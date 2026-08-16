@@ -2298,11 +2298,11 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			z_min_cam = z_vec.dot(center) - radius;
 
 			{
-				float soft_shadow_angle = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE);
+				float soft_shadow_angular_radius_degrees = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE);
 
-				if (soft_shadow_angle > 0.0) {
+				if (soft_shadow_angular_radius_degrees > 0.0) {
 					float z_range = (z_vec.dot(center) + radius + pancake_size) - z_min_cam;
-					soft_shadow_expand = Math::tan(Math::deg_to_rad(soft_shadow_angle)) * z_range;
+					soft_shadow_expand = Math::tan(Math::deg_to_rad(soft_shadow_angular_radius_degrees)) * z_range;
 
 					x_max += soft_shadow_expand;
 					y_max += soft_shadow_expand;
