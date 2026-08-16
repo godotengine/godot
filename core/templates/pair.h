@@ -63,7 +63,13 @@ struct is_zero_constructible<Pair<F, S>> : std::conjunction<is_zero_constructibl
 template <typename K, typename V>
 struct KeyValue {
 	const K key{};
-	V value{};
+
+	// For whatever reason, MSVC does not support normal `no_unique_address` but supports `msvc::no_unique_address`.
+#if defined(_MSC_VER)
+	[[msvc::no_unique_address]] V value{};
+#else
+	[[no_unique_address]] V value{};
+#endif
 
 	KeyValue &operator=(const KeyValue &p_kv) = delete;
 	KeyValue &operator=(KeyValue &&p_kv) = delete;
