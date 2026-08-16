@@ -1709,8 +1709,6 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		atlas->render_buffers.instantiate();
 	}
 
-	RD::get_singleton()->draw_command_begin_label("Reflection Probe Render");
-
 	const bool update_always = LightStorage::get_singleton()->reflection_probe_get_update_mode(rpi->probe) == RSE::REFLECTION_PROBE_UPDATE_ALWAYS;
 	if (update_always && atlas->reflection.is_valid() && atlas->size != 256) {
 		WARN_PRINT("ReflectionProbes set to UPDATE_ALWAYS must have an atlas size of 256. Please update the atlas size in the ProjectSettings.");
@@ -1810,10 +1808,12 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		}
 	}
 
-	if (rpi->atlas_index != -1) { // should we fail if this is still -1 ?
-		atlas->reflections.write[rpi->atlas_index].owner = p_instance;
-	}
+	ERR_FAIL_COND_V(rpi->atlas_index == -1, false);
 
+	RD::get_singleton()->draw_command_begin_label("Reflection Probe Render"); 
+
+	atlas->reflections.write[rpi->atlas_index].owner = p_instance;
+	
 	rpi->atlas = p_reflection_atlas;
 	rpi->rendering = true;
 	rpi->dirty = false;
@@ -1833,11 +1833,6 @@ bool LightStorage::reflection_probe_instance_end_render(RID p_instance, RID p_re
 
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
-
-	ERR_PRINT(vformat(
-			"atlas_index = %d, reflections.size() = %d",
-			rpi->atlas_index,
-			atlas->reflections.size()));
 
 	RD::get_singleton()->draw_command_begin_label("Convert reflection probe to octahedral");
 	copy_effects->copy_cubemap_to_octmap(atlas->color_buffer, atlas->reflections.write[rpi->atlas_index].data.layers[0].mipmaps[0].framebuffer, atlas->uv_border_size);
