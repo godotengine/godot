@@ -34,6 +34,7 @@
 #include "../gdscript_analyzer.h"
 
 #include "core/io/resource_loader.h"
+#include "core/templates/fixed_vector.h"
 
 void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back(GDScriptLanguage::get_singleton()->get_extension());
@@ -140,8 +141,7 @@ void GDScriptEditorTranslationParserPlugin::_add_id_ctx_plural(const Vector<Stri
 }
 
 void GDScriptEditorTranslationParserPlugin::_traverse_class(const GDScriptParser::ClassNode *p_class) {
-	for (int i = 0; i < p_class->members.size(); i++) {
-		const GDScriptParser::ClassNode::Member &m = p_class->members[i];
+	for (const GDScriptParser::ClassNode::Member &m : p_class->members) {
 		// Other member types can't contain translatable strings.
 		switch (m.type) {
 			case GDScriptParser::ClassNode::Member::CLASS:
@@ -168,8 +168,8 @@ void GDScriptEditorTranslationParserPlugin::_traverse_function(const GDScriptPar
 		return;
 	}
 
-	for (int i = 0; i < p_func->parameters.size(); i++) {
-		_assess_expression(p_func->parameters[i]->initializer);
+	for (const GDScriptParser::ParameterNode *param : p_func->parameters) {
+		_assess_expression(param->initializer);
 	}
 	_traverse_block(p_func->body);
 }
@@ -179,10 +179,8 @@ void GDScriptEditorTranslationParserPlugin::_traverse_block(const GDScriptParser
 		return;
 	}
 
-	const Vector<GDScriptParser::Node *> &statements = p_suite->statements;
-	for (int i = 0; i < statements.size(); i++) {
-		const GDScriptParser::Node *statement = statements[i];
-
+	const LocalVector<GDScriptParser::Node *> &statements = p_suite->statements;
+	for (const GDScriptParser::Node *statement : statements) {
 		// BREAK, BREAKPOINT, CONSTANT, CONTINUE, and PASS are skipped because they can't contain translatable strings.
 		switch (statement->type) {
 			case GDScriptParser::Node::ASSERT: {
@@ -207,9 +205,9 @@ void GDScriptEditorTranslationParserPlugin::_traverse_block(const GDScriptParser
 			case GDScriptParser::Node::MATCH: {
 				const GDScriptParser::MatchNode *match_node = static_cast<const GDScriptParser::MatchNode *>(statement);
 				_assess_expression(match_node->test);
-				for (int j = 0; j < match_node->branches.size(); j++) {
-					_traverse_block(match_node->branches[j]->guard_body);
-					_traverse_block(match_node->branches[j]->block);
+				for (const GDScriptParser::MatchBranchNode *branch : match_node->branches) {
+					_traverse_block(branch->guard_body);
+					_traverse_block(branch->block);
 				}
 			} break;
 			case GDScriptParser::Node::RETURN: {
@@ -243,8 +241,8 @@ void GDScriptEditorTranslationParserPlugin::_assess_expression(const GDScriptPar
 	switch (p_expression->type) {
 		case GDScriptParser::Node::ARRAY: {
 			const GDScriptParser::ArrayNode *array_node = static_cast<const GDScriptParser::ArrayNode *>(p_expression);
-			for (int i = 0; i < array_node->elements.size(); i++) {
-				_assess_expression(array_node->elements[i]);
+			for (GDScriptParser::ExpressionNode *expr : array_node->elements) {
+				_assess_expression(expr);
 			}
 		} break;
 		case GDScriptParser::Node::ASSIGNMENT: {
@@ -266,9 +264,9 @@ void GDScriptEditorTranslationParserPlugin::_assess_expression(const GDScriptPar
 		} break;
 		case GDScriptParser::Node::DICTIONARY: {
 			const GDScriptParser::DictionaryNode *dict_node = static_cast<const GDScriptParser::DictionaryNode *>(p_expression);
-			for (int i = 0; i < dict_node->elements.size(); i++) {
-				_assess_expression(dict_node->elements[i].key);
-				_assess_expression(dict_node->elements[i].value);
+			for (const GDScriptParser::DictionaryNode::Pair &element : dict_node->elements) {
+				_assess_expression(element.key);
+				_assess_expression(element.value);
 			}
 		} break;
 		case GDScriptParser::Node::LAMBDA: {
@@ -327,8 +325,8 @@ void GDScriptEditorTranslationParserPlugin::_assess_assignment(const GDScriptPar
 
 void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::CallNode *p_call) {
 	_assess_expression(p_call->callee);
-	for (int i = 0; i < p_call->arguments.size(); i++) {
-		_assess_expression(p_call->arguments[i]);
+	for (GDScriptParser::ExpressionNode *arg : p_call->arguments) {
+		_assess_expression(arg);
 	}
 
 	// Extract the translatable strings coming from function calls. For example:
@@ -343,7 +341,7 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 
 	if (function_name == tr_func || function_name == atr_func) {
 		// Extract from `tr(id, ctx)` or `atr(id, ctx)`.
-		for (int i = 0; i < p_call->arguments.size(); i++) {
+		for (uint32_t i = 0; i < p_call->arguments.size(); i++) {
 			if (_is_constant_string(p_call->arguments[i])) {
 				id_ctx_plural.write[i] = p_call->arguments[i]->reduced_value;
 			} else {
@@ -356,11 +354,8 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 		}
 	} else if (function_name == trn_func || function_name == atrn_func) {
 		// Extract from `tr_n(id, plural, n, ctx)` or `atr_n(id, plural, n, ctx)`.
-		Vector<int> indices;
-		indices.push_back(0);
-		indices.push_back(3);
-		indices.push_back(1);
-		for (int i = 0; i < indices.size(); i++) {
+		FixedVector<uint32_t, 3> indices = { 0, 3, 1 };
+		for (uint32_t i = 0; i < indices.size(); i++) {
 			if (indices[i] >= p_call->arguments.size()) {
 				continue;
 			}
@@ -429,8 +424,8 @@ void GDScriptEditorTranslationParserPlugin::_extract_fd_filter_array(const GDScr
 	}
 
 	if (array_node) {
-		for (int i = 0; i < array_node->elements.size(); i++) {
-			_extract_fd_filter_string(array_node->elements[i], array_node->elements[i]->start_line);
+		for (GDScriptParser::ExpressionNode *expr : array_node->elements) {
+			_extract_fd_filter_string(expr, expr->start_line);
 		}
 	}
 }
