@@ -8428,6 +8428,8 @@ void EditorNode::notify_settings_overrides_changed() {
 // Keep the list alphabetically sorted.
 HashMap<String, Variant> EditorNode::get_initial_settings() {
 	HashMap<String, Variant> settings;
+	settings["display/window/size/viewport_height"] = 720;
+	settings["display/window/size/viewport_width"] = 1280;
 	settings["display/window/stretch/aspect"] = "expand";
 	settings["display/window/stretch/mode"] = "canvas_items";
 	settings["gui/common/auto_focus_strategy"] = Control::AutoFocusStrategy::STRATEGY_BALLOON;

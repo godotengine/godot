@@ -40,6 +40,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/settings/setting_preset_editor.h"
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/version_control/editor_vcs_interface.h"
@@ -518,7 +519,7 @@ void ProjectDialog::_renderer_selected() {
 				String::utf8("•  ") + TTR("Supports desktop, mobile + web platforms.") +
 				String::utf8("\n•  ") + TTR("Least advanced 3D graphics.") +
 				String::utf8("\n•  ") + TTR("Intended for low-end/older devices.") +
-				String::utf8("\n•  ") + TTR("Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2).") +
+				String::utf8("\n•  ") + TTR("Uses OpenGL ES 3.0 backend.") +
 				String::utf8("\n•  ") + TTR("Fastest rendering of simple scenes."));
 	} else {
 		WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
@@ -596,10 +597,17 @@ void ProjectDialog::ok_pressed() {
 		initial_settings["application/config/features"] = project_features;
 		initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 		initial_settings["application/config/icon"] = "res://icon.svg";
-		ProjectSettings::CustomMap extra_settings = EditorNode::get_initial_settings();
+
+		const ProjectSettings::CustomMap extra_settings = EditorNode::get_initial_settings();
 		for (const KeyValue<String, Variant> &extra_setting : extra_settings) {
 			// Merge with other initial settings defined above.
 			initial_settings[extra_setting.key] = extra_setting.value;
+		}
+
+		const ProjectSettings::CustomMap preset_settings = setting_preset_editor->get_setting_preset_values(SettingPresetEditor::SettingPreset(setting_preset_editor->get_selected_preset()));
+		for (const KeyValue<String, Variant> &preset_setting : preset_settings) {
+			// Merge with other initial settings defined above.
+			initial_settings[preset_setting.key] = preset_setting.value;
 		}
 
 		Error err = ProjectSettings::get_singleton()->save_custom(path.path_join("project.godot"), initial_settings, Vector<String>(), false);
@@ -615,8 +623,6 @@ void ProjectDialog::ok_pressed() {
 			return;
 		}
 		fa_icon->store_string(get_default_project_icon());
-
-		EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), path);
 
 		// Ensures external editors and IDEs use UTF-8 encoding.
 		const String editor_config_path = path.path_join(".editorconfig");
@@ -872,7 +878,9 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 		name_container->show();
 		install_path_container->hide();
 		renderer_container->hide();
-		default_files_container->hide();
+		setting_preset_editor->hide();
+		change_later_separator->hide();
+		change_later_label->hide();
 
 		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 		callable_mp(project_name, &LineEdit::select_all).call_deferred();
@@ -913,7 +921,9 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			name_container->hide();
 			install_path_container->hide();
 			renderer_container->hide();
-			default_files_container->hide();
+			setting_preset_editor->hide();
+			change_later_separator->hide();
+			change_later_label->hide();
 			edit_check_box->show();
 
 			// Project path dialog is also opened; no need to change focus.
@@ -941,7 +951,9 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			name_container->show();
 			install_path_container->hide();
 			renderer_container->show();
-			default_files_container->show();
+			setting_preset_editor->show();
+			change_later_separator->show();
+			change_later_label->show();
 			edit_check_box->hide();
 
 			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
@@ -955,7 +967,9 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			name_container->show();
 			install_path_container->hide();
 			renderer_container->hide();
-			default_files_container->hide();
+			setting_preset_editor->hide();
+			change_later_separator->hide();
+			change_later_label->hide();
 			edit_check_box->show();
 
 			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred(false);
@@ -966,7 +980,9 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			name_container->show();
 			install_path_container->hide();
 			renderer_container->hide();
-			default_files_container->hide();
+			setting_preset_editor->hide();
+			change_later_separator->hide();
+			change_later_label->hide();
 			edit_check_box->set_visible(duplicate_can_edit);
 
 			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
@@ -1190,38 +1206,30 @@ ProjectDialog::ProjectDialog() {
 	rd_not_supported->set_visible(false);
 	renderer_container->add_child(rd_not_supported);
 
-	l = memnew(Label);
-	l->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	l->set_text(TTRC("The renderer can be changed later, but scenes may need to be adjusted."));
-	// Add some extra spacing to separate it from the list above and the buttons below.
-	l->set_custom_minimum_size(Size2(0, 40) * EDSCALE);
-	l->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	l->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	l->set_modulate(Color(1, 1, 1, 0.7));
-	renderer_container->add_child(l);
-
-	default_files_container = memnew(HBoxContainer);
-	vb->add_child(default_files_container);
-	l = memnew(Label);
-	l->set_text(TTRC("Version Control Metadata:"));
-	default_files_container->add_child(l);
-	vcs_metadata_selection = memnew(OptionButton);
-	vcs_metadata_selection->set_custom_minimum_size(Size2(100, 20));
-	vcs_metadata_selection->add_item(TTRC("None"), (int)EditorVCSInterface::VCSMetadata::NONE);
-	vcs_metadata_selection->add_item(TTRC("Git"), (int)EditorVCSInterface::VCSMetadata::GIT);
-	vcs_metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
-	vcs_metadata_selection->set_accessibility_name(TTRC("Version Control Metadata:"));
-	default_files_container->add_child(vcs_metadata_selection);
 	Control *spacer = memnew(Control);
 	spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	default_files_container->add_child(spacer);
+	spacer->set_custom_minimum_size(Size2(0, 10) * EDSCALE);
+	vb->add_child(spacer);
+
+	setting_preset_editor = memnew(SettingPresetEditor);
+	vb->add_child(setting_preset_editor);
+
+	change_later_separator = memnew(HSeparator);
+	vb->add_child(change_later_separator);
+
+	change_later_label = memnew(Label);
+	change_later_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	change_later_label->set_text(TTRC("The renderer and optimization preset can be changed later\nin the Project Settings, but scenes may need to be adjusted."));
+	// Add some extra spacing to separate it from the list above and the buttons below.
+	change_later_label->set_custom_minimum_size(Size2(0, 40) * EDSCALE);
+	change_later_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	change_later_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	change_later_label->set_modulate(Color(1, 1, 1, 0.7));
+	vb->add_child(change_later_label);
+
 	fdialog_install = memnew(EditorFileDialog);
 	fdialog_install->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(fdialog_install);
-
-	Control *spacer2 = memnew(Control);
-	spacer2->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	vb->add_child(spacer2);
 
 	edit_check_box = memnew(CheckBox);
 	edit_check_box->set_text(TTRC("Edit Now"));
