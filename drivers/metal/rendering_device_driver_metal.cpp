@@ -2072,7 +2072,7 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 	desc->setAlphaToOneEnabled(p_multisample_state.enable_alpha_to_one);
 
 	// Depth buffer.
-	bool depth_enabled = p_depth_stencil_state.enable_depth_test && desc->depthAttachmentPixelFormat() != MTL::PixelFormatInvalid;
+	bool depth_enabled = (p_depth_stencil_state.enable_depth_test || p_depth_stencil_state.enable_depth_write) && desc->depthAttachmentPixelFormat() != MTL::PixelFormatInvalid;
 	bool stencil_enabled = p_depth_stencil_state.enable_stencil && desc->stencilAttachmentPixelFormat() != MTL::PixelFormatInvalid;
 
 	if (depth_enabled || stencil_enabled) {
