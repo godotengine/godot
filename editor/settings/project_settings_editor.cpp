@@ -38,13 +38,16 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/editor_settings_dialog.h"
 #include "editor/settings/gdextension/project_settings_gdextension.h"
+#include "editor/settings/setting_preset_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/separator.h"
 #include "servers/movie_writer/movie_writer.h"
 
 void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_dock) {
@@ -218,6 +221,29 @@ void ProjectSettingsEditor::_delete_setting() {
 
 	property_box->clear();
 	del_button->release_focus();
+}
+
+void ProjectSettingsEditor::_presets_pressed() {
+	// Same width as the project creation dialog, so that the setting presets dialog looks similar.
+	// The height is set to allow all settings to show without scrolling with all presets.
+	presets_dialog->popup_centered_clamped(Size2(500, 450) * EDSCALE);
+}
+
+void ProjectSettingsEditor::_preset_dialog_confirmed() {
+	if (presets_editor->get_selected_preset() == SettingPresetEditor::SETTING_PRESET_NONE) {
+		// Nothing needs to be changed.
+		return;
+	}
+
+	const HashMap<String, Variant> preset_settings = presets_editor->get_setting_preset_values(presets_editor->get_selected_preset());
+	for (const KeyValue<String, Variant> &preset_setting : preset_settings) {
+		ProjectSettings::get_singleton()->set_setting(preset_setting.key, preset_setting.value);
+	}
+	ProjectSettings::get_singleton()->save();
+
+	EditorToaster::get_singleton()->popup_str(
+			vformat(TTR("Setting preset \"%s\" applied."),
+					presets_editor->get_setting_preset_name(presets_editor->get_selected_preset())));
 }
 
 void ProjectSettingsEditor::_property_box_changed(const String &p_text) {
@@ -651,6 +677,7 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 void ProjectSettingsEditor::_update_theme() {
 	add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 	del_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+	presets_button->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 	restart_close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 	restart_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
@@ -773,6 +800,22 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	del_button->set_disabled(true);
 	del_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_delete_setting));
 	custom_properties->add_child(del_button);
+
+	VSeparator *separator = memnew(VSeparator);
+	custom_properties->add_child(separator);
+
+	presets_button = memnew(Button);
+	presets_button->set_text(TTRC("Presets"));
+	presets_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsEditor::_presets_pressed));
+	custom_properties->add_child(presets_button);
+
+	presets_dialog = memnew(ConfirmationDialog);
+	presets_dialog->set_title(TTRC("Presets"));
+	add_child(presets_dialog);
+	presets_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ProjectSettingsEditor::_preset_dialog_confirmed));
+
+	presets_editor = memnew(SettingPresetEditor);
+	presets_dialog->add_child(presets_editor);
 
 	general_settings_inspector = memnew(SectionedInspector);
 	general_settings_inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
