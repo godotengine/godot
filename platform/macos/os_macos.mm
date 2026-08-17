@@ -1248,7 +1248,9 @@ OS_MacOS_Headless::OS_MacOS_Headless(const char *p_execpath, int p_argc, char **
 #ifdef TOOLS_ENABLED
 
 void OS_MacOS_Embedded::run() {
-	CFRunLoopGetCurrent();
+	// The process is registered with LaunchServices, so it must use the
+	// NSApplication event loop to signal that it has finished launching.
+	[GodotApplication sharedApplication];
 
 	@autoreleasepool {
 		Error err = Main::setup(execpath, argc, argv);
@@ -1275,7 +1277,8 @@ void OS_MacOS_Embedded::run() {
 			main_loop->initialize();
 		}
 
-		while (true) {
+		CFRunLoopObserverRef pre_wait_observer = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+			bool should_wake = true;
 			@autoreleasepool {
 				@try {
 					GodotProfileFrameMark;
@@ -1289,15 +1292,29 @@ void OS_MacOS_Embedded::run() {
 					}
 #endif
 					if (Main::iteration()) {
-						break;
-					}
+						should_wake = false;
+						CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), observer, kCFRunLoopCommonModes);
+						[NSApp stop:nil];
 
-					CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, 0);
+						// `stop:` is processed after the next event, but an embedded process
+						// has no window to generate one.
+						NSEvent *stop_event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined location:NSZeroPoint modifierFlags:0 timestamp:0 windowNumber:0 context:nil subtype:0 data1:0 data2:0];
+						[NSApp postEvent:stop_event atStart:YES];
+					}
 				} @catch (NSException *exception) {
 					ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 				}
 			}
-		}
+			if (should_wake && wait_timer == nil) {
+				CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
+			}
+		});
+		CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+
+		[NSApp run];
+
+		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+		CFRelease(pre_wait_observer);
 
 		main_loop->finalize();
 	}
