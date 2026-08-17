@@ -523,7 +523,6 @@ void EditorLog::_add_highlighted_log_line(const String &p_line, const String &p_
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	String filter_keytext = search_box->get_text();
-	String parsed_text = _strip_bbcode_from_message(p_message.text);
 
 	if (!is_inside_tree()) {
 		// The log will be built all at once when it enters the tree and has its theme items.
