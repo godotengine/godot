@@ -125,9 +125,8 @@ void EditorLog::_update_theme() {
 
 	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
-	// show_non_search_matches_button->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
-	// search_case_sensitive_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
-	// search_parse_bbcode_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
+	filter_previous_match_button->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
+	filter_next_match_button->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
@@ -135,6 +134,9 @@ void EditorLog::_update_theme() {
 	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 	theme_cache.warning_icon = get_editor_theme_icon(SNAME("Warning"));
 	theme_cache.message_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
+	theme_cache.filter_highlight_active_color = EDITOR_GET("text_editor/theme/highlighting/selection_color");
+	theme_cache.filter_highlight_inactive_color = theme_cache.filter_highlight_active_color * Color(1, 1, 1, 0.6);
+	
 }
 
 void EditorLog::_editor_settings_changed() {
@@ -234,6 +236,12 @@ void EditorLog::_set_search_case_sensitive(bool p_state) {
 
 void EditorLog::_set_extra_filter_options_visible(bool p_visible) {
 	extra_filter_options_hbox->set_visible(p_visible);
+}
+
+void EditorLog::_enable_filter_previous_match_button(bool p_enable) {
+}
+
+void EditorLog::_enable_filter_next_match_button(bool p_enable) {
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
@@ -378,9 +386,7 @@ void EditorLog::_rebuild_log() {
 	for (int msg_idx = start_message_index; msg_idx < messages.size(); msg_idx++) {
 		LogMessage msg = messages[msg_idx];
 
-		if (_contains_case_sensitive(_strip_bbcode_from_message(msg.text), search_text) && _check_display_message(msg)) {
-			search_matches_count += 1;
-		}
+		search_matches_count += _count_case_sensitive(_strip_bbcode_from_message(msg.text), search_text);
 
 		if (collapse) {
 			// If collapsing, only log one instance of the message.
@@ -425,6 +431,14 @@ int EditorLog::_find_case_sensitive(const String &p_base, const String &p_target
 		return p_base.find(p_target);
 	} else {
 		return p_base.findn(p_target);
+	}
+}
+
+int EditorLog::_count_case_sensitive(const String &p_base, const String &p_target) {
+	if (search_case_sensitive) {
+		return p_base.count(p_target);
+	} else {
+		return p_base.countn(p_target);
 	}
 }
 
@@ -511,7 +525,7 @@ void EditorLog::_add_highlighted_log_line(const String &p_line, const String &p_
 			log->push_normal();
 			log->add_text(substring);
 		} else { // Match
-			log->push_bgcolor(EditorSettings::get_singleton()->get_setting("text_editor/theme/highlighting/selection_color"));
+			log->push_bgcolor(theme_cache.filter_highlight_active_color);
 			log->add_text(substring);
 		}
 	}
@@ -531,10 +545,6 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 
 	if (unlikely(log->is_updating())) {
 		// The new message arrived during log RTL text processing/redraw (invalid BiDi control characters / font error), ignore it to avoid RTL data corruption.
-		return;
-	}
-
-	if (!type_filter_map[p_message.type]->is_active()) {
 		return;
 	}
 
@@ -635,15 +645,15 @@ void EditorLog::_update_matching_lines_count_label(int count) {
 	matching_lines_count_label->set_modulate(Color(1.0, 1.0, 1.0));
 
 	if (count == 0) {
-		matching_lines_count_label->set_text("No matching lines");
-		matching_lines_count_label->set_modulate(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		matching_lines_count_label->set_text("No matches");
+		matching_lines_count_label->set_modulate(theme_cache.error_color);
 		return;
 	} else if (count == 1) {
-		matching_lines_count_label->set_text("1 matching line");
+		matching_lines_count_label->set_text("1 match");
 		return;
 	}
 
-	matching_lines_count_label->set_text(vformat("%s matching lines", itos(count)));
+	matching_lines_count_label->set_text(vformat("%s matches", itos(count)));
 }
 
 void EditorLog::_reset_message_counts() {
@@ -716,12 +726,25 @@ EditorLog::EditorLog() {
 	matching_lines_count_label = memnew(Label);
 	extra_filter_options_hbox->add_child(matching_lines_count_label);
 
-	//Exclude non-filter matches button
+	// Previous filter match button
+	filter_previous_match_button = memnew(Button);
+	filter_previous_match_button->set_tooltip_text(TTRC("Previous filter match"));
+	filter_previous_match_button->set_theme_type_variation(SceneStringName(FlatButton));
+	filter_previous_match_button->set_accessibility_name(TTRC("Previous filter match"));
+	extra_filter_options_hbox->add_child(filter_previous_match_button);
+
+	// Next filter match button
+	filter_next_match_button = memnew(Button);
+	filter_next_match_button->set_tooltip_text(TTRC("Next filter match"));
+	filter_next_match_button->set_theme_type_variation(SceneStringName(FlatButton));
+	filter_next_match_button->set_accessibility_name(TTRC("Next filter match"));
+	extra_filter_options_hbox->add_child(filter_next_match_button);
+
+	// Exclude non-filter matches button
 	show_non_search_matches_button = memnew(CheckBox);
 	show_non_search_matches_button->set_text("Show Non-Matches");
 	show_non_search_matches_button->set_tooltip_text(TTRC("Show Non-Matches"));
 	show_non_search_matches_button->set_accessibility_name(TTRC("Show Non-Matches"));
-	// show_non_search_matches_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_non_search_matches_button->set_pressed(true);
 	show_non_search_matches_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_show_non_search_matches));
 	extra_filter_options_hbox->add_child(show_non_search_matches_button);
@@ -731,7 +754,6 @@ EditorLog::EditorLog() {
 	search_case_sensitive_button->set_text("Match Case");
 	search_case_sensitive_button->set_tooltip_text(TTRC("Toggle case-sensitivity"));
 	search_case_sensitive_button->set_accessibility_name(TTRC("Toggle case-sensitivity"));
-	// search_case_sensitive_button->set_theme_type_variation(SceneStringName(FlatButton));
 	search_case_sensitive_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_case_sensitive));
 	extra_filter_options_hbox->add_child(search_case_sensitive_button);
 

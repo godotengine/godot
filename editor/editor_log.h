@@ -77,6 +77,9 @@ private:
 		Ref<Texture2D> warning_icon;
 
 		Color message_color;
+
+		Color filter_highlight_inactive_color;
+		Color filter_highlight_active_color;
 	} theme_cache;
 
 	// Encapsulates all data and functionality regarding filters.
@@ -144,6 +147,12 @@ private:
 	Label *matching_lines_count_label = nullptr;
 	void _update_matching_lines_count_label(int count);
 
+	Button *filter_previous_match_button = nullptr;
+	void _enable_filter_previous_match_button(bool p_enable);
+
+	Button *filter_next_match_button = nullptr;
+	void _enable_filter_next_match_button(bool p_enable);
+
 	CheckBox *show_non_search_matches_button = nullptr;
 	void _set_show_non_search_matches(bool p_state);
 	bool show_non_search_matches = true;
@@ -186,6 +195,7 @@ private:
 	bool _check_display_message(LogMessage &p_message);
 	bool _contains_case_sensitive(const String &p_base, const String &p_contains);
 	int _find_case_sensitive(const String &p_base, const String &p_target);
+	int _count_case_sensitive(const String &p_base, const String &p_target);
 	String _strip_bbcode_from_message(const String &p_text);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
