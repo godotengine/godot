@@ -2077,7 +2077,7 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 	bool depth_write_enabled = p_depth_stencil_state.enable_depth_write && depth_enabled;
 	bool stencil_enabled = p_depth_stencil_state.enable_stencil && desc->stencilAttachmentPixelFormat() != MTL::PixelFormatInvalid;
 
-	if ((depth_test_enabled || depth_write_enabled || stencil_enabled) {
+	if (depth_test_enabled || depth_write_enabled || stencil_enabled) {
 		NS::SharedPtr<MTL::DepthStencilDescriptor> ds_desc = NS::TransferPtr(MTL::DepthStencilDescriptor::alloc()->init());
 
 		pipeline->raster_state.depth_test.enabled = depth_test_enabled;
