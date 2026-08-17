@@ -361,6 +361,10 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 		if (depth_test == DEPTH_TEST_ENABLED_INVERTED) {
 			depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS;
 		}
+	} else if (depth_draw != DEPTH_DRAW_DISABLED) {
+		depth_stencil_state.enable_depth_test = true;
+		depth_stencil_state.enable_depth_write = true;
+		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_ALWAYS;
 	}
 
 	bool use_stencil = stencil_enabled && p_pipeline_key.version == PIPELINE_VERSION_COLOR_PASS;
