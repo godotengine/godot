@@ -7,6 +7,116 @@ previous feature release. It is equivalent to the listings on our
 Changelogs for earlier feature releases are available in their respective Git
 branches, and linked at the [end of this file](#Past-releases).
 
+## 4.7.2 - 2026-08-17
+
+#### 2D
+
+- Don't create new proxy object for the same tile ([GH-120517](https://github.com/godotengine/godot/pull/120517)).
+- Fix use-after-free crash in `TileSetAtlasSourceEditor` ([GH-120548](https://github.com/godotengine/godot/pull/120548)).
+
+#### 3D
+
+- Ensure key is erased in hashmap `instance_shader_parameters` instead of value ([GH-121259](https://github.com/godotengine/godot/pull/121259)).
+- Fix 3D ruler tool tooltip ([GH-120890](https://github.com/godotengine/godot/pull/120890)).
+
+#### Assetlib
+
+- Asset Store: Fix image width on different Editor Scales ([GH-121470](https://github.com/godotengine/godot/pull/121470)).
+
+#### Buildsystem
+
+- CI: Update all GitHub Actions to latest versions ([GH-121767](https://github.com/godotengine/godot/pull/121767)).
+- Fix building Android Editor with separate arches ([GH-122186](https://github.com/godotengine/godot/pull/122186)).
+- Ping `master` cache after saving cache ([GH-121973](https://github.com/godotengine/godot/pull/121973)).
+
+#### Codestyle
+
+- Fix more MSVC warnings for potential mod by 0 (C4724) ([GH-121746](https://github.com/godotengine/godot/pull/121746)).
+
+#### Core
+
+- Android: Play store crash investigations ([GH-121146](https://github.com/godotengine/godot/pull/121146)).
+- Fix `Color::hash()` hashing the red component twice ([GH-121237](https://github.com/godotengine/godot/pull/121237)).
+- Fix crash when failing to open log file for writing ([GH-121926](https://github.com/godotengine/godot/pull/121926)).
+- Fix regressions to the Android editor introduced by #121670 ([GH-121917](https://github.com/godotengine/godot/pull/121917)).
+- Forbid negative weights in `RandomPCG::rand_weighted` ([GH-120004](https://github.com/godotengine/godot/pull/120004)).
+- Update `DirAccess::create_temp` to not fail on empty `prefix` parameter ([GH-121315](https://github.com/godotengine/godot/pull/121315)).
+
+#### Documentation
+
+- Fix and improve Light3D bake mode descriptions ([GH-120599](https://github.com/godotengine/godot/pull/120599)).
+- Fix incorrect note about `DisplayServer.screen_get_max_scale()` only working on macOS ([GH-122139](https://github.com/godotengine/godot/pull/122139)).
+
+#### Editor
+
+- Don't auto-translate favorite nodes ([GH-122260](https://github.com/godotengine/godot/pull/122260)).
+- Fix axis inversion setting for 3D navigation ([GH-121212](https://github.com/godotengine/godot/pull/121212)).
+- Fix godot crash in SpriteFrames in the AnimatedSprite2D and 3D ([GH-120792](https://github.com/godotengine/godot/pull/120792)).
+- Fix incorrect freed autoload check ([GH-121509](https://github.com/godotengine/godot/pull/121509)).
+- Fix leaks from expanded Array and Dict from parentless buttons on invisible slots ([GH-121036](https://github.com/godotengine/godot/pull/121036)).
+- Fix Script Editor tab name for translated class ref ([GH-121333](https://github.com/godotengine/godot/pull/121333)).
+- Fix Script Editor zoom factor not being applied on editor start ([GH-121251](https://github.com/godotengine/godot/pull/121251)).
+- Fix Visual Profiler cursor not appearing when graph is partially filled ([GH-118294](https://github.com/godotengine/godot/pull/118294)).
+- Remove `emscripten_cancel_main_loop` from web `exit_callback` ([GH-122056](https://github.com/godotengine/godot/pull/122056)).
+
+#### GDExtension
+
+- Fix `register_extension_class` never iterating parents for exposed checks ([GH-120985](https://github.com/godotengine/godot/pull/120985)).
+
+#### GDScript
+
+- Editor: Fix autocomplete icon for `CODE_COMPLETION_KIND_CLASS` ([GH-121466](https://github.com/godotengine/godot/pull/121466)).
+
+#### GUI
+
+- Fix `BaseButton` input when `enable_long_press_as_right_click` is true ([GH-120962](https://github.com/godotengine/godot/pull/120962)).
+- Fix children's `parent_maximum_size_cache` unable to update twice in a frame ([GH-120984](https://github.com/godotengine/godot/pull/120984)).
+- Prevent stale updates to parent maximum size cache ([GH-120002](https://github.com/godotengine/godot/pull/120002)).
+
+#### Import
+
+- Add null fail condition to append_gltf_node ([GH-121360](https://github.com/godotengine/godot/pull/121360)).
+- Fix `GLTFDocument.import_object_model_property` crash ([GH-121304](https://github.com/godotengine/godot/pull/121304)).
+
+#### Input
+
+- Fix performance issues when moving the mouse with high polling rate on Windows ([GH-109639](https://github.com/godotengine/godot/pull/109639)).
+- Fix simultaneous shift release ([GH-120327](https://github.com/godotengine/godot/pull/120327)).
+- Wayland: Fix IME popup position under fractional scaling on KDE Plasma ([GH-121571](https://github.com/godotengine/godot/pull/121571)).
+
+#### Multiplayer
+
+- Fix peers stopping replication on deleting node they spawned with MultiplayerSpawner ([GH-109864](https://github.com/godotengine/godot/pull/109864)).
+
+#### Navigation
+
+- Fix debug `NavigationRegion3D` colors not updating until project re-start ([GH-120939](https://github.com/godotengine/godot/pull/120939)).
+
+#### Network
+
+- mbedTLS: Always use Godot's OS as entropy source ([GH-121759](https://github.com/godotengine/godot/pull/121759)).
+
+#### Platforms
+
+- [WinRT, 4.7] Add exception handling to `DispatcherQueueOptions` init ([GH-122261](https://github.com/godotengine/godot/pull/122261)).
+- Avoid running `GetVolumeInformationW` on network drives ([GH-121192](https://github.com/godotengine/godot/pull/121192)).
+- Fix copy paste error in macos mediaKeyEvent handler ([GH-121225](https://github.com/godotengine/godot/pull/121225)).
+- macOS: Fix initial window flags ([GH-120533](https://github.com/godotengine/godot/pull/120533)).
+- Make it impossible to have more than one main thread, and don't release unnecessarily ([GH-121161](https://github.com/godotengine/godot/pull/121161)).
+- Wayland: Improve pointer constraining ([GH-120647](https://github.com/godotengine/godot/pull/120647)).
+- Windows: Clean WinRT window data pointer when it is erased ([GH-121858](https://github.com/godotengine/godot/pull/121858)).
+
+#### Rendering
+
+- Android: Fix issue causing the engine to crash when starting while the screen is off ([GH-121670](https://github.com/godotengine/godot/pull/121670)).
+- Fix local billboard particles running copy twice ([GH-120859](https://github.com/godotengine/godot/pull/120859)).
+- Fix PCSS shadows using shadow range begin in the wrong space ([GH-120774](https://github.com/godotengine/godot/pull/120774)).
+- Render: Crash Fix use-after-return instance shader parameter lists ([GH-120858](https://github.com/godotengine/godot/pull/120858)).
+
+#### Thirdparty
+
+- Update AccessKit to 0.22.3 ([GH-121393](https://github.com/godotengine/godot/pull/121393)).
+
 ## 4.7.1 - 2026-07-14
 
 - [Release announcement](https://godotengine.org/article/maintenance-release-godot-4-7-1)
