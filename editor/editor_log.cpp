@@ -430,7 +430,7 @@ int EditorLog::_find_case_sensitive(const String &p_base, const String &p_target
 
 String EditorLog::_strip_bbcode_from_message(const String &p_text) {
 	String result;
-	
+
 	// Lazy initialize the BBCode parser
 	if (!bbcode_parser) {
 		bbcode_parser = memnew(RichTextLabel);
@@ -588,7 +588,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	}
 
 	// Note that errors and warnings only support BBCode in the file part of the message.
-	
+
 	if (!filter_keytext.is_empty()) {
 		_add_highlighted_log_line(p_message.text, filter_keytext);
 	} else {
@@ -639,8 +639,7 @@ void EditorLog::_update_matching_lines_count_label(int count) {
 		matching_lines_count_label->set_text("No matching lines");
 		matching_lines_count_label->set_modulate(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		return;
-	}
-	else if (count == 1) {
+	} else if (count == 1) {
 		matching_lines_count_label->set_text("1 matching line");
 		return;
 	}
