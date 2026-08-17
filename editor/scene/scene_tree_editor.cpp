@@ -1626,11 +1626,11 @@ void SceneTreeEditor::rename_node(Node *p_node, const String &p_name, TreeItem *
 		item = _find(tree->get_root(), p_node->get_path());
 	}
 	ERR_FAIL_NULL(item);
-	bool check_for_unique_name_token = !p_name.is_empty() && p_name[0] == '%';
+	bool check_for_unique_name_token = !p_name.is_empty() && p_name.contains_char('%');
 	String substr_name = p_name;
 
 	if (check_for_unique_name_token) {
-		substr_name = p_name.substr(1);
+		substr_name = p_name.remove_char('%');
 
 		// No need to do anything else with this if already unique.
 		if (p_node->is_unique_name_in_owner()) {
