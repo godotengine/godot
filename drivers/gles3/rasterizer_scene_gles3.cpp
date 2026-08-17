@@ -3308,7 +3308,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			should_request_redraw = true;
 		}
 
-		if constexpr (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
+		if constexpr (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
 			scene_state.enable_gl_depth_test(shader->depth_test != GLES3::SceneShaderData::DEPTH_TEST_DISABLED);
 		}
 
