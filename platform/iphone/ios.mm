@@ -45,10 +45,8 @@ void iOS::_bind_methods() {
 };
 
 bool iOS::supports_haptic_engine() {
-	if (@available(iOS 13, *)) {
-		id<CHHapticDeviceCapability> capabilities = [CHHapticEngine capabilitiesForHardware];
-		return capabilities.supportsHaptics;
-	}
+	id<CHHapticDeviceCapability> capabilities = [CHHapticEngine capabilitiesForHardware];
+	return capabilities.supportsHaptics;
 
 	return false;
 }
@@ -70,69 +68,63 @@ CHHapticEngine *iOS::get_haptic_engine_instance() API_AVAILABLE(ios(13)) {
 }
 
 void iOS::vibrate_haptic_engine(float p_duration_seconds) API_AVAILABLE(ios(13)) {
-	if (@available(iOS 13, *)) { // We need the @available check every time to make the compiler happy...
-		if (supports_haptic_engine()) {
-			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
-			if (haptic_engine) {
-				NSDictionary *hapticDict = @{
-					CHHapticPatternKeyPattern : @[
-						@{CHHapticPatternKeyEvent : @{
-							CHHapticPatternKeyEventType : CHHapticEventTypeHapticContinuous,
-							CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
-							CHHapticPatternKeyEventDuration : @(p_duration_seconds)
-						},
-						},
-					],
-				};
+	if (supports_haptic_engine()) {
+		CHHapticEngine *haptic_engine = get_haptic_engine_instance();
+		if (haptic_engine) {
+			NSDictionary *hapticDict = @{
+				CHHapticPatternKeyPattern : @[
+					@{CHHapticPatternKeyEvent : @{
+						CHHapticPatternKeyEventType : CHHapticEventTypeHapticContinuous,
+						CHHapticPatternKeyTime : @(CHHapticTimeImmediate),
+						CHHapticPatternKeyEventDuration : @(p_duration_seconds)
+					},
+					},
+				],
+			};
 
-				NSError *error;
-				CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithDictionary:hapticDict error:&error];
+			NSError *error;
+			CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithDictionary:hapticDict error:&error];
 
-				[[haptic_engine createPlayerWithPattern:pattern error:&error] startAtTime:0 error:&error];
+			[[haptic_engine createPlayerWithPattern:pattern error:&error] startAtTime:0 error:&error];
 
-				NSLog(@"Could not vibrate using haptic engine: %@", error);
-			}
-
-			return;
+			NSLog(@"Could not vibrate using haptic engine: %@", error);
 		}
+
+		return;
 	}
 
 	NSLog(@"Haptic engine is not supported in this version of iOS");
 }
 
 void iOS::start_haptic_engine() {
-	if (@available(iOS 13, *)) {
-		if (supports_haptic_engine()) {
-			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
-			if (haptic_engine) {
-				[haptic_engine startWithCompletionHandler:^(NSError *returnedError) {
-					if (returnedError) {
-						NSLog(@"Could not start haptic engine: %@", returnedError);
-					}
-				}];
-			}
-
-			return;
+	if (supports_haptic_engine()) {
+		CHHapticEngine *haptic_engine = get_haptic_engine_instance();
+		if (haptic_engine) {
+			[haptic_engine startWithCompletionHandler:^(NSError *returnedError) {
+				if (returnedError) {
+					NSLog(@"Could not start haptic engine: %@", returnedError);
+				}
+			}];
 		}
+
+		return;
 	}
 
 	NSLog(@"Haptic engine is not supported in this version of iOS");
 }
 
 void iOS::stop_haptic_engine() {
-	if (@available(iOS 13, *)) {
-		if (supports_haptic_engine()) {
-			CHHapticEngine *haptic_engine = get_haptic_engine_instance();
-			if (haptic_engine) {
-				[haptic_engine stopWithCompletionHandler:^(NSError *returnedError) {
-					if (returnedError) {
-						NSLog(@"Could not stop haptic engine: %@", returnedError);
-					}
-				}];
-			}
-
-			return;
+	if (supports_haptic_engine()) {
+		CHHapticEngine *haptic_engine = get_haptic_engine_instance();
+		if (haptic_engine) {
+			[haptic_engine stopWithCompletionHandler:^(NSError *returnedError) {
+				if (returnedError) {
+					NSLog(@"Could not stop haptic engine: %@", returnedError);
+				}
+			}];
 		}
+
+		return;
 	}
 
 	NSLog(@"Haptic engine is not supported in this version of iOS");
