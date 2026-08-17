@@ -593,7 +593,7 @@ PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
 						String idx_str = p.hint_string.substr(pos + tag.length());
 
 						// Strip any metadata after the index
-						int comma = idx_str.find(",");
+						int comma = idx_str.find_char(',');
 						if (comma != -1) {
 							idx_str = idx_str.left(comma);
 						}
