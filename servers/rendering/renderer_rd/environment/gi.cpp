@@ -2004,6 +2004,8 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 				// Convert from Luminous Power to Luminous Intensity
 				if (lights[idx].type == RSE::LIGHT_OMNI) {
 					lights[idx].energy *= 1.0 / (Math::PI * 4.0);
+				} else if (lights[idx].type == RSE::LIGHT_AREA) {
+					lights[idx].energy *= 1.0 / (Math::PI * 2.0);
 				} else if (lights[idx].type == RSE::LIGHT_SPOT) {
 					// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 					// We make this assumption to keep them easy to control.
@@ -2495,6 +2497,8 @@ void GI::SDFGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderScen
 					// Convert from Luminous Power to Luminous Intensity
 					if (lights[idx].type == RSE::LIGHT_OMNI) {
 						lights[idx].energy *= 1.0 / (Math::PI * 4.0);
+					} else if (lights[idx].type == RSE::LIGHT_AREA) {
+						lights[idx].energy *= 1.0 / (Math::PI * 2.0);
 					} else if (lights[idx].type == RSE::LIGHT_SPOT) {
 						// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 						// We make this assumption to keep them easy to control.
