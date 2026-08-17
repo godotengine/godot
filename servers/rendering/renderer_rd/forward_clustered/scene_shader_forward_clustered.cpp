@@ -353,9 +353,10 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 
 	RD::PipelineDepthStencilState depth_stencil_state;
 
+	depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED;
+
 	if (depth_test != DEPTH_TEST_DISABLED) {
 		depth_stencil_state.enable_depth_test = true;
-		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
 		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 
 		if (depth_test == DEPTH_TEST_ENABLED_INVERTED) {
