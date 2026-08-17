@@ -4196,8 +4196,10 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 		}
 	} else {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE;
-		flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH;
-		flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW;
+		if (p_material->shader_data->depth_draw != SceneShaderForwardClustered::ShaderData::DEPTH_DRAW_DISABLED) {
+			flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH;
+			flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW;
+		}
 	}
 
 	if (p_material->shader_data->uses_particle_trails) {
