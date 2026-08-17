@@ -84,6 +84,7 @@
 			<description>
 				Returns whether a cached resource is available for the given [param path].
 				Once a resource has been loaded by the engine, it is cached in memory for faster access, and future calls to the [method load] method will use the cached version. The cached resource can be overridden by using [method Resource.take_over_path] on a new resource for that same path.
+				[b]Note:[/b] When the resource is freed from memory, its cache will also be deleted.
 			</description>
 		</method>
 		<method name="list_directory">
