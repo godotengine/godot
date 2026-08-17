@@ -1308,6 +1308,9 @@ void OS_MacOS_Embedded::run() {
 OS_MacOS_Embedded::OS_MacOS_Embedded(const char *p_execpath, int p_argc, char **p_argv) :
 		OS_MacOS(p_execpath, p_argc, p_argv) {
 	DisplayServerMacOSEmbedded::register_embedded_driver();
+
+	[GodotApplication sharedApplication];
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyProhibited];
 }
 
 #endif
