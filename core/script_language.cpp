@@ -35,6 +35,7 @@
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
+Mutex ScriptServer::_mutex;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
@@ -134,6 +135,8 @@ ScriptLanguage *ScriptServer::get_language(int p_idx) {
 }
 
 void ScriptServer::register_language(ScriptLanguage *p_language) {
+	MutexLock lock(_mutex);
+
 	ERR_FAIL_COND(_language_count >= MAX_LANGUAGES);
 	_languages[_language_count++] = p_language;
 }
@@ -188,6 +191,8 @@ bool ScriptServer::is_reload_scripts_on_save_enabled() {
 }
 
 void ScriptServer::thread_enter() {
+	MutexLock lock(_mutex);
+
 	for (int i = 0; i < _language_count; i++) {
 		_languages[i]->thread_enter();
 	}

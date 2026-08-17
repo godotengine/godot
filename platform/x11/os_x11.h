@@ -51,6 +51,7 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
+#include <atomic>
 
 #if defined(SPEECHD_ENABLED)
 #include "tts_linux.h"
@@ -172,7 +173,7 @@ class OS_X11 : public OS_Unix {
 
 	mutable Mutex events_mutex;
 	Thread events_thread;
-	bool events_thread_done = false;
+	std::atomic<bool> events_thread_done = false;
 	LocalVector<XEvent> polled_events;
 	static void _poll_events_thread(void *ud);
 	bool _wait_for_events() const;
