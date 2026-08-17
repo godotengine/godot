@@ -331,10 +331,6 @@ void BetsyCompressor::finish() {
 
 // Helper functions.
 
-static int get_next_multiple(int n, int m) {
-	return n + (m - (n % m));
-}
-
 static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool &r_is_rgb) {
 	r_is_rgb = false;
 
@@ -619,7 +615,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 			push_constant.height = height;
 
 			compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RGBToRGBAPushConstant));
-			compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 8) / 8, get_next_multiple(height, 8) / 8, 1);
+			compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 8), Math::division_round_up(height, 8), 1);
 
 			compress_rd->compute_list_end();
 
@@ -670,7 +666,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					push_constant.sizeY = 1.0f / height;
 
 					compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC6PushConstant));
-					compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+					compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 32), Math::division_round_up(height, 32), 1);
 				} break;
 
 				case BETSY_SHADER_BC1_STANDARD: {
@@ -678,7 +674,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					push_constant.num_refines = 2;
 
 					compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC1PushConstant));
-					compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+					compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 32), Math::division_round_up(height, 32), 1);
 				} break;
 
 				case BETSY_SHADER_BC4_UNSIGNED: {
@@ -686,7 +682,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					push_constant.channel_idx = 0;
 
 					compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC4PushConstant));
-					compress_rd->compute_list_dispatch(compute_list, 1, get_next_multiple(width, 16) / 16, get_next_multiple(height, 16) / 16);
+					compress_rd->compute_list_dispatch(compute_list, 1, Math::division_round_up(width, 16), Math::division_round_up(height, 16));
 				} break;
 
 				default: {
@@ -740,7 +736,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 				push_constant.channel_idx = dest_format == Image::FORMAT_DXT5 ? 3 : 1;
 
 				compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC4PushConstant));
-				compress_rd->compute_list_dispatch(compute_list, 1, get_next_multiple(width, 16) / 16, get_next_multiple(height, 16) / 16);
+				compress_rd->compute_list_dispatch(compute_list, 1, Math::division_round_up(width, 16), Math::division_round_up(height, 16));
 
 				compress_rd->compute_list_end();
 			}
@@ -786,7 +782,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 				compress_rd->compute_list_bind_compute_pipeline(compute_list, stitch_shader.pipeline);
 				compress_rd->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-				compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+				compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 32), Math::division_round_up(height, 32), 1);
 
 				compress_rd->compute_list_end();
 
