@@ -203,8 +203,7 @@ private:
 	Error _export_apple_embedded_plugins(const Ref<EditorExportPreset> &p_preset, AppleEmbeddedConfigData &p_config_data, const String &p_dest_dir, const Vector<String> &p_module_libs, Vector<AppleEmbeddedExportAsset> &r_exported_assets, bool p_debug);
 
 	Error _export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify, bool p_oneclick);
-
-	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
+	String _get_app_id(const Ref<EditorExportPreset> &p_preset) const;
 
 protected:
 	virtual String _process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing);

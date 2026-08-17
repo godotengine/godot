@@ -879,19 +879,7 @@ String DisplayServerWindows::_get_app_id() const {
 		if (Engine::get_singleton()->is_editor_hint()) {
 			appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
 		} else {
-			String name = GLOBAL_GET("application/config/name");
-			String version = GLOBAL_GET("application/config/version");
-			if (version.is_empty()) {
-				version = "0";
-			}
-			String clean_app_name = name.to_pascal_case();
-			for (int i = 0; i < clean_app_name.length(); i++) {
-				if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
-					clean_app_name[i] = '_';
-				}
-			}
-			clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
-			appname = "Godot." + clean_app_name + "." + version;
+			appname = ProjectSettings::get_singleton()->app_id_from_name(GLOBAL_GET("application/config/id"), ProjectSettings::APP_ID_WINDOWS);
 		}
 	}
 	return appname;
@@ -8042,26 +8030,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 
 	_register_raw_input_devices(DisplayServerEnums::INVALID_WINDOW_ID);
 
-	String appname;
-	if (Engine::get_singleton()->is_editor_hint()) {
-		appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
-	} else {
-		String name = GLOBAL_GET("application/config/name");
-		String version = GLOBAL_GET("application/config/version");
-		if (version.is_empty()) {
-			version = "0";
-		}
-		String clean_app_name = name.to_pascal_case();
-		for (int i = 0; i < clean_app_name.length(); i++) {
-			if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
-				clean_app_name[i] = '_';
-			}
-		}
-		clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
-		appname = "Godot." + clean_app_name + "." + version;
-
+	String appname = _get_app_id();
 #ifndef TOOLS_ENABLED
+	if (!Engine::get_singleton()->is_editor_hint()) {
 		// Set for exported projects only.
+		String name = GLOBAL_GET("application/config/name");
 		HKEY key;
 		if (RegOpenKeyW(HKEY_CURRENT_USER_LOCAL_SETTINGS, L"Software\\Microsoft\\Windows\\Shell\\MuiCache", &key) == ERROR_SUCCESS) {
 			Char16String cs_name = name.utf16();
@@ -8069,8 +8042,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 			RegSetValueExW(key, (LPCWSTR)value_name.utf16().get_data(), 0, REG_SZ, (const BYTE *)cs_name.get_data(), cs_name.size() * sizeof(WCHAR));
 			RegCloseKey(key);
 		}
-#endif
 	}
+#endif
 	SetCurrentProcessExplicitAppUserModelID((PCWSTR)appname.utf16().get_data());
 
 	mouse_monitor = SetWindowsHookEx(WH_MOUSE, ::MouseProc, nullptr, GetCurrentThreadId());

@@ -521,13 +521,6 @@ String EditorExportPlatformAndroid::get_project_name(const Ref<EditorExportPrese
 	return aname;
 }
 
-String EditorExportPlatformAndroid::get_package_name(const Ref<EditorExportPreset> &p_preset, const String &p_package) const {
-	String pname = p_package;
-	String name = get_valid_basename(p_preset);
-	pname = pname.replace("$genname", name);
-	return pname;
-}
-
 // Returns the project name without invalid characters
 // or the "noname" string if all characters are invalid.
 String EditorExportPlatformAndroid::get_valid_basename(const Ref<EditorExportPreset> &p_preset) const {
@@ -557,80 +550,6 @@ String EditorExportPlatformAndroid::get_valid_basename(const Ref<EditorExportPre
 String EditorExportPlatformAndroid::get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const {
 	String gradle_build_directory = ExportTemplateManager::get_android_build_directory(p_preset);
 	return gradle_build_directory.path_join(p_export_format == EXPORT_FORMAT_AAB ? AAB_ASSETS_DIRECTORY : APK_ASSETS_DIRECTORY);
-}
-
-bool EditorExportPlatformAndroid::is_package_name_valid(const Ref<EditorExportPreset> &p_preset, const String &p_package, String *r_error) const {
-	String pname = get_package_name(p_preset, p_package);
-
-	if (pname.length() == 0) {
-		if (r_error) {
-			*r_error = TTR("Package name is missing.");
-		}
-		return false;
-	}
-
-	int segments = 0;
-	bool first = true;
-	for (int i = 0; i < pname.length(); i++) {
-		char32_t c = pname[i];
-		if (first && c == '.') {
-			if (r_error) {
-				*r_error = TTR("Package segments must be of non-zero length.");
-			}
-			return false;
-		}
-		if (c == '.') {
-			segments++;
-			first = true;
-			continue;
-		}
-		if (!is_ascii_identifier_char(c)) {
-			if (r_error) {
-				*r_error = vformat(TTR("The character '%s' is not allowed in Android application package names."), String::chr(c));
-			}
-			return false;
-		}
-		if (first && is_digit(c)) {
-			if (r_error) {
-				*r_error = TTR("A digit cannot be the first character in a package segment.");
-			}
-			return false;
-		}
-		if (first && is_underscore(c)) {
-			if (r_error) {
-				*r_error = vformat(TTR("The character '%s' cannot be the first character in a package segment."), String::chr(c));
-			}
-			return false;
-		}
-		first = false;
-	}
-
-	if (segments == 0) {
-		if (r_error) {
-			*r_error = TTR("The package must have at least one '.' separator.");
-		}
-		return false;
-	}
-
-	if (first) {
-		if (r_error) {
-			*r_error = TTR("Package segments must be of non-zero length.");
-		}
-		return false;
-	}
-
-	return true;
-}
-
-bool EditorExportPlatformAndroid::is_project_name_valid(const Ref<EditorExportPreset> &p_preset) const {
-	// Get the original project name and convert to lowercase.
-	String basename = get_project_setting(p_preset, "application/config/name");
-	basename = basename.to_lower();
-	// Check if there are invalid characters.
-	if (basename != get_valid_basename(p_preset)) {
-		return false;
-	}
-	return true;
 }
 
 bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data) {
@@ -1242,7 +1161,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 	String version_name = p_preset->get_version("version/name");
 	int version_code = p_preset->get("version/code");
-	String package_name = p_preset->get("package/unique_name");
+	String package_name = _get_app_id(p_preset);
 
 	const int screen_orientation =
 			_get_android_orientation_value(DisplayServerEnums::ScreenOrientation(int(get_project_setting(p_preset, "display/window/handheld/orientation"))));
@@ -1330,7 +1249,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 					//replace project information
 					if (tname == "manifest" && attrname == "package") {
-						string_table.write[attr_value] = get_package_name(p_preset, package_name);
+						string_table.write[attr_value] = package_name;
 					}
 
 					if (tname == "manifest" && attrname == "versionCode") {
@@ -1378,7 +1297,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					}
 
 					if (tname == "provider" && attrname == "authorities") {
-						string_table.write[attr_value] = get_package_name(p_preset, package_name) + String(".fileprovider");
+						string_table.write[attr_value] = package_name + String(".fileprovider");
 					}
 
 					if (tname == "supports-screens") {
@@ -2083,13 +2002,21 @@ void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPres
 	}
 }
 
+String EditorExportPlatformAndroid::_get_app_id(const Ref<EditorExportPreset> &p_preset) const {
+	String id = p_preset->get("package/unique_name");
+	if (id.is_empty()) {
+		id = get_project_setting(p_preset, "application/config/id");
+	}
+	return ProjectSettings::get_singleton()->app_id_from_name(id, ProjectSettings::APP_ID_FREEDESKTOP);
+}
+
 String EditorExportPlatformAndroid::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
 		if (p_name == "package/unique_name") {
-			String pn = p_preset->get("package/unique_name");
+			String pn = _get_app_id(Ref<EditorExportPreset>(p_preset));
 			String pn_err;
 
-			if (!is_package_name_valid(Ref<EditorExportPreset>(p_preset), pn, &pn_err)) {
+			if (!ProjectSettings::get_singleton()->validate_app_id(pn, ProjectSettings::APP_ID_FREEDESKTOP, &pn_err)) {
 				return TTR("Invalid package name:") + " " + pn_err;
 			}
 		} else if (p_name == "gesture/swipe_to_dismiss") {
@@ -2231,7 +2158,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "com.example.$genname", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "package/app_category", PROPERTY_HINT_ENUM, "Accessibility,Audio,Game,Image,Maps,News,Productivity,Social,Video,Undefined"), APP_CATEGORY_GAME));
@@ -2469,7 +2396,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	String output;
 
 	bool remove_prev = EDITOR_GET("export/android/one_click_deploy_clear_previous_install");
-	String package_name = p_preset->get("package/unique_name");
+	String package_name = _get_app_id(p_preset);
 
 	if (remove_prev) {
 		if (ep.step(TTR("Uninstalling..."), 1)) {
@@ -2485,7 +2412,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 			args.push_back("--user");
 			args.push_back("0");
 		}
-		args.push_back(get_package_name(p_preset, package_name));
+		args.push_back(package_name);
 
 		output.clear();
 		err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
@@ -2593,7 +2520,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 				args.push_back("--no-vd-system-decorations");
 			}
 		}
-		args.push_back("--start-app=+" + get_package_name(p_preset, package_name));
+		args.push_back("--start-app=+" + package_name);
 
 		Dictionary data = OS::get_singleton()->execute_with_pipe(scrcpy, args, false);
 		if (!data.has("pid") || data["pid"].operator int() <= 0) {
@@ -2646,16 +2573,16 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 		// Going with implicit launch first based on the LAUNCHER category and the app's package.
 		args.push_back("-c");
 		args.push_back("android.intent.category.LAUNCHER");
-		args.push_back(get_package_name(p_preset, package_name));
+		args.push_back(package_name);
 
 		output.clear();
 		err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
 		print_verbose(output);
 		if (err || rv != 0 || output.contains("Error: Activity not started")) {
 			// The implicit launch failed, let's try an explicit launch by specifying the component name before giving up.
-			const String component_name = get_package_name(p_preset, package_name) + "/com.godot.game.GodotAppLauncher";
+			const String component_name = package_name + "/com.godot.game.GodotAppLauncher";
 			print_line("Implicit launch failed... Trying explicit launch using", component_name);
-			args.erase(get_package_name(p_preset, package_name));
+			args.erase(package_name);
 			args.push_back("-n");
 			args.push_back(component_name);
 
@@ -3202,13 +3129,6 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 			err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
 			err += "\n";
 		}
-	}
-
-	String package_name = p_preset->get("package/unique_name");
-	if (package_name.contains("$genname") && !is_project_name_valid(p_preset)) {
-		// Warning only, so don't override `valid`.
-		err += vformat(TTR("The project name does not meet the requirement for the package name format and will be updated to \"%s\". Please explicitly specify the package name if needed."), get_valid_basename(p_preset));
-		err += "\n";
 	}
 
 	r_error = err;
@@ -3868,7 +3788,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String build_path = ProjectSettings::get_singleton()->globalize_path(gradle_build_directory);
 		build_command = build_path.path_join(build_command);
 
-		String package_name = get_package_name(p_preset, p_preset->get("package/unique_name"));
+		String package_name = _get_app_id(p_preset);
 		String version_code = itos(p_preset->get("version/code"));
 		String version_name = p_preset->get_version("version/name");
 		String min_sdk_version = p_preset->get("gradle_build/min_sdk");

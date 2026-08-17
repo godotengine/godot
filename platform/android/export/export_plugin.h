@@ -116,14 +116,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	String get_project_name(const Ref<EditorExportPreset> &p_preset, const String &p_name) const;
 
-	String get_package_name(const Ref<EditorExportPreset> &p_preset, const String &p_package) const;
-
 	String get_valid_basename(const Ref<EditorExportPreset> &p_preset) const;
 
 	String get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const;
-
-	bool is_package_name_valid(const Ref<EditorExportPreset> &p_preset, const String &p_package, String *r_error = nullptr) const;
-	bool is_project_name_valid(const Ref<EditorExportPreset> &p_preset) const;
 
 	static bool _should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data);
 
@@ -204,6 +199,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	bool _uses_vulkan(const Ref<EditorExportPreset> &p_preset) const;
 
 	Error _generate_sparse_pck_metadata(const Ref<EditorExportPreset> &p_preset, PackData &p_pack_data, Vector<uint8_t> &r_data);
+
+	String _get_app_id(const Ref<EditorExportPreset> &p_preset) const;
 
 protected:
 	void _notification(int p_what);

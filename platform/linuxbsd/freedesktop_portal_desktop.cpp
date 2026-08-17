@@ -690,15 +690,9 @@ void FreeDesktopPortalDesktop::_register_app_id() {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		app_id = "org.godotengine.Godot";
+		app_id = "org.godotengine.godot";
 	} else {
-		String name = GLOBAL_GET("application/config/name");
-		app_id = name.to_pascal_case();
-		for (int i = 0; i < app_id.length(); i++) {
-			if (!is_ascii_alphanumeric_char(app_id[i]) && app_id[i] != '_' && app_id[i] != '.') {
-				app_id[i] = '_';
-			}
-		}
+		app_id = ProjectSettings::get_singleton()->app_id_from_name(GLOBAL_GET("application/config/id"), ProjectSettings::APP_ID_FREEDESKTOP);
 	}
 	print_verbose(vformat("Registering application ID: %s", app_id));
 
