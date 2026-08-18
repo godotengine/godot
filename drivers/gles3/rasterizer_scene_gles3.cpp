@@ -2800,14 +2800,17 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.enable_gl_depth_test(false);
 		scene_state.enable_gl_depth_draw(false);
 
+		GLenum target = rt->view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(rt->view_count > 1 ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D, rt->color);
+		glBindTexture(target, rt->color);
 
 		if (apply_canvas_bg_exposure) {
 			copy_effects->copy_with_exposure(tonemap_ubo.exposure, render_data.luminance_multiplier);
 		} else {
 			copy_effects->copy_screen(render_data.luminance_multiplier);
 		}
+
+		glBindTexture(target, 0);
 
 		scene_state.enable_gl_depth_test(true);
 		scene_state.enable_gl_depth_draw(true);

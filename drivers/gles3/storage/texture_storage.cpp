@@ -2923,18 +2923,21 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 }
 
 RID TextureStorage::render_target_create() {
-	RenderTarget render_target;
-	render_target.used_in_frame = false;
-	render_target.clear_requested = false;
+	RID rid = render_target_owner.make_rid(RenderTarget());
+	RenderTarget *rt = render_target_owner.get_or_null(rid);
+	rt->self = rid;
+	rt->used_in_frame = false;
+	rt->clear_requested = false;
 
 	Texture t;
 	t.active = true;
-	t.render_target = &render_target;
+	t.render_target = rt;
 	t.is_render_target = true;
 
-	render_target.texture = texture_owner.make_rid(t);
-	_update_render_target_color(&render_target);
-	return render_target_owner.make_rid(render_target);
+	rt->texture = texture_owner.make_rid(t);
+	_update_render_target_color(rt);
+
+	return rid;
 }
 
 void TextureStorage::render_target_free(RID p_rid) {
@@ -3003,6 +3006,7 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 
 	bool create_new_color_fbo = true;
 	bool create_new_velocity_fbo = true;
+	bool needs_clear = !rt->overridden.is_overridden;
 
 	if (rt->overridden.color == p_color_texture && rt->overridden.depth == p_depth_texture && rt->overridden.velocity == p_velocity_texture && rt->overridden.velocity_depth == p_velocity_depth_texture) {
 		return;
@@ -3017,9 +3021,10 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 		_clear_render_target(rt);
 		_update_render_target_color(rt);
 		create_new_color_fbo = false;
+		needs_clear = false;
 	}
 
-	if (!rt->overridden.is_overridden) {
+	if (needs_clear) {
 		_clear_render_target(rt);
 	}
 
@@ -3028,7 +3033,7 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	rt->overridden.depth_has_stencil = p_depth_texture.is_null();
 	rt->overridden.velocity = p_velocity_texture;
 	rt->overridden.velocity_depth = p_velocity_depth_texture;
-	rt->overridden.is_overridden = true;
+	rt->overridden.is_overridden = p_color_texture.is_valid() || p_depth_texture.is_valid() || p_velocity_texture.is_valid() || p_velocity_depth_texture.is_valid();
 
 	// Update to our new color output.
 	RID new_color_texture = render_target_get_texture(p_render_target);
@@ -3047,7 +3052,6 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 		rt->depth = cache->get().depth;
 		rt->depth_has_stencil = cache->get().depth_has_stencil;
 		rt->size = cache->get().size;
-		rt->texture = p_color_texture;
 		create_new_color_fbo = false;
 	}
 
