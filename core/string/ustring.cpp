@@ -3549,6 +3549,9 @@ bool String::matchn(const String &p_wildcard) const {
 	return _wildcard_match(p_wildcard.get_data(), get_data(), false);
 }
 
+static String _replace_common(const String &p_this, const String &p_key, const String &p_with, bool p_case_insensitive, int p_from = 0);
+static String _replace_common(const String &p_this, const char *p_key, const char *p_with, bool p_case_insensitive, int p_from = 0);
+
 String String::format(const Variant &p_values, const String &p_placeholder) const {
 	String new_string = *this;
 
@@ -3596,7 +3599,11 @@ String String::format(const Variant &p_values, const String &p_placeholder) cons
 		obj->get_property_list(&props);
 
 		for (const PropertyInfo &E : props) {
-			new_string = new_string.replace(p_placeholder.replace("_", E.name), obj->get(E.name));
+			String placeholder = p_placeholder.replace("_", E.name);
+			int pos = new_string.find(placeholder);
+			if (pos != -1) {
+				new_string = _replace_common(new_string, placeholder, obj->get(E.name), false, pos);
+			}
 		}
 	} else {
 		ERR_PRINT(String("Invalid type: use Array, Dictionary or Object.").ascii().get_data());
@@ -3605,14 +3612,14 @@ String String::format(const Variant &p_values, const String &p_placeholder) cons
 	return new_string;
 }
 
-static String _replace_common(const String &p_this, const String &p_key, const String &p_with, bool p_case_insensitive) {
+static String _replace_common(const String &p_this, const String &p_key, const String &p_with, bool p_case_insensitive, int p_from) {
 	if (p_key.is_empty() || p_this.is_empty()) {
 		return p_this;
 	}
 
 	const size_t key_length = p_key.length();
 
-	int search_from = 0;
+	int search_from = p_from;
 	int result = 0;
 
 	LocalVector<int> found;
@@ -3662,14 +3669,14 @@ static String _replace_common(const String &p_this, const String &p_key, const S
 	return new_string;
 }
 
-static String _replace_common(const String &p_this, const char *p_key, const char *p_with, bool p_case_insensitive) {
+static String _replace_common(const String &p_this, const char *p_key, const char *p_with, bool p_case_insensitive, int p_from) {
 	size_t key_length = strlen(p_key);
 
 	if (key_length == 0 || p_this.is_empty()) {
 		return p_this;
 	}
 
-	int search_from = 0;
+	int search_from = p_from;
 	int result = 0;
 
 	LocalVector<int> found;
