@@ -136,17 +136,17 @@ private:
 	// Maps MessageTypes to LogFilters for convenient access and storage (don't need 1 member per filter).
 	HashMap<MessageType, LogFilter *> type_filter_map;
 
+	//A custom class is used for filter highlighting, since highlight drawing is deeply integrated in RichTextLabel drawing logic.
 	EditorLogRichTextLabel *log = nullptr;
 
 	Button *clear_button = nullptr;
 
 	HBoxContainer *extra_filter_options_hbox = nullptr;
 
-	// int search_matches_count = 0;
 	int currently_viewed_match_index = 0;
 
-	Label *matching_lines_count_label = nullptr;
-	void _update_matching_lines_count_label(int count);
+	Label *filter_matches_count_label = nullptr;
+	void _update_matches_count_label(int count);
 
 	Button *filter_previous_match_button = nullptr;
 	void _enable_filter_previous_match_button(bool p_enable);
@@ -203,6 +203,7 @@ private:
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
 	void _search_changed(const String &p_text);
+	void _count_matches();
 
 	void _process_message(const String &p_msg, MessageType p_type, bool p_clear);
 	void _reset_message_counts();

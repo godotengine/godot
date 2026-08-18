@@ -356,8 +356,6 @@ void EditorLog::_rebuild_log() {
 	int initial_skip = 0;
 	int search_matches_count = 0;
 
-	String search_text = search_box->get_text();
-
 	// Search backward for starting place.
 	for (start_message_index = messages.size() - 1; start_message_index >= 0; start_message_index--) {
 		LogMessage msg = messages[start_message_index];
@@ -387,8 +385,6 @@ void EditorLog::_rebuild_log() {
 	for (int msg_idx = start_message_index; msg_idx < messages.size(); msg_idx++) {
 		LogMessage msg = messages[msg_idx];
 
-		search_matches_count += _count_case_sensitive(_strip_bbcode_from_message(msg.text), search_text);
-
 		if (collapse) {
 			// If collapsing, only log one instance of the message.
 			_add_log_line(msg);
@@ -400,8 +396,6 @@ void EditorLog::_rebuild_log() {
 			}
 		}
 	}
-
-	_update_matching_lines_count_label(search_matches_count);
 }
 
 bool EditorLog::_check_display_message(LogMessage &p_message) {
@@ -620,28 +614,44 @@ void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
 }
 
 void EditorLog::_search_changed(const String &p_text) {
-	log->set_scroll_follow(false); // Prevent the RichTextLabel from autoscrolling due to new messages being added during _rebuild_log().
-
 	log->set_filter_keytext(p_text);
-	_rebuild_log();
+
 	_set_extra_filter_options_visible(!p_text.is_empty());
+	_count_matches();
 
-	log->set_scroll_follow(true);
-}
-
-void EditorLog::_update_matching_lines_count_label(int count) {
-	matching_lines_count_label->set_modulate(Color(1.0, 1.0, 1.0));
-
-	if (count == 0) {
-		matching_lines_count_label->set_text("No matches");
-		matching_lines_count_label->set_modulate(theme_cache.error_color);
-		return;
-	} else if (count == 1) {
-		matching_lines_count_label->set_text("1 match");
+	if (show_non_search_matches) {
 		return;
 	}
 
-	matching_lines_count_label->set_text(vformat("%s matches", itos(count)));
+	log->set_scroll_follow(false); // Prevent the RichTextLabel from autoscrolling due to new messages being added during _rebuild_log().
+	_rebuild_log();
+	log->set_scroll_follow(true);
+}
+
+void EditorLog::_count_matches() {
+	int count = 0;
+	const String search_text = search_box->get_text();
+
+	for (const LogMessage &msg : messages) {
+		count += _count_case_sensitive(_strip_bbcode_from_message(msg.text), search_text);
+	}
+
+	_update_matches_count_label(count);
+}
+
+void EditorLog::_update_matches_count_label(int count) {
+	filter_matches_count_label->set_modulate(Color(1.0, 1.0, 1.0));
+
+	if (count == 0) {
+		filter_matches_count_label->set_text("No matches");
+		filter_matches_count_label->set_modulate(theme_cache.error_color);
+		return;
+	} else if (count == 1) {
+		filter_matches_count_label->set_text("1 match");
+		return;
+	}
+
+	filter_matches_count_label->set_text(vformat("%s matches", itos(count)));
 }
 
 void EditorLog::_reset_message_counts() {
@@ -715,8 +725,8 @@ EditorLog::EditorLog() {
 	extra_filter_options_hbox = memnew(HBoxContainer);
 	vb_left->add_child(extra_filter_options_hbox);
 
-	matching_lines_count_label = memnew(Label);
-	extra_filter_options_hbox->add_child(matching_lines_count_label);
+	filter_matches_count_label = memnew(Label);
+	extra_filter_options_hbox->add_child(filter_matches_count_label);
 
 	// Previous filter match button
 	filter_previous_match_button = memnew(Button);
