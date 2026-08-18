@@ -142,7 +142,7 @@ env["x86_libtheora_opt_gcc"] = False
 env["x86_libtheora_opt_vc"] = False
 
 # avoid issues when building with different versions of python out of the same directory
-env.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
+env.SConsignFile(File(f"#.sconsign{pickle.HIGHEST_PROTOCOL}.dblite").abspath)
 
 # Build options
 
@@ -158,7 +158,7 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-opts.Add((["platform", "p"], "Target platform (%s)" % "|".join(platform_list), ""))
+opts.Add((["platform", "p"], f"Target platform ({'|'.join(platform_list)})", ""))
 opts.Add(
     EnumVariable(
         "target", "Compilation target", "editor", ["editor", "template_release", "template_debug"], ignorecase=2
@@ -622,8 +622,8 @@ if env.GetOption("num_jobs") == altered_num_jobs:
         else:
             safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
             print(
-                "Auto-detected %d CPU cores available for build parallelism. Using %d cores by default. You can override it with the `-j` or `num_jobs` arguments."
-                % (cpu_count, safer_cpu_count)
+                f"Auto-detected {cpu_count} CPU cores available for build parallelism. Using {safer_cpu_count} cores by default. "
+                "You can override it with the `-j` or `num_jobs` arguments."
             )
             env.SetOption("num_jobs", safer_cpu_count)
 
