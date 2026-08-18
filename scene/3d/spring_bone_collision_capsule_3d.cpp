@@ -112,7 +112,18 @@ void SpringBoneCollisionCapsule3D::_bind_methods() {
 
 // In other words, we need to find a mu between 0 and 1 that minimizes verify_distance_within_taper(lerp(head,tail,mu)).
 
+// Very local calculation verification feature
 #define VERIFY_SPRINGBONECAPSULE_CALCULATIONS 1
+#ifdef VERIFY_SPRINGBONECAPSULE_CALCULATIONS
+#define SB_DEV_ASSERT(m_cond) \
+	if ((!(m_cond))) { \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: DEV_ASSERT failed  \"" _STR(m_cond) "\" is false."); \
+		_err_flush_stdout(); \
+	} else \
+		((void)0)
+#else
+#define SB_DEV_ASSERT(m_cond)
+#endif
 
 // function to verify calculations
 real_t verify_distance_within_taper(const Vector3 &p_origin, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
@@ -189,21 +200,23 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 	// ( -badba  badp )   ( lam )   ( hhdba )
 	// ( -badp   pdp  ) * (  mu ) = (  hhdp )
 
-	
-	real_t det = -badba * pdp + badp * badp;
+	// If T is the angle between ba and p, then the determinant of this matrix is:
+	// -badba * pdp + badp * badp = -ba^2*p^2 + ba^2*p^2*cosT^2 = -ba^2*p^2*sinT^2 = -(ba x p)^2
+	real_t det = -perp_sq;
 	// ( pdp    -badp )   ( hhdba )   ( lam )
 	// ( badp  -badba ) * (  hhdp ) = (  mu ) * det
 	real_t lam = (pdp * hhdba - badp * hhdp) / det;
 	real_t mu = (badp * hhdba - badba * hhdp) / det;
 
 #ifdef VERIFY_SPRINGBONECAPSULE_CALCULATIONS
+	SB_DEV_ASSERT(Math::is_equal_approx(det, -badba * pdp + badp * badp));
 	real_t Dhhdba = -badba * lam + badp * mu;
 	real_t Dhhdp = -badp * lam + pdp * mu;
 	Vector3 Dperpvec = perp * (perp_dist / perp_len);
-	DEV_ASSERT(Math::is_equal_approx(Dhhdba, hhdba));
-	DEV_ASSERT(Math::is_equal_approx(Dhhdp, hhdp));
+	SB_DEV_ASSERT(Math::is_equal_approx(Dhhdba, hhdba));
+	SB_DEV_ASSERT(Math::is_equal_approx(Dhhdp, hhdp));
 	Vector3 Dlammuvec = (p_current_origin + bone_axis * lam + Dperpvec) - (head + p * mu);
-	DEV_ASSERT(Math::is_zero_approx_approx(Dlammuvec.length()));
+	SB_DEV_ASSERT(Math::is_zero_approx(Dlammuvec.length()));
 #endif
 
 	// Handle cylindrical springbone case.
@@ -255,13 +268,19 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 	real_t p_bone_origin_radiusP = p_bone_origin_radius / cone_side_perp_y;
 	real_t p_bone_radiusP = p_bone_radius / cone_side_perp_y;
 
-	Vector3 C_plane_origin = head + p * mu;
-	Vector3 C_plane_z = perp.normalized();
-	Vector3 C_plane_y = bone_axis.normalized();
+	//Vector3 C_plane_origin = head + p * mu;
+	Vector3 C_plane_z = perp * (1 / perp_len);
+	Vector3 C_plane_y = bone_axis * (1 / p_bone_length);
 	Vector3 C_plane_x = C_plane_z.cross(C_plane_y);
-	Vector3 C_capsule_vec = p.normalized();
+	SB_DEV_ASSERT(Math::is_equal_approx(C_plane_z.length(), 1));
+	SB_DEV_ASSERT(Math::is_equal_approx(C_plane_y.length(), 1));
+	SB_DEV_ASSERT(Math::is_equal_approx(C_plane_x.length(), 1));
+
+	real_t p_length = sqrt(pdp);
+	Vector3 C_capsule_vec = p * (1 / p_length);
+	SB_DEV_ASSERT(Math::is_equal_approx(C_capsule_vec.length(), 1));
 	Vector3 C_capsule_vec_inplane = Vector3(C_capsule_vec.dot(C_plane_x), C_capsule_vec.dot(C_plane_y), C_capsule_vec.dot(C_plane_z));
-	DEV_ASSERT(Math::is_zero_approx_approx(C_capsule_vec_inplane.z));
+	SB_DEV_ASSERT(Math::is_zero_approx(C_capsule_vec_inplane.z));
 	real_t capsule_vec_slope = C_capsule_vec_inplane.y / C_capsule_vec_inplane.x;
 
 	// The apex of the cone relative to plane C frame is (0, ya, perp_dist)
@@ -282,8 +301,19 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 	//   x/(capsule_vec_slope * cone_slope) = (y - ya)*cone_slope
 	//   perp_dist^2 = x^2*((1/(capsule_vec_slope * cone_slope))^2 - 1)
 	//   x^2 = perp_dist^2 / ((1/(capsule_vec_slope * cone_slope))^2 - 1)
+
+	// Protect division by zero which occurs with alignment of the capsule to the asymtote
 	real_t cc = capsule_vec_slope * cone_slope;
-	real_t xsq = perp_dist * perp_dist * (cc * cc) / (1 - cc*cc);
+	real_t perp_dist_sq = perp_dist * perp_dist;
+	real_t xsq_num = perp_dist_sq * cc * cc;
+	real_t xsq_den = 1 - cc * cc;
+	real_t xsq;
+	if (fabs(xsq_den) <= fabs(xsq_num) * 100000 + CMP_EPSILON) {
+		xsq = (xsq_num * xsq_den < 0 ? -100000 : 100000);
+	} else {
+		xsq = xsq_num / xsq_den;
+	}
+	
 	real_t x = sqrt(xsq);
 	if ((capsule_vec_slope > 0) == (p_bone_origin_radius > p_bone_radius)) {
 		x = -x;
@@ -291,12 +321,12 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 	real_t y = x * capsule_vec_slope;
 	//real_t ya = y - x / (capsule_vec_slope * cone_slope * cone_slope);
 
-	real_t emu = y / (C_capsule_vec_inplane.y * p.length());
+	real_t emu = y / (C_capsule_vec_inplane.y * p_length);
 	real_t mu0 = mu + emu;
 
 	// If the sphere in the bone cone is off and endpoint, then pick a mu in the collision capsule
 	// that is closest to that end point
-	real_t cone_axis_rad = sqrt(perp_dist * perp_dist + x * x);
+	real_t cone_axis_rad = sqrt(perp_dist_sq + xsq);
 	real_t lam_cone_sphere = lam + (y + cone_axis_rad * cone_slope) / p_bone_length;
 	if ((lam_cone_sphere < 0) || (lam_cone_sphere > 1)) {
 		mu0 = p.dot((lam_cone_sphere < 0 ? p_current_origin : p_current) - head) / pdp;
