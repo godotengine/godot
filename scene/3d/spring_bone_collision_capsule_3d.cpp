@@ -114,11 +114,10 @@ void SpringBoneCollisionCapsule3D::_bind_methods() {
 
 // Very local calculation verification feature
 #define VERIFY_SPRINGBONECAPSULE_CALCULATIONS 1
-#ifdef VERIFY_SPRINGBONECAPSULE_CALCULATIONS
+#if VERIFY_SPRINGBONECAPSULE_CALCULATIONS
 #define SB_DEV_ASSERT(m_cond) \
 	if ((!(m_cond))) { \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "FATAL: DEV_ASSERT failed  \"" _STR(m_cond) "\" is false."); \
-		_err_flush_stdout(); \
+		printf("SB_DEV_ASSERT %s %s %d   %s\n", FUNCTION_STR, __FILE__, __LINE__, _STR(m_cond)); \
 	} else \
 		((void)0)
 #else
@@ -302,18 +301,17 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 	//   perp_dist^2 = x^2*((1/(capsule_vec_slope * cone_slope))^2 - 1)
 	//   x^2 = perp_dist^2 / ((1/(capsule_vec_slope * cone_slope))^2 - 1)
 
-	// Protect division by zero which occurs with alignment of the capsule to the asymtote
+	// Protect division by zero which occurs with alignment of the capsule beyond the asymtote
 	real_t cc = capsule_vec_slope * cone_slope;
 	real_t perp_dist_sq = perp_dist * perp_dist;
 	real_t xsq_num = perp_dist_sq * cc * cc;
 	real_t xsq_den = 1 - cc * cc;
-	real_t xsq;
-	if (fabs(xsq_den) <= fabs(xsq_num) * 100000 + CMP_EPSILON) {
-		xsq = (xsq_num * xsq_den < 0 ? -100000 : 100000);
-	} else {
-		xsq = xsq_num / xsq_den;
+	if (xsq_den <= xsq_num * 0.0000001 + CMP_EPSILON) {
+		// this needs to pick the best endpoint of the capsule that will hit the cone
+		return -1.0;
 	}
-	
+	real_t xsq = xsq_num / xsq_den;
+
 	real_t x = sqrt(xsq);
 	if ((capsule_vec_slope > 0) == (p_bone_origin_radius > p_bone_radius)) {
 		x = -x;
