@@ -816,6 +816,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 #if defined(__x86_64__)
 		} else {
 			Error err = ERR_TIMEOUT;
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 110000
 			NSError *error = nullptr;
 			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:[NSDictionary dictionaryWithObject:arguments forKey:NSWorkspaceLaunchConfigurationArguments] error:&error];
 			if (error) {
@@ -827,6 +828,7 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 				}
 				err = OK;
 			}
+#endif
 			return err;
 		}
 #endif
@@ -906,11 +908,13 @@ Error OS_MacOS::open_with_program(const String &p_program_path, const List<Strin
 		return err;
 #if defined(__x86_64__)
 	} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 110000
 		NSError *error = nullptr;
 		[[NSWorkspace sharedWorkspace] openURLs:urls_to_open withApplicationAtURL:app_url options:NSWorkspaceLaunchDefault configuration:@{} error:&error];
 		if (error) {
 			return ERR_CANT_FORK;
 		}
+#endif
 		return OK;
 	}
 #endif
@@ -929,7 +933,11 @@ String OS_MacOS::get_unique_id() const {
 	static String serial_number;
 
 	if (serial_number.is_empty()) {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 		io_service_t platform_expert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+#else
+		io_service_t platform_expert = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+#endif
 		CFStringRef serial_number_cf_string = nullptr;
 		if (platform_expert) {
 			serial_number_cf_string = (CFStringRef)IORegistryEntryCreateCFProperty(platform_expert, CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault, 0);

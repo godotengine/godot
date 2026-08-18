@@ -118,6 +118,7 @@ bool PixelFormats::isPVRTCFormat(MTLPixelFormat p_format) {
 	return false;
 #else
 	switch (p_format) {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 150000
 		case MTLPixelFormatPVRTC_RGBA_2BPP:
 		case MTLPixelFormatPVRTC_RGBA_2BPP_sRGB:
 		case MTLPixelFormatPVRTC_RGBA_4BPP:
@@ -127,6 +128,7 @@ bool PixelFormats::isPVRTCFormat(MTLPixelFormat p_format) {
 		case MTLPixelFormatPVRTC_RGB_4BPP:
 		case MTLPixelFormatPVRTC_RGB_4BPP_sRGB:
 			return true;
+#endif
 		default:
 			return false;
 	}
@@ -672,7 +674,7 @@ void PixelFormats::initMTLPixelFormatCapabilities() {
 	addMTLPixelFormatDesc(RGBA32Sint, Color128, RWC);
 	addMTLPixelFormatDesc(RGBA32Float, Color128, All);
 
-#if !defined(VISIONOS_ENABLED)
+#if !defined(VISIONOS_ENABLED) && MAC_OS_X_VERSION_MIN_REQUIRED < 150000
 	// Compressed pixel formats
 	addMTLPixelFormatDesc(PVRTC_RGBA_2BPP, PVRTC_RGBA_2BPP, RF);
 	addMTLPixelFormatDescSRGB(PVRTC_RGBA_2BPP_sRGB, PVRTC_RGBA_2BPP, RF, PVRTC_RGBA_2BPP);
