@@ -4,6 +4,66 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.6.3] - 2026-08-20
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-6-3) for details.
+
+### Changed
+
+#### Export
+
+- iOS: Bump min. version to 15.0, remove 32-bit code, add min. target export option ([GH-122324](https://github.com/godotengine/godot/pull/122324)).
+
+#### Platforms
+
+- Android bump default target SDK to 36 ([GH-120883](https://github.com/godotengine/godot/pull/120883)).
+
+#### Network
+
+- mbedtls: Update to 3.6.7 ([GH-121110](https://github.com/godotengine/godot/pull/121110)).
+- mbedTLS: Always use Godot's OS as entropy source ([GH-121894](https://github.com/godotengine/godot/pull/121894)).
+
+#### Thirdparty
+
+- libpng: Update to 1.6.58 ([GH-122506](https://github.com/godotengine/godot/pull/122506)).
+
+### Fixed
+
+#### Audio
+
+- Fix audio crackling issues due to incorrect WASAPI buffer size ([GH-89283](https://github.com/godotengine/godot/pull/89283)).
+- Suppress error when device is invalidated after `IAudioClient::GetBufferSize` ([GH-122467](https://github.com/godotengine/godot/pull/122467)).
+
+#### Buildsystem
+
+- Add proper flags when using external recast ([GH-112029](https://github.com/godotengine/godot/pull/112029)).
+- Ping `master` cache after saving cache ([GH-122267](https://github.com/godotengine/godot/pull/122267)).
+
+#### Core
+
+- Minor BVH correctness fixes ([GH-121501](https://github.com/godotengine/godot/pull/121501)).
+
+#### Export
+
+- Preserve the output from the gradle build command ([GH-120612](https://github.com/godotengine/godot/pull/120612)).
+
+#### GDScript
+
+- Fix missing function signature hint ([GH-68449](https://github.com/godotengine/godot/pull/68449)).
+
+#### Input
+
+- Fix new CI compiler warnings ([GH-120627](https://github.com/godotengine/godot/pull/120627)).
+
+#### Platforms
+
+- Process TTS callback on the main thread to avoid speech-dispatcher deadlock ([GH-110481](https://github.com/godotengine/godot/pull/110481)).
+
+#### Rendering
+
+- FTI - Optimize non-interpolated 2D items ([GH-111195](https://github.com/godotengine/godot/pull/111195)).
+- Make physics interpolation compatible with separate-thread rendering ([GH-114211](https://github.com/godotengine/godot/pull/114211)).
+
 
 ## [3.6.2] - 2025-10-23
 
@@ -3110,6 +3170,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
+[3.6.3]: https://github.com/godotengine/godot/releases/tag/3.6.3-stable
 [3.6.2]: https://github.com/godotengine/godot/releases/tag/3.6.2-stable
 [3.6.1]: https://github.com/godotengine/godot/releases/tag/3.6.1-stable
 [3.6]: https://github.com/godotengine/godot/releases/tag/3.6-stable
