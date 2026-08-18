@@ -54,17 +54,15 @@
 #include <mach-o/getsect.h>
 
 static uint64_t load_address() {
-	const struct segment_command_64 *cmd = getsegbyname("__TEXT");
 	char full_path[1024];
 	uint32_t size = sizeof(full_path);
 
-	if (cmd && !_NSGetExecutablePath(full_path, &size)) {
-		uint32_t dyld_count = _dyld_image_count();
-		for (uint32_t i = 0; i < dyld_count; i++) {
-			const char *image_name = _dyld_get_image_name(i);
-			if (image_name && strncmp(image_name, full_path, 1024) == 0) {
-				return cmd->vmaddr + _dyld_get_image_vmaddr_slide(i);
-			}
+	if (!_NSGetExecutablePath(full_path, &size)) {
+		void *handle = dlopen(full_path, RTLD_LAZY | RTLD_NOLOAD);
+		void *addr = dlsym(handle, "main");
+		Dl_info info;
+		if (dladdr(addr, &info)) {
+			return (uint64_t)info.dli_fbase;
 		}
 	}
 
