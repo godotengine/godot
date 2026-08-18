@@ -38,9 +38,7 @@
 #include "scene/gui/margin_container.h"
 
 Size2 EditorObjectSelector::get_minimum_size() const {
-	Ref<Font> font = get_theme_font(SceneStringName(font));
-	int font_size = get_theme_font_size(SceneStringName(font_size));
-	return Button::get_minimum_size() + Size2(0, font->get_height(font_size));
+	return main_mc->get_minimum_size();
 }
 
 void EditorObjectSelector::_add_children_to_popup(Object *p_obj, int p_depth) {
@@ -209,7 +207,7 @@ void EditorObjectSelector::_notification(int p_what) {
 EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	history = p_history;
 
-	MarginContainer *main_mc = memnew(MarginContainer);
+	main_mc = memnew(MarginContainer);
 	main_mc->set_theme_type_variation("ObjectSelectorMargin");
 	main_mc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	add_child(main_mc);
