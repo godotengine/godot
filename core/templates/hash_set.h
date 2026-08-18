@@ -101,11 +101,15 @@ public:
 			return _inner.operator bool();
 		}
 
-		_FORCE_INLINE_ void operator=(const Iterator &p_it) {
-			_inner = p_it._inner;
-		}
+		_FORCE_INLINE_ Iterator() {}
 		_FORCE_INLINE_ Iterator(typename InnerTable::ConstIterator p_inner) {
 			_inner = p_inner;
+		}
+		_FORCE_INLINE_ Iterator(const Iterator &p_it) {
+			_inner = p_it._inner;
+		}
+		_FORCE_INLINE_ void operator=(const Iterator &p_it) {
+			_inner = p_it._inner;
 		}
 
 	private:
