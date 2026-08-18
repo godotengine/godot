@@ -667,11 +667,13 @@ void EditorProperty::_notification(int p_what) {
 				text_limit -= total_icon_w;
 			}
 
-			int v_ofs = (size.height - font->get_height(font_size)) / 2;
-			if (rtl) {
-				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
-			} else {
-				draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
+			if (text_limit > 0) {
+				int v_ofs = (size.height - font->get_height(font_size)) / 2;
+				if (rtl) {
+					draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
+				} else {
+					draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
+				}
 			}
 
 			ofs = size.width;
