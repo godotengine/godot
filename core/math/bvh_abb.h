@@ -206,45 +206,49 @@ struct BVH_ABB {
 	}
 
 	bool intersects_point(const POINT &p_pt) const {
-		if (_any_lessthan(-p_pt, neg_max)) {
-			return false;
+		POINT diff_max = -p_pt - neg_max;
+		POINT diff_min = p_pt - min;
+		bool result = true;
+		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
+			result &= !std::signbit(diff_max[axis]);
+			result &= !std::signbit(diff_min[axis]);
 		}
-		if (_any_lessthan(p_pt, min)) {
-			return false;
-		}
-		return true;
+		return result;
 	}
 
 	// Very hot in profiling, make sure optimized
 	bool intersects(const BVH_ABB &p_o) const {
-		if (_any_morethan(p_o.min, -neg_max)) {
-			return false;
+		POINT diff_max = -neg_max - p_o.min;
+		POINT diff_min = -p_o.neg_max - min;
+		bool result = true;
+		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
+			result &= !std::signbit(diff_max[axis]);
+			result &= !std::signbit(diff_min[axis]);
 		}
-		if (_any_morethan(min, -p_o.neg_max)) {
-			return false;
-		}
-		return true;
+		return result;
 	}
 
 	// for pre-swizzled tester (this object)
 	bool intersects_swizzled(const BVH_ABB &p_o) const {
-		if (_any_lessthan(min, p_o.min)) {
-			return false;
+		POINT diff_min = min - p_o.min;
+		POINT diff_max = neg_max - p_o.neg_max;
+		bool result = true;
+		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
+			result &= !std::signbit(diff_min[axis]);
+			result &= !std::signbit(diff_max[axis]);
 		}
-		if (_any_lessthan(neg_max, p_o.neg_max)) {
-			return false;
-		}
-		return true;
+		return result;
 	}
 
 	bool is_other_within(const BVH_ABB &p_o) const {
-		if (_any_lessthan(p_o.neg_max, neg_max)) {
-			return false;
+		POINT diff_max = p_o.neg_max - neg_max;
+		POINT diff_min = p_o.min - min;
+		bool result = true;
+		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
+			result &= !std::signbit(diff_max[axis]);
+			result &= !std::signbit(diff_min[axis]);
 		}
-		if (_any_lessthan(p_o.min, min)) {
-			return false;
-		}
-		return true;
+		return result;
 	}
 
 	void grow(const POINT &p_change) {
@@ -271,23 +275,5 @@ struct BVH_ABB {
 			neg_max[axis] = FLT_MAX;
 		}
 		min = neg_max;
-	}
-
-	bool _any_morethan(const POINT &p_a, const POINT &p_b) const {
-		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
-			if (p_a[axis] > p_b[axis]) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	bool _any_lessthan(const POINT &p_a, const POINT &p_b) const {
-		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
-			if (p_a[axis] < p_b[axis]) {
-				return true;
-			}
-		}
-		return false;
 	}
 };
