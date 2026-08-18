@@ -1333,7 +1333,7 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 				r_result.insert(option.display, option);
 			}
 
-			if (clss->base_type.kind == GDScriptParser::DataType::CLASS && clss->base_type.class_type) {
+			if (clss->base_type.is_set()) {
 				GDScriptCompletionIdentifier base_type;
 				base_type.type = clss->base_type;
 				base_type.type.is_meta_type = p_static && !outer;
@@ -2632,6 +2632,7 @@ static bool _guess_identifier_type_from_class(GDScriptParser::CompletionContext 
 	ERR_FAIL_COND_V_MSG(recursion.check(), false, "Reached recursion limit while trying to guess type.");
 
 	const GDScriptParser::ClassNode *clss = p_class;
+	bool outer = false;
 	while (clss) {
 		if (clss->has_member(p_identifier)) {
 			const GDScriptParser::ClassNode::Member &member = clss->get_member(p_identifier);
@@ -2705,14 +2706,15 @@ static bool _guess_identifier_type_from_class(GDScriptParser::CompletionContext 
 			}
 			return false;
 		}
-		if (clss->base_type.class_type != nullptr) {
+		if (clss->base_type.is_set()) {
 			GDScriptCompletionIdentifier base;
 			base.type = clss->base_type;
-			base.type.is_meta_type = p_static;
+			base.type.is_meta_type = p_static && !outer;
 			if (_guess_identifier_type_from_base(p_context, base, p_identifier, r_type)) {
 				return true;
 			}
 		}
+		outer = true;
 		clss = clss->outer;
 	}
 	return false;
