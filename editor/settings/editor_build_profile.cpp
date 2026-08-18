@@ -44,7 +44,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
@@ -1376,13 +1375,15 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	add_child(main_vbc);
 
 	HBoxContainer *path_hbc = memnew(HBoxContainer);
-	profile_label = memnew(Label);
+	profile_label = memnew(LineEdit);
 	path_hbc->add_child(profile_label);
 	profile_label->set_text(TTR("[Unsaved Profile]"));
-	profile_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	profile_label->set_accessibility_name(TTRC("Current Profile:"));
+	profile_label->set_text(TTR("(none)"));
+	profile_label->set_editable(false);
+	profile_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	profile_label->set_accessibility_name(TTRC("Profile Path"));
 	profile_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	profile_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	profile_actions[ACTION_NEW] = memnew(Button(TTRC("New/Unset")));
 	path_hbc->add_child(profile_actions[ACTION_NEW]);
@@ -1424,19 +1425,21 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	main_vbc->add_margin_child(TTRC("Actions:"), profiles_hbc);
 
+	Label *cecp = memnew(Label(TTRC("Configure Engine Compilation Profile:")));
+	cecp->set_theme_type_variation("HeaderSmall");
+	main_vbc->add_child(cecp);
+
+	// It will be displayed once the user creates or chooses a profile.
 	class_list = memnew(Tree);
 	class_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	class_list->set_hide_root(true);
 	class_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
-	class_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	class_list->set_theme_type_variation("TreeSecondary");
+	class_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	class_list->connect("cell_selected", callable_mp(this, &EditorBuildProfileManager::_class_list_item_selected));
 	class_list->connect("item_edited", callable_mp(this, &EditorBuildProfileManager::_class_list_item_edited), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", callable_mp(this, &EditorBuildProfileManager::_class_list_item_collapsed));
-
-	// It will be displayed once the user creates or chooses a profile.
-	MarginContainer *mc = main_vbc->add_margin_child(TTRC("Configure Engine Compilation Profile:"), class_list, true);
-	mc->set_theme_type_variation("NoBorderHorizontalWindow");
-	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_vbc->add_child(class_list);
 
 	description_bit = memnew(EditorHelpBit);
 	description_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);

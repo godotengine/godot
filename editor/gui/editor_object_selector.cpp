@@ -215,6 +215,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	add_child(main_mc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
+	main_hb->add_theme_constant_override("separation", 0);
 	main_mc->add_child(main_hb);
 
 	current_object_icon = memnew(TextureRect);

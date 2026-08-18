@@ -1187,17 +1187,19 @@ void ScriptEditor::_update_recent_scripts() {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", config_section, Array());
 	recent_scripts->clear();
 
-	String path;
-	for (int i = 0; i < rc.size(); i++) {
-		path = rc[i];
-		recent_scripts->add_item(path.replace("res://", ""));
+	if (rc.is_empty()) {
+		recent_scripts->add_item(TTRC("No Recent Documents"), -1);
+		recent_scripts->set_item_disabled(-1, true);
+	} else {
+		for (const String path : rc) {
+			recent_scripts->add_item(path.replace("res://", ""));
+		}
+
+		recent_scripts->add_separator();
+		recent_scripts->add_shortcut(ED_GET_SHORTCUT("script_editor/clear_recent"));
 	}
 
-	recent_scripts->add_separator();
-	recent_scripts->add_shortcut(ED_GET_SHORTCUT("script_editor/clear_recent"));
 	recent_scripts->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
-	recent_scripts->set_item_disabled(-1, rc.is_empty());
-
 	recent_scripts->reset_size();
 }
 

@@ -37,7 +37,6 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/margin_container.h"
 
 void EditorLayoutsDialog::_validate_name() {
 	const String layout_name = name->get_text().strip_edges();
@@ -150,18 +149,20 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	validation->set_accept_button(get_ok_button());
 	validation->set_v_size_flags(0);
 
+	Label *lb = memnew(Label(TTRC("Select Existing Layout:")));
+	lb->set_theme_type_variation("HeaderSmall");
+	makevb->add_child(lb);
+
 	layout_names = memnew(ItemList);
 	layout_names->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	layout_names->set_allow_rmb_select(true);
-	layout_names->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
+	layout_names->set_theme_type_variation("ItemListSecondary");
+	layout_names->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
 	layout_names->connect(SceneStringName(item_selected), callable_mp(validation, &EditorValidationPanel::update).unbind(1));
 	layout_names->connect("multi_selected", callable_mp(this, &EditorLayoutsDialog::_multi_selected).unbind(2)); // For deletion mode.
 	layout_names->connect("item_activated", callable_mp(this, &EditorLayoutsDialog::_item_activated).unbind(1));
-
-	MarginContainer *mc = makevb->add_margin_child(TTRC("Select Existing Layout:"), layout_names);
-	mc->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
-	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	makevb->add_child(layout_names);
 
 	name = memnew(LineEdit);
 	makevb->add_child(name);
