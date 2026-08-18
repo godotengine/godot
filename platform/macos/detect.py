@@ -253,6 +253,8 @@ def configure(env: "Environment"):
             "QuartzCore",
             "-framework",
             "Security",
+            "-framework",
+            "UniformTypeIdentifiers",
         ]
     )
     env.Append(LIBS=["pthread", "z"])
