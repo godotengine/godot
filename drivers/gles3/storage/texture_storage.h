@@ -33,6 +33,7 @@
 #ifdef GLES3_ENABLED
 
 #include "core/io/image.h"
+#include "core/object/callable_mp.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "drivers/gles3/shaders/canvas_sdf.glsl.gen.h"
@@ -429,6 +430,16 @@ private:
 	RID_Owner<CanvasTexture, true> canvas_texture_owner;
 
 	/* Texture API */
+#ifdef TOOLS_ENABLED
+	static void _image_cache_2d_changed(const RID &p_tex) {
+		Texture *tex = get_singleton()->texture_owner.get_or_null(p_tex);
+		if (tex) {
+			tex->image_cache_2d->disconnect_changed(callable_mp_static(&TextureStorage::_image_cache_2d_changed));
+			tex->image_cache_2d.unref();
+		}
+	}
+#endif
+
 	// Textures can be created from threads, so this RID_Owner is thread safe.
 	mutable RID_Owner<Texture, true> texture_owner;
 
