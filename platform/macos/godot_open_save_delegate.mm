@@ -176,15 +176,33 @@
 	}
 	if ([new_allowed_types count] > 0) {
 		NSMutableArray *type_filters = [new_allowed_types objectAtIndex:0];
-		if (type_filters && [type_filters count] == 1 && [[type_filters objectAtIndex:0] isEqualToString:@"*"]) {
-			[p_panel setAllowedFileTypes:nil];
-			[p_panel setAllowsOtherFileTypes:true];
+		if (@available(macOS 11, *)) {
+			if (type_filters && [type_filters count] == 1 && [type_filters objectAtIndex:0] == UTTypeData) {
+				[p_panel setAllowedContentTypes:@[ UTTypeData ]];
+				[p_panel setAllowsOtherFileTypes:true];
+			} else {
+				[p_panel setAllowsOtherFileTypes:false];
+				[p_panel setAllowedContentTypes:type_filters];
+			}
 		} else {
-			[p_panel setAllowsOtherFileTypes:false];
-			[p_panel setAllowedFileTypes:type_filters];
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
+			if (type_filters && [type_filters count] == 1 && [[type_filters objectAtIndex:0] isEqualToString:@"*"]) {
+				[p_panel setAllowedFileTypes:nil];
+				[p_panel setAllowsOtherFileTypes:true];
+			} else {
+				[p_panel setAllowsOtherFileTypes:false];
+				[p_panel setAllowedFileTypes:type_filters];
+			}
+#endif
 		}
 	} else {
-		[p_panel setAllowedFileTypes:nil];
+		if (@available(macOS 11, *)) {
+			[p_panel setAllowedContentTypes:@[ UTTypeData ]];
+		} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
+			[p_panel setAllowedFileTypes:nil];
+#endif
+		}
 		[p_panel setAllowsOtherFileTypes:true];
 	}
 }
@@ -247,16 +265,34 @@
 		NSUInteger index = [btn indexOfSelectedItem];
 		if (allowed_types && index < [allowed_types count]) {
 			NSMutableArray *type_filters = [allowed_types objectAtIndex:index];
-			if (type_filters && [type_filters count] == 1 && [[type_filters objectAtIndex:0] isEqualToString:@"*"]) {
-				[dialog setAllowedFileTypes:nil];
-				[dialog setAllowsOtherFileTypes:true];
+			if (@available(macOS 11, *)) {
+				if (type_filters && [type_filters count] == 1 && [type_filters objectAtIndex:0] == UTTypeData) {
+					[dialog setAllowedContentTypes:@[ UTTypeData ]];
+					[dialog setAllowsOtherFileTypes:true];
+				} else {
+					[dialog setAllowsOtherFileTypes:false];
+					[dialog setAllowedContentTypes:type_filters];
+				}
 			} else {
-				[dialog setAllowsOtherFileTypes:false];
-				[dialog setAllowedFileTypes:type_filters];
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
+				if (type_filters && [type_filters count] == 1 && [[type_filters objectAtIndex:0] isEqualToString:@"*"]) {
+					[dialog setAllowedFileTypes:nil];
+					[dialog setAllowsOtherFileTypes:true];
+				} else {
+					[dialog setAllowsOtherFileTypes:false];
+					[dialog setAllowedFileTypes:type_filters];
+				}
+#endif
 			}
 			cur_index = index;
 		} else {
-			[dialog setAllowedFileTypes:nil];
+			if (@available(macOS 11, *)) {
+				[dialog setAllowedContentTypes:@[ UTTypeData ]];
+			} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
+				[dialog setAllowedFileTypes:nil];
+#endif
+			}
 			[dialog setAllowsOtherFileTypes:true];
 			cur_index = -1;
 		}
