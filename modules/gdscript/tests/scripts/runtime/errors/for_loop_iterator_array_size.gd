@@ -9,6 +9,7 @@ class BadInit:
 	func _init(new_push):
 		push = new_push
 
+	@override
 	func _iter_init(iter: Array):
 		if push:
 			iter.push_back("hi")
@@ -16,10 +17,12 @@ class BadInit:
 			iter.pop_back()
 		return true
 
+	@override
 	func _iter_next(iter: Array):
 		iter.pop_back()
 		return !iter.is_empty()
 
+	@override
 	func _iter_get(iter):
 		return iter
 
@@ -47,10 +50,12 @@ class BadNext:
 	func _init(new_push):
 		push = new_push
 
+	@override
 	func _iter_init(iter: Array):
 		iter[0] = 1
 		return true
 
+	@override
 	func _iter_next(iter: Array):
 		if push:
 			iter.push_back(2)
@@ -58,6 +63,7 @@ class BadNext:
 			iter.pop_back()
 		return true
 
+	@override
 	func _iter_get(iter):
 		return iter
 

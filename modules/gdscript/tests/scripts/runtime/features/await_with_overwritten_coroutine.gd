@@ -5,6 +5,7 @@ class BaseClass:
 		return true
 
 class InheritedClass extends BaseClass:
+	@override
 	func get_bool() -> bool:
 		await release_bool
 		return false

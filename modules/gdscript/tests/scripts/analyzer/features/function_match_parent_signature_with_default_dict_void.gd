@@ -10,5 +10,6 @@ class Parent:
 		pass
 
 class Child extends Parent:
+	@override
 	func my_function(_par1: Dictionary = {}) -> void:
 		pass

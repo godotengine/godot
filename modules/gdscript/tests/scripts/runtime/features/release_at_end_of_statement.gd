@@ -1,5 +1,6 @@
 class TestRefCounted:
 	extends RefCounted
+	@override
 	func _notification(what: int) -> void:
 		if what == NOTIFICATION_PREDELETE:
 			print("    TestRefCounted released")

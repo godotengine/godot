@@ -8,14 +8,17 @@ class ExponentialIterator:
 		self.base = new_base
 		self.end = new_end
 
+	@override
 	func _iter_init(iter: Array):
 		iter[0] = 1
 		return iter[0] < end
 
+	@override
 	func _iter_next(iter: Array):
 		iter[0] *= base
 		return iter[0] < end
 
+	@override
 	func _iter_get(iter: Variant):
 		return iter
 
@@ -27,14 +30,17 @@ class StringIterator:
 	func _init(value: String):
 		self.s = value
 
+	@override
 	func _iter_init(iter: Array):
 		iter[0] = s
 		return !iter[0].is_empty()
 
+	@override
 	func _iter_next(iter: Array):
 		iter[0] = iter[0].substr(1)
 		return !iter[0].is_empty()
 
+	@override
 	func _iter_get(iter: Variant):
 		return iter.left(1)
 
