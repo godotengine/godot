@@ -1002,7 +1002,11 @@ else:  # GCC, Clang
 
     if env["werror"]:
         env.AppendUnique(CCFLAGS=["-Werror"])
-        env.AppendUnique(LINKFLAGS=["-Wl,--fatal-warnings" if env["platform"] != "macos" else "-Wl,-fatal_warnings"])
+        if env["platform"] != "macos":
+            env.AppendUnique(LINKFLAGS=["-Wl,--fatal-warnings"])
+        elif env["arch"] != "x86_64":
+            # Disabled for x86-64 macOS build due to MoltenVK min. target version mismatch.
+            env.AppendUnique(LINKFLAGS=["-Wl,-fatal_warnings"])
 
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()
