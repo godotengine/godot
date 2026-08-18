@@ -2180,17 +2180,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 	if (p_assignable->initializer != nullptr) {
 		reduce_expression(p_assignable->initializer);
 
-		if (p_assignable->initializer->type == GDScriptParser::Node::ARRAY) {
-			GDScriptParser::ArrayNode *array = static_cast<GDScriptParser::ArrayNode *>(p_assignable->initializer);
-			if (has_specified_type && specified_type.has_container_element_type(0)) {
-				update_array_literal_element_type(array, specified_type.get_container_element_type(0));
-			}
-		} else if (p_assignable->initializer->type == GDScriptParser::Node::DICTIONARY) {
-			GDScriptParser::DictionaryNode *dictionary = static_cast<GDScriptParser::DictionaryNode *>(p_assignable->initializer);
-			if (has_specified_type && specified_type.has_container_element_types()) {
-				update_dictionary_literal_element_type(dictionary, specified_type.get_container_element_type_or_variant(0), specified_type.get_container_element_type_or_variant(1));
-			}
-		}
+		update_collection_literal_element_type(p_assignable->initializer, specified_type);
 
 		if (is_constant && !p_assignable->initializer->is_constant) {
 			bool is_initializer_value_reduced = false;
@@ -2625,12 +2615,7 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 			result.builtin_type = Variant::NIL;
 			result.is_constant = true;
 		} else {
-			if (p_return->return_value->type == GDScriptParser::Node::ARRAY && has_expected_type && expected_type.has_container_element_type(0)) {
-				update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_return->return_value), expected_type.get_container_element_type(0));
-			} else if (p_return->return_value->type == GDScriptParser::Node::DICTIONARY && has_expected_type && expected_type.has_container_element_types()) {
-				update_dictionary_literal_element_type(static_cast<GDScriptParser::DictionaryNode *>(p_return->return_value),
-						expected_type.get_container_element_type_or_variant(0), expected_type.get_container_element_type_or_variant(1));
-			}
+			update_collection_literal_element_type(p_return->return_value, expected_type);
 			if (has_expected_type && expected_type.is_hard_type() && p_return->return_value->is_constant) {
 				update_const_expression_builtin_type(p_return->return_value, expected_type, "return");
 			}
@@ -2846,79 +2831,89 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 // When an array literal is stored (or passed as function argument) to a typed context, we then assume the array is typed.
 // This function determines which type is that (if any).
 void GDScriptAnalyzer::update_array_literal_element_type(GDScriptParser::ArrayNode *p_array, const GDScriptParser::DataType &p_element_type) {
-	GDScriptParser::DataType expected_type = p_element_type;
-	expected_type.container_element_types.clear(); // Nested types (like `Array[Array[int]]`) are not currently supported.
+	ERR_FAIL_COND_MSG(p_element_type.has_container_element_types(), "GDScript bug (please report): Encountered nested Array type.");
+	ERR_FAIL_COND_MSG(p_array->type_constraint.has_container_element_types(), "GDScript bug (please report): Array literal already has a determined type.");
 
 	for (GDScriptParser::ExpressionNode *element_node : p_array->elements) {
 		if (element_node->is_constant) {
-			update_const_expression_builtin_type(element_node, expected_type, "include");
+			update_const_expression_builtin_type(element_node, p_element_type, "include");
 		}
 		const GDScriptParser::DataType &actual_type = element_node->type_constraint;
 		if (actual_type.has_no_type() || actual_type.is_variant() || !actual_type.is_hard_type()) {
 			mark_node_unsafe(element_node);
 			continue;
 		}
-		if (!is_type_compatible(expected_type, actual_type, true, p_array)) {
-			if (is_type_compatible(actual_type, expected_type)) {
+		if (!is_type_compatible(p_element_type, actual_type, true, p_array)) {
+			if (is_type_compatible(actual_type, p_element_type)) {
 				mark_node_unsafe(element_node);
 				continue;
 			}
-			push_error(vformat(R"(Cannot have an element of type "%s" in an array of type "Array[%s]".)", actual_type.to_string(), expected_type.to_string()), element_node);
+			push_error(vformat(R"(Cannot have an element of type "%s" in an array of type "Array[%s]".)", actual_type.to_string(), p_element_type.to_string()), element_node);
 			return;
 		}
 	}
 
-	GDScriptParser::DataType array_type = p_array->type_constraint;
-	array_type.set_container_element_type(0, expected_type);
-	p_array->type_constraint = array_type;
+	p_array->type_constraint.set_container_element_type(0, p_element_type);
 }
 
 // When a dictionary literal is stored (or passed as function argument) to a typed context, we then assume the dictionary is typed.
 // This function determines which type is that (if any).
 void GDScriptAnalyzer::update_dictionary_literal_element_type(GDScriptParser::DictionaryNode *p_dictionary, const GDScriptParser::DataType &p_key_element_type, const GDScriptParser::DataType &p_value_element_type) {
-	GDScriptParser::DataType expected_key_type = p_key_element_type;
-	GDScriptParser::DataType expected_value_type = p_value_element_type;
-	expected_key_type.container_element_types.clear(); // Nested types (like `Dictionary[String, Array[int]]`) are not currently supported.
-	expected_value_type.container_element_types.clear();
+	ERR_FAIL_COND_MSG(p_key_element_type.has_container_element_types(), "GDScript bug (please report): Encountered nested Dictionary key type.");
+	ERR_FAIL_COND_MSG(p_value_element_type.has_container_element_types(), "GDScript bug (please report): Encountered nested Dictionary value type.");
+	ERR_FAIL_COND_MSG(p_dictionary->type_constraint.has_container_element_types(), "GDScript bug (please report): Dictionary literal already has a determined type.");
 
-	for (uint32_t i = 0; i < p_dictionary->elements.size(); i++) {
-		GDScriptParser::ExpressionNode *key_element_node = p_dictionary->elements[i].key;
-		if (key_element_node->is_constant) {
-			update_const_expression_builtin_type(key_element_node, expected_key_type, "include");
+	for (GDScriptParser::DictionaryNode::Pair element : p_dictionary->elements) {
+		if (element.key->is_constant) {
+			update_const_expression_builtin_type(element.key, p_key_element_type, "include");
 		}
-		const GDScriptParser::DataType &actual_key_type = key_element_node->type_constraint;
+		const GDScriptParser::DataType &actual_key_type = element.key->type_constraint;
 		if (actual_key_type.has_no_type() || actual_key_type.is_variant() || !actual_key_type.is_hard_type()) {
-			mark_node_unsafe(key_element_node);
-		} else if (!is_type_compatible(expected_key_type, actual_key_type, true, p_dictionary)) {
-			if (is_type_compatible(actual_key_type, expected_key_type)) {
-				mark_node_unsafe(key_element_node);
+			mark_node_unsafe(element.key);
+		} else if (!is_type_compatible(p_key_element_type, actual_key_type, true, p_dictionary)) {
+			if (is_type_compatible(actual_key_type, p_key_element_type)) {
+				mark_node_unsafe(element.key);
 			} else {
-				push_error(vformat(R"(Cannot have a key of type "%s" in a dictionary of type "Dictionary[%s, %s]".)", actual_key_type.to_string(), expected_key_type.to_string(), expected_value_type.to_string()), key_element_node);
+				push_error(vformat(R"(Cannot have a key of type "%s" in a dictionary of type "Dictionary[%s, %s]".)", actual_key_type.to_string(), p_key_element_type.to_string(), p_value_element_type.to_string()), element.key);
 				return;
 			}
 		}
 
-		GDScriptParser::ExpressionNode *value_element_node = p_dictionary->elements[i].value;
-		if (value_element_node->is_constant) {
-			update_const_expression_builtin_type(value_element_node, expected_value_type, "include");
+		if (element.value->is_constant) {
+			update_const_expression_builtin_type(element.value, p_value_element_type, "include");
 		}
-		const GDScriptParser::DataType &actual_value_type = value_element_node->type_constraint;
+		const GDScriptParser::DataType &actual_value_type = element.value->type_constraint;
 		if (actual_value_type.has_no_type() || actual_value_type.is_variant() || !actual_value_type.is_hard_type()) {
-			mark_node_unsafe(value_element_node);
-		} else if (!is_type_compatible(expected_value_type, actual_value_type, true, p_dictionary)) {
-			if (is_type_compatible(actual_value_type, expected_value_type)) {
-				mark_node_unsafe(value_element_node);
+			mark_node_unsafe(element.value);
+		} else if (!is_type_compatible(p_value_element_type, actual_value_type, true, p_dictionary)) {
+			if (is_type_compatible(actual_value_type, p_value_element_type)) {
+				mark_node_unsafe(element.value);
 			} else {
-				push_error(vformat(R"(Cannot have a value of type "%s" in a dictionary of type "Dictionary[%s, %s]".)", actual_value_type.to_string(), expected_key_type.to_string(), expected_value_type.to_string()), value_element_node);
+				push_error(vformat(R"(Cannot have a value of type "%s" in a dictionary of type "Dictionary[%s, %s]".)", actual_value_type.to_string(), p_key_element_type.to_string(), p_value_element_type.to_string()), element.value);
 				return;
 			}
 		}
 	}
 
-	GDScriptParser::DataType dictionary_type = p_dictionary->type_constraint;
-	dictionary_type.set_container_element_type(0, expected_key_type);
-	dictionary_type.set_container_element_type(1, expected_value_type);
-	p_dictionary->type_constraint = dictionary_type;
+	p_dictionary->type_constraint.set_container_element_type(0, p_key_element_type);
+	p_dictionary->type_constraint.set_container_element_type(1, p_value_element_type);
+}
+
+void GDScriptAnalyzer::update_collection_literal_element_type(GDScriptParser::Node *p_node, const GDScriptParser::DataType &p_collection_type) {
+	if (!p_node || !p_collection_type.is_hard_type() || p_collection_type.kind != GDScriptParser::DataType::BUILTIN || !p_collection_type.has_container_element_types()) {
+		return;
+	}
+
+	if (p_node->type == GDScriptParser::Node::ARRAY && p_collection_type.builtin_type == Variant::ARRAY) {
+		update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_node), p_collection_type.get_container_element_type(0));
+	}
+
+	if (p_node->type == GDScriptParser::Node::DICTIONARY && p_collection_type.builtin_type == Variant::DICTIONARY) {
+		update_dictionary_literal_element_type(
+				static_cast<GDScriptParser::DictionaryNode *>(p_node),
+				p_collection_type.get_container_element_type(0),
+				p_collection_type.get_container_element_type(1));
+	}
 }
 
 void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assignment) {
@@ -3017,13 +3012,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		}
 	}
 
-	// Check if assigned value is an array/dictionary literal, so we can make it a typed container too if appropriate.
-	if (p_assignment->assigned_value->type == GDScriptParser::Node::ARRAY && assignee_type.is_hard_type() && assignee_type.has_container_element_type(0)) {
-		update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_assignment->assigned_value), assignee_type.get_container_element_type(0));
-	} else if (p_assignment->assigned_value->type == GDScriptParser::Node::DICTIONARY && assignee_type.is_hard_type() && assignee_type.has_container_element_types()) {
-		update_dictionary_literal_element_type(static_cast<GDScriptParser::DictionaryNode *>(p_assignment->assigned_value),
-				assignee_type.get_container_element_type_or_variant(0), assignee_type.get_container_element_type_or_variant(1));
-	}
+	update_collection_literal_element_type(p_assignment->assigned_value, assignee_type);
 
 	if (p_assignment->operation == GDScriptParser::AssignmentNode::OP_NONE && assignee_type.is_hard_type() && p_assignment->assigned_value->is_constant) {
 		update_const_expression_builtin_type(p_assignment->assigned_value, assignee_type, "assign");
@@ -3307,16 +3296,9 @@ const char *check_for_renamed_identifier(String identifier, GDScriptParser::Node
 
 void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await, bool p_is_root) {
 	bool all_is_constant = true;
-	HashMap<int, GDScriptParser::ArrayNode *> arrays; // For array literal to potentially type when passing.
-	HashMap<int, GDScriptParser::DictionaryNode *> dictionaries; // Same, but for dictionaries.
-	for (uint32_t i = 0; i < p_call->arguments.size(); i++) {
-		reduce_expression(p_call->arguments[i]);
-		if (p_call->arguments[i]->type == GDScriptParser::Node::ARRAY) {
-			arrays[i] = static_cast<GDScriptParser::ArrayNode *>(p_call->arguments[i]);
-		} else if (p_call->arguments[i]->type == GDScriptParser::Node::DICTIONARY) {
-			dictionaries[i] = static_cast<GDScriptParser::DictionaryNode *>(p_call->arguments[i]);
-		}
-		all_is_constant = all_is_constant && p_call->arguments[i]->is_constant;
+	for (GDScriptParser::ExpressionNode *arg : p_call->arguments) {
+		reduce_expression(arg);
+		all_is_constant = all_is_constant && arg->is_constant;
 	}
 
 	GDScriptParser::Node::Type callee_type = p_call->get_callee_type();
@@ -3711,19 +3693,11 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 
 		// If the function requires typed arrays we must make literals be typed.
-		for (const KeyValue<int, GDScriptParser::ArrayNode *> &E : arrays) {
-			int index = E.key;
-			if (index < par_types.size() && par_types.get(index).is_hard_type() && par_types.get(index).has_container_element_type(0)) {
-				update_array_literal_element_type(E.value, par_types.get(index).get_container_element_type(0));
+		for (uint32_t idx = 0; idx < (uint32_t)par_types.size(); idx++) {
+			if (idx >= p_call->arguments.size()) {
+				break;
 			}
-		}
-		for (const KeyValue<int, GDScriptParser::DictionaryNode *> &E : dictionaries) {
-			int index = E.key;
-			if (index < par_types.size() && par_types.get(index).is_hard_type() && par_types.get(index).has_container_element_types()) {
-				GDScriptParser::DataType key = par_types.get(index).get_container_element_type_or_variant(0);
-				GDScriptParser::DataType value = par_types.get(index).get_container_element_type_or_variant(1);
-				update_dictionary_literal_element_type(E.value, key, value);
-			}
+			update_collection_literal_element_type(p_call->arguments[idx], par_types.get(idx));
 		}
 		validate_call_arg(par_types, default_arg_count, method_flags.has_flag(METHOD_FLAG_VARARG), p_call);
 
@@ -3871,14 +3845,8 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 		}
 	}
 
-	if (p_cast->operand->type == GDScriptParser::Node::ARRAY && cast_type.has_container_element_type(0)) {
-		update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_cast->operand), cast_type.get_container_element_type(0));
-	}
-
-	if (p_cast->operand->type == GDScriptParser::Node::DICTIONARY && cast_type.has_container_element_types()) {
-		update_dictionary_literal_element_type(static_cast<GDScriptParser::DictionaryNode *>(p_cast->operand),
-				cast_type.get_container_element_type_or_variant(0), cast_type.get_container_element_type_or_variant(1));
-	}
+	// This is a bad idea. It means casting collection literals works differently than casting collection variables.
+	update_collection_literal_element_type(p_cast->operand, cast_type);
 
 	if (!cast_type.is_variant()) {
 		GDScriptParser::DataType op_type = p_cast->operand->type_constraint;
