@@ -64,7 +64,7 @@ void SpringBoneCollisionSphere3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collide_mode", PROPERTY_HINT_ENUM, "Joint,Inside,Chain"), "set_collide_mode", "get_collide_mode");
 }
 
-Vector3 SpringBoneCollisionSphere3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
+Vector3 SpringBoneCollisionSphere3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
 	Vector3 origin = get_transform_from_skeleton(p_center).origin;
 	if (collide_mode == COLLIDE_MODE_CHAIN) {
 		return _collide_sphere_taper(origin, radius, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
