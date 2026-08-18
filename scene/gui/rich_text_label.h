@@ -139,6 +139,9 @@ public:
 		IMAGE_UNIT_EM,
 	};
 
+private:
+	struct Item;
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
@@ -162,10 +165,10 @@ protected:
 	void _add_image_bind_compat_112617(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false, const String &p_alt_text = String());
 	void _update_image_bind_compat_112617(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false);
 	static void _bind_compatibility_methods();
-#endif
 
-private:
-	struct Item;
+	// Kept for compatibility from 3.x to 4.0.
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
 
 	struct Line { // Line is a paragraph.
 		Item *from = nullptr; // `from` is main if this Line is the first Line in the doc, otherwise `from` is the previous Item in the doc of any type.
@@ -201,6 +204,7 @@ private:
 		}
 	};
 
+private:
 	struct Item {
 		int index = 0;
 		int char_ofs = 0;
@@ -236,7 +240,6 @@ private:
 		std::atomic<int> first_invalid_line;
 		std::atomic<int> first_invalid_font_line;
 		std::atomic<int> first_resized_line;
-
 		ItemFrame *parent_frame = nullptr;
 
 		Color odd_row_bg = Color(0, 0, 0, 0);
@@ -671,6 +674,8 @@ private:
 	float _find_click_in_line(ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool p_table = false, bool p_meta = false);
 	void _accessibility_update_line(RID p_id, ItemFrame *p_frame, int p_line, const Vector2 &p_ofs, int p_width, float p_vsep);
 
+	virtual void _highlighting_pass_callback(Line *l, RID rid, RID ci_rid, Color highlight_color, Vector2 p_ofs, Vector2 off, float l_ascent, Vector2 l_size);
+
 	String _roman(int p_num, bool p_capitalize) const;
 	String _letters(int p_num, bool p_capitalize) const;
 
@@ -744,10 +749,6 @@ private:
 	static Vector<String> _split_unquoted(const String &p_src, char32_t p_splitter);
 	static String _get_tag_value(const String &p_tag);
 
-#ifndef DISABLE_DEPRECATED
-	// Kept for compatibility from 3.x to 4.0.
-	bool _set(const StringName &p_name, const Variant &p_value);
-#endif
 	bool use_bbcode = false;
 	String text;
 	void _apply_translation();

@@ -32,6 +32,7 @@
 
 #include "core/os/thread.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/gui/editor_log_rich_text_label.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
@@ -135,7 +136,7 @@ private:
 	// Maps MessageTypes to LogFilters for convenient access and storage (don't need 1 member per filter).
 	HashMap<MessageType, LogFilter *> type_filter_map;
 
-	RichTextLabel *log = nullptr;
+	EditorLogRichTextLabel *log = nullptr;
 
 	Button *clear_button = nullptr;
 
@@ -149,9 +150,11 @@ private:
 
 	Button *filter_previous_match_button = nullptr;
 	void _enable_filter_previous_match_button(bool p_enable);
+	void _filter_view_previous_match();
 
 	Button *filter_next_match_button = nullptr;
 	void _enable_filter_next_match_button(bool p_enable);
+	void _filter_view_next_match();
 
 	CheckBox *show_non_search_matches_button = nullptr;
 	void _set_show_non_search_matches(bool p_state);

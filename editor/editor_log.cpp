@@ -690,7 +690,7 @@ EditorLog::EditorLog() {
 	hb->add_child(vb_left);
 
 	// Log - Rich Text Label.
-	log = memnew(RichTextLabel);
+	log = memnew(EditorLogRichTextLabel);
 	log->set_threaded(true);
 	log->set_use_bbcode(true);
 	log->set_scroll_follow(true);
@@ -742,9 +742,9 @@ EditorLog::EditorLog() {
 
 	// Exclude non-filter matches button
 	show_non_search_matches_button = memnew(CheckBox);
-	show_non_search_matches_button->set_text("Show Non-Matches");
-	show_non_search_matches_button->set_tooltip_text(TTRC("Show Non-Matches"));
-	show_non_search_matches_button->set_accessibility_name(TTRC("Show Non-Matches"));
+	show_non_search_matches_button->set_text("Show Non-Matching Lines");
+	show_non_search_matches_button->set_tooltip_text(TTRC("Show Non-Matching Lines"));
+	show_non_search_matches_button->set_accessibility_name(TTRC("Show Non-Matching Lines"));
 	show_non_search_matches_button->set_pressed(true);
 	show_non_search_matches_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_show_non_search_matches));
 	extra_filter_options_hbox->add_child(show_non_search_matches_button);
