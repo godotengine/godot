@@ -588,6 +588,21 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 
 #define COMPLETION_RECURSION_LIMIT 200
 
+#define MAX_COMPLETION_RECURSION 100
+struct RecursionCheck {
+	int *counter;
+	_FORCE_INLINE_ bool check() {
+		return (*counter) > MAX_COMPLETION_RECURSION;
+	}
+	RecursionCheck(int *p_counter) :
+			counter(p_counter) {
+		(*counter)++;
+	}
+	~RecursionCheck() {
+		(*counter)--;
+	}
+};
+
 struct GDScriptCompletionIdentifier {
 	GDScriptParser::DataType type;
 	String enumeration;
@@ -1125,6 +1140,45 @@ static void _find_global_enums(HashMap<String, ScriptLanguage::CodeCompletionOpt
 	}
 }
 
+static void _add_type_members(const GDScriptParser::ClassNode *p_class, bool p_inherit_only, int p_location, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
+	static int recursion_depth = 0;
+	RecursionCheck recursion(&recursion_depth);
+	ERR_FAIL_COND_MSG(recursion.check(), "Reached recursion limit while listing available types.");
+
+	for (int i = 0; i < p_class->members.size(); i++) {
+		const GDScriptParser::ClassNode::Member &member = p_class->members[i];
+		switch (member.type) {
+			case GDScriptParser::ClassNode::Member::CLASS: {
+				ScriptLanguage::CodeCompletionOption option(member.m_class->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, p_location);
+				r_result.insert(option.display, option);
+			} break;
+			case GDScriptParser::ClassNode::Member::ENUM: {
+				if (!p_inherit_only) {
+					ScriptLanguage::CodeCompletionOption option(member.m_enum->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_ENUM, p_location);
+					r_result.insert(option.display, option);
+				}
+			} break;
+			case GDScriptParser::ClassNode::Member::CONSTANT: {
+				if (member.constant->type_constraint.is_meta_type) {
+					ScriptLanguage::CodeCompletionOption option(member.constant->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, p_location);
+					r_result.insert(option.display, option);
+				}
+			} break;
+			default:
+				break;
+		}
+	}
+
+	if (p_class->outer) {
+		_add_type_members(p_class->outer, p_inherit_only, p_location + 1, r_result);
+	}
+
+	const GDScriptParser::DataType &base = p_class->base_type;
+	if (base.kind == GDScriptParser::DataType::CLASS && base.class_type) {
+		_add_type_members(base.class_type, p_inherit_only, p_location, r_result);
+	}
+}
+
 static void _list_available_types(bool p_inherit_only, GDScriptParser::CompletionContext &p_context, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
 	// Built-in Variant Types
 	_find_built_in_variants(r_result);
@@ -1155,37 +1209,7 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 				r_result.insert(option.display, option);
 			}
 		}
-		// Check current class for potential types.
-		// TODO: Also check classes the current class inherits from.
-		const GDScriptParser::ClassNode *current = p_context.current_class;
-		int location_offset = 0;
-		while (current) {
-			for (int i = 0; i < current->members.size(); i++) {
-				const GDScriptParser::ClassNode::Member &member = current->members[i];
-				switch (member.type) {
-					case GDScriptParser::ClassNode::Member::CLASS: {
-						ScriptLanguage::CodeCompletionOption option(member.m_class->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_LOCAL + location_offset);
-						r_result.insert(option.display, option);
-					} break;
-					case GDScriptParser::ClassNode::Member::ENUM: {
-						if (!p_inherit_only) {
-							ScriptLanguage::CodeCompletionOption option(member.m_enum->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_ENUM, ScriptLanguage::LOCATION_LOCAL + location_offset);
-							r_result.insert(option.display, option);
-						}
-					} break;
-					case GDScriptParser::ClassNode::Member::CONSTANT: {
-						if (member.constant->type_constraint.is_meta_type) {
-							ScriptLanguage::CodeCompletionOption option(member.constant->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_LOCAL + location_offset);
-							r_result.insert(option.display, option);
-						}
-					} break;
-					default:
-						break;
-				}
-			}
-			location_offset += 1;
-			current = current->outer;
-		}
+		_add_type_members(p_context.current_class, p_inherit_only, ScriptLanguage::LOCATION_LOCAL, r_result);
 	}
 
 	// Global scripts
@@ -1308,6 +1332,14 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 				}
 				r_result.insert(option.display, option);
 			}
+
+			if (clss->base_type.kind == GDScriptParser::DataType::CLASS && clss->base_type.class_type) {
+				GDScriptCompletionIdentifier base_type;
+				base_type.type = clss->base_type;
+				base_type.type.is_meta_type = p_static && !outer;
+				_find_identifiers_in_base(base_type, p_only_functions, p_types_only, p_add_braces, r_result, p_recursion_depth + 1);
+			}
+
 			if (p_types_only) {
 				break; // Otherwise, it will fill the results with types from the outer class (which is undesired for that case).
 			}
@@ -1316,14 +1348,14 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 			clss = clss->outer;
 			classes_processed++;
 		}
+	} else {
+		// Parents.
+		GDScriptCompletionIdentifier base_type;
+		base_type.type = p_class->base_type;
+		base_type.type.is_meta_type = p_static;
+
+		_find_identifiers_in_base(base_type, p_only_functions, p_types_only, p_add_braces, r_result, p_recursion_depth + 1);
 	}
-
-	// Parents.
-	GDScriptCompletionIdentifier base_type;
-	base_type.type = p_class->base_type;
-	base_type.type.is_meta_type = p_static;
-
-	_find_identifiers_in_base(base_type, p_only_functions, p_types_only, p_add_braces, r_result, p_recursion_depth + 1);
 }
 
 static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base, bool p_only_functions, bool p_types_only, bool p_add_braces, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, int p_recursion_depth) {
@@ -1816,21 +1848,6 @@ static GDScriptCompletionIdentifier _callable_type_from_method_info(const Method
 	ci.type.method_info = p_method;
 	return ci;
 }
-
-#define MAX_COMPLETION_RECURSION 100
-struct RecursionCheck {
-	int *counter;
-	_FORCE_INLINE_ bool check() {
-		return (*counter) > MAX_COMPLETION_RECURSION;
-	}
-	RecursionCheck(int *p_counter) :
-			counter(p_counter) {
-		(*counter)++;
-	}
-	~RecursionCheck() {
-		(*counter)--;
-	}
-};
 
 static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context, const GDScriptParser::IdentifierNode *p_identifier, GDScriptCompletionIdentifier &r_type);
 static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type);
@@ -2609,92 +2626,109 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	return false;
 }
 
+static bool _guess_identifier_type_from_class(GDScriptParser::CompletionContext &p_context, const GDScriptParser::ClassNode *p_class, bool p_static, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type) {
+	static int recursion_depth = 0;
+	RecursionCheck recursion(&recursion_depth);
+	ERR_FAIL_COND_V_MSG(recursion.check(), false, "Reached recursion limit while trying to guess type.");
+
+	const GDScriptParser::ClassNode *clss = p_class;
+	while (clss) {
+		if (clss->has_member(p_identifier)) {
+			const GDScriptParser::ClassNode::Member &member = clss->get_member(p_identifier);
+			switch (member.type) {
+				case GDScriptParser::ClassNode::Member::CONSTANT:
+					r_type.type = member.constant->type_constraint;
+					if (member.constant->initializer && member.constant->initializer->is_constant) {
+						r_type.value = member.constant->initializer->reduced_value;
+					}
+					return true;
+				case GDScriptParser::ClassNode::Member::VARIABLE:
+					if (!p_static || member.variable->is_static) {
+						if (member.variable->type_constraint.is_set() && !member.variable->type_constraint.is_variant()) {
+							r_type.type = member.variable->type_constraint;
+							return true;
+						} else if (member.variable->initializer) {
+							const GDScriptParser::ExpressionNode *init = member.variable->initializer;
+							if (init->is_constant) {
+								r_type.value = init->reduced_value;
+								r_type = _type_from_variant(init->reduced_value, p_context);
+								return true;
+							} else if (init->start_line == p_context.current_line) {
+								return false;
+								// Detects if variable is assigned to itself
+							} else if (_is_expression_named_identifier(init, member.variable->identifier->name)) {
+								if (member.variable->initializer->type_constraint.is_set()) {
+									r_type.type = member.variable->initializer->type_constraint;
+								} else if (member.variable->type_constraint.is_set() && !member.variable->type_constraint.is_variant()) {
+									r_type.type = member.variable->type_constraint;
+								}
+								return true;
+							} else if (_guess_expression_type(p_context, init, r_type)) {
+								return true;
+							} else if (init->type_constraint.is_set() && !init->type_constraint.is_variant()) {
+								r_type.type = init->type_constraint;
+								return true;
+							}
+						}
+					}
+					// TODO: Check assignments in constructor.
+					return false;
+				case GDScriptParser::ClassNode::Member::ENUM:
+					r_type.type = member.m_enum->enum_type;
+					r_type.enumeration = member.m_enum->identifier->name;
+					return true;
+				case GDScriptParser::ClassNode::Member::ENUM_VALUE:
+					r_type = _type_from_variant(member.enum_value.value, p_context);
+					return true;
+				case GDScriptParser::ClassNode::Member::SIGNAL:
+					r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+					r_type.type.kind = GDScriptParser::DataType::BUILTIN;
+					r_type.type.builtin_type = Variant::SIGNAL;
+					r_type.type.method_info = member.signal->method_info;
+					return true;
+				case GDScriptParser::ClassNode::Member::FUNCTION:
+					if (p_static && !member.function->is_static) {
+						return false;
+					}
+					r_type = _callable_type_from_method_info(member.function->info);
+					return true;
+				case GDScriptParser::ClassNode::Member::CLASS:
+					r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+					r_type.type.kind = GDScriptParser::DataType::CLASS;
+					r_type.type.class_type = member.m_class;
+					r_type.type.is_meta_type = true;
+					return true;
+				case GDScriptParser::ClassNode::Member::GROUP:
+					return false; // No-op, but silences warnings.
+				case GDScriptParser::ClassNode::Member::UNDEFINED:
+					return false; // Unreachable.
+			}
+			return false;
+		}
+		if (clss->base_type.class_type != nullptr) {
+			GDScriptCompletionIdentifier base;
+			base.type = clss->base_type;
+			base.type.is_meta_type = p_static;
+			if (_guess_identifier_type_from_base(p_context, base, p_identifier, r_type)) {
+				return true;
+			}
+		}
+		clss = clss->outer;
+	}
+	return false;
+}
+
 static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type) {
 	static int recursion_depth = 0;
 	RecursionCheck recursion(&recursion_depth);
-	if (unlikely(recursion.check())) {
-		ERR_FAIL_V_MSG(false, "Reached recursion limit while trying to guess type.");
-	}
+	ERR_FAIL_COND_V_MSG(recursion.check(), false, "Reached recursion limit while trying to guess type.");
 
 	GDScriptParser::DataType base_type = p_base.type;
 	bool is_static = base_type.is_meta_type;
 	while (base_type.is_set()) {
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS:
-				if (base_type.class_type->has_member(p_identifier)) {
-					const GDScriptParser::ClassNode::Member &member = base_type.class_type->get_member(p_identifier);
-					switch (member.type) {
-						case GDScriptParser::ClassNode::Member::CONSTANT:
-							r_type.type = member.constant->type_constraint;
-							if (member.constant->initializer && member.constant->initializer->is_constant) {
-								r_type.value = member.constant->initializer->reduced_value;
-							}
-							return true;
-						case GDScriptParser::ClassNode::Member::VARIABLE:
-							if (!is_static || member.variable->is_static) {
-								if (member.variable->type_constraint.is_set() && !member.variable->type_constraint.is_variant()) {
-									r_type.type = member.variable->type_constraint;
-									return true;
-								} else if (member.variable->initializer) {
-									const GDScriptParser::ExpressionNode *init = member.variable->initializer;
-									if (init->is_constant) {
-										r_type.value = init->reduced_value;
-										r_type = _type_from_variant(init->reduced_value, p_context);
-										return true;
-									} else if (init->start_line == p_context.current_line) {
-										return false;
-										// Detects if variable is assigned to itself
-									} else if (_is_expression_named_identifier(init, member.variable->identifier->name)) {
-										if (member.variable->initializer->type_constraint.is_set()) {
-											r_type.type = member.variable->initializer->type_constraint;
-										} else if (member.variable->type_constraint.is_set() && !member.variable->type_constraint.is_variant()) {
-											r_type.type = member.variable->type_constraint;
-										}
-										return true;
-									} else if (_guess_expression_type(p_context, init, r_type)) {
-										return true;
-									} else if (init->type_constraint.is_set() && !init->type_constraint.is_variant()) {
-										r_type.type = init->type_constraint;
-										return true;
-									}
-								}
-							}
-							// TODO: Check assignments in constructor.
-							return false;
-						case GDScriptParser::ClassNode::Member::ENUM:
-							r_type.type = member.m_enum->enum_type;
-							r_type.enumeration = member.m_enum->identifier->name;
-							return true;
-						case GDScriptParser::ClassNode::Member::ENUM_VALUE:
-							r_type = _type_from_variant(member.enum_value.value, p_context);
-							return true;
-						case GDScriptParser::ClassNode::Member::SIGNAL:
-							r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-							r_type.type.kind = GDScriptParser::DataType::BUILTIN;
-							r_type.type.builtin_type = Variant::SIGNAL;
-							r_type.type.method_info = member.signal->method_info;
-							return true;
-						case GDScriptParser::ClassNode::Member::FUNCTION:
-							if (is_static && !member.function->is_static) {
-								return false;
-							}
-							r_type = _callable_type_from_method_info(member.function->info);
-							return true;
-						case GDScriptParser::ClassNode::Member::CLASS:
-							r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-							r_type.type.kind = GDScriptParser::DataType::CLASS;
-							r_type.type.class_type = member.m_class;
-							r_type.type.is_meta_type = true;
-							return true;
-						case GDScriptParser::ClassNode::Member::GROUP:
-							return false; // No-op, but silences warnings.
-						case GDScriptParser::ClassNode::Member::UNDEFINED:
-							return false; // Unreachable.
-					}
-					return false;
-				}
-				base_type = base_type.class_type->base_type;
-				break;
+				return _guess_identifier_type_from_class(p_context, base_type.class_type, is_static, p_identifier, r_type);
 			case GDScriptParser::DataType::SCRIPT: {
 				Ref<Script> scr = base_type.script_type;
 				if (scr.is_valid()) {
