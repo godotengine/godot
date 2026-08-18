@@ -363,26 +363,20 @@ bool DisplayServerWindows::_has_moving_window() const {
 void DisplayServerWindows::_register_raw_input_devices(DisplayServerEnums::WindowID p_target_window) {
 	use_raw_input = true;
 
-	RAWINPUTDEVICE rid[2] = {};
-	rid[0].usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
-	rid[0].usUsage = 0x02; // HID_USAGE_GENERIC_MOUSE
-	rid[0].dwFlags = 0;
-
-	rid[1].usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
-	rid[1].usUsage = 0x06; // HID_USAGE_GENERIC_KEYBOARD
-	rid[1].dwFlags = 0;
+	RAWINPUTDEVICE rid = {};
+	rid.usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
+	rid.usUsage = 0x02; // HID_USAGE_GENERIC_MOUSE
+	rid.dwFlags = 0;
 
 	if (p_target_window != DisplayServerEnums::INVALID_WINDOW_ID && windows.has(p_target_window)) {
 		// Follow the defined window
-		rid[0].hwndTarget = windows[p_target_window].hWnd;
-		rid[1].hwndTarget = windows[p_target_window].hWnd;
+		rid.hwndTarget = windows[p_target_window].hWnd;
 	} else {
-		// Follow the keyboard focus
-		rid[0].hwndTarget = nullptr;
-		rid[1].hwndTarget = nullptr;
+		// Follow the mouse focus
+		rid.hwndTarget = nullptr;
 	}
 
-	if (RegisterRawInputDevices(rid, 2, sizeof(rid[0])) == FALSE) {
+	if (RegisterRawInputDevices(&rid, 1, sizeof(rid)) == FALSE) {
 		// Registration failed.
 		use_raw_input = false;
 	}
@@ -4405,36 +4399,39 @@ void DisplayServerWindows::_process_raw_mouse_motion(const Vector2 &p_relative, 
 }
 
 void DisplayServerWindows::_process_raw_input_event(const RAWINPUT &p_raw, DisplayServerEnums::WindowID p_window_id) {
-	if (p_raw.header.dwType == RIM_TYPEKEYBOARD) {
-		if (p_raw.data.keyboard.VKey == VK_SHIFT) {
-			// If multiple Shifts are held down at the same time,
-			// Windows natively only sends a KEYUP for the last one to be released.
-			// Handle all Shift "key up" events here for consistency.
-			if (p_raw.data.keyboard.Flags & RI_KEY_BREAK) {
-				ERR_FAIL_COND(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
-				const BitField<WinKeyModifierMask> &mods = _get_mods();
-
-				KeyEvent ke;
-				ke.shift = false;
-				ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
-				ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
-				ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
-				ke.meta = mods.has_flag(WinKeyModifierMask::META);
-				ke.uMsg = WM_KEYUP;
-				ke.window_id = p_window_id;
-
-				ke.wParam = VK_SHIFT;
-				// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
-				// Bit 30 -> key was previously down, bit 31 -> key is being released.
-				ke.lParam = p_raw.data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
-				key_event_buffer[key_event_pos++] = ke;
-			}
-		}
-	} else if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED && p_raw.header.dwType == RIM_TYPEMOUSE) {
+	if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED && p_raw.header.dwType == RIM_TYPEMOUSE) {
 		_process_raw_mouse_motion(
 				_get_raw_mouse_motion(p_raw, p_window_id),
 				p_raw.data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN,
 				p_window_id);
+	}
+}
+
+void DisplayServerWindows::_reconcile_shift_state(DisplayServerEnums::WindowID p_window_id) {
+	if (!windows.has(p_window_id)) {
+		p_window_id = DisplayServerEnums::MAIN_WINDOW_ID;
+	}
+
+	const BitField<WinKeyModifierMask> &mods = _get_mods();
+	for (int shift_index = 0; shift_index < 2; shift_index++) {
+		const int virtual_key = shift_index == 0 ? VK_LSHIFT : VK_RSHIFT;
+		if (!legacy_shift_pressed[shift_index] || GetAsyncKeyState(virtual_key) < 0) {
+			continue;
+		}
+		ERR_CONTINUE(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+
+		KeyEvent ke;
+		ke.shift = GetAsyncKeyState(shift_index == 0 ? VK_RSHIFT : VK_LSHIFT) < 0;
+		ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+		ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+		ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+		ke.meta = mods.has_flag(WinKeyModifierMask::META);
+		ke.uMsg = WM_KEYUP;
+		ke.window_id = p_window_id;
+		ke.wParam = VK_SHIFT;
+		ke.lParam = (shift_index == 0 ? 0x2A : 0x36) << 16 | (1LL << 30) | (1LL << 31);
+		key_event_buffer[key_event_pos++] = ke;
+		legacy_shift_pressed[shift_index] = false;
 	}
 }
 
@@ -4568,6 +4565,7 @@ void DisplayServerWindows::process_events() {
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 	}
+	_reconcile_shift_state(_get_focused_window_or_popup());
 	_THREAD_SAFE_UNLOCK_
 
 	if (tts) {
@@ -6861,11 +6859,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
-			// Windows handles shift KEYUP inconsistently, handle with WM_INPUT
-			if (wParam == VK_SHIFT) {
-				break;
-			}
-			[[fallthrough]];
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN: {
 			if (windows[window_id].ime_suppress_next_keyup && (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP)) {
@@ -6874,6 +6867,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 			if (windows[window_id].ime_in_progress) {
 				break;
+			}
+			if (wParam == VK_SHIFT) {
+				const int shift_index = ((lParam >> 16) & 0xFF) == 0x36 ? 1 : 0;
+				legacy_shift_pressed[shift_index] = uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN;
 			}
 
 			if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
@@ -7034,6 +7031,8 @@ void DisplayServerWindows::_process_activate_event(DisplayServerEnums::WindowID 
 		_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 	} else { // WM_INACTIVE.
 		Input::get_singleton()->release_pressed_events();
+		legacy_shift_pressed[0] = false;
+		legacy_shift_pressed[1] = false;
 		track_mouse_leave_event(wd.hWnd);
 		// Release capture unconditionally because it can be set due to dragging, in addition to captured mode.
 		// When the user is moving a window, it's important to not ReleaseCapture because it will cause
