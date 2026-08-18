@@ -78,6 +78,16 @@ void EmbeddedDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["notification"] = &EmbeddedDebugger::_msg_notification;
 	parse_message_handlers["ime_update"] = &EmbeddedDebugger::_msg_ime_update;
 	parse_message_handlers["ds_state"] = &EmbeddedDebugger::_msg_ds_state;
+	parse_message_handlers["dialog_cb"] = &EmbeddedDebugger::_msg_dialog_cb;
+}
+
+Error EmbeddedDebugger::_msg_dialog_cb(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 4 && p_args.size() != 5 && p_args.size() != 2, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'file_dialog_cb' message.");
+	DisplayServerMacOSEmbedded *ds = Object::cast_to<DisplayServerMacOSEmbedded>(DisplayServer::get_singleton());
+	ERR_FAIL_COND_V(!ds, ERR_UNAVAILABLE);
+
+	ds->call_dialog_callback(p_args);
+	return OK;
 }
 
 Error EmbeddedDebugger::_msg_window_size(const Array &p_args) {
