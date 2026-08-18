@@ -763,14 +763,10 @@ void GDScriptParser::parse_program() {
 					break;
 				}
 			}
-		} else if (check(GDScriptTokenizer::Token::LITERAL) && current.literal.get_type() == Variant::STRING) {
-			// Allow strings in class body as multiline comments.
-			advance();
-			if (!match(GDScriptTokenizer::Token::NEWLINE)) {
-				push_error("Expected newline after comment string.");
-			}
 		} else {
-			break;
+			if (!parse_standalone_string()) {
+				break;
+			}
 		}
 	}
 
@@ -806,12 +802,7 @@ void GDScriptParser::parse_program() {
 				can_have_class_or_extends = false;
 				break;
 			case GDScriptTokenizer::Token::LITERAL:
-				if (current.literal.get_type() == Variant::STRING) {
-					// Allow strings in class body as multiline comments.
-					advance();
-					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
-						push_error("Expected newline after comment string.");
-					}
+				if (parse_standalone_string()) {
 					break;
 				}
 				[[fallthrough]];
@@ -1201,12 +1192,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				class_end = true;
 				break;
 			case GDScriptTokenizer::Token::LITERAL:
-				if (current.literal.get_type() == Variant::STRING) {
-					// Allow strings in class body as multiline comments.
-					advance();
-					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
-						push_error("Expected newline after comment string.");
-					}
+				if (parse_standalone_string()) {
 					break;
 				}
 				[[fallthrough]];
@@ -2203,12 +2189,6 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					case Node::LAMBDA:
 						// Standalone lambdas can't be used, so make this an error.
 						push_error("Standalone lambdas cannot be accessed. Consider assigning it to a variable.", expression);
-						break;
-					case Node::LITERAL:
-						// Allow strings as multiline comments.
-						if (static_cast<GDScriptParser::LiteralNode *>(expression)->value.get_type() != Variant::STRING) {
-							push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
-						}
 						break;
 					case Node::TERNARY_OPERATOR:
 						push_warning(expression, GDScriptWarning::STANDALONE_TERNARY);
@@ -3928,6 +3908,21 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 
 	complete_extents(type);
 	return type;
+}
+
+bool GDScriptParser::parse_standalone_string() {
+	if (check(GDScriptTokenizer::Token::LITERAL) && current.literal.get_type() == Variant::STRING) {
+		// For compatibility we allow standalone strings without erroring.
+		advance();
+#ifdef DEBUG_ENABLED
+		push_warning(previous.start_line, previous.start_column, previous.end_line, previous.end_column, GDScriptWarning::STANDALONE_EXPRESSION);
+#endif
+		if (!match(GDScriptTokenizer::Token::NEWLINE)) {
+			push_error("Expected newline after comment string.");
+		}
+		return true;
+	}
+	return false;
 }
 
 #ifdef TOOLS_ENABLED
