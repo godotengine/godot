@@ -304,7 +304,7 @@ public:
 		int get_radiance_size() const;
 		bool set_mode(RSE::SkyMode p_mode);
 		bool set_material(RID p_material);
-		Ref<Image> bake_panorama(float p_energy, int p_roughness_layers, const Size2i &p_size);
+		Ref<Image> bake_panorama(float p_energy, int p_roughness_layers, bool p_use_array, const Size2i &p_size);
 	};
 
 	uint32_t sky_ggx_samples_quality;

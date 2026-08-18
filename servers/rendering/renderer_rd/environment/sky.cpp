@@ -657,7 +657,7 @@ bool SkyRD::Sky::set_material(RID p_material) {
 	return true;
 }
 
-Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, const Size2i &p_size) {
+Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, bool p_use_array, const Size2i &p_size) {
 	if (radiance.is_valid()) {
 		RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
 
@@ -668,7 +668,7 @@ Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, con
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
 		RID rad_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
-		copy_effects->copy_octmap_to_panorama(radiance, rad_tex, p_size, p_roughness_layers, reflection.layers.size() > 1, Size2(uv_border_size, 1.0f - uv_border_size * 2.0));
+		copy_effects->copy_octmap_to_panorama(radiance, rad_tex, p_size, p_roughness_layers, p_use_array, Size2(uv_border_size, 1.0f - uv_border_size * 2.0));
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rad_tex, 0);
 		RD::get_singleton()->free_rid(rad_tex);
 
@@ -1701,7 +1701,7 @@ Ref<Image> SkyRD::sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irrad
 
 	update_dirty_skys();
 
-	return sky->bake_panorama(p_energy, p_bake_irradiance ? roughness_layers : 0, p_size);
+	return sky->bake_panorama(p_energy, p_bake_irradiance ? roughness_layers : 0, sky_use_octmap_array, p_size);
 }
 
 RID SkyRD::sky_get_radiance_texture_rd(RID p_sky) const {
