@@ -307,7 +307,13 @@ MyDeviceNotifications *device_notifications = nil;
 
 void CameraMacOS::update_feeds() {
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= 101500
-	AVCaptureDeviceDiscoverySession *session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+	AVCaptureDeviceDiscoverySession *session;
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 140000
+	// Avoid deprecated warning if the minimum SDK is 14.0.
+	session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternal, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+#else
+	session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+#endif
 	NSArray *devices = session.devices;
 #else
 	NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];

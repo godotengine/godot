@@ -234,6 +234,8 @@ def configure(env: "Environment"):
             "CoreMedia",
             "-framework",
             "QuartzCore",
+            "-framework",
+            "UniformTypeIdentifiers",
         ]
     )
     env.Append(LIBS=["pthread", "z"])
