@@ -913,6 +913,15 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 				resource_desc.Flags = resource_desc.Flags & ~D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 			}
 		} break;
+		case MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE: {
+			if (misc_features_support.gpu_upload_heap_supported) {
+				allocation_desc.HeapType = D3D12_HEAP_TYPE_GPU_UPLOAD;
+			} else if (misc_features_support.uma_supported) {
+				allocation_desc.CustomPool = uma_gpu_mappable_pool.Get();
+			} else {
+				ERR_FAIL_V_MSG(BufferID(), "GPU mappable buffers are unsupported on this device.");
+			}
+		} break;
 	}
 
 	ComPtr<ID3D12Resource> buffer;
@@ -5890,6 +5899,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return false;
 		case SUPPORTS_HDR_OUTPUT:
 			return true;
+		case SUPPORTS_GPU_MAPPABLE_BUFFER:
+			return misc_features_support.uma_supported || misc_features_support.gpu_upload_heap_supported;
 		default:
 			return false;
 	}
@@ -6320,6 +6331,24 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 		// Print it as a warning (instead of verbose) because in the rare chance this lesser-used code path
 		// causes bugs, we get an inkling of what's going on (i.e. in order to repro bugs locally).
 		print_verbose("D3D12: Device does NOT support GPU UPLOAD heap. ReBAR must be enabled for this feature. Regular UPLOAD heaps will be used as fallback.");
+	}
+
+	misc_features_support.uma_supported = allocator->IsUMA();
+	misc_features_support.gpu_upload_heap_supported = allocator->IsGPUUploadHeapSupported();
+
+	// If UMA is supported but GPU upload heap isn't, the same functionality can be achieved
+	// by creating resources from a pool with the same properties as an upload heap.
+	if (misc_features_support.uma_supported && !misc_features_support.gpu_upload_heap_supported) {
+		D3D12MA::POOL_DESC pool_desc = {};
+#if defined(_MSC_VER) || !defined(_WIN32)
+		pool_desc.HeapProperties = device->GetCustomHeapProperties(0, D3D12_HEAP_TYPE_UPLOAD);
+#else
+		device->GetCustomHeapProperties(&pool_desc.HeapProperties, 0, D3D12_HEAP_TYPE_UPLOAD);
+#endif
+		pool_desc.HeapFlags = D3D12MA_RECOMMENDED_HEAP_FLAGS | D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS;
+		res = allocator->CreatePool(&pool_desc, uma_gpu_mappable_pool.GetAddressOf());
+
+		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::Allocator::CreatePool failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	}
 
 	return OK;
