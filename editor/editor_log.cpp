@@ -220,6 +220,7 @@ void EditorLog::_set_show_non_search_matches(bool p_state) {
 
 void EditorLog::_set_search_case_sensitive(bool p_state) {
 	search_case_sensitive = p_state;
+	log->set_filter_case_sensitive(p_state);
 
 	log->set_scroll_follow(false);
 	_rebuild_log();
@@ -445,99 +446,88 @@ int EditorLog::_count_case_sensitive(const String &p_base, const String &p_targe
 String EditorLog::_strip_bbcode_from_message(const String &p_text) {
 	String result;
 
-	// Lazy initialize the BBCode parser
-	if (!bbcode_parser) {
-		bbcode_parser = memnew(RichTextLabel);
-		bbcode_parser->set_use_bbcode(true);
-	}
-
-	// Ensure clean state for each message
 	bbcode_parser->clear();
 	bbcode_parser->parse_bbcode(p_text);
 	result = bbcode_parser->get_parsed_text();
 	return result;
 }
 
-Vector<int> EditorLog::_get_line_search_query_positions(const String &p_line, const String &p_keytext) {
-	int keytext_length = p_keytext.length();
+// Vector<int> EditorLog::_get_line_search_query_positions(const String &p_line, const String &p_keytext) {
+// 	int keytext_length = p_keytext.length();
 
-	String iterator_line = p_line;
-	int cursor_position = 0;
+// 	String iterator_line = p_line;
+// 	int cursor_position = 0;
 
-	Vector<int> positions; // Array of substring positions. Every pair will be cut into a substring from p_line.
-	positions.append(0);
+// 	Vector<int> positions; // Array of substring positions. Every pair will be cut into a substring from p_line.
+// 	positions.append(0);
 
-	if (_find_case_sensitive(iterator_line, p_keytext) == 0) {
-		positions.append(0);
-		positions.append(0); // This last zero will be replaced in a few lines, which fixes the order in case the first characters are immediately matches.
-	}
+// 	if (_find_case_sensitive(iterator_line, p_keytext) == 0) {
+// 		positions.append(0);
+// 		positions.append(0); // This last zero will be replaced in a few lines, which fixes the order in case the first characters are immediately matches.
+// 	}
 
-	// Map which segments of p_line contain the target string. Every uneven pair of ints will be a non-match, and every even pair will be a match.
-	while (_contains_case_sensitive(iterator_line, p_keytext)) {
-		int keytext_pos = _find_case_sensitive(iterator_line, p_keytext);
+// 	// Map which segments of p_line contain the target string. Every uneven pair of ints will be a non-match, and every even pair will be a match.
+// 	while (_contains_case_sensitive(iterator_line, p_keytext)) {
+// 		int keytext_pos = _find_case_sensitive(iterator_line, p_keytext);
 
-		if (keytext_pos == 0) {
-			int last_pos = positions[positions.size() - 1];
-			positions.resize(positions.size() - 1);
-			positions.append(last_pos + keytext_length);
-		} else {
-			positions.append(keytext_pos + cursor_position);
-			positions.append(keytext_pos + cursor_position + keytext_length);
-		}
+// 		if (keytext_pos == 0) {
+// 			int last_pos = positions[positions.size() - 1];
+// 			positions.resize(positions.size() - 1);
+// 			positions.append(last_pos + keytext_length);
+// 		} else {
+// 			positions.append(keytext_pos + cursor_position);
+// 			positions.append(keytext_pos + cursor_position + keytext_length);
+// 		}
 
-		cursor_position += keytext_pos + keytext_length;
+// 		cursor_position += keytext_pos + keytext_length;
 
-		iterator_line = p_line.substr(cursor_position);
-	}
+// 		iterator_line = p_line.substr(cursor_position);
+// 	}
 
-	// Imagine p_line "Lullaby" and p_keytext "l".
-	// positions will be [0,0,1,2,4].
-	// - The pair 0,0 was inserted due to 20 lines up and is considered not a match.
-	// - The pair 0,1 ("L") is a match
-	// - The pair 1,2 ("u") is not a match
-	// - The pair 2,4 ("ll") is a match once again
+// 	// Imagine p_line "Lullaby" and p_keytext "l".
+// 	// positions will be [0,0,1,2,4].
+// 	// - The pair 0,0 was inserted due to 20 lines up and is considered not a match.
+// 	// - The pair 0,1 ("L") is a match
+// 	// - The pair 1,2 ("u") is not a match
+// 	// - The pair 2,4 ("ll") is a match once again
 
-	// The last pair will always describe a match at this point and in the case p_line does not end with a match, that would cut off p_line after the last match...
-	if (positions[positions.size() - 1] != p_line.size() - 1) {
-		positions.append(p_line.size() - 1); // ...so we add a final position. In the case of "Lullaby", it'd append 6 so that positions becomes [0,0,1,2,4,6]. That prevents the mistake described 2 lines up.
-	}
+// 	// The last pair will always describe a match at this point and in the case p_line does not end with a match, that would cut off p_line after the last match...
+// 	if (positions[positions.size() - 1] != p_line.size() - 1) {
+// 		positions.append(p_line.size() - 1); // ...so we add a final position. In the case of "Lullaby", it'd append 6 so that positions becomes [0,0,1,2,4,6]. That prevents the mistake described 2 lines up.
+// 	}
 
-	return positions;
-}
+// 	return positions;
+// }
 
-void EditorLog::_add_highlighted_log_line(const String &p_line, const String &p_keytext) {
-	String parsed_text = _strip_bbcode_from_message(p_line);
+// void EditorLog::_add_highlighted_log_line(const String &p_line, const String &p_keytext) {
+// 	String parsed_text = _strip_bbcode_from_message(p_line);
 
-	if (p_keytext.is_empty() || !_contains_case_sensitive(parsed_text, p_keytext)) {
-		log->append_text(p_line);
-		return;
-	}
+// 	if (p_keytext.is_empty() || !_contains_case_sensitive(parsed_text, p_keytext)) {
+// 		log->append_text(p_line);
+// 		return;
+// 	}
 
-	Vector<int> positions = _get_line_search_query_positions(parsed_text, p_keytext);
+// 	Vector<int> positions = _get_line_search_query_positions(parsed_text, p_keytext);
 
-	// Iterate through map in pairs. That's why we start at index 1.
-	for (int i = 1; i < positions.size(); i++) {
-		String substring = parsed_text.substr(positions[i - 1], positions[i] - positions[i - 1]);
+// 	// Iterate through map in pairs. That's why we start at index 1.
+// 	for (int i = 1; i < positions.size(); i++) {
+// 		String substring = parsed_text.substr(positions[i - 1], positions[i] - positions[i - 1]);
 
-		// Even index means this segment is a match, uneven means the segment is not a match.
-		if (i % 2 == 1) { // Not a match
-			log->push_bgcolor(Color(1.0, 1.0, 1.0, 0.0));
-			log->push_normal();
-			log->add_text(substring);
-		} else { // Match
-			log->push_bgcolor(theme_cache.filter_highlight_active_color);
-			log->add_text(substring);
-		}
-	}
+// 		// Even index means this segment is a match, uneven means the segment is not a match.
+// 		if (i % 2 == 1) { // Not a match
+// 			log->push_bgcolor(Color(1.0, 1.0, 1.0, 0.0));
+// 			log->push_normal();
+// 			log->add_text(substring);
+// 		} else { // Match
+// 			log->push_bgcolor(theme_cache.filter_highlight_active_color);
+// 			log->add_text(substring);
+// 		}
+// 	}
 
-	log->pop(); // To finish off, we break off the most recently pushed tag. In the case that was push_bold(), the boldening effect is removed.
-
-	// That's it!
-}
+// 	log->pop(); // To finish off, we break off the most recently pushed tag. In the case that was push_bold(), the boldening effect is removed.
+// }
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
-	String filter_keytext = search_box->get_text();
-
 	if (!is_inside_tree()) {
 		// The log will be built all at once when it enters the tree and has its theme items.
 		return;
@@ -548,6 +538,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		return;
 	}
 
+	// Only add the message to the log if it passes the filters.
 	if (!_check_display_message(p_message)) {
 		return;
 	}
@@ -559,7 +550,6 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->remove_paragraph(log->get_paragraph_count() - 2);
 	}
 
-	// Add message type icons
 	switch (p_message.type) {
 		case MSG_TYPE_STD: {
 		} break;
@@ -597,14 +587,11 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	}
 
 	// Note that errors and warnings only support BBCode in the file part of the message.
-
-	if (!filter_keytext.is_empty()) {
-		_add_highlighted_log_line(p_message.text, filter_keytext);
-	} else {
-		log->push_normal();
+	if (p_message.type == MSG_TYPE_STD_RICH || p_message.type == MSG_TYPE_ERROR || p_message.type == MSG_TYPE_WARNING) {
 		log->append_text(p_message.text);
+	} else {
+		log->add_text(p_message.text);
 	}
-
 	if (p_message.clear || p_message.type != MSG_TYPE_STD_RICH) {
 		log->pop_all(); // Pop all unclosed tags.
 	}
@@ -635,6 +622,7 @@ void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
 void EditorLog::_search_changed(const String &p_text) {
 	log->set_scroll_follow(false); // Prevent the RichTextLabel from autoscrolling due to new messages being added during _rebuild_log().
 
+	log->set_filter_keytext(p_text);
 	_rebuild_log();
 	_set_extra_filter_options_visible(!p_text.is_empty());
 
@@ -689,10 +677,14 @@ EditorLog::EditorLog() {
 	vb_left->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(vb_left);
 
+	bbcode_parser = memnew(RichTextLabel);
+	bbcode_parser->set_use_bbcode(true);
+
 	// Log - Rich Text Label.
 	log = memnew(EditorLogRichTextLabel);
 	log->set_threaded(true);
 	log->set_use_bbcode(true);
+	log->set_bbcode_parser(bbcode_parser);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
 	log->set_context_menu_enabled(true);
