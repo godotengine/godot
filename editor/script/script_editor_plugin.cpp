@@ -2226,7 +2226,7 @@ void ScriptEditor::_close_builtin_scripts_from_scene(const String &p_scene) {
 void ScriptEditor::_toggle_files_pressed(bool p_pressed) {
 	ERR_FAIL_NULL(list_split);
 	list_split->set_visible(p_pressed);
-	EditorSettings::get_singleton()->set_project_metadata("files_panel", "show_files_panel", list_split->is_visible());
+	EditorSettings::get_singleton()->set_project_metadata("show_files_panel", config_section, list_split->is_visible());
 }
 
 void ScriptEditor::edited_scene_changed() {
@@ -4184,7 +4184,15 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	toggle_files_button->set_shortcut_context(this);
 	toggle_files_button->set_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"));
 	menu_hb->add_child(toggle_files_button);
-	bool initial_state = EditorSettings::get_singleton()->get_project_metadata("files_panel", "show_files_panel", true);
+#ifndef DISABLE_DEPRECATED
+	EditorSettings *es = EditorSettings::get_singleton();
+	if (es && es->get_project_metadata("files_panel", "show_files_panel", "") != "") {
+		es->set_project_metadata("show_files_panel", "ScriptEditor", es->get_project_metadata("files_panel", "show_files_panel", true));
+		es->set_project_metadata("files_panel", "show_files_panel", Variant());
+		es->save_project_metadata();
+	}
+#endif
+	bool initial_state = EditorSettings::get_singleton()->get_project_metadata("show_files_panel", config_section, true);
 	toggle_files_button->set_pressed_no_signal(initial_state);
 	_toggle_files_pressed(initial_state);
 
