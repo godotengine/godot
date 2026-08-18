@@ -114,7 +114,6 @@ public:
 
 	private:
 		typename InnerTable::ConstIterator _inner;
-
 	};
 
 	_FORCE_INLINE_ Iterator begin() const _LIFETIME_BOUND_ {
@@ -140,7 +139,7 @@ public:
 	/* Insert */
 
 	Iterator insert(const TKey &p_key) _LIFETIME_BOUND_ {
-		return Iterator(_inner.insert(p_key, EmptyValue {}));
+		return Iterator(_inner.insert(p_key, EmptyValue{}));
 	}
 
 	/* Constructors */
