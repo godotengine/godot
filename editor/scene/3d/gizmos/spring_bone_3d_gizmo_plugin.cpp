@@ -111,8 +111,10 @@ void SpringBoneSimulator3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_mesh(mesh, Ref<Material>(), skel_tr, skeleton->register_skin(skeleton->create_skin_from_rest_transforms()));
 }
 
+bool draw_as_chain = true;
 Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_skeleton, SpringBoneSimulator3D *p_simulator, bool p_is_selected) {
 	Color bone_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/spring_bone_joint");
+	Color cone_color = Color(1, 0, 0, 1);
 
 	Ref<SurfaceTool> surface_tool;
 	surface_tool.instantiate();
@@ -147,7 +149,13 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 				Transform3D parent_global_pose = p_skeleton->get_bone_global_rest(prev_bone);
 				Vector3 bone_vector = p_simulator->get_bone_vector(i, j - 1);
 				Vector3 center = parent_global_pose.translated_local(bone_vector).origin;
-				draw_line(surface_tool, parent_global_pose.origin, center, bone_color);
+
+				if (draw_as_chain) {
+					draw_sphere_tangent_cone(surface_tool, parent_global_pose.origin, p_simulator->get_joint_radius(i, MAX(0, j - 2)), center, p_simulator->get_joint_radius(i, j - 1), cone_color);
+				} else {
+					draw_line(surface_tool, parent_global_pose.origin, center, bone_color);
+				}
+
 				draw_sphere(surface_tool, global_pose.basis, center, p_simulator->get_joint_radius(i, j - 1), bone_color);
 
 				// Draw rotation axis vector if not ROTATION_AXIS_ALL.
@@ -172,7 +180,11 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 				surface_tool->set_bones(Vector<int>(bones));
 				surface_tool->set_weights(Vector<float>(weights));
 				Vector3 center = global_pose.translated_local(bone_vector).origin;
-				draw_line(surface_tool, global_pose.origin, center, bone_color);
+				if (draw_as_chain) {
+					draw_sphere_tangent_cone(surface_tool, global_pose.origin, p_simulator->get_joint_radius(i, j - 1), center, p_simulator->get_joint_radius(i, j), cone_color);
+				} else {
+					draw_line(surface_tool, global_pose.origin, center, bone_color);
+				}
 				draw_sphere(surface_tool, global_pose.basis, center, p_simulator->get_joint_radius(i, j), bone_color);
 			} else {
 				bones[0] = current_bone;
@@ -220,6 +232,64 @@ void SpringBoneSimulator3DGizmoPlugin::draw_sphere(Ref<SurfaceTool> &p_surface_t
 		p_surface_tool->set_color(p_color);
 		p_surface_tool->add_vertex(p_center + ((p_basis.xform(Vector3::FORWARD * p_radius)).rotated(p_basis.xform(Vector3::UP), SPPI * (i % STEP))));
 	}
+}
+
+void SpringBoneSimulator3DGizmoPlugin::draw_sphere_tangent_cone(Ref<SurfaceTool> &p_surface_tool, const Vector3 &p_prev_center, float p_prev_radius, const Vector3 &p_center, float p_radius, const Color &p_color) {
+	static constexpr int STEP = 16;
+	static constexpr float SPPI = Math::TAU / (float)STEP;
+
+	Vector3 axis_vec = p_center - p_prev_center;
+	float axis_length = axis_vec.length();
+	if (Math::is_zero_approx(axis_length)) {
+		return;
+	}
+	Vector3 cone_axis = axis_vec / axis_length;
+	float cone_gradient = (p_prev_radius - p_radius) / axis_length;
+	if ((cone_gradient <= -1.0) || (cone_gradient >= 1.0)) {
+		return;
+	}
+
+	Vector3 prev_cone_center = p_prev_center + cone_axis * (p_prev_radius * cone_gradient);
+	Vector3 cone_center = p_center + cone_axis * (p_radius * cone_gradient);
+
+	float cone_rad_fac = sqrt(1 - cone_gradient * cone_gradient);
+	Vector3 cone_side_axis = cone_axis.cross(fabs(axis_vec.x) < 0.5 ? Vector3(1, 0, 0) : Vector3(0, 0, 1)).normalized();
+	Vector3 prev_cone_side_vec = cone_side_axis * (p_prev_radius * cone_rad_fac);
+	Vector3 cone_side_vec = cone_side_axis * (p_radius * cone_rad_fac);
+
+	for (int i = 1; i <= STEP; i++) {
+		p_surface_tool->set_color(p_color);
+		p_surface_tool->add_vertex(prev_cone_center + prev_cone_side_vec.rotated(cone_axis, SPPI * ((i - 1) % STEP)));
+		p_surface_tool->set_color(p_color);
+		p_surface_tool->add_vertex(prev_cone_center + prev_cone_side_vec.rotated(cone_axis, SPPI * (i % STEP)));
+	}
+
+	for (int i = 1; i <= STEP; i++) {
+		p_surface_tool->set_color(p_color);
+		p_surface_tool->add_vertex(cone_center + cone_side_vec.rotated(cone_axis, SPPI * ((i - 1) % STEP)));
+		p_surface_tool->set_color(p_color);
+		p_surface_tool->add_vertex(cone_center + cone_side_vec.rotated(cone_axis, SPPI * (i % STEP)));
+	}
+
+	p_surface_tool->set_color(p_color);
+	p_surface_tool->add_vertex(prev_cone_center + prev_cone_side_vec);
+	p_surface_tool->set_color(p_color);
+	p_surface_tool->add_vertex(cone_center + cone_side_vec);
+
+	p_surface_tool->set_color(p_color);
+	p_surface_tool->add_vertex(prev_cone_center + prev_cone_side_vec.rotated(cone_axis, Math::PI * 0.5));
+	p_surface_tool->set_color(p_color);
+	p_surface_tool->add_vertex(cone_center + cone_side_vec.rotated(cone_axis, Math::PI * 0.5));
+
+	p_surface_tool->set_color(p_color);
+	p_surface_tool->add_vertex(prev_cone_center + prev_cone_side_vec.rotated(cone_axis, Math::PI));
+	p_surface_tool->set_color(p_color);
+	p_surface_tool->add_vertex(cone_center + cone_side_vec.rotated(cone_axis, Math::PI));
+
+	p_surface_tool->set_color(p_color);
+	p_surface_tool->add_vertex(prev_cone_center + prev_cone_side_vec.rotated(cone_axis, Math::PI * 1.5));
+	p_surface_tool->set_color(p_color);
+	p_surface_tool->add_vertex(cone_center + cone_side_vec.rotated(cone_axis, Math::PI * 1.5));
 }
 
 void SpringBoneSimulator3DGizmoPlugin::draw_line(Ref<SurfaceTool> &p_surface_tool, const Vector3 &p_begin_pos, const Vector3 &p_end_pos, const Color &p_color) {
@@ -309,13 +379,13 @@ Ref<ArrayMesh> SpringBoneCollision3DGizmoPlugin::get_collision_mesh(SpringBoneCo
 
 	SpringBoneCollisionSphere3D *sphere = Object::cast_to<SpringBoneCollisionSphere3D>(p_collision);
 	if (sphere) {
-		draw_sphere(surface_tool, sphere->get_radius(), sphere->is_inside() ? inside_collision_color : collision_color);
+		draw_sphere(surface_tool, sphere->get_radius(), sphere->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_INSIDE ? inside_collision_color : collision_color);
 		return surface_tool->commit();
 	}
 
 	SpringBoneCollisionCapsule3D *capsule = Object::cast_to<SpringBoneCollisionCapsule3D>(p_collision);
 	if (capsule) {
-		draw_capsule(surface_tool, capsule->get_radius(), capsule->get_height(), capsule->is_inside() ? inside_collision_color : collision_color);
+		draw_capsule(surface_tool, capsule->get_radius(), capsule->get_height(), capsule->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_INSIDE ? inside_collision_color : collision_color);
 		return surface_tool->commit();
 	}
 
