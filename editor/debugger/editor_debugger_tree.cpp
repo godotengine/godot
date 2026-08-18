@@ -258,6 +258,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		// Add this node.
 		TreeItem *item = create_item(parent);
 		item->set_text(0, node.name);
+		item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 		if (node.scene_file_path.is_empty()) {
 			item->set_tooltip_text(0, node.name + "\n" + TTR("Type:") + " " + node.type_name);
 		} else {
