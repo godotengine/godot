@@ -221,7 +221,6 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 	// Handle cylindrical springbone case.
 	// The bone capsule (cylinder) is from (p_current_origin, p_bone_origin_radius) to (p_current, p_bone_radius)
 	if (p_bone_radius == p_bone_origin_radius) {
-
 		// clamp the collision sphere center point to the bone and recalculate it for the capsule
 		if ((lam < 0.0) || (lam > 1.0)) {
 			Vector3 bone_sphere_end = (lam < 0.0 ? p_current_origin : p_current);
