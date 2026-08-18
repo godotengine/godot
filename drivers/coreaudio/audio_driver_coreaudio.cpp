@@ -38,6 +38,10 @@
 #define kOutputBus 0
 #define kInputBus 1
 
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= 120000
+#define kAudioObjectPropertyElementMaster kAudioObjectPropertyElementMain
+#endif
+
 #ifdef MACOS_ENABLED
 OSStatus AudioDriverCoreAudio::input_device_address_cb(AudioObjectID inObjectID,
 		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
@@ -674,5 +678,7 @@ void AudioDriverCoreAudio::set_input_device(const String &p_name) {
 AudioDriverCoreAudio::AudioDriverCoreAudio() {
 	samples_in.clear();
 }
+
+#undef kAudioObjectPropertyElementMaster
 
 #endif // COREAUDIO_ENABLED
