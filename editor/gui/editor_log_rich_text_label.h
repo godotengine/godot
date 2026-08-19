@@ -10,7 +10,7 @@ public:
     void set_filter_case_sensitive(bool p_case_sensitive);
 
 protected:
-    virtual void _highlighting_pass_callback(Line l, RID rid, RID ci_rid, Color highlight_color, Vector2 p_ofs, Vector2 off, float l_ascent, Vector2 l_size) override;
+    virtual void _highlighting_pass_callback(const String &line_text, RID rid, RID ci_rid, Color highlight_color, Vector2 p_ofs, Vector2 off, float l_ascent, Vector2 l_size) override;
     
 private:
     RichTextLabel *bbcode_parser = nullptr;    

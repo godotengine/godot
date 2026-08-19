@@ -143,10 +143,12 @@ private:
 
 	HBoxContainer *extra_filter_options_hbox = nullptr;
 
+	int match_count = 0;
 	int currently_viewed_match_index = 0;
+	void _set_currently_viewed_match_index(int p_index);
 
 	Label *filter_matches_count_label = nullptr;
-	void _update_matches_count_label(int count);
+	void _update_matches_count_label();
 
 	Button *filter_previous_match_button = nullptr;
 	void _enable_filter_previous_match_button(bool p_enable);

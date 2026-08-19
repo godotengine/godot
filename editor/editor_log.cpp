@@ -31,6 +31,7 @@
 #include "editor_log.h"
 
 #include "core/io/resource_loader.h"
+#include "core/math/math_funcs.h"
 #include "core/object/callable_mp.h"
 #include "core/object/message_queue.h"
 #include "core/object/undo_redo.h"
@@ -225,6 +226,8 @@ void EditorLog::_set_search_case_sensitive(bool p_state) {
 	log->set_scroll_follow(false);
 	_rebuild_log();
 	log->set_scroll_follow(true);
+
+	_count_matches();
 }
 
 // void EditorLog::_set_search_parse_bbcode(bool p_state) {
@@ -240,9 +243,11 @@ void EditorLog::_set_extra_filter_options_visible(bool p_visible) {
 }
 
 void EditorLog::_enable_filter_previous_match_button(bool p_enable) {
+	filter_previous_match_button->set_disabled(!p_enable);
 }
 
 void EditorLog::_enable_filter_next_match_button(bool p_enable) {
+	filter_next_match_button->set_disabled(!p_enable);
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
@@ -354,7 +359,6 @@ void EditorLog::_rebuild_log() {
 	int line_count = 0;
 	int start_message_index = 0;
 	int initial_skip = 0;
-	int search_matches_count = 0;
 
 	// Search backward for starting place.
 	for (start_message_index = messages.size() - 1; start_message_index >= 0; start_message_index--) {
@@ -613,6 +617,14 @@ void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
 	log->set_scroll_follow(true);
 }
 
+void EditorLog::_filter_view_previous_match() {
+	_set_currently_viewed_match_index(currently_viewed_match_index - 1);
+}
+
+void EditorLog::_filter_view_next_match() {
+	_set_currently_viewed_match_index(currently_viewed_match_index + 1);
+}
+
 void EditorLog::_search_changed(const String &p_text) {
 	log->set_filter_keytext(p_text);
 
@@ -628,30 +640,56 @@ void EditorLog::_search_changed(const String &p_text) {
 	log->set_scroll_follow(true);
 }
 
+void EditorLog::_set_currently_viewed_match_index(int p_index) {
+	currently_viewed_match_index = CLAMP(p_index, 0, match_count - 1);
+
+	_enable_filter_previous_match_button(true);
+	_enable_filter_next_match_button(true);
+
+	if (currently_viewed_match_index == 0) {
+		_enable_filter_previous_match_button(false);
+	}
+	if (currently_viewed_match_index == match_count - 1) {
+		_enable_filter_next_match_button(false);
+	}
+
+	_update_matches_count_label();
+}
+
 void EditorLog::_count_matches() {
 	int count = 0;
 	const String search_text = search_box->get_text();
 
 	for (const LogMessage &msg : messages) {
-		count += _count_case_sensitive(_strip_bbcode_from_message(msg.text), search_text);
+		String message_text = msg.text;
+
+		if (msg.type != MSG_TYPE_STD) {
+			message_text = _strip_bbcode_from_message(message_text);
+		}
+
+		count += _count_case_sensitive(message_text, search_text);
 	}
 
-	_update_matches_count_label(count);
+	match_count = count;
+
+	_set_currently_viewed_match_index(CLAMP(currently_viewed_match_index, 0, count - 1));
+
+	_update_matches_count_label();
 }
 
-void EditorLog::_update_matches_count_label(int count) {
+void EditorLog::_update_matches_count_label() {
 	filter_matches_count_label->set_modulate(Color(1.0, 1.0, 1.0));
 
-	if (count == 0) {
+	if (match_count == 0) {
 		filter_matches_count_label->set_text("No matches");
 		filter_matches_count_label->set_modulate(theme_cache.error_color);
 		return;
-	} else if (count == 1) {
-		filter_matches_count_label->set_text("1 match");
+	} else if (match_count == 1) {
+		filter_matches_count_label->set_text("1 out of 1 match");
 		return;
 	}
 
-	filter_matches_count_label->set_text(vformat("%s matches", itos(count)));
+	filter_matches_count_label->set_text(vformat("%s of %s matches", itos(currently_viewed_match_index + 1), itos(match_count)));
 }
 
 void EditorLog::_reset_message_counts() {
@@ -733,6 +771,7 @@ EditorLog::EditorLog() {
 	filter_previous_match_button->set_tooltip_text(TTRC("Previous filter match"));
 	filter_previous_match_button->set_theme_type_variation(SceneStringName(FlatButton));
 	filter_previous_match_button->set_accessibility_name(TTRC("Previous filter match"));
+	filter_previous_match_button->connect("button_down", callable_mp(this, &EditorLog::_filter_view_previous_match)); 
 	extra_filter_options_hbox->add_child(filter_previous_match_button);
 
 	// Next filter match button
@@ -740,6 +779,7 @@ EditorLog::EditorLog() {
 	filter_next_match_button->set_tooltip_text(TTRC("Next filter match"));
 	filter_next_match_button->set_theme_type_variation(SceneStringName(FlatButton));
 	filter_next_match_button->set_accessibility_name(TTRC("Next filter match"));
+	filter_next_match_button->connect("button_down", callable_mp(this, &EditorLog::_filter_view_next_match));
 	extra_filter_options_hbox->add_child(filter_next_match_button);
 
 	// Exclude non-filter matches button

@@ -1,18 +1,16 @@
 #include "editor_log_rich_text_label.h"
 #include "servers/rendering/rendering_server.h"
 
-void EditorLogRichTextLabel::_highlighting_pass_callback(Line l, RID rid, RID ci_rid, Color highlight_color, Vector2 p_ofs, Vector2 off, float l_ascent, Vector2 l_size) {
-    // const Ref<TextParagraph> &text_buf = l.text_buf_disp.is_valid() ? l.text_buf_disp : l.text_buf;
-    const String line_text = TS->shaped_get_text(rid);
-
+void EditorLogRichTextLabel::_highlighting_pass_callback(const String &line_text, RID rid, RID ci_rid, Color highlight_color, Vector2 p_ofs, Vector2 off, float l_ascent, Vector2 l_size) {
     Vector<int> positions = _get_line_search_query_positions(line_text);
 
-	// Iterate through map in pairs. That's why we start at index 1.
 	for (int i = 2; i + 1 < positions.size(); i = i + 2) {
+		// Start at the first match, so index 2 (a pair consists of elements at index i and index i - 1, so this starts with elements 1 and 2 as a pair).
+		// Then increase by two because we only want to read out matches.
 
         Vector<Vector2> sel = TS->shaped_text_get_selection(rid, positions[i - 1], positions[i]);
         for (int j = 0; j < sel.size(); j++) {
-            Rect2 rect = Rect2(sel[j].x + p_ofs.x + off.x, p_ofs.y + off.y - l_ascent, sel[j].y - sel[j].x, l_size.y);
+            Rect2 rect = Rect2((sel[j].x + p_ofs.x + off.x), p_ofs.y + off.y - l_ascent, (sel[j].y - sel[j].x), l_size.y);
             RenderingServer::get_singleton()->canvas_item_add_rect(ci_rid, rect, highlight_color);
         }
     }

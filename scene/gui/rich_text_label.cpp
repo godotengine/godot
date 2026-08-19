@@ -1711,7 +1711,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				}
 			}
 			if (step == DRAW_STEP_BACKGROUND) {
-				_highlighting_pass_callback(l, rid, ci, theme_cache.selection_color, p_ofs, off, l_ascent, l_size); // Used in editor/gui/editor_log_rich_text_label for filter highlighting
+				_highlighting_pass_callback(TS->shaped_get_text(text_buf->get_rid()), rid, ci, theme_cache.selection_color, p_ofs, off, l_ascent, l_size);
 
 				if (sel_start != -1) {
 					Color selection_bg = theme_cache.selection_color;
@@ -1755,8 +1755,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	return line_count;
 }
 
-void RichTextLabel::_highlighting_pass_callback(Line l, RID rid, RID ci_rid, Color highlight_color, Vector2 p_ofs, Vector2 off, float l_ascent, Vector2 l_size) {
-	// Implemented in editor/gui/editor_log_rich_text_label.cpp
+void RichTextLabel::_highlighting_pass_callback(const String &line_text, RID rid, RID ci_rid, Color highlight_color, Vector2 p_ofs, Vector2 off, float l_ascent, Vector2 l_size) {
+	// Implemented in editor/gui/editor_log_rich_text_label.cpp for output filter highlighting
 }
 
 void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame, int *r_click_line, Item **r_click_item, int *r_click_char, bool *r_outside, bool p_meta) {
