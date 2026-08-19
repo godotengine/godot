@@ -42,6 +42,7 @@ thirdparty_sources = [
     "src/renderer/tvgTaskScheduler.cpp",
     "src/renderer/tvgText.cpp",
     # renderer cpu_engine
+    "src/renderer/cpu_engine/tvgSwBlendOp.cpp",
     "src/renderer/cpu_engine/tvgSwFill.cpp",
     "src/renderer/cpu_engine/tvgSwImage.cpp",
     "src/renderer/cpu_engine/tvgSwMath.cpp",
@@ -52,6 +53,7 @@ thirdparty_sources = [
     "src/renderer/cpu_engine/tvgSwRle.cpp",
     "src/renderer/cpu_engine/tvgSwShape.cpp",
     "src/renderer/cpu_engine/tvgSwStroke.cpp",
+    "src/renderer/cpu_engine/tvgSwUtil.cpp",
 ]
 
 if env["module_webp_enabled"]:
