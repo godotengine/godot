@@ -2437,6 +2437,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Callable, get_object_id, sarray(), varray());
 	bind_method(Callable, get_method, sarray(), varray());
 	bind_function(Callable, get_argument_count, _VariantCall::func_Callable_get_argument_count, sarray(), varray());
+	bind_method(Callable, get_arguments, sarray(), varray());
 	bind_method(Callable, get_bound_arguments_count, sarray(), varray());
 	bind_method(Callable, get_bound_arguments, sarray(), varray());
 	bind_method(Callable, get_unbound_arguments_count, sarray(), varray());

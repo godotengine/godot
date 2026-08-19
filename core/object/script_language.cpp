@@ -37,7 +37,9 @@
 #include "core/debugger/script_debugger.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/property_info.h"
 #include "core/templates/sort_array.h"
+#include "core/templates/vector.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
@@ -133,6 +135,28 @@ int Script::get_script_method_argument_count(const StringName &p_method, bool *r
 		*r_is_valid = true;
 	}
 	return mi.arguments.size();
+}
+
+Vector<Variant> Script::get_script_method_arguments(const StringName &p_method, bool *r_is_valid) const {
+	MethodInfo mi = get_method_info(p_method);
+	Vector<Variant> ret;
+
+	if (mi == MethodInfo()) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return ret;
+	}
+
+	for (const PropertyInfo &E : mi.arguments) {
+		ret.push_back(E.operator Dictionary());
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = true;
+	}
+
+	return ret;
 }
 
 #ifdef TOOLS_ENABLED
@@ -751,6 +775,34 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 		}
 	}
 	return false;
+}
+
+Vector<Variant> PlaceHolderScriptInstance::get_method_arguments(const StringName &p_method, bool *r_is_valid) const {
+	Vector<Variant> ret;
+	if (script->is_placeholder_fallback_enabled()) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return ret;
+	}
+
+	Ref<Script> scr = script;
+	while (scr.is_valid()) {
+		bool valid = false;
+		ret = scr->get_script_method_arguments(p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret;
+		}
+		scr = scr->get_base_script();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return ret;
 }
 
 Variant PlaceHolderScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {

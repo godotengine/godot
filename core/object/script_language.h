@@ -173,6 +173,7 @@ public:
 	virtual bool has_static_method(const StringName &p_method) const { return false; }
 
 	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
+	virtual Vector<Variant> get_script_method_arguments(const StringName &p_method, bool *r_is_valid = nullptr) const;
 
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
@@ -441,6 +442,7 @@ public:
 		return 0;
 	}
 
+	virtual Vector<Variant> get_method_arguments(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 	virtual void notification(int p_notification, bool p_reversed = false) override {}
 

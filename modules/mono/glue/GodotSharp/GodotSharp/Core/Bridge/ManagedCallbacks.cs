@@ -13,6 +13,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, IntPtr, godot_bool> DelegateUtils_DelegateEquals;
         public delegate* unmanaged<IntPtr, int> DelegateUtils_DelegateHash;
         public delegate* unmanaged<IntPtr, godot_bool*, int> DelegateUtils_GetArgumentCount;
+        public delegate* unmanaged<IntPtr, void*, void> DelegateUtils_GetArguments;
         public delegate* unmanaged<IntPtr, godot_array*, godot_bool> DelegateUtils_TrySerializeDelegateWithGCHandle;
         public delegate* unmanaged<godot_array*, IntPtr*, godot_bool> DelegateUtils_TryDeserializeDelegateWithGCHandle;
         public delegate* unmanaged<void> ScriptManagerBridge_FrameCallback;
@@ -57,6 +58,7 @@ namespace Godot.Bridge
                 DelegateUtils_DelegateEquals = &DelegateUtils.DelegateEquals,
                 DelegateUtils_DelegateHash = &DelegateUtils.DelegateHash,
                 DelegateUtils_GetArgumentCount = &DelegateUtils.GetArgumentCount,
+                DelegateUtils_GetArguments = &DelegateUtils.GetArguments,
                 DelegateUtils_TrySerializeDelegateWithGCHandle = &DelegateUtils.TrySerializeDelegateWithGCHandle,
                 DelegateUtils_TryDeserializeDelegateWithGCHandle = &DelegateUtils.TryDeserializeDelegateWithGCHandle,
                 ScriptManagerBridge_FrameCallback = &ScriptManagerBridge.FrameCallback,

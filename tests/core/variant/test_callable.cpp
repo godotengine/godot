@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "core/object/property_info.h"
 #include "tests/test_macros.h"
 
 TEST_FORCE_LINK(test_callable)
@@ -193,6 +194,163 @@ TEST_CASE("[Callable] Bound and unbound argument count") {
 	CHECK(get_output(test_func.bind(1, 2, 3).unbind(1).unbind(1).unbind(1)) == "3 3 [1, 2, 3] [1, 2, 3] [1, 2, 3]");
 
 	memdelete(test_instance);
+}
+
+class TestGetArguments : public Object {
+	GDCLASS(TestGetArguments, Object);
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("test_func_1"), &TestGetArguments::test_func_1);
+		ClassDB::bind_method(D_METHOD("test_func_2", "foo", "bar"), &TestGetArguments::test_func_2);
+		ClassDB::bind_method(D_METHOD("test_func_3", "foo", "bar", "baz"), &TestGetArguments::test_func_3);
+		ClassDB::bind_static_method("TestGetArguments", D_METHOD("test_func_6", "foo", "bar", "baz"), &TestGetArguments::test_func_6);
+		ClassDB::bind_static_method("TestGetArguments", D_METHOD("test_func_7", "foo", "bar", "baz"), &TestGetArguments::test_func_7);
+
+		{
+			MethodInfo mi;
+			mi.name = "test_func_8";
+			mi.arguments.push_back(PropertyInfo(Variant::INT, "foo"));
+			mi.arguments.push_back(PropertyInfo(Variant::INT, "bar"));
+
+			ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "test_func_8", &TestGetArguments::test_func_8, mi, varray(), false);
+		}
+
+		{
+			MethodInfo mi;
+			mi.name = "test_func_9";
+			mi.arguments.push_back(PropertyInfo(Variant::INT, "foo"));
+			mi.arguments.push_back(PropertyInfo(Variant::INT, "bar"));
+			mi.arguments.push_back(PropertyInfo(Variant::INT, "baz"));
+
+			ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "test_func_9", &TestGetArguments::test_func_9, mi, varray(), false);
+		}
+	}
+
+public:
+	void test_func_1() {}
+	void test_func_2(int p_foo, String p_bar) {}
+	void test_func_3(Signal p_foo, Variant p_bar, StringName p_baz) {}
+
+	int test_func_4(int p_foo, int p_bar) const { return 0; }
+	int test_func_5(String p_foo, StringName p_bar, NodePath p_baz) const { return 0; }
+
+	static void test_func_6(Callable p_foo, String p_bar, NodePath p_baz) {}
+	static void test_func_7(Callable p_foo, String p_bar, int p_baz) {}
+
+	void test_func_8(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {}
+	void test_func_9(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {}
+
+	static String get_output(const Array &p_callable_arguments) {
+		String ret = "[";
+		for (int i = 0; i < p_callable_arguments.size(); ++i) {
+			PropertyInfo arg = PropertyInfo::from_dict(p_callable_arguments[i]);
+			ret += vformat(
+					"{ type: %d, name: \"%s\", class_name: \"%s\", hint: %d, hint_string: \"%s\", usage: %d }",
+					arg.type, arg.name, arg.class_name, arg.hint, arg.hint_string, arg.usage);
+			if (i != p_callable_arguments.size() - 1) {
+				ret += ", ";
+			}
+		}
+		ret += "]";
+		return ret;
+	}
+};
+TEST_CASE("[Callable] Arguments") {
+	String (*get_output)(const Array &) = TestGetArguments::get_output;
+	TestGetArguments *my_test = memnew(TestGetArguments);
+
+	// Test simple methods.
+	Callable callable_0 = Callable(my_test, "test_func_1");
+	CHECK(get_output(callable_0.get_arguments()) == "[]");
+
+	// Only in debug builds there'll be argument names
+#ifdef DEBUG_ENABLED
+	Callable callable_1 = Callable(my_test, "test_func_2");
+	CHECK(get_output(callable_1.get_arguments()) == "[{ type: 2, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 4, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_2 = Callable(my_test, "test_func_3");
+	CHECK(get_output(callable_2.get_arguments()) == "[{ type: 26, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"baz\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_3 = Callable(my_test, "test_func_6");
+	CHECK(get_output(callable_3.get_arguments()) == "[{ type: 25, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 4, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 22, name: \"baz\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_4 = Callable(my_test, "test_func_7");
+	CHECK(get_output(callable_4.get_arguments()) == "[{ type: 25, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 4, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 2, name: \"baz\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+#else
+	Callable callable_1 = Callable(my_test, "test_func_2");
+	CHECK(get_output(callable_1.get_arguments()) == "[{ type: 2, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 4, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_2 = Callable(my_test, "test_func_3");
+	CHECK(get_output(callable_2.get_arguments()) == "[{ type: 26, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_3 = Callable(my_test, "test_func_6");
+	CHECK(get_output(callable_3.get_arguments()) == "[{ type: 25, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 4, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 22, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_4 = Callable(my_test, "test_func_7");
+	CHECK(get_output(callable_4.get_arguments()) == "[{ type: 25, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 4, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 2, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+#endif
+
+	// Test vararg methods.
+	Callable callable_vararg_1 = Callable(my_test, "test_func_8");
+	CHECK(get_output(callable_vararg_1.get_arguments()) == "[{ type: 2, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 2, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_vararg_2 = Callable(my_test, "test_func_9");
+	CHECK(get_output(callable_vararg_2.get_arguments()) == "[{ type: 2, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 2, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 2, name: \"baz\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+
+	// Callable MP tests.
+
+	// Test simple methods.
+
+	Callable callable_mp_0 = callable_mp(my_test, &TestGetArguments::test_func_1);
+	CHECK(get_output(callable_0.get_arguments()) == "[]");
+
+	// Only in debug builds there'll be argument names
+#ifdef DEBUG_ENABLED
+	Callable callable_mp_1 = callable_mp(my_test, &TestGetArguments::test_func_2);
+	CHECK(get_output(callable_mp_1.get_arguments()) == "[{ type: 2, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 4, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_mp_2 = callable_mp(my_test, &TestGetArguments::test_func_3);
+	CHECK(get_output(callable_mp_2.get_arguments()) == "[{ type: 26, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"baz\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+#else
+	Callable callable_mp_1 = callable_mp(my_test, &TestGetArguments::test_func_2);
+	CHECK(get_output(callable_mp_1.get_arguments()) == "[{ type: 2, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 4, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_mp_2 = callable_mp(my_test, &TestGetArguments::test_func_3);
+	CHECK(get_output(callable_mp_2.get_arguments()) == "[{ type: 26, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+#endif
+
+	// Const methods
+	Callable callable_mp_3 = callable_mp(my_test, &TestGetArguments::test_func_4);
+	CHECK(get_output(callable_mp_3.get_arguments()) == "[{ type: 2, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 2, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_mp_4 = callable_mp(my_test, &TestGetArguments::test_func_5);
+	CHECK(get_output(callable_mp_4.get_arguments()) == "[{ type: 4, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 21, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 22, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+
+	// Test static methods.
+	Callable callable_mp_static_1 = callable_mp_static(&TestGetArguments::test_func_6);
+	CHECK(get_output(callable_mp_static_1.get_arguments()) == "[{ type: 25, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 4, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 22, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_mp_static_2 = callable_mp_static(&TestGetArguments::test_func_7);
+	CHECK(get_output(callable_mp_static_2.get_arguments()) == "[{ type: 25, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 4, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 2, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+
+	// Only in debug builds there'll be argument names
+#ifdef DEBUG_ENABLED
+	// Test bind.
+	Callable callable_mp_bind_1 = callable_mp_2.bind(1);
+	CHECK(get_output(callable_mp_bind_1.get_arguments()) == "[{ type: 26, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"baz\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_mp_bind_2 = callable_mp_2.bind(1, 2);
+	CHECK(get_output(callable_mp_bind_2.get_arguments()) == "[{ type: 26, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"baz\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+
+	// Test unbind.
+	Callable callable_mp_unbind_1 = callable_mp_2.unbind(1);
+	CHECK(get_output(callable_mp_unbind_1.get_arguments()) == "[{ type: 26, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"baz\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_mp_unbind_2 = callable_mp_2.unbind(2);
+	CHECK(get_output(callable_mp_unbind_2.get_arguments()) == "[{ type: 26, name: \"foo\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"bar\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"baz\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+#else
+	// Test bind.
+	Callable callable_mp_bind_1 = callable_mp_2.bind(1);
+	CHECK(get_output(callable_mp_bind_1.get_arguments()) == "[{ type: 26, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_mp_bind_2 = callable_mp_2.bind(1, 2);
+	CHECK(get_output(callable_mp_bind_2.get_arguments()) == "[{ type: 26, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+
+	// Test unbind.
+	Callable callable_mp_unbind_1 = callable_mp_2.unbind(1);
+	CHECK(get_output(callable_mp_unbind_1.get_arguments()) == "[{ type: 26, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+	Callable callable_mp_unbind_2 = callable_mp_2.unbind(2);
+	CHECK(get_output(callable_mp_unbind_2.get_arguments()) == "[{ type: 26, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }, { type: 0, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 131078 }, { type: 21, name: \"\", class_name: \"\", hint: 0, hint_string: \"\", usage: 6 }]");
+#endif
+
+	memdelete(my_test);
 }
 
 } // namespace TestCallable
