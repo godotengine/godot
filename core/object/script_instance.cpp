@@ -54,6 +54,29 @@ int ScriptInstance::get_method_argument_count(const StringName &p_method, bool *
 	return 0;
 }
 
+Vector<Variant> ScriptInstance::get_method_arguments(const StringName &p_method, bool *r_is_valid) const {
+	// Default implementation simply traverses hierarchy.
+	Vector<Variant> ret;
+
+	Ref<Script> script = get_script();
+	while (script.is_valid()) {
+		bool valid = false;
+		ret = script->get_script_method_arguments(p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret;
+		}
+		script = script->get_base_script();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return ret;
+}
+
 Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	return callp(p_method, p_args, p_argcount, r_error);
 }

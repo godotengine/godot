@@ -37,6 +37,9 @@
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant_callable.h"
 
+#include <core/string/print_string.h>
+#include <core/variant/dictionary.h>
+
 void Callable::call_deferredp(const Variant **p_arguments, int p_argcount) const {
 	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount, true);
 }
@@ -216,6 +219,28 @@ void Callable::get_bound_arguments_ref(Vector<Variant> &r_arguments) const {
 Array Callable::get_bound_arguments() const {
 	Vector<Variant> arr;
 	get_bound_arguments_ref(arr);
+	Array ret;
+	ret.resize(arr.size());
+	for (int i = 0; i < arr.size(); i++) {
+		ret[i] = arr[i];
+	}
+	return ret;
+}
+
+void Callable::get_arguments_ref(Vector<Variant> &r_arguments) const {
+	if (is_custom()) {
+		custom->get_arguments(r_arguments);
+	} else if (is_valid()) {
+		r_arguments = get_object()->get_method_arguments(method);
+	} else {
+		r_arguments.clear();
+	}
+}
+
+Array Callable::get_arguments() const {
+	print_line("Callable::get_arguments called!");
+	Vector<Variant> arr;
+	get_arguments_ref(arr);
 	Array ret;
 	ret.resize(arr.size());
 	for (int i = 0; i < arr.size(); i++) {
@@ -467,6 +492,11 @@ const Callable *CallableCustom::get_base_comparator() const {
 int CallableCustom::get_argument_count(bool &r_is_valid) const {
 	r_is_valid = false;
 	return 0;
+}
+
+void CallableCustom::get_arguments(Vector<Variant> &r_arguments) const {
+	print_line("CallableCustom::get_arguments is called!");
+	r_arguments.clear();
 }
 
 int CallableCustom::get_bound_arguments_count() const {

@@ -69,6 +69,31 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
+        internal static unsafe void GetArguments(IntPtr delegateGCHandle, void* r_arguments)
+        {
+            try
+            {
+                var @delegate = (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target;
+                ParameterInfo[]? argsArr = @delegate?.Method?.GetParameters();
+                if (argsArr is null)
+                {
+                    return;
+                }
+                foreach (ParameterInfo p in argsArr)
+                {
+                    Console.WriteLine(p);
+                }
+                return;
+                //return argCount.Value;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                return;
+            }
+        }
+
+        [UnmanagedCallersOnly]
         internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, void* trampoline,
             godot_variant** args, int argc, godot_variant* outRet)
         {
