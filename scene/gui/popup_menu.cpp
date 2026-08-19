@@ -3688,7 +3688,9 @@ void PopupMenu::_popup_base(const Rect2i &p_bounds) {
 	} else {
 		if (is_inside_tree()) {
 			set_flag(FLAG_POPUP, true);
-			set_flag(FLAG_NO_FOCUS, !is_embedded());
+			if (get_flag(FLAG_NO_FOCUS) != !is_embedded()) {
+				set_flag(FLAG_NO_FOCUS, !is_embedded());
+			}
 		}
 
 		moved = Vector2();
@@ -3797,7 +3799,9 @@ void PopupMenu::set_visible(bool p_visible) {
 	} else {
 		if (p_visible && is_inside_tree()) {
 			set_flag(FLAG_POPUP, true);
-			set_flag(FLAG_NO_FOCUS, !is_embedded());
+			if (get_flag(FLAG_NO_FOCUS) != !is_embedded()) {
+				set_flag(FLAG_NO_FOCUS, !is_embedded());
+			}
 		}
 
 		Popup::set_visible(p_visible);
