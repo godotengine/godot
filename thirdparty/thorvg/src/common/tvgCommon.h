@@ -63,9 +63,6 @@ using namespace tvg;
     #define TVG_FALLTHROUGH
 #endif
 
-void* operator new(std::size_t size);
-void operator delete(void* ptr) noexcept;
-
 namespace tvg
 {
     enum class FileType
