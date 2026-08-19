@@ -3814,7 +3814,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 						set_message(vformat(TTR("Translating: %s"), vformat("%.*v", snap_step_decimals, selected_node->get_global_position())));
 					}
 
-					selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
+					const Vector3 surface_pos = _get_instance_position(_edit.mouse_pos, selected_node);
+					Vector3 snapped_pos = spatial_editor->snap_point(surface_pos);
+					snapped_pos.y = surface_pos.y; // Preserve the surface placement height after grid snapping.
+					selected_node->set_global_position(snapped_pos);
 
 					if (ruler->is_inside_tree() && !ruler_start_point->is_visible()) {
 						ruler_end_point->set_global_position(ruler_start_point->get_global_position());
@@ -3832,7 +3835,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 				return;
 			}
 			if (preview_node->is_inside_tree()) {
-				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
+				const Vector3 surface_pos = _get_instance_position(preview_node_viewport_pos, preview_node);
+				preview_node_pos = spatial_editor->snap_point(surface_pos);
+				preview_node_pos.y = surface_pos.y; // Preserve the surface placement height after grid snapping.
 				double snap = EDITOR_GET("interface/inspector/default_float_step");
 				int snap_step_decimals = Math::range_step_decimals(snap);
 				set_message(vformat(TTR("Instantiating: %s"), vformat("%.*v", snap_step_decimals, preview_node_pos)));
