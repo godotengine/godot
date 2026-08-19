@@ -153,7 +153,11 @@ const Vector<String> prop_allowed_inherited_member_hiding = {
 // This avoids hiding the enum when the property is declared in a derived class,
 // and the need for the 'new' keyword. It can also be used to avoid breaking compat
 // later if a new member is added with the same name as the enum.
-const Vector<String> enums_with_forced_suffix = {};
+const Vector<String> enums_with_forced_suffix = {
+	"Line3D.MaterialMode",
+	"Line3D.MeshAlignment",
+	"Line3D.TilingMode",
+};
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
