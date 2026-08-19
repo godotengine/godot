@@ -810,6 +810,67 @@ int Object::get_method_argument_count(const StringName &p_method, bool *r_is_val
 	return 0;
 }
 
+TypedArray<Dictionary> Object::_get_method_arguments_bind(const StringName &p_method) const {
+	// TODO: This code will change when going from get_arguments -> get_method_info,
+	//       but for now... this's fine
+	Vector<Variant> arguments_as_variants = get_method_arguments(p_method);
+	TypedArray<Dictionary> ret;
+	for (const Variant &E : arguments_as_variants) {
+		ret.push_back(E.operator Dictionary());
+	}
+	return ret;
+}
+
+Vector<Variant> Object::get_method_arguments(const StringName &p_method, bool *r_is_valid) const {
+	Vector<Variant> ret;
+	if (p_method == CoreStringName(free_)) {
+		if (r_is_valid) {
+			*r_is_valid = true;
+		}
+		return ret;
+	}
+
+	if (script_instance) {
+		bool valid = false;
+		ret = script_instance->get_method_arguments(p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret;
+		}
+	}
+
+	{
+		bool valid = false;
+		ret = ClassDB::get_method_arguments(get_class_name(), p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret;
+		}
+	}
+
+	const Script *scr = Object::cast_to<Script>(this);
+	while (scr != nullptr) {
+		bool valid = false;
+		ret = scr->get_script_method_arguments(p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret;
+		}
+		scr = scr->get_base_script().ptr();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return ret;
+}
+
 Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
 	if (r_valid) {
 		*r_valid = false;
@@ -1962,6 +2023,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_method", "method"), &Object::has_method);
 
 	ClassDB::bind_method(D_METHOD("get_method_argument_count", "method"), &Object::_get_method_argument_count_bind);
+	ClassDB::bind_method(D_METHOD("get_method_arguments", "method"), &Object::_get_method_arguments_bind);
 
 	ClassDB::bind_method(D_METHOD("has_signal", "signal"), &Object::has_signal);
 	ClassDB::bind_method(D_METHOD("get_signal_list"), &Object::_get_signal_list);

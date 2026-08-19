@@ -33,6 +33,8 @@
 #include "csharp_script.h"
 #include "mono_gd/gd_mono_cache.h"
 
+#include <core/string/print_string.h>
+
 #ifdef GD_MONO_HOT_RELOAD
 SelfList<ManagedCallable>::List ManagedCallable::instances;
 RBMap<ManagedCallable *, Array> ManagedCallable::instances_pending_reload;
@@ -87,6 +89,11 @@ ObjectID ManagedCallable::get_object() const {
 
 int ManagedCallable::get_argument_count(bool &r_is_valid) const {
 	return GDMonoCache::managed_callbacks.DelegateUtils_GetArgumentCount(delegate_handle, &r_is_valid);
+}
+
+void ManagedCallable::get_arguments(Vector<Variant> &r_arguments) const {
+	print_line("ManagedCallable::get_arguments is called!");
+	GDMonoCache::managed_callbacks.DelegateUtils_GetArguments(delegate_handle, &r_arguments);
 }
 
 void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
