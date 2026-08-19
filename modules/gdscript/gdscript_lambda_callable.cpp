@@ -34,6 +34,11 @@
 
 #include "core/templates/hashfuncs.h"
 
+#include <core/error/error_macros.h>
+#include <core/object/property_info.h>
+#include <core/string/print_string.h>
+#include <core/variant/dictionary.h>
+
 bool GDScriptLambdaCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	// Lambda callables are only compared by reference.
 	return p_a == p_b;
@@ -87,6 +92,20 @@ int GDScriptLambdaCallable::get_argument_count(bool &r_is_valid) const {
 	}
 	r_is_valid = true;
 	return function->get_argument_count() - captures.size();
+}
+
+void GDScriptLambdaCallable::get_arguments(Vector<Variant> &r_arguments) const {
+	print_line("GDScriptLambdaCallable::get_arguments was called!");
+	r_arguments.clear();
+	if (function == nullptr) {
+		return;
+	}
+	MethodInfo method_info = function->get_method_info();
+	ERR_FAIL_COND_MSG(method_info == MethodInfo(), vformat("Failed to get method info of \"%s\"", get_method()));
+	Vector<PropertyInfo> arguments = method_info.arguments;
+	for (const PropertyInfo &E : arguments) {
+		r_arguments.push_back(E.operator Dictionary());
+	}
 }
 
 void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
@@ -211,6 +230,20 @@ int GDScriptLambdaSelfCallable::get_argument_count(bool &r_is_valid) const {
 	}
 	r_is_valid = true;
 	return function->get_argument_count() - captures.size();
+}
+
+void GDScriptLambdaSelfCallable::get_arguments(Vector<Variant> &r_arguments) const {
+	print_line("GDScriptLambdaSelfCallable::get_arguments was called!");
+	r_arguments.clear();
+	if (function == nullptr) {
+		return;
+	}
+	MethodInfo method_info = function->get_method_info();
+	ERR_FAIL_COND_MSG(method_info == MethodInfo(), vformat("Failed to get method info of \"%s\"", get_method()));
+	Vector<PropertyInfo> arguments = method_info.arguments;
+	for (const PropertyInfo &E : arguments) {
+		r_arguments.push_back(E.operator Dictionary());
+	}
 }
 
 void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

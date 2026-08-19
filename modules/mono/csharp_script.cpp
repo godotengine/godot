@@ -38,6 +38,9 @@
 #include "utils/naming_utils.h"
 #include "utils/string_utils.h"
 
+#include "core/object/property_info.h"
+#include "core/templates/vector.h"
+
 #ifdef GD_MONO_HOT_RELOAD
 #include "managed_callable.h"
 #include "utils/path_utils.h"
@@ -1691,6 +1694,34 @@ int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *
 	return 0;
 }
 
+Vector<Variant> CSharpInstance::get_method_arguments(const StringName &p_method, bool *r_is_valid) const {
+	Vector<Variant> ret;
+	if (!script->is_script_valid() || !script->valid) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return ret;
+	}
+
+	const CSharpScript *top = script.ptr();
+	while (top != nullptr) {
+		bool valid = false;
+		ret = top->get_script_method_arguments(p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return ret;
+		}
+		top = top->base_script.ptr();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return ret;
+}
+
 Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	ERR_FAIL_COND_V(script.is_null(), Variant());
 
@@ -2552,6 +2583,33 @@ int CSharpScript::get_script_method_argument_count(const StringName &p_method, b
 		*r_is_valid = false;
 	}
 	return 0;
+}
+
+Vector<Variant> CSharpScript::get_script_method_arguments(const StringName &p_method, bool *r_is_valid) const {
+	Vector<Variant> ret;
+	if (!valid) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return ret;
+	}
+
+	for (const CSharpMethodInfo &E : methods) {
+		if (E.name == p_method) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			for (const PropertyInfo &F : E.method_info.arguments) {
+				ret.push_back(F.operator Dictionary());
+			}
+			return ret;
+		}
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return ret;
 }
 
 MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {

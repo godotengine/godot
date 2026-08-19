@@ -30,6 +30,12 @@
 
 #include "gdscript_utility_callable.h"
 
+#include "core/object/method_info.h"
+
+#include <core/error/error_macros.h>
+#include <core/string/print_string.h>
+#include <core/variant/variant.h>
+
 bool GDScriptUtilityCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	return p_a->hash() == p_b->hash();
 }
@@ -91,6 +97,28 @@ int GDScriptUtilityCallable::get_argument_count(bool &r_is_valid) const {
 			return GDScriptUtilityFunctions::get_function_argument_count(function_name);
 	}
 	ERR_FAIL_V_MSG(0, "Invalid type.");
+}
+
+void GDScriptUtilityCallable::get_arguments(Vector<Variant> &r_arguments) const {
+	print_line("GDScriptUtilityCallable::get_arguments is called!");
+	r_arguments.clear();
+	MethodInfo method_info = MethodInfo();
+	switch (type) {
+		case TYPE_INVALID:
+			break;
+		case TYPE_GLOBAL:
+			method_info = Variant::get_utility_function_info(function_name);
+			break;
+		case TYPE_GDSCRIPT:
+			method_info = GDScriptUtilityFunctions::get_function_info(function_name);
+			break;
+	}
+
+	ERR_FAIL_COND_MSG(method_info == MethodInfo(), vformat("Failed to get method info of \"%s\"", get_method()));
+	Vector<PropertyInfo> arguments = method_info.arguments;
+	for (PropertyInfo E : arguments) {
+		r_arguments.push_back(E.operator Dictionary());
+	}
 }
 
 void GDScriptUtilityCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

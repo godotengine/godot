@@ -76,6 +76,7 @@ struct ManagedCallbacks {
 	using FuncDelegateUtils_DelegateEquals = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr);
 	using FuncDelegateUtils_DelegateHash = int32_t(GD_CLR_STDCALL *)(GCHandleIntPtr);
 	using FuncDelegateUtils_GetArgumentCount = int32_t(GD_CLR_STDCALL *)(GCHandleIntPtr, bool *);
+	using FuncDelegateUtils_GetArguments = void(GD_CLR_STDCALL *)(GCHandleIntPtr, Vector<Variant> *);
 	using FuncDelegateUtils_TrySerializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const Array *);
 	using FuncDelegateUtils_TryDeserializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(const Array *, GCHandleIntPtr *);
 	using FuncScriptManagerBridge_FrameCallback = void(GD_CLR_STDCALL *)();
@@ -114,6 +115,7 @@ struct ManagedCallbacks {
 	FuncDelegateUtils_DelegateEquals DelegateUtils_DelegateEquals;
 	FuncDelegateUtils_DelegateHash DelegateUtils_DelegateHash;
 	FuncDelegateUtils_GetArgumentCount DelegateUtils_GetArgumentCount;
+	FuncDelegateUtils_GetArguments DelegateUtils_GetArguments;
 	FuncDelegateUtils_TrySerializeDelegateWithGCHandle DelegateUtils_TrySerializeDelegateWithGCHandle;
 	FuncDelegateUtils_TryDeserializeDelegateWithGCHandle DelegateUtils_TryDeserializeDelegateWithGCHandle;
 	FuncScriptManagerBridge_FrameCallback ScriptManagerBridge_FrameCallback;
