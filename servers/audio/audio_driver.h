@@ -90,6 +90,8 @@ public:
 
 	virtual Error init() = 0;
 	virtual void start() = 0;
+	virtual bool can_output_device_sleep() const { return false; }
+	virtual bool set_output_device_sleep(bool p_enable) { return false; }
 	virtual int get_mix_rate() const = 0;
 	virtual int get_input_mix_rate() const { return get_mix_rate(); }
 	virtual SpeakerMode get_speaker_mode() const = 0;
