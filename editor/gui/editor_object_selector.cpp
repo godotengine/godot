@@ -155,7 +155,7 @@ void EditorObjectSelector::update_path() {
 			}
 
 			current_object_label->set_text(name);
-			set_tooltip_text(obj->get_class());
+			set_tooltip_text(name + "\n" + vformat(TTR("Type: %s"), obj->get_class()) + "\n" + TTR("Click to open a list of sub-resources."));
 		}
 	}
 }
@@ -196,6 +196,10 @@ void EditorObjectSelector::_notification(int p_what) {
 			current_object_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 			sub_objects_icon->set_texture(get_theme_icon(SNAME("arrow"), SNAME("OptionButton")));
 			sub_objects_menu->add_theme_constant_override("icon_max_width", icon_size);
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			update_path();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -241,5 +245,5 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	sub_objects_menu->connect("about_to_popup", callable_mp(this, &EditorObjectSelector::_about_to_show));
 	sub_objects_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorObjectSelector::_id_pressed));
 
-	set_tooltip_text(TTR("Open a list of sub-resources."));
+	set_auto_translate(false);
 }
