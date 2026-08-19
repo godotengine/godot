@@ -339,7 +339,7 @@
         typedef void (*PFNGLBINDTEXTUREPROC)(GLenum target, GLuint texture);
         typedef void (*PFNGLDELETETEXTURESPROC)(GLsizei n, const GLuint *textures);
         typedef void (*PFNGLGENTEXTURESPROC)(GLsizei n, GLuint *textures);
-        //typedef void (*PFNGLDRAWARRAYSPROC)(GLenum mode, GLint first, GLsizei count);
+        typedef void (*PFNGLDRAWARRAYSPROC)(GLenum mode, GLint first, GLsizei count);
         //typedef void (*PFNGLGETPOINTERVPROC)(GLenum pname, void **params);
         //typedef void (*PFNGLPOLYGONOFFSETPROC)(GLfloat factor, GLfloat units);
         //typedef void (*PFNGLCOPYTEXIMAGE1DPROC)(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLint border);
@@ -1235,7 +1235,7 @@
     extern PFNGLBINDTEXTUREPROC       glBindTexture;
     extern PFNGLDELETETEXTURESPROC    glDeleteTextures;
     extern PFNGLGENTEXTURESPROC       glGenTextures;
-    //extern PFNGLDRAWARRAYSPROC        glDrawArrays;
+    extern PFNGLDRAWARRAYSPROC        glDrawArrays;
     //extern PFNGLGETPOINTERVPROC       glGetPointerv;
     //extern PFNGLPOLYGONOFFSETPROC     glPolygonOffset;
     //extern PFNGLCOPYTEXIMAGE1DPROC    glCopyTexImage1D;

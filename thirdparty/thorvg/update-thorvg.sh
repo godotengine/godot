@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-VERSION=1.0.4
+VERSION=1.1.0
 # Uncomment and set a git hash to use specific commit instead of tag.
 #GIT_COMMIT=
 

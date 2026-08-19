@@ -42,6 +42,12 @@ struct WgShaderTypeMat4x4f
     void update(size_t w, size_t h);
 };
 
+struct WgShaderTypeMat4x4fBlock
+{
+    WgShaderTypeMat4x4f matrix;
+    uint8_t _padding[256 - sizeof(WgShaderTypeMat4x4f)]{};
+};
+
 // vec4f
 struct WgShaderTypeVec4f
 {

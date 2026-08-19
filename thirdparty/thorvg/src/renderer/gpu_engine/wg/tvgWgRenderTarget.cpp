@@ -57,8 +57,7 @@ WgRenderTarget* WgRenderTargetPool::allocate(WgContext& context)
 {
     WgRenderTarget* renderTarget{};
     if (pool.count > 0) {
-        renderTarget = pool.last();
-        pool.pop();
+        renderTarget = pool.pick();
     } else {
         renderTarget = new WgRenderTarget;
         renderTarget->initialize(context, width, height);

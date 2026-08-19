@@ -26,9 +26,8 @@
 #include "tvgLoader.h"
 #include "tvgTaskScheduler.h"
 
-class WebpLoader : public ImageLoader, public Task
+struct WebpLoader : ImageLoader, Task
 {
-public:
     WebpLoader();
     ~WebpLoader();
 

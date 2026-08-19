@@ -473,9 +473,17 @@ void WgPipelines::initialize(WgContext& context)
     // render pipeline blit
     blit = createRenderPipeline(
         context.device, "The render pipeline blit",
-        shader_blit, "vs_main", "fs_main", 
+        shader_blit, "vs_main", "fs_main",
         layout_blit, vertexBufferLayoutsImage, 2,
-        WGPUColorWriteMask_All, context.format, blendStateSrc, // must be preferred screen pixel format
+        WGPUColorWriteMask_All, context.format, blendStateSrc,  // must be preferred screen pixel format
+        depthStencilStateScene, multisampleStateX1);
+
+    // TODO: either premultiplied blit or unpremultplied bit used.
+    blit_unpremultiplied = createRenderPipeline(
+        context.device, "The render pipeline blit unpremultiplied",
+        shader_blit, "vs_main", "fs_main_unpremultiplied",
+        layout_blit, vertexBufferLayoutsImage, 2,
+        WGPUColorWriteMask_All, context.format, blendStateSrc,  // must be preferred screen pixel format
         depthStencilStateScene, multisampleStateX1);
 
     // effects
@@ -533,6 +541,7 @@ void WgPipelines::releaseGraphicHandles(WgContext& context)
     releaseRenderPipeline(gaussian_vert);
     releaseRenderPipeline(dropshadow);
     // pipeline blit
+    releaseRenderPipeline(blit_unpremultiplied);
     releaseRenderPipeline(blit);
     // pipelines compose
     for (uint32_t i = 0; i < 11; i++)

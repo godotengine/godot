@@ -15,5 +15,5 @@
 // For internal debugging:
 //#define THORVG_LOG_ENABLED
 
-#define THORVG_VERSION_STRING "1.0.4"
+#define THORVG_VERSION_STRING "1.1.0"
 #endif

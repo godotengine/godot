@@ -25,54 +25,26 @@
 #include "tvgGlRenderTask.h"
 #include "tvgGlTessellator.h"
 
-static RenderRegion _transformBounds(const RenderRegion& bounds, const Matrix& matrix)
-{
-    if (bounds.invalid()) return bounds;
-
-    auto lt = Point{float(bounds.min.x), float(bounds.min.y)} * matrix;
-    auto lb = Point{float(bounds.min.x), float(bounds.max.y)} * matrix;
-    auto rt = Point{float(bounds.max.x), float(bounds.min.y)} * matrix;
-    auto rb = Point{float(bounds.max.x), float(bounds.max.y)} * matrix;
-
-    auto left = min(min(lt.x, lb.x), min(rt.x, rb.x));
-    auto top = min(min(lt.y, lb.y), min(rt.y, rb.y));
-    auto right = max(max(lt.x, lb.x), max(rt.x, rb.x));
-    auto bottom = max(max(lt.y, lb.y), max(rt.y, rb.y));
-
-    return RenderRegion{{int32_t(floor(left)), int32_t(floor(top))}, {int32_t(ceil(right)), int32_t(ceil(bottom))}};
-}
-
-
-bool GlIntersector::isPointInTriangle(const Point& p, const Point& a, const Point& b, const Point& c)
-{
-    auto d1 = tvg::cross(p - a, p - b);
-    auto d2 = tvg::cross(p - b, p - c);
-    auto d3 = tvg::cross(p - c, p - a);
-    auto has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-    auto has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
-    return !(has_neg && has_pos);
-}
-
 bool GlIntersector::isPointInImage(const Point& p, const GlGeometryBuffer& mesh, const Matrix& tr)
 {
     for (uint32_t i = 0; i < mesh.index.count; i += 3) {
         auto p0 = Point{mesh.vertex[mesh.index[i+0]*4+0], mesh.vertex[mesh.index[i+0]*4+1]} * tr;
         auto p1 = Point{mesh.vertex[mesh.index[i+1]*4+0], mesh.vertex[mesh.index[i+1]*4+1]} * tr;
         auto p2 = Point{mesh.vertex[mesh.index[i+2]*4+0], mesh.vertex[mesh.index[i+2]*4+1]} * tr;
-        if (isPointInTriangle(p, p0, p1, p2)) return true;
+        if (gpuPointInTriangle(p, p0, p1, p2)) return true;
     }
     return false;
 }
 
 
 // triangle list
-bool GlIntersector::isPointInTris(const Point& p, const GlGeometryBuffer& mesh, const Matrix& tr)
+bool GlIntersector::isPointInTris(const Point& p, const GlGeometryBuffer& mesh)
 {
     for (uint32_t i = 0; i < mesh.index.count; i += 3) {
-        auto p0 = Point{mesh.vertex[mesh.index[i+0]*2+0], mesh.vertex[mesh.index[i+0]*2+1]} * tr;
-        auto p1 = Point{mesh.vertex[mesh.index[i+1]*2+0], mesh.vertex[mesh.index[i+1]*2+1]} * tr;
-        auto p2 = Point{mesh.vertex[mesh.index[i+2]*2+0], mesh.vertex[mesh.index[i+2]*2+1]} * tr;
-        if (isPointInTriangle(p, p0, p1, p2)) return true;
+        auto p0 = Point{mesh.vertex[mesh.index[i + 0] * 2 + 0], mesh.vertex[mesh.index[i + 0] * 2 + 1]};
+        auto p1 = Point{mesh.vertex[mesh.index[i + 1] * 2 + 0], mesh.vertex[mesh.index[i + 1] * 2 + 1]};
+        auto p2 = Point{mesh.vertex[mesh.index[i + 2] * 2 + 0], mesh.vertex[mesh.index[i + 2] * 2 + 1]};
+        if (gpuPointInTriangle(p, p0, p1, p2)) return true;
     }
     return false;
 }
@@ -102,16 +74,18 @@ bool GlIntersector::isPointInMesh(const Point& p, const GlGeometryBuffer& mesh, 
     return (crossings % 2) == 1;
 }
 
-
 bool GlIntersector::intersectClips(const Point& pt, const tvg::Array<tvg::RenderData>& clips)
 {
     for (uint32_t i = 0; i < clips.count; i++) {
-        auto clip = (GlShape*)clips[i];
-        if (!isPointInMesh(pt, clip->geometry.fill, clip->geometry.fillWorld ? tvg::identity() : clip->geometry.matrix)) return false;
+        auto clip = (const GlShape*)clips[i];
+        if (clip->validFill) {
+            if (!isPointInMesh(pt, clip->geometry.fill, clip->geometry.fillWorld ? tvg::identity() : clip->geometry.matrix)) return false;
+        } else if (clip->validStroke) {
+            if (!isPointInTris(pt * *clip->geometry.inverseMatrix(), clip->geometry.stroke)) return false;
+        }
     }
     return true;
 }
-
 
 bool GlIntersector::intersectShape(const RenderRegion region, const GlShape* shape)
 {
@@ -125,7 +99,7 @@ bool GlIntersector::intersectShape(const RenderRegion region, const GlShape* sha
             if (y % 2 == 1) pt.y = (float)sizeY - y - sizeY % 2 + region.min.y;
             if (intersectClips(pt, shape->clips)) {
                 if (shape->validFill && isPointInMesh(pt, shape->geometry.fill, shape->geometry.fillWorld ? tvg::identity() : shape->geometry.matrix)) return true;
-                if (shape->validStroke && isPointInTris(pt, shape->geometry.stroke, tvg::identity())) return true;
+                if (shape->validStroke && isPointInTris(pt * *shape->geometry.inverseMatrix(), shape->geometry.stroke)) return true;
             }
         }
     }
@@ -154,16 +128,26 @@ void GlGeometry::prepare(const RenderShape& rshape)
 {
     optPathThin = false;
     optPathSkipFill = false;
+    optStrokePath.clear();
+
+    auto strokeWidth = rshape.strokeWidth();
+    auto localOut = (std::isfinite(strokeWidth) && !tvg::zero(strokeWidth)) ? &optStrokePath : nullptr;
+    auto path = &rshape.path;
+    RenderPath trimmedPath;
+
     if (rshape.trimpath()) {
-        RenderPath trimmedPath;
         if (rshape.stroke->trim.trim(rshape.path, trimmedPath)) {
-            gpuOptimize(trimmedPath, optPath, matrix, optPathThin, optPathSkipFill);
+            path = &trimmedPath;
         } else {
             optPath.clear();
+            return;
         }
-    } else {
-        gpuOptimize(rshape.path, optPath, matrix, optPathThin, optPathSkipFill);
     }
+
+    GpuOptimizeResult result{&optPath, localOut};
+    gpuOptimize(*path, result, matrix);
+    optPathThin = result.thin;
+    optPathSkipFill = result.skipFill;
 }
 
 
@@ -182,13 +166,7 @@ bool GlGeometry::tesselateShape(const RenderShape& rshape, float* opacityMultipl
     // After CTM:  [.]        // thinner than 1 px in device space
     // Visible thin fills use stroke tessellation; sub-quantum fills are skipped earlier.
     if (optPathThin && tvg::zero(rshape.strokeWidth())) {
-        if (tesselateThinPath(optPath)) {
-            // The time spent is similar to substituting buffers in tessellation, so we just move the buffers to keep the code simple.
-            stroke.index.move(fill.index);
-            stroke.vertex.move(fill.vertex);
-            fillBounds = strokeBounds;
-            strokeBounds = {};
-            strokeRenderWidth = 0.0f;
+        if (tesselateThinFill(optPath)) {
             if (opacityMultiplier) *opacityMultiplier = MIN_GL_STROKE_ALPHA;
             fillRule = rshape.rule;
             return true;
@@ -207,15 +185,21 @@ bool GlGeometry::tesselateShape(const RenderShape& rshape, float* opacityMultipl
 }
 
 
-bool GlGeometry::tesselateThinPath(const RenderPath& path)
+bool GlGeometry::tesselateThinFill(const RenderPath& path)
 {
     stroke.clear();
     strokeBounds = {};
-    strokeRenderWidth = MIN_GL_STROKE_WIDTH;
     if (path.pts.count < 2) return false;
+
+    // Thin fills borrow stroke tessellation, but the generated stroke buffer is
+    // temporary. It must be moved into fill before this function returns.
     Stroker stroker(&stroke, MIN_GL_STROKE_WIDTH, StrokeCap::Butt, StrokeJoin::Bevel);
-    stroker.run(path);
-    strokeBounds = stroker.bounds();
+    stroker.run(path); // path is already in world space.
+    stroke.index.move(fill.index);
+    stroke.vertex.move(fill.vertex);
+    fillBounds = stroker.bounds();
+    strokeBounds = {};
+    strokeRenderWidth = 0.0f;
     return true;
 }
 
@@ -226,28 +210,23 @@ bool GlGeometry::tesselateStroke(const RenderShape& rshape)
     strokeBounds = {};
     strokeRenderWidth = 0.0f;
 
-    auto strokeWidth = 0.0f;
-    if (isinf(matrix.e11)) {
-        strokeWidth = rshape.strokeWidth() * scaling(matrix);
-        if (strokeWidth <= MIN_GL_STROKE_WIDTH) strokeWidth = MIN_GL_STROKE_WIDTH;
-        strokeWidth = strokeWidth / matrix.e11;
-    } else {
-        strokeWidth = rshape.strokeWidth();
-    }
-    auto strokeWidthWorld = strokeWidth * scaling(matrix);
-    if (!std::isfinite(strokeWidthWorld)) strokeWidthWorld = strokeWidth;
+    auto strokeWidth = rshape.strokeWidth();
+    if (!std::isfinite(strokeWidth)) return false;
+    if (tvg::zero(strokeWidth)) return false;
 
-    //run stroking only if it's valid
-    if (!tvg::zero(strokeWidthWorld)) {
-        Stroker stroker(&stroke, strokeWidthWorld, rshape.strokeCap(), rshape.strokeJoin(), rshape.strokeMiterlimit());
-        auto& dashed = RenderPath::scratch();
-        if (gpuStrokeDash(rshape, dashed, &matrix)) stroker.run(dashed);
-        else stroker.run(optPath);
-        strokeBounds = stroker.bounds();
-        strokeRenderWidth = strokeWidthWorld;
-        return true;
-    }
-    return false;
+    auto qualityScale = scaling(matrix);
+    if (!std::isfinite(qualityScale)) return false;
+    if (tvg::zero(qualityScale)) return false;
+    strokeRenderWidth = strokeWidth * qualityScale;
+    if (!std::isfinite(strokeRenderWidth)) return false; // Invalid stroke render width when width and quality scale are finite but their product is not finite.
+
+    // Keep stroke vertices local; GL applies model later through uViewMatrix.
+    Stroker stroker(&stroke, strokeWidth, rshape.strokeCap(), rshape.strokeJoin(), rshape.strokeMiterlimit(), qualityScale);
+    auto& dashed = RenderPath::scratch();
+    if (gpuStrokeDash(rshape, dashed, nullptr)) stroker.run(dashed);
+    else stroker.run(optStrokePath);
+    strokeBounds = stroker.bounds();
+    return true;
 }
 
 
@@ -285,17 +264,12 @@ void GlGeometry::tesselateImage(const RenderSurface* image)
     fill.index.push(1);
     fill.index.push(3);
 
-    fillBounds = _transformBounds(RenderRegion{{0, 0}, {int32_t(image->w), int32_t(image->h)}}, matrix);
+    fillBounds = gpuTransformBounds(RenderRegion{{0, 0}, {int32_t(image->w), int32_t(image->h)}}, matrix);
 }
 
-
-bool GlGeometry::draw(GlRenderTask* task, GlStageBuffer* gpuBuffer, RenderUpdateFlag flag)
+void GlGeometry::draw(GlRenderTask* task, GlStageBuffer* gpuBuffer, RenderUpdateFlag flag) const
 {
-    if (flag == RenderUpdateFlag::None) return false;
-
     auto buffer = ((flag & RenderUpdateFlag::Stroke) || (flag & RenderUpdateFlag::GradientStroke)) ? &stroke : &fill;
-    if (buffer->index.empty()) return false;
-
     auto vertexOffset = gpuBuffer->push(buffer->vertex.data, buffer->vertex.count * sizeof(float));
     auto indexOffset = gpuBuffer->pushIndex(buffer->index.data, buffer->index.count * sizeof(uint32_t));
 
@@ -307,9 +281,7 @@ bool GlGeometry::draw(GlRenderTask* task, GlStageBuffer* gpuBuffer, RenderUpdate
         task->addVertexLayout(GlVertexLayout{0, 2, 2 * sizeof(float), vertexOffset});
     }
     task->setDrawRange(indexOffset, buffer->index.count);
-    return true;
 }
-
 
 GlStencilMode GlGeometry::getStencilMode(RenderUpdateFlag flag)
 {
@@ -331,7 +303,7 @@ RenderRegion GlGeometry::getBounds() const
     auto hasBounds = false;
 
     if (!fill.index.empty()) {
-        auto fill = fillWorld ? fillBounds : _transformBounds(fillBounds, matrix);
+        auto fill = fillWorld ? fillBounds : gpuTransformBounds(fillBounds, matrix);
         if (fill.valid()) {
             bounds = fill;
             hasBounds = true;
@@ -339,7 +311,7 @@ RenderRegion GlGeometry::getBounds() const
     }
 
     if (!stroke.index.empty()) {
-        auto stroke = strokeBounds;
+        auto stroke = gpuTransformBounds(strokeBounds, matrix);
         if (stroke.valid()) {
             if (hasBounds) bounds.add(stroke);
             else {

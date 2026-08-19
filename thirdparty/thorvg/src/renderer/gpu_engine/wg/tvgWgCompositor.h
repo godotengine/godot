@@ -43,6 +43,7 @@ private:
     WgStageBufferGeometry stageBufferGeometry{};
     WgStageBufferSolidColor stageBufferSolidColor{};
     WgStageBufferUniform<WgShaderTypePaintSettings> stageBufferPaint;
+    WgStageBufferUniform<WgShaderTypeMat4x4fBlock> stageBufferViewMat;
     // global stencil/depth buffer handles
     WGPUTexture texDepthStencil{};
     WGPUTextureView texViewDepthStencil{};
@@ -131,7 +132,7 @@ public:
     void composeScene(WgContext& context, WgRenderTarget* src, WgRenderTarget* mask, WgCompose* compose);
 
     // blit render target to texture view (f.e. screen buffer)
-    void blit(WgContext& context, WGPUCommandEncoder encoder, WgRenderTarget* src, WGPUTextureView dstView);
+    void blit(WgContext& context, WGPUCommandEncoder encoder, WgRenderTarget* src, WGPUTextureView dstView, bool premultiplied);
 
     // effects
     bool gaussianBlur(WgContext& context, WgRenderTarget* dst, const RenderEffectGaussianBlur* params, const WgCompose* compose);

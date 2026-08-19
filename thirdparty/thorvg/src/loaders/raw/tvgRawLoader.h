@@ -23,9 +23,8 @@
 #ifndef _TVG_RAW_LOADER_H_
 #define _TVG_RAW_LOADER_H_
 
-class RawLoader : public ImageLoader
+struct RawLoader : ImageLoader
 {
-public:
     bool copy = false;
 
     RawLoader();

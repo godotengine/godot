@@ -200,6 +200,8 @@ bool RenderPath::bounds(const Matrix* m, BBox& box)
 {
     if (cmds.empty() || cmds.first() == PathCommand::CubicTo) return false;
 
+    box.init();
+
     auto pt = pts.begin();
     auto cmd = cmds.begin();
 

@@ -99,5 +99,7 @@ void TextureMgr::clear()
     }
     surfaces.free();
     if (++stamp == 0) stamp = 1;  // avoid zero stamp, which is used to indicate stale cache.
-    if (!textures.empty()) GL_CHECK(glDeleteTextures(textures.count, textures.data));
+    if (!textures.empty()) {
+        GL_CHECK(glDeleteTextures(textures.count, textures.data));
+    }
 }

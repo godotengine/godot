@@ -23,11 +23,13 @@
 #ifndef _TVG_WG_COMMON_H_
 #define _TVG_WG_COMMON_H_
 
+#include <webgpu/webgpu.h>
 #include "tvgGpuCommon.h"
 #include "tvgWgBindGroups.h"
 
 struct WgContext {
     WGPUInstance instance{};
+    WGPUAdapter adapter{};
     WGPUDevice device{};
     WGPUQueue queue{};
     WGPUTextureFormat format = WGPUTextureFormat_BGRA8Unorm;
@@ -38,7 +40,7 @@ struct WgContext {
     WGPUSampler samplerLinearClamp;
     WgBindGroupLayouts layouts;
 
-    void initialize(WGPUInstance instance, WGPUDevice device);
+    void initialize(const WgCanvas::Context& ctx);
     void release();
     
     // create common objects
@@ -47,7 +49,7 @@ struct WgContext {
     WGPUTexture createTexStorage(uint32_t width, uint32_t height, WGPUTextureFormat format);
     WGPUTexture createTexAttachement(uint32_t width, uint32_t height, WGPUTextureFormat format, uint32_t sc);
     WGPUTextureView createTextureView(WGPUTexture texture);
-    bool allocateTexture(WGPUTexture& texture, uint32_t width, uint32_t height, WGPUTextureFormat format, void* data);
+    bool allocateTexture(WGPUTexture& texture, uint32_t width, uint32_t height, WGPUTextureFormat format, const void* data, uint32_t bytesPerRow, uint64_t dataSize);
 
     // release common objects
     void releaseTextureView(WGPUTextureView& textureView);

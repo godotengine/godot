@@ -32,7 +32,7 @@ static uint32_t _pushVertex(Array<float>& array, float x, float y)
     return (array.count - 2) / 2;
 }
 
-Stroker::Stroker(GlGeometryBuffer* buffer, float width, StrokeCap cap, StrokeJoin join, float miterLimit) : mBuffer(buffer), mWidth(width), mMiterLimit(miterLimit), mCap(cap), mJoin(join)
+Stroker::Stroker(GlGeometryBuffer* buffer, float width, StrokeCap cap, StrokeJoin join, float miterLimit, float qualityScale) : mBuffer(buffer), mWidth(width), mMiterLimit(miterLimit), mQualityScale(qualityScale), mCap(cap), mJoin(join)
 {
 }
 
@@ -167,7 +167,7 @@ void Stroker::cubicTo(const Point& cnt1, const Point& cnt2, const Point& end)
 {
     Bezier curve{ mState.prevPt, cnt1, cnt2, end };
 
-    auto count = curve.segments();
+    auto count = curve.segments(mQualityScale);
     auto step = 1.f / count;
 
     for (uint32_t i = 0; i <= count; i++) {
@@ -233,8 +233,8 @@ void Stroker::round(const Point &prev, const Point& curr, const Point& center)
     mRightBottom.x = std::max(mRightBottom.x, std::max(center.x, std::max(prev.x, curr.x)));
     mRightBottom.y = std::max(mRightBottom.y, std::max(center.y, std::max(prev.y, curr.y)));
 
-    auto startAngle = tvg::atan2(prev.y - center.y, prev.x - center.x);
-    auto endAngle = tvg::atan2(curr.y - center.y, curr.x - center.x);
+    auto startAngle = tvg::atan(prev - center);
+    auto endAngle = tvg::atan(curr - center);
 
     if (orient == Orientation::Clockwise) {
         if (endAngle > startAngle) endAngle -= 2 * MATH_PI;
@@ -243,7 +243,7 @@ void Stroker::round(const Point &prev, const Point& curr, const Point& center)
     }
 
     auto arcAngle = endAngle - startAngle;
-    auto count = arcSegmentsCnt(arcAngle, radius());
+    auto count = gpuArcSegmentsCnt(arcAngle, radius() * mQualityScale);
 
     auto c = _pushVertex(mBuffer->vertex, center.x, center.y);
     auto pi = _pushVertex(mBuffer->vertex, prev.x, prev.y);
@@ -270,7 +270,7 @@ void Stroker::round(const Point &prev, const Point& curr, const Point& center)
 
 void Stroker::roundPoint(const Point &p)
 {
-    auto count = arcSegmentsCnt(2.0f * MATH_PI, radius());
+    auto count = gpuArcSegmentsCnt(2.0f * MATH_PI, radius() * mQualityScale);
     auto c = _pushVertex(mBuffer->vertex, p.x, p.y);
     auto step = 2.0f * MATH_PI / (count - 1);
 

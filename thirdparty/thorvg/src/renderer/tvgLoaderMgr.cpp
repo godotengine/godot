@@ -22,7 +22,6 @@
 
 #include <atomic>
 #include "tvgInlist.h"
-#include "tvgStr.h"
 #include "tvgLoaderMgr.h"
 #include "tvgLock.h"
 
@@ -42,8 +41,8 @@
     #include "tvgWebpLoader.h"
 #endif
 
-#ifdef THORVG_TTF_LOADER_SUPPORT
-    #include "tvgTtfLoader.h"
+#ifdef THORVG_SFNT_LOADER_SUPPORT
+    #include "tvgSfntLoader.h"
 #endif
 
 #ifdef THORVG_LOTTIE_LOADER_SUPPORT
@@ -94,9 +93,9 @@ static tvg::Loader* _find(FileType type)
 #endif
             break;
         }
-        case FileType::Ttf: {
-#ifdef THORVG_TTF_LOADER_SUPPORT
-            return new TtfLoader;
+        case FileType::Sfnt: {
+#ifdef THORVG_SFNT_LOADER_SUPPORT
+            return new SfntLoader;
 #endif
             break;
         }
@@ -122,8 +121,8 @@ static tvg::Loader* _find(FileType type)
             format = "SVG";
             break;
         }
-        case FileType::Ttf: {
-            format = "TTF";
+        case FileType::Sfnt: {
+            format = "SFNT";
             break;
         }
         case FileType::Lot: {
@@ -167,8 +166,7 @@ static tvg::Loader* _findByPath(const char* filename)
     if (!strcmp(ext, "png")) return _find(FileType::Png);
     if (!strcmp(ext, "jpg")) return _find(FileType::Jpg);
     if (!strcmp(ext, "webp")) return _find(FileType::Webp);
-    if (!strcmp(ext, "ttf") || !strcmp(ext, "ttc")) return _find(FileType::Ttf);
-    if (!strcmp(ext, "otf") || !strcmp(ext, "otc")) return _find(FileType::Ttf);
+    if (!strcmp(ext, "ttf") || !strcmp(ext, "ttc") || !strcmp(ext, "otf") || !strcmp(ext, "otc")) return _find(FileType::Sfnt);
     return nullptr;
 }
 #endif
@@ -180,7 +178,7 @@ static FileType _convert(const char* mimeType)
     auto type = FileType::Unknown;
 
     if (!strcmp(mimeType, "svg") || !strcmp(mimeType, "svg+xml")) type = FileType::Svg;
-    else if (!strcmp(mimeType, "ttf") || !strcmp(mimeType, "otf")) type = FileType::Ttf;
+    else if (!strcmp(mimeType, "ttf") || !strcmp(mimeType, "otf")) type = FileType::Sfnt;
     else if (!strcmp(mimeType, "lot") || !strcmp(mimeType, "lottie+json")) type = FileType::Lot;
     else if (!strcmp(mimeType, "raw")) type = FileType::Raw;
     else if (!strcmp(mimeType, "png")) type = FileType::Png;
@@ -239,7 +237,7 @@ bool LoaderMgr::term()
 {
     // clean up the remained font loaders which is globally used.
     INLIST_SAFE_FOREACH(_activeLoaders, loader) {
-        if (loader->type != FileType::Ttf) continue;
+        if (loader->type != FileType::Sfnt) continue;
         auto ret = loader->close();
         _activeLoaders.remove(loader);
         if (ret) delete (loader);
@@ -265,38 +263,25 @@ tvg::Loader* LoaderMgr::loader(const char* filename, const LoaderOps* ops, bool*
 #ifdef THORVG_FILE_IO_SUPPORT
     *invalid = false;
 
-    // TODO: make lottie sharable.
-    auto allowCache = true;
-    auto ext = fileext(filename);
-    if (ext && (!strcmp(ext, "json") || !strcmp(ext, "lot"))) allowCache = false;
-
-    if (allowCache) {
-        if (auto loader = _findFromCache(filename)) return loader;
-    }
+    if (auto loader = _findFromCache(filename)) return loader;
 
     if (auto loader = _findByPath(filename)) {
         if (loader->open(filename, ops)) {
-            if (allowCache) {
-                loader->cache(duplicate(filename));
-                {
-                    ScopedLock lock(_key);
-                    _activeLoaders.back(loader);
-                }
+            if (loader->cache(filename)) {
+                ScopedLock lock(_key);
+                _activeLoaders.back(loader);
             }
             return loader;
         }
         delete (loader);
     }
     // Unknown MimeType. Try with the candidates in the order
-    for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
+    for (int i = 0; i < static_cast<int>(FileType::Unknown); i++) {
         if (auto loader = _find(static_cast<FileType>(i))) {
             if (loader->open(filename, ops)) {
-                if (allowCache) {
-                    loader->cache(duplicate(filename));
-                    {
-                        ScopedLock lock(_key);
-                        _activeLoaders.back(loader);
-                    }
+                if (loader->cache(filename)) {
+                    ScopedLock lock(_key);
+                    _activeLoaders.back(loader);
                 }
                 return loader;
             }
@@ -317,15 +302,7 @@ tvg::Loader* LoaderMgr::loader(const char* data, uint32_t size, const char* mime
 {
     // Note that users could use the same data pointer with the different content.
     // Thus caching is only valid for shareable.
-    auto allowCache = !copy;
-
-    // TODO: make lottie shareable.
-    if (allowCache) {
-        auto type = _convert(mimeType);
-        if (type == FileType::Lot) allowCache = false;
-    }
-
-    if (allowCache) {
+    if (!copy) {
         if (auto loader = _findFromCache(data, size, mimeType)) return loader;
     }
 
@@ -333,8 +310,7 @@ tvg::Loader* LoaderMgr::loader(const char* data, uint32_t size, const char* mime
     if (mimeType) {
         if (auto loader = _findByType(mimeType)) {
             if (loader->open(data, size, ops, copy)) {
-                if (allowCache) {
-                    loader->cache(HASH_KEY(data));
+                if (!copy && loader->cache(HASH_KEY(data))) {
                     ScopedLock lock(_key);
                     _activeLoaders.back(loader);
                 }
@@ -346,19 +322,17 @@ tvg::Loader* LoaderMgr::loader(const char* data, uint32_t size, const char* mime
         }
     }
     // Unknown MimeType. Try with the candidates in the order
-    for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
+    for (int i = 0; i < static_cast<int>(FileType::Unknown); i++) {
         auto loader = _find(static_cast<FileType>(i));
-        if (loader) {
-            if (loader->open(data, size, ops, copy)) {
-                if (allowCache) {
-                    loader->cache(HASH_KEY(data));
-                    ScopedLock lock(_key);
-                    _activeLoaders.back(loader);
-                }
-                return loader;
+        if (!loader) continue;
+        if (loader->open(data, size, ops, copy)) {
+            if (!copy && loader->cache(HASH_KEY(data))) {
+                ScopedLock lock(_key);
+                _activeLoaders.back(loader);
             }
-            delete (loader);
+            return loader;
         }
+        delete (loader);
     }
     return nullptr;
 }
@@ -375,8 +349,7 @@ tvg::Loader* LoaderMgr::loader(const uint32_t* data, uint32_t w, uint32_t h, Col
     // function is dedicated for raw images only
     auto loader = new RawLoader;
     if (loader->open(data, w, h, cs, copy)) {
-        if (!copy) {
-            loader->cache(HASH_KEY((const char*)data));
+        if (!copy && loader->cache(HASH_KEY((const char*)data))) {
             ScopedLock lock(_key);
             _activeLoaders.back(loader);
         }
@@ -389,12 +362,12 @@ tvg::Loader* LoaderMgr::loader(const uint32_t* data, uint32_t w, uint32_t h, Col
 // loads fonts from memory - loader is cached (regardless of copy value) in order to access it while setting font
 tvg::Loader* LoaderMgr::loader(const char* name, const char* data, uint32_t size, TVG_UNUSED const char* mimeType, const LoaderOps* ops, bool copy)
 {
-#ifdef THORVG_TTF_LOADER_SUPPORT
+#ifdef THORVG_SFNT_LOADER_SUPPORT
     // TODO: add check for mimetype ?
     if (auto loader = font(name)) return loader;
 
-    // function is dedicated for ttf loader (the only supported font loader)
-    auto loader = new TtfLoader;
+    // function is dedicated for SFNT-based font loading
+    auto loader = new SfntLoader;
     if (loader->open(data, size, ops, copy)) {
         loader->name = duplicate(name);
         loader->cached = true;  // force it.
@@ -413,7 +386,7 @@ tvg::Loader* LoaderMgr::font(const char* name)
 {
     ScopedLock lock(_key);
     INLIST_FOREACH(_activeLoaders, loader) {
-        if (loader->type != FileType::Ttf) continue;
+        if (loader->type != FileType::Sfnt) continue;
         if (loader->cached && tvg::equal(name, static_cast<FontLoader*>(loader)->name)) {
             ++loader->sharing;
             return loader;
@@ -426,7 +399,7 @@ tvg::Loader* LoaderMgr::anyfont()
 {
     ScopedLock lock(_key);
     INLIST_FOREACH(_activeLoaders, loader) {
-        if (loader->cached && loader->type == FileType::Ttf) {
+        if (loader->cached && loader->type == FileType::Sfnt) {
             ++loader->sharing;
             return loader;
         }

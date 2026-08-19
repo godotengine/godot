@@ -37,6 +37,7 @@
 
 static bool _appendClipShape(SvgParserContext& ctx, SvgNode* node, Shape* shape, const Box& vBox, const string& svgPath, const Matrix* transform);
 static Scene* _sceneBuildHelper(SvgParserContext& ctx, const SvgNode* node, const Box& vBox, const string& svgPath, bool mask, int depth);
+static Paint* _applyPatternProperty(SvgParserContext& ctx, Shape* vg, SvgNode* node, SvgNode* patternNode, const Box& vBox, const string& svgPath);
 
 static inline bool _isGroupType(SvgNodeType type)
 {
@@ -54,6 +55,15 @@ static Box _bounds(Paint* paint)
     return {x, y, w, h};
 }
 
+static Box _objectBoundingBox(const Box& ratio, const Box& bounds)
+{
+    return {bounds.x + ratio.x * bounds.w, bounds.y + ratio.y * bounds.h, ratio.w * bounds.w, ratio.h * bounds.h};
+}
+
+static inline bool _validBox(const Box& b)
+{
+    return b.w > 0.0f && b.h > 0.0f;
+}
 
 static void _transformMultiply(const Matrix* mBBox, Matrix* gradTransf)
 {
@@ -66,8 +76,7 @@ static void _transformMultiply(const Matrix* mBBox, Matrix* gradTransf)
     gradTransf->e21 *= mBBox->e22;
 }
 
-
-static LinearGradient* _applyLinearGradientProperty(SvgStyleGradient* g, const Box& vBox, int opacity)
+static LinearGradient* _applyLinearGradientProperty(SvgStyleGradient* g, const Box& vBox, const Box& viewport, int opacity)
 {
     Fill::ColorStop* stops;
     auto fillGrad = LinearGradient::gen();
@@ -76,7 +85,10 @@ static LinearGradient* _applyLinearGradientProperty(SvgStyleGradient* g, const B
     if (isTransform) finalTransform = *g->transform;
 
     if (g->userSpace) {
-        fillGrad->linear(g->linear.x1 * vBox.w, g->linear.y1 * vBox.h, g->linear.x2 * vBox.w, g->linear.y2 * vBox.h);
+        fillGrad->linear(g->linear.x1 * (g->linear.isX1Percentage ? vBox.w : viewport.w),
+                         g->linear.y1 * (g->linear.isY1Percentage ? vBox.h : viewport.h),
+                         g->linear.x2 * (g->linear.isX2Percentage ? vBox.w : viewport.w),
+                         g->linear.y2 * (g->linear.isY2Percentage ? vBox.h : viewport.h));
     } else {
         Matrix m = {vBox.w, 0, vBox.x, 0, vBox.h, vBox.y, 0, 0, 1};
         if (isTransform) _transformMultiply(&m, &finalTransform);
@@ -108,8 +120,7 @@ static LinearGradient* _applyLinearGradientProperty(SvgStyleGradient* g, const B
     return fillGrad;
 }
 
-
-static RadialGradient* _applyRadialGradientProperty(SvgStyleGradient* g, const Box& vBox, int opacity)
+static RadialGradient* _applyRadialGradientProperty(SvgStyleGradient* g, const Box& vBox, const Box& viewport, int opacity)
 {
     Fill::ColorStop *stops;
     auto fillGrad = RadialGradient::gen();
@@ -121,7 +132,13 @@ static RadialGradient* _applyRadialGradientProperty(SvgStyleGradient* g, const B
         //The radius scaling is done according to the Units section:
         //https://www.w3.org/TR/2015/WD-SVG2-20150915/coords.html
         auto diag = sqrtf(powf(vBox.w, 2.0f) + powf(vBox.h, 2.0f)) / sqrtf(2.0f);
-        fillGrad->radial(g->radial.cx * vBox.w, g->radial.cy * vBox.h, g->radial.r * diag, g->radial.fx * vBox.w, g->radial.fy * vBox.h, g->radial.fr * diag);
+        auto viewportDiag = sqrtf(powf(viewport.w, 2.0f) + powf(viewport.h, 2.0f)) / sqrtf(2.0f);
+        fillGrad->radial(g->radial.cx * (g->radial.isCxPercentage ? vBox.w : viewport.w),
+                         g->radial.cy * (g->radial.isCyPercentage ? vBox.h : viewport.h),
+                         g->radial.r * (g->radial.isRPercentage ? diag : viewportDiag),
+                         g->radial.fx * (g->radial.isFxPercentage ? vBox.w : viewport.w),
+                         g->radial.fy * (g->radial.isFyPercentage ? vBox.h : viewport.h),
+                         g->radial.fr * (g->radial.isFrPercentage ? diag : viewportDiag));
     } else {
         Matrix m = {vBox.w, 0, vBox.x, 0, vBox.h, vBox.y, 0, 0, 1};
         if (isTransform) _transformMultiply(&m, &finalTransform);
@@ -232,7 +249,8 @@ static Matrix _compositionTransform(Paint* paint, const SvgNode* node, const Svg
     if (compNode->transform) {
         m *= *compNode->transform;
     }
-    if (!compNode->node.clip.userSpace) {
+    auto userSpace = (type == SvgNodeType::Mask) ? compNode->node.mask.maskContentUserSpace : compNode->node.clip.userSpace;
+    if (!userSpace) {
         auto bbox = _bounds(paint);
         m *= {bbox.w, 0, bbox.x, 0, bbox.h, bbox.y, 0, 0, 1};
     }
@@ -302,18 +320,27 @@ static Paint* _applyComposition(SvgParserContext& ctx, Paint* paint, const SvgNo
         node->style->mask.applying = true;
 
         if (auto mask = _sceneBuildHelper(ctx, maskNode, vBox, svgPath, true, 0)) {
-            if (!maskNode->node.mask.userSpace) {
+            auto& maskData = maskNode->node.mask;
+            if (!maskData.maskContentUserSpace) {
                 Matrix finalTransform = _compositionTransform(paint, node, maskNode, SvgNodeType::Mask);
                 mask->transform(finalTransform);
             } else if (node->transform) {
                 mask->transform(*node->transform);
             }
-            scene->mask(mask, maskNode->node.mask.type == SvgMaskType::Luminance ? MaskMethod::Luma: MaskMethod::Alpha);
+            auto bbox = _bounds(paint);
+            auto clipper = Shape::gen();
+            if (maskData.userSpace) {
+                clipper->appendRect(maskData.box.x, maskData.box.y, maskData.box.w, maskData.box.h);
+                if (node->transform) clipper->transform(*node->transform);
+            } else {
+                auto box = _objectBoundingBox(maskData.box, bbox);
+                clipper->appendRect(box.x, box.y, box.w, box.h);
+            }
+            mask->clip(clipper);
+            scene->mask(mask, maskData.type == SvgMaskType::Luminance ? MaskMethod::Luma : MaskMethod::Alpha);
         }
-
         node->style->mask.applying = false;
     }
-
     return scene;
 }
 
@@ -321,12 +348,11 @@ static Paint* _applyFilter(SvgParserContext& ctx, Paint* paint, const SvgNode* n
 {
     auto filterNode = node->style->filter.node;
     if (!filterNode || filterNode->child.count == 0) return paint;
+
     auto& filter = filterNode->node.filter;
-
     auto scene = Scene::gen();
-
     auto bbox = _bounds(paint);
-    Box clipBox = filter.filterUserSpace ? filter.box : Box{bbox.x + filter.box.x * bbox.w, bbox.y + filter.box.y * bbox.h, filter.box.w * bbox.w, filter.box.h * bbox.h};
+    auto clipBox = filter.filterUserSpace ? filter.box : _objectBoundingBox(filter.box, bbox);
     auto primitiveUserSpace = filter.primitiveUserSpace;
     auto sx = paint->transform().e11;
     auto sy = paint->transform().e22;
@@ -375,6 +401,32 @@ static Paint* _applyFilter(SvgParserContext& ctx, Paint* paint, const SvgNode* n
     return scene;
 }
 
+static void _applyStroke(SvgStyleProperty* style, Shape* vg, const Box& vBox, const Box& viewport)
+{
+    vg->strokeWidth(style->stroke.width);
+    vg->strokeCap(style->stroke.cap);
+    vg->strokeJoin(style->stroke.join);
+    vg->strokeMiterlimit(style->stroke.miterlimit);
+    vg->strokeDash(style->stroke.dash.array.data, style->stroke.dash.array.count, style->stroke.dash.offset);
+
+    if (style->stroke.paint.none) {
+        vg->strokeWidth(0.0f);
+    } else if (style->stroke.paint.gradient) {
+        auto bBox = style->stroke.paint.gradient->userSpace ? vBox : _bounds(vg);
+        if (style->stroke.paint.gradient->type == SvgGradientType::Linear) {
+            vg->strokeFill(_applyLinearGradientProperty(style->stroke.paint.gradient, bBox, viewport, style->stroke.opacity));
+        } else if (style->stroke.paint.gradient->type == SvgGradientType::Radial) {
+            vg->strokeFill(_applyRadialGradientProperty(style->stroke.paint.gradient, bBox, viewport, style->stroke.opacity));
+        }
+    } else if (style->stroke.paint.url) {
+        TVGLOG("SVG", "The stroke's url not supported.");
+    } else if (style->stroke.paint.curColor) {
+        vg->strokeFill(style->color.r, style->color.g, style->color.b, style->stroke.opacity);
+    } else {
+        vg->strokeFill(style->stroke.paint.color.r, style->stroke.paint.color.g, style->stroke.paint.color.b, style->stroke.opacity);
+    }
+}
+
 static Paint* _applyProperty(SvgParserContext& ctx, SvgNode* node, Shape* vg, const Box& vBox, const string& svgPath, bool clip)
 {
     SvgStyleProperty* style = node->style;
@@ -388,9 +440,23 @@ static Paint* _applyProperty(SvgParserContext& ctx, SvgNode* node, Shape* vg, co
     } else if (style->fill.paint.gradient) {
         auto bBox = style->fill.paint.gradient->userSpace ? vBox : _bounds(vg);
         if (style->fill.paint.gradient->type == SvgGradientType::Linear) {
-            vg->fill(_applyLinearGradientProperty(style->fill.paint.gradient, bBox, style->fill.opacity));
+            vg->fill(_applyLinearGradientProperty(style->fill.paint.gradient, bBox, ctx.parser->global, style->fill.opacity));
         } else if (style->fill.paint.gradient->type == SvgGradientType::Radial) {
-            vg->fill(_applyRadialGradientProperty(style->fill.paint.gradient, bBox, style->fill.opacity));
+            vg->fill(_applyRadialGradientProperty(style->fill.paint.gradient, bBox, ctx.parser->global, style->fill.opacity));
+        }
+    } else if (style->fill.paint.pattern) {
+        if (auto patternPaint = _applyPatternProperty(ctx, vg, node, style->fill.paint.pattern, vBox, svgPath)) {
+            vg->fillRule(style->fill.fillRule);
+            vg->order(!style->paintOrder);
+            _applyStroke(style, vg, vBox, ctx.parser->global);
+            auto patternScene = Scene::gen();
+            patternScene->add(patternPaint);
+            patternScene->add(vg);
+            patternScene->opacity(style->opacity);
+            if (node->transform && !clip) patternScene->transform(*node->transform);
+            auto p = _applyFilter(ctx, patternScene, node, vBox, svgPath);
+            p = _applyComposition(ctx, p, node, vBox, svgPath);
+            return _applyBlend(p, node);
         }
     } else if (style->fill.paint.url) {
         TVGLOG("SVG", "The fill's url not supported.");
@@ -411,33 +477,7 @@ static Paint* _applyProperty(SvgParserContext& ctx, SvgNode* node, Shape* vg, co
         return vg;
     }
 
-    //Apply the stroke style property
-    vg->strokeWidth(style->stroke.width);
-    vg->strokeCap(style->stroke.cap);
-    vg->strokeJoin(style->stroke.join);
-    vg->strokeMiterlimit(style->stroke.miterlimit);
-    vg->strokeDash(style->stroke.dash.array.data, style->stroke.dash.array.count, style->stroke.dash.offset);
-
-    //If stroke property is nullptr then do nothing
-    if (style->stroke.paint.none) {
-        vg->strokeWidth(0.0f);
-    } else if (style->stroke.paint.gradient) {
-        auto bBox = style->stroke.paint.gradient->userSpace ? vBox : _bounds(vg);
-        if (style->stroke.paint.gradient->type == SvgGradientType::Linear) {
-             vg->strokeFill(_applyLinearGradientProperty(style->stroke.paint.gradient, bBox, style->stroke.opacity));
-        } else if (style->stroke.paint.gradient->type == SvgGradientType::Radial) {
-             vg->strokeFill(_applyRadialGradientProperty(style->stroke.paint.gradient, bBox, style->stroke.opacity));
-        }
-    } else if (style->stroke.paint.url) {
-        //TODO: Apply the color pointed by url
-        TVGLOG("SVG", "The stroke's url not supported.");
-    } else if (style->stroke.paint.curColor) {
-        //Apply the current style color
-        vg->strokeFill(style->color.r, style->color.g, style->color.b, style->stroke.opacity);
-    } else {
-        //Apply the stroke color
-        vg->strokeFill(style->stroke.paint.color.r, style->stroke.paint.color.g, style->stroke.paint.color.b, style->stroke.opacity);
-    }
+    _applyStroke(style, vg, vBox, ctx.parser->global);
 
     //apply transform after the local space shape bbox for gradient acquisition
     if (node->transform && !clip) vg->transform(*node->transform);
@@ -576,14 +616,14 @@ static constexpr struct
 
 
 static bool _isValidImageMimeTypeAndEncoding(const char** href, const char** mimetype, imageMimeTypeEncoding* encoding) {
-    if (strncmp(*href, "image/", sizeof("image/") - 1)) return false; //not allowed mime type
+    if (strncasecmp(*href, "image/", sizeof("image/") - 1)) return false;  // not allowed mime type
     *href += sizeof("image/") - 1;
 
     //RFC2397 data:[<mediatype>][;base64],<data>
     //mediatype  := [ type "/" subtype ] *( ";" parameter )
     //parameter  := attribute "=" value
     for (unsigned int i = 0; i < sizeof(imageMimeTypes) / sizeof(imageMimeTypes[0]); i++) {
-        if (strncmp(*href, imageMimeTypes[i].name, imageMimeTypes[i].sz - 1)) continue;
+        if (strncasecmp(*href, imageMimeTypes[i].name, imageMimeTypes[i].sz - 1)) continue;
         *href += imageMimeTypes[i].sz  - 1;
         *mimetype = imageMimeTypes[i].name;
 
@@ -593,14 +633,14 @@ static bool _isValidImageMimeTypeAndEncoding(const char** href, const char** mim
             ++(*href);
 
             if (imageMimeTypes[i].encoding & imageMimeTypeEncoding::base64) {
-                if (!strncmp(*href, "base64,", sizeof("base64,") - 1)) {
+                if (!strncasecmp(*href, "base64,", sizeof("base64,") - 1)) {
                     *href += sizeof("base64,") - 1;
                     *encoding = imageMimeTypeEncoding::base64;
                     return true; //valid base64
                 }
             }
             if (imageMimeTypes[i].encoding & imageMimeTypeEncoding::utf8) {
-                if (!strncmp(*href, "utf8,", sizeof("utf8,") - 1)) {
+                if (!strncasecmp(*href, "utf8,", sizeof("utf8,") - 1)) {
                     *href += sizeof("utf8,") - 1;
                     *encoding = imageMimeTypeEncoding::utf8;
                     return true; //valid utf8
@@ -823,8 +863,7 @@ static Scene* _useBuildHelper(SvgParserContext& ctx, const SvgNode* node, const 
     return scene;
 }
 
-
-static void _applyTextFill(SvgStyleProperty* style, Text* text, const Box& vBox)
+static void _applyTextFill(SvgStyleProperty* style, Text* text, const Box& vBox, const Box& viewport)
 {
     //If fill property is nullptr then do nothing
     if (style->fill.paint.none) {
@@ -832,9 +871,9 @@ static void _applyTextFill(SvgStyleProperty* style, Text* text, const Box& vBox)
     } else if (style->fill.paint.gradient) {
         auto bBox = style->fill.paint.gradient->userSpace ? vBox : _bounds(text);
         if (style->fill.paint.gradient->type == SvgGradientType::Linear) {
-            text->fill(_applyLinearGradientProperty(style->fill.paint.gradient, bBox, style->fill.opacity));
+            text->fill(_applyLinearGradientProperty(style->fill.paint.gradient, bBox, viewport, style->fill.opacity));
         } else if (style->fill.paint.gradient->type == SvgGradientType::Radial) {
-            text->fill(_applyRadialGradientProperty(style->fill.paint.gradient, bBox, style->fill.opacity));
+            text->fill(_applyRadialGradientProperty(style->fill.paint.gradient, bBox, viewport, style->fill.opacity));
         }
     } else if (style->fill.paint.url) {
         //TODO: Apply the color pointed by url
@@ -889,19 +928,11 @@ static char* _processText(const char* text, SvgXmlSpace space)
     return processed;
 }
 
-static Paint* _textBuildHelper(SvgParserContext& ctx, const SvgNode* node, const Box& vBox, const string& svgPath)
+static Text* _buildText(const SvgTextNode* textNode, SvgXmlSpace xmlSpace, const Matrix* transform)
 {
-    auto textNode = &node->node.text;
     if (!textNode->text) return nullptr;
 
     auto text = Text::gen();
-
-    Matrix textTransform;
-    if (node->transform) textTransform = *node->transform;
-    else textTransform = tvg::identity();
-
-    translateR(&textTransform, {node->node.text.x, node->node.text.y - textNode->fontSize});
-    text->transform(textTransform);
 
     //TODO: handle def values of font and size as used in a system?
     auto size = textNode->fontSize * 0.75f; //1 pt = 1/72; 1 in = 96 px; -> 72/96 = 0.75
@@ -910,21 +941,124 @@ static Paint* _textBuildHelper(SvgParserContext& ctx, const SvgNode* node, const
     }
     text->size(size);
 
-    // Handle xml:space
-    auto xmlSpace = node->xmlSpace;
-    auto parent = node->parent;
-    while (xmlSpace == SvgXmlSpace::None && parent) {
-        xmlSpace = parent->xmlSpace;
-        parent = parent->parent;
-    }
-    if (xmlSpace == SvgXmlSpace::None) xmlSpace = SvgXmlSpace::Default;
     auto processedText = _processText(textNode->text, xmlSpace);
     text->text(processedText);
     tvg::free(processedText);
 
-    _applyTextFill(node->style, text, vBox);
+    TextMetrics tm;
+    text->metrics(tm);
+    auto textTransform = transform ? *transform : tvg::identity();
+    translateR(&textTransform, {textNode->x + textNode->dx, textNode->y + textNode->dy - tm.ascent});
+    text->transform(textTransform);
 
-    auto p = _applyFilter(ctx, text, node, vBox, svgPath);
+    return text;
+}
+
+static void _updatePos(Text* text, const SvgTextNode& textNode, float anchor, Point& textPos)
+{
+    auto advance = 0.0f;
+    if (auto utf8 = text->text()) {
+        GlyphMetrics gm;
+        while (utf8) {
+            if (text->metrics(utf8, gm, &utf8) == Result::Success) advance += gm.advance;
+            else break;
+        }
+    }
+    textPos.x = textNode.x + textNode.dx + (1.0f - anchor) * advance;
+    textPos.y = textNode.y + textNode.dy;
+}
+
+static bool _hasPositionedTspan(const SvgNode* node, int depth)
+{
+    if (depth > 2192) {
+        TVGERR("SVG", "Infinite recursive call - stopped after %d calls! Svg file may be incorrectly formatted.", depth);
+        return true;
+    }
+    ARRAY_FOREACH(p, node->child)
+    {
+        if ((*p)->type != SvgNodeType::Tspan) continue;
+        auto& textNode = (*p)->node.text;
+        if (textNode.text) return true;
+        if (_hasPositionedTspan(*p, depth + 1)) return true;
+    }
+    return false;
+}
+
+static void _buildTspanScene(SvgParserContext& ctx, const SvgNode* node, Scene* scene, const Box& vBox, const string& svgPath, int depth, Point& textPos)
+{
+    if (depth > 2192) {
+        TVGERR("SVG", "Infinite recursive call - stopped after %d calls! Svg file may be incorrectly formatted.", depth);
+        return;
+    }
+    ARRAY_FOREACH(p, node->child)
+    {
+        auto child = *p;
+        if (child->type != SvgNodeType::Tspan) continue;
+
+        auto textNode = child->node.text;
+        if (textNode.text) {
+            auto xmlSpace = child->xmlSpace;
+            for (auto n = child->parent; n; n = n->parent) {
+                if (textNode.fontSize <= 0.0f) textNode.fontSize = n->node.text.fontSize;
+                if (!textNode.fontFamily) textNode.fontFamily = n->node.text.fontFamily;
+                if (xmlSpace == SvgXmlSpace::None) xmlSpace = n->xmlSpace;
+                if (n->type == SvgNodeType::Text) break;
+            }
+            if (xmlSpace == SvgXmlSpace::None) xmlSpace = SvgXmlSpace::Default;
+
+            if (textNode.x == FLT_MAX) textNode.x = textPos.x;
+            if (textNode.y == FLT_MAX) textNode.y = textPos.y;
+
+            auto text = _buildText(&textNode, xmlSpace, nullptr);
+            if (text) {
+                text->align(child->style->textAnchor, 0.0f);
+                _updatePos(text, textNode, child->style->textAnchor, textPos);
+                _applyTextFill(child->style, text, vBox, ctx.parser->global);
+                auto paint = _applyFilter(ctx, text, child, vBox, svgPath);
+                paint = _applyComposition(ctx, paint, child, vBox, svgPath);
+                paint = _applyBlend(paint, child);
+                scene->add(paint);
+            }
+        }
+        _buildTspanScene(ctx, child, scene, vBox, svgPath, depth + 1, textPos);
+    }
+}
+
+static Paint* _textBuildHelper(SvgParserContext& ctx, const SvgNode* node, const Box& vBox, const string& svgPath)
+{
+    auto textNode = &node->node.text;
+
+    // Handle xml:space
+    auto xmlSpace = node->xmlSpace;
+    for (auto n = node->parent; xmlSpace == SvgXmlSpace::None && n; n = n->parent)
+        xmlSpace = n->xmlSpace;
+    if (xmlSpace == SvgXmlSpace::None) xmlSpace = SvgXmlSpace::Default;
+
+    if (!_hasPositionedTspan(node, 0)) {
+        auto text = _buildText(textNode, xmlSpace, node->transform);
+        if (!text) return nullptr;
+        text->align(node->style->textAnchor, 0.0f);
+        _applyTextFill(node->style, text, vBox, ctx.parser->global);
+        auto p = _applyFilter(ctx, text, node, vBox, svgPath);
+        p = _applyComposition(ctx, p, node, vBox, svgPath);
+        return _applyBlend(p, node);
+    }
+
+    auto scene = Scene::gen();
+    if (node->transform) scene->transform(*node->transform);
+
+    Point textPos = {textNode->x, textNode->y};
+
+    if (auto text = _buildText(textNode, xmlSpace, nullptr)) {
+        text->align(node->style->textAnchor, 0.0f);
+        _updatePos(text, *textNode, node->style->textAnchor, textPos);
+        _applyTextFill(node->style, text, vBox, ctx.parser->global);
+        scene->add(text);
+    }
+
+    _buildTspanScene(ctx, node, scene, vBox, svgPath, 0, textPos);
+
+    auto p = _applyFilter(ctx, scene, node, vBox, svgPath);
     p = _applyComposition(ctx, p, node, vBox, svgPath);
     return _applyBlend(p, node);
 }
@@ -948,7 +1082,7 @@ static Scene* _sceneBuildHelper(SvgParserContext& ctx, const SvgNode* node, cons
     ARRAY_FOREACH(p, node->child) {
         auto child = *p;
         Paint* paint = nullptr;
-        if (child->type == SvgNodeType::ClipPath || child->type == SvgNodeType::Filter) continue;
+        if (child->type == SvgNodeType::ClipPath || child->type == SvgNodeType::Filter || child->type == SvgNodeType::Pattern) continue;
         if (_isGroupType(child->type)) {
             if (child->type == SvgNodeType::Use) paint = _useBuildHelper(ctx, child, vBox, svgPath, depth + 1);
             else if (!(child->type == SvgNodeType::Symbol && node->type != SvgNodeType::Use)) paint = _sceneBuildHelper(ctx, child, vBox, svgPath, false, depth + 1);
@@ -971,6 +1105,143 @@ static Scene* _sceneBuildHelper(SvgParserContext& ctx, const SvgNode* node, cons
     return (Scene*)_applyBlend(_applyComposition(ctx, _applyFilter(ctx, scene, node, vBox, svgPath), node, vBox, svgPath), node);
 }
 
+static Paint* _buildPatternChild(SvgParserContext& ctx, SvgNode* child, const Box& vBox, const string& svgPath)
+{
+    if (child->type == SvgNodeType::ClipPath || child->type == SvgNodeType::Filter || child->type == SvgNodeType::Pattern) return nullptr;
+    if (_isGroupType(child->type)) {
+        if (child->type == SvgNodeType::Use) return _useBuildHelper(ctx, child, vBox, svgPath, 0);
+        if (child->type != SvgNodeType::Symbol) return _sceneBuildHelper(ctx, child, vBox, svgPath, false, 0);
+        return nullptr;
+    }
+    if (child->type == SvgNodeType::Image) return _imageBuildHelper(ctx, child, vBox, svgPath);
+    if (child->type == SvgNodeType::Text) return _textBuildHelper(ctx, child, vBox, svgPath);
+    if (child->type == SvgNodeType::Mask) return nullptr;
+    return _shapeBuildHelper(ctx, child, vBox, svgPath);
+}
+
+static Paint* _buildBaseTile(SvgParserContext& ctx, SvgNode* patternNode, const Box& vBox, const string& svgPath)
+{
+    Paint* paint = nullptr;
+    Scene* tileScene = nullptr;
+    ARRAY_FOREACH(p, patternNode->child) {
+        auto child = _buildPatternChild(ctx, *p, vBox, svgPath);
+        if (!child) continue;
+        if (!paint && !tileScene) {
+            paint = child;
+            continue;
+        }
+        if (!tileScene) {
+            tileScene = Scene::gen();
+            tileScene->add(paint);
+            paint = nullptr;
+        }
+        tileScene->add(child);
+    }
+    if (tileScene) return tileScene;
+    return paint;
+}
+
+static bool _patternCellRect(const SvgPatternNode& pat, const Box& bbox, Box& cell)
+{
+    if (pat.patternUserSpace) {
+        cell = pat.box;
+    } else {
+        cell.x = bbox.x + pat.box.x * bbox.w;
+        cell.y = bbox.y + pat.box.y * bbox.h;
+        cell.w = pat.box.w * bbox.w;
+        cell.h = pat.box.h * bbox.h;
+    }
+    return _validBox(cell);
+}
+
+static Matrix _patternContentTransform(const SvgPatternNode& pat, const Box& bbox, const Box& cell)
+{
+    if (pat.hasViewBox) {
+        auto sx = cell.w / pat.vbox.w;
+        auto sy = cell.h / pat.vbox.h;
+        return {sx, 0, -pat.vbox.x * sx, 0, sy, -pat.vbox.y * sy, 0, 0, 1};
+    }
+    if (!pat.contentUserSpace) return {bbox.w, 0, 0, 0, bbox.h, 0, 0, 0, 1};
+    return tvg::identity();
+}
+
+static Box _transformBounds(const Box& bounds, const Matrix& matrix)
+{
+    auto lt = Point{bounds.x, bounds.y} * matrix;
+    auto lb = Point{bounds.x, bounds.y + bounds.h} * matrix;
+    auto rt = Point{bounds.x + bounds.w, bounds.y} * matrix;
+    auto rb = Point{bounds.x + bounds.w, bounds.y + bounds.h} * matrix;
+
+    auto min = tvg::min(tvg::min(lt, lb), tvg::min(rt, rb));
+    auto max = tvg::max(tvg::max(lt, lb), tvg::max(rt, rb));
+
+    return {min.x, min.y, max.x - min.x, max.y - min.y};
+}
+
+static void _patternTileGrid(const Box& cell, const Box& bbox, const Matrix* transform, float& startX, float& startY, int& cols, int& rows)
+{
+    auto box = bbox;
+    Matrix inv;
+    if (transform && tvg::inverse(transform, &inv)) box = _transformBounds(bbox, inv);
+
+    startX = cell.x + floorf((box.x - cell.x) / cell.w) * cell.w;
+    startY = cell.y + floorf((box.y - cell.y) / cell.h) * cell.h;
+    cols = (int)ceilf((box.x + box.w - startX) / cell.w);
+    rows = (int)ceilf((box.y + box.h - startY) / cell.h);
+}
+
+static Paint* _applyPatternProperty(SvgParserContext& ctx, Shape* vg, SvgNode* node, SvgNode* patternNode, const Box& vBox, const string& svgPath)
+{
+    if (!patternNode || patternNode->child.empty()) return nullptr;
+    auto& pat = patternNode->node.pattern;
+
+    if (pat.applying) {
+        TVGLOG("SVG", "Circular pattern reference detected; skipped.");
+        return nullptr;
+    }
+
+    auto bbox = _bounds(vg);
+    if (!_validBox(bbox)) return nullptr;
+
+    Box cell;
+    if (!_patternCellRect(pat, bbox, cell)) return nullptr;
+
+    float startX, startY;
+    int cols, rows;
+    _patternTileGrid(cell, bbox, pat.transform, startX, startY, cols, rows);
+
+    auto contentTransform = _patternContentTransform(pat, bbox, cell);
+
+    pat.applying = true;
+
+    auto base = _buildBaseTile(ctx, patternNode, vBox, svgPath);
+    auto tilesScene = Scene::gen();
+    if (base) {
+        for (int r = 0; r < rows; ++r) {
+            for (int c = 0; c < cols; ++c) {
+                auto copy = base->duplicate();
+                if (!copy) continue;
+                Matrix tileTransform = Matrix{1, 0, startX + c * cell.w, 0, 1, startY + r * cell.h, 0, 0, 1} * contentTransform;
+                if (pat.transform) tileTransform = *pat.transform * tileTransform;
+                copy->transform(tileTransform * copy->transform());
+                tilesScene->add(copy);
+            }
+        }
+        Paint::rel(base);
+    }
+
+    auto clipper = Shape::gen();
+    if (!_recognizeShape(node, clipper)) {
+        pat.applying = false;
+        Paint::rel(tilesScene);
+        Paint::rel(clipper);
+        return nullptr;
+    }
+    tilesScene->clip(clipper);
+
+    pat.applying = false;
+    return tilesScene;
+}
 
 static void _updateInvalidViewSize(Scene* scene, Box& vBox, float& w, float& h, SvgViewFlag viewFlag)
 {
@@ -995,33 +1266,32 @@ static void _loadFonts(Array<FontFace>& fonts)
 {
     if (fonts.empty()) return;
 
-    static constexpr struct {
-        const char* prefix;
-        size_t len;
-    } prefixes[] = {
-        {"data:font/ttf;base64,", sizeof("data:font/ttf;base64,") - 1},
-        {"data:application/font-ttf;base64,", sizeof("data:application/font-ttf;base64,") - 1}
-    };
-
+    constexpr size_t MAX_SCAN = 40;
+    constexpr size_t KEY_LEN = 10;  // "ttf;base64" / "otf;base64"
 
     ARRAY_FOREACH(p, fonts) {
         if (!p->name) continue;
 
         size_t shift = 0;
-        for (const auto& prefix : prefixes) {
-            if (p->srcLen > prefix.len && !memcmp(p->src, prefix.prefix, prefix.len)) {
-                shift = prefix.len;
+        const char* type = nullptr;
+        auto limit = (p->srcLen < MAX_SCAN) ? p->srcLen : MAX_SCAN;
+
+        for (size_t i = 0; i + KEY_LEN <= limit; ++i) {
+            if (!memcmp(p->src + i, "ttf;base64", KEY_LEN)) {
+                shift = i + KEY_LEN + 1;  // skip ","
+                type = "ttf";
+                break;
+            }
+            if (!memcmp(p->src + i, "otf;base64", KEY_LEN)) {
+                shift = i + KEY_LEN + 1;
+                type = "otf";
                 break;
             }
         }
-        if (shift == 0) {
-            TVGLOG("SVG", "The embedded font \"%s\" data not loaded properly.", p->name);
-            continue;
+        if (type) {
+            auto size = b64Decode(p->src + shift, p->srcLen - shift, &p->decoded);
+            Text::load(p->name, p->decoded, size, type);
         }
-
-        auto size = b64Decode(p->src + shift, p->srcLen - shift, &p->decoded);
-
-        if (Text::load(p->name, p->decoded, size) != Result::Success) TVGERR("SVG", "Error while loading the ttf font named \"%s\".", p->name);
     }
 }
 

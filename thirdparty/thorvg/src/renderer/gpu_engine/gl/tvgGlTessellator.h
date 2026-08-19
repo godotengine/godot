@@ -38,7 +38,7 @@ class Stroker
         Point prevPtDir;
     };
 public:
-    Stroker(GlGeometryBuffer* buffer, float strokeWidth, StrokeCap cap, StrokeJoin join, float miterLimit = 4.0f);
+    Stroker(GlGeometryBuffer* buffer, float strokeWidth, StrokeCap cap, StrokeJoin join, float miterLimit = 4.0f, float qualityScale = 1.0f);
     void run(const RenderPath& path);
     RenderRegion bounds() const;
 
@@ -65,6 +65,7 @@ private:
     GlGeometryBuffer* mBuffer;
     float mWidth = 0.0f;
     float mMiterLimit = 4.f;
+    float mQualityScale = 1.0f;
     StrokeCap mCap = StrokeCap::Square;
     StrokeJoin mJoin = StrokeJoin::Bevel;
     State mState = {};

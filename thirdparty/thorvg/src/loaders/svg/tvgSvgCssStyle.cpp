@@ -145,6 +145,11 @@ static void _copyStyle(SvgStyleProperty* to, const SvgStyleProperty* from, bool 
         to->flags |= SvgStyleFlags::BlendMode;
         if (from->flagsImportance & SvgStyleFlags::BlendMode) to->flagsImportance |= SvgStyleFlags::BlendMode;
     }
+    if (((from->flags & SvgStyleFlags::TextAnchor) && (overwrite || !(to->flags & SvgStyleFlags::TextAnchor))) || _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::TextAnchor)) {
+        to->textAnchor = from->textAnchor;
+        to->flags |= SvgStyleFlags::TextAnchor;
+        if (from->flagsImportance & SvgStyleFlags::TextAnchor) to->flagsImportance |= SvgStyleFlags::TextAnchor;
+    }
 }
 
 

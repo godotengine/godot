@@ -23,7 +23,9 @@
 #ifndef _TVG_WG_RENDERER_H_
 #define _TVG_WG_RENDERER_H_
 
+#include "tvgRender.h"
 #include "tvgWgRenderTask.h"
+#include "tvgWgTextureMgr.h"
 
 struct WgRenderer : RenderMethod
 {
@@ -46,7 +48,7 @@ struct WgRenderer : RenderMethod
     bool sync() override;
     bool intersectsImage(RenderData data, const RenderRegion& region) override;
     bool intersectsShape(RenderData data, const RenderRegion& region) override;
-    bool target(WGPUDevice device, WGPUInstance instance, void* target, uint32_t w, uint32_t h, ColorSpace cs, int type = 0);
+    Result target(const WgCanvas::Context& ctx, void* target, uint32_t w, uint32_t h, ColorSpace cs, int type = 0);
 
     //composition
     RenderCompositor* target(const RenderRegion& region, ColorSpace cs, CompositionFlag flags) override;
@@ -73,7 +75,7 @@ private:
     void releaseSurfaceTexture();
 
     void clearTargets();
-    bool surfaceConfigure(WGPUSurface surface, WgContext& context, uint32_t width, uint32_t height);
+    void surfaceConfigure(WGPUSurface surface, WgContext& context, uint32_t width, uint32_t height, ColorSpace cs);
 
     // render tree stacks
     WgRenderTarget mRenderTargetRoot;
@@ -89,6 +91,7 @@ private:
     WgRenderDataShapePool mRenderDataShapePool;
     WgRenderDataPicturePool mRenderDataPicturePool;
     WgRenderDataEffectParamsPool mRenderDataEffectParamsPool;
+    WgTextureMgr mTextures;
 
     // rendering context
     WgContext mContext;

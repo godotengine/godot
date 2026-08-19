@@ -82,6 +82,7 @@ Result Text::load(const char* name, const char* data, uint32_t size, const char*
 
 Result Text::unload(const char* filename) noexcept
 {
+    if (!filename) return Result::InvalidArguments;
 #ifdef THORVG_FILE_IO_SUPPORT
     if (LoaderMgr::retrieve(filename)) return Result::Success;
     return Result::InsufficientCondition;
@@ -162,10 +163,9 @@ Result Text::metrics(TextMetrics& metrics) const noexcept
     return to<TextImpl>(this)->metrics(metrics);
 }
 
-
-Result Text::metrics(const char* ch, GlyphMetrics& metrics) const noexcept
+Result Text::metrics(const char* ch, GlyphMetrics& metrics, const char** next) const noexcept
 {
-    return to<TextImpl>(this)->metrics(ch, metrics);
+    return to<TextImpl>(this)->metrics(ch, metrics, next);
 }
 
 

@@ -54,6 +54,11 @@ static inline RenderUpdateFlag operator|(const RenderUpdateFlag a, const RenderU
     return RenderUpdateFlag(uint16_t(a) | uint16_t(b));
 }
 
+static inline bool operator&(const EngineOption a, const EngineOption b)
+{
+    return (uint8_t(a) & uint8_t(b));
+}
+
 struct RenderSurface
 {
     union {
@@ -67,6 +72,7 @@ struct RenderSurface
     ColorSpace cs = ColorSpace::Unknown;
     uint8_t channelSize = 0;
     bool premultiplied = false;         //Alpha-premultiplied
+    bool alphaIgnored = false;          // If true, the alpha channel can be ignored.
 
     RenderSurface()
     {
@@ -81,6 +87,7 @@ struct RenderSurface
         cs = rhs->cs;
         channelSize = rhs->channelSize;
         premultiplied = rhs->premultiplied;
+        alphaIgnored = rhs->alphaIgnored;
     }
 };
 
@@ -94,11 +101,7 @@ struct RenderRegion
 {
     struct {
         int32_t x, y;
-    } min;
-
-    struct {
-        int32_t x, y;
-    } max;
+    } min, max;
 
     static constexpr RenderRegion intersect(const RenderRegion& lhs, const RenderRegion& rhs)
     {

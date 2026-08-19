@@ -67,6 +67,10 @@ struct PictureImpl : Picture
         auto pivot = Point{-origin.x * float(w), -origin.y * float(h)};
 
         if (bitmap) {
+            if (bitmap->cs == ColorSpace::Unknown) {
+                TVGERR("RENDERER", "Unknown colorspace picture data");
+                return false;
+            }
             //Overriding Transformation by the desired image size
             auto sx = w / loader->w;
             auto sy = h / loader->h;
@@ -110,12 +114,12 @@ struct PictureImpl : Picture
         return Result::Success;
     }
 
-    bool intersects(const RenderRegion& region)
+    bool intersects(const RenderRegion& region, bool visibleOnly)
     {
         if (!impl.renderer) return false;
         load();
         if (impl.rd) return impl.renderer->intersectsImage(impl.rd, region);
-        else if (vector) return to<SceneImpl>(vector)->intersects(region);
+        else if (vector) return PAINT(vector)->intersects(region, visibleOnly);
         return false;
     }
 
@@ -151,7 +155,7 @@ struct PictureImpl : Picture
     Result load(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, bool copy)
     {
         if (!data || w <= 0 || h <= 0 || cs == ColorSpace::Unknown)  return Result::InvalidArguments;
-        if (vector || bitmap) return Result::InsufficientCondition;
+        if (vector) return Result::InsufficientCondition;
         return load(LoaderMgr::loader(data, w, h, cs, copy));
     }
 
@@ -302,15 +306,10 @@ struct PictureImpl : Picture
     {
         if (!loader) return Result::NonSupport;
 
-        // fonts are not expected in the picture
-        if (loader->type == FileType::Ttf) {
-            LoaderMgr::retrieve(loader);
-            return Result::InvalidArguments;
-        }
-
         //Same resource has been loaded.
         if (this->loader == loader) {
             this->loader->sharing--;  //make it sure the reference counting.
+            if (bitmap) impl.mark(RenderUpdateFlag::Image);  // force the bitmap updated
             return Result::Success;
         } else if (this->loader) {
             LoaderMgr::retrieve(this->loader);

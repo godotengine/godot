@@ -100,6 +100,7 @@ public:
     WGPURenderPipeline scene_compose[11]{};
     // pipeline blit
     WGPURenderPipeline blit{};
+    WGPURenderPipeline blit_unpremultiplied{};
     // effects
     WGPURenderPipeline gaussian_vert{};
     WGPURenderPipeline gaussian_horz{};

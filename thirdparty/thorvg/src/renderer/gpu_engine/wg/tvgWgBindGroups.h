@@ -25,10 +25,9 @@
 
 #include <webgpu/webgpu.h>
 
-class WgBindGroupLayouts {
-private:
+struct WgBindGroupLayouts
+{
     WGPUDevice device{};
-public:
     WGPUBindGroupLayout layoutTexSampled{};
     WGPUBindGroupLayout layoutTexSampledBuff1Un{};
     WGPUBindGroupLayout layoutTexSampledBuff2Un{};
@@ -52,6 +51,7 @@ public:
     WGPUBindGroup createBindGroupBuffer1Un(WGPUBuffer buff, uint64_t offset, uint64_t size);
     WGPUBindGroup createBindGroupBuffer2Un(WGPUBuffer buff0, WGPUBuffer buff1);
     WGPUBindGroup createBindGroupBuffer3Un(WGPUBuffer buff0, WGPUBuffer buff1, WGPUBuffer buff2);
+
     void releaseBindGroup(WGPUBindGroup& bindGroup);
     void releaseBindGroupLayout(WGPUBindGroupLayout& bindGroupLayout);
 

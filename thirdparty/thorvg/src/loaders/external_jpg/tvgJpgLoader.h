@@ -28,9 +28,8 @@
 using tjhandle = void*;
 
 //TODO: Use Task?
-class JpgLoader : public ImageLoader
+struct JpgLoader : ImageLoader
 {
-public:
     JpgLoader();
     ~JpgLoader();
 

@@ -826,6 +826,15 @@ fn vs_main(in: VertexInput) -> VertexOutput {
 fn fs_main(in: VertexOutput) -> @location(0) vec4f {
     return textureSample(uTextureSrc, uSamplerSrc, in.texCoord.xy);
 };
+
+@fragment
+fn fs_main_unpremultiplied(in: VertexOutput) -> @location(0) vec4f {
+    let src = textureSample(uTextureSrc, uSamplerSrc, in.texCoord.xy);
+    if (src.a <= 0.0) {
+        return vec4f(0.0);
+    }
+    return vec4f(clamp(src.rgb / src.a, vec3f(0.0), vec3f(1.0)), src.a);
+};
 )";
 
 //************************************************************************

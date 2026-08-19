@@ -44,9 +44,7 @@ public:
     GlRenderTask* takeLastTask()
     {
         if (mTasks.empty()) return nullptr;
-        auto task = mTasks.last();
-        mTasks.pop();
-        return task;
+        return mTasks.pick();
     }
 
     GLuint getFboId() { return mFbo->fbo; }

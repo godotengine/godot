@@ -84,11 +84,13 @@ enum struct SvgNodeType : uint16_t
     Symbol,
     Filter,
     GaussianBlur,
+    Pattern,
     Unknown
 };
 
 enum struct SvgFillFlags : uint8_t
 {
+    None = 0x0,
     Paint = 0x01,
     Opacity = 0x02,
     Gradient = 0x04,
@@ -148,6 +150,7 @@ enum struct SvgGradientType : uint8_t
 
 enum struct SvgStyleFlags
 {
+    None = 0x0,
     Color = 0x01,
     Fill = 0x02,
     FillRule = 0x04,
@@ -168,7 +171,8 @@ enum struct SvgStyleFlags
     StrokeMiterlimit = 0x20000,
     StrokeDashOffset = 0x40000,
     Filter = 0x80000,
-    BlendMode = 0x100000
+    BlendMode = 0x100000,
+    TextAnchor = 0x200000
 };
 
 constexpr bool operator&(SvgStyleFlags a, SvgStyleFlags b)
@@ -382,8 +386,11 @@ struct SvgClipNode
 
 struct SvgMaskNode
 {
+    Box box;
+    bool isPercentage[4];
     SvgMaskType type;
     bool userSpace;
+    bool maskContentUserSpace;
 };
 
 struct SvgCssStyleNode
@@ -395,6 +402,7 @@ struct SvgTextNode
     char* text;
     char* fontFamily;
     float x, y;
+    float dx, dy;
     float fontSize;
 };
 
@@ -413,6 +421,18 @@ struct SvgFilterNode
     bool isPercentage[4];
     bool filterUserSpace;
     bool primitiveUserSpace;
+};
+
+struct SvgPatternNode
+{
+    Box box;
+    Box vbox;
+    Matrix* transform;
+    bool isPercentage[4];
+    bool patternUserSpace;
+    bool contentUserSpace;
+    bool hasViewBox;
+    bool applying;
 };
 
 struct SvgLinearGradient
@@ -445,6 +465,7 @@ struct SvgComposite
 struct SvgPaint
 {
     SvgStyleGradient* gradient;
+    SvgNode* pattern;
     char *url;
     SvgColor color;
     bool none;
@@ -519,6 +540,7 @@ struct SvgStyleProperty
     int opacity;
     SvgColor color;
     char* cssClass;
+    float textAnchor;  // 0=start, 0.5=middle, 1=end
     SvgStyleFlags flags;
     SvgStyleFlags flagsImportance; //indicates the importance of the flag - if set, higher priority is applied (https://drafts.csswg.org/css-cascade-4/#importance)
     bool curColorSet;
@@ -555,6 +577,7 @@ struct SvgNode
         SvgTextNode text;
         SvgFilterNode filter;
         SvgGaussianBlurNode gaussianBlur;
+        SvgPatternNode pattern;
     } node;
     SvgXmlSpace xmlSpace = SvgXmlSpace::None;
     ~SvgNode();

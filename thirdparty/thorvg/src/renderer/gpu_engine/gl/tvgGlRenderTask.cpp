@@ -37,17 +37,6 @@ static void clearColorTarget(uint32_t width, uint32_t height)
 /* GlRenderTask Class Implementation                                    */
 /************************************************************************/
 
-GlRenderTask::GlRenderTask(GlProgram* program, GlRenderTask* other): mProgram(program)
-{
-    mVertexLayout.push(other->mVertexLayout);
-    mViewport = other->mViewport;
-    mIndexOffset = other->mIndexOffset;
-    mIndexCount = other->mIndexCount;
-    mViewMatrix = other->mViewMatrix;
-    mUseViewMatrix = other->mUseViewMatrix;
-}
-
-
 void GlRenderTask::run()
 {
     // bind shader
@@ -105,7 +94,11 @@ void GlRenderTask::run()
         }
     }
 
-    GL_CHECK(glDrawElements(GL_TRIANGLES, mIndexCount, GL_UNSIGNED_INT, reinterpret_cast<void*>(mIndexOffset)));
+    if (mUseDrawArrays) {
+        GL_CHECK(glDrawArrays(mArrayMode, mArrayOffset, mIndexCount));
+    } else {
+        GL_CHECK(glDrawElements(GL_TRIANGLES, mIndexCount, GL_UNSIGNED_INT, reinterpret_cast<void*>(mIndexOffset)));
+    }
 
     // setup attribute layout
     for (uint32_t i = 0; i < mVertexLayout.count; i++) {
@@ -139,6 +132,7 @@ void GlRenderTask::addBindResource(const GlBindingResource &binding)
 
 void GlRenderTask::setDrawRange(uint32_t offset, uint32_t count)
 {
+    mUseDrawArrays = false;
     mIndexOffset = offset;
     mIndexCount = count;
 }
@@ -157,16 +151,19 @@ void GlRenderTask::setViewport(const RenderRegion &viewport)
 /************************************************************************/
 
 GlStencilCoverTask::GlStencilCoverTask(GlRenderTask* stencil, GlRenderTask* cover, GlStencilMode mode)
- :GlRenderTask(nullptr), mStencilTask(stencil), mCoverTask(cover), mStencilMode(mode)
- {
-
- }
+ :GlRenderTask(nullptr), mStencilMode(mode)
+{
+    mStencilTasks.push(stencil);
+    mCoverTasks.push(cover);
+}
 
 
 GlStencilCoverTask::~GlStencilCoverTask()
 {
-    delete mStencilTask;
-    delete mCoverTask;
+    ARRAY_FOREACH(p, mStencilTasks) delete(*p);
+    ARRAY_FOREACH(p, mCoverTasks) delete(*p);
+    mStencilTasks.clear();
+    mCoverTasks.clear();
 }
 
 
@@ -186,7 +183,7 @@ void GlStencilCoverTask::run()
     }
     GL_CHECK(glColorMask(0, 0, 0, 0));
 
-    mStencilTask->run();
+    ARRAY_FOREACH(p, mStencilTasks) (*p)->run();
 
     if (mStencilMode == GlStencilMode::FillEvenOdd) {
         GL_CHECK(glStencilFunc(GL_NOTEQUAL, 0x00, 0x01));
@@ -198,7 +195,7 @@ void GlStencilCoverTask::run()
 
     GL_CHECK(glColorMask(1, 1, 1, 1));
 
-    mCoverTask->run();
+    ARRAY_FOREACH(p, mCoverTasks) (*p)->run();
 
     GL_CHECK(glDisable(GL_STENCIL_TEST));
 }
@@ -206,8 +203,8 @@ void GlStencilCoverTask::run()
 
 void GlStencilCoverTask::normalizeDrawDepth(int32_t maxDepth)
 {
-    mCoverTask->normalizeDrawDepth(maxDepth);
-    mStencilTask->normalizeDrawDepth(maxDepth);
+    ARRAY_FOREACH(p, mCoverTasks) (*p)->normalizeDrawDepth(maxDepth);
+    ARRAY_FOREACH(p, mStencilTasks) (*p)->normalizeDrawDepth(maxDepth);
 }
 
 
@@ -597,6 +594,7 @@ void GlGaussianBlurTask::run()
     GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, mDstFbo->fbo));
 
     GL_CHECK(glDisable(GL_BLEND));
+    GL_CHECK(glDepthFunc(GL_ALWAYS));
     if (effect->direction == 0) {
         GL_CHECK(glBindFramebuffer(GL_READ_FRAMEBUFFER, mDstFbo->fbo));
         GL_CHECK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mDstCopyFbo1->resolvedFbo));
@@ -622,6 +620,7 @@ void GlGaussianBlurTask::run()
         vertTask->addBindResource({ 0, dstCopyTexId0, vertSrcTextureLoc });
         vertTask->run();
     }
+    GL_CHECK(glDepthFunc(GL_GREATER));
     GL_CHECK(glEnable(GL_BLEND));
 }
 
@@ -661,6 +660,7 @@ void GlEffectDropShadowTask::run()
     GL_CHECK(glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
     
     GL_CHECK(glDisable(GL_BLEND));
+    GL_CHECK(glDepthFunc(GL_ALWAYS));
     // when sigma is 0, no blur is applied, and the original image is used directly as the shadow.
     if (!tvg::zero(effect->sigma)) {
         // horizontal blur
@@ -681,6 +681,7 @@ void GlEffectDropShadowTask::run()
     // run drop shadow effect
     GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, mDstFbo->fbo));
     GlRenderTask::run();
+    GL_CHECK(glDepthFunc(GL_GREATER));
     GL_CHECK(glEnable(GL_BLEND));
 }
 
@@ -707,6 +708,8 @@ void GlEffectColorTransformTask::run()
 
     // run transform
     GL_CHECK(glDisable(GL_BLEND));
+    GL_CHECK(glDepthFunc(GL_ALWAYS));
     GlRenderTask::run();
+    GL_CHECK(glDepthFunc(GL_GREATER));
     GL_CHECK(glEnable(GL_BLEND));
 }

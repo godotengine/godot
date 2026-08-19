@@ -21,7 +21,6 @@
  */
 
 #include "tvgWgBindGroups.h"
-#include <cassert>
 
 WGPUBindGroup WgBindGroupLayouts::createBindGroupTexSampled(WGPUSampler sampler, WGPUTextureView texView)
 {
@@ -158,7 +157,6 @@ void WgBindGroupLayouts::releaseBindGroupLayout(WGPUBindGroupLayout& bindGroupLa
 void WgBindGroupLayouts::initialize(WGPUDevice device)
 {
     // store device handle
-    assert(device);
     this->device = device;
 
     // common bind group settings
@@ -182,9 +180,6 @@ void WgBindGroupLayouts::initialize(WGPUDevice device)
     layoutTexSampled        = wgpuDeviceCreateBindGroupLayout(device, &layoutDescTexSambled);
     layoutTexSampledBuff1Un = wgpuDeviceCreateBindGroupLayout(device, &layoutDescTexSampledBuff1Un);
     layoutTexSampledBuff2Un = wgpuDeviceCreateBindGroupLayout(device, &layoutDescTexSampledBuff2Un);
-    assert(layoutTexSampled);
-    assert(layoutTexSampledBuff1Un);
-    assert(layoutTexSampledBuff2Un);
 
     // bind group layout tex storages WO
     const WGPUBindGroupLayoutEntry entriesTexStoragesWO[] {
@@ -192,7 +187,6 @@ void WgBindGroupLayouts::initialize(WGPUDevice device)
     };
     const WGPUBindGroupLayoutDescriptor layoutDescTexStrorage1WO { .entryCount = 1, .entries = entriesTexStoragesWO };
     layoutTexStrorage1WO = wgpuDeviceCreateBindGroupLayout(device, &layoutDescTexStrorage1WO);
-    assert(layoutTexStrorage1WO);
 
     // bind group layout tex storages RO
     const WGPUBindGroupLayoutEntry entriesTexStoragesRO[] {
@@ -206,9 +200,6 @@ void WgBindGroupLayouts::initialize(WGPUDevice device)
     layoutTexStrorage1RO = wgpuDeviceCreateBindGroupLayout(device, &layoutDescTexStorages1RO);
     layoutTexStrorage2RO = wgpuDeviceCreateBindGroupLayout(device, &layoutDescTexStorages2RO);
     layoutTexStrorage3RO = wgpuDeviceCreateBindGroupLayout(device, &layoutDescTexStorages3RO);
-    assert(layoutTexStrorage1RO);
-    assert(layoutTexStrorage2RO);
-    assert(layoutTexStrorage3RO);
 
     // bind group layout buffer uniforms
     const WGPUBindGroupLayoutEntry entriesBufferUniform[] {
@@ -222,9 +213,6 @@ void WgBindGroupLayouts::initialize(WGPUDevice device)
     layoutBuffer1Un = wgpuDeviceCreateBindGroupLayout(device, &layoutDescBufferUniforms1Un);
     layoutBuffer2Un = wgpuDeviceCreateBindGroupLayout(device, &layoutDescBufferUniforms2Un);
     layoutBuffer3Un = wgpuDeviceCreateBindGroupLayout(device, &layoutDescBufferUniforms3Un);
-    assert(layoutBuffer1Un);
-    assert(layoutBuffer2Un);
-    assert(layoutBuffer3Un);
 }
 
 

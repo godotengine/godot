@@ -298,7 +298,7 @@ struct Paint::Impl
         return Result::Success;
     }
 
-    bool intersects(const RenderRegion& region);
+    bool intersects(const RenderRegion& region, bool visibleOnly);
     RenderRegion bounds();
     bool bounds(Point* pt4, const Matrix* pm, bool obb);
     AccessorIterator* iterator();
@@ -309,4 +309,4 @@ struct Paint::Impl
 
 }
 
-#endif //_TVG_PAINT_H_
+#endif  //_TVG_PAINT_H_

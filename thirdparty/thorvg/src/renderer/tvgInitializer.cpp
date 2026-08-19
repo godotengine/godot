@@ -131,3 +131,27 @@ uint16_t THORVG_VERSION_NUMBER()
 {
     return _version;
 }
+
+
+void* operator new(std::size_t size)
+{
+    return tvg::malloc(size);
+}
+
+
+void operator delete(void* ptr) noexcept
+{
+    tvg::free(ptr);
+}
+
+
+void* operator new[](std::size_t size)
+{
+    return tvg::malloc(size);
+}
+
+
+void operator delete[](void* ptr) noexcept
+{
+    tvg::free(ptr);
+}

@@ -52,6 +52,18 @@ typedef SvgStyleGradient* (*GradientFactoryMethod)(SvgParserContext* ctx, const 
 static bool _parseStyleAttr(void* data, const char* key, const char* value);
 static bool _parseStyleAttr(void* data, const char* key, const char* value, bool style);
 
+static constexpr struct {
+    const char* tag;
+    SvgParserLengthType type;
+    int sz;
+    size_t offset;
+} boxTags[] = {
+    {"x", SvgParserLengthType::Horizontal, sizeof("x"), offsetof(Box, x)},
+    {"y", SvgParserLengthType::Vertical, sizeof("y"), offsetof(Box, y)},
+    {"width", SvgParserLengthType::Horizontal, sizeof("width"), offsetof(Box, w)},
+    {"height", SvgParserLengthType::Vertical, sizeof("height"), offsetof(Box, h)}
+};
+
 static void _copyId(char** to, const char* from)
 {
     tvg::free(*to);
@@ -125,7 +137,7 @@ static void _parseAspectRatio(const char** content, AspectRatioAlign* align, Asp
 static float _findEmBaseFontSize(const SvgNode* from)
 {
     for (auto n = from; n; n = n->parent) {
-        if (n->type == SvgNodeType::Text && n->node.text.fontSize > 0.0f) return n->node.text.fontSize;
+        if ((n->type == SvgNodeType::Text || n->type == SvgNodeType::Tspan) && n->node.text.fontSize > 0.0f) return n->node.text.fontSize;
     }
     return DEFAULT_FONT_SIZE;
 }
@@ -675,8 +687,8 @@ static bool _toColor(const char* str, uint8_t& r, uint8_t&g, uint8_t& b, char** 
                     hsl.l /= 100.0f;
                     brightness = svgUtilSkipWhiteSpace(brightness + 1, nullptr);
                     if (brightness && brightness[0] == ')' && brightness[1] == '\0') {
-                       hsl2rgb(hsl.h, tvg::clamp(hsl.s, 0.0f, 1.0f), tvg::clamp(hsl.l, 0.0f, 1.0f), r, g, b);
-                       return true;
+                        svgUtilHslToRgb(hsl.h, tvg::clamp(hsl.s, 0.0f, 1.0f), tvg::clamp(hsl.l, 0.0f, 1.0f), r, g, b);
+                        return true;
                     }
                 }
             }
@@ -1078,6 +1090,14 @@ static void _handleMixBlendModeAttr(TVG_UNUSED SvgParserContext* ctx, SvgNode* n
     node->style->flags |= SvgStyleFlags::BlendMode;
 }
 
+static void _handleTextAnchorAttr(TVG_UNUSED SvgParserContext* ctx, SvgNode* node, const char* value)
+{
+    node->style->flags |= SvgStyleFlags::TextAnchor;
+    if (STR_AS(value, "middle")) node->style->textAnchor = 0.5f;
+    else if (STR_AS(value, "end")) node->style->textAnchor = 1.0f;
+    else node->style->textAnchor = 0.0f;
+}
+
 static void _handleCssClassAttr(SvgParserContext* ctx, SvgNode* node, const char* value)
 {
     auto cssClass = &node->style->cssClass;
@@ -1121,9 +1141,8 @@ static constexpr struct
     STYLE_DEF(display, Display, SvgStyleFlags::Display),
     STYLE_DEF(paint-order, PaintOrder, SvgStyleFlags::PaintOrder),
     STYLE_DEF(filter, Filter, SvgStyleFlags::Filter),
-    STYLE_DEF(mix-blend-mode, MixBlendMode, SvgStyleFlags::BlendMode)
-};
-
+    STYLE_DEF(mix-blend-mode, MixBlendMode, SvgStyleFlags::BlendMode),
+    STYLE_DEF(text-anchor, TextAnchor, SvgStyleFlags::TextAnchor)};
 
 static SvgXmlSpace _toXmlSpace(const char* str)
 {
@@ -1233,6 +1252,28 @@ static bool _attrParseClipPathNode(void* data, const char* key, const char* valu
     return true;
 }
 
+static void _recalcBox(const SvgParserContext* ctx, Box* box, bool (&isPercentage)[4])
+{
+    auto array = (unsigned char*)box;
+    for (unsigned int i = 0; i < sizeof(boxTags) / sizeof(boxTags[0]); i++) {
+        if (!isPercentage[i]) continue;
+        if (boxTags[i].type == SvgParserLengthType::Horizontal) *(float*)(array + boxTags[i].offset) *= ctx->parser->global.w;
+        else *(float*)(array + boxTags[i].offset) *= ctx->parser->global.h;
+    }
+}
+
+static bool _parseBox(const char* key, const char* value, Box* box, bool (&isPercentage)[4])
+{
+    auto array = (unsigned char*)box;
+    int sz = strlen(key);
+    for (unsigned int i = 0; i < sizeof(boxTags) / sizeof(boxTags[0]); i++) {
+        if (boxTags[i].sz - 1 == sz && !strncmp(boxTags[i].tag, key, sz)) {
+            *(float*)(array + boxTags[i].offset) = _gradientToFloat(nullptr, value, isPercentage[i]);
+            return true;
+        }
+    }
+    return false;
+}
 
 static bool _attrParseMaskNode(void* data, const char* key, const char* value)
 {
@@ -1240,21 +1281,17 @@ static bool _attrParseMaskNode(void* data, const char* key, const char* value)
     auto node = ctx->parser->node;
     auto mask = &node->node.mask;
 
-    if (STR_AS(key, "style")) {
-        return xmlParseW3CAttribute(value, strlen(value), _parseStyleAttr, ctx);
-    } else if (STR_AS(key, "transform")) {
-        node->transform = _parseTransformationMatrix(value);
-    } else if (STR_AS(key, "id")) {
-        _copyId(&node->id, value);
-    } else if (STR_AS(key, "class")) {
-        _handleCssClassAttr(ctx, node, value);
-    } else if (STR_AS(key, "maskContentUnits")) {
-        if (STR_AS(value, "objectBoundingBox")) mask->userSpace = false;
-    } else if (STR_AS(key, "mask-type")) {
-        mask->type = _toMaskType(value);
-    } else {
-        return _parseStyleAttr(ctx, key, value, false);
-    }
+    if (_parseBox(key, value, &mask->box, mask->isPercentage)) return true;
+
+    if (STR_AS(key, "style")) return xmlParseW3CAttribute(value, strlen(value), _parseStyleAttr, ctx);
+    else if (STR_AS(key, "transform")) node->transform = _parseTransformationMatrix(value);
+    else if (STR_AS(key, "id")) _copyId(&node->id, value);
+    else if (STR_AS(key, "class")) _handleCssClassAttr(ctx, node, value);
+    else if (STR_AS(key, "maskUnits")) { if (STR_AS(value, "userSpaceOnUse")) mask->userSpace = true; }
+    else if (STR_AS(key, "maskContentUnits")) { if (STR_AS(value, "objectBoundingBox")) mask->maskContentUserSpace = false; }
+    else if (STR_AS(key, "mask-type")) mask->type = _toMaskType(value);
+    else return _parseStyleAttr(ctx, key, value, false);
+
     return true;
 }
 
@@ -1295,45 +1332,6 @@ static bool _attrParseSymbolNode(void* data, const char* key, const char* value)
     }
     return true;
 }
-
-
-static constexpr struct
-{
-    const char* tag;
-    SvgParserLengthType type;
-    int sz;
-    size_t offset;
-} boxTags[] = {
-    {"x", SvgParserLengthType::Horizontal, sizeof("x"), offsetof(Box, x)},
-    {"y", SvgParserLengthType::Vertical, sizeof("y"), offsetof(Box, y)},
-    {"width", SvgParserLengthType::Horizontal, sizeof("width"), offsetof(Box, w)},
-    {"height", SvgParserLengthType::Vertical, sizeof("height"), offsetof(Box, h)}
-};
-
-
-static bool _parseBox(const char* key, const char* value, Box* box, bool (&isPercentage)[4])
-{
-    auto array = (unsigned char*)box;
-    int sz = strlen(key);
-    for (unsigned int i = 0; i < sizeof(boxTags) / sizeof(boxTags[0]); i++) {
-        if (boxTags[i].sz - 1 == sz && !strncmp(boxTags[i].tag, key, sz)) {
-            *(float*)(array + boxTags[i].offset) = _gradientToFloat(nullptr, value, isPercentage[i]);
-            return true;
-        }
-    }
-    return false;
-}
-
-static void _recalcBox(const SvgParserContext* ctx, Box* box, bool (&isPercentage)[4])
-{
-    auto array = (unsigned char*)box;
-    for (unsigned int i = 0; i < sizeof(boxTags) / sizeof(boxTags[0]); i++) {
-        if (!isPercentage[i]) continue;
-        if (boxTags[i].type == SvgParserLengthType::Horizontal) *(float*)(array + boxTags[i].offset) *= ctx->parser->global.w;
-        else *(float*)(array + boxTags[i].offset) *= ctx->parser->global.h;
-    }
-}
-
 
 static bool _attrParseFilterNode(void* data, const char* key, const char* value)
 {
@@ -1464,10 +1462,14 @@ static SvgNode* _createMaskNode(SvgParserContext* ctx, SvgNode* parent, TVG_UNUS
     ctx->parser->node = _createNode(parent, SvgNodeType::Mask);
     if (!ctx->parser->node) return nullptr;
 
-    ctx->parser->node->node.mask.userSpace = true;
-    ctx->parser->node->node.mask.type = SvgMaskType::Luminance;
-
+    auto& mask = ctx->parser->node->node.mask;
+    mask.maskContentUserSpace = true;
+    mask.type = SvgMaskType::Luminance;
+    // default region per https://www.w3.org/TR/SVG11/masking.html#MaskElement (x/y=-10%, width/height=120%)
+    mask.box = {-0.1f, -0.1f, 1.2f, 1.2f};
+    mask.isPercentage[0] = mask.isPercentage[1] = mask.isPercentage[2] = mask.isPercentage[3] = true;
     func(buf, bufLength, _attrParseMaskNode, ctx);
+    if (mask.userSpace) _recalcBox(ctx, &mask.box, mask.isPercentage);
 
     return ctx->parser->node;
 }
@@ -1538,6 +1540,45 @@ static SvgNode* _createFilterNode(SvgParserContext* ctx, SvgNode* parent, const 
     return ctx->parser->node;
 }
 
+static bool _attrParsePatternNode(void* data, const char* key, const char* value)
+{
+    auto ctx = (SvgParserContext*)data;
+    auto node = ctx->parser->node;
+    auto pattern = &node->node.pattern;
+
+    if (_parseBox(key, value, &pattern->box, pattern->isPercentage)) return true;
+
+    if (STR_AS(key, "id")) _copyId(&node->id, value);
+    else if (STR_AS(key, "patternUnits")) {
+        if (STR_AS(value, "userSpaceOnUse")) pattern->patternUserSpace = true;
+    } else if (STR_AS(key, "patternContentUnits")) {
+        if (STR_AS(value, "objectBoundingBox")) pattern->contentUserSpace = false;
+    } else if (STR_AS(key, "viewBox")) {
+        if (!_parseNumber(&value, nullptr, &pattern->vbox.x) || !_parseNumber(&value, nullptr, &pattern->vbox.y)) return false;
+        if (!_parseNumber(&value, nullptr, &pattern->vbox.w) || !_parseNumber(&value, nullptr, &pattern->vbox.h)) return false;
+        if (pattern->vbox.w > 0.0f && pattern->vbox.h > 0.0f) pattern->hasViewBox = true;
+    } else if (STR_AS(key, "patternTransform")) {
+        pattern->transform = _parseTransformationMatrix(value);
+    }
+    return true;
+}
+
+static SvgNode* _createPatternNode(SvgParserContext* ctx, SvgNode* parent, const char* buf, unsigned bufLength, parseAttributes func)
+{
+    ctx->parser->node = _createNode(parent, SvgNodeType::Pattern);
+    if (!ctx->parser->node) return nullptr;
+    SvgPatternNode& pattern = ctx->parser->node->node.pattern;
+
+    ctx->parser->node->style->display = false;
+    pattern.patternUserSpace = false;
+    pattern.contentUserSpace = true;
+
+    func(buf, bufLength, _attrParsePatternNode, ctx);
+
+    if (pattern.patternUserSpace) _recalcBox(ctx, &pattern.box, pattern.isPercentage);
+
+    return ctx->parser->node;
+}
 
 static bool _attrParsePathNode(void* data, const char* key, const char* value)
 {
@@ -2102,7 +2143,9 @@ static constexpr struct
     size_t offset;
 } textTags[] = {
     {"x", SvgParserLengthType::Horizontal, sizeof("x"), offsetof(SvgTextNode, x)},
-    {"y", SvgParserLengthType::Vertical, sizeof("y"), offsetof(SvgTextNode, y)}};
+    {"y", SvgParserLengthType::Vertical, sizeof("y"), offsetof(SvgTextNode, y)},
+    {"dx", SvgParserLengthType::Horizontal, sizeof("dx"), offsetof(SvgTextNode, dx)},
+    {"dy", SvgParserLengthType::Vertical, sizeof("dy"), offsetof(SvgTextNode, dy)}};
 
 static bool _attrPrescanTextFontSize(void* data, const char* key, const char* value)
 {
@@ -2155,6 +2198,19 @@ static SvgNode* _createTextNode(SvgParserContext* ctx, SvgNode* parent, const ch
     return ctx->parser->node;
 }
 
+static SvgNode* _createTspanNode(SvgParserContext* ctx, SvgNode* parent, const char* buf, unsigned bufLength, parseAttributes func)
+{
+    ctx->parser->node = _createNode(parent, SvgNodeType::Tspan);
+    if (!ctx->parser->node) return nullptr;
+
+    ctx->parser->node->node.text.x = FLT_MAX;
+    ctx->parser->node->node.text.y = FLT_MAX;
+
+    func(buf, bufLength, _attrPrescanTextFontSize, ctx);
+    func(buf, bufLength, _attrParseTextNode, ctx);
+
+    return ctx->parser->node;
+}
 
 static constexpr struct
 {
@@ -2172,9 +2228,7 @@ static constexpr struct
     {"line", sizeof("line"), _createLineNode},
     {"image", sizeof("image"), _createImageNode},
     {"text", sizeof("text"), _createTextNode},
-    {"feGaussianBlur", sizeof("feGaussianBlur"), _createGaussianBlurNode}
-};
-
+    {"feGaussianBlur", sizeof("feGaussianBlur"), _createGaussianBlurNode}};
 
 static constexpr struct
 {
@@ -2189,9 +2243,8 @@ static constexpr struct
     {"clipPath", sizeof("clipPath"), _createClipPathNode},
     {"style", sizeof("style"), _createCssStyleNode},
     {"symbol", sizeof("symbol"), _createSymbolNode},
-    {"filter", sizeof("filter"), _createFilterNode}
-};
-
+    {"filter", sizeof("filter"), _createFilterNode},
+    {"pattern", sizeof("pattern"), _createPatternNode}};
 
 #define FIND_FACTORY(Short_Name, Tags_Array)                                           \
     static FactoryMethod                                                               \
@@ -2912,6 +2965,7 @@ static void _styleInherit(SvgStyleProperty* child, const SvgStyleProperty* paren
     if (!(child->stroke.flags & SvgStrokeFlags::Cap)) child->stroke.cap = parent->stroke.cap;
     if (!(child->stroke.flags & SvgStrokeFlags::Join)) child->stroke.join = parent->stroke.join;
     if (!(child->stroke.flags & SvgStrokeFlags::Miterlimit)) child->stroke.miterlimit = parent->stroke.miterlimit;
+    if (!(child->flags & SvgStyleFlags::TextAnchor)) child->textAnchor = parent->textAnchor;
 }
 
 
@@ -2928,6 +2982,7 @@ static void _styleCopy(SvgStyleProperty* to, const SvgStyleProperty* from)
     if (from->flags & SvgStyleFlags::PaintOrder) to->paintOrder = from->paintOrder;
     if (from->flags & SvgStyleFlags::Display) to->display = from->display;
     if (from->flags & SvgStyleFlags::BlendMode) to->blendMode = from->blendMode;
+    if (from->flags & SvgStyleFlags::TextAnchor) to->textAnchor = from->textAnchor;
 
     //Fill
     to->fill.flags = (to->fill.flags | from->fill.flags);
@@ -3026,9 +3081,21 @@ static void _copyAttr(SvgNode* to, const SvgNode* from)
             to->node.use = from->node.use;
             break;
         }
+        case SvgNodeType::Pattern: {
+            to->node.pattern = from->node.pattern;
+            to->node.pattern.applying = false;
+            if (from->node.pattern.transform) {
+                to->node.pattern.transform = tvg::malloc<Matrix>(sizeof(Matrix));
+                *to->node.pattern.transform = *from->node.pattern.transform;
+            }
+            break;
+        }
+        case SvgNodeType::Tspan:
         case SvgNodeType::Text: {
             to->node.text.x = from->node.text.x;
             to->node.text.y = from->node.text.y;
+            to->node.text.dx = from->node.text.dx;
+            to->node.text.dy = from->node.text.dy;
             to->node.text.fontSize = from->node.text.fontSize;
             svgUtilReplace(&to->node.text.text, from->node.text.text);
             svgUtilReplace(&to->node.text.fontFamily, from->node.text.fontFamily);
@@ -3132,6 +3199,35 @@ static int _svgLoaderParserXmlTagName(const char* content, char* tagName, unsign
     return sz;
 }
 
+static bool _hasTspanChild(const SvgNode* node, const SvgNode* exclude = nullptr)
+{
+    ARRAY_FOREACH(p, node->child) {
+        if (*p == exclude) continue;
+        if ((*p)->type == SvgNodeType::Tspan && ((*p)->node.text.text || !(*p)->child.empty())) return true;
+    }
+    return false;
+}
+
+
+static void _spliceTspanClose(SvgParserContext* ctx)
+{
+    auto cur = ctx->parser->node;
+    if (!cur || cur->type != SvgNodeType::Tspan) return;
+
+    auto& t = cur->node.text;
+    bool unpositioned = (t.x == FLT_MAX && t.y == FLT_MAX && t.dx == 0.0f && t.dy == 0.0f);
+    bool noOverride = (t.fontSize <= 0.0f && !t.fontFamily && cur->xmlSpace == SvgXmlSpace::None && cur->style->flags == SvgStyleFlags::None && cur->style->fill.flags == SvgFillFlags::None);
+
+    auto splice = t.text && unpositioned && noOverride && cur->parent && cur->child.empty() && !_hasTspanChild(cur->parent, cur);
+
+    if (splice) {
+        auto& parentText = cur->parent->node.text;
+        parentText.text = append(parentText.text, t.text, strlen(t.text));
+        tvg::free(t.text);
+        t.text = nullptr;
+    }
+    ctx->parser->node = cur->parent;
+}
 
 static void _svgLoaderParserXmlClose(SvgParserContext* ctx, const char* content, unsigned int length)
 {
@@ -3156,6 +3252,11 @@ static void _svgLoaderParserXmlClose(SvgParserContext* ctx, const char* content,
             ctx->gradientStack.pop();
             break;
         }
+    }
+
+    if (ctx->openedTag == OpenedTagType::Text && STR_AS(tagName, "tspan")) {
+        _spliceTspanClose(ctx);
+        return;
     }
 
     for (unsigned int i = 0; i < sizeof(graphicsTags) / sizeof(graphicsTags[0]); i++) {
@@ -3253,6 +3354,10 @@ static void _svgLoaderParserXmlOpen(SvgParserContext* ctx, const char* content, 
         if (node->type != SvgNodeType::Defs || !empty) {
             ctx->stack.push(node);
         }
+    } else if (ctx->openedTag == OpenedTagType::Text && STR_AS(tagName, "tspan")) {
+        parent = ctx->parser->node;
+        node = _createTspanNode(ctx, parent, attrs, attrsLength, xmlParseAttributes);
+        if (empty) ctx->parser->node = parent;
     } else if ((method = _findGraphicsFactory(tagName))) {
         if (ctx->stack.count > 0) parent = ctx->stack.last();
         else parent = ctx->doc;
@@ -3288,7 +3393,17 @@ static void _svgLoaderParserXmlOpen(SvgParserContext* ctx, const char* content, 
 
 static void _svgLoaderParserText(SvgParserContext* ctx, const char* content, unsigned int length)
 {
-    auto& text = ctx->parser->node->node.text;
+    auto node = ctx->parser->node;
+
+    if (_hasTspanChild(node)) {
+        auto run = _createNode(node, SvgNodeType::Tspan);
+        run->node.text.x = FLT_MAX;
+        run->node.text.y = FLT_MAX;
+        run->node.text.text = append(run->node.text.text, content, length);
+        return;
+    }
+
+    auto& text = node->node.text;
     text.text = append(text.text, content, length);
 }
 
@@ -3384,9 +3499,14 @@ static void _free(SvgNode* node)
              tvg::free(node->node.image.href);
              break;
          }
+         case SvgNodeType::Tspan:
          case SvgNodeType::Text: {
              tvg::free(node->node.text.text);
              tvg::free(node->node.text.fontFamily);
+             break;
+         }
+         case SvgNodeType::Pattern: {
+             tvg::free(node->node.pattern.transform);
              break;
          }
          default: {
@@ -3612,6 +3732,24 @@ static void _updateGradient(SvgParserContext* ctx, SvgNode* node, Array<SvgStyle
     }
 }
 
+static void _updatePattern(SvgNode* node, SvgNode* root, SvgNode* defs)
+{
+    auto lookup = [&](const char* url) -> SvgNode* {
+        SvgNode* p = nullptr;
+        if (defs) p = _findNodeById(defs, url);
+        if (!p) p = _findNodeById(root, url);
+        if (p && p->type != SvgNodeType::Pattern) return nullptr;
+        return p;
+    };
+
+    if (node->style) {
+        auto& fill = node->style->fill.paint;
+        if (fill.url && !fill.gradient && !fill.pattern) fill.pattern = lookup(fill.url);
+    }
+    ARRAY_FOREACH(c, node->child) {
+        _updatePattern(*c, root, defs);
+    }
+}
 
 static void _updateComposite(SvgNode* node, SvgNode* root)
 {
@@ -3713,6 +3851,8 @@ void SvgLoader::clear(bool all)
 
 void SvgLoader::run(unsigned tid)
 {
+    if (!ctx.parser) return;
+
     //According to the SVG standard the value of the width/height of the viewbox set to 0 disables rendering
     if ((viewFlag & SvgViewFlag::Viewbox) && (fabsf(vbox.w) <= FLOAT_EPSILON || fabsf(vbox.h) <= FLOAT_EPSILON)) {
         TVGLOG("SVG", "The <viewBox> width and/or height set to 0 - rendering disabled.");
@@ -3729,15 +3869,22 @@ void SvgLoader::run(unsigned tid)
 
                 _updateComposite(ctx.doc, ctx.doc);
                 if (defs) _updateComposite(ctx.doc, defs);
+                if (defs) _updateComposite(defs, defs);
 
                 _updateFilter(ctx.doc, ctx.doc);
                 if (defs) _updateFilter(ctx.doc, defs);
+                if (defs) _updateFilter(defs, defs);
 
                 _updateStyle(ctx.doc, nullptr);
                 if (defs) _updateStyle(defs, nullptr);
 
                 if (ctx.gradients.count > 0) _updateGradient(&ctx, ctx.doc, &ctx.gradients);
                 if (defs) _updateGradient(&ctx, ctx.doc, &defs->node.defs.gradients);
+                if (defs && ctx.gradients.count > 0) _updateGradient(&ctx, defs, &ctx.gradients);
+                if (defs) _updateGradient(&ctx, defs, &defs->node.defs.gradients);
+
+                _updatePattern(ctx.doc, ctx.doc, defs);
+                if (defs) _updatePattern(defs, ctx.doc, defs);
 
                 root = svgSceneBuild(ctx, vbox, w, h, align, meetOrSlice, svgPath, viewFlag);
 
@@ -3752,7 +3899,7 @@ void SvgLoader::run(unsigned tid)
             }
         }
     }
-    root->ref();
+    if (root) root->ref();
     clear(false);
 }
 

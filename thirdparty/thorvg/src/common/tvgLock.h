@@ -32,6 +32,16 @@ namespace tvg
     struct Key
     {
         std::mutex mtx;
+
+        void lock()
+        {
+            mtx.lock();
+        }
+
+        void unlock()
+        {
+            mtx.unlock();
+        }
     };
 
     struct StrictKey : Key
@@ -66,7 +76,23 @@ namespace tvg
 
     struct StrictKey : Key
     {
+#ifdef __STDCPP_THREADS__
         std::mutex mtx;
+#endif
+
+        void lock()
+        {
+#ifdef __STDCPP_THREADS__
+            mtx.lock();
+#endif
+        }
+
+        void unlock()
+        {
+#ifdef __STDCPP_THREADS__
+            mtx.unlock();
+#endif
+        }
     };
 
     struct ScopedLock
@@ -77,17 +103,16 @@ namespace tvg
 
         ScopedLock(StrictKey& k)
         {
-            k.mtx.lock();
+            k.lock();
             key = &k;
         }
 
         ~ScopedLock()
         {
-            if (key) key->mtx.unlock();
+            if (key) key->unlock();
         }
     };
 #endif //THORVG_THREAD_SUPPORT
 }
 
 #endif //_TVG_LOCK_H_
-

@@ -39,7 +39,7 @@ class WgStroker
         Point prevPtDir;
     };
 public:
-    WgStroker(WgMeshData* buffer, float width, StrokeCap cap, StrokeJoin join = StrokeJoin::Bevel, float miterLimit = 4.0f);
+    WgStroker(WgMeshData* buffer, float width, StrokeCap cap, StrokeJoin join = StrokeJoin::Bevel, float miterLimit = 4.0f, float qualityScale = 1.0f);
     void run(const RenderPath& path);
     RenderRegion bounds() const;
     BBox getBBox() const;
@@ -65,6 +65,7 @@ private:
     WgMeshData* mBuffer;
     float mWidth = 0.0f;
     float mMiterLimit = 4.f;
+    float mQualityScale = 1.0f;
     StrokeCap mCap = StrokeCap::Square;
     StrokeJoin mJoin = StrokeJoin::Bevel;
     State mState = {};

@@ -77,7 +77,7 @@ GlRenderTask* GlEffect::render(RenderEffectGaussianBlur* effect, GlRenderTarget*
     auto dstCopyFbo1 = blendPool[1]->getRenderTarget(vp);
 
     // add uniform data
-    float viewport[4] {(float)vp.min.x, (float)vp.min.y, (float)vp.max.x, (float)vp.max.y};
+    float viewport[4]{0.0f, 0.0f, (float)vp.sw(), (float)vp.sh()};
     auto blurOffset = gpuBuffer->push((GlGaussianBlur*)(effect->rd), sizeof(GlGaussianBlur), true);
     auto viewportOffset = gpuBuffer->push(viewport, sizeof(viewport), true);
 
@@ -109,6 +109,7 @@ GlRenderTask* GlEffect::render(RenderEffectGaussianBlur* effect, GlRenderTarget*
 struct GlDropShadow: GlGaussianBlur {
     float color[4];
     float offset[2];
+    float dummy1[2];  // padding for std140 block alignment
 };
 
 
@@ -157,7 +158,7 @@ GlRenderTask* GlEffect::render(RenderEffectDropShadow* effect, GlRenderTarget* d
     auto dstCopyFbo1 = blendPool[1]->getRenderTarget(vp);
 
     // add uniform data
-    float viewport[4] {(float)vp.min.x, (float)vp.min.y, (float)vp.max.x, (float)vp.max.y};
+    float viewport[4]{0.0f, 0.0f, (float)vp.sw(), (float)vp.sh()};
     GlDropShadow* params = (GlDropShadow*)(effect->rd);
     auto paramsOffset = gpuBuffer->push(params, sizeof(GlDropShadow), true);
     auto viewportOffset = gpuBuffer->push(viewport, sizeof(viewport), true);

@@ -231,14 +231,13 @@ struct SceneImpl : Scene
         return ret;
     }
 
-
-    bool intersects(const RenderRegion& region)
+    bool intersects(const RenderRegion& region, bool visibleOnly)
     {
         if (!impl.renderer) return false;
 
         if (this->bounds().intersected(region)) {
             for (auto paint : paints) {
-                if (PAINT(paint)->intersects(region)) return true;
+                if (PAINT(paint)->intersects(region, visibleOnly)) return true;
             }
         }
 

@@ -75,9 +75,10 @@ struct GlBindingResource
 
 class GlRenderTask
 {
+    friend class GlStencilCoverBatch;
+
 public:
     GlRenderTask(GlProgram* program): mProgram(program) {}
-    GlRenderTask(GlProgram* program, GlRenderTask* other);
 
     virtual ~GlRenderTask() = default;
 
@@ -104,27 +105,32 @@ private:
     RenderRegion mViewport = {};
     uint32_t mIndexOffset = {};
     uint32_t mIndexCount = {};
+    GLenum mArrayMode = GL_TRIANGLES;
+    uint32_t mArrayOffset = {};
     Array<GlVertexLayout> mVertexLayout = {};
     Array<GlBindingResource> mBindingResources = {};
     float mDrawDepth = 0.f;
     Matrix mViewMatrix = {};
     bool mUseViewMatrix = false;
     bool mUseVertexColor = false;
+    bool mUseDrawArrays = false;
     float mVertexColor[4] = {0.f, 0.f, 0.f, 0.f};
 };
 
 class GlStencilCoverTask : public GlRenderTask
 {
+    friend class GlStencilCoverBatch;
+
 public:
     GlStencilCoverTask(GlRenderTask* stencil, GlRenderTask* cover, GlStencilMode mode);
     ~GlStencilCoverTask() override;
 
     void run() override;
-
     void normalizeDrawDepth(int32_t maxDepth) override;
+
 private:
-    GlRenderTask* mStencilTask;
-    GlRenderTask* mCoverTask;
+    Array<GlRenderTask*> mStencilTasks;
+    Array<GlRenderTask*> mCoverTasks;
     GlStencilMode mStencilMode;
 };
 

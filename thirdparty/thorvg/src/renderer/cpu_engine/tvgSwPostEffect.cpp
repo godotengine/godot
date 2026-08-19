@@ -573,7 +573,7 @@ bool effectTint(SwCompositor* cmp, const RenderEffectTint* params, bool direct)
         for (size_t y = 0; y < h; ++y) {
             auto dst = dbuffer;
             for (size_t x = 0; x < w; ++x, ++dst) {
-                auto val = INTERPOLATE(white, black, luma((uint8_t*)&dst));
+                auto val = INTERPOLATE(white, black, luma((uint8_t*)dst));
                 if (params->intensity < 255) val = INTERPOLATE(val, *dst, params->intensity);
                 *dst = ALPHA_BLEND(val, MULTIPLY(opacity, A(*dst)));
             }

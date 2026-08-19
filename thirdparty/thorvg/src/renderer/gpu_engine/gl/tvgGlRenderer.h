@@ -31,6 +31,7 @@
 #include "tvgGlRenderPass.h"
 #include "tvgGlEffect.h"
 #include "tvgGlSolidBatch.h"
+#include "tvgGlStencilCoverBatch.h"
 
 struct GlRenderer : RenderMethod
 {
@@ -164,7 +165,7 @@ struct GlRenderer : RenderMethod
     bool clear() override;
     bool intersectsShape(RenderData data, const RenderRegion& region) override;
     bool intersectsImage(RenderData data, const RenderRegion& region) override;
-    bool target(void* display, void* surface, void* context, int32_t id, uint32_t w, uint32_t h, ColorSpace cs);
+    Result target(void* display, void* surface, void* context, int32_t id, uint32_t w, uint32_t h, ColorSpace cs);
 
     //composition
     RenderCompositor* target(const RenderRegion& region, ColorSpace cs, CompositionFlag flags) override;
@@ -194,11 +195,10 @@ private:
     void initShaders();
     static RenderRegion viewportRegion(const RenderRegion& vp, const RenderRegion& bbox);
     GlRenderTask* createPrimitiveTask(RenderTypes type, BlendSource source, const RenderRegion& viewRegion, GlRenderTarget*& dstCopyFbo);
-    GlRenderTask* createStencilTask(GlRenderTask* task, GlStencilMode stencilMode, int32_t depth);
     void bindBlendTarget(GlRenderTask* task, const GlRenderTarget* dstCopyFbo, const RenderRegion& viewRegion, uint32_t binding);
     void drawPrimitive(GlShape& sdata, const RenderColor& c, RenderUpdateFlag flag, int32_t depth);
     void drawPrimitive(GlShape& sdata, const Fill* fill, RenderUpdateFlag flag, int32_t depth);
-    void drawClip(Array<RenderData>& clips);
+    void drawClip(Array<RenderData>& clips, const RenderRegion& viewBounds);
 
     GlRenderPass* currentPass();
 
@@ -231,6 +231,7 @@ private:
     Array<GlCompositor*> mComposeStack;
     TextureMgr mTextures;
     GlSolidBatch mSolidBatch;
+    GlStencilCoverBatch mStencilCoverBatch;
 
     //Disposed resources. They should be released on synced call.
     struct {

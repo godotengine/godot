@@ -279,12 +279,12 @@ bool Paint::Impl::bounds(Point* pt4, const Matrix* pm, bool obb)
     return ret;
 }
 
-
-bool Paint::Impl::intersects(const RenderRegion& region)
+bool Paint::Impl::intersects(const RenderRegion& region, bool visibleOnly)
 {
+    if (visibleOnly && hidden) return false;
     if (renderer) {
         bool ret;
-        PAINT_METHOD(ret, intersects(region));
+        PAINT_METHOD(ret, intersects(region, visibleOnly));
         return ret;
     }
     return false;
@@ -369,11 +369,15 @@ Result Paint::bounds(Point* pt4) noexcept
     return Result::InsufficientCondition;
 }
 
-
 bool Paint::intersects(int32_t x, int32_t y, int32_t w, int32_t h) noexcept
 {
+    return intersects(x, y, w, h, false);
+}
+
+bool Paint::intersects(int32_t x, int32_t y, int32_t w, int32_t h, bool visibleOnly) noexcept
+{
     if (w <= 0 || h <= 0) return false;
-    return pImpl->intersects({{x, y}, {x + w, y + h}});
+    return pImpl->intersects({{x, y}, {x + w, y + h}}, visibleOnly);
 }
 
 
