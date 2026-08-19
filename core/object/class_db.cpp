@@ -479,33 +479,35 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 			}
 		}
 
-		{ //properties
+		{
+			//properties
 
-			List<StringName> snames;
+			LocalVector<StringName> snames;
 
-			for (const KeyValue<StringName, PropertySetGet> &F : t->property_setget) {
-				snames.push_back(F.key);
+			for (const KeyValue<StringName, GDType::Property> &kv : t->gdtype->get_property_map(true)) {
+				if (kv.value.type == GDType::Property::Type::SETGET) {
+					snames.push_back(kv.key);
+				}
 			}
-
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
-				PropertySetGet *psg = t->property_setget.getptr(F);
-				ERR_FAIL_NULL_V(psg, 0);
+				const GDType::Property &property = t->gdtype->get_property_map(true)[F];
+				const GDType::Property::SetGet &psg = property.payload.setget;
 
 				hash = hash_murmur3_one_64(F.hash(), hash);
-				hash = hash_murmur3_one_64(psg->setter.hash(), hash);
-				hash = hash_murmur3_one_64(psg->getter.hash(), hash);
+				hash = hash_murmur3_one_64((psg.setter ? psg.setter->get_name() : StringName()).hash(), hash);
+				hash = hash_murmur3_one_64((psg.getter ? psg.getter->get_name() : StringName()).hash(), hash);
 			}
 		}
 
 		//property list
-		for (const PropertyInfo &F : t->property_list) {
-			hash = hash_murmur3_one_64(F.name.hash(), hash);
-			hash = hash_murmur3_one_64(F.type, hash);
-			hash = hash_murmur3_one_64(F.hint, hash);
-			hash = hash_murmur3_one_64(F.hint_string.hash(), hash);
-			hash = hash_murmur3_one_64(F.usage, hash);
+		for (const PropertyInfo *F : t->gdtype->get_ordered_self_properties()) {
+			hash = hash_murmur3_one_64(F->name.hash(), hash);
+			hash = hash_murmur3_one_64(F->type, hash);
+			hash = hash_murmur3_one_64(F->hint, hash);
+			hash = hash_murmur3_one_64(F->hint_string.hash(), hash);
+			hash = hash_murmur3_one_64(F->usage, hash);
 		}
 	}
 
@@ -973,7 +975,7 @@ static MethodInfo info_from_bind(const MethodBind *p_method) {
 	return minfo;
 }
 
-void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
+void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -981,11 +983,6 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 		if (type->disabled) {
 			continue;
 		}
-#ifdef DEBUG_ENABLED
-		if (p_exclude_from_properties && type->methods_in_properties.has(kv.key)) {
-			continue;
-		}
-#endif
 
 		p_methods->push_back(info_from_bind(kv.value));
 	}
@@ -995,7 +992,7 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 #endif
 }
 
-void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods, bool p_no_inheritance, bool p_exclude_from_properties) {
+void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -1003,11 +1000,6 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 		if (type->disabled) {
 			continue;
 		}
-#ifdef DEBUG_ENABLED
-		if (p_exclude_from_properties && type->methods_in_properties.has(kv.key)) {
-			continue;
-		}
-#endif
 
 		p_methods->push_back(Pair(info_from_bind(kv.value), kv.value->get_hash()));
 	}
@@ -1044,7 +1036,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 	}
 }
 
-bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance, bool p_exclude_from_properties) {
+bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
@@ -1344,7 +1336,7 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 }
 
 void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
-	Locker::Lock lock(Locker::STATE_WRITE);
+	Locker::Lock lock(Locker::STATE_READ); // Doesn't modify ClassDB stuff.
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
@@ -1353,11 +1345,11 @@ void ClassDB::add_property_group(const StringName &p_class, const String &p_name
 		prefix = vformat("%s,%d", p_prefix, p_indent_depth);
 	}
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_GROUP));
+	type->gdtype->add_to_ordered_properties(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_GROUP));
 }
 
 void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
-	Locker::Lock lock(Locker::STATE_WRITE);
+	Locker::Lock lock(Locker::STATE_READ); // Doesn't modify ClassDB stuff.
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
@@ -1366,7 +1358,7 @@ void ClassDB::add_property_subgroup(const StringName &p_class, const String &p_n
 		prefix = vformat("%s,%d", p_prefix, p_indent_depth);
 	}
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_SUBGROUP));
+	type->gdtype->add_to_ordered_properties(PropertyInfo(Variant::NIL, p_name, PROPERTY_HINT_NONE, prefix, PROPERTY_USAGE_SUBGROUP));
 }
 
 void ClassDB::add_property_array_count(const StringName &p_class, const String &p_label, const StringName &p_count_property, const StringName &p_count_setter, const StringName &p_count_getter, const String &p_array_element_prefix, uint32_t p_count_usage) {
@@ -1374,71 +1366,20 @@ void ClassDB::add_property_array_count(const StringName &p_class, const String &
 }
 
 void ClassDB::add_property_array(const StringName &p_class, const StringName &p_path, const String &p_array_element_prefix) {
-	Locker::Lock lock(Locker::STATE_WRITE);
+	Locker::Lock lock(Locker::STATE_READ); // Doesn't modify ClassDB stuff.
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	type->property_list.push_back(PropertyInfo(Variant::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
+	type->gdtype->add_to_ordered_properties(PropertyInfo(Variant::NIL, p_path, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, p_array_element_prefix));
 }
 
 // NOTE: For implementation simplicity reasons, this method doesn't allow setters to have optional arguments at the end.
 void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index) {
-	Locker::Lock lock(Locker::STATE_WRITE);
+	Locker::Lock lock(Locker::STATE_READ); // Doesn't modify ClassDB stuff.
 
 	ClassInfo *type = classes.getptr(p_class);
-
 	ERR_FAIL_NO_CLASS(type, p_class);
-
-	const MethodBind *mb_set = nullptr;
-	if (p_setter) {
-		mb_set = get_method(p_class, p_setter);
-#ifdef DEBUG_ENABLED
-
-		ERR_FAIL_NULL_MSG(mb_set, vformat("Invalid setter '%s::%s' for property '%s'.", p_class, p_setter, p_pinfo.name));
-
-		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
-		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, vformat("Invalid function for setter '%s::%s' for property '%s'.", p_class, p_setter, p_pinfo.name));
-#endif // DEBUG_ENABLED
-	}
-
-	const MethodBind *mb_get = nullptr;
-	if (p_getter) {
-		mb_get = get_method(p_class, p_getter);
-#ifdef DEBUG_ENABLED
-
-		ERR_FAIL_NULL_MSG(mb_get, vformat("Invalid getter '%s::%s' for property '%s'.", p_class, p_getter, p_pinfo.name));
-
-		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
-		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, vformat("Invalid function for getter '%s::%s' for property '%s'.", p_class, p_getter, p_pinfo.name));
-#endif // DEBUG_ENABLED
-	}
-
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_MSG(type->property_setget.has(p_pinfo.name), vformat("Object '%s' already has property '%s'.", p_class, p_pinfo.name));
-#endif // DEBUG_ENABLED
-
-	type->property_list.push_back(p_pinfo);
-	type->property_map[p_pinfo.name] = p_pinfo;
-#ifdef DEBUG_ENABLED
-	// Used to filter out setters and getters in the editor (e.g. autocomplete) to not clutter menus. We only want to filter methods from properties that are easily available to users.
-	if (p_index == -1 && !(p_pinfo.usage & PropertyUsageFlags::PROPERTY_USAGE_INTERNAL)) {
-		if (mb_get) {
-			type->methods_in_properties.insert(p_getter);
-		}
-		if (mb_set) {
-			type->methods_in_properties.insert(p_setter);
-		}
-	}
-#endif // DEBUG_ENABLED
-	PropertySetGet psg;
-	psg.setter = p_setter;
-	psg.getter = p_getter;
-	psg._setptr = mb_set;
-	psg._getptr = mb_get;
-	psg.index = p_index;
-	psg.type = p_pinfo.type;
-
-	type->property_setget[p_pinfo.name] = psg;
+	type->gdtype->add_property(p_pinfo, p_setter, p_getter, p_index);
 }
 
 void ClassDB::set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default) {
@@ -1450,12 +1391,17 @@ void ClassDB::set_property_default_value(const StringName &p_class, const String
 
 void ClassDB::add_linked_property(const StringName &p_class, const String &p_property, const String &p_linked_property) {
 #ifdef TOOLS_ENABLED
-	Locker::Lock lock(Locker::STATE_WRITE);
+	Locker::Lock lock(Locker::STATE_READ); // Doesn't modify ClassDB stuff.
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	ERR_FAIL_COND(!type->property_map.has(p_property));
-	ERR_FAIL_COND(!type->property_map.has(p_linked_property));
+	const GDType::Property *property = type->gdtype->get_property_map(true).getptr(p_property);
+	ERR_FAIL_NULL(property);
+	ERR_FAIL_COND(property->type != GDType::Property::Type::SETGET);
+
+	const GDType::Property *linked_property = type->gdtype->get_property_map(true).getptr(p_linked_property);
+	ERR_FAIL_NULL(linked_property);
+	ERR_FAIL_COND(linked_property->type != GDType::Property::Type::SETGET);
 
 	if (!type->linked_properties.has(p_property)) {
 		type->linked_properties.insert(p_property, List<StringName>());
@@ -1466,13 +1412,13 @@ void ClassDB::add_linked_property(const StringName &p_class, const String &p_pro
 }
 
 void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
-	Locker::Lock lock(Locker::STATE_READ);
+	Locker::Lock lock(Locker::STATE_READ); // Doesn't modify ClassDB stuff.
 
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
 	while (check) {
-		for (const PropertyInfo &pi : check->property_list) {
-			p_list->push_back(pi);
+		for (const PropertyInfo *pi : check->gdtype->get_ordered_self_properties()) {
+			p_list->push_back(*pi);
 			if (p_validator) {
 				p_validator->validate_property(p_list->back()->get());
 			}
@@ -1507,22 +1453,18 @@ void ClassDB::get_linked_properties_info(const StringName &p_class, const String
 bool ClassDB::get_property_info(const StringName &p_class, const StringName &p_property, PropertyInfo *r_info, bool p_no_inheritance, const Object *p_validator) {
 	Locker::Lock lock(Locker::STATE_READ);
 
-	ClassInfo *check = classes.getptr(p_class);
-	while (check) {
-		if (check->property_map.has(p_property)) {
-			PropertyInfo pinfo = check->property_map[p_property];
-			if (p_validator) {
-				p_validator->validate_property(pinfo);
-			}
+	ClassInfo *class_info = classes.getptr(p_class);
+	if (class_info) {
+		const GDType::Property *property = class_info->gdtype->get_property_map(p_no_inheritance).getptr(p_property);
+		if (property && property->type == GDType::Property::Type::SETGET) {
 			if (r_info) {
-				*r_info = pinfo;
+				*r_info = *property->payload.setget.property_info;
+			}
+			if (p_validator) {
+				p_validator->validate_property(*r_info);
 			}
 			return true;
 		}
-		if (p_no_inheritance) {
-			break;
-		}
-		check = check->inherits_ptr;
 	}
 
 	return false;
@@ -1531,126 +1473,29 @@ bool ClassDB::get_property_info(const StringName &p_class, const StringName &p_p
 bool ClassDB::set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid) {
 	ERR_FAIL_NULL_V(p_object, false);
 
-	ClassInfo *type = classes.getptr(p_object->get_class_name());
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
-			if (!psg->setter) {
-				if (r_valid) {
-					*r_valid = false;
-				}
-				return true; //return true but do nothing
-			}
-
-			Callable::CallError ce;
-
-			if (psg->index >= 0) {
-				Variant index = psg->index;
-				const Variant *arg[2] = { &index, &p_value };
-				//p_object->call(psg->setter,arg,2,ce);
-				if (psg->_setptr) {
-					psg->_setptr->call(p_object, arg, 2, ce);
-				} else {
-					p_object->callp(psg->setter, arg, 2, ce);
-				}
-
-			} else {
-				const Variant *arg[1] = { &p_value };
-				if (psg->_setptr) {
-					psg->_setptr->call(p_object, arg, 1, ce);
-				} else {
-					p_object->callp(psg->setter, arg, 1, ce);
-				}
-			}
-
-			if (r_valid) {
-				*r_valid = ce.error == Callable::CallError::CALL_OK;
-			}
-
-			return true;
-		}
-
-		check = check->inherits_ptr;
-	}
-
-	return false;
+	return p_object->set_native(p_property, p_value, r_valid);
 }
 
 bool ClassDB::get_property(Object *p_object, const StringName &p_property, Variant &r_value) {
 	ERR_FAIL_NULL_V(p_object, false);
 
-	ClassInfo *type = classes.getptr(p_object->get_class_name());
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
-			if (!psg->getter) {
-				return true; //return true but do nothing
-			}
-
-			if (psg->index >= 0) {
-				Variant index = psg->index;
-				const Variant *arg[1] = { &index };
-				Callable::CallError ce;
-				const Variant value = p_object->callp(psg->getter, arg, 1, ce);
-				r_value = (ce.error == Callable::CallError::CALL_OK) ? value : Variant();
-
-			} else {
-				Callable::CallError ce;
-				if (psg->_getptr) {
-					r_value = psg->_getptr->call(p_object, nullptr, 0, ce);
-				} else {
-					const Variant value = p_object->callp(psg->getter, nullptr, 0, ce);
-					r_value = (ce.error == Callable::CallError::CALL_OK) ? value : Variant();
-				}
-			}
-			return true;
-		}
-
-		const int64_t *c = check->gdtype->get_integer_constant_map(true).getptr(p_property); //constants count
-		if (c) {
-			r_value = *c;
-			return true;
-		}
-
-		if (check->gdtype->get_method_map(true).has(p_property)) { //methods count
-			r_value = Callable(p_object, p_property);
-			return true;
-		}
-
-		if (check->gdtype->get_signal_map(true).has(p_property)) { //signals count
-			r_value = Signal(p_object, p_property);
-			return true;
-		}
-
-		check = check->inherits_ptr;
-	}
-
-	// The "free()" method is special, so we assume it exists and return a Callable.
-	if (p_property == CoreStringName(free_)) {
-		r_value = Callable(p_object, p_property);
-		return true;
-	}
-
-	return false;
+	return p_object->get_native(p_property, r_value);
 }
 
 int ClassDB::get_property_index(const StringName &p_class, const StringName &p_property, bool *r_is_valid) {
-	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
+	ClassInfo *class_info = classes.getptr(p_class);
+	if (class_info) {
+		const GDType::Property *property = class_info->gdtype->get_property_map().getptr(p_property);
+		if (property && property->type == GDType::Property::Type::SETGET) {
+			const GDType::Property::SetGet &psg = property->payload.setget;
 			if (r_is_valid) {
 				*r_is_valid = true;
 			}
 
-			return psg->index;
+			return psg.index;
 		}
-
-		check = check->inherits_ptr;
 	}
+
 	if (r_is_valid) {
 		*r_is_valid = false;
 	}
@@ -1659,20 +1504,19 @@ int ClassDB::get_property_index(const StringName &p_class, const StringName &p_p
 }
 
 Variant::Type ClassDB::get_property_type(const StringName &p_class, const StringName &p_property, bool *r_is_valid) {
-	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
+	ClassInfo *class_info = classes.getptr(p_class);
+	if (class_info) {
+		const GDType::Property *property = class_info->gdtype->get_property_map().getptr(p_property);
+		if (property && property->type == GDType::Property::Type::SETGET) {
+			const GDType::Property::SetGet &psg = property->payload.setget;
 			if (r_is_valid) {
 				*r_is_valid = true;
 			}
 
-			return psg->type;
+			return psg.property_info->type;
 		}
-
-		check = check->inherits_ptr;
 	}
+
 	if (r_is_valid) {
 		*r_is_valid = false;
 	}
@@ -1681,47 +1525,34 @@ Variant::Type ClassDB::get_property_type(const StringName &p_class, const String
 }
 
 StringName ClassDB::get_property_setter(const StringName &p_class, const StringName &p_property) {
-	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
-			return psg->setter;
+	ClassInfo *class_info = classes.getptr(p_class);
+	if (class_info) {
+		const GDType::Property *property = class_info->gdtype->get_property_map().getptr(p_property);
+		if (property && property->type == GDType::Property::Type::SETGET) {
+			return property->payload.setget.setter ? property->payload.setget.setter->get_name() : StringName();
 		}
-
-		check = check->inherits_ptr;
 	}
 
 	return StringName();
 }
 
 StringName ClassDB::get_property_getter(const StringName &p_class, const StringName &p_property) {
-	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		const PropertySetGet *psg = check->property_setget.getptr(p_property);
-		if (psg) {
-			return psg->getter;
+	ClassInfo *class_info = classes.getptr(p_class);
+	if (class_info) {
+		const GDType::Property *property = class_info->gdtype->get_property_map().getptr(p_property);
+		if (property && property->type == GDType::Property::Type::SETGET) {
+			return property->payload.setget.getter ? property->payload.setget.getter->get_name() : StringName();
 		}
-
-		check = check->inherits_ptr;
 	}
 
 	return StringName();
 }
 
 bool ClassDB::has_property(const StringName &p_class, const StringName &p_property, bool p_no_inheritance) {
-	ClassInfo *type = classes.getptr(p_class);
-	ClassInfo *check = type;
-	while (check) {
-		if (check->property_setget.has(p_property)) {
-			return true;
-		}
-
-		if (p_no_inheritance) {
-			break;
-		}
-		check = check->inherits_ptr;
+	ClassInfo *class_info = classes.getptr(p_class);
+	if (class_info) {
+		const GDType::Property *property = class_info->gdtype->get_property_map(p_no_inheritance).getptr(p_property);
+		return property ? property->type == GDType::Property::Type::SETGET : false;
 	}
 
 	return false;

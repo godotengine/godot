@@ -690,6 +690,10 @@ public:
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get(const StringName &p_name, bool *r_valid = nullptr) const;
+	/// Like set/get but only uses the internal path. Used from ClassDB::set_property and for GDScript optimization.
+	bool set_native(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
+	bool get_native(const StringName &p_name, Variant &r_value, bool *r_valid = nullptr) const;
+
 	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 

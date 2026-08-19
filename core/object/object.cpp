@@ -220,10 +220,8 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	}
 
 	// Try built-in setter.
-	{
-		if (ClassDB::set_property(this, p_name, p_value, r_valid)) {
-			return;
-		}
+	if (set_native(p_name, p_value, r_valid)) {
+		return;
 	}
 
 	if (p_name == CoreStringName(script)) {
@@ -291,13 +289,8 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 	}
 
 	// Try built-in getter.
-	{
-		if (ClassDB::get_property(const_cast<Object *>(this), p_name, ret)) {
-			if (r_valid) {
-				*r_valid = true;
-			}
-			return ret;
-		}
+	if (Variant value; get_native(p_name, value, r_valid)) {
+		return value;
 	}
 
 	if (p_name == CoreStringName(script)) {
@@ -351,6 +344,122 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		}
 		return Variant();
 	}
+}
+
+bool Object::set_native(const StringName &p_name, const Variant &p_value, bool *r_valid) {
+	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_name);
+	if (property) {
+		switch (property->type) {
+			case GDType::Property::Type::SETGET: {
+				const GDType::Property::SetGet &psg = property->payload.setget;
+				if (!psg.setter) {
+					if (r_valid) {
+						*r_valid = false;
+					}
+					return true;
+				}
+
+				Callable::CallError ce;
+
+				if (psg.index >= 0) {
+					Variant index = psg.index;
+					const Variant *arg[2] = { &index, &p_value };
+					//p_object->call(psg->setter,arg,2,ce);
+					psg.setter->call(this, arg, 2, ce);
+				} else {
+					const Variant *arg[1] = { &p_value };
+					psg.setter->call(this, arg, 1, ce);
+				}
+
+				if (r_valid) {
+					*r_valid = ce.error == Callable::CallError::CALL_OK;
+				}
+				return true;
+			}
+			default: {
+				// All other properties are unsettable.
+				if (r_valid) {
+					*r_valid = false;
+				}
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Object::get_native(const StringName &p_name, Variant &r_value, bool *r_valid) const {
+	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_name);
+	if (property) {
+		switch (property->type) {
+			case GDType::Property::Type::SETGET: {
+				const GDType::Property::SetGet &psg = property->payload.setget;
+				if (!psg.getter) {
+					if (r_valid) {
+						*r_valid = true; // Set to true for compat reasons.
+					}
+					r_value = Variant();
+					return true;
+				}
+
+				Callable::CallError ce;
+				if (psg.index >= 0) {
+					Variant index = psg.index;
+					const Variant *arg[1] = { &index };
+					r_value = psg.getter->call(const_cast<Object *>(this), arg, 1, ce);
+				} else {
+					r_value = psg.getter->call(const_cast<Object *>(this), nullptr, 0, ce);
+				}
+
+				if (ce.error != Callable::CallError::CALL_OK) {
+					if (r_valid) {
+						*r_valid = false;
+					}
+					r_value = Variant();
+				} else if (r_valid) {
+					*r_valid = true;
+				}
+				return true;
+			}
+			case GDType::Property::Type::INTEGER_CONSTANT: {
+				if (r_valid) {
+					*r_valid = true;
+				}
+				r_value = property->payload.integer;
+				return true;
+			}
+			case GDType::Property::Type::METHOD: {
+				if (r_valid) {
+					*r_valid = true;
+				}
+				r_value = Callable(this, p_name);
+				return true;
+			}
+			case GDType::Property::Type::SIGNAL: {
+				if (r_valid) {
+					*r_valid = true;
+				}
+				r_value = Signal(this, p_name);
+				return true;
+			}
+		}
+	}
+
+	// The "free()" method is special, so we assume it exists and return a Callable.
+	if (p_name == CoreStringName(free_)) {
+		if (r_valid) {
+			*r_valid = true;
+		}
+
+		r_value = Callable(this, p_name);
+		return true;
+	}
+
+	if (r_valid) {
+		*r_valid = false;
+	}
+	return false;
 }
 
 void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
