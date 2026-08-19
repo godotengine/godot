@@ -34,7 +34,7 @@
 
 class SMBPitchShift {
 	enum {
-		MAX_FRAME_LENGTH = 8192
+		MAX_FRAME_LENGTH = 4096 * sizeof(float),
 	};
 
 	float gInFIFO[MAX_FRAME_LENGTH] = {};
