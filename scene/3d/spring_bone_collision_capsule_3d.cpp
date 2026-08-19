@@ -124,8 +124,7 @@ void SpringBoneCollisionCapsule3D::_bind_methods() {
 #define SB_DEV_ASSERT(m_cond)
 #endif
 
-// function to verify calculations
-real_t verify_distance_within_taper(const Vector3 &p_origin, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
+static real_t _verify_distance_within_taper(const Vector3 &p_origin, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
 	// (p_origin) defines the external point we are measuring the distance to (on the axis of the collider)
 	// The bone capsule is from (p_current_origin, p_bone_origin_radius) to (p_current, p_bone_radius)
 	real_t taper_fore = (p_bone_origin_radius - p_bone_radius) / p_bone_length;
@@ -146,7 +145,7 @@ real_t verify_distance_within_taper(const Vector3 &p_origin, float p_bone_radius
 	return (p_origin - closest_cone_axis_point).length() - cone_sphere_rad;
 }
 
-static Vector3 _closest_capsule_sphere(const Vector3 &head, const Vector3 &tail, const Vector3 &bone_sphere_center) {
+static Vector3 _closest_capsule_sphere(const Vector3 &p_head, const Vector3 &p_tail, const Vector3 &p_bone_sphere_center) {
 	Vector3 p = tail - head;
 	Vector3 q = bone_sphere_center - head;
 	real_t dot = p.dot(q);
@@ -160,7 +159,7 @@ static Vector3 _closest_capsule_sphere(const Vector3 &head, const Vector3 &tail,
 	return head + p * (dot / pls);
 }
 
-static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector3 &tail, float radius, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
+static real_t _closest_capsule_sphere_to_taper(const Vector3 &p_head, const Vector3 &p_tail, float p_radius, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
 	// The collision capsule is (head, radius) to (tail, radius) parametrized by mu
 	// The bone capsule is from (p_current_origin, p_bone_origin_radius) to (p_current, p_bone_radius) parametrized by lam
 
@@ -172,7 +171,7 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 	// so the cross-product vector is the shortest distance between them.
 	Vector3 perp = bone_axis.cross(p);
 	real_t perp_sq = perp.dot(perp);
-	real_t perp_len = sqrt(perp_sq);
+	real_t perp_len = Math::sqrt(perp_sq);
 	if (Math::is_zero_approx(perp_len)) { // This case also removes zero length bones and capsules.
 		return 0.5; // Axes are parallel, so should actually pick point in overlap, but this is a very rare case.
 	}
@@ -235,7 +234,7 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 		Vector3 Dbone_sphere_center = p_current_origin * (1.0 - lam) + p_current * lam;
 		real_t Dvpdist = (Dcapsule_sphere_center - Dbone_sphere_center).length();
 		real_t Dvdist = verify_distance_within_taper(Dcapsule_sphere_center, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
-		if (fabs((Dvpdist - p_bone_radius) - Dvdist) > 0.01) {
+		if (Math::abs((Dvpdist - p_bone_radius) - Dvdist) > 0.01) {
 			printf("  %d disag %.3f %.3f mu %.3f lam %.3f\n", SpringBoneCollision3D::Dsegmentindexbeingcalculated, Dvpdist, Dvdist, mu, lam);
 		}
 #endif
@@ -262,7 +261,7 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 
 	// If cone_side_perp is the unit vector in the cone axis (x component) and perpendicular to the cone axis (y component)
 	real_t cone_side_perp_x = (p_bone_origin_radius - p_bone_radius) / p_bone_length;
-	real_t cone_side_perp_y = sqrt(1 - cone_side_perp_x * cone_side_perp_x);
+	real_t cone_side_perp_y = Math::sqrt(1 - cone_side_perp_x * cone_side_perp_x);
 	real_t p_bone_origin_radiusP = p_bone_origin_radius / cone_side_perp_y;
 	real_t p_bone_radiusP = p_bone_radius / cone_side_perp_y;
 
@@ -274,7 +273,7 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 	SB_DEV_ASSERT(Math::is_equal_approx(C_plane_y.length(), 1));
 	SB_DEV_ASSERT(Math::is_equal_approx(C_plane_x.length(), 1));
 
-	real_t p_length = sqrt(pdp);
+	real_t p_length = Math::sqrt(pdp);
 	Vector3 C_capsule_vec = p * (1 / p_length);
 	SB_DEV_ASSERT(Math::is_equal_approx(C_capsule_vec.length(), 1));
 	Vector3 C_capsule_vec_inplane = Vector3(C_capsule_vec.dot(C_plane_x), C_capsule_vec.dot(C_plane_y), C_capsule_vec.dot(C_plane_z));
@@ -311,7 +310,7 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 	}
 	real_t xsq = xsq_num / xsq_den;
 
-	real_t x = sqrt(xsq);
+	real_t x = Math::sqrt(xsq);
 	if ((capsule_vec_slope > 0) == (p_bone_origin_radius > p_bone_radius)) {
 		x = -x;
 	}
@@ -323,7 +322,7 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &head, const Vector
 
 	// If the sphere in the bone cone is off and endpoint, then pick a mu in the collision capsule
 	// that is closest to that end point
-	real_t cone_axis_rad = sqrt(perp_dist_sq + xsq);
+	real_t cone_axis_rad = Math::sqrt(perp_dist_sq + xsq);
 	real_t lam_cone_sphere = lam + (y + cone_axis_rad * cone_slope) / p_bone_length;
 	if ((lam_cone_sphere < 0) || (lam_cone_sphere > 1)) {
 		mu0 = p.dot((lam_cone_sphere < 0 ? p_current_origin : p_current) - head) / pdp;

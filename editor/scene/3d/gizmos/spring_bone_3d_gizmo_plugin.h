@@ -48,7 +48,7 @@ class SpringBoneSimulator3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 public:
 	static Ref<ArrayMesh> get_joints_mesh(Skeleton3D *p_skeleton, SpringBoneSimulator3D *p_simulator, bool p_is_selected);
 	static void draw_sphere(Ref<SurfaceTool> &p_surface_tool, const Basis &p_basis, const Vector3 &p_center, float p_radius, const Color &p_color);
-	static void draw_sphere_tangent_cone(Ref<SurfaceTool> &p_surface_tool, const Vector3 &p_prev_center, float p__prev_radius, const Vector3 &p_center, float p_radius, const Color &p_color);
+	static void draw_sphere_tangent_cone(Ref<SurfaceTool> &p_surface_tool, const Vector3 &p_prev_center, float p_prev_radius, const Vector3 &p_center, float p_radius, const Color &p_color);
 	static void draw_line(Ref<SurfaceTool> &p_surface_tool, const Vector3 &p_begin_pos, const Vector3 &p_end_pos, const Color &p_color);
 
 	bool has_gizmo(Node3D *p_spatial) override;
