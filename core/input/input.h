@@ -165,9 +165,7 @@ private:
 	bool emulate_mouse_from_touch = false;
 	bool agile_input_event_flushing = false;
 	bool use_accumulated_input = true;
-	bool joypads_enabled = true;
-
-	TypedArray<int> joypads_enabled_state;
+	bool joypad_enabled = true;
 
 	int mouse_from_touch_index = -1;
 
@@ -344,7 +342,7 @@ private:
 
 	EventDispatchFunc event_dispatch_function = nullptr;
 
-	bool _should_ignore_joypad_events(int p_device = -1) const;
+	bool _should_ignore_joypad_events() const;
 
 #ifndef DISABLE_DEPRECATED
 	void _vibrate_handheld_bind_compat_91143(int p_duration_ms = 500);
@@ -501,12 +499,10 @@ public:
 	void set_agile_input_event_flushing(bool p_enable);
 	void set_use_accumulated_input(bool p_enable);
 	bool is_using_accumulated_input();
-	void set_joypads_enabled(bool p_enable);
-	void set_joypad_device_enabled(int p_device, bool p_enable);
-	bool are_joypads_enabled() const;
-	bool is_joypad_enabled(int p_device) const;
+	void set_joypad_enabled(bool p_enable);
+	bool is_joypad_enabled() const;
 
-	void release_pressed_events(bool p_force_released = false);
+	void release_pressed_events();
 
 	void set_event_dispatch_function(EventDispatchFunc p_function);
 
