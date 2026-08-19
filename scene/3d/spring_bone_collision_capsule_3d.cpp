@@ -146,22 +146,26 @@ static real_t _verify_distance_within_taper(const Vector3 &p_origin, float p_bon
 }
 
 static Vector3 _closest_capsule_sphere(const Vector3 &p_head, const Vector3 &p_tail, const Vector3 &p_bone_sphere_center) {
-	Vector3 p = tail - head;
-	Vector3 q = bone_sphere_center - head;
+	Vector3 p = p_tail - p_head;
+	Vector3 q = p_bone_sphere_center - p_head;
 	real_t dot = p.dot(q);
 	if (dot <= 0) {
-		return head;
+		return p_head;
 	}
 	real_t pls = p.length_squared();
 	if ((pls <= dot) || Math::is_zero_approx(pls)) {
-		return tail;
+		return p_tail;
 	}
-	return head + p * (dot / pls);
+	return p_head + p * (dot / pls);
 }
 
 static real_t _closest_capsule_sphere_to_taper(const Vector3 &p_head, const Vector3 &p_tail, float p_radius, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) {
 	// The collision capsule is (head, radius) to (tail, radius) parametrized by mu
 	// The bone capsule is from (p_current_origin, p_bone_origin_radius) to (p_current, p_bone_radius) parametrized by lam
+
+	// remove clutter from variable names
+	const Vector3& head = p_head;
+	const Vector3& tail = p_tail;
 
 	Vector3 bone_axis = p_current - p_current_origin;
 	DEV_ASSERT(Math::is_equal_approx(bone_axis.length(), p_bone_length)); // enforced by limit_length()
@@ -178,7 +182,7 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &p_head, const Vect
 	real_t perp_bone = perp.dot(p_current_origin);
 	real_t perp_capsule = perp.dot(head);
 	real_t perp_dist = (perp_capsule - perp_bone) / perp_len;
-	if (Math::abs(perp_dist) > radius + MAX(p_bone_origin_radius, p_bone_radius) + CMP_EPSILON) {
+	if (Math::abs(perp_dist) > p_radius + MAX(p_bone_origin_radius, p_bone_radius) + CMP_EPSILON) {
 		return -1.0; // Geometry too distant for to interactions.
 	}
 
@@ -233,7 +237,7 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &p_head, const Vect
 		Vector3 Dcapsule_sphere_center = head * (1.0 - mu) + tail * mu;
 		Vector3 Dbone_sphere_center = p_current_origin * (1.0 - lam) + p_current * lam;
 		real_t Dvpdist = (Dcapsule_sphere_center - Dbone_sphere_center).length();
-		real_t Dvdist = verify_distance_within_taper(Dcapsule_sphere_center, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+		real_t Dvdist = _verify_distance_within_taper(Dcapsule_sphere_center, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 		if (Math::abs((Dvpdist - p_bone_radius) - Dvdist) > 0.01) {
 			printf("  %d disag %.3f %.3f mu %.3f lam %.3f\n", SpringBoneCollision3D::Dsegmentindexbeingcalculated, Dvpdist, Dvdist, mu, lam);
 		}
@@ -352,13 +356,13 @@ Vector3 SpringBoneCollisionCapsule3D::_collide(const Transform3D &p_center, floa
 
 	// Numerically test the claim that we have found the sphere in the collision capsule that enters the bone cone the deepest.
 #ifdef VERIFY_SPRINGBONECAPSULE_CALCULATIONS
-	real_t Dvdist = verify_distance_within_taper(capsule_sphere_center, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+	real_t Dvdist = _verify_distance_within_taper(capsule_sphere_center, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 	real_t mulo = MAX(capsule_mu - 0.1, 0.0);
 	Vector3 caplo = head * (1.0 - mulo) + tail * mulo;
 	real_t muhi = MIN(capsule_mu + 0.1, 1.0);
 	Vector3 caphi = head * (1.0 - muhi) + tail * muhi;
-	real_t Dvdistlo = verify_distance_within_taper(caplo, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
-	real_t Dvdisthi = verify_distance_within_taper(caphi, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+	real_t Dvdistlo = _verify_distance_within_taper(caplo, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
+	real_t Dvdisthi = _verify_distance_within_taper(caphi, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
 	if (Dvdistlo < Dvdist - 0.001) {
 		printf("%d Non-minimal mu=%.2f  %.3f < %.3f lo\n", SpringBoneCollision3D::Dsegmentindexbeingcalculated, capsule_mu, Dvdistlo, Dvdist);
 	}
