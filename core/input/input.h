@@ -502,7 +502,7 @@ public:
 	void set_joypad_enabled(bool p_enable);
 	bool is_joypad_enabled() const;
 
-	void release_pressed_events();
+	void release_pressed_events(bool p_force_released = false);
 
 	void set_event_dispatch_function(EventDispatchFunc p_function);
 
