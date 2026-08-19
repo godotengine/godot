@@ -156,8 +156,16 @@ public:
 
 	PoolVector<uint8_t>::Write write_lock;
 
-	// Use this, NOT write_lock.ptr() (because that will be NULL for zero size images).
-	bool _is_locked() const { return write_lock.is_active(); }
+	// By keeping a refcount on locks, we can allow users
+	// to manually lock, but still allow calling functions which require their own lock,
+	// by reusing the existing lock.
+	SafeNumeric<uint32_t> _lock_refcount;
+
+	bool _is_locked() const { return _lock_refcount.get() > 0; }
+
+	// Returns pointer to locked data, or NULL on failure.
+	uint8_t *_lock_refcounted();
+	void _unlock_refcounted();
 
 protected:
 	static void _bind_methods();
@@ -189,7 +197,8 @@ private:
 	static int _get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps = -1);
 	bool _can_modify(Format p_format) const;
 
-	_FORCE_INLINE_ void _get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest, Rect2i &r_clipped_src_rect, Rect2i &r_clipped_dest_rect) const;
+	void _get_clipped_src_and_dest_rects(const Image &p_src, const Rect2i &p_src_rect, const Point2i &p_dest, Rect2i &r_clipped_src_rect, Rect2i &r_clipped_dest_rect) const;
+	void _blit_rect(const Image &p_src, const Rect2i &p_src_rect, const Point2i &p_dest);
 
 	_FORCE_INLINE_ void _put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel);
 	_FORCE_INLINE_ void _get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel);
@@ -375,6 +384,12 @@ public:
 
 	void copy_internals_from(const Ref<Image> &p_image) {
 		ERR_FAIL_COND_MSG(p_image.is_null(), "It's not a reference to a valid Image object.");
+		ERR_FAIL_COND_MSG(_is_locked(), "Cannot copy image internals when it is locked.");
+
+		if (this == p_image.ptr()) {
+			return;
+		}
+
 		format = p_image->format;
 		width = p_image->width;
 		height = p_image->height;
@@ -383,6 +398,27 @@ public:
 	}
 
 	~Image();
+
+private:
+	struct ImageLock {
+		ImageLock(Image &p_image) :
+				image(p_image) {
+			data = image._lock_refcounted();
+		}
+
+		~ImageLock() {
+			image._unlock_refcounted();
+		}
+
+		uint8_t *ptr() const { return data; }
+
+		ImageLock(const ImageLock &) = delete;
+		ImageLock &operator=(const ImageLock &) = delete;
+
+	private:
+		Image &image;
+		uint8_t *data = nullptr;
+	};
 };
 
 VARIANT_ENUM_CAST(Image::Format)
