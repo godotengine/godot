@@ -164,8 +164,8 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &p_head, const Vect
 	// The bone capsule is from (p_current_origin, p_bone_origin_radius) to (p_current, p_bone_radius) parametrized by lam
 
 	// remove clutter from variable names
-	const Vector3& head = p_head;
-	const Vector3& tail = p_tail;
+	const Vector3 &head = p_head;
+	const Vector3 &tail = p_tail;
 
 	Vector3 bone_axis = p_current - p_current_origin;
 	DEV_ASSERT(Math::is_equal_approx(bone_axis.length(), p_bone_length)); // enforced by limit_length()
