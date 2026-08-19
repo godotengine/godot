@@ -13,7 +13,6 @@ thirdparty_obj = []
 thirdparty_dir = "#thirdparty/thorvg/"
 thirdparty_sources = [
     # common
-    "src/common/tvgColor.cpp",
     "src/common/tvgCompressor.cpp",
     "src/common/tvgMath.cpp",
     "src/common/tvgStr.cpp",
@@ -33,7 +32,6 @@ thirdparty_sources = [
     "src/renderer/tvgCanvas.cpp",
     "src/renderer/tvgFill.cpp",
     "src/renderer/tvgInitializer.cpp",
-    # "src/renderer/tvgLoader.cpp",
     "src/renderer/tvgLoaderMgr.cpp",
     "src/renderer/tvgPaint.cpp",
     "src/renderer/tvgPicture.cpp",
