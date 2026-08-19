@@ -127,6 +127,11 @@ void AnimationNode::add_validation_error(const AnimationTree *p_tree, const Stri
 void AnimationNode::make_invalid(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const String &p_reason) {
 	p_process_state.valid = false;
 
+	// TODO:
+	// Currently, if the AnimationTree stops due to an error as valid state at runtime, there is no way for the user to be aware of the error.
+	// I assume we should output an error when there is a change in p_process_state.valid between frames.
+	// Caching invalid_instance and checking the difference every frame is accurate, but it is somewhat costly and therefore likely not preferred.
+	// If we were to implement it, we should add an option in the project settings' animation tab, like `enum PrintErrorMode: {NONE, LOOSE, STRICT}`.
 	InvalidInstance &invalid_instance = p_process_state.invalid_instances[p_instance.path];
 	invalid_instance.errors.push_back(p_reason);
 }
@@ -138,8 +143,12 @@ AnimationNode::NodeTimeInfo AnimationNode::blend_input(ProcessState &p_process_s
 	if (likely(p_instance.connection_instances.size() > 0)) {
 		node_instance = p_instance.connection_instances[p_input];
 	}
-	// Should not ever happen due to validation earlier.
-	ERR_FAIL_NULL_V(node_instance, NodeTimeInfo());
+	if (unlikely(!node_instance)) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, vformat(RTR("Nothing connected to input %d."), p_input));
+		}
+		return NodeTimeInfo();
+	}
 
 	real_t activity = 0.0;
 
@@ -253,6 +262,7 @@ AnimationNode::NodeTimeInfo AnimationNode::_blend_node(ProcessState &p_process_s
 	if (!p_playback_info.seeked && !p_sync && !any_valid) {
 		p_playback_info.delta = 0.0;
 	}
+	p_other.blended = any_valid;
 	return p_other.resource->_pre_process(p_process_state, p_other, p_playback_info, p_test_only);
 }
 
@@ -349,16 +359,23 @@ void AnimationNode::set_filter_path(const NodePath &p_path, bool p_enable) {
 	} else {
 		filter.erase(p_path);
 	}
-	filters_dirty = true;
+	_mark_filters_dirty();
 }
 
 void AnimationNode::set_filter_enabled(bool p_enable) {
 	filter_enabled = p_enable;
-	filters_dirty = true;
+	_mark_filters_dirty();
 }
 
 bool AnimationNode::is_filter_enabled() const {
 	return filter_enabled;
+}
+
+void AnimationNode::_mark_filters_dirty() {
+	filters_version++;
+	if (unlikely(filters_version == 0)) {
+		filters_version = 1;
+	}
 }
 
 void AnimationNode::set_deletable(bool p_closable) {
@@ -408,6 +425,7 @@ void AnimationNode::_set_filters(const Array &p_filters) {
 }
 
 void AnimationNode::_update_filter_cache(const ProcessState &p_process_state, const AnimationNodeInstance &p_instance) {
+	bool filters_dirty = p_instance.filters_version != filters_version;
 	if (!p_process_state.track_map_updated && !filters_dirty) {
 		return; // Cache is valid.
 	}
@@ -422,7 +440,7 @@ void AnimationNode::_update_filter_cache(const ProcessState &p_process_state, co
 			p_instance.filtered_track_indices_cache.push_back(*p);
 		}
 	}
-	filters_dirty = false;
+	p_instance.filters_version = filters_version;
 }
 
 void AnimationNode::_validate_property(PropertyInfo &p_property) const {
@@ -568,7 +586,7 @@ void AnimationNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("node_updated", PropertyInfo(Variant::INT, "object_id")));
 	ADD_SIGNAL(MethodInfo("animation_node_renamed", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
-	ADD_SIGNAL(MethodInfo("animation_node_removed", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("animation_node_removed", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "node_name")));
 
 	BIND_ENUM_CONSTANT(FILTER_IGNORE);
 	BIND_ENUM_CONSTANT(FILTER_PASS);
@@ -642,18 +660,14 @@ Ref<AnimationRootNode> AnimationTree::get_root_animation_node() const {
 bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map) {
 	_update_properties(); // If properties need updating, update them.
 
-	bool was_validation_dirty = validation_dirty;
+	if (root_animation_node.is_null()) {
+		process_state = AnimationNode::ProcessState();
+		return false; // Abort after _update_properties() and init process_state.
+	}
+
 	if (validation_dirty) {
-		process_state.invalid_instances.clear();
-		validation_successful = true;
-		_validate_animation_graph(Animation::PARAMETERS_BASE_PATH, root_animation_node);
-		validation_dirty = false;
-	}
-	if (!validation_successful) {
-		return false;
-	}
-	if (was_validation_dirty) {
 		_update_connections();
+		validation_dirty = false;
 	}
 
 	AnimationNodeInstance &instance = get_node_instance_by_path(SNAME(Animation::PARAMETERS_BASE_PATH.ascii().get_data()));
@@ -682,6 +696,7 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		for (int i = 0; i < p_track_count; i++) {
 			src_blendsw[i] = 1.0; // By default all go to 1 for the root input.
 		}
+		instance.blended = true;
 		instance.path = SNAME(Animation::PARAMETERS_BASE_PATH.ascii().get_data());
 	}
 
@@ -782,7 +797,7 @@ void AnimationTree::_animation_node_renamed(const ObjectID &p_oid, const String 
 
 void AnimationTree::_animation_node_removed(const ObjectID &p_oid, const StringName &p_node) {
 	for (const StringName &parent_path : instance_paths[p_oid]) {
-		String base_path = String(parent_path) + String(p_node);
+		String base_path = String(parent_path) + String(p_node) + "/";
 
 		for (const PropertyInfo &E : properties) {
 			if (E.name.begins_with(base_path)) {
@@ -902,24 +917,6 @@ void AnimationTree::_update_properties() const {
 	const_cast<AnimationTree *>(this)->notify_property_list_changed();
 }
 
-void AnimationTree::_validate_animation_graph(const StringName &p_path, const Ref<AnimationNode> &p_node) const {
-	if (p_node.is_null()) {
-		validation_successful = false;
-		return;
-	}
-
-	p_node->validate_node(this, p_path);
-	// We will continue even if the validation is not successful, to gather all errors.
-
-	LocalVector<AnimationNode::ChildNode> children;
-	p_node->get_child_nodes(&children);
-
-	for (const AnimationNode::ChildNode &E : children) {
-		const StringName child_path = String(p_path) + E.name + "/";
-		_validate_animation_graph(child_path, E.node);
-	}
-}
-
 void AnimationTree::_update_connections() {
 	for (KeyValue<StringName, AnimationNodeInstance> &E : instance_map) {
 		AnimationNodeInstance &parent_instance = E.value;
@@ -935,7 +932,6 @@ void AnimationTree::_update_connections() {
 			parent_instance.connection_instances.resize(1);
 			AnimationNodeInstance *connected_instance = parent_instance.get_child_instance_by_path_or_null(output_connections->operator[](0));
 			parent_instance.connection_instances[0] = connected_instance;
-			CRASH_COND(!connected_instance); // Will never happen.
 		}
 
 		for (const KeyValue<StringName, AnimationNodeInstance *> &kv : parent_instance.child_instances) {
@@ -947,20 +943,24 @@ void AnimationTree::_update_connections() {
 				const StringName &connected_node_name = child_connections[input];
 				AnimationNodeInstance *connected_instance = parent_instance.get_child_instance_by_path_or_null(connected_node_name);
 				child_instance->connection_instances[input] = connected_instance;
-				CRASH_COND(!connected_instance); // Will never happen.
 			}
 		}
 	}
 }
 
 void AnimationTree::_add_validation_error(const StringName &p_path, const String &p_error, int p_input_index) const {
-	validation_successful = false;
-
 	AnimationNode::InvalidInstance &invalid_instance = process_state.invalid_instances[p_path];
 
 	if (p_input_index == -1) {
-		invalid_instance.errors.push_back(p_error);
+		if (invalid_instance.errors.find(p_error) == -1) {
+			invalid_instance.errors.push_back(p_error);
+		}
 	} else {
+		for (const AnimationNode::InvalidInstance::InputError &E : invalid_instance.input_errors) {
+			if (E.index == p_input_index) {
+				return;
+			}
+		}
 		invalid_instance.input_errors.push_back({ p_input_index, p_error });
 	}
 }
@@ -1154,7 +1154,7 @@ void AnimationTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 
-	ADD_SIGNAL(MethodInfo(SNAME("animation_player_changed")));
+	ADD_SIGNAL(MethodInfo("animation_player_changed"));
 }
 
 AnimationTree::AnimationTree() {

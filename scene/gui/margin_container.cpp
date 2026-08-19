@@ -42,18 +42,32 @@ Size2 MarginContainer::get_minimum_size() const {
 		}
 
 		Size2 s = c->get_bound_minimum_size();
-		if (s.width > max.width) {
-			max.width = s.width;
-		}
-		if (s.height > max.height) {
-			max.height = s.height;
-		}
+		max = max.max(s);
 	}
 
 	max.width += (theme_cache.margin_left + theme_cache.margin_right);
 	max.height += (theme_cache.margin_top + theme_cache.margin_bottom);
 
 	return max;
+}
+
+Size2 MarginContainer::get_desired_size() const {
+	Size2 ds;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
+		if (!c) {
+			continue;
+		}
+
+		Size2 s = c->get_desired_size();
+		ds = ds.max(s);
+	}
+
+	ds.width += (theme_cache.margin_left + theme_cache.margin_right);
+	ds.height += (theme_cache.margin_top + theme_cache.margin_bottom);
+
+	return ds;
 }
 
 Size2 MarginContainer::get_inner_combined_maximum_size() const {

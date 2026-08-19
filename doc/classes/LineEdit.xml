@@ -587,7 +587,7 @@
 			The caret's width in pixels. Greater values can be used to improve accessibility by ensuring the caret is easily visible, or to ensure consistency with a large font size.
 		</theme_item>
 		<theme_item name="minimum_character_width" data_type="constant" type="int" default="4">
-			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'M' characters (i.e. this number of 'M' characters can be displayed without scrolling).
+			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'W' characters (i.e. this number of 'W' characters can be displayed without scrolling).
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.

@@ -40,7 +40,8 @@
 /drivers/vulkan/                              @godotengine/rendering
 
 ## OS
-/drivers/apple*/                              @godotengine/macos
+/drivers/apple/                               @godotengine/macos @godotengine/ios
+/drivers/apple_embedded/                      @godotengine/ios
 /drivers/unix/                                @godotengine/linux-bsd
 /drivers/windows/                             @godotengine/windows
 
@@ -113,7 +114,6 @@
 /modules/hdr/                                 @godotengine/asset-pipeline
 /modules/jpg/                                 @godotengine/asset-pipeline
 /modules/ktx/                                 @godotengine/asset-pipeline
-/modules/squish/                              @godotengine/asset-pipeline
 /modules/svg/                                 @godotengine/asset-pipeline
 /modules/tga/                                 @godotengine/asset-pipeline
 /modules/tinyexr/                             @godotengine/asset-pipeline
@@ -149,6 +149,8 @@
 /modules/vhacd/                               @godotengine/rendering
 /modules/visual_shader/                       @godotengine/shaders
 /modules/visual_shader/doc_classes/           @godotengine/shaders @godotengine/documentation
+/modules/visual_shader/editor/                @godotengine/shaders @godotengine/editor
+/modules/visual_shader/tests/                 @godotengine/shaders @godotengine/tests
 /modules/xatlas_unwrap/                       @godotengine/rendering
 
 ## Scripting
@@ -160,7 +162,7 @@
 /modules/jsonrpc/tests/                       @godotengine/gdscript @godotengine/network @godotengine/tests
 /modules/mono/                                @godotengine/dotnet
 /modules/mono/doc_classes/                    @godotengine/dotnet @godotengine/documentation
-/modules/mono/editor/                         @godotengine/dotnet @godotengine/script-editor
+/modules/mono/editor/                         @godotengine/dotnet @godotengine/editor
 
 ## Text
 /modules/freetype/                            @godotengine/buildsystem
@@ -177,6 +179,8 @@
 /modules/openxr/                              @godotengine/xr
 /modules/openxr/doc_classes/                  @godotengine/xr @godotengine/documentation
 /modules/openxr/editor/                       @godotengine/xr @godotengine/editor
+/modules/visionos_xr/                         @godotengine/xr
+/modules/visionos_xr/doc_classes/             @godotengine/xr @godotengine/documentation
 /modules/webxr/                               @godotengine/xr
 /modules/webxr/doc_classes/                   @godotengine/xr @godotengine/documentation
 
@@ -189,6 +193,7 @@
 /modules/gridmap/                             @godotengine/3d-nodes
 /modules/gridmap/doc_classes/                 @godotengine/3d-nodes @godotengine/documentation
 /modules/gridmap/editor/                      @godotengine/3d-nodes @godotengine/editor
+/modules/gridmap/tests/                       @godotengine/3d-nodes @godotengine/tests
 /modules/navigation_2d/                       @godotengine/navigation
 /modules/navigation_2d/editor/                @godotengine/navigation @godotengine/editor
 /modules/navigation_3d/                       @godotengine/navigation
@@ -202,6 +207,9 @@
 /modules/regex/                               @godotengine/core
 /modules/regex/doc_classes/                   @godotengine/core @godotengine/documentation
 /modules/regex/tests/                         @godotengine/core @godotengine/tests
+/modules/tilemap/                             @godotengine/2d-nodes
+/modules/tilemap/doc_classes/                 @godotengine/2d-nodes @godotengine/documentation
+/modules/tilemap/editor/                      @godotengine/2d-nodes @godotengine/editor
 /modules/zip/                                 @godotengine/core
 /modules/zip/doc_classes/                     @godotengine/core @godotengine/documentation
 /modules/zip/tests/                           @godotengine/core @godotengine/tests

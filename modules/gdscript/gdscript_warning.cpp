@@ -154,6 +154,12 @@ String GDScriptWarning::get_message() const {
 		case CONFUSABLE_CAPTURE_REASSIGNMENT:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(Reassigning lambda capture does not modify the outer local variable "%s".)", symbols[0]);
+		case CONFUSABLE_TEMPORARY_MODIFICATION:
+			CHECK_SYMBOLS(2);
+			if (symbols.size() > 2) {
+				return vformat(R"*(The built-in property "%s" will not be modified as a result of calling the method "%s()". Consider assigning the desired value to the property instead, or check the "%s" class for a specialized API.)*", symbols[1], symbols[2], symbols[0]);
+			}
+			return vformat(R"(The built-in property "%s" will not be modified in the assignment chain. Consider using a temporary variable and assigning it back instead, or check the "%s" class for a specialized API.)", symbols[1], symbols[0]);
 		case INFERENCE_ON_VARIANT:
 			CHECK_SYMBOLS(1);
 			return vformat("The %s type is being inferred from a Variant value, so it will be typed as Variant.", symbols[0]);
@@ -238,6 +244,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("CONFUSABLE_LOCAL_DECLARATION"),
 		PNAME("CONFUSABLE_LOCAL_USAGE"),
 		PNAME("CONFUSABLE_CAPTURE_REASSIGNMENT"),
+		PNAME("CONFUSABLE_TEMPORARY_MODIFICATION"),
 		PNAME("INFERENCE_ON_VARIANT"),
 		PNAME("NATIVE_METHOD_OVERRIDE"),
 		PNAME("GET_NODE_DEFAULT_WITHOUT_ONREADY"),

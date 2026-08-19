@@ -31,7 +31,6 @@
 #include "control_editor_plugin.h"
 
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
@@ -59,16 +58,16 @@ void ControlPositioningWarning::_update_warning() {
 	Node *parent_node = control_node->get_parent_control();
 	if (!parent_node) {
 		title_icon->set_texture(get_editor_theme_icon(SNAME("SubViewport")));
-		title_label->set_text(TTR("This node doesn't have a control parent."));
-		hint_label->set_text(TTR("Use the appropriate layout properties depending on where you are going to put it."));
+		title_label->set_text(TTRC("This node doesn't have a control parent."));
+		hint_label->set_text(TTRC("Use the appropriate layout properties depending on where you are going to put it."));
 	} else if (Object::cast_to<Container>(parent_node)) {
 		title_icon->set_texture(get_editor_theme_icon(SNAME("ContainerLayout")));
-		title_label->set_text(TTR("This node is a child of a container."));
-		hint_label->set_text(TTR("Use container properties for positioning."));
+		title_label->set_text(TTRC("This node is a child of a container."));
+		hint_label->set_text(TTRC("Use container properties for positioning."));
 	} else {
 		title_icon->set_texture(get_editor_theme_icon(SNAME("ControlLayout")));
-		title_label->set_text(TTR("This node is a child of a regular control."));
-		hint_label->set_text(TTR("Use anchors and the rectangle for positioning."));
+		title_label->set_text(TTRC("This node is a child of a regular control."));
+		hint_label->set_text(TTRC("Use anchors and the rectangle for positioning."));
 	}
 
 	bg_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("bg_group_note"), SNAME("EditorProperty")));
@@ -78,14 +77,14 @@ void ControlPositioningWarning::_update_toggler() {
 	Ref<Texture2D> arrow;
 	if (hint_label->is_visible()) {
 		arrow = get_theme_icon(SNAME("arrow"), SNAME("Tree"));
-		set_tooltip_text(TTR("Collapse positioning hint."));
+		set_tooltip_text(TTRC("Collapse positioning hint."));
 	} else {
 		if (is_layout_rtl()) {
 			arrow = get_theme_icon(SNAME("arrow_collapsed"), SNAME("Tree"));
 		} else {
 			arrow = get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
 		}
-		set_tooltip_text(TTR("Expand positioning hint."));
+		set_tooltip_text(TTRC("Expand positioning hint."));
 	}
 
 	hint_icon->set_texture(arrow);
@@ -245,6 +244,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	options->set_flat(true);
 	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(options);
@@ -367,14 +367,14 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 
 	if (p_options.is_empty()) {
 		flag_presets->clear();
-		flag_presets->add_item(TTR("Container Default"));
+		flag_presets->add_item(TTRC("Container Default"));
 		flag_presets->set_disabled(true);
 		flag_expand->set_visible(false);
 		return;
 	}
 
 	HashMap<int, String> flags;
-	for (int i = 0, j = 0; i < p_options.size(); i++, j++) {
+	for (int i = 0; i < p_options.size(); i++) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 		flags[current_val] = text_split[0];
@@ -406,18 +406,18 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 
 	flag_presets->clear();
 	if (flags.has(SIZE_FILL)) {
-		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(wide_preset_icon), TTR("Fill"), SIZE_FLAGS_PRESET_FILL);
+		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(wide_preset_icon), TTRC("Fill"), SIZE_FLAGS_PRESET_FILL);
 	}
 	// Shrink Begin is the same as no flags at all, as such it cannot be disabled.
-	flag_presets->add_icon_item(gui_base->get_editor_theme_icon(begin_preset_icon), TTR("Shrink Begin"), SIZE_FLAGS_PRESET_SHRINK_BEGIN);
+	flag_presets->add_icon_item(gui_base->get_editor_theme_icon(begin_preset_icon), TTRC("Shrink Begin"), SIZE_FLAGS_PRESET_SHRINK_BEGIN);
 	if (flags.has(SIZE_SHRINK_CENTER)) {
-		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(SNAME("ControlAlignCenter")), TTR("Shrink Center"), SIZE_FLAGS_PRESET_SHRINK_CENTER);
+		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(SNAME("ControlAlignCenter")), TTRC("Shrink Center"), SIZE_FLAGS_PRESET_SHRINK_CENTER);
 	}
 	if (flags.has(SIZE_SHRINK_END)) {
-		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(end_preset_icon), TTR("Shrink End"), SIZE_FLAGS_PRESET_SHRINK_END);
+		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(end_preset_icon), TTRC("Shrink End"), SIZE_FLAGS_PRESET_SHRINK_END);
 	}
 	flag_presets->add_separator();
-	flag_presets->add_item(TTR("Custom"), SIZE_FLAGS_PRESET_CUSTOM);
+	flag_presets->add_item(TTRC("Custom"), SIZE_FLAGS_PRESET_CUSTOM);
 
 	flag_expand->set_visible(flags.has(SIZE_EXPAND));
 }
@@ -428,6 +428,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 
 	flag_presets = memnew(OptionButton);
 	flag_presets->set_clip_text(true);
+	flag_presets->set_fit_to_longest_item(false);
 	flag_presets->set_flat(true);
 	flag_presets->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	vb->add_child(flag_presets);
@@ -440,7 +441,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	vb->add_child(flag_options);
 
 	flag_expand = memnew(CheckBox);
-	flag_expand->set_text(TTR("Expand"));
+	flag_expand->set_text(TTRC("Expand"));
 	flag_expand->set_clip_text(true);
 	vb->add_child(flag_expand);
 	add_focusable(flag_expand);
@@ -739,10 +740,10 @@ void SizeFlagPresetPicker::set_allowed_flags(Vector<SizeFlags> &p_flags) {
 
 	expand_button->set_disabled(!p_flags.has(SIZE_EXPAND));
 	if (p_flags.has(SIZE_EXPAND)) {
-		expand_button->set_tooltip_text(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
+		expand_button->set_tooltip_text(TTRC("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
 	} else {
 		expand_button->set_pressed(false);
-		expand_button->set_tooltip_text(TTR("Some parents of the selected nodes do not support the Expand flag."));
+		expand_button->set_tooltip_text(TTRC("Some parents of the selected nodes do not support the Expand flag."));
 	}
 }
 
@@ -790,16 +791,16 @@ SizeFlagPresetPicker::SizeFlagPresetPicker(bool p_vertical) {
 	main_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(main_row);
 
-	_add_row_button(main_row, SIZE_SHRINK_BEGIN, TTR("Shrink Begin"));
-	_add_row_button(main_row, SIZE_SHRINK_CENTER, TTR("Shrink Center"));
-	_add_row_button(main_row, SIZE_SHRINK_END, TTR("Shrink End"));
+	_add_row_button(main_row, SIZE_SHRINK_BEGIN, TTRC("Shrink Begin"));
+	_add_row_button(main_row, SIZE_SHRINK_CENTER, TTRC("Shrink Center"));
+	_add_row_button(main_row, SIZE_SHRINK_END, TTRC("Shrink End"));
 	_add_separator(main_row, memnew(VSeparator));
-	_add_row_button(main_row, SIZE_FILL, TTR("Fill"));
+	_add_row_button(main_row, SIZE_FILL, TTRC("Fill"));
 
 	expand_button = memnew(CheckButton);
 	expand_button->set_flat(true);
-	expand_button->set_text(TTR("Expand"));
-	expand_button->set_tooltip_text(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
+	expand_button->set_text(TTRC("Expand"));
+	expand_button->set_tooltip_text(TTRC("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
 	expand_button->connect(SceneStringName(pressed), callable_mp(this, &SizeFlagPresetPicker::_expand_button_pressed));
 	main_vb->add_child(expand_button);
 }
@@ -811,13 +812,21 @@ void ControlEditorToolbar::_anchors_preset_selected(int p_preset) {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
+	if (!reposition_button->is_pressed()) {
+		undo_redo->create_action(TTR("Change Anchors, Grow Direction"));
+	} else {
+		undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
+	}
 
 	for (Node *E : selection) {
 		Control *control = Object::cast_to<Control>(E);
 		if (control) {
 			undo_redo->add_do_property(control, "layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS);
 			undo_redo->add_do_property(control, "anchors_preset", preset);
+			if (!reposition_button->is_pressed()) {
+				undo_redo->add_do_property(control, "position", control->get_position());
+				undo_redo->add_do_property(control, "size", control->get_size());
+			}
 			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
 		}
 	}
@@ -1196,43 +1205,50 @@ void ControlEditorToolbar::_notification(int p_what) {
 ControlEditorToolbar::ControlEditorToolbar() {
 	// Anchor and offset tools.
 	anchors_button = memnew(ControlEditorPopupButton);
-	anchors_button->set_tooltip_text(TTR("Presets for the anchor and offset values of a Control node."));
+	anchors_button->set_tooltip_text(TTRC("Presets for the anchor and offset values of a Control node."));
 	anchors_button->connect(SceneStringName(toggled), callable_mp(this, &ControlEditorToolbar::_update_anchor_selection_ui));
 	add_child(anchors_button);
 
 	Label *anchors_label = memnew(Label);
-	anchors_label->set_text(TTR("Anchor preset"));
+	anchors_label->set_text(TTRC("Anchor preset"));
 	anchors_button->get_popup_hbox()->add_child(anchors_label);
 	anchors_picker = memnew(AnchorPresetPicker);
 	anchors_picker->set_h_size_flags(SIZE_SHRINK_CENTER);
 	anchors_button->get_popup_hbox()->add_child(anchors_picker);
 	anchors_picker->connect("anchors_preset_selected", callable_mp(this, &ControlEditorToolbar::_anchors_preset_selected));
 
+	reposition_button = memnew(CheckBox);
+	reposition_button->set_text(TTRC("Reposition"));
+	reposition_button->set_tooltip_text(TTRC("If disabled, picking a preset will only adjust the anchors, without moving the Control."));
+	reposition_button->set_h_size_flags(SIZE_SHRINK_CENTER);
+	reposition_button->set_pressed(true);
+	anchors_button->get_popup_hbox()->add_child(reposition_button);
+
 	anchors_button->get_popup_hbox()->add_child(memnew(HSeparator));
 
 	Button *keep_ratio_button = memnew(Button);
 	keep_ratio_button->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-	keep_ratio_button->set_text(TTR("Set to Current Ratio"));
-	keep_ratio_button->set_tooltip_text(TTR("Adjust anchors and offsets to match the current rect size."));
+	keep_ratio_button->set_text(TTRC("Set to Current Ratio"));
+	keep_ratio_button->set_tooltip_text(TTRC("Adjust anchors and offsets to match the current rect size."));
 	anchors_button->get_popup_hbox()->add_child(keep_ratio_button);
 	keep_ratio_button->connect(SceneStringName(pressed), callable_mp(this, &ControlEditorToolbar::_anchors_to_current_ratio));
 
 	anchor_mode_button = memnew(Button);
 	anchor_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
 	anchor_mode_button->set_toggle_mode(true);
-	anchor_mode_button->set_tooltip_text(TTR("When active, moving Control nodes changes their anchors instead of their offsets."));
+	anchor_mode_button->set_tooltip_text(TTRC("When active, moving Control nodes changes their anchors instead of their offsets."));
 	anchor_mode_button->set_accessibility_name(TTRC("Change Anchors"));
 	add_child(anchor_mode_button);
 	anchor_mode_button->connect(SceneStringName(toggled), callable_mp(this, &ControlEditorToolbar::_anchor_mode_toggled));
 
 	// Container tools.
 	containers_button = memnew(ControlEditorPopupButton);
-	containers_button->set_tooltip_text(TTR("Sizing settings for children of a Container node."));
+	containers_button->set_tooltip_text(TTRC("Sizing settings for children of a Container node."));
 	containers_button->connect(SceneStringName(toggled), callable_mp(this, &ControlEditorToolbar::_update_container_sizing_selection_ui));
 	add_child(containers_button);
 
 	Label *container_h_label = memnew(Label);
-	container_h_label->set_text(TTR("Horizontal alignment"));
+	container_h_label->set_text(TTRC("Horizontal alignment"));
 	containers_button->get_popup_hbox()->add_child(container_h_label);
 	container_h_picker = memnew(SizeFlagPresetPicker(false));
 	containers_button->get_popup_hbox()->add_child(container_h_picker);
@@ -1242,7 +1258,7 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	containers_button->get_popup_hbox()->add_child(memnew(HSeparator));
 
 	Label *container_v_label = memnew(Label);
-	container_v_label->set_text(TTR("Vertical alignment"));
+	container_v_label->set_text(TTRC("Vertical alignment"));
 	containers_button->get_popup_hbox()->add_child(container_v_label);
 	container_v_picker = memnew(SizeFlagPresetPicker(true));
 	containers_button->get_popup_hbox()->add_child(container_v_picker);

@@ -206,7 +206,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false" deprecated="Due to internal changes this doesn&apos;t do anything anymore, as they&apos;re always in front.">
+		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" deprecated="Due to internal changes this doesn&apos;t do anything anymore, as they&apos;re always in front.">
 			This doesn't do anything.
 		</member>
 		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
@@ -231,6 +231,9 @@
 		</member>
 		<member name="tab_focus_mode" type="int" setter="set_tab_focus_mode" getter="get_tab_focus_mode" enum="Control.FocusMode" default="2">
 			The focus access mode for the internal [TabBar] node.
+		</member>
+		<member name="tab_sizing" type="int" setter="set_tab_sizing" getter="get_tab_sizing" enum="TabBar.SizingMode" default="0">
+			The sizing strategy used to determine tab widths.
 		</member>
 		<member name="tab_{index}/disabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the tab at [code]index[/code] is disabled.

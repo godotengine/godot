@@ -115,6 +115,8 @@ class GraphNode : public GraphElement {
 
 	void _port_pos_update();
 
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -195,6 +197,7 @@ public:
 	Control::FocusMode get_slots_focus_mode() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 

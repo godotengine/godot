@@ -36,6 +36,7 @@
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/string/fuzzy_search.h"
+#include "core/templates/fixed_vector.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -209,15 +210,14 @@ bool EditorQuickOpenDialog::_is_instant_preview_active() const {
 }
 
 void EditorQuickOpenDialog::selection_changed() {
-	if (!_is_instant_preview_active()) {
-		return;
-	}
-
 	// This prevents the property from being changed the first time the Quick Open
 	// window is opened.
 	if (!initial_selection_performed) {
 		initial_selection_performed = true;
-	} else {
+		return;
+	}
+
+	if (_is_instant_preview_active()) {
 		preview_property();
 	}
 }
@@ -719,15 +719,15 @@ QuickOpenResultCandidate QuickOpenResultCandidate::from_uid(const ResourceUID::I
 	return candidate;
 }
 
-QuickOpenResultCandidate QuickOpenResultCandidate::from_result(const FuzzySearchResult &p_result, bool &r_success) {
-	ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(p_result.target);
+QuickOpenResultCandidate QuickOpenResultCandidate::from_result(Ref<FuzzySearchMatch> p_result, bool &r_success) {
+	ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(p_result->get_target());
 
 	QuickOpenResultCandidate candidate = from_uid(uid, r_success);
 	if (!r_success) {
 		return QuickOpenResultCandidate();
 	}
 
-	candidate.result = &p_result;
+	candidate.result = p_result;
 	return candidate;
 }
 
@@ -745,6 +745,22 @@ void QuickOpenResultContainer::_add_candidate(QuickOpenResultCandidate &p_candid
 	}
 
 	String file_path = ResourceUID::get_singleton()->get_id_path(p_candidate.uid);
+
+	// Verify that a PackedScene is actually a "real" Scene if in a Open Scene context.
+	if (base_types[0] == SNAME("PackedScene")) {
+		static FixedVector<String, 3> valid_extensions = { "tscn", "scn", "res" };
+		bool is_valid_type = false;
+		for (const String &ext : valid_extensions) {
+			if (file_path.has_extension(ext)) {
+				is_valid_type = true;
+				break;
+			}
+		}
+		if (!is_valid_type) {
+			return;
+		}
+	}
+
 	EditorResourcePreview::PreviewItem item = EditorResourcePreview::get_singleton()->get_resource_preview_if_available(file_path);
 	if (item.preview.is_valid()) {
 		p_candidate.thumbnail = item.preview;
@@ -775,8 +791,6 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
-	HashSet<ResourceUID::ID> existing_uids;
-
 	Vector<ResourceUID::ID> *history = _get_history();
 	if (history) {
 		for (const ResourceUID::ID &uid : *history) {
@@ -807,15 +821,15 @@ void QuickOpenResultContainer::_use_default_candidates() {
 	}
 }
 
-void QuickOpenResultContainer::_update_fuzzy_search_results() {
+Vector<Ref<FuzzySearchMatch>> QuickOpenResultContainer::_get_fuzzy_search_results() {
 	FuzzySearch fuzzy_search;
-	fuzzy_search.start_offset = 6; // Don't match against "res://" at the start of each filepath.
-	fuzzy_search.set_query(query);
-	fuzzy_search.max_results = max_total_results;
+	fuzzy_search.set_start_offset(6); // Don't match against "res://" at the start of each filepath.
+	fuzzy_search.set_case_sensitive(!query.is_lowercase());
+	fuzzy_search.set_max_results(max_total_results);
 	bool fuzzy_matching = EDITOR_GET("filesystem/quick_open_dialog/enable_fuzzy_matching");
 	int max_misses = EDITOR_GET("filesystem/quick_open_dialog/max_fuzzy_misses");
-	fuzzy_search.allow_subsequences = fuzzy_matching;
-	fuzzy_search.max_misses = fuzzy_matching ? max_misses : 0;
+	fuzzy_search.set_use_exact_tokens(!fuzzy_matching);
+	fuzzy_search.set_max_misses(fuzzy_matching ? max_misses : 0);
 
 	PackedStringArray paths;
 	paths.reserve_exact(uids.size());
@@ -824,13 +838,11 @@ void QuickOpenResultContainer::_update_fuzzy_search_results() {
 		paths.push_back(ResourceUID::get_singleton()->get_id_path(uid));
 	}
 
-	fuzzy_search.search_all(paths, search_results);
+	return fuzzy_search.search_all(query, paths);
 }
 
 void QuickOpenResultContainer::_score_and_sort_candidates() {
-	_update_fuzzy_search_results();
-
-	for (const FuzzySearchResult &result : search_results) {
+	for (const Ref<FuzzySearchMatch> &result : _get_fuzzy_search_results()) {
 		bool success;
 		QuickOpenResultCandidate candidate = QuickOpenResultCandidate::from_result(result, success);
 		if (!success) {
@@ -1362,11 +1374,11 @@ void QuickOpenResultListItem::set_content(const QuickOpenResultCandidate &p_cand
 	name->reset_highlights();
 	path->reset_highlights();
 
-	if (p_highlight && p_candidate.result != nullptr) {
-		for (const FuzzyTokenMatch &match : p_candidate.result->token_matches) {
+	if (p_highlight && p_candidate.result.is_valid()) {
+		for (const FuzzyTokenMatch &match : p_candidate.result->get_token_matches()) {
 			for (const Vector2i &interval : match.substrings) {
-				path->add_highlight(_get_path_interval(interval, p_candidate.result->dir_index));
-				name->add_highlight(_get_name_interval(interval, p_candidate.result->dir_index));
+				path->add_highlight(_get_path_interval(interval, p_candidate.result->get_dir_index()));
+				name->add_highlight(_get_name_interval(interval, p_candidate.result->get_dir_index()));
 			}
 		}
 	}
@@ -1434,10 +1446,10 @@ void QuickOpenResultGridItem::set_content(const QuickOpenResultCandidate &p_cand
 	name->set_tooltip_text(file_path);
 	name->reset_highlights();
 
-	if (p_highlight && p_candidate.result != nullptr) {
-		for (const FuzzyTokenMatch &match : p_candidate.result->token_matches) {
+	if (p_highlight && p_candidate.result.is_valid()) {
+		for (const FuzzyTokenMatch &match : p_candidate.result->get_token_matches()) {
 			for (const Vector2i &interval : match.substrings) {
-				name->add_highlight(_get_name_interval(interval, p_candidate.result->dir_index));
+				name->add_highlight(_get_name_interval(interval, p_candidate.result->get_dir_index()));
 			}
 		}
 	}

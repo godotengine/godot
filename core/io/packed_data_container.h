@@ -49,7 +49,7 @@ class PackedDataContainer : public Resource {
 	Vector<uint8_t> data;
 	int datalen = 0;
 
-	uint32_t _pack(const Variant &p_data, Vector<uint8_t> &tmpdata, HashMap<String, uint32_t> &string_cache);
+	uint32_t _pack(const Variant &p_data, Vector<uint8_t> &r_tmpdata, HashMap<String, uint32_t> &r_string_cache);
 
 	Variant _iter_init_ofs(const Array &p_iter, uint32_t p_offset);
 	Variant _iter_next_ofs(const Array &p_iter, uint32_t p_offset);
@@ -60,8 +60,8 @@ class PackedDataContainer : public Resource {
 	Variant _iter_get(const Variant &p_iter);
 
 	friend class PackedDataContainerRef;
-	Variant _key_at_ofs(uint32_t p_ofs, const Variant &p_key, bool &err) const;
-	Variant _get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, bool &err) const;
+	Variant _key_at_ofs(uint32_t p_ofs, const Variant &p_key, bool &r_err) const;
+	Variant _get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, bool &r_err) const;
 	uint32_t _type_at_ofs(uint32_t p_ofs) const;
 	int _size(uint32_t p_ofs) const;
 

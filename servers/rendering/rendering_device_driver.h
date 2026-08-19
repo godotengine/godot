@@ -70,7 +70,7 @@ class RenderingShaderContainerFormat;
 template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
-	static constexpr size_t MAX_RESOURCE_SIZE = Span(RESOURCE_SIZES).max();
+	static constexpr size_t MAX_RESOURCE_SIZE = Span<size_t>(RESOURCE_SIZES).max();
 	uint8_t data[MAX_RESOURCE_SIZE];
 
 	template <typename T>
@@ -157,6 +157,7 @@ public:
 	enum MemoryAllocationType {
 		MEMORY_ALLOCATION_TYPE_CPU, // For images, CPU allocation also means linear, GPU is tiling optimal.
 		MEMORY_ALLOCATION_TYPE_GPU,
+		MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE, // Supported on UMA devices or discrete devices with ReBAR.
 	};
 
 	/*****************/
@@ -483,6 +484,9 @@ public:
 
 	// Retrieve the color space used by the swap chain's framebuffers.
 	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) = 0;
+
+	// Retrieve whether the swapchain supports our preferred HDR formats.
+	virtual bool swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) = 0;
 
 	// Tells the swapchain the max_fps so it can use the proper frame pacing.
 	// Android uses this with Swappy library. Some implementations or platforms may ignore this hint.
@@ -946,6 +950,8 @@ public:
 	virtual const RenderingShaderContainerFormat &get_shader_container_format() const = 0;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const { return false; }
+
+	virtual DriverWorkarounds get_driver_workarounds() const { return DriverWorkarounds(); }
 
 	/******************/
 

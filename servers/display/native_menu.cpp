@@ -77,6 +77,7 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_item_index_with_submenu", "rid", "submenu_rid"), &NativeMenu::find_item_index_with_submenu);
 
 	ClassDB::bind_method(D_METHOD("is_item_checked", "rid", "idx"), &NativeMenu::is_item_checked);
+	ClassDB::bind_method(D_METHOD("is_item_indeterminate", "rid", "idx"), &NativeMenu::is_item_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_item_checkable", "rid", "idx"), &NativeMenu::is_item_checkable);
 	ClassDB::bind_method(D_METHOD("is_item_radio_checkable", "rid", "idx"), &NativeMenu::is_item_radio_checkable);
 	ClassDB::bind_method(D_METHOD("get_item_callback", "rid", "idx"), &NativeMenu::get_item_callback);
@@ -94,6 +95,7 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_indentation_level", "rid", "idx"), &NativeMenu::get_item_indentation_level);
 
 	ClassDB::bind_method(D_METHOD("set_item_checked", "rid", "idx", "checked"), &NativeMenu::set_item_checked);
+	ClassDB::bind_method(D_METHOD("set_item_indeterminate", "rid", "idx", "indeterminate"), &NativeMenu::set_item_indeterminate);
 	ClassDB::bind_method(D_METHOD("set_item_checkable", "rid", "idx", "checkable"), &NativeMenu::set_item_checkable);
 	ClassDB::bind_method(D_METHOD("set_item_radio_checkable", "rid", "idx", "checkable"), &NativeMenu::set_item_radio_checkable);
 	ClassDB::bind_method(D_METHOD("set_item_callback", "rid", "idx", "callback"), &NativeMenu::set_item_callback);
@@ -303,6 +305,11 @@ bool NativeMenu::is_item_checked(const RID &p_rid, int p_idx) const {
 	return false;
 }
 
+bool NativeMenu::is_item_indeterminate(const RID &p_rid, int p_idx) const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return false;
+}
+
 bool NativeMenu::is_item_checkable(const RID &p_rid, int p_idx) const {
 	WARN_PRINT("Global menus are not supported on this platform.");
 	return false;
@@ -379,6 +386,10 @@ int NativeMenu::get_item_indentation_level(const RID &p_rid, int p_idx) const {
 }
 
 void NativeMenu::set_item_checked(const RID &p_rid, int p_idx, bool p_checked) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+void NativeMenu::set_item_indeterminate(const RID &p_rid, int p_idx, bool p_indeterminate) {
 	WARN_PRINT("Global menus are not supported on this platform.");
 }
 

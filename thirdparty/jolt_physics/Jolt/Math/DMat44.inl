@@ -87,6 +87,26 @@ DVec3 DMat44::operator * (Vec3Arg inV) const
 	float64x2_t low = vaddq_f64(mCol3.mValue.val[0], vcvt_f64_f32(vget_low_f32(t)));
 	float64x2_t high = vaddq_f64(mCol3.mValue.val[1], vcvt_high_f64_f32(t));
 	return DVec3::sFixW({ low, high });
+#elif defined(JPH_USE_RVV)
+	const vfloat32m1_t v0 = __riscv_vfmv_v_f_f32m1(inV.mF32[0], 4);
+	const vfloat32m1_t v1 = __riscv_vfmv_v_f_f32m1(inV.mF32[1], 4);
+	const vfloat32m1_t v2 = __riscv_vfmv_v_f_f32m1(inV.mF32[2], 4);
+
+	const vfloat32m1_t col0 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t col1 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t col2 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+	const vfloat64m2_t col3 = __riscv_vle64_v_f64m2(mCol3.mF64, 4);
+
+	vfloat32m1_t t = __riscv_vfmul_vv_f32m1(col0, v0, 4);
+	t = __riscv_vfmacc_vv_f32m1(t, col1, v1, 4);
+	t = __riscv_vfmacc_vv_f32m1(t, col2, v2, 4);
+
+	vfloat64m2_t t_f64 = __riscv_vfwcvt_f_f_v_f64m2(t, 4);
+	t_f64 = __riscv_vfadd_vv_f64m2(t_f64, col3, 4);
+
+	DVec3 v;
+	__riscv_vse64_v_f64m2(v.mF64, t_f64, 4);
+	return DVec3::sFixW(v.mValue);
 #else
 	return DVec3(
 		mCol3.mF64[0] + double(mCol[0].mF32[0] * inV.mF32[0] + mCol[1].mF32[0] * inV.mF32[1] + mCol[2].mF32[0] * inV.mF32[2]),
@@ -130,6 +150,29 @@ DVec3 DMat44::operator * (DVec3Arg inV) const
 	t_high = vaddq_f64(t_high, vmulq_f64(vcvt_high_f64_f32(col1), yyyy));
 	t_high = vaddq_f64(t_high, vmulq_f64(vcvt_high_f64_f32(col2), zzzz));
 	return DVec3::sFixW({ t_low, t_high });
+#elif defined(JPH_USE_RVV)
+	const vfloat64m2_t xxxx = __riscv_vfmv_v_f_f64m2(inV.mF64[0], 4);
+	const vfloat64m2_t yyyy = __riscv_vfmv_v_f_f64m2(inV.mF64[1], 4);
+	const vfloat64m2_t zzzz = __riscv_vfmv_v_f_f64m2(inV.mF64[2], 4);
+
+	const vfloat32m1_t col0_f32 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t col1_f32 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t col2_f32 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+
+	const vfloat64m2_t col0 = __riscv_vfwcvt_f_f_v_f64m2(col0_f32, 4);
+	const vfloat64m2_t col1 = __riscv_vfwcvt_f_f_v_f64m2(col1_f32, 4);
+	const vfloat64m2_t col2 = __riscv_vfwcvt_f_f_v_f64m2(col2_f32, 4);
+
+	const vfloat64m2_t col3 = __riscv_vle64_v_f64m2(mCol3.mF64, 4);
+
+	vfloat64m2_t t = __riscv_vfmul_vv_f64m2(col0, xxxx, 4);
+	t = __riscv_vfmacc_vv_f64m2(t, col1, yyyy, 4);
+	t = __riscv_vfmacc_vv_f64m2(t, col2, zzzz, 4);
+	t = __riscv_vfadd_vv_f64m2(t, col3, 4);
+
+	DVec3 v;
+	__riscv_vse64_v_f64m2(v.mF64, t, 4);
+	return DVec3::sFixW(v.mValue);
 #else
 	return DVec3(
 		mCol3.mF64[0] + double(mCol[0].mF32[0]) * inV.mF64[0] + double(mCol[1].mF32[0]) * inV.mF64[1] + double(mCol[2].mF32[0]) * inV.mF64[2],
@@ -173,6 +216,26 @@ DVec3 DMat44::Multiply3x3(DVec3Arg inV) const
 	t_high = vaddq_f64(t_high, vmulq_f64(vcvt_high_f64_f32(col1), yyyy));
 	t_high = vaddq_f64(t_high, vmulq_f64(vcvt_high_f64_f32(col2), zzzz));
 	return DVec3::sFixW({ t_low, t_high });
+#elif defined(JPH_USE_RVV)
+	const vfloat64m2_t xxxx = __riscv_vfmv_v_f_f64m2(inV.mF64[0], 4);
+	const vfloat64m2_t yyyy = __riscv_vfmv_v_f_f64m2(inV.mF64[1], 4);
+	const vfloat64m2_t zzzz = __riscv_vfmv_v_f_f64m2(inV.mF64[2], 4);
+
+	const vfloat32m1_t col0 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t col1 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t col2 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+
+	const vfloat64m2_t col0_f64 = __riscv_vfwcvt_f_f_v_f64m2(col0, 4);
+	const vfloat64m2_t col1_f64 = __riscv_vfwcvt_f_f_v_f64m2(col1, 4);
+	const vfloat64m2_t col2_f64 = __riscv_vfwcvt_f_f_v_f64m2(col2, 4);
+
+	vfloat64m2_t t = __riscv_vfmul_vv_f64m2(col0_f64, xxxx, 4);
+	t = __riscv_vfmacc_vv_f64m2(t, col1_f64, yyyy, 4);
+	t = __riscv_vfmacc_vv_f64m2(t, col2_f64, zzzz, 4);
+
+	DVec3::Type v;
+	__riscv_vse64_v_f64m2(v.mData, t, 4);
+	return DVec3::sFixW(v);
 #else
 	return DVec3(
 		double(mCol[0].mF32[0]) * inV.mF64[0] + double(mCol[1].mF32[0]) * inV.mF64[1] + double(mCol[2].mF32[0]) * inV.mF64[2],
@@ -203,6 +266,23 @@ DMat44 DMat44::operator * (Mat44Arg inM) const
 		t = vmlaq_f32(t, mCol[1].mValue, vdupq_laneq_f32(c, 1));
 		t = vmlaq_f32(t, mCol[2].mValue, vdupq_laneq_f32(c, 2));
 		result.mCol[i].mValue = t;
+	}
+#elif defined(JPH_USE_RVV)
+	const vfloat32m1_t col0 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t col1 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t col2 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+
+	for (int i = 0; i < 3; ++i)
+	{
+		const Vec4 v = inM.GetColumn4(i);
+		const vfloat32m1_t v0 = __riscv_vfmv_v_f_f32m1(v.mF32[0], 4);
+		const vfloat32m1_t v1 = __riscv_vfmv_v_f_f32m1(v.mF32[1], 4);
+		const vfloat32m1_t v2 = __riscv_vfmv_v_f_f32m1(v.mF32[2], 4);
+
+		vfloat32m1_t t = __riscv_vfmul_vv_f32m1(v0, col0, 4);
+		t = __riscv_vfmacc_vv_f32m1(t, col1, v1, 4);
+		t = __riscv_vfmacc_vv_f32m1(t, col2, v2, 4);
+		__riscv_vse32_v_f32m1(result.mCol[i].mF32, t, 4);
 	}
 #else
 	for (int i = 0; i < 3; ++i)
@@ -241,6 +321,23 @@ DMat44 DMat44::operator * (DMat44Arg inM) const
 		t = vmlaq_f32(t, mCol[2].mValue, vdupq_laneq_f32(c, 2));
 		result.mCol[i].mValue = t;
 	}
+#elif defined(JPH_USE_RVV)
+	const vfloat32m1_t col0 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t col1 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t col2 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+
+	for (int i = 0; i < 3; ++i)
+	{
+		const float *col_i = inM.mCol[i].mF32;
+		const vfloat32m1_t v0 = __riscv_vfmv_v_f_f32m1(col_i[0], 4);
+		const vfloat32m1_t v1 = __riscv_vfmv_v_f_f32m1(col_i[1], 4);
+		const vfloat32m1_t v2 = __riscv_vfmv_v_f_f32m1(col_i[2], 4);
+
+		vfloat32m1_t t = __riscv_vfmul_vv_f32m1(v0, col0, 4);
+		t = __riscv_vfmacc_vv_f32m1(t, col1, v1, 4);
+		t = __riscv_vfmacc_vv_f32m1(t, col2, v2, 4);
+		__riscv_vse32_v_f32m1(result.mCol[i].mF32, t, 4);
+	}
 #else
 	for (int i = 0; i < 3; ++i)
 	{
@@ -270,7 +367,7 @@ DMat44 DMat44::PreScaled(Vec3Arg inScale) const
 DMat44 DMat44::PostScaled(Vec3Arg inScale) const
 {
 	Vec4 scale(inScale, 1);
-	return DMat44(scale * mCol[0], scale * mCol[1], scale * mCol[2], DVec3(scale) * mCol3);
+	return DMat44(scale * mCol[0], scale * mCol[1], scale * mCol[2], DVec3(inScale) * mCol3);
 }
 
 DMat44 DMat44::PreTranslated(Vec3Arg inTranslation) const

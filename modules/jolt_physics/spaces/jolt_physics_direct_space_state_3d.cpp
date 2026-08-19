@@ -190,7 +190,7 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_recover(const JoltBody3D &p_bod
 	for (int i = 0; i < JoltProjectSettings::motion_query_recovery_iterations; ++i) {
 		collector.reset();
 
-		_collide_shape_kinematics(jolt_shape, JPH::Vec3::sOne(), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
+		_collide_shape_motion(jolt_shape, JPH::Vec3::sOne(), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
 
 		if (!collector.had_hit()) {
 			break;
@@ -299,7 +299,7 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_cast(const JoltBody3D &p_body, 
 	return collided;
 }
 
-bool JoltPhysicsDirectSpaceState3D::_body_motion_collide(const JoltBody3D &p_body, const Transform3D &p_transform, const Vector3 &p_motion, float p_margin, int p_max_collisions, const HashSet<RID> &p_excluded_bodies, const HashSet<ObjectID> &p_excluded_objects, PhysicsServer3D::MotionResult *p_result) const {
+bool JoltPhysicsDirectSpaceState3D::_body_motion_collide(const JoltBody3D &p_body, const Transform3D &p_transform, const Vector3 &p_motion, float p_margin, int p_max_collisions, const HashSet<RID> &p_excluded_bodies, const HashSet<ObjectID> &p_excluded_objects, PS3DT::MotionResult *p_result) const {
 	if (p_max_collisions == 0) {
 		return false;
 	}
@@ -316,8 +316,8 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_collide(const JoltBody3D &p_bod
 	const Vector3 &base_offset = transform_com.origin;
 
 	const JoltMotionFilter3D motion_filter(p_body, p_excluded_bodies, p_excluded_objects);
-	JoltQueryCollectorClosestMulti<JPH::CollideShapeCollector, 32> collector(p_max_collisions);
-	_collide_shape_kinematics(jolt_shape, JPH::Vec3::sOne(), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
+	JoltQueryCollectorMotion<JPH::CollideShapeCollector, 32> collector(p_motion, p_margin, p_max_collisions);
+	_collide_shape_motion(jolt_shape, JPH::Vec3::sOne(), to_jolt_r(transform_com), settings, to_jolt_r(base_offset), collector, motion_filter, motion_filter, motion_filter, motion_filter);
 
 	if (!collector.had_hit() || p_result == nullptr) {
 		return collector.had_hit();
@@ -328,21 +328,8 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_collide(const JoltBody3D &p_bod
 	for (int i = 0; i < collector.get_hit_count(); ++i) {
 		const JPH::CollideShapeResult &hit = collector.get_hit(i);
 
-		const float penetration_depth = hit.mPenetrationDepth + p_margin;
-
-		if (penetration_depth <= 0.0f) {
-			continue;
-		}
-
 		const Vector3 normal = to_godot(-hit.mPenetrationAxis.Normalized());
-
-		if (p_motion.length_squared() > 0) {
-			const Vector3 direction = p_motion.normalized();
-
-			if (direction.dot(normal) >= -CMP_EPSILON) {
-				continue;
-			}
-		}
+		const float penetration_depth = hit.mPenetrationDepth + p_margin;
 
 		JPH::ContactPoints contact_points1;
 		JPH::ContactPoints contact_points2;
@@ -365,7 +352,7 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_collide(const JoltBody3D &p_bod
 		for (JPH::Vec3 contact_point : contact_points2) {
 			const Vector3 position = base_offset + to_godot(contact_point);
 
-			PhysicsServer3D::MotionCollision &collision = p_result->collisions[count++];
+			PS3DT::MotionCollision &collision = p_result->collisions[count++];
 
 			collision.position = position;
 			collision.normal = normal;
@@ -439,7 +426,7 @@ void JoltPhysicsDirectSpaceState3D::_collide_shape_queries(
 	}
 }
 
-void JoltPhysicsDirectSpaceState3D::_collide_shape_kinematics(
+void JoltPhysicsDirectSpaceState3D::_collide_shape_motion(
 		const JPH::Shape *p_shape,
 		JPH::Vec3Arg p_scale,
 		JPH::RMat44Arg p_transform_com,
@@ -461,7 +448,7 @@ JoltPhysicsDirectSpaceState3D::JoltPhysicsDirectSpaceState3D(JoltSpace3D *p_spac
 		space(p_space) {
 }
 
-bool JoltPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+bool JoltPhysicsDirectSpaceState3D::intersect_ray(const PS3DT::RayParameters &p_parameters, PS3DT::RayResult &r_result) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "intersect_ray must not be called while the physics space is being stepped.");
 
 	space->flush_pending_objects();
@@ -524,7 +511,7 @@ bool JoltPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_paramet
 	return true;
 }
 
-int JoltPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
+int JoltPhysicsDirectSpaceState3D::intersect_point(const PS3DT::PointParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "intersect_point must not be called while the physics space is being stepped.");
 
 	if (p_result_max == 0) {
@@ -544,7 +531,7 @@ int JoltPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_para
 		const JoltObject3D *object = space->try_get_object(hit.mBodyID);
 		ERR_FAIL_NULL_V(object, 0);
 
-		ShapeResult &result = *r_results++;
+		PS3DT::ShapeResult &result = *r_results++;
 
 		result.shape = 0;
 
@@ -562,7 +549,7 @@ int JoltPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_para
 	return hit_count;
 }
 
-int JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
+int JoltPhysicsDirectSpaceState3D::intersect_shape(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "intersect_shape must not be called while the physics space is being stepped.");
 
 	if (p_result_max == 0) {
@@ -591,35 +578,56 @@ int JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_para
 	settings.mMaxSeparationDistance = (float)p_parameters.margin;
 
 	const JoltQueryFilter3D query_filter(*this, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.exclude);
-	JoltQueryCollectorAnyMulti<JPH::CollideShapeCollector, 32> collector(p_result_max);
-	_collide_shape_queries(jolt_shape, to_jolt(scale), to_jolt_r(transform_com), settings, to_jolt_r(transform_com.origin), collector, query_filter, query_filter, query_filter);
 
-	const int hit_count = collector.get_hit_count();
+	// Calculate bounds for query shape and expand by max separation distance
+	JPH::RMat44 jolt_transform_com = to_jolt_r(transform_com);
+	JPH::Vec3 jolt_scale = to_jolt(scale);
+	JPH::AABox jolt_bounds = jolt_shape->GetWorldSpaceBounds(jolt_transform_com, jolt_scale);
+	jolt_bounds.ExpandBy(JPH::Vec3::sReplicate(settings.mMaxSeparationDistance));
 
-	for (int i = 0; i < hit_count; ++i) {
-		const JPH::CollideShapeResult &hit = collector.get_hit(i);
-		const JoltObject3D *object = space->try_get_object(hit.mBodyID2);
-		ERR_FAIL_NULL_V(object, 0);
+	// Collect all transformed shapes that intersect with the bounding box of the query shape
+	JoltQueryCollectorAll<JPH::TransformedShapeCollector, 32> ts_collector;
+	space->get_narrow_phase_query().CollectTransformedShapes(jolt_bounds, ts_collector, query_filter, query_filter, query_filter);
 
-		ShapeResult &result = *r_results++;
+	// Loop over all collected transformed shapes
+	int hit_count = 0;
+	for (int ts = 0, nts = ts_collector.get_hit_count(); ts < nts; ts++) {
+		const JPH::TransformedShape &transformed_shape = ts_collector.get_hit(ts);
 
-		result.shape = 0;
+		JoltQueryCollectorAny<JPH::CollideShapeCollector> leaf_collector;
+		transformed_shape.CollideShape(jolt_shape, jolt_scale, jolt_transform_com, settings, jolt_transform_com.GetTranslation(), leaf_collector);
 
-		if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
-			const int shape_index = shaped_object->find_shape_index(hit.mSubShapeID2);
-			ERR_FAIL_COND_V(shape_index == -1, 0);
-			result.shape = shape_index;
+		if (leaf_collector.had_hit()) {
+			const JPH::CollideShapeResult &hit = leaf_collector.get_hit();
+
+			const JoltObject3D *object = space->try_get_object(transformed_shape.mBodyID);
+			ERR_FAIL_NULL_V(object, 0);
+
+			PS3DT::ShapeResult &result = *r_results++;
+
+			result.shape = 0;
+
+			if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
+				const int shape_index = shaped_object->find_shape_index(hit.mSubShapeID2);
+				ERR_FAIL_COND_V(shape_index == -1, 0);
+				result.shape = shape_index;
+			}
+
+			result.rid = object->get_rid();
+			result.collider_id = object->get_instance_id();
+			result.collider = object->get_instance();
+
+			hit_count++;
+			if (hit_count >= p_result_max) {
+				// Early out if we reach the maximum number of results
+				return hit_count;
+			}
 		}
-
-		result.rid = object->get_rid();
-		result.collider_id = object->get_instance_id();
-		result.collider = object->get_instance();
 	}
-
 	return hit_count;
 }
 
-bool JoltPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_parameters, real_t &r_closest_safe, real_t &r_closest_unsafe, ShapeRestInfo *r_info) {
+bool JoltPhysicsDirectSpaceState3D::cast_motion(const PS3DT::ShapeParameters &p_parameters, real_t &r_closest_safe, real_t &r_closest_unsafe, PS3DT::ShapeRestInfo *r_info) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "cast_motion must not be called while the physics space is being stepped.");
 	ERR_FAIL_COND_V_MSG(r_info != nullptr, false, "Providing rest info as part of cast_motion is not supported when using Jolt Physics.");
 
@@ -650,7 +658,7 @@ bool JoltPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_paramet
 	return true;
 }
 
-bool JoltPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) {
+bool JoltPhysicsDirectSpaceState3D::collide_shape(const PS3DT::ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) {
 	r_result_count = 0;
 
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "collide_shape must not be called while the physics space is being stepped.");
@@ -725,7 +733,7 @@ bool JoltPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_param
 	return true;
 }
 
-bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) {
+bool JoltPhysicsDirectSpaceState3D::rest_info(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeRestInfo *r_info) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "get_rest_info must not be called while the physics space is being stepped.");
 
 	space->flush_pending_objects();
@@ -858,7 +866,7 @@ Vector3 JoltPhysicsDirectSpaceState3D::get_closest_point_to_object_volume(RID p_
 	}
 }
 
-bool JoltPhysicsDirectSpaceState3D::body_test_motion(const JoltBody3D &p_body, const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult *r_result) const {
+bool JoltPhysicsDirectSpaceState3D::body_test_motion(const JoltBody3D &p_body, const PS3DT::MotionParameters &p_parameters, PS3DT::MotionResult *r_result) const {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "body_test_motion (maybe from move_and_slide?) must not be called while the physics space is being stepped.");
 
 	if (!p_body.in_space()) {
@@ -897,7 +905,7 @@ bool JoltPhysicsDirectSpaceState3D::body_test_motion(const JoltBody3D &p_body, c
 	}
 
 	if (collided) {
-		const PhysicsServer3D::MotionCollision &deepest = r_result->collisions[0];
+		const PS3DT::MotionCollision &deepest = r_result->collisions[0];
 
 		r_result->travel = recovery + p_parameters.motion * safe_fraction;
 		r_result->remainder = p_parameters.motion - p_parameters.motion * safe_fraction;

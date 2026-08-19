@@ -104,7 +104,7 @@ void ColorPicker::_notification(int p_what) {
 #ifdef MACOS_ENABLED
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible_in_tree()) {
-				perm_hb->set_visible(!OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
+				perm_hb->set_visible(sampler_visible && !OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
 			}
 		} break;
 #endif
@@ -595,7 +595,7 @@ Color ColorPicker::_color_apply_intensity(const Color &col) const {
 	Color result;
 	float multiplier = Math::pow(2, intensity);
 	for (int i = 0; i < 3; i++) {
-		result.components[i] = linear_color.components[i] * multiplier;
+		result[i] = linear_color[i] * multiplier;
 	}
 	result.a = col.a;
 	return result.linear_to_srgb();
@@ -609,7 +609,7 @@ void ColorPicker::_copy_color_to_normalized_and_intensity() {
 	Color linear_color = color.srgb_to_linear();
 	float multiplier = MAX(1, MAX(MAX(linear_color.r, linear_color.g), linear_color.b));
 	for (int i = 0; i < 3; i++) {
-		color_normalized.components[i] = linear_color.components[i] / multiplier;
+		color_normalized[i] = linear_color[i] / multiplier;
 	}
 	color_normalized.a = linear_color.a;
 	color_normalized = color_normalized.linear_to_srgb();
@@ -1947,6 +1947,9 @@ void ColorPicker::set_sampler_visible(bool p_visible) {
 	}
 	sampler_visible = p_visible;
 	sample_hbc->set_visible(p_visible);
+#ifdef MACOS_ENABLED
+	perm_hb->set_visible(p_visible && !OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
+#endif
 }
 
 bool ColorPicker::is_sampler_visible() const {

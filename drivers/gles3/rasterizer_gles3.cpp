@@ -194,6 +194,9 @@ typedef void(GLAPIENTRY *DebugMessageCallbackARB)(DEBUGPROCARB callback, const v
 
 void RasterizerGLES3::initialize() {
 	Engine::get_singleton()->print_header(vformat("OpenGL API %s - Compatibility - Using Device: %s - %s", RS::get_singleton()->get_video_adapter_api_version(), RS::get_singleton()->get_video_adapter_vendor(), RS::get_singleton()->get_video_adapter_name()));
+	if (Engine::get_singleton()->get_gpu_index() >= 0) {
+		WARN_PRINT("The Compatibility renderer does not support overriding the GPU with the --gpu-index command line argument. Falling back to the default GPU for OpenGL applications.");
+	}
 }
 
 void RasterizerGLES3::finalize() {
@@ -462,7 +465,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServerEnums::WindowID
 		copy_effects->copy_to_rect(screenrect, linear_to_srgb);
 	}
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(target, 0);
 }
 
 // is this p_screen useless in a multi window environment?

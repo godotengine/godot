@@ -5,7 +5,7 @@
  *   FreeType API for color filtering of subpixel bitmap glyphs
  *   (specification).
  *
- * Copyright (C) 2006-2025 by
+ * Copyright (C) 2006-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -145,16 +145,10 @@ FT_BEGIN_HEADER
    *
    *   FT_LCD_FILTER_LEGACY ::
    *   FT_LCD_FILTER_LEGACY1 ::
-   *     This filter corresponds to the original libXft color filter.  It
-   *     provides high contrast output but can exhibit really bad color
-   *     fringes if glyphs are not extremely well hinted to the pixel grid.
-   *     This filter is only provided for comparison purposes, and might be
-   *     disabled or stay unsupported in the future. The second value is
-   *     provided for compatibility with FontConfig, which historically used
-   *     different enumeration, sometimes incorrectly forwarded to FreeType.
+   *     The legacy libXft color filter is no longer supported and ignored.
    *
    * @since:
-   *   2.3.0 (`FT_LCD_FILTER_LEGACY1` since 2.6.2)
+   *   2.3.0
    */
   typedef enum  FT_LcdFilter_
   {

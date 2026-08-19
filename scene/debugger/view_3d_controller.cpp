@@ -35,7 +35,6 @@
 #include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
@@ -43,7 +42,7 @@ using namespace View3DControllerConsts;
 
 Transform3D View3DController::_to_camera_transform(const Cursor &p_cursor) const {
 	Transform3D camera_transform;
-	camera_transform.translate_local(p_cursor.pos);
+	camera_transform.translate_local(Vector3(p_cursor.pos_x, p_cursor.pos_y, p_cursor.pos_z));
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -p_cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -p_cursor.y_rot);
 
@@ -56,47 +55,35 @@ Transform3D View3DController::_to_camera_transform(const Cursor &p_cursor) const
 	return camera_transform;
 }
 
-bool View3DController::_is_shortcut_pressed(const ShortcutName p_name, const bool p_true_if_null) {
+bool View3DController::_is_shortcut_pressed(const ShortcutName p_name, const bool p_true_if_empty) {
 	Ref<Shortcut> shortcut = inputs[p_name];
 	if (shortcut.is_null()) {
-		return p_true_if_null;
+		return p_true_if_empty;
 	}
 
 	const Array shortcuts = shortcut->get_events();
-	Ref<InputEventKey> k;
-	if (shortcuts.size() > 0) {
-		k = shortcuts.front();
+	if (shortcuts.is_empty()) {
+		return p_true_if_empty;
 	}
 
-	if (k.is_null()) {
-		return p_true_if_null;
+	for (Ref<InputEventKey> k : shortcuts) {
+		if (k.is_null()) {
+			continue;
+		}
+
+		if (k->get_physical_keycode() == Key::NONE && Input::get_singleton()->is_key_pressed(emulate_numpad_key(k->get_keycode()))) {
+			return true;
+		} else if (Input::get_singleton()->is_physical_key_pressed(emulate_numpad_key(k->get_physical_keycode()))) {
+			return true;
+		}
 	}
 
-#define EMULATE_NUMPAD_KEY(p_code) \
-	(emulate_numpad && p_code >= Key::KEY_0 && p_code <= Key::KEY_9 ? p_code - Key::KEY_0 + Key::KP_0 : p_code)
-
-	if (k->get_physical_keycode() == Key::NONE) {
-		return Input::get_singleton()->is_key_pressed(EMULATE_NUMPAD_KEY(k->get_keycode()));
-	}
-
-	return Input::get_singleton()->is_physical_key_pressed(EMULATE_NUMPAD_KEY(k->get_physical_keycode()));
-
-#undef EMULATE_NUMPAD_KEY
+	return false;
 }
 
 bool View3DController::_is_shortcut_empty(const ShortcutName p_name) {
 	Ref<Shortcut> shortcut = inputs[p_name];
-	if (shortcut.is_null()) {
-		return true;
-	}
-
-	const Array shortcuts = shortcut->get_events();
-	Ref<InputEventKey> k;
-	if (shortcuts.size() > 0) {
-		k = shortcuts.front();
-	}
-
-	return k.is_null();
+	return shortcut.is_null() || shortcut->get_events().is_empty();
 }
 
 View3DController::NavigationMode View3DController::_get_nav_mode_from_shortcuts(NavigationMouseButton p_mouse_button, const Vector<ShortcutCheck> &p_shortcut_checks, bool p_not_empty) {
@@ -161,7 +148,7 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 		int pan_mod_input_count = GET_SHORTCUT_COUNT(SHORTCUT_PAN_MOD_1) + GET_SHORTCUT_COUNT(SHORTCUT_PAN_MOD_2);
 		int zoom_mod_input_count = GET_SHORTCUT_COUNT(SHORTCUT_ZOOM_MOD_1) + GET_SHORTCUT_COUNT(SHORTCUT_ZOOM_MOD_2);
 		bool orbit_not_empty = !_is_shortcut_empty(SHORTCUT_ORBIT_MOD_1) || !_is_shortcut_empty(SHORTCUT_ORBIT_MOD_2);
-		bool pan_not_empty = !_is_shortcut_empty(SHORTCUT_PAN_MOD_2) || !_is_shortcut_empty(SHORTCUT_PAN_MOD_2);
+		bool pan_not_empty = !_is_shortcut_empty(SHORTCUT_PAN_MOD_1) || !_is_shortcut_empty(SHORTCUT_PAN_MOD_2);
 		bool zoom_not_empty = !_is_shortcut_empty(SHORTCUT_ZOOM_MOD_1) || !_is_shortcut_empty(SHORTCUT_ZOOM_MOD_2);
 		shortcut_checks.push_back(ShortcutCheck(orbit_mod_pressed, orbit_not_empty, orbit_mod_input_count, orbit_mouse_button, NAV_MODE_ORBIT));
 		shortcut_checks.push_back(ShortcutCheck(pan_mod_pressed, pan_not_empty, pan_mod_input_count, pan_mouse_button, NAV_MODE_PAN));
@@ -347,7 +334,7 @@ void View3DController::cursor_pan(const Ref<InputEventWithModifiers> &p_event, c
 
 	Transform3D camera_transform;
 
-	camera_transform.translate_local(cursor.pos);
+	camera_transform.translate_local(Vector3(cursor.pos_x, cursor.pos_y, cursor.pos_z));
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
 	Vector3 translation(
@@ -356,7 +343,9 @@ void View3DController::cursor_pan(const Ref<InputEventWithModifiers> &p_event, c
 			0);
 	translation *= cursor.distance / DISTANCE_DEFAULT;
 	camera_transform.translate_local(translation);
-	cursor.pos = camera_transform.origin;
+	cursor.pos_x = camera_transform.origin.x;
+	cursor.pos_y = camera_transform.origin.y;
+	cursor.pos_z = camera_transform.origin.z;
 
 	emit_signal(SNAME("cursor_panned"));
 }
@@ -452,7 +441,9 @@ void View3DController::cursor_look(const Ref<InputEventWithModifiers> &p_event, 
 	Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
 	Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
 	Vector3 diff = prev_pos - pos;
-	cursor.pos += diff;
+	cursor.pos_x += diff.x;
+	cursor.pos_y += diff.y;
+	cursor.pos_z += diff.z;
 
 	set_view_type(VIEW_TYPE_USER);
 }
@@ -489,36 +480,51 @@ void View3DController::update_camera(const real_t p_delta) {
 		if (freelook) {
 			// Higher inertia should increase "lag" (lerp with factor between 0 and 1).
 			// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
-			float factor = (1.0 / freelook_inertia) * p_delta;
+			double factor = (1.0 / freelook_inertia) * p_delta;
 
 			// We interpolate a different point here, because in freelook mode the focus point (cursor.pos) orbits around eye_pos
-			cursor_interp.eye_pos = old_camera_cursor.eye_pos.lerp(cursor.eye_pos, CLAMP(factor, 0, 1));
+			cursor_interp.eye_pos_x = Math::lerp(old_camera_cursor.eye_pos_x, cursor.eye_pos_x, CLAMP(factor, 0, 1));
+			cursor_interp.eye_pos_y = Math::lerp(old_camera_cursor.eye_pos_y, cursor.eye_pos_y, CLAMP(factor, 0, 1));
+			cursor_interp.eye_pos_z = Math::lerp(old_camera_cursor.eye_pos_z, cursor.eye_pos_z, CLAMP(factor, 0, 1));
 		}
 
-		cursor_interp.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_delta * (1 / orbit_inertia)));
-		cursor_interp.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_delta * (1 / orbit_inertia)));
+		if (orbit_inertia > 0) {
+			cursor_interp.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_delta * (1 / orbit_inertia)));
+			cursor_interp.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_delta * (1 / orbit_inertia)));
 
-		if (Math::abs(cursor_interp.x_rot - cursor.x_rot) < 0.1) {
-			cursor_interp.x_rot = cursor.x_rot;
-		}
-		if (Math::abs(cursor_interp.y_rot - cursor.y_rot) < 0.1) {
-			cursor_interp.y_rot = cursor.y_rot;
+			if (Math::abs(cursor_interp.x_rot - cursor.x_rot) < 0.1) {
+				cursor_interp.x_rot = cursor.x_rot;
+			}
+			if (Math::abs(cursor_interp.y_rot - cursor.y_rot) < 0.1) {
+				cursor_interp.y_rot = cursor.y_rot;
+			}
 		}
 
 		if (freelook) {
 			Vector3 forward = _to_camera_transform(cursor_interp).basis.xform(Vector3(0, 0, -1));
-			cursor_interp.pos = cursor_interp.eye_pos + forward * cursor_interp.distance;
+			cursor_interp.pos_x = cursor_interp.eye_pos_x + forward.x * cursor_interp.distance;
+			cursor_interp.pos_y = cursor_interp.eye_pos_y + forward.y * cursor_interp.distance;
+			cursor_interp.pos_z = cursor_interp.eye_pos_z + forward.z * cursor_interp.distance;
 		} else {
-			cursor_interp.pos = old_camera_cursor.pos.lerp(cursor.pos, MIN(1.f, p_delta * (1 / translation_inertia)));
-			cursor_interp.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN((float)1.0, p_delta * (1 / zoom_inertia)));
+			if (translation_inertia > 0) {
+				cursor_interp.pos_x = Math::lerp(old_camera_cursor.pos_x, cursor.pos_x, MIN(1.0, p_delta * (1 / translation_inertia)));
+				cursor_interp.pos_y = Math::lerp(old_camera_cursor.pos_y, cursor.pos_y, MIN(1.0, p_delta * (1 / translation_inertia)));
+				cursor_interp.pos_z = Math::lerp(old_camera_cursor.pos_z, cursor.pos_z, MIN(1.0, p_delta * (1 / translation_inertia)));
+			}
+
+			if (zoom_inertia > 0) {
+				cursor_interp.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN((float)1.0, p_delta * (1 / zoom_inertia)));
+			}
 		}
 
 		// Apply camera transform.
 
 		const real_t tolerance = 0.001;
+		// Use a smaller tolerance for position, as it's always stored in doubles.
+		const double pos_tolerance = 0.000001;
 		if (!Math::is_equal_approx(old_camera_cursor.x_rot, cursor_interp.x_rot, tolerance) || !Math::is_equal_approx(old_camera_cursor.y_rot, cursor_interp.y_rot, tolerance)) {
 			equal = false;
-		} else if (!old_camera_cursor.pos.is_equal_approx(cursor_interp.pos)) {
+		} else if (!Math::is_equal_approx(old_camera_cursor.pos_x, cursor_interp.pos_x, pos_tolerance) || !Math::is_equal_approx(old_camera_cursor.pos_y, cursor_interp.pos_y, pos_tolerance) || !Math::is_equal_approx(old_camera_cursor.pos_z, cursor_interp.pos_z, pos_tolerance)) {
 			equal = false;
 		} else if (!Math::is_equal_approx(old_camera_cursor.distance, cursor_interp.distance, tolerance)) {
 			equal = false;
@@ -589,8 +595,12 @@ void View3DController::update_freelook(const float p_delta) {
 	}
 
 	const Vector3 motion = direction * speed * p_delta;
-	cursor.pos += motion;
-	cursor.eye_pos += motion;
+	cursor.pos_x += motion.x;
+	cursor.pos_y += motion.y;
+	cursor.pos_z += motion.z;
+	cursor.eye_pos_x += motion.x;
+	cursor.eye_pos_y += motion.y;
+	cursor.eye_pos_z += motion.z;
 }
 
 void View3DController::scale_freelook_speed(const float p_scale) {
@@ -621,6 +631,13 @@ void View3DController::scale_cursor_distance(const float p_scale) {
 	}
 
 	emit_signal(SNAME("cursor_distance_scaled"));
+}
+
+Key View3DController::emulate_numpad_key(const Key p_code) const {
+	if (emulate_numpad && p_code >= Key::KEY_0 && p_code <= Key::KEY_9) {
+		return p_code - Key::KEY_0 + Key::KP_0;
+	}
+	return p_code;
 }
 
 void View3DController::set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut) {
@@ -723,9 +740,13 @@ void View3DController::set_freelook_enabled(const bool p_enabled) {
 	if (freelook) {
 		// Make sure eye_pos is synced, because freelook referential is eye pos rather than orbit pos.
 		Vector3 forward = to_camera_transform().basis.xform(Vector3(0, 0, -1));
-		cursor.eye_pos = cursor.pos - cursor.distance * forward;
+		cursor.eye_pos_x = cursor.pos_x - cursor.distance * forward.x;
+		cursor.eye_pos_y = cursor.pos_y - cursor.distance * forward.y;
+		cursor.eye_pos_z = cursor.pos_z - cursor.distance * forward.z;
 		// Also sync the interpolated cursor's eye_pos, otherwise switching to freelook will be trippy if inertia is active.
-		cursor_interp.eye_pos = cursor.eye_pos;
+		cursor_interp.eye_pos_x = cursor.eye_pos_x;
+		cursor_interp.eye_pos_y = cursor.eye_pos_y;
+		cursor_interp.eye_pos_z = cursor.eye_pos_z;
 
 		if (freelook_speed_zoom_link) {
 			// Re-adjust freelook speed from the current zoom level.

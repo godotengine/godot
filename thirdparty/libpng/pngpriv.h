@@ -957,7 +957,7 @@
  *
  * At present these index values are not exported (not part of the public API)
  * so can be changed at will.  For convenience the names are in lexical sort
- * order but with the critical chunks at the start in the order of occurence in
+ * order but with the critical chunks at the start in the order of occurrence in
  * a PNG.
  *
  * PNG_INFO_ values do not exist for every one of these chunk handles; for
@@ -2086,7 +2086,7 @@ PNG_INTERNAL_FUNCTION(void, png_ascii_from_fixed,
  * not valid it will be the index of a character in the supposed number.
  *
  * The format of a number is defined in the PNG extensions specification
- * and this API is strictly conformant to that spec, not anyone elses!
+ * and this API is strictly conformant to that spec, not anyone else's!
  *
  * The format as a regular expression is:
  *

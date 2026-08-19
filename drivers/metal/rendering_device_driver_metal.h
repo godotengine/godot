@@ -36,6 +36,7 @@
 
 #include <Metal/Metal.hpp>
 
+#include <optional>
 #include <variant>
 
 class RenderingShaderContainerFormatMetal;
@@ -116,10 +117,11 @@ protected:
 		return copy_queue_buffer.get()->length() - copy_queue_buffer_offset;
 	}
 
-	/// Marks p_size bytes as consumed from the copy queue buffer, aligning the offset to 16 bytes.
+	/// Marks p_size bytes as consumed from the copy queue buffer, aligning the new offset to 16 bytes.
 	_FORCE_INLINE_ void _copy_queue_buffer_consume(NS::UInteger p_size) {
-		NS::UInteger aligned_offset = round_up_to_alignment(copy_queue_buffer_offset, 16);
-		copy_queue_buffer_offset = aligned_offset + p_size;
+		// Round up the end of the consumed region so the next copy starts aligned and the offset
+		// never exceeds the buffer length (which would underflow _copy_queue_buffer_available()).
+		copy_queue_buffer_offset = round_up_to_alignment(copy_queue_buffer_offset + p_size, 16);
 	}
 
 	/// Returns a pointer to the current position in the copy queue buffer.
@@ -178,7 +180,10 @@ protected:
 	 * there are no more references to the MDLibrary associated with the cache entry.
 	 */
 	HashMap<SHA256Digest, ShaderCacheEntry *> _shader_cache;
-	void shader_cache_free_entry(const SHA256Digest &key);
+	Mutex _shader_cache_lock;
+	void shader_cache_free_entry(ShaderCacheEntry *p_entry);
+	std::optional<std::shared_ptr<MDLibrary>> shader_cache_get_library(const SHA256Digest &key);
+	void shader_cache_set_entry(const SHA256Digest &key, ShaderCacheEntry *p_entry);
 
 public:
 	virtual Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override = 0;
@@ -215,7 +220,7 @@ public:
 
 private:
 	// Returns true if the texture is a valid linear format.
-	bool is_valid_linear(TextureFormat const &p_format) const;
+	bool is_valid_linear(const TextureFormat &p_format) const;
 
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
@@ -316,6 +321,7 @@ public:
 	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override final;
 	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override final;
 	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) override final;
+	virtual bool swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) override final;
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) override final;
 	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
 
@@ -531,7 +537,7 @@ public:
 	MTL::Device *get_device() const { return device; }
 	PixelFormats &get_pixel_formats() const { return *pixel_formats; }
 	MDResourceCache &get_resource_cache() const { return *resource_cache; }
-	MetalDeviceProperties const &get_device_properties() const { return *device_properties; }
+	const MetalDeviceProperties &get_device_properties() const { return *device_properties; }
 
 	_FORCE_INLINE_ uint32_t get_metal_buffer_index_for_vertex_attribute_binding(uint32_t p_binding) {
 		return (device_properties->limits.maxPerStageBufferCount - 1) - p_binding;

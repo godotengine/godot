@@ -31,7 +31,6 @@
 #include "quick_settings_dialog.h"
 
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_properties.h"
@@ -182,12 +181,14 @@ void QuickSettingsDialog::_update_current_values() {
 	}
 }
 
-void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_control) {
+void QuickSettingsDialog::_add_setting_control(const String &p_text, const String &p_setting, Control *p_control) {
 	HBoxContainer *container = memnew(HBoxContainer);
 	settings_list->add_child(container);
 
-	Label *label = memnew(Label(p_text));
+	Label *label = memnew(SettingLabel(p_text, p_setting));
+	label->set_text(p_text);
 	label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	container->add_child(label);
 
 	p_control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -253,14 +254,9 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 
 void QuickSettingsDialog::_show_full_settings() {
 	if (!editor_settings_dialog) {
-		EditorHelp::generate_doc();
-
 		Ref<EditorInspectorDefaultPlugin> eidp;
 		eidp.instantiate();
 		EditorInspector::add_inspector_plugin(eidp);
-
-		EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
-		add_child(epnp);
 
 		editor_settings_dialog = memnew(EditorSettingsDialog);
 		get_parent()->add_child(editor_settings_dialog);
@@ -325,6 +321,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			language_option_button = memnew(OptionButton);
 			language_option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			language_option_button->set_fit_to_longest_item(false);
+			language_option_button->set_search_bar_enabled(true);
 			language_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_language_selected));
 
 			for (int i = 0; i < editor_languages.size(); i++) {
@@ -334,7 +331,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				language_option_button->set_item_metadata(i, lang_code);
 			}
 
-			_add_setting_control(TTRC("Language"), language_option_button);
+			_add_setting_control(TTRC("Language"), "interface/editor/localization/editor_language", language_option_button);
 		}
 #endif
 		// Style options.
@@ -348,7 +345,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				style_option_button->add_item(style_value, i);
 			}
 
-			_add_setting_control(TTRC("Style"), style_option_button);
+			_add_setting_control(TTRC("Style"), "interface/theme/style", style_option_button);
 		}
 
 		// Theme options.
@@ -362,9 +359,9 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				theme_option_button->add_item(theme_value, i);
 			}
 
-			_add_setting_control(TTRC("Color Preset"), theme_option_button);
+			_add_setting_control(TTRC("Color Preset"), "interface/theme/color_preset", theme_option_button);
 
-			custom_theme_label = memnew(Label(TTRC("Custom preset can be further configured in the editor.")));
+			custom_theme_label = memnew(Label(TTRC("Custom preset can be further configured in the full settings.")));
 			custom_theme_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 			custom_theme_label->set_custom_minimum_size(Size2(220, 0) * EDSCALE);
 			custom_theme_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
@@ -385,7 +382,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				scale_option_button->add_item(scale_value, i);
 			}
 
-			_add_setting_control(TTRC("Display Scale"), scale_option_button);
+			_add_setting_control(TTRC("Display Scale"), "interface/editor/appearance/display_scale", scale_option_button);
 		}
 
 		// Network mode options.
@@ -399,7 +396,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				network_mode_option_button->add_item(network_mode_value, i);
 			}
 
-			_add_setting_control(TTRC("Network Mode"), network_mode_option_button);
+			_add_setting_control(TTRC("Network Mode"), "network/connection/network_mode", network_mode_option_button);
 		}
 
 		// Check for updates options.
@@ -413,7 +410,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				check_for_update_button->add_item(check_for_update_value, i);
 			}
 
-			_add_setting_control(TTRC("Check for Updates"), check_for_update_button);
+			_add_setting_control(TTRC("Check for Updates"), "network/connection/check_for_updates", check_for_update_button);
 		}
 
 		// Project directory naming options.
@@ -427,7 +424,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				directory_naming_convention_button->add_item(directory_naming_convention, i);
 			}
 
-			_add_setting_control(TTRC("Directory Naming Convention"), directory_naming_convention_button);
+			_add_setting_control(TTRC("Directory Naming Convention"), "project_manager/directory_naming_convention", directory_naming_convention_button);
 		}
 
 		_update_current_values();
@@ -451,4 +448,13 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		restart_required_label->hide();
 		main_vbox->add_child(restart_required_label);
 	}
+}
+
+Control *SettingLabel::make_custom_tooltip(const String &p_text) const {
+	return EditorHelpBitTooltip::make_tooltip(const_cast<SettingLabel *>(this), vformat("property|EditorSettings|%s", setting_name), String());
+}
+
+SettingLabel::SettingLabel(const String &p_text, const String &p_setting) :
+		Label(p_text) {
+	setting_name = p_setting;
 }

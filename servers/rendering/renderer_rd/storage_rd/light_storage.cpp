@@ -816,7 +816,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 						Projection correction;
 						correction.set_depth_correction(false, true, false);
 						Projection matrix = correction * light_instance->shadow_transform[j].camera;
-						float split = light_instance->shadow_transform[MIN(limit, j)].split;
+						float split = j <= limit ? light_instance->shadow_transform[j].split : 0;
 
 						Projection bias;
 						bias.set_light_bias();
@@ -858,8 +858,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 					}
 
 					float fade_start = light->param[RSE::LIGHT_PARAM_SHADOW_FADE_START];
-					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
-					light_data.fade_to = -light_data.shadow_split_offsets[3];
+					light_data.fade_from = -light_data.shadow_split_offsets[limit] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
+					light_data.fade_to = -light_data.shadow_split_offsets[limit];
 				}
 
 				r_directional_light_count++;
@@ -1549,9 +1549,7 @@ RID LightStorage::reflection_atlas_create() {
 void LightStorage::reflection_atlas_free(RID p_ref_atlas) {
 	reflection_atlas_set_size(p_ref_atlas, 0, 0);
 	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
-	if (ra->cluster_builder) {
-		memdelete(ra->cluster_builder);
-	}
+	memdelete(ra->cluster_builder);
 	reflection_atlas_owner.free(p_ref_atlas);
 }
 

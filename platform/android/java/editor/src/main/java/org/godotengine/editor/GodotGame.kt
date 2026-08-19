@@ -44,7 +44,7 @@ import org.godotengine.openxr.vendors.utils.*
 /**
  * Drives the 'run project' window of the Godot Editor.
  */
-open class GodotGame : BaseGodotGame() {
+abstract class GodotGame : BaseGodotGame() {
 
 	companion object {
 		private val TAG = GodotGame::class.java.simpleName
@@ -101,8 +101,6 @@ open class GodotGame : BaseGodotGame() {
 
 	override fun getGodotAppLayout() = R.layout.godot_game_layout
 
-	override fun getEditorWindowInfo() = RUN_GAME_INFO
-
 	override fun getEditorGameEmbedMode() = GameMenuUtils.GameEmbedMode.DISABLED
 
 	override fun overrideOrientationRequest() = false
@@ -125,6 +123,22 @@ open class GodotGame : BaseGodotGame() {
 	override fun toggleSelectionVisibility(enabled: Boolean) {
 		val actionBundle = Bundle().apply {
 			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_SET_SELECTION_VISIBLE)
+			putBoolean(KEY_GAME_MENU_ACTION_PARAM1, enabled)
+		}
+		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
+	}
+
+	override fun toggleSelectionAvoidLocked(enabled: Boolean) {
+		val actionBundle = Bundle().apply {
+			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_SET_SELECTION_AVOID_LOCKED)
+			putBoolean(KEY_GAME_MENU_ACTION_PARAM1, enabled)
+		}
+		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
+	}
+
+	override fun toggleSelectionPreferGroup(enabled: Boolean) {
+		val actionBundle = Bundle().apply {
+			putString(KEY_GAME_MENU_ACTION, GAME_MENU_ACTION_SET_SELECTION_PREFER_GROUP)
 			putBoolean(KEY_GAME_MENU_ACTION_PARAM1, enabled)
 		}
 		editorMessageDispatcher.dispatchGameMenuAction(EDITOR_MAIN_INFO, actionBundle)
@@ -213,7 +227,7 @@ open class GodotGame : BaseGodotGame() {
 
 	override fun isMinimizedButtonEnabled() = isTaskRoot && !isNativeXRDevice(applicationContext)
 
-	override fun isCloseButtonEnabled() = !isHorizonOSDevice(applicationContext)
+	override fun isCloseButtonEnabled() = !isNativeXRDevice(applicationContext)
 
 	override fun isPiPButtonEnabled() = isPiPModeSupported()
 

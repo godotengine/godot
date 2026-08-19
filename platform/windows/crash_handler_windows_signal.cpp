@@ -94,9 +94,7 @@ public:
 		ret.image_name = temp;
 		GetModuleBaseName(process, module, temp, sizeof(temp));
 		ret.module_name = temp;
-		std::vector<char> img(ret.image_name.begin(), ret.image_name.end());
-		std::vector<char> mod(ret.module_name.begin(), ret.module_name.end());
-		SymLoadModule64(process, nullptr, &img[0], &mod[0], (DWORD64)ret.base_address, ret.load_size);
+		SymLoadModule64(process, nullptr, ret.image_name.c_str(), ret.module_name.c_str(), (DWORD64)ret.base_address, ret.load_size);
 		return ret;
 	}
 };
@@ -141,9 +139,7 @@ int symbol_callback(void *data, uintptr_t pc, const char *filename, int lineno, 
 		}
 		print_error(vformat("[%d] %x (%s+%x) - %s (%s:%d)", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(fname), String::utf8(filename), lineno));
 	} else if ((int64_t)ch_data->pc > 0) {
-		print_error(vformat("[%d] %x (%s+%x) - <couldn't map PC to fn name>", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset));
-	} else {
-		print_error(vformat("[%d] ???", ch_data->index++));
+		print_error(vformat("[%d] %x (%s+%x) - ???", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset));
 	}
 	return 0;
 }
@@ -245,13 +241,13 @@ extern void CrashHandlerException(int signal) {
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 
-	String _execpath = OS::get_singleton()->get_executable_path();
+	String exec_path = OS::get_singleton()->get_executable_path();
 
 	// Load process and image info to determine ASLR addresses offset.
 	MODULEINFO mi;
 	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &mi, sizeof(mi));
 	int64_t image_mem_base = reinterpret_cast<int64_t>(mi.lpBaseOfDll);
-	int64_t image_file_base = get_image_base(_execpath);
+	int64_t image_file_base = get_image_base(exec_path);
 	data.offset = image_mem_base - image_file_base;
 
 	std::vector<module_data> modules;
@@ -272,12 +268,12 @@ extern void CrashHandlerException(int signal) {
 
 	print_error(vformat("Load address: %x\n", (uint64_t)data.offset));
 
-	if (FileAccess::exists(_execpath + ".debugsymbols")) {
-		_execpath = _execpath + ".debugsymbols";
+	if (FileAccess::exists(exec_path + ".debugsymbols")) {
+		exec_path = exec_path + ".debugsymbols";
 	}
-	_execpath = _execpath.replace_char('/', '\\');
+	exec_path = exec_path.replace_char('/', '\\');
 
-	CharString cs = _execpath.utf8(); // Note: should remain in scope during backtrace_simple call.
+	CharString cs = exec_path.utf8(); // Note: should remain in scope during backtrace_simple call.
 	data.state = backtrace_create_state(cs.get_data(), 0, &error_callback, reinterpret_cast<void *>(&data));
 	if (data.state != nullptr) {
 		data.index = 1;
@@ -286,6 +282,10 @@ extern void CrashHandlerException(int signal) {
 
 	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");
+
+	if (data.sym_ok) {
+		SymCleanup(data.process);
+	}
 
 	for (const Ref<ScriptBacktrace> &backtrace : ScriptServer::capture_script_backtraces(false)) {
 		if (!backtrace->is_empty()) {

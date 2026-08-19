@@ -1124,6 +1124,17 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 	lines = 1;
 	f = p_f;
 
+	// Skip UTF-8 BOM.
+	{
+		uint64_t pos = f->get_position();
+		if (pos == 0 && f->get_length() > 3) {
+			uint8_t bom[3] = {};
+			if (f->get_buffer(&bom[0], 3) != 3 || bom[0] != 0xef || bom[1] != 0xbb || bom[2] != 0xbf) {
+				f->seek(pos); // Wasn't a BOM; reset position.
+			}
+		}
+	}
+
 	stream.f = f;
 	is_scene = false;
 	ignore_resource_parsing = false;
@@ -1983,7 +1994,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				}
 
 				String vars;
-				VariantWriter::write_to_string(value, vars, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(value, vars, true, _write_resources, this, use_compat);
 				f->store_string(name.property_name_encode() + " = " + vars + "\n");
 			}
 		}
@@ -2061,14 +2072,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			if (!instance_placeholder.is_empty()) {
 				String vars;
 				f->store_string(" instance_placeholder=");
-				VariantWriter::write_to_string(instance_placeholder, vars, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(instance_placeholder, vars, true, _write_resources, this, use_compat);
 				f->store_string(vars);
 			}
 
 			if (instance.is_valid()) {
 				String vars;
 				f->store_string(" instance=");
-				VariantWriter::write_to_string(instance, vars, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(instance, vars, true, _write_resources, this, use_compat);
 				f->store_string(vars);
 			}
 
@@ -2076,7 +2087,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 			for (int j = 0; j < state->get_node_property_count(i); j++) {
 				String vars;
-				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, true, _write_resources, this, use_compat);
 
 				f->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
 			}
@@ -2124,7 +2135,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			f->store_string(connstr);
 			if (binds.size()) {
 				String vars;
-				VariantWriter::write_to_string(binds, vars, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(binds, vars, true, _write_resources, this, use_compat);
 				f->store_string(" binds= " + vars);
 			}
 

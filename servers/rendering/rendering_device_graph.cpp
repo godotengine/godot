@@ -105,6 +105,7 @@ bool RenderingDeviceGraph::_is_write_usage(ResourceUsage p_usage) {
 		case RESOURCE_USAGE_STORAGE_IMAGE_READ:
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ:
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
+		case RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ:
 		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ:
 			return false;
 		case RESOURCE_USAGE_COPY_TO:
@@ -146,6 +147,10 @@ RDD::TextureLayout RenderingDeviceGraph::_usage_to_image_layout(ResourceUsage p_
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL;
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL;
+		case RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ:
+			// Rasterization rate map is not a real texture and it's readonly from shaders,
+			// so it doesn't need a texture layout
+			return RDD::TEXTURE_LAYOUT_UNDEFINED;
 		case RESOURCE_USAGE_GENERAL:
 			return RDD::TEXTURE_LAYOUT_GENERAL;
 		case RESOURCE_USAGE_NONE:
@@ -198,6 +203,10 @@ RDD::BarrierAccessBits RenderingDeviceGraph::_usage_to_access_bits(ResourceUsage
 			return RDD::BARRIER_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT;
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
 			return RDD::BARRIER_ACCESS_FRAGMENT_DENSITY_MAP_ATTACHMENT_READ_BIT;
+		case RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ:
+			// Rasterization rate map is not a real texture and it's readonly from shaders,
+			// so it doesn't need barrier access attributes
+			return RDD::BarrierAccessBits(0);
 		case RESOURCE_USAGE_GENERAL:
 			return RDD::BarrierAccessBits(RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT);
 		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE:
@@ -406,6 +415,13 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 
 		resource_tracker->reset_if_outdated(tracking_frame);
 
+		resource_tracker->command_index = p_command_index;
+		resource_tracker->usage_index = i;
+	}
+
+	for (uint32_t i = 0; i < p_resource_count; i++) {
+		ResourceTracker *resource_tracker = p_resource_trackers[i];
+
 		const RDD::TextureSubresourceRange &subresources = resource_tracker->texture_subresources;
 		const Rect2i resource_tracker_rect(subresources.base_mipmap, subresources.base_layer, subresources.mipmap_count, subresources.layer_count);
 		Rect2i search_tracker_rect = resource_tracker_rect;
@@ -417,6 +433,15 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 		if (is_resource_a_slice) {
 			// This resource depends on a parent resource.
 			resource_tracker->parent->reset_if_outdated(tracking_frame);
+
+			// Quit early if the parent is already in this command.
+			if (resource_tracker->parent->command_index == p_command_index) {
+				DEV_ASSERT(resource_tracker->parent->usage_index != UINT32_MAX);
+
+				ERR_FAIL_COND_MSG(p_resource_usages[resource_tracker->parent->usage_index] != new_resource_usage, "Using a full texture and its slices at the same time with different usages is not allowed.");
+
+				continue;
+			}
 
 			if (resource_tracker->texture_slice_command_index != p_command_index) {
 				// Indicate this slice has been used by this command.
@@ -1055,6 +1080,8 @@ void RenderingDeviceGraph::_add_draw_list_begin(FramebufferCache *p_framebuffer_
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	draw_instruction_list.breadcrumb = p_breadcrumb;
 #endif
+
+	workarounds_state.bound_any_draw_list_pipeline = false;
 }
 
 void RenderingDeviceGraph::_run_secondary_command_buffer_task(const SecondaryCommandBuffer *p_secondary) {
@@ -1117,7 +1144,7 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 				_run_raytracing_list_command(r_command_buffer, raytracing_list_command->instruction_data(), raytracing_list_command->instruction_data_size);
 			} break;
 			case RecordedCommand::TYPE_COMPUTE_LIST: {
-				if (device.workarounds.avoid_compute_after_draw && workarounds_state.draw_list_found) {
+				if (driver_workarounds.avoid_compute_after_draw && workarounds_state.draw_list_found) {
 					// Avoid compute after draw workaround. Refer to the comment that enables this in the Vulkan driver for more information.
 					workarounds_state.draw_list_found = false;
 
@@ -1141,7 +1168,7 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 				_run_compute_list_command(r_command_buffer, compute_list_command->instruction_data(), compute_list_command->instruction_data_size);
 			} break;
 			case RecordedCommand::TYPE_DRAW_LIST: {
-				if (device.workarounds.avoid_compute_after_draw) {
+				if (driver_workarounds.avoid_compute_after_draw) {
 					// Indicate that a draw list was encountered for the workaround.
 					workarounds_state.draw_list_found = true;
 				}
@@ -1712,13 +1739,13 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 	}
 }
 
-void RenderingDeviceGraph::initialize(RDD *p_driver, RenderingContextDriver::Device p_device, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame) {
+void RenderingDeviceGraph::initialize(RDD *p_driver, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame) {
 	DEV_ASSERT(p_driver != nullptr);
 	DEV_ASSERT(p_render_pass_creation_function != nullptr);
 	DEV_ASSERT(p_frame_count > 0);
 
 	driver = p_driver;
-	device = p_device;
+	driver_workarounds = p_driver->get_driver_workarounds();
 	render_pass_creation_function = p_render_pass_creation_function;
 	frames.resize(p_frame_count);
 
@@ -2148,6 +2175,8 @@ void RenderingDeviceGraph::add_draw_list_bind_pipeline(RDD::PipelineID p_pipelin
 	instruction->type = DrawListInstruction::TYPE_BIND_PIPELINE;
 	instruction->pipeline = p_pipeline;
 	draw_instruction_list.stages = draw_instruction_list.stages | p_pipeline_stage_bits;
+
+	workarounds_state.bound_any_draw_list_pipeline = true;
 }
 
 void RenderingDeviceGraph::add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
@@ -2345,6 +2374,11 @@ void RenderingDeviceGraph::add_draw_list_end() {
 	command->clear_values_count = draw_instruction_list.attachment_clear_values.size();
 	command->trackers_count = trackers_count;
 
+	RDD::AttachmentStoreOp attachment_store_op_dont_care = RDD::ATTACHMENT_STORE_OP_DONT_CARE;
+	if (driver_workarounds.avoid_store_op_dont_care_in_draw_list_with_no_bound_pipeline && !workarounds_state.bound_any_draw_list_pipeline) {
+		attachment_store_op_dont_care = RDD::ATTACHMENT_STORE_OP_STORE;
+	}
+
 	// Initialize the load and store operations to their default behaviors. The store behavior will be modified if a command depends on the result of this render pass.
 	uint32_t attachment_op_count = draw_instruction_list.attachment_operations.size();
 	ResourceTracker **trackers = command->trackers();
@@ -2367,7 +2401,7 @@ void RenderingDeviceGraph::add_draw_list_end() {
 				load_ops[i] = RDD::ATTACHMENT_LOAD_OP_LOAD;
 			}
 
-			store_ops[i] = resource_tracker->is_discardable ? RDD::ATTACHMENT_STORE_OP_DONT_CARE : RDD::ATTACHMENT_STORE_OP_STORE;
+			store_ops[i] = resource_tracker->is_discardable ? attachment_store_op_dont_care : RDD::ATTACHMENT_STORE_OP_STORE;
 		} else {
 			load_ops[i] = RDD::ATTACHMENT_LOAD_OP_DONT_CARE;
 			store_ops[i] = RDD::ATTACHMENT_STORE_OP_DONT_CARE;
@@ -2643,13 +2677,16 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 		}
 
 		// Batch buffer, texture, draw lists and compute operations together.
-		const uint32_t PriorityTable[RecordedCommand::TYPE_MAX] = {
+		const uint32_t PriorityTable[] = {
 			0, // TYPE_NONE
+			6, // TYPE_BOTTOM_LEVEL_ACCELERATION_STRUCTURE_BUILD
+			6, // TYPE_TOP_LEVEL_ACCELERATION_STRUCTURE_BUILD
 			1, // TYPE_BUFFER_CLEAR
 			1, // TYPE_BUFFER_COPY
 			1, // TYPE_BUFFER_GET_DATA
 			1, // TYPE_BUFFER_UPDATE
 			4, // TYPE_COMPUTE_LIST
+			7, // TYPE_RAYTRACING_LIST
 			3, // TYPE_DRAW_LIST
 			2, // TYPE_TEXTURE_CLEAR_COLOR
 			2, // TYPE_TEXTURE_CLEAR_DEPTH_STENCIL
@@ -2660,6 +2697,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 			2, // TYPE_CAPTURE_TIMESTAMP
 			5, // TYPE_DRIVER_CALLBACK
 		};
+		static_assert(std_size(PriorityTable) == RecordedCommand::TYPE_MAX, "PriorityTable must have one entry per RecordedCommand::Type");
 
 		commands_sorted.clear();
 		commands_sorted.resize(command_count);
@@ -2699,7 +2737,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 		int32_t current_label_level = -1;
 		_run_label_command_change(r_command_buffer, -1, -1, true, true, nullptr, 0, current_label_index, current_label_level);
 
-		if (device.workarounds.avoid_compute_after_draw) {
+		if (driver_workarounds.avoid_compute_after_draw) {
 			// Reset the state of the workaround.
 			workarounds_state.draw_list_found = false;
 		}

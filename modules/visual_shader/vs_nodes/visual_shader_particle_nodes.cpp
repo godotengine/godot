@@ -94,9 +94,6 @@ void VisualShaderNodeParticleEmitter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_2d"), "set_mode_2d", "is_mode_2d");
 }
 
-VisualShaderNodeParticleEmitter::VisualShaderNodeParticleEmitter() {
-}
-
 // VisualShaderNodeParticleSphereEmitter
 
 String VisualShaderNodeParticleSphereEmitter::get_caption() const {
@@ -1431,9 +1428,6 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 		}
 	}
 	return code;
-}
-
-VisualShaderNodeParticleOutput::VisualShaderNodeParticleOutput() {
 }
 
 // EmitParticle

@@ -420,6 +420,11 @@ public:
 	FUNC2(mesh_surface_remove, RID, int)
 	FUNC1(mesh_clear, RID)
 
+	FUNC2RC(RID, mesh_surface_get_vertex_buffer_rd_rid, RID, int)
+	FUNC2RC(RID, mesh_surface_get_attribute_buffer_rd_rid, RID, int)
+	FUNC2RC(RID, mesh_surface_get_skin_buffer_rd_rid, RID, int)
+	FUNC2RC(RID, mesh_surface_get_index_buffer_rd_rid, RID, int)
+
 	FUNC1(mesh_debug_usage, List<RenderingServerTypes::MeshInfo> *)
 
 	/* MULTIMESH API */
@@ -972,7 +977,7 @@ public:
 	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter_default_value, RID, const StringName &)
-	FUNC2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
+	FUNC2SC(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	FUNC3R(TypedArray<Image>, bake_render_uv2, RID, const TypedArray<RID> &, const Size2i &)
 	FUNC4R(PackedByteArray, bake_render_area_light_atlas, const TypedArray<RID> &, const TypedArray<Rect2> &, const Size2i &, int)
@@ -1059,7 +1064,7 @@ public:
 	FUNC3(canvas_item_set_instance_shader_parameter, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, canvas_item_get_instance_shader_parameter, RID, const StringName &)
 	FUNC2RC(Variant, canvas_item_get_instance_shader_parameter_default_value, RID, const StringName &)
-	FUNC2C(canvas_item_get_instance_shader_parameter_list, RID, List<PropertyInfo> *)
+	FUNC2SC(canvas_item_get_instance_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	FUNC2(canvas_item_set_use_parent_material, RID, bool)
 

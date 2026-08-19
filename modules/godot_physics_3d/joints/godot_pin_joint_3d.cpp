@@ -50,8 +50,8 @@ subject to the following restrictions:
 #include "godot_pin_joint_3d.h"
 
 bool GodotPinJoint3D::setup(real_t p_step) {
-	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
-	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_A = (A->get_mode() > PS3DE::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PS3DE::BODY_MODE_KINEMATIC);
 
 	if (!dynamic_A && !dynamic_B) {
 		return false;
@@ -139,27 +139,27 @@ void GodotPinJoint3D::solve(real_t p_step) {
 	}
 }
 
-void GodotPinJoint3D::set_param(PhysicsServer3D::PinJointParam p_param, real_t p_value) {
+void GodotPinJoint3D::set_param(PS3DE::PinJointParam p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::PIN_JOINT_BIAS:
+		case PS3DE::PIN_JOINT_BIAS:
 			m_tau = p_value;
 			break;
-		case PhysicsServer3D::PIN_JOINT_DAMPING:
+		case PS3DE::PIN_JOINT_DAMPING:
 			m_damping = p_value;
 			break;
-		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP:
+		case PS3DE::PIN_JOINT_IMPULSE_CLAMP:
 			m_impulseClamp = p_value;
 			break;
 	}
 }
 
-real_t GodotPinJoint3D::get_param(PhysicsServer3D::PinJointParam p_param) const {
+real_t GodotPinJoint3D::get_param(PS3DE::PinJointParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::PIN_JOINT_BIAS:
+		case PS3DE::PIN_JOINT_BIAS:
 			return m_tau;
-		case PhysicsServer3D::PIN_JOINT_DAMPING:
+		case PS3DE::PIN_JOINT_DAMPING:
 			return m_damping;
-		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP:
+		case PS3DE::PIN_JOINT_IMPULSE_CLAMP:
 			return m_impulseClamp;
 	}
 

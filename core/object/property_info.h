@@ -160,13 +160,13 @@ struct PropertyInfo {
 			type(Variant::OBJECT),
 			class_name(p_class_name) {}
 
-	explicit PropertyInfo(const GDExtensionPropertyInfo &pinfo) :
-			type((Variant::Type)pinfo.type),
-			name(*reinterpret_cast<StringName *>(pinfo.name)),
-			class_name(*reinterpret_cast<StringName *>(pinfo.class_name)),
-			hint((PropertyHint)pinfo.hint),
-			hint_string(*reinterpret_cast<String *>(pinfo.hint_string)),
-			usage(pinfo.usage) {}
+	explicit PropertyInfo(const GDExtensionPropertyInfo &p_info) :
+			type((Variant::Type)p_info.type),
+			name(*reinterpret_cast<StringName *>(p_info.name)),
+			class_name(*reinterpret_cast<StringName *>(p_info.class_name)),
+			hint((PropertyHint)p_info.hint),
+			hint_string(*reinterpret_cast<String *>(p_info.hint_string)),
+			usage(p_info.usage) {}
 
 	bool operator==(const PropertyInfo &p_info) const {
 		return ((type == p_info.type) &&

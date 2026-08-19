@@ -196,7 +196,7 @@ hb_raster_draw_set_user_data (hb_raster_draw_t   *draw,
  * Since: 13.0.0
  **/
 void *
-hb_raster_draw_get_user_data (hb_raster_draw_t   *draw,
+hb_raster_draw_get_user_data (const hb_raster_draw_t   *draw,
 			      hb_user_data_key_t *key)
 {
   return hb_object_get_user_data (draw, key);
@@ -257,7 +257,7 @@ hb_raster_draw_set_scale_factor (hb_raster_draw_t *draw,
  * Since: 13.0.0
  **/
 void
-hb_raster_draw_get_scale_factor (hb_raster_draw_t *draw,
+hb_raster_draw_get_scale_factor (const hb_raster_draw_t *draw,
 				 float *x_scale_factor,
 				 float *y_scale_factor)
 {
@@ -280,7 +280,7 @@ hb_raster_draw_get_scale_factor (hb_raster_draw_t *draw,
  * Since: 13.0.0
  **/
 void
-hb_raster_draw_get_transform (hb_raster_draw_t *draw,
+hb_raster_draw_get_transform (const hb_raster_draw_t *draw,
 			      float *xx, float *yx,
 			      float *xy, float *yy,
 			      float *dx, float *dy)
@@ -324,7 +324,7 @@ hb_raster_draw_set_extents (hb_raster_draw_t          *draw,
  * Since: 13.0.0
  **/
 hb_bool_t
-hb_raster_draw_get_extents (hb_raster_draw_t    *draw,
+hb_raster_draw_get_extents (const hb_raster_draw_t    *draw,
 			    hb_raster_extents_t *extents)
 {
   if (!draw->has_extents)
@@ -405,15 +405,32 @@ hb_raster_draw_set_glyph_extents (hb_raster_draw_t         *draw,
 }
 
 /**
+ * hb_raster_draw_clear:
+ * @draw: a rasterizer
+ *
+ * Discards accumulated geometry and extents so @draw can be reused
+ * for another render.  User configuration (transform, scale factors)
+ * is preserved.  Call hb_raster_draw_reset() to also reset user
+ * configuration to defaults.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_raster_draw_clear (hb_raster_draw_t *draw)
+{
+  draw->fixed_extents     = {};
+  draw->has_extents = false;
+  draw->edges.clear ();
+  draw->active_edges.clear ();
+}
+
+/**
  * hb_raster_draw_reset:
  * @draw: a rasterizer
  *
  * Resets the rasterizer to its initial state, clearing all accumulated
  * geometry, the transform, and fixed extents.  The object can then be
  * reused for a new glyph.
- *
- * Internal scratch buffers and recycled image cache are preserved for
- * reuse across subsequent renders.
  *
  * Since: 13.0.0
  **/
@@ -423,10 +440,7 @@ hb_raster_draw_reset (hb_raster_draw_t *draw)
   draw->transform         = {1, 0, 0, 1, 0, 0};
   draw->x_scale_factor    = 1.f;
   draw->y_scale_factor    = 1.f;
-  draw->fixed_extents     = {};
-  draw->has_extents = false;
-  draw->edges.clear ();
-  draw->active_edges.clear ();
+  hb_raster_draw_clear (draw);
 }
 
 /**
@@ -482,7 +496,8 @@ emit_segment (hb_raster_draw_t *draw,
   } else {
     e.xL = X1; e.yL = Y1; e.xH = X0; e.yH = Y0; e.wind = -1;
   }
-  e.slope = ((int64_t) (e.xH - e.xL) << 16) / (e.yH - e.yL);
+  e.slope = (((int64_t) e.xH - (int64_t) e.xL) * (int64_t) 65536) /
+	    ((int64_t) e.yH - (int64_t) e.yL);
 
   draw->edges.push (e);
 }
@@ -920,20 +935,48 @@ free_static_raster_draw_funcs ()
 
 /**
  * hb_raster_draw_get_funcs:
+ * @draw: a rasterizer draw context.
  *
- * Fetches the singleton #hb_draw_funcs_t that feeds outline data
- * into an #hb_raster_draw_t.  Pass the #hb_raster_draw_t as the
- * @draw_data argument when calling the draw functions.
+ * Fetches the #hb_draw_funcs_t that feeds outline data into
+ * @draw.  Pass @draw as the @draw_data argument when calling
+ * the draw functions.
  *
  * Return value: (transfer none):
  * The rasterizer draw functions
  *
- * Since: 13.0.0
+ * Since: 14.2.0
  **/
 hb_draw_funcs_t *
-hb_raster_draw_get_funcs (void)
+hb_raster_draw_get_funcs (const hb_raster_draw_t *draw HB_UNUSED)
 {
   return static_raster_draw_funcs.get_unconst ();
+}
+
+/**
+ * hb_raster_draw_glyph_or_fail:
+ * @draw: a rasterizer
+ * @font: font to draw from
+ * @glyph: glyph ID to draw
+ *
+ * Convenience to draw one glyph.  Equivalent to:
+ *
+ * |[<!-- language="plain" -->
+ * hb_font_draw_glyph_or_fail (font, glyph,
+ *   hb_raster_draw_get_funcs (draw), draw);
+ * ]|
+ *
+ * Return value: `true` if the glyph was drawn, `false` if the font has
+ * no outlines for @glyph.
+ *
+ * Since: 14.2.0
+ **/
+hb_bool_t
+hb_raster_draw_glyph_or_fail (hb_raster_draw_t *draw,
+			      hb_font_t       *font,
+			      hb_codepoint_t   glyph)
+{
+  return hb_font_draw_glyph_or_fail (font, glyph,
+				     hb_raster_draw_get_funcs (draw), draw);
 }
 
 /**
@@ -941,35 +984,19 @@ hb_raster_draw_get_funcs (void)
  * @draw: a rasterizer
  * @font: font to draw from
  * @glyph: glyph ID to draw
- * @pen_x: glyph origin x in font coordinates (pre-transform)
- * @pen_y: glyph origin y in font coordinates (pre-transform)
  *
- * Convenience wrapper to draw one glyph at (@pen_x, @pen_y) using the
- * rasterizer's current transform. The pen coordinates are applied before
- * minification and are transformed by the current affine transform.
+ * Draws one glyph into @draw using the rasterizer's current
+ * transform.  Equivalent to hb_raster_draw_glyph_or_fail() with the
+ * return value ignored.
  *
- * Since: 13.0.0
+ * Since: 14.2.0
  **/
 void
 hb_raster_draw_glyph (hb_raster_draw_t *draw,
 		      hb_font_t       *font,
-		      hb_codepoint_t   glyph,
-		      float            pen_x,
-		      float            pen_y)
+		      hb_codepoint_t   glyph)
 {
-  float xx = draw->transform.xx;
-  float yx = draw->transform.yx;
-  float xy = draw->transform.xy;
-  float yy = draw->transform.yy;
-  float dx = draw->transform.x0;
-  float dy = draw->transform.y0;
-
-  hb_raster_draw_set_transform (draw,
-				xx, yx, xy, yy,
-				dx + xx * pen_x + xy * pen_y,
-				dy + yx * pen_x + yy * pen_y);
-  hb_font_draw_glyph (font, glyph, hb_raster_draw_get_funcs (), draw);
-  hb_raster_draw_set_transform (draw, xx, yx, xy, yy, dx, dy);
+  hb_raster_draw_glyph_or_fail (draw, font, glyph);
 }
 
 
@@ -1036,9 +1063,14 @@ edge_sweep_row (int32_t                *area,
   int32_t ey1 = hb_min (edge.yH, y_bot);
   if (ey0 >= ey1) return;
 
-  /* X at clipped endpoints (fixed-point) */
-  int32_t x0 = edge.xL + (int32_t) ((int64_t) (ey0 - edge.yL) * edge.slope >> 16);
-  int32_t x1 = edge.xL + (int32_t) ((int64_t) (ey1 - edge.yL) * edge.slope >> 16);
+  /* X at clipped endpoints (fixed-point). Keep the interpolation in 64-bit
+   * so extreme y values do not overflow before the slope multiply. */
+  int64_t x0_64 = (int64_t) edge.xL +
+		  ((((int64_t) ey0 - (int64_t) edge.yL) * edge.slope) >> 16);
+  int64_t x1_64 = (int64_t) edge.xL +
+		  ((((int64_t) ey1 - (int64_t) edge.yL) * edge.slope) >> 16);
+  int32_t x0 = (int32_t) hb_clamp (x0_64, (int64_t) INT32_MIN, (int64_t) INT32_MAX);
+  int32_t x1 = (int32_t) hb_clamp (x1_64, (int64_t) INT32_MIN, (int64_t) INT32_MAX);
 
   /* Fractional y within this pixel row [0, ONE_PIXEL] */
   int32_t fy0 = ey0 - y_top;
@@ -1057,8 +1089,8 @@ edge_sweep_row (int32_t                *area,
     return;
   }
 
-  int32_t total_dx = x1 - x0;
-  int32_t total_dy = fy1 - fy0;
+  int64_t total_dx = (int64_t) x1 - (int64_t) x0;
+  int64_t total_dy = (int64_t) fy1 - (int64_t) fy0;
 
   /* fy increment per pixel column (constant since x_b advances by ONE_PIXEL). */
   int32_t delta_fy = (int32_t) ((int64_t) HB_RASTER_ONE_PIXEL * total_dy / total_dx);
@@ -1066,8 +1098,9 @@ edge_sweep_row (int32_t                *area,
   if (total_dx > 0)
   {
     /* Left-to-right edge. */
-    int32_t x_b  = (cx0 + 1) << HB_RASTER_PIXEL_BITS;
-    int32_t fy_b = fy0 + (int32_t) ((int64_t) (x_b - x0) * total_dy / total_dx);
+    int32_t x_b = (int32_t) hb_clamp (((int64_t) cx0 + 1) * HB_RASTER_ONE_PIXEL,
+				      (int64_t) INT32_MIN, (int64_t) INT32_MAX);
+    int32_t fy_b = fy0 + (int32_t) ((((int64_t) x_b - (int64_t) x0) * total_dy) / total_dx);
     cell_add (area, cover, width, cx0 - x_org, fx0, fy0, HB_RASTER_ONE_PIXEL, fy_b, wind, x_min, x_max);
 
     int32_t fy_prev = fy_b;
@@ -1083,8 +1116,9 @@ edge_sweep_row (int32_t                *area,
   else
   {
     /* Right-to-left edge. */
-    int32_t x_b  = cx0 << HB_RASTER_PIXEL_BITS;
-    int32_t fy_b = fy0 + (int32_t) ((int64_t) (x_b - x0) * total_dy / total_dx);
+    int32_t x_b = (int32_t) hb_clamp ((int64_t) cx0 * HB_RASTER_ONE_PIXEL,
+				      (int64_t) INT32_MIN, (int64_t) INT32_MAX);
+    int32_t fy_b = fy0 + (int32_t) ((((int64_t) x_b - (int64_t) x0) * total_dy) / total_dx);
     cell_add (area, cover, width, cx0 - x_org, fx0, fy0, 0, fy_b, wind, x_min, x_max);
 
     int32_t fy_prev = fy_b;
@@ -1274,24 +1308,23 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
     ext.stride = (ext.width + 3u) & ~3u;
 
   /* ── 3. Allocate or reuse image ─────────────────────────────────── */
-  hb_raster_image_t *image;
+  /* Reset one-shot state on every exit path. */
+  HB_SCOPE_GUARD (hb_raster_draw_clear (draw));
+
+  hb_unique_ptr_t<hb_raster_image_t> image;
   if (draw->recycled_image)
   {
-    image = draw->recycled_image;
+    image = hb_unique_ptr_t<hb_raster_image_t> (draw->recycled_image);
     draw->recycled_image = nullptr;
   }
   else
   {
-    image = hb_raster_image_create_or_fail ();
-    if (unlikely (!image)) goto fail;
+    image = hb_unique_ptr_t<hb_raster_image_t> (hb_raster_image_create_or_fail ());
+    if (unlikely (!image)) return nullptr;
   }
 
   if (unlikely (!image->configure (HB_RASTER_FORMAT_A8, ext)))
-  {
-    hb_raster_image_destroy (image);
-    image = nullptr;
-    goto fail;
-  }
+    return nullptr;
   image->clear ();
 
   /* ── 4. Bucket edges by starting row and rasterize scanlines ──── */
@@ -1299,7 +1332,7 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
   {
     if (unlikely (!draw->row_area.resize_dirty (ext.width) ||
 		  !draw->row_cover.resize_dirty (ext.width)))
-      goto fail;
+      return nullptr;
     hb_memset (draw->row_area.arrayZ,  0, ext.width * sizeof (int32_t));
     hb_memset (draw->row_cover.arrayZ, 0, ext.width * sizeof (int16_t));
 
@@ -1309,7 +1342,7 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
     if (ext.height > old_buckets)
     {
       if (unlikely (!draw->edge_buckets.resize (ext.height)))
-	goto fail;
+	return nullptr;
     }
     for (unsigned i = 0; i < hb_min (ext.height, old_buckets); i++)
       draw->edge_buckets.arrayZ[i].clear ();
@@ -1328,7 +1361,8 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
 
     for (unsigned row = 0; row < ext.height; row++)
     {
-      int32_t y_top = (ext.y_origin + (int) row) << HB_RASTER_PIXEL_BITS;
+      int64_t y_top_64 = ((int64_t) ext.y_origin + (int64_t) row) * HB_RASTER_ONE_PIXEL;
+      int32_t y_top = (int32_t) hb_clamp (y_top_64, (int64_t) INT32_MIN, (int64_t) INT32_MAX);
 
       /* Add new edges from this row's bucket. */
       draw->active_edges.extend (draw->edge_buckets.arrayZ[row]);
@@ -1371,16 +1405,5 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
     }
   }
 
-done:
-  /* ── 6. Reset one-shot state ────────────────────────────────────── */
-  draw->edges.clear ();
-  draw->has_extents = false;
-  draw->fixed_extents     = {};
-
-  return image;
-
-fail:
-  hb_raster_image_destroy (image);
-  image = nullptr;
-  goto done;
+  return image.release ();
 }

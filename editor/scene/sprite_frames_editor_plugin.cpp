@@ -1808,6 +1808,7 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	if (p_frames.is_null()) {
 		frames.unref();
 		_remove_sprite_node();
+		close();
 		return;
 	}
 
@@ -2042,9 +2043,7 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 	}
 
 	bool show_node_edit = false;
-	AnimatedSprite2D *as2d = Object::cast_to<AnimatedSprite2D>(selected);
-	AnimatedSprite3D *as3d = Object::cast_to<AnimatedSprite3D>(selected);
-	if (as2d || as3d) {
+	if (selected && selected->has_method("get_sprite_frames")) {
 		if (frames != selected->call("get_sprite_frames")) {
 			_remove_sprite_node();
 		} else {
@@ -2459,6 +2458,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(frame_list);
 
 	dialog = memnew(AcceptDialog);
+	dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(dialog);
 
 	load->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_load_pressed));
@@ -2509,6 +2509,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	edited_anim = SceneStringName(default_);
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(delete_dialog);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SpriteFramesEditor::_animation_remove_confirmed));
 

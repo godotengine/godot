@@ -90,6 +90,7 @@ bool RefCounted::reference() {
 }
 
 bool RefCounted::unreference() {
+	dereference_count.increment();
 	uint32_t rc_val = refcount.unrefval();
 	bool die = rc_val == 0;
 
@@ -106,6 +107,22 @@ bool RefCounted::unreference() {
 		die = die && binding_ret;
 	}
 
+	dereference_count.decrement();
+
+	// If we are going to be destroyed we need to ensure that no other thread
+	// is still inside our critical section. If they are they might see
+	// a (partially) destroyed Object for get_script_instance, _get_extension,
+	// or _instance_binding_reference.
+	if (die) {
+		// It is unlikely that we will spin here for very long.
+		// Only threads that see die == true will spin, which should only
+		// ever be one. Only threads seeing rc_val == 1 and rc_val == 0
+		// will do anything at all in the critical section.
+		while (dereference_count.get()) {
+			// Spin
+		}
+	}
+
 	return die;
 }
 
@@ -114,33 +131,5 @@ RefCounted::RefCounted() :
 	_define_ancestry(AncestralClass::REF_COUNTED);
 	refcount.init();
 	refcount_init.init();
-}
-
-Variant WeakRef::get_ref() const {
-	if (ref.is_null()) {
-		return Variant();
-	}
-
-	Object *obj = ObjectDB::get_instance(ref);
-	if (!obj) {
-		return Variant();
-	}
-	RefCounted *r = cast_to<RefCounted>(obj);
-	if (r) {
-		return Ref<RefCounted>(r);
-	}
-
-	return obj;
-}
-
-void WeakRef::set_obj(Object *p_object) {
-	ref = p_object ? p_object->get_instance_id() : ObjectID();
-}
-
-void WeakRef::set_ref(const Ref<RefCounted> &p_ref) {
-	ref = p_ref.is_valid() ? p_ref->get_instance_id() : ObjectID();
-}
-
-void WeakRef::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_ref"), &WeakRef::get_ref);
+	dereference_count.set(0);
 }

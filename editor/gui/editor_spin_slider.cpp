@@ -36,7 +36,6 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
@@ -44,12 +43,17 @@
 #include "scene/theme/theme_db.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
-	String value = get_text_value() + suffix;
+	const String base_tooltip = Range::get_tooltip(p_pos);
+
+	const String value = get_text_value() + suffix;
 	if (!read_only && grabber->is_visible()) {
 		String tooltip = value;
-		Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
+		if (!base_tooltip.is_empty()) {
+			tooltip += "\n" + TTR(base_tooltip);
+		}
+
 		if (!editing_integer) {
-			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), find_keycode_name(key));
+			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), keycode_get_string(Key::CMD_OR_CTRL));
 		}
 		return tooltip + "\n" + TTR("Hold Shift for more precise changes.");
 	}
@@ -62,6 +66,9 @@ Size2 EditorSpinSlider::get_minimum_size() const {
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
 
 	Size2 ms = sb->get_minimum_size();
+	Ref<Texture2D> updown = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
+	ms.width += updown->get_width();
+
 	ms.height += font->get_height(font_size);
 	ms.height = MAX(ms.height, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor)));
 
@@ -351,8 +358,6 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
-
-	Ref<Texture2D> updown = get_theme_icon(read_only ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 
 	String numstr = get_text_value();
 

@@ -406,14 +406,15 @@ hb_font_get_glyph_h_origins_default (hb_font_t *font HB_UNUSED,
 {
   if (font->has_glyph_h_origin_func_set ())
   {
+    hb_bool_t ret = true;
     for (unsigned int i = 0; i < count; i++)
     {
-      font->get_glyph_h_origin (*first_glyph, first_x, first_y, false);
+      ret &= font->get_glyph_h_origin (*first_glyph, first_x, first_y, false);
       first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
       first_x = &StructAtOffsetUnaligned<hb_position_t> (first_x, x_stride);
       first_y = &StructAtOffsetUnaligned<hb_position_t> (first_y, y_stride);
     }
-    return true;
+    return ret;
   }
 
   hb_bool_t ret = font->parent->get_glyph_h_origins (count,
@@ -448,14 +449,15 @@ hb_font_get_glyph_v_origins_default (hb_font_t *font HB_UNUSED,
 {
   if (font->has_glyph_v_origin_func_set ())
   {
+    hb_bool_t ret = true;
     for (unsigned int i = 0; i < count; i++)
     {
-      font->get_glyph_v_origin (*first_glyph, first_x, first_y, false);
+      ret &= font->get_glyph_v_origin (*first_glyph, first_x, first_y, false);
       first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
       first_x = &StructAtOffsetUnaligned<hb_position_t> (first_x, x_stride);
       first_y = &StructAtOffsetUnaligned<hb_position_t> (first_y, y_stride);
     }
-    return true;
+    return ret;
   }
 
   hb_bool_t ret = font->parent->get_glyph_v_origins (count,
@@ -1001,25 +1003,25 @@ _hb_font_funcs_set_middle (hb_font_funcs_t   *ffuncs,
 			   void              *user_data,
 			   hb_destroy_func_t  destroy)
 {
+  auto destroy_guard = hb_make_scope_guard ([&]() {
+    if (destroy) destroy (user_data);
+  });
+
   if (user_data && !ffuncs->user_data)
   {
     ffuncs->user_data = (decltype (ffuncs->user_data)) hb_calloc (1, sizeof (*ffuncs->user_data));
     if (unlikely (!ffuncs->user_data))
-      goto fail;
+      return false;
   }
   if (destroy && !ffuncs->destroy)
   {
     ffuncs->destroy = (decltype (ffuncs->destroy)) hb_calloc (1, sizeof (*ffuncs->destroy));
     if (unlikely (!ffuncs->destroy))
-      goto fail;
+      return false;
   }
 
+  destroy_guard.release ();
   return true;
-
-fail:
-  if (destroy)
-    (destroy) (user_data);
-  return false;
 }
 
 #define HB_FONT_FUNC_IMPLEMENT(get_,name) \
@@ -1625,11 +1627,12 @@ hb_font_draw_glyph_or_fail (hb_font_t *font,
  *
  * Paints a color glyph.
  *
- * This function is similar to, but lower-level than,
- * hb_font_paint_glyph(). It is suitable for clients that
- * need more control.  If there are no color glyphs available,
- * it will return `false`. The client can then fall back to
- * hb_font_draw_glyph_or_fail() for the monochrome outline glyph.
+ * Succeeds if @glyph has color paint layers (COLRv0),
+ * a color paint graph (COLRv1), or a bitmap image that the
+ * font's callbacks render successfully.  Returns `false` if
+ * the font has no color data for @glyph; the client can then
+ * fall back to hb_font_draw_glyph_or_fail() for the monochrome
+ * outline.
  *
  * The painting instructions are returned by way of calls to
  * the callbacks of the @funcs object, with @paint_data passed
@@ -2414,6 +2417,10 @@ hb_font_set_parent (hb_font_t *font,
   if (!parent)
     parent = hb_font_get_empty ();
 
+  for (hb_font_t *p = parent; p && p != hb_font_get_empty(); p = p->parent)
+    if (p == font)
+      return; /* Would create a cycle - reject */
+
   hb_font_t *old = font->parent;
 
   font->parent = hb_font_reference (parent);
@@ -3183,7 +3190,7 @@ hb_font_set_var_coords_design (hb_font_t    *font,
   for (unsigned int i = input_coords_length; i < coords_length; i++)
     design_coords[i] = axes[i].get_default ();
 
-  hb_ot_var_normalize_coords (font->face, coords_length, coords, normalized);
+  hb_ot_var_normalize_coords (font->face, coords_length, design_coords, normalized);
   _hb_font_adopt_var_coords (font, normalized, design_coords, coords_length);
 }
 

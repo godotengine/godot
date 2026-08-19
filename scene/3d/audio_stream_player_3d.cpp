@@ -39,10 +39,12 @@
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
+#include "servers/audio/audio_server.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/area_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
@@ -110,16 +112,16 @@ static const Vector3 speaker_directions[7] = {
 void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tightness, FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &output) {
 	unsigned int speaker_count = 0; // only main speakers (no LFE)
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
-		case AudioServer::SPEAKER_MODE_STEREO:
+		case AuSE::SPEAKER_MODE_STEREO:
 			speaker_count = 2;
 			break;
-		case AudioServer::SPEAKER_SURROUND_31:
+		case AuSE::SPEAKER_SURROUND_31:
 			speaker_count = 3;
 			break;
-		case AudioServer::SPEAKER_SURROUND_51:
+		case AuSE::SPEAKER_SURROUND_51:
 			speaker_count = 5;
 			break;
-		case AudioServer::SPEAKER_SURROUND_71:
+		case AuSE::SPEAKER_SURROUND_71:
 			speaker_count = 7;
 			break;
 	}
@@ -129,19 +131,19 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 	spcap.calculate(source_dir, tightness, speaker_count, volumes);
 
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
-		case AudioServer::SPEAKER_SURROUND_71:
+		case AuSE::SPEAKER_SURROUND_71:
 			output[3].left = volumes[5]; // side-left
 			output[3].right = volumes[6]; // side-right
 			[[fallthrough]];
-		case AudioServer::SPEAKER_SURROUND_51:
+		case AuSE::SPEAKER_SURROUND_51:
 			output[2].left = volumes[3]; // rear-left
 			output[2].right = volumes[4]; // rear-right
 			[[fallthrough]];
-		case AudioServer::SPEAKER_SURROUND_31:
+		case AuSE::SPEAKER_SURROUND_31:
 			output[1].right = 1.0; // LFE - always full power
 			output[1].left = volumes[2]; // center
 			[[fallthrough]];
-		case AudioServer::SPEAKER_MODE_STEREO:
+		case AuSE::SPEAKER_MODE_STEREO:
 			output[0].right = volumes[1]; // front-right
 			output[0].left = volumes[0]; // front-left
 			break;
@@ -306,6 +308,10 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 #ifndef PHYSICS_3D_DISABLED
 // Interacts with PhysicsServer3D, so can only be called during _physics_process
 Area3D *AudioStreamPlayer3D::_get_overriding_area() {
+	if (area_mask == 0) {
+		return nullptr;
+	}
+
 	//check if any area is diverting sound into a bus
 	Ref<World3D> world_3d = get_world_3d();
 	ERR_FAIL_COND_V(world_3d.is_null(), nullptr);
@@ -314,9 +320,9 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
 
-	PhysicsDirectSpaceState3D::ShapeResult sr[MAX_INTERSECT_AREAS];
+	PS3DT::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-	PhysicsDirectSpaceState3D::PointParameters point_params;
+	PS3DT::PointParameters point_params;
 	point_params.position = global_pos;
 	point_params.collision_mask = area_mask;
 	point_params.collide_with_bodies = false;
@@ -355,7 +361,7 @@ StringName AudioStreamPlayer3D::_get_actual_bus() {
 	return internal->bus;
 }
 
-static void _apply_max_volume_from_vector(Vector<AudioFrame> &r_tgt_volume_vector, const FixedVector<AudioFrame, AudioServer::MAX_CHANNELS_PER_BUS> &p_src_volume_vector) {
+static void _apply_max_volume_from_vector(Vector<AudioFrame> &r_tgt_volume_vector, const FixedVector<AudioFrame, AuSC::MAX_CHANNELS_PER_BUS> &p_src_volume_vector) {
 	// note: indexed loops with Vector are slow, so we use raw pointers on purpose here
 	AudioFrame *tgt_ptr = r_tgt_volume_vector.ptrw();
 	const AudioFrame *src_ptr = p_src_volume_vector.ptr();
@@ -366,7 +372,7 @@ static void _apply_max_volume_from_vector(Vector<AudioFrame> &r_tgt_volume_vecto
 	}
 }
 
-static float _get_max_volume(const FixedVector<AudioFrame, AudioServer::MAX_CHANNELS_PER_BUS> &p_src_volume_vector) {
+static float _get_max_volume(const FixedVector<AudioFrame, AuSC::MAX_CHANNELS_PER_BUS> &p_src_volume_vector) {
 	float max_vol = 0.0;
 	for (const AudioFrame &frame : p_src_volume_vector) {
 		max_vol = MAX(max_vol, MAX(frame.left, frame.right));
@@ -489,7 +495,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			frame = AudioFrame(0, 0);
 		}
 
-		if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
+		if (AudioServer::get_singleton()->get_speaker_mode() == AuSE::SPEAKER_MODE_STEREO) {
 			listener_volume_vector[0] = _calc_output_vol_stereo(local_pos, cached_global_panning_strength * panning_strength);
 		} else {
 			// Bake in a constant factor here to allow the project setting defaults for 2d and 3d to be normalized to 1.0.
@@ -833,11 +839,11 @@ float AudioStreamPlayer3D::get_panning_strength() const {
 	return panning_strength;
 }
 
-AudioServer::PlaybackType AudioStreamPlayer3D::get_playback_type() const {
+AuSE::PlaybackType AudioStreamPlayer3D::get_playback_type() const {
 	return internal->get_playback_type();
 }
 
-void AudioStreamPlayer3D::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+void AudioStreamPlayer3D::set_playback_type(AuSE::PlaybackType p_playback_type) {
 	internal->set_playback_type(p_playback_type);
 }
 
@@ -931,7 +937,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Logarithmic,Disabled"), "set_attenuation_model", "get_attenuation_model");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,80,suffix:dB"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,or_greater,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.01,or_greater"), "set_unit_size", "get_unit_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_db", PROPERTY_HINT_RANGE, "-24,6,suffix:dB"), "set_max_db", "get_max_db");

@@ -131,11 +131,8 @@ struct ObjectGDExtension {
 
 	/// A type for this Object extension.
 	/// This is not exposed through the GDExtension API (yet) so it is inferred from above parameters.
-	GDType *gdtype;
-	void create_gdtype();
-	void destroy_gdtype();
-
-	~ObjectGDExtension();
+	/// The GDType's lifetime is (usually) owned by ClassDB.
+	const GDType *gdtype = nullptr;
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
@@ -156,7 +153,7 @@ struct ObjectGDExtension {
  * much alone defines the object model.
  */
 
-/// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
+/// Provides `Object` functionality, such as being able to use `Object::cast_to()`.
 /// Use this for `Object` subclasses that are not registered in `ClassDB` (use `GDCLASS` otherwise).
 #define GDSOFTCLASS(m_class, m_inherits) \
 public: \
@@ -243,12 +240,12 @@ protected: \
 \
 private:
 
-/// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
-/// Use this for `Object` subclasses that are registered in `ObjectDB` (use `GDSOFTCLASS` otherwise).
+/// Provides `Object` functionality, such as being able to use `Object::cast_to()`, and `ClassDB` integration.
+/// Use this for `Object` subclasses that are registered in `ClassDB` (use `GDSOFTCLASS` otherwise).
 #define GDCLASS(m_class, m_inherits) \
 	GDSOFTCLASS(m_class, m_inherits) \
 private: \
-	void operator=(const m_class &p_rval) {} \
+	void operator=(const m_class &p_rval) = delete; \
 	friend class ::ClassDB; \
 \
 	static GDType &get_gdtype_static_mutable() { \
@@ -346,6 +343,12 @@ private:
 class ClassDB;
 class ScriptInstance;
 
+/**
+ * Base class for all OBJECT Variant types.
+ *
+ * For documentation, see:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/object_class.html
+ */
 class Object {
 public:
 	typedef Object self_type;
@@ -448,7 +451,6 @@ private:
 #endif
 	ScriptInstance *script_instance = nullptr;
 	HashMap<StringName, Variant> metadata;
-	HashMap<StringName, Variant *> metadata_properties;
 	mutable const GDType *_gdtype_ptr = nullptr;
 	void _reset_gdtype() const;
 
@@ -1024,12 +1026,12 @@ public:
 	}
 
 	template <typename U = T, std::enable_if_t<std::is_base_of_v<RefCounted, U>, int> = 0>
-	_FORCE_INLINE_ element_type *ptr() const {
+	_FORCE_INLINE_ T *ptr() const {
 		return *_value;
 	}
 
 	template <typename U = T, std::enable_if_t<!std::is_base_of_v<RefCounted, U>, int> = 0>
-	_FORCE_INLINE_ element_type *ptr() const {
+	_FORCE_INLINE_ T *ptr() const {
 		return _value;
 	}
 
@@ -1042,11 +1044,11 @@ public:
 		return Ref<T_Other>(_value);
 	}
 
-	_FORCE_INLINE_ element_type *operator*() const {
+	_FORCE_INLINE_ T *operator*() const {
 		return ptr();
 	}
 
-	_FORCE_INLINE_ element_type *operator->() const {
+	_FORCE_INLINE_ T *operator->() const {
 		return ptr();
 	}
 };

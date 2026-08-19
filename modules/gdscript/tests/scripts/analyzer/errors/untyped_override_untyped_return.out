@@ -1,0 +1,15 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 65: A void function cannot return a value.
+>> ERROR at line 66: A void function cannot return a value.
+>> ERROR at line 68: Not all code paths return a value.
+>> ERROR at line 73: Not all code paths return a value.
+>> ERROR at line 74: Cannot return value of type "null" because the function return type is "int".
+>> ERROR at line 75: Cannot return a value of type "null" as "int".
+>> ERROR at line 75: Cannot return value of type "null" because the function return type is "int".
+>> ERROR at line 104: A void function cannot return a value.
+>> ERROR at line 105: A void function cannot return a value.
+>> ERROR at line 107: Not all code paths return a value.
+>> ERROR at line 112: Not all code paths return a value.
+>> ERROR at line 113: Cannot return value of type "null" because the function return type is "int".
+>> ERROR at line 114: Cannot return a value of type "null" as "int".
+>> ERROR at line 114: Cannot return value of type "null" because the function return type is "int".

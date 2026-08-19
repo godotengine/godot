@@ -186,9 +186,7 @@ void Node::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
-			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
-				notification(NOTIFICATION_TRANSLATION_CHANGED);
-			}
+			notification(NOTIFICATION_TRANSLATION_CHANGED);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -502,31 +500,31 @@ void Node::_propagate_physics_interpolation_reset_requested(bool p_requested) {
 	data.blocked--;
 }
 
-void Node::move_child(RequiredParam<Node> rp_child, int p_index) {
+void Node::move_child(RequiredParam<Node> p_child, int p_index) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Moving child node positions inside the SceneTree is only allowed from the main thread. Use call_deferred(\"move_child\",child,index).");
-	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
-	ERR_FAIL_COND_MSG(p_child->data.parent != this, "Child is not a child of this node.");
+	EXTRACT_PARAM_OR_FAIL(child, p_child);
+	ERR_FAIL_COND_MSG(child->data.parent != this, "Child is not a child of this node.");
 
 	_update_children_cache();
 	// We need to check whether node is internal and move it only in the relevant node range.
-	if (p_child->data.internal_mode == INTERNAL_MODE_FRONT) {
+	if (child->data.internal_mode == INTERNAL_MODE_FRONT) {
 		if (p_index < 0) {
 			p_index += data.internal_children_front_count_cache;
 		}
 		ERR_FAIL_INDEX_MSG(p_index, data.internal_children_front_count_cache, vformat("Invalid new child index: %d. Child is internal.", p_index));
-		_move_child(p_child, p_index);
-	} else if (p_child->data.internal_mode == INTERNAL_MODE_BACK) {
+		_move_child(child, p_index);
+	} else if (child->data.internal_mode == INTERNAL_MODE_BACK) {
 		if (p_index < 0) {
 			p_index += data.internal_children_back_count_cache;
 		}
 		ERR_FAIL_INDEX_MSG(p_index, data.internal_children_back_count_cache, vformat("Invalid new child index: %d. Child is internal.", p_index));
-		_move_child(p_child, (int)data.children_cache.size() - data.internal_children_back_count_cache + p_index);
+		_move_child(child, (int)data.children_cache.size() - data.internal_children_back_count_cache + p_index);
 	} else {
 		if (p_index < 0) {
 			p_index += get_child_count(false);
 		}
 		ERR_FAIL_INDEX_MSG(p_index, (int)data.children_cache.size() + 1 - data.internal_children_front_count_cache - data.internal_children_back_count_cache, vformat("Invalid new child index: %d.", p_index));
-		_move_child(p_child, p_index + data.internal_children_front_count_cache);
+		_move_child(child, p_index + data.internal_children_front_count_cache);
 	}
 }
 
@@ -1555,7 +1553,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 			// Optimized version of the code below:
 			// String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
 			uint32_t c = node_hrcr_count.get();
-			String cn = p_child->get_class_name().operator String();
+			String cn = p_child->get_class_name().string();
 			const char32_t *cn_ptr = cn.ptr();
 			uint32_t cn_length = cn.length();
 			uint32_t c_chars = String::num_characters(c);
@@ -1710,47 +1708,47 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, InternalM
 	emit_signal(SNAME("child_order_changed"));
 }
 
-void Node::add_child(RequiredParam<Node> rp_child, bool p_force_readable_name, InternalMode p_internal) {
+void Node::add_child(RequiredParam<Node> p_child, bool p_force_readable_name, InternalMode p_internal) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Adding children to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_child\",node).");
 
 	ERR_THREAD_GUARD
-	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
-	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
-	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
+	EXTRACT_PARAM_OR_FAIL(child, p_child);
+	ERR_FAIL_COND_MSG(child == this, vformat("Can't add child '%s' to itself.", child->get_name())); // adding to itself!
+	ERR_FAIL_COND_MSG(child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", child->get_name(), get_name(), child->data.parent->get_name())); //Fail if node has a parent
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_MSG(p_child->is_ancestor_of(this), vformat("Can't add child '%s' to '%s' as it would result in a cyclic dependency since '%s' is already a parent of '%s'.", p_child->get_name(), get_name(), p_child->get_name(), get_name()));
+	ERR_FAIL_COND_MSG(child->is_ancestor_of(this), vformat("Can't add child '%s' to '%s' as it would result in a cyclic dependency since '%s' is already a parent of '%s'.", child->get_name(), get_name(), child->get_name(), get_name()));
 #endif
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_child()` failed. Consider using `add_child.call_deferred(child)` instead.");
 
-	_validate_child_name(p_child, p_force_readable_name);
+	_validate_child_name(child, p_force_readable_name);
 
 #ifdef DEBUG_ENABLED
-	if (p_child->data.owner && !p_child->data.owner->is_ancestor_of(p_child)) {
+	if (child->data.owner && !child->data.owner->is_ancestor_of(child)) {
 		// Owner of p_child should be ancestor of p_child.
-		WARN_PRINT(vformat("Adding '%s' as child to '%s' will make owner '%s' inconsistent. Consider unsetting the owner beforehand.", p_child->get_name(), get_name(), p_child->data.owner->get_name()));
+		WARN_PRINT(vformat("Adding '%s' as child to '%s' will make owner '%s' inconsistent. Consider unsetting the owner beforehand.", child->get_name(), get_name(), child->data.owner->get_name()));
 	}
 #endif // DEBUG_ENABLED
 
-	_add_child_nocheck(p_child, p_child->data.name, p_internal);
+	_add_child_nocheck(child, child->data.name, p_internal);
 }
 
-void Node::add_sibling(RequiredParam<Node> rp_sibling, bool p_force_readable_name) {
+void Node::add_sibling(RequiredParam<Node> p_sibling, bool p_force_readable_name) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Adding a sibling to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_sibling\",node).");
-	EXTRACT_PARAM_OR_FAIL(p_sibling, rp_sibling);
-	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
+	EXTRACT_PARAM_OR_FAIL(sibling, p_sibling);
+	ERR_FAIL_COND_MSG(sibling == this, vformat("Can't add sibling '%s' to itself.", sibling->get_name())); // adding to itself!
 	ERR_FAIL_NULL(data.parent);
 	ERR_FAIL_COND_MSG(data.parent->data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
 
-	data.parent->add_child(p_sibling, p_force_readable_name, data.internal_mode);
+	data.parent->add_child(sibling, p_force_readable_name, data.internal_mode);
 	data.parent->_update_children_cache();
-	data.parent->_move_child(p_sibling, get_index() + 1);
+	data.parent->_move_child(sibling, get_index() + 1);
 }
 
-void Node::remove_child(RequiredParam<Node> rp_child) {
+void Node::remove_child(RequiredParam<Node> p_child) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Removing children from a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"remove_child\",node).");
-	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
+	EXTRACT_PARAM_OR_FAIL(child, p_child);
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy adding/removing children, `remove_child()` can't be called at this time. Consider using `remove_child.call_deferred(child)` instead.");
-	ERR_FAIL_COND(p_child->data.parent != this);
+	ERR_FAIL_COND(child->data.parent != this);
 
 	/**
 	 *  Do not change the data.internal_children*cache counters here.
@@ -1763,25 +1761,43 @@ void Node::remove_child(RequiredParam<Node> rp_child) {
 	 */
 
 	data.blocked++;
-	p_child->_set_tree(nullptr);
+	child->_set_tree(nullptr);
 
-	remove_child_notify(p_child);
-	p_child->notification(NOTIFICATION_UNPARENTED);
+	remove_child_notify(child);
+	child->notification(NOTIFICATION_UNPARENTED);
 
 	data.blocked--;
 
-	data.children_cache_dirty = true;
-	bool success = data.children.erase(p_child->data.name);
+	if (!data.children_cache_dirty && !data.children_cache.is_empty() && data.children_cache[data.children_cache.size() - 1] == child) {
+		// Removing the last child keeps the cache and the counters valid, so pop it
+		// instead of dirtying the cache. This keeps interleaving removals with reads
+		// (like get_child()) linear, as long as children are removed back to front.
+		data.children_cache.resize(data.children_cache.size() - 1);
+		switch (child->data.internal_mode) {
+			case INTERNAL_MODE_DISABLED: {
+				data.external_children_count_cache--;
+			} break;
+			case INTERNAL_MODE_FRONT: {
+				data.internal_children_front_count_cache--;
+			} break;
+			case INTERNAL_MODE_BACK: {
+				data.internal_children_back_count_cache--;
+			} break;
+		}
+	} else {
+		data.children_cache_dirty = true;
+	}
+	bool success = data.children.erase(child->data.name);
 	ERR_FAIL_COND_MSG(!success, "Children name does not match parent name in hashtable, this is a bug.");
 
-	p_child->data.parent = nullptr;
-	p_child->data.index = -1;
+	child->data.parent = nullptr;
+	child->data.index = -1;
 
 	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
 	emit_signal(SNAME("child_order_changed"));
 
 	if (data.tree) {
-		p_child->_propagate_after_exit_tree();
+		child->_propagate_after_exit_tree();
 	}
 }
 
@@ -1998,7 +2014,7 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 		if (p_owned && !cptr[i]->data.owner) {
 			continue;
 		}
-		if (cptr[i]->data.name.operator String().match(p_pattern)) {
+		if (cptr[i]->data.name.string().match(p_pattern)) {
 			return cptr[i];
 		}
 
@@ -2029,7 +2045,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			continue;
 		}
 
-		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
+		if (p_pattern.is_empty() || cptr[i]->data.name.string().match(p_pattern)) {
 			if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
 				ret.append(cptr[i]);
 			} else if (cptr[i]->get_script_instance()) {
@@ -2053,17 +2069,17 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 	return ret;
 }
 
-void Node::reparent(RequiredParam<Node> rp_parent, bool p_keep_global_transform) {
+void Node::reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD
-	EXTRACT_PARAM_OR_FAIL(p_parent, rp_parent);
+	EXTRACT_PARAM_OR_FAIL(parent, p_parent);
 	ERR_FAIL_NULL_MSG(data.parent, "Node needs a parent to be reparented.");
-	ERR_FAIL_COND_MSG(p_parent == this, vformat("Can't reparent '%s' to itself.", p_parent->get_name()));
+	ERR_FAIL_COND_MSG(parent == this, vformat("Can't reparent '%s' to itself.", parent->get_name()));
 
-	if (p_parent == data.parent) {
+	if (parent == data.parent) {
 		return;
 	}
 
-	bool preserve_owner = data.owner && (data.owner == p_parent || data.owner->is_ancestor_of(p_parent));
+	bool preserve_owner = data.owner && (data.owner == parent || data.owner->is_ancestor_of(parent));
 	Node *owner_temp = data.owner;
 	LocalVector<Node *> common_parents;
 
@@ -2089,7 +2105,7 @@ void Node::reparent(RequiredParam<Node> rp_parent, bool p_keep_global_transform)
 	}
 
 	data.parent->remove_child(this);
-	p_parent->add_child(this);
+	parent->add_child(this);
 
 	// Reassign the old owner to those found nodes.
 	if (preserve_owner) {
@@ -2107,7 +2123,7 @@ Node *Node::find_parent(const String &p_pattern) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *p = data.parent;
 	while (p) {
-		if (p->data.name.operator String().match(p_pattern)) {
+		if (p->data.name.string().match(p_pattern)) {
 			return p;
 		}
 		p = p->data.parent;
@@ -2150,37 +2166,48 @@ Window *Node::get_last_exclusive_window() const {
 	return w;
 }
 
-bool Node::is_ancestor_of(RequiredParam<const Node> rp_node) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
-	Node *p = p_node->data.parent;
-	while (p) {
-		if (p == this) {
+bool Node::is_ancestor_of(RequiredParam<const Node> p_node) const {
+	EXTRACT_PARAM_OR_FAIL_V(node, p_node, false);
+
+	const Node *n = node;
+
+	if (is_inside_tree() && node->data.tree == data.tree) {
+		const int depth = data.depth;
+		while (n->data.depth > depth) {
+			n = n->data.parent;
+		}
+		return n == this;
+	}
+
+	n = node->data.parent;
+	while (n) {
+		if (n == this) {
 			return true;
 		}
-		p = p->data.parent;
+		n = n->data.parent;
 	}
 
 	return false;
 }
 
-bool Node::is_greater_than(RequiredParam<const Node> rp_node) const {
+bool Node::is_greater_than(RequiredParam<const Node> p_node) const {
 	// parent->get_child(1) > parent->get_child(0) > parent
 
-	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
+	EXTRACT_PARAM_OR_FAIL_V(node, p_node, false);
 	ERR_FAIL_COND_V(!data.tree, false);
-	ERR_FAIL_COND_V(p_node->data.tree != data.tree, false);
+	ERR_FAIL_COND_V(node->data.tree != data.tree, false);
 
 	ERR_FAIL_COND_V(data.depth < 0, false);
-	ERR_FAIL_COND_V(p_node->data.depth < 0, false);
+	ERR_FAIL_COND_V(node->data.depth < 0, false);
 
 	_update_children_cache();
 
-	bool this_is_deeper = this->data.depth > p_node->data.depth;
+	bool this_is_deeper = this->data.depth > node->data.depth;
 
 	const Node *deep = this;
-	const Node *shallow = p_node;
+	const Node *shallow = node;
 	if (!this_is_deeper) {
-		deep = p_node;
+		deep = node;
 		shallow = this;
 	}
 
@@ -2225,7 +2252,7 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 
 void Node::_release_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Safety check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.string());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which == nullptr || *which != this) {
 		return; // Ignore.
@@ -2235,7 +2262,7 @@ void Node::_release_unique_name_in_owner() {
 
 void Node::_acquire_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Safety check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.string());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
 		String which_path = String(is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which));
@@ -2340,10 +2367,10 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 	return const_cast<Node *>(common_parent);
 }
 
-NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_path) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, NodePath());
+NodePath Node::get_path_to(RequiredParam<const Node> p_node, bool p_use_unique_path) const {
+	EXTRACT_PARAM_OR_FAIL_V(node, p_node, NodePath());
 
-	if (this == p_node) {
+	if (this == node) {
 		return NodePath(".");
 	}
 
@@ -2356,7 +2383,7 @@ NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_
 		n = n->data.parent;
 	}
 
-	const Node *common_parent = p_node;
+	const Node *common_parent = node;
 
 	while (common_parent) {
 		if (visited.has(common_parent)) {
@@ -2365,7 +2392,7 @@ NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_
 		common_parent = common_parent->data.parent;
 	}
 
-	ERR_FAIL_NULL_V_MSG(common_parent, NodePath(), vformat("No path can be resolved between the nodes %s and %s as they share no common ancestor.", get_description(true), p_node->get_description(true)));
+	ERR_FAIL_NULL_V_MSG(common_parent, NodePath(), vformat("No path can be resolved between the nodes %s and %s as they share no common ancestor.", get_description(true), node->get_description(true)));
 
 	visited.clear();
 
@@ -2373,7 +2400,7 @@ NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_
 	StringName up = String("..");
 
 	if (p_use_unique_path) {
-		n = p_node;
+		n = node;
 
 		bool is_detected = false;
 		while (n != common_parent) {
@@ -2409,7 +2436,7 @@ NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_
 			}
 		}
 	} else {
-		n = p_node;
+		n = node;
 
 		while (n != common_parent) {
 			path.push_back(n->get_name());
@@ -2656,20 +2683,20 @@ String Node::get_editor_description() const {
 	return data.editor_description;
 }
 
-void Node::set_editable_instance(RequiredParam<Node> rp_node, bool p_editable) {
+void Node::set_editable_instance(RequiredParam<Node> p_node, bool p_editable) {
 	ERR_THREAD_GUARD
-	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
-	ERR_FAIL_COND(!is_ancestor_of(p_node));
+	EXTRACT_PARAM_OR_FAIL(node, p_node);
+	ERR_FAIL_COND(!is_ancestor_of(node));
 	if (!p_editable) {
-		p_node->data.editable_instance = false;
+		node->data.editable_instance = false;
 		// Avoid this flag being needlessly saved;
 		// also give more visual feedback if editable children are re-enabled
 		set_display_folded(false);
 	} else {
-		p_node->data.editable_instance = true;
+		node->data.editable_instance = true;
 	}
 
-	p_node->_emit_editor_state_changed();
+	node->_emit_editor_state_changed();
 }
 
 bool Node::is_editable_instance(const Node *p_node) const {
@@ -2685,7 +2712,7 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	ERR_FAIL_NULL_V(p_start_node, nullptr);
 	ERR_FAIL_COND_V(!is_ancestor_of(p_start_node), p_start_node);
 
-	Node const *iterated_item = p_start_node;
+	const Node *iterated_item = p_start_node;
 	Node *node = p_start_node;
 
 	while (iterated_item->get_owner() && iterated_item->get_owner() != this) {
@@ -2734,6 +2761,7 @@ StringName Node::get_property_store_alias(const StringName &p_property) const {
 
 bool Node::is_part_of_edited_scene() const {
 	return Engine::get_singleton()->is_editor_hint() && is_inside_tree() && data.tree->get_edited_scene_root() &&
+			data.tree->get_edited_scene_root()->get_parent() && // Defend against edge cases when creating new scenes and they are not fully added to the tree yet.
 			data.tree->get_edited_scene_root()->get_parent()->is_ancestor_of(this);
 }
 #endif
@@ -3202,25 +3230,25 @@ static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
 	}
 }
 
-void Node::replace_by(RequiredParam<Node> rp_node, bool p_keep_groups) {
+void Node::replace_by(RequiredParam<Node> p_node, bool p_keep_groups) {
 	ERR_THREAD_GUARD
-	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
-	ERR_FAIL_COND(p_node->data.parent);
+	EXTRACT_PARAM_OR_FAIL(node, p_node);
+	ERR_FAIL_COND(node->data.parent);
 
 	List<Node *> owned(data.owned);
 	List<Node *> owned_by_owner;
-	Node *owner = (data.owner == this) ? p_node : data.owner;
+	Node *owner = (data.owner == this) ? node : data.owner;
 
 	if (p_keep_groups) {
 		List<GroupInfo> groups;
 		get_groups(&groups);
 
 		for (const GroupInfo &E : groups) {
-			p_node->add_to_group(E.name, E.persistent);
+			node->add_to_group(E.name, E.persistent);
 		}
 	}
 
-	_replace_connections_target(p_node);
+	_replace_connections_target(node);
 
 	if (data.owner) {
 		for (int i = 0; i < get_child_count(); i++) {
@@ -3235,26 +3263,26 @@ void Node::replace_by(RequiredParam<Node> rp_node, bool p_keep_groups) {
 
 	if (data.parent) {
 		parent->remove_child(this);
-		parent->add_child(p_node);
-		parent->move_child(p_node, index_in_parent);
+		parent->add_child(node);
+		parent->move_child(node, index_in_parent);
 	}
 
-	emit_signal(SNAME("replacing_by"), p_node);
+	emit_signal(SNAME("replacing_by"), node);
 
 	// Move non-internal children to `p_node`.
 	while (get_child_count(false)) {
 		Node *child = get_child(0, false);
 		remove_child(child);
-		Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
+		Node *child_owner = child->get_owner() == this ? node : child->get_owner();
 		child->set_owner(nullptr);
-		p_node->add_child(child);
+		node->add_child(child);
 		child->set_owner(child_owner);
 	}
 
-	p_node->set_owner(owner);
+	node->set_owner(owner);
 	for (Node *E : owned) {
-		if (E->data.owner != p_node) {
-			E->set_owner(p_node);
+		if (E->data.owner != node) {
+			E->set_owner(node);
 		}
 	}
 
@@ -3264,7 +3292,7 @@ void Node::replace_by(RequiredParam<Node> rp_node, bool p_keep_groups) {
 		}
 	}
 
-	p_node->set_scene_file_path(get_scene_file_path());
+	node->set_scene_file_path(get_scene_file_path());
 }
 
 void Node::_replace_connections_target(Node *p_new_target) {
@@ -3495,7 +3523,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
 		HashMap<StringName, String> global_groups(ProjectSettings::get_singleton()->get_global_groups_list());
 		for (const KeyValue<StringName, String> &E : global_groups) {
-			r_options->push_back(E.key.operator String().quote());
+			r_options->push_back(E.key.string().quote());
 		}
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
@@ -3724,6 +3752,14 @@ RID Node::get_focused_accessibility_element() const {
 		return id;
 	} else {
 		return get_accessibility_element();
+	}
+}
+
+Transform2D Node::get_accessibility_transform() const {
+	if (is_inside_tree() && data.parent) {
+		return data.parent->get_accessibility_transform();
+	} else {
+		return Transform2D();
 	}
 }
 

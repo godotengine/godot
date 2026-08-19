@@ -71,8 +71,8 @@ struct GodotPosition {
 	GodotPosition(int p_line, int p_column) :
 			line(p_line), column(p_column) {}
 
-	LSP::Position to_lsp(const Vector<String> &p_lines) const;
-	static GodotPosition from_lsp(const LSP::Position p_pos, const Vector<String> &p_lines);
+	LSP::Position to_lsp() const;
+	static GodotPosition from_lsp(const LSP::Position p_pos);
 
 	bool operator==(const GodotPosition &p_other) const {
 		return line == p_other.line && column == p_other.column;
@@ -90,8 +90,8 @@ struct GodotRange {
 	GodotRange(GodotPosition p_start, GodotPosition p_end) :
 			start(p_start), end(p_end) {}
 
-	LSP::Range to_lsp(const Vector<String> &p_lines) const;
-	static GodotRange from_lsp(const LSP::Range &p_range, const Vector<String> &p_lines);
+	LSP::Range to_lsp() const;
+	static GodotRange from_lsp(const LSP::Range &p_range);
 
 	bool operator==(const GodotRange &p_other) const {
 		return start == p_other.start && end == p_other.end;
@@ -139,7 +139,13 @@ public:
 
 	String get_text_for_completion(const LSP::Position &p_cursor) const;
 	String get_text_for_lookup_symbol(const LSP::Position &p_cursor, const String &p_symbol = "", bool p_func_required = false) const;
-	String get_identifier_under_position(const LSP::Position &p_position, LSP::Range &r_range) const;
+	/**
+	 * Parses the symbol name at the given position. Returns that name and its full range.
+	 *
+	 * The returned name might be a false positive and not translate to an actual symbol e.g. it might be a language keyword.
+	 * The results of this method are not equivalent to identifier AST nodes. Instead it returns results that are compatible with `LSP::DocumentSymbol::name` i.e. includes `@` for annotations.
+	 */
+	String get_symbol_name_under_position(const LSP::Position &p_position, LSP::Range &r_range) const;
 	String get_uri() const;
 
 	/**

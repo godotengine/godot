@@ -605,7 +605,10 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	unsigned int added_glyphs = 0;
 	if (unlikely (hb_unsigned_mul_overflows (n_copies, n_repeating, &added_glyphs) ||
 		      hb_unsigned_add_overflows (extra_glyphs_needed, added_glyphs, &extra_glyphs_needed)))
+	{
+	  extra_glyphs_needed = UINT_MAX;
 	  break;
+	}
 	DEBUG_MSG (ARABIC, nullptr, "will add extra %u copies of repeating tiles", n_copies);
       }
       else

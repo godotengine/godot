@@ -81,7 +81,7 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 	if (p_at_index == -1 || p_at_index == blend_points_used) {
 		p_at_index = blend_points_used;
 	} else {
-		for (int i = blend_points_used - 1; i > p_at_index; i--) {
+		for (int i = blend_points_used; i > p_at_index; i--) {
 			blend_points[i] = blend_points[i - 1];
 		}
 		for (int i = 0; i < triangles.size(); i++) {
@@ -166,6 +166,7 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
 	ERR_FAIL_COND(blend_points[p_point].node.is_null());
+	String removed_name = blend_points[p_point].name;
 	_remove_node(blend_points[p_point].node);
 
 	for (int i = 0; i < triangles.size(); i++) {
@@ -190,10 +191,10 @@ void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 	}
 	blend_points_used--;
 
-	blend_points[blend_points_used].name = StringName();
+	blend_points[blend_points_used].reset();
 	lengths_dirty = true;
 
-	emit_signal(SNAME("animation_node_removed"), get_instance_id(), itos(p_point));
+	emit_signal(SNAME("animation_node_removed"), get_instance_id(), removed_name);
 	_tree_changed();
 }
 
@@ -370,10 +371,35 @@ void AnimationNodeBlendSpace2D::_set_triangles(const Vector<int> &p_triangles) {
 		return;
 	}
 	ERR_FAIL_COND(p_triangles.size() % 3 != 0);
+
+#ifndef DISABLE_DEPRECATED
+	for (int i = 0; i < p_triangles.size(); i += 3) {
+		if (p_triangles[i + 0] >= blend_points_used || p_triangles[i + 1] >= blend_points_used || p_triangles[i + 2] >= blend_points_used) {
+			// Blend points for this triangle haven't been deserialized yet, so retry after the rest of the file has loaded.
+			callable_mp(this, &AnimationNodeBlendSpace2D::_retry_set_triangles).call_deferred(p_triangles);
+			return;
+		}
+	}
+#endif // DISABLE_DEPRECATED
+
 	for (int i = 0; i < p_triangles.size(); i += 3) {
 		add_triangle(p_triangles[i + 0], p_triangles[i + 1], p_triangles[i + 2]);
 	}
 }
+
+#ifndef DISABLE_DEPRECATED
+void AnimationNodeBlendSpace2D::_retry_set_triangles(const Vector<int> &p_triangles) {
+	for (int i = 0; i < p_triangles.size(); i += 3) {
+		int x = p_triangles[i + 0];
+		int y = p_triangles[i + 1];
+		int z = p_triangles[i + 2];
+		if (x >= blend_points_used || y >= blend_points_used || z >= blend_points_used || has_triangle(x, y, z)) {
+			continue;
+		}
+		add_triangle(x, y, z);
+	}
+}
+#endif // DISABLE_DEPRECATED
 
 Vector<int> AnimationNodeBlendSpace2D::_get_triangles() const {
 	Vector<int> t;
@@ -410,6 +436,10 @@ bool AnimationNodeBlendSpace2D::_set(const StringName &p_name, const Variant &p_
 		}
 		return true;
 	}
+	if (prop == "triangles") {
+		_set_triangles(p_value);
+		return true;
+	}
 	return false;
 }
 
@@ -429,6 +459,10 @@ bool AnimationNodeBlendSpace2D::_get(const StringName &p_name, Variant &r_ret) c
 		}
 		return true;
 	}
+	if (prop == "triangles") {
+		r_ret = _get_triangles();
+		return true;
+	}
 	return false;
 }
 
@@ -438,6 +472,9 @@ void AnimationNodeBlendSpace2D::_get_property_list(List<PropertyInfo> *p_list) c
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, "blend_point_" + itos(i) + "/pos", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::STRING, "blend_point_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
+
+	// This is here and not an ADD_PROPERTY in _bind_methods() because static properties apply before this list, so triangles would serialize before blend points and fail to resolve on deserialization.
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void AnimationNodeBlendSpace2D::_queue_auto_triangles() {
@@ -571,7 +608,16 @@ void AnimationNodeBlendSpace2D::_check_can_sync() {
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	_update_triangles();
 
-	if (!blend_points_used || is_contain_invalid_point) {
+	if (!blend_points_used) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, RTR(ERR_NO_TRIANGLE));
+		}
+		return NodeTimeInfo();
+	}
+	if (is_contain_invalid_point) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, RTR(ERR_INVALID_POINT));
+		}
 		return NodeTimeInfo();
 	}
 
@@ -589,7 +635,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(ProcessState &p_
 	deltas.resize_initialized(blend_points_used);
 	if (sync_mode == SYNC_MODE_NONE) {
 		for (int i = 0; i < blend_points_used; i++) {
-			deltas[i] = -1; // Not process.
+			deltas[i] = NAN; // Not process.
 		}
 	}
 
@@ -736,12 +782,12 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(ProcessState &p_
 		pi.seeked = true;
 		pi.weight = 1.0;
 		mind = blend_node(p_process_state, p_instance, instance_new_closest, pi, FILTER_IGNORE, true, p_test_only);
-		deltas[new_closest] = -1; // No more blend new_closest point.
+		deltas[new_closest] = NAN; // No more blend new_closest point.
 	}
 
 	// Normal case, blend all points.
 	for (int i = 0; i < blend_points_used; i++) {
-		if (std::signbit(deltas[i])) {
+		if (Math::is_nan(deltas[i])) {
 			continue;
 		}
 		pi = p_playback_info;
@@ -843,7 +889,12 @@ void AnimationNodeBlendSpace2D::validate_node(const AnimationTree *p_tree, const
 
 	const_cast<AnimationNodeBlendSpace2D *>(this)->_update_triangles();
 	if (get_triangle_count() == 0) {
-		add_validation_error(p_tree, p_path, RTR("No triangles exist, so blending cannot take place."));
+		add_validation_error(p_tree, p_path, RTR(ERR_NO_TRIANGLE));
+	}
+
+	const_cast<AnimationNodeBlendSpace2D *>(this)->_check_can_sync();
+	if (is_contain_invalid_point) {
+		add_validation_error(p_tree, p_path, RTR(ERR_INVALID_POINT));
 	}
 }
 
@@ -901,7 +952,6 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cyclic_length"), &AnimationNodeBlendSpace2D::get_cyclic_length);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_auto_triangles", "get_auto_triangles");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_triangles", "_get_triangles");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "min_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_min_space", "get_min_space");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "max_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_max_space", "get_max_space");

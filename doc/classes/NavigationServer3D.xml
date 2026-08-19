@@ -4,9 +4,9 @@
 		A server interface for low-level 3D navigation access.
 	</brief_description>
 	<description>
-		NavigationServer3D is the server that handles navigation maps, regions and agents. It does not handle A* navigation from [AStar3D].
+		NavigationServer3D is the server that handles navigation maps, regions, and agents. It does not handle A* navigation from [AStar3D].
 		Maps are divided into regions, which are composed of navigation meshes. Together, they define the navigable areas in the 3D world.
-		[b]Note:[/b] Most [NavigationServer3D] changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions or agents by navigation-related nodes in the scene tree or made through scripts.
+		[b]Note:[/b] Most [NavigationServer3D] changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions, or agents by navigation-related nodes in the scene tree or made through scripts.
 		For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
 		You may assign navigation layers to regions with [method NavigationServer3D.region_set_navigation_layers], which then can be checked upon when requesting a path with [method NavigationServer3D.map_get_path]. This can be used to allow or deny certain areas for some objects.
 		To use the collision avoidance system, you may use agents. You can set an agent's target velocity, then the servers will emit a callback with a modified velocity.
@@ -261,7 +261,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="time_horizon" type="float" />
 			<description>
-				The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to other agents. The larger this number, the sooner this agent will respond to the presence of other agents, but the less freedom this agent has in choosing its velocities. A too high value will slow down agents movement considerably. Must be positive.
+				The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to other agents. The larger this number, the sooner this agent will respond to the presence of other agents, but the less freedom this agent has in choosing its velocities. A too high value will slow down agent movement considerably. Must be positive.
 			</description>
 		</method>
 		<method name="agent_set_time_horizon_obstacles">
@@ -269,7 +269,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="time_horizon" type="float" />
 			<description>
-				The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to static avoidance obstacles. The larger this number, the sooner this agent will respond to the presence of static avoidance obstacles, but the less freedom this agent has in choosing its velocities. A too high value will slow down agents movement considerably. Must be positive.
+				The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to static avoidance obstacles. The larger this number, the sooner this agent will respond to the presence of static avoidance obstacles, but the less freedom this agent has in choosing its velocities. A too high value will slow down agent movement considerably. Must be positive.
 			</description>
 		</method>
 		<method name="agent_set_use_3d_avoidance">
@@ -278,8 +278,8 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets if the agent uses the 2D avoidance or the 3D avoidance while avoidance is enabled.
-				If [code]true[/code] the agent calculates avoidance velocities in 3D for the xyz-axis, e.g. for games that take place in air, underwater or space. The 3D using agent only avoids other 3D avoidance using agent's. The 3D using agent only reacts to radius based avoidance obstacles. The 3D using agent ignores any vertices based obstacles. The 3D using agent only avoids other 3D using agent's.
-				If [code]false[/code] the agent calculates avoidance velocities in 2D along the xz-axis ignoring the y-axis. The 2D using agent only avoids other 2D avoidance using agent's. The 2D using agent reacts to radius avoidance obstacles. The 2D using agent reacts to vertices based avoidance obstacles. The 2D using agent only avoids other 2D using agent's. 2D using agents will ignore other 2D using agents or obstacles that are below their current position or above their current position including the agents height in 2D avoidance.
+				If [code]true[/code] the agent calculates avoidance velocities in 3D for the XYZ axes, e.g. for games that take place in the air, underwater, or space. The 3D agent only avoids other 3D avoidance agents. The 3D agent only reacts to radius based avoidance obstacles. The 3D agent ignores any vertices based obstacles. The 3D agent only avoids other 3D agents.
+				If [code]false[/code] the agent calculates avoidance velocities in 2D along the xz-axes ignoring the y-axis. The 2D agent only avoids other 2D avoidance agents. The 2D agent reacts to radius avoidance obstacles. The 2D agent reacts to vertex based avoidance obstacles. The 2D agent only avoids other 2D agents. 2D agents will ignore other 2D agents or obstacles that are below their current position or above their current position including the agent's height in 2D avoidance.
 			</description>
 		</method>
 		<method name="agent_set_velocity">
@@ -287,7 +287,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="velocity" type="Vector3" />
 			<description>
-				Sets [param velocity] as the new wanted velocity for the specified [param agent]. The avoidance simulation will try to fulfill this velocity if possible but will modify it to avoid collision with other agent's and obstacles. When an agent is teleported to a new position use [method agent_set_velocity_forced] as well to reset the internal simulation velocity.
+				Sets [param velocity] as the new wanted velocity for the specified [param agent]. The avoidance simulation will try to achieve this velocity if possible, but will adjust it to avoid colliding with other agents and obstacles. When an agent is teleported to a new position far away, use [method agent_set_velocity_forced] instead to reset the internal velocity state.
 			</description>
 		</method>
 		<method name="agent_set_velocity_forced">
@@ -471,7 +471,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="navigation_layers" type="int" />
 			<description>
-				Set the links's navigation layers. This allows selecting links from a path request (when using [method NavigationServer3D.map_get_path]).
+				Sets the given [param link]'s navigation layers to [param navigation_layers]. This allows selecting links from a path request (when using [method NavigationServer3D.map_get_path]).
 			</description>
 		</method>
 		<method name="link_set_owner_id">
@@ -509,7 +509,7 @@
 			<param index="0" name="map" type="RID" />
 			<description>
 				This function immediately forces synchronization of the specified navigation [param map] [RID]. By default navigation maps are only synchronized at the end of each physics frame. This function can be used to immediately (re)calculate all the navigation meshes and region connections of the navigation map. This makes it possible to query a navigation path for a changed map immediately and in the same frame (multiple times if needed).
-				Due to technical restrictions the current NavigationServer command queue will be flushed. This means all already queued update commands for this physics frame will be executed, even those intended for other maps, regions and agents not part of the specified map. The expensive computation of the navigation meshes and region connections of a map will only be done for the specified map. Other maps will receive the normal synchronization at the end of the physics frame. Should the specified map receive changes after the forced update it will update again as well when the other maps receive their update.
+				Due to technical restrictions the current NavigationServer command queue will be flushed. This means all already queued update commands for this physics frame will be executed, even those intended for other maps, regions, and agents not part of the specified map. The expensive computation of the navigation meshes and region connections of a map will only be done for the specified map. Other maps will receive the normal synchronization at the end of the physics frame. Should the specified map receive changes after the forced update it will update again as well when the other maps receive their update.
 				Avoidance processing and dispatch of the [code]safe_velocity[/code] signals is unaffected by this function and continues to happen for all maps and agents at the end of the physics frame.
 				[b]Note:[/b] With great power comes great responsibility. This function should only be used by users that really know what they are doing and have a good reason for it. Forcing an immediate update of a navigation map requires locking the NavigationServer and flushing the entire NavigationServer command queue. Not only can this severely impact the performance of a game but it can also introduce bugs if used inappropriately without much foresight.
 			</description>
@@ -518,7 +518,7 @@
 			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns all navigation agents [RID]s that are currently assigned to the requested navigation [param map].
+				Returns all navigation agent [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_cell_height" qualifiers="const">
@@ -603,7 +603,7 @@
 			<return type="float" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns map's internal merge rasterizer cell scale.
+				Returns the map's internal merge rasterizer cell scale.
 			</description>
 		</method>
 		<method name="map_get_obstacles" qualifiers="const">
@@ -639,7 +639,7 @@
 			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns all navigation regions [RID]s that are currently assigned to the requested navigation [param map].
+				Returns all navigation region [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_up" qualifiers="const">
@@ -831,7 +831,7 @@
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="layers" type="int" />
 			<description>
-				Set the obstacles's [code]avoidance_layers[/code] bitmask.
+				Sets the given [param obstacle]'s avoidance layers to [param layers].
 			</description>
 		</method>
 		<method name="obstacle_set_height">
@@ -1181,7 +1181,7 @@
 			<param index="0" name="path" type="PackedVector3Array" />
 			<param index="1" name="epsilon" type="float" />
 			<description>
-				Returns a simplified version of [param path] with less critical path points removed. The simplification amount is in worlds units and controlled by [param epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
+				Returns a simplified version of [param path] with less critical path points removed. The simplification amount is in world units and controlled by [param epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
 				Path simplification can be helpful to mitigate various path following issues that can arise with certain agent types and script behaviors. E.g. "steering" agents or avoidance in "open fields".
 			</description>
 		</method>

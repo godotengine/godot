@@ -75,6 +75,7 @@ import org.godotengine.godot.utils.useBenchmark
 import org.godotengine.godot.xr.XRMode
 import java.util.*
 import java.util.concurrent.Callable
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -205,6 +206,7 @@ class Godot private constructor(val context: Context) {
 	internal var darkMode = false
 	private var backgroundColor: Int = Color.BLACK
 	private var orientation = Configuration.ORIENTATION_UNDEFINED
+	private var isImeAnimating = false
 	var disableGodotSplash = false
 		private set
 
@@ -284,8 +286,9 @@ class Godot private constructor(val context: Context) {
 				} else if (commandLine[i] == "--fullscreen") {
 					useImmersive.set(true)
 					newArgs.add(commandLine[i])
-				} else if (commandLine[i] == "--background_color") {
+				} else if (hasExtra && commandLine[i] == "--background_color") {
 					setWindowColor(commandLine[i + 1])
+					i++
 				} else if (commandLine[i] == "--disable_godot_splash") {
 					disableGodotSplash = true
 				} else if (commandLine[i] == "--benchmark") {
@@ -301,13 +304,17 @@ class Godot private constructor(val context: Context) {
 
 					i++
 				} else if (hasExtra && commandLine[i] == "--main-pack") {
+					newArgs.add(commandLine[i])
+
 					val mainPackPath = commandLine[i + 1]
+					newArgs.add(commandLine[i + 1])
 					// Check the storage scope of the main pack path. For template builds, `useApkExpansion` is enabled
 					// if the storage scope is APP.
 					val storageScope = fileAccessHandler.storageScopeIdentifier.identifyStorageScope(mainPackPath)
 					if (isTemplateBuild()) {
 						useApkExpansion = storageScope == StorageScope.APP
 					}
+					i++
 				} else if (commandLine[i].trim().isNotEmpty()) { // This block should always be last!
 					newArgs.add(commandLine[i])
 				}
@@ -329,6 +336,7 @@ class Godot private constructor(val context: Context) {
 			}
 
 			if (nativeLayerInitializeCompleted && !nativeLayerSetupCompleted) {
+				Log.v(TAG, "Setting up native layer with params: $commandLine")
 				nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), tts)
 				if (!nativeLayerSetupCompleted) {
 					throw IllegalStateException("Unable to setup the Godot engine! Aborting...")
@@ -360,7 +368,12 @@ class Godot private constructor(val context: Context) {
 		val rootView = window.decorView
 		WindowCompat.setDecorFitsSystemWindows(window, !(isEdgeToEdge.get() || useImmersive.get()))
 		if (enabled) {
-			ViewCompat.setOnApplyWindowInsetsListener(rootView, null)
+			ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+				v.post {
+					resetVirtualKeyboardHeight(insets)
+				}
+				WindowInsetsCompat.CONSUMED
+			}
 			rootView.setPadding(0, 0, 0, 0)
 			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 				window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
@@ -388,6 +401,8 @@ class Godot private constructor(val context: Context) {
 						val windowInsets = insets.getInsets(getInsetType())
 						v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
 					}
+
+					resetVirtualKeyboardHeight(insets)
 				}
 				WindowInsetsCompat.CONSUMED
 			}
@@ -399,6 +414,15 @@ class Godot private constructor(val context: Context) {
 			WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
 		} else {
 			WindowInsetsCompat.Type.systemBars()
+		}
+	}
+
+	private fun resetVirtualKeyboardHeight(insets: WindowInsetsCompat) {
+		val isImeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+		val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+
+		if (isImeVisible && !isImeAnimating) {
+			GodotLib.setVirtualKeyboardHeight(imeBottom)
 		}
 	}
 
@@ -567,6 +591,7 @@ class Godot private constructor(val context: Context) {
 				var endBottom = 0
 				override fun onPrepare(animation: WindowInsetsAnimationCompat) {
 					startBottom = ViewCompat.getRootWindowInsets(topView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+					isImeAnimating = true
 				}
 
 				override fun onStart(
@@ -574,6 +599,7 @@ class Godot private constructor(val context: Context) {
 					bounds: WindowInsetsAnimationCompat.BoundsCompat
 				): WindowInsetsAnimationCompat.BoundsCompat {
 					endBottom = ViewCompat.getRootWindowInsets(topView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+					isImeAnimating = true
 					return bounds
 				}
 
@@ -589,6 +615,7 @@ class Godot private constructor(val context: Context) {
 							break
 						}
 					}
+					isImeAnimating = imeAnimation != null
 
 					// Update keyboard height based on IME animation.
 					if (imeAnimation != null) {
@@ -602,6 +629,7 @@ class Godot private constructor(val context: Context) {
 				}
 
 				override fun onEnd(animation: WindowInsetsAnimationCompat) {
+					isImeAnimating = false
 					// Fixes an issue on Android 10 and older where immersive mode gets auto disabled after the keyboard is hidden on some devices.
 					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 						runOnHostThread {
@@ -612,6 +640,11 @@ class Godot private constructor(val context: Context) {
 			})
 
 			renderView?.queueOnRenderThread {
+				for (plugin in pluginRegistry.allPlugins) {
+					// Plugins should be registered early so they are available as soon as the app starts.
+					// Otherwise, a delay in registration may make them unavailable during _init() of the main script or an autoload.
+					plugin.onRegisterPluginWithGodotNative()
+				}
 				setKeepScreenOn(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/energy_saving/keep_screen_on")))
 			}
 
@@ -818,7 +851,6 @@ class Godot private constructor(val context: Context) {
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
-			plugin.onRegisterPluginWithGodotNative()
 			plugin.onGodotSetupCompleted()
 		}
 		primaryHost?.onGodotSetupCompleted()
@@ -871,18 +903,45 @@ class Godot private constructor(val context: Context) {
 
 	@JvmOverloads
 	fun alert(message: String, title: String, okCallback: Runnable? = null) {
-		val activity = getActivity() ?: return
+		val renderLatch = CountDownLatch(1)
 		runOnHostThread {
-			val builder = AlertDialog.Builder(activity)
-			builder.setMessage(message).setTitle(title)
-			builder.setPositiveButton(
-				R.string.dialog_ok
-			) { dialog: DialogInterface, _: Int ->
-				okCallback?.run()
-				dialog.cancel()
+			val activity = getActivity()
+			if (activity == null) {
+				renderLatch.countDown()
+				return@runOnHostThread
 			}
-			val dialog = builder.create()
-			dialog.show()
+
+			try {
+				val builder = AlertDialog.Builder(activity)
+				builder.setMessage(message).setTitle(title)
+				builder.setPositiveButton(
+					R.string.dialog_ok
+				) { dialog: DialogInterface, _: Int ->
+					okCallback?.run()
+					dialog.cancel()
+					renderLatch.countDown()
+				}
+				builder.setOnCancelListener {
+					renderLatch.countDown()
+				}
+				val dialog = builder.create()
+				dialog.show()
+			} catch (e: WindowManager.BadTokenException) {
+				// fallback in case the activity state changes before show().
+				renderLatch.countDown()
+			}
+		}
+
+		// We only block the render thread.
+		val blockerRunnable = Runnable {
+			try {
+				renderLatch.await()
+			} catch (_: InterruptedException) {}
+		}
+		if (Thread.currentThread() == Looper.getMainLooper().thread) {
+			runOnRenderThread(blockerRunnable)
+		} else {
+			blockerRunnable.run()
 		}
 	}
 
@@ -1015,6 +1074,7 @@ class Godot private constructor(val context: Context) {
 
 	fun onBackPressed() {
 		for (plugin in pluginRegistry.allPlugins) {
+			Log.v(TAG, "Invoking onMainBackPressed for plugin ${plugin.pluginName}")
 			plugin.onMainBackPressed()
 		}
 		runOnRenderThread { GodotLib.back() }

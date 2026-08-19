@@ -228,8 +228,6 @@ static const char *ANDROID_PERMS[] = {
 	nullptr
 };
 
-static const char *MISMATCHED_VERSIONS_MESSAGE = "Android build version mismatch:\n| Template installed: %s\n| Requested version: %s\nPlease reinstall Android build template from 'Project' menu.";
-
 static const char *GDEXTENSION_LIBS_PATH = "libs/gdextensionlibs.json";
 
 // This template string must be in sync with the content of 'platform/android/java/lib/src/main/java/res/mipmap-anydpi-v26/icon.xml'.
@@ -830,17 +828,14 @@ Error EditorExportPlatformAndroid::save_apk_so(const Ref<EditorExportPreset> &p_
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
+Error EditorExportPlatformAndroid::save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data) {
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 
-	const String simplified_path = simplify_path(p_path);
+	const String simplified_path = EditorExportPlatform::simplify_path(p_info.path);
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_store_temp_file(p_preset, simplified_path, p_data, enc_data, sd));
 
 	String dst_path;
 	if (ed->pd.salt.length() == 32) {
@@ -856,7 +851,7 @@ Error EditorExportPlatformAndroid::save_apk_file(const Ref<EditorExportPreset> &
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
+Error EditorExportPlatformAndroid::ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data) {
 	return OK;
 }
 
@@ -1322,14 +1317,14 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 				iofs += 28;
 
 				for (uint32_t i = 0; i < attrcount; i++) {
-					uint32_t attr_nspace = decode_uint32(&p_manifest[iofs]);
+					// uint32_t attr_nspace = decode_uint32(&p_manifest[iofs]);
 					uint32_t attr_name = decode_uint32(&p_manifest[iofs + 4]);
 					uint32_t attr_value = decode_uint32(&p_manifest[iofs + 8]);
-					uint32_t attr_resid = decode_uint32(&p_manifest[iofs + 16]);
+					// uint32_t attr_resid = decode_uint32(&p_manifest[iofs + 16]);
 
-					const String value = (attr_value != 0xFFFFFFFF) ? string_table[attr_value] : "Res #" + itos(attr_resid);
+					// const String value = (attr_value != 0xFFFFFFFF) ? string_table[attr_value] : "Res #" + itos(attr_resid);
 					String attrname = string_table[attr_name];
-					const String nspace = (attr_nspace != 0xFFFFFFFF) ? string_table[attr_nspace] : "";
+					// const String nspace = (attr_nspace != 0xFFFFFFFF) ? string_table[attr_nspace] : "";
 
 					//replace project information
 					if (tname == "manifest" && attrname == "package") {
@@ -2106,11 +2101,6 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (!enabled_deprecated_plugins_names.is_empty() && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
 			}
-#ifdef ANDROID_ENABLED
-			if (gradle_build_enabled) {
-				return TTR("Support for \"Use Gradle Build\" on Android is currently experimental.");
-			}
-#endif // ANDROID_ENABLED
 		} else if (p_name == "gradle_build/compress_native_libraries") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (bool(p_preset->get("gradle_build/compress_native_libraries")) && !gradle_build_enabled) {
@@ -2142,7 +2132,7 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			int target_sdk_int = DEFAULT_TARGET_SDK_VERSION;
 
 			String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-			int min_sdk_int = VULKAN_MIN_SDK_VERSION;
+			int min_sdk_int = _uses_vulkan(Ref<EditorExportPreset>(p_preset)) ? VULKAN_MIN_SDK_VERSION : DEFAULT_MIN_SDK_VERSION;
 			if (min_sdk_str.is_valid_int()) {
 				min_sdk_int = min_sdk_str.to_int();
 			}
@@ -2203,7 +2193,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "gradle_build/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK, false, true));
 	// Using String instead of int to default to an empty string (no override) with placeholder for instructions (see GH-62465).
 	// This implies doing validation that the string is a proper int.
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", VULKAN_MIN_SDK_VERSION)), "", false, true));
+	const String min_sdk_placeholder = _uses_vulkan(nullptr) ? vformat("%d (Vulkan default)", VULKAN_MIN_SDK_VERSION) : vformat("%d (default)", DEFAULT_MIN_SDK_VERSION);
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, min_sdk_placeholder), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), "", false, true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "gradle_build/custom_theme_attributes", PROPERTY_HINT_DICTIONARY_TYPE, "String;String"), Dictionary()));
@@ -2476,7 +2467,6 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	String output;
 
 	bool remove_prev = EDITOR_GET("export/android/one_click_deploy_clear_previous_install");
-	String version_name = p_preset->get_version("version/name");
 	String package_name = p_preset->get("package/unique_name");
 
 	if (remove_prev) {
@@ -2989,28 +2979,38 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			err += template_err;
 		}
 	} else {
-		// Validate the custom gradle android source template.
-		bool android_source_template_valid = false;
-		const String android_source_template = p_preset->get("gradle_build/android_source_template");
-		if (!android_source_template.is_empty()) {
-			android_source_template_valid = FileAccess::exists(android_source_template);
-			if (!android_source_template_valid) {
-				err += TTR("Custom Android source template not found.") + "\n";
+		r_missing_templates = false;
+		valid = true;
+
+		// Check if the build template is already installed and is valid.
+		bool android_build_installed_and_valid = false;
+		if (ExportTemplateManager::is_android_template_installed(p_preset)) {
+			if (ExportTemplateManager::is_android_build_version_valid(p_preset)) {
+				android_build_installed_and_valid = true;
+			} else {
+				bool can_automatically_delete_build_dir = EDITOR_GET("export/android/build/automatically_delete_build_directory");
+				if (!can_automatically_delete_build_dir) {
+					// Show an error requesting the user to delete the current build directory manually.
+					err += vformat(TTR("Invalid build directory. Manually delete \"%s\" or enable automatic deletion in the Editor Settings (Export > Android > Build > Automatically Delete Build Directory)."), ExportTemplateManager::get_android_build_directory(p_preset)) + "\n";
+					valid = false;
+				}
 			}
 		}
 
-		// Validate the installed build template.
-		bool installed_android_build_template = FileAccess::exists(ExportTemplateManager::get_android_build_directory(p_preset).path_join("build.gradle"));
-		if (!installed_android_build_template) {
-			if (!android_source_template_valid) {
-				r_missing_templates = !exists_export_template("android_source.zip", &err);
+		if (!android_build_installed_and_valid) {
+			// Validate the custom gradle android source templates.
+			const String android_source_template = p_preset->get("gradle_build/android_source_template");
+			if (!android_source_template.is_empty()) {
+				if (!FileAccess::exists(android_source_template)) {
+					err += TTR("Custom Android source template not found.") + "\n";
+					valid = false;
+				}
+			} else {
+				// Default android build template validation.
+				valid = exists_export_template("android_source.zip", &err);
+				r_missing_templates = !valid;
 			}
-			err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
-		} else {
-			r_missing_templates = false;
 		}
-
-		valid = installed_android_build_template && !r_missing_templates;
 	}
 
 	// Validate the rest of the export configuration.
@@ -3152,23 +3152,12 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 		valid = false;
 		if (EditorNode::is_cmdline_mode()) {
-			err += TTR("ETC2/ASTC texture compression is required for Android export. In Project Settings, search for 'ETC2' in the search field, or enable 'Advanced Settings' and go to Rendering > Textures > VRAM Compression to enable 'Import ETC2 ASTC'.") + "\n";
+			err += TTR("ETC2/ASTC texture compression is required for Android export. In the Project Settings, search for 'ETC2' in the search field, or enable 'Advanced Settings', and go to Rendering > Textures > VRAM Compression to enable 'Import ETC2 ASTC'.") + "\n";
 		}
 	}
 
 	bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-	if (gradle_build_enabled) {
-		String build_version_path = ExportTemplateManager::get_android_build_directory(p_preset).get_base_dir().path_join(".build_version");
-		Ref<FileAccess> f = FileAccess::open(build_version_path, FileAccess::READ);
-		if (f.is_valid()) {
-			String current_version = ExportTemplateManager::get_android_template_identifier(p_preset);
-			String installed_version = f->get_line().strip_edges();
-			if (current_version != installed_version) {
-				err += vformat(TTR(MISMATCHED_VERSIONS_MESSAGE), installed_version, current_version);
-				err += "\n";
-			}
-		}
-	} else {
+	if (!gradle_build_enabled) {
 		if (_is_transparency_allowed(p_preset)) {
 			// Warning only, so don't override `valid`.
 			err += vformat(TTR("\"Use Gradle Build\" is required for transparent background on Android"));
@@ -3196,18 +3185,20 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		err += "\n";
 	}
 
-	String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-	int min_sdk_int = VULKAN_MIN_SDK_VERSION;
-	if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
-		if (min_sdk_str.is_valid_int()) {
-			min_sdk_int = min_sdk_str.to_int();
+	if (_uses_vulkan(p_preset)) {
+		String min_sdk_str = p_preset->get("gradle_build/min_sdk");
+		int min_sdk_int = VULKAN_MIN_SDK_VERSION;
+		if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
+			if (min_sdk_str.is_valid_int()) {
+				min_sdk_int = min_sdk_str.to_int();
+			}
 		}
-	}
-	bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-	if (_uses_vulkan(p_preset) && min_sdk_int < VULKAN_MIN_SDK_VERSION && !fallback_to_opengl3) {
-		// Warning only, so don't override `valid`.
-		err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
-		err += "\n";
+		bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+		if (min_sdk_int < VULKAN_MIN_SDK_VERSION && !fallback_to_opengl3) {
+			// Warning only, so don't override `valid`.
+			err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
+			err += "\n";
+		}
 	}
 
 	String package_name = p_preset->get("package/unique_name");
@@ -3605,7 +3596,7 @@ bool EditorExportPlatformAndroid::_is_clean_build_required(const Ref<EditorExpor
 	return have_plugins_changed || has_build_dir_changed || first_build;
 }
 
-Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	int export_format = int(p_preset->get("gradle_build/export_format"));
 	bool should_sign = p_preset->get("package/signed");
 	return export_project_helper(p_preset, p_debug, p_path, export_format, should_sign, p_flags);
@@ -3631,33 +3622,7 @@ Error EditorExportPlatformAndroid::_generate_sparse_pck_metadata(const Ref<Edito
 
 	Vector<uint8_t> key;
 	if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
-		String script_key = _get_script_encryption_key(p_preset);
-		key.resize(32);
-		if (script_key.length() == 64) {
-			for (int i = 0; i < 32; i++) {
-				int v = 0;
-				if (i * 2 < script_key.length()) {
-					char32_t ct = script_key[i * 2];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct << 4;
-				}
-
-				if (i * 2 + 1 < script_key.length()) {
-					char32_t ct = script_key[i * 2 + 1];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct;
-				}
-				key.write[i] = v;
-			}
-		}
+		key = p_preset->resolve_script_encryption_key();
 	}
 
 	if (!EditorExportPlatform::_encrypt_and_store_directory(ftmp, p_pack_data, key, p_preset->get_seed(), 0)) {
@@ -3761,21 +3726,19 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 
 	if (use_gradle_build) {
+		if (ep.step(TTR("Starting gradle build..."), 0)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Starting gradle build...");
 		//test that installed build version is alright
 		{
-			print_verbose("Checking build version...");
-			String gradle_base_directory = gradle_build_directory.get_base_dir();
-			Ref<FileAccess> f = FileAccess::open(gradle_base_directory.path_join(".build_version"), FileAccess::READ);
-			if (f.is_null()) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
-				return ERR_UNCONFIGURED;
+			if (ep.step(TTR("Checking build directory..."), 10)) {
+				return ERR_SKIP;
 			}
-			String current_version = ExportTemplateManager::get_android_template_identifier(p_preset);
-			String installed_version = f->get_line().strip_edges();
-			print_verbose("- build version: " + installed_version);
-			if (installed_version != current_version) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR(MISMATCHED_VERSIONS_MESSAGE), installed_version, current_version));
+			print_verbose("Checking build directory...");
+			err = EditorNode::get_singleton()->setup_android_build_template(p_preset, true);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unable to set up Android build directory. Please fix by manually deleting the \"%s\" directory and try again. Or enable automatic deletion in the Editor Settings (Export > Android > Build > Automatically Delete Build Directory)."), gradle_build_directory));
 				return ERR_UNCONFIGURED;
 			}
 		}
@@ -3813,6 +3776,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_clear_assets_directory(p_preset);
 		String gdextension_libs_path = gradle_build_directory.path_join(GDEXTENSION_LIBS_PATH);
 		_remove_copied_libs(gdextension_libs_path);
+
+		if (ep.step(TTR("Exporting project files..."), 20)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Exporting project files...");
 		CustomExportData user_data;
 		user_data.assets_directory = assets_directory;
@@ -3823,7 +3790,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		} else {
 			user_data.pd.path = "assets.sparsepck";
 			user_data.pd.use_sparse_pck = true;
-			if (p_preset->get_enc_directory()) {
+			if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
 				RandomPCG rng = RandomPCG(p_preset->get_seed());
 				for (int i = 0; i < 32; i++) {
 					user_data.pd.salt += String::chr(1 + rng.rand() % 254);
@@ -3853,6 +3820,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			fa->store_string(JSON::stringify(user_data.libs, "\t"));
 		}
 
+		if (ep.step(TTR("Storing command line flags..."), 30)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Storing command line flags...");
 		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 
@@ -3879,7 +3849,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String version_name = p_preset->get_version("version/name");
 		String min_sdk_version = p_preset->get("gradle_build/min_sdk");
 		if (!min_sdk_version.is_valid_int()) {
-			min_sdk_version = itos(VULKAN_MIN_SDK_VERSION);
+			min_sdk_version = _uses_vulkan(p_preset) ? itos(VULKAN_MIN_SDK_VERSION) : itos(DEFAULT_MIN_SDK_VERSION);
 		}
 		String target_sdk_version = p_preset->get("gradle_build/target_sdk");
 		if (!target_sdk_version.is_valid_int()) {
@@ -3971,6 +3941,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.
 		// Any non-sensitive additions to the command line arguments must be done above this section.
 		// Sensitive additions must be done below the logging statement.
+		if (ep.step(TTR("Build Android project..."), 40)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Build Android project using gradle command: " + String("\n") + build_command + " " + join_list(cmdline, String(" ")));
 
 		if (should_sign) {
@@ -4091,6 +4064,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		print_verbose("Successfully completed Android gradle build.");
 #endif
+		if (ep.step(TTR("Build complete."), 105)) {
+			return ERR_SKIP;
+		}
 		return OK;
 	}
 	// This is the start of the Legacy build system
@@ -4141,11 +4117,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	((void)0)
 
 	zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
-
-	String cmdline = p_preset->get("command_line/extra_args");
-
-	String version_name = p_preset->get_version("version/name");
-	String package_name = p_preset->get("package/unique_name");
 
 	Vector<ABI> invalid_abis(enabled_abis);
 
@@ -4335,7 +4306,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		ed.apk = unaligned_apk;
 		ed.pd.path = "assets.sparsepck";
 		ed.pd.use_sparse_pck = true;
-		if (p_preset->get_enc_directory()) {
+		if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
 			RandomPCG rng = RandomPCG(p_preset->get_seed());
 			for (int i = 0; i < 32; i++) {
 				ed.pd.salt += String::chr(1 + rng.rand() % 254);
@@ -4512,8 +4483,6 @@ EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 #ifndef ANDROID_ENABLED
 	_stop_check_for_changes_poll_thread();
 #else
-	if (android_editor_gradle_runner) {
-		memdelete(android_editor_gradle_runner);
-	}
+	memdelete(android_editor_gradle_runner);
 #endif
 }

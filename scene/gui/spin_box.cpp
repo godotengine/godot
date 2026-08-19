@@ -641,6 +641,7 @@ bool SpinBox::is_custom_arrow_rounding() const {
 
 void SpinBox::_value_changed(double p_value) {
 	_update_buttons_state_for_current_value();
+	Range::_value_changed(p_value);
 }
 
 void SpinBox::_update_buttons_state_for_current_value() {
@@ -734,6 +735,7 @@ void SpinBox::_bind_methods() {
 SpinBox::SpinBox() {
 	line_edit = memnew(SpinBoxLineEdit);
 	line_edit->set_emoji_menu_enabled(false);
+	line_edit->set_use_parent_material(true);
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
 	line_edit->set_theme_type_variation("SpinBoxInnerLineEdit");

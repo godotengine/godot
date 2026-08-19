@@ -563,20 +563,20 @@ struct CSharpScriptDepSort {
 void CSharpLanguage::reload_all_scripts() {
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		reload_assemblies(false);
+		reload_assemblies();
 	}
 #endif
 }
 
-void CSharpLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
+void CSharpLanguage::reload_scripts(const Array &p_scripts) {
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		reload_assemblies(p_soft_reload);
+		reload_assemblies();
 	}
 #endif
 }
 
-void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
+void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script) {
 	CRASH_COND(!Engine::get_singleton()->is_editor_hint());
 
 #ifdef TOOLS_ENABLED
@@ -585,7 +585,7 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		reload_assemblies(p_soft_reload);
+		reload_assemblies();
 	}
 #endif
 }
@@ -622,7 +622,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 	return true;
 }
 
-void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
+void CSharpLanguage::reload_assemblies() {
 	ERR_FAIL_NULL(gdmono);
 	if (!gdmono->is_runtime_initialized()) {
 		return;
@@ -865,7 +865,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 
 		if (!scr->get_path().is_empty() && !scr->get_path().begins_with("csharp://")) {
-			scr->reload(p_soft_reload);
+			scr->reload();
 
 			if (!scr->valid) {
 				scr->pending_reload_instances.clear();
@@ -894,7 +894,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 					continue;
 				}
 
-				if (!ClassDB::is_parent_class(obj->get_class_name(), native_name)) {
+				if (!obj->is_class(native_name)) {
 					// No longer inherits the same compatible type, can't reload
 					scr->pending_reload_state.erase(obj_id);
 					continue;
@@ -1030,10 +1030,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 }
 #endif
 
-void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("cs");
-}
-
 #ifdef TOOLS_ENABLED
 Error CSharpLanguage::open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) {
 	return (Error)(int)get_godotsharp_editor()->call("OpenInExternalEditor", p_script, p_line, p_col);
@@ -1158,7 +1154,7 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	ERR_FAIL_NULL_V(classinfo, false);
 	type_name = classinfo->gdtype->get_name();
 
-	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), type_name);
+	bool parent_is_object_class = p_object->is_class(type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, false,
 			"Type inherits from native type '" + type_name + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
 
@@ -1647,7 +1643,7 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 }
 
 void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
-	if (!script->is_valid() || !script->valid) {
+	if (!script->is_script_valid() || !script->valid) {
 		return;
 	}
 
@@ -1668,7 +1664,7 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 }
 
 int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
-	if (!script->is_valid() || !script->valid) {
+	if (!script->is_script_valid() || !script->valid) {
 		if (r_is_valid) {
 			*r_is_valid = false;
 		}
@@ -2464,7 +2460,7 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
 	ERR_FAIL_COND_V(native_name == StringName(), nullptr);
 
-	if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
+	if (!p_this->is_class(native_name)) {
 		if (EngineDebugger::is_active()) {
 			CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
 					"Script inherits from native type '" + String(native_name) +

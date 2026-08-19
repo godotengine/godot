@@ -25,7 +25,7 @@ def get_opts():
 
     return [
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
-        ("SWIFT_FRONTEND", "Path to the swift-frontend binary", ""),
+        (("SWIFT_COMPILER", "SWIFT_FRONTEND"), "Path to the swiftc binary", ""),
         # APPLE_TOOLCHAIN_PATH Example: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
         (("APPLE_TOOLCHAIN_PATH", "IOS_TOOLCHAIN_PATH"), "Path to the Apple toolchain", ""),
         (("APPLE_SDK_PATH", "IOS_SDK_PATH"), "Path to the iOS SDK", ""),
@@ -103,14 +103,14 @@ def configure(env: "SConsEnvironment"):
 
     if env["simulator"]:
         env["APPLE_PLATFORM"] = "iossimulator"
-        env.Append(ASFLAGS=["-mios-simulator-version-min=14.0"])
-        env.Append(CCFLAGS=["-mios-simulator-version-min=14.0"])
+        env.Append(ASFLAGS=["-mios-simulator-version-min=15.0"])
+        env.Append(CCFLAGS=["-mios-simulator-version-min=15.0"])
         env.Append(CPPDEFINES=["IOS_SIMULATOR"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         env["APPLE_PLATFORM"] = "ios"
-        env.Append(ASFLAGS=["-miphoneos-version-min=14.0"])
-        env.Append(CCFLAGS=["-miphoneos-version-min=14.0"])
+        env.Append(ASFLAGS=["-miphoneos-version-min=15.0"])
+        env.Append(CCFLAGS=["-miphoneos-version-min=15.0"])
     detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
@@ -120,7 +120,7 @@ def configure(env: "SConsEnvironment"):
             print_error("Building for iOS with 'arch=x86_64' requires 'simulator=yes'.")
             sys.exit(255)
 
-        env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
+        env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
         env.Append(
             CCFLAGS=(
                 "-fobjc-arc -arch x86_64"

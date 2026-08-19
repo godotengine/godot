@@ -897,31 +897,29 @@ hb_ot_draw_glyph_or_fail (hb_font_t *font,
 {
   const hb_ot_font_t *ot_font = (const hb_ot_font_t *) font_data;
   hb_draw_session_t draw_session {draw_funcs, draw_data};
-  bool ret = false;
 
   OT::hb_scalar_cache_t *gvar_cache = nullptr;
+#ifndef HB_NO_VAR
   if (font->num_coords)
   {
     ot_font->check_serial (font);
     gvar_cache = ot_font->draw.acquire_gvar_cache (*ot_font->ot_face->gvar);
   }
+#endif
+  HB_SCOPE_GUARD (ot_font->draw.release_gvar_cache (gvar_cache));
 
 #ifndef HB_NO_VAR_COMPOSITES
-  if (font->face->table.VARC->get_path (font, glyph, draw_session)) { ret = true; goto done; }
+  if (font->face->table.VARC->get_path (font, glyph, draw_session)) return true;
 #endif
   // Keep the following in synch with VARC::get_path_at()
-  if (font->face->table.glyf->get_path (font, glyph, draw_session, gvar_cache)) { ret = true; goto done; }
+  if (font->face->table.glyf->get_path (font, glyph, draw_session, gvar_cache)) return true;
 
 #ifndef HB_NO_CFF
-  if (font->face->table.cff2->get_path (font, glyph, draw_session)) { ret = true; goto done; }
-  if (font->face->table.cff1->get_path (font, glyph, draw_session)) { ret = true; goto done; }
+  if (font->face->table.cff2->get_path (font, glyph, draw_session)) return true;
+  if (font->face->table.cff1->get_path (font, glyph, draw_session)) return true;
 #endif
 
-done:
-
-  ot_font->draw.release_gvar_cache (gvar_cache);
-
-  return ret;
+  return false;
 }
 #endif
 

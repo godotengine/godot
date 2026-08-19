@@ -223,4 +223,9 @@ public partial class ExportedProperties(string primaryCtorParameter) : GodotObje
 
     [Export]
     private Godot.Collections.Array<int> PropertyGodotGenericArray { get; set; } = new() { 0, 1, 2, 3, 4, 5, 6 };
+
+    public int NotIgnoredProperty { get; set; }
+
+    [IgnoreMember]
+    public int IgnoredProperty { get; set; }
 }

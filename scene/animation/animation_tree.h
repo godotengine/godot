@@ -66,7 +66,6 @@ public:
 	LocalVector<Input> inputs;
 	HashSet<NodePath> filter;
 	bool filter_enabled = false;
-	bool filters_dirty = true;
 
 	// To propagate information from upstream for use in estimation of playback progress.
 	// These values must be taken from the result of blend_node() or blend_input() and must be essentially read-only.
@@ -179,6 +178,9 @@ protected:
 	GDVIRTUAL4R(double, _process, double, bool, bool, bool)
 	GDVIRTUAL0RC(String, _get_caption)
 	GDVIRTUAL0RC(bool, _has_filter)
+private:
+	mutable uint32_t filters_version = 1;
+	void _mark_filters_dirty();
 
 public:
 	virtual void get_parameter_list(LocalVector<PropertyInfo> *r_list) const;
@@ -265,7 +267,9 @@ struct AnimationNodeInstance {
 
 	mutable LocalVector<AnimationNodeInstance *> connection_instances; // AnimationNodeInstance* | nullptr
 	mutable LocalVector<real_t> track_weights;
+	mutable bool blended = false;
 	mutable LocalVector<int> filtered_track_indices_cache;
+	mutable uint32_t filters_version = 0;
 	mutable AHashMap<StringName, AnimationNodeInstance *> child_instances; // Child Name -> AnimationNodeInstance*
 
 	// Multiple AnimationNodeInstances can share the same resource btw.
@@ -425,6 +429,10 @@ struct AnimationNodeInstance {
 		CRASH_COND_MSG(!instance, "Child instance pointer is null for path: \"" + String(p_path) + "\".");
 		return *instance;
 	}
+
+	_FORCE_INLINE_ bool is_blended() const {
+		return blended;
+	}
 };
 
 class AnimationTree : public AnimationMixer {
@@ -458,10 +466,8 @@ private:
 
 	mutable bool properties_dirty = true;
 	mutable bool validation_dirty = true;
-	mutable bool validation_successful = false;
 
 	void _update_properties() const;
-	void _validate_animation_graph(const StringName &p_path, const Ref<AnimationNode> &p_node) const;
 	void _update_connections();
 	void _add_validation_error(const StringName &p_path, const String &p_error, int p_input_index = -1) const;
 	void _update_properties_for_node(const StringName &p_base_path, const Ref<AnimationNode> &p_node) const;

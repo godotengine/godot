@@ -150,7 +150,6 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 
 	TreeItem *to_select = first_section->get_first_child();
 	to_select->select(0);
-	to_select->set_as_cursor(0);
 	search_options->ensure_cursor_is_visible();
 }
 
@@ -193,10 +192,10 @@ void EditorCommandPalette::_confirmed() {
 }
 
 void EditorCommandPalette::open_popup() {
+	_update_command_search(String());
 	if (was_showed) {
 		popup(prev_rect);
 	} else {
-		_update_command_search(String());
 		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
 	}
 

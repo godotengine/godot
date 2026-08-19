@@ -34,7 +34,6 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -893,7 +892,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 
 	Label *owners_label = memnew(Label);
 	owners_label->set_theme_type_variation("HeaderSmall");
-	owners_label->set_text(TTR("Dependencies of files to be deleted:"));
+	owners_label->set_text(TTR("Owners of files to be deleted:"));
 	vb_owners->add_child(owners_label);
 
 	mc = memnew(MarginContainer);
@@ -906,7 +905,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	owners->set_hide_root(true);
 	owners->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
-	owners->set_accessibility_name(TTRC("Dependencies"));
+	owners->set_accessibility_name(TTRC("Owners"));
 	mc->add_child(owners);
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -1034,7 +1033,7 @@ void DependencyErrorDialog::_check_for_resolved() {
 
 				LocalVector<String> &stored_paths = owner_deps[owner_path];
 				for (const String &dep : deps) {
-					if (!errors_fixed && !FileAccess::exists(_get_resolved_dep_path(dep))) {
+					if (errors_fixed && !FileAccess::exists(_get_resolved_dep_path(dep))) {
 						errors_fixed = false;
 					}
 					stored_paths.push_back(_get_stored_dep_path(dep));

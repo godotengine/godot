@@ -38,6 +38,7 @@
 #include "core/object/class_db.h"
 #include "core/templates/rb_map.h"
 #include "core/variant/variant_utility.h"
+#include "scene/gui/control.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_types.h"
 
@@ -462,9 +463,6 @@ void VisualShaderNode::_bind_methods() {
 	BIND_ENUM_CONSTANT(PORT_TYPE_TRANSFORM);
 	BIND_ENUM_CONSTANT(PORT_TYPE_SAMPLER);
 	BIND_ENUM_CONSTANT(PORT_TYPE_MAX);
-}
-
-VisualShaderNode::VisualShaderNode() {
 }
 
 /////////////////////////////////////////////////////////
@@ -1630,9 +1628,6 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		return String();
 	}
 
-	List<String> input_names;
-	List<String> output_names;
-
 	for (int i = 0; i < p_node->get_input_port_count(); i++) {
 		if (!p_output && i == p_port_id) {
 			continue;
@@ -2123,10 +2118,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 				continue;
 			}
 
-			Error err = _write_node(type, p_global_code, p_global_code_per_node, p_global_code_per_func, r_code, r_def_tex_params, p_input_connections, from_node, r_processed, p_for_preview, r_classes);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERROR(_write_node(type, p_global_code, p_global_code_per_node, p_global_code_per_func, r_code, r_def_tex_params, p_input_connections, from_node, r_processed, p_for_preview, r_classes));
 		}
 	}
 
@@ -3909,9 +3901,6 @@ void VisualShaderNodeInput::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("input_type_changed"));
 }
 
-VisualShaderNodeInput::VisualShaderNodeInput() {
-}
-
 ////////////// ParameterRef
 
 RBMap<RID, List<VisualShaderNodeParameterRef::Parameter>> parameters;
@@ -4184,9 +4173,6 @@ Vector<StringName> VisualShaderNodeParameterRef::get_editable_properties() const
 	return props;
 }
 
-VisualShaderNodeParameterRef::VisualShaderNodeParameterRef() {
-}
-
 ////////////////////////////////////////////
 
 const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
@@ -4404,9 +4390,6 @@ String VisualShaderNodeOutput::generate_code(Shader::Mode p_mode, VisualShader::
 	return shader_code;
 }
 
-VisualShaderNodeOutput::VisualShaderNodeOutput() {
-}
-
 ///////////////////////////
 
 void VisualShaderNodeParameter::set_parameter_name(const String &p_name) {
@@ -4603,9 +4586,6 @@ Vector<StringName> VisualShaderNodeParameter::get_editable_properties() const {
 	return props;
 }
 
-VisualShaderNodeParameter::VisualShaderNodeParameter() {
-}
-
 ////////////// ResizeableBase
 
 void VisualShaderNodeResizableBase::set_size(const Size2 &p_size) {
@@ -4747,9 +4727,6 @@ void VisualShaderNodeFrame::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoshrink"), "set_autoshrink_enabled", "is_autoshrink_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "attached_nodes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_attached_nodes", "get_attached_nodes");
-}
-
-VisualShaderNodeFrame::VisualShaderNodeFrame() {
 }
 
 ////////////// Comment (Deprecated)
@@ -5543,9 +5520,6 @@ VisualShader::VaryingType VisualShaderNodeVarying::get_varying_type() const {
 	return varying_type;
 }
 
-VisualShaderNodeVarying::VisualShaderNodeVarying() {
-}
-
 ////////////// Varying Setter
 
 String VisualShaderNodeVaryingSetter::get_caption() const {
@@ -5585,9 +5559,6 @@ String VisualShaderNodeVaryingSetter::generate_code(Shader::Mode p_mode, VisualS
 	return code;
 }
 
-VisualShaderNodeVaryingSetter::VisualShaderNodeVaryingSetter() {
-}
-
 ////////////// Varying Getter
 
 String VisualShaderNodeVaryingGetter::get_caption() const {
@@ -5624,7 +5595,6 @@ bool VisualShaderNodeVaryingGetter::has_output_port_preview(int p_port) const {
 
 String VisualShaderNodeVaryingGetter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String from = varying_name;
-	String from2;
 
 	if (varying_name == "[None]" || p_for_preview) {
 		switch (varying_type) {

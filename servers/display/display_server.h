@@ -306,8 +306,8 @@ public:
 
 	const float SCREEN_REFRESH_RATE_FALLBACK = -1.0; // Returned by screen_get_refresh_rate if the method fails.
 
-	virtual TypedArray<Rect2> get_display_cutouts() const { return TypedArray<Rect2>(); }
-	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
+	virtual TypedArray<Rect2> get_display_cutouts(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const { return TypedArray<Rect2>(); }
+	virtual Rect2i get_display_safe_area(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const { return screen_get_usable_rect(p_screen); }
 
 	int _get_screen_index(int p_screen) const {
 		switch (p_screen) {
@@ -496,6 +496,11 @@ public:
 	virtual Error remove_embedded_process(ProcessID p_pid);
 	virtual ProcessID get_focused_process_id();
 
+	/* NOTIFICATIONS */
+
+	virtual DisplayServerEnums::NotificationID send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback);
+	virtual void hide_toast_notification(DisplayServerEnums::NotificationID p_id);
+
 	/* DIALOGS */
 
 	virtual bool get_swap_cancel_ok();
@@ -509,6 +514,8 @@ public:
 #ifndef DISABLE_DEPRECATED
 	Error _file_dialog_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
 	Error _file_dialog_with_options_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback);
+	TypedArray<Rect2> _get_display_cutouts_bind_compat_119196() const;
+	Rect2i _get_display_safe_area_bind_compat_119196() const;
 #endif
 
 	virtual void show_emoji_and_symbol_picker() const;
@@ -652,6 +659,7 @@ VARIANT_ENUM_CAST_EXT(DisplayServerEnums::WindowResizeEdge, DisplayServer::Windo
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::VSyncMode, DisplayServer::VSyncMode)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::ProgressState, DisplayServer::ProgressState)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::FileDialogMode, DisplayServer::FileDialogMode)
+VARIANT_ENUM_CAST_EXT(DisplayServerEnums::NotificationStatus, DisplayServer::NotificationStatus)
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::AccessibilityRole, DisplayServer::AccessibilityRole)

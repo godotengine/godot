@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -215,7 +215,7 @@ XrResult RuntimeInterface::TryLoadingSingleRuntime(const std::string& openxr_com
     std::vector<XrExtensionProperties> extension_properties;
     GetInstance()->GetInstanceExtensionProperties(extension_properties);
     supported_extensions.reserve(extension_properties.size());
-    for (XrExtensionProperties ext_prop : extension_properties) {
+    for (const auto& ext_prop : extension_properties) {
         supported_extensions.emplace_back(ext_prop.extensionName);
     }
     GetInstance()->SetSupportedExtensions(supported_extensions);
@@ -352,7 +352,7 @@ XrResult RuntimeInterface::CreateInstance(const XrInstanceCreateInfo* info, XrIn
     res = rt_xrCreateInstance(info, instance);
     if (XR_SUCCEEDED(res)) {
         create_succeeded = true;
-        std::unique_ptr<XrGeneratedDispatchTableCore> dispatch_table(new XrGeneratedDispatchTableCore());
+        auto dispatch_table = std::make_unique<XrGeneratedDispatchTableCore>();
         GeneratedXrPopulateDispatchTableCore(dispatch_table.get(), *instance, _get_instance_proc_addr);
         std::lock_guard<std::mutex> mlock(_dispatch_table_mutex);
         _dispatch_table_map[*instance] = std::move(dispatch_table);

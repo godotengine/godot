@@ -131,6 +131,9 @@ private:
 	real_t camera_znear = 0;
 	real_t camera_zfar = 0;
 
+	Key freelook_modifier = Key::NONE;
+	Ref<Shortcut> freelook_toggle;
+
 	struct SelectionBox : public RefCounted {
 		RID instance;
 		RID instance_ofs;

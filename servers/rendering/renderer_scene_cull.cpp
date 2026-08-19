@@ -928,10 +928,9 @@ void RendererSceneCull::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 		return;
 	}
 
-	// Particles always need to be unpaired. Geometry may need to be unpaired, but only if lights or decals use pairing.
+	// Particles and geometries need to be unpaired.
 	// Needs to happen before layer mask changes so we can avoid attempting to unpair something that was never paired.
-	if (instance->base_type == RSE::INSTANCE_PARTICLES ||
-			(((geometry_instance_pair_mask & (1 << RSE::INSTANCE_LIGHT)) || (geometry_instance_pair_mask & (1 << RSE::INSTANCE_DECAL))) && ((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK))) {
+	if (instance->base_type == RSE::INSTANCE_PARTICLES || ((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK)) {
 		_unpair_instance(instance);
 		singleton->_instance_queue_update(instance, false, false);
 	}
@@ -2068,6 +2067,10 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 	float accum_blend = 0.0;
 
 	InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
+	// Don't blend if only one lightmap affects the dynamic object.
+	// This prevents ambient light from being pure black until the object has fully entered the LightmapGI's AABB.
+	const bool use_blending = geom->lightmap_captures.size() >= 2;
+
 	for (Instance *E : geom->lightmap_captures) {
 		Instance *lightmap = E;
 
@@ -2083,9 +2086,6 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 		Vector3 lm_pos = to_bounds.xform(center);
 
 		AABB bounds = RSG::light_storage->lightmap_get_aabb(lightmap->base);
-		if (!bounds.has_point(lm_pos)) {
-			continue; //not in this lightmap
-		}
 
 		Color sh[9];
 		RSG::light_storage->lightmap_tap_sh_light(lightmap->base, lm_pos, sh);
@@ -2105,11 +2105,14 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 
 		Vector3 inner_pos = ((lm_pos - bounds.position) / bounds.size) * 2.0 - Vector3(1.0, 1.0, 1.0);
 
-		real_t blend = MAX(Math::abs(inner_pos.x), MAX(Math::abs(inner_pos.y), Math::abs(inner_pos.z)));
-		//make blend more rounded
-		blend = Math::lerp(inner_pos.length(), blend, blend);
-		blend *= blend;
-		blend = MAX(0.0, 1.0 - blend);
+		real_t blend = 1.0;
+		if (use_blending) {
+			blend = MAX(Math::abs(inner_pos.x), MAX(Math::abs(inner_pos.y), Math::abs(inner_pos.z)));
+			// Make blend more rounded.
+			blend = Math::lerp(inner_pos.length(), blend, blend);
+			blend *= blend;
+			blend = MAX(0.0, 1.0 - blend);
+		}
 
 		if (interior && !inside) {
 			//do not blend, just replace
@@ -2141,7 +2144,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 
 void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect) {
 	// For later tight culling, the light culler needs to know the details of the directional light.
-	light_culler->prepare_directional_light(p_instance, p_shadow_index);
+	light_culler->prepare_directional_light_begin(p_instance, p_shadow_index);
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
@@ -2208,11 +2211,14 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
 		}
 
-		//obtain the frustum endpoints
+		Vector<Plane> receiver_frustum_planes = camera_matrix.get_projection_planes(p_cam_transform);
 
+		//obtain the frustum endpoints
 		Vector3 endpoints[8]; // frustum plane endpoints
 		bool res = camera_matrix.get_endpoints(p_cam_transform, endpoints);
 		ERR_CONTINUE(!res);
+
+		light_culler->prepare_directional_light_cascade(p_shadow_index, i, receiver_frustum_planes, endpoints);
 
 		// obtain the light frustum ranges (given endpoints)
 
@@ -2354,7 +2360,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			cull.shadows[p_shadow_index].cascades[i].split = distances[i + 1];
 			cull.shadows[p_shadow_index].cascades[i].shadow_texel_size = radius * 2.0 / texture_size;
 			cull.shadows[p_shadow_index].cascades[i].bias_scale = (z_max - z_min_cam);
-			cull.shadows[p_shadow_index].cascades[i].range_begin = z_max;
+			cull.shadows[p_shadow_index].cascades[i].range_begin = z_max - z_vec.dot(p_cam_transform.origin);
 			cull.shadows[p_shadow_index].cascades[i].uv_scale = uv_scale;
 		}
 	}
@@ -2420,7 +2426,8 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 					for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 						Instance *instance = instance_shadow_cull_result[j];
-						if (!instance->visible || !((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask & RSG::light_storage->light_get_shadow_caster_mask(p_instance->base))) {
+						const bool is_inactive_particle = (instance->base_type == RSE::INSTANCE_PARTICLES) && RSG::particles_storage->particles_is_inactive(instance->base);
+						if (!instance->visible || !((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask & RSG::light_storage->light_get_shadow_caster_mask(p_instance->base)) || is_inactive_particle) {
 							continue;
 						} else {
 							if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
@@ -2503,7 +2510,8 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 					for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 						Instance *instance = instance_shadow_cull_result[j];
-						if (!instance->visible || !((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask & RSG::light_storage->light_get_shadow_caster_mask(p_instance->base))) {
+						const bool is_inactive_particle = (instance->base_type == RSE::INSTANCE_PARTICLES) && RSG::particles_storage->particles_is_inactive(instance->base);
+						if (!instance->visible || !((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask & RSG::light_storage->light_get_shadow_caster_mask(p_instance->base)) || is_inactive_particle) {
 							continue;
 						} else {
 							if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
@@ -2571,7 +2579,8 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 			for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 				Instance *instance = instance_shadow_cull_result[j];
-				if (!instance->visible || !((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask & RSG::light_storage->light_get_shadow_caster_mask(p_instance->base))) {
+				const bool is_inactive_particle = (instance->base_type == RSE::INSTANCE_PARTICLES) && RSG::particles_storage->particles_is_inactive(instance->base);
+				if (!instance->visible || !((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask & RSG::light_storage->light_get_shadow_caster_mask(p_instance->base)) || is_inactive_particle) {
 					continue;
 				} else {
 					if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
@@ -2637,7 +2646,8 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 
 			for (int j = 0; j < (int)instance_shadow_cull_result.size(); j++) {
 				Instance *instance = instance_shadow_cull_result[j];
-				if (!instance->visible || !((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask & RSG::light_storage->light_get_shadow_caster_mask(p_instance->base))) {
+				const bool is_inactive_particle = (instance->base_type == RSE::INSTANCE_PARTICLES) && RSG::particles_storage->particles_is_inactive(instance->base);
+				if (!instance->visible || !((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows || !(p_visible_layers & instance->layer_mask & RSG::light_storage->light_get_shadow_caster_mask(p_instance->base)) || is_inactive_particle) {
 					continue;
 				} else {
 					if (static_cast<InstanceGeometryData *>(instance->base_data)->material_is_animated) {
@@ -3241,7 +3251,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 					if (IN_FRUSTUM(cull_data.cull->shadows[j].cascades[k].frustum) && VIS_CHECK) {
 						uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
 
-						if (((1 << base_type) & RSE::INSTANCE_GEOMETRY_MASK) && idata.flags & InstanceData::FLAG_CAST_SHADOWS && (LAYER_CHECK & cull_data.cull->shadows[j].caster_mask)) {
+						const bool is_inactive_particle = (base_type == RSE::INSTANCE_PARTICLES) && RSG::particles_storage->particles_is_inactive(idata.base_rid);
+						if (((1 << base_type) & RSE::INSTANCE_GEOMETRY_MASK) && idata.flags & InstanceData::FLAG_CAST_SHADOWS && (LAYER_CHECK & cull_data.cull->shadows[j].caster_mask) && !is_inactive_particle) {
 							cull_result.directional_shadows[j].cascade_geometry_instances[k].push_back(idata.instance_geometry);
 							mesh_visible = true;
 						}
@@ -4539,9 +4550,7 @@ RendererSceneCull::~RendererSceneCull() {
 	}
 	scene_cull_result_threads.clear();
 
-	if (dummy_occlusion_culling) {
-		memdelete(dummy_occlusion_culling);
-	}
+	memdelete(dummy_occlusion_culling);
 
 	if (light_culler) {
 		memdelete(light_culler);

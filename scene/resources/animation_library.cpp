@@ -151,7 +151,7 @@ void AnimationLibrary::get_argument_options(const StringName &p_function, int p_
 		LocalVector<StringName> names;
 		get_animation_list(&names);
 		for (const StringName &E : names) {
-			r_options->push_back(E.operator String().quote());
+			r_options->push_back(E.string().quote());
 		}
 	}
 	Resource::get_argument_options(p_function, p_idx, r_options);
@@ -172,10 +172,10 @@ void AnimationLibrary::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 
-	ADD_SIGNAL(MethodInfo("animation_added", PropertyInfo(Variant::STRING_NAME, "name")));
-	ADD_SIGNAL(MethodInfo("animation_removed", PropertyInfo(Variant::STRING_NAME, "name")));
-	ADD_SIGNAL(MethodInfo("animation_renamed", PropertyInfo(Variant::STRING_NAME, "name"), PropertyInfo(Variant::STRING_NAME, "to_name")));
-	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "name")));
+	ADD_SIGNAL(MethodInfo("animation_added", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_removed", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_renamed", PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
+	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 }
 AnimationLibrary::AnimationLibrary() {
 }

@@ -378,76 +378,46 @@ void DisplayServerMacOSBase::show_emoji_and_symbol_picker() const {
 }
 
 bool DisplayServerMacOSBase::is_dark_mode_supported() const {
-	if (@available(macOS 10.14, *)) {
-		return true;
-	} else {
-		return false;
-	}
+	return true;
 }
 
 bool DisplayServerMacOSBase::is_dark_mode() const {
-	if (@available(macOS 10.14, *)) {
-		if (![[NSUserDefaults standardUserDefaults] objectForKey:@"AppleInterfaceStyle"]) {
-			return false;
-		} else {
-			return ([[[NSUserDefaults standardUserDefaults] stringForKey:@"AppleInterfaceStyle"] isEqual:@"Dark"]);
-		}
-	} else {
+	if (![[NSUserDefaults standardUserDefaults] objectForKey:@"AppleInterfaceStyle"]) {
 		return false;
+	} else {
+		return ([[[NSUserDefaults standardUserDefaults] stringForKey:@"AppleInterfaceStyle"] isEqual:@"Dark"]);
 	}
 }
 
 Color DisplayServerMacOSBase::get_accent_color() const {
-	if (@available(macOS 10.14, *)) {
-		__block NSColor *color = nullptr;
-		if (@available(macOS 11.0, *)) {
-			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
-				color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-			}];
-			if (!color) {
-				color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-			}
-		} else {
-			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
-			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
-			color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-			[NSAppearance setCurrentAppearance:saved_appearance];
-		}
-		if (color) {
-			CGFloat components[4];
-			[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
-			return Color(components[0], components[1], components[2], components[3]);
-		} else {
-			return Color(0, 0, 0, 0);
-		}
+	__block NSColor *color = nullptr;
+	[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+		color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+	}];
+	if (!color) {
+		color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+	}
+	if (color) {
+		CGFloat components[4];
+		[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
+		return Color(components[0], components[1], components[2], components[3]);
 	} else {
 		return Color(0, 0, 0, 0);
 	}
 }
 
 Color DisplayServerMacOSBase::get_base_color() const {
-	if (@available(macOS 10.14, *)) {
-		__block NSColor *color = nullptr;
-		if (@available(macOS 11.0, *)) {
-			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
-				color = [[NSColor windowBackgroundColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-			}];
-			if (!color) {
-				color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-			}
-		} else {
-			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
-			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
-			color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
-			[NSAppearance setCurrentAppearance:saved_appearance];
-		}
-		if (color) {
-			CGFloat components[4];
-			[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
-			return Color(components[0], components[1], components[2], components[3]);
-		} else {
-			return Color(0, 0, 0, 0);
-		}
+	__block NSColor *color = nullptr;
+	[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
+		color = [[NSColor windowBackgroundColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+	}];
+	if (!color) {
+		color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+	}
+	if (color) {
+		CGFloat components[4];
+		[color getRed:&components[0] green:&components[1] blue:&components[2] alpha:&components[3]];
+		return Color(components[0], components[1], components[2], components[3]);
 	} else {
 		return Color(0, 0, 0, 0);
 	}
@@ -590,11 +560,22 @@ bool DisplayServerMacOSBase::window_is_hdr_output_supported(DisplayServerEnums::
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!has_window(p_window), false);
+	bool renderer_supports_hdr_output = false;
+	bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
-	if (rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
-		return false;
+	if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+		renderer_supports_hdr_output = true;
+		surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 	}
 #endif
+	if (!renderer_supports_hdr_output) {
+		return false;
+	}
+
+	if (!surface_supports_hdr_output) {
+		return false;
+	}
+
 	CGFloat max_potential_edr;
 	window_get_edr_values(p_window, &max_potential_edr, nullptr);
 	return max_potential_edr > 1.0f;
@@ -604,9 +585,25 @@ void DisplayServerMacOSBase::window_request_hdr_output(const bool p_enabled, Dis
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!has_window(p_window));
+	if (p_enabled) {
+		bool renderer_supports_hdr_output = false;
+		bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
-	ERR_FAIL_COND_MSG(p_enabled && rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT), "HDR output is not supported by the rendering device.");
+		if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+			renderer_supports_hdr_output = true;
+			surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
+		}
 #endif
+		if (!renderer_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
+			return;
+		}
+
+		if (!surface_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but the window does not support an HDR format.");
+			return;
+		}
+	}
 
 	HDROutput &hdr = _get_hdr_output(p_window);
 	hdr.requested = p_enabled;

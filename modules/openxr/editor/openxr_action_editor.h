@@ -44,6 +44,7 @@ class OpenXRActionEditor : public HBoxContainer {
 private:
 	EditorUndoRedoManager *undo_redo;
 	Ref<OpenXRAction> action;
+	bool action_name_dirty = false;
 
 	LineEdit *action_name = nullptr;
 	LineEdit *action_localized_name = nullptr;
@@ -55,6 +56,7 @@ private:
 	void _on_action_localized_name_changed(const String &p_new_text);
 	void _on_item_selected(int p_idx);
 	void _on_remove_action();
+	void _on_focus_exit();
 
 protected:
 	static void _bind_methods();

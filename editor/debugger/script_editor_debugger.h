@@ -115,8 +115,8 @@ private:
 	};
 	FileDialogPurpose file_dialog_purpose = SAVE_MONITORS_CSV;
 
-	int error_count;
-	int warning_count;
+	int error_count = 0;
+	int warning_count = 0;
 
 	bool skip_breakpoints_value = false;
 	bool ignore_error_breaks_value = false;
@@ -140,6 +140,7 @@ private:
 
 	HashMap<int, String> profiler_signature;
 
+	MarginContainer *vmem_mc = nullptr;
 	Tree *vmem_tree = nullptr;
 	Button *vmem_refresh = nullptr;
 	Button *vmem_export = nullptr;
@@ -197,7 +198,7 @@ private:
 	void _mute_audio_on_break(bool p_mute);
 	void _send_debug_mute_audio_msg(bool p_mute);
 
-	EditorDebuggerNode::CameraOverride camera_override;
+	EditorDebuggerNode::CameraOverride camera_override = EditorDebuggerNode::OVERRIDE_NONE;
 
 	void _stack_dump_frame_selected();
 
@@ -371,6 +372,8 @@ public:
 	bool get_debug_mute_audio() const;
 	void set_debug_mute_audio(bool p_mute);
 
+	void set_debug_collisions(bool p_enable);
+
 	EditorDebuggerNode::CameraOverride get_camera_override() const;
 	void set_camera_override(EditorDebuggerNode::CameraOverride p_override);
 
@@ -393,6 +396,8 @@ public:
 
 	void send_message(const String &p_message, const Array &p_args);
 	void toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data);
+
+	void update_layout(EditorDock::DockLayout p_layout, int p_slot);
 
 	ScriptEditorDebugger();
 	~ScriptEditorDebugger();

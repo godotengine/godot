@@ -3,9 +3,9 @@ public:
 // depends which works best for cache.
 struct ItemPairs {
 	struct Link {
-		void set(BVHHandle h, void *ud) {
-			handle = h;
-			userdata = ud;
+		void set(BVHHandle p_handle, void *p_userdata) {
+			handle = p_handle;
+			userdata = p_userdata;
 		}
 		BVHHandle handle;
 		void *userdata;
@@ -23,33 +23,33 @@ struct ItemPairs {
 	int32_t num_pairs;
 	LocalVector<Link> extended_pairs;
 
-	void add_pair_to(BVHHandle h, void *p_userdata) {
+	void add_pair_to(BVHHandle p_handle, void *p_userdata) {
 		Link temp;
-		temp.set(h, p_userdata);
+		temp.set(p_handle, p_userdata);
 
 		extended_pairs.push_back(temp);
 		num_pairs++;
 	}
 
-	uint32_t find_pair_to(BVHHandle h) const {
+	uint32_t find_pair_to(BVHHandle p_handle) const {
 		for (int n = 0; n < num_pairs; n++) {
-			if (extended_pairs[n].handle == h) {
+			if (extended_pairs[n].handle == p_handle) {
 				return n;
 			}
 		}
 		return uint32_t(-1);
 	}
 
-	bool contains_pair_to(BVHHandle h) const {
-		return find_pair_to(h) != BVHCommon::INVALID;
+	bool contains_pair_to(BVHHandle p_handle) const {
+		return find_pair_to(p_handle) != BVHCommon::INVALID;
 	}
 
 	// return success
-	void *remove_pair_to(BVHHandle h) {
+	void *remove_pair_to(BVHHandle p_handle) {
 		void *userdata = nullptr;
 
 		for (int n = 0; n < num_pairs; n++) {
-			if (extended_pairs[n].handle == h) {
+			if (extended_pairs[n].handle == p_handle) {
 				userdata = extended_pairs[n].userdata;
 				extended_pairs.remove_at_unordered(n);
 				num_pairs--;

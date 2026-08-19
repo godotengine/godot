@@ -3,13 +3,22 @@ extends Node2D
 var _plugin_name = "GodotAppInstrumentedTestPlugin"
 var _android_plugin
 
-func _ready():
+var _signal_test_plugin_name = "SignalTestPlugin"
+var _signal_test_plugin
+
+func _init():
+	# Verify plugin singleton in _init, since plugins should already be registered at this point.
 	if Engine.has_singleton(_plugin_name):
 		_android_plugin = Engine.get_singleton(_plugin_name)
 		_android_plugin.connect("launch_tests", _launch_tests)
 		_android_plugin.connect("update_quit_on_go_back", _update_quit_on_go_back)
-	else:
-		printerr("Couldn't find plugin " + _plugin_name)
+
+	if Engine.has_singleton(_signal_test_plugin_name):
+		_signal_test_plugin = Engine.get_singleton(_signal_test_plugin_name)
+
+func _ready() -> void:
+	if not _android_plugin:
+		printerr("ERROR: Couldn't find plugin " + _plugin_name)
 		get_tree().quit()
 
 func _launch_tests(test_label: String) -> void:
@@ -19,10 +28,12 @@ func _launch_tests(test_label: String) -> void:
 			test_instance = JavaClassWrapperTests.new()
 		"file_access_tests":
 			test_instance = FileAccessTests.new()
+		"android_plugin_signal_tests":
+			test_instance = AndroidPluginSignalTests.new(_signal_test_plugin)
 
 	if test_instance:
 		test_instance.__reset_tests()
-		test_instance.run_tests()
+		await test_instance.run_tests()
 		var incomplete_tests = test_instance._test_started - test_instance._test_completed
 		_android_plugin.onTestsCompleted(test_label, test_instance._test_completed, test_instance._test_assert_failures + incomplete_tests)
 	else:
