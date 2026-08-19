@@ -1560,14 +1560,16 @@ void EditorSettings::save() {
 	if (!singleton.ptr()) {
 		return;
 	}
-
-	Error err = ResourceSaver::save(singleton);
-
-	if (err != OK) {
-		ERR_PRINT("Error saving editor settings to " + singleton->get_path());
-	} else {
-		singleton->changed_settings.clear();
-		print_verbose("EditorSettings: Save OK!");
+	// Only save if a setting has been changed. Fixes issues
+	// when multiple editor instances are open.
+	if (singleton->changed_settings.size() > 0) {
+		Error err = ResourceSaver::save(singleton);
+		if (err != OK) {
+			ERR_PRINT("Error saving editor settings to " + singleton->get_path());
+		} else {
+			singleton->changed_settings.clear();
+			print_verbose("EditorSettings: Save OK!");
+		}
 	}
 }
 
