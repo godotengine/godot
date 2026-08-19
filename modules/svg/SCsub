@@ -45,7 +45,6 @@ thirdparty_sources = [
     "src/renderer/cpu_engine/tvgSwBlendOp.cpp",
     "src/renderer/cpu_engine/tvgSwFill.cpp",
     "src/renderer/cpu_engine/tvgSwImage.cpp",
-    "src/renderer/cpu_engine/tvgSwMath.cpp",
     "src/renderer/cpu_engine/tvgSwMemPool.cpp",
     "src/renderer/cpu_engine/tvgSwPostEffect.cpp",
     "src/renderer/cpu_engine/tvgSwRaster.cpp",
