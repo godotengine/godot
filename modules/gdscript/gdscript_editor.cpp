@@ -598,6 +598,20 @@ struct GDScriptCompletionIdentifier {
 	const GDScriptParser::ExpressionNode *assigned_expression = nullptr;
 };
 
+static bool _is_constructible_object(GDScriptParser::DataType &p_datatype) {
+	switch (p_datatype.kind) {
+		case GDScriptParser::DataType::NATIVE:
+			return !ClassDB::is_abstract(p_datatype.native_type);
+		case GDScriptParser::DataType::SCRIPT:
+			return p_datatype.script_type.is_valid() && !p_datatype.script_type->is_abstract() && !ClassDB::is_abstract(p_datatype.native_type);
+		case GDScriptParser::DataType::CLASS:
+			return p_datatype.class_type && !p_datatype.class_type->is_abstract && !ClassDB::is_abstract(p_datatype.class_type->base_type.native_type);
+		default:
+			ERR_FAIL_V_MSG(false, "GDScript bug (please report): Unexpected datatype kind.");
+	}
+	return true;
+}
+
 // LOCATION METHODS
 // These methods are used to populate the `CodeCompletionOption::location` integer.
 // For these methods, the location is based on the depth in the inheritance chain that the property
@@ -1332,7 +1346,8 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 	GDScriptParser::DataType base_type = p_base.type;
 
-	if (!p_types_only && base_type.is_meta_type && base_type.kind != GDScriptParser::DataType::BUILTIN && base_type.kind != GDScriptParser::DataType::ENUM) {
+	// Check only at recursion depth 0 if the most specific type is constructible.
+	if (p_recursion_depth == 0 && !p_types_only && base_type.is_meta_type && base_type.kind != GDScriptParser::DataType::BUILTIN && base_type.kind != GDScriptParser::DataType::ENUM && _is_constructible_object(base_type) && !Engine::get_singleton()->has_singleton(base_type.native_type)) {
 		EditorLanguage::CompletionOption option("new", EditorLanguage::CompletionKind::FUNCTION, EditorLanguage::CompletionLocation::LOCAL);
 		if (p_add_braces) {
 			option.insert_text += "(";
