@@ -69,6 +69,12 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
+#include "modules/modules_enabled.gen.h" // for gdscript
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/gdscript.h"
+#endif // MODULE_GDSCRIPT_ENABLED
+
 void EditorInspectorActionButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -5450,6 +5456,14 @@ void EditorInspector::edit(Object *p_object) {
 	per_array_page.clear();
 
 	object = p_object;
+
+	// For inner classes, edit the owner instead, as they don't have their own file.
+#ifdef MODULE_GDSCRIPT_ENABLED
+	Ref<GDScript> gdscript = Object::cast_to<GDScript>(object);
+	if (gdscript.is_valid() && gdscript->is_built_in() && gdscript->has_owner()) {
+		object = gdscript->get_owner();
+	}
+#endif // MODULE_GDSCRIPT_ENABLED
 
 	if (object) {
 		update_scroll_request = 0; //reset

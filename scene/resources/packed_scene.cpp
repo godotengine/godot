@@ -46,6 +46,12 @@
 #include "scene/main/missing_node.h"
 #include "scene/property_utils.h"
 
+#include "modules/modules_enabled.gen.h" // for gdscript
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/gdscript.h"
+#endif // MODULE_GDSCRIPT_ENABLED
+
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
 #endif // _3D_DISABLED
@@ -966,6 +972,13 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			if (value.get_type() != Variant::NODE_PATH) {
 				continue; //was never set, ignore.
 			}
+		} else if (E.type == Variant::OBJECT && name == CoreStringName(script)) {
+#ifdef MODULE_GDSCRIPT_ENABLED
+			Ref<GDScript> script = value;
+			if (script.is_valid() && script->is_built_in() && script->has_owner()) {
+				continue; // ignore inneer classes.
+			}
+#endif // MODULE_GDSCRIPT_ENABLED
 		} else if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
 			// Was this missing resource overridden? If so do not save the old value.
 			Ref<Resource> ures = value;
