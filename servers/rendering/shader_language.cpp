@@ -11516,7 +11516,8 @@ Error ShaderLanguage::compile(const String &p_code, const ShaderCompileInfo &p_i
 	return OK;
 }
 
-Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptLanguage::CodeCompletionOption> *r_options, String &r_call_hint) {
+#ifdef TOOLS_ENABLED
+Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_info, List<EditorLanguage::CompletionOption> *r_options, String &r_call_hint) {
 	clear();
 	is_shader_inc = p_info.is_include;
 
@@ -11541,7 +11542,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				if (keyword_list[i].excluded_shader_types.has(shader_type_identifier) || keyword_list[i].excluded_functions.has(current_function)) {
 					continue;
 				}
-				ScriptLanguage::CodeCompletionOption option(keyword_list[i].text, ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD);
+				EditorLanguage::CompletionOption option(keyword_list[i].text, EditorLanguage::CompletionKind::KEYWORD);
 				r_options->push_back(option);
 			}
 		}
@@ -11555,7 +11556,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		} break;
 		case COMPLETION_SHADER_TYPE: {
 			for (const String &shader_type : p_info.shader_types) {
-				ScriptLanguage::CodeCompletionOption option(shader_type, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				EditorLanguage::CompletionOption option(shader_type, EditorLanguage::CompletionKind::PLAIN_TEXT);
 				r_options->push_back(option);
 			}
 			return OK;
@@ -11579,7 +11580,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 							if (!found) {
 								for (int k = 0; k < info.options.size(); k++) {
-									ScriptLanguage::CodeCompletionOption option(String(info.name) + "_" + String(info.options[k]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+									EditorLanguage::CompletionOption option(String(info.name) + "_" + String(info.options[k]), EditorLanguage::CompletionKind::PLAIN_TEXT);
 									r_options->push_back(option);
 								}
 							}
@@ -11587,7 +11588,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 							const String name = String(info.name);
 
 							if (!shader->render_modes.has(name)) {
-								ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+								EditorLanguage::CompletionOption option(name, EditorLanguage::CompletionKind::PLAIN_TEXT);
 								r_options->push_back(option);
 							}
 						}
@@ -11608,7 +11609,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 						if (!found) {
 							for (int j = 0; j < info.options.size(); j++) {
-								ScriptLanguage::CodeCompletionOption option(String(info.name) + "_" + String(info.options[j]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+								EditorLanguage::CompletionOption option(String(info.name) + "_" + String(info.options[j]), EditorLanguage::CompletionKind::PLAIN_TEXT);
 								r_options->push_back(option);
 							}
 						}
@@ -11616,7 +11617,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						const String name = String(info.name);
 
 						if (!shader->render_modes.has(name)) {
-							ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+							EditorLanguage::CompletionOption option(name, EditorLanguage::CompletionKind::PLAIN_TEXT);
 							r_options->push_back(option);
 						}
 					}
@@ -11642,7 +11643,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 							if (!found) {
 								for (const StringName &option : info.options) {
-									ScriptLanguage::CodeCompletionOption completion_option(String(info.name) + "_" + String(option), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+									EditorLanguage::CompletionOption completion_option(String(info.name) + "_" + String(option), EditorLanguage::CompletionKind::PLAIN_TEXT);
 									r_options->push_back(completion_option);
 								}
 							}
@@ -11650,7 +11651,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 							const String name = String(info.name);
 
 							if (!shader->stencil_modes.has(name)) {
-								ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+								EditorLanguage::CompletionOption option(name, EditorLanguage::CompletionKind::PLAIN_TEXT);
 								r_options->push_back(option);
 							}
 						}
@@ -11669,7 +11670,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 						if (!found) {
 							for (const StringName &option : info.options) {
-								ScriptLanguage::CodeCompletionOption completion_option(String(info.name) + "_" + String(option), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+								EditorLanguage::CompletionOption completion_option(String(info.name) + "_" + String(option), EditorLanguage::CompletionKind::PLAIN_TEXT);
 								r_options->push_back(completion_option);
 							}
 						}
@@ -11677,7 +11678,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						const String name = String(info.name);
 
 						if (!shader->stencil_modes.has(name)) {
-							ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+							EditorLanguage::CompletionOption option(name, EditorLanguage::CompletionKind::PLAIN_TEXT);
 							r_options->push_back(option);
 						}
 					}
@@ -11690,7 +11691,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			if (shader->structs.has(completion_struct)) {
 				StructNode *node = shader->structs[completion_struct].shader_struct;
 				for (ShaderLanguage::MemberNode *member : node->members) {
-					ScriptLanguage::CodeCompletionOption option(member->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+					EditorLanguage::CompletionOption option(member->name, EditorLanguage::CompletionKind::MEMBER_VARIABLE);
 					r_options->push_back(option);
 				}
 			}
@@ -11712,7 +11713,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				if (found) {
 					continue;
 				}
-				ScriptLanguage::CodeCompletionOption option(E.key, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+				EditorLanguage::CompletionOption option(E.key, EditorLanguage::CompletionKind::FUNCTION);
 				r_options->push_back(option);
 			}
 
@@ -11721,7 +11722,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		case COMPLETION_IDENTIFIER:
 		case COMPLETION_FUNCTION_CALL: {
 			bool comp_ident = completion_type == COMPLETION_IDENTIFIER;
-			HashMap<String, ScriptLanguage::CodeCompletionKind> matches;
+			HashMap<String, EditorLanguage::CompletionKind> matches;
 			StringName skip_function;
 			BlockNode *block = completion_block;
 
@@ -11730,7 +11731,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					if (comp_ident) {
 						for (const KeyValue<StringName, BlockNode::Variable> &E : block->variables) {
 							if (E.value.line < completion_line) {
-								matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE);
+								matches.insert(E.key, EditorLanguage::CompletionKind::VARIABLE);
 							}
 						}
 					}
@@ -11738,7 +11739,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					if (block->parent_function) {
 						if (comp_ident) {
 							for (int i = 0; i < block->parent_function->arguments.size(); i++) {
-								matches.insert(block->parent_function->arguments[i].name, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE);
+								matches.insert(block->parent_function->arguments[i].name, EditorLanguage::CompletionKind::VARIABLE);
 							}
 						}
 						skip_function = block->parent_function->name;
@@ -11753,9 +11754,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 							if (info.has("global")) {
 								for (const KeyValue<StringName, BuiltInInfo> &E : info["global"].built_ins) {
-									ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+									EditorLanguage::CompletionKind kind = EditorLanguage::CompletionKind::MEMBER_VARIABLE;
 									if (E.value.constant) {
-										kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+										kind = EditorLanguage::CompletionKind::CONSTANT;
 									}
 									matches.insert(E.key, kind);
 								}
@@ -11763,9 +11764,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 							if (info.has("constants")) {
 								for (const KeyValue<StringName, BuiltInInfo> &E : info["constants"].built_ins) {
-									ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+									EditorLanguage::CompletionKind kind = EditorLanguage::CompletionKind::MEMBER_VARIABLE;
 									if (E.value.constant) {
-										kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+										kind = EditorLanguage::CompletionKind::CONSTANT;
 									}
 									matches.insert(E.key, kind);
 								}
@@ -11773,9 +11774,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 							if (skip_function != StringName() && info.has(skip_function)) {
 								for (const KeyValue<StringName, BuiltInInfo> &E : info[skip_function].built_ins) {
-									ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+									EditorLanguage::CompletionKind kind = EditorLanguage::CompletionKind::MEMBER_VARIABLE;
 									if (E.value.constant) {
-										kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+										kind = EditorLanguage::CompletionKind::CONSTANT;
 									}
 									matches.insert(E.key, kind);
 								}
@@ -11784,9 +11785,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					} else {
 						if (p_info.functions.has("global")) {
 							for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["global"].built_ins) {
-								ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+								EditorLanguage::CompletionKind kind = EditorLanguage::CompletionKind::MEMBER_VARIABLE;
 								if (E.value.constant) {
-									kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+									kind = EditorLanguage::CompletionKind::CONSTANT;
 								}
 								matches.insert(E.key, kind);
 							}
@@ -11794,9 +11795,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 						if (p_info.functions.has("constants")) {
 							for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions["constants"].built_ins) {
-								ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+								EditorLanguage::CompletionKind kind = EditorLanguage::CompletionKind::MEMBER_VARIABLE;
 								if (E.value.constant) {
-									kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+									kind = EditorLanguage::CompletionKind::CONSTANT;
 								}
 								matches.insert(E.key, kind);
 							}
@@ -11804,9 +11805,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 						if (skip_function != StringName() && p_info.functions.has(skip_function)) {
 							for (const KeyValue<StringName, BuiltInInfo> &E : p_info.functions[skip_function].built_ins) {
-								ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+								EditorLanguage::CompletionKind kind = EditorLanguage::CompletionKind::MEMBER_VARIABLE;
 								if (E.value.constant) {
-									kind = ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT;
+									kind = EditorLanguage::CompletionKind::CONSTANT;
 								}
 								matches.insert(E.key, kind);
 							}
@@ -11814,13 +11815,13 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					}
 
 					for (const KeyValue<StringName, ShaderNode::Constant> &E : shader->constants) {
-						matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+						matches.insert(E.key, EditorLanguage::CompletionKind::CONSTANT);
 					}
 					for (const KeyValue<StringName, ShaderNode::Varying> &E : shader->varyings) {
-						matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE);
+						matches.insert(E.key, EditorLanguage::CompletionKind::VARIABLE);
 					}
 					for (const KeyValue<StringName, ShaderNode::Uniform> &E : shader->uniforms) {
-						matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+						matches.insert(E.key, EditorLanguage::CompletionKind::MEMBER_VARIABLE);
 					}
 				}
 
@@ -11828,7 +11829,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					if (!shader->vfunctions[i].callable || shader->vfunctions[i].name == skip_function) {
 						continue;
 					}
-					matches.insert(String(shader->vfunctions[i].rname), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+					matches.insert(String(shader->vfunctions[i].rname), EditorLanguage::CompletionKind::FUNCTION);
 				}
 
 				int idx = 0;
@@ -11841,7 +11842,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 							if (F.value.skip_function == skip_function && stages->has(skip_function)) {
 								continue;
 							}
-							matches.insert(String(F.key), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+							matches.insert(String(F.key), EditorLanguage::CompletionKind::FUNCTION);
 						}
 					}
 				}
@@ -11852,7 +11853,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						continue;
 					}
 
-					matches.insert(String(builtin_func_defs[idx].name), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+					matches.insert(String(builtin_func_defs[idx].name), EditorLanguage::CompletionKind::FUNCTION);
 					idx++;
 				}
 
@@ -11866,15 +11867,15 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						continue;
 					}
 					if (builtin_func_defs[idx].tag == completion_class) {
-						matches.insert(String(builtin_func_defs[idx].name), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+						matches.insert(String(builtin_func_defs[idx].name), EditorLanguage::CompletionKind::FUNCTION);
 					}
 					idx++;
 				}
 			}
 
-			for (const KeyValue<String, ScriptLanguage::CodeCompletionKind> &E : matches) {
-				ScriptLanguage::CodeCompletionOption option(E.key, E.value);
-				if (E.value == ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION) {
+			for (const KeyValue<String, EditorLanguage::CompletionKind> &E : matches) {
+				EditorLanguage::CompletionOption option(E.key, E.value);
+				if (E.value == EditorLanguage::CompletionKind::FUNCTION) {
 					option.insert_text += "(";
 				}
 				r_options->push_back(option);
@@ -12140,18 +12141,18 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			}
 
 			for (int i = 0; i < limit; i++) {
-				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(colv[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT, ScriptLanguage::LOCATION_OTHER, theme_color_names[i]));
-				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(coordv[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT, ScriptLanguage::LOCATION_OTHER, theme_color_names[i]));
-				r_options->push_back(ScriptLanguage::CodeCompletionOption(String::chr(coordt[i]), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT, ScriptLanguage::LOCATION_OTHER, theme_color_names[i]));
+				r_options->push_back(EditorLanguage::CompletionOption(String::chr(colv[i]), EditorLanguage::CompletionKind::PLAIN_TEXT, EditorLanguage::CompletionLocation::OTHER, theme_color_names[i]));
+				r_options->push_back(EditorLanguage::CompletionOption(String::chr(coordv[i]), EditorLanguage::CompletionKind::PLAIN_TEXT, EditorLanguage::CompletionLocation::OTHER, theme_color_names[i]));
+				r_options->push_back(EditorLanguage::CompletionOption(String::chr(coordt[i]), EditorLanguage::CompletionKind::PLAIN_TEXT, EditorLanguage::CompletionLocation::OTHER, theme_color_names[i]));
 			}
 
 		} break;
 		case COMPLETION_HINT: {
 			if (completion_base == DataType::TYPE_VEC3 || completion_base == DataType::TYPE_VEC4) {
 				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
-					ScriptLanguage::CodeCompletionOption option("source_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					EditorLanguage::CompletionOption option("source_color", EditorLanguage::CompletionKind::PLAIN_TEXT);
 					r_options->push_back(option);
-					r_options->push_back({ "color_conversion_disabled", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT });
+					r_options->push_back({ "color_conversion_disabled", EditorLanguage::CompletionKind::PLAIN_TEXT });
 				}
 			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
 				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
@@ -12166,7 +12167,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 					for (const String &option_text : options) {
 						String hint_name = option_text.substr(0, option_text.find_char(char32_t('(')));
-						ScriptLanguage::CodeCompletionOption option(hint_name, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+						EditorLanguage::CompletionOption option(hint_name, EditorLanguage::CompletionKind::PLAIN_TEXT);
 						option.insert_text = option_text;
 						r_options->push_back(option);
 					}
@@ -12214,12 +12215,12 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				}
 
 				for (int i = 0; i < options.size(); i++) {
-					ScriptLanguage::CodeCompletionOption option(options[i], ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					EditorLanguage::CompletionOption option(options[i], EditorLanguage::CompletionKind::PLAIN_TEXT);
 					r_options->push_back(option);
 				}
 			}
 			if (!completion_base_array && !current_uniform_instance_index_defined) {
-				ScriptLanguage::CodeCompletionOption option("instance_index", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				EditorLanguage::CompletionOption option("instance_index", EditorLanguage::CompletionKind::PLAIN_TEXT);
 				option.insert_text = "instance_index(0)";
 				r_options->push_back(option);
 			}
@@ -12228,6 +12229,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 
 	return ERR_PARSE_ERROR;
 }
+#endif
 
 String ShaderLanguage::get_error_text() {
 	return error_str;
