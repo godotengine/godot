@@ -6613,7 +6613,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph = memnew(GraphEdit);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
-	graph->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+	graph->set_custom_minimum_size(Size2(260, 180) * EDSCALE);
 	graph->set_grid_pattern(GraphEdit::GridPattern::GRID_PATTERN_DOTS);
 	int grid_pattern = EDITOR_GET("editors/visual_editors/grid_pattern");
 	graph->set_grid_pattern((GraphEdit::GridPattern)grid_pattern);

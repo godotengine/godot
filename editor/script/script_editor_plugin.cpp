@@ -635,7 +635,7 @@ DocumentList::DocumentList(ScriptEditor *p_script_editor) {
 
 	item_list = memnew(ItemList);
 	item_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	item_list->set_custom_minimum_size(Size2(100, 60) * EDSCALE);
+	item_list->set_custom_minimum_size(Size2(60, 40) * EDSCALE);
 	item_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	item_list->set_theme_type_variation("ItemListSecondary");
 	item_list->set_allow_rmb_select(true);
@@ -853,7 +853,7 @@ DocumentOutline::DocumentOutline(ScriptEditor *p_script_editor) {
 	tree->set_allow_rmb_select(true);
 	tree->set_hide_root(true);
 	tree->set_hide_folding(true);
-	tree->set_custom_minimum_size(Size2(0, 60) * EDSCALE);
+	tree->set_custom_minimum_size(Size2(0, 40 * EDSCALE));
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->connect(SceneStringName(item_selected), callable_mp(this, &DocumentOutline::_tree_selected));
 	add_child(tree);
