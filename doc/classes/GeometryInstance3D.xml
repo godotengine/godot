@@ -17,6 +17,12 @@
 				Get the value of a shader parameter as set on this instance.
 			</description>
 		</method>
+		<method name="get_lightmap_baked_texel_scale" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the texel scale used when this instance's current lightmap was baked.
+			</description>
+		</method>
 		<method name="set_instance_shader_parameter">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -26,6 +32,13 @@
 				[b]Note:[/b] For a shader uniform to be assignable on a per-instance basis, it [i]must[/i] be defined with [code]instance uniform ...[/code] rather than [code]uniform ...[/code] in the shader code.
 				[b]Note:[/b] [param name] is case-sensitive and must match the name of the uniform in the code exactly (not the capitalized name in the inspector).
 				[b]Note:[/b] Per-instance shader uniforms are only available in Spatial and CanvasItem shaders, but not for Fog, Sky, or Particles shaders.
+			</description>
+		</method>
+		<method name="set_lightmap_baked_texel_scale">
+			<return type="void" />
+			<param index="0" name="scale" type="float" />
+			<description>
+				Sets the texel scale used when this instance's current lightmap was baked. This is used internally to keep the UV2 texel density debug view accurate when [member gi_lightmap_texel_scale] changes after baking.
 			</description>
 		</method>
 	</methods>

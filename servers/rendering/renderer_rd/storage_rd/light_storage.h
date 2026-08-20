@@ -352,6 +352,8 @@ private:
 		RID light_texture;
 		RID shadow_texture;
 		RSE::ShadowmaskMode shadowmask_mode = RSE::SHADOWMASK_MODE_NONE;
+		float texel_scale = 1.0;
+		float baked_texel_scale = 1.0;
 		bool uses_spherical_harmonics = false;
 		bool interior = false;
 		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
@@ -1037,6 +1039,10 @@ public:
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
 	virtual RSE::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override;
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RSE::ShadowmaskMode p_mode) override;
+	virtual float lightmap_get_texel_scale(RID p_lightmap) override;
+	virtual void lightmap_set_texel_scale(RID p_lightmap, float p_scale) override;
+	virtual float lightmap_get_baked_texel_scale(RID p_lightmap) override;
+	virtual void lightmap_set_baked_texel_scale(RID p_lightmap, float p_scale) override;
 
 	virtual float lightmap_get_probe_capture_update_speed() const override {
 		return lightmap_probe_capture_update_speed;
