@@ -228,10 +228,16 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 	const int first_bytes = f->get_16();
 	static const Vector<int> coff_header_machines{
 		0x0, // IMAGE_FILE_MACHINE_UNKNOWN
-		0x8664, // IMAGE_FILE_MACHINE_AMD64
-		0x1c0, // IMAGE_FILE_MACHINE_ARM
-		0x14c, // IMAGE_FILE_MACHINE_I386
-		0x200, // IMAGE_FILE_MACHINE_IA64
+		0x8664, // IMAGE_FILE_MACHINE_AMD64 (x86_64)
+		0x1c0, // IMAGE_FILE_MACHINE_ARM (old arm32)
+		0x1c4, // IMAGE_FILE_MACHINE_ARMNT (new arm32)
+		0x14c, // IMAGE_FILE_MACHINE_I386 (x86_32)
+		0x200, // IMAGE_FILE_MACHINE_IA64 (Itanium)
+		0x5064, // IMAGE_FILE_MACHINE_RISCV64 (rv64)
+		0x5128, // IMAGE_FILE_MACHINE_RISCV128 (rv128)
+		0xa641, // IMAGE_FILE_MACHINE_ARM64EC (arm64ec)
+		0xa64e, // IMAGE_FILE_MACHINE_ARM64X (hybrid: both arm64 and arm64ec)
+		0xaa64, // IMAGE_FILE_MACHINE_ARM64 (arm64)
 	};
 	ERR_FAIL_COND_V_MSG(coff_header_machines.has(first_bytes), ERR_FILE_CORRUPT, vformat("Couldn't read OBJ file '%s', it seems to be binary, corrupted, or empty.", p_path));
 	f->seek(0);
