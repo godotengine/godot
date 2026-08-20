@@ -75,5 +75,7 @@
 			$application_scene_manifest_immersive_configuration
 		</dict>
 	</dict>
+    $hand_tracking_usage_description
+    $accessory_tracking_usage_description
 </dict>
 </plist>

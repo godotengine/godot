@@ -34,20 +34,24 @@
 
 #include "visionos_simd_helpers.h"
 
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/input/input.h"
+#include "core/math/transform_3d.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
+#include "core/os/thread.h"
+#include "core/string/print_string.h"
 #include "drivers/metal/metal3_objects.h"
-#include "drivers/metal/rendering_device_driver_metal.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server.h" // ERR_NOT_ON_RENDER_THREAD_V
+#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/rendering_server_types.h"
+#include "servers/xr/xr_server.h"
 
 #include "platform/visionos/godot_app_delegate_service_visionos.h"
 
-#import <ARKit/ARKit.h>
-#import <CompositorServices/CompositorServices.h>
-
 const String VisionOSXRInterface::name = "visionOS";
-
-ar_world_tracking_provider_t VisionOSXRInterface::world_tracking_provider = nullptr;
 
 StringName VisionOSXRInterface::get_signal_name(SignalEnum p_signal) {
 	switch (p_signal) {
@@ -104,7 +108,11 @@ XRInterface::TrackingStatus VisionOSXRInterface::get_tracking_status() const {
 }
 
 bool VisionOSXRInterface::is_initialized() const {
-	return (initialized);
+	return initialized;
+}
+
+void VisionOSXRInterface::RenderThread::set_world_tracking_provider(uint64_t p_world_tracking_provider) {
+	this->world_tracking_provider = (__bridge ar_world_tracking_provider_t)(void *)p_world_tracking_provider;
 }
 
 bool VisionOSXRInterface::initialize() {
@@ -113,47 +121,79 @@ bool VisionOSXRInterface::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, false);
 
+	// Checking features
+	GDTRenderMode app_delegate_render_mode = GDTAppDelegateServiceVisionOS.renderMode;
+	cs.enabled = (app_delegate_render_mode == GDTRenderModeCompositorServices);
+	hands.enabled = GLOBAL_GET("xr/visionos/enable_hand_tracking");
+	controllers.enabled = GLOBAL_GET("xr/visionos/enable_controller_tracking");
+
+	// ARKit session
+	ar_session = ar_session_create();
+
+	// CompositorServices
+	if (cs.enabled) {
+		cs.initialize(xr_server);
+
+		// RenderThread
+		rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL_V(rendering_server, false);
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::initialize));
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_world_tracking_provider).bind((uint64_t)(__bridge void *)cs.world_tracking_provider));
+
+		float minimum_supported_near_plane = cp_layer_renderer_capabilities_supported_minimum_near_plane_distance(cs.layer_renderer_capabilities);
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_minimum_supported_near_plane).bind(minimum_supported_near_plane));
+
+		// Make this our primary interface, since it's used for rendering
+		xr_server->set_primary_interface(this);
+	}
+
+	// Hand tracking
+	if (hands.enabled) {
+		hands.initialize(xr_server);
+	}
+
+	// Controllers
+	if (controllers.enabled) {
+		controllers.initialize(xr_server, this);
+	}
+
+	// Running the ARKit session for head tracking, at first
+	run_ar_session();
+
+	// Check the authorizations asynchronously
+	if (hands.enabled || controllers.enabled) {
+		update_authorizations_async();
+	}
+
+	initialized = true;
+
+	print_verbose(String("VisionOSXRInterface initialized with:") + " compositorservices=" + (cs.enabled ? "yes" : "no") + " hands=" + (hands.enabled ? "yes" : "no") + " controllers=" + (controllers.enabled ? "yes" : "no"));
+
+	return initialized;
+}
+
+bool VisionOSXRInterface::CompositorServicesData::initialize(XRServer *p_xr_server) {
 	String driver_name = OS::get_singleton()->get_current_rendering_driver_name().to_lower();
 	ERR_FAIL_COND_V_MSG(driver_name != "metal", false, "The visionOS XR interface requires the Metal rendering driver.");
-
-	GDTRenderMode app_delegate_render_mode = GDTAppDelegateServiceVisionOS.renderMode;
-	ERR_FAIL_COND_V_MSG(app_delegate_render_mode != GDTRenderModeCompositorServices, false, "The visionOS XR interface requires GDTRenderModeCompositorServices render mode.");
 
 	layer_renderer = GDTAppDelegateServiceVisionOS.layerRenderer;
 	layer_renderer_capabilities = GDTAppDelegateServiceVisionOS.layerRendererCapabilities;
 
-	ERR_FAIL_NULL_V_MSG(layer_renderer, false, "GDTAppDelegateServiceVisionOS.layerRenderer not set");
-	ERR_FAIL_NULL_V_MSG(layer_renderer_capabilities, false, "GDTAppDelegateServiceVisionOS.layerRendererCapabilities not set");
+	ERR_FAIL_NULL_V_MSG(layer_renderer, false, "GDTAppDelegateServiceVisionOS.layerRenderer not set.");
+	ERR_FAIL_NULL_V_MSG(layer_renderer_capabilities, false, "GDTAppDelegateServiceVisionOS.layerRendererCapabilities not set.");
 
-	// ARKit session initialization
-	ar_session = ar_session_create();
 	ar_world_tracking_configuration_t world_tracking_configuration = ar_world_tracking_configuration_create();
 	world_tracking_provider = ar_world_tracking_provider_create(world_tracking_configuration);
 	current_device_anchor = ar_device_anchor_create();
-	ar_data_providers_t data_providers = ar_data_providers_create();
-	ar_data_providers_add_data_provider(data_providers, world_tracking_provider);
-	ar_session_run(ar_session, data_providers);
 
 	// Head tracker initialization
 	head_tracker.instantiate();
 	head_tracker->set_tracker_type(XRServer::TRACKER_HEAD);
 	head_tracker->set_tracker_name("head");
 	head_tracker->set_tracker_desc("Device head pose");
-	xr_server->add_tracker(head_tracker);
+	p_xr_server->add_tracker(head_tracker);
 
-	// RenderThread
-	rendering_server = RenderingServer::get_singleton();
-	ERR_FAIL_NULL_V(rendering_server, false);
-	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::initialize));
-
-	float minimum_supported_near_plane = cp_layer_renderer_capabilities_supported_minimum_near_plane_distance(layer_renderer_capabilities);
-	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_minimum_supported_near_plane).bind(minimum_supported_near_plane));
-
-	// Make this our primary interface
-	xr_server->set_primary_interface(this);
-
-	initialized = true;
-	return initialized;
+	return true;
 }
 
 void VisionOSXRInterface::uninitialize() {
@@ -161,22 +201,44 @@ void VisionOSXRInterface::uninitialize() {
 		return;
 	}
 
-	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::uninitialize));
+	if (cs.enabled && rendering_server) {
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::uninitialize));
+	}
 
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
-		if (head_tracker.is_valid()) {
-			xr_server->remove_tracker(head_tracker);
-			head_tracker.unref();
+		if (controllers.enabled) {
+			controllers.uninitialize(xr_server);
 		}
 
-		if (xr_server->get_primary_interface() == this) {
-			// no longer our primary interface
-			xr_server->set_primary_interface(nullptr);
+		if (hands.enabled) {
+			if (hands.left_hand_tracker.is_valid()) {
+				xr_server->remove_tracker(hands.left_hand_tracker);
+				hands.left_hand_tracker.unref();
+			}
+			if (hands.right_hand_tracker.is_valid()) {
+				xr_server->remove_tracker(hands.right_hand_tracker);
+				hands.right_hand_tracker.unref();
+			}
+		}
+
+		if (cs.enabled) {
+			if (cs.head_tracker.is_valid()) {
+				xr_server->remove_tracker(cs.head_tracker);
+				cs.head_tracker.unref();
+			}
+
+			if (xr_server->get_primary_interface() == this) {
+				// no longer our primary interface
+				xr_server->set_primary_interface(nullptr);
+			}
 		}
 
 		initialized = false;
 	}
+
+	// equivalent to "ar_release(ar_session)" since automatic reference counting is enabled
+	ar_session = nullptr;
 }
 
 void VisionOSXRInterface::RenderThread::initialize() {
@@ -205,10 +267,10 @@ void VisionOSXRInterface::RenderThread::uninitialize() {
 }
 
 void VisionOSXRInterface::update_layer_renderer(cp_layer_renderer_t p_layer_renderer, cp_layer_renderer_capabilities_t p_layer_renderer_capabilities) {
-	layer_renderer = p_layer_renderer;
-	layer_renderer_capabilities = p_layer_renderer_capabilities;
+	cs.layer_renderer = p_layer_renderer;
+	cs.layer_renderer_capabilities = p_layer_renderer_capabilities;
 
-	float minimum_supported_near_plane = cp_layer_renderer_capabilities_supported_minimum_near_plane_distance(layer_renderer_capabilities);
+	float minimum_supported_near_plane = cp_layer_renderer_capabilities_supported_minimum_near_plane_distance(cs.layer_renderer_capabilities);
 	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_minimum_supported_near_plane).bind(minimum_supported_near_plane));
 }
 
@@ -238,25 +300,149 @@ bool VisionOSXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 }
 
 void VisionOSXRInterface::set_head_pose_from_arkit() {
-	ERR_FAIL_NULL_MSG(current_frame, "Current frame is nil, process() has probably not been called, using identity transform.");
+	ERR_FAIL_NULL_MSG(cs.current_frame, "Current frame is nil, process() has probably not been called, using identity transform.");
 
-	cp_frame_timing_t frame_timing = cp_frame_predict_timing(current_frame);
+	cs.current_timing = cp_frame_predict_timing(cs.current_frame);
 
-	CFTimeInterval presentation_time = cp_time_to_cf_time_interval(cp_frame_timing_get_presentation_time(frame_timing));
-	ar_device_anchor_query_status_t query_anchor_result = ar_world_tracking_provider_query_device_anchor_at_timestamp(world_tracking_provider, presentation_time, current_device_anchor);
+	CFTimeInterval presentation_time = cp_time_to_cf_time_interval(cp_frame_timing_get_presentation_time(cs.current_timing));
+	ar_device_anchor_query_status_t query_anchor_result = ar_world_tracking_provider_query_device_anchor_at_timestamp(cs.world_tracking_provider, presentation_time, cs.current_device_anchor);
 
 	if (query_anchor_result != ar_device_anchor_query_status_success) {
 		tracking_state = XRInterface::XR_NOT_TRACKING;
-		ERR_FAIL_MSG("cannot query device anchor, result: " + itos(query_anchor_result));
+		ERR_FAIL_MSG("Cannot query device anchor, result: " + itos(query_anchor_result) + ".");
 	}
 
-	simd_float4x4 origin_from_head_simd = ar_anchor_get_origin_from_anchor_transform(current_device_anchor);
+	simd_float4x4 origin_from_head_simd = ar_anchor_get_origin_from_anchor_transform(cs.current_device_anchor);
 	tracking_state = XRInterface::XR_NORMAL_TRACKING;
 
-	if (head_tracker.is_valid()) {
+	if (cs.head_tracker.is_valid()) {
 		// Set our head position (in real space, reference frame and world scale is applied later)
-		head_tracker->set_pose("default", MTL::simd_to_transform3D(origin_from_head_simd), Vector3(), Vector3(), XRPose::XR_TRACKING_CONFIDENCE_HIGH);
+		cs.head_tracker->set_pose("default", MTL::simd_to_transform3D(origin_from_head_simd), Vector3(), Vector3(), XRPose::XR_TRACKING_CONFIDENCE_HIGH);
 	}
+}
+
+namespace {
+VisionOSAuthorizationStatus convert(ar_authorization_status_t p_status) {
+	switch (p_status) {
+		case ar_authorization_status_not_determined:
+			return VisionOSAuthorizationStatus::NOT_DETERMINED;
+		case ar_authorization_status_allowed:
+			return VisionOSAuthorizationStatus::ALLOWED;
+		case ar_authorization_status_denied:
+			return VisionOSAuthorizationStatus::DENIED;
+	}
+	// Unknown/future cases
+	return VisionOSAuthorizationStatus::NOT_DETERMINED;
+}
+} // namespace
+
+void VisionOSXRInterface::update_authorizations_async() {
+	uintptr_t types = ar_authorization_type_none;
+
+	if (hands.enabled) {
+		types |= ar_authorization_type_hand_tracking;
+	}
+
+	if (controllers.enabled) {
+		types |= ar_authorization_type_accessory_tracking;
+	}
+
+	if (types == ar_authorization_type_none) {
+		// Nothing to request
+		return;
+	}
+
+	Ref<VisionOSXRInterface> ref_this = this;
+	ar_session_request_authorization(ar_session, static_cast<ar_authorization_type_t>(types), ^(ar_authorization_results_t authorization_results, ar_error_t _Nullable error) {
+		dispatch_async(dispatch_get_main_queue(), ^(void) {
+			ERR_FAIL_COND_MSG(error != nullptr, "Could not query ARKit authorizations.");
+
+			if (ref_this->is_initialized()) {
+				ref_this->update_from_authorizations(authorization_results);
+			}
+		});
+	});
+}
+
+void VisionOSXRInterface::update_from_authorizations(ar_authorization_results_t p_authorization_results) {
+	VisionOSAuthorizationStatus previous_hands = hands.authorization;
+	VisionOSAuthorizationStatus previous_controllers = controllers.authorization;
+
+	ar_authorization_results_enumerate_results(p_authorization_results, ^bool(ar_authorization_result_t authorization_result) {
+		ar_authorization_type_t type = ar_authorization_result_get_authorization_type(authorization_result);
+		ar_authorization_status_t status = ar_authorization_result_get_status(authorization_result);
+
+		switch (type) {
+			case ar_authorization_type_hand_tracking:
+				hands.authorization = convert(status);
+				if (status == ar_authorization_status_denied) {
+					ERR_PRINT("Hand tracking not authorized. Enable it in `Settings > Privacy` and restart the app.");
+				}
+				break;
+			case ar_authorization_type_accessory_tracking:
+				controllers.authorization = convert(status);
+				if (status == ar_authorization_status_denied) {
+					ERR_PRINT("Controller tracking not authorized. Enable it in `Settings > Privacy` and restart the app.");
+				}
+				break;
+			default:
+				break;
+		}
+
+		return true; // continue with the enumeration
+	});
+
+	// If something changed, re-run the ARKit session with updated authorizations
+	if (previous_hands != hands.authorization || previous_controllers != controllers.authorization) {
+		run_ar_session();
+	}
+}
+
+void VisionOSXRInterface::run_ar_session() {
+	ar_data_providers_t ar_data_providers = ar_data_providers_create();
+
+	if (cs.enabled) {
+		ar_data_providers_add_data_provider(ar_data_providers, cs.world_tracking_provider);
+	}
+
+	if (hands.active()) {
+		ar_data_providers_add_data_provider(ar_data_providers, hands.hand_tracking_provider);
+	}
+
+	if (controllers.active()) {
+		ar_data_providers_add_data_provider(ar_data_providers, controllers.accessory_tracking_provider);
+	}
+
+	// Running the ARSession with the given providers, after it has been configured
+	ar_session_run(ar_session, ar_data_providers);
+}
+
+CFTimeInterval VisionOSXRInterface::get_trackable_anchor_time() {
+	// Computing the time to use for pose prediction
+	CFTimeInterval trackable_anchor_time = 0;
+
+	if (cs.enabled) {
+		// If CompositorServices is enabled, use its presentation time for pose prediction
+		trackable_anchor_time = cp_time_to_cf_time_interval(cp_frame_timing_get_trackable_anchor_time(cs.current_timing));
+	} else {
+		// If not using CompositorServices, we obtain the estimatedPresentationTime from the active UIScene
+		UIWindowScene *window_scene = nil;
+		for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+			if ([scene isKindOfClass:[UIWindowScene class]]) {
+				UIWindowScene *window_scene_candidate = (UIWindowScene *)scene;
+				if (window_scene_candidate.activationState == UISceneActivationStateForegroundActive) {
+					window_scene = window_scene_candidate;
+					break;
+				}
+			}
+		}
+		if (window_scene != nil) {
+			UIUpdateInfo *ui_update_info = [UIUpdateInfo currentUpdateInfoForWindowScene:window_scene];
+			trackable_anchor_time = ui_update_info.estimatedPresentationTime;
+		}
+	}
+
+	return trackable_anchor_time;
 }
 
 void VisionOSXRInterface::process() {
@@ -264,15 +450,29 @@ void VisionOSXRInterface::process() {
 		return;
 	}
 
-	current_frame = cp_layer_renderer_query_next_frame(layer_renderer);
+	if (cs.enabled) {
+		cs.current_frame = cp_layer_renderer_query_next_frame(cs.layer_renderer);
 
-	ERR_FAIL_NULL_MSG(current_frame, "Layer renderer unexpectedly returned a nil frame, the layer renderer has probably been invalidated and it hasn't been updated to a new one.");
+		ERR_FAIL_NULL_MSG(cs.current_frame, "Layer renderer unexpectedly returned a nil frame, the layer renderer has probably been invalidated and it hasn't been updated to a new one.");
 
-	// Set head pose before engine update, so scripts can access fresh head tracker data
-	set_head_pose_from_arkit();
+		// Set head pose before engine update, so scripts can access fresh head tracker data
+		set_head_pose_from_arkit();
 
-	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_current_frame).bind((uint64_t)current_frame));
-	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::start_frame_update));
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_current_frame).bind((uint64_t)cs.current_frame));
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::start_frame_update));
+	}
+
+	if (hands.active() || controllers.active()) {
+		CFTimeInterval trackable_anchor_time = get_trackable_anchor_time();
+
+		if (hands.active()) {
+			hands.update_hand_trackers_from_arkit(trackable_anchor_time);
+		}
+
+		if (controllers.active()) {
+			controllers.update_controller_trackers_from_arkit(trackable_anchor_time);
+		}
+	}
 }
 
 Size2 VisionOSXRInterface::get_render_target_size() {
@@ -294,7 +494,7 @@ void VisionOSXRInterface::RenderThread::set_current_frame(uint64_t p_current_fra
 	ar_device_anchor_query_status_t query_anchor_result = ar_world_tracking_provider_query_device_anchor_at_timestamp(world_tracking_provider, presentation_time, current_device_anchor);
 
 	if (query_anchor_result != ar_device_anchor_query_status_success) {
-		ERR_FAIL_MSG("Cannot query device anchor, result: " + itos(query_anchor_result));
+		ERR_FAIL_MSG("Cannot query device anchor, result: " + itos(query_anchor_result) + ".");
 	}
 
 	simd_float4x4 origin_from_head_simd = ar_anchor_get_origin_from_anchor_transform(current_device_anchor);
@@ -343,7 +543,7 @@ Transform3D VisionOSXRInterface::RenderThread::get_transform_for_view(uint32_t p
 		float world_scale = xr_server->get_world_scale();
 		origin_from_eye.origin *= world_scale;
 	} else {
-		ERR_PRINT("vision_vr_interface not initialized, returning received camera transform");
+		ERR_PRINT("vision_vr_interface not initialized, returning received camera transform.");
 		origin_from_eye = Transform3D();
 	}
 	Transform3D reference_frame = xr_server->get_reference_frame();
@@ -465,7 +665,7 @@ void VisionOSXRInterface::RenderThread::pre_render() {
 			current_drawable = drawable;
 		}
 	}
-	ERR_FAIL_NULL_MSG(current_drawable, "Built-in drawable not found, aborting");
+	ERR_FAIL_NULL_MSG(current_drawable, "Built-in drawable not found, aborting.");
 
 	// Cache the render target size so it can be read from the game thread.
 	id<MTLTexture> color_texture = cp_drawable_get_color_texture(current_drawable, 0);
@@ -475,7 +675,7 @@ void VisionOSXRInterface::RenderThread::pre_render() {
 	if (current_device_anchor != nil) {
 		cp_drawable_set_device_anchor(current_drawable, current_device_anchor);
 	} else {
-		ERR_PRINT("Current device anchor is nil, will present drawable without a device anchor");
+		ERR_PRINT("Current device anchor is nil, will present drawable without a device anchor.");
 	}
 }
 
@@ -587,7 +787,7 @@ RID VisionOSXRInterface::RenderThread::get_vrs_texture() {
 
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, pre_render() has probably not been called.");
 	size_t count = cp_drawable_get_rasterization_rate_map_count(current_drawable);
-	ERR_FAIL_COND_V_MSG(count == 0, RID(), "No rasterizationRateMaps found");
+	ERR_FAIL_COND_V_MSG(count == 0, RID(), "No rasterizationRateMaps found.");
 	id<MTLRasterizationRateMap> rasterization_rate_map = cp_drawable_get_rasterization_rate_map(current_drawable, 0);
 	MTLSize logical_size = rasterization_rate_map.screenSize;
 
@@ -610,6 +810,12 @@ RID VisionOSXRInterface::RenderThread::get_vrs_texture() {
 	current_rasterization_rate_map_id = rendering_device->texture_owner.make_rid(current_rasterization_rate_map);
 
 	return current_rasterization_rate_map_id;
+}
+
+void VisionOSXRInterface::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
+	if (controllers.enabled) {
+		controllers.trigger_haptic_pulse(p_action_name, p_tracker_name, p_frequency, p_amplitude, p_duration_sec, p_delay_sec);
+	}
 }
 
 #endif // VISIONOS_ENABLED

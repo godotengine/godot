@@ -334,6 +334,14 @@ String EditorExportPlatformIOS::_process_config_file_line(const Ref<EditorExport
 	} else if (p_line.contains("$application_scene_manifest_immersive_configuration")) {
 		strnew += p_line.replace("$application_scene_manifest_immersive_configuration", "") + "\n";
 
+		// Info.plist NSHandsTrackingUsageDescription
+	} else if (p_line.contains("$hand_tracking_usage_description")) {
+		strnew += p_line.replace("$hand_tracking_usage_description", "") + "\n";
+
+		// Info.plist NSAccessoryTrackingUsageDescription
+	} else if (p_line.contains("$accessory_tracking_usage_description")) {
+		strnew += p_line.replace("$accessory_tracking_usage_description", "") + "\n";
+
 		// Apple Embedded common
 	} else {
 		strnew += EditorExportPlatformAppleEmbedded::_process_config_file_line(p_preset, p_line, p_config, p_debug, p_code_signing);

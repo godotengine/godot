@@ -32,26 +32,18 @@
 
 #ifdef VISIONOS_ENABLED
 
-#include "core/object/ref_counted.h"
-#include "drivers/metal/metal_objects_shared.h"
-#include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_server_types.h"
-#include "servers/xr/xr_interface.h"
-#include "servers/xr/xr_positional_tracker.h"
+#include "visionos_controller_tracking.h"
+#include "visionos_definitions.h"
+#include "visionos_hand_tracking.h"
 
 #ifdef __OBJC__
-// When compiling as Objective-C++, include the actual headers
-#import <ARKit/ARKit.h>
 #import <CompositorServices/CompositorServices.h>
 #else
-// When compiling as C++, use forward declarations for ARKit and CompositorServices types (opaque pointers)
-typedef struct ar_world_tracking_provider *ar_world_tracking_provider_t;
 typedef struct cp_layer_renderer *cp_layer_renderer_t;
 typedef struct cp_layer_renderer_capabilities *cp_layer_renderer_capabilities_t;
-typedef struct ar_session *ar_session_t;
-typedef struct ar_device_anchor *ar_device_anchor_t;
 typedef struct cp_frame *cp_frame_t;
 typedef struct cp_drawable *cp_drawable_t;
+typedef struct cp_frame_timing *cp_frame_timing_t;
 #endif
 
 class RenderingServer;
@@ -78,15 +70,44 @@ private:
 
 	RenderingServer *rendering_server;
 
-	// Static so it can be used from the render thread
-	static ar_world_tracking_provider_t world_tracking_provider;
-
-	cp_layer_renderer_t layer_renderer = nullptr;
-	cp_layer_renderer_capabilities_t layer_renderer_capabilities = nullptr;
 	ar_session_t ar_session = nullptr;
 
-	ar_device_anchor_t current_device_anchor = nullptr;
-	cp_frame_t current_frame = nullptr;
+	// Rendering in XR with CompositorServices
+	struct CompositorServicesData {
+		bool enabled = false;
+
+		cp_layer_renderer_t layer_renderer = nullptr;
+		cp_layer_renderer_capabilities_t layer_renderer_capabilities = nullptr;
+
+		ar_world_tracking_provider_t world_tracking_provider = nullptr;
+
+		cp_frame_t current_frame = nullptr;
+		cp_frame_timing_t current_timing = nullptr;
+
+		// Head tracker
+		Ref<XRPositionalTracker> head_tracker;
+
+		ar_device_anchor_t current_device_anchor = nullptr;
+
+		bool initialize(XRServer *xr_server);
+	} cs;
+
+	void set_head_pose_from_arkit();
+
+	// Checks the ARKit authorizations asynchronously
+	// and updates the ARKit session if they changed.
+	void update_authorizations_async();
+
+	// Time used for pose prediction
+	CFTimeInterval get_trackable_anchor_time();
+
+	void update_from_authorizations(ar_authorization_results_t);
+
+	// Hand tracking
+	VisionOSHandTracking hands;
+
+	// Controller tracking
+	VisionOSControllerTracking controllers;
 
 	// Data and functions only accessible from the rendering thread
 	class RenderThread : public Object {
@@ -104,6 +125,7 @@ private:
 		// RenderThread must query the device anchor again,
 		// because ar_device_anchor_t objects cannot be safely shared between threads
 		ar_device_anchor_t current_device_anchor = nullptr;
+		ar_world_tracking_provider_t world_tracking_provider = nullptr;
 		Transform3D origin_from_head;
 
 		cp_frame_t current_frame = nullptr;
@@ -129,6 +151,9 @@ private:
 		// p_current_frame should be an cp_frame_t pointer casted to uint64_t
 		void set_current_frame(uint64_t p_current_frame);
 
+		// Expects an ar_world_tracking_provider_t
+		void set_world_tracking_provider(uint64_t p_world_tracking_provider);
+
 		// Safe to be called from the game thread
 		void start_frame_update();
 		void end_frame_update();
@@ -151,14 +176,9 @@ private:
 		RID get_vrs_texture();
 	} rt;
 
-	// Head tracker
-	Ref<XRPositionalTracker> head_tracker;
-
 	static void _bind_methods();
 	static const String name;
 	static StringName get_signal_name(SignalEnum p_signal);
-
-	void set_head_pose_from_arkit();
 
 public:
 	static Ref<VisionOSXRInterface> find_interface() {
@@ -168,16 +188,24 @@ public:
 	VisionOSXRInterface();
 	~VisionOSXRInterface();
 
+	cp_frame_timing_t get_current_timing();
+
 	void emit_signal_enum(SignalEnum p_signal);
 
 	virtual StringName get_name() const override;
 	virtual uint32_t get_capabilities() const override;
 
 	virtual TrackingStatus get_tracking_status() const override;
+	virtual void trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0) override;
 
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
+
+	// Running the ARKit session.
+	// Note that we need to re-run it when the privacy authorizations changed
+	// or when a new controller was connected (on visionOS 26 and earlier).
+	void run_ar_session();
 
 	// The LayerRenderer and Capabilities are polled from the app delegate when initializing the VisionOSXRInterface,
 	// but they need to be updated when the app backgrounds and foregrounds because they are recreated by visionOS
@@ -234,4 +262,4 @@ public:
 	}
 };
 
-#endif
+#endif // VISIONOS_ENABLED

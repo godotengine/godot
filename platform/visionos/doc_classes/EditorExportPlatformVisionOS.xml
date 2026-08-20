@@ -139,6 +139,12 @@
 		<member name="modules/camera" type="bool" setter="" getter="">
 			If [code]true[/code], [CameraServer] module is added to the exported project.
 		</member>
+		<member name="privacy/accessory_tracking_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to controller tracking on visionOS (in English).
+		</member>
+		<member name="privacy/accessory_tracking_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to controller tracking on visionOS (localized).
+		</member>
 		<member name="privacy/active_keyboard_access_reasons" type="int" setter="" getter="">
 			The reasons your app use active keyboard API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
 		</member>
@@ -573,6 +579,12 @@
 		</member>
 		<member name="privacy/file_timestamp_access_reasons" type="int" setter="" getter="">
 			The reasons your app use file timestamp/metadata API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+		</member>
+		<member name="privacy/hand_tracking_usage_description" type="String" setter="" getter="">
+			A message displayed when requesting access to hand tracking on visionOS (in English).
+		</member>
+		<member name="privacy/hand_tracking_usage_description_localized" type="Dictionary" setter="" getter="">
+			A message displayed when requesting access to hand tracking on visionOS (localized).
 		</member>
 		<member name="privacy/microphone_usage_description" type="String" setter="" getter="">
 			A message displayed when requesting access to the device's microphone (in English).

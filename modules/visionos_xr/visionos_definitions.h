@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  export_plugin.h                                                       */
+/*  visionos_definitions.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,40 +30,45 @@
 
 #pragma once
 
-#include "editor/export/editor_export_platform_apple_embedded.h"
+#ifdef VISIONOS_ENABLED
 
-class EditorExportPlatformVisionOS : public EditorExportPlatformAppleEmbedded {
-	GDCLASS(EditorExportPlatformVisionOS, EditorExportPlatformAppleEmbedded);
+#include "core/templates/safe_refcount.h"
+#include "drivers/metal/metal_objects_shared.h"
+#include "drivers/metal/rendering_context_driver_metal.h"
+#include "drivers/metal/rendering_device_driver_metal.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/xr/xr_controller_tracker.h"
+#include "servers/xr/xr_hand_tracker.h"
+#include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_positional_tracker.h"
+#include "servers/xr/xr_vrs.h"
 
-	static Vector<String> device_types;
+#ifdef __OBJC__
+// When compiling as Objective-C++, include the actual headers
+#import <ARKit/ARKit.h>
+#else // __OBJC__
+// When compiling as C++, use forward declarations for ARKit and CompositorServices types (opaque pointers)
+typedef struct ar_world_tracking_provider *ar_world_tracking_provider_t;
+typedef struct ar_hand_tracking_provider *ar_hand_tracking_provider_t;
+typedef struct ar_accessory_tracking_provider *ar_accessory_tracking_provider_t;
+typedef struct ar_data_providers *ar_data_providers_t;
+typedef struct ar_data_provider *ar_data_provider_t;
+;
+typedef struct ar_authorization_results *ar_authorization_results_t;
+typedef struct ar_session *ar_session_t;
+typedef struct ar_device_anchor *ar_device_anchor_t;
+typedef struct ar_hand_anchor *ar_hand_anchor_t;
+typedef struct ar_accessories *ar_accessories_t;
+typedef struct ar_accessory_anchor *ar_accessory_anchor_t;
+#endif // __OBJC__
 
-	virtual String get_platform_name() const override { return "visionos"; }
-	virtual String get_sdk_name() const override { return "xros"; }
-	virtual const Vector<String> get_device_types() const override { return device_types; }
-
-	virtual String get_minimum_deployment_target() const override { return "26.0"; }
-
-	virtual Vector<EditorExportPlatformAppleEmbedded::IconInfo> get_icon_infos() const override;
-
-	// visionOS uses a layered .solidimagestack with three .solidimagestacklayer dirs.
-	virtual String _get_iconset_dir_name() const override { return "AppIcon.solidimagestack"; }
-	virtual Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) override;
-
-	virtual void get_export_options(List<ExportOption> *r_options) const override;
-
-	virtual String _process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) override;
-
-	virtual void get_usage_descriptions(List<UsageDescription> *r_descriptions) const override;
-
-public:
-	virtual String get_name() const override { return "visionOS"; }
-	virtual String get_os_name() const override { return "visionOS"; }
-
-	virtual void get_platform_features(List<String> *r_features) const override {
-		EditorExportPlatformAppleEmbedded::get_platform_features(r_features);
-		r_features->push_back("visionos");
-	}
-
-	virtual void initialize() override;
-	~EditorExportPlatformVisionOS();
+// Equivalent to ARKit's `ar_authorization_status`
+enum class VisionOSAuthorizationStatus {
+	NOT_DETERMINED,
+	ALLOWED,
+	DENIED,
 };
+
+#endif // VISIONOS_ENABLED

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisionOSXRInterface" inherits="XRInterface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		visionOS XR implementation for rendering in immersive mode.
+		visionOS XR implementation for rendering in immersive mode, hand tracking, and controller tracking.
 	</brief_description>
 	<description>
-		This is a visionOS XR implementation for rendering in immersive mode. It uses the Compositor Services framework to render an Immersive scene. It supports the full and mixed immersive modes mode. To use this module, you must set the [member EditorExportPlatformVisionOS.application/app_role] export setting to [code]Immersive[/code]. You can choose the immersion style using the [member EditorExportPlatformVisionOS.application/immersion_style] export setting. You must use the Metal rendering driver, and only the Mobile renderer is supported for now. You can initialize this interface in the [method Node._ready] method of any of your nodes as follows:
+		This is a visionOS XR implementation. It has three modules:
+		- the CompositorServices module, to render with Godot in immersive mode
+		- the hand tracking module, using Apple's ARKit
+		- the spatial controller module, using Apple's ARKit and GCController.
+		Those modules can be enabled/disabled independently. The rendering module uses the CompositorServices framework to render an Immersive scene. It supports the full and mixed immersion modes. To use this module, you must set the [member EditorExportPlatformVisionOS.application/app_role] export setting to [code]Immersive[/code]. You can choose the immersion style using the [member EditorExportPlatformVisionOS.application/immersion_style] export setting. You must use the Metal rendering driver, and only the Mobile renderer is supported for now. You can initialize this interface in the [method Node._ready] method of any of your nodes as follows:
 		[codeblock]
 		func _ready() -> void:
 			var interface = XRServer.find_interface("visionOS")
@@ -15,6 +19,8 @@
 				viewport.use_hdr_2d = true
 		[/codeblock]
 		Do not initialize the XR interface in the [method Node._process] method, as this will initialize it at some unspecified point in the middle of the frame rendering, possibly causing incorrect visionOS API usage.
+		Enable the hand tracking module with the [member ProjectSettings.xr/visionos/enable_hand_tracking] project setting. It will populate the [code]"/user/hand_tracker/left"[/code] and [code]"/user/hand_tracker/right"[/code] XRHandTrackers.
+		Enable the spatial controller module using the [member ProjectSettings.xr/visionos/enable_controller_tracking] project setting. It will populate the [code]"left_hand"[/code] and [code]"right_hand"[/code] reserved XRController trackers.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  export_plugin.h                                                       */
+/*  visionos_hand_tracking.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,40 +30,29 @@
 
 #pragma once
 
-#include "editor/export/editor_export_platform_apple_embedded.h"
+#ifdef VISIONOS_ENABLED
 
-class EditorExportPlatformVisionOS : public EditorExportPlatformAppleEmbedded {
-	GDCLASS(EditorExportPlatformVisionOS, EditorExportPlatformAppleEmbedded);
+#include "visionos_definitions.h"
 
-	static Vector<String> device_types;
+// Hand tracking using ARKit
+struct VisionOSHandTracking {
+	bool enabled = false;
+	VisionOSAuthorizationStatus authorization = VisionOSAuthorizationStatus::NOT_DETERMINED;
 
-	virtual String get_platform_name() const override { return "visionos"; }
-	virtual String get_sdk_name() const override { return "xros"; }
-	virtual const Vector<String> get_device_types() const override { return device_types; }
+	bool active() const { return enabled && authorization == VisionOSAuthorizationStatus::ALLOWED; }
 
-	virtual String get_minimum_deployment_target() const override { return "26.0"; }
+	ar_hand_tracking_provider_t hand_tracking_provider = nullptr;
 
-	virtual Vector<EditorExportPlatformAppleEmbedded::IconInfo> get_icon_infos() const override;
+	// Hand trackers
+	Ref<XRHandTracker> left_hand_tracker;
+	Ref<XRHandTracker> right_hand_tracker;
+	ar_hand_anchor_t left_hand_anchor = nullptr;
+	ar_hand_anchor_t right_hand_anchor = nullptr;
 
-	// visionOS uses a layered .solidimagestack with three .solidimagestacklayer dirs.
-	virtual String _get_iconset_dir_name() const override { return "AppIcon.solidimagestack"; }
-	virtual Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) override;
-
-	virtual void get_export_options(List<ExportOption> *r_options) const override;
-
-	virtual String _process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) override;
-
-	virtual void get_usage_descriptions(List<UsageDescription> *r_descriptions) const override;
-
-public:
-	virtual String get_name() const override { return "visionOS"; }
-	virtual String get_os_name() const override { return "visionOS"; }
-
-	virtual void get_platform_features(List<String> *r_features) const override {
-		EditorExportPlatformAppleEmbedded::get_platform_features(r_features);
-		r_features->push_back("visionos");
-	}
-
-	virtual void initialize() override;
-	~EditorExportPlatformVisionOS();
+	void initialize(XRServer *xr_server);
+	void update_hand_trackers_from_arkit(CFTimeInterval trackable_anchor_time);
+	void reset_hand_tracker_data(Ref<XRHandTracker> hand_tracker);
+	void set_hand_tracker_data_from_arkit(Ref<XRHandTracker> hand_tracker, ar_hand_anchor_t hand_anchor);
 };
+
+#endif // VISIONOS_ENABLED
