@@ -1648,6 +1648,12 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 
 			elements[item.identifier->name] = item.line;
 
+			if (named) {
+				make_completion_context(COMPLETION_NAMED_ENUM_ITEM_DECLARATION, enum_node);
+			} else {
+				make_completion_context(COMPLETION_IDENTIFIER, item.identifier);
+			}
+
 			if (match(GDScriptTokenizer::Token::EQUAL)) {
 				ExpressionNode *value = parse_expression(false);
 				if (value == nullptr) {
