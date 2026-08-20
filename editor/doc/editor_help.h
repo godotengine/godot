@@ -402,7 +402,8 @@ public:
 			const String &p_symbol,
 			const String &p_prologue = String(),
 			bool p_use_class_prefix = false,
-			bool p_shortcut = false);
+			bool p_shortcut = false,
+			Control *p_custom_header = nullptr);
 
 	void popup_under_position(const Point2 &p_point);
 

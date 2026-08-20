@@ -512,6 +512,7 @@ public:
 
 	void confirm_code_completion(bool p_replace = false);
 	void cancel_code_completion();
+	Rect2i get_code_completion_rect() const { return code_completion_rect; }
 
 	/* Line length guidelines */
 	void set_line_length_guidelines(TypedArray<int> p_guideline_columns);

@@ -50,17 +50,22 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/plugins/editor_plugin.h"
 #include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/style_box_flat.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 void ConnectionInfoDialog::ok_pressed() {
@@ -1381,13 +1386,143 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	}
 }
 
+bool ScriptTextEditor::_get_diagnostic_at_pos(int p_line, int p_column, bool &r_is_error, String &r_message) {
+	int line = p_line;
+	int col = p_column;
+
+	for (const ScriptLanguage::ScriptError &error : errors) {
+		int start_line = error.start_line - 1;
+		int start_col = error.start_column - 1;
+		int end_line = error.end_line - 1;
+		int end_col = error.end_column - 1;
+
+		if (line >= start_line && line <= end_line) {
+			int c_start = (line == start_line) ? start_col : 0;
+			int c_end = (line == end_line) ? end_col : INT_MAX;
+			if (col >= c_start && col < c_end) {
+				r_is_error = true;
+				r_message = error.message;
+				return true;
+			}
+		}
+	}
+
+	for (const ScriptLanguage::Warning &warning : warnings) {
+		int start_line = warning.start_line - 1;
+		int start_col = warning.start_column - 1;
+		int end_line = warning.end_line - 1;
+		int end_col = warning.end_column - 1;
+
+		if (line >= start_line && line <= end_line) {
+			int c_start = (line == start_line) ? start_col : 0;
+			int c_end = (line == end_line) ? end_col : INT_MAX;
+			if (col >= c_start && col < c_end) {
+				r_is_error = false;
+				r_message = warning.message;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void ScriptTextEditor::_on_hover_tooltip_timer_timeout() {
+	CodeEdit *ce = code_editor->get_text_editor();
+	const String word = ce->get_lookup_word(hover_tooltip_pos.y, hover_tooltip_pos.x);
+	const int line = hover_tooltip_pos.y;
+	const int column = hover_tooltip_pos.x;
+
+	bool is_mouse_over_code_completion_popup = ce->get_code_completion_selected_index() != -1 && ce->get_code_completion_rect().has_point(ce->get_local_mouse_position());
+
+	if (line < 0 || column < 0 || Input::get_singleton()->is_anything_pressed() || is_mouse_over_code_completion_popup) {
+		return;
+	}
+
+	_show_symbol_tooltip(word, line, column, false);
+}
+
+void ScriptTextEditor::_on_diagnostic_copy_pressed(const String &p_text) {
+	DisplayServer::get_singleton()->clipboard_set(p_text);
+	EditorToaster::get_singleton()->popup_str(TTR("Diagnostic message copied to clipboard."), EditorToaster::SEVERITY_INFO);
+}
+
 void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column, bool p_shortcut) {
-	if (!EDITOR_GET("text_editor/behavior/documentation/enable_tooltips").booleanize()) {
+	bool is_err;
+	String msg;
+	bool diagnostics_enabled = EDITOR_GET("text_editor/behavior/diagnostics/enable_tooltips").booleanize();
+	bool has_diagnostic = diagnostics_enabled && _get_diagnostic_at_pos(p_row, p_column, is_err, msg);
+
+	Control *diagnostic_header = nullptr;
+	if (has_diagnostic) {
+		VBoxContainer *vbox = memnew(VBoxContainer);
+		vbox->add_theme_constant_override("separation", 0);
+
+		PanelContainer *title_panel = memnew(PanelContainer);
+		title_panel->set_theme_type_variation("EditorHelpBitTooltipTitle");
+		vbox->add_child(title_panel);
+
+		HBoxContainer *hbox = memnew(HBoxContainer);
+		hbox->add_theme_constant_override("separation", 4 * EDSCALE);
+		title_panel->add_child(hbox);
+
+		TextureRect *icon = memnew(TextureRect);
+		icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+		hbox->add_child(icon);
+
+		Label *title = memnew(Label);
+		title->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+		title->add_theme_font_override("font", get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+		hbox->add_child(title);
+
+		Control *spacer = memnew(Control);
+		spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		hbox->add_child(spacer);
+
+		Button *copy_btn = memnew(Button);
+		copy_btn->set_flat(true);
+		copy_btn->set_tooltip_text(TTR("Click to copy."));
+		copy_btn->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+		copy_btn->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+		copy_btn->connect("pressed", callable_mp(this, &ScriptTextEditor::_on_diagnostic_copy_pressed).bind(msg));
+		hbox->add_child(copy_btn);
+
+		PanelContainer *content_panel = memnew(PanelContainer);
+		content_panel->set_theme_type_variation("EditorHelpBitTooltipContent");
+		vbox->add_child(content_panel);
+
+		Label *label = memnew(Label);
+		label->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
+		label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+		label->set_text(msg);
+		content_panel->add_child(label);
+
+		if (is_err) {
+			icon->set_texture(get_editor_theme_icon("StatusError"));
+			title->set_text(TTR("Error"));
+			title->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
+		} else {
+			icon->set_texture(get_editor_theme_icon("NodeWarning"));
+			title->set_text(TTR("Warning"));
+			title->add_theme_color_override("font_color", get_theme_color("warning_color", "Editor"));
+		}
+
+		diagnostic_header = vbox;
+	}
+
+	bool docs_enabled = EDITOR_GET("text_editor/behavior/documentation/enable_tooltips").booleanize();
+
+	if (!docs_enabled || p_symbol.is_empty()) {
+		if (has_diagnostic) {
+			Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), String(), String(), false, p_shortcut, diagnostic_header);
+			memdelete(tmp);
+		}
 		return;
 	}
 
 	if (p_symbol.begins_with("res://") || p_symbol.begins_with("uid://")) {
-		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol, String(), false, p_shortcut, diagnostic_header);
 		memdelete(tmp);
 		return;
 	}
@@ -1499,8 +1634,8 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 		debug_value = TTR("Current value: ") + debug_value.replace("[", "[lb]");
 	}
 
-	if (!doc_symbol.is_empty() || !debug_value.is_empty()) {
-		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true, p_shortcut);
+	if (!doc_symbol.is_empty() || !debug_value.is_empty() || has_diagnostic) {
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true, p_shortcut, diagnostic_header);
 		memdelete(tmp);
 	}
 }
@@ -1886,6 +2021,16 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 
 void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_EXIT_TREE: {
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_ready() && is_visible_in_tree()) {
+				_update_errors();
+				_update_warnings();
+			}
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_ready() && is_visible_in_tree()) {
 				_update_errors();
@@ -1893,7 +2038,7 @@ void ScriptTextEditor::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
 			if (!editor_enabled) {
 				break;
 			}
@@ -1902,6 +2047,7 @@ void ScriptTextEditor::_notification(int p_what) {
 				_update_errors();
 				_update_background_color();
 			}
+		}
 			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
@@ -2411,11 +2557,30 @@ void ScriptTextEditor::_assign_dragged_export_variables() {
 
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
+	Ref<InputEventMouseMotion> mm = p_ev;
 	Ref<InputEventKey> k = p_ev;
 	Point2 local_pos;
 	bool create_menu = false;
 
 	CodeEdit *tx = code_editor->get_text_editor();
+
+	if (mm.is_valid() && p_ev->get_device() != InputEvent::DEVICE_ID_EMULATION) {
+		Vector2i mpos = mm->get_position();
+		if (tx->is_layout_rtl()) {
+			mpos.x = tx->get_size().x - mpos.x;
+		}
+
+		Point2i last_hover_tooltip_pos = hover_tooltip_pos;
+		hover_tooltip_pos = tx->get_line_column_at_pos(mpos, false, false);
+		if (hover_tooltip_pos != last_hover_tooltip_pos) {
+			hover_tooltip_timer->start();
+		}
+	}
+
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() != Key::CTRL && k->get_keycode() != Key::ALT && k->get_keycode() != Key::SHIFT && k->get_keycode() != Key::META && k->get_keycode() != Key::CAPSLOCK) {
+		hover_tooltip_timer->stop();
+	}
+
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		local_pos = mb->get_global_position() - tx->get_global_position();
 		create_menu = true;
@@ -2680,6 +2845,14 @@ ScriptTextEditor::ScriptTextEditor() {
 	inline_color_options->set_fit_to_longest_item(false);
 	inline_color_options->connect("item_selected", callable_mp(this, &ScriptTextEditor::_update_color_text).unbind(1));
 	inline_color_picker->get_slider_container()->add_sibling(inline_color_options);
+
+	code_editor->get_text_editor()->set_symbol_tooltip_on_hover_enabled(false);
+
+	hover_tooltip_timer = memnew(Timer);
+	hover_tooltip_timer->set_wait_time(0.5);
+	hover_tooltip_timer->set_one_shot(true);
+	hover_tooltip_timer->connect("timeout", callable_mp(this, &ScriptTextEditor::_on_hover_tooltip_timer_timeout));
+	add_child(hover_tooltip_timer, false, INTERNAL_MODE_FRONT);
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 

@@ -95,6 +95,12 @@ class ScriptTextEditor : public CodeEditorBase {
 
 	Color warning_underline_color = Color(1, 1, 1);
 	Color error_underline_color = Color(1, 1, 1);
+	Timer *hover_tooltip_timer = nullptr;
+	Point2i hover_tooltip_pos = Point2i(-1, -1);
+	void _on_hover_tooltip_timer_timeout();
+
+	void _on_diagnostic_copy_pressed(const String &p_text);
+	bool _get_diagnostic_at_pos(int p_line, int p_column, bool &r_is_error, String &r_message);
 
 	bool theme_loaded = false;
 

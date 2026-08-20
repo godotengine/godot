@@ -5081,7 +5081,8 @@ Control *EditorHelpBitTooltip::make_tooltip(
 		const String &p_symbol,
 		const String &p_prologue,
 		bool p_use_class_prefix,
-		bool p_shortcut) {
+		bool p_shortcut,
+		Control *p_custom_header) {
 	ERR_FAIL_NULL_V(p_target, _make_invisible_control());
 
 	// Show the custom tooltip only if it is not already visible.
@@ -5091,14 +5092,29 @@ Control *EditorHelpBitTooltip::make_tooltip(
 		return _make_invisible_control();
 	}
 
-	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_symbol, p_prologue, p_use_class_prefix, false, true));
-
 	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target, p_shortcut));
-	help_bit->connect("request_hide", callable_mp(static_cast<Node *>(tooltip), &Node::queue_free));
-	tooltip->add_child(help_bit);
+
+	VBoxContainer *vbox = memnew(VBoxContainer);
+	vbox->add_theme_constant_override("separation", 0);
+	tooltip->add_child(vbox);
+
+	if (p_custom_header) {
+		vbox->add_child(p_custom_header);
+	}
+
+	EditorHelpBit *help_bit = nullptr;
+	if (!p_symbol.is_empty() || !p_prologue.is_empty()) {
+		help_bit = memnew(EditorHelpBit(p_symbol, p_prologue, p_use_class_prefix, false, true));
+		help_bit->connect("request_hide", callable_mp(static_cast<Node *>(tooltip), &Node::queue_free));
+		vbox->add_child(help_bit);
+	}
+
 	p_target->add_child(tooltip);
 
-	help_bit->update_content_height();
+	if (help_bit) {
+		help_bit->update_content_height();
+	}
+
 	if (tooltip->is_shortcut_pressed()) {
 		tooltip->_shortcut_pressed(p_target);
 	} else {
