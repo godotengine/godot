@@ -217,6 +217,10 @@ bool sc_directional_light_blend_split(uint i) {
 	return ((sc_packed_1() >> (23 + i)) & 1U) != 0;
 }
 
+bool sc_use_lightmap_specular() {
+	return ((sc_packed_1() >> 31) & 1U) != 0;
+}
+
 half sc_luminance_multiplier() {
 	return half(sc_packed_2());
 }
@@ -295,7 +299,11 @@ struct Lightmap {
 	mat3 normal_xform;
 	vec2 light_texture_size;
 	float exposure_normalization;
+	float specular_intensity;
 	uint flags;
+	uint pad1;
+	uint pad2;
+	uint pad3;
 };
 
 layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {

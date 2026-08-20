@@ -129,7 +129,7 @@ public:
 				uint32_t directional_lights : 2;
 				uint32_t decals : 1;
 				uint32_t directional_light_blend_splits : 8;
-				uint32_t padding_1 : 1;
+				uint32_t use_lightmap_specular : 1;
 			};
 		};
 
