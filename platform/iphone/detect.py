@@ -137,7 +137,7 @@ def configure(env):
                 "-arch x86_64 -fobjc-arc -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK"
             ).split()
         )
-        env.Append(ASFLAGS=["-arch x86_64"])
+        env.Append(ASFLAGS=["-arch", "x86_64"])
     else:
         detect_darwin_sdk_path("iphone", env)
         env.Append(
