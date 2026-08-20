@@ -65,12 +65,44 @@ void OS_JavaScript::request_quit_callback() {
 	}
 }
 
+int OS_JavaScript::_internal_getentropy(void *buffer, size_t length) const {
+	if (length > 256) {
+		errno = EIO;
+		return -1;
+	}
+
+	FILE *f = fopen("/dev/urandom", "rb");
+	if (!f) {
+		errno = ENOSYS;
+		return -1;
+	}
+
+	size_t bytes_read = fread(buffer, 1, length, f);
+	fclose(f);
+
+	if (bytes_read != length) {
+		errno = EIO;
+		return -1;
+	}
+	return 0;
+}
+
 Error OS_JavaScript::get_entropy(uint8_t *r_buffer, int p_bytes) {
 	int left = p_bytes;
 	int ofs = 0;
 	do {
 		int chunk = MIN(left, 256);
+#ifdef __EMSCRIPTEN__
+// Check if the version is older than or equal to 1.39.9
+#include <emscripten/version.h>
+#if (__EMSCRIPTEN_major__ < 1 || (__EMSCRIPTEN_major__ == 1 && __EMSCRIPTEN_minor__ < 40))
+		ERR_FAIL_COND_V(_internal_getentropy(r_buffer + ofs, chunk), FAILED);
+#else
 		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+#endif
+#else
+		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+#endif
 		left -= chunk;
 		ofs += chunk;
 	} while (left > 0);

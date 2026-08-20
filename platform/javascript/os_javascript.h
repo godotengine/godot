@@ -127,6 +127,8 @@ private:
 	static void ime_callback(int p_type, const char *p_text);
 	static void update_voices_callback(int p_size, const char **p_voice);
 
+	int _internal_getentropy(void *buffer, size_t length) const;
+
 protected:
 	void resume_audio();
 
