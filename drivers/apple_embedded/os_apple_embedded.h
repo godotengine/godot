@@ -135,6 +135,9 @@ public:
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) override;
 
+	void audio_driver_start();
+	void audio_driver_stop();
+
 	void on_focus_out();
 	void on_focus_in();
 

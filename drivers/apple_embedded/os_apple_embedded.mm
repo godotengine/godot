@@ -783,6 +783,14 @@ Error OS_AppleEmbedded::setup_remote_filesystem(const String &p_server_host, int
 	return err;
 }
 
+void OS_AppleEmbedded::audio_driver_start() {
+	audio_driver.start();
+}
+
+void OS_AppleEmbedded::audio_driver_stop() {
+	audio_driver.stop();
+}
+
 void OS_AppleEmbedded::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;

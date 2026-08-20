@@ -30,6 +30,8 @@
 
 #import "godot_app_delegate_service_visionos.h"
 
+#import "drivers/apple_embedded/os_apple_embedded.h"
+
 static GDTRenderMode _renderMode = GDTRenderModeWindowed;
 static __weak cp_layer_renderer_t _layerRenderer = nil;
 static __strong cp_layer_renderer_capabilities_t _layerRendererCapabilities = nil;
@@ -74,6 +76,19 @@ static __strong cp_layer_renderer_capabilities_t _layerRendererCapabilities = ni
 		return;
 	}
 	_layerRendererCapabilities = layerRendererCapabilities;
+}
+
+- (void)sceneDidBecomeActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	[super sceneDidBecomeActive:scene];
+
+	// On Compositor Services scenes, sceneDidBecomeActive: is called too soon when
+	// donning the device, which attempts to start the audio driver too early. Start it
+	// again after a short delay so audio resumes correctly.
+	if (_renderMode == GDTRenderModeCompositorServices) {
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			OS_AppleEmbedded::get_singleton()->audio_driver_start();
+		});
+	}
 }
 
 @end
