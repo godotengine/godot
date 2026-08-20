@@ -35,6 +35,8 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/3d/physics/physics_body_3d.h"
+#include "scene/3d/skeleton_3d.h"
+#include "scene/resources/3d/skin.h"
 #include "servers/rendering/rendering_server.h"
 
 SoftBodyRenderingServerHandler::SoftBodyRenderingServerHandler() {}
@@ -422,12 +424,69 @@ void SoftBody3D::_update_physics_server() {
 	}
 
 	_update_cache_pin_points_datas();
-	// Submit bone attachment
+	_update_pinned_skin_cache();
+
+	Skeleton3D *skeleton = nullptr;
+	Ref<Skin> skin;
+	if (!get_skeleton_path().is_empty() && has_node(get_skeleton_path())) {
+		skeleton = Object::cast_to<Skeleton3D>(get_node(get_skeleton_path()));
+		if (skeleton) {
+			skin = get_skin();
+			if (skin.is_null() && get_skin_reference().is_valid()) {
+				skin = get_skin_reference()->get_skin();
+			}
+			if (skin.is_null()) {
+				skin = skeleton->create_skin_from_rest_transforms();
+			}
+		}
+	}
+
+	Transform3D skeleton_global_transform;
+	LocalVector<Transform3D> skin_transforms;
+	if (skeleton && skin.is_valid()) {
+		skeleton_global_transform = skeleton->get_global_transform();
+		int bind_count = skin->get_bind_count();
+		skin_transforms.resize(bind_count);
+		for (int i = 0; i < bind_count; ++i) {
+			int bone_idx = -1;
+			StringName bind_name = skin->get_bind_name(i);
+			if (bind_name != StringName()) {
+				bone_idx = skeleton->find_bone(bind_name);
+			} else if (skin->get_bind_bone(i) >= 0) {
+				bone_idx = skin->get_bind_bone(i);
+			} else {
+				bone_idx = i;
+			}
+
+			if (bone_idx >= 0 && bone_idx < skeleton->get_bone_count()) {
+				skin_transforms[i] = skeleton->get_bone_global_pose(bone_idx) * skin->get_bind_pose(i);
+			} else {
+				skin_transforms[i] = Transform3D();
+			}
+		}
+	}
+
+	// Submit bone attachment and skinning
 	const int pinned_points_indices_size = pinned_points.size();
 	const PinnedPoint *r = pinned_points.ptr();
 	for (int i = 0; i < pinned_points_indices_size; ++i) {
 		if (r[i].spatial_attachment) {
 			PhysicsServer3D::get_singleton()->soft_body_move_point(physics_rid, r[i].point_index, r[i].spatial_attachment->get_global_transform().xform(r[i].offset));
+		} else if (skeleton && skin.is_valid()) {
+			HashMap<int, PinnedSkinData>::ConstIterator E = pinned_skin_data_cache.find(r[i].point_index);
+			if (E) {
+				const PinnedSkinData &skin_data = E->value;
+				Vector3 skinned_vertex;
+				for (uint32_t b = 0; b < skin_data.bone_indices.size(); ++b) {
+					int skin_bind_idx = skin_data.bone_indices[b];
+					float weight = skin_data.bone_weights[b];
+					if (skin_bind_idx >= 0 && skin_bind_idx < (int)skin_transforms.size()) {
+						skinned_vertex += skin_transforms[skin_bind_idx].xform(skin_data.rest_vertex) * weight;
+					}
+				}
+				Vector3 world_pos = skeleton_global_transform.xform(skinned_vertex);
+				PhysicsServer3D::get_singleton()->soft_body_move_point(physics_rid, r[i].point_index, world_pos);
+			}
 		}
 	}
 }
@@ -452,6 +511,9 @@ void SoftBody3D::_draw_soft_mesh() {
 		callable_mp((Node3D *)this, &Node3D::set_as_top_level).call_deferred(true);
 		callable_mp((Node3D *)this, &Node3D::set_transform).call_deferred(Transform3D());
 	}
+
+	// Make sure GPU skinning is detached from visual instance to avoid double transformation
+	RS::get_singleton()->instance_attach_skeleton(get_instance(), RID());
 
 	_update_physics_server();
 
@@ -518,6 +580,7 @@ void SoftBody3D::_become_mesh_owner() {
 	}
 
 	owned_mesh = soft_mesh->get_rid();
+	_make_cache_dirty();
 }
 
 void SoftBody3D::set_collision_mask(uint32_t p_mask) {
@@ -762,8 +825,22 @@ SoftBody3D::~SoftBody3D() {
 	PhysicsServer3D::get_singleton()->free_rid(physics_rid);
 }
 
+Vector3 SoftBody3D::_get_point_local_position(int p_point_index) const {
+	if (mesh.is_valid() && mesh->get_surface_count() > 0) {
+		Array arrays = mesh->surface_get_arrays(0);
+		if (!arrays.is_empty() && arrays.size() > Mesh::ARRAY_VERTEX) {
+			const Vector<Vector3> &vertices = arrays[Mesh::ARRAY_VERTEX];
+			if (p_point_index >= 0 && p_point_index < vertices.size()) {
+				return vertices[p_point_index];
+			}
+		}
+	}
+	return Vector3();
+}
+
 void SoftBody3D::_make_cache_dirty() {
 	pinned_points_cache_dirty = true;
+	pinned_skin_data_cache_dirty = true;
 }
 
 void SoftBody3D::_update_cache_pin_points_datas() {
@@ -777,6 +854,76 @@ void SoftBody3D::_update_cache_pin_points_datas() {
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
 		if (!w[i].spatial_attachment_path.is_empty()) {
 			w[i].spatial_attachment = Object::cast_to<Node3D>(get_node(w[i].spatial_attachment_path));
+		}
+	}
+}
+
+void SoftBody3D::_update_pinned_skin_cache() {
+	if (!pinned_skin_data_cache_dirty) {
+		return;
+	}
+
+	pinned_skin_data_cache_dirty = false;
+	pinned_skin_data_cache.clear();
+
+	if (mesh.is_null() || !mesh->get_surface_count()) {
+		return;
+	}
+
+	Array surface_arrays = mesh->surface_get_arrays(0);
+	if (surface_arrays.is_empty() || surface_arrays.size() != Mesh::ARRAY_MAX) {
+		return;
+	}
+
+	const Vector<Vector3> &vertices = surface_arrays[Mesh::ARRAY_VERTEX];
+	const Vector<int> &bones = surface_arrays[Mesh::ARRAY_BONES];
+	const Vector<float> &weights = surface_arrays[Mesh::ARRAY_WEIGHTS];
+
+	if (vertices.is_empty() || bones.is_empty() || weights.is_empty()) {
+		return;
+	}
+
+	uint32_t surface_format = mesh->surface_get_format(0);
+	int bones_per_vertex = (surface_format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+
+	if (bones.size() != vertices.size() * bones_per_vertex || weights.size() != vertices.size() * bones_per_vertex) {
+		return;
+	}
+
+	const Vector3 *v_ptr = vertices.ptr();
+	const int *b_ptr = bones.ptr();
+	const float *w_ptr = weights.ptr();
+
+	for (int i = 0; i < pinned_points.size(); ++i) {
+		const PinnedPoint &pp = pinned_points[i];
+		if (!pp.spatial_attachment_path.is_empty()) {
+			continue;
+		}
+
+		int pt_idx = pp.point_index;
+		if (pt_idx < 0 || pt_idx >= vertices.size()) {
+			continue;
+		}
+
+		PinnedSkinData skin_data;
+		skin_data.rest_vertex = v_ptr[pt_idx];
+
+		float total_weight = 0.0f;
+		for (int b = 0; b < bones_per_vertex; ++b) {
+			int idx = pt_idx * bones_per_vertex + b;
+			float weight = w_ptr[idx];
+			if (weight > 0.0001f) {
+				skin_data.bone_indices.push_back(b_ptr[idx]);
+				skin_data.bone_weights.push_back(weight);
+				total_weight += weight;
+			}
+		}
+
+		if (total_weight > 0.0001f) {
+			for (float &weight : skin_data.bone_weights) {
+				weight /= total_weight;
+			}
+			pinned_skin_data_cache.insert(pt_idx, skin_data);
 		}
 	}
 }
@@ -795,7 +942,7 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 
 		if (!p_spatial_attachment_path.is_empty() && has_node(p_spatial_attachment_path)) {
 			pp.spatial_attachment = Object::cast_to<Node3D>(get_node(p_spatial_attachment_path));
-			pp.offset = (pp.spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, pp.point_index));
+			pp.offset = (pp.spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(_get_point_local_position(pp.point_index));
 		}
 
 		if (p_insert_at != -1) {
@@ -814,9 +961,10 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 			ERR_FAIL_NULL_MSG(attachment_node, "Attachment node path is invalid.");
 
 			pinned_point->spatial_attachment = attachment_node;
-			pinned_point->offset = (pinned_point->spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, pinned_point->point_index));
+			pinned_point->offset = (pinned_point->spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(_get_point_local_position(pinned_point->point_index));
 		}
 	}
+	_make_cache_dirty();
 }
 
 void SoftBody3D::_reset_points_offsets() {
@@ -837,7 +985,7 @@ void SoftBody3D::_reset_points_offsets() {
 			continue;
 		}
 
-		w[i].offset = (r[i].spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, r[i].point_index));
+		w[i].offset = (r[i].spatial_attachment->get_global_transform().affine_inverse() * get_global_transform()).xform(_get_point_local_position(r[i].point_index));
 	}
 }
 
@@ -845,6 +993,7 @@ void SoftBody3D::_remove_pinned_point(int p_point_index) {
 	const int id(_has_pinned_point(p_point_index));
 	if (-1 != id) {
 		pinned_points.remove_at(id);
+		_make_cache_dirty();
 	}
 }
 

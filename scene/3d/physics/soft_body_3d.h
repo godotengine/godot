@@ -98,6 +98,14 @@ private:
 	bool simulation_started = false;
 	bool pinned_points_cache_dirty = true;
 
+	struct PinnedSkinData {
+		Vector3 rest_vertex;
+		LocalVector<int> bone_indices;
+		LocalVector<float> bone_weights;
+	};
+	HashMap<int, PinnedSkinData> pinned_skin_data_cache;
+	bool pinned_skin_data_cache_dirty = true;
+
 	Ref<ArrayMesh> debug_mesh_cache;
 	class MeshInstance3D *debug_mesh = nullptr;
 
@@ -200,8 +208,10 @@ public:
 	~SoftBody3D();
 
 private:
+	Vector3 _get_point_local_position(int p_point_index) const;
 	void _make_cache_dirty();
 	void _update_cache_pin_points_datas();
+	void _update_pinned_skin_cache();
 
 	void _pin_point_on_physics_server(int p_point_index, bool pin);
 	void _add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path, int p_insert_at = -1);
