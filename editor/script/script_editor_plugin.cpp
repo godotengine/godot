@@ -38,6 +38,7 @@
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/fuzzy_search.h"
@@ -2993,6 +2994,15 @@ Error ScriptEditor::close_file(const String &p_file) {
 		}
 	}
 	return ERR_FILE_NOT_FOUND;
+}
+
+void ScriptEditor::rename_symbol(const String &p_symbol, const EditorLanguage::LookupResult &p_lookup) {
+	FindInFiles::get_singleton()->get_container()->create_rename_control(p_symbol, p_lookup);
+	FindInFiles::get_singleton()->get_dock()->make_visible();
+
+	LineEdit *name_edit = FindInFiles::get_singleton()->get_container()->get_search_control()->get_rename_line_edit();
+	callable_mp((Control *)name_edit, &Control::grab_focus).call_deferred(false);
+	callable_mp(name_edit, &LineEdit::select_all).call_deferred();
 }
 
 void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {
