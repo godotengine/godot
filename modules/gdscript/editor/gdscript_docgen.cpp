@@ -591,6 +591,13 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 
 	// Add doc to the outer-most class.
 	p_script->_add_doc(doc);
+	// Named enums will be attempting to look up their docs based on their full name
+	// So we need to add docs for those names as well
+	for (const auto &enum_doc_entry : doc.enums) {
+		DocData::ClassDoc enum_class_doc = doc;
+		enum_class_doc.name = enum_class_doc.name + "." + enum_doc_entry.key;
+		p_script->_add_doc(enum_class_doc);
+	}
 }
 
 void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
