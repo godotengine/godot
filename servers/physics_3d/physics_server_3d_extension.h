@@ -451,6 +451,12 @@ public:
 	EXBIND2(soft_body_set_linear_stiffness, RID, real_t)
 	EXBIND1RC(real_t, soft_body_get_linear_stiffness, RID)
 
+	EXBIND2(soft_body_set_internal_springs, RID, bool)
+	EXBIND1RC(bool, soft_body_is_internal_springs_enabled, RID)
+
+	EXBIND2(soft_body_set_internal_spring_stiffness, RID, real_t)
+	EXBIND1RC(real_t, soft_body_get_internal_spring_stiffness, RID)
+
 	EXBIND2(soft_body_set_shrinking_factor, RID, real_t)
 	EXBIND1RC(real_t, soft_body_get_shrinking_factor, RID)
 

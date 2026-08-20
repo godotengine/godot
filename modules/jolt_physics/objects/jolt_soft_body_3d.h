@@ -59,6 +59,8 @@ class JoltSoftBody3D final : public JoltObject3D {
 	float pressure = 0.0f;
 	float linear_damping = 0.01f;
 	float stiffness_coefficient = 0.5f;
+	bool internal_springs = false;
+	float internal_spring_stiffness = 0.5f;
 	float shrinking_factor = 0.0f;
 
 	int simulation_precision = 5;
@@ -140,6 +142,12 @@ public:
 
 	float get_stiffness_coefficient() const;
 	void set_stiffness_coefficient(float p_coefficient);
+
+	bool is_internal_springs_enabled() const { return internal_springs; }
+	void set_internal_springs(bool p_enabled);
+
+	float get_internal_spring_stiffness() const { return internal_spring_stiffness; }
+	void set_internal_spring_stiffness(float p_stiffness);
 
 	float get_shrinking_factor() const;
 	void set_shrinking_factor(float p_shrinking_factor);

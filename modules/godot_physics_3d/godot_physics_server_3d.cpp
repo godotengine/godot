@@ -1133,6 +1133,34 @@ real_t GodotPhysicsServer3D::soft_body_get_linear_stiffness(RID p_body) const {
 	return soft_body->get_linear_stiffness();
 }
 
+void GodotPhysicsServer3D::soft_body_set_internal_springs(RID p_body, bool p_enabled) {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(soft_body);
+
+	soft_body->set_internal_springs(p_enabled);
+}
+
+bool GodotPhysicsServer3D::soft_body_is_internal_springs_enabled(RID p_body) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, false);
+
+	return soft_body->is_internal_springs_enabled();
+}
+
+void GodotPhysicsServer3D::soft_body_set_internal_spring_stiffness(RID p_body, real_t p_stiffness) {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(soft_body);
+
+	soft_body->set_internal_spring_stiffness(p_stiffness);
+}
+
+real_t GodotPhysicsServer3D::soft_body_get_internal_spring_stiffness(RID p_body) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, 0.f);
+
+	return soft_body->get_internal_spring_stiffness();
+}
+
 void GodotPhysicsServer3D::soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);

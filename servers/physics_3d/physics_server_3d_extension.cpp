@@ -346,6 +346,12 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_soft_body_set_linear_stiffness, "body", "linear_stiffness");
 	GDVIRTUAL_BIND(_soft_body_get_linear_stiffness, "body");
 
+	GDVIRTUAL_BIND(_soft_body_set_internal_springs, "body", "enabled");
+	GDVIRTUAL_BIND(_soft_body_is_internal_springs_enabled, "body");
+
+	GDVIRTUAL_BIND(_soft_body_set_internal_spring_stiffness, "body", "internal_spring_stiffness");
+	GDVIRTUAL_BIND(_soft_body_get_internal_spring_stiffness, "body");
+
 	GDVIRTUAL_BIND(_soft_body_set_shrinking_factor, "body", "shrinking_factor");
 	GDVIRTUAL_BIND(_soft_body_get_shrinking_factor, "body");
 

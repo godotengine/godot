@@ -38,20 +38,25 @@ class PhysicsBody3D;
 class SoftBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHandler {
 	friend class SoftBody3D;
 
-	RID mesh;
-	int surface = 0;
-	Vector<uint8_t> buffer;
-	uint32_t stride = 0;
-	uint32_t normal_stride = 0;
-	uint32_t offset_vertices = 0;
-	uint32_t offset_normal = 0;
+	struct SurfaceInfo {
+		int surface = 0;
+		Vector<uint8_t> buffer;
+		uint8_t *write_buffer = nullptr;
+		uint32_t vertex_count = 0;
+		uint32_t stride = 0;
+		uint32_t normal_stride = 0;
+		uint32_t offset_vertices = 0;
+		uint32_t offset_normal = 0;
+		uint32_t global_vertex_offset = 0;
+	};
 
-	uint8_t *write_buffer = nullptr;
+	RID mesh;
+	Vector<SurfaceInfo> surfaces;
 
 private:
 	SoftBodyRenderingServerHandler();
 	bool is_ready(RID p_mesh_rid) const { return mesh.is_valid() && mesh == p_mesh_rid; }
-	void prepare(RID p_mesh_rid, int p_surface);
+	void prepare(RID p_mesh_rid);
 	void clear();
 	void open();
 	void close();
@@ -106,6 +111,9 @@ private:
 	HashMap<int, PinnedSkinData> pinned_skin_data_cache;
 	bool pinned_skin_data_cache_dirty = true;
 
+	bool internal_springs = false;
+	real_t internal_spring_stiffness = 0.5;
+
 	Ref<ArrayMesh> debug_mesh_cache;
 	class MeshInstance3D *debug_mesh = nullptr;
 
@@ -121,6 +129,7 @@ private:
 	void _become_mesh_owner();
 
 protected:
+	void _validate_property(PropertyInfo &p_property) const;
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -172,6 +181,12 @@ public:
 
 	void set_linear_stiffness(real_t p_linear_stiffness);
 	real_t get_linear_stiffness();
+
+	void set_internal_springs(bool p_enabled);
+	bool is_internal_springs_enabled() const;
+
+	void set_internal_spring_stiffness(real_t p_stiffness);
+	real_t get_internal_spring_stiffness() const;
 
 	void set_shrinking_factor(real_t p_shrinking_factor);
 	real_t get_shrinking_factor();

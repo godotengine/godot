@@ -137,22 +137,216 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 		return;
 	}
 
-	// TODO: calling RenderingServer::mesh_surface_get_arrays() from the physics thread
-	// is not safe and can deadlock when physics/3d/run_on_separate_thread is enabled.
-	// This method blocks on the main thread to return data, but the main thread may be
-	// blocked waiting on us in PhysicsServer3D::sync().
-	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
-	ERR_FAIL_COND(arrays.is_empty());
+	if (!internal_springs) {
+		// TODO: calling RenderingServer::mesh_surface_get_arrays() from the physics thread
+		// is not safe and can deadlock when physics/3d/run_on_separate_thread is enabled.
+		// This method blocks on the main thread to return data, but the main thread may be
+		// blocked waiting on us in PhysicsServer3D::sync().
+		Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
+		ERR_FAIL_COND(arrays.is_empty());
 
-	const Vector<int> &indices = arrays[RSE::ARRAY_INDEX];
-	const Vector<Vector3> &vertices = arrays[RSE::ARRAY_VERTEX];
-	ERR_FAIL_COND_MSG(indices.is_empty(), "Soft body's mesh needs to have indices");
-	ERR_FAIL_COND_MSG(vertices.is_empty(), "Soft body's mesh needs to have vertices");
+		const Vector<int> &indices = arrays[RSE::ARRAY_INDEX];
+		const Vector<Vector3> &vertices = arrays[RSE::ARRAY_VERTEX];
+		ERR_FAIL_COND_MSG(indices.is_empty(), "Soft body's mesh needs to have indices");
+		ERR_FAIL_COND_MSG(vertices.is_empty(), "Soft body's mesh needs to have vertices");
 
-	bool success = create_from_trimesh(indices, vertices);
-	if (!success) {
-		destroy();
+		bool success = create_from_trimesh(indices, vertices);
+		if (!success) {
+			destroy();
+		}
+		return;
 	}
+
+	// Multi-surface mesh creation with loose edge internal springs
+	RenderingServer *rendering = RenderingServer::get_singleton();
+	int surface_count = rendering->mesh_get_surface_count(soft_mesh);
+	ERR_FAIL_COND(surface_count <= 0);
+
+	uint32_t total_visual_vertices = 0;
+	for (int s = 0; s < surface_count; s++) {
+		Array arrays = rendering->mesh_surface_get_arrays(soft_mesh, s);
+		if (!arrays.is_empty() && arrays.size() > RSE::ARRAY_VERTEX) {
+			const Vector<Vector3> &v = arrays[RSE::ARRAY_VERTEX];
+			total_visual_vertices += v.size();
+		}
+	}
+	ERR_FAIL_COND(total_visual_vertices == 0);
+
+	LocalVector<Vector3> unique_vertices;
+	HashMap<Vector3, uint32_t> unique_vertex_map;
+	map_visual_to_physics.resize(total_visual_vertices);
+
+	struct LooseEdge {
+		uint32_t v0;
+		uint32_t v1;
+	};
+	LocalVector<LooseEdge> loose_edges;
+	LocalVector<int> triangles;
+
+	uint32_t vertex_id_counter = 0;
+	uint32_t global_v_offset = 0;
+
+	for (int s = 0; s < surface_count; s++) {
+		Array arrays = rendering->mesh_surface_get_arrays(soft_mesh, s);
+		if (arrays.is_empty() || arrays.size() <= RSE::ARRAY_VERTEX) {
+			continue;
+		}
+
+		const Vector<Vector3> &mesh_vertices = arrays[RSE::ARRAY_VERTEX];
+		Vector<int> mesh_indices;
+		if (arrays.size() > RSE::ARRAY_INDEX) {
+			mesh_indices = arrays[RSE::ARRAY_INDEX];
+		}
+		const int mesh_vertex_count = mesh_vertices.size();
+		const int mesh_index_count = mesh_indices.size();
+
+		RenderingServerTypes::SurfaceData surface_data = rendering->mesh_get_surface(soft_mesh, s);
+		RSE::PrimitiveType prim_type = surface_data.primitive;
+
+		for (int v = 0; v < mesh_vertex_count; ++v) {
+			const Vector3 &vertex = mesh_vertices[v];
+			HashMap<Vector3, uint32_t>::Iterator e = unique_vertex_map.find(vertex);
+			uint32_t vertex_id;
+			if (e) {
+				vertex_id = e->value;
+			} else {
+				vertex_id = vertex_id_counter++;
+				unique_vertex_map[vertex] = vertex_id;
+				unique_vertices.push_back(vertex);
+			}
+			map_visual_to_physics[global_v_offset + v] = vertex_id;
+		}
+
+		if (prim_type == RSE::PRIMITIVE_TRIANGLES) {
+			if (!mesh_indices.is_empty()) {
+				for (int i = 0; i < mesh_index_count; i += 3) {
+					for (int j = 0; j < 3; ++j) {
+						int visual_idx = global_v_offset + mesh_indices[i + j];
+						triangles.push_back(map_visual_to_physics[visual_idx]);
+					}
+				}
+			} else {
+				for (int i = 0; i + 2 < mesh_vertex_count; i += 3) {
+					for (int j = 0; j < 3; ++j) {
+						int visual_idx = global_v_offset + i + j;
+						triangles.push_back(map_visual_to_physics[visual_idx]);
+					}
+				}
+			}
+		} else if (prim_type == RSE::PRIMITIVE_LINES) {
+			if (!mesh_indices.is_empty()) {
+				for (int i = 0; i + 1 < mesh_index_count; i += 2) {
+					uint32_t p0 = map_visual_to_physics[global_v_offset + mesh_indices[i]];
+					uint32_t p1 = map_visual_to_physics[global_v_offset + mesh_indices[i + 1]];
+					if (p0 != p1) {
+						loose_edges.push_back({ p0, p1 });
+					}
+				}
+			} else {
+				for (int i = 0; i + 1 < mesh_vertex_count; i += 2) {
+					uint32_t p0 = map_visual_to_physics[global_v_offset + i];
+					uint32_t p1 = map_visual_to_physics[global_v_offset + i + 1];
+					if (p0 != p1) {
+						loose_edges.push_back({ p0, p1 });
+					}
+				}
+			}
+		} else if (prim_type == RSE::PRIMITIVE_LINE_STRIP) {
+			if (!mesh_indices.is_empty()) {
+				for (int i = 0; i + 1 < mesh_index_count; ++i) {
+					uint32_t p0 = map_visual_to_physics[global_v_offset + mesh_indices[i]];
+					uint32_t p1 = map_visual_to_physics[global_v_offset + mesh_indices[i + 1]];
+					if (p0 != p1) {
+						loose_edges.push_back({ p0, p1 });
+					}
+				}
+			} else {
+				for (int i = 0; i + 1 < mesh_vertex_count; ++i) {
+					uint32_t p0 = map_visual_to_physics[global_v_offset + i];
+					uint32_t p1 = map_visual_to_physics[global_v_offset + i + 1];
+					if (p0 != p1) {
+						loose_edges.push_back({ p0, p1 });
+					}
+				}
+			}
+		}
+
+		global_v_offset += mesh_vertex_count;
+	}
+
+	uint32_t node_count = unique_vertices.size();
+	ERR_FAIL_COND(node_count == 0);
+
+	nodes.resize(node_count);
+	real_t inv_node_mass = node_count * inv_total_mass;
+	Vector3 leaf_size = Vector3(collision_margin, collision_margin, collision_margin) * 2.0;
+	for (uint32_t i = 0; i < node_count; ++i) {
+		Node &node = nodes[i];
+		node.s = unique_vertices[i];
+		node.x = node.s;
+		node.q = node.s;
+		node.im = inv_node_mass;
+
+		AABB node_aabb(node.x, leaf_size);
+		node.leaf = node_tree.insert(node_aabb, &node);
+		node.index = i;
+	}
+
+	// Create links and faces from triangles
+	LocalVector<bool> chks;
+	chks.resize(node_count * node_count);
+	memset(chks.ptr(), 0, chks.size() * sizeof(bool));
+
+	const uint32_t triangle_count = triangles.size() / 3;
+	for (uint32_t i = 0; i < triangle_count * 3; i += 3) {
+		const int idx[] = { triangles[i], triangles[i + 1], triangles[i + 2] };
+
+		for (int j = 2, k = 0; k < 3; j = k++) {
+			int chk = idx[k] * node_count + idx[j];
+			if (!chks[chk]) {
+				chks[chk] = true;
+				int inv_chk = idx[j] * node_count + idx[k];
+				chks[inv_chk] = true;
+
+				append_link(idx[j], idx[k]);
+			}
+		}
+
+		append_face(idx[0], idx[1], idx[2]);
+	}
+
+	// Create links from loose edges
+	for (const LooseEdge &le : loose_edges) {
+		int chk = le.v1 * node_count + le.v0;
+		if (!chks[chk]) {
+			chks[chk] = true;
+			int inv_chk = le.v0 * node_count + le.v1;
+			chks[inv_chk] = true;
+
+			append_link(le.v0, le.v1);
+		}
+	}
+
+	// Set pinned nodes
+	uint32_t pinned_count = pinned_vertices.size();
+	for (uint32_t i = 0; i < pinned_count; ++i) {
+		int pinned_vertex = pinned_vertices[i];
+		if (pinned_vertex >= (int)total_visual_vertices || pinned_vertex < 0) {
+			continue;
+		}
+		uint32_t node_index = map_visual_to_physics[pinned_vertex];
+		if (node_index < node_count) {
+			Node &node = nodes[node_index];
+			node.im = 0.0;
+		}
+	}
+
+	generate_bending_constraints(2);
+	reoptimize_link_order();
+
+	update_constants();
+	update_normals_and_centroids();
+	update_bounds();
 }
 
 void GodotSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) {
@@ -924,6 +1118,20 @@ void GodotSoftBody3D::set_collision_margin(real_t p_val) {
 
 void GodotSoftBody3D::set_linear_stiffness(real_t p_val) {
 	linear_stiffness = p_val;
+}
+
+void GodotSoftBody3D::set_internal_springs(bool p_enabled) {
+	if (internal_springs == p_enabled) {
+		return;
+	}
+	internal_springs = p_enabled;
+	if (soft_mesh.is_valid()) {
+		set_mesh(soft_mesh);
+	}
+}
+
+void GodotSoftBody3D::set_internal_spring_stiffness(real_t p_val) {
+	internal_spring_stiffness = CLAMP(p_val, 0.0, 1.0);
 }
 
 void GodotSoftBody3D::set_shrinking_factor(real_t p_val) {

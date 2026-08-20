@@ -96,6 +96,8 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 
 	int iteration_count = 5;
 	real_t linear_stiffness = 0.5; // [0,1]
+	bool internal_springs = false;
+	real_t internal_spring_stiffness = 0.5; // [0,1]
 	real_t shrinking_factor = 0.0; // [-1,1]
 	real_t pressure_coefficient = 0.0; // [-inf,+inf]
 	real_t damping_coefficient = 0.01; // [0,1]
@@ -195,6 +197,12 @@ public:
 
 	void set_linear_stiffness(real_t p_val);
 	_FORCE_INLINE_ real_t get_linear_stiffness() const { return linear_stiffness; }
+
+	void set_internal_springs(bool p_enabled);
+	_FORCE_INLINE_ bool is_internal_springs_enabled() const { return internal_springs; }
+
+	void set_internal_spring_stiffness(real_t p_val);
+	_FORCE_INLINE_ real_t get_internal_spring_stiffness() const { return internal_spring_stiffness; }
 
 	void set_shrinking_factor(real_t p_val);
 	_FORCE_INLINE_ real_t get_shrinking_factor() const { return shrinking_factor; }

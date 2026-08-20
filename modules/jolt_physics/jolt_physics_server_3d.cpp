@@ -1155,6 +1155,34 @@ real_t JoltPhysicsServer3D::soft_body_get_linear_stiffness(RID p_body) const {
 	return (real_t)body->get_stiffness_coefficient();
 }
 
+void JoltPhysicsServer3D::soft_body_set_internal_springs(RID p_body, bool p_enabled) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->set_internal_springs(p_enabled);
+}
+
+bool JoltPhysicsServer3D::soft_body_is_internal_springs_enabled(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, false);
+
+	return body->is_internal_springs_enabled();
+}
+
+void JoltPhysicsServer3D::soft_body_set_internal_spring_stiffness(RID p_body, real_t p_stiffness) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->set_internal_spring_stiffness((float)p_stiffness);
+}
+
+real_t JoltPhysicsServer3D::soft_body_get_internal_spring_stiffness(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 0.0);
+
+	return (real_t)body->get_internal_spring_stiffness();
+}
+
 void JoltPhysicsServer3D::soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) {
 	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);

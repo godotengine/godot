@@ -129,14 +129,114 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	// is not safe and can deadlock when physics/3d/run_on_separate_thread is enabled.
 	// This method blocks on the main thread to return data, but the main thread may be
 	// blocked waiting on us in PhysicsServer3D::sync().
-	const Array mesh_data = rendering->mesh_surface_get_arrays(mesh, 0);
-	ERR_FAIL_COND_V(mesh_data.is_empty(), nullptr);
 
-	const PackedInt32Array mesh_indices = mesh_data[RSE::ARRAY_INDEX];
-	ERR_FAIL_COND_V(mesh_indices.is_empty(), nullptr);
+	if (!internal_springs) {
+		// Single-surface (surface 0) standard soft body
+		const Array mesh_data = rendering->mesh_surface_get_arrays(mesh, 0);
+		ERR_FAIL_COND_V(mesh_data.is_empty(), nullptr);
 
-	const PackedVector3Array mesh_vertices = mesh_data[RSE::ARRAY_VERTEX];
-	ERR_FAIL_COND_V(mesh_vertices.is_empty(), nullptr);
+		const PackedInt32Array mesh_indices = mesh_data[RSE::ARRAY_INDEX];
+		ERR_FAIL_COND_V(mesh_indices.is_empty(), nullptr);
+
+		const PackedVector3Array mesh_vertices = mesh_data[RSE::ARRAY_VERTEX];
+		ERR_FAIL_COND_V(mesh_vertices.is_empty(), nullptr);
+
+		JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
+		JPH::Array<JPH::SoftBodySharedSettings::Vertex> &physics_vertices = settings->mVertices;
+		JPH::Array<JPH::SoftBodySharedSettings::Face> &physics_faces = settings->mFaces;
+
+		HashMap<Vector3, int> vertex_to_physics;
+
+		const int mesh_vertex_count = mesh_vertices.size();
+		const int mesh_index_count = mesh_indices.size();
+
+		mesh_to_physics.resize(mesh_vertex_count);
+		for (int &index : mesh_to_physics) {
+			index = -1;
+		}
+		physics_vertices.reserve(mesh_vertex_count);
+		vertex_to_physics.reserve(mesh_vertex_count);
+
+		int physics_index_count = 0;
+
+		const JPH::RVec3 body_position = jolt_settings->mPosition;
+
+		for (int i = 0; i < mesh_index_count; i += 3) {
+			int physics_face[3];
+
+			for (int j = 0; j < 3; ++j) {
+				const int mesh_index = mesh_indices[i + j];
+				const Vector3 vertex = mesh_vertices[mesh_index];
+
+				HashMap<Vector3, int>::Iterator iter_physics_index = vertex_to_physics.find(vertex);
+
+				if (iter_physics_index == vertex_to_physics.end()) {
+					physics_vertices.emplace_back(JPH::Float3((float)(vertex.x - body_position.GetX()), (float)(vertex.y - body_position.GetY()), (float)(vertex.z - body_position.GetZ())), JPH::Float3(0.0f, 0.0f, 0.0f), 1.0f);
+					iter_physics_index = vertex_to_physics.insert(vertex, physics_index_count++);
+				}
+
+				physics_face[j] = iter_physics_index->value;
+				mesh_to_physics[mesh_index] = iter_physics_index->value;
+			}
+
+			if (physics_face[0] == physics_face[1] || physics_face[0] == physics_face[2] || physics_face[1] == physics_face[2]) {
+				continue; // We skip degenerate faces, since they're problematic, and Jolt will assert about it anyway.
+			}
+
+			// Jolt uses a different winding order, so we swap the indices to account for that.
+			physics_faces.emplace_back((JPH::uint32)physics_face[2], (JPH::uint32)physics_face[1], (JPH::uint32)physics_face[0]);
+		}
+
+		// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call below to order the
+		// constraints. Note that it's fine if the pinned vertices change later, but that will reduce the effectiveness
+		// of the constraints a bit.
+		pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
+
+		// Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt uses actual stiffness for its
+		// edge constraints, we must map one to the other.
+		//
+		// Godot uses classic PBD edge constraints, which have a stiffness parameter k that is used in the position correction formula as follows:
+		// delta_x1 = -k * w1 / (w1 + w2) * (l - l0) / l * (x2 - x1)
+		// where k is the stiffness, w1 and w2 are the inverse masses of the two vertices, l is the current length of the edge = |x2 - x1|, l0 is the rest length of the edge, and x1 and x2 are the vertex positions.
+		//
+		// Note that the actual formula used in Godot physics seems to use an approximation of this which avoids calculating the square root:
+		// delta_x1 = -k * w1 / (w1 + w2) * (l^2 - l0^2) / (l^2 + l0^2) * (x2 - x1)
+		//
+		// Jolt uses XPBD which goes as follows:
+		// delta_x1 = -w1 / (w1 + w2 + compliance / dt^2) * (l - l0) / l * (x2 - x1)
+		// where compliance is the inverse of stiffness and dt is the timestep.
+		//
+		// We can derive Jolt's compliance from Godot's stiffness by evaluating:
+		// k * w1 / (w1 + w2) = w1 / (w1 + w2 + compliance / dt^2)
+		// which simplifies to:
+		// compliance = dt^2 * (1 / k - 1) * (w1 + w2)
+
+		// Assuming that the vertices have the same mass:
+		const float w1_plus_w2 = 2.0f * physics_vertices.size() / mass;
+
+		// Calculate time step of a single XPBD iteration
+		const float dt = 1.0f / Engine::get_singleton()->get_user_physics_ticks_per_second() / simulation_precision;
+
+		// Now calculate the compliance
+		const float surface_stiffness = CLAMP(stiffness_coefficient, 0.0001f, 1.0f);
+		const float inverse_stiffness = dt * dt * (1.0f / surface_stiffness - 1.0f) * w1_plus_w2;
+
+		JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
+		vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
+
+		settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
+		float multiplier = 1.0f - shrinking_factor;
+		for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
+			e.mRestLength *= multiplier;
+		}
+		settings->Optimize();
+
+		return settings;
+	}
+
+	// Multi-surface parsing with loose edge internal springs
+	const int surface_count = rendering->mesh_get_surface_count(mesh);
+	ERR_FAIL_COND_V(surface_count <= 0, nullptr);
 
 	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
 	JPH::Array<JPH::SoftBodySharedSettings::Vertex> &physics_vertices = settings->mVertices;
@@ -144,27 +244,53 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 
 	HashMap<Vector3, int> vertex_to_physics;
 
-	const int mesh_vertex_count = mesh_vertices.size();
-	const int mesh_index_count = mesh_indices.size();
+	int total_mesh_vertices = 0;
+	for (int s = 0; s < surface_count; s++) {
+		const Array surface_arrays = rendering->mesh_surface_get_arrays(mesh, s);
+		if (!surface_arrays.is_empty() && surface_arrays.size() > RSE::ARRAY_VERTEX) {
+			const PackedVector3Array verts = surface_arrays[RSE::ARRAY_VERTEX];
+			total_mesh_vertices += verts.size();
+		}
+	}
+	ERR_FAIL_COND_V(total_mesh_vertices == 0, nullptr);
 
-	mesh_to_physics.resize(mesh_vertex_count);
+	mesh_to_physics.resize(total_mesh_vertices);
 	for (int &index : mesh_to_physics) {
 		index = -1;
 	}
-	physics_vertices.reserve(mesh_vertex_count);
-	vertex_to_physics.reserve(mesh_vertex_count);
+	physics_vertices.reserve(total_mesh_vertices);
+	vertex_to_physics.reserve(total_mesh_vertices);
 
 	int physics_index_count = 0;
-
 	const JPH::RVec3 body_position = jolt_settings->mPosition;
 
-	for (int i = 0; i < mesh_index_count; i += 3) {
-		int physics_face[3];
+	struct LooseEdge {
+		int v0;
+		int v1;
+	};
+	LocalVector<LooseEdge> loose_edges;
 
-		for (int j = 0; j < 3; ++j) {
-			const int mesh_index = mesh_indices[i + j];
-			const Vector3 vertex = mesh_vertices[mesh_index];
+	int global_vertex_offset = 0;
 
+	for (int s = 0; s < surface_count; s++) {
+		const Array surface_arrays = rendering->mesh_surface_get_arrays(mesh, s);
+		if (surface_arrays.is_empty() || surface_arrays.size() <= RSE::ARRAY_VERTEX) {
+			continue;
+		}
+
+		const PackedVector3Array mesh_vertices = surface_arrays[RSE::ARRAY_VERTEX];
+		PackedInt32Array mesh_indices;
+		if (surface_arrays.size() > RSE::ARRAY_INDEX) {
+			mesh_indices = surface_arrays[RSE::ARRAY_INDEX];
+		}
+		const int mesh_vertex_count = mesh_vertices.size();
+		const int mesh_index_count = mesh_indices.size();
+
+		RenderingServerTypes::SurfaceData surface_data = rendering->mesh_get_surface(mesh, s);
+		RSE::PrimitiveType prim_type = surface_data.primitive;
+
+		for (int v = 0; v < mesh_vertex_count; ++v) {
+			const Vector3 vertex = mesh_vertices[v];
 			HashMap<Vector3, int>::Iterator iter_physics_index = vertex_to_physics.find(vertex);
 
 			if (iter_physics_index == vertex_to_physics.end()) {
@@ -172,59 +298,113 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 				iter_physics_index = vertex_to_physics.insert(vertex, physics_index_count++);
 			}
 
-			physics_face[j] = iter_physics_index->value;
-			mesh_to_physics[mesh_index] = iter_physics_index->value;
+			mesh_to_physics[global_vertex_offset + v] = iter_physics_index->value;
 		}
 
-		if (physics_face[0] == physics_face[1] || physics_face[0] == physics_face[2] || physics_face[1] == physics_face[2]) {
-			continue; // We skip degenerate faces, since they're problematic, and Jolt will assert about it anyway.
+		if (prim_type == RSE::PRIMITIVE_TRIANGLES) {
+			if (!mesh_indices.is_empty()) {
+				for (int i = 0; i < mesh_index_count; i += 3) {
+					int physics_face[3];
+					for (int j = 0; j < 3; ++j) {
+						int local_idx = mesh_indices[i + j];
+						physics_face[j] = mesh_to_physics[global_vertex_offset + local_idx];
+					}
+
+					if (physics_face[0] == physics_face[1] || physics_face[0] == physics_face[2] || physics_face[1] == physics_face[2]) {
+						continue;
+					}
+
+					physics_faces.emplace_back((JPH::uint32)physics_face[2], (JPH::uint32)physics_face[1], (JPH::uint32)physics_face[0]);
+				}
+			} else {
+				for (int i = 0; i + 2 < mesh_vertex_count; i += 3) {
+					int physics_face[3];
+					for (int j = 0; j < 3; ++j) {
+						physics_face[j] = mesh_to_physics[global_vertex_offset + i + j];
+					}
+
+					if (physics_face[0] == physics_face[1] || physics_face[0] == physics_face[2] || physics_face[1] == physics_face[2]) {
+						continue;
+					}
+
+					physics_faces.emplace_back((JPH::uint32)physics_face[2], (JPH::uint32)physics_face[1], (JPH::uint32)physics_face[0]);
+				}
+			}
+		} else if (prim_type == RSE::PRIMITIVE_LINES) {
+			if (!mesh_indices.is_empty()) {
+				for (int i = 0; i + 1 < mesh_index_count; i += 2) {
+					int p0 = mesh_to_physics[global_vertex_offset + mesh_indices[i]];
+					int p1 = mesh_to_physics[global_vertex_offset + mesh_indices[i + 1]];
+					if (p0 != p1) {
+						loose_edges.push_back({ p0, p1 });
+					}
+				}
+			} else {
+				for (int i = 0; i + 1 < mesh_vertex_count; i += 2) {
+					int p0 = mesh_to_physics[global_vertex_offset + i];
+					int p1 = mesh_to_physics[global_vertex_offset + i + 1];
+					if (p0 != p1) {
+						loose_edges.push_back({ p0, p1 });
+					}
+				}
+			}
+		} else if (prim_type == RSE::PRIMITIVE_LINE_STRIP) {
+			if (!mesh_indices.is_empty()) {
+				for (int i = 0; i + 1 < mesh_index_count; ++i) {
+					int p0 = mesh_to_physics[global_vertex_offset + mesh_indices[i]];
+					int p1 = mesh_to_physics[global_vertex_offset + mesh_indices[i + 1]];
+					if (p0 != p1) {
+						loose_edges.push_back({ p0, p1 });
+					}
+				}
+			} else {
+				for (int i = 0; i + 1 < mesh_vertex_count; ++i) {
+					int p0 = mesh_to_physics[global_vertex_offset + i];
+					int p1 = mesh_to_physics[global_vertex_offset + i + 1];
+					if (p0 != p1) {
+						loose_edges.push_back({ p0, p1 });
+					}
+				}
+			}
 		}
 
-		// Jolt uses a different winding order, so we swap the indices to account for that.
-		physics_faces.emplace_back((JPH::uint32)physics_face[2], (JPH::uint32)physics_face[1], (JPH::uint32)physics_face[0]);
+		global_vertex_offset += mesh_vertex_count;
 	}
 
-	// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call below to order the
-	// constraints. Note that it's fine if the pinned vertices change later, but that will reduce the effectiveness
-	// of the constraints a bit.
 	pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
 
-	// Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt uses actual stiffness for its
-	// edge constraints, we must map one to the other.
-	//
-	// Godot uses classic PBD edge constraints, which have a stiffness parameter k that is used in the position correction formula as follows:
-	// delta_x1 = -k * w1 / (w1 + w2) * (l - l0) / l * (x2 - x1)
-	// where k is the stiffness, w1 and w2 are the inverse masses of the two vertices, l is the current length of the edge = |x2 - x1|, l0 is the rest length of the edge, and x1 and x2 are the vertex positions.
-	//
-	// Note that the actual formula used in Godot physics seems to use an approximation of this which avoids calculating the square root:
-	// delta_x1 = -k * w1 / (w1 + w2) * (l^2 - l0^2) / (l^2 + l0^2) * (x2 - x1)
-	//
-	// Jolt uses XPBD which goes as follows:
-	// delta_x1 = -w1 / (w1 + w2 + compliance / dt^2) * (l - l0) / l * (x2 - x1)
-	// where compliance is the inverse of stiffness and dt is the timestep.
-	//
-	// We can derive Jolt's compliance from Godot's stiffness by evaluating:
-	// k * w1 / (w1 + w2) = w1 / (w1 + w2 + compliance / dt^2)
-	// which simplifies to:
-	// compliance = dt^2 * (1 / k - 1) * (w1 + w2)
-
-	// Assuming that the vertices have the same mass:
 	const float w1_plus_w2 = 2.0f * physics_vertices.size() / mass;
-
-	// Calculate time step of a single XPBD iteration
 	const float dt = 1.0f / Engine::get_singleton()->get_user_physics_ticks_per_second() / simulation_precision;
-
-	// Now calculate the compliance
 	const float inverse_stiffness = dt * dt * (1.0f / stiffness_coefficient - 1.0f) * w1_plus_w2;
 
 	JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
 	vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
 
 	settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
+
 	float multiplier = 1.0f - shrinking_factor;
 	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
 		e.mRestLength *= multiplier;
 	}
+
+	// Add internal springs from loose edges
+	if (!loose_edges.is_empty()) {
+		const float internal_stiffness = CLAMP(internal_spring_stiffness, 0.0001f, 1.0f);
+		const float internal_compliance = dt * dt * (1.0f / internal_stiffness - 1.0f) * w1_plus_w2;
+		for (const LooseEdge &le : loose_edges) {
+			const JPH::Float3 &pos0 = physics_vertices[le.v0].mPosition;
+			const JPH::Float3 &pos1 = physics_vertices[le.v1].mPosition;
+			float dx = pos0.x - pos1.x;
+			float dy = pos0.y - pos1.y;
+			float dz = pos0.z - pos1.z;
+			float rest_len = Math::sqrt(dx * dx + dy * dy + dz * dz) * multiplier;
+
+			JPH::SoftBodySharedSettings::Edge edge_constraint((JPH::uint32)le.v0, (JPH::uint32)le.v1, internal_compliance);
+			edge_constraint.mRestLength = rest_len;
+			settings->mEdgeConstraints.push_back(edge_constraint);
+		}
+	}
+
 	settings->Optimize();
 
 	return settings;
@@ -612,6 +792,19 @@ void JoltSoftBody3D::set_stiffness_coefficient(float p_coefficient) {
 	stiffness_coefficient = CLAMP(p_coefficient, 0.0f, 1.0f);
 }
 
+void JoltSoftBody3D::set_internal_springs(bool p_enabled) {
+	if (internal_springs == p_enabled) {
+		return;
+	}
+	internal_springs = p_enabled;
+	_try_rebuild();
+}
+
+void JoltSoftBody3D::set_internal_spring_stiffness(float p_stiffness) {
+	internal_spring_stiffness = CLAMP(p_stiffness, 0.0f, 1.0f);
+	_try_rebuild();
+}
+
 float JoltSoftBody3D::get_shrinking_factor() const {
 	return shrinking_factor;
 }
@@ -851,7 +1044,6 @@ bool JoltSoftBody3D::is_vertex_pinned(int p_index) const {
 	ERR_FAIL_COND_V_MSG(!in_space(), false, vformat("Failed retrieve pin status of point for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
 	ERR_FAIL_INDEX_V(p_index, (int)mesh_to_physics.size(), false);
-	const int physics_index = mesh_to_physics[p_index];
 
-	return pinned_vertices.has(physics_index);
+	return pinned_vertices.has(p_index);
 }

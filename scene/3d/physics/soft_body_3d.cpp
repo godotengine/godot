@@ -37,70 +37,112 @@
 #include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/resources/3d/skin.h"
+#include "scene/resources/material.h"
 #include "servers/rendering/rendering_server.h"
 
 SoftBodyRenderingServerHandler::SoftBodyRenderingServerHandler() {}
 
-void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
+void SoftBodyRenderingServerHandler::prepare(RID p_mesh) {
 	clear();
 
 	ERR_FAIL_COND(!p_mesh.is_valid());
 
 	mesh = p_mesh;
-	surface = p_surface;
 
-	RenderingServerTypes::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh, surface);
+	int surface_count = RS::get_singleton()->mesh_get_surface_count(mesh);
+	uint32_t current_offset = 0;
 
-	uint32_t surface_offsets[RSE::ARRAY_MAX];
-	uint32_t vertex_stride;
-	uint32_t normal_tangent_stride;
-	uint32_t attrib_stride;
-	uint32_t skin_stride;
-	RS::get_singleton()->mesh_surface_make_offsets_from_format(surface_data.format, surface_data.vertex_count, surface_data.index_count, surface_offsets, vertex_stride, normal_tangent_stride, attrib_stride, skin_stride);
+	for (int s = 0; s < surface_count; s++) {
+		RenderingServerTypes::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh, s);
+		if (surface_data.vertex_count == 0) {
+			continue;
+		}
 
-	buffer = surface_data.vertex_data;
-	stride = vertex_stride;
-	normal_stride = normal_tangent_stride;
-	offset_vertices = surface_offsets[RSE::ARRAY_VERTEX];
-	offset_normal = surface_offsets[RSE::ARRAY_NORMAL];
+		SurfaceInfo si;
+		si.surface = s;
+		si.vertex_count = surface_data.vertex_count;
+		si.global_vertex_offset = current_offset;
+
+		uint32_t surface_offsets[RSE::ARRAY_MAX];
+		uint32_t vertex_stride;
+		uint32_t normal_tangent_stride;
+		uint32_t attrib_stride;
+		uint32_t skin_stride;
+		RS::get_singleton()->mesh_surface_make_offsets_from_format(surface_data.format, surface_data.vertex_count, surface_data.index_count, surface_offsets, vertex_stride, normal_tangent_stride, attrib_stride, skin_stride);
+
+		si.buffer = surface_data.vertex_data;
+		si.stride = vertex_stride;
+		si.normal_stride = normal_tangent_stride;
+		si.offset_vertices = surface_offsets[RSE::ARRAY_VERTEX];
+		si.offset_normal = surface_offsets[RSE::ARRAY_NORMAL];
+
+		surfaces.push_back(si);
+		current_offset += surface_data.vertex_count;
+	}
 }
 
 void SoftBodyRenderingServerHandler::clear() {
-	buffer.resize(0);
-	stride = 0;
-	normal_stride = 0;
-	offset_vertices = 0;
-	offset_normal = 0;
-
-	surface = 0;
+	surfaces.clear();
 	mesh = RID();
 }
 
 void SoftBodyRenderingServerHandler::open() {
-	write_buffer = buffer.ptrw();
+	for (int i = 0; i < surfaces.size(); i++) {
+		surfaces.write[i].write_buffer = surfaces.write[i].buffer.ptrw();
+	}
 }
 
 void SoftBodyRenderingServerHandler::close() {
-	write_buffer = nullptr;
+	for (int i = 0; i < surfaces.size(); i++) {
+		surfaces.write[i].write_buffer = nullptr;
+	}
 }
 
 void SoftBodyRenderingServerHandler::commit_changes() {
-	RS::get_singleton()->mesh_surface_update_vertex_region(mesh, surface, 0, buffer);
+	for (int i = 0; i < surfaces.size(); i++) {
+		RS::get_singleton()->mesh_surface_update_vertex_region(mesh, surfaces[i].surface, 0, surfaces[i].buffer);
+	}
 }
 
 void SoftBodyRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &p_vertex) {
-	float *vertex_buffer = reinterpret_cast<float *>(write_buffer + p_vertex_id * stride + offset_vertices);
-	*vertex_buffer++ = (float)p_vertex.x;
-	*vertex_buffer++ = (float)p_vertex.y;
-	*vertex_buffer++ = (float)p_vertex.z;
+	if (p_vertex_id < 0) {
+		return;
+	}
+	for (int i = 0; i < surfaces.size(); i++) {
+		const SurfaceInfo &si = surfaces[i];
+		if ((uint32_t)p_vertex_id >= si.global_vertex_offset && (uint32_t)p_vertex_id < si.global_vertex_offset + si.vertex_count) {
+			if (!si.write_buffer) {
+				return;
+			}
+			uint32_t local_idx = (uint32_t)p_vertex_id - si.global_vertex_offset;
+			float *vertex_buffer = reinterpret_cast<float *>(si.write_buffer + local_idx * si.stride + si.offset_vertices);
+			*vertex_buffer++ = (float)p_vertex.x;
+			*vertex_buffer++ = (float)p_vertex.y;
+			*vertex_buffer++ = (float)p_vertex.z;
+			return;
+		}
+	}
 }
 
 void SoftBodyRenderingServerHandler::set_normal(int p_vertex_id, const Vector3 &p_normal) {
-	Vector2 res = p_normal.octahedron_encode();
-	uint32_t value = 0;
-	value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
-	value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
-	memcpy(&write_buffer[p_vertex_id * normal_stride + offset_normal], &value, sizeof(uint32_t));
+	if (p_vertex_id < 0) {
+		return;
+	}
+	for (int i = 0; i < surfaces.size(); i++) {
+		const SurfaceInfo &si = surfaces[i];
+		if ((uint32_t)p_vertex_id >= si.global_vertex_offset && (uint32_t)p_vertex_id < si.global_vertex_offset + si.vertex_count) {
+			if (!si.write_buffer) {
+				return;
+			}
+			uint32_t local_idx = (uint32_t)p_vertex_id - si.global_vertex_offset;
+			Vector2 res = p_normal.octahedron_encode();
+			uint32_t value = 0;
+			value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+			value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
+			memcpy(&si.write_buffer[local_idx * si.normal_stride + si.offset_normal], &value, sizeof(uint32_t));
+			return;
+		}
+	}
 }
 
 void SoftBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {
@@ -324,6 +366,12 @@ void SoftBody3D::_notification(int p_what) {
 	}
 }
 
+void SoftBody3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "internal_spring_stiffness" && !internal_springs) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+}
+
 void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_physics_rid"), &SoftBody3D::get_physics_rid);
 
@@ -357,6 +405,12 @@ void SoftBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_linear_stiffness", "linear_stiffness"), &SoftBody3D::set_linear_stiffness);
 	ClassDB::bind_method(D_METHOD("get_linear_stiffness"), &SoftBody3D::get_linear_stiffness);
+
+	ClassDB::bind_method(D_METHOD("set_internal_springs", "enabled"), &SoftBody3D::set_internal_springs);
+	ClassDB::bind_method(D_METHOD("is_internal_springs_enabled"), &SoftBody3D::is_internal_springs_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_internal_spring_stiffness", "stiffness"), &SoftBody3D::set_internal_spring_stiffness);
+	ClassDB::bind_method(D_METHOD("get_internal_spring_stiffness"), &SoftBody3D::get_internal_spring_stiffness);
 
 	ClassDB::bind_method(D_METHOD("set_shrinking_factor", "shrinking_factor"), &SoftBody3D::set_shrinking_factor);
 	ClassDB::bind_method(D_METHOD("get_shrinking_factor"), &SoftBody3D::get_shrinking_factor);
@@ -393,6 +447,8 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,exp,suffix:kg"), "set_total_mass", "get_total_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "internal_springs"), "set_internal_springs", "is_internal_springs_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "internal_spring_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_internal_spring_stiffness", "get_internal_spring_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shrinking_factor", PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"), "set_shrinking_factor", "get_shrinking_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_damping_coefficient", "get_damping_coefficient");
@@ -427,39 +483,39 @@ void SoftBody3D::_update_physics_server() {
 	_update_pinned_skin_cache();
 
 	Skeleton3D *skeleton = nullptr;
-	Ref<Skin> skin;
+	Ref<Skin> active_skin;
 	if (!get_skeleton_path().is_empty() && has_node(get_skeleton_path())) {
 		skeleton = Object::cast_to<Skeleton3D>(get_node(get_skeleton_path()));
 		if (skeleton) {
-			skin = get_skin();
-			if (skin.is_null() && get_skin_reference().is_valid()) {
-				skin = get_skin_reference()->get_skin();
+			active_skin = get_skin();
+			if (active_skin.is_null() && get_skin_reference().is_valid()) {
+				active_skin = get_skin_reference()->get_skin();
 			}
-			if (skin.is_null()) {
-				skin = skeleton->create_skin_from_rest_transforms();
+			if (active_skin.is_null()) {
+				active_skin = skeleton->create_skin_from_rest_transforms();
 			}
 		}
 	}
 
 	Transform3D skeleton_global_transform;
 	LocalVector<Transform3D> skin_transforms;
-	if (skeleton && skin.is_valid()) {
+	if (skeleton && active_skin.is_valid()) {
 		skeleton_global_transform = skeleton->get_global_transform();
-		int bind_count = skin->get_bind_count();
+		int bind_count = active_skin->get_bind_count();
 		skin_transforms.resize(bind_count);
 		for (int i = 0; i < bind_count; ++i) {
 			int bone_idx = -1;
-			StringName bind_name = skin->get_bind_name(i);
+			StringName bind_name = active_skin->get_bind_name(i);
 			if (bind_name != StringName()) {
 				bone_idx = skeleton->find_bone(bind_name);
-			} else if (skin->get_bind_bone(i) >= 0) {
-				bone_idx = skin->get_bind_bone(i);
+			} else if (active_skin->get_bind_bone(i) >= 0) {
+				bone_idx = active_skin->get_bind_bone(i);
 			} else {
 				bone_idx = i;
 			}
 
 			if (bone_idx >= 0 && bone_idx < skeleton->get_bone_count()) {
-				skin_transforms[i] = skeleton->get_bone_global_pose(bone_idx) * skin->get_bind_pose(i);
+				skin_transforms[i] = skeleton->get_bone_global_pose(bone_idx) * active_skin->get_bind_pose(i);
 			} else {
 				skin_transforms[i] = Transform3D();
 			}
@@ -472,7 +528,7 @@ void SoftBody3D::_update_physics_server() {
 	for (int i = 0; i < pinned_points_indices_size; ++i) {
 		if (r[i].spatial_attachment) {
 			PhysicsServer3D::get_singleton()->soft_body_move_point(physics_rid, r[i].point_index, r[i].spatial_attachment->get_global_transform().xform(r[i].offset));
-		} else if (skeleton && skin.is_valid()) {
+		} else if (skeleton && active_skin.is_valid()) {
 			HashMap<int, PinnedSkinData>::ConstIterator E = pinned_skin_data_cache.find(r[i].point_index);
 			if (E) {
 				const PinnedSkinData &skin_data = E->value;
@@ -504,7 +560,7 @@ void SoftBody3D::_draw_soft_mesh() {
 	}
 
 	if (!rendering_server_handler->is_ready(mesh_rid)) {
-		rendering_server_handler->prepare(mesh_rid, 0);
+		rendering_server_handler->prepare(mesh_rid);
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
 		simulation_started = true;
@@ -559,24 +615,47 @@ void SoftBody3D::_become_mesh_owner() {
 
 	ERR_FAIL_COND(!mesh->get_surface_count());
 
-	// Get current mesh array and create new mesh array with necessary flag for SoftBody
-	Array surface_arrays = mesh->surface_get_arrays(0);
-	Array surface_blend_arrays = mesh->surface_get_blend_shape_arrays(0);
-	Dictionary surface_lods = mesh->surface_get_lods(0);
-	uint32_t surface_format = mesh->surface_get_format(0);
-
-	surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
-	surface_format &= ~Mesh::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-
 	Ref<ArrayMesh> soft_mesh;
 	soft_mesh.instantiate();
-	soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_lods, surface_format);
-	soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
+
+	int surface_count = mesh->get_surface_count();
+	for (int s = 0; s < surface_count; s++) {
+		Array surface_arrays = mesh->surface_get_arrays(s);
+		Array surface_blend_arrays = mesh->surface_get_blend_shape_arrays(s);
+		Dictionary surface_lods = mesh->surface_get_lods(s);
+		uint32_t surface_format = mesh->surface_get_format(s);
+		Mesh::PrimitiveType primitive_type = mesh->surface_get_primitive_type(s);
+
+		surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
+		surface_format &= ~Mesh::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+
+		soft_mesh->add_surface_from_arrays(primitive_type, surface_arrays, surface_blend_arrays, surface_lods, surface_format);
+
+		if (internal_springs && primitive_type != Mesh::PRIMITIVE_TRIANGLES) {
+			// Hide internal springs from final render
+			Ref<StandardMaterial3D> hidden_mat;
+			hidden_mat.instantiate();
+			hidden_mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+			hidden_mat->set_albedo(Color(0, 0, 0, 0));
+			soft_mesh->surface_set_material(s, hidden_mat);
+		} else {
+			soft_mesh->surface_set_material(s, mesh->surface_get_material(s));
+		}
+	}
 
 	set_mesh(soft_mesh);
 
 	for (int i = copy_materials.size() - 1; 0 <= i; --i) {
-		set_surface_override_material(i, copy_materials[i]);
+		Mesh::PrimitiveType prim_type = mesh->surface_get_primitive_type(i);
+		if (internal_springs && prim_type != Mesh::PRIMITIVE_TRIANGLES) {
+			Ref<StandardMaterial3D> hidden_mat;
+			hidden_mat.instantiate();
+			hidden_mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+			hidden_mat->set_albedo(Color(0, 0, 0, 0));
+			set_surface_override_material(i, hidden_mat);
+		} else {
+			set_surface_override_material(i, copy_materials[i]);
+		}
 	}
 
 	owned_mesh = soft_mesh->get_rid();
@@ -723,6 +802,28 @@ real_t SoftBody3D::get_linear_stiffness() {
 	return PhysicsServer3D::get_singleton()->soft_body_get_linear_stiffness(physics_rid);
 }
 
+void SoftBody3D::set_internal_springs(bool p_enabled) {
+	if (internal_springs == p_enabled) {
+		return;
+	}
+	internal_springs = p_enabled;
+	PhysicsServer3D::get_singleton()->soft_body_set_internal_springs(physics_rid, p_enabled);
+	notify_property_list_changed();
+}
+
+bool SoftBody3D::is_internal_springs_enabled() const {
+	return internal_springs;
+}
+
+void SoftBody3D::set_internal_spring_stiffness(real_t p_stiffness) {
+	internal_spring_stiffness = p_stiffness;
+	PhysicsServer3D::get_singleton()->soft_body_set_internal_spring_stiffness(physics_rid, p_stiffness);
+}
+
+real_t SoftBody3D::get_internal_spring_stiffness() const {
+	return internal_spring_stiffness;
+}
+
 void SoftBody3D::set_shrinking_factor(real_t p_shrinking_factor) {
 	PhysicsServer3D::get_singleton()->soft_body_set_shrinking_factor(physics_rid, p_shrinking_factor);
 }
@@ -764,9 +865,14 @@ int SoftBody3D::get_point_count() const {
 		return 0;
 	}
 
-	const int vertex_count = mesh->surface_get_array_len(0);
-	ERR_FAIL_COND_V(vertex_count < 0, 0);
-	return vertex_count;
+	int count = 0;
+	for (int s = 0; s < mesh->get_surface_count(); s++) {
+		int vertex_count = mesh->surface_get_array_len(s);
+		if (vertex_count > 0) {
+			count += vertex_count;
+		}
+	}
+	return count;
 }
 
 void SoftBody3D::apply_impulse(int p_point_index, const Vector3 &p_impulse) {
@@ -827,11 +933,16 @@ SoftBody3D::~SoftBody3D() {
 
 Vector3 SoftBody3D::_get_point_local_position(int p_point_index) const {
 	if (mesh.is_valid() && mesh->get_surface_count() > 0) {
-		Array arrays = mesh->surface_get_arrays(0);
-		if (!arrays.is_empty() && arrays.size() > Mesh::ARRAY_VERTEX) {
-			const Vector<Vector3> &vertices = arrays[Mesh::ARRAY_VERTEX];
-			if (p_point_index >= 0 && p_point_index < vertices.size()) {
-				return vertices[p_point_index];
+		int surf_count = mesh->get_surface_count();
+		int vertex_offset = 0;
+		for (int s = 0; s < surf_count; s++) {
+			Array arrays = mesh->surface_get_arrays(s);
+			if (!arrays.is_empty() && arrays.size() > Mesh::ARRAY_VERTEX) {
+				const Vector<Vector3> &vertices = arrays[Mesh::ARRAY_VERTEX];
+				if (p_point_index >= vertex_offset && p_point_index < vertex_offset + vertices.size()) {
+					return vertices[p_point_index - vertex_offset];
+				}
+				vertex_offset += vertices.size();
 			}
 		}
 	}
@@ -870,61 +981,71 @@ void SoftBody3D::_update_pinned_skin_cache() {
 		return;
 	}
 
-	Array surface_arrays = mesh->surface_get_arrays(0);
-	if (surface_arrays.is_empty() || surface_arrays.size() != Mesh::ARRAY_MAX) {
-		return;
-	}
+	int surface_count = mesh->get_surface_count();
+	int global_vertex_offset = 0;
 
-	const Vector<Vector3> &vertices = surface_arrays[Mesh::ARRAY_VERTEX];
-	const Vector<int> &bones = surface_arrays[Mesh::ARRAY_BONES];
-	const Vector<float> &weights = surface_arrays[Mesh::ARRAY_WEIGHTS];
-
-	if (vertices.is_empty() || bones.is_empty() || weights.is_empty()) {
-		return;
-	}
-
-	uint32_t surface_format = mesh->surface_get_format(0);
-	int bones_per_vertex = (surface_format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
-
-	if (bones.size() != vertices.size() * bones_per_vertex || weights.size() != vertices.size() * bones_per_vertex) {
-		return;
-	}
-
-	const Vector3 *v_ptr = vertices.ptr();
-	const int *b_ptr = bones.ptr();
-	const float *w_ptr = weights.ptr();
-
-	for (int i = 0; i < pinned_points.size(); ++i) {
-		const PinnedPoint &pp = pinned_points[i];
-		if (!pp.spatial_attachment_path.is_empty()) {
+	for (int s = 0; s < surface_count; s++) {
+		Array surface_arrays = mesh->surface_get_arrays(s);
+		if (surface_arrays.is_empty() || surface_arrays.size() != Mesh::ARRAY_MAX) {
 			continue;
 		}
 
-		int pt_idx = pp.point_index;
-		if (pt_idx < 0 || pt_idx >= vertices.size()) {
+		const Vector<Vector3> &vertices = surface_arrays[Mesh::ARRAY_VERTEX];
+		const Vector<int> &bones = surface_arrays[Mesh::ARRAY_BONES];
+		const Vector<float> &weights = surface_arrays[Mesh::ARRAY_WEIGHTS];
+
+		if (vertices.is_empty()) {
 			continue;
 		}
 
-		PinnedSkinData skin_data;
-		skin_data.rest_vertex = v_ptr[pt_idx];
+		uint32_t surface_format = mesh->surface_get_format(s);
+		int bones_per_vertex = (surface_format & Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
+		bool has_skin = !bones.is_empty() && !weights.is_empty() &&
+				bones.size() == vertices.size() * bones_per_vertex &&
+				weights.size() == vertices.size() * bones_per_vertex;
 
-		float total_weight = 0.0f;
-		for (int b = 0; b < bones_per_vertex; ++b) {
-			int idx = pt_idx * bones_per_vertex + b;
-			float weight = w_ptr[idx];
-			if (weight > 0.0001f) {
-				skin_data.bone_indices.push_back(b_ptr[idx]);
-				skin_data.bone_weights.push_back(weight);
-				total_weight += weight;
+		const Vector3 *v_ptr = vertices.ptr();
+		const int *b_ptr = has_skin ? bones.ptr() : nullptr;
+		const float *w_ptr = has_skin ? weights.ptr() : nullptr;
+
+		for (int i = 0; i < pinned_points.size(); ++i) {
+			const PinnedPoint &pp = pinned_points[i];
+			if (!pp.spatial_attachment_path.is_empty()) {
+				continue;
+			}
+
+			int pt_idx = pp.point_index;
+			if (pt_idx < global_vertex_offset || pt_idx >= global_vertex_offset + vertices.size()) {
+				continue;
+			}
+
+			int local_pt_idx = pt_idx - global_vertex_offset;
+
+			PinnedSkinData skin_data;
+			skin_data.rest_vertex = v_ptr[local_pt_idx];
+
+			if (has_skin) {
+				float total_weight = 0.0f;
+				for (int b = 0; b < bones_per_vertex; ++b) {
+					int idx = local_pt_idx * bones_per_vertex + b;
+					float weight = w_ptr[idx];
+					if (weight > 0.0001f) {
+						skin_data.bone_indices.push_back(b_ptr[idx]);
+						skin_data.bone_weights.push_back(weight);
+						total_weight += weight;
+					}
+				}
+
+				if (total_weight > 0.0001f) {
+					for (float &weight : skin_data.bone_weights) {
+						weight /= total_weight;
+					}
+					pinned_skin_data_cache.insert(pt_idx, skin_data);
+				}
 			}
 		}
 
-		if (total_weight > 0.0001f) {
-			for (float &weight : skin_data.bone_weights) {
-				weight /= total_weight;
-			}
-			pinned_skin_data_cache.insert(pt_idx, skin_data);
-		}
+		global_vertex_offset += vertices.size();
 	}
 }
 

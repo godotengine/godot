@@ -289,6 +289,12 @@ public:
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) = 0;
 	virtual real_t soft_body_get_linear_stiffness(RID p_body) const = 0;
 
+	virtual void soft_body_set_internal_springs(RID p_body, bool p_enabled) = 0;
+	virtual bool soft_body_is_internal_springs_enabled(RID p_body) const = 0;
+
+	virtual void soft_body_set_internal_spring_stiffness(RID p_body, real_t p_stiffness) = 0;
+	virtual real_t soft_body_get_internal_spring_stiffness(RID p_body) const = 0;
+
 	virtual void soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) = 0;
 	virtual real_t soft_body_get_shrinking_factor(RID p_body) const = 0;
 
