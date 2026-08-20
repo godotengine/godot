@@ -767,6 +767,7 @@ void FindInFilesResultsPanel::set_with_replace(bool p_with_replace) {
 
 void FindInFilesResultsPanel::set_replace_text(const String &p_text) {
 	replace_text = p_text;
+	_update_replace_preview();
 }
 
 void FindInFilesResultsPanel::set_search_labels_visibility(bool p_visible) {
@@ -929,10 +930,13 @@ void FindInFilesResultsPanel::_on_result_found(const String &p_fpath, int p_line
 	int chars_removed = p_text.size() - trimmed_text.size();
 	String start = vformat("%3s: ", p_line_number);
 
-	item->set_text(text_index, start + trimmed_text);
+	if (!with_replace) {
+		item->set_text(text_index, start + trimmed_text);
+	}
 	item->set_custom_draw_callback(text_index, callable_mp(this, &FindInFilesResultsPanel::_draw_result_text));
 
 	Result r;
+	r.base_text = start + trimmed_text;
 	r.line_number = p_line_number;
 	r.begin = p_begin;
 	r.end = p_end;
@@ -940,6 +944,8 @@ void FindInFilesResultsPanel::_on_result_found(const String &p_fpath, int p_line
 	result_items[item] = r;
 
 	if (with_replace) {
+		_update_replace_item(item, r);
+
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		item->set_checked(0, true);
 		item->set_editable(0, true);
@@ -981,6 +987,10 @@ void FindInFilesResultsPanel::_on_theme_changed() {
 
 		file_item = file_item->get_next();
 	}
+	theme_cache.accent_color = get_theme_color("accent_color", EditorStringName(Editor));
+	theme_cache.removed_color = get_theme_color("error_color", EditorStringName(Editor));
+	theme_cache.added_color = get_theme_color("success_color", EditorStringName(Editor));
+	theme_cache.font_color = get_theme_color(SceneStringName(font_color), Tree::get_class_static());
 }
 
 void FindInFilesResultsPanel::_draw_result_text(Object *p_item_obj, const Rect2 &p_rect) {
@@ -994,31 +1004,50 @@ void FindInFilesResultsPanel::_draw_result_text(Object *p_item_obj, const Rect2 
 		return;
 	}
 	Result r = E->value;
-	String item_text = item->get_text(with_replace ? 1 : 0);
-	Ref<Font> font = results_display->get_theme_font(SceneStringName(font));
-	int font_size = results_display->get_theme_font_size(SceneStringName(font_size));
 
-	Rect2 match_rect = p_rect;
-	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 1;
-	match_rect.size.x = font->get_string_size(finder->get_search_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 1;
-	match_rect.position.y += 1 * EDSCALE;
-	match_rect.size.y -= 2 * EDSCALE;
+	Ref<TextParagraph> item_text = item->_get_text_buf(with_replace ? 1 : 0);
 
 	RID ci = item->get_tree()->get_custom_drawing_canvas_item();
+	constexpr float fill_alpha = 0.17;
+	constexpr float outline_alpha = 0.17;
 
-	Vector<Vector2> points;
-	points.resize(5);
-	points.write[0] = match_rect.position;
-	points.write[1] = match_rect.position + Vector2(match_rect.size.x, 0);
-	points.write[2] = match_rect.position + match_rect.size;
-	points.write[3] = match_rect.position + Vector2(0, match_rect.size.y);
-	points.write[4] = match_rect.position;
-	Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-	Vector<Color> colors = { Color(accent_color, 0.33) };
-	RenderingServer::get_singleton()->canvas_item_add_polyline(ci, points, colors, 2.0);
-	RenderingServer::get_singleton()->canvas_item_add_rect(ci, match_rect, Color(accent_color, 0.17));
+	int search_start = r.begin_trimmed;
+	int search_end = search_start + finder->get_search_text().length();
+	Vector<Vector2> match_sel = TS->shaped_text_get_selection(item_text->get_rid(), search_start, search_end);
+	for (const Vector2 &match_range : match_sel) {
+		Rect2 match_rect = Rect2(p_rect.position.x + match_range.x - 1, p_rect.position.y + 1 * EDSCALE, match_range.y - match_range.x + 2, p_rect.size.y - 2 * EDSCALE);
+		if (!with_replace) {
+			_draw_outlined_rect(ci, match_rect, Color(theme_cache.accent_color, fill_alpha), Color(theme_cache.accent_color, outline_alpha));
+			return;
+		} else {
+			_draw_outlined_rect(ci, match_rect, Color(theme_cache.removed_color, fill_alpha), Color(theme_cache.removed_color, outline_alpha));
+		}
+		RenderingServer::get_singleton()->canvas_item_add_line(ci, Vector2(match_rect.position.x, match_rect.get_center().y), Vector2(match_rect.get_end().x, match_rect.get_center().y), theme_cache.font_color);
+	}
+	if (replace_text.is_empty()) {
+		return;
+	}
 
-	// Text is drawn by Tree already.
+	int repl_start = search_end;
+	int repl_end = repl_start + replace_text.length();
+	match_sel = TS->shaped_text_get_selection(item_text->get_rid(), repl_start, repl_end);
+	for (const Vector2 &match_range : match_sel) {
+		Rect2 match_rect = Rect2(p_rect.position.x + match_range.x - 1, p_rect.position.y + 1 * EDSCALE, match_range.y - match_range.x + 2, p_rect.size.y - 2 * EDSCALE);
+		_draw_outlined_rect(ci, match_rect, Color(theme_cache.added_color, fill_alpha), Color(theme_cache.added_color, outline_alpha));
+	}
+}
+
+void FindInFilesResultsPanel::_draw_outlined_rect(RID p_canvas_item, const Rect2 &p_rect, const Color &p_fill_color, const Color &p_outline_color) {
+	RenderingServer::get_singleton()->canvas_item_add_polyline(p_canvas_item,
+			PackedVector2Array{
+					p_rect.position,
+					p_rect.position + Vector2(p_rect.size.x, 0),
+					p_rect.position + p_rect.size,
+					p_rect.position + Vector2(0, p_rect.size.y),
+					p_rect.position,
+			},
+			PackedColorArray{ p_outline_color }, 2.0);
+	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas_item, p_rect, p_fill_color);
 }
 
 void FindInFilesResultsPanel::_on_item_edited() {
@@ -1199,6 +1228,17 @@ void FindInFilesResultsPanel::_update_matches_text() {
 		file_item->set_text(0, (String)file_item->get_metadata(0) + " (" + vformat(TTRN("%d match", "%d matches", file_matches_count), file_matches_count) + ")");
 		file_item = file_item->get_next();
 	}
+}
+
+void FindInFilesResultsPanel::_update_replace_preview() {
+	for (const KeyValue<TreeItem *, Result> &KV : result_items) {
+		_update_replace_item(KV.key, KV.value);
+	}
+}
+
+void FindInFilesResultsPanel::_update_replace_item(TreeItem *p_item, const Result &p_result) {
+	const int end = p_result.begin_trimmed + (p_result.end - p_result.begin);
+	p_item->set_text(1, p_result.base_text.substr(0, p_result.begin_trimmed) + p_result.base_text.substr(p_result.begin_trimmed, p_result.end - p_result.begin) + get_replace_text() + p_result.base_text.substr(end));
 }
 
 void FindInFilesResultsPanel::_bind_methods() {
