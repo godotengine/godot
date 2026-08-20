@@ -761,6 +761,9 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 		scene_state.lightmap_ids[i] = p_lightmaps[i];
 		scene_state.lightmap_has_sh[i] = light_storage->lightmap_uses_spherical_harmonics(lightmap);
 
+		scene_state.lightmaps[i].specular_intensity = light_storage->lightmap_get_specular_intensity(lightmap);
+		scene_state.lightmap_has_specular[i] = scene_state.lightmap_has_sh[i] && (scene_state.lightmaps[i].specular_intensity > 0.0f);
+
 		scene_state.lightmaps_used++;
 	}
 	if (scene_state.lightmaps_used > 0) {
@@ -2155,8 +2158,8 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
-		// Sets lod_index and uses_lightmap at once.
-		element_info.value = uint32_t(surface->sort.sort_key1 & 0x1FF);
+		// Sets lod_index, uses_lightmap, and uses_lightmap_specular at once.
+		element_info.value = uint32_t(surface->sort.sort_key1 & 0x3FF);
 	}
 
 	if (p_update_buffer && element_total > 0u) {
@@ -2222,6 +2225,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 		}
 
 		bool uses_lightmap = false;
+		bool uses_lightmap_specular = false;
 		// bool uses_gi = false;
 
 		if (p_render_list == RENDER_LIST_OPAQUE) {
@@ -2239,6 +2243,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP;
 					if (scene_state.lightmap_has_sh[lightmap_cull_index]) {
 						flags |= INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP;
+						uses_lightmap_specular = scene_state.lightmap_has_specular[lightmap_cull_index];
 					}
 					uses_lightmap = true;
 				} else {
@@ -2281,6 +2286,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 		while (surf) {
 			surf->sort.uses_lightmap = 0;
+			surf->sort.uses_lightmap_specular = 0;
 
 			// LOD
 
@@ -2325,6 +2331,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 				if (uses_lightmap) {
 					surf->sort.uses_lightmap = 1; // This needs to become our lightmap index but we'll do that in a separate PR.
+					surf->sort.uses_lightmap_specular = uses_lightmap_specular ? 1 : 0;
 					scene_state.used_lightmap = true;
 				}
 
@@ -2483,6 +2490,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			pipeline_specialization.area_lights = SceneShaderForwardMobile::shader_count_for(inst->area_light_count);
 			pipeline_specialization.reflection_probes = SceneShaderForwardMobile::shader_count_for(inst->reflection_probe_count);
 			pipeline_specialization.decals = inst->decals_count > 0;
+			pipeline_specialization.use_lightmap_specular = element_info.uses_lightmap_specular;
 
 #ifdef DEBUG_ENABLED
 			if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
