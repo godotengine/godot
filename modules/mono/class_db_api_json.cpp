@@ -58,7 +58,10 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, const MethodBind *> &F : t->gdtype->get_method_map(true)) {
+			for (const KeyValue<StringName, GDType::Property> &F : t->gdtype->get_property_map(true)) {
+				if (F.value.type != GDType::Property::Type::METHOD) {
+					continue;
+				}
 				String name = F.key.string();
 
 				ERR_CONTINUE(name.is_empty());
@@ -78,7 +81,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				Dictionary method_dict;
 				methods.push_back(method_dict);
 
-				const MethodBind *mb = t->gdtype->get_method_map(true)[F];
+				const MethodBind *mb = t->gdtype->get_property_map(true)[F].payload.method;
 				method_dict["name"] = mb->get_name();
 				method_dict["argument_count"] = mb->get_argument_count();
 				method_dict["return_type"] = mb->get_argument_type(-1);
@@ -121,7 +124,10 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, int64_t> &F : t->gdtype->get_integer_constant_map(true)) {
+			for (const KeyValue<StringName, GDType::Property> &F : t->gdtype->get_property_map(true)) {
+				if (F.value.type != GDType::Property::Type::INTEGER_CONSTANT) {
+					continue;
+				}
 				snames.push_back(F.key);
 			}
 
@@ -134,7 +140,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				constants.push_back(constant_dict);
 
 				constant_dict["name"] = F;
-				constant_dict["value"] = t->gdtype->get_integer_constant_map(true)[F];
+				constant_dict["value"] = t->gdtype->get_property_map(true)[F].payload.integer_constant.value;
 			}
 
 			if (!constants.is_empty()) {
@@ -146,7 +152,10 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, const MethodInfo *> &F : t->gdtype->get_signal_map(true)) {
+			for (const KeyValue<StringName, GDType::Property> &F : t->gdtype->get_property_map(true)) {
+				if (F.value.type != GDType::Property::Type::SIGNAL) {
+					continue;
+				}
 				snames.push_back(F.key);
 			}
 
@@ -158,7 +167,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				Dictionary signal_dict;
 				signals.push_back(signal_dict);
 
-				const MethodInfo &mi = *t->gdtype->get_signal_map(true)[F];
+				const MethodInfo &mi = *t->gdtype->get_property_map(true)[F].payload.signal;
 				signal_dict["name"] = F;
 
 				Array arguments;
