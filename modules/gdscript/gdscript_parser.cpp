@@ -5530,6 +5530,33 @@ GDScriptParser::DataType GDScriptParser::DataType::get_typed_container_type() co
 	return type;
 }
 
+bool GDScriptParser::DataType::is_constructible() const {
+	switch (kind) {
+		case GDScriptParser::DataType::BUILTIN:
+		case GDScriptParser::DataType::ENUM:
+		case GDScriptParser::DataType::VARIANT:
+		case GDScriptParser::DataType::RESOLVING:
+		case GDScriptParser::DataType::UNRESOLVED:
+			return false;
+		case GDScriptParser::DataType::NATIVE:
+			if (ClassDB::is_abstract(native_type)) {
+				return false;
+			}
+			break;
+		case GDScriptParser::DataType::SCRIPT:
+			if (script_type.is_valid() && script_type->is_abstract()) {
+				return false;
+			}
+			break;
+		case GDScriptParser::DataType::CLASS:
+			if (class_type && class_type->is_abstract) {
+				return false;
+			}
+			break;
+	}
+	return true;
+}
+
 bool GDScriptParser::DataType::can_reference(const GDScriptParser::DataType &p_other) const {
 	if (p_other.is_meta_type) {
 		return false;
