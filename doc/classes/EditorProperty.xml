@@ -193,6 +193,7 @@
 		</signal>
 		<signal name="property_keyed">
 			<param index="0" name="property" type="StringName" />
+			<param index="1" name="use_keying_next" type="bool" />
 			<description>
 				Emit it if you want to add this value as an animation key (check for keying being enabled first).
 			</description>

@@ -956,7 +956,7 @@ void AnimationLibraryEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 
 void AnimationLibraryEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_editor", "mixer"), &AnimationLibraryEditor::_update_editor);
-	ADD_SIGNAL(MethodInfo("update_editor"));
+	ADD_SIGNAL(MethodInfo("update_editor", PropertyInfo(Variant::OBJECT, "mixer")));
 }
 
 AnimationLibraryEditor::AnimationLibraryEditor() {
