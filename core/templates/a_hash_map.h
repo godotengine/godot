@@ -338,16 +338,32 @@ public:
 		}
 
 		_metadata[meta_idx].hash = EMPTY_HASH;
-		_elements[element_idx].key.~TKey();
-		_elements[element_idx].value.~TValue();
+		if constexpr (!std::is_trivially_destructible_v<TKey>) {
+			_elements[element_idx].key.~TKey();
+		}
+		if constexpr (!std::is_trivially_destructible_v<TValue>) {
+			_elements[element_idx].value.~TValue();
+		}
 		_size--;
 
 		if (element_idx < _size) {
-			memcpy((void *)&_elements[element_idx], (const void *)&_elements[_size], sizeof(MapKeyValue));
 			uint32_t moved_element_idx = 0;
 			uint32_t moved_meta_idx = 0;
 			_lookup_idx(_elements[_size].key, moved_element_idx, moved_meta_idx);
 			_metadata[moved_meta_idx].element_idx = element_idx;
+
+			if constexpr (std::is_trivially_copyable_v<TKey> && std::is_trivially_copyable_v<TValue>) {
+				memcpy((void *)&_elements[element_idx], (const void *)&_elements[_size], sizeof(MapKeyValue));
+			} else {
+				memnew_placement(&_elements[element_idx], MapKeyValue(std::move(_elements[_size])));
+			}
+
+			if constexpr (!std::is_trivially_destructible_v<TKey>) {
+				_elements[_size].key.~TKey();
+			}
+			if constexpr (!std::is_trivially_destructible_v<TValue>) {
+				_elements[_size].value.~TValue();
+			}
 		}
 
 		return true;
