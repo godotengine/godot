@@ -318,8 +318,8 @@ Transform3D VisionOSXRInterface::RenderThread::get_camera_transform() {
 	ERR_FAIL_NULL_V(xr_server, camera_transform);
 	// scale our origin point of our transform
 	float world_scale = xr_server->get_world_scale();
-	origin_from_head.origin *= world_scale;
 	camera_transform = origin_from_head;
+	camera_transform.origin *= world_scale;
 	return camera_transform;
 }
 
