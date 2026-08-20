@@ -34,6 +34,7 @@
 
 #include "core/object/class_db.h"
 #include "editor/export/editor_export.h"
+#include "editor/settings/editor_settings.h"
 
 void register_windows_exporter_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformWindows);

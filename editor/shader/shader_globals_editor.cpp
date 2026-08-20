@@ -31,6 +31,7 @@
 #include "shader_globals_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -491,7 +492,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	variable_add->connect(SceneStringName(pressed), callable_mp(this, &ShaderGlobalsEditor::_variable_added));
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+	mc->set_theme_type_variation("NoBorderBottomWideWindow");
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(mc);
 

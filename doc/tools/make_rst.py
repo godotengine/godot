@@ -89,7 +89,7 @@ BASE_STRINGS = [
     "This operator may be changed or removed in future versions.",
     "This theme property may be changed or removed in future versions.",
     # See also `make_rst_class()` and `editor/doc/editor_help.cpp`.
-    "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.",
+    "[note]The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.[/note]",
 ]
 strings_l10n: dict[str, str] = {}
 writing_translation = False
@@ -102,19 +102,14 @@ CLASS_GROUPS: dict[str, str] = {
     "editor": "Editor-only",
     "variant": "Variant types",
 }
+
 CLASS_GROUPS_BASE: dict[str, str] = {
     "node": "Node",
     "resource": "Resource",
     "object": "Object",
     "variant": "Variant",
 }
-# Sync with editor\register_editor_types.cpp
-EDITOR_CLASSES: list[str] = [
-    "FileSystemDock",
-    "ScriptCreateDialog",
-    "ScriptEditor",
-    "ScriptEditorBase",
-]
+
 # Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
 CLASSES_WITH_CSHARP_DIFFERENCES: list[str] = [
     "@GlobalScope",
@@ -171,6 +166,7 @@ class State:
 
         # Additional content and structure checks and validators.
         self.script_language_parity_check: ScriptLanguageParityCheck = ScriptLanguageParityCheck()
+        self.reserved_tag_check: ReservedTagCheck = ReservedTagCheck()
 
     def parse_class(self, class_root: ET.Element, filepath: str) -> None:
         class_name = class_root.attrib["name"]
@@ -183,6 +179,8 @@ class State:
         inherits = class_root.get("inherits")
         if inherits is not None:
             class_def.inherits = inherits
+
+        class_def.api_type = class_root.get("api_type")
 
         class_def.deprecated = class_root.get("deprecated")
         class_def.experimental = class_root.get("experimental")
@@ -595,8 +593,8 @@ class ClassDef(DefinitionBase):
     def __init__(self, name: str) -> None:
         super().__init__("class", name)
 
-        self.class_group = "variant"
-        self.editor_class = self._is_editor_class()
+        self.class_group: str = "variant"
+        self.api_type: str | None = None
 
         self.constants: OrderedDict[str, ConstantDef] = OrderedDict()
         self.enums: OrderedDict[str, EnumDef] = OrderedDict()
@@ -615,14 +613,6 @@ class ClassDef(DefinitionBase):
 
         # Used to match the class with XML source for output filtering purposes.
         self.filepath: str = ""
-
-    def _is_editor_class(self) -> bool:
-        if self.name.startswith("Editor"):
-            return True
-        if self.name in EDITOR_CLASSES:
-            return True
-
-        return False
 
     def update_class_group(self, state: State) -> None:
         group_name = "variant"
@@ -674,6 +664,56 @@ class ScriptLanguageParityCheck:
             self.hit_map[class_name] = []
 
         self.hit_map[class_name].append((context, error))
+
+
+# Checks if reserved tags have matching opening/closing pairs.
+class ReservedTagCheck:
+    def __init__(self) -> None:
+        self.tag_depth = 0  # Number of opening tags - closing tags.
+        self.tag_stack: list[
+            str
+        ] = []  # List of unmatched opening tags. When tags mismatch, len(tag_stack) may differ from tag_depth.
+        self.tag_stack_error: str = ""  # First occurrence of a mismatched/duplicated opening/closing tag.
+
+    def reset(self) -> None:
+        self.tag_depth = 0
+        self.tag_stack.clear()
+        self.tag_stack_error = ""
+
+    def run_final_check(self) -> None:
+        if len(self.tag_stack) > 0:
+            if self.tag_stack_error == "":
+                self.tag_stack_error = f"unmatched opening tag(s) [{']['.join(self.tag_stack)}]"
+
+    def add_opening_tag(self, tag_state_name: str) -> None:
+        self.tag_depth += 1
+
+        if tag_state_name in self.tag_stack:
+            if self.tag_stack_error == "":
+                self.tag_stack_error = f"duplicated opening tags [{']['.join(self.tag_stack)}][{tag_state_name}]"
+
+        self.tag_stack.append(tag_state_name)
+
+    def add_closing_tag(self, tag_state_name: str) -> None:
+        self.tag_depth -= 1
+
+        if len(self.tag_stack) <= 0:
+            if self.tag_stack_error == "":
+                self.tag_stack_error = f"extra closing tag [/{tag_state_name}]"
+        elif tag_state_name != self.tag_stack[-1]:
+            if tag_state_name in self.tag_stack:
+                if self.tag_stack_error == "":
+                    self.tag_stack_error = f"mismatched closing tag [{']['.join(self.tag_stack)}][/{tag_state_name}]"
+
+                self.tag_stack.reverse()
+                self.tag_stack.remove(tag_state_name)
+                self.tag_stack.reverse()
+            else:
+                if self.tag_stack_error == "":
+                    self.tag_stack_error = f"unmatched closing tag [{']['.join(self.tag_stack)}][/{tag_state_name}]"
+        else:
+            # Correct closing tag.
+            self.tag_stack.pop()
 
 
 # Entry point for the RST generator.
@@ -799,7 +839,7 @@ def main() -> None:
             grouped_classes[class_def.class_group] = []
         grouped_classes[class_def.class_group].append(class_name)
 
-        if class_def.editor_class:
+        if class_def.api_type == "editor":
             if "editor" not in grouped_classes:
                 grouped_classes["editor"] = []
             grouped_classes["editor"].append(class_name)
@@ -1306,7 +1346,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 # Add copy note to built-in properties returning `Packed*Array`.
                 if property_def.type_name.type_name in PACKED_ARRAY_TYPES:
                     # See also `BASE_STRINGS` and `editor/doc/editor_help.cpp`.
-                    copy_note = f"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details."
+                    copy_note = f"[note]The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details.[/note]"
                     f.write(f"{format_text_block(copy_note, property_def, state)}\n\n")
 
                 index += 1
@@ -1791,6 +1831,7 @@ RESERVED_CROSSLINK_TAGS = [
     "theme_item",
     "param",
 ]
+RESERVED_ADMONITION_TAGS = ["important", "note", "tip", "warning"]
 
 
 def is_in_tagset(tag_text: str, tagset: list[str]) -> bool:
@@ -1868,8 +1909,23 @@ def format_text_block(
     has_codeblocks_csharp = False
 
     pos = 0
-    tag_depth = 0
+    admonition_pos = -1
+    state.reserved_tag_check.reset()
     while True:
+        if state.reserved_tag_check.tag_depth > 2 or (
+            state.reserved_tag_check.tag_depth == 2
+            and admonition_pos == -1
+            and not (
+                len(state.reserved_tag_check.tag_stack) == 2
+                and state.reserved_tag_check.tag_stack[0] == "codeblocks"
+                and state.reserved_tag_check.tag_stack[1] in ("gdscript", "csharp")
+            )
+        ):
+            print_warning(
+                f"{state.current_class}.xml: Found nested tags [{']['.join(state.reserved_tag_check.tag_stack)}] in {context_name} (online doc will contain invalid RST markup).",
+                state,
+            )
+
         pos = text.find("[", pos)
         if pos == -1:
             break
@@ -1907,7 +1963,7 @@ def format_text_block(
                 if tag_state.closing and tag_state.name == inside_code_tag:
                     if is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
                         tag_text = ""
-                        tag_depth -= 1
+                        state.reserved_tag_check.add_closing_tag(tag_state.name)
                         inside_code = False
                         ignore_code_warnings = False
                         # Strip newline if the tag was alone on one
@@ -1916,7 +1972,7 @@ def format_text_block(
 
                     elif is_in_tagset(tag_state.name, ["code"]):
                         tag_text = "``"
-                        tag_depth -= 1
+                        state.reserved_tag_check.add_closing_tag(tag_state.name)
                         inside_code = False
                         ignore_code_warnings = False
                         escape_post = True
@@ -1945,16 +2001,16 @@ def format_text_block(
                     has_codeblocks_gdscript = False
                     has_codeblocks_csharp = False
 
-                    tag_depth -= 1
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     tag_text = ""
                     inside_code_tabs = False
                 else:
-                    tag_depth += 1
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     tag_text = "\n.. tabs::"
                     inside_code_tabs = True
 
             elif is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
-                tag_depth += 1
+                state.reserved_tag_check.add_opening_tag(tag_state.name)
 
                 if tag_state.name == "gdscript":
                     if not inside_code_tabs:
@@ -1993,7 +2049,7 @@ def format_text_block(
 
             elif is_in_tagset(tag_state.name, ["code"]):
                 tag_text = "``"
-                tag_depth += 1
+                state.reserved_tag_check.add_opening_tag(tag_state.name)
 
                 inside_code = True
                 inside_code_tag = "code"
@@ -2280,6 +2336,17 @@ def format_text_block(
                         )
                         break
                     link_title = text[endq_pos + 1 : endurl_pos]
+                    for rft in RESERVED_FORMATTING_TAGS:
+                        if link_title.find(f"[{rft}]") != -1:
+                            print_warning(
+                                f"{state.current_class}.xml: Found nested tags [url][{rft}] in {context_name} (online doc will contain invalid RST markup).",
+                                state,
+                            )
+                        elif link_title.find(f"[/{rft}]") != -1:
+                            print_warning(
+                                f"{state.current_class}.xml: Found nested tags [url][/{rft}] in {context_name} (online doc will contain invalid RST markup).",
+                                state,
+                            )
                     tag_text = make_link(url_target, link_title)
 
                     pre_text = text[:pos]
@@ -2303,35 +2370,35 @@ def format_text_block(
 
             elif tag_state.name == "center":
                 if tag_state.closing:
-                    tag_depth -= 1
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                 else:
-                    tag_depth += 1
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                 tag_text = ""
 
             elif tag_state.name == "i":
                 if tag_state.closing:
-                    tag_depth -= 1
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
-                    tag_depth += 1
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
                 tag_text = "*"
 
             elif tag_state.name == "b":
                 if tag_state.closing:
-                    tag_depth -= 1
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
-                    tag_depth += 1
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
                 tag_text = "**"
 
             elif tag_state.name == "u":
                 if tag_state.closing:
-                    tag_depth -= 1
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
-                    tag_depth += 1
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
                 tag_text = ""
 
@@ -2344,12 +2411,44 @@ def format_text_block(
             elif tag_state.name == "kbd":
                 tag_text = "`"
                 if tag_state.closing:
-                    tag_depth -= 1
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
                     tag_text = ":kbd:" + tag_text
-                    tag_depth += 1
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
+            elif tag_state.name in RESERVED_ADMONITION_TAGS:
+                if tag_state.closing and admonition_pos == -1:
+                    print_error(
+                        f'{state.current_class}.xml: Closing admonition tag "[{tag_state.raw}]" has no opening counterpart.',
+                        state,
+                    )
+                    break
+                elif tag_state.closing:
+                    admonition_type = tag_state.name.removeprefix("/")
+                    admonition_contents = (
+                        (text[admonition_pos : pos + len(tag_state.name) + 3])
+                        .removeprefix(f"[{admonition_type}]")
+                        .removesuffix(f"[/{admonition_type}]")
+                        .strip()
+                    )
+                    lines = admonition_contents.splitlines()
+                    for i in range(len(lines)):
+                        lines[i] = "    " + lines[i]
+                    admonition_contents = "\n".join(lines)
+                    admonition_text = f".. classref_{admonition_type}::\n\n{admonition_contents}"
+                    if pre_text.rstrip() != "":
+                        pre_text = text[:admonition_pos].rstrip() + "\n\n"
+                    pre_text = pre_text + admonition_text
+                    tag_text = ""
+                    if post_text.lstrip() != "":
+                        post_text = "\n\n" + post_text.lstrip()
+                    admonition_pos = -1
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
+                else:
+                    tag_text = f"[{tag_state.name}]"
+                    admonition_pos = pos
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
 
             # Invalid syntax.
             else:
@@ -2399,9 +2498,17 @@ def format_text_block(
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
 
-    if tag_depth > 0:
+    if state.reserved_tag_check.tag_depth != 0:
         print_error(
             f"{state.current_class}.xml: Tag depth mismatch: too many (or too few) open/close tags in {context_name}.",
+            state,
+        )
+
+    state.reserved_tag_check.run_final_check()
+
+    if state.reserved_tag_check.tag_stack_error != "":
+        print_error(
+            f"{state.current_class}.xml: Tag order mismatch: {state.reserved_tag_check.tag_stack_error} in {context_name}.",
             state,
         )
 

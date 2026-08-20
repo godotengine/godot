@@ -218,6 +218,7 @@ class ControlEditorToolbar : public HBoxContainer {
 	ControlEditorPopupButton *anchors_button = nullptr;
 	ControlEditorPopupButton *containers_button = nullptr;
 	Button *anchor_mode_button = nullptr;
+	CheckBox *reposition_button = nullptr;
 
 	AnchorPresetPicker *anchors_picker = nullptr;
 
@@ -252,14 +253,36 @@ public:
 	ControlEditorToolbar();
 };
 
+class ControlOffsetTransformPreview : public Control {
+	GDCLASS(ControlOffsetTransformPreview, Control);
+
+	EditorPlugin *plugin = nullptr;
+	Control *selected_control = nullptr;
+
+	friend class ControlEditorPlugin;
+
+public:
+	void edit(Control *p_control);
+
+	void forward_canvas_draw_over_viewport(Control *p_overlay) const;
+
+	ControlOffsetTransformPreview(EditorPlugin *p_plugin);
+};
+
 // Editor plugin.
 class ControlEditorPlugin : public EditorPlugin {
 	GDCLASS(ControlEditorPlugin, EditorPlugin);
 
 	ControlEditorToolbar *toolbar = nullptr;
+	ControlOffsetTransformPreview *offset_transform_preview = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "Control"; }
+
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
 	ControlEditorPlugin();
 };

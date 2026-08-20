@@ -766,6 +766,12 @@ hb_ft_get_glyph_name (hb_font_t *font HB_UNUSED,
   hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
 
+  if (!size)
+  {
+    char buf[128];
+    return !FT_Get_Glyph_Name (ft_face, glyph, buf, sizeof (buf)) && *buf;
+  }
+
   hb_bool_t ret = !FT_Get_Glyph_Name (ft_face, glyph, name, size);
   if (ret && (size && !*name))
     ret = false;
@@ -1117,14 +1123,13 @@ _hb_ft_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data
   buffer = (FT_Byte *) hb_malloc (length);
   if (!buffer)
     return nullptr;
+  auto buffer_guard = hb_make_scope_guard ([&]() { hb_free (buffer); });
 
   error = FT_Load_Sfnt_Table (ft_face, tag, 0, buffer, &length);
   if (error)
-  {
-    hb_free (buffer);
     return nullptr;
-  }
 
+  buffer_guard.release ();
   return hb_blob_create ((const char *) buffer, length,
 			 HB_MEMORY_MODE_WRITABLE,
 			 buffer, hb_free);
@@ -1693,6 +1698,13 @@ _release_blob (void *arg)
 void
 hb_ft_font_set_funcs (hb_font_t *font)
 {
+  int load_flags = FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING;
+  if (font->destroy == (hb_destroy_func_t) _hb_ft_font_destroy && font->user_data)
+  {
+    const hb_ft_font_t *existing_ft_font = (const hb_ft_font_t *) font->user_data;
+    load_flags = existing_ft_font->load_flags;
+  }
+
   // In case of failure...
   hb_font_set_funcs (font,
 		     hb_font_funcs_get_empty (),
@@ -1740,7 +1752,7 @@ hb_ft_font_set_funcs (hb_font_t *font)
   }
 
   _hb_ft_font_set_funcs (font, ft_face, true);
-  hb_ft_font_set_load_flags (font, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
+  hb_ft_font_set_load_flags (font, load_flags);
 
   _hb_ft_hb_font_changed (font, ft_face);
 }

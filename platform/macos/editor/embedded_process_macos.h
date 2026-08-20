@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/class_db.h"
+#include "core/os/process_id.h"
 #include "editor/run/embedded_process.h"
 #include "scene/gui/control.h"
 #include "servers/display/display_server_enums.h"
@@ -85,7 +86,7 @@ class EmbeddedProcessMacOS final : public EmbeddedProcessBase {
 	uint32_t context_id = 0;
 	ScriptEditorDebugger *script_debugger = nullptr;
 	LayerHost *layer_host = nullptr;
-	OS::ProcessID current_process_id = 0;
+	ProcessID current_process_id = 0;
 
 	// Embedded process state.
 
@@ -118,7 +119,7 @@ public:
 	}
 
 	bool is_process_focused() const override { return layer_host->has_focus(); }
-	void embed_process(OS::ProcessID p_pid) override;
+	void embed_process(ProcessID p_pid) override;
 	int get_embedded_pid() const override { return current_process_id; }
 	void reset() override;
 	void reset_timers() override {}

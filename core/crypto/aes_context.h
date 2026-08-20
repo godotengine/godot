@@ -32,7 +32,7 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/object/ref_counted.h"
-#include "core/variant/binder_common.h"
+#include "core/variant/type_info.h"
 
 class AESContext : public RefCounted {
 	GDCLASS(AESContext, RefCounted);
@@ -49,7 +49,6 @@ public:
 private:
 	Mode mode = MODE_MAX;
 	CryptoCore::AESContext ctx;
-	PackedByteArray iv;
 
 protected:
 	static void _bind_methods();

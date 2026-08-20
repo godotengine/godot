@@ -34,24 +34,24 @@
 
 #include "core/input/input_enums.h"
 #include "core/os/mutex.h"
+#include "core/os/process_id.h"
 #include "core/os/thread.h"
+#include "core/os/thread_safe.h"
 #include "core/templates/local_vector.h"
 #include "servers/display/display_server.h"
 
 #ifdef SOWRAP_ENABLED
-#include "x11/dynwrappers/xlib-so_wrap.h"
-
 #include "x11/dynwrappers/xcursor-so_wrap.h"
 #include "x11/dynwrappers/xinput2-so_wrap.h"
+#include "x11/dynwrappers/xlib-so_wrap.h"
 #include "x11/dynwrappers/xrandr-so_wrap.h"
 
 #ifdef XKB_ENABLED
 #include "xkbcommon-so_wrap.h"
 #endif
 #else // !SOWRAP_ENABLED
-#include <X11/Xlib.h>
-
 #include <X11/Xcursor/Xcursor.h>
+#include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xrandr.h>
 
@@ -152,6 +152,8 @@ class DisplayServerX11 : public DisplayServer {
 #ifdef XKB_ENABLED
 		xkb_compose_state *xkb_state = nullptr;
 #endif
+		Ref<Image> icon;
+		bool icon_set = false;
 
 		Size2i min_size;
 		Size2i max_size;
@@ -229,6 +231,7 @@ class DisplayServerX11 : public DisplayServer {
 	::Time last_keyrelease_time = 0;
 	::XIM xim = nullptr;
 	::XIMStyle xim_style;
+	bool warn_xim_just_stopped = true;
 
 	static int _xim_preedit_start_callback(::XIM xim, ::XPointer client_data,
 			::XPointer call_data);
@@ -271,6 +274,12 @@ class DisplayServerX11 : public DisplayServer {
 		Vector2 old_raw_pos;
 		::Time last_relative_time;
 	} xi;
+
+	Ref<Image> icon;
+	void _update_window_icon(WindowData &p_wd);
+
+	static bool g_set_icon_error;
+	static int set_icon_errorhandler(Display *dpy, XErrorEvent *ev);
 
 	bool _refresh_device_info();
 
@@ -373,7 +382,7 @@ class DisplayServerX11 : public DisplayServer {
 		Window process_window = 0;
 		bool visible = true;
 	};
-	HashMap<OS::ProcessID, EmbeddedProcessData *> embedded_processes;
+	HashMap<ProcessID, EmbeddedProcessData *> embedded_processes;
 
 	Point2i _get_window_position(Window p_window) const;
 	Rect2i _get_window_rect(Window p_window) const;
@@ -442,6 +451,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
 	virtual Ref<Image> screen_get_image(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
@@ -500,6 +510,8 @@ public:
 	virtual void window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
+	virtual void window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+
 	virtual bool window_is_maximize_allowed(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
@@ -531,10 +543,10 @@ public:
 	virtual void window_start_drag(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual void window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window) override;
 
-	virtual Error embed_process(DisplayServerEnums::WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
-	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
-	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
-	virtual OS::ProcessID get_focused_process_id() override;
+	virtual Error embed_process(DisplayServerEnums::WindowID p_window, ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
+	virtual Error request_close_embedded_process(ProcessID p_pid) override;
+	virtual Error remove_embedded_process(ProcessID p_pid) override;
+	virtual ProcessID get_focused_process_id() override;
 
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
 	virtual DisplayServerEnums::CursorShape cursor_get_shape() const override;

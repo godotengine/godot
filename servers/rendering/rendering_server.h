@@ -95,7 +95,8 @@ protected:
 	void _canvas_item_add_circle_bind_compat_84523(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color);
 	void _instance_set_interpolated_bind_compat_104269(RID p_instance, bool p_interpolated);
 	void _instance_reset_physics_interpolation_bind_compat_104269(RID p_instance);
-	void _viewport_set_size_compat_115799(RID p_viewport, int p_width, int p_height);
+	void _viewport_set_size_bind_compat_115799(RID p_viewport, int p_width, int p_height);
+	void _particles_request_process_time_bind_compat_109142(RID p_particles, real_t p_request_process_time);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -240,6 +241,11 @@ public:
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) = 0;
 	virtual void mesh_clear(RID p_mesh) = 0;
 
+	virtual RID mesh_surface_get_vertex_buffer_rd_rid(RID p_mesh, int p_surface) const = 0;
+	virtual RID mesh_surface_get_attribute_buffer_rd_rid(RID p_mesh, int p_surface) const = 0;
+	virtual RID mesh_surface_get_skin_buffer_rd_rid(RID p_mesh, int p_surface) const = 0;
+	virtual RID mesh_surface_get_index_buffer_rd_rid(RID p_mesh, int p_surface) const = 0;
+
 	virtual void mesh_debug_usage(List<RenderingServerTypes::MeshInfo> *r_info) = 0;
 
 	/* MULTIMESH API */
@@ -302,6 +308,7 @@ public:
 	virtual RID directional_light_create() = 0;
 	virtual RID omni_light_create() = 0;
 	virtual RID spot_light_create() = 0;
+	virtual RID area_light_create() = 0;
 
 	virtual void light_set_color(RID p_light, const Color &p_color) = 0;
 	virtual void light_set_param(RID p_light, RSE::LightParam p_param, float p_value) = 0;
@@ -325,6 +332,10 @@ public:
 	virtual void light_directional_set_shadow_mode(RID p_light, RSE::LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
 	virtual void light_directional_set_sky_mode(RID p_light, RSE::LightDirectionalSkyMode p_mode) = 0;
+
+	virtual void light_area_set_size(RID p_light, const Vector2 &p_size) = 0;
+	virtual void light_area_set_normalize_energy(RID p_light, bool p_enabled) = 0;
+	virtual void light_area_set_texture(RID p_light, RID texture) = 0;
 
 	// Shadow atlas
 
@@ -436,7 +447,7 @@ public:
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) = 0;
-	virtual void particles_request_process_time(RID p_particles, real_t p_request_process_time) = 0;
+	virtual void particles_request_process_time(RID p_particles, real_t p_request_process_time, real_t p_request_process_time_residual = 0.0) = 0;
 	virtual void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_randomness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) = 0;
@@ -450,6 +461,8 @@ public:
 	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) = 0;
 
 	virtual void particles_set_transform_align(RID p_particles, RSE::ParticlesTransformAlign p_transform_align) = 0;
+	virtual void particles_set_transform_align_channel_filter(RID p_particles, RSE::ParticlesTransformAlignCustomSrc p_transform_align_channel_filter) = 0;
+	virtual void particles_set_transform_align_axis(RID p_particles, RSE::ParticlesTransformAlignAxis p_rotation_axis) = 0;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, float p_length_sec) = 0;
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) = 0;
@@ -764,6 +777,7 @@ public:
 	/* BAKE API */
 
 	virtual TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) = 0;
+	virtual PackedByteArray bake_render_area_light_atlas(const TypedArray<RID> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps) = 0;
 
 	/* CANVAS API (2D) */
 
@@ -1070,6 +1084,7 @@ private:
 };
 
 // Make variant understand the enums.
+
 VARIANT_ENUM_CAST_EXT(RSE::TextureType, RenderingServer::TextureType);
 VARIANT_ENUM_CAST_EXT(RSE::TextureLayeredType, RenderingServer::TextureLayeredType);
 VARIANT_ENUM_CAST_EXT(RSE::CubeMapLayer, RenderingServer::CubeMapLayer);
@@ -1097,6 +1112,8 @@ VARIANT_ENUM_CAST_EXT(RSE::DecalTexture, RenderingServer::DecalTexture);
 VARIANT_ENUM_CAST_EXT(RSE::DecalFilter, RenderingServer::DecalFilter);
 VARIANT_ENUM_CAST_EXT(RSE::ParticlesMode, RenderingServer::ParticlesMode);
 VARIANT_ENUM_CAST_EXT(RSE::ParticlesTransformAlign, RenderingServer::ParticlesTransformAlign);
+VARIANT_ENUM_CAST_EXT(RSE::ParticlesTransformAlignCustomSrc, RenderingServer::ParticlesTransformAlignCustomSrc);
+VARIANT_ENUM_CAST_EXT(RSE::ParticlesTransformAlignAxis, RenderingServer::ParticlesTransformAlignAxis);
 VARIANT_ENUM_CAST_EXT(RSE::ParticlesDrawOrder, RenderingServer::ParticlesDrawOrder);
 VARIANT_ENUM_CAST_EXT(RSE::ParticlesEmitFlags, RenderingServer::ParticlesEmitFlags);
 VARIANT_ENUM_CAST_EXT(RSE::ParticlesCollisionType, RenderingServer::ParticlesCollisionType);

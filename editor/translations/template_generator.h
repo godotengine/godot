@@ -44,7 +44,7 @@ class TranslationTemplateGenerator {
 
 	using MessageMap = HashMap<Translation::MessageKey, MessageData, Translation::MessageKey>;
 
-	MessageMap parse(const Vector<String> &p_sources, bool p_add_builtin) const;
+	MessageMap parse(const Vector<String> &p_sources, bool p_add_builtin, bool p_add_title) const;
 
 	void _write_to_pot(Ref<FileAccess> p_file, const MessageMap &p_map) const;
 	void _write_to_csv(Ref<FileAccess> p_file, const MessageMap &p_map) const;

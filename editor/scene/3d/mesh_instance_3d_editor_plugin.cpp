@@ -30,6 +30,8 @@
 
 #include "mesh_instance_3d_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -44,6 +46,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
@@ -900,6 +903,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	shape_dialog->connect(SceneStringName(confirmed), callable_mp(this, &MeshInstance3DEditor::_create_collision_shape));
 
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(AcceptDialog);

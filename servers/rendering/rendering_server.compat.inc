@@ -62,8 +62,12 @@ void RenderingServer::_instance_reset_physics_interpolation_bind_compat_104269(R
 	WARN_PRINT_ONCE("instance_reset_physics_interpolation() is deprecated.");
 }
 
-void RenderingServer::_viewport_set_size_compat_115799(RID p_viewport, int p_width, int p_height) {
+void RenderingServer::_viewport_set_size_bind_compat_115799(RID p_viewport, int p_width, int p_height) {
 	viewport_set_size(p_viewport, p_width, p_height, 1);
+}
+
+void RenderingServer::_particles_request_process_time_bind_compat_109142(RID p_particles, real_t p_request_process_time) {
+	particles_request_process_time(p_particles, p_request_process_time, 0.0);
 }
 
 void RenderingServer::_bind_compatibility_methods() {
@@ -74,7 +78,8 @@ void RenderingServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_circle", "item", "pos", "radius", "color"), &RenderingServer::_canvas_item_add_circle_bind_compat_84523);
 	ClassDB::bind_compatibility_method(D_METHOD("instance_set_interpolated", "instance", "interpolated"), &RenderingServer::_instance_set_interpolated_bind_compat_104269);
 	ClassDB::bind_compatibility_method(D_METHOD("instance_reset_physics_interpolation", "instance"), &RenderingServer::_instance_reset_physics_interpolation_bind_compat_104269);
-	ClassDB::bind_compatibility_method(D_METHOD("viewport_set_size", "viewport", "width", "height"), &RenderingServer::_viewport_set_size_compat_115799);
+	ClassDB::bind_compatibility_method(D_METHOD("viewport_set_size", "viewport", "width", "height"), &RenderingServer::_viewport_set_size_bind_compat_115799);
+	ClassDB::bind_compatibility_method(D_METHOD("particles_request_process_time", "particles", "process_time"), &RenderingServer::_particles_request_process_time_bind_compat_109142);
 }
 
 #endif // DISABLE_DEPRECATED

@@ -31,6 +31,7 @@
 #include "csg_gizmos.h"
 
 #include "core/math/geometry_3d.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/gizmos/gizmo_3d_helper.h"
@@ -41,6 +42,7 @@
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/main/scene_tree.h"
 
 void CSGShapeEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -165,6 +167,7 @@ CSGShapeEditor::CSGShapeEditor() {
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CSGShapeEditor::_menu_option));
 
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 }
 
@@ -425,6 +428,10 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	collision_array[Mesh::ARRAY_VERTEX] = faces;
 	collision_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, collision_array);
 	p_gizmo->add_collision_triangles(collision_mesh->generate_triangle_mesh());
+
+	if (cs->is_using_collision() && cs->is_root_shape()) {
+		p_gizmo->set_collision_meshes_are_snap_source(true);
+	}
 
 	if (p_gizmo->is_selected()) {
 		// Draw a translucent representation of the CSG node

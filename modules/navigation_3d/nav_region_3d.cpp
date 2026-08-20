@@ -30,11 +30,11 @@
 
 #include "nav_region_3d.h"
 
-#include "nav_map_3d.h"
-
 #include "3d/nav_mesh_queries_3d.h"
 #include "3d/nav_region_builder_3d.h"
 #include "3d/nav_region_iteration_3d.h"
+#include "nav_map_3d.h"
+
 #include "core/config/project_settings.h"
 
 using namespace Nav3D;
@@ -203,7 +203,7 @@ AABB NavRegion3D::get_bounds() const {
 	return iteration->get_bounds();
 }
 
-LocalVector<Nav3D::Polygon> const &NavRegion3D::get_polygons() const {
+const LocalVector<Nav3D::Polygon> &NavRegion3D::get_polygons() const {
 	RWLockRead read_lock(iteration_rwlock);
 	return iteration->get_navmesh_polygons();
 }

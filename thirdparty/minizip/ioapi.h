@@ -1,10 +1,10 @@
 /* ioapi.h -- IO base function header for compress/uncompress .zip
-   part of the MiniZip project - ( http://www.winimage.com/zLibDll/minizip.html )
+   part of the MiniZip project - ( https://www.winimage.com/zLibDll/minizip.html )
 
-         Copyright (C) 1998-2010 Gilles Vollant (minizip) ( http://www.winimage.com/zLibDll/minizip.html )
+         Copyright (C) 1998-2026 Gilles Vollant (minizip) ( https://www.winimage.com/zLibDll/minizip.html )
 
          Modifications for Zip64 support
-         Copyright (C) 2009-2010 Mathias Svensson ( http://result42.com )
+         Copyright (C) 2009-2010 Mathias Svensson ( https://result42.com )
 
          For more info read MiniZip_info.txt
 
@@ -21,7 +21,7 @@
 #ifndef ZLIBIOAPI64_H
 #define ZLIBIOAPI64_H
 
-#if (!defined(_WIN32)) && (!defined(WIN32)) && (!defined(__APPLE__))
+#if (!defined(_WIN32)) && (!defined(WIN32)) && (!defined(__APPLE__)) && (!(defined(__ANDROID_API__) || __ANDROID_API__ >= 24))
 
   /* Linux needs this to support file operation on files larger then 4+GB */
   /* But might need better if/def to select just the platforms that needs them.*/

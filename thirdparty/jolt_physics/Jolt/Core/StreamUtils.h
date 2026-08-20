@@ -7,18 +7,13 @@
 #include <Jolt/Core/Result.h>
 #include <Jolt/Core/StreamIn.h>
 #include <Jolt/Core/StreamOut.h>
+#include <Jolt/Core/ObjectToIDMap.h>
 #include <Jolt/Core/UnorderedMap.h>
 #include <Jolt/Core/Factory.h>
 
 JPH_NAMESPACE_BEGIN
 
 namespace StreamUtils {
-
-template <class Type>
-using ObjectToIDMap = UnorderedMap<const Type *, uint32>;
-
-template <class Type>
-using IDToObjectMap = Array<Ref<Type>>;
 
 // Restore a single object by reading the hash of the type, constructing it and then calling the restore function
 template <class Type>

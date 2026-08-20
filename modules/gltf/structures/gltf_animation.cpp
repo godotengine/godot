@@ -104,7 +104,7 @@ GLTFAnimation::GLTFAnimation() {
 }
 
 Variant GLTFAnimation::get_additional_data(const StringName &p_extension_name) {
-	return additional_data[p_extension_name];
+	return additional_data.get(p_extension_name, Variant());
 }
 
 void GLTFAnimation::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {

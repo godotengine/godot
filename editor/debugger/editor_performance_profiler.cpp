@@ -30,6 +30,7 @@
 
 #include "editor_performance_profiler.h"
 
+#include "core/object/callable_mp.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_property_name_processor.h"
@@ -85,7 +86,6 @@ void EditorPerformanceProfiler::_update_monitor_value(Monitor *p_monitor, float 
 	const String label = EditorPerformanceProfiler::_format_label(p_value, p_monitor->type);
 	item->set_text(1, label);
 
-	String tooltip;
 	switch (p_monitor->type) {
 		case Performance::MONITOR_TYPE_MEMORY:
 		case Performance::MONITOR_TYPE_TIME: {

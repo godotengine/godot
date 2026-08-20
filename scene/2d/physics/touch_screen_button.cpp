@@ -32,7 +32,9 @@
 
 #include "core/config/engine.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
@@ -214,6 +216,10 @@ void TouchScreenButton::_notification(int p_what) {
 			if (is_pressed()) {
 				_release();
 			}
+		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			queue_redraw();
 		} break;
 	}
 }

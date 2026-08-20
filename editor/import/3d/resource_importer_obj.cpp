@@ -31,6 +31,7 @@
 #include "resource_importer_obj.h"
 
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
@@ -291,6 +292,9 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				c.r = v[4].to_float();
 				c.g = v[5].to_float();
 				c.b = v[6].to_float();
+				if (v.size() >= 8) {
+					c.a = v[7].to_float();
+				}
 				colors.push_back(c);
 			} else if (!colors.is_empty()) {
 				colors.push_back(Color(1.0, 1.0, 1.0));
@@ -679,7 +683,6 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 		if (f.is_valid()) {
 			f->store_32(mesh_lightmap_caches.size());
 			for (int i = 0; i < mesh_lightmap_caches.size(); i++) {
-				String md5 = String::md5(mesh_lightmap_caches[i].ptr());
 				f->store_buffer(mesh_lightmap_caches[i].ptr(), mesh_lightmap_caches[i].size());
 			}
 		}

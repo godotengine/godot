@@ -30,8 +30,10 @@
 
 #include "editor_command_palette.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
@@ -148,7 +150,6 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 
 	TreeItem *to_select = first_section->get_first_child();
 	to_select->select(0);
-	to_select->set_as_cursor(0);
 	search_options->ensure_cursor_is_visible();
 }
 
@@ -186,15 +187,15 @@ void EditorCommandPalette::_confirmed() {
 	const String command_key = selected_option != nullptr ? selected_option->get_metadata(0) : "";
 	if (!command_key.is_empty()) {
 		hide();
-		callable_mp(this, &EditorCommandPalette::execute_command).call_deferred(command_key);
+		execute_command(command_key);
 	}
 }
 
 void EditorCommandPalette::open_popup() {
+	_update_command_search(String());
 	if (was_showed) {
 		popup(prev_rect);
 	} else {
-		_update_command_search(String());
 		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
 	}
 

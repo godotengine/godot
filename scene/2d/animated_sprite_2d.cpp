@@ -31,6 +31,7 @@
 #include "animated_sprite_2d.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 #include "servers/display/accessibility_server.h"
@@ -218,15 +219,22 @@ void AnimatedSprite2D::_notification(int p_what) {
 					// Forwards.
 					if (frame_progress >= 1.0) {
 						if (frame >= last_frame) {
-							if (frames->get_animation_loop(animation)) {
-								frame = 0;
-								emit_signal("animation_looped");
-							} else {
+							SpriteFrames::LoopMode loop = frames->get_animation_loop_mode(animation);
+							if (loop == SpriteFrames::LOOP_NONE) {
 								frame = last_frame;
 								pause();
 								emit_signal(SceneStringName(animation_finished));
 								return;
 							}
+
+							if (loop == SpriteFrames::LOOP_PINGPONG) {
+								frame = last_frame;
+								custom_speed_scale *= -1;
+							} else {
+								frame = 0;
+							}
+							emit_signal("animation_looped");
+
 						} else {
 							frame++;
 						}
@@ -242,15 +250,22 @@ void AnimatedSprite2D::_notification(int p_what) {
 					// Backwards.
 					if (frame_progress <= 0) {
 						if (frame <= 0) {
-							if (frames->get_animation_loop(animation)) {
-								frame = last_frame;
-								emit_signal("animation_looped");
-							} else {
+							SpriteFrames::LoopMode loop = frames->get_animation_loop_mode(animation);
+							if (loop == SpriteFrames::LOOP_NONE) {
 								frame = 0;
 								pause();
 								emit_signal(SceneStringName(animation_finished));
 								return;
 							}
+
+							if (loop == SpriteFrames::LOOP_PINGPONG) {
+								frame = 0;
+								custom_speed_scale *= -1;
+							} else {
+								frame = last_frame;
+							}
+							emit_signal("animation_looped");
+
 						} else {
 							frame--;
 						}
@@ -315,7 +330,6 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	if (frames.is_valid()) {
 		frames->disconnect(CoreStringName(changed), callable_mp(this, &AnimatedSprite2D::_res_changed));
 	}
-	stop();
 	frames = p_frames;
 	if (frames.is_valid()) {
 		frames->connect(CoreStringName(changed), callable_mp(this, &AnimatedSprite2D::_res_changed));
@@ -334,6 +348,7 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 			}
 		}
 	}
+	stop();
 
 	notify_property_list_changed();
 	queue_redraw();
@@ -673,7 +688,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_looped"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, SpriteFrames::get_class_static()), "set_sprite_frames", "get_sprite_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, SpriteFrames::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation", PROPERTY_HINT_ENUM, ""), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");

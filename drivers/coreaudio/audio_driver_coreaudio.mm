@@ -32,7 +32,9 @@
 
 #ifdef COREAUDIO_ENABLED
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/os/os.h"
 
 #define kOutputBus 0
@@ -125,7 +127,7 @@ Error AudioDriverCoreAudio::init() {
 	AudioDeviceID device_id;
 	UInt32 dev_id_size = sizeof(AudioDeviceID);
 
-	AudioObjectPropertyAddress property_dev_id = { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+	AudioObjectPropertyAddress property_dev_id = { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
 	result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property_dev_id, 0, nullptr, &dev_id_size, &device_id);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
@@ -287,6 +289,16 @@ void AudioDriverCoreAudio::stop() {
 			active = false;
 		}
 	}
+}
+
+bool AudioDriverCoreAudio::set_output_device_sleep(bool p_enable) {
+	if (p_enable) {
+		stop();
+		return !active;
+	}
+
+	start();
+	return active;
 }
 
 int AudioDriverCoreAudio::get_mix_rate() const {
@@ -699,7 +711,7 @@ String AudioDriverCoreAudio::get_output_device() {
 
 void AudioDriverCoreAudio::set_output_device(const String &p_name) {
 	output_device_name = p_name;
-	if (active) {
+	if (audio_unit) {
 		_set_device(output_device_name);
 	}
 }
@@ -714,7 +726,7 @@ String AudioDriverCoreAudio::get_input_device() {
 
 void AudioDriverCoreAudio::set_input_device(const String &p_name) {
 	input_device_name = p_name;
-	if (active) {
+	if (input_unit) {
 		_set_device(input_device_name, true);
 	}
 }

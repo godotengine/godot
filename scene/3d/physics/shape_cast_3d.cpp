@@ -30,10 +30,14 @@
 
 #include "shape_cast_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/3d/physics/collision_object_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/mesh.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #include "servers/rendering/rendering_server.h"
 
 void ShapeCast3D::_notification(int p_what) {
@@ -97,6 +101,14 @@ void ShapeCast3D::_notification(int p_what) {
 				if (is_inside_tree() && debug_instance.is_valid()) {
 					RenderingServer::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 				}
+			}
+		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			if (get_tree()->is_debugging_collisions_hint()) {
+				_update_debug_shape();
+			} else {
+				_clear_debug_shape();
 			}
 		} break;
 	}
@@ -397,7 +409,7 @@ void ShapeCast3D::_update_shapecast_state() {
 
 	Transform3D gt = get_global_transform();
 
-	PhysicsDirectSpaceState3D::ShapeParameters params;
+	PS3DT::ShapeParameters params;
 	params.shape_rid = shape_rid;
 	params.transform = gt;
 	params.motion = gt.basis.xform(target_position);
@@ -425,7 +437,7 @@ void ShapeCast3D::_update_shapecast_state() {
 
 	bool intersected = true;
 	while (intersected && result.size() < max_results) {
-		PhysicsDirectSpaceState3D::ShapeRestInfo info;
+		PS3DT::ShapeRestInfo info;
 		intersected = dss->rest_info(params, &info);
 		if (intersected) {
 			result.push_back(info);
@@ -443,18 +455,18 @@ void ShapeCast3D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void ShapeCast3D::add_exception(RequiredParam<const CollisionObject3D> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
-	add_exception_rid(p_node->get_rid());
+void ShapeCast3D::add_exception(RequiredParam<const CollisionObject3D> p_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(node, p_node, "The passed Node must be an instance of CollisionObject3D.");
+	add_exception_rid(node->get_rid());
 }
 
 void ShapeCast3D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void ShapeCast3D::remove_exception(RequiredParam<const CollisionObject3D> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
-	remove_exception_rid(p_node->get_rid());
+void ShapeCast3D::remove_exception(RequiredParam<const CollisionObject3D> p_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(node, p_node, "The passed Node must be an instance of CollisionObject3D.");
+	remove_exception_rid(node->get_rid());
 }
 
 void ShapeCast3D::clear_exceptions() {
@@ -481,7 +493,7 @@ Array ShapeCast3D::get_collision_result() const {
 	Array ret;
 
 	for (int i = 0; i < result.size(); ++i) {
-		const PhysicsDirectSpaceState3D::ShapeRestInfo &sri = result[i];
+		const PS3DT::ShapeRestInfo &sri = result[i];
 
 		Dictionary col;
 		col["point"] = sri.point;

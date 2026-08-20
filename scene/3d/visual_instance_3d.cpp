@@ -32,8 +32,10 @@
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
-#include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/material.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -182,6 +184,11 @@ void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sorting_offset"), &VisualInstance3D::get_sorting_offset);
 	ClassDB::bind_method(D_METHOD("set_sorting_use_aabb_center", "enabled"), &VisualInstance3D::set_sorting_use_aabb_center);
 	ClassDB::bind_method(D_METHOD("is_sorting_use_aabb_center"), &VisualInstance3D::is_sorting_use_aabb_center);
+
+	// TODO Note: This used to be bound in GeometryInstance3D::_bind_methods, indicating it
+	//            was originally meant to be exposed to GeometryInstance3D instead of VisualInstance3D.
+	//            This should be investigated, to either move the binding or remove this comment.
+	ClassDB::bind_method(D_METHOD("get_aabb"), &VisualInstance3D::get_aabb);
 
 	GDVIRTUAL_BIND(_get_aabb);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
@@ -402,7 +409,7 @@ void GeometryInstance3D::set_instance_shader_parameter(const StringName &p_name,
 	if (p_value.get_type() == Variant::NIL) {
 		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), p_name);
 		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_name, def_value);
-		instance_shader_parameters.erase(p_value);
+		instance_shader_parameters.erase(p_name);
 	} else {
 		instance_shader_parameters[p_name] = p_value;
 		if (p_value.get_type() == Variant::OBJECT) {
@@ -596,8 +603,6 @@ void GeometryInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance3D::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &GeometryInstance3D::get_custom_aabb);
-
-	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance3D::get_aabb);
 
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT), "set_material_override", "get_material_override");

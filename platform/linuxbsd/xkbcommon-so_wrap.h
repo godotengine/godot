@@ -97,9 +97,9 @@
 #define xkb_compose_state_get_status xkb_compose_state_get_status_dylibloader_orig_xkbcommon
 #define xkb_compose_state_get_utf8 xkb_compose_state_get_utf8_dylibloader_orig_xkbcommon
 #define xkb_compose_state_get_one_sym xkb_compose_state_get_one_sym_dylibloader_orig_xkbcommon
-#include "./thirdparty/linuxbsd_headers/xkbcommon/xkbcommon.h"
-#include "./thirdparty/linuxbsd_headers/xkbcommon/xkbcommon-compose.h"
-#include "./thirdparty/linuxbsd_headers/xkbcommon/xkbcommon-keysyms.h"
+#include "./thirdparty/linuxbsd_headers/xkbcommon/xkbcommon.h" // IWYU pragma: export.
+#include "./thirdparty/linuxbsd_headers/xkbcommon/xkbcommon-compose.h" // IWYU pragma: export.
+#include "./thirdparty/linuxbsd_headers/xkbcommon/xkbcommon-keysyms.h" // IWYU pragma: export.
 #undef xkb_keysym_get_name
 #undef xkb_keysym_from_name
 #undef xkb_keysym_to_utf8

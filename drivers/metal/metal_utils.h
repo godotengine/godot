@@ -30,9 +30,13 @@
 
 #pragma once
 
+#include "core/error/error_macros.h"
+
 #include <os/log.h>
 
+#include <cstdint>
 #include <functional>
+#include <type_traits>
 
 /// Godot limits the number of dynamic buffers to 8.
 ///

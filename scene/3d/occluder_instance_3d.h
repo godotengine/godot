@@ -32,6 +32,8 @@
 
 #include "scene/3d/visual_instance_3d.h"
 
+class ArrayMesh;
+
 class Occluder3D : public Resource {
 	GDCLASS(Occluder3D, Resource);
 	RES_BASE_EXTENSION("occ");
@@ -45,6 +47,8 @@ class Occluder3D : public Resource {
 	mutable Vector<Vector3> debug_lines;
 
 protected:
+	static void _bind_methods();
+
 	void _update();
 	virtual void _update_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices) = 0;
 

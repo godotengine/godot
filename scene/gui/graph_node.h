@@ -64,6 +64,7 @@ class GraphNode : public GraphElement {
 
 	struct _MinSizeCache {
 		int min_size = 0;
+		int max_size = -1;
 		bool will_stretch = false;
 		int final_size = 0;
 	};
@@ -114,6 +115,8 @@ class GraphNode : public GraphElement {
 
 	void _port_pos_update();
 
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -126,6 +129,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	virtual String _get_accessibility_name() const override;
 
 public:
 	virtual String get_accessibility_container_name(const Node *p_node) const override;
@@ -192,6 +197,7 @@ public:
 	Control::FocusMode get_slots_focus_mode() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 

@@ -33,6 +33,7 @@
 TEST_FORCE_LINK(test_path_follow_2d)
 
 #include "scene/2d/path_2d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 namespace TestPathFollow2D {

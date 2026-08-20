@@ -113,9 +113,9 @@ struct [[nodiscard]] Transform3D {
 
 	Transform3D interpolate_with(const Transform3D &p_transform, real_t p_c) const;
 
-	_FORCE_INLINE_ Transform3D inverse_xform(const Transform3D &t) const {
-		Vector3 v = t.origin - origin;
-		return Transform3D(basis.transpose_xform(t.basis),
+	_FORCE_INLINE_ Transform3D inverse_xform(const Transform3D &p_transform) const {
+		Vector3 v = p_transform.origin - origin;
+		return Transform3D(basis.transpose_xform(p_transform.basis),
 				basis.xform(v));
 	}
 

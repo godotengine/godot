@@ -30,11 +30,13 @@
 
 #include "project_manager.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_mp.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
@@ -64,6 +66,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"
@@ -109,6 +112,7 @@ void ProjectManager::_notification(int p_what) {
 			_select_main_view(MAIN_VIEW_PROJECTS);
 			_update_list_placeholder();
 			_titlebar_resized();
+			_update_compact_mode(true);
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -116,10 +120,12 @@ void ProjectManager::_notification(int p_what) {
 			SceneTree::get_singleton()->get_root()->set_title(GODOT_VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 			const String line1 = TTR("You don't have any projects yet.");
-			const String line2 = TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Library!");
+			const String line2 = TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Store!");
 			empty_list_message->set_text(vformat("[center][b]%s[/b] %s[/center]", line1, line2));
 
 			_titlebar_resized();
+
+			EditorHelpBit::clear_cache();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -139,6 +145,10 @@ void ProjectManager::_notification(int p_what) {
 				_update_theme();
 			}
 			_update_list_placeholder();
+		} break;
+		case NOTIFICATION_RESIZED: {
+			project_list->resize_project_titles();
+			_update_compact_mode();
 		} break;
 	}
 }
@@ -174,8 +184,22 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 
 // Main layout.
 
+// Hides certain parts of the Project Manager when window width gets smaller than combined_minimum_size.
+void ProjectManager::_update_compact_mode(bool p_reset_threshold) {
+	if (p_reset_threshold) {
+		project_list_sidebar->show();
+		compact_mode_threshold = root_container->get_combined_minimum_size().width;
+	}
+
+	bool compact_mode = get_size().width < compact_mode_threshold;
+	project_list_sidebar->set_visible(!compact_mode);
+}
+
 void ProjectManager::_update_size_limits() {
-	const Size2 minimum_size = Size2(720, 450) * EDSCALE;
+	const Size2 default_minimum_size = Size2(720, 450) * EDSCALE;
+	const Size2 display_size = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW).size;
+	const real_t smallest_display_dimension = display_size.width < display_size.height ? display_size.width : display_size.height;
+	const Size2 minimum_size = default_minimum_size.minf(smallest_display_dimension);
 
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
@@ -196,7 +220,7 @@ void ProjectManager::_update_size_limits() {
 		// Limit popup menus to prevent unusably long lists.
 		// We try to set it to half the screen resolution, but no smaller than the minimum window size.
 		Size2 half_screen_rect = (screen_rect.size * EDSCALE) / 2;
-		Size2 maximum_popup_size = MAX(half_screen_rect, minimum_size);
+		Size2 maximum_popup_size = half_screen_rect.max(minimum_size);
 		quick_settings_dialog->update_size_limits(maximum_popup_size);
 	}
 }
@@ -243,7 +267,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		title_bar_logo->set_button_icon(get_editor_theme_icon("TitleBarLogo"));
 
 		_set_main_view_icon(MAIN_VIEW_PROJECTS, get_editor_theme_icon("ProjectList"));
-		_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon("AssetLib"));
+		_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon("AssetStore"));
 
 		// Project list.
 		{
@@ -252,7 +276,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 
 			empty_list_create_project->set_button_icon(get_editor_theme_icon("Add"));
 			empty_list_import_project->set_button_icon(get_editor_theme_icon("Load"));
-			empty_list_open_assetlib->set_button_icon(get_editor_theme_icon("AssetLib"));
+			empty_list_open_assetlib->set_button_icon(get_editor_theme_icon("AssetStore"));
 
 			empty_list_online_warning->add_theme_font_override(SceneStringName(font), get_theme_font("italic", EditorStringName(EditorFonts)));
 			empty_list_online_warning->add_theme_color_override(SceneStringName(font_color), get_theme_color("font_placeholder_color", EditorStringName(Editor)));
@@ -296,15 +320,20 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			open_options_popup->set_item_icon(1, get_editor_theme_icon("NodeWarning"));
 		}
 
-		// Dialogs
+		// Dialogs.
 		migration_guide_button->set_button_icon(get_editor_theme_icon("ExternalLink"));
 
-		// Asset library popup.
+		// Asset store popup.
 		if (asset_library && EDITOR_GET("interface/theme/style") == "Classic") {
 			// Removes extra border margins.
 			asset_library->add_theme_style_override(SceneStringName(panel), memnew(StyleBoxEmpty));
 		}
 	}
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+	EditorHelpHighlighter::get_singleton()->clear_cache();
+#endif
+
 #ifdef ANDROID_ENABLED
 	DisplayServer::get_singleton()->window_set_color(theme->get_color("background", EditorStringName(Editor)));
 #endif
@@ -395,7 +424,6 @@ void ProjectManager::_open_asset_library_confirmed() {
 		EditorSettings::get_singleton()->save();
 	}
 
-	asset_library->disable_community_support();
 	_select_main_view(MAIN_VIEW_ASSETLIB);
 }
 
@@ -467,6 +495,12 @@ void ProjectManager::_dim_window() {
 // Quick settings.
 
 void ProjectManager::_show_quick_settings() {
+	if (!EditorPropertyNameProcessor::get_singleton()) {
+		EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+		add_child(epnp);
+
+		EditorHelp::generate_doc();
+	}
 	quick_settings_dialog->popup_centered(Size2(640, 200) * EDSCALE);
 }
 
@@ -491,10 +525,10 @@ void ProjectManager::_update_list_placeholder() {
 
 	const int network_mode = EDITOR_GET("network/connection/network_mode");
 	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
-		empty_list_open_assetlib->set_text(TTRC("Go Online and Open Asset Library"));
+		empty_list_open_assetlib->set_text(TTRC("Go Online and Open Asset Store"));
 		empty_list_online_warning->set_visible(true);
 	} else {
-		empty_list_open_assetlib->set_text(TTRC("Open Asset Library"));
+		empty_list_open_assetlib->set_text(TTRC("Open Asset Store"));
 		empty_list_online_warning->set_visible(false);
 	}
 
@@ -590,6 +624,10 @@ void ProjectManager::_open_selected_projects() {
 			args.push_back("--verbose");
 		}
 
+		if (ask_upgrade_tool->is_pressed()) {
+			args.push_back("--run-upgrade-tool");
+		}
+
 		Error err = OS::get_singleton()->create_instance(args);
 		if (err != OK) {
 			loading_label->hide();
@@ -630,9 +668,11 @@ void ProjectManager::_open_selected_projects_check_warnings() {
 
 	ask_update_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT); // Reset in case of previous center align.
 	ask_update_backup->set_pressed(false);
+	ask_upgrade_tool->set_pressed(false);
 	full_convert_button->hide();
 	migration_guide_button->hide();
 	ask_update_backup->hide();
+	ask_upgrade_tool->hide();
 
 	ask_update_settings->get_ok_button()->set_text("OK");
 
@@ -679,7 +719,10 @@ void ProjectManager::_open_selected_projects_check_warnings() {
 				i--;
 			} else if (ProjectList::project_feature_looks_like_version(feature)) {
 				ask_update_backup->show();
-				migration_guide_button->show();
+				if (project.control->is_older_version()) {
+					ask_upgrade_tool->show();
+					migration_guide_button->show();
+				}
 				version_convert_feature = feature;
 				warning_message += vformat(TTR("Warning: This project was last edited in Godot %s. Opening will change it to Godot %s.\n\n"), Variant(feature), Variant(GODOT_VERSION_BRANCH));
 				unsupported_features.remove_at(i);
@@ -740,6 +783,7 @@ void ProjectManager::_open_selected_projects_with_migration() {
 	}
 #endif
 	_open_selected_projects();
+	ask_upgrade_tool->set_pressed(false);
 }
 
 void ProjectManager::_install_project(const String &p_zip_path, const String &p_title) {
@@ -1566,6 +1610,7 @@ ProjectManager::ProjectManager() {
 
 			filter_option = memnew(OptionButton);
 			filter_option->set_clip_text(true);
+			filter_option->set_fit_to_longest_item(false);
 			filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			filter_option->set_stretch_ratio(0.3);
 			filter_option->set_accessibility_name(TTRC("Sort:"));
@@ -1596,6 +1641,7 @@ ProjectManager::ProjectManager() {
 			project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
 			project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_check_recovery_mode));
 			project_list->connect(ProjectList::SIGNAL_MENU_OPTION_SELECTED, callable_mp(this, &ProjectManager::_project_list_menu_option));
+			project_list->connect(SceneStringName(minimum_size_changed), callable_mp(this, &ProjectManager::_update_compact_mode).bind(true));
 
 			// Empty project list placeholder.
 			{
@@ -1631,7 +1677,7 @@ ProjectManager::ProjectManager() {
 				empty_list_import_project->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_import_project));
 
 				empty_list_open_assetlib = memnew(Button);
-				empty_list_open_assetlib->set_text(TTRC("Open Asset Library"));
+				empty_list_open_assetlib->set_text(TTRC("Open Asset Store"));
 				empty_list_open_assetlib->set_theme_type_variation("PanelBackgroundButton");
 				empty_list_actions->add_child(empty_list_open_assetlib);
 				empty_list_open_assetlib->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_asset_library_confirmed));
@@ -1642,13 +1688,13 @@ ProjectManager::ProjectManager() {
 				empty_list_online_warning->set_custom_minimum_size(Size2(220, 0) * EDSCALE);
 				empty_list_online_warning->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 				empty_list_online_warning->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-				empty_list_online_warning->set_text(TTRC("Note: The Asset Library requires an online connection and involves sending data over the internet."));
+				empty_list_online_warning->set_text(TTRC("Note: The Asset Store requires an online connection and involves sending data over the internet."));
 				empty_list_placeholder->add_child(empty_list_online_warning);
 			}
 
 			// The side bar with the edit, run, rename, etc. buttons.
-			VBoxContainer *project_list_sidebar = memnew(VBoxContainer);
-			project_list_sidebar->set_custom_minimum_size(Size2(120, 120));
+			project_list_sidebar = memnew(VBoxContainer);
+			project_list_sidebar->set_custom_minimum_size(Size2(120, 120) * EDSCALE);
 			project_list_hbox->add_child(project_list_sidebar);
 
 			project_list_sidebar->add_child(memnew(HSeparator));
@@ -1728,18 +1774,18 @@ ProjectManager::ProjectManager() {
 		}
 	}
 
-	// Asset library view.
+	// Asset store view.
 	if (AssetLibraryEditorPlugin::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
 		asset_library->set_name("AssetLibraryTab");
-		_add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Library"), Ref<Texture2D>(), asset_library);
+		_add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Store"), Ref<Texture2D>(), asset_library);
 		asset_library->connect("install_asset", callable_mp(this, &ProjectManager::_install_project));
 	} else {
 		VBoxContainer *asset_library_filler = memnew(VBoxContainer);
 		asset_library_filler->set_name("AssetLibraryTab");
-		Button *asset_library_toggle = _add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Library"), Ref<Texture2D>(), asset_library_filler);
+		Button *asset_library_toggle = _add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Store"), Ref<Texture2D>(), asset_library_filler);
 		asset_library_toggle->set_disabled(true);
-		asset_library_toggle->set_tooltip_text(TTRC("Asset Library not available (due to using Web editor, or because SSL support disabled)."));
+		asset_library_toggle->set_tooltip_text(TTRC("Asset Store not available (due to using Web editor, or because SSL support disabled)."));
 	}
 
 	// Footer bar.
@@ -1776,6 +1822,7 @@ ProjectManager::ProjectManager() {
 		scan_dir->connect("dir_selected", callable_mp(project_list, &ProjectList::find_projects));
 
 		erase_missing_ask = memnew(ConfirmationDialog);
+		erase_missing_ask->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 		erase_missing_ask->set_ok_button_text(TTRC("Remove All"));
 		erase_missing_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
 		add_child(erase_missing_ask);
@@ -1799,11 +1846,13 @@ ProjectManager::ProjectManager() {
 		//erase_ask_vb->add_child(delete_project_contents);
 
 		multi_open_ask = memnew(ConfirmationDialog);
+		multi_open_ask->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 		multi_open_ask->set_ok_button_text(TTRC("Edit"));
 		multi_open_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects));
 		add_child(multi_open_ask);
 
 		multi_run_ask = memnew(ConfirmationDialog);
+		multi_run_ask->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 		multi_run_ask->set_ok_button_text(TTRC("Run"));
 		multi_run_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_run_project_confirm));
 		add_child(multi_run_ask);
@@ -1830,6 +1879,11 @@ ProjectManager::ProjectManager() {
 		ask_update_backup->set_text(TTRC("Backup project first"));
 		ask_update_backup->set_h_size_flags(SIZE_SHRINK_CENTER);
 		ask_update_vb->add_child(ask_update_backup);
+		ask_upgrade_tool = memnew(CheckBox);
+		ask_upgrade_tool->set_text(TTRC("Upgrade All Project Files"));
+		ask_upgrade_tool->set_tooltip_text(TTRC("Automatically runs the upgrade tool. This may take a while to finish. The project will be restarted once in the process."));
+		ask_upgrade_tool->set_h_size_flags(SIZE_SHRINK_CENTER);
+		ask_update_vb->add_child(ask_upgrade_tool);
 		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_with_migration));
 		int ed_swap_cancel_ok = EDITOR_GET("interface/editor/appearance/accept_dialog_cancel_ok_buttons");
 		if (ed_swap_cancel_ok == 0) {
@@ -1978,6 +2032,8 @@ ProjectManager::ProjectManager() {
 ProjectManager::~ProjectManager() {
 	singleton = nullptr;
 	EditorInspector::cleanup_plugins();
+
+	EditorHelp::cleanup_doc();
 
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 	EditorHelpHighlighter::free_singleton();

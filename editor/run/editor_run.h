@@ -30,7 +30,13 @@
 
 #pragma once
 
-#include "core/os/os.h"
+#include "core/math/vector2i.h"
+#include "core/os/process_id.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/variant/callable.h"
+
+#include <climits> // INT_MAX
 
 typedef void (*EditorRunInstanceStarting)(int p_index, List<String> &r_arguments);
 typedef bool (*EditorRunInstanceRequestScreenshot)(const Callable &p_callback);
@@ -43,7 +49,7 @@ public:
 		STATUS_STOP
 	};
 
-	List<OS::ProcessID> pids;
+	List<ProcessID> pids;
 
 	struct WindowPlacement {
 		int screen = 0;
@@ -68,10 +74,10 @@ public:
 	void run_native_notify() { status = STATUS_PLAY; }
 	void stop();
 
-	void stop_child_process(OS::ProcessID p_pid);
-	bool has_child_process(OS::ProcessID p_pid) const;
+	void stop_child_process(ProcessID p_pid);
+	bool has_child_process(ProcessID p_pid) const;
 	int get_child_process_count() const { return pids.size(); }
-	OS::ProcessID get_current_process() const;
+	ProcessID get_current_process() const;
 
 	static bool request_screenshot(const Callable &p_callback);
 

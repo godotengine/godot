@@ -169,31 +169,37 @@ TEST_CASE("[SpriteFrames] Animation Speed getter and setter") {
 			"Sets animation to zero");
 }
 
-TEST_CASE("[SpriteFrames] Animation Loop getter and setter") {
+TEST_CASE("[SpriteFrames] Animation Loop Mode getter and setter") {
 	SpriteFrames frames;
 
 	frames.add_animation(test_animation_name);
 
 	CHECK_MESSAGE(
-			frames.get_animation_loop(test_animation_name),
-			"Sets new animation to default loop value.");
+			frames.get_animation_loop_mode(test_animation_name) == SpriteFrames::LOOP_LINEAR,
+			"Sets new animation to default loop mode value (linear).");
 
-	frames.set_animation_loop(test_animation_name, true);
-
-	CHECK_MESSAGE(
-			frames.get_animation_loop(test_animation_name),
-			"Sets animation loop to true");
-
-	frames.set_animation_loop(test_animation_name, false);
+	frames.set_animation_loop_mode(test_animation_name, SpriteFrames::LOOP_LINEAR);
 
 	CHECK_MESSAGE(
-			!frames.get_animation_loop(test_animation_name),
-			"Sets animation loop to false");
+			frames.get_animation_loop_mode(test_animation_name) == SpriteFrames::LOOP_LINEAR,
+			"Sets animation loop mode to linear");
+
+	frames.set_animation_loop_mode(test_animation_name, SpriteFrames::LOOP_PINGPONG);
+
+	CHECK_MESSAGE(
+			frames.get_animation_loop_mode(test_animation_name) == SpriteFrames::LOOP_PINGPONG,
+			"Sets animation loop mode to ping pong");
+
+	frames.set_animation_loop_mode(test_animation_name, SpriteFrames::LOOP_NONE);
+
+	CHECK_MESSAGE(
+			frames.get_animation_loop_mode(test_animation_name) == SpriteFrames::LOOP_NONE,
+			"Sets animation loop mode to none");
 
 	// These error handling cases should not crash.
 	ERR_PRINT_OFF;
-	frames.get_animation_loop("This does not exist");
-	frames.set_animation_loop("This does not exist", false);
+	frames.get_animation_loop_mode("This does not exist");
+	frames.set_animation_loop_mode("This does not exist", SpriteFrames::LOOP_NONE);
 	ERR_PRINT_ON;
 }
 

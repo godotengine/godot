@@ -220,6 +220,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	void _subgizmo_selection_change();
 	void _disconnect_from_skeleton();
+	void _disconnect_from_tree();
 
 	int selected_bone = -1;
 
@@ -268,12 +269,11 @@ public:
 class Skeleton3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Skeleton3DEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginSkeleton *skeleton_plugin = nullptr;
+	Ref<EditorInspectorPluginSkeleton> skeleton_plugin;
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
-	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;
 
 	virtual String get_plugin_name() const override { return "Skeleton3D"; }

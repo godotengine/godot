@@ -110,6 +110,13 @@ uint encode_tang_to_uint_oct(vec4 base) {
 	// Encode binormal sign in y component
 	oct.y = oct.y * 0.5f + 0.5f;
 	oct.y = base.w >= 0.0f ? oct.y : 1 - oct.y;
+
+	if (oct.x == 0.0 && oct.y == 1.0) {
+		// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
+		// So we sanitize here.
+		oct.x = 1.0;
+	}
+
 	return vec2_to_uint(oct);
 }
 

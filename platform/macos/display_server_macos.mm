@@ -46,18 +46,15 @@
 #import "native_menu_macos.h"
 #import "os_macos.h"
 
-#ifdef TOOLS_ENABLED
-#import "macos_quartz_core_spi.h"
-#endif
-
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/image_texture.h"
@@ -66,16 +63,38 @@
 
 #ifdef TOOLS_ENABLED
 #import "display_server_macos_embedded.h"
+
 #import "editor/embedded_process_macos.h"
 #endif
 
+// Rendering drivers - include after general Godot deps as they imply system includes
+// which may need precise ordering.
+
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
+#include "gl_manager_macos_angle.h"
+#endif
+#include "gl_manager_macos_legacy.h"
+
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/rendering_device.h"
+
+#if defined(VULKAN_ENABLED)
+#import "rendering_context_driver_vulkan_macos.h"
+#endif
+#if defined(METAL_ENABLED)
+#import "drivers/metal/rendering_context_driver_metal.h"
+#endif
+#endif // RD_ENABLED
+
+// Keep Quartz after rendering includes, as it includes system GL.h
+// which clashes with GLAD.
+#ifdef TOOLS_ENABLED
+#import "macos_quartz_core_spi.h"
 #endif
 
 #include <AppKit/AppKit.h>
@@ -205,12 +224,14 @@ DisplayServerEnums::WindowID DisplayServerMacOS::_create_window(DisplayServerEnu
 				gl_failed = true;
 			}
 		}
+#if defined(ANGLE_ENABLED)
 		if (gl_manager_angle) {
 			Error err = gl_manager_angle->window_create(window_id_counter, nullptr, (__bridge void *)layer, p_rect.size.width, p_rect.size.height);
 			if (err != OK) {
 				gl_failed = true;
 			}
 		}
+#endif
 		if (gl_failed) {
 			AccessibilityServer::get_singleton()->window_destroy(id);
 
@@ -248,9 +269,11 @@ DisplayServerEnums::WindowID DisplayServerMacOS::_create_window(DisplayServerEnu
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_resize(id, wd.size.width, wd.size.height);
 	}
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->window_resize(id, wd.size.width, wd.size.height);
 	}
+#endif
 #endif
 
 	return id;
@@ -656,13 +679,18 @@ void DisplayServerMacOS::send_event(NSEvent *p_event) {
 	}
 }
 
-void DisplayServerMacOS::send_window_event(const WindowData &wd, DisplayServerEnums::WindowEvent p_event) {
+void DisplayServerMacOS::send_window_event(const WindowData &wd, DisplayServerEnums::WindowEvent p_event) const {
 	_THREAD_SAFE_METHOD_
 
 	if (wd.event_callback.is_valid()) {
 		Variant event = int(p_event);
 		wd.event_callback.call(event);
 	}
+}
+
+void DisplayServerMacOS::send_window_event_by_id(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_id) const {
+	const WindowData &wd = windows[p_id];
+	send_window_event(wd, p_event);
 }
 
 void DisplayServerMacOS::release_pressed_events() {
@@ -782,9 +810,11 @@ void DisplayServerMacOS::window_resize(DisplayServerEnums::WindowID p_window, in
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_resize(p_window, p_width, p_height);
 	}
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->window_resize(p_window, p_width, p_height);
 	}
+#endif
 #endif
 }
 
@@ -1504,6 +1534,84 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	return Rect2i();
 }
 
+TypedArray<Rect2> DisplayServerMacOS::get_display_cutouts(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	TypedArray<Rect2> ret = TypedArray<Rect2>();
+
+	ERR_FAIL_INDEX_V(p_screen, screen_count, ret);
+
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		const float scale = screen_get_max_scale();
+		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
+		NSEdgeInsets safeAreaInsets = [[screenArray objectAtIndex:p_screen] safeAreaInsets];
+
+		float inset_left = safeAreaInsets.left * scale;
+		float inset_top = safeAreaInsets.top * scale;
+		float inset_right = safeAreaInsets.right * scale;
+		float inset_bottom = safeAreaInsets.bottom * scale;
+
+		float screen_width = nsrect.size.width * scale;
+		float screen_height = nsrect.size.height * scale;
+
+		if (inset_left > 0) {
+			Rect2 rect = Rect2(0.0, 0.0, inset_left, screen_height);
+			ret.push_back(rect);
+		}
+
+		if (inset_top > 0) {
+			Rect2 rect = Rect2(0.0, 0.0, screen_width, inset_top);
+			ret.push_back(rect);
+		}
+
+		if (inset_bottom > 0) {
+			Rect2 rect = Rect2(0.0, screen_height - inset_bottom, screen_width, inset_bottom);
+			ret.push_back(rect);
+		}
+
+		if (inset_right > 0) {
+			Rect2 rect = Rect2(screen_width - inset_right, 0.0, inset_right, screen_width);
+			ret.push_back(rect);
+		}
+	}
+
+	return ret;
+}
+
+Rect2i DisplayServerMacOS::get_display_safe_area(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		const float scale = screen_get_max_scale();
+		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
+		NSEdgeInsets safeAreaInsets = [[screenArray objectAtIndex:p_screen] safeAreaInsets];
+
+		int inset_left = safeAreaInsets.left * scale;
+		int inset_top = safeAreaInsets.top * scale;
+		int inset_right = safeAreaInsets.right * scale;
+		int inset_bottom = safeAreaInsets.bottom * scale;
+
+		int screen_width = nsrect.size.width * scale;
+		int screen_height = nsrect.size.height * scale;
+
+		return Rect2i(
+				inset_left,
+				inset_top,
+				screen_width - (inset_left + inset_right),
+				screen_height - (inset_top + inset_bottom));
+	}
+
+	return Rect2i();
+}
+
 Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 	HashSet<CGWindowID> exclude_windows;
 	for (HashMap<DisplayServerEnums::WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
@@ -1659,7 +1767,7 @@ DisplayServerEnums::WindowID DisplayServerMacOS::create_sub_window(DisplayServer
 
 	DisplayServerEnums::WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
 
-	uint32_t set_flags = p_flags & ~(DisplayServerEnums::WINDOW_FLAG_MAX - 1); // Clear the flags that are not supported by the window.
+	uint32_t set_flags = p_flags & ((1 << DisplayServerEnums::WINDOW_FLAG_MAX) - 1); // Clear the flags that are not supported by the window.
 	while (set_flags != 0) {
 		// Find the index of the next set bit.
 		uint32_t index = (uint32_t)__builtin_ctzll(set_flags);
@@ -2745,21 +2853,27 @@ int64_t DisplayServerMacOS::window_get_native_handle(DisplayServerEnums::HandleT
 			if (gl_manager_legacy) {
 				return (int64_t)gl_manager_legacy->get_context(p_window);
 			}
+#if defined(ANGLE_ENABLED)
 			if (gl_manager_angle) {
 				return (int64_t)gl_manager_angle->get_context(p_window);
 			}
+#endif
 			return 0;
 		}
 		case DisplayServerEnums::EGL_DISPLAY: {
+#if defined(ANGLE_ENABLED)
 			if (gl_manager_angle) {
 				return (int64_t)gl_manager_angle->get_display(p_window);
 			}
+#endif
 			return 0;
 		}
 		case DisplayServerEnums::EGL_CONFIG: {
+#if defined(ANGLE_ENABLED)
 			if (gl_manager_angle) {
 				return (int64_t)gl_manager_angle->get_config(p_window);
 			}
+#endif
 			return 0;
 		}
 #endif
@@ -2788,18 +2902,22 @@ void DisplayServerMacOS::gl_window_make_current(DisplayServerEnums::WindowID p_w
 	if (gl_manager_legacy) {
 		gl_manager_legacy->window_make_current(p_window_id);
 	}
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->window_make_current(p_window_id);
 	}
+#endif
 #endif
 }
 
 void DisplayServerMacOS::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsync_mode, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
+#endif
 	if (gl_manager_legacy) {
 		gl_manager_legacy->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
@@ -2814,9 +2932,11 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_v
 DisplayServerEnums::VSyncMode DisplayServerMacOS::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		return (gl_manager_angle->is_using_vsync() ? DisplayServerEnums::VSyncMode::VSYNC_ENABLED : DisplayServerEnums::VSyncMode::VSYNC_DISABLED);
 	}
+#endif
 	if (gl_manager_legacy) {
 		return (gl_manager_legacy->is_using_vsync() ? DisplayServerEnums::VSyncMode::VSYNC_ENABLED : DisplayServerEnums::VSyncMode::VSYNC_DISABLED);
 	}
@@ -2849,13 +2969,8 @@ void DisplayServerMacOS::window_get_edr_values(DisplayServerEnums::WindowID p_wi
 		*v = val; \
 	}
 
-	if (@available(macOS 10.15, *)) {
-		SET_VAL(r_max_potential_edr_value, screen.maximumPotentialExtendedDynamicRangeColorComponentValue);
-		SET_VAL(r_max_edr_value, screen.maximumExtendedDynamicRangeColorComponentValue);
-	} else {
-		SET_VAL(r_max_potential_edr_value, 1.0);
-		SET_VAL(r_max_edr_value, 1.0);
-	}
+	SET_VAL(r_max_potential_edr_value, screen.maximumPotentialExtendedDynamicRangeColorComponentValue);
+	SET_VAL(r_max_edr_value, screen.maximumExtendedDynamicRangeColorComponentValue);
 
 #undef SET_VAL
 }
@@ -2868,7 +2983,7 @@ void DisplayServerMacOS::update_screen_parameters() {
 	}
 
 #ifdef TOOLS_ENABLED
-	for (KeyValue<OS::ProcessID, EmbeddedProcessData> &E : embedded_processes) {
+	for (KeyValue<ProcessID, EmbeddedProcessData> &E : embedded_processes) {
 		E.value.process->display_state_changed();
 	}
 #endif
@@ -3039,7 +3154,7 @@ bool DisplayServerMacOS::get_swap_cancel_ok() {
 	return false;
 }
 
-void DisplayServerMacOS::enable_for_stealing_focus(OS::ProcessID pid) {
+void DisplayServerMacOS::enable_for_stealing_focus(ProcessID pid) {
 }
 
 #define GET_OR_FAIL_V(m_val, m_map, m_key, m_retval) \
@@ -3065,7 +3180,7 @@ void DisplayServerMacOS::_window_update_display_id(WindowData *p_wd) {
 
 #ifdef TOOLS_ENABLED
 	// Notify any embedded processes of the new display ID, so that they can potentially update their vsync.
-	for (KeyValue<OS::ProcessID, EmbeddedProcessData> &E : embedded_processes) {
+	for (KeyValue<ProcessID, EmbeddedProcessData> &E : embedded_processes) {
 		if (E.value.wd == p_wd) {
 			E.value.process->display_state_changed();
 		}
@@ -3081,7 +3196,7 @@ Error DisplayServerMacOS::embed_process_update(DisplayServerEnums::WindowID p_wi
 	WindowData *wd;
 	GET_OR_FAIL_V(wd, windows, p_window, FAILED);
 
-	OS::ProcessID p_pid = p_process->get_embedded_pid();
+	ProcessID p_pid = p_process->get_embedded_pid();
 
 	[CATransaction begin];
 	[CATransaction setDisableActions:YES];
@@ -3118,11 +3233,11 @@ Error DisplayServerMacOS::embed_process_update(DisplayServerEnums::WindowID p_wi
 	return OK;
 }
 
-Error DisplayServerMacOS::request_close_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerMacOS::request_close_embedded_process(ProcessID p_pid) {
 	return OK;
 }
 
-Error DisplayServerMacOS::remove_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerMacOS::remove_embedded_process(ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
 	EmbeddedProcessData *ed;
@@ -3222,9 +3337,11 @@ void DisplayServerMacOS::force_process_and_drop_events() {
 
 void DisplayServerMacOS::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->release_current();
 	}
+#endif
 	if (gl_manager_legacy) {
 		gl_manager_legacy->release_current();
 	}
@@ -3233,9 +3350,11 @@ void DisplayServerMacOS::release_rendering_thread() {
 
 void DisplayServerMacOS::swap_buffers() {
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->swap_buffers();
 	}
+#endif
 	if (gl_manager_legacy) {
 		gl_manager_legacy->swap_buffers();
 	}
@@ -3465,7 +3584,9 @@ Vector<String> DisplayServerMacOS::get_rendering_drivers_func() {
 #endif
 #if defined(GLES3_ENABLED)
 	drivers.push_back("opengl3");
+#if defined(ANGLE_ENABLED)
 	drivers.push_back("opengl3_angle");
+#endif
 #endif
 	drivers.push_back("dummy");
 
@@ -3784,18 +3905,23 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 #endif
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
+	if (rendering_driver == "opengl3" && OS::get_singleton()->get_processor_name().contains("Virtual")) {
+		WARN_PRINT("Virtual Machine detected, switching to ANGLE.");
+		rendering_driver = "opengl3_angle";
+	}
 	if (rendering_driver == "opengl3_angle") {
 		gl_manager_angle = memnew(GLManagerANGLE_MacOS);
 		if (gl_manager_angle->initialize() != OK || gl_manager_angle->open_display(nullptr) != OK) {
 			memdelete(gl_manager_angle);
 			gl_manager_angle = nullptr;
+			if (OS::get_singleton()->get_processor_name().contains("Virtual")) {
+				r_error = ERR_UNAVAILABLE;
+				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
+			}
 			bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
 			if (fallback) {
-#ifdef EGL_STATIC
 				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
-#else
-				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dylib and libGLESv2.dylib) are missing, switching to native OpenGL.");
-#endif
 				rendering_driver = "opengl3";
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else {
@@ -3804,7 +3930,12 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 			}
 		}
 	}
-
+#else
+	if (rendering_driver == "opengl3" && OS::get_singleton()->get_processor_name().contains("Virtual")) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Virtual Machine detected, could not initialize OpenGL.");
+	}
+#endif
 	if (rendering_driver == "opengl3") {
 		gl_manager_legacy = memnew(GLManagerLegacy_MacOS);
 		if (gl_manager_legacy->initialize() != OK) {
@@ -3853,9 +3984,11 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 	if (rendering_driver == "opengl3") {
 		RasterizerGLES3::make_current(true);
 	}
+#if defined(ANGLE_ENABLED)
 	if (rendering_driver == "opengl3_angle") {
 		RasterizerGLES3::make_current(false);
 	}
+#endif
 #endif
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -3894,10 +4027,12 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 		memdelete(gl_manager_legacy);
 		gl_manager_legacy = nullptr;
 	}
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		memdelete(gl_manager_angle);
 		gl_manager_angle = nullptr;
 	}
+#endif
 #endif
 #if defined(RD_ENABLED)
 	if (rendering_device) {

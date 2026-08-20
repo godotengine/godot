@@ -12,7 +12,7 @@ func run_tests():
 
 	# Scoped storage: Testing access to Downloads and Documents directory.
 	var version = JavaClassWrapper.wrap("android.os.Build$VERSION")
-	if version.SDK_INT >= 29:
+	if version.SDK_INT >= 30:
 		__exec_test(test_downloads_dir_access)
 		__exec_test(test_documents_dir_access)
 

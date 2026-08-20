@@ -118,6 +118,18 @@ public:
 	String get_item_tooltip(int p_idx) const;
 	AutoTranslateMode get_item_auto_translate_mode(int p_idx) const;
 
+	void set_search_bar_enabled(bool p_enabled);
+	bool is_search_bar_enabled() const;
+
+	void set_search_bar_min_item_count(int p_count);
+	int get_search_bar_min_item_count() const;
+
+	void set_search_bar_fuzzy_search_enabled(bool p_enabled);
+	bool is_search_bar_fuzzy_search_enabled() const;
+
+	void set_search_bar_fuzzy_search_max_misses(int p_max_misses);
+	int get_search_bar_fuzzy_search_max_misses() const;
+
 	bool has_selectable_items() const;
 	int get_selectable_item(bool p_from_last = false) const;
 

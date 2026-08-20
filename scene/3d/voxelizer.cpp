@@ -33,7 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
 #include "core/math/geometry_3d.h"
-#include "scene/resources/curve.h"
 #include "scene/resources/texture.h"
 
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
@@ -615,7 +614,7 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 		bake_cells.write[p_idx].normal[2] /= alpha;
 
 		Vector3 n(bake_cells[p_idx].normal[0], bake_cells[p_idx].normal[1], bake_cells[p_idx].normal[2]);
-		if (n.length() < 0.01) {
+		if (n.length() < 0.01f) {
 			//too much fight over normal, zero it
 			bake_cells.write[p_idx].normal[0] = 0;
 			bake_cells.write[p_idx].normal[1] = 0;

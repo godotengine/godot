@@ -32,7 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/object/class_db.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "scene/main/timer.h"
@@ -81,7 +81,6 @@ void EmbeddedProcessBase::_project_settings_changed() {
 void EmbeddedProcessBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("embedding_completed"));
 	ADD_SIGNAL(MethodInfo("embedding_failed"));
-	ADD_SIGNAL(MethodInfo("embedded_process_updated"));
 	ADD_SIGNAL(MethodInfo("embedded_process_focused"));
 }
 
@@ -190,7 +189,7 @@ int EmbeddedProcess::get_embedded_pid() const {
 	return current_process_id;
 }
 
-void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
+void EmbeddedProcess::embed_process(ProcessID p_pid) {
 	if (!window) {
 		return;
 	}
@@ -303,7 +302,6 @@ void EmbeddedProcess::_update_embedded_process() {
 	}
 
 	DisplayServer::get_singleton()->embed_process(window->get_window_id(), current_process_id, get_screen_embedded_window_rect(), is_visible_in_tree(), must_grab_focus);
-	emit_signal(SNAME("embedded_process_updated"));
 }
 
 void EmbeddedProcess::_timer_embedding_timeout() {
@@ -395,7 +393,7 @@ void EmbeddedProcess::_check_mouse_over() {
 }
 
 void EmbeddedProcess::_check_focused_process_id() {
-	OS::ProcessID process_id = DisplayServer::get_singleton()->get_focused_process_id();
+	ProcessID process_id = DisplayServer::get_singleton()->get_focused_process_id();
 	if (process_id != focused_process_id) {
 		focused_process_id = process_id;
 		if (focused_process_id == current_process_id) {
@@ -444,8 +442,7 @@ Window *EmbeddedProcess::_get_current_modal_window() {
 	return nullptr;
 }
 
-EmbeddedProcess::EmbeddedProcess() :
-		EmbeddedProcessBase() {
+EmbeddedProcess::EmbeddedProcess() {
 	timer_embedding = memnew(Timer);
 	timer_embedding->set_wait_time(0.1);
 	timer_embedding->set_one_shot(true);

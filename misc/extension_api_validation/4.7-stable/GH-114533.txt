@@ -1,0 +1,7 @@
+GH-114533
+--------------
+Validate extension JSON: API was removed: classes/GDScriptTextDocument/methods/codeLens
+Validate extension JSON: API was removed: classes/GDScriptTextDocument/methods/colorPresentation
+Validate extension JSON: API was removed: classes/GDScriptTextDocument/methods/foldingRange
+
+Removed dummy endpoints from an unstable interface. Compatibility methods deliberately excluded.

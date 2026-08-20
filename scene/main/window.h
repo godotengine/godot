@@ -127,6 +127,7 @@ private:
 	mutable Size2i max_size;
 	mutable Vector<Vector2> mpath;
 	mutable Mode mode = MODE_WINDOWED;
+	mutable Mode toggle_fullscreen_previous_mode = mode;
 	mutable bool flags[FLAG_MAX] = {};
 	bool visible = true;
 	bool focused = false;
@@ -137,6 +138,7 @@ private:
 
 	void _update_viewport_for_hdr_output();
 
+	bool fullscreen_shortcut_enabled = false;
 	bool transient = false;
 	bool transient_to_focused = false;
 	bool exclusive = false;
@@ -266,7 +268,7 @@ private:
 
 protected:
 	virtual void _popup_base(const Rect2i &p_screen_rect = Rect2i());
-	virtual void _pre_popup() {} // Called after "about_to_popup", but before window is shown.
+	virtual void _pre_popup(const Size2i &p_size) {} // Called after "about_to_popup", but before window is shown.
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 	virtual void _post_popup() {}
 
@@ -288,6 +290,8 @@ protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
+	virtual String _get_accessibility_name() const;
+
 	GDVIRTUAL0RC(Vector2, _get_contents_minimum_size)
 
 public:
@@ -296,6 +300,8 @@ public:
 		NOTIFICATION_POST_POPUP = 31,
 		NOTIFICATION_THEME_CHANGED = 32
 	};
+
+	PackedStringArray get_accessibility_configuration_warnings() const override;
 
 	static void set_root_layout_direction(int p_root_dir);
 	static Window *get_from_id(DisplayServerEnums::WindowID p_window_id);
@@ -335,6 +341,9 @@ public:
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
+
+	void set_fullscreen_shortcut_enabled(bool p_enabled);
+	bool is_fullscreen_shortcut_enabled() const;
 
 	void set_flag(Flags p_flag, bool p_enabled);
 	bool get_flag(Flags p_flag) const;
@@ -452,6 +461,8 @@ public:
 	String get_accessibility_description() const;
 
 	void accessibility_announcement(const String &p_announcement);
+
+	virtual Transform2D get_accessibility_transform() const override;
 
 	// Internationalization.
 

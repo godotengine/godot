@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "editor_export_platform.h"
-#include "editor_export_plugin.h"
+#include "editor/export/editor_export_platform.h"
+#include "editor/export/editor_export_plugin.h"
 
 class Timer;
 

@@ -30,6 +30,10 @@
 
 #include "gdtype.h"
 
+#include "core/object/method_bind.h"
+#include "core/os/memory.h"
+#include "core/os/thread.h"
+
 GDType::GDType(const GDType *p_super_type, StringName p_name) :
 		super_type(p_super_type), name(std::move(p_name)) {
 	name_hierarchy.push_back(name);
@@ -39,4 +43,118 @@ GDType::GDType(const GDType *p_super_type, StringName p_name) :
 			name_hierarchy.push_back(ancestor_name);
 		}
 	}
+}
+
+GDType::~GDType() {
+	for (const KeyValue<StringName, const EnumInfo *> &kv : self_enum_map) {
+		memdelete(const_cast<EnumInfo *>(kv.value));
+	}
+	for (const KeyValue<StringName, const MethodInfo *> &kv : self_signal_map) {
+		memdelete(const_cast<MethodInfo *>(kv.value));
+	}
+	for (MethodBind *bind : owned_method_map) {
+		memdelete(bind);
+	}
+}
+
+void GDType::initialize() {
+	ERR_FAIL_COND(init_state != InitState::UNINITIALIZED);
+
+	if (super_type) {
+		// Now that a subtype is registered, the supertype cannot change anymore.
+		// Otherwise, our caches would become invalid.
+		// This shouldn't be a problem, since classes should register all their
+		// parts in _bind_methods, which is called on registration.
+		super_type->init_state = InitState::FINALIZED;
+
+		constant_map = super_type->constant_map;
+		enum_map = super_type->enum_map;
+		signal_map = super_type->signal_map;
+		method_map = super_type->method_map;
+	}
+
+	init_state = InitState::MUTABLE;
+}
+
+void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
+	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(init_state != InitState::MUTABLE);
+	ERR_FAIL_COND_MSG(self_constant_map.has(p_name), vformat("Class '%s' already has constant '%s'.", String(name), String(p_name)));
+
+	constant_map[p_name] = p_constant;
+	self_constant_map[p_name] = p_constant;
+
+	String enum_name = p_enum;
+	if (!enum_name.is_empty()) {
+		if (enum_name.contains_char('.')) {
+			enum_name = enum_name.get_slicec('.', 1);
+		}
+
+		const EnumInfo **_enum_info = self_enum_map.getptr(enum_name);
+
+		if (_enum_info != nullptr) {
+			EnumInfo *enum_info = const_cast<EnumInfo *>(*_enum_info);
+			enum_info->values.insert(p_name, p_constant);
+			enum_info->is_bitfield = p_is_bitfield;
+		} else {
+			EnumInfo *enum_info = memnew(EnumInfo);
+			enum_info->name = enum_name;
+			enum_info->is_bitfield = p_is_bitfield;
+			enum_info->values.insert(p_name, p_constant);
+			self_enum_map[enum_name] = enum_info;
+			enum_map[enum_name] = enum_info;
+		}
+	}
+}
+
+const GDType::EnumInfo *GDType::get_integer_constant_enum(const StringName &p_name, bool p_no_inheritance) const {
+	for (const KeyValue<StringName, const EnumInfo *> &kv : get_enum_map(p_no_inheritance)) {
+		if (kv.value->values.has(p_name)) {
+			return kv.value;
+		}
+	}
+
+	return nullptr;
+}
+
+void GDType::add_signal(MethodInfo p_signal) {
+	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(init_state != InitState::MUTABLE);
+
+	const StringName signal_name(p_signal.name);
+	ERR_FAIL_COND_MSG(signal_map.has(signal_name), vformat("Class '%s' already has signal '%s'.", String(name), String(signal_name)));
+
+	const MethodInfo *ptr = memnew(MethodInfo(std::move(p_signal)));
+
+	signal_map[signal_name] = ptr;
+	self_signal_map[signal_name] = ptr;
+}
+
+bool GDType::bind_method(MethodBind *p_method, bool p_take_ownership) {
+	ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+	ERR_FAIL_COND_V(init_state != InitState::MUTABLE, false);
+
+	if (self_method_map.has(p_method->get_name())) {
+		if (p_take_ownership) {
+			memdelete(p_method);
+		}
+		ERR_FAIL_V_MSG(false, vformat("Method already bound '%s::%s'.", name, p_method->get_name()));
+	}
+
+	method_map[p_method->get_name()] = p_method;
+	self_method_map[p_method->get_name()] = p_method;
+	if (p_take_ownership) {
+		owned_method_map.push_back(p_method);
+	}
+	return true;
+}
+
+void GDType::set_method_flags(const StringName &p_method, int p_flags) {
+	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(init_state != InitState::MUTABLE);
+
+	const MethodBind **method = self_method_map.getptr(p_method);
+	ERR_FAIL_NULL(method);
+
+	const_cast<MethodBind *>(*method)->set_hint_flags(p_flags);
 }

@@ -303,20 +303,25 @@ namespace Godot.SourceGenerators
                 }
                 source.Append(")\n");
                 source.Append("    {\n");
-                source.Append($"        EmitSignal(SignalName.{signalName}");
+                source.Append($"        EmitSignal(SignalName.{signalName}, [");
                 foreach (var paramSymbol in invokeMethodSymbol.Parameters)
                 {
+                    if (paramSymbol.Ordinal != 0)
+                    {
+                        source.Append(", ");
+                    }
+
                     // Enums must be converted to the underlying type before they can be implicitly converted to Variant
                     if (paramSymbol.Type.TypeKind == TypeKind.Enum)
                     {
                         var underlyingType = ((INamedTypeSymbol)paramSymbol.Type).EnumUnderlyingType!;
-                        source.Append($", ({underlyingType.FullQualifiedNameIncludeGlobal()})@{paramSymbol.Name}");
+                        source.Append($"({underlyingType.FullQualifiedNameIncludeGlobal()})@{paramSymbol.Name}");
                         continue;
                     }
 
-                    source.Append($", @{paramSymbol.Name}");
+                    source.Append($"@{paramSymbol.Name}");
                 }
-                source.Append(");\n");
+                source.Append("]);\n");
                 source.Append("    }\n");
             }
 

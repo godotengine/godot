@@ -446,7 +446,7 @@ void GLTFState::set_filename(const String &p_filename) {
 }
 
 Variant GLTFState::get_additional_data(const StringName &p_extension_name) const {
-	return additional_data[p_extension_name];
+	return additional_data.get(p_extension_name, Variant());
 }
 
 void GLTFState::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
@@ -480,6 +480,7 @@ GLTFBufferViewIndex GLTFState::append_data_to_buffers(const Vector<uint8_t> &p_d
 }
 
 GLTFNodeIndex GLTFState::append_gltf_node(Ref<GLTFNode> p_gltf_node, Node *p_godot_scene_node, GLTFNodeIndex p_parent_node_index) {
+	ERR_FAIL_COND_V(p_gltf_node.is_null(), GLTFNodeIndex(0));
 	p_gltf_node->set_parent(p_parent_node_index);
 	const GLTFNodeIndex new_index = nodes.size();
 	nodes.append(p_gltf_node);

@@ -30,15 +30,16 @@
 
 #include "image_compress_betsy.h"
 
-#include "betsy_bc1.h"
-
 #include "alpha_stitch.glsl.gen.h"
 #include "bc1.glsl.gen.h"
 #include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
+#include "betsy_bc1.h"
 #include "rgb_to_rgba.glsl.gen.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device.h"
@@ -330,10 +331,6 @@ void BetsyCompressor::finish() {
 
 // Helper functions.
 
-static int get_next_multiple(int n, int m) {
-	return n + (m - (n % m));
-}
-
 static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool &r_is_rgb) {
 	r_is_rgb = false;
 
@@ -440,11 +437,12 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		return ERR_INVALID_DATA;
 	}
 
-	int img_width = r_img->get_width();
-	int img_height = r_img->get_height();
-	if (img_width % 4 != 0 || img_height % 4 != 0) {
-		img_width = img_width <= 2 ? img_width : (img_width + 3) & ~3;
-		img_height = img_height <= 2 ? img_height : (img_height + 3) & ~3;
+	int img_width = (r_img->get_width() + 3) & ~0x03;
+	int img_height = (r_img->get_height() + 3) & ~0x03;
+
+	if (r_img->get_width() != img_width || r_img->get_height() != img_height) {
+		// Align the image to 4x4 texels.
+		r_img->resize(img_width, img_height, Image::INTERPOLATE_NEAREST);
 	}
 
 	Error err = OK;
@@ -548,38 +546,9 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		dst_texture_format.height = (height + 3) >> 2;
 		dst_texture_format.width = (width + 3) >> 2;
 
-		// Pad textures to nearest block by smearing.
-		if (width != src_mip_w || height != src_mip_h) {
-			const uint8_t *src_mip_read = r_img->ptr() + src_mip_ofs;
-
-			// Reserve the buffer for padded image data.
-			int px_size = Image::get_format_pixel_size(r_img->get_format());
-			src_image_ptr[0].resize(width * height * px_size);
-			uint8_t *ptrw = src_image_ptr[0].ptrw();
-
-			int x = 0, y = 0;
-			for (y = 0; y < src_mip_h; y++) {
-				for (x = 0; x < src_mip_w; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, src_mip_read + (src_mip_w * y + x) * px_size, px_size);
-				}
-
-				// First, smear in x.
-				for (; x < width; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - 1) * px_size, px_size);
-				}
-			}
-
-			// Then, smear in y.
-			for (; y < height; y++) {
-				for (x = 0; x < width; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - width) * px_size, px_size);
-				}
-			}
-		} else {
-			// Create a buffer filled with the source mip layer data.
-			src_image_ptr[0].resize(src_mip_size);
-			memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
-		}
+		// Create a buffer filled with the source mip layer data.
+		src_image_ptr[0].resize(src_mip_size);
+		memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
 
 		// Create the textures on the GPU.
 		RID src_texture;
@@ -646,7 +615,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 			push_constant.height = height;
 
 			compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RGBToRGBAPushConstant));
-			compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 8) / 8, get_next_multiple(height, 8) / 8, 1);
+			compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 8), Math::division_round_up(height, 8), 1);
 
 			compress_rd->compute_list_end();
 
@@ -697,7 +666,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					push_constant.sizeY = 1.0f / height;
 
 					compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC6PushConstant));
-					compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+					compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 32), Math::division_round_up(height, 32), 1);
 				} break;
 
 				case BETSY_SHADER_BC1_STANDARD: {
@@ -705,7 +674,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					push_constant.num_refines = 2;
 
 					compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC1PushConstant));
-					compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+					compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 32), Math::division_round_up(height, 32), 1);
 				} break;
 
 				case BETSY_SHADER_BC4_UNSIGNED: {
@@ -713,7 +682,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					push_constant.channel_idx = 0;
 
 					compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC4PushConstant));
-					compress_rd->compute_list_dispatch(compute_list, 1, get_next_multiple(width, 16) / 16, get_next_multiple(height, 16) / 16);
+					compress_rd->compute_list_dispatch(compute_list, 1, Math::division_round_up(width, 16), Math::division_round_up(height, 16));
 				} break;
 
 				default: {
@@ -767,7 +736,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 				push_constant.channel_idx = dest_format == Image::FORMAT_DXT5 ? 3 : 1;
 
 				compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC4PushConstant));
-				compress_rd->compute_list_dispatch(compute_list, 1, get_next_multiple(width, 16) / 16, get_next_multiple(height, 16) / 16);
+				compress_rd->compute_list_dispatch(compute_list, 1, Math::division_round_up(width, 16), Math::division_round_up(height, 16));
 
 				compress_rd->compute_list_end();
 			}
@@ -813,7 +782,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 				compress_rd->compute_list_bind_compute_pipeline(compute_list, stitch_shader.pipeline);
 				compress_rd->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-				compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+				compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 32), Math::division_round_up(height, 32), 1);
 
 				compress_rd->compute_list_end();
 
@@ -863,13 +832,13 @@ void ensure_betsy_exists() {
 	betsy_mutex.unlock();
 }
 
-Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels) {
+Error _betsy_compress_bptc(Image *r_img, Image::UsedChannels p_channels, Image::BPTCFormat p_bptc_format) {
 	ensure_betsy_exists();
 	Image::Format format = r_img->get_format();
 	Error result = ERR_UNAVAILABLE;
 
 	if (format >= Image::FORMAT_RF && format <= Image::FORMAT_RGBE9995) {
-		if (r_img->detect_signed()) {
+		if ((p_bptc_format == Image::BPTC_DETECT && r_img->detect_signed()) || p_bptc_format == Image::BPTC_FORCE_SIGNED) {
 			result = betsy->compress(BETSY_FORMAT_BC6_SIGNED, r_img);
 		} else {
 			result = betsy->compress(BETSY_FORMAT_BC6_UNSIGNED, r_img);

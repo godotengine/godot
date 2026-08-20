@@ -33,18 +33,20 @@
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/mesh.h"
@@ -69,10 +71,13 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/collision_object_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_object_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef XR_DISABLED
@@ -560,7 +565,7 @@ void Viewport::_update_viewport_path() {
 
 	for (ViewportTexture *E : viewport_textures) {
 		Node *loc_scene = E->get_local_scene();
-		if (loc_scene) {
+		if (loc_scene && loc_scene->is_inside_tree()) {
 			E->path = loc_scene->get_path_to(this);
 		}
 	}
@@ -628,6 +633,8 @@ void Viewport::_notification(int p_what) {
 				set_physics_process_internal(true);
 			}
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
+			_update_texture_filter_changed(false);
+			_update_texture_repeat_changed(false);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -808,7 +815,7 @@ void Viewport::_process_picking() {
 	Vector2 last_pos(1e20, 1e20);
 	CollisionObject3D *last_object = nullptr;
 	ObjectID last_id;
-	PhysicsDirectSpaceState3D::RayResult result;
+	PS3DT::RayResult result;
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
@@ -899,7 +906,7 @@ void Viewport::_process_picking() {
 
 			uint64_t frame = get_tree()->get_frame();
 
-			PhysicsDirectSpaceState2D::ShapeResult res[64];
+			PS2DT::ShapeResult res[64];
 			for (const CanvasLayer *E : canvas_layers) {
 				Transform2D canvas_layer_transform;
 				ObjectID canvas_layer_id;
@@ -915,7 +922,7 @@ void Viewport::_process_picking() {
 
 				Vector2 point = canvas_layer_transform.affine_inverse().xform(pos);
 
-				PhysicsDirectSpaceState2D::PointParameters point_params;
+				PS2DT::PointParameters point_params;
 				point_params.position = point;
 				point_params.canvas_instance_id = canvas_layer_id;
 				point_params.collide_with_areas = true;
@@ -924,7 +931,7 @@ void Viewport::_process_picking() {
 				int rc = ss2d->intersect_point(point_params, res, 64);
 				if (physics_object_picking_sort) {
 					struct ComparatorCollisionObjects {
-						bool operator()(const PhysicsDirectSpaceState2D::ShapeResult &p_a, const PhysicsDirectSpaceState2D::ShapeResult &p_b) const {
+						bool operator()(const PS2DT::ShapeResult &p_a, const PS2DT::ShapeResult &p_b) const {
 							CollisionObject2D *a = Object::cast_to<CollisionObject2D>(p_a.collider);
 							CollisionObject2D *b = Object::cast_to<CollisionObject2D>(p_b.collider);
 							if (!a || !b) {
@@ -938,7 +945,7 @@ void Viewport::_process_picking() {
 							return a->is_greater_than(b);
 						}
 					};
-					SortArray<PhysicsDirectSpaceState2D::ShapeResult, ComparatorCollisionObjects> sorter;
+					SortArray<PS2DT::ShapeResult, ComparatorCollisionObjects> sorter;
 					sorter.sort(res, rc);
 				}
 				for (int i = 0; i < rc; i++) {
@@ -996,7 +1003,7 @@ void Viewport::_process_picking() {
 		CollisionObject3D *capture_object = nullptr;
 		if (physics_object_capture.is_valid()) {
 			capture_object = ObjectDB::get_instance<CollisionObject3D>(physics_object_capture);
-			if (!capture_object || !camera_3d || (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed())) {
+			if (!capture_object || !capture_object->is_inside_tree() || !camera_3d || (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed())) {
 				physics_object_capture = ObjectID();
 			} else {
 				last_id = physics_object_capture;
@@ -1006,12 +1013,15 @@ void Viewport::_process_picking() {
 
 		if (pos == last_pos) {
 			if (last_id.is_valid()) {
-				if (ObjectDB::get_instance(last_id) && last_object) {
-					// Good, exists.
-					_collision_object_3d_input_event(last_object, camera_3d, ev, result.position, result.normal, result.shape);
-					if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+				CollisionObject3D *current_last_object = ObjectDB::get_instance<CollisionObject3D>(last_id);
+				if (current_last_object && current_last_object == last_object && current_last_object->is_inside_tree()) {
+					_collision_object_3d_input_event(current_last_object, camera_3d, ev, result.position, result.normal, result.shape);
+					if (current_last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 						physics_object_capture = last_id;
 					}
+				} else {
+					last_id = ObjectID();
+					last_object = nullptr;
 				}
 			}
 		} else {
@@ -1022,7 +1032,7 @@ void Viewport::_process_picking() {
 
 				PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
 				if (space) {
-					PhysicsDirectSpaceState3D::RayParameters ray_params;
+					PS3DT::RayParameters ray_params;
 					ray_params.from = from;
 					ray_params.to = from + dir * depth_far;
 					ray_params.collide_with_areas = true;
@@ -1045,7 +1055,7 @@ void Viewport::_process_picking() {
 					if (is_mouse && new_collider != physics_object_over) {
 						if (physics_object_over.is_valid()) {
 							CollisionObject3D *previous_co = ObjectDB::get_instance<CollisionObject3D>(physics_object_over);
-							if (previous_co) {
+							if (previous_co && previous_co->is_inside_tree()) {
 								previous_co->_mouse_exit();
 							}
 						}
@@ -1183,6 +1193,14 @@ bool Viewport::_set_size(const Size2i &p_size, const int p_view_count, const Siz
 	Rect2i limit = get_visible_rect();
 	for (int i = 0; i < gui.sub_windows.size(); ++i) {
 		Window *sw = gui.sub_windows[i].window;
+#ifdef TOOLS_ENABLED
+		if (!is_part_of_edited_scene() && sw->is_part_of_edited_scene()) {
+			continue;
+		}
+#endif
+		if (!sw->is_clamped_to_embedder()) {
+			continue;
+		}
 		Rect2i rect = Rect2i(sw->position, sw->size);
 		Rect2i new_rect = sw->fit_rect_in_parent(rect, limit);
 		if (new_rect != rect) {
@@ -1563,17 +1581,6 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 	while (p_control) {
 		tooltip = p_control->get_tooltip(pos);
 
-		// Temporary solution for PopupMenus.
-		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
-		if (menu) {
-			Ref<StyleBox> sb = menu->get_theme_stylebox(SceneStringName(panel));
-			if (sb.is_valid()) {
-				pos.y += sb->get_margin(SIDE_TOP);
-			}
-
-			tooltip = menu->get_tooltip(pos);
-		}
-
 		if (r_tooltip_owner) {
 			*r_tooltip_owner = p_control;
 		}
@@ -1670,7 +1677,7 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 		gui.tooltip_label = memnew(Label);
 		gui.tooltip_label->set_theme_type_variation(SNAME("TooltipLabel"));
 		gui.tooltip_label->set_text(gui.tooltip_text);
-		gui.tooltip_label->set_auto_translate_mode(tooltip_owner->get_tooltip_auto_translate_mode());
+		gui.tooltip_label->set_auto_translate_mode(tooltip_owner->get_tooltip_auto_translate_mode_at(tooltip_owner->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos)));
 		base_tooltip = gui.tooltip_label;
 		panel->connect(SceneStringName(mouse_entered), callable_mp(this, &Viewport::_gui_cancel_tooltip));
 	}
@@ -2052,7 +2059,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Viewport *section_root = get_section_root_viewport();
 		if (!gui.drag_attempted && gui.mouse_focus && section_root && !section_root->gui.global_dragging && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 			gui.drag_accum += mm->get_relative();
-			float len = gui.drag_accum.length();
+			real_t len = gui.drag_accum.length();
 			if (len > gui.drag_threshold) {
 				{ // Attempt grab, try parent controls too.
 					CanvasItem *ci = gui.mouse_focus;
@@ -2517,9 +2524,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
 	Control *drag_preview = _gui_get_drag_preview();
-	if (drag_preview) {
-		memdelete(drag_preview);
-	}
+	memdelete(drag_preview);
 	p_control->set_as_top_level(true);
 	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); // Add as child of viewport.
@@ -3490,10 +3495,10 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 	gui.sending_mouse_enter_exit_notifications = false;
 }
 
-void Viewport::push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords) {
+void Viewport::push_input(RequiredParam<InputEvent> p_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
+	EXTRACT_PARAM_OR_FAIL(event, p_event);
 
 	if (disable_input || disable_input_override) {
 		return;
@@ -3517,9 +3522,9 @@ void Viewport::push_input(RequiredParam<InputEvent> rp_event, bool p_local_coord
 
 	Ref<InputEvent> ev;
 	if (!p_local_coords) {
-		ev = _make_input_local(p_event);
+		ev = _make_input_local(event);
 	} else {
-		ev = p_event;
+		ev = event;
 	}
 
 	Ref<InputEventMouse> me = ev;
@@ -3557,11 +3562,11 @@ void Viewport::push_input(RequiredParam<InputEvent> rp_event, bool p_local_coord
 }
 
 #ifndef DISABLE_DEPRECATED
-void Viewport::push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_local_coords) {
+void Viewport::push_unhandled_input(RequiredParam<InputEvent> p_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
 	WARN_DEPRECATED_MSG(R"*(The "push_unhandled_input()" method is deprecated, use "push_input()" instead.)*");
 	ERR_FAIL_COND(!is_inside_tree());
-	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
+	EXTRACT_PARAM_OR_FAIL(event, p_event);
 
 	local_input_handled = false;
 
@@ -3575,21 +3580,55 @@ void Viewport::push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_l
 
 	Ref<InputEvent> ev;
 	if (!p_local_coords) {
-		ev = _make_input_local(p_event);
+		ev = _make_input_local(event);
 	} else {
-		ev = p_event;
+		ev = event;
 	}
 
 	_push_unhandled_input_internal(ev);
 }
 #endif // DISABLE_DEPRECATED
 
+void Viewport::_push_shortcut_input_internal(const Ref<InputEvent> &p_event) {
+	if (Object::cast_to<InputEventKey>(*p_event) == nullptr && Object::cast_to<InputEventShortcut>(*p_event) == nullptr && Object::cast_to<InputEventJoypadButton>(*p_event) == nullptr) {
+		return;
+	}
+	ERR_FAIL_COND(!is_inside_tree());
+	get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, p_event, this);
+
+	if (!propagate_shortcuts_to_parent || is_input_handled()) {
+		return;
+	}
+
+	Viewport *parent_viewport = get_parent_viewport();
+	if (!parent_viewport) {
+		return;
+	}
+	if (parent_viewport->disable_input || parent_viewport->disable_input_override) {
+		return;
+	}
+	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(parent_viewport)) {
+		return;
+	}
+	if (!parent_viewport->handle_input_locally || parent_viewport->is_embedding_subwindows()) {
+		return;
+	}
+	if (!parent_viewport->_can_consume_input_events()) {
+		return;
+	}
+
+	parent_viewport->local_input_handled = false;
+	parent_viewport->shortcut_use_focus_owner = false;
+	parent_viewport->_push_shortcut_input_internal(p_event);
+	parent_viewport->shortcut_use_focus_owner = true;
+	if (parent_viewport->is_input_handled()) {
+		set_input_as_handled();
+	}
+}
+
 void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 	// Shortcut Input.
-	if (Object::cast_to<InputEventKey>(*p_event) != nullptr || Object::cast_to<InputEventShortcut>(*p_event) != nullptr || Object::cast_to<InputEventJoypadButton>(*p_event) != nullptr) {
-		ERR_FAIL_COND(!is_inside_tree());
-		get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, p_event, this);
-	}
+	_push_shortcut_input_internal(p_event);
 
 	// Unhandled key Input - Used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, and to handle Unicode input with Alt / Ctrl modifiers after handling shortcuts.
 	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*p_event) != nullptr)) {
@@ -3992,6 +4031,80 @@ bool Viewport::is_handling_input_locally() const {
 	return handle_input_locally;
 }
 
+void Viewport::set_propagate_shortcuts_to_parent(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
+	propagate_shortcuts_to_parent = p_enable;
+}
+
+bool Viewport::gui_shortcut_use_focus_owner() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return shortcut_use_focus_owner;
+}
+
+void Viewport::_refresh_texture_filter_cache() const {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	switch (default_canvas_item_texture_filter) {
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
+			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
+			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
+			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
+			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE: {
+			Node *p = get_parent();
+			CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p);
+			if (parent_ci) {
+				default_canvas_item_texture_filter_cache = (RenderingServerEnums::CanvasItemTextureFilter)parent_ci->get_texture_filter_in_tree();
+				if (default_canvas_item_texture_filter_cache == RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT) {
+					default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+				}
+				break;
+			}
+			Viewport *parent_vp = Object::cast_to<Viewport>(p);
+			if (parent_vp) {
+				default_canvas_item_texture_filter_cache = (RenderingServerEnums::CanvasItemTextureFilter)parent_vp->get_texture_filter_in_tree();
+				break;
+			}
+			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+		} break;
+		default: {
+		}
+	}
+}
+
+void Viewport::_update_texture_filter_changed(bool p_propagate) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	_refresh_texture_filter_cache();
+	RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, default_canvas_item_texture_filter_cache);
+
+	if (p_propagate) {
+		for (Node *c : iterate_children()) {
+			CanvasItem *child_ci = Object::cast_to<CanvasItem>(c);
+			if (child_ci) {
+				if (child_ci->texture_filter == CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
+					child_ci->_update_texture_filter_changed(true);
+				}
+				continue;
+			}
+			Viewport *child_vp = Object::cast_to<Viewport>(c);
+			if (child_vp && child_vp->default_canvas_item_texture_filter == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE) {
+				child_vp->_update_texture_filter_changed(true);
+			}
+		}
+	}
+}
+
 void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_filter, DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX);
@@ -4000,27 +4113,79 @@ void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFi
 		return;
 	}
 	default_canvas_item_texture_filter = p_filter;
-	switch (default_canvas_item_texture_filter) {
-		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
-			break;
-		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
-			break;
-		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
-			break;
-		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
-			break;
-		default: {
-		}
-	}
+	_update_texture_filter_changed(true);
 }
 
 Viewport::DefaultCanvasItemTextureFilter Viewport::get_default_canvas_item_texture_filter() const {
 	ERR_READ_THREAD_GUARD_V(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	return default_canvas_item_texture_filter;
+}
+
+RenderingServerEnums::CanvasItemTextureFilter Viewport::get_texture_filter_in_tree() const {
+	ERR_READ_THREAD_GUARD_V(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+	_refresh_texture_filter_cache();
+	return default_canvas_item_texture_filter_cache;
+}
+
+void Viewport::_refresh_texture_repeat_cache() const {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	switch (default_canvas_item_texture_repeat) {
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+			default_canvas_item_texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
+			default_canvas_item_texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
+			default_canvas_item_texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR;
+		} break;
+		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE: {
+			Node *p = get_parent();
+			CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p);
+			if (parent_ci) {
+				default_canvas_item_texture_repeat_cache = (RenderingServerEnums::CanvasItemTextureRepeat)parent_ci->get_texture_repeat_in_tree();
+				if (default_canvas_item_texture_repeat_cache == RSE::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT) {
+					default_canvas_item_texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+				}
+				break;
+			}
+			Viewport *parent_vp = Object::cast_to<Viewport>(p);
+			if (parent_vp) {
+				default_canvas_item_texture_repeat_cache = (RenderingServerEnums::CanvasItemTextureRepeat)parent_vp->get_texture_repeat_in_tree();
+				break;
+			}
+			default_canvas_item_texture_repeat_cache = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+		} break;
+		default: {
+		}
+	}
+}
+
+void Viewport::_update_texture_repeat_changed(bool p_propagate) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	_refresh_texture_repeat_cache();
+	RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, default_canvas_item_texture_repeat_cache);
+
+	if (p_propagate) {
+		for (Node *c : iterate_children()) {
+			CanvasItem *child_ci = Object::cast_to<CanvasItem>(c);
+			if (child_ci) {
+				if (child_ci->texture_repeat == CanvasItem::TEXTURE_REPEAT_PARENT_NODE) {
+					child_ci->_update_texture_repeat_changed(true);
+				}
+				continue;
+			}
+			Viewport *child_vp = Object::cast_to<Viewport>(c);
+			if (child_vp && child_vp->default_canvas_item_texture_repeat == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE) {
+				child_vp->_update_texture_repeat_changed(true);
+			}
+		}
+	}
 }
 
 void Viewport::set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat) {
@@ -4032,25 +4197,18 @@ void Viewport::set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRe
 	}
 
 	default_canvas_item_texture_repeat = p_repeat;
-
-	switch (default_canvas_item_texture_repeat) {
-		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			break;
-		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			break;
-		case DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR:
-			RS::get_singleton()->viewport_set_default_canvas_item_texture_repeat(viewport, RSE::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
-			break;
-		default: {
-		}
-	}
+	_update_texture_repeat_changed(true);
 }
 
 Viewport::DefaultCanvasItemTextureRepeat Viewport::get_default_canvas_item_texture_repeat() const {
 	ERR_READ_THREAD_GUARD_V(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	return default_canvas_item_texture_repeat;
+}
+
+RenderingServerEnums::CanvasItemTextureRepeat Viewport::get_texture_repeat_in_tree() const {
+	ERR_READ_THREAD_GUARD_V(RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	_refresh_texture_repeat_cache();
+	return default_canvas_item_texture_repeat_cache;
 }
 
 void Viewport::set_vrs_mode(Viewport::VRSMode p_vrs_mode) {
@@ -4565,6 +4723,13 @@ void Viewport::_audio_listener_3d_make_next_current(AudioListener3D *p_exclude) 
 
 #ifndef PHYSICS_3D_DISABLED
 void Viewport::_collision_object_3d_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
+	ERR_FAIL_NULL(p_object);
+	ERR_FAIL_NULL(p_camera);
+	if (!p_object->is_inside_tree() || !p_camera->is_inside_tree()) {
+		physics_last_id = ObjectID();
+		return;
+	}
+
 	Transform3D object_transform = p_object->get_global_transform();
 	Transform3D camera_transform = p_camera->get_global_transform();
 	ObjectID id = p_object->get_instance_id();
@@ -4739,7 +4904,12 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 	}
 
 	if (is_inside_tree()) {
-		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
+		const Ref<World3D> found_world_3d = find_world_3d();
+		if (found_world_3d.is_valid()) {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, found_world_3d->get_scenario());
+		} else {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, RID());
+		}
 	}
 
 	_update_audio_listener_3d();
@@ -4760,7 +4930,12 @@ void Viewport::_own_world_3d_changed() {
 	}
 
 	if (is_inside_tree()) {
-		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
+		const Ref<World3D> found_world_3d = find_world_3d();
+		if (found_world_3d.is_valid()) {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, found_world_3d->get_scenario());
+		} else {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, RID());
+		}
 	}
 
 	_update_audio_listener_3d();
@@ -4795,7 +4970,12 @@ void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
 	}
 
 	if (is_inside_tree()) {
-		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
+		const Ref<World3D> found_world_3d = find_world_3d();
+		if (found_world_3d.is_valid()) {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, found_world_3d->get_scenario());
+		} else {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, RID());
+		}
 	}
 
 	_update_audio_listener_3d();
@@ -5208,24 +5388,24 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_occlusion_culling"), "set_use_occlusion_culling", "is_using_occlusion_culling");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_lod_threshold", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_mesh_lod_threshold", "get_mesh_lod_threshold");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Lighting,Overdraw,Wireframe,Normal Buffer,VoxelGI Albedo,VoxelGI Lighting,VoxelGI Emission,Shadow Atlas,Directional Shadow Map,Scene Luminance,SSAO,SSIL,Directional Shadow Splits,Decal Atlas,SDFGI Cascades,SDFGI Probes,VoxelGI/SDFGI Buffer,Disable Mesh LOD,OmniLight3D Cluster,SpotLight3D Cluster,Decal Cluster,ReflectionProbe Cluster,Occlusion Culling Buffer,Motion Vectors,Internal Buffer"), "set_debug_draw", "get_debug_draw");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Lighting,Overdraw,Wireframe,Normal Buffer,VoxelGI Albedo,VoxelGI Lighting,VoxelGI Emission,Shadow Atlas,Directional Shadow Map,Scene Luminance,SSAO,SSIL,Directional Shadow Splits,Decal Atlas,SDFGI Cascades,SDFGI Probes,VoxelGI/SDFGI Buffer,Disable Mesh LOD,OmniLight3D Cluster,SpotLight3D Cluster,Decal Cluster,ReflectionProbe Cluster,Occlusion Culling Buffer,Motion Vectors,Internal Buffer,AreaLight3D Cluster,AreaLight3D Atlas"), "set_debug_draw", "get_debug_draw");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr_2d"), "set_use_hdr_2d", "is_using_hdr_2d");
 
 #ifndef _3D_DISABLED
 	ADD_GROUP("Scaling 3D", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "scaling_3d_mode", PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast),FSR 2.2 (Slow),MetalFX (Spatial),MetalFX (Temporal)"), "set_scaling_3d_mode", "get_scaling_3d_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scaling_3d_scale", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), "set_scaling_3d_scale", "get_scaling_3d_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scaling_3d_mode", PROPERTY_HINT_ENUM, "Nearest (Fastest):5,Bilinear (Fastest):0,FSR 1.0 (Fast):1,FSR 2.2 (Slow):2,MetalFX (Spatial - Fast):3,MetalFX (Temporal - Slow):4"), "set_scaling_3d_mode", "get_scaling_3d_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scaling_3d_scale", PROPERTY_HINT_RANGE, "0.1,2.0,0.0001"), "set_scaling_3d_scale", "get_scaling_3d_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), "set_texture_mipmap_bias", "get_texture_mipmap_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16x (Slow)")), "set_anisotropic_filtering_level", "get_anisotropic_filtering_level");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), "set_fsr_sharpness", "get_fsr_sharpness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_fsr_sharpness", "get_fsr_sharpness");
 	ADD_GROUP("Variable Rate Shading", "vrs_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_mode", PROPERTY_HINT_ENUM, "Disabled,Texture,XR"), "set_vrs_mode", "get_vrs_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vrs_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,Always"), "set_vrs_update_mode", "get_vrs_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "vrs_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_vrs_texture", "get_vrs_texture");
 #endif
 	ADD_GROUP("Canvas Items", "canvas_item_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap,Inherit"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror,Inherit"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
 	ADD_GROUP("Audio Listener", "audio_listener_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_2d"), "set_as_audio_listener_2d", "is_audio_listener_2d");
 #ifndef _3D_DISABLED
@@ -5276,6 +5456,7 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCALING_3D_MODE_FSR2);
 	BIND_ENUM_CONSTANT(SCALING_3D_MODE_METALFX_SPATIAL);
 	BIND_ENUM_CONSTANT(SCALING_3D_MODE_METALFX_TEMPORAL);
+	BIND_ENUM_CONSTANT(SCALING_3D_MODE_NEAREST);
 	BIND_ENUM_CONSTANT(SCALING_3D_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(MSAA_DISABLED);
@@ -5333,16 +5514,20 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_OCCLUDERS)
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_MOTION_VECTORS)
 	BIND_ENUM_CONSTANT(DEBUG_DRAW_INTERNAL_BUFFER);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_CLUSTER_AREA_LIGHTS);
+	BIND_ENUM_CONSTANT(DEBUG_DRAW_AREA_LIGHT_ATLAS);
 
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX);
 
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
+	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE);
 	BIND_ENUM_CONSTANT(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX);
 
 	BIND_ENUM_CONSTANT(SDF_OVERSIZE_100_PERCENT);

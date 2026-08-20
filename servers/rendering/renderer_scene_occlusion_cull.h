@@ -35,6 +35,8 @@
 #include "core/templates/local_vector.h"
 #include "servers/rendering/rendering_server_enums.h"
 
+#include <cfloat> // FLT_MIN, FLT_MAX
+
 class RendererSceneOcclusionCull {
 protected:
 	static RendererSceneOcclusionCull *singleton;

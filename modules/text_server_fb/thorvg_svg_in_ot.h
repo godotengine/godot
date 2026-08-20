@@ -30,25 +30,12 @@
 
 #pragma once
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
-
-#include <godot_cpp/core/mutex_lock.hpp>
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/templates/hash_map.hpp>
-
-using namespace godot;
-
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
-
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/typedefs.h"
 
 #include "modules/modules_enabled.gen.h" // For svg, freetype.
-#endif
 
 #ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED

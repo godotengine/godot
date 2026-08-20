@@ -150,6 +150,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["adb"] = "ADB";
 	capitalize_string_remaps["actool"] = "actool";
 	capitalize_string_remaps["ao"] = "AO";
+	capitalize_string_remaps["androidxr"] = "AndroidXR";
 	capitalize_string_remaps["api"] = "API";
 	capitalize_string_remaps["apk"] = "APK";
 	capitalize_string_remaps["arm32"] = "arm32";
@@ -167,6 +168,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["bptc"] = "BPTC";
 	capitalize_string_remaps["bvh"] = "BVH";
 	capitalize_string_remaps["ca"] = "CA";
+	capitalize_string_remaps["colr"] = "COLR";
 	capitalize_string_remaps["ccdik"] = "CCDIK";
 	capitalize_string_remaps["cd"] = "CD";
 	capitalize_string_remaps["cpu"] = "CPU";

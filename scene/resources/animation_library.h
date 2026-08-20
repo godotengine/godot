@@ -60,7 +60,7 @@ public:
 	void rename_animation(const StringName &p_name, const StringName &p_new_name);
 	bool has_animation(const StringName &p_name) const;
 	Ref<Animation> get_animation(const StringName &p_name) const;
-	void get_animation_list(List<StringName> *p_animations) const;
+	void get_animation_list(LocalVector<StringName> *p_animations) const;
 	int get_animation_list_size() const;
 
 #ifdef TOOLS_ENABLED

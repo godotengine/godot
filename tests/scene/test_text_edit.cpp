@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_text_edit)
 
 #include "core/input/input_map.h"
 #include "scene/gui/text_edit.h"
+#include "scene/main/scene_tree.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"
 
@@ -131,7 +132,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			// Can clear even if not editable.
 			text_edit->set_editable(false);
 
-			Array lines_edited_clear_args = { { 1, 0 } };
+			Array lines_edited_clear_args = { { 0, 0 } };
 
 			text_edit->clear();
 			MessageQueue::get_singleton()->flush();
@@ -1209,8 +1210,6 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 		SIGNAL_WATCH(text_edit, "text_changed");
 		SIGNAL_WATCH(text_edit, "lines_edited_from");
 		SIGNAL_WATCH(text_edit, "caret_changed");
-
-		Array lines_edited_args = { { 0, 0 }, { 0, 0 } };
 
 		SUBCASE("[TextEdit] select all") {
 			// Select when there is no text does not select.
@@ -6794,7 +6793,7 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 
 	// Should this work?
 	text_edit->set_caret_column(5);
-	CHECK(text_edit->get_word_under_caret() == "");
+	CHECK(text_edit->get_word_under_caret() == "Lorem");
 
 	text_edit->set_caret_column(6);
 	CHECK(text_edit->get_word_under_caret() == "");
@@ -7874,7 +7873,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 
 	text_edit->set_h_scroll(10000000);
 	CHECK(text_edit->get_h_scroll() == 307);
-	CHECK(text_edit->get_h_scroll_bar()->get_combined_minimum_size().x == 8);
+	CHECK(text_edit->get_h_scroll_bar()->get_bound_minimum_size().x == 8);
 
 	text_edit->set_h_scroll(-100);
 	CHECK(text_edit->get_h_scroll() == 0);
@@ -8040,6 +8039,46 @@ TEST_CASE("[SceneTree][TextEdit] small height value") {
 
 	text_edit->set_v_scroll(100);
 	CHECK(text_edit->get_v_scroll() < 3);
+
+	memdelete(text_edit);
+}
+
+TEST_CASE("[SceneTree][TextEdit] fit content scrollbar behavior") {
+	TextEdit *text_edit = memnew(TextEdit);
+	SceneTree::get_singleton()->get_root()->add_child(text_edit);
+
+	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+	text_edit->set_fit_content_width_enabled(true);
+	text_edit->set_fit_content_height_enabled(true);
+
+	const String long_line = "0123456789012345678901234567890123456789012345678901234567890123456789";
+	String content;
+	for (int i = 0; i < 40; i++) {
+		if (i > 0) {
+			content += "\n";
+		}
+		content += long_line;
+	}
+	text_edit->set_text(content);
+	MessageQueue::get_singleton()->flush();
+
+	SUBCASE("[TextEdit] fit content without maximum size") {
+		text_edit->set_custom_maximum_size(Size2(-1, -1));
+		text_edit->set_size(text_edit->get_combined_minimum_size());
+		MessageQueue::get_singleton()->flush();
+
+		CHECK_FALSE(text_edit->get_h_scroll_bar()->is_visible());
+		CHECK_FALSE(text_edit->get_v_scroll_bar()->is_visible());
+	}
+
+	SUBCASE("[TextEdit] fit content with maximum size") {
+		text_edit->set_custom_maximum_size(Size2(180, 120));
+		text_edit->set_size(text_edit->get_combined_maximum_size());
+		MessageQueue::get_singleton()->flush();
+
+		CHECK(text_edit->get_h_scroll_bar()->is_visible());
+		CHECK(text_edit->get_v_scroll_bar()->is_visible());
+	}
 
 	memdelete(text_edit);
 }

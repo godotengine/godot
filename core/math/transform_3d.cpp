@@ -150,6 +150,7 @@ Transform3D Transform3D::translated_local(const Vector3 &p_translation) const {
 }
 
 void Transform3D::orthonormalize() {
+	// Orthonormalizable check is done in Basis class below.
 	basis.orthonormalize();
 }
 

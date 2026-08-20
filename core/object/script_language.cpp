@@ -30,11 +30,12 @@
 
 #include "script_language.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/sort_array.h"
 
@@ -162,7 +163,6 @@ PropertyInfo Script::get_class_category() const {
 void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);
 	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
-	ClassDB::bind_method(D_METHOD("instance_has", "base_object"), &Script::instance_has);
 	ClassDB::bind_method(D_METHOD("has_source_code"), &Script::has_source_code);
 	ClassDB::bind_method(D_METHOD("get_source_code"), &Script::get_source_code);
 	ClassDB::bind_method(D_METHOD("set_source_code", "source"), &Script::set_source_code);
@@ -172,6 +172,7 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_global_name"), &Script::get_global_name);
 
+	ClassDB::bind_method(D_METHOD("has_script_method", "method_name"), &Script::has_method);
 	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
 
 	ClassDB::bind_method(D_METHOD("get_script_property_list"), &Script::_get_script_property_list);
@@ -185,32 +186,25 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::_get_rpc_config_bind);
 
+#ifndef DISABLE_DEPRECATED
+	GODOT_PUSH_IGNORE_DEPRECATION();
+
+	ClassDB::bind_method(D_METHOD("instance_has", "base_object"), &Script::instance_has);
+
+	GODOT_POP_IGNORE_DEPRECATION();
+#endif // !DISABLE_DEPRECATED
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
 
 void Script::reload_from_file() {
 #ifdef TOOLS_ENABLED
-	// Replicates how the ScriptEditor reloads script resources, which generally handles it.
-	// However, when scripts are to be reloaded but aren't open in the internal editor, we go through here instead.
-	const Ref<Script> rel = ResourceLoader::load(ResourceLoader::path_remap(get_path()), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-	if (rel.is_null()) {
-		return;
+	if (Engine::get_singleton()->is_editor_hint() && is_tool()) {
+		get_language()->reload_tool_script(this);
+	} else {
+		Array scripts = { this };
+		get_language()->reload_scripts(scripts);
 	}
-
-	set_source_code(rel->get_source_code());
-	set_last_modified_time(rel->get_last_modified_time());
-
-	// Only reload the script when there are no compilation errors to prevent printing the error messages twice.
-	if (rel->is_valid()) {
-		if (Engine::get_singleton()->is_editor_hint() && is_tool()) {
-			get_language()->reload_tool_script(this, true);
-		} else {
-			// It's important to set p_keep_state to true in order to manage reloading scripts
-			// that are currently instantiated.
-			reload(true);
-		}
-	}
-
 #else
 	Resource::reload_from_file();
 #endif
@@ -588,43 +582,6 @@ Vector<Ref<ScriptBacktrace>> ScriptServer::capture_script_backtraces(bool p_incl
 }
 
 ////////////////////
-
-void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const {
-	p_core_type_words->push_back("String");
-	p_core_type_words->push_back("Vector2");
-	p_core_type_words->push_back("Vector2i");
-	p_core_type_words->push_back("Rect2");
-	p_core_type_words->push_back("Rect2i");
-	p_core_type_words->push_back("Vector3");
-	p_core_type_words->push_back("Vector3i");
-	p_core_type_words->push_back("Transform2D");
-	p_core_type_words->push_back("Vector4");
-	p_core_type_words->push_back("Vector4i");
-	p_core_type_words->push_back("Plane");
-	p_core_type_words->push_back("Quaternion");
-	p_core_type_words->push_back("AABB");
-	p_core_type_words->push_back("Basis");
-	p_core_type_words->push_back("Transform3D");
-	p_core_type_words->push_back("Projection");
-	p_core_type_words->push_back("Color");
-	p_core_type_words->push_back("StringName");
-	p_core_type_words->push_back("NodePath");
-	p_core_type_words->push_back("RID");
-	p_core_type_words->push_back("Callable");
-	p_core_type_words->push_back("Signal");
-	p_core_type_words->push_back("Dictionary");
-	p_core_type_words->push_back("Array");
-	p_core_type_words->push_back("PackedByteArray");
-	p_core_type_words->push_back("PackedInt32Array");
-	p_core_type_words->push_back("PackedInt64Array");
-	p_core_type_words->push_back("PackedFloat32Array");
-	p_core_type_words->push_back("PackedFloat64Array");
-	p_core_type_words->push_back("PackedStringArray");
-	p_core_type_words->push_back("PackedVector2Array");
-	p_core_type_words->push_back("PackedVector3Array");
-	p_core_type_words->push_back("PackedColorArray");
-	p_core_type_words->push_back("PackedVector4Array");
-}
 
 void ScriptLanguage::frame() {
 }

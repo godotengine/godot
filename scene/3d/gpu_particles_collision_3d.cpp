@@ -33,6 +33,7 @@
 #include "core/math/geometry_3d.h"
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/main/viewport.h"
@@ -329,7 +330,7 @@ void GPUParticlesCollisionSDF3D::_find_closest_distance(const Vector3 &p_pos, co
 		bool pass = true;
 		if (!p_bvh[p_bvh_cell].bounds.has_point(p_pos)) {
 			//outside, find closest point
-			Vector3 he = p_bvh[p_bvh_cell].bounds.size * 0.5;
+			Vector3 he = p_bvh[p_bvh_cell].bounds.size * 0.5f;
 			Vector3 center = p_bvh[p_bvh_cell].bounds.position + he;
 
 			Vector3 rel = (p_pos - center).abs();

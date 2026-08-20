@@ -53,7 +53,6 @@
 // As some data is setup before we start rendering, and cleaned up
 // after we've stopped, that is accessed directly from both threads.
 
-#include "action_map/openxr_action_map.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 
@@ -170,6 +169,9 @@ public:
 
 	bool get_foveation_dynamic() const;
 	void set_foveation_dynamic(bool p_foveation_dynamic);
+
+	bool get_foveation_with_subsampled_images() const;
+	void set_foveation_with_subsampled_images(bool p_enabled);
 
 	float get_vrs_min_radius() const;
 	void set_vrs_min_radius(float p_vrs_min_radius);

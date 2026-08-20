@@ -31,11 +31,11 @@
 #include "history_dock.h"
 
 #include "core/io/config_file.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/settings/editor_command_palette.h"
-#include "editor/settings/editor_settings.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/item_list.h"
 
@@ -270,7 +270,7 @@ HistoryDock::HistoryDock() {
 	global_history_checkbox->connect(SceneStringName(toggled), callable_mp(this, &HistoryDock::refresh_history).unbind(1));
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_theme_type_variation("NoBorderBottomPanel");
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	main_vb->add_child(mc);
 

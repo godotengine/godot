@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
+#include "core/variant/type_info.h"
 
 class UndoRedo : public Object {
 	GDCLASS(UndoRedo, Object);
@@ -86,7 +86,7 @@ private:
 	int merge_total = 0;
 
 	void _pop_history_tail();
-	void _process_operation_list(List<Operation>::Element *E, bool p_execute);
+	void _process_operation_list(List<Operation>::Element *r_elements, bool p_execute);
 	void _discard_redo();
 	bool _redo(bool p_execute);
 

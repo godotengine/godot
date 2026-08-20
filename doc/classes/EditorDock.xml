@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorDock" inherits="MarginContainer" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorDock" inherits="MarginContainer" api_type="editor" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Dockable container for the editor.
 	</brief_description>
@@ -50,13 +50,25 @@
 				Implement this method to handle saving this dock's layout. It's equivalent to [method EditorPlugin._get_window_layout]. [param section] is a unique section based on [member layout_key].
 			</description>
 		</method>
-		<method name="_update_layout" qualifiers="virtual">
+		<method name="_update_layout" qualifiers="virtual" deprecated="Use [method _update_layout_and_slot] instead.">
 			<return type="void" />
 			<param index="0" name="layout" type="int" />
 			<description>
 				Implement this method to handle the layout switching for this dock. [param layout] is one of the [enum DockLayout] constants.
 				[codeblock]
 				func _update_layout(layout):
+					box_container.vertical = (layout == DOCK_LAYOUT_VERTICAL)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="_update_layout_and_slot" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="layout" type="int" />
+			<param index="1" name="slot" type="int" />
+			<description>
+				Implement this method to handle the layout/slot switching for this dock. [param layout] is one of the [enum DockLayout] constants, and [param slot] is one of the [enum DockSlot] ones.
+				[codeblock]
+				func _update_layout_and_slot(layout, slot):
 					box_container.vertical = (layout == DOCK_LAYOUT_VERTICAL)
 				[/codeblock]
 			</description>
@@ -82,6 +94,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_region" type="bool" setter="set_accessibility_region" getter="is_accessibility_region" overrides="Container" default="true" />
 		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="5">
 			The available layouts for this dock, as a bitmask. By default, the dock allows vertical and floating layouts.
 		</member>

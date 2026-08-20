@@ -32,97 +32,30 @@
 
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
-#include "editor/settings/editor_settings.h"
 #include "gdscript_language_protocol.h"
 #include "gdscript_workspace.h"
 
-int get_indent_size() {
-	if (EditorSettings::get_singleton()) {
-		return EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
-	} else {
-		return 4;
-	}
-}
-
-LSP::Position GodotPosition::to_lsp(const Vector<String> &p_lines) const {
+LSP::Position GodotPosition::to_lsp() const {
 	LSP::Position res;
-
-	// Special case: `line = 0` -> root class (range covers everything).
-	if (line <= 0) {
-		return res;
-	}
-	// Special case: `line = p_lines.size() + 1` -> root class (range covers everything).
-	if (line >= p_lines.size() + 1) {
-		res.line = p_lines.size();
-		return res;
-	}
 	res.line = line - 1;
-
-	// Special case: `column = 0` -> Starts at beginning of line.
-	if (column <= 0) {
-		return res;
-	}
-
-	// Note: character outside of `pos_line.length()-1` is valid.
 	res.character = column - 1;
-
-	String pos_line = p_lines[res.line];
-	if (pos_line.contains_char('\t')) {
-		int tab_size = get_indent_size();
-
-		int in_col = 1;
-		int res_char = 0;
-
-		while (res_char < pos_line.size() && in_col < column) {
-			if (pos_line[res_char] == '\t') {
-				in_col += tab_size;
-				res_char++;
-			} else {
-				in_col++;
-				res_char++;
-			}
-		}
-
-		res.character = res_char;
-	}
-
 	return res;
 }
 
-GodotPosition GodotPosition::from_lsp(const LSP::Position p_pos, const Vector<String> &p_lines) {
-	GodotPosition res(p_pos.line + 1, p_pos.character + 1);
-
-	// Line outside of actual text is valid (-> pos/cursor at end of text).
-	if (res.line > p_lines.size()) {
-		return res;
-	}
-
-	String line = p_lines[p_pos.line];
-	int tabs_before_char = 0;
-	for (int i = 0; i < p_pos.character && i < line.length(); i++) {
-		if (line[i] == '\t') {
-			tabs_before_char++;
-		}
-	}
-
-	if (tabs_before_char > 0) {
-		int tab_size = get_indent_size();
-		res.column += tabs_before_char * (tab_size - 1);
-	}
-
-	return res;
+GodotPosition GodotPosition::from_lsp(const LSP::Position p_pos) {
+	return GodotPosition(p_pos.line + 1, p_pos.character + 1);
 }
 
-LSP::Range GodotRange::to_lsp(const Vector<String> &p_lines) const {
+LSP::Range GodotRange::to_lsp() const {
 	LSP::Range res;
-	res.start = start.to_lsp(p_lines);
-	res.end = end.to_lsp(p_lines);
+	res.start = start.to_lsp();
+	res.end = end.to_lsp();
 	return res;
 }
 
-GodotRange GodotRange::from_lsp(const LSP::Range &p_range, const Vector<String> &p_lines) {
-	GodotPosition start = GodotPosition::from_lsp(p_range.start, p_lines);
-	GodotPosition end = GodotPosition::from_lsp(p_range.end, p_lines);
+GodotRange GodotRange::from_lsp(const LSP::Range &p_range) {
+	GodotPosition start = GodotPosition::from_lsp(p_range.start);
+	GodotPosition end = GodotPosition::from_lsp(p_range.end);
 	return GodotRange(start, end);
 }
 
@@ -140,7 +73,7 @@ void ExtendGDScriptParser::update_diagnostics() {
 				GodotPosition(error.start_line, error.start_column),
 				GodotPosition(error.end_line, error.end_column));
 
-		diagnostic.range = godot_range.to_lsp(get_lines());
+		diagnostic.range = godot_range.to_lsp();
 		diagnostics.push_back(diagnostic);
 	}
 
@@ -155,7 +88,7 @@ void ExtendGDScriptParser::update_diagnostics() {
 				GodotPosition(warning.start_line, warning.start_column),
 				GodotPosition(warning.end_line, warning.end_column));
 
-		diagnostic.range = godot_range.to_lsp(get_lines());
+		diagnostic.range = godot_range.to_lsp();
 		diagnostics.push_back(diagnostic);
 	}
 }
@@ -203,10 +136,9 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 				bool exists = fs->file_exists(scr_path);
 
 				if (exists) {
-					String value = const_val;
 					LSP::DocumentLink link;
 					link.target = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(scr_path);
-					link.range = GodotRange(GodotPosition(token.start_line, token.start_column), GodotPosition(token.end_line, token.end_column)).to_lsp(lines);
+					link.range = GodotRange(GodotPosition(token.start_line, token.start_column), GodotPosition(token.end_line, token.end_column)).to_lsp();
 					document_links.push_back(link);
 				}
 			}
@@ -217,7 +149,7 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 LSP::Range ExtendGDScriptParser::range_of_node(const GDScriptParser::Node *p_node) const {
 	GodotPosition start(p_node->start_line, p_node->start_column);
 	GodotPosition end(p_node->end_line, p_node->end_column);
-	return GodotRange(start, end).to_lsp(lines);
+	return GodotRange(start, end).to_lsp();
 }
 
 void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p_class, LSP::DocumentSymbol &r_symbol) {
@@ -322,8 +254,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.script_path = path;
 
 				symbol.detail = "const " + symbol.name;
-				if (m.constant->get_datatype().is_hard_type()) {
-					symbol.detail += ": " + m.constant->get_datatype().to_string();
+				if (m.constant->type_constraint.is_hard_type()) {
+					symbol.detail += ": " + m.constant->type_constraint.to_string();
 				}
 
 				const Variant &default_value = m.constant->initializer->reduced_value;
@@ -380,8 +312,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					param_symbol.uri = uri;
 					param_symbol.script_path = path;
 					param_symbol.detail = "var " + param_symbol.name;
-					if (param->get_datatype().is_hard_type()) {
-						param_symbol.detail += ": " + param->get_datatype().to_string();
+					if (param->type_constraint.is_hard_type()) {
+						param_symbol.detail += ": " + param->type_constraint.to_string();
 					}
 					symbol.children.push_back(param_symbol);
 				}
@@ -393,8 +325,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.name = m.enum_value.identifier->name;
 				symbol.kind = LSP::SymbolKind::EnumMember;
 				symbol.deprecated = false;
-				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.start_column).to_lsp(lines);
-				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.end_column).to_lsp(lines);
+				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.start_column).to_lsp();
+				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.end_column).to_lsp();
 				symbol.selectionRange = range_of_node(m.enum_value.identifier);
 				symbol.documentation = m.enum_value.doc_data.description;
 				symbol.uri = uri;
@@ -429,8 +361,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					child.name = value.identifier->name;
 					child.kind = LSP::SymbolKind::EnumMember;
 					child.deprecated = false;
-					child.range.start = GodotPosition(value.line, value.start_column).to_lsp(lines);
-					child.range.end = GodotPosition(value.line, value.end_column).to_lsp(lines);
+					child.range.start = GodotPosition(value.line, value.start_column).to_lsp();
+					child.range.end = GodotPosition(value.line, value.end_column).to_lsp();
 					child.selectionRange = range_of_node(value.identifier);
 					child.documentation = value.doc_data.description;
 					child.uri = uri;
@@ -491,8 +423,8 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			parameters += ", ";
 		}
 		parameters += String(parameter->identifier->name);
-		if (parameter->get_datatype().is_hard_type()) {
-			parameters += ": " + parameter->get_datatype().to_string();
+		if (parameter->type_constraint.is_hard_type()) {
+			parameters += ": " + parameter->type_constraint.to_string();
 		}
 		if (parameter->initializer != nullptr) {
 			parameters += " = " + parameter->initializer->reduced_value.to_json_string();
@@ -503,11 +435,11 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			parameters += ", ";
 		}
 		const ParameterNode *rest_param = p_func->rest_parameter;
-		parameters += "..." + rest_param->identifier->name + ": " + rest_param->get_datatype().to_string();
+		parameters += "..." + rest_param->identifier->name + ": " + rest_param->type_constraint.to_string();
 	}
 	r_symbol.detail += parameters + ")";
 
-	const DataType return_type = p_func->get_datatype();
+	const DataType return_type = p_func->return_type_constraint;
 	if (return_type.is_hard_type()) {
 		if (return_type.kind == DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
 			r_symbol.detail += " -> void";
@@ -604,8 +536,8 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 					break;
 				default:
 					// Fallback.
-					symbol.range.start = GodotPosition(local.start_line, local.start_column).to_lsp(get_lines());
-					symbol.range.end = GodotPosition(local.end_line, local.end_column).to_lsp(get_lines());
+					symbol.range.start = GodotPosition(local.start_line, local.start_column).to_lsp();
+					symbol.range.end = GodotPosition(local.end_line, local.end_column).to_lsp();
 					symbol.selectionRange = symbol.range;
 					break;
 			}
@@ -699,13 +631,28 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const LSP::Position &p_c
 	return longthing;
 }
 
-String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &p_position, LSP::Range &r_range) const {
+String ExtendGDScriptParser::get_symbol_name_under_position(const LSP::Position &p_position, LSP::Range &r_range) const {
+	r_range = LSP::Range(p_position, p_position); // Default for error macros.
 	ERR_FAIL_INDEX_V(p_position.line, lines.size(), "");
+
 	String line = lines[p_position.line];
 	if (line.is_empty()) {
 		return "";
 	}
+	// Checks against line.size(), which includes a terminating NUL. This is to allow a cursor after the last character.
 	ERR_FAIL_INDEX_V(p_position.character, line.size(), "");
+
+	LSP::Position pos = p_position;
+
+	// Cursor after last character.
+	if (pos.character >= line.length()) {
+		pos.character--;
+	}
+
+	// If on the start of an annotation move the position into the identifier part. We account for "@" at the end.
+	if (line[pos.character] == '@' && pos.character + 1 < line.size() && is_unicode_identifier_start(line[pos.character + 1])) {
+		pos.character++;
+	}
 
 	// `p_position` cursor is BETWEEN chars, not ON chars.
 	// ->
@@ -718,51 +665,54 @@ String ExtendGDScriptParser::get_identifier_under_position(const LSP::Position &
 	//           |
 	//           | cursor on `member`, pos on ` ` (space)
 	// ```
-	// -> Move position to previous character if:
-	//    * Position not on valid identifier char.
-	//    * Prev position is valid identifier char.
-	LSP::Position pos = p_position;
-	if (
-			pos.character >= line.length() // Cursor at end of line.
-			|| (!is_unicode_identifier_continue(line[pos.character]) // Not on valid identifier char.
-					   && (pos.character > 0 // Not line start -> there is a prev char.
-								  && is_unicode_identifier_continue(line[pos.character - 1]) // Prev is valid identifier char.
-								  ))) {
+	if (!is_unicode_identifier_continue(line[pos.character])) {
+		if (pos.character == 0 || !is_unicode_identifier_continue(line[pos.character - 1])) {
+			// In between two non-identifier chars.
+			return "";
+		}
+		//  Move position to previous character if not on valid char and the previous char is valid.
 		pos.character--;
 	}
 
-	int start_pos = pos.character;
+	// Iterate forward till we have a start. Symbol starts require lookahead, so we save the latest valid start and track back to it once we can stop looking.
+	// E.g. ?0nly
+	//        ^
+	//        | could be an identifier start (since 0 can't start identifiers), but if there was another symbol in front of 0 the identifier would be longer.
+	int last_valid_start_pos = -1;
 	for (int c = pos.character; c >= 0; c--) {
-		start_pos = c;
 		char32_t ch = line[c];
-		bool valid_char = is_unicode_identifier_continue(ch);
-		if (!valid_char) {
+		if (is_unicode_identifier_start(ch)) {
+			last_valid_start_pos = c;
+		}
+		if (!is_unicode_identifier_continue(ch)) {
 			break;
 		}
 	}
 
-	int end_pos = pos.character;
+	// Iterate backwards till we have an end. No lookahead required. Uses +1 since the end of a range is exclusive.
+	int end_pos = pos.character + 1;
 	for (int c = pos.character; c < line.length(); c++) {
 		char32_t ch = line[c];
-		bool valid_char = is_unicode_identifier_continue(ch);
-		if (!valid_char) {
+		if (!is_unicode_identifier_continue(ch)) {
 			break;
 		}
-		end_pos = c;
+		end_pos = c + 1;
 	}
 
-	if (!is_unicode_identifier_start(line[start_pos + 1])) {
+	if (last_valid_start_pos == -1) {
 		return "";
 	}
 
-	if (start_pos < end_pos) {
-		r_range.start.line = r_range.end.line = pos.line;
-		r_range.start.character = start_pos + 1;
-		r_range.end.character = end_pos + 1;
-		return line.substr(start_pos + 1, end_pos - start_pos);
+	// For annotations we include the @, since it is included in the symbol name used by other parts of the LSP code.
+	int start_pos = last_valid_start_pos;
+	if (start_pos > 0 && line[start_pos - 1] == '@') {
+		start_pos -= 1;
 	}
 
-	return "";
+	r_range.start.character = start_pos;
+	r_range.end.character = end_pos;
+
+	return line.substr(start_pos, end_pos - start_pos);
 }
 
 String ExtendGDScriptParser::get_uri() const {
@@ -863,13 +813,13 @@ Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::Functio
 	ERR_FAIL_NULL_V(p_func, Dictionary());
 	Dictionary func;
 	func["name"] = p_func->identifier->name;
-	func["return_type"] = p_func->get_datatype().to_string();
+	func["return_type"] = p_func->return_type_constraint.to_string();
 	func["rpc_config"] = p_func->rpc_config;
 	Array parameters;
 	for (int i = 0; i < p_func->parameters.size(); i++) {
 		Dictionary arg;
 		arg["name"] = p_func->parameters[i]->identifier->name;
-		arg["type"] = p_func->parameters[i]->get_datatype().to_string();
+		arg["type"] = p_func->parameters[i]->type_constraint.to_string();
 		if (p_func->parameters[i]->initializer != nullptr) {
 			arg["default_value"] = p_func->parameters[i]->initializer->reduced_value;
 		}
@@ -919,7 +869,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 				Dictionary api;
 				api["name"] = m.constant->identifier->name;
 				api["value"] = m.constant->initializer->reduced_value;
-				api["data_type"] = m.constant->get_datatype().to_string();
+				api["data_type"] = m.constant->type_constraint.to_string();
 				if (const LSP::DocumentSymbol *symbol = get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.constant->start_line))) {
 					api["signature"] = symbol->detail;
 					api["description"] = symbol->documentation;
@@ -956,7 +906,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 			case ClassNode::Member::VARIABLE: {
 				Dictionary api;
 				api["name"] = m.variable->identifier->name;
-				api["data_type"] = m.variable->get_datatype().to_string();
+				api["data_type"] = m.variable->type_constraint.to_string();
 				api["default_value"] = m.variable->initializer != nullptr ? m.variable->initializer->reduced_value : Variant();
 				api["setter"] = m.variable->setter ? ("@" + String(m.variable->identifier->name) + "_setter") : (m.variable->setter_pointer != nullptr ? String(m.variable->setter_pointer->name) : String());
 				api["getter"] = m.variable->getter ? ("@" + String(m.variable->identifier->name) + "_getter") : (m.variable->getter_pointer != nullptr ? String(m.variable->getter_pointer->name) : String());

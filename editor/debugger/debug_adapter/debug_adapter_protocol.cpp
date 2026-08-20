@@ -34,6 +34,8 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/debugger/debug_adapter/debug_adapter_parser.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_log.h"
@@ -122,10 +124,7 @@ Error DAPeer::send_data() {
 		int data_sent = 0;
 		while (data_sent < formatted_data.size()) {
 			int curr_sent = 0;
-			Error err = connection->put_partial_data(formatted_data.ptr() + data_sent, formatted_data.size() - data_sent, curr_sent);
-			if (err != OK) {
-				return err;
-			}
+			RETURN_IF_ERROR(connection->put_partial_data(formatted_data.ptr() + data_sent, formatted_data.size() - data_sent, curr_sent));
 			data_sent += curr_sent;
 		}
 		res_queue.pop_front();

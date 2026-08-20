@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInterface" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorInterface" inherits="Object" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's interface.
 	</brief_description>
@@ -223,6 +223,13 @@
 				Returns the editor's [EditorResourcePreview] instance.
 			</description>
 		</method>
+		<method name="get_scene_paint_2d" qualifiers="const">
+			<return type="ScenePaint2DEditor" />
+			<description>
+				Returns the editor's [ScenePaint2DEditor] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
 		<method name="get_script_editor" qualifiers="const">
 			<return type="ScriptEditor" />
 			<description>
@@ -255,6 +262,12 @@
 			<param index="2" name="inspector_only" type="bool" default="false" />
 			<description>
 				Shows the given property on the given [param object] in the editor's Inspector dock. If [param inspector_only] is [code]true[/code], plugins will not attempt to edit [param object].
+			</description>
+		</method>
+		<method name="is_exiting" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the editor is currently exiting.
 			</description>
 		</method>
 		<method name="is_multi_window_enabled" qualifiers="const">
@@ -450,7 +463,7 @@
 			<return type="void" />
 			<param index="0" name="scene_filepath" type="String" />
 			<description>
-				Reloads the scene at the given path.
+				Reloads the scene at the given path. Fails if the scene is not open.
 			</description>
 		</method>
 		<method name="restart_editor">
@@ -500,7 +513,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], [code]Game[/code], or [code]AssetLib[/code] for default tabs).
+				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the title of the tab in question exactly (e.g. [code]2D[/code], [code]3D[/code], [code skip-lint]Script[/code], [code]Game[/code], or [code]Asset Store[/code] for default tabs).
 			</description>
 		</method>
 		<method name="set_object_edited">

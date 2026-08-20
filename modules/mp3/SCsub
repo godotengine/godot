@@ -11,3 +11,6 @@ if not env["mp3_extra_formats"]:
 
 # Godot source files
 env_mp3.add_source_files(env.modules_sources, "*.cpp")
+
+if env.editor_build:
+    env_mp3.add_source_files(env.modules_sources, "editor/*.cpp")

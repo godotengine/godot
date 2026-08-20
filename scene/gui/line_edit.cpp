@@ -31,14 +31,16 @@
 #include "line_edit.h"
 #include "line_edit.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/alt_codes.h"
-#include "core/string/translation_server.h"
 #include "scene/gui/label.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -1212,6 +1214,15 @@ void LineEdit::_accessibility_action_menu(const Variant &p_data) {
 	menu->grab_focus();
 }
 
+String LineEdit::_get_accessibility_name() const {
+	const String &ac_name = Control::_get_accessibility_name();
+	if (!placeholder.is_empty() && ac_name.is_empty()) {
+		return atr(placeholder);
+	} else {
+		return ac_name;
+	}
+}
+
 void LineEdit::_notification(int p_what) {
 	switch (p_what) {
 #ifdef TOOLS_ENABLED
@@ -1239,9 +1250,6 @@ void LineEdit::_notification(int p_what) {
 			bool using_placeholder = text.is_empty() && ime_text.is_empty();
 			if (using_placeholder && !placeholder.is_empty()) {
 				AccessibilityServer::get_singleton()->update_set_placeholder(ae, atr(placeholder));
-			}
-			if (!placeholder.is_empty() && get_accessibility_name().is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, atr(placeholder));
 			}
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, !editable);
 
@@ -1678,6 +1686,8 @@ void LineEdit::_notification(int p_what) {
 			if (editing) {
 				unedit();
 				emit_signal(SNAME("editing_toggled"), false);
+			} else if (deselect_on_focus_loss_enabled && !selection.drag_attempt) {
+				deselect();
 			}
 		} break;
 
@@ -2267,6 +2277,7 @@ void LineEdit::set_placeholder(String p_text) {
 	placeholder_translated = atr(placeholder);
 	_shape();
 	queue_redraw();
+	update_configuration_warnings();
 }
 
 String LineEdit::get_placeholder() const {

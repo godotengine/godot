@@ -31,10 +31,14 @@
 #include "import_dock.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -60,7 +64,6 @@ public:
 			values[p_name] = p_value;
 			if (checking) {
 				checked.insert(p_name);
-				notify_property_list_changed();
 			}
 			return true;
 		}
@@ -687,7 +690,7 @@ void ImportDock::_reimport() {
 	}
 
 	EditorFileSystem::get_singleton()->reimport_files(params->paths);
-	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed")); //it changed, so force emitting the signal
+	EditorFileSystem::get_singleton()->filesystem_changed(); // It changed, so force emitting the signal.
 
 	_set_dirty(false);
 }
@@ -781,7 +784,7 @@ ImportDock::ImportDock() {
 	hb->add_child(preset);
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_theme_type_variation("NoBorderPanel");
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	content->add_child(mc);
 

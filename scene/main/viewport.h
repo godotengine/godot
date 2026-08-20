@@ -33,6 +33,7 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "servers/display/display_server_enums.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class AudioListener2D;
 class Camera2D;
@@ -102,6 +103,7 @@ public:
 		SCALING_3D_MODE_FSR2,
 		SCALING_3D_MODE_METALFX_SPATIAL,
 		SCALING_3D_MODE_METALFX_TEMPORAL,
+		SCALING_3D_MODE_NEAREST,
 		SCALING_3D_MODE_MAX
 	};
 
@@ -183,6 +185,8 @@ public:
 		DEBUG_DRAW_OCCLUDERS,
 		DEBUG_DRAW_MOTION_VECTORS,
 		DEBUG_DRAW_INTERNAL_BUFFER,
+		DEBUG_DRAW_CLUSTER_AREA_LIGHTS,
+		DEBUG_DRAW_AREA_LIGHT_ATLAS,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -190,6 +194,7 @@ public:
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS,
+		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE,
 		DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX
 	};
 
@@ -197,6 +202,7 @@ public:
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR,
+		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE,
 		DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX,
 	};
 
@@ -283,6 +289,8 @@ private:
 
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
+	bool propagate_shortcuts_to_parent = false;
+	bool shortcut_use_focus_owner = true;
 
 	Ref<World2D> world_2d;
 
@@ -418,7 +426,12 @@ private:
 	} gui;
 
 	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	mutable RenderingServerEnums::CanvasItemTextureFilter default_canvas_item_texture_filter_cache = RenderingServerEnums::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+	void _refresh_texture_filter_cache() const;
+
 	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	mutable RenderingServerEnums::CanvasItemTextureRepeat default_canvas_item_texture_repeat_cache = RenderingServerEnums::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	void _refresh_texture_repeat_cache() const;
 
 	bool disable_input = false;
 	bool disable_input_override = false;
@@ -433,6 +446,7 @@ private:
 	void _perform_drop(Control *p_control = nullptr);
 	void _gui_cleanup_internal_state(Ref<InputEvent> p_event);
 
+	void _push_shortcut_input_internal(const Ref<InputEvent> &p_event);
 	void _push_unhandled_input_internal(const Ref<InputEvent> &p_event);
 
 	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);
@@ -616,9 +630,9 @@ public:
 
 	void _push_text_input(const String &p_text, bool p_emit_text_changed_signal = false);
 	void push_text_input(const String &p_text);
-	void push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
+	void push_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
 #ifndef DISABLE_DEPRECATED
-	void push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
+	void push_unhandled_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
 #endif // DISABLE_DEPRECATED
 	void notify_mouse_entered();
 	void notify_mouse_exited();
@@ -676,6 +690,9 @@ public:
 	void set_handle_input_locally(bool p_enable);
 	bool is_handling_input_locally() const;
 
+	void set_propagate_shortcuts_to_parent(bool p_enable);
+	bool gui_shortcut_use_focus_owner() const;
+
 	bool gui_is_dragging() const;
 	bool gui_is_drag_successful() const;
 	void gui_cancel_drag();
@@ -692,8 +709,14 @@ public:
 	void set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter);
 	DefaultCanvasItemTextureFilter get_default_canvas_item_texture_filter() const;
 
+	void _update_texture_filter_changed(bool p_propagate);
+	RenderingServerEnums::CanvasItemTextureFilter get_texture_filter_in_tree() const;
+
 	void set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat);
 	DefaultCanvasItemTextureRepeat get_default_canvas_item_texture_repeat() const;
+
+	void _update_texture_repeat_changed(bool p_propagate);
+	RenderingServerEnums::CanvasItemTextureRepeat get_texture_repeat_in_tree() const;
 
 	// VRS
 

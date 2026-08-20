@@ -30,9 +30,8 @@
 
 #include "render_data_extension.h"
 
+#include "core/object/class_db.h" // IWYU pragma: keep. `GDVIRTUAL_BIND` macro.
 #include "servers/rendering/rendering_server.h" // IWYU pragma: keep // Needed to bind RSE enums.
-
-#include "core/object/class_db.h"
 
 // RenderSceneBuffersExtension
 

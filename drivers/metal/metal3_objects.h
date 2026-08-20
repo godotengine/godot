@@ -50,8 +50,7 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
-#include "metal_objects_shared.h"
-
+#include "drivers/metal/metal_objects_shared.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
@@ -348,7 +347,7 @@ public:
 		MDRenderPipeline *pipeline = nullptr;
 		LocalVector<RDD::RenderPassClearValue> clear_values;
 		uint32_t current_subpass = UINT32_MAX;
-		Rect2i render_area = {};
+		Rect2i render_area;
 		bool is_rendering_entire_area = false;
 		NS::SharedPtr<MTL::RenderPassDescriptor> desc;
 		NS::SharedPtr<MTL::RenderCommandEncoder> encoder;
@@ -405,7 +404,7 @@ public:
 			dirty.set_flag(DirtyFlag::DIRTY_UNIFORMS);
 		}
 
-		_FORCE_INLINE_ void mark_uniforms_dirty(void) {
+		_FORCE_INLINE_ void mark_uniforms_dirty() {
 			if (uniform_sets.is_empty()) {
 				return;
 			}
@@ -478,7 +477,7 @@ public:
 		_FORCE_INLINE_ void reset();
 		void end_encoding();
 
-		_FORCE_INLINE_ void mark_uniforms_dirty(void) {
+		_FORCE_INLINE_ void mark_uniforms_dirty() {
 			if (uniform_sets.is_empty()) {
 				return;
 			}

@@ -31,22 +31,19 @@
 #pragma once
 
 #include "test_gltf.h"
-#include "tests/test_macros.h"
 
 #ifdef TOOLS_ENABLED
 
-#include "core/os/os.h"
+#include "../editor/editor_scene_importer_gltf.h"
+
 #include "editor/import/3d/resource_importer_scene.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/material.h"
-#include "scene/resources/packed_scene.h"
-
-#include "modules/gltf/editor/editor_scene_importer_gltf.h"
-#include "modules/gltf/gltf_document.h"
-#include "modules/gltf/gltf_state.h"
+#include "tests/test_macros.h"
 
 namespace TestGltf {
 

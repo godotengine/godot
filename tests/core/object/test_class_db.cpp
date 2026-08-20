@@ -497,7 +497,7 @@ void validate_class(const Context &p_context, const ExposedClass &p_exposed_clas
 	}
 
 	TEST_FAIL_COND((is_derived_type && !p_context.exposed_classes.has(p_exposed_class.base)),
-			"Base type '", p_exposed_class.base.operator String(), "' does not exist, for class '", p_exposed_class.name, "'.");
+			"Base type '", p_exposed_class.base.string(), "' does not exist, for class '", p_exposed_class.name, "'.");
 
 	for (const PropertyData &F : p_exposed_class.properties) {
 		validate_property(p_context, p_exposed_class, F);
@@ -603,7 +603,7 @@ void add_exposed_classes(Context &r_context) {
 
 			PropertyInfo return_info = method_info.return_val;
 
-			MethodBind *m = method.is_virtual ? nullptr : ClassDB::get_method(class_name, method_info.name);
+			const MethodBind *m = method.is_virtual ? nullptr : ClassDB::get_method(class_name, method_info.name);
 
 			method.is_vararg = m && m->is_vararg();
 
@@ -711,12 +711,12 @@ void add_exposed_classes(Context &r_context) {
 
 		// Add signals
 
-		const AHashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const AHashMap<StringName, const MethodInfo *> &signal_map = class_info->gdtype->get_signal_map(true);
 
-		for (const KeyValue<StringName, MethodInfo> &K : signal_map) {
+		for (const KeyValue<StringName, const MethodInfo *> &K : signal_map) {
 			SignalData signal;
 
-			const MethodInfo &method_info = signal_map.get(K.key);
+			const MethodInfo &method_info = *signal_map.get(K.key);
 
 			signal.name = method_info.name;
 			TEST_FAIL_COND(!String(signal.name).is_valid_ascii_identifier(),
@@ -764,18 +764,18 @@ void add_exposed_classes(Context &r_context) {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(class_name, &constants, true);
 
-		const HashMap<StringName, ClassDB::ClassInfo::EnumInfo> &enum_map = class_info->enum_map;
+		const AHashMap<StringName, const GDType::EnumInfo *> &enum_map = class_info->gdtype->get_enum_map(true);
 
-		for (const KeyValue<StringName, ClassDB::ClassInfo::EnumInfo> &K : enum_map) {
+		for (const KeyValue<StringName, const GDType::EnumInfo *> &kv_enum : enum_map) {
 			EnumData enum_;
-			enum_.name = K.key;
+			enum_.name = kv_enum.key;
 
-			for (const StringName &E : K.value.constants) {
-				const StringName &constant_name = E;
+			for (const KeyValue<StringName, int64_t> &kv_case : kv_enum.value->values) {
+				const StringName &constant_name = kv_case.key;
 				TEST_FAIL_COND(String(constant_name).contains("::"),
 						"Enum constant contains '::', check bindings to remove the scope: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
-				int64_t *value = class_info->constant_map.getptr(constant_name);
+				const int64_t *value = class_info->gdtype->get_integer_constant_map(false).getptr(constant_name);
 				TEST_FAIL_COND(!value, "Missing enum constant value: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
 				constants.erase(constant_name);
@@ -789,7 +789,7 @@ void add_exposed_classes(Context &r_context) {
 
 			exposed_class.enums.push_back(enum_);
 
-			r_context.enum_types.push_back(String(class_name) + "." + String(K.key));
+			r_context.enum_types.push_back(String(class_name) + "." + String(kv_enum.key));
 		}
 
 		for (const String &E : constants) {
@@ -797,7 +797,7 @@ void add_exposed_classes(Context &r_context) {
 			TEST_FAIL_COND(constant_name.contains("::"),
 					"Constant contains '::', check bindings to remove the scope: '",
 					String(class_name), ".", constant_name, "'.");
-			int64_t *value = class_info->constant_map.getptr(StringName(E));
+			const int64_t *value = class_info->gdtype->get_integer_constant_map(false).getptr(StringName(E));
 			TEST_FAIL_COND(!value, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
 
 			ConstantData constant;

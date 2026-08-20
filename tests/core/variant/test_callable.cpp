@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_callable)
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
 

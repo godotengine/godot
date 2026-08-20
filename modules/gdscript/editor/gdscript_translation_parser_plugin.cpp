@@ -36,7 +36,7 @@
 #include "core/io/resource_loader.h"
 
 void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
-	GDScriptLanguage::get_singleton()->get_recognized_extensions(r_extensions);
+	r_extensions->push_back(GDScriptLanguage::get_singleton()->get_extension());
 }
 
 Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vector<String>> *r_translations) {
@@ -450,6 +450,7 @@ GDScriptEditorTranslationParserPlugin::GDScriptEditorTranslationParserPlugin() {
 	first_arg_patterns.insert("add_radio_check_item");
 	first_arg_patterns.insert("add_separator");
 	first_arg_patterns.insert("add_submenu_item");
+	first_arg_patterns.insert("add_submenu_node_item");
 
 	second_arg_patterns.insert("set_tab_title");
 	second_arg_patterns.insert("add_icon_check_item");

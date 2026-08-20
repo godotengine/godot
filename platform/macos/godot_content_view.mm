@@ -37,6 +37,7 @@
 #include "core/input/input.h"
 #include "core/input/input_event.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
 

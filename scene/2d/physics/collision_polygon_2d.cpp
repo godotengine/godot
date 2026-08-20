@@ -35,6 +35,7 @@
 #include "core/object/class_db.h"
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_object_2d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
 
@@ -42,9 +43,10 @@ void CollisionPolygon2D::_build_polygon() {
 	collision_object->shape_owner_clear_shapes(owner_id);
 
 	bool solids = build_mode == BUILD_SOLIDS;
+	const int polygon_size = polygon.size();
 
 	if (solids) {
-		if (polygon.size() < 3) {
+		if (polygon_size < 3) {
 			return;
 		}
 
@@ -58,19 +60,19 @@ void CollisionPolygon2D::_build_polygon() {
 		}
 
 	} else {
-		if (polygon.size() < 2) {
+		if (polygon_size < 2) {
 			return;
 		}
 
 		Ref<ConcavePolygonShape2D> concave = memnew(ConcavePolygonShape2D);
 
 		Vector<Vector2> segments;
-		segments.resize(polygon.size() * 2);
+		segments.resize(polygon_size * 2);
 		Vector2 *w = segments.ptrw();
 
-		for (int i = 0; i < polygon.size(); i++) {
+		for (int i = 0; i < polygon_size; i++) {
 			w[(i << 1) + 0] = polygon[i];
-			w[(i << 1) + 1] = polygon[(i + 1) % polygon.size()];
+			w[(i << 1) + 1] = polygon[(i + 1) % polygon_size];
 		}
 
 		concave->set_segments(segments);
@@ -167,6 +169,10 @@ void CollisionPolygon2D::_notification(int p_what) {
 
 				draw_primitive(pts, cols, Vector<Vector2>()); //small arrow
 			}
+		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			queue_redraw();
 		} break;
 	}
 }

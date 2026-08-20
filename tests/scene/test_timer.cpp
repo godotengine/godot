@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_timer)
 
+#include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "tests/signal_watcher.h"
@@ -170,7 +171,6 @@ TEST_CASE("[SceneTree][Timer] Check Timer timeout signal") {
 
 		SceneTree::get_singleton()->process(0.05);
 
-		Array signal_args = { {} };
 		SIGNAL_CHECK_FALSE(SNAME("timeout"));
 
 		SIGNAL_UNWATCH(test_timer, SNAME("timeout"));
@@ -196,7 +196,6 @@ TEST_CASE("[SceneTree][Timer] Check Timer timeout signal") {
 
 		SceneTree::get_singleton()->physics_process(0.05);
 
-		Array signal_args = { {} };
 		SIGNAL_CHECK_FALSE(SNAME("timeout"));
 
 		SIGNAL_UNWATCH(test_timer, SNAME("timeout"));

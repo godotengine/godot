@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ItemList" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ItemList" inherits="Control" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A vertical list of selectable items with one or multiple columns.
 	</brief_description>
@@ -417,6 +417,22 @@
 		<member name="item_count" type="int" setter="set_item_count" getter="get_item_count" default="0">
 			The number of items currently in the list.
 		</member>
+		<member name="item_{index}/disabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is disabled.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/icon" type="Texture2D" setter="" getter="">
+			The icon of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/selectable" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the item at [code]index[/code] is selectable.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="item_{index}/text" type="String" setter="" getter="" default="&quot;&quot;">
+			The text of the item at [code]index[/code].
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
 		<member name="max_columns" type="int" setter="set_max_columns" getter="get_max_columns" default="1">
 			Maximum columns the list will have.
 			If greater than zero, the content will be split among the specified columns.
@@ -519,6 +535,12 @@
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.65, 0.65, 0.65, 1)">
 			Default text [Color] of the item.
 		</theme_item>
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			Text [Color] used when the item is disabled.
+		</theme_item>
+		<theme_item name="font_disabled_hovered_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			Text [Color] used when the item is disabled and hovered.
+		</theme_item>
 		<theme_item name="font_hovered_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Text [Color] used when the item is hovered and not selected yet.
 		</theme_item>
@@ -550,6 +572,9 @@
 			The size of the item text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
+		<theme_item name="scroll_bar_h_separation" data_type="constant" type="int" default="4">
+			The horizontal separation of items and the vertical scrollbar.
+		</theme_item>
 		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical spacing between items.
 		</theme_item>
@@ -567,6 +592,12 @@
 		</theme_item>
 		<theme_item name="cursor_unfocused" data_type="style" type="StyleBox">
 			[StyleBox] used for the cursor, when the [ItemList] is not being focused.
+		</theme_item>
+		<theme_item name="disabled" data_type="style" type="StyleBox">
+			[StyleBox] for items that are disabled.
+		</theme_item>
+		<theme_item name="disabled_hovered" data_type="style" type="StyleBox">
+			[StyleBox] for items that are disabled, hovered, but not selected.
 		</theme_item>
 		<theme_item name="focus" data_type="style" type="StyleBox">
 			The focused style for the [ItemList], drawn on top of everything.

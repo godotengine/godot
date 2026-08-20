@@ -32,8 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
@@ -50,6 +52,7 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/image_texture.h"
@@ -469,12 +472,12 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 			Node *root = player->get_node_or_null(player->get_root_node());
 
 			// Player shouldn't access parent if it's the scene root.
-			if (!root || (player == get_tree()->get_edited_scene_root() && player->get_root_node() == SceneStringName(path_pp))) {
+			if (!root || (player == get_tree()->get_edited_scene_root() && player->get_root_node() == NodePath(".."))) {
 				NodePath cached_root_path = player->get_path_to(get_cached_root_node());
 				if (player->get_node_or_null(cached_root_path) != nullptr) {
 					player->set_root_node(cached_root_path);
 				} else {
-					player->set_root_node(SceneStringName(path_pp)); // No other choice, preventing crash.
+					player->set_root_node(NodePath("..")); // No other choice, preventing crash.
 				}
 			} else {
 				cached_root_node_id = root->get_instance_id(); // Caching as `track_editor` can lose track of player's root node.
@@ -826,10 +829,8 @@ void AnimationPlayerEditor::_update_animation_blend() {
 
 	blend_editor.tree->clear();
 
-	String current = animation->get_item_text(animation->get_selected());
+	StringName current = animation->get_item_text(animation->get_selected());
 
-	List<StringName> anims;
-	player->get_animation_list(&anims);
 	TreeItem *root = blend_editor.tree->create_item();
 	updating_blends = true;
 
@@ -838,7 +839,7 @@ void AnimationPlayerEditor::_update_animation_blend() {
 	blend_editor.next->clear();
 	blend_editor.next->add_item("", i);
 
-	for (const StringName &to : anims) {
+	for (const StringName &to : player->get_sorted_animation_list()) {
 		TreeItem *blend = blend_editor.tree->create_item(root);
 		blend->set_editable(0, false);
 		blend->set_editable(1, true);
@@ -1035,7 +1036,7 @@ void AnimationPlayerEditor::_update_player() {
 		return;
 	}
 
-	List<StringName> libraries;
+	LocalVector<StringName> libraries;
 	player->get_animation_library_list(&libraries);
 
 	int active_idx = -1;
@@ -1060,7 +1061,7 @@ void AnimationPlayerEditor::_update_player() {
 			}
 		}
 
-		List<StringName> animlist;
+		LocalVector<StringName> animlist;
 		anim_library->get_animation_list(&animlist);
 
 		for (const StringName &E : animlist) {
@@ -1166,7 +1167,7 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 		}
 	}
 
-	List<StringName> libraries;
+	LocalVector<StringName> libraries;
 	player->get_animation_library_list(&libraries);
 	library->clear();
 
@@ -1508,7 +1509,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 		}
 
 		// Determine the read-only status of the animation's library and the libraries as a whole.
-		List<StringName> libraries;
+		LocalVector<StringName> libraries;
 		player->get_animation_library_list(&libraries);
 
 		bool current_animation_library_is_readonly = false;
@@ -1520,7 +1521,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 				all_animation_libraries_are_readonly = false;
 			}
 
-			List<StringName> animlist;
+			LocalVector<StringName> animlist;
 			anim_library->get_animation_list(&animlist);
 			bool animation_found = false;
 			for (const StringName &E : animlist) {
@@ -1538,8 +1539,6 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 				break;
 			}
 		}
-
-		StringName library_name = player->find_animation_library(anim);
 
 		bool animation_is_readonly = EditorNode::get_singleton()->is_resource_read_only(anim);
 
@@ -2128,6 +2127,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	scale->hide();
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(delete_dialog);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationPlayerEditor::_animation_remove_confirmed));
 
@@ -2153,10 +2153,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	animation = memnew(OptionButton);
 	hb->add_child(animation);
+	animation->set_search_bar_enabled(true);
+	animation->set_search_bar_min_item_count(10);
 	animation->set_accessibility_name(TTRC("Animation"));
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
 	animation->set_tooltip_text(TTRC("Display list of animations in player."));
 	animation->set_clip_text(true);
+	animation->set_fit_to_longest_item(false);
 	animation->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	autoplay = memnew(Button);
@@ -2257,10 +2260,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.tree->set_column_clip_content(0, true);
 	blend_editor.tree->set_column_expand_ratio(1, 3);
 	blend_editor.tree->set_column_clip_content(1, true);
-	blend_vb->add_margin_child(TTRC("Blend Times:"), blend_editor.tree, true);
+	blend_editor.tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	blend_vb->add_margin_child(TTRC("Blend Times:"), blend_editor.tree, true)->set_theme_type_variation("NoBorderHorizontalWindow");
 	blend_editor.tree->connect(SNAME("item_edited"), callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
 	blend_editor.next = memnew(OptionButton);
+	blend_editor.next->set_search_bar_enabled(true);
+	blend_editor.next->set_search_bar_min_item_count(10);
 	blend_editor.next->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	blend_editor.next->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
 	blend_vb->add_margin_child(TTRC("Next (Auto Queue):"), blend_editor.next);
@@ -2347,7 +2353,7 @@ AnimationPlayerEditor::~AnimationPlayerEditor() {
 void AnimationPlayerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			Node3DEditor::get_singleton()->connect(SNAME("transform_key_request"), callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
+			Node3DEditor::get_singleton()->connect(SNAME("transform_3d_key_request"), callable_mp(this, &AnimationPlayerEditorPlugin::_transform_3d_key_request));
 			InspectorDock::get_inspector_singleton()->connect(SNAME("property_keyed"), callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
 			anim_editor->get_track_editor()->connect(SNAME("keying_changed"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_keying));
 			InspectorDock::get_inspector_singleton()->connect(SNAME("edited_object_changed"), callable_mp(anim_editor->get_track_editor(), &AnimationTrackEditor::update_keying));
@@ -2365,7 +2371,7 @@ void AnimationPlayerEditorPlugin::_property_keyed(const String &p_keyed, const V
 	te->insert_value_key(p_keyed, p_advance);
 }
 
-void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
+void AnimationPlayerEditorPlugin::_transform_3d_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
 	if (!anim_editor->get_track_editor()->has_keying()) {
 		return;
 	}
@@ -2373,9 +2379,9 @@ void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const Strin
 	if (!s) {
 		return;
 	}
-	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_POSITION_3D, p_key.origin);
-	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_ROTATION_3D, p_key.basis.get_rotation_quaternion());
-	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_SCALE_3D, p_key.basis.get_scale());
+	anim_editor->get_track_editor()->insert_transform_3d_key(s, p_sub, Animation::TYPE_POSITION_3D, p_key.origin);
+	anim_editor->get_track_editor()->insert_transform_3d_key(s, p_sub, Animation::TYPE_ROTATION_3D, p_key.basis.get_rotation_quaternion());
+	anim_editor->get_track_editor()->insert_transform_3d_key(s, p_sub, Animation::TYPE_SCALE_3D, p_key.basis.get_scale());
 }
 
 void AnimationPlayerEditorPlugin::_update_keying() {
@@ -2460,7 +2466,13 @@ void AnimationPlayerEditorPlugin::_update_dummy_player(AnimationMixer *p_mixer) 
 	memdelete(default_node);
 
 	// Library list is dynamically added to property list, should be copied explicitly.
-	List<StringName> libraries;
+	LocalVector<StringName> existing_libs;
+	dummy_player->get_animation_library_list(&existing_libs);
+	for (const StringName &K : existing_libs) {
+		dummy_player->remove_animation_library(K);
+	}
+
+	LocalVector<StringName> libraries;
 	p_mixer->get_animation_library_list(&libraries);
 	for (const StringName &K : libraries) {
 		dummy_player->add_animation_library(K, p_mixer->get_animation_library(K));
@@ -2477,10 +2489,6 @@ bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
 
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		// if AnimationTree editor is visible, do not occupy the bottom panel
-		if (AnimationTreeEditor::get_singleton() && AnimationTreeEditor::get_singleton()->is_visible_in_tree()) {
-			return;
-		}
 		anim_editor->make_visible();
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();

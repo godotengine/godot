@@ -32,6 +32,7 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/create_dialog.h"
@@ -63,10 +64,10 @@ void SceneCreateDialog::_notification(int p_what) {
 	}
 }
 
-void SceneCreateDialog::config(const String &p_dir) {
+void SceneCreateDialog::config(const String &p_dir, const String &p_scene_name) {
 	directory = p_dir;
 	root_name_edit->set_text("");
-	scene_name_edit->set_text("");
+	scene_name_edit->set_text(p_scene_name.get_basename());
 	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred(false);
 	validation_panel->update();
 
@@ -156,6 +157,10 @@ void SceneCreateDialog::update_dialog() {
 
 String SceneCreateDialog::get_scene_path() const {
 	return scene_name;
+}
+
+String SceneCreateDialog::get_root_name() const {
+	return root_name;
 }
 
 Node *SceneCreateDialog::create_scene_root() {

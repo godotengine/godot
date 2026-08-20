@@ -30,13 +30,12 @@
 
 #import "godot_view_apple_embedded.h"
 
-#import "display_layer_apple_embedded.h"
-#import "display_server_apple_embedded.h"
-#import "godot_view_renderer.h"
-
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/string/ustring.h"
+#import "drivers/apple_embedded/display_layer_apple_embedded.h"
+#import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_renderer.h"
 
 #import <CoreMotion/CoreMotion.h>
 
@@ -180,7 +179,7 @@ static const float earth_gravity = 9.80665;
 
 	self.isActive = NO;
 
-	print_verbose("Stop animation!");
+	print_verbose("Stop rendering");
 
 	if (self.useCADisplayLink) {
 		[self.displayLink invalidate];
@@ -200,7 +199,7 @@ static const float earth_gravity = 9.80665;
 
 	self.isActive = YES;
 
-	print_verbose("Start animation!");
+	print_verbose("Start rendering");
 
 	if (self.useCADisplayLink) {
 		self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
@@ -238,7 +237,7 @@ static const float earth_gravity = 9.80665;
 		return;
 	}
 
-	if ([self.renderer setupView:self]) {
+	if ([self.renderer setUp]) {
 		return;
 	}
 

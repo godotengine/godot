@@ -38,6 +38,7 @@ class Button;
 class ButtonGroup;
 class CanvasItemEditorViewport;
 class ConfirmationDialog;
+class CreateDialog;
 class EditorData;
 class EditorSelection;
 class EditorZoomWidget;
@@ -45,6 +46,7 @@ class HScrollBar;
 class HSplitContainer;
 class MenuButton;
 class PanelContainer;
+class RichTextLabel;
 class StyleBoxTexture;
 class Timer;
 class ViewPanner;
@@ -200,7 +202,7 @@ private:
 	bool selection_menu_additive_selection = false;
 
 	Tool tool = TOOL_SELECT;
-	Control *viewport = nullptr;
+	CanvasItemEditorViewport *viewport = nullptr;
 	Control *viewport_scrollable = nullptr;
 
 	HScrollBar *h_scroll = nullptr;
@@ -243,6 +245,9 @@ private:
 	Vector2i primary_grid_step;
 	int grid_step_multiplier = 0;
 
+	Color selection_rectangle_color;
+	Color locked_selection_rectangle_color;
+
 	real_t snap_rotation_step = 0.0;
 	real_t snap_rotation_offset = 0.0;
 	real_t snap_scale_step = 0.0;
@@ -278,7 +283,7 @@ private:
 	real_t grab_distance = 0.0;
 	bool simple_panning = false;
 
-	MenuOption last_option;
+	MenuOption last_option = SNAP_USE;
 
 public:
 	struct SelectResult {
@@ -372,6 +377,7 @@ private:
 
 	PopupMenu *selection_menu = nullptr;
 	PopupMenu *add_node_menu = nullptr;
+	CreateDialog *add_node_dialog = nullptr;
 
 	Control *top_ruler = nullptr;
 	Control *left_ruler = nullptr;
@@ -413,6 +419,7 @@ private:
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
 	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items, bool p_allow_locked = false);
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	Dictionary _get_context_data();
 
 	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append);
 
@@ -436,8 +443,8 @@ private:
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _add_node_pressed(int p_result);
-	void _adjust_new_node_position(Node *p_node);
-	void _reset_create_position();
+	void _create_node();
+	void _instantiate_scene(const String &p_path);
 	void _update_editor_settings();
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
@@ -600,7 +607,7 @@ public:
 
 	VSplitContainer *get_bottom_split();
 
-	Control *get_viewport_control() { return viewport; }
+	CanvasItemEditorViewport *get_viewport_control() { return viewport; }
 
 	Control *get_controls_container() { return controls_vb; }
 
@@ -613,6 +620,7 @@ public:
 
 	bool is_grid_visible() const;
 	Vector2 get_grid_step() const { return grid_step; }
+	Vector2 get_grid_offset() const { return grid_offset; }
 
 	void edit(CanvasItem *p_canvas_item);
 
@@ -623,6 +631,9 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	ThemePreviewMode get_theme_preview() const { return theme_preview; }
+
+	bool cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
+	void add_node_to_scene(Node *p_parent, Node *p_child, const Vector2 &p_target_position);
 
 	EditorSelection *editor_selection = nullptr;
 
@@ -668,8 +679,7 @@ class CanvasItemEditorViewport : public Control {
 	Control *preview_node = nullptr;
 	AcceptDialog *accept = nullptr;
 	AcceptDialog *texture_node_type_selector = nullptr;
-	Label *label = nullptr;
-	Label *label_desc = nullptr;
+	RichTextLabel *tooltip_panel = nullptr;
 	Ref<ButtonGroup> button_group;
 
 	void _on_mouse_exit();
@@ -680,11 +690,11 @@ class CanvasItemEditorViewport : public Control {
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();
 
-	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
 	bool _is_any_texture_selected() const;
 	void _create_texture_node(Node *p_parent, Node *p_child, const String &p_path, const Point2 &p_point);
 	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
+	void _create_mesh_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();
 	void _update_theme();
@@ -695,6 +705,8 @@ protected:
 public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
+
+	void set_hint_label(const String &p_title, const String &p_description) const;
 
 	CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor);
 	~CanvasItemEditorViewport();

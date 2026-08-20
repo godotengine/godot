@@ -24,6 +24,10 @@
  * Adobe Author(s): Michiharu Ariza
  */
 
+#ifndef HB_OT_CFF2_TABLE_CC
+#define HB_OT_CFF2_TABLE_CC
+#ifdef HB_OT_CFF2_TABLE_CC /* Pacify -Wunused-macros. */
+
 #include "hb.hh"
 
 #ifndef HB_NO_OT_FONT_CFF
@@ -228,3 +232,6 @@ bool OT::cff2::accelerator_t::get_path_at (hb_font_t *font, hb_codepoint_t glyph
 }
 
 #endif
+
+#endif /* HB_OT_CFF2_TABLE_CC pacify */
+#endif /* HB_OT_CFF2_TABLE_CC guard */

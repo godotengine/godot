@@ -35,8 +35,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
+#include "core/object/class_db.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/text_edit.h"
 
 Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
@@ -799,19 +799,15 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	const GDScriptLanguage *gdscript = GDScriptLanguage::get_singleton();
 
-	/* Core types. */
+	/* Variant types. */
 	const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
-	List<String> core_types;
-	gdscript->get_core_type_words(&core_types);
-	for (const String &E : core_types) {
-		class_names[StringName(E)] = basetype_color;
+	for (int type = 0; type < Variant::Type::VARIANT_MAX; type++) {
+		if (type != Variant::Type::NIL && type != Variant::Type::OBJECT) {
+			class_names[Variant::get_type_name((Variant::Type)type)] = basetype_color;
+		}
 	}
 	class_names[SNAME("Variant")] = basetype_color;
 	class_names[SNAME("void")] = basetype_color;
-	// `get_core_type_words()` doesn't return primitive types.
-	class_names[SNAME("bool")] = basetype_color;
-	class_names[SNAME("int")] = basetype_color;
-	class_names[SNAME("float")] = basetype_color;
 
 	/* Reserved words. */
 	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
@@ -947,7 +943,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			HashMap<StringName, Variant> scr_constant_list;
 			scr_class->get_constants(&scr_constant_list);
 			for (const KeyValue<StringName, Variant> &E : scr_constant_list) {
-				member_keywords[E.key.operator String()] = member_variable_color;
+				member_keywords[E.key.string()] = member_variable_color;
 			}
 			scr_class = scr_class->get_base_script();
 		}

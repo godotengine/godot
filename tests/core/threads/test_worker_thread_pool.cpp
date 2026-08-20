@@ -32,8 +32,9 @@
 
 TEST_FORCE_LINK(test_worker_thread_pool)
 
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
 
 namespace TestWorkerThreadPool {
 
@@ -140,7 +141,6 @@ TEST_CASE("[WorkerThreadPool] Run a yielding daemon as the only hope for other t
 		task_ids.push_back(WorkerThreadPool::get_singleton()->add_native_task(static_busy_task, nullptr, true));
 	}
 
-	LocalVector<WorkerThreadPool::TaskID> legit_task_ids;
 	LocalVector<bool> legit_task_needed_yield;
 	int legit_tasks_count = num_threads * 4;
 	legit_task_needed_yield.resize(legit_tasks_count);

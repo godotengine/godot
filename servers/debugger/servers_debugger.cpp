@@ -30,11 +30,13 @@
 
 #include "servers_debugger.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/engine_profiler.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -393,9 +395,7 @@ void ServersDebugger::initialize() {
 }
 
 void ServersDebugger::deinitialize() {
-	if (singleton) {
-		memdelete(singleton);
-	}
+	memdelete(singleton);
 }
 
 Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {

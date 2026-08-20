@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -40,6 +41,7 @@
 #include "scene/3d/navigation/navigation_obstacle_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/main/scene_tree.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -867,6 +869,7 @@ NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
 	button_clear->set_toggle_mode(true);
 
 	button_clear_dialog = memnew(ConfirmationDialog);
+	button_clear_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	button_clear_dialog->set_title(TTR("Please Confirm..."));
 	button_clear_dialog->set_text(TTR("Remove all vertices?"));
 	button_clear_dialog->connect(SceneStringName(confirmed), callable_mp(NavigationObstacle3DEditorPlugin::singleton, &NavigationObstacle3DEditorPlugin::action_clear_vertices));

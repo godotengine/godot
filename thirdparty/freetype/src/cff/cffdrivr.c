@@ -4,7 +4,7 @@
  *
  *   OpenType font driver implementation (body).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, Werner Lemberg, and Dominik Röttsches.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -456,8 +456,8 @@
                                                          dict->weight );
       font_info->italic_angle        = dict->italic_angle;
       font_info->is_fixed_pitch      = dict->is_fixed_pitch;
-      font_info->underline_position  = (FT_Short)dict->underline_position;
-      font_info->underline_thickness = (FT_UShort)dict->underline_thickness;
+      font_info->underline_position  = dict->underline_position;
+      font_info->underline_thickness = dict->underline_thickness;
 
       cff->font_info = font_info;
     }

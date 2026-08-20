@@ -30,9 +30,8 @@
 
 #include "file_access_patched.h"
 
-#include "file_access_pack.h"
-
 #include "core/io/delta_encoding.h"
+#include "core/io/file_access_pack.h"
 #include "core/os/os.h"
 
 Error FileAccessPatched::_apply_patch() const {
@@ -157,10 +156,7 @@ Error FileAccessPatched::get_error() const {
 	}
 
 	if (patched_file.is_valid()) {
-		Error inner_error = patched_file->get_error();
-		if (inner_error != OK) {
-			return inner_error;
-		}
+		RETURN_IF_ERROR(patched_file->get_error());
 	}
 
 	return last_error;

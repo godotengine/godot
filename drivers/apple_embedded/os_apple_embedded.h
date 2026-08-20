@@ -32,8 +32,7 @@
 
 #ifdef APPLE_EMBEDDED_ENABLED
 
-#import "apple_embedded.h"
-
+#import "drivers/apple_embedded/apple_embedded.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio/audio_server.h"
@@ -43,7 +42,7 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_apple_embedded.h"
+#import "drivers/apple_embedded/rendering_context_driver_vulkan_apple_embedded.h"
 #endif
 #endif
 
@@ -100,6 +99,7 @@ public:
 
 	void start();
 
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	virtual Vector<String> get_system_fonts() const override;
@@ -124,6 +124,7 @@ public:
 	virtual String get_bundle_resource_dir() const override;
 
 	virtual String get_locale() const override;
+	virtual Vector<String> get_preferred_locales() const override;
 
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;
@@ -144,6 +145,17 @@ public:
 
 	virtual bool request_permission(const String &p_name) override;
 	virtual Vector<String> get_granted_permissions() const override;
+
+	virtual String get_platform_string(PlatformString p_platform_string) const override {
+		switch (p_platform_string) {
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in Files");
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in Files");
+			default:
+				return OS::get_platform_string(p_platform_string);
+		}
+	}
 };
 
 #endif // APPLE_EMBEDDED_ENABLED

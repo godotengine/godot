@@ -36,20 +36,16 @@
 #include "ip_web.h"
 #include "net_socket_web.h"
 
-#include "core/config/project_settings.h"
-#include "core/debugger/engine_debugger.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 
-#include "modules/modules_enabled.gen.h" // For websocket.
-
 #include <dlfcn.h>
 #include <emscripten.h>
-#include <cstdlib>
 
 void OS_Web::alert(const String &p_alert, const String &p_title) {
 	godot_js_display_alert(p_alert.utf8().get_data());
@@ -94,9 +90,7 @@ bool OS_Web::main_loop_iterate() {
 }
 
 void OS_Web::delete_main_loop() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 	main_loop = nullptr;
 }
 
@@ -276,6 +270,18 @@ Error OS_Web::pwa_update() {
 
 bool OS_Web::is_userfs_persistent() const {
 	return idb_available;
+}
+
+Error OS_Web::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	int left = p_bytes;
+	int ofs = 0;
+	do {
+		int chunk = MIN(left, 256);
+		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+		left -= chunk;
+		ofs += chunk;
+	} while (left > 0);
+	return OK;
 }
 
 Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {

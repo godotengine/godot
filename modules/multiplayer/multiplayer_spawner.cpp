@@ -30,7 +30,9 @@
 
 #include "multiplayer_spawner.h"
 
+#include "core/config/engine.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/multiplayer_api.h"
 

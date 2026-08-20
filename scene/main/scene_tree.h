@@ -81,6 +81,11 @@ public:
 	void release_connections();
 };
 
+struct SceneTreeGroup {
+	Vector<Node *> nodes;
+	bool changed = false;
+};
+
 class SceneTree : public MainLoop {
 	_THREAD_SAFE_CLASS_
 
@@ -118,11 +123,6 @@ private:
 
 	bool node_threading_disabled = false;
 
-	struct Group {
-		Vector<Node *> nodes;
-		bool changed = false;
-	};
-
 #ifndef _3D_DISABLED
 	struct ClientPhysicsInterpolation {
 		SelfList<Node3D>::List _node_3d_list;
@@ -145,7 +145,7 @@ private:
 	bool paused = false;
 	bool suspended = false;
 
-	HashMap<StringName, Group> group_map;
+	HashMap<StringName, SceneTreeGroup> group_map;
 	bool _quit = false;
 
 	// Static so we can get directly instead of via SceneTree pointer.
@@ -196,7 +196,7 @@ private:
 	bool ugc_locked = false;
 	void _flush_ugc();
 
-	_FORCE_INLINE_ void _update_group_order(Group &g);
+	_FORCE_INLINE_ void _update_group_order(SceneTreeGroup &g);
 
 	TypedArray<Node> _get_nodes_in_group(const StringName &p_group);
 
@@ -234,7 +234,7 @@ private:
 	void process_timers(double p_delta, bool p_physics_frame);
 	void process_tweens(double p_delta, bool p_physics_frame);
 
-	Group *add_to_group(const StringName &p_group, Node *p_node);
+	SceneTreeGroup *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
 
 	void _process_group(ProcessGroup *p_group, bool p_physics);
@@ -289,6 +289,7 @@ protected:
 
 public:
 	enum {
+		// Keep in sync with CanvasItem and Node3D.
 		NOTIFICATION_TRANSFORM_CHANGED = 2000
 	};
 
@@ -299,7 +300,7 @@ public:
 		GROUP_CALL_UNIQUE = 4,
 	};
 
-	_FORCE_INLINE_ Window *get_root() const { return root; }
+	RequiredResult<Window> get_root() const;
 
 	void call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount);
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
@@ -408,7 +409,7 @@ public:
 
 	int get_node_count() const;
 
-	void queue_delete(RequiredParam<Object> rp_object);
+	void queue_delete(RequiredParam<Object> p_object);
 
 	Vector<Node *> get_nodes_in_group(const StringName &p_group);
 	Node *get_first_node_in_group(const StringName &p_group);
@@ -424,8 +425,8 @@ public:
 	void set_current_scene(Node *p_scene);
 	Node *get_current_scene() const;
 	Error change_scene_to_file(const String &p_path);
-	Error change_scene_to_packed(RequiredParam<PackedScene> rp_scene);
-	Error change_scene_to_node(RequiredParam<Node> rp_node);
+	Error change_scene_to_packed(RequiredParam<PackedScene> p_scene);
+	Error change_scene_to_node(RequiredParam<Node> p_node);
 	Error reload_current_scene();
 	void unload_current_scene();
 
@@ -445,7 +446,7 @@ public:
 
 	//network API
 
-	Ref<MultiplayerAPI> get_multiplayer(const NodePath &p_for_path = NodePath()) const;
+	RequiredResult<MultiplayerAPI> get_multiplayer(const NodePath &p_for_path = NodePath()) const;
 	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path = NodePath());
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;

@@ -1,0 +1,5 @@
+GH-121318
+--------------
+Validate extension JSON: API was removed: classes/AnimationNodeBlendSpace2D/properties/triangles
+
+The "triangles" property was moved from static ADD_PROPERTY registration into the dynamic _get_property_list() override, to allow it to serialize/deserialize together with blend_point_i/*, and prevent errors and dropped triangles on load. The property remains fully functional at runtime via _set/_get, only its static GDExtension reflection entry was removed.

@@ -30,6 +30,7 @@
 
 #include "node_2d.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 #include "servers/display/accessibility_server.h"
@@ -394,19 +395,20 @@ void Node2D::set_global_transform(const Transform2D &p_transform) {
 	}
 }
 
-Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
+Transform2D Node2D::get_relative_transform_to_parent(RequiredParam<const Node> p_parent) const {
+	EXTRACT_PARAM_OR_FAIL_V(parent, p_parent, Transform2D());
 	ERR_READ_THREAD_GUARD_V(Transform2D());
-	if (p_parent == this) {
+	if (parent == this) {
 		return Transform2D();
 	}
 
 	Node2D *parent_2d = Object::cast_to<Node2D>(get_parent());
 
 	ERR_FAIL_NULL_V(parent_2d, Transform2D());
-	if (p_parent == parent_2d) {
+	if (parent == parent_2d) {
 		return get_transform();
 	} else {
-		return parent_2d->get_relative_transform_to_parent(p_parent) * get_transform();
+		return parent_2d->get_relative_transform_to_parent(parent) * get_transform();
 	}
 }
 
@@ -420,12 +422,12 @@ real_t Node2D::get_angle_to(const Vector2 &p_pos) const {
 	return (to_local(p_pos) * get_scale()).angle();
 }
 
-Point2 Node2D::to_local(Point2 p_global) const {
+Point2 Node2D::to_local(const Point2 &p_global) const {
 	ERR_READ_THREAD_GUARD_V(Point2());
 	return get_global_transform().affine_inverse().xform(p_global);
 }
 
-Point2 Node2D::to_global(Point2 p_local) const {
+Point2 Node2D::to_global(const Point2 &p_local) const {
 	ERR_READ_THREAD_GUARD_V(Point2());
 	return get_global_transform().xform(p_local);
 }

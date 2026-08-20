@@ -31,36 +31,47 @@
 #include "script_editor_base.h"
 
 #include "core/io/json.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
+#include "editor/script/find_in_files.h"
+#include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
+#include "scene/resources/shader.h"
+#include "scene/resources/shader_include.h"
 #include "servers/display/display_server.h"
 
 void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("name_changed"));
 
 	// First use in TextEditorBase.
-	ADD_SIGNAL(MethodInfo("edited_script_changed"));
+	ADD_SIGNAL(MethodInfo("_validation_updated"));
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &ScriptEditorBase::add_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("get_base_editor"), &ScriptEditorBase::get_base_editor);
 
 	// First use in ScriptTextEditor.
-	ADD_SIGNAL(MethodInfo("request_save_history"));
+	ADD_SIGNAL(MethodInfo("_request_save_new_history", PropertyInfo(Variant::DICTIONARY, "state")));
+	ADD_SIGNAL(MethodInfo("_request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
 	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "topic")));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
-	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::STRING, "method")));
+
+#ifndef DISABLE_DEPRECATED
+	ADD_SIGNAL(MethodInfo("request_save_history"));
+	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
+	ADD_SIGNAL(MethodInfo("edited_script_changed"));
+#endif
 }
 
-String ScriptEditorBase::get_name() {
+String ScriptEditorBase::get_document_name() const {
 	String name;
 
 	name = edited_res->get_path().get_file();
@@ -74,10 +85,6 @@ String ScriptEditorBase::get_name() {
 			// display the built-in text_file name as follows: `ResourceName (scene_file.tscn)`
 			name = vformat("%s (%s)", text_file_name, name.get_slice("::", 0));
 		}
-	}
-
-	if (is_unsaved()) {
-		name += "(*)";
 	}
 
 	return name;
@@ -94,7 +101,10 @@ void ScriptEditorBase::tag_saved_version() {
 //// TextEditorBase
 
 TextEditorBase *TextEditorBase::EditMenus::_get_active_editor() {
-	return Object::cast_to<TextEditorBase>(ScriptEditor::get_singleton()->get_current_editor());
+	if (se) {
+		return Object::cast_to<TextEditorBase>(se->get_current_editor());
+	}
+	return nullptr;
 }
 
 void TextEditorBase::EditMenus::_edit_option(int p_op) {
@@ -132,8 +142,6 @@ void TextEditorBase::EditMenus::_change_syntax_highlighter(int p_idx) {
 }
 
 void TextEditorBase::EditMenus::_update_bookmark_list() {
-	TextEditorBase *script_text_editor = _get_active_editor();
-	ERR_FAIL_NULL(script_text_editor);
 	bookmarks_menu->clear();
 	bookmarks_menu->reset_size();
 
@@ -141,6 +149,11 @@ void TextEditorBase::EditMenus::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
+
+	TextEditorBase *script_text_editor = _get_active_editor();
+	if (script_text_editor == nullptr) {
+		return;
+	}
 
 	PackedInt32Array bookmark_list = script_text_editor->code_editor->get_text_editor()->get_bookmarked_lines();
 	if (bookmark_list.is_empty()) {
@@ -170,11 +183,15 @@ void TextEditorBase::EditMenus::_bookmark_item_pressed(int p_idx) {
 	if (p_idx < 4) { // Any item before the separator.
 		script_text_editor->_edit_option(bookmarks_menu->get_item_id(p_idx));
 	} else {
-		script_text_editor->code_editor->goto_line_centered(bookmarks_menu->get_item_metadata(p_idx));
+		ScriptEditorNavigationMarker::get_singleton()->locate_begin();
+		script_text_editor->goto_line_centered(bookmarks_menu->get_item_metadata(p_idx));
+		ScriptEditorNavigationMarker::get_singleton()->locate_end();
 	}
 }
 
-TextEditorBase::EditMenus::EditMenus() {
+TextEditorBase::EditMenus::EditMenus(ScriptEditor *p_se) {
+	se = p_se;
+
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_flat(false);
 	edit_menu->set_theme_type_variation("FlatMenuButton");
@@ -253,7 +270,7 @@ TextEditorBase::EditMenus::EditMenus() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/replace_in_files"), REPLACE_IN_FILES);
 	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditMenus::_edit_option));
 
 	goto_menu = memnew(MenuButton);
@@ -271,6 +288,9 @@ TextEditorBase::EditMenus::EditMenus() {
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &EditMenus::_bookmark_item_pressed));
 
 	goto_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditMenus::_edit_option));
+
+	// Update immediately for shortcuts.
+	_update_bookmark_list();
 }
 
 void TextEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position, bool p_show) {
@@ -376,29 +396,60 @@ bool TextEditorBase::_edit_option(int p_op) {
 	tx->apply_ime();
 
 	switch (p_op) {
+		case EDIT_UNDO:
+		case EDIT_REDO:
+		case EDIT_CUT:
+		case EDIT_COPY:
+		case EDIT_PASTE:
+		case EDIT_SELECT_ALL:
+		case EDIT_TRIM_TRAILING_WHITESAPCE:
+		case EDIT_TRIM_FINAL_NEWLINES:
+		case EDIT_CONVERT_INDENT_TO_SPACES:
+		case EDIT_CONVERT_INDENT_TO_TABS:
+		case EDIT_MOVE_LINE_UP:
+		case EDIT_MOVE_LINE_DOWN:
+		case EDIT_INDENT:
+		case EDIT_UNINDENT:
+		case EDIT_DELETE_LINE:
+		case EDIT_JOIN_LINES:
+		case EDIT_DUPLICATE_SELECTION:
+		case EDIT_DUPLICATE_LINES:
+		case EDIT_TO_UPPERCASE:
+		case EDIT_TO_LOWERCASE:
+		case EDIT_CAPITALIZE:
+		case EDIT_TOGGLE_FOLD_LINE:
+		case EDIT_FOLD_ALL_LINES:
+		case EDIT_TOGGLE_WORD_WRAP:
+		case EDIT_UNFOLD_ALL_LINES:
+		case EDIT_EMOJI_AND_SYMBOL:
+		case SEARCH_FIND_NEXT:
+		case SEARCH_FIND_PREV:
+		case BOOKMARK_TOGGLE:
+		case BOOKMARK_GOTO_NEXT:
+		case BOOKMARK_GOTO_PREV:
+		case BOOKMARK_REMOVE_ALL: {
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
+		}
+	}
+
+	switch (p_op) {
 		case EDIT_UNDO: {
 			tx->undo();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_REDO: {
 			tx->redo();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_CUT: {
 			tx->cut();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_COPY: {
 			tx->copy();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_PASTE: {
 			tx->paste();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_SELECT_ALL: {
 			tx->select_all();
-			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		} break;
 		case EDIT_MOVE_LINE_UP: {
 			tx->move_lines_up();
@@ -463,16 +514,10 @@ bool TextEditorBase::_edit_option(int p_op) {
 		case SEARCH_REPLACE: {
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
-		case SEARCH_IN_FILES: {
-			String selected_text = tx->get_selected_text();
-
-			// Yep, because it doesn't make sense to instance this dialog for every single script open...
-			// So this will be delegated to the ScriptEditor.
-			emit_signal(SNAME("search_in_files_requested"), selected_text);
-		} break;
+		case SEARCH_IN_FILES:
 		case REPLACE_IN_FILES: {
 			String selected_text = tx->get_selected_text();
-			emit_signal(SNAME("replace_in_files_requested"), selected_text);
+			FindInFiles::get_singleton()->open_dock(selected_text, p_op == REPLACE_IN_FILES);
 		} break;
 		case SEARCH_GOTO_LINE: {
 			goto_line_popup->popup_find_line(code_editor);
@@ -481,10 +526,14 @@ bool TextEditorBase::_edit_option(int p_op) {
 			code_editor->toggle_bookmark();
 		} break;
 		case BOOKMARK_GOTO_NEXT: {
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 			code_editor->goto_next_bookmark();
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		} break;
 		case BOOKMARK_GOTO_PREV: {
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 			code_editor->goto_prev_bookmark();
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		} break;
 		case BOOKMARK_REMOVE_ALL: {
 			code_editor->remove_all_bookmarks();
@@ -513,8 +562,28 @@ void TextEditorBase::_load_theme_settings() {
 }
 
 void TextEditorBase::_validate_script() {
-	emit_signal(SNAME("name_changed"));
-	emit_signal(SNAME("edited_script_changed"));
+	emit_signal(SNAME("_validation_updated"));
+}
+
+void TextEditorBase::_saved_update() {
+	if (was_unsaved != is_unsaved()) {
+		was_unsaved = is_unsaved();
+		emit_signal(SNAME("name_changed"));
+	}
+}
+
+void TextEditorBase::_emit_request_save_new_history() {
+	Dictionary state = get_edit_state();
+	state["ensure_caret_visible"] = true;
+	previous_history_line = state["row"];
+	emit_signal(SNAME("_request_save_new_history"), state);
+}
+
+void TextEditorBase::_emit_request_save_previous_state() {
+	Dictionary state = get_edit_state();
+	state["ensure_caret_visible"] = true;
+	previous_history_line = state["row"];
+	emit_signal(SNAME("_request_save_previous_state"), state);
 }
 
 void TextEditorBase::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
@@ -552,7 +621,6 @@ void TextEditorBase::set_edited_resource(const Ref<Resource> &p_res) {
 	code_editor->get_text_editor()->clear_undo_history();
 	code_editor->get_text_editor()->tag_saved_version();
 
-	emit_signal(SNAME("name_changed"));
 	code_editor->update_line_and_column();
 }
 
@@ -563,6 +631,7 @@ bool TextEditorBase::is_unsaved() {
 void TextEditorBase::tag_saved_version() {
 	code_editor->get_text_editor()->tag_saved_version();
 	ScriptEditorBase::tag_saved_version();
+	_saved_update();
 }
 
 void TextEditorBase::reload_text() {
@@ -589,12 +658,23 @@ void TextEditorBase::reload_text() {
 		te->set_text(script->get_source_code());
 	}
 
+	Ref<ShaderInclude> shader_inc = edited_res;
+	if (shader_inc.is_valid()) {
+		te->set_text(shader_inc->get_code());
+	}
+
+	Ref<Shader> shader = edited_res;
+	if (shader.is_valid()) {
+		te->set_text(shader->get_code());
+	}
+
 	te->set_caret_line(row);
 	te->set_caret_column(column);
 	te->set_h_scroll(h);
 	te->set_v_scroll(v);
 
 	te->tag_saved_version();
+	_saved_update();
 
 	code_editor->update_line_and_column();
 	if (editor_enabled) {
@@ -620,10 +700,13 @@ void TextEditorBase::set_tooltip_request_func(const Callable &p_toolip_callback)
 	code_editor->get_text_editor()->set_tooltip_request_func(p_toolip_callback.bindp(argp, 1));
 }
 
-void TextEditorBase::set_edit_state(const Variant &p_state) {
+void TextEditorBase::set_edit_state(const Variant &p_state, bool p_grab_focus) {
 	code_editor->set_edit_state(p_state);
 
 	Dictionary state = p_state;
+	if (state.has("row")) {
+		previous_history_line = state["row"];
+	}
 	if (state.has("syntax_highlighter")) {
 		for (const Ref<EditorSyntaxHighlighter> &highlighter : highlighters) {
 			if (highlighter->_get_name() == String(state["syntax_highlighter"])) {
@@ -633,7 +716,9 @@ void TextEditorBase::set_edit_state(const Variant &p_state) {
 		}
 	}
 
-	ensure_focus();
+	if (p_grab_focus) {
+		ensure_focus();
+	}
 }
 
 TextEditorBase::TextEditorBase() {
@@ -643,9 +728,11 @@ TextEditorBase::TextEditorBase() {
 	code_editor->show_toggle_files_button();
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &TextEditorBase::_text_edit_gui_input));
+	code_editor->get_text_editor()->connect(SceneStringName(text_changed), callable_mp(this, &TextEditorBase::_saved_update));
 	code_editor->connect("validate_script", callable_mp(this, &TextEditorBase::_validate_script));
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditorBase::_load_theme_settings));
 	code_editor->connect("show_goto_popup", callable_mp(this, &TextEditorBase::_edit_option).bind(SEARCH_GOTO_LINE));
+	code_editor->connect("_request_save_new_history", callable_mp(this, &TextEditorBase::_emit_request_save_new_history));
 
 	context_menu = memnew(PopupMenu);
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditorBase::_edit_option));
@@ -672,6 +759,75 @@ TextEditorBase::~TextEditorBase() {
 
 //// CodeEditorBase
 
+void CodeEditorBase::EditMenusCEB::_update_breakpoint_list() {
+	breakpoints_menu->clear();
+	breakpoints_menu->reset_size();
+
+	TextEditorBase *text_editor_base = _get_active_editor();
+	if (text_editor_base == nullptr) {
+		return;
+	}
+
+	PackedInt32Array breakpoint_list = text_editor_base->get_code_editor()->get_text_editor()->get_breakpointed_lines();
+	if (breakpoint_list.is_empty()) {
+		return;
+	}
+
+	breakpoints_menu->add_separator();
+
+	for (int i = 0; i < breakpoint_list.size(); i++) {
+		// Strip edges to remove spaces or tabs.
+		// Also replace any tabs by spaces, since we can't print tabs in the menu.
+		String line = text_editor_base->get_code_editor()->get_text_editor()->get_line(breakpoint_list[i]).replace("\t", "  ").strip_edges();
+
+		// Limit the size of the line if too big.
+		if (line.length() > 50) {
+			line = line.substr(0, 50);
+		}
+
+		breakpoints_menu->add_item(String::num_int64(breakpoint_list[i] + 1) + " - `" + line + "`");
+		breakpoints_menu->set_item_metadata(-1, breakpoint_list[i]);
+	}
+}
+
+void CodeEditorBase::EditMenusCEB::_breakpoint_item_pressed(int p_idx) {
+	TextEditorBase *text_editor_base = _get_active_editor();
+	ERR_FAIL_NULL(text_editor_base);
+	if (p_idx < 4) { // Any item before the separator.
+		_edit_option(breakpoints_menu->get_item_id(p_idx));
+	} else {
+		text_editor_base->goto_line_centered(breakpoints_menu->get_item_metadata(p_idx));
+	}
+}
+
+void CodeEditorBase::EditMenusCEB::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			// Update immediately for shortcuts.
+			_update_breakpoint_list();
+		}
+	}
+}
+
+CodeEditorBase::EditMenusCEB::EditMenusCEB(ScriptEditor *p_se, String p_breakpoint_menu_name) : EditMenus(p_se) {
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
+	_popup_move_item(EDIT_TRIM_TRAILING_WHITESAPCE, edit_menu->get_popup(), false);
+	edit_menu_line->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
+
+	breakpoints_menu = memnew(PopupMenu);
+	goto_menu->get_popup()->add_submenu_node_item(TTRC(p_breakpoint_menu_name), breakpoints_menu);
+	breakpoints_menu->connect("about_to_popup", callable_mp(this, &EditMenusCEB::_update_breakpoint_list));
+	breakpoints_menu->connect("index_pressed", callable_mp(this, &EditMenusCEB::_breakpoint_item_pressed));
+}
+
+void CodeEditorBase::set_breakpoint(int p_line, bool p_enabled) {
+	code_editor->get_text_editor()->set_line_as_breakpoint(p_line, p_enabled);
+}
+
+void CodeEditorBase::_show_warnings_panel(bool p_show) {
+	warnings_panel->set_visible(p_show);
+}
+
 bool CodeEditorBase::_warning_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		goto_line_centered(p_line.operator int64_t());
@@ -680,13 +836,123 @@ bool CodeEditorBase::_warning_clicked(const Variant &p_line) {
 	return false;
 }
 
-CodeEditorBase::EditMenusCEB::EditMenusCEB() {
-	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
-	_popup_move_item(EDIT_TRIM_TRAILING_WHITESAPCE, edit_menu->get_popup(), false);
-	edit_menu_line->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
+void CodeEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position, bool p_show) {
+	TextEditorBase::_make_context_menu(p_selection, p_foldable, p_position, false);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
+	_popup_move_item(EDIT_UNINDENT, context_menu);
+
+	if (p_show) {
+		_show_context_menu(p_position);
+	}
+}
+
+void CodeEditorBase::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+	CodeEditorBase *ste = (CodeEditorBase *)p_ud;
+	ste->_code_complete_script(p_code, r_options, r_force);
+}
+
+bool CodeEditorBase::_edit_option(int p_option) {
+	CodeEdit *tx = code_editor->get_text_editor();
+	tx->apply_ime();
+
+	switch (p_option) {
+		case DEBUG_TOGGLE_BREAKPOINT:
+		case DEBUG_REMOVE_ALL_BREAKPOINTS:
+		case DEBUG_GOTO_NEXT_BREAKPOINT:
+		case DEBUG_GOTO_PREV_BREAKPOINT: {
+			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
+		}
+	}
+
+	switch (p_option) {
+		case DEBUG_TOGGLE_BREAKPOINT: {
+			Vector<int> sorted_carets = tx->get_sorted_carets();
+			int last_line = -1;
+
+			for (const int &c : sorted_carets) {
+				int from = tx->get_selection_from_line(c);
+				from += from == last_line ? 1 : 0;
+
+				int to = tx->get_selection_to_line(c);
+				if (to < from) {
+					continue;
+				}
+
+				// Check first if there's any lines with breakpoints in the selection.
+				bool selection_has_breakpoints = false;
+				for (int line = from; line <= to; line++) {
+					if (tx->is_line_breakpointed(line)) {
+						selection_has_breakpoints = true;
+						break;
+					}
+				}
+
+				// Set breakpoint on caret or remove all bookmarks from the selection.
+				if (!selection_has_breakpoints) {
+					if (tx->get_caret_line(c) != last_line) {
+						tx->set_line_as_breakpoint(tx->get_caret_line(c), true);
+					}
+				} else {
+					for (int line = from; line <= to; line++) {
+						tx->set_line_as_breakpoint(line, false);
+					}
+				}
+
+				last_line = to;
+			}
+		} break;
+		case DEBUG_GOTO_NEXT_BREAKPOINT: {
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
+			if (bpoints.is_empty()) {
+				return true;
+			}
+
+			int current_line = tx->get_caret_line();
+			int bpoint_idx = 0;
+			if (current_line < (int)bpoints[bpoints.size() - 1]) {
+				while (bpoint_idx < bpoints.size() && bpoints[bpoint_idx] <= current_line) {
+					bpoint_idx++;
+				}
+			}
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
+			goto_line_centered(bpoints[bpoint_idx]);
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
+		} break;
+		case DEBUG_GOTO_PREV_BREAKPOINT: {
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
+			if (bpoints.is_empty()) {
+				return true;
+			}
+
+			int current_line = tx->get_caret_line();
+			int bpoint_idx = bpoints.size() - 1;
+			if (current_line > (int)bpoints[0]) {
+				while (bpoint_idx >= 0 && bpoints[bpoint_idx] >= current_line) {
+					bpoint_idx--;
+				}
+			}
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
+			goto_line_centered(bpoints[bpoint_idx]);
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
+		} break;
+		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
+			for (int line : tx->get_breakpointed_lines()) {
+				tx->set_line_as_breakpoint(line, false);
+			}
+		} break;
+		default: {
+			return TextEditorBase::_edit_option(p_option);
+		}
+	}
+	return true;
 }
 
 CodeEditorBase::CodeEditorBase() {
+	code_editor->set_code_complete_func(_code_complete_scripts, this);
+	code_editor->connect("show_warnings_panel", callable_mp(this, &CodeEditorBase::_show_warnings_panel));
+	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
+	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &CodeEditorBase::_breakpoint_toggled));
+
 	warnings_panel = memnew(RichTextLabel);
 	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
 	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -701,6 +967,4 @@ CodeEditorBase::CodeEditorBase() {
 	add_child(editor_box);
 	editor_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
-	editor_box->add_child(code_editor);
-	editor_box->add_child(warnings_panel);
 }

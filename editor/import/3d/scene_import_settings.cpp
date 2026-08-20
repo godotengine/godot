@@ -31,6 +31,9 @@
 #include "scene_import_settings.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
+#include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -78,7 +81,7 @@ class SceneImportSettingsData : public Object {
 				SceneImportSettingsDialog::get_singleton()->request_generate_collider();
 			}
 
-			ResourceImporterScene *resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
+			Ref<ResourceImporterScene> resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
 				if (resource_importer_scene->get_option_visibility(path, p_name, current)) {
 					SceneImportSettingsDialog::get_singleton()->update_view();
@@ -141,10 +144,10 @@ class SceneImportSettingsData : public Object {
 						hint_string = anim->get_name();
 					}
 					if (library.is_valid()) {
-						List<StringName> anim_names;
+						LocalVector<StringName> anim_names;
 						library->get_animation_list(&anim_names);
 						if (anim_names.size() == 1) {
-							(*settings)["rest_pose/selected_animation"] = String(anim_names.front()->get());
+							(*settings)["rest_pose/selected_animation"] = String(anim_names[0]);
 						}
 						for (StringName anim_name : anim_names) {
 							hint_string += "," + anim_name; // Include preceding, as a catch-all.
@@ -163,7 +166,7 @@ class SceneImportSettingsData : public Object {
 		if (hide_options) {
 			return;
 		}
-		ResourceImporterScene *resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
+		Ref<ResourceImporterScene> resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
 		for (const ResourceImporter::ImportOption &E : options) {
 			PropertyInfo option = E.option;
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
@@ -464,9 +467,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 	AnimationPlayer *anim_node = Object::cast_to<AnimationPlayer>(p_node);
 	if (anim_node) {
 		Vector<String> animation_list;
-		List<StringName> animations;
-		anim_node->get_animation_list(&animations);
-		for (const StringName &E : animations) {
+		for (const StringName &E : anim_node->get_sorted_animation_list()) {
 			_fill_animation(scene_tree, anim_node->get_animation(E), E, item);
 			animation_list.append(E);
 		}
@@ -589,7 +590,7 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 		}
 
 		// Get the collider_view MeshInstance3D.
-		TypedArray<Node> descendants = mesh_node->find_children("collider_view", "MeshInstance3D");
+		TypedArray<Node> descendants = mesh_node->find_children("collider_view", "MeshInstance3D", false);
 		CRASH_COND_MSG(descendants.is_empty(), "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
 		MeshInstance3D *collider_view = Object::cast_to<MeshInstance3D>(descendants[0].operator Object *());
 
@@ -752,11 +753,11 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 		data_mode->set_current_tab(0);
 	}
 
-	// Only show the save data options for PackedScene imports of scenes, not resource imports.
-	const bool disable_save_mesh_mat = p_scene_import_type != "PackedScene";
+	// Only show the save mesh options for PackedScene and MeshLibrary imports of scenes.
+	const bool disable_save_mesh_mat = p_scene_import_type != "PackedScene" && p_scene_import_type != "MeshLibrary";
 	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), disable_save_mesh_mat);
 	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), disable_save_mesh_mat);
-	const bool disable_save_anim = disable_save_mesh_mat && p_scene_import_type != "AnimationLibrary";
+	const bool disable_save_anim = p_scene_import_type != "PackedScene" && p_scene_import_type != "AnimationLibrary";
 	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_ANIMATION_SAVE_PATHS), disable_save_anim);
 
 	base_path = p_path;
@@ -2001,5 +2002,4 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 SceneImportSettingsDialog::~SceneImportSettingsDialog() {
 	memdelete(scene_import_settings_data);
-	memdelete(_resource_importer_scene);
 }

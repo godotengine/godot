@@ -30,13 +30,16 @@
 
 #include "gdextension_manager.h"
 
+#include "core/config/engine.h"
 #include "core/extension/gdextension_function_loader.h"
 #include "core/extension/gdextension_library_loader.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 
 GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(const Ref<GDExtension> &p_extension, bool p_first_load) {
 	if (level >= 0) { // Already initialized up to some level.
@@ -119,7 +122,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &
 	return load_extension_with_loader(p_path, loader);
 }
 
-GDExtensionManager::LoadStatus GDExtensionManager::load_extension_from_function(const String &p_path, GDExtensionConstPtr<const GDExtensionInitializationFunction> p_init_func) {
+GDExtensionManager::LoadStatus GDExtensionManager::load_extension_from_function(const String &p_path, GDExtensionPtr<const GDExtensionInitializationFunction> p_init_func) {
 	Ref<GDExtensionFunctionLoader> func_loader;
 	func_loader.instantiate();
 	func_loader->set_initialization_function((GDExtensionInitializationFunction)*p_init_func.data);
@@ -137,6 +140,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 	extension.instantiate();
 	Error err = extension->open_library(p_path, p_loader);
 	if (err != OK) {
+		if (err == ERR_SKIP) {
+			return LOAD_STATUS_NOT_LOADED;
+		}
 		return LOAD_STATUS_FAILED;
 	}
 
@@ -189,6 +195,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 
 	Error err = extension->open_library(p_path, extension->loader);
 	if (err != OK) {
+		if (err == ERR_SKIP) {
+			return LOAD_STATUS_NOT_LOADED;
+		}
 		return LOAD_STATUS_FAILED;
 	}
 

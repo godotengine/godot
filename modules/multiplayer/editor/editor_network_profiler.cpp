@@ -31,7 +31,7 @@
 #include "editor_network_profiler.h"
 
 #include "core/io/resource_loader.h"
-#include "core/object/class_db.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/settings/editor_settings.h"
@@ -39,6 +39,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/split_container.h"
 #include "scene/main/timer.h"
 
 void EditorNetworkProfiler::_bind_methods() {

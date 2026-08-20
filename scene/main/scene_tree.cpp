@@ -32,12 +32,13 @@
 
 STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/object/message_queue.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
@@ -170,12 +171,12 @@ void SceneTree::node_renamed(Node *p_node) {
 	emit_signal(node_renamed_name, p_node);
 }
 
-SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
+SceneTreeGroup *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
 	_THREAD_SAFE_METHOD_
 
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 	if (!E) {
-		E = group_map.insert(p_group, Group());
+		E = group_map.insert(p_group, SceneTreeGroup());
 	}
 
 	ERR_FAIL_COND_V_MSG(E->value.nodes.has(p_node), &E->value, "Already in group: " + p_group + ".");
@@ -187,7 +188,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	_THREAD_SAFE_METHOD_
 
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 	ERR_FAIL_COND(!E);
 
 	E->value.nodes.erase(p_node);
@@ -336,7 +337,7 @@ void SceneTree::_flush_ugc() {
 	ugc_locked = false;
 }
 
-void SceneTree::_update_group_order(Group &g) {
+void SceneTree::_update_group_order(SceneTreeGroup &g) {
 	if (!g.changed) {
 		return;
 	}
@@ -353,17 +354,21 @@ void SceneTree::_update_group_order(Group &g) {
 	g.changed = false;
 }
 
+RequiredResult<Window> SceneTree::get_root() const {
+	return root;
+}
+
 void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
 	Vector<Node *> nodes_copy;
 
 	{
 		_THREAD_SAFE_METHOD_
 
-		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 		if (!E) {
 			return;
 		}
-		Group &g = E->value;
+		SceneTreeGroup &g = E->value;
 		if (g.nodes.is_empty()) {
 			return;
 		}
@@ -450,11 +455,11 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 	Vector<Node *> nodes_copy;
 	{
 		_THREAD_SAFE_METHOD_
-		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 		if (!E) {
 			return;
 		}
-		Group &g = E->value;
+		SceneTreeGroup &g = E->value;
 		if (g.nodes.is_empty()) {
 			return;
 		}
@@ -513,11 +518,11 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 	{
 		_THREAD_SAFE_METHOD_
 
-		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 		if (!E) {
 			return;
 		}
-		Group &g = E->value;
+		SceneTreeGroup &g = E->value;
 		if (g.nodes.is_empty()) {
 			return;
 		}
@@ -920,8 +925,23 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_CRASH:
 		case NOTIFICATION_APPLICATION_RESUMED:
 		case NOTIFICATION_APPLICATION_PAUSED:
+		case NOTIFICATION_APPLICATION_PIP_MODE_ENTERED:
+		case NOTIFICATION_APPLICATION_PIP_MODE_EXITED: {
+			// Pass these to nodes, since they are mirrored.
+			get_root()->propagate_notification(p_notification);
+		} break;
+
 		case NOTIFICATION_APPLICATION_FOCUS_IN:
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			if (Input::get_singleton()) {
+				Input::get_singleton()->application_focused = p_notification == NOTIFICATION_APPLICATION_FOCUS_IN;
+
+				// `release_pressed_events()` already preserves joypad state when the
+				// unfocused joypad setting is disabled, but keyboard state still needs
+				// to be released after focus loss.
+				Input::get_singleton()->release_pressed_events();
+			}
+
 			// Pass these to nodes, since they are mirrored.
 			get_root()->propagate_notification(p_notification);
 		} break;
@@ -946,7 +966,13 @@ void SceneTree::set_quit_on_go_back(bool p_enable) {
 
 #ifdef DEBUG_ENABLED
 void SceneTree::set_debug_collisions_hint(bool p_enabled) {
+	if (debug_collisions_hint == p_enabled) {
+		return;
+	}
 	debug_collisions_hint = p_enabled;
+	if (root) {
+		root->propagate_notification(Node::NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED);
+	}
 }
 
 bool SceneTree::is_debugging_collisions_hint() const {
@@ -1412,11 +1438,11 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	{
 		_THREAD_SAFE_METHOD_
 
-		HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+		HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 		if (!E) {
 			return;
 		}
-		Group &g = E->value;
+		SceneTreeGroup &g = E->value;
 		if (g.nodes.is_empty()) {
 			return;
 		}
@@ -1535,7 +1561,7 @@ int64_t SceneTree::get_frame() const {
 TypedArray<Node> SceneTree::_get_nodes_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
 	TypedArray<Node> ret;
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return ret;
 	}
@@ -1563,7 +1589,7 @@ bool SceneTree::has_group(const StringName &p_identifier) const {
 
 int SceneTree::get_node_count_in_group(const StringName &p_group) const {
 	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::ConstIterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::ConstIterator E = group_map.find(p_group);
 	if (!E) {
 		return 0;
 	}
@@ -1573,7 +1599,7 @@ int SceneTree::get_node_count_in_group(const StringName &p_group) const {
 
 Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return nullptr; // No group.
 	}
@@ -1589,7 +1615,7 @@ Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 
 Vector<Node *> SceneTree::get_nodes_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
+	HashMap<StringName, SceneTreeGroup>::Iterator E = group_map.find(p_group);
 	if (!E) {
 		return {};
 	}
@@ -1608,18 +1634,16 @@ void SceneTree::_flush_delete_queue() {
 
 	while (delete_queue.size()) {
 		Object *obj = ObjectDB::get_instance(delete_queue.front()->get());
-		if (obj) {
-			memdelete(obj);
-		}
+		memdelete(obj);
 		delete_queue.pop_front();
 	}
 }
 
-void SceneTree::queue_delete(RequiredParam<Object> rp_object) {
+void SceneTree::queue_delete(RequiredParam<Object> p_object) {
 	_THREAD_SAFE_METHOD_
-	EXTRACT_PARAM_OR_FAIL(p_object, rp_object);
-	p_object->_is_queued_for_deletion = true;
-	delete_queue.push_back(p_object->get_instance_id());
+	EXTRACT_PARAM_OR_FAIL(object, p_object);
+	object->_is_queued_for_deletion = true;
+	delete_queue.push_back(object->get_instance_id());
 }
 
 int SceneTree::get_node_count() const {
@@ -1654,9 +1678,7 @@ void SceneTree::_flush_scene_change() {
 	if (prev_scene_id.is_valid()) {
 		// Might have already been freed externally.
 		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
-		if (prev_scene) {
-			memdelete(prev_scene);
-		}
+		memdelete(prev_scene);
 		prev_scene_id = ObjectID();
 	}
 
@@ -1690,18 +1712,18 @@ Error SceneTree::change_scene_to_file(const String &p_path) {
 	return change_scene_to_packed(new_scene);
 }
 
-Error SceneTree::change_scene_to_packed(RequiredParam<PackedScene> rp_scene) {
-	EXTRACT_PARAM_OR_FAIL_V_MSG(p_scene, rp_scene, ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
+Error SceneTree::change_scene_to_packed(RequiredParam<PackedScene> p_scene) {
+	EXTRACT_PARAM_OR_FAIL_V_MSG(scene, p_scene, ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
 
-	Node *new_scene = p_scene->instantiate();
+	Node *new_scene = scene->instantiate();
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
 	return change_scene_to_node(new_scene);
 }
 
-Error SceneTree::change_scene_to_node(RequiredParam<Node> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_V_MSG(p_node, rp_node, ERR_INVALID_PARAMETER, "Can't change to a null node. Use unload_current_scene() if you wish to unload it.");
-	ERR_FAIL_COND_V_MSG(p_node->is_inside_tree(), ERR_UNCONFIGURED, "The new scene node can't already be inside scene tree.");
+Error SceneTree::change_scene_to_node(RequiredParam<Node> p_node) {
+	EXTRACT_PARAM_OR_FAIL_V_MSG(node, p_node, ERR_INVALID_PARAMETER, "Can't change to a null node. Use unload_current_scene() if you wish to unload it.");
+	ERR_FAIL_COND_V_MSG(node->is_inside_tree(), ERR_UNCONFIGURED, "The new scene node can't already be inside scene tree.");
 
 	// If called again while a change is pending.
 	if (pending_new_scene_id.is_valid()) {
@@ -1720,7 +1742,7 @@ Error SceneTree::change_scene_to_node(RequiredParam<Node> rp_node) {
 	}
 	DEV_ASSERT(!current_scene);
 
-	pending_new_scene_id = p_node->get_instance_id();
+	pending_new_scene_id = node->get_instance_id();
 	return OK;
 }
 
@@ -1789,7 +1811,7 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 	return ret;
 }
 
-Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
+RequiredResult<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<MultiplayerAPI>(), "Multiplayer can only be manipulated from the main thread.");
 	if (p_for_path.is_empty()) {
 		return multiplayer;
@@ -2016,7 +2038,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 	if (add_options) {
 		HashMap<StringName, String> global_groups(ProjectSettings::get_singleton()->get_global_groups_list());
 		for (const KeyValue<StringName, String> &E : global_groups) {
-			r_options->push_back(E.key.operator String().quote());
+			r_options->push_back(E.key.string().quote());
 		}
 	}
 	MainLoop::get_argument_options(p_function, p_idx, r_options);
@@ -2134,10 +2156,7 @@ SceneTree::SceneTree() {
 		if (load_err) {
 			ERR_PRINT("Non-existing or invalid VRS texture at '" + vrs_texture_path + "'.");
 		} else {
-			Ref<ImageTexture> vrs_texture;
-			vrs_texture.instantiate();
-			vrs_texture->create_from_image(vrs_image);
-			root->set_vrs_texture(vrs_texture);
+			root->set_vrs_texture(ImageTexture::create_from_image(vrs_image));
 		}
 	}
 
@@ -2212,16 +2231,12 @@ SceneTree::SceneTree() {
 SceneTree::~SceneTree() {
 	if (prev_scene_id.is_valid()) {
 		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
-		if (prev_scene) {
-			memdelete(prev_scene);
-		}
+		memdelete(prev_scene);
 		prev_scene_id = ObjectID();
 	}
 	if (pending_new_scene_id.is_valid()) {
 		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
-		if (pending_new_scene) {
-			memdelete(pending_new_scene);
-		}
+		memdelete(pending_new_scene);
 		pending_new_scene_id = ObjectID();
 	}
 	if (root) {

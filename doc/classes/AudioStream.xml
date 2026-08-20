@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStream" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioStream" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for audio streams.
 	</brief_description>
@@ -45,10 +45,10 @@
 				Return the controllable parameters of this stream. This array contains dictionaries with a property info description format (see [method Object.get_property_list]). Additionally, the default value for this parameter must be added tho each dictionary in "default_value" field.
 			</description>
 		</method>
-		<method name="_get_stream_name" qualifiers="virtual const">
+		<method name="_get_stream_name" qualifiers="virtual const" deprecated="This method is not used by the engine.">
 			<return type="String" />
 			<description>
-				Override this method to customize the name assigned to this audio stream. Unused by the engine.
+				Override this method to customize the name assigned to this audio stream.
 			</description>
 		</method>
 		<method name="_get_tags" qualifiers="virtual const">

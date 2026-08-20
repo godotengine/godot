@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SpinBox" inherits="Range" keywords="number, numeric, input" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SpinBox" inherits="Range" api_type="core" keywords="number, numeric, input" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An input field for numbers.
 	</brief_description>
 	<description>
-		[SpinBox] is a numerical input text field. It allows entering integers and floating-point numbers. The [SpinBox] also has up and down buttons that can be clicked increase or decrease the value. The value can also be changed by dragging the mouse up or down over the [SpinBox]'s arrows.
+		[SpinBox] is a numerical input text field. It allows entering integers and floating-point numbers. The [SpinBox] also has up and down buttons that can be clicked to increase or decrease the value. The value can also be changed by dragging the mouse up or down over the [SpinBox]'s arrows.
 		Additionally, mathematical expressions can be entered. These are evaluated when the user presses [kbd]Enter[/kbd] while editing the [SpinBox]'s text field. This uses the [Expression] class to parse and evaluate the expression. The result of the expression is then set as the value of the [SpinBox]. Some examples of valid expressions are [code]5 + 2 * 3[/code], [code]pow(2, 4)[/code], and [code]PI + sin(0.5)[/code]. Expressions are case-sensitive.
 		[b]Example:[/b] Create a [SpinBox], disable its context menu and set its text alignment to right.
 		[codeblocks]

@@ -36,17 +36,20 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
+class BaseButton;
 class Button;
+class ButtonGroup;
 class ConfirmationDialog;
+class EditorZoomWidget;
 class FilterLineEdit;
 class HSlider;
 class ItemList;
 class MenuButton;
 class Node3DEditorPlugin;
-class ButtonGroup;
-class EditorZoomWidget;
-class BaseButton;
+class Node3DEditorViewport;
 class SpinBox;
+class Tree;
+class TreeItem;
 
 class GridMapEditor : public EditorDock {
 	GDCLASS(GridMapEditor, EditorDock);
@@ -93,6 +96,7 @@ class GridMapEditor : public EditorDock {
 	Button *rotate_x_button = nullptr;
 	Button *rotate_y_button = nullptr;
 	Button *rotate_z_button = nullptr;
+	Button *clear_rotation_button = nullptr;
 
 	EditorZoomWidget *zoom_widget = nullptr;
 	Button *mode_thumbnail = nullptr;
@@ -119,9 +123,14 @@ class GridMapEditor : public EditorDock {
 
 	Transform3D grid_xform;
 	Transform3D edit_grid_xform;
-	Vector3::Axis edit_axis;
+	Vector3::Axis edit_axis_select = Vector3::AXIS_Y;
 	int edit_floor[3];
+	int edit_main_vp = 0;
 	Vector3 grid_ofs;
+
+	bool allow_viewport_override = true;
+	Viewport *last_viewport = nullptr;
+	Vector3::Axis viewport_axis = edit_axis_select;
 
 	RID grid[3];
 	RID grid_instance[3];
@@ -192,6 +201,7 @@ class GridMapEditor : public EditorDock {
 		MENU_OPTION_X_AXIS,
 		MENU_OPTION_Y_AXIS,
 		MENU_OPTION_Z_AXIS,
+		MENU_OPTION_VIEWPORT_OVERRIDE,
 		MENU_OPTION_CURSOR_ROTATE_Y,
 		MENU_OPTION_CURSOR_ROTATE_X,
 		MENU_OPTION_CURSOR_ROTATE_Z,
@@ -208,21 +218,21 @@ class GridMapEditor : public EditorDock {
 
 	};
 
-	Node3DEditorPlugin *spatial_editor = nullptr;
-
 	struct AreaDisplay {
 		RID mesh;
 		RID instance;
 	};
 
+	Tree *categories = nullptr;
+	MarginContainer *item_palette_mc = nullptr;
 	ItemList *mesh_library_palette = nullptr;
 	Label *info_message = nullptr;
 
-	void update_grid(); // Change which and where the grid is displayed
+	void update_grid(); // Change which and where the grid is displayed.
 	void _draw_grids(const Vector3 &cell_size);
-	void _configure();
 	void _menu_option(int);
 	void update_palette();
+	void _update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_idx);
 	void _update_mesh_library();
 	void _set_display_mode(int p_mode);
 	void _item_selected_cbk(int idx);
@@ -249,21 +259,42 @@ class GridMapEditor : public EditorDock {
 	bool _has_selection() const;
 	Array _get_selected_cells() const;
 
+	void _update_edit_axis();
+	Vector3::Axis _get_facing_axis(const Basis &p_grid_basis, const Vector3 &p_direction) const;
+	Vector3::Axis _get_edit_axis() const { return allow_viewport_override ? viewport_axis : edit_axis_select; }
+
+	void _view_state_changed(Node3DEditorViewport *p_viewport);
+
+	String _get_cursor_coordinates() const;
+
 	void _floor_changed(float p_value);
 	void _floor_mouse_exited();
 
 	void _delete_selection();
 	void _delete_selection_with_undo();
 	void _fill_selection();
+	void _clear_selection_with_undo();
 	void _setup_paste_mode();
 
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
 
 	friend class GridMapEditorPlugin;
 
+	struct ItemCategoryMapping {
+		AHashMap<StringName, HashSet<StringName>> category_to_category_children;
+		AHashMap<StringName, HashSet<int>> category_to_items;
+	};
+
+	void _on_categories_item_activated();
+
+	void _rebuild_categories();
+	void _add_child_categories_recursive(Tree *p_categories, TreeItem *p_ti_parent, const StringName &p_category, const ItemCategoryMapping &p_mapping);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 public:
 	EditorPlugin::AfterGUIInput forward_spatial_input_event(Camera3D *p_camera, const Ref<InputEvent> &p_event);
@@ -278,14 +309,16 @@ class GridMapEditorPlugin : public EditorPlugin {
 
 	GridMapEditor *grid_map_editor = nullptr;
 
+	void _overlay_update_requested();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	virtual void forward_3d_draw_over_viewport(Control *p_overlay) override;
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return grid_map_editor->forward_spatial_input_event(p_camera, p_event); }
 	virtual String get_plugin_name() const override { return "GridMap"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

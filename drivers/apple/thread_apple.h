@@ -34,6 +34,7 @@
 #include "core/typedefs.h"
 
 #include <pthread.h>
+
 #include <new> // For hardware interference size
 
 class String;
@@ -75,13 +76,11 @@ private:
 	ID id = UNASSIGNED_ID;
 	pthread_t pthread;
 
+	static inline SafeFlag is_main_thread_assigned{ false };
 	static SafeNumeric<uint64_t> id_counter;
 	static thread_local ID caller_id;
 
 	static void *thread_callback(void *p_data);
-
-	static void make_main_thread() { caller_id = MAIN_ID; }
-	static void release_main_thread() { caller_id = id_counter.increment(); }
 
 public:
 	_FORCE_INLINE_ static void yield() { pthread_yield_np(); }
@@ -95,6 +94,8 @@ public:
 	_FORCE_INLINE_ static ID get_main_id() { return MAIN_ID; }
 
 	_FORCE_INLINE_ static bool is_main_thread() { return caller_id == MAIN_ID; }
+	static void make_main_thread();
+	static void release_main_thread();
 
 	static Error set_name(const String &p_name);
 

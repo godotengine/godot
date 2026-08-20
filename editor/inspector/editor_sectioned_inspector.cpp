@@ -30,6 +30,7 @@
 
 #include "editor_sectioned_inspector.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_inspector.h"
@@ -367,6 +368,7 @@ SectionedInspector::SectionedInspector() :
 	sections->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 	sections->set_hide_root(true);
+	sections->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	sections->set_theme_type_variation("TreeSecondary");
 
 	left_vb->add_child(sections, true);

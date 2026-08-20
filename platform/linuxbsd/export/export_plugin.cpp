@@ -33,12 +33,15 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
-#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/io/zip_io.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
 #include "modules/svg/image_loader_svg.h"
@@ -58,7 +61,7 @@ Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportP
 	return OK;
 }
 
-Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	String custom_debug = p_preset->get("custom_template/debug");
 	String custom_release = p_preset->get("custom_template/release");
 	String arch = p_preset->get("binary_format/architecture");
@@ -108,8 +111,9 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 		path = tmp_dir_path.path_join(p_path.get_file().get_basename());
 	}
 
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, export_as_zip);
 	// Export project.
-	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, path, p_flags);
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, path, p_flags, !export_as_zip);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;
@@ -222,6 +226,12 @@ bool EditorExportPlatformLinuxBSD::is_shebang(const String &p_path) const {
 
 bool EditorExportPlatformLinuxBSD::is_executable(const String &p_path) const {
 	return is_elf(p_path) || is_shebang(p_path);
+}
+
+void EditorExportPlatformLinuxBSD::get_platform_features(List<String> *r_features) const {
+	EditorExportPlatformPC::get_platform_features(r_features);
+	r_features->push_back("linux");
+	r_features->push_back("linuxbsd");
 }
 
 bool EditorExportPlatformLinuxBSD::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {

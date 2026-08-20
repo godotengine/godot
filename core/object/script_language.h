@@ -41,6 +41,10 @@ class ScriptLanguage;
 template <typename T>
 class TypedArray;
 
+#ifdef TOOLS_ENABLED
+class EditorLanguage;
+#endif // TOOLS_ENABLED
+
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
 class ScriptServer {
@@ -151,7 +155,6 @@ public:
 	virtual StringName get_instance_base_type() const = 0; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
 	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) { return nullptr; }
-	virtual bool instance_has(const Object *p_this) const = 0;
 
 	virtual bool has_source_code() const = 0;
 	virtual String get_source_code() const = 0;
@@ -174,7 +177,7 @@ public:
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
-	virtual bool is_valid() const = 0;
+	virtual bool is_script_valid() const = 0;
 	virtual bool is_abstract() const = 0;
 
 	virtual ScriptLanguage *get_language() const = 0;
@@ -200,6 +203,10 @@ public:
 	Script() {
 		_define_ancestry(AncestralClass::SCRIPT);
 	}
+
+#ifndef DISABLE_DEPRECATED
+	[[deprecated("Use Object::get_script instead.")]] bool instance_has(const Object *p_this) const { return p_this != nullptr && Object::cast_to<Script>(p_this->get_script()) == this; }
+#endif // !DISABLE_DEPRECATED
 };
 
 class ScriptLanguage : public Object {
@@ -218,9 +225,20 @@ public:
 	virtual void finish() = 0;
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	// Must not return `nullptr`. `EditorLanguage` can be used as default implementation for languages without editor support.
+	virtual EditorLanguage *get_editor_language() = 0;
+#endif // TOOLS_ENABLED
+
 	struct Warning {
+		/// One-based.
 		int start_line = 0;
+		int start_column = -1;
+
+		/// One-based.
 		int end_line = 0;
+		int end_column = -1;
+
 		int code;
 		String string_code;
 		String message;
@@ -228,8 +246,11 @@ public:
 
 	struct ScriptError {
 		String path;
-		int line = -1;
-		int column = -1;
+		/// All one-based.
+		int start_line = -1;
+		int start_column = -1;
+		int end_line = -1;
+		int end_column = -1;
 		String message;
 	};
 
@@ -260,7 +281,6 @@ public:
 		}
 	};
 
-	void get_core_type_words(List<String> *p_core_type_words) const;
 	virtual Vector<String> get_reserved_words() const = 0;
 	virtual bool is_control_flow_keyword(const String &p_string) const = 0;
 	virtual Vector<String> get_comment_delimiters() const = 0;
@@ -274,7 +294,6 @@ public:
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }
 	virtual bool can_inherit_from_file() const { return false; }
-	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const = 0;
 	virtual bool can_make_function() const { return true; }
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
@@ -294,6 +313,7 @@ public:
 		CODE_COMPLETION_KIND_NODE_PATH,
 		CODE_COMPLETION_KIND_FILE_PATH,
 		CODE_COMPLETION_KIND_PLAIN_TEXT,
+		CODE_COMPLETION_KIND_KEYWORD,
 		CODE_COMPLETION_KIND_MAX
 	};
 
@@ -305,10 +325,27 @@ public:
 		LOCATION_OTHER = 1 << 10,
 	};
 
+	struct TextEdit {
+		String new_text;
+		int start_line = -1;
+		int start_column;
+		int end_line;
+		int end_column;
+
+		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
+	};
+
 	struct CodeCompletionOption {
 		CodeCompletionKind kind = CODE_COMPLETION_KIND_PLAIN_TEXT;
 		String display;
 		String insert_text;
+		/**
+		 * Optional server side calculated insertion.
+		 *
+		 * In contrast to `insert_text`, the editor must not do matching of preexisting text on `text_edit`.
+		 * Note: This is used by the language server, there is no support in the builtin editor for this property at the moment.
+		 */
+		TextEdit text_edit;
 		Color font_color;
 		Ref<Resource> icon;
 		Variant default_value;
@@ -335,54 +372,6 @@ public:
 		TypedArray<int> charac;
 	};
 
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
-
-	enum LookupResultType {
-		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.
-		LOOKUP_RESULT_CLASS,
-		LOOKUP_RESULT_CLASS_CONSTANT,
-		LOOKUP_RESULT_CLASS_PROPERTY,
-		LOOKUP_RESULT_CLASS_METHOD,
-		LOOKUP_RESULT_CLASS_SIGNAL,
-		LOOKUP_RESULT_CLASS_ENUM,
-		LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE, // Deprecated.
-		LOOKUP_RESULT_CLASS_ANNOTATION,
-		LOOKUP_RESULT_LOCAL_CONSTANT,
-		LOOKUP_RESULT_LOCAL_VARIABLE,
-		LOOKUP_RESULT_MAX,
-	};
-
-	struct LookupResult {
-		LookupResultType type;
-
-		// For `CLASS_*`.
-		String class_name;
-		String class_member;
-
-		// For `LOCAL_*`.
-		String description;
-		bool is_deprecated = false;
-		String deprecated_message;
-		bool is_experimental = false;
-		String experimental_message;
-
-		// For `LOCAL_*`.
-		String doc_type;
-		String enumeration;
-		bool is_bitfield = false;
-
-		// For `LOCAL_*`.
-		String value;
-
-		// `SCRIPT_LOCATION` and `LOCAL_*` must have, `CLASS_*` can have.
-		Ref<Script> script;
-		String script_path;
-		int location = -1;
-	};
-
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
-
-	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) {}
 	virtual void remove_named_global_constant(const StringName &p_name) {}
@@ -414,11 +403,10 @@ public:
 	virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
 
 	virtual void reload_all_scripts() = 0;
-	virtual void reload_scripts(const Array &p_scripts, bool p_soft_reload) = 0;
-	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) = 0;
+	virtual void reload_scripts(const Array &p_scripts) = 0;
+	virtual void reload_tool_script(const Ref<Script> &p_script) = 0;
 	/* LOADER FUNCTIONS */
 
-	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const = 0;
 	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const = 0;
 	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const = 0;

@@ -30,10 +30,11 @@
 
 #include "metal_objects_shared.h"
 
-#include "rendering_device_driver_metal.h"
+#include "drivers/metal/rendering_device_driver_metal.h"
 
 #include <os/signpost.h>
 #include <simd/simd.h>
+
 #include <shared_mutex>
 #include <string>
 
@@ -345,21 +346,21 @@ MTL::DepthStencilState *MDResourceCache::get_depth_stencil_state(bool p_use_dept
 MTLFmtCaps MDSubpass::getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const {
 	MTLFmtCaps caps = kMTLFmtCapsNone;
 
-	for (RDD::AttachmentReference const &ar : input_references) {
+	for (const RDD::AttachmentReference &ar : input_references) {
 		if (ar.attachment == p_index) {
 			flags::set(caps, kMTLFmtCapsRead);
 			break;
 		}
 	}
 
-	for (RDD::AttachmentReference const &ar : color_references) {
+	for (const RDD::AttachmentReference &ar : color_references) {
 		if (ar.attachment == p_index) {
 			flags::set(caps, kMTLFmtCapsColorAtt);
 			break;
 		}
 	}
 
-	for (RDD::AttachmentReference const &ar : resolve_references) {
+	for (const RDD::AttachmentReference &ar : resolve_references) {
 		if (ar.attachment == p_index) {
 			flags::set(caps, kMTLFmtCapsResolve);
 			break;
@@ -377,7 +378,7 @@ void MDAttachment::linkToSubpass(const MDRenderPass &p_pass) {
 	firstUseSubpassIndex = UINT32_MAX;
 	lastUseSubpassIndex = 0;
 
-	for (MDSubpass const &subpass : p_pass.subpasses) {
+	for (const MDSubpass &subpass : p_pass.subpasses) {
 		MTLFmtCaps reqCaps = subpass.getRequiredFmtCapsForAttachmentAt(index);
 		if (reqCaps) {
 			firstUseSubpassIndex = MIN(subpass.subpass_index, firstUseSubpassIndex);
@@ -386,7 +387,7 @@ void MDAttachment::linkToSubpass(const MDRenderPass &p_pass) {
 	}
 }
 
-MTL::StoreAction MDAttachment::getMTLStoreAction(MDSubpass const &p_subpass,
+MTL::StoreAction MDAttachment::getMTLStoreAction(const MDSubpass &p_subpass,
 		bool p_is_rendering_entire_area,
 		bool p_has_resolve,
 		bool p_can_resolve,
@@ -439,7 +440,7 @@ void MDCommandBufferBase::render_set_viewport(VectorView<Rect2i> p_viewports) {
 	RenderStateBase &state = get_render_state_base();
 	state.viewports.resize(p_viewports.size());
 	for (uint32_t i = 0; i < p_viewports.size(); i += 1) {
-		Rect2i const &vp = p_viewports[i];
+		const Rect2i &vp = p_viewports[i];
 		state.viewports[i] = {
 			.originX = static_cast<double>(vp.position.x),
 			.originY = static_cast<double>(vp.position.y),
@@ -456,7 +457,7 @@ void MDCommandBufferBase::render_set_scissor(VectorView<Rect2i> p_scissors) {
 	RenderStateBase &state = get_render_state_base();
 	state.scissors.resize(p_scissors.size());
 	for (uint32_t i = 0; i < p_scissors.size(); i += 1) {
-		Rect2i const &vp = p_scissors[i];
+		const Rect2i &vp = p_scissors[i];
 		state.scissors[i] = {
 			.x = static_cast<NS::UInteger>(vp.position.x),
 			.y = static_cast<NS::UInteger>(vp.position.y),
@@ -479,12 +480,12 @@ void MDCommandBufferBase::render_set_blend_constants(const Color &p_constants) {
 void MDCommandBufferBase::_populate_vertices(simd::float4 *p_vertices, Size2i p_fb_size, VectorView<Rect2i> p_rects) {
 	uint32_t idx = 0;
 	for (uint32_t i = 0; i < p_rects.size(); i++) {
-		Rect2i const &rect = p_rects[i];
+		const Rect2i &rect = p_rects[i];
 		idx = _populate_vertices(p_vertices, idx, rect, p_fb_size);
 	}
 }
 
-uint32_t MDCommandBufferBase::_populate_vertices(simd::float4 *p_vertices, uint32_t p_index, Rect2i const &p_rect, Size2i p_fb_size) {
+uint32_t MDCommandBufferBase::_populate_vertices(simd::float4 *p_vertices, uint32_t p_index, const Rect2i &p_rect, Size2i p_fb_size) {
 	// Determine the positions of the four edges of the
 	// clear rectangle as a fraction of the attachment size.
 	float leftPos = (float)(p_rect.position.x) / (float)p_fb_size.width;
@@ -540,8 +541,8 @@ uint32_t MDCommandBufferBase::_populate_vertices(simd::float4 *p_vertices, uint3
 }
 
 void MDCommandBufferBase::_end_render_pass() {
-	MDFrameBuffer const &fb_info = *get_frame_buffer();
-	MDSubpass const &subpass = get_current_subpass();
+	const MDFrameBuffer &fb_info = *get_frame_buffer();
+	const MDSubpass &subpass = get_current_subpass();
 
 	PixelFormats &pf = device_driver->get_pixel_formats();
 
@@ -563,8 +564,8 @@ void MDCommandBufferBase::_end_render_pass() {
 }
 
 void MDCommandBufferBase::_render_clear_render_area() {
-	MDRenderPass const &pass = *get_render_pass();
-	MDSubpass const &subpass = get_current_subpass();
+	const MDRenderPass &pass = *get_render_pass();
+	const MDSubpass &subpass = get_current_subpass();
 	LocalVector<RDD::RenderPassClearValue> &clear_values = get_clear_values();
 
 	uint32_t ds_index = subpass.depth_stencil_reference.attachment;
@@ -588,7 +589,7 @@ void MDCommandBufferBase::_render_clear_render_area() {
 	}
 
 	if (clear_depth || clear_stencil) {
-		MDAttachment const &attachment = pass.attachments[ds_index];
+		const MDAttachment &attachment = pass.attachments[ds_index];
 		BitField<RDD::TextureAspectBits> bits = {};
 		if (clear_depth && attachment.type & MDAttachmentType::Depth) {
 			bits.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
@@ -616,7 +617,7 @@ void MDCommandBufferBase::encode_push_constant_data(RDD::ShaderID p_shader, Vect
 				return;
 			}
 			push_constant_binding = shader->push_constants.binding;
-			void const *ptr = p_data.ptr();
+			const void *ptr = p_data.ptr();
 			push_constant_data_len = p_data.size() * sizeof(uint32_t);
 			DEV_ASSERT(push_constant_data_len <= sizeof(push_constant_data));
 			memcpy(push_constant_data, ptr, push_constant_data_len);
@@ -633,15 +634,15 @@ void MDCommandBufferBase::encode_push_constant_data(RDD::ShaderID p_shader, Vect
 #pragma mark - Metal Library
 
 static const char *SHADER_STAGE_NAMES[] = {
-	[RDC::SHADER_STAGE_VERTEX] = "vert",
-	[RDC::SHADER_STAGE_FRAGMENT] = "frag",
-	[RDC::SHADER_STAGE_TESSELATION_CONTROL] = "tess_ctrl",
-	[RDC::SHADER_STAGE_TESSELATION_EVALUATION] = "tess_eval",
-	[RDC::SHADER_STAGE_COMPUTE] = "comp",
+	"vert", // RDC::SHADER_STAGE_VERTEX
+	"frag", // RDC::SHADER_STAGE_FRAGMENT
+	"tess_ctrl", // RDC::SHADER_STAGE_TESSELATION_CONTROL
+	"tess_eval", // RDC::SHADER_STAGE_TESSELATION_EVALUATION
+	"comp", // RDC::SHADER_STAGE_COMPUTE
 };
 
-void ShaderCacheEntry::notify_free() const {
-	owner.shader_cache_free_entry(key);
+void ShaderCacheEntry::notify_free() {
+	owner.shader_cache_free_entry(this);
 }
 
 #pragma mark - MDLibrary

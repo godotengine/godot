@@ -32,8 +32,10 @@
 
 #include "core/config/engine.h"
 #include "core/math/transform_interpolator.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 #include "scene/property_utils.h"
 #include "servers/display/accessibility_server.h"
@@ -250,10 +252,6 @@ void Node3D::_notification(int p_what) {
 
 			ERR_FAIL_NULL(data.viewport);
 
-			if (get_script_instance()) {
-				get_script_instance()->call(SNAME("_enter_world"));
-			}
-
 #ifdef TOOLS_ENABLED
 			if (is_part_of_edited_scene() && !data.gizmos_requested) {
 				data.gizmos_requested = true;
@@ -268,10 +266,6 @@ void Node3D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 			clear_gizmos();
 #endif
-
-			if (get_script_instance()) {
-				get_script_instance()->call(SNAME("_exit_world"));
-			}
 
 			data.viewport = nullptr;
 			data.inside_world = false;

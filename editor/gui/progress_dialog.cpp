@@ -30,12 +30,13 @@
 
 #include "progress_dialog.h"
 
-#include "core/object/callable_method_pointer.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "servers/display/display_server.h"
 
@@ -131,6 +132,17 @@ ProgressDialog *ProgressDialog::singleton = nullptr;
 
 void ProgressDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			Window *base_window = get_window();
+			if (base_window) {
+				base_window->set_taskbar_progress_value(0.0);
+				if (is_visible()) {
+					base_window->set_taskbar_progress_state(DisplayServerEnums::PROGRESS_STATE_NORMAL);
+				} else {
+					base_window->set_taskbar_progress_state(DisplayServerEnums::PROGRESS_STATE_NOPROGRESS);
+				}
+			}
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			Ref<StyleBox> style = main->get_theme_stylebox(SceneStringName(panel), SNAME("PopupMenu"));
 			main_border_size = style->get_minimum_size();
@@ -240,6 +252,11 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 		t.progress->set_value(t.progress->get_value() + 1);
 	} else {
 		t.progress->set_value(p_step);
+	}
+
+	Window *base_window = get_window();
+	if (base_window) {
+		base_window->set_taskbar_progress_value(t.progress->get_as_ratio());
 	}
 
 	t.state->set_text(p_state);

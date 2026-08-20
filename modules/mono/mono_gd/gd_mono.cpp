@@ -30,7 +30,6 @@
 
 #include "gd_mono.h"
 
-#include "../csharp_script.h"
 #include "../glue/runtime_interop.h"
 #include "../godotsharp_dirs.h"
 #include "../thirdparty/coreclr_delegates.h"
@@ -47,8 +46,8 @@
 #include "../editor/semver.h"
 #endif
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
@@ -857,13 +856,13 @@ namespace MonoBind {
 
 GodotSharp *GodotSharp::singleton = nullptr;
 
-void GodotSharp::reload_assemblies(bool p_soft_reload) {
+void GodotSharp::reload_assemblies() {
 #ifdef GD_MONO_HOT_RELOAD
 	CRASH_COND(CSharpLanguage::get_singleton() == nullptr);
 	// This method may be called more than once with `call_deferred`, so we need to check
 	// again if reloading is needed to avoid reloading multiple times unnecessarily.
 	if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed()) {
-		CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
+		CSharpLanguage::get_singleton()->reload_assemblies();
 	}
 #endif
 }

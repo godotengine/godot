@@ -249,9 +249,7 @@ public:
 
 	virtual ~DuplicateGuineaPigData() {
 		Object *obj_ptr = obj.get_validated_object();
-		if (obj_ptr) {
-			memdelete(obj_ptr);
-		}
+		memdelete(obj_ptr);
 	}
 };
 
@@ -350,7 +348,7 @@ public:
 		} \
 \
 	public: \
-		static m_class_name *register_and_instantiate() { \
+		static Ref<m_class_name> register_and_instantiate() { \
 			static bool registered = false; \
 			if (!registered) { \
 				GDREGISTER_CLASS(m_class_name); \
