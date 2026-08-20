@@ -1053,7 +1053,7 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 			for (Node *node : pasted_nodes) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(node);
 				if (ci) {
-					Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse() * ci->get_transform();
+					Transform2D xform = ci->get_transform() * ci->get_global_transform_with_canvas().affine_inverse();
 					undo_redo->add_do_method(ci, "_edit_set_position", xform.xform(node_create_position));
 					undo_redo->add_undo_method(ci, "_edit_set_position", ci->_edit_get_position());
 				}
@@ -1074,7 +1074,7 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 					if (!_is_node_movable(ci, true)) {
 						continue;
 					}
-					Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse() * ci->get_transform();
+					Transform2D xform = ci->get_transform() * ci->get_global_transform_with_canvas().affine_inverse();
 					undo_redo->add_do_method(ci, "_edit_set_position", xform.xform(node_create_position));
 					undo_redo->add_undo_method(ci, "_edit_set_position", ci->_edit_get_position());
 				}
