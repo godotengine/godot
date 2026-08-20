@@ -58,6 +58,12 @@
 #include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server.h"
 
+#include "modules/modules_enabled.gen.h" // for gdscript
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/gdscript.h"
+#endif // MODULE_GDSCRIPT_ENABLED
+
 static bool _has_sub_resources(const Ref<Resource> &p_res) {
 	List<PropertyInfo> property_list;
 	p_res->get_property_list(&property_list);
@@ -189,6 +195,16 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 	}
 
 	if (preview_rect) {
+		// For inner classes, show the owner's preview instead, as they don't have their own preview.
+#ifdef MODULE_GDSCRIPT_ENABLED
+		Ref<GDScript> gdscript = edited_resource;
+		if (gdscript.is_valid() && gdscript->is_built_in() && gdscript->has_owner()) {
+			Ref<GDScript> owner_script = gdscript->get_owner();
+			assign_button->set_text(owner_script->get_path().get_file());
+			return;
+		}
+#endif // MODULE_GDSCRIPT_ENABLED
+
 		Ref<Script> scr = edited_resource;
 		if (scr.is_valid()) {
 			assign_button->set_text(scr->get_path().get_file());
