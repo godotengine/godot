@@ -5669,7 +5669,7 @@ void EditorNode::add_io_warning(const String &p_warning) {
 	}
 }
 
-bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Resource *> &r_resources_found) {
+bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Resource *> &r_resources_found, const String &p_root_scene_path, Ref<Resource> *r_recursive_resource) {
 	switch (p_variant.get_type()) {
 		case Variant::ARRAY: {
 			Array a = p_variant;
@@ -5678,7 +5678,7 @@ bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Reso
 				if (v2.get_type() != Variant::ARRAY && v2.get_type() != Variant::DICTIONARY && v2.get_type() != Variant::OBJECT) {
 					continue;
 				}
-				if (find_recursive_resources(v2, r_resources_found)) {
+				if (find_recursive_resources(v2, r_resources_found, p_root_scene_path, r_recursive_resource)) {
 					return true;
 				}
 			}
@@ -5689,12 +5689,12 @@ bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Reso
 				const Variant &k = kv.key;
 				const Variant &v2 = kv.value;
 				if (k.get_type() == Variant::ARRAY || k.get_type() == Variant::DICTIONARY || k.get_type() == Variant::OBJECT) {
-					if (find_recursive_resources(k, r_resources_found)) {
+					if (find_recursive_resources(k, r_resources_found, p_root_scene_path, r_recursive_resource)) {
 						return true;
 					}
 				}
 				if (v2.get_type() == Variant::ARRAY || v2.get_type() == Variant::DICTIONARY || v2.get_type() == Variant::OBJECT) {
-					if (find_recursive_resources(v2, r_resources_found)) {
+					if (find_recursive_resources(v2, r_resources_found, p_root_scene_path, r_recursive_resource)) {
 						return true;
 					}
 				}
@@ -5708,7 +5708,22 @@ bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Reso
 			}
 
 			if (r_resources_found.has(r.ptr())) {
+				if (r_recursive_resource) {
+					*r_recursive_resource = Ref<Resource>(r);
+				}
 				return true;
+			}
+
+			if (!p_root_scene_path.is_empty()) {
+				Ref<PackedScene> ps = r;
+				if (ps.is_valid()) {
+					if (ps->get_path() == p_root_scene_path) {
+						if (r_recursive_resource) {
+							*r_recursive_resource = Ref<Resource>(r);
+						}
+						return true;
+					}
+				}
 			}
 
 			r_resources_found.insert(r.ptr());
@@ -5723,7 +5738,7 @@ bool EditorNode::find_recursive_resources(const Variant &p_variant, HashSet<Reso
 				if (pinfo.type != Variant::ARRAY && pinfo.type != Variant::DICTIONARY && pinfo.type != Variant::OBJECT) {
 					continue;
 				}
-				if (find_recursive_resources(r->get(pinfo.name), r_resources_found)) {
+				if (find_recursive_resources(r->get(pinfo.name), r_resources_found, p_root_scene_path, r_recursive_resource)) {
 					return true;
 				}
 			}

@@ -65,6 +65,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/packed_scene.h"
 #include "scene/resources/sky.h"
 #include "servers/display/display_server.h"
 
@@ -3433,18 +3434,25 @@ void EditorPropertyResource::_select_resource(const Ref<Resource> &p_resource, b
 }
 
 void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
+	HashSet<Resource *> resources_found;
 	Resource *r = Object::cast_to<Resource>(get_edited_object());
+	String root_scene_path;
 	if (r) {
-		// Check for recursive setting of resource
-		HashSet<Resource *> resources_found;
 		resources_found.insert(r);
-		bool found = EditorNode::find_recursive_resources(p_resource, resources_found);
-		if (found) {
-			callable_mp(EditorNode::get_singleton(), &EditorNode::show_warning).call_deferred(TTR("Recursion detected, unable to assign resource to property."), TTR("Warning!"));
-			emit_changed(get_edited_property(), Ref<Resource>());
-			update_property();
-			return;
-		}
+	}
+	Node *n = Object::cast_to<Node>(get_edited_object());
+	if (n) {
+		root_scene_path = n->get_scene_file_path();
+	}
+
+	// Check for recursive setting of resource
+	Ref<Resource> recursive_resource;
+	bool found = EditorNode::find_recursive_resources(p_resource, resources_found, root_scene_path, &recursive_resource);
+	if (found) {
+		callable_mp(EditorNode::get_singleton(), &EditorNode::show_warning).call_deferred(vformat(TTR("Recursion detected on resource '%s', unable to assign resource to property."), recursive_resource->get_path()), TTR("Warning!"));
+		emit_changed(get_edited_property(), Ref<Resource>());
+		update_property();
+		return;
 	}
 
 	if (p_resource.is_valid() && p_resource->is_local_to_scene()) {
