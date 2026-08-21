@@ -32,6 +32,7 @@
 
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/scene_tree_editor.h"
@@ -41,8 +42,28 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
+
+Ref<Mesh> Particles3DEditorPlugin::get_mesh_for_node_created_in_editor() const {
+	Ref<QuadMesh> quad_mesh = memnew(QuadMesh);
+	quad_mesh->set_size(Vector2(0.1, 0.1));
+
+	// Create material to display billboarded texture that follows the color and scale ramps
+	// defined in ParticleProcessMaterial.
+	Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
+	material->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
+	material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	material->set_flag(BaseMaterial3D::FLAG_BILLBOARD_KEEP_SCALE, true);
+	material->set_billboard_mode(BaseMaterial3D::BILLBOARD_PARTICLES);
+
+	material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, get_texture_for_object_created_in_editor());
+	quad_mesh->set_material(material);
+
+	return quad_mesh;
+}
 
 void Particles3DEditorPlugin::_generate_aabb() {
 	double time = generate_seconds->get_value();
@@ -316,6 +337,42 @@ Particles3DEditorPlugin::Particles3DEditorPlugin() {
 	emission_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Particles3DEditorPlugin::_generate_emission_points));
 }
 
+void GPUParticles3DEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorInterface::get_singleton()->connect("object_created_in_editor", callable_mp(this, &GPUParticles3DEditorPlugin::_object_created_in_editor));
+		} break;
+	}
+}
+
+void GPUParticles3DEditorPlugin::_object_created_in_editor(Object *p_object) {
+	GPUParticles3D *gpu_particles_3d = Object::cast_to<GPUParticles3D>(p_object);
+	if (gpu_particles_3d) {
+		// Increase the particle amount somewhat to make moving particle systems more visible out of the box.
+		gpu_particles_3d->set_amount(30);
+
+		// Simulate particles at the render framerate to avoid issues with interpolation.
+		// Enabling trails will internally force fixed FPS to 30 anyway (without changing the value of the property).
+		gpu_particles_3d->set_fixed_fps(0);
+
+		gpu_particles_3d->set_process_material(get_material_for_object_created_in_editor());
+		Ref<ParticleProcessMaterial> process_material = gpu_particles_3d->get_process_material();
+		if (process_material.is_valid()) {
+			// Set gravity according to the 3D project settings.
+			const float default_gravity = GLOBAL_GET("physics/3d/default_gravity");
+			const Vector3 default_gravity_vector = GLOBAL_GET("physics/3d/default_gravity_vector");
+			process_material->set_gravity(default_gravity_vector * default_gravity);
+
+			// Emit particles upwards, so that they are visible even when the particles node is placed on the ground.
+			// Adjust for the default gravity, so that particles are emitted upwards even when gravity is set to a high value.
+			process_material->set_direction(Vector3(0, 1, 0));
+			process_material->set_param_min(ParticleProcessMaterial::PARAM_INITIAL_LINEAR_VELOCITY, MAX(1.0, default_gravity * 0.4));
+		}
+
+		gpu_particles_3d->set_draw_pass_mesh(0, get_mesh_for_node_created_in_editor());
+	}
+}
+
 Node *GPUParticles3DEditorPlugin::_convert_particles() {
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(edited_node);
 
@@ -415,6 +472,57 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin() {
 	handled_type = TTRC("GPUParticles3D");
 	conversion_option_name = TTR("Convert to CPUParticles3D");
+}
+
+void CPUParticles3DEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorInterface::get_singleton()->connect("object_created_in_editor", callable_mp(this, &CPUParticles3DEditorPlugin::_object_created_in_editor));
+		} break;
+	}
+}
+
+void CPUParticles3DEditorPlugin::_object_created_in_editor(Object *p_object) {
+	CPUParticles3D *cpu_particles_3d = Object::cast_to<CPUParticles3D>(p_object);
+	if (cpu_particles_3d) {
+		// Increase the particle amount somewhat to make moving particle systems more visible out of the box.
+		cpu_particles_3d->set_amount(30);
+
+		// Reduce particle spread to make the particle node's rotation easier to notice.
+		cpu_particles_3d->set_spread(5.0);
+
+		// Randomize initial particle rotation.
+		cpu_particles_3d->set_param_min(CPUParticles3D::PARAM_ANGLE, 0.0);
+		cpu_particles_3d->set_param_max(CPUParticles3D::PARAM_ANGLE, 360.0);
+
+		// Scale particles up and down as the lifetime progresses.
+		Ref<Curve> curve = memnew(Curve);
+		// The wind-up occurs significantly faster than the fade-out.
+		curve->add_point(Vector2(0.0, 0.0));
+		curve->add_point(Vector2(0.1, 1.0));
+		curve->add_point(Vector2(1.0, 0.0));
+		cpu_particles_3d->set_param_curve(CPUParticles3D::PARAM_SCALE, curve);
+
+		// Fade particles with transparency as the lifetime progresses.
+		Ref<Gradient> gradient = memnew(Gradient);
+		// The fade-in occurs significantly faster than the fade-out.
+		gradient->set_color(0, Color(1, 1, 1, 0));
+		gradient->set_color(1, Color(1, 1, 1, 0));
+		gradient->add_point(0.1, Color(1, 1, 1, 1));
+		cpu_particles_3d->set_color_ramp(gradient);
+
+		// Set gravity according to the 3D project settings.
+		const float default_gravity = GLOBAL_GET("physics/3d/default_gravity");
+		const Vector3 default_gravity_vector = GLOBAL_GET("physics/3d/default_gravity_vector");
+		cpu_particles_3d->set_gravity(default_gravity_vector * default_gravity);
+
+		// Emit particles upwards, so that they are visible even when the particles node is placed on the ground.
+		// Adjust for the default gravity, so that particles are emitted upwards even when gravity is set to a high value.
+		cpu_particles_3d->set_direction(Vector3(0, 1, 0));
+		cpu_particles_3d->set_param_min(CPUParticles3D::PARAM_INITIAL_LINEAR_VELOCITY, MAX(1.0, default_gravity * 0.4));
+
+		cpu_particles_3d->set_mesh(get_mesh_for_node_created_in_editor());
+	}
 }
 
 Node *CPUParticles3DEditorPlugin::_convert_particles() {

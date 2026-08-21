@@ -117,8 +117,10 @@ class GPUParticles2DEditorPlugin : public Particles2DEditorPlugin {
 	SpinBox *generate_seconds = nullptr;
 
 	void _generate_visibility_rect();
+	void _object_created_in_editor(Object *p_object);
 
 protected:
+	void _notification(int p_what);
 	void _menu_callback(int p_idx) override;
 	void _add_menu_options(PopupMenu *p_menu) override;
 
@@ -133,7 +135,10 @@ public:
 class CPUParticles2DEditorPlugin : public Particles2DEditorPlugin {
 	GDCLASS(CPUParticles2DEditorPlugin, Particles2DEditorPlugin);
 
+	void _object_created_in_editor(Object *p_object);
+
 protected:
+	void _notification(int p_what);
 	Node *_convert_particles() override;
 
 	void _generate_emission_mask() override;
