@@ -34,27 +34,99 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Array);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
 
+#include "memory.h"
+
 #include "core/templates/hash_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/container_type_validate.h"
 #include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
+typedef HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator> VHashMap;
+
 struct DictionaryPrivate {
 	SafeRefCount refcount;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator> variant_map;
+	VHashMap variant_map;
 	ContainerTypeValidate typed_key;
 	ContainerTypeValidate typed_value;
 	Variant *typed_fallback = nullptr; // Allows a typed dictionary to return dummy values when attempting an invalid access.
 };
 
+// ConstIterator mirrors the HashMap version
+struct Dictionary::ConstIteratorPrivate {
+	friend Dictionary;
+	friend ConstIterator;
+
+	ConstIteratorPrivate(const VHashMap::ConstIterator p_it) : it{ p_it } {}
+
+private:
+	VHashMap::ConstIterator it;
+};
+
+const KeyValue<Variant, Variant> &Dictionary::ConstIterator::operator*() const {
+	return _p->it.operator*();
+}
+const KeyValue<Variant, Variant> *Dictionary::ConstIterator::operator->() const {
+	return _p->it.operator->();
+}
+Dictionary::ConstIterator &Dictionary::ConstIterator::operator++() {
+	_p->it.operator++();
+	return *this;
+}
+Dictionary::ConstIterator &Dictionary::ConstIterator::operator--() {
+	_p->it.operator--();
+	return *this;
+}
+
+bool Dictionary::ConstIterator::operator==(const ConstIterator &p_other) const {
+	return _p->it.operator==(p_other._p->it);
+}
+bool Dictionary::ConstIterator::operator!=(const ConstIterator &p_other) const {
+	return _p->it.operator!=(p_other._p->it);
+}
+
+Dictionary::ConstIterator::operator bool() const {
+	return _p->it.operator bool();
+}
+
+Dictionary::ConstIterator::ConstIterator(const ConstIterator &p_other) : _p{ memnew(Dictionary::ConstIteratorPrivate(p_other._p->it)) } {}
+
+Dictionary::ConstIterator::ConstIterator(ConstIterator &&p_other) : _p{ p_other._p } {
+	p_other._p = nullptr;
+}
+
+Dictionary::ConstIterator &Dictionary::ConstIterator::operator=(const ConstIterator &p_other) {
+	if (_p != nullptr) {
+		memdelete(_p);
+	}
+	_p = memnew(Dictionary::ConstIteratorPrivate{ p_other._p->it });
+	return *this;
+}
+
+Dictionary::ConstIterator &Dictionary::ConstIterator::operator=(ConstIterator &&p_other) {
+	if (_p != nullptr) {
+		memdelete(_p);
+	}
+	_p = p_other._p;
+	p_other._p = nullptr;
+	return *this;
+}
+
+Dictionary::ConstIterator::~ConstIterator() {
+	if (_p != nullptr) {
+		memdelete(_p);
+	}
+}
+
+Dictionary::ConstIterator::ConstIterator(ConstIteratorPrivate *p_p) : _p{ p_p } {}
+
 Dictionary::ConstIterator Dictionary::begin() const {
-	return _p->variant_map.begin();
+	return Dictionary::ConstIterator(memnew(Dictionary::ConstIteratorPrivate(_p->variant_map.begin())));
 }
 
 Dictionary::ConstIterator Dictionary::end() const {
-	return _p->variant_map.end();
+	return Dictionary::ConstIterator(memnew(Dictionary::ConstIteratorPrivate(_p->variant_map.end())));
 }
 
 LocalVector<Variant> Dictionary::get_key_list() const {
@@ -139,7 +211,7 @@ const Variant *Dictionary::getptr(const Variant &p_key) const {
 	if (unlikely(!_p->typed_key.validate(key, "getptr"))) {
 		return nullptr;
 	}
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(key));
+	VHashMap::ConstIterator E(_p->variant_map.find(key));
 	if (!E) {
 		return nullptr;
 	}
@@ -152,7 +224,7 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 	if (unlikely(!_p->typed_key.validate(key, "getptr"))) {
 		return nullptr;
 	}
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E(_p->variant_map.find(key));
+	VHashMap::Iterator E(_p->variant_map.find(key));
 	if (!E) {
 		return nullptr;
 	}
@@ -167,7 +239,7 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 Variant Dictionary::get_valid(const Variant &p_key) const {
 	Variant key = p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "get_valid"), Variant());
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(key));
+	VHashMap::ConstIterator E(_p->variant_map.find(key));
 
 	if (!E) {
 		return Variant();
@@ -276,7 +348,7 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int p_recursion
 	}
 	p_recursion_count++;
 	for (const KeyValue<Variant, Variant> &this_E : _p->variant_map) {
-		HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
+		VHashMap::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
 		if (!other_E || !this_E.value.hash_compare(other_E->value, p_recursion_count, false)) {
 			return false;
 		}
@@ -436,7 +508,7 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 	}
 
 	int size = p_dictionary._p->variant_map.size();
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator> variant_map = HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>(size);
+	VHashMap variant_map(size);
 
 	Vector<Variant> key_array;
 	key_array.resize(size);
@@ -569,7 +641,7 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 	}
 	Variant key = *p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "next"), nullptr);
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E = _p->variant_map.find(key);
+	VHashMap::Iterator E = _p->variant_map.find(key);
 
 	if (!E) {
 		return nullptr;
