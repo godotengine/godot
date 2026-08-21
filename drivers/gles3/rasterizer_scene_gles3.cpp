@@ -659,20 +659,34 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 	dirty_sky_list = nullptr;
 }
 
+GLES3::SkyMaterialData *RasterizerSceneGLES3::_get_flat_color_sky_material_data(RID p_env) {
+	ERR_FAIL_COND_V(p_env.is_null(), nullptr);
+
+	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
+
+	GLES3::SkyMaterialData *material_data = nullptr;
+	RID sky_material = sky_globals.fog_material;
+
+	material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
+
+	if (!material_data) {
+		sky_material = sky_globals.default_material;
+		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
+	}
+
+	return material_data;
+}
+
 GLES3::SkyMaterialData *RasterizerSceneGLES3::_get_sky_material_data(RID p_env) {
 	ERR_FAIL_COND_V(p_env.is_null(), nullptr);
 
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_env));
-	RSE::EnvironmentBG background = environment_get_background(p_env);
 
 	GLES3::SkyMaterialData *material_data = nullptr;
 	RID sky_material;
 
-	if (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) {
-		sky_material = sky_globals.fog_material;
-		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
-	} else if (sky) {
+	if (sky) {
 		sky_material = sky->material;
 
 		if (sky_material.is_valid()) {
@@ -889,7 +903,8 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_sky_energy_multiplier, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y, bool p_apply_environment_effects_in_post) {
 	ERR_FAIL_COND(p_env.is_null());
 
-	GLES3::SkyMaterialData *material_data = _get_sky_material_data(p_env);
+	RSE::EnvironmentBG background = environment_get_background(p_env);
+	GLES3::SkyMaterialData *material_data = (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) ? _get_flat_color_sky_material_data(p_env) : _get_sky_material_data(p_env);
 	ERR_FAIL_NULL(material_data);
 	material_data->bind_uniforms();
 
