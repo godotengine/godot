@@ -244,7 +244,7 @@ void SectionedInspector::update_category_list() {
 
 	const EditorPropertyNameProcessor::Style name_style = EditorPropertyNameProcessor::get_settings_style();
 	const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(name_style);
-
+	String first_element = "";
 	for (PropertyInfo &pi : pinfo) {
 		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
@@ -298,8 +298,15 @@ void SectionedInspector::update_category_list() {
 			if (i == sc - 1) {
 				//if it has children, make selectable
 				section_map[metasection]->set_selectable(0, true);
+				if (first_element.is_empty()) {
+					first_element = metasection;
+				}
 			}
 		}
+	}
+
+	if (!section_map.has(selected_category)) {
+		selected_category = first_element;
 	}
 
 	if (section_map.has(selected_category)) {
