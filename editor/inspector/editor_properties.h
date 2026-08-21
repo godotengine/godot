@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/property_selector.h"
 
 class CheckBox;
 class ColorPickerButton;
@@ -698,13 +699,20 @@ class EditorPropertyNodePath : public EditorProperty {
 	LineEdit *edit = nullptr;
 
 	SceneTreeDialog *scene_tree = nullptr;
+	PropertySelector *property_selector = nullptr;
 	bool use_path_from_scene_root = false;
 	bool editing_node = false;
 	bool dropping = false;
+	bool is_node_only = false;
+	bool is_property_selector = false;
+	NodePath adding_property_path;
 
 	Vector<StringName> valid_types;
+	Vector<StringName> valid_property_types;
 	void _node_selected(const NodePath &p_path, bool p_absolute = true);
 	void _node_assign();
+	void _property_selected(const String &p_name);
+	void _property_assign(const NodePath &p_path, bool p_absolute = true);
 	void _assign_draw();
 	Node *get_base_node();
 	void _update_menu();
@@ -725,7 +733,10 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root = true, bool p_editing_node = false);
+	void setup_node_path(const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root = true, bool p_editing_node = false);
+	void setup_node_path();
+	void setup_property_path(const Vector<StringName> &p_valid_property_types);
+	void setup_property_path();
 	EditorPropertyNodePath();
 };
 
