@@ -383,7 +383,20 @@ void vertex_shader(in vec3 vertex,
 		model_matrix = read_model_matrix;
 #endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
 #endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED) || defined(MODEL_MATRIX_USED)
-		model_normal_matrix = model_normal_matrix * mat3(matrix);
+		mat3 multimesh_transform = mat3(matrix);
+		vec3 scale_vec = vec3(
+				length(multimesh_transform[0]),
+				length(multimesh_transform[1]),
+				length(multimesh_transform[2]));
+		const float scale_epsilon = 0.0001;
+		bool has_non_uniform_scale = (abs(scale_vec.x - scale_vec.y) > scale_epsilon) ||
+				(abs(scale_vec.x - scale_vec.z) > scale_epsilon) ||
+				(abs(scale_vec.y - scale_vec.z) > scale_epsilon);
+		if (has_non_uniform_scale) {
+			model_normal_matrix = model_normal_matrix * transpose(inverse(multimesh_transform));
+		} else {
+			model_normal_matrix = model_normal_matrix * multimesh_transform;
+		}
 	}
 
 #ifdef UV_USED
