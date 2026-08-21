@@ -1,5 +1,6 @@
 """Functions used to generate source files during build time"""
 
+import argparse
 import os.path
 
 from methods import generated_wrapper, print_error, to_raw_cstring
@@ -243,13 +244,13 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
     return header_data
 
 
-def build_gles3_header(filename: str, shader: str) -> None:
+def gles3_glsl(target: str, shader: str) -> None:
     include_file_in_gles3_header(shader, header_data := GLES3HeaderStruct(), 0)
     out_file_class = (
         os.path.basename(shader).replace(".glsl", "").title().replace("_", "").replace(".", "") + "ShaderGLES3"
     )
 
-    with generated_wrapper(filename) as file:
+    with generated_wrapper(target) as file:
         defspec = 0
         defvariant = ""
 
@@ -569,7 +570,18 @@ protected:
 """)
 
 
-def build_gles3_headers(target, source, env):
-    env.NoCache(target)
-    for src in source:
-        build_gles3_header(f"{src}.gen.h", str(src))
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    gles3_glsl_parser = subparsers.add_parser("gles3_glsl")
+    gles3_glsl_parser.add_argument("target")
+    gles3_glsl_parser.add_argument("shader")
+
+    args = vars(parser.parse_args())
+    command = globals().get(args.pop("command"), {})
+    command(**args)
+
+
+if __name__ == "__main__":
+    main()
