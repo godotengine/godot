@@ -1189,8 +1189,8 @@
 			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
 		</member>
 		<member name="offset_transform_visual_only" type="bool" setter="set_offset_transform_visual_only" getter="is_offset_transform_visual_only" default="true">
-			If [code]true[/code], the offset transforms is only applied visually and does not affect input. In other words, this Control will still receive input events at its original location before the offset transform is applied.
-			If [code]false[/code], the entire transform of this Control is affected and input events will register where the Control is visually.
+			If [code]true[/code], the offset transform is only applied visually and does not affect input. In other words, this Control will still receive input events at its original location before the offset transform is applied.
+			If [code]false[/code], the entire transform of this Control is affected and input events will register where the Control is visually. Control pixel snapping, if enabled, is applied on top of the offset transform in this case.
 			Has no effect unless [member offset_transform_enabled] is [code]true[/code].
 		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
