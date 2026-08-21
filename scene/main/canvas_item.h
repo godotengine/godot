@@ -124,7 +124,7 @@ private:
 	bool behind = false;
 	bool use_parent_material = false;
 	bool notify_local_transform = false;
-	bool notify_transform = false;
+	bool notify_global_transform = false;
 	bool hide_clip_children = false;
 #ifdef TOOLS_ENABLED
 	mutable HashMap<StringName, StringName> instance_parameter_cache;
@@ -232,7 +232,10 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = 2000, // Keep in sync with SceneTree.
+		NOTIFICATION_GLOBAL_TRANSFORM_CHANGED = 2000, // Keep in sync with SceneTree.
+#ifndef DISABLE_DEPRECATED
+		NOTIFICATION_TRANSFORM_CHANGED = NOTIFICATION_GLOBAL_TRANSFORM_CHANGED, // Alias for old name.
+#endif // DISABLE_DEPRECATED
 		NOTIFICATION_DRAW = 30,
 		NOTIFICATION_VISIBILITY_CHANGED = 31,
 		NOTIFICATION_ENTER_CANVAS = 32,
@@ -421,8 +424,12 @@ public:
 	void set_notify_local_transform(bool p_enable);
 	bool is_local_transform_notification_enabled() const;
 
-	void set_notify_transform(bool p_enable);
-	bool is_transform_notification_enabled() const;
+	void set_notify_global_transform(bool p_enable);
+	bool is_global_transform_notification_enabled() const;
+#ifndef DISABLE_DEPRECATED
+	void set_notify_transform(bool p_enabled) { set_notify_global_transform(p_enabled); }
+	bool is_transform_notification_enabled() const { return is_global_transform_notification_enabled(); }
+#endif // DISABLE_DEPRECATED
 
 	void force_update_transform();
 

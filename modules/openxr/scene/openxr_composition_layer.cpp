@@ -737,7 +737,7 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 			update_configuration_warnings();
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			update_transform();
 			update_configuration_warnings();
 		} break;
@@ -751,12 +751,12 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_PARENTED: {
 			// Enables NOTIFICATION_LOCAL_TRANSFORM_CHANGED when XROrigin3D or XRCamera3D are the parents
-			// since that notification happens less frequently than NOTIFICATION_TRANSFORM_CHANGED.
+			// since that notification happens less frequently than NOTIFICATION_GLOBAL_TRANSFORM_CHANGED.
 			bool parent_is_xr_camera = Object::cast_to<XRCamera3D>(get_parent()) != nullptr;
 			bool parent_is_xr_origin = Object::cast_to<XROrigin3D>(get_parent()) != nullptr;
 			bool enable_local_transform_notification = parent_is_xr_camera || parent_is_xr_origin;
 			set_notify_local_transform(enable_local_transform_notification);
-			set_notify_transform(!enable_local_transform_notification);
+			set_notify_global_transform(!enable_local_transform_notification);
 
 			update_transform();
 		} break;
