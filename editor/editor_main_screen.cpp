@@ -186,6 +186,10 @@ void EditorMainScreen::select(int p_index) {
 	ERR_FAIL_NULL(new_editor);
 
 	if (selected_plugin == new_editor) {
+		// This focuses the script area in case it did not have focus.
+		if (p_index == EDITOR_SCRIPT) {
+			selected_plugin->selected_notify();
+		}
 		return;
 	}
 
