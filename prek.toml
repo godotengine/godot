@@ -1,0 +1,239 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+exclude.glob = [
+	"**/*-{dll,dylib,so}_wrap.[ch]",
+	"**/thirdparty/**",
+	"platform/android/java/editor/src/main/java/com/**",
+]
+
+[[repos]]
+repo = "builtin"
+hooks = [
+	{ id = "check-executables-have-shebangs" },
+	{
+		id = "check-shebang-scripts-are-executable",
+		exclude.glob = "**/{SConstruct,SCsub}",  # SCons files use shebangs for syntax highlighting only.
+	},
+]
+
+[[repos]]
+repo = "https://github.com/pre-commit/mirrors-clang-format"
+rev = "v22.1.5"
+hooks = [
+	{ id = "clang-format", files.glob = "**/*.{c,h,cpp,hpp,cc,hh,cxx,hxx,m,mm,inc,java}", types_or = ["text"] },
+	{
+		id = "clang-format",
+		name = "clang-format (glsl)",
+		files.glob = "**/*.glsl",
+		types_or = ["text"],
+		args = ["-style=file:misc/utility/clang_format_glsl.yml"],
+	},
+]
+
+# Not automatically triggered (because it requires compile_commands.json to be up-to-date).
+# Invoke it manually via `prek run --hook-stage manual clang-tidy`
+[[repos]]
+repo = "https://github.com/pocc/pre-commit-hooks"
+rev = "v1.3.5"
+hooks = [
+	{
+		id = "clang-tidy",
+		# TODO: .inc ignored for now because they don't include their parent header.
+		# TODO: Platform-specific subfolders currently fail, we should try to include them.
+		files.glob = "{core,main,scene}/**/*.{c,h,cpp,hpp,cc,hh,cxx,hxx,m,mm,java}",
+		args = [
+			"--fix",
+			"--quiet",
+			"--use-color",
+			"-p=compile_commands.json",
+			"-extra-arg=-Wno-unknown-warning-option",  # Easier compatibility with GCC.
+		],
+		types_or = ["text"],
+		additional_dependencies = ["clang-tidy==22.1.7"],
+		require_serial = false,
+		stages = ["manual"],
+	}
+]
+
+[[repos]]
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.15.20"
+hooks = [
+	{ id = "ruff-check", args = ["--color=always"], files.glob = "**/{*.py,SConstruct,SCsub}", types_or = ["text"] },
+	{ id = "ruff-format", args = ["--color=always"], files.glob = "**/{*.py,SConstruct,SCsub}", types_or = ["text"] },
+]
+
+[[repos]]
+repo = "https://github.com/pre-commit/mirrors-mypy"
+rev = "v1.19.1"
+hooks = [{ id = "mypy", files.glob = "**/*.py", types_or = ["text"] }]
+
+[[repos]]
+repo = "https://github.com/codespell-project/codespell"
+rev = "v2.4.2"
+hooks = [{ id = "codespell", additional_dependencies = ["tomli"] }]
+
+[[repos]]
+repo = "https://github.com/python-jsonschema/check-jsonschema"
+rev = "0.37.4"
+hooks = [
+	{
+		id = "check-jsonschema",
+		files.glob = "core/extension/gdextension_interface.json",
+		args = ["--schemafile", "core/extension/gdextension_interface.schema.json"],
+	},
+]
+
+[[repos]]
+repo = "local"
+hooks = [
+	{
+		id = "copyright-headers",
+		name = "copyright-headers",
+		language = "python",
+		entry = "python misc/scripts/copyright_headers.py",
+		files.glob = "**/*.{c,h,cpp,hpp,cc,hh,cxx,hxx,m,mm,inc,java}",
+		exclude.glob = [
+			"core/math/bvh_*.inc",
+			"platform/android/java/lib/src/main/java/org/godotengine/godot/gl/{EGLLogWrapper,GLSurfaceView}.java",
+			"platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix.java",
+		],
+	},
+	{
+		id = "header-guards",
+		name = "header-guards",
+		language = "python",
+		entry = "python misc/scripts/header_guards.py",
+		files.glob = "**/*.{h,hpp,hh,hxx}",
+	},
+	{
+		id = "validate-builders",
+		name = "validate-builders",
+		language = "python",
+		entry = "python tests/python_build/validate_builders.py",
+		pass_filenames = false,
+		files.glob = "{gles3,glsl}_builders.py",
+	},
+	{
+		id = "validate-codeowners",
+		name = "validate-codeowners",
+		language = "python",
+		entry = "python misc/scripts/validate_codeowners.py",
+		args = ["--unowned"],
+	},
+	{
+		id = "validate-includes",
+		name = "validate-includes",
+		language = "python",
+		entry = "python misc/scripts/validate_includes.py",
+		files.glob = "**/*.{c,h,cpp,hpp,cc,hh,cxx,hxx,m,mm,inc}",
+	},
+	{
+		id = "validate-xml",
+		name = "validate-xml",
+		language = "python",
+		entry = "python misc/scripts/validate_xml.py",
+		files.glob = ["doc/classes/**/*.xml", "modules/*/doc_classes/**/*.xml"],
+		additional_dependencies = ["xmlschema"],
+	},
+	{
+		id = "file-format",
+		name = "file-format",
+		language = "python",
+		entry = "python misc/scripts/file_format.py",
+		types_or = ["text"],
+		exclude.glob = [
+			"**/*.out",
+			"**/*.test.txt",
+			"modules/gdscript/tests/scripts/parser/features/mixed_indentation_on_blank_lines.gd",
+			"modules/gdscript/tests/scripts/parser/warnings/empty_file_newline*.norun.gd",
+			"tests/data/**/*.bin",
+		],
+	},
+	{
+		id = "make-rst",
+		name = "make-rst",
+		language = "python",
+		entry = "python doc/tools/make_rst.py",
+		args = ["doc/classes", "modules", "platform", "--dry-run", "--color"],
+		pass_filenames = false,
+		files.glob = ["doc/classes/**/*.xml", "modules/*/doc_classes/**/*.xml"],
+	},
+	{
+		id = "doc-status",
+		name = "doc-status",
+		language = "python",
+		entry = "python doc/tools/doc_status.py",
+		args = ["doc/classes", "modules/*/doc_classes", "platform/*/doc_classes", "-c"],
+		pass_filenames = false,
+		files.glob = ["doc/classes/**/*.xml", "modules/*/doc_classes/**/*.xml"],
+	},
+	{
+		id = "eslint",
+		name = "eslint",
+		language = "node",
+		entry = "eslint",
+		files.glob = ["misc/dist/html/*.{html,js}", "modules/**/*.{html,js}", "platform/web/js/**/*.js"],
+		args = [
+			"--fix",
+			"--no-warn-ignored",
+			"--no-config-lookup",
+			"--config",
+			"platform/web/eslint.config.cjs",
+		],
+		additional_dependencies = [
+			"@eslint/js@^9.3.0",
+			"@html-eslint/eslint-plugin@^0.24.1",
+			"@html-eslint/parser@^0.24.1",
+			"@stylistic/eslint-plugin@^2.1.0",
+			"eslint-plugin-html@^8.1.1",
+			"eslint@^9.3.0",
+			"espree@^10.0.1",
+			"globals@^15.3.0",
+		],
+	},
+	{
+		id = "jsdoc",
+		name = "jsdoc",
+		language = "node",
+		entry = "jsdoc",
+		files.glob = "platform/web/js/engine/{engine,config,features}.js",
+		args = [
+			"--template",
+			"platform/web/js/jsdoc2rst/",
+			"platform/web/js/engine/engine.js",
+			"platform/web/js/engine/config.js",
+			"platform/web/js/engine/features.js",
+			"--destination",
+			"",
+			"-d",
+			"dry-run"
+		],
+		pass_filenames = false,
+		additional_dependencies = ["jsdoc@^4.0.3"],
+	},
+	{
+		id = "svgo",
+		name = "svgo",
+		language = "node",
+		entry = "svgo",
+		files.glob = "**/*.svg",
+		args = ["--quiet", "--config", "misc/utility/svgo.config.mjs"],
+		additional_dependencies = ["svgo@4.0.1"],
+	},
+	{
+		id = "dotnet-format",
+		name = "dotnet-format",
+		language = "python",
+		entry = "python misc/scripts/dotnet_format.py",
+		types_or = ["c#"],
+	},
+	# End of upstream local hooks.
+	#
+	# Keep this separation to let downstream forks add their own pre-commit hooks to this file,
+	# without running into merge conflicts when rebasing on latest upstream.
+	#
+	# Start of downstream local hooks.
+]
