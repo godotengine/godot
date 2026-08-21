@@ -8681,13 +8681,17 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	select_all_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_select_all_tracks_for_copy));
 	track_copy_vbox->add_child(select_all_button);
 
+	mc = memnew(MarginContainer);
+	mc->set_theme_type_variation("NoBorderHorizontalWindow");
+	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	track_copy_vbox->add_child(mc);
+
 	track_copy_select = memnew(Tree);
 	track_copy_select->set_accessibility_name(TTRC("Copy Selection"));
 	track_copy_select->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	track_copy_select->set_h_size_flags(SIZE_EXPAND_FILL);
-	track_copy_select->set_v_size_flags(SIZE_EXPAND_FILL);
 	track_copy_select->set_hide_root(true);
-	track_copy_vbox->add_child(track_copy_select);
+	track_copy_select->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	mc->add_child(track_copy_select);
 	track_copy_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_COPY_TRACKS_CONFIRM));
 
 	read_only_dialog = memnew(AcceptDialog);
