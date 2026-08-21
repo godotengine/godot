@@ -272,6 +272,9 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("soft_body_set_internal_spring_stiffness", "body", "stiffness"), &PhysicsServer3D::soft_body_set_internal_spring_stiffness);
 	ClassDB::bind_method(D_METHOD("soft_body_get_internal_spring_stiffness", "body"), &PhysicsServer3D::soft_body_get_internal_spring_stiffness);
 
+	ClassDB::bind_method(D_METHOD("soft_body_set_internal_spring_damping_coefficient", "body", "damping_coefficient"), &PhysicsServer3D::soft_body_set_internal_spring_damping_coefficient);
+	ClassDB::bind_method(D_METHOD("soft_body_get_internal_spring_damping_coefficient", "body"), &PhysicsServer3D::soft_body_get_internal_spring_damping_coefficient);
+
 	ClassDB::bind_method(D_METHOD("soft_body_set_shrinking_factor", "body", "shrinking_factor"), &PhysicsServer3D::soft_body_set_shrinking_factor);
 	ClassDB::bind_method(D_METHOD("soft_body_get_shrinking_factor", "body"), &PhysicsServer3D::soft_body_get_shrinking_factor);
 
@@ -280,6 +283,9 @@ void PhysicsServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("soft_body_set_damping_coefficient", "body", "damping_coefficient"), &PhysicsServer3D::soft_body_set_damping_coefficient);
 	ClassDB::bind_method(D_METHOD("soft_body_get_damping_coefficient", "body"), &PhysicsServer3D::soft_body_get_damping_coefficient);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_mesh_damping_coefficient", "body", "damping_coefficient"), &PhysicsServer3D::soft_body_set_mesh_damping_coefficient);
+	ClassDB::bind_method(D_METHOD("soft_body_get_mesh_damping_coefficient", "body"), &PhysicsServer3D::soft_body_get_mesh_damping_coefficient);
 
 	ClassDB::bind_method(D_METHOD("soft_body_set_drag_coefficient", "body", "drag_coefficient"), &PhysicsServer3D::soft_body_set_drag_coefficient);
 	ClassDB::bind_method(D_METHOD("soft_body_get_drag_coefficient", "body"), &PhysicsServer3D::soft_body_get_drag_coefficient);

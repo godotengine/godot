@@ -352,6 +352,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_soft_body_set_internal_spring_stiffness, "body", "internal_spring_stiffness");
 	GDVIRTUAL_BIND(_soft_body_get_internal_spring_stiffness, "body");
 
+	GDVIRTUAL_BIND(_soft_body_set_internal_spring_damping_coefficient, "body", "internal_spring_damping_coefficient");
+	GDVIRTUAL_BIND(_soft_body_get_internal_spring_damping_coefficient, "body");
+
 	GDVIRTUAL_BIND(_soft_body_set_shrinking_factor, "body", "shrinking_factor");
 	GDVIRTUAL_BIND(_soft_body_get_shrinking_factor, "body");
 
@@ -360,6 +363,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_soft_body_set_damping_coefficient, "body", "damping_coefficient");
 	GDVIRTUAL_BIND(_soft_body_get_damping_coefficient, "body");
+
+	GDVIRTUAL_BIND(_soft_body_set_mesh_damping_coefficient, "body", "mesh_damping_coefficient");
+	GDVIRTUAL_BIND(_soft_body_get_mesh_damping_coefficient, "body");
 
 	GDVIRTUAL_BIND(_soft_body_set_drag_coefficient, "body", "drag_coefficient");
 	GDVIRTUAL_BIND(_soft_body_get_drag_coefficient, "body");

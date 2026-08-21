@@ -322,6 +322,9 @@ public:
 	FUNC2(soft_body_set_internal_spring_stiffness, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_internal_spring_stiffness, RID);
 
+	FUNC2(soft_body_set_internal_spring_damping_coefficient, RID, real_t);
+	FUNC1RC(real_t, soft_body_get_internal_spring_damping_coefficient, RID);
+
 	FUNC2(soft_body_set_shrinking_factor, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_shrinking_factor, RID);
 
@@ -330,6 +333,9 @@ public:
 
 	FUNC2(soft_body_set_damping_coefficient, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_damping_coefficient, RID);
+
+	FUNC2(soft_body_set_mesh_damping_coefficient, RID, real_t);
+	FUNC1RC(real_t, soft_body_get_mesh_damping_coefficient, RID);
 
 	FUNC2(soft_body_set_drag_coefficient, RID, real_t);
 	FUNC1RC(real_t, soft_body_get_drag_coefficient, RID);

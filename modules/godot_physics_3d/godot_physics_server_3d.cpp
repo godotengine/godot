@@ -1161,6 +1161,20 @@ real_t GodotPhysicsServer3D::soft_body_get_internal_spring_stiffness(RID p_body)
 	return soft_body->get_internal_spring_stiffness();
 }
 
+void GodotPhysicsServer3D::soft_body_set_internal_spring_damping_coefficient(RID p_body, real_t p_damping_coefficient) {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(soft_body);
+
+	soft_body->set_internal_spring_damping_coefficient(p_damping_coefficient);
+}
+
+real_t GodotPhysicsServer3D::soft_body_get_internal_spring_damping_coefficient(RID p_body) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, 0.f);
+
+	return soft_body->get_internal_spring_damping_coefficient();
+}
+
 void GodotPhysicsServer3D::soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);
@@ -1201,6 +1215,20 @@ real_t GodotPhysicsServer3D::soft_body_get_damping_coefficient(RID p_body) const
 	ERR_FAIL_NULL_V(soft_body, 0.f);
 
 	return soft_body->get_damping_coefficient();
+}
+
+void GodotPhysicsServer3D::soft_body_set_mesh_damping_coefficient(RID p_body, real_t p_damping_coefficient) {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(soft_body);
+
+	soft_body->set_mesh_damping_coefficient(p_damping_coefficient);
+}
+
+real_t GodotPhysicsServer3D::soft_body_get_mesh_damping_coefficient(RID p_body) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, 0.f);
+
+	return soft_body->get_mesh_damping_coefficient();
 }
 
 void GodotPhysicsServer3D::soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) {

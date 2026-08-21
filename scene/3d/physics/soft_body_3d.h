@@ -114,6 +114,7 @@ private:
 
 	bool internal_springs = false;
 	real_t internal_spring_stiffness = 0.5;
+	real_t internal_spring_damping_coefficient = 0.0;
 
 	Ref<ArrayMesh> debug_mesh_cache;
 	class MeshInstance3D *debug_mesh = nullptr;
@@ -189,6 +190,9 @@ public:
 	void set_internal_spring_stiffness(real_t p_stiffness);
 	real_t get_internal_spring_stiffness() const;
 
+	void set_internal_spring_damping_coefficient(real_t p_internal_spring_damping_coefficient);
+	real_t get_internal_spring_damping_coefficient() const;
+
 	void set_shrinking_factor(real_t p_shrinking_factor);
 	real_t get_shrinking_factor();
 
@@ -197,6 +201,9 @@ public:
 
 	void set_damping_coefficient(real_t p_damping_coefficient);
 	real_t get_damping_coefficient();
+
+	void set_mesh_damping_coefficient(real_t p_mesh_damping_coefficient);
+	real_t get_mesh_damping_coefficient();
 
 	void set_drag_coefficient(real_t p_drag_coefficient);
 	real_t get_drag_coefficient();

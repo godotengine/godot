@@ -324,7 +324,7 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 				int inv_chk = le.v0 * node_count + le.v1;
 				chks[inv_chk] = true;
 
-				append_link(le.v0, le.v1);
+				append_link(le.v0, le.v1, Link::TYPE_INTERNAL_SPRING);
 			}
 		}
 	}
@@ -361,7 +361,7 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 
 				mesh_to_anchor[pinned_vertex] = anchor_idx;
 
-				append_link(node_index, anchor_idx);
+				append_link(node_index, anchor_idx, Link::TYPE_ANCHOR);
 				Link &anchor_link = links[links.size() - 1];
 				anchor_link.rl = 0.0;
 				anchor_link.c1 = 0.0;
@@ -511,8 +511,14 @@ void GodotSoftBody3D::reset_link_rest_lengths() {
 
 void GodotSoftBody3D::update_link_constants() {
 	real_t inv_linear_stiffness = 1.0 / linear_stiffness;
+	real_t inv_internal_stiffness = 1.0 / internal_spring_stiffness;
 	for (Link &link : links) {
-		link.c0 = (link.n[0]->im + link.n[1]->im) * inv_linear_stiffness;
+		if (link.type == Link::TYPE_ANCHOR) {
+			// Anchor link stiffness is calculated from pin weight
+			continue;
+		}
+		real_t inv_stiffness = (link.type == Link::TYPE_INTERNAL_SPRING) ? inv_internal_stiffness : inv_linear_stiffness;
+		link.c0 = (link.n[0]->im + link.n[1]->im) * inv_stiffness;
 	}
 }
 
@@ -1134,7 +1140,7 @@ void GodotSoftBody3D::reoptimize_link_order() {
 	memdelete_arr(link_buffer);
 }
 
-void GodotSoftBody3D::append_link(uint32_t p_node1, uint32_t p_node2) {
+void GodotSoftBody3D::append_link(uint32_t p_node1, uint32_t p_node2, Link::Type p_type) {
 	if (p_node1 == p_node2) {
 		return;
 	}
@@ -1143,6 +1149,7 @@ void GodotSoftBody3D::append_link(uint32_t p_node1, uint32_t p_node2) {
 	Node *node2 = &nodes[p_node2];
 
 	Link link;
+	link.type = p_type;
 	link.n[0] = node1;
 	link.n[1] = node2;
 	link.rl = (node1->x - node2->x).length();
@@ -1218,6 +1225,10 @@ void GodotSoftBody3D::set_internal_spring_stiffness(real_t p_val) {
 	internal_spring_stiffness = CLAMP(p_val, 0.0, 1.0);
 }
 
+void GodotSoftBody3D::set_internal_spring_damping_coefficient(real_t p_val) {
+	internal_spring_damping_coefficient = CLAMP(p_val, 0.0, 1.0);
+}
+
 void GodotSoftBody3D::set_shrinking_factor(real_t p_val) {
 	shrinking_factor = p_val;
 }
@@ -1228,6 +1239,10 @@ void GodotSoftBody3D::set_pressure_coefficient(real_t p_val) {
 
 void GodotSoftBody3D::set_damping_coefficient(real_t p_val) {
 	damping_coefficient = p_val;
+}
+
+void GodotSoftBody3D::set_mesh_damping_coefficient(real_t p_val) {
+	mesh_damping_coefficient = CLAMP(p_val, 0.0, 1.0);
 }
 
 void GodotSoftBody3D::set_drag_coefficient(real_t p_val) {
@@ -1422,7 +1437,53 @@ void GodotSoftBody3D::solve_constraints(real_t p_delta) {
 		node.q = node.x;
 	}
 
+	solve_link_damping();
+
 	update_normals_and_centroids();
+}
+
+void GodotSoftBody3D::solve_link_damping() {
+	if (mesh_damping_coefficient <= CMP_EPSILON && internal_spring_damping_coefficient <= CMP_EPSILON) {
+		return;
+	}
+
+	for (Link &link : links) {
+		real_t damp = 0.0;
+		if (link.type == Link::TYPE_SURFACE) {
+			damp = mesh_damping_coefficient;
+		} else if (link.type == Link::TYPE_INTERNAL_SPRING) {
+			damp = internal_spring_damping_coefficient;
+		} else {
+			// Anchor link
+			// for now, just use the surface damping coefficient
+			damp = mesh_damping_coefficient;
+		}
+
+		if (damp <= CMP_EPSILON) {
+			continue;
+		}
+
+		Node &node_a = *link.n[0];
+		Node &node_b = *link.n[1];
+		real_t w_sum = node_a.im + node_b.im;
+		if (w_sum <= CMP_EPSILON) {
+			continue;
+		}
+
+		Vector3 diff = node_b.x - node_a.x;
+		real_t dist = diff.length();
+		if (dist <= CMP_EPSILON) {
+			continue;
+		}
+
+		Vector3 dir = diff / dist;
+		real_t v_rel_proj = (node_b.v - node_a.v).dot(dir);
+
+		real_t damp_impulse = v_rel_proj * damp;
+
+		node_a.v += dir * (damp_impulse * (node_a.im / w_sum));
+		node_b.v -= dir * (damp_impulse * (node_b.im / w_sum));
+	}
 }
 
 void GodotSoftBody3D::solve_links(real_t kst, real_t ti) {

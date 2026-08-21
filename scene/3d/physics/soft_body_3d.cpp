@@ -358,7 +358,7 @@ void SoftBody3D::_notification(int p_what) {
 }
 
 void SoftBody3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "internal_spring_stiffness" && !internal_springs) {
+	if ((p_property.name == "internal_spring_stiffness" || p_property.name == "internal_spring_damping_coefficient") && !internal_springs) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -403,6 +403,9 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_internal_spring_stiffness", "stiffness"), &SoftBody3D::set_internal_spring_stiffness);
 	ClassDB::bind_method(D_METHOD("get_internal_spring_stiffness"), &SoftBody3D::get_internal_spring_stiffness);
 
+	ClassDB::bind_method(D_METHOD("set_internal_spring_damping_coefficient", "internal_spring_damping_coefficient"), &SoftBody3D::set_internal_spring_damping_coefficient);
+	ClassDB::bind_method(D_METHOD("get_internal_spring_damping_coefficient"), &SoftBody3D::get_internal_spring_damping_coefficient);
+
 	ClassDB::bind_method(D_METHOD("set_shrinking_factor", "shrinking_factor"), &SoftBody3D::set_shrinking_factor);
 	ClassDB::bind_method(D_METHOD("get_shrinking_factor"), &SoftBody3D::get_shrinking_factor);
 
@@ -411,6 +414,9 @@ void SoftBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_damping_coefficient", "damping_coefficient"), &SoftBody3D::set_damping_coefficient);
 	ClassDB::bind_method(D_METHOD("get_damping_coefficient"), &SoftBody3D::get_damping_coefficient);
+
+	ClassDB::bind_method(D_METHOD("set_mesh_damping_coefficient", "mesh_damping_coefficient"), &SoftBody3D::set_mesh_damping_coefficient);
+	ClassDB::bind_method(D_METHOD("get_mesh_damping_coefficient"), &SoftBody3D::get_mesh_damping_coefficient);
 
 	ClassDB::bind_method(D_METHOD("set_drag_coefficient", "drag_coefficient"), &SoftBody3D::set_drag_coefficient);
 	ClassDB::bind_method(D_METHOD("get_drag_coefficient"), &SoftBody3D::get_drag_coefficient);
@@ -442,9 +448,11 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "internal_springs"), "set_internal_springs", "is_internal_springs_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "internal_spring_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_internal_spring_stiffness", "get_internal_spring_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "internal_spring_damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_internal_spring_damping_coefficient", "get_internal_spring_damping_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shrinking_factor", PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"), "set_shrinking_factor", "get_shrinking_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01,or_greater"), "set_damping_coefficient", "get_damping_coefficient");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mesh_damping_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_mesh_damping_coefficient", "get_mesh_damping_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
@@ -821,6 +829,15 @@ real_t SoftBody3D::get_internal_spring_stiffness() const {
 	return internal_spring_stiffness;
 }
 
+void SoftBody3D::set_internal_spring_damping_coefficient(real_t p_internal_spring_damping_coefficient) {
+	internal_spring_damping_coefficient = p_internal_spring_damping_coefficient;
+	PhysicsServer3D::get_singleton()->soft_body_set_internal_spring_damping_coefficient(physics_rid, p_internal_spring_damping_coefficient);
+}
+
+real_t SoftBody3D::get_internal_spring_damping_coefficient() const {
+	return internal_spring_damping_coefficient;
+}
+
 void SoftBody3D::set_shrinking_factor(real_t p_shrinking_factor) {
 	PhysicsServer3D::get_singleton()->soft_body_set_shrinking_factor(physics_rid, p_shrinking_factor);
 }
@@ -843,6 +860,14 @@ real_t SoftBody3D::get_damping_coefficient() {
 
 void SoftBody3D::set_damping_coefficient(real_t p_damping_coefficient) {
 	PhysicsServer3D::get_singleton()->soft_body_set_damping_coefficient(physics_rid, p_damping_coefficient);
+}
+
+real_t SoftBody3D::get_mesh_damping_coefficient() {
+	return PhysicsServer3D::get_singleton()->soft_body_get_mesh_damping_coefficient(physics_rid);
+}
+
+void SoftBody3D::set_mesh_damping_coefficient(real_t p_mesh_damping_coefficient) {
+	PhysicsServer3D::get_singleton()->soft_body_set_mesh_damping_coefficient(physics_rid, p_mesh_damping_coefficient);
 }
 
 real_t SoftBody3D::get_drag_coefficient() {

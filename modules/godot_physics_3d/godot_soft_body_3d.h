@@ -61,6 +61,12 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 	};
 
 	struct Link {
+		enum Type {
+			TYPE_SURFACE,
+			TYPE_INTERNAL_SPRING,
+			TYPE_ANCHOR,
+		} type = TYPE_SURFACE;
+
 		Vector3 c3; // gradient
 		Node *n[2] = { nullptr, nullptr }; // Node pointers
 		real_t rl = 0.0; // Rest length
@@ -98,9 +104,11 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 	real_t linear_stiffness = 0.5; // [0,1]
 	bool internal_springs = false;
 	real_t internal_spring_stiffness = 0.5; // [0,1]
+	real_t internal_spring_damping_coefficient = 0.0; // [0,1]
 	real_t shrinking_factor = 0.0; // [-1,1]
 	real_t pressure_coefficient = 0.0; // [-inf,+inf]
 	real_t damping_coefficient = 0.01; // [0,1]
+	real_t mesh_damping_coefficient = 0.0; // [0,1]
 	real_t drag_coefficient = 0.0; // [0,1]
 	LocalVector<int> pinned_vertices;
 	HashMap<int, real_t> pinned_weights;
@@ -208,6 +216,9 @@ public:
 	void set_internal_spring_stiffness(real_t p_val);
 	_FORCE_INLINE_ real_t get_internal_spring_stiffness() const { return internal_spring_stiffness; }
 
+	void set_internal_spring_damping_coefficient(real_t p_val);
+	_FORCE_INLINE_ real_t get_internal_spring_damping_coefficient() const { return internal_spring_damping_coefficient; }
+
 	void set_shrinking_factor(real_t p_val);
 	_FORCE_INLINE_ real_t get_shrinking_factor() const { return shrinking_factor; }
 
@@ -216,6 +227,9 @@ public:
 
 	void set_damping_coefficient(real_t p_val);
 	_FORCE_INLINE_ real_t get_damping_coefficient() const { return damping_coefficient; }
+
+	void set_mesh_damping_coefficient(real_t p_val);
+	_FORCE_INLINE_ real_t get_mesh_damping_coefficient() const { return mesh_damping_coefficient; }
 
 	void set_drag_coefficient(real_t p_val);
 	_FORCE_INLINE_ real_t get_drag_coefficient() const { return drag_coefficient; }
@@ -253,10 +267,11 @@ private:
 	bool create_from_trimesh(const Vector<int> &p_indices, const Vector<Vector3> &p_vertices);
 	void generate_bending_constraints(int p_distance);
 	void reoptimize_link_order();
-	void append_link(uint32_t p_node1, uint32_t p_node2);
+	void append_link(uint32_t p_node1, uint32_t p_node2, Link::Type p_type = Link::TYPE_SURFACE);
 	void append_face(uint32_t p_node1, uint32_t p_node2, uint32_t p_node3);
 
 	void solve_links(real_t kst, real_t ti);
+	void solve_link_damping();
 
 	void initialize_face_tree();
 	void update_face_tree(real_t p_delta);

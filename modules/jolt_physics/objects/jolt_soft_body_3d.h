@@ -44,6 +44,12 @@ class JoltSpace3D;
 class PhysicsServer3DRenderingServerHandler;
 
 class JoltSoftBody3D final : public JoltObject3D {
+	enum EdgeType : uint8_t {
+		EDGE_TYPE_SURFACE,
+		EDGE_TYPE_INTERNAL_SPRING,
+		EDGE_TYPE_ANCHOR,
+	};
+
 	HashSet<int> pinned_vertices;
 	HashMap<int, float> pinned_weights;
 	HashMap<int, int> mesh_to_anchor;
@@ -52,6 +58,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	LocalVector<JoltArea3D *> areas;
 	LocalVector<Vector3> normals;
 	LocalVector<RID> exceptions;
+	LocalVector<EdgeType> edge_types;
 
 	RID mesh;
 
@@ -60,9 +67,11 @@ class JoltSoftBody3D final : public JoltObject3D {
 	float mass = 1.0f;
 	float pressure = 0.0f;
 	float linear_damping = 0.01f;
+	float mesh_damping_coefficient = 0.0f;
 	float stiffness_coefficient = 0.5f;
 	bool internal_springs = false;
 	float internal_spring_stiffness = 0.5f;
+	float internal_spring_damping_coefficient = 0.0f;
 	float shrinking_factor = 0.0f;
 
 	int simulation_precision = 5;
@@ -78,6 +87,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	JPH::SoftBodySharedSettings *_create_shared_settings();
 
 	void _apply_environmental_forces(float p_step);
+	void _apply_link_damping(float p_step);
 
 	void _update_mass();
 	void _update_pressure();
@@ -151,6 +161,9 @@ public:
 	float get_internal_spring_stiffness() const { return internal_spring_stiffness; }
 	void set_internal_spring_stiffness(float p_stiffness);
 
+	float get_internal_spring_damping_coefficient() const { return internal_spring_damping_coefficient; }
+	void set_internal_spring_damping_coefficient(float p_damping);
+
 	float get_shrinking_factor() const;
 	void set_shrinking_factor(float p_shrinking_factor);
 
@@ -159,6 +172,9 @@ public:
 
 	float get_linear_damping() const { return linear_damping; }
 	void set_linear_damping(float p_damping);
+
+	float get_mesh_damping_coefficient() const { return mesh_damping_coefficient; }
+	void set_mesh_damping_coefficient(float p_damping);
 
 	float get_drag() const;
 	void set_drag(float p_drag);

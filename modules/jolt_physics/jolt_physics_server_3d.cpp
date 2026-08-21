@@ -1183,6 +1183,20 @@ real_t JoltPhysicsServer3D::soft_body_get_internal_spring_stiffness(RID p_body) 
 	return (real_t)body->get_internal_spring_stiffness();
 }
 
+void JoltPhysicsServer3D::soft_body_set_internal_spring_damping_coefficient(RID p_body, real_t p_damping_coefficient) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	return body->set_internal_spring_damping_coefficient((float)p_damping_coefficient);
+}
+
+real_t JoltPhysicsServer3D::soft_body_get_internal_spring_damping_coefficient(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 0.0);
+
+	return (real_t)body->get_internal_spring_damping_coefficient();
+}
+
 void JoltPhysicsServer3D::soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) {
 	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
@@ -1223,6 +1237,20 @@ real_t JoltPhysicsServer3D::soft_body_get_damping_coefficient(RID p_body) const 
 	ERR_FAIL_NULL_V(body, 0.0);
 
 	return (real_t)body->get_linear_damping();
+}
+
+void JoltPhysicsServer3D::soft_body_set_mesh_damping_coefficient(RID p_body, real_t p_damping_coefficient) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	return body->set_mesh_damping_coefficient((float)p_damping_coefficient);
+}
+
+real_t JoltPhysicsServer3D::soft_body_get_mesh_damping_coefficient(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 0.0);
+
+	return (real_t)body->get_mesh_damping_coefficient();
 }
 
 void JoltPhysicsServer3D::soft_body_set_drag_coefficient(RID p_body, real_t p_coefficient) {

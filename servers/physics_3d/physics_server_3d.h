@@ -295,6 +295,9 @@ public:
 	virtual void soft_body_set_internal_spring_stiffness(RID p_body, real_t p_stiffness) = 0;
 	virtual real_t soft_body_get_internal_spring_stiffness(RID p_body) const = 0;
 
+	virtual void soft_body_set_internal_spring_damping_coefficient(RID p_body, real_t p_damping_coefficient) = 0;
+	virtual real_t soft_body_get_internal_spring_damping_coefficient(RID p_body) const = 0;
+
 	virtual void soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) = 0;
 	virtual real_t soft_body_get_shrinking_factor(RID p_body) const = 0;
 
@@ -303,6 +306,9 @@ public:
 
 	virtual void soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient) = 0;
 	virtual real_t soft_body_get_damping_coefficient(RID p_body) const = 0;
+
+	virtual void soft_body_set_mesh_damping_coefficient(RID p_body, real_t p_damping_coefficient) = 0;
+	virtual real_t soft_body_get_mesh_damping_coefficient(RID p_body) const = 0;
 
 	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient) = 0;
 	virtual real_t soft_body_get_drag_coefficient(RID p_body) const = 0;

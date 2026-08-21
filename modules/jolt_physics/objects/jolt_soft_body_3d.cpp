@@ -296,6 +296,12 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 
 	settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
 
+	LocalVector<EdgeType> unoptimized_edge_types;
+	unoptimized_edge_types.resize(settings->mEdgeConstraints.size());
+	for (uint32_t i = 0; i < (uint32_t)settings->mEdgeConstraints.size(); ++i) {
+		unoptimized_edge_types[i] = EDGE_TYPE_SURFACE;
+	}
+
 	float multiplier = 1.0f - shrinking_factor;
 	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
 		e.mRestLength *= multiplier;
@@ -316,6 +322,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 			JPH::SoftBodySharedSettings::Edge edge_constraint((JPH::uint32)le.v0, (JPH::uint32)le.v1, internal_compliance);
 			edge_constraint.mRestLength = rest_len;
 			settings->mEdgeConstraints.push_back(edge_constraint);
+			unoptimized_edge_types.push_back(EDGE_TYPE_INTERNAL_SPRING);
 		}
 	}
 
@@ -347,11 +354,17 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 			JPH::SoftBodySharedSettings::Edge anchor_edge((JPH::uint32)mesh_physics_index, (JPH::uint32)anchor_physics_index, spring_compliance);
 			anchor_edge.mRestLength = 0.0f;
 			settings->mEdgeConstraints.push_back(anchor_edge);
+			unoptimized_edge_types.push_back(EDGE_TYPE_ANCHOR);
 		}
 	}
 
 	settings->mVertices = physics_vertices;
-	settings->Optimize();
+	JPH::SoftBodySharedSettings::OptimizationResults opt_results;
+	settings->Optimize(opt_results);
+	edge_types.resize(settings->mEdgeConstraints.size());
+	for (uint32_t i = 0; i < (uint32_t)unoptimized_edge_types.size(); ++i) {
+		edge_types[opt_results.mEdgeRemap[i]] = unoptimized_edge_types[i];
+	}
 	pin_vertices(*this, pinned_vertices, pinned_weights, mesh_to_physics, mesh_to_anchor, settings->mVertices, mass);
 
 	return settings;
@@ -615,8 +628,75 @@ Vector3 JoltSoftBody3D::get_velocity_at_position(const Vector3 &p_position) cons
 	return Vector3();
 }
 
+void JoltSoftBody3D::_apply_link_damping(float p_step) {
+	if (mesh_damping_coefficient <= CMP_EPSILON && internal_spring_damping_coefficient <= CMP_EPSILON) {
+		return;
+	}
+
+	if (!jolt_body || jolt_body->IsStatic()) {
+		return;
+	}
+
+	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
+	const JPH::SoftBodySharedSettings *settings = motion_properties.GetSettings();
+	if (!settings) {
+		return;
+	}
+
+	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
+	const JPH::Array<JPH::SoftBodySharedSettings::Edge> &edge_constraints = settings->mEdgeConstraints;
+
+	uint32_t total_edges = (uint32_t)edge_constraints.size();
+	if (edge_types.size() != total_edges) {
+		return;
+	}
+
+	for (uint32_t i = 0; i < total_edges; ++i) {
+		float damp = 0.0f;
+		EdgeType type = edge_types[i];
+		if (type == EDGE_TYPE_SURFACE) {
+			damp = mesh_damping_coefficient;
+		} else if (type == EDGE_TYPE_INTERNAL_SPRING) {
+			damp = internal_spring_damping_coefficient;
+		} else {
+			// Anchor link
+			// for now, just use the mesh damping coefficient
+			damp = mesh_damping_coefficient;
+		}
+
+		if (damp <= CMP_EPSILON) {
+			continue;
+		}
+
+		const JPH::SoftBodySharedSettings::Edge &edge = edge_constraints[i];
+		JPH::SoftBodyVertex &v0 = physics_vertices[edge.mVertex[0]];
+		JPH::SoftBodyVertex &v1 = physics_vertices[edge.mVertex[1]];
+
+		float w_sum = v0.mInvMass + v1.mInvMass;
+		if (w_sum <= CMP_EPSILON) {
+			continue;
+		}
+
+		JPH::Vec3 diff = v1.mPosition - v0.mPosition;
+		float dist_sq = diff.LengthSq();
+		if (dist_sq <= 1.0e-12f) {
+			continue;
+		}
+
+		float dist = Math::sqrt(dist_sq);
+		JPH::Vec3 dir = diff / dist;
+		float v_rel_proj = (v1.mVelocity - v0.mVelocity).Dot(dir);
+
+		float damp_impulse = v_rel_proj * damp;
+
+		v0.mVelocity += dir * (damp_impulse * (v0.mInvMass / w_sum));
+		v1.mVelocity -= dir * (damp_impulse * (v1.mInvMass / w_sum));
+	}
+}
+
 void JoltSoftBody3D::pre_step(float p_step) {
 	_apply_environmental_forces(p_step);
+	_apply_link_damping(p_step);
 }
 
 void JoltSoftBody3D::set_mesh(const RID &p_mesh) {
@@ -749,7 +829,14 @@ void JoltSoftBody3D::set_internal_springs(bool p_enabled) {
 
 void JoltSoftBody3D::set_internal_spring_stiffness(float p_stiffness) {
 	internal_spring_stiffness = CLAMP(p_stiffness, 0.0f, 1.0f);
-	_try_rebuild();
+}
+
+void JoltSoftBody3D::set_internal_spring_damping_coefficient(float p_damping) {
+	if (unlikely(internal_spring_damping_coefficient == p_damping)) {
+		return;
+	}
+
+	internal_spring_damping_coefficient = CLAMP(p_damping, 0.0f, 1.0f);
 }
 
 float JoltSoftBody3D::get_shrinking_factor() const {
@@ -778,6 +865,14 @@ void JoltSoftBody3D::set_linear_damping(float p_damping) {
 	linear_damping = MAX(p_damping, 0.0f);
 
 	_damping_changed();
+}
+
+void JoltSoftBody3D::set_mesh_damping_coefficient(float p_damping) {
+	if (unlikely(mesh_damping_coefficient == p_damping)) {
+		return;
+	}
+
+	mesh_damping_coefficient = CLAMP(p_damping, 0.0f, 1.0f);
 }
 
 float JoltSoftBody3D::get_drag() const {
