@@ -1644,6 +1644,9 @@
 		<member name="text_editor/help/show_help_index" type="bool" setter="" getter="">
 			If [code]true[/code], displays a table of contents at the left of the editor help (at the location where the members overview would appear when editing a script).
 		</member>
+		<member name="text_editor/help/show_property_setters_and_getters" type="bool" setter="" getter="">
+			If [code]true[/code], shows property setters and getters from the editor help.
+		</member>
 		<member name="text_editor/help/sort_functions_alphabetically" type="bool" setter="" getter="">
 			If [code]true[/code], the script's method list in the Script Editor is sorted alphabetically.
 		</member>
