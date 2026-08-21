@@ -6320,6 +6320,10 @@ void WaylandThread::destroy() {
 	// remove handler.
 	LocalVector<uint32_t> global_names_to_delete;
 	for (uint32_t name : registry.global_names) {
+		if (name != 0 && name == registry.wl_fixes_name) {
+			// Need this to destroy wl_registry.
+			continue;
+		}
 		global_names_to_delete.push_back(name);
 	}
 
@@ -6332,6 +6336,10 @@ void WaylandThread::destroy() {
 	}
 
 	if (wl_registry) {
+		if (registry.wl_fixes) {
+			wl_fixes_destroy_registry(registry.wl_fixes, wl_registry);
+			wl_fixes_destroy(registry.wl_fixes);
+		}
 		wl_registry_destroy(wl_registry);
 	}
 
