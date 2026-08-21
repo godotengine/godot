@@ -59,6 +59,10 @@ int Engine::get_user_physics_ticks_per_second() const {
 	return user_ips;
 }
 
+double Engine::get_user_time_scale() const {
+	return _user_time_scale;
+}
+
 void Engine::set_max_physics_steps_per_frame(int p_max_physics_steps) {
 	ERR_FAIL_COND_MSG(p_max_physics_steps <= 0, "Maximum number of physics steps per frame must be greater than 0.");
 	max_physics_steps_per_frame = p_max_physics_steps;

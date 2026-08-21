@@ -117,6 +117,7 @@ public:
 	virtual void set_physics_ticks_per_second(int p_ips);
 	virtual int get_physics_ticks_per_second() const;
 	virtual int get_user_physics_ticks_per_second() const;
+	double get_user_time_scale() const;
 
 	virtual void set_max_physics_steps_per_frame(int p_max_physics_steps);
 	virtual int get_max_physics_steps_per_frame() const;
