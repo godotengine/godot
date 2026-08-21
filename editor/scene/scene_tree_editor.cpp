@@ -1885,6 +1885,14 @@ void SceneTreeEditor::set_editor_selection(EditorSelection *p_selection) {
 	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeEditor::_selection_changed));
 }
 
+TreeItem *SceneTreeEditor::get_node_item(Node *p_node) const {
+	const CachedNode *node = node_cache.cache.getptr(p_node);
+	if (node) {
+		return node->item;
+	}
+	return nullptr;
+}
+
 void SceneTreeEditor::_update_selection(TreeItem *item) {
 	ERR_FAIL_NULL(item);
 
