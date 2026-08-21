@@ -1851,7 +1851,8 @@ void fragment_shader(in SceneData scene_data) {
 				lm_light_l1p1 = (textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb - vec3(0.5)) * 2.0;
 			}
 
-			vec3 n = normalize(lightmaps.data[ofs].normal_xform * indirect_normal);
+			mat3 normal_xform = mat3(lightmaps.data[ofs].normal_xform_and_specular_intensity);
+			vec3 n = normalize(normal_xform * indirect_normal);
 			float en = lightmaps.data[ofs].exposure_normalization;
 
 			vec3 sh_light = lm_light_l0;
@@ -1874,11 +1875,11 @@ void fragment_shader(in SceneData scene_data) {
 
 				if (l1_len > 1e-5 && l0_luminance > 1e-5) {
 					vec3 lightmap_direction = l1 / l1_len;
-					vec3 L_view = normalize(lightmap_direction * lightmaps.data[ofs].normal_xform);
+					vec3 L_view = normalize(lightmap_direction * normal_xform);
 					float NdotL = max(dot(normal, L_view), 0.0);
 
 					if (NdotL > 1e-4) {
-						vec3 specular_lightmap_normal = normalize(lightmaps.data[ofs].normal_xform * normal);
+						vec3 specular_lightmap_normal = normalize(normal_xform * normal);
 						vec3 specular_irradiance = lm_light_l0;
 						specular_irradiance += lm_light_l0 * lm_light_l1n1 * specular_lightmap_normal.y * 4.0;
 						specular_irradiance += lm_light_l0 * lm_light_l1_0 * specular_lightmap_normal.z * 4.0;
@@ -1890,7 +1891,7 @@ void fragment_shader(in SceneData scene_data) {
 
 						vec3 diffuse_light_discarded = diffuse_light;
 						float directionality = clamp(l1_len / l0_luminance, 0.0, 1.0);
-						float specular_intensity = directionality * lightmaps.data[ofs].specular_intensity * 2.0;
+						float specular_intensity = directionality * lightmaps.data[ofs].normal_xform_and_specular_intensity[0][3] * 2.0;
 
 						light_compute(normal, L_view, view, 0.0, specular_light_color, true, 1.0, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
