@@ -2204,10 +2204,14 @@ bool DisplayServer::can_create_rendering_device() {
 
 	Error err;
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
 	// On some NVIDIA drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
 	List<String> arguments;
 	arguments.push_back("--test-rd-creation");
+	if (get_singleton()) {
+		arguments.push_back("--display-driver");
+		arguments.push_back(get_singleton()->get_name().to_lower());
+	}
 
 	String pipe;
 	int exitcode = 0;
@@ -2218,7 +2222,7 @@ bool DisplayServer::can_create_rendering_device() {
 	} else {
 		created_rendering_device = DisplayServerEnums::RenderingDeviceCreationStatus::FAILURE;
 	}
-#else // WINDOWS_ENABLED
+#else // WINDOWS_ENABLED || LINUXBSD_ENABLED
 
 	RenderingContextDriver *rcd = nullptr;
 
