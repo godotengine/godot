@@ -39,6 +39,7 @@ class MarginContainer;
 class OptionButton;
 class PanelContainer;
 class VBoxContainer;
+class EditorSpinSlider;
 
 class SettingLabel : public Label {
 	GDCLASS(SettingLabel, Label);
@@ -80,6 +81,8 @@ class QuickSettingsDialog : public AcceptDialog {
 	OptionButton *style_option_button = nullptr;
 	OptionButton *theme_option_button = nullptr;
 	OptionButton *scale_option_button = nullptr;
+	EditorSpinSlider *custom_scale_slider = nullptr;
+	Control *custom_scale_container = nullptr;
 	OptionButton *network_mode_option_button = nullptr;
 	OptionButton *check_for_update_button = nullptr;
 	OptionButton *directory_naming_convention_button = nullptr;
@@ -93,6 +96,7 @@ class QuickSettingsDialog : public AcceptDialog {
 	void _style_selected(int p_id);
 	void _theme_selected(int p_id);
 	void _scale_selected(int p_id);
+	void _custom_scale_changed(double p_value);
 	void _network_mode_selected(int p_id);
 	void _check_for_update_selected(int p_id);
 	void _directory_naming_convention_selected(int p_id);
