@@ -3194,21 +3194,21 @@ static void override_label_colors(Control *p_control) {
 	p_control->end_bulk_theme_override();
 }
 
-static void override_button_stylebox(Button *p_button, const Ref<StyleBox> p_stylebox) {
-	p_button->begin_bulk_theme_override();
-	p_button->add_theme_style_override(CoreStringName(normal), p_stylebox);
-	p_button->add_theme_style_override("normal_mirrored", p_stylebox);
-	p_button->add_theme_style_override(SceneStringName(hover), p_stylebox);
-	p_button->add_theme_style_override("hover_mirrored", p_stylebox);
-	p_button->add_theme_style_override("hover_pressed", p_stylebox);
-	p_button->add_theme_style_override("hover_pressed_mirrored", p_stylebox);
-	p_button->add_theme_style_override(SceneStringName(pressed), p_stylebox);
-	p_button->add_theme_style_override("pressed_mirrored", p_stylebox);
-	p_button->add_theme_style_override("focus", p_stylebox);
-	p_button->add_theme_style_override("focus_mirrored", p_stylebox);
-	p_button->add_theme_style_override("disabled", p_stylebox);
-	p_button->add_theme_style_override("disabled_mirrored", p_stylebox);
-	p_button->end_bulk_theme_override();
+static void override_control_stylebox(Control *p_control, const Ref<StyleBox> p_stylebox) {
+	p_control->begin_bulk_theme_override();
+	p_control->add_theme_style_override(CoreStringName(normal), p_stylebox);
+	p_control->add_theme_style_override("normal_mirrored", p_stylebox);
+	p_control->add_theme_style_override(SceneStringName(hover), p_stylebox);
+	p_control->add_theme_style_override("hover_mirrored", p_stylebox);
+	p_control->add_theme_style_override("hover_pressed", p_stylebox);
+	p_control->add_theme_style_override("hover_pressed_mirrored", p_stylebox);
+	p_control->add_theme_style_override(SceneStringName(pressed), p_stylebox);
+	p_control->add_theme_style_override("pressed_mirrored", p_stylebox);
+	p_control->add_theme_style_override("focus", p_stylebox);
+	p_control->add_theme_style_override("focus_mirrored", p_stylebox);
+	p_control->add_theme_style_override("disabled", p_stylebox);
+	p_control->add_theme_style_override("disabled_mirrored", p_stylebox);
+	p_control->end_bulk_theme_override();
 }
 
 void Node3DEditorViewport::_notification(int p_what) {
@@ -3894,20 +3894,20 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
 
-			override_button_stylebox(view_display_menu, information_3d_stylebox);
+			override_control_stylebox(view_display_menu, information_3d_stylebox);
 			override_label_colors(view_display_menu);
-			override_button_stylebox(translation_preview_button, information_3d_stylebox);
+			override_control_stylebox(translation_preview_button, information_3d_stylebox);
 			override_label_colors(translation_preview_button);
-			override_button_stylebox(follow_mode, information_3d_stylebox);
+			override_control_stylebox(follow_mode, information_3d_stylebox);
 			override_label_colors(follow_mode);
-			override_button_stylebox(preview_camera, information_3d_stylebox);
+			override_control_stylebox(preview_camera, information_3d_stylebox);
 			override_label_colors(preview_camera);
 
 			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color_dark_background"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color_dark_background"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color_dark_background"), EditorStringName(Editor)));
 
-			override_button_stylebox(pilot_camera, information_3d_stylebox);
+			override_control_stylebox(pilot_camera, information_3d_stylebox);
 			override_label_colors(pilot_camera);
 
 			info_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
@@ -3922,8 +3922,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			frame_time_panel->set_custom_minimum_size(Size2(min_width, 0) * EDSCALE);
 			frame_time_vbox->add_theme_constant_override("separation", Math::round(-1 * EDSCALE));
 
-			cinema_label->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
-			locked_label->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+			override_control_stylebox(cinema_label, information_3d_stylebox);
+			override_label_colors(cinema_label);
+			override_control_stylebox(locked_label, information_3d_stylebox);
+			override_label_colors(locked_label);
 
 			ruler_label->add_theme_color_override(SceneStringName(font_color), Color(1.0, 0.9, 0.0, 1.0));
 			ruler_label->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0));
