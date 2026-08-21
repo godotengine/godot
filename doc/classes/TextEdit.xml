@@ -242,7 +242,8 @@
 			<return type="Vector2" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the caret pixel draw position.
+				Returns the latest caret draw position in pixels. The position is at the bottom of the caret. If the caret was scrolled out of view, the draw position will not update. See also [method get_column_position].
+				[b]Note:[/b] This method is dependent on draw updates, so changes to the caret, text, or scroll position may not be accounted for immediately.
 			</description>
 		</method>
 		<method name="get_caret_index_edit_order" deprecated="Carets no longer need to be edited in any specific order. If the carets need to be sorted, use [method get_sorted_carets] instead.">
@@ -265,6 +266,16 @@
 				Returns the wrap index the editing caret is on.
 			</description>
 		</method>
+		<method name="get_column_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<param index="2" name="only_in_bounds" type="bool" default="true" />
+			<description>
+				Returns the local position of the given line and column in pixels, as if a caret was placed there. The line and column parameters will be clamped to the text. The returned [code]y[/code] position is the top of the line.
+				If [param only_in_bounds] is [code]true[/code], positions outside of the viewable text area will return [code]Point2(-1, -1)[/code].
+			</description>
+		</method>
 		<method name="get_first_non_whitespace_column" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="line" type="int" />
@@ -276,6 +287,16 @@
 			<return type="int" />
 			<description>
 				Returns the first visible line.
+			</description>
+		</method>
+		<method name="get_grapheme_rect" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<param index="2" name="only_in_bounds" type="bool" default="true" />
+			<description>
+				Returns the local rect of the grapheme on the given line and column in pixels. The line and column parameters will be clamped to the text. The used grapheme will be the one after the column, so column [code]0[/code] is the first grapheme. The returned height is always the line height, and the [code]y[/code] position is the top of the line.
+				If [param only_in_bounds] is [code]true[/code], graphemes outside of the viewable text area will return [code]Rect2(-1, -1, 0, 0)[/code].
 			</description>
 		</method>
 		<method name="get_gutter_count" qualifiers="const">
@@ -543,13 +564,14 @@
 				Returns the count to the next visible line from [param line] to [code]line + visible_amount[/code]. Can also count backwards. For example if a [TextEdit] has 5 lines with lines 2 and 3 hidden, calling this with [code]line = 1, visible_amount = 1[/code] would return 3.
 			</description>
 		</method>
-		<method name="get_pos_at_line_column" qualifiers="const">
+		<method name="get_pos_at_line_column" qualifiers="const" deprecated="Use [method get_grapheme_rect] or [method get_column_position] instead.">
 			<return type="Vector2i" />
 			<param index="0" name="line" type="int" />
 			<param index="1" name="column" type="int" />
 			<description>
-				Returns the local position for the given [param line] and [param column]. If [code]x[/code] or [code]y[/code] of the returned vector equal [code]-1[/code], the position is outside of the viewable area of the control.
+				Returns the local position for the given [param line] and [param column]. If [code]x[/code] or [code]y[/code] of the returned vector equal [code]-1[/code], the position is outside of the viewable area of the control. The returned position will be the one before the column, so column [code]1[/code] is the start of the line.
 				[b]Note:[/b] The Y position corresponds to the bottom side of the line. Use [method get_rect_at_line_column] to get the top side position.
+				[b]Note:[/b] This method is dependent on draw updates, so changes to the text or scroll position may not be accounted for immediately.
 			</description>
 		</method>
 		<method name="get_previous_composite_character_column" qualifiers="const">
@@ -561,13 +583,14 @@
 				[b]Note:[/b] To check at caret location use [code]get_previous_composite_character_column(get_caret_line(), get_caret_column())[/code]
 			</description>
 		</method>
-		<method name="get_rect_at_line_column" qualifiers="const">
+		<method name="get_rect_at_line_column" qualifiers="const" deprecated="Use [method get_grapheme_rect] instead.">
 			<return type="Rect2i" />
 			<param index="0" name="line" type="int" />
 			<param index="1" name="column" type="int" />
 			<description>
-				Returns the local position and size for the grapheme at the given [param line] and [param column]. If [code]x[/code] or [code]y[/code] position of the returned rect equal [code]-1[/code], the position is outside of the viewable area of the control.
+				Returns the local position and size for the grapheme at the given [param line] and [param column]. If the [code]x[/code] or [code]y[/code] position of the returned rectangle equal [code]-1[/code], the position is outside of the viewable area of the control. The used grapheme will be the one before the column, so column [code]1[/code] is the first grapheme.
 				[b]Note:[/b] The Y position of the returned rect corresponds to the top side of the line, unlike [method get_pos_at_line_column] which returns the bottom side.
+				[b]Note:[/b] This method is dependent on draw updates, so changes to the text or scroll position may not be accounted for immediately.
 			</description>
 		</method>
 		<method name="get_saved_version" qualifiers="const">
