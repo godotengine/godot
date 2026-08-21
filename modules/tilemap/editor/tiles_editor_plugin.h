@@ -172,3 +172,17 @@ public:
 	TileSetEditorPlugin();
 	~TileSetEditorPlugin();
 };
+
+class TileTerrainEditorPlugin : public EditorInspectorPlugin {
+	GDCLASS(TileTerrainEditorPlugin, EditorInspectorPlugin);
+
+public:
+	bool can_handle(Object *p_object) override;
+	bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) override;
+
+	static void update_terrain_set_property_editor(EditorPropertyEnum *p_editor, Ref<TileSet> &tile_set);
+	static void update_terrain_property_editor(EditorPropertyEnum *p_editor, Ref<TileSet> &tile_set, int terrain_set);
+
+	TileTerrainEditorPlugin() = default;
+	~TileTerrainEditorPlugin() = default;
+};
