@@ -2466,6 +2466,13 @@ void Window::start_resize(DisplayServerEnums::WindowResizeEdge p_edge) {
 	}
 }
 
+void Window::drag_files(const PackedStringArray &p_files) {
+	ERR_MAIN_THREAD_GUARD;
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_drag_files(p_files, window_id);
+	}
+}
+
 Rect2i Window::get_usable_parent_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2i());
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
@@ -3451,6 +3458,7 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("start_drag"), &Window::start_drag);
 	ClassDB::bind_method(D_METHOD("start_resize", "edge"), &Window::start_resize);
+	ClassDB::bind_method(D_METHOD("drag_files", "files"), &Window::drag_files);
 
 	ClassDB::bind_method(D_METHOD("set_ime_active", "active"), &Window::set_ime_active);
 	ClassDB::bind_method(D_METHOD("set_ime_position", "position"), &Window::set_ime_position);
