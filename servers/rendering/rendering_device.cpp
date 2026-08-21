@@ -1557,6 +1557,9 @@ RID RenderingDevice::texture_buffer_create(uint32_t p_size_elements, DataFormat 
 
 RID RenderingDevice::texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data) {
 	// Some adjustments will happen.
+	ERR_FAIL_COND_V_MSG(DisplayServer::get_singleton()->get_name() == "headless", RID(),
+			"Cannot create texture in headless mode");
+
 	TextureFormat format = p_format;
 
 	if (format.shareable_formats.size()) {
