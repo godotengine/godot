@@ -5879,7 +5879,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			{
 				case SC_SCREENSAVE: // Screensaver trying to start?
 				case SC_MONITORPOWER: // Monitor trying to enter powersave?
-					return 0; // Prevent from happening.
+					if (screen_is_kept_on()) {
+						return 0; // Prevent from happening.
+					}
+					break;
 				case SC_KEYMENU:
 					Engine *engine = Engine::get_singleton();
 					if (((lParam >> 16) <= 0) && !engine->is_project_manager_hint() && !engine->is_editor_hint() && !GLOBAL_GET_CACHED(bool, "application/run/enable_alt_space_menu")) {
