@@ -76,6 +76,15 @@ private:
 	float panning_strength = 1.0f;
 	float cached_global_panning_strength = 0.5f;
 
+#ifdef DEBUG_ENABLED
+private:
+	RID debug_canvas_item;
+	void _update_debug_visualization();
+
+public:
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+#endif // DEBUG_ENABLED
+
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
