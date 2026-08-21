@@ -413,13 +413,27 @@ void PackedSourceDirectory::add_directory(const String &p_path, bool p_replace_f
 	}
 	da->set_include_hidden(true);
 
-	for (const String &file_name : da->get_files()) {
-		String file_path = p_path.path_join(file_name);
-		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		PackedData::get_singleton()->add_path(p_path, file_path, 0, 0, md5, this, p_replace_files, false, false, false);
+	Vector<String> sub_dirs;
+	if (da->list_dir_begin() != OK) {
+		return;
 	}
 
-	for (const String &sub_dir_name : da->get_directories()) {
+	String entry_name = da->get_next();
+	while (!entry_name.is_empty()) {
+		if (entry_name != "." && entry_name != "..") {
+			if (da->current_is_dir()) {
+				sub_dirs.push_back(entry_name);
+			} else {
+				String file_path = p_path.path_join(entry_name);
+				uint8_t md5[16] = {};
+				PackedData::get_singleton()->add_path(p_path, file_path, 0, 0, md5, this, p_replace_files, false, false, false);
+			}
+		}
+		entry_name = da->get_next();
+	}
+	da->list_dir_end();
+
+	for (const String &sub_dir_name : sub_dirs) {
 		String sub_dir_path = p_path.path_join(sub_dir_name);
 		add_directory(sub_dir_path, p_replace_files);
 	}
