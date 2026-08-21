@@ -2847,12 +2847,13 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 	}
 
 	List<const Node *> hidden_roots;
-	List<const Node *> node_tree;
-	node_tree.push_front(this);
 
 	if (instantiated) {
 		// Since nodes in the instantiated hierarchy won't be duplicated explicitly, we need to make an inventory
 		// of all the nodes in the tree of the instantiated scene in order to transfer the values of the properties
+
+		List<const Node *> node_tree;
+		node_tree.push_front(this);
 
 		Vector<const Node *> instance_roots;
 		instance_roots.push_back(this);
