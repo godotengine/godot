@@ -4312,7 +4312,8 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="sharpness" type="float" />
 			<description>
-				Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
+				Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from [code]0.0[/code] (sharpest) to [code]2.0[/code] (no sharpening). Values above [code]2.0[/code] don't make a visible difference.
+				[b]Note:[/b] For consistency with established games, projects' settings menus should expose this value in inverted fashion, typically with a [code]0[/code] to [code]10[/code] scale where [code]0[/code] is the least sharp and [code]10[/code] is the sharpest. This can be achieved using [code]remap(fsr_sharpness, 2.0, 0.0, 0.0, 10.0)[/code] where [code]fsr_sharpness[/code] is this setting's value. Use [code]remap(fsr_sharpness, 0.0, 10.0, 2.0, 0.0)[/code] to convert back to this setting's value.
 			</description>
 		</method>
 		<method name="viewport_set_global_canvas_transform">
