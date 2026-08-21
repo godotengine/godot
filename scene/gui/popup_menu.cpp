@@ -1100,6 +1100,8 @@ bool PopupMenu::_highlight_first_available_item(int p_from, int p_to, bool p_rev
 void PopupMenu::_search_bar_text_changed(const String &p_new_text) {
 	_filter_items(p_new_text);
 
+	prev_mouse_over = mouse_over;
+	mouse_over = -1;
 	queue_accessibility_update();
 	control->queue_redraw();
 	child_controls_changed();
