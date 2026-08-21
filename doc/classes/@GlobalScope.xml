@@ -2941,6 +2941,7 @@
 			[/csharp]
 			[/codeblocks]
 			[b]Note:[/b] The trailing colon is required for properly detecting built-in types.
+			[b]Note:[/b] When picking a script type from the inspector, the property will store the script's path instead of class name.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint" deprecated="This hint is not used by the engine.">
 		</constant>
