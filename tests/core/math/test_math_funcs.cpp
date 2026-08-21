@@ -696,4 +696,48 @@ TEST_CASE("[Math] division_no_overflow/modulo_no_overflow") {
 	CHECK(Math::modulo_no_overflow(num, den) == 0);
 }
 
+TEST_CASE("[Math] snap_scalar_separation") {
+	CHECK(Math::snap_scalar_separation(1.0, 3.0, 10.0, 2.0) == doctest::Approx(9.0));
+	CHECK(Math::snap_scalar_separation(-1.0, 3.0, 10.0, 2.0) == doctest::Approx(9.0));
+	CHECK(Math::snap_scalar_separation(1.0, -3.0, 10.0, 2.0) == doctest::Approx(10.0));
+	CHECK(Math::snap_scalar_separation(1.0, 3.0, -10.0, 2.0) == doctest::Approx(-9.0));
+	CHECK(Math::snap_scalar_separation(1.0, 3.0, 10.0, -2.0) == doctest::Approx(10.0));
+	CHECK(Math::snap_scalar_separation(-1.0, -3.0, 10.0, 2.0) == doctest::Approx(10.0));
+	CHECK(Math::snap_scalar_separation(-1.0, 3.0, -10.0, 2.0) == doctest::Approx(-11.0));
+	CHECK(Math::snap_scalar_separation(-1.0, 3.0, 10.0, -2.0) == doctest::Approx(10.0));
+	CHECK(Math::snap_scalar_separation(1.0, -3.0, -10.0, 2.0) == doctest::Approx(-10.0));
+	CHECK(Math::snap_scalar_separation(1.0, -3.0, 10.0, -2.0) == doctest::Approx(11.0));
+	CHECK(Math::snap_scalar_separation(1.0, 3.0, -10.0, -2.0) == doctest::Approx(-10.0));
+	CHECK(Math::snap_scalar_separation(-1.0, -3.0, -10.0, 2.0) == doctest::Approx(-10.0));
+	CHECK(Math::snap_scalar_separation(-1.0, -3.0, 10.0, -2.0) == doctest::Approx(11.0));
+	CHECK(Math::snap_scalar_separation(-1.0, 3.0, -10.0, -2.0) == doctest::Approx(-10.0));
+	CHECK(Math::snap_scalar_separation(1.0, -3.0, -10.0, -2.0) == doctest::Approx(-9.0));
+	CHECK(Math::snap_scalar_separation(-1.0, -3.0, -10.0, -2.0) == doctest::Approx(-11.0));
+
+	CHECK(Math::snap_scalar_separation(0.0, 3.0, 7.5, 2.0) == doctest::Approx(8.0));
+	CHECK(Math::snap_scalar_separation(0.0, 3.0, 7.5, -8.0) == doctest::Approx(5.0));
+
+	CHECK(Math::snap_scalar_separation(0.0, 3.0, 4.0, 2.0) == doctest::Approx(3.0));
+	CHECK(Math::snap_scalar_separation(0.0, 2.0, -4.0, 3.0) == doctest::Approx(-3.0));
+
+	CHECK(Math::snap_scalar_separation(0.0, 3.0, 10.0, -3.0) == doctest::Approx(10.0));
+
+	CHECK(Math::snap_scalar_separation(5.0, 0.0, 10.0, 7.0) == doctest::Approx(10.0));
+	CHECK(Math::snap_scalar_separation(-5.0, 0.0, -10.0, -7.0) == doctest::Approx(-10.0));
+
+	CHECK(Math::snap_scalar_separation(1.0, 4.0, 9.0, 0.0) == doctest::Approx(9.0));
+	CHECK(Math::snap_scalar_separation(1.0, 4.0, 8.0, 0.0) == doctest::Approx(9.0));
+
+	// Both candidates come from a single separation band, which can sit on the far side
+	// of p_target, so a closer edge may be skipped.
+	CHECK(Math::snap_scalar_separation(0.0, 2.0, 6.9, 3.0) == doctest::Approx(5.0));
+	CHECK(Math::snap_scalar_separation(0.0, 2.0, -7.0, 3.0) == doctest::Approx(-5.0));
+
+	CHECK(Math::snap_scalar_separation(0.0, 3.0, 9.0, 3.0) == doctest::Approx(9.0));
+
+	CHECK(Math::snap_scalar_separation(1.5, 2.5, 9.3, 1.5) == doctest::Approx(9.5));
+	CHECK(Math::snap_scalar_separation(0.3, 5.2, 12.7, 0.8) == doctest::Approx(12.3));
+	CHECK(Math::snap_scalar_separation(2.2, 7.5, -14.6, 1.3) == doctest::Approx(-15.4));
+}
+
 } // namespace TestMathFuncs
