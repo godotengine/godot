@@ -120,7 +120,11 @@ String Resource::get_path() const {
 }
 
 void Resource::set_path_cache(const String &p_path) {
-	path_cache = p_path;
+	if (path_cache != p_path) {
+		ERR_FAIL_COND_MSG(!path_cache.is_empty() && !p_path.is_empty() && ResourceCache::has(path_cache), vformat("This resource is already cached with path '%s'.", path_cache));
+		path_cache = p_path;
+	}
+
 	GDVIRTUAL_CALL(_set_path_cache, p_path);
 }
 
