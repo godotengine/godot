@@ -95,7 +95,11 @@ hvec3 f0_Clear_Coat_To_Surface(hvec3 f0) {
 	// Approximation of iorTof0(f0ToIor(f0), 1.5)
 	// This assumes that the clear coat layer has an IOR of 1.5
 	// see https://github.com/google/filament/blob/837b2715a05f4656d4f524bce50d1b23ff8f84c9/shaders/src/surface_material.fs#L54-L62
+#ifdef USING_MOBILE_RENDERER
+	return clamp(f0 * (f0 * half(0.526868) + half(0.529324)) - half(0.0482256), half(0.0), half(1.0));
+#else
 	return clamp(f0 * (f0 * (half(0.941892) - half(0.263008) * f0) + half(0.346479)) - half(0.0285998), half(0.0), half(1.0));
+#endif
 }
 
 void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is_directional, half attenuation, hvec3 f0, half roughness, half metallic, half specular_amount, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
