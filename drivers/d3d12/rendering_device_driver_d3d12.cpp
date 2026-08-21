@@ -5244,7 +5244,7 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		(&pipeline_desc.DepthStencilState)->DepthEnable = false;
 		(&pipeline_desc.DepthStencilState)->StencilEnable = false;
 	} else {
-		(&pipeline_desc.DepthStencilState)->DepthEnable = p_depth_stencil_state.enable_depth_test;
+		(&pipeline_desc.DepthStencilState)->DepthEnable = p_depth_stencil_state.enable_depth_test or p_depth_stencil_state.enable_depth_write;
 		(&pipeline_desc.DepthStencilState)->DepthWriteMask = p_depth_stencil_state.enable_depth_write ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
 		(&pipeline_desc.DepthStencilState)->DepthFunc = RD_TO_D3D12_COMPARE_OP[p_depth_stencil_state.depth_compare_operator];
 		(&pipeline_desc.DepthStencilState)->DepthBoundsTestEnable = p_depth_stencil_state.enable_depth_range;

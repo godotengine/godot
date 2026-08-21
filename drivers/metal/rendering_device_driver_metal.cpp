@@ -2075,14 +2075,16 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 	desc->setAlphaToOneEnabled(p_multisample_state.enable_alpha_to_one);
 
 	// Depth buffer.
-	bool depth_enabled = p_depth_stencil_state.enable_depth_test && desc->depthAttachmentPixelFormat() != MTL::PixelFormatInvalid;
+	bool depth_enabled = desc->depthAttachmentPixelFormat() != MTL::PixelFormatInvalid;
+	bool depth_test_enabled = p_depth_stencil_state.enable_depth_test && depth_enabled;
+	bool depth_write_enabled = p_depth_stencil_state.enable_depth_write && depth_enabled;
 	bool stencil_enabled = p_depth_stencil_state.enable_stencil && desc->stencilAttachmentPixelFormat() != MTL::PixelFormatInvalid;
 
-	if (depth_enabled || stencil_enabled) {
+	if (depth_test_enabled || depth_write_enabled || stencil_enabled) {
 		NS::SharedPtr<MTL::DepthStencilDescriptor> ds_desc = NS::TransferPtr(MTL::DepthStencilDescriptor::alloc()->init());
 
-		pipeline->raster_state.depth_test.enabled = depth_enabled;
-		ds_desc->setDepthWriteEnabled(p_depth_stencil_state.enable_depth_write);
+		pipeline->raster_state.depth_test.enabled = depth_test_enabled;
+		ds_desc->setDepthWriteEnabled(depth_write_enabled);
 		ds_desc->setDepthCompareFunction(COMPARE_OPERATORS[p_depth_stencil_state.depth_compare_operator]);
 		if (p_depth_stencil_state.enable_depth_range) {
 			WARN_PRINT("unsupported: depth range");

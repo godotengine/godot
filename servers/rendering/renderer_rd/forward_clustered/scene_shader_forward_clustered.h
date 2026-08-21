@@ -285,9 +285,7 @@ public:
 			bool has_base_alpha = (uses_alpha && (!uses_alpha_clip || uses_alpha_antialiasing)) || has_read_screen_alpha;
 			bool has_blend_alpha = uses_blend_alpha;
 			bool has_alpha = has_base_alpha || has_blend_alpha;
-			bool no_depth_draw = depth_draw == DEPTH_DRAW_DISABLED;
-			bool no_depth_test = depth_test != DEPTH_TEST_ENABLED;
-			return has_alpha || has_read_screen_alpha || no_depth_draw || no_depth_test;
+			return has_alpha || has_read_screen_alpha;
 		}
 
 		_FORCE_INLINE_ bool uses_depth_in_alpha_pass() const {

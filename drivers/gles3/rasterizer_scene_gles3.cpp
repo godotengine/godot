@@ -261,7 +261,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 		flags |= GeometryInstanceSurface::FLAG_USES_STENCIL;
 	}
 
-	if (has_alpha || has_read_screen_alpha || p_material->shader_data->depth_draw == GLES3::SceneShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test != GLES3::SceneShaderData::DEPTH_TEST_ENABLED) {
+	if (has_alpha || has_read_screen_alpha) {
 		//material is only meant for alpha pass
 		flags |= GeometryInstanceSurface::FLAG_PASS_ALPHA;
 		if (p_material->shader_data->uses_depth_prepass_alpha && !(p_material->shader_data->depth_draw == GLES3::SceneShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test != GLES3::SceneShaderData::DEPTH_TEST_ENABLED)) {
@@ -270,8 +270,11 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 		}
 	} else {
 		flags |= GeometryInstanceSurface::FLAG_PASS_OPAQUE;
-		flags |= GeometryInstanceSurface::FLAG_PASS_DEPTH;
-		flags |= GeometryInstanceSurface::FLAG_PASS_SHADOW;
+
+		if (p_material->shader_data->depth_draw != GLES3::SceneShaderData::DEPTH_DRAW_DISABLED) {
+			flags |= GeometryInstanceSurface::FLAG_PASS_DEPTH;
+			flags |= GeometryInstanceSurface::FLAG_PASS_SHADOW;
+		}
 	}
 
 	if (p_material->shader_data->stencil_enabled) {
@@ -3317,7 +3320,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			should_request_redraw = true;
 		}
 
-		if constexpr (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
+		if constexpr (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
 			scene_state.enable_gl_depth_test(shader->depth_test != GLES3::SceneShaderData::DEPTH_TEST_DISABLED);
 		}
 
