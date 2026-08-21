@@ -880,9 +880,9 @@ void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_file, HashSet<Stri
 	}
 
 	for (const IntResource &res : internal_resources) {
-		p_file->seek(res.offset);
+		f->seek(res.offset);
 		String t = get_unicode_string();
-		if (!p_file->get_error() && t != String() && ClassDB::class_exists(t)) {
+		if (!f->get_error() && t != String() && ClassDB::class_exists(t)) {
 			p_classes->insert(t);
 		}
 	}
@@ -1462,9 +1462,6 @@ void ResourceFormatLoaderBinary::get_classes_used(const String &p_path, HashSet<
 
 	// Fetch the nodes inside scene files.
 
-	// Reopening is necessary, or errors will occur.
-	f->reopen(p_path, FileAccess::READ);
-	loader.open(f);
 	ERR_FAIL_COND(loader.load() != OK);
 
 	Ref<SceneState> state = Ref<PackedScene>(loader.get_resource())->get_state();
