@@ -3,8 +3,6 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-File = env.File
-
 source_files = [
     File("display_server_x11.cpp"),
     File("key_mapping_x11.cpp"),
