@@ -3553,6 +3553,15 @@ PackedStringArray Node::get_configuration_warnings() const {
 	ERR_THREAD_GUARD_V(PackedStringArray());
 	PackedStringArray ret;
 
+	Ref<Script> scr = get_script();
+	if (scr.is_valid()) {
+		const StringName script_base_type = scr->get_instance_base_type();
+		const StringName this_node_type = get_class_name();
+		if (!ClassDB::is_parent_class(this_node_type, script_base_type)) {
+			ret.append(vformat(RTR("Script inherits from native type \"%s\", so it can't be assigned to an object of type: \"%s\""), script_base_type, this_node_type));
+		}
+	}
+
 	Vector<String> warnings;
 	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
 		ret.append_array(warnings);
