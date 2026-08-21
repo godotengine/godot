@@ -226,6 +226,13 @@ void DockTabContainer::_tab_rmb_clicked(int p_tab_idx) {
 	dock_context_popup->popup();
 }
 
+void DockTabContainer::_tab_close_pressed(int p_tab_idx) {
+	EditorDock *hovered_dock = get_dock(p_tab_idx);
+	if (hovered_dock) {
+		hovered_dock->close();
+	}
+}
+
 void DockTabContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
 		connect("pre_popup_pressed", callable_mp(this, &DockTabContainer::_pre_popup).bind(Size2i()));
@@ -348,6 +355,7 @@ DockTabContainer::DockTabContainer(int p_slot) {
 
 	get_tab_bar()->set_switch_on_release(true);
 	get_tab_bar()->connect("tab_rmb_clicked", callable_mp(this, &DockTabContainer::_tab_rmb_clicked));
+	get_tab_bar()->connect("tab_close_pressed", callable_mp(this, &DockTabContainer::_tab_close_pressed));
 }
 
 Rect2 SideDockTabContainer::get_floating_dock_rect(EditorDock *p_dock) {
