@@ -1507,6 +1507,9 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 
 	EditorSettings::get_singleton()->set_project_metadata("export_options", "export_debug", export_debug);
 
+	// Save all scenes before initiating project export, so that unsaved changes are included in the exported project.
+	EditorNode::get_singleton()->save_all_scenes(false);
+
 	Error err = platform->export_project(current, export_debug, current->get_export_path(), 0);
 	result_dialog_log->clear();
 	if (err != ERR_SKIP) {
