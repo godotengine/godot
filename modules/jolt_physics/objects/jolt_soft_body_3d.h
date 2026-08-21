@@ -147,6 +147,13 @@ public:
 	void put_to_sleep() { set_is_sleeping(true); }
 	void wake_up() { set_is_sleeping(false); }
 
+	_FORCE_INLINE_ static float normalize_stiffness(float p_stiffness, int p_precision) {
+		if (p_precision <= 1 || p_stiffness <= 0.0f || p_stiffness >= 1.0f) {
+			return p_stiffness;
+		}
+		return 1.0f - Math::pow(1.0f - p_stiffness, 1.0f / (float)p_precision);
+	}
+
 	int get_simulation_precision() const { return simulation_precision; }
 	void set_simulation_precision(int p_precision);
 

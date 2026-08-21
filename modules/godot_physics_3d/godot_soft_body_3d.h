@@ -198,6 +198,13 @@ public:
 	void get_face_points(uint32_t p_face_index, Vector3 &r_point_1, Vector3 &r_point_2, Vector3 &r_point_3) const;
 	Vector3 get_face_normal(uint32_t p_face_index) const;
 
+	_FORCE_INLINE_ static real_t normalize_stiffness(real_t p_stiffness, int p_iterations) {
+		if (p_iterations <= 1 || p_stiffness <= 0.0 || p_stiffness >= 1.0) {
+			return p_stiffness;
+		}
+		return 1.0 - Math::pow(1.0 - p_stiffness, (real_t)1.0 / p_iterations);
+	}
+
 	void set_iteration_count(int p_val);
 	_FORCE_INLINE_ real_t get_iteration_count() const { return iteration_count; }
 

@@ -289,7 +289,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 
 	const float w1_plus_w2 = 2.0f * physics_vertices.size() / mass;
 	const float dt = 1.0f / Engine::get_singleton()->get_user_physics_ticks_per_second() / simulation_precision;
-	const float inverse_stiffness = dt * dt * (1.0f / stiffness_coefficient - 1.0f) * w1_plus_w2;
+	const float eff_stiffness = normalize_stiffness(CLAMP(stiffness_coefficient, 0.0001f, 1.0f), simulation_precision);
+	const float inverse_stiffness = dt * dt * (1.0f / eff_stiffness - 1.0f) * w1_plus_w2;
 
 	JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
 	vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
@@ -310,7 +311,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	// Add internal springs from loose edges only when enabled
 	if (internal_springs && !loose_edges.is_empty()) {
 		const float internal_stiffness = CLAMP(internal_spring_stiffness, 0.0001f, 1.0f);
-		const float internal_compliance = dt * dt * (1.0f / internal_stiffness - 1.0f) * w1_plus_w2;
+		const float eff_internal_stiffness = normalize_stiffness(internal_stiffness, simulation_precision);
+		const float internal_compliance = dt * dt * (1.0f / eff_internal_stiffness - 1.0f) * w1_plus_w2;
 		for (const LooseEdge &le : loose_edges) {
 			const JPH::Float3 &pos0 = physics_vertices[le.v0].mPosition;
 			const JPH::Float3 &pos1 = physics_vertices[le.v1].mPosition;
@@ -349,7 +351,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 			mesh_to_anchor[mesh_index] = anchor_physics_index;
 
 			const float spring_stiffness = CLAMP(weight, 0.0001f, 1.0f);
-			const float spring_compliance = dt * dt * (1.0f / spring_stiffness - 1.0f) * w1_plus_w2;
+			const float eff_spring_stiffness = normalize_stiffness(spring_stiffness, simulation_precision);
+			const float spring_compliance = dt * dt * (1.0f / eff_spring_stiffness - 1.0f) * w1_plus_w2;
 
 			JPH::SoftBodySharedSettings::Edge anchor_edge((JPH::uint32)mesh_physics_index, (JPH::uint32)anchor_physics_index, spring_compliance);
 			anchor_edge.mRestLength = 0.0f;
@@ -521,6 +524,8 @@ void JoltSoftBody3D::_mesh_changed() {
 }
 
 void JoltSoftBody3D::_simulation_precision_changed() {
+	_update_simulation_precision();
+	_try_rebuild();
 	wake_up();
 }
 
@@ -822,7 +827,13 @@ float JoltSoftBody3D::get_stiffness_coefficient() const {
 }
 
 void JoltSoftBody3D::set_stiffness_coefficient(float p_coefficient) {
-	stiffness_coefficient = CLAMP(p_coefficient, 0.0f, 1.0f);
+	float clamped = CLAMP(p_coefficient, 0.0f, 1.0f);
+	if (unlikely(stiffness_coefficient == clamped)) {
+		return;
+	}
+	stiffness_coefficient = clamped;
+	_try_rebuild();
+	wake_up();
 }
 
 void JoltSoftBody3D::set_internal_springs(bool p_enabled) {
@@ -834,7 +845,13 @@ void JoltSoftBody3D::set_internal_springs(bool p_enabled) {
 }
 
 void JoltSoftBody3D::set_internal_spring_stiffness(float p_stiffness) {
-	internal_spring_stiffness = CLAMP(p_stiffness, 0.0f, 1.0f);
+	float clamped = CLAMP(p_stiffness, 0.0f, 1.0f);
+	if (unlikely(internal_spring_stiffness == clamped)) {
+		return;
+	}
+	internal_spring_stiffness = clamped;
+	_try_rebuild();
+	wake_up();
 }
 
 void JoltSoftBody3D::set_internal_spring_damping_coefficient(float p_damping) {

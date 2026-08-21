@@ -365,8 +365,9 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 				Link &anchor_link = links[links.size() - 1];
 				anchor_link.rl = 0.0;
 				anchor_link.c1 = 0.0;
-				real_t kLST = CLAMP(weight, (real_t)0.001, (real_t)1.0);
-				anchor_link.c0 = nodes[node_index].im * kLST;
+				int n = MAX(1, iteration_count);
+				real_t eff_weight = normalize_stiffness(CLAMP(weight, (real_t)0.0001, (real_t)1.0), n);
+				anchor_link.c0 = nodes[node_index].im / eff_weight;
 			}
 		}
 	}
@@ -510,8 +511,11 @@ void GodotSoftBody3D::reset_link_rest_lengths() {
 }
 
 void GodotSoftBody3D::update_link_constants() {
-	real_t inv_linear_stiffness = 1.0 / linear_stiffness;
-	real_t inv_internal_stiffness = 1.0 / internal_spring_stiffness;
+	int n = MAX(1, iteration_count);
+	real_t eff_linear_stiffness = normalize_stiffness(CLAMP(linear_stiffness, (real_t)0.0001, (real_t)1.0), n);
+	real_t eff_internal_stiffness = normalize_stiffness(CLAMP(internal_spring_stiffness, (real_t)0.0001, (real_t)1.0), n);
+	real_t inv_linear_stiffness = 1.0 / eff_linear_stiffness;
+	real_t inv_internal_stiffness = 1.0 / eff_internal_stiffness;
 	for (Link &link : links) {
 		if (link.type == Link::TYPE_ANCHOR) {
 			// Anchor link stiffness is calculated from pin weight
@@ -1184,7 +1188,11 @@ void GodotSoftBody3D::append_face(uint32_t p_node1, uint32_t p_node2, uint32_t p
 }
 
 void GodotSoftBody3D::set_iteration_count(int p_val) {
+	if (iteration_count == p_val) {
+		return;
+	}
 	iteration_count = p_val;
+	update_link_constants();
 }
 
 void GodotSoftBody3D::set_total_mass(real_t p_val) {
@@ -1212,7 +1220,11 @@ void GodotSoftBody3D::set_collision_margin(real_t p_val) {
 }
 
 void GodotSoftBody3D::set_linear_stiffness(real_t p_val) {
+	if (linear_stiffness == p_val) {
+		return;
+	}
 	linear_stiffness = p_val;
+	update_link_constants();
 }
 
 void GodotSoftBody3D::set_internal_springs(bool p_enabled) {
@@ -1226,7 +1238,12 @@ void GodotSoftBody3D::set_internal_springs(bool p_enabled) {
 }
 
 void GodotSoftBody3D::set_internal_spring_stiffness(real_t p_val) {
-	internal_spring_stiffness = CLAMP(p_val, 0.0, 1.0);
+	real_t clamped = CLAMP(p_val, 0.0, 1.0);
+	if (internal_spring_stiffness == clamped) {
+		return;
+	}
+	internal_spring_stiffness = clamped;
+	update_link_constants();
 }
 
 void GodotSoftBody3D::set_internal_spring_damping_coefficient(real_t p_val) {
