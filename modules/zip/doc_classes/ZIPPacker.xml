@@ -76,7 +76,7 @@
 	</methods>
 	<members>
 		<member name="compression_level" type="int" setter="set_compression_level" getter="get_compression_level" default="-1">
-			The compression level used when [method start_file] is called. Use [enum ZIPPacker.CompressionLevel] as a reference.
+			The compression level used when [method start_file] is called. You can use [enum ZIPPacker.CompressionLevel] as a point of reference.
 		</member>
 	</members>
 	<constants>
