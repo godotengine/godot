@@ -233,6 +233,7 @@ void CanvasItemMaterial::_validate_property(PropertyInfo &p_property) const {
 }
 
 RID CanvasItemMaterial::get_shader_rid() const {
+	MutexLock lock(material_mutex);
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
 	return shader_map[current_key].shader;
 }
