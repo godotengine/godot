@@ -159,7 +159,6 @@ private:
 	void _method_check_button_pressed(const CheckButton *p_button);
 	void _open_method_popup();
 
-	void _unbind_count_changed(double p_count);
 	void _add_bind();
 	void _remove_bind(const String &p_bind);
 	void _advanced_pressed();
