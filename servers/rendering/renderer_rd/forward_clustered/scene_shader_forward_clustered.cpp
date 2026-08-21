@@ -804,6 +804,8 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["LIGHT_AREA_DIFFUSE_MULTIPLIER"] = "area_diffuse";
 		actions.renames["LIGHT_AREA_SPECULAR_MULTIPLIER"] = "area_specular";
 		actions.renames["LIGHT"] = "light_highp";
+		actions.renames["LIGHT_FALLOFF"] = "light_falloff_highp";
+		actions.renames["LIGHT_SHADOW"] = "light_shadow_highp";
 		actions.renames["ATTENUATION"] = "attenuation_highp";
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light_highp";
 		actions.renames["SPECULAR_LIGHT"] = "specular_light_highp";
@@ -838,6 +840,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.usage_defines["LIGHT_AREA_DIFFUSE_MULTIPLIER"] = "#define AREA_LIGHT_CODE_USED\n";
 		actions.usage_defines["LIGHT_AREA_SPECULAR_MULTIPLIER"] = "@LIGHT_AREA_DIFFUSE_MULTIPLIER";
 		actions.usage_defines["LIGHT_IS_AREA"] = "@LIGHT_AREA_DIFFUSE_MULTIPLIER";
+		actions.usage_defines["LIGHT_FALLOFF"] = "#define LIGHT_FALLOFF_USED\n";
+		actions.usage_defines["LIGHT_SHADOW"] = "#define LIGHT_SHADOW_USED\n";
+		actions.usage_defines["ATTENUATION"] = "#define ATTENUATION_USED\n";
 
 		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
 		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";
