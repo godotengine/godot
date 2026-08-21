@@ -124,6 +124,8 @@ public:
 
 	virtual AABB get_aabb() const override;
 
+	void queue_update();
+
 	ReflectionProbe();
 	~ReflectionProbe();
 };
