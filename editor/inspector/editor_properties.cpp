@@ -3040,8 +3040,14 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path, bool p_absol
 		path = get_tree()->get_edited_scene_root()->get_path_to(to_node);
 	}
 
-	if (p_absolute && base_node) { // for AnimationTrackKeyEdit
-		path = base_node->get_path().rel_path_to(p_path);
+	if (base_node) {
+		if (p_absolute) { // For AnimationTrackKeyEdit.
+			path = base_node->get_path().rel_path_to(p_path);
+		} else {
+			path = p_path;
+		}
+		Node *to_node = base_node->get_node_or_null(path);
+		ERR_FAIL_NULL_EDMSG(to_node, vformat(TTR("Invalid node path \"%s\" (relative to %s)."), path, base_node->get_name()));
 	}
 
 	if (editing_node) {
