@@ -34,6 +34,8 @@
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
+#include <atomic>
+
 VARIANT_ENUM_CAST(IP::ResolverStatus);
 
 /************* RESOLVER ******************/
@@ -73,7 +75,7 @@ struct _IP_ResolverPrivate {
 
 	Thread thread;
 	//Semaphore* semaphore;
-	bool thread_abort;
+	std::atomic<bool> thread_abort;
 
 	void resolve_queues() {
 		for (int i = 0; i < IP::RESOLVER_MAX_QUERIES; i++) {
@@ -109,7 +111,7 @@ struct _IP_ResolverPrivate {
 	static void _thread_function(void *self) {
 		_IP_ResolverPrivate *ipr = (_IP_ResolverPrivate *)self;
 
-		while (!ipr->thread_abort) {
+		while (!ipr->thread_abort.load(std::memory_order_acquire)) {
 			ipr->sem.wait();
 			ipr->resolve_queues();
 		}
@@ -347,7 +349,7 @@ IP::IP() {
 }
 
 IP::~IP() {
-	resolver->thread_abort = true;
+	resolver->thread_abort.store(true, std::memory_order_release);
 	resolver->sem.post();
 	resolver->thread.wait_to_finish();
 

@@ -37,6 +37,8 @@
 #include "core/variant.h"
 #include "servers/audio/audio_effect.h"
 
+#include <atomic>
+
 class AudioDriverDummy;
 class AudioStream;
 class AudioStreamSample;
@@ -47,8 +49,8 @@ class AudioDriver {
 	uint64_t _last_mix_frames;
 
 #ifdef DEBUG_ENABLED
-	uint64_t prof_ticks;
-	uint64_t prof_time;
+	std::atomic<uint64_t> prof_ticks;
+	std::atomic<uint64_t> prof_time;
 #endif
 
 protected:
@@ -62,8 +64,10 @@ protected:
 	void input_buffer_write(int32_t sample);
 
 #ifdef DEBUG_ENABLED
-	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
-	_FORCE_INLINE_ void stop_counting_ticks() { prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks; }
+	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks.store(OS::get_singleton()->get_ticks_usec(), std::memory_order_relaxed); }
+	_FORCE_INLINE_ void stop_counting_ticks() {
+		prof_time.fetch_add(OS::get_singleton()->get_ticks_usec() - prof_ticks.load(std::memory_order_relaxed), std::memory_order_relaxed);
+	}
 #else
 	_FORCE_INLINE_ void start_counting_ticks() {}
 	_FORCE_INLINE_ void stop_counting_ticks() {}
@@ -112,8 +116,8 @@ public:
 	unsigned int get_input_size() { return input_size; }
 
 #ifdef DEBUG_ENABLED
-	uint64_t get_profiling_time() const { return prof_time; }
-	void reset_profiling_time() { prof_time = 0; }
+	uint64_t get_profiling_time() const { return prof_time.load(std::memory_order_relaxed); }
+	void reset_profiling_time() { prof_time.store(0, std::memory_order_relaxed); }
 #endif
 
 	AudioDriver();
@@ -208,7 +212,7 @@ private:
 	uint64_t mix_count;
 	uint64_t mix_frames;
 #ifdef DEBUG_ENABLED
-	uint64_t prof_time;
+	std::atomic<uint64_t> prof_time;
 #endif
 
 	float channel_disable_threshold_db;

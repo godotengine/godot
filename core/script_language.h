@@ -48,6 +48,7 @@ class ScriptServer {
 
 	static ScriptLanguage *_languages[MAX_LANGUAGES];
 	static int _language_count;
+	static Mutex _mutex;
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
 	static bool languages_finished;

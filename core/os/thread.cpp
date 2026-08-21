@@ -65,7 +65,11 @@ void Thread::_set_platform_funcs(
 }
 
 void Thread::callback(Thread *p_self, const Settings &p_settings, Callback p_callback, void *p_userdata) {
-	caller_id = _thread_id_hash(p_self->thread.get_id());
+	// Prevent unused parameter warning since p_self is no longer read here.
+	(void)p_self;
+
+	// Safely query the current thread ID without accessing the parent/shared thread object.
+	caller_id = _thread_id_hash(std::this_thread::get_id());
 	caller_id_cached = true;
 
 	if (set_priority_func) {

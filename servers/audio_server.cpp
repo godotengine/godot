@@ -483,7 +483,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 	}
 
 #ifdef DEBUG_ENABLED
-	prof_time += OS::get_singleton()->get_ticks_usec() - prof_ticks;
+	prof_time.fetch_add(OS::get_singleton()->get_ticks_usec() - prof_ticks, std::memory_order_relaxed);
 #endif
 }
 
@@ -1163,7 +1163,7 @@ void AudioServer::update() {
 		// Driver time includes server time + effects times
 		// Server time includes effects times
 		uint64_t driver_time = AudioDriver::get_singleton()->get_profiling_time();
-		uint64_t server_time = prof_time;
+		uint64_t server_time = prof_time.load(std::memory_order_relaxed);
 
 		// Subtract the server time from the driver time
 		if (driver_time > server_time) {
@@ -1221,7 +1221,7 @@ void AudioServer::update() {
 	}
 
 	AudioDriver::get_singleton()->reset_profiling_time();
-	prof_time = 0;
+	prof_time.store(0, std::memory_order_relaxed);
 #endif
 
 	// Give audio driver option to turn off to throttle CPU.

@@ -921,7 +921,7 @@ String OS_X11::get_processor_name() const {
 }
 
 void OS_X11::finalize() {
-	events_thread_done = true;
+	events_thread_done.store(true, std::memory_order_release);
 	events_thread.wait_to_finish();
 
 	if (main_loop) {
@@ -2571,7 +2571,7 @@ bool OS_X11::_wait_for_events() const {
 }
 
 void OS_X11::_poll_events() {
-	while (!events_thread_done) {
+	while (!events_thread_done.load(std::memory_order_acquire)) {
 		_wait_for_events();
 
 		// Process events from the queue.
