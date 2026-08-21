@@ -251,6 +251,27 @@ static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDSc
 	return true;
 }
 
+static bool _can_hold_ref_counted(const GDScriptCodeGenerator::Address &address) {
+	if (address.type.kind == GDScriptDataType::VARIANT) {
+		return true;
+	}
+	if (address.type.kind == GDScriptDataType::BUILTIN) {
+		return false;
+	}
+	// Known type, can be checked.
+	StringName class_name;
+	if (address.type.kind == GDScriptDataType::NATIVE) {
+		class_name = address.type.native_type;
+	} else {
+		class_name = address.type.native_type == StringName() ? address.type.script_type->get_instance_base_type() : address.type.native_type;
+	}
+	if (!GDScriptAnalyzer::class_exists(class_name)) {
+		// Class doesn't exists, let's assume it can hold RefCounted.
+		return true;
+	}
+	return class_name == Object::get_class_static() || ClassDB::is_parent_class(class_name, RefCounted::get_class_static());
+}
+
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root, bool p_initializer) {
 	if (p_expression->is_constant && !(p_expression->type_constraint.is_meta_type && p_expression->type_constraint.kind == GDScriptParser::DataType::CLASS)) {
 		return codegen.add_constant(p_expression->reduced_value);
@@ -620,6 +641,12 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				if (r_error) {
 					return GDScriptCodeGenerator::Address();
 				}
+				// Always pass `self` as null inside a ref-counted predelete by passing it as a copy.
+				if (arg.mode == GDScriptCodeGenerator::Address::SELF && ClassDB::is_parent_class(codegen.script->native->get_name(), RefCounted::get_class_static())) {
+					GDScriptCodeGenerator::Address temp = codegen.add_temporary(_gdtype_from_datatype(codegen.class_node->self_type, codegen.script));
+					gen->write_assign(temp, arg);
+					arg = temp;
+				}
 				arguments.push_back(arg);
 			}
 
@@ -692,6 +719,12 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
 								if (r_error) {
 									return GDScriptCodeGenerator::Address();
+								}
+								// If the base could be ref-counted object we need to make sure it will exist for the whole call.
+								if (base.mode == GDScriptCodeGenerator::Address::MEMBER && _can_hold_ref_counted(base)) {
+									GDScriptCodeGenerator::Address temp = codegen.add_temporary(base.type);
+									gen->write_assign(temp, base);
+									base = temp;
 								}
 								if (is_awaited) {
 									gen->write_call_async(result, base, call->function_name, arguments);
@@ -791,6 +824,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
 			if (r_error) {
 				return GDScriptCodeGenerator::Address();
+			}
+
+			// If the base could be ref-counted object with its own getter we need to make sure it will exist for the whole call.
+			if (base.mode == GDScriptCodeGenerator::Address::MEMBER && _can_hold_ref_counted(base)) {
+				GDScriptCodeGenerator::Address temp = codegen.add_temporary(base.type);
+				gen->write_assign(temp, base);
+				base = temp;
 			}
 
 			bool named = subscript->is_attribute;
@@ -1079,10 +1119,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				GDScriptCodeGenerator::Address prev_base = base;
 
+				GDScriptCodeGenerator::Address base_temp;
+				// If the base could be ref-counted object with its own setter we need to make sure it will exist for the whole call.
+				bool needs_lifetime_ensured = base.mode == GDScriptCodeGenerator::Address::MEMBER && _can_hold_ref_counted(base);
 				// In case the base has a setter, don't use the address directly, as we want to call that setter.
 				// So use a temp value instead and call the setter at the end.
-				GDScriptCodeGenerator::Address base_temp;
-				if ((!base_known_type || !base_is_shared) && base.mode == GDScriptCodeGenerator::Address::MEMBER && member_property_has_setter && !member_property_is_in_setter) {
+				bool base_has_setter = (!base_known_type || !base_is_shared) && base.mode == GDScriptCodeGenerator::Address::MEMBER && member_property_has_setter && !member_property_is_in_setter;
+				if (needs_lifetime_ensured || base_has_setter) {
 					base_temp = codegen.add_temporary(base.type);
 					gen->write_assign(base_temp, base);
 					prev_base = base_temp;
@@ -1240,8 +1283,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					if (!base_known_type) {
 						gen->write_jump_if_shared(base);
 					}
-					// Save the temp value back to the base by calling its setter.
-					gen->write_call(GDScriptCodeGenerator::Address(), base, member_property_setter_function, { assigned });
+					if (base_has_setter) {
+						// Save the temp value back to the base by calling its setter.
+						gen->write_call(GDScriptCodeGenerator::Address(), base, member_property_setter_function, { assigned });
+					}
 					if (!base_known_type) {
 						gen->write_end_jump_if_shared();
 					}
