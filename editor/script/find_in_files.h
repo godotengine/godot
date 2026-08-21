@@ -191,11 +191,19 @@ class FindInFilesResultsPanel : public MarginContainer {
 	};
 
 	struct Result {
+		String base_text;
 		int line_number = 0;
 		int begin = 0;
 		int end = 0;
 		int begin_trimmed = 0;
 	};
+
+	struct ThemeCache {
+		Color accent_color;
+		Color removed_color;
+		Color added_color;
+		Color font_color;
+	} theme_cache;
 
 	FindInFilesSearch *finder = nullptr;
 	Label *find_label = nullptr;
@@ -228,8 +236,11 @@ class FindInFilesResultsPanel : public MarginContainer {
 
 	void _apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text);
 	void _update_matches_text();
+	void _update_replace_preview();
+	void _update_replace_item(TreeItem *p_item, const Result &p_result);
 
 	void _draw_result_text(Object *p_item_obj, const Rect2 &p_rect);
+	void _draw_outlined_rect(RID p_canvas_item, const Rect2 &p_rect, const Color &p_fill_color, const Color &p_outline_color);
 
 	void _clear();
 

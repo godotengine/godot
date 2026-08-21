@@ -408,6 +408,11 @@ String TreeItem::get_text(int p_column) const {
 	return cells[p_column].text;
 }
 
+Ref<TextParagraph> TreeItem::_get_text_buf(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), nullptr);
+	return cells[p_column].text_buf;
+}
+
 void TreeItem::set_description(int p_column, String p_text) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
