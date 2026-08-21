@@ -82,6 +82,8 @@ enum PropertyHint {
 	PROPERTY_HINT_GROUP_ENABLE, ///< used to make the property's group checkable. Only use for boolean types.
 	PROPERTY_HINT_INPUT_NAME,
 	PROPERTY_HINT_FILE_PATH,
+	PROPERTY_HINT_FLAGS_GRID, ///< hint_text= "count" (unnamed bit flags in compact grid).
+	PROPERTY_HINT_FLAGS_GRID_NAMED, ///< hint_text= "flag1,flag2,etc" (named bit flags in compact grid).
 	PROPERTY_HINT_MAX,
 };
 
