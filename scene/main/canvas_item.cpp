@@ -153,8 +153,9 @@ void CanvasItem::_redraw_callback() {
 
 	if (is_visible_in_tree()) {
 		drawing = true;
-		if (oversampling_override > 0 && _is_oversampling_with_scale()) {
-			double oversampling = oversampling_override * get_viewport()->get_oversampling();
+		if (is_oversampling_with_scale_cache) {
+			Vector2 scale = get_global_transform().get_scale();
+			double oversampling = MAX(scale.x, scale.y) * get_viewport()->get_oversampling();
 			if (oversampling_override_cache != oversampling) {
 				TS->reference_oversampling_level(oversampling);
 				DPITexture::reference_scaling_level(oversampling);
@@ -166,6 +167,11 @@ void CanvasItem::_redraw_callback() {
 			}
 			TextServer::set_current_drawn_item_oversampling(oversampling_override_cache);
 		} else {
+			if (oversampling_override_cache > 0) {
+				TS->unreference_oversampling_level(oversampling_override_cache);
+				DPITexture::unreference_scaling_level(oversampling_override_cache);
+				oversampling_override_cache = -1;
+			}
 			TextServer::set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
 		}
 		current_item_drawn = this;
@@ -318,44 +324,22 @@ void CanvasItem::_exit_canvas() {
 	}
 }
 
-bool CanvasItem::_is_oversampling_with_scale() const {
-	if (oversampling_with_scale == OVERSAMPLING_WITH_SCALE_PARENT_NODE) {
-		CanvasItem *ci = get_parent_item();
-		if (ci) {
-			return ci->_is_oversampling_with_scale();
-		}
-	}
-	return oversampling_with_scale == OVERSAMPLING_WITH_SCALE_ENABLED;
-}
-
 CanvasItem::OversamplingWithScale CanvasItem::get_oversampling_with_scale() const {
 	return oversampling_with_scale;
 }
 
-void CanvasItem::_update_oversampling(bool p_propagate) {
-	if (p_propagate) {
-		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
-			CanvasItem *ci = data.canvas_item_children[n];
-			if (!ci->top_level && ci->get_oversampling_with_scale() == OVERSAMPLING_WITH_SCALE_PARENT_NODE) {
-				ci->_update_oversampling(p_propagate);
-			}
-		}
+void CanvasItem::_invalidate_oversampling(bool p_oversampling_with_scale) {
+	if (oversampling_with_scale == OVERSAMPLING_WITH_SCALE_PARENT_NODE) {
+		is_oversampling_with_scale_cache = p_oversampling_with_scale;
+	} else {
+		is_oversampling_with_scale_cache = (oversampling_with_scale == OVERSAMPLING_WITH_SCALE_ENABLED);
 	}
 
-	if (parent_visible_in_tree) {
-		bool new_oversampling_with_scale = _is_oversampling_with_scale();
-		if (new_oversampling_with_scale) {
-			double new_os = MAX(get_global_transform().get_scale().x, get_global_transform().get_scale().y);
-			if (new_os != oversampling_override) {
-				oversampling_override = new_os;
-				queue_redraw();
-			}
-		} else {
-			oversampling_override = -1.0;
-		}
-		if (is_oversampling_with_scale_cache != new_oversampling_with_scale) {
-			is_oversampling_with_scale_cache = new_oversampling_with_scale;
-			queue_redraw();
+	for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
+		CanvasItem *ci = data.canvas_item_children[n];
+		if (!ci->top_level && ci->get_oversampling_with_scale() == OVERSAMPLING_WITH_SCALE_PARENT_NODE) {
+			ci->_invalidate_oversampling(is_oversampling_with_scale_cache);
+			ci->queue_redraw();
 		}
 	}
 }
@@ -365,7 +349,15 @@ void CanvasItem::set_oversampling_with_scale(CanvasItem::OversamplingWithScale p
 		return;
 	}
 	oversampling_with_scale = p_mode;
-	_update_oversampling(true);
+	if (is_inside_tree()) {
+		CanvasItem *ci = get_parent_item();
+		if (ci) {
+			_invalidate_oversampling(ci->is_oversampling_with_scale_cache);
+		} else {
+			_invalidate_oversampling(oversampling_with_scale == OVERSAMPLING_WITH_SCALE_ENABLED);
+		}
+	}
+	queue_redraw();
 }
 
 void CanvasItem::_notification(int p_what) {
@@ -443,7 +435,12 @@ void CanvasItem::_notification(int p_what) {
 			if (is_physics_interpolated_and_enabled()) {
 				notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 			}
-			_update_oversampling(false);
+			CanvasItem *ci = get_parent_item();
+			if (ci) {
+				_invalidate_oversampling(ci->is_oversampling_with_scale_cache);
+			} else {
+				_invalidate_oversampling(oversampling_with_scale == OVERSAMPLING_WITH_SCALE_ENABLED);
+			}
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -489,6 +486,16 @@ void CanvasItem::_notification(int p_what) {
 
 			if (get_viewport()) {
 				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::canvas_parent_mark_dirty).bind(get_parent()));
+			}
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			if (is_oversampling_with_scale_cache && visible && parent_visible_in_tree) {
+				Vector2 scale = get_global_transform().get_scale();
+				double oversampling = MAX(scale.x, scale.y) * get_viewport()->get_oversampling();
+				if (oversampling_override_cache != oversampling) {
+					queue_redraw();
+				}
 			}
 		} break;
 
@@ -1150,7 +1157,7 @@ void CanvasItem::draw_char_outline(RequiredParam<Font> p_font, const Point2 &p_p
 }
 
 void CanvasItem::_notify_transform_deferred() {
-	if (is_inside_tree() && notify_transform && !xform_change.in_list()) {
+	if (is_inside_tree() && (notify_transform || is_oversampling_with_scale_cache) && !xform_change.in_list()) {
 		get_tree()->xform_change_list.add(&xform_change);
 	}
 }
@@ -1162,15 +1169,13 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	 * notification anyway).
 	 */
 
-	_update_oversampling(false);
-
 	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_global_invalid()) {
 		return; //nothing to do
 	}
 
 	p_node->_set_global_invalid(true);
 
-	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
+	if ((p_node->notify_transform || p_node->is_oversampling_with_scale_cache) && !p_node->xform_change.in_list()) {
 		if (!p_node->block_transform_notify) {
 			if (p_node->is_inside_tree()) {
 				if (is_accessible_from_caller_thread()) {
