@@ -499,13 +499,17 @@ Files generated from upstream source:
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
-1. Download and extract both `icu4c-{version}-src.tgz` and `icu4c-{version}-data.zip`
+1. Download and extract both `icu4c-{version}-sources.tgz` and `icu4c-{version}-data.zip`
   (replace `data` subfolder from the main source archive)
 2. Build ICU with default options: `./runConfigureICU {PLATFORM} && make`
-3. Reconfigure ICU with custom data config:
+3. Reconfigure ICU with full custom data config:
    `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`
 4. Delete `data/out` folder and rebuild data: `cd data && rm -rf ./out && make`
 5. Copy `source/data/out/icudt{ICU_VERSION}l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt_godot.dat`
+6. Reconfigure ICU with minimal custom data config:
+   `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data_min.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`
+7. Delete `data/out` folder and rebuild data: `cd data && rm -rf ./out && make`
+8. Copy `source/data/out/icudt{ICU_VERSION}l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt_godot_min.dat`
 
 
 ## jolt_physics
