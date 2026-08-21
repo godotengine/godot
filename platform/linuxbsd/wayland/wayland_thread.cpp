@@ -2246,7 +2246,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 					if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
 						// If this is a discrete scroll, specify how many "clicks" it did for this
 						// pointer frame.
-						mb->set_factor(std::abs(pd.discrete_scroll_vector_120.x / (float)120));
+						mb->set_factor(Math::abs(pd.discrete_scroll_vector_120.x / (float)120));
 					}
 
 					mb->set_button_mask(pd.pressed_button_mask);
@@ -4119,8 +4119,8 @@ void WaylandThread::window_state_set_buffer_scale(WindowState *p_ws, int p_buffe
 // must be scaled with away from zero half-rounding.
 Vector2i WaylandThread::scale_vector2i(const Vector2i &p_vector, double p_amount) {
 	// This snippet is tiny, I know, but this is done a lot.
-	int x = std::round(p_vector.x * p_amount);
-	int y = std::round(p_vector.y * p_amount);
+	int x = Math::round(p_vector.x * p_amount);
+	int y = Math::round(p_vector.y * p_amount);
 
 	return Vector2i(x, y);
 }
