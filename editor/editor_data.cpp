@@ -854,6 +854,11 @@ void EditorData::set_edited_scene_root(Node *p_root) {
 	set_scene_root(current_edited_scene, p_root);
 }
 
+bool EditorData::has_edited_scene_selection(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
+	return !edited_scene[p_idx].selection.is_empty();
+}
+
 int EditorData::get_edited_scene_count() const {
 	return edited_scene.size();
 }

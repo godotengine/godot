@@ -4868,6 +4868,13 @@ void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state) {
 		scene_root->add_child(new_scene, true);
 	}
 
+	// For newly loaded scene, save root node to history so global selection is loaded later in restore_edited_scene_state
+	if (new_scene && !editor_data.has_edited_scene_selection(p_idx)) {
+		editor_selection->add_node(new_scene);
+		editor_history.add_object(new_scene->get_instance_id());
+		editor_data.save_edited_scene_state(editor_selection, &editor_history, Dictionary());
+	}
+
 	if (editor_data.check_and_update_scene(p_idx)) {
 		if (!editor_data.get_scene_path(p_idx).is_empty()) {
 			editor_folding.load_scene_folding(editor_data.get_edited_scene_root(p_idx), scene_path);
