@@ -69,6 +69,9 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_user_presence_supported"), &OpenXRInterface::is_user_presence_supported);
 	ClassDB::bind_method(D_METHOD("is_user_present"), &OpenXRInterface::is_user_present);
 
+	// View configuration
+	ClassDB::bind_method(D_METHOD("get_active_view_configuration"), &OpenXRInterface::get_active_view_configuration);
+
 	// Display refresh rate
 	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &OpenXRInterface::get_display_refresh_rate);
 	ClassDB::bind_method(D_METHOD("set_display_refresh_rate", "refresh_rate"), &OpenXRInterface::set_display_refresh_rate);
@@ -144,6 +147,12 @@ void OpenXRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(SESSION_STATE_STOPPING);
 	BIND_ENUM_CONSTANT(SESSION_STATE_LOSS_PENDING);
 	BIND_ENUM_CONSTANT(SESSION_STATE_EXITING);
+
+	BIND_ENUM_CONSTANT(VIEW_CONFIGURATION_MONO);
+	BIND_ENUM_CONSTANT(VIEW_CONFIGURATION_STEREO);
+	BIND_ENUM_CONSTANT(VIEW_CONFIGURATION_STEREO_WITH_INSET);
+	BIND_ENUM_CONSTANT(VIEW_CONFIGURATION_UNSET);
+	BIND_ENUM_CONSTANT(VIEW_CONFIGURATION_UNKNOWN);
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);
@@ -702,8 +711,8 @@ bool OpenXRInterface::initialize() {
 
 	// we must create a tracker for our head
 	head.instantiate();
-	head->set_tracker_type(XRServer::TRACKER_HEAD);
-	head->set_tracker_name("head");
+	head->set_tracker_type(XRServer::TRACKER_CAMERA);
+	head->set_tracker_name(XR_TRACKER_HEAD);
 	head->set_tracker_desc("Players head");
 	xr_server->add_tracker(head);
 
@@ -1055,8 +1064,13 @@ Size2 OpenXRInterface::get_render_target_size() {
 }
 
 uint32_t OpenXRInterface::get_view_count() {
-	// TODO set this based on our configuration
-	return 2;
+	if (openxr_api == nullptr) {
+		return 2;
+	} else {
+		// We return our primary view count here,
+		// this controls our primary view!
+		return openxr_api->get_primary_view_count();
+	}
 }
 
 void OpenXRInterface::_set_default_pos(Transform3D &r_transform, double p_world_scale, uint64_t p_eye) {
@@ -1085,28 +1099,33 @@ Transform3D OpenXRInterface::get_camera_transform() {
 	hmd_transform.basis = head_transform.basis;
 	hmd_transform.origin = head_transform.origin * world_scale;
 
-	return hmd_transform;
+	return xr_server->get_reference_frame() * hmd_transform;
 }
 
+TypedArray<Projection> OpenXRInterface::get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) {
+	ERR_FAIL_NULL_V(openxr_api, TypedArray<Projection>());
+
+	return openxr_api->get_camera_projections(p_tracker_name, p_aspect, p_z_near, p_z_far);
+}
+
+TypedArray<Transform3D> OpenXRInterface::get_camera_offsets(const StringName &p_tracker_name) {
+	ERR_FAIL_NULL_V(openxr_api, TypedArray<Transform3D>());
+
+	return openxr_api->get_camera_offsets(p_tracker_name);
+}
+
+#ifndef DISABLE_DEPRECATED
 Transform3D OpenXRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, Transform3D());
+	ERR_FAIL_NULL_V(openxr_api, Transform3D());
 	ERR_FAIL_UNSIGNED_INDEX_V_MSG(p_view, get_view_count(), Transform3D(), "View index outside bounds.");
 
-	Transform3D t;
-	if (openxr_api && openxr_api->get_view_transform(p_view, t)) {
-		// update our cached value if we have a valid transform
-		transform_for_view[p_view] = t;
-	} else {
-		// reuse cached value
-		t = transform_for_view[p_view];
-	}
+	Transform3D view_offset;
+	openxr_api->get_view_offset(p_view, view_offset);
+	view_offset.origin *= xr_server->get_world_scale();
 
-	// Apply our world scale
-	double world_scale = xr_server->get_world_scale();
-	t.origin *= world_scale;
-
-	return p_cam_transform * xr_server->get_reference_frame() * t;
+	return p_cam_transform * xr_server->get_reference_frame() * head_transform * view_offset;
 }
 
 Projection OpenXRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
@@ -1124,6 +1143,7 @@ Projection OpenXRInterface::get_projection_for_view(uint32_t p_view, double p_as
 
 	return cm;
 }
+#endif
 
 Rect2i OpenXRInterface::get_render_region() {
 	if (openxr_api) {
@@ -1499,6 +1519,24 @@ bool OpenXRInterface::is_user_present() const {
 	}
 }
 
+/** View configuration */
+OpenXRInterface::ViewConfiguration OpenXRInterface::get_active_view_configuration() const {
+	if (!openxr_api || !openxr_api->is_initialized()) {
+		return VIEW_CONFIGURATION_UNSET;
+	} else {
+		switch (openxr_api->get_view_configuration()) {
+			case XR_VIEW_CONFIGURATION_TYPE_PRIMARY_MONO:
+				return VIEW_CONFIGURATION_MONO;
+			case XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO:
+				return VIEW_CONFIGURATION_STEREO;
+			case XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO_WITH_FOVEATED_INSET:
+				return VIEW_CONFIGURATION_STEREO_WITH_INSET;
+			default:
+				return VIEW_CONFIGURATION_UNKNOWN;
+		}
+	}
+}
+
 /** Hand tracking. */
 void OpenXRInterface::set_motion_range(const Hand p_hand, const HandMotionRange p_motion_range) {
 	ERR_FAIL_INDEX(p_hand, HAND_MAX);
@@ -1643,6 +1681,9 @@ Vector3 OpenXRInterface::get_hand_joint_angular_velocity(Hand p_hand, HandJoints
 }
 
 RID OpenXRInterface::get_vrs_texture() {
+	// Note, vrs_mode == VRS_XR should not be used with foveated inset.
+	// Not sure where to best check for this (yet).
+
 	if (!openxr_api) {
 		return RID();
 	}

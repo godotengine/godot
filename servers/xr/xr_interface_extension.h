@@ -101,8 +101,12 @@ public:
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name) override;
+#ifndef DISABLE_DEPRECATED
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+#endif
 	virtual RID get_vrs_texture() override;
 	virtual VRSTextureFormat get_vrs_texture_format() override;
 	virtual RID get_color_texture() override;
@@ -112,8 +116,12 @@ public:
 	GDVIRTUAL0R(Size2, _get_render_target_size);
 	GDVIRTUAL0R(uint32_t, _get_view_count);
 	GDVIRTUAL0R(Transform3D, _get_camera_transform);
+	GDVIRTUAL4R(TypedArray<Projection>, _get_camera_projections, const StringName &, double, double, double);
+	GDVIRTUAL1R(TypedArray<Transform3D>, _get_camera_offsets, const StringName &);
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL2R(Transform3D, _get_transform_for_view, uint32_t, const Transform3D &);
 	GDVIRTUAL4R(PackedFloat64Array, _get_projection_for_view, uint32_t, double, double, double);
+#endif
 	GDVIRTUAL0R(RID, _get_vrs_texture);
 	GDVIRTUAL0R(VRSTextureFormat, _get_vrs_texture_format);
 	GDVIRTUAL0R(RID, _get_color_texture);
