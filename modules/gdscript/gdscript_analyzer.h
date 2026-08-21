@@ -72,7 +72,7 @@ class GDScriptAnalyzer {
 
 	void resolve_annotation(GDScriptParser::AnnotationNode *p_annotation);
 	void resolve_class_member(GDScriptParser::ClassNode *p_class, const StringName &p_name, const GDScriptParser::Node *p_source = nullptr);
-	void resolve_class_member(GDScriptParser::ClassNode *p_class, int p_index, const GDScriptParser::Node *p_source = nullptr);
+	void resolve_class_member(GDScriptParser::ClassNode *p_class, uint32_t p_index, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_interface(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_interface(GDScriptParser::ClassNode *p_class, bool p_recursive);
 	void resolve_class_body(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source = nullptr);

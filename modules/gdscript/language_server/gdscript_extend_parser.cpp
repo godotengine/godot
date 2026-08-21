@@ -192,9 +192,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 		r_symbol.documentation = doc;
 	}
 
-	for (int i = 0; i < p_class->members.size(); i++) {
-		const ClassNode::Member &m = p_class->members[i];
-
+	for (const ClassNode::Member &m : p_class->members) {
 		switch (m.type) {
 			case ClassNode::Member::VARIABLE: {
 				LSP::DocumentSymbol symbol;
@@ -293,7 +291,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.uri = uri;
 				symbol.script_path = path;
 				symbol.detail = "signal " + String(m.signal->identifier->name) + "(";
-				for (int j = 0; j < m.signal->parameters.size(); j++) {
+				for (uint32_t j = 0; j < m.signal->parameters.size(); j++) {
 					if (j > 0) {
 						symbol.detail += ", ";
 					}
@@ -347,7 +345,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.script_path = path;
 
 				symbol.detail = "enum " + String(m.m_enum->identifier->name) + "{";
-				for (int j = 0; j < m.m_enum->values.size(); j++) {
+				for (uint32_t j = 0; j < m.m_enum->values.size(); j++) {
 					if (j > 0) {
 						symbol.detail += ", ";
 					}
@@ -417,7 +415,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	r_symbol.script_path = path;
 
 	String parameters;
-	for (int i = 0; i < p_func->parameters.size(); i++) {
+	for (uint32_t i = 0; i < p_func->parameters.size(); i++) {
 		const ParameterNode *parameter = p_func->parameters[i];
 		if (i > 0) {
 			parameters += ", ";
@@ -491,8 +489,8 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			case GDScriptParser::TypeNode::SUITE: {
 				GDScriptParser::SuiteNode *suite_node = (GDScriptParser::SuiteNode *)node;
 				function_nodes.push_back(suite_node);
-				for (int i = 0; i < suite_node->statements.size(); ++i) {
-					node_stack.push_back(suite_node->statements[i]);
+				for (Node *stmt : suite_node->statements) {
+					node_stack.push_back(stmt);
 				}
 			} break;
 
@@ -503,8 +501,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 
 	for (List<GDScriptParser::SuiteNode *>::Element *N = function_nodes.front(); N; N = N->next()) {
 		const GDScriptParser::SuiteNode *suite_node = N->get();
-		for (int i = 0; i < suite_node->locals.size(); i++) {
-			const SuiteNode::Local &local = suite_node->locals[i];
+		for (const SuiteNode::Local &local : suite_node->locals) {
 			LSP::DocumentSymbol symbol;
 			symbol.name = local.name;
 			symbol.kind = local.type == SuiteNode::Local::CONSTANT ? LSP::SymbolKind::Constant : LSP::SymbolKind::Variable;
@@ -816,12 +813,12 @@ Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::Functio
 	func["return_type"] = p_func->return_type_constraint.to_string();
 	func["rpc_config"] = p_func->rpc_config;
 	Array parameters;
-	for (int i = 0; i < p_func->parameters.size(); i++) {
+	for (ParameterNode *param : p_func->parameters) {
 		Dictionary arg;
-		arg["name"] = p_func->parameters[i]->identifier->name;
-		arg["type"] = p_func->parameters[i]->type_constraint.to_string();
-		if (p_func->parameters[i]->initializer != nullptr) {
-			arg["default_value"] = p_func->parameters[i]->initializer->reduced_value;
+		arg["name"] = param->identifier->name;
+		arg["type"] = param->type_constraint.to_string();
+		if (param->initializer != nullptr) {
+			arg["default_value"] = param->initializer->reduced_value;
 		}
 		parameters.push_back(arg);
 	}
@@ -859,8 +856,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 	Array methods;
 	Array static_functions;
 
-	for (int i = 0; i < p_class->members.size(); i++) {
-		const ClassNode::Member &m = p_class->members[i];
+	for (const ClassNode::Member &m : p_class->members) {
 		switch (m.type) {
 			case ClassNode::Member::CLASS:
 				nested_classes.push_back(dump_class_api(m.m_class));
@@ -889,8 +885,8 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 			} break;
 			case ClassNode::Member::ENUM: {
 				Dictionary enum_dict;
-				for (int j = 0; j < m.m_enum->values.size(); j++) {
-					enum_dict[m.m_enum->values[j].identifier->name] = m.m_enum->values[j].value;
+				for (const GDScriptParser::EnumNode::Value &element : m.m_enum->values) {
+					enum_dict[element.identifier->name] = element.value;
 				}
 
 				Dictionary api;
@@ -921,8 +917,8 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 				Dictionary api;
 				api["name"] = m.signal->identifier->name;
 				Array pars;
-				for (int j = 0; j < m.signal->parameters.size(); j++) {
-					pars.append(String(m.signal->parameters[j]->identifier->name));
+				for (const ParameterNode *param : m.signal->parameters) {
+					pars.append(String(param->identifier->name));
 				}
 				api["arguments"] = pars;
 				if (const LSP::DocumentSymbol *symbol = get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.signal->start_line))) {
