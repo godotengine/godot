@@ -186,6 +186,7 @@ void EditorMainScreen::select(int p_index) {
 	ERR_FAIL_NULL(new_editor);
 
 	if (selected_plugin == new_editor) {
+		selected_plugin->selected_notify();
 		return;
 	}
 
