@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/hash_map.h"
@@ -79,13 +78,13 @@ class RenderingServerDefault : public RenderingServer {
 
 	mutable CommandQueueMT command_queue;
 
+	Thread render_thread;
 	Thread::ID server_thread = Thread::MAIN_ID;
-	WorkerThreadPool::TaskID server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	bool exit = false;
 	bool create_thread = false;
 
-	void _assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id);
 	void _thread_exit();
+	static void _thread_loop_callback(void *p_userdata);
 	void _thread_loop();
 
 	void _draw(bool p_swap_buffers, double frame_step);
