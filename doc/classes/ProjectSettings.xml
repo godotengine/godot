@@ -3680,11 +3680,23 @@
 		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], Godot will compile shaders required for XR.
 		</member>
+		<member name="xr/visionos/dynamic_render_quality/enable" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables Dynamic Render Quality for the visionOS XR module. If enabled, you can dynamically set the render quality according to the complexity of your rendered scene. Higher render qualities increase the resolution of the textures provided by the visionOS XR module.
+		</member>
+		<member name="xr/visionos/dynamic_render_quality/maximum_quality" type="float" setter="" getter="" default="0.38">
+			Set this value to the minimum value that makes sense for your app. The supported range is from [code]0.0[/code] (exclusive) to [code]1.0[/code] (inclusive). Setting a maximum render quality that you never use at runtime will use more memory than necessary.
+		</member>
 		<member name="xr/visionos/enable_controller_tracking" type="bool" setter="" getter="" default="false">
 			Enables and initializes visionOS controller tracking.
 		</member>
 		<member name="xr/visionos/enable_hand_tracking" type="bool" setter="" getter="" default="false">
 			Enables and initializes visionOS hand tracking.
+		</member>
+		<member name="xr/visionos/persistent_system_overlays" type="int" setter="" getter="" default="0">
+			Initial visibility of the system overlays, such as the Home indicator, for the visionOS XR module's immersive scene. Change it at runtime with [member VisionOSXRInterface.persistent_system_overlays]. See [url=https://developer.apple.com/documentation/swiftui/view/persistentsystemoverlays(_:)]persistentSystemOverlays(_:)[/url].
+		</member>
+		<member name="xr/visionos/upper_limb_visibility" type="int" setter="" getter="" default="0">
+			Initial visibility of the user's upper limbs for the visionOS XR module's immersive scene. Change it at runtime with [member VisionOSXRInterface.upper_limb_visibility]. See [url=https://developer.apple.com/documentation/swiftui/scene/upperlimbvisibility(_:)]upperLimbVisibility(_:)[/url].
 		</member>
 	</members>
 	<signals>

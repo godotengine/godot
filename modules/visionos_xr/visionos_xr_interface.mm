@@ -39,6 +39,7 @@
 #include "core/input/input.h"
 #include "core/math/transform_3d.h"
 #include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/string/print_string.h"
@@ -85,6 +86,28 @@ void VisionOSXRInterface::_bind_methods() {
 	for (int i = 0; i < VISIONOS_XR_SIGNAL_MAX; i++) {
 		ADD_SIGNAL(MethodInfo(get_signal_name((SignalEnum)i)));
 	}
+
+	ClassDB::bind_method(D_METHOD("get_current_render_quality"), &VisionOSXRInterface::get_current_render_quality);
+	ClassDB::bind_method(D_METHOD("set_current_render_quality", "render_quality"), &VisionOSXRInterface::set_current_render_quality);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "current_render_quality"), "set_current_render_quality", "get_current_render_quality");
+
+	BIND_ENUM_CONSTANT(IMMERSION_STYLE_FULL);
+	BIND_ENUM_CONSTANT(IMMERSION_STYLE_MIXED);
+	BIND_ENUM_CONSTANT(IMMERSION_STYLE_PROGRESSIVE);
+	ClassDB::bind_method(D_METHOD("get_immersion_style"), &VisionOSXRInterface::get_immersion_style);
+	ClassDB::bind_method(D_METHOD("set_immersion_style", "immersion_style"), &VisionOSXRInterface::set_immersion_style);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "immersion_style", PROPERTY_HINT_ENUM, "Full,Mixed,Progressive"), "set_immersion_style", "get_immersion_style");
+
+	BIND_ENUM_CONSTANT(VISIBILITY_AUTOMATIC);
+	BIND_ENUM_CONSTANT(VISIBILITY_VISIBLE);
+	BIND_ENUM_CONSTANT(VISIBILITY_HIDDEN);
+	ClassDB::bind_method(D_METHOD("get_upper_limb_visibility"), &VisionOSXRInterface::get_upper_limb_visibility);
+	ClassDB::bind_method(D_METHOD("set_upper_limb_visibility", "upper_limb_visibility"), &VisionOSXRInterface::set_upper_limb_visibility);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "upper_limb_visibility", PROPERTY_HINT_ENUM, "Automatic,Visible,Hidden"), "set_upper_limb_visibility", "get_upper_limb_visibility");
+
+	ClassDB::bind_method(D_METHOD("get_persistent_system_overlays"), &VisionOSXRInterface::get_persistent_system_overlays);
+	ClassDB::bind_method(D_METHOD("set_persistent_system_overlays", "persistent_system_overlays"), &VisionOSXRInterface::set_persistent_system_overlays);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "persistent_system_overlays", PROPERTY_HINT_ENUM, "Automatic,Visible,Hidden"), "set_persistent_system_overlays", "get_persistent_system_overlays");
 }
 
 VisionOSXRInterface::VisionOSXRInterface() {}
@@ -142,6 +165,8 @@ bool VisionOSXRInterface::initialize() {
 
 		float minimum_supported_near_plane = cp_layer_renderer_capabilities_supported_minimum_near_plane_distance(cs.layer_renderer_capabilities);
 		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_minimum_supported_near_plane).bind(minimum_supported_near_plane));
+
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::prepare_screen));
 
 		// Make this our primary interface, since it's used for rendering
 		xr_server->set_primary_interface(this);
@@ -252,6 +277,13 @@ void VisionOSXRInterface::RenderThread::initialize() {
 	initialized = true;
 }
 
+void VisionOSXRInterface::RenderThread::prepare_screen() {
+	ERR_NOT_ON_RENDER_THREAD;
+
+	// Trigger the swap-chain resize so the format is initialized; must happen outside any submission.
+	rendering_device->screen_prepare_for_drawing(DisplayServerEnums::MAIN_WINDOW_ID);
+}
+
 void VisionOSXRInterface::RenderThread::uninitialize() {
 	ERR_NOT_ON_RENDER_THREAD;
 	if (current_color_texture_id != RID()) {
@@ -297,6 +329,98 @@ XRInterface::PlayAreaMode VisionOSXRInterface::get_play_area_mode() const {
 
 bool VisionOSXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return p_mode == XR_PLAY_AREA_ROOMSCALE;
+}
+
+float VisionOSXRInterface::get_current_render_quality() {
+	return cp_layer_renderer_get_render_quality(cs.layer_renderer);
+}
+
+void VisionOSXRInterface::set_current_render_quality(float p_render_quality) {
+	ERR_FAIL_COND_MSG(!GDTAppDelegateServiceVisionOS.isDynamicRenderQualityEnabled, "Attempting to set current render quality but Dynamic Render Quality has not been enabled in Project Settings.");
+	float maxRenderQuality = GDTAppDelegateServiceVisionOS.maxRenderQuality;
+	ERR_FAIL_COND_MSG(p_render_quality > GDTAppDelegateServiceVisionOS.maxRenderQuality, vformat("Attempting to set a current render quality higher than the Max Render Quality configured in Project Settings (%f).", maxRenderQuality));
+	cp_layer_renderer_set_render_quality(cs.layer_renderer, p_render_quality);
+}
+
+VisionOSXRInterface::ImmersionStyle VisionOSXRInterface::get_immersion_style() {
+	switch (GDTAppDelegateServiceVisionOS.immersionStyle) {
+		case GDTImmersionStyleFull:
+			return IMMERSION_STYLE_FULL;
+		case GDTImmersionStyleMixed:
+			return IMMERSION_STYLE_MIXED;
+		case GDTImmersionStyleProgressive:
+			return IMMERSION_STYLE_PROGRESSIVE;
+		default:
+			return IMMERSION_STYLE_FULL;
+	}
+}
+
+void VisionOSXRInterface::set_immersion_style(ImmersionStyle p_immersion_style) {
+	switch (p_immersion_style) {
+		case IMMERSION_STYLE_FULL:
+			GDTAppDelegateServiceVisionOS.immersionStyle = GDTImmersionStyleFull;
+			break;
+		case IMMERSION_STYLE_MIXED:
+			GDTAppDelegateServiceVisionOS.immersionStyle = GDTImmersionStyleMixed;
+			break;
+		case IMMERSION_STYLE_PROGRESSIVE:
+			GDTAppDelegateServiceVisionOS.immersionStyle = GDTImmersionStyleProgressive;
+			break;
+	}
+}
+
+VisionOSXRInterface::Visibility VisionOSXRInterface::get_upper_limb_visibility() {
+	switch (GDTAppDelegateServiceVisionOS.upperLimbVisibility) {
+		case GDTVisibilityAutomatic:
+			return VISIBILITY_AUTOMATIC;
+		case GDTVisibilityVisible:
+			return VISIBILITY_VISIBLE;
+		case GDTVisibilityHidden:
+			return VISIBILITY_HIDDEN;
+		default:
+			return VISIBILITY_AUTOMATIC;
+	}
+}
+
+void VisionOSXRInterface::set_upper_limb_visibility(Visibility p_upper_limb_visibility) {
+	switch (p_upper_limb_visibility) {
+		case VISIBILITY_AUTOMATIC:
+			GDTAppDelegateServiceVisionOS.upperLimbVisibility = GDTVisibilityAutomatic;
+			break;
+		case VISIBILITY_VISIBLE:
+			GDTAppDelegateServiceVisionOS.upperLimbVisibility = GDTVisibilityVisible;
+			break;
+		case VISIBILITY_HIDDEN:
+			GDTAppDelegateServiceVisionOS.upperLimbVisibility = GDTVisibilityHidden;
+			break;
+	}
+}
+
+VisionOSXRInterface::Visibility VisionOSXRInterface::get_persistent_system_overlays() {
+	switch (GDTAppDelegateServiceVisionOS.persistentSystemOverlays) {
+		case GDTVisibilityAutomatic:
+			return VISIBILITY_AUTOMATIC;
+		case GDTVisibilityVisible:
+			return VISIBILITY_VISIBLE;
+		case GDTVisibilityHidden:
+			return VISIBILITY_HIDDEN;
+		default:
+			return VISIBILITY_AUTOMATIC;
+	}
+}
+
+void VisionOSXRInterface::set_persistent_system_overlays(Visibility p_persistent_system_overlays) {
+	switch (p_persistent_system_overlays) {
+		case VISIBILITY_AUTOMATIC:
+			GDTAppDelegateServiceVisionOS.persistentSystemOverlays = GDTVisibilityAutomatic;
+			break;
+		case VISIBILITY_VISIBLE:
+			GDTAppDelegateServiceVisionOS.persistentSystemOverlays = GDTVisibilityVisible;
+			break;
+		case VISIBILITY_HIDDEN:
+			GDTAppDelegateServiceVisionOS.persistentSystemOverlays = GDTVisibilityHidden;
+			break;
+	}
 }
 
 void VisionOSXRInterface::set_head_pose_from_arkit() {
@@ -692,6 +816,42 @@ Vector<RenderingServerTypes::BlitToScreen> VisionOSXRInterface::RenderThread::po
 	return Vector<RenderingServerTypes::BlitToScreen>();
 }
 
+// Wraps cp_drawable_encode_present in a drawable render context with a no-op load/store pass,
+// which Compositor Services requires whenever the layer supports progressive immersion.
+void VisionOSXRInterface::RenderThread::encode_drawable_no_op_and_present(cp_drawable_t p_drawable, cp_frame_t p_frame, void *p_command_buffer) {
+	id<MTLCommandBuffer> command_buffer = (__bridge id<MTLCommandBuffer>)p_command_buffer;
+	// A nil command buffer makes the Compositor Services API fail.
+	ERR_FAIL_NULL_MSG(command_buffer, "Command buffer is nil, cannot add a drawable render context.");
+	cp_drawable_render_context_t drawable_render_context = cp_drawable_add_render_context(p_drawable, command_buffer);
+
+	id<MTLTexture> color_texture = cp_drawable_get_color_texture(p_drawable, 0);
+	id<MTLTexture> depth_texture = cp_drawable_get_depth_texture(p_drawable, 0);
+
+	MTLRenderPassDescriptor *render_pass_descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+	render_pass_descriptor.colorAttachments[0].texture = color_texture;
+	render_pass_descriptor.colorAttachments[0].loadAction = MTLLoadActionLoad;
+	render_pass_descriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
+	// Compositor Services' compositing pipeline has no stencil attachment.
+	render_pass_descriptor.depthAttachment.texture = depth_texture;
+	render_pass_descriptor.depthAttachment.loadAction = MTLLoadActionLoad;
+	render_pass_descriptor.depthAttachment.storeAction = MTLStoreActionStore;
+	render_pass_descriptor.renderTargetArrayLength = cp_frame_get_drawable_target_view_count(p_frame, cp_drawable_get_target(p_drawable));
+	size_t count = cp_drawable_get_rasterization_rate_map_count(p_drawable);
+	if (count > 0) {
+		id<MTLRasterizationRateMap> rasterization_rate_map = cp_drawable_get_rasterization_rate_map(p_drawable, 0);
+		MTLSize logical_size = rasterization_rate_map.screenSize;
+		render_pass_descriptor.rasterizationRateMap = rasterization_rate_map;
+		render_pass_descriptor.renderTargetWidth = logical_size.width;
+		render_pass_descriptor.renderTargetHeight = logical_size.height;
+	}
+
+	id<MTLRenderCommandEncoder> command_encoder = [command_buffer renderCommandEncoderWithDescriptor:render_pass_descriptor];
+
+	cp_drawable_render_context_end_encoding(drawable_render_context, command_encoder);
+
+	cp_drawable_encode_present(p_drawable, command_buffer);
+}
+
 void VisionOSXRInterface::RenderThread::encode_present(MTL3::MDCommandBuffer *p_cmd_buffer) {
 	ERR_NOT_ON_RENDER_THREAD;
 
@@ -700,7 +860,7 @@ void VisionOSXRInterface::RenderThread::encode_present(MTL3::MDCommandBuffer *p_
 	}
 
 	ERR_FAIL_NULL_MSG(current_drawable, "Current drawable is nil, process() has probably not been called.");
-	cp_drawable_encode_present(current_drawable, (__bridge id<MTLCommandBuffer>)p_cmd_buffer->get_command_buffer());
+	encode_drawable_no_op_and_present(current_drawable, current_frame, p_cmd_buffer->get_command_buffer());
 	current_drawable = nullptr;
 }
 
