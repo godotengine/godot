@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "area_3d.h"
+#include "area_3d.compat.inc"
 
 #include "core/config/engine.h"
 #include "core/object/callable_mp.h"
@@ -36,12 +37,12 @@
 #include "servers/audio/audio_server.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
-void Area3D::set_gravity_space_override_mode(SpaceOverride p_mode) {
+void Area3D::set_gravity_space_override_mode(PS3DE::AreaSpaceOverrideMode p_mode) {
 	gravity_space_override = p_mode;
 	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE, p_mode);
 }
 
-Area3D::SpaceOverride Area3D::get_gravity_space_override_mode() const {
+PS3DE::AreaSpaceOverrideMode Area3D::get_gravity_space_override_mode() const {
 	return gravity_space_override;
 }
 
@@ -90,21 +91,21 @@ real_t Area3D::get_gravity() const {
 	return gravity;
 }
 
-void Area3D::set_linear_damp_space_override_mode(SpaceOverride p_mode) {
+void Area3D::set_linear_damp_space_override_mode(PS3DE::AreaSpaceOverrideMode p_mode) {
 	linear_damp_space_override = p_mode;
 	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE, p_mode);
 }
 
-Area3D::SpaceOverride Area3D::get_linear_damp_space_override_mode() const {
+PS3DE::AreaSpaceOverrideMode Area3D::get_linear_damp_space_override_mode() const {
 	return linear_damp_space_override;
 }
 
-void Area3D::set_angular_damp_space_override_mode(SpaceOverride p_mode) {
+void Area3D::set_angular_damp_space_override_mode(PS3DE::AreaSpaceOverrideMode p_mode) {
 	angular_damp_space_override = p_mode;
 	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE, p_mode);
 }
 
-Area3D::SpaceOverride Area3D::get_angular_damp_space_override_mode() const {
+PS3DE::AreaSpaceOverrideMode Area3D::get_angular_damp_space_override_mode() const {
 	return angular_damp_space_override;
 }
 
@@ -664,7 +665,7 @@ void Area3D::_validate_property(PropertyInfo &p_property) const {
 
 		p_property.hint_string = options;
 	} else if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
-		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
+		if (gravity_space_override == PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		} else {
 			if (gravity_is_point) {
@@ -678,11 +679,11 @@ void Area3D::_validate_property(PropertyInfo &p_property) const {
 			}
 		}
 	} else if (p_property.name.begins_with("linear_damp") && p_property.name != "linear_damp_space_override") {
-		if (linear_damp_space_override == SPACE_OVERRIDE_DISABLED) {
+		if (linear_damp_space_override == PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	} else if (p_property.name.begins_with("angular_damp") && p_property.name != "angular_damp_space_override") {
-		if (angular_damp_space_override == SPACE_OVERRIDE_DISABLED) {
+		if (angular_damp_space_override == PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
@@ -809,11 +810,13 @@ void Area3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_amount", "get_reverb_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_uniformity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_uniformity", "get_reverb_uniformity");
 
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE_REPLACE);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE_COMBINE);
+#endif // DISABLE_DEPRECATED
 }
 
 Area3D::Area3D() :
