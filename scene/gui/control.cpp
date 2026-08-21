@@ -948,7 +948,7 @@ Control::GrowDirection Control::get_v_grow_direction() const {
 	return data.v_grow;
 }
 
-void Control::_compute_layout_rect(Rect2 p_rect, bool p_keep_offsets) {
+void Control::_compute_layout_rect(Rect2 p_rect, bool p_keep_offsets, bool p_grow_rect) {
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
 
 	if (p_keep_offsets) {
@@ -960,7 +960,7 @@ void Control::_compute_layout_rect(Rect2 p_rect, bool p_keep_offsets) {
 	real_t x = p_rect.position.x;
 	real_t y = p_rect.position.y;
 
-	if (_get_layout_mode() != LayoutMode::LAYOUT_MODE_CONTAINER) {
+	if (p_grow_rect && _get_layout_mode() != LayoutMode::LAYOUT_MODE_CONTAINER) {
 		float left_grow_factor =
 				(data.h_grow == GROW_DIRECTION_BEGIN) ? 1.0f
 				: (data.h_grow == GROW_DIRECTION_END) ? 0.0f
@@ -990,6 +990,68 @@ void Control::_compute_layout_rect(Rect2 p_rect, bool p_keep_offsets) {
 		data.offset[1] = y - (data.anchor[1] * parent_rect_size.y);
 		data.offset[2] = x + p_rect.size.x - (data.anchor[2] * parent_rect_size.x);
 		data.offset[3] = y + p_rect.size.y - (data.anchor[3] * parent_rect_size.y);
+	}
+}
+
+void Control::_compute_layout_position(const Rect2 &p_parent_rect, const Size2 &p_size, Point2 &r_position) const {
+	if (is_layout_rtl()) {
+		r_position.x = p_parent_rect.size.x + 2 * p_parent_rect.position.x - r_position.x - p_size.x;
+	}
+}
+
+void Control::_compute_edge_positions(const Rect2 &p_parent_rect, real_t (&r_edge_positions)[4]) const {
+	for (int i = 0; i < 4; i++) {
+		real_t area = p_parent_rect.size[i & 1];
+		r_edge_positions[i] = data.offset[i] + (data.anchor[i] * area);
+	}
+}
+
+void Control::_compute_position_and_size_with_grow(const Rect2 &p_parent_rect, Point2 &r_position, Size2 &r_size) const {
+	Size2 maximum_size = get_combined_maximum_size();
+	Size2 minimum_size = get_combined_minimum_size();
+
+	if (minimum_size.width > r_size.width) {
+		if (data.h_grow == GROW_DIRECTION_BEGIN) {
+			r_position.x += r_size.width - minimum_size.width;
+		} else if (data.h_grow == GROW_DIRECTION_BOTH) {
+			r_position.x += 0.5 * (r_size.width - minimum_size.width);
+		}
+
+		r_size.width = minimum_size.width;
+	}
+
+	if (maximum_size.width >= 0 && maximum_size.width < r_size.width) {
+		if (data.h_grow == GROW_DIRECTION_BEGIN) {
+			r_position.x += r_size.width - maximum_size.width;
+		} else if (data.h_grow == GROW_DIRECTION_BOTH) {
+			r_position.x += 0.5 * (r_size.width - maximum_size.width);
+		}
+
+		r_size.width = maximum_size.width;
+	}
+
+	if (is_layout_rtl()) {
+		r_position.x = p_parent_rect.size.x + 2 * p_parent_rect.position.x - r_position.x - r_size.x;
+	}
+
+	if (minimum_size.height > r_size.height) {
+		if (data.v_grow == GROW_DIRECTION_BEGIN) {
+			r_position.y += r_size.height - minimum_size.height;
+		} else if (data.v_grow == GROW_DIRECTION_BOTH) {
+			r_position.y += 0.5 * (r_size.height - minimum_size.height);
+		}
+
+		r_size.height = minimum_size.height;
+	}
+
+	if (maximum_size.height >= 0 && maximum_size.height < r_size.height) {
+		if (data.v_grow == GROW_DIRECTION_BEGIN) {
+			r_position.y += r_size.height - maximum_size.height;
+		} else if (data.v_grow == GROW_DIRECTION_BOTH) {
+			r_position.y += 0.5 * (r_size.height - maximum_size.height);
+		}
+
+		r_size.height = maximum_size.height;
 	}
 }
 
@@ -1523,7 +1585,23 @@ void Control::set_position(const Point2 &p_point, bool p_keep_offsets) {
 	}
 #endif // TOOLS_ENABLED
 
-	_compute_layout_rect(Rect2(p_point, data.size_cache), p_keep_offsets);
+	// Determine actual position of top-left corner based on anchors, offsets, grow direction, min size, and max size.
+	Rect2 parent_rect = get_parent_anchorable_rect();
+	real_t edge_pos[4];
+	_compute_edge_positions(parent_rect, edge_pos);
+
+	Point2 anchor_position = Point2(edge_pos[0], edge_pos[1]);
+	Size2 anchor_size = Point2(edge_pos[2], edge_pos[3]) - anchor_position;
+
+	Point2 position = anchor_position;
+	Size2 size = anchor_size;
+	_compute_position_and_size_with_grow(parent_rect, position, size);
+
+	// Only move anchor rect position by amount the top-left corner should change.
+	// Keep anchor rect size since that changes how overall sizing behaves.
+	_compute_layout_position(parent_rect, anchor_size, anchor_position);
+	anchor_position += p_point - position;
+	_compute_layout_rect(Rect2(anchor_position, anchor_size), p_keep_offsets, false);
 	_size_changed();
 }
 
@@ -2213,63 +2291,11 @@ Size2 Control::get_bound_minimum_size() const {
 
 void Control::_size_changed() {
 	Rect2 parent_rect = get_parent_anchorable_rect();
-
 	real_t edge_pos[4];
-
-	for (int i = 0; i < 4; i++) {
-		real_t area = parent_rect.size[i & 1];
-		edge_pos[i] = data.offset[i] + (data.anchor[i] * area);
-	}
-
+	_compute_edge_positions(parent_rect, edge_pos);
 	Point2 new_pos_cache = Point2(edge_pos[0], edge_pos[1]);
 	Size2 new_size_cache = Point2(edge_pos[2], edge_pos[3]) - new_pos_cache;
-
-	Size2 maximum_size = get_combined_maximum_size();
-	Size2 minimum_size = get_combined_minimum_size();
-
-	if (minimum_size.width > new_size_cache.width) {
-		if (data.h_grow == GROW_DIRECTION_BEGIN) {
-			new_pos_cache.x += new_size_cache.width - minimum_size.width;
-		} else if (data.h_grow == GROW_DIRECTION_BOTH) {
-			new_pos_cache.x += 0.5 * (new_size_cache.width - minimum_size.width);
-		}
-
-		new_size_cache.width = minimum_size.width;
-	}
-
-	if (maximum_size.width >= 0 && maximum_size.width < new_size_cache.width) {
-		if (data.h_grow == GROW_DIRECTION_BEGIN) {
-			new_pos_cache.x += new_size_cache.width - maximum_size.width;
-		} else if (data.h_grow == GROW_DIRECTION_BOTH) {
-			new_pos_cache.x += 0.5 * (new_size_cache.width - maximum_size.width);
-		}
-
-		new_size_cache.width = maximum_size.width;
-	}
-
-	if (is_layout_rtl()) {
-		new_pos_cache.x = parent_rect.size.x + 2 * parent_rect.position.x - new_pos_cache.x - new_size_cache.x;
-	}
-
-	if (minimum_size.height > new_size_cache.height) {
-		if (data.v_grow == GROW_DIRECTION_BEGIN) {
-			new_pos_cache.y += new_size_cache.height - minimum_size.height;
-		} else if (data.v_grow == GROW_DIRECTION_BOTH) {
-			new_pos_cache.y += 0.5 * (new_size_cache.height - minimum_size.height);
-		}
-
-		new_size_cache.height = minimum_size.height;
-	}
-
-	if (maximum_size.height >= 0 && maximum_size.height < new_size_cache.height) {
-		if (data.v_grow == GROW_DIRECTION_BEGIN) {
-			new_pos_cache.y += new_size_cache.height - maximum_size.height;
-		} else if (data.v_grow == GROW_DIRECTION_BOTH) {
-			new_pos_cache.y += 0.5 * (new_size_cache.height - maximum_size.height);
-		}
-
-		new_size_cache.height = maximum_size.height;
-	}
+	_compute_position_and_size_with_grow(parent_rect, new_pos_cache, new_size_cache);
 
 	bool pos_changed = new_pos_cache != data.pos_cache;
 	bool size_changed = new_size_cache != data.size_cache;
