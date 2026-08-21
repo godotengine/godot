@@ -337,6 +337,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["light"].built_ins["FRAGCOORD"] = constt(ShaderLanguage::TYPE_VEC4);
 	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["light"].built_ins["NORMAL"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["light"].built_ins["COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
+	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["light"].built_ins["ACCUMULATED_COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
 	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["light"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["light"].built_ins["SPECULAR_SHININESS"] = constt(ShaderLanguage::TYPE_VEC4);
 	shader_modes[RSE::SHADER_CANVAS_ITEM].functions["light"].built_ins["LIGHT_COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
