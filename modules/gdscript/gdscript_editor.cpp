@@ -3253,6 +3253,10 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						return;
 					}
 				}
+				if (p_base.type.builtin_type == Variant::Type::SIGNAL && method == SNAME("emit")) {
+					r_arghint = _make_arguments_hint(p_base.type.method_info, p_argidx, true);
+					return;
+				}
 
 				List<MethodInfo> methods;
 				base.get_method_list(&methods);
