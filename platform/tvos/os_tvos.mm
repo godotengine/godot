@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  display_layer_visionos.h                                              */
+/*  os_tvos.mm                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,9 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#import "os_tvos.h"
 
-#include "drivers/apple_embedded/display_layer_apple_embedded.h"
+#import "display_server_tvos.h"
 
-@interface GDTMetalLayer : CAMetalLayer <GDTDisplayLayer>
-@end
+#ifdef TVOS_ENABLED
+
+OS_TVOS *OS_TVOS::get_singleton() {
+	return (OS_TVOS *)OS_AppleEmbedded::get_singleton();
+}
+
+OS_TVOS::OS_TVOS() :
+		OS_AppleEmbedded() {
+	DisplayServerTVOS::register_tvos_driver();
+}
+
+OS_TVOS::~OS_TVOS() {}
+
+String OS_TVOS::get_name() const {
+	return "tvOS";
+}
+
+#endif // TVOS_ENABLED

@@ -2859,6 +2859,8 @@ static MetalDeviceProfile device_profile_from_properties(MetalDeviceProperties *
 	res.min_os_version = MinOsVersion(os_version.majorVersion, os_version.minorVersion, os_version.patchVersion);
 #if TARGET_OS_OSX
 	res.platform = DP::Platform::macOS;
+#elif TARGET_OS_TV
+	res.platform = DP::Platform::tvOS;
 #elif TARGET_OS_IPHONE
 	res.platform = DP::Platform::iOS;
 #elif TARGET_OS_VISION

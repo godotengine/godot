@@ -102,7 +102,7 @@ Config::Config() {
 		float_texture_supported = extensions.has("GL_EXT_color_buffer_float");
 		float_texture_linear_supported = extensions.has("GL_OES_texture_float_linear");
 		etc2_supported = true;
-#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+#if defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 		// Some Android devices report support for S3TC but we don't expect that and don't export the textures.
 		// This could be fixed but so few devices support it that it doesn't seem useful (and makes bigger APKs).
 		// For good measure we do the same hack for iOS, just in case.
@@ -142,7 +142,7 @@ Config::Config() {
 #else
 	msaa_supported = true;
 #endif
-#ifndef IOS_ENABLED
+#ifndef APPLE_EMBEDDED_ENABLED
 #ifdef WEB_ENABLED
 	msaa_multiview_supported = extensions.has("OCULUS_multiview");
 	rt_msaa_multiview_supported = msaa_multiview_supported;

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  display_layer_ios.mm                                                  */
+/*  display_layer_apple_embedded.mm                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "display_layer_ios.h"
-
-#import "display_server_ios.h"
-#import "os_ios.h"
+#import "display_layer_apple_embedded.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/keyboard.h"
-#include "main/main.h"
-#include "servers/audio/audio_server.h"
 
-#import <AudioToolbox/AudioServices.h>
-#import <GameController/GameController.h>
 #if defined(GLES3_ENABLED)
+#include "drivers/gles3/storage/texture_storage.h"
+
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
 #endif
-#import <QuartzCore/QuartzCore.h>
-#import <UIKit/UIKit.h>
 
 @implementation GDTMetalLayer
 
 - (void)initializeDisplayLayer {
-#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
+#if defined(IOS_ENABLED) && defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
 	if (@available(iOS 13, *)) {
-		// Simulator supports Metal since iOS 13
+		// Simulator supports Metal since iOS 13.
 	} else {
 		NSLog(@"iOS Simulator prior to iOS 13 does not support Metal rendering.");
 	}

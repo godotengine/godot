@@ -60,7 +60,7 @@ class String;
 // Can be extended by subclasses
 - (void)godot_commonInit;
 
-// Implemented in subclasses
+// Creates the rendering layer matching the active rendering driver.
 - (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
 
 - (void)startRendering;
