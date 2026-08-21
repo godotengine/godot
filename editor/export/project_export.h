@@ -108,8 +108,8 @@ class ProjectExportDialog : public ConfirmationDialog {
 	Label *include_label = nullptr;
 	MarginContainer *include_margin = nullptr;
 
-	Button *export_button = nullptr;
-	Button *export_all_button = nullptr;
+	PopupMenu *export_selection_menu = nullptr;
+
 	AcceptDialog *export_all_dialog = nullptr;
 
 	RBSet<String> feature_set;
@@ -199,6 +199,10 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	OptionButton *script_mode = nullptr;
 
+	void _export_selection_menu(bool p_pressed);
+	void _export_selection(int p_id);
+	void _export_selection__menu_closed();
+
 	void _open_export_template_manager();
 
 	void _export_pck_zip();
@@ -230,6 +234,16 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	void _tab_changed(int);
 
+public:
+	enum ExportOption {
+		EXPORT_ALL,
+		EXPORT_ALL_DEBUG,
+		EXPORT_PROJECT,
+		EXPORT_PROJECT_DEBUG,
+		EXPORT_PCK_ZIP,
+		EXPORT_PCK_ZIP_DEBUG,
+	};
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -247,3 +261,5 @@ public:
 
 	ProjectExportDialog();
 };
+
+VARIANT_ENUM_CAST(ProjectExportDialog::ExportOption)
