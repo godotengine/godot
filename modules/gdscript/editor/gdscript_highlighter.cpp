@@ -430,15 +430,6 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		} else if (str[j] == '.' && !is_binary_op && is_digit(str[j + 1]) && (j == 0 || (j > 0 && str[j - 1] != '.'))) {
 			// Start number highlighting from leading decimal points (like .42)
 			in_number = true;
-		} else if ((str[j] == '-' || str[j] == '+' || str[j] == '~') && !is_binary_op) {
-			// Only start number highlighting on unary operators if a digit follows them.
-			int non_op = j + 1;
-			while (str[non_op] == '-' || str[non_op] == '+' || str[non_op] == '~') {
-				non_op++;
-			}
-			if (is_digit(str[non_op]) || (str[non_op] == '.' && non_op < line_length && is_digit(str[non_op + 1]))) {
-				in_number = true;
-			}
 		}
 
 		if (!in_word && is_unicode_identifier_start(str[j]) && !in_number) {
