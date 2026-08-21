@@ -148,6 +148,8 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RSE::ViewportDebugDraw 
 	ubo.reflection_atlas_border_size[0] = reflection_atlas_border_size.x;
 	ubo.reflection_atlas_border_size[1] = reflection_atlas_border_size.y;
 
+	ubo.probe_max_roughness_lod = probe_max_roughness_lod;
+
 	ubo.time = time;
 
 	ubo.directional_light_count = directional_light_count;
