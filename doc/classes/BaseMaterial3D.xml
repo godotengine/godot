@@ -138,7 +138,7 @@
 		</member>
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="BaseMaterial3D.BlendMode" default="0">
 			The material's blend mode.
-			[b]Note:[/b] Values other than [code]Mix[/code] force the object into the transparent pipeline.
+			[b]Note:[/b] Values other than [constant BLEND_MODE_MIX] force the object into the transparent pipeline, which will affect performance and may result in transparency sorting issues.
 		</member>
 		<member name="clearcoat" type="float" setter="set_clearcoat" getter="get_clearcoat" default="1.0">
 			Sets the strength of the clearcoat effect. Setting to [code]0[/code] looks the same as disabling the clearcoat effect.
@@ -158,6 +158,7 @@
 		</member>
 		<member name="depth_draw_mode" type="int" setter="set_depth_draw_mode" getter="get_depth_draw_mode" enum="BaseMaterial3D.DepthDrawMode" default="0">
 			Determines when depth rendering takes place. See also [member transparency].
+			[b]Note:[/b] [constant DEPTH_DRAW_DISABLED] forces the object into the transparent pipeline, which will affect performance and may result in transparency sorting issues.
 		</member>
 		<member name="depth_test" type="int" setter="set_depth_test" getter="get_depth_test" enum="BaseMaterial3D.DepthTest" default="0" experimental="May be affected by future rendering pipeline changes.">
 			Determines which comparison operator is used when testing depth.
@@ -332,9 +333,11 @@
 		</member>
 		<member name="proximity_fade_enabled" type="bool" setter="set_proximity_fade_enabled" getter="is_proximity_fade_enabled" default="false">
 			If [code]true[/code], the proximity fade effect is enabled. The proximity fade effect fades out each pixel based on its distance to another object.
+			[b]Note:[/b] Enabling proximity fade forces the material to go through the transparent pipeline, which will affect performance and may result in transparency sorting issues.
 		</member>
 		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], the refraction effect is enabled. Distorts transparency based on light from behind the object.
+			[b]Note:[/b] Enabling refraction forces the material to go through the transparent pipeline, which will affect performance and may result in transparency sorting issues.
 			[b]Note:[/b] Refraction is implemented using the screen texture. Only opaque materials will appear in the refraction, since transparent materials do not appear in the screen texture.
 		</member>
 		<member name="refraction_scale" type="float" setter="set_refraction" getter="get_refraction" default="0.05">
@@ -840,6 +843,7 @@
 		</constant>
 		<constant name="DISTANCE_FADE_PIXEL_ALPHA" value="1" enum="DistanceFadeMode">
 			Smoothly fades the object out based on each pixel's distance from the camera using the alpha channel.
+			[b]Note:[/b] Using pixel alpha distance fade forces the material to go through the transparent pipeline, which will affect performance and may result in transparency sorting issues.
 		</constant>
 		<constant name="DISTANCE_FADE_PIXEL_DITHER" value="2" enum="DistanceFadeMode">
 			Smoothly fades the object out based on each pixel's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA].
