@@ -875,6 +875,14 @@ bool AnimationBezierTrackEdit::_is_track_displayed(int p_track_index) {
 		return false;
 	}
 
+	String filter_text = editor->timeline->filter_track->get_text();
+	if (!filter_text.is_empty()) {
+		String target = String(animation->track_get_path(p_track_index));
+		if (!target.containsn(filter_text)) {
+			return false;
+		}
+	}
+
 	if (is_filtered) {
 		String path = String(animation->track_get_path(p_track_index));
 		if (root && root->has_node(path)) {

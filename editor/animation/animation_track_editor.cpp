@@ -8186,6 +8186,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bezier_edit->set_editor(this);
 	bezier_edit->set_timeline(timeline);
 	bezier_edit->connect("timeline_changed", callable_mp(this, &AnimationTrackEditor::_timeline_changed));
+	timeline->connect("filter_changed", callable_mp(static_cast<CanvasItem *>(bezier_edit), &CanvasItem::queue_redraw));
 
 	marker_edit = memnew(AnimationMarkerEdit);
 	timeline->get_child(0)->add_child(marker_edit);
