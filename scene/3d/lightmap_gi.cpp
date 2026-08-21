@@ -1399,7 +1399,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			} else if (Object::cast_to<AreaLight3D>(light)) {
 				AreaLight3D *l = Object::cast_to<AreaLight3D>(light);
 				if (use_physical_light_units) {
-					energy *= (1.0 / Math::PI * 2.0);
+					energy *= (1.0 / (Math::PI * 2.0));
 				}
 				Vector3 area_vec_x = xf.basis.get_column(Vector3::AXIS_X).normalized() * l->get_area_size().x;
 				Vector3 area_vec_y = xf.basis.get_column(Vector3::AXIS_Y).normalized() * l->get_area_size().y;
