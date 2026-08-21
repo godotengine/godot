@@ -1487,6 +1487,20 @@
 		<member name="text_editor/appearance/minimap/show_minimap" type="bool" setter="" getter="">
 			If [code]true[/code], draws an overview of the script near the scroll bar. The minimap can be left-clicked to scroll directly to a location in an "absolute" manner.
 		</member>
+		<member name="text_editor/appearance/underlining/error_underline_style" type="int" setter="" getter="">
+			The style to draw error underlines in the script editor with.
+			- [b]None:[/b] Does not draw anything under errors.
+			- [b]Straight:[/b] Draws a simple flat line under errors.
+			- [b]Squiggle:[/b] Draws a squiggly zig-zag line under errors.
+			For setting the color of the error underlines, see [member text_editor/theme/highlighting/error_underline_color].
+		</member>
+		<member name="text_editor/appearance/underlining/warning_underline_style" type="int" setter="" getter="">
+			The style to draw warning underlines in the script editor with.
+			- [b]None:[/b] Does not draw anything under warnings.
+			- [b]Straight:[/b] Draws a simple flat line under warnings.
+			- [b]Squiggle:[/b] Draws a squiggly zig-zag line under warnings.
+			For setting the color of the error underlines, see [member text_editor/theme/highlighting/warning_underline_color].
+		</member>
 		<member name="text_editor/appearance/whitespace/draw_spaces" type="bool" setter="" getter="">
 			If [code]true[/code], draws space characters as centered points.
 		</member>

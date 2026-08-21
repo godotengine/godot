@@ -96,6 +96,9 @@ class ScriptTextEditor : public CodeEditorBase {
 	Color warning_underline_color = Color(1, 1, 1);
 	Color error_underline_color = Color(1, 1, 1);
 
+	TextEdit::UnderlineStyle warning_underline_style = TextEdit::UNDERLINE_STYLE_SQUIGGLY;
+	TextEdit::UnderlineStyle error_underline_style = TextEdit::UNDERLINE_STYLE_SQUIGGLY;
+
 	bool theme_loaded = false;
 
 	enum {

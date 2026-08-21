@@ -824,6 +824,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/whitespace/draw_spaces", false, true);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "-10,50,1")
 
+	// Appearance: Underlining
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/underlining/warning_underline_style", 2, "None,Straight,Squiggle")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/underlining/error_underline_style", 2, "None,Straight,Squiggle")
+
 	// Behavior
 	// Behavior: General
 	_initial_set("text_editor/behavior/general/empty_selection_clipboard", true);
