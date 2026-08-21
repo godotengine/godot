@@ -1200,6 +1200,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/sorting_order", 0, "Last Edited,Name,Path")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/directory_naming_convention", 1, "No Convention,kebab-case,snake_case,camelCase,PascalCase,Title Case")
 
+#if defined(ANDRIOD_ENABLED)
+	_initial_set("project_manager/compact_mode", true, true);
+#elif !defined(ANDRIOD_ENABLED)
+	_initial_set("project_manager/compact_mode", false, true);
+	_initial_set("project_manager/compact_mode_threshold", 0, true);
+#endif
+
 #if defined(WEB_ENABLED)
 	// Web platform only supports `gl_compatibility`.
 	const String default_renderer = "gl_compatibility";
