@@ -5,6 +5,8 @@
 	</brief_description>
 	<description>
 		[BaseButton] is an abstract base class for GUI buttons. It doesn't display anything by itself.
+		[BaseButton] supports the following screen reader commands:
+		- "Click" - simulates press and release, emits [signal pressed] and [signal toggled] (if [member toggle_mode] is set).
 	</description>
 	<tutorials>
 	</tutorials>

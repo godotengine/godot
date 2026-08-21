@@ -38,6 +38,11 @@
 		- [kbd]Cmd + Left Arrow[/kbd]: Same as [kbd]Home[/kbd], move the caret to the beginning of the line
 		- [kbd]Cmd + Right Arrow[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
 		[b]Note:[/b] Caret movement shortcuts listed above are not affected by [member shortcut_keys_enabled].
+		[LineEdit] supports the following screen reader commands:
+		- "Set Text Selection" - sets text selection to the specified range.
+		- "Replace Text Selection" - replaces selected text with the spiecified string.
+		- "Set Value" - replaces entire text with the spiecified string.
+		- "Show Context Menu" - shows context menu.
 	</description>
 	<tutorials>
 	</tutorials>

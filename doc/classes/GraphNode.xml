@@ -8,6 +8,11 @@
 		Each [GraphNode] slot is defined by its index and can provide the node with up to two ports: one on the left, and one on the right. By convention the left port is also referred to as the [b]input port[/b] and the right port is referred to as the [b]output port[/b]. Each port can be enabled and configured individually, using different type and color. The type is an arbitrary value that you can define using your own considerations. The parent [GraphEdit] will receive this information on each connect and disconnect request.
 		Slots can be configured in the Inspector dock once you add at least one child [Control]. The properties are grouped by each slot's index in the "Slot" section.
 		[b]Note:[/b] While GraphNode is set up using slots and slot indices, connections are made between the ports which are enabled. Because of that [GraphEdit] uses the port's index and not the slot's index. You can use [method get_input_port_slot] and [method get_output_port_slot] to get the slot index from the port index.
+		[GraphNode] supports the following screen reader commands:
+		- "Edit Input Port Connection" (custom command) - starts (or ends, if it is already started) keyboard editing of the input port connection of the selected slot.
+		- "Edit Output Port Connection" (custom command) - starts (or ends, if it is already started) keyboard editing of the output port connection of the selected slot.
+		- "Follow Input Port Connection" (custom command) - switches focus to the [GraphNode] connected to the input port of the selected slot.
+		- "Follow Output Port Connection" (custom command) - switches focus to the [GraphNode] connected to the input port of the selected slot.
 	</description>
 	<tutorials>
 	</tutorials>
