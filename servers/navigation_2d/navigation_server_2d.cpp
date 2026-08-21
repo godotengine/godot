@@ -40,6 +40,9 @@
 #include "scene/resources/2d/navigation_polygon.h" // IWYU pragma: keep. Bind `NavigationPolygon`.
 #include "servers/navigation_2d/navigation_path_query_parameters_2d.h" // IWYU pragma: keep. Bind `NavigationPathQueryParameters2D`.
 #include "servers/navigation_2d/navigation_path_query_result_2d.h" // IWYU pragma: keep. Bind `NavigationPathQueryResult2D`.
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_2d/navigation_server_2d_debug.h"
+#endif // DEBUG_ENABLED
 
 NavigationServer2D *NavigationServer2D::singleton = nullptr;
 
@@ -227,51 +230,30 @@ NavigationServer2D::NavigationServer2D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults2D::NAV_MESH_CELL_SIZE_HINT), NavigationDefaults2D::NAV_MESH_CELL_SIZE);
-	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "navigation/2d/merge_rasterizer_cell_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001,or_greater"), 1.0);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::EDGE_CONNECTION_MARGIN);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::LINK_CONNECTION_RADIUS);
+#ifdef DEBUG_ENABLED
+	debug = memnew(NavigationServer2DDebug);
+	ERR_FAIL_NULL(NavigationServer2DDebug::get_singleton());
+#endif // DEBUG_ENABLED
+
+	register_settings();
 
 #ifdef DEBUG_ENABLED
-	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/2d/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
-	debug_navigation_geometry_edge_color = GLOBAL_DEF("debug/shapes/navigation/2d/geometry_edge_color", Color(0.5, 1.0, 1.0, 1.0));
-	debug_navigation_geometry_face_color = GLOBAL_DEF("debug/shapes/navigation/2d/geometry_face_color", Color(0.5, 1.0, 1.0, 0.4));
-	debug_navigation_geometry_edge_disabled_color = GLOBAL_DEF("debug/shapes/navigation/2d/geometry_edge_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
-	debug_navigation_geometry_face_disabled_color = GLOBAL_DEF("debug/shapes/navigation/2d/geometry_face_disabled_color", Color(0.5, 0.5, 0.5, 0.4));
-	debug_navigation_link_connection_color = GLOBAL_DEF("debug/shapes/navigation/2d/link_connection_color", Color(1.0, 0.5, 1.0, 1.0));
-	debug_navigation_link_connection_disabled_color = GLOBAL_DEF("debug/shapes/navigation/2d/link_connection_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
-	debug_navigation_agent_path_color = GLOBAL_DEF("debug/shapes/navigation/2d/agent_path_color", Color(1.0, 0.0, 0.0, 1.0));
-
-	debug_navigation_enable_edge_connections = GLOBAL_DEF("debug/shapes/navigation/2d/enable_edge_connections", true);
-	debug_navigation_enable_edge_lines = GLOBAL_DEF("debug/shapes/navigation/2d/enable_edge_lines", true);
-	debug_navigation_enable_geometry_face_random_color = GLOBAL_DEF("debug/shapes/navigation/2d/enable_geometry_face_random_color", true);
-	debug_navigation_enable_link_connections = GLOBAL_DEF("debug/shapes/navigation/2d/enable_link_connections", true);
-
-	debug_navigation_enable_agent_paths = GLOBAL_DEF("debug/shapes/navigation/2d/enable_agent_paths", true);
-	debug_navigation_agent_path_point_size = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/navigation/2d/agent_path_point_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 4.0);
-
-	debug_navigation_avoidance_agents_radius_color = GLOBAL_DEF("debug/shapes/avoidance/2d/agents_radius_color", Color(1.0, 1.0, 0.0, 0.25));
-	debug_navigation_avoidance_obstacles_radius_color = GLOBAL_DEF("debug/shapes/avoidance/2d/obstacles_radius_color", Color(1.0, 0.5, 0.0, 0.25));
-	debug_navigation_avoidance_static_obstacle_pushin_face_color = GLOBAL_DEF("debug/shapes/avoidance/2d/obstacles_static_face_pushin_color", Color(1.0, 0.0, 0.0, 0.0));
-	debug_navigation_avoidance_static_obstacle_pushin_edge_color = GLOBAL_DEF("debug/shapes/avoidance/2d/obstacles_static_edge_pushin_color", Color(1.0, 0.0, 0.0, 1.0));
-	debug_navigation_avoidance_static_obstacle_pushout_face_color = GLOBAL_DEF("debug/shapes/avoidance/2d/obstacles_static_face_pushout_color", Color(1.0, 1.0, 0.0, 0.5));
-	debug_navigation_avoidance_static_obstacle_pushout_edge_color = GLOBAL_DEF("debug/shapes/avoidance/2d/obstacles_static_edge_pushout_color", Color(1.0, 1.0, 0.0, 1.0));
-	debug_navigation_avoidance_enable_agents_radius = GLOBAL_DEF("debug/shapes/avoidance/2d/enable_agents_radius", true);
-	debug_navigation_avoidance_enable_obstacles_radius = GLOBAL_DEF("debug/shapes/avoidance/2d/enable_obstacles_radius", true);
-	debug_navigation_avoidance_enable_obstacles_static = GLOBAL_DEF("debug/shapes/avoidance/2d/enable_obstacles_static", true);
-
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// Enable NavigationServer2D when in Editor or navigation mesh edge connections are invisible.
 		// On runtime tests SceneTree has "Visible Navigation" set and main iteration takes care of this.
-		set_debug_enabled(true);
-		set_debug_navigation_enabled(true);
-		set_debug_avoidance_enabled(true);
+		NavigationServer2DDebug::get_singleton()->set_debug_enabled(true);
+		NavigationServer2DDebug::get_singleton()->set_debug_navigation_enabled(true);
+		NavigationServer2DDebug::get_singleton()->set_debug_avoidance_enabled(true);
 	}
 #endif // DEBUG_ENABLED
 }
 
 NavigationServer2D::~NavigationServer2D() {
+#ifdef DEBUG_ENABLED
+	memdelete(debug);
+	debug = nullptr;
+#endif // DEBUG_ENABLED
+
 	singleton = nullptr;
 
 	RWLockWrite write_lock(geometry_parser_rwlock);
@@ -318,27 +300,33 @@ void NavigationServer2D::source_geometry_parser_set_callback(RID p_parser, const
 
 void NavigationServer2D::set_debug_enabled(bool p_enabled) {
 #ifdef DEBUG_ENABLED
-	if (debug_enabled != p_enabled) {
-		debug_dirty = true;
-	}
-
-	debug_enabled = p_enabled;
-
-	if (debug_dirty) {
-		navigation_debug_dirty = true;
-		callable_mp(this, &NavigationServer2D::_emit_navigation_debug_changed_signal).call_deferred();
-
-		avoidance_debug_dirty = true;
-		callable_mp(this, &NavigationServer2D::_emit_avoidance_debug_changed_signal).call_deferred();
-	}
+	NavigationServer2DDebug::get_singleton()->set_debug_enabled(p_enabled);
 #endif // DEBUG_ENABLED
 }
 
 bool NavigationServer2D::get_debug_enabled() const {
-	return debug_enabled;
+#ifdef DEBUG_ENABLED
+	return NavigationServer2DDebug::get_singleton()->get_debug_enabled();
+#else
+	return false;
+#endif // DEBUG_ENABLED
 }
 
 #ifdef DEBUG_ENABLED
+void NavigationServer2D::emit_navigation_debug_changed() {
+	if (!navigation_debug_dirty) {
+		navigation_debug_dirty = true;
+		callable_mp(this, &NavigationServer2D::_emit_navigation_debug_changed_signal).call_deferred();
+	}
+}
+
+void NavigationServer2D::emit_avoidance_debug_changed() {
+	if (!avoidance_debug_dirty) {
+		avoidance_debug_dirty = true;
+		callable_mp(this, &NavigationServer2D::_emit_avoidance_debug_changed_signal).call_deferred();
+	}
+}
+
 void NavigationServer2D::_emit_navigation_debug_changed_signal() {
 	if (navigation_debug_dirty) {
 		navigation_debug_dirty = false;
@@ -354,200 +342,28 @@ void NavigationServer2D::_emit_avoidance_debug_changed_signal() {
 }
 #endif // DEBUG_ENABLED
 
+void NavigationServer2D::register_settings() {
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults2D::NAV_MESH_CELL_SIZE_HINT), NavigationDefaults2D::NAV_MESH_CELL_SIZE);
+	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "navigation/2d/merge_rasterizer_cell_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001,or_greater"), 1.0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::EDGE_CONNECTION_MARGIN);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::LINK_CONNECTION_RADIUS);
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &NavigationServer2D::update_from_settings));
+
 #ifdef DEBUG_ENABLED
-void NavigationServer2D::set_debug_navigation_enabled(bool p_enabled) {
-	debug_navigation_enabled = p_enabled;
-	navigation_debug_dirty = true;
-	callable_mp(this, &NavigationServer2D::_emit_navigation_debug_changed_signal).call_deferred();
-}
-
-bool NavigationServer2D::get_debug_navigation_enabled() const {
-	return debug_navigation_enabled;
-}
-
-void NavigationServer2D::set_debug_avoidance_enabled(bool p_enabled) {
-	debug_avoidance_enabled = p_enabled;
-	avoidance_debug_dirty = true;
-	callable_mp(this, &NavigationServer2D::_emit_avoidance_debug_changed_signal).call_deferred();
-}
-
-bool NavigationServer2D::get_debug_avoidance_enabled() const {
-	return debug_avoidance_enabled;
-}
-
-void NavigationServer2D::set_debug_navigation_edge_connection_color(const Color &p_color) {
-	debug_navigation_edge_connection_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_edge_connection_color() const {
-	return debug_navigation_edge_connection_color;
-}
-
-void NavigationServer2D::set_debug_navigation_geometry_face_color(const Color &p_color) {
-	debug_navigation_geometry_face_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_geometry_face_color() const {
-	return debug_navigation_geometry_face_color;
-}
-
-void NavigationServer2D::set_debug_navigation_geometry_face_disabled_color(const Color &p_color) {
-	debug_navigation_geometry_face_disabled_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_geometry_face_disabled_color() const {
-	return debug_navigation_geometry_face_disabled_color;
-}
-
-void NavigationServer2D::set_debug_navigation_link_connection_color(const Color &p_color) {
-	debug_navigation_link_connection_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_link_connection_color() const {
-	return debug_navigation_link_connection_color;
-}
-
-void NavigationServer2D::set_debug_navigation_link_connection_disabled_color(const Color &p_color) {
-	debug_navigation_link_connection_disabled_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_link_connection_disabled_color() const {
-	return debug_navigation_link_connection_disabled_color;
-}
-
-void NavigationServer2D::set_debug_navigation_geometry_edge_color(const Color &p_color) {
-	debug_navigation_geometry_edge_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_geometry_edge_color() const {
-	return debug_navigation_geometry_edge_color;
-}
-
-void NavigationServer2D::set_debug_navigation_geometry_edge_disabled_color(const Color &p_color) {
-	debug_navigation_geometry_edge_disabled_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_geometry_edge_disabled_color() const {
-	return debug_navigation_geometry_edge_disabled_color;
-}
-
-void NavigationServer2D::set_debug_navigation_enable_edge_connections(const bool p_value) {
-	debug_navigation_enable_edge_connections = p_value;
-}
-
-bool NavigationServer2D::get_debug_navigation_enable_edge_connections() const {
-	return debug_navigation_enable_edge_connections;
-}
-
-void NavigationServer2D::set_debug_navigation_enable_geometry_face_random_color(const bool p_value) {
-	debug_navigation_enable_geometry_face_random_color = p_value;
-}
-
-bool NavigationServer2D::get_debug_navigation_enable_geometry_face_random_color() const {
-	return debug_navigation_enable_geometry_face_random_color;
-}
-
-void NavigationServer2D::set_debug_navigation_enable_edge_lines(const bool p_value) {
-	debug_navigation_enable_edge_lines = p_value;
-}
-
-bool NavigationServer2D::get_debug_navigation_enable_edge_lines() const {
-	return debug_navigation_enable_edge_lines;
-}
-
-void NavigationServer2D::set_debug_navigation_agent_path_color(const Color &p_color) {
-	debug_navigation_agent_path_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_agent_path_color() const {
-	return debug_navigation_agent_path_color;
-}
-
-void NavigationServer2D::set_debug_navigation_enable_agent_paths(const bool p_value) {
-	debug_navigation_enable_agent_paths = p_value;
-}
-
-bool NavigationServer2D::get_debug_navigation_enable_agent_paths() const {
-	return debug_navigation_enable_agent_paths;
-}
-
-void NavigationServer2D::set_debug_navigation_agent_path_point_size(real_t p_point_size) {
-	debug_navigation_agent_path_point_size = p_point_size;
-}
-
-real_t NavigationServer2D::get_debug_navigation_agent_path_point_size() const {
-	return debug_navigation_agent_path_point_size;
-}
-
-void NavigationServer2D::set_debug_navigation_avoidance_enable_agents_radius(const bool p_value) {
-	debug_navigation_avoidance_enable_agents_radius = p_value;
-}
-
-bool NavigationServer2D::get_debug_navigation_avoidance_enable_agents_radius() const {
-	return debug_navigation_avoidance_enable_agents_radius;
-}
-
-void NavigationServer2D::set_debug_navigation_avoidance_enable_obstacles_radius(const bool p_value) {
-	debug_navigation_avoidance_enable_obstacles_radius = p_value;
-}
-
-bool NavigationServer2D::get_debug_navigation_avoidance_enable_obstacles_radius() const {
-	return debug_navigation_avoidance_enable_obstacles_radius;
-}
-
-void NavigationServer2D::set_debug_navigation_avoidance_agents_radius_color(const Color &p_color) {
-	debug_navigation_avoidance_agents_radius_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_avoidance_agents_radius_color() const {
-	return debug_navigation_avoidance_agents_radius_color;
-}
-
-void NavigationServer2D::set_debug_navigation_avoidance_obstacles_radius_color(const Color &p_color) {
-	debug_navigation_avoidance_obstacles_radius_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_avoidance_obstacles_radius_color() const {
-	return debug_navigation_avoidance_obstacles_radius_color;
-}
-
-void NavigationServer2D::set_debug_navigation_avoidance_static_obstacle_pushin_face_color(const Color &p_color) {
-	debug_navigation_avoidance_static_obstacle_pushin_face_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_avoidance_static_obstacle_pushin_face_color() const {
-	return debug_navigation_avoidance_static_obstacle_pushin_face_color;
-}
-
-void NavigationServer2D::set_debug_navigation_avoidance_static_obstacle_pushout_face_color(const Color &p_color) {
-	debug_navigation_avoidance_static_obstacle_pushout_face_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_avoidance_static_obstacle_pushout_face_color() const {
-	return debug_navigation_avoidance_static_obstacle_pushout_face_color;
-}
-
-void NavigationServer2D::set_debug_navigation_avoidance_static_obstacle_pushin_edge_color(const Color &p_color) {
-	debug_navigation_avoidance_static_obstacle_pushin_edge_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_avoidance_static_obstacle_pushin_edge_color() const {
-	return debug_navigation_avoidance_static_obstacle_pushin_edge_color;
-}
-
-void NavigationServer2D::set_debug_navigation_avoidance_static_obstacle_pushout_edge_color(const Color &p_color) {
-	debug_navigation_avoidance_static_obstacle_pushout_edge_color = p_color;
-}
-
-Color NavigationServer2D::get_debug_navigation_avoidance_static_obstacle_pushout_edge_color() const {
-	return debug_navigation_avoidance_static_obstacle_pushout_edge_color;
-}
-
-void NavigationServer2D::set_debug_navigation_avoidance_enable_obstacles_static(const bool p_value) {
-	debug_navigation_avoidance_enable_obstacles_static = p_value;
-}
-
-bool NavigationServer2D::get_debug_navigation_avoidance_enable_obstacles_static() const {
-	return debug_navigation_avoidance_enable_obstacles_static;
-}
+	NavigationServer2DDebug::get_singleton()->register_settings();
 #endif // DEBUG_ENABLED
+}
+
+void NavigationServer2D::update_from_settings() {
+#ifdef DEBUG_ENABLED
+	NavigationServer2DDebug::get_singleton()->update_from_settings();
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("debug/shapes/navigation/2d")) {
+		navigation_debug_dirty = true;
+		callable_mp(this, &NavigationServer2D::_emit_navigation_debug_changed_signal).call_deferred();
+		avoidance_debug_dirty = true;
+		callable_mp(this, &NavigationServer2D::_emit_avoidance_debug_changed_signal).call_deferred();
+	}
+#endif // DEBUG_ENABLED
+}

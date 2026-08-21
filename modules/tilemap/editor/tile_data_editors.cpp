@@ -53,6 +53,9 @@
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/rendering/rendering_server.h"
+#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_2D_DISABLED)
+#include "servers/navigation_2d/navigation_server_2d_debug.h"
+#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_2D_DISABLED)
 
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;
@@ -3005,9 +3008,9 @@ void TileDataNavigationEditor::_tile_set_changed() {
 void TileDataNavigationEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-#ifdef DEBUG_ENABLED
-			polygon_editor->set_polygons_color(NavigationServer2D::get_singleton()->get_debug_navigation_geometry_face_color());
-#endif // DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_2D_DISABLED)
+			polygon_editor->set_polygons_color(NavigationServer2DDebug::get_singleton()->get_debug_navigation_geometry_face_color());
+#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_2D_DISABLED)
 		} break;
 	}
 }
@@ -3033,9 +3036,9 @@ void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfo
 		}
 
 		Color color = Color(0.5, 1.0, 1.0, 1.0);
-#ifdef DEBUG_ENABLED
-		color = NavigationServer2D::get_singleton()->get_debug_navigation_geometry_face_color();
-#endif // DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_2D_DISABLED)
+		color = NavigationServer2DDebug::get_singleton()->get_debug_navigation_geometry_face_color();
+#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_2D_DISABLED)
 		if (p_selected) {
 			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
 			Color selection_color = Color::from_hsv(Math::fposmod(grid_color.get_h() + 0.5, 1.0), grid_color.get_s(), grid_color.get_v(), 1.0);

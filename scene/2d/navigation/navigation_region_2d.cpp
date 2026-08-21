@@ -39,6 +39,9 @@
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/rendering/rendering_server.h"
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_2d/navigation_server_2d_debug.h"
+#endif // DEBUG_ENABLED
 
 RID NavigationRegion2D::get_rid() const {
 	return region;
@@ -54,7 +57,7 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 	NavigationServer2D::get_singleton()->region_set_enabled(region, enabled);
 
 #ifdef DEBUG_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_navigation_enabled()) {
+	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2DDebug::get_singleton()->get_debug_navigation_enabled()) {
 		queue_redraw();
 	}
 #endif // DEBUG_ENABLED
@@ -183,7 +186,7 @@ void NavigationRegion2D::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 #ifdef DEBUG_ENABLED
-			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || (NavigationServer2D::get_singleton()->get_debug_enabled() && NavigationServer2D::get_singleton()->get_debug_navigation_enabled())) && navigation_polygon.is_valid()) {
+			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || (NavigationServer2DDebug::get_singleton()->get_debug_enabled() && NavigationServer2DDebug::get_singleton()->get_debug_navigation_enabled())) && navigation_polygon.is_valid()) {
 				_update_debug_mesh();
 				_update_debug_edge_connections_mesh();
 				_update_debug_baking_rect();
@@ -447,7 +450,7 @@ void NavigationRegion2D::_update_debug_mesh() {
 		return;
 	}
 
-	const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
+	const NavigationServer2DDebug *ns2dd = NavigationServer2DDebug::get_singleton();
 	RenderingServer *rs = RenderingServer::get_singleton();
 
 	if (!debug_instance_rid.is_valid()) {
@@ -481,15 +484,15 @@ void NavigationRegion2D::_update_debug_mesh() {
 		return;
 	}
 
-	bool enabled_geometry_face_random_color = ns2d->get_debug_navigation_enable_geometry_face_random_color();
-	bool enabled_edge_lines = ns2d->get_debug_navigation_enable_edge_lines();
+	bool enabled_geometry_face_random_color = ns2dd->get_debug_navigation_enable_geometry_face_random_color();
+	bool enabled_edge_lines = ns2dd->get_debug_navigation_enable_edge_lines();
 
-	Color debug_face_color = ns2d->get_debug_navigation_geometry_face_color();
-	Color debug_edge_color = ns2d->get_debug_navigation_geometry_edge_color();
+	Color debug_face_color = ns2dd->get_debug_navigation_geometry_face_color();
+	Color debug_edge_color = ns2dd->get_debug_navigation_geometry_edge_color();
 
 	if (!enabled) {
-		debug_face_color = ns2d->get_debug_navigation_geometry_face_disabled_color();
-		debug_edge_color = ns2d->get_debug_navigation_geometry_edge_disabled_color();
+		debug_face_color = ns2dd->get_debug_navigation_geometry_face_disabled_color();
+		debug_edge_color = ns2dd->get_debug_navigation_geometry_edge_disabled_color();
 	}
 
 	int vertex_count = 0;
@@ -601,10 +604,10 @@ void NavigationRegion2D::_update_debug_mesh() {
 #ifdef DEBUG_ENABLED
 void NavigationRegion2D::_update_debug_edge_connections_mesh() {
 	const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
-	bool enable_edge_connections = use_edge_connections && ns2d->get_debug_navigation_enable_edge_connections() && ns2d->map_get_use_edge_connections(get_world_2d()->get_navigation_map());
+	bool enable_edge_connections = use_edge_connections && NavigationServer2DDebug::get_singleton()->get_debug_navigation_enable_edge_connections() && ns2d->map_get_use_edge_connections(get_world_2d()->get_navigation_map());
 
 	if (enable_edge_connections) {
-		Color debug_edge_connection_color = ns2d->get_debug_navigation_edge_connection_color();
+		Color debug_edge_connection_color = NavigationServer2DDebug::get_singleton()->get_debug_navigation_edge_connection_color();
 		// Draw the region edge connections.
 		Transform2D xform = get_global_transform();
 		real_t radius = ns2d->map_get_edge_connection_margin(get_world_2d()->get_navigation_map()) / 2.0;
