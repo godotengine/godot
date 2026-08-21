@@ -2100,8 +2100,8 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	if (String(d["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
 		if (se) {
-			String sp = se->get_edited_resource()->get_path();
-			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+			Ref<Resource> sr = se->get_edited_resource();
+			if (_is_script_type(sr->get_class())) {
 				tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 				return _has_drop_selection(item, p_point);
 			}
@@ -2166,8 +2166,9 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	if (String(d["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
 		if (se) {
-			String sp = se->get_edited_resource()->get_path();
-			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+			Ref<Resource> sr = se->get_edited_resource();
+			String sp = sr->get_path();
+			if (_is_script_type(sr->get_class())) {
 				emit_signal(SNAME("script_dropped"), sp, np);
 			}
 		}
