@@ -1816,7 +1816,9 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 	saving_resources_in_path.erase(p_resource);
 
 	_resource_saved(p_resource, path);
-	clear_node_reference(p_resource); // // Check if Resource is saved to disk to potentially remove it from resource_count
+	if (!is_resource_internal_to_scene(p_resource)) {
+		invalidate_resource_usage_cache();
+	}
 	emit_signal(SNAME("resource_saved"), p_resource);
 	editor_data.notify_resource_saved(p_resource);
 
@@ -2041,71 +2043,218 @@ void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> 
 	}
 }
 
-void EditorNode::update_resource_count(Node *p_node, bool p_remove) {
-	if (!get_edited_scene()) {
+void EditorNode::_queue_resource_usage_changed() {
+	if (resource_usage_notification_queued) {
+		return;
+	}
+	resource_usage_notification_queued = true;
+	callable_mp(this, &EditorNode::_flush_resource_usage_changed).call_deferred();
+}
+
+void EditorNode::_flush_resource_usage_changed() {
+	resource_usage_notification_queued = false;
+	emit_signal(SNAME("resource_counter_changed"));
+}
+
+void EditorNode::_reset_resource_usage_cache() {
+	for (const KeyValue<Ref<Resource>, HashSet<ObjectID>> &E : resource_node_usage) {
+		const Callable callback = callable_mp(this, &EditorNode::_resource_usage_changed).bind(E.key->get_instance_id());
+		E.key->disconnect_changed(callback);
+	}
+	node_resource_usage.clear();
+	resource_node_usage.clear();
+	dirty_resource_usage_nodes.clear();
+	resource_usage_scene_id = get_edited_scene() ? get_edited_scene()->get_instance_id() : ObjectID();
+	resource_usage_initialized = false;
+	resource_usage_invalid = false;
+	resource_usage_updating = false;
+	_queue_resource_usage_changed();
+}
+
+void EditorNode::invalidate_resource_usage_cache() {
+	if (!resource_usage_initialized || resource_usage_invalid) {
+		return;
+	}
+	resource_usage_invalid = true;
+	_queue_resource_usage_changed();
+}
+
+bool EditorNode::_is_node_in_resource_usage_scope(Node *p_node) const {
+	Node *scene = get_editor_data().get_edited_scene_root();
+	if (!scene || !p_node || (p_node != scene && !scene->is_ancestor_of(p_node))) {
+		return false;
+	}
+	return p_node == scene || p_node->get_owner() == scene || (p_node->get_owner() && scene->is_editable_instance(p_node->get_owner()));
+}
+
+void EditorNode::_collect_node_resource_usage(Node *p_node, HashSet<Ref<Resource>> &r_resources) {
+	List<Ref<Resource>> resources;
+	HashSet<Object *> scanned_objects;
+	gather_resources(p_node, resources, scanned_objects, true);
+	for (const Ref<Resource> &resource : resources) {
+		if (resource.is_valid() && is_resource_internal_to_scene(resource)) {
+			r_resources.insert(resource);
+		}
+	}
+}
+
+void EditorNode::_remove_resource_usage_snapshot(ObjectID p_node_id) {
+	HashSet<Ref<Resource>> *old_resources = node_resource_usage.getptr(p_node_id);
+	if (!old_resources) {
+		return;
+	}
+	for (const Ref<Resource> &resource : *old_resources) {
+		HashSet<ObjectID> *nodes = resource_node_usage.getptr(resource);
+		if (!nodes) {
+			continue;
+		}
+		nodes->erase(p_node_id);
+		if (nodes->is_empty()) {
+			const Callable callback = callable_mp(this, &EditorNode::_resource_usage_changed).bind(resource->get_instance_id());
+			resource->disconnect_changed(callback);
+			resource_node_usage.erase(resource);
+		}
+	}
+	node_resource_usage.erase(p_node_id);
+}
+
+void EditorNode::_reconcile_node_resource_usage(Node *p_node) {
+	ERR_FAIL_NULL(p_node);
+	const ObjectID node_id = p_node->get_instance_id();
+	if (!_is_node_in_resource_usage_scope(p_node)) {
+		_remove_resource_usage_snapshot(node_id);
 		return;
 	}
 
-	List<Ref<Resource>> res_list;
-	HashSet<Object *> scanned_objects;
-	gather_resources(p_node, res_list, scanned_objects, true);
+	HashSet<Ref<Resource>> resources;
+	_collect_node_resource_usage(p_node, resources);
+	_remove_resource_usage_snapshot(node_id);
+	node_resource_usage.insert(node_id, resources);
+	for (const Ref<Resource> &resource : resources) {
+		HashSet<ObjectID> &nodes = resource_node_usage[resource];
+		if (nodes.is_empty()) {
+			const Callable callback = callable_mp(this, &EditorNode::_resource_usage_changed).bind(resource->get_instance_id());
+			resource->connect_changed(callback);
+		}
+		nodes.insert(node_id);
+	}
+}
 
-	for (Ref<Resource> &R : res_list) {
-		List<Node *>::Element *E = resource_count[R].find(p_node);
-		if (E) {
-			if (p_remove) {
-				resource_count[R].erase(E);
+void EditorNode::_rebuild_resource_usage_cache() {
+	Node *scene = get_edited_scene();
+	_reset_resource_usage_cache();
+	resource_usage_initialized = true;
+	resource_usage_updating = true;
+	if (scene) {
+		List<Node *> pending;
+		pending.push_back(scene);
+		while (!pending.is_empty()) {
+			Node *node = pending.front()->get();
+			pending.pop_front();
+			if (_is_node_in_resource_usage_scope(node)) {
+				_reconcile_node_resource_usage(node);
 			}
-		} else {
-			resource_count[R].push_back(p_node);
+			for (int i = 0; i < node->get_child_count(false); i++) {
+				pending.push_back(node->get_child(i, false));
+			}
 		}
 	}
+	resource_usage_updating = false;
+}
 
-	emit_signal(SNAME("resource_counter_changed"));
+void EditorNode::_ensure_resource_usage_cache() {
+	const ObjectID scene_id = get_edited_scene() ? get_edited_scene()->get_instance_id() : ObjectID();
+	if (!resource_usage_initialized || resource_usage_invalid || resource_usage_scene_id != scene_id) {
+		_rebuild_resource_usage_cache();
+		return;
+	}
+	if (resource_usage_updating || dirty_resource_usage_nodes.is_empty()) {
+		return;
+	}
+	resource_usage_updating = true;
+	HashSet<ObjectID> dirty(dirty_resource_usage_nodes);
+	dirty_resource_usage_nodes.clear();
+	for (const ObjectID &node_id : dirty) {
+		Node *node = ObjectDB::get_instance<Node>(node_id);
+		if (node) {
+			_reconcile_node_resource_usage(node);
+		} else {
+			_remove_resource_usage_snapshot(node_id);
+		}
+	}
+	resource_usage_updating = false;
+}
+
+void EditorNode::_mark_resource_usage_subtree_dirty(Node *p_node) {
+	if (!resource_usage_initialized || !p_node) {
+		return;
+	}
+
+	List<Node *> pending;
+	pending.push_back(p_node);
+	while (!pending.is_empty()) {
+		Node *node = pending.front()->get();
+		pending.pop_front();
+		dirty_resource_usage_nodes.insert(node->get_instance_id());
+		for (int i = 0; i < node->get_child_count(false); i++) {
+			pending.push_back(node->get_child(i, false));
+		}
+	}
+	_queue_resource_usage_changed();
+}
+
+void EditorNode::mark_node_resource_usage_dirty(Node *p_node) {
+	if (!resource_usage_initialized || !p_node) {
+		return;
+	}
+	dirty_resource_usage_nodes.insert(p_node->get_instance_id());
+	_queue_resource_usage_changed();
+}
+
+void EditorNode::remove_node_from_resource_usage_cache(Node *p_node) {
+	if (!resource_usage_initialized || !p_node) {
+		return;
+	}
+	dirty_resource_usage_nodes.erase(p_node->get_instance_id());
+	_remove_resource_usage_snapshot(p_node->get_instance_id());
+	_queue_resource_usage_changed();
+}
+
+void EditorNode::_resource_usage_changed(ObjectID p_resource_id) {
+	if (!resource_usage_initialized) {
+		return;
+	}
+	if (resource_usage_updating) {
+		resource_usage_invalid = true;
+		_queue_resource_usage_changed();
+		return;
+	}
+	Resource *resource = ObjectDB::get_instance<Resource>(p_resource_id);
+	if (!resource) {
+		invalidate_resource_usage_cache();
+		return;
+	}
+	HashSet<ObjectID> *nodes = resource_node_usage.getptr(Ref<Resource>(resource));
+	if (!nodes) {
+		return;
+	}
+	for (const ObjectID &node_id : *nodes) {
+		dirty_resource_usage_nodes.insert(node_id);
+	}
+	_queue_resource_usage_changed();
+}
+
+void EditorNode::_undo_redo_resource_usage_changed() {
+	// Inspector actions mark affected nodes dirty; invalidate for other actions.
+	if (resource_usage_initialized && dirty_resource_usage_nodes.is_empty()) {
+		invalidate_resource_usage_cache();
+	}
 }
 
 int EditorNode::get_resource_count(Ref<Resource> p_res) {
-	List<Node *> *L = resource_count.getptr(p_res);
-	return L ? L->size() : 0;
-}
-
-List<Node *> EditorNode::get_resource_node_list(Ref<Resource> p_res) {
-	List<Node *> *L = resource_count.getptr(p_res);
-	return L == nullptr ? List<Node *>() : List<Node *>(*L);
-}
-
-void EditorNode::update_node_reference(const Variant &p_value, Node *p_node, bool p_remove) {
-	List<Ref<Resource>> list;
-	Ref<Resource> res = p_value;
-	HashSet<Object *> scanned_objects;
-	gather_resources(p_value, list, scanned_objects, true); //Gather all Resources and their SubResources to remove p_node from their lists.
-
-	if (res.is_valid() && is_resource_internal_to_scene(res)) {
-		// Avoid external Resources from being added in.
-		list.push_back(res);
-	}
-
-	for (Ref<Resource> &R : list) {
-		if (!p_remove) {
-			resource_count[R].push_back(p_node);
-		} else {
-			List<Node *>::Element *E = resource_count[R].find(p_node);
-			if (E) {
-				resource_count[R].erase(E);
-			}
-		}
-	}
-	emit_signal(SNAME("resource_counter_changed"));
-}
-
-void EditorNode::clear_node_reference(Ref<Resource> p_res) {
-	if (is_resource_internal_to_scene(p_res)) {
-		return;
-	}
-	List<Node *> *node_list = resource_count.getptr(p_res);
-	if (node_list != nullptr) {
-		node_list->clear();
-	}
+	_ensure_resource_usage_cache();
+	HashSet<ObjectID> *nodes = resource_node_usage.getptr(p_res);
+	return nodes ? nodes->size() : 0;
 }
 
 void EditorNode::_menu_option(int p_option) {
@@ -4725,6 +4874,9 @@ void EditorNode::set_edited_scene_root(Node *p_scene, bool p_auto_add) {
 	if (p_auto_add && p_scene) {
 		scene_root->add_child(p_scene, true);
 	}
+	if (p_scene != old_edited_scene_root) {
+		_reset_resource_usage_cache();
+	}
 }
 
 String EditorNode::get_preview_locale() const {
@@ -4875,7 +5027,7 @@ void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state) {
 
 		EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_scene_history_id(p_idx), false);
 	}
-	resource_count.clear();
+	_reset_resource_usage_cache();
 	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
 
 	_update_title();
@@ -8006,7 +8158,7 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
 
-	ClassDB::bind_method(D_METHOD("update_node_reference", "value", "node", "remove"), &EditorNode::update_node_reference, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("mark_node_resource_usage_dirty", "node"), &EditorNode::mark_node_resource_usage_dirty);
 
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
@@ -8521,8 +8673,10 @@ EditorNode::EditorNode() {
 
 	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_unsaved_cache));
+	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_undo_redo_resource_usage_changed));
 	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_unsaved_cache));
+	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_undo_redo_resource_usage_changed));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
 	GDExtensionManager::get_singleton()->connect("extensions_reloaded", callable_mp(this, &EditorNode::_gdextensions_reloaded));
 
