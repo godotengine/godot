@@ -72,7 +72,9 @@
 void EditorInspectorActionButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			set_button_icon(get_editor_theme_icon(icon_name));
+			if (!icon_name.is_empty()) {
+				set_button_icon(get_editor_theme_icon(icon_name));
+			}
 		} break;
 	}
 }
