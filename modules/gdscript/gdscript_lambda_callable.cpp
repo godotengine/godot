@@ -150,12 +150,12 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 	}
 }
 
-GDScriptLambdaCallable::GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, const Vector<Variant> &p_captures) :
+GDScriptLambdaCallable::GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, TightLocalVector<Variant> &&p_captures) :
 		function(p_function) {
 	ERR_FAIL_COND(p_script.is_null());
 	ERR_FAIL_NULL(p_function);
 	script = p_script;
-	captures = p_captures;
+	captures = std::move(p_captures);
 
 	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
 }
@@ -282,23 +282,23 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 	}
 }
 
-GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures) :
+GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, GDScriptFunction *p_function, TightLocalVector<Variant> &&p_captures) :
 		function(p_function) {
 	ERR_FAIL_COND(p_self.is_null());
 	ERR_FAIL_NULL(p_function);
 	reference = p_self;
 	object = p_self.ptr();
-	captures = p_captures;
+	captures = std::move(p_captures);
 
 	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
 }
 
-GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Object *p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures) :
+GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Object *p_self, GDScriptFunction *p_function, TightLocalVector<Variant> &&p_captures) :
 		function(p_function) {
 	ERR_FAIL_NULL(p_self);
 	ERR_FAIL_NULL(p_function);
 	object = p_self;
-	captures = p_captures;
+	captures = std::move(p_captures);
 
 	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
 }
