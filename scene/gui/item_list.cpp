@@ -343,13 +343,26 @@ Rect2 ItemList::get_item_rect(int p_idx, bool p_expand) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Rect2());
 
 	Rect2 ret = items[p_idx].rect_cache;
+
 	if (p_expand && p_idx % current_columns == current_columns - 1) {
 		int width = get_size().width - theme_cache.panel_style->get_minimum_size().width;
 		if (scroll_bar_v->is_visible()) {
-			width -= scroll_bar_v->get_bound_minimum_size().width + theme_cache.scroll_bar_h_separation;
+			int scroll_width = scroll_bar_v->get_bound_minimum_size().width + theme_cache.scrollbar_h_separation;
+			if (theme_cache.scrollbar_margin_right < 0) {
+				width -= scroll_width;
+			} else {
+				int scroll_margin = theme_cache.scrollbar_margin_right + scroll_width;
+				if (scroll_margin > theme_cache.panel_style->get_margin(SIDE_RIGHT)) {
+					width -= scroll_margin - theme_cache.panel_style->get_margin(SIDE_RIGHT);
+				}
+			}
+		} else {
+			width -= MAX(theme_cache.panel_style->get_margin(SIDE_RIGHT), theme_cache.scrollbar_margin_right);
 		}
+
 		ret.size.width = width - ret.position.x;
 	}
+
 	ret.position += theme_cache.panel_style->get_offset();
 	return ret;
 }
@@ -1404,23 +1417,47 @@ void ItemList::_notification(int p_what) {
 			Size2 scroll_bar_h_min = scroll_bar_h->is_visible() ? scroll_bar_h->get_bound_minimum_size() : Size2();
 			Size2 scroll_bar_v_min = scroll_bar_v->is_visible() ? scroll_bar_v->get_bound_minimum_size() : Size2();
 
-			int left_margin = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_RIGHT) : theme_cache.panel_style->get_margin(SIDE_LEFT);
-			int right_margin = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_LEFT) : theme_cache.panel_style->get_margin(SIDE_RIGHT);
+			int left_margin = 0;
+			if (theme_cache.scrollbar_margin_left < 0) {
+				left_margin = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_RIGHT) : theme_cache.panel_style->get_margin(SIDE_LEFT);
+			} else {
+				left_margin = theme_cache.scrollbar_margin_left;
+			}
+			int right_margin = 0;
+			if (theme_cache.scrollbar_margin_right < 0) {
+				right_margin = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_LEFT) : theme_cache.panel_style->get_margin(SIDE_RIGHT);
+			} else {
+				right_margin = theme_cache.scrollbar_margin_right;
+			}
+
+			int top_margin = theme_cache.scrollbar_margin_top < 0 ? theme_cache.panel_style->get_margin(SIDE_TOP) : theme_cache.scrollbar_margin_top;
+			int bottom_margin = theme_cache.scrollbar_margin_bottom < 0 ? theme_cache.panel_style->get_margin(SIDE_BOTTOM) : theme_cache.scrollbar_margin_bottom;
 
 			scroll_bar_v->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_bar_v_min.width - right_margin);
 			scroll_bar_v->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -right_margin);
-			scroll_bar_v->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, theme_cache.panel_style->get_margin(SIDE_TOP));
-			scroll_bar_v->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -scroll_bar_h_min.height - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
+			scroll_bar_v->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, top_margin);
+			scroll_bar_v->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -scroll_bar_h_min.height - bottom_margin);
 
 			scroll_bar_h->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, left_margin);
 			scroll_bar_h->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -right_margin - scroll_bar_v_min.width);
-			scroll_bar_h->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -scroll_bar_h_min.height - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
-			scroll_bar_h->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -theme_cache.panel_style->get_margin(SIDE_BOTTOM));
+			scroll_bar_h->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -scroll_bar_h_min.height - bottom_margin);
+			scroll_bar_h->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -bottom_margin);
 
 			Size2 size = get_size();
-			int width = size.width - theme_cache.panel_style->get_minimum_size().width;
+
+			int width = get_size().width - theme_cache.panel_style->get_minimum_size().width;
 			if (scroll_bar_v->is_visible()) {
-				width -= scroll_bar_v_min.width + theme_cache.scroll_bar_h_separation;
+				int scroll_width = scroll_bar_v_min.width + theme_cache.scrollbar_h_separation;
+				if (theme_cache.scrollbar_margin_right < 0) {
+					width -= scroll_width;
+				} else {
+					int scroll_margin = theme_cache.scrollbar_margin_right + scroll_width;
+					if (scroll_margin > theme_cache.panel_style->get_margin(SIDE_RIGHT)) {
+						width -= scroll_margin - theme_cache.panel_style->get_margin(SIDE_RIGHT);
+					}
+				}
+			} else {
+				width -= MAX(theme_cache.panel_style->get_margin(SIDE_RIGHT), theme_cache.scrollbar_margin_right);
 			}
 
 			draw_style_box(theme_cache.panel_style, Rect2(Point2(), size));
@@ -2487,7 +2524,11 @@ void ItemList::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, v_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scroll_bar_h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scrollbar_margin_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scrollbar_margin_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scrollbar_margin_right);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scrollbar_margin_bottom);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scrollbar_h_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, focus_style, "focus");
