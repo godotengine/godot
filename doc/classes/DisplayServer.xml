@@ -2708,10 +2708,9 @@
 	</methods>
 	<signals>
 		<signal name="orientation_changed">
-			<param index="0" name="orientation" type="int" />
+			<param index="0" name="orientation" type="int" enum="DisplayServer.SensorOrientation" />
 			<description>
-				Emitted when the device orientation changes. [param orientation] is the new orientation.
-				Returns [code]1[/code] for portrait, [code]2[/code] for landscape, and [code]0[/code] if the orientation is undefined.
+				Emitted when the screen orientation changes. [param orientation] is the new orientation.
 				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</signal>
@@ -3189,6 +3188,15 @@
 		</constant>
 		<constant name="SCREEN_SENSOR" value="6" enum="ScreenOrientation">
 			Automatic landscape or portrait orientation (default or reverse depending on sensor).
+		</constant>
+		<constant name="SENSOR_ORIENTATION_UNDEFINED" value="0" enum="SensorOrientation">
+			Unspecified screen sensor orientation.
+		</constant>
+		<constant name="SENSOR_ORIENTATION_PORTRAIT" value="1" enum="SensorOrientation">
+			Portrait orientation (either standard portrait or reverse portrait).
+		</constant>
+		<constant name="SENSOR_ORIENTATION_LANDSCAPE" value="2" enum="SensorOrientation">
+			Landscape orientation (either standard landscape or reverse landscape).
 		</constant>
 		<constant name="KEYBOARD_TYPE_DEFAULT" value="0" enum="VirtualKeyboardType">
 			Default text virtual keyboard.
