@@ -1050,10 +1050,27 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 				return;
 			}
 
+			// Adjust the transform to ignore the parent's. Since the nodes aren't parented yet,
+			// we need to get it from either the selection, or the root node.
+			Node *paste_parent = nullptr;
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
+			if (selection.is_empty()) {
+				paste_parent = EditorNode::get_singleton()->get_edited_scene();
+			} else {
+				paste_parent = selection.back()->get();
+			}
+			Transform2D parent_inverse;
+			if (paste_parent) {
+				CanvasItem *ci = Object::cast_to<CanvasItem>(paste_parent);
+				if (ci) {
+					parent_inverse = ci->get_global_transform_with_canvas().affine_inverse();
+				}
+			}
+
 			for (Node *node : pasted_nodes) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(node);
 				if (ci) {
-					Transform2D xform = ci->get_transform() * ci->get_global_transform_with_canvas().affine_inverse();
+					Transform2D xform = ci->get_transform() * parent_inverse;
 					undo_redo->add_do_method(ci, "_edit_set_position", xform.xform(node_create_position));
 					undo_redo->add_undo_method(ci, "_edit_set_position", ci->_edit_get_position());
 				}
