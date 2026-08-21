@@ -705,7 +705,7 @@ PackedStringArray OptionButton::get_configuration_warnings() const {
 OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
-	set_process_shortcut_input(true);
+	_update_shortcut_input();
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
@@ -718,7 +718,4 @@ OptionButton::OptionButton(const String &p_text) :
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed).bind(false));
 
 	property_helper.setup_for_instance(base_property_helper, this);
-}
-
-OptionButton::~OptionButton() {
 }
