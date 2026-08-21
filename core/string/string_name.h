@@ -79,11 +79,16 @@ class [[nodiscard]] _WARN_UNUSED_ StringName {
 	};
 
 	static inline bool debug_stringname = false;
+
 #endif
+	static const StringName _empty_val;
+	static constexpr const StringName &_empty_ref() { return _empty_val; }
 
 	StringName(_Data *p_data) { _data = p_data; }
 
 public:
+	static const StringName &EMPTY;
+
 	_FORCE_INLINE_ explicit operator bool() const { return _data; }
 
 	bool operator==(const String &p_name) const;
@@ -134,8 +139,7 @@ public:
 	}
 
 	_FORCE_INLINE_ const String &string() const _LIFETIME_BOUND_ {
-		static const String EMPTY;
-		return _data ? _data->name : EMPTY;
+		return _data ? _data->name : String::EMPTY;
 	}
 
 	_FORCE_INLINE_ operator const String &() const _LIFETIME_BOUND_ {
@@ -179,14 +183,14 @@ public:
 		p_name._data = nullptr;
 	}
 	StringName(const String &p_name, bool p_static = false);
-	StringName() {}
+	constexpr StringName() = default;
 
 #ifdef SIZE_EXTRA
 	_NO_INLINE_
 #else
 	_FORCE_INLINE_
 #endif
-	~StringName() {
+	constexpr ~StringName() {
 		// Using `likely` here leads to huge binary size benefits.
 		if (likely(_data)) {
 			unref();
@@ -197,6 +201,9 @@ public:
 	static void set_debug_stringnames(bool p_enable) { debug_stringname = p_enable; }
 #endif
 };
+
+inline constexpr const StringName StringName::_empty_val;
+inline constexpr const StringName &StringName::EMPTY = StringName::_empty_ref();
 
 // Zero-constructing StringName initializes _data to nullptr (and thus empty).
 template <>
