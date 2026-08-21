@@ -543,7 +543,7 @@ if env["optimize"] == "auto":
         opt_level = "speed"
     env["optimize"] = opt_level
 
-env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env.dev_build)
+env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env["debug_symbols"] or env.dev_build)
 
 if env.editor_build:
     env.Append(CPPDEFINES=["TOOLS_ENABLED"])
@@ -673,7 +673,7 @@ if env["dev_mode"]:
     env["strict_checks"] = methods.get_cmdline_bool("strict_checks", True)
 if env["production"]:
     env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
-    env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
+    env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env["debug_symbols"])
     if env["platform"] == "android":
         env["swappy"] = methods.get_cmdline_bool("swappy", True)
     # LTO "auto" means we handle the preferred option in each platform detect.py.
