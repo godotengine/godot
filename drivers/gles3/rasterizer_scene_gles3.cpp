@@ -823,8 +823,8 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 
 				sky_light_data.enabled = true;
 
-				float angular_diameter = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SIZE);
-				sky_light_data.size = Math::deg_to_rad(angular_diameter);
+				float angular_radius_degrees = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SIZE);
+				sky_light_data.size = Math::deg_to_rad(angular_radius_degrees);
 				sky_globals.directional_light_count++;
 				if (sky_globals.directional_light_count >= sky_globals.max_directional_lights) {
 					break;
@@ -1779,8 +1779,8 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 				light_data.color[1] = linear_col.g;
 				light_data.color[2] = linear_col.b;
 
-				float size = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SIZE);
-				light_data.size = 1.0 - Math::cos(Math::deg_to_rad(size)); //angle to cosine offset
+				float angular_radius_degrees = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SIZE);
+				light_data.size = 1.0 - Math::cos(Math::deg_to_rad(angular_radius_degrees)); //angle to cosine offset
 
 				light_data.specular = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SPECULAR);
 
@@ -1976,9 +1976,9 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		light_data.direction[1] = direction.y;
 		light_data.direction[2] = direction.z;
 
-		float size = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SIZE);
+		float size_radius_meters = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SIZE);
 
-		light_data.size = size;
+		light_data.size = size_radius_meters;
 
 		float sign = light_storage->light_is_negative(base) ? -1 : 1;
 		Color linear_col = light_storage->light_get_color(base).srgb_to_linear();
