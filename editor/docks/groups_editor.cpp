@@ -228,15 +228,46 @@ void GroupsEditor::_update_tree() {
 
 	tree->clear();
 
-	List<Node::GroupInfo> groups;
-	for (Node *p_node : selection) {
-		p_node->get_groups(&groups);
-	}
-	groups.sort_custom<_GroupInfoComparator>();
+	HashSet<StringName> full_groups;
+	HashSet<StringName> partial_groups;
 
-	List<StringName> current_groups;
-	for (const Node::GroupInfo &gi : groups) {
-		current_groups.push_back(gi.name);
+	if (!selection.is_empty()) {
+		List<Node::GroupInfo> groups;
+		selection[0]->get_groups(&groups);
+
+		for (const Node::GroupInfo &gi : groups) {
+			full_groups.insert(gi.name);
+		}
+	}
+
+	for (Node *p_node : selection) {
+		List<Node::GroupInfo> groups;
+		p_node->get_groups(&groups);
+
+		for (const StringName &group_name : full_groups) {
+			if (partial_groups.has(group_name)) {
+				// Already determined partial, so skip.
+				continue;
+			}
+
+			bool found = false;
+			for (const Node::GroupInfo &gi : groups) {
+				if (gi.name == group_name) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				partial_groups.insert(group_name);
+				// Not removed from full groups, because no need to.
+			}
+		}
+
+		for (const Node::GroupInfo &gi : groups) {
+			if (!full_groups.has(gi.name)) {
+				partial_groups.insert(gi.name);
+			}
+		}
 	}
 
 	TreeItem *root = tree->create_item();
@@ -262,7 +293,11 @@ void GroupsEditor::_update_tree() {
 		TreeItem *item = tree->create_item(local_root);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		item->set_editable(0, _can_edit(E));
-		item->set_checked(0, current_groups.find(E) != nullptr);
+		if (partial_groups.has(E)) {
+			item->set_indeterminate(0, true);
+		} else if (full_groups.has(E)) {
+			item->set_checked(0, true);
+		}
 		item->set_text(0, E);
 		item->set_meta("__local", true);
 		item->set_meta("__name", E);
@@ -294,7 +329,11 @@ void GroupsEditor::_update_tree() {
 		TreeItem *item = tree->create_item(global_root);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		item->set_editable(0, _can_edit(E));
-		item->set_checked(0, current_groups.find(E) != nullptr);
+		if (partial_groups.has(E)) {
+			item->set_indeterminate(0, true);
+		} else if (full_groups.has(E)) {
+			item->set_checked(0, true);
+		}
 		item->set_text(0, E);
 		item->set_meta("__local", false);
 		item->set_meta("__name", E);
