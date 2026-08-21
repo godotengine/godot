@@ -721,6 +721,34 @@ void EditorInterface::reload_scene_from_path(const String &scene_path) {
 	EditorNode::get_singleton()->reload_scene(scene_path);
 }
 
+void EditorInterface::set_node_locked(Node *p_node, bool p_locked) {
+	ERR_FAIL_NULL_MSG(p_node, "Cannot lock a null node.");
+	if (p_locked) {
+		p_node->set_meta("_edit_lock_", true);
+	} else if (p_node->has_meta("_edit_lock_")) {
+		p_node->remove_meta("_edit_lock_");
+	}
+}
+
+bool EditorInterface::is_node_locked(Node *p_node) const {
+	ERR_FAIL_NULL_V_MSG(p_node, false, "Cannot get the locked status of a null node.");
+	return p_node->has_meta("_edit_lock_");
+}
+
+void EditorInterface::set_node_selection_grouped(Node *p_node, bool p_grouped) {
+	ERR_FAIL_NULL_MSG(p_node, "Cannot create a selection group for a null node.");
+	if (p_grouped) {
+		p_node->set_meta("_edit_group_", true);
+	} else if (p_node->has_meta("_edit_group_")) {
+		p_node->remove_meta("_edit_group_");
+	}
+}
+
+bool EditorInterface::is_node_selection_grouped(Node *p_node) const {
+	ERR_FAIL_NULL_V_MSG(p_node, false, "Cannot get the selection grouped status of a null node.");
+	return p_node->has_meta("_edit_group_");
+}
+
 void EditorInterface::set_object_edited(Object *p_object, bool p_edited) {
 	ERR_FAIL_NULL_MSG(p_object, "Cannot change edited status on a null object.");
 	p_object->set_edited(p_edited);
@@ -931,6 +959,11 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("edit_script", "script", "line", "column", "grab_focus"), &EditorInterface::edit_script, DEFVAL(-1), DEFVAL(0), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath", "set_inherited"), &EditorInterface::open_scene_from_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
+
+	ClassDB::bind_method(D_METHOD("set_node_locked", "node", "locked"), &EditorInterface::set_node_locked);
+	ClassDB::bind_method(D_METHOD("is_node_locked", "node"), &EditorInterface::is_node_locked);
+	ClassDB::bind_method(D_METHOD("set_node_selection_grouped", "node", "grouped"), &EditorInterface::set_node_selection_grouped);
+	ClassDB::bind_method(D_METHOD("is_node_selection_grouped", "node"), &EditorInterface::is_node_selection_grouped);
 
 	ClassDB::bind_method(D_METHOD("set_object_edited", "object", "edited"), &EditorInterface::set_object_edited);
 	ClassDB::bind_method(D_METHOD("is_object_edited", "object"), &EditorInterface::is_object_edited);
