@@ -913,7 +913,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
 		// chunk sizes.
-		file->seek(file_pos + chunksize + (chunksize & 1));
+		file->seek(MIN(file_pos + chunksize + (chunksize & 1), file->get_length() - 1));
 	}
 
 	// STEP 2, APPLY CONVERSIONS
