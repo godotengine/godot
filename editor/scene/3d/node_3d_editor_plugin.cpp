@@ -108,6 +108,11 @@
 #include "servers/physics_3d/physics_server_3d_types.h"
 #include "servers/rendering/rendering_server.h"
 
+#include "modules/modules_enabled.gen.h" // For csg.
+#ifdef MODULE_CSG_ENABLED
+#include "modules/csg/csg_shape.h"
+#endif
+
 using namespace Node3DEditorConstants;
 
 ///////////////////////////////////////////////////////////////////
@@ -2152,6 +2157,18 @@ HashSet<RID> _get_physics_bodies_rid(Node *node) {
 	for (const PhysicsBody3D *I : child_nodes) {
 		rids.insert(I->get_rid());
 	}
+#ifdef MODULE_CSG_ENABLED
+	CSGShape3D *csg_shape = Node::cast_to<CSGShape3D>(node);
+	if (csg_shape && csg_shape->is_using_collision()) {
+		rids.insert(csg_shape->_get_root_collision_instance());
+	}
+	HashSet<CSGShape3D *> csg_child_nodes = _get_child_nodes<CSGShape3D>(node);
+	for (const CSGShape3D *I : csg_child_nodes) {
+		if (I->is_using_collision()) {
+			rids.insert(I->_get_root_collision_instance());
+		}
+	}
+#endif
 
 	return rids;
 }
