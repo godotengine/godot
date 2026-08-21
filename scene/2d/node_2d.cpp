@@ -36,7 +36,7 @@
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Dictionary Node2D::_edit_get_state() const {
 	Dictionary state;
 	state["position"] = get_position();
@@ -114,7 +114,7 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 
 	_update_transform();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void Node2D::_set_xform_dirty(bool p_dirty) const {
 	if (is_group_processing()) {

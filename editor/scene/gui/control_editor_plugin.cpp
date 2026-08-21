@@ -886,6 +886,7 @@ void ControlEditorToolbar::_anchor_mode_toggled(bool p_status) {
 
 	anchors_mode = p_status;
 	CanvasItemEditor::get_singleton()->update_viewport();
+	emit_signal("anchors_mode_toggled", anchors_mode);
 }
 
 void ControlEditorToolbar::_container_flags_selected(int p_flags, bool p_vertical) {
@@ -1200,6 +1201,10 @@ void ControlEditorToolbar::_notification(int p_what) {
 			containers_button->set_button_icon(get_editor_theme_icon(SNAME("ContainerLayout")));
 		} break;
 	}
+}
+
+void ControlEditorToolbar::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("anchors_mode_toggled", PropertyInfo(Variant::BOOL, "enabled")));
 }
 
 ControlEditorToolbar::ControlEditorToolbar() {

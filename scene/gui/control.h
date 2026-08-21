@@ -504,8 +504,7 @@ public:
 
 	// Editor plugin interoperability.
 
-	// TODO: Decouple controls from their editor plugin and get rid of this.
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;
 
@@ -526,9 +525,7 @@ public:
 	virtual bool _edit_use_pivot() const override;
 
 	virtual Size2 _edit_get_minimum_size() const override;
-#endif //TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 #endif // DEBUG_ENABLED

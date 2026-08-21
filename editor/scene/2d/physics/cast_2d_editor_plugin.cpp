@@ -105,7 +105,7 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && pressed) {
-		Vector2 point = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
+		Vector2 point = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
 		point = node->get_screen_transform().affine_inverse().xform(point);
 
 		node->set("target_position", point);

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -52,7 +53,6 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_viewport.h"
@@ -294,6 +294,12 @@ void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String 
 		msg.push_back(p_field);
 		_put_msg("scene:set_object_property_field", msg);
 	}
+}
+
+void ScriptEditorDebugger::change_canvas_item_objects(const Dictionary &p_states) {
+	ERR_FAIL_COND(p_states.is_empty());
+	Array msg = { p_states.duplicate() };
+	_put_msg("scene:change_canvas_item_states", msg);
 }
 
 void ScriptEditorDebugger::request_remote_objects(const TypedArray<uint64_t> &p_obj_ids, bool p_update_selection) {
@@ -581,6 +587,9 @@ void ScriptEditorDebugger::_msg_output(uint64_t p_thread_id, const Array &p_data
 			} break;
 			case RemoteDebugger::MESSAGE_TYPE_ERROR: {
 				msg_type = EditorLog::MSG_TYPE_ERROR;
+			} break;
+			case RemoteDebugger::MESSAGE_TYPE_EDITOR: {
+				msg_type = EditorLog::MSG_TYPE_EDITOR;
 			} break;
 			default: {
 				WARN_PRINT("Unhandled script debugger message type: " + itos(type));
@@ -934,8 +943,9 @@ void ScriptEditorDebugger::_msg_remote_selection_invalidated(uint64_t p_thread_i
 	inspector->invalidate_selection_from_cache(p_data[0]);
 }
 
-void ScriptEditorDebugger::_msg_show_selection_limit_warning(uint64_t p_thread_id, const Array &p_data) {
-	EditorToaster::get_singleton()->popup_str(vformat(TTR("Some remote nodes were not selected, as the configured maximum selection is %d. This can be changed at \"debugger/max_node_selection\" in the Editor Settings."), EDITOR_GET("debugger/max_node_selection")), EditorToaster::SEVERITY_WARNING);
+void ScriptEditorDebugger::_msg_remote_undo_redo_action(uint64_t p_thread_id, const Array &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+	inspector->add_undo_redo_action(p_data);
 }
 
 void ScriptEditorDebugger::_msg_performance_profile_names(uint64_t p_thread_id, const Array &p_data) {
@@ -976,12 +986,22 @@ void ScriptEditorDebugger::_msg_window_title(uint64_t p_thread_id, const Array &
 	emit_signal(SNAME("remote_window_title_changed"), p_data[0]);
 }
 
-void ScriptEditorDebugger::_msg_embed_suspend_toggle(uint64_t p_thread_id, const Array &p_data) {
-	emit_signal(SNAME("embed_shortcut_requested"), EMBED_SUSPEND_TOGGLE);
-}
+void ScriptEditorDebugger::_msg_editor_shortcut_pressed(uint64_t p_thread_id, const Array &p_data) {
+	ERR_FAIL_COND(p_data.size() != 1);
 
-void ScriptEditorDebugger::_msg_embed_next_frame(uint64_t p_thread_id, const Array &p_data) {
-	emit_signal(SNAME("embed_shortcut_requested"), EMBED_NEXT_FRAME);
+	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut(p_data[0]);
+	if (shortcut.is_null()) {
+		return;
+	}
+
+	Array events = shortcut->get_events();
+	if (!events.is_empty()) {
+		Ref<InputEventKey> k = events[0].duplicate();
+		if (k.is_valid()) {
+			k->set_pressed(true);
+			Input::get_singleton()->parse_input_event(k);
+		}
+	}
 }
 
 void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data) {
@@ -1031,13 +1051,12 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["remote_objects_selected"] = &ScriptEditorDebugger::_msg_remote_objects_selected;
 	parse_message_handlers["remote_nothing_selected"] = &ScriptEditorDebugger::_msg_remote_nothing_selected;
 	parse_message_handlers["remote_selection_invalidated"] = &ScriptEditorDebugger::_msg_remote_selection_invalidated;
-	parse_message_handlers["show_selection_limit_warning"] = &ScriptEditorDebugger::_msg_show_selection_limit_warning;
+	parse_message_handlers["remote_undo_redo_action"] = &ScriptEditorDebugger::_msg_remote_undo_redo_action;
 	parse_message_handlers["performance:profile_names"] = &ScriptEditorDebugger::_msg_performance_profile_names;
 	parse_message_handlers["filesystem:update_file"] = &ScriptEditorDebugger::_msg_filesystem_update_file;
 	parse_message_handlers["evaluation_return"] = &ScriptEditorDebugger::_msg_evaluation_return;
 	parse_message_handlers["window:title"] = &ScriptEditorDebugger::_msg_window_title;
-	parse_message_handlers["request_embed_suspend_toggle"] = &ScriptEditorDebugger::_msg_embed_suspend_toggle;
-	parse_message_handlers["request_embed_next_frame"] = &ScriptEditorDebugger::_msg_embed_next_frame;
+	parse_message_handlers["editor_shortcut_pressed"] = &ScriptEditorDebugger::_msg_editor_shortcut_pressed;
 }
 
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
@@ -2085,7 +2104,6 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
 	ADD_SIGNAL(MethodInfo("errors_cleared"));
-	ADD_SIGNAL(MethodInfo("embed_shortcut_requested", PropertyInfo(Variant::INT, "embed_shortcut_action")));
 }
 
 void ScriptEditorDebugger::add_debugger_tab(Control *p_control) {
@@ -2270,6 +2288,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		inspector->connect("object_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
 		inspector->connect("objects_edited", callable_mp(this, &ScriptEditorDebugger::_remote_objects_edited));
 		inspector->connect("object_property_updated", callable_mp(this, &ScriptEditorDebugger::_remote_object_property_updated));
+		inspector->connect("canvas_item_objects_changed", callable_mp(this, &ScriptEditorDebugger::change_canvas_item_objects));
 		inspector->register_text_enter(search);
 		inspector->set_use_filter(true);
 		inspector_vbox->add_child(inspector);

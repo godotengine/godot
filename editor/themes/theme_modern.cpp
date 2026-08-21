@@ -2212,6 +2212,16 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
 		}
 
+		// VSeparatorButtonGroup.
+		{
+			p_theme->set_type_variation("VSeparatorButtonGroup", "VSeparator");
+
+			Ref<StyleBoxLine> style_v_separator = p_theme->get_stylebox(SNAME("separator"), SNAME("VSeparator"))->duplicate();
+			style_v_separator->set_color(p_config.base_color);
+
+			p_theme->set_stylebox("separator", "VSeparatorButtonGroup", style_v_separator);
+		}
+
 		// TreeLineEdit.
 		{
 			Ref<StyleBoxFlat> tree_line_edit_style = p_theme->get_stylebox(CoreStringName(normal), SNAME("LineEdit"))->duplicate();

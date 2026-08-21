@@ -429,7 +429,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 			return false;
 		}
 
-		Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
+		Vector2 cpoint = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
 		cpoint = node->get_viewport()->get_popup_base_transform().affine_inverse().xform(cpoint);
 		cpoint = original_transform.affine_inverse().xform(cpoint);
 		last_point = cpoint;

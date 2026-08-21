@@ -237,13 +237,12 @@ private:
 	void _msg_remote_objects_selected(uint64_t p_thread_id, const Array &p_data);
 	void _msg_remote_nothing_selected(uint64_t p_thread_id, const Array &p_data);
 	void _msg_remote_selection_invalidated(uint64_t p_thread_id, const Array &p_data);
-	void _msg_show_selection_limit_warning(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_undo_redo_action(uint64_t p_thread_id, const Array &p_data);
 	void _msg_performance_profile_names(uint64_t p_thread_id, const Array &p_data);
 	void _msg_filesystem_update_file(uint64_t p_thread_id, const Array &p_data);
 	void _msg_evaluation_return(uint64_t p_thread_id, const Array &p_data);
 	void _msg_window_title(uint64_t p_thread_id, const Array &p_data);
-	void _msg_embed_suspend_toggle(uint64_t p_thread_id, const Array &p_data);
-	void _msg_embed_next_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_editor_shortcut_pressed(uint64_t p_thread_id, const Array &p_data);
 
 	void _parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data);
 	void _set_reason_text(const String &p_reason, MessageType p_type);
@@ -308,13 +307,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum EmbedShortcutAction {
-		EMBED_SUSPEND_TOGGLE,
-		EMBED_NEXT_FRAME,
-	};
-
 	void request_remote_objects(const TypedArray<uint64_t> &p_obj_ids, bool p_update_selection = true);
 	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field = "");
+	void change_canvas_item_objects(const Dictionary &p_states);
 
 	void clear_inspector(bool p_send_msg = true);
 

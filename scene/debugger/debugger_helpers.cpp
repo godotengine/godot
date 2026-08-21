@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  visible_on_screen_notifier_2d.h                                       */
+/*  debugger_helpers.cpp                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,85 +28,38 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
-
-#include "scene/2d/node_2d.h"
-
-class Viewport;
-class VisibleOnScreenNotifier2D : public Node2D {
-	GDCLASS(VisibleOnScreenNotifier2D, Node2D);
-
-	Rect2 rect;
-	bool show_rect = true;
-
-private:
-	bool on_screen = false;
-	void _visibility_enter();
-	void _visibility_exit();
-
-protected:
-	virtual void _screen_enter() {}
-	virtual void _screen_exit() {}
-
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
 #ifdef DEBUG_ENABLED
-	virtual Dictionary _edit_get_state() const override;
-	virtual void _edit_set_state(const Dictionary &p_state) override;
+#include "debugger_helpers.h"
 
-	virtual Vector2 _edit_get_minimum_size() const override { return Vector2(); }
+#include "core/input/input.h"
+#include "core/input/shortcut.h"
 
-	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
+bool DebuggerHelpers::is_shortcut_pressed(const int p_idx, const HashMap<int, Ref<Shortcut>> &p_shortcuts, bool p_true_if_empty) {
+	ERR_FAIL_INDEX_V(p_idx, (int)p_shortcuts.size(), p_true_if_empty);
+	if (is_shortcut_empty(p_idx, p_shortcuts)) {
+		return p_true_if_empty;
+	}
 
-	virtual Rect2 _edit_get_rect() const override;
+	Ref<Shortcut> shortcut = p_shortcuts[p_idx];
+	for (Ref<InputEventKey> k : shortcut->get_events()) {
+		if (k.is_null()) {
+			continue;
+		}
 
-	virtual bool _edit_use_rect() const override;
+		if (k->get_physical_keycode() == Key::NONE && Input::get_singleton()->is_key_pressed(k->get_keycode())) {
+			return true;
+		} else if (Input::get_singleton()->is_physical_key_pressed(k->get_physical_keycode())) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool DebuggerHelpers::is_shortcut_empty(const int p_idx, const HashMap<int, Ref<Shortcut>> &p_shortcuts) {
+	ERR_FAIL_INDEX_V(p_idx, (int)p_shortcuts.size(), true);
+	Ref<Shortcut> shortcut = p_shortcuts[p_idx];
+	return shortcut.is_null() || shortcut->get_events().is_empty();
+}
+
 #endif // DEBUG_ENABLED
-
-	void set_rect(const Rect2 &p_rect);
-	Rect2 get_rect() const;
-
-	void set_show_rect(bool p_show_rect);
-	bool is_showing_rect() const;
-
-	bool is_on_screen() const;
-
-	VisibleOnScreenNotifier2D();
-};
-
-class VisibleOnScreenEnabler2D : public VisibleOnScreenNotifier2D {
-	GDCLASS(VisibleOnScreenEnabler2D, VisibleOnScreenNotifier2D);
-
-public:
-	enum EnableMode {
-		ENABLE_MODE_INHERIT,
-		ENABLE_MODE_ALWAYS,
-		ENABLE_MODE_WHEN_PAUSED,
-	};
-
-protected:
-	ObjectID node_id;
-	virtual void _screen_enter() override;
-	virtual void _screen_exit() override;
-
-	EnableMode enable_mode = ENABLE_MODE_INHERIT;
-	NodePath enable_node_path = NodePath("..");
-
-	void _notification(int p_what);
-	static void _bind_methods();
-
-	void _update_enable_mode(bool p_enable);
-
-public:
-	void set_enable_mode(EnableMode p_mode);
-	EnableMode get_enable_mode();
-
-	void set_enable_node_path(NodePath p_path);
-	NodePath get_enable_node_path();
-
-	VisibleOnScreenEnabler2D();
-};
-
-VARIANT_ENUM_CAST(VisibleOnScreenEnabler2D::EnableMode);
