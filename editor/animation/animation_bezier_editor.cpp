@@ -406,6 +406,10 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				track_indices[base_path] = indices;
 			}
 
+			if (editor->is_sorting_alphabetically()) {
+				track_order.sort();
+			}
+
 			const Color dc = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
 
 			Ref<Texture2D> remove = get_editor_theme_icon(SNAME("Remove"));
