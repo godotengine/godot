@@ -307,6 +307,9 @@ void AudioStreamPlayer2D::_validate_property(PropertyInfo &p_property) const {
 void AudioStreamPlayer2D::set_max_distance(float p_pixels) {
 	ERR_FAIL_COND(p_pixels <= 0.0);
 	max_distance = p_pixels;
+#ifdef DEBUG_ENABLED
+	queue_redraw();
+#endif // DEBUG_ENABLED
 }
 
 float AudioStreamPlayer2D::get_max_distance() const {
@@ -315,6 +318,9 @@ float AudioStreamPlayer2D::get_max_distance() const {
 
 void AudioStreamPlayer2D::set_attenuation(float p_curve) {
 	attenuation = p_curve;
+#ifdef DEBUG_ENABLED
+	queue_redraw();
+#endif // DEBUG_ENABLED
 }
 
 float AudioStreamPlayer2D::get_attenuation() const {
