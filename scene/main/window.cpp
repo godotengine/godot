@@ -424,11 +424,6 @@ void Window::set_size(const Size2i &p_size) {
 	_settings_changed();
 }
 
-Size2i Window::get_size() const {
-	ERR_READ_THREAD_GUARD_V(Size2i());
-	return size;
-}
-
 void Window::reset_size() {
 	ERR_MAIN_THREAD_GUARD;
 	set_size(Size2i());
@@ -3393,7 +3388,6 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_to_center"), &Window::move_to_center);
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Window::set_size);
-	ClassDB::bind_method(D_METHOD("get_size"), &Window::get_size);
 	ClassDB::bind_method(D_METHOD("reset_size"), &Window::reset_size);
 
 	ClassDB::bind_method(D_METHOD("get_position_with_decorations"), &Window::get_position_with_decorations);

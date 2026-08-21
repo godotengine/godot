@@ -31,6 +31,7 @@
 #include "subviewport_container.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 
@@ -92,7 +93,23 @@ void SubViewportContainer::recalc_force_viewport_sizes() {
 			continue;
 		}
 
-		c->set_size_force(get_size() / shrink);
+		Size2 render_size = get_size();
+
+		if (get_viewport() != nullptr) {
+			Size2i parent_size_2d_override = get_viewport()->get_size_2d_override();
+			if (parent_size_2d_override.width > 0 && parent_size_2d_override.height > 0) {
+				// Remap from "2d override" resolution that this container is working in, to the actual render resolution
+				Size2i parent_size = get_viewport()->get_size();
+				int actual_width = parent_size.x * get_size().x / parent_size_2d_override.x;
+				int actual_height = parent_size.y * get_size().y / parent_size_2d_override.y;
+				render_size = Size2i(actual_width, actual_height);
+
+				// Ensure subviewports work in the overridden resolution
+				c->set_size_2d_override(get_size());
+			}
+		}
+
+		c->set_size_force(render_size / shrink);
 	}
 }
 
@@ -114,7 +131,11 @@ void SubViewportContainer::_notification(int p_what) {
 			recalc_force_viewport_sizes();
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
+			// Capture parent viewport resizing as target resolution may change while canvas resolution is unchanged
+			get_viewport()->connect("size_changed", callable_mp(this, &SubViewportContainer::recalc_force_viewport_sizes));
+			[[fallthrough]];
+		}
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			for (int i = 0; i < get_child_count(); i++) {
 				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
