@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "drivers/metal/metal_allocator.h"
 #include "drivers/metal/metal_device_properties.h"
 #include "drivers/metal/metal_utils.h"
 #include "drivers/metal/pixel_formats.h"
@@ -97,6 +98,26 @@ struct ClearAttKey {
 	}
 };
 
+#pragma mark - Cached Buffer
+
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDCachedBuffer {
+	MTL::Buffer *buffer = nullptr;
+	void *contents = nullptr;
+	uint64_t gpu_address = 0;
+	NS::UInteger length = 0;
+
+	MDCachedBuffer() = default;
+
+	explicit MDCachedBuffer(MTL::Buffer *p_buffer) :
+			buffer(p_buffer),
+			contents(p_buffer->contents()),
+			length(p_buffer->length()) {
+		if (__builtin_available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+			gpu_address = p_buffer->gpuAddress();
+		}
+	}
+};
+
 #pragma mark - Ring Buffer
 
 /// A ring buffer backed by MTLBuffer instances for transient GPU allocations.
@@ -118,7 +139,10 @@ public:
 	};
 
 private:
-	MTL::Device *device = nullptr;
+	MetalAllocator *allocator = nullptr;
+	LocalVector<MetalBuffer> segments;
+	LocalVector<MDCachedBuffer> cached_buffers;
+	// Mirror of the raw `MTL::Buffer *` of each segment, for encoder residency.
 	LocalVector<MTL::Buffer *> buffers;
 	LocalVector<uint32_t> heads;
 	uint32_t current_segment = 0;
@@ -126,23 +150,26 @@ private:
 	bool changed = false;
 
 	_FORCE_INLINE_ uint32_t alloc_segment() {
-		MTL::Buffer *buffer = device->newBuffer(buffer_size, MTL::ResourceStorageModeShared | MTL::ResourceHazardTrackingModeUntracked);
+		MetalBuffer segment = allocator->new_buffer(buffer_size, MTL::ResourceStorageModeShared | MTL::ResourceHazardTrackingModeUntracked);
+		MTL::Buffer *buffer = segment.buffer.get();
+		segments.push_back(segment);
+		cached_buffers.push_back(MDCachedBuffer(buffer));
 		buffers.push_back(buffer);
 		heads.push_back(0);
 		changed = true;
 
-		return buffers.size() - 1;
+		return cached_buffers.size() - 1;
 	}
 
 public:
 	MDRingBuffer() = default;
 
-	MDRingBuffer(MTL::Device *p_device, uint32_t p_buffer_size = DEFAULT_BUFFER_SIZE) :
-			device(p_device), buffer_size(p_buffer_size) {}
+	MDRingBuffer(MetalAllocator *p_allocator, uint32_t p_buffer_size = DEFAULT_BUFFER_SIZE) :
+			allocator(p_allocator), buffer_size(p_buffer_size) {}
 
 	~MDRingBuffer() {
-		for (MTL::Buffer *buffer : buffers) {
-			buffer->release();
+		for (MetalBuffer &segment : segments) {
+			allocator->free_buffer(segment);
 		}
 	}
 
@@ -152,7 +179,7 @@ public:
 		p_size = MAX(p_size, MIN_BLOCK_SIZE);
 		p_size = (p_size + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
 
-		if (buffers.is_empty()) {
+		if (cached_buffers.is_empty()) {
 			alloc_segment();
 		}
 
@@ -161,7 +188,7 @@ public:
 		if (aligned_head + p_size > buffer_size) {
 			// Current segment exhausted, try to find one with space or allocate new.
 			bool found = false;
-			for (uint32_t i = 0; i < buffers.size(); i++) {
+			for (uint32_t i = 0; i < cached_buffers.size(); i++) {
 				uint32_t ah = (heads[i] + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
 				if (ah + p_size <= buffer_size) {
 					current_segment = i;
@@ -177,14 +204,12 @@ public:
 			}
 		}
 
-		MTL::Buffer *buffer = buffers[current_segment];
+		MDCachedBuffer &cb = cached_buffers[current_segment];
 		Allocation alloc;
-		alloc.buffer = buffer;
+		alloc.buffer = cb.buffer;
 		alloc.offset = aligned_head;
-		alloc.ptr = static_cast<uint8_t *>(buffer->contents()) + aligned_head;
-		if (__builtin_available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
-			alloc.gpu_address = buffer->gpuAddress() + aligned_head;
-		}
+		alloc.ptr = static_cast<uint8_t *>(cb.contents) + aligned_head;
+		alloc.gpu_address = cb.gpu_address + aligned_head;
 		heads[current_segment] = aligned_head + p_size;
 
 		return alloc;
@@ -974,7 +999,7 @@ _FORCE_INLINE_ MTL::ResourceUsage resource_usage_for_stage(StageResourceUsage p_
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDUniformSet {
 public:
-	NS::SharedPtr<MTL::Buffer> arg_buffer;
+	MetalBuffer arg_buffer;
 	Vector<uint8_t> arg_buffer_data; // Stored for dynamic uniform sets.
 	ResourceUsageMap usage_to_resources; // Used by Metal 3 for resource tracking.
 	Vector<RDD::BoundUniform> uniforms;
