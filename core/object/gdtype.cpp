@@ -55,6 +55,11 @@ GDType::~GDType() {
 	for (MethodBind *bind : owned_method_map) {
 		memdelete(bind);
 	}
+	for (const KeyValue<StringName, LocalVector<MethodBind *>> &kv : self_compatibility_method_map) {
+		for (MethodBind *bind : kv.value) {
+			memdelete(bind);
+		}
+	}
 	for (const PropertyInfo *property : ordered_self_properties) {
 		memdelete(const_cast<PropertyInfo *>(property));
 	}
@@ -74,6 +79,7 @@ void GDType::initialize() {
 		enum_map = super_type->enum_map;
 		signal_map = super_type->signal_map;
 		method_map = super_type->method_map;
+		compatibility_method_map = super_type->compatibility_method_map;
 		property_map = super_type->property_map;
 	}
 
@@ -170,6 +176,21 @@ void GDType::set_method_flags(const StringName &p_method, int p_flags) {
 	ERR_FAIL_NULL(method);
 
 	const_cast<MethodBind *>(*method)->set_hint_flags(p_flags);
+}
+
+bool GDType::bind_compatibility_method(MethodBind *p_method) {
+	ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+	ERR_FAIL_COND_V(init_state != InitState::MUTABLE, false);
+
+	if (!compatibility_method_map.has(p_method->get_name())) {
+		compatibility_method_map.insert(p_method->get_name(), LocalVector<MethodBind *>());
+	}
+	if (!self_compatibility_method_map.has(p_method->get_name())) {
+		self_compatibility_method_map.insert(p_method->get_name(), LocalVector<MethodBind *>());
+	}
+	compatibility_method_map[p_method->get_name()].push_back(p_method);
+	self_compatibility_method_map[p_method->get_name()].push_back(p_method);
+	return true;
 }
 
 void GDType::add_property(const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter,
