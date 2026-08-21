@@ -922,10 +922,6 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 
 shader_type spatial;
 
-void vertex() {
-	ROUGHNESS = 0.8;
-}
-
 void fragment() {
 	ALBEDO = vec3(0.6);
 	ROUGHNESS = 0.8;
