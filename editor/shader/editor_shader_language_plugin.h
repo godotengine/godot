@@ -32,6 +32,7 @@
 
 #include "scene/resources/shader.h"
 
+class OptionButton;
 class EditorShaderLanguagePlugin : public RefCounted {
 	GDCLASS(EditorShaderLanguagePlugin, RefCounted);
 
@@ -46,8 +47,16 @@ public:
 	static Ref<EditorShaderLanguagePlugin> get_shader_language_for_index(int p_index);
 	static String get_file_extension_for_index(int p_index);
 
+	enum {
+		DEFAULT_TEMPLATE,
+		DEFAULT_TEMPLATE_MAX,
+	};
+
 	virtual Ref<Shader> create_new_shader(int p_variation_index, Shader::Mode p_shader_mode, int p_template_index) = 0;
 	virtual Ref<ShaderInclude> create_new_shader_include() { return Ref<ShaderInclude>(); }
 	virtual PackedStringArray get_language_variations() const = 0;
 	virtual String get_file_extension(int p_variation_index) const { return "tres"; }
+	virtual void add_template_options(OptionButton *p_option_button, Shader::Mode p_shader_mode) const {}
+	virtual int get_template_count(Shader::Mode p_shader_mode) const { return DEFAULT_TEMPLATE_MAX; }
+	virtual bool get_template_option(Shader::Mode p_shader_mode, int p_template_index, StringName &r_icon_name, String &r_label) const { return false; }
 };
