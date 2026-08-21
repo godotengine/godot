@@ -115,7 +115,7 @@ void Polygon2D::_notification(int p_what) {
 				skeleton_node = Object::cast_to<Skeleton2D>(get_node(skeleton));
 			}
 
-			ObjectID new_skeleton_id = 0;
+			ObjectID new_skeleton_id;
 
 			if (skeleton_node) {
 				VS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), skeleton_node->get_skeleton());
@@ -672,7 +672,6 @@ Polygon2D::Polygon2D() {
 	color = Color(1, 1, 1);
 	rect_cache_dirty = true;
 	internal_vertices = 0;
-	current_skeleton_id = 0;
 }
 
 Polygon2D::~Polygon2D() {
