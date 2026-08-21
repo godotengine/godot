@@ -879,7 +879,9 @@ void Main::test_cleanup() {
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
 
+#ifdef DEBUG_ENABLED
 	EngineDebugger::deinitialize();
+#endif
 	OS::get_singleton()->finalize();
 
 	memdelete(packed_data);
@@ -1041,7 +1043,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String audio_driver = "";
 	String project_path = ".";
 
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 	String debug_uri = "";
 	bool skip_breakpoints = false;
 	bool ignore_error_breaks = false;
@@ -1838,7 +1840,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif // defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) || defined(ANDROID_ENABLED)
 
 		} else if (arg == "-d" || arg == "--debug") {
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 			debug_uri = "local://";
 			OS::get_singleton()->_debug_stdout = true;
 #else
@@ -1870,7 +1872,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			test_rd_creation = true;
 #endif // defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 		} else if (arg == "--remote-debug") {
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 			if (N) {
 				debug_uri = N->get();
 				if (!debug_uri.contains("://")) { // wrong address
@@ -2257,7 +2259,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_errors_per_second", PROPERTY_HINT_RANGE, "1,200,1,or_greater"), 400);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_warnings_per_second", PROPERTY_HINT_RANGE, "1,200,1,or_greater"), 400);
 
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 	EngineDebugger::initialize(debug_uri, skip_breakpoints, ignore_error_breaks, breakpoints, []() {
 #ifdef TOOLS_ENABLED
 		if (editor_pid) {
@@ -2950,7 +2952,9 @@ error:
 		OS::get_singleton()->remove_lock_file();
 	}
 
+#ifdef DEBUG_ENABLED
 	EngineDebugger::deinitialize();
+#endif
 
 	memdelete(performance);
 	memdelete(input_map);
@@ -5057,7 +5061,9 @@ bool Main::iteration() {
 
 	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;
 	process_max = MAX(process_ticks, process_max);
+#ifdef DEBUG_ENABLED
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
+#endif
 
 	GodotProfileZoneGrouped(_profile_zone, "GDExtensionManager::frame");
 	GDExtensionManager::get_singleton()->frame();
@@ -5070,9 +5076,11 @@ bool Main::iteration() {
 	GodotProfileZoneGrouped(_profile_zone, "AudioServer::update");
 	AudioServer::get_singleton()->update();
 
+#ifdef DEBUG_ENABLED
 	if (EngineDebugger::is_active()) {
 		EngineDebugger::get_singleton()->iteration(frame_time, process_ticks, physics_process_ticks, physics_step);
 	}
+#endif
 
 	frames++;
 	Engine::get_singleton()->_process_frames++;
@@ -5281,7 +5289,9 @@ void Main::cleanup(bool p_force) {
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
 
+#ifdef DEBUG_ENABLED
 	EngineDebugger::deinitialize();
+#endif
 
 #ifndef XR_DISABLED
 	memdelete(xr_server);

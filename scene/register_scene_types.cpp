@@ -1317,7 +1317,9 @@ void register_scene_types() {
 #endif //_3D_DISABLED
 	}
 
+#ifdef DEBUG_ENABLED
 	SceneDebugger::initialize();
+#endif
 
 	OS::get_singleton()->benchmark_end_measure("Scene", "Register Types");
 }
@@ -1325,7 +1327,9 @@ void register_scene_types() {
 void unregister_scene_types() {
 	OS::get_singleton()->benchmark_begin_measure("Scene", "Unregister Types");
 
+#ifdef DEBUG_ENABLED
 	SceneDebugger::deinitialize();
+#endif
 
 	if constexpr (GD_IS_CLASS_ENABLED(TextureLayered)) {
 		ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);

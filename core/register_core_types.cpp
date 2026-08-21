@@ -111,7 +111,9 @@ static CoreBind::OS *_os = nullptr;
 static CoreBind::Engine *_engine = nullptr;
 static CoreBind::Special::ClassDB *_classdb = nullptr;
 static CoreBind::Marshalls *_marshalls = nullptr;
+#if defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
 static CoreBind::EngineDebugger *_engine_debugger = nullptr;
+#endif
 
 static IP *ip = nullptr;
 static Time *_time = nullptr;
@@ -305,7 +307,9 @@ void register_core_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(ResourceUID);
 
+#if defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
 	GDREGISTER_CLASS(EngineProfiler);
+#endif
 
 	GDREGISTER_CLASS(FuzzySearch);
 	GDREGISTER_CLASS(FuzzySearchMatch);
@@ -328,7 +332,9 @@ void register_core_types() {
 	GDREGISTER_CLASS(CoreBind::Engine);
 	GDREGISTER_CLASS(CoreBind::Special::ClassDB);
 	GDREGISTER_CLASS(CoreBind::Marshalls);
+#if defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
 	GDREGISTER_CLASS(CoreBind::EngineDebugger);
+#endif
 
 	GDREGISTER_CLASS(TranslationServer);
 	GDREGISTER_ABSTRACT_CLASS(Input);
@@ -347,7 +353,9 @@ void register_core_types() {
 	_engine = memnew(CoreBind::Engine);
 	_classdb = memnew(CoreBind::Special::ClassDB);
 	_marshalls = memnew(CoreBind::Marshalls);
+#if defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
 	_engine_debugger = memnew(CoreBind::EngineDebugger);
+#endif
 
 	GDREGISTER_NATIVE_STRUCT(ObjectID, "uint64_t id = 0");
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
@@ -388,7 +396,9 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
+#if defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
 	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", CoreBind::EngineDebugger::get_singleton()));
+#endif
 	Engine::get_singleton()->add_singleton(Engine::Singleton("GDExtensionManager", GDExtensionManager::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceUID", ResourceUID::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("WorkerThreadPool", worker_thread_pool));
@@ -426,7 +436,9 @@ void unregister_core_types() {
 
 	memdelete(worker_thread_pool);
 
+#if defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
 	memdelete(_engine_debugger);
+#endif
 	memdelete(_marshalls);
 	memdelete(_classdb);
 	memdelete(_engine);

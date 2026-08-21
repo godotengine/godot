@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #include "servers_debugger.h"
 
 #include "core/config/engine.h"
@@ -536,3 +538,5 @@ ServersDebugger::~ServersDebugger() {
 	EngineDebugger::unregister_message_capture("servers");
 	singleton = nullptr;
 }
+
+#endif // DEBUG_ENABLED

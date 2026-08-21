@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef DEBUG_ENABLED
+
 #include "core/object/ref_counted.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
@@ -98,3 +100,5 @@ public:
 	RemoteDebuggerPeerTCP();
 	~RemoteDebuggerPeerTCP();
 };
+
+#endif // DEBUG_ENABLED

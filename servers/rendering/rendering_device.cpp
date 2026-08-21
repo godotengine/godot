@@ -5936,7 +5936,7 @@ void RenderingDevice::draw_list_bind_vertex_buffers_format(DrawListID p_list, Ve
 
 	FixedVector<RDG::ResourceTracker *, 32> draw_trackers;
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	uint32_t max_instances_allowed = 0xFFFFFFFF;
 #endif
 
@@ -5953,7 +5953,7 @@ void RenderingDevice::draw_list_bind_vertex_buffers_format(DrawListID p_list, Ve
 
 		_check_transfer_worker_buffer(buffer);
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 		uint64_t binding_offset = offsets_span[i];
 		ERR_FAIL_COND_MSG(binding_offset > buffer->size, "Vertex buffer offset for attachment (" + itos(i) + ") exceeds buffer size.");
 

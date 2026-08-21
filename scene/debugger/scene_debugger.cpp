@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #include "scene_debugger.h"
 
 #include "core/config/engine.h"
@@ -60,23 +62,18 @@
 #include "scene/3d/camera_3d.h"
 #endif
 
-#ifdef DEBUG_ENABLED
 #include "scene/debugger/runtime_node_select.h"
-#endif
 
 SceneDebugger::SceneDebugger() {
 	singleton = this;
 
-#ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
 	RuntimeNodeSelect::singleton = memnew(RuntimeNodeSelect);
 
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
-#endif
 }
 
 SceneDebugger::~SceneDebugger() {
-#ifdef DEBUG_ENABLED
 	if (LiveEditor::singleton) {
 		EngineDebugger::unregister_message_capture("scene");
 		memdelete(LiveEditor::singleton);
@@ -87,16 +84,13 @@ SceneDebugger::~SceneDebugger() {
 		memdelete(RuntimeNodeSelect::singleton);
 		RuntimeNodeSelect::singleton = nullptr;
 	}
-#endif // DEBUG_ENABLED
 
 	singleton = nullptr;
 }
 
 void SceneDebugger::initialize() {
 	if (EngineDebugger::is_active()) {
-#ifdef DEBUG_ENABLED
 		_init_message_handlers();
-#endif
 		memnew(SceneDebugger);
 	}
 }
@@ -104,8 +98,6 @@ void SceneDebugger::initialize() {
 void SceneDebugger::deinitialize() {
 	memdelete(singleton);
 }
-
-#ifdef DEBUG_ENABLED
 
 void SceneDebugger::_handle_input(const Ref<InputEvent> &p_event, const Ref<Shortcut> &p_shortcut) {
 	Ref<InputEventKey> k = p_event;
@@ -1338,4 +1330,5 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 		}
 	}
 }
+
 #endif // DEBUG_ENABLED

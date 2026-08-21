@@ -465,8 +465,10 @@ class GDScriptLanguage : public ScriptLanguage {
 #endif
 
 public:
+#ifdef DEBUG_ENABLED
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
+#endif
 
 	_FORCE_INLINE_ void enter_function(CallLevel *call_level, GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
 		if (!track_call_stack) {

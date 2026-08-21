@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #ifndef _3D_DISABLED
 
 #include "view_3d_controller.h"
@@ -819,3 +821,5 @@ void View3DController::_bind_methods() {
 }
 
 #endif // _3D_DISABLED
+
+#endif // DEBUG_ENABLED

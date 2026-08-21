@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
@@ -397,3 +399,5 @@ LocalDebugger::~LocalDebugger() {
 	unregister_profiler("scripts");
 	memdelete(scripts_profiler);
 }
+
+#endif // DEBUG_ENABLED

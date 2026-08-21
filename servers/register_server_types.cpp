@@ -271,7 +271,9 @@ void register_server_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(MovieWriter);
 
+#ifdef DEBUG_ENABLED
 	ServersDebugger::initialize();
+#endif
 
 #ifndef NAVIGATION_2D_DISABLED
 	GDREGISTER_CLASS(NavigationServer2DManager);
@@ -382,7 +384,9 @@ void register_server_types() {
 void unregister_server_types() {
 	OS::get_singleton()->benchmark_begin_measure("Servers", "Unregister Extensions");
 
+#ifdef DEBUG_ENABLED
 	ServersDebugger::deinitialize();
+#endif
 	memdelete(shader_types);
 	if constexpr (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
 		memdelete(writer_pngwav);
