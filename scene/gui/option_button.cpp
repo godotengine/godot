@@ -32,6 +32,7 @@
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "scene/gui/label.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
@@ -487,9 +488,16 @@ void OptionButton::_refresh_size_cache() {
 
 	if (fit_to_longest_item) {
 		_cached_size = theme_cache.normal->get_minimum_size();
+		Label *label = _get_text_label();
+		String prev_text = label->get_text();
+		Ref<Texture2D> prev_icon = get_button_icon();
 		for (int i = 0; i < get_item_count(); i++) {
-			_cached_size = _cached_size.max(get_minimum_size_for_text_and_icon(popup->get_item_xl_text(i), get_item_icon(i)));
+			label->set_text(popup->get_item_xl_text(i));
+			set_button_icon(get_item_icon(i));
+			_cached_size = _cached_size.max(Button::get_minimum_size());
 		}
+		label->set_text(prev_text);
+		set_button_icon(prev_icon);
 	}
 	update_minimum_size();
 }
