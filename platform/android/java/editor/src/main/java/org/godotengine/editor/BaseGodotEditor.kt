@@ -98,6 +98,10 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val EXTRA_IS_GAME_EMBEDDED = "is_game_embedded"
 		internal const val EXTRA_IS_GAME_RUNNING = "is_game_running"
 
+		// Benchmarking extras.
+		private const val EXTRA_LOAD_EMPTY_BENCHMARK_PROJECT = "load_empty_benchmark_project"
+		private const val EXTRA_BENCHMARK_RENDERING_METHOD = "benchmark_rendering_method"
+
 		// Command line arguments.
 		private const val FULLSCREEN_ARG = "--fullscreen"
 		private const val FULLSCREEN_ARG_SHORT = "-f"
@@ -173,11 +177,21 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		private const val PREF_KEY_DONT_SHOW_GAME_RESUME_HINT = "pref_key_dont_show_game_resume_hint"
 
 		@JvmStatic
-		fun isRunningInInstrumentation(): Boolean {
+		fun isRunningInInstrumentationOrUserTestHarness(): Boolean {
+			// Check if running in user test harness.
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && ActivityManager.isRunningInUserTestHarness()) {
+				return true
+			}
+
 			if (BuildConfig.BUILD_TYPE == "release") {
 				return false
 			}
 
+			if (BuildConfig.BUILD_TYPE == "benchmark") {
+				return true
+			}
+
+			// Check if running in instrumentation.
 			return try {
 				Class.forName("org.godotengine.editor.GodotEditorTest")
 				true
@@ -256,6 +270,10 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		return mutableSetOf()
 	}
 
+	override fun shouldSanitizeLaunchIntent(): Boolean {
+		return BuildConfig.BUILD_TYPE == "release" || (isRunningInInstrumentationOrUserTestHarness() && BuildConfig.BUILD_TYPE != "benchmark")
+	}
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		installSplashScreen()
 
@@ -266,8 +284,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Skip permissions request if running in a device farm (e.g. firebase test lab) or if requested via the launch
 		// intent (e.g. instrumentation tests).
-		val skipPermissionsRequest = isRunningInInstrumentation() ||
-			Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && ActivityManager.isRunningInUserTestHarness()
+		val skipPermissionsRequest = isRunningInInstrumentationOrUserTestHarness()
 		if (!skipPermissionsRequest) {
 			// We exclude certain permissions from the set we request at startup, as they'll be
 			// requested on demand based on use cases.
@@ -440,6 +457,51 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 					}
 				}
 			}
+
+			else -> {
+				if (BuildConfig.BUILD_TYPE == "benchmark") {
+					val benchmarkRenderingMethod = intent.getStringExtra(EXTRA_BENCHMARK_RENDERING_METHOD)
+					if (!benchmarkRenderingMethod.isNullOrBlank()) {
+						updatedCommandLineParams.addAll(arrayOf("--rendering-method", benchmarkRenderingMethod))
+					}
+
+					val shouldLoadEmptyBenchmarkProject = intent.getBooleanExtra(EXTRA_LOAD_EMPTY_BENCHMARK_PROJECT, false)
+					if (shouldLoadEmptyBenchmarkProject) {
+						val projectParentDir = getExternalFilesDir(null)
+						if (projectParentDir != null) {
+							val benchmarkDir = File(projectParentDir, "godot_benchmark")
+							try {
+								Log.v(TAG, "Benchmark directory is $benchmarkDir")
+								if (!benchmarkDir.exists()) {
+									if (benchmarkDir.mkdirs()) {
+										Log.v(TAG, "Created benchmark directory: $benchmarkDir")
+									} else {
+										Log.e(TAG, "Unable to create editor benchmark directory")
+									}
+								}
+
+								val projectMetadata = File(benchmarkDir, "project.godot")
+								if (projectMetadata.createNewFile()) {
+									Log.v(TAG, "Created project metadata file: $projectMetadata")
+								}
+
+								// Load the empty project.
+								updatedCommandLineParams.addAll(
+									arrayOf(
+										EDITOR_ARG,
+										PATH_ARG,
+										benchmarkDir.canonicalPath
+									)
+								)
+							} catch(e: Exception) {
+								Log.e(TAG, "Unable to set up benchmark directory", e)
+							}
+						} else {
+							Log.e(TAG, "Unable to access empty benchmark project directory.")
+						}
+					}
+				}
+			}
 		}
 
 		super.handleStartIntent(intent, newLaunch)
@@ -536,7 +598,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		if (updatedCommandLineParams.isNotEmpty()) {
 			params.addAll(updatedCommandLineParams)
 		}
-		if (BuildConfig.BUILD_TYPE == "debug" && !params.contains("--benchmark")) {
+		if ((BuildConfig.BUILD_TYPE == "debug" || BuildConfig.BUILD_TYPE == "benchmark") && !params.contains("--benchmark")) {
 			params.add("--benchmark")
 		}
 		return params
@@ -687,7 +749,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun onGodotForceQuit(instance: Godot) {
-		if (!isRunningInInstrumentation()) {
+		if (!isRunningInInstrumentationOrUserTestHarness()) {
 			// For instrumented tests, we disable force-quitting to allow the tests to complete successfully, otherwise
 			// they fail when the process crashes.
 			super.onGodotForceQuit(instance)
