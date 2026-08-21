@@ -43,8 +43,13 @@ Vector<Vector3> SeparationRayShape3D::get_debug_mesh_lines() const {
 	return points;
 }
 
-Ref<ArrayMesh> SeparationRayShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
-	return memnew(ArrayMesh);
+Ref<ArrayMesh> SeparationRayShape3D::get_debug_arraymesh_faces(const Color &p_modulate) {
+	if (debug_mesh_faces_cache.is_valid()) {
+		return debug_mesh_faces_cache;
+	}
+	print_line("SeparationRayShape3D Cache Miss");
+	debug_mesh_faces_cache = memnew(ArrayMesh);
+	return debug_mesh_faces_cache;
 }
 
 real_t SeparationRayShape3D::get_enclosing_radius() const {
