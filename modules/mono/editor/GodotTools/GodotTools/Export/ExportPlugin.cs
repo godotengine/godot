@@ -227,19 +227,6 @@ namespace GodotTools.Export
 
             var targets = new List<PublishConfig> { publishConfig };
 
-            if (platform == OS.Platforms.iOS)
-            {
-                targets.Add(new PublishConfig
-                {
-                    BuildConfig = publishConfig.BuildConfig,
-                    Archs = ["arm64", "x86_64"],
-                    BundleOutputs = false,
-                    IncludeDebugSymbols = publishConfig.IncludeDebugSymbols,
-                    RidOS = OS.DotNetOS.iOSSimulator,
-                    UseTempDir = false,
-                });
-            }
-
             List<string> outputPaths = new();
 
             bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android) && platform != OS.Platforms.MacOS;
@@ -292,7 +279,7 @@ namespace GodotTools.Export
                     string soExt = ridOS switch
                     {
                         OS.DotNetOS.Win or OS.DotNetOS.Win10 => "dll",
-                        OS.DotNetOS.OSX or OS.DotNetOS.iOS or OS.DotNetOS.iOSSimulator => "dylib",
+                        OS.DotNetOS.OSX or OS.DotNetOS.iOS => "dylib",
                         _ => "so"
                     };
 
@@ -429,24 +416,6 @@ namespace GodotTools.Export
 
             if (platform == OS.Platforms.iOS)
             {
-                if (outputPaths.Count > 2)
-                {
-                    // lipo the simulator binaries together
-
-                    string outputPath = Path.Combine(outputPaths[1], $"{GodotSharpDirs.ProjectAssemblyName}.dylib");
-                    string[] files = outputPaths
-                        .Skip(1)
-                        .Select(path => Path.Combine(path, $"{GodotSharpDirs.ProjectAssemblyName}.dylib"))
-                        .ToArray();
-
-                    if (!Internal.LipOCreateFile(outputPath, files))
-                    {
-                        throw new InvalidOperationException($"Failed to 'lipo' simulator binaries.");
-                    }
-
-                    outputPaths.RemoveRange(2, outputPaths.Count - 2);
-                }
-
                 string xcFrameworkPath = Path.Combine(GodotSharpDirs.ProjectBaseOutputPath, publishConfig.BuildConfig, $"{GodotSharpDirs.ProjectAssemblyName}_aot.xcframework");
                 if (!BuildManager.GenerateXCFrameworkBlocking(outputPaths, xcFrameworkPath))
                 {

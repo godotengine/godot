@@ -633,16 +633,8 @@ def detect_darwin_sdk_path(platform, env):
         sdk_name = "iphoneos"
         var_name = "APPLE_SDK_PATH"
 
-    elif platform == "iossimulator":
-        sdk_name = "iphonesimulator"
-        var_name = "APPLE_SDK_PATH"
-
     elif platform == "visionos":
         sdk_name = "xros"
-        var_name = "APPLE_SDK_PATH"
-
-    elif platform == "visionossimulator":
-        sdk_name = "xrsimulator"
         var_name = "APPLE_SDK_PATH"
 
     else:
