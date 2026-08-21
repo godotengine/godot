@@ -79,6 +79,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
+#include "scene/resources/gradient.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_texture.h"
 #include "servers/rendering/rendering_server.h"
@@ -4694,10 +4695,23 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 void CanvasItemEditor::_update_scrollbars() {
 	updating_scroll = true;
 
-	// Move the zoom buttons.
-	Point2 controls_vb_begin = Point2(5, 5);
+	// Move the zoom buttons (top-left corner).
+	Point2 controls_vb_begin = Point2(5, 5) * EDSCALE;
 	controls_vb_begin += (show_rulers) ? Point2(ruler_width_scaled, ruler_width_scaled) : Point2();
 	controls_vb->set_begin(controls_vb_begin);
+
+	// Move the information panel (bottom-right corner).
+	// Does not depend on rulers, since rulers are only on the top and left sides of the viewport.
+	Point2 info_panel_end = Point2(-10, -10) * EDSCALE;
+	info_panel_container->set_end(Point2(info_panel_end.x, info_panel_end.y));
+
+	// Move the frame time panel to account for rulers (top-right corner).
+	float frame_time_panel_end_y = 10 * EDSCALE;
+	if (show_rulers) {
+		frame_time_panel_end_y += ruler_width_scaled;
+	}
+	frame_time_panel_container->set_begin(Point2(frame_time_panel_container->get_begin().x, frame_time_panel_end_y));
+	frame_time_panel_container->set_end(Point2(-10 * EDSCALE, frame_time_panel_container->get_end().y));
 
 	Size2 hmin = h_scroll->get_minimum_size();
 	Size2 vmin = v_scroll->get_minimum_size();
@@ -4961,6 +4975,18 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			show_viewport = !show_viewport;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_VIEWPORT);
 			view_menu->get_popup()->set_item_checked(idx, show_viewport);
+			viewport->queue_redraw();
+		} break;
+		case SHOW_INFORMATION: {
+			viewport->set_show_information(!viewport->is_showing_information());
+			int idx = view_menu->get_popup()->get_item_index(SHOW_INFORMATION);
+			view_menu->get_popup()->set_item_checked(idx, viewport->is_showing_information());
+			viewport->queue_redraw();
+		} break;
+		case SHOW_FRAME_TIME: {
+			viewport->set_show_frame_time(!viewport->is_showing_frame_time());
+			int idx = view_menu->get_popup()->get_item_index(SHOW_FRAME_TIME);
+			view_menu->get_popup()->set_item_checked(idx, viewport->is_showing_frame_time());
 			viewport->queue_redraw();
 		} break;
 		case SHOW_POSITION_GIZMOS: {
@@ -5435,6 +5461,8 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["grid_visibility"] = grid_visibility;
 	state["show_origin"] = show_origin;
 	state["show_viewport"] = show_viewport;
+	state["show_information"] = viewport->is_showing_information();
+	state["show_frame_time"] = viewport->is_showing_frame_time();
 	state["show_rulers"] = show_rulers;
 	state["show_guides"] = show_guides;
 	state["show_helpers"] = show_helpers;
@@ -5560,6 +5588,18 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 		show_viewport = state["show_viewport"];
 		int idx = view_menu->get_popup()->get_item_index(SHOW_VIEWPORT);
 		view_menu->get_popup()->set_item_checked(idx, show_viewport);
+	}
+
+	if (state.has("show_information")) {
+		viewport->set_show_information(state["show_information"]);
+		int idx = view_menu->get_popup()->get_item_index(SHOW_INFORMATION);
+		view_menu->get_popup()->set_item_checked(idx, viewport->is_showing_information());
+	}
+
+	if (state.has("show_frame_time")) {
+		viewport->set_show_frame_time(state["show_frame_time"]);
+		int idx = view_menu->get_popup()->get_item_index(SHOW_FRAME_TIME);
+		view_menu->get_popup()->set_item_checked(idx, viewport->is_showing_frame_time());
 	}
 
 	if (state.has("show_rulers")) {
@@ -5806,7 +5846,17 @@ CanvasItemEditor::CanvasItemEditor() {
 	scene_tree->add_child(EditorNode::get_singleton()->get_scene_root());
 
 	controls_vb = memnew(VBoxContainer);
-	controls_vb->set_begin(Point2(5, 5));
+	controls_vb->set_begin(Point2(5, 5) * EDSCALE);
+
+	info_panel_container = memnew(VBoxContainer);
+	info_panel_container->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_RIGHT);
+	info_panel_container->set_grow_direction_preset(Control::PRESET_BOTTOM_RIGHT);
+	info_panel_container->set_end(Point2(5, -5) * EDSCALE);
+
+	frame_time_panel_container = memnew(VBoxContainer);
+	frame_time_panel_container->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
+	frame_time_panel_container->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
+	frame_time_panel_container->set_end(Point2(5, 5) * EDSCALE);
 
 	ED_SHORTCUT("canvas_item_editor/cancel_transform", TTRC("Cancel Transformation"), Key::ESCAPE);
 
@@ -5888,6 +5938,8 @@ CanvasItemEditor::CanvasItemEditor() {
 	v_scroll->hide();
 
 	viewport->add_child(controls_vb);
+	viewport->add_child(info_panel_container);
+	viewport->add_child(frame_time_panel_container);
 
 	select_button = memnew(Button);
 	select_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -6131,6 +6183,8 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTRC("Show Guides"), Key::Y), SHOW_GUIDES);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_origin", TTRC("Show Origin")), SHOW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_viewport", TTRC("Show Viewport")), SHOW_VIEWPORT);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_information", TTRC("Show Information")), SHOW_INFORMATION);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_frame_time", TTRC("Show Frame Time")), SHOW_FRAME_TIME);
 	p->add_separator();
 
 	gizmos_menu = memnew(PopupMenu);
@@ -6837,6 +6891,51 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	}
 }
 
+void CanvasItemEditorViewport::set_show_information(bool p_enable) {
+	show_information = p_enable;
+
+	set_process(show_information || show_frame_time);
+	info_panel->set_visible(show_information);
+}
+
+bool CanvasItemEditorViewport::is_showing_information() const {
+	return show_information;
+}
+
+void CanvasItemEditorViewport::set_show_frame_time(bool p_enable) {
+	show_frame_time = p_enable;
+
+	set_process(show_information || show_frame_time);
+
+	if (show_frame_time) {
+		frame_time_panel->show();
+		RS::get_singleton()->viewport_set_measure_render_time(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), true);
+		for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
+			// Initialize to 120 FPS, so that the initial estimation until we get enough data is always reasonable.
+			cpu_time_history[i] = 8.333333;
+			gpu_time_history[i] = 8.333333;
+		}
+		cpu_time_history_index = 0;
+		gpu_time_history_index = 0;
+	} else {
+		frame_time_panel->hide();
+	}
+}
+
+bool CanvasItemEditorViewport::is_showing_frame_time() const {
+	return show_frame_time;
+}
+
+static void override_label_colors(Control *p_control) {
+	p_control->begin_bulk_theme_override();
+	p_control->add_theme_color_override(SceneStringName(font_color), p_control->get_theme_color(SNAME("font_dark_background_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_hover_color", p_control->get_theme_color(SNAME("font_dark_background_hover_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_focus_color", p_control->get_theme_color(SNAME("font_dark_background_focus_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_pressed_color", p_control->get_theme_color(SNAME("font_dark_background_pressed_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_hover_pressed_color", p_control->get_theme_color(SNAME("font_dark_background_hover_pressed_color"), EditorStringName(Editor)));
+	p_control->end_bulk_theme_override();
+}
+
 void CanvasItemEditorViewport::_update_theme() {
 	List<BaseButton *> btn_list;
 	button_group->get_buttons(&btn_list);
@@ -6848,6 +6947,22 @@ void CanvasItemEditorViewport::_update_theme() {
 	Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 	const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
 	tooltip_panel->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+
+	frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color_dark_background"), EditorStringName(Editor)));
+	frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color_dark_background"), EditorStringName(Editor)));
+	frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color_dark_background"), EditorStringName(Editor)));
+
+	info_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
+	override_label_colors(info_label);
+	tooltip_panel->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+
+	frame_time_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
+	// Set a minimum width to prevent the width from changing all the time
+	// when numbers vary rapidly. This minimum width is set based on a
+	// GPU time of 999.99 ms in the current editor language.
+	const float min_width = get_theme_font(SNAME("main"), EditorStringName(EditorFonts))->get_string_size(vformat(TTR("GPU Time: %s ms"), 999.99)).x;
+	frame_time_panel->set_custom_minimum_size(Size2(min_width, 0) * EDSCALE);
+	frame_time_vbox->add_theme_constant_override("separation", Math::round(-1 * EDSCALE));
 }
 
 void CanvasItemEditorViewport::_notification(int p_what) {
@@ -6867,6 +6982,74 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_END: {
 			_remove_preview();
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			SubViewport *edited_scene_viewport = EditorNode::get_singleton()->get_scene_root();
+			const RID edited_scene_viewport_rid = edited_scene_viewport->get_viewport_rid();
+
+			if (show_information) {
+				const String viewport_size = vformat(U"%d × %d", get_size().x, get_size().y);
+				String text;
+				text += vformat(
+						TTR("Size: %s (%.1fMP)") + "\n",
+						viewport_size,
+						get_size().x * get_size().y * 0.000001);
+
+				text += "\n";
+				text += vformat(TTR("Objects: %d"), edited_scene_viewport->get_render_info(Viewport::RENDER_INFO_TYPE_CANVAS, Viewport::RENDER_INFO_OBJECTS_IN_FRAME)) + "\n";
+				text += vformat(TTR("Primitives: %d"), edited_scene_viewport->get_render_info(Viewport::RENDER_INFO_TYPE_CANVAS, Viewport::RENDER_INFO_PRIMITIVES_IN_FRAME)) + "\n";
+				text += vformat(TTR("Draw Calls: %d"), edited_scene_viewport->get_render_info(Viewport::RENDER_INFO_TYPE_CANVAS, Viewport::RENDER_INFO_DRAW_CALLS_IN_FRAME));
+
+				info_label->set_text(text);
+			}
+
+			// FPS Counter.
+			if (show_frame_time) {
+				cpu_time_history[cpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_cpu(edited_scene_viewport_rid);
+				cpu_time_history_index = (cpu_time_history_index + 1) % FRAME_TIME_HISTORY;
+				double cpu_time = 0.0;
+				for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
+					cpu_time += cpu_time_history[i];
+				}
+				cpu_time /= FRAME_TIME_HISTORY;
+				// Prevent unrealistically low values.
+				cpu_time = MAX(0.01, cpu_time);
+
+				gpu_time_history[gpu_time_history_index] = RS::get_singleton()->viewport_get_measured_render_time_gpu(edited_scene_viewport_rid);
+				gpu_time_history_index = (gpu_time_history_index + 1) % FRAME_TIME_HISTORY;
+				double gpu_time = 0.0;
+				for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
+					gpu_time += gpu_time_history[i];
+				}
+				gpu_time /= FRAME_TIME_HISTORY;
+				// Prevent division by zero for the FPS counter (and unrealistically low values).
+				// This limits the reported FPS to 100000.
+				gpu_time = MAX(0.01, gpu_time);
+
+				// Color labels depending on performance level ("good" = green, "OK" = yellow, "bad" = red).
+				// Middle point is at 15 ms.
+				cpu_time_label->set_text(vformat(TTR("CPU Time: %s ms"), rtos(cpu_time).pad_decimals(2)));
+				cpu_time_label->add_theme_color_override(
+						SceneStringName(font_color),
+						frame_time_gradient->get_color_at_offset(
+								Math::remap(cpu_time, 0, 30, 0, 1)));
+
+				gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), rtos(gpu_time).pad_decimals(2)));
+				// Middle point is at 15 ms.
+				gpu_time_label->add_theme_color_override(
+						SceneStringName(font_color),
+						frame_time_gradient->get_color_at_offset(
+								Math::remap(gpu_time, 0, 30, 0, 1)));
+
+				const double fps = 1000.0 / gpu_time;
+				fps_label->set_text(vformat(TTR("FPS: %d"), fps));
+				// Middle point is at 60 FPS.
+				fps_label->add_theme_color_override(
+						SceneStringName(font_color),
+						frame_time_gradient->get_color_at_offset(
+								Math::remap(fps, 110, 10, 0, 1)));
+			}
 		} break;
 	}
 }
@@ -6932,6 +7115,42 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 	tooltip_panel->set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT);
 	tooltip_panel->add_theme_color_override(SceneStringName(font_color), Color(0.8f, 0.8f, 0.8f, 1));
 	tooltip_panel->add_theme_constant_override("paragraph_separation", 5);
+
+	info_panel = memnew(PanelContainer);
+	info_panel->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -90 * EDSCALE);
+	info_panel->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -90 * EDSCALE);
+	info_panel->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -10 * EDSCALE);
+	info_panel->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -10 * EDSCALE);
+	info_panel->set_h_grow_direction(GROW_DIRECTION_BEGIN);
+	info_panel->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	info_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	canvas_item_editor->get_info_panel_container()->add_child(info_panel);
+	info_panel->hide();
+
+	info_label = memnew(Label);
+	info_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+	info_panel->add_child(info_label);
+
+	frame_time_gradient = memnew(Gradient);
+	// The color is set when the theme changes.
+	frame_time_gradient->add_point(0.5, Color());
+	frame_time_panel = memnew(PanelContainer);
+	frame_time_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	canvas_item_editor->get_frame_time_panel_container()->add_child(frame_time_panel);
+	frame_time_panel->hide();
+
+	frame_time_vbox = memnew(VBoxContainer);
+	frame_time_panel->add_child(frame_time_vbox);
+
+	// Individual Labels are used to allow coloring each label with its own color.
+	cpu_time_label = memnew(Label);
+	frame_time_vbox->add_child(cpu_time_label);
+
+	gpu_time_label = memnew(Label);
+	frame_time_vbox->add_child(gpu_time_label);
+
+	fps_label = memnew(Label);
+	frame_time_vbox->add_child(fps_label);
 
 	RS::get_singleton()->canvas_set_disable_scale(true);
 }
