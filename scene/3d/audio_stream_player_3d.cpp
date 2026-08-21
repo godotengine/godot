@@ -254,7 +254,10 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 		}
 	}
 
-	att += internal->volume_db;
+	if (AudioServer::get_singleton()->cached_volume_db_affects_3d_attenuation) {
+		att += internal->volume_db;
+	}
+
 	if (att > max_db) {
 		att = max_db;
 	}
@@ -502,6 +505,10 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			float tightness = cached_global_panning_strength * 2.0f;
 			tightness *= panning_strength;
 			_calc_output_vol(local_pos.normalized(), tightness, listener_volume_vector);
+		}
+
+		if (!AudioServer::get_singleton()->cached_volume_db_affects_3d_attenuation) {
+			multiplier *= Math::db_to_linear(internal->volume_db);
 		}
 
 		for (AudioFrame &frame : listener_volume_vector) {
