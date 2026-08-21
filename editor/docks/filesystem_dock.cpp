@@ -4183,6 +4183,11 @@ void FileSystemDock::_feature_profile_changed() {
 }
 
 void FileSystemDock::_project_settings_changed() {
+	// First scan not finished, so main scene UID may be inaccessible.
+	if (!EditorNode::get_singleton()->is_editor_ready()) {
+		EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &FileSystemDock::_project_settings_changed), CONNECT_ONE_SHOT | CONNECT_REFERENCE_COUNTED);
+		return;
+	}
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
 
 	const String &current_main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));

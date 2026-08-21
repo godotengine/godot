@@ -298,6 +298,11 @@ void EditorSceneTabs::update_scene_tabs() {
 }
 
 void EditorSceneTabs::_update_tab_titles() {
+	// First scan not finished, so main scene UID may be inaccessible.
+	if (!EditorNode::get_singleton()->is_editor_ready()) {
+		return;
+	}
+
 	bool show_rb = EDITOR_GET("interface/scene_tabs/show_script_button");
 	const String main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
 
