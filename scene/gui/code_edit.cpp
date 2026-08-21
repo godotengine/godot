@@ -223,7 +223,13 @@ void CodeEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			RID ci = get_text_canvas_item();
+			RS::get_singleton()->canvas_item_clear(code_complete_ci);
+			RS::get_singleton()->canvas_item_set_custom_rect(code_complete_ci, !is_visibility_clip_disabled(), Rect2(Point2(0, 0), get_size()));
+			RS::get_singleton()->canvas_item_set_clip(code_complete_ci, true);
+			RS::get_singleton()->canvas_item_set_visibility_layer(code_complete_ci, get_visibility_layer());
+			RS::get_singleton()->canvas_item_set_default_texture_filter(code_complete_ci, RSE::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+
+			RID ci = code_complete_ci;
 			const bool caret_visible = is_caret_visible();
 			const bool rtl = is_layout_rtl();
 			const int row_height = get_line_height();
@@ -4278,10 +4284,15 @@ CodeEdit::CodeEdit() {
 	connect("gutter_added", callable_mp(this, &CodeEdit::_update_gutter_indexes));
 	connect("gutter_removed", callable_mp(this, &CodeEdit::_update_gutter_indexes));
 	_update_gutter_indexes();
+
+	code_complete_ci = RS::get_singleton()->canvas_item_create();
+	RS::get_singleton()->canvas_item_set_parent(code_complete_ci, get_canvas_item());
+	RS::get_singleton()->canvas_item_set_use_parent_material(code_complete_ci, true);
 }
 
 CodeEdit::~CodeEdit() {
 	_clear_line_number_text_cache();
+	RS::get_singleton()->free_rid(code_complete_ci);
 }
 
 // Return true if l should come before r

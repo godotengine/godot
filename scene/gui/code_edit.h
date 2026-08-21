@@ -207,6 +207,7 @@ private:
 	int code_hint_xpos = -0xFFFF;
 
 	/* Code Completion */
+	RID code_complete_ci;
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
 

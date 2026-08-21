@@ -323,6 +323,9 @@ private:
 	LocalVector<Underline> underlines;
 	void _cut_line_from_underline(Underline &r_ul, int p_line);
 
+	RID underlines_ci;
+	Ref<Texture2D> underline_squiggle_icon;
+
 	// Placeholder
 	String placeholder_text = "";
 	Array placeholder_bidi_override;
@@ -843,6 +846,9 @@ public:
 				ul.color = p_new_color;
 			}
 		}
+	}
+	void set_underline_texture(const Ref<Texture2D> &p_underline_squiggle_icon) {
+		underline_squiggle_icon = p_underline_squiggle_icon;
 	}
 
 	/* General overrides. */
