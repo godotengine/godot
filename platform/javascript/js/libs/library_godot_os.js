@@ -324,6 +324,17 @@ const GodotOS = {
 		a.remove();
 		window.URL.revokeObjectURL(url);
 	},
+
+	godot_js_os_internal_getentropy__sig: 'iii',
+	godot_js_os_internal_getentropy: function (buf, bufLen) {
+		try {
+			crypto.getRandomValues(GodotRuntime.heapSub(HEAPU8, buf, bufLen));
+			return 0;
+		} catch (e) {
+			return -1;
+		}
+	},
+
 };
 
 autoAddDeps(GodotOS, '$GodotOS');
