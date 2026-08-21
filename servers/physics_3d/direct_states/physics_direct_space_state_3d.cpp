@@ -154,14 +154,70 @@ Dictionary PhysicsDirectSpaceState3D::_get_rest_info(RequiredParam<PhysicsShapeQ
 	return r;
 }
 
+bool PhysicsDirectSpaceState3D::_intersect_ray_into(RequiredParam<PhysicsRayQueryParameters3D> p_ray_query, RequiredParam<PhysicsIntersectRayResult3D> p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(ray_query, p_ray_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(result, p_result, false);
+
+	return intersect_ray(ray_query->get_parameters(), result->result);
+}
+
+bool PhysicsDirectSpaceState3D::_intersect_point_into(RequiredParam<PhysicsPointQueryParameters3D> p_point_query, RequiredParam<PhysicsIntersectPointResult3D> p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(point_query, p_point_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(result, p_result, false);
+
+	result->intersection_count = intersect_point(point_query->get_parameters(), result->result.ptr(), result->get_max_intersections());
+
+	return result->intersection_count > 0;
+}
+
+bool PhysicsDirectSpaceState3D::_intersect_shape_into(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, RequiredParam<PhysicsIntersectShapeResult3D> p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(result, p_result, false);
+
+	result->intersection_count = intersect_shape(shape_query->get_parameters(), result->result.ptr(), result->get_max_intersections());
+
+	return result->intersection_count > 0;
+}
+
+bool PhysicsDirectSpaceState3D::_cast_motion_into(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, RequiredParam<PhysicsCastMotionResult3D> p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(result, p_result, false);
+
+	result->safe_fraction = 1.0;
+	result->unsafe_fraction = 1.0;
+
+	return cast_motion(shape_query->get_parameters(), result->safe_fraction, result->unsafe_fraction) && result->safe_fraction < 1.0;
+}
+
+bool PhysicsDirectSpaceState3D::_collide_shape_into(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, RequiredParam<PhysicsCollideShapeResult3D> p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(result, p_result, false);
+
+	return collide_shape(shape_query->get_parameters(), result->result.ptrw(), result->get_max_collisions(), result->collision_count);
+}
+
+bool PhysicsDirectSpaceState3D::_get_rest_info_into(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, RequiredParam<PhysicsGetRestInfoResult3D> p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, false);
+	EXTRACT_PARAM_OR_FAIL_V(result, p_result, false);
+
+	return rest_info(shape_query->get_parameters(), &result->result);
+}
+
 PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 }
 
 void PhysicsDirectSpaceState3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_point, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray);
+	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_point, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState3D::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_collide_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState3D::_get_rest_info);
+
+	ClassDB::bind_method(D_METHOD("intersect_ray_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_ray_into);
+	ClassDB::bind_method(D_METHOD("intersect_point_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_point_into);
+	ClassDB::bind_method(D_METHOD("intersect_shape_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_intersect_shape_into);
+	ClassDB::bind_method(D_METHOD("cast_motion_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_cast_motion_into);
+	ClassDB::bind_method(D_METHOD("collide_shape_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_collide_shape_into);
+	ClassDB::bind_method(D_METHOD("get_rest_info_into", "parameters", "result"), &PhysicsDirectSpaceState3D::_get_rest_info_into);
 }
