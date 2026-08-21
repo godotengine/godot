@@ -980,7 +980,13 @@ bool SceneTree::is_debugging_collisions_hint() const {
 }
 
 void SceneTree::set_debug_paths_hint(bool p_enabled) {
+	if (debug_paths_hint == p_enabled) {
+		return;
+	}
 	debug_paths_hint = p_enabled;
+	if (root) {
+		root->propagate_notification(Node::NOTIFICATION_DEBUG_PATHS_HINT_CHANGED);
+	}
 }
 
 bool SceneTree::is_debugging_paths_hint() const {
