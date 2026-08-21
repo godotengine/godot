@@ -1315,7 +1315,7 @@ public:
 	bool window_is_focused(DisplayServerEnums::WindowID p_window_id);
 
 	// Optional - requires xdg_activation_v1
-	void window_request_attention(DisplayServerEnums::WindowID p_window_id);
+	void window_request_attention(DisplayServerEnums::WindowID p_window_id, bool p_hint_strong_focus = false);
 
 	void window_start_drag(DisplayServerEnums::WindowID p_window_id);
 
