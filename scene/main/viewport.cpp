@@ -790,9 +790,9 @@ void Viewport::_process_picking() {
 	if (Object::cast_to<Window>(this) && Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
 		return;
 	}
-	if (!gui.mouse_in_viewport || gui.subwindow_over) {
-		// Clear picking events if the mouse has left the viewport or is over an embedded window.
-		// These are locations, that are expected to not trigger physics picking.
+	if (gui.subwindow_over) {
+		// Clear picking events if the mouse is over an embedded window.
+		// This location is expected to not trigger physics picking.
 		physics_picking_events.clear();
 		return;
 	}
@@ -888,6 +888,11 @@ void Viewport::_process_picking() {
 			is_mouse = true;
 		}
 
+		if (is_mouse && !gui.mouse_in_viewport) {
+			// Skip this event if it is a mouse event if the mouse is outside of the viewport
+			continue;
+		}
+
 		Ref<InputEventScreenDrag> sd = ev;
 
 		if (sd.is_valid()) {
@@ -898,6 +903,11 @@ void Viewport::_process_picking() {
 
 		if (st.is_valid()) {
 			pos = st->get_position();
+		}
+
+		if (!is_mouse && !get_visible_rect().has_point(pos)) {
+			// Skip this event if it is a touch event and the event position is outside of the viewport
+			continue;
 		}
 
 #ifndef PHYSICS_2D_DISABLED
