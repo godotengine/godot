@@ -126,7 +126,6 @@ env.scons_version = env._get_major_minor_revision(scons_raw_version)
 env.__class__.add_module_version_string = methods.add_module_version_string
 
 env.__class__.add_source_files = methods.add_source_files
-env.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 
 env.__class__.add_shared_library = methods.add_shared_library
 env.__class__.add_library = methods.add_library
