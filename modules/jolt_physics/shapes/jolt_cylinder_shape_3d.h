@@ -33,8 +33,9 @@
 #include "jolt_shape_3d.h"
 
 class JoltCylinderShape3D final : public JoltShape3D {
+	float radius_top = 0.0f;
+	float radius_bottom = 0.0f;
 	float height = 0.0f;
-	float radius = 0.0f;
 	float margin = 0.04f;
 
 	virtual JPH::ShapeRefC _build() const override;
