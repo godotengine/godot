@@ -55,6 +55,9 @@ GDType::~GDType() {
 	for (MethodBind *bind : owned_method_map) {
 		memdelete(bind);
 	}
+	for (const PropertyInfo *property : ordered_self_properties) {
+		memdelete(const_cast<PropertyInfo *>(property));
+	}
 }
 
 void GDType::initialize() {
@@ -71,6 +74,7 @@ void GDType::initialize() {
 		enum_map = super_type->enum_map;
 		signal_map = super_type->signal_map;
 		method_map = super_type->method_map;
+		property_map = super_type->property_map;
 	}
 
 	init_state = InitState::MUTABLE;
@@ -80,9 +84,12 @@ void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p
 	ERR_FAIL_COND(!Thread::is_main_thread());
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
 	ERR_FAIL_COND_MSG(self_constant_map.has(p_name), vformat("Class '%s' already has constant '%s'.", String(name), String(p_name)));
+	ERR_FAIL_COND_MSG(property_map.has(p_name), vformat("Object '%s' already has property '%s'.", get_name(), p_name));
 
 	constant_map[p_name] = p_constant;
 	self_constant_map[p_name] = p_constant;
+	property_map.insert(p_name, Property(Property::Type::INTEGER_CONSTANT, p_constant));
+	self_property_map.insert(p_name, Property(Property::Type::INTEGER_CONSTANT, p_constant));
 
 	String enum_name = p_enum;
 	if (!enum_name.is_empty()) {
@@ -123,22 +130,25 @@ void GDType::add_signal(MethodInfo p_signal) {
 
 	const StringName signal_name(p_signal.name);
 	ERR_FAIL_COND_MSG(signal_map.has(signal_name), vformat("Class '%s' already has signal '%s'.", String(name), String(signal_name)));
+	ERR_FAIL_COND_MSG(property_map.has(signal_name), vformat("Object '%s' already has property '%s'.", get_name(), signal_name));
 
 	const MethodInfo *ptr = memnew(MethodInfo(std::move(p_signal)));
 
 	signal_map[signal_name] = ptr;
 	self_signal_map[signal_name] = ptr;
+	property_map.insert(ptr->name, Property(Property::Type::SIGNAL));
+	self_property_map.insert(ptr->name, Property(Property::Type::SIGNAL));
 }
 
 bool GDType::bind_method(MethodBind *p_method, bool p_take_ownership) {
 	ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 	ERR_FAIL_COND_V(init_state != InitState::MUTABLE, false);
 
-	if (self_method_map.has(p_method->get_name())) {
+	if (property_map.has(p_method->get_name())) {
 		if (p_take_ownership) {
 			memdelete(p_method);
 		}
-		ERR_FAIL_V_MSG(false, vformat("Method already bound '%s::%s'.", name, p_method->get_name()));
+		ERR_FAIL_V_MSG(false, vformat("Object '%s' already has property '%s'.", get_name(), p_method->get_name()));
 	}
 
 	method_map[p_method->get_name()] = p_method;
@@ -146,6 +156,9 @@ bool GDType::bind_method(MethodBind *p_method, bool p_take_ownership) {
 	if (p_take_ownership) {
 		owned_method_map.push_back(p_method);
 	}
+	property_map.insert(p_method->get_name(), Property(Property::Type::METHOD));
+	self_property_map.insert(p_method->get_name(), Property(Property::Type::METHOD));
+
 	return true;
 }
 
@@ -157,4 +170,50 @@ void GDType::set_method_flags(const StringName &p_method, int p_flags) {
 	ERR_FAIL_NULL(method);
 
 	const_cast<MethodBind *>(*method)->set_hint_flags(p_flags);
+}
+
+void GDType::add_property(const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter,
+		int p_index) {
+	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(init_state != InitState::MUTABLE);
+
+	ERR_FAIL_COND_MSG(property_map.has(p_pinfo.name), vformat("Object '%s' already has property '%s'.", get_name(), p_pinfo.name));
+
+	const MethodBind *const *mb_set = nullptr;
+	if (p_setter) {
+		mb_set = get_method_map().getptr(p_setter);
+
+		ERR_FAIL_NULL_MSG(mb_set, vformat("Invalid setter '%s::%s' for property '%s'.", get_name(), p_setter, p_pinfo.name));
+		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
+		ERR_FAIL_COND_MSG((*mb_set)->get_argument_count() != exp_args, vformat("Invalid function for setter '%s::%s' for property '%s'.", get_name(), p_setter, p_pinfo.name));
+	}
+
+	const MethodBind *const *mb_get = nullptr;
+	if (p_getter) {
+		mb_get = get_method_map().getptr(p_getter);
+
+		ERR_FAIL_NULL_MSG(mb_get, vformat("Invalid getter '%s::%s' for property '%s'.", get_name(), p_getter, p_pinfo.name));
+		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
+		ERR_FAIL_COND_MSG((*mb_get)->get_argument_count() != exp_args, vformat("Invalid function for getter '%s::%s' for property '%s'.", get_name(), p_getter, p_pinfo.name));
+	}
+
+	PropertyInfo *info = memnew(PropertyInfo(p_pinfo));
+
+	Property::SetGet psg;
+	psg.property_info = info;
+	psg.setter = mb_set ? *mb_set : nullptr;
+	psg.getter = mb_get ? *mb_get : nullptr;
+	psg.index = p_index;
+
+	property_map.insert(p_pinfo.name, Property(Property::Type::SETGET, psg));
+	self_property_map.insert(p_pinfo.name, Property(Property::Type::SETGET, psg));
+	ordered_self_properties.push_back(info);
+}
+
+void GDType::add_to_ordered_properties(const PropertyInfo &p_pinfo) {
+	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(init_state != InitState::MUTABLE);
+
+	PropertyInfo *info = memnew(PropertyInfo(p_pinfo));
+	ordered_self_properties.push_back(info);
 }

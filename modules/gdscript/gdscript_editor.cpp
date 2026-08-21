@@ -1477,13 +1477,34 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 				bool only_static = base_type.is_meta_type && !Engine::get_singleton()->has_singleton(type);
 
+				// Skip getters and setters of properties because users will usually use the property instead.
+				HashSet<StringName> methods_to_skip;
+				for (const KeyValue<StringName, GDType::Property> &kv : ClassDB::get_gdtype(type)->get_property_map()) {
+					if (kv.value.type != GDType::Property::Type::SETGET) {
+						continue; // Not relevant.
+					}
+					const GDType::Property::SetGet &psg = kv.value.payload.setget;
+					if (psg.index != -1 || (psg.property_info->usage & PROPERTY_USAGE_INTERNAL)) {
+						continue; // Not exposed.
+					}
+					if (psg.setter) {
+						methods_to_skip.insert(psg.setter->get_name());
+					}
+					if (psg.getter) {
+						methods_to_skip.insert(psg.getter->get_name());
+					}
+				}
+
 				List<MethodInfo> methods;
-				ClassDB::get_method_list(type, &methods, false, true);
+				ClassDB::get_method_list(type, &methods, false);
 				for (const MethodInfo &E : methods) {
 					if (only_static && (E.flags & METHOD_FLAG_STATIC) == 0) {
 						continue;
 					}
 					if (E.name.begins_with("_")) {
+						continue;
+					}
+					if (methods_to_skip.has(E.name)) {
 						continue;
 					}
 					int location = p_recursion_depth + _get_method_location(type, E.name);

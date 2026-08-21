@@ -188,10 +188,34 @@ void PropertySelector::_update_search() {
 				}
 			}
 
+			// Skip getters and setters of properties because users will usually use the property instead.
+			HashSet<StringName> methods_to_skip;
+			for (const KeyValue<StringName, GDType::Property> &kv : ClassDB::get_gdtype(base_type)->get_property_map()) {
+				if (kv.value.type != GDType::Property::Type::SETGET) {
+					continue; // Not relevant.
+				}
+				const GDType::Property::SetGet &psg = kv.value.payload.setget;
+				if (psg.index != -1 || (psg.property_info->usage & PROPERTY_USAGE_INTERNAL)) {
+					continue; // Not exposed.
+				}
+				if (psg.setter) {
+					methods_to_skip.insert(psg.setter->get_name());
+				}
+				if (psg.getter) {
+					methods_to_skip.insert(psg.getter->get_name());
+				}
+			}
+
 			StringName base = base_type;
 			while (base) {
 				methods.push_back(MethodInfo("*" + String(base)));
-				ClassDB::get_method_list(base, &methods, true, true);
+				List<MethodInfo> class_methods;
+				ClassDB::get_method_list(base, &class_methods, true);
+				for (const MethodInfo &mi : class_methods) {
+					if (!methods_to_skip.has(mi.name)) {
+						methods.push_back(mi);
+					}
+				}
 				base = ClassDB::get_parent_class(base);
 			}
 		}
