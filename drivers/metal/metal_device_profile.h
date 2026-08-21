@@ -75,6 +75,12 @@ constexpr MinOsVersion IOS_15_0(15'00'00);
 constexpr MinOsVersion VISIONOS_26_0(26'00'00);
 constexpr MinOsVersion VISIONOS_02_4(02'04'00);
 
+constexpr MinOsVersion TVOS_26_0(26'00'00);
+constexpr MinOsVersion TVOS_18_0(18'00'00);
+constexpr MinOsVersion TVOS_17_0(17'00'00);
+constexpr MinOsVersion TVOS_16_0(16'00'00);
+constexpr MinOsVersion TVOS_15_0(15'00'00);
+
 } //namespace os_version
 
 /// @brief A minimal structure that defines a device profile for Metal.
@@ -88,6 +94,7 @@ struct MetalDeviceProfile {
 		macOS = 0,
 		iOS = 1,
 		visionOS = 2,
+		tvOS = 3,
 	};
 
 	/*! @brief The GPU family.

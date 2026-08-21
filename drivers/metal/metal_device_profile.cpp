@@ -36,7 +36,7 @@ Mutex MetalDeviceProfile::profiles_lock;
 HashMap<MetalDeviceProfile::ProfileKey, MetalDeviceProfile> MetalDeviceProfile::profiles;
 
 const MetalDeviceProfile *MetalDeviceProfile::get_profile(Platform p_platform, GPU p_gpu, MinOsVersion p_min_os_version) {
-	DEV_ASSERT(p_platform == Platform::macOS || p_platform == Platform::iOS || p_platform == Platform::visionOS);
+	DEV_ASSERT(p_platform == Platform::macOS || p_platform == Platform::iOS || p_platform == Platform::visionOS || p_platform == Platform::tvOS);
 
 	MutexLock lock(profiles_lock);
 
@@ -121,6 +121,40 @@ const MetalDeviceProfile *MetalDeviceProfile::get_profile(Platform p_platform, G
 				default: {
 					CRASH_NOW_MSG("visionOS hardware has a minimum Apple8 GPU.");
 				}
+			}
+		} break;
+
+		case Platform::tvOS: {
+			if (p_min_os_version >= os_version::TVOS_26_0) {
+				res.features.msl_version = MSL_VERSION_40;
+			} else if (p_min_os_version >= os_version::TVOS_18_0) {
+				res.features.msl_version = MSL_VERSION_32;
+			} else if (p_min_os_version >= os_version::TVOS_17_0) {
+				res.features.msl_version = MSL_VERSION_31;
+			} else if (p_min_os_version >= os_version::TVOS_16_0) {
+				res.features.msl_version = MSL_VERSION_30;
+			} else if (p_min_os_version >= os_version::TVOS_15_0) {
+				res.features.msl_version = MSL_VERSION_24;
+			} else {
+				res.features.msl_version = MSL_VERSION_23;
+			}
+
+			switch (p_gpu) {
+				case GPU::Apple1:
+				case GPU::Apple2:
+				case GPU::Apple3:
+				case GPU::Apple4:
+				case GPU::Apple5: {
+					res.features.simdPermute = false;
+					res.features.use_argument_buffers = false;
+				} break;
+				case GPU::Apple6:
+				case GPU::Apple7:
+				case GPU::Apple8:
+				case GPU::Apple9: {
+					res.features.use_argument_buffers = p_min_os_version >= os_version::TVOS_16_0;
+					res.features.simdPermute = true;
+				} break;
 			}
 		} break;
 	}

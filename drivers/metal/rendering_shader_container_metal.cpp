@@ -59,6 +59,9 @@ void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 		case MetalDeviceProfile::Platform::visionOS:
 			sdk = "xros";
 			break;
+		case MetalDeviceProfile::Platform::tvOS:
+			sdk = "appletvos";
+			break;
 	}
 
 	Vector<String> parts{ "echo", R"("")", "|", "/usr/bin/xcrun", "-sdk", sdk, "metal", "-E", "-dM", "-x", "metal" };
@@ -74,6 +77,10 @@ void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 		}
 		case MetalDeviceProfile::Platform::visionOS: {
 			parts.push_back("-mtargetos=xros" + device_profile->min_os_version.to_compiler_os_version());
+			break;
+		}
+		case MetalDeviceProfile::Platform::tvOS: {
+			parts.push_back("-mtargetos=tvos" + device_profile->min_os_version.to_compiler_os_version());
 			break;
 		}
 	}
@@ -142,6 +149,9 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 		case MetalDeviceProfile::Platform::visionOS:
 			sdk = "xros";
 			break;
+		case MetalDeviceProfile::Platform::tvOS:
+			sdk = "appletvos";
+			break;
 	}
 
 	// Build the .metallib binary.
@@ -168,6 +178,10 @@ Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, 
 			}
 			case MetalDeviceProfile::Platform::visionOS: {
 				args.push_back("-mtargetos=xros" + device_profile->min_os_version.to_compiler_os_version());
+				break;
+			}
+			case MetalDeviceProfile::Platform::tvOS: {
+				args.push_back("-mtargetos=tvos" + device_profile->min_os_version.to_compiler_os_version());
 				break;
 			}
 		}
@@ -379,7 +393,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 
 	msl_options.platform = device_profile->platform == MetalDeviceProfile::Platform::macOS ? CompilerMSL::Options::macOS : CompilerMSL::Options::iOS;
 
-	if (device_profile->platform == MetalDeviceProfile::Platform::iOS) {
+	if (device_profile->platform == MetalDeviceProfile::Platform::iOS || device_profile->platform == MetalDeviceProfile::Platform::tvOS) {
 		msl_options.ios_use_simdgroup_functions = device_profile->features.simdPermute;
 		msl_options.ios_support_base_vertex_instance = true;
 	}

@@ -134,6 +134,7 @@ class ExportTemplateManager : public AcceptDialog {
 		ANDROID,
 
 		IOS,
+		TVOS,
 
 		ICU_DATA,
 	};
@@ -145,6 +146,7 @@ class ExportTemplateManager : public AcceptDialog {
 		WEB,
 		ANDROID,
 		IOS,
+		TVOS,
 		COMMON,
 	};
 

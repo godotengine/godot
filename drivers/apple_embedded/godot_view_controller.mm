@@ -37,6 +37,7 @@
 #import "drivers/apple_embedded/godot_view_renderer.h"
 #import "drivers/apple_embedded/key_mapping_apple_embedded.h"
 #import "drivers/apple_embedded/os_apple_embedded.h"
+#include "scene/main/scene_tree.h"
 #include "servers/camera/camera_server.h"
 
 #import <AVFoundation/AVFoundation.h>
@@ -59,7 +60,7 @@
 }
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-	[super pressesBegan:presses withEvent:event];
+	// [super pressesBegan:presses withEvent:event];
 
 	if (!DisplayServerAppleEmbedded::get_singleton() || DisplayServerAppleEmbedded::get_singleton()->is_keyboard_active()) {
 		return;
@@ -94,7 +95,22 @@
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-	[super pressesEnded:presses withEvent:event];
+	// [super pressesEnded:presses withEvent:event];
+
+#ifdef TVOS_ENABLED
+	for (UIPress *press in presses) {
+		if (press.type == UIPressTypeMenu) {
+			SceneTree *scene = SceneTree::get_singleton();
+			if (scene && scene->is_quit_on_go_back()) {
+				// Let UIKit process the event.
+				[super pressesEnded:presses withEvent:event];
+			} else if (DisplayServerAppleEmbedded::get_singleton()) {
+				DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_GO_BACK_REQUEST);
+			}
+			return;
+		}
+	}
+#endif
 
 	if (!DisplayServerAppleEmbedded::get_singleton() || DisplayServerAppleEmbedded::get_singleton()->is_keyboard_active()) {
 		return;
@@ -153,6 +169,10 @@
 
 - (void)godot_commonInit {
 	// Initialize view controller values.
+#ifdef TVOS_ENABLED
+	// Don't pass presses like the B button as regular events.
+	// self.controllerUserInteractionEnabled = NO;
+#endif
 }
 
 - (void)didReceiveMemoryWarning {
@@ -163,10 +183,14 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 
+#ifndef TVOS_ENABLED
 	[self observeKeyboard];
+#endif
 	[self displayLoadingOverlay];
 
+#ifndef TVOS_ENABLED
 	[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+#endif
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -182,6 +206,7 @@
 	[super viewDidDisappear:animated];
 }
 
+#ifndef TVOS_ENABLED
 - (void)observeKeyboard {
 	print_verbose("Setting up keyboard input view.");
 	self.keyboardView = [GDTKeyboardInputView new];
@@ -199,6 +224,7 @@
 				   name:UIKeyboardDidHideNotification
 				 object:nil];
 }
+#endif
 
 - (void)displayLoadingOverlay {
 #if !defined(VISIONOS_ENABLED)
@@ -302,6 +328,7 @@
 }
 #endif
 
+#ifndef TVOS_ENABLED
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
 	if (GLOBAL_GET("display/window/ios/suppress_ui_gesture")) {
 		return UIRectEdgeAll;
@@ -371,9 +398,11 @@
 		return NO;
 	}
 }
+#endif // TVOS_ENABLED
 
 // MARK: Keyboard
 
+#ifndef TVOS_ENABLED
 - (void)keyboardOnScreen:(NSNotification *)notification {
 	NSDictionary *info = notification.userInfo;
 	NSValue *value = info[UIKeyboardFrameEndUserInfoKey];
@@ -391,5 +420,6 @@
 		DisplayServerAppleEmbedded::get_singleton()->virtual_keyboard_set_height(0);
 	}
 }
+#endif
 
 @end

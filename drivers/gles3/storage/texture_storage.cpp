@@ -3285,7 +3285,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 
 			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->color, rt->size.x * rt->size.y * rt->view_count * rt->color_format_size, "Render target color texture");
 		}
-#ifndef IOS_ENABLED
+#ifndef APPLE_EMBEDDED_ENABLED
 		if (use_multiview) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rt->color, 0, 0, rt->view_count);
 		} else {
@@ -3322,7 +3322,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->depth, rt->size.x * rt->size.y * rt->view_count * 4, "Render target depth texture");
 		}
 
-#ifndef IOS_ENABLED
+#ifndef APPLE_EMBEDDED_ENABLED
 		if (use_multiview) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, rt->depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, rt->depth, 0, 0, rt->view_count);
 		} else {
@@ -3399,7 +3399,7 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-#ifndef IOS_ENABLED
+#ifndef APPLE_EMBEDDED_ENABLED
 	if (view_count > 1) {
 		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, velocity_texture_id, 0, 0, view_count);
 	} else {
@@ -3416,7 +3416,7 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-#ifndef IOS_ENABLED
+#ifndef APPLE_EMBEDDED_ENABLED
 	if (view_count > 1) {
 		glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, velocity_depth_texture_id, 0, 0, view_count);
 	} else {

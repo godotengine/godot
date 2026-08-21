@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  display_layer_visionos.mm                                             */
+/*  export.cpp                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,20 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "display_layer_visionos.h"
+#include "export.h"
 
-@implementation GDTMetalLayer
+#include "export_plugin.h"
 
-- (void)initializeDisplayLayer {
+#include "core/object/class_db.h"
+#include "editor/export/editor_export.h"
+
+#ifdef MACOS_ENABLED
+#include "editor/settings/editor_settings.h"
+#endif
+
+void register_tvos_exporter_types() {
+	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformTVOS);
 }
 
-- (void)layoutDisplayLayer {
-}
+void register_tvos_exporter() {
+	// TODO: Move to editor_settings.cpp
+#ifdef MACOS_ENABLED
+	EDITOR_DEF("export/tvos/tvos_deploy", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/tvos/tvos_deploy", PROPERTY_HINT_GLOBAL_FILE, "*"));
+#endif
 
-- (void)startRenderDisplayLayer {
-}
+	Ref<EditorExportPlatformTVOS> platform;
+	platform.instantiate();
 
-- (void)stopRenderDisplayLayer {
+	EditorExport::get_singleton()->add_export_platform(platform);
 }
-
-@end
