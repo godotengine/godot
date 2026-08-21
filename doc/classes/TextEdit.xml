@@ -156,7 +156,9 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Performs a full reset of [TextEdit], including undo history.
+				Clears all text and related state. This clears the text content, selections, carets, and gutter line data.
+				Does [b]not[/b] reset other values (such as [member placeholder_text], font, colors, etc.) to their defaults.
+				Does [b]not[/b] clear the undo history. Use [method clear_undo_history] to clear the undo history.
 			</description>
 		</method>
 		<method name="clear_undo_history">
