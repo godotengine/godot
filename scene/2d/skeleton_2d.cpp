@@ -843,4 +843,7 @@ Skeleton2D::Skeleton2D() {
 Skeleton2D::~Skeleton2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free_rid(skeleton);
+	if (modification_stack.is_valid()) {
+		callable_mp(modification_stack.ptr(), &SkeletonModificationStack2D::set_skeleton).call_deferred((Object *)nullptr);
+	}
 }
