@@ -261,6 +261,9 @@ void BoxContainer::_resort() {
 		delta = +1;
 	}
 
+#ifdef TOOLS_ENABLED
+	cell_positions.clear();
+#endif
 	int accumulated_size = 0;
 	for (int i = start; i != end; i += delta) {
 		Control *c = as_sortable_control(get_child(i));
@@ -295,6 +298,9 @@ void BoxContainer::_resort() {
 		} else {
 			rect = Rect2(from, 0, size, new_size.height);
 		}
+#ifdef TOOLS_ENABLED
+		cell_positions.push_back(from);
+#endif
 
 		if (propagating_max_size) {
 			if (vertical) {
