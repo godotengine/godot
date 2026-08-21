@@ -2481,7 +2481,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (mb->is_pressed()) {
-			if (mb->get_button_index() == MouseButton::WHEEL_UP && !mb->is_command_or_control_pressed()) {
+			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				if (mb->is_shift_pressed()) {
 					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
 					queue_accessibility_update();
@@ -2494,7 +2494,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 				_selection_mode_update();
 			}
-			if (mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_or_control_pressed()) {
+			if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 				if (mb->is_shift_pressed()) {
 					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
 					queue_accessibility_update();
