@@ -47,9 +47,20 @@
 namespace {
 
 template <typename TJoltVertex>
-void pin_vertices(const JoltSoftBody3D &p_body, const HashSet<int> &p_pinned_vertices, const LocalVector<int> &p_mesh_to_physics, JPH::Array<TJoltVertex> &r_physics_vertices) {
+void pin_vertices(const JoltSoftBody3D &p_body, const HashSet<int> &p_pinned_vertices, const HashMap<int, float> &p_pinned_weights, const LocalVector<int> &p_mesh_to_physics, const HashMap<int, int> &p_mesh_to_anchor, JPH::Array<TJoltVertex> &r_physics_vertices, float p_mass) {
 	const int mesh_vertex_count = p_mesh_to_physics.size();
 	const int physics_vertex_count = (int)r_physics_vertices.size();
+	const float default_inv_mass = (physics_vertex_count > 0 && p_mass > 0.0f) ? (float)physics_vertex_count / p_mass : 1.0f;
+
+	for (int i = 0; i < physics_vertex_count; ++i) {
+		r_physics_vertices[i].mInvMass = default_inv_mass;
+	}
+
+	for (const KeyValue<int, int> &E : p_mesh_to_anchor) {
+		if (E.value >= 0 && E.value < physics_vertex_count) {
+			r_physics_vertices[E.value].mInvMass = 0.0f;
+		}
+	}
 
 	for (int mesh_index : p_pinned_vertices) {
 		ERR_CONTINUE_MSG(mesh_index < 0 || mesh_index >= mesh_vertex_count, vformat("Index %d of pinned vertex in soft body '%s' is out of bounds. There are only %d vertices in the current mesh.", mesh_index, p_body.to_string(), mesh_vertex_count));
@@ -57,7 +68,15 @@ void pin_vertices(const JoltSoftBody3D &p_body, const HashSet<int> &p_pinned_ver
 		const int physics_index = p_mesh_to_physics[mesh_index];
 		ERR_CONTINUE_MSG(physics_index < 0 || physics_index >= physics_vertex_count, vformat("Index %d of pinned vertex in soft body '%s' is out of bounds. There are only %d vertices in the current mesh. This should not happen. Please report this.", physics_index, p_body.to_string(), physics_vertex_count));
 
-		r_physics_vertices[physics_index].mInvMass = 0.0f;
+		float weight = 1.0f;
+		const HashMap<int, float>::ConstIterator E = p_pinned_weights.find(mesh_index);
+		if (E) {
+			weight = E->value;
+		}
+
+		if (weight >= 0.999f) {
+			r_physics_vertices[physics_index].mInvMass = 0.0f;
+		}
 	}
 }
 
@@ -130,111 +149,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	// This method blocks on the main thread to return data, but the main thread may be
 	// blocked waiting on us in PhysicsServer3D::sync().
 
-	if (!internal_springs) {
-		// Single-surface (surface 0) standard soft body
-		const Array mesh_data = rendering->mesh_surface_get_arrays(mesh, 0);
-		ERR_FAIL_COND_V(mesh_data.is_empty(), nullptr);
-
-		const PackedInt32Array mesh_indices = mesh_data[RSE::ARRAY_INDEX];
-		ERR_FAIL_COND_V(mesh_indices.is_empty(), nullptr);
-
-		const PackedVector3Array mesh_vertices = mesh_data[RSE::ARRAY_VERTEX];
-		ERR_FAIL_COND_V(mesh_vertices.is_empty(), nullptr);
-
-		JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
-		JPH::Array<JPH::SoftBodySharedSettings::Vertex> &physics_vertices = settings->mVertices;
-		JPH::Array<JPH::SoftBodySharedSettings::Face> &physics_faces = settings->mFaces;
-
-		HashMap<Vector3, int> vertex_to_physics;
-
-		const int mesh_vertex_count = mesh_vertices.size();
-		const int mesh_index_count = mesh_indices.size();
-
-		mesh_to_physics.resize(mesh_vertex_count);
-		for (int &index : mesh_to_physics) {
-			index = -1;
-		}
-		physics_vertices.reserve(mesh_vertex_count);
-		vertex_to_physics.reserve(mesh_vertex_count);
-
-		int physics_index_count = 0;
-
-		const JPH::RVec3 body_position = jolt_settings->mPosition;
-
-		for (int i = 0; i < mesh_index_count; i += 3) {
-			int physics_face[3];
-
-			for (int j = 0; j < 3; ++j) {
-				const int mesh_index = mesh_indices[i + j];
-				const Vector3 vertex = mesh_vertices[mesh_index];
-
-				HashMap<Vector3, int>::Iterator iter_physics_index = vertex_to_physics.find(vertex);
-
-				if (iter_physics_index == vertex_to_physics.end()) {
-					physics_vertices.emplace_back(JPH::Float3((float)(vertex.x - body_position.GetX()), (float)(vertex.y - body_position.GetY()), (float)(vertex.z - body_position.GetZ())), JPH::Float3(0.0f, 0.0f, 0.0f), 1.0f);
-					iter_physics_index = vertex_to_physics.insert(vertex, physics_index_count++);
-				}
-
-				physics_face[j] = iter_physics_index->value;
-				mesh_to_physics[mesh_index] = iter_physics_index->value;
-			}
-
-			if (physics_face[0] == physics_face[1] || physics_face[0] == physics_face[2] || physics_face[1] == physics_face[2]) {
-				continue; // We skip degenerate faces, since they're problematic, and Jolt will assert about it anyway.
-			}
-
-			// Jolt uses a different winding order, so we swap the indices to account for that.
-			physics_faces.emplace_back((JPH::uint32)physics_face[2], (JPH::uint32)physics_face[1], (JPH::uint32)physics_face[0]);
-		}
-
-		// Pin whatever pinned vertices we have currently. This is used during the `Optimize` call below to order the
-		// constraints. Note that it's fine if the pinned vertices change later, but that will reduce the effectiveness
-		// of the constraints a bit.
-		pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
-
-		// Since Godot's stiffness is input as a coefficient between 0 and 1, and Jolt uses actual stiffness for its
-		// edge constraints, we must map one to the other.
-		//
-		// Godot uses classic PBD edge constraints, which have a stiffness parameter k that is used in the position correction formula as follows:
-		// delta_x1 = -k * w1 / (w1 + w2) * (l - l0) / l * (x2 - x1)
-		// where k is the stiffness, w1 and w2 are the inverse masses of the two vertices, l is the current length of the edge = |x2 - x1|, l0 is the rest length of the edge, and x1 and x2 are the vertex positions.
-		//
-		// Note that the actual formula used in Godot physics seems to use an approximation of this which avoids calculating the square root:
-		// delta_x1 = -k * w1 / (w1 + w2) * (l^2 - l0^2) / (l^2 + l0^2) * (x2 - x1)
-		//
-		// Jolt uses XPBD which goes as follows:
-		// delta_x1 = -w1 / (w1 + w2 + compliance / dt^2) * (l - l0) / l * (x2 - x1)
-		// where compliance is the inverse of stiffness and dt is the timestep.
-		//
-		// We can derive Jolt's compliance from Godot's stiffness by evaluating:
-		// k * w1 / (w1 + w2) = w1 / (w1 + w2 + compliance / dt^2)
-		// which simplifies to:
-		// compliance = dt^2 * (1 / k - 1) * (w1 + w2)
-
-		// Assuming that the vertices have the same mass:
-		const float w1_plus_w2 = 2.0f * physics_vertices.size() / mass;
-
-		// Calculate time step of a single XPBD iteration
-		const float dt = 1.0f / Engine::get_singleton()->get_user_physics_ticks_per_second() / simulation_precision;
-
-		// Now calculate the compliance
-		const float surface_stiffness = CLAMP(stiffness_coefficient, 0.0001f, 1.0f);
-		const float inverse_stiffness = dt * dt * (1.0f / surface_stiffness - 1.0f) * w1_plus_w2;
-
-		JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
-		vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
-
-		settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
-		float multiplier = 1.0f - shrinking_factor;
-		for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
-			e.mRestLength *= multiplier;
-		}
-		settings->Optimize();
-
-		return settings;
-	}
-
-	// Multi-surface parsing with loose edge internal springs
 	const int surface_count = rendering->mesh_get_surface_count(mesh);
 	ERR_FAIL_COND_V(surface_count <= 0, nullptr);
 
@@ -371,7 +285,7 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 		global_vertex_offset += mesh_vertex_count;
 	}
 
-	pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
+	mesh_to_anchor.clear();
 
 	const float w1_plus_w2 = 2.0f * physics_vertices.size() / mass;
 	const float dt = 1.0f / Engine::get_singleton()->get_user_physics_ticks_per_second() / simulation_precision;
@@ -387,8 +301,8 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 		e.mRestLength *= multiplier;
 	}
 
-	// Add internal springs from loose edges
-	if (!loose_edges.is_empty()) {
+	// Add internal springs from loose edges only when enabled
+	if (internal_springs && !loose_edges.is_empty()) {
 		const float internal_stiffness = CLAMP(internal_spring_stiffness, 0.0001f, 1.0f);
 		const float internal_compliance = dt * dt * (1.0f / internal_stiffness - 1.0f) * w1_plus_w2;
 		for (const LooseEdge &le : loose_edges) {
@@ -405,7 +319,40 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 		}
 	}
 
+	// Add anchor vertices and spring edges for soft-pinned points
+	for (int mesh_index : pinned_vertices) {
+		if (mesh_index < 0 || mesh_index >= (int)mesh_to_physics.size()) {
+			continue;
+		}
+		const int mesh_physics_index = mesh_to_physics[mesh_index];
+		if (mesh_physics_index < 0 || mesh_physics_index >= (int)physics_vertices.size()) {
+			continue;
+		}
+
+		float weight = 1.0f;
+		const HashMap<int, float>::ConstIterator E = pinned_weights.find(mesh_index);
+		if (E) {
+			weight = E->value;
+		}
+
+		if (weight > 0.0f && weight < 0.999f) {
+			int anchor_physics_index = (int)physics_vertices.size();
+			const JPH::Float3 &mesh_pos = physics_vertices[mesh_physics_index].mPosition;
+			physics_vertices.emplace_back(mesh_pos, JPH::Float3(0.0f, 0.0f, 0.0f), 0.0f);
+			mesh_to_anchor[mesh_index] = anchor_physics_index;
+
+			const float spring_stiffness = CLAMP(weight, 0.0001f, 1.0f);
+			const float spring_compliance = dt * dt * (1.0f / spring_stiffness - 1.0f) * w1_plus_w2;
+
+			JPH::SoftBodySharedSettings::Edge anchor_edge((JPH::uint32)mesh_physics_index, (JPH::uint32)anchor_physics_index, spring_compliance);
+			anchor_edge.mRestLength = 0.0f;
+			settings->mEdgeConstraints.push_back(anchor_edge);
+		}
+	}
+
+	settings->mVertices = physics_vertices;
 	settings->Optimize();
+	pin_vertices(*this, pinned_vertices, pinned_weights, mesh_to_physics, mesh_to_anchor, settings->mVertices, mass);
 
 	return settings;
 }
@@ -505,7 +452,7 @@ void JoltSoftBody3D::_update_mass() {
 		vertex.mInvMass = inverse_vertex_mass;
 	}
 
-	pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
+	pin_vertices(*this, pinned_vertices, pinned_weights, mesh_to_physics, mesh_to_anchor, physics_vertices, mass);
 }
 
 void JoltSoftBody3D::_update_pressure() {
@@ -1017,7 +964,20 @@ void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position)
 	JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
 
 	const JPH::RVec3 center_of_mass = jolt_body->GetCenterOfMassPosition();
-	physics_vertex.mPosition = JPH::Vec3(to_jolt_r(p_position) - center_of_mass);
+	const JPH::Vec3 target_rel_pos = JPH::Vec3(to_jolt_r(p_position) - center_of_mass);
+
+	const HashMap<int, int>::ConstIterator anchor_it = mesh_to_anchor.find(p_index);
+	if (anchor_it) {
+		const int anchor_index = anchor_it->value;
+		if (anchor_index >= 0 && anchor_index < (int)physics_vertices.size()) {
+			physics_vertices[anchor_index].mPosition = target_rel_pos;
+			physics_vertices[anchor_index].mVelocity = JPH::Vec3::sZero();
+		}
+	} else {
+		JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
+		physics_vertex.mPosition = target_rel_pos;
+		physics_vertex.mVelocity = JPH::Vec3::sZero();
+	}
 
 	_vertices_changed();
 }
@@ -1030,12 +990,14 @@ void JoltSoftBody3D::pin_vertex(int p_index) {
 
 void JoltSoftBody3D::unpin_vertex(int p_index) {
 	pinned_vertices.erase(p_index);
+	pinned_weights.erase(p_index);
 
 	_pins_changed();
 }
 
 void JoltSoftBody3D::unpin_all_vertices() {
 	pinned_vertices.clear();
+	pinned_weights.clear();
 
 	_pins_changed();
 }
@@ -1046,4 +1008,17 @@ bool JoltSoftBody3D::is_vertex_pinned(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, (int)mesh_to_physics.size(), false);
 
 	return pinned_vertices.has(p_index);
+}
+
+void JoltSoftBody3D::set_vertex_weight(int p_index, float p_weight) {
+	pinned_weights[p_index] = CLAMP(p_weight, 0.0f, 1.0f);
+	_pins_changed();
+}
+
+float JoltSoftBody3D::get_vertex_weight(int p_index) const {
+	const HashMap<int, float>::ConstIterator E = pinned_weights.find(p_index);
+	if (E) {
+		return E->value;
+	}
+	return 1.0f;
 }

@@ -315,19 +315,23 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 		append_face(idx[0], idx[1], idx[2]);
 	}
 
-	// Create links from loose edges
-	for (const LooseEdge &le : loose_edges) {
-		int chk = le.v1 * node_count + le.v0;
-		if (!chks[chk]) {
-			chks[chk] = true;
-			int inv_chk = le.v0 * node_count + le.v1;
-			chks[inv_chk] = true;
+	// Create links from loose edges only when enabled
+	if (internal_springs) {
+		for (const LooseEdge &le : loose_edges) {
+			int chk = le.v1 * node_count + le.v0;
+			if (!chks[chk]) {
+				chks[chk] = true;
+				int inv_chk = le.v0 * node_count + le.v1;
+				chks[inv_chk] = true;
 
-			append_link(le.v0, le.v1);
+				append_link(le.v0, le.v1);
+			}
 		}
 	}
 
-	// Set pinned nodes
+	mesh_to_anchor.clear();
+
+	// Set pinned nodes & create anchor spring links for soft-pinned vertices
 	uint32_t pinned_count = pinned_vertices.size();
 	for (uint32_t i = 0; i < pinned_count; ++i) {
 		int pinned_vertex = pinned_vertices[i];
@@ -336,8 +340,34 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 		}
 		uint32_t node_index = map_visual_to_physics[pinned_vertex];
 		if (node_index < node_count) {
-			Node &node = nodes[node_index];
-			node.im = 0.0;
+			float weight = 1.0f;
+			if (pinned_weights.has(pinned_vertex)) {
+				weight = pinned_weights[pinned_vertex];
+			}
+			if (weight >= 0.999f) {
+				nodes[node_index].im = 0.0;
+			} else if (weight > 0.0f) {
+				// Soft pin: create dedicated anchor node (kinematic) and spring link
+				uint32_t anchor_idx = nodes.size();
+				Node anchor_node;
+				anchor_node.s = nodes[node_index].s;
+				anchor_node.x = nodes[node_index].x;
+				anchor_node.q = nodes[node_index].q;
+				anchor_node.im = 0.0;
+				anchor_node.index = anchor_idx;
+				AABB node_aabb(anchor_node.x, leaf_size);
+				anchor_node.leaf = node_tree.insert(node_aabb, &anchor_node);
+				nodes.push_back(anchor_node);
+
+				mesh_to_anchor[pinned_vertex] = anchor_idx;
+
+				append_link(node_index, anchor_idx);
+				Link &anchor_link = links[links.size() - 1];
+				anchor_link.rl = 0.0;
+				anchor_link.c1 = 0.0;
+				real_t kLST = CLAMP(weight, (real_t)0.001, (real_t)1.0);
+				anchor_link.c0 = nodes[node_index].im * kLST;
+			}
 		}
 	}
 
@@ -534,12 +564,25 @@ void GodotSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position
 	}
 
 	ERR_FAIL_COND(p_index >= (int)map_visual_to_physics.size());
-	uint32_t node_index = map_visual_to_physics[p_index];
-
-	ERR_FAIL_COND(node_index >= nodes.size());
-	Node &node = nodes[node_index];
-	node.q = node.x;
-	node.x = p_position;
+	const HashMap<int, int>::ConstIterator anchor_it = mesh_to_anchor.find(p_index);
+	if (anchor_it) {
+		uint32_t anchor_idx = anchor_it->value;
+		if (anchor_idx < nodes.size()) {
+			Node &node = nodes[anchor_idx];
+			node.q = node.x;
+			node.x = p_position;
+			node.v = Vector3();
+			node.bv = Vector3();
+		}
+	} else {
+		uint32_t node_index = map_visual_to_physics[p_index];
+		ERR_FAIL_COND(node_index >= nodes.size());
+		Node &node = nodes[node_index];
+		node.q = node.x;
+		node.x = p_position;
+		node.v = Vector3();
+		node.bv = Vector3();
+	}
 }
 
 void GodotSoftBody3D::pin_vertex(int p_index) {
@@ -557,7 +600,19 @@ void GodotSoftBody3D::pin_vertex(int p_index) {
 
 		ERR_FAIL_COND(node_index >= nodes.size());
 		Node &node = nodes[node_index];
-		node.im = 0.0;
+
+		real_t weight = 1.0;
+		const HashMap<int, real_t>::ConstIterator E = pinned_weights.find(p_index);
+		if (E) {
+			weight = E->value;
+		}
+
+		if (weight >= 0.999) {
+			node.im = 0.0;
+		} else if (weight > 0.0) {
+			real_t inv_node_mass = nodes.size() * inv_total_mass;
+			node.im = (1.0 - weight) * inv_node_mass;
+		}
 	}
 }
 
@@ -568,6 +623,7 @@ void GodotSoftBody3D::unpin_vertex(int p_index) {
 	for (uint32_t i = 0; i < pinned_count; ++i) {
 		if (p_index == pinned_vertices[i]) {
 			pinned_vertices.remove_at(i);
+			pinned_weights.erase(p_index);
 
 			if (!soft_mesh.is_null()) {
 				ERR_FAIL_COND(p_index >= (int)map_visual_to_physics.size());
@@ -602,6 +658,7 @@ void GodotSoftBody3D::unpin_all_vertices() {
 	}
 
 	pinned_vertices.clear();
+	pinned_weights.clear();
 }
 
 bool GodotSoftBody3D::is_vertex_pinned(int p_index) const {
@@ -615,6 +672,33 @@ bool GodotSoftBody3D::is_vertex_pinned(int p_index) const {
 	}
 
 	return false;
+}
+
+void GodotSoftBody3D::set_vertex_weight(int p_index, real_t p_weight) {
+	pinned_weights[p_index] = CLAMP(p_weight, (real_t)0.0, (real_t)1.0);
+	if (is_vertex_pinned(p_index) && !soft_mesh.is_null()) {
+		ERR_FAIL_COND(p_index >= (int)map_visual_to_physics.size());
+		uint32_t node_index = map_visual_to_physics[p_index];
+
+		ERR_FAIL_COND(node_index >= nodes.size());
+		Node &node = nodes[node_index];
+
+		real_t weight = pinned_weights[p_index];
+		if (weight >= 0.999) {
+			node.im = 0.0;
+		} else {
+			real_t inv_node_mass = nodes.size() * inv_total_mass;
+			node.im = (1.0 - weight) * inv_node_mass;
+		}
+	}
+}
+
+real_t GodotSoftBody3D::get_vertex_weight(int p_index) const {
+	const HashMap<int, real_t>::ConstIterator E = pinned_weights.find(p_index);
+	if (E) {
+		return E->value;
+	}
+	return 1.0;
 }
 
 uint32_t GodotSoftBody3D::get_node_count() const {
@@ -1348,7 +1432,11 @@ void GodotSoftBody3D::solve_links(real_t kst, real_t ti) {
 			Node &node_b = *link.n[1];
 			const Vector3 del = node_b.x - node_a.x;
 			const real_t len = del.length_squared();
-			if (link.c1 + len > CMP_EPSILON) {
+			if (link.rl == 0.0) {
+				const real_t k = (1.0 / link.c0) * kst;
+				node_a.x += del * (k * node_a.im);
+				node_b.x -= del * (k * node_b.im);
+			} else if (link.c1 + len > CMP_EPSILON) {
 				const real_t k = ((link.c1 - len) / (link.c0 * (link.c1 + len))) * kst;
 				node_a.x -= del * (k * node_a.im);
 				node_b.x += del * (k * node_b.im);

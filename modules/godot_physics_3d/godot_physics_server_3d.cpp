@@ -1270,6 +1270,20 @@ bool GodotPhysicsServer3D::soft_body_is_point_pinned(RID p_body, int p_point_ind
 	return soft_body->is_vertex_pinned(p_point_index);
 }
 
+void GodotPhysicsServer3D::soft_body_set_point_weight(RID p_body, int p_point_index, real_t p_weight) {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(soft_body);
+
+	soft_body->set_vertex_weight(p_point_index, p_weight);
+}
+
+real_t GodotPhysicsServer3D::soft_body_get_point_weight(RID p_body, int p_point_index) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, 1.0);
+
+	return soft_body->get_vertex_weight(p_point_index);
+}
+
 /* JOINT API */
 
 RID GodotPhysicsServer3D::joint_create() {

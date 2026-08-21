@@ -103,6 +103,8 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 	real_t damping_coefficient = 0.01; // [0,1]
 	real_t drag_coefficient = 0.0; // [0,1]
 	LocalVector<int> pinned_vertices;
+	HashMap<int, real_t> pinned_weights;
+	HashMap<int, int> mesh_to_anchor;
 
 	SelfList<GodotSoftBody3D> active_list;
 
@@ -169,6 +171,8 @@ public:
 	void unpin_vertex(int p_index);
 	void unpin_all_vertices();
 	bool is_vertex_pinned(int p_index) const;
+	void set_vertex_weight(int p_index, real_t p_weight);
+	real_t get_vertex_weight(int p_index) const;
 
 	uint32_t get_node_count() const;
 	real_t get_node_inv_mass(uint32_t p_node_index) const;

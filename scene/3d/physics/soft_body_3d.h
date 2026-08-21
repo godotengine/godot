@@ -82,6 +82,7 @@ public:
 		NodePath spatial_attachment_path;
 		Node3D *spatial_attachment = nullptr; // Cache
 		Vector3 offset;
+		real_t weight = 1.0;
 
 		PinnedPoint();
 		PinnedPoint(const PinnedPoint &obj_tocopy);
@@ -206,8 +207,10 @@ public:
 
 	Vector3 get_point_transform(int p_point_index);
 
-	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1);
+	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1, real_t p_weight = 1.0);
 	bool is_point_pinned(int p_point_index) const;
+	void set_point_weight(int p_point_index, real_t p_weight);
+	real_t get_point_weight(int p_point_index) const;
 
 	void _pin_point_deferred(int p_point_index, bool pin, const NodePath p_spatial_attachment_path);
 
@@ -229,7 +232,7 @@ private:
 	void _update_pinned_skin_cache();
 
 	void _pin_point_on_physics_server(int p_point_index, bool pin);
-	void _add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path, int p_insert_at = -1);
+	void _add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path, int p_insert_at = -1, real_t p_weight = 1.0);
 	void _reset_points_offsets();
 
 	void _remove_pinned_point(int p_point_index);

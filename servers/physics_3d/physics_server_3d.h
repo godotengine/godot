@@ -318,6 +318,8 @@ public:
 	virtual void soft_body_remove_all_pinned_points(RID p_body) = 0;
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) = 0;
 	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const = 0;
+	virtual void soft_body_set_point_weight(RID p_body, int p_point_index, real_t p_weight) = 0;
+	virtual real_t soft_body_get_point_weight(RID p_body, int p_point_index) const = 0;
 
 	/* JOINT API */
 

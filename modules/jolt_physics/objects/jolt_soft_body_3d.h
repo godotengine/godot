@@ -45,6 +45,8 @@ class PhysicsServer3DRenderingServerHandler;
 
 class JoltSoftBody3D final : public JoltObject3D {
 	HashSet<int> pinned_vertices;
+	HashMap<int, float> pinned_weights;
+	HashMap<int, int> mesh_to_anchor;
 
 	LocalVector<int> mesh_to_physics;
 	LocalVector<JoltArea3D *> areas;
@@ -180,6 +182,8 @@ public:
 	void unpin_all_vertices();
 
 	bool is_vertex_pinned(int p_index) const;
+	void set_vertex_weight(int p_index, float p_weight);
+	float get_vertex_weight(int p_index) const;
 
 	void apply_vertex_impulse(int p_index, const Vector3 &p_impulse);
 	void apply_vertex_force(int p_index, const Vector3 &p_force);

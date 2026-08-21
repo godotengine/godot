@@ -344,6 +344,8 @@ public:
 	FUNC1(soft_body_remove_all_pinned_points, RID);
 	FUNC3(soft_body_pin_point, RID, int, bool);
 	FUNC2RC(bool, soft_body_is_point_pinned, RID, int);
+	FUNC3(soft_body_set_point_weight, RID, int, real_t);
+	FUNC2RC(real_t, soft_body_get_point_weight, RID, int);
 
 	/* JOINT API */
 

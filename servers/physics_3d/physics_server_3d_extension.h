@@ -479,6 +479,8 @@ public:
 	EXBIND1(soft_body_remove_all_pinned_points, RID)
 	EXBIND3(soft_body_pin_point, RID, int, bool)
 	EXBIND2RC(bool, soft_body_is_point_pinned, RID, int)
+	EXBIND3(soft_body_set_point_weight, RID, int, real_t)
+	EXBIND2RC(real_t, soft_body_get_point_weight, RID, int)
 
 	EXBIND3(soft_body_apply_point_impulse, RID, int, const Vector3 &)
 	EXBIND3(soft_body_apply_point_force, RID, int, const Vector3 &)

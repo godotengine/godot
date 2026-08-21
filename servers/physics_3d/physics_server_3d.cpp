@@ -290,8 +290,10 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("soft_body_remove_all_pinned_points", "body"), &PhysicsServer3D::soft_body_remove_all_pinned_points);
 
 	ClassDB::bind_method(D_METHOD("soft_body_pin_point", "body", "point_index", "pin"), &PhysicsServer3D::soft_body_pin_point);
-
 	ClassDB::bind_method(D_METHOD("soft_body_is_point_pinned", "body", "point_index"), &PhysicsServer3D::soft_body_is_point_pinned);
+
+	ClassDB::bind_method(D_METHOD("soft_body_set_point_weight", "body", "point_index", "weight"), &PhysicsServer3D::soft_body_set_point_weight);
+	ClassDB::bind_method(D_METHOD("soft_body_get_point_weight", "body", "point_index"), &PhysicsServer3D::soft_body_get_point_weight);
 
 	ClassDB::bind_method(D_METHOD("soft_body_apply_point_impulse", "body", "point_index", "impulse"), &PhysicsServer3D::soft_body_apply_point_impulse);
 	ClassDB::bind_method(D_METHOD("soft_body_apply_point_force", "body", "point_index", "force"), &PhysicsServer3D::soft_body_apply_point_force);

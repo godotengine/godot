@@ -322,6 +322,8 @@ public:
 	virtual void soft_body_remove_all_pinned_points(RID p_body) override;
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) override;
 	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const override;
+	virtual void soft_body_set_point_weight(RID p_body, int p_point_index, real_t p_weight) override;
+	virtual real_t soft_body_get_point_weight(RID p_body, int p_point_index) const override;
 
 	/* JOINT API */
 

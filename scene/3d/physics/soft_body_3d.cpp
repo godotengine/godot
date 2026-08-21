@@ -157,6 +157,7 @@ SoftBody3D::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
 	spatial_attachment_path = obj_tocopy.spatial_attachment_path;
 	spatial_attachment = obj_tocopy.spatial_attachment;
 	offset = obj_tocopy.offset;
+	weight = obj_tocopy.weight;
 }
 
 void SoftBody3D::PinnedPoint::operator=(const PinnedPoint &obj) {
@@ -164,6 +165,7 @@ void SoftBody3D::PinnedPoint::operator=(const PinnedPoint &obj) {
 	spatial_attachment_path = obj.spatial_attachment_path;
 	spatial_attachment = obj.spatial_attachment;
 	offset = obj.offset;
+	weight = obj.weight;
 }
 
 void SoftBody3D::_update_pickable() {
@@ -228,41 +230,24 @@ void SoftBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + PNAME("point_index")));
 		p_list->push_back(PropertyInfo(Variant::NODE_PATH, prefix + PNAME("spatial_attachment_path")));
 		p_list->push_back(PropertyInfo(Variant::VECTOR3, prefix + PNAME("offset")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + PNAME("weight"), PROPERTY_HINT_RANGE, "0,1,0.01"));
 	}
 }
 
 bool SoftBody3D::_set_property_pinned_points_indices(const Array &p_indices) {
 	const int p_indices_size = p_indices.size();
 
-	{ // Remove the pined points on physics server that will be removed by resize
-		const PinnedPoint *r = pinned_points.ptr();
-		if (p_indices_size < pinned_points.size()) {
-			for (int i = pinned_points.size() - 1; i >= p_indices_size; --i) {
-				pin_point(r[i].point_index, false);
-			}
-		}
+	// Unpin old points from physics server
+	for (int i = 0; i < pinned_points.size(); ++i) {
+		_pin_point_on_physics_server(pinned_points[i].point_index, false);
 	}
+	pinned_points.clear();
 
-	pinned_points.resize(p_indices_size);
-
-	PinnedPoint *w = pinned_points.ptrw();
-	int point_index;
 	for (int i = 0; i < p_indices_size; ++i) {
-		point_index = p_indices.get(i);
-		if (w[i].point_index != point_index || pinned_points.size() < p_indices_size) {
-			bool insert = false;
-			if (w[i].point_index != -1 && p_indices.find(w[i].point_index) == -1) {
-				pin_point(w[i].point_index, false);
-				insert = true;
-			}
-			w[i].point_index = point_index;
-			if (insert) {
-				pin_point(w[i].point_index, true, NodePath(), i);
-			} else {
-				pin_point(w[i].point_index, true);
-			}
-		}
+		int point_index = p_indices.get(i);
+		pin_point(point_index, true);
 	}
+	_make_cache_dirty();
 	return true;
 }
 
@@ -277,12 +262,16 @@ bool SoftBody3D::_set_property_pinned_points_attachment(int p_item, const String
 		if (is_inside_tree()) {
 			callable_mp(this, &SoftBody3D::_pin_point_deferred).call_deferred(Variant(w[p_item].point_index), true, p_value);
 		} else {
-			pin_point(w[p_item].point_index, true, p_value);
+			pin_point(w[p_item].point_index, true, p_value, -1, w[p_item].weight);
 			_make_cache_dirty();
 		}
 	} else if ("offset" == p_what) {
 		PinnedPoint *w = pinned_points.ptrw();
 		w[p_item].offset = p_value;
+	} else if ("weight" == p_what) {
+		PinnedPoint *w = pinned_points.ptrw();
+		w[p_item].weight = CLAMP((real_t)p_value, (real_t)0.0, (real_t)1.0);
+		PhysicsServer3D::get_singleton()->soft_body_set_point_weight(physics_rid, w[p_item].point_index, w[p_item].weight);
 	} else {
 		return false;
 	}
@@ -302,6 +291,8 @@ bool SoftBody3D::_get_property_pinned_points(int p_item, const String &p_what, V
 		r_ret = r[p_item].spatial_attachment_path;
 	} else if ("offset" == p_what) {
 		r_ret = r[p_item].offset;
+	} else if ("weight" == p_what) {
+		r_ret = r[p_item].weight;
 	} else {
 		return false;
 	}
@@ -431,8 +422,10 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &SoftBody3D::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_central_force", "force"), &SoftBody3D::apply_central_force);
 
-	ClassDB::bind_method(D_METHOD("set_point_pinned", "point_index", "pinned", "attachment_path", "insert_at"), &SoftBody3D::pin_point, DEFVAL(NodePath()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("set_point_pinned", "point_index", "pinned", "attachment_path", "insert_at", "weight"), &SoftBody3D::pin_point, DEFVAL(NodePath()), DEFVAL(-1), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("is_point_pinned", "point_index"), &SoftBody3D::is_point_pinned);
+	ClassDB::bind_method(D_METHOD("set_point_weight", "point_index", "weight"), &SoftBody3D::set_point_weight);
+	ClassDB::bind_method(D_METHOD("get_point_weight", "point_index"), &SoftBody3D::get_point_weight);
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &SoftBody3D::get_point_count);
 
@@ -600,6 +593,10 @@ void SoftBody3D::_prepare_physics_server() {
 			mesh_rid = mesh->get_rid();
 		}
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh_rid);
+		for (int i = 0; i < pinned_points.size(); ++i) {
+				PhysicsServer3D::get_singleton()->soft_body_pin_point(physics_rid, pinned_points[i].point_index, true);
+				PhysicsServer3D::get_singleton()->soft_body_set_point_weight(physics_rid, pinned_points[i].point_index, pinned_points[i].weight);
+		}
 		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
 	} else {
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, RID());
@@ -631,8 +628,8 @@ void SoftBody3D::_become_mesh_owner() {
 
 		soft_mesh->add_surface_from_arrays(primitive_type, surface_arrays, surface_blend_arrays, surface_lods, surface_format);
 
-		if (internal_springs && primitive_type != Mesh::PRIMITIVE_TRIANGLES) {
-			// Hide internal springs from final render
+		if (primitive_type != Mesh::PRIMITIVE_TRIANGLES) {
+			// Hide internal springs / loose lines / loose points from final render
 			Ref<StandardMaterial3D> hidden_mat;
 			hidden_mat.instantiate();
 			hidden_mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
@@ -647,7 +644,7 @@ void SoftBody3D::_become_mesh_owner() {
 
 	for (int i = copy_materials.size() - 1; 0 <= i; --i) {
 		Mesh::PrimitiveType prim_type = mesh->surface_get_primitive_type(i);
-		if (internal_springs && prim_type != Mesh::PRIMITIVE_TRIANGLES) {
+		if (prim_type != Mesh::PRIMITIVE_TRIANGLES) {
 			Ref<StandardMaterial3D> hidden_mat;
 			hidden_mat.instantiate();
 			hidden_mat->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
@@ -891,14 +888,40 @@ void SoftBody3D::apply_central_force(const Vector3 &p_force) {
 	PhysicsServer3D::get_singleton()->soft_body_apply_central_force(physics_rid, p_force);
 }
 
-void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path, int p_insert_at) {
+void SoftBody3D::pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path, int p_insert_at, real_t p_weight) {
 	ERR_FAIL_COND_MSG(p_insert_at < -1 || p_insert_at >= pinned_points.size(), "Invalid index for pin point insertion position.");
+	if (p_weight <= 0.0) {
+		pin = false;
+	}
 	_pin_point_on_physics_server(p_point_index, pin);
 	if (pin) {
-		_add_pinned_point(p_point_index, p_spatial_attachment_path, p_insert_at);
+		_add_pinned_point(p_point_index, p_spatial_attachment_path, p_insert_at, p_weight);
+		PhysicsServer3D::get_singleton()->soft_body_set_point_weight(physics_rid, p_point_index, p_weight);
 	} else {
 		_remove_pinned_point(p_point_index);
 	}
+}
+
+void SoftBody3D::set_point_weight(int p_point_index, real_t p_weight) {
+	if (p_weight <= 0.0) {
+		pin_point(p_point_index, false);
+		return;
+	}
+	PinnedPoint *pp = nullptr;
+	int idx = _get_pinned_point(p_point_index, pp);
+	if (idx != -1 && pp) {
+		pp->weight = CLAMP(p_weight, (real_t)0.0, (real_t)1.0);
+		PhysicsServer3D::get_singleton()->soft_body_set_point_weight(physics_rid, p_point_index, pp->weight);
+	}
+}
+
+real_t SoftBody3D::get_point_weight(int p_point_index) const {
+	PinnedPoint *pp = nullptr;
+	int idx = _get_pinned_point(p_point_index, pp);
+	if (idx != -1 && pp) {
+		return pp->weight;
+	}
+	return 1.0;
 }
 
 void SoftBody3D::_pin_point_deferred(int p_point_index, bool pin, const NodePath p_spatial_attachment_path) {
@@ -1053,13 +1076,14 @@ void SoftBody3D::_pin_point_on_physics_server(int p_point_index, bool pin) {
 	PhysicsServer3D::get_singleton()->soft_body_pin_point(physics_rid, p_point_index, pin);
 }
 
-void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path, int p_insert_at) {
+void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path, int p_insert_at, real_t p_weight) {
 	SoftBody3D::PinnedPoint *pinned_point;
 	if (-1 == _get_pinned_point(p_point_index, pinned_point)) {
 		// Create new
 		PinnedPoint pp;
 		pp.point_index = p_point_index;
 		pp.spatial_attachment_path = p_spatial_attachment_path;
+		pp.weight = CLAMP(p_weight, (real_t)0.0, (real_t)1.0);
 
 		if (!p_spatial_attachment_path.is_empty() && has_node(p_spatial_attachment_path)) {
 			pp.spatial_attachment = Object::cast_to<Node3D>(get_node(p_spatial_attachment_path));
@@ -1075,6 +1099,7 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 	} else {
 		pinned_point->point_index = p_point_index;
 		pinned_point->spatial_attachment_path = p_spatial_attachment_path;
+		pinned_point->weight = CLAMP(p_weight, (real_t)0.0, (real_t)1.0);
 
 		if (!p_spatial_attachment_path.is_empty() && has_node(p_spatial_attachment_path)) {
 			Node3D *attachment_node = Object::cast_to<Node3D>(get_node(p_spatial_attachment_path));

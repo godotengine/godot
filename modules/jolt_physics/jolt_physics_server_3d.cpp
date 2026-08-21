@@ -1278,6 +1278,20 @@ bool JoltPhysicsServer3D::soft_body_is_point_pinned(RID p_body, int p_point_inde
 	return body->is_vertex_pinned(p_point_index);
 }
 
+void JoltPhysicsServer3D::soft_body_set_point_weight(RID p_body, int p_point_index, real_t p_weight) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->set_vertex_weight(p_point_index, (float)p_weight);
+}
+
+real_t JoltPhysicsServer3D::soft_body_get_point_weight(RID p_body, int p_point_index) const {
+	const JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 1.0);
+
+	return (real_t)body->get_vertex_weight(p_point_index);
+}
+
 RID JoltPhysicsServer3D::joint_create() {
 	JoltJoint3D *joint = memnew(JoltJoint3D);
 	RID rid = joint_owner.make_rid(joint);
