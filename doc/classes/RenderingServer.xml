@@ -2137,6 +2137,22 @@
 				If [code]true[/code], this directional light will blend between shadow map splits resulting in a smoother transition between them. Equivalent to [member DirectionalLight3D.directional_shadow_blend_splits].
 			</description>
 		</method>
+		<method name="light_directional_set_min_shadow_fov">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="fov" type="float" />
+			<description>
+				Sets the minimum vertical FOV for the light camera frustum. Use this to reduce flickering shadows during camera FOV animations at the cost of lower shadow detail. This value is only used for perspective or frustum cameras. Equivalent to [member DirectionalLight3D.directional_shadow_min_fov].
+			</description>
+		</method>
+		<method name="light_directional_set_min_shadow_size">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="size" type="float" />
+			<description>
+				Sets the minimum size for the light camera frustum. Use this to reduce flickering shadows during camera FOV animations at the cost of lower shadow detail. This value is only used for orthogonal cameras. Equivalent to [member DirectionalLight3D.directional_shadow_min_size].
+			</description>
+		</method>
 		<method name="light_directional_set_shadow_mode">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />

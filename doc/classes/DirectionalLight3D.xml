@@ -21,6 +21,14 @@
 		<member name="directional_shadow_max_distance" type="float" setter="set_param" getter="get_param" default="100.0">
 			The maximum distance for shadow splits. Increasing this value will make directional shadows visible from further away, at the cost of lower overall shadow detail and performance (since more objects need to be included in the directional shadow rendering).
 		</member>
+		<member name="directional_shadow_min_fov" type="float" setter="set_min_shadow_fov" getter="get_min_shadow_fov" default="0.0">
+			The minimum vertical FOV for shadow rendering. Use this to reduce flickering shadows during camera FOV animations at the cost of lower shadow detail. Shadows will appear more stable as long as the camera's vertical FOV does not exceed this value.
+			[b]Note:[/b] This property only affects cameras whose [member Camera3D.projection] is set to [constant Camera3D.PROJECTION_PERSPECTIVE] or [constant Camera3D.PROJECTION_FRUSTUM].
+		</member>
+		<member name="directional_shadow_min_size" type="float" setter="set_min_shadow_size" getter="get_min_shadow_size" default="0.0">
+			The minimum size for shadow rendering. Use this to reduce flickering shadows during camera FOV animations at the cost of lower shadow detail. Shadows will appear more stable as long as the camera's size does not exceed this value.
+			[b]Note:[/b] This property only affects cameras whose [member Camera3D.projection] is set to [constant Camera3D.PROJECTION_ORTHOGONAL].
+		</member>
 		<member name="directional_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="DirectionalLight3D.ShadowMode" default="2">
 			The light's shadow rendering algorithm.
 		</member>

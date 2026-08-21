@@ -505,6 +505,8 @@ public:
 	FUNC2(light_directional_set_shadow_mode, RID, RSE::LightDirectionalShadowMode)
 	FUNC2(light_directional_set_blend_splits, RID, bool)
 	FUNC2(light_directional_set_sky_mode, RID, RSE::LightDirectionalSkyMode)
+	FUNC2(light_directional_set_min_shadow_fov, RID, real_t)
+	FUNC2(light_directional_set_min_shadow_size, RID, real_t)
 
 	FUNC2(light_area_set_size, RID, const Vector2 &)
 	FUNC2(light_area_set_normalize_energy, RID, bool)
