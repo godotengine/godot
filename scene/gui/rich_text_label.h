@@ -817,7 +817,62 @@ private:
 		Color table_border;
 
 		float base_scale = 1.0;
+
+		bool operator==(const ThemeCache &p_other) const {
+			return normal_style == p_other.normal_style &&
+					focus_style == p_other.focus_style &&
+					progress_bg_style == p_other.progress_bg_style &&
+					progress_fg_style == p_other.progress_fg_style &&
+
+					horizontal_rule == p_other.horizontal_rule &&
+
+					line_separation == p_other.line_separation &&
+					paragraph_separation == p_other.paragraph_separation &&
+
+					normal_font == p_other.normal_font &&
+					normal_font_size == p_other.normal_font_size &&
+
+					default_color == p_other.default_color &&
+					font_selected_color == p_other.font_selected_color &&
+					selection_color == p_other.selection_color &&
+					font_outline_color == p_other.font_outline_color &&
+					font_shadow_color == p_other.font_shadow_color &&
+					shadow_outline_size == p_other.shadow_outline_size &&
+					shadow_offset_x == p_other.shadow_offset_x &&
+					shadow_offset_y == p_other.shadow_offset_y &&
+					outline_size == p_other.outline_size &&
+					outline_color == p_other.outline_color &&
+
+					bold_font == p_other.bold_font &&
+					bold_font_size == p_other.bold_font_size &&
+					bold_italics_font == p_other.bold_italics_font &&
+					bold_italics_font_size == p_other.bold_italics_font_size &&
+					italics_font == p_other.italics_font &&
+					italics_font_size == p_other.italics_font_size &&
+					mono_font == p_other.mono_font &&
+					mono_font_size == p_other.mono_font_size &&
+
+					text_highlight_h_padding == p_other.text_highlight_h_padding &&
+					text_highlight_v_padding == p_other.text_highlight_v_padding &&
+
+					underline_alpha == p_other.underline_alpha &&
+					strikethrough_alpha == p_other.strikethrough_alpha &&
+
+					table_h_separation == p_other.table_h_separation &&
+					table_v_separation == p_other.table_v_separation &&
+					table_odd_row_bg == p_other.table_odd_row_bg &&
+					table_even_row_bg == p_other.table_even_row_bg &&
+					table_border == p_other.table_border &&
+
+					base_scale == p_other.base_scale;
+		}
+
+		bool operator!=(const ThemeCache &p_other) const {
+			return !(*this == p_other);
+		}
 	} theme_cache;
+
+	ThemeCache theme_cache_old = ThemeCache();
 
 public:
 	virtual RID get_focused_accessibility_element() const override;

@@ -2712,7 +2712,12 @@ void RichTextLabel::_notification(int p_what) {
 			} else {
 				current_fitted_font_size = 0;
 			}
-			main->first_invalid_font_line.store(0);
+			theme_cache_old.normal_style = theme_cache.normal_style;
+			theme_cache_old.focus_style = theme_cache.focus_style;
+			if (theme_cache != theme_cache_old) {
+				main->first_invalid_font_line.store(0);
+			}
+			theme_cache_old = theme_cache;
 			main->first_resized_line.store(0);
 			for (const RID &E : hr_list) {
 				Item *it = items.get_or_null(E);
