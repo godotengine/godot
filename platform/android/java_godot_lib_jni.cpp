@@ -89,6 +89,7 @@ static Vector3 accelerometer;
 static Vector3 gravity;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
+static Quaternion device_orientation;
 
 static void _terminate(JNIEnv *env, bool p_restart = false) {
 	if (step.get() == STEP_TERMINATED) {
@@ -346,6 +347,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 		dsa->process_gravity(gravity);
 		dsa->process_magnetometer(magnetometer);
 		dsa->process_gyroscope(gyroscope);
+		dsa->process_device_orientation(device_orientation);
 	}
 
 	bool should_swap_buffers = false;
@@ -495,6 +497,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_magnetometer(JNIEnv *
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gyroscope(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat z) {
 	gyroscope = Vector3(x, y, z);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_deviceOrientation(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat z, jfloat w) {
+	device_orientation = Quaternion(x, y, z, w);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, jclass clazz) {
