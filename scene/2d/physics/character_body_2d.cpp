@@ -162,7 +162,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					apply_ceiling_velocity = true;
 					Vector2 ceiling_vertical_velocity = up_direction * up_direction.dot(result.collider_velocity);
 					Vector2 motion_vertical_velocity = up_direction * up_direction.dot(velocity);
-					if (motion_vertical_velocity.dot(up_direction) > 0 || ceiling_vertical_velocity.length_squared() > motion_vertical_velocity.length_squared()) {
+					if (motion_vertical_velocity.dot(up_direction) > 0.0f || ceiling_vertical_velocity.length_squared() > motion_vertical_velocity.length_squared()) {
 						velocity = ceiling_vertical_velocity + velocity.slide(up_direction);
 					}
 				}
