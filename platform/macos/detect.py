@@ -110,10 +110,10 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=13.0"])
         env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=13.0"])
     elif env["arch"] == "x86_64":
-        print("Building for macOS 11.0+.")
-        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=11.0"])
-        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=11.0"])
-        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=11.0"])
+        print("Building for macOS 12.0+.")
+        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=12.0"])
+        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=12.0"])
+        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=12.0"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
     env.Append(CCFLAGS=["-fobjc-arc", "-fvisibility=hidden"])
