@@ -977,6 +977,7 @@
 			<description>
 				Attaches [param script] to the object, and instantiates it. As a result, the script's [method _init] is called. A [Script] is used to extend the object's functionality.
 				If a script already exists, its instance is detached, and its property values and state are lost. Built-in property values are still kept.
+				[b]Note:[/b] In [code]@tool[/code] scripts, assigning an [GDScript] inner class to an [Node] via [method set_script] will not persist when saving the scene. As a result, any [code]@export[/code] properties defined in that inner class will lose their values after the scene is reloaded, as the script reference is not stored in the saved file.
 			</description>
 		</method>
 		<method name="set_translation_domain">
