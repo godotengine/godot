@@ -97,6 +97,10 @@ public:
 		return sizeof...(P);
 	}
 
+	virtual void get_arguments(Vector<Variant> &r_arguments) const {
+		print_line("CallableCustomMethodPointer::get_arguments is called!");
+	}
+
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 		ERR_FAIL_NULL_MSG(ObjectDB::get_instance(ObjectID(data.object_id)), "Invalid Object id '" + uitos(data.object_id) + "', can't call method.");
 		if constexpr (std::is_same<R, void>::value) {
