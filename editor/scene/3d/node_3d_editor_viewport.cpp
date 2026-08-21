@@ -3182,6 +3182,8 @@ void Node3DEditorViewport::_project_settings_changed() {
 
 	const Viewport::AnisotropicFiltering anisotropic_filtering_level = Viewport::AnisotropicFiltering(int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level")));
 	viewport->set_anisotropic_filtering_level(anisotropic_filtering_level);
+
+	use_separate_thread = GLOBAL_GET("physics/3d/run_on_separate_thread");
 }
 
 static void override_label_colors(Control *p_control) {
@@ -3788,61 +3790,16 @@ void Node3DEditorViewport::_notification(int p_what) {
 						frame_time_gradient->get_color_at_offset(
 								Math::remap(fps, 110, 10, 0, 1)));
 			}
+
+			if (!use_separate_thread) {
+				_update_collision_reposition_and_preview();
+			}
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
-			if (collision_reposition) {
-				Node3D *selected_node = nullptr;
-
-				if (ruler->is_inside_tree()) {
-					if (ruler_start_point->is_visible()) {
-						selected_node = ruler_end_point;
-					} else {
-						selected_node = ruler_start_point;
-					}
-				} else {
-					const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-					if (selection.size() == 1) {
-						selected_node = Object::cast_to<Node3D>(selection.front()->get());
-					}
-				}
-
-				if (selected_node) {
-					if (!ruler->is_inside_tree()) {
-						double snap = EDITOR_GET("interface/inspector/default_float_step");
-						int snap_step_decimals = Math::range_step_decimals(snap);
-						set_message(vformat(TTR("Translating: %s"), vformat("%.*v", snap_step_decimals, selected_node->get_global_position())));
-					}
-
-					selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
-
-					if (ruler->is_inside_tree() && !ruler_start_point->is_visible()) {
-						ruler_end_point->set_global_position(ruler_start_point->get_global_position());
-						ruler_start_point->set_visible(true);
-						ruler_end_point->set_visible(true);
-						ruler_label->set_visible(true);
-						ruler_label_x->set_visible(false);
-						ruler_label_y->set_visible(false);
-						ruler_label_z->set_visible(false);
-					}
-				}
+			if (use_separate_thread) {
+				_update_collision_reposition_and_preview();
 			}
-
-			if (!update_preview_node) {
-				return;
-			}
-			if (preview_node->is_inside_tree()) {
-				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
-				double snap = EDITOR_GET("interface/inspector/default_float_step");
-				int snap_step_decimals = Math::range_step_decimals(snap);
-				set_message(vformat(TTR("Instantiating: %s"), vformat("%.*v", snap_step_decimals, preview_node_pos)));
-				Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
-				preview_node->set_global_transform(preview_gl_transform);
-				if (!preview_node->is_visible()) {
-					preview_node->show();
-				}
-			}
-			update_preview_node = false;
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -5950,6 +5907,61 @@ void Node3DEditorViewport::_perform_drop_data() {
 	}
 }
 
+void Node3DEditorViewport::_update_collision_reposition_and_preview() {
+	if (collision_reposition) {
+		Node3D *selected_node = nullptr;
+
+		if (ruler->is_inside_tree()) {
+			if (ruler_start_point->is_visible()) {
+				selected_node = ruler_end_point;
+			} else {
+				selected_node = ruler_start_point;
+			}
+		} else {
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			if (selection.size() == 1) {
+				selected_node = Object::cast_to<Node3D>(selection.front()->get());
+			}
+		}
+
+		if (selected_node) {
+			if (!ruler->is_inside_tree()) {
+				double snap = EDITOR_GET("interface/inspector/default_float_step");
+				int snap_step_decimals = Math::range_step_decimals(snap);
+				set_message(vformat(TTR("Translating: %s"), vformat("%.*v", snap_step_decimals, selected_node->get_global_position())));
+			}
+
+			selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
+
+			if (ruler->is_inside_tree() && !ruler_start_point->is_visible()) {
+				ruler_end_point->set_global_position(ruler_start_point->get_global_position());
+				ruler_start_point->set_visible(true);
+				ruler_end_point->set_visible(true);
+				ruler_label->set_visible(true);
+				ruler_label_x->set_visible(false);
+				ruler_label_y->set_visible(false);
+				ruler_label_z->set_visible(false);
+			}
+		}
+	}
+
+	if (!update_preview_node) {
+		return;
+	}
+	if (preview_node->is_inside_tree()) {
+		preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
+		double snap = EDITOR_GET("interface/inspector/default_float_step");
+		int snap_step_decimals = Math::range_step_decimals(snap);
+		set_message(vformat(TTR("Instantiating: %s"), vformat("%.*v", snap_step_decimals, preview_node_pos)));
+		Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
+		preview_node->set_global_transform(preview_gl_transform);
+		if (!preview_node->is_visible()) {
+			preview_node->show();
+		}
+	}
+	update_preview_node = false;
+}
+
 void Node3DEditorViewport::_show_tooltip(const String &p_title, const String &p_description) const {
 	tooltip_panel->set_text(
 			vformat("[font_size=%s][b][color=%s]%s[/color][/b][/font_size]\n%s",
@@ -6767,6 +6779,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_edit.instant = false;
 	_edit.gizmo_handle = -1;
 	_edit.gizmo_handle_secondary = false;
+
+	use_separate_thread = GLOBAL_GET("physics/3d/run_on_separate_thread");
 
 	index = p_index;
 	editor_selection = EditorNode::get_singleton()->get_editor_selection();
