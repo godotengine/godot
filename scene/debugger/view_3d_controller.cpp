@@ -45,12 +45,7 @@ Transform3D View3DController::_to_camera_transform(const Cursor &p_cursor) const
 	camera_transform.translate_local(Vector3(p_cursor.pos_x, p_cursor.pos_y, p_cursor.pos_z));
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -p_cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -p_cursor.y_rot);
-
-	if (orthogonal) {
-		camera_transform.translate_local(0, 0, (zfar - znear) / 2.0);
-	} else {
-		camera_transform.translate_local(0, 0, p_cursor.distance);
-	}
+	camera_transform.translate_local(0, 0, p_cursor.distance);
 
 	return camera_transform;
 }

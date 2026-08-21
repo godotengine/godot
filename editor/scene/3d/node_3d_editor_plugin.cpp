@@ -34,7 +34,6 @@
 #include "core/input/input.h"
 #include "core/math/geometry_3d.h"
 #include "core/math/math_funcs.h"
-#include "core/math/projection.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
@@ -99,7 +98,6 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/sky_material.h"
@@ -3625,32 +3623,33 @@ Node3DEditor::Node3DEditor() {
 	settings_vbc->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	settings_dialog->add_child(settings_vbc);
 
-	settings_fov = memnew(SpinBox);
+	settings_fov = memnew(EditorSpinSlider);
 	settings_fov->set_max(MAX_FOV);
 	settings_fov->set_min(MIN_FOV);
 	settings_fov->set_step(0.1);
 	settings_fov->set_value(EDITOR_GET("editors/3d/default_fov"));
-	settings_fov->set_select_all_on_focus(true);
 	settings_fov->set_tooltip_text(TTRC("FOV is defined as a vertical value, as the editor camera always uses the Keep Height aspect mode."));
 	settings_fov->set_accessibility_name(TTRC("Perspective VFOV (deg.):"));
 	settings_vbc->add_margin_child(TTRC("Perspective VFOV (deg.):"), settings_fov);
 
-	settings_znear = memnew(SpinBox);
-	settings_znear->set_max(MAX_Z);
+	settings_znear = memnew(EditorSpinSlider);
+	settings_znear->set_max(MAX_Z_HINT);
 	settings_znear->set_min(MIN_Z);
 	settings_znear->set_step(0.01);
+	settings_znear->set_allow_greater(true);
+	settings_znear->set_exp_ratio(true);
 	settings_znear->set_accessibility_name(TTRC("View Z-Near:"));
 	settings_znear->set_value(EDITOR_GET("editors/3d/default_z_near"));
-	settings_znear->set_select_all_on_focus(true);
 	settings_vbc->add_margin_child(TTRC("View Z-Near:"), settings_znear);
 
-	settings_zfar = memnew(SpinBox);
-	settings_zfar->set_max(MAX_Z);
+	settings_zfar = memnew(EditorSpinSlider);
+	settings_zfar->set_max(MAX_Z_HINT);
 	settings_zfar->set_min(MIN_Z);
 	settings_zfar->set_step(0.1);
+	settings_zfar->set_allow_greater(true);
+	settings_zfar->set_exp_ratio(true);
 	settings_zfar->set_accessibility_name(TTRC("View Z-Far:"));
 	settings_zfar->set_value(EDITOR_GET("editors/3d/default_z_far"));
-	settings_zfar->set_select_all_on_focus(true);
 	settings_vbc->add_margin_child(TTRC("View Z-Far:"), settings_zfar);
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; ++i) {
@@ -4103,7 +4102,7 @@ void Node3DEditor::remove_gizmo_bvh_node(DynamicBVH::ID p_id) {
 	gizmo_bvh.remove(p_id);
 }
 
-Vector<Node3D *> Node3DEditor::gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_end) {
+Vector<Node3D *> Node3DEditor::gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_dir, real_t ray_length) {
 	struct Result {
 		Vector<Node3D *> nodes;
 		bool operator()(void *p_data) {
@@ -4112,7 +4111,7 @@ Vector<Node3D *> Node3DEditor::gizmo_bvh_ray_query(const Vector3 &p_ray_start, c
 		}
 	} result;
 
-	gizmo_bvh.ray_query(p_ray_start, p_ray_end, result);
+	gizmo_bvh.ray_query(p_ray_start, p_ray_dir, ray_length, result);
 
 	return result.nodes;
 }
