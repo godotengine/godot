@@ -160,6 +160,9 @@ void ResourceImporterTexture::update_imports() {
 			} else if (compress_to == 2) {
 				cf->set_value("params", "compress/mode", COMPRESS_BASIS_UNIVERSAL);
 				compress_string = "Basis Universal";
+			} else if (compress_to == 100) {
+				cf->set_value("params", "compress/mode", COMPRESS_LOSSLESS);
+				compress_string = "Lossless";
 			}
 
 			print_line(
@@ -286,7 +289,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	// Maximum bound is the highest allowed value for lossy compression (the lowest common denominator).
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,16383,1"), 0));
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled,VRAM Compressed,Basis Universal"), (p_preset == PRESET_DETECT) ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "detect_3d/compress_to", PROPERTY_HINT_ENUM, "Disabled:0,Lossless:100,VRAM Compressed:1,Basis Universal:2"), (p_preset == PRESET_DETECT) ? 1 : 0));
 
 	// Do path based customization only if a path was passed.
 	if (p_path.is_empty() || p_path.get_extension() == "svg") {
