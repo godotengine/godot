@@ -499,6 +499,7 @@ public:
 	FUNC2(light_set_shadow_caster_mask, RID, uint32_t)
 	FUNC2(light_set_bake_mode, RID, RSE::LightBakeMode)
 	FUNC2(light_set_max_sdfgi_cascade, RID, uint32_t)
+	FUNC2(light_set_allow_contact_shadows, RID, bool)
 
 	FUNC2(light_omni_set_shadow_mode, RID, RSE::LightOmniShadowMode)
 
@@ -865,6 +866,8 @@ public:
 	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
 	FUNC1(environment_set_ssr_half_size, bool)
 	FUNC1(environment_set_ssr_roughness_quality, RSE::EnvironmentSSRRoughnessQuality)
+
+	FUNC9(environment_set_sscs, RID, bool, RSE::EnvironmentSSCSSampleCount, float, float, float, bool, float, float)
 
 	FUNC10(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, float)
 	FUNC6(environment_set_ssao_quality, RSE::EnvironmentSSAOQuality, bool, float, int, float, float)
