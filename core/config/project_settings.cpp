@@ -227,6 +227,12 @@ void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_v
 	props[p_name].initial = p_value.duplicate();
 }
 
+void ProjectSettings::initialize_setting(const String &p_name, const Variant &p_value) {
+	block_changed = true;
+	set(p_name, p_value);
+	block_changed = false;
+}
+
 void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
 	props[p_name].restart_if_changed = p_restart;
@@ -374,8 +380,10 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 	}
 
-	_version++;
-	_queue_changed(p_name);
+	if (!block_changed) {
+		_version++;
+		_queue_changed(p_name);
+	}
 	return true;
 }
 
@@ -1008,7 +1016,9 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 
 Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path) {
 	// Attempt first to load the binary project.godot file.
+	block_changed = true;
 	Error err = _load_settings_binary(p_bin_path);
+	block_changed = false;
 	if (err == OK) {
 		return OK;
 	} else if (err != ERR_FILE_NOT_FOUND) {
@@ -1017,7 +1027,9 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 	}
 
 	// Fallback to text-based project.godot file if binary was not found.
+	block_changed = true;
 	err = _load_settings_text(p_text_path);
+	block_changed = false;
 	if (err == OK) {
 #ifndef DISABLE_DEPRECATED
 		const PackedStringArray features = get_setting("application/config/features");
@@ -1339,7 +1351,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic, bool p_internal) {
 	Variant ret;
 	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
-		ProjectSettings::get_singleton()->set(p_var, p_default);
+		ProjectSettings::get_singleton()->initialize_setting(p_var, p_default);
 	}
 	ret = GLOBAL_GET(p_var);
 
