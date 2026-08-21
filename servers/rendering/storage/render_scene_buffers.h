@@ -44,6 +44,7 @@ private:
 	uint32_t view_count = 1;
 
 	RSE::ViewportScaling3DMode scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
+	RID scaling_3d_custom_upscaler;
 	RSE::ViewportMSAA msaa_3d = RSE::VIEWPORT_MSAA_DISABLED;
 	RSE::ViewportScreenSpaceAA screen_space_aa = RSE::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	RSE::ViewportAnisotropicFiltering anisotropic_filtering_level = RSE::VIEWPORT_ANISOTROPY_4X;
@@ -71,6 +72,9 @@ public:
 
 	RSE::ViewportScaling3DMode get_scaling_3d_mode() const { return scaling_3d_mode; }
 	void set_scaling_3d_mode(RSE::ViewportScaling3DMode p_scaling_3d_mode) { scaling_3d_mode = p_scaling_3d_mode; }
+
+	RID get_scaling_3d_custom_upscaler() const { return scaling_3d_custom_upscaler; }
+	void set_scaling_3d_custom_upscaler(RID p_scaling_3d_custom_upscaler) { scaling_3d_custom_upscaler = p_scaling_3d_custom_upscaler; }
 
 	RSE::ViewportMSAA get_msaa_3d() const { return msaa_3d; }
 	void set_msaa_3d(RSE::ViewportMSAA p_msaa_3d) { msaa_3d = p_msaa_3d; }
