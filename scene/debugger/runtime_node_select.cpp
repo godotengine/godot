@@ -1070,6 +1070,13 @@ void RuntimeNodeSelect::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_n
 	xform = (xform * ci->get_transform()).affine_inverse();
 	const real_t local_grab_distance = xform.basis_xform(Vector2(sel_2d_grab_dist, 0)).length() / view_2d_zoom;
 	if (ci->_edit_is_selected_on_click(xform.xform(pos), local_grab_distance)) {
+		if (Object::cast_to<Control>(ci)) {
+			Control *control = Object::cast_to<Control>(ci);
+			if (control->get_mouse_filter_with_override() != Control::MOUSE_FILTER_STOP) {
+				return;
+			}
+		}
+
 		SelectResult res;
 		res.item = ci;
 		res.order = ci->get_effective_z_index() + ci->get_canvas_layer();
@@ -1144,6 +1151,13 @@ void RuntimeNodeSelect::_find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_
 	}
 
 	if (selected) {
+		if (Object::cast_to<Control>(ci)) {
+			Control *control = Object::cast_to<Control>(ci);
+			if (control->get_mouse_filter_with_override() != Control::MOUSE_FILTER_STOP) {
+				return;
+			}
+		}
+
 		SelectResult res;
 		res.item = ci;
 		res.order = ci->get_effective_z_index() + ci->get_canvas_layer();
