@@ -8,4 +8,8 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
+		<member name="include_directories" type="Array" setter="" getter="" default="PackedStringArray()">
+		</member>
+	</members>
 </class>
