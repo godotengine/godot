@@ -14,6 +14,6 @@
     <AppendRuntimeIdentifierToOutputPath>False</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="EnvDTE" Version="17.8.37221" />
+    <PackageReference Include="EnvDTE" Version="17.14.40260" />
   </ItemGroup>
 </Project>
