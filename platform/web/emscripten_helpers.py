@@ -35,18 +35,20 @@ def create_template_zip(env, js, wasm, side):
     zip_dir = env.Dir(env.GetTemplateZipPath())
     in_files = [
         js,
-        wasm,
         "#platform/web/js/libs/audio.worklet.js",
         "#platform/web/js/libs/audio.position.worklet.js",
     ]
     out_files = [
         zip_dir.File(binary_name + ".js"),
-        zip_dir.File(binary_name + ".wasm"),
         zip_dir.File(binary_name + ".audio.worklet.js"),
         zip_dir.File(binary_name + ".audio.position.worklet.js"),
     ]
-    # Dynamic linking (extensions) specific.
-    if env["dlink_enabled"]:
+
+    if wasm is not None:
+        in_files.append(wasm)  # Wasm (contains the actual Godot code or pure runtime).
+        out_files.append(zip_dir.File(binary_name + ".wasm"))
+    # Dynamic linking specific.
+    if side is not None:
         in_files.append(side)  # Side wasm (contains the actual Godot code).
         out_files.append(zip_dir.File(binary_name + ".side.wasm"))
 
