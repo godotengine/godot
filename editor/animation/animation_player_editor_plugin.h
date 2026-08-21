@@ -341,6 +341,31 @@ public:
 	AnimationTrackKeyEditEditorPlugin();
 };
 
+// AnimationMultiTrackKeyEditEditorPlugin
+
+class EditorInspectorPluginAnimationMultiTrackKeyEdit : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginAnimationMultiTrackKeyEdit, EditorInspectorPlugin);
+
+	AnimationMultiTrackKeyEditEditor *amtk_editor = nullptr;
+
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
+};
+
+class AnimationMultiTrackKeyEditEditorPlugin : public EditorPlugin {
+	GDCLASS(AnimationMultiTrackKeyEditEditorPlugin, EditorPlugin);
+
+	Ref<EditorInspectorPluginAnimationMultiTrackKeyEdit> amtk_plugin;
+
+public:
+	virtual bool handles(Object *p_object) const override;
+
+	virtual String get_plugin_name() const override { return "AnimationMultiTrackKeyEdit"; }
+
+	AnimationMultiTrackKeyEditEditorPlugin();
+};
+
 // AnimationMarkerKeyEditEditorPlugin
 
 class EditorInspectorPluginAnimationMarkerKeyEdit : public EditorInspectorPlugin {
