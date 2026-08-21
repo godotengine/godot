@@ -389,6 +389,33 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
+String ProjectSettings::_get_property_warning(const StringName &p_name) const {
+	if (!props.has(p_name)) {
+		return String();
+	}
+	if (p_name == "application/config/id.macos" || p_name == "application/config/id.ios" || p_name == "application/config/id.visionos") {
+		String value = app_id_from_name(props[p_name].variant, APP_ID_APPLE);
+		String warnings;
+		if (!value.is_empty() && !validate_app_id(value, APP_ID_APPLE, &warnings)) {
+			return warnings;
+		}
+	} else if (p_name == "application/config/id.linuxbsd" || p_name == "application/config/id.android") {
+		String value = app_id_from_name(props[p_name].variant, APP_ID_FREEDESKTOP);
+		String warnings;
+		if (!value.is_empty() && !validate_app_id(value, APP_ID_FREEDESKTOP, &warnings)) {
+			return warnings;
+		}
+	} else if (p_name == "application/config/id.windows") {
+		String value = app_id_from_name(props[p_name].variant, APP_ID_WINDOWS);
+		String warnings;
+		if (!value.is_empty() && !validate_app_id(value, APP_ID_WINDOWS, &warnings)) {
+			return warnings;
+		}
+	}
+
+	return String();
+}
+
 Variant ProjectSettings::get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1630,6 +1657,8 @@ Variant ProjectSettings::get_editor_setting_override(const String &p_setting) co
 }
 
 void ProjectSettings::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &ProjectSettings::_get_property_warning);
+
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &ProjectSettings::set_setting);
 	ClassDB::bind_method(D_METHOD("get_setting", "name", "default_value"), &ProjectSettings::get_setting, DEFVAL(Variant()));
@@ -1680,6 +1709,151 @@ void ProjectSettings::_add_builtin_input_map() {
 	}
 }
 
+bool ProjectSettings::validate_app_id(const String &p_id, AppIDType p_type, String *r_error) const {
+	if (p_id.length() == 0) {
+#ifdef TOOLS_ENABLED
+		if (r_error) {
+			*r_error = TTR("Application ID is missing.");
+		}
+#endif
+		return false;
+	}
+
+	int segments = 0;
+	bool first = true;
+	for (int i = 0; i < p_id.length(); i++) {
+		char32_t c = p_id[i];
+		if (first && c == '.') {
+#ifdef TOOLS_ENABLED
+			if (r_error) {
+				*r_error = TTR("Application ID segments must be of non-zero length.");
+			}
+#endif
+			return false;
+		}
+		if (c == '.') {
+			segments++;
+			first = true;
+			continue;
+		}
+		switch (p_type) {
+			case APP_ID_FREEDESKTOP: {
+				if (first && is_digit(c)) {
+#ifdef TOOLS_ENABLED
+					if (r_error) {
+						*r_error = TTR("A digit cannot be the first character in an application ID segment.");
+					}
+#endif
+					return false;
+				}
+				if (first && is_underscore(c)) {
+#ifdef TOOLS_ENABLED
+					if (r_error) {
+						*r_error = vformat(TTR("The character '%s' cannot be the first character in an application ID segment."), String::chr(c));
+					}
+#endif
+					return false;
+				}
+				if (is_underscore(c)) {
+					first = false;
+					continue;
+				}
+			} break;
+			case APP_ID_APPLE: {
+				if (first && c == '-') {
+#ifdef TOOLS_ENABLED
+					if (r_error) {
+						*r_error = vformat(TTR("The character '%s' cannot be the first character in an application ID segment."), String::chr(c));
+					}
+#endif
+					return false;
+				}
+				if (c == '-') {
+					first = false;
+					continue;
+				}
+			} break;
+			case APP_ID_WINDOWS: {
+				if (first && !is_ascii_upper_case(c)) {
+#ifdef TOOLS_ENABLED
+					if (r_error) {
+						*r_error = TTR("The first character in an application ID segment should be upper case.");
+					}
+#endif
+					return false;
+				}
+				if (is_underscore(c) || c == '-') {
+					first = false;
+					continue;
+				}
+			} break;
+		}
+		if (!is_ascii_alphanumeric_char(c)) {
+#ifdef TOOLS_ENABLED
+			if (r_error) {
+				*r_error = vformat(TTR("The character '%s' is not allowed in application ID."), String::chr(c));
+			}
+#endif
+			return false;
+		}
+		first = false;
+	}
+	if (segments == 0) {
+#ifdef TOOLS_ENABLED
+		if (r_error) {
+			*r_error = TTR("Application IDe must have at least one '.' separator.");
+		}
+#endif
+		return false;
+	}
+	if (first) {
+#ifdef TOOLS_ENABLED
+		if (r_error) {
+			*r_error = TTR("Application ID segments must be of non-zero length.");
+		}
+#endif
+		return false;
+	}
+	if (p_type == APP_ID_WINDOWS && p_id.length() > 128) {
+#ifdef TOOLS_ENABLED
+		if (r_error) {
+			*r_error = TTR("Application ID can have no more than 128 characters.");
+		}
+#endif
+		return false;
+	}
+	return true;
+}
+
+String ProjectSettings::app_id_from_name(const String &p_id, AppIDType p_type) const {
+	String name = GLOBAL_GET("application/config/name");
+	String ascii_name;
+	for (int i = 0; i < name.length(); i++) {
+		char32_t c = name[i];
+		if (is_ascii_alphanumeric_char(c) || is_whitespace(c)) {
+			ascii_name += c;
+		}
+	}
+	ascii_name = ascii_name.strip_edges();
+	if (ascii_name.is_empty()) {
+		ascii_name = "Unnamed Project";
+	}
+
+	switch (p_type) {
+		case APP_ID_FREEDESKTOP: {
+			ascii_name = ascii_name.to_snake_case();
+		} break;
+		case APP_ID_APPLE: {
+			ascii_name = ascii_name.to_kebab_case();
+		} break;
+		case APP_ID_WINDOWS: {
+			ascii_name = ascii_name.substr(0, 128 - (p_id.length() - 8));
+			ascii_name = ascii_name.to_pascal_case();
+		} break;
+	};
+	return p_id.replace("$genname", ascii_name);
+}
+
 ProjectSettings::ProjectSettings() {
 	// Initialization of engine variables should be done in the setup() method,
 	// so that the values can be overridden from project.godot or project.binary.
@@ -1701,6 +1875,15 @@ ProjectSettings::ProjectSettings() {
 #endif
 
 	GLOBAL_DEF_BASIC("application/config/name", "");
+
+	GLOBAL_DEF_BASIC("application/config/id", "");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/id.android", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game_name"), "com.example.$genname");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/id.ios", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game-name"), "com.example.$genname");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/id.linuxbsd", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game_name"), "com.example.$genname");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/id.macos", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game-name"), "com.example.$genname");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/id.visionos", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game-name"), "com.example.$genname");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/id.windows", PROPERTY_HINT_PLACEHOLDER_TEXT, "Example.GameName"), "Example.$genname");
+
 	GLOBAL_DEF(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT), "");
 	GLOBAL_DEF_BASIC("application/config/version", "");

@@ -181,9 +181,9 @@ String EditorExportPlatformAppleEmbedded::get_export_option_warning(const Editor
 				return TTR("App Store Team ID not specified.") + "\n";
 			}
 		} else if (p_name == "application/bundle_identifier") {
-			String identifier = p_preset->get("application/bundle_identifier");
+			String identifier = _get_app_id(Ref<EditorExportPreset>(p_preset));
 			String pn_err;
-			if (!is_package_name_valid(identifier, &pn_err)) {
+			if (!ProjectSettings::get_singleton()->validate_app_id(identifier, ProjectSettings::APP_ID_APPLE, &pn_err)) {
 				return TTR("Invalid Identifier:") + " " + pn_err;
 			}
 		} else if (p_name == "privacy/file_timestamp_access_reasons") {
@@ -410,6 +410,14 @@ void EditorExportPlatformAppleEmbedded::_fix_config_file(const Ref<EditorExportP
 	}
 }
 
+String EditorExportPlatformAppleEmbedded::_get_app_id(const Ref<EditorExportPreset> &p_preset) const {
+	String id = p_preset->get("application/bundle_identifier");
+	if (id.is_empty()) {
+		id = get_project_setting(p_preset, "application/config/id");
+	}
+	return ProjectSettings::get_singleton()->app_id_from_name(id, ProjectSettings::APP_ID_APPLE);
+}
+
 String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) {
 	String strnew;
 	if (p_line.contains("$binary")) {
@@ -431,7 +439,7 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 	} else if (p_line.contains("$name")) {
 		strnew += p_line.replace("$name", p_config.pkg_name) + "\n";
 	} else if (p_line.contains("$bundle_identifier")) {
-		strnew += p_line.replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
+		strnew += p_line.replace("$bundle_identifier", _get_app_id(p_preset)) + "\n";
 	} else if (p_line.contains("$short_version")) {
 		strnew += p_line.replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
 	} else if (p_line.contains("$version")) {
@@ -1259,7 +1267,7 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 		destination = destination_dir;
 
 		// Convert to framework and copy.
-		RETURN_IF_ERROR(_convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier")));
+		RETURN_IF_ERROR(_convert_to_framework(p_asset, destination, _get_app_id(p_preset)));
 	} else if (p_is_framework && asset.ends_with(".xcframework")) {
 		// For Apple Embedded platforms we need to turn .dylib inside .xcframework
 		// into .framework to be able to send application to AppStore
@@ -1285,7 +1293,7 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 
 		if (dylibs > 0) {
 			// Convert to framework and copy.
-			RETURN_IF_ERROR(_convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier")));
+			RETURN_IF_ERROR(_convert_to_framework(p_asset, destination, _get_app_id(p_preset)));
 		} else {
 			// Copy as is.
 			if (!filesystem_da->dir_exists(destination_dir)) {
@@ -2583,29 +2591,6 @@ String EditorExportPlatformAppleEmbedded::get_option_tooltip(int p_index) const 
 	return "UUID: " + devices[p_index].id;
 }
 
-bool EditorExportPlatformAppleEmbedded::is_package_name_valid(const String &p_package, String *r_error) const {
-	String pname = p_package;
-
-	if (pname.length() == 0) {
-		if (r_error) {
-			*r_error = TTR("Identifier is missing.");
-		}
-		return false;
-	}
-
-	for (int i = 0; i < pname.length(); i++) {
-		char32_t c = pname[i];
-		if (!(is_ascii_alphanumeric_char(c) || c == '-' || c == '.')) {
-			if (r_error) {
-				*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
-			}
-			return false;
-		}
-	}
-
-	return true;
-}
-
 #ifdef MACOS_ENABLED
 bool EditorExportPlatformAppleEmbedded::_check_xcode_install() {
 	static bool xcode_found = false;
@@ -3068,7 +3053,7 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 			args.push_back("--terminate-existing");
 			args.push_back("-d");
 			args.push_back(dev.id);
-			args.push_back(p_preset->get("application/bundle_identifier"));
+			args.push_back(_get_app_id(p_preset));
 			for (const String &E : cmd_args_list) {
 				args.push_back(E);
 			}
