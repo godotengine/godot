@@ -201,6 +201,8 @@ public:
 		return this->span();
 	}
 
+	explicit operator String() const;
+
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array(std::initializer_list<Variant> p_init);
