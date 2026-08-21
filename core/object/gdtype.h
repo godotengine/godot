@@ -124,10 +124,7 @@ public:
 
 	const GDType *get_super_type() const { return super_type; }
 	const StringName &get_name() const { return name; }
-	const StringName &get_super_type_name() const {
-		static const StringName EMPTY;
-		return super_type ? super_type->name : EMPTY;
-	}
+	const StringName &get_super_type_name() const { return super_type ? super_type->name : StringName::EMPTY; }
 	const Vector<StringName> &get_name_hierarchy() const { return name_hierarchy; }
 
 	void bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);

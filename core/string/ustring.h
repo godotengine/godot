@@ -309,6 +309,8 @@ public:
 		npos = -1 ///<for "some" compatibility with std::string (npos is a huge value in std::string)
 	};
 
+	static const String &EMPTY;
+
 	_FORCE_INLINE_ char32_t *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
 	_FORCE_INLINE_ const char32_t *get_data() const _LIFETIME_BOUND_ { return size() ? ptr() : &_null; }
@@ -714,6 +716,8 @@ public:
 		append_utf32(p_cstr);
 	}
 };
+
+inline const String &String::EMPTY = String();
 
 // Zero-constructing String initializes _cowdata.ptr() to nullptr and thus empty.
 template <>
