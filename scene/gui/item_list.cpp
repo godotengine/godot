@@ -1588,12 +1588,6 @@ void ItemList::_notification(int p_what) {
 					Point2 pos = items[i].rect_cache.position + base_ofs;
 
 					if (icon_mode == ICON_MODE_TOP) {
-						pos.y += MAX(theme_cache.v_separation, 0) / 2;
-					} else {
-						pos.x += MAX(theme_cache.h_separation, 0) / 2;
-					}
-
-					if (icon_mode == ICON_MODE_TOP) {
 						pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
 						text_ofs.y = icon_size.height + theme_cache.icon_margin;
 					} else {
@@ -1638,8 +1632,6 @@ void ItemList::_notification(int p_what) {
 					}
 
 					Point2 draw_pos = items[i].rect_cache.position + base_ofs;
-					draw_pos.x += MAX(theme_cache.h_separation, 0) / 2;
-					draw_pos.y += MAX(theme_cache.v_separation, 0) / 2;
 					if (rtl) {
 						draw_pos.x = size.width - draw_pos.x - tag_icon_size.x;
 					}
@@ -1670,9 +1662,6 @@ void ItemList::_notification(int p_what) {
 					}
 
 					if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-						text_ofs.y += MAX(theme_cache.v_separation, 0) / 2;
-						text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
-
 						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 						float text_w = items[i].rect_cache.size.width - text_ofs.x * 2;
@@ -1695,7 +1684,6 @@ void ItemList::_notification(int p_what) {
 						items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 					} else {
 						text_ofs.y += (items[i].rect_cache.size.height - items[i].text_buf->get_size().y) / 2;
-						text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
 
 						real_t text_width_ofs = text_ofs.x;
 
@@ -1709,7 +1697,7 @@ void ItemList::_notification(int p_what) {
 						items.write[i].text_buf->set_width(text_w);
 
 						if (rtl) {
-							text_ofs.x = size.width - items[i].rect_cache.size.width + icon_size.x - text_ofs.x + MAX(theme_cache.h_separation, 0);
+							text_ofs.x = size.width - items[i].rect_cache.size.width + icon_size.x - text_ofs.x;
 							if (wraparound_items) {
 								text_ofs.x += MAX(items[i].rect_cache.size.width - width, 0);
 							}
@@ -1723,12 +1711,12 @@ void ItemList::_notification(int p_what) {
 						}
 
 						if (fixed_column_width > 0) {
-							if (items[i].rect_cache.size.width - icon_size.x - MAX(theme_cache.h_separation, 0) > 0) {
+							if (items[i].rect_cache.size.width - icon_size.x > 0) {
 								items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 							}
 						} else {
 							if (wraparound_items) {
-								if (width - icon_size.x - MAX(theme_cache.h_separation, 0) - int(scroll_bar_h->get_value()) > 0) {
+								if (width - icon_size.x - int(scroll_bar_h->get_value()) > 0) {
 									items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 								}
 							} else {
@@ -1833,10 +1821,6 @@ void ItemList::force_update_list_size() {
 		}
 		max_column_width = MAX(max_column_width, minsize.x);
 
-		// Elements need to adapt to the selected size.
-		minsize.y += MAX(theme_cache.v_separation, 0);
-		minsize.x += MAX(theme_cache.h_separation, 0);
-
 		items.write[i].rect_cache.size = minsize;
 		items.write[i].min_rect_cache.size = minsize;
 
@@ -1864,8 +1848,12 @@ void ItemList::force_update_list_size() {
 
 		separators.clear();
 
+		int v_sep = MAX(theme_cache.v_separation, 0);
+
 		for (int i = 0; i < items.size(); i++) {
-			if (current_columns > 1 && items[i].rect_cache.size.width + ofs.x > fit_size && !auto_width && wraparound_items) {
+			int h_sep = (col > 0) ? MAX(theme_cache.h_separation, 0) : 0;
+
+			if (current_columns > 1 && items[i].rect_cache.size.width + h_sep + ofs.x > fit_size && !auto_width && wraparound_items) {
 				// Went past.
 				current_columns = MAX(col, 1);
 				all_fit = false;
@@ -1873,8 +1861,10 @@ void ItemList::force_update_list_size() {
 			}
 
 			if (same_column_width) {
-				items.write[i].rect_cache.size.x = max_column_width + MAX(theme_cache.h_separation, 0);
+				items.write[i].rect_cache.size.x = max_column_width;
 			}
+
+			ofs.x += h_sep;
 			items.write[i].rect_cache.position = ofs;
 
 			max_h = MAX(max_h, items[i].rect_cache.size.y);
@@ -1885,7 +1875,7 @@ void ItemList::force_update_list_size() {
 			col++;
 			if (col == current_columns) {
 				if (i < items.size() - 1) {
-					separators.push_back(ofs.y + max_h);
+					separators.push_back(ofs.y + max_h + v_sep / 2);
 				}
 
 				for (int j = i; j >= 0 && col > 0; j--, col--) {
@@ -1894,6 +1884,9 @@ void ItemList::force_update_list_size() {
 
 				ofs.x = 0;
 				ofs.y += max_h;
+				if (i < items.size() - 1) {
+					ofs.y += v_sep;
+				}
 				col = 0;
 				max_h = 0;
 			}
