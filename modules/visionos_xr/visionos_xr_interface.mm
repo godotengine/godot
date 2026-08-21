@@ -255,13 +255,13 @@ void VisionOSXRInterface::RenderThread::initialize() {
 void VisionOSXRInterface::RenderThread::uninitialize() {
 	ERR_NOT_ON_RENDER_THREAD;
 	if (current_color_texture_id != RID()) {
-		rendering_device->texture_owner.free(current_color_texture_id);
+		rendering_device->free_rid(current_color_texture_id);
 	}
 	if (current_depth_texture_id != RID()) {
-		rendering_device->texture_owner.free(current_depth_texture_id);
+		rendering_device->free_rid(current_depth_texture_id);
 	}
 	if (current_rasterization_rate_map_id != RID()) {
-		rendering_device->texture_owner.free(current_rasterization_rate_map_id);
+		rendering_device->free_rid(current_rasterization_rate_map_id);
 	}
 	initialized = false;
 }
@@ -724,7 +724,7 @@ RID VisionOSXRInterface::RenderThread::get_color_texture() {
 	}
 
 	if (current_color_texture_id != RID()) {
-		rendering_device->texture_owner.free(current_color_texture_id);
+		rendering_device->free_rid(current_color_texture_id);
 	}
 
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, pre_render() has probably not been called.");
@@ -753,7 +753,7 @@ RID VisionOSXRInterface::RenderThread::get_depth_texture() {
 	}
 
 	if (current_depth_texture_id != RID()) {
-		rendering_device->texture_owner.free(current_depth_texture_id);
+		rendering_device->free_rid(current_depth_texture_id);
 	}
 
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, pre_render() has probably not been called.");
@@ -782,7 +782,7 @@ RID VisionOSXRInterface::RenderThread::get_vrs_texture() {
 	}
 
 	if (current_rasterization_rate_map_id != RID()) {
-		rendering_device->texture_owner.free(current_rasterization_rate_map_id);
+		rendering_device->free_rid(current_rasterization_rate_map_id);
 	}
 
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, pre_render() has probably not been called.");
@@ -791,23 +791,19 @@ RID VisionOSXRInterface::RenderThread::get_vrs_texture() {
 	id<MTLRasterizationRateMap> rasterization_rate_map = cp_drawable_get_rasterization_rate_map(current_drawable, 0);
 	MTLSize logical_size = rasterization_rate_map.screenSize;
 
-	RD::Texture texture;
-	texture.driver_id = RDD::TextureID((__bridge void *)rasterization_rate_map);
-	texture.usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
-	texture.width = logical_size.width;
-	texture.height = logical_size.height;
-	texture.layers = rasterization_rate_map.layerCount;
-	// The following spoofed values are unused, but they are required
-	// to pass RenderingDevice::_render_pass_create() validation
-	texture.type = RDD::TEXTURE_TYPE_2D_ARRAY;
-	texture.format = RDD::DATA_FORMAT_R8_UINT;
-	texture.samples = RDD::TEXTURE_SAMPLES_1;
-	texture.depth = 1;
-	texture.mipmaps = 1;
-	ERR_FAIL_COND_V(!texture.driver_id, RID());
-
-	current_rasterization_rate_map = texture;
-	current_rasterization_rate_map_id = rendering_device->texture_owner.make_rid(current_rasterization_rate_map);
+	// The type, format and sample count are spoofed. They satisfy
+	// RenderingDevice::_render_pass_create() validation and have no other use.
+	current_rasterization_rate_map_id = rendering_device->texture_create_from_extension(
+			RD::TEXTURE_TYPE_2D_ARRAY,
+			RD::DATA_FORMAT_R8_UINT,
+			RD::TEXTURE_SAMPLES_1,
+			RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT,
+			(uint64_t)(__bridge void *)rasterization_rate_map,
+			logical_size.width,
+			logical_size.height,
+			1,
+			rasterization_rate_map.layerCount,
+			1);
 
 	return current_rasterization_rate_map_id;
 }
