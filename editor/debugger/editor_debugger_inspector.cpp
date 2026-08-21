@@ -94,7 +94,7 @@ void EditorDebuggerRemoteObjects::_get_property_list(List<PropertyInfo> *p_list)
 void EditorDebuggerRemoteObjects::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
 	// Ignore the field with arrays and dictionaries, as they are passed whole when edited.
 	Variant::Type type = p_value.get_type();
-	if (type == Variant::ARRAY || type == Variant::DICTIONARY) {
+	if (type == Variant::ARRAY || type == Variant::DICTIONARY || type == Variant::PACKED_VECTOR2_ARRAY) {
 		_set_impl(p_property, p_value, "");
 	} else {
 		_set_impl(p_property, p_value, p_field);
