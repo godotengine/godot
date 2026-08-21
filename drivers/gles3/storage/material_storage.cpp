@@ -1439,6 +1439,7 @@ MaterialStorage::MaterialStorage() {
 			actions.render_mode_defines["vertex_lighting"] = "#define USE_VERTEX_LIGHTING\n";
 		}
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
+		actions.render_mode_defines["decals_disabled"] = "#define DECALS_DISABLED\n";
 
 		actions.render_mode_defines["specular_occlusion_disabled"] = "#define SPECULAR_OCCLUSION_DISABLED\n";
 
