@@ -45,7 +45,10 @@ class LocalizationEditor : public VBoxContainer {
 	EditorLocaleDialog *locale_select = nullptr;
 	EditorFileDialog *translation_file_open = nullptr;
 
+	Button *translation_button = nullptr;
+	Button *translation_res_add_button = nullptr;
 	Button *translation_res_option_add_button = nullptr;
+	Button *translation_template_gen_button = nullptr;
 	EditorFileDialog *translation_res_file_open_dialog = nullptr;
 	EditorFileDialog *translation_res_option_file_open_dialog = nullptr;
 	Tree *translation_remap = nullptr;

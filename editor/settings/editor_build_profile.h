@@ -33,6 +33,7 @@
 #include "core/object/ref_counted.h"
 #include "editor/doc/editor_help.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
 
 class EditorBuildProfile : public RefCounted {
@@ -168,7 +169,7 @@ class EditorBuildProfileManager : public AcceptDialog {
 	EditorFileDialog *import_profile = nullptr;
 	EditorFileDialog *export_profile = nullptr;
 
-	Label *profile_label = nullptr;
+	LineEdit *profile_label = nullptr;
 	String profile_path;
 
 	LineEdit *force_detect_classes = nullptr;
