@@ -319,11 +319,12 @@ Variant::Type get_variant_type() {
 }
 
 template <typename T>
-const String get_object_class_name_or_empty() {
+const StringName &get_object_class_name_or_empty() {
 	if constexpr (std::is_base_of_v<Object, T>) {
 		return T::get_class_static();
 	} else {
-		return "";
+		static const StringName EMPTY = "";
+		return EMPTY;
 	}
 }
 
