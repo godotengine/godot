@@ -1,128 +1,107 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTLDevice.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
-#include "MTL4Counters.hpp"
-#include "MTLArgument.hpp"
-#include "MTLDataType.hpp"
 #include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPixelFormat.hpp"
-#include "MTLPrivate.hpp"
-#include "MTLResource.hpp"
-#include "MTLTexture.hpp"
-#include "MTLTypes.hpp"
+#include "MTLBlocks.hpp"
+#include "MTLStructs.hpp"
+#include "MTLBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 #include <IOSurface/IOSurfaceRef.h>
-#include <cstdint>
-#include <dispatch/dispatch.h>
 
-#include <TargetConditionals.h>
-#include <cstdint>
-#include <functional>
+namespace MTL {
+    class AccelerationStructure;
+    class AccelerationStructureDescriptor;
+    class ArgumentEncoder;
+    class BinaryArchive;
+    class BinaryArchiveDescriptor;
+    class Buffer;
+    class BufferBinding;
+    class CommandQueue;
+    class CommandQueueDescriptor;
+    class CompileOptions;
+    class ComputePipelineDescriptor;
+    class ComputePipelineState;
+    class CounterSampleBuffer;
+    class CounterSampleBufferDescriptor;
+    class DepthStencilDescriptor;
+    class DepthStencilState;
+    class DynamicLibrary;
+    class Event;
+    class Fence;
+    class Function;
+    class FunctionHandle;
+    class Heap;
+    class HeapDescriptor;
+    class IOCommandQueue;
+    class IOCommandQueueDescriptor;
+    class IOFileHandle;
+    class IndirectCommandBuffer;
+    class IndirectCommandBufferDescriptor;
+    class Library;
+    class LogState;
+    class LogStateDescriptor;
+    class MeshRenderPipelineDescriptor;
+    class RasterizationRateMap;
+    class RasterizationRateMapDescriptor;
+    class RenderPipelineDescriptor;
+    class RenderPipelineState;
+    class ResidencySet;
+    class ResidencySetDescriptor;
+    class ResourceViewPoolDescriptor;
+    class SamplerDescriptor;
+    class SamplerState;
+    class SharedEvent;
+    class SharedEventHandle;
+    class SharedTextureHandle;
+    class StitchedLibraryDescriptor;
+    class Tensor;
+    class TensorDescriptor;
+    class Texture;
+    class TextureDescriptor;
+    class TextureViewPool;
+    class TileRenderPipelineDescriptor;
+    enum BindingAccess : NS::UInteger;
+    enum DataType : NS::UInteger;
+    enum PixelFormat : NS::UInteger;
+    using ResourceOptions = NS::UInteger;
+    enum SparsePageSize : NS::Integer;
+    enum TextureType : NS::UInteger;
+}
+namespace MTL4 {
+    class Archive;
+    class ArgumentTable;
+    class ArgumentTableDescriptor;
+    class BinaryFunction;
+    class CommandAllocator;
+    class CommandAllocatorDescriptor;
+    class CommandBuffer;
+    class CommandQueue;
+    class CommandQueueDescriptor;
+    class Compiler;
+    class CompilerDescriptor;
+    class CounterHeap;
+    class CounterHeapDescriptor;
+    class PipelineDataSetSerializer;
+    class PipelineDataSetSerializerDescriptor;
+    enum CounterHeapType : NS::Integer;
+}
+namespace NS {
+    class Array;
+    class Bundle;
+    class Error;
+    class String;
+    class URL;
+}
 
 namespace MTL
 {
-class AccelerationStructure;
-class AccelerationStructureDescriptor;
-class Architecture;
-class ArgumentDescriptor;
-class ArgumentEncoder;
-class BinaryArchive;
-class BinaryArchiveDescriptor;
-class Buffer;
-class BufferBinding;
-class CommandQueue;
-class CommandQueueDescriptor;
-class CompileOptions;
-class ComputePipelineDescriptor;
-class ComputePipelineReflection;
-class ComputePipelineState;
-class CounterSampleBuffer;
-class CounterSampleBufferDescriptor;
-class DepthStencilDescriptor;
-class DepthStencilState;
-class Device;
-class DynamicLibrary;
-class Event;
-class Fence;
-class Function;
-class FunctionConstantValues;
-class FunctionHandle;
-class Heap;
-class HeapDescriptor;
-class IOCommandQueue;
-class IOCommandQueueDescriptor;
-class IOFileHandle;
-class IndirectCommandBuffer;
-class IndirectCommandBufferDescriptor;
-class Library;
-class LogState;
-class LogStateDescriptor;
-class MeshRenderPipelineDescriptor;
-class RasterizationRateMap;
-class RasterizationRateMapDescriptor;
-struct Region;
-class RenderPipelineDescriptor;
-class RenderPipelineReflection;
-class RenderPipelineState;
-class ResidencySet;
-class ResidencySetDescriptor;
-class ResourceViewPoolDescriptor;
-struct SamplePosition;
-class SamplerDescriptor;
-class SamplerState;
-class SharedEvent;
-class SharedEventHandle;
-class SharedTextureHandle;
-class StitchedLibraryDescriptor;
-class Tensor;
-class TensorDescriptor;
-class Texture;
-class TextureDescriptor;
-class TextureViewPool;
-class TileRenderPipelineDescriptor;
 
-}
-namespace MTL4
-{
-class Archive;
-class ArgumentTable;
-class ArgumentTableDescriptor;
-class BinaryFunction;
-class CommandAllocator;
-class CommandAllocatorDescriptor;
-class CommandBuffer;
-class CommandQueue;
-class CommandQueueDescriptor;
-class Compiler;
-class CompilerDescriptor;
-class CounterHeap;
-class CounterHeapDescriptor;
-class PipelineDataSetSerializer;
-class PipelineDataSetSerializerDescriptor;
-
-}
-namespace MTL
-{
+using DeviceNotificationName = NS::String*;
+extern DeviceNotificationName const DeviceWasAddedNotification __asm__("_MTLDeviceWasAddedNotification");
+extern DeviceNotificationName const DeviceRemovalRequestedNotification __asm__("_MTLDeviceRemovalRequestedNotification");
+extern DeviceNotificationName const DeviceWasRemovedNotification __asm__("_MTLDeviceWasRemovedNotification");
+extern NS::ErrorDomain const DeviceErrorDomain __asm__("_MTLDeviceErrorDomain");
 _MTL_ENUM(NS::Integer, IOCompressionMethod) {
     IOCompressionMethodZlib = 0,
     IOCompressionMethodLZFSE = 1,
@@ -150,20 +129,16 @@ _MTL_ENUM(NS::UInteger, FeatureSet) {
     FeatureSet_iOS_GPUFamily4_v2 = 15,
     FeatureSet_iOS_GPUFamily5_v1 = 16,
     FeatureSet_macOS_GPUFamily1_v1 = 10000,
-    FeatureSet_OSX_GPUFamily1_v1 = 10000,
+    FeatureSet_OSX_GPUFamily1_v1 = FeatureSet_macOS_GPUFamily1_v1,
     FeatureSet_macOS_GPUFamily1_v2 = 10001,
-    FeatureSet_OSX_GPUFamily1_v2 = 10001,
+    FeatureSet_OSX_GPUFamily1_v2 = FeatureSet_macOS_GPUFamily1_v2,
     FeatureSet_macOS_ReadWriteTextureTier2 = 10002,
-    FeatureSet_OSX_ReadWriteTextureTier2 = 10002,
+    FeatureSet_OSX_ReadWriteTextureTier2 = FeatureSet_macOS_ReadWriteTextureTier2,
     FeatureSet_macOS_GPUFamily1_v3 = 10003,
     FeatureSet_macOS_GPUFamily1_v4 = 10004,
     FeatureSet_macOS_GPUFamily2_v1 = 10005,
-    FeatureSet_watchOS_GPUFamily1_v1 = 20000,
-    FeatureSet_WatchOS_GPUFamily1_v1 = 20000,
-    FeatureSet_watchOS_GPUFamily2_v1 = 20001,
-    FeatureSet_WatchOS_GPUFamily2_v1 = 20001,
     FeatureSet_tvOS_GPUFamily1_v1 = 30000,
-    FeatureSet_TVOS_GPUFamily1_v1 = 30000,
+    FeatureSet_TVOS_GPUFamily1_v1 = FeatureSet_tvOS_GPUFamily1_v1,
     FeatureSet_tvOS_GPUFamily1_v2 = 30001,
     FeatureSet_tvOS_GPUFamily1_v3 = 30002,
     FeatureSet_tvOS_GPUFamily2_v1 = 30003,
@@ -197,7 +172,15 @@ _MTL_ENUM(NS::UInteger, DeviceLocation) {
     DeviceLocationBuiltIn = 0,
     DeviceLocationSlot = 1,
     DeviceLocationExternal = 2,
-    DeviceLocationUnspecified = NS::UIntegerMax,
+    DeviceLocationUnspecified = static_cast<NS::UInteger>(-1),
+};
+
+_MTL_OPTIONS(NS::UInteger, PipelineOption) {
+    PipelineOptionNone = 0,
+    PipelineOptionArgumentInfo = 1 << 0,
+    PipelineOptionBindingInfo = 1 << 0,
+    PipelineOptionBufferTypeInfo = 1 << 1,
+    PipelineOptionFailOnBinaryArchiveMiss = 1 << 2,
 };
 
 _MTL_ENUM(NS::UInteger, ReadWriteTextureTier) {
@@ -224,1270 +207,1071 @@ _MTL_ENUM(NS::UInteger, CounterSamplingPoint) {
     CounterSamplingPointAtBlitBoundary = 4,
 };
 
-_MTL_OPTIONS(NS::UInteger, PipelineOption) {
-    PipelineOptionNone = 0,
-    PipelineOptionArgumentInfo = 1,
-    PipelineOptionBindingInfo = 1,
-    PipelineOptionBufferTypeInfo = 1 << 1,
-    PipelineOptionFailOnBinaryArchiveMiss = 1 << 2,
+_MTL_ENUM(NS::Integer, DeviceError) {
+    DeviceErrorNone = 0,
+    DeviceErrorNotSupported = 1,
 };
 
-using DeviceNotificationName = NS::String*;
-using DeviceNotificationHandlerBlock = void (^)(MTL::Device* pDevice, MTL::DeviceNotificationName notifyName);
-using DeviceNotificationHandlerFunction = std::function<void(MTL::Device* pDevice, MTL::DeviceNotificationName notifyName)>;
-using AutoreleasedComputePipelineReflection = MTL::ComputePipelineReflection*;
-using AutoreleasedRenderPipelineReflection = MTL::RenderPipelineReflection*;
-using NewLibraryCompletionHandler = void (^)(MTL::Library*, NS::Error*);
-using NewLibraryCompletionHandlerFunction = std::function<void(MTL::Library*, NS::Error*)>;
-using NewRenderPipelineStateCompletionHandler = void (^)(MTL::RenderPipelineState*, NS::Error*);
-using NewRenderPipelineStateCompletionHandlerFunction = std::function<void(MTL::RenderPipelineState*, NS::Error*)>;
-using NewRenderPipelineStateWithReflectionCompletionHandler = void (^)(MTL::RenderPipelineState*, MTL::RenderPipelineReflection*, NS::Error*);
-using NewRenderPipelineStateWithReflectionCompletionHandlerFunction = std::function<void(MTL::RenderPipelineState*, MTL::RenderPipelineReflection*, NS::Error*)>;
-using NewComputePipelineStateCompletionHandler = void (^)(MTL::ComputePipelineState*, NS::Error*);
-using NewComputePipelineStateCompletionHandlerFunction = std::function<void(MTL::ComputePipelineState*, NS::Error*)>;
-using NewComputePipelineStateWithReflectionCompletionHandler = void (^)(MTL::ComputePipelineState*, MTL::ComputePipelineReflection*, NS::Error*);
-using NewComputePipelineStateWithReflectionCompletionHandlerFunction = std::function<void(MTL::ComputePipelineState*, MTL::ComputePipelineReflection*, NS::Error*)>;
-using Timestamp = std::uint64_t;
 
-_MTL_CONST(DeviceNotificationName, DeviceWasAddedNotification);
-_MTL_CONST(DeviceNotificationName, DeviceRemovalRequestedNotification);
-_MTL_CONST(DeviceNotificationName, DeviceWasRemovedNotification);
-_MTL_CONST(NS::ErrorUserInfoKey, CommandBufferEncoderInfoErrorKey);
-Device*    CreateSystemDefaultDevice();
-NS::Array* CopyAllDevices();
-NS::Array* CopyAllDevicesWithObserver(NS::Object** pOutObserver, MTL::DeviceNotificationHandlerBlock handler);
-NS::Array* CopyAllDevicesWithObserver(NS::Object** pOutObserver, const MTL::DeviceNotificationHandlerFunction& handler);
-void       RemoveDeviceObserver(const NS::Object* pObserver);
-struct AccelerationStructureSizes
-{
-    NS::UInteger accelerationStructureSize;
-    NS::UInteger buildScratchBufferSize;
-    NS::UInteger refitScratchBufferSize;
-} _MTL_PACKED;
-
-struct SizeAndAlign
-{
-    NS::UInteger size;
-    NS::UInteger align;
-} _MTL_PACKED;
+class ArgumentDescriptor;
+class Architecture;
+class Device;
 
 class ArgumentDescriptor : public NS::Copying<ArgumentDescriptor>
 {
 public:
-    BindingAccess              access() const;
-
     static ArgumentDescriptor* alloc();
+    ArgumentDescriptor*        init() const;
 
-    static ArgumentDescriptor* argumentDescriptor();
+    static MTL::ArgumentDescriptor* argumentDescriptor();
 
-    NS::UInteger               arrayLength() const;
+    MTL::BindingAccess access() const;
+    NS::UInteger       arrayLength() const;
+    NS::UInteger       constantBlockAlignment() const;
+    MTL::DataType      dataType() const;
+    NS::UInteger       index() const;
+    void               setAccess(MTL::BindingAccess access);
+    void               setArrayLength(NS::UInteger arrayLength);
+    void               setConstantBlockAlignment(NS::UInteger constantBlockAlignment);
+    void               setDataType(MTL::DataType dataType);
+    void               setIndex(NS::UInteger index);
+    void               setTextureType(MTL::TextureType textureType);
+    MTL::TextureType   textureType() const;
 
-    NS::UInteger               constantBlockAlignment() const;
-
-    DataType                   dataType() const;
-
-    NS::UInteger               index() const;
-
-    ArgumentDescriptor*        init();
-
-    void                       setAccess(MTL::BindingAccess access);
-
-    void                       setArrayLength(NS::UInteger arrayLength);
-
-    void                       setConstantBlockAlignment(NS::UInteger constantBlockAlignment);
-
-    void                       setDataType(MTL::DataType dataType);
-
-    void                       setIndex(NS::UInteger index);
-
-    void                       setTextureType(MTL::TextureType textureType);
-    TextureType                textureType() const;
 };
+
 class Architecture : public NS::Copying<Architecture>
 {
 public:
     static Architecture* alloc();
+    Architecture*        init() const;
 
-    Architecture*        init();
+    NS::String* name() const;
 
-    NS::String*          name() const;
 };
+
 class Device : public NS::Referencing<Device>
 {
 public:
-    AccelerationStructureSizes accelerationStructureSizes(const MTL::AccelerationStructureDescriptor* descriptor);
-
-    Architecture*              architecture() const;
-
-    bool                       areBarycentricCoordsSupported() const;
-
-    bool                       areProgrammableSamplePositionsSupported() const;
-
-    bool                       areRasterOrderGroupsSupported() const;
-
-    ArgumentBuffersTier        argumentBuffersSupport() const;
-
-    [[deprecated("please use areBarycentricCoordsSupported instead")]]
-    bool         barycentricCoordsSupported() const;
-
-    void         convertSparsePixelRegions(const MTL::Region* pixelRegions, MTL::Region* tileRegions, MTL::Size tileSize, MTL::SparseTextureRegionAlignmentMode mode, NS::UInteger numRegions);
-
-    void         convertSparseTileRegions(const MTL::Region* tileRegions, MTL::Region* pixelRegions, MTL::Size tileSize, NS::UInteger numRegions);
-
-    NS::Array*   counterSets() const;
-
-    NS::UInteger currentAllocatedSize() const;
-
-    [[deprecated("please use isDepth24Stencil8PixelFormatSupported instead")]]
-    bool            depth24Stencil8PixelFormatSupported() const;
-
-    FunctionHandle* functionHandle(const MTL::Function* function);
-    FunctionHandle* functionHandle(const MTL4::BinaryFunction* function);
-
-    void            getDefaultSamplePositions(MTL::SamplePosition* positions, NS::UInteger count);
-
-    bool            hasUnifiedMemory() const;
-
-    [[deprecated("please use isHeadless instead")]]
-    bool           headless() const;
-
-    SizeAndAlign   heapAccelerationStructureSizeAndAlign(NS::UInteger size);
-    SizeAndAlign   heapAccelerationStructureSizeAndAlign(const MTL::AccelerationStructureDescriptor* descriptor);
-
-    SizeAndAlign   heapBufferSizeAndAlign(NS::UInteger length, MTL::ResourceOptions options);
-
-    SizeAndAlign   heapTextureSizeAndAlign(const MTL::TextureDescriptor* desc);
-
-    bool           isDepth24Stencil8PixelFormatSupported() const;
-
-    bool           isHeadless() const;
-
-    bool           isLowPower() const;
-
-    bool           isRemovable() const;
-
-    DeviceLocation location() const;
-    NS::UInteger   locationNumber() const;
-
-    [[deprecated("please use isLowPower instead")]]
+    MTL::AccelerationStructureSizes  accelerationStructureSizes(MTL::AccelerationStructureDescriptor* descriptor);
+    MTL::Architecture*               architecture() const;
+    bool                             areBarycentricCoordsSupported();
+    bool                             areProgrammableSamplePositionsSupported();
+    bool                             areRasterOrderGroupsSupported();
+    MTL::ArgumentBuffersTier         argumentBuffersSupport() const;
+    void                             convertSparsePixelRegions(const MTL::Region * pixelRegions, MTL::Region* tileRegions, MTL::Size tileSize, MTL::SparseTextureRegionAlignmentMode mode, NS::UInteger numRegions);
+    void                             convertSparseTileRegions(const MTL::Region * tileRegions, MTL::Region* pixelRegions, MTL::Size tileSize, NS::UInteger numRegions);
+    NS::Array*                       counterSets() const;
+    NS::UInteger                     currentAllocatedSize() const;
+    bool                             depth24Stencil8PixelFormatSupported() const;
+    MTL::FunctionHandle*             functionHandle(MTL::Function* function);
+    MTL::FunctionHandle*             functionHandle(MTL4::BinaryFunction* function);
+    void                             getDefaultSamplePositions(MTL::SamplePosition* positions, NS::UInteger count);
+    bool                             hasUnifiedMemory() const;
+    bool                             headless() const;
+    MTL::SizeAndAlign                heapAccelerationStructureSizeAndAlign(NS::UInteger size);
+    MTL::SizeAndAlign                heapAccelerationStructureSizeAndAlign(MTL::AccelerationStructureDescriptor* descriptor);
+    MTL::SizeAndAlign                heapBufferSizeAndAlign(NS::UInteger length, MTL::ResourceOptions options);
+    MTL::SizeAndAlign                heapTextureSizeAndAlign(MTL::TextureDescriptor* desc);
+    bool                             isDepth24Stencil8PixelFormatSupported();
+    bool                             isHeadless();
+    bool                             isLowPower();
+    bool                             isRemovable();
+    MTL::DeviceLocation              location() const;
+    NS::UInteger                     locationNumber() const;
     bool                             lowPower() const;
-
     NS::UInteger                     maxArgumentBufferSamplerCount() const;
-
     NS::UInteger                     maxBufferLength() const;
-
     NS::UInteger                     maxThreadgroupMemoryLength() const;
-
-    Size                             maxThreadsPerThreadgroup() const;
-
+    MTL::Size                        maxThreadsPerThreadgroup() const;
     uint64_t                         maxTransferRate() const;
-
     NS::UInteger                     maximumConcurrentCompilationTaskCount() const;
-
     NS::UInteger                     minimumLinearTextureAlignmentForPixelFormat(MTL::PixelFormat format);
-
     NS::UInteger                     minimumTextureBufferAlignmentForPixelFormat(MTL::PixelFormat format);
-
     NS::String*                      name() const;
-
-    AccelerationStructure*           newAccelerationStructure(NS::UInteger size);
-    AccelerationStructure*           newAccelerationStructure(const MTL::AccelerationStructureDescriptor* descriptor);
-
-    MTL4::Archive*                   newArchive(const NS::URL* url, NS::Error** error);
-
-    ArgumentEncoder*                 newArgumentEncoder(const NS::Array* arguments);
-    ArgumentEncoder*                 newArgumentEncoder(const MTL::BufferBinding* bufferBinding);
-
-    MTL4::ArgumentTable*             newArgumentTable(const MTL4::ArgumentTableDescriptor* descriptor, NS::Error** error);
-
-    BinaryArchive*                   newBinaryArchive(const MTL::BinaryArchiveDescriptor* descriptor, NS::Error** error);
-
-    Buffer*                          newBuffer(NS::UInteger length, MTL::ResourceOptions options);
-    Buffer*                          newBuffer(const void* pointer, NS::UInteger length, MTL::ResourceOptions options);
-    Buffer*                          newBuffer(const void* pointer, NS::UInteger length, MTL::ResourceOptions options, void (^deallocator)(void*, NS::UInteger));
-    Buffer*                          newBuffer(NS::UInteger length, MTL::ResourceOptions options, MTL::SparsePageSize placementSparsePageSize);
-
+    MTL::AccelerationStructure*      newAccelerationStructure(NS::UInteger size);
+    MTL::AccelerationStructure*      newAccelerationStructure(MTL::AccelerationStructureDescriptor* descriptor);
+    MTL4::Archive*                   newArchive(NS::URL* url, NS::Error** error);
+    MTL::ArgumentEncoder*            newArgumentEncoder(NS::Array* arguments);
+    MTL::ArgumentEncoder*            newArgumentEncoder(MTL::BufferBinding* bufferBinding);
+    MTL4::ArgumentTable*             newArgumentTable(MTL4::ArgumentTableDescriptor* descriptor, NS::Error** error);
+    MTL::BinaryArchive*              newBinaryArchive(MTL::BinaryArchiveDescriptor* descriptor, NS::Error** error);
+    MTL::Buffer*                     newBuffer(NS::UInteger length, MTL::ResourceOptions options);
+    MTL::Buffer*                     newBuffer(const void * pointer, NS::UInteger length, MTL::ResourceOptions options);
+    MTL::Buffer*                     newBuffer(void * pointer, NS::UInteger length, MTL::ResourceOptions options, MTL::NewBufferBlock deallocator);
+    MTL::Buffer*                     newBuffer(void * pointer, NS::UInteger length, MTL::ResourceOptions options, const MTL::NewBufferFunction& deallocator);
+    MTL::Buffer*                     newBuffer(NS::UInteger length, MTL::ResourceOptions options, MTL::SparsePageSize placementSparsePageSize);
     MTL4::CommandAllocator*          newCommandAllocator();
-    MTL4::CommandAllocator*          newCommandAllocator(const MTL4::CommandAllocatorDescriptor* descriptor, NS::Error** error);
-
+    MTL4::CommandAllocator*          newCommandAllocator(MTL4::CommandAllocatorDescriptor* descriptor, NS::Error** error);
     MTL4::CommandBuffer*             newCommandBuffer();
-
-    CommandQueue*                    newCommandQueue();
-    CommandQueue*                    newCommandQueue(NS::UInteger maxCommandBufferCount);
-    CommandQueue*                    newCommandQueue(const MTL::CommandQueueDescriptor* descriptor);
-
-    MTL4::Compiler*                  newCompiler(const MTL4::CompilerDescriptor* descriptor, NS::Error** error);
-
-    ComputePipelineState*            newComputePipelineState(const MTL::Function* computeFunction, NS::Error** error);
-    ComputePipelineState*            newComputePipelineState(const MTL::Function* computeFunction, MTL::PipelineOption options, const MTL::AutoreleasedComputePipelineReflection* reflection, NS::Error** error);
-    void                             newComputePipelineState(const MTL::Function* computeFunction, const MTL::NewComputePipelineStateCompletionHandler completionHandler);
-    void                             newComputePipelineState(const MTL::Function* computeFunction, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandler completionHandler);
-    ComputePipelineState*            newComputePipelineState(const MTL::ComputePipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::AutoreleasedComputePipelineReflection* reflection, NS::Error** error);
-    void                             newComputePipelineState(const MTL::ComputePipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandler completionHandler);
-    void                             newComputePipelineState(const MTL::Function* pFunction, const MTL::NewComputePipelineStateCompletionHandlerFunction& completionHandler);
-    void                             newComputePipelineState(const MTL::Function* pFunction, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction& completionHandler);
-    void                             newComputePipelineState(const MTL::ComputePipelineDescriptor* pDescriptor, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction& completionHandler);
-
-    MTL4::CounterHeap*               newCounterHeap(const MTL4::CounterHeapDescriptor* descriptor, NS::Error** error);
-
-    CounterSampleBuffer*             newCounterSampleBuffer(const MTL::CounterSampleBufferDescriptor* descriptor, NS::Error** error);
-
-    Library*                         newDefaultLibrary();
-    Library*                         newDefaultLibrary(const NS::Bundle* bundle, NS::Error** error);
-
-    DepthStencilState*               newDepthStencilState(const MTL::DepthStencilDescriptor* descriptor);
-
-    DynamicLibrary*                  newDynamicLibrary(const MTL::Library* library, NS::Error** error);
-    DynamicLibrary*                  newDynamicLibrary(const NS::URL* url, NS::Error** error);
-
-    Event*                           newEvent();
-
-    Fence*                           newFence();
-
-    Heap*                            newHeap(const MTL::HeapDescriptor* descriptor);
-
-    IOCommandQueue*                  newIOCommandQueue(const MTL::IOCommandQueueDescriptor* descriptor, NS::Error** error);
-
-    IOFileHandle*                    newIOFileHandle(const NS::URL* url, NS::Error** error);
-    IOFileHandle*                    newIOFileHandle(const NS::URL* url, MTL::IOCompressionMethod compressionMethod, NS::Error** error);
-
-    IOFileHandle*                    newIOHandle(const NS::URL* url, NS::Error** error);
-    IOFileHandle*                    newIOHandle(const NS::URL* url, MTL::IOCompressionMethod compressionMethod, NS::Error** error);
-
-    IndirectCommandBuffer*           newIndirectCommandBuffer(const MTL::IndirectCommandBufferDescriptor* descriptor, NS::UInteger maxCount, MTL::ResourceOptions options);
-
-    Library*                         newLibrary(const NS::String* filepath, NS::Error** error);
-    Library*                         newLibrary(const NS::URL* url, NS::Error** error);
-    Library*                         newLibrary(const dispatch_data_t data, NS::Error** error);
-    Library*                         newLibrary(const NS::String* source, const MTL::CompileOptions* options, NS::Error** error);
-    void                             newLibrary(const NS::String* source, const MTL::CompileOptions* options, const MTL::NewLibraryCompletionHandler completionHandler);
-    Library*                         newLibrary(const MTL::StitchedLibraryDescriptor* descriptor, NS::Error** error);
-    void                             newLibrary(const MTL::StitchedLibraryDescriptor* descriptor, const MTL::NewLibraryCompletionHandler completionHandler);
-    void                             newLibrary(const NS::String* pSource, const MTL::CompileOptions* pOptions, const MTL::NewLibraryCompletionHandlerFunction& completionHandler);
-    void                             newLibrary(const MTL::StitchedLibraryDescriptor* pDescriptor, const MTL::NewLibraryCompletionHandlerFunction& completionHandler);
-
-    LogState*                        newLogState(const MTL::LogStateDescriptor* descriptor, NS::Error** error);
-
+    MTL::CommandQueue*               newCommandQueue();
+    MTL::CommandQueue*               newCommandQueue(NS::UInteger maxCommandBufferCount);
+    MTL::CommandQueue*               newCommandQueue(MTL::CommandQueueDescriptor* descriptor);
+    MTL4::Compiler*                  newCompiler(MTL4::CompilerDescriptor* descriptor, NS::Error** error);
+    MTL::ComputePipelineState*       newComputePipelineState(MTL::Function* computeFunction, NS::Error** error);
+    MTL::ComputePipelineState*       newComputePipelineState(MTL::Function* computeFunction, MTL::PipelineOption options, MTL::AutoreleasedComputePipelineReflection* reflection, NS::Error** error);
+    void                             newComputePipelineState(MTL::Function* computeFunction, MTL::NewComputePipelineStateCompletionHandler completionHandler);
+    void                             newComputePipelineState(MTL::Function* computeFunction, const MTL::NewComputePipelineStateCompletionHandlerFunction& completionHandler);
+    void                             newComputePipelineState(MTL::Function* computeFunction, MTL::PipelineOption options, MTL::NewComputePipelineStateWithReflectionCompletionHandler completionHandler);
+    void                             newComputePipelineState(MTL::Function* computeFunction, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction& completionHandler);
+    MTL::ComputePipelineState*       newComputePipelineState(MTL::ComputePipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::AutoreleasedComputePipelineReflection* reflection, NS::Error** error);
+    void                             newComputePipelineState(MTL::ComputePipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::NewComputePipelineStateWithReflectionCompletionHandler completionHandler);
+    void                             newComputePipelineState(MTL::ComputePipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction& completionHandler);
+    MTL4::CounterHeap*               newCounterHeap(MTL4::CounterHeapDescriptor* descriptor, NS::Error** error);
+    MTL::CounterSampleBuffer*        newCounterSampleBuffer(MTL::CounterSampleBufferDescriptor* descriptor, NS::Error** error);
+    MTL::Library*                    newDefaultLibrary();
+    MTL::Library*                    newDefaultLibrary(NS::Bundle* bundle, NS::Error** error);
+    MTL::DepthStencilState*          newDepthStencilState(MTL::DepthStencilDescriptor* descriptor);
+    MTL::DynamicLibrary*             newDynamicLibrary(MTL::Library* library, NS::Error** error);
+    MTL::DynamicLibrary*             newDynamicLibrary(NS::URL* url, NS::Error** error);
+    MTL::Event*                      newEvent();
+    MTL::Fence*                      newFence();
+    MTL::Heap*                       newHeap(MTL::HeapDescriptor* descriptor);
+    MTL::IOCommandQueue*             newIOCommandQueue(MTL::IOCommandQueueDescriptor* descriptor, NS::Error** error);
+    MTL::IOFileHandle*               newIOFileHandle(NS::URL* url, NS::Error** error);
+    MTL::IOFileHandle*               newIOFileHandle(NS::URL* url, MTL::IOCompressionMethod compressionMethod, NS::Error** error);
+    MTL::IOFileHandle*               newIOHandle(NS::URL* url, NS::Error** error);
+    MTL::IOFileHandle*               newIOHandle(NS::URL* url, MTL::IOCompressionMethod compressionMethod, NS::Error** error);
+    MTL::IndirectCommandBuffer*      newIndirectCommandBuffer(MTL::IndirectCommandBufferDescriptor* descriptor, NS::UInteger maxCount, MTL::ResourceOptions options);
+    MTL::Library*                    newLibrary(NS::String* filepath, NS::Error** error);
+    MTL::Library*                    newLibrary(NS::URL* url, NS::Error** error);
+    MTL::Library*                    newLibrary(dispatch_data_t data, NS::Error** error);
+    MTL::Library*                    newLibrary(NS::String* source, MTL::CompileOptions* options, NS::Error** error);
+    void                             newLibrary(NS::String* source, MTL::CompileOptions* options, MTL::NewLibraryCompletionHandler completionHandler);
+    void                             newLibrary(NS::String* source, MTL::CompileOptions* options, const MTL::NewLibraryCompletionHandlerFunction& completionHandler);
+    MTL::Library*                    newLibrary(MTL::StitchedLibraryDescriptor* descriptor, NS::Error** error);
+    void                             newLibrary(MTL::StitchedLibraryDescriptor* descriptor, MTL::NewLibraryCompletionHandler completionHandler);
+    void                             newLibrary(MTL::StitchedLibraryDescriptor* descriptor, const MTL::NewLibraryCompletionHandlerFunction& completionHandler);
+    MTL::LogState*                   newLogState(MTL::LogStateDescriptor* descriptor, NS::Error** error);
     MTL4::CommandQueue*              newMTL4CommandQueue();
-    MTL4::CommandQueue*              newMTL4CommandQueue(const MTL4::CommandQueueDescriptor* descriptor, NS::Error** error);
-
-    MTL4::PipelineDataSetSerializer* newPipelineDataSetSerializer(const MTL4::PipelineDataSetSerializerDescriptor* descriptor);
-
-    RasterizationRateMap*            newRasterizationRateMap(const MTL::RasterizationRateMapDescriptor* descriptor);
-
-    RenderPipelineState*             newRenderPipelineState(const MTL::RenderPipelineDescriptor* descriptor, NS::Error** error);
-    RenderPipelineState*             newRenderPipelineState(const MTL::RenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error);
-    void                             newRenderPipelineState(const MTL::RenderPipelineDescriptor* descriptor, const MTL::NewRenderPipelineStateCompletionHandler completionHandler);
-    void                             newRenderPipelineState(const MTL::RenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler);
-    RenderPipelineState*             newRenderPipelineState(const MTL::TileRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error);
-    void                             newRenderPipelineState(const MTL::TileRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler);
-    RenderPipelineState*             newRenderPipelineState(const MTL::MeshRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error);
-    void                             newRenderPipelineState(const MTL::MeshRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler);
-    void                             newRenderPipelineState(const MTL::RenderPipelineDescriptor* pDescriptor, const MTL::NewRenderPipelineStateCompletionHandlerFunction& completionHandler);
-    void                             newRenderPipelineState(const MTL::RenderPipelineDescriptor* pDescriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction& completionHandler);
-    void                             newRenderPipelineState(const MTL::TileRenderPipelineDescriptor* pDescriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction& completionHandler);
-
-    ResidencySet*                    newResidencySet(const MTL::ResidencySetDescriptor* desc, NS::Error** error);
-
-    SamplerState*                    newSamplerState(const MTL::SamplerDescriptor* descriptor);
-
-    SharedEvent*                     newSharedEvent();
-    SharedEvent*                     newSharedEvent(const MTL::SharedEventHandle* sharedEventHandle);
-
-    Texture*                         newSharedTexture(const MTL::TextureDescriptor* descriptor);
-    Texture*                         newSharedTexture(const MTL::SharedTextureHandle* sharedHandle);
-
-    Tensor*                          newTensor(const MTL::TensorDescriptor* descriptor, NS::Error** error);
-
-    Texture*                         newTexture(const MTL::TextureDescriptor* descriptor);
-    Texture*                         newTexture(const MTL::TextureDescriptor* descriptor, const IOSurfaceRef iosurface, NS::UInteger plane);
-    TextureViewPool*                 newTextureViewPool(const MTL::ResourceViewPoolDescriptor* descriptor, NS::Error** error);
-
+    MTL4::CommandQueue*              newMTL4CommandQueue(MTL4::CommandQueueDescriptor* descriptor, NS::Error** error);
+    MTL4::PipelineDataSetSerializer* newPipelineDataSetSerializer(MTL4::PipelineDataSetSerializerDescriptor* descriptor);
+    MTL::RasterizationRateMap*       newRasterizationRateMap(MTL::RasterizationRateMapDescriptor* descriptor);
+    MTL::RenderPipelineState*        newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, NS::Error** error);
+    MTL::RenderPipelineState*        newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error);
+    void                             newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, MTL::NewRenderPipelineStateCompletionHandler completionHandler);
+    void                             newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, const MTL::NewRenderPipelineStateCompletionHandlerFunction& completionHandler);
+    void                             newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler);
+    void                             newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction& completionHandler);
+    MTL::RenderPipelineState*        newRenderPipelineState(MTL::TileRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error);
+    void                             newRenderPipelineState(MTL::TileRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler);
+    void                             newRenderPipelineState(MTL::TileRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction& completionHandler);
+    MTL::RenderPipelineState*        newRenderPipelineState(MTL::MeshRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error);
+    void                             newRenderPipelineState(MTL::MeshRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler);
+    void                             newRenderPipelineState(MTL::MeshRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction& completionHandler);
+    MTL::ResidencySet*               newResidencySet(MTL::ResidencySetDescriptor* desc, NS::Error** error);
+    MTL::SamplerState*               newSamplerState(MTL::SamplerDescriptor* descriptor);
+    MTL::SharedEvent*                newSharedEvent();
+    MTL::SharedEvent*                newSharedEvent(MTL::SharedEventHandle* sharedEventHandle);
+    MTL::Texture*                    newSharedTexture(MTL::TextureDescriptor* descriptor);
+    MTL::Texture*                    newSharedTexture(MTL::SharedTextureHandle* sharedHandle);
+    MTL::Tensor*                     newTensor(MTL::TensorDescriptor* descriptor, NS::Error** error);
+    MTL::Texture*                    newTexture(MTL::TextureDescriptor* descriptor);
+    MTL::Texture*                    newTexture(MTL::TextureDescriptor* descriptor, IOSurfaceRef iosurface, NS::UInteger plane);
+    MTL::TextureViewPool*            newTextureViewPool(MTL::ResourceViewPoolDescriptor* descriptor, NS::Error** error);
     uint32_t                         peerCount() const;
-
     uint64_t                         peerGroupID() const;
-
     uint32_t                         peerIndex() const;
+    uint64_t                         queryTimestampFrequency();
+    MTL::ReadWriteTextureTier        readWriteTextureSupport() const;
+    uint64_t                         recommendedMaxWorkingSetSize() const;
+    uint64_t                         registryID() const;
+    bool                             removable() const;
+    void                             sampleTimestamps(MTL::Timestamp* cpuTimestamp, MTL::Timestamp* gpuTimestamp);
+    void                             setShouldMaximizeConcurrentCompilation(bool shouldMaximizeConcurrentCompilation);
+    bool                             shouldMaximizeConcurrentCompilation() const;
+    NS::UInteger                     sizeOfCounterHeapEntry(MTL4::CounterHeapType type);
+    MTL::Size                        sparseTileSize(MTL::TextureType textureType, MTL::PixelFormat pixelFormat, NS::UInteger sampleCount);
+    MTL::Size                        sparseTileSize(MTL::TextureType textureType, MTL::PixelFormat pixelFormat, NS::UInteger sampleCount, MTL::SparsePageSize sparsePageSize);
+    NS::UInteger                     sparseTileSizeInBytes() const;
+    NS::UInteger                     sparseTileSizeInBytes(MTL::SparsePageSize sparsePageSize);
+    bool                             supports32BitFloatFiltering() const;
+    bool                             supports32BitMSAA() const;
+    bool                             supportsBCTextureCompression() const;
+    bool                             supportsCounterSampling(MTL::CounterSamplingPoint samplingPoint);
+    bool                             supportsDynamicLibraries() const;
+    bool                             supportsFamily(MTL::GPUFamily gpuFamily);
+    bool                             supportsFeatureSet(MTL::FeatureSet featureSet);
+    bool                             supportsFunctionPointers() const;
+    bool                             supportsFunctionPointersFromRender() const;
+    bool                             supportsPrimitiveMotionBlur() const;
+    bool                             supportsPullModelInterpolation() const;
+    bool                             supportsQueryTextureLOD() const;
+    bool                             supportsRasterizationRateMap(NS::UInteger layerCount);
+    bool                             supportsRaytracing() const;
+    bool                             supportsRaytracingFromRender() const;
+    bool                             supportsRenderDynamicLibraries() const;
+    bool                             supportsShaderBarycentricCoordinates() const;
+    bool                             supportsTextureSampleCount(NS::UInteger sampleCount);
+    bool                             supportsVertexAmplificationCount(NS::UInteger count);
+    MTL::SizeAndAlign                tensorSizeAndAlign(MTL::TensorDescriptor* descriptor);
 
-    [[deprecated("please use areProgrammableSamplePositionsSupported instead")]]
-    bool     programmableSamplePositionsSupported() const;
-
-    uint64_t queryTimestampFrequency();
-
-    [[deprecated("please use areRasterOrderGroupsSupported instead")]]
-    bool                 rasterOrderGroupsSupported() const;
-
-    ReadWriteTextureTier readWriteTextureSupport() const;
-
-    uint64_t             recommendedMaxWorkingSetSize() const;
-
-    uint64_t             registryID() const;
-
-    [[deprecated("please use isRemovable instead")]]
-    bool         removable() const;
-
-    void         sampleTimestamps(MTL::Timestamp* cpuTimestamp, MTL::Timestamp* gpuTimestamp);
-
-    void         setShouldMaximizeConcurrentCompilation(bool shouldMaximizeConcurrentCompilation);
-    bool         shouldMaximizeConcurrentCompilation() const;
-
-    NS::UInteger sizeOfCounterHeapEntry(MTL4::CounterHeapType type);
-
-    Size         sparseTileSize(MTL::TextureType textureType, MTL::PixelFormat pixelFormat, NS::UInteger sampleCount);
-    Size         sparseTileSize(MTL::TextureType textureType, MTL::PixelFormat pixelFormat, NS::UInteger sampleCount, MTL::SparsePageSize sparsePageSize);
-    NS::UInteger sparseTileSizeInBytes() const;
-    NS::UInteger sparseTileSizeInBytes(MTL::SparsePageSize sparsePageSize);
-
-    bool         supports32BitFloatFiltering() const;
-
-    bool         supports32BitMSAA() const;
-
-    bool         supportsBCTextureCompression() const;
-
-    bool         supportsCounterSampling(MTL::CounterSamplingPoint samplingPoint);
-
-    bool         supportsDynamicLibraries() const;
-
-    bool         supportsFamily(MTL::GPUFamily gpuFamily);
-
-    bool         supportsFeatureSet(MTL::FeatureSet featureSet);
-
-    bool         supportsFunctionPointers() const;
-    bool         supportsFunctionPointersFromRender() const;
-
-    bool         supportsPrimitiveMotionBlur() const;
-
-    bool         supportsPullModelInterpolation() const;
-
-    bool         supportsQueryTextureLOD() const;
-
-    bool         supportsRasterizationRateMap(NS::UInteger layerCount);
-
-    bool         supportsRaytracing() const;
-    bool         supportsRaytracingFromRender() const;
-
-    bool         supportsRenderDynamicLibraries() const;
-
-    bool         supportsShaderBarycentricCoordinates() const;
-
-    bool         supportsTextureSampleCount(NS::UInteger sampleCount);
-
-    bool         supportsVertexAmplificationCount(NS::UInteger count);
-
-    SizeAndAlign tensorSizeAndAlign(const MTL::TensorDescriptor* descriptor);
 };
 
-}
+} // namespace MTL
 
-#if defined(MTL_PRIVATE_IMPLEMENTATION)
-extern "C" MTL::Device* MTLCreateSystemDefaultDevice();
-extern "C" NS::Array*   MTLCopyAllDevices();
-extern "C" NS::Array*   MTLCopyAllDevicesWithObserver(NS::Object**, MTL::DeviceNotificationHandlerBlock);
-extern "C" void         MTLRemoveDeviceObserver(const NS::Object*);
-_MTL_PRIVATE_DEF_WEAK_CONST(MTL::DeviceNotificationName, DeviceWasAddedNotification);
-_MTL_PRIVATE_DEF_WEAK_CONST(MTL::DeviceNotificationName, DeviceRemovalRequestedNotification);
-_MTL_PRIVATE_DEF_WEAK_CONST(MTL::DeviceNotificationName, DeviceWasRemovedNotification);
-_MTL_PRIVATE_DEF_CONST(NS::ErrorUserInfoKey, CommandBufferEncoderInfoErrorKey);
-_NS_EXPORT MTL::Device* MTL::CreateSystemDefaultDevice()
-{
-    return ::MTLCreateSystemDefaultDevice();
-}
+// --- Class symbols + inline implementations ---
 
-_NS_EXPORT NS::Array* MTL::CopyAllDevices()
-{
-#if (__IPHONE_OS_VERSION_MIN_REQUIRED >= 180000) || (__MAC_OS_X_VERSION_MIN_REQUIRED >= 101100)
-    return ::MTLCopyAllDevices();
-#else
-    return nullptr;
-#endif
-}
-
-_NS_EXPORT NS::Array* MTL::CopyAllDevicesWithObserver(NS::Object** pOutObserver, MTL::DeviceNotificationHandlerBlock handler)
-{
-#if TARGET_OS_OSX
-    return ::MTLCopyAllDevicesWithObserver(pOutObserver, handler);
-#else
-    (void)pOutObserver;
-    (void)handler;
-    return nullptr;
-#endif // TARGET_OS_OSX
-}
-
-_NS_EXPORT NS::Array* MTL::CopyAllDevicesWithObserver(NS::Object** pOutObserver, const MTL::DeviceNotificationHandlerFunction& handler)
-{
-    __block DeviceNotificationHandlerFunction function = handler;
-    return CopyAllDevicesWithObserver(pOutObserver, ^(Device* pDevice, DeviceNotificationName pNotificationName) { function(pDevice, pNotificationName); });
-}
-
-_NS_EXPORT void MTL::RemoveDeviceObserver(const NS::Object* pObserver)
-{
-    (void)pObserver;
-#if TARGET_OS_OSX
-    ::MTLRemoveDeviceObserver(pObserver);
-#endif // TARGET_OS_OSX
-}
-
-#endif // MTL_PRIVATE_IMPLEMENTATION
-
-_MTL_INLINE MTL::BindingAccess MTL::ArgumentDescriptor::access() const
-{
-    return Object::sendMessage<MTL::BindingAccess>(this, _MTL_PRIVATE_SEL(access));
-}
+extern "C" void *OBJC_CLASS_$_MTLArgumentDescriptor;
+extern "C" void *OBJC_CLASS_$_MTLArchitecture;
+extern "C" void *OBJC_CLASS_$_MTLDevice;
 
 _MTL_INLINE MTL::ArgumentDescriptor* MTL::ArgumentDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL::ArgumentDescriptor>(_MTL_PRIVATE_CLS(MTLArgumentDescriptor));
+    return _MTL_msg_MTL__ArgumentDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTLArgumentDescriptor, nullptr);
+}
+
+_MTL_INLINE MTL::ArgumentDescriptor* MTL::ArgumentDescriptor::init() const
+{
+    return _MTL_msg_MTL__ArgumentDescriptorp_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE MTL::ArgumentDescriptor* MTL::ArgumentDescriptor::argumentDescriptor()
 {
-    return Object::sendMessage<MTL::ArgumentDescriptor*>(_MTL_PRIVATE_CLS(MTLArgumentDescriptor), _MTL_PRIVATE_SEL(argumentDescriptor));
-}
-
-_MTL_INLINE NS::UInteger MTL::ArgumentDescriptor::arrayLength() const
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(arrayLength));
-}
-
-_MTL_INLINE NS::UInteger MTL::ArgumentDescriptor::constantBlockAlignment() const
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(constantBlockAlignment));
+    return _MTL_msg_MTL__ArgumentDescriptorp_argumentDescriptor((const void*)&OBJC_CLASS_$_MTLArgumentDescriptor, nullptr);
 }
 
 _MTL_INLINE MTL::DataType MTL::ArgumentDescriptor::dataType() const
 {
-    return Object::sendMessage<MTL::DataType>(this, _MTL_PRIVATE_SEL(dataType));
-}
-
-_MTL_INLINE NS::UInteger MTL::ArgumentDescriptor::index() const
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(index));
-}
-
-_MTL_INLINE MTL::ArgumentDescriptor* MTL::ArgumentDescriptor::init()
-{
-    return NS::Object::init<MTL::ArgumentDescriptor>();
-}
-
-_MTL_INLINE void MTL::ArgumentDescriptor::setAccess(MTL::BindingAccess access)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setAccess_), access);
-}
-
-_MTL_INLINE void MTL::ArgumentDescriptor::setArrayLength(NS::UInteger arrayLength)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setArrayLength_), arrayLength);
-}
-
-_MTL_INLINE void MTL::ArgumentDescriptor::setConstantBlockAlignment(NS::UInteger constantBlockAlignment)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setConstantBlockAlignment_), constantBlockAlignment);
+    return _MTL_msg_MTL__DataType_dataType((const void*)this, nullptr);
 }
 
 _MTL_INLINE void MTL::ArgumentDescriptor::setDataType(MTL::DataType dataType)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setDataType_), dataType);
+    _MTL_msg_v_setDataType__MTL__DataType((const void*)this, nullptr, dataType);
+}
+
+_MTL_INLINE NS::UInteger MTL::ArgumentDescriptor::index() const
+{
+    return _MTL_msg_NS__UInteger_index((const void*)this, nullptr);
 }
 
 _MTL_INLINE void MTL::ArgumentDescriptor::setIndex(NS::UInteger index)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setIndex_), index);
+    _MTL_msg_v_setIndex__NS__UInteger((const void*)this, nullptr, index);
 }
 
-_MTL_INLINE void MTL::ArgumentDescriptor::setTextureType(MTL::TextureType textureType)
+_MTL_INLINE NS::UInteger MTL::ArgumentDescriptor::arrayLength() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setTextureType_), textureType);
+    return _MTL_msg_NS__UInteger_arrayLength((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::ArgumentDescriptor::setArrayLength(NS::UInteger arrayLength)
+{
+    _MTL_msg_v_setArrayLength__NS__UInteger((const void*)this, nullptr, arrayLength);
+}
+
+_MTL_INLINE MTL::BindingAccess MTL::ArgumentDescriptor::access() const
+{
+    return _MTL_msg_MTL__BindingAccess_access((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::ArgumentDescriptor::setAccess(MTL::BindingAccess access)
+{
+    _MTL_msg_v_setAccess__MTL__BindingAccess((const void*)this, nullptr, access);
 }
 
 _MTL_INLINE MTL::TextureType MTL::ArgumentDescriptor::textureType() const
 {
-    return Object::sendMessage<MTL::TextureType>(this, _MTL_PRIVATE_SEL(textureType));
+    return _MTL_msg_MTL__TextureType_textureType((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::ArgumentDescriptor::setTextureType(MTL::TextureType textureType)
+{
+    _MTL_msg_v_setTextureType__MTL__TextureType((const void*)this, nullptr, textureType);
+}
+
+_MTL_INLINE NS::UInteger MTL::ArgumentDescriptor::constantBlockAlignment() const
+{
+    return _MTL_msg_NS__UInteger_constantBlockAlignment((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::ArgumentDescriptor::setConstantBlockAlignment(NS::UInteger constantBlockAlignment)
+{
+    _MTL_msg_v_setConstantBlockAlignment__NS__UInteger((const void*)this, nullptr, constantBlockAlignment);
 }
 
 _MTL_INLINE MTL::Architecture* MTL::Architecture::alloc()
 {
-    return NS::Object::alloc<MTL::Architecture>(_MTL_PRIVATE_CLS(MTLArchitecture));
+    return _MTL_msg_MTL__Architecturep_alloc((const void*)&OBJC_CLASS_$_MTLArchitecture, nullptr);
 }
 
-_MTL_INLINE MTL::Architecture* MTL::Architecture::init()
+_MTL_INLINE MTL::Architecture* MTL::Architecture::init() const
 {
-    return NS::Object::init<MTL::Architecture>();
+    return _MTL_msg_MTL__Architecturep_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::String* MTL::Architecture::name() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(name));
-}
-
-_MTL_INLINE MTL::AccelerationStructureSizes MTL::Device::accelerationStructureSizes(const MTL::AccelerationStructureDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL::AccelerationStructureSizes>(this, _MTL_PRIVATE_SEL(accelerationStructureSizesWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL::Architecture* MTL::Device::architecture() const
-{
-    return Object::sendMessage<MTL::Architecture*>(this, _MTL_PRIVATE_SEL(architecture));
-}
-
-_MTL_INLINE bool MTL::Device::areBarycentricCoordsSupported() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(areBarycentricCoordsSupported));
-}
-
-_MTL_INLINE bool MTL::Device::areProgrammableSamplePositionsSupported() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(areProgrammableSamplePositionsSupported));
-}
-
-_MTL_INLINE bool MTL::Device::areRasterOrderGroupsSupported() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(areRasterOrderGroupsSupported));
-}
-
-_MTL_INLINE MTL::ArgumentBuffersTier MTL::Device::argumentBuffersSupport() const
-{
-    return Object::sendMessage<MTL::ArgumentBuffersTier>(this, _MTL_PRIVATE_SEL(argumentBuffersSupport));
-}
-
-_MTL_INLINE bool MTL::Device::barycentricCoordsSupported() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(areBarycentricCoordsSupported));
-}
-
-_MTL_INLINE void MTL::Device::convertSparsePixelRegions(const MTL::Region* pixelRegions, MTL::Region* tileRegions, MTL::Size tileSize, MTL::SparseTextureRegionAlignmentMode mode, NS::UInteger numRegions)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(convertSparsePixelRegions_toTileRegions_withTileSize_alignmentMode_numRegions_), pixelRegions, tileRegions, tileSize, mode, numRegions);
-}
-
-_MTL_INLINE void MTL::Device::convertSparseTileRegions(const MTL::Region* tileRegions, MTL::Region* pixelRegions, MTL::Size tileSize, NS::UInteger numRegions)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(convertSparseTileRegions_toPixelRegions_withTileSize_numRegions_), tileRegions, pixelRegions, tileSize, numRegions);
-}
-
-_MTL_INLINE NS::Array* MTL::Device::counterSets() const
-{
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(counterSets));
-}
-
-_MTL_INLINE NS::UInteger MTL::Device::currentAllocatedSize() const
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(currentAllocatedSize));
-}
-
-_MTL_INLINE bool MTL::Device::depth24Stencil8PixelFormatSupported() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(isDepth24Stencil8PixelFormatSupported));
-}
-
-_MTL_INLINE MTL::FunctionHandle* MTL::Device::functionHandle(const MTL::Function* function)
-{
-    return Object::sendMessage<MTL::FunctionHandle*>(this, _MTL_PRIVATE_SEL(functionHandleWithFunction_), function);
-}
-
-_MTL_INLINE MTL::FunctionHandle* MTL::Device::functionHandle(const MTL4::BinaryFunction* function)
-{
-    return Object::sendMessage<MTL::FunctionHandle*>(this, _MTL_PRIVATE_SEL(functionHandleWithBinaryFunction_), function);
-}
-
-_MTL_INLINE void MTL::Device::getDefaultSamplePositions(MTL::SamplePosition* positions, NS::UInteger count)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(getDefaultSamplePositions_count_), positions, count);
-}
-
-_MTL_INLINE bool MTL::Device::hasUnifiedMemory() const
-{
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(hasUnifiedMemory));
-}
-
-_MTL_INLINE bool MTL::Device::headless() const
-{
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(isHeadless));
-}
-
-_MTL_INLINE MTL::SizeAndAlign MTL::Device::heapAccelerationStructureSizeAndAlign(NS::UInteger size)
-{
-    return Object::sendMessage<MTL::SizeAndAlign>(this, _MTL_PRIVATE_SEL(heapAccelerationStructureSizeAndAlignWithSize_), size);
-}
-
-_MTL_INLINE MTL::SizeAndAlign MTL::Device::heapAccelerationStructureSizeAndAlign(const MTL::AccelerationStructureDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL::SizeAndAlign>(this, _MTL_PRIVATE_SEL(heapAccelerationStructureSizeAndAlignWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL::SizeAndAlign MTL::Device::heapBufferSizeAndAlign(NS::UInteger length, MTL::ResourceOptions options)
-{
-    return Object::sendMessage<MTL::SizeAndAlign>(this, _MTL_PRIVATE_SEL(heapBufferSizeAndAlignWithLength_options_), length, options);
-}
-
-_MTL_INLINE MTL::SizeAndAlign MTL::Device::heapTextureSizeAndAlign(const MTL::TextureDescriptor* desc)
-{
-    return Object::sendMessage<MTL::SizeAndAlign>(this, _MTL_PRIVATE_SEL(heapTextureSizeAndAlignWithDescriptor_), desc);
-}
-
-_MTL_INLINE bool MTL::Device::isDepth24Stencil8PixelFormatSupported() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(isDepth24Stencil8PixelFormatSupported));
-}
-
-_MTL_INLINE bool MTL::Device::isHeadless() const
-{
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(isHeadless));
-}
-
-_MTL_INLINE bool MTL::Device::isLowPower() const
-{
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(isLowPower));
-}
-
-_MTL_INLINE bool MTL::Device::isRemovable() const
-{
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(isRemovable));
-}
-
-_MTL_INLINE MTL::DeviceLocation MTL::Device::location() const
-{
-    return Object::sendMessage<MTL::DeviceLocation>(this, _MTL_PRIVATE_SEL(location));
-}
-
-_MTL_INLINE NS::UInteger MTL::Device::locationNumber() const
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(locationNumber));
-}
-
-_MTL_INLINE bool MTL::Device::lowPower() const
-{
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(isLowPower));
-}
-
-_MTL_INLINE NS::UInteger MTL::Device::maxArgumentBufferSamplerCount() const
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(maxArgumentBufferSamplerCount));
-}
-
-_MTL_INLINE NS::UInteger MTL::Device::maxBufferLength() const
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(maxBufferLength));
-}
-
-_MTL_INLINE NS::UInteger MTL::Device::maxThreadgroupMemoryLength() const
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(maxThreadgroupMemoryLength));
-}
-
-_MTL_INLINE MTL::Size MTL::Device::maxThreadsPerThreadgroup() const
-{
-    return Object::sendMessage<MTL::Size>(this, _MTL_PRIVATE_SEL(maxThreadsPerThreadgroup));
-}
-
-_MTL_INLINE uint64_t MTL::Device::maxTransferRate() const
-{
-    return Object::sendMessage<uint64_t>(this, _MTL_PRIVATE_SEL(maxTransferRate));
-}
-
-_MTL_INLINE NS::UInteger MTL::Device::maximumConcurrentCompilationTaskCount() const
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(maximumConcurrentCompilationTaskCount));
-}
-
-_MTL_INLINE NS::UInteger MTL::Device::minimumLinearTextureAlignmentForPixelFormat(MTL::PixelFormat format)
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(minimumLinearTextureAlignmentForPixelFormat_), format);
-}
-
-_MTL_INLINE NS::UInteger MTL::Device::minimumTextureBufferAlignmentForPixelFormat(MTL::PixelFormat format)
-{
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(minimumTextureBufferAlignmentForPixelFormat_), format);
+    return _MTL_msg_NS__Stringp_name((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::String* MTL::Device::name() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(name));
-}
-
-_MTL_INLINE MTL::AccelerationStructure* MTL::Device::newAccelerationStructure(NS::UInteger size)
-{
-    return Object::sendMessage<MTL::AccelerationStructure*>(this, _MTL_PRIVATE_SEL(newAccelerationStructureWithSize_), size);
-}
-
-_MTL_INLINE MTL::AccelerationStructure* MTL::Device::newAccelerationStructure(const MTL::AccelerationStructureDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL::AccelerationStructure*>(this, _MTL_PRIVATE_SEL(newAccelerationStructureWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL4::Archive* MTL::Device::newArchive(const NS::URL* url, NS::Error** error)
-{
-    return Object::sendMessage<MTL4::Archive*>(this, _MTL_PRIVATE_SEL(newArchiveWithURL_error_), url, error);
-}
-
-_MTL_INLINE MTL::ArgumentEncoder* MTL::Device::newArgumentEncoder(const NS::Array* arguments)
-{
-    return Object::sendMessage<MTL::ArgumentEncoder*>(this, _MTL_PRIVATE_SEL(newArgumentEncoderWithArguments_), arguments);
-}
-
-_MTL_INLINE MTL::ArgumentEncoder* MTL::Device::newArgumentEncoder(const MTL::BufferBinding* bufferBinding)
-{
-    return Object::sendMessage<MTL::ArgumentEncoder*>(this, _MTL_PRIVATE_SEL(newArgumentEncoderWithBufferBinding_), bufferBinding);
-}
-
-_MTL_INLINE MTL4::ArgumentTable* MTL::Device::newArgumentTable(const MTL4::ArgumentTableDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL4::ArgumentTable*>(this, _MTL_PRIVATE_SEL(newArgumentTableWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL::BinaryArchive* MTL::Device::newBinaryArchive(const MTL::BinaryArchiveDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL::BinaryArchive*>(this, _MTL_PRIVATE_SEL(newBinaryArchiveWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL::Buffer* MTL::Device::newBuffer(NS::UInteger length, MTL::ResourceOptions options)
-{
-    return Object::sendMessage<MTL::Buffer*>(this, _MTL_PRIVATE_SEL(newBufferWithLength_options_), length, options);
-}
-
-_MTL_INLINE MTL::Buffer* MTL::Device::newBuffer(const void* pointer, NS::UInteger length, MTL::ResourceOptions options)
-{
-    return Object::sendMessage<MTL::Buffer*>(this, _MTL_PRIVATE_SEL(newBufferWithBytes_length_options_), pointer, length, options);
-}
-
-_MTL_INLINE MTL::Buffer* MTL::Device::newBuffer(const void* pointer, NS::UInteger length, MTL::ResourceOptions options, void (^deallocator)(void*, NS::UInteger))
-{
-    return Object::sendMessage<MTL::Buffer*>(this, _MTL_PRIVATE_SEL(newBufferWithBytesNoCopy_length_options_deallocator_), pointer, length, options, deallocator);
-}
-
-_MTL_INLINE MTL::Buffer* MTL::Device::newBuffer(NS::UInteger length, MTL::ResourceOptions options, MTL::SparsePageSize placementSparsePageSize)
-{
-    return Object::sendMessage<MTL::Buffer*>(this, _MTL_PRIVATE_SEL(newBufferWithLength_options_placementSparsePageSize_), length, options, placementSparsePageSize);
-}
-
-_MTL_INLINE MTL4::CommandAllocator* MTL::Device::newCommandAllocator()
-{
-    return Object::sendMessage<MTL4::CommandAllocator*>(this, _MTL_PRIVATE_SEL(newCommandAllocator));
-}
-
-_MTL_INLINE MTL4::CommandAllocator* MTL::Device::newCommandAllocator(const MTL4::CommandAllocatorDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL4::CommandAllocator*>(this, _MTL_PRIVATE_SEL(newCommandAllocatorWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL4::CommandBuffer* MTL::Device::newCommandBuffer()
-{
-    return Object::sendMessage<MTL4::CommandBuffer*>(this, _MTL_PRIVATE_SEL(newCommandBuffer));
-}
-
-_MTL_INLINE MTL::CommandQueue* MTL::Device::newCommandQueue()
-{
-    return Object::sendMessage<MTL::CommandQueue*>(this, _MTL_PRIVATE_SEL(newCommandQueue));
-}
-
-_MTL_INLINE MTL::CommandQueue* MTL::Device::newCommandQueue(NS::UInteger maxCommandBufferCount)
-{
-    return Object::sendMessage<MTL::CommandQueue*>(this, _MTL_PRIVATE_SEL(newCommandQueueWithMaxCommandBufferCount_), maxCommandBufferCount);
-}
-
-_MTL_INLINE MTL::CommandQueue* MTL::Device::newCommandQueue(const MTL::CommandQueueDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL::CommandQueue*>(this, _MTL_PRIVATE_SEL(newCommandQueueWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL4::Compiler* MTL::Device::newCompiler(const MTL4::CompilerDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL4::Compiler*>(this, _MTL_PRIVATE_SEL(newCompilerWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL::ComputePipelineState* MTL::Device::newComputePipelineState(const MTL::Function* computeFunction, NS::Error** error)
-{
-    return Object::sendMessage<MTL::ComputePipelineState*>(this, _MTL_PRIVATE_SEL(newComputePipelineStateWithFunction_error_), computeFunction, error);
-}
-
-_MTL_INLINE MTL::ComputePipelineState* MTL::Device::newComputePipelineState(const MTL::Function* computeFunction, MTL::PipelineOption options, const MTL::AutoreleasedComputePipelineReflection* reflection, NS::Error** error)
-{
-    return Object::sendMessage<MTL::ComputePipelineState*>(this, _MTL_PRIVATE_SEL(newComputePipelineStateWithFunction_options_reflection_error_), computeFunction, options, reflection, error);
-}
-
-_MTL_INLINE void MTL::Device::newComputePipelineState(const MTL::Function* computeFunction, const MTL::NewComputePipelineStateCompletionHandler completionHandler)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(newComputePipelineStateWithFunction_completionHandler_), computeFunction, completionHandler);
-}
-
-_MTL_INLINE void MTL::Device::newComputePipelineState(const MTL::Function* computeFunction, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandler completionHandler)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(newComputePipelineStateWithFunction_options_completionHandler_), computeFunction, options, completionHandler);
-}
-
-_MTL_INLINE MTL::ComputePipelineState* MTL::Device::newComputePipelineState(const MTL::ComputePipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::AutoreleasedComputePipelineReflection* reflection, NS::Error** error)
-{
-    return Object::sendMessage<MTL::ComputePipelineState*>(this, _MTL_PRIVATE_SEL(newComputePipelineStateWithDescriptor_options_reflection_error_), descriptor, options, reflection, error);
-}
-
-_MTL_INLINE void MTL::Device::newComputePipelineState(const MTL::ComputePipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandler completionHandler)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(newComputePipelineStateWithDescriptor_options_completionHandler_), descriptor, options, completionHandler);
-}
-
-_MTL_INLINE void MTL::Device::newComputePipelineState(const MTL::Function* pFunction, const MTL::NewComputePipelineStateCompletionHandlerFunction& completionHandler)
-{
-    __block MTL::NewComputePipelineStateCompletionHandlerFunction blockCompletionHandler = completionHandler;
-    newComputePipelineState(pFunction, ^(MTL::ComputePipelineState* pPipelineState, NS::Error* pError) { blockCompletionHandler(pPipelineState, pError); });
-}
-
-_MTL_INLINE void MTL::Device::newComputePipelineState(const MTL::Function* pFunction, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction& completionHandler)
-{
-    __block MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction blockCompletionHandler = completionHandler;
-    newComputePipelineState(pFunction, options, ^(MTL::ComputePipelineState* pPipelineState, MTL::ComputePipelineReflection* pReflection, NS::Error* pError) { blockCompletionHandler(pPipelineState, pReflection, pError); });
-}
-
-_MTL_INLINE void MTL::Device::newComputePipelineState(const MTL::ComputePipelineDescriptor* pDescriptor, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction& completionHandler)
-{
-    __block NewComputePipelineStateWithReflectionCompletionHandlerFunction blockCompletionHandler = completionHandler;
-    newComputePipelineState(pDescriptor, options, ^(ComputePipelineState* pPipelineState, ComputePipelineReflection* pReflection, NS::Error* pError) { blockCompletionHandler(pPipelineState, pReflection, pError); });
-}
-
-_MTL_INLINE MTL4::CounterHeap* MTL::Device::newCounterHeap(const MTL4::CounterHeapDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL4::CounterHeap*>(this, _MTL_PRIVATE_SEL(newCounterHeapWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL::CounterSampleBuffer* MTL::Device::newCounterSampleBuffer(const MTL::CounterSampleBufferDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL::CounterSampleBuffer*>(this, _MTL_PRIVATE_SEL(newCounterSampleBufferWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL::Library* MTL::Device::newDefaultLibrary()
-{
-    return Object::sendMessage<MTL::Library*>(this, _MTL_PRIVATE_SEL(newDefaultLibrary));
-}
-
-_MTL_INLINE MTL::Library* MTL::Device::newDefaultLibrary(const NS::Bundle* bundle, NS::Error** error)
-{
-    return Object::sendMessage<MTL::Library*>(this, _MTL_PRIVATE_SEL(newDefaultLibraryWithBundle_error_), bundle, error);
-}
-
-_MTL_INLINE MTL::DepthStencilState* MTL::Device::newDepthStencilState(const MTL::DepthStencilDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL::DepthStencilState*>(this, _MTL_PRIVATE_SEL(newDepthStencilStateWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL::DynamicLibrary* MTL::Device::newDynamicLibrary(const MTL::Library* library, NS::Error** error)
-{
-    return Object::sendMessage<MTL::DynamicLibrary*>(this, _MTL_PRIVATE_SEL(newDynamicLibrary_error_), library, error);
-}
-
-_MTL_INLINE MTL::DynamicLibrary* MTL::Device::newDynamicLibrary(const NS::URL* url, NS::Error** error)
-{
-    return Object::sendMessage<MTL::DynamicLibrary*>(this, _MTL_PRIVATE_SEL(newDynamicLibraryWithURL_error_), url, error);
-}
-
-_MTL_INLINE MTL::Event* MTL::Device::newEvent()
-{
-    return Object::sendMessage<MTL::Event*>(this, _MTL_PRIVATE_SEL(newEvent));
-}
-
-_MTL_INLINE MTL::Fence* MTL::Device::newFence()
-{
-    return Object::sendMessage<MTL::Fence*>(this, _MTL_PRIVATE_SEL(newFence));
-}
-
-_MTL_INLINE MTL::Heap* MTL::Device::newHeap(const MTL::HeapDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL::Heap*>(this, _MTL_PRIVATE_SEL(newHeapWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL::IOCommandQueue* MTL::Device::newIOCommandQueue(const MTL::IOCommandQueueDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL::IOCommandQueue*>(this, _MTL_PRIVATE_SEL(newIOCommandQueueWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL::IOFileHandle* MTL::Device::newIOFileHandle(const NS::URL* url, NS::Error** error)
-{
-    return Object::sendMessage<MTL::IOFileHandle*>(this, _MTL_PRIVATE_SEL(newIOFileHandleWithURL_error_), url, error);
-}
-
-_MTL_INLINE MTL::IOFileHandle* MTL::Device::newIOFileHandle(const NS::URL* url, MTL::IOCompressionMethod compressionMethod, NS::Error** error)
-{
-    return Object::sendMessage<MTL::IOFileHandle*>(this, _MTL_PRIVATE_SEL(newIOFileHandleWithURL_compressionMethod_error_), url, compressionMethod, error);
-}
-
-_MTL_INLINE MTL::IOFileHandle* MTL::Device::newIOHandle(const NS::URL* url, NS::Error** error)
-{
-    return Object::sendMessage<MTL::IOFileHandle*>(this, _MTL_PRIVATE_SEL(newIOHandleWithURL_error_), url, error);
-}
-
-_MTL_INLINE MTL::IOFileHandle* MTL::Device::newIOHandle(const NS::URL* url, MTL::IOCompressionMethod compressionMethod, NS::Error** error)
-{
-    return Object::sendMessage<MTL::IOFileHandle*>(this, _MTL_PRIVATE_SEL(newIOHandleWithURL_compressionMethod_error_), url, compressionMethod, error);
-}
-
-_MTL_INLINE MTL::IndirectCommandBuffer* MTL::Device::newIndirectCommandBuffer(const MTL::IndirectCommandBufferDescriptor* descriptor, NS::UInteger maxCount, MTL::ResourceOptions options)
-{
-    return Object::sendMessage<MTL::IndirectCommandBuffer*>(this, _MTL_PRIVATE_SEL(newIndirectCommandBufferWithDescriptor_maxCommandCount_options_), descriptor, maxCount, options);
-}
-
-_MTL_INLINE MTL::Library* MTL::Device::newLibrary(const NS::String* filepath, NS::Error** error)
-{
-    return Object::sendMessage<MTL::Library*>(this, _MTL_PRIVATE_SEL(newLibraryWithFile_error_), filepath, error);
-}
-
-_MTL_INLINE MTL::Library* MTL::Device::newLibrary(const NS::URL* url, NS::Error** error)
-{
-    return Object::sendMessage<MTL::Library*>(this, _MTL_PRIVATE_SEL(newLibraryWithURL_error_), url, error);
-}
-
-_MTL_INLINE MTL::Library* MTL::Device::newLibrary(const dispatch_data_t data, NS::Error** error)
-{
-    return Object::sendMessage<MTL::Library*>(this, _MTL_PRIVATE_SEL(newLibraryWithData_error_), data, error);
-}
-
-_MTL_INLINE MTL::Library* MTL::Device::newLibrary(const NS::String* source, const MTL::CompileOptions* options, NS::Error** error)
-{
-    return Object::sendMessage<MTL::Library*>(this, _MTL_PRIVATE_SEL(newLibraryWithSource_options_error_), source, options, error);
-}
-
-_MTL_INLINE void MTL::Device::newLibrary(const NS::String* source, const MTL::CompileOptions* options, const MTL::NewLibraryCompletionHandler completionHandler)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(newLibraryWithSource_options_completionHandler_), source, options, completionHandler);
-}
-
-_MTL_INLINE MTL::Library* MTL::Device::newLibrary(const MTL::StitchedLibraryDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL::Library*>(this, _MTL_PRIVATE_SEL(newLibraryWithStitchedDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE void MTL::Device::newLibrary(const MTL::StitchedLibraryDescriptor* descriptor, const MTL::NewLibraryCompletionHandler completionHandler)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(newLibraryWithStitchedDescriptor_completionHandler_), descriptor, completionHandler);
-}
-
-_MTL_INLINE void MTL::Device::newLibrary(const NS::String* pSource, const MTL::CompileOptions* pOptions, const MTL::NewLibraryCompletionHandlerFunction& completionHandler)
-{
-    __block MTL::NewLibraryCompletionHandlerFunction blockCompletionHandler = completionHandler;
-    newLibrary(pSource, pOptions, ^(MTL::Library* pLibrary, NS::Error* pError) { blockCompletionHandler(pLibrary, pError); });
-}
-
-_MTL_INLINE void MTL::Device::newLibrary(const MTL::StitchedLibraryDescriptor* pDescriptor, const MTL::NewLibraryCompletionHandlerFunction& completionHandler)
-{
-    __block MTL::NewLibraryCompletionHandlerFunction blockCompletionHandler = completionHandler;
-    newLibrary(pDescriptor, ^(MTL::Library* pLibrary, NS::Error* pError) { blockCompletionHandler(pLibrary, pError); });
-}
-
-_MTL_INLINE MTL::LogState* MTL::Device::newLogState(const MTL::LogStateDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL::LogState*>(this, _MTL_PRIVATE_SEL(newLogStateWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL4::CommandQueue* MTL::Device::newMTL4CommandQueue()
-{
-    return Object::sendMessage<MTL4::CommandQueue*>(this, _MTL_PRIVATE_SEL(newMTL4CommandQueue));
-}
-
-_MTL_INLINE MTL4::CommandQueue* MTL::Device::newMTL4CommandQueue(const MTL4::CommandQueueDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL4::CommandQueue*>(this, _MTL_PRIVATE_SEL(newMTL4CommandQueueWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL4::PipelineDataSetSerializer* MTL::Device::newPipelineDataSetSerializer(const MTL4::PipelineDataSetSerializerDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL4::PipelineDataSetSerializer*>(this, _MTL_PRIVATE_SEL(newPipelineDataSetSerializerWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL::RasterizationRateMap* MTL::Device::newRasterizationRateMap(const MTL::RasterizationRateMapDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL::RasterizationRateMap*>(this, _MTL_PRIVATE_SEL(newRasterizationRateMapWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL::RenderPipelineState* MTL::Device::newRenderPipelineState(const MTL::RenderPipelineDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL::RenderPipelineState*>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL::RenderPipelineState* MTL::Device::newRenderPipelineState(const MTL::RenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error)
-{
-    return Object::sendMessage<MTL::RenderPipelineState*>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithDescriptor_options_reflection_error_), descriptor, options, reflection, error);
-}
-
-_MTL_INLINE void MTL::Device::newRenderPipelineState(const MTL::RenderPipelineDescriptor* descriptor, const MTL::NewRenderPipelineStateCompletionHandler completionHandler)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithDescriptor_completionHandler_), descriptor, completionHandler);
-}
-
-_MTL_INLINE void MTL::Device::newRenderPipelineState(const MTL::RenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithDescriptor_options_completionHandler_), descriptor, options, completionHandler);
-}
-
-_MTL_INLINE MTL::RenderPipelineState* MTL::Device::newRenderPipelineState(const MTL::TileRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error)
-{
-    return Object::sendMessage<MTL::RenderPipelineState*>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithTileDescriptor_options_reflection_error_), descriptor, options, reflection, error);
-}
-
-_MTL_INLINE void MTL::Device::newRenderPipelineState(const MTL::TileRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithTileDescriptor_options_completionHandler_), descriptor, options, completionHandler);
-}
-
-_MTL_INLINE MTL::RenderPipelineState* MTL::Device::newRenderPipelineState(const MTL::MeshRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error)
-{
-    return Object::sendMessage<MTL::RenderPipelineState*>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithMeshDescriptor_options_reflection_error_), descriptor, options, reflection, error);
-}
-
-_MTL_INLINE void MTL::Device::newRenderPipelineState(const MTL::MeshRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(newRenderPipelineStateWithMeshDescriptor_options_completionHandler_), descriptor, options, completionHandler);
-}
-
-_MTL_INLINE void MTL::Device::newRenderPipelineState(const MTL::RenderPipelineDescriptor* pDescriptor, const MTL::NewRenderPipelineStateCompletionHandlerFunction& completionHandler)
-{
-    __block MTL::NewRenderPipelineStateCompletionHandlerFunction blockCompletionHandler = completionHandler;
-    newRenderPipelineState(pDescriptor, ^(MTL::RenderPipelineState* pPipelineState, NS::Error* pError) { blockCompletionHandler(pPipelineState, pError); });
-}
-
-_MTL_INLINE void MTL::Device::newRenderPipelineState(const MTL::RenderPipelineDescriptor* pDescriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction& completionHandler)
-{
-    __block MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction blockCompletionHandler = completionHandler;
-    newRenderPipelineState(pDescriptor, options, ^(MTL::RenderPipelineState* pPipelineState, MTL::RenderPipelineReflection* pReflection, NS::Error* pError) { blockCompletionHandler(pPipelineState, pReflection, pError); });
-}
-
-_MTL_INLINE void MTL::Device::newRenderPipelineState(const MTL::TileRenderPipelineDescriptor* pDescriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction& completionHandler)
-{
-    __block MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction blockCompletionHandler = completionHandler;
-    newRenderPipelineState(pDescriptor, options, ^(MTL::RenderPipelineState* pPipelineState, MTL::RenderPipelineReflection* pReflection, NS::Error* pError) { blockCompletionHandler(pPipelineState, pReflection, pError); });
-}
-
-_MTL_INLINE MTL::ResidencySet* MTL::Device::newResidencySet(const MTL::ResidencySetDescriptor* desc, NS::Error** error)
-{
-    return Object::sendMessage<MTL::ResidencySet*>(this, _MTL_PRIVATE_SEL(newResidencySetWithDescriptor_error_), desc, error);
-}
-
-_MTL_INLINE MTL::SamplerState* MTL::Device::newSamplerState(const MTL::SamplerDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL::SamplerState*>(this, _MTL_PRIVATE_SEL(newSamplerStateWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL::SharedEvent* MTL::Device::newSharedEvent()
-{
-    return Object::sendMessage<MTL::SharedEvent*>(this, _MTL_PRIVATE_SEL(newSharedEvent));
-}
-
-_MTL_INLINE MTL::SharedEvent* MTL::Device::newSharedEvent(const MTL::SharedEventHandle* sharedEventHandle)
-{
-    return Object::sendMessage<MTL::SharedEvent*>(this, _MTL_PRIVATE_SEL(newSharedEventWithHandle_), sharedEventHandle);
-}
-
-_MTL_INLINE MTL::Texture* MTL::Device::newSharedTexture(const MTL::TextureDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL::Texture*>(this, _MTL_PRIVATE_SEL(newSharedTextureWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL::Texture* MTL::Device::newSharedTexture(const MTL::SharedTextureHandle* sharedHandle)
-{
-    return Object::sendMessage<MTL::Texture*>(this, _MTL_PRIVATE_SEL(newSharedTextureWithHandle_), sharedHandle);
-}
-
-_MTL_INLINE MTL::Tensor* MTL::Device::newTensor(const MTL::TensorDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL::Tensor*>(this, _MTL_PRIVATE_SEL(newTensorWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE MTL::Texture* MTL::Device::newTexture(const MTL::TextureDescriptor* descriptor)
-{
-    return Object::sendMessage<MTL::Texture*>(this, _MTL_PRIVATE_SEL(newTextureWithDescriptor_), descriptor);
-}
-
-_MTL_INLINE MTL::Texture* MTL::Device::newTexture(const MTL::TextureDescriptor* descriptor, const IOSurfaceRef iosurface, NS::UInteger plane)
-{
-    return Object::sendMessage<MTL::Texture*>(this, _MTL_PRIVATE_SEL(newTextureWithDescriptor_iosurface_plane_), descriptor, iosurface, plane);
-}
-
-_MTL_INLINE MTL::TextureViewPool* MTL::Device::newTextureViewPool(const MTL::ResourceViewPoolDescriptor* descriptor, NS::Error** error)
-{
-    return Object::sendMessage<MTL::TextureViewPool*>(this, _MTL_PRIVATE_SEL(newTextureViewPoolWithDescriptor_error_), descriptor, error);
-}
-
-_MTL_INLINE uint32_t MTL::Device::peerCount() const
-{
-    return Object::sendMessage<uint32_t>(this, _MTL_PRIVATE_SEL(peerCount));
-}
-
-_MTL_INLINE uint64_t MTL::Device::peerGroupID() const
-{
-    return Object::sendMessage<uint64_t>(this, _MTL_PRIVATE_SEL(peerGroupID));
-}
-
-_MTL_INLINE uint32_t MTL::Device::peerIndex() const
-{
-    return Object::sendMessage<uint32_t>(this, _MTL_PRIVATE_SEL(peerIndex));
-}
-
-_MTL_INLINE bool MTL::Device::programmableSamplePositionsSupported() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(areProgrammableSamplePositionsSupported));
-}
-
-_MTL_INLINE uint64_t MTL::Device::queryTimestampFrequency()
-{
-    return Object::sendMessage<uint64_t>(this, _MTL_PRIVATE_SEL(queryTimestampFrequency));
-}
-
-_MTL_INLINE bool MTL::Device::rasterOrderGroupsSupported() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(areRasterOrderGroupsSupported));
-}
-
-_MTL_INLINE MTL::ReadWriteTextureTier MTL::Device::readWriteTextureSupport() const
-{
-    return Object::sendMessage<MTL::ReadWriteTextureTier>(this, _MTL_PRIVATE_SEL(readWriteTextureSupport));
-}
-
-_MTL_INLINE uint64_t MTL::Device::recommendedMaxWorkingSetSize() const
-{
-    return Object::sendMessage<uint64_t>(this, _MTL_PRIVATE_SEL(recommendedMaxWorkingSetSize));
+    return _MTL_msg_NS__Stringp_name((const void*)this, nullptr);
 }
 
 _MTL_INLINE uint64_t MTL::Device::registryID() const
 {
-    return Object::sendMessage<uint64_t>(this, _MTL_PRIVATE_SEL(registryID));
+    return _MTL_msg_uint64_t_registryID((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::Architecture* MTL::Device::architecture() const
+{
+    return _MTL_msg_MTL__Architecturep_architecture((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::Size MTL::Device::maxThreadsPerThreadgroup() const
+{
+    return _MTL_msg_MTL__Size_maxThreadsPerThreadgroup((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::lowPower() const
+{
+    return _MTL_msg_bool_lowPower((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::headless() const
+{
+    return _MTL_msg_bool_headless((const void*)this, nullptr);
 }
 
 _MTL_INLINE bool MTL::Device::removable() const
 {
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(isRemovable));
+    return _MTL_msg_bool_removable((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL::Device::sampleTimestamps(MTL::Timestamp* cpuTimestamp, MTL::Timestamp* gpuTimestamp)
+_MTL_INLINE bool MTL::Device::hasUnifiedMemory() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(sampleTimestamps_gpuTimestamp_), cpuTimestamp, gpuTimestamp);
+    return _MTL_msg_bool_hasUnifiedMemory((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL::Device::setShouldMaximizeConcurrentCompilation(bool shouldMaximizeConcurrentCompilation)
+_MTL_INLINE uint64_t MTL::Device::recommendedMaxWorkingSetSize() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setShouldMaximizeConcurrentCompilation_), shouldMaximizeConcurrentCompilation);
+    return _MTL_msg_uint64_t_recommendedMaxWorkingSetSize((const void*)this, nullptr);
 }
 
-_MTL_INLINE bool MTL::Device::shouldMaximizeConcurrentCompilation() const
+_MTL_INLINE MTL::DeviceLocation MTL::Device::location() const
 {
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(shouldMaximizeConcurrentCompilation));
+    return _MTL_msg_MTL__DeviceLocation_location((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL::Device::sizeOfCounterHeapEntry(MTL4::CounterHeapType type)
+_MTL_INLINE NS::UInteger MTL::Device::locationNumber() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(sizeOfCounterHeapEntry_), type);
+    return _MTL_msg_NS__UInteger_locationNumber((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::Size MTL::Device::sparseTileSize(MTL::TextureType textureType, MTL::PixelFormat pixelFormat, NS::UInteger sampleCount)
+_MTL_INLINE uint64_t MTL::Device::maxTransferRate() const
 {
-    return Object::sendMessage<MTL::Size>(this, _MTL_PRIVATE_SEL(sparseTileSizeWithTextureType_pixelFormat_sampleCount_), textureType, pixelFormat, sampleCount);
+    return _MTL_msg_uint64_t_maxTransferRate((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::Size MTL::Device::sparseTileSize(MTL::TextureType textureType, MTL::PixelFormat pixelFormat, NS::UInteger sampleCount, MTL::SparsePageSize sparsePageSize)
+_MTL_INLINE bool MTL::Device::depth24Stencil8PixelFormatSupported() const
 {
-    return Object::sendMessage<MTL::Size>(this, _MTL_PRIVATE_SEL(sparseTileSizeWithTextureType_pixelFormat_sampleCount_sparsePageSize_), textureType, pixelFormat, sampleCount, sparsePageSize);
+    return _MTL_msg_bool_depth24Stencil8PixelFormatSupported((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL::Device::sparseTileSizeInBytes() const
+_MTL_INLINE MTL::ReadWriteTextureTier MTL::Device::readWriteTextureSupport() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(sparseTileSizeInBytes));
+    return _MTL_msg_MTL__ReadWriteTextureTier_readWriteTextureSupport((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL::Device::sparseTileSizeInBytes(MTL::SparsePageSize sparsePageSize)
+_MTL_INLINE MTL::ArgumentBuffersTier MTL::Device::argumentBuffersSupport() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(sparseTileSizeInBytesForSparsePageSize_), sparsePageSize);
+    return _MTL_msg_MTL__ArgumentBuffersTier_argumentBuffersSupport((const void*)this, nullptr);
 }
 
 _MTL_INLINE bool MTL::Device::supports32BitFloatFiltering() const
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supports32BitFloatFiltering));
+    return _MTL_msg_bool_supports32BitFloatFiltering((const void*)this, nullptr);
 }
 
 _MTL_INLINE bool MTL::Device::supports32BitMSAA() const
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supports32BitMSAA));
-}
-
-_MTL_INLINE bool MTL::Device::supportsBCTextureCompression() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsBCTextureCompression));
-}
-
-_MTL_INLINE bool MTL::Device::supportsCounterSampling(MTL::CounterSamplingPoint samplingPoint)
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsCounterSampling_), samplingPoint);
-}
-
-_MTL_INLINE bool MTL::Device::supportsDynamicLibraries() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsDynamicLibraries));
-}
-
-_MTL_INLINE bool MTL::Device::supportsFamily(MTL::GPUFamily gpuFamily)
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsFamily_), gpuFamily);
-}
-
-_MTL_INLINE bool MTL::Device::supportsFeatureSet(MTL::FeatureSet featureSet)
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsFeatureSet_), featureSet);
-}
-
-_MTL_INLINE bool MTL::Device::supportsFunctionPointers() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsFunctionPointers));
-}
-
-_MTL_INLINE bool MTL::Device::supportsFunctionPointersFromRender() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsFunctionPointersFromRender));
-}
-
-_MTL_INLINE bool MTL::Device::supportsPrimitiveMotionBlur() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsPrimitiveMotionBlur));
-}
-
-_MTL_INLINE bool MTL::Device::supportsPullModelInterpolation() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsPullModelInterpolation));
+    return _MTL_msg_bool_supports32BitMSAA((const void*)this, nullptr);
 }
 
 _MTL_INLINE bool MTL::Device::supportsQueryTextureLOD() const
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsQueryTextureLOD));
+    return _MTL_msg_bool_supportsQueryTextureLOD((const void*)this, nullptr);
 }
 
-_MTL_INLINE bool MTL::Device::supportsRasterizationRateMap(NS::UInteger layerCount)
+_MTL_INLINE bool MTL::Device::supportsBCTextureCompression() const
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsRasterizationRateMapWithLayerCount_), layerCount);
+    return _MTL_msg_bool_supportsBCTextureCompression((const void*)this, nullptr);
 }
 
-_MTL_INLINE bool MTL::Device::supportsRaytracing() const
+_MTL_INLINE bool MTL::Device::supportsPullModelInterpolation() const
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsRaytracing));
-}
-
-_MTL_INLINE bool MTL::Device::supportsRaytracingFromRender() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsRaytracingFromRender));
-}
-
-_MTL_INLINE bool MTL::Device::supportsRenderDynamicLibraries() const
-{
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsRenderDynamicLibraries));
+    return _MTL_msg_bool_supportsPullModelInterpolation((const void*)this, nullptr);
 }
 
 _MTL_INLINE bool MTL::Device::supportsShaderBarycentricCoordinates() const
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsShaderBarycentricCoordinates));
+    return _MTL_msg_bool_supportsShaderBarycentricCoordinates((const void*)this, nullptr);
+}
+
+_MTL_INLINE NS::UInteger MTL::Device::currentAllocatedSize() const
+{
+    return _MTL_msg_NS__UInteger_currentAllocatedSize((const void*)this, nullptr);
+}
+
+_MTL_INLINE NS::UInteger MTL::Device::maxThreadgroupMemoryLength() const
+{
+    return _MTL_msg_NS__UInteger_maxThreadgroupMemoryLength((const void*)this, nullptr);
+}
+
+_MTL_INLINE NS::UInteger MTL::Device::maxArgumentBufferSamplerCount() const
+{
+    return _MTL_msg_NS__UInteger_maxArgumentBufferSamplerCount((const void*)this, nullptr);
+}
+
+_MTL_INLINE uint64_t MTL::Device::peerGroupID() const
+{
+    return _MTL_msg_uint64_t_peerGroupID((const void*)this, nullptr);
+}
+
+_MTL_INLINE uint32_t MTL::Device::peerIndex() const
+{
+    return _MTL_msg_uint32_t_peerIndex((const void*)this, nullptr);
+}
+
+_MTL_INLINE uint32_t MTL::Device::peerCount() const
+{
+    return _MTL_msg_uint32_t_peerCount((const void*)this, nullptr);
+}
+
+_MTL_INLINE NS::UInteger MTL::Device::sparseTileSizeInBytes() const
+{
+    return _MTL_msg_NS__UInteger_sparseTileSizeInBytes((const void*)this, nullptr);
+}
+
+_MTL_INLINE NS::UInteger MTL::Device::maxBufferLength() const
+{
+    return _MTL_msg_NS__UInteger_maxBufferLength((const void*)this, nullptr);
+}
+
+_MTL_INLINE NS::Array* MTL::Device::counterSets() const
+{
+    return _MTL_msg_NS__Arrayp_counterSets((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::supportsDynamicLibraries() const
+{
+    return _MTL_msg_bool_supportsDynamicLibraries((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::supportsRenderDynamicLibraries() const
+{
+    return _MTL_msg_bool_supportsRenderDynamicLibraries((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::supportsRaytracing() const
+{
+    return _MTL_msg_bool_supportsRaytracing((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::supportsFunctionPointers() const
+{
+    return _MTL_msg_bool_supportsFunctionPointers((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::supportsFunctionPointersFromRender() const
+{
+    return _MTL_msg_bool_supportsFunctionPointersFromRender((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::supportsRaytracingFromRender() const
+{
+    return _MTL_msg_bool_supportsRaytracingFromRender((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::supportsPrimitiveMotionBlur() const
+{
+    return _MTL_msg_bool_supportsPrimitiveMotionBlur((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::shouldMaximizeConcurrentCompilation() const
+{
+    return _MTL_msg_bool_shouldMaximizeConcurrentCompilation((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::Device::setShouldMaximizeConcurrentCompilation(bool shouldMaximizeConcurrentCompilation)
+{
+    _MTL_msg_v_setShouldMaximizeConcurrentCompilation__bool((const void*)this, nullptr, shouldMaximizeConcurrentCompilation);
+}
+
+_MTL_INLINE NS::UInteger MTL::Device::maximumConcurrentCompilationTaskCount() const
+{
+    return _MTL_msg_NS__UInteger_maximumConcurrentCompilationTaskCount((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::LogState* MTL::Device::newLogState(MTL::LogStateDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL__LogStatep_newLogStateWithDescriptor_error__MTL__LogStateDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE MTL::CommandQueue* MTL::Device::newCommandQueue()
+{
+    return _MTL_msg_MTL__CommandQueuep_newCommandQueue((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::CommandQueue* MTL::Device::newCommandQueue(NS::UInteger maxCommandBufferCount)
+{
+    return _MTL_msg_MTL__CommandQueuep_newCommandQueueWithMaxCommandBufferCount__NS__UInteger((const void*)this, nullptr, maxCommandBufferCount);
+}
+
+_MTL_INLINE MTL::CommandQueue* MTL::Device::newCommandQueue(MTL::CommandQueueDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__CommandQueuep_newCommandQueueWithDescriptor__MTL__CommandQueueDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::SizeAndAlign MTL::Device::heapTextureSizeAndAlign(MTL::TextureDescriptor* desc)
+{
+    return _MTL_msg_MTL__SizeAndAlign_heapTextureSizeAndAlignWithDescriptor__MTL__TextureDescriptorp((const void*)this, nullptr, desc);
+}
+
+_MTL_INLINE MTL::SizeAndAlign MTL::Device::heapBufferSizeAndAlign(NS::UInteger length, MTL::ResourceOptions options)
+{
+    return _MTL_msg_MTL__SizeAndAlign_heapBufferSizeAndAlignWithLength_options__NS__UInteger_MTL__ResourceOptions((const void*)this, nullptr, length, options);
+}
+
+_MTL_INLINE MTL::Heap* MTL::Device::newHeap(MTL::HeapDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__Heapp_newHeapWithDescriptor__MTL__HeapDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::Buffer* MTL::Device::newBuffer(NS::UInteger length, MTL::ResourceOptions options)
+{
+    return _MTL_msg_MTL__Bufferp_newBufferWithLength_options__NS__UInteger_MTL__ResourceOptions((const void*)this, nullptr, length, options);
+}
+
+_MTL_INLINE MTL::Buffer* MTL::Device::newBuffer(const void * pointer, NS::UInteger length, MTL::ResourceOptions options)
+{
+    return _MTL_msg_MTL__Bufferp_newBufferWithBytes_length_options__constvoidp_NS__UInteger_MTL__ResourceOptions((const void*)this, nullptr, pointer, length, options);
+}
+
+_MTL_INLINE MTL::Buffer* MTL::Device::newBuffer(void * pointer, NS::UInteger length, MTL::ResourceOptions options, MTL::NewBufferBlock deallocator)
+{
+    return _MTL_msg_MTL__Bufferp_newBufferWithBytesNoCopy_length_options_deallocator__voidp_NS__UInteger_MTL__ResourceOptions_MTL__NewBufferBlock((const void*)this, nullptr, pointer, length, options, deallocator);
+}
+
+_MTL_INLINE MTL::Buffer* MTL::Device::newBuffer(void * pointer, NS::UInteger length, MTL::ResourceOptions options, const MTL::NewBufferFunction& deallocator)
+{
+    __block MTL::NewBufferFunction blockFunction = deallocator;
+    return newBuffer(pointer, length, options, ^(void * x0, NS::UInteger x1) { blockFunction(x0, x1); });
+}
+
+_MTL_INLINE MTL::DepthStencilState* MTL::Device::newDepthStencilState(MTL::DepthStencilDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__DepthStencilStatep_newDepthStencilStateWithDescriptor__MTL__DepthStencilDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::Texture* MTL::Device::newTexture(MTL::TextureDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__Texturep_newTextureWithDescriptor__MTL__TextureDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::Texture* MTL::Device::newTexture(MTL::TextureDescriptor* descriptor, IOSurfaceRef iosurface, NS::UInteger plane)
+{
+    return _MTL_msg_MTL__Texturep_newTextureWithDescriptor_iosurface_plane__MTL__TextureDescriptorp_IOSurfaceRef_NS__UInteger((const void*)this, nullptr, descriptor, iosurface, plane);
+}
+
+_MTL_INLINE MTL::Texture* MTL::Device::newSharedTexture(MTL::TextureDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__Texturep_newSharedTextureWithDescriptor__MTL__TextureDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::Texture* MTL::Device::newSharedTexture(MTL::SharedTextureHandle* sharedHandle)
+{
+    return _MTL_msg_MTL__Texturep_newSharedTextureWithHandle__MTL__SharedTextureHandlep((const void*)this, nullptr, sharedHandle);
+}
+
+_MTL_INLINE MTL::SamplerState* MTL::Device::newSamplerState(MTL::SamplerDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__SamplerStatep_newSamplerStateWithDescriptor__MTL__SamplerDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::Library* MTL::Device::newDefaultLibrary()
+{
+    return _MTL_msg_MTL__Libraryp_newDefaultLibrary((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::Library* MTL::Device::newDefaultLibrary(NS::Bundle* bundle, NS::Error** error)
+{
+    return _MTL_msg_MTL__Libraryp_newDefaultLibraryWithBundle_error__NS__Bundlep_NS__Errorpp((const void*)this, nullptr, bundle, error);
+}
+
+_MTL_INLINE MTL::Library* MTL::Device::newLibrary(NS::String* filepath, NS::Error** error)
+{
+    return _MTL_msg_MTL__Libraryp_newLibraryWithFile_error__NS__Stringp_NS__Errorpp((const void*)this, nullptr, filepath, error);
+}
+
+_MTL_INLINE MTL::Library* MTL::Device::newLibrary(NS::URL* url, NS::Error** error)
+{
+    return _MTL_msg_MTL__Libraryp_newLibraryWithURL_error__NS__URLp_NS__Errorpp((const void*)this, nullptr, url, error);
+}
+
+_MTL_INLINE MTL::Library* MTL::Device::newLibrary(dispatch_data_t data, NS::Error** error)
+{
+    return _MTL_msg_MTL__Libraryp_newLibraryWithData_error__dispatch_data_t_NS__Errorpp((const void*)this, nullptr, data, error);
+}
+
+_MTL_INLINE MTL::Library* MTL::Device::newLibrary(NS::String* source, MTL::CompileOptions* options, NS::Error** error)
+{
+    return _MTL_msg_MTL__Libraryp_newLibraryWithSource_options_error__NS__Stringp_MTL__CompileOptionsp_NS__Errorpp((const void*)this, nullptr, source, options, error);
+}
+
+_MTL_INLINE void MTL::Device::newLibrary(NS::String* source, MTL::CompileOptions* options, MTL::NewLibraryCompletionHandler completionHandler)
+{
+    _MTL_msg_v_newLibraryWithSource_options_completionHandler__NS__Stringp_MTL__CompileOptionsp_MTL__NewLibraryCompletionHandler((const void*)this, nullptr, source, options, completionHandler);
+}
+
+_MTL_INLINE void MTL::Device::newLibrary(NS::String* source, MTL::CompileOptions* options, const MTL::NewLibraryCompletionHandlerFunction& completionHandler)
+{
+    __block MTL::NewLibraryCompletionHandlerFunction blockFunction = completionHandler;
+    newLibrary(source, options, ^(MTL::Library* x0, NS::Error* x1) { blockFunction(x0, x1); });
+}
+
+_MTL_INLINE MTL::Library* MTL::Device::newLibrary(MTL::StitchedLibraryDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL__Libraryp_newLibraryWithStitchedDescriptor_error__MTL__StitchedLibraryDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE void MTL::Device::newLibrary(MTL::StitchedLibraryDescriptor* descriptor, MTL::NewLibraryCompletionHandler completionHandler)
+{
+    _MTL_msg_v_newLibraryWithStitchedDescriptor_completionHandler__MTL__StitchedLibraryDescriptorp_MTL__NewLibraryCompletionHandler((const void*)this, nullptr, descriptor, completionHandler);
+}
+
+_MTL_INLINE void MTL::Device::newLibrary(MTL::StitchedLibraryDescriptor* descriptor, const MTL::NewLibraryCompletionHandlerFunction& completionHandler)
+{
+    __block MTL::NewLibraryCompletionHandlerFunction blockFunction = completionHandler;
+    newLibrary(descriptor, ^(MTL::Library* x0, NS::Error* x1) { blockFunction(x0, x1); });
+}
+
+_MTL_INLINE MTL::RenderPipelineState* MTL::Device::newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL__RenderPipelineStatep_newRenderPipelineStateWithDescriptor_error__MTL__RenderPipelineDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE MTL::RenderPipelineState* MTL::Device::newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error)
+{
+    return _MTL_msg_MTL__RenderPipelineStatep_newRenderPipelineStateWithDescriptor_options_reflection_error__MTL__RenderPipelineDescriptorp_MTL__PipelineOption_MTL__RenderPipelineReflectionpp_NS__Errorpp((const void*)this, nullptr, descriptor, options, reflection, error);
+}
+
+_MTL_INLINE void MTL::Device::newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, MTL::NewRenderPipelineStateCompletionHandler completionHandler)
+{
+    _MTL_msg_v_newRenderPipelineStateWithDescriptor_completionHandler__MTL__RenderPipelineDescriptorp_MTL__NewRenderPipelineStateCompletionHandler((const void*)this, nullptr, descriptor, completionHandler);
+}
+
+_MTL_INLINE void MTL::Device::newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, const MTL::NewRenderPipelineStateCompletionHandlerFunction& completionHandler)
+{
+    __block MTL::NewRenderPipelineStateCompletionHandlerFunction blockFunction = completionHandler;
+    newRenderPipelineState(descriptor, ^(MTL::RenderPipelineState* x0, NS::Error* x1) { blockFunction(x0, x1); });
+}
+
+_MTL_INLINE void MTL::Device::newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler)
+{
+    _MTL_msg_v_newRenderPipelineStateWithDescriptor_options_completionHandler__MTL__RenderPipelineDescriptorp_MTL__PipelineOption_MTL__NewRenderPipelineStateWithReflectionCompletionHandler((const void*)this, nullptr, descriptor, options, completionHandler);
+}
+
+_MTL_INLINE void MTL::Device::newRenderPipelineState(MTL::RenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction& completionHandler)
+{
+    __block MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction blockFunction = completionHandler;
+    newRenderPipelineState(descriptor, options, ^(MTL::RenderPipelineState* x0, void* x1, NS::Error* x2) { blockFunction(x0, x1, x2); });
+}
+
+_MTL_INLINE MTL::ComputePipelineState* MTL::Device::newComputePipelineState(MTL::Function* computeFunction, NS::Error** error)
+{
+    return _MTL_msg_MTL__ComputePipelineStatep_newComputePipelineStateWithFunction_error__MTL__Functionp_NS__Errorpp((const void*)this, nullptr, computeFunction, error);
+}
+
+_MTL_INLINE MTL::ComputePipelineState* MTL::Device::newComputePipelineState(MTL::Function* computeFunction, MTL::PipelineOption options, MTL::AutoreleasedComputePipelineReflection* reflection, NS::Error** error)
+{
+    return _MTL_msg_MTL__ComputePipelineStatep_newComputePipelineStateWithFunction_options_reflection_error__MTL__Functionp_MTL__PipelineOption_MTL__ComputePipelineReflectionpp_NS__Errorpp((const void*)this, nullptr, computeFunction, options, reflection, error);
+}
+
+_MTL_INLINE void MTL::Device::newComputePipelineState(MTL::Function* computeFunction, MTL::NewComputePipelineStateCompletionHandler completionHandler)
+{
+    _MTL_msg_v_newComputePipelineStateWithFunction_completionHandler__MTL__Functionp_MTL__NewComputePipelineStateCompletionHandler((const void*)this, nullptr, computeFunction, completionHandler);
+}
+
+_MTL_INLINE void MTL::Device::newComputePipelineState(MTL::Function* computeFunction, const MTL::NewComputePipelineStateCompletionHandlerFunction& completionHandler)
+{
+    __block MTL::NewComputePipelineStateCompletionHandlerFunction blockFunction = completionHandler;
+    newComputePipelineState(computeFunction, ^(MTL::ComputePipelineState* x0, NS::Error* x1) { blockFunction(x0, x1); });
+}
+
+_MTL_INLINE void MTL::Device::newComputePipelineState(MTL::Function* computeFunction, MTL::PipelineOption options, MTL::NewComputePipelineStateWithReflectionCompletionHandler completionHandler)
+{
+    _MTL_msg_v_newComputePipelineStateWithFunction_options_completionHandler__MTL__Functionp_MTL__PipelineOption_MTL__NewComputePipelineStateWithReflectionCompletionHandler((const void*)this, nullptr, computeFunction, options, completionHandler);
+}
+
+_MTL_INLINE void MTL::Device::newComputePipelineState(MTL::Function* computeFunction, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction& completionHandler)
+{
+    __block MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction blockFunction = completionHandler;
+    newComputePipelineState(computeFunction, options, ^(MTL::ComputePipelineState* x0, void* x1, NS::Error* x2) { blockFunction(x0, x1, x2); });
+}
+
+_MTL_INLINE MTL::ComputePipelineState* MTL::Device::newComputePipelineState(MTL::ComputePipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::AutoreleasedComputePipelineReflection* reflection, NS::Error** error)
+{
+    return _MTL_msg_MTL__ComputePipelineStatep_newComputePipelineStateWithDescriptor_options_reflection_error__MTL__ComputePipelineDescriptorp_MTL__PipelineOption_MTL__ComputePipelineReflectionpp_NS__Errorpp((const void*)this, nullptr, descriptor, options, reflection, error);
+}
+
+_MTL_INLINE void MTL::Device::newComputePipelineState(MTL::ComputePipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::NewComputePipelineStateWithReflectionCompletionHandler completionHandler)
+{
+    _MTL_msg_v_newComputePipelineStateWithDescriptor_options_completionHandler__MTL__ComputePipelineDescriptorp_MTL__PipelineOption_MTL__NewComputePipelineStateWithReflectionCompletionHandler((const void*)this, nullptr, descriptor, options, completionHandler);
+}
+
+_MTL_INLINE void MTL::Device::newComputePipelineState(MTL::ComputePipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction& completionHandler)
+{
+    __block MTL::NewComputePipelineStateWithReflectionCompletionHandlerFunction blockFunction = completionHandler;
+    newComputePipelineState(descriptor, options, ^(MTL::ComputePipelineState* x0, void* x1, NS::Error* x2) { blockFunction(x0, x1, x2); });
+}
+
+_MTL_INLINE MTL::Fence* MTL::Device::newFence()
+{
+    return _MTL_msg_MTL__Fencep_newFence((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::supportsFeatureSet(MTL::FeatureSet featureSet)
+{
+    return _MTL_msg_bool_supportsFeatureSet__MTL__FeatureSet((const void*)this, nullptr, featureSet);
+}
+
+_MTL_INLINE bool MTL::Device::supportsFamily(MTL::GPUFamily gpuFamily)
+{
+    return _MTL_msg_bool_supportsFamily__MTL__GPUFamily((const void*)this, nullptr, gpuFamily);
 }
 
 _MTL_INLINE bool MTL::Device::supportsTextureSampleCount(NS::UInteger sampleCount)
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsTextureSampleCount_), sampleCount);
+    return _MTL_msg_bool_supportsTextureSampleCount__NS__UInteger((const void*)this, nullptr, sampleCount);
+}
+
+_MTL_INLINE NS::UInteger MTL::Device::minimumLinearTextureAlignmentForPixelFormat(MTL::PixelFormat format)
+{
+    return _MTL_msg_NS__UInteger_minimumLinearTextureAlignmentForPixelFormat__MTL__PixelFormat((const void*)this, nullptr, format);
+}
+
+_MTL_INLINE NS::UInteger MTL::Device::minimumTextureBufferAlignmentForPixelFormat(MTL::PixelFormat format)
+{
+    return _MTL_msg_NS__UInteger_minimumTextureBufferAlignmentForPixelFormat__MTL__PixelFormat((const void*)this, nullptr, format);
+}
+
+_MTL_INLINE MTL::RenderPipelineState* MTL::Device::newRenderPipelineState(MTL::TileRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error)
+{
+    return _MTL_msg_MTL__RenderPipelineStatep_newRenderPipelineStateWithTileDescriptor_options_reflection_error__MTL__TileRenderPipelineDescriptorp_MTL__PipelineOption_MTL__RenderPipelineReflectionpp_NS__Errorpp((const void*)this, nullptr, descriptor, options, reflection, error);
+}
+
+_MTL_INLINE void MTL::Device::newRenderPipelineState(MTL::TileRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler)
+{
+    _MTL_msg_v_newRenderPipelineStateWithTileDescriptor_options_completionHandler__MTL__TileRenderPipelineDescriptorp_MTL__PipelineOption_MTL__NewRenderPipelineStateWithReflectionCompletionHandler((const void*)this, nullptr, descriptor, options, completionHandler);
+}
+
+_MTL_INLINE void MTL::Device::newRenderPipelineState(MTL::TileRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction& completionHandler)
+{
+    __block MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction blockFunction = completionHandler;
+    newRenderPipelineState(descriptor, options, ^(MTL::RenderPipelineState* x0, void* x1, NS::Error* x2) { blockFunction(x0, x1, x2); });
+}
+
+_MTL_INLINE MTL::RenderPipelineState* MTL::Device::newRenderPipelineState(MTL::MeshRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::AutoreleasedRenderPipelineReflection* reflection, NS::Error** error)
+{
+    return _MTL_msg_MTL__RenderPipelineStatep_newRenderPipelineStateWithMeshDescriptor_options_reflection_error__MTL__MeshRenderPipelineDescriptorp_MTL__PipelineOption_MTL__RenderPipelineReflectionpp_NS__Errorpp((const void*)this, nullptr, descriptor, options, reflection, error);
+}
+
+_MTL_INLINE void MTL::Device::newRenderPipelineState(MTL::MeshRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, MTL::NewRenderPipelineStateWithReflectionCompletionHandler completionHandler)
+{
+    _MTL_msg_v_newRenderPipelineStateWithMeshDescriptor_options_completionHandler__MTL__MeshRenderPipelineDescriptorp_MTL__PipelineOption_MTL__NewRenderPipelineStateWithReflectionCompletionHandler((const void*)this, nullptr, descriptor, options, completionHandler);
+}
+
+_MTL_INLINE void MTL::Device::newRenderPipelineState(MTL::MeshRenderPipelineDescriptor* descriptor, MTL::PipelineOption options, const MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction& completionHandler)
+{
+    __block MTL::NewRenderPipelineStateWithReflectionCompletionHandlerFunction blockFunction = completionHandler;
+    newRenderPipelineState(descriptor, options, ^(MTL::RenderPipelineState* x0, void* x1, NS::Error* x2) { blockFunction(x0, x1, x2); });
+}
+
+_MTL_INLINE void MTL::Device::getDefaultSamplePositions(MTL::SamplePosition* positions, NS::UInteger count)
+{
+    _MTL_msg_v_getDefaultSamplePositions_count__MTL__SamplePositionp_NS__UInteger((const void*)this, nullptr, positions, count);
+}
+
+_MTL_INLINE MTL::ArgumentEncoder* MTL::Device::newArgumentEncoder(NS::Array* arguments)
+{
+    return _MTL_msg_MTL__ArgumentEncoderp_newArgumentEncoderWithArguments__NS__Arrayp((const void*)this, nullptr, arguments);
+}
+
+_MTL_INLINE bool MTL::Device::supportsRasterizationRateMap(NS::UInteger layerCount)
+{
+    return _MTL_msg_bool_supportsRasterizationRateMapWithLayerCount__NS__UInteger((const void*)this, nullptr, layerCount);
+}
+
+_MTL_INLINE MTL::RasterizationRateMap* MTL::Device::newRasterizationRateMap(MTL::RasterizationRateMapDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__RasterizationRateMapp_newRasterizationRateMapWithDescriptor__MTL__RasterizationRateMapDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::IndirectCommandBuffer* MTL::Device::newIndirectCommandBuffer(MTL::IndirectCommandBufferDescriptor* descriptor, NS::UInteger maxCount, MTL::ResourceOptions options)
+{
+    return _MTL_msg_MTL__IndirectCommandBufferp_newIndirectCommandBufferWithDescriptor_maxCommandCount_options__MTL__IndirectCommandBufferDescriptorp_NS__UInteger_MTL__ResourceOptions((const void*)this, nullptr, descriptor, maxCount, options);
+}
+
+_MTL_INLINE MTL::Event* MTL::Device::newEvent()
+{
+    return _MTL_msg_MTL__Eventp_newEvent((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::SharedEvent* MTL::Device::newSharedEvent()
+{
+    return _MTL_msg_MTL__SharedEventp_newSharedEvent((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::SharedEvent* MTL::Device::newSharedEvent(MTL::SharedEventHandle* sharedEventHandle)
+{
+    return _MTL_msg_MTL__SharedEventp_newSharedEventWithHandle__MTL__SharedEventHandlep((const void*)this, nullptr, sharedEventHandle);
+}
+
+_MTL_INLINE MTL::IOFileHandle* MTL::Device::newIOHandle(NS::URL* url, NS::Error** error)
+{
+    return _MTL_msg_MTL__IOFileHandlep_newIOHandleWithURL_error__NS__URLp_NS__Errorpp((const void*)this, nullptr, url, error);
+}
+
+_MTL_INLINE MTL::IOCommandQueue* MTL::Device::newIOCommandQueue(MTL::IOCommandQueueDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL__IOCommandQueuep_newIOCommandQueueWithDescriptor_error__MTL__IOCommandQueueDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE MTL::IOFileHandle* MTL::Device::newIOHandle(NS::URL* url, MTL::IOCompressionMethod compressionMethod, NS::Error** error)
+{
+    return _MTL_msg_MTL__IOFileHandlep_newIOHandleWithURL_compressionMethod_error__NS__URLp_MTL__IOCompressionMethod_NS__Errorpp((const void*)this, nullptr, url, compressionMethod, error);
+}
+
+_MTL_INLINE MTL::IOFileHandle* MTL::Device::newIOFileHandle(NS::URL* url, NS::Error** error)
+{
+    return _MTL_msg_MTL__IOFileHandlep_newIOFileHandleWithURL_error__NS__URLp_NS__Errorpp((const void*)this, nullptr, url, error);
+}
+
+_MTL_INLINE MTL::IOFileHandle* MTL::Device::newIOFileHandle(NS::URL* url, MTL::IOCompressionMethod compressionMethod, NS::Error** error)
+{
+    return _MTL_msg_MTL__IOFileHandlep_newIOFileHandleWithURL_compressionMethod_error__NS__URLp_MTL__IOCompressionMethod_NS__Errorpp((const void*)this, nullptr, url, compressionMethod, error);
+}
+
+_MTL_INLINE MTL::Size MTL::Device::sparseTileSize(MTL::TextureType textureType, MTL::PixelFormat pixelFormat, NS::UInteger sampleCount)
+{
+    return _MTL_msg_MTL__Size_sparseTileSizeWithTextureType_pixelFormat_sampleCount__MTL__TextureType_MTL__PixelFormat_NS__UInteger((const void*)this, nullptr, textureType, pixelFormat, sampleCount);
+}
+
+_MTL_INLINE void MTL::Device::convertSparsePixelRegions(const MTL::Region * pixelRegions, MTL::Region* tileRegions, MTL::Size tileSize, MTL::SparseTextureRegionAlignmentMode mode, NS::UInteger numRegions)
+{
+    _MTL_msg_v_convertSparsePixelRegions_toTileRegions_withTileSize_alignmentMode_numRegions__constMTL__Regionp_MTL__Regionp_MTL__Size_MTL__SparseTextureRegionAlignmentMode_NS__UInteger((const void*)this, nullptr, pixelRegions, tileRegions, tileSize, mode, numRegions);
+}
+
+_MTL_INLINE void MTL::Device::convertSparseTileRegions(const MTL::Region * tileRegions, MTL::Region* pixelRegions, MTL::Size tileSize, NS::UInteger numRegions)
+{
+    _MTL_msg_v_convertSparseTileRegions_toPixelRegions_withTileSize_numRegions__constMTL__Regionp_MTL__Regionp_MTL__Size_NS__UInteger((const void*)this, nullptr, tileRegions, pixelRegions, tileSize, numRegions);
+}
+
+_MTL_INLINE NS::UInteger MTL::Device::sparseTileSizeInBytes(MTL::SparsePageSize sparsePageSize)
+{
+    return _MTL_msg_NS__UInteger_sparseTileSizeInBytesForSparsePageSize__MTL__SparsePageSize((const void*)this, nullptr, sparsePageSize);
+}
+
+_MTL_INLINE MTL::Size MTL::Device::sparseTileSize(MTL::TextureType textureType, MTL::PixelFormat pixelFormat, NS::UInteger sampleCount, MTL::SparsePageSize sparsePageSize)
+{
+    return _MTL_msg_MTL__Size_sparseTileSizeWithTextureType_pixelFormat_sampleCount_sparsePageSize__MTL__TextureType_MTL__PixelFormat_NS__UInteger_MTL__SparsePageSize((const void*)this, nullptr, textureType, pixelFormat, sampleCount, sparsePageSize);
+}
+
+_MTL_INLINE MTL::CounterSampleBuffer* MTL::Device::newCounterSampleBuffer(MTL::CounterSampleBufferDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL__CounterSampleBufferp_newCounterSampleBufferWithDescriptor_error__MTL__CounterSampleBufferDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE void MTL::Device::sampleTimestamps(MTL::Timestamp* cpuTimestamp, MTL::Timestamp* gpuTimestamp)
+{
+    _MTL_msg_v_sampleTimestamps_gpuTimestamp__uint64_tp_uint64_tp((const void*)this, nullptr, cpuTimestamp, gpuTimestamp);
+}
+
+_MTL_INLINE MTL::ArgumentEncoder* MTL::Device::newArgumentEncoder(MTL::BufferBinding* bufferBinding)
+{
+    return _MTL_msg_MTL__ArgumentEncoderp_newArgumentEncoderWithBufferBinding__MTL__BufferBindingp((const void*)this, nullptr, bufferBinding);
+}
+
+_MTL_INLINE bool MTL::Device::supportsCounterSampling(MTL::CounterSamplingPoint samplingPoint)
+{
+    return _MTL_msg_bool_supportsCounterSampling__MTL__CounterSamplingPoint((const void*)this, nullptr, samplingPoint);
 }
 
 _MTL_INLINE bool MTL::Device::supportsVertexAmplificationCount(NS::UInteger count)
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportsVertexAmplificationCount_), count);
+    return _MTL_msg_bool_supportsVertexAmplificationCount__NS__UInteger((const void*)this, nullptr, count);
 }
 
-_MTL_INLINE MTL::SizeAndAlign MTL::Device::tensorSizeAndAlign(const MTL::TensorDescriptor* descriptor)
+_MTL_INLINE MTL::DynamicLibrary* MTL::Device::newDynamicLibrary(MTL::Library* library, NS::Error** error)
 {
-    return Object::sendMessage<MTL::SizeAndAlign>(this, _MTL_PRIVATE_SEL(tensorSizeAndAlignWithDescriptor_), descriptor);
+    return _MTL_msg_MTL__DynamicLibraryp_newDynamicLibrary_error__MTL__Libraryp_NS__Errorpp((const void*)this, nullptr, library, error);
+}
+
+_MTL_INLINE MTL::DynamicLibrary* MTL::Device::newDynamicLibrary(NS::URL* url, NS::Error** error)
+{
+    return _MTL_msg_MTL__DynamicLibraryp_newDynamicLibraryWithURL_error__NS__URLp_NS__Errorpp((const void*)this, nullptr, url, error);
+}
+
+_MTL_INLINE MTL::BinaryArchive* MTL::Device::newBinaryArchive(MTL::BinaryArchiveDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL__BinaryArchivep_newBinaryArchiveWithDescriptor_error__MTL__BinaryArchiveDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE MTL::AccelerationStructureSizes MTL::Device::accelerationStructureSizes(MTL::AccelerationStructureDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__AccelerationStructureSizes_accelerationStructureSizesWithDescriptor__MTL__AccelerationStructureDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::AccelerationStructure* MTL::Device::newAccelerationStructure(NS::UInteger size)
+{
+    return _MTL_msg_MTL__AccelerationStructurep_newAccelerationStructureWithSize__NS__UInteger((const void*)this, nullptr, size);
+}
+
+_MTL_INLINE MTL::AccelerationStructure* MTL::Device::newAccelerationStructure(MTL::AccelerationStructureDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__AccelerationStructurep_newAccelerationStructureWithDescriptor__MTL__AccelerationStructureDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::SizeAndAlign MTL::Device::heapAccelerationStructureSizeAndAlign(NS::UInteger size)
+{
+    return _MTL_msg_MTL__SizeAndAlign_heapAccelerationStructureSizeAndAlignWithSize__NS__UInteger((const void*)this, nullptr, size);
+}
+
+_MTL_INLINE MTL::SizeAndAlign MTL::Device::heapAccelerationStructureSizeAndAlign(MTL::AccelerationStructureDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__SizeAndAlign_heapAccelerationStructureSizeAndAlignWithDescriptor__MTL__AccelerationStructureDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::ResidencySet* MTL::Device::newResidencySet(MTL::ResidencySetDescriptor* desc, NS::Error** error)
+{
+    return _MTL_msg_MTL__ResidencySetp_newResidencySetWithDescriptor_error__MTL__ResidencySetDescriptorp_NS__Errorpp((const void*)this, nullptr, desc, error);
+}
+
+_MTL_INLINE MTL::SizeAndAlign MTL::Device::tensorSizeAndAlign(MTL::TensorDescriptor* descriptor)
+{
+    return _MTL_msg_MTL__SizeAndAlign_tensorSizeAndAlignWithDescriptor__MTL__TensorDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::Tensor* MTL::Device::newTensor(MTL::TensorDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL__Tensorp_newTensorWithDescriptor_error__MTL__TensorDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE MTL::FunctionHandle* MTL::Device::functionHandle(MTL::Function* function)
+{
+    return _MTL_msg_MTL__FunctionHandlep_functionHandleWithFunction__MTL__Functionp((const void*)this, nullptr, function);
+}
+
+_MTL_INLINE MTL4::CommandAllocator* MTL::Device::newCommandAllocator()
+{
+    return _MTL_msg_MTL4__CommandAllocatorp_newCommandAllocator((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL4::CommandAllocator* MTL::Device::newCommandAllocator(MTL4::CommandAllocatorDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL4__CommandAllocatorp_newCommandAllocatorWithDescriptor_error__MTL4__CommandAllocatorDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE MTL4::CommandQueue* MTL::Device::newMTL4CommandQueue()
+{
+    return _MTL_msg_MTL4__CommandQueuep_newMTL4CommandQueue((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL4::CommandQueue* MTL::Device::newMTL4CommandQueue(MTL4::CommandQueueDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL4__CommandQueuep_newMTL4CommandQueueWithDescriptor_error__MTL4__CommandQueueDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE MTL4::CommandBuffer* MTL::Device::newCommandBuffer()
+{
+    return _MTL_msg_MTL4__CommandBufferp_newCommandBuffer((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL4::ArgumentTable* MTL::Device::newArgumentTable(MTL4::ArgumentTableDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL4__ArgumentTablep_newArgumentTableWithDescriptor_error__MTL4__ArgumentTableDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE MTL::TextureViewPool* MTL::Device::newTextureViewPool(MTL::ResourceViewPoolDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL__TextureViewPoolp_newTextureViewPoolWithDescriptor_error__MTL__ResourceViewPoolDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE MTL4::Compiler* MTL::Device::newCompiler(MTL4::CompilerDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL4__Compilerp_newCompilerWithDescriptor_error__MTL4__CompilerDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE MTL4::Archive* MTL::Device::newArchive(NS::URL* url, NS::Error** error)
+{
+    return _MTL_msg_MTL4__Archivep_newArchiveWithURL_error__NS__URLp_NS__Errorpp((const void*)this, nullptr, url, error);
+}
+
+_MTL_INLINE MTL4::PipelineDataSetSerializer* MTL::Device::newPipelineDataSetSerializer(MTL4::PipelineDataSetSerializerDescriptor* descriptor)
+{
+    return _MTL_msg_MTL4__PipelineDataSetSerializerp_newPipelineDataSetSerializerWithDescriptor__MTL4__PipelineDataSetSerializerDescriptorp((const void*)this, nullptr, descriptor);
+}
+
+_MTL_INLINE MTL::Buffer* MTL::Device::newBuffer(NS::UInteger length, MTL::ResourceOptions options, MTL::SparsePageSize placementSparsePageSize)
+{
+    return _MTL_msg_MTL__Bufferp_newBufferWithLength_options_placementSparsePageSize__NS__UInteger_MTL__ResourceOptions_MTL__SparsePageSize((const void*)this, nullptr, length, options, placementSparsePageSize);
+}
+
+_MTL_INLINE MTL4::CounterHeap* MTL::Device::newCounterHeap(MTL4::CounterHeapDescriptor* descriptor, NS::Error** error)
+{
+    return _MTL_msg_MTL4__CounterHeapp_newCounterHeapWithDescriptor_error__MTL4__CounterHeapDescriptorp_NS__Errorpp((const void*)this, nullptr, descriptor, error);
+}
+
+_MTL_INLINE NS::UInteger MTL::Device::sizeOfCounterHeapEntry(MTL4::CounterHeapType type)
+{
+    return _MTL_msg_NS__UInteger_sizeOfCounterHeapEntry__MTL4__CounterHeapType((const void*)this, nullptr, type);
+}
+
+_MTL_INLINE uint64_t MTL::Device::queryTimestampFrequency()
+{
+    return _MTL_msg_uint64_t_queryTimestampFrequency((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::FunctionHandle* MTL::Device::functionHandle(MTL4::BinaryFunction* function)
+{
+    return _MTL_msg_MTL__FunctionHandlep_functionHandleWithBinaryFunction__MTL4__BinaryFunctionp((const void*)this, nullptr, function);
+}
+
+_MTL_INLINE bool MTL::Device::isLowPower()
+{
+    return _MTL_msg_bool_isLowPower((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::isHeadless()
+{
+    return _MTL_msg_bool_isHeadless((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::isRemovable()
+{
+    return _MTL_msg_bool_isRemovable((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::isDepth24Stencil8PixelFormatSupported()
+{
+    return _MTL_msg_bool_isDepth24Stencil8PixelFormatSupported((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::areRasterOrderGroupsSupported()
+{
+    return _MTL_msg_bool_areRasterOrderGroupsSupported((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::areBarycentricCoordsSupported()
+{
+    return _MTL_msg_bool_areBarycentricCoordsSupported((const void*)this, nullptr);
+}
+
+_MTL_INLINE bool MTL::Device::areProgrammableSamplePositionsSupported()
+{
+    return _MTL_msg_bool_areProgrammableSamplePositionsSupported((const void*)this, nullptr);
 }
