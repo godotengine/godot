@@ -38,6 +38,7 @@
 				The default ParticleProcessMaterial needs to have [member ParticleProcessMaterial.particle_flag_preserve_color] set to [code]true[/code] to correctly use the color given from this function.
 				Additionally, it will use the contents of [param custom] as [code](rotation, lifetime, animation, lifetime randomness)[/code].
 				[b]Note:[/b] [method emit_particle] is only supported on the Forward+ and Mobile rendering methods, not Compatibility.
+				[b]Note:[/b] A custom processing material shader that doesn't modify the transform is required for the [constant EMIT_FLAG_ROTATION_SCALE] flag to work correctly.
 			</description>
 		</method>
 		<method name="get_draw_pass_mesh" qualifiers="const">
