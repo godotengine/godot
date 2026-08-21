@@ -91,7 +91,7 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 				ad_hoc = true;
 			} break;
 			case 2: { // "rcodesign"
-				ad_hoc = p_preset->get_or_env("codesign/certificate_file", ENV_MAC_CODESIGN_CERT_FILE).operator String().is_empty() || p_preset->get_or_env("codesign/certificate_password", ENV_MAC_CODESIGN_CERT_FILE).operator String().is_empty();
+				ad_hoc = p_preset->get_or_env("codesign/certificate_file", ENV_MAC_CODESIGN_CERT_FILE).operator String().is_empty() || p_preset->get_or_env("codesign/certificate_password", ENV_MAC_CODESIGN_CERT_PASS).operator String().is_empty();
 			} break;
 #ifdef MACOS_ENABLED
 			case 3: { // "codesign"
