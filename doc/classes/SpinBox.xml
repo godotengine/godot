@@ -49,6 +49,9 @@
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 			Changes the alignment of the underlying [LineEdit].
 		</member>
+		<member name="button_alignment" type="int" setter="set_button_alignment" getter="get_button_alignment" enum="SpinBox.ButtonAlignment" default="0">
+			Controls which side the up and down buttons appear on. [constant BUTTON_ALIGNMENT_DEFAULT] follows the layout direction (right in LTR, left in RTL). [constant BUTTON_ALIGNMENT_LEFT] and [constant BUTTON_ALIGNMENT_RIGHT] override this regardless of layout direction.
+		</member>
 		<member name="custom_arrow_round" type="bool" setter="set_custom_arrow_round" getter="is_custom_arrow_rounding" default="false">
 			If [code]true[/code], the value will be rounded to a multiple of [member custom_arrow_step] when interacting with the arrow buttons. Otherwise, increments the value by [member custom_arrow_step] and then rounds it according to [member Range.step].
 		</member>
@@ -75,6 +78,17 @@
 			[b]Note:[/b] If set to [code]true[/code], this will interfere with entering mathematical expressions in the [SpinBox]. The [SpinBox] will try to evaluate the expression as you type, which means symbols like a trailing [code]+[/code] are removed immediately by the expression being evaluated.
 		</member>
 	</members>
+	<constants>
+		<constant name="BUTTON_ALIGNMENT_DEFAULT" value="0" enum="ButtonAlignment">
+			The up and down buttons follow the layout direction: on the right in left-to-right layouts, on the left in right-to-left layouts.
+		</constant>
+		<constant name="BUTTON_ALIGNMENT_LEFT" value="1" enum="ButtonAlignment">
+			The up and down buttons are always placed on the left, regardless of layout direction.
+		</constant>
+		<constant name="BUTTON_ALIGNMENT_RIGHT" value="2" enum="ButtonAlignment">
+			The up and down buttons are always placed on the right, regardless of layout direction.
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="down_disabled_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Down button icon modulation color, when the button is disabled.
