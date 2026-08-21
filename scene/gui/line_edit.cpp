@@ -2477,12 +2477,16 @@ Size2 LineEdit::get_minimum_size() const {
 	int icon_max_width = 0;
 	if (right_icon.is_valid()) {
 		Point2 right_icon_size = _get_right_icon_size(right_icon);
-		min_size.height = MAX(min_size.height, right_icon_size.height);
+		if (icon_expand_mode != LineEdit::EXPAND_MODE_FIT_TO_LINE_EDIT) {
+			min_size.height = MAX(min_size.height, right_icon_size.height);
+		}
 		icon_max_width = right_icon_size.width;
 	}
 	if (clear_button_enabled) {
 		Point2 right_icon_size = _get_right_icon_size(theme_cache.clear_icon);
-		min_size.height = MAX(min_size.height, right_icon_size.height);
+		if (icon_expand_mode != LineEdit::EXPAND_MODE_FIT_TO_LINE_EDIT) {
+			min_size.height = MAX(min_size.height, right_icon_size.height);
+		}
 		icon_max_width = MAX(icon_max_width, right_icon_size.width);
 	}
 	min_size.width += icon_max_width;
