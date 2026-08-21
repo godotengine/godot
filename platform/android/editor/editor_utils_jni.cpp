@@ -37,6 +37,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
@@ -115,6 +116,28 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_orien
 				}
 			}
 		}
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_onDragDropCompleted(JNIEnv *p_env, jclass, jobjectArray p_added_files) {
+#ifdef TOOLS_ENABLED
+	if (EditorFileSystem *efs = EditorFileSystem::get_singleton()) {
+		if (efs->is_scanning()) {
+			return;
+		}
+
+		Vector<String> added_files_paths;
+		jint length = p_env->GetArrayLength(p_added_files);
+		for (jint i = 0; i < length; i++) {
+			jstring j_path = (jstring)p_env->GetObjectArrayElement(p_added_files, i);
+			String path = jstring_to_string(j_path, p_env);
+			added_files_paths.push_back(path);
+			p_env->DeleteLocalRef(j_path);
+		}
+
+		efs->update_files(added_files_paths);
+		efs->reimport_files(added_files_paths);
 	}
 #endif
 }
