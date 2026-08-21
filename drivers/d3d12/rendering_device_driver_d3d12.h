@@ -92,6 +92,10 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	struct ShaderCapabilities {
 		D3D_SHADER_MODEL shader_model = (D3D_SHADER_MODEL)0;
 		bool native_16bit_ops = false;
+
+		_FORCE_INLINE_ bool buffer_device_address_supported() const {
+			return shader_model >= D3D_SHADER_MODEL_6_6;
+		}
 	};
 
 	struct FormatCapabilities {
@@ -135,6 +139,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	struct DescriptorHeap {
 		struct Allocation {
 			uint64_t virtual_alloc_handle = {}; // This is the handle value in "D3D12MA::VirtualAllocation".
+			uint64_t offset = UINT64_MAX;
 			D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle = {};
 			D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle = {};
 		};
@@ -171,7 +176,11 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	};
 
 	DescriptorHeap resource_descriptor_heap;
+	BinaryMutex resource_descriptor_heap_mutex;
+
 	DescriptorHeap sampler_descriptor_heap;
+	BinaryMutex sampler_descriptor_heap_mutex;
+
 	CPUDescriptorHeapPool resource_descriptor_heap_pool;
 	CPUDescriptorHeapPool rtv_descriptor_heap_pool;
 	CPUDescriptorHeapPool dsv_descriptor_heap_pool;
@@ -202,7 +211,11 @@ private:
 	/****************/
 
 	Microsoft::WRL::ComPtr<D3D12MA::Allocator> allocator;
-	Microsoft::WRL::ComPtr<D3D12MA::Pool> uma_gpu_mappable_pool;
+
+	// These pools allow UPLOAD and READBACK heap types to bypass runtime validation
+	// for GPU features that are supported in practice, such as ALLOW_UNORDERED_ACCESS.
+	Microsoft::WRL::ComPtr<D3D12MA::Pool> custom_upload_pool;
+	Microsoft::WRL::ComPtr<D3D12MA::Pool> custom_readback_pool;
 
 	/******************/
 	/**** RESOURCE ****/
@@ -255,6 +268,7 @@ private:
 		D3D12_GPU_VIRTUAL_ADDRESS gpu_virtual_address = {};
 		DataFormat texel_format = DATA_FORMAT_MAX;
 		uint64_t size = 0;
+		DescriptorHeap::Allocation device_address_uav_alloc = {};
 		struct {
 			bool is_dynamic : 1; // Only used for tracking (e.g. Vulkan needs these checks).
 		} flags = {};
