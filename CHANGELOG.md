@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [3.6.3] - 2026-08-20
+## [3.6.3] - 2026-08-22
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-3-6-3) for details.
 
@@ -16,7 +16,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 
 #### Platforms
 
-- Android bump default target SDK to 36 ([GH-120883](https://github.com/godotengine/godot/pull/120883)).
+- Android: Bump default target SDK to 36 ([GH-120883](https://github.com/godotengine/godot/pull/120883)).
 
 #### Network
 
@@ -58,6 +58,8 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 #### Platforms
 
 - Process TTS callback on the main thread to avoid speech-dispatcher deadlock ([GH-110481](https://github.com/godotengine/godot/pull/110481)).
+- Web: Add internal get_entropy() javascript function for web build ([GH-122647](https://github.com/godotengine/godot/pull/122647)).
+- iOS: Fix x86_64 simulator build. ([GH-122639](https://github.com/godotengine/godot/pull/122639)).
 
 #### Rendering
 
