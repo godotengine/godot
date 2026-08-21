@@ -230,30 +230,6 @@ public:
 	virtual EditorLanguage *get_editor_language() = 0;
 #endif // TOOLS_ENABLED
 
-	struct Warning {
-		/// One-based.
-		int start_line = 0;
-		int start_column = -1;
-
-		/// One-based.
-		int end_line = 0;
-		int end_column = -1;
-
-		int code;
-		String string_code;
-		String message;
-	};
-
-	struct ScriptError {
-		String path;
-		/// All one-based.
-		int start_line = -1;
-		int start_column = -1;
-		int end_line = -1;
-		int end_column = -1;
-		String message;
-	};
-
 	enum TemplateLocation {
 		TEMPLATE_BUILT_IN,
 		TEMPLATE_EDITOR,
@@ -289,7 +265,6 @@ public:
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }

@@ -173,7 +173,7 @@ Vector<String> ScriptTextEditor::get_functions() {
 	List<String> fnc;
 
 	Ref<Script> script = edited_res;
-	if (script.is_valid() && script->get_language()->validate(text, script->get_path(), &fnc)) {
+	if (script.is_valid() && script->get_language()->get_editor_language()->validate(text, script->get_path(), nullptr, nullptr, &fnc, nullptr)) {
 		//if valid rewrite functions to latest
 		functions.clear();
 		for (const String &E : fnc) {
@@ -745,7 +745,7 @@ void ScriptTextEditor::_update_background_color() {
 
 	// Set the warning background.
 	if (warning_line_color.a != 0.0 || warning_underline_color.a != 0.0) {
-		for (const ScriptLanguage::Warning &warning : warnings) {
+		for (const EditorLanguage::Warning &warning : warnings) {
 			int warning_start_line = CLAMP(warning.start_line - 1, 0, te->get_line_count() - 1);
 			int warning_start_column = warning.start_column - 1;
 			int warning_end_line = CLAMP(warning.end_line - 1, 0, te->get_line_count() - 1);
@@ -772,7 +772,7 @@ void ScriptTextEditor::_update_background_color() {
 
 	// Set the error background.
 	if (marked_line_color.a != 0.0 || error_underline_color.a != 0.0) {
-		for (const ScriptLanguage::ScriptError &error : errors) {
+		for (const EditorLanguage::ScriptError &error : errors) {
 			int error_start_line = CLAMP(error.start_line - 1, 0, te->get_line_count() - 1);
 			int error_start_column = error.start_column - 1;
 			int error_end_line = CLAMP(error.end_line - 1, 0, te->get_line_count() - 1);
@@ -889,7 +889,7 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 }
 
 struct ScriptErrorLineComparator {
-	bool operator()(const ScriptLanguage::ScriptError &p_a, const ScriptLanguage::ScriptError &p_b) const {
+	bool operator()(const EditorLanguage::ScriptError &p_a, const EditorLanguage::ScriptError &p_b) const {
 		if (p_a.start_line != p_b.start_line) {
 			return p_a.start_line < p_b.start_line;
 		}
@@ -909,12 +909,12 @@ void ScriptTextEditor::_validate_script() {
 	safe_lines.clear();
 
 	Ref<Script> script = edited_res;
-	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
+	if (!script->get_language()->get_editor_language()->validate(text, script->get_path(), &errors, &warnings, &fnc, &safe_lines)) {
 		errors.sort_custom<ScriptErrorLineComparator>();
 
-		List<ScriptLanguage::ScriptError>::Element *E = errors.front();
+		List<EditorLanguage::ScriptError>::Element *E = errors.front();
 		while (E) {
-			List<ScriptLanguage::ScriptError>::Element *next_E = E->next();
+			List<EditorLanguage::ScriptError>::Element *next_E = E->next();
 			if ((E->get().path.is_empty() && !script->get_path().is_empty()) || E->get().path != script->get_path()) {
 				depended_errors[E->get().path].push_back(E->get());
 				E->erase();
@@ -992,7 +992,7 @@ void ScriptTextEditor::_update_warnings() {
 
 	// Add script warnings.
 	warnings_panel->push_table(3);
-	for (const ScriptLanguage::Warning &w : warnings) {
+	for (const EditorLanguage::Warning &w : warnings) {
 		Dictionary ignore_meta;
 		ignore_meta["line"] = w.start_line - 1;
 		ignore_meta["code"] = w.string_code.to_lower();
@@ -1026,7 +1026,7 @@ void ScriptTextEditor::_update_errors() {
 
 	errors_panel->clear();
 	errors_panel->push_table(2);
-	for (const ScriptLanguage::ScriptError &err : errors) {
+	for (const EditorLanguage::ScriptError &err : errors) {
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.start_line - 1);
 		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -1042,7 +1042,7 @@ void ScriptTextEditor::_update_errors() {
 	}
 	errors_panel->pop(); // Table
 
-	for (const KeyValue<String, List<ScriptLanguage::ScriptError>> &KV : depended_errors) {
+	for (const KeyValue<String, List<EditorLanguage::ScriptError>> &KV : depended_errors) {
 		Dictionary click_meta_script;
 		click_meta_script["path"] = KV.key;
 		click_meta_script["line"] = 0;
@@ -1056,7 +1056,7 @@ void ScriptTextEditor::_update_errors() {
 
 		errors_panel->push_indent(1);
 		errors_panel->push_table(2);
-		for (const ScriptLanguage::ScriptError &err : KV.value) {
+		for (const EditorLanguage::ScriptError &err : KV.value) {
 			Dictionary click_meta;
 			click_meta["path"] = KV.key;
 			click_meta["line"] = err.start_line - 1;
@@ -2386,7 +2386,7 @@ void ScriptTextEditor::_assign_dragged_export_variables() {
 		bool script_has_errors = false;
 		String scr_path = si->get_script()->get_path();
 
-		for (const ScriptLanguage::ScriptError &error : errors) {
+		for (const EditorLanguage::ScriptError &error : errors) {
 			if (error.path == scr_path) {
 				script_has_errors = true;
 				break;

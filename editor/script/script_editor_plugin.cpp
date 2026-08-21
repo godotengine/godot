@@ -38,6 +38,7 @@
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/fuzzy_search.h"
@@ -1505,7 +1506,7 @@ void ScriptEditor::trigger_live_script_reload(const String &p_script_path) {
 			reloaded_script = ResourceLoader::load(p_script_path);
 		}
 		if (reloaded_script.is_valid()) {
-			if (!reloaded_script->get_language()->validate(reloaded_script->get_source_code(), p_script_path)) {
+			if (!reloaded_script->get_language()->get_editor_language()->validate(reloaded_script->get_source_code(), p_script_path, nullptr, nullptr, nullptr, nullptr)) {
 				// Script has errors, don't live reload.
 				return;
 			}
