@@ -32,15 +32,27 @@
 
 void WebpLoader::run(unsigned tid)
 {
-    //TODO: acquire the current colorspace format & pre-multiplied alpha image.
-    surface.buf8 = WebPDecodeBGRA(data, size, nullptr, nullptr);
+    WebPDecoderConfig config;
+    if (!WebPInitDecoderConfig(&config)) return;
+
+    // request premultiplied image data
+    if (ImageLoader::cs == ColorSpace::ARGB8888 || ImageLoader::cs == ColorSpace::ARGB8888S) {
+        config.output.colorspace = MODE_bgrA;
+        if (WebPDecode(data, size, &config) != VP8_STATUS_OK) return;
+        surface.buf8 = config.output.u.RGBA.rgba;
+        surface.cs = ColorSpace::ARGB8888;
+    } else {
+        config.output.colorspace = MODE_rgbA;
+        if (WebPDecode(data, size, &config) != VP8_STATUS_OK) return;
+        surface.buf8 = config.output.u.RGBA.rgba;
+        surface.cs = ColorSpace::ABGR8888;
+    }
+
     surface.stride = (uint32_t)w;
     surface.w = (uint32_t)w;
     surface.h = (uint32_t)h;
     surface.channelSize = sizeof(uint32_t);
-    surface.cs = ColorSpace::ARGB8888;
-    surface.premultiplied = false;
-
+    surface.premultiplied = true;
 }
 
 
@@ -64,16 +76,16 @@ WebpLoader::~WebpLoader()
     WebPFree(surface.buf8);
 }
 
-
-bool WebpLoader::open(const char* path)
+bool WebpLoader::open(const char* path, TVG_UNUSED const LoaderOps* ops)
 {
 #ifdef THORVG_FILE_IO_SUPPORT
-    if (!(data = (unsigned char*)LoadModule::open(path, size))) return false;
+    if (!(data = (unsigned char*)Loader::open(path, size))) return false;
 
-    int width, height;
-    if (!WebPGetInfo(data, size, &width, &height)) return false;
-    w = static_cast<float>(width);
-    h = static_cast<float>(height);
+    WebPBitstreamFeatures features;
+    if (WebPGetFeatures(data, size, &features)) return false;
+    w = static_cast<float>(features.width);
+    h = static_cast<float>(features.height);
+    surface.alphaIgnored = !features.has_alpha;
     freeData = true;
     return true;
 #else
@@ -81,8 +93,7 @@ bool WebpLoader::open(const char* path)
 #endif
 }
 
-
-bool WebpLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rpath, bool copy)
+bool WebpLoader::open(const char* data, uint32_t size, TVG_UNUSED const LoaderOps* ops, bool copy)
 {
     if (copy) {
         this->data = tvg::malloc<unsigned char>(size);
@@ -94,12 +105,11 @@ bool WebpLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rp
         freeData = false;
     }
 
-    int width, height;
-    if (!WebPGetInfo(this->data, size, &width, &height)) return false;
-
-    w = static_cast<float>(width);
-    h = static_cast<float>(height);
-    surface.cs = ColorSpace::ARGB8888;
+    WebPBitstreamFeatures features;
+    if (WebPGetFeatures(this->data, size, &features)) return false;
+    w = static_cast<float>(features.width);
+    h = static_cast<float>(features.height);
+    surface.alphaIgnored = !features.has_alpha;
     this->size = size;
     return true;
 }
@@ -107,7 +117,7 @@ bool WebpLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rp
 
 bool WebpLoader::read()
 {
-    if (!LoadModule::read()) return true;
+    if (!Loader::read()) return true;
 
     if (!data || w == 0 || h == 0) return false;
 

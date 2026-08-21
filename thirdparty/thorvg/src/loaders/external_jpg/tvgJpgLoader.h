@@ -28,14 +28,13 @@
 using tjhandle = void*;
 
 //TODO: Use Task?
-class JpgLoader : public ImageLoader
+struct JpgLoader : ImageLoader
 {
-public:
     JpgLoader();
     ~JpgLoader();
 
-    bool open(const char* path) override;
-    bool open(const char* data, uint32_t size, const char* rpath, bool copy) override;
+    bool open(const char* path, const LoaderOps* ops) override;
+    bool open(const char* data, uint32_t size, const LoaderOps* ops, bool copy) override;
     bool read() override;
 
 private:

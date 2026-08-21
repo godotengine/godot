@@ -99,6 +99,12 @@ Result Picture::origin(float* x, float* y) const noexcept
 
 const Paint* Picture::paint(uint32_t id) noexcept
 {
+    if (accessible) {
+        auto entity = to<PictureImpl>(this)->access(id);
+        return entity ? entity->paint : nullptr;
+    }
+
+    // TODO: remove at thorvg v2 release (for backward compat)
     struct Value
     {
         uint32_t id;

@@ -27,7 +27,7 @@
 #include "tvgMath.h"
 #include "tvgShape.h"
 #include "tvgFill.h"
-#include "tvgLoader.h"
+#include "tvgLoaderMgr.h"
 
 namespace tvg
 {
@@ -133,10 +133,10 @@ struct TextImpl : Text
         return Result::Success;
     }
 
-    Result metrics(const char* ch, GlyphMetrics& metrics)
+    Result metrics(const char* ch, GlyphMetrics& metrics, const char** next)
     {
         if (!loader || fm.fontSize <= 0.0f) return Result::InsufficientCondition;
-        if (ch && loader->metrics(fm, ch, metrics)) return Result::Success;
+        if (ch && loader->metrics(fm, ch, metrics, next)) return Result::Success;
         return Result::InvalidArguments;
     }
 
@@ -202,10 +202,10 @@ struct TextImpl : Text
         return true;
     }
 
-    bool intersects(const RenderRegion& region)
+    bool intersects(const RenderRegion& region, TVG_UNUSED bool visibleOnly)
     {
         if (!load()) return false;
-        return to<ShapeImpl>(shape)->intersects(region);
+        return to<ShapeImpl>(shape)->intersects(region, false);
     }
 
     bool bounds(Point* pt4, const Matrix& m, bool obb)
@@ -240,7 +240,7 @@ struct TextImpl : Text
         return text;
     }
 
-    Iterator* iterator()
+    AccessorIterator* iterator()
     {
         return nullptr;
     }

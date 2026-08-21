@@ -7,8 +7,8 @@
 #include <cstdarg>
 
 #define TVG_VERSION_MAJOR 1  // for compile-time checks
-#define TVG_VERSION_MINOR 0  // for compile-time checks
-#define TVG_VERSION_MICRO 3  // for compile-time checks
+#define TVG_VERSION_MINOR 1  // for compile-time checks
+#define TVG_VERSION_MICRO 0  // for compile-time checks
 
 #ifdef TVG_API
     #undef TVG_API
@@ -108,14 +108,13 @@ enum struct Result
  */
 enum struct ColorSpace : uint8_t
 {
-    ABGR8888 = 0,      ///< The channels are joined in the order: alpha, blue, green, red. Colors are alpha-premultiplied.
-    ARGB8888,          ///< The channels are joined in the order: alpha, red, green, blue. Colors are alpha-premultiplied.
-    ABGR8888S,         ///< The channels are joined in the order: alpha, blue, green, red. Colors are un-alpha-premultiplied. @since 0.12
-    ARGB8888S,         ///< The channels are joined in the order: alpha, red, green, blue. Colors are un-alpha-premultiplied. @since 0.12
-    Grayscale8,        ///< One single channel data.
-    Unknown = 255      ///< Unknown channel data. This is reserved for an initial ColorSpace value. @since 1.0
+    ABGR8888 = 0,  ///< The channels are joined in the order: alpha, blue, green, red. Colors are alpha-premultiplied.
+    ARGB8888,      ///< The channels are joined in the order: alpha, red, green, blue. Colors are alpha-premultiplied.
+    ABGR8888S,     ///< The channels are joined in the order: alpha, blue, green, red. Colors are un-alpha-premultiplied. @since 0.12
+    ARGB8888S,     ///< The channels are joined in the order: alpha, red, green, blue. Colors are un-alpha-premultiplied. @since 0.12
+    Grayscale8,    ///< Single channel, 1 byte per pixel 8-bit grayscale.
+    Unknown = 255  ///< Unknown channel data. This is reserved for an initial ColorSpace value. @since 1.0
 };
-
 
 /**
  * @brief Enumeration to specify rendering engine behavior.
@@ -133,9 +132,10 @@ enum struct ColorSpace : uint8_t
  */
 enum struct EngineOption : uint8_t
 {
-    None = 0,                   /**< No engine options are enabled. This may be used to explicitly disable all optional behaviors. */
-    Default = 1 << 0,           /**< Uses the default rendering mode. */
-    SmartRender = 1 << 1        /**< Enables automatic partial (smart) rendering optimizations. */
+    None = 0,                    /**< No engine options are enabled. This may be used to explicitly disable all optional behaviors. */
+    Default = 1 << 0,            /**< Uses the default rendering mode. */
+    SmartRender = 1 << 1,        /**< Enables automatic partial (smart) rendering optimizations. */
+    Aliased = 1 << 2             /**< Disables anti-aliased rendering. @note Experimental API */
 };
 
 
@@ -193,11 +193,10 @@ enum struct FillRule : uint8_t
     EvenOdd      ///< A line from the point to a location outside the shape is drawn and its intersections with the path segments of the shape are counted. If the number of intersections is an odd number, the point is inside the shape.
 };
 
-
 /**
  * @brief Defines the image filtering method used during image scaling or transformation.
  *
- * @note Experimental API
+ * @since 1.1
  */
 enum struct FilterMethod : uint8_t
 {
@@ -249,13 +248,13 @@ enum struct BlendMethod : uint8_t
     ColorDodge,        ///< Divides the bottom layer by the inverted top layer. D / (255 - S)
     ColorBurn,         ///< Divides the inverted bottom layer by the top layer, and then inverts the result. 255 - (255 - D) / S
     HardLight,         ///< The same as Overlay but with the color roles reversed. (2 * S * D) if (S < 128), otherwise 255 - 2 * (255 - S) * (255 - D)
-    SoftLight,         ///< The same as Overlay but with applying pure black or white does not result in pure black or white. (255 - 2 * S) * (D * D) + (2 * S * D)
+    SoftLight,         ///< Darkens or lightens the colors, depending on the source color value. If S <= 0.5: D - (1 - 2 * S) * D * (1 - D), otherwise: D + (2 * S - 1) * (G(D) - D), where G(D) = ((16 * D - 12) * D + 4) * D if D <= 0.25, otherwise sqrt(D).
     Difference,        ///< Subtracts the bottom layer from the top layer or the other way around, to always get a non-negative value. (S - D) if (S > D), otherwise (D - S)
     Exclusion,         ///< The result is twice the product of the top and bottom layers, subtracted from their sum. S + D - (2 * S * D)
-    Hue,               ///< Combine with HSL(Sh + Ds + Dl) then convert it to RGB. @since 1.0
-    Saturation,        ///< Combine with HSL(Dh + Ss + Dl) then convert it to RGB. @since 1.0
-    Color,             ///< Combine with HSL(Sh + Ss + Dl) then convert it to RGB. @since 1.0
-    Luminosity,        ///< Combine with HSL(Dh + Ds + Sl) then convert it to RGB. @since 1.0
+    Hue,               ///< Uses the hue of the source and the saturation and luminosity of the destination. @since 1.0
+    Saturation,        ///< Uses the saturation of the source and the hue and luminosity of the destination. @since 1.0
+    Color,             ///< Uses the hue and saturation of the source and the luminosity of the destination. @since 1.0
+    Luminosity,        ///< Uses the luminosity of the source and the hue and saturation of the destination. @since 1.0
     Add,               ///< Simply adds pixel values of one layer with the other. (S + D)
     Composition = 255  ///< For intermediate composition layers; suitable for use with Scene or Picture. @since 1.0
 };
@@ -613,10 +612,40 @@ struct TVG_API Paint
      * @note To test a single point, set the region size to w = 1, h = 1.
      * @note For efficiency, an AABB (axis-aligned bounding box) test is performed internally before precise hit detection.
      * @note This test does not take into account the results of blending or masking.
-     * @note This test does take into account the the hidden paints as well. @see Paint::visible()
+     * @note This test does take into account hidden paints as well.
+     * @see Paint::visible() const
      * @since 1.0
      */
     bool intersects(int32_t x, int32_t y, int32_t w = 1, int32_t h = 1) noexcept;
+
+    /**
+     * @brief Checks whether a given region intersects the filled area of the paint.
+     *
+     * This function determines whether the specified rectangular region—defined by (`x`, `y`, `w`, `h`)—
+     * intersects the geometric fill region of the paint object.
+     *
+     * This is useful for hit-testing purposes, such as detecting whether a user interaction (e.g., touch or click)
+     * occurs within a painted region.
+     *
+     * The paint must be updated in a Canvas beforehand—typically after the Canvas has been
+     * drawn and synchronized.
+     *
+     * @param[in] x The x-coordinate of the top-left corner of the test region.
+     * @param[in] y The y-coordinate of the top-left corner of the test region.
+     * @param[in] w The width of the region to test. Must be greater than 0.
+     * @param[in] h The height of the region to test. Must be greater than 0.
+     * @param[in] visibleOnly If @c true, hidden paints are excluded from the intersection test.
+     *
+     * @return @c true if any part of the region intersects the filled area; otherwise, @c false.
+     *
+     * @note To test a single point, set the region size to w = 1, h = 1.
+     * @note This test does not take into account the results of blending or masking.
+     *
+     * @see Paint::visible(bool on)
+     *
+     * @since Experimental API
+     */
+    bool intersects(int32_t x, int32_t y, int32_t w, int32_t h, bool visibleOnly) noexcept;
 
     /**
      * @brief Duplicates the object.
@@ -1137,7 +1166,7 @@ struct TVG_API RadialGradient : Fill
      *
      * This method can be used to check the current concrete instance type.
      *
-     * @return The class type ID of the LinearGradient instance.
+     * @return The class type ID of the RadialGradient instance.
      *
      * @since 1.0
      */
@@ -1230,8 +1259,8 @@ struct TVG_API Shape : Paint
      *
      * The rectangle is treated as a new sub-path - it is not connected with the previous sub-path.
      *
-     * The value of the current point is set to (@p x + @p rx, @p y) - in case @p rx is greater
-     * than @p w/2 the current point is set to (@p x + @p w/2, @p y)
+     * The value of the current point is set to (@p x + @p w, @p y + @p ry) - in case @p ry is greater
+     * than @p h/2 the current point is set to (@p x + @p w, @p y + @p h/2).
      *
      * @param[in] x The horizontal coordinate of the upper-left corner of the rectangle.
      * @param[in] y The vertical coordinate of the upper-left corner of the rectangle.
@@ -1304,7 +1333,7 @@ struct TVG_API Shape : Paint
      * @param[in] r The red color channel value in the range [0 ~ 255]. The default value is 0.
      * @param[in] g The green color channel value in the range [0 ~ 255]. The default value is 0.
      * @param[in] b The blue color channel value in the range [0 ~ 255]. The default value is 0.
-     * @param[in] a The alpha channel value in the range [0 ~ 255], where 0 is completely transparent and 255 is opaque. The default value is 0.
+     * @param[in] a The alpha channel value in the range [0 ~ 255], where 0 is completely transparent and 255 is opaque. The default value is 255.
      *
      * @note If the stroke width is 0 (default), the stroke will not be visible regardless of the color.
      * @note Either a solid color or a gradient fill is applied, depending on what was set as last.
@@ -1398,7 +1427,7 @@ struct TVG_API Shape : Paint
      * @param[in] r The red color channel value in the range [0 ~ 255]. The default value is 0.
      * @param[in] g The green color channel value in the range [0 ~ 255]. The default value is 0.
      * @param[in] b The blue color channel value in the range [0 ~ 255]. The default value is 0.
-     * @param[in] a The alpha channel value in the range [0 ~ 255], where 0 is completely transparent and 255 is opaque. The default value is 0.
+     * @param[in] a The alpha channel value in the range [0 ~ 255], where 0 is completely transparent and 255 is opaque. The default value is 255.
      *
      * @note Either a solid color or a gradient fill is applied, depending on what was set as last.
      */
@@ -1612,6 +1641,7 @@ struct TVG_API Picture : Paint
      *
      * @retval Result::InvalidArguments In case no data are provided or the @p size is zero or less.
      * @retval Result::NonSupport When trying to load a file with an unknown extension.
+     * @retval Result::InsufficientCondition If a vector asset has already been loaded into the picture.
      *
      * @warning It's the user responsibility to release the @p data memory.
      *
@@ -1699,6 +1729,8 @@ struct TVG_API Picture : Paint
      * @param[in] cs Specifies how the 32-bit color values should be interpreted.
      * @param[in] copy If @c true, the data is copied into the engine's local buffer. If @c false, the data is not copied.
      *
+     * @note If the memory data pointed to by @p data is modified, calling this API will re-upload the updated content to the canvas.
+     *
      * @since 0.9
      */
     Result load(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, bool copy = false) noexcept;
@@ -1738,20 +1770,23 @@ struct TVG_API Picture : Paint
      * @return Always returns @c Result::Success.
      *
      * @see FilterMethod
-     * @note Experimental API
+     * @since 1.1
      */
     Result filter(FilterMethod method) noexcept;
 
     /**
-     * @brief Retrieve a paint object from the Picture scene by its Unique ID.
+     * @brief Retrieve a Paint object from the Picture scene by its unique ID.
      *
-     * This function searches for a paint object within the Picture scene that matches the provided @p id.
+     * Searches for a Paint object within the Picture scene that matches the given @p id.
      *
-     * @param[in] id The Unique ID of the paint object.
+     * @param[in] id The unique identifier of the Paint object.
      *
-     * @return A pointer to the paint object that matches the given identifier, or @c nullptr if no matching paint object is found.
+     * @return A pointer to the matching Paint object, or @c nullptr if not found.
+     *
+     * @note Setting @ref Picture::accessible to @c true enables more efficient access.
      *
      * @see Accessor::id()
+     * @see Picture::accessible
      *
      * @since 1.0
      */
@@ -1779,6 +1814,23 @@ struct TVG_API Picture : Paint
      * @since 1.0
      */
     Type type() const noexcept override;
+
+    /**
+     * @brief Enable or disable accessible mode for a Picture.
+     *
+     * When accessible mode is enabled, the Picture maintains an internal mapping
+     * of ID-accessible vector assets nodes (such as SVG), allowing efficient access to Paint objects
+     * and their associated identifier information via Accessor APIs.
+     *
+     * When disabled, no additional mapping is maintained and all nodes are treated
+     * as general traversal targets.
+     *
+     * @see Picture::paint()
+     * @see Accessor::name()
+     *
+     * @since 1.1
+     */
+    bool accessible = false;
 
     _TVG_DECLARE_ACCESSOR(Animation);
     _TVG_DECLARE_PRIVATE_DERIVE(Picture);
@@ -2042,7 +2094,7 @@ struct TVG_API Text : Paint
      * @return The total number of lines.
      *
      * @see Text::wrap()
-     * @since Experimental API
+     * @since 1.1
      */
     uint32_t lines() noexcept;
 
@@ -2167,6 +2219,8 @@ struct TVG_API Text : Paint
      *
      * @param[in] ch A pointer to a UTF-8 encoded character.
      * @param[out] metrics A reference to a @ref GlyphMetrics structure to be filled with the resulting values.
+     * @param[out] next An optional pointer that receives the position immediately
+     *                  following the processed UTF-8 character.
      *
      * @return Result::InsufficientCondition if no font or size has been set yet.
      * @return Result::InvalidArguments if the given character is invalid or not supported.
@@ -2175,7 +2229,7 @@ struct TVG_API Text : Paint
      * @note Currently, ThorVG only supports horizontal text layout.
      * @note Experimental API
      */
-    Result metrics(const char* ch, GlyphMetrics& metrics) const noexcept;
+    Result metrics(const char* ch, GlyphMetrics& metrics, const char** next = nullptr) const noexcept;
 
     /**
      * @brief Loads a scalable font data (ttf) from a file.
@@ -2293,9 +2347,11 @@ struct TVG_API SwCanvas final : Canvas
      *
      * @warning Do not access @p buffer during Canvas::add() - Canvas::sync(). It should not be accessed while the engine is writing on it.
      *
+     * @note Currently, only @c ColorSpace::ABGR8888S, @c ColorSpace::ABGR8888, @c ColorSpace::ARGB8888S, and @c ColorSpace::ARGB8888 are supported for @p cs.
+     *
      * @see Canvas::viewport()
      * @see Canvas::sync()
-    */
+     */
     Result target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t h, ColorSpace cs) noexcept;
 
     /**
@@ -2390,25 +2446,62 @@ struct TVG_API WgCanvas final : Canvas
     ~WgCanvas() override;
 
     /**
+     * @brief Encapsulates the WebGPU context required for rendering.
+     *
+     * This structure contains the WebGPU objects used to initialize the rendering backend.
+     *
+     * @note Experimental API
+     */
+    struct Context
+    {
+        void* instance;  // WGPUInstance, context for all other wgpu objects.
+        void* adapter;   // WGPUAdapter, the adapter associated with the rendering device.
+        void* device;    // WGPUDevice, a desired handle for the wgpu device.
+    };
+
+    /**
      * @brief Sets the drawing target for the rasterization.
      *
-     * @param[in] device WGPUDevice, a desired handle for the wgpu device. If it is @c nullptr, ThorVG will assign an appropriate device internally.
+     * @param[in] device WGPUDevice, a desired handle for the wgpu device.
      * @param[in] instance WGPUInstance, context for all other wgpu objects.
      * @param[in] target Either WGPUSurface or WGPUTexture, serving as handles to a presentable surface or texture.
      * @param[in] w The width of the target.
      * @param[in] h The height of the target.
-     * @param[in] cs Specifies how the pixel values should be interpreted. Currently, it only allows @c ColorSpace::ABGR8888S as @c WGPUTextureFormat_RGBA8Unorm.
+     * @param[in] cs Specifies how the pixel values should be interpreted. Currently, it allows @c ColorSpace::ABGR8888 and @c ColorSpace::ABGR8888S.
      * @param[in] type @c 0: surface, @c 1: texture are used as pesentable target.
      *
      * @retval Result::InsufficientCondition if the canvas is performing rendering. Please ensure the canvas is synced.
      * @retval Result::NonSupport In case the wg engine is not supported.
      *
+     * @warning Regardless of the value of @p cs, this target API uses the default alpha mode.
+     *
+     * @see WgCanvas::target(const Context&, void*, uint32_t, uint32_t, ColorSpace, int)
+     * @see Canvas::viewport()
+     * @see Canvas::sync()
+     *
      * @since 1.0
+     */
+    Result target(void* device, void* instance, void* target, uint32_t w, uint32_t h, ColorSpace cs, int type = 0) noexcept;
+
+    /**
+     * @brief Sets the drawing target for the rasterization.
+     *
+     * @param[in] context WebGPU context.
+     * @param[in] target Either WGPUSurface or WGPUTexture, serving as handles to a presentable surface or texture.
+     * @param[in] w The width of the target.
+     * @param[in] h The height of the target.
+     * @param[in] cs Specifies how the pixel values should be interpreted. Currently, it allows @c ColorSpace::ABGR8888 and @c ColorSpace::ABGR8888S.
+     * @param[in] type @c 0: surface, @c 1: texture are used as pesentable target.
+     *
+     * @retval Result::InsufficientCondition if the canvas is performing rendering. Please ensure the canvas is synced.
+     * @retval Result::NonSupport In case the wg engine is not supported.
      *
      * @see Canvas::viewport()
      * @see Canvas::sync()
+     *
+     * @note Experimental API
      */
-    Result target(void* device, void* instance, void* target, uint32_t w, uint32_t h, ColorSpace cs, int type = 0) noexcept;
+    Result target(const Context& context, void* target, uint32_t w, uint32_t h, ColorSpace cs, int type = 0) noexcept;
 
     /**
      * @brief Creates a new WebGPU Canvas object with optional rendering engine settings.
@@ -2577,7 +2670,7 @@ struct TVG_API Animation
      * @retval Result::InvalidArguments If the @p begin is higher than @p end.
      * @retval Result::NonSupport When it's not animatable.
      *
-     * @note Animation allows a range from 0.0 to the total frame. @p end should not be higher than @p begin.
+     * @note Animation allows a range from 0.0 to the total frame. @p end should not be lower than @p begin.
      * @note If a marker has been specified, its range will be disregarded.
      *
      * @see LottieAnimation::segment(const char* marker)
@@ -2712,7 +2805,6 @@ struct TVG_API Saver final
     _TVG_DECLARE_PRIVATE_BASE(Saver);
 };
 
-
 /**
  * @class Accessor
  *
@@ -2721,12 +2813,13 @@ struct TVG_API Saver final
  * The Accessor helps you search specific nodes to read the property information, figure out the structure of the scene tree and its size.
  *
  * @warning We strongly warn you not to change the paints of a scene unless you really know the design-structure.
+ * @warning This class is not designed for inheritance.
  *
  * @since 0.10
  */
-struct TVG_API Accessor final
+struct TVG_API Accessor
 {
-    ~Accessor();
+    virtual ~Accessor();
 
     /**
      * @brief Set the access function for traversing the Picture scene tree nodes.
@@ -2752,10 +2845,33 @@ struct TVG_API Accessor final
      * @return The generated unique identifier value.
      *
      * @see Paint::id
+     * @see Picture::paint()
      *
      * @since 1.0
      */
     static uint32_t id(const char* name) noexcept;
+
+    /**
+     * @brief Retrieve the original name string from a given unique ID.
+     *
+     * Returns the name associated with the specified identifier.
+     *
+     * This method is only valid when @ref Picture::accessible is set to @c true
+     * for the Picture associated with the given @p paint in @ref Accessor::set() Otherwise, the name
+     * information may not be available.
+     *
+     * @param[in] id The unique identifier.
+     *
+     * @return The corresponding name string, or @c nullptr if not found or unavailable.
+     *
+     * @see Accessor::id()
+     * @see Accessor::set()
+     * @see Picture::accessible
+     *
+     * @note This function is only available within Accessor callbacks registered via @ref Accessor::set().
+     * @since 1.1
+     */
+    const char* name(uint32_t id) noexcept;
 
     /**
      * @brief Creates a new Accessor object.
