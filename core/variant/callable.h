@@ -195,6 +195,7 @@ public:
 
 	Error emit(const Variant **p_arguments, int p_argcount) const;
 	Error connect(const Callable &p_callable, uint32_t p_flags = 0);
+	void disconnect_all();
 	void disconnect(const Callable &p_callable);
 	bool is_connected(const Callable &p_callable) const;
 	bool has_connections() const;
