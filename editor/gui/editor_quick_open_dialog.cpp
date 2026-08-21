@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -56,6 +57,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/packed_scene.h"
 
 void HighlightedLabel::draw_substr_rects(const Vector2i &p_substr, Vector2 p_offset, int p_line_limit, int line_spacing) {
 	for (int i = get_lines_skipped(); i < p_line_limit; i++) {
@@ -360,6 +362,28 @@ void style_button(Button *p_button) {
 	p_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 }
 
+static void _update_scene_state_modified_times(Node *p_node, const HashMap<String, uint64_t> &p_modified_times) {
+	Ref<SceneState> state = p_node->get_scene_instance_state();
+	if (state.is_valid()) {
+		const uint64_t *modified_time = p_modified_times.getptr(state->get_path());
+		if (modified_time) {
+			state->set_last_modified_time(*modified_time);
+		}
+	}
+
+	state = p_node->get_scene_inherited_state();
+	if (state.is_valid()) {
+		const uint64_t *modified_time = p_modified_times.getptr(state->get_path());
+		if (modified_time) {
+			state->set_last_modified_time(*modified_time);
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_update_scene_state_modified_times(p_node->get_child(i), p_modified_times);
+	}
+}
+
 QuickOpenResultContainer::QuickOpenResultContainer() {
 	set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -441,6 +465,17 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		bottom_bar->add_theme_constant_override("separation", 3);
 		add_child(bottom_bar);
 
+		generate_missing_uids_button = memnew(Button);
+		generate_missing_uids_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+		generate_missing_uids_button->set_tooltip_text(TTRC("Generate and save UIDs for scenes that do not have one."));
+		generate_missing_uids_button->connect(SceneStringName(pressed), callable_mp(this, &QuickOpenResultContainer::_request_generate_missing_uids));
+		generate_missing_uids_button->hide();
+		bottom_bar->add_child(generate_missing_uids_button);
+
+		Control *bottom_bar_spacer = memnew(Control);
+		bottom_bar_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		bottom_bar->add_child(bottom_bar_spacer);
+
 		instant_preview_toggle = memnew(CheckButton);
 		style_button(instant_preview_toggle);
 		instant_preview_toggle->set_text(TTRC("Instant Preview"));
@@ -473,6 +508,12 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		display_mode_toggle->connect(SceneStringName(pressed), callable_mp(this, &QuickOpenResultContainer::_toggle_display_mode));
 		bottom_bar->add_child(display_mode_toggle);
 	}
+
+	generate_missing_uids_confirmation = memnew(ConfirmationDialog);
+	generate_missing_uids_confirmation->set_title(TTRC("Generate Missing UIDs"));
+	generate_missing_uids_confirmation->get_ok_button()->set_text(TTRC("Generate"));
+	generate_missing_uids_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &QuickOpenResultContainer::_generate_missing_uids));
+	add_child(generate_missing_uids_confirmation);
 }
 
 void QuickOpenResultContainer::_menu_option(int p_option) {
@@ -649,6 +690,7 @@ void QuickOpenResultContainer::_create_initial_results() {
 	uids.clear();
 	filetypes.clear();
 	history_set.clear();
+	missing_uid_paths.clear();
 
 	Vector<ResourceUID::ID> *history = _get_history();
 	if (history) {
@@ -658,6 +700,7 @@ void QuickOpenResultContainer::_create_initial_results() {
 	}
 
 	_find_uids_in_folder(EditorFileSystem::get_singleton()->get_filesystem(), include_addons_toggle->is_pressed());
+	_update_generate_missing_uids_button();
 	_sort_uids(result_items.size());
 	max_total_results = MIN(uids.size(), result_items.size());
 	update_results();
@@ -672,10 +715,6 @@ void QuickOpenResultContainer::_find_uids_in_folder(EditorFileSystemDirectory *p
 
 	for (int i = 0; i < p_directory->get_file_count(); i++) {
 		ResourceUID::ID uid = p_directory->get_file_uid(i);
-		if (uid == ResourceUID::INVALID_ID) {
-			continue;
-		}
-
 		const StringName engine_type = p_directory->get_file_type(i);
 		const StringName script_type = p_directory->get_file_resource_script_class(i);
 
@@ -686,6 +725,12 @@ void QuickOpenResultContainer::_find_uids_in_folder(EditorFileSystemDirectory *p
 			bool is_valid = ClassDB::is_parent_class(engine_type, parent_type) || (!is_engine_type && EditorNode::get_editor_data().script_class_is_parent(script_type, parent_type));
 
 			if (is_valid) {
+				if (uid == ResourceUID::INVALID_ID) {
+					if (base_types.size() == 1 && base_types[0] == SNAME("PackedScene")) {
+						missing_uid_paths.push_back(p_directory->get_file_path(i));
+					}
+					break;
+				}
 				uids.push_back(uid);
 				filetypes.insert(uid, actual_type);
 				break; // Stop testing base types as soon as we get a match.
@@ -1015,6 +1060,81 @@ void QuickOpenResultContainer::_toggle_instant_preview(bool p_pressed) {
 void QuickOpenResultContainer::_toggle_fuzzy_search(bool p_pressed) {
 	EditorSettings::get_singleton()->set("filesystem/quick_open_dialog/enable_fuzzy_matching", p_pressed);
 	update_results();
+}
+
+void QuickOpenResultContainer::_request_generate_missing_uids() {
+	if (missing_uid_paths.is_empty()) {
+		return;
+	}
+
+	generate_missing_uids_confirmation->set_text(vformat(TTRN("This will modify %d scene file by adding a UID. Continue?", "This will modify %d scene files by adding UIDs. Continue?", missing_uid_paths.size()), missing_uid_paths.size()));
+	generate_missing_uids_confirmation->popup_centered();
+}
+
+void QuickOpenResultContainer::_update_generate_missing_uids_button() {
+	generate_missing_uids_button->set_visible(!missing_uid_paths.is_empty());
+	generate_missing_uids_button->set_text(vformat(TTR("Generate Missing UIDs (%d)"), missing_uid_paths.size()));
+}
+
+void QuickOpenResultContainer::_acknowledge_generated_uid_files(const Vector<String> &p_paths) {
+	EditorFileSystem::get_singleton()->update_files(p_paths);
+
+	// ResourceSaver::set_uid() rewrites the files without going through the editor's scene save flow.
+	// Synchronize the new modification times so the editor does not treat these writes as external changes.
+	HashMap<String, uint64_t> modified_times;
+	for (const String &path : p_paths) {
+		const uint64_t modified_time = FileAccess::get_modified_time(path);
+		modified_times.insert(path, modified_time);
+
+		Ref<Resource> cached_resource = ResourceCache::get_ref(path);
+		if (cached_resource.is_valid()) {
+			cached_resource->set_last_modified_time(modified_time);
+		}
+	}
+
+	EditorData &editor_data = EditorNode::get_editor_data();
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		const uint64_t *modified_time = modified_times.getptr(editor_data.get_scene_path(i));
+		if (modified_time) {
+			editor_data.set_scene_modified_time(i, *modified_time);
+		}
+
+		Node *scene_root = editor_data.get_edited_scene_root(i);
+		if (scene_root) {
+			_update_scene_state_modified_times(scene_root, modified_times);
+		}
+	}
+}
+
+void QuickOpenResultContainer::_generate_missing_uids() {
+	Vector<String> generated_paths;
+	Vector<String> failed_paths;
+
+	for (const String &path : missing_uid_paths) {
+		const ResourceUID::ID uid = ResourceUID::get_singleton()->create_id_for_path(path);
+		if (uid == ResourceUID::INVALID_ID || ResourceSaver::set_uid(path, uid) != OK) {
+			failed_paths.push_back(path);
+			ERR_PRINT(vformat("Failed to generate a UID for scene '%s'.", path));
+			continue;
+		}
+
+		ResourceUID::get_singleton()->add_id(uid, path);
+		generated_paths.push_back(path);
+	}
+
+	if (!generated_paths.is_empty()) {
+		_acknowledge_generated_uid_files(generated_paths);
+		_create_initial_results();
+	} else {
+		missing_uid_paths = failed_paths;
+		_update_generate_missing_uids_button();
+	}
+
+	if (failed_paths.is_empty()) {
+		EditorToaster::get_singleton()->popup_str(vformat(TTRN("Generated a UID for %d scene.", "Generated UIDs for %d scenes.", generated_paths.size()), generated_paths.size()), EditorToaster::SEVERITY_INFO);
+	} else {
+		EditorToaster::get_singleton()->popup_str(vformat(TTR("Generated UIDs for %d scenes. Failed to update %d scenes."), generated_paths.size(), failed_paths.size()), EditorToaster::SEVERITY_WARNING);
+	}
 }
 
 String QuickOpenResultContainer::_get_cache_file_path() const {
