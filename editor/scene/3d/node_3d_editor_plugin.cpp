@@ -2005,6 +2005,7 @@ void Node3DEditor::update_grid() {
 
 void Node3DEditor::_selection_changed() {
 	_refresh_menu_icons();
+	active_node = nullptr;
 
 	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
@@ -2020,6 +2021,7 @@ void Node3DEditor::_selection_changed() {
 		}
 
 		if (sp == editor_selection->get_top_selected_node_list().back()->get()) {
+			active_node = sp;
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance, active_selection_box->get_rid());
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray, active_selection_box_xray->get_rid());
 			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_offset, active_selection_box->get_rid());
