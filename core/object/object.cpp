@@ -136,6 +136,12 @@ Object::Connection::Connection(const Variant &p_variant) {
 }
 
 bool Object::_predelete() {
+	// Prevent self-deletion during notification -- would cause UB.
+	if (unlikely(_notifying)) {
+		ERR_PRINT(vformat("Cannot free own object from notification handler. %s instance (id %d) will be leaked.", get_class(), (uint64_t)get_instance_id()));
+		return false;
+	}
+
 	_predelete_ok = true;
 	notification(NOTIFICATION_PREDELETE, true);
 	if (!_predelete_ok) {
@@ -2341,6 +2347,7 @@ void Object::_construct_object(bool p_reference) {
 	_block_signals = false;
 	_can_translate = true;
 	_emitting = false;
+	_notifying = false;
 	_is_queued_for_deletion = false;
 	_predelete_ok = false;
 
