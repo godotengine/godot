@@ -445,6 +445,10 @@ void GLTFState::set_filename(const String &p_filename) {
 	}
 }
 
+bool GLTFState::is_text_file() const {
+	return filename.to_lower().ends_with(".gltf");
+}
+
 Variant GLTFState::get_additional_data(const StringName &p_extension_name) const {
 	return additional_data.get(p_extension_name, Variant());
 }
