@@ -1539,6 +1539,7 @@ void DisplayServerWayland::_window_update_hdr_state(WindowData &p_window) {
 		bool hdr_preferred = p_window.color_profile.target_max_luminance > p_window.color_profile.reference_luminance;
 		bool hdr_desired = wayland_thread.supports_hdr() && hdr_preferred && p_window.hdr_requested;
 
+		DisplayServerEnums::WindowID window_id = p_window.id;
 		if (rendering_context->window_get_hdr_output_enabled(window_id) != hdr_desired) {
 			rendering_context->window_set_hdr_output_enabled(window_id, hdr_desired);
 			_send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, window_id);
