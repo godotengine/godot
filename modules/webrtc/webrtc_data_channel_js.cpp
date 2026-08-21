@@ -140,10 +140,6 @@ Error WebRTCDataChannelJS::put_packet(const uint8_t *p_buffer, int p_buffer_size
 	return OK;
 }
 
-int WebRTCDataChannelJS::get_max_packet_size() const {
-	return 1200;
-}
-
 void WebRTCDataChannelJS::set_write_mode(WriteMode p_mode) {
 	_write_mode = p_mode;
 }
