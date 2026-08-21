@@ -653,7 +653,7 @@
 			Marks the option as a variable.
 		</constant>
 		<constant name="KIND_MEMBER" value="4" enum="CodeCompletionKind">
-			Marks the option as a member.
+			Marks the option as a member variable.
 		</constant>
 		<constant name="KIND_ENUM" value="5" enum="CodeCompletionKind">
 			Marks the option as an enum entry.
