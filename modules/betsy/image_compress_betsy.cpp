@@ -331,18 +331,24 @@ void BetsyCompressor::finish() {
 
 // Helper functions.
 
-static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool &r_is_rgb) {
-	r_is_rgb = false;
+static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool &r_convert_rgb_to_rgba, RD::TextureView &r_view) {
+	r_convert_rgb_to_rgba = false;
 
 	switch (r_img->get_format()) {
 		case Image::FORMAT_L8:
-			r_img->convert(Image::FORMAT_RGBA8);
-			r_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			r_view.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_g = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_b = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+			r_format = RD::DATA_FORMAT_R8_UNORM;
 			break;
 
 		case Image::FORMAT_LA8:
-			r_img->convert(Image::FORMAT_RGBA8);
-			r_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			r_view.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_g = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_b = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_a = RD::TEXTURE_SWIZZLE_G;
+			r_format = RD::DATA_FORMAT_R8G8_UNORM;
 			break;
 
 		case Image::FORMAT_R8:
@@ -354,8 +360,8 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool
 			break;
 
 		case Image::FORMAT_RGB8:
-			r_is_rgb = true;
-			r_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			r_convert_rgb_to_rgba = !RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R8G8B8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT);
+			r_format = r_convert_rgb_to_rgba ? RD::DATA_FORMAT_R8G8B8A8_UNORM : RD::DATA_FORMAT_R8G8B8_UNORM;
 			break;
 
 		case Image::FORMAT_RGBA8:
@@ -371,8 +377,8 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool
 			break;
 
 		case Image::FORMAT_RGBH:
-			r_is_rgb = true;
-			r_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			r_convert_rgb_to_rgba = !RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R16G16B16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT);
+			r_format = r_convert_rgb_to_rgba ? RD::DATA_FORMAT_R16G16B16A16_SFLOAT : RD::DATA_FORMAT_R16G16B16_SFLOAT;
 			break;
 
 		case Image::FORMAT_RGBAH:
@@ -388,8 +394,8 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool
 			break;
 
 		case Image::FORMAT_RGBF:
-			r_is_rgb = true;
-			r_format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			r_convert_rgb_to_rgba = !RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R32G32B32_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT);
+			r_format = r_convert_rgb_to_rgba ? RD::DATA_FORMAT_R32G32B32A32_SFLOAT : RD::DATA_FORMAT_R32G32B32_SFLOAT;
 			break;
 
 		case Image::FORMAT_RGBAF:
@@ -409,8 +415,8 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool
 			break;
 
 		case Image::FORMAT_RGB16:
-			r_is_rgb = true;
-			r_format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
+			r_convert_rgb_to_rgba = !RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R16G16B16_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT);
+			r_format = r_convert_rgb_to_rgba ? RD::DATA_FORMAT_R16G16B16A16_UNORM : RD::DATA_FORMAT_R16G16B16_UNORM;
 			break;
 
 		case Image::FORMAT_RGBA16:
@@ -475,11 +481,12 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		src_texture_format.depth = 1;
 		src_texture_format.mipmaps = 1;
 		src_texture_format.texture_type = RD::TEXTURE_TYPE_2D;
-		src_texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		src_texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	}
 
+	RD::TextureView src_texture_view;
 	bool needs_rgb_to_rgba = false;
-	err = get_src_texture_format(r_img, src_texture_format.format, needs_rgb_to_rgba);
+	err = get_src_texture_format(r_img, src_texture_format.format, needs_rgb_to_rgba, src_texture_view);
 
 	if (err != OK) {
 		return err;
@@ -487,7 +494,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 	// For the destination format just copy the source format and change the usage bits.
 	RD::TextureFormat dst_texture_format = src_texture_format;
-	dst_texture_format.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+	dst_texture_format.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 	dst_texture_format.format = dst_rd_format;
 
 	RD::TextureFormat dst_texture_format_alpha;
@@ -580,8 +587,8 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 			RID source_buffer = compress_rd->storage_buffer_create(src_image_ptr[0].size(), src_image_ptr[0].span());
 
 			RD::TextureFormat rgba_texture_format = src_texture_format;
-			rgba_texture_format.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-			src_texture = compress_rd->texture_create(rgba_texture_format, RD::TextureView());
+			rgba_texture_format.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+			src_texture = compress_rd->texture_create(rgba_texture_format, src_texture_view);
 
 			Vector<RD::Uniform> uniforms;
 			{
@@ -621,7 +628,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 			compress_rd->free_rid(source_buffer);
 		} else {
-			src_texture = compress_rd->texture_create(src_texture_format, RD::TextureView(), src_images);
+			src_texture = compress_rd->texture_create(src_texture_format, src_texture_view, src_images);
 		}
 
 		{
