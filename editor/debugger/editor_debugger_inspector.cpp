@@ -148,7 +148,7 @@ EditorDebuggerInspector::~EditorDebuggerInspector() {
 
 void EditorDebuggerInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("objects_edited", PropertyInfo(Variant::ARRAY, "ids"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value"), PropertyInfo(Variant::STRING, "field")));
+	ADD_SIGNAL(MethodInfo("objects_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "int;Variant"), PropertyInfo(Variant::STRING, "field")));
 	ADD_SIGNAL(MethodInfo("object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 }
 
@@ -345,6 +345,8 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 				}
 			}
 		}
+	} else {
+		has_custom_class = false;
 	}
 
 	if (!has_custom_class && class_name != SNAME("Object")) {
