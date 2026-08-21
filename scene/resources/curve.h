@@ -165,6 +165,10 @@ private:
 	void _remove_point(int p_index, bool p_mark_dirty = true);
 	void _set_point_position(int p_index, const Vector2 &p_position);
 
+#ifdef TOOLS_ENABLED
+	void _inspector_array_swap_point(uint32_t p_index_a, uint32_t p_index_b);
+#endif
+
 	LocalVector<Point> _points;
 	mutable bool _baked_cache_dirty = false;
 	mutable Vector<real_t> _baked_cache;
