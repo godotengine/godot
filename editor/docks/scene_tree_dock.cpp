@@ -251,6 +251,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_COPY_NODE_PATH);
 	} else if (ED_IS_SHORTCUT("scene_tree/show_in_file_system", p_event)) {
 		_tool_selected(TOOL_SHOW_IN_FILE_SYSTEM);
+	} else if (ED_IS_SHORTCUT("scene_tree/show_in_file_system_inherited", p_event)) {
+		_tool_selected(TOOL_SHOW_IN_FILE_SYSTEM_INHERITED);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_unique_name", p_event)) {
 		_tool_selected(TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_editable_children", p_event)) {
@@ -1303,6 +1305,16 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				const Node *node = e->get();
 				if (node) {
 					FileSystemDock::get_singleton()->navigate_to_path(node->get_scene_file_path());
+				}
+			}
+		} break;
+		case TOOL_SHOW_IN_FILE_SYSTEM_INHERITED: {
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
+			const List<Node *>::Element *e = selection.front();
+			if (e) {
+				Node *node = e->get();
+				if (node && node == edited_scene && node->get_scene_inherited_state().is_valid()) {
+					FileSystemDock::get_singleton()->navigate_to_path(node->get_scene_inherited_state()->get_path());
 				}
 			}
 		} break;
@@ -4135,8 +4147,21 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/open_scene_in_editor"));
 	}
 
-	if (full_selection.size() == 1 && selection.front()->get()->is_instance()) {
-		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ShowInFileSystem")), ED_GET_SHORTCUT("scene_tree/show_in_file_system"), TOOL_SHOW_IN_FILE_SYSTEM);
+	if (full_selection.size() == 1) {
+		bool is_show_in_file_system_icon_added = false; // Only add an icon to the first "show_in_file_system" option.
+
+		if (selection.front()->get()->is_instance()) {
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ShowInFileSystem")), ED_GET_SHORTCUT("scene_tree/show_in_file_system"), TOOL_SHOW_IN_FILE_SYSTEM);
+			is_show_in_file_system_icon_added = true;
+		}
+
+		if (selection.front()->get() == edited_scene && selection.front()->get()->get_scene_inherited_state().is_valid()) {
+			menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/show_in_file_system_inherited"), TOOL_SHOW_IN_FILE_SYSTEM_INHERITED);
+			if (!is_show_in_file_system_icon_added) {
+				menu->set_item_icon(-1, get_editor_theme_icon(SNAME("ShowInFileSystem")));
+				is_show_in_file_system_icon_added = true;
+			}
+		}
 	}
 
 	menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), TTRC("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
@@ -5028,6 +5053,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTRC("Save Branch as Scene..."));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTRC("Copy Node Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("scene_tree/show_in_file_system", TTRC("Show in FileSystem"));
+	ED_SHORTCUT("scene_tree/show_in_file_system_inherited", TTRC("Show in FileSystem (parent)"));
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTRC("Toggle Access as Unique Name"));
 	ED_SHORTCUT("scene_tree/toggle_editable_children", TTRC("Toggle Editable Children"));
 	ED_SHORTCUT_ARRAY("scene_tree/open_scene_in_editor", TTRC("Open Scene in Editor"), { int32_t(Key::SLASH), int32_t(KeyModifierMask::SHIFT | Key::COLON) });
