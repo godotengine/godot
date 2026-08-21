@@ -32,6 +32,7 @@
 #define BVH_ABB_H
 
 #include <float.h>
+#include <cmath>
 
 // special optimized version of axis aligned bounding box
 template <class BOUNDS = AABB, class POINT = Vector3>
