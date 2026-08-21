@@ -347,7 +347,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							scr = scr->base.ptr();
 						}
 
-						if (nc && (identifier == CoreStringName(free_) || ClassDB::has_signal(nc->get_name(), identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
+						if (nc && (identifier == CoreStringName(free_) || nc->get_native_gdtype()->get_signal_map().has(identifier) || nc->get_native_gdtype()->get_method_map().has(identifier))) {
 							// Get like it was a property.
 							GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
 							GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
@@ -377,10 +377,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 						// Class C++ integer constant.
 						if (nc) {
-							bool success = false;
-							int64_t constant = ClassDB::get_integer_constant(nc->get_name(), identifier, &success);
-							if (success) {
-								return codegen.add_constant(constant);
+							if (const int64_t *constant = nc->get_native_gdtype()->get_integer_constant_map().getptr(identifier)) {
+								return codegen.add_constant(*constant);
 							}
 						}
 
@@ -641,11 +639,12 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				} else {
 					if (callee->type == GDScriptParser::Node::IDENTIFIER) {
 						// Self function call.
-						if (ClassDB::has_method(codegen.script->native->get_name(), call->function_name)) {
+						if (codegen.script->native->get_native_gdtype()->get_method_map().has(call->function_name)) {
 							// Native method, use faster path.
 							GDScriptCodeGenerator::Address self;
 							self.mode = GDScriptCodeGenerator::Address::SELF;
-							const MethodBind *method = ClassDB::get_method(codegen.script->native->get_name(), call->function_name);
+							const MethodBind *const *cmethod = codegen.script->native->get_native_gdtype()->get_method_map().getptr(call->function_name);
+							const MethodBind *method = cmethod ? *cmethod : nullptr;
 
 							if (_can_use_validate_call(method, arguments)) {
 								// Exact arguments, use validated call.
