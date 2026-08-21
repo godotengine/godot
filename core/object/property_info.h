@@ -82,6 +82,7 @@ enum PropertyHint {
 	PROPERTY_HINT_GROUP_ENABLE, ///< used to make the property's group checkable. Only use for boolean types.
 	PROPERTY_HINT_INPUT_NAME,
 	PROPERTY_HINT_FILE_PATH,
+	PROPERTY_HINT_SUFFIX,
 	PROPERTY_HINT_MAX,
 };
 
