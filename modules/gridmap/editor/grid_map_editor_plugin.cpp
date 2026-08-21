@@ -36,6 +36,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/docks/editor_dock_manager.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -1153,6 +1154,11 @@ void GridMapEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 }
 
 void GridMapEditor::update_palette() {
+	if (updating) {
+		// Main::iteration() from make_mesh_preview_with_environment() can cause a recursive call.
+		return;
+	}
+
 	float min_size = EDITOR_GET("editors/grid_map/preview_size");
 	min_size *= EDSCALE;
 
@@ -1201,6 +1207,13 @@ void GridMapEditor::update_palette() {
 	}
 	items_sorted.sort();
 
+	int preview_size = EDITOR_GET("editors/grid_map/preview_size");
+	RS::get_singleton()->viewport_set_size(preview_viewport, preview_size, preview_size);
+	RS::get_singleton()->viewport_set_update_mode(preview_viewport, RSE::VIEWPORT_UPDATE_ALWAYS);
+	RID viewport_texture = RS::get_singleton()->viewport_get_texture(preview_viewport);
+
+	mesh_library->set_block_signals(true);
+	updating = true;
 	for (_CGMEItemSort &E : items_sorted) {
 		int item_id = E.id;
 
@@ -1230,15 +1243,13 @@ void GridMapEditor::update_palette() {
 		}
 		mesh_library_palette->set_item_text(list_id, item_name);
 
-		const Ref<Texture2D> &preview = mesh_library->get_item_preview(item_id);
+		Ref<Texture2D> preview = mesh_library->get_item_preview(item_id);
 		if (preview.is_valid()) {
 			mesh_library_palette->set_item_icon(list_id, preview);
 		} else {
-			Ref<Mesh> mesh = mesh_library->get_item_mesh(item_id);
-			if (mesh.is_valid()) {
-				// Fallback to the item's mesh preview.
-				EditorResourcePreview::get_singleton()->queue_edited_resource_preview(mesh, callable_mp(this, &GridMapEditor::_update_resource_preview).bind(list_id));
-			}
+			preview = EditorInterface::get_singleton()->make_mesh_preview_with_environment(
+					preview_scenario, preview_camera, light_instance, light_instance2, viewport_texture, mesh_library->get_item_mesh(item_id), mesh_library->get_item_mesh_transform(item_id));
+			mesh_library->set_item_preview(item_id, preview);
 		}
 
 		mesh_library_palette->set_item_text(list_id, item_name);
@@ -1372,6 +1383,9 @@ void GridMapEditor::_update_resource_preview(const String &p_path, const Ref<Tex
 	if (p_idx < mesh_library_palette->get_item_count()) {
 		mesh_library_palette->set_item_icon(p_idx, p_preview);
 	}
+	mesh_library->set_block_signals(false);
+	updating = false;
+	RS::get_singleton()->viewport_set_update_mode(preview_viewport, RSE::VIEWPORT_UPDATE_DISABLED);
 }
 
 void GridMapEditor::_update_mesh_library() {
@@ -1450,7 +1464,6 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	// Prevent the cursor from being at an incorrect position before any inputs happen.
 	cursor_origin = (Vector3(cursor_gridpos) + Vector3(0.5 * node->get_center_x(), 0.5 * node->get_center_y(), 0.5 * node->get_center_z())) * node->get_cell_size();
 
-	update_palette();
 	_update_cursor_instance();
 	_update_edit_axis();
 
@@ -1480,9 +1493,7 @@ void GridMapEditor::update_grid() {
 		RenderingServer::get_singleton()->instance_set_visible(grid_instance[i], i == edit_axis);
 	}
 
-	updating = true;
-	floor->set_value(edit_floor[edit_axis]);
-	updating = false;
+	floor->set_value_no_signal(edit_floor[edit_axis]);
 }
 
 void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
@@ -1558,22 +1569,22 @@ void GridMapEditor::_update_theme() {
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
+			const RID world_scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
 
 			for (int i = 0; i < 3; i++) {
 				grid[i] = RS::get_singleton()->mesh_create();
-				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], scenario);
+				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], world_scenario);
 				RenderingServer::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
-				selection_level_instance[i] = RenderingServer::get_singleton()->instance_create2(selection_level_mesh[i], scenario);
+				selection_level_instance[i] = RenderingServer::get_singleton()->instance_create2(selection_level_mesh[i], world_scenario);
 				RenderingServer::get_singleton()->instance_set_layer_mask(selection_level_instance[i], 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 			}
 
-			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
+			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, world_scenario);
 			RenderingServer::get_singleton()->instance_set_layer_mask(cursor_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 			RenderingServer::get_singleton()->instance_set_visible(cursor_instance, false);
-			selection_instance = RenderingServer::get_singleton()->instance_create2(selection_mesh, scenario);
+			selection_instance = RenderingServer::get_singleton()->instance_create2(selection_mesh, world_scenario);
 			RenderingServer::get_singleton()->instance_set_layer_mask(selection_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
-			paste_instance = RenderingServer::get_singleton()->instance_create2(paste_mesh, scenario);
+			paste_instance = RenderingServer::get_singleton()->instance_create2(paste_mesh, world_scenario);
 			RenderingServer::get_singleton()->instance_set_layer_mask(paste_instance, 1 << Node3DEditorViewport::MISC_TOOL_LAYER);
 
 			_update_selection_transform();
@@ -1649,14 +1660,14 @@ void GridMapEditor::_update_cursor_instance() {
 	}
 	cursor_instance = RID();
 
-	const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
+	const RID world_scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
 
 	if (mesh_library.is_valid()) {
 		if (mode_buttons_group->get_pressed_button() == paint_mode_button) {
 			if (selected_palette >= 0 && node && node->get_mesh_library().is_valid()) {
 				Ref<Mesh> mesh = node->get_mesh_library()->get_item_mesh(selected_palette);
 				if (mesh.is_valid() && mesh->get_rid().is_valid()) {
-					cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
+					cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), world_scenario);
 					RSE::ShadowCastingSetting cast_shadows = (RSE::ShadowCastingSetting)node->get_mesh_library()->get_item_mesh_cast_shadow(selected_palette);
 					RS::get_singleton()->instance_geometry_set_cast_shadows_setting(cursor_instance, cast_shadows);
 				}
@@ -1664,15 +1675,15 @@ void GridMapEditor::_update_cursor_instance() {
 		} else if (mode_buttons_group->get_pressed_button() == select_mode_button) {
 			cursor_inner_mat->set_albedo(Color(default_color, 0.2));
 			cursor_outer_mat->set_albedo(Color(default_color, 0.8));
-			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
+			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, world_scenario);
 		} else if (mode_buttons_group->get_pressed_button() == erase_mode_button) {
 			cursor_inner_mat->set_albedo(Color(erase_color, 0.2));
 			cursor_outer_mat->set_albedo(Color(erase_color, 0.8));
-			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
+			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, world_scenario);
 		} else if (mode_buttons_group->get_pressed_button() == pick_mode_button) {
 			cursor_inner_mat->set_albedo(Color(pick_color, 0.2));
 			cursor_outer_mat->set_albedo(Color(pick_color, 0.8));
-			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
+			cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, world_scenario);
 		}
 	}
 
@@ -1705,10 +1716,6 @@ void GridMapEditor::_item_selected_cbk(int idx) {
 }
 
 void GridMapEditor::_floor_changed(float p_value) {
-	if (updating) {
-		return;
-	}
-
 	edit_floor[_get_edit_axis()] = p_value;
 	node->set_meta("_editor_floor_", Vector3(edit_floor[0], edit_floor[1], edit_floor[2]));
 	update_grid();
@@ -2184,6 +2191,23 @@ GridMapEditor::GridMapEditor() {
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	indicator_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	indicator_mat->set_albedo(EDITOR_GET("editors/3d_gizmos/gizmo_colors/gridmap_grid"));
+
+	preview_scenario = RS::get_singleton()->scenario_create();
+
+	preview_viewport = RS::get_singleton()->viewport_create();
+	RS::get_singleton()->viewport_set_scenario(preview_viewport, preview_scenario);
+	RS::get_singleton()->viewport_set_transparent_background(preview_viewport, true);
+	RS::get_singleton()->viewport_set_active(preview_viewport, true);
+
+	preview_camera = RS::get_singleton()->camera_create();
+	RS::get_singleton()->viewport_attach_camera(preview_viewport, preview_camera);
+
+	light = RS::get_singleton()->directional_light_create();
+	light_instance = RS::get_singleton()->instance_create2(light, preview_scenario);
+
+	light2 = RS::get_singleton()->directional_light_create();
+	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	light_instance2 = RS::get_singleton()->instance_create2(light2, preview_scenario);
 }
 
 GridMapEditor::~GridMapEditor() {
@@ -2219,6 +2243,14 @@ GridMapEditor::~GridMapEditor() {
 	if (paste_instance.is_valid()) {
 		RenderingServer::get_singleton()->free_rid(paste_instance);
 	}
+
+	RS::get_singleton()->free_rid(preview_viewport);
+	RS::get_singleton()->free_rid(light);
+	RS::get_singleton()->free_rid(light_instance);
+	RS::get_singleton()->free_rid(light2);
+	RS::get_singleton()->free_rid(light_instance2);
+	RS::get_singleton()->free_rid(preview_camera);
+	RS::get_singleton()->free_rid(preview_scenario);
 }
 
 void GridMapEditorPlugin::_notification(int p_what) {
