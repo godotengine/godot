@@ -274,6 +274,7 @@ enum LightBakeMode {
 	LIGHT_BAKE_DISABLED,
 	LIGHT_BAKE_STATIC,
 	LIGHT_BAKE_DYNAMIC,
+	LIGHT_BAKE_FULL,
 };
 
 enum LightOmniShadowMode {

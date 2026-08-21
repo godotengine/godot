@@ -65,6 +65,7 @@ public:
 		BAKE_DISABLED,
 		BAKE_STATIC,
 		BAKE_DYNAMIC,
+		BAKE_FULL,
 	};
 
 private:
