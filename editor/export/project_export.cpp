@@ -170,6 +170,8 @@ void ProjectExportDialog::popup_export() {
 		_update_current_preset(); // triggers rescan for templates if newly installed
 	}
 
+	debug_checkbox->set_pressed_no_signal(EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));
+
 	// Restore valid window bounds or pop up at default size.
 	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "export", Rect2());
 	if (saved_size != Rect2()) {
@@ -1427,10 +1429,9 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 	ERR_FAIL_COND(platform.is_null());
 
 	const Dictionary &fd_option = export_pck_zip->get_selected_options();
-	bool export_debug = fd_option.get(TTRC("Export With Debug"), true);
+	bool export_debug = debug_checkbox->is_pressed();
 	bool export_as_patch = fd_option.get(TTRC("Export As Patch"), true);
 
-	EditorSettings::get_singleton()->set_project_metadata("export_options", "export_debug", export_debug);
 	EditorSettings::get_singleton()->set_project_metadata("export_options", "export_as_patch", export_as_patch);
 
 	if (p_path.ends_with(".zip")) {
@@ -1483,6 +1484,7 @@ void ProjectExportDialog::_export_project() {
 			export_project->set_current_file(default_filename);
 		}
 	}
+
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	export_project->popup_file_dialog();
 }
@@ -1502,10 +1504,7 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 
 	platform->clear_messages();
 	current->update_value_overrides();
-	Dictionary fd_option = export_project->get_selected_options();
-	bool export_debug = fd_option.get(TTRC("Export With Debug"), true);
-
-	EditorSettings::get_singleton()->set_project_metadata("export_options", "export_debug", export_debug);
+	bool export_debug = debug_checkbox->is_pressed();
 
 	Error err = platform->export_project(current, export_debug, current->get_export_path(), 0);
 	result_dialog_log->clear();
@@ -1518,23 +1517,13 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	exporting = false;
 }
 
-void ProjectExportDialog::_export_all_dialog() {
-	export_all_dialog->show();
-	export_all_dialog->popup_centered(Size2(300, 80));
-}
-
-void ProjectExportDialog::_export_all_dialog_action(const String &p_str) {
-	export_all_dialog->hide();
-
-	_export_all(p_str != "release");
-}
-
-void ProjectExportDialog::_export_all(bool p_debug) {
+void ProjectExportDialog::_export_all() {
 	exporting = true;
 	bool show_dialog = false;
+	bool is_debug = debug_checkbox->is_pressed();
 
 	{ // Scope for the editor progress, we must free it before showing the dialog at the end.
-		String export_target = p_debug ? TTR("Debug") : TTR("Release");
+		String export_target = is_debug ? TTR("Debug") : TTR("Release");
 		EditorProgress ep("exportall", TTR("Exporting All") + " " + export_target, EditorExport::get_singleton()->get_export_preset_count(), true);
 
 		result_dialog_log->clear();
@@ -1555,7 +1544,7 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 
 			platform->clear_messages();
 			preset->update_value_overrides();
-			Error err = platform->export_project(preset, p_debug, preset->get_export_path(), 0);
+			Error err = platform->export_project(preset, is_debug, preset->get_export_path(), 0);
 			if (err == ERR_SKIP) {
 				exporting = false;
 				return;
@@ -1570,6 +1559,10 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 	}
 
 	exporting = false;
+}
+
+void ProjectExportDialog::_set_export_with_debug(bool p_debug) {
+	EditorSettings::get_singleton()->set_project_metadata("export_options", "export_debug", p_debug);
 }
 
 void ProjectExportDialog::_bind_methods() {
@@ -2026,18 +2019,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Disable initially before we select a valid preset.
 	export_button->set_disabled(true);
 
-	export_all_dialog = memnew(ConfirmationDialog);
-	export_all_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
-	add_child(export_all_dialog);
-	export_all_dialog->set_title(TTRC("Export All"));
-	export_all_dialog->set_text(TTRC("Choose an export mode:"));
-	export_all_dialog->get_ok_button()->hide();
-	export_all_dialog->add_button(TTRC("Debug"), true, "debug");
-	export_all_dialog->add_button(TTRC("Release"), true, "release");
-	export_all_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_export_all_dialog_action));
-
-	export_all_button = add_button(TTRC("Export All..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
-	export_all_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_all_dialog));
+	export_all_button = add_button(TTRC("Export All"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
+	export_all_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_all));
 	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);
@@ -2047,6 +2030,15 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_pck_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	add_child(export_pck_zip);
 	export_pck_zip->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_pck_zip_selected));
+
+	HBoxContainer *button_container = Object::cast_to<HBoxContainer>(get_ok_button()->get_parent());
+	debug_checkbox = memnew(CheckBox);
+	debug_checkbox->set_text(TTRC("Export With Debug"));
+	debug_checkbox->set_pressed_no_signal(true);
+	debug_checkbox->connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_set_export_with_debug));
+	button_container->add_child(debug_checkbox);
+	button_container->move_child(debug_checkbox, 0);
+	button_container->add_spacer(true);
 
 	// Export warnings and errors bottom section.
 
@@ -2097,8 +2089,6 @@ ProjectExportDialog::ProjectExportDialog() {
 	add_child(export_project);
 	export_project->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_project_to_path));
 
-	export_project->add_option(TTRC("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));
-	export_pck_zip->add_option(TTRC("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));
 	export_pck_zip->add_option(TTRC("Export As Patch"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_as_patch", true));
 
 	set_hide_on_ok(false);
