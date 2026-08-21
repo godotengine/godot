@@ -676,8 +676,16 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 			bool valid;
 			Array array = base->get(dnp.property, &valid);
-			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
-			array = array.duplicate();
+			if (!valid && base->get_script_instance() && base->get_script_instance()->is_placeholder()) {
+				// Fallback handling could be enabled, so still try to set the property even if its definition is missing.
+				// Collection type is the minimum to ensure node collection interactions with scene packing
+				// and node duplication are preserved.
+				array = Array();
+				array.set_typed(Variant::OBJECT, "Node", Variant());
+			} else {
+				ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
+				array = array.duplicate();
+			}
 
 			array.resize(paths.size());
 			for (int i = 0; i < array.size(); i++) {
@@ -689,8 +697,21 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 			bool valid;
 			Dictionary dict = base->get(dnp.property, &valid);
-			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
-			dict = dict.duplicate();
+			if (!valid && base->get_script_instance() && base->get_script_instance()->is_placeholder()) {
+				// Fallback handling could be enabled, so still try to set the property even if its definition is missing.
+				// Collection type is the minimum to ensure node collection interactions with scene packing
+				// and node duplication are preserved. Since the dictionary could be of Node and NodePath, need to
+				// rely on types set in _parse_node() to know what was originally a Node.
+				dict = Dictionary();
+				bool is_key_node = paths.get_typed_key_builtin() == Variant::NODE_PATH;
+				bool is_value_node = paths.get_typed_value_builtin() == Variant::NODE_PATH;
+				dict.set_typed(is_key_node ? Variant::OBJECT : Variant::NIL, is_key_node ? "Node" : "", Variant(),
+						is_value_node ? Variant::OBJECT : Variant::NIL, is_value_node ? "Node" : "", Variant());
+			} else {
+				ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
+				dict = dict.duplicate();
+			}
+
 			bool convert_key = dict.get_typed_key_builtin() == Variant::OBJECT &&
 					ClassDB::is_parent_class(dict.get_typed_key_class_name(), "Node");
 			bool convert_value = dict.get_typed_value_builtin() == Variant::OBJECT &&
@@ -1005,6 +1026,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			int key_value_separator = E.hint_string.find_char(';');
 			if (key_value_separator >= 0) {
 				int key_subtype_separator = E.hint_string.find_char(':');
+				if (key_subtype_separator > key_value_separator) {
+					key_subtype_separator = key_value_separator;
+				}
 				String key_subtype_string = E.hint_string.substr(0, key_subtype_separator);
 				int key_slash_pos = key_subtype_string.find_char('/');
 				PropertyHint key_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
@@ -1030,6 +1054,10 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 					use_deferred_node_path_bit = true;
 					Dictionary dict = value;
 					Dictionary new_dict;
+					// Set types as a hint to help instantiate recover from missing properties
+					new_dict.set_typed(convert_key ? Variant::NODE_PATH : Variant::NIL, "", Variant(),
+							convert_value ? Variant::NODE_PATH : Variant::NIL, "", Variant());
+
 					for (const KeyValue<Variant, Variant> &kv : dict) {
 						Variant new_key = kv.key;
 						if (convert_key && new_key.get_type() == Variant::OBJECT) {
