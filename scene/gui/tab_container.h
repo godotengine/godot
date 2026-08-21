@@ -54,6 +54,7 @@ private:
 	Button *popup_button = nullptr;
 
 	bool tabs_visible = true;
+	bool allows_tab_hotkeys = false;
 	TabPosition tabs_position = POSITION_TOP;
 	mutable ObjectID popup_obj_id;
 	bool use_hidden_tabs_for_min_size = false;
@@ -168,7 +169,7 @@ protected:
 
 public:
 	virtual bool accessibility_override_tree_hierarchy() const override { return true; }
-
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	HBoxContainer *get_internal_container() { return internal_container; }
 	TabBar *get_tab_bar() const;
 
@@ -192,6 +193,9 @@ public:
 
 	void set_tabs_visible(bool p_visible);
 	bool are_tabs_visible() const;
+
+	void set_allows_tab_hotkeys(bool p_allow_hotkeys);
+	bool does_allow_tab_hotkeys() const;
 
 #ifndef DISABLE_DEPRECATED
 	void set_all_tabs_in_front(bool p_is_front);
