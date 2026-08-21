@@ -665,6 +665,15 @@ void EditorDockManager::close_dock(EditorDock *p_dock) {
 	_update_layout();
 }
 
+void EditorDockManager::close_docks_by_slot(EditorDock::DockSlot slot) {
+	for (size_t i = 0; i < all_docks.size(); i++) {
+		EditorDock *dock = all_docks[i];
+		if (dock->get_current_slot() == slot && dock->is_visible()) {
+			dock->hide();
+		}
+	}
+}
+
 void EditorDockManager::open_dock(EditorDock *p_dock, bool p_set_current) {
 	ERR_FAIL_NULL(p_dock);
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot open unknown dock '%s'.", p_dock->get_display_title()));
