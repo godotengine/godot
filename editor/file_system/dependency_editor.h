@@ -170,6 +170,7 @@ class DependencyErrorDialog : public ConfirmationDialog {
 	GDCLASS(DependencyErrorDialog, ConfirmationDialog);
 
 	StringName icon_name_fail;
+	StringName icon_name_cyclic;
 	StringName icon_name_check;
 
 	String for_file;
@@ -178,6 +179,7 @@ class DependencyErrorDialog : public ConfirmationDialog {
 	bool errors_fixed = false;
 
 	Tree *files = nullptr;
+	Label *files_label = nullptr;
 
 	EditorFileDialog *replacement_file_dialog = nullptr;
 	DependencyEditor *deps_editor = nullptr;
