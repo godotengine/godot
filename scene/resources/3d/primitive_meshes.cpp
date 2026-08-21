@@ -81,24 +81,27 @@ void PrimitiveMesh::_update() const {
 	if (flip_faces) {
 		Vector<Vector3> normals = arr[RSE::ARRAY_NORMAL];
 
-		if (normals.size() && indices.size()) {
-			{
-				int nc = normals.size();
-				Vector3 *w = normals.ptrw();
-				for (int i = 0; i < nc; i++) {
-					w[i] = -w[i];
-				}
-			}
-
-			{
-				int ic = indices.size();
-				int *w = indices.ptrw();
-				for (int i = 0; i < ic; i += 3) {
-					SWAP(w[i + 0], w[i + 1]);
-				}
+		if (normals.size()) {
+			int nc = normals.size();
+			Vector3 *w = normals.ptrw();
+			for (int i = 0; i < nc; i++) {
+				w[i] = -w[i];
 			}
 			arr[RSE::ARRAY_NORMAL] = normals;
+		}
+
+		if (indices.size()) {
+			int ic = indices.size();
+			int *w = indices.ptrw();
+			for (int i = 0; i < ic; i += 3) {
+				SWAP(w[i + 0], w[i + 1]);
+			}
 			arr[RSE::ARRAY_INDEX] = indices;
+		} else {
+			for (int i = 0; i < points.size(); i += 3) {
+				SWAP(points.write[i + 0], points.write[i + 1]);
+			}
+			arr[RSE::ARRAY_VERTEX] = points;
 		}
 	}
 
