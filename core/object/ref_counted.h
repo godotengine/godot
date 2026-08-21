@@ -242,7 +242,13 @@ void postinitialize_handler(Ref<T> &p_object) {
 template <typename T>
 struct is_zero_constructible<Ref<T>> : std::true_type {};
 
-template <typename T>
+template <typename T, std::enable_if_t<std::is_base_of_v<RefCounted, T>, int>>
 Ref<T> ObjectDB::get_ref(ObjectID p_instance_id) {
-	return Ref<T>(get_instance(p_instance_id));
+	ObjectSlot *slot = ObjectDB::_get_locked_slot<OBJECTDB_PREDELETE_BIT | OBJECTDB_ACTIVE_BIT, 0>(p_instance_id);
+	Ref<T> ref{};
+	if (slot) {
+		ref.reference_ptr(slot->object);
+		slot->safe_data.sub(1);
+	}
+	return ref;
 }
