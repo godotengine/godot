@@ -143,14 +143,14 @@
 			<return type="Vector4i" />
 			<param index="0" name="step" type="Vector4i" />
 			<description>
-				Returns a new vector with each component snapped to the closest multiple of the corresponding component in [param step].
+				Returns a new vector with each component snapped to the closest multiple of the corresponding component in [param step], with halfway cases rounded up for a positive [param step] and down for a negative [param step].
 			</description>
 		</method>
 		<method name="snappedi" qualifiers="const">
 			<return type="Vector4i" />
 			<param index="0" name="step" type="int" />
 			<description>
-				Returns a new vector with each component snapped to the closest multiple of [param step].
+				Returns a new vector with each component snapped to the closest multiple of [param step], with halfway cases rounded up for a positive [param step] and down for a negative [param step].
 			</description>
 		</method>
 	</methods>
