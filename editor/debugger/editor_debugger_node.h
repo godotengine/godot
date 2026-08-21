@@ -60,6 +60,10 @@ private:
 		DEBUG_STEP,
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
+		DEBUG_MOVE_UP_IN_CALL_STACK,
+		DEBUG_MOVE_DOWN_CALL_STACK,
+		DEBUG_TOP_OF_CALL_STACK,
+		DEBUG_BOTTOM_OF_CALL_STACK,
 		DEBUG_WITH_EXTERNAL_EDITOR,
 	};
 
@@ -180,6 +184,10 @@ public:
 	void debug_step();
 	void debug_break();
 	void debug_continue();
+	void debug_move_up_in_call_stack();
+	void debug_move_down_in_call_stack();
+	void debug_top_of_call_stack();
+	void debug_bottom_of_call_stack();
 
 	void set_script_debug_button(MenuButton *p_button);
 
