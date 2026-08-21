@@ -1520,10 +1520,15 @@ void EditorSettings::setup_language(bool p_initial_setup) {
 }
 
 void EditorSettings::setup_network() {
+	_setup_network("network/debug/remote_host");
+	_setup_network("network/language_server/remote_host");
+}
+
+void EditorSettings::_setup_network(const String &p_remote_host_setting) {
 	List<IPAddress> local_ip;
 	IP::get_singleton()->get_local_addresses(&local_ip);
 	String hint;
-	String current = has_setting("network/debug/remote_host") ? get("network/debug/remote_host") : "";
+	String current = has_setting(p_remote_host_setting) ? get(p_remote_host_setting) : "";
 	String selected = "127.0.0.1";
 
 	// Check that current remote_host is a valid interface address and populate hints.
@@ -1547,11 +1552,9 @@ void EditorSettings::setup_network() {
 	}
 
 	// Add hints with valid IP addresses to remote_host property.
-	add_property_hint(PropertyInfo(Variant::STRING, "network/debug/remote_host", PROPERTY_HINT_ENUM, hint));
-	add_property_hint(PropertyInfo(Variant::STRING, "network/language_server/remote_host", PROPERTY_HINT_ENUM, hint));
+	add_property_hint(PropertyInfo(Variant::STRING, p_remote_host_setting, PROPERTY_HINT_ENUM, hint));
 	// Fix potentially invalid remote_host due to network change.
-	set("network/debug/remote_host", selected);
-	set("network/language_server/remote_host", selected);
+	set(p_remote_host_setting, selected);
 }
 
 void EditorSettings::save() {

@@ -118,6 +118,7 @@ private:
 	void _add_property_info_bind(const Dictionary &p_info);
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+	void _setup_network(const String &p_remote_host_setting);
 
 	void _set_initialized();
 	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
