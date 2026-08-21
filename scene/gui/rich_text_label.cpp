@@ -894,7 +894,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	}
 
 	// Add zero-width space to the end if line did not end with /n to ensure uniform height.
-	if (it_prev) {
+	if (it_prev && txt.is_empty()) {
 		Ref<Font> font = p_base_font;
 		int font_size = p_base_font_size;
 
