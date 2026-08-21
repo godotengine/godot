@@ -8393,7 +8393,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	zoom->set_v_size_flags(SIZE_SHRINK_CENTER);
 	zoom->set_accessibility_name(TTRC("Zoom"));
 	zoom_hb->add_child(zoom);
-	bottom_hf->add_child(zoom_hb);
 	timeline->set_zoom(zoom);
 
 	ED_SHORTCUT("animation_editor/auto_fit", TTRC("Fit to panel"), KeyModifierMask::ALT | Key::F);
@@ -8403,7 +8402,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	auto_fit->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit));
 	auto_fit->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
 	auto_fit->set_accessibility_name(TTRC("Auto Fit"));
-	bottom_hf->add_child(auto_fit);
+	zoom_hb->add_child(auto_fit);
 
 	auto_fit_bezier = memnew(Button);
 	auto_fit_bezier->set_flat(true);
@@ -8411,7 +8410,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	auto_fit_bezier->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit_bezier));
 	auto_fit_bezier->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
 	auto_fit_bezier->set_accessibility_name(TTRC("Auto Fit Bezier"));
-	bottom_hf->add_child(auto_fit_bezier);
+	zoom_hb->add_child(auto_fit_bezier);
+	bottom_hf->add_child(zoom_hb);
 
 	edit = memnew(MenuButton);
 	edit->set_shortcut_context(this);
