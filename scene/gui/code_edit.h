@@ -61,6 +61,11 @@ public:
 		LOCATION_OTHER = 1 << 10,
 	};
 
+	enum AutoBraceCompletionMode {
+		AUTO_BRACE_COMPLETION_ALWAYS,
+		AUTO_BRACE_COMPLETION_BEFORE_WHITESPACE,
+	};
+
 private:
 	/* Indent management */
 	int indent_size = 4;
@@ -77,6 +82,7 @@ private:
 
 	/* Auto brace completion */
 	bool auto_brace_completion_enabled = false;
+	AutoBraceCompletionMode auto_brace_completion_mode = AUTO_BRACE_COMPLETION_ALWAYS;
 
 	/* BracePair open_key must be uniquie and ordered by length. */
 	struct BracePair {
@@ -381,6 +387,9 @@ public:
 	void set_auto_brace_completion_enabled(bool p_enabled);
 	bool is_auto_brace_completion_enabled() const;
 
+	void set_auto_brace_completion_mode(AutoBraceCompletionMode p_mode);
+	AutoBraceCompletionMode get_auto_brace_completion_mode() const;
+
 	void set_highlight_matching_braces_enabled(bool p_enabled);
 	bool is_highlight_matching_braces_enabled() const;
 
@@ -545,6 +554,7 @@ public:
 
 VARIANT_ENUM_CAST(CodeEdit::CodeCompletionKind);
 VARIANT_ENUM_CAST(CodeEdit::CodeCompletionLocation);
+VARIANT_ENUM_CAST(CodeEdit::AutoBraceCompletionMode);
 
 // The custom comparer which will sort completion options.
 struct CodeCompletionOptionCompare {
