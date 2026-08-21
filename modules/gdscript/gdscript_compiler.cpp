@@ -693,7 +693,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								if (r_error) {
 									return GDScriptCodeGenerator::Address();
 								}
-								if (is_awaited) {
+								if (subscript->is_null_safe) {
+									gen->write_call_safe(result, base, call->function_name, arguments); // Safe call is evaluated as Variant call
+								} else if (is_awaited) {
 									gen->write_call_async(result, base, call->function_name, arguments);
 								} else if (base.type.kind != GDScriptDataType::VARIANT && base.type.kind != GDScriptDataType::BUILTIN) {
 									// Native method, use faster path.
@@ -835,7 +837,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			if (named) {
-				gen->write_get_named(result, name, base);
+				if (subscript->is_null_safe) {
+					gen->write_get_named_safe(result, name, base);
+				} else {
+					gen->write_get_named(result, name, base);
+				}
 			} else {
 				gen->write_get(result, index, base);
 			}
@@ -1090,6 +1096,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				struct ChainInfo {
 					bool is_named = false;
+					bool is_null_safe = false;
 					GDScriptCodeGenerator::Address base;
 					GDScriptCodeGenerator::Address key;
 					StringName name;
@@ -1109,7 +1116,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 					if (subscript_elem->is_attribute) {
 						name = subscript_elem->attribute->name;
-						gen->write_get_named(value, name, prev_base);
+						if (subscript_elem->is_null_safe) {
+							gen->write_get_named_safe(value, name, prev_base);
+						} else {
+							gen->write_get_named(value, name, prev_base);
+						}
 					} else {
 						key = _parse_expression(codegen, r_error, subscript_elem->index);
 						if (r_error) {
@@ -1119,7 +1130,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					}
 
 					// Store base and key for setting it back later.
-					set_chain.push_front({ subscript_elem->is_attribute, prev_base, key, name }); // Push to front to invert the list.
+					set_chain.push_front({ subscript_elem->is_attribute, subscript_elem->is_null_safe, prev_base, key, name }); // Push to front to invert the list.
 					prev_base = value;
 				}
 
@@ -1159,7 +1170,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				// Perform assignment.
 				if (subscript->is_attribute) {
-					gen->write_set_named(prev_base, name, assigned);
+					if (subscript->is_null_safe) {
+						gen->write_set_named_safe(prev_base, name, assigned);
+					} else {
+						gen->write_set_named(prev_base, name, assigned);
+					}
 				} else {
 					gen->write_set(prev_base, key, assigned);
 				}
@@ -1185,7 +1200,11 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						if (!info.is_named) {
 							gen->write_set(info.base, info.key, assigned);
 						} else {
-							gen->write_set_named(info.base, info.name, assigned);
+							if (info.is_null_safe) {
+								gen->write_set_named_safe(info.base, info.name, assigned);
+							} else {
+								gen->write_set_named(info.base, info.name, assigned);
+							}
 						}
 						if (!known_type) {
 							gen->write_end_jump_if_shared();
