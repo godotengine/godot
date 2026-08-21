@@ -1759,6 +1759,7 @@
 		</member>
 		<member name="text_editor/theme/highlighting/error_underline_color" type="Color" setter="" getter="">
 			The script editor's color for the squiggly lines shown under code producing errors.
+			[note]To disable error underlines completely, set the color's alpha value to [code]0.0[/code]. This may improve editor performance on certain hardware.[/note]
 		</member>
 		<member name="text_editor/theme/highlighting/executing_line_color" type="Color" setter="" getter="">
 			The script editor's color for the debugger's executing line icon (displayed in the gutter).
@@ -1844,6 +1845,7 @@
 		</member>
 		<member name="text_editor/theme/highlighting/warning_underline_color" type="Color" setter="" getter="">
 			The script editor's color for the squiggly lines shown under code producing warnings.
+			[note]To disable warning underlines completely, set the color's alpha value to 0. This may improve editor performance on certain hardware.[/note]
 		</member>
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].
