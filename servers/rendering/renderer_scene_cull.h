@@ -1002,6 +1002,9 @@ public:
 	InstanceCullResult scene_cull_result;
 	LocalVector<InstanceCullResult> scene_cull_result_threads;
 
+	LocalVector<RID> directional_light_instances;
+	LocalVector<Instance *> lights_with_shadow;
+
 	RendererSceneRender::RenderShadowData render_shadow_data[MAX_UPDATE_SHADOWS];
 	uint32_t max_shadows_used = 0;
 
