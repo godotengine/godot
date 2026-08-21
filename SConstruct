@@ -154,6 +154,14 @@ opts.Add(
 )
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
+opts.Add(BoolVariable("disable_overrides", "Disable project settings overrides (override.cfg)", False))
+opts.Add(
+    BoolVariable(
+        "disable_path_overrides",
+        "Disable CLI arguments to override project path/main pack/scene and run scripts (export template only)",
+        True,
+    )
+)
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
@@ -769,6 +777,12 @@ if selected_platform in platform_list:
                     "only with 'tools=no' (export template)."
                 )
                 sys.exit(255)
+
+    if not env["disable_overrides"]:
+        env.Append(CPPDEFINES=["OVERRIDE_ENABLED"])
+
+    if env["tools"] or not env["disable_path_overrides"]:
+        env.Append(CPPDEFINES=["OVERRIDE_PATH_ENABLED"])
 
     if not env["verbose"]:
         methods.no_verbose(sys, env)
