@@ -584,6 +584,12 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		return;
 	}
 
+	if (strcmp(interface, wl_fixes_interface.name) == 0) {
+		registry->wl_fixes = (struct wl_fixes *)wl_registry_bind(wl_registry, name, &wl_fixes_interface, 1);
+		registry->wl_fixes_name = name;
+		return;
+	}
+
 	if (strcmp(interface, wl_output_interface.name) == 0) {
 		struct wl_output *wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, CLAMP((int)version, 1, 4));
 		wl_proxy_tag_godot((struct wl_proxy *)wl_output);
@@ -885,6 +891,17 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 			ss->wl_data_device = nullptr;
 		}
+
+		return;
+	}
+
+	if (name == registry->wl_fixes_name) {
+		if (registry->wl_fixes) {
+			wl_fixes_destroy(registry->wl_fixes);
+			registry->wl_fixes = nullptr;
+		}
+
+		registry->wl_fixes_name = 0;
 
 		return;
 	}
