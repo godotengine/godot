@@ -852,6 +852,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	Button *view_group = nullptr;
 	Button *selected_filter = nullptr;
 	Button *alphabetic_sorting = nullptr;
+	TypedArray<Node> filtered_nodes;
 
 	void _auto_fit();
 	void _auto_fit_bezier();
