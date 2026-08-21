@@ -1141,6 +1141,20 @@ real_t JoltPhysicsServer3D::soft_body_get_total_mass(RID p_body) const {
 	return (real_t)body->get_mass();
 }
 
+void JoltPhysicsServer3D::soft_body_set_gravity_scale(RID p_body, real_t p_gravity_scale) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	return body->set_gravity_scale((float)p_gravity_scale);
+}
+
+real_t JoltPhysicsServer3D::soft_body_get_gravity_scale(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, 0.0);
+
+	return (real_t)body->get_gravity_scale();
+}
+
 void JoltPhysicsServer3D::soft_body_set_linear_stiffness(RID p_body, real_t p_coefficient) {
 	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);

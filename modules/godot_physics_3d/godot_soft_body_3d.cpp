@@ -1203,6 +1203,10 @@ void GodotSoftBody3D::set_total_mass(real_t p_val) {
 	update_constants();
 }
 
+void GodotSoftBody3D::set_gravity_scale(real_t p_val) {
+	gravity_scale = p_val;
+}
+
 void GodotSoftBody3D::set_collision_margin(real_t p_val) {
 	collision_margin = p_val;
 }
@@ -1363,6 +1367,8 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 		default_area->compute_gravity(get_transform().get_origin(), default_gravity);
 		gravity += default_gravity;
 	}
+
+	gravity *= gravity_scale;
 
 	// Apply forces.
 	add_velocity(gravity * p_delta);

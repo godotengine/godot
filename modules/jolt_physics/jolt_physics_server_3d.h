@@ -333,6 +333,9 @@ public:
 	virtual void soft_body_set_total_mass(RID p_body, real_t p_total_mass) override;
 	virtual real_t soft_body_get_total_mass(RID p_body) const override;
 
+	virtual void soft_body_set_gravity_scale(RID p_body, real_t p_gravity_scale) override;
+	virtual real_t soft_body_get_gravity_scale(RID p_body) const override;
+
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_coefficient) override;
 	virtual real_t soft_body_get_linear_stiffness(RID p_body) const override;
 

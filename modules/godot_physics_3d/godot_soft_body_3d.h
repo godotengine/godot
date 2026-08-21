@@ -99,6 +99,7 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 
 	real_t total_mass = 1.0;
 	real_t inv_total_mass = 1.0;
+	real_t gravity_scale = 1.0;
 
 	int iteration_count = 5;
 	real_t linear_stiffness = 0.5; // [0,1]
@@ -203,6 +204,9 @@ public:
 	void set_total_mass(real_t p_val);
 	_FORCE_INLINE_ real_t get_total_mass() const { return total_mass; }
 	_FORCE_INLINE_ real_t get_total_inv_mass() const { return inv_total_mass; }
+
+	void set_gravity_scale(real_t p_val);
+	_FORCE_INLINE_ real_t get_gravity_scale() const { return gravity_scale; }
 
 	void set_collision_margin(real_t p_val);
 	_FORCE_INLINE_ real_t get_collision_margin() const { return collision_margin; }

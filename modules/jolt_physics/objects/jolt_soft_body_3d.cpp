@@ -395,6 +395,8 @@ void JoltSoftBody3D::_apply_environmental_forces(float p_step) {
 		gravity += space->get_default_area()->compute_gravity(com_position);
 	}
 
+	gravity *= gravity_scale;
+
 	// Apply gravity to soft body. Note that this only works so long as vertices have uniform mass (excluding pinned vertices).
 	jolt_body->AddForce(to_jolt(gravity) * mass);
 
@@ -809,6 +811,10 @@ void JoltSoftBody3D::set_mass(float p_mass) {
 	mass = p_mass;
 
 	_mass_changed();
+}
+
+void JoltSoftBody3D::set_gravity_scale(float p_gravity_scale) {
+	gravity_scale = p_gravity_scale;
 }
 
 float JoltSoftBody3D::get_stiffness_coefficient() const {

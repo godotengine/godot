@@ -1119,6 +1119,20 @@ real_t GodotPhysicsServer3D::soft_body_get_total_mass(RID p_body) const {
 	return soft_body->get_total_mass();
 }
 
+void GodotPhysicsServer3D::soft_body_set_gravity_scale(RID p_body, real_t p_gravity_scale) {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(soft_body);
+
+	soft_body->set_gravity_scale(p_gravity_scale);
+}
+
+real_t GodotPhysicsServer3D::soft_body_get_gravity_scale(RID p_body) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, 0.f);
+
+	return soft_body->get_gravity_scale();
+}
+
 void GodotPhysicsServer3D::soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);

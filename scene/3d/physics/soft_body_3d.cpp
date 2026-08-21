@@ -394,6 +394,9 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_total_mass", "mass"), &SoftBody3D::set_total_mass);
 	ClassDB::bind_method(D_METHOD("get_total_mass"), &SoftBody3D::get_total_mass);
 
+	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &SoftBody3D::set_gravity_scale);
+	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &SoftBody3D::get_gravity_scale);
+
 	ClassDB::bind_method(D_METHOD("set_linear_stiffness", "linear_stiffness"), &SoftBody3D::set_linear_stiffness);
 	ClassDB::bind_method(D_METHOD("get_linear_stiffness"), &SoftBody3D::get_linear_stiffness);
 
@@ -445,6 +448,7 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "parent_collision_ignore", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject3D"), "set_parent_collision_ignore", "get_parent_collision_ignore");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,exp,suffix:kg"), "set_total_mass", "get_total_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-10,10,0.001,or_less,or_greater"), "set_gravity_scale", "get_gravity_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "internal_springs"), "set_internal_springs", "is_internal_springs_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "internal_spring_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_internal_spring_stiffness", "get_internal_spring_stiffness");
@@ -797,6 +801,14 @@ real_t SoftBody3D::get_total_mass() {
 
 void SoftBody3D::set_total_mass(real_t p_total_mass) {
 	PhysicsServer3D::get_singleton()->soft_body_set_total_mass(physics_rid, p_total_mass);
+}
+
+void SoftBody3D::set_gravity_scale(real_t p_gravity_scale) {
+	PhysicsServer3D::get_singleton()->soft_body_set_gravity_scale(physics_rid, p_gravity_scale);
+}
+
+real_t SoftBody3D::get_gravity_scale() const {
+	return PhysicsServer3D::get_singleton()->soft_body_get_gravity_scale(physics_rid);
 }
 
 void SoftBody3D::set_linear_stiffness(real_t p_linear_stiffness) {

@@ -343,6 +343,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_soft_body_set_total_mass, "body", "total_mass");
 	GDVIRTUAL_BIND(_soft_body_get_total_mass, "body");
 
+	GDVIRTUAL_BIND(_soft_body_set_gravity_scale, "body", "gravity_scale");
+	GDVIRTUAL_BIND(_soft_body_get_gravity_scale, "body");
+
 	GDVIRTUAL_BIND(_soft_body_set_linear_stiffness, "body", "linear_stiffness");
 	GDVIRTUAL_BIND(_soft_body_get_linear_stiffness, "body");
 

@@ -181,6 +181,9 @@ public:
 	void set_total_mass(real_t p_total_mass);
 	real_t get_total_mass();
 
+	void set_gravity_scale(real_t p_gravity_scale);
+	real_t get_gravity_scale() const;
+
 	void set_linear_stiffness(real_t p_linear_stiffness);
 	real_t get_linear_stiffness();
 

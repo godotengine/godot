@@ -263,6 +263,9 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("soft_body_set_total_mass", "body", "total_mass"), &PhysicsServer3D::soft_body_set_total_mass);
 	ClassDB::bind_method(D_METHOD("soft_body_get_total_mass", "body"), &PhysicsServer3D::soft_body_get_total_mass);
 
+	ClassDB::bind_method(D_METHOD("soft_body_set_gravity_scale", "body", "gravity_scale"), &PhysicsServer3D::soft_body_set_gravity_scale);
+	ClassDB::bind_method(D_METHOD("soft_body_get_gravity_scale", "body"), &PhysicsServer3D::soft_body_get_gravity_scale);
+
 	ClassDB::bind_method(D_METHOD("soft_body_set_linear_stiffness", "body", "stiffness"), &PhysicsServer3D::soft_body_set_linear_stiffness);
 	ClassDB::bind_method(D_METHOD("soft_body_get_linear_stiffness", "body"), &PhysicsServer3D::soft_body_get_linear_stiffness);
 

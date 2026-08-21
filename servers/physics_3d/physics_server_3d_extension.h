@@ -448,6 +448,9 @@ public:
 	EXBIND2(soft_body_set_total_mass, RID, real_t)
 	EXBIND1RC(real_t, soft_body_get_total_mass, RID)
 
+	EXBIND2(soft_body_set_gravity_scale, RID, real_t)
+	EXBIND1RC(real_t, soft_body_get_gravity_scale, RID)
+
 	EXBIND2(soft_body_set_linear_stiffness, RID, real_t)
 	EXBIND1RC(real_t, soft_body_get_linear_stiffness, RID)
 

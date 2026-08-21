@@ -65,6 +65,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	JPH::SoftBodyCreationSettings *jolt_settings = new JPH::SoftBodyCreationSettings();
 
 	float mass = 1.0f;
+	float gravity_scale = 1.0f;
 	float pressure = 0.0f;
 	float linear_damping = 0.01f;
 	float mesh_damping_coefficient = 0.0f;
@@ -151,6 +152,9 @@ public:
 
 	float get_mass() const { return mass; }
 	void set_mass(float p_mass);
+
+	float get_gravity_scale() const { return gravity_scale; }
+	void set_gravity_scale(float p_gravity_scale);
 
 	float get_stiffness_coefficient() const;
 	void set_stiffness_coefficient(float p_coefficient);
