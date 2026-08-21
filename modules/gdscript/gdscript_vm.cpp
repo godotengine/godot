@@ -42,11 +42,11 @@ static bool _profile_count_as_native(const Object *p_base_obj, const StringName 
 	if (!p_base_obj) {
 		return false;
 	}
-	const StringName &cname = p_base_obj->get_class_name();
-	if ((p_methodname == SNAME("new") && cname == GDScript::get_class_static()) || p_methodname == CoreStringName(call)) {
+	const GDType &gdtype = p_base_obj->get_gdtype();
+	if ((p_methodname == SNAME("new") && gdtype.get_name() == GDScript::get_class_static()) || p_methodname == CoreStringName(call)) {
 		return false;
 	}
-	return ClassDB::class_exists(cname) && ClassDB::has_method(cname, p_methodname, false);
+	return gdtype.get_method_map(false).has(p_methodname);
 }
 
 static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {
