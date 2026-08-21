@@ -748,6 +748,16 @@ String ResourceFormatDDS::get_resource_type(const String &p_path) const {
 	return "";
 }
 
+Ref<Image> load_file_dds(Ref<FileAccess> file) {
+	DDSFormat dds_format;
+	uint32_t width, height, mipmaps, pitch, flags, layer_count, dds_type;
+
+	Vector<Ref<Image>> images = _dds_load_images_from_buffer(file, dds_format, width, height, mipmaps, pitch, flags, layer_count, dds_type);
+	ERR_FAIL_COND_V_MSG(images.is_empty(), Ref<Image>(), "Failed to load DDS image.");
+
+	return images[0];
+}
+
 Ref<Image> load_mem_dds(const uint8_t *p_dds, int p_size) {
 	ERR_FAIL_NULL_V(p_dds, Ref<Image>());
 	ERR_FAIL_COND_V(!p_size, Ref<Image>());
@@ -756,13 +766,7 @@ Ref<Image> load_mem_dds(const uint8_t *p_dds, int p_size) {
 	Error open_memfile_error = memfile->open_custom(p_dds, p_size);
 	ERR_FAIL_COND_V_MSG(open_memfile_error, Ref<Image>(), "Could not create memfile for DDS image buffer.");
 
-	DDSFormat dds_format;
-	uint32_t width, height, mipmaps, pitch, flags, layer_count, dds_type;
-
-	Vector<Ref<Image>> images = _dds_load_images_from_buffer(memfile, dds_format, width, height, mipmaps, pitch, flags, layer_count, dds_type);
-	ERR_FAIL_COND_V_MSG(images.is_empty(), Ref<Image>(), "Failed to load DDS image.");
-
-	return images[0];
+	return load_file_dds(memfile);
 }
 
 ResourceFormatDDS::ResourceFormatDDS() {
