@@ -3143,8 +3143,12 @@ void EditorPropertyNodePath::_accept_text() {
 }
 
 void EditorPropertyNodePath::_text_submitted(const String &p_text) {
-	NodePath np = p_text;
-	_node_selected(np, false);
+	if (p_text.is_empty()) {
+		_menu_option(ACTION_CLEAR);
+	} else {
+		NodePath np = p_text;
+		_node_selected(np, false);
+	}
 	edit->hide();
 	assign->show();
 	menu->show();
