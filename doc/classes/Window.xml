@@ -679,6 +679,11 @@
 			[b]Note:[/b] This property is implemented only on macOS.
 			[b]Note:[/b] This property only works with native windows.
 		</member>
+		<member name="follow_parent" type="bool" setter="set_flag" getter="get_flag" default="false">
+			Window follows its transient parent position.
+			[b]Note:[/b] This flag is implemented on Linux and Windows.
+			[b]Note:[/b] On macOS, windows always follow transient parent position.
+		</member>
 		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
 		</member>
@@ -1004,7 +1009,7 @@
 			[b]Note:[/b] This flag has no effect in embedded windows.
 			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
-		<constant name="FLAG_MAX" value="13" enum="Flags">
+		<constant name="FLAG_MAX" value="14" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">

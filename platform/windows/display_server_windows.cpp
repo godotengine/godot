@@ -193,6 +193,7 @@ bool DisplayServerWindows::has_feature(DisplayServerEnums::Feature p_feature) co
 		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
 		case DisplayServerEnums::FEATURE_WINDOW_DRAG:
 		case DisplayServerEnums::FEATURE_HDR_OUTPUT:
+		case DisplayServerEnums::FEATURE_FOLLOW_PARENT:
 			return true;
 		case DisplayServerEnums::FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return (os_ver.dwBuildNumber >= 19041); // Fully supported on Windows 10 Vibranium R1 (2004)+ only, captured as black rect on older versions.
@@ -1953,6 +1954,9 @@ DisplayServerEnums::WindowID DisplayServerWindows::create_sub_window(DisplayServ
 	if (p_flags & DisplayServerEnums::WINDOW_FLAG_MAXIMIZE_DISABLED_BIT) {
 		wd.no_max_btn = true;
 	}
+	if (p_flags & DisplayServerEnums::WINDOW_FLAG_FOLLOW_PARENT_BIT) {
+		wd.follow_parent = true;
+	}
 	if (p_flags & DisplayServerEnums::WINDOW_FLAG_BORDERLESS_BIT) {
 		wd.borderless = true;
 	}
@@ -2961,6 +2965,9 @@ void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 			wd.no_max_btn = p_enabled;
 			_update_window_style(p_window);
 		} break;
+		case DisplayServerEnums::WINDOW_FLAG_FOLLOW_PARENT: {
+			wd.follow_parent = p_enabled;
+		} break;
 		case DisplayServerEnums::WINDOW_FLAG_RESIZE_DISABLED: {
 			if (p_enabled && wd.parent_hwnd) {
 				print_line("Embedded window resize can't be disabled.");
@@ -3061,6 +3068,9 @@ bool DisplayServerWindows::window_get_flag(DisplayServerEnums::WindowFlags p_fla
 	switch (p_flag) {
 		case DisplayServerEnums::WINDOW_FLAG_MAXIMIZE_DISABLED: {
 			return wd.no_max_btn;
+		} break;
+		case DisplayServerEnums::WINDOW_FLAG_FOLLOW_PARENT: {
+			return wd.follow_parent;
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_MINIMIZE_DISABLED: {
 			return wd.no_min_btn;
@@ -6684,6 +6694,33 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_DISPLAYCHANGE: {
 			// Update HDR capabilities and reference luminance when display changes.
 			_legacy_update_hdr_output_for_tracked_windows(true);
+		} break;
+
+		case WM_WINDOWPOSCHANGING: {
+			WindowData &window = windows[window_id];
+
+			WINDOWPOS *window_pos_params = (WINDOWPOS *)lParam;
+
+			if (window_pos_params->flags & SWP_NOMOVE) {
+				break;
+			}
+
+			if (window.follow_parent && windows.has(window.transient_parent)) {
+				WindowData &wd_parent = windows[window.transient_parent];
+
+				RECT r, rp;
+				GetWindowRect(window.hWnd, &r);
+				GetWindowRect(wd_parent.hWnd, &rp);
+				window.offset.x = rp.left - r.left;
+				window.offset.y = rp.top - r.top;
+			}
+
+			for (const DisplayServerEnums::WindowID &child : window.transient_children) {
+				WindowData &wd_child = windows[child];
+				if (wd_child.follow_parent) {
+					SetWindowPos(wd_child.hWnd, 0, window_pos_params->x - wd_child.offset.x, window_pos_params->y - wd_child.offset.y, 0, 0, SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+				}
+			}
 		} break;
 
 		case WM_WINDOWPOSCHANGED: {

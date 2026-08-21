@@ -296,6 +296,8 @@ class DisplayServerWindows : public DisplayServer {
 		DisplayServerEnums::ProgressState progress_state = DisplayServerEnums::PROGRESS_STATE_NOPROGRESS;
 		float progress_value = 0.0;
 
+		Vector2i offset;
+
 		bool create_completed = false;
 		bool pre_fs_valid = false;
 		RECT pre_fs_rect;
@@ -308,6 +310,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool resizable = true;
 		bool no_min_btn = false;
 		bool no_max_btn = false;
+		bool follow_parent = false;
 		bool window_focused = false;
 		int activate_state = 0;
 		bool was_maximized_pre_fs = false;
