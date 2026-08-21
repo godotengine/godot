@@ -27,7 +27,7 @@
  *	the interval [0,0.34658]:
  *	Write
  *	    R(r**2) = r*(exp(r)+1)/(exp(r)-1) = 2 + r*r/6 - r**4/360 + ...
- *      We use a special Reme algorithm on [0,0.34658] to generate
+ *      We use a special Remez algorithm on [0,0.34658] to generate
  * 	a polynomial of degree 5 to approximate R. The maximum error
  *	of this polynomial approximation is bounded by 2**-59. In
  *	other words,
@@ -75,10 +75,6 @@
 
 #include "math_libm.h"
 #include "math_private.h"
-
-#ifdef __WATCOMC__ /* Watcom defines huge=__huge */
-#undef huge
-#endif
 
 static const double
 one	= 1.0,

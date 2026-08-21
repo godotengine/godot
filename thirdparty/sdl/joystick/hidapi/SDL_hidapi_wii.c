@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -511,6 +511,8 @@ static void UpdatePowerLevelWiiU(SDL_Joystick *joystick, Uint8 extensionBatteryB
     bool charging = !(extensionBatteryByte & 0x08);
     bool pluggedIn = !(extensionBatteryByte & 0x04);
     Uint8 batteryLevel = extensionBatteryByte >> 4;
+
+    SDL_AssertJoysticksLocked();
 
     if (pluggedIn) {
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
