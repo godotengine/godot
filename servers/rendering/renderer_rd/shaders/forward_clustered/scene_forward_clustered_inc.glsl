@@ -232,14 +232,10 @@ directional_lights;
 #define LIGHTMAP_SHADOWMASK_MODE_ONLY 3
 
 struct Lightmap {
-	mat3 normal_xform;
+	mat3x4 normal_xform_and_specular_intensity; // "normal_xform" is the 3x3 matrix. "specular_intensity" is the 4th row of the 1st column.
 	vec2 light_texture_size;
 	float exposure_normalization;
-	float specular_intensity;
 	uint flags;
-	uint pad1;
-	uint pad2;
-	uint pad3;
 };
 
 layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {

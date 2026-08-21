@@ -742,7 +742,7 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 		// Transform (for directional lightmaps).
 		Basis to_lm = light_storage->lightmap_instance_get_transform(p_lightmaps[i]).basis.inverse() * p_cam_transform.basis;
 		to_lm = to_lm.inverse().transposed(); //will transform normals
-		RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
+		RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform_and_specular_intensity);
 
 		// Light texture size.
 		Vector2i lightmap_size = light_storage->lightmap_get_light_texture_size(lightmap);
@@ -761,8 +761,9 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 		scene_state.lightmap_ids[i] = p_lightmaps[i];
 		scene_state.lightmap_has_sh[i] = light_storage->lightmap_uses_spherical_harmonics(lightmap);
 
-		scene_state.lightmaps[i].specular_intensity = light_storage->lightmap_get_specular_intensity(lightmap);
-		scene_state.lightmap_has_specular[i] = scene_state.lightmap_has_sh[i] && (scene_state.lightmaps[i].specular_intensity > 0.0f);
+		float &specular_intensity = scene_state.lightmaps[i].normal_xform_and_specular_intensity[3];
+		specular_intensity = light_storage->lightmap_get_specular_intensity(lightmap);
+		scene_state.lightmap_has_specular[i] = scene_state.lightmap_has_sh[i] && (specular_intensity > 0.0f);
 
 		scene_state.lightmaps_used++;
 	}

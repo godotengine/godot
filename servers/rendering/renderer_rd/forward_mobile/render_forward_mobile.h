@@ -186,12 +186,10 @@ private:
 	/* Light map */
 
 	struct LightmapData {
-		float normal_xform[12];
+		float normal_xform_and_specular_intensity[12];
 		float texture_size[2];
 		float exposure_normalization;
-		float specular_intensity;
 		uint32_t flags;
-		uint32_t pad[3];
 	};
 
 	struct LightmapCaptureData {
