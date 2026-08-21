@@ -3449,7 +3449,7 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 	Ref<Resource> recursive_resource;
 	bool found = EditorNode::find_recursive_resources(p_resource, resources_found, root_scene_path, &recursive_resource);
 	if (found) {
-		callable_mp(EditorNode::get_singleton(), &EditorNode::show_warning).call_deferred(TTR("Recursion detected on resource '" + recursive_resource->get_path() + "', unable to assign resource to property."), TTR("Warning!"));
+		callable_mp(EditorNode::get_singleton(), &EditorNode::show_warning).call_deferred(vformat(TTR("Recursion detected on resource '%s', unable to assign resource to property."), recursive_resource->get_path()), TTR("Warning!"));
 		emit_changed(get_edited_property(), Ref<Resource>());
 		update_property();
 		return;
