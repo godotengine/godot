@@ -1289,7 +1289,7 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 					Dictionary ret;
 
 					if (key_type.builtin_type != Variant::NIL || value_type.builtin_type != Variant::NIL) {
-						ret.set_typed(key_type, value_type);
+						ret.set_typed(std::move(key_type), std::move(value_type));
 					}
 
 					ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ret, "Variant is too deep. Bailing.");
@@ -1312,7 +1312,7 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 					Array ret;
 
 					if (elem_type.builtin_type != Variant::NIL) {
-						ret.set_typed(elem_type);
+						ret.set_typed(std::move(elem_type));
 					}
 
 					ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ret, "Variant is too deep. Bailing.");

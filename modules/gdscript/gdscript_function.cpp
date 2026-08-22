@@ -47,8 +47,8 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 				if (array.is_typed()) {
 					const GDScriptDataType &elem_type = container_element_types[0];
 					Variant::Type array_builtin_type = (Variant::Type)array.get_typed_builtin();
-					StringName array_native_type = array.get_typed_class_name();
-					Ref<Script> array_script_type_ref = array.get_typed_script();
+					const StringName &array_native_type = array.get_typed_class_name();
+					const Ref<Script> &array_script_type_ref = array.get_typed_script();
 
 					if (array_script_type_ref.is_valid()) {
 						valid = (elem_type.kind == SCRIPT || elem_type.kind == GDSCRIPT) && elem_type.script_type == array_script_type_ref.ptr();
@@ -66,8 +66,8 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 					if (dictionary.is_typed_key()) {
 						GDScriptDataType key = get_container_element_type_or_variant(0);
 						Variant::Type key_builtin_type = (Variant::Type)dictionary.get_typed_key_builtin();
-						StringName key_native_type = dictionary.get_typed_key_class_name();
-						Ref<Script> key_script_type_ref = dictionary.get_typed_key_script();
+						const StringName &key_native_type = dictionary.get_typed_key_class_name();
+						const Ref<Script> &key_script_type_ref = dictionary.get_typed_key_script();
 
 						if (key_script_type_ref.is_valid()) {
 							valid = (key.kind == SCRIPT || key.kind == GDSCRIPT) && key.script_type == key_script_type_ref.ptr();
@@ -81,8 +81,8 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 					if (valid && dictionary.is_typed_value()) {
 						GDScriptDataType value = get_container_element_type_or_variant(1);
 						Variant::Type value_builtin_type = (Variant::Type)dictionary.get_typed_value_builtin();
-						StringName value_native_type = dictionary.get_typed_value_class_name();
-						Ref<Script> value_script_type_ref = dictionary.get_typed_value_script();
+						const StringName &value_native_type = dictionary.get_typed_value_class_name();
+						const Ref<Script> &value_script_type_ref = dictionary.get_typed_value_script();
 
 						if (value_script_type_ref.is_valid()) {
 							valid = (value.kind == SCRIPT || value.kind == GDSCRIPT) && value.script_type == value_script_type_ref.ptr();
