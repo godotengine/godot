@@ -177,6 +177,10 @@ void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> 
 		emit_signal(SNAME("files_selected"), files);
 	} else {
 		if (mode == FILE_MODE_SAVE_FILE) {
+			// Some portals (KDE) append a bare "." when the filter has no extension to auto-select.
+			f = f.trim_suffix(".");
+			filename_edit->set_text(f.get_file());
+
 			bool valid = false;
 
 			if (p_filter == filter->get_item_count() - 1) {
