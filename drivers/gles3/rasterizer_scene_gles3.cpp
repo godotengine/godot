@@ -1343,6 +1343,9 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 			flags |= INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE;
 		}
 
+		if (inst->surface_caches != nullptr && inst->surface_caches->shader != nullptr) {
+			flags |= inst->surface_caches->shader->cull_mode == static_cast<int>(RSE::CULL_MODE_DISABLED) && inst->mirror ? static_cast<int>(INSTANCE_DATA_FLAG_NEGATIVE_NORMALS) : 0;
+		}
 		// Sets the index values for lookup in the shader
 		// This has to be done after _setup_lights was called this frame
 

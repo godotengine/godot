@@ -2229,6 +2229,10 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 		bool uses_lightmap_specular = false;
 		// bool uses_gi = false;
 
+		if (inst->surface_caches != nullptr && inst->surface_caches->shader != nullptr) {
+			flags |= inst->surface_caches->shader->cull_mode == static_cast<int>(RSE::CULL_MODE_DISABLED) && inst->mirror ? static_cast<int>(INSTANCE_DATA_FLAG_NEGATIVE_NORMALS) : 0;
+		}
+
 		if (p_render_list == RENDER_LIST_OPAQUE) {
 			if (inst->lightmap_instance.is_valid()) {
 				int32_t lightmap_cull_index = -1;
