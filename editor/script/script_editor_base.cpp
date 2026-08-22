@@ -625,7 +625,8 @@ void TextEditorBase::set_edited_resource(const Ref<Resource> &p_res) {
 }
 
 bool TextEditorBase::is_unsaved() {
-	return code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version() || edited_res->get_path().is_empty(); // In memory.
+	const bool is_new_version = code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version();
+	return is_new_version || edited_res->get_path().is_empty() || edited_res->is_edited(); // In memory.
 }
 
 void TextEditorBase::tag_saved_version() {
