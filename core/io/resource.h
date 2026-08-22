@@ -73,6 +73,9 @@ private:
 	String path_cache;
 	String scene_unique_id;
 
+	Ref<Resource> inherits_state;
+	HashMap<StringName, Variant> inherited_state_values; // Last known values of the inheritance base's properties, to detect overridden properties.
+
 #ifdef TOOLS_ENABLED
 	uint64_t last_modified_time = 0;
 	uint64_t import_last_modified_time = 0;
@@ -115,6 +118,17 @@ protected:
 
 	virtual void reset_local_to_scene();
 	GDVIRTUAL0(_setup_local_to_scene);
+	GDVIRTUAL1R(bool, _setup_inherits_state, Ref<Resource>);
+	GDVIRTUAL2RC(bool, _is_inherited_state_property_value_saved, const StringName &, const Variant &);
+
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+	void _validate_property(PropertyInfo &p_property) const;
+
+	void _update_inherited_state_cache();
+
+	virtual bool is_inherited_state_property_value_saved(const StringName &p_name, const Variant &p_value) const;
+	virtual bool setup_inherits_state(const Ref<Resource> &p_resource);
 
 	GDVIRTUAL0RC(RID, _get_rid);
 
@@ -187,6 +201,11 @@ public:
 	static void set_resource_id_for_path(const String &p_referrer_path, const String &p_resource_path, const String &p_id);
 	void set_id_for_path(const String &p_referrer_path, const String &p_id) { set_resource_id_for_path(p_referrer_path, get_path(), p_id); }
 	String get_id_for_path(const String &p_referrer_path) const;
+
+	void set_inherits_state(const Ref<Resource> &p_resource);
+	Ref<Resource> get_inherits_state() const;
+	bool update_inherited_state();
+	bool is_property_value_saved(const StringName &p_property, const Variant &p_value) const;
 
 	Resource();
 	~Resource();

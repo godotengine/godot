@@ -75,6 +75,11 @@
 				Emitted when a new scene is created that inherits the scene at [param file] path.
 			</description>
 		</signal>
+		<signal name="inherit_resource">
+			<param index="0" name="file" type="String" />
+			<description>
+			</description>
+		</signal>
 		<signal name="instantiate">
 			<param index="0" name="files" type="PackedStringArray" />
 			<description>

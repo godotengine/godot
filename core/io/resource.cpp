@@ -30,6 +30,7 @@
 
 #include "resource.h"
 
+#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/math/random_pcg.h"
@@ -250,6 +251,9 @@ Error Resource::copy_from(const Ref<Resource> &p_resource) {
 		}
 		if (E.name == "resource_path") {
 			continue; //do not change path
+		}
+		if (E.name == CoreStringName(resource_inherits_state)) {
+			continue; // Do not change the inheritance base, it's handled by setup_inherits_state().
 		}
 
 		set(E.name, p_resource->get(E.name));
@@ -730,6 +734,171 @@ String Resource::get_id_for_path(const String &p_referrer_path) const {
 #endif
 }
 
+bool Resource::_property_can_revert(const StringName &p_name) const {
+	if (!inherits_state.is_valid()) {
+		return false;
+	}
+	bool value_valid;
+	get(p_name, &value_valid);
+	if (!value_valid) {
+		return false;
+	}
+	inherits_state->get(p_name, &value_valid);
+	if (!value_valid) {
+		return false;
+	}
+	return true;
+}
+
+bool Resource::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (!inherits_state.is_valid()) {
+		return false;
+	}
+
+	bool value_valid;
+	Variant inherits_value = inherits_state->get(p_name, &value_valid);
+	if (value_valid) {
+		r_property = inherits_value;
+	}
+	return value_valid;
+}
+
+void Resource::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == CoreStringName(resource_inherits_state)) {
+		p_property.hint_string = get_class();
+	}
+}
+
+bool Resource::setup_inherits_state(const Ref<Resource> &p_resource) {
+	bool ret;
+	if (GDVIRTUAL_CALL(_setup_inherits_state, p_resource, ret)) {
+		return ret;
+	}
+
+	ERR_FAIL_COND_V_MSG(p_resource.is_valid() && !is_class(p_resource->get_class_name()), false, "Resources must be of (or class inherit) the same class when setting up state inheritance");
+
+	// Prevent inheritance cycles.
+	for (Ref<Resource> ancestor = p_resource; ancestor.is_valid(); ancestor = ancestor->get_inherits_state()) {
+		ERR_FAIL_COND_V_MSG(ancestor == this, false, "A resource cannot inherit the state of itself or of a resource that inherits from it.");
+	}
+
+	if (p_resource.is_valid()) {
+		copy_from(p_resource);
+	}
+	return true;
+}
+
+void Resource::_update_inherited_state_cache() {
+	inherited_state_values.clear();
+	if (inherits_state.is_null()) {
+		return;
+	}
+
+	List<PropertyInfo> pi;
+	inherits_state->get_property_list(&pi);
+	for (const PropertyInfo &E : pi) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+		if (E.name == "resource_path" || E.name == CoreStringName(resource_inherits_state)) {
+			continue;
+		}
+		inherited_state_values[E.name] = inherits_state->get(E.name);
+	}
+}
+
+bool Resource::update_inherited_state() {
+	if (inherits_state.is_null()) {
+		return false;
+	}
+
+	bool updated = false;
+	List<PropertyInfo> pi;
+	inherits_state->get_property_list(&pi);
+	for (const PropertyInfo &E : pi) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+		if (E.name == "resource_path" || E.name == CoreStringName(resource_inherits_state)) {
+			continue;
+		}
+
+		Variant new_value = inherits_state->get(E.name);
+
+		HashMap<StringName, Variant>::Iterator I = inherited_state_values.find(E.name);
+		if (!I) {
+			// The property was added to the base since the cache was last updated.
+			inherited_state_values[E.name] = new_value;
+			continue;
+		}
+
+		if (bool(Variant::evaluate(Variant::OP_EQUAL, I->value, new_value))) {
+			continue; // The property did not change.
+		}
+
+		Variant old_value = I->value;
+		I->value = new_value;
+
+		bool valid = false;
+		Variant current_value = get(E.name, &valid);
+		if (valid && bool(Variant::evaluate(Variant::OP_EQUAL, current_value, old_value))) {
+			// The property was not overridden locally, so take the value from the base.
+			set(E.name, new_value);
+			updated = true;
+		}
+	}
+
+	return updated;
+}
+
+void Resource::set_inherits_state(const Ref<Resource> &p_resource) {
+	if (setup_inherits_state(p_resource)) {
+		inherits_state = p_resource;
+		if (inherits_state.is_valid()) {
+			_update_inherited_state_cache();
+		} else {
+			inherited_state_values.clear();
+		}
+	}
+}
+
+Ref<Resource> Resource::get_inherits_state() const {
+	return inherits_state;
+}
+
+bool Resource::is_inherited_state_property_value_saved(const StringName &p_name, const Variant &p_value) const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_is_inherited_state_property_value_saved, p_name, p_value, ret)) {
+		return ret;
+	}
+
+	bool default_value_valid;
+	Variant default_value = inherits_state->get(p_name, &default_value_valid);
+	if (!default_value_valid) {
+		return true; // Not a default value, so save.
+	}
+
+	if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p_value, default_value))) {
+		return false;
+	}
+
+	return true;
+}
+
+bool Resource::is_property_value_saved(const StringName &p_property, const Variant &p_value) const {
+	if (!inherits_state.is_valid()) {
+		Variant default_value = ClassDB::class_get_default_property_value(get_class(), p_property);
+
+		if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p_value, default_value))) {
+			return false;
+		}
+
+		return true;
+	} else {
+		return is_inherited_state_property_value_saved(p_property, p_value);
+	}
+}
+
 void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);
 	ClassDB::bind_method(D_METHOD("take_over_path", "path"), &Resource::_take_over_path);
@@ -753,6 +922,11 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scene_unique_id", "id"), &Resource::set_scene_unique_id);
 	ClassDB::bind_method(D_METHOD("get_scene_unique_id"), &Resource::get_scene_unique_id);
 
+	ClassDB::bind_method(D_METHOD("set_inherits_state", "base"), &Resource::set_inherits_state);
+	ClassDB::bind_method(D_METHOD("get_inherits_state"), &Resource::get_inherits_state);
+	ClassDB::bind_method(D_METHOD("update_inherited_state"), &Resource::update_inherited_state);
+	ClassDB::bind_method(D_METHOD("is_property_value_saved", "property", "value"), &Resource::is_property_value_saved);
+
 	ClassDB::bind_method(D_METHOD("emit_changed"), &Resource::emit_changed);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "deep"), &Resource::duplicate, DEFVAL(false));
@@ -775,11 +949,14 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_scene_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_unique_id", "get_scene_unique_id");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "resource_inherits_state", PROPERTY_HINT_RESOURCE_TYPE, "Resource", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE), "set_inherits_state", "get_inherits_state");
 
 	GDVIRTUAL_BIND(_setup_local_to_scene);
 	GDVIRTUAL_BIND(_get_rid);
 	GDVIRTUAL_BIND(_reset_state);
 	GDVIRTUAL_BIND(_set_path_cache, "path");
+	GDVIRTUAL_BIND(_setup_inherits_state, "resource");
+	GDVIRTUAL_BIND(_is_inherited_state_property_value_saved, "property", "value");
 }
 
 Resource::Resource() :

@@ -609,6 +609,7 @@ private:
 	void _prepare_save_confirmation_popup();
 
 	void _inherit_request(String p_file);
+	void _inherit_resource_request(String p_file);
 	void _instantiate_request(const Vector<String> &p_files);
 
 	void _quick_opened(const String &p_file_path);

@@ -5436,6 +5436,14 @@ Object *EditorInspector::get_next_edited_object() {
 }
 
 void EditorInspector::edit(Object *p_object) {
+	Resource *res = Object::cast_to<Resource>(p_object);
+	if (res && res->get_inherits_state().is_valid() && res->update_inherited_state()) {
+		if (object == p_object) {
+			update_tree();
+			return;
+		}
+	}
+
 	if (object == p_object) {
 		return;
 	}
