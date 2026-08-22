@@ -1,0 +1,14 @@
+Import("env")
+
+if not env.get("3DS_EXPORT", False):
+    Return()
+
+sources = [
+    "export/export_3ds.cpp",
+    "export/export_plugin_3ds.cpp",
+]
+
+env.add_source_files(
+    env.modules_sources,
+    sources
+)
