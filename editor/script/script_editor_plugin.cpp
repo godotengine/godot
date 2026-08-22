@@ -67,11 +67,9 @@
 #include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/script_text_editor.h"
 #include "editor/script/syntax_highlighters.h"
-#include "editor/script/text_editor.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/shader/shader_create_dialog.h"
-#include "editor/shader/shader_editor_plugin.h"
 #include "editor/shader/shader_text_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -2937,14 +2935,14 @@ void ScriptEditor::open_text_file_create_dialog(const String &p_base_path, const
 
 Ref<Resource> ScriptEditor::open_file(const String &p_file) {
 	if (_get_recognized_extensions().find(p_file.get_extension())) {
-		Ref<Resource> scr = ResourceLoader::load(p_file);
-		if (scr.is_null()) {
+		Ref<Resource> res = ResourceLoader::load(p_file);
+		if (res.is_null()) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
 			return Ref<Resource>();
 		}
 
-		edit(scr);
-		return scr;
+		edit(res);
+		return res;
 	}
 
 	Error error;
@@ -3948,97 +3946,6 @@ void ScriptEditor::_validation_updated() {
 	document_outline->update_visibility();
 }
 
-void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end) {
-	ScriptEditorNavigationMarker::get_singleton()->locate_begin();
-	if (ResourceLoader::exists(fpath)) {
-		Ref<Resource> res = ResourceLoader::load(fpath);
-
-		if (fpath.has_extension("gdshader") || fpath.has_extension("gdshaderinc")) {
-			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
-			shader_editor->edit(res.ptr());
-			shader_editor->set_current();
-			if (ShaderTextEditor *shader_te = Object::cast_to<ShaderTextEditor>(ScriptEditor::get_bottom_script_editor()->get_resource_editor(res))) {
-				shader_te->goto_line_selection(line_number - 1, begin, end);
-			}
-			ScriptEditorNavigationMarker::get_singleton()->locate_end();
-			return;
-		} else if (fpath.has_extension("tscn")) {
-			const PackedStringArray lines = FileAccess::get_file_as_string(fpath).split("\n");
-			if (line_number > lines.size()) {
-				ScriptEditorNavigationMarker::get_singleton()->locate_end();
-				return;
-			}
-
-			const char *scr_header = "[sub_resource type=\"GDScript\" id=\"";
-			const char *source_header = "script/source = \"";
-			String script_id;
-
-			// Search the scene backwards from the found line.
-			int scan_line = line_number - 1;
-			while (scan_line >= 0) {
-				const String &line = lines[scan_line];
-				if (line.begins_with(source_header)) {
-					// Adjust line relative to the script beginning.
-					line_number -= scan_line + 1;
-				} else if (line.begins_with(scr_header)) {
-					script_id = line.trim_prefix(scr_header).get_slicec('"', 0);
-					break;
-				}
-				scan_line--;
-			}
-
-			EditorNode::get_singleton()->open_scene(fpath);
-			if (!script_id.is_empty()) {
-				Ref<Script> scr = ResourceLoader::load(fpath + "::" + script_id, "Script");
-				if (scr.is_valid()) {
-					edit(scr);
-					ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
-
-					if (ste) {
-						callable_mp(EditorInterface::get_singleton(), &EditorInterface::set_main_screen_editor).call_deferred("Script");
-						if (line_number == 0) {
-							const int source_len = strlen(source_header);
-							ste->goto_line_selection(line_number, begin - source_len, end - source_len);
-						} else {
-							ste->goto_line_selection(line_number, begin, end);
-						}
-					}
-				}
-			}
-
-			ScriptEditorNavigationMarker::get_singleton()->locate_end();
-			return;
-		} else {
-			Ref<Script> scr = res;
-			Ref<JSON> json = res;
-			if (scr.is_valid() || json.is_valid()) {
-				edit(scr);
-
-				ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
-				if (ste) {
-					EditorInterface::get_singleton()->set_main_screen_editor("Script");
-					ste->goto_line_selection(line_number - 1, begin, end);
-				}
-				ScriptEditorNavigationMarker::get_singleton()->locate_end();
-				return;
-			}
-		}
-	}
-
-	// If the file is not a valid resource/script, load it as a text file.
-	Error err;
-	Ref<TextFile> text_file = _load_text_file(fpath, &err);
-	if (text_file.is_valid()) {
-		edit(text_file);
-
-		TextEditor *te = Object::cast_to<TextEditor>(_get_current_editor());
-		if (te) {
-			te->goto_line_selection(line_number - 1, begin, end);
-		}
-	}
-	ScriptEditorNavigationMarker::get_singleton()->locate_end();
-}
-
 void ScriptEditor::_on_find_in_files_modified_files() {
 	_test_script_times_on_disk();
 	_update_modified_scripts_for_external_editor();
@@ -4406,7 +4313,7 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 		help_search_dialog->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 
 		FindInFilesContainer *find_in_files = FindInFiles::get_singleton()->get_container();
-		find_in_files->connect("result_selected", callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
+		find_in_files->connect("result_selected", callable_mp(EditorNode::get_singleton(), &EditorNode::edit_text_resource));
 		find_in_files->connect("files_modified", callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
 	}
 
