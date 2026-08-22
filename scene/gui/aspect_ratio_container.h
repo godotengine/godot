@@ -38,7 +38,6 @@ class AspectRatioContainer : public Container {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual Size2 get_minimum_size() const override;
 
 public:
 	enum StretchMode {
