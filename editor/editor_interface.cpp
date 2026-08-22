@@ -799,6 +799,10 @@ Error EditorInterface::close_scene() {
 	return EditorNode::get_singleton()->close_scene() ? OK : ERR_DOES_NOT_EXIST;
 }
 
+void EditorInterface::instantiate_object_properties(Object *p_object) {
+	EditorNode::get_editor_data().instantiate_object_properties(p_object);
+}
+
 // Scene playback.
 
 void EditorInterface::play_main_scene() {
@@ -948,6 +952,9 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("close_scene"), &EditorInterface::close_scene);
 
 	ClassDB::bind_method(D_METHOD("mark_scene_as_unsaved"), &EditorInterface::mark_scene_as_unsaved);
+
+	ClassDB::bind_method(D_METHOD("instantiate_object_properties", "object"), &EditorInterface::instantiate_object_properties);
+	ADD_SIGNAL(MethodInfo("object_created_in_editor", PropertyInfo(Variant::OBJECT, "object")));
 
 	// Scene playback.
 
