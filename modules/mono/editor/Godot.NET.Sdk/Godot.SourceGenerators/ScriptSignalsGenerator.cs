@@ -255,22 +255,23 @@ namespace Godot.SourceGenerators
             foreach (var signalDelegate in godotSignalDelegates)
             {
                 string signalName = signalDelegate.Name;
+                string delegateName = signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal();
 
                 // TODO: Hide backing event from code-completion and debugger
                 // The reason we have a backing field is to hide the invoke method from the event,
                 // as it doesn't emit the signal, only the event delegates. This can confuse users.
                 // Maybe we should directly connect the delegates, as we do with native signals?
                 source.Append("    private ")
-                    .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
+                    .Append(delegateName)
                     .Append(" backing_")
                     .Append(signalName)
                     .Append(";\n");
 
                 source.Append(
-                    $"    /// <inheritdoc cref=\"{signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal()}\"/>\n");
+                    $"    /// <inheritdoc cref=\"{delegateName.Replace('<', '{').Replace('>', '}')}\"/>\n");
 
                 source.Append($"    {signalDelegate.DelegateSymbol.GetAccessibilityKeyword()} event ")
-                    .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
+                    .Append(delegateName)
                     .Append(" @")
                     .Append(signalName)
                     .Append(" {\n")
