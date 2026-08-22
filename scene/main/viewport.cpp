@@ -2871,12 +2871,10 @@ void Viewport::_push_text_input(const String &p_text, bool p_emit_signal) {
 		gui.subwindow_focused->push_text_input(p_text);
 		return;
 	}
-
-	StringName set_text_method = SNAME("_set_text");
-	if (!gui.key_focus || !gui.key_focus->has_method(set_text_method)) {
+	if (!gui.key_focus) {
 		return;
 	}
-	gui.key_focus->call(set_text_method, p_text, p_emit_signal);
+	gui.key_focus->call(SNAME("_set_text"), p_text, p_emit_signal);
 }
 
 void Viewport::push_text_input(const String &p_text) {

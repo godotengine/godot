@@ -3186,17 +3186,15 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding, false);
 	}
 
-	bool is_resource = current_obj->is_class("Resource");
-	bool is_node = current_obj->is_class("Node");
+	bool is_resource = Object::cast_to<Resource>(current_obj);
+	bool is_node = Object::cast_to<Node>(current_obj);
 	bool skip_main_plugin = false;
 
 	String editable_info; // None by default.
 	bool info_is_warning = false;
 
-	if (current_obj->has_method("_is_read_only")) {
-		if (current_obj->call("_is_read_only")) {
-			editable_info = TTR("This object is marked as read-only, so it's not editable.");
-		}
+	if (current_obj->call(SNAME("_is_read_only")).operator bool()) {
+		editable_info = TTR("This object is marked as read-only, so it's not editable.");
 	}
 
 	if (is_resource) {
@@ -7192,9 +7190,7 @@ void EditorNode::_notify_nodes_scene_reimported(Node *p_node, Array p_reimported
 		}
 	}
 
-	if (p_node->has_method("_nodes_scene_reimported")) {
-		p_node->call("_nodes_scene_reimported", p_reimported_nodes);
-	}
+	p_node->call(SNAME("_nodes_scene_reimported"), p_reimported_nodes);
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_notify_nodes_scene_reimported(p_node->get_child(i), p_reimported_nodes);

@@ -2277,9 +2277,10 @@ Dictionary VisualShaderEditor::get_custom_node_data(Ref<VisualShaderNodeCustom> 
 	category = category.rstrip("/");
 	category = category.lstrip("/");
 	category = "Addons/" + category;
-	if (p_custom_node->has_method("_get_subcategory")) {
-		String subcategory = (String)p_custom_node->call("_get_subcategory");
-		if (!subcategory.is_empty()) {
+	{
+		Callable::CallError err;
+		const String subcategory = p_custom_node->callp("_get_subcategory", nullptr, 0, err);
+		if (err.error == Callable::CallError::CALL_OK && !subcategory.is_empty()) {
 			category += "/" + subcategory;
 		}
 	}

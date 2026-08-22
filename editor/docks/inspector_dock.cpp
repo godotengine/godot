@@ -342,26 +342,7 @@ void InspectorDock::_prepare_history() {
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
-		String text;
-		if (obj->has_method("_get_editor_name")) {
-			text = obj->call("_get_editor_name");
-		} else if (Object::cast_to<Resource>(obj)) {
-			Resource *r = Object::cast_to<Resource>(obj);
-			if (r->get_path().is_resource_file()) {
-				text = r->get_path().get_file();
-			} else if (!r->get_name().is_empty()) {
-				text = r->get_name();
-			} else {
-				text = r->get_class();
-			}
-		} else if (Object::cast_to<Node>(obj)) {
-			text = Object::cast_to<Node>(obj)->get_name();
-		} else if (obj->is_class("EditorDebuggerRemoteObjects")) {
-			text = obj->call("get_title");
-		} else {
-			text = obj->get_class();
-		}
-
+		String text = InspectorDock::get_object_display_name(obj);
 		if (i == editor_history->get_history_pos() && current) {
 			text += " " + TTR("(Current)");
 		}
@@ -528,6 +509,32 @@ void InspectorDock::_bind_methods() {
 	ClassDB::bind_method("apply_script_properties", &InspectorDock::apply_script_properties);
 
 	ADD_SIGNAL(MethodInfo("request_help"));
+}
+
+String InspectorDock::get_object_display_name(Object *p_object) {
+	Callable::CallError err;
+	const String editor_name = p_object->callp(SNAME("_get_editor_name"), nullptr, 0, err);
+
+	if (err.error == Callable::CallError::CALL_OK) {
+		return editor_name;
+	}
+	if (Object::cast_to<Resource>(p_object)) {
+		Resource *r = Object::cast_to<Resource>(p_object);
+		if (r->get_path().is_resource_file()) {
+			return r->get_path().get_file();
+		}
+		if (!r->get_name().is_empty()) {
+			return r->get_name();
+		}
+		return r->get_class();
+	}
+	if (Object::cast_to<Node>(p_object)) {
+		return Object::cast_to<Node>(p_object)->get_name();
+	}
+	if (Object::cast_to<EditorDebuggerRemoteObjects>(p_object)) {
+		return p_object->call(SNAME("get_title"));
+	}
+	return p_object->get_class();
 }
 
 void InspectorDock::edit_resource(const Ref<Resource> &p_resource) {

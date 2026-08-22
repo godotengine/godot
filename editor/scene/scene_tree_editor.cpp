@@ -56,6 +56,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
@@ -110,7 +111,7 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 					NodePath node_path = tree_item->get_metadata(0);
 					Node *node = get_scene_node()->get_node_or_null(node_path);
 					if (node != nullptr) {
-						visibility_drag_value = !node->call("is_visible");
+						visibility_drag_value = !node->call(SceneStringName(is_visible));
 						visibility_drag_start_pos = tree_mouse_pos;
 						visibility_drag_start_node = node->get_instance_id();
 					}
@@ -150,7 +151,7 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 			bool crossed_drag_threshold = visibility_drag_start_pos.distance_to(tree_mouse_pos) > get_viewport()->get_drag_threshold();
 			if (tree_button_id == BUTTON_VISIBILITY && (crossed_drag_threshold || !visibility_drag_nodes.is_empty())) {
 				Node *start_node = ObjectDB::get_instance<Node>(visibility_drag_start_node);
-				if (start_node != nullptr && (bool)start_node->call("is_visible") != visibility_drag_value) {
+				if (start_node != nullptr && (bool)start_node->call(SceneStringName(is_visible)) != visibility_drag_value) {
 					start_node->call("set_visible", visibility_drag_value);
 					visibility_drag_nodes.push_back(visibility_drag_start_node);
 				}
@@ -159,7 +160,7 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 				ERR_FAIL_NULL(tree_item);
 				NodePath node_path = tree_item->get_metadata(0);
 				Node *node = get_scene_node()->get_node_or_null(node_path);
-				if (node != nullptr && (bool)node->call("is_visible") != visibility_drag_value) {
+				if (node != nullptr && (bool)node->call(SceneStringName(is_visible)) != visibility_drag_value) {
 					node->call("set_visible", visibility_drag_value);
 					visibility_drag_nodes.push_back(node->get_instance_id());
 				}
@@ -346,8 +347,8 @@ void SceneTreeEditor::_revoke_unique_name() {
 }
 
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
-	if (p_node->has_method("is_visible") && p_node->has_method("set_visible")) {
-		bool v = bool(p_node->call("is_visible"));
+	if (p_node->has_method(SceneStringName(is_visible)) && p_node->has_method(SNAME("set_visible"))) {
+		bool v = bool(p_node->call(SceneStringName(is_visible)));
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->add_do_method(p_node, "set_visible", !v);
 		undo_redo->add_undo_method(p_node, "set_visible", v);
@@ -714,8 +715,8 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			p_item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
 		}
 
-		if (p_node->has_method("is_visible") && p_node->has_method("set_visible") && p_node->has_signal(SceneStringName(visibility_changed))) {
-			bool is_visible = p_node->call("is_visible");
+		if (p_node->has_method(SceneStringName(is_visible)) && p_node->has_method(SNAME("set_visible")) && p_node->has_signal(SceneStringName(visibility_changed))) {
+			bool is_visible = p_node->call(SceneStringName(is_visible));
 			if (is_visible) {
 				p_item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityVisible")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			} else {
@@ -833,9 +834,9 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
 	bool node_visible = false;
 
-	if (p_node->has_method("is_visible")) {
-		node_visible = p_node->call("is_visible");
-		if (p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
+	if (p_node->has_method(SceneStringName(is_visible))) {
+		node_visible = p_node->call(SceneStringName(is_visible));
+		if (Object::cast_to<CanvasItem>(p_node) || Object::cast_to<CanvasLayer>(p_node) || Object::cast_to<Window>(p_node)) {
 			CanvasItemEditor::get_singleton()->get_viewport_control()->queue_redraw();
 		}
 	}
@@ -850,7 +851,7 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 }
 
 void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
-	if (p_node->has_method("is_visible_in_tree")) {
+	if (p_node->has_method(SNAME("is_visible_in_tree"))) {
 		Color color(1, 1, 1, 1);
 		bool visible_on_screen = p_node->call("is_visible_in_tree");
 		if (!visible_on_screen) {
