@@ -261,9 +261,9 @@ partial class ExportedFields
         /// </summary>
         public new static readonly global::Godot.StringName @_fieldEmptyInt64Array = "_fieldEmptyInt64Array";
     }
-    protected internal new static partial class GodotInternal
+    protected new static partial class GodotInternal
     {
-        internal new static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        private static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
         {
             static godot_variant trampoline_get__fieldBoolean(object godotObject)
             {
@@ -896,16 +896,18 @@ partial class ExportedFields
             collector.TryAdd(PropertyName.@_notIgnoredField, (new(&trampoline_get__notIgnoredField), new(&trampoline_set__notIgnoredField)));
             collector.TryAdd(PropertyName.@_fieldEmptyInt64Array, (new(&trampoline_get__fieldEmptyInt64Array), new(&trampoline_set__fieldEmptyInt64Array)));
         }
-    }
-    /// <summary>
-    /// Get the property information for all the properties declared in this class.
-    /// This method is used by Godot to register the available properties in the editor.
-    /// Do not call this method.
-    /// </summary>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    internal new static global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo> GetGodotPropertyList()
-    {
-        var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
+        /// <summary>
+        /// Get the property information for all the properties declared in this class.
+        /// This method is used by Godot to register the available properties in the editor.
+        /// Do not call this method.
+        /// </summary>
+        public static
+#nullable enable
+            global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>?
+#nullable restore
+            GetGodotPropertyList()
+        {
+            var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
         properties.Add(new(type: (global::Godot.Variant.Type)1, name: PropertyName.@_fieldBoolean, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.@_fieldChar, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.@_fieldSByte, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
@@ -969,7 +971,8 @@ partial class ExportedFields
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.@_fieldGodotGenericArray, hint: (global::Godot.PropertyHint)23, hintString: "2/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.@_notIgnoredField, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         properties.Add(new(type: (global::Godot.Variant.Type)31, name: PropertyName.@_fieldEmptyInt64Array, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        return properties;
+            return properties;
+        }
     }
 #pragma warning restore CS0109
 }

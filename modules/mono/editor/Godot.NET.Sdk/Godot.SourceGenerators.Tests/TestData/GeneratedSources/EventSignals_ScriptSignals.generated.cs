@@ -13,21 +13,24 @@ partial class EventSignals
         /// </summary>
         public new static readonly global::Godot.StringName @MySignal = "MySignal";
     }
-    /// <summary>
-    /// Get the signal information for all the signals declared in this class.
-    /// This method is used by Godot to register the available signals in the editor.
-    /// Do not call this method.
-    /// </summary>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    internal new static global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo> GetGodotSignalList()
+    protected new static partial class GodotInternal
     {
-        var signals = new global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>(1);
+        /// <summary>
+        /// Get the signal information for all the signals declared in this class.
+        /// This method is used by Godot to register the available signals in the editor.
+        /// Do not call this method.
+        /// </summary>
+        public static
+#nullable enable
+            global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>?
+#nullable restore
+            GetGodotSignalList()
+        {
+            var signals = new global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>(1);
         signals.Add(new(name: SignalName.@MySignal, returnVal: new(type: (global::Godot.Variant.Type)0, name: "", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), flags: (global::Godot.MethodFlags)1, arguments: new() { new(type: (global::Godot.Variant.Type)4, name: "str", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), new(type: (global::Godot.Variant.Type)2, name: "num", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false),  }, defaultArguments: null));
-        return signals;
-    }
-    protected internal new static partial class GodotInternal
-    {
-        internal new static unsafe void GetGodotRaiseSignalTrampolines(global::Godot.Bridge.RaiseSignalTrampolineCollector collector)
+            return signals;
+        }
+        private static unsafe void GetGodotRaiseSignalTrampolines(global::Godot.Bridge.RaiseSignalTrampolineCollector collector)
         {
             static void trampoline_2_MySignal(object godotObject, NativeVariantPtrArgs args)
             {

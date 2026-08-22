@@ -17,22 +17,33 @@ partial class ScriptBoilerplate
         /// </summary>
         public new static readonly global::Godot.StringName @Bazz = "Bazz";
     }
-    /// <summary>
-    /// Get the method information for all the methods declared in this class.
-    /// This method is used by Godot to register the available methods in the editor.
-    /// Do not call this method.
-    /// </summary>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    internal new static global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo> GetGodotMethodList()
+    protected new static partial class GodotInternal
     {
-        var methods = new global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>(2);
+        /// <summary>
+        /// Get the method information for all the methods declared in this class.
+        /// This method is used by Godot to register the available methods in the editor.
+        /// Do not call this method.
+        /// </summary>
+        public static
+#nullable enable
+            global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>?
+#nullable restore
+            GetGodotMethodList()
+        {
+            var methods = new global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>(2);
         methods.Add(new(name: MethodName.@_Process, returnVal: new(type: (global::Godot.Variant.Type)0, name: "", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), flags: (global::Godot.MethodFlags)1, arguments: new() { new(type: (global::Godot.Variant.Type)3, name: "delta", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false),  }, defaultArguments: null));
         methods.Add(new(name: MethodName.@Bazz, returnVal: new(type: (global::Godot.Variant.Type)2, name: "", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), flags: (global::Godot.MethodFlags)1, arguments: new() { new(type: (global::Godot.Variant.Type)21, name: "name", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false),  }, defaultArguments: null));
-        return methods;
-    }
-    protected internal new static partial class GodotInternal
-    {
-        public new static unsafe void GetGodotMethodTrampolines(global::Godot.Bridge.MethodTrampolineCollector collector)
+            return methods;
+        }
+        /// <summary>
+        /// Get the method information for all the methods declared in this class.
+        /// This method is used by Godot to register the available methods in the editor.
+        /// Do not call this method.
+        /// </summary>
+        public static void GetGodotRpcMethods(global::Godot.Bridge.RpcMethodCollector collector)
+        {
+        }
+        private static unsafe void GetGodotMethodTrampolines(global::Godot.Bridge.MethodTrampolineCollector collector)
         {
             static godot_variant trampoline_1__Process(object godotObject, NativeVariantPtrArgs args, ref godot_variant_call_error callError)
             {
@@ -56,13 +67,14 @@ partial class ScriptBoilerplate
             }
             collector.TryAdd(new(MethodName.@Bazz, 1), new(&trampoline_1_Bazz, isStatic: false));
         }
-        private static readonly global::System.Type CachedType = typeof(global::ScriptBoilerplate);
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+        public static global::System.Type CachedType { get; } = typeof(global::ScriptBoilerplate);
         private static partial class Accessors
         {
             [global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = ".ctor")]
             public extern static void CtorAsMethod(global::ScriptBoilerplate godotObject);
         }
-        public new static unsafe void GetGodotConstructorTrampolines(global::Godot.Bridge.ConstructorTrampolineCollector collector)
+        private static unsafe void GetGodotConstructorTrampolines(global::Godot.Bridge.ConstructorTrampolineCollector collector)
         {
             static global::Godot.GodotObject trampoline_0(global::System.IntPtr godotObjectPtr, NativeVariantPtrArgs args)
             {
