@@ -40,28 +40,25 @@ struct ContainerType {
 	Ref<Script> script;
 };
 
-struct ContainerTypeValidate {
-	Variant::Type type = Variant::NIL;
-	StringName class_name;
-	Ref<Script> script;
+struct ContainerTypeValidate : public ContainerType {
 	const char *where = "container";
 
 private:
 	_FORCE_INLINE_ bool _internal_validate(Variant &r_inout_variant, const char *p_operation, bool p_output_errors) const {
-		if (type == Variant::NIL) {
+		if (builtin_type == Variant::NIL) {
 			return true;
 		}
 
-		if (type != r_inout_variant.get_type()) {
-			if (r_inout_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
+		if (builtin_type != r_inout_variant.get_type()) {
+			if (r_inout_variant.get_type() == Variant::NIL && builtin_type == Variant::OBJECT) {
 				return true;
 			}
 
-			if (Variant::can_convert_strict(r_inout_variant.get_type(), type)) {
+			if (Variant::can_convert_strict(r_inout_variant.get_type(), builtin_type)) {
 				Variant converted_to;
 				const Variant *converted_from = &r_inout_variant;
 				Callable::CallError call_error;
-				Variant::construct(type, converted_to, &converted_from, 1, call_error);
+				Variant::construct(builtin_type, converted_to, &converted_from, 1, call_error);
 
 				if (call_error.error == Callable::CallError::CALL_OK) {
 					r_inout_variant = converted_to;
@@ -70,13 +67,13 @@ private:
 			}
 
 			if (p_output_errors) {
-				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of incompatible type '%s'.", String(p_operation), Variant::get_type_name(r_inout_variant.get_type()), where, Variant::get_type_name(type)));
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of incompatible type '%s'.", String(p_operation), Variant::get_type_name(r_inout_variant.get_type()), where, Variant::get_type_name(builtin_type)));
 			} else {
 				return false;
 			}
 		}
 
-		if (type != Variant::OBJECT) {
+		if (builtin_type != Variant::OBJECT) {
 			return true;
 		}
 
@@ -164,9 +161,9 @@ public:
 	}
 
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
-		if (type != p_type.type) {
+		if (builtin_type != p_type.builtin_type) {
 			return false;
-		} else if (type != Variant::OBJECT) {
+		} else if (builtin_type != Variant::OBJECT) {
 			return true;
 		}
 
@@ -190,9 +187,9 @@ public:
 	}
 
 	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
-		return type == p_type.type && class_name == p_type.class_name && script == p_type.script;
+		return builtin_type == p_type.builtin_type && class_name == p_type.class_name && script == p_type.script;
 	}
 	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
-		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
+		return builtin_type != p_type.builtin_type || class_name != p_type.class_name || script != p_type.script;
 	}
 };

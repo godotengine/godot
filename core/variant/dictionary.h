@@ -121,16 +121,16 @@ public:
 	bool is_same_typed_key(const Dictionary &p_other) const;
 	bool is_same_typed_value(const Dictionary &p_other) const;
 
-	ContainerType get_key_type() const;
-	ContainerType get_value_type() const;
+	const ContainerType &get_key_type() const _LIFETIME_BOUND_;
+	const ContainerType &get_value_type() const _LIFETIME_BOUND_;
 	uint32_t get_typed_key_builtin() const;
 	uint32_t get_typed_value_builtin() const;
 	StringName get_typed_key_class_name() const;
 	StringName get_typed_value_class_name() const;
 	Variant get_typed_key_script() const;
 	Variant get_typed_value_script() const;
-	const ContainerTypeValidate &get_key_validator() const;
-	const ContainerTypeValidate &get_value_validator() const;
+	const ContainerTypeValidate &get_key_validator() const _LIFETIME_BOUND_;
+	const ContainerTypeValidate &get_value_validator() const _LIFETIME_BOUND_;
 
 	void make_read_only();
 	bool is_read_only() const;
