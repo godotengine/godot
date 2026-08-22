@@ -220,6 +220,10 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
+		if (hover != -1 && mb->get_button_index() == MouseButton::LEFT) {
+			accept_event();
+		}
+
 		if (rb_pressing && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			if (rb_hover != -1) {
 				emit_signal(SNAME("tab_button_pressed"), rb_hover);
@@ -2138,6 +2142,9 @@ void TabBar::ensure_tab_visible(int p_idx) {
 }
 
 Rect2 TabBar::get_tab_rect(int p_tab) const {
+	if (p_tab < 0) {
+		p_tab += tabs.size();
+	}
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
 
 	if (is_layout_rtl()) {
