@@ -198,7 +198,11 @@ void GraphNode::_resort() {
 
 		if (msc.will_stretch) {
 			available_stretch_space += msc.min_size;
-			stretch_ratio_total += child->get_stretch_ratio();
+			msc.stretch_ratio = child->get_stretch_ratio();
+			if (child->get_v_size_flags().has_flag(SIZE_MAXIMIZE)) {
+				msc.stretch_ratio *= MAXIMIZE_STRETCH_FACTOR;
+			}
+			stretch_ratio_total += msc.stretch_ratio;
 		}
 
 		children_count++;
@@ -232,13 +236,12 @@ void GraphNode::_resort() {
 			_MinSizeCache &msc = min_size_cache[child];
 
 			if (msc.will_stretch) {
-				float stretch_ratio = child->get_stretch_ratio();
-				int final_pixel_size = available_stretch_space * stretch_ratio / stretch_ratio_total;
+				int final_pixel_size = available_stretch_space * msc.stretch_ratio / stretch_ratio_total;
 				if (final_pixel_size < msc.min_size) {
 					// If the available stretching area is too small for a Control,
 					// then remove it from stretching area.
 					msc.will_stretch = false;
-					stretch_ratio_total -= stretch_ratio;
+					stretch_ratio_total -= msc.stretch_ratio;
 					refit_successful = false;
 					available_stretch_space -= msc.min_size;
 					msc.final_size = msc.min_size;
@@ -247,7 +250,7 @@ void GraphNode::_resort() {
 					// If stretching would exceed the Control's maximum size,
 					// cap it and redistribute its unused share.
 					msc.will_stretch = false;
-					stretch_ratio_total -= stretch_ratio;
+					stretch_ratio_total -= msc.stretch_ratio;
 					refit_successful = false;
 					available_stretch_space -= msc.max_size;
 					msc.final_size = msc.max_size;
@@ -1011,14 +1014,20 @@ Size2 GraphNode::_get_minimum_size(bool p_use_desired_sizes) const {
 			continue;
 		}
 
-		Size2i size = p_use_desired_sizes ? child->get_bound_desired_size() : child->get_bound_minimum_size();
-		size.width += sb_panel->get_minimum_size().width;
-		if (slot_table.has(i)) {
-			size += slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2();
-		}
+		Size2 slot_size = (slot_table.has(i) && slot_table[i].draw_stylebox) ? sb_slot->get_minimum_size() : Size2();
 
-		minsize.height += size.height;
-		minsize.width = MAX(minsize.width, size.width);
+		Size2 size = p_use_desired_sizes ? child->get_bound_desired_size() : child->get_bound_minimum_size();
+		Size2 max_size = child->get_custom_maximum_size();
+
+		real_t width = (max_size.width >= 0 && child->get_h_size_flags().has_flag(SIZE_MAXIMIZE)) ? max_size.width : size.width;
+		real_t height = (max_size.height >= 0 && child->get_v_size_flags().has_flag(SIZE_MAXIMIZE)) ? max_size.height : size.height;
+
+		width += sb_panel->get_minimum_size().width;
+		width += slot_size.width;
+		height += slot_size.height;
+
+		minsize.width = MAX(minsize.width, width);
+		minsize.height += height;
 
 		if (i > 0) {
 			minsize.height += separation;
@@ -1234,6 +1243,7 @@ Vector<int> GraphNode::get_allowed_size_flags_horizontal() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 
@@ -1244,6 +1254,7 @@ Vector<int> GraphNode::get_allowed_size_flags_vertical() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 
