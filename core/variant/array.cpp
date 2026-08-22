@@ -869,30 +869,40 @@ const void *Array::id() const {
 	return _p;
 }
 
-Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
-	_p = memnew(ArrayPrivate);
-	_p->refcount.init();
-	set_typed(p_type, p_class_name, p_script);
-	assign(p_from);
+#define ARRAY_SET_TYPED_VALIDATE(m_type, m_class_name, m_script) \
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state."); \
+	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty."); \
+	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user."); \
+	ERR_FAIL_COND_MSG(_p->typed.builtin_type != Variant::NIL, "Type can only be set once."); \
+	ERR_FAIL_COND_MSG(m_class_name != StringName() && m_type != Variant::OBJECT, "Class names can only be set for type OBJECT"); \
+	ERR_FAIL_COND_MSG(m_script.is_valid() && m_class_name == StringName(), "Script class can only be set together with base class name")
+
+void Array::_set_typed(uint32_t p_type, StringName p_class_name, Ref<Script> p_script) {
+	ARRAY_SET_TYPED_VALIDATE(p_type, p_class_name, p_script);
+
+	_p->typed.builtin_type = Variant::Type(p_type);
+	_p->typed.class_name = std::move(p_class_name);
+	_p->typed.script = std::move(p_script);
+	_p->typed.where = "TypedArray";
 }
 
 void Array::set_typed(const ContainerType &p_element_type) {
-	set_typed(p_element_type.builtin_type, p_element_type.class_name, p_element_type.script);
+	ARRAY_SET_TYPED_VALIDATE(p_element_type.builtin_type, p_element_type.class_name, p_element_type.script);
+
+	_p->typed.builtin_type = p_element_type.builtin_type;
+	_p->typed.class_name = p_element_type.class_name;
+	_p->typed.script = p_element_type.script;
+	_p->typed.where = "TypedArray";
+}
+
+#undef ARRAY_SET_TYPED_VALIDATE
+
+void Array::set_typed(ContainerType &&p_element_type) {
+	_set_typed(p_element_type.builtin_type, std::move(p_element_type.class_name), std::move(p_element_type.script));
 }
 
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
-	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
-	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
-	ERR_FAIL_COND_MSG(_p->typed.builtin_type != Variant::NIL, "Type can only be set once.");
-	ERR_FAIL_COND_MSG(p_class_name != StringName() && p_type != Variant::OBJECT, "Class names can only be set for type OBJECT");
-	Ref<Script> script = p_script;
-	ERR_FAIL_COND_MSG(script.is_valid() && p_class_name == StringName(), "Script class can only be set together with base class name");
-
-	_p->typed.builtin_type = Variant::Type(p_type);
-	_p->typed.class_name = p_class_name;
-	_p->typed.script = script;
-	_p->typed.where = "TypedArray";
+	_set_typed(p_type, p_class_name, Ref<Script>(p_script));
 }
 
 bool Array::is_typed() const {
@@ -951,19 +961,39 @@ Span<Variant> Array::span() const {
 	return _p->array.span();
 }
 
-Array::Array(const Array &p_from) {
-	_p = nullptr;
+Array::Array(uint32_t p_type, const StringName &p_class_name) : _p(memnew(ArrayPrivate)) {
+	_p->refcount.init();
+	set_typed(p_type, p_class_name, Ref<Script>());
+}
+
+Array::Array(const Array &p_from, const ContainerType &p_element_type) : _p(memnew(ArrayPrivate)) {
+	_p->refcount.init();
+	set_typed(p_element_type);
+	assign(p_from);
+}
+
+Array::Array(const Array &p_from, ContainerType &&p_element_type) : _p(memnew(ArrayPrivate)) {
+	_p->refcount.init();
+	set_typed(std::move(p_element_type));
+	assign(p_from);
+}
+
+Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) : _p(memnew(ArrayPrivate)) {
+	_p->refcount.init();
+	set_typed(p_type, p_class_name, p_script);
+	assign(p_from);
+}
+
+Array::Array(const Array &p_from) : _p(nullptr) {
 	_ref(p_from);
 }
 
-Array::Array(std::initializer_list<Variant> p_init) {
-	_p = memnew(ArrayPrivate);
+Array::Array(std::initializer_list<Variant> p_init) : _p(memnew(ArrayPrivate)) {
 	_p->refcount.init();
 	_p->array = Vector<Variant>(p_init);
 }
 
-Array::Array() {
-	_p = memnew(ArrayPrivate);
+Array::Array() : _p(memnew(ArrayPrivate)) {
 	_p->refcount.init();
 }
 

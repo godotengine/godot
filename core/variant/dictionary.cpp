@@ -382,7 +382,7 @@ uint32_t Dictionary::recursive_hash(int p_recursion_count) const {
 Array Dictionary::keys() const {
 	Array varr;
 	if (is_typed_key()) {
-		varr.set_typed(get_typed_key_builtin(), get_typed_key_class_name(), get_typed_key_script());
+		varr.set_typed(get_key_type());
 	}
 	if (_p->variant_map.is_empty()) {
 		return varr;
@@ -402,7 +402,7 @@ Array Dictionary::keys() const {
 Array Dictionary::values() const {
 	Array varr;
 	if (is_typed_value()) {
-		varr.set_typed(get_typed_value_builtin(), get_typed_value_class_name(), get_typed_value_script());
+		varr.set_typed(get_value_type());
 	}
 	if (_p->variant_map.is_empty()) {
 		return varr;
@@ -633,30 +633,50 @@ Dictionary Dictionary::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMod
 	return n;
 }
 
-void Dictionary::set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type) {
-	set_typed(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, p_value_type.builtin_type, p_value_type.class_name, p_value_type.script);
-}
+#define DICTIONARY_SET_TYPED_VALIDATE(m_key_type, m_key_class_name, m_key_script, m_value_type, m_value_class_name, m_value_script) \
+	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state."); \
+	ERR_FAIL_COND_MSG(_p->variant_map.size() > 0, "Type can only be set when dictionary is empty."); \
+	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when dictionary has no more than one user."); \
+	ERR_FAIL_COND_MSG(_p->typed_key.builtin_type != Variant::NIL || _p->typed_value.builtin_type != Variant::NIL, "Type can only be set once."); \
+	ERR_FAIL_COND_MSG((m_key_class_name != StringName() && m_key_type != Variant::OBJECT) || (m_value_class_name != StringName() && m_value_type != Variant::OBJECT), "Class names can only be set for type OBJECT."); \
+	ERR_FAIL_COND_MSG(m_key_script.is_valid() && m_key_class_name == StringName(), "Script class can only be set together with base class name."); \
+	ERR_FAIL_COND_MSG(m_value_script.is_valid() && m_value_class_name == StringName(), "Script class can only be set together with base class name.")
 
-void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
-	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
-	ERR_FAIL_COND_MSG(_p->variant_map.size() > 0, "Type can only be set when dictionary is empty.");
-	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when dictionary has no more than one user.");
-	ERR_FAIL_COND_MSG(_p->typed_key.builtin_type != Variant::NIL || _p->typed_value.builtin_type != Variant::NIL, "Type can only be set once.");
-	ERR_FAIL_COND_MSG((p_key_class_name != StringName() && p_key_type != Variant::OBJECT) || (p_value_class_name != StringName() && p_value_type != Variant::OBJECT), "Class names can only be set for type OBJECT.");
-	Ref<Script> key_script = p_key_script;
-	ERR_FAIL_COND_MSG(key_script.is_valid() && p_key_class_name == StringName(), "Script class can only be set together with base class name.");
-	Ref<Script> value_script = p_value_script;
-	ERR_FAIL_COND_MSG(value_script.is_valid() && p_value_class_name == StringName(), "Script class can only be set together with base class name.");
+void Dictionary::_set_typed(uint32_t p_key_type, StringName p_key_class_name, Ref<Script> p_key_script, uint32_t p_value_type, StringName p_value_class_name, Ref<Script> p_value_script) {
+	DICTIONARY_SET_TYPED_VALIDATE(p_key_type, p_key_class_name, p_key_script, p_value_type, p_value_class_name, p_value_script);
 
 	_p->typed_key.builtin_type = Variant::Type(p_key_type);
-	_p->typed_key.class_name = p_key_class_name;
-	_p->typed_key.script = key_script;
+	_p->typed_key.class_name = std::move(p_key_class_name);
+	_p->typed_key.script = std::move(p_key_script);
 	_p->typed_key.where = "TypedDictionary.Key";
 
 	_p->typed_value.builtin_type = Variant::Type(p_value_type);
-	_p->typed_value.class_name = p_value_class_name;
-	_p->typed_value.script = value_script;
+	_p->typed_value.class_name = std::move(p_value_class_name);
+	_p->typed_value.script = std::move(p_value_script);
 	_p->typed_value.where = "TypedDictionary.Value";
+}
+
+void Dictionary::set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type) {
+	DICTIONARY_SET_TYPED_VALIDATE(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, p_value_type.builtin_type, p_value_type.class_name, p_value_type.script);
+
+	_p->typed_key.builtin_type = p_key_type.builtin_type;
+	_p->typed_key.class_name = p_key_type.class_name;
+	_p->typed_key.script = p_key_type.script;
+	_p->typed_key.where = "TypedDictionary.Key";
+
+	_p->typed_value.builtin_type = p_value_type.builtin_type;
+	_p->typed_value.class_name = p_value_type.class_name;
+	_p->typed_value.script = p_value_type.script;
+	_p->typed_value.where = "TypedDictionary.Value";
+}
+
+void Dictionary::set_typed(ContainerType &&p_key_type, ContainerType &&p_value_type) {
+	_set_typed(p_key_type.builtin_type, std::move(p_key_type.class_name), std::move(p_key_type.script),
+			p_value_type.builtin_type, std::move(p_value_type.class_name), std::move(p_value_type.script));
+}
+
+void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
+	_set_typed(p_key_type, p_key_class_name, Ref<Script>(p_key_script), p_value_type, p_value_class_name, Ref<Script>(p_value_script));
 }
 
 bool Dictionary::is_typed() const {
@@ -754,25 +774,37 @@ const void *Dictionary::id() const {
 	return _p;
 }
 
-Dictionary::Dictionary(const Dictionary &p_base, uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
-	_p = memnew(DictionaryPrivate);
+Dictionary::Dictionary(uint32_t p_key_type, const StringName &p_key_class_name, uint32_t p_value_type, const StringName &p_value_class_name) : _p(memnew(DictionaryPrivate)) {
+	_p->refcount.init();
+	set_typed(p_key_type, p_key_class_name, Ref<Script>(), p_value_type, p_value_class_name, Ref<Script>());
+}
+
+Dictionary::Dictionary(const Dictionary &p_base, const ContainerType &p_key_type, const ContainerType &p_value_type) : _p(memnew(DictionaryPrivate)) {
+	_p->refcount.init();
+	set_typed(p_key_type, p_value_type);
+	assign(p_base);
+}
+Dictionary::Dictionary(const Dictionary &p_base, ContainerType &&p_key_type, ContainerType &&p_value_type) : _p(memnew(DictionaryPrivate)) {
+	_p->refcount.init();
+	set_typed(std::move(p_key_type), std::move(p_value_type));
+	assign(p_base);
+}
+
+Dictionary::Dictionary(const Dictionary &p_base, uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) : _p(memnew(DictionaryPrivate)) {
 	_p->refcount.init();
 	set_typed(p_key_type, p_key_class_name, p_key_script, p_value_type, p_value_class_name, p_value_script);
 	assign(p_base);
 }
 
-Dictionary::Dictionary(const Dictionary &p_from) {
-	_p = nullptr;
+Dictionary::Dictionary(const Dictionary &p_from) : _p(nullptr) {
 	_ref(p_from);
 }
 
-Dictionary::Dictionary() {
-	_p = memnew(DictionaryPrivate);
+Dictionary::Dictionary() : _p(memnew(DictionaryPrivate)) {
 	_p->refcount.init();
 }
 
-Dictionary::Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init) {
-	_p = memnew(DictionaryPrivate);
+Dictionary::Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init) : _p(memnew(DictionaryPrivate)) {
 	_p->refcount.init();
 
 	for (const KeyValue<Variant, Variant> &E : p_init) {
