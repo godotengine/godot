@@ -775,7 +775,7 @@ void add_exposed_classes(Context &r_context) {
 				TEST_FAIL_COND(String(constant_name).contains("::"),
 						"Enum constant contains '::', check bindings to remove the scope: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
-				const int64_t *value = class_info->gdtype->get_integer_constant_map(false).getptr(constant_name);
+				const int64_t *value = class_info->gdtype->get_integer_constant(constant_name, false);
 				TEST_FAIL_COND(!value, "Missing enum constant value: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
 				constants.erase(constant_name);
@@ -797,7 +797,7 @@ void add_exposed_classes(Context &r_context) {
 			TEST_FAIL_COND(constant_name.contains("::"),
 					"Constant contains '::', check bindings to remove the scope: '",
 					String(class_name), ".", constant_name, "'.");
-			const int64_t *value = class_info->gdtype->get_integer_constant_map(false).getptr(StringName(E));
+			const int64_t *value = class_info->gdtype->get_integer_constant(StringName(E), false);
 			TEST_FAIL_COND(!value, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
 
 			ConstantData constant;

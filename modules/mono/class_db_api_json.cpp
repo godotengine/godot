@@ -119,10 +119,12 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 		{ //constants
 
-			List<StringName> snames;
+			LocalVector<StringName> snames;
 
-			for (const KeyValue<StringName, int64_t> &F : t->gdtype->get_integer_constant_map(true)) {
-				snames.push_back(F.key);
+			for (const KeyValue<StringName, GDType::Property> &F : t->gdtype->get_property_map(true)) {
+				if (F.value.type == GDType::Property::Type::INTEGER_CONSTANT) {
+					snames.push_back(F.key);
+				}
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
@@ -134,7 +136,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				constants.push_back(constant_dict);
 
 				constant_dict["name"] = F;
-				constant_dict["value"] = t->gdtype->get_integer_constant_map(true)[F];
+				constant_dict["value"] = t->gdtype->get_property_map(true)[F].payload.integer;
 			}
 
 			if (!constants.is_empty()) {

@@ -70,7 +70,6 @@ void GDType::initialize() {
 		// parts in _bind_methods, which is called on registration.
 		super_type->init_state = InitState::FINALIZED;
 
-		constant_map = super_type->constant_map;
 		enum_map = super_type->enum_map;
 		signal_map = super_type->signal_map;
 		method_map = super_type->method_map;
@@ -83,11 +82,9 @@ void GDType::initialize() {
 void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
-	ERR_FAIL_COND_MSG(self_constant_map.has(p_name), vformat("Class '%s' already has constant '%s'.", String(name), String(p_name)));
+	ERR_FAIL_COND_MSG(has_integer_constant(p_name, true), vformat("Class '%s' already has constant '%s'.", String(name), String(p_name)));
 	ERR_FAIL_COND_MSG(property_map.has(p_name), vformat("Object '%s' already has property '%s'.", get_name(), p_name));
 
-	constant_map[p_name] = p_constant;
-	self_constant_map[p_name] = p_constant;
 	property_map.insert(p_name, Property(Property::Type::INTEGER_CONSTANT, p_constant));
 	self_property_map.insert(p_name, Property(Property::Type::INTEGER_CONSTANT, p_constant));
 
@@ -112,6 +109,16 @@ void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p
 			enum_map[enum_name] = enum_info;
 		}
 	}
+}
+
+const int64_t *GDType::get_integer_constant(const StringName &p_name, bool p_no_inheritance) const {
+	const GDType::Property *p = get_property_map(p_no_inheritance).getptr(p_name);
+	return p && p->type == Property::Type::INTEGER_CONSTANT ? &p->payload.integer : nullptr;
+}
+
+bool GDType::has_integer_constant(const StringName &p_name, bool p_no_inheritance) const {
+	const GDType::Property *p = get_property_map(p_no_inheritance).getptr(p_name);
+	return p && p->type == Property::Type::INTEGER_CONSTANT;
 }
 
 const GDType::EnumInfo *GDType::get_integer_constant_enum(const StringName &p_name, bool p_no_inheritance) const {
