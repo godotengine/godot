@@ -38,6 +38,7 @@
 		- [kbd]Cmd + Left Arrow[/kbd]: Same as [kbd]Home[/kbd], move the caret to the beginning of the line
 		- [kbd]Cmd + Right Arrow[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
 		[b]Note:[/b] Caret movement shortcuts listed above are not affected by [member shortcut_keys_enabled].
+		[note]Column numbers are [i]zero-based[/i], like elements of an array. For example, [member caret_column] being [code]0[/code] indicates the caret is on the first column (i.e., before the first character).[/note]
 	</description>
 	<tutorials>
 	</tutorials>
