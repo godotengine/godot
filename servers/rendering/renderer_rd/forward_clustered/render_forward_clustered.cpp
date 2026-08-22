@@ -981,6 +981,10 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 		bool uses_motion = false;
 		float fade_alpha = 1.0;
 
+		if (inst->surface_caches != nullptr && inst->surface_caches->shader != nullptr) {
+			flags |= inst->surface_caches->shader->cull_mode == static_cast<int>(RSE::CULL_MODE_DISABLED) && inst->mirror ? static_cast<int>(INSTANCE_DATA_FLAG_NEGATIVE_NORMALS) : 0;
+		}
+
 		if (inst->fade_near || inst->fade_far) {
 			float fade_dist = inst->transformed_aabb.get_center().distance_to(p_render_data->scene_data->cam_transform.origin);
 			// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.

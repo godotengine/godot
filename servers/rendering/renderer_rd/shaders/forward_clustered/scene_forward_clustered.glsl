@@ -490,6 +490,9 @@ void vertex_shader(vec3 vertex_input,
 	// Normalize TBN vectors to account for model/normal transforms that may have scale
 #ifdef NORMAL_USED
 	normal_interp = normalize(normal);
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NEGATIVE_NORMALS)) {
+		normal_interp = -normal_interp;
+	}
 #endif
 
 #ifdef TANGENT_USED
