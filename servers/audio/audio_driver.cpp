@@ -96,9 +96,9 @@ void AudioDriver::input_buffer_init(int driver_buffer_frames) {
 	input_size = 0;
 }
 
-void AudioDriver::input_buffer_write(int32_t sample) {
+void AudioDriver::input_buffer_write(float p_sample) {
 	if ((int)input_position < input_buffer.size()) {
-		input_buffer.write[input_position++] = sample;
+		input_buffer.write[input_position++] = p_sample;
 		if ((int)input_position >= input_buffer.size()) {
 			input_position = 0;
 		}
@@ -212,6 +212,7 @@ int AudioDriverManager::get_driver_count() {
 
 void AudioDriverManager::initialize(int p_driver) {
 	GLOBAL_DEF_RST("audio/driver/enable_input", false);
+	GLOBAL_DEF_RST("audio/driver/voice_processing", false);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate", PROPERTY_HINT_RANGE, "11025,192000,1,or_greater,suffix:Hz"), DEFAULT_MIX_RATE);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate.web", PROPERTY_HINT_RANGE, "0,192000,1,or_greater,suffix:Hz"), 0); // Safer default output_latency for web (use browser default).
 

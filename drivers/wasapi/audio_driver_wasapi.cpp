@@ -106,6 +106,7 @@ DEFINE_PROPERTYKEY(PKEY_Device_FriendlyNameGodot, 0xa45c254e, 0xdf1c, 0x4efd, 0x
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 const IID IID_IAudioClient = __uuidof(IAudioClient);
+const IID IID_IAudioClient2 = __uuidof(IAudioClient2);
 const IID IID_IAudioClient3 = __uuidof(IAudioClient3);
 const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
@@ -384,10 +385,34 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 
 	if (!using_audio_client_3) {
 		DWORD streamflags = 0;
-		if ((DWORD)mix_rate != pwfex->nSamplesPerSec) {
+		if (p_input && voice_processing_enabled) {
+			// Ask Windows to treat this stream as communications audio; lets
+			// vendor/OS voice DSP apply where available.
+			AudioClientProperties audioProps;
+			memset(&audioProps, 0, sizeof(audioProps));
+			audioProps.cbSize = sizeof(AudioClientProperties);
+			audioProps.bIsOffload = FALSE;
+			audioProps.eCategory = AudioCategory_Communications;
+			IAudioClient2 *audio_client2 = nullptr;
+			HRESULT hr2 = p_device->audio_client->QueryInterface(IID_IAudioClient2, (void **)&audio_client2);
+			if (hr2 == S_OK && audio_client2 != nullptr) {
+				hr2 = audio_client2->SetClientProperties(&audioProps);
+				if (hr2 != S_OK) {
+					print_verbose("WASAPI: SetClientProperties failed with error 0x" + String::num_uint64(hr2, 16) + ".");
+				}
+				audio_client2->Release();
+			}
+		}
+		// Capture runs at the device's native sample rate to avoid a lossy
+		// rate-adjust pass; consumers resample once via their own path.
+		if (!p_input && (DWORD)mix_rate != pwfex->nSamplesPerSec) {
 			streamflags |= AUDCLNT_STREAMFLAGS_RATEADJUST;
 			pwfex->nSamplesPerSec = mix_rate;
 			pwfex->nAvgBytesPerSec = pwfex->nSamplesPerSec * pwfex->nChannels * (pwfex->wBitsPerSample / 8);
+		}
+		if (p_input) {
+			input_mix_rate = pwfex->nSamplesPerSec;
+			input_mono = p_device->channels == 1;
 		}
 		hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_input ? REFTIMES_PER_SEC : 0, 0, pwfex, nullptr);
 
@@ -591,6 +616,8 @@ Error AudioDriverWASAPI::finish_input_device() {
 
 Error AudioDriverWASAPI::init() {
 	mix_rate = _get_configured_mix_rate();
+	// Updated to the device's native rate when the capture device opens.
+	input_mix_rate = mix_rate;
 
 	target_latency_ms = Engine::get_singleton()->get_audio_output_latency();
 
@@ -675,37 +702,33 @@ void AudioDriverWASAPI::set_output_device(const String &p_name) {
 	unlock();
 }
 
-int32_t AudioDriverWASAPI::read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i) {
+float AudioDriverWASAPI::read_sample_float(WORD format_tag, int bits_per_sample, BYTE *buffer, int i) {
 	if (format_tag == WAVE_FORMAT_PCM) {
-		int32_t sample = 0;
 		switch (bits_per_sample) {
 			case 8:
-				sample = int32_t(((int8_t *)buffer)[i]) << 24;
-				break;
+				return ((int8_t *)buffer)[i] / 128.f;
 
 			case 16:
-				sample = int32_t(((int16_t *)buffer)[i]) << 16;
-				break;
+				return ((int16_t *)buffer)[i] / 32768.f;
 
-			case 24:
+			case 24: {
+				int32_t sample = 0;
 				sample |= int32_t(((int8_t *)buffer)[i * 3 + 2]) << 24;
 				sample |= int32_t(((int8_t *)buffer)[i * 3 + 1]) << 16;
 				sample |= int32_t(((int8_t *)buffer)[i * 3 + 0]) << 8;
-				break;
+				return sample / 2147483648.f;
+			}
 
 			case 32:
-				sample = ((int32_t *)buffer)[i];
-				break;
+				return ((int32_t *)buffer)[i] / 2147483648.f;
 		}
-
-		return sample;
 	} else if (format_tag == WAVE_FORMAT_IEEE_FLOAT) {
-		return int32_t(((float *)buffer)[i] * 32768.0) << 16;
+		return ((float *)buffer)[i];
 	} else {
 		ERR_PRINT("WASAPI: Unknown format tag");
 	}
 
-	return 0;
+	return 0.0f;
 }
 
 void AudioDriverWASAPI::write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i, int32_t sample) {
@@ -903,20 +926,19 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 					hr = ad->audio_input.capture_client->GetBuffer(&data, &num_frames_available, &flags, nullptr, nullptr);
 					ERR_BREAK(hr != S_OK);
 
-					// fixme: Only works for floating point atm
 					for (UINT32 j = 0; j < num_frames_available; j++) {
-						int32_t l = 0, r = 0;
+						float l = 0.0f, r = 0.0f;
 
 						if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
-							l = r = 0;
+							l = r = 0.0f;
 						} else {
 							if (ad->audio_input.channels >= 2) {
-								l = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * ad->audio_input.channels);
-								r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * ad->audio_input.channels + 1);
+								l = read_sample_float(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * ad->audio_input.channels);
+								r = read_sample_float(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * ad->audio_input.channels + 1);
 							} else if (ad->audio_input.channels == 1) {
-								l = r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
+								l = r = read_sample_float(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
 							} else {
-								l = r = 0;
+								l = r = 0.0f;
 								ERR_PRINT("WASAPI: unsupported channel count in microphone!");
 							}
 						}

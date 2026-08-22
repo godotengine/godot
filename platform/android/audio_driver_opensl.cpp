@@ -183,7 +183,7 @@ void AudioDriverOpenSL::start() {
 
 void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf queueItf) {
 	for (int i = 0; i < rec_buffer.size(); i++) {
-		int32_t sample = rec_buffer[i] << 16;
+		float sample = rec_buffer[i] / 32768.f;
 		input_buffer_write(sample);
 		input_buffer_write(sample); // call twice to convert to Stereo
 	}
@@ -228,6 +228,21 @@ Error AudioDriverOpenSL::init_input_device() {
 	SLresult res = (*EngineItf)->CreateAudioRecorder(EngineItf, &recorder, &recSource, &recSnk, 2, ids, req);
 	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);
 
+	if (voice_processing_enabled) {
+		// Request the platform's voice communication pipeline (echo
+		// cancellation, noise suppression) via the recording preset. Must be
+		// set before the recorder object is realized.
+		SLAndroidConfigurationItf configItf;
+		res = (*recorder)->GetInterface(recorder, SL_IID_ANDROIDCONFIGURATION, (void *)&configItf);
+		if (res == SL_RESULT_SUCCESS && configItf != nullptr) {
+			SLuint32 preset = SL_ANDROID_RECORDING_PRESET_VOICE_COMMUNICATION;
+			res = (*configItf)->SetConfiguration(configItf, SL_ANDROID_KEY_RECORDING_PRESET, &preset, sizeof(SLuint32));
+			if (res != SL_RESULT_SUCCESS) {
+				print_verbose("OpenSL: Failed to set VOICE_COMMUNICATION recording preset.");
+			}
+		}
+	}
+
 	res = (*recorder)->Realize(recorder, SL_BOOLEAN_FALSE);
 	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);
 
@@ -254,6 +269,7 @@ Error AudioDriverOpenSL::init_input_device() {
 
 	const int rec_buffer_frames = 2048;
 	rec_buffer.resize(rec_buffer_frames);
+	input_mono = true;
 	input_buffer_init(rec_buffer_frames);
 
 	res = (*recordBufferQueueItf)->Enqueue(recordBufferQueueItf, rec_buffer.ptrw(), rec_buffer.size() * sizeof(int16_t));

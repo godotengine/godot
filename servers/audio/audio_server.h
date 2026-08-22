@@ -80,7 +80,9 @@ private:
 #endif // DEBUG_ENABLED
 
 	bool input_device_active = false;
+	bool voice_processing_enabled = false;
 	int input_buffer_ofs = 0;
+	int input_peak_ofs = 0;
 
 	struct Bus {
 		StringName name;
@@ -351,6 +353,10 @@ public:
 	String get_input_device();
 	void set_input_device(const String &p_name);
 	Error set_input_device_active(bool p_is_active);
+	bool is_input_mono() const;
+	void set_voice_processing_enabled(bool p_enable);
+	bool is_voice_processing_enabled() const;
+	Vector2 get_input_peak();
 	int get_input_frames_available();
 	int get_input_buffer_length_frames();
 	PackedVector2Array get_input_frames(int p_frames);

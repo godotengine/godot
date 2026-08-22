@@ -1288,10 +1288,19 @@ const _GodotAudio = {
 			return ctx.destination.channelCount;
 		},
 
-		create_input: function (callback) {
+		create_input: function (voiceProcessing, callback) {
 			if (GodotAudio.input) {
 				return 0; // Already started.
 			}
+			// Browser defaults when voice processing is off; explicit echo
+			// cancellation, noise suppression and AGC when it's on.
+			const audioConstraints = voiceProcessing
+				? {
+						echoCancellation: true,
+						noiseSuppression: true,
+						autoGainControl: true,
+				  }
+				: true;
 			function gotMediaInput(stream) {
 				try {
 					GodotAudio.input = GodotAudio.ctx.createMediaStreamSource(stream);
@@ -1302,7 +1311,7 @@ const _GodotAudio = {
 			}
 			if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 				navigator.mediaDevices.getUserMedia({
-					'audio': true,
+					'audio': audioConstraints,
 				}).then(gotMediaInput, function (e) {
 					GodotRuntime.error('Error getting user media.', e);
 				});
@@ -1315,7 +1324,7 @@ const _GodotAudio = {
 					return 1;
 				}
 				navigator.getUserMedia({
-					'audio': true,
+					'audio': audioConstraints,
 				}, gotMediaInput, function (e) {
 					GodotRuntime.print(e);
 				});
@@ -1587,9 +1596,9 @@ const _GodotAudio = {
 	},
 
 	godot_audio_input_start__proxy: 'sync',
-	godot_audio_input_start__sig: 'i',
-	godot_audio_input_start: function () {
-		return GodotAudio.create_input(function (input) {
+	godot_audio_input_start__sig: 'ii',
+	godot_audio_input_start: function (voiceProcessing) {
+		return GodotAudio.create_input(voiceProcessing, function (input) {
 			input.connect(GodotAudio.driver.get_node());
 		});
 	},

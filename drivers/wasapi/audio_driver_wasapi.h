@@ -71,6 +71,7 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	unsigned int channels = 0;
 	int mix_rate = 0;
+	int input_mix_rate = 0;
 	int buffer_frames = 0;
 	int target_latency_ms = 0;
 	float real_latency = 0.0;
@@ -79,7 +80,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	SafeFlag exit_thread;
 
 	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i, int32_t sample);
-	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
+	static _FORCE_INLINE_ float read_sample_float(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
 	static void thread_func(void *p_udata);
 
 	Error init_output_device(bool p_reinit = false);
@@ -100,6 +101,7 @@ public:
 	virtual Error init() override;
 	virtual void start() override;
 	virtual int get_mix_rate() const override;
+	virtual int get_input_mix_rate() const override { return input_mix_rate; }
 	virtual SpeakerMode get_speaker_mode() const override;
 	virtual float get_latency() override;
 

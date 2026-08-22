@@ -452,6 +452,10 @@
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
 			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows, make sure that apps are allowed to access the microphone in the OS's privacy settings.
 		</member>
+		<member name="audio/driver/voice_processing" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], requests platform voice processing (echo cancellation, noise suppression and automatic gain control) for the microphone input stream. Can also be toggled at runtime with [method AudioServer.set_voice_processing_enabled].
+			Platform support varies: full echo cancellation on macOS/iOS, Android and Web; on Windows this only marks the capture stream as communications audio.
+		</member>
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
 			Target mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
 			[b]Note:[/b] On iOS and macOS, mixing rate is determined by audio driver, this value is ignored.

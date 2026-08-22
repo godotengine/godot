@@ -1353,6 +1353,11 @@ void AudioServer::init() {
 #endif
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/video/video_delay_compensation_ms", PROPERTY_HINT_RANGE, "-1000,1000,1,suffix:ms"), 0);
+
+	voice_processing_enabled = GLOBAL_GET("audio/driver/voice_processing");
+	if (AudioDriver::get_singleton()) {
+		AudioDriver::get_singleton()->set_voice_processing_enabled(voice_processing_enabled);
+	}
 }
 
 void AudioServer::update() {
@@ -1692,13 +1697,79 @@ Error AudioServer::set_input_device_active(bool p_is_active) {
 			return FAILED;
 		}
 
+		AudioDriver::get_singleton()->set_voice_processing_enabled(voice_processing_enabled);
 		input_buffer_ofs = 0;
+		input_peak_ofs = 0;
 		input_device_active = true;
 		return AudioDriver::get_singleton()->input_start();
 	} else {
 		input_device_active = false;
 		return AudioDriver::get_singleton()->input_stop();
 	}
+}
+
+bool AudioServer::is_input_mono() const {
+	return AudioDriver::get_singleton()->is_input_mono();
+}
+
+void AudioServer::set_voice_processing_enabled(bool p_enable) {
+	if (voice_processing_enabled == p_enable) {
+		return;
+	}
+	voice_processing_enabled = p_enable;
+	AudioDriver::get_singleton()->set_voice_processing_enabled(p_enable);
+
+	// Voice processing is requested when the capture stream opens, so restart
+	// the input device if it is currently active.
+	if (input_device_active) {
+		AudioDriver::get_singleton()->input_stop();
+		input_buffer_ofs = 0;
+		AudioDriver::get_singleton()->input_start();
+	}
+}
+
+bool AudioServer::is_voice_processing_enabled() const {
+	return voice_processing_enabled;
+}
+
+Vector2 AudioServer::get_input_peak() {
+	Vector2 peak = Vector2(0.0, 0.0);
+	AudioDriver *ad = AudioDriver::get_singleton();
+	ad->lock();
+	Vector<float> buf = ad->get_input_buffer();
+	if (!buf.is_empty()) {
+		int input_position = ad->get_input_position();
+		if (input_peak_ofs < 0 || input_peak_ofs >= buf.size()) {
+			// Buffer was reallocated (e.g. capture restarted): resync.
+			input_peak_ofs = input_position;
+		}
+		if (input_position < input_peak_ofs) {
+			input_position += buf.size();
+		}
+		int available_samples = input_position - input_peak_ofs;
+		for (int i = 0; i < available_samples; i++) {
+			int ofs = (input_peak_ofs + i) % buf.size();
+			float v = Math::abs(buf[ofs]);
+			if (ofs % 2 == 0) {
+				peak.x = MAX(peak.x, v);
+			} else {
+				peak.y = MAX(peak.y, v);
+			}
+		}
+		// Consume the scanned region so repeated calls report the peak of new
+		// samples only. If the writer lapped the cursor, start from the current
+		// write position.
+		if (available_samples >= buf.size()) {
+			input_peak_ofs = ad->get_input_position();
+		} else {
+			input_peak_ofs += available_samples;
+			if (input_peak_ofs >= buf.size()) {
+				input_peak_ofs -= buf.size();
+			}
+		}
+	}
+	ad->unlock();
+	return peak;
 }
 
 int AudioServer::get_input_frames_available() {
@@ -1725,18 +1796,18 @@ PackedVector2Array AudioServer::get_input_frames(int p_frames) {
 	AudioDriver *ad = AudioDriver::get_singleton();
 	ad->lock();
 	int input_position = ad->get_input_position();
-	Vector<int32_t> buf = ad->get_input_buffer();
+	Vector<float> buf = ad->get_input_buffer();
 	if (input_position < input_buffer_ofs) {
 		input_position += buf.size();
 	}
 	if ((input_buffer_ofs + p_frames * 2 <= input_position) && (p_frames >= 0)) {
 		ret.resize(p_frames);
 		for (int i = 0; i < p_frames; i++) {
-			float l = (buf[input_buffer_ofs++] >> 16) / 32768.f;
+			float l = buf[input_buffer_ofs++];
 			if (input_buffer_ofs >= buf.size()) {
 				input_buffer_ofs = 0;
 			}
-			float r = (buf[input_buffer_ofs++] >> 16) / 32768.f;
+			float r = buf[input_buffer_ofs++];
 			if (input_buffer_ofs >= buf.size()) {
 				input_buffer_ofs = 0;
 			}
@@ -1922,6 +1993,10 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_device"), &AudioServer::get_input_device);
 	ClassDB::bind_method(D_METHOD("set_input_device", "name"), &AudioServer::set_input_device);
 	ClassDB::bind_method(D_METHOD("set_input_device_active", "active"), &AudioServer::set_input_device_active);
+	ClassDB::bind_method(D_METHOD("is_input_mono"), &AudioServer::is_input_mono);
+	ClassDB::bind_method(D_METHOD("set_voice_processing_enabled", "enable"), &AudioServer::set_voice_processing_enabled);
+	ClassDB::bind_method(D_METHOD("is_voice_processing_enabled"), &AudioServer::is_voice_processing_enabled);
+	ClassDB::bind_method(D_METHOD("get_input_peak"), &AudioServer::get_input_peak);
 	ClassDB::bind_method(D_METHOD("get_input_frames_available"), &AudioServer::get_input_frames_available);
 	ClassDB::bind_method(D_METHOD("get_input_buffer_length_frames"), &AudioServer::get_input_buffer_length_frames);
 	ClassDB::bind_method(D_METHOD("get_input_frames", "frames"), &AudioServer::get_input_frames);
