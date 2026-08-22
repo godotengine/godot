@@ -17,9 +17,9 @@ partial class ExportedToolButtons
         /// </summary>
         public new static readonly global::Godot.StringName @MyButton2 = "MyButton2";
     }
-    protected internal new static partial class GodotInternal
+    protected new static partial class GodotInternal
     {
-        internal new static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        private static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
         {
             static godot_variant trampoline_get_MyButton1(object godotObject)
             {
@@ -34,19 +34,22 @@ partial class ExportedToolButtons
             collector.TryAdd(PropertyName.@MyButton1, (new(&trampoline_get_MyButton1), new(null)));
             collector.TryAdd(PropertyName.@MyButton2, (new(&trampoline_get_MyButton2), new(null)));
         }
-    }
-    /// <summary>
-    /// Get the property information for all the properties declared in this class.
-    /// This method is used by Godot to register the available properties in the editor.
-    /// Do not call this method.
-    /// </summary>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    internal new static global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo> GetGodotPropertyList()
-    {
-        var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
+        /// <summary>
+        /// Get the property information for all the properties declared in this class.
+        /// This method is used by Godot to register the available properties in the editor.
+        /// Do not call this method.
+        /// </summary>
+        public static
+#nullable enable
+            global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>?
+#nullable restore
+            GetGodotPropertyList()
+        {
+            var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
         properties.Add(new(type: (global::Godot.Variant.Type)25, name: PropertyName.@MyButton1, hint: (global::Godot.PropertyHint)39, hintString: "Click me!", usage: (global::Godot.PropertyUsageFlags)4, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)25, name: PropertyName.@MyButton2, hint: (global::Godot.PropertyHint)39, hintString: "Click me!,ColorRect", usage: (global::Godot.PropertyUsageFlags)4, exported: true));
-        return properties;
+            return properties;
+        }
     }
 #pragma warning restore CS0109
 }

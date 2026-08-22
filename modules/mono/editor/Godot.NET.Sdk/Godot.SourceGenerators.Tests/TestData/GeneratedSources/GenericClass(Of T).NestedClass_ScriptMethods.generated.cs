@@ -11,9 +11,30 @@ partial class NestedClass
     /// </summary>
     public new class MethodName : global::Godot.GodotObject.MethodName {
     }
-    protected internal new static partial class GodotInternal
+    protected new static partial class GodotInternal
     {
-        public new static unsafe void GetGodotMethodTrampolines(global::Godot.Bridge.MethodTrampolineCollector collector)
+        /// <summary>
+        /// Get the method information for all the methods declared in this class.
+        /// This method is used by Godot to register the available methods in the editor.
+        /// Do not call this method.
+        /// </summary>
+        public static
+#nullable enable
+            global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>?
+#nullable restore
+            GetGodotMethodList()
+        {
+            return null;
+        }
+        /// <summary>
+        /// Get the method information for all the methods declared in this class.
+        /// This method is used by Godot to register the available methods in the editor.
+        /// Do not call this method.
+        /// </summary>
+        public static void GetGodotRpcMethods(global::Godot.Bridge.RpcMethodCollector collector)
+        {
+        }
+        private static unsafe void GetGodotMethodTrampolines(global::Godot.Bridge.MethodTrampolineCollector collector)
         {
         }
     }
