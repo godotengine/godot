@@ -38,6 +38,9 @@
 class Array;
 class StringName;
 class Variant;
+class Script;
+template <typename T>
+class Ref;
 struct ContainerType;
 struct ContainerTypeValidate;
 struct DictionaryPrivate;
@@ -125,12 +128,17 @@ public:
 	const ContainerType &get_value_type() const _LIFETIME_BOUND_;
 	uint32_t get_typed_key_builtin() const;
 	uint32_t get_typed_value_builtin() const;
-	StringName get_typed_key_class_name() const;
-	StringName get_typed_value_class_name() const;
-	Variant get_typed_key_script() const;
-	Variant get_typed_value_script() const;
+	const StringName &get_typed_key_class_name() const _LIFETIME_BOUND_;
+	const StringName &get_typed_value_class_name() const _LIFETIME_BOUND_;
+	const Ref<Script> &get_typed_key_script() const _LIFETIME_BOUND_;
+	const Ref<Script> &get_typed_value_script() const _LIFETIME_BOUND_;
 	const ContainerTypeValidate &get_key_validator() const _LIFETIME_BOUND_;
 	const ContainerTypeValidate &get_value_validator() const _LIFETIME_BOUND_;
+
+	StringName _get_typed_key_class_name_bind() const;
+	StringName _get_typed_value_class_name_bind() const;
+	Variant _get_typed_key_script_bind() const;
+	Variant _get_typed_value_script_bind() const;
 
 	void make_read_only();
 	bool is_read_only() const;

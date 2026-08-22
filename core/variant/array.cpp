@@ -915,11 +915,19 @@ uint32_t Array::get_typed_builtin() const {
 	return _p->typed.builtin_type;
 }
 
-StringName Array::get_typed_class_name() const {
+const StringName &Array::get_typed_class_name() const {
 	return _p->typed.class_name;
 }
 
-Variant Array::get_typed_script() const {
+const Ref<Script> &Array::get_typed_script() const {
+	return _p->typed.script;
+}
+
+StringName Array::_get_typed_class_name_bind() const {
+	return _p->typed.class_name;
+}
+
+Variant Array::_get_typed_script_bind() const {
 	return _p->typed.script;
 }
 

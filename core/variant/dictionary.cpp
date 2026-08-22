@@ -703,19 +703,19 @@ uint32_t Dictionary::get_typed_value_builtin() const {
 	return _p->typed_value.builtin_type;
 }
 
-StringName Dictionary::get_typed_key_class_name() const {
+const StringName &Dictionary::get_typed_key_class_name() const {
 	return _p->typed_key.class_name;
 }
 
-StringName Dictionary::get_typed_value_class_name() const {
+const StringName &Dictionary::get_typed_value_class_name() const {
 	return _p->typed_value.class_name;
 }
 
-Variant Dictionary::get_typed_key_script() const {
+const Ref<Script> &Dictionary::get_typed_key_script() const {
 	return _p->typed_key.script;
 }
 
-Variant Dictionary::get_typed_value_script() const {
+const Ref<Script> &Dictionary::get_typed_value_script() const {
 	return _p->typed_value.script;
 }
 
@@ -725,6 +725,22 @@ const ContainerTypeValidate &Dictionary::get_key_validator() const {
 
 const ContainerTypeValidate &Dictionary::get_value_validator() const {
 	return _p->typed_value;
+}
+
+StringName Dictionary::_get_typed_key_class_name_bind() const {
+	return _p->typed_key.class_name;
+}
+
+StringName Dictionary::_get_typed_value_class_name_bind() const {
+	return _p->typed_value.class_name;
+}
+
+Variant Dictionary::_get_typed_key_script_bind() const {
+	return _p->typed_key.script;
+}
+
+Variant Dictionary::_get_typed_value_script_bind() const {
+	return _p->typed_value.script;
 }
 
 void Dictionary::operator=(const Dictionary &p_dictionary) {

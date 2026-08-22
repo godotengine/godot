@@ -40,7 +40,9 @@
 class Callable;
 class StringName;
 class Variant;
-
+class Script;
+template <typename T>
+class Ref;
 struct ArrayPrivate;
 struct ContainerType;
 
@@ -189,8 +191,11 @@ public:
 
 	const ContainerType &get_element_type() const _LIFETIME_BOUND_;
 	uint32_t get_typed_builtin() const;
-	StringName get_typed_class_name() const;
-	Variant get_typed_script() const;
+	const StringName &get_typed_class_name() const _LIFETIME_BOUND_;
+	const Ref<Script> &get_typed_script() const _LIFETIME_BOUND_;
+
+	StringName _get_typed_class_name_bind() const;
+	Variant _get_typed_script_bind() const;
 
 	void make_read_only();
 	bool is_read_only() const;
