@@ -2821,7 +2821,8 @@ void RichTextLabel::_notification(int p_what) {
 
 			// Search for the first line.
 			int to_line = main->first_invalid_line.load();
-			int from_line = _find_first_line(0, to_line, vofs);
+			first_line = _find_first_line(0, to_line, vofs);
+			int from_line = first_line;
 
 			// Bottom margin for text clipping.
 			float v_limit = theme_cache.normal_style->get_margin(SIDE_BOTTOM);
@@ -4171,7 +4172,9 @@ bool RichTextLabel::_validate_line_caches() {
 			total_height = _update_scroll_exceeds(total_height, ctrl_height, wrap_width, i, old_scroll, text_rect.size.height);
 			main->first_resized_line.store(i);
 		}
-
+		if (!(scroll_follow && scroll_following)) {
+			vscroll->set_value(main->lines[first_line].offset.y + theme_cache.line_separation);
+		}
 		main->first_resized_line.store(main->lines.size());
 
 		if (fit_content) {
