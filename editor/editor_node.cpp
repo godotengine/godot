@@ -400,16 +400,34 @@ void EditorNode::_update_unsaved_cache() {
 	}
 }
 
+void EditorNode::set_block_input(bool p_block) {
+	block_input = p_block;
+}
+
 void EditorNode::input(const Ref<InputEvent> &p_event) {
-	// EditorNode::get_singleton()->set_process_input is set to true in ProgressDialog
+	// EditorNode::get_singleton()->set_block_input is set to true in ProgressDialog
 	// only when the progress dialog is visible.
 	// We need to discard all key events to disable all shortcuts while the progress
 	// dialog is displayed, simulating an exclusive popup. Mouse events are
 	// captured by a full-screen container in front of the EditorNode in ProgressDialog,
 	// allowing interaction with the actual dialog where a Cancel button may be visible.
-	Ref<InputEventKey> k = p_event;
-	if (k.is_valid()) {
-		get_tree()->get_root()->set_input_as_handled();
+	if (block_input) {
+		Ref<InputEventKey> k = p_event;
+		if (k.is_valid()) {
+			get_tree()->get_root()->set_input_as_handled();
+			return;
+		}
+	}
+
+	if (EDITOR_GET("interface/editor/input/mouse_extra_buttons_navigate_history")) {
+		Ref<InputEventMouseButton> mb = p_event;
+		if (mb.is_valid() && mb->is_pressed()) {
+			if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
+				_history_back();
+			} else if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
+				_history_forward();
+			}
+		}
 	}
 }
 
@@ -4677,6 +4695,8 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 		new_index = 1;
 	}
 
+	_remove_scene_from_history(editor_data.get_scene_history_id(old_index));
+
 	if (p_change_tab) {
 		_set_current_scene(new_index);
 	}
@@ -4697,6 +4717,7 @@ void EditorNode::_remove_scene(int p_idx, bool p_change_tab) {
 		_remove_edited_scene(p_change_tab);
 	} else {
 		// Scene to remove is not active scene.
+		_remove_scene_from_history(editor_data.get_scene_history_id(p_idx));
 		editor_data.remove_scene(p_idx);
 	}
 }
@@ -4830,7 +4851,72 @@ void EditorNode::_set_current_scene(int p_idx) {
 	_set_current_scene_nocheck(p_idx);
 }
 
-void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state) {
+void EditorNode::_history_back() {
+	while (tab_history_pos > 0) {
+		if (editor_data.get_edited_scene_from_history_id(tab_history[tab_history_pos - 1]) == -1) {
+			WARN_PRINT("Invalid scene found in history.");
+			_remove_scene_from_history(tab_history[tab_history_pos - 1]);
+			continue;
+		}
+		_update_history_pos(tab_history_pos - 1);
+		break;
+	}
+}
+
+void EditorNode::_history_forward() {
+	while (tab_history_pos < tab_history.size() - 1) {
+		if (editor_data.get_edited_scene_from_history_id(tab_history[tab_history_pos + 1]) == -1) {
+			WARN_PRINT("Invalid scene found in history.");
+			_remove_scene_from_history(tab_history[tab_history_pos + 1]);
+			continue;
+		}
+		_update_history_pos(tab_history_pos + 1);
+		break;
+	}
+}
+
+void EditorNode::_update_history_pos(int p_new_pos) {
+	ERR_FAIL_INDEX_MSG(p_new_pos, tab_history.size(), "History position out of bounds.");
+	tab_history_pos = p_new_pos;
+	int history_id = tab_history[tab_history_pos];
+
+	int scene_idx = editor_data.get_edited_scene_from_history_id(history_id);
+	if (scene_idx == -1 || scene_idx == editor_data.get_edited_scene()) {
+		return;
+	}
+
+	_set_current_scene_nocheck(scene_idx, false, false);
+	scene_tabs->update_scene_tabs();
+}
+
+void EditorNode::_remove_scene_from_history(int p_history_id) {
+	for (int i = 0; i < tab_history.size(); i++) {
+		if (tab_history[i] != p_history_id) {
+			continue;
+		}
+		tab_history.remove_at(i);
+		if (tab_history_pos >= i) {
+			tab_history_pos--;
+		}
+		i--;
+	}
+}
+
+void EditorNode::_push_scene_to_history(int p_history_id) {
+	if (tab_history_pos >= 0 && tab_history[tab_history_pos] == p_history_id) {
+		return;
+	}
+
+	tab_history.resize(tab_history_pos + 1);
+	tab_history.push_back(p_history_id);
+	tab_history_pos = tab_history.size() - 1;
+}
+
+void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state, bool p_save_history) {
+	if (p_save_history) {
+		_push_scene_to_history(editor_data.get_scene_history_id(p_idx));
+	}
+
 	// Save the folding in case the scene gets reloaded.
 	const String scene_path = editor_data.get_scene_path(p_idx);
 	if (scene_path.is_empty() && editor_data.get_edited_scene_root(p_idx)) {
@@ -9690,6 +9776,7 @@ EditorNode::EditorNode() {
 	saving_resource = Ref<Resource>();
 
 	set_process(true);
+	set_process_input(true);
 
 	open_imported = memnew(ConfirmationDialog);
 	open_imported->set_flag(Window::FLAG_RESIZE_DISABLED, true);

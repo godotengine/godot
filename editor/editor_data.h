@@ -233,6 +233,7 @@ public:
 	int get_scene_history_id_from_path(const String &p_path) const;
 	int get_current_edited_scene_history_id() const;
 	int get_scene_history_id(int p_idx) const;
+	int get_edited_scene_from_history_id(int p_history_id) const;
 
 	void set_plugin_window_layout(Ref<ConfigFile> p_layout);
 	void get_plugin_window_layout(Ref<ConfigFile> p_layout);

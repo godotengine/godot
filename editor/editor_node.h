@@ -315,6 +315,11 @@ private:
 	// Main tabs.
 	EditorSceneTabs *scene_tabs = nullptr;
 
+	Vector<int> tab_history;
+	int tab_history_pos = -1;
+
+	bool block_input = false;
+
 	int tab_closing_idx = 0;
 	List<String> tabs_to_close;
 	List<int> scenes_to_save_as;
@@ -595,7 +600,12 @@ private:
 	void _save_scene_silently();
 
 	void _set_current_scene(int p_idx);
-	void _set_current_scene_nocheck(int p_idx, bool p_ignore_state = false);
+	void _set_current_scene_nocheck(int p_idx, bool p_ignore_state = false, bool p_save_history = true);
+	void _history_back();
+	void _history_forward();
+	void _update_history_pos(int p_new_pos);
+	void _remove_scene_from_history(int p_history_id);
+	void _push_scene_to_history(int p_history_id);
 	void _nav_to_selected_scene();
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
 	void _save_scene(String p_file, int idx = -1);
@@ -865,6 +875,8 @@ public:
 	String get_multiwindow_support_tooltip_text() const;
 
 	bool is_changing_scene() const;
+
+	void set_block_input(bool p_block);
 
 	SubViewport *get_scene_root() { return scene_root; } // Root of the scene being edited.
 

@@ -1109,7 +1109,7 @@
 			The size of the font in the editor interface.
 		</member>
 		<member name="interface/editor/input/mouse_extra_buttons_navigate_history" type="bool" setter="" getter="">
-			If [code]true[/code], the mouse's additional side buttons will be usable to navigate in the script editor's file history. Set this to [code]false[/code] if you're using the side buttons for other purposes (such as a push-to-talk button in a VoIP program).
+			If [code]true[/code], the mouse's additional side buttons will be usable to navigate in the script editor's file and scene editor's history. Set this to [code]false[/code] if you're using the side buttons for other purposes (such as a push-to-talk button in a VoIP program).
 		</member>
 		<member name="interface/editor/input/tablet_driver" type="int" setter="" getter="">
 			Overrides the tablet driver used by the editor.
