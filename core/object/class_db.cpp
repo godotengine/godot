@@ -446,17 +446,19 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 		{ //constants
 
-			List<StringName> snames;
+			LocalVector<StringName> snames;
 
-			for (const KeyValue<StringName, int64_t> &F : t->gdtype->get_integer_constant_map(true)) {
-				snames.push_back(F.key);
+			for (const KeyValue<StringName, GDType::Property> &F : t->gdtype->get_property_map(true)) {
+				if (F.value.type == GDType::Property::Type::INTEGER_CONSTANT) {
+					snames.push_back(F.key);
+				}
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : snames) {
 				hash = hash_murmur3_one_64(F.hash(), hash);
-				hash = hash_murmur3_one_64(uint64_t(t->gdtype->get_integer_constant_map(true)[F]), hash);
+				hash = hash_murmur3_one_64(uint64_t(t->gdtype->get_property_map(true)[F].payload.integer), hash);
 			}
 		}
 
@@ -1167,8 +1169,10 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	for (const KeyValue<StringName, int64_t> &E : type->gdtype->get_integer_constant_map(p_no_inheritance)) {
-		p_constants->push_back(E.key);
+	for (const KeyValue<StringName, GDType::Property> &E : type->gdtype->get_property_map(p_no_inheritance)) {
+		if (E.value.type == GDType::Property::Type::INTEGER_CONSTANT) {
+			p_constants->push_back(E.key);
+		}
 	}
 }
 
@@ -1177,8 +1181,7 @@ int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringNam
 
 	ClassInfo *type = classes.getptr(p_class);
 	if (type) {
-		const int64_t *constant = type->gdtype->get_integer_constant_map(false).getptr(p_name);
-		if (constant) {
+		if (const int64_t *constant = type->gdtype->get_integer_constant(p_name)) {
 			if (p_success) {
 				*p_success = true;
 			}
@@ -1198,7 +1201,7 @@ bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL_V(type, false);
 
-	return type->gdtype->get_integer_constant_map(p_no_inheritance).has(p_name);
+	return type->gdtype->has_integer_constant(p_name, p_no_inheritance);
 }
 
 StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {

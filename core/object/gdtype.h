@@ -95,9 +95,6 @@ protected:
 	/// `name` is the first element and `Object` is the last (for `Object` types).
 	Vector<StringName> name_hierarchy;
 
-	AHashMap<StringName, int64_t> constant_map;
-	AHashMap<StringName, int64_t> self_constant_map;
-
 	AHashMap<StringName, const EnumInfo *> enum_map;
 	AHashMap<StringName, const EnumInfo *> self_enum_map;
 
@@ -131,8 +128,9 @@ public:
 	const Vector<StringName> &get_name_hierarchy() const { return name_hierarchy; }
 
 	void bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
-	const AHashMap<StringName, int64_t> &get_integer_constant_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_constant_map : constant_map; }
 	const AHashMap<StringName, const EnumInfo *> &get_enum_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_enum_map : enum_map; }
+	const int64_t *get_integer_constant(const StringName &p_name, bool p_no_inheritance = false) const;
+	bool has_integer_constant(const StringName &p_name, bool p_no_inheritance = false) const;
 	const EnumInfo *get_integer_constant_enum(const StringName &p_name, bool p_no_inheritance = false) const;
 
 	void add_signal(MethodInfo p_signal);

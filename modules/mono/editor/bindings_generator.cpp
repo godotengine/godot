@@ -4388,7 +4388,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const String &constant_name : constants) {
-			const int64_t *value = class_info->gdtype->get_integer_constant_map(true).getptr(StringName(constant_name));
+			const int64_t *value = class_info->gdtype->get_integer_constant(StringName(constant_name), true);
 			ERR_FAIL_NULL_V(value, false);
 
 			String constant_proxy_name = snake_to_pascal_case(constant_name, true);

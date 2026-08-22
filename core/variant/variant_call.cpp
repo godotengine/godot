@@ -1223,7 +1223,7 @@ struct _VariantCall {
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_COND(variant_constants[p_type].has(p_constant_name));
 		ERR_FAIL_COND(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type)).get_enum_map(true).has(p_constant_name));
-		ERR_FAIL_COND(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type)).get_integer_constant_map(true).has(p_constant_name));
+		ERR_FAIL_COND(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type)).has_integer_constant(p_constant_name, true));
 #endif // DEBUG_ENABLED
 		variant_constants[p_type][p_constant_name] = p_constant_value;
 	}
@@ -1655,8 +1655,8 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
-	for (const KeyValue<StringName, int64_t> &E : _get_gdtype_for_type(p_type).get_integer_constant_map(false)) {
-		if (_get_gdtype_for_type(p_type).get_integer_constant_enum(E.key, false) == nullptr) {
+	for (const KeyValue<StringName, GDType::Property> &E : _get_gdtype_for_type(p_type).get_property_map(false)) {
+		if (E.value.type == GDType::Property::Type::INTEGER_CONSTANT && _get_gdtype_for_type(p_type).get_integer_constant_enum(E.key, false) == nullptr) {
 			p_constants->push_back(E.key);
 		}
 	}
@@ -1677,7 +1677,7 @@ int Variant::get_constants_count_for_type(Variant::Type p_type) {
 bool Variant::has_constant(Variant::Type p_type, const StringName &p_value) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 	const bool is_non_enum_integer_constant =
-			_get_gdtype_for_type(p_type).get_integer_constant_map(false).has(p_value) &&
+			_get_gdtype_for_type(p_type).has_integer_constant(p_value, false) &&
 			_get_gdtype_for_type(p_type).get_integer_constant_enum(p_value, false) == nullptr;
 	return is_non_enum_integer_constant || _VariantCall::variant_constants[p_type].has(p_value);
 }
@@ -1689,7 +1689,7 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 
-	const int64_t *int_value = _get_gdtype_for_type(p_type).get_integer_constant_map(false).getptr(p_value);
+	const int64_t *int_value = _get_gdtype_for_type(p_type).get_integer_constant(p_value, false);
 	if (int_value && _get_gdtype_for_type(p_type).get_integer_constant_enum(p_value, false) == nullptr) {
 		if (r_valid) {
 			*r_valid = true;
