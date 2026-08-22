@@ -48,6 +48,7 @@
 #include "core/object/method_bind.h"
 #include "core/os/os.h"
 #include "core/string/string_name.h"
+#include "core/variant/container_type_validate.h"
 #include "core/variant/variant_parser.h"
 
 #ifdef TOOLS_ENABLED
@@ -1123,7 +1124,7 @@ void godotsharp_array_set_typed(Array *p_self, uint32_t p_elem_type, const Strin
 	if (p_elem_script && p_elem_script->is_valid()) {
 		elem_class_name = p_elem_script->ptr()->get_instance_base_type();
 	}
-	p_self->set_typed(p_elem_type, elem_class_name, p_elem_script->ptr());
+	p_self->set_typed(ContainerType{ Variant::Type(p_elem_type), elem_class_name, *p_elem_script });
 }
 
 bool godotsharp_array_is_typed(const Array *p_self) {
@@ -1289,7 +1290,8 @@ void godotsharp_dictionary_set_typed(Dictionary *p_self, uint32_t p_key_type, co
 	if (p_value_script && p_value_script->is_valid()) {
 		value_class_name = p_value_script->ptr()->get_instance_base_type();
 	}
-	p_self->set_typed(p_key_type, key_class_name, p_key_script->ptr(), p_value_type, value_class_name, p_value_script->ptr());
+	p_self->set_typed(ContainerType{ Variant::Type(p_key_type), key_class_name, *p_key_script },
+			ContainerType{ Variant::Type(p_value_type), value_class_name, *p_value_script });
 }
 
 bool godotsharp_dictionary_is_typed_key(const Dictionary *p_self) {

@@ -42,6 +42,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_map.h"
+#include "core/variant/container_type_validate.h"
 #include "scene/main/node.h"
 
 #include "modules/gdscript/gdscript_parser.h"
@@ -5666,9 +5667,9 @@ Array GDScriptAnalyzer::make_array_from_element_datatype(const GDScriptParser::D
 			script_type.reference_ptr(scr->find_class(p_element_datatype.class_type->fqcn));
 		}
 
-		array.set_typed(p_element_datatype.builtin_type, p_element_datatype.native_type, script_type);
+		array.set_typed(ContainerType{ p_element_datatype.builtin_type, p_element_datatype.native_type, script_type });
 	} else {
-		array.set_typed(p_element_datatype.builtin_type, StringName(), Variant());
+		array.set_typed(ContainerType{ p_element_datatype.builtin_type, StringName(), Ref<Script>() });
 	}
 
 	return array;
@@ -5676,10 +5677,8 @@ Array GDScriptAnalyzer::make_array_from_element_datatype(const GDScriptParser::D
 
 Dictionary GDScriptAnalyzer::make_dictionary_from_element_datatype(const GDScriptParser::DataType &p_key_element_datatype, const GDScriptParser::DataType &p_value_element_datatype, const GDScriptParser::Node *p_source_node) {
 	Dictionary dictionary;
-	StringName key_name;
-	Variant key_script;
-	StringName value_name;
-	Variant value_script;
+	ContainerType key_type = ContainerType::from_type(p_key_element_datatype.builtin_type);
+	ContainerType value_type = ContainerType::from_type(p_value_element_datatype.builtin_type);
 
 	if (p_key_element_datatype.builtin_type == Variant::OBJECT) {
 		Ref<Script> script_type = p_key_element_datatype.script_type;
@@ -5693,8 +5692,8 @@ Dictionary GDScriptAnalyzer::make_dictionary_from_element_datatype(const GDScrip
 			script_type.reference_ptr(scr->find_class(p_key_element_datatype.class_type->fqcn));
 		}
 
-		key_name = p_key_element_datatype.native_type;
-		key_script = script_type;
+		key_type.class_name = p_key_element_datatype.native_type;
+		key_type.script = script_type;
 	}
 
 	if (p_value_element_datatype.builtin_type == Variant::OBJECT) {
@@ -5709,11 +5708,11 @@ Dictionary GDScriptAnalyzer::make_dictionary_from_element_datatype(const GDScrip
 			script_type.reference_ptr(scr->find_class(p_value_element_datatype.class_type->fqcn));
 		}
 
-		value_name = p_value_element_datatype.native_type;
-		value_script = script_type;
+		value_type.class_name = p_value_element_datatype.native_type;
+		value_type.script = script_type;
 	}
 
-	dictionary.set_typed(p_key_element_datatype.builtin_type, key_name, key_script, p_value_element_datatype.builtin_type, value_name, value_script);
+	dictionary.set_typed(std::move(key_type), std::move(value_type));
 	return dictionary;
 }
 

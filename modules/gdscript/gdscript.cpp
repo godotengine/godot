@@ -41,6 +41,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/rb_set.h"
+#include "core/variant/container_type_validate.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
@@ -701,13 +702,14 @@ void GDScript::_static_default_init() {
 		if (type.builtin_type == Variant::ARRAY && type.has_container_element_type(0)) {
 			const GDScriptDataType element_type = type.get_container_element_type(0);
 			Array default_value;
-			default_value.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+			default_value.set_typed(ContainerType{ element_type.builtin_type, element_type.native_type, element_type.script_type_ref });
 			static_variables.write[E.value.index] = default_value;
 		} else if (type.builtin_type == Variant::DICTIONARY && type.has_container_element_types()) {
 			const GDScriptDataType key_type = type.get_container_element_type_or_variant(0);
 			const GDScriptDataType value_type = type.get_container_element_type_or_variant(1);
 			Dictionary default_value;
-			default_value.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type, value_type.builtin_type, value_type.native_type, value_type.script_type);
+			default_value.set_typed(ContainerType{ key_type.builtin_type, key_type.native_type, key_type.script_type_ref },
+					ContainerType{ value_type.builtin_type, value_type.native_type, value_type.script_type_ref });
 			static_variables.write[E.value.index] = default_value;
 		} else {
 			Variant default_value;
@@ -1769,7 +1771,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 
 							String elem_type;
 							if (arr.is_typed()) {
-								const Ref<Script> script_type = arr.get_typed_script();
+								const Ref<Script> &script_type = arr.get_typed_script();
 								if (script_type.is_valid() && script_type->is_script_valid()) {
 									elem_type = GDScript::debug_get_script_name(script_type);
 								} else if (!arr.get_typed_class_name().is_empty()) {

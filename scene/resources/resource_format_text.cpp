@@ -678,7 +678,7 @@ Error ResourceLoaderText::load() {
 						if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
 							Array get_array = get_value;
 							if (!set_array.is_same_typed(get_array)) {
-								value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
+								value = Array(set_array, get_array.get_element_type());
 							}
 						}
 					}
@@ -690,8 +690,7 @@ Error ResourceLoaderText::load() {
 						if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
 							Dictionary get_dict = get_value;
 							if (!set_dict.is_same_typed(get_dict)) {
-								value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
-										get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
+								value = Dictionary(set_dict, get_dict.get_key_type(), get_dict.get_value_type());
 							}
 						}
 					}
@@ -819,7 +818,7 @@ Error ResourceLoaderText::load() {
 					if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
 						Array get_array = get_value;
 						if (!set_array.is_same_typed(get_array)) {
-							value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
+							value = Array(set_array, get_array.get_element_type());
 						}
 					}
 				}
@@ -831,8 +830,7 @@ Error ResourceLoaderText::load() {
 					if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
 						Dictionary get_dict = get_value;
 						if (!set_dict.is_same_typed(get_dict)) {
-							value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
-									get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
+							value = Dictionary(set_dict, get_dict.get_key_type(), get_dict.get_value_type());
 						}
 					}
 				}

@@ -38,6 +38,13 @@ struct ContainerType {
 	Variant::Type builtin_type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
+
+	_ALWAYS_INLINE_ static ContainerType from_type(uint32_t p_builtin_type) {
+		return ContainerType{ Variant::Type(p_builtin_type), StringName(), Ref<Script>() };
+	}
+	_ALWAYS_INLINE_ static ContainerType from_type(Variant::Type p_builtin_type) {
+		return ContainerType{ p_builtin_type, StringName(), Ref<Script>() };
+	}
 };
 
 struct ContainerTypeValidate : public ContainerType {
@@ -125,7 +132,11 @@ private:
 			return true; // All good, no script requested.
 		}
 
+#ifdef DEBUG_ENABLED
 		Ref<Script> other_script = object->get_script();
+#else
+		Ref<Script> other_script = Object::cast_to<Script>(object->get_script().operator Object *());
+#endif
 
 		// Check base script..
 		if (other_script.is_null()) {
