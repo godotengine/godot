@@ -1,0 +1,18 @@
+Import("env")
+
+if not env.get("3DS_ENABLED", False):
+    Return()
+
+sources = [
+    "3ds.cpp",
+    "godot_3ds.cpp",
+    "os_3ds.cpp",
+    "display_server_3ds.cpp",
+    "rendering_server_3ds.cpp",
+    "audio_driver_3ds.cpp",
+]
+
+env.add_source_files(
+    env.modules_sources,
+    sources
+)
