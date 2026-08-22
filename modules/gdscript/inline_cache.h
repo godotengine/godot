@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  script_instance.cpp                                                   */
+/*  inline_cache.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,67 +28,78 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "script_instance.h"
+#pragma once
 
 #include "core/object/script_language.h"
+#include "core/variant/variant.h"
 
-int ScriptInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
-	// Default implementation simply traverses hierarchy.
-	Ref<Script> script = get_script();
-	while (script.is_valid()) {
-		bool valid = false;
-		int ret = script->get_script_method_argument_count(p_method, &valid);
-		if (valid) {
-			if (r_is_valid) {
-				*r_is_valid = true;
-			}
-			return ret;
+struct FunctionInlineCache {
+	enum class CacheState : uint8_t {
+		UNINITIALIZED,
+		INITIALIZING,
+		MONOMORPHIC,
+		DISABLED,
+	};
+
+	CacheState state;
+	bool is_static;
+
+	GDType *type;
+	Ref<Script> script;
+	Variant::VariantCacheFunctionCall fn;
+
+private:
+	void load(Variant &p_base, const StringName &p_method);
+
+	_FORCE_INLINE_ static GDType *get_type(const Variant &v) {
+		Variant::Type vtype = v.get_type();
+		if (vtype == Variant::OBJECT) {
+			return const_cast<GDType *>(&(*VariantInternal::get_object(&v))->get_gdtype());
 		}
-
-		script = script->get_base_script();
+		// Others not supported currently.
+		return nullptr;
 	}
 
-	if (r_is_valid) {
-		*r_is_valid = false;
+	_FORCE_INLINE_ bool hit(Variant &p_base) const {
+		return get_type(p_base) == type && (p_base.get_type() != Variant::OBJECT || script_matches(*VariantInternal::get_object(&p_base)));
 	}
-	return 0;
-}
 
-Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	return callp(p_method, p_args, p_argcount, r_error);
-}
+	_FORCE_INLINE_ bool script_matches(Object *obj) const {
+		if (is_static) {
+			return *script == Object::cast_to<Script>(obj);
+		}
+		const ScriptInstance *si = obj->get_script_instance();
+		return si->script_eq(script);
+	}
 
-Variant::VariantCacheFunctionCall ScriptInstance::lookup_function_call(const StringName &p_method_name) {
-	return Variant::VariantCacheFunctionCall();
-}
-
-void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &r_state) {
-	List<PropertyInfo> pinfo;
-	get_property_list(&pinfo);
-	for (const PropertyInfo &E : pinfo) {
-		if (E.usage & PROPERTY_USAGE_STORAGE) {
-			Pair<StringName, Variant> p;
-			p.first = E.name;
-			if (get(p.first, p.second)) {
-				r_state.push_back(p);
+public:
+	_FORCE_INLINE_ void callp(Variant &p_base, const StringName &p_method, const Variant **p_args, int p_argcount, Variant *p_ret, Callable::CallError &p_error) {
+		if (unlikely(state == CacheState::UNINITIALIZED)) {
+			load(p_base, p_method);
+		}
+		if (state == CacheState::MONOMORPHIC) {
+			if (likely(hit(p_base))) {
+				if (p_ret != nullptr) {
+					*p_ret = fn(&p_base, p_args, p_argcount, p_error);
+				} else {
+					fn(&p_base, p_args, p_argcount, p_error);
+				}
+				return;
+			} else {
+				state = CacheState::DISABLED;
+				// TODO: cleanup?
 			}
 		}
+		// Fallback to variant call
+		if (p_ret != nullptr) {
+			p_base.callp(p_method, p_args, p_argcount, *p_ret, p_error);
+		} else {
+			Variant v;
+			p_base.callp(p_method, p_args, p_argcount, v, p_error);
+		}
 	}
-}
 
-void ScriptInstance::property_set_fallback(const StringName &, const Variant &, bool *r_valid) {
-	if (r_valid) {
-		*r_valid = false;
-	}
-}
+	void reset();
+};
 
-Variant ScriptInstance::property_get_fallback(const StringName &, bool *r_valid) {
-	if (r_valid) {
-		*r_valid = false;
-	}
-	return Variant();
-}
-
-const Variant ScriptInstance::get_rpc_config() const {
-	return get_script()->get_rpc_config();
-}
+constexpr size_t FunctionInlineCacheIntSize = (sizeof(FunctionInlineCache) + sizeof(int) - 1) / sizeof(int);

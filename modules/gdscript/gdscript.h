@@ -210,6 +210,8 @@ protected:
 
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
+	virtual Variant::VariantCacheFunctionCall lookup_function_call(const StringName &p_method_name) override;
+
 	static void _bind_methods();
 
 public:
@@ -377,12 +379,15 @@ public:
 
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
+	virtual Variant::VariantCacheFunctionCall lookup_function_call(const StringName &p_method_name);
+
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
 	virtual void notification(int p_notification, bool p_reversed = false);
 	String to_string(bool *r_valid);
 
 	virtual Ref<Script> get_script() const;
+	virtual bool script_eq(const Ref<Script> &p_script) const;
 
 	virtual ScriptLanguage *get_language();
 

@@ -971,6 +971,21 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 	return Variant();
 }
 
+Variant::VariantCacheFunctionCall GDScript::lookup_function_call(const StringName &p_method) {
+	GDScript *top = this;
+	while (top) {
+		if (likely(top->valid)) {
+			HashMap<StringName, GDScriptFunction *>::Iterator E = top->member_functions.find(p_method);
+			if (E) {
+				// TODO: add static call check
+				return std::bind(&GDScriptFunction::call_for_variant_cache, E->value, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+			}
+		}
+		top = top->base.ptr();
+	}
+	return Variant::VariantCacheFunctionCall();
+}
+
 bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == GDScriptLanguage::get_singleton()->strings._script_source) {
 		r_ret = get_source_code();
@@ -1972,6 +1987,25 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 	return Variant();
 }
 
+Variant::VariantCacheFunctionCall GDScriptInstance::lookup_function_call(const StringName &p_method) {
+	GDScript *sptr = script.ptr();
+	if (unlikely(p_method == SceneStringName(_ready))) {
+		// Call implicit ready first, including for the super classes recursively.
+		return Variant::VariantCacheFunctionCall();
+	}
+	while (sptr) {
+		if (likely(sptr->valid)) {
+			HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(p_method);
+			if (E) {
+				return std::bind(&GDScriptFunction::call_for_variant_cache, E->value, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+			}
+		}
+		sptr = sptr->base.ptr();
+	}
+
+	return Variant::VariantCacheFunctionCall();
+}
+
 void GDScriptInstance::notification(int p_notification, bool p_reversed) {
 	if (unlikely(!script->valid)) {
 		return;
@@ -2032,6 +2066,10 @@ String GDScriptInstance::to_string(bool *r_valid) {
 
 Ref<Script> GDScriptInstance::get_script() const {
 	return script;
+}
+
+bool GDScriptInstance::script_eq(const Ref<Script> &p_script) const {
+	return *script == *p_script;
 }
 
 ScriptLanguage *GDScriptInstance::get_language() {

@@ -470,6 +470,7 @@ public:
 	virtual void notification(int p_notification, bool p_reversed = false) override {}
 
 	virtual Ref<Script> get_script() const override { return script; }
+	virtual bool script_eq(const Ref<Script> &p_script) const override { return *script == *p_script; }
 
 	virtual ScriptLanguage *get_language() override { return language; }
 

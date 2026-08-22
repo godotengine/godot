@@ -68,6 +68,9 @@ public:
 	}
 
 	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error); // implement if language supports const functions
+
+	virtual Variant::VariantCacheFunctionCall lookup_function_call(const StringName &p_method_name);
+
 	virtual void notification(int p_notification, bool p_reversed = false) = 0;
 	virtual String to_string(bool *r_valid) {
 		if (r_valid) {
@@ -84,6 +87,7 @@ public:
 	virtual bool refcount_decremented() { return true; } //return true if it can die
 
 	virtual Ref<Script> get_script() const = 0;
+	virtual bool script_eq(const Ref<Script> &p_script) const = 0;
 
 	virtual bool is_placeholder() const { return false; }
 

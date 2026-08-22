@@ -63,6 +63,8 @@
 #include "core/variant/dictionary.h"
 #include "core/variant/variant_deep_duplicate.h"
 
+#include <functional>
+
 class GDType;
 class Object;
 class RefCounted;
@@ -819,6 +821,11 @@ public:
 
 	static void get_utility_function_list(List<StringName> *r_functions);
 	static int get_utility_function_count();
+
+	// For caching function calls
+	// typedef Variant (*VariantCacheFunctionCall)(Variant *, const Variant **, int, Callable::CallError &);
+	typedef std::function<Variant(Variant *, const Variant **, int, Callable::CallError &)> VariantCacheFunctionCall;
+	VariantCacheFunctionCall lookup_function_call(const StringName &p_method_name);
 
 	[[nodiscard]] bool operator==(const Variant &p_variant) const;
 	[[nodiscard]] bool operator<(const Variant &p_variant) const;
