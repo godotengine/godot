@@ -142,7 +142,7 @@ NetSocketWinSock::NetError NetSocketWinSock::_get_socket_error() const {
 	if (err == WSAEMSGSIZE || err == WSAENOBUFS) {
 		return ERR_NET_BUFFER_TOO_SMALL;
 	}
-	print_verbose("Socket error: " + itos(err) + ".");
+	PRINT_VERBOSE("Socket error: " + itos(err) + ".");
 	return ERR_NET_OTHER;
 }
 
@@ -256,11 +256,11 @@ Error NetSocketWinSock::open(Family p_family, Type p_sock_type, IP::Type &ip_typ
 		// recv/recvfrom and an ICMP reply was received from a previous send/sendto.
 		unsigned long disable = 0;
 		if (ioctlsocket(_sock, SIO_UDP_CONNRESET, &disable) == SOCKET_ERROR) {
-			print_verbose("Unable to turn off UDP WSAECONNRESET behavior on Windows.");
+			PRINT_VERBOSE("Unable to turn off UDP WSAECONNRESET behavior on Windows.");
 		}
 		if (ioctlsocket(_sock, SIO_UDP_NETRESET, &disable) == SOCKET_ERROR) {
 			// This feature seems not to be supported on wine.
-			print_verbose("Unable to turn off UDP WSAENETRESET behavior on Windows.");
+			PRINT_VERBOSE("Unable to turn off UDP WSAENETRESET behavior on Windows.");
 		}
 	}
 	return OK;
@@ -286,7 +286,7 @@ Error NetSocketWinSock::bind(Address p_addr) {
 
 	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
 		NetError err = _get_socket_error();
-		print_verbose("Failed to bind socket. Error: " + itos(err) + ".");
+		PRINT_VERBOSE("Failed to bind socket. Error: " + itos(err) + ".");
 		close();
 		return ERR_UNAVAILABLE;
 	}
@@ -299,7 +299,7 @@ Error NetSocketWinSock::listen(int p_max_pending) {
 
 	if (::listen(_sock, p_max_pending) != 0) {
 		_get_socket_error();
-		print_verbose("Failed to listen from socket.");
+		PRINT_VERBOSE("Failed to listen from socket.");
 		close();
 		return FAILED;
 	}
@@ -327,7 +327,7 @@ Error NetSocketWinSock::connect_to_host(Address p_addr) {
 			case ERR_NET_IN_PROGRESS:
 				return ERR_BUSY;
 			default:
-				print_verbose("Connection to remote host failed.");
+				PRINT_VERBOSE("Connection to remote host failed.");
 				close();
 				return FAILED;
 		}
@@ -383,7 +383,7 @@ Error NetSocketWinSock::poll(PollType p_type, int p_timeout) const {
 
 	if (FD_ISSET(_sock, &ex)) {
 		_get_socket_error();
-		print_verbose("Exception when polling socket.");
+		PRINT_VERBOSE("Exception when polling socket.");
 		return FAILED;
 	}
 
@@ -564,7 +564,7 @@ int NetSocketWinSock::get_available_bytes() const {
 	int ret = ioctlsocket(_sock, FIONREAD, &len);
 	if (ret == -1) {
 		_get_socket_error();
-		print_verbose("Error when checking available bytes on socket.");
+		PRINT_VERBOSE("Error when checking available bytes on socket.");
 		return -1;
 	}
 	return len;
@@ -577,7 +577,7 @@ Error NetSocketWinSock::get_socket_address(Address *r_addr) const {
 	socklen_t len = sizeof(saddr);
 	if (getsockname(_sock, (struct sockaddr *)&saddr, &len) != 0) {
 		_get_socket_error();
-		print_verbose("Error when reading local socket address.");
+		PRINT_VERBOSE("Error when reading local socket address.");
 		return FAILED;
 	}
 	IPAddress ip;
@@ -598,7 +598,7 @@ Ref<NetSocket> NetSocketWinSock::accept(Address &r_addr) {
 	SOCKET fd = ::accept(_sock, (struct sockaddr *)&their_addr, &size);
 	if (fd == INVALID_SOCKET) {
 		_get_socket_error();
-		print_verbose("Error when accepting socket connection.");
+		PRINT_VERBOSE("Error when accepting socket connection.");
 		return out;
 	}
 
