@@ -245,13 +245,13 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	bufferList.mNumberBuffers = 1;
 	bufferList.mBuffers[0].mData = nullptr;
 	bufferList.mBuffers[0].mNumberChannels = ad->capture_channels;
-	bufferList.mBuffers[0].mDataByteSize = ad->buffer_size * sizeof(int16_t);
+	bufferList.mBuffers[0].mDataByteSize = ad->buffer_size * sizeof(float);
 
 	OSStatus result = AudioUnitRender(ad->input_unit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
 	if (result == noErr) {
-		int16_t *data = (int16_t *)bufferList.mBuffers[0].mData;
+		float *data = (float *)bufferList.mBuffers[0].mData;
 		for (unsigned int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
-			int32_t sample = data[i] << 16;
+			float sample = data[i];
 			ad->input_buffer_write(sample);
 
 			if (ad->capture_channels == 1) {
@@ -380,11 +380,17 @@ Error AudioDriverCoreAudio::init_input_device() {
 	AudioComponentDescription desc;
 	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
+	if (voice_processing_enabled) {
+		// Apple's voice processing unit provides echo cancellation, noise
+		// suppression and automatic gain control.
+		desc.componentSubType = kAudioUnitSubType_VoiceProcessingIO;
+	} else {
 #ifdef MACOS_ENABLED
-	desc.componentSubType = kAudioUnitSubType_HALOutput;
+		desc.componentSubType = kAudioUnitSubType_HALOutput;
 #else
-	desc.componentSubType = kAudioUnitSubType_RemoteIO;
+		desc.componentSubType = kAudioUnitSubType_RemoteIO;
 #endif
+	}
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
 	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
@@ -392,6 +398,21 @@ Error AudioDriverCoreAudio::init_input_device() {
 
 	OSStatus result = AudioComponentInstanceNew(comp, &input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+#ifdef IOS_ENABLED
+	if (voice_processing_enabled) {
+		// The voice processing unit requires the session to allow simultaneous
+		// input and output. Save the previous state to restore on finish.
+		AVAudioSession *session = [AVAudioSession sharedInstance];
+		NSError *error = nil;
+
+		prev_session_category = String([session.category UTF8String]);
+		prev_session_mode = String([session.mode UTF8String]);
+
+		BOOL ok = [session setCategory:AVAudioSessionCategoryPlayAndRecord mode:AVAudioSessionModeVoiceChat options:session.categoryOptions error:&error];
+		ERR_FAIL_COND_V_MSG(!ok, FAILED, "CoreAudio: Setting AVAudioSession category for voice processing failed.");
+	}
+#endif
 
 #ifdef MACOS_ENABLED
 	AudioObjectPropertyAddress prop;
@@ -445,6 +466,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 			capture_channels = 2;
 			break;
 	}
+	input_mono = capture_channels == 1;
 
 #ifdef MACOS_ENABLED
 	double hw_mix_rate;
@@ -459,12 +481,14 @@ Error AudioDriverCoreAudio::init_input_device() {
 	capture_mix_rate = hw_mix_rate;
 
 	memset(&strdesc, 0, sizeof(strdesc));
+	// Request 32-bit float from the input unit; AudioUnit performs the
+	// conversion from the hardware format.
 	strdesc.mFormatID = kAudioFormatLinearPCM;
-	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
+	strdesc.mFormatFlags = kLinearPCMFormatFlagIsFloat | kLinearPCMFormatFlagIsPacked;
 	strdesc.mChannelsPerFrame = capture_channels;
 	strdesc.mSampleRate = capture_mix_rate;
 	strdesc.mFramesPerPacket = 1;
-	strdesc.mBitsPerChannel = 16;
+	strdesc.mBitsPerChannel = 32;
 	strdesc.mBytesPerFrame = strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
 	strdesc.mBytesPerPacket = strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
@@ -529,6 +553,31 @@ void AudioDriverCoreAudio::finish_input_device() {
 		input_unit = nullptr;
 		unlock();
 	}
+
+#ifdef IOS_ENABLED
+	if (voice_processing_enabled && !prev_session_category.is_empty()) {
+		// Restore the audio session state saved when the capture unit opened.
+		AVAudioSession *session = [AVAudioSession sharedInstance];
+		NSError *error = nil;
+
+		NSString *category = [NSString stringWithUTF8String:prev_session_category.utf8().get_data()];
+		BOOL ok = [session setCategory:(AVAudioSessionCategory)category error:&error];
+		if (!ok) {
+			ERR_PRINT("CoreAudio: Restoring AVAudioSession category failed.");
+		}
+
+		if (!prev_session_mode.is_empty()) {
+			NSString *mode = [NSString stringWithUTF8String:prev_session_mode.utf8().get_data()];
+			ok = [session setMode:(AVAudioSessionMode)mode error:&error];
+			if (!ok) {
+				ERR_PRINT("CoreAudio: Restoring AVAudioSession mode failed.");
+			}
+		}
+
+		prev_session_category = String();
+		prev_session_mode = String();
+	}
+#endif
 }
 
 Error AudioDriverCoreAudio::input_start() {

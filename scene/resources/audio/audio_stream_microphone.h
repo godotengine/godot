@@ -39,8 +39,15 @@ class AudioStreamMicrophone : public AudioStream {
 	friend class AudioStreamPlaybackMicrophone;
 
 	HashSet<AudioStreamPlaybackMicrophone *> playbacks;
+	float playback_delay_ms = 50.0f;
+
+protected:
+	static void _bind_methods();
 
 public:
+	void set_playback_delay_ms(float p_ms);
+	float get_playback_delay_ms() const;
+
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 
 	virtual double get_length() const override; //if supported, otherwise return 0

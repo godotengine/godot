@@ -156,6 +156,15 @@
 			<return type="float" />
 			<description>
 				Returns the sample rate at the input of the [AudioServer].
+				[b]Note:[/b] On some platforms the capture stream runs at the microphone device's native sample rate, which may differ from [method get_mix_rate].
+			</description>
+		</method>
+		<method name="get_input_peak" experimental="">
+			<return type="Vector2" />
+			<description>
+				Returns the peak absolute amplitude of the microphone input since the last call to this method, as a [Vector2] whose [code]x[/code] component is the left channel and [code]y[/code] component is the right channel. Values are in the range [code]0.0[/code] to [code]1.0[/code], and can be used for level meters or push-to-talk indicators.
+				Polls consume the scanned region, so calling this every frame reports the peak of newly captured audio only.
+				[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] and the input device must be active for this value to update.
 			</description>
 		</method>
 		<method name="get_mix_rate" qualifiers="const">
@@ -224,12 +233,24 @@
 				If [code]true[/code], the bus at index [param bus_idx] is in solo mode.
 			</description>
 		</method>
+		<method name="is_input_mono" qualifiers="const" experimental="">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the active input device captures a single channel (the left and right channels of the input buffer are identical). Useful to avoid sending duplicated audio when streaming microphone data over the network.
+			</description>
+		</method>
 		<method name="is_stream_registered_as_sample" experimental="">
 			<return type="bool" />
 			<param index="0" name="stream" type="AudioStream" />
 			<description>
 				If [code]true[/code], the stream is registered as a sample. The engine will not have to register it before playing the sample.
 				If [code]false[/code], the stream will have to be registered before playing it. To prevent lag spikes, register the stream as sample with [method register_stream_as_sample].
+			</description>
+		</method>
+		<method name="is_voice_processing_enabled" qualifiers="const" experimental="">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if platform voice processing (echo cancellation, noise suppression and automatic gain control) is requested for the microphone input. See [method set_voice_processing_enabled].
 			</description>
 		</method>
 		<method name="lock">
@@ -357,6 +378,15 @@
 			<description>
 				If [param active] is [code]true[/code], starts the microphone input stream specified by [member input_device] or returns an error if it failed.
 				If [param active] is [code]false[/code], stops the input stream if it is running.
+			</description>
+		</method>
+		<method name="set_voice_processing_enabled" experimental="">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				If [param enable] is [code]true[/code], requests platform voice processing (echo cancellation, noise suppression and automatic gain control) for the microphone input stream. This is essential for real-time voice chat played back through speakers, as it removes game audio from the captured signal.
+				The processing mode is applied when the input device is opened: if the input stream is currently active, it is restarted. The default can be set with [member ProjectSettings.audio/driver/voice_processing].
+				Platform support varies: full echo cancellation on macOS/iOS (VoiceProcessingIO), Android (voice communication recording preset) and Web (browser constraints); on Windows this only marks the capture stream as communications audio, so dedicated processing requires a third-party library.
 			</description>
 		</method>
 		<method name="swap_bus_effects">

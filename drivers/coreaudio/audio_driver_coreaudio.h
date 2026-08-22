@@ -62,6 +62,13 @@ class AudioDriverCoreAudio : public AudioDriver {
 	Vector<int32_t> samples_in;
 	unsigned int buffer_size = 0;
 
+#ifdef IOS_ENABLED
+	// Previous AVAudioSession state, saved when voice processing switches the
+	// session to PlayAndRecord/voiceChat for the capture unit.
+	String prev_session_category;
+	String prev_session_mode;
+#endif
+
 #ifdef MACOS_ENABLED
 	PackedStringArray _get_device_list(bool capture = false);
 	void _set_device(const String &output_device, bool capture = false);

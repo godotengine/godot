@@ -30,6 +30,7 @@
 
 #include "audio_stream_microphone.h"
 
+#include "core/object/class_db.h"
 #include "servers/audio/audio_driver.h"
 #include "servers/audio/audio_server.h"
 
@@ -53,13 +54,29 @@ bool AudioStreamMicrophone::is_monophonic() const {
 	return true;
 }
 
+void AudioStreamMicrophone::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_playback_delay_ms", "delay_ms"), &AudioStreamMicrophone::set_playback_delay_ms);
+	ClassDB::bind_method(D_METHOD("get_playback_delay_ms"), &AudioStreamMicrophone::get_playback_delay_ms);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_delay_ms", PROPERTY_HINT_RANGE, "0,500,0.1,or_greater,suffix:ms"), "set_playback_delay_ms", "get_playback_delay_ms");
+}
+
+void AudioStreamMicrophone::set_playback_delay_ms(float p_ms) {
+	playback_delay_ms = MAX(0.0f, p_ms);
+}
+
+float AudioStreamMicrophone::get_playback_delay_ms() const {
+	return playback_delay_ms;
+}
+
 int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	AudioDriver::get_singleton()->lock();
 
-	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
+	Vector<float> buf = AudioDriver::get_singleton()->get_input_buffer();
 	unsigned int input_size = AudioDriver::get_singleton()->get_input_size();
 	int mix_rate = AudioDriver::get_singleton()->get_input_mix_rate();
-	unsigned int playback_delay = MIN(((50 * mix_rate) / 1000) * 2, buf.size() >> 1);
+	float delay_ms = microphone->playback_delay_ms;
+	unsigned int playback_delay = MIN((unsigned int)(delay_ms * mix_rate / 1000.0f) * 2, buf.size() >> 1);
 #ifdef DEBUG_ENABLED
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
 #endif
@@ -67,6 +84,7 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 	int mixed_frames = p_frames;
 
 	if (playback_delay > input_size) {
+		// Not enough buffered input yet (startup or after underrun): output silence.
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0.0f, 0.0f);
 		}
@@ -74,11 +92,11 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 	} else {
 		for (int i = 0; i < p_frames; i++) {
 			if (input_size > input_ofs && (int)input_ofs < buf.size()) {
-				float l = (buf[input_ofs++] >> 16) / 32768.f;
+				float l = buf[input_ofs++];
 				if ((int)input_ofs >= buf.size()) {
 					input_ofs = 0;
 				}
-				float r = (buf[input_ofs++] >> 16) / 32768.f;
+				float r = buf[input_ofs++];
 				if ((int)input_ofs >= buf.size()) {
 					input_ofs = 0;
 				}

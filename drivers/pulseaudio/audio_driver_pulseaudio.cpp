@@ -542,16 +542,16 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 			size_t bytes = pa_stream_readable_size(ad->pa_rec_str);
 			if (bytes > 0) {
 				const void *ptr = nullptr;
-				size_t maxbytes = ad->input_buffer.size() * sizeof(int16_t);
+				size_t maxbytes = ad->input_buffer.size() * sizeof(float);
 
 				bytes = MIN(bytes, maxbytes);
 				ret = pa_stream_peek(ad->pa_rec_str, &ptr, &bytes);
 				if (ret != 0) {
 					ERR_PRINT("pa_stream_peek error");
 				} else {
-					int16_t *srcptr = (int16_t *)ptr;
-					for (size_t i = bytes >> 1; i > 0; i--) {
-						int32_t sample = int32_t(*srcptr++) << 16;
+					float *srcptr = (float *)ptr;
+					for (size_t i = bytes / sizeof(float); i > 0; i--) {
+						float sample = *srcptr++;
 						ad->input_buffer_write(sample);
 
 						if (ad->pa_rec_map.channels == 1) {
@@ -736,7 +736,7 @@ Error AudioDriverPulseAudio::init_input_device() {
 
 	pa_sample_spec spec;
 
-	spec.format = PA_SAMPLE_S16LE;
+	spec.format = PA_SAMPLE_FLOAT32LE;
 	spec.channels = pa_rec_map.channels;
 	spec.rate = mix_rate;
 
@@ -746,7 +746,7 @@ Error AudioDriverPulseAudio::init_input_device() {
 
 	pa_buffer_attr attr = {};
 	attr.maxlength = (uint32_t)-1;
-	attr.fragsize = input_buffer_size * sizeof(int16_t);
+	attr.fragsize = input_buffer_size * sizeof(float);
 
 	pa_rec_str = pa_stream_new(pa_ctx, "Record", &spec, &pa_rec_map);
 	if (pa_rec_str == nullptr) {
@@ -754,8 +754,10 @@ Error AudioDriverPulseAudio::init_input_device() {
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	CharString output_device_name_nondefault = output_device_name == "Default" ? CharString() : output_device_name.utf8();
-	const char *dev = output_device_name_nondefault.ptr(); // nullptr on CharString()
+	input_mono = pa_rec_map.channels == 1;
+
+	CharString input_device_name_nondefault = input_device_name == "Default" ? CharString() : input_device_name.utf8();
+	const char *dev = input_device_name_nondefault.ptr(); // nullptr on CharString()
 
 	pa_stream_flags flags = pa_stream_flags(PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY | PA_STREAM_AUTO_TIMING_UPDATE);
 	int error_code = pa_stream_connect_record(pa_rec_str, dev, &attr, flags);

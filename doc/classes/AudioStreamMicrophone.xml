@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		When used directly in an [AudioStreamPlayer] node, [AudioStreamMicrophone] plays back microphone input in real-time. This can be used in conjunction with [AudioEffectCapture] to process the data or save it.
+		Input is captured as floating-point samples at the rate reported by [method AudioServer.get_input_mix_rate], and resampled to the audio server's mix rate on playback. Use [member playback_delay_ms] to trade latency against robustness to capture jitter.
 		[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
 	</description>
 	<tutorials>
@@ -12,4 +13,10 @@
 		<link title="Recording with microphone">$DOCS_URL/tutorials/audio/recording_with_microphone.html</link>
 		<link title="Audio Mic Record Demo">https://github.com/godotengine/godot-demo-projects/tree/master/audio/mic_record</link>
 	</tutorials>
+	<members>
+		<member name="playback_delay_ms" type="float" setter="set_playback_delay_ms" getter="get_playback_delay_ms" default="50.0">
+			Delay in milliseconds before playback starts consuming the capture buffer. Higher values add latency but make playback robust to jitter in the capture callback; lower values reduce the delay between speaking and hearing yourself.
+			The delay is clamped internally to the capacity of the driver's input buffer.
+		</member>
+	</members>
 </class>

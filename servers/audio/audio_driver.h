@@ -51,14 +51,18 @@ class AudioDriver {
 #endif
 
 protected:
-	Vector<int32_t> input_buffer;
+	// Interleaved stereo capture samples in [-1, 1]. Mono sources are duplicated
+	// to stereo; `input_mono` reports whether the source device was mono.
+	Vector<float> input_buffer;
 	unsigned int input_position = 0;
 	unsigned int input_size = 0;
+	bool voice_processing_enabled = false;
+	bool input_mono = false;
 
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
 	void input_buffer_init(int driver_buffer_frames);
-	void input_buffer_write(int32_t sample);
+	void input_buffer_write(float p_sample);
 
 	int _get_configured_mix_rate();
 
@@ -112,14 +116,21 @@ public:
 	virtual String get_input_device() { return "Default"; }
 	virtual void set_input_device(const String &p_name) {}
 
+	// Whether the driver should request platform voice processing (echo
+	// cancellation, noise suppression, automatic gain control) when opening the
+	// capture stream. Must be set before `input_start()`; drivers read it while
+	// initializing the input device.
+	void set_voice_processing_enabled(bool p_enabled) { voice_processing_enabled = p_enabled; }
+
 	//
 
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
 
-	Vector<int32_t> get_input_buffer() { return input_buffer; }
+	Vector<float> get_input_buffer() { return input_buffer; }
 	unsigned int get_input_position() { return input_position; }
 	unsigned int get_input_size() { return input_size; }
+	bool is_input_mono() const { return input_mono; }
 
 #ifdef DEBUG_ENABLED
 	uint64_t get_profiling_time() const { return prof_time.get(); }
