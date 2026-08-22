@@ -721,7 +721,7 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 		if (shader_data->uses_time && time - sky->prev_time > 0.00001) {
 			sky->prev_time = time;
 			sky->reflection_dirty = true;
-			RenderingServerDefault::redraw_request();
+			RenderingServerDefault::redraw_request(false);
 		}
 
 		if (environment_get_fog_aerial_perspective(p_render_data->environment) != sky->prev_fog_aerial_perspective) {
@@ -4094,7 +4094,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 	// Make the actual redraw request
 	if (should_request_redraw) {
-		RenderingServerDefault::redraw_request();
+		RenderingServerDefault::redraw_request(false);
 	}
 }
 
