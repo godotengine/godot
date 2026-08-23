@@ -462,7 +462,7 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 
 			if (should_yield) {
 				// We need to make sure we yield on our actual current task. If we are
-				// waiting we are certainly not the the task being ran.
+				// waiting we are certainly not the task being ran.
 				yielders.push_back(WorkerThreadPool::get_singleton()->get_caller_task_id());
 			}
 

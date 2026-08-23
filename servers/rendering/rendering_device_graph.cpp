@@ -337,7 +337,7 @@ void RenderingDeviceGraph::_check_discardable_attachment_dependency(ResourceTrac
 		return;
 	}
 
-	// Check if the command is a a draw list that clears the attachment completely. If it is, we don't need to modify the previous draw list.
+	// Check if the command is a draw list that clears the attachment completely. If it is, we don't need to modify the previous draw list.
 	uint32_t command_offset = command_data_offsets[p_command_index];
 	RecordedDrawListCommand *draw_list_command = reinterpret_cast<RecordedDrawListCommand *>(&command_data[command_offset]);
 	if (draw_list_command->type == RecordedCommand::TYPE_DRAW_LIST) {
