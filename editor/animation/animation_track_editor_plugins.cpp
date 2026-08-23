@@ -1415,12 +1415,11 @@ int AnimationTrackEditTypeStateEvent::get_key_height() const {
 }
 
 Rect2 AnimationTrackEditTypeStateEvent::get_key_rect(int p_index, float p_pixels_sec) {
-	float ofs = get_animation()->state_event_track_get_key_start_time(get_track(), p_index);
 	float duration = get_animation()->state_event_track_get_key_duration(get_track(), p_index);
 
 	int fh = get_key_height();
 	int h = get_size().height;
-	return Rect2(ofs * p_pixels_sec, (h - fh) / 2, MAX(5 * EDSCALE, duration * p_pixels_sec), fh);
+	return Rect2(0, (h - fh) / 2, MAX(5 * EDSCALE, duration * p_pixels_sec), fh);
 }
 
 bool AnimationTrackEditTypeStateEvent::is_key_selectable_by_distance() const {
