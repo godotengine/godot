@@ -49,21 +49,25 @@ struct RayParameters {
 	bool hit_from_inside = false;
 };
 
+GODOT_PUSH_IGNORE_DEPRECATION() // For implicit constructors etc.
 struct RayResult {
 	Vector2 position;
 	Vector2 normal;
 	RID rid;
 	ObjectID collider_id;
-	Object *collider = nullptr;
+	[[deprecated("Use `collider_id` instead.")]] Object *collider = nullptr;
 	int shape = 0;
 };
+GODOT_POP_IGNORE_DEPRECATION()
 
+GODOT_PUSH_IGNORE_DEPRECATION() // For implicit constructors etc.
 struct ShapeResult {
 	RID rid;
 	ObjectID collider_id;
-	Object *collider = nullptr;
+	[[deprecated("Use `collider_id` instead.")]] Object *collider = nullptr;
 	int shape = 0;
 };
+GODOT_POP_IGNORE_DEPRECATION()
 
 struct PointParameters {
 	Vector2 position;

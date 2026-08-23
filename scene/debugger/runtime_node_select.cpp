@@ -1241,11 +1241,11 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 		ray_params.exclude = excluded;
 		if (ss->intersect_ray(ray_params, result)) {
 			SelectResult res;
-			res.item = Object::cast_to<Node>(result.collider);
+			res.item = result.collider_id.is_valid() ? ObjectDB::get_instance<Node>(result.collider_id) : nullptr;
 			res.order = -pos.distance_to(result.position);
 
 			// Fetch collision shapes.
-			CollisionObject3D *collision = Object::cast_to<CollisionObject3D>(result.collider);
+			CollisionObject3D *collision = result.collider_id.is_valid() ? ObjectDB::get_instance<CollisionObject3D>(result.collider_id) : nullptr;
 			if (collision) {
 				List<uint32_t> owners;
 				collision->get_shape_owners(&owners);
@@ -1364,16 +1364,15 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 	const int num_hits = ss->intersect_shape(shape_params, results, 32);
 	for (int i = 0; i < num_hits; i++) {
 		const PS3DT::ShapeResult &result = results[i];
-		if (!result.collider) {
+		SelectResult res;
+		res.item = result.collider_id.is_valid() ? ObjectDB::get_instance<Node>(result.collider_id) : nullptr;
+		if (!res.item) {
 			continue;
 		}
-
-		SelectResult res;
-		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
 
 		// Fetch collision shapes.
-		CollisionObject3D *collision = Object::cast_to<CollisionObject3D>(result.collider);
+		CollisionObject3D *collision = result.collider_id.is_valid() ? ObjectDB::get_instance<CollisionObject3D>(result.collider_id) : nullptr;
 		if (collision) {
 			List<uint32_t> owners;
 			collision->get_shape_owners(&owners);

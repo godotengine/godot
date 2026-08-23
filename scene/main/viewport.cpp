@@ -932,8 +932,11 @@ void Viewport::_process_picking() {
 				if (physics_object_picking_sort) {
 					struct ComparatorCollisionObjects {
 						bool operator()(const PS2DT::ShapeResult &p_a, const PS2DT::ShapeResult &p_b) const {
-							CollisionObject2D *a = Object::cast_to<CollisionObject2D>(p_a.collider);
-							CollisionObject2D *b = Object::cast_to<CollisionObject2D>(p_b.collider);
+							if (!p_a.collider_id.is_valid() || !p_b.collider_id.is_valid()) {
+								return false;
+							}
+							CollisionObject2D *a = ObjectDB::get_instance<CollisionObject2D>(p_a.collider_id);
+							CollisionObject2D *b = ObjectDB::get_instance<CollisionObject2D>(p_b.collider_id);
 							if (!a || !b) {
 								return false;
 							}
@@ -952,8 +955,8 @@ void Viewport::_process_picking() {
 					if (is_input_handled()) {
 						break;
 					}
-					if (res[i].collider_id.is_valid() && res[i].collider) {
-						CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
+					if (res[i].collider_id.is_valid()) {
+						CollisionObject2D *co = ObjectDB::get_instance<CollisionObject2D>(res[i].collider_id);
 						if (co && co->can_process()) {
 							bool send_event = true;
 							if (is_mouse) {
@@ -1040,7 +1043,7 @@ void Viewport::_process_picking() {
 
 					bool col = space->intersect_ray(ray_params, result);
 					ObjectID new_collider;
-					CollisionObject3D *co = col ? Object::cast_to<CollisionObject3D>(result.collider) : nullptr;
+					CollisionObject3D *co = col && result.collider_id.is_valid() ? ObjectDB::get_instance<CollisionObject3D>(result.collider_id) : nullptr;
 					if (co && co->can_process()) {
 						new_collider = result.collider_id;
 						if (!capture_object) {
