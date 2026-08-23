@@ -43,7 +43,7 @@ private:
 	Dictionary _intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> p_ray_query);
 	TypedArray<Dictionary> _intersect_point(RequiredParam<PhysicsPointQueryParameters3D> p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, int p_max_results = 32);
-	Vector<real_t> _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query);
+	Vector2 _cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query);
 	TypedArray<Vector3> _collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query);
 

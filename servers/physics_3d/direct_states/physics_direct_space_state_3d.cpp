@@ -100,19 +100,15 @@ TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(RequiredParam
 	return ret;
 }
 
-Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query) {
-	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, Vector<real_t>());
+Vector2 PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, Vector2(1.0f, 1.0f));
 
 	real_t closest_safe = 1.0f, closest_unsafe = 1.0f;
 	bool res = cast_motion(shape_query->get_parameters(), closest_safe, closest_unsafe);
 	if (!res) {
-		return Vector<real_t>();
+		return Vector2(1.0f, 1.0f);
 	}
-	Vector<real_t> ret;
-	ret.resize(2);
-	ret.write[0] = closest_safe;
-	ret.write[1] = closest_unsafe;
-	return ret;
+	return Vector2(closest_safe, closest_unsafe);
 }
 
 TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, int p_max_results) {
