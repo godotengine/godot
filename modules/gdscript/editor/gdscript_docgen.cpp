@@ -544,7 +544,6 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				enum_doc.deprecated_message = m_enum->doc_data.deprecated_message;
 				enum_doc.is_experimental = m_enum->doc_data.is_experimental;
 				enum_doc.experimental_message = m_enum->doc_data.experimental_message;
-				doc.enums[name] = enum_doc;
 
 				for (const GDP::EnumNode::Value &val : m_enum->values) {
 					DocData::ConstantDoc const_doc;
@@ -559,9 +558,10 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					const_doc.is_experimental = val.doc_data.is_experimental;
 					const_doc.experimental_message = val.doc_data.experimental_message;
 
-					doc.constants.push_back(const_doc);
+					enum_doc.constants.push_back(const_doc);
 				}
 
+				doc.enums[name] = enum_doc;
 			} break;
 
 			case GDP::ClassNode::Member::ENUM_VALUE: {

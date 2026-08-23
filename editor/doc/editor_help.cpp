@@ -3711,6 +3711,54 @@ EditorHelpBit::HelpData EditorHelpBit::_get_constant_help_data(const StringName 
 				doc_constant_cache[p_class_name][constant.name] = current;
 			}
 		}
+	} else { // Check if "class" is named enum
+		String class_name_and_enum = p_class_name.string();
+		int sep_idx = class_name_and_enum.rfind(".");
+		if (sep_idx >= 0) {
+			String enum_name = class_name_and_enum.substr(sep_idx + 1, class_name_and_enum.size() - sep_idx - 1);
+			String class_name = class_name_and_enum.substr(0, sep_idx);
+			const DocData::ClassDoc *parent_class_doc = EditorHelp::get_doc(class_name);
+			if (parent_class_doc) {
+				const bool is_native = !parent_class_doc->is_script_doc;
+
+				if (parent_class_doc->enums.has(enum_name)) {
+					for (const DocData::ConstantDoc &constant : parent_class_doc->enums[enum_name].constants) {
+						HelpData current;
+						current.description = HANDLE_DOC(constant.description);
+						if (constant.is_deprecated) {
+							if (constant.deprecated_message.is_empty()) {
+								current.deprecated_message = TTR("This constant may be changed or removed in future versions.");
+							} else {
+								current.deprecated_message = HANDLE_DOC(constant.deprecated_message);
+							}
+						}
+						if (constant.is_experimental) {
+							if (constant.experimental_message.is_empty()) {
+								current.experimental_message = TTR("This constant may be changed or removed in future versions.");
+							} else {
+								current.experimental_message = HANDLE_DOC(constant.experimental_message);
+							}
+						}
+						current.doc_type = { constant.type, constant.enumeration, constant.is_bitfield };
+						if (constant.is_value_valid) {
+							current.value = constant.value;
+						}
+
+						if (constant.name == p_constant_name) {
+							result = current;
+
+							if (!is_native) {
+								break;
+							}
+						}
+
+						if (is_native) {
+							doc_constant_cache[p_class_name][constant.name] = current;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	return result;

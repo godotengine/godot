@@ -647,6 +647,7 @@ public:
 		String deprecated_message;
 		bool is_experimental = false;
 		String experimental_message;
+		Vector<ConstantDoc> constants;
 		static EnumDoc from_dict(const Dictionary &p_dict) {
 			EnumDoc doc;
 
@@ -674,6 +675,14 @@ public:
 				doc.experimental_message = p_dict["experimental"];
 			}
 
+			Array constants;
+			if (p_dict.has("constants")) {
+				constants = p_dict["constants"];
+			}
+			for (int i = 0; i < constants.size(); i++) {
+				doc.constants.push_back(ConstantDoc::from_dict(constants[i]));
+			}
+
 			return doc;
 		}
 		static Dictionary to_dict(const EnumDoc &p_doc) {
@@ -689,6 +698,14 @@ public:
 
 			if (p_doc.is_experimental) {
 				dict["experimental"] = p_doc.experimental_message;
+			}
+
+			if (!p_doc.constants.is_empty()) {
+				Array constants;
+				for (int i = 0; i < p_doc.constants.size(); i++) {
+					constants.push_back(ConstantDoc::to_dict(p_doc.constants[i]));
+				}
+				dict["constants"] = constants;
 			}
 
 			return dict;
