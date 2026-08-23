@@ -34,6 +34,7 @@
 #include "scene/animation/tween.h"
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
+#include "scene/resources/animation_state_event.h"
 #include "scene/resources/animation_library.h"
 #include "scene/resources/audio/audio_stream_polyphonic.h"
 
@@ -300,6 +301,34 @@ protected:
 
 		TrackCacheAnimation() {
 			type = Animation::TYPE_ANIMATION;
+		}
+	};
+
+	struct TrackCacheStateEvent : public TrackCache {
+		struct ActiveEvent {
+			Ref<AnimationStateEvent> event_res;
+			Ref<AnimationStateContext> context;
+			bool started = false;
+		};
+		// Map from animation instance ID and key index to active event instance
+		AHashMap<ObjectID, AHashMap<int, ActiveEvent>> active_events;
+
+		TrackCacheStateEvent(const TrackCacheStateEvent &p_other) :
+				TrackCache(p_other),
+				active_events(p_other.active_events) {}
+
+		TrackCacheStateEvent() {
+			type = Animation::TYPE_STATE_EVENT;
+		}
+
+		~TrackCacheStateEvent() override {
+			for (KeyValue<ObjectID, AHashMap<int, ActiveEvent>> &E : active_events) {
+				for (KeyValue<int, ActiveEvent> &ae : E.value) {
+					if (ae.value.event_res.is_valid() && ae.value.context.is_valid()) {
+						ae.value.event_res->cancel(ae.value.context);
+					}
+				}
+			}
 		}
 	};
 

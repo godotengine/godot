@@ -41,6 +41,7 @@
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/resources/animation_state_event.h"
 #include "scene/resources/audio/audio_stream.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -1394,4 +1395,262 @@ AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_animation_track_edit
 	AnimationTrackEditTypeAnimation *an = memnew(AnimationTrackEditTypeAnimation);
 	an->set_node(p_object);
 	return an;
+}
+
+AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_state_event_track_edit() {
+	return memnew(AnimationTrackEditTypeStateEvent);
+}
+
+// ----------------------------------------------------
+// AnimationTrackEditTypeStateEvent
+// ----------------------------------------------------
+
+AnimationTrackEditTypeStateEvent::AnimationTrackEditTypeStateEvent() {
+}
+
+int AnimationTrackEditTypeStateEvent::get_key_height() const {
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	return int(font->get_height(font_size) * 1.5);
+}
+
+Rect2 AnimationTrackEditTypeStateEvent::get_key_rect(int p_index, float p_pixels_sec) {
+	float ofs = get_animation()->state_event_track_get_key_start_time(get_track(), p_index);
+	float duration = get_animation()->state_event_track_get_key_duration(get_track(), p_index);
+
+	int fh = get_key_height();
+	int h = get_size().height;
+	return Rect2(ofs * p_pixels_sec, (h - fh) / 2, MAX(5 * EDSCALE, duration * p_pixels_sec), fh);
+}
+
+bool AnimationTrackEditTypeStateEvent::is_key_selectable_by_distance() const {
+	return false;
+}
+
+void AnimationTrackEditTypeStateEvent::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
+	float duration = get_animation()->state_event_track_get_key_duration(get_track(), p_index);
+	Ref<AnimationStateEvent> event = get_animation()->state_event_track_get_key_event(get_track(), p_index);
+
+	int px_offset = 0;
+	float local_duration = duration;
+	if (len_resizing && p_index == len_resizing_index) {
+		float ofs_local = len_resizing_rel / get_timeline()->get_zoom_scale();
+		if (len_resizing_start) {
+			local_duration = MAX(0.0001, duration - ofs_local);
+			px_offset = ofs_local * p_pixels_sec;
+		} else {
+			local_duration = MAX(0.0001, duration + ofs_local);
+		}
+	}
+
+	int pixel_len = MAX(5 * EDSCALE, local_duration * p_pixels_sec);
+	int pixel_begin = px_offset + p_x;
+	int pixel_end = pixel_begin + pixel_len;
+
+	if (pixel_end < p_clip_left || pixel_begin > p_clip_right) {
+		return;
+	}
+
+	int from_x = MAX(pixel_begin, p_clip_left);
+	int to_x = MIN(pixel_end, p_clip_right);
+	if (to_x <= from_x) {
+		to_x = from_x + 1;
+	}
+
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	float fh = int(font->get_height(font_size) * 1.5);
+	int h = get_size().height;
+	Rect2 rect = Rect2(from_x, (h - fh) / 2, to_x - from_x, fh);
+
+	Color base_color = event.is_valid() ? event->get_tag_color() : Color(0.3, 0.6, 0.9, 0.85);
+	Color fill_color = base_color;
+	fill_color.a *= 0.45f;
+	draw_rect(rect, fill_color);
+
+	Color border_color = base_color;
+	border_color.a = 0.9f;
+	draw_rect(rect, border_color, false, 1.0);
+
+	// Draw left and right handle indicators
+	if (pixel_begin >= p_clip_left && pixel_begin <= p_clip_right) {
+		draw_rect(Rect2(pixel_begin, rect.position.y, 2 * EDSCALE, rect.size.y), border_color);
+	}
+	if (pixel_end >= p_clip_left && pixel_end <= p_clip_right) {
+		draw_rect(Rect2(pixel_end - 2 * EDSCALE, rect.position.y, 2 * EDSCALE, rect.size.y), border_color);
+	}
+
+	// Draw text label
+	String text;
+	if (event.is_valid()) {
+		if (event->get_event_name() != StringName()) {
+			text = String(event->get_event_name());
+		} else if (!event->get_name().is_empty()) {
+			text = event->get_name();
+		} else {
+			text = event->get_class();
+		}
+	} else {
+		text = TTR("[Empty Event]");
+	}
+
+	int text_padding = int(4 * EDSCALE);
+	int text_width = to_x - from_x - text_padding * 2;
+	if (text_width > 10) {
+		Point2 text_pos = Point2(from_x + text_padding, rect.position.y + (rect.size.y - font->get_height(font_size)) / 2 + font->get_ascent(font_size));
+		draw_string(font, text_pos, text, HORIZONTAL_ALIGNMENT_LEFT, text_width, font_size, Color(1, 1, 1, 0.95));
+	}
+
+	if (p_selected) {
+		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		draw_rect(rect, accent, false, 2.0);
+	}
+}
+
+bool AnimationTrackEditTypeStateEvent::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	if (p_point.x > get_timeline()->get_name_limit() && p_point.x < get_size().width - get_timeline()->get_buttons_width()) {
+		Dictionary drag_data = p_data;
+		if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
+			Ref<AnimationStateEvent> res = drag_data["resource"];
+			if (res.is_valid()) {
+				return true;
+			}
+		}
+
+		if (drag_data.has("type") && String(drag_data["type"]) == "files") {
+			Vector<String> files = drag_data["files"];
+			if (files.size() == 1) {
+				Ref<AnimationStateEvent> res = ResourceLoader::load(files[0]);
+				if (res.is_valid()) {
+					return true;
+				}
+			}
+		}
+	}
+
+	return AnimationTrackEdit::can_drop_data(p_point, p_data);
+}
+
+void AnimationTrackEditTypeStateEvent::drop_data(const Point2 &p_point, const Variant &p_data) {
+	if (p_point.x > get_timeline()->get_name_limit() && p_point.x < get_size().width - get_timeline()->get_buttons_width()) {
+		Ref<AnimationStateEvent> event_res;
+		Dictionary drag_data = p_data;
+		if (drag_data.has("type") && String(drag_data["type"]) == "resource") {
+			event_res = drag_data["resource"];
+		} else if (drag_data.has("type") && String(drag_data["type"]) == "files") {
+			Vector<String> files = drag_data["files"];
+			if (files.size() == 1) {
+				event_res = ResourceLoader::load(files[0]);
+			}
+		}
+
+		if (event_res.is_valid()) {
+			int x = p_point.x - get_timeline()->get_name_limit();
+			float ofs = x / get_timeline()->get_zoom_scale();
+			ofs += get_timeline()->get_value();
+			ofs = get_editor()->snap_time(ofs);
+
+			while (get_animation()->track_find_key(get_track(), ofs, Animation::FIND_MODE_APPROX) != -1) {
+				ofs += 0.0001;
+			}
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Add State Event Key"));
+			undo_redo->add_do_method(get_animation().ptr(), "state_event_track_insert_key", get_track(), ofs, 0.5, event_res);
+			undo_redo->add_undo_method(get_animation().ptr(), "track_remove_key_at_time", get_track(), ofs);
+			undo_redo->commit_action();
+
+			queue_redraw();
+			return;
+		}
+	}
+
+	AnimationTrackEdit::drop_data(p_point, p_data);
+}
+
+void AnimationTrackEditTypeStateEvent::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (!len_resizing && mm.is_valid()) {
+		bool use_hsize_cursor = false;
+		for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
+			float duration = get_animation()->state_event_track_get_key_duration(get_track(), i);
+			float ofs = get_animation()->track_get_key_time(get_track(), i);
+
+			ofs -= get_timeline()->get_value();
+			ofs *= get_timeline()->get_zoom_scale();
+			ofs += get_timeline()->get_name_limit();
+
+			int end = ofs + MAX(5 * EDSCALE, duration * get_timeline()->get_zoom_scale());
+
+			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && Math::abs(mm->get_position().x - end) < 5 * EDSCALE) {
+				len_resizing_start = false;
+				use_hsize_cursor = true;
+				len_resizing_index = i;
+			}
+
+			if (ofs >= get_timeline()->get_name_limit() && ofs <= get_size().width - get_timeline()->get_buttons_width() && Math::abs(mm->get_position().x - ofs) < 5 * EDSCALE) {
+				len_resizing_start = true;
+				use_hsize_cursor = true;
+				len_resizing_index = i;
+			}
+		}
+		over_drag_position = use_hsize_cursor;
+	}
+
+	if (len_resizing && mm.is_valid()) {
+		len_resizing_rel += mm->get_relative().x;
+		queue_redraw();
+		return;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed() && over_drag_position) {
+		len_resizing = true;
+		len_resizing_from_px = mb->get_position().x;
+		len_resizing_rel = 0.0f;
+		queue_redraw();
+		return;
+	}
+
+	if (len_resizing && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
+		float prev_start = get_animation()->state_event_track_get_key_start_time(get_track(), len_resizing_index);
+		float prev_duration = get_animation()->state_event_track_get_key_duration(get_track(), len_resizing_index);
+		float ofs_local = len_resizing_rel / get_timeline()->get_zoom_scale();
+
+		float new_start = prev_start;
+		float new_duration = prev_duration;
+
+		if (len_resizing_start) {
+			new_start = get_editor()->snap_time(prev_start + ofs_local);
+			new_duration = MAX(0.0001, (prev_start + prev_duration) - new_start);
+		} else {
+			float new_end = get_editor()->snap_time((prev_start + prev_duration) + ofs_local);
+			new_duration = MAX(0.0001, new_end - prev_start);
+		}
+
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Resize State Event Strip"));
+		if (len_resizing_start) {
+			undo_redo->add_do_method(get_animation().ptr(), "state_event_track_set_key_start_time", get_track(), len_resizing_index, new_start);
+			undo_redo->add_undo_method(get_animation().ptr(), "state_event_track_set_key_start_time", get_track(), len_resizing_index, prev_start);
+		}
+		undo_redo->add_do_method(get_animation().ptr(), "state_event_track_set_key_duration", get_track(), len_resizing_index, new_duration);
+		undo_redo->add_undo_method(get_animation().ptr(), "state_event_track_set_key_duration", get_track(), len_resizing_index, prev_duration);
+		undo_redo->commit_action();
+
+		len_resizing = false;
+		queue_redraw();
+		return;
+	}
+
+	AnimationTrackEdit::gui_input(p_event);
+}
+
+Control::CursorShape AnimationTrackEditTypeStateEvent::get_cursor_shape(const Point2 &p_pos) const {
+	if (over_drag_position || len_resizing) {
+		return Control::CURSOR_HSIZE;
+	}
+	return AnimationTrackEdit::get_cursor_shape(p_pos);
 }

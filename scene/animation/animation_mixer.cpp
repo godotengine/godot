@@ -930,6 +930,11 @@ bool AnimationMixer::_update_caches() {
 						track = track_animation;
 
 					} break;
+					case Animation::TYPE_STATE_EVENT: {
+						TrackCacheStateEvent *track_se = memnew(TrackCacheStateEvent);
+						track_se->object_id = child->get_instance_id();
+						track = track_se;
+					} break;
 					default: {
 						ERR_PRINT("Animation corrupted (invalid track type).");
 						continue;
@@ -1904,6 +1909,100 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 					}
 				} break;
+				case Animation::TYPE_STATE_EVENT: {
+					if (p_update_only) {
+						continue;
+					}
+					TrackCacheStateEvent *t = static_cast<TrackCacheStateEvent *>(track);
+					Object *t_obj = ObjectDB::get_instance(t->object_id);
+					Node *node = t_obj ? Object::cast_to<Node>(t_obj) : nullptr;
+					if (!t_obj || !node) {
+						continue;
+					}
+
+					ObjectID oid = a->get_instance_id();
+					if (!t->active_events.has(oid)) {
+						t->active_events[oid] = AHashMap<int, TrackCacheStateEvent::ActiveEvent>();
+					}
+					AHashMap<int, TrackCacheStateEvent::ActiveEvent> &map = t->active_events[oid];
+
+					int key_count = a->track_get_key_count(i);
+					HashSet<int> keys_should_be_active;
+
+					for (int k = 0; k < key_count; k++) {
+						double k_start = a->state_event_track_get_key_start_time(i, k);
+						double k_end = a->state_event_track_get_key_end_time(i, k);
+						
+						bool is_active = false;
+						if (time >= k_start && time < k_end) {
+							is_active = true;
+						}
+						
+						if (is_active) {
+							keys_should_be_active.insert(k);
+						}
+					}
+
+					LocalVector<int> to_remove;
+					for (const KeyValue<int, TrackCacheStateEvent::ActiveEvent> &E : map) {
+						int k = E.key;
+						if (!keys_should_be_active.has(k)) {
+							Ref<AnimationStateContext> ctx = E.value.context;
+							Ref<AnimationStateEvent> ev = E.value.event_res;
+							if (ev.is_valid() && ctx.is_valid()) {
+								if (seeked) {
+									ev->cancel(ctx);
+								} else {
+									double k_start = a->state_event_track_get_key_start_time(i, k);
+									double k_end = a->state_event_track_get_key_end_time(i, k);
+									if (!backward && time >= k_end) {
+										ev->end(ctx);
+									} else if (backward && time <= k_start) {
+										ev->end(ctx);
+									} else {
+										ev->cancel(ctx);
+									}
+								}
+							}
+							to_remove.push_back(k);
+						}
+					}
+					for (int k : to_remove) {
+						map.erase(k);
+					}
+
+					for (int k : keys_should_be_active) {
+						double k_start = a->state_event_track_get_key_start_time(i, k);
+						double k_dur = a->state_event_track_get_key_duration(i, k);
+						double elapsed = time - k_start;
+
+						if (!map.has(k)) {
+							TrackCacheStateEvent::ActiveEvent ae;
+							ae.event_res = a->state_event_track_get_key_event(i, k);
+							if (ae.event_res.is_valid()) {
+								ae.context.instantiate();
+								ae.context->set_target(node);
+								ae.context->set_mixer(this);
+								ae.context->set_animation(a);
+								ae.context->set_duration(k_dur);
+								ae.context->set_elapsed(elapsed);
+								ae.context->set_delta(delta);
+								ae.context->set_weight(blend);
+								ae.event_res->start(ae.context);
+								ae.started = true;
+							}
+							map[k] = ae;
+						} else {
+							TrackCacheStateEvent::ActiveEvent &ae = map[k];
+							if (ae.event_res.is_valid() && ae.context.is_valid()) {
+								ae.context->set_elapsed(elapsed);
+								ae.context->set_delta(delta);
+								ae.context->set_weight(blend);
+								ae.event_res->update(ae.context, delta);
+							}
+						}
+					}
+				} break;
 			}
 		}
 	}
@@ -2628,7 +2727,8 @@ AnimationMixer::TrackCache *AnimatedValuesBackup::get_cache_copy(AnimationMixer:
 		}
 
 		case Animation::TYPE_METHOD:
-		case Animation::TYPE_ANIMATION: {
+		case Animation::TYPE_ANIMATION:
+		case Animation::TYPE_STATE_EVENT: {
 			// Nothing to do here.
 		} break;
 	}

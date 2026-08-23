@@ -55,6 +55,7 @@ public:
 		TYPE_BEZIER, // Bezier curve.
 		TYPE_AUDIO,
 		TYPE_ANIMATION,
+		TYPE_STATE_EVENT, // Animation State Event
 	};
 
 	enum InterpolationType : uint8_t {
@@ -255,6 +256,21 @@ private:
 	LocalVector<MarkerKey> marker_names; // time -> name
 	HashMap<StringName, double> marker_times; // name -> time
 	HashMap<StringName, Color> marker_colors; // name -> color
+
+	/* STATE EVENT TRACK */
+
+	struct StateEventKey : public Key {
+		Ref<Resource> event;
+		double duration = 0.0;
+	};
+
+	struct StateEventTrack : public Track {
+		LocalVector<StateEventKey> events;
+
+		StateEventTrack() {
+			type = TYPE_STATE_EVENT;
+		}
+	};
 
 	LocalVector<Track *> tracks;
 #ifdef TOOLS_ENABLED
@@ -508,6 +524,16 @@ public:
 	int animation_track_insert_key(int p_track, double p_time, const StringName &p_animation);
 	void animation_track_set_key_animation(int p_track, int p_key, const StringName &p_animation);
 	StringName animation_track_get_key_animation(int p_track, int p_key) const;
+
+	int state_event_track_insert_key(int p_track, double p_time, double p_duration, const Ref<Resource> &p_event);
+	void state_event_track_set_key_duration(int p_track, int p_key, double p_duration);
+	double state_event_track_get_key_duration(int p_track, int p_key) const;
+	void state_event_track_set_key_start_time(int p_track, int p_key, double p_start_time);
+	double state_event_track_get_key_start_time(int p_track, int p_key) const;
+	void state_event_track_set_key_end_time(int p_track, int p_key, double p_end_time);
+	double state_event_track_get_key_end_time(int p_track, int p_key) const;
+	void state_event_track_set_key_event(int p_track, int p_key, const Ref<Resource> &p_event);
+	Ref<Resource> state_event_track_get_key_event(int p_track, int p_key) const;
 
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
 	bool track_get_interpolation_loop_wrap(int p_track) const;

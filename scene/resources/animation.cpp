@@ -105,6 +105,8 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				add_track(TYPE_AUDIO);
 			} else if (type == "animation") {
 				add_track(TYPE_ANIMATION);
+			} else if (type == "state_event") {
+				add_track(TYPE_STATE_EVENT);
 			} else {
 				return false;
 			}
@@ -443,6 +445,39 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				}
 
 				return true;
+			} else if (track_get_type(track) == TYPE_STATE_EVENT) {
+				StateEventTrack *et = static_cast<StateEventTrack *>(tracks[track]);
+				Dictionary d = p_value;
+				ERR_FAIL_COND_V(!d.has("times"), false);
+				ERR_FAIL_COND_V(!d.has("events"), false);
+
+				Vector<real_t> times = d["times"];
+				Array events = d["events"];
+				Vector<real_t> durations;
+				if (d.has("durations")) {
+					durations = d["durations"];
+				}
+
+				ERR_FAIL_COND_V(events.size() != times.size(), false);
+
+				if (times.size()) {
+					int valcount = times.size();
+
+					const real_t *rt = times.ptr();
+					const real_t *rd = durations.size() == valcount ? durations.ptr() : nullptr;
+
+					et->events.resize(valcount);
+
+					for (int i = 0; i < valcount; i++) {
+						StateEventKey ek;
+						ek.time = rt[i];
+						ek.duration = rd ? rd[i] : 0.0;
+						ek.event = events[i];
+						et->events[i] = ek;
+					}
+				}
+
+				return true;
 			} else {
 				return false;
 			}
@@ -539,6 +574,9 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					break;
 				case TYPE_ANIMATION:
 					r_ret = "animation";
+					break;
+				case TYPE_STATE_EVENT:
+					r_ret = "state_event";
 					break;
 			}
 
@@ -855,6 +893,39 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 				r_ret = d;
 
 				return true;
+			} else if (track_get_type(track) == TYPE_STATE_EVENT) {
+				const StateEventTrack *et = static_cast<const StateEventTrack *>(tracks[track]);
+
+				Dictionary d;
+
+				Vector<real_t> key_times;
+				Vector<real_t> key_durations;
+				Array key_events;
+
+				int kk = et->events.size();
+
+				key_times.resize(kk);
+				key_durations.resize(kk);
+				key_events.resize(kk);
+
+				real_t *wti = key_times.ptrw();
+				real_t *wdu = key_durations.ptrw();
+
+				const StateEventKey *vls = et->events.ptr();
+
+				for (int i = 0; i < kk; i++) {
+					wti[i] = vls[i].time;
+					wdu[i] = vls[i].duration;
+					key_events[i] = vls[i].event;
+				}
+
+				d["times"] = key_times;
+				d["durations"] = key_durations;
+				d["events"] = key_events;
+
+				r_ret = d;
+
+				return true;
 			}
 		} else {
 			return false;
@@ -935,6 +1006,10 @@ int Animation::add_track(TrackType p_type, int p_at_pos) {
 			tracks.insert(p_at_pos, memnew(AnimationTrack));
 
 		} break;
+		case TYPE_STATE_EVENT: {
+			tracks.insert(p_at_pos, memnew(StateEventTrack));
+
+		} break;
 		default: {
 			ERR_PRINT("Unknown track type");
 		}
@@ -995,6 +1070,11 @@ void Animation::remove_track(int p_track) {
 		case TYPE_ANIMATION: {
 			AnimationTrack *an = static_cast<AnimationTrack *>(t);
 			an->values.clear();
+
+		} break;
+		case TYPE_STATE_EVENT: {
+			StateEventTrack *et = static_cast<StateEventTrack *>(t);
+			et->events.clear();
 
 		} break;
 	}
@@ -1533,6 +1613,12 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 			an->values.remove_at(p_idx);
 
 		} break;
+		case TYPE_STATE_EVENT: {
+			StateEventTrack *et = static_cast<StateEventTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_idx, et->events.size());
+			et->events.remove_at(p_idx);
+
+		} break;
 	}
 
 	emit_changed();
@@ -1711,6 +1797,18 @@ int Animation::track_find_key(int p_track, double p_time, FindMode p_find_mode, 
 			return k;
 
 		} break;
+		case TYPE_STATE_EVENT: {
+			const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+			int k = _find(et->events, p_time, p_backward, p_limit);
+			if ((uint32_t)k >= et->events.size()) {
+				return -1;
+			}
+			if ((p_find_mode == FIND_MODE_APPROX && !Math::is_equal_approx(et->events[k].time, p_time)) || (p_find_mode == FIND_MODE_EXACT && et->events[k].time != p_time)) {
+				return -1;
+			}
+			return k;
+
+		} break;
 	}
 
 	return -1;
@@ -1826,6 +1924,24 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 			ret = _insert(p_time, at->values, ak);
 
 		} break;
+		case TYPE_STATE_EVENT: {
+			StateEventTrack *et = static_cast<StateEventTrack *>(t);
+
+			StateEventKey ek;
+			ek.time = p_time;
+			ek.transition = p_transition;
+			if (p_key.get_type() == Variant::DICTIONARY) {
+				Dictionary d = p_key;
+				ek.duration = d.has("duration") ? double(d["duration"]) : 0.0;
+				ek.event = d.has("event") ? Ref<Resource>(d["event"]) : Ref<Resource>();
+			} else {
+				ek.event = p_key;
+				ek.duration = 0.0;
+			}
+
+			ret = _insert(p_time, et->events, ek);
+
+		} break;
 	}
 
 	emit_changed();
@@ -1886,6 +2002,10 @@ int Animation::track_get_key_count(int p_track) const {
 		case TYPE_ANIMATION: {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
 			return at->values.size();
+		} break;
+		case TYPE_STATE_EVENT: {
+			const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+			return et->events.size();
 		} break;
 	}
 
@@ -1962,6 +2082,16 @@ Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
 			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, at->values.size(), Variant());
 
 			return at->values[p_key_idx].value;
+
+		} break;
+		case TYPE_STATE_EVENT: {
+			const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, et->events.size(), Variant());
+
+			Dictionary k;
+			k["duration"] = et->events[p_key_idx].duration;
+			k["event"] = et->events[p_key_idx].event;
+			return k;
 
 		} break;
 	}
@@ -2050,6 +2180,12 @@ double Animation::track_get_key_time(int p_track, int p_key_idx) const {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
 			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, at->values.size(), -1);
 			return at->values[p_key_idx].time;
+
+		} break;
+		case TYPE_STATE_EVENT: {
+			const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key_idx, et->events.size(), -1);
+			return et->events[p_key_idx].time;
 
 		} break;
 	}
@@ -2147,6 +2283,15 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 			_insert(p_time, at->values, key);
 			return;
 		}
+		case TYPE_STATE_EVENT: {
+			StateEventTrack *et = static_cast<StateEventTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key_idx, et->events.size());
+			StateEventKey key = et->events[p_key_idx];
+			key.time = p_time;
+			et->events.remove_at(p_key_idx);
+			_insert(p_time, et->events, key);
+			return;
+		}
 	}
 
 	ERR_FAIL();
@@ -2209,6 +2354,9 @@ real_t Animation::track_get_key_transition(int p_track, int p_key_idx) const {
 		} break;
 		case TYPE_ANIMATION: {
 			return 1; //animation does not really use transitions
+		} break;
+		case TYPE_STATE_EVENT: {
+			return 1; //state_event does not really use transitions
 		} break;
 	}
 
@@ -2339,6 +2487,23 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			at->values[p_key_idx].value = p_value;
 
 		} break;
+		case TYPE_STATE_EVENT: {
+			StateEventTrack *et = static_cast<StateEventTrack *>(t);
+			ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key_idx, et->events.size());
+
+			if (p_value.get_type() == Variant::DICTIONARY) {
+				Dictionary k = p_value;
+				if (k.has("duration")) {
+					et->events[p_key_idx].duration = k["duration"];
+				}
+				if (k.has("event")) {
+					et->events[p_key_idx].event = k["event"];
+				}
+			} else {
+				et->events[p_key_idx].event = p_value;
+			}
+
+		} break;
 	}
 
 	emit_changed();
@@ -2387,7 +2552,8 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, real_t p_tr
 		} break;
 		case TYPE_BEZIER:
 		case TYPE_AUDIO:
-		case TYPE_ANIMATION: {
+		case TYPE_ANIMATION:
+		case TYPE_STATE_EVENT: {
 			// they don't use transition
 		} break;
 	}
@@ -2979,6 +3145,16 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 							_track_get_key_indices_in_range(an->values, from_time, anim_end, r_indices, is_backward);
 						}
 					} break;
+					case TYPE_STATE_EVENT: {
+						const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+						if (!is_backward) {
+							_track_get_key_indices_in_range(et->events, from_time, anim_end, r_indices, is_backward);
+							_track_get_key_indices_in_range(et->events, anim_start, to_time, r_indices, is_backward);
+						} else {
+							_track_get_key_indices_in_range(et->events, anim_start, to_time, r_indices, is_backward);
+							_track_get_key_indices_in_range(et->events, from_time, anim_end, r_indices, is_backward);
+						}
+					} break;
 				}
 				return;
 			}
@@ -3074,6 +3250,11 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 						_track_get_key_indices_in_range(an->values, start, from_time, r_indices, true);
 						_track_get_key_indices_in_range(an->values, start, to_time, r_indices, false);
 					} break;
+					case TYPE_STATE_EVENT: {
+						const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+						_track_get_key_indices_in_range(et->events, start, from_time, r_indices, true);
+						_track_get_key_indices_in_range(et->events, start, to_time, r_indices, false);
+					} break;
 				}
 				return;
 			}
@@ -3145,6 +3326,11 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 						_track_get_key_indices_in_range(an->values, from_time, end, r_indices, false);
 						_track_get_key_indices_in_range(an->values, to_time, end, r_indices, true);
 					} break;
+					case TYPE_STATE_EVENT: {
+						const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+						_track_get_key_indices_in_range(et->events, from_time, end, r_indices, false);
+						_track_get_key_indices_in_range(et->events, to_time, end, r_indices, true);
+					} break;
 				}
 				return;
 			}
@@ -3209,6 +3395,10 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 		case TYPE_ANIMATION: {
 			const AnimationTrack *an = static_cast<const AnimationTrack *>(t);
 			_track_get_key_indices_in_range(an->values, from_time, to_time, r_indices, is_backward);
+		} break;
+		case TYPE_STATE_EVENT: {
+			const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+			_track_get_key_indices_in_range(et->events, from_time, to_time, r_indices, is_backward);
 		} break;
 	}
 }
@@ -3848,6 +4038,102 @@ StringName Animation::animation_track_get_key_animation(int p_track, int p_key) 
 	return at->values[p_key].value;
 }
 
+// State Event Track
+
+int Animation::state_event_track_insert_key(int p_track, double p_time, double p_duration, const Ref<Resource> &p_event) {
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), -1);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_STATE_EVENT, -1);
+
+	StateEventTrack *et = static_cast<StateEventTrack *>(t);
+
+	StateEventKey k;
+	k.time = p_time;
+	k.duration = MAX(0.0, p_duration);
+	k.event = p_event;
+
+	int ret = _insert(p_time, et->events, k);
+	emit_changed();
+	return ret;
+}
+
+void Animation::state_event_track_set_key_duration(int p_track, int p_key, double p_duration) {
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_STATE_EVENT);
+
+	StateEventTrack *et = static_cast<StateEventTrack *>(t);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key, et->events.size());
+
+	et->events[p_key].duration = MAX(0.0, p_duration);
+	emit_changed();
+}
+
+double Animation::state_event_track_get_key_duration(int p_track, int p_key) const {
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), 0.0);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_STATE_EVENT, 0.0);
+
+	const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key, et->events.size(), 0.0);
+
+	return et->events[p_key].duration;
+}
+
+void Animation::state_event_track_set_key_start_time(int p_track, int p_key, double p_start_time) {
+	track_set_key_time(p_track, p_key, p_start_time);
+}
+
+double Animation::state_event_track_get_key_start_time(int p_track, int p_key) const {
+	return track_get_key_time(p_track, p_key);
+}
+
+void Animation::state_event_track_set_key_end_time(int p_track, int p_key, double p_end_time) {
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_STATE_EVENT);
+
+	StateEventTrack *et = static_cast<StateEventTrack *>(t);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key, et->events.size());
+
+	double new_duration = MAX(0.0, p_end_time - et->events[p_key].time);
+	state_event_track_set_key_duration(p_track, p_key, new_duration);
+}
+
+double Animation::state_event_track_get_key_end_time(int p_track, int p_key) const {
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), 0.0);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_STATE_EVENT, 0.0);
+
+	const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key, et->events.size(), 0.0);
+
+	return et->events[p_key].time + et->events[p_key].duration;
+}
+
+void Animation::state_event_track_set_key_event(int p_track, int p_key, const Ref<Resource> &p_event) {
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_STATE_EVENT);
+
+	StateEventTrack *et = static_cast<StateEventTrack *>(t);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key, et->events.size());
+
+	et->events[p_key].event = p_event;
+	emit_changed();
+}
+
+Ref<Resource> Animation::state_event_track_get_key_event(int p_track, int p_key) const {
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_track, tracks.size(), Ref<Resource>());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_STATE_EVENT, Ref<Resource>());
+
+	const StateEventTrack *et = static_cast<const StateEventTrack *>(t);
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key, et->events.size(), Ref<Resource>());
+
+	return et->events[p_key].event;
+}
+
 void Animation::set_length(double p_length) {
 	if (p_length < ANIM_MIN_LENGTH) {
 		p_length = ANIM_MIN_LENGTH;
@@ -4041,6 +4327,16 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "track_idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_animation", "track_idx", "key_idx"), &Animation::animation_track_get_key_animation);
 
+	ClassDB::bind_method(D_METHOD("state_event_track_insert_key", "track_idx", "time", "duration", "event"), &Animation::state_event_track_insert_key, DEFVAL(0.0), DEFVAL(Ref<Resource>()));
+	ClassDB::bind_method(D_METHOD("state_event_track_set_key_duration", "track_idx", "key_idx", "duration"), &Animation::state_event_track_set_key_duration);
+	ClassDB::bind_method(D_METHOD("state_event_track_get_key_duration", "track_idx", "key_idx"), &Animation::state_event_track_get_key_duration);
+	ClassDB::bind_method(D_METHOD("state_event_track_set_key_start_time", "track_idx", "key_idx", "start_time"), &Animation::state_event_track_set_key_start_time);
+	ClassDB::bind_method(D_METHOD("state_event_track_get_key_start_time", "track_idx", "key_idx"), &Animation::state_event_track_get_key_start_time);
+	ClassDB::bind_method(D_METHOD("state_event_track_set_key_end_time", "track_idx", "key_idx", "end_time"), &Animation::state_event_track_set_key_end_time);
+	ClassDB::bind_method(D_METHOD("state_event_track_get_key_end_time", "track_idx", "key_idx"), &Animation::state_event_track_get_key_end_time);
+	ClassDB::bind_method(D_METHOD("state_event_track_set_key_event", "track_idx", "key_idx", "event"), &Animation::state_event_track_set_key_event);
+	ClassDB::bind_method(D_METHOD("state_event_track_get_key_event", "track_idx", "key_idx"), &Animation::state_event_track_get_key_event);
+
 	ClassDB::bind_method(D_METHOD("add_marker", "name", "time"), &Animation::add_marker);
 	ClassDB::bind_method(D_METHOD("remove_marker", "name"), &Animation::remove_marker);
 	ClassDB::bind_method(D_METHOD("has_marker", "name"), &Animation::has_marker);
@@ -4083,6 +4379,7 @@ void Animation::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_BEZIER);
 	BIND_ENUM_CONSTANT(TYPE_AUDIO);
 	BIND_ENUM_CONSTANT(TYPE_ANIMATION);
+	BIND_ENUM_CONSTANT(TYPE_STATE_EVENT);
 
 	BIND_ENUM_CONSTANT(INTERPOLATION_NEAREST);
 	BIND_ENUM_CONSTANT(INTERPOLATION_LINEAR);

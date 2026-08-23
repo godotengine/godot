@@ -434,6 +434,41 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 				return true;
 			}
 		} break;
+		case Animation::TYPE_STATE_EVENT: {
+			if (name == "event") {
+				Ref<Resource> event_res = p_value;
+
+				setting = true;
+				undo_redo->create_action(TTR("Animation Change Keyframe Event"), UndoRedo::MERGE_ENDS);
+				Ref<Resource> prev = animation->state_event_track_get_key_event(track, key);
+				undo_redo->add_do_method(animation.ptr(), "state_event_track_set_key_event", track, key, event_res);
+				undo_redo->add_undo_method(animation.ptr(), "state_event_track_set_key_event", track, key, prev);
+				undo_redo->add_do_method(this, "_update_obj", animation);
+				undo_redo->add_undo_method(this, "_update_obj", animation);
+				undo_redo->commit_action();
+
+				setting = false;
+				notify_change();
+				return true;
+			}
+
+			if (name == "duration") {
+				float duration = p_value;
+
+				setting = true;
+				undo_redo->create_action(TTR("Animation Change Keyframe Duration"), UndoRedo::MERGE_ENDS);
+				float prev = animation->state_event_track_get_key_duration(track, key);
+				undo_redo->add_do_method(animation.ptr(), "state_event_track_set_key_duration", track, key, duration);
+				undo_redo->add_undo_method(animation.ptr(), "state_event_track_set_key_duration", track, key, prev);
+				undo_redo->add_do_method(this, "_update_obj", animation);
+				undo_redo->add_undo_method(this, "_update_obj", animation);
+				undo_redo->commit_action();
+
+				setting = false;
+				notify_change();
+				return true;
+			}
+		} break;
 	}
 
 	return false;
@@ -546,6 +581,17 @@ bool AnimationTrackKeyEdit::_get(const StringName &p_name, Variant &r_ret) const
 				return true;
 			}
 
+		} break;
+		case Animation::TYPE_STATE_EVENT: {
+			if (name == "event") {
+				r_ret = animation->state_event_track_get_key_event(track, key);
+				return true;
+			}
+
+			if (name == "duration") {
+				r_ret = animation->state_event_track_get_key_duration(track, key);
+				return true;
+			}
 		} break;
 	}
 
@@ -667,6 +713,10 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 
 			p_list->push_back(PropertyInfo(Variant::STRING_NAME, PNAME("animation"), PROPERTY_HINT_ENUM, animations));
 
+		} break;
+		case Animation::TYPE_STATE_EVENT: {
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("event"), PROPERTY_HINT_RESOURCE_TYPE, "AnimationStateEvent"));
+			p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("duration"), PROPERTY_HINT_RANGE, "0.0001,3600,0.0001,or_greater"));
 		} break;
 	}
 
@@ -984,6 +1034,31 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 						update_obj = true;
 					}
 				} break;
+				case Animation::TYPE_STATE_EVENT: {
+					if (name == "event") {
+						Ref<Resource> event_res = p_value;
+
+						if (!setting) {
+							setting = true;
+							undo_redo->create_action(TTR("Animation Multi Change Keyframe Event"), UndoRedo::MERGE_ENDS);
+						}
+						Ref<Resource> prev = animation->state_event_track_get_key_event(track, key);
+						undo_redo->add_do_method(animation.ptr(), "state_event_track_set_key_event", track, key, event_res);
+						undo_redo->add_undo_method(animation.ptr(), "state_event_track_set_key_event", track, key, prev);
+						update_obj = true;
+					} else if (name == "duration") {
+						float duration = p_value;
+
+						if (!setting) {
+							setting = true;
+							undo_redo->create_action(TTR("Animation Multi Change Keyframe Duration"), UndoRedo::MERGE_ENDS);
+						}
+						float prev = animation->state_event_track_get_key_duration(track, key);
+						undo_redo->add_do_method(animation.ptr(), "state_event_track_set_key_duration", track, key, duration);
+						undo_redo->add_undo_method(animation.ptr(), "state_event_track_set_key_duration", track, key, prev);
+						update_obj = true;
+					}
+				} break;
 			}
 		}
 	}
@@ -1116,6 +1191,18 @@ bool AnimationMultiTrackKeyEdit::_get(const StringName &p_name, Variant &r_ret) 
 				case Animation::TYPE_ANIMATION: {
 					if (name == "animation") {
 						r_ret = animation->animation_track_get_key_animation(track, key);
+						return true;
+					}
+
+				} break;
+				case Animation::TYPE_STATE_EVENT: {
+					if (name == "event") {
+						r_ret = animation->state_event_track_get_key_event(track, key);
+						return true;
+					}
+
+					if (name == "duration") {
+						r_ret = animation->state_event_track_get_key_duration(track, key);
 						return true;
 					}
 
@@ -1268,6 +1355,10 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 				animations += "[stop]";
 
 				p_list->push_back(PropertyInfo(Variant::STRING_NAME, "animation", PROPERTY_HINT_ENUM, animations));
+			} break;
+			case Animation::TYPE_STATE_EVENT: {
+				p_list->push_back(PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "AnimationStateEvent"));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, "duration", PROPERTY_HINT_RANGE, "0.0001,3600,0.0001,or_greater"));
 			} break;
 		}
 	}
@@ -1472,6 +1563,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyBezier")), TTRC("Bezier Curve Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAudio")), TTRC("Audio Playback Track..."));
 			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyAnimation")), TTRC("Animation Playback Track..."));
+			add_track->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("KeyCall")), TTRC("State Event Track..."));
 
 			timeline_resize_rect.size = get_editor_theme_icon(SNAME("TimelineHandle"))->get_size();
 		} break;
@@ -2859,7 +2951,7 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 }
 
 Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
-	const Ref<Texture2D> type_icons[9] = {
+	const Ref<Texture2D> type_icons[10] = {
 		get_editor_theme_icon(SNAME("KeyValue")),
 		get_editor_theme_icon(SNAME("KeyTrackPosition")),
 		get_editor_theme_icon(SNAME("KeyTrackRotation")),
@@ -2868,7 +2960,8 @@ Ref<Texture2D> AnimationTrackEdit::_get_key_type_icon() const {
 		get_editor_theme_icon(SNAME("KeyCall")),
 		get_editor_theme_icon(SNAME("KeyBezier")),
 		get_editor_theme_icon(SNAME("KeyAudio")),
-		get_editor_theme_icon(SNAME("KeyAnimation"))
+		get_editor_theme_icon(SNAME("KeyAnimation")),
+		get_editor_theme_icon(SNAME("KeyCall"))
 	};
 	return type_icons[animation->track_get_type(track)];
 }
@@ -3800,6 +3893,13 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_audio_track_edit() {
 AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object *p_object) {
 	if (get_script_instance()) {
 		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_animation_track_edit", p_object).operator Object *());
+	}
+	return nullptr;
+}
+
+AnimationTrackEdit *AnimationTrackEditPlugin::create_state_event_track_edit() {
+	if (get_script_instance()) {
+		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_state_event_track_edit").operator Object *());
 	}
 	return nullptr;
 }
@@ -5046,7 +5146,8 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 		case Animation::TYPE_BLEND_SHAPE:
 		case Animation::TYPE_VALUE:
 		case Animation::TYPE_AUDIO:
-		case Animation::TYPE_ANIMATION: {
+		case Animation::TYPE_ANIMATION:
+		case Animation::TYPE_STATE_EVENT: {
 			value = p_id.value;
 
 		} break;
@@ -5308,6 +5409,15 @@ void AnimationTrackEditor::_update_tracks() {
 					if (track_edit) {
 						break;
 					}
+				}
+			}
+		}
+
+		if (animation->track_get_type(i) == Animation::TYPE_STATE_EVENT) {
+			for (int j = 0; j < track_edit_plugins.size(); j++) {
+				track_edit = track_edit_plugins.write[j]->create_state_event_track_edit();
+				if (track_edit) {
+					break;
 				}
 			}
 		}
@@ -5812,6 +5922,15 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			undo_redo->commit_action();
 
 		} break;
+		case Animation::TYPE_STATE_EVENT: {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Add State Event Track"));
+			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
+			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
+			undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
+			undo_redo->commit_action();
+
+		} break;
 	}
 }
 
@@ -5852,6 +5971,9 @@ void AnimationTrackEditor::_add_track(int p_type) {
 		case Animation::TYPE_ANIMATION: {
 			valid_types.push_back(SNAME("AnimationPlayer"));
 			title_text = TTRC("Pick a node to play animation:");
+		} break;
+		case Animation::TYPE_STATE_EVENT: {
+			title_text = TTRC("Pick a target node for the State Event Track:");
 		} break;
 	}
 	pick_track->set_valid_types(valid_types);
@@ -6106,6 +6228,12 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 		} break;
 		case Animation::TYPE_ANIMATION: {
 			id.value = StringName("[stop]");
+		} break;
+		case Animation::TYPE_STATE_EVENT: {
+			Dictionary ek;
+			ek["event"] = Ref<Resource>();
+			ek["duration"] = 0.5;
+			id.value = ek;
 		} break;
 		default: {
 			// All track types should be handled by now.
