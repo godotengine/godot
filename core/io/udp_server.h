@@ -62,6 +62,11 @@ protected:
 	Ref<NetSocket> _sock;
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	Error _listen_bind_compat_120522(uint16_t p_port, const IPAddress &p_bind_address = IPAddress("*"));
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
 	void remove_peer(IPAddress p_ip, int p_port);
 	Error listen(int64_t p_port, const IPAddress &p_bind_address = IPAddress("*"));

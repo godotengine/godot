@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "udp_server.h"
+#include "udp_server.compat.inc"
 
 #include "core/object/class_db.h"
 

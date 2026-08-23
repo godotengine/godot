@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "tcp_server.h"
+#include "tcp_server.compat.inc"
 
 #include "core/object/class_db.h"
 
