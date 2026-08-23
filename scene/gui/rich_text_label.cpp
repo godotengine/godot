@@ -6001,7 +6001,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			add_text(String::chr(0x2066));
 			pos = brk_end + 1;
 		} else if (tag == "rli") {
-			add_text(String::chr(0x2027));
+			add_text(String::chr(0x2067));
 			pos = brk_end + 1;
 		} else if (tag == "fsi") {
 			add_text(String::chr(0x2068));
