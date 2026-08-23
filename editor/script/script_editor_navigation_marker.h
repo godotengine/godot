@@ -61,6 +61,6 @@ public:
 	bool is_locating() const;
 	bool is_traversing() const;
 
-	bool is_locate_just_occured() const;
-	bool is_traverse_just_occured() const;
+	bool is_locate_just_occurred() const;
+	bool is_traverse_just_occurred() const;
 };

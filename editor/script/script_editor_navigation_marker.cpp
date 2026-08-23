@@ -88,7 +88,7 @@ bool ScriptEditorNavigationMarker::is_traversing() const {
 	return traverse_in_progress;
 }
 
-bool ScriptEditorNavigationMarker::is_locate_just_occured() const {
+bool ScriptEditorNavigationMarker::is_locate_just_occurred() const {
 	if (Engine::get_singleton()->is_in_physics_frame()) {
 		return locate_end_physics_frame == Engine::get_singleton()->get_physics_frames() || locate_end_physics_frame == Engine::get_singleton()->get_physics_frames() - 1;
 	} else {
@@ -96,7 +96,7 @@ bool ScriptEditorNavigationMarker::is_locate_just_occured() const {
 	}
 }
 
-bool ScriptEditorNavigationMarker::is_traverse_just_occured() const {
+bool ScriptEditorNavigationMarker::is_traverse_just_occurred() const {
 	if (Engine::get_singleton()->is_in_physics_frame()) {
 		return traverse_end_physics_frame == Engine::get_singleton()->get_physics_frames() || traverse_end_physics_frame == Engine::get_singleton()->get_physics_frames() - 1;
 	} else {

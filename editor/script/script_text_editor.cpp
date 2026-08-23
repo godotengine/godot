@@ -1215,7 +1215,7 @@ void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 }
 
 void ScriptTextEditor::_on_caret_moved() {
-	if (ScriptEditorNavigationMarker::get_singleton()->is_locate_just_occured() || ScriptEditorNavigationMarker::get_singleton()->is_traverse_just_occured() || ScriptEditorNavigationMarker::get_singleton()->is_locating() || ScriptEditorNavigationMarker::get_singleton()->is_traversing()) {
+	if (ScriptEditorNavigationMarker::get_singleton()->is_locate_just_occurred() || ScriptEditorNavigationMarker::get_singleton()->is_traverse_just_occurred() || ScriptEditorNavigationMarker::get_singleton()->is_locating() || ScriptEditorNavigationMarker::get_singleton()->is_traversing()) {
 		return;
 	}
 	if (code_editor->is_previewing_navigation_change()) {
