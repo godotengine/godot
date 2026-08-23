@@ -121,6 +121,9 @@ const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
 #define CAPTURE_BUFFER_CHANNELS 2
 
+#define IDLE_DELAY_USEC 1000
+#define SUSPENDED_DELAY_USEC 10000
+
 static bool default_output_device_changed = false;
 static bool default_input_device_changed = false;
 static int output_reinit_countdown = 0;
@@ -595,6 +598,7 @@ Error AudioDriverWASAPI::init() {
 	target_latency_ms = Engine::get_singleton()->get_audio_output_latency();
 
 	exit_thread.clear();
+	output_sleeping.clear();
 
 	Error err = init_output_device();
 	ERR_FAIL_COND_V_MSG(err != OK, err, "WASAPI: init_output_device error.");
@@ -746,8 +750,15 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 	while (!ad->exit_thread.is_set()) {
 		uint32_t read_frames = 0;
 		uint32_t written_frames = 0;
+		const bool output_sleeping = ad->output_sleeping.is_set();
 
-		if (avail_frames == 0) {
+		if (output_sleeping) {
+			// Drop partially written buffer so playback resumes cleanly when waking up.
+			avail_frames = 0;
+			write_ofs = 0;
+		}
+
+		if (!output_sleeping && avail_frames == 0) {
 			ad->lock();
 			ad->start_counting_ticks();
 
@@ -767,7 +778,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 		ad->lock();
 		ad->start_counting_ticks();
 
-		if (avail_frames > 0 && ad->audio_output.audio_client) {
+		if (!output_sleeping && avail_frames > 0 && ad->audio_output.audio_client) {
 			UINT32 buffer_size;
 			UINT32 cur_frames;
 			bool invalidated = false;
@@ -879,7 +890,9 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			if (output_reinit_countdown < 1) {
 				Error err = ad->init_output_device(true);
 				if (err == OK) {
-					ad->start();
+					if (!output_sleeping) {
+						ad->start();
+					}
 				} else {
 					output_reinit_countdown = 1000;
 				}
@@ -973,14 +986,14 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 		// Let the thread rest a while if we haven't read or write anything
 		if (written_frames == 0 && read_frames == 0) {
-			OS::get_singleton()->delay_usec(1000);
+			OS::get_singleton()->delay_usec(output_sleeping && !ad->audio_input.active.is_set() ? SUSPENDED_DELAY_USEC : IDLE_DELAY_USEC);
 		}
 	}
 	CoUninitialize();
 }
 
 void AudioDriverWASAPI::start() {
-	if (audio_output.audio_client) {
+	if (audio_output.audio_client && !audio_output.active.is_set()) {
 		HRESULT hr = audio_output.audio_client->Start();
 		if (hr != S_OK) {
 			ERR_PRINT("WASAPI: Start failed");
@@ -988,6 +1001,30 @@ void AudioDriverWASAPI::start() {
 			audio_output.active.set();
 		}
 	}
+}
+
+bool AudioDriverWASAPI::set_output_device_sleep(bool p_enable) {
+	// This is called from the main thread, lock to avoid resetting the
+	// the audio client while the audio thread is writing.
+	MutexLock mutex_lock(mutex);
+
+	if (p_enable) {
+		if (audio_output.active.is_set()) {
+			HRESULT hr = audio_output.audio_client->Stop();
+			ERR_FAIL_COND_V_MSG(hr != S_OK, false, "WASAPI: Stop failed");
+			audio_output.active.clear();
+
+			audio_output.audio_client->Reset();
+		}
+
+		output_sleeping.set();
+		return true;
+	}
+
+	output_sleeping.clear();
+	start();
+
+	return audio_output.active.is_set();
 }
 
 void AudioDriverWASAPI::lock() {
