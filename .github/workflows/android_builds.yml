@@ -49,7 +49,7 @@ jobs:
           submodules: recursive
 
       - name: Set up Java 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
