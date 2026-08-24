@@ -556,7 +556,7 @@ void View3DController::update_freelook(const float p_delta) {
 	const Vector3 right = camera_transform.basis.xform(Vector3(1, 0, 0));
 
 	Vector3 up;
-	if (freelook_scheme == View3DController::FREELOOK_PARTIALLY_AXIS_LOCKED || freelook_scheme == View3DController::FREELOOK_FULLY_AXIS_LOCKED) {
+	if (freelook_vertical_movement_global || freelook_scheme == FREELOOK_PARTIALLY_AXIS_LOCKED || freelook_scheme == FREELOOK_FULLY_AXIS_LOCKED) {
 		// Up/down keys will always go up/down regardless of camera pitch.
 		up = Vector3(0, 1, 0);
 	} else {

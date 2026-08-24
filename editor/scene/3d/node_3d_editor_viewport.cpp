@@ -3999,6 +3999,7 @@ void Node3DEditorViewport::_update_view_3d_controller(bool p_update_all) {
 		view_3d_controller->set_freelook_inertia(EDITOR_GET("editors/3d/freelook/freelook_inertia"));
 		view_3d_controller->set_freelook_speed_zoom_link(EDITOR_GET("editors/3d/freelook/freelook_speed_zoom_link"));
 		view_3d_controller->set_freelook_invert_y_axis(EDITOR_GET("editors/3d/freelook/freelook_invert_y_axis"));
+		view_3d_controller->set_freelook_vertical_movement_global(EDITOR_GET("editors/3d/freelook/freelook_vertical_movement_global"));
 
 		view_3d_controller->set_translation_sensitivity(EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity"));
 		view_3d_controller->set_translation_inertia(EDITOR_GET("editors/3d/navigation_feel/translation_inertia"));

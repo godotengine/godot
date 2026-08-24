@@ -211,6 +211,7 @@ private:
 	float freelook_sensitivity = 0;
 	float freelook_inertia = 0;
 	bool freelook_invert_y_axis = false;
+	bool freelook_vertical_movement_global = true;
 
 	ZoomStyle zoom_style = ZOOM_VERTICAL;
 	NavigationMouseButton zoom_mouse_button = NAV_MOUSE_BUTTON_MIDDLE;
@@ -308,6 +309,8 @@ public:
 	void set_freelook_inertia(const float p_inertia) { freelook_inertia = p_inertia; }
 	void set_freelook_speed_zoom_link(const bool p_enabled) { freelook_speed_zoom_link = p_enabled; }
 	void set_freelook_invert_y_axis(const bool p_enabled) { freelook_invert_y_axis = p_enabled; }
+	void set_freelook_vertical_movement_global(const bool p_enabled) { freelook_vertical_movement_global = p_enabled; }
+	bool is_freelook_vertical_movement_global() const { return freelook_vertical_movement_global; }
 
 	void set_zoom_style(ZoomStyle p_style) { zoom_style = p_style; }
 	void set_zoom_inertia(const float p_inertia) { zoom_inertia = p_inertia; }

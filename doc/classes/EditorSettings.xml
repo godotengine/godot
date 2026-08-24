@@ -423,6 +423,9 @@
 		<member name="editors/3d/freelook/freelook_speed_zoom_link" type="bool" setter="" getter="">
 			If [code]true[/code], freelook speed is linked to the zoom value used in the camera orbit mode in the 3D editor.
 		</member>
+		<member name="editors/3d/freelook/freelook_vertical_movement_global" type="bool" setter="" getter="">
+			If [code]true[/code], the Freelook Up and Down keys move along the global world Y axis regardless of camera pitch. If [code]false[/code], vertical movement depends on the camera's local pitch orientation when using the Default navigation scheme.
+		</member>
 		<member name="editors/3d/grid_division_level_bias" type="float" setter="" getter="">
 			The grid division bias to use in the 3D editor. Negative values will cause small grid divisions to appear earlier, whereas positive values will cause small grid divisions to appear later.
 		</member>

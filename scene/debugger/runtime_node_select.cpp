@@ -155,6 +155,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	view_3d_controller->set_freelook_inertia(p_settings.get("editors/3d/freelook/freelook_inertia", 0));
 	view_3d_controller->set_freelook_speed_zoom_link(p_settings.get("editors/3d/freelook/freelook_speed_zoom_link", false));
 	view_3d_controller->set_freelook_invert_y_axis(p_settings.get("editors/3d/freelook/freelook_invert_y_axis", false));
+	view_3d_controller->set_freelook_vertical_movement_global(p_settings.get("editors/3d/freelook/freelook_vertical_movement_global", true));
 
 	view_3d_controller->set_translation_sensitivity(p_settings.get("editors/3d/navigation_feel/translation_sensitivity", 1));
 	view_3d_controller->set_translation_inertia(p_settings.get("editors/3d/navigation_feel/translation_inertia", 0));

@@ -93,6 +93,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["editors/3d/freelook/freelook_inertia"] = EDITOR_GET("editors/3d/freelook/freelook_inertia");
 	settings["editors/3d/freelook/freelook_speed_zoom_link"] = EDITOR_GET("editors/3d/freelook/freelook_speed_zoom_link");
 	settings["editors/3d/freelook/freelook_invert_y_axis"] = EDITOR_GET("editors/3d/freelook/freelook_invert_y_axis");
+	settings["editors/3d/freelook/freelook_vertical_movement_global"] = EDITOR_GET("editors/3d/freelook/freelook_vertical_movement_global");
 	settings["editors/3d/navigation/orbit_mouse_button"] = EDITOR_GET("editors/3d/navigation/orbit_mouse_button");
 	settings["editors/3d/navigation_feel/orbit_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/orbit_sensitivity");
 	settings["editors/3d/navigation_feel/orbit_inertia"] = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
