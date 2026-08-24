@@ -1,0 +1,14 @@
+diff --git a/thirdparty/miniaudio/miniaudio.h b/thirdparty/miniaudio/miniaudio.h
+index a4a40fa4..11987ed4 100644
+--- a/thirdparty/miniaudio/miniaudio.h
++++ b/thirdparty/miniaudio/miniaudio.h
+@@ -50031,7 +50031,7 @@ MA_API ma_result ma_device_op_queue_init(ma_device_op_queue* pQueue)
+ 
+ MA_API void ma_device_op_queue_uninit(ma_device_op_queue* pQueue)
+ {
+-    if (pQueue != NULL) {
++    if (pQueue == NULL) {
+         return;
+     }
+ 
+

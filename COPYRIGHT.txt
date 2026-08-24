@@ -263,6 +263,11 @@ Comment: dr_libs
 Copyright: 2020, David Reid
 License: Unlicense or MIT-0
 
+Files: thirdparty/miniaudio/*
+Comment: miniaudio
+Copyright: 2025, David Reid
+License: Public Domain or MIT-0
+
 Files: thirdparty/embree/*
 Comment: Embree
 Copyright: 2009-2021 Intel Corporation

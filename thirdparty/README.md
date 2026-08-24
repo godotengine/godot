@@ -743,6 +743,21 @@ Patches:
 - `0002-clang-std-replacements-leak.patch` ([GH-85208](https://github.com/godotengine/godot/pull/85208))
 - `0003-explicit-includes.patch` ([GH-111557](https://github.com/godotengine/godot/pull/111557))
 
+## miniaudio
+
+- Upstream: https://github.com/mackron/miniaudio
+- Version: 0.11.26 (b73904b7382998c07aa119ef1c2c1db5292fe85a, 2026)
+- License: Public Domain or MIT-0
+
+Files extracted from upstream source:
+
+- `miniaudio.h`
+- `miniaudio.c`
+- `LICENSE.txt`
+
+Patches:
+
+- `0001-fix-device-operation-queue-uninit.patch` ([miniaudio#1150](https://github.com/mackron/miniaudio/pull/1150))
 
 ## miniupnpc
 

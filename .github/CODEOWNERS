@@ -84,6 +84,7 @@
 /modules/interactive_music/                   @godotengine/audio
 /modules/interactive_music/doc_classes/       @godotengine/audio @godotengine/documentation
 /modules/interactive_music/editor/            @godotengine/audio @godotengine/editor
+/modules/miniaudio/                           @godotengine/audio
 /modules/mp3/                                 @godotengine/audio
 /modules/mp3/doc_classes/                     @godotengine/audio @godotengine/documentation
 /modules/ogg/                                 @godotengine/audio

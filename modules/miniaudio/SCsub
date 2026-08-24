@@ -1,0 +1,46 @@
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_miniaudio = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/miniaudio/"
+thirdparty_sources = ["miniaudio.c"]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_miniaudio.Prepend(CPPPATH=[thirdparty_dir])
+env_miniaudio.Append(
+    CPPDEFINES=[
+        "MA_NO_DECODING",
+        "MA_NO_ENCODING",
+        "MA_NO_NODE_GRAPH",
+    ]
+)
+
+env_thirdparty = env_miniaudio.Clone()
+env_thirdparty.disable_warnings()
+
+# Note: visionOS is untested on miniaudio, but it should go through TARGET_OS_IPHONE path.
+# If it there are problems with it, this module can be temporarily disabled on "visionos" until miniaudio is updated to support it.
+if env["platform"] in ["ios", "visionos"]:
+    env_thirdparty.Append(CCFLAGS=["-x", "objective-c"])
+elif env["platform"] == "linuxbsd":
+    env.Append(LIBS=["m"])
+
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_miniaudio.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)
