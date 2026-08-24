@@ -51,6 +51,7 @@ class AudioServer : public Object {
 
 public:
 	typedef void (*AudioCallback)(void *p_userdata);
+	bool cached_volume_db_affects_3d_attenuation = true;
 
 private:
 	static constexpr uint64_t AUDIO_DRIVER_SLEEP_DELAY_MSEC = 3000;
