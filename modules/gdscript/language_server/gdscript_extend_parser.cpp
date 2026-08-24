@@ -81,8 +81,9 @@ void ExtendGDScriptParser::update_diagnostics() {
 	for (const GDScriptWarning &warning : parser_warnings) {
 		LSP::Diagnostic diagnostic;
 		diagnostic.severity = LSP::DiagnosticSeverity::Warning;
-		diagnostic.message = "(" + warning.get_name() + "): " + warning.get_message();
+		diagnostic.message = warning.get_message();
 		diagnostic.source = "gdscript";
+		diagnostic.code = warning.get_name();
 
 		GodotRange godot_range(
 				GodotPosition(warning.start_line, warning.start_column),
