@@ -1400,7 +1400,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			}
 			progress += indeterminate_count;
 			EditorNode::get_bottom_panel()->get_progress_indicator()->set_value(progress / download_count);
-		}
+		} break;
 	}
 }
 
