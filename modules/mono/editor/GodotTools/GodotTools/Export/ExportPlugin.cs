@@ -365,6 +365,12 @@ namespace GodotTools.Export
                                                 path = newPath;
                                             }
 
+                                            if (fileName.EndsWith(".a"))
+                                            {
+                                                // Don't export static libraries for Android.
+                                                return;
+                                            }
+
                                             AddSharedObject(path, tags: new string[] { arch },
                                                 Path.Join(projectDataDirName,
                                                     Path.GetRelativePath(publishOutputDir,
