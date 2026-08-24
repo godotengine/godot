@@ -229,6 +229,8 @@ class SceneTreeEditor : public Control {
 	LocalVector<StringName> *script_types;
 	bool _has_drop_selection(TreeItem *p_item, const Point2 &p_point) const;
 	bool _is_script_type(const StringName &p_type) const;
+	NodePath _get_node_path(Node *p_node) const;
+	Node *_get_node(const NodePath &p_path) const;
 
 	Vector<StringName> valid_types;
 
