@@ -13,8 +13,8 @@ namespace GodotTools.Internals
         {
             Task = task;
             using godot_string taskIn = Marshaling.ConvertStringToNative(task);
-            using godot_string labelIn = Marshaling.ConvertStringToNative(label);
-            Internal.godot_icall_EditorProgress_Create(taskIn, labelIn, amount, canCancel);
+            using godot_string labelIn = Marshaling.ConvertStringToNative(label); // codespell:ignore labelin.
+            Internal.godot_icall_EditorProgress_Create(taskIn, labelIn, amount, canCancel); // codespell:ignore labelin.
         }
 
         ~EditorProgress()

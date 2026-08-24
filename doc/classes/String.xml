@@ -602,7 +602,7 @@
 			<description>
 				Returns the first [param length] characters from the beginning of the string. If [param length] is negative, strips the last [param length] characters from the string's end.
 				[codeblock]
-				print("Hello World!".left(3))  # Prints "Hel"
+				print("Hello World!".left(2))  # Prints "He"
 				print("Hello World!".left(-4)) # Prints "Hello Wo"
 				[/codeblock]
 			</description>

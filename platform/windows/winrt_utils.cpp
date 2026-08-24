@@ -501,8 +501,8 @@ DisplayServerEnums::NotificationID WinRTUtils::send_toast_notification(const Str
 	title.instantiate();
 	title->set_string(p_title);
 
-	Ref<WinRTNotificationData> nd;
-	nd.instantiate();
+	Ref<WinRTNotificationData> ndata;
+	ndata.instantiate();
 	DisplayServerEnums::NotificationID nid = notification_id++;
 
 	ComPtr<ROToastNotificationManagerStatics> toastman_fact;
@@ -538,7 +538,7 @@ DisplayServerEnums::NotificationID WinRTUtils::send_toast_notification(const Str
 		}
 		img->save_png(img_path);
 
-		nd->temp_file = img_path;
+		ndata->temp_file = img_path;
 		Ref<HStringWrapper> himage;
 		himage.instantiate();
 		himage->set_string(img_path);
@@ -582,32 +582,32 @@ DisplayServerEnums::NotificationID WinRTUtils::send_toast_notification(const Str
 
 	ComPtr<ROToastNotificationFactory> toast_fact;
 	ERR_FAIL_COND_V(FAILED(WinRTUtils::activation_factory(ROToastNotificationName, IID_PPV_ARGS(&toast_fact))), DisplayServerEnums::INVALID_NOTIFICATION_ID);
-	ERR_FAIL_COND_V(FAILED(toast_fact->CreateToastNotification(xml.Get(), (void **)nd->nt.GetAddressOf())), DisplayServerEnums::INVALID_NOTIFICATION_ID);
+	ERR_FAIL_COND_V(FAILED(toast_fact->CreateToastNotification(xml.Get(), (void **)ndata->nt.GetAddressOf())), DisplayServerEnums::INVALID_NOTIFICATION_ID);
 
-	nd->nid = nid;
-	nd->cb = p_callback;
+	ndata->nid = nid;
+	ndata->cb = p_callback;
 
 	ComPtr<ROTypedEventHandler_ToastNotification_IInspectable> handler_a;
 	GodotToastActivatedEventHandler *handler_act = new GodotToastActivatedEventHandler(nid);
 	ERR_FAIL_COND_V(FAILED(handler_act->QueryInterface(IID_PPV_ARGS(&handler_a))), DisplayServerEnums::INVALID_NOTIFICATION_ID);
-	ERR_FAIL_COND_V(FAILED(nd->nt->add_Activated(handler_a.Get(), &nd->act_token)), DisplayServerEnums::INVALID_NOTIFICATION_ID);
+	ERR_FAIL_COND_V(FAILED(ndata->nt->add_Activated(handler_a.Get(), &ndata->act_token)), DisplayServerEnums::INVALID_NOTIFICATION_ID);
 
 	ComPtr<ROTypedEventHandler_ToastNotification_ToastDismissedEventArgs> handler_d;
 	GodotToastDismissedEventHandler *handler_dis = new GodotToastDismissedEventHandler(nid);
 	ERR_FAIL_COND_V(FAILED(handler_dis->QueryInterface(IID_PPV_ARGS(&handler_d))), DisplayServerEnums::INVALID_NOTIFICATION_ID);
-	ERR_FAIL_COND_V(FAILED(nd->nt->add_Dismissed(handler_d.Get(), &nd->dis_token)), DisplayServerEnums::INVALID_NOTIFICATION_ID);
+	ERR_FAIL_COND_V(FAILED(ndata->nt->add_Dismissed(handler_d.Get(), &ndata->dis_token)), DisplayServerEnums::INVALID_NOTIFICATION_ID);
 
 	ComPtr<ROTypedEventHandler_ToastNotification_ToastFailedEventArgs> handler_f;
 	GodotToastFailedEventHandler *handler_fail = new GodotToastFailedEventHandler(nid);
 	ERR_FAIL_COND_V(FAILED(handler_fail->QueryInterface(IID_PPV_ARGS(&handler_f))), DisplayServerEnums::INVALID_NOTIFICATION_ID);
-	ERR_FAIL_COND_V(FAILED(nd->nt->add_Failed(handler_f.Get(), &nd->fail_token)), DisplayServerEnums::INVALID_NOTIFICATION_ID);
+	ERR_FAIL_COND_V(FAILED(ndata->nt->add_Failed(handler_f.Get(), &ndata->fail_token)), DisplayServerEnums::INVALID_NOTIFICATION_ID);
 
 	{
 		MutexLock lock(noti_mutex);
-		notifications[nid] = nd;
+		notifications[nid] = ndata;
 	}
 
-	ERR_FAIL_COND_V(FAILED(notifier->Show(nd->nt.Get())), DisplayServerEnums::INVALID_NOTIFICATION_ID);
+	ERR_FAIL_COND_V(FAILED(notifier->Show(ndata->nt.Get())), DisplayServerEnums::INVALID_NOTIFICATION_ID);
 	return nid;
 }
 
@@ -620,8 +620,8 @@ void WinRTUtils::hide_toast_notification(DisplayServerEnums::NotificationID p_id
 	if (!notifications.has(p_id)) {
 		return;
 	}
-	Ref<WinRTNotificationData> nd = notifications[p_id];
+	Ref<WinRTNotificationData> ndata = notifications[p_id];
 	notifications.erase(p_id);
 
-	notifier->Hide(nd->nt.Get());
+	notifier->Hide(ndata->nt.Get());
 }

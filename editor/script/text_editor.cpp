@@ -39,15 +39,15 @@ void TextEditor::_validate_script() {
 
 	Ref<JSON> json_file = edited_res;
 	if (json_file.is_valid()) {
-		CodeEdit *te = code_editor->get_text_editor();
+		CodeEdit *text_editor = code_editor->get_text_editor();
 
-		te->set_line_background_color(code_editor->get_error_pos().x, Color(0, 0, 0, 0));
+		text_editor->set_line_background_color(code_editor->get_error_pos().x, Color(0, 0, 0, 0));
 		code_editor->set_error("");
 
-		if (json_file->parse(te->get_text(), true) != OK) {
+		if (json_file->parse(text_editor->get_text(), true) != OK) {
 			code_editor->set_error(json_file->get_error_message().replace("[", "[lb]"));
 			code_editor->set_error_pos(json_file->get_error_line(), 0);
-			te->set_line_background_color(code_editor->get_error_pos().x, EDITOR_GET("text_editor/theme/highlighting/mark_color"));
+			text_editor->set_line_background_color(code_editor->get_error_pos().x, EDITOR_GET("text_editor/theme/highlighting/mark_color"));
 		}
 	}
 }

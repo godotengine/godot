@@ -202,12 +202,12 @@ void AimModifier3D::_process_constraint_by_bone(int p_index, Skeleton3D *p_skele
 }
 
 void AimModifier3D::_process_constraint_by_node(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, const NodePath &p_reference_node, float p_amount) {
-	Node3D *nd = Object::cast_to<Node3D>(get_node_or_null(p_reference_node));
-	if (!nd) {
+	Node3D *node = Object::cast_to<Node3D>(get_node_or_null(p_reference_node));
+	if (!node) {
 		return;
 	}
 	Transform3D skel_tr = p_skeleton->get_global_transform_interpolated();
-	Vector3 reference_origin = nd->get_global_transform_interpolated().origin - skel_tr.origin;
+	Vector3 reference_origin = node->get_global_transform_interpolated().origin - skel_tr.origin;
 	_process_aim(p_index, p_skeleton, p_apply_bone, skel_tr.basis.get_rotation_quaternion().xform_inv(reference_origin), p_amount);
 }
 

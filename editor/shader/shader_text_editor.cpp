@@ -859,23 +859,23 @@ void ShaderTextEditor::_remove_shader_preview(int p_line) {
 }
 
 void ShaderTextEditor::_load_theme_settings() {
-	CodeEdit *te = code_editor->get_text_editor();
+	CodeEdit *teditor = code_editor->get_text_editor();
 	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
 	if (updated_marked_line_color != marked_line_color) {
-		for (int i = 0; i < te->get_line_count(); i++) {
-			if (te->get_line_background_color(i) == marked_line_color) {
-				te->set_line_background_color(i, updated_marked_line_color);
+		for (int i = 0; i < teditor->get_line_count(); i++) {
+			if (teditor->get_line_background_color(i) == marked_line_color) {
+				teditor->set_line_background_color(i, updated_marked_line_color);
 			}
 		}
 		marked_line_color = updated_marked_line_color;
 	}
 
-	te->clear_comment_delimiters();
-	te->add_comment_delimiter("/*", "*/", false);
-	te->add_comment_delimiter("//", "", true);
+	teditor->clear_comment_delimiters();
+	teditor->add_comment_delimiter("/*", "*/", false);
+	teditor->add_comment_delimiter("//", "", true);
 
-	if (!te->has_auto_brace_completion_open_key("/*")) {
-		te->add_auto_brace_completion_pair("/*", "*/");
+	if (!teditor->has_auto_brace_completion_open_key("/*")) {
+		teditor->add_auto_brace_completion_pair("/*", "*/");
 	}
 	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
 }
@@ -1060,8 +1060,8 @@ bool ShaderTextEditor::_edit_option(int p_option) {
 void ShaderTextEditor::_validate_script() {
 	apply_code();
 
-	CodeEdit *te = code_editor->get_text_editor();
-	String code = te->get_text();
+	CodeEdit *text_editor = code_editor->get_text_editor();
+	String code = text_editor->get_text();
 
 	ShaderPreprocessor preprocessor;
 	String code_pp;
