@@ -662,7 +662,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
-				if (selected_track >= 0 && track_count > 0 && !hidden_tracks.has(selected_track)) {
+				if (selected_track >= 0 && track_count > 0 && !is_filtered && !hidden_tracks.has(selected_track)) {
 					// Draw edited curve.
 					_draw_track(selected_track, selected_track_color);
 				}
