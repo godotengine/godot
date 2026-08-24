@@ -1476,10 +1476,6 @@ void AudioServer::finish() {
 		AudioDriverManager::get_driver(i)->finish();
 	}
 
-	// The mix step is the only thing that takes playbacks off the list, and the
-	// drivers are stopped by now, so no further mix step will run. A playback left
-	// on the list would keep its reference and get reported as a leaked instance
-	// at exit.
 	for (AudioStreamPlaybackListNode *playback : playback_list) {
 		_delete_stream_playback_list_node(playback);
 	}
