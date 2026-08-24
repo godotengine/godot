@@ -1580,7 +1580,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	bone_scroll_main_vb->set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 	sync_bones = memnew(Button(TTR("Sync Bones to Polygon")));
 	bone_scroll_main_vb->add_child(sync_bones);
-	sync_bones->set_h_size_flags(0);
+	sync_bones->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	sync_bones->connect(SceneStringName(pressed), callable_mp(this, &Polygon2DEditor::_sync_bones));
 	uv_main_hsc->add_child(bone_scroll_main_vb);
 	bone_scroll = memnew(ScrollContainer);

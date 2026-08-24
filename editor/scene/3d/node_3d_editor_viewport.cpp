@@ -6807,7 +6807,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_display_menu = memnew(MenuButton);
 	view_display_menu->set_flat(false);
-	view_display_menu->set_h_size_flags(0);
+	view_display_menu->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	view_display_menu->set_shortcut_context(this);
 	view_display_menu->set_accessibility_name(TTRC("View"));
 	view_display_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -6963,7 +6963,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	// Using Control even on macOS to avoid conflict with Quick Open shortcut.
 	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTRC("Toggle Camera Preview"), KeyModifierMask::CTRL | Key::P));
 	vbox->add_child(preview_camera);
-	preview_camera->set_h_size_flags(0);
+	preview_camera->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	preview_camera->set_theme_type_variation("CheckBoxNoIconTint");
 	preview_camera->hide();
 	preview_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
@@ -6973,7 +6973,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	pilot_camera->set_tooltip_text(TTRC("Enable pilot mode for the preview camera.\nAllows WASD movement and mouse look when in preview mode."));
 	pilot_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_pilot_preview", TTRC("Toggle Pilot Mode in Preview")));
 	vbox->add_child(pilot_camera);
-	pilot_camera->set_h_size_flags(0);
+	pilot_camera->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	pilot_camera->set_theme_type_variation("CheckBoxNoIconTint");
 	pilot_camera->hide();
 	pilot_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_pilot_preview));

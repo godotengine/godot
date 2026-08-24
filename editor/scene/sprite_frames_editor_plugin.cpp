@@ -2592,8 +2592,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	MarginContainer *split_sheet_zoom_margin = memnew(MarginContainer);
 	split_sheet_panel->add_child(split_sheet_zoom_margin);
-	split_sheet_zoom_margin->set_h_size_flags(0);
-	split_sheet_zoom_margin->set_v_size_flags(0);
+	split_sheet_zoom_margin->set_h_size_flags(SIZE_SHRINK_BEGIN);
+	split_sheet_zoom_margin->set_v_size_flags(SIZE_SHRINK_BEGIN);
 	split_sheet_zoom_margin->add_theme_constant_override("margin_top", 5);
 	split_sheet_zoom_margin->add_theme_constant_override("margin_left", 5);
 	HBoxContainer *split_sheet_zoom_hb = memnew(HBoxContainer);

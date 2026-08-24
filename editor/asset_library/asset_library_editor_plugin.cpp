@@ -587,7 +587,7 @@ void EditorAssetLibraryItemDescription::add_release(const String &p_url, const S
 
 void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, const String &p_url, const String &p_thumbnail) {
 	if (preview_images.is_empty()) {
-		desc_vbox->set_h_size_flags(0);
+		desc_vbox->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
 		previews_vbox->show();
 	}
 
@@ -965,7 +965,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	panel->add_child(hb);
 	icon = memnew(TextureRect);
 	icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	icon->set_v_size_flags(0);
+	icon->set_v_size_flags(SIZE_SHRINK_BEGIN);
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
