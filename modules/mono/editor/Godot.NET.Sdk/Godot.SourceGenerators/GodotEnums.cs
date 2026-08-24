@@ -90,7 +90,11 @@ namespace Godot.SourceGenerators
         LayersAvoidance = 37,
         DictionaryType = 38,
         ToolButton = 39,
-        Max = 40
+        OneShot = 40,
+        GroupEnable = 42,
+        InputName = 43,
+        FilePath = 44,
+        Max = 45
     }
 
     [Flags]

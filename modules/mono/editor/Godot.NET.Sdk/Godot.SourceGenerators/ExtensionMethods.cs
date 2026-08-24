@@ -278,6 +278,9 @@ namespace Godot.SourceGenerators
         public static bool IsGodotExportAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ExportAttr;
 
+        public static bool IsGodotExportEmbedAttribute(this INamedTypeSymbol symbol)
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ExportEmbedAttr;
+
         public static bool IsGodotSignalAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SignalAttr;
 
@@ -353,23 +356,29 @@ namespace Godot.SourceGenerators
 
         public static IEnumerable<GodotPropertyData> WhereIsGodotCompatibleType(
             this IEnumerable<IPropertySymbol> properties,
-            MarshalUtils.TypeCache typeCache
+            MarshalUtils.TypeCache typeCache,
+            GodotPropertyData? containingProperty,
+            bool createUnallowed = false
         )
         {
             foreach (var property in properties)
             {
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(property.Type, typeCache);
 
+                if (createUnallowed && marshalType == null)
+                    yield return new GodotPropertyData(property, default, PropertyType.Unallowed, containingProperty);
                 if (marshalType == null)
                     continue;
 
-                yield return new GodotPropertyData(property, marshalType.Value);
+                yield return new GodotPropertyData(property, marshalType.Value, PropertyType.Property, containingProperty);
             }
         }
 
-        public static IEnumerable<GodotFieldData> WhereIsGodotCompatibleType(
+        public static IEnumerable<GodotPropertyData> WhereIsGodotCompatibleType(
             this IEnumerable<IFieldSymbol> fields,
-            MarshalUtils.TypeCache typeCache
+            MarshalUtils.TypeCache typeCache,
+            GodotPropertyData? containingProperty,
+            bool createUnallowed = false
         )
         {
             foreach (var field in fields)
@@ -377,11 +386,50 @@ namespace Godot.SourceGenerators
                 // TODO: We should still restore read-only fields after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(field.Type, typeCache);
 
+                if (createUnallowed && marshalType == null)
+                    yield return new GodotPropertyData(field, default, PropertyType.Unallowed, containingProperty);
                 if (marshalType == null)
                     continue;
 
-                yield return new GodotFieldData(field, marshalType.Value);
+                yield return new GodotPropertyData(field, marshalType.Value, PropertyType.Field, containingProperty);
             }
+        }
+
+        public static IEnumerable<GodotPropertyData> WhereIsSortedGodotProperties(
+            this IEnumerable<ISymbol> members,
+            MarshalUtils.TypeCache typeCache,
+            Func<IEnumerable<ISymbol>, IEnumerable<IPropertySymbol>> propertiesFilter,
+            Func<IEnumerable<ISymbol>, IEnumerable<IFieldSymbol>> fieldsFilter,
+            bool createUnallowed = false,
+            GodotPropertyData? containingProperty = null
+        )
+        {
+            return Enumerable.Empty<GodotPropertyData>()
+                .Concat(propertiesFilter(members).WhereIsGodotCompatibleType(typeCache, containingProperty, createUnallowed))
+                .Concat(fieldsFilter(members).WhereIsGodotCompatibleType(typeCache, containingProperty, createUnallowed))
+                .Concat(members
+                    .Where(s => (s is IPropertySymbol || s is IFieldSymbol) && s.GetAttributes()
+                        .Any(a => a.AttributeClass?.IsGodotExportEmbedAttribute() ?? false))
+                    .Select(s => s switch
+                        {
+                            IPropertySymbol sp => new GodotPropertyData(sp, default, PropertyType.Embed, containingProperty),
+                            IFieldSymbol sf => new GodotPropertyData(sf, default, PropertyType.Embed, containingProperty),
+                            _ => throw new NotSupportedException(),
+                        }))
+                // To retain the definition order (and display categories correctly), we want to
+                //  iterate over fields and properties at the same time, sorted by line number.
+                .OrderBy(data => data.Symbol.Locations[0].Path())
+                .ThenBy(data => data.Symbol.Locations[0].StartLine())
+                // Gather Godot exports from embedded exports recursively.
+                .SelectMany(data => Enumerable
+                    .Repeat(data, 1)
+                    .Concat(data.PropertyType == PropertyType.Embed
+                        ? data.PropertyTypeSymbol
+                            .GetMembers()
+                            .Where(m => !m.GetAttributes()
+                                .Any(a => a.AttributeClass?.IsGodotIgnoreMemberAttribute() ?? false))
+                            .WhereIsSortedGodotProperties(typeCache, propertiesFilter, fieldsFilter, createUnallowed, data)
+                        : Enumerable.Empty<GodotPropertyData>()));
         }
 
         public static Location? FirstLocationWithSourceTreeOrDefault(this IEnumerable<Location> locations)
