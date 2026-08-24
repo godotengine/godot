@@ -1526,7 +1526,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				return;
 			} break;
 			case GDScriptParser::DataType::ENUM: {
-				if (p_types_only) {
+				if (p_types_only || !base_type.is_meta_type) {
 					return;
 				}
 
