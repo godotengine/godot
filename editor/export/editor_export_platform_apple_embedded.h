@@ -222,6 +222,13 @@ protected:
 	virtual Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) { return OK; }
 	virtual Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir);
 
+	// tvOS has no tinted app icons, so it does not expose the `_tinted` options.
+	virtual bool _supports_tinted_icons() const { return true; }
+
+	// `capabilities/access_wifi`, `performance_gaming_tier` and `performance_a12` map to
+	// UIRequiredDeviceCapabilities values that only iPhone and iPad accept.
+	virtual bool _supports_device_capability_options() const { return true; }
+
 	// Asset-catalog dir name under Images.xcassets. visionOS overrides for layered icons.
 	virtual String _get_iconset_dir_name() const { return "AppIcon.appiconset"; }
 

@@ -36,6 +36,7 @@
 
 #define HAVE_STDARG_H 1
 #define HAVE_STDDEF_H 1
+#define HAVE_STDLIB_H 1
 
 // Here we disable SDL subsystems that are not going to be used
 #define SDL_CPUINFO_DISABLED 1
@@ -124,6 +125,7 @@
 #define SDL_PLATFORM_UNIX 1
 #define HAVE_STDIO_H 1
 #define HAVE_LIBC 1
+#define HAVE_MALLOC 1
 #define SDL_HAPTIC_IOKIT 1
 #define SDL_JOYSTICK_IOKIT 1
 #define SDL_JOYSTICK_MFI 1
@@ -132,11 +134,13 @@
 #define SDL_THREAD_PTHREAD 1
 #define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1
 
-// iOS/visionOS defines
-#elif defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_VISIONOS)
+// iOS/tvOS/visionOS defines
+#elif defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_VISIONOS)
 
 #ifdef SDL_PLATFORM_IOS
 #define SDL_PLATFORM_PRIVATE_NAME "iOS"
+#elif defined(SDL_PLATFORM_TVOS)
+#define SDL_PLATFORM_PRIVATE_NAME "tvOS"
 #else
 #define SDL_PLATFORM_PRIVATE_NAME "visionOS"
 #endif
@@ -145,6 +149,7 @@
 
 #define HAVE_STDIO_H 1
 #define HAVE_LIBC 1
+#define HAVE_MALLOC 1
 
 #define SDL_JOYSTICK_MFI 1
 #define SDL_HAPTIC_DUMMY 1

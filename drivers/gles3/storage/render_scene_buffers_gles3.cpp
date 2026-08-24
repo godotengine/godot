@@ -62,7 +62,7 @@ void RenderSceneBuffersGLES3::_rt_attach_textures(GLuint p_color, GLuint p_depth
 			ERR_PRINT_ONCE("Multiview MSAA isn't supported on this platform.");
 #endif
 		} else {
-#ifndef IOS_ENABLED
+#ifndef APPLE_EMBEDDED_ENABLED
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, p_color, 0, 0, p_view_count);
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, p_depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, p_depth, 0, 0, p_view_count);
 #else
@@ -246,7 +246,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		glGenFramebuffers(1, &internal3d.fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, internal3d.fbo);
 
-#ifndef IOS_ENABLED
+#ifndef APPLE_EMBEDDED_ENABLED
 		if (use_multiview) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, internal3d.color, 0, 0, view_count);
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, internal3d.depth, 0, 0, view_count);
@@ -317,7 +317,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 
 			glBindRenderbuffer(GL_RENDERBUFFER, 0);
 			glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-#if !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
+#if !defined(APPLE_EMBEDDED_ENABLED) && !defined(WEB_ENABLED)
 		} else if (use_multiview && !config->rt_msaa_multiview_supported) {
 			// Render to texture extensions not supported? fall back to MSAA textures through GL_EXT_multiview_texture_multisample.
 			msaa3d.needs_resolve = true;
@@ -493,7 +493,7 @@ void RenderSceneBuffersGLES3::check_backbuffer(bool p_need_color, bool p_need_de
 
 		GLES3::Utilities::get_singleton()->texture_allocated_data(backbuffer3d.color, internal_size.x * internal_size.y * view_count * color_format_size, "3D Back buffer color texture");
 
-#ifndef IOS_ENABLED
+#ifndef APPLE_EMBEDDED_ENABLED
 		if (use_multiview) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, backbuffer3d.color, 0, 0, view_count);
 		} else {
@@ -521,7 +521,7 @@ void RenderSceneBuffersGLES3::check_backbuffer(bool p_need_color, bool p_need_de
 
 		GLES3::Utilities::get_singleton()->texture_allocated_data(backbuffer3d.depth, internal_size.x * internal_size.y * view_count * depth_format_size, "3D back buffer depth texture");
 
-#ifndef IOS_ENABLED
+#ifndef APPLE_EMBEDDED_ENABLED
 		if (use_multiview) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, backbuffer3d.depth, 0, 0, view_count);
 		} else {
