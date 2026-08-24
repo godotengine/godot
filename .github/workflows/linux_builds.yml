@@ -167,7 +167,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           # Targeting the oldest version we want to support to ensure it still builds.
-          dotnet-version: 8.0.100
+          dotnet-version: 10.0.100
 
       - name: Download pre-built AccessKit
         shell: sh

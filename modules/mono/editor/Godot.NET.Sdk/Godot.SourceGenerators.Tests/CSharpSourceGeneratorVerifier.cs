@@ -17,7 +17,7 @@ where TSourceGenerator : ISourceGenerator, new()
     {
         public Test()
         {
-            ReferenceAssemblies = Constants.Net80;
+            ReferenceAssemblies = Constants.Net100;
 
             SolutionTransforms.Add((Solution solution, ProjectId projectId) =>
             {
