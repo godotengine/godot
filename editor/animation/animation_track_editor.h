@@ -829,6 +829,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	SpinBox *ease_fps = nullptr;
 
 	void _select_all_tracks_for_copy();
+	void _update_copy_tracks();
 
 	void _edit_menu_about_to_popup();
 	void _edit_menu_pressed(int p_option);
@@ -861,7 +862,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _selection_changed();
 
 	ConfirmationDialog *track_copy_dialog = nullptr;
+
 	Tree *track_copy_select = nullptr;
+	LineEdit *track_copy_filter = nullptr;
 
 	struct TrackClipboard {
 		NodePath full_path;
