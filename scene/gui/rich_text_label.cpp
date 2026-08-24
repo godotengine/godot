@@ -758,7 +758,8 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				if (resize_font_to_fit && theme_cache.normal_font_size > 0 && font_size != p_base_font_size) {
 					font_size = MAX(1, font_size * p_base_font_size / theme_cache.normal_font_size);
 				}
-				l.text_buf->add_string(String::chr(0x200B), font, font_size, String(), it->rid);
+				String lang = _find_language(it);
+				l.text_buf->add_string(String::chr(0x200B), font, font_size, lang, it->rid);
 				txt += "\n";
 				l.char_count++;
 				remaining_characters--;
@@ -911,7 +912,8 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 		if (font_size_it && font_size_it->font_size > 0) {
 			font_size = font_size_it->font_size;
 		}
-		l.text_buf->add_string(String::chr(0x200B), font, font_size, String(), it_prev->rid);
+		String lang = _find_language(it_prev);
+		l.text_buf->add_string(String::chr(0x200B), font, font_size, lang, it_prev->rid);
 		txt += "\n";
 	}
 
