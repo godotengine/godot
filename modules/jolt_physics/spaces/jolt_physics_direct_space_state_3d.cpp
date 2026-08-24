@@ -55,7 +55,7 @@
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
-bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_shape, const Transform3D &p_transform_com, const Vector3 &p_scale, const Vector3 &p_motion, bool p_use_edge_removal, bool p_ignore_overlaps, const JPH::CollideShapeSettings &p_settings, const JPH::BroadPhaseLayerFilter &p_broad_phase_layer_filter, const JPH::ObjectLayerFilter &p_object_layer_filter, const JPH::BodyFilter &p_body_filter, const JPH::ShapeFilter &p_shape_filter, real_t &r_closest_safe, real_t &r_closest_unsafe) const {
+bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_shape, const Transform3D &p_transform_com, const Vector3 &p_scale, const Vector3 &p_motion, bool p_use_edge_removal, bool p_ignore_overlaps, const JPH::CollideShapeSettings &p_settings, const JPH::BroadPhaseLayerFilter &p_broad_phase_layer_filter, const JPH::ObjectLayerFilter &p_object_layer_filter, const JPH::BodyFilter &p_body_filter, const JPH::ShapeFilter &p_shape_filter, real_t &r_closest_safe, real_t &r_closest_unsafe, JPH::CollideShapeResult *r_hit) const {
 	r_closest_safe = 1.0f;
 	r_closest_unsafe = 1.0f;
 
@@ -88,7 +88,7 @@ bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_s
 
 	JoltCustomMotionShape motion_shape(static_cast<const JPH::ConvexShape &>(p_jolt_shape));
 
-	auto collides = [&](const JPH::Body &p_other_body, float p_fraction) {
+	auto collides = [&](const JPH::Body &p_other_body, float p_fraction, JPH::CollideShapeResult *r_result) {
 		motion_shape.set_motion(motion_local * p_fraction);
 
 		const JPH::TransformedShape other_shape = p_other_body.GetTransformedShape();
@@ -107,7 +107,15 @@ bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_s
 			other_shape.CollideShape(&motion_shape, scale, transform_com, p_settings, base_offset, collector, p_shape_filter);
 		}
 
-		return collector.had_hit();
+		if (!collector.had_hit()) {
+			return false;
+		}
+
+		if (r_result != nullptr) {
+			*r_result = collector.get_hit();
+		}
+
+		return true;
 	};
 
 	// Figure out the number of steps we need in our binary search in order to achieve millimeter precision, within reason.
@@ -126,11 +134,18 @@ bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_s
 			continue;
 		}
 
-		if (!collides(*other_jolt_body, 1.0f)) {
+		JPH::CollideShapeResult body_hit;
+		JPH::CollideShapeResult *body_hit_ptr = nullptr;
+
+		if (r_hit != nullptr) {
+			body_hit_ptr = &body_hit;
+		}
+
+		if (!collides(*other_jolt_body, 1.0f, body_hit_ptr)) {
 			continue;
 		}
 
-		if (p_ignore_overlaps && collides(*other_jolt_body, 0.0f)) {
+		if (p_ignore_overlaps && collides(*other_jolt_body, 0.0f, nullptr)) {
 			continue;
 		}
 
@@ -141,7 +156,7 @@ bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_s
 		for (int j = 0; j < step_count; ++j) {
 			const float fraction = lo + (hi - lo) * coeff;
 
-			if (collides(*other_jolt_body, fraction)) {
+			if (collides(*other_jolt_body, fraction, body_hit_ptr)) {
 				collided = true;
 
 				hi = fraction;
@@ -165,6 +180,10 @@ bool JoltPhysicsDirectSpaceState3D::_cast_motion_impl(const JPH::Shape &p_jolt_s
 		if (lo < r_closest_safe) {
 			r_closest_safe = lo;
 			r_closest_unsafe = hi;
+
+			if (r_hit != nullptr) {
+				*r_hit = body_hit;
+			}
 		}
 	}
 
@@ -629,7 +648,6 @@ int JoltPhysicsDirectSpaceState3D::intersect_shape(const PS3DT::ShapeParameters 
 
 bool JoltPhysicsDirectSpaceState3D::cast_motion(const PS3DT::ShapeParameters &p_parameters, real_t &r_closest_safe, real_t &r_closest_unsafe, PS3DT::ShapeRestInfo *r_info) {
 	ERR_FAIL_COND_V_MSG(space->is_stepping(), false, "cast_motion must not be called while the physics space is being stepped.");
-	ERR_FAIL_COND_V_MSG(r_info != nullptr, false, "Providing rest info as part of cast_motion is not supported when using Jolt Physics.");
 
 	space->flush_pending_objects();
 
@@ -653,7 +671,38 @@ bool JoltPhysicsDirectSpaceState3D::cast_motion(const PS3DT::ShapeParameters &p_
 	settings.mMaxSeparationDistance = (float)p_parameters.margin;
 
 	const JoltQueryFilter3D query_filter(*this, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.exclude);
-	_cast_motion_impl(*jolt_shape, transform_com, scale, p_parameters.motion, JoltProjectSettings::use_enhanced_internal_edge_removal_for_queries, true, settings, query_filter, query_filter, query_filter, JPH::ShapeFilter(), r_closest_safe, r_closest_unsafe);
+
+	JPH::CollideShapeResult hit;
+	JPH::CollideShapeResult *hit_ptr = nullptr;
+
+	if (r_info != nullptr) {
+		hit_ptr = &hit;
+	}
+
+	_cast_motion_impl(*jolt_shape, transform_com, scale, p_parameters.motion, JoltProjectSettings::use_enhanced_internal_edge_removal_for_queries, true, settings, query_filter, query_filter, query_filter, JPH::ShapeFilter(), r_closest_safe, r_closest_unsafe, hit_ptr);
+
+	if (r_info == nullptr || r_closest_safe >= 1.0) {
+		return true;
+	}
+
+	const JoltObject3D *object = space->try_get_object(hit.mBodyID2);
+	ERR_FAIL_NULL_V(object, false);
+
+	r_info->shape = 0;
+
+	if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
+		const int shape_index = shaped_object->find_shape_index(hit.mSubShapeID2);
+		ERR_FAIL_COND_V(shape_index == -1, false);
+		r_info->shape = shape_index;
+	}
+
+	const Vector3 hit_point = transform_com.origin + to_godot(hit.mContactPointOn2);
+
+	r_info->point = hit_point;
+	r_info->normal = to_godot(-hit.mPenetrationAxis.Normalized());
+	r_info->rid = object->get_rid();
+	r_info->collider_id = object->get_instance_id();
+	r_info->linear_velocity = object->get_velocity_at_position(hit_point);
 
 	return true;
 }

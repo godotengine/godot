@@ -109,6 +109,7 @@
 #include "servers/physics_3d/physics_server_3d_dummy.h"
 #include "servers/physics_3d/physics_server_3d_extension.h"
 #include "servers/physics_3d/physics_server_3d_manager.h"
+#include "servers/physics_3d/queries/physics_cast_motion_result_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 // XR
@@ -349,6 +350,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(PhysicsRayQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsCastMotionResult3D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
 
