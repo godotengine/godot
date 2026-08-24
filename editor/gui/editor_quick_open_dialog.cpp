@@ -398,7 +398,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 			scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 			scroll_container->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 			scroll_container->hide();
-			panel_container->add_child(scroll_container);
+			mc->add_child(scroll_container);
 
 			list = memnew(VBoxContainer);
 			list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
