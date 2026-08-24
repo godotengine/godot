@@ -1510,6 +1510,11 @@ void EditorSettings::setup_language(bool p_initial_setup) {
 
 	if (lang == "en") {
 		TranslationServer::get_singleton()->set_locale(lang);
+
+		TranslationServer::get_singleton()->get_editor_domain()->clear();
+		TranslationServer::get_singleton()->get_property_domain()->clear();
+		TranslationServer::get_singleton()->get_doc_domain()->clear();
+
 		emit_signal("_translation_changed");
 		return; // Default, nothing to do.
 	}
