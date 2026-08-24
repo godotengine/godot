@@ -493,7 +493,9 @@ public:
 		}
 
 		call_level->prev = _call_stack;
+		GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wdangling-pointer=") // False positive on GCC 13/14.
 		_call_stack = call_level;
+		GODOT_GCC_WARNING_POP
 		call_level->stack = p_stack;
 		call_level->instance = p_instance;
 		call_level->function = p_function;
