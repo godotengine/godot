@@ -51,6 +51,9 @@ private:
 
 		SDL_JoystickID sdl_instance_idx;
 
+		// Bitmask of the axes that still need their initial state queried from SDL.
+		uint32_t axes_pending_initial_sync = 0;
+
 		bool supports_force_feedback = false;
 		bool supports_motion_sensors = false;
 		uint64_t ff_effect_timestamp = 0;

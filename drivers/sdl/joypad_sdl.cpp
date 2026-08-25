@@ -49,6 +49,11 @@
 		continue; \
 	}
 
+// SDL axes go from SDL_JOYSTICK_AXIS_MIN to SDL_JOYSTICK_AXIS_MAX, Godot axes go from -1 to 1.
+static float _sdl_axis_to_godot(Sint16 p_value) {
+	return ((p_value - SDL_JOYSTICK_AXIS_MIN) / (float)(SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) - 0.5f) * 2.0f;
+}
+
 JoypadSDL::~JoypadSDL() {
 	// Process any remaining input events
 	process_events();
@@ -163,6 +168,11 @@ void JoypadSDL::process_events() {
 
 				joypads[joy_id].attached = true;
 				joypads[joy_id].sdl_instance_idx = sdl_event.jdevice.which;
+				// SDL gamepads are left alone: they are reported through SDL's mapped gamepad
+				// events, which have their own trigger semantics.
+				joypads[joy_id].axes_pending_initial_sync = SDL_IsGamepad(sdl_event.jdevice.which)
+						? 0
+						: (((uint32_t)1 << MIN(SDL_GetNumJoystickAxes(joy), (int)JoyAxis::MAX)) - 1);
 				joypads[joy_id].supports_force_feedback = SDL_GetBooleanProperty(propertiesID, SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, false);
 				joypads[joy_id].guid = StringName(String(guid));
 				joypads[joy_id].supports_motion_sensors = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL) || SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO);
@@ -226,7 +236,7 @@ void JoypadSDL::process_events() {
 					Input::get_singleton()->joy_axis(
 							joy_id,
 							static_cast<JoyAxis>(sdl_event.jaxis.axis), // Godot joy axis constants are already intentionally the same as SDL's
-							((sdl_event.jaxis.value - SDL_JOYSTICK_AXIS_MIN) / (float)(SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) - 0.5f) * 2.0f);
+							_sdl_axis_to_godot(sdl_event.jaxis.value));
 					break;
 
 				case SDL_EVENT_JOYSTICK_BUTTON_UP:
@@ -262,8 +272,7 @@ void JoypadSDL::process_events() {
 						axis_value = sdl_event.gaxis.value / (float)SDL_JOYSTICK_AXIS_MAX;
 					} else {
 						// Other axis go from SDL_JOYSTICK_AXIS_MIN to SDL_JOYSTICK_AXIS_MAX
-						axis_value =
-								((sdl_event.gaxis.value - SDL_JOYSTICK_AXIS_MIN) / (float)(SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) - 0.5f) * 2.0f;
+						axis_value = _sdl_axis_to_godot(sdl_event.gaxis.value);
 					}
 
 					Input::get_singleton()->joy_axis(
@@ -296,6 +305,49 @@ void JoypadSDL::process_events() {
 		}
 	}
 
+	/*
+		SDL does not emit an axis motion event for the position an axis was already in when
+		the device was opened, it waits until the axis moves away from that position first.
+		Axes that do not spring back to a resting position (HOTAS throttles, RC transmitter
+		controls, pedals, sliders) can therefore start anywhere, while Godot keeps reporting
+		the default 0 until the user moves them.
+
+		Seed those axes from SDL's own state as soon as SDL has an initial value for them.
+	*/
+	for (int i = 0; i < Input::JOYPADS_MAX; i++) {
+		Joypad &joy = joypads[i];
+		if (!joy.attached || joy.axes_pending_initial_sync == 0) {
+			continue;
+		}
+
+		SDL_Joystick *sdl_joy = joy.get_sdl_joystick();
+		if (!sdl_joy) {
+			continue;
+		}
+
+		for (int axis = 0; axis < (int)JoyAxis::MAX; axis++) {
+			const uint32_t axis_bit = (uint32_t)1 << axis;
+			if (!(joy.axes_pending_initial_sync & axis_bit)) {
+				continue;
+			}
+
+			Sint16 initial_value;
+			if (!SDL_GetJoystickAxisInitialState(sdl_joy, axis, &initial_value)) {
+				// SDL has nothing for this axis yet, try again on the next frame.
+				continue;
+			}
+
+			// Send the current value rather than the initial one, so that movement that
+			// happened while SDL was waiting for a first report is not overwritten.
+			Input::get_singleton()->joy_axis(
+					i,
+					static_cast<JoyAxis>(axis), // Godot joy axis constants are already intentionally the same as SDL's
+					_sdl_axis_to_godot(SDL_GetJoystickAxis(sdl_joy, axis)));
+
+			joy.axes_pending_initial_sync &= ~axis_bit;
+		}
+	}
+
 	for (int i = 0; i < Input::JOYPADS_MAX; i++) {
 		Joypad &joy = joypads[i];
 		if (!joy.attached || !joy.supports_motion_sensors) {
@@ -320,6 +372,7 @@ void JoypadSDL::close_joypad(int p_pad_idx) {
 	int sdl_instance_idx = joypads[p_pad_idx].sdl_instance_idx;
 
 	joypads[p_pad_idx].attached = false;
+	joypads[p_pad_idx].axes_pending_initial_sync = 0;
 	sdl_instance_id_to_joypad_id.erase(sdl_instance_idx);
 
 	if (SDL_IsGamepad(sdl_instance_idx)) {
