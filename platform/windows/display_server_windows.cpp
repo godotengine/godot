@@ -41,7 +41,6 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/xml_parser.h"
