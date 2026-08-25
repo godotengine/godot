@@ -6207,6 +6207,17 @@ String EditorNode::_get_system_info() const {
 		display_driver_window_mode += ", " + itos(DisplayServer::get_singleton()->get_screen_count()) + " monitors";
 	}
 
+	// List resolution and refresh rate for each monitor.
+	display_driver_window_mode += " (";
+	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
+		const Size2i screen_size = DisplayServer::get_singleton()->screen_get_size(i);
+		display_driver_window_mode += vformat("%dx%d @ %.2f Hz", screen_size.x, screen_size.y, DisplayServer::get_singleton()->screen_get_refresh_rate(i));
+		if (i < DisplayServer::get_singleton()->get_screen_count() - 1) {
+			display_driver_window_mode += ", ";
+		}
+	}
+	display_driver_window_mode += ")";
+
 	info.push_back(display_driver_window_mode);
 
 	info.push_back(vformat("%s (%s)", driver_name, rendering_method));
