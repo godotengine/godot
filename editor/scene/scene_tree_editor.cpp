@@ -2157,7 +2157,7 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 
 	if (String(d["type"]) == "nodes") {
 		Array nodes = d["nodes"];
-		emit_signal(SNAME("nodes_rearranged"), nodes, np, section);
+		emit_signal(SNAME("nodes_rearranged"), nodes, n, section);
 	}
 
 	if (String(d["type"]) == "files") {
@@ -2165,9 +2165,9 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 
 		String ftype = EditorFileSystem::get_singleton()->get_file_type(files[0]);
 		if (_is_script_type(ftype)) {
-			emit_signal(SNAME("script_dropped"), files[0], np);
+			emit_signal(SNAME("script_dropped"), files[0], n);
 		} else {
-			emit_signal(SNAME("files_dropped"), files, np, section);
+			emit_signal(SNAME("files_dropped"), files, n, section);
 		}
 	}
 
@@ -2176,7 +2176,7 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 		if (se) {
 			String sp = se->get_edited_resource()->get_path();
 			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
-				emit_signal(SNAME("script_dropped"), sp, np);
+				emit_signal(SNAME("script_dropped"), sp, n);
 			}
 		}
 	}
@@ -2264,9 +2264,9 @@ void SceneTreeEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_prerename"));
 	ADD_SIGNAL(MethodInfo("node_changed"));
 	ADD_SIGNAL(MethodInfo("nodes_dragged"));
-	ADD_SIGNAL(MethodInfo("nodes_rearranged", PropertyInfo(Variant::ARRAY, "paths"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
-	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
-	ADD_SIGNAL(MethodInfo("script_dropped", PropertyInfo(Variant::STRING, "file"), PropertyInfo(Variant::NODE_PATH, "to_path")));
+	ADD_SIGNAL(MethodInfo("nodes_rearranged", PropertyInfo(Variant::ARRAY, "paths"), PropertyInfo(Variant::OBJECT, "to_parent"), PropertyInfo(Variant::INT, "type")));
+	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files"), PropertyInfo(Variant::OBJECT, "to_parent"), PropertyInfo(Variant::INT, "type")));
+	ADD_SIGNAL(MethodInfo("script_dropped", PropertyInfo(Variant::STRING, "file"), PropertyInfo(Variant::OBJECT, "to_parent")));
 	ADD_SIGNAL(MethodInfo("rmb_pressed", PropertyInfo(Variant::VECTOR2, "position")));
 
 	ADD_SIGNAL(MethodInfo("open"));
