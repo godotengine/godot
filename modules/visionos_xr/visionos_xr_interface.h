@@ -135,7 +135,6 @@ private:
 		RID current_color_texture_id;
 		RD::Texture current_depth_texture;
 		RID current_depth_texture_id;
-		RD::Texture current_rasterization_rate_map;
 		RID current_rasterization_rate_map_id;
 
 		// Cached render target size, set in pre_render() on the render thread
