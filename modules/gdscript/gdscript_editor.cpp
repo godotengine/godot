@@ -154,6 +154,8 @@ Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(
 	return templates;
 }
 
+#ifdef TOOLS_ENABLED
+
 static void get_function_names_recursively(const GDScriptParser::ClassNode *p_class, const String &p_prefix, HashMap<int, String> &r_funcs) {
 	for (const GDScriptParser::ClassNode::Member &member : p_class->members) {
 		if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
@@ -166,7 +168,7 @@ static void get_function_names_recursively(const GDScriptParser::ClassNode *p_cl
 	}
 }
 
-bool GDScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, HashSet<int> *r_safe_lines) const {
+bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const {
 	GDScriptParser parser;
 	GDScriptAnalyzer analyzer(&parser);
 
@@ -178,12 +180,11 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 	if (r_warnings) {
 		for (const GDScriptWarning &E : parser.get_warnings()) {
 			const GDScriptWarning &warn = E;
-			ScriptLanguage::Warning w;
+			Warning w;
 			w.start_line = warn.start_line;
 			w.start_column = warn.start_column;
 			w.end_line = warn.end_line;
 			w.end_column = warn.end_column;
-			w.code = (int)warn.code;
 			w.string_code = GDScriptWarning::get_name_from_code(warn.code);
 			w.message = warn.get_message();
 			r_warnings->push_back(w);
@@ -193,7 +194,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 	if (err) {
 		if (r_errors) {
 			for (const GDScriptParser::ParserError &pe : parser.get_errors()) {
-				ScriptLanguage::ScriptError e;
+				ScriptError e;
 				e.path = p_path;
 				e.start_line = pe.start_line;
 				e.start_column = pe.start_column;
@@ -206,7 +207,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 			for (KeyValue<String, Ref<GDScriptParserRef>> E : parser.get_depended_parsers()) {
 				GDScriptParser *depended_parser = E.value->get_parser();
 				for (const GDScriptParser::ParserError &pe : depended_parser->get_errors()) {
-					ScriptLanguage::ScriptError e;
+					ScriptError e;
 					e.path = E.key;
 					e.start_line = pe.start_line;
 					e.start_column = pe.start_column;
@@ -242,6 +243,8 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 
 	return true;
 }
+
+#endif // TOOLS_ENABLED
 
 bool GDScriptLanguage::supports_builtin_mode() const {
 	return true;
