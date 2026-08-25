@@ -34,6 +34,8 @@
 
 #include <thorvg.h>
 
+#include <memory>
+
 HashMap<Color, Color> ImageLoaderSVG::forced_color_map = HashMap<Color, Color>();
 
 void ImageLoaderSVG::set_forced_color_map(const HashMap<Color, Color> &p_color_map) {
