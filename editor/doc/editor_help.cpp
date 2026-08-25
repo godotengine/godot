@@ -4996,7 +4996,16 @@ Control *EditorHelpBitTooltip::_make_invisible_control() {
 	return control;
 }
 
+bool EditorHelpBitTooltip::_is_mouse_inside_target() const {
+	Control *target = Object::cast_to<Control>(get_parent());
+	return target && target->is_inside_tree() && target->get_screen_rect().has_point(DisplayServer::get_singleton()->mouse_get_position());
+}
+
 void EditorHelpBitTooltip::_start_timer() {
+	// Showing the tooltip window can make the target emit `mouse_exited` even though the mouse is still over it.
+	if (!_is_shortcut_pressed && _is_mouse_inside_target()) {
+		return;
+	}
 	if (timer->is_inside_tree() && timer->is_stopped()) {
 		timer->start();
 	}

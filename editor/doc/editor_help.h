@@ -388,6 +388,7 @@ class EditorHelpBitTooltip : public PopupPanel {
 
 	static Control *_make_invisible_control();
 
+	bool _is_mouse_inside_target() const;
 	void _start_timer();
 	void _target_gui_input(const Ref<InputEvent> &p_event);
 	void _shortcut_pressed(Control *p_target);
