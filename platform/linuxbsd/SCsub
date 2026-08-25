@@ -11,6 +11,7 @@ common_linuxbsd = [
     "freedesktop_portal_desktop.cpp",
     "freedesktop_screensaver.cpp",
     "freedesktop_at_spi_monitor.cpp",
+    "xkb_convert_dead_keys.cpp",
 ]
 
 if env["library_type"] == "executable":
