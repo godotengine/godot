@@ -893,6 +893,7 @@ class AnimationTrackEditor : public VBoxContainer {
 			float time = 0;
 			float transition = 0;
 			Variant value;
+			Animation::HandleMode handle_mode = Animation::HANDLE_MODE_FREE;
 		};
 		Vector<Key> keys;
 	};
