@@ -1019,7 +1019,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 			p_methods->push_back(pair);
 		}
 #endif
-		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->method_map_compatibility) {
+		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->gdtype->get_self_compatibility_method_map()) {
 			LocalVector<MethodBind *> compat(E.value);
 			for (MethodBind *method : compat) {
 				MethodInfo minfo = info_from_bind(method);
@@ -1104,8 +1104,8 @@ Vector<uint32_t> ClassDB::get_method_compatibility_hashes(const StringName &p_cl
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		if (type->method_map_compatibility.has(p_name)) {
-			LocalVector<MethodBind *> *c = type->method_map_compatibility.getptr(p_name);
+		if (type->gdtype->get_self_compatibility_method_map().has(p_name)) {
+			const LocalVector<MethodBind *> *c = type->gdtype->get_self_compatibility_method_map().getptr(p_name);
 			Vector<uint32_t> ret;
 			for (uint32_t i = 0; i < c->size(); i++) {
 				ret.push_back((*c)[i]->get_hash());
@@ -1133,7 +1133,7 @@ const MethodBind *ClassDB::get_method_with_compatibility(const StringName &p_cla
 			}
 		}
 
-		LocalVector<MethodBind *> *compat = type->method_map_compatibility.getptr(p_name);
+		const LocalVector<MethodBind *> *compat = type->gdtype->get_self_compatibility_method_map().getptr(p_name);
 		if (compat) {
 			if (r_method_exists) {
 				*r_method_exists = true;
@@ -1601,13 +1601,6 @@ void ClassDB::bind_compatibility_method_custom(const StringName &p_class, Method
 	_bind_method_custom(p_class, p_method, true);
 }
 
-void ClassDB::_bind_compatibility(ClassInfo *r_type, MethodBind *p_method) {
-	if (!r_type->method_map_compatibility.has(p_method->get_name())) {
-		r_type->method_map_compatibility.insert(p_method->get_name(), LocalVector<MethodBind *>());
-	}
-	r_type->method_map_compatibility[p_method->get_name()].push_back(p_method);
-}
-
 void ClassDB::_bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility, bool p_take_ownership) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
@@ -1620,11 +1613,10 @@ void ClassDB::_bind_method_custom(const StringName &p_class, MethodBind *p_metho
 	}
 
 	if (p_compatibility) {
-		_bind_compatibility(type, p_method);
-		return;
+		type->gdtype->bind_compatibility_method(p_method);
+	} else {
+		type->gdtype->bind_method(p_method, p_take_ownership);
 	}
-
-	type->gdtype->bind_method(p_method, p_take_ownership);
 }
 
 MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility) {
@@ -1641,11 +1633,10 @@ MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p
 	}
 
 	if (p_compatibility) {
-		_bind_compatibility(type, bind);
-		return bind;
+		return type->gdtype->bind_compatibility_method(bind) ? bind : nullptr;
+	} else {
+		return type->gdtype->bind_method(bind) ? bind : nullptr;
 	}
-
-	return type->gdtype->bind_method(bind) ? bind : nullptr;
 }
 
 #ifdef DEBUG_ENABLED
@@ -1689,7 +1680,9 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 #endif // DEBUG_ENABLED
 
 	if (p_compatibility) {
-		_bind_compatibility(type, p_bind);
+		if (!type->gdtype->bind_compatibility_method(p_bind)) {
+			return nullptr;
+		}
 	} else {
 		if (!type->gdtype->bind_method(p_bind)) {
 			return nullptr;
@@ -2095,14 +2088,6 @@ void ClassDB::cleanup() {
 	//OBJTYPE_LOCK; hah not here
 
 	for (KeyValue<StringName, ClassInfo> &E : classes) {
-		ClassInfo &ti = E.value;
-
-		for (KeyValue<StringName, LocalVector<MethodBind *>> &F : ti.method_map_compatibility) {
-			for (uint32_t i = 0; i < F.value.size(); i++) {
-				memdelete(F.value[i]);
-			}
-		}
-
 		if (E.value.gdextension) {
 			WARN_PRINT(vformat("Extension class '%s' is still registered at exit; its GDExtension did not unregister it.", E.key));
 			gdtype_leaked_autorelease_pool.push_back(E.value.gdtype); // We created it; we need to clear it.
