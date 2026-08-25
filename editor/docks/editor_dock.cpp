@@ -92,6 +92,10 @@ void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_closable"), &EditorDock::is_closable);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closable"), "set_closable", "is_closable");
 
+	ClassDB::bind_method(D_METHOD("set_allow_switch_screen", "allow"), &EditorDock::set_allow_switch_screen);
+	ClassDB::bind_method(D_METHOD("is_allow_switch_screen"), &EditorDock::is_allow_switch_screen);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_switch_screen"), "set_allow_switch_screen", "is_allow_switch_screen");
+
 	ClassDB::bind_method(D_METHOD("set_icon_name", "icon_name"), &EditorDock::set_icon_name);
 	ClassDB::bind_method(D_METHOD("get_icon_name"), &EditorDock::get_icon_name);
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "icon_name"), "set_icon_name", "get_icon_name");

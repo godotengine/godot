@@ -3117,6 +3117,8 @@ void ScriptEditor::_apply_editor_settings() {
 		_connect_to_scene();
 	}
 
+	set_allow_switch_screen(!bool(EDITOR_GET("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected")));
+
 	document_list->update_editor_settings();
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save"));

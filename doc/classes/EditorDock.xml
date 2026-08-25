@@ -95,6 +95,9 @@
 	</methods>
 	<members>
 		<member name="accessibility_region" type="bool" setter="set_accessibility_region" getter="is_accessibility_region" overrides="Container" default="true" />
+		<member name="allow_switch_screen" type="bool" setter="set_allow_switch_screen" getter="is_allow_switch_screen" default="false">
+			If [code]true[/code] and this dock is docked in the main screen, selecting a node in the scene tree can switch away from this dock. The selected node needs to be handled by another main screen dock (2D, 3D) for the switch to happen.
+		</member>
 		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="5">
 			The available layouts for this dock, as a bitmask. By default, the dock allows vertical and floating layouts.
 		</member>
