@@ -316,25 +316,29 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 		} else if (next_tag.name == "connection") {
 			if (!next_tag.fields.has("from")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'from' field from connection tag";
+				error_text = "Missing 'from' field from connection tag";
+				_printerr();
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("to")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'to' field from connection tag";
+				error_text = "Missing 'to' field from connection tag";
+				_printerr();
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("signal")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'signal' field from connection tag";
+				error_text = "Missing 'signal' field from connection tag";
+				_printerr();
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("method")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'method' field from connection tag";
+				error_text = "Missing 'method' field from connection tag";
+				_printerr();
 				return Ref<PackedScene>();
 			}
 
@@ -1010,6 +1014,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 
 		if (err != OK) {
 			error = ERR_FILE_CORRUPT;
+			_printerr();
 			ERR_FAIL_V(error);
 		}
 
