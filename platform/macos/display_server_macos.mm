@@ -511,7 +511,7 @@ void DisplayServerMacOS::_process_key_events() {
 	for (int i = 0; i < key_event_pos; i++) {
 		const KeyEvent &ke = key_event_buffer[i];
 		if (ke.raw) {
-			// Non IME input - no composite characters, pass events as is.
+			// No composite characters, pass events as is.
 			k.instantiate();
 
 			k->set_window_id(ke.window_id);
@@ -749,7 +749,7 @@ void DisplayServerMacOS::update_mouse_pos(DisplayServerMacOS::WindowData &p_wd, 
 
 void DisplayServerMacOS::pop_last_key_event() {
 	// Does not pop last key event when it is an IME key event.
-	if (key_event_pos > 0 && key_event_buffer[key_event_pos - 1].raw) {
+	if (key_event_pos > 0 && !key_event_buffer[key_event_pos - 1].ime) {
 		key_event_pos--;
 	}
 }
