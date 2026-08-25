@@ -3288,14 +3288,11 @@ void ScriptEditor::input(const Ref<InputEvent> &p_event) {
 		// Navigate the script history using additional mouse buttons present on some mice.
 		// This must be hardcoded as the editor shortcuts dialog doesn't allow assigning
 		// more than one shortcut per action.
-		Control *focus_owner = get_viewport()->gui_get_focus_owner();
-		if (focus_owner && (this == focus_owner || is_ancestor_of(focus_owner))) {
+		if (get_global_rect().has_point(get_global_mouse_position())) {
 			if (mb.is_valid() && mb->is_pressed() && is_visible_in_tree()) {
 				if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
 					_history_back();
-				}
-
-				if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
+				} else if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
 					_history_forward();
 				}
 			}
