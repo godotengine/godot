@@ -347,11 +347,11 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 }
 
 bool Object::set_native(const StringName &p_name, const Variant &p_value, bool *r_valid) {
-	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_name);
-	if (property) {
-		switch (property->type) {
-			case GDType::Property::Type::SETGET: {
-				const GDType::Property::SetGet &psg = property->payload.setget;
+	const GDType::Member *member = get_gdtype().members().getptr(p_name);
+	if (member) {
+		switch (member->type) {
+			case GDType::Member::Type::PROPERTY: {
+				const GDType::Member::Property &psg = member->payload.property;
 				if (!psg.setter) {
 					if (r_valid) {
 						*r_valid = false;
@@ -376,10 +376,10 @@ bool Object::set_native(const StringName &p_name, const Variant &p_value, bool *
 				}
 				return true;
 			}
-			case GDType::Property::Type::INTEGER_CONSTANT:
-			case GDType::Property::Type::METHOD:
-			case GDType::Property::Type::ENUM:
-			case GDType::Property::Type::SIGNAL: {
+			case GDType::Member::Type::INTEGER_CONSTANT:
+			case GDType::Member::Type::METHOD:
+			case GDType::Member::Type::ENUM:
+			case GDType::Member::Type::SIGNAL: {
 				// All other properties are unsettable.
 				if (r_valid) {
 					*r_valid = false;
@@ -393,11 +393,11 @@ bool Object::set_native(const StringName &p_name, const Variant &p_value, bool *
 }
 
 bool Object::get_native(const StringName &p_name, Variant &r_value, bool *r_valid) const {
-	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_name);
-	if (property) {
-		switch (property->type) {
-			case GDType::Property::Type::SETGET: {
-				const GDType::Property::SetGet &psg = property->payload.setget;
+	const GDType::Member *member = get_gdtype().members().getptr(p_name);
+	if (member) {
+		switch (member->type) {
+			case GDType::Member::Type::PROPERTY: {
+				const GDType::Member::Property &psg = member->payload.property;
 				if (!psg.getter) {
 					if (r_valid) {
 						*r_valid = true; // Set to true for compat reasons.
@@ -425,28 +425,28 @@ bool Object::get_native(const StringName &p_name, Variant &r_value, bool *r_vali
 				}
 				return true;
 			}
-			case GDType::Property::Type::INTEGER_CONSTANT: {
+			case GDType::Member::Type::INTEGER_CONSTANT: {
 				if (r_valid) {
 					*r_valid = true;
 				}
-				r_value = property->payload.integer_constant.value;
+				r_value = member->payload.integer_constant.value;
 				return true;
 			}
-			case GDType::Property::Type::METHOD: {
+			case GDType::Member::Type::METHOD: {
 				if (r_valid) {
 					*r_valid = true;
 				}
 				r_value = Callable(this, p_name);
 				return true;
 			}
-			case GDType::Property::Type::SIGNAL: {
+			case GDType::Member::Type::SIGNAL: {
 				if (r_valid) {
 					*r_valid = true;
 				}
 				r_value = Signal(this, p_name);
 				return true;
 			}
-			case GDType::Property::Type::ENUM: {
+			case GDType::Member::Type::ENUM: {
 				if (r_valid) {
 					*r_valid = false;
 				}
@@ -744,8 +744,8 @@ bool Object::has_method(const StringName &p_method) const {
 		return true;
 	}
 
-	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_method);
-	if (property != nullptr && property->type == GDType::Property::Type::METHOD) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_method);
+	if (member != nullptr && member->type == GDType::Member::Type::METHOD) {
 		return true;
 	}
 
@@ -899,13 +899,13 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 
 	//extension does not need this, because all methods are registered in MethodBind
 
-	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_method);
-	if (!property || property->type != GDType::Property::Type::METHOD) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_method);
+	if (!member || member->type != GDType::Member::Type::METHOD) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
 
-	const MethodBind *method = property->payload.method;
+	const MethodBind *method = member->payload.method;
 	return method->call(this, p_args, p_argcount, r_error);
 }
 
@@ -941,13 +941,13 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 
 	//extension does not need this, because all methods are registered in MethodBind
 
-	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_method);
-	if (!property || property->type != GDType::Property::Type::METHOD) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_method);
+	if (!member || member->type != GDType::Member::Type::METHOD) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
 
-	const MethodBind *method = property->payload.method;
+	const MethodBind *method = member->payload.method;
 
 	if (!method->is_const()) {
 		r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
@@ -1183,7 +1183,7 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
 	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
-	ERR_FAIL_COND_MSG(get_gdtype().get_property_map().has(p_signal.name), vformat("User signal's name conflicts with a built-in property of '%s'.", get_class_name()));
+	ERR_FAIL_COND_MSG(get_gdtype().members().has(p_signal.name), vformat("User signal's name conflicts with a built-in member of '%s'.", get_class_name()));
 
 	ObjectSignalLock signal_lock(this);
 
@@ -1273,8 +1273,8 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		SignalData *s = signal_map.getptr(p_name);
 		if (!s) {
 #ifdef DEBUG_ENABLED
-			const GDType::Property *property = get_gdtype().get_property_map().getptr(p_name);
-			bool signal_is_valid = property && property->type == GDType::Property::Type::SIGNAL;
+			const GDType::Member *member = get_gdtype().members().getptr(p_name);
+			bool signal_is_valid = member && member->type == GDType::Member::Type::SIGNAL;
 			//check in script
 			ERR_FAIL_COND_V_MSG(!signal_is_valid && script_instance && !script_instance->get_script()->has_script_signal(p_name), ERR_UNAVAILABLE, vformat("Can't emit non-existing signal \"%s\".", p_name));
 #endif
@@ -1490,8 +1490,8 @@ bool Object::has_signal(const StringName &p_name) const {
 		return true;
 	}
 
-	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_name);
-	if (property && property->type == GDType::Property::Type::SIGNAL) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_name);
+	if (member && member->type == GDType::Member::Type::SIGNAL) {
 		return true;
 	}
 
@@ -1598,8 +1598,8 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		const GDType::Property *property = get_gdtype().get_property_map().getptr(p_signal);
-		bool signal_is_valid = property && property->type == GDType::Property::Type::SIGNAL;
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		bool signal_is_valid = member && member->type == GDType::Member::Type::SIGNAL;
 		//check in script
 		if (!signal_is_valid && script_instance) {
 			if (script_instance->get_script()->has_script_signal(p_signal)) {
@@ -1657,8 +1657,8 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		const GDType::Property *property = get_gdtype().get_property_map().getptr(p_signal);
-		if (property && property->type == GDType::Property::Type::SIGNAL) {
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		if (member && member->type == GDType::Member::Type::SIGNAL) {
 			return false;
 		}
 
@@ -1677,8 +1677,8 @@ bool Object::has_connections(const StringName &p_signal) const {
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		const GDType::Property *property = get_gdtype().get_property_map().getptr(p_signal);
-		if (property && property->type == GDType::Property::Type::SIGNAL) {
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		if (member && member->type == GDType::Member::Type::SIGNAL) {
 			return false;
 		}
 
@@ -1703,8 +1703,8 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		const GDType::Property *property = get_gdtype().get_property_map().getptr(p_signal);
-		bool signal_is_valid = (property && property->type == GDType::Property::Type::SIGNAL) ||
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		bool signal_is_valid = (member && member->type == GDType::Member::Type::SIGNAL) ||
 				(script_instance && script_instance->get_script()->has_script_signal(p_signal));
 		ERR_FAIL_COND_V_MSG(signal_is_valid, false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
 	}
@@ -1727,8 +1727,8 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
-	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_signal);
-	if (s->slot_map.is_empty() && property && property->type == GDType::Property::Type::SIGNAL) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+	if (s->slot_map.is_empty() && member && member->type == GDType::Member::Type::SIGNAL) {
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}
