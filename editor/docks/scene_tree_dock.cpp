@@ -763,7 +763,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			if (was_empty) {
-				_update_create_root_dialog();
+				button_clipboard->show();
 			}
 		} break;
 		case TOOL_PASTE: {
@@ -1712,17 +1712,6 @@ void SceneTreeDock::_notification(int p_what) {
 			top_row->add_child(l);
 			top_row->add_spacer();
 
-			node_shortcuts_toggle = memnew(Button);
-			node_shortcuts_toggle->set_flat(true);
-			node_shortcuts_toggle->set_accessibility_name(TTRC("Favorite Nodes"));
-			node_shortcuts_toggle->set_button_icon(get_editor_theme_icon(SNAME("Favorites")));
-			node_shortcuts_toggle->set_toggle_mode(true);
-			node_shortcuts_toggle->set_tooltip_text(TTRC("Toggle the display of favorite nodes."));
-			node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
-			node_shortcuts_toggle->set_anchors_and_offsets_preset(Control::PRESET_CENTER_RIGHT);
-			node_shortcuts_toggle->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
-			top_row->add_child(node_shortcuts_toggle);
-
 			create_root_dialog->add_child(top_row);
 
 			ScrollContainer *scroll_container = memnew(ScrollContainer);
@@ -1766,9 +1755,10 @@ void SceneTreeDock::_notification(int p_what) {
 			button_custom->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_NEW, false));
 
 			button_clipboard = memnew(Button);
-			node_shortcuts->add_child(button_clipboard);
 			button_clipboard->set_text(TTRC("Paste From Clipboard"));
 			button_clipboard->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
+			button_clipboard->hide();
+			node_shortcuts->add_child(button_clipboard);
 			button_clipboard->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_PASTE, false));
 
 			_update_create_root_dialog(true);
@@ -1825,6 +1815,8 @@ void SceneTreeDock::_notification(int p_what) {
 			}
 
 			menu_subresources->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+
+			theme_cache.favorite_icon = get_editor_theme_icon(SNAME("Favorites"));
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -4707,51 +4699,46 @@ void SceneTreeDock::_update_create_root_dialog_visibility() {
 }
 
 void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
-	if (!p_initializing) {
-		EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", node_shortcuts_toggle->is_pressed());
-		EditorSettings::get_singleton()->save();
+	for (int i = 0; i < favorite_node_shortcuts->get_child_count(); i++) {
+		favorite_node_shortcuts->get_child(i)->queue_free();
 	}
 
-	if (node_shortcuts_toggle->is_pressed()) {
-		for (int i = 0; i < favorite_node_shortcuts->get_child_count(); i++) {
-			favorite_node_shortcuts->get_child(i)->queue_free();
-		}
+	bool favorite_node_shortcuts_empty = true;
 
-		bool favorite_node_shortcuts_empty = true;
+	Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites.Node"), FileAccess::READ);
+	if (f.is_valid()) {
+		while (!f->eof_reached()) {
+			String l = f->get_line().strip_edges();
 
-		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites.Node"), FileAccess::READ);
-		if (f.is_valid()) {
-			while (!f->eof_reached()) {
-				String l = f->get_line().strip_edges();
+			if (!l.is_empty()) {
+				favorite_node_shortcuts_empty = false;
 
-				if (!l.is_empty()) {
-					Button *button = memnew(Button);
-					favorite_node_shortcuts->add_child(button);
-					favorite_node_shortcuts_empty = false;
-					button->set_text(l);
-					button->set_clip_text(true);
-					String name = l.get_slicec(' ', 0);
-					if (ScriptServer::is_global_class(name)) {
-						name = ScriptServer::get_global_class_native_base(name);
-					}
-					button->set_button_icon(EditorNode::get_singleton()->get_class_icon(name));
-					button->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_favorite_root_selected).bind(l));
+				Button *button = memnew(Button);
+				button->set_text(l);
+				button->set_clip_text(true);
+				String name = l.get_slicec(' ', 0);
+				if (ScriptServer::is_global_class(name)) {
+					name = ScriptServer::get_global_class_native_base(name);
 				}
+				button->set_button_icon(EditorNode::get_singleton()->get_class_icon(name));
+				favorite_node_shortcuts->add_child(button);
+				button->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_favorite_root_selected).bind(l));
+				button->connect(SceneStringName(draw), callable_mp(this, &SceneTreeDock::_draw_favorite_decoration).bind(button));
 			}
 		}
-
-		favorite_node_shortcuts->set_visible(!favorite_node_shortcuts_empty);
-		beginner_node_shortcuts->hide();
-	} else {
-		beginner_node_shortcuts->show();
-		favorite_node_shortcuts->hide();
 	}
-	button_clipboard->set_visible(!node_clipboard.is_empty());
+	favorite_node_shortcuts->set_visible(!favorite_node_shortcuts_empty);
 }
 
 void SceneTreeDock::_favorite_root_selected(const String &p_class) {
 	selected_favorite_root = p_class;
 	_tool_selected(TOOL_CREATE_FAVORITE);
+}
+
+void SceneTreeDock::_draw_favorite_decoration(Button *p_button) {
+	const Ref<Texture2D> &fav_icon = theme_cache.favorite_icon;
+	real_t pos_x = p_button->is_layout_rtl() ? 8 * EDSCALE : p_button->get_size().x - fav_icon->get_width() - 8 * EDSCALE;
+	p_button->draw_texture(fav_icon, Vector2(pos_x, p_button->get_size().y * 0.5 - fav_icon->get_height() * 0.5), Color(1, 1, 1, 0.2));
 }
 
 void SceneTreeDock::_feature_profile_changed() {

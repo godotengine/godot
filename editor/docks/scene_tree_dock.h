@@ -100,6 +100,10 @@ class SceneTreeDock : public EditorDock {
 		EDIT_SUBRESOURCE_BASE = 100
 	};
 
+	struct ThemeCache {
+		Ref<Texture2D> favorite_icon;
+	} theme_cache;
+
 	Vector<ObjectID> subresources;
 
 	int current_option = 0;
@@ -116,7 +120,6 @@ class SceneTreeDock : public EditorDock {
 	Button *button_extend_script = nullptr;
 	MenuButton *button_tree_menu = nullptr;
 
-	Button *node_shortcuts_toggle = nullptr;
 	VBoxContainer *beginner_node_shortcuts = nullptr;
 	VBoxContainer *favorite_node_shortcuts = nullptr;
 
@@ -287,6 +290,7 @@ class SceneTreeDock : public EditorDock {
 	void _update_create_root_dialog(bool p_initializing = false);
 	void _update_create_root_dialog_visibility();
 	void _favorite_root_selected(const String &p_class);
+	void _draw_favorite_decoration(Button *p_button);
 
 	void _feature_profile_changed();
 
