@@ -56,3 +56,40 @@ To avoid failing edge cases a certain behavior needs to be tested multiple times
   - directly inside a suite
   - assignments inside a suite
   - as parameter to a call
+
+# GDScript Code action tests
+
+The `scripts/code_actions` folder contains tests for GDScript code actions.
+
+Within an individual subfolder, a test case should have a base name shared between three files:
+
+- A `.cfg` file that configures the GDScript compiler and analyzer, and instructs the test runner on what code action should be performed.
+- A `.gd` file with GDScript code, before a particular code action is performed.
+  For quick fixes to warnings (in the `warning_fixes` folder), the code should be parsable and valid.
+- An `.out.gd` file with GDScript code _after_ the code action is performed.
+
+## Configuring a test with a `.cfg` file
+
+Each test's `.cfg` file should have a `[warnings]` section with the key `warnings_only` that corresponds to a list of warning string names. The GDScript analyzer will only report these warnings for the given test. For example, if testing quick fixes for the `UNUSED_VARIABLE` warning, the `[warnings]` section should look like:
+
+```toml
+[warnings]
+include_only=["UNUSED_VARIABLE"]
+```
+
+Additionally, there should be an `[apply]` section with two keys, `group_idx` and `action_idx`, corresponding to integer values. The code actions system reports groups of code actions, and these two values index into the groups to identify a single code action to perform. For example, when getting code actions for a script with an `UNUSED_VARIABLE` warning, the code actions returned may look like so:
+
+```text
+- Group: UNUSED_VARIABLE
+  - Action: Add underscore to variable name
+  - Action: Remove variable declaration
+  - Action: Ignore "UNUSED_VARIABLE"
+```
+
+To test the action `Remove variable declaration`, we would go to the first group (`group_idx=0`) and the second action within that group (`action_idx=1`). Thus, the `[apply]` section of the `.cfg` file would look like:
+
+```toml
+[apply]
+group_idx=0
+action_idx=1
+```
