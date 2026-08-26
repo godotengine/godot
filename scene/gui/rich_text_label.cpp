@@ -5106,6 +5106,7 @@ void RichTextLabel::push_table(int p_columns, InlineAlignment p_alignment, int p
 
 	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ERR_FAIL_COND(p_columns < 1);
+	ERR_FAIL_COND(p_columns > 65536);
 	ItemTable *item = memnew(ItemTable);
 	item->rid = items.make_rid(item);
 	item->name = p_alt_text;
@@ -6245,9 +6246,13 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			}
 			if (font_option) {
 				const String &fnt = font_option->value;
-				Ref<Font> font = ResourceLoader::load(fnt, "Font");
-				if (font.is_valid()) {
-					f = font;
+				if (_validate_resource_path(fnt)) {
+					Ref<Font> font = ResourceLoader::load(fnt, "Font");
+					if (font.is_valid()) {
+						f = font;
+					}
+				} else {
+					WARN_PRINT(vformat("Attempting to open resource \"%s\" outside allowed location set.", fnt));
 				}
 			}
 			OptionMap::Iterator font_size_option = bbcode_options.find("font_size");
@@ -6372,123 +6377,127 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 			String alt_text;
 
-			Ref<Texture2D> texture = ResourceLoader::load(image, "Texture2D");
-			if (texture.is_valid()) {
-				Rect2 region;
-				OptionMap::Iterator region_option = bbcode_options.find("region");
-				if (region_option) {
-					Vector<String> region_values = _split_unquoted(region_option->value, U',');
-					if (region_values.size() == 4) {
-						region.position.x = region_values[0].to_float();
-						region.position.y = region_values[1].to_float();
-						region.size.x = region_values[2].to_float();
-						region.size.y = region_values[3].to_float();
-					}
-				}
-
-				Color color = Color(1.0, 1.0, 1.0);
-				OptionMap::Iterator color_option = bbcode_options.find("color");
-				if (color_option) {
-					color = Color::from_string(color_option->value, color);
-				}
-
-				OptionMap::Iterator alt_text_option = bbcode_options.find("alt");
-				if (alt_text_option) {
-					alt_text = alt_text_option->value;
-				}
-
-				float width = 0;
-				float height = 0;
-				bool pad = false;
-				String tooltip;
-				ImageUnit width_unit = IMAGE_UNIT_PIXEL;
-				ImageUnit height_unit = IMAGE_UNIT_PIXEL;
-				if (!bbcode_value.is_empty()) {
-					int sep = bbcode_value.find_char('x');
-					if (sep == -1) {
-						if (bbcode_value.ends_with("%")) {
-							width_unit = IMAGE_UNIT_PERCENT;
+			if (_validate_resource_path(image)) {
+				Ref<Texture2D> texture = ResourceLoader::load(image, "Texture2D");
+				if (texture.is_valid()) {
+					Rect2 region;
+					OptionMap::Iterator region_option = bbcode_options.find("region");
+					if (region_option) {
+						Vector<String> region_values = _split_unquoted(region_option->value, U',');
+						if (region_values.size() == 4) {
+							region.position.x = region_values[0].to_float();
+							region.position.y = region_values[1].to_float();
+							region.size.x = region_values[2].to_float();
+							region.size.y = region_values[3].to_float();
 						}
-						width = bbcode_value.to_float();
+					}
+
+					Color color = Color(1.0, 1.0, 1.0);
+					OptionMap::Iterator color_option = bbcode_options.find("color");
+					if (color_option) {
+						color = Color::from_string(color_option->value, color);
+					}
+
+					OptionMap::Iterator alt_text_option = bbcode_options.find("alt");
+					if (alt_text_option) {
+						alt_text = alt_text_option->value;
+					}
+
+					float width = 0;
+					float height = 0;
+					bool pad = false;
+					String tooltip;
+					ImageUnit width_unit = IMAGE_UNIT_PIXEL;
+					ImageUnit height_unit = IMAGE_UNIT_PIXEL;
+					if (!bbcode_value.is_empty()) {
+						int sep = bbcode_value.find_char('x');
+						if (sep == -1) {
+							if (bbcode_value.ends_with("%")) {
+								width_unit = IMAGE_UNIT_PERCENT;
+							}
+							width = bbcode_value.to_float();
+						} else {
+							if (bbcode_value.substr(0, sep).ends_with("%")) {
+								width_unit = IMAGE_UNIT_PERCENT;
+							}
+							width = bbcode_value.substr(0, sep).to_float();
+							if (bbcode_value.substr(sep + 1).ends_with("%")) {
+								height_unit = IMAGE_UNIT_PERCENT;
+							}
+							height = bbcode_value.substr(sep + 1).to_float();
+						}
 					} else {
-						if (bbcode_value.substr(0, sep).ends_with("%")) {
-							width_unit = IMAGE_UNIT_PERCENT;
-						}
-						width = bbcode_value.substr(0, sep).to_float();
-						if (bbcode_value.substr(sep + 1).ends_with("%")) {
-							height_unit = IMAGE_UNIT_PERCENT;
-						}
-						height = bbcode_value.substr(sep + 1).to_float();
-					}
-				} else {
-					OptionMap::Iterator align_option = bbcode_options.find("align");
-					if (align_option) {
-						Vector<String> subtag = _split_unquoted(align_option->value, U',');
-						_normalize_subtags(subtag);
+						OptionMap::Iterator align_option = bbcode_options.find("align");
+						if (align_option) {
+							Vector<String> subtag = _split_unquoted(align_option->value, U',');
+							_normalize_subtags(subtag);
 
-						if (subtag.size() > 1) {
-							if (subtag[0] == "top" || subtag[0] == "t") {
-								alignment = INLINE_ALIGNMENT_TOP_TO;
-							} else if (subtag[0] == "center" || subtag[0] == "c") {
-								alignment = INLINE_ALIGNMENT_CENTER_TO;
-							} else if (subtag[0] == "bottom" || subtag[0] == "b") {
-								alignment = INLINE_ALIGNMENT_BOTTOM_TO;
-							}
-							if (subtag[1] == "top" || subtag[1] == "t") {
-								alignment |= INLINE_ALIGNMENT_TO_TOP;
-							} else if (subtag[1] == "center" || subtag[1] == "c") {
-								alignment |= INLINE_ALIGNMENT_TO_CENTER;
-							} else if (subtag[1] == "baseline" || subtag[1] == "l") {
-								alignment |= INLINE_ALIGNMENT_TO_BASELINE;
-							} else if (subtag[1] == "bottom" || subtag[1] == "b") {
-								alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
-							}
-						} else if (!subtag.is_empty()) {
-							if (subtag[0] == "top" || subtag[0] == "t") {
-								alignment = INLINE_ALIGNMENT_TOP;
-							} else if (subtag[0] == "center" || subtag[0] == "c") {
-								alignment = INLINE_ALIGNMENT_CENTER;
-							} else if (subtag[0] == "bottom" || subtag[0] == "b") {
-								alignment = INLINE_ALIGNMENT_BOTTOM;
+							if (subtag.size() > 1) {
+								if (subtag[0] == "top" || subtag[0] == "t") {
+									alignment = INLINE_ALIGNMENT_TOP_TO;
+								} else if (subtag[0] == "center" || subtag[0] == "c") {
+									alignment = INLINE_ALIGNMENT_CENTER_TO;
+								} else if (subtag[0] == "bottom" || subtag[0] == "b") {
+									alignment = INLINE_ALIGNMENT_BOTTOM_TO;
+								}
+								if (subtag[1] == "top" || subtag[1] == "t") {
+									alignment |= INLINE_ALIGNMENT_TO_TOP;
+								} else if (subtag[1] == "center" || subtag[1] == "c") {
+									alignment |= INLINE_ALIGNMENT_TO_CENTER;
+								} else if (subtag[1] == "baseline" || subtag[1] == "l") {
+									alignment |= INLINE_ALIGNMENT_TO_BASELINE;
+								} else if (subtag[1] == "bottom" || subtag[1] == "b") {
+									alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
+								}
+							} else if (!subtag.is_empty()) {
+								if (subtag[0] == "top" || subtag[0] == "t") {
+									alignment = INLINE_ALIGNMENT_TOP;
+								} else if (subtag[0] == "center" || subtag[0] == "c") {
+									alignment = INLINE_ALIGNMENT_CENTER;
+								} else if (subtag[0] == "bottom" || subtag[0] == "b") {
+									alignment = INLINE_ALIGNMENT_BOTTOM;
+								}
 							}
 						}
-					}
-					OptionMap::Iterator width_option = bbcode_options.find("width");
-					if (width_option) {
-						width = width_option->value.to_float();
-						if (width_option->value.ends_with("%")) {
-							width = width_option->value.trim_suffix("%").to_float();
-							width_unit = IMAGE_UNIT_PERCENT;
-						} else if (width_option->value.ends_with("em")) {
-							width = width_option->value.trim_suffix("em").to_float();
-							width_unit = IMAGE_UNIT_EM;
+						OptionMap::Iterator width_option = bbcode_options.find("width");
+						if (width_option) {
+							width = width_option->value.to_float();
+							if (width_option->value.ends_with("%")) {
+								width = width_option->value.trim_suffix("%").to_float();
+								width_unit = IMAGE_UNIT_PERCENT;
+							} else if (width_option->value.ends_with("em")) {
+								width = width_option->value.trim_suffix("em").to_float();
+								width_unit = IMAGE_UNIT_EM;
+							}
+						}
+
+						OptionMap::Iterator height_option = bbcode_options.find("height");
+						if (height_option) {
+							height = height_option->value.to_float();
+							if (height_option->value.ends_with("%")) {
+								height = height_option->value.trim_suffix("%").to_float();
+								height_unit = IMAGE_UNIT_PERCENT;
+							} else if (height_option->value.ends_with("em")) {
+								height = height_option->value.trim_suffix("em").to_float();
+								height_unit = IMAGE_UNIT_EM;
+							}
+						}
+
+						OptionMap::Iterator tooltip_option = bbcode_options.find("tooltip");
+						if (tooltip_option) {
+							tooltip = tooltip_option->value;
+						}
+
+						OptionMap::Iterator pad_option = bbcode_options.find("pad");
+						if (pad_option) {
+							pad = (pad_option->value == "true");
 						}
 					}
 
-					OptionMap::Iterator height_option = bbcode_options.find("height");
-					if (height_option) {
-						height = height_option->value.to_float();
-						if (height_option->value.ends_with("%")) {
-							height = height_option->value.trim_suffix("%").to_float();
-							height_unit = IMAGE_UNIT_PERCENT;
-						} else if (height_option->value.ends_with("em")) {
-							height = height_option->value.trim_suffix("em").to_float();
-							height_unit = IMAGE_UNIT_EM;
-						}
-					}
-
-					OptionMap::Iterator tooltip_option = bbcode_options.find("tooltip");
-					if (tooltip_option) {
-						tooltip = tooltip_option->value;
-					}
-
-					OptionMap::Iterator pad_option = bbcode_options.find("pad");
-					if (pad_option) {
-						pad = (pad_option->value == "true");
-					}
+					add_image(texture, width, height, color, (InlineAlignment)alignment, region, Variant(), pad, tooltip, width_unit, height_unit, alt_text);
 				}
-
-				add_image(texture, width, height, color, (InlineAlignment)alignment, region, Variant(), pad, tooltip, width_unit, height_unit, alt_text);
+			} else {
+				WARN_PRINT(vformat("Attempting to open resource \"%s\" outside allowed location set.", image));
 			}
 
 			pos = end;
@@ -6576,10 +6585,14 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				Vector<String> base_tag_block = _split_unquoted(tag, ' ');
 				if (!base_tag_block.is_empty()) {
 					const String &fnt = _get_tag_value(base_tag_block[0]).unquote();
-					Ref<Font> font_data = ResourceLoader::load(fnt, "Font");
-					if (font_data.is_valid()) {
-						font = font_data;
-						def_font = RTL_CUSTOM_FONT;
+					if (_validate_resource_path(fnt)) {
+						Ref<Font> font_data = ResourceLoader::load(fnt, "Font");
+						if (font_data.is_valid()) {
+							font = font_data;
+							def_font = RTL_CUSTOM_FONT;
+						}
+					} else {
+						WARN_PRINT(vformat("Attempting to open resource \"%s\" outside allowed location set.", fnt));
 					}
 				}
 			}
@@ -6590,10 +6603,14 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			}
 			if (name_option) {
 				const String &fnt = name_option->value;
-				Ref<Font> font_data = ResourceLoader::load(fnt, "Font");
-				if (font_data.is_valid()) {
-					font = font_data;
-					def_font = RTL_CUSTOM_FONT;
+				if (_validate_resource_path(fnt)) {
+					Ref<Font> font_data = ResourceLoader::load(fnt, "Font");
+					if (font_data.is_valid()) {
+						font = font_data;
+						def_font = RTL_CUSTOM_FONT;
+					}
+				} else {
+					WARN_PRINT(vformat("Attempting to open resource \"%s\" outside allowed location set.", fnt));
 				}
 			}
 			OptionMap::Iterator size_option = bbcode_options.find("size");
@@ -7926,6 +7943,38 @@ int RichTextLabel::get_line_width(int p_line) const {
 	return 0;
 }
 
+bool RichTextLabel::_validate_resource_path(const String &p_path) const {
+	if (p_path.begins_with("res://") || p_path.begins_with("uid://")) {
+		return access_flags.has_flag(RichTextLabel::RESOURCE_ACCESS_RESOURCES);
+	} else if (p_path.begins_with("user://")) {
+		return access_flags.has_flag(RichTextLabel::RESOURCE_ACCESS_USERDATA);
+	} else if (p_path.begins_with("pipe://")) {
+		return access_flags.has_flag(RichTextLabel::RESOURCE_ACCESS_PIPE);
+	} else if (p_path.is_network_share_path()) {
+		return access_flags.has_flag(RichTextLabel::RESOURCE_ACCESS_NETWORK);
+	} else {
+		return access_flags.has_flag(RichTextLabel::RESOURCE_ACCESS_FILESYSTEM);
+	}
+}
+
+BitField<RichTextLabel::ResoureceAccessFlag> RichTextLabel::get_resource_access_flags() const {
+	return access_flags;
+}
+
+void RichTextLabel::set_resource_access_flags(BitField<RichTextLabel::ResoureceAccessFlag> p_flags) {
+	if (p_flags == access_flags) {
+		return;
+	}
+	access_flags = p_flags;
+
+	// Reload text.
+	if (text.is_empty()) {
+		clear();
+	} else {
+		_apply_translation();
+	}
+}
+
 #ifndef DISABLE_DEPRECATED
 // People will be very angry, if their texts get erased, because of #39148. (3.x -> 4.0)
 // Although some people may not used bbcode_text, so we only overwrite, if bbcode_text is not empty.
@@ -8144,6 +8193,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_menu_visible"), &RichTextLabel::is_menu_visible);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &RichTextLabel::menu_option);
 
+	ClassDB::bind_method(D_METHOD("get_resource_access_flags"), &RichTextLabel::get_resource_access_flags);
+	ClassDB::bind_method(D_METHOD("set_resource_access_flags", "flags"), &RichTextLabel::set_resource_access_flags);
+
 	// Note: set "bbcode_enabled" first, to avoid unnecessary "text" resets.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
@@ -8162,6 +8214,8 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "tab_stops"), "set_tab_stops", "get_tab_stops");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "resource_access_flags", PROPERTY_HINT_FLAGS, "Resources:1,User Data:2,File System:4,Named Pipes:8,Network Shares:16"), "set_resource_access_flags", "get_resource_access_flags");
 
 	ADD_GROUP("Markup", "");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("RichTextEffect"), (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_effects", "get_effects");
@@ -8221,6 +8275,12 @@ void RichTextLabel::_bind_methods() {
 	BIND_BITFIELD_FLAG(UPDATE_PAD);
 	BIND_BITFIELD_FLAG(UPDATE_TOOLTIP);
 	BIND_BITFIELD_FLAG(UPDATE_WIDTH_UNIT);
+
+	BIND_BITFIELD_FLAG(RESOURCE_ACCESS_RESOURCES);
+	BIND_BITFIELD_FLAG(RESOURCE_ACCESS_USERDATA);
+	BIND_BITFIELD_FLAG(RESOURCE_ACCESS_FILESYSTEM);
+	BIND_BITFIELD_FLAG(RESOURCE_ACCESS_PIPE);
+	BIND_BITFIELD_FLAG(RESOURCE_ACCESS_NETWORK);
 
 	BIND_ENUM_CONSTANT(IMAGE_UNIT_PIXEL);
 	BIND_ENUM_CONSTANT(IMAGE_UNIT_PERCENT);
