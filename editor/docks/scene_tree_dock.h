@@ -263,9 +263,9 @@ class SceneTreeDock : public EditorDock {
 
 	void _normalize_drop(Node *&to_node, int &to_pos, int p_type);
 
-	void _nodes_dragged(const Array &p_nodes, NodePath p_to, int p_type);
-	void _files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type);
-	void _script_dropped(const String &p_file, NodePath p_to);
+	void _nodes_dragged(const Array &p_nodes, Node *p_to_node, int p_type);
+	void _files_dropped(const Vector<String> &p_files, Node *p_to_node, int p_type);
+	void _script_dropped(const String &p_file, Node *p_to_node);
 	void _quick_open(const String &p_file_path);
 
 	void _tree_rmb(const Vector2 &p_menu_pos);

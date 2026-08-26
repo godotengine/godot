@@ -478,6 +478,11 @@ Comment: FastNoise Lite
 Copyright: 2023, Jordan Peck and contributors
 License: Expat
 
+Files: thirdparty/misc/gamemode_client.h
+Comment: GameMode client
+Copyright: 2017-2024, Feral Interactive
+License: BSD-3-clause
+
 Files: thirdparty/misc/ifaddrs-android.cc
  thirdparty/misc/ifaddrs-android.h
 Comment: libjingle

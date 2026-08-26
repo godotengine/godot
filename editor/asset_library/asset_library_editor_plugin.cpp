@@ -39,6 +39,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -587,7 +588,7 @@ void EditorAssetLibraryItemDescription::add_release(const String &p_url, const S
 
 void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, const String &p_url, const String &p_thumbnail) {
 	if (preview_images.is_empty()) {
-		desc_vbox->set_h_size_flags(0);
+		desc_vbox->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
 		previews_vbox->show();
 	}
 
@@ -965,7 +966,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	panel->add_child(hb);
 	icon = memnew(TextureRect);
 	icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	icon->set_v_size_flags(0);
+	icon->set_v_size_flags(SIZE_SHRINK_BEGIN);
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -1047,6 +1048,12 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("bg"), SNAME("AssetLib")));
 			error_label->move_to_front();
+
+			if (EditorNode::get_singleton()) {
+				EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_margins));
+			} else if (ProjectManager::get_singleton()) {
+				ProjectManager::get_singleton()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_margins));
+			}
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1069,7 +1076,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 				// Focus the search box automatically when switching to the Templates tab (in the Project Manager)
 				// or switching to the AssetLib tab (in the editor).
 				// The Project Manager's project filter box is automatically focused in the project manager code.
-				filter->grab_focus();
+				callable_mp((Control *)filter, &Control::grab_focus).call_deferred(false);
 #endif
 
 				if (initial_loading) {
@@ -1167,6 +1174,10 @@ void EditorAssetLibrary::_update_repository_options() {
 	}
 }
 
+void EditorAssetLibrary::_update_margins() {
+	update_layout(get_current_layout(), get_current_slot());
+}
+
 void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -1179,6 +1190,21 @@ void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 	}
+}
+
+void EditorAssetLibrary::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	begin_bulk_theme_override();
+	if (p_layout == DOCK_LAYOUT_FLOATING) {
+		remove_theme_constant_override("margin_left");
+		remove_theme_constant_override("margin_right");
+		remove_theme_constant_override("margin_bottom");
+	} else {
+		int margin = EditorNode::get_singleton()->get_editor_theme()->get_constant("base_margin", EditorStringName(Editor));
+		add_theme_constant_override("margin_left", margin);
+		add_theme_constant_override("margin_right", margin);
+		add_theme_constant_override("margin_bottom", margin);
+	}
+	end_bulk_theme_override();
 }
 
 void EditorAssetLibrary::_install_asset(const String &p_asset_id, const String &p_version, const String &p_download_url, const String &p_sha256) {
@@ -2136,6 +2162,13 @@ void EditorAssetLibrary::_bind_methods() {
 }
 
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
+	set_name(TTRC("Asset Store"));
+	set_icon_name("AssetStore");
+	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
+	if (!Engine::get_singleton()->is_project_manager_hint()) {
+		set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_asset_store"));
+	}
 	templates_only = p_templates_only;
 	loading_blocked = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
 
@@ -2342,10 +2375,6 @@ bool AssetLibraryEditorPlugin::is_available() {
 #endif
 }
 
-const Ref<Texture2D> AssetLibraryEditorPlugin::get_plugin_icon() const {
-	return EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("AssetStore"), EditorStringName(EditorIcons));
-}
-
 void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		addon_library->show();
@@ -2357,7 +2386,7 @@ void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(addon_library);
+	EditorDockManager::get_singleton()->add_dock(addon_library);
 	addon_library->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	addon_library->hide();
 }

@@ -662,7 +662,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
-				if (selected_track >= 0 && track_count > 0 && !hidden_tracks.has(selected_track)) {
+				if (selected_track >= 0 && track_count > 0 && !is_filtered && !hidden_tracks.has(selected_track)) {
 					// Draw edited curve.
 					_draw_track(selected_track, selected_track_color);
 				}
@@ -2641,6 +2641,9 @@ void AnimationBezierTrackEdit::paste_keys(real_t p_ofs, bool p_ofs_valid) {
 
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, dst_time, value, key.transition);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, dst_time);
+			if (key.track_type == Animation::TYPE_BEZIER) {
+				undo_redo->add_do_method(editor, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), selected_track, dst_time, key.handle_mode);
+			}
 
 			Pair<int, float> p;
 			p.first = selected_track;

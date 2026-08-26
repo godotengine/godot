@@ -2510,7 +2510,19 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 	if (p_func) {
 		gd_function->return_type = _gdtype_from_datatype(p_func->return_type_constraint, p_script);
-		method_info.return_val = p_func->return_type_constraint.to_property_info(String());
+		if (func_name == GDScriptLanguage::get_singleton()->strings._init) {
+			// TODO: The analyzer and editor use the current class instead of `void` as the return type for `_init()`.
+			// We should clear up the confusion between `new()` and `_init()` to remove the special handling here.
+
+			GDScriptParser::DataType void_type;
+			void_type.kind = GDScriptParser::DataType::BUILTIN;
+			void_type.builtin_type = Variant::NIL;
+			void_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+
+			method_info.return_val = void_type.to_property_info(String());
+		} else {
+			method_info.return_val = p_func->return_type_constraint.to_property_info(String());
+		}
 
 		if (p_func->is_vararg()) {
 			gd_function->_vararg_index = vararg_addr.address;
@@ -2693,6 +2705,10 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	}
 
 	parsing_classes.insert(p_script);
+
+#ifdef DEBUG_ENABLED
+	p_script->old_member_indices = p_script->member_indices;
+#endif // DEBUG_ENABLED
 
 	p_script->clearing = true;
 
@@ -3068,6 +3084,10 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 	}
 
 	p_script->_static_default_init();
+
+#ifdef DEBUG_ENABLED
+	p_script->old_member_indices.clear();
+#endif // DEBUG_ENABLED
 
 	p_script->valid = true;
 	return OK;

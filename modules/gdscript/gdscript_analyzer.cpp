@@ -1831,10 +1831,14 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		}
 	} else if (!p_is_lambda && function_name == GDScriptLanguage::get_singleton()->strings._static_init) {
 		// Static constructor.
+
 		GDScriptParser::DataType return_type;
 		return_type.kind = GDScriptParser::DataType::BUILTIN;
 		return_type.builtin_type = Variant::NIL;
+		return_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+
 		p_function->return_type_constraint = return_type;
+
 		if (p_function->return_type) {
 			GDScriptParser::DataType declared_return = resolve_datatype(p_function->return_type);
 			if (declared_return.kind != GDScriptParser::DataType::BUILTIN || declared_return.builtin_type != Variant::NIL) {

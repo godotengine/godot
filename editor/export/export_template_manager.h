@@ -134,6 +134,7 @@ class ExportTemplateManager : public AcceptDialog {
 		ANDROID,
 
 		IOS,
+		VISIONOS,
 
 		ICU_DATA,
 	};
@@ -145,6 +146,7 @@ class ExportTemplateManager : public AcceptDialog {
 		WEB,
 		ANDROID,
 		IOS,
+		VISIONOS,
 		COMMON,
 	};
 
@@ -238,7 +240,6 @@ class ExportTemplateManager : public AcceptDialog {
 	void _update_version_list();
 	void _update_template_tree();
 	void _fill_template_tree(Tree *p_tree, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_current_version);
-	void _update_template_tree_with_folding();
 	void _update_install_button();
 	bool _can_download_templates();
 

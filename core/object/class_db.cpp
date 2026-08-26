@@ -399,12 +399,14 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 		hash = hash_murmur3_one_64(t->gdtype->get_name().hash(), hash);
 		hash = hash_murmur3_one_64(t->gdtype->get_super_type_name().hash(), hash);
 
-		{ //methods
+		LocalVector<StringName> methods;
+		LocalVector<StringName> constants;
+		LocalVector<StringName> signals;
+		LocalVector<StringName> setgets;
 
-			List<StringName> snames;
-
-			for (const KeyValue<StringName, const MethodBind *> &F : t->gdtype->get_method_map(true)) {
-				String name = F.key.string();
+		for (const KeyValue<StringName, GDType::Property> &kv : t->gdtype->get_property_map(true)) {
+			if (kv.value.type == GDType::Property::Type::METHOD) {
+				String name = kv.key.string();
 
 				ERR_CONTINUE(name.is_empty());
 
@@ -412,13 +414,21 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 					continue; // Ignore non-virtual methods that start with an underscore
 				}
 
-				snames.push_back(F.key);
+				methods.push_back(kv.key);
+			} else if (kv.value.type == GDType::Property::Type::INTEGER_CONSTANT) {
+				constants.push_back(kv.key);
+			} else if (kv.value.type == GDType::Property::Type::SIGNAL) {
+				signals.push_back(kv.key);
+			} else if (kv.value.type == GDType::Property::Type::SETGET) {
+				setgets.push_back(kv.key);
 			}
+		}
 
-			snames.sort_custom<StringName::AlphCompare>();
+		{ //methods
+			methods.sort_custom<StringName::AlphCompare>();
 
-			for (const StringName &F : snames) {
-				const MethodBind *mb = t->gdtype->get_method_map(true)[F];
+			for (const StringName &F : methods) {
+				const MethodBind *mb = t->gdtype->get_property_map(true)[F].payload.method;
 				hash = hash_murmur3_one_64(mb->get_name().hash(), hash);
 				hash = hash_murmur3_one_64(mb->get_argument_count(), hash);
 				hash = hash_murmur3_one_64(mb->get_argument_type(-1), hash); //return
@@ -445,33 +455,19 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 		}
 
 		{ //constants
+			constants.sort_custom<StringName::AlphCompare>();
 
-			List<StringName> snames;
-
-			for (const KeyValue<StringName, int64_t> &F : t->gdtype->get_integer_constant_map(true)) {
-				snames.push_back(F.key);
-			}
-
-			snames.sort_custom<StringName::AlphCompare>();
-
-			for (const StringName &F : snames) {
+			for (const StringName &F : constants) {
 				hash = hash_murmur3_one_64(F.hash(), hash);
-				hash = hash_murmur3_one_64(uint64_t(t->gdtype->get_integer_constant_map(true)[F]), hash);
+				hash = hash_murmur3_one_64(uint64_t(t->gdtype->get_property_map(true)[F].payload.integer_constant.value), hash);
 			}
 		}
 
 		{ //signals
+			signals.sort_custom<StringName::AlphCompare>();
 
-			List<StringName> snames;
-
-			for (const KeyValue<StringName, const MethodInfo *> &F : t->gdtype->get_signal_map(true)) {
-				snames.push_back(F.key);
-			}
-
-			snames.sort_custom<StringName::AlphCompare>();
-
-			for (const StringName &F : snames) {
-				const MethodInfo &mi = *t->gdtype->get_signal_map(true)[F];
+			for (const StringName &F : signals) {
+				const MethodInfo &mi = *t->gdtype->get_property_map(true)[F].payload.signal;
 				hash = hash_murmur3_one_64(F.hash(), hash);
 				for (const PropertyInfo &pi : mi.arguments) {
 					hash = hash_murmur3_one_64(pi.type, hash);
@@ -480,18 +476,9 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 		}
 
 		{
-			//properties
+			setgets.sort_custom<StringName::AlphCompare>();
 
-			LocalVector<StringName> snames;
-
-			for (const KeyValue<StringName, GDType::Property> &kv : t->gdtype->get_property_map(true)) {
-				if (kv.value.type == GDType::Property::Type::SETGET) {
-					snames.push_back(kv.key);
-				}
-			}
-			snames.sort_custom<StringName::AlphCompare>();
-
-			for (const StringName &F : snames) {
+			for (const StringName &F : setgets) {
 				const GDType::Property &property = t->gdtype->get_property_map(true)[F];
 				const GDType::Property::SetGet &psg = property.payload.setget;
 
@@ -979,13 +966,21 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	for (const KeyValue<StringName, const MethodBind *> &kv : type->gdtype->get_method_map(p_no_inheritance)) {
+	ERR_FAIL_NULL(type);
+
+	do {
 		if (type->disabled) {
+			type = type->inherits_ptr;
 			continue;
 		}
 
-		p_methods->push_back(info_from_bind(kv.value));
-	}
+		for (const KeyValue<StringName, GDType::Property> &kv : type->gdtype->get_property_map(true)) {
+			if (kv.value.type == GDType::Property::Type::METHOD) {
+				p_methods->push_back(info_from_bind(kv.value.payload.method));
+			}
+		}
+		type = type->inherits_ptr;
+	} while (type && !p_no_inheritance);
 
 #ifdef DEBUG_ENABLED
 	ClassDB::get_virtual_methods(p_class, p_methods, p_no_inheritance);
@@ -996,13 +991,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);
-	for (const KeyValue<StringName, const MethodBind *> &kv : type->gdtype->get_method_map(p_no_inheritance)) {
-		if (type->disabled) {
-			continue;
-		}
-
-		p_methods->push_back(Pair(info_from_bind(kv.value), kv.value->get_hash()));
-	}
+	ERR_FAIL_NULL(type);
 
 	while (type) {
 		if (type->disabled) {
@@ -1012,6 +1001,11 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 
 			type = type->inherits_ptr;
 			continue;
+		}
+		for (const KeyValue<StringName, GDType::Property> &kv : type->gdtype->get_property_map(true)) {
+			if (kv.value.type == GDType::Property::Type::METHOD) {
+				p_methods->push_back(Pair(info_from_bind(kv.value.payload.method), kv.value.payload.method->get_hash()));
+			}
 		}
 #ifdef DEBUG_ENABLED
 		for (const MethodInfo &E : type->virtual_methods) {
@@ -1052,11 +1046,10 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 		}
 
 #ifdef DEBUG_ENABLED
-		const MethodBind *const *method = type->gdtype->get_method_map(true).getptr(p_method);
-		if (method) {
+		const GDType::Property *property = type->gdtype->get_property_map(true).getptr(p_method);
+		if (property && property->type == GDType::Property::Type::METHOD) {
 			if (r_info != nullptr) {
-				MethodInfo minfo = info_from_bind(*method);
-				*r_info = minfo;
+				*r_info = info_from_bind(property->payload.method);
 			}
 			return true;
 		} else if (type->virtual_methods_map.has(p_method)) {
@@ -1066,11 +1059,10 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			return true;
 		}
 #else
-		if (type->gdtype->get_method_map(true).has(p_method)) {
+		const GDType::Property *property = type->gdtype->get_property_map(true).getptr(p_method);
+		if (property && property->type == GDType::Property::Type::METHOD) {
 			if (r_info) {
-				const MethodBind *m = type->gdtype->get_method_map(true)[p_method];
-				MethodInfo minfo = info_from_bind(m);
-				*r_info = minfo;
+				*r_info = info_from_bind(property->payload.method);
 			}
 			return true;
 		}
@@ -1094,8 +1086,8 @@ const MethodBind *ClassDB::get_method(const StringName &p_class, const StringNam
 		return nullptr;
 	}
 
-	const MethodBind *const *method = type->gdtype->get_method_map(false).getptr(p_name);
-	return method ? *method : nullptr;
+	const GDType::Property *property = type->gdtype->get_property_map().getptr(p_name);
+	return property && property->type == GDType::Property::Type::METHOD ? property->payload.method : nullptr;
 }
 
 Vector<uint32_t> ClassDB::get_method_compatibility_hashes(const StringName &p_class, const StringName &p_name) {
@@ -1123,13 +1115,13 @@ const MethodBind *ClassDB::get_method_with_compatibility(const StringName &p_cla
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		const MethodBind *const *method = type->gdtype->get_method_map(true).getptr(p_name);
-		if (method) {
+		const GDType::Property *property = type->gdtype->get_property_map(true).getptr(p_name);
+		if (property && property->type == GDType::Property::Type::METHOD) {
 			if (r_method_exists) {
 				*r_method_exists = true;
 			}
-			if ((*method)->get_hash() == p_hash) {
-				return *method;
+			if (property->payload.method->get_hash() == p_hash) {
+				return property->payload.method;
 			}
 		}
 
@@ -1167,8 +1159,10 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	for (const KeyValue<StringName, int64_t> &E : type->gdtype->get_integer_constant_map(p_no_inheritance)) {
-		p_constants->push_back(E.key);
+	for (const KeyValue<StringName, GDType::Property> &kv : type->gdtype->get_property_map(p_no_inheritance)) {
+		if (kv.value.type == GDType::Property::Type::INTEGER_CONSTANT) {
+			p_constants->push_back(kv.key);
+		}
 	}
 }
 
@@ -1177,12 +1171,12 @@ int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringNam
 
 	ClassInfo *type = classes.getptr(p_class);
 	if (type) {
-		const int64_t *constant = type->gdtype->get_integer_constant_map(false).getptr(p_name);
-		if (constant) {
+		const GDType::Property *property = type->gdtype->get_property_map().getptr(p_name);
+		if (property && property->type == GDType::Property::Type::INTEGER_CONSTANT) {
 			if (p_success) {
 				*p_success = true;
 			}
-			return *constant;
+			return property->payload.integer_constant.value;
 		}
 	}
 
@@ -1198,7 +1192,8 @@ bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL_V(type, false);
 
-	return type->gdtype->get_integer_constant_map(p_no_inheritance).has(p_name);
+	const GDType::Property *property = type->gdtype->get_property_map(p_no_inheritance).getptr(p_name);
+	return property && property->type == GDType::Property::Type::INTEGER_CONSTANT;
 }
 
 StringName ClassDB::get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
@@ -1221,8 +1216,10 @@ void ClassDB::get_enum_list(const StringName &p_class, List<StringName> *p_enums
 		return;
 	}
 
-	for (const KeyValue<StringName, const GDType::EnumInfo *> &E : type->gdtype->get_enum_map(p_no_inheritance)) {
-		p_enums->push_back(E.key);
+	for (const KeyValue<StringName, GDType::Property> &kv : type->gdtype->get_property_map(p_no_inheritance)) {
+		if (kv.value.type == GDType::Property::Type::ENUM) {
+			p_enums->push_back(kv.key);
+		}
 	}
 }
 
@@ -1232,10 +1229,11 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	const GDType::EnumInfo *const *enum_info = type->gdtype->get_enum_map(p_no_inheritance).getptr(p_enum);
-	ERR_FAIL_NULL(enum_info);
+	const GDType::Property *property = type->gdtype->get_property_map(p_no_inheritance).getptr(p_enum);
+	ERR_FAIL_NULL(property);
+	ERR_FAIL_COND(property->type != GDType::Property::Type::ENUM);
 
-	for (const KeyValue<StringName, int64_t> &kv : (*enum_info)->values) {
+	for (const KeyValue<StringName, int64_t> &kv : property->payload.enum_info->values) {
 		p_constants->push_back(kv.key);
 	}
 }
@@ -1273,7 +1271,8 @@ bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL_V(type, false);
 
-	return type->gdtype->get_enum_map(p_no_inheritance).has(p_name);
+	const GDType::Property *property = type->gdtype->get_property_map(p_no_inheritance).getptr(p_name);
+	return property && property->type == GDType::Property::Type::ENUM;
 }
 
 bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
@@ -1282,14 +1281,13 @@ bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_na
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL_V(type, false);
 
-	const GDType::EnumInfo *const *enum_info = type->gdtype->get_enum_map(p_no_inheritance).getptr(p_name);
+	const GDType::Property *property = type->gdtype->get_property_map(p_no_inheritance).getptr(p_name);
 	// FIXME This fails unexpectedly often. Keeping legacy behavior to silently fail for now.
-	//ERR_FAIL_NULL_V(enum_info, false);
-	if (!enum_info) {
+	if (!property || property->type != GDType::Property::Type::ENUM) {
 		return false;
 	}
 
-	return (*enum_info)->is_bitfield;
+	return property->payload.enum_info->is_bitfield;
 }
 
 void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) {
@@ -1307,8 +1305,10 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	for (const KeyValue<StringName, const MethodInfo *> &kv : type->gdtype->get_signal_map(p_no_inheritance)) {
-		p_signals->push_back(*kv.value);
+	for (const KeyValue<StringName, GDType::Property> &kv : type->gdtype->get_property_map(p_no_inheritance)) {
+		if (kv.value.type == GDType::Property::Type::SIGNAL) {
+			p_signals->push_back(*kv.value.payload.signal);
+		}
 	}
 }
 
@@ -1318,7 +1318,8 @@ bool ClassDB::has_signal(const StringName &p_class, const StringName &p_signal, 
 	if (!type) {
 		return false;
 	}
-	return type->gdtype->get_signal_map(p_no_inheritance).has(p_signal);
+	const GDType::Property *property = type->gdtype->get_property_map(p_no_inheritance).getptr(p_signal);
+	return property && property->type == GDType::Property::Type::SIGNAL;
 }
 
 bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, MethodInfo *r_signal) {
@@ -1327,12 +1328,12 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 	if (!type) {
 		return false;
 	}
-	const MethodInfo *const *method_info = type->gdtype->get_signal_map(false).getptr(p_signal);
-	if (method_info) {
-		*r_signal = **method_info;
-		return true;
+	const GDType::Property *property = type->gdtype->get_property_map().getptr(p_signal);
+	if (!property || property->type != GDType::Property::Type::SIGNAL) {
+		return false;
 	}
-	return false;
+	*r_signal = *property->payload.signal;
+	return true;
 }
 
 void ClassDB::add_property_group(const StringName &p_class, const String &p_name, const String &p_prefix, int p_indent_depth) {
@@ -1570,7 +1571,8 @@ bool ClassDB::has_method(const StringName &p_class, const StringName &p_method, 
 	if (!type) {
 		return false;
 	}
-	return type->gdtype->get_method_map(p_no_inheritance).has(p_method);
+	const GDType::Property *property = type->gdtype->get_property_map(p_no_inheritance).getptr(p_method);
+	return property && property->type == GDType::Property::Type::METHOD;
 }
 
 int ClassDB::get_method_argument_count(const StringName &p_class, const StringName &p_method, bool *r_is_valid, bool p_no_inheritance) {
@@ -1578,12 +1580,12 @@ int ClassDB::get_method_argument_count(const StringName &p_class, const StringNa
 
 	ClassInfo *type = classes.getptr(p_class);
 	if (type) {
-		const MethodBind *const *method = type->gdtype->get_method_map(p_no_inheritance).getptr(p_method);
-		if (method) {
+		const GDType::Property *property = type->gdtype->get_property_map(p_no_inheritance).getptr(p_method);
+		if (property && property->type == GDType::Property::Type::METHOD) {
 			if (r_is_valid) {
 				*r_is_valid = true;
 			}
-			return (*method)->get_argument_count();
+			return property->payload.method->get_argument_count();
 		}
 	}
 

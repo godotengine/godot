@@ -41,7 +41,6 @@
 #include "editor/doc/doc_tools.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_interface.h"
-#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -1629,7 +1628,7 @@ void EditorProperty::menu_option(int p_option) {
 		} break;
 		case MENU_OPEN_DOCUMENTATION: {
 			ScriptEditor::get_singleton()->goto_help(doc_path);
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+			ScriptEditor::get_singleton()->focus_editor();
 		} break;
 		default: {
 			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
@@ -2101,7 +2100,7 @@ void EditorInspectorCategory::_handle_menu_option(int p_option) {
 
 		case MENU_OPEN_DOCS: {
 			ScriptEditor::get_singleton()->goto_help("class:" + doc_class_name);
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+			ScriptEditor::get_singleton()->focus_editor();
 		} break;
 
 		case MENU_UNFAVORITE_ALL: {
@@ -2980,7 +2979,7 @@ void EditorInspectorSection::menu_option(int p_option) {
 
 		case MENU_OPEN_DOCUMENTATION: {
 			ScriptEditor::get_singleton()->goto_help(doc_path);
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+			ScriptEditor::get_singleton()->focus_editor();
 		} break;
 	}
 }

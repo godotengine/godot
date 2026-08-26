@@ -1323,7 +1323,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				ScriptEditor::get_singleton()->goto_help("class_name:" + class_name);
 			}
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+			ScriptEditor::get_singleton()->focus_editor();
 		} break;
 		case TOOL_AUTO_EXPAND: {
 			scene_tree->set_auto_expand_selected(!EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), true);
@@ -3458,6 +3458,7 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 
 void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
+	scene_tree->set_selected(nullptr, false);
 	_update_create_root_dialog_visibility();
 }
 
@@ -3658,9 +3659,8 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 	}
 }
 
-void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type) {
-	Node *node = get_node(p_to);
-	ERR_FAIL_NULL(node);
+void SceneTreeDock::_files_dropped(const Vector<String> &p_files, Node *p_to_node, int p_type) {
+	ERR_FAIL_NULL(p_to_node);
 	ERR_FAIL_COND(p_files.is_empty());
 
 	const String &res_path = p_files[0];
@@ -3672,7 +3672,7 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 		List<String> valid_properties;
 
 		List<PropertyInfo> pinfo;
-		node->get_property_list(&pinfo);
+		p_to_node->get_property_list(&pinfo);
 
 		for (const PropertyInfo &p : pinfo) {
 			if (!(p.usage & PROPERTY_USAGE_EDITOR) || !(p.usage & PROPERTY_USAGE_STORAGE) || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
@@ -3689,13 +3689,13 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 		}
 
 		if (valid_properties.size() > 1) {
-			property_drop_node = node;
+			property_drop_node = p_to_node;
 			resource_drop_path = res_path;
 
 			const EditorPropertyNameProcessor::Style style = InspectorDock::get_singleton()->get_property_name_style();
 			menu_properties->clear();
 			for (const String &p : valid_properties) {
-				menu_properties->add_item(EditorPropertyNameProcessor::get_singleton()->process_name(p, style, p, node->get_class_name()));
+				menu_properties->add_item(EditorPropertyNameProcessor::get_singleton()->process_name(p, style, p, p_to_node->get_class_name()));
 				menu_properties->set_item_metadata(-1, p);
 			}
 
@@ -3705,29 +3705,26 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 			return;
 		}
 		if (!valid_properties.is_empty()) {
-			_perform_property_drop(node, valid_properties.front()->get(), ResourceLoader::load(res_path));
+			_perform_property_drop(p_to_node, valid_properties.front()->get(), ResourceLoader::load(res_path));
 			return;
 		}
 	}
 
 	// Either instantiate scenes or create AudioStreamPlayers.
 	int to_pos = -1;
-	_normalize_drop(node, to_pos, p_type);
+	_normalize_drop(p_to_node, to_pos, p_type);
 	if (is_dropping_scene) {
-		_perform_instantiate_scenes(p_files, node, to_pos);
+		_perform_instantiate_scenes(p_files, p_to_node, to_pos);
 	} else if (ClassDB::is_parent_class(res_type, "AudioStream")) {
-		_perform_create_audio_stream_players(p_files, node, to_pos);
+		_perform_create_audio_stream_players(p_files, p_to_node, to_pos);
 	}
 }
 
-void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
+void SceneTreeDock::_script_dropped(const String &p_file, Node *p_to_node) {
+	ERR_FAIL_NULL(p_to_node);
+
 	Ref<Script> scr = ResourceLoader::load(p_file);
 	ERR_FAIL_COND(scr.is_null());
-	Node *n = get_node(p_to);
-
-	if (!n) {
-		return;
-	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
@@ -3745,21 +3742,21 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 		new_node->set_script(scr);
 
 		undo_redo->create_action(TTR("Instantiate Script"));
-		undo_redo->add_do_method(n, "add_child", new_node, true);
+		undo_redo->add_do_method(p_to_node, "add_child", new_node, true);
 		undo_redo->add_do_method(new_node, "set_owner", edited_scene);
 		undo_redo->add_do_method(editor_selection, "clear");
 		undo_redo->add_do_method(editor_selection, "add_node", new_node);
 		undo_redo->add_do_reference(new_node);
-		undo_redo->add_undo_method(n, "remove_child", new_node);
+		undo_redo->add_undo_method(p_to_node, "remove_child", new_node);
 
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(n), new_node->get_class(), new_node->get_name());
-		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(n)).path_join(new_node->get_name())));
+		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_to_node), new_node->get_class(), new_node->get_name());
+		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_to_node)).path_join(new_node->get_name())));
 		undo_redo->commit_action();
 	} else {
 		// Check if dropped script is compatible.
-		if (n->has_meta(SceneStringName(_custom_type_script))) {
-			Ref<Script> ct_scr = PropertyUtils::get_custom_type_script(n);
+		if (p_to_node->has_meta(SceneStringName(_custom_type_script))) {
+			Ref<Script> ct_scr = PropertyUtils::get_custom_type_script(p_to_node);
 			if (!scr->inherits_script(ct_scr)) {
 				String custom_type_name = ct_scr->get_global_name();
 
@@ -3778,20 +3775,24 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 			}
 		}
 
-		undo_redo->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, n);
-		undo_redo->add_do_method(InspectorDock::get_singleton(), "store_script_properties", n);
-		undo_redo->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", n);
-		undo_redo->add_do_method(n, "set_script", scr);
-		undo_redo->add_undo_method(n, "set_script", n->get_script());
-		undo_redo->add_do_method(InspectorDock::get_singleton(), "apply_script_properties", n);
-		undo_redo->add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", n);
+		undo_redo->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, p_to_node);
+		undo_redo->add_do_method(InspectorDock::get_singleton(), "store_script_properties", p_to_node);
+		undo_redo->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", p_to_node);
+		undo_redo->add_do_method(p_to_node, "set_script", scr);
+		undo_redo->add_undo_method(p_to_node, "set_script", p_to_node->get_script());
+		undo_redo->add_do_method(InspectorDock::get_singleton(), "apply_script_properties", p_to_node);
+		undo_redo->add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", p_to_node);
 		undo_redo->add_do_method(this, "_queue_update_script_button");
 		undo_redo->add_undo_method(this, "_queue_update_script_button");
 		undo_redo->commit_action();
 	}
 }
 
-void SceneTreeDock::_nodes_dragged(const Array &p_nodes, NodePath p_to, int p_type) {
+void SceneTreeDock::_nodes_dragged(const Array &p_nodes, Node *p_to_node, int p_type) {
+	if (!p_to_node) {
+		return;
+	}
+
 	if (!_validate_no_foreign_selected(editor_selection->get_top_selected_node_list())) {
 		return;
 	}
@@ -3802,11 +3803,6 @@ void SceneTreeDock::_nodes_dragged(const Array &p_nodes, NodePath p_to, int p_ty
 		return; //nothing to reparent
 	}
 
-	Node *to_node = get_node(p_to);
-	if (!to_node) {
-		return;
-	}
-
 	Vector<Node *> nodes;
 	for (Node *E : selection) {
 		nodes.push_back(E);
@@ -3814,8 +3810,8 @@ void SceneTreeDock::_nodes_dragged(const Array &p_nodes, NodePath p_to, int p_ty
 
 	int to_pos = -1;
 
-	_normalize_drop(to_node, to_pos, p_type);
-	_do_reparent(to_node, to_pos, nodes, !Input::get_singleton()->is_key_pressed(Key::SHIFT));
+	_normalize_drop(p_to_node, to_pos, p_type);
+	_do_reparent(p_to_node, to_pos, nodes, !Input::get_singleton()->is_key_pressed(Key::SHIFT));
 }
 
 void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {

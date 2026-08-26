@@ -42,6 +42,9 @@ typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
+#ifndef ANDROID_ENABLED
+class AndroidSDKManager;
+#endif
 class AcceptDialog;
 class BoxContainer;
 class ColorPicker;
@@ -173,7 +176,7 @@ public:
 		PROJECT_VERSION_CONTROL,
 		PROJECT_EXPORT,
 		PROJECT_PACK_AS_ZIP,
-		PROJECT_INSTALL_ANDROID_SOURCE,
+		PROJECT_SETUP_ANDROID_BUILD,
 		PROJECT_OPEN_USER_DATA_FOLDER,
 		PROJECT_RELOAD_CURRENT_PROJECT,
 		PROJECT_QUIT_TO_PROJECT_MANAGER,
@@ -289,7 +292,6 @@ private:
 	HashMap<String, EditorPlugin *> addon_name_to_plugin;
 	LocalVector<String> pending_addons;
 	HashMap<ObjectID, HashSet<EditorPlugin *>> active_plugins;
-	bool is_main_screen_editing = false;
 
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
@@ -500,6 +502,10 @@ private:
 
 	bool unfocused_low_processor_usage_mode_enabled = true;
 
+#ifndef ANDROID_ENABLED
+	AndroidSDKManager *android_sdk_manager = nullptr;
+#endif
+
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
 	static int build_callback_count;
@@ -553,6 +559,7 @@ private:
 	void _android_install_build_template();
 	void _android_explore_build_templates();
 	void _android_remove_build_templates(bool p_prompt_for_removal);
+	void _setup_android_build(bool p_confirmed);
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);

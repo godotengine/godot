@@ -381,6 +381,7 @@ Error RenderingDeviceDriverD3D12::DescriptorHeap::allocate(uint32_t p_descriptor
 	ERR_FAIL_COND_V_MSG(FAILED(hr), ERR_CANT_CREATE, "Allocate failed with error " + vformat("0x%08ux", (uint64_t)hr) + ".");
 
 	r_allocation.virtual_alloc_handle = virtual_alloc.AllocHandle;
+	r_allocation.offset = offset;
 	r_allocation.cpu_handle = get_cpu_handle(cpu_handle, offset, increment_size);
 	r_allocation.gpu_handle = get_gpu_handle(gpu_handle, offset, increment_size);
 
@@ -874,8 +875,11 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 		p_size = p_size * frames.size();
 	}
 
+	bool buffer_device_address = p_usage.has_flag(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
+	ERR_FAIL_COND_V_MSG(buffer_device_address && !shader_capabilities.buffer_device_address_supported(), RDD::BufferID(), "Buffer device address is unsupported on this device.");
+
 	CD3DX12_RESOURCE_DESC1 resource_desc = CD3DX12_RESOURCE_DESC1::Buffer(p_size);
-	if (p_usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT)) {
+	if (p_usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT) || buffer_device_address) {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 	} else {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
@@ -890,12 +894,22 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 			bool is_dst = p_usage.has_flag(BUFFER_USAGE_TRANSFER_TO_BIT);
 			if (is_src && !is_dst) {
 				// Looks like a staging buffer: CPU maps, writes sequentially, then GPU copies to VRAM.
-				allocation_desc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+				if (buffer_device_address) {
+					// Use the custom UPLOAD pool to bypass the runtime validation that prevents ALLOW_UNORDERED_ACCESS from being used.
+					allocation_desc.CustomPool = custom_upload_pool.Get();
+				} else {
+					allocation_desc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+				}
 				initial_state = D3D12_RESOURCE_STATE_GENERIC_READ;
 			}
 			if (is_dst && !is_src) {
 				// Looks like a readback buffer: GPU copies from VRAM, then CPU maps and reads.
-				allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
+				if (buffer_device_address) {
+					// Use the custom READBACK pool to bypass the runtime validation that prevents ALLOW_UNORDERED_ACCESS from being used.
+					allocation_desc.CustomPool = custom_readback_pool.Get();
+				} else {
+					allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
+				}
 				initial_state = D3D12_RESOURCE_STATE_COPY_DEST;
 			}
 		} break;
@@ -917,7 +931,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 			if (misc_features_support.gpu_upload_heap_supported) {
 				allocation_desc.HeapType = D3D12_HEAP_TYPE_GPU_UPLOAD;
 			} else if (misc_features_support.uma_supported) {
-				allocation_desc.CustomPool = uma_gpu_mappable_pool.Get();
+				allocation_desc.CustomPool = custom_upload_pool.Get();
 			} else {
 				ERR_FAIL_V_MSG(BufferID(), "GPU mappable buffers are unsupported on this device.");
 			}
@@ -949,6 +963,31 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
+	// If device address usage is requested, create a UAV descriptor expected by spirv2dxil.
+	DescriptorHeap::Allocation device_address_uav_alloc = {};
+	if (buffer_device_address) {
+		Error err;
+		{
+			MutexLock lock(resource_descriptor_heap_mutex);
+
+			err = resource_descriptor_heap.allocate(1, device_address_uav_alloc);
+		}
+
+		if (unlikely(err != OK)) {
+			ERR_FAIL_COND_V_MSG(err == ERR_OUT_OF_MEMORY, BufferID(), "Cannot create buffer because there's not enough room in the RESOURCES descriptor heap.\n"
+																	  "Please increase the value of the rendering/rendering_device/d3d12/max_resource_descriptors project setting.");
+
+			ERR_FAIL_V_MSG(BufferID(), "Failed to allocate buffer descriptor.");
+		}
+
+		D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
+		uav_desc.Format = DXGI_FORMAT_R32_TYPELESS;
+		uav_desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+		uav_desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+		uav_desc.Buffer.NumElements = p_size / 4;
+		device->CreateUnorderedAccessView(buffer.Get(), nullptr, &uav_desc, device_address_uav_alloc.cpu_handle);
+	}
+
 	// Bookkeep.
 
 	BufferInfo *buf_info;
@@ -974,6 +1013,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 	buf_info->states_ptr = &buf_info->owner_info.states;
 	buf_info->gpu_virtual_address = buffer->GetGPUVirtualAddress();
 	buf_info->size = original_size;
+	buf_info->device_address_uav_alloc = device_address_uav_alloc;
 	buf_info->flags.is_dynamic = p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT);
 
 	return BufferID(buf_info);
@@ -987,6 +1027,13 @@ bool RenderingDeviceDriverD3D12::buffer_set_texel_format(BufferID p_buffer, Data
 
 void RenderingDeviceDriverD3D12::buffer_free(BufferID p_buffer) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
+
+	if (buf_info->device_address_uav_alloc.virtual_alloc_handle != 0) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		resource_descriptor_heap.free(buf_info->device_address_uav_alloc);
+	}
+
 	if (buf_info->is_dynamic()) {
 		buf_info->resource->Unmap(0, &VOID_RANGE);
 		VersatileResource::free(resources_allocator, (BufferDynamicInfo *)buf_info);
@@ -1044,7 +1091,9 @@ uint64_t RenderingDeviceDriverD3D12::buffer_get_dynamic_offsets(Span<BufferID> p
 
 uint64_t RenderingDeviceDriverD3D12::buffer_get_device_address(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
-	return buf_info->gpu_virtual_address;
+	DEV_ASSERT(buf_info->device_address_uav_alloc.virtual_alloc_handle);
+	// This is the format expected by spirv2dxil. The descriptor is loaded via ResourceDescriptorHeap using the index in the high 32 bits of the device address.
+	return (buf_info->device_address_uav_alloc.offset << 32ull) | (0xD3ull << 56);
 }
 
 /*****************/
@@ -3388,7 +3437,13 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 
 	// Allocate range for resource descriptors.
 	if (uniform_set.resource_descriptor_count > 0) {
-		Error err = resource_descriptor_heap.allocate(uniform_set.resource_descriptor_count, uniform_set_info->resource_descriptor_heap_alloc);
+		Error err;
+		{
+			MutexLock lock(resource_descriptor_heap_mutex);
+
+			err = resource_descriptor_heap.allocate(uniform_set.resource_descriptor_count, uniform_set_info->resource_descriptor_heap_alloc);
+		}
+
 		if (unlikely(err != OK)) {
 			VersatileResource::free(resources_allocator, uniform_set_info);
 
@@ -3423,6 +3478,8 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 		}
 		sampler_key = hash_fmix32(sampler_key);
 
+		MutexLock lock(sampler_descriptor_heap_mutex);
+
 		RBMap<uint32_t, SamplerDescriptorHeapAllocation>::Iterator find_result = sampler_descriptor_heap_allocations.find(sampler_key);
 		if (find_result != sampler_descriptor_heap_allocations.end()) {
 			uniform_set_info->sampler_descriptor_heap_alloc = &find_result->value;
@@ -3433,7 +3490,12 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 
 			Error err = sampler_descriptor_heap.allocate(uniform_set.sampler_descriptor_count, *uniform_set_info->sampler_descriptor_heap_alloc);
 			if (unlikely(err != OK)) {
-				resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+				{
+					MutexLock resource_descriptor_heap_mutex_lock(resource_descriptor_heap_mutex);
+
+					resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+				}
+
 				VersatileResource::free(resources_allocator, uniform_set_info);
 
 				ERR_FAIL_COND_V_MSG(err == ERR_OUT_OF_MEMORY, UniformSetID(), "Cannot create uniform set because there's not enough room in the SAMPLERS descriptors heap.\n"
@@ -3624,9 +3686,15 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 void RenderingDeviceDriverD3D12::uniform_set_free(UniformSetID p_uniform_set) {
 	UniformSetInfo *uniform_set_info = (UniformSetInfo *)p_uniform_set.id;
 
-	resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+	if (uniform_set_info->resource_descriptor_heap_alloc.virtual_alloc_handle != 0) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+	}
 
 	if (uniform_set_info->sampler_descriptor_heap_alloc != nullptr) {
+		MutexLock lock(sampler_descriptor_heap_mutex);
+
 		if ((--uniform_set_info->sampler_descriptor_heap_alloc->use_count) == 0) {
 			sampler_descriptor_heap.free(*uniform_set_info->sampler_descriptor_heap_alloc);
 			sampler_descriptor_heap_allocations.erase(uniform_set_info->sampler_descriptor_heap_alloc->key);
@@ -3814,7 +3882,13 @@ RenderingDeviceDriverD3D12::DescriptorHeap::Allocation RenderingDeviceDriverD3D1
 	} else {
 		DescriptorHeap::Allocation descriptor_allocation = {};
 
-		Error err = resource_descriptor_heap.allocate(1, descriptor_allocation);
+		Error err;
+		{
+			MutexLock lock(resource_descriptor_heap_mutex);
+
+			err = resource_descriptor_heap.allocate(1, descriptor_allocation);
+		}
+
 		ERR_FAIL_COND_V_MSG(err == ERR_OUT_OF_MEMORY, DescriptorHeap::Allocation(), "Cannot allocate per frame descriptor because there's not enough room in the RESOURCES descriptor heap.\n"
 																					"Please increase the value of the rendering/rendering_device/d3d12/max_resource_descriptors project setting.");
 
@@ -4796,6 +4870,8 @@ void RenderingDeviceDriverD3D12::command_render_clear_attachments(CommandBufferI
 }
 
 void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
+	_command_check_descriptor_sets(p_cmd_buffer);
+
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 
 	const PipelineInfo *pipeline_info = (const PipelineInfo *)p_pipeline.id;
@@ -5381,6 +5457,8 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 // ----- COMMANDS -----
 
 void RenderingDeviceDriverD3D12::command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
+	_command_check_descriptor_sets(p_cmd_buffer);
+
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 
 	const PipelineInfo *pipeline_info = (const PipelineInfo *)p_pipeline.id;
@@ -5688,10 +5766,15 @@ void RenderingDeviceDriverD3D12::end_segment() {
 	FrameInfo &f = frames[frame_idx];
 
 	// Free leftover descriptors.
-	for (uint32_t i = f.descriptor_allocation_count; i < f.descriptor_allocations.size(); i++) {
-		resource_descriptor_heap.free(f.descriptor_allocations[i]);
+	if (f.descriptor_allocation_count < f.descriptor_allocations.size()) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		for (uint32_t i = f.descriptor_allocation_count; i < f.descriptor_allocations.size(); i++) {
+			resource_descriptor_heap.free(f.descriptor_allocations[i]);
+		}
+
+		f.descriptor_allocations.resize(f.descriptor_allocation_count);
 	}
-	f.descriptor_allocations.resize(f.descriptor_allocation_count);
 
 	segment_begun = false;
 }
@@ -5890,7 +5973,7 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
-			return true;
+			return shader_capabilities.buffer_device_address_supported();
 		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
 			return true;
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
@@ -5956,9 +6039,13 @@ RenderingDeviceDriverD3D12::RenderingDeviceDriverD3D12(RenderingContextDriverD3D
 RenderingDeviceDriverD3D12::~RenderingDeviceDriverD3D12() {
 	rtv_descriptor_heap_pool.free(null_rtv_alloc);
 
-	for (FrameInfo &f : frames) {
-		for (DescriptorHeap::Allocation &alloc : f.descriptor_allocations) {
-			resource_descriptor_heap.free(alloc);
+	{
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		for (FrameInfo &f : frames) {
+			for (DescriptorHeap::Allocation &alloc : f.descriptor_allocations) {
+				resource_descriptor_heap.free(alloc);
+			}
 		}
 	}
 
@@ -6338,7 +6425,11 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 
 	// If UMA is supported but GPU upload heap isn't, the same functionality can be achieved
 	// by creating resources from a pool with the same properties as an upload heap.
-	if (misc_features_support.uma_supported && !misc_features_support.gpu_upload_heap_supported) {
+	//
+	// We also create this pool to support buffer device addresses for UPLOAD heaps.
+	// The limitation preventing UPLOAD heaps from being used for unordered access is a
+	// runtime validation that GPUs normally support with the same heap properties.
+	if (shader_capabilities.buffer_device_address_supported() || (misc_features_support.uma_supported && !misc_features_support.gpu_upload_heap_supported)) {
 		D3D12MA::POOL_DESC pool_desc = {};
 #if defined(_MSC_VER) || !defined(_WIN32)
 		pool_desc.HeapProperties = device->GetCustomHeapProperties(0, D3D12_HEAP_TYPE_UPLOAD);
@@ -6346,7 +6437,21 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 		device->GetCustomHeapProperties(&pool_desc.HeapProperties, 0, D3D12_HEAP_TYPE_UPLOAD);
 #endif
 		pool_desc.HeapFlags = D3D12MA_RECOMMENDED_HEAP_FLAGS | D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS;
-		res = allocator->CreatePool(&pool_desc, uma_gpu_mappable_pool.GetAddressOf());
+		res = allocator->CreatePool(&pool_desc, custom_upload_pool.GetAddressOf());
+
+		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::Allocator::CreatePool failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+	}
+
+	// Also create a pool for READBACK heaps.
+	if (shader_capabilities.buffer_device_address_supported()) {
+		D3D12MA::POOL_DESC pool_desc = {};
+#if defined(_MSC_VER) || !defined(_WIN32)
+		pool_desc.HeapProperties = device->GetCustomHeapProperties(0, D3D12_HEAP_TYPE_READBACK);
+#else
+		device->GetCustomHeapProperties(&pool_desc.HeapProperties, 0, D3D12_HEAP_TYPE_READBACK);
+#endif
+		pool_desc.HeapFlags = D3D12MA_RECOMMENDED_HEAP_FLAGS | D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS;
+		res = allocator->CreatePool(&pool_desc, custom_readback_pool.GetAddressOf());
 
 		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::Allocator::CreatePool failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	}
