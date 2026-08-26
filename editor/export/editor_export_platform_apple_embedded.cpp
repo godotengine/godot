@@ -1736,7 +1736,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 	bool export_project_only = p_preset->get("application/export_project_only");
 	if (p_oneclick) {
-		export_project_only = false; // Skip for one-click deploy.
+		export_project_only = false; // Skip for remote deploy.
 	}
 
 	EditorProgress ep("export", export_project_only ? TTR("Exporting for " + get_name() + " (Project Files Only)") : TTR("Exporting for " + get_name() + ""), export_project_only ? 2 : 5, true);
