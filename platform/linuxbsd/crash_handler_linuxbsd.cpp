@@ -246,7 +246,7 @@ static void handle_crash(int sig) {
 	// Abort to pass the error to the OS
 	abort();
 }
-#endif
+#endif // CRASH_HANDLER_ENABLED
 
 CrashHandler::CrashHandler() {
 	disabled = false;

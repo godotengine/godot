@@ -101,10 +101,10 @@ public:
 		}
 		uint64_t significand = (((uint64_t)rand()) << 32) | rand() | 0x8000000000000001U;
 		return std::ldexp((double)significand, -64 - CLZ32(proto_exp_offset));
-#else
+#else // defined(CLZ32)
 #pragma message("RandomPCG::randd - intrinsic clz is not available, falling back to bit truncation")
 		return (double)(((((uint64_t)rand()) << 32) | rand()) & 0x1FFFFFFFFFFFFFU) / (double)0x1FFFFFFFFFFFFFU;
-#endif
+#endif // defined(CLZ32)
 	}
 	_FORCE_INLINE_ float randf() {
 #if defined(CLZ32)
@@ -113,10 +113,10 @@ public:
 			return 0;
 		}
 		return std::ldexp((float)(rand() | 0x80000001), -32 - CLZ32(proto_exp_offset));
-#else
+#else // defined(CLZ32)
 #pragma message("RandomPCG::randf - intrinsic clz is not available, falling back to bit truncation")
 		return (float)(rand() & 0xFFFFFF) / (float)0xFFFFFF;
-#endif
+#endif // defined(CLZ32)
 	}
 
 	_FORCE_INLINE_ double randfn(double p_mean, double p_deviation) {

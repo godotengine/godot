@@ -128,7 +128,7 @@ int AudioDriver::_get_configured_mix_rate() {
 		mix_rate = AudioDriverManager::DEFAULT_MIX_RATE;
 	}
 	return mix_rate;
-#endif
+#endif // WEB_ENABLED
 }
 
 AudioDriver::SpeakerMode AudioDriver::get_speaker_mode_by_total_channels(int p_channels) const {

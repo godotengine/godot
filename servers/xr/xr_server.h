@@ -121,7 +121,7 @@ protected:
 	void _add_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker);
 	void _remove_tracker_bind_compat_90645(const Ref<XRPositionalTracker> &p_tracker);
 	Ref<XRPositionalTracker> _get_tracker_bind_compat_90645(const StringName &p_name) const;
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	static XRMode get_xr_mode();

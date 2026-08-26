@@ -396,7 +396,7 @@ bool JoltContactListener3D::_try_add_debug_contacts(const JPH::Body &p_soft_body
 	return true;
 }
 
-#endif
+#endif // DEBUG_ENABLED
 
 bool JoltContactListener3D::_has_shape_shifted(const JoltShapedObject3D &p_object, const JPH::SubShapeID &p_sub_shape_id) {
 	return p_object.get_previous_jolt_shape() != nullptr && p_object.get_jolt_shape()->GetSubShapeUserData(p_sub_shape_id) != p_object.get_previous_jolt_shape()->GetSubShapeUserData(p_sub_shape_id);

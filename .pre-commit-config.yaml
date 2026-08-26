@@ -121,6 +121,12 @@ repos:
         entry: python misc/scripts/validate_includes.py
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc)$
 
+      - id: comment-preprocessing
+        name: comment-preprocessing
+        language: python
+        entry: python misc/scripts/comment_preprocessing.py
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|glsl)$
+
       - id: eslint
         name: eslint
         language: node

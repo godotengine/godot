@@ -103,7 +103,7 @@ vec3 customExp2(vec3 a) {
 			a.y >= 0 ? exp2(a.y) - 1.0f : -(exp2(-a.y) - 1.0f),
 			a.z >= 0 ? exp2(a.z) - 1.0f : -(exp2(-a.z) - 1.0f));
 }
-#else
+#else // SIGNED
 float CalcMSLE(vec3 a, vec3 b) {
 	vec3 err = log2((b + 1.0f) / (a + 1.0f));
 	err = err * err;
@@ -117,7 +117,7 @@ vec3 customLog2(vec3 a) {
 vec3 customExp2(vec3 a) {
 	return exp2(a) - 1.0f;
 }
-#endif
+#endif // SIGNED
 
 uint PatternFixupID(uint i) {
 	uint ret = 15u;
@@ -183,7 +183,8 @@ vec3 FinishUnquantize(vec3 endpoint0Unq, vec3 endpoint1Unq, float weight) {
 	vec3 comp = (endpoint0Unq * (64.0f - weight) + endpoint1Unq * weight + 32.0f) * (31.0f / 4096.0f);
 	return f16tof32(uvec3(comp));
 }
-#else
+#else // SIGNED
+
 //SF
 
 vec3 cmpSign(vec3 value) {
@@ -243,7 +244,7 @@ vec3 FinishUnquantize(vec3 endpoint0Unq, vec3 endpoint1Unq, float weight) {
 	vec3 comp = (endpoint0Unq * (64.0f - weight) + endpoint1Unq * weight + 32.0f) * (31.0f / 2048.0f);
 	return f16tof32(uvec3(comp));
 }
-#endif
+#endif // SIGNED
 
 void Swap(inout vec3 a, inout vec3 b) {
 	vec3 tmp = a;
@@ -511,7 +512,7 @@ void EncodeP2Pattern(inout uvec4 block, inout float blockMSLE, uint pattern, vec
 	int maxVal9 = 0xFF;
 	endpoint760 = clamp(endpoint760, -maxVal7, maxVal7);
 	endpoint950 = clamp(endpoint950, -maxVal9, maxVal9);
-#endif
+#endif // SIGNED
 
 	vec3 endpoint760Unq = Unquantize7(endpoint760);
 	vec3 endpoint761Unq = Unquantize7(endpoint760 + endpoint761);
@@ -735,7 +736,7 @@ void main() {
 	}
 
 	EncodeP2Pattern(block, blockMSLE, bestPattern, texels);
-#endif
+#endif // QUALITY
 
 	imageStore(dstTexture, ivec2(gl_GlobalInvocationID.xy), block);
 }

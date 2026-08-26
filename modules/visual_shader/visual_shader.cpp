@@ -1270,7 +1270,7 @@ Vector2 VisualShader::get_graph_offset() const {
 	WARN_DEPRECATED_MSG("graph_offset property is deprecated. Getting it always returns Vector2().");
 	return Vector2();
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port, Vector<ShaderGraph::DefaultTextureParam> &default_tex_params) const {
 	Ref<VisualShaderNode> node = get_node(p_type, p_node);
@@ -1454,7 +1454,7 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		preview_params[param_name] = value;
 		return true;
 	}
-#endif
+#endif // TOOLS_ENABLED
 	else if (prop_name.begins_with("nodes/")) {
 		String typestr = prop_name.get_slicec('/', 1);
 		Type type = TYPE_VERTEX;
@@ -3593,7 +3593,7 @@ bool VisualShaderNodeParameter::_set(const StringName &p_name, const Variant &p_
 	}
 	return false;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void VisualShaderNodeParameter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_parameter_name", "name"), &VisualShaderNodeParameter::set_parameter_name);
@@ -3897,7 +3897,7 @@ void VisualShaderNodeComment::set_description(const String &p_description) {
 String VisualShaderNodeComment::get_description() const {
 	return description;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 ////////////// GroupBase
 

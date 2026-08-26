@@ -103,12 +103,12 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * Don't use GENERATE_TRAP() directly, should only be used be the macros below.
  */
 #define GENERATE_TRAP() __debugbreak()
-#else
+#else // defined(_MSC_VER) && !defined(__clang__)
 /**
  * Don't use GENERATE_TRAP() directly, should only be used be the macros below.
  */
 #define GENERATE_TRAP() __builtin_trap()
-#endif
+#endif // defined(_MSC_VER) && !defined(__clang__)
 
 /**
  * Error macros.
@@ -848,9 +848,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		GENERATE_TRAP(); \
 	} else \
 		((void)0)
-#else
+#else // DEV_ENABLED
 #define DEV_ASSERT(m_cond)
-#endif
+#endif // DEV_ENABLED
 
 #ifdef DEV_ENABLED
 #define DEV_CHECK_ONCE(m_cond) \
@@ -862,9 +862,9 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		} \
 	} else \
 		((void)0)
-#else
+#else // DEV_ENABLED
 #define DEV_CHECK_ONCE(m_cond)
-#endif
+#endif // DEV_ENABLED
 
 /**
  * Physics Interpolation warnings.

@@ -1631,7 +1631,7 @@ bool OpenXRAPI::openxr_loader_init() {
 		Error error_code = OS::get_singleton()->get_dynamic_library_symbol_handle(openxr_loader_library_handle, "xrGetInstanceProcAddr", (void *&)xrGetInstanceProcAddr);
 		ERR_FAIL_COND_V_MSG(error_code != OK, false, "Symbol xrGetInstanceProcAddr not found in OpenXR Loader library.");
 	}
-#endif
+#endif // ANDROID_ENABLED
 
 	// Resolve the symbols that don't require an instance
 	OPENXR_API_INIT_XR_FUNC_V(xrCreateInstance);
@@ -2271,7 +2271,7 @@ void OpenXRAPI::_update_main_swapchain_size_rt() {
 		print_verbose(String(" - recommended render width: ") + itos(openxr_api->view_configuration_views[i].recommendedImageRectWidth));
 		print_verbose(String(" - recommended render height: ") + itos(openxr_api->view_configuration_views[i].recommendedImageRectHeight));
 	}
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void OpenXRAPI::allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer) {
@@ -3030,7 +3030,7 @@ OpenXRAPI::~OpenXRAPI() {
 		OS::get_singleton()->close_dynamic_library(openxr_loader_library_handle);
 		openxr_loader_library_handle = nullptr;
 	}
-#endif
+#endif // ANDROID_ENABLED
 
 	singleton = nullptr;
 }

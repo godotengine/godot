@@ -916,7 +916,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 				}
 				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 			}
-#endif
+#endif // GL_API_ENABLED
 #ifdef GLES_API_ENABLED
 			if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 				glTexStorage2D(GL_TEXTURE_CUBE_MAP, atlas->mipmap_count, GL_RGB10_A2, atlas->size, atlas->size);
@@ -954,7 +954,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 				}
 				glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 			}
-#endif
+#endif // GL_API_ENABLED
 #ifdef GLES_API_ENABLED
 			if (!RasterizerUtilGLES3::is_gles_over_gl()) {
 				glTexStorage2D(GL_TEXTURE_CUBE_MAP, atlas->mipmap_count, GL_RGB10_A2, atlas->size, atlas->size);
@@ -1621,7 +1621,7 @@ bool LightStorage::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_i
 				if (status != GL_FRAMEBUFFER_COMPLETE) {
 					ERR_PRINT("Could not create omni light shadow framebuffer, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
 				}
-#endif
+#endif // DEBUG_ENABLED
 				glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 			} else {
 				glBindTexture(GL_TEXTURE_2D, texture_id);

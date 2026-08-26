@@ -424,7 +424,7 @@ void MultiMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "transform_2d_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_transform_2d_array", "_get_transform_2d_array");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "color_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_color_array", "_get_color_array");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "custom_data_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "_set_custom_data_array", "_get_custom_data_array");
-#endif
+#endif // DISABLE_DEPRECATED
 
 	ADD_GROUP("Physics Interpolation", "physics_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_interpolation_quality", PROPERTY_HINT_ENUM, "Fast,High"), "set_physics_interpolation_quality", "get_physics_interpolation_quality");

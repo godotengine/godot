@@ -291,7 +291,7 @@ TEST_CASE("[Dictionary] Duplicate dictionary") {
 	k2.erase(0);
 	k3.push_back(0);
 	CHECK_EQ(shallow_d, d);
-#endif
+#endif // 0
 }
 
 TEST_CASE("[Dictionary] Duplicate recursive dictionary") {
@@ -364,7 +364,7 @@ TEST_CASE("[Dictionary] Duplicate recursive dictionary on keys") {
 	d1.clear();
 	d2.clear();
 }
-#endif
+#endif // 0
 
 TEST_CASE("[Dictionary] Hash dictionary") {
 	// d = {1: {1: 1}, {2: 2}: [2], [3]: 3}
@@ -432,7 +432,7 @@ TEST_CASE("[Dictionary] Hash recursive dictionary on keys") {
 	// Break the recursivity otherwise Dictionary teardown will leak memory
 	d.clear();
 }
-#endif
+#endif // 0
 
 TEST_CASE("[Dictionary] Empty comparison") {
 	Dictionary d1;
@@ -571,7 +571,7 @@ TEST_CASE("[Dictionary] Recursive comparison on keys") {
 	d1.clear();
 	d2.clear();
 }
-#endif
+#endif // 0
 
 TEST_CASE("[Dictionary] Recursive self comparison") {
 	Dictionary d1;

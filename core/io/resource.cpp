@@ -443,7 +443,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, DuplicateRe
 	if (thread_duplicate_remap_cache && &p_remap_cache != thread_duplicate_remap_cache) {
 		ERR_PRINT("Resource::duplicate_for_local_scene() called during an ongoing duplication session. This is an engine bug.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	DuplicateRemapCacheT *remap_cache_backup = thread_duplicate_remap_cache;
 	bool remap_cache_needs_deallocation_backup = thread_duplicate_remap_cache_needs_deallocation;
@@ -647,7 +647,7 @@ uint32_t Resource::hash_edited_version_for_preview() const {
 	return hash;
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 void Resource::set_local_to_scene(bool p_enable) {
 	local_to_scene = p_enable;
@@ -711,7 +711,7 @@ void Resource::set_resource_id_for_path(const String &p_referrer_path, const Str
 		ResourceCache::resource_path_cache[p_referrer_path][p_resource_path] = p_id;
 		ResourceCache::path_cache_lock.write_unlock();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 String Resource::get_id_for_path(const String &p_referrer_path) const {
@@ -725,9 +725,9 @@ String Resource::get_id_for_path(const String &p_referrer_path) const {
 		ResourceCache::path_cache_lock.read_unlock();
 		return "";
 	}
-#else
+#else // TOOLS_ENABLED
 	return "";
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void Resource::_bind_methods() {

@@ -295,7 +295,7 @@ extern void CrashHandlerException(int signal) {
 		}
 	}
 }
-#endif
+#endif // CRASH_HANDLER_EXCEPTION
 
 CrashHandler::CrashHandler() {
 	disabled = false;

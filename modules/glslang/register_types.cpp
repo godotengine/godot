@@ -87,7 +87,7 @@ Vector<uint8_t> compile_glslang_shader(RenderingDeviceCommons::ShaderStage p_sta
 		// SPIRV to DXIL conversion does not support debug info.
 		generate_spirv_debug_info = false;
 	}
-#endif
+#endif // D3D12_ENABLED
 
 	EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
 	if (generate_spirv_debug_info) {

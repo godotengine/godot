@@ -8176,7 +8176,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_caret_index_edit_order"), &TextEdit::get_caret_index_edit_order);
 	ClassDB::bind_method(D_METHOD("get_selection_line", "caret_index"), &TextEdit::get_selection_line, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_selection_column", "caret_index"), &TextEdit::get_selection_column, DEFVAL(0));
-#endif
+#endif // DISABLE_DEPRECATED
 
 	/* Inspector */
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
@@ -9768,7 +9768,7 @@ int TextEdit::get_selection_line(int p_caret) const {
 int TextEdit::get_selection_column(int p_caret) const {
 	return get_selection_origin_column(p_caret);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 /*** Super internal Core API. Everything builds on it. ***/
 

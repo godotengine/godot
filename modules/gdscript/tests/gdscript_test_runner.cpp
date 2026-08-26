@@ -188,7 +188,7 @@ static String strip_warnings(const String &p_expected) {
 	}
 	return expected_no_warnings.strip_edges() + "\n";
 }
-#endif
+#endif // DEBUG_ENABLED
 
 int GDScriptTestRunner::run_tests() {
 	if (!make_tests()) {
@@ -302,7 +302,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 						continue;
 					}
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				String out_file = next.get_basename() + ".out";
 				ERR_FAIL_COND_V_MSG(!is_generating && !dir->file_exists(out_file), false, "Could not find output file for " + next);
@@ -614,7 +614,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		warning_string.append(vformat("~~ WARNING at line %d: (%s) %s\n", warning.start_line, warning.get_name(), warning.get_message()));
 	}
 	result.output += warning_string.as_string();
-#endif
+#endif // DEBUG_ENABLED
 
 	// Test compiling.
 	GDScriptCompiler compiler;

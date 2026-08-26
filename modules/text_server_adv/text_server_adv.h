@@ -87,7 +87,7 @@ GODOT_CLANG_WARNING_POP
 #endif
 #include <hb-ft.h>
 #include <hb-ot.h>
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 #include <hb-icu.h>
 #include <hb.h>
@@ -327,7 +327,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 		hb_raster_paint_t *hb_rdr = nullptr;
 		hb_raster_draw_t *hb_mono = nullptr;
-#endif
+#endif // HB_VERSION_ATLEAST(13, 0, 0)
 
 		bool face_init = false;
 		HashSet<uint32_t> supported_scripts;
@@ -361,7 +361,7 @@ class TextServerAdvanced : public TextServerExtension {
 			if (hb_mono != nullptr) {
 				hb_raster_draw_destroy(hb_mono);
 			}
-#endif
+#endif // HB_VERSION_ATLEAST(13, 0, 0)
 #ifdef MODULE_FREETYPE_ENABLED
 			if (face != nullptr) {
 				FT_Done_Face(face);
@@ -379,7 +379,7 @@ class TextServerAdvanced : public TextServerExtension {
 #if HB_VERSION_ATLEAST(13, 0, 0)
 	_FORCE_INLINE_ FontGlyph rasterize_hb_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, hb_raster_image_t *p_image, const hb_raster_extents_t &p_ext, const Vector2 &p_advance, bool p_bgra) const;
 #endif
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	bool _ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling = 0) const;
 	bool _ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size, FontForSizeAdvanced *&r_cache_for_size, bool p_silent = false, uint32_t p_oversampling = 0) const;
 	_FORCE_INLINE_ bool _font_validate(const RID &p_font_rid) const;

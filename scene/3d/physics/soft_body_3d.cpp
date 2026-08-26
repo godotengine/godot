@@ -473,7 +473,7 @@ void SoftBody3D::_prepare_physics_server() {
 
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (mesh.is_valid() && (is_enabled() || (disable_mode != DISABLE_MODE_REMOVE))) {
 		RID mesh_rid = mesh->get_rid();

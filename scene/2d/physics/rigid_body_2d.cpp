@@ -644,7 +644,7 @@ void RigidBody2D::_notification(int p_what) {
 			update_configuration_warnings();
 		} break;
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 PackedStringArray RigidBody2D::get_configuration_warnings() const {

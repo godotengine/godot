@@ -65,7 +65,7 @@ public:
 	virtual String get_as_text() const {
 		return text;
 	}
-#else
+#else // DEBUG_ENABLED
 	virtual String get_as_text() const {
 		return String();
 	}

@@ -257,7 +257,7 @@ void Node3D::_notification(int p_what) {
 				data.gizmos_requested = true;
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_request_gizmo_for_id"), get_instance_id());
 			}
-#endif
+#endif // TOOLS_ENABLED
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
@@ -618,7 +618,8 @@ Transform3D Node3D::get_global_transform_interpolated() {
 	}
 
 	return get_global_transform();
-#else
+#else // 1
+
 	// OLD METHOD - deprecated since moving to SceneTreeFTI,
 	// but leaving for reference and comparison for debugging.
 
@@ -634,7 +635,7 @@ Transform3D Node3D::get_global_transform_interpolated() {
 	}
 
 	return _get_global_transform_interpolated(Engine::get_singleton()->get_physics_interpolation_fraction());
-#endif
+#endif // 1
 }
 
 Transform3D Node3D::get_global_transform() const {
@@ -677,7 +678,7 @@ Transform3D Node3D::get_global_gizmo_transform() const {
 Transform3D Node3D::get_local_gizmo_transform() const {
 	return get_transform();
 }
-#endif
+#endif // TOOLS_ENABLED
 
 Node3D *Node3D::get_parent_node_3d() const {
 	ERR_READ_THREAD_GUARD_V(nullptr); // This can't be changed on threads anyway.
@@ -873,7 +874,7 @@ void Node3D::update_gizmos() {
 	}
 	data.gizmos_dirty = true;
 	callable_mp(this, &Node3D::_update_gizmos).call_deferred();
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform) {
@@ -886,7 +887,7 @@ void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transfor
 	if (is_part_of_edited_scene()) {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_set_subgizmo_selection"), this, p_gizmo, p_id, p_transform);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void Node3D::clear_subgizmo_selection() {
@@ -903,7 +904,7 @@ void Node3D::clear_subgizmo_selection() {
 	if (is_part_of_edited_scene()) {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_clear_subgizmo_selection"), this);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void Node3D::add_gizmo(Ref<Node3DGizmo> p_gizmo) {
@@ -921,7 +922,7 @@ void Node3D::add_gizmo(Ref<Node3DGizmo> p_gizmo) {
 		}
 		p_gizmo->transform();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void Node3D::remove_gizmo(Ref<Node3DGizmo> p_gizmo) {
@@ -932,7 +933,7 @@ void Node3D::remove_gizmo(Ref<Node3DGizmo> p_gizmo) {
 		p_gizmo->free();
 		data.gizmos.remove_at(idx);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void Node3D::clear_gizmos() {
@@ -943,7 +944,7 @@ void Node3D::clear_gizmos() {
 	}
 	data.gizmos.clear();
 	data.gizmos_requested = false;
-#endif
+#endif // TOOLS_ENABLED
 }
 
 TypedArray<Node3DGizmo> Node3D::get_gizmos_bind() const {
@@ -1006,7 +1007,7 @@ void Node3D::_update_gizmos() {
 			data.gizmos.write[i]->clear();
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void Node3D::set_disable_gizmos(bool p_enabled) {
@@ -1016,7 +1017,7 @@ void Node3D::set_disable_gizmos(bool p_enabled) {
 	if (!p_enabled) {
 		clear_gizmos();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void Node3D::reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform) {
@@ -1088,7 +1089,7 @@ void Node3D::_propagate_visibility_changed() {
 		data.gizmos_dirty = true;
 		_update_gizmos();
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	for (uint32_t n = 0; n < data.node3d_children.size(); n++) {
 		Node3D *s = data.node3d_children[n];
@@ -1570,7 +1571,7 @@ Node3D::Node3D() :
 	data.gizmos_disabled = false;
 	data.gizmos_dirty = false;
 	data.transform_gizmo_visible = true;
-#endif
+#endif // TOOLS_ENABLED
 }
 
 Node3D::~Node3D() {

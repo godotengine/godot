@@ -128,7 +128,7 @@ private:
 		SelfList<Node3D>::List _node_3d_list;
 		void physics_process();
 	} _client_physics_interpolation;
-#endif
+#endif // _3D_DISABLED
 
 	Window *root = nullptr;
 
@@ -376,7 +376,7 @@ public:
 
 	void set_debug_navigation_hint(bool p_enabled);
 	bool is_debugging_navigation_hint() const;
-#else
+#else // DEBUG_ENABLED
 	void set_debug_collisions_hint(bool p_enabled) {}
 	bool is_debugging_collisions_hint() const { return false; }
 
@@ -385,7 +385,7 @@ public:
 
 	void set_debug_navigation_hint(bool p_enabled) {}
 	bool is_debugging_navigation_hint() const { return false; }
-#endif
+#endif // DEBUG_ENABLED
 
 	void set_debug_collisions_color(const Color &p_color);
 	Color get_debug_collisions_color() const;

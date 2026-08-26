@@ -96,7 +96,8 @@ void QuickSettingsDialog::_update_current_values() {
 			}
 		}
 	}
-#endif
+#endif // ANDROID_ENABLED
+
 	// Style options.
 	{
 		const String current_style = EDITOR_GET("interface/theme/style");
@@ -200,7 +201,7 @@ void QuickSettingsDialog::_language_selected(int p_id) {
 	const String selected_language = language_option_button->get_item_metadata(p_id);
 	_set_setting_value("interface/editor/localization/editor_language", selected_language);
 }
-#endif
+#endif // ANDROID_ENABLED
 
 void QuickSettingsDialog::_style_selected(int p_id) {
 	const String selected_style = style_option_button->get_item_text(p_id);
@@ -333,7 +334,8 @@ QuickSettingsDialog::QuickSettingsDialog() {
 
 			_add_setting_control(TTRC("Language"), "interface/editor/localization/editor_language", language_option_button);
 		}
-#endif
+#endif // ANDROID_ENABLED
+
 		// Style options.
 		{
 			style_option_button = memnew(OptionButton);

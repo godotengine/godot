@@ -129,7 +129,7 @@ void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 	EditorNode::get_bottom_panel()->remove_item(p_control);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void EditorPlugin::add_dock(EditorDock *p_dock) {
 	EditorDockManager::get_singleton()->add_dock(p_dock);
@@ -630,7 +630,7 @@ void EditorPlugin::_notification(int p_what) {
 			ProjectSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
 		} break;
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 }
 
 void EditorPlugin::_bind_methods() {
@@ -651,7 +651,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dock_tab_icon", "control", "icon"), &EditorPlugin::set_dock_tab_icon);
 	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title", "shortcut"), &EditorPlugin::add_control_to_bottom_panel, DEFVAL(Ref<Shortcut>()));
 	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::add_autoload_singleton);
 	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);
@@ -753,7 +753,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_PASS);
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_STOP);

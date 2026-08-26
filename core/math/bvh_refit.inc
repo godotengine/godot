@@ -34,7 +34,7 @@ void node_update_aabb(TNode &tnode) {
 			// the 'blank' aabb will screw up parent aabbs
 			WARN_PRINT("BVH_Tree::TNode no children, AABB is undefined");
 		}
-#endif
+#endif // BVH_CHECKS
 	} else {
 		// leaf
 		const TLeaf &leaf = _node_get_leaf(tnode);
@@ -50,7 +50,7 @@ void node_update_aabb(TNode &tnode) {
 			// the 'blank' aabb will screw up parent aabbs
 			WARN_PRINT("BVH_Tree::TLeaf no items, AABB is undefined");
 		}
-#endif
+#endif // BVH_CHECKS
 	}
 }
 

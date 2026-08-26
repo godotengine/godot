@@ -35,7 +35,7 @@ void light_compute_vertex(hvec3 N, hvec3 L, hvec3 V, hvec3 light_color, bool is_
 	blinn *= (shininess + half(2.0)) * half(1.0 / (8.0 * M_PI)) * cNdotL;
 	specular_brdf_NL = blinn;
 	specular_light += specular_brdf_NL * light_color;
-#endif
+#endif // !defined(SPECULAR_DISABLED)
 }
 
 half get_omni_attenuation(float distance, float inv_range, float decay) {

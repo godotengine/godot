@@ -107,7 +107,7 @@ void ColorPicker::_notification(int p_what) {
 				perm_hb->set_visible(sampler_visible && !OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
 			}
 		} break;
-#endif
+#endif // MACOS_ENABLED
 
 		case NOTIFICATION_READY: {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_COLOR_PICKER)) {
@@ -548,7 +548,7 @@ void ColorPicker::set_palette_saved_callback(const Callable &p_palette_saved) {
 	palette_saved_callback = p_palette_saved;
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 HSlider *ColorPicker::get_slider(int p_idx) {
 	ERR_FAIL_INDEX_V(p_idx, MODE_MAX, nullptr);
@@ -796,7 +796,7 @@ void ColorPicker::_update_presets() {
 			}
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (presets_just_loaded || presets.is_empty() || Engine::get_singleton()->is_editor_hint()) {
 		// Rebuild swatch color buttons, keeping the add-preset button in the first position.
@@ -834,7 +834,7 @@ void ColorPicker::_update_recent_presets() {
 
 		_notification(NOTIFICATION_VISIBILITY_CHANGED);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 #ifdef TOOLS_ENABLED
@@ -991,7 +991,7 @@ void ColorPicker::_palette_file_selected(const String &p_path) {
 				editor_settings->call(set_project_metadata, "color_picker", "presets", saved_presets);
 				editor_settings->call(set_project_metadata, "color_picker", "palette_edited", false);
 			}
-#endif
+#endif // TOOLS_ENABLED
 		} break;
 		case FileDialog::FileMode::FILE_MODE_SAVE_FILE: {
 			Ref<ColorPalette> palette;
@@ -1020,7 +1020,7 @@ void ColorPicker::_palette_file_selected(const String &p_path) {
 		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "palette_path", palette_path);
 		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "palette_edited", false);
 	}
-#endif
+#endif // TOOLS_ENABLED
 	if (file_dialog->get_file_mode() == FileDialog::FileMode::FILE_MODE_OPEN_FILE) {
 		_update_presets();
 	}
@@ -1151,7 +1151,7 @@ void ColorPicker::add_preset(const Color &p_color) {
 		editor_settings->call(set_project_metadata, "color_picker", "presets", arr_to_save);
 		editor_settings->call(set_project_metadata, "color_picker", "palette_edited", true);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void ColorPicker::add_recent_preset(const Color &p_color) {
@@ -1172,7 +1172,7 @@ void ColorPicker::add_recent_preset(const Color &p_color) {
 		PackedColorArray arr_to_save = get_recent_presets();
 		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "recent_presets", arr_to_save);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void ColorPicker::erase_preset(const Color &p_color) {
@@ -1210,7 +1210,7 @@ void ColorPicker::erase_preset(const Color &p_color) {
 			editor_settings->call(set_project_metadata, "color_picker", "palette_name", palette_name->get_text());
 			editor_settings->call(set_project_metadata, "color_picker", "palette_path", palette_path);
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 }
 
@@ -1234,7 +1234,7 @@ void ColorPicker::erase_recent_preset(const Color &p_color) {
 			PackedColorArray arr_to_save = get_recent_presets();
 			editor_settings->call(SNAME("set_project_metadata"), "color_picker", "recent_presets", arr_to_save);
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 }
 
@@ -2228,7 +2228,7 @@ ColorPicker::ColorPicker() {
 		text_type->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {
 		text_type->set_accessibility_name(ETR("Hexadecimal Values"));
-#else
+#else // TOOLS_ENABLED
 	{
 		text_type->set_accessibility_name(ETR("Hexadecimal Values"));
 #endif // TOOLS_ENABLED

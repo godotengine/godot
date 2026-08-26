@@ -267,4 +267,4 @@ TEST_CASE("[SceneTree][FoldableContainer] FoldableGroup behavior") {
 
 } // namespace TestFoldableContainer
 
-#endif
+#endif // ADVANCED_GUI_DISABLED

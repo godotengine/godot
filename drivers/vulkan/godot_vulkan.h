@@ -40,5 +40,6 @@
 #ifdef VK_USE_PLATFORM_XLIB_KHR
 #undef CursorShape // vulkan.h transitively includes Xlib.h.
 #endif
-#endif
+#endif // USE_VOLK
+
 // IWYU pragma: end_exports.

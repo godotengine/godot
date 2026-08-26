@@ -447,7 +447,7 @@ void EditorInterface::set_main_screen_editor(const String &p_name) {
 	ERR_FAIL_NULL_MSG(dock, "The editor name '" + p_name + "' was not found.");
 	EditorDockManager::get_singleton()->focus_dock(dock);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 EditorDock *EditorInterface::get_dock_by_name(const String &p_name) {
 	return EditorDockManager::get_singleton()->get_dock_by_name(p_name);
@@ -853,7 +853,7 @@ void EditorInterface::get_argument_options(const StringName &p_function, int p_i
 				r_options->push_back(E);
 			}
 		}
-#endif
+#endif // DISABLE_DEPRECATED
 		if (pf == "get_editor_viewport_3d") {
 			for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
 				r_options->push_back(String::num_int64(i));

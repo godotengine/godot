@@ -55,7 +55,7 @@ void Light2D::_update_light_visibility() {
 			editor_ok = (get_tree()->get_edited_scene_root() && (this == get_tree()->get_edited_scene_root() || get_owner() == get_tree()->get_edited_scene_root()));
 		}
 	}
-#else
+#else // TOOLS_ENABLED
 	if (editor_only) {
 		editor_ok = false;
 	}
@@ -409,7 +409,7 @@ void PointLight2D::set_texture(const Ref<Texture2D> &p_texture) {
 				p_texture->is_class("ViewportTexture")) {
 			WARN_PRINT(vformat("%s cannot be used as a PointLight2D texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		RS::get_singleton()->canvas_light_set_texture(_get_light(), texture->get_rid());
 	} else {

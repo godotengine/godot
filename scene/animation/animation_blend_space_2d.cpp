@@ -75,9 +75,9 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 		WARN_PRINT_ED("AnimationNodeBlendSpace2D::add_blend_point: No name provided, using safe index as reference. In the future, empty names will be deprecated, so explicitly passing a name is recommended.");
 		return;
 	}
-#else
+#else // DISABLE_DEPRECATED
 	ERR_FAIL_COND(p_name == StringName());
-#endif
+#endif // DISABLE_DEPRECATED
 
 	if (p_at_index == -1 || p_at_index == blend_points_used) {
 		p_at_index = blend_points_used;

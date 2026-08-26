@@ -429,7 +429,7 @@ public:
 		}
 		return ret["valid"];
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	EXBIND1RC(String, validate_path, const String &)
 #ifndef DISABLE_DEPRECATED
@@ -563,7 +563,7 @@ public:
 		GDVIRTUAL_CALL(_auto_indent_code, p_code, p_from_line, p_to_line, ret);
 		p_code = ret;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	EXBIND2(add_global_constant, const StringName &, const Variant &)
 	EXBIND2(add_named_global_constant, const StringName &, const Variant &)

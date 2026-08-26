@@ -177,7 +177,7 @@ void main() {
 		break;
 	}
 
-#endif
+#endif // 1
 
 	imageStore(screen_buffer, screen_pos, vec4(clamp(linear_to_srgb(light), vec3(0.0), vec3(1.0)), 1.0));
 }

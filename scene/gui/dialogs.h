@@ -97,7 +97,7 @@ protected:
 	void _remove_button_bind_compat_89419(Control *p_button);
 
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	Label *get_label() { return message_label; }

@@ -1088,7 +1088,7 @@ Transform3D PhysicalBone3D::get_global_gizmo_transform() const {
 Transform3D PhysicalBone3D::get_local_gizmo_transform() const {
 	return gizmo_move_joint ? get_transform() * joint_offset : get_transform();
 }
-#endif
+#endif // TOOLS_ENABLED
 
 const PhysicalBone3D::JointData *PhysicalBone3D::get_joint_data() const {
 	return joint_data;
@@ -1335,7 +1335,7 @@ void PhysicalBone3D::update_offset() {
 			set_body_offset(bone_transform.affine_inverse() * get_global_transform());
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void PhysicalBone3D::_start_physics_simulation() {

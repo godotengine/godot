@@ -192,7 +192,7 @@ private:
 		uint32_t rc = 0;
 	};
 	static thread_local UnlockableLocks unlockable_locks[MAX_UNLOCKABLE_LOCKS];
-#endif
+#endif // THREADS_ENABLED
 
 	TaskID _add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description, bool p_pump_task = false);
 	GroupID _add_group_task(const Callable &p_callable, void (*p_func)(void *, uint32_t), void *p_userdata, BaseTemplateUserdata *p_template_userdata, int p_elements, int p_tasks, bool p_high_priority, const String &p_description);
@@ -288,12 +288,12 @@ public:
 	template <int Tag>
 	_ALWAYS_INLINE_ static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return _thread_enter_unlock_allowance_zone(p_mutex._get_lock()); }
 	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id);
-#else
+#else // THREADS_ENABLED
 	static uint32_t thread_enter_unlock_allowance_zone(const MutexLock<BinaryMutex> &p_lock) { return UINT32_MAX; }
 	template <int Tag>
 	static uint32_t thread_enter_unlock_allowance_zone(const SafeBinaryMutex<Tag> &p_mutex) { return UINT32_MAX; }
 	static void thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {}
-#endif
+#endif // THREADS_ENABLED
 
 	void init(int p_thread_count = -1, float p_low_priority_task_ratio = 0.3);
 	void exit_languages_threads();

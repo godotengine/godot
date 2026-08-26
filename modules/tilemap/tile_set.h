@@ -920,7 +920,7 @@ protected:
 	Ref<OccluderPolygon2D> _get_occluder_bind_compat_84660(int p_layer_id) const;
 
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	// Not exposed.

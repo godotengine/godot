@@ -206,7 +206,7 @@ void NavigationMeshSourceGeometryData3D::add_mesh(const Ref<Mesh> &p_mesh, const
 		This poses a significant performance issues as visual meshes store geometry data on the GPU and transferring this data back to the CPU blocks the rendering.\n\
 		For runtime (re)baking navigation meshes use and parse collision shapes as source geometry or create geometry data procedurally in scripts.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	_add_mesh(p_mesh, root_node_transform * p_xform);
 }

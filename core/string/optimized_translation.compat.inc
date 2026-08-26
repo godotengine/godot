@@ -42,4 +42,4 @@ void OptimizedTranslation::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("generate", "from"), &OptimizedTranslation::_generate_bind_compat_119563);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

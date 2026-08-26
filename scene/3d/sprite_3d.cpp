@@ -1504,7 +1504,7 @@ void AnimatedSprite3D::get_argument_options(const StringName &p_function, int p_
 	}
 	SpriteBase3D::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 bool AnimatedSprite3D::_set(const StringName &p_name, const Variant &p_value) {
@@ -1514,7 +1514,7 @@ bool AnimatedSprite3D::_set(const StringName &p_name, const Variant &p_value) {
 	}
 	return false;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite3D::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite3D::get_sprite_frames);

@@ -1680,7 +1680,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 							(surface_version >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK,
 							(RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK));
 		}
-#endif
+#endif // DISABLE_DEPRECATED
 
 		surface_data.push_back(surface);
 		surface_materials.push_back(material);

@@ -212,7 +212,7 @@ bool TextureRect::_set(const StringName &p_name, const Variant &p_value) {
 	}
 	return false;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void TextureRect::_texture_changed() {
 	queue_redraw();

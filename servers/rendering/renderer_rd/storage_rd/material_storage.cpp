@@ -789,7 +789,7 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 			size = ShaderLanguage::get_datatype_size(E.value.type);
 		}
 		ERR_CONTINUE(offset + size > p_buffer_size);
-#endif
+#endif // DEBUG_ENABLED
 		uint8_t *data = &p_buffer[offset];
 		HashMap<StringName, Variant>::ConstIterator V = p_parameters.find(E.key);
 
@@ -1310,7 +1310,7 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
 	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
-#endif
+#endif // 0
 
 	texture_storage->tex_blit_shader.shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
 	ERR_FAIL_COND(!texture_storage->tex_blit_shader.shader.version_is_valid(version));

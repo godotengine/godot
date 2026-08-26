@@ -911,7 +911,7 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 			} else
-#endif
+#endif // WEB_ENABLED
 			{
 				need_decompress = true;
 			}
@@ -924,7 +924,7 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
 			} else
-#endif
+#endif // WEB_ENABLED
 			{
 				need_decompress = true;
 			}
@@ -1103,7 +1103,7 @@ void TextureStorage::texture_external_initialize(RID p_texture, int p_width, int
 		}
 		texture.total_data_size = 0;
 	} else
-#endif
+#endif // ANDROID_ENABLED
 	{
 		// If external textures aren't supported, allocate an empty 1x1 texture.
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
@@ -1341,7 +1341,7 @@ void TextureStorage::texture_external_update(RID p_texture, int p_width, int p_h
 		GLES3::Config::get_singleton()->eglEGLImageTargetTexture2DOES(_GL_TEXTURE_EXTERNAL_OES, reinterpret_cast<void *>(p_external_buffer));
 		glBindTexture(_GL_TEXTURE_EXTERNAL_OES, 0);
 	}
-#endif
+#endif // ANDROID_ENABLED
 }
 
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {

@@ -960,7 +960,7 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 		return;
 	}
-#endif
+#endif // ANDROID_ENABLED
 
 	Ref<InputEventKey> k = p_event;
 

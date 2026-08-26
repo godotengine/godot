@@ -91,7 +91,7 @@ void main() {
 	color = mix(color, vec4(100.0, 100.0, 100.0, 1.0), isnan(color));
 
 	imageStore(dest_buffer, pos + params.target, color);
-#endif
+#endif // MODE_MIPMAP
 
 #ifdef MODE_GAUSSIAN_BLUR
 
@@ -114,10 +114,11 @@ void main() {
 		local_cache[dest_index + 16 + 1] /= 1.0 + dot(local_cache[dest_index + 16 + 1].rgb, tonemap_col);
 	}
 	const float kernel[5] = { 0.2024, 0.1790, 0.1240, 0.0672, 0.0285 };
-#else
+#else // MODE_GLOW
+
 	// Simpler blur uses SIGMA2 for the gaussian kernel for a stronger effect.
 	const float kernel[4] = { 0.214607, 0.189879, 0.131514, 0.071303 };
-#endif
+#endif // MODE_GLOW
 	memoryBarrierShared();
 	barrier();
 

@@ -77,7 +77,7 @@ layout(set = 1, binding = 2, std430) buffer Counter {
 	uint sum;
 }
 counter;
-#endif
+#endif // ADAPTIVE
 
 layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
 layout(r8, set = 2, binding = 1) uniform image2D edges_weights_image;
@@ -376,7 +376,7 @@ void generate_SSIL(out vec3 r_color, out vec4 r_edges, out float r_obscurance, o
 			SSILTap(p_quality_level, color_sum, obscurance_sum, weight_sum, int(i), rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, weight_mod, norm_xy, norm_xy_length);
 		}
 	}
-#endif
+#endif // ADAPTIVE
 
 	// Early out for adaptive base
 	if (p_adaptive_base) {
@@ -431,10 +431,10 @@ void main() {
 
 	imageStore(dest_image, ssC, vec4(out_color, out_obscurance));
 	imageStore(edges_weights_image, ssC, vec4(out_weight / (float(SSIL_ADAPTIVE_TAP_BASE_COUNT) * 4.0)));
-#else
+#else // SSIL_BASE
 	generate_SSIL(out_color, out_edges, out_obscurance, out_weight, uv, params.quality, false); // pass in quality levels
 
 	imageStore(dest_image, ssC, vec4(out_color, out_obscurance));
 	imageStore(edges_weights_image, ssC, vec4(pack_edges(out_edges)));
-#endif
+#endif // SSIL_BASE
 }

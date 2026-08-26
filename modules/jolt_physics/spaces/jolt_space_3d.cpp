@@ -601,4 +601,4 @@ void JoltSpace3D::set_max_debug_contacts(int p_count) {
 	contact_listener->set_max_debug_contacts(p_count);
 }
 
-#endif
+#endif // DEBUG_ENABLED

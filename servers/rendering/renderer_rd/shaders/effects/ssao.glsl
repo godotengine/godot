@@ -83,7 +83,7 @@ layout(set = 1, binding = 2, std430) buffer Counter {
 	uint sum;
 }
 counter;
-#endif
+#endif // ADAPTIVE
 
 layout(rg8, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
 
@@ -407,7 +407,7 @@ void generate_SSAO_shadows_internal(out float r_shadow_term, out vec4 r_edges, o
 			SSAOTap(p_quality_level, obscurance_sum, weight_sum, int(i), rot_scale_matrix, pix_center_pos, pixel_normal, normalized_screen_pos, mip_offset, fallof_sq, weight_mod, norm_xy, norm_xy_length);
 		}
 	}
-#endif
+#endif // ADAPTIVE
 
 	// early out for adaptive base - just output weight (used for the next pass)
 	if (p_adaptive_base) {
@@ -477,5 +477,5 @@ void main() {
 	}
 
 	imageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), vec4(out_shadow_term, pack_edges(out_edges), 0.0, 0.0));
-#endif
+#endif // SSAO_BASE
 }

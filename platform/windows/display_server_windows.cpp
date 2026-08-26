@@ -2092,7 +2092,7 @@ void DisplayServerWindows::delete_sub_window(DisplayServerEnums::WindowID p_wind
 	if (rendering_context) {
 		rendering_context->window_destroy(p_window);
 	}
-#endif
+#endif // RD_ENABLED
 #ifdef GLES3_ENABLED
 #ifdef ANGLE_ENABLED
 	if (gl_manager_angle) {
@@ -2102,7 +2102,7 @@ void DisplayServerWindows::delete_sub_window(DisplayServerEnums::WindowID p_wind
 	if (gl_manager_native) {
 		gl_manager_native->window_destroy(p_window);
 	}
-#endif
+#endif // GLES3_ENABLED
 
 	_destroy_window(p_window);
 
@@ -2121,7 +2121,7 @@ void DisplayServerWindows::gl_window_make_current(DisplayServerEnums::WindowID p
 	if (gl_manager_native) {
 		gl_manager_native->window_make_current(p_window_id);
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 }
 
 int64_t DisplayServerWindows::window_get_native_handle(DisplayServerEnums::HandleType p_handle_type, DisplayServerEnums::WindowID p_window) const {
@@ -2168,7 +2168,7 @@ int64_t DisplayServerWindows::window_get_native_handle(DisplayServerEnums::Handl
 #endif
 			return 0;
 		}
-#endif
+#endif // defined(GLES3_ENABLED)
 		default: {
 			return 0;
 		}
@@ -4625,7 +4625,7 @@ void DisplayServerWindows::release_rendering_thread() {
 	if (gl_manager_native) {
 		gl_manager_native->release_current();
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 }
 
 void DisplayServerWindows::swap_buffers() {
@@ -4638,7 +4638,7 @@ void DisplayServerWindows::swap_buffers() {
 	if (gl_manager_native) {
 		gl_manager_native->swap_buffers();
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 }
 
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
@@ -5080,7 +5080,7 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServerEnums::VSyncMode p
 		gl_manager_angle->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
 #endif
-#endif
+#endif // defined(GLES3_ENABLED)
 }
 
 DisplayServerEnums::VSyncMode DisplayServerWindows::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
@@ -5100,7 +5100,7 @@ DisplayServerEnums::VSyncMode DisplayServerWindows::window_get_vsync_mode(Displa
 		return gl_manager_angle->is_using_vsync() ? DisplayServerEnums::VSYNC_ENABLED : DisplayServerEnums::VSYNC_DISABLED;
 	}
 #endif
-#endif
+#endif // defined(GLES3_ENABLED)
 	return DisplayServerEnums::VSYNC_ENABLED;
 }
 
@@ -5115,7 +5115,7 @@ bool DisplayServerWindows::window_is_hdr_output_supported(DisplayServerEnums::Wi
 		renderer_supports_hdr_output = true;
 		surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 	}
-#endif
+#endif // defined(RD_ENABLED)
 	if (!renderer_supports_hdr_output) {
 		return false;
 	}
@@ -5141,7 +5141,7 @@ void DisplayServerWindows::window_request_hdr_output(const bool p_enable, Displa
 			renderer_supports_hdr_output = true;
 			surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 		}
-#endif
+#endif // defined(RD_ENABLED)
 		if (!renderer_supports_hdr_output) {
 			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
 			return;
@@ -5204,7 +5204,7 @@ void DisplayServerWindows::window_set_hdr_output_reference_luminance(const float
 			rendering_context->window_set_hdr_output_reference_luminance(p_window, p_reference_luminance);
 			_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 		}
-#endif
+#endif // defined(RD_ENABLED)
 	}
 }
 
@@ -5252,7 +5252,7 @@ void DisplayServerWindows::window_set_hdr_output_max_luminance(const float p_max
 			rendering_context->window_set_hdr_output_max_luminance(p_window, p_max_luminance);
 			_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 		}
-#endif
+#endif // defined(RD_ENABLED)
 	}
 }
 
@@ -6760,7 +6760,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
 					rendering_context->window_set_size(window_id, window.width + off.x, window.height + off.y);
 				}
-#endif
+#endif // defined(RD_ENABLED)
 #if defined(GLES3_ENABLED)
 				if (window.create_completed && gl_manager_native && window.gl_native_window_created) {
 					gl_manager_native->window_resize(window_id, window.width + off.x, window.height + off.y);
@@ -6770,7 +6770,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					gl_manager_angle->window_resize(window_id, window.width + off.x, window.height + off.y);
 				}
 #endif
-#endif
+#endif // defined(GLES3_ENABLED)
 			}
 
 			if (!window.minimized && (!(window_pos_params->flags & SWP_NOMOVE) || window_pos_params->flags & SWP_FRAMECHANGED)) {
@@ -7562,7 +7562,7 @@ Error DisplayServerWindows::_create_rendering_context_window(DisplayServerEnums:
 		wpd.vulkan.window = wd.hWnd;
 		wpd.vulkan.instance = hInstance;
 	}
-#endif
+#endif // VULKAN_ENABLED
 #ifdef D3D12_ENABLED
 	if (p_rendering_driver == "d3d12") {
 		wpd.d3d12.window = wd.hWnd;
@@ -7588,7 +7588,7 @@ void DisplayServerWindows::_destroy_rendering_context_window(DisplayServerEnums:
 	rendering_context->window_destroy(p_window_id);
 	wd.rendering_context_window_created = false;
 }
-#endif
+#endif // RD_ENABLED
 
 #ifdef GLES3_ENABLED
 Error DisplayServerWindows::_create_gl_window(DisplayServerEnums::WindowID p_window_id) {
@@ -7609,11 +7609,11 @@ Error DisplayServerWindows::_create_gl_window(DisplayServerEnums::WindowID p_win
 
 		wd.gl_angle_window_created = true;
 	}
-#endif
+#endif // ANGLE_ENABLED
 
 	return OK;
 }
-#endif
+#endif // GLES3_ENABLED
 
 BitField<DisplayServerWindows::DriverID> DisplayServerWindows::tested_drivers = 0;
 
@@ -8068,7 +8068,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 			RegSetValueExW(key, (LPCWSTR)value_name.utf16().get_data(), 0, REG_SZ, (const BYTE *)cs_name.get_data(), cs_name.size() * sizeof(WCHAR));
 			RegCloseKey(key);
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 	SetCurrentProcessExplicitAppUserModelID((PCWSTR)appname.utf16().get_data());
 
@@ -8133,13 +8133,13 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 			rendering_context = memnew(RenderingContextDriverVulkanWindows);
 			tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
 		}
-#endif
+#endif // VULKAN_ENABLED
 #ifdef D3D12_ENABLED
 		if (tested_rendering_driver == "d3d12") {
 			rendering_context = memnew(RenderingContextDriverD3D12);
 			tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
 		}
-#endif
+#endif // D3D12_ENABLED
 		if (rendering_context != nullptr) {
 			if (rendering_context->initialize() == OK) {
 				// The window needs to be recreated when this value differs, because it cannot be added or removed after creation.
@@ -8209,13 +8209,13 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 			rendering_driver_failed = false;
 		}
 	}
-#endif
+#endif // GLES3_ENABLED
 
 	if (rendering_driver_failed) {
 		r_error = ERR_UNAVAILABLE;
 		return;
 	}
-#endif
+#endif // RD_ENABLED
 
 #if defined(GLES3_ENABLED)
 #if defined(ANGLE_ENABLED)
@@ -8233,7 +8233,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		r_error = ERR_UNAVAILABLE;
 		ERR_FAIL_MSG("Could not initialize OpenGL.");
 #endif
-#else
+#else // defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
 		typedef BOOL(WINAPI * IsWow64Process2Ptr)(HANDLE, USHORT *, USHORT *);
 
 		IsWow64Process2Ptr IsWow64Process2 = (IsWow64Process2Ptr)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process2");
@@ -8253,7 +8253,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 #endif
 			}
 		}
-#endif
+#endif // defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
 	}
 
 #if defined(ANGLE_ENABLED)
@@ -8332,7 +8332,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 			ERR_FAIL_MSG("Could not initialize native OpenGL.");
 		}
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 
 	bool should_create_main_window = true;
 	bool no_redirection_bitmap = false;
@@ -8351,7 +8351,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 			should_create_main_window = false;
 		}
 	}
-#endif
+#endif // RD_ENABLED
 
 	if (should_create_main_window) {
 		if (_create_window(DisplayServerEnums::MAIN_WINDOW_ID, p_mode, p_flags, Rect2i(window_position, p_resolution), false, DisplayServerEnums::INVALID_WINDOW_ID, parent_hwnd, no_redirection_bitmap) != OK) {
@@ -8383,8 +8383,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		}
 		RasterizerGLES3::make_current(false);
 	}
-#endif
-#endif
+#endif // ANGLE_ENABLED
+#endif // GLES3_ENABLED
 
 	window_set_vsync_mode(p_vsync_mode, DisplayServerEnums::MAIN_WINDOW_ID);
 
@@ -8395,7 +8395,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		memdelete(joypad_sdl);
 		joypad_sdl = nullptr;
 	}
-#endif
+#endif // SDL_ENABLED
 
 	for (int i = 0; i < DisplayServerEnums::WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
@@ -8423,7 +8423,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		}
 		_THREAD_SAFE_UNLOCK_
 	}
-#endif
+#endif // ACCESSKIT_ENABLED
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -8433,7 +8433,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 
 		RendererCompositorRD::make_current();
 	}
-#endif
+#endif // defined(RD_ENABLED)
 
 	if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->is_in_low_processor_usage_mode()) {
 		// Increase priority for projects that are not in low-processor mode (typically games)
@@ -8476,7 +8476,7 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 #ifdef ANGLE_ENABLED
 	drivers.push_back("opengl3_angle");
 #endif
-#endif
+#endif // GLES3_ENABLED
 	drivers.push_back("dummy");
 
 	return drivers;
@@ -8603,7 +8603,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 		if (rendering_context) {
 			rendering_context->window_destroy(DisplayServerEnums::MAIN_WINDOW_ID);
 		}
-#endif
+#endif // RD_ENABLED
 		_destroy_window(DisplayServerEnums::MAIN_WINDOW_ID);
 	}
 
@@ -8617,7 +8617,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 		memdelete(rendering_context);
 		rendering_context = nullptr;
 	}
-#endif
+#endif // RD_ENABLED
 
 	if (restore_mouse_trails > 1) {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);
@@ -8628,12 +8628,12 @@ DisplayServerWindows::~DisplayServerWindows() {
 		memdelete(gl_manager_angle);
 		gl_manager_angle = nullptr;
 	}
-#endif
+#endif // ANGLE_ENABLED
 	if (gl_manager_native) {
 		memdelete(gl_manager_native);
 		gl_manager_native = nullptr;
 	}
-#endif
+#endif // GLES3_ENABLED
 	memdelete(tts);
 
 	OleUninitialize();

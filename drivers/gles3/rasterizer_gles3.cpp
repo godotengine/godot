@@ -77,7 +77,7 @@
 #else
 #define GLAPIENTRY
 #endif
-#endif
+#endif // GLAPIENTRY
 
 #include <platform_gl.h>
 
@@ -272,7 +272,7 @@ RasterizerGLES3::RasterizerGLES3() {
 		if (!glad_loaded && gladLoaderLoadGLES2()) {
 			glad_loaded = true;
 		}
-#endif
+#endif // GLES_API_ENABLED
 	}
 
 	// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of

@@ -381,7 +381,7 @@ public:
 				can_upload[i] = true;
 			}
 		}
-#endif
+#endif // DEV_ENABLED
 		return !p_append;
 	}
 

@@ -216,7 +216,7 @@ static bool _filter_drive(struct mntent *mnt) {
 	// Ignore everything else
 	return false;
 }
-#endif
+#endif // __has_include(<mntent.h>) && defined(LINUXBSD_ENABLED)
 
 static void _get_drives(List<String> *list) {
 	// Add root.
@@ -241,7 +241,7 @@ static void _get_drives(List<String> *list) {
 
 		endmntent(mtab);
 	}
-#endif
+#endif // __has_include(<mntent.h>) && defined(LINUXBSD_ENABLED)
 
 	// Add $HOME.
 	const char *home = getenv("HOME");
@@ -680,9 +680,9 @@ String DirAccessUnix::get_filesystem_type() const {
 		default:
 			return "";
 	}
-#else
+#else // __linux__
 	return ""; //TODO this should be implemented
-#endif
+#endif // __linux__
 }
 
 bool DirAccessUnix::is_hidden(const String &p_name) {
@@ -706,7 +706,7 @@ bool DirAccessUnix::is_case_sensitive(const String &p_path) const {
 		}
 		::close(fd);
 	}
-#endif
+#endif // defined(LINUXBSD_ENABLED)
 	return true;
 }
 

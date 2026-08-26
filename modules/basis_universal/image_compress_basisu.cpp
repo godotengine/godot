@@ -47,7 +47,7 @@ GODOT_GCC_WARNING_IGNORE("-Wunused-value")
 
 static Mutex init_mutex;
 static bool initialized = false;
-#endif
+#endif // TOOLS_ENABLED
 
 GODOT_GCC_WARNING_POP
 

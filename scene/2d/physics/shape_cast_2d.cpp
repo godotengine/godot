@@ -274,7 +274,7 @@ void ShapeCast2D::_notification(int p_what) {
 
 				draw_primitive(pts, cols, Vector<Vector2>());
 			}
-#endif
+#endif // TOOLS_ENABLED
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {

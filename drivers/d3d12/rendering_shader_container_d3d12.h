@@ -136,7 +136,7 @@ protected:
 	static void _nir_report_resource(uint32_t p_register, uint32_t p_space, uint32_t p_dxil_type, void *p_data);
 	static void _nir_report_sc_bit_offset(uint32_t p_sc_id, uint64_t p_bit_offset, void *p_data);
 	static void _nir_report_bitcode_bit_offset(uint64_t p_bit_offset, void *p_data);
-#endif
+#endif // NIR_ENABLED
 
 	// RenderingShaderContainer overrides.
 	virtual uint32_t _format() const override;

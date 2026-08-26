@@ -272,7 +272,7 @@ void JavaScriptObjectImpl::callback(void *p_ref, int p_args_id, int p_argc) {
 		callable_mp_static(JavaScriptObjectImpl::_callback).call_deferred(obj, arg);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_callback(obj, arg);
 }

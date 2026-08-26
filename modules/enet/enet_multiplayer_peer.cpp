@@ -443,7 +443,7 @@ void ENetMultiplayerPeer::set_refuse_new_connections(bool p_enabled) {
 			E.value->refuse_new_connections(p_enabled);
 		}
 	}
-#endif
+#endif // GODOT_ENET
 	MultiplayerPeer::set_refuse_new_connections(p_enabled);
 }
 

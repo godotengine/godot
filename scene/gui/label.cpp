@@ -1110,7 +1110,7 @@ bool Label::_set(const StringName &p_name, const Variant &p_value) {
 	}
 	return false;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 int Label::get_line_count() const {
 	if (!is_inside_tree()) {

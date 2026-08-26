@@ -75,4 +75,4 @@ public:
 	}
 };
 
-#endif
+#endif // DEBUG_ENABLED

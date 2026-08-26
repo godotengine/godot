@@ -60,7 +60,7 @@
 #if !defined(FT_CONFIG_OPTION_USE_BROTLI) && !defined(_MSC_VER)
 #warning FreeType is configured without Brotli support, built-in fonts will not be available.
 #endif
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 /*************************************************************************/
 

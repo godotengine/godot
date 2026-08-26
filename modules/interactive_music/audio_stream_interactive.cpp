@@ -76,7 +76,7 @@ void AudioStreamInteractive::set_clip_count(int p_count) {
 			initial_clip = 0;
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 	clip_count = p_count;
 	AudioServer::get_singleton()->unlock();
 
@@ -134,7 +134,7 @@ void AudioStreamInteractive::set_clip_stream(int p_clip, const Ref<AudioStream> 
 			}
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 #ifdef TOOLS_ENABLED
 	stream_name_cache = "";
@@ -415,7 +415,7 @@ String AudioStreamInteractive::_get_streams_hint() const {
 	return stream_name_cache;
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 void AudioStreamInteractive::_validate_property(PropertyInfo &r_property) const {
 	String prop = r_property.name;
@@ -434,7 +434,7 @@ void AudioStreamInteractive::_validate_property(PropertyInfo &r_property) const 
 			r_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 		r_property.hint_string = _get_streams_hint();
-#endif
+#endif // TOOLS_ENABLED
 	} else if (prop.begins_with("clip_") && prop != "clip_count") {
 		int clip = prop.get_slicec('_', 1).to_int();
 		if (clip >= clip_count) {

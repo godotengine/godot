@@ -67,7 +67,7 @@ layout(std140) uniform MaterialUniforms{ //ubo:0
 #MATERIAL_UNIFORMS
 
 };
-#endif
+#endif // MATERIAL_UNIFORMS_USED
 
 #GLOBALS
 

@@ -87,4 +87,4 @@ public:
 	~WebRTCPeerConnectionJS();
 };
 
-#endif
+#endif // WEB_ENABLED

@@ -74,7 +74,7 @@ void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
 		EditorPlugins::add_by_type<NavigationRegion3DEditorPlugin>();
 		EditorPlugins::add_by_type<NavigationObstacle3DEditorPlugin>();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void uninitialize_navigation_3d_module(ModuleInitializationLevel p_level) {

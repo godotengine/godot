@@ -70,7 +70,7 @@ String RenderingLightCuller::Data::plane_bitfield_to_string(unsigned int BF) {
 
 	return sz;
 }
-#endif
+#endif // RENDERING_LIGHT_CULLER_DEBUG_STRINGS
 
 void RenderingLightCuller::prepare_directional_light_begin(const RendererSceneCull::Instance *p_instance, int32_t p_directional_light_id) {
 	// Something is probably going wrong, we shouldn't have this many directional lights...
@@ -239,7 +239,7 @@ void RenderingLightCuller::cull_regular_light(PagedArray<RendererSceneCull::Inst
 			print_line("[" + itos(data.debug_count) + "] linear cull before " + itos(count_before) + " after " + itos(r_instance_shadow_cull_result.size()));
 		}
 	}
-#endif
+#endif // LIGHT_CULLER_DEBUG_LOGGING
 }
 
 void RenderingLightCuller::LightCullPlanes::add_cull_plane(const Plane &p) {
@@ -288,10 +288,10 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 
 	// each edge forms a plane
 	int n_edges = entry.size() - 1;
-#else
+#else // RENDERING_LIGHT_CULLER_CALCULATE_LUT
 	uint8_t *entry = &data.LUT_entries[lookup][0];
 	int n_edges = data.LUT_entry_sizes[lookup] - 1;
-#endif
+#endif // RENDERING_LIGHT_CULLER_CALCULATE_LUT
 
 	const Vector3 *const frustum_points = p_cull_frustum.frustum_points;
 
@@ -534,7 +534,7 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 			print_line("switching light culler " + String(Variant(data.light_culling_active)));
 		}
 	}
-#endif
+#endif // LIGHT_CULLER_DEBUG_FLASH
 
 	if (!data.is_active()) {
 		return false;
@@ -555,13 +555,13 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 			print_line("LightCuller directional light " + itos(n) + " rejected " + itos(data.directional_cull_planes[n].rejected_count) + " instances.");
 		}
 	}
-#endif
+#endif // LIGHT_CULLER_DEBUG_DIRECTIONAL_LIGHT
 #ifdef LIGHT_CULLER_DEBUG_REGULAR_LIGHT
 	if (data.regular_rejected_count) {
 		print_line("LightCuller regular lights rejected " + itos(data.regular_rejected_count) + " instances.");
 	}
 	data.regular_rejected_count = 0;
-#endif
+#endif // LIGHT_CULLER_DEBUG_REGULAR_LIGHT
 
 	data.directional_cull_planes.resize(0);
 
@@ -571,7 +571,7 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 			print_line("plane " + itos(p) + " : " + String(data.frustum_planes[p]));
 		}
 	}
-#endif
+#endif // LIGHT_CULLER_DEBUG_LOGGING
 
 	return create_frustum_points(&data.frustum_planes[0], data.frustum_points);
 }
@@ -1188,4 +1188,4 @@ void RenderingLightCuller::get_corners_of_planes(PlaneOrder p_plane_a, PlaneOrde
 	r_points[1] = fp_table[p_plane_a][p_plane_b][1];
 }
 
-#endif
+#endif // RENDERING_LIGHT_CULLER_CALCULATE_LUT

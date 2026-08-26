@@ -1024,7 +1024,7 @@ private:
 	RID _vertex_buffer_create_bind_compat_101561(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, bool p_use_as_storage);
 	RID _index_buffer_create_bind_compat_101561(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices);
 	RID _storage_buffer_create_bind_compat_101561(uint32_t p_size, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage);
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	RenderingDeviceDriver *get_device_driver() const { return driver; }
@@ -1223,7 +1223,8 @@ private:
 			uint32_t primitive_minimum = 0;
 			uint32_t primitive_divisor = 0;
 		} validation;
-#endif
+#endif // DEBUG_ENABLED
+
 		// Actual pipeline.
 		RID shader;
 		RDD::ShaderID shader_driver_id;
@@ -1489,12 +1490,12 @@ private:
 			uint32_t pipeline_push_constant_size = 0;
 			bool pipeline_push_constant_supplied = false;
 		} validation;
-#else
+#else // DEBUG_ENABLED
 		struct Validation {
 			uint32_t vertex_array_size = 0;
 			uint32_t index_array_count = 0;
 		} validation;
-#endif
+#endif // DEBUG_ENABLED
 	};
 
 	DrawList draw_list;
@@ -1615,7 +1616,7 @@ private:
 			uint32_t pipeline_push_constant_size = 0;
 			bool pipeline_push_constant_supplied = false;
 		} validation;
-#endif
+#endif // DEBUG_ENABLED
 	};
 
 	RaytracingList raytracing_list;
@@ -1669,7 +1670,7 @@ private:
 			uint32_t pipeline_push_constant_size = 0;
 			bool pipeline_push_constant_supplied = false;
 		} validation;
-#endif
+#endif // DEBUG_ENABLED
 	};
 
 	ComputeList compute_list;

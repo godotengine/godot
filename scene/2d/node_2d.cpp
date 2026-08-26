@@ -114,7 +114,7 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 
 	_update_transform();
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void Node2D::_set_xform_dirty(bool p_dirty) const {
 	if (is_group_processing()) {

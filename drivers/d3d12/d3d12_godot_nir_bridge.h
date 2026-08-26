@@ -38,7 +38,7 @@
 #include <cstdint>
 
 extern "C" {
-#endif
+#endif // __cplusplus
 
 // This one leaves room for potentially extremely copious bindings in a set.
 static const uint32_t GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER = 100000000;

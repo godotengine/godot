@@ -65,7 +65,7 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 	} else {
 		popup_centered_clamped(Size2(1200, 700) * EDSCALE, 0.8);
 	}
-#endif
+#endif // ANDROID_ENABLED
 
 	_add_feature_overrides();
 	general_settings_inspector->update_category_list();

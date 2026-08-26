@@ -460,11 +460,11 @@ vec3 apply_color_correction(vec3 color) {
 	color.b = texture(source_color_correction, vec2(color.b, 0.0f)).b;
 	return color;
 }
-#else
+#else // USE_1D_LUT
 vec3 apply_color_correction(vec3 color) {
 	return textureLod(source_color_correction, color, 0.0).rgb;
 }
-#endif
+#endif // USE_1D_LUT
 
 // FXAA 3.11 compact, Ported from https://github.com/kosua20/Rendu/blob/master/resources/common/shaders/screens/fxaa.frag
 ///////////////////////////////////////////////////////////////////////////////////
@@ -688,7 +688,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	vec3 finalColor = textureLod(source_color, finalUv, 0.0).xyz * exposure * params.luminance_multiplier;
 	return finalColor;
 
-#else
+#else // USE_MULTIVIEW
 	float lumaUp = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(0, 1)).xyz * exposure * params.luminance_multiplier);
 	float lumaDown = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(0, -1)).xyz * exposure * params.luminance_multiplier);
 	float lumaLeft = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(-1, 0)).xyz * exposure * params.luminance_multiplier);
@@ -832,7 +832,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	vec3 finalColor = textureLod(source_color, finalUv, 0.0).xyz * exposure * params.luminance_multiplier;
 	return finalColor;
 
-#endif
+#endif // USE_MULTIVIEW
 }
 
 // From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf

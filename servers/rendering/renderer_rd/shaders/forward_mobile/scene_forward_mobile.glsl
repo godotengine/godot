@@ -130,7 +130,7 @@ layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms
 #MATERIAL_UNIFORMS
 } material;
 /* clang-format on */
-#endif
+#endif // MATERIAL_UNIFORMS_USED
 
 #ifdef MODE_DUAL_PARABOLOID
 
@@ -197,7 +197,7 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 	s = quick_two_sum(s, se, out_precision);
 	return s;
 }
-#endif
+#endif // USE_DOUBLE_PRECISION
 
 uint multimesh_stride() {
 	uint stride = sc_multimesh_format_2d() ? 2 : 3;
@@ -214,7 +214,7 @@ void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position
 #endif
 		out vec3 r_tangent,
 		out vec3 r_binormal,
-#endif
+#endif // defined(NORMAL_USED) || defined(TANGENT_USED)
 		out vec3 r_vertex) {
 
 	r_vertex = p_vertex_in.xyz * p_compressed_aabb_size + p_compressed_aabb_position;
@@ -243,7 +243,7 @@ void _unpack_vertex_attributes(vec4 p_vertex_in, vec3 p_compressed_aabb_position
 		axis_angle_to_tbn(axis, angle, r_tangent, r_binormal, r_normal);
 		r_binormal *= binormal_sign;
 	}
-#endif
+#endif // defined(NORMAL_USED) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 }
 
 void vertex_shader(in vec3 vertex,
@@ -348,7 +348,7 @@ void vertex_shader(in vec3 vertex,
 		color_highp *= pcolor;
 #endif
 
-#else
+#else // USE_PARTICLE_TRAILS
 		uint stride = multimesh_stride();
 		uint offset = stride * (INSTANCE_INDEX + multimesh_offset);
 
@@ -371,7 +371,8 @@ void vertex_shader(in vec3 vertex,
 			instance_custom = transforms.data[offset];
 		}
 
-#endif
+#endif // USE_PARTICLE_TRAILS
+
 		//transpose
 		matrix = transpose(matrix);
 
@@ -430,7 +431,7 @@ void vertex_shader(in vec3 vertex,
 	tangent_highp = mat3(model_matrix) * tangent_highp;
 	binormal_highp = mat3(model_matrix) * binormal_highp;
 #endif
-#endif
+#endif // !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
 #ifdef Z_CLIP_SCALE_USED
 	float z_clip_scale = 1.0;
@@ -461,9 +462,9 @@ void vertex_shader(in vec3 vertex,
 	vec3 temp_precision; // Will be ignored.
 	modelview[3].xyz = double_add_vec3(model_origin, model_precision, inv_view_matrix[3].xyz, view_precision, temp_precision);
 	modelview[3].xyz = mat3(read_view_matrix) * modelview[3].xyz;
-#else
+#else // USE_DOUBLE_PRECISION
 	mat4 modelview = read_view_matrix * model_matrix;
-#endif
+#endif // USE_DOUBLE_PRECISION
 	mat3 modelview_normal = mat3(read_view_matrix) * model_normal_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
 
@@ -510,7 +511,7 @@ void vertex_shader(in vec3 vertex,
 	binormal_highp = (read_view_matrix * vec4(binormal_highp, 0.0)).xyz;
 	tangent_highp = (read_view_matrix * vec4(tangent_highp, 0.0)).xyz;
 #endif
-#endif
+#endif // !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
 	vertex_interp = vertex;
 
@@ -633,7 +634,7 @@ void vertex_shader(in vec3 vertex,
 	vtx.z = vtx.z * 2.0 - 1.0;
 	vertex_interp = vtx;
 
-#endif
+#endif // MODE_DUAL_PARABOLOID
 
 #endif //MODE_RENDER_DEPTH
 
@@ -692,7 +693,7 @@ void vertex_shader(in vec3 vertex,
 	} else {
 		gl_PointSize = point_size;
 	}
-#endif
+#endif // POINT_SIZE_USED
 }
 
 void main() {
@@ -717,7 +718,7 @@ void main() {
 #endif
 			prev_tangent,
 			prev_binormal,
-#endif
+#endif // defined(NORMAL_USED) || defined(TANGENT_USED)
 			prev_vertex);
 
 	vertex_shader(prev_vertex,
@@ -754,7 +755,8 @@ void main() {
 			scene_data_block.prev_data.viewport_size,
 			scene_data_block.prev_data.directional_light_count,
 			prev_screen_position);
-#else
+#else // defined(MODE_RENDER_MOTION_VECTORS)
+
 	// Unused output.
 	vec4 screen_position;
 #endif // MODE_RENDER_MOTION_VECTORS
@@ -779,7 +781,7 @@ void main() {
 #endif
 			tangent,
 			binormal,
-#endif
+#endif // defined(NORMAL_USED) || defined(TANGENT_USED)
 			vertex);
 
 	vertex_shader(vertex,
@@ -936,7 +938,7 @@ layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms
 #MATERIAL_UNIFORMS
 } material;
 /* clang-format on */
-#endif
+#endif // MATERIAL_UNIFORMS_USED
 
 #GLOBALS
 
@@ -1004,7 +1006,7 @@ hvec4 fog_process(vec3 vertex) {
 		vec3 sky_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cube_uv, roughness_lod), cube_lod).rgb;
 		vec3 sky_sample_b = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cube_uv, roughness_lod + 1), cube_lod).rgb;
 		sky_fog_color = mix(sky_sample_a, sky_sample_b, blend);
-#else
+#else // USE_RADIANCE_OCTMAP_ARRAY
 		float roughness_lod = mip_level * MAX_ROUGHNESS_LOD;
 		vec2 cube_uv = vec3_to_oct_with_border(cube_view, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
 		sky_fog_color = textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_uv, roughness_lod).rgb;
@@ -1063,13 +1065,13 @@ void main() {
 	} else if (uc_cull_mode() == POLYGON_CULL_FRONT && front_facing) {
 		discard;
 	}
-#endif
+#endif // UBERSHADER
 #ifdef MODE_DUAL_PARABOLOID
 
 	if (dp_clip > 0.0) {
 		discard;
 	}
-#endif
+#endif // MODE_DUAL_PARABOLOID
 
 	//lay out everything, whatever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
@@ -1117,7 +1119,7 @@ void main() {
 #else // TANGENT_USED || NORMAL_MAP_USED || LIGHT_ANISOTROPY_USED || BENT_NORMAL_MAP_USED
 	vec3 binormal_highp = vec3(0.0);
 	vec3 tangent_highp = vec3(0.0);
-#endif
+#endif // defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) || defined(BENT_NORMAL_MAP_USED)
 
 #ifdef NORMAL_USED
 	vec3 normal_highp = normal_interp;
@@ -1205,8 +1207,8 @@ void main() {
 	}
 #else // !POINT_SIZE_USED
 	vec2 point_coord = vec2(0.5);
-#endif
-#endif
+#endif // POINT_SIZE_USED
+#endif // POINT_COORD_USED
 
 	{
 #CODE : FRAGMENT
@@ -1292,7 +1294,7 @@ void main() {
 #else
 	transmittance_color.a *= sss_strength;
 #endif
-#endif
+#endif // LIGHT_TRANSMITTANCE_USED
 
 #ifndef USE_SHADOW_TO_OPACITY
 
@@ -1303,7 +1305,7 @@ void main() {
 	} else {
 		alpha = half(1.0);
 	}
-#else
+#else // MODE_RENDER_MATERIAL
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
@@ -1319,7 +1321,7 @@ void main() {
 	} else {
 		alpha = half(1.0);
 	}
-#else
+#else // MODE_RENDER_MATERIAL
 	if (alpha < compute_alpha_hash_threshold(object_pos, alpha_hash_scale)) {
 		discard;
 	}
@@ -1365,7 +1367,7 @@ void main() {
 	bent_normal_map.z = sqrt(max(half(0.0), half(1.0) - dot(bent_normal_map.xy, bent_normal_map.xy)));
 
 	bent_normal_vector = normalize(tangent * bent_normal_map.x + binormal * bent_normal_map.y + normal * bent_normal_map.z);
-#endif
+#endif // BENT_NORMAL_MAP_USED
 
 #ifdef LIGHT_ANISOTROPY_USED
 
@@ -1376,7 +1378,7 @@ void main() {
 		binormal = normalize(rot * hvec3(-anisotropy_flow.y, anisotropy_flow.x, 0.0));
 	}
 
-#endif
+#endif // LIGHT_ANISOTROPY_USED
 
 #ifdef ENABLE_CLIP_ALPHA
 #ifdef MODE_RENDER_MATERIAL
@@ -1388,13 +1390,13 @@ void main() {
 		albedo.a = half(1.0);
 		alpha = half(1.0);
 	}
-#else
+#else // MODE_RENDER_MATERIAL
 	if (albedo.a < half(0.99)) {
 		//used for doublepass and shadowmapping
 		discard;
 	}
 #endif // MODE_RENDER_MATERIAL
-#endif
+#endif // ENABLE_CLIP_ALPHA
 
 	/////////////////////// FOG //////////////////////
 #ifndef MODE_RENDER_DEPTH
@@ -1538,10 +1540,10 @@ void main() {
 		hvec3 bent_normal = normalize(mix(indirect_normal, anisotropic_normal, anisotropy * clamp(half(5.0) * roughness, half(0.0), half(1.0))));
 		hvec3 ref_vec = reflect(-view, bent_normal);
 		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
-#else
+#else // LIGHT_ANISOTROPY_USED
 		hvec3 ref_vec = reflect(-view, indirect_normal);
 		ref_vec = mix(ref_vec, indirect_normal, roughness * roughness);
-#endif
+#endif // LIGHT_ANISOTROPY_USED
 		half horizon = min(half(1.0) + dot(ref_vec, indirect_normal), half(1.0));
 		ref_vec = hvec3(scene_data.radiance_inverse_xform * vec3(ref_vec));
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
@@ -1614,7 +1616,7 @@ void main() {
 		hvec3 clearcoat_sample_a = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod), ref_lod).rgb);
 		hvec3 clearcoat_sample_b = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod + 1), ref_lod).rgb);
 		hvec3 clearcoat_light = mix(clearcoat_sample_a, clearcoat_sample_b, blend);
-#else
+#else // USE_RADIANCE_OCTMAP_ARRAY
 		vec2 ref_uv = vec3_to_oct_with_border(cc_radiance_ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
 		hvec3 clearcoat_light = hvec3(textureLod(sampler2D(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), ref_uv, roughness_lod).rgb);
 
@@ -1776,9 +1778,9 @@ void main() {
 		hvec3 anisotropic_tangent = cross(anisotropic_direction, view);
 		hvec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
 		hvec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(half(5.0) * roughness, half(0.0), half(1.0))));
-#else
+#else // LIGHT_ANISOTROPY_USED
 		hvec3 bent_normal = normal;
-#endif
+#endif // LIGHT_ANISOTROPY_USED
 		hvec3 ref_vec = normalize(reflect(-view, bent_normal));
 		// Interpolate between mirror and rough reflection by using linear_roughness * linear_roughness.
 		ref_vec = mix(ref_vec, bent_normal, roughness * roughness * roughness * roughness);
@@ -1874,7 +1876,7 @@ void main() {
 	// 1.5. We recompute f0 by first computing its IOR, then reconverting to f0
 	// by using the correct interface
 	f0 = mix(f0, f0_Clear_Coat_To_Surface(f0), clearcoat);
-#endif
+#endif // LIGHT_CLEARCOAT_USED
 
 #ifndef AMBIENT_LIGHT_DISABLED
 	{
@@ -1909,7 +1911,7 @@ void main() {
 
 		// We don't need a BRDF approximation for clearcoat, so we can use the fresnel directly.
 		indirect_specular_light += cc_specular_light * F;
-#endif
+#endif // LIGHT_CLEARCOAT_USED
 
 #endif // DIFFUSE_TOON
 	}
@@ -2066,7 +2068,7 @@ void main() {
 					} else if (shadowmask_mode == LIGHTMAP_SHADOWMASK_MODE_OVERLAY) {
 						shadow = shadowmask * mix(shadow, half(1.0), half(smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z))); //done with negative values for performance
 					} else {
-#endif
+#endif // USE_LIGHTMAP
 						shadow = mix(shadow, half(1.0), half(smoothstep(directional_lights.data[i].fade_from, directional_lights.data[i].fade_to, vertex.z)));
 #ifdef USE_LIGHTMAP
 					}
@@ -2128,7 +2130,7 @@ void main() {
 			}
 			tint = mix(tint, vec3(1.0), float(shadow));
 			shadow = half(1.0);
-#endif
+#endif // DEBUG_DRAW_PSSM_SPLITS
 
 			float size_A = sc_use_light_soft_shadows() ? directional_lights.data[i].size : 0.0;
 
@@ -2145,7 +2147,7 @@ void main() {
 					transmittance_depth,
 					transmittance_boost,
 					transmittance_z,
-#endif
+#endif // LIGHT_TRANSMITTANCE_USED
 */
 #ifdef LIGHT_RIM_USED
 					rim, rim_tint,
@@ -2273,7 +2275,7 @@ void main() {
 	} else {
 		alpha = half(1.0);
 	}
-#else
+#else // MODE_RENDER_MATERIAL
 	if (alpha < alpha_scissor_threshold) {
 		discard;
 	}
@@ -2393,5 +2395,5 @@ void main() {
 	vec3 prev_ndc = prev_screen_position.xyz / prev_screen_position.w;
 	prev_ndc.y = -prev_ndc.y;
 	frag_color = vec4(ndc - prev_ndc, 0.0);
-#endif
+#endif // MODE_RENDER_MOTION_VECTORS
 }

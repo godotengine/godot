@@ -56,7 +56,7 @@ GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4458) // "Declaration of 'identifier' hides c
 
 GODOT_GCC_WARNING_POP
 GODOT_MSVC_WARNING_POP
-#endif
+#endif // MODULE_MSDFGEN_ENABLED
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include FT_SFNT_NAMES_H
@@ -64,7 +64,7 @@ GODOT_MSVC_WARNING_POP
 #ifdef MODULE_SVG_ENABLED
 #include "thorvg_svg_in_ot.h"
 #endif
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 /*************************************************************************/
 
@@ -501,7 +501,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 	}
 	return chr;
 }
-#endif
+#endif // MODULE_MSDFGEN_ENABLED
 
 #ifdef MODULE_FREETYPE_ENABLED
 _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitmap(FontForSizeFallback *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const {
@@ -623,7 +623,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 	chr.rect.size = chr.uv_rect.size * p_data->scale;
 	return chr;
 }
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 /*************************************************************************/
 /* Font Cache                                                            */
@@ -806,7 +806,7 @@ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data, const Vector2i
 		r_glyph = E->value;
 		return gl.found;
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	E = fd->glyph_map.insert(p_glyph, FontGlyph());
 	r_glyph = E->value;
 	return false;
@@ -1008,7 +1008,7 @@ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_font_data, const
 				}
 			}
 		}
-#endif
+#endif // defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 
 		// Write variations.
 		if (p_font_data->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
@@ -1041,14 +1041,14 @@ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_font_data, const
 			FT_Set_Var_Design_Coordinates(p_font_data->face, coords.size(), coords.ptrw());
 			FT_Done_MM_Var(ft_library, amaster);
 		}
-#else
+#else // MODULE_FREETYPE_ENABLED
 		memdelete(fd);
 		if (p_silent) {
 			return false;
 		} else {
 			ERR_FAIL_V_MSG(false, "FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
 		}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	}
 
 	fd->owner = p_font_data;
@@ -1244,7 +1244,7 @@ int64_t TextServerFallback::_font_get_face_count(const RID &p_font_rid) const {
 			face_count = tmp_face->num_faces;
 			FT_Done_Face(tmp_face);
 		}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	}
 
 	return face_count;
@@ -2612,9 +2612,9 @@ Dictionary TextServerFallback::_font_get_glyph_contours(const RID &p_font_rid, i
 	out["contours"] = contours;
 	out["orientation"] = orientation;
 	return out;
-#else
+#else // MODULE_FREETYPE_ENABLED
 	return Dictionary();
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 }
 
 TypedArray<Vector2i> TextServerFallback::_font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
@@ -2715,7 +2715,7 @@ Vector2 TextServerFallback::_font_get_kerning(const RID &p_font_rid, int64_t p_s
 				return Vector2(delta.x, delta.y);
 			}
 		}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	}
 	return Vector2();
 }
@@ -2777,7 +2777,7 @@ String TextServerFallback::_font_get_supported_chars(const RID &p_font_rid) cons
 		}
 		return chars;
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	const HashMap<int32_t, FontGlyph> &gl = ffsd->glyph_map;
 	for (const KeyValue<int32_t, FontGlyph> &E : gl) {
 		chars = chars + String::chr(E.key);
@@ -2808,7 +2808,7 @@ PackedInt32Array TextServerFallback::_font_get_supported_glyphs(const RID &p_fon
 		}
 		return glyphs;
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	if (at_size) {
 		const HashMap<int32_t, FontGlyph> &gl = at_size->glyph_map;
 		for (const KeyValue<int32_t, FontGlyph> &E : gl) {
@@ -2851,7 +2851,7 @@ void TextServerFallback::_font_render_range(const RID &p_font_rid, const Vector2
 				}
 			}
 		}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	}
 }
 
@@ -2885,7 +2885,7 @@ void TextServerFallback::_font_render_glyph(const RID &p_font_rid, const Vector2
 			}
 		}
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 }
 
 void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
@@ -2950,7 +2950,7 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 			index = index | (xshift << 27);
 		}
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 	FontGlyph fgl;
 	if (!_ensure_glyph(fd, size, index, fgl, viewport_oversampling ? 64 * oversampling_factor : 0)) {
@@ -3093,7 +3093,7 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 			index = index | (xshift << 27);
 		}
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 	FontGlyph fgl;
 	if (!_ensure_glyph(fd, size, index, fgl, viewport_oversampling ? 64 * oversampling_factor : 0)) {
@@ -4607,7 +4607,7 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 						}
 					}
 				}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 				_font_set_antialiasing(sysf.rid, key.antialiasing);
 				_font_set_disable_embedded_bitmaps(sysf.rid, key.disable_embedded_bitmaps);

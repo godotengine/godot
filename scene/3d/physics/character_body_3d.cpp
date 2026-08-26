@@ -630,7 +630,7 @@ void CharacterBody3D::_set_platform_data(const PS3DT::MotionCollision &p_collisi
 	if (bs_ext != nullptr && !GDVIRTUAL_IS_OVERRIDDEN_PTR(bs_ext, _get_collision_layer)) {
 		platform_layer = PhysicsServer3D::get_singleton()->body_get_collision_layer(p_collision.collider);
 	} else
-#endif
+#endif // DISABLE_DEPRECATED
 	{
 		platform_layer = bs->get_collision_layer();
 	}

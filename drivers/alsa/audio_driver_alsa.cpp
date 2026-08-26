@@ -176,7 +176,7 @@ Error AudioDriverALSA::init() {
 	if (initialize_asound(dylibloader_verbose)) {
 		return ERR_CANT_OPEN;
 	}
-#endif
+#endif // SOWRAP_ENABLED
 	bool ver_ok = false;
 	String version = String::utf8(snd_asoundlib_version());
 	Vector<String> ver_parts = version.split(".");

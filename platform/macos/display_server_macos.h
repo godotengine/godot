@@ -66,7 +66,7 @@ class GLManagerLegacy_MacOS;
 #ifdef ANGLE_ENABLED
 class GLManagerANGLE_MacOS;
 #endif
-#endif
+#endif // GLES3_ENABLED
 
 class DisplayServerMacOS : public DisplayServerMacOSBase {
 	GDSOFTCLASS(DisplayServerMacOS, DisplayServerMacOSBase);
@@ -157,7 +157,7 @@ private:
 #if defined(ANGLE_ENABLED)
 	GLManagerANGLE_MacOS *gl_manager_angle = nullptr;
 #endif
-#endif
+#endif // defined(GLES3_ENABLED)
 	String rendering_driver;
 
 	struct WarpEvent {
@@ -236,7 +236,7 @@ private:
 		CALayer *layer_host = nil;
 	};
 	HashMap<ProcessID, EmbeddedProcessData> embedded_processes;
-#endif
+#endif // TOOLS_ENABLED
 	void _window_update_display_id(WindowData *p_wd);
 
 public:

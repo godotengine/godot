@@ -47,4 +47,4 @@ template class MutexImpl<THREADING_NAMESPACE::mutex>;
 template class MutexLock<MutexImpl<THREADING_NAMESPACE::recursive_mutex>>;
 template class MutexLock<MutexImpl<THREADING_NAMESPACE::mutex>>;
 
-#endif
+#endif // THREADS_ENABLED

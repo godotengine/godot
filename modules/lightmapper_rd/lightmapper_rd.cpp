@@ -667,7 +667,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			}
 		}
 	}
-#endif
+#endif // 0
 
 #if 0
 	for (int i = 0; i < grid_size; i++) {
@@ -682,7 +682,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		Ref<Image> img = Image::create_from_data(grid_size, grid_size, false, Image::FORMAT_L8, grid_usage);
 		img->save_png("res://grid_layer_" + itos(1000 + i).substr(1, 3) + ".png");
 	}
-#endif
+#endif // 0
 
 	/*****************************/
 	/*** CREATE GPU STRUCTURES ***/
@@ -870,7 +870,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 		img->convert(Image::FORMAT_RGBA8);
 		img->save_png("res://5_dilated_" + itos(i) + ".png");
 	}
-#endif
+#endif // DEBUG_TEXTURES
 	return BAKE_OK;
 }
 
@@ -1171,7 +1171,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			end += mip0size / pow(4, m + 1);
 		}
 	}
-#endif
+#endif // DEBUG_TEXTURES
 
 	// Attempt to create a local device by requesting it from rendering server first.
 	// If that fails because the current renderer is not implemented on top of RD, we fall back to creating
@@ -1190,8 +1190,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			rcd = memnew(RenderingContextDriverVulkan);
 			rd = memnew(RenderingDevice);
 		}
-#endif
-#endif
+#endif // defined(VULKAN_ENABLED)
+#endif // defined(RD_ENABLED)
 		if (rcd != nullptr && rd != nullptr) {
 			err = rcd->initialize();
 			if (err == OK) {
@@ -1619,7 +1619,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		img->set_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->save_exr("res://1_normal_" + itos(i) + ".exr", false);
 	}
-#endif
+#endif // DEBUG_TEXTURES
 
 #define FREE_RASTER_RESOURCES \
 	rd->free_rid(rasterize_shader); \
@@ -1748,7 +1748,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAF, s);
 		img->save_exr("res://1_unocclude_" + itos(i) + ".exr", false);
 	}
-#endif
+#endif // DEBUG_TEXTURES
 
 	if (p_step_function) {
 		if (p_step_function(0.5, RTR("Plot direct lighting"), p_bake_userdata, true)) {
@@ -1904,7 +1904,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			img->save_exr("res://2_light_primary_accum_" + itos(i) + ".exr", false);
 		}
 	}
-#endif
+#endif // DEBUG_TEXTURES
 
 	/* SECONDARY (indirect) LIGHT PASS(ES) */
 
@@ -2156,7 +2156,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 		img->save_png("res://3_light_probe_" + itos(i) + ".png");
 	}
-#endif
+#endif // 0
 
 	/* DENOISE */
 
@@ -2240,7 +2240,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->save_exr("res://4_light_secondary_" + itos(i) + ".exr", false);
 	}
-#endif
+#endif // DEBUG_TEXTURES
 
 	/* BLEND SEAMS */
 	//shaders
@@ -2396,7 +2396,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->save_exr("res://5_blendseams" + itos(i) + ".exr", false);
 	}
-#endif
+#endif // DEBUG_TEXTURES
 
 	if (p_step_function) {
 		p_step_function(0.9, RTR("Retrieving textures"), p_bake_userdata, true);
@@ -2429,7 +2429,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			Ref<Image> img2 = Image::create_from_data(probe_values.size(), 1, false, Image::FORMAT_RGBAF, probe_data);
 			img2->save_exr("res://6_lightprobes.exr", false);
 		}
-#endif
+#endif // DEBUG_TEXTURES
 	}
 
 	FREE_TEXTURES

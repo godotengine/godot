@@ -437,7 +437,7 @@ void Sprite2D::_editor_set_dragging_to_resize_rect(bool p_dragging_to_resize_rec
 bool Sprite2D::_editor_is_dragging_to_resiz_rect() const {
 	return dragging_to_resize_rect;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 Rect2 Sprite2D::get_rect() const {
 	if (texture.is_null()) {

@@ -409,7 +409,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	function->constructors_names = constructors_names;
 	function->utilities_names = utilities_names;
 	function->gds_utilities_names = gds_utilities_names;
-#endif
+#endif // DEBUG_ENABLED
 
 	ended = true;
 	return function;

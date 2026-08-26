@@ -52,7 +52,7 @@ EmbeddedDebugger::EmbeddedDebugger(DisplayServerMacOSEmbedded *p_ds) {
 		_init_parse_message_handlers();
 	}
 	EngineDebugger::register_message_capture("embed", EngineDebugger::Capture(this, EmbeddedDebugger::parse_message));
-#endif
+#endif // DEBUG_ENABLED
 }
 
 EmbeddedDebugger::~EmbeddedDebugger() {
@@ -195,4 +195,4 @@ Error EmbeddedDebugger::parse_message(void *p_user, const String &p_msg, const A
 		return ERR_SKIP;
 	}
 }
-#endif
+#endif // DEBUG_ENABLED

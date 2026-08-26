@@ -200,7 +200,7 @@ String ResourceUID::get_id_path(ID p_id) const {
 		scan_for_uid_on_startup();
 		cache = unique_ids.getptr(p_id);
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (unlikely(!cache)) {
 		if (cache_initialized) {

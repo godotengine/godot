@@ -136,7 +136,7 @@ BOOL is_wow64() {
 	}
 	return wow64;
 }
-#endif
+#endif // WINDOWS_ENABLED
 
 static const char *arch_name_map[][2] = {
 	{ "arm32", "arm" },
@@ -184,7 +184,7 @@ bool get_default_installation_dir(String &r_dotnet_root) {
 		r_dotnet_root = dotnet_root_emulated;
 		return true;
 	}
-#endif
+#endif // defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 
 	r_dotnet_root = Path::join(program_files_dir, "dotnet");
 	return true;
@@ -198,10 +198,10 @@ bool get_default_installation_dir(String &r_dotnet_root) {
 		r_dotnet_root = dotnet_root_emulated;
 		return true;
 	}
-#endif
+#endif // defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 
 	return true;
-#else
+#else // defined(MACOS_ENABLED)
 	r_dotnet_root = "/usr/share/dotnet";
 	return true;
 #endif
@@ -225,7 +225,7 @@ bool get_install_location_from_file(const String &p_file_path, String &r_dotnet_
 	r_dotnet_root = line;
 	return true;
 }
-#endif
+#endif // WINDOWS_ENABLED
 
 bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 #if defined(WINDOWS_ENABLED)
@@ -256,7 +256,7 @@ bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr()).replace_char('\\', '/');
 	RegCloseKey(hkey);
 	return true;
-#else
+#else // defined(WINDOWS_ENABLED)
 	String install_location_file = Path::join("/etc/dotnet", "install_location_" + get_dotnet_arch().to_lower());
 	if (get_install_location_from_file(install_location_file, r_dotnet_root)) {
 		return true;
@@ -269,7 +269,7 @@ bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 
 	String legacy_install_location_file = Path::join("/etc/dotnet", "install_location");
 	return get_install_location_from_file(legacy_install_location_file, r_dotnet_root);
-#endif
+#endif // defined(WINDOWS_ENABLED)
 }
 
 bool get_file_path_from_env(const String &p_env_key, String &r_dotnet_root) {
@@ -303,7 +303,7 @@ bool get_dotnet_root_from_env(String &r_dotnet_root) {
 	if (is_wow64() && get_file_path_from_env("DOTNET_ROOT(x86)", r_dotnet_root)) {
 		return true;
 	}
-#endif
+#endif // WINDOWS_ENABLED
 
 	// DOTNET_ROOT
 	return get_file_path_from_env(dotnet_root_env, r_dotnet_root);

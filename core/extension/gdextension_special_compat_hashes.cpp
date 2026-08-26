@@ -633,13 +633,13 @@ void GDExtensionSpecialCompatHashes::initialize() {
 		{ "body_apply_impulse", 34330743, 1124035137 },
 		{ "body_apply_force", 34330743, 1124035137 },
 		{ "body_add_constant_force", 34330743, 1124035137 },
-#else
+#else // REAL_T_IS_DOUBLE
 		{ "area_add_shape", 754862190, 339056240 },
 		{ "body_add_shape", 754862190, 339056240 },
 		{ "body_apply_impulse", 34330743, 205485391 },
 		{ "body_apply_force", 34330743, 205485391 },
 		{ "body_add_constant_force", 34330743, 205485391 },
-#endif
+#endif // REAL_T_IS_DOUBLE
 		{ "joint_make_pin", 2288600450, 1612646186 },
 		{ "joint_make_groove", 3573265764, 481430435 },
 		{ "joint_make_damped_spring", 206603952, 1994657646 },
@@ -651,13 +651,13 @@ void GDExtensionSpecialCompatHashes::initialize() {
 		{ "body_apply_impulse", 110375048, 2238283471 },
 		{ "body_apply_force", 110375048, 2238283471 },
 		{ "body_add_constant_force", 110375048, 2238283471 },
-#else
+#else // REAL_T_IS_DOUBLE
 		{ "area_add_shape", 4040559639, 3711419014 },
 		{ "body_add_shape", 4040559639, 3711419014 },
 		{ "body_apply_impulse", 110375048, 390416203 },
 		{ "body_apply_force", 110375048, 390416203 },
 		{ "body_add_constant_force", 110375048, 390416203 },
-#endif
+#endif // REAL_T_IS_DOUBLE
 	});
 	mappings.insert("PopupMenu", {
 		{ "add_item", 3224536192, 3674230041 },

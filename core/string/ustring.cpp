@@ -1467,9 +1467,9 @@ String String::num(double p_num, int p_decimals) {
 	// found a case where this is not true, so we should create a buffer
 	// as big as needed
 	snprintf(buf, 325, fmt, p_num);
-#else
+#else // defined(__GNUC__) || defined(_MSC_VER)
 	sprintf(buf, fmt, p_num);
-#endif
+#endif // defined(__GNUC__) || defined(_MSC_VER)
 
 	buf[324] = 0;
 	// Destroy trailing zeroes, except one after period.
@@ -5784,7 +5784,7 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	}
 	return text_plural.replace("$DOCS_URL", GODOT_VERSION_DOCS_URL);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 /**
  * "Run-time TRanslate". Performs string replacement for internationalization

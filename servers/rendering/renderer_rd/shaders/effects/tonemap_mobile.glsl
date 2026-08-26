@@ -273,7 +273,7 @@ vec3 gather_glow() {
 	vec2 uv = gl_FragCoord.xy * params.dest_pixel_size;
 	return textureLod(source_glow, vec3(uv, ViewIndex), 0.0).rgb * params.luminance_multiplier;
 }
-#else
+#else // USE_MULTIVIEW
 vec3 gather_glow() {
 	vec2 uv = gl_FragCoord.xy * params.dest_pixel_size;
 	return textureLod(source_glow, uv, 0.0).rgb * params.luminance_multiplier;
@@ -329,11 +329,11 @@ vec3 apply_color_correction(vec3 color) {
 	color.b = texture(source_color_correction, vec2(color.b, 0.0f)).b;
 	return color;
 }
-#else
+#else // USE_1D_LUT
 vec3 apply_color_correction(vec3 color) {
 	return textureLod(source_color_correction, color, 0.0).rgb;
 }
-#endif
+#endif // USE_1D_LUT
 
 #ifndef SUBPASS
 
@@ -559,7 +559,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	vec3 finalColor = textureLod(source_color, finalUv, 0.0).xyz * exposure * params.luminance_multiplier;
 	return finalColor;
 
-#else
+#else // USE_MULTIVIEW
 	float lumaUp = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(0, 1)).xyz * exposure * params.luminance_multiplier);
 	float lumaDown = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(0, -1)).xyz * exposure * params.luminance_multiplier);
 	float lumaLeft = rgb2luma(textureLodOffset(source_color, uv_interp, 0.0, ivec2(-1, 0)).xyz * exposure * params.luminance_multiplier);
@@ -703,7 +703,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	vec3 finalColor = textureLod(source_color, finalUv, 0.0).xyz * exposure * params.luminance_multiplier;
 	return finalColor;
 
-#endif
+#endif // USE_MULTIVIEW
 }
 #endif // !SUBPASS
 
@@ -762,7 +762,7 @@ void main() {
 			color.rgb = apply_glow(color.rgb, glow, params.white);
 		}
 	}
-#endif
+#endif // SUBPASS
 
 	// Tonemap to lower dynamic range.
 
@@ -782,7 +782,7 @@ void main() {
 		glow = apply_tonemapping(glow);
 		color.rgb = apply_glow(color.rgb, glow, params.white);
 	}
-#endif
+#endif // SUBPASS
 
 	// Additional effects.
 

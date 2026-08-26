@@ -55,7 +55,7 @@
 #endif
 
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-#endif
+#endif // RD_ENABLED
 
 #ifdef GLES3_ENABLED
 #include "detect_prime_egl.h"
@@ -65,7 +65,7 @@
 #include "core/io/file_access.h"
 #include "drivers/egl/egl_manager.h"
 #include "drivers/gles3/rasterizer_gles3.h"
-#endif
+#endif // GLES3_ENABLED
 
 #ifdef DBUS_ENABLED
 #include "freedesktop_at_spi_monitor.h"
@@ -77,7 +77,7 @@
 #else
 #include <dbus/dbus.h>
 #endif
-#endif
+#endif // DBUS_ENABLED
 
 #ifdef SPEECHD_ENABLED
 #include "tts_linux.h"
@@ -205,7 +205,7 @@ void DisplayServerWayland::_delete_window(DisplayServerEnums::WindowID p_window_
 		if (rendering_context) {
 			rendering_context->window_destroy(p_window_id);
 		}
-#endif
+#endif // VULKAN_ENABLED
 
 #ifdef GLES3_ENABLED
 		if (egl_manager) {
@@ -319,7 +319,7 @@ bool DisplayServerWayland::has_feature(DisplayServerEnums::Feature p_feature) co
 		case DisplayServerEnums::FEATURE_NATIVE_COLOR_PICKER: {
 			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_screenshot_supported());
 		} break;
-#endif
+#endif // DBUS_ENABLED
 
 #ifdef SPEECHD_ENABLED
 		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH: {
@@ -403,7 +403,7 @@ void DisplayServerWayland::tts_stop() {
 	tts->stop();
 }
 
-#endif
+#endif // SPEECHD_ENABLED
 
 #ifdef DBUS_ENABLED
 
@@ -470,7 +470,7 @@ Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title,
 	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
 }
 
-#endif
+#endif // DBUS_ENABLED
 
 void DisplayServerWayland::beep() const {
 	wayland_thread.beep();
@@ -809,7 +809,7 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 
 		screensaver_inhibited = p_enable;
 	}
-#endif
+#endif // DBUS_ENABLED
 }
 
 bool DisplayServerWayland::screen_is_kept_on() const {
@@ -936,7 +936,7 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 				ERR_FAIL_NULL(wpd.vulkan.surface);
 				wpd.vulkan.display = wayland_thread.get_wl_display();
 			}
-#endif
+#endif // VULKAN_ENABLED
 			Error err = rendering_context->window_create(wd.id, &wpd);
 			ERR_FAIL_COND_MSG(err != OK, vformat("Can't create a %s window", rendering_driver));
 
@@ -950,7 +950,7 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 		if (rendering_device) {
 			rendering_device->screen_create(wd.id);
 		}
-#endif
+#endif // RD_ENABLED
 
 #ifdef GLES3_ENABLED
 		if (egl_manager) {
@@ -963,7 +963,7 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 
 			window_set_vsync_mode(wd.vsync_mode, p_window_id);
 		}
-#endif
+#endif // GLES3_ENABLED
 
 		// NOTE: Some public window-handling methods might depend on this flag being
 		// set. Make sure the method you're calling does not depend on it before this
@@ -1436,7 +1436,7 @@ int DisplayServerWayland::accessibility_should_increase_contrast() const {
 		return -1;
 	}
 	return portal_desktop->get_high_contrast();
-#endif
+#endif // DBUS_ENABLED
 	return -1;
 }
 
@@ -1561,7 +1561,7 @@ void DisplayServerWayland::_window_update_hdr_state(WindowData &p_window) {
 			wayland_thread.window_set_color_profile(window_id, p_window.color_profile);
 		}
 	}
-#endif
+#endif // defined(RD_ENABLED)
 }
 
 bool DisplayServerWayland::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window_id) const {
@@ -1573,7 +1573,7 @@ bool DisplayServerWayland::window_is_hdr_output_supported(DisplayServerEnums::Wi
 		renderer_supports_hdr_output = true;
 		surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window_id);
 	}
-#endif
+#endif // defined(RD_ENABLED)
 	if (!renderer_supports_hdr_output) {
 		return false;
 	}
@@ -1596,7 +1596,7 @@ void DisplayServerWayland::window_request_hdr_output(const bool p_enabled, Displ
 			renderer_supports_hdr_output = true;
 			surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window_id);
 		}
-#endif
+#endif // defined(RD_ENABLED)
 		if (!renderer_supports_hdr_output) {
 			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
 			return;
@@ -1916,9 +1916,9 @@ bool DisplayServerWayland::color_picker(const Callable &p_callback) {
 	// TODO: Use window IDs for multiwindow support.
 	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
 	return portal_desktop->color_picker((ws ? ws->exported_handle : String()), p_callback);
-#else
+#else // DBUS_ENABLED
 	return false;
-#endif
+#endif // DBUS_ENABLED
 }
 
 void DisplayServerWayland::try_suspend() {
@@ -2320,7 +2320,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Dis
 	if (tts_enabled) {
 		initialize_tts();
 	}
-#endif
+#endif // SPEECHD_ENABLED
 
 	rendering_driver = p_rendering_driver;
 
@@ -2537,7 +2537,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Dis
 		print_verbose("Failed to load DBus library!");
 		dbus_ok = false;
 	}
-#endif
+#endif // SOWRAP_ENABLED
 	if (dbus_ok) {
 		bool ver_ok = false;
 		int version_major = 0;

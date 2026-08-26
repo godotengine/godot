@@ -52,7 +52,7 @@ static void _editor_init() {
 	plugin.instantiate();
 	EditorInspector::add_inspector_plugin(plugin);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void initialize_vorbis_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -66,7 +66,7 @@ void initialize_vorbis_module(ModuleInitializationLevel p_level) {
 
 		EditorNode::add_init_callback(_editor_init);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void uninitialize_vorbis_module(ModuleInitializationLevel p_level) {

@@ -416,7 +416,7 @@ public:
 			r_valid = false;
 			return;
 		}
-#endif
+#endif // defined(DEBUG_ENABLED)
 		*r_ret = a << b;
 		r_valid = true;
 	}
@@ -442,7 +442,7 @@ public:
 			r_valid = false;
 			return;
 		}
-#endif
+#endif // defined(DEBUG_ENABLED)
 		*r_ret = a >> b;
 		r_valid = true;
 	}

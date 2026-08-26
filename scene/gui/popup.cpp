@@ -245,7 +245,7 @@ PackedStringArray PopupPanel::get_configuration_warnings() const {
 
 	return warnings;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void PopupPanel::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (p_event.is_valid()) {

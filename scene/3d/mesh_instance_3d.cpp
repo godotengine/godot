@@ -357,7 +357,7 @@ void MeshInstance3D::_notification(int p_what) {
 					skeleton_path = NodePath("..");
 				}
 			}
-#endif
+#endif // DISABLE_DEPRECATED
 			_resolve_skeleton_path();
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {

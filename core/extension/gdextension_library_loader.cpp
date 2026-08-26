@@ -268,7 +268,7 @@ bool GDExtensionLibraryLoader::has_library_changed() const {
 	if (FileAccess::get_modified_time(library_path) != library_last_modified_time) {
 		return true;
 	}
-#endif
+#endif // TOOLS_ENABLED
 	return false;
 }
 
@@ -384,7 +384,7 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 		else {
 			compatible = GODOT_VERSION_PATCH <= compatibility_maximum[2];
 		}
-#endif
+#endif // GODOT_VERSION_PATCH
 
 		if (!compatible) {
 			ERR_PRINT(vformat("GDExtension only compatible with Godot version %s or earlier: %s, but your Godot version is %d.%d.%d",
@@ -411,7 +411,7 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 	update_last_modified_time(
 			FileAccess::get_modified_time(resource_path),
 			FileAccess::get_modified_time(library_path));
-#endif
+#endif // TOOLS_ENABLED
 
 	library_dependencies = find_extension_dependencies(p_path, config, [](const String &p_feature) { return OS::get_singleton()->has_feature(p_feature); });
 

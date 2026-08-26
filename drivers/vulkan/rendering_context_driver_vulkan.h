@@ -197,7 +197,7 @@ public:
 	enum VkTrackedSystemAllocationScope {
 		VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT = VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE + 1
 	};
-#endif
+#endif // defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 
 	const char *get_tracked_object_name(uint32_t p_type_index) const override;
 #if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
@@ -209,7 +209,7 @@ public:
 	uint64_t get_driver_allocation_count() const override;
 	uint64_t get_driver_memory_by_object_type(uint32_t p_type) const override;
 	uint64_t get_driver_allocs_by_object_type(uint32_t p_type) const override;
-#endif
+#endif // defined(VK_TRACK_DRIVER_MEMORY)
 
 #if defined(VK_TRACK_DEVICE_MEMORY)
 	uint64_t get_device_total_memory() const override;
@@ -217,7 +217,7 @@ public:
 	uint64_t get_device_memory_by_object_type(uint32_t p_type) const override;
 	uint64_t get_device_allocs_by_object_type(uint32_t p_type) const override;
 	static VKAPI_ATTR void VKAPI_CALL memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data);
-#endif
+#endif // defined(VK_TRACK_DEVICE_MEMORY)
 
 	RenderingContextDriverVulkan();
 	virtual ~RenderingContextDriverVulkan() override;

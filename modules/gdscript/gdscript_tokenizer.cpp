@@ -1222,7 +1222,7 @@ void GDScriptTokenizerText::check_indent() {
 				comment += _advance();
 			}
 			comments[line] = CommentData(comment, true);
-#else
+#else // TOOLS_ENABLED
 			while (_peek() != '\n' && !_is_at_end()) {
 				_advance();
 			}
@@ -1349,7 +1349,7 @@ void GDScriptTokenizerText::_skip_whitespace() {
 					comment += _advance();
 				}
 				comments[line] = CommentData(comment, is_bol);
-#else
+#else // TOOLS_ENABLED
 				while (_peek() != '\n' && !_is_at_end()) {
 					_advance();
 				}

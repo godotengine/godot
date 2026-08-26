@@ -302,7 +302,7 @@ private:
 	BoxContainer *main_box = nullptr; // It only contains the touch_actions_panel and main_vbox.
 	TouchActionsPanel *touch_actions_panel = nullptr;
 	void _touch_actions_panel_mode_changed();
-#endif
+#endif // ANDROID_ENABLED
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 

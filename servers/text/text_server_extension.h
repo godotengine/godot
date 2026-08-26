@@ -413,7 +413,7 @@ public:
 	virtual void font_set_global_oversampling(double p_oversampling) override;
 	GDVIRTUAL0RC(double, _font_get_global_oversampling);
 	GDVIRTUAL1(_font_set_global_oversampling, double);
-#endif
+#endif // DISABLE_DEPRECATED
 	virtual void reference_oversampling_level(double p_oversampling) override;
 	virtual void unreference_oversampling_level(double p_oversampling) override;
 	GDVIRTUAL1(_reference_oversampling_level, double);

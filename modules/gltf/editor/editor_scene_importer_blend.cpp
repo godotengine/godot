@@ -130,7 +130,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	if (source_global.is_network_share_path()) {
 		source_global = "\\\\" + source_global.substr(2);
 	}
-#endif
+#endif // WINDOWS_ENABLED
 
 	const String blend_basename = p_path.get_file().get_basename();
 	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().path_join(

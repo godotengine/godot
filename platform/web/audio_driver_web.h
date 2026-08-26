@@ -141,7 +141,7 @@ public:
 	virtual void unlock() override;
 };
 
-#else
+#else // THREADS_ENABLED
 
 class AudioDriverWorklet : public AudioDriverWeb {
 private:

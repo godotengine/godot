@@ -224,7 +224,7 @@ void Light3D::set_projector(const Ref<Texture2D> &p_texture) {
 					p_texture->is_class("ViewportTexture"))) {
 		WARN_PRINT(vformat("%s cannot be used as a Light3D projector texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	RS::get_singleton()->light_set_projector(light, tex_id);
 	update_configuration_warnings();
@@ -304,11 +304,11 @@ void Light3D::_update_visibility() {
 			editor_ok = (get_tree()->get_edited_scene_root() && (this == get_tree()->get_edited_scene_root() || get_owner() == get_tree()->get_edited_scene_root()));
 		}
 	}
-#else
+#else // TOOLS_ENABLED
 	if (editor_only) {
 		editor_ok = false;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree() && editor_ok);
 }
@@ -710,7 +710,7 @@ void AreaLight3D::set_area_texture(const Ref<Texture2D> &p_texture) {
 					p_texture->is_class("ViewportTexture"))) {
 		WARN_PRINT(vformat("%s cannot be used as a Light3D projector texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	RS::get_singleton()->light_area_set_texture(light, tex_id);
 	update_configuration_warnings();

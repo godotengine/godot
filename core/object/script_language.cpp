@@ -205,9 +205,9 @@ void Script::reload_from_file() {
 		Array scripts = { this };
 		get_language()->reload_scripts(scripts);
 	}
-#else
+#else // TOOLS_ENABLED
 	Resource::reload_from_file();
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void ScriptServer::set_scripting_enabled(bool p_enabled) {
@@ -288,7 +288,7 @@ void ScriptServer::init_languages() {
 			}
 			ProjectSettings::get_singleton()->clear("_global_script_classes");
 		}
-#endif
+#endif // DISABLE_DEPRECATED
 
 		Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
 		for (const Variant &script_class : script_classes) {
@@ -761,7 +761,7 @@ Variant PlaceHolderScriptInstance::callp(const StringName &p_method, const Varia
 	} else {
 		return String("Attempt to call a method on a placeholder instance. Probably a bug, please report.");
 	}
-#else
+#else // TOOLS_ENABLED
 	return Variant();
 #endif // TOOLS_ENABLED
 }

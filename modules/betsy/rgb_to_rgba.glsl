@@ -85,7 +85,8 @@ void main() {
 			break;
 	}
 
-#else
+#else // defined(VER_UINT8)
+
 	// In a similar vein to RGB8, the RGBH/RGB16 source texel can be in either of 2 alignment 'states':
 	// 0 - [ XY-X_ ]
 	// 1 - [ _Y-XY ]

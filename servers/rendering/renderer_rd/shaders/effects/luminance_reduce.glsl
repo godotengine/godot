@@ -15,12 +15,12 @@ shared float tmp_data[BLOCK_SIZE * BLOCK_SIZE];
 //use for main texture
 layout(set = 0, binding = 0) uniform sampler2D source_texture;
 
-#else
+#else // READ_TEXTURE
 
 //use for intermediate textures
 layout(r32f, set = 0, binding = 0) uniform restrict readonly image2D source_luminance;
 
-#endif
+#endif // READ_TEXTURE
 
 layout(r32f, set = 1, binding = 0) uniform restrict writeonly image2D dest_luminance;
 

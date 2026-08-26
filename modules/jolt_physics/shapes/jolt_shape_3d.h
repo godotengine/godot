@@ -121,13 +121,13 @@ public:
 	} else \
 		((void)0)
 
-#else
+#else // DEBUG_ENABLED
 
 #define JOLT_ENSURE_SCALE_NOT_ZERO(m_transform, m_msg)
 
 #define ERR_PRINT_INVALID_SCALE_MSG(m_scale, m_valid_scale, m_msg)
 
-#endif
+#endif // DEBUG_ENABLED
 
 #define JOLT_ENSURE_SCALE_VALID(m_shape, m_scale, m_msg) \
 	if (true) { \

@@ -23,7 +23,7 @@ layout(set = 2, binding = 0) uniform usampler2DMS source_voxel_gi;
 layout(rg8ui, set = 3, binding = 0) uniform restrict writeonly uimage2D dest_voxel_gi;
 #endif
 
-#endif
+#endif // MODE_RESOLVE_GI
 
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
@@ -48,7 +48,7 @@ void main() {
 	depth_avg /= float(params.sample_count);
 	imageStore(dest_depth, pos, vec4(depth_avg));
 
-#endif
+#endif // MODE_RESOLVE_DEPTH
 
 #ifdef MODE_RESOLVE_GI
 
@@ -72,7 +72,7 @@ void main() {
 		}
 	}
 
-#else
+#else // 0
 
 #if 1
 
@@ -183,7 +183,7 @@ void main() {
 		best_index = mix(best_index0, best_index1, min_f0 < min_f1);
 	}
 
-#else
+#else // 1
 	float depths[16];
 	int depth_indices[16];
 	int depth_amount[16];
@@ -217,14 +217,14 @@ void main() {
 			depth_least = depth_amount[j];
 		}
 	}
-#endif
+#endif // 1
 	best_depth = texelFetch(source_depth, pos, best_index).r;
 	best_normal_roughness = texelFetch(source_normal_roughness, pos, best_index);
 #ifdef VOXEL_GI_RESOLVE
 	best_voxel_gi = texelFetch(source_voxel_gi, pos, best_index).rg;
 #endif
 
-#endif
+#endif // 0
 
 	imageStore(dest_depth, pos, vec4(best_depth));
 	imageStore(dest_normal_roughness, pos, vec4(best_normal_roughness));
@@ -232,5 +232,5 @@ void main() {
 	imageStore(dest_voxel_gi, pos, uvec4(best_voxel_gi, 0, 0));
 #endif
 
-#endif
+#endif // MODE_RESOLVE_GI
 }

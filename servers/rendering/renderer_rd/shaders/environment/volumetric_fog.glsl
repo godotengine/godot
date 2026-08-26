@@ -75,10 +75,10 @@ layout(set = 1, binding = 3) volatile buffer density_only_map_buffer {
 layout(set = 1, binding = 4) volatile buffer light_only_map_buffer {
 	uint light_only_map[];
 };
-#else
+#else // NO_IMAGE_ATOMICS
 layout(r32ui, set = 1, binding = 3) volatile uniform uimage3D density_only_map;
 layout(r32ui, set = 1, binding = 4) volatile uniform uimage3D light_only_map;
-#endif
+#endif // NO_IMAGE_ATOMICS
 
 #ifdef MATERIAL_UNIFORMS_USED
 /* clang-format off */
@@ -86,7 +86,7 @@ layout(set = 2, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
 /* clang-format on */
-#endif
+#endif // MATERIAL_UNIFORMS_USED
 
 #GLOBALS
 
@@ -265,7 +265,7 @@ void main() {
 #endif
 				}
 			}
-#endif
+#endif // EMISSION_USED
 #ifdef ALBEDO_USED
 			{
 				vec3 scattering = albedo * clamp(density, 0.0, 1.0);

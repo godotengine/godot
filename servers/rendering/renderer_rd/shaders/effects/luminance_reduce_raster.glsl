@@ -58,9 +58,9 @@ void main() {
 	// This formula should be more "accurate" but gave an overexposed result when testing.
 	// Leaving it here so we can revisit it if we want.
 	// luminance = source_color.r * 0.21 + source_color.g * 0.71 + source_color.b * 0.07;
-#else
+#else // FIRST_PASS
 	luminance = source_color.r;
-#endif
+#endif // FIRST_PASS
 
 #ifdef FINAL_PASS
 	// Obtain our target luminance
@@ -69,5 +69,5 @@ void main() {
 	// Now smooth to our transition
 	highp float prev_lum = texelFetch(prev_luminance, ivec2(0, 0), 0).r; //1 pixel previous luminance
 	luminance = prev_lum + (luminance - prev_lum) * clamp(settings.exposure_adjust, 0.0, 1.0);
-#endif
+#endif // FINAL_PASS
 }

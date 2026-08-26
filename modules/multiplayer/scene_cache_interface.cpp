@@ -63,7 +63,7 @@ void SceneCacheInterface::_remove_node_cache(ObjectID p_oid) {
 		ERR_CONTINUE(!pinfo);
 		pinfo->recv_nodes.erase(E.value);
 	}
-#endif
+#endif // 0
 	for (KeyValue<int, bool> &E : nc->confirmed_peers) {
 		PeerInfo *pinfo = peers_info.getptr(E.key);
 		ERR_CONTINUE(!pinfo);

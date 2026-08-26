@@ -246,7 +246,7 @@ void PhysicalBoneSimulator3D::physical_bones_stop_simulation() {
 	} else {
 		_pb_stop_simulation(this);
 	}
-#else
+#else // DISABLE_DEPRECATED
 	_pb_stop_simulation(this);
 #endif // _DISABLE_DEPRECATED
 }
@@ -327,7 +327,7 @@ void PhysicalBoneSimulator3D::physical_bones_start_simulation_on(const TypedArra
 	} else {
 		_pb_start_simulation(this, this, sim_bones);
 	}
-#else
+#else // DISABLE_DEPRECATED
 	_pb_start_simulation(this, this, sim_bones);
 #endif // _DISABLE_DEPRECATED
 }

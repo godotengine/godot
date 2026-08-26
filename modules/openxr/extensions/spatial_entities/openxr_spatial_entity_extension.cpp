@@ -1028,7 +1028,8 @@ PackedVector2Array OpenXRSpatialEntityExtension::get_vector2_buffer(RID p_spatia
 		ptr[i].x = buffer[i].x;
 		ptr[i].y = buffer[i].y;
 	}
-#else
+#else // REAL_T_IS_DOUBLE
+
 	// OpenXR's XrVector2f and Godots Vector2 should be interchangeable.
 	ret.resize(count);
 
@@ -1036,7 +1037,7 @@ PackedVector2Array OpenXRSpatialEntityExtension::get_vector2_buffer(RID p_spatia
 	if (XR_FAILED(result)) {
 		ERR_FAIL_V_MSG(PackedVector2Array(), "OpenXR: Failed to get buffer [" + openxr_api->get_error_string(result) + "]");
 	}
-#endif
+#endif // REAL_T_IS_DOUBLE
 
 	return ret;
 }
@@ -1079,7 +1080,8 @@ PackedVector3Array OpenXRSpatialEntityExtension::get_vector3_buffer(RID p_spatia
 		ptr[i].y = buffer[i].y;
 		ptr[i].z = buffer[i].z;
 	}
-#else
+#else // REAL_T_IS_DOUBLE
+
 	// OpenXR's XrVector3f and Godots Vector3 should be interchangeable.
 	ret.resize(count);
 
@@ -1087,7 +1089,7 @@ PackedVector3Array OpenXRSpatialEntityExtension::get_vector3_buffer(RID p_spatia
 	if (XR_FAILED(result)) {
 		ERR_FAIL_V_MSG(PackedVector3Array(), "OpenXR: Failed to get buffer [" + openxr_api->get_error_string(result) + "]");
 	}
-#endif
+#endif // REAL_T_IS_DOUBLE
 
 	return ret;
 }

@@ -76,7 +76,7 @@ class JoltJobSystem final : public JPH::JobSystemWithBarrier {
 
 	// TODO: Check whether the usage of SpinLock is justified or if this should be a mutex instead.
 	inline static SpinLock timings_lock;
-#endif
+#endif // DEBUG_ENABLED
 
 	JPH::FixedSizeFreeList<Job> jobs;
 

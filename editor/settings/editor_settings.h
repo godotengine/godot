@@ -129,7 +129,7 @@ private:
 	void _handle_setting_compatibility();
 	void _rename_setting(const String &p_old_name, const String &p_new_name);
 	void _rename_shortcut(const String &p_old_path, const String &p_new_path);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	// Bind helpers.
 	Vector<String> _get_shortcut_list();

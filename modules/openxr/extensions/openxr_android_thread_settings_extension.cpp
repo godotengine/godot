@@ -129,7 +129,7 @@ bool OpenXRAndroidThreadSettingsExtension::set_application_thread_type(ThreadTyp
 		print_error(vformat("OpenXR: Failed to set android application thread; %s", OpenXRAPI::get_singleton()->get_error_string(result)));
 		return false;
 	}
-#endif
+#endif // XR_USE_PLATFORM_ANDROID
 
 	return true;
 }

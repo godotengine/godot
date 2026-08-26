@@ -243,10 +243,10 @@ private:
 				lightmap_uv_scale[1] = p_rect.position.y;
 				lightmap_uv_scale[2] = p_rect.size.x;
 				lightmap_uv_scale[3] = p_rect.size.y;
-#else
+#else // REAL_T_IS_DOUBLE
 				Rect2 *rect = reinterpret_cast<Rect2 *>(lightmap_uv_scale);
 				*rect = p_rect;
-#endif
+#endif // REAL_T_IS_DOUBLE
 			}
 
 			inline void set_compressed_aabb(const AABB &p_aabb) {
@@ -258,12 +258,12 @@ private:
 				compressed_aabb_size[0] = p_aabb.size.x;
 				compressed_aabb_size[1] = p_aabb.size.y;
 				compressed_aabb_size[2] = p_aabb.size.z;
-#else
+#else // REAL_T_IS_DOUBLE
 				Vector3 *compressed_aabb_position_vec3 = reinterpret_cast<Vector3 *>(compressed_aabb_position);
 				Vector3 *compressed_aabb_size_vec3 = reinterpret_cast<Vector3 *>(compressed_aabb_size);
 				*compressed_aabb_position_vec3 = p_aabb.position;
 				*compressed_aabb_size_vec3 = p_aabb.size;
-#endif
+#endif // REAL_T_IS_DOUBLE
 			}
 
 			inline void set_uv_scale(const Vector4 &p_uv_scale) {
@@ -272,10 +272,10 @@ private:
 				uv_scale[1] = p_uv_scale.y;
 				uv_scale[2] = p_uv_scale.z;
 				uv_scale[3] = p_uv_scale.w;
-#else
+#else // REAL_T_IS_DOUBLE
 				Vector4 *uv_scale_vec4 = reinterpret_cast<Vector4 *>(uv_scale);
 				*uv_scale_vec4 = p_uv_scale;
-#endif
+#endif // REAL_T_IS_DOUBLE
 			}
 		};
 

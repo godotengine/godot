@@ -340,7 +340,7 @@ void LightmapGIData::_set_light_textures_data(const Array &p_data) {
 Array LightmapGIData::_get_light_textures_data() const {
 	return Array(storage_light_textures);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_user_data", "data"), &LightmapGIData::_set_user_data);
@@ -382,7 +382,7 @@ void LightmapGIData::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, TextureLayered::get_class_static(), PROPERTY_USAGE_NONE), "set_light_texture", "get_light_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "light_textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL), "_set_light_textures_data", "_get_light_textures_data");
-#endif
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(SHADOWMASK_MODE_NONE);
 	BIND_ENUM_CONSTANT(SHADOWMASK_MODE_REPLACE);
@@ -1650,7 +1650,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				}
 			}
 		}
-#endif
+#endif // DEBUG_SIMPLICES_AS_OBJ_FILE
 
 		LocalVector<BSPNode> bsp_nodes;
 		LocalVector<int32_t> planes_tested;
@@ -1685,7 +1685,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			for (uint32_t i = 0; i < bsp_nodes.size(); i++) {
 				f->store_line(itos(i) + " - plane: " + bsp_nodes[i].plane + " over: " + itos(bsp_nodes[i].over) + " under: " + itos(bsp_nodes[i].under));
 			}
-#endif
+#endif // DEBUG_BSP_TREE
 		}
 
 		gi_data->set_capture_data(bounds, interior, Vector<Vector3>(probe_points), Vector<Color>(probe_sh), tetrahedrons, bsp_array, exposure_normalization, bake_probe_hash);

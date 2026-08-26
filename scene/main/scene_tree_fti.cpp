@@ -51,7 +51,7 @@
 // Uncomment this to regularly print the tree that is being interpolated.
 // #define GODOT_SCENE_TREE_FTI_PRINT_TREE
 
-#endif
+#endif // DEV_ENABLED
 
 void SceneTreeFTI::_reset_node3d_flags(Node3D &r_node) {
 	r_node.data.fti_on_tick_xform_list = false;
@@ -276,7 +276,7 @@ void SceneTreeFTI::_create_depth_lists() {
 				print_line("0 nodes moved during frame.");
 			}
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		for (uint32_t n = 0; n < source_list.size(); n++) {
 			Node3D *s = source_list[n];
@@ -294,7 +294,7 @@ void SceneTreeFTI::_create_depth_lists() {
 			if (dest_list.find(s) != -1) {
 				ERR_FAIL_COND(dest_list.find(s) != -1);
 			}
-#endif
+#endif // GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
 
 #ifdef DEBUG_ENABLED
 			if (log_nodes_moved_on_frame) {
@@ -330,7 +330,7 @@ void SceneTreeFTI::_node_add_to_frame_list(Node3D &r_node, bool p_forced) {
 		if (found != -1) {
 			ERR_FAIL_COND(found != -1);
 		}
-#endif
+#endif // GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
 		data.frame_xform_list_forced.push_back(&r_node);
 		r_node.data.fti_frame_xform_force_update = true;
 	} else {
@@ -340,7 +340,7 @@ void SceneTreeFTI::_node_add_to_frame_list(Node3D &r_node, bool p_forced) {
 		if (found != -1) {
 			ERR_FAIL_COND(found != -1);
 		}
-#endif
+#endif // GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
 		data.frame_xform_list.push_back(&r_node);
 		r_node.data.fti_on_frame_xform_list = true;
 	}
@@ -459,7 +459,7 @@ void SceneTreeFTI::node_3d_notify_delete(Node3D *p_node) {
 
 	DEV_CHECK_ONCE(data.frame_xform_list.find(p_node) == -1);
 	DEV_CHECK_ONCE(data.frame_xform_list_forced.find(p_node) == -1);
-#endif
+#endif // GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
 }
 
 void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_half_frame, float p_interpolation_fraction, bool p_active, const Transform3D *p_parent_global_xform, int p_depth) {
@@ -538,7 +538,7 @@ void SceneTreeFTI::_update_dirty_nodes(Node *p_node, uint32_t p_current_half_fra
 			}
 			print_line(sz + p_node->get_name() + (dirty ? " DIRTY" : "") + (s->get_transform() == Transform3D() ? "\t[IDENTITY]" : ""));
 		}
-#endif
+#endif // GODOT_SCENE_TREE_FTI_PRINT_TREE
 
 		// First calculate our local xform.
 		// This will either use interpolation, or just use the current local if not interpolated.
@@ -630,7 +630,7 @@ void SceneTreeFTI::frame_update(Node *p_root, bool p_frame_start) {
 		print_line(String("\nScene: ") + (data.frame_start ? "start" : "end") + "\n");
 	}
 #endif
-#endif
+#endif // DEBUG_ENABLED
 
 	data.debug_node_count = 0;
 	data.debug_nodes_processed = 0;
@@ -805,7 +805,7 @@ SceneTreeFTI::~SceneTreeFTI() {
 		memfree(_tests);
 		_tests = nullptr;
 	}
-#endif
+#endif // GODOT_SCENE_TREE_FTI_VERIFY
 }
 
 #endif // ndef _3D_DISABLED

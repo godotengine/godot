@@ -58,5 +58,5 @@ Dependency::~Dependency() {
 			E.key->dependencies.erase(this);
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 }

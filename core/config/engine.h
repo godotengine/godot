@@ -179,7 +179,7 @@ public:
 
 	_FORCE_INLINE_ void set_recovery_mode_hint(bool p_enabled) { recovery_mode_hint = p_enabled; }
 	_FORCE_INLINE_ bool is_recovery_mode_hint() const { return recovery_mode_hint; }
-#else
+#else // TOOLS_ENABLED
 	_FORCE_INLINE_ void set_editor_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_editor_hint() const { return false; }
 
@@ -191,7 +191,7 @@ public:
 
 	_FORCE_INLINE_ void set_recovery_mode_hint(bool p_enabled) {}
 	_FORCE_INLINE_ bool is_recovery_mode_hint() const { return false; }
-#endif
+#endif // TOOLS_ENABLED
 
 	Dictionary get_version_info() const;
 	Dictionary get_author_info() const;

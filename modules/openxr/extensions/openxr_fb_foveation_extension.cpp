@@ -75,7 +75,7 @@ OpenXRFBFoveationExtension::OpenXRFBFoveationExtension(const String &p_rendering
 	meta_vulkan_swapchain_create_info.next = nullptr;
 	meta_vulkan_swapchain_create_info.additionalCreateFlags = 0;
 	meta_vulkan_swapchain_create_info.additionalUsageFlags = 0;
-#endif
+#endif // VULKAN_ENABLED
 
 	if (rendering_driver == "opengl3") {
 		swapchain_create_info_foveation_fb.flags = XR_SWAPCHAIN_CREATE_FOVEATION_SCALED_BIN_BIT_FB;
@@ -147,7 +147,7 @@ void *OpenXRFBFoveationExtension::set_system_properties_and_get_next_pointer(voi
 		meta_foveation_eye_tracked_properties.next = p_next_pointer;
 		return &meta_foveation_eye_tracked_properties;
 	}
-#endif
+#endif // XR_USE_GRAPHICS_API_VULKAN
 	return p_next_pointer;
 }
 
@@ -170,7 +170,7 @@ void *OpenXRFBFoveationExtension::set_swapchain_create_info_and_get_next_pointer
 			meta_vulkan_swapchain_create_info.next = next;
 			next = &meta_vulkan_swapchain_create_info;
 		}
-#endif
+#endif // VULKAN_ENABLED
 	}
 
 	return next;

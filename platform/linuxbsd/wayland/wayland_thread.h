@@ -39,7 +39,7 @@
 #include "wayland/dynwrappers/wayland-cursor-so_wrap.h"
 #include "wayland/dynwrappers/wayland-egl-core-so_wrap.h"
 #include "xkbcommon-so_wrap.h"
-#else
+#else // SOWRAP_ENABLED
 #include <wayland-client-core.h>
 #include <wayland-cursor.h>
 #ifdef GLES3_ENABLED
@@ -375,7 +375,7 @@ public:
 		// rid of this cleanly once we have our own CSDs.
 		struct libdecor_frame *libdecor_frame = nullptr;
 		struct libdecor_configuration *pending_libdecor_configuration = nullptr;
-#endif
+#endif // LIBDECOR_ENABLED
 
 		RegistryState *registry;
 		WaylandThread *wayland_thread;

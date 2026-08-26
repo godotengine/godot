@@ -139,4 +139,4 @@ JavaClassWrapper::JavaClassWrapper() {
 	singleton = this;
 }
 
-#endif
+#endif // !defined(ANDROID_ENABLED)

@@ -409,7 +409,7 @@ void CameraAttributesPhysical::_update_frustum() {
 		use_far = false;
 		use_near = false;
 	}
-#endif
+#endif // DEBUG_ENABLED
 	RS::get_singleton()->camera_attributes_set_dof_blur(
 			get_rid(),
 			use_far,

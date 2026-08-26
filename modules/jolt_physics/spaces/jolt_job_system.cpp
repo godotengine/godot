@@ -53,7 +53,7 @@ void JoltJobSystem::Job::_execute(void *p_user_data) {
 	timings_lock.lock();
 	timings_by_job[job->name] += time_elapsed;
 	timings_lock.unlock();
-#endif
+#endif // DEBUG_ENABLED
 
 	job->Release();
 }
@@ -196,4 +196,4 @@ void JoltJobSystem::flush_timings() {
 	}
 }
 
-#endif
+#endif // DEBUG_ENABLED

@@ -57,7 +57,7 @@ void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
 	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
 	ClassDB::bind_method(D_METHOD("publish_diagnostics", "path"), &GDScriptWorkspace::publish_diagnostics);
-#endif
+#endif // DISABLE_DEPRECATED
 }
 
 void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {

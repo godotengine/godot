@@ -307,7 +307,7 @@ Ref<Script> PropertyUtils::get_custom_type_script(const Object *p_object) {
 		assign_custom_type_script(const_cast<Object *>(p_object), script_object);
 		return script_object;
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 	ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(custom_script);
 	if (unlikely(id == ResourceUID::INVALID_ID || !ResourceUID::get_singleton()->has_id(id))) {
 		const_cast<Object *>(p_object)->remove_meta(SceneStringName(_custom_type_script));

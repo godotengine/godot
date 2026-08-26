@@ -73,7 +73,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 	static OSStatus output_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 			void *inClientData);
-#endif
+#endif // MACOS_ENABLED
 
 	static OSStatus output_callback(void *inRefCon,
 			AudioUnitRenderActionFlags *ioActionFlags,
@@ -115,7 +115,7 @@ public:
 	virtual PackedStringArray get_input_device_list() override;
 	virtual String get_input_device() override;
 	virtual void set_input_device(const String &p_name) override;
-#endif
+#endif // MACOS_ENABLED
 
 	virtual Error input_start() override;
 	virtual Error input_stop() override;

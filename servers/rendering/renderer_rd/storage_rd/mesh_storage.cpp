@@ -349,7 +349,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::Surfa
 		}
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 
 	uint64_t surface_version = p_surface.format & (uint64_t(RSE::ARRAY_FLAG_FORMAT_VERSION_MASK) << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 	RenderingServerTypes::SurfaceData new_surface = p_surface;
@@ -367,7 +367,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::Surfa
 						(surface_version >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK,
 						(RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK));
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	Mesh::Surface *s = memnew(Mesh::Surface);
 

@@ -117,7 +117,7 @@ void godot_nir_free(void *p_block) {
 }
 }
 
-#else
+#else // SPIRV_TO_DXIL_ENABLE_HEAP_PER_THREAD
 
 extern "C" {
 void *godot_nir_malloc(size_t p_size) {
@@ -133,7 +133,7 @@ void godot_nir_free(void *p_block) {
 }
 }
 
-#endif
+#endif // SPIRV_TO_DXIL_ENABLE_HEAP_PER_THREAD
 
 static D3D12_SHADER_VISIBILITY stages_to_d3d12_visibility(uint32_t p_stages_mask) {
 	switch (p_stages_mask) {
@@ -230,9 +230,9 @@ uint32_t RenderingDXIL::patch_specialization_constant(
 		DEV_ASSERT(!p_is_first_patch || ((orig_patch_val >> 1) & GODOT_NIR_SC_SENTINEL_MAGIC_MASK) == GODOT_NIR_SC_SENTINEL_MAGIC);
 		uint64_t readback_patch_val = tamper_bits(bytecode.ptrw(), offset, (uint64_t)patch_val);
 		DEV_ASSERT(readback_patch_val == (uint64_t)patch_val);
-#else
+#else // DEV_ENABLED
 		tamper_bits(bytecode.ptrw(), offset, (uint64_t)patch_val);
-#endif
+#endif // DEV_ENABLED
 
 		stages_patched_mask |= (1 << stage);
 	}
@@ -890,7 +890,7 @@ void RenderingShaderContainerD3D12::_nir_report_bitcode_bit_offset(uint64_t p_bi
 		sc_d3d12.stages_bit_offsets[offset_idx] += p_bit_offset;
 	}
 }
-#endif
+#endif // NIR_ENABLED
 
 void RenderingShaderContainerD3D12::_set_from_shader_reflection_post(const ReflectShader &p_shader) {
 	reflection_binding_set_data_d3d12.resize(reflection_binding_set_uniforms_count.size());
@@ -962,9 +962,9 @@ bool RenderingShaderContainerD3D12::_set_code_from_spirv(const ReflectShader &p_
 	}
 
 	return true;
-#else
+#else // NIR_ENABLED
 	ERR_FAIL_V_MSG(false, "Shader compilation is not supported at runtime without NIR.");
-#endif
+#endif // NIR_ENABLED
 }
 
 RenderingShaderContainerD3D12::RenderingShaderContainerD3D12() {

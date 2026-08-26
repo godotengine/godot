@@ -1421,7 +1421,7 @@ void AudioServer::update() {
 
 	AudioDriver::get_singleton()->reset_profiling_time();
 	prof_time.set(0);
-#endif
+#endif // DEBUG_ENABLED
 
 	for (CallbackItem *ci : update_callback_list) {
 		ci->callback(ci->userdata);
@@ -1762,7 +1762,7 @@ void AudioServer::get_argument_options(const StringName &p_function, int p_idx, 
 
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 AuSE::PlaybackType AudioServer::get_default_playback_type() const {
 	int playback_type = GLOBAL_GET_CACHED(int, "audio/general/default_playback_type");

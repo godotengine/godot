@@ -64,7 +64,7 @@ vec3 screen_space_dither(vec2 frag_coord, float bit_alignment_diviser) {
 	// Use a dither strength of 100% rather than the 37.5% suggested by the original source.
 	return (dither.rgb - 0.5) / bit_alignment_diviser;
 }
-#endif
+#endif // MODE_GLOW_UPSAMPLE
 
 layout(location = 0) out vec4 frag_color;
 
@@ -89,7 +89,7 @@ vec4 BloomDownKernel4(sampler2D Tex, vec2 uv0) {
 	return c;
 }
 
-#endif
+#endif // MODE_GLOW_DOWNSAMPLE
 
 #ifdef MODE_GLOW_UPSAMPLE
 
@@ -146,7 +146,7 @@ void main() {
 	color += texture(source_color, uv_interp + vec2(-0.5, 0.5) * pix_size);
 	frag_color = color / 4.0;
 
-#endif
+#endif // MODE_MIPMAP
 
 #ifdef MODE_GAUSSIAN_BLUR
 
@@ -175,7 +175,7 @@ void main() {
 	frag_color += (B + C + H + G) * lesser_weight;
 	frag_color += (F + G + L + K) * lesser_weight;
 	frag_color += (G + H + M + L) * lesser_weight;
-#endif
+#endif // MODE_GAUSSIAN_BLUR
 
 #ifdef MODE_GLOW_GATHER
 	// First step, go straight to quarter resolution.

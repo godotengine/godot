@@ -258,7 +258,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	// Pass the exception to the OS
 	return EXCEPTION_CONTINUE_SEARCH;
 }
-#endif
+#endif // CRASH_HANDLER_EXCEPTION
 
 CrashHandler::CrashHandler() {
 	disabled = false;

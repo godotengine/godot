@@ -402,7 +402,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		} else {
 			android_sdk_error_container->hide();
 		}
-#endif
+#endif // ANDROID_ENABLED
 
 		export_warning->hide();
 		export_button->set_disabled(true);
@@ -575,7 +575,7 @@ void ProjectExportDialog::_update_android_sdk_error_container() {
 		_update_current_preset();
 	}
 }
-#endif
+#endif // ANDROID_ENABLED
 
 void ProjectExportDialog::_options_filter_changed(const String &p_filter) {
 	const bool search_active = !p_filter.is_empty();
@@ -2135,7 +2135,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	setup_android_java_sdk->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	android_sdk_error_container->add_child(setup_android_java_sdk);
 	setup_android_java_sdk->connect(SceneStringName(pressed), callable_mp(android_sdk_manager, &AndroidSDKManager::run_setup).bind(Callable(), Callable()));
-#endif
+#endif // ANDROID_ENABLED
 
 	// Export project file dialog.
 

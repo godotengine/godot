@@ -39,7 +39,7 @@
 //  debugger crashes the engine and it causes weird errors.
 // See: https://github.com/onqtam/doctest/issues/401
 #define DOCTEST_THREAD_LOCAL
-#endif
+#endif // defined(_MSC_VER) && !defined(DOCTEST_THREAD_LOCAL)
 
 #if !__cpp_exceptions && !__EXCEPTIONS && !defined(DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS)
 #define DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS

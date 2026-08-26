@@ -657,7 +657,7 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 					Ref<FileAccess> f = FileAccess::open("res://popo.spv", FileAccess::WRITE);
 					f->store_buffer((const uint8_t *)&SpirV[0], SpirV.size() * sizeof(uint32_t));
 				}
-#endif
+#endif // 0
 
 				ERR_FAIL_COND_V_MSG(reflection.push_constant_size && reflection.push_constant_size != pconstants[0]->size, FAILED,
 						"Reflection of SPIR-V shader stage '" + String(RDC::SHADER_STAGE_NAMES[p_spirv[i].shader_stage]) + "': Push constant block must be the same across shader stages.");

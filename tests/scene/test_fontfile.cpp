@@ -83,7 +83,7 @@ TEST_CASE("[FontFile] Load Dynamic Font - getters") {
 	CHECK(ff->get_descent(100) == doctest::Approx((real_t)30));
 	CHECK(ff->get_underline_position(100) == doctest::Approx((real_t)12.5));
 	CHECK(ff->get_underline_thickness(100) == doctest::Approx((real_t)5));
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 }
 
 TEST_CASE("[FontFile] Create font file and check data") {
@@ -122,7 +122,7 @@ TEST_CASE("[FontFile] Create font file and check data") {
 	CHECK_MESSAGE(font_file->get_glyph_index(2, 0x4416, 0) == 0, "Glyph index is invalid.");
 	CHECK_MESSAGE(font_file->get_glyph_index(2, 0x5555, 0) == 0, "Glyph index is invalid.");
 	CHECK_MESSAGE(font_file->get_glyph_index(2, 0x2901, 0) == 0, "Glyph index is invalid.");
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 }
 
 } // namespace TestFontFile

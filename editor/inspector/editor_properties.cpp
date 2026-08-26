@@ -1613,7 +1613,7 @@ void EditorPropertyInteger::update_property() {
 	if (val != (int64_t)(double)(val)) {
 		WARN_PRINT("Cannot reliably represent '" + itos(val) + "' in the inspector, value is too large.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void EditorPropertyInteger::setup(const EditorPropertyRangeHint &p_range_hint) {

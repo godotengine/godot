@@ -243,7 +243,7 @@ Error HTTPClientWeb::poll() {
 						   "frame on the Web platform.");
 			}
 			last_polling_frame = Engine::get_singleton()->get_process_frames();
-#endif
+#endif // DEBUG_ENABLED
 
 			polled_response_code = godot_js_fetch_http_status_get(js_id);
 			godot_js_fetch_state_t js_state = godot_js_fetch_state_get(js_id);

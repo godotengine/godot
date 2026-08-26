@@ -60,7 +60,7 @@ void DetectPrimeEGL::create_context(EGLenum p_platform_enum) {
 		print_verbose("Unable to load EGL, GPU detection skipped.");
 		quick_exit(1);
 	}
-#endif
+#endif // defined(GLAD_ENABLED)
 
 	EGLDisplay egl_display = EGL_NO_DISPLAY;
 
@@ -84,7 +84,7 @@ void DetectPrimeEGL::create_context(EGLenum p_platform_enum) {
 		print_verbose("Unable to load EGL, GPU detection skipped.");
 		quick_exit(1);
 	}
-#endif
+#endif // defined(GLAD_ENABLED)
 
 	eglBindAPI(EGL_OPENGL_API);
 

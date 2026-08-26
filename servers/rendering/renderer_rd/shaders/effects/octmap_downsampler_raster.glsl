@@ -107,7 +107,7 @@ void main() {
 	frag_color += textureLod(source_octmap, vec2(u1, v0) * 0.5f + 0.5f, 0.0) * weights[1];
 	frag_color += textureLod(source_octmap, vec2(u0, v1) * 0.5f + 0.5f, 0.0) * weights[2];
 	frag_color += textureLod(source_octmap, vec2(u1, v1) * 0.5f + 0.5f, 0.0) * weights[3];
-#else
+#else // USE_HIGH_QUALITY
 	frag_color = textureLod(source_octmap, uv_interp, 0.0);
-#endif
+#endif // USE_HIGH_QUALITY
 }

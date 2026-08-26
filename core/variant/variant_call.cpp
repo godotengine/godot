@@ -1244,7 +1244,7 @@ struct _VariantCall {
 	static int64_t _bsearch_bind_compat_112539(Vector<T> *p_vector, const T &p_value, bool p_before) {
 		return p_vector->bsearch(p_value, p_before);
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 };
 
 HashMap<StringName, Variant> *_VariantCall::variant_constants = nullptr;
@@ -1385,7 +1385,7 @@ static void register_builtin_compat_method(const Vector<String> &p_argnames, con
 	}
 	builtin_compat_method_info[T::get_base_type()][name].push_back(imi);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void Variant::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 	if (type == Variant::OBJECT) {
@@ -1522,7 +1522,7 @@ Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method_with_compatibility(Var
 			}
 		}
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	return nullptr;
 }
@@ -1632,7 +1632,7 @@ Vector<uint32_t> Variant::get_builtin_method_compatibility_hashes(Variant::Type 
 			method_hashes.push_back(imi.get_hash());
 		}
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 	return method_hashes;
 }
 

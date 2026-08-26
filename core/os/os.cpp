@@ -493,7 +493,7 @@ bool OS::has_feature(const String &p_feature) {
 	} else if (p_feature == "embedded_in_editor") {
 		return _embedded_in_editor;
 	}
-#else
+#else // TOOLS_ENABLED
 	if (p_feature == "template") {
 		return true;
 	}
@@ -774,7 +774,7 @@ void OS::benchmark_begin_measure(const String &p_context, const String &p_what) 
 	ERR_FAIL_COND_MSG(benchmark_marks_from.has(mark_key), vformat("Benchmark key '%s:%s' already exists.", p_context, p_what));
 
 	benchmark_marks_from[mark_key] = OS::get_singleton()->get_ticks_usec();
-#endif
+#endif // TOOLS_ENABLED
 }
 void OS::benchmark_end_measure(const String &p_context, const String &p_what) {
 #ifdef TOOLS_ENABLED
@@ -784,7 +784,7 @@ void OS::benchmark_end_measure(const String &p_context, const String &p_what) {
 	uint64_t total = OS::get_singleton()->get_ticks_usec() - benchmark_marks_from[mark_key];
 	double total_f = double(total) / double(1000000);
 	benchmark_marks_final[mark_key] = total_f;
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void OS::benchmark_dump() {
@@ -821,7 +821,7 @@ void OS::benchmark_dump() {
 			print_line(vformat("\t[%s]\n%s", E.key, E.value));
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 OS::OS() {

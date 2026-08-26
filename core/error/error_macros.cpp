@@ -253,5 +253,5 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 			}
 		}
 	}
-#endif
+#endif // defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 }

@@ -469,7 +469,7 @@ void AudioStreamOggVorbis::maybe_update_info() {
 			WARN_PRINT(vformat(R"(Invalid comment in Ogg Vorbis file "%s", should contain '=': "%s".)", get_path(), c));
 			continue;
 		}
-#endif
+#endif // TOOLS_ENABLED
 
 		String tag = c.substr(0, equals);
 		String tag_value = c.substr(equals + 1);

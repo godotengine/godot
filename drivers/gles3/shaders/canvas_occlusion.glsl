@@ -62,7 +62,7 @@ void main() {
 	highp vec4 comp = fract(out_depth * vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
 	out_buf = comp;
-#else
+#else // USE_RGBA_SHADOWS
 	out_buf = out_depth;
-#endif
+#endif // USE_RGBA_SHADOWS
 }

@@ -44,7 +44,7 @@ typedef struct cp_layer_renderer_capabilities *cp_layer_renderer_capabilities_t;
 typedef struct cp_frame *cp_frame_t;
 typedef struct cp_drawable *cp_drawable_t;
 typedef struct cp_frame_timing *cp_frame_timing_t;
-#endif
+#endif // __OBJC__
 
 class RenderingServer;
 namespace MTL3 {

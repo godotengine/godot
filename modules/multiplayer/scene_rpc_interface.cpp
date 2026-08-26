@@ -60,7 +60,7 @@ _FORCE_INLINE_ void SceneRPCInterface::_profile_node_data(const String &p_what, 
 		EngineDebugger::profiler_add_frame_data("multiplayer:rpc", values);
 	}
 }
-#endif
+#endif // DEBUG_ENABLED
 
 // Returns the packet size stripping the node path added when the node is not yet cached.
 int get_packet_len(uint32_t p_node_target, int p_packet_len) {

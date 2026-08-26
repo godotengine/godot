@@ -824,7 +824,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 					vertex.tangent.d = vertex.normal.cross(vertex.tangent.normal).dot(bn) > 0 ? 1 : -1;
 				}
 
-#endif
+#endif // NO_UP_AXIS_SWAP
 
 				vertex.fix_unit_scale(collada);
 				int index = 0;
@@ -1116,7 +1116,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 						SWAP(out.y, out.z);
 						out.z = -out.z;
 					}
-#endif
+#endif // NO_UP_AXIS_SWAP
 					pos *= collada.state.unit_scale;
 					in *= collada.state.unit_scale;
 					out *= collada.state.unit_scale;

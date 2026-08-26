@@ -40,7 +40,7 @@ precision highp int;
 precision mediump float;
 precision mediump int;
 #endif
-#endif
+#endif // USE_GLES_OVER_GL
 
 uniform sampler2D source; //texunit:0
 /* clang-format on */

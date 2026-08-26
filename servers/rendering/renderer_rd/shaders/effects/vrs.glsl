@@ -89,5 +89,5 @@ void main() {
 	// Encode to frag_color;
 	frag_color = int(color.r + 0.1) << 2;
 	frag_color += int(color.g + 0.1);
-#endif
+#endif // SPLIT_RG
 }

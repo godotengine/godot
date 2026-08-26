@@ -611,7 +611,7 @@ TEST_CASE("[String] Number to string") {
 	CHECK_MESSAGE(String::num_real(real_t(-123.456789)) == "-123.456789", "Prints the appropriate amount of digits for real_t = double.");
 	CHECK_MESSAGE(String::num_real(real_t(Math::PI)) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
 	CHECK_MESSAGE(String::num_real(real_t(3.1415f)) == "3.1414999961853", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double) and no trailing zero.");
-#else
+#else // REAL_T_IS_DOUBLE
 	CHECK_MESSAGE(String::num_real(real_t(123.456789)) == "123.4568", "Prints the appropriate amount of digits for real_t = float.");
 	CHECK_MESSAGE(String::num_real(real_t(-123.456789)) == "-123.4568", "Prints the appropriate amount of digits for real_t = float.");
 	CHECK_MESSAGE(String::num_real(real_t(Math::PI)) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");

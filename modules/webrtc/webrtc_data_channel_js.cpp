@@ -214,4 +214,4 @@ WebRTCDataChannelJS::~WebRTCDataChannelJS() {
 	close();
 	godot_js_rtc_datachannel_destroy(_js_id);
 }
-#endif
+#endif // WEB_ENABLED

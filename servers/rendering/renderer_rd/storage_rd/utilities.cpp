@@ -274,7 +274,7 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 	if (p_feature == "s3tc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC1_RGB_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
 		return true;
 	}
-#endif
+#endif // !defined(ANDROID_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED)
 
 	if (p_feature == "bptc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC7_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
 		return true;

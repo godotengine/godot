@@ -492,7 +492,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared(TextureID p_ori
 		// TODO(sgc): is it ok to create a shared texture from a multi-sample texture?
 		WARN_PRINT("Is it safe to create a shared texture from multi-sample texture?");
 	}
-#endif
+#endif // DEV_ENABLED
 
 	MTL::PixelFormat format = (MTL::PixelFormat)pixel_formats->getMTLPixelFormat(p_view.format);
 
@@ -835,7 +835,7 @@ RDD::SamplerID RenderingDeviceDriverMetal::sampler_create(const SamplerState &p_
 			desc->setLodBias(p_state.lod_bias);
 		}
 	}
-#endif
+#endif // __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 260000 || __TV_OS_VERSION_MAX_ALLOWED >= 260000 || __VISION_OS_VERSION_MAX_ALLOWED >= 260000
 
 	MTL::SamplerState *obj = device->newSamplerState(desc.get());
 	ERR_FAIL_NULL_V_MSG(obj, SamplerID(), "newSamplerState failed");
@@ -2652,11 +2652,11 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 	case NAME: \
 		WARN_PRINT_ONCE("Returning maximum value for unknown limit " #NAME "."); \
 		return safe_unbounded;
-#else
+#else // defined(DEV_ENABLED)
 #define UNKNOWN(NAME) \
 	case NAME: \
 		return safe_unbounded
-#endif
+#endif // defined(DEV_ENABLED)
 
 	// clang-format off
 	switch (p_limit) {
@@ -2890,7 +2890,7 @@ RenderingDeviceDriverMetal::~RenderingDeviceDriverMetal() {
 						p.allocation_count, p.dedicated_count, String::humanize_size(p.dedicated_bytes)));
 			}
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		memdelete(allocator);
 		allocator = nullptr;

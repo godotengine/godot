@@ -115,7 +115,7 @@ public:
 
 private:
 	static InstantiationWarningNotify instantiation_warn_notify;
-#endif
+#endif // TOOLS_ENABLED
 
 protected:
 	static void _bind_methods();
@@ -289,7 +289,7 @@ public:
 	}
 
 	static HashSet<StringName> get_scene_groups(const String &p_path);
-#endif
+#endif // TOOLS_ENABLED
 	Ref<SceneState> get_state() const;
 
 	PackedScene();

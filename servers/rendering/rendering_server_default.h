@@ -107,11 +107,11 @@ public:
 		_changes_changed();
 	}
 
-#else
+#else // DEBUG_CHANGES
 	_FORCE_INLINE_ static void redraw_request() {
 		changes++;
 	}
-#endif
+#endif // DEBUG_CHANGES
 
 #define WRITE_ACTION redraw_request();
 #define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)

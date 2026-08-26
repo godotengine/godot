@@ -65,7 +65,7 @@ private:
 		resource_last_modified_time = p_resource_last_modified_time;
 		library_last_modified_time = p_library_last_modified_time;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 public:
 	static bool match_all_tags(PackedStringArray p_tags, std::function<bool(String)> p_has_feature);

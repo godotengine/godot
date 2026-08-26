@@ -44,14 +44,14 @@ light_probes;
 
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
 layout(set = 1, binding = 2) uniform texture2D environment;
-#endif
+#endif // MODE_LIGHT_PROBES
 
 #ifdef MODE_UNOCCLUDE
 
 layout(rgba32f, set = 1, binding = 0) uniform restrict image2DArray position;
 layout(rgba32f, set = 1, binding = 1) uniform restrict image2DArray unocclude;
 
-#endif
+#endif // MODE_UNOCCLUDE
 
 #if defined(MODE_DIRECT_LIGHT) || defined(MODE_BOUNCE_LIGHT)
 
@@ -61,7 +61,7 @@ layout(set = 1, binding = 2) uniform texture2DArray source_position;
 layout(set = 1, binding = 3) uniform texture2DArray source_normal;
 layout(rgba16f, set = 1, binding = 4) uniform restrict image2DArray accum_light;
 
-#endif
+#endif // defined(MODE_DIRECT_LIGHT) || defined(MODE_BOUNCE_LIGHT)
 
 #if defined(MODE_DIRECT_LIGHT) && defined(USE_SHADOWMASK)
 layout(rgba8, set = 1, binding = 5) uniform restrict writeonly image2DArray shadowmask;
@@ -92,7 +92,7 @@ layout(set = 1, binding = 4) uniform DenoiseParams {
 	uint slice_count;
 }
 denoise_params;
-#endif
+#endif // MODE_DENOISE
 
 layout(push_constant, std430) uniform Params {
 	uint atlas_slice;
@@ -705,7 +705,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	r_light = light_data.energy * attenuation * penumbra * penumbra_color;
 }
 
-#endif
+#endif // defined(MODE_DIRECT_LIGHT) || defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
 
 #if defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
 
@@ -760,7 +760,7 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			}
 
 			direct_light *= bake_params.exposure_normalization;
-#endif
+#endif // USE_LIGHT_TEXTURE_FOR_BOUNCES
 
 			vec4 albedo_alpha = textureLod(sampler2DArray(albedo_tex, linear_sampler), uvw, 0).rgba;
 			vec3 emissive = textureLod(sampler2DArray(emission_tex, linear_sampler), uvw, 0).rgb;
@@ -841,7 +841,7 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			}
 
 			direct_light *= bake_params.exposure_normalization;
-#endif
+#endif // USE_LIGHT_TEXTURE_FOR_BOUNCES
 
 			vec3 emissive = textureLod(sampler2DArray(emission_tex, linear_sampler), uvw, 0).rgb;
 			emissive *= bake_params.exposure_normalization;
@@ -857,7 +857,7 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 	return light;
 }
 
-#endif
+#endif // defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
 
 void main() {
 	// Check if invocation is out of bounds.
@@ -867,12 +867,12 @@ void main() {
 		return;
 	}
 
-#else
+#else // MODE_LIGHT_PROBES
 	ivec2 atlas_pos = ivec2(gl_GlobalInvocationID.xy) + params.region_ofs;
 	if (any(greaterThanEqual(atlas_pos, bake_params.atlas_size))) {
 		return;
 	}
-#endif
+#endif // MODE_LIGHT_PROBES
 
 #ifdef MODE_DIRECT_LIGHT
 	vec3 normal = texelFetch(sampler2DArray(source_normal, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0).xyz;
@@ -901,7 +901,7 @@ void main() {
 			vec4(0.0, 0.0, 0.0, 1.0),
 			vec4(0.0, 0.0, 0.0, 1.0),
 			vec4(0.0, 0.0, 0.0, 1.0));
-#endif
+#endif // USE_SH_LIGHTMAPS
 
 	// Use atlas position and a prime number as the seed.
 	uint noise = random_seed(ivec3(atlas_pos, 43573547));
@@ -946,7 +946,7 @@ void main() {
 			for (uint j = 0; j < 4; j++) {
 				sh_accum[j].rgb += light * c[j] * bake_params.exposure_normalization;
 			}
-#endif
+#endif // USE_SH_LIGHTMAPS
 		}
 
 		light_for_bounces += light * lights.data[i].indirect_energy;
@@ -967,10 +967,10 @@ void main() {
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 1), sh_accum[1]);
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 2), sh_accum[2]);
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + 3), sh_accum[3]);
-#else
+#else // USE_SH_LIGHTMAPS
 	light_for_texture *= bake_params.exposure_normalization;
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice), vec4(light_for_texture, 1.0));
-#endif
+#endif // USE_SH_LIGHTMAPS
 
 #ifdef USE_SHADOWMASK
 	imageStore(shadowmask, ivec3(atlas_pos, params.atlas_slice), vec4(shadowmask_value, shadowmask_value, shadowmask_value, 1.0));
@@ -986,9 +986,9 @@ void main() {
 			vec4(0.0, 0.0, 0.0, 1.0),
 			vec4(0.0, 0.0, 0.0, 1.0),
 			vec4(0.0, 0.0, 0.0, 1.0));
-#else
+#else // USE_SH_LIGHTMAPS
 	vec3 light_accum = vec3(0.0);
-#endif
+#endif // USE_SH_LIGHTMAPS
 
 	// Retrieve starting normal and position.
 	vec3 normal = texelFetch(sampler2DArray(source_normal, linear_sampler), ivec3(atlas_pos, params.atlas_slice), 0).xyz;
@@ -1022,9 +1022,9 @@ void main() {
 		for (uint j = 0; j < 4; j++) {
 			sh_accum[j].rgb += light * c[j];
 		}
-#else
+#else // USE_SH_LIGHTMAPS
 		light_accum += light;
-#endif
+#endif // USE_SH_LIGHTMAPS
 	}
 
 	// Add the averaged result to the accumulated light texture.
@@ -1034,13 +1034,13 @@ void main() {
 		accum.rgb += sh_accum[i].rgb / float(params.ray_count);
 		imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice * 4 + i), accum);
 	}
-#else
+#else // USE_SH_LIGHTMAPS
 	vec4 accum = imageLoad(accum_light, ivec3(atlas_pos, params.atlas_slice));
 	accum.rgb += light_accum / float(params.ray_count);
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice), accum);
-#endif
+#endif // USE_SH_LIGHTMAPS
 
-#endif
+#endif // MODE_BOUNCE_LIGHT
 
 #ifdef MODE_UNOCCLUDE
 
@@ -1087,7 +1087,7 @@ void main() {
 	imageStore(position, ivec3(atlas_pos, params.atlas_slice), position_alpha);
 	imageStore(unocclude, ivec3(atlas_pos, params.atlas_slice), vec4(unocclude_mask, 0, 0, 0));
 
-#endif
+#endif // MODE_UNOCCLUDE
 
 #ifdef MODE_LIGHT_PROBES
 
@@ -1142,7 +1142,7 @@ void main() {
 		light_probes.data[probe_index * 9 + j] = probe_sh_accum[j];
 	}
 
-#endif
+#endif // MODE_LIGHT_PROBES
 
 #ifdef MODE_DILATE
 
@@ -1174,7 +1174,7 @@ void main() {
 
 	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice), texel_color);
 
-#endif
+#endif // MODE_DILATE
 
 #ifdef MODE_DENOISE
 	// Joint Non-local means (JNLM) denoiser.
@@ -1331,7 +1331,7 @@ void main() {
 
 		imageStore(dest_light, ivec3(atlas_pos, lightmap_slice), vec4(denoised_rgb, input_light.a));
 	}
-#endif
+#endif // MODE_DENOISE
 
 #ifdef MODE_PACK_L1_COEFFS
 	vec4 base_coeff = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4), 0);
@@ -1344,5 +1344,5 @@ void main() {
 
 		imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice * 4 + i), c);
 	}
-#endif
+#endif // MODE_PACK_L1_COEFFS
 }

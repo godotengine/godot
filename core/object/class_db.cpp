@@ -228,7 +228,7 @@ public:
 		return nullptr;
 	}
 };
-#endif
+#endif // TOOLS_ENABLED
 
 bool ClassDB::_is_parent_class(const StringName &p_class, const StringName &p_inherits) {
 	const ClassInfo *c = classes.getptr(p_class);
@@ -298,7 +298,7 @@ void ClassDB::get_extension_class_list(const Ref<GDExtension> &p_extension, List
 
 	p_classes->sort_custom<StringName::AlphCompare>();
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void ClassDB::get_inheriters_from_class(const StringName &p_class, LocalVector<StringName> &p_classes) {
 	Locker::Lock lock(Locker::STATE_READ);
@@ -506,7 +506,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 	}
 
 	return hash;
-#else
+#else // DEBUG_ENABLED
 	return 0;
 #endif // DEBUG_ENABLED
 }
@@ -541,14 +541,14 @@ Object *ClassDB::_instantiate_from_gdextension(ObjectGDExtension *p_object_gd_ex
 			((RefCounted *)object)->init_ref();
 		}
 		return object;
-#endif
+#endif // DISABLE_DEPRECATED
 	} else {
 #ifndef DISABLE_DEPRECATED
 		if (p_object_gd_extension->create_instance2 != nullptr) {
 			// Caller expects no refcount, creation func returns without refcount. It's a match.
 			return (Object *)p_object_gd_extension->create_instance2(p_object_gd_extension->class_userdata, p_notify_postinitialize);
 		}
-#endif
+#endif // DISABLE_DEPRECATED
 		if (p_object_gd_extension->create_instance3 != nullptr) {
 			Object *object = (Object *)p_object_gd_extension->create_instance3(p_object_gd_extension->class_userdata, p_notify_postinitialize);
 			if (object != nullptr && object->is_ref_counted()) {
@@ -592,7 +592,7 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 		ERR_PRINT(vformat("Class '%s' can only be instantiated by editor.", String(p_class)));
 		return nullptr;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 #ifdef TOOLS_ENABLED
 	// Try to create placeholder.
@@ -791,7 +791,7 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 
 	return placeholder_extension;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 const GDType *ClassDB::get_gdtype(const StringName &p_class) {
 	Locker::Lock lock(Locker::STATE_READ);
@@ -1012,7 +1012,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 			Pair<MethodInfo, uint32_t> pair(E, E.get_compatibility_hash());
 			p_methods->push_back(pair);
 		}
-#endif
+#endif // DEBUG_ENABLED
 		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->gdtype->get_self_compatibility_method_map()) {
 			LocalVector<MethodBind *> compat(E.value);
 			for (MethodBind *method : compat) {
@@ -1058,7 +1058,7 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			}
 			return true;
 		}
-#else
+#else // DEBUG_ENABLED
 		const GDType::Property *property = type->gdtype->get_property_map(true).getptr(p_method);
 		if (property && property->type == GDType::Property::Type::METHOD) {
 			if (r_info) {
@@ -1260,7 +1260,7 @@ Vector<Error> ClassDB::get_method_error_return_values(const StringName &p_class,
 		return Vector<Error>();
 	}
 	return type->method_error_values[p_method];
-#else
+#else // DEBUG_ENABLED
 	return Vector<Error>();
 #endif // DEBUG_ENABLED
 }
@@ -1409,7 +1409,7 @@ void ClassDB::add_linked_property(const StringName &p_class, const String &p_pro
 	}
 	type->linked_properties[p_property].push_back(p_linked_property);
 
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
@@ -1448,7 +1448,7 @@ void ClassDB::get_linked_properties_info(const StringName &p_class, const String
 		}
 		check = check->inherits_ptr;
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 bool ClassDB::get_property_info(const StringName &p_class, const StringName &p_property, PropertyInfo *r_info, bool p_no_inheritance, const Object *p_validator) {

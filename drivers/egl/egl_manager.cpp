@@ -68,8 +68,8 @@ extern "C" EGLAPI EGLDisplay EGLAPIENTRY eglGetPlatformDisplayEXT(EGLenum platfo
 #define EGL_SURFACE_ORIENTATION_ANGLE 0x33A8
 #define EGL_SURFACE_ORIENTATION_INVERT_X_ANGLE 0x0001
 #define EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE 0x0002
-#endif
-#endif
+#endif // EGL_OPTIMAL_SURFACE_ORIENTATION_ANGLE
+#endif // WINDOWS_ENABLED
 
 // Creates and caches a GLDisplay. Returns -1 on error.
 int EGLManager::_get_gldisplay_id(void *p_display) {
@@ -133,7 +133,7 @@ int EGLManager::_get_gldisplay_id(void *p_display) {
 	if (has_blob_cache && !shader_cache_dir.is_empty()) {
 		eglSetBlobCacheFuncsANDROID(new_gldisplay.egl_display, &EGLManager::_set_cache, &EGLManager::_get_cache);
 	}
-#endif
+#endif // EGL_ANDROID_blob_cache
 
 #ifdef WINDOWS_ENABLED
 	String client_extensions_string = eglQueryString(new_gldisplay.egl_display, EGL_EXTENSIONS);
@@ -145,7 +145,7 @@ int EGLManager::_get_gldisplay_id(void *p_display) {
 			print_verbose("EGL: EGL_ANGLE_surface_orientation is supported.");
 		}
 	}
-#endif
+#endif // WINDOWS_ENABLED
 
 	displays.push_back(new_gldisplay);
 
@@ -183,7 +183,7 @@ EGLsizeiANDROID EGLManager::_get_cache(const void *p_key, EGLsizeiANDROID p_key_
 	}
 	return len;
 }
-#endif
+#endif // EGL_ANDROID_blob_cache
 
 Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	EGLint attribs[] = {
@@ -288,7 +288,7 @@ Error EGLManager::window_create(DisplayServerEnums::WindowID p_window_id, void *
 	if (!egl_attribs.is_empty()) {
 		egl_attribs.push_back(EGL_NONE);
 	}
-#endif
+#endif // WINDOWS_ENABLED
 
 	if (GLAD_EGL_VERSION_1_5) {
 		glwindow.egl_surface = eglCreatePlatformWindowSurface(gldisplay.egl_display, gldisplay.egl_config, p_native_window, egl_attribs.ptr());
@@ -315,7 +315,7 @@ Error EGLManager::window_create(DisplayServerEnums::WindowID p_window_id, void *
 			ERR_PRINT(vformat("Failed to get EGL_SURFACE_ORIENTATION_ANGLE, error: 0x%08X", eglGetError()));
 		}
 	}
-#endif
+#endif // WINDOWS_ENABLED
 
 	window_make_current(p_window_id);
 
@@ -494,7 +494,7 @@ Error EGLManager::initialize(void *p_native_display) {
 	ERR_FAIL_COND_V_MSG(!GLAD_EGL_VERSION_1_4, ERR_UNAVAILABLE, vformat("EGL version is too old! %d.%d < 1.4", major, minor));
 
 	eglTerminate(tmp_display);
-#endif
+#endif // defined(GLAD_ENABLED) && !defined(EGL_STATIC)
 
 #ifdef EGL_ANDROID_blob_cache
 	shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
@@ -518,7 +518,7 @@ Error EGLManager::initialize(void *p_native_display) {
 			shader_cache_dir = shader_cache_dir.path_join(String("shader_cache").path_join("EGL"));
 		}
 	}
-#endif
+#endif // EGL_ANDROID_blob_cache
 
 	String client_extensions_string = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 

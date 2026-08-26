@@ -578,7 +578,7 @@ void register_scene_types() {
 		swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
 	}
 	AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
-#endif
+#endif // ADVANCED_GUI_DISABLED
 
 	int root_dir = GLOBAL_GET("internationalization/rendering/root_node_layout_direction");
 	Control::set_root_layout_direction(root_dir);

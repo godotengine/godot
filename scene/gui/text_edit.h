@@ -1270,7 +1270,7 @@ public:
 
 	int get_selection_line(int p_caret = 0) const;
 	int get_selection_column(int p_caret = 0) const;
-#endif
+#endif // DISABLE_DEPRECATED
 
 	TextEdit(const String &p_placeholder = String());
 	~TextEdit();

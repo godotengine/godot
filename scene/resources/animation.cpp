@@ -4688,7 +4688,8 @@ struct AnimationCompressionDataState {
 #endif
 		uint32_t debug_packet_push = get_temp_packet_size();
 		uint32_t debug_data_size = data.size();
-#endif
+#endif // DEBUG_PACKET_PUSH
+
 		// Store header
 
 		uint8_t header[8];
@@ -5261,7 +5262,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 	}
 
 	print_line("Original size: " + itos(orig_size) + " - Compressed size: " + itos(new_size) + " " + String::num(float(new_size) / float(orig_size) * 100, 2) + "% pages: " + itos(compression.pages.size()));
-#endif
+#endif // 1
 }
 
 bool Animation::_rotation_interpolate_compressed(uint32_t p_compressed_track, double p_time, Quaternion &r_ret) const {

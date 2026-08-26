@@ -44,7 +44,7 @@
 #else
 #include <alsa/asoundlib.h>
 #endif
-#endif
+#endif // ALSAMIDI_ENABLED
 
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
@@ -292,7 +292,7 @@ Error AudioDriverPulseAudio::init() {
 	if (initialize_pulse(dylibloader_verbose)) {
 		return ERR_CANT_OPEN;
 	}
-#endif
+#endif // SOWRAP_ENABLED
 	bool ver_ok = false;
 	String version = String::utf8(pa_get_library_version());
 	Vector<String> ver_parts = version.split(".");

@@ -41,7 +41,7 @@ void __cpuid(int *r_cpuinfo, int p_info) {
 			: "=a"(r_cpuinfo[0]), "=r"(r_cpuinfo[1]), "=c"(r_cpuinfo[2]), "=d"(r_cpuinfo[3])
 			: "0"(p_info));
 }
-#endif
+#endif // _MSC_VER
 
 #ifndef PF_SSE4_2_INSTRUCTIONS_AVAILABLE
 #define PF_SSE4_2_INSTRUCTIONS_AVAILABLE 38

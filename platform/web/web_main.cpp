@@ -44,7 +44,7 @@
 #include "editor/web_tools_editor_plugin.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h" // SceneTree only forward declares it.
-#endif
+#endif // TOOLS_ENABLED
 
 #include <emscripten/emscripten.h>
 
@@ -101,7 +101,7 @@ void main_loop_callback() {
 		}
 		target_ticks += (uint64_t)(1000000 / max_fps);
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and set the cleanup one.
@@ -171,7 +171,7 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 		ps.push_back("/tmp/preload.zip");
 		SceneTree::get_singleton()->get_root()->emit_signal(SNAME("files_dropped"), ps);
 	}
-#endif
+#endif // TOOLS_ENABLED
 	emscripten_set_main_loop(main_loop_callback, -1, false);
 	// Immediately run the first iteration.
 	// We are inside an animation frame, we want to immediately draw on the newly setup canvas.

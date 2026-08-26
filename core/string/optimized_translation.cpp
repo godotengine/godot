@@ -194,9 +194,9 @@ bool OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	set_locale(p_from->get_locale());
 
 	return true;
-#else
+#else // TOOLS_ENABLED
 	return false;
-#endif
+#endif // TOOLS_ENABLED
 }
 
 bool OptimizedTranslation::_set(const StringName &p_name, const Variant &p_value) {

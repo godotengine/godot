@@ -1650,7 +1650,7 @@ void SpringBoneSimulator3D::_update_bone_axis(Skeleton3D *p_skeleton, SpringBone
 			joints[j]->verlet->forward_vector = snap_vector_to_plane(joints[j]->get_rotation_axis_vector(), axis.normalized());
 			joints[j]->verlet->length = axis.length();
 		}
-#else
+#else // TOOLS_ENABLED
 		joints[j]->verlet->forward_vector = snap_vector_to_plane(joints[j]->get_rotation_axis_vector(), axis.normalized());
 		joints[j]->verlet->length = axis.length();
 #endif // TOOLS_ENABLED
@@ -1705,7 +1705,7 @@ void SpringBoneSimulator3D::_redraw_gizmo() {
 	update_gizmos();
 	gizmo_dirty = false;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void SpringBoneSimulator3D::_set_active(bool p_active) {
 	if (p_active) {

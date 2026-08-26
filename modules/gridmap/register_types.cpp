@@ -52,7 +52,7 @@ void initialize_gridmap_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_VIRTUAL_CLASS(GridMapEditorPlugin);
 		EditorPlugins::add_by_type<GridMapEditorPlugin>();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void uninitialize_gridmap_module(ModuleInitializationLevel p_level) {

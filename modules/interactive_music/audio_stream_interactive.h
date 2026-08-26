@@ -138,7 +138,7 @@ private:
 	PackedStringArray _get_linked_undo_properties(const String &p_property, const Variant &p_new_value) const;
 	void _inspector_array_swap_clip(uint32_t p_item_a, uint32_t p_item_b);
 
-#endif
+#endif // TOOLS_ENABLED
 
 	void _set_transitions(const Dictionary &p_transitions);
 	Dictionary _get_transitions() const;

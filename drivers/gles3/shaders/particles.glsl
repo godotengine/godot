@@ -28,7 +28,7 @@ layout(std140) uniform MaterialUniforms{ //ubo:2
 #MATERIAL_UNIFORMS
 
 };
-#endif
+#endif // MATERIAL_UNIFORMS_USED
 
 /* clang-format on */
 
@@ -253,7 +253,7 @@ void main() {
 	if (bool(flags & PARTICLE_FLAG_ACTIVE)) {
 		xform[3].xyz += out_velocity_flags.xyz * local_delta;
 	}
-#endif
+#endif // !defined(DISABLE_VELOCITY)
 	uint index = uint(gl_VertexID);
 	if (emitting) {
 		float restart_phase = float(index) / float(total_particles);

@@ -64,7 +64,7 @@
 		x->Release(); \
 		x = nullptr; \
 	}
-#endif
+#endif // SAFE_RELEASE
 
 template <typename T>
 class ComAutoreleaseRef {

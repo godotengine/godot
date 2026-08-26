@@ -72,7 +72,7 @@ SceneDebugger::SceneDebugger() {
 	RuntimeNodeSelect::singleton = memnew(RuntimeNodeSelect);
 
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
-#endif
+#endif // DEBUG_ENABLED
 }
 
 SceneDebugger::~SceneDebugger() {
@@ -249,7 +249,7 @@ Error SceneDebugger::_msg_hdr_output_request_state(const Array &p_args) {
 	if (rendering_device && rendering_device->has_feature(RD::SUPPORTS_HDR_OUTPUT)) {
 		renderer_supports_hdr_output = true;
 	}
-#endif
+#endif // defined(RD_ENABLED)
 
 	Array state;
 	state.append(ds->window_is_hdr_output_requested());
@@ -565,7 +565,7 @@ Error SceneDebugger::_msg_rq_screenshot(const Array &p_args) {
 	if (rendering_device && RenderingServer::get_singleton()->viewport_is_using_hdr_2d(viewport->get_viewport_rid())) {
 		img->linear_to_srgb();
 	}
-#endif
+#endif // RD_ENABLED
 	img->save_png(path);
 
 	Array arr;

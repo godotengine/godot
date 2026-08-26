@@ -230,7 +230,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
 	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
-#endif
+#endif // 0
 	SceneShaderForwardClustered::singleton->shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
 
 	ubo_size = gen_code.uniform_total_size;
@@ -341,7 +341,7 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 			"PASS FLAGS:", p_pipeline_key.color_pass_flags,
 			"SPEC PACKED #0:", p_pipeline_key.shader_specialization.packed_0,
 			"WIREFRAME:", p_pipeline_key.wireframe);
-#endif
+#endif // PRINT_PIPELINE_COMPILATION_KEYS
 
 	// Color pass -> attachment 0: Color/Diffuse, attachment 1: Separate Specular, attachment 2: Motion Vectors
 	RD::PipelineColorBlendState::Attachment blend_attachment = blend_mode_to_blend_attachment(BlendMode(blend_mode));

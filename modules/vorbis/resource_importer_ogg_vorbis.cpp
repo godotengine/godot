@@ -91,7 +91,7 @@ void ResourceImporterOggVorbis::show_advanced_options(const String &p_path) {
 		AudioStreamImportSettingsDialog::get_singleton()->edit(p_path, "oggvorbisstr", ogg_stream);
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 Error ResourceImporterOggVorbis::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	bool loop = p_options["loop"];
@@ -122,7 +122,7 @@ Ref<AudioStreamOggVorbis> ResourceImporterOggVorbis::load_from_buffer(const Vect
 Ref<AudioStreamOggVorbis> ResourceImporterOggVorbis::load_from_file(const String &p_path) {
 	return AudioStreamOggVorbis::load_from_file(p_path);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void ResourceImporterOggVorbis::_bind_methods() {
 #ifndef DISABLE_DEPRECATED

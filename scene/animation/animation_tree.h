@@ -307,7 +307,7 @@ struct AnimationNodeInstance {
 	};
 
 	LocalVector<Activity> input_activity;
-#endif
+#endif // ENABLE_ACTIVITY_TRACKING
 
 	// Cache for AnimationNodeAnimation
 	Ref<Animation> cached_animation;
@@ -554,7 +554,7 @@ public:
 
 		return current;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	void set_animation_player(const NodePath &p_path);
 	NodePath get_animation_player() const;

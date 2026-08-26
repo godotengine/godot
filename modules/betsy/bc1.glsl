@@ -211,7 +211,8 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], vec3 color[4]) {
 			mask |= ((dotValue < c3Point) ? 2u : 0u);
 		}
 	}
-#else
+#else // BC1_DITHER
+
 	// with floyd-steinberg dithering
 	vec4 ep1 = vec4(0, 0, 0, 0);
 	vec4 ep2 = vec4(0, 0, 0, 0);
@@ -282,7 +283,7 @@ uint MatchColorsBlock(const uint srcPixelsBlock[16], vec3 color[4]) {
 			ep2 = tmp;
 		} // swap
 	}
-#endif
+#endif // BC1_DITHER
 
 	return mask;
 }
@@ -411,7 +412,7 @@ void DitherBlock(const uint srcPixBlck[16], out uint dthPixBlck[16]) {
 		}
 	}
 }
-#endif
+#endif // BC1_DITHER
 
 void main() {
 	uint srcPixelsBlock[16];

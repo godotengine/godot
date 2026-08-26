@@ -605,7 +605,7 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 			p_self->~Object();
 			memset((void *)p_self, 0, sizeof(Object));
 			Memory::free_static(p_self, false);
-#endif
+#endif // defined(ASAN_ENABLED) || defined(TSAN_ENABLED)
 		}
 
 	public:

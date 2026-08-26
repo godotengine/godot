@@ -36,4 +36,4 @@
 #endif
 
 #include <ES3/gl.h> // IWYU pragma: export.
-#endif
+#endif // GLES3_ENABLED

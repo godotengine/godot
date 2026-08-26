@@ -59,7 +59,7 @@
 //#define BVH_VERBOSE_FRAME
 //#define BVH_CHECKS
 //#define BVH_INTEGRITY_CHECKS
-#endif
+#endif // DEV_ENABLED
 
 // debug only assert
 #ifdef BVH_CHECKS

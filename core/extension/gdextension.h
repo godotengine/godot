@@ -58,7 +58,7 @@ class GDExtension : public Resource {
 			bool is_placeholder = false;
 		};
 		HashMap<ObjectID, InstanceState> instance_state;
-#endif
+#endif // TOOLS_ENABLED
 	};
 
 	HashMap<StringName, Extension> extension_classes;
@@ -115,7 +115,7 @@ class GDExtension : public Resource {
 	void prepare_reload();
 	void finish_reload();
 	void clear_instance_bindings();
-#endif
+#endif // TOOLS_ENABLED
 
 	GDExtensionMainLoopStartupCallback startup_callback = nullptr;
 	GDExtensionMainLoopShutdownCallback shutdown_callback = nullptr;
@@ -152,7 +152,7 @@ protected:
 	void _close_library_bind_compat_88418();
 	void _initialize_library_bind_compat_88418(InitializationLevel p_level);
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 #ifdef TOOLS_ENABLED
@@ -165,7 +165,7 @@ public:
 	void untrack_instance_binding(Object *p_object);
 
 	PackedStringArray get_classes_used() const;
-#endif
+#endif // TOOLS_ENABLED
 
 	InitializationLevel get_minimum_library_initialization_level() const;
 	void initialize_library(InitializationLevel p_level);

@@ -943,7 +943,7 @@ enum Features {
 	FEATURE_SHADERS,
 	FEATURE_MULTITHREADED,
 };
-#endif
+#endif // DISABLE_DEPRECATED
 
 } // namespace RenderingServerEnums
 

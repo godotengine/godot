@@ -72,13 +72,13 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 	r_request_roughness = request_roughness_callback && df & FORMAT_BIT_DETECT_ROUGNESS;
 	r_request_normal = request_normal_callback && df & FORMAT_BIT_DETECT_NORMAL;
 
-#else
+#else // TOOLS_ENABLED
 
 	r_request_3d = false;
 	r_request_roughness = false;
 	r_request_normal = false;
 
-#endif
+#endif // TOOLS_ENABLED
 	if (!(df & FORMAT_BIT_STREAM)) {
 		p_size_limit = 0;
 	}
@@ -187,7 +187,7 @@ Error CompressedTexture2D::load(const String &p_path) {
 		RS::get_singleton()->texture_set_detect_normal_callback(texture, nullptr, nullptr);
 	}
 
-#endif
+#endif // TOOLS_ENABLED
 	notify_property_list_changed();
 	emit_changed();
 	return OK;

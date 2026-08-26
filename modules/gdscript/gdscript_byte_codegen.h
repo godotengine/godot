@@ -132,7 +132,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		}
 		vector.write[index] = name;
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	// Lists since these can be nested.
 	List<int> if_jmp_addrs;

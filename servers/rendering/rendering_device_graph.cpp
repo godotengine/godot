@@ -215,7 +215,7 @@ RDD::BarrierAccessBits RenderingDeviceGraph::_usage_to_access_bits(ResourceUsage
 			DEV_ASSERT(false && "Invalid usage.");
 			return RDD::BarrierAccessBits(0);
 	}
-#endif
+#endif // FORCE_FULL_ACCESS_BITS
 }
 
 bool RenderingDeviceGraph::_check_command_intersection(ResourceTracker *p_resource_tracker, int32_t p_previous_command_index, int32_t p_command_index) const {
@@ -798,7 +798,7 @@ void RenderingDeviceGraph::_add_buffer_barrier_to_command(RDD::BufferID p_buffer
 	command_buffer_barriers.push_back(buffer_barrier);
 	r_barrier_count++;
 }
-#endif
+#endif // USE_BUFFER_BARRIERS
 
 void RenderingDeviceGraph::_add_acceleration_structure_barrier_to_command(RDD::AccelerationStructureID p_acceleration_structure_id, BitField<RDD::BarrierAccessBits> p_src_access, BitField<RDD::BarrierAccessBits> p_dst_access, LocalVector<RDD::AccelerationStructureBarrier> &r_barrier_vector, int32_t &r_barrier_index, int32_t &r_barrier_count) {
 	if (!driver_honors_barriers) {
@@ -1428,7 +1428,7 @@ void RenderingDeviceGraph::_group_barriers_for_render_commands(RDD::CommandBuffe
 			const RDD::BufferBarrier &recorded_barrier = command_buffer_barriers[command->buffer_barrier_index + j];
 			barrier_group.buffer_barriers.push_back(recorded_barrier);
 		}
-#endif
+#endif // USE_BUFFER_BARRIERS
 
 		// Gather acceleration structure barriers.
 		for (int32_t j = 0; j < command->acceleration_structure_barrier_count; j++) {

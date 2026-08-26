@@ -146,7 +146,7 @@ bool Basis::is_symmetric() const {
 
 	return true;
 }
-#endif
+#endif // MATH_CHECKS
 
 Basis Basis::diagonalize() {
 // NOTE: only implemented for symmetric matrices
@@ -332,7 +332,7 @@ Vector3 Basis::rotref_posscale_decomposition(Basis &r_rotref) const {
 
 	Basis m = transposed() * (*this);
 	ERR_FAIL_COND_V(!m.is_diagonal(), Vector3());
-#endif
+#endif // MATH_CHECKS
 	Vector3 scale = get_scale();
 	Basis inv_scale = Basis().scaled(scale.inverse()); // this will also absorb the sign of scale
 	r_rotref = (*this) * inv_scale;

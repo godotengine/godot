@@ -107,7 +107,7 @@ public:
 
 	void _set_light_textures_data(const Array &p_data);
 	Array _get_light_textures_data() const;
-#endif
+#endif // DISABLE_DEPRECATED
 
 	void set_uses_spherical_harmonics(bool p_enable);
 	bool is_using_spherical_harmonics() const;

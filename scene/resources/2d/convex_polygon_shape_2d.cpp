@@ -62,7 +62,7 @@ bool is_convex(const Vector<Vector2> &p_points) {
 
 	return true;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void ConvexPolygonShape2D::_update_shape() {
 	Vector<Vector2> final_points = points;

@@ -566,7 +566,7 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 						}
 						uid = ResourceUID::get_singleton()->id_to_text(id);
 					}
-#endif
+#endif // DISABLE_DEPRECATED
 
 					ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(uid);
 					if (id == ResourceUID::INVALID_ID || !ResourceUID::get_singleton()->has_id(id)) {

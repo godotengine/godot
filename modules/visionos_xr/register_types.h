@@ -37,4 +37,4 @@
 void initialize_visionos_xr_module(ModuleInitializationLevel p_level);
 void uninitialize_visionos_xr_module(ModuleInitializationLevel p_level);
 
-#endif
+#endif // VISIONOS_ENABLED

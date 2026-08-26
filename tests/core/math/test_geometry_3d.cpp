@@ -105,7 +105,7 @@ TEST_CASE("[Geometry3D] Build Convex Mesh") {
 		CHECK(mesh.vertices.size() == current_case.want_vertices);
 	}
 }
-#endif
+#endif // false
 
 TEST_CASE("[Geometry3D] Clip Polygon") {
 	Vector<Plane> box_planes = Geometry3D::build_box_planes(Vector3(5, 10, 5));

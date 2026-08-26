@@ -32,7 +32,7 @@ struct InstanceData {
 	vec4 src_rect;
 	vec2 pad;
 
-#endif
+#endif // USE_PRIMITIVE
 	uint flags;
 	uint instance_uniforms_ofs;
 	uvec4 lights;
@@ -67,7 +67,7 @@ layout(push_constant, std430) uniform Params {
 
 	vec4 modulation;
 	uvec4 lights;
-#endif
+#endif // USE_ATTRIBUTES
 }
 params;
 
@@ -80,7 +80,7 @@ uint sc_packed_0() {
 	return params.sc_packed_0;
 }
 
-#else
+#else // UBERSHADER
 
 // Pull the constants from the pipeline's specialization constants.
 layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
@@ -89,7 +89,7 @@ uint sc_packed_0() {
 	return pso_sc_packed_0;
 }
 
-#endif
+#endif // UBERSHADER
 
 bool sc_use_lighting() {
 	return ((sc_packed_0() >> 0) & 1U) != 0;

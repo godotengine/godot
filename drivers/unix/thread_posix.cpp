@@ -55,7 +55,7 @@ static Error set_name(const String &p_name) {
 	// check if thread is the same as caller
 	int err = pthread_setname_np(p_name.utf8().get_data());
 
-#else
+#else // PTHREAD_RENAME_SELF
 
 	pthread_t running_thread = pthread_self();
 #ifdef PTHREAD_BSD_SET_NAME

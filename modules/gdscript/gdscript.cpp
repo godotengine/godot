@@ -295,7 +295,7 @@ void GDScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 	placeholders.erase(p_placeholder);
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const {
 	const GDScript *current = this;
@@ -403,7 +403,7 @@ bool GDScript::get_property_default_value(const StringName &p_property, Variant 
 	if (base_cache.is_valid()) {
 		return base_cache->get_property_default_value(p_property, r_value);
 	}
-#endif
+#endif // TOOLS_ENABLED
 	return false;
 }
 
@@ -435,9 +435,9 @@ PlaceHolderScriptInstance *GDScript::placeholder_instance_create(Object *p_this)
 	placeholders.insert(si);
 	_update_exports(nullptr, false, si);
 	return si;
-#else
+#else // TOOLS_ENABLED
 	return nullptr;
-#endif
+#endif // TOOLS_ENABLED
 }
 
 bool GDScript::has_source_code() const {
@@ -497,7 +497,7 @@ void GDScript::_clear_doc() {
 String GDScript::get_class_icon_path() const {
 	return simplified_icon_path;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderScriptInstance *p_instance_to_update, bool p_base_exports_changed) {
 #ifdef TOOLS_ENABLED
@@ -625,9 +625,9 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 	return changed;
 
-#else
+#else // TOOLS_ENABLED
 	return false;
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void GDScript::update_exports() {
@@ -657,7 +657,7 @@ void GDScript::_update_exports_down(bool p_base_exports_changed) {
 		s->_update_exports_down(p_base_exports_changed || changed);
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 String GDScript::_get_debug_path() const {
 	if (is_built_in() && !get_name().is_empty()) {
@@ -735,7 +735,7 @@ void GDScript::_restore_old_static_data() {
 	}
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 Error GDScript::reload(bool p_keep_state) {
 	if (reloading) {
@@ -773,7 +773,7 @@ Error GDScript::reload(bool p_keep_state) {
 		reloading = false;
 		return OK;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	{
 		String source_path = path;
@@ -880,7 +880,7 @@ Error GDScript::reload(bool p_keep_state) {
 			EngineDebugger::get_script_debugger()->send_error("GDScript::reload", get_script_path(), warning.start_line, warning.get_name(), warning.get_message(), false, ERR_HANDLER_WARNING, si);
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (can_run) {
 		err = _static_init();
@@ -898,7 +898,7 @@ Error GDScript::reload(bool p_keep_state) {
 		// Update the properties in the inspector.
 		update_exports();
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	reloading = false;
 	return OK;
@@ -1383,7 +1383,7 @@ String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
 
 	return "<unknown script>";
 }
-#endif
+#endif // DEBUG_ENABLED
 
 String GDScript::canonicalize_path(const String &p_path) {
 	if (p_path.get_extension() == "gdc") {
@@ -1483,7 +1483,7 @@ void GDScript::clear() {
 	if (_owner) {
 		_clear_doc();
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	// All dependencies have been accounted for
 	for (GDScriptFunction *E : functions_to_clear) {
@@ -2052,7 +2052,7 @@ void GDScriptInstance::reload_members() {
 	}
 	members = std::move(new_members);
 
-#endif
+#endif // DEBUG_ENABLED
 }
 
 GDScriptInstance::~GDScriptInstance() {
@@ -2198,7 +2198,7 @@ void GDScriptLanguage::_extension_unloading(const Ref<GDExtension> &p_extension)
 		_remove_global(n);
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 String GDScriptLanguage::get_type() const {
 	return "GDScript";
@@ -2312,7 +2312,7 @@ void GDScriptLanguage::profiling_start() {
 	}
 
 	profiling = true;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void GDScriptLanguage::profiling_set_save_native_calls(bool p_enable) {
@@ -2363,7 +2363,7 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, 
 		p_info_arr[last_non_internal].internal_time = nat_time;
 		elem = elem->next();
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	return current;
 }
@@ -2404,7 +2404,7 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 		}
 		elem = elem->next();
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	return current;
 }
@@ -2433,7 +2433,7 @@ void GDScriptLanguage::profiling_collate_native_call_data(bool p_accumulated) {
 		}
 		elem = elem->next();
 	}
-#endif
+#endif // DEBUG_ENABLED
 }
 
 struct GDScriptDepSort {
@@ -2608,7 +2608,7 @@ void GDScriptLanguage::frame() {
 		}
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 }
 
 /* EDITOR FUNCTIONS */

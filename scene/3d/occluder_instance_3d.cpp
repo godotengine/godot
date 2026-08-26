@@ -468,7 +468,7 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 	if (is_part_of_edited_scene()) {
 		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_current).call_deferred();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void OccluderInstance3D::_occluder_changed() {

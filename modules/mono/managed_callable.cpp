@@ -117,7 +117,7 @@ ManagedCallable::ManagedCallable(GCHandleIntPtr p_delegate_handle, void *p_tramp
 		MutexLock lock(instances_mutex);
 		instances.add(&self_instance);
 	}
-#endif
+#endif // GD_MONO_HOT_RELOAD
 }
 /* clang-format on */
 
@@ -128,7 +128,7 @@ ManagedCallable::~ManagedCallable() {
 		instances.remove(&self_instance);
 		instances_pending_reload.erase(this);
 	}
-#endif
+#endif // GD_MONO_HOT_RELOAD
 
 	release_delegate_handle();
 }

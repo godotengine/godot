@@ -176,9 +176,9 @@ int64_t Compression::decompress(uint8_t *p_dst, int64_t p_dst_max_size, const ui
 			BrotliDecoderResult res = BrotliDecoderDecompress(p_src_size, p_src, &ret_size, p_dst);
 			ERR_FAIL_COND_V(res != BROTLI_DECODER_RESULT_SUCCESS, -1);
 			return ret_size;
-#else
+#else // BROTLI_ENABLED
 			ERR_FAIL_V_MSG(-1, "Godot was compiled without brotli support.");
-#endif
+#endif // BROTLI_ENABLED
 		} break;
 		case MODE_FASTLZ: {
 			ERR_FAIL_COND_V_MSG(p_dst_max_size > INT32_MAX, -1, "Cannot decompress a FastLZ/LZ77 file 2 GiB or larger. LZ77 supports larger files, but FastLZ's implementation uses C++ `int` so is limited to 2 GiB. Consider using Zstd instead.");
@@ -297,9 +297,9 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int64_t p_max_d
 		// Clean up and return.
 		BrotliDecoderDestroyInstance(state);
 		return Z_OK;
-#else
+#else // BROTLI_ENABLED
 		ERR_FAIL_V_MSG(Z_ERRNO, "Godot was compiled without brotli support.");
-#endif
+#endif // BROTLI_ENABLED
 	} else {
 		// This function only supports GZip and Deflate.
 		ERR_FAIL_COND_V_MSG(p_mode != MODE_DEFLATE && p_mode != MODE_GZIP, Z_ERRNO, "Dynamic decompression is only supported with gzip, DEFLATE, and Brotli compression methods.");

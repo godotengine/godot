@@ -1831,7 +1831,7 @@ void AnimationNodeStateMachine::get_argument_options(const StringName &p_functio
 	}
 	AnimationRootNode::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void AnimationNodeStateMachine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_node", "name", "node", "position"), &AnimationNodeStateMachine::add_node, DEFVAL(Vector2()));

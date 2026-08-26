@@ -136,7 +136,7 @@ void OpenXRCompositionLayerExtension::on_instance_created(const XrInstance p_ins
 	if (android_surface_ext_available) {
 		EXT_INIT_XR_FUNC(xrCreateSwapchainAndroidSurfaceKHR);
 	}
-#endif
+#endif // ANDROID_ENABLED
 }
 
 void OpenXRCompositionLayerExtension::on_session_created(const XrSession p_session) {
@@ -273,7 +273,7 @@ bool OpenXRCompositionLayerExtension::create_android_surface_swapchain(XrSwapcha
 
 	return false;
 }
-#endif
+#endif // ANDROID_ENABLED
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRCompositionLayerExtension::CompositionLayer
@@ -328,7 +328,7 @@ void OpenXRCompositionLayerExtension::CompositionLayer::set_use_android_surface(
 	} else {
 		free_swapchain();
 	}
-#endif
+#endif // ANDROID_ENABLED
 }
 
 void OpenXRCompositionLayerExtension::CompositionLayer::set_alpha_blend(bool p_alpha_blend) {
@@ -538,7 +538,7 @@ Ref<JavaObject> OpenXRCompositionLayerExtension::CompositionLayer::get_android_s
 		}
 		return android_surface.surface;
 	}
-#endif
+#endif // ANDROID_ENABLED
 	return Ref<JavaObject>();
 }
 
@@ -551,7 +551,7 @@ void OpenXRCompositionLayerExtension::CompositionLayer::on_pre_render() {
 		}
 		return;
 	}
-#endif
+#endif // ANDROID_ENABLED
 
 	RenderingServer *rs = RenderingServer::get_singleton();
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
@@ -677,7 +677,7 @@ void OpenXRCompositionLayerExtension::CompositionLayer::update_swapchain_state()
 
 		fb_update_swapchain_ext->update_swapchain_state(android_surface.swapchain, &swapchain_state);
 	} else
-#endif
+#endif // ANDROID_ENABLED
 	{
 		if (subviewport.swapchain_info.get_swapchain() == XR_NULL_HANDLE) {
 			return;
@@ -783,7 +783,7 @@ void OpenXRCompositionLayerExtension::CompositionLayer::free_swapchain() {
 			android_surface.surface.unref();
 		}
 	} else
-#endif
+#endif // ANDROID_ENABLED
 	{
 		if (subviewport.swapchain_info.get_swapchain() != XR_NULL_HANDLE) {
 			subviewport.swapchain_info.queue_free();
@@ -838,4 +838,4 @@ void OpenXRCompositionLayerExtension::CompositionLayer::create_android_surface()
 		android_surface.surface.instantiate(JavaClassWrapper::get_singleton()->wrap("android.view.Surface"), surface);
 	}
 }
-#endif
+#endif // ANDROID_ENABLED

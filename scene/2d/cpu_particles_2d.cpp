@@ -626,7 +626,7 @@ void CPUParticles2D::set_show_gizmos(bool p_show_gizmos) {
 	show_gizmos = p_show_gizmos;
 	queue_redraw();
 }
-#endif
+#endif // TOOLS_ENABLED
 
 uint32_t CPUParticles2D::get_seed() const {
 	return seed;
@@ -1395,7 +1395,7 @@ void CPUParticles2D::_draw_emission_gizmo() {
 			break;
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	GPUParticles2D *gpu_particles = Object::cast_to<GPUParticles2D>(p_particles);

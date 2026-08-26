@@ -263,7 +263,7 @@ class DisplayServerWindows : public DisplayServer {
 	GLManagerANGLE_Windows *gl_manager_angle = nullptr;
 #endif
 	GLManagerNative_Windows *gl_manager_native = nullptr;
-#endif
+#endif // defined(GLES3_ENABLED)
 
 #if defined(RD_ENABLED)
 	RenderingContextDriver *rendering_context = nullptr;

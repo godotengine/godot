@@ -177,4 +177,4 @@ void main() {
 
 	imageStore(sdf_tex, pos, uvec4(dist_8));
 }
-#endif
+#endif // 0

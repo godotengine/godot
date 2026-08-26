@@ -41,13 +41,13 @@
 #define gd_iconv_open iconv_open
 #define gd_iconv iconv
 #define gd_iconv_close iconv_close
-#else
+#else // defined(__GLIBC__) || defined(WEB_ENABLED)
 typedef void *gd_iconv_t;
 typedef gd_iconv_t (*PIConvOpen)(const char *, const char *);
 typedef size_t (*PIConv)(gd_iconv_t, char **, size_t *, char **, size_t *);
 typedef int (*PIConvClose)(gd_iconv_t);
 typedef const char *(*PIConvLocaleCharset)();
-#endif
+#endif // defined(__GLIBC__) || defined(WEB_ENABLED)
 
 class OS_Unix : public OS {
 	struct ProcessInfo {
@@ -68,7 +68,7 @@ class OS_Unix : public OS {
 	PIConvLocaleCharset gd_locale_charset = nullptr;
 
 	void _load_iconv();
-#endif
+#endif // defined(__GLIBC__) || defined(WEB_ENABLED)
 
 	static int _wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options, pid_t *r_pid = nullptr);
 	bool _check_pid_is_running(const pid_t p_pid, int *r_status) const;

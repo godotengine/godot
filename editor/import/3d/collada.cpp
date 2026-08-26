@@ -95,7 +95,7 @@ Transform3D Collada::fix_transform(const Transform3D &p_transform) {
 		tr.basis[1][state.up_axis] = -tr.basis[1][state.up_axis];
 		tr.origin[state.up_axis] = -tr.origin[state.up_axis];
 	}
-#endif
+#endif // NO_UP_AXIS_SWAP
 
 	//tr.scale(Vector3(state.unit_scale.unit_scale.unit_scale));
 	return tr;

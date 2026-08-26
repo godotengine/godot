@@ -70,7 +70,7 @@ void main() {
 	}
 
 	imageStore(dst_process, pos, ivec4(rel, 0, 0));
-#endif
+#endif // MODE_LOAD_SHRINK
 
 #ifdef MODE_PROCESS
 
@@ -129,7 +129,7 @@ void main() {
 	}
 
 	imageStore(dst_process, pos, ivec4(rel, 0, 0));
-#endif
+#endif // MODE_PROCESS
 
 #ifdef MODE_STORE
 
@@ -151,7 +151,7 @@ void main() {
 	d = clamp(d, -1.0, 1.0);
 	imageStore(dst_sdf, pos, vec4(d));
 
-#endif
+#endif // MODE_STORE
 
 #ifdef MODE_STORE_SHRINK
 
@@ -175,5 +175,5 @@ void main() {
 	d = clamp(d, -1.0, 1.0);
 	imageStore(dst_sdf, pos, vec4(d));
 
-#endif
+#endif // MODE_STORE_SHRINK
 }

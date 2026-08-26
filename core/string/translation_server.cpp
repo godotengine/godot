@@ -625,7 +625,7 @@ String TranslationServer::get_tool_locale() {
 		}
 		return "en";
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	Ref<Translation> res;
 	int best_score = 0;

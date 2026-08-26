@@ -1229,7 +1229,7 @@ void TreeItem::validate_cache() const {
 	}
 	DEV_ASSERT(index == parent->children_cache.size());
 }
-#endif
+#endif // DEV_ENABLED
 
 void TreeItem::move_before(TreeItem *p_item) {
 	ERR_FAIL_NULL(p_item);

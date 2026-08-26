@@ -48,7 +48,7 @@
 #if defined(VULKAN_ENABLED)
 #include "rendering_context_driver_vulkan_android.h"
 #endif
-#endif
+#endif // defined(RD_ENABLED)
 
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -529,7 +529,7 @@ int64_t DisplayServerAndroid::window_get_native_handle(DisplayServerEnums::Handl
 			// @todo Find a way to get this from the Java side.
 			return 0;
 		}
-#endif
+#endif // GLES3_ENABLED
 		default: {
 			return 0;
 		}
@@ -720,7 +720,7 @@ bool DisplayServerAndroid::check_vulkan_global_context(bool p_vulkan_requirement
 				OS::get_singleton()->set_current_rendering_driver_name("opengl3", OS::RENDERING_SOURCE_FALLBACK);
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
 			} else
-#endif
+#endif // defined(GLES3_ENABLED)
 			{
 				ERR_PRINT("Failed to initialize Vulkan context.");
 			}
@@ -739,7 +739,7 @@ void DisplayServerAndroid::free_vulkan_global_context() {
 		rendering_context_global_checked = false;
 	}
 }
-#endif
+#endif // VULKAN_ENABLED
 
 void DisplayServerAndroid::reset_window() {
 #if defined(RD_ENABLED)
@@ -762,7 +762,7 @@ void DisplayServerAndroid::reset_window() {
 			ERR_FAIL_NULL(native_window);
 			wpd.vulkan.window = native_window;
 		}
-#endif
+#endif // VULKAN_ENABLED
 
 		if (rendering_context_global->window_create(DisplayServerEnums::MAIN_WINDOW_ID, &wpd) != OK) {
 			ERR_PRINT(vformat("Failed to reset %s window.", rendering_driver));
@@ -777,7 +777,7 @@ void DisplayServerAndroid::reset_window() {
 			rendering_device->screen_create(DisplayServerEnums::MAIN_WINDOW_ID);
 		}
 	}
-#endif
+#endif // defined(RD_ENABLED)
 }
 
 void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
@@ -837,7 +837,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 		RendererCompositorRD::make_current();
 	}
-#endif
+#endif // VULKAN_ENABLED
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {

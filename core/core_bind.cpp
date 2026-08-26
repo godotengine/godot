@@ -1844,7 +1844,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("get_class_list"), &ClassDB::get_class_list);
@@ -2105,7 +2105,7 @@ void Engine::get_argument_options(const StringName &p_function, int p_idx, List<
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_ticks_per_second", "physics_ticks_per_second"), &Engine::set_physics_ticks_per_second);

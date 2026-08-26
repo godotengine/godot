@@ -210,7 +210,7 @@ void OS_MacOS::wait_for_debugger(uint32_t p_msec) {
 	print("continue...");
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 void OS_MacOS::initialize_core() {
 	OS_Unix::initialize_core();
@@ -252,7 +252,7 @@ void OS_MacOS::initialize_joypads() {
 		memdelete(joypad_sdl);
 		joypad_sdl = nullptr;
 	}
-#endif
+#endif // SDL_ENABLED
 }
 
 void OS_MacOS::set_main_loop(MainLoop *p_main_loop) {
@@ -868,7 +868,7 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 				return create_process(path, arguments, r_child_id, false);
 			}
 		}
-#endif
+#endif // TOOLS_ENABLED
 		return create_process(path, p_arguments, r_child_id, false);
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);
@@ -1324,4 +1324,4 @@ OS_MacOS_Embedded::OS_MacOS_Embedded(const char *p_execpath, int p_argc, char **
 	DisplayServerMacOSEmbedded::register_embedded_driver();
 }
 
-#endif
+#endif // TOOLS_ENABLED

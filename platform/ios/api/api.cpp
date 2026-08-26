@@ -40,7 +40,7 @@ void unregister_ios_api() {
 	godot_apple_embedded_plugins_deinitialize();
 }
 
-#else
+#else // defined(IOS_ENABLED)
 
 void register_ios_api() {}
 void unregister_ios_api() {}

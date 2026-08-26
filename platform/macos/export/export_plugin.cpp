@@ -291,7 +291,7 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 					return false;
 				}
 			} break;
-#endif
+#endif // MACOS_ENABLED
 			default: { // disabled
 				if (p_option == "codesign/identity" || p_option == "codesign/certificate_file" || p_option == "codesign/certificate_password" || p_option == "codesign/custom_options" || p_option.begins_with("codesign/entitlements") || p_option == "codesign/team_id") {
 					return false;
@@ -1180,7 +1180,7 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), "\t\t\"xcrun stapler staple <app path>\"");
 			}
 		} break;
-#endif
+#endif // MACOS_ENABLED
 		default: {
 		};
 	}
@@ -1320,7 +1320,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 				print_verbose("codesign (" + p_path + "):\n" + str);
 			}
 		} break;
-#endif
+#endif // MACOS_ENABLED
 		default: {
 		};
 	}
@@ -1687,7 +1687,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		export_format = "dmg";
 	} else if (p_path.ends_with("pkg")) {
 		export_format = "pkg";
-#endif
+#endif // MACOS_ENABLED
 	} else {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Invalid export format."));
 		return ERR_CANT_CREATE;
@@ -1970,7 +1970,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			if (!lg_icon.is_empty()) {
 				lg_icon_expored = (_export_liquid_glass_icon(p_preset, tmp_app_path_name, lg_icon) == OK);
 			}
-#endif
+#endif // MACOS_ENABLED
+
 			// Modify plist.
 			_fix_plist(p_preset, data, pkg_name, lg_icon_expored, lg_icon.get_file().get_basename());
 		}

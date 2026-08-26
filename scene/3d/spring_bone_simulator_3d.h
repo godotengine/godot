@@ -38,7 +38,7 @@ namespace compat::SpringBoneSimulator3D {
 enum BoneDirection : int;
 enum RotationAxis : int;
 } //namespace compat::SpringBoneSimulator3D
-#endif
+#endif // DISABLE_DEPRECATED
 
 class SpringBoneSimulator3D : public SkeletonModifier3D {
 	GDCLASS(SpringBoneSimulator3D, SkeletonModifier3D);

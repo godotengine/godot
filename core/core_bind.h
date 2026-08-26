@@ -170,7 +170,7 @@ protected:
 
 	String _read_string_from_stdin_bind_compat_91201();
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 #ifndef DISABLE_DEPRECATED

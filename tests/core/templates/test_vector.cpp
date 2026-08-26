@@ -705,6 +705,6 @@ TEST_CASE("[Vector] Cyclic Reference") {
 	vector.ptrw()[0].is_destructing = true;
 	// The vector goes out of scope and destructs, calling CyclicVectorHolder's destructor.
 }
-#endif
+#endif // ASAN_ENABLED
 
 } // namespace TestVector

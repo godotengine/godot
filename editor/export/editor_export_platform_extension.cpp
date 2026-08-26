@@ -197,7 +197,7 @@ Ref<Texture2D> EditorExportPlatformExtension::get_option_icon(int p_index) const
 	if (GDVIRTUAL_CALL(_get_option_icon_bind_compat_108825, p_index, comp_ret)) {
 		return comp_ret;
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 	return EditorExportPlatform::get_option_icon(p_index);
 }
 

@@ -427,7 +427,7 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 	r_error += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
 	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
 	return false;
-#else
+#else // MODULE_MONO_ENABLED
 
 	String err;
 	bool valid = false;

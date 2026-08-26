@@ -168,7 +168,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("disabled_font_color", EditorStringName(Editor), p_config.font_disabled_color);
 		p_theme->set_color("readonly_color", EditorStringName(Editor), p_config.font_readonly_color);
 		p_theme->set_color("highlighted_font_color", EditorStringName(Editor), p_config.font_hover_color); // Closest equivalent.
-#endif
+#endif // DISABLE_DEPRECATED
 
 		// Icon colors.
 

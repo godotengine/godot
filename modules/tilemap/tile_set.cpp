@@ -6716,7 +6716,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 		texture_origin = p_value;
 		return true;
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
@@ -6884,7 +6884,7 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = texture_origin;
 		return true;
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	Vector<String> components = String(p_name).split("/", true, 2);
 

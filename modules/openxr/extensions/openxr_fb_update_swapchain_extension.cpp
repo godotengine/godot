@@ -145,7 +145,7 @@ void OpenXRFBUpdateSwapchainExtension::update_swapchain_state(XrSwapchain p_swap
 			print_error(vformat("OpenXR: Failed to update swapchain [%s]", OpenXRAPI::get_singleton()->get_error_string(result)));
 			return;
 		}
-#endif
+#endif // XR_USE_GRAPHICS_API_VULKAN
 	} else if (rendering_driver == "opengl3" || rendering_driver == "opengl3_es") {
 #ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 		if (!fb_swapchain_update_state_ext || !fb_swapchain_update_state_opengles_ext) {
@@ -173,7 +173,7 @@ void OpenXRFBUpdateSwapchainExtension::update_swapchain_state(XrSwapchain p_swap
 			print_error(vformat("OpenXR: Failed to update swapchain [%s]", OpenXRAPI::get_singleton()->get_error_string(result)));
 			return;
 		}
-#endif
+#endif // XR_USE_GRAPHICS_API_OPENGL_ES
 	}
 }
 
@@ -194,7 +194,7 @@ void OpenXRFBUpdateSwapchainExtension::update_swapchain_surface_size(XrSwapchain
 	if (XR_FAILED(result)) {
 		print_error(vformat("OpenXR: Failed to update swapchain surface size [%s]", OpenXRAPI::get_singleton()->get_error_string(result)));
 	}
-#endif
+#endif // ANDROID_ENABLED
 }
 
 uint32_t OpenXRFBUpdateSwapchainExtension::filter_to_gl(OpenXRCompositionLayerExtension::Filter p_filter, OpenXRCompositionLayerExtension::MipmapMode p_mipmap_mode) {
@@ -228,7 +228,7 @@ uint32_t OpenXRFBUpdateSwapchainExtension::filter_to_gl(OpenXRCompositionLayerEx
 					return GL_CUBIC_MIPMAP_LINEAR_IMG;
 			}
 	}
-#endif
+#endif // XR_USE_GRAPHICS_API_OPENGL_ES
 	return 0;
 }
 
@@ -246,7 +246,7 @@ uint32_t OpenXRFBUpdateSwapchainExtension::wrap_to_gl(OpenXRCompositionLayerExte
 		case OpenXRCompositionLayerExtension::Wrap::WRAP_MIRROR_CLAMP_TO_EDGE:
 			return GL_CLAMP_TO_EDGE;
 	}
-#endif
+#endif // XR_USE_GRAPHICS_API_OPENGL_ES
 	return 0;
 }
 
@@ -266,7 +266,7 @@ uint32_t OpenXRFBUpdateSwapchainExtension::swizzle_to_gl(OpenXRCompositionLayerE
 		case OpenXRCompositionLayerExtension::Swizzle::SWIZZLE_ONE:
 			return GL_ONE;
 	}
-#endif
+#endif // XR_USE_GRAPHICS_API_OPENGL_ES
 	return 0;
 }
 
@@ -280,7 +280,7 @@ uint32_t OpenXRFBUpdateSwapchainExtension::filter_to_vk(OpenXRCompositionLayerEx
 		case OpenXRCompositionLayerExtension::Filter::FILTER_CUBIC:
 			return VK_FILTER_CUBIC_EXT;
 	}
-#endif
+#endif // XR_USE_GRAPHICS_API_VULKAN
 	return 0;
 }
 
@@ -294,7 +294,7 @@ uint32_t OpenXRFBUpdateSwapchainExtension::mipmap_mode_to_vk(OpenXRCompositionLa
 		case OpenXRCompositionLayerExtension::MipmapMode::MIPMAP_MODE_LINEAR:
 			return VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	}
-#endif
+#endif // XR_USE_GRAPHICS_API_VULKAN
 	return 0;
 }
 
@@ -312,7 +312,7 @@ uint32_t OpenXRFBUpdateSwapchainExtension::wrap_to_vk(OpenXRCompositionLayerExte
 		case OpenXRCompositionLayerExtension::Wrap::WRAP_MIRROR_CLAMP_TO_EDGE:
 			return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
 	}
-#endif
+#endif // XR_USE_GRAPHICS_API_VULKAN
 	return 0;
 }
 
@@ -332,6 +332,6 @@ uint32_t OpenXRFBUpdateSwapchainExtension::swizzle_to_vk(OpenXRCompositionLayerE
 		case OpenXRCompositionLayerExtension::Swizzle::SWIZZLE_ONE:
 			return VK_COMPONENT_SWIZZLE_ONE;
 	}
-#endif
+#endif // XR_USE_GRAPHICS_API_VULKAN
 	return 0;
 }

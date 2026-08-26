@@ -568,7 +568,7 @@ void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 					accept_event();
 					return;
 				}
-#endif
+#endif // DISABLE_DEPRECATED
 				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
 				accept_event();
 			}
@@ -2593,7 +2593,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					paths.append((String)ci->get_path());
 				}
 				EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(add_node_menu, EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, paths, items, 500);
-#endif
+#endif // DISABLE_DEPRECATED
 			}
 
 			add_node_menu->reset_size();

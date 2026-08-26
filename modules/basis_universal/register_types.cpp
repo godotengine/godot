@@ -47,7 +47,7 @@ void initialize_basis_universal_module(ModuleInitializationLevel p_level) {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/basis_universal/zstd_supercompression_level", PROPERTY_HINT_RANGE, "1,22,1"), 6);
 
 	Image::basis_universal_packer = basis_universal_packer;
-#endif
+#endif // TOOLS_ENABLED
 
 	Image::basis_universal_unpacker = basis_universal_unpacker;
 	Image::basis_universal_unpacker_ptr = basis_universal_unpacker_ptr;

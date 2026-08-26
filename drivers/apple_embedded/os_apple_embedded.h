@@ -44,7 +44,7 @@
 #if defined(VULKAN_ENABLED)
 #import "drivers/apple_embedded/rendering_context_driver_vulkan_apple_embedded.h"
 #endif
-#endif
+#endif // defined(RD_ENABLED)
 
 class JoypadSDL;
 

@@ -85,7 +85,7 @@ void StringName::cleanup() {
 		print_line(vformat("\nOut of %d StringNames, %d StringNames were never referenced during this run (0 times) (%.2f%%).", data_size, unreferenced_stringnames, unreferenced_stringnames / float(data_size) * 100));
 		print_line(vformat("Out of %d StringNames, %d StringNames were rarely referenced during this run (1-4 times) (%.2f%%).", data_size, rarely_referenced_stringnames, rarely_referenced_stringnames / float(data_size) * 100));
 	}
-#endif
+#endif // DEBUG_ENABLED
 	int lost_strings = 0;
 	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
 		while (Table::table[i]) {
@@ -253,7 +253,7 @@ StringName::StringName(const char *p_name, bool p_static) {
 		_data->refcount.ref();
 		_data->static_count.increment();
 	}
-#endif
+#endif // DEBUG_ENABLED
 	if (Table::table[idx]) {
 		Table::table[idx]->prev = _data;
 	}
@@ -308,7 +308,7 @@ StringName::StringName(const String &p_name, bool p_static) {
 		_data->refcount.ref();
 		_data->static_count.increment();
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (Table::table[idx]) {
 		Table::table[idx]->prev = _data;

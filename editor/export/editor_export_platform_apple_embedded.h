@@ -103,7 +103,7 @@ protected:
 	int _execute(const String &p_path, const List<String> &p_arguments, std::function<void(const String &)> p_on_data);
 
 private:
-#endif
+#endif // MACOS_ENABLED
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
 	static Error _walk_dir_recursive(Ref<DirAccess> &p_da, FileHandler p_handler, void *p_userdata);

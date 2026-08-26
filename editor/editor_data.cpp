@@ -1149,7 +1149,7 @@ void EditorData::script_class_load_icon_paths() {
 		}
 		ProjectSettings::get_singleton()->clear("_global_script_class_icons");
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
 	for (int i = 0; i < script_classes.size(); i++) {

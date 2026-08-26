@@ -1445,9 +1445,9 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 				float_points_ptr[i * 2 + 1] = p_points[i].y;
 			}
 			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), float_points.span().reinterpret<uint8_t>());
-#else
+#else // REAL_T_IS_DOUBLE
 			oc->sdf_vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_points.size() * 2 * sizeof(float), p_points.span().reinterpret<uint8_t>());
-#endif
+#endif // REAL_T_IS_DOUBLE
 			oc->sdf_index_buffer = RD::get_singleton()->index_buffer_create(sdf_indices.size(), RD::INDEX_BUFFER_FORMAT_UINT32, sdf_indices.span().reinterpret<uint8_t>());
 			oc->sdf_index_array = RD::get_singleton()->index_array_create(oc->sdf_index_buffer, 0, sdf_indices.size());
 
@@ -1467,9 +1467,9 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 				float_points_ptr[i * 2 + 1] = p_points[i].y;
 			}
 			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(float) * 2 * p_points.size(), float_points.ptr());
-#else
+#else // REAL_T_IS_DOUBLE
 			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(float) * 2 * p_points.size(), p_points.ptr());
-#endif
+#endif // REAL_T_IS_DOUBLE
 			RD::get_singleton()->buffer_update(oc->sdf_index_buffer, 0, sdf_indices.size() * sizeof(int32_t), sdf_indices.ptr());
 		}
 	}
@@ -1498,7 +1498,7 @@ void RendererCanvasRenderRD::CanvasShaderData::_create_pipeline(PipelineKey p_pi
 			"PRIMITIVE:", p_pipeline_key.render_primitive,
 			"SPEC PACKED #0:", p_pipeline_key.shader_specialization.packed_0,
 			"LCD:", p_pipeline_key.lcd_blend);
-#endif
+#endif // PRINT_PIPELINE_COMPILATION_KEYS
 
 	RendererRD::MaterialStorage::ShaderData::BlendMode blend_mode_rd = RendererRD::MaterialStorage::ShaderData::BlendMode(blend_mode);
 	RD::PipelineColorBlendState blend_state;
@@ -1614,7 +1614,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
 	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
-#endif
+#endif // 0
 	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
 
 	ubo_size = gen_code.uniform_total_size;
@@ -2974,7 +2974,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 
 		r_batch_broken = false;
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (r_current_clip && reclip) {
 		// will make it re-enable clipping if needed afterwards

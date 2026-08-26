@@ -2197,7 +2197,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
 				}
 			}
-#endif
+#endif // DEBUG_ENABLED
 			break;
 		}
 	}
@@ -2250,7 +2250,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			// TODO: Properties setters and getters with unreachable code are not being warned
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (panic_mode) {
 		synchronize();
@@ -2804,7 +2804,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	if (previous_operand != nullptr && previous_operand->type == GDScriptParser::Node::IDENTIFIER && prefix_rule == static_cast<ParseFunction>(&GDScriptParser::parse_identifier)) {
 		make_completion_context(COMPLETION_IDENTIFIER, previous_operand);
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	while (p_precedence <= get_rule(current.type)->precedence) {
 		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || lambda_ended) {
@@ -2839,7 +2839,7 @@ GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
 		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.string());
 	}
-#endif
+#endif // DEBUG_ENABLED
 	return identifier;
 }
 
@@ -3656,7 +3656,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier)) {
 				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier);
 			}
-#endif
+#endif // DEBUG_ENABLED
 			get_node->full_path += identifier;
 
 			path_state = PATH_STATE_NODE_NAME;

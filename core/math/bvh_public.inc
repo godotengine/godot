@@ -81,7 +81,7 @@ BVHHandle item_add(T *p_userdata, bool p_active, const BOUNDS &p_aabb, int32_t p
 	VERBOSE_PRINT("\titem_add [" + itos(ref_id) + "] " + itos(_refs.used_size()) + " refs,\t" + itos(_nodes.used_size()) + " nodes " + sz);
 	VERBOSE_PRINT("mem use : " + itos(mem) + ", num nodes reserved : " + itos(_nodes.reserved_size()));
 
-#endif
+#endif // BVH_VERBOSE
 
 	return handle;
 }
@@ -94,7 +94,7 @@ void _debug_print_refs() {
 		print_line("tnode_id " + itos(ref.tnode_id) + ", item_id " + itos(ref.item_id));
 	}
 
-#endif
+#endif // BVH_VERBOSE_TREE
 }
 
 // returns false if noop
@@ -117,7 +117,7 @@ bool item_move(BVHHandle p_handle, const BOUNDS &p_aabb) {
 	} else {
 		abb.expand(_pairing_expansion);
 	}
-#endif
+#endif // BVH_EXPAND_LEAF_AABBS
 
 	BVH_ASSERT(ref.tnode_id != BVHCommon::INVALID);
 	TNode &tnode = _nodes[ref.tnode_id];
@@ -142,11 +142,11 @@ bool item_move(BVHHandle p_handle, const BOUNDS &p_aabb) {
 		if (expanded_aabb_encloses_not_shrink(leaf_aabb, p_aabb)) {
 			return false;
 		}
-#else
+#else // BVH_EXPAND_LEAF_AABBS
 		if (leaf_abb == abb) {
 			return false;
 		}
-#endif
+#endif // BVH_EXPAND_LEAF_AABBS
 
 #ifdef BVH_VERBOSE_MOVES
 		print_line("item_move " + itos(p_handle.id()) + "(within tnode aabb) : " + _debug_aabb_to_string(abb));
@@ -407,7 +407,7 @@ void incremental_optimize() {
 	sz += ", num nodes : " + itos(_nodes.size());
 	print_line(sz);
 	*/
-#endif
+#endif // BVH_VERBOSE
 }
 
 void update() {
@@ -448,7 +448,7 @@ void update() {
 			}
 		}
 	}
-#endif
+#endif // BVH_ALLOW_AUTO_EXPANSION
 }
 
 void params_set_pairing_expansion(real_t p_value) {

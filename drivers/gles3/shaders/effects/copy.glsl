@@ -76,7 +76,7 @@ vec3 oct_to_vec3(vec2 e) {
 	v.xy += t * -sign(v.xy);
 	return normalize(v);
 }
-#endif
+#endif // CUBE_TO_OCTAHEDRAL
 
 #ifdef CUBE_TO_PANORAMA
 uniform lowp float mip_level;
@@ -217,14 +217,14 @@ void main() {
 	frag_color += (B + C + H + G) * lesser_weight;
 	frag_color += (F + G + L + K) * lesser_weight;
 	frag_color += (G + H + M + L) * lesser_weight;
-#endif
+#endif // MODE_GAUSSIAN_BLUR
 
 #ifdef CUBE_TO_OCTAHEDRAL
 	// Treat the UV coordinates as 0-1 encoded octahedral coordinates.
 	vec3 dir = oct_to_vec3(uv_interp * 2.0 - 1.0);
 	frag_color = texture(source_cube, dir);
 
-#endif
+#endif // CUBE_TO_OCTAHEDRAL
 
 #ifdef CUBE_TO_PANORAMA
 
@@ -241,5 +241,5 @@ void main() {
 	vec3 color = srgb_to_linear(textureLod(source_cube, normal, mip_level).rgb);
 	frag_color = vec4(color, 1.0);
 
-#endif
+#endif // CUBE_TO_PANORAMA
 }

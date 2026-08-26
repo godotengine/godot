@@ -809,7 +809,7 @@ void ProjectDialog::ok_pressed() {
 				f2->close();
 			}
 		}
-#endif
+#endif // ANDROID_ENABLED
 		emit_signal(SNAME("project_created"), path, mode == MODE_NEW || edit_check_box->is_pressed());
 	} else if (mode == MODE_DUPLICATE) {
 		emit_signal(SNAME("project_duplicated"), original_project_path, path, edit_check_box->is_visible() && edit_check_box->is_pressed());

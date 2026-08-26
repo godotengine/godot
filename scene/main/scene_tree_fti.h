@@ -56,7 +56,7 @@ public:
 	void node_3d_notify_delete(Node3D *p_node) {}
 	void node_3d_request_reset(Node3D *p_node) {}
 };
-#else
+#else // _3D_DISABLED
 
 // Important.
 // This class uses raw pointers, so it is essential that on deletion, this class is notified

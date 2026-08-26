@@ -216,7 +216,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	if (uses_transmittance) {
 		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ renderer.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 #if 0
 	print_line("**compiling shader:");
@@ -234,7 +234,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
 	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
-#endif
+#endif // 0
 
 	SceneShaderForwardMobile::singleton->shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
 
@@ -297,7 +297,7 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 			"SPEC PACKED #2:", p_pipeline_key.shader_specialization.packed_2,
 			"RENDER PASS:", p_pipeline_key.render_pass,
 			"WIREFRAME:", p_pipeline_key.wireframe);
-#endif
+#endif // PRINT_PIPELINE_COMPILATION_KEYS
 
 	RD::PipelineColorBlendState::Attachment blend_attachment = blend_mode_to_blend_attachment(BlendMode(blend_mode));
 	RD::PipelineColorBlendState blend_state_blend;

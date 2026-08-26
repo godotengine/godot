@@ -67,7 +67,7 @@ void MIDIDriverWebMidi::set_input_names_callback(int p_size, const char **p_inpu
 		callable_mp_static(MIDIDriverWebMidi::_set_input_names_callback).call_deferred(input_names);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_set_input_names_callback(input_names);
 }
@@ -91,7 +91,7 @@ void MIDIDriverWebMidi::on_midi_message(int p_device_index, int p_status, const 
 		callable_mp_static(MIDIDriverWebMidi::_on_midi_message).call_deferred(p_device_index, p_status, data, p_data_len);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 	_on_midi_message(p_device_index, p_status, data, p_data_len);
 }
 

@@ -55,9 +55,9 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 				print_verbose("Text-to-Speech: Unsupported Speech Dispatcher library version!");
 				return;
 			}
-#else
+#else // SOWRAP_ENABLED
 		{
-#endif
+#endif // SOWRAP_ENABLED
 			CharString class_str;
 			String config_name = GLOBAL_GET("application/config/name");
 			if (config_name.length() == 0) {

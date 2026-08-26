@@ -142,7 +142,7 @@ bool is_csharp_keyword(const String &p_name) {
 String escape_csharp_keyword(const String &p_name) {
 	return is_csharp_keyword(p_name) ? "@" + p_name : p_name;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 Error read_all_file_utf8(const String &p_path, String &r_content) {
 	Vector<uint8_t> sourcef;

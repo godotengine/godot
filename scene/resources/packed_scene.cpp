@@ -290,7 +290,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				old_parent_path = String(node_paths[n.parent & FLAG_MASK]).trim_prefix("./").replace_char('/', '@');
 				nparent = ret_nodes[0];
 			}
-#endif
+#endif // DEBUG_ENABLED
 			parent = nparent;
 		} else {
 			// i == 0 is root node.
@@ -500,7 +500,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						} else {
 							node->set_script(props[nprops[j].value]);
 						}
-#else
+#else // TOOLS_ENABLED
 						node->set_script(props[nprops[j].value]);
 #endif // TOOLS_ENABLED
 
@@ -616,7 +616,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								pending_add = false;
 							}
 						}
-#endif
+#endif // TOOLS_ENABLED
 						if (pending_add) {
 							parent->_add_child_nocheck(node, snames[n.name]);
 						}
@@ -2663,7 +2663,7 @@ HashSet<StringName> PackedScene::get_scene_groups(const String &p_path) {
 		return packed_scene->get_state()->get_all_groups();
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 Ref<SceneState> PackedScene::get_state() const {
 	return state;

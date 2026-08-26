@@ -262,7 +262,7 @@ static const float earth_gravity = 9.80665;
 		}
 	}
 
-#endif
+#endif // !defined(VISIONOS_ENABLED)
 
 	[self.renderer renderOnView:self];
 

@@ -61,11 +61,11 @@ struct _ObjectDebugLock {
 
 #define OBJ_DEBUG_LOCK _ObjectDebugLock _debug_lock(this);
 
-#else
+#else // DEBUG_ENABLED
 
 #define OBJ_DEBUG_LOCK
 
-#endif
+#endif // DEBUG_ENABLED
 
 struct ObjectSignalLock {
 	Mutex *mutex1 = nullptr;
@@ -173,7 +173,7 @@ bool Object::_predelete() {
 			}
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	return true;
 }
@@ -252,7 +252,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 			return;
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	// Something inside the object... :|
 	bool success = _setv(p_name, p_value);
@@ -329,7 +329,8 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 				return ret;
 			}
 		}
-#endif
+#endif // TOOLS_ENABLED
+
 		// Something inside the object... :|
 		bool success = _getv(p_name, ret);
 		if (success) {
@@ -870,7 +871,8 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 			ERR_FAIL_V_MSG(Variant(), "Object is locked and can't be freed.");
 		}
 
-#endif
+#endif // DEBUG_ENABLED
+
 		//must be here, must be before everything,
 		memdelete(this);
 		r_error.error = Callable::CallError::CALL_OK;
@@ -970,7 +972,7 @@ void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr,
 		} else if (_extension->get_virtual) {
 			fn_ptr = (void *)_extension->get_virtual(_extension->class_userdata, &p_fn_name);
 		}
-#endif
+#endif // DISABLE_DEPRECATED
 	}
 #ifdef TOOLS_ENABLED
 	if (_extension->reloadable) {
@@ -979,7 +981,7 @@ void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr,
 		tracker->next = virtual_method_list;
 		virtual_method_list = tracker;
 	}
-#endif
+#endif // TOOLS_ENABLED
 	if (fn_ptr == nullptr) {
 		fn_ptr = reinterpret_cast<void *>(_INVALID_GDVIRTUAL_FUNC_ADDR);
 	}
@@ -1277,7 +1279,8 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			bool signal_is_valid = property && property->type == GDType::Property::Type::SIGNAL;
 			//check in script
 			ERR_FAIL_COND_V_MSG(!signal_is_valid && script_instance && !script_instance->get_script()->has_script_signal(p_name), ERR_UNAVAILABLE, vformat("Can't emit non-existing signal \"%s\".", p_name));
-#endif
+#endif // DEBUG_ENABLED
+
 			//not connected? just return
 			return ERR_UNAVAILABLE;
 		}
@@ -1306,7 +1309,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			// This signal was connected from the editor, and is being edited. Just don't disconnect for now.
 			disconnect = false;
 		}
-#endif
+#endif // TOOLS_ENABLED
 		if (disconnect) {
 			_disconnect(p_name, slot_callables[i]);
 		}
@@ -1377,7 +1380,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 						continue;
 					}
 				}
-#endif
+#endif // DEBUG_ENABLED
 				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && target && !ClassDB::class_exists(target->get_class_name())) {
 					// Most likely object is not initialized yet, do not throw error.
 				} else {
@@ -1612,7 +1615,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 					signal_is_valid = true;
 				}
 			}
-#endif
+#endif // TOOLS_ENABLED
 		}
 
 		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, vformat("In Object of type '%s': Attempt to connect nonexistent signal '%s' to callable '%s'.", String(get_class()), p_signal, p_callable));
@@ -1883,7 +1886,7 @@ bool Object::editor_is_section_unfolded(const String &p_section) {
 	return editor_section_folding.has(p_section);
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 void Object::clear_internal_resource_paths() {
 	List<PropertyInfo> pinfo;
@@ -2053,7 +2056,7 @@ void Object::_bind_methods() {
 		mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 		BIND_OBJ_CORE_METHOD(mi);
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	BIND_CONSTANT(NOTIFICATION_POSTINITIALIZE);
 	BIND_CONSTANT(NOTIFICATION_PREDELETE);
@@ -2168,7 +2171,7 @@ bool Object::is_edited() const {
 uint32_t Object::get_edited_version() const {
 	return _edited_version;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 const GDType &Object::get_gdtype() const {
 	if (unlikely(!_gdtype_ptr)) {
@@ -2195,7 +2198,7 @@ StringName Object::get_class_name_for_extension(const GDExtension *p_library) co
 	if (unlikely(_extension && _extension->library == p_library && _extension->is_placeholder)) {
 		return get_class_name();
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	// Only return the class name per the extension if it matches the given p_library.
 	if (_extension && _extension->library == p_library) {
@@ -2349,7 +2352,7 @@ void Object::reset_internal_extension(ObjectGDExtension *p_extension) {
 		_gdtype_ptr = p_extension->gdtype;
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void Object::_construct_object(bool p_reference) {
 	_block_signals = false;
@@ -2504,7 +2507,7 @@ void Object::get_argument_options(const StringName &p_function, int p_idx, List<
 		}
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 SpinLock ObjectDB::spin_lock;
 uint32_t ObjectDB::slot_count = 0;
@@ -2580,7 +2583,8 @@ void ObjectDB::remove_instance(Object *p_object) {
 		}
 	}
 
-#endif
+#endif // DEBUG_ENABLED
+
 	//decrease slot count
 	slot_count--;
 	//set the free slot properly

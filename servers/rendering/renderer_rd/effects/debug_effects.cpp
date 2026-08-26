@@ -374,7 +374,7 @@ void DebugEffects::draw_motion_vectors(RID p_velocity, RID p_depth, RID p_dest_f
 
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &motion_vectors.push_constant, sizeof(MotionVectorsPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
-#endif
+#endif // DRAW_DERIVATION_FROM_DEPTH_ON_TOP
 
 	RD::get_singleton()->draw_list_end();
 }

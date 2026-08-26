@@ -289,7 +289,7 @@ void main() {
 		}
 	}
 
-#endif
+#endif // MODE_PROCESS_DYNAMIC
 
 	{
 		uint rgbe = process_voxels.data[voxel_index].light;
@@ -554,7 +554,7 @@ void main() {
 		}
 	}
 
-#endif
+#endif // MODE_PROCESS_DYNAMIC
 
 #ifdef MODE_PROCESS_STATIC
 
@@ -571,5 +571,5 @@ void main() {
 
 	process_voxels.data[voxel_index].light_aniso = light_aniso;
 
-#endif
+#endif // MODE_PROCESS_STATIC
 }

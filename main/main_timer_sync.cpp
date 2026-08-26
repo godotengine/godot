@@ -147,7 +147,7 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta
 
 			print_line(sz);
 		}
-#endif
+#endif // GODOT_DEBUG_DELTA_SMOOTHER
 
 		return;
 	}
@@ -492,7 +492,7 @@ MainFrameTime MainTimerSync::advance_checked(double p_physics_step, int p_physic
 	if (time_accum > p_physics_step + 1E-7) {
 		WARN_PRINT_ONCE("Final value of `time_accum` is larger than `p_physics_step`. It should always be between 0 and `p_physics_step`. This hints at an engine bug.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	// track deficit
 	time_deficit = p_process_step - ret.process_step;

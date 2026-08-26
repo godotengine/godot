@@ -172,7 +172,7 @@ public:
 			if (p_dict.has("is_experimental")) {
 				doc.is_experimental = p_dict["is_experimental"];
 			}
-#endif
+#endif // DISABLE_DEPRECATED
 
 			if (p_dict.has("deprecated")) {
 				doc.is_deprecated = true;
@@ -316,7 +316,7 @@ public:
 			if (p_dict.has("is_experimental")) {
 				doc.is_experimental = p_dict["is_experimental"];
 			}
-#endif
+#endif // DISABLE_DEPRECATED
 
 			if (p_dict.has("deprecated")) {
 				doc.is_deprecated = true;
@@ -442,7 +442,7 @@ public:
 			if (p_dict.has("is_experimental")) {
 				doc.is_experimental = p_dict["is_experimental"];
 			}
-#endif
+#endif // DISABLE_DEPRECATED
 
 			if (p_dict.has("deprecated")) {
 				doc.is_deprecated = true;
@@ -662,7 +662,7 @@ public:
 			if (p_dict.has("is_experimental")) {
 				doc.is_experimental = p_dict["is_experimental"];
 			}
-#endif
+#endif // DISABLE_DEPRECATED
 
 			if (p_dict.has("deprecated")) {
 				doc.is_deprecated = true;
@@ -836,7 +836,7 @@ public:
 			if (p_dict.has("is_experimental")) {
 				doc.is_experimental = p_dict["is_experimental"];
 			}
-#endif
+#endif // DISABLE_DEPRECATED
 
 			if (p_dict.has("deprecated")) {
 				doc.is_deprecated = true;

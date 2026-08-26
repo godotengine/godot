@@ -81,7 +81,7 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
 		RenderingContextDriverMetal::WindowPlatformData metal;
 		GODOT_CLANG_WARNING_POP
-#endif
+#endif // METAL_ENABLED
 	} wpd;
 
 #if defined(VULKAN_ENABLED)
@@ -93,7 +93,7 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 		wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
 		rendering_context = memnew(RenderingContextDriverVulkanAppleEmbedded);
 	}
-#endif
+#endif // defined(VULKAN_ENABLED)
 #ifdef METAL_ENABLED
 	if (rendering_driver == "metal") {
 		if (@available(iOS 14.0, *)) {
@@ -106,7 +106,7 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 			return;
 		}
 	}
-#endif
+#endif // METAL_ENABLED
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
 			memdelete(rendering_context);
@@ -119,7 +119,7 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
-#endif
+#endif // defined(GLES3_ENABLED)
 			{
 				ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
 				r_error = ERR_UNAVAILABLE;
@@ -154,7 +154,7 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 		RendererCompositorRD::make_current();
 		has_made_render_compositor_current = true;
 	}
-#endif
+#endif // defined(RD_ENABLED)
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
@@ -167,7 +167,7 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 		RasterizerGLES3::make_current(false);
 		has_made_render_compositor_current = true;
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 
 	ERR_FAIL_COND_MSG(!has_made_render_compositor_current, vformat("Failed to make RendererCompositor current for rendering driver %s", rendering_driver));
 
@@ -197,7 +197,7 @@ DisplayServerAppleEmbedded::~DisplayServerAppleEmbedded() {
 		memdelete(rendering_context);
 		rendering_context = nullptr;
 	}
-#endif
+#endif // defined(RD_ENABLED)
 }
 
 Vector<String> DisplayServerAppleEmbedded::get_rendering_drivers_func() {
@@ -690,7 +690,7 @@ void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServerEnums::Scre
 	} else {
 		[UIViewController attemptRotationToDeviceOrientation];
 	}
-#endif
+#endif // IOS_ENABLED
 }
 
 DisplayServerEnums::ScreenOrientation DisplayServerAppleEmbedded::screen_get_orientation(int p_screen) const {
@@ -863,7 +863,7 @@ void DisplayServerAppleEmbedded::_update_hdr_output(bool edr_headroom_changed) {
 	if (hdr_state_changed || edr_headroom_changed) {
 		send_window_event(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 	}
-#endif
+#endif // RD_ENABLED
 }
 
 void DisplayServerAppleEmbedded::current_edr_headroom_changed() {
@@ -878,7 +878,7 @@ bool DisplayServerAppleEmbedded::window_is_hdr_output_supported(DisplayServerEnu
 		renderer_supports_hdr_output = true;
 		surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 	}
-#endif
+#endif // defined(RD_ENABLED)
 	if (!renderer_supports_hdr_output) {
 		return false;
 	}
@@ -899,7 +899,7 @@ void DisplayServerAppleEmbedded::window_request_hdr_output(const bool p_enabled,
 			renderer_supports_hdr_output = true;
 			surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 		}
-#endif
+#endif // defined(RD_ENABLED)
 		if (!renderer_supports_hdr_output) {
 			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
 			return;

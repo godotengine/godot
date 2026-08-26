@@ -713,9 +713,9 @@ void EditorNode::_update_system_menu_icons(bool p_dark_mode) {
 	} else {
 		apple_menu->set_item_icon(apple_menu->get_item_index(EDITOR_OPEN_SETTINGS), get_editor_theme_native_menu_icon(SNAME("Tools"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode));
 	}
-#else
+#else // MACOS_ENABLED
 	settings_menu->set_item_icon(settings_menu->get_item_index(EDITOR_OPEN_SETTINGS), get_editor_theme_native_menu_icon(SNAME("Tools"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode));
-#endif
+#endif // MACOS_ENABLED
 
 	help_menu->set_item_icon(help_menu->get_item_index(HELP_SEARCH), get_editor_theme_native_menu_icon(SNAME("HelpSearch"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode));
 	help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), get_editor_theme_native_menu_icon(SNAME("ActionCopy"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode));
@@ -739,7 +739,7 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 			// Update syntax colors.
 			EditorHelpHighlighter::get_singleton()->clear_cache();
 		}
-#endif
+#endif // defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 	}
 
 	Vector<Ref<Theme>> editor_themes;
@@ -988,7 +988,7 @@ void EditorNode::_notification(int p_what) {
 			if (is_fullscreen) {
 				DisplayServer::get_singleton()->window_set_mode(DisplayServerEnums::WINDOW_MODE_FULLSCREEN);
 			}
-#endif
+#endif // ANDROID_ENABLED
 			get_tree()->get_root()->connect("files_dropped", callable_mp(this, &EditorNode::_dropped_files));
 
 			command_palette->register_shortcuts_as_command();
@@ -3765,7 +3765,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				Callable setup_android_build_callable = callable_mp(this, &EditorNode::_setup_android_build).bind(p_confirmed);
 				android_sdk_manager->run_setup(setup_android_build_callable, setup_android_build_callable);
 			} else {
-#endif
+#endif // ANDROID_ENABLED
 				_setup_android_build(p_confirmed);
 #ifndef ANDROID_ENABLED
 			}
@@ -4072,7 +4072,7 @@ void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h
 	if (rendering_device && RenderingServer::get_singleton()->viewport_is_using_hdr_2d(viewport->get_viewport_rid())) {
 		img->linear_to_srgb();
 	}
-#endif
+#endif // RD_ENABLED
 	ERR_FAIL_COND(p_emb_path.is_empty());
 	Ref<Image> overlay = Image::load_from_file(p_emb_path);
 	DirAccess::remove_absolute(p_emb_path);
@@ -4101,7 +4101,7 @@ void EditorNode::_save_screenshot(const String &p_path) {
 	if (rendering_device && RenderingServer::get_singleton()->viewport_is_using_hdr_2d(viewport->get_viewport_rid())) {
 		img->linear_to_srgb();
 	}
-#endif
+#endif // RD_ENABLED
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 
@@ -8121,10 +8121,10 @@ void EditorNode::_build_file_menu(bool p_dark_mode) {
 		file_menu->add_separator();
 		file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Close"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/file_quit"), SCENE_QUIT, true);
 	}
-#else
+#else // MACOS_ENABLED
 	file_menu->add_separator();
 	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Close"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/file_quit"), SCENE_QUIT, true);
-#endif
+#endif // MACOS_ENABLED
 }
 
 void EditorNode::_build_project_menu(bool p_dark_mode) {
@@ -8182,9 +8182,9 @@ void EditorNode::_build_settings_menu(bool p_dark_mode) {
 		// On macOS "Settings" option is in the "app" menu.
 		settings_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Tools"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
 	}
-#else
+#else // MACOS_ENABLED
 	settings_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Tools"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/editor_settings"), EDITOR_OPEN_SETTINGS);
-#endif
+#endif // MACOS_ENABLED
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/command_palette"), EDITOR_COMMAND_PALETTE);
 	settings_menu->add_separator();
 
@@ -8213,7 +8213,7 @@ void EditorNode::_build_settings_menu(bool p_dark_mode) {
 		settings_menu->add_item(TTRC("Open Editor Settings Folder"), EDITOR_OPEN_CONFIG_FOLDER);
 	}
 	settings_menu->add_separator();
-#endif
+#endif // ANDROID_ENABLED
 
 	settings_menu->add_item(TTRC("Manage Editor Features..."), EDITOR_MANAGE_FEATURE_PROFILES);
 	settings_menu->add_item(TTRC("Manage Export Templates..."), EDITOR_MANAGE_EXPORT_TEMPLATES);
@@ -8251,9 +8251,9 @@ void EditorNode::_build_help_menu(bool p_dark_mode) {
 		// On macOS "About" option is in the "app" menu.
 		help_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Godot"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/about"), HELP_ABOUT);
 	}
-#else
+#else // MACOS_ENABLED
 	help_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Godot"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/about"), HELP_ABOUT);
-#endif
+#endif // MACOS_ENABLED
 	help_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("Heart"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/support_development"), HELP_SUPPORT_GODOT_DEVELOPMENT);
 }
 
@@ -8334,7 +8334,7 @@ void EditorNode::_update_main_menu_type() {
 		menu_btn_spacer->set_custom_minimum_size(Vector2(8, 0) * EDSCALE);
 		title_bar->add_child(menu_btn_spacer);
 		title_bar->move_child(menu_btn_spacer, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
-#endif
+#endif // ANDROID_ENABLED
 		title_bar->add_child(main_menu_button);
 		if (menu_btn_spacer == nullptr) {
 			title_bar->move_child(main_menu_button, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
@@ -8396,7 +8396,7 @@ void EditorNode::_touch_actions_panel_mode_changed() {
 			break;
 	}
 }
-#endif
+#endif // ANDROID_ENABLED
 
 #ifdef MACOS_ENABLED
 extern "C" GameViewPluginBase *get_game_view_plugin();
@@ -8779,12 +8779,12 @@ EditorNode::EditorNode() {
 	_touch_actions_panel_mode_changed();
 
 	gui_base->add_child(base_vbox);
-#else
+#else // ANDROID_ENABLED
 	gui_base->add_child(main_vbox);
 
 	title_bar = memnew(EditorTitleBar);
 	main_vbox->add_child(title_bar);
-#endif
+#endif // ANDROID_ENABLED
 
 	DockSplitContainer *main_vsplit = memnew(DockSplitContainer);
 	main_vsplit->set_name("DockVSplitMain");
@@ -9148,7 +9148,7 @@ EditorNode::EditorNode() {
 		apple_menu->add_separator();
 		apple_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 	}
-#endif
+#endif // MACOS_ENABLED
 
 	if (can_expand) {
 		// Add spacer to avoid other controls under window minimize/maximize/close buttons (left side).

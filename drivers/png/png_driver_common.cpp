@@ -53,7 +53,7 @@ static bool check_error(const png_image &image) {
 		if (eng && eng->is_editor_hint() && !strcmp(image.message, noisy)) {
 			return false;
 		}
-#endif
+#endif // TOOLS_ENABLED
 		WARN_PRINT(image.message);
 	}
 	return false;

@@ -44,7 +44,7 @@ void GraphElement::_edit_set_position(const Point2 &p_position) {
 	}
 	set_position(p_position);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void GraphElement::_resort() {
 	Size2 size = get_size();

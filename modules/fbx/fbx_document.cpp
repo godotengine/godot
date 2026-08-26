@@ -1574,7 +1574,7 @@ Light3D *FBXDocument::_generate_light(Ref<FBXState> p_state, const GLTFNodeIndex
 			}
 			light->set_param(Light3D::PARAM_ATTENUATION, attenuation);
 		}
-#endif
+#endif // 0
 
 		if (spot_light) {
 			// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b

@@ -97,7 +97,7 @@ bool OpenXROpenGLExtension::check_graphics_api_support(XrVersion p_desired_versi
 	if (!OpenXRAPI::get_singleton()->xr_result(result, "Failed to get OpenGL graphics requirements!")) {
 		return false;
 	}
-#else
+#else // XR_USE_GRAPHICS_API_OPENGL_ES
 	XrGraphicsRequirementsOpenGLKHR opengl_requirements;
 	opengl_requirements.type = XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR;
 	opengl_requirements.next = nullptr;
@@ -106,7 +106,7 @@ bool OpenXROpenGLExtension::check_graphics_api_support(XrVersion p_desired_versi
 	if (!OpenXRAPI::get_singleton()->xr_result(result, "Failed to get OpenGL graphics requirements!")) {
 		return false;
 	}
-#endif
+#endif // XR_USE_GRAPHICS_API_OPENGL_ES
 
 	if (p_desired_version < opengl_requirements.minApiVersionSupported) {
 		print_line("OpenXR: Requested OpenGL version does not meet the minimum version this runtime supports.");
@@ -167,7 +167,7 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 	graphics_binding_gl.display = (void *)display_server->window_get_native_handle(DisplayServerEnums::DISPLAY_HANDLE);
 	graphics_binding_gl.config = (EGLConfig)0; // https://github.com/KhronosGroup/OpenXR-SDK-Source/blob/master/src/tests/hello_xr/graphicsplugin_opengles.cpp#L122
 	graphics_binding_gl.context = (void *)display_server->window_get_native_handle(DisplayServerEnums::OPENGL_CONTEXT);
-#else
+#else // defined(ANDROID_ENABLED)
 #if defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
 	if (display_server->get_name() == "Wayland") {
 		ERR_FAIL_COND_V_MSG(!egl_extension_enabled, p_next_pointer, "OpenXR cannot initialize on Wayland without the XR_MNDX_egl_enable extension.");
@@ -182,7 +182,7 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 
 		return &graphics_binding_egl;
 	}
-#endif
+#endif // defined(EGL_ENABLED) && defined(WAYLAND_ENABLED)
 #if defined(X11_ENABLED)
 	graphics_binding_gl.type = XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR;
 	graphics_binding_gl.next = p_next_pointer;
@@ -198,7 +198,7 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 	graphics_binding_gl.glxDrawable = (GLXDrawable)glxdrawable_handle;
 	graphics_binding_gl.glxFBConfig = (GLXFBConfig)glx_fbconfig_handle;
 	graphics_binding_gl.visualid = glx_visualid;
-#endif
+#endif // defined(X11_ENABLED)
 #endif
 
 #if defined(WIN32) || defined(ANDROID_ENABLED) || defined(X11_ENABLED)
@@ -404,7 +404,8 @@ String OpenXROpenGLExtension::get_swapchain_format_name(int64_t p_swapchain_form
 		ENUM_TO_STRING_CASE(GL_DEPTH_COMPONENT24)
 		ENUM_TO_STRING_CASE(GL_DEPTH24_STENCIL8)
 
-#else
+#else // XR_USE_GRAPHICS_API_OPENGL_ES
+
 		// using definitions from GLAD
 		ENUM_TO_STRING_CASE(GL_R8_SNORM)
 		ENUM_TO_STRING_CASE(GL_RG8_SNORM)
@@ -455,7 +456,7 @@ String OpenXROpenGLExtension::get_swapchain_format_name(int64_t p_swapchain_form
 		ENUM_TO_STRING_CASE(GL_R11F_G11F_B10F)
 		ENUM_TO_STRING_CASE(GL_DEPTH_COMPONENT32F)
 		ENUM_TO_STRING_CASE(GL_DEPTH32F_STENCIL8)
-#endif
+#endif // XR_USE_GRAPHICS_API_OPENGL_ES
 		default: {
 			return String("Swapchain format 0x") + String::num_int64(p_swapchain_format, 16);
 		} break;

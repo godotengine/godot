@@ -96,7 +96,7 @@ layout(std140) uniform MaterialUniforms{ //ubo:3
 #MATERIAL_UNIFORMS
 
 };
-#endif
+#endif // MATERIAL_UNIFORMS_USED
 /* clang-format on */
 #GLOBALS
 
@@ -125,7 +125,7 @@ layout(std140) uniform MultiviewData { // ubo:12
 	highp vec4 eye_offset[MAX_VIEWS];
 }
 multiview_data;
-#endif
+#endif // USE_MULTIVIEW
 
 layout(location = 0) out vec4 frag_color;
 
@@ -136,7 +136,7 @@ vec3 interleaved_gradient_noise(vec2 pos) {
 	float res = fract(magic.z * fract(dot(pos, magic.xy))) * 2.0 - 1.0;
 	return vec3(res, -res, res) / 255.0;
 }
-#endif
+#endif // USE_DEBANDING
 
 #if !defined(DISABLE_FOG)
 vec4 fog_process(vec3 view, vec3 sky_color) {
@@ -192,11 +192,11 @@ void main() {
 
 	// Unproject will give us the position between the eyes, need to re-offset.
 	cube_normal += multiview_data.eye_offset[ViewIndex].xyz;
-#else
+#else // USE_MULTIVIEW
 	cube_normal.z = -1.0;
 	cube_normal.x = (uv_interp.x + projection.x) / projection.y;
 	cube_normal.y = (uv_interp.y + projection.z) / projection.w;
-#endif
+#endif // USE_MULTIVIEW
 	cube_normal = mat3(orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
 
@@ -223,22 +223,22 @@ void main() {
 #ifdef USES_QUARTER_RES_COLOR
 	quarter_res_color = texture(quarter_res, cube_normal);
 #endif
-#else
+#else // USE_CUBEMAP_PASS
 #ifdef USES_HALF_RES_COLOR
 #ifdef USE_MULTIVIEW
 	half_res_color = textureLod(half_res, vec3(uv, ViewIndex), 0.0);
 #else
 	half_res_color = textureLod(half_res, uv, 0.0);
 #endif
-#endif
+#endif // USES_HALF_RES_COLOR
 #ifdef USES_QUARTER_RES_COLOR
 #ifdef USE_MULTIVIEW
 	quarter_res_color = textureLod(quarter_res, vec3(uv, ViewIndex), 0.0);
 #else
 	quarter_res_color = textureLod(quarter_res, uv, 0.0);
 #endif
-#endif
-#endif
+#endif // USES_QUARTER_RES_COLOR
+#endif // USE_CUBEMAP_PASS
 
 	{
 #CODE : SKY

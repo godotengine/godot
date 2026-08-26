@@ -162,7 +162,7 @@ void SpriteFrames::set_animation_loop(const StringName &p_anim, bool p_loop) {
 bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
 	return get_animation_loop_mode(p_anim) == LOOP_LINEAR;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void SpriteFrames::set_animation_loop_mode(const StringName &p_anim, LoopMode p_loop_mode) {
 	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
@@ -228,7 +228,7 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 				anim.frames.push_back(frame);
 				continue;
 			}
-#endif
+#endif // DISABLE_DEPRECATED
 
 			Dictionary f = frames[j];
 
@@ -260,7 +260,7 @@ void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx,
 	}
 	Resource::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "anim"), &SpriteFrames::add_animation);

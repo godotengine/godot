@@ -331,10 +331,11 @@ void godotsharp_internal_editor_file_system_update_files(const PackedStringArray
 	if (efs) {
 		efs->update_files(p_script_paths);
 	}
-#else
+#else // TOOLS_ENABLED
+
 	// EditorFileSystem is only available when running in the Godot editor.
 	DEV_ASSERT(false);
-#endif
+#endif // TOOLS_ENABLED
 }
 
 bool godotsharp_internal_script_load(const String *p_path, Ref<CSharpScript> *r_dest) {

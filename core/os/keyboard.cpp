@@ -78,7 +78,7 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::CMD_OR_CTRL           ,"Ctrl"},
 	{Key::ALT                   ,"Alt"},
 	{Key::ALT                   ,"Option"},
-#else
+#else // defined(WINDOWS_ENABLED)
 	{Key::META                  ,"Meta"},
 	{Key::META                  ,"Windows"},
 	{Key::META                  ,"Command"},

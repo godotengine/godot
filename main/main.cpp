@@ -228,7 +228,7 @@ static int converter_max_line_length = 100000;
 #endif // DISABLE_DEPRECATED
 
 HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
-#endif
+#endif // TOOLS_ENABLED
 static bool single_threaded_scene = false;
 
 // Display
@@ -255,7 +255,7 @@ static bool init_custom_scale_found = false;
 static float init_custom_scale = 1.0;
 static bool init_expand_to_title = false;
 static bool init_expand_to_title_found = false;
-#endif
+#endif // TOOLS_ENABLED
 static bool use_custom_res = true;
 static bool force_res = false;
 
@@ -269,7 +269,7 @@ static bool debug_navigation = false;
 static bool debug_avoidance = false;
 static bool debug_canvas_item_redraw = false;
 static bool debug_mute_audio = false;
-#endif
+#endif // DEBUG_ENABLED
 static int max_fps = -1;
 static int frame_delay = 0;
 static int audio_output_latency = 0;
@@ -286,7 +286,7 @@ static bool dump_extension_api = false;
 static bool include_docs_in_extension_api_dump = false;
 static bool validate_extension_api = false;
 static String validate_extension_api_file;
-#endif
+#endif // TOOLS_ENABLED
 bool profile_gpu = false;
 
 // Constants.
@@ -347,7 +347,7 @@ static Vector<String> get_files_with_extension(const String &p_root, const Strin
 
 	return paths;
 }
-#endif
+#endif // defined(TOOLS_ENABLED) && defined(MODULE_GDSCRIPT_ENABLED)
 
 void finalize_display() {
 	rendering_server->finish();
@@ -507,7 +507,7 @@ void Main::print_help(const char *p_binary) {
 #if defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
 	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript Language Server Protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif // MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
-#endif
+#endif // TOOLS_ENABLED
 	print_help_option("--quit", "Quit after the first iteration.\n");
 	print_help_option("--quit-after <int>", "Quit after the given number of iterations. Set to 0 to disable.\n");
 	print_help_option("-l, --language <locale>", "Use a specific locale (<locale> being a two-letter code).\n");
@@ -592,7 +592,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("-b, --breakpoints", "Breakpoint list as source:line comma-separated pairs, no spaces (use %%20 instead).\n");
 	print_help_option("--ignore-error-breaks", "If debugger is connected, prevents sending error breakpoints.\n");
 	print_help_option("--profiling", "Enable profiling in the script debugger.\n");
-#endif
+#endif // DEBUG_ENABLED
 	print_help_option("--gpu-profile", "Show a GPU profile of the tasks that took the most time during frame rendering.\n");
 	print_help_option("--gpu-validation", "Enable graphics API validation layers for debugging.\n");
 #ifdef DEBUG_ENABLED
@@ -616,7 +616,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--debug-stringnames", "Print all StringName allocations to stdout when the engine quits.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-canvas-item-redraw", "Display a rectangle each time a canvas item requests a redraw (useful to troubleshoot low processor mode).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 
-#endif
+#endif // DEBUG_ENABLED
 	print_help_option("--max-fps <fps>", "Set a maximum number of frames per second rendered (can be used to limit power usage). A value of 0 results in unlimited framerate.\n");
 	print_help_option("--frame-delay <ms>", "Simulate high CPU load (delay each frame by <ms> milliseconds). Do not use as a FPS limiter; use --max-fps instead.\n");
 	print_help_option("--time-scale <scale>", "Force time scale (higher values are faster, 1.0 is normal speed).\n");
@@ -682,7 +682,8 @@ Error Main::test_setup() {
 	ERR_FAIL_V(ERR_UNAVAILABLE);
 }
 void Main::test_cleanup() {}
-#else
+#else // TESTS_ENABLED
+
 // The order is the same as in `Main::setup()`, only core and some editor types
 // are initialized here. This also combines `Main::setup2()` initialization.
 Error Main::test_setup() {
@@ -784,7 +785,7 @@ Error Main::test_setup() {
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
 
 	ClassDB::set_current_api(ClassDB::API_CORE);
-#endif
+#endif // TOOLS_ENABLED
 	register_platform_apis();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
@@ -923,12 +924,12 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 			int status = test_main(argc, argv);
 			test_cleanup();
 			return status;
-#else
+#else // TESTS_ENABLED
 			ERR_PRINT(
 					"`--test` was specified on the command line, but this Godot binary was compiled without support for unit tests. Aborting.\n"
 					"To be able to run unit tests, use the `tests=yes` SCons option when compiling Godot.\n");
 			return EXIT_FAILURE;
-#endif
+#endif // TESTS_ENABLED
 		}
 	}
 	tests_need_run = false;
@@ -976,13 +977,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (new_cwd.is_empty() || !new_cwd.is_absolute_path()) {
 		new_cwd = OS::get_singleton()->get_executable_path().get_base_dir();
 	}
-#else
+#else // defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	String new_cwd = OS::get_singleton()->get_executable_path().get_base_dir();
-#endif
+#endif // defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	if (!new_cwd.is_empty()) {
 		OS::get_singleton()->set_cwd(new_cwd);
 	}
-#endif
+#endif // !defined(OVERRIDE_PATH_ENABLED) && !defined(TOOLS_ENABLED)
 
 	// Benchmark tracking must be done after `OS::get_singleton()->initialize()` as on some
 	// platforms, it's used to set up the time utilities.
@@ -1046,7 +1047,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool skip_breakpoints = false;
 	bool ignore_error_breaks = false;
 	Vector<String> breakpoints;
-#endif
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	bool test_rd_creation = false;
@@ -1088,7 +1089,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	packed_data->add_pack_source(zip_packed_data);
-#endif
+#endif // MINIZIP_ENABLED
 
 	// Exit error code used in the `goto error` conditions.
 	// It's returned as the program exit code. ERR_HELP is special cased and handled as success (0).
@@ -1107,7 +1108,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			I = N;
 			continue;
 		}
-#endif
+#endif // MACOS_ENABLED
 
 #ifdef TOOLS_ENABLED
 		if (arg == "--debug" ||
@@ -1141,7 +1142,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(next_arg);
 			}
 		}
-#endif
+#endif // TOOLS_ENABLED
 
 		if (adding_user_args) {
 			user_args.push_back(arg);
@@ -1304,7 +1305,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			Engine::singleton->extra_gpu_memory_tracking = true;
 		} else if (arg == "--accurate-breadcrumbs") {
 			Engine::singleton->accurate_breadcrumbs = true;
-#endif
+#endif // defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 		} else if (arg == "--tablet-driver") {
 			if (N) {
 				tablet_driver = N->get();
@@ -1487,7 +1488,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote filesystem address, aborting.\n");
 				goto error;
 			}
-#else
+#else // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			ERR_PRINT(
 					"`--remote-fs` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
 					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
@@ -1502,7 +1503,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote filesystem password, aborting.\n");
 				goto error;
 			}
-#else
+#else // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			ERR_PRINT(
 					"`--remote-fs-password` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
 					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
@@ -1719,7 +1720,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing relative or absolute path, aborting.\n");
 				goto error;
 			}
-#else
+#else // defined(OVERRIDE_PATH_ENABLED)
 			ERR_PRINT(
 					"`--path` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
@@ -1756,7 +1757,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 			editor = true;
 #endif
-#else
+#else // defined(OVERRIDE_PATH_ENABLED)
 			ERR_PRINT(
 					"`project.godot` path was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
@@ -1830,7 +1831,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing path to main pack file, aborting.\n");
 				goto error;
 			}
-#else
+#else // defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) || defined(ANDROID_ENABLED)
 			ERR_PRINT(
 					"`--main-pack` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
@@ -1846,7 +1847,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					arg + " was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
 						  "To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
 			goto error;
-#endif
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 #if defined(DEBUG_ENABLED)
 		} else if (arg == "--debug-collisions") {
 			debug_collisions = true;
@@ -1883,7 +1884,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote debug host address, aborting.\n");
 				goto error;
 			}
-#else
+#else // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			ERR_PRINT(
 					"`--remote-debug` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
 					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
@@ -2034,7 +2035,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				"Error: Command line arguments implied opening both editor and project manager, which is not possible. Aborting.\n");
 		goto error;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 #if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	// Network file system needs to be configured before globals, since globals are based on the
@@ -2077,15 +2078,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else {
 			error_msg += "If you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).\n";
 		}
-#else
+#else // !defined(OVERRIDE_PATH_ENABLED) && !defined(TOOLS_ENABLED)
 		error_msg += "If you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).\n";
-#endif
+#endif // !defined(OVERRIDE_PATH_ENABLED) && !defined(TOOLS_ENABLED)
 		ERR_PRINT(error_msg);
 
 		OS::get_singleton()->alert(error_msg);
 
 		goto error;
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	if (clear_shader_cache && !project_path.is_empty()) {
@@ -2105,9 +2106,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			float low_priority_ratio = GLOBAL_GET("threading/worker_pool/low_priority_thread_ratio");
 			WorkerThreadPool::get_singleton()->init(worker_threads, low_priority_ratio);
 		}
-#else
+#else // THREADS_ENABLED
 		WorkerThreadPool::get_singleton()->init(0, 0);
-#endif
+#endif // THREADS_ENABLED
 	}
 
 #ifdef TOOLS_ENABLED
@@ -2152,7 +2153,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	if (test_rd_support) {
@@ -2176,7 +2177,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 		goto error;
 	}
-#endif
+#endif // defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 
 #ifdef TOOLS_ENABLED
 	if (editor) {
@@ -2205,7 +2206,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		Engine::get_singleton()->set_recovery_mode_hint(true);
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 
@@ -2265,7 +2266,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 #endif
 	});
-#endif
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 
 #ifdef TOOLS_ENABLED
 	if (editor) {
@@ -2471,7 +2472,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		rendering_method = "gl_compatibility";
 		default_renderer_mobile = "gl_compatibility";
 	}
-#endif
+#endif // GLES3_ENABLED
 
 	if (!rendering_method.is_empty()) {
 		if (rendering_method != "forward_plus" &&
@@ -2578,7 +2579,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			available_drivers.push_back("opengl3_angle");
 			available_drivers.push_back("opengl3_es");
 		}
-#endif
+#endif // GLES3_ENABLED
 		if (rendering_method == "dummy") {
 			available_drivers.push_back("dummy");
 		}
@@ -2643,7 +2644,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		window_size.width = ProjectManager::DEFAULT_WINDOW_WIDTH;
 		window_size.height = ProjectManager::DEFAULT_WINDOW_HEIGHT;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (use_custom_res) {
 		if (!force_res) {
@@ -2731,7 +2732,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_allow_hidpi = true;
 		load_shell_env = true;
 	}
-#endif
+#endif // TOOLS_ENABLED
 	if (load_shell_env) {
 		OS::get_singleton()->load_shell_environment();
 	}
@@ -3167,7 +3168,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		OS::get_singleton()->benchmark_end_measure("Startup", "Initialize Early Settings");
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Servers");
 
@@ -3417,7 +3418,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 				display_server->window_set_position(scr_rect.position + (scr_rect.size - real_size) / 2, DisplayServerEnums::MAIN_WINDOW_ID);
 			}
 		}
-#endif
+#endif // TOOLS_ENABLED
 		if (display_server->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS)) {
 			display_server->show_window(DisplayServerEnums::MAIN_WINDOW_ID);
 		}
@@ -3457,7 +3458,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (GLOBAL_GET("debug/settings/stdout/print_fps") || print_fps) {
 		// Print requested V-Sync mode at startup to diagnose the printed FPS not going above the monitor refresh rate.
@@ -3543,7 +3544,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	if (OS::get_singleton()->get_environment("USER") == "root" && !OS::get_singleton()->has_environment("GODOT_SILENCE_ROOT_WARNING")) {
 		WARN_PRINT("Started the engine as `root`/superuser. This is a security risk, and subsystems like audio may not work correctly.\nSet the environment variable `GODOT_SILENCE_ROOT_WARNING` to 1 to silence this warning.");
 	}
-#endif
+#endif // UNIX_ENABLED
 
 	/* Initialize Audio Driver */
 
@@ -3784,7 +3785,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 	ClassDB::set_current_api(ClassDB::API_CORE);
 
-#endif
+#endif // TOOLS_ENABLED
 
 	MAIN_PRINT("Main: Load Platforms");
 
@@ -3834,7 +3835,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		ResourceUID::scan_for_uid_on_startup = EditorFileSystem::scan_for_uid;
 	}
 
-#endif
+#endif // TOOLS_ENABLED
 
 	theme_db->initialize_theme();
 	audio_server->load_default_bus_layout();
@@ -3846,7 +3847,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	// for the C# docs generation in the bindings.
 	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
 	BindingsGenerator::handle_cmdline_args(cmdline_args);
-#endif
+#endif // defined(MODULE_MONO_ENABLED) && defined(TOOLS_ENABLED)
 
 #ifdef DEBUG_ENABLED
 	if (use_debug_profiler && EngineDebugger::is_active()) {
@@ -3854,7 +3855,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		// We could add more, and make the CLI arg require a comma-separated list of profilers.
 		EngineDebugger::get_singleton()->profiler_enable("scripts", true);
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (!project_manager) {
 		// If not running the project manager, and now that the engine is
@@ -3947,7 +3948,7 @@ void Main::setup_boot_logo() {
 			RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
 			MAIN_PRINT("Main: Image");
 			RenderingServer::get_singleton()->set_boot_image_with_stretch(splash, boot_bg_color, RSE::SPLASH_STRETCH_MODE_DISABLED);
-#endif
+#endif // NO_DEFAULT_BOOT_LOGO
 		}
 
 #if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
@@ -3955,7 +3956,7 @@ void Main::setup_boot_logo() {
 			Ref<Image> icon = memnew(Image(app_icon_png));
 			DisplayServer::get_singleton()->set_icon(icon);
 		}
-#endif
+#endif // defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
 	}
 	RenderingServer::get_singleton()->set_default_clear_color(
 			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
@@ -4042,7 +4043,7 @@ int Main::start() {
 			} else {
 				ERR_FAIL_V_MSG(EXIT_FAILURE, "Missing scene path, aborting.");
 			}
-#else
+#else // defined(OVERRIDE_PATH_ENABLED)
 			ERR_PRINT(
 					"`--scene` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
@@ -4115,7 +4116,7 @@ int Main::start() {
 				export_patch = true;
 			} else if (E->get() == "--patches") {
 				patches = E->next()->get().split(",", false);
-#endif
+#endif // TOOLS_ENABLED
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
 				parsed_pair = false;
@@ -4132,7 +4133,7 @@ int Main::start() {
 			doc_tool_path = ".";
 			doc_tool_implicit_cwd = true;
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	uint64_t minimum_time_msec = GLOBAL_DEF(PropertyInfo(Variant::INT, "application/boot_splash/minimum_display_time", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:ms"), 0);
@@ -4171,7 +4172,7 @@ int Main::start() {
 		GLOBAL_DEF("dotnet/project/assembly_name", "");
 		GLOBAL_DEF("dotnet/project/solution_directory", "");
 		GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
-#endif
+#endif // MODULE_MONO_ENABLED
 
 		Error err;
 		DocTools doc;
@@ -4289,7 +4290,7 @@ int Main::start() {
 		main_loop_type = String();
 	}
 #endif // TOOLS_ENABLED
-#else
+#else // defined(OVERRIDE_PATH_ENABLED)
 	script = String();
 	game_path = String();
 	main_loop_type = String();
@@ -4318,7 +4319,7 @@ int Main::start() {
 		OS::get_singleton()->alert("Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
 		ERR_FAIL_V_MSG(EXIT_FAILURE, "Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	MainLoop *main_loop = nullptr;
 	if (editor) {
@@ -4438,7 +4439,7 @@ int Main::start() {
 		if (debug_mute_audio) {
 			AudioServer::get_singleton()->set_debug_mute(true);
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		if (single_threaded_scene) {
 			sml->set_disable_node_threading(true);
@@ -4576,7 +4577,7 @@ int Main::start() {
 
 			OS::get_singleton()->benchmark_end_measure("Startup", "Editor");
 		}
-#endif
+#endif // TOOLS_ENABLED
 		sml->set_auto_accept_quit(GLOBAL_GET("application/config/auto_accept_quit"));
 		sml->set_quit_on_go_back(GLOBAL_GET("application/config/quit_on_go_back"));
 
@@ -4628,9 +4629,9 @@ int Main::start() {
 			// from a debug build (including the editor). Since this results in lower performance,
 			// this should be clearly presented to the user.
 			DisplayServer::get_singleton()->window_set_title(vformat("%s (DEBUG)", appname));
-#else
+#else // DEBUG_ENABLED
 			DisplayServer::get_singleton()->window_set_title(appname);
-#endif
+#endif // DEBUG_ENABLED
 
 			bool snap_controls = GLOBAL_GET("gui/common/snap_controls_to_pixels");
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
@@ -4658,7 +4659,7 @@ int Main::start() {
 			}
 			restore_editor_window_layout = EDITOR_GET("interface/editor/appearance/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 		}
-#endif
+#endif // TOOLS_ENABLED
 
 		String local_game_path;
 		if (!game_path.is_empty() && !project_manager) {
@@ -4706,7 +4707,7 @@ int Main::start() {
 					EditorDebuggerNode::get_singleton()->set_keep_open(true);
 				}
 			}
-#endif
+#endif // TOOLS_ENABLED
 		}
 
 		if (!project_manager && !editor) { // game
@@ -4737,7 +4738,7 @@ int Main::start() {
 					DisplayServer::get_singleton()->set_native_icon(mac_icon_path);
 					has_icon = true;
 				}
-#endif
+#endif // MACOS_ENABLED
 
 #ifdef WINDOWS_ENABLED
 				String win_icon_path = GLOBAL_GET("application/config/windows_native_icon");
@@ -4745,7 +4746,7 @@ int Main::start() {
 					DisplayServer::get_singleton()->set_native_icon(win_icon_path);
 					has_icon = true;
 				}
-#endif
+#endif // WINDOWS_ENABLED
 
 				String icon_path = GLOBAL_GET("application/config/icon");
 				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_ICON) && !icon_path.is_empty() && !has_icon) {
@@ -4788,7 +4789,7 @@ int Main::start() {
 		if (recovery_mode) {
 			Engine::get_singleton()->set_recovery_mode_hint(true);
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_ICON) && !has_icon && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
@@ -4832,7 +4833,7 @@ int Main::start() {
 	} else {
 		DisplayServer::get_singleton()->process_events();
 	}
-#else
+#else // MACOS_ENABLED
 	if (minimum_time_msec) {
 		uint64_t minimum_time = 1000 * minimum_time_msec;
 		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec();
@@ -4840,7 +4841,7 @@ int Main::start() {
 			OS::get_singleton()->delay_usec(minimum_time - elapsed_time);
 		}
 	}
-#endif
+#endif // MACOS_ENABLED
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Start");
 	OS::get_singleton()->benchmark_dump();
@@ -5151,7 +5152,7 @@ bool Main::iteration() {
 					"Command line option --build-solutions was passed, but the build callback failed. Aborting.");
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 #ifdef TOOLS_ENABLED
 	if (exit && quit_after_timeout && EditorNode::get_singleton()) {
@@ -5247,7 +5248,7 @@ void Main::cleanup(bool p_force) {
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
 	unregister_editor_types();
 
-#endif
+#endif // TOOLS_ENABLED
 
 	ImageLoader::cleanup();
 

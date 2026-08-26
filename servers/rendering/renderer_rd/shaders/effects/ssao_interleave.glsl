@@ -106,14 +106,14 @@ void main() {
 	float d = textureLod(source_texture, vec3(uv, 3), 0.0).x;
 	float avg = (a + d) * 0.5;
 
-#else
+#else // MODE_HALF
 	float a = textureLod(source_texture, vec3(uv, 0), 0.0).x;
 	float b = textureLod(source_texture, vec3(uv, 1), 0.0).x;
 	float c = textureLod(source_texture, vec3(uv, 2), 0.0).x;
 	float d = textureLod(source_texture, vec3(uv, 3), 0.0).x;
 	float avg = (a + b + c + d) * 0.25;
 
-#endif
+#endif // MODE_HALF
 	imageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), vec4(avg));
-#endif
+#endif // MODE_SMART
 }

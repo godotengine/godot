@@ -40,7 +40,7 @@ void unregister_visionos_api() {
 	godot_apple_embedded_plugins_deinitialize();
 }
 
-#else
+#else // defined(VISIONOS_ENABLED)
 
 void register_visionos_api() {}
 void unregister_visionos_api() {}

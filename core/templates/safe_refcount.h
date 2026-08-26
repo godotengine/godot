@@ -196,7 +196,7 @@ class SafeRefCount {
 				"Upon a SafeRefCount reaching zero any object whose lifetime is tied to it, as well as the ref count itself, must be destroyed.\n"
 				"Moreover, to guarantee that, no multiple threads should be racing to do the final unreferencing to zero.");
 	}
-#endif
+#endif // DEV_ENABLED
 
 public:
 	_ALWAYS_INLINE_ bool ref() { // true on success

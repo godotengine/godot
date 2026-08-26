@@ -41,7 +41,7 @@ _FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
 	return Object::cast_to<GameViewPlugin>(EditorNode::get_editor_data().get_editor_by_name("Game"));
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 extern "C" {
 
@@ -51,7 +51,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_suspend(enabled);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_nextFrame(JNIEnv *env, jclass clazz) {
@@ -60,7 +60,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_nex
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->next_frame();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setNodeType(JNIEnv *env, jclass clazz, jint type) {
@@ -69,7 +69,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_node_type(type);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSelectMode(JNIEnv *env, jclass clazz, jint mode) {
@@ -78,7 +78,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_select_mode(mode);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSelectionVisible(JNIEnv *env, jclass clazz, jboolean visible) {
@@ -87,7 +87,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_selection_visible(visible);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSelectionAvoidLocked(JNIEnv *env, jclass clazz, jboolean enabled) {
@@ -96,7 +96,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_selection_avoid_locked(enabled);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSelectionPreferGroup(JNIEnv *env, jclass clazz, jboolean enabled) {
@@ -105,7 +105,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_selection_prefer_group(enabled);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setCameraOverride(JNIEnv *env, jclass clazz, jboolean enabled) {
@@ -114,7 +114,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_camera_override(enabled);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setCameraManipulateMode(JNIEnv *env, jclass clazz, jint mode) {
@@ -123,7 +123,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_camera_manipulate_mode(static_cast<EditorDebuggerNode::CameraOverride>(mode));
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_resetCamera2DPosition(JNIEnv *env, jclass clazz) {
@@ -132,7 +132,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_res
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->reset_camera_2d_position();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_resetCamera3DPosition(JNIEnv *env, jclass clazz) {
@@ -141,7 +141,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_res
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->reset_camera_3d_position();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_playMainScene(JNIEnv *env, jclass clazz) {
@@ -158,7 +158,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_debug_mute_audio(enabled);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_resetTimeScale(JNIEnv *env, jclass clazz) {
@@ -167,7 +167,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_res
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->reset_time_scale();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setTimeScale(JNIEnv *env, jclass clazz, jdouble scale) {
@@ -176,6 +176,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_time_scale(scale);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 }

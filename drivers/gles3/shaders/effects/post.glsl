@@ -82,7 +82,7 @@ vec3 apply_color_correction(vec3 color) {
 	color.b = texture(source_color_correction, vec2(color.b, 0.0f)).b;
 	return color;
 }
-#else
+#else // USE_1D_LUT
 uniform sampler3D source_color_correction; //texunit:2
 
 vec3 apply_color_correction(vec3 color) {
@@ -112,7 +112,7 @@ uniform sampler2D depth_buffer; // texunit:3
 // Use the more generic NxN grid version.
 #include "../s4ao_inc.glsl"
 #endif
-#endif
+#endif // defined(USE_SSAO_ABYSS) || defined(USE_SSAO_LOW) || defined(USE_SSAO_MED) || defined(USE_SSAO_HIGH) || defined(USE_SSAO_MEGA)
 
 in vec2 uv_interp;
 
@@ -187,7 +187,7 @@ void main() {
 	// even weights the preceived brightness of blues are affected, but this
 	// maintains compatibility with existing projects.
 	color.rgb = mix(vec3(dot(vec3(1.0), color.rgb) * (1.0 / 3.0)), color.rgb, saturation);
-#else
+#else // USE_BCS
 	color.rgb = linear_to_srgb(color.rgb);
 #endif // USE_BCS
 

@@ -51,7 +51,7 @@ namespace GDMonoCache {
 #else
 #define GD_CLR_STDCALL
 #endif
-#endif
+#endif // GD_CLR_STDCALL
 
 struct godotsharp_property_info {
 	godot_string_name name; // Not owned

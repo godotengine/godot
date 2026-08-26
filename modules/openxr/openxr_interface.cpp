@@ -1306,7 +1306,7 @@ Vector<RenderingServerTypes::BlitToScreen> OpenXRInterface::post_draw_viewport(R
 		blit.dst_rect = dst_rect;
 		blit_to_screen.push_back(blit);
 	}
-#endif
+#endif // ANDROID_ENABLED
 
 	if (openxr_api) {
 		openxr_api->post_draw_viewport(p_render_target);

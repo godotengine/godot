@@ -291,7 +291,7 @@ void Node::_notification(int p_notification) {
 				ERR_PRINT(vformat("Something attempted to free the root Node of a scene (\"%s\"). This is not supported inside the editor, so the Node was not freed.", get_name()));
 				return;
 			}
-#endif
+#endif // TOOLS_ENABLED
 			if (data.owner) {
 				_clean_up_owner();
 			}
@@ -415,7 +415,7 @@ void Node::_propagate_exit_tree() {
 		// Only remove if file path is set (optimization).
 		SceneDebugger::remove_from_cache(data.scene_file_path, this);
 	}
-#endif
+#endif // DEBUG_ENABLED
 	data.blocked++;
 
 	for (HashMap<StringName, Node *>::Iterator I = data.children.last(); I; --I) {
@@ -721,7 +721,7 @@ void Node::set_process_mode(ProcessMode p_mode) {
 	}
 
 	_emit_editor_state_changed();
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void Node::_propagate_pause_notification(bool p_enable) {
@@ -1508,7 +1508,7 @@ String Node::prevalidate_child_name(Node *p_child, StringName p_name) {
 	_generate_serial_child_name(p_child, p_name);
 	return p_name;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 String Node::adjust_name_casing(const String &p_name) {
 	switch (GLOBAL_GET("editor/naming/node_name_casing").operator int()) {
@@ -2764,7 +2764,7 @@ bool Node::is_part_of_edited_scene() const {
 			data.tree->get_edited_scene_root()->get_parent() && // Defend against edge cases when creating new scenes and they are not fully added to the tree yet.
 			data.tree->get_edited_scene_root()->get_parent()->is_ancestor_of(this);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) const {
 	ERR_THREAD_GUARD
@@ -3079,7 +3079,7 @@ void Node::_emit_editor_state_changed() {
 		emit_signal(SNAME("editor_state_changed"));
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void Node::_duplicate_scripts(const Node *p_original, Node *p_copy) const {
 	bool is_valid = false;
@@ -3467,7 +3467,7 @@ void Node::print_orphan_nodes() {
 
 	// Flush it after use.
 	_print_orphan_nodes_map.clear();
-#endif
+#endif // DEBUG_ENABLED
 }
 TypedArray<int> Node::get_orphan_node_ids() {
 	TypedArray<int> ret;
@@ -3484,7 +3484,7 @@ TypedArray<int> Node::get_orphan_node_ids() {
 
 	// Flush it after use.
 	_print_orphan_nodes_map.clear();
-#endif
+#endif // DEBUG_ENABLED
 	return ret;
 }
 
@@ -3528,7 +3528,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void Node::clear_internal_tree_resource_paths() {
 	clear_internal_resource_paths();
@@ -3570,7 +3570,7 @@ void Node::update_configuration_warnings() {
 	if (data.tree->get_edited_scene_root() && (data.tree->get_edited_scene_root() == this || data.tree->get_edited_scene_root()->is_ancestor_of(this))) {
 		data.tree->emit_signal(SceneStringName(node_configuration_warning_changed), this);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void Node::set_display_folded(bool p_folded) {
@@ -4297,4 +4297,4 @@ bool Node::has_connections(const StringName &p_signal) const {
 	return Object::has_connections(p_signal);
 }
 
-#endif
+#endif // DEBUG_ENABLED

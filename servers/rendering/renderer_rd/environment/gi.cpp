@@ -182,7 +182,7 @@ void GI::voxel_gi_allocate_data(RID p_voxel_gi, const Transform3D &p_to_cell_xfo
 			RD::get_singleton()->free(uniform_set);
 			RD::get_singleton()->free(shared_tex);
 		}
-#endif
+#endif // 0
 	}
 
 	voxel_gi->version++;
@@ -2400,7 +2400,7 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 		}
 
 		//finalize render and update sdf
-#endif
+#endif // 0
 
 #if 0
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(render_albedo, 0);
@@ -2414,7 +2414,7 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 		}
 
 		//finalize render and update sdf
-#endif
+#endif // 0
 
 		RENDER_TIMESTAMP("< SDFGI Update SDF");
 		RD::get_singleton()->draw_command_end_label();

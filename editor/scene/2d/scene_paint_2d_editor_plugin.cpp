@@ -75,9 +75,9 @@ void ScenePaint2DEditor::_edit(Object *p_object) {
 				grid_step = tile_set->get_tile_size();
 			}
 		} else {
-#else
+#else // MODULE_TILEMAP_ENABLED
 		{
-#endif
+#endif // MODULE_TILEMAP_ENABLED
 			grid = CanvasItemEditor::get_singleton()->is_grid_visible();
 			grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
 			grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();

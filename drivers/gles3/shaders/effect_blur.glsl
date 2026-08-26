@@ -47,7 +47,7 @@ precision highp int;
 precision mediump float;
 precision mediump int;
 #endif
-#endif
+#endif // USE_GLES_OVER_GL
 
 in vec2 uv_interp;
 /* clang-format on */
@@ -76,14 +76,14 @@ const int dof_kernel_size = 11;
 const int dof_kernel_from = 5;
 const float dof_kernel[11] = float[](0.055037, 0.072806, 0.090506, 0.105726, 0.116061, 0.119726, 0.116061, 0.105726, 0.090506, 0.072806, 0.055037);
 
-#endif
+#endif // DOF_QUALITY_MEDIUM
 
 #ifdef DOF_QUALITY_HIGH
 const int dof_kernel_size = 21;
 const int dof_kernel_from = 10;
 const float dof_kernel[21] = float[](0.028174, 0.032676, 0.037311, 0.041944, 0.046421, 0.050582, 0.054261, 0.057307, 0.059587, 0.060998, 0.061476, 0.060998, 0.059587, 0.057307, 0.054261, 0.050582, 0.046421, 0.041944, 0.037311, 0.032676, 0.028174);
 #endif
-#endif
+#endif // USE_GLES_OVER_GL
 
 uniform sampler2D dof_source_depth; //texunit:1
 uniform float dof_begin;
@@ -91,7 +91,7 @@ uniform float dof_end;
 uniform vec2 dof_dir;
 uniform float dof_radius;
 
-#endif
+#endif // defined(DOF_FAR_BLUR) || defined(DOF_NEAR_BLUR)
 
 #ifdef GLOW_FIRST_PASS
 
@@ -101,7 +101,7 @@ uniform float glow_bloom;
 uniform float glow_hdr_threshold;
 uniform float glow_hdr_scale;
 
-#endif
+#endif // GLOW_FIRST_PASS
 
 uniform float camera_z_far;
 uniform float camera_z_near;
@@ -121,7 +121,7 @@ void main() {
 	color += textureLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.106595;
 	color *= glow_strength;
 	frag_color = color;
-#endif
+#endif // GLOW_GAUSSIAN_HORIZONTAL
 
 #ifdef GLOW_GAUSSIAN_VERTICAL
 	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pixel_size, lod) * 0.288713;
@@ -131,7 +131,7 @@ void main() {
 	color += textureLod(source_color, uv_interp + vec2(0.0, -2.0) * pixel_size, lod) * 0.122581;
 	color *= glow_strength;
 	frag_color = color;
-#endif
+#endif // GLOW_GAUSSIAN_VERTICAL
 
 #ifndef USE_GLES_OVER_GL
 #if defined(DOF_FAR_BLUR) || defined(DOF_NEAR_BLUR)
@@ -145,7 +145,7 @@ void main() {
 	dof_kernel[2] = 0.250301;
 	dof_kernel[3] = 0.221461;
 	dof_kernel[4] = 0.153388;
-#endif
+#endif // DOF_QUALITY_LOW
 
 #ifdef DOF_QUALITY_MEDIUM
 	const int dof_kernel_size = 11;
@@ -162,7 +162,7 @@ void main() {
 	dof_kernel[8] = 0.090506;
 	dof_kernel[9] = 0.072806;
 	dof_kernel[10] = 0.055037;
-#endif
+#endif // DOF_QUALITY_MEDIUM
 
 #ifdef DOF_QUALITY_HIGH
 	const int dof_kernel_size = 21;
@@ -189,8 +189,8 @@ void main() {
 	dof_kernel[18] = 0.037311;
 	dof_kernel[19] = 0.032676;
 	dof_kernel[20] = 0.028174;
-#endif
-#endif
+#endif // DOF_QUALITY_HIGH
+#endif // defined(DOF_FAR_BLUR) || defined(DOF_NEAR_BLUR)
 #endif //!USE_GLES_OVER_GL
 
 #ifdef DOF_FAR_BLUR
@@ -236,7 +236,7 @@ void main() {
 
 	frag_color = color_accum; ///k_accum;
 
-#endif
+#endif // DOF_FAR_BLUR
 
 #ifdef DOF_NEAR_BLUR
 
@@ -278,7 +278,7 @@ void main() {
 
 	frag_color = color_accum;
 
-#endif
+#endif // DOF_NEAR_BLUR
 
 #ifdef GLOW_FIRST_PASS
 
@@ -287,5 +287,5 @@ void main() {
 
 	frag_color = min(frag_color * feedback, vec4(luminance_cap));
 
-#endif
+#endif // GLOW_FIRST_PASS
 }

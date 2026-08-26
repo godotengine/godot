@@ -454,7 +454,7 @@ void DocumentList::_show_context_menu() {
 			selected_paths.push_back(current_resource->get_path());
 		}
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, selected_paths, current_resource, 500);
-#endif
+#endif // DISABLE_DEPRECATED
 	}
 
 	context_menu->set_position(get_screen_position() + get_local_mouse_position());
@@ -2232,7 +2232,7 @@ void ScriptEditor::_notification(int p_what) {
 			virtual_keyboard_spacer->set_custom_minimum_size(Size2(0, spacer_height));
 			EditorSceneTabs::get_singleton()->set_visible(!kb_visible);
 		} break;
-#endif
+#endif // ANDROID_ENABLED
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			if (is_inside_tree()) {
 				_test_script_times_on_disk();
@@ -3360,7 +3360,7 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 			return;
 		}
-#endif
+#endif // DISABLE_DEPRECATED
 		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
 		accept_event();
 	}
@@ -4633,7 +4633,7 @@ void ScriptEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 	if (p_layout->has_section_key("ScriptEditor", "window_screen_rect")) {
 		p_layout->erase_section_key("ScriptEditor", "window_screen_rect");
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	script_editor->get_window_layout(p_layout);
 }

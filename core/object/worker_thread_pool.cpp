@@ -84,7 +84,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		}
 		task_mutex.unlock();
 	}
-#endif
+#endif // THREADS_ENABLED
 
 #ifdef THREADS_ENABLED
 	bool low_priority = p_task->low_priority;
@@ -180,7 +180,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 
 	set_current_thread_safe_for_nodes(safe_for_nodes_backup);
 	MessageQueue::set_thread_singleton_override(call_queue_backup);
-#endif
+#endif // THREADS_ENABLED
 }
 
 void WorkerThreadPool::_thread_function(void *p_user) {
@@ -375,7 +375,7 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 			thread_ids.insert(threads[thread_count].thread.get_id(), thread_count);
 		}
 	}
-#endif
+#endif // THREADS_ENABLED
 
 	_post_tasks(&task, 1, p_high_priority, lock, p_pump_task);
 
@@ -472,7 +472,7 @@ void WorkerThreadPool::_lock_unlockable_mutexes() {
 			unlockable_locks[i].ulock->lock();
 		}
 	}
-#endif
+#endif // THREADS_ENABLED
 }
 
 void WorkerThreadPool::_unlock_unlockable_mutexes() {
@@ -482,7 +482,7 @@ void WorkerThreadPool::_unlock_unlockable_mutexes() {
 			unlockable_locks[i].ulock->unlock();
 		}
 	}
-#endif
+#endif // THREADS_ENABLED
 }
 
 void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, Task *p_task) {
@@ -754,7 +754,7 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 
 	MutexLock task_lock(task_mutex); // This mutex is needed when Physics 2D and/or 3D is selected to run on a separate thread.
 	groups.erase(p_group);
-#endif
+#endif // THREADS_ENABLED
 }
 
 int WorkerThreadPool::get_thread_index() const {
@@ -804,7 +804,7 @@ void WorkerThreadPool::thread_exit_unlock_allowance_zone(uint32_t p_zone_id) {
 		unlockable_locks[p_zone_id].ulock = nullptr;
 	}
 }
-#endif
+#endif // THREADS_ENABLED
 
 void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio) {
 	ERR_FAIL_COND(threads.size() > 0);

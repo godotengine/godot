@@ -177,7 +177,7 @@ public:
 	void set_import_path(const String &p_path) { import_path = p_path; }
 	String get_import_path() const { return import_path; }
 
-#endif
+#endif // TOOLS_ENABLED
 
 	void set_as_translation_remapped(bool p_remapped);
 

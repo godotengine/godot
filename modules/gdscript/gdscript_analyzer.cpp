@@ -3835,7 +3835,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				}
 			}
 			push_error(vformat(R"*(Function "%s()" not found in base %s.%s)*", p_call->function_name, base_name, rename_hint), p_call->is_super ? p_call : p_call->callee);
-#else
+#else // SUGGEST_GODOT4_RENAMES
 			push_error(vformat(R"*(Function "%s()" not found in base %s.)*", p_call->function_name, base_name), p_call->is_super ? p_call : p_call->callee);
 #endif // SUGGEST_GODOT4_RENAMES
 		} else if (!found && (!p_call->is_super && base_type.is_hard_type() && base_type.is_meta_type)) {
@@ -4187,7 +4187,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					}
 				}
 				push_error(vformat(R"(Cannot find member "%s" in base "%s".%s)", name, base.to_string(), rename_hint), p_identifier);
-#else
+#else // SUGGEST_GODOT4_RENAMES
 				push_error(vformat(R"(Cannot find member "%s" in base "%s".)", name, base.to_string()), p_identifier);
 #endif // SUGGEST_GODOT4_RENAMES
 			}
@@ -4231,7 +4231,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 							}
 						}
 						push_error(vformat(R"(Cannot find member "%s" in base "%s".%s)", name, base.to_string(), rename_hint), p_identifier);
-#else
+#else // SUGGEST_GODOT4_RENAMES
 						push_error(vformat(R"(Cannot find member "%s" in base "%s".)", name, base.to_string()), p_identifier);
 #endif // SUGGEST_GODOT4_RENAMES
 					}
@@ -4757,7 +4757,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		}
 	}
 	push_error(vformat(R"(Identifier "%s" not declared in the current scope.%s)", name, rename_hint), p_identifier);
-#else
+#else // SUGGEST_GODOT4_RENAMES
 	push_error(vformat(R"(Identifier "%s" not declared in the current scope.)", name), p_identifier);
 #endif // SUGGEST_GODOT4_RENAMES
 	GDScriptParser::DataType dummy;

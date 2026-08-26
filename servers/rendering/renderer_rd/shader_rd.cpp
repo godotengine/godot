@@ -723,7 +723,7 @@ void ShaderRD::_compile_version_start(Version *p_version, int p_group) {
 			return;
 		}
 	}
-#endif
+#endif // ENABLE_SHADER_CACHE
 
 	CompileData compile_data;
 	compile_data.version = p_version;

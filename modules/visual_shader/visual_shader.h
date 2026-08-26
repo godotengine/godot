@@ -792,7 +792,7 @@ public:
 	void set_description(const String &p_description);
 	String get_description() const;
 };
-#endif
+#endif // DISABLE_DEPRECATED
 
 class VisualShaderNodeGroupBase : public VisualShaderNodeResizableBase {
 	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNodeResizableBase);

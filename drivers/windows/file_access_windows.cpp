@@ -192,7 +192,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 			WARN_PRINT("Case mismatch opening requested file '" + p_path + "', stored as '" + proper_path + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (is_backup_save_enabled() && p_mode_flags == WRITE) {
 		save_path = path;

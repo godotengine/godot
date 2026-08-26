@@ -56,7 +56,7 @@ struct _CoreConstant {
 			name(p_name),
 			value(p_value) {
 	}
-#else
+#else // DEBUG_ENABLED
 	_CoreConstant(const StringName &p_enum_name, const char *p_name, int64_t p_value) :
 			enum_name(p_enum_name),
 			name(p_name),
@@ -160,7 +160,7 @@ static HashMap<StringName, Vector<_CoreConstant>> _global_enums;
 		_global_enums[enum_name].push_back((_global_constants.ptr())[_global_constants.size() - 1]); \
 	}
 
-#else
+#else // DEBUG_ENABLED
 
 #define BIND_CORE_CONSTANT(m_constant) \
 	_global_constants.push_back(_CoreConstant(StringName(), #m_constant, m_constant)); \
@@ -844,7 +844,7 @@ bool CoreConstants::is_global_constant_bitfield(int p_idx) {
 bool CoreConstants::get_ignore_value_in_docs(int p_idx) {
 	return _global_constants[p_idx].ignore_value_in_docs;
 }
-#else
+#else // DEBUG_ENABLED
 bool CoreConstants::is_global_constant_bitfield(int p_idx) {
 	return false;
 }
@@ -891,4 +891,4 @@ void CoreConstants::get_global_enums(List<StringName> *r_values) {
 	}
 }
 
-#endif
+#endif // TOOLS_ENABLED

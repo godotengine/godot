@@ -1106,7 +1106,7 @@ void EditorFileSystem::scan() {
 				}
 			}
 		}
-#endif
+#endif // ANDROID_ENABLED
 	}
 
 	_update_extensions();

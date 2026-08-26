@@ -109,7 +109,7 @@ void FileDialog::_popup_base(const Rect2i &p_screen_rect) {
 		ConfirmationDialog::_popup_base(p_screen_rect);
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (_should_use_native_popup()) {
 		_native_popup();
@@ -133,7 +133,7 @@ void FileDialog::set_visible(bool p_visible) {
 		ConfirmationDialog::set_visible(p_visible);
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (_should_use_native_popup()) {
 		if (p_visible) {
@@ -405,7 +405,7 @@ void FileDialog::_dir_submitted(String p_dir) {
 		// Non network path without X:/ prefix on Windows, add drive letter.
 		new_dir = drives->get_popup()->get_item_metadata(selected_drive).operator Dictionary()["path"].operator String().path_join(new_dir);
 	}
-#endif
+#endif // WINDOWS_ENABLED
 	if (!root_prefix.is_empty()) {
 		new_dir = root_prefix.path_join(new_dir);
 	}
@@ -826,7 +826,7 @@ void FileDialog::_popup_menu(const Vector2 &p_pos, int p_for_item) {
 		item_menu->add_item(ETR("Show Package Contents"), ITEM_MENU_SHOW_BUNDLE_CONTENT);
 		item_menu->set_item_icon(-1, theme_cache.menu_open_bundle);
 	}
-#endif
+#endif // !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 
 	if (item_menu->get_item_count() == 0) {
 		return;

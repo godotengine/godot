@@ -99,12 +99,12 @@ private:
 				return false;
 			}
 		}
-#else
+#else // DEBUG_ENABLED
 		Object *object = p_variant;
 		if (object == nullptr) {
 			return true; //fine
 		}
-#endif
+#endif // DEBUG_ENABLED
 		if (class_name == StringName()) {
 			return true; // All good, no class type requested.
 		}

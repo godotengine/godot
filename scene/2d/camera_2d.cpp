@@ -76,7 +76,7 @@ void Camera2D::_project_settings_changed() {
 		queue_redraw();
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void Camera2D::_update_process_callback() {
 	if (is_physics_interpolated_and_enabled()) {
@@ -294,7 +294,7 @@ void Camera2D::_notification(int p_what) {
 				ProjectSettings::get_singleton()->connect(SNAME("settings_changed"), callable_mp(this, &Camera2D::_project_settings_changed));
 			}
 		} break;
-#endif
+#endif // TOOLS_ENABLED
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			_update_scroll();
@@ -451,7 +451,7 @@ void Camera2D::_notification(int p_what) {
 				}
 			}
 		} break;
-#endif
+#endif // TOOLS_ENABLED
 	}
 }
 

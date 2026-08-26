@@ -523,7 +523,7 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PS3DE::BODY_AXIS_ANGULAR_Y);
 	BIND_ENUM_CONSTANT(PS3DE::BODY_AXIS_ANGULAR_Z);
 
-#endif
+#endif // _3D_DISABLED
 }
 
 PhysicsServer3D::PhysicsServer3D() {

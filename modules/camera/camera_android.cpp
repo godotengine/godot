@@ -76,7 +76,7 @@ public:
 #define IF_EQUAL_RETURN(param, val) \
 	if (MAKE_FORMAT_CONST(val) == param) \
 	return #val
-#endif
+#endif // IF_EQUAL_RETURN
 
 String GetFormatName(const int32_t &format) {
 	IF_EQUAL_RETURN(format, YUV_420_888);

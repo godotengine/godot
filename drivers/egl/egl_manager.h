@@ -85,7 +85,7 @@ private:
 
 	static void _set_cache(const void *p_key, EGLsizeiANDROID p_key_size, const void *p_value, EGLsizeiANDROID p_value_size);
 	static EGLsizeiANDROID _get_cache(const void *p_key, EGLsizeiANDROID p_key_size, void *p_value, EGLsizeiANDROID p_value_size);
-#endif
+#endif // EGL_ANDROID_blob_cache
 
 	int _get_gldisplay_id(void *p_display);
 	Error _gldisplay_create_context(GLDisplay &p_gldisplay);

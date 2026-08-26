@@ -451,7 +451,7 @@ private:
 
 	String _get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	String _get_callable_call_error(const String &p_where, const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
-#endif
+#endif // DEBUG_ENABLED
 
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
@@ -532,7 +532,7 @@ public:
 	String get_readable_function() {
 		return state.function_name;
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	void _clear_stack();
 	void _clear_connections();

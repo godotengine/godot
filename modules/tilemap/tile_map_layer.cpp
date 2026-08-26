@@ -2383,7 +2383,7 @@ Rect2 TileMapLayer::get_rect(bool &r_changed) const {
 		rect_cache = r_total;
 		rect_cache_dirty = false;
 	}
-#endif
+#endif // DEBUG_ENABLED
 	return rect_cache;
 }
 
@@ -3537,7 +3537,7 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 	if (physics_layers_count <= 0 && navigation_layers_count <= 0) {
 		return;
 	}
-#else
+#else // PHYSICS_2D_DISABLED
 	if (navigation_layers_count <= 0) {
 		return;
 	}

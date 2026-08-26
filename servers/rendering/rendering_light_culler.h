@@ -274,7 +274,7 @@ private:
 		// Names of the plane and point enums, useful for debugging.
 		static const char *string_planes[];
 		static const char *string_points[];
-#endif
+#endif // RENDERING_LIGHT_CULLER_DEBUG_STRINGS
 
 		// Precalculated look up table.
 		static uint8_t LUT_entry_sizes[LUT_SIZE];
@@ -311,5 +311,5 @@ private:
 
 	// Contains a list of points for each combination of plane facing directions.
 	LocalVector<uint8_t> _calculated_LUT[LUT_SIZE];
-#endif
+#endif // RENDERING_LIGHT_CULLER_CALCULATE_LUT
 };

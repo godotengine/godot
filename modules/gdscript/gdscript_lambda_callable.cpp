@@ -128,7 +128,7 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 					r_call_error.argument = 0;
 					r_call_error.expected = 0;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				break;
 			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
@@ -140,7 +140,7 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 					r_call_error.argument = 0;
 					r_call_error.expected = 0;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				break;
 			default:
 				break;
@@ -220,7 +220,7 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return;
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	int captures_amount = captures.size();
 
@@ -260,7 +260,7 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 					r_call_error.argument = 0;
 					r_call_error.expected = 0;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				break;
 			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
@@ -272,7 +272,7 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 					r_call_error.argument = 0;
 					r_call_error.expected = 0;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				break;
 			default:
 				break;

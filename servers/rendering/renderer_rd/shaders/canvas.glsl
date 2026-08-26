@@ -20,7 +20,7 @@ layout(location = 7) in vec4 custom1_attrib;
 layout(location = 10) in uvec4 bone_attrib;
 layout(location = 11) in vec4 weight_attrib;
 
-#endif
+#endif // USE_ATTRIBUTES
 
 #include "canvas_uniforms_inc.glsl"
 
@@ -110,7 +110,7 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
 /* clang-format on */
-#endif
+#endif // MATERIAL_UNIFORMS_USED
 
 #GLOBALS
 
@@ -361,7 +361,7 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
 /* clang-format on */
-#endif
+#endif // MATERIAL_UNIFORMS_USED
 
 vec2 screen_uv_to_sdf(vec2 p_uv) {
 	return canvas_data.screen_to_sdf * p_uv;
@@ -428,7 +428,7 @@ vec4 light_compute(
 	return light;
 }
 
-#endif
+#endif // LIGHT_CODE_USED
 
 #ifdef USE_NINEPATCH
 
@@ -469,7 +469,7 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 	}
 }
 
-#endif
+#endif // USE_NINEPATCH
 
 vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 light_color, vec4 specular_shininess, bool specular_shininess_used) {
 	float cNdotL = max(0.0, dot(normal, light_vec));
@@ -595,13 +595,13 @@ void main() {
 
 	uv = uv * ninepatch_src_rect.zw + ninepatch_src_rect.xy; //apply region if needed
 
-#endif
+#endif // USE_NINEPATCH
 	if (bool(read_draw_data_flags & INSTANCE_FLAGS_CLIP_RECT_UV)) {
 		vec2 half_texpixel = read_draw_data_color_texture_pixel_size * 0.5;
 		uv = clamp(uv, src_rect.xy + half_texpixel, src_rect.xy + abs(src_rect.zw) - half_texpixel);
 	}
 
-#endif
+#endif // !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 	// only used by TYPE_RECT
@@ -632,9 +632,9 @@ void main() {
 			color = vec4(0.0, 0.0, 0.0, 0.0);
 		}
 	} else {
-#else
+#else // !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 	{
-#endif
+#endif // !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 		color *= texture(sampler2D(color_texture, texture_sampler), uv);
 	}
 
@@ -657,7 +657,7 @@ void main() {
 			normal.xy = normal.yx;
 		}
 		normal.xy *= sign(src_rect.zw);
-#endif
+#endif // !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 		normal.z = sqrt(max(0.0, 1.0 - dot(normal.xy, normal.xy)));
 		normal_used = true;
 	} else {
@@ -742,7 +742,7 @@ void main() {
 			} else {
 				light_color.rgb *= base_color.rgb;
 			}
-#endif
+#endif // LIGHT_CODE_USED
 
 			if (bool(light_array.data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
 				vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array.data[light_base].shadow_matrix[0], light_array.data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
@@ -789,7 +789,7 @@ void main() {
 
 			light_color.rgb *= light_base_color.rgb;
 			light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, false);
-#else
+#else // LIGHT_CODE_USED
 
 			light_color.rgb *= light_base_color.rgb * light_base_color.a;
 
@@ -802,7 +802,7 @@ void main() {
 			} else {
 				light_color.rgb *= base_color.rgb;
 			}
-#endif
+#endif // LIGHT_CODE_USED
 
 			if (bool(light_array.data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW) && bool(read_draw_data_flags & (INSTANCE_FLAGS_SHADOW_MASKED << i))) {
 				vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array.data[light_base].shadow_matrix[0], light_array.data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
@@ -850,7 +850,7 @@ void main() {
 #endif
 		}
 	}
-#endif
+#endif // !defined(MODE_UNSHADED)
 
 #ifdef MODE_LIGHT_ONLY
 	color.a *= light_only_alpha;

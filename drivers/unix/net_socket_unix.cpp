@@ -270,7 +270,7 @@ Error NetSocketUnix::_inet_open(Type p_sock_type, IP::Type &r_ip_type) {
 	if (r_ip_type == IP::TYPE_ANY) {
 		r_ip_type = IP::TYPE_IPV4;
 	}
-#endif
+#endif // defined(__OpenBSD__)
 
 	int family = r_ip_type == IP::TYPE_IPV4 ? AF_INET : AF_INET6;
 	int protocol = p_sock_type == TYPE_TCP ? IPPROTO_TCP : IPPROTO_UDP;
@@ -311,7 +311,7 @@ Error NetSocketUnix::_inet_open(Type p_sock_type, IP::Type &r_ip_type) {
 	if (setsockopt(_sock, SOL_SOCKET, SO_NOSIGPIPE, &par, sizeof(int)) != 0) {
 		print_verbose("Unable to turn off SIGPIPE on socket.");
 	}
-#endif
+#endif // defined(SO_NOSIGPIPE)
 	return OK;
 }
 
@@ -329,7 +329,7 @@ Error NetSocketUnix::_unix_open() {
 	if (setsockopt(_sock, SOL_SOCKET, SO_NOSIGPIPE, &par, sizeof(int)) != 0) {
 		print_verbose("Unable to turn off SIGPIPE on socket.");
 	}
-#endif
+#endif // defined(SO_NOSIGPIPE)
 
 	return OK;
 }

@@ -832,7 +832,7 @@ String AndroidSDKManager::get_apksigner_path(int p_target_sdk, bool p_check_exec
 		if (!env_path.contains(java_sdk_path)) {
 			OS::get_singleton()->set_environment("PATH", java_sdk_path + "/bin:" + env_path);
 		}
-#endif
+#endif // UNIX_ENABLED
 	}
 
 	List<String> args;

@@ -428,7 +428,7 @@ public:
 	void set_palette_saved_callback(const Callable &p_palette_saved);
 
 	void _quick_open_palette_file_selected(const String &p_path);
-#endif
+#endif // TOOLS_ENABLED
 
 	GridContainer *get_slider_container();
 	HSlider *get_slider(int idx);

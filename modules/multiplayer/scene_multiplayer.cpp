@@ -47,7 +47,7 @@ _FORCE_INLINE_ void SceneMultiplayer::_profile_bandwidth(const String &p_what, i
 		EngineDebugger::profiler_add_frame_data("multiplayer:bandwidth", values);
 	}
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void SceneMultiplayer::_update_status() {
 	MultiplayerPeer::ConnectionStatus status = multiplayer_peer.is_valid() ? multiplayer_peer->get_connection_status() : MultiplayerPeer::CONNECTION_DISCONNECTED;
@@ -255,7 +255,7 @@ _FORCE_INLINE_ Error SceneMultiplayer::_send(const uint8_t *p_packet, int p_pack
 	_profile_bandwidth("out", p_packet_len);
 	return multiplayer_peer->put_packet(p_packet, p_packet_len);
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Error SceneMultiplayer::send_command(int p_to, const uint8_t *p_packet, int p_packet_len) {
 	if (server_relay && get_unique_id() != 1 && p_to != 1 && multiplayer_peer->is_server_relay_supported()) {

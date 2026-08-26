@@ -39,7 +39,7 @@ void main() {
 
 	uv_interp = vec3(uv, float(params.slice));
 	gl_Position = vec4((uv + params.uv_offset) * 2.0 - 1.0, 0.0001, 1.0);
-#endif
+#endif // MODE_TRIANGLES
 
 #ifdef MODE_LINES
 	uint seam_idx = params.base_index + gl_VertexIndex / 4;
@@ -67,7 +67,7 @@ void main() {
 
 	uv_interp = vec3(src_uv, float(params.slice));
 	gl_Position = vec4(dst_uv * 2.0 - 1.0, 0.0001, 1.0);
-#endif
+#endif // MODE_LINES
 }
 
 #[fragment]

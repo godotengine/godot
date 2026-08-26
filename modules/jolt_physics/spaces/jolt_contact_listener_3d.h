@@ -139,5 +139,5 @@ public:
 	int get_debug_contact_count() const { return debug_contact_count.load(std::memory_order_acquire); }
 	int get_max_debug_contacts() const { return (int)debug_contacts.size(); }
 	void set_max_debug_contacts(int p_count) { debug_contacts.resize(p_count); }
-#endif
+#endif // DEBUG_ENABLED
 };

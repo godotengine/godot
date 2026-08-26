@@ -77,9 +77,9 @@ Error RenderingContextDriverMetal::initialize() {
 	} else if (render_mode == RenderModeVisionOS::WINDOWED) {
 		metal_device = MTL::CreateSystemDefaultDevice();
 	}
-#else
+#else // TARGET_OS_VISION && defined(MODULE_VISIONOS_XR_ENABLED)
 	metal_device = MTL::CreateSystemDefaultDevice();
-#endif
+#endif // TARGET_OS_VISION && defined(MODULE_VISIONOS_XR_ENABLED)
 
 #if TARGET_OS_OSX
 	if (__builtin_available(macOS 13.3, *)) {
@@ -163,7 +163,7 @@ public:
 				layer->setDisplaySyncEnabled(false);
 				break;
 		}
-#endif
+#endif // TARGET_OS_OSX
 		drawables.resize(p_desired_framebuffer_count);
 		frame_buffers.resize(p_desired_framebuffer_count);
 		for (uint32_t i = 0; i < p_desired_framebuffer_count; i++) {
@@ -454,7 +454,7 @@ public:
 		return nullptr;
 	}
 };
-#endif
+#endif // TARGET_OS_VISION && defined(MODULE_VISIONOS_XR_ENABLED)
 
 RenderingContextDriver::SurfaceID RenderingContextDriverMetal::surface_create(const void *p_platform_data) {
 	const WindowPlatformData *wpd = (const WindowPlatformData *)(p_platform_data);
@@ -468,17 +468,18 @@ RenderingContextDriver::SurfaceID RenderingContextDriverMetal::surface_create(co
 	} else if (render_mode == RenderModeVisionOS::WINDOWED) {
 		surface = memnew(SurfaceLayer(wpd->layer, metal_device));
 	}
-#else
+#else // defined(MODULE_VISIONOS_XR_ENABLED)
+
 	// If visionOS XR module is not enabled, only windowed mode available
 	surface = memnew(SurfaceLayer(wpd->layer, metal_device));
-#endif
-#else
+#endif // defined(MODULE_VISIONOS_XR_ENABLED)
+#else // TARGET_OS_VISION
 	if (String v = OS::get_singleton()->get_environment("GODOT_MTL_OFF_SCREEN"); v == U"1") {
 		surface = memnew(SurfaceOffscreen(wpd->layer, metal_device));
 	} else {
 		surface = memnew(SurfaceLayer(wpd->layer, metal_device));
 	}
-#endif
+#endif // TARGET_OS_VISION
 
 	return SurfaceID(surface);
 }

@@ -47,6 +47,6 @@ void Object::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("is_class", "class"), &Object::_is_class_bind_compat_118582);
 }
 
-#else
+#else // DISABLE_DEPRECATED
 void Object::_bind_compatibility_methods() {}
 #endif // DISABLE_DEPRECATED

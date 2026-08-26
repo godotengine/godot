@@ -51,7 +51,7 @@ class ManagedCallable : public CallableCustom {
 	static SelfList<ManagedCallable>::List instances;
 	static RBMap<ManagedCallable *, Array> instances_pending_reload;
 	static Mutex instances_mutex;
-#endif
+#endif // GD_MONO_HOT_RELOAD
 
 public:
 	uint32_t hash() const override;

@@ -92,7 +92,7 @@ protected:
 	void _popup_property_selector_bind_compat_94323(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter = PackedInt32Array());
 	void _open_scene_from_path_bind_compat_90057(const String &scene_path);
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	static EditorInterface *get_singleton() { return singleton; }

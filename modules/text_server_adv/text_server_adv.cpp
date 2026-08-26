@@ -62,7 +62,7 @@ GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4458) // "Declaration of 'identifier' hides c
 
 GODOT_GCC_WARNING_POP
 GODOT_MSVC_WARNING_POP
-#endif
+#endif // MODULE_MSDFGEN_ENABLED
 
 #ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED
@@ -431,7 +431,7 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 		u_init(&err); // Do not check for errors, since we only load part of the data.
 		icu_data_loaded = true;
 	}
-#else
+#else // defined(ICU_STATIC_DATA) || !defined(HAVE_ICU_BUILTIN)
 	if (!icu_data_loaded) {
 		UErrorCode err = U_ZERO_ERROR;
 		String filename = (p_filename.is_empty()) ? String("res://icudt_godot.dat") : p_filename;
@@ -457,7 +457,7 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 			ERR_FAIL_V_MSG(false, u_errorName(err));
 		}
 	}
-#endif
+#endif // defined(ICU_STATIC_DATA) || !defined(HAVE_ICU_BUILTIN)
 	return true;
 }
 
@@ -486,9 +486,9 @@ bool TextServerAdvanced::_save_support_data(const String &p_filename) const {
 	f->store_buffer(icu_data_static);
 
 	return true;
-#else
+#else // ICU_STATIC_DATA
 	return false;
-#endif
+#endif // ICU_STATIC_DATA
 }
 
 PackedByteArray TextServerAdvanced::_get_support_data() const {
@@ -500,9 +500,9 @@ PackedByteArray TextServerAdvanced::_get_support_data() const {
 	memcpy(icu_data_static.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
 
 	return icu_data_static;
-#else
+#else // ICU_STATIC_DATA
 	return icu_data;
-#endif
+#endif // ICU_STATIC_DATA
 }
 
 bool TextServerAdvanced::_is_locale_using_support_data(const String &p_locale) const {
@@ -1086,7 +1086,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 	}
 	return chr;
 }
-#endif
+#endif // MODULE_MSDFGEN_ENABLED
 
 #ifdef MODULE_FREETYPE_ENABLED
 #if HB_VERSION_ATLEAST(13, 0, 0)
@@ -1153,7 +1153,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_hb_bi
 	chr.rect.size = chr.uv_rect.size * p_data->scale;
 	return chr;
 }
-#endif
+#endif // HB_VERSION_ATLEAST(13, 0, 0)
 
 _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const {
 	FontGlyph chr;
@@ -1274,7 +1274,7 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 	chr.rect.size = chr.uv_rect.size * p_data->scale;
 	return chr;
 }
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 /*************************************************************************/
 /* Font Cache                                                            */
@@ -1497,9 +1497,9 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 						}
 					}
 				} else {
-#else
+#else // HB_VERSION_ATLEAST(13, 0, 0)
 				{
-#endif
+#endif // HB_VERSION_ATLEAST(13, 0, 0)
 					error = FT_Render_Glyph(slot, aa_mode);
 					if (!error) {
 						gl = rasterize_bitmap(fd, rect_range, slot->bitmap, slot->bitmap_top, slot->bitmap_left, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, bgra);
@@ -1539,7 +1539,7 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 		r_glyph = E->value;
 		return gl.found;
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	E = fd->glyph_map.insert(p_glyph, FontGlyph());
 	r_glyph = E->value;
 	return false;
@@ -1669,11 +1669,11 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 		if (Math::is_equal_approx(p_font_data->transform[0][0], (real_t)1.f) && Math::is_equal_approx(p_font_data->transform[1][0], (real_t)0.f) && Math::is_equal_approx(p_font_data->transform[1][1], (real_t)1.f)) {
 			hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform[0][1]);
 		}
-#else
+#else // HB_VERSION_ATLEAST(3, 3, 0)
 #ifndef _MSC_VER
 #warning Building with HarfBuzz < 3.3.0, synthetic slant offset correction disabled.
 #endif
-#endif
+#endif // HB_VERSION_ATLEAST(3, 3, 0)
 #if HB_VERSION_ATLEAST(13, 0, 0)
 		fd->hb_face = hb_font_get_face(fd->hb_handle);
 		fd->color_paint = (hb_ot_color_has_paint(fd->hb_face) || hb_ot_color_has_layers(fd->hb_face));
@@ -1721,9 +1721,10 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 				p_font_data->palette_names.push_back(pal_name);
 				p_font_data->palette_colors.push_back(pal_colors);
 			}
-#else
+#else // HB_VERSION_ATLEAST(13, 0, 0)
 			hb_face_t *hb_face = hb_font_get_face(fd->hb_handle);
-#endif
+#endif // HB_VERSION_ATLEAST(13, 0, 0)
+
 			// When a font does not provide a `family_name`, FreeType tries to synthesize one based on other names.
 			// FreeType automatically converts non-ASCII characters to "?" in the synthesized name.
 			// To avoid that behavior, use the format-specific name directly if available.
@@ -2042,11 +2043,11 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
 						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
-#else
+#else // HB_VERSION_ATLEAST(2, 1, 0)
 #ifndef _MSC_VER
 #warning Building with HarfBuzz < 2.1.0, readable OpenType feature names disabled.
 #endif
-#endif
+#endif // HB_VERSION_ATLEAST(2, 1, 0)
 					ftr["type"] = _get_tag_type(feature_tags[i]);
 					ftr["hidden"] = _get_tag_hidden(feature_tags[i]);
 
@@ -2071,11 +2072,11 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
 						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
-#else
+#else // HB_VERSION_ATLEAST(2, 1, 0)
 #ifndef _MSC_VER
 #warning Building with HarfBuzz < 2.1.0, readable OpenType feature names disabled.
 #endif
-#endif
+#endif // HB_VERSION_ATLEAST(2, 1, 0)
 					ftr["type"] = _get_tag_type(feature_tags[i]);
 					ftr["hidden"] = _get_tag_hidden(feature_tags[i]);
 
@@ -2107,7 +2108,7 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 				}
 			}
 		}
-#endif
+#endif // defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 
 		// Write variations.
 		if (p_font_data->face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
@@ -2146,14 +2147,14 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 			hb_font_set_variations(fd->hb_handle, hb_vars.is_empty() ? nullptr : &hb_vars[0], hb_vars.size());
 			FT_Done_MM_Var(ft_library, amaster);
 		}
-#else
+#else // MODULE_FREETYPE_ENABLED
 		memdelete(fd);
 		if (p_silent) {
 			return false;
 		} else {
 			ERR_FAIL_V_MSG(false, "FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
 		}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	} else {
 		// Init bitmap font.
 		fd->hb_handle = _bmp_font_create(fd, nullptr);
@@ -2376,7 +2377,7 @@ int64_t TextServerAdvanced::_font_get_face_count(const RID &p_font_rid) const {
 			face_count = tmp_face->num_faces;
 			FT_Done_Face(tmp_face);
 		}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	}
 
 	return face_count;
@@ -2603,7 +2604,7 @@ Dictionary TextServerAdvanced::_font_get_ot_name_strings(const RID &p_font_rid) 
 	for (const KeyValue<String, Dictionary> &E : names_for_lang) {
 		out[E.key] = E.value;
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	return out;
 }
 
@@ -2860,7 +2861,7 @@ void TextServerAdvanced::_font_set_palette_custom_colors(const RID &p_font_rid, 
 		}
 		_font_clear_cache(fd);
 	}
-#endif
+#endif // HB_VERSION_ATLEAST(13, 0, 0)
 }
 
 Vector<Color> TextServerAdvanced::_font_get_palette_custom_colors(const RID &p_font_rid) const {
@@ -2892,7 +2893,7 @@ void TextServerAdvanced::_font_set_used_palette(const RID &p_font_rid, int64_t p
 		fd->palette_index = p_index;
 		_font_clear_cache(fd);
 	}
-#endif
+#endif // HB_VERSION_ATLEAST(13, 0, 0)
 }
 
 void TextServerAdvanced::_font_set_hinting(const RID &p_font_rid, TextServer::Hinting p_hinting) {
@@ -3923,9 +3924,9 @@ Dictionary TextServerAdvanced::_font_get_glyph_contours(const RID &p_font_rid, i
 	out["contours"] = contours;
 	out["orientation"] = orientation;
 	return out;
-#else
+#else // MODULE_FREETYPE_ENABLED
 	return Dictionary();
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 }
 
 TypedArray<Vector2i> TextServerAdvanced::_font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
@@ -4022,7 +4023,7 @@ Vector2 TextServerAdvanced::_font_get_kerning(const RID &p_font_rid, int64_t p_s
 				return Vector2(delta.x, delta.y);
 			}
 		}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	}
 	return Vector2();
 }
@@ -4048,9 +4049,9 @@ int64_t TextServerAdvanced::_font_get_glyph_index(const RID &p_font_rid, int64_t
 	} else {
 		return (int64_t)p_char;
 	}
-#else
+#else // MODULE_FREETYPE_ENABLED
 	return (int64_t)p_char;
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 }
 
 int64_t TextServerAdvanced::_font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const {
@@ -4080,9 +4081,9 @@ int64_t TextServerAdvanced::_font_get_char_from_glyph_index(const RID &p_font_ri
 	} else {
 		return 0;
 	}
-#else
+#else // MODULE_FREETYPE_ENABLED
 	return p_glyph_index;
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 }
 
 bool TextServerAdvanced::_font_has_char(const RID &p_font_rid, int64_t p_char) const {
@@ -4133,7 +4134,7 @@ String TextServerAdvanced::_font_get_supported_chars(const RID &p_font_rid) cons
 		}
 		return chars;
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	const HashMap<int32_t, FontGlyph> &gl = ffsd->glyph_map;
 	for (const KeyValue<int32_t, FontGlyph> &E : gl) {
 		chars = chars + String::chr(E.key);
@@ -4164,7 +4165,7 @@ PackedInt32Array TextServerAdvanced::_font_get_supported_glyphs(const RID &p_fon
 		}
 		return glyphs;
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	if (at_size) {
 		const HashMap<int32_t, FontGlyph> &gl = at_size->glyph_map;
 		for (const KeyValue<int32_t, FontGlyph> &E : gl) {
@@ -4207,7 +4208,7 @@ void TextServerAdvanced::_font_render_range(const RID &p_font_rid, const Vector2
 				}
 			}
 		}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 	}
 }
 
@@ -4241,7 +4242,7 @@ void TextServerAdvanced::_font_render_glyph(const RID &p_font_rid, const Vector2
 			}
 		}
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 }
 
 void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
@@ -4306,7 +4307,7 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 			index = index | (xshift << 27);
 		}
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 	FontGlyph fgl;
 	if (!_ensure_glyph(fd, size, index, fgl, viewport_oversampling ? 64 * oversampling_factor : 0)) {
@@ -4449,7 +4450,7 @@ void TextServerAdvanced::_font_draw_glyph_outline(const RID &p_font_rid, const R
 			index = index | (xshift << 27);
 		}
 	}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 	FontGlyph fgl;
 	if (!_ensure_glyph(fd, size, index, fgl, viewport_oversampling ? 64 * oversampling_factor : 0)) {
@@ -6163,7 +6164,7 @@ RID TextServerAdvanced::_find_sys_font_for_text(const RID &p_fdef, const String 
 					}
 				}
 			}
-#endif
+#endif // MODULE_FREETYPE_ENABLED
 
 			_font_set_antialiasing(sysf.rid, key.antialiasing);
 			_font_set_disable_embedded_bitmaps(sysf.rid, key.disable_embedded_bitmaps);
@@ -8239,7 +8240,7 @@ bool TextServerAdvanced::_is_valid_identifier(const String &p_string) const {
 		WARN_PRINT_ONCE("ICU data is not loaded, Unicode security and spoofing detection disabled.");
 		return TextServer::is_valid_identifier(p_string);
 	}
-#endif
+#endif // ICU_STATIC_DATA
 
 	enum UAX31SequenceStatus {
 		SEQ_NOT_STARTED,

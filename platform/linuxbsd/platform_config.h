@@ -44,4 +44,4 @@
 #else
 #define PTHREAD_BSD_SET_NAME
 #endif
-#endif
+#endif // defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)

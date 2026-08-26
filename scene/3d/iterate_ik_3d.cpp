@@ -514,7 +514,7 @@ void IterateIK3D::_update_bone_axis(Skeleton3D *p_skeleton, int p_index) {
 			solver_info_list[j]->forward_vector = snap_vector_to_plane(joint_setting->get_rotation_axis_vector(), axis.normalized());
 			solver_info_list[j]->length = axis.length();
 		}
-#else
+#else // TOOLS_ENABLED
 		solver_info_list[j]->forward_vector = snap_vector_to_plane(joint_setting->get_rotation_axis_vector(), axis.normalized());
 		solver_info_list[j]->length = axis.length();
 #endif // TOOLS_ENABLED

@@ -270,7 +270,7 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 				return;
 			}
-#endif
+#endif // DISABLE_DEPRECATED
 			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
 		} else {
 			return;
@@ -4159,7 +4159,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			p_paths.push_back(node_path);
 		}
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_paths, context_data["selected_nodes"], 500);
-#endif
+#endif // DISABLE_DEPRECATED
 	}
 
 	menu->reset_size();

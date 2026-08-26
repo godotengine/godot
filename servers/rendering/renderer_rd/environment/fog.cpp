@@ -441,7 +441,7 @@ bool Fog::VolumetricFog::sync_gi_dependent_sets_validity(bool p_ensure_freed) {
 	DEV_ASSERT(null == gi_dependent_sets.process_uniform_set2.is_null());
 	DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.process_uniform_set));
 	DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.process_uniform_set2));
-#endif
+#endif // DEV_ENABLED
 
 	if (valid) {
 		if (p_ensure_freed) {

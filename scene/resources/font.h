@@ -110,7 +110,7 @@ protected:
 	RID _find_variation_bind_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const;
 	RID _find_variation_bind_compat_117149(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const;
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	virtual bool _is_cyclic(const Ref<Font> &p_f, int p_depth) const;

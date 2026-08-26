@@ -423,7 +423,7 @@ void SkeletonIK3D::_set_interpolation(real_t p_interpolation) {
 real_t SkeletonIK3D::_get_interpolation() const {
 	return get_influence();
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void SkeletonIK3D::set_target_transform(const Transform3D &p_target) {
 	target = p_target;

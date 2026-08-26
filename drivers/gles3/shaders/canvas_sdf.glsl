@@ -96,7 +96,7 @@ void main() {
 	}
 
 	distance_field = ivec4(rel, 0, 0);
-#endif
+#endif // MODE_LOAD_SHRINK
 
 #ifdef MODE_PROCESS
 
@@ -155,7 +155,7 @@ void main() {
 	}
 
 	distance_field = ivec4(rel, 0, 0);
-#endif
+#endif // MODE_PROCESS
 
 #ifdef MODE_STORE
 
@@ -177,7 +177,7 @@ void main() {
 	d = clamp(d, -1.0, 1.0);
 	distance_field = float_to_vec4(d*0.5+0.5);
 
-#endif
+#endif // MODE_STORE
 
 #ifdef MODE_STORE_SHRINK
 
@@ -201,5 +201,5 @@ void main() {
 	d = clamp(d, -1.0, 1.0);
 	distance_field = float_to_vec4(d*0.5+0.5);
 
-#endif
+#endif // MODE_STORE_SHRINK
 }

@@ -159,7 +159,7 @@ void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 			process_material->disconnect("emission_shape_changed", callable_mp((Node3D *)this, &GPUParticles3D::update_gizmos));
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	process_material = p_material;
 	RID material_rid;

@@ -90,7 +90,7 @@ bool jolt_assert(const char *p_expr, const char *p_msg, const char *p_file, uint
 	return false;
 }
 
-#endif
+#endif // JPH_ENABLE_ASSERTS
 
 void jolt_initialize() {
 	JPH::Allocate = &jolt_alloc;

@@ -1922,7 +1922,7 @@ Basis Curve3D::get_point_baked_posture(int p_index, bool p_apply_tilt) const {
 
 	return twist * frame;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 Vector3 Curve3D::sample_baked(real_t p_offset, bool p_cubic) const {
 	// Make sure that p_offset is finite.

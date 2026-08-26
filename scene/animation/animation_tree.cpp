@@ -542,7 +542,7 @@ void AnimationNode::get_argument_options(const StringName &p_function, int p_idx
 	}
 	Resource::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_input", "name"), &AnimationNode::add_input);
@@ -834,7 +834,7 @@ void AnimationTree::_update_properties_for_node(const StringName &p_base_path, c
 			instance.input_activity.push_back(a);
 		}
 	}
-#endif
+#endif // ENABLE_ACTIVITY_TRACKING
 
 	LocalVector<PropertyInfo> plist;
 	p_node->get_parameter_list(&plist);
@@ -1129,7 +1129,7 @@ real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_co
 
 	return activity[p_connection].activity;
 }
-#endif
+#endif // ENABLE_ACTIVITY_TRACKING
 
 #ifdef TOOLS_ENABLED
 String AnimationTree::get_editor_error_message() const {
@@ -1141,7 +1141,7 @@ String AnimationTree::get_editor_error_message() const {
 
 	return "";
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tree_root", "animation_node"), &AnimationTree::set_root_animation_node);

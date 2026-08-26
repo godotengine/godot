@@ -2156,7 +2156,7 @@ void RenderingServer::set_surface_upgrade_callback(SurfaceUpgradeCallback p_call
 void RenderingServer::set_warn_on_surface_upgrade(bool p_warn) {
 	warn_on_surface_upgrade = p_warn;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 void RenderingServer::fix_surface_compatibility(RenderingServerTypes::SurfaceData &p_surface, const String &p_path) {
@@ -2176,7 +2176,7 @@ void RenderingServer::fix_surface_compatibility(RenderingServerTypes::SurfaceDat
 			WARN_PRINT("A surface of " + p_path + " uses an old surface format and needs to be upgraded.");
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (surface_version == RSE::ARRAY_FLAG_FORMAT_VERSION_1) {
 		// The only difference for now is that Version 1 uses interleaved vertex positions while version 2 does not.
@@ -2228,7 +2228,7 @@ void RenderingServer::fix_surface_compatibility(RenderingServerTypes::SurfaceDat
 	p_surface.format &= ~(RSE::ARRAY_FLAG_FORMAT_VERSION_MASK << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 	p_surface.format |= RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION & (RSE::ARRAY_FLAG_FORMAT_VERSION_MASK << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 #ifdef TOOLS_ENABLED
 void RenderingServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
@@ -2247,7 +2247,7 @@ void RenderingServer::get_argument_options(const StringName &p_function, int p_i
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void RenderingServer::_bind_methods() {
 	BIND_CONSTANT(RSE::NO_INDEX_ARRAY);
@@ -3590,7 +3590,7 @@ void RenderingServer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(RSE::FEATURE_SHADERS);
 	BIND_ENUM_CONSTANT(RSE::FEATURE_MULTITHREADED);
-#endif
+#endif // DISABLE_DEPRECATED
 }
 
 void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry3D::MeshData &p_mesh_data) {
@@ -3627,7 +3627,7 @@ void RenderingServer::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	RSE::SplashStretchMode stretch_mode = p_scale ? RSE::SPLASH_STRETCH_MODE_KEEP : RSE::SPLASH_STRETCH_MODE_DISABLED;
 	set_boot_image_with_stretch(p_image, p_color, stretch_mode, p_use_filter);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 RID RenderingServer::instance_create2(RID p_base, RID p_scenario) {
 	RID instance = instance_create();

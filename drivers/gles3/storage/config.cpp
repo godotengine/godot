@@ -70,7 +70,7 @@ Config::Config() {
 		}
 		free(extension_array_string);
 	}
-#else
+#else // WEB_ENABLED
 	{
 		GLint max_extensions = 0;
 		glGetIntegerv(GL_NUM_EXTENSIONS, &max_extensions);
@@ -82,7 +82,7 @@ Config::Config() {
 			extensions.insert((const char *)s);
 		}
 	}
-#endif
+#endif // WEB_ENABLED
 
 	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("GL_EXT_texture_compression_bptc");
 	astc_3d_supported = extensions.has("GL_OES_texture_compression_astc");
@@ -107,9 +107,9 @@ Config::Config() {
 		// This could be fixed but so few devices support it that it doesn't seem useful (and makes bigger APKs).
 		// For good measure we do the same hack for iOS, just in case.
 		s3tc_supported = false;
-#else
+#else // defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
 		s3tc_supported = extensions.has("GL_EXT_texture_compression_dxt1") || extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
-#endif
+#endif // defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
 		rgtc_supported = extensions.has("GL_EXT_texture_compression_rgtc") || extensions.has("GL_ARB_texture_compression_rgtc");
 		srgb_framebuffer_supported = extensions.has("GL_EXT_sRGB_write_control");
 		unorm16_texture_supported = extensions.has("GL_EXT_texture_norm16");
@@ -151,7 +151,7 @@ Config::Config() {
 #endif
 
 	multiview_supported = extensions.has("OCULUS_multiview") || extensions.has("GL_OVR_multiview2") || extensions.has("GL_OVR_multiview");
-#endif
+#endif // IOS_ENABLED
 
 #ifdef ANDROID_ENABLED
 	// These are GLES only
@@ -193,7 +193,7 @@ Config::Config() {
 			external_texture_supported = false;
 		}
 	}
-#endif
+#endif // ANDROID_ENABLED
 
 	force_vertex_shading = GLOBAL_GET("rendering/shading/overrides/force_vertex_shading");
 	specular_occlusion = GLOBAL_GET("rendering/reflections/specular_occlusion/enabled");

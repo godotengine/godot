@@ -225,7 +225,7 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 		remap_cache[s] = param;
 		set_shader_parameter(param, p_value);
 		return true;
-#endif
+#endif // DISABLE_DEPRECATED
 	}
 
 	return false;
@@ -324,7 +324,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 					param_cache.insert(pi.name, varray);
 					is_uniform_type_compatible = true;
 				}
-#endif
+#endif // DISABLE_DEPRECATED
 
 				if (is_uniform_type_compatible && pi.type == Variant::OBJECT && cached.get_type() == Variant::OBJECT) {
 					// Check if the Object class (hint string) changed, for example Texture2D sampler to Texture3D.
@@ -511,7 +511,7 @@ void ShaderMaterial::get_argument_options(const StringName &p_function, int p_id
 	}
 	Material::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 bool ShaderMaterial::_can_do_next_pass() const {
 	return shader.is_valid() && shader->get_mode() == Shader::MODE_SPATIAL;

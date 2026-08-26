@@ -110,7 +110,7 @@ void main() {
 		}
 	}
 
-#endif
+#endif // MODE_SORT_BLOCK
 
 #ifdef MODE_SORT_STEP
 
@@ -142,7 +142,7 @@ void main() {
 		}
 	}
 
-#endif
+#endif // MODE_SORT_STEP
 
 #ifdef MODE_SORT_INNER
 
@@ -201,5 +201,5 @@ void main() {
 		}
 	}
 
-#endif
+#endif // MODE_SORT_INNER
 }

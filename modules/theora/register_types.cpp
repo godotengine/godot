@@ -52,7 +52,7 @@ void initialize_theora_module(ModuleInitializationLevel p_level) {
 				writer_ogv = memnew(MovieWriterOGV);
 				MovieWriter::add_writer(writer_ogv);
 			}
-#endif
+#endif // TOOLS_ENABLED
 		} break;
 
 		case MODULE_INITIALIZATION_LEVEL_SCENE: {

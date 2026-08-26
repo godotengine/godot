@@ -129,7 +129,7 @@ public:
 	static void add_to_cache(const String &p_filename, Node *p_node);
 	static void remove_from_cache(const String &p_filename, Node *p_node);
 	static void reload_cached_files(const PackedStringArray &p_files);
-#endif
+#endif // DEBUG_ENABLED
 };
 
 #ifdef DEBUG_ENABLED

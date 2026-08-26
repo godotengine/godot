@@ -186,7 +186,7 @@ void JoypadSDL::process_events() {
 				if (steam_handle != 0) {
 					joypad_info["steam_input_index"] = itos(steam_handle);
 				}
-#endif
+#endif // defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED) || defined(MACOS_ENABLED)
 
 #ifdef WINDOWS_ENABLED
 				const int player_index = SDL_GetJoystickPlayerIndex(joy);
@@ -194,7 +194,7 @@ void JoypadSDL::process_events() {
 					// For XInput controllers SDL_GetJoystickPlayerIndex returns the XInput user index.
 					joypad_info["xinput_index"] = itos(player_index);
 				}
-#endif
+#endif // WINDOWS_ENABLED
 
 				Input::get_singleton()->joy_connection_changed(
 						joy_id,

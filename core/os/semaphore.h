@@ -43,11 +43,11 @@
 #include <thirdparty/mingw-std-threads/mingw.condition_variable.h>
 #include <thirdparty/mingw-std-threads/mingw.mutex.h>
 #define THREADING_NAMESPACE mingw_stdthread
-#else
+#else // MINGW_ENABLED
 #include <condition_variable>
 #include <mutex>
 #define THREADING_NAMESPACE std
-#endif
+#endif // MINGW_ENABLED
 
 class Semaphore {
 private:
@@ -130,7 +130,7 @@ public:
 			new (&condition) THREADING_NAMESPACE::condition_variable();
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 };
 
 #else // No threads.

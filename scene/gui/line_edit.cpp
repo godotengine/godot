@@ -1236,7 +1236,7 @@ void LineEdit::_notification(int p_what) {
 				}
 			}
 		} break;
-#endif
+#endif // TOOLS_ENABLED
 		case NOTIFICATION_EXIT_TREE:
 		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
 			accessibility_text_root_element = RID();
@@ -2886,7 +2886,7 @@ void LineEdit::_editor_settings_changed() {
 	}
 	set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
 	set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void LineEdit::set_expand_to_text_length_enabled(bool p_enabled) {

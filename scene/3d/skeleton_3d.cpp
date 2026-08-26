@@ -135,7 +135,7 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 				set_bone_pose_scale(which, rest.basis.get_scale());
 			}
 		}
-#endif
+#endif // DISABLE_DEPRECATED
 	} else {
 		return false;
 	}

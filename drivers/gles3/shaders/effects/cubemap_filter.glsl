@@ -120,5 +120,5 @@ void main() {
 
 	sum.rgb = linear_to_srgb(sum.rgb);
 	frag_color = vec4(sum.rgb, 1.0);
-#endif
+#endif // MODE_DIRECT_WRITE
 }

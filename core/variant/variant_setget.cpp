@@ -313,22 +313,22 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 #define OOB_TEST(m_idx, m_v) \
 	ERR_FAIL_INDEX(m_idx, m_v)
 
-#else
+#else // DEBUG_ENABLED
 
 #define OOB_TEST(m_idx, m_v)
 
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 
 #define NULL_TEST(m_key) \
 	ERR_FAIL_NULL(m_key)
 
-#else
+#else // DEBUG_ENABLED
 
 #define NULL_TEST(m_key)
 
-#endif
+#endif // DEBUG_ENABLED
 
 #define INDEXED_SETGET_STRUCT_TYPED(m_base_type, m_elem_type) \
 	struct VariantIndexedSetGet_##m_base_type { \
@@ -1378,7 +1378,7 @@ bool Variant::iter_init(Variant &r_iter, bool &r_valid) const {
 				return false;
 			}
 
-#endif
+#endif // DEBUG_ENABLED
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
 			Array ref = { r_iter };
@@ -1612,7 +1612,7 @@ bool Variant::iter_next(Variant &r_iter, bool &r_valid) const {
 				return false;
 			}
 
-#endif
+#endif // DEBUG_ENABLED
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
 			Array ref = { r_iter };
@@ -1806,7 +1806,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				return Variant();
 			}
 
-#endif
+#endif // DEBUG_ENABLED
 			Callable::CallError ce;
 			ce.error = Callable::CallError::CALL_OK;
 			const Variant *refp[] = { &r_iter };
@@ -1839,7 +1839,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		case PACKED_BYTE_ARRAY: {
@@ -1851,7 +1851,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		case PACKED_INT32_ARRAY: {
@@ -1863,7 +1863,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		case PACKED_INT64_ARRAY: {
@@ -1875,7 +1875,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		case PACKED_FLOAT32_ARRAY: {
@@ -1887,7 +1887,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		case PACKED_FLOAT64_ARRAY: {
@@ -1899,7 +1899,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		case PACKED_STRING_ARRAY: {
@@ -1911,7 +1911,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		case PACKED_VECTOR2_ARRAY: {
@@ -1923,7 +1923,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		case PACKED_VECTOR3_ARRAY: {
@@ -1935,7 +1935,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		case PACKED_COLOR_ARRAY: {
@@ -1947,7 +1947,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		case PACKED_VECTOR4_ARRAY: {
@@ -1959,7 +1959,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				r_valid = false;
 				return Variant();
 			}
-#endif
+#endif // DEBUG_ENABLED
 			return arr->get(idx);
 		} break;
 		default: {

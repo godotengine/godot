@@ -139,7 +139,7 @@ protected:
 	String get_as_text_bind_compat_110867(bool p_skip_cr) const;
 
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 private:
 	static inline bool backup_save = false;

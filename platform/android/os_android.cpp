@@ -89,7 +89,7 @@ _FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
 	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
 	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor_by_name("Game"));
 }
-#endif
+#endif // TOOLS_ENABLED
 
 class AndroidLogger : public Logger {
 public:
@@ -375,7 +375,7 @@ void OS_Android::main_loop_begin() {
 			EditorNode::get_singleton()->connect("distraction_free_mode_changed", callable_mp_static(&OS_Android::_on_distraction_free_mode_changed));
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
@@ -414,7 +414,7 @@ void OS_Android::main_loop_end() {
 			EditorNode::get_singleton()->disconnect("distraction_free_mode_changed", callable_mp_static(&OS_Android::_on_distraction_free_mode_changed));
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (main_loop) {
 		SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
@@ -437,7 +437,7 @@ void OS_Android::_on_distraction_free_mode_changed(bool p_enable) {
 		OS_Android::get_singleton()->get_godot_java()->on_distraction_free_mode_changed(p_enable);
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void OS_Android::main_loop_focusout() {
 	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
@@ -478,7 +478,7 @@ String OS_Android::get_resource_dir() const {
 	} else {
 		return remote_fs_dir;
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 String OS_Android::get_locale() const {
@@ -875,7 +875,7 @@ void OS_Android::benchmark_dump() {
 		return;
 	}
 	godot_java->dump_benchmark(get_benchmark_file());
-#endif
+#endif // TOOLS_ENABLED
 }
 
 #ifdef TOOLS_ENABLED
@@ -886,7 +886,7 @@ Error OS_Android::sign_apk(const String &p_input_path, const String &p_output_pa
 Error OS_Android::verify_apk(const String &p_apk_path) {
 	return godot_java->verify_apk(p_apk_path);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "macos" || p_feature == "web_ios" || p_feature == "web_macos" || p_feature == "windows") {

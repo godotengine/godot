@@ -928,7 +928,7 @@ void AnimationPlayer::get_argument_options(const StringName &p_function, int p_i
 	}
 	AnimationMixer::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void AnimationPlayer::_animation_removed(const StringName &p_name, const StringName &p_library) {
 	AnimationMixer::_animation_removed(p_name, p_library);

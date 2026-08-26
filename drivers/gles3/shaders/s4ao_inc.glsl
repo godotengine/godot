@@ -44,7 +44,7 @@ float s4ao(vec2 UV) {
 		int o = /*notch_01 &*/ int((j <= 0) || (j >= (sample_width - 1))); // Notch corners of the grid.
 		vec2 duv = (float(o) - sample_mid) * rcos + base_duv;
 		for (int i = sample_width - o - o; --i >= 0;) {
-#endif
+#endif // defined(USE_SSAO_LOW)
 #ifdef USE_MULTIVIEW
 			float dz = texture(depth_buffer_array, vec3(UV + duv, view)).r - depth;
 #else

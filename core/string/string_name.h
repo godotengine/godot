@@ -80,7 +80,7 @@ class [[nodiscard]] _WARN_UNUSED_ StringName {
 	};
 
 	static inline bool debug_stringname = false;
-#endif
+#endif // DEBUG_ENABLED
 
 	StringName(_Data *p_data) { _data = p_data; }
 

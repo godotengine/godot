@@ -47,7 +47,7 @@ protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override {} // Disable parent method.
 };
-#endif
+#endif // DISABLE_DEPRECATED
 
 class EditorMainScreen : public DockTabContainer {
 	GDCLASS(EditorMainScreen, DockTabContainer);
@@ -74,7 +74,7 @@ public:
 	VBoxContainer *get_control() const;
 	void add_main_plugin(EditorPlugin *p_editor);
 	void remove_main_plugin(EditorPlugin *p_editor);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	void edit(Object *p_object);
 

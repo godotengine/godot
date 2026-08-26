@@ -42,15 +42,15 @@ hvec3 SSS_skin(half NdotL, half transmittance_depth, half transmittance_z, half 
 
 	return profile * transmittance_color.a * light_color * clamp(transmittance_boost - NdotL, half(0.0), half(1.0)) * half(1.0 / M_PI);
 }
-#else
+#else // SSS_MODE_SKIN
 hvec3 SSS(half NdotL, half transmittance_depth, half transmittance_z, half transmittance_boost, hvec4 transmittance_color, hvec3 light_color) {
 	half scale = half(8.25) / transmittance_depth;
 	half d = scale * abs(transmittance_z);
 	half dd = -d * d;
 	return exp(dd) * transmittance_color.rgb * transmittance_color.a * light_color * clamp(transmittance_boost - NdotL, half(0.0), half(1.0)) * half(1.0 / M_PI);
 }
-#endif
-#endif
+#endif // SSS_MODE_SKIN
+#endif // LIGHT_TRANSMITTANCE_USED
 
 // From Earl Hammon, Jr. "PBR Diffuse Lighting for GGX+Smith Microsurfaces" https://www.gdcvault.com/play/1024478/PBR-Diffuse-Lighting-for-GGX
 half V_GGX(half NdotL, half NdotV, half alpha) {
@@ -107,7 +107,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 		half transmittance_depth,
 		half transmittance_boost,
 		half transmittance_z,
-#endif
+#endif // LIGHT_TRANSMITTANCE_USED
 #ifdef LIGHT_RIM_USED
 		half rim, half rim_tint,
 #endif
@@ -236,7 +236,8 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 				half FdL = half(1.0) + FD90_minus_1 * SchlickFresnel(cNdotL);
 				diffuse_brdf_NL = half(1.0 / M_PI) * FdV * FdL * cNdotL;
 			}
-#else
+#else // defined(DIFFUSE_BURLEY)
+
 			// lambert
 			diffuse_brdf_NL = cNdotL * half(1.0 / M_PI);
 #endif
@@ -626,7 +627,7 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			shadow = mix(half(1.0), sample_omni_pcf_shadow(shadow_atlas, omni_lights.data[idx].soft_shadow_scale / shadow_sample.z, pos, uv_rect, flip_offset, depth, taa_frame_count), half(omni_lights.data[idx].shadow_opacity));
 		}
 	}
-#endif
+#endif // SHADOWS_DISABLED
 
 	vec3 color = omni_lights.data[idx].color;
 
@@ -738,7 +739,7 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			transmittance_depth,
 			transmittance_boost,
 			transmittance_z,
-#endif
+#endif // LIGHT_TRANSMITTANCE_USED
 #ifdef LIGHT_RIM_USED
 			rim * omni_attenuation, rim_tint,
 #endif
@@ -940,7 +941,7 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			transmittance_depth,
 			transmittance_boost,
 			transmittance_z,
-#endif
+#endif // LIGHT_TRANSMITTANCE_USED
 #ifdef LIGHT_RIM_USED
 			rim * spot_attenuation, rim_tint,
 #endif
@@ -1121,7 +1122,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			shadow = mix(half(1.0), sample_omni_pcf_shadow(shadow_atlas, area_lights.data[idx].soft_shadow_scale / shadow_sample.z, pos, uv_rect, vec2(0), depth, taa_frame_count), half(area_lights.data[idx].shadow_opacity));
 		}
 	}
-#endif
+#endif // SHADOWS_DISABLED
 	light_attenuation_ltc = light_attenuation_ltc * shadow;
 	half light_attenuation = light_attenuation_raw * shadow;
 	hvec3 color = hvec3(area_lights.data[idx].color);
@@ -1204,7 +1205,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	diffuse_light = hvec3(diffuse_light_highp);
 	specular_light = hvec3(specular_light_highp);
 
-#else
+#else // defined(LIGHT_CODE_USED) && defined(AREA_LIGHT_CODE_USED)
 	half specular_amount = half(area_lights.data[idx].specular_amount);
 	half area = a_len * b_len;
 	half cc_attenuation = half(1.0);
@@ -1218,7 +1219,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		hvec2 uv = (closest_point_local_to_light.xy + hvec2(a_half_len, b_half_len)) / hvec2(a_len, b_len);
 		isotropic_light_color = hvec3(fetch_ltc_lod(vec2(hvec2(1.0) - uv), area_lights.data[idx].projector_rect, float(lod), max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP));
 	}
-#endif
+#endif // defined(LIGHT_TRANSMITTANCE_USED) || defined(LIGHT_BACKLIGHT_USED) || defined(LIGHT_RIM_USED) || defined(DIFFUSE_TOON)
 #ifdef LIGHT_TRANSMITTANCE_USED
 	{
 		half transmittance_z = transmittance_depth;
@@ -1246,7 +1247,8 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			float shadow_z = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos, 0.0).r;
 			transmittance_z = half((depth - shadow_z) / inv_center_range);
 		}
-#endif
+#endif // SHADOWS_DISABLED
+
 		// transmission can't use ltc_diffuse_tex_color, because for backface pixels texture would have to be sampled for opposite normal direction.
 #ifdef SSS_MODE_SKIN
 		diffuse_light += SSS_skin(half(ltc_diffuse), transmittance_depth, transmittance_z, transmittance_boost, transmittance_color, color * isotropic_light_color * area);
@@ -1278,7 +1280,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		half NdotL = half((ltc_diffuse - backface_ltc_diffuse) / (max(solid_angle, 0.001) / M_PI));
 		half diffuse_brdf_NL = smoothstep(-roughness, max(roughness, half(0.01)), NdotL) * half(1.0 / M_PI);
 		diffuse_light += diffuse_brdf_NL * isotropic_light_color * color * area * light_attenuation * cc_attenuation;
-#else
+#else // defined(DIFFUSE_TOON)
 		diffuse_light += half(ltc_diffuse) * hvec3(ltc_diffuse_tex_color) * color * light_attenuation_ltc * cc_attenuation;
 #endif // DIFFUSE_TOON
 
@@ -1449,5 +1451,5 @@ half blur_shadow(half shadow) {
 		shadow = interp_shadow;
 	}
 	return shadow;
-#endif
+#endif // 0
 }

@@ -55,4 +55,4 @@ bool macos_is_app_bundle_installed(const String &p_bundle_id) {
 	}
 }
 
-#endif
+#endif // MACOS_ENABLED

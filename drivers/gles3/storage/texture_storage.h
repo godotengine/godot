@@ -950,7 +950,7 @@ inline String TextureStorage::get_framebuffer_error(GLenum p_status) {
 	} else if (p_status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER) {
 		return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
 	}
-#endif
+#endif // defined(DEBUG_ENABLED) && defined(GL_API_ENABLED)
 	return itos(p_status);
 }
 

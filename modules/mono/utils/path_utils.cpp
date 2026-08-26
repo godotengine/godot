@@ -69,11 +69,11 @@ String find_executable(const String &p_name) {
 				return p2;
 			}
 		}
-#else
+#else // WINDOWS_ENABLED
 		if (FileAccess::exists(p)) {
 			return p;
 		}
-#endif
+#endif // WINDOWS_ENABLED
 	}
 
 	return String();
@@ -94,7 +94,7 @@ String cwd() {
 		return ".";
 	}
 	return result.simplify_path();
-#else
+#else // WINDOWS_ENABLED
 	char buffer[PATH_MAX];
 	if (::getcwd(buffer, sizeof(buffer)) == nullptr) {
 		return ".";
@@ -106,7 +106,7 @@ String cwd() {
 	}
 
 	return result.simplify_path();
-#endif
+#endif // WINDOWS_ENABLED
 }
 
 String abspath(const String &p_path) {
@@ -212,7 +212,7 @@ String get_drive_letter(const String &p_norm_path) {
 	}
 	return String();
 }
-#endif
+#endif // WINDOWS_ENABLED
 
 String relative_to(const String &p_path, const String &p_relative_to) {
 	String relative_to_abs_norm = abspath(p_relative_to);

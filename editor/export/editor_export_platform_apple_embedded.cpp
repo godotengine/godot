@@ -54,7 +54,7 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
-#endif
+#endif // MACOS_ENABLED
 
 void EditorExportPlatformAppleEmbedded::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.
@@ -226,7 +226,7 @@ void EditorExportPlatformAppleEmbedded::_notification(int p_what) {
 			EditorExport::get_singleton()->connect_presets_runnable_updated(callable_mp(this, &EditorExportPlatformAppleEmbedded::_update_preset_status));
 		}
 	}
-#endif
+#endif // MACOS_ENABLED
 }
 
 bool EditorExportPlatformAppleEmbedded::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
@@ -2045,7 +2045,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 				// we need execute rights on this file
 				chmod(file.utf8().get_data(), 0755);
 			}
-#endif
+#endif // defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
 		}
 
 		ret = unzGoToNextFile(src_pkg_zip);
@@ -2277,9 +2277,9 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 			return FAILED;
 		}
 	}
-#else
+#else // MACOS_ENABLED
 	add_message(EXPORT_MESSAGE_WARNING, TTR("Xcode Build"), TTR(".ipa can only be built on macOS. Leaving Xcode project without building the package."));
-#endif
+#endif // MACOS_ENABLED
 
 	return OK;
 }
@@ -2900,7 +2900,7 @@ int EditorExportPlatformAppleEmbedded::_execute(const String &p_path, const List
 	return OS::get_singleton()->get_process_exit_code(pid);
 }
 
-#endif
+#endif // MACOS_ENABLED
 
 Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) {
 #ifdef MACOS_ENABLED
@@ -3087,9 +3087,9 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 	CLEANUP_AND_RETURN(OK);
 
 #undef CLEANUP_AND_RETURN
-#else
+#else // MACOS_ENABLED
 	return ERR_UNCONFIGURED;
-#endif
+#endif // MACOS_ENABLED
 }
 
 void EditorExportPlatformAppleEmbedded::_initialize(const char *p_platform_logo_svg, const char *p_run_icon_svg) {

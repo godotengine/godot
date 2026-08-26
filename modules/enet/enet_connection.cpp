@@ -56,14 +56,14 @@ Error ENetConnection::create_host_bound(const IPAddress &p_bind_address, int p_p
 	} else {
 		enet_address_set_ip(&address, p_bind_address.get_ipv6(), 16);
 	}
-#else
+#else // GODOT_ENET
 	if (p_bind_address.is_wildcard()) {
 		address.host = 0;
 	} else {
 		ERR_FAIL_COND_V(!p_bind_address.is_ipv4(), ERR_INVALID_PARAMETER);
 		address.host = *(uint32_t *)p_bind_address.get_ipv4();
 	}
-#endif
+#endif // GODOT_ENET
 	return _create(&address, p_max_peers, p_max_channels, p_in_bandwidth, p_out_bandwidth);
 }
 

@@ -470,7 +470,7 @@ void CryptoMbedTLS::load_default_certificates(const String &p_path) {
 			default_certs->load_from_memory(certs.ptr(), certs.size());
 			print_verbose("Loaded builtin CA certificates");
 		}
-#endif
+#endif // BUILTIN_CERTS_ENABLED
 	}
 }
 

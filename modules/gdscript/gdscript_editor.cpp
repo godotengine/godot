@@ -54,7 +54,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
-#endif
+#endif // TOOLS_ENABLED
 
 #ifdef TOOLS_ENABLED
 GDScriptEditorLanguage *GDScriptEditorLanguage::singleton = nullptr;
@@ -74,7 +74,7 @@ static String _get_indentation() {
 			return String(" ").repeat(indent_size);
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 	return "\t";
 }
 
@@ -150,7 +150,7 @@ Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(
 			templates.append(TEMPLATES[i]);
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 	return templates;
 }
 
@@ -190,7 +190,7 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 			r_warnings->push_back(w);
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 	if (err) {
 		if (r_errors) {
 			for (const GDScriptParser::ParserError &pe : parser.get_errors()) {
@@ -239,7 +239,7 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 			}
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	return true;
 }

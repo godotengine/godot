@@ -200,7 +200,8 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 		bake->set_disabled(true);
 		bake->set_tooltip_text(vformat(TTR("Lightmap baking is not supported on this GPU (%s)."), RenderingServer::get_singleton()->get_video_adapter_name()));
 	}
-#else
+#else // MODULE_LIGHTMAPPER_RD_ENABLED
+
 	// Disable lightmap baking if the module is disabled at compile-time.
 	bake->set_disabled(true);
 #if defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)

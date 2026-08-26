@@ -116,7 +116,7 @@ GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_dept
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-#endif
+#endif // defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 
 	return new_fbo.fbo;
 }
@@ -251,9 +251,9 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, internal3d.color, 0, 0, view_count);
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, internal3d.depth, 0, 0, view_count);
 		} else {
-#else
+#else // IOS_ENABLED
 		{
-#endif
+#endif // IOS_ENABLED
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_target, internal3d.color, 0);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, texture_target, internal3d.depth, 0);
 		}
@@ -363,7 +363,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 
 			glBindTexture(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, 0);
 			glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-#endif
+#endif // !defined(IOS_ENABLED) && !defined(WEB_ENABLED)
 #if defined(ANDROID_ENABLED) || defined(WEB_ENABLED) // Only supported on OpenGLES!
 		} else if (!use_internal_buffer) {
 			// We are going to render directly into our render target textures,
@@ -391,7 +391,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			}
 
 			glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-#endif
+#endif // defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 		} else {
 			// HUH? how did we get here?
 			WARN_PRINT_ONCE("MSAA is not supported on this device.");

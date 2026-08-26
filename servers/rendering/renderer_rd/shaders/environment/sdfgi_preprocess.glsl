@@ -49,7 +49,7 @@ uvec4 group_load(ivec3 p_pos) {
 	return group_positions[offset];
 }
 
-#endif
+#endif // MODE_JUMPFLOOD_OPTIMIZED
 
 #ifdef MODE_OCCLUSION
 
@@ -78,7 +78,7 @@ uint get_facing(ivec3 p_pos) {
 	return (v >> ((ofs % 4) * 8)) & 0xFF;
 }
 
-#endif
+#endif // MODE_OCCLUSION
 
 #ifdef MODE_STORE
 
@@ -116,7 +116,7 @@ dst_process_voxels;
 shared ProcessVoxel store_positions[4 * 4 * 4];
 shared uint store_position_count;
 shared uint store_from_index;
-#endif
+#endif // MODE_STORE
 
 #ifdef MODE_SCROLL
 
@@ -146,14 +146,14 @@ layout(set = 0, binding = 6, std430) restrict buffer readonly ProcessVoxels {
 }
 src_process_voxels;
 
-#endif
+#endif // MODE_SCROLL
 
 #ifdef MODE_SCROLL_OCCLUSION
 
 layout(r8, set = 0, binding = 1) uniform restrict image3D dst_occlusion[8];
 layout(r16ui, set = 0, binding = 2) uniform restrict readonly uimage3D src_occlusion;
 
-#endif
+#endif // MODE_SCROLL_OCCLUSION
 
 layout(push_constant, std430) uniform Params {
 	ivec3 scroll;
@@ -198,7 +198,7 @@ void main() {
 	uint light_aniso = src_process_voxels.data[index].light_aniso & 0x3fffffff; //30 bits of 6 anisotropic 5 bits values
 	imageStore(dst_light_aniso, write_pos, uvec4(light_aniso));
 
-#endif
+#endif // MODE_SCROLL
 
 #ifdef MODE_SCROLL_OCCLUSION
 
@@ -222,7 +222,7 @@ void main() {
 		imageStore(dst_occlusion[i], write_pos, vec4(o));
 	}
 
-#endif
+#endif // MODE_SCROLL_OCCLUSION
 
 #ifdef MODE_INITIALIZE_JUMP_FLOOD
 
@@ -240,7 +240,7 @@ void main() {
 	}
 
 	imageStore(dst_positions, pos, v);
-#endif
+#endif // MODE_INITIALIZE_JUMP_FLOOD
 
 #ifdef MODE_INITIALIZE_JUMP_FLOOD_HALF
 
@@ -270,7 +270,7 @@ void main() {
 		imageStore(dst_positions, pos, closest[index]);
 	}
 
-#endif
+#endif // MODE_INITIALIZE_JUMP_FLOOD_HALF
 
 #ifdef MODE_JUMPFLOOD
 
@@ -346,7 +346,7 @@ void main() {
 	}
 
 	imageStore(dst_positions, pos, p);
-#endif
+#endif // MODE_JUMPFLOOD
 
 #ifdef MODE_JUMPFLOOD_OPTIMIZED
 	//optimized version using shared compute memory
@@ -441,7 +441,7 @@ void main() {
 
 	imageStore(dst_positions, global_pos, closest);
 
-#endif
+#endif // MODE_JUMPFLOOD_OPTIMIZED
 
 #ifdef MODE_UPSCALE_JUMP_FLOOD
 
@@ -479,7 +479,7 @@ void main() {
 
 	imageStore(dst_positions, pos, v);
 
-#endif
+#endif // MODE_UPSCALE_JUMP_FLOOD
 
 #ifdef MODE_OCCLUSION
 
@@ -578,7 +578,7 @@ void main() {
 						}*/
 
 						occ/=3.0;
-#endif
+#endif // 0
 							occ = 1.0;
 
 						} else {
@@ -687,10 +687,10 @@ void main() {
 				uvec3 facing_neg_base = (uvec3(facing) >> uvec3(3,4,5)) & uvec3(1,1,1);
 				uvec3 facing_pos=  facing_pos_base &((~facing_neg_base)&uvec3(1,1,1));
 				uvec3 facing_neg=  facing_neg_base &((~facing_pos_base)&uvec3(1,1,1));
-#else
+#else // 0
 					uvec3 facing_pos = (uvec3(facing) >> uvec3(0, 1, 2)) & uvec3(1, 1, 1);
 					uvec3 facing_neg = (uvec3(facing) >> uvec3(3, 4, 5)) & uvec3(1, 1, 1);
-#endif
+#endif // 0
 					bvec3 read_valid = bvec3(mix(facing_neg, facing_pos, greaterThan(read_dir, ivec3(0))));
 
 					//sides
@@ -792,7 +792,7 @@ void main() {
 		}
 	}
 
-#endif
+#endif // 1
 
 #if 1
 	groupMemoryBarrier();
@@ -928,7 +928,7 @@ void main() {
 		}
 	}
 
-#endif
+#endif // 1
 
 	/*
 	for(int i=0;i<8;i++) {
@@ -943,7 +943,7 @@ void main() {
 	}
 */
 
-#endif
+#endif // MODE_OCCLUSION
 
 #ifdef MODE_STORE
 
@@ -1060,5 +1060,5 @@ void main() {
 		dispatch_data.y = 1;
 		dispatch_data.z = 1;
 	}
-#endif
+#endif // MODE_STORE
 }

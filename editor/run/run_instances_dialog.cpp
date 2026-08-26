@@ -362,7 +362,7 @@ RunInstancesDialog::RunInstancesDialog() {
 	bool is_xr_editor = OS::get_singleton()->has_feature("xr_editor");
 	enable_multiple_instances_checkbox->set_visible(is_xr_editor);
 	enable_multiple_instances_checkbox->set_disabled(!is_xr_editor);
-#endif
+#endif // ANDROID_ENABLED
 
 	instance_count = memnew(SpinBox);
 	instance_count->set_min(1);

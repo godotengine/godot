@@ -145,7 +145,7 @@ public:
 		}
 
 		print_line("HASH:", p_key_hash, "SOURCE:", source_name);
-#endif
+#endif // PRINT_PIPELINE_COMPILATION_KEYS
 
 		// Queue a background compilation task.
 		WorkerThreadPool::TaskID task_id = WorkerThreadPool::get_singleton()->add_template_task(creation_object, creation_function, p_key, p_high_priority, "PipelineCompilation");

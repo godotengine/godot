@@ -725,7 +725,7 @@ private:
 		// this tick, because it is vital that the AABB is kept up to date
 		expanded_aabb = p_aabb;
 		expanded_aabb.grow_by(tree._pairing_expansion);
-#endif
+#endif // BVH_EXPAND_LEAF_AABBS
 
 		// this code is to ensure that changed items only appear once on the updated list
 		// collision checking them multiple times is not needed, and repeats the same thing

@@ -377,7 +377,7 @@ private:
 	void _set_arrange_nodes_button_hidden_bind_compat_81582(bool p_enable);
 	PackedVector2Array _get_connection_line_bind_compat_86158(const Vector2 &p_from, const Vector2 &p_to);
 	Error _connect_node_bind_compat_97449(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
-#endif
+#endif // DISABLE_DEPRECATED
 
 protected:
 	virtual void _update_theme_item_cache() override;

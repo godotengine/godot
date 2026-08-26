@@ -72,7 +72,7 @@ private:
 
 	bool egl_extension_enabled = false;
 #endif
-#else
+#else // defined(LINUXBSD_ENABLED)
 #error "OpenXR with OpenGL isn't supported on this platform"
 #endif
 

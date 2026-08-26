@@ -55,7 +55,7 @@ class OS_LinuxBSD : public OS_Unix {
 
 	int _weight_to_fc(int p_weight) const;
 	int _stretch_to_fc(int p_stretch) const;
-#endif
+#endif // FONTCONFIG_ENABLED
 
 #ifdef SDL_ENABLED
 	JoypadSDL *joypad_sdl = nullptr;

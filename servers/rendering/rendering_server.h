@@ -54,10 +54,10 @@ struct MeshData;
 	RenderingServer *rendering_server = RenderingServer::get_singleton(); \
 	ERR_FAIL_NULL_V(rendering_server, m_ret); \
 	ERR_FAIL_COND_V(!rendering_server->is_on_render_thread(), m_ret);
-#else
+#else // DEBUG_ENABLED
 #define ERR_NOT_ON_RENDER_THREAD
 #define ERR_NOT_ON_RENDER_THREAD_V(m_ret)
-#endif
+#endif // DEBUG_ENABLED
 
 class RenderingDevice;
 
@@ -99,7 +99,7 @@ protected:
 	void _particles_request_process_time_bind_compat_109142(RID p_particles, real_t p_request_process_time);
 
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	static RenderingServer *get_singleton();

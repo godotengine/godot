@@ -66,7 +66,7 @@
 #ifdef WAYLAND_ENABLED
 #include "wayland/rendering_context_driver_vulkan_wayland.h"
 #endif
-#endif
+#endif // defined(VULKAN_ENABLED)
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
@@ -94,7 +94,7 @@ namespace GameMode {
 }
 
 #include "core/config/project_settings.h"
-#endif
+#endif // __linux__
 
 #ifdef FONTCONFIG_ENABLED
 #ifdef SOWRAP_ENABLED
@@ -102,7 +102,7 @@ namespace GameMode {
 #else
 #include <fontconfig/fontconfig.h>
 #endif
-#endif
+#endif // FONTCONFIG_ENABLED
 
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || (defined(__GLIBC_MINOR__) && (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
 // In <unistd.h>.
@@ -195,7 +195,7 @@ void OS_LinuxBSD::initialize_joypads() {
 		memdelete(joypad_sdl);
 		joypad_sdl = nullptr;
 	}
-#endif
+#endif // SDL_ENABLED
 }
 
 String OS_LinuxBSD::get_unique_id() const {
@@ -209,14 +209,14 @@ String OS_LinuxBSD::get_unique_id() const {
 		if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
 			machine_id = String::utf8(buf).remove_char('-');
 		}
-#else
+#else // defined(__FreeBSD__)
 		Ref<FileAccess> f = FileAccess::open("/etc/machine-id", FileAccess::READ);
 		if (f.is_valid()) {
 			while (machine_id.is_empty() && !f->eof_reached()) {
 				machine_id = f->get_line().strip_edges();
 			}
 		}
-#endif
+#endif // defined(__FreeBSD__)
 	}
 	return machine_id;
 }
@@ -230,7 +230,7 @@ String OS_LinuxBSD::get_processor_name() const {
 	if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
 		return String::utf8(buf);
 	}
-#else
+#else // defined(__FreeBSD__)
 	Ref<FileAccess> f = FileAccess::open("/proc/cpuinfo", FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), "", String("Couldn't open `/proc/cpuinfo` to get the CPU model name. Returning an empty string."));
 
@@ -240,7 +240,7 @@ String OS_LinuxBSD::get_processor_name() const {
 			return line.get_slicec(':', 1).strip_edges();
 		}
 	}
-#endif
+#endif // defined(__FreeBSD__)
 
 	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model. Returning an empty string."));
 }
@@ -594,7 +594,7 @@ bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "bsd") {
 		return true;
 	}
-#endif
+#endif // __linux__
 
 	if (p_feature == "pc") {
 		return true;
@@ -728,9 +728,9 @@ Vector<String> OS_LinuxBSD::get_system_fonts() const {
 		ret.push_back(E);
 	}
 	return ret;
-#else
+#else // FONTCONFIG_ENABLED
 	ERR_FAIL_V_MSG(Vector<String>(), "Godot was compiled without fontconfig, system font support is disabled.");
-#endif
+#endif // FONTCONFIG_ENABLED
 }
 
 #ifdef FONTCONFIG_ENABLED
@@ -834,9 +834,9 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 	}
 
 	return ret;
-#else
+#else // FONTCONFIG_ENABLED
 	ERR_FAIL_V_MSG(Vector<String>(), "Godot was compiled without fontconfig, system font support is disabled.");
-#endif
+#endif // FONTCONFIG_ENABLED
 }
 
 String OS_LinuxBSD::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
@@ -890,9 +890,9 @@ String OS_LinuxBSD::get_system_font_path(const String &p_font_name, int p_weight
 	}
 
 	return String();
-#else
+#else // FONTCONFIG_ENABLED
 	ERR_FAIL_V_MSG(String(), "Godot was compiled without fontconfig, system font support is disabled.");
-#endif
+#endif // FONTCONFIG_ENABLED
 }
 
 String OS_LinuxBSD::get_config_path() const {
@@ -1012,7 +1012,7 @@ void OS_LinuxBSD::run() {
 			print_verbose("GameMode: Not enabling, as the project has it disabled.");
 		}
 	}
-#endif
+#endif // __linux__
 
 	while (true) {
 		GodotProfileFrameMark;
@@ -1068,7 +1068,7 @@ static String get_mountpoint(const String &p_path) {
 	}
 
 	endmntent(fd);
-#endif
+#endif // __has_include(<mntent.h>)
 	return "";
 }
 
@@ -1269,7 +1269,7 @@ Error OS_LinuxBSD::get_entropy(uint8_t *r_buffer, int p_bytes) {
 		ERR_FAIL_COND_V(ret <= 0, FAILED);
 		left -= ret;
 	} while (left > 0);
-#else
+#else // !defined(NO_URANDOM)
 	return ERR_UNAVAILABLE;
 #endif
 	return OK;
@@ -1295,7 +1295,7 @@ bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) 
 		rcd = memnew(RenderingContextDriverVulkanWayland);
 	}
 #endif
-#endif
+#endif // defined(VULKAN_ENABLED)
 	if (rcd != nullptr) {
 		err = rcd->initialize();
 		if (err == OK) {
@@ -1310,7 +1310,7 @@ bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) 
 		memdelete(rcd);
 		rcd = nullptr;
 	}
-#endif
+#endif // defined(RD_ENABLED)
 	return ok;
 }
 
@@ -1327,7 +1327,7 @@ bool OS_LinuxBSD::_test_create_rendering_device_and_gl(const String &p_display_d
 #endif
 		DetectPrimeX11::create_context();
 	}
-#endif
+#endif // X11_ENABLED
 #ifdef WAYLAND_ENABLED
 	if (p_display_driver == "wayland") {
 #ifdef SOWRAP_ENABLED
@@ -1337,12 +1337,12 @@ bool OS_LinuxBSD::_test_create_rendering_device_and_gl(const String &p_display_d
 #endif
 		DetectPrimeEGL::create_context(EGL_PLATFORM_WAYLAND_KHR);
 	}
-#endif
+#endif // WAYLAND_ENABLED
 	RasterizerGLES3::make_current(true);
-#endif
+#endif // GLES3_ENABLED
 	return _test_create_rendering_device(p_display_driver);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
@@ -1371,9 +1371,9 @@ OS_LinuxBSD::OS_LinuxBSD() {
 	int dylibloader_verbose = 0;
 #endif
 	font_config_initialized = (initialize_fontconfig(dylibloader_verbose) == 0);
-#else
+#else // SOWRAP_ENABLED
 	font_config_initialized = true;
-#endif
+#endif // SOWRAP_ENABLED
 	if (font_config_initialized) {
 		bool ver_ok = false;
 		int version = FcGetVersion();

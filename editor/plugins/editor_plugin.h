@@ -102,7 +102,7 @@ public:
 		DOCK_SLOT_BOTTOM,
 		DOCK_SLOT_MAX
 	};
-#endif
+#endif // DISABLE_DEPRECATED
 
 	enum AfterGUIInput {
 		AFTER_GUI_INPUT_PASS,
@@ -156,7 +156,7 @@ protected:
 
 	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut = nullptr);
 	void remove_control_from_bottom_panel(Control *p_control);
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	//TODO: send a resource for editing to the editor node?

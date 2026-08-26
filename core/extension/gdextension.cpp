@@ -64,7 +64,7 @@ class GDExtensionMethodBind : public MethodBind {
 	StringName name;
 	bool is_reloading = false;
 	bool valid = true;
-#endif
+#endif // TOOLS_ENABLED
 
 protected:
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
@@ -189,7 +189,7 @@ public:
 		update(p_method_info);
 		return true;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	void update(const GDExtensionClassMethodInfo *p_method_info) {
 #ifdef TOOLS_ENABLED
@@ -484,10 +484,10 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 		self->extension_classes[class_name] = Extension();
 		extension = &self->extension_classes[class_name];
 	}
-#else
+#else // TOOLS_ENABLED
 	self->extension_classes[class_name] = Extension();
 	Extension *extension = &self->extension_classes[class_name];
-#endif
+#endif // TOOLS_ENABLED
 
 	if (parent_extension) {
 		extension->gdextension.parent = &parent_extension->gdextension;
@@ -559,7 +559,7 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 		extension->gdextension.track_instance = nullptr;
 		extension->gdextension.untrack_instance = nullptr;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	ClassDB::register_extension_class(&extension->gdextension);
 
@@ -608,10 +608,10 @@ void GDExtension::_register_extension_class_method(GDExtensionClassLibraryPtr p_
 		method->is_reloading = false;
 		is_from_old_extension = true;
 	}
-#else
+#else // TOOLS_ENABLED
 	GDExtensionMethodBind *method = memnew(GDExtensionMethodBind(p_method_info));
 	method->set_instance_class(class_name);
-#endif
+#endif // TOOLS_ENABLED
 
 	ClassDB::bind_method_custom(class_name, method, !is_from_old_extension);
 }
@@ -635,7 +635,7 @@ void GDExtension::_register_extension_class_integer_constant(GDExtensionClassLib
 	if (extension->is_reloading) {
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	ClassDB::bind_integer_constant(class_name, enum_name, constant_name, p_constant_value, p_is_bitfield);
 }
@@ -659,7 +659,7 @@ void GDExtension::_register_extension_class_property_indexed(GDExtensionClassLib
 	if (extension->is_reloading) {
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	PropertyInfo pinfo(*p_info);
 
@@ -680,7 +680,7 @@ void GDExtension::_register_extension_class_property_group(GDExtensionClassLibra
 	if (extension->is_reloading) {
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	ClassDB::add_property_group(class_name, group_name, prefix);
 }
@@ -699,7 +699,7 @@ void GDExtension::_register_extension_class_property_subgroup(GDExtensionClassLi
 	if (extension->is_reloading) {
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	ClassDB::add_property_subgroup(class_name, subgroup_name, prefix);
 }
@@ -717,7 +717,7 @@ void GDExtension::_register_extension_class_signal(GDExtensionClassLibraryPtr p_
 	if (extension->is_reloading) {
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	MethodInfo s;
 	s.name = signal_name;
@@ -754,9 +754,9 @@ void GDExtension::_unregister_extension_class(GDExtensionClassLibraryPtr p_libra
 	}
 
 	GDExtensionEditorHelp::remove_class(class_name);
-#else
+#else // TOOLS_ENABLED
 	self->extension_classes.erase(class_name);
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void GDExtension::_get_library_path(GDExtensionClassLibraryPtr p_library, GDExtensionUninitializedStringPtr r_path) {

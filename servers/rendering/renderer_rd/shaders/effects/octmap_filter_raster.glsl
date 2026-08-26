@@ -75,12 +75,12 @@ layout(set = 1, binding = 0, std430) buffer restrict readonly Data {
 	vec4[7][5][3][24] coeffs;
 }
 data;
-#else
+#else // USE_HIGH_QUALITY
 layout(set = 1, binding = 0, std430) buffer restrict readonly Data {
 	vec4[7][5][6] coeffs;
 }
 data;
-#endif
+#endif // USE_HIGH_QUALITY
 
 void main() {
 	// NOTE (macOS/MoltenVK): Do not rename, "level" variable name conflicts with the Metal "level(float lod)" mipmap sampling function name.
@@ -191,7 +191,7 @@ void main() {
 					float sample_level = coeffsLevel[0][iSubTap] + coeffsLevel[1][iSubTap] * theta2 + coeffsLevel[2][iSubTap] * phi2;
 
 					float sample_weight = coeffsWeight[0][iSubTap] + coeffsWeight[1][iSubTap] * theta2 + coeffsWeight[2][iSubTap] * phi2;
-#else
+#else // USE_HIGH_QUALITY
 				vec4 coeffsDir0 = data.coeffs[mip_level][0][index];
 				vec4 coeffsDir1 = data.coeffs[mip_level][1][index];
 				vec4 coeffsDir2 = data.coeffs[mip_level][2][index];
@@ -205,7 +205,7 @@ void main() {
 					float sample_level = coeffsLevel[iSubTap];
 
 					float sample_weight = coeffsWeight[iSubTap];
-#endif
+#endif // USE_HIGH_QUALITY
 
 					sample_weight *= frameweight;
 

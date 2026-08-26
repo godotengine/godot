@@ -85,7 +85,7 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 	return false;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void Path2D::_notification(int p_what) {
 	switch (p_what) {

@@ -300,7 +300,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 		void *ubo = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(LightUniform) * light_count, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 		memcpy(ubo, state.light_uniforms, sizeof(LightUniform) * light_count);
 		glUnmapBuffer(GL_UNIFORM_BUFFER);
-#endif
+#endif // WEB_ENABLED
 
 		GLuint texture_atlas = texture_storage->texture_atlas_get_texture();
 		if (texture_atlas == 0) {
@@ -675,7 +675,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	void *buffer = glMapBufferRange(GL_ARRAY_BUFFER, state.last_item_index * sizeof(InstanceData), index * sizeof(InstanceData), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 	memcpy(buffer, state.instance_data_array, index * sizeof(InstanceData));
 	glUnmapBuffer(GL_ARRAY_BUFFER);
-#endif
+#endif // WEB_ENABLED
 
 	glDisable(GL_SCISSOR_TEST);
 	current_clip = nullptr;
@@ -1558,7 +1558,7 @@ void RasterizerCanvasGLES3::_add_to_batch(uint32_t &r_index, bool &r_batch_broke
 		void *buffer = glMapBufferRange(GL_ARRAY_BUFFER, state.last_item_index * sizeof(InstanceData), r_index * sizeof(InstanceData), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 		memcpy(buffer, state.instance_data_array, r_index * sizeof(InstanceData));
 		glUnmapBuffer(GL_ARRAY_BUFFER);
-#endif
+#endif // WEB_ENABLED
 		_allocate_instance_buffer();
 		r_index = 0;
 		state.last_item_index = 0;

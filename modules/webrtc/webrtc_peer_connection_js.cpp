@@ -151,4 +151,4 @@ WebRTCPeerConnectionJS::~WebRTCPeerConnectionJS() {
 		_js_id = 0;
 	}
 }
-#endif
+#endif // WEB_ENABLED

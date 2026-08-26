@@ -154,7 +154,7 @@ private:
 	Vector<DocData::ClassDoc> docs;
 	void _add_doc(const DocData::ClassDoc &p_doc);
 	void _clear_doc();
-#endif
+#endif // TOOLS_ENABLED
 
 	GDScriptFunction *initializer = nullptr; // Direct pointer to `new()`/`_init()` member function, faster to locate.
 
@@ -192,7 +192,7 @@ private:
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 	void _update_exports_down(bool p_base_exports_changed);
-#endif
+#endif // TOOLS_ENABLED
 
 #ifdef DEBUG_ENABLED
 	HashMap<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
@@ -478,7 +478,7 @@ public:
 		if (script_debugger != nullptr && script_debugger->get_lines_left() > 0 && script_debugger->get_depth() >= 0) {
 			script_debugger->set_depth(script_debugger->get_depth() + 1);
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		if (unlikely(_call_stack_size >= _debug_max_call_stack)) {
 			_debug_error = vformat("Stack overflow (stack size: %s). Check for infinite recursion in your script.", _debug_max_call_stack);
@@ -512,7 +512,7 @@ public:
 		if (script_debugger && script_debugger->get_lines_left() > 0 && script_debugger->get_depth() >= 0) {
 			script_debugger->set_depth(script_debugger->get_depth() - 1);
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		if (unlikely(_call_stack_size == 0)) {
 #ifdef DEBUG_ENABLED
@@ -524,7 +524,7 @@ public:
 			}
 #else // !DEBUG_ENABLED
 			ERR_PRINT("Stack underflow! (Engine Bug)");
-#endif
+#endif // DEBUG_ENABLED
 			return;
 		}
 

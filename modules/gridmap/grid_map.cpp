@@ -392,7 +392,7 @@ void GridMap::set_debug_octant_color(const Color &p_color) {
 	if (debug_octant_line_material.is_valid()) {
 		debug_octant_line_material->set_albedo(debug_octant_color);
 	}
-#endif
+#endif // DEBUG_ENABLED
 }
 
 Color GridMap::get_debug_octant_color() const {
@@ -959,7 +959,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				it.transform = mm_item_placement.transform;
 				it.key = mm_item_placement.index_key;
 				mmi.items.push_back(it);
-#endif
+#endif // TOOLS_ENABLED
 
 				idx++;
 			}
@@ -1266,7 +1266,7 @@ void GridMap::_notification(int p_what) {
 					RS::get_singleton()->instance_set_transform(octant_debug.debug_line_instance_rid, octant_transform);
 				}
 			}
-#endif
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
@@ -1313,7 +1313,7 @@ void GridMap::_update_visibility() {
 			RS::get_singleton()->instance_set_visible(octant_debug.debug_line_instance_rid, is_visible_in_tree());
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void GridMap::_queue_octants_dirty() {
@@ -1906,7 +1906,7 @@ void GridMap::set_debug_show_octants(bool p_enable) {
 
 	debug_show_octants = p_enable;
 	_debug_update();
-#endif
+#endif // DEBUG_ENABLED
 }
 
 bool GridMap::get_debug_show_octants() const {

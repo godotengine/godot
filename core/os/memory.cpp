@@ -147,7 +147,7 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 		} else {
 			_current_mem_usage.sub(*s - p_bytes);
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		if (p_bytes == 0) {
 			GodotProfileFree(mem);

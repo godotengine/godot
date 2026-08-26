@@ -78,7 +78,7 @@ struct MetalAllocatorStats {
 	};
 	Pool pools[3];
 };
-#endif
+#endif // DEBUG_ENABLED
 
 /// Abstract allocation interface for the Metal driver. The driver holds a
 /// single instance selected by sync mode.

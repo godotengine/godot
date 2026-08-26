@@ -761,7 +761,7 @@ Rect2 Control::get_parent_anchorable_rect() const {
 			parent_rect = get_viewport()->get_visible_rect();
 		}
 
-#else
+#else // TOOLS_ENABLED
 		parent_rect = get_viewport()->get_visible_rect();
 #endif // TOOLS_ENABLED
 	}
@@ -4271,7 +4271,7 @@ bool Control::is_layout_rtl() const {
 					return data.is_rtl;
 				}
 			}
-#else
+#else // TOOLS_ENABLED
 			if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 				data.is_rtl = true;
 				return data.is_rtl;

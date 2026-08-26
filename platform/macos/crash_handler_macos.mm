@@ -196,7 +196,7 @@ static void handle_crash(int sig) {
 	// Abort to pass the error to the OS
 	abort();
 }
-#endif
+#endif // CRASH_HANDLER_ENABLED
 
 CrashHandler::CrashHandler() {
 	disabled = false;
@@ -216,7 +216,7 @@ void CrashHandler::disable() {
 	signal(SIGFPE, SIG_DFL);
 	signal(SIGILL, SIG_DFL);
 	signal(SIGTRAP, SIG_DFL);
-#endif
+#endif // CRASH_HANDLER_ENABLED
 
 	disabled = true;
 }
@@ -227,5 +227,5 @@ void CrashHandler::initialize() {
 	signal(SIGFPE, handle_crash);
 	signal(SIGILL, handle_crash);
 	signal(SIGTRAP, handle_crash);
-#endif
+#endif // CRASH_HANDLER_ENABLED
 }

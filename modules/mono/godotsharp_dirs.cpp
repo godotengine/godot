@@ -49,7 +49,7 @@
 #ifndef ANDROID_ENABLED
 #include "core/io/file_access.h"
 #endif
-#endif
+#endif // TOOLS_ENABLED
 
 namespace GodotSharpDirs {
 
@@ -64,7 +64,7 @@ String _get_expected_build_config() {
 	return "ExportRelease";
 #endif
 
-#endif
+#endif // TOOLS_ENABLED
 }
 
 String _get_mono_user_dir() {
@@ -95,9 +95,9 @@ String _get_mono_user_dir() {
 
 		return settings_path.path_join("mono");
 	}
-#else
+#else // TOOLS_ENABLED
 	return OS::get_singleton()->get_user_data_dir().path_join("mono");
-#endif
+#endif // TOOLS_ENABLED
 }
 
 #if !TOOLS_ENABLED
@@ -128,7 +128,7 @@ String _get_platform_name() {
 
 	return "";
 }
-#endif
+#endif // !TOOLS_ENABLED
 
 class _GodotSharpDirs {
 public:
@@ -173,7 +173,7 @@ private:
 		if (!DirAccess::exists(api_assemblies_base_dir)) {
 			api_assemblies_base_dir = res_dir.path_join("GodotSharp").path_join("Api");
 		}
-#endif
+#endif // MACOS_ENABLED
 		api_assemblies_dir = api_assemblies_base_dir.path_join(GDMono::get_expected_api_build_config());
 #else // TOOLS_ENABLED
 		String platform = _get_platform_name();
@@ -230,7 +230,7 @@ private:
 			api_assemblies_dir = data_dir_root;
 		}
 #endif // ANDROID_ENABLED
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 public:
@@ -264,6 +264,6 @@ String get_build_logs_dir() {
 String get_data_editor_tools_dir() {
 	return _GodotSharpDirs::get_singleton().data_editor_tools_dir;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 } // namespace GodotSharpDirs

@@ -248,7 +248,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	} else {
 		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
-#endif
+#endif // ANDROID_ENABLED
 
 	_focus_current_search_box();
 }

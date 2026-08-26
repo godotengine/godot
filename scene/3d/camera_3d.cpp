@@ -222,7 +222,7 @@ void Camera3D::_notification(int p_what) {
 					PHYSICS_INTERPOLATION_NODE_WARNING(get_instance_id(), "Interpolated Camera3D triggered from outside physics process");
 				}
 			}
-#endif
+#endif // defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 			_request_camera_update();
 			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 				velocity_tracker->update_position(get_global_transform().origin);

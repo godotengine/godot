@@ -113,7 +113,7 @@ HashMap<String, bool *> OpenXRExtensionWrapper::get_requested_extensions(XrVersi
 		}
 		return result;
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	return HashMap<String, bool *>();
 }

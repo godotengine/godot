@@ -564,7 +564,7 @@ void EditorSpinSlider::set_hide_slider(bool p_hide) {
 bool EditorSpinSlider::is_hiding_slider() const {
 	return control_state == CONTROL_STATE_HIDE;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void EditorSpinSlider::set_editing_integer(bool p_editing_integer) {
 	if (p_editing_integer == editing_integer) {

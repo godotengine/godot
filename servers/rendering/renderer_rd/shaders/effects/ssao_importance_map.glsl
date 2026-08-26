@@ -37,7 +37,7 @@ layout(set = 2, binding = 0, std430) buffer Counter {
 	uint sum;
 }
 counter;
-#endif
+#endif // PROCESS_MAPB
 
 layout(push_constant, std430) uniform Params {
 	vec2 half_screen_pixel_size;
@@ -75,7 +75,7 @@ void main() {
 	float min_max_diff = maxV - minV;
 
 	imageStore(dest_image, ssC, vec4(pow(clamp(min_max_diff * 2.0, 0.0, 1.0), 0.8)));
-#endif
+#endif // GENERATE_MAP
 
 #ifdef PROCESS_MAPA
 	vec2 uv = (vec2(ssC) + 0.5f) * params.half_screen_pixel_size * 2.0;
@@ -93,7 +93,7 @@ void main() {
 	float avg = dot(vals, vec4(0.25, 0.25, 0.25, 0.25));
 
 	imageStore(dest_image, ssC, vec4(avg));
-#endif
+#endif // PROCESS_MAPA
 
 #ifdef PROCESS_MAPB
 	vec2 uv = (vec2(ssC) + 0.5f) * params.half_screen_pixel_size * 2.0;
@@ -119,5 +119,5 @@ void main() {
 	if (((ssC.x % 3) + (ssC.y % 3)) == 0) {
 		atomicAdd(counter.sum, sum);
 	}
-#endif
+#endif // PROCESS_MAPB
 }

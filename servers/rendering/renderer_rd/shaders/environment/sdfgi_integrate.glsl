@@ -317,7 +317,7 @@ void main() {
 		SH_ACCUM(14, 1.445305 * (ray_dir2.x - ray_dir2.y) * ray_dir.z);
 		SH_ACCUM(15, 0.590043 * ray_dir.x * (ray_dir2.x - 3.0f * ray_dir2.y));
 
-#endif
+#endif // (SH_SIZE == 16)
 	}
 
 	for (uint i = 0; i < SH_SIZE; i++) {
@@ -384,7 +384,7 @@ void main() {
 			1.445305 * (normal2.x - normal2.y) * normal.z,
 			0.590043 * normal.x * (normal2.x - 3.0f * normal2.y)
 
-#endif
+#endif // (SH_SIZE == 16)
 	);
 
 	const float l_mult[SH_SIZE] = float[](
@@ -406,7 +406,7 @@ void main() {
 			0.0,
 			0.0,
 			0.0
-#endif
+#endif // (SH_SIZE == 16)
 	);
 
 	vec3 irradiance = vec3(0.0);
@@ -470,7 +470,7 @@ void main() {
 		imageStore(lightprobe_texture_data, copy_to[i] + ivec3(0, 0, int(params.max_cascades)), uvec4(radiance_rgbe));
 	}
 
-#endif
+#endif // MODE_STORE
 
 #ifdef MODE_SCROLL
 
@@ -595,7 +595,7 @@ void main() {
 		}
 	}
 
-#endif
+#endif // MODE_SCROLL
 
 #ifdef MODE_SCROLL_STORE
 
@@ -617,5 +617,5 @@ void main() {
 		imageStore(lightprobe_average_texture, spos, average);
 	}
 
-#endif
+#endif // MODE_SCROLL_STORE
 }

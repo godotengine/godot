@@ -206,11 +206,11 @@ layout(set = 0, binding = 18) buffer light_only_map_buffer {
 layout(set = 0, binding = 19) buffer emissive_only_map_buffer {
 	uint emissive_only_map[];
 };
-#else
+#else // NO_IMAGE_ATOMICS
 layout(r32ui, set = 0, binding = 17) uniform uimage3D density_only_map;
 layout(r32ui, set = 0, binding = 18) uniform uimage3D light_only_map;
 layout(r32ui, set = 0, binding = 19) uniform uimage3D emissive_only_map;
-#endif
+#endif // NO_IMAGE_ATOMICS
 
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
 layout(set = 0, binding = 20) uniform texture2DArray sky_texture;
@@ -796,7 +796,7 @@ void main() {
 			total_light += ambient_total * params.gi_inject;
 		}
 
-#endif
+#endif // ENABLE_SDFGI
 	}
 
 	vec4 final_density = vec4(total_light * scattering + emission, total_density);
@@ -820,7 +820,7 @@ void main() {
 	imageStore(light_only_map, pos, uvec4(0));
 	imageStore(emissive_only_map, pos, uvec4(0));
 #endif
-#endif
+#endif // MODE_DENSITY
 
 #ifdef MODE_FOG
 
@@ -858,7 +858,7 @@ void main() {
 		imageStore(fog_map, fog_pos, final_fog);
 	}
 
-#endif
+#endif // MODE_FOG
 
 #ifdef MODE_FILTER
 
@@ -876,7 +876,7 @@ void main() {
 
 	imageStore(dest_map, pos, accum);
 
-#endif
+#endif // MODE_FILTER
 #ifdef MODE_COPY
 	ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);
 	if (any(greaterThanEqual(pos, params.fog_volume_size))) {
@@ -885,5 +885,5 @@ void main() {
 
 	imageStore(dest_map, pos, imageLoad(source_map, pos));
 
-#endif
+#endif // MODE_COPY
 }

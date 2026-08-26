@@ -68,9 +68,9 @@ static bool debug_print_enabled = false;
 	} else \
 		((void)0)
 
-#else
+#else // WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
 #define DEBUG_LOG_WAYLAND_EMBED_VERBOSE(...)
-#endif
+#endif // WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
 
 // Wayland messages are structured with 32-bit words.
 #define WL_WORD_SIZE (sizeof(uint32_t))
@@ -977,7 +977,7 @@ Error WaylandEmbedder::send_raw_message(int p_socket, std::initializer_list<stru
 		}
 	}
 	printf("\n");
-#endif
+#endif // WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
 
 	sendmsg(p_socket, &msg, MSG_NOSIGNAL);
 
@@ -1021,7 +1021,7 @@ Error WaylandEmbedder::send_raw_wayland_message(int p_socket, uint32_t p_id, uin
 		}
 		printf("\n");
 	}
-#endif
+#endif // WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
 
 	if (sendmsg(p_socket, &msg, MSG_NOSIGNAL) < 0) {
 		return FAILED;
@@ -1400,7 +1400,7 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 					} else {
 						DEBUG_LOG_WAYLAND_EMBED_VERBOSE("Unknown interface, marking packet as invalid.");
 					}
-#endif
+#endif // WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
 					valid = false;
 					break;
 				}
@@ -3101,7 +3101,7 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 			printf("%.2x", ((const uint8_t *)msg_buf.ptr())[i]);
 		}
 		printf("\n");
-#endif
+#endif // WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
 	}
 
 	if (full_msg.msg_controllen > 0) {
@@ -3133,7 +3133,7 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 					printf("%d ", cmsg_fds[i]);
 				}
 				printf("\n");
-#endif
+#endif // WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
 
 				free(cmsg_fds);
 			}

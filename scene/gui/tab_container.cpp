@@ -863,7 +863,7 @@ void TabContainer::set_all_tabs_in_front(bool p_in_front) {
 bool TabContainer::is_all_tabs_in_front() const {
 	return false;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = get_tab_control(p_tab);

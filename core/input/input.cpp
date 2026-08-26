@@ -269,7 +269,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void Input::VelocityTrack::update(const Vector2 &p_delta_p, const Vector2 &p_screen_delta_p) {
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
@@ -1628,7 +1628,7 @@ void Input::parse_input_event(RequiredParam<InputEvent> p_event) {
 	} else {
 		frame_parsed_events.insert(event);
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (use_accumulated_input) {
 		if (buffered_events.is_empty() || !buffered_events.back()->get()->accumulate(event)) {
@@ -1647,7 +1647,7 @@ void Input::flush_frame_parsed_events() {
 
 	frame_parsed_events.clear();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void Input::flush_buffered_events() {
 	_THREAD_SAFE_METHOD_
@@ -1836,7 +1836,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 			// Convert to a value between 0.0f and 1.0f.
 			value = 0.5f + value / 2.0f;
 		}
-#endif
+#endif // ANDROID_ENABLED
 		_axis_event(p_device, axis, value);
 		return;
 	}

@@ -80,7 +80,7 @@ public:
 			ERR_PRINT("Internal bug, please report: Span was created from nullptr with size > 0. Recovering by using size = 0.");
 			_len = 0;
 		}
-#endif
+#endif // DEBUG_ENABLED
 	}
 
 	// Allows creating Span directly from C arrays and string literals.

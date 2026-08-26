@@ -162,7 +162,7 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 		class_doc.is_script_doc = true;
 		class_doc.inherits = "Shader";
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	for (PropertyInfo &pi : local) {
 		bool is_group = pi.usage == PROPERTY_USAGE_GROUP || pi.usage == PROPERTY_USAGE_SUBGROUP;
@@ -197,7 +197,7 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 					class_doc.properties.push_back(prop_doc);
 				}
 			}
-#endif
+#endif // TOOLS_ENABLED
 			p_params->push_back(pi);
 		}
 	}

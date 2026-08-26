@@ -409,7 +409,7 @@ void ProjectManager::_select_main_view(int p_id) {
 
 	// The Templates tab's search field is focused on display in the asset
 	// library editor plugin code.
-#endif
+#endif // ANDROID_ENABLED
 }
 
 void ProjectManager::_show_about() {
@@ -781,7 +781,7 @@ void ProjectManager::_open_selected_projects_with_migration() {
 		// Only migrate if a single project is opened.
 		_minor_project_migrate();
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 	_open_selected_projects();
 	ask_upgrade_tool->set_pressed(false);
 }
@@ -1204,7 +1204,7 @@ void ProjectManager::_minor_project_migrate() {
 		}
 	}
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void ProjectManager::_full_convert_button_pressed() {
 	ask_update_settings->hide();
@@ -1267,7 +1267,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 			_dim_window();
 			get_tree()->quit();
 		}
-#endif
+#endif // MACOS_ENABLED
 
 		if (current_main_view != MAIN_VIEW_PROJECTS) {
 			return;

@@ -50,7 +50,7 @@ layout(set = 1, binding = 0) uniform sampler2DArray ssr;
 layout(set = 1, binding = 0) uniform sampler2D ssr;
 #endif //USE_MULTIVIEW
 
-#endif
+#endif // MODE_SSR
 
 #ifdef MODE_MERGE
 
@@ -60,7 +60,7 @@ layout(set = 2, binding = 0) uniform sampler2DArray diffuse;
 layout(set = 2, binding = 0) uniform sampler2D diffuse;
 #endif //USE_MULTIVIEW
 
-#endif
+#endif // MODE_MERGE
 
 layout(location = 0) out vec4 frag_color;
 

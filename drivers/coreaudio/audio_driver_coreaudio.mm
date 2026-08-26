@@ -73,7 +73,7 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 #if (TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED < 120000) || (TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED < 150000)
 #define kAudioObjectPropertyElementMain kAudioObjectPropertyElementMaster
 #endif
-#endif
+#endif // MACOS_ENABLED
 
 Error AudioDriverCoreAudio::init() {
 	AudioComponentDescription desc;
@@ -100,7 +100,7 @@ Error AudioDriverCoreAudio::init() {
 
 	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &prop, &output_device_address_cb, this);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
-#endif
+#endif // MACOS_ENABLED
 
 	AudioStreamBasicDescription strdesc;
 
@@ -137,9 +137,9 @@ Error AudioDriverCoreAudio::init() {
 	AudioObjectPropertyAddress property_sr = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
 	result = AudioObjectGetPropertyData(device_id, &property_sr, 0, nullptr, &hw_mix_rate_size, &hw_mix_rate);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
-#else
+#else // MACOS_ENABLED
 	double hw_mix_rate = [AVAudioSession sharedInstance].sampleRate;
-#endif
+#endif // MACOS_ENABLED
 	mix_rate = hw_mix_rate;
 
 	memset(&strdesc, 0, sizeof(strdesc));
@@ -364,7 +364,7 @@ void AudioDriverCoreAudio::finish() {
 		if (result != noErr) {
 			ERR_PRINT("AudioObjectRemovePropertyListener failed");
 		}
-#endif
+#endif // MACOS_ENABLED
 
 		result = AudioComponentInstanceDispose(audio_unit);
 		if (result != noErr) {
@@ -401,7 +401,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 
 	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &prop, &input_device_address_cb, this);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
-#endif
+#endif // MACOS_ENABLED
 
 	UInt32 flag = 1;
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, sizeof(flag));
@@ -423,7 +423,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &device_id, sizeof(AudioDeviceID));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
-#endif
+#endif // MACOS_ENABLED
 
 	AudioStreamBasicDescription strdesc;
 	memset(&strdesc, 0, sizeof(strdesc));
@@ -453,9 +453,9 @@ Error AudioDriverCoreAudio::init_input_device() {
 	AudioObjectPropertyAddress property_sr = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
 	result = AudioObjectGetPropertyData(device_id, &property_sr, 0, nullptr, &hw_mix_rate_size, &hw_mix_rate);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
-#else
+#else // MACOS_ENABLED
 	double hw_mix_rate = [AVAudioSession sharedInstance].sampleRate;
-#endif
+#endif // MACOS_ENABLED
 	capture_mix_rate = hw_mix_rate;
 
 	memset(&strdesc, 0, sizeof(strdesc));
@@ -519,7 +519,7 @@ void AudioDriverCoreAudio::finish_input_device() {
 		if (result != noErr) {
 			ERR_PRINT("AudioObjectRemovePropertyListener failed");
 		}
-#endif
+#endif // MACOS_ENABLED
 
 		result = AudioComponentInstanceDispose(input_unit);
 		if (result != noErr) {
@@ -731,7 +731,7 @@ void AudioDriverCoreAudio::set_input_device(const String &p_name) {
 	}
 }
 
-#endif
+#endif // MACOS_ENABLED
 
 AudioDriverCoreAudio::AudioDriverCoreAudio() {
 	samples_in.clear();

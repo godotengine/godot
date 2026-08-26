@@ -126,7 +126,7 @@ extern void apple_embedded_finish();
 
 @end
 
-#else
+#else // defined(MODULE_VISIONOS_XR_ENABLED)
 
 @implementation GDTCompositorServicesRenderer
 
@@ -150,4 +150,4 @@ extern void apple_embedded_finish();
 
 @end
 
-#endif
+#endif // defined(MODULE_VISIONOS_XR_ENABLED)

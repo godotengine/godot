@@ -781,7 +781,7 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 		}
 		res.push_back(values);
 	}
-#endif
+#endif // 0
 	return res;
 }
 

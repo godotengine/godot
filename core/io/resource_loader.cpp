@@ -312,7 +312,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 			}
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(), vformat("Failed loading resource: %s.", p_path));
 
@@ -324,7 +324,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		}
 		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, !p_type_hint.is_empty() ? p_type_hint : "unknown"));
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (r_error) {
 		*r_error = ERR_FILE_UNRECOGNIZED;
@@ -613,7 +613,7 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 			//printf("mt %s: %lli\n",remapped_path.utf8().get_data(),mt);
 			load_task.resource->set_last_modified_time(mt);
 		}
-#endif
+#endif // TOOLS_ENABLED
 
 		if (_loaded_callback) {
 			_loaded_callback(load_task.resource, load_task.local_path);

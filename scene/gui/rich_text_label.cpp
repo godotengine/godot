@@ -7936,7 +7936,7 @@ bool RichTextLabel::_set(const StringName &p_name, const Variant &p_value) {
 	}
 	return false;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void RichTextLabel::_maximum_size_changed() {
 	if (!fit_content || autowrap_mode == TextServer::AUTOWRAP_OFF) {

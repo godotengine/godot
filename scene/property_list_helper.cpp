@@ -203,7 +203,7 @@ Variant PropertyListHelper::documentation_get_default_value(const String &p_prop
 	}
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 bool PropertyListHelper::property_get_value(const String &p_property, Variant &r_ret) const {
 	int index;

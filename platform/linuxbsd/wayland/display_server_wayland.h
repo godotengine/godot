@@ -177,7 +177,7 @@ class DisplayServerWayland : public DisplayServer {
 
 	FreeDesktopScreenSaver *screensaver = nullptr;
 	bool screensaver_inhibited = false;
-#endif
+#endif // DBUS_ENABLED
 	static String _get_app_id_from_context(DisplayServerEnums::Context p_context);
 
 	void _send_window_event(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID);
@@ -209,7 +209,7 @@ public:
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
-#endif
+#endif // SPEECHD_ENABLED
 
 #ifdef DBUS_ENABLED
 	virtual bool is_dark_mode_supported() const override;
@@ -219,7 +219,7 @@ public:
 
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
 	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
-#endif
+#endif // DBUS_ENABLED
 
 	virtual void beep() const override;
 

@@ -76,7 +76,7 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 	return false;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void Line2D::set_points(const Vector<Vector2> &p_points) {
 	_points = p_points;

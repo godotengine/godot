@@ -417,7 +417,7 @@ void Window::set_size(const Size2i &p_size) {
 		// Can't set root window size on Android.
 		return;
 	}
-#endif
+#endif // defined(ANDROID_ENABLED)
 
 	size = p_size;
 	_update_window_size();
@@ -493,7 +493,7 @@ void Window::set_max_size(const Size2i &p_max_size) {
 		// Can't set root window size on Android.
 		return;
 	}
-#endif
+#endif // defined(ANDROID_ENABLED)
 	Size2i max_size_clamped = _clamp_limit_size(p_max_size);
 	if (max_size == max_size_clamped) {
 		return;
@@ -516,7 +516,7 @@ void Window::set_min_size(const Size2i &p_min_size) {
 		// Can't set root window size on Android.
 		return;
 	}
-#endif
+#endif // defined(ANDROID_ENABLED)
 	Size2i min_size_clamped = _clamp_limit_size(p_min_size);
 	if (min_size == min_size_clamped) {
 		return;
@@ -3181,11 +3181,11 @@ bool Window::is_layout_rtl() const {
 				}
 			}
 		}
-#else
+#else // TOOLS_ENABLED
 		if (GLOBAL_GET_CACHED(bool, "internationalization/rendering/force_right_to_left_layout_direction")) {
 			return true;
 		}
-#endif
+#endif // TOOLS_ENABLED
 		const StringName domain_name = get_translation_domain();
 		Node *parent_node = get_parent();
 		while (parent_node && parent_node->get_translation_domain() == domain_name) {
@@ -3246,7 +3246,7 @@ bool Window::is_auto_translating() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return can_auto_translate();
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 Transform2D Window::get_final_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
@@ -3352,7 +3352,7 @@ void Window::_update_displayed_title() {
 		// to the user.
 		displayed_title = vformat("%s (DEBUG)", displayed_title);
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
@@ -3372,7 +3372,7 @@ void Window::_update_displayed_title() {
 		Array arr = { displayed_title };
 		EngineDebugger::get_singleton()->send_message("window:title", arr);
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	update_configuration_warnings();
 	queue_accessibility_update();
@@ -3557,7 +3557,7 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &Window::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &Window::is_using_font_oversampling);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);

@@ -238,10 +238,10 @@ Error WindowsUtils::copy_and_rename_pdb(const String &p_dll_path) {
 	}
 
 	ERR_FAIL_V_MSG(FAILED, vformat("Failed to find an unblocked PDB name for '%s' among %d files.", p_dll_path, max_pdb_names));
-#else
+#else // DEBUG_ENABLED
 	WARN_PRINT_ONCE("Renaming PDB files is only available in debug builds. If your libraries use PDB files, then the original ones will be used.");
 	return ERR_SKIP;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void WindowsUtils::remove_temp_pdbs(const String &p_dll_path) {
@@ -274,7 +274,7 @@ void WindowsUtils::remove_temp_pdbs(const String &p_dll_path) {
 			temp_pdbs[p_dll_path].erase(pdb);
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 }
 
 #endif // WINDOWS_ENABLED

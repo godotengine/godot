@@ -70,7 +70,7 @@ static String fix_path(const String &p_path) {
 	return path;
 }
 
-#endif
+#endif // WINDOWS_ENABLED
 
 Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path) {
 	static const uint8_t icon_size[] = { 16, 32, 48, 64, 128, 0 /*256*/ };
@@ -365,7 +365,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		SHChangeNotify(SHCNE_UPDATEITEM, SHCNF_PATH, (LPCWSTR)w_path.utf16().get_data(), nullptr);
 
 		SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
-#endif
+#endif // WINDOWS_ENABLED
 	}
 
 	return err;
@@ -557,7 +557,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	if (signtool_path.is_empty()) {
 		signtool_path = "signtool"; // try to run signtool from PATH
 	}
-#else
+#else // WINDOWS_ENABLED
 	String signtool_path = EDITOR_GET("export/windows/osslsigncode");
 	if (!signtool_path.is_empty() && !FileAccess::exists(signtool_path)) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Could not find osslsigncode executable at \"%s\"."), signtool_path));
@@ -566,7 +566,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	if (signtool_path.is_empty()) {
 		signtool_path = "osslsigncode"; // try to run signtool from PATH
 	}
-#endif
+#endif // WINDOWS_ENABLED
 
 	args.push_back("sign");
 
@@ -595,7 +595,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Invalid identity type."));
 		return FAILED;
 	}
-#else
+#else // WINDOWS_ENABLED
 	int id_type = 1;
 	if (p_preset->get_or_env("codesign/identity", ENV_WIN_CODESIGN_ID) != "") {
 		args.push_back("-pkcs12");
@@ -604,7 +604,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("No identity found."));
 		return FAILED;
 	}
-#endif
+#endif // WINDOWS_ENABLED
 
 	//password
 	if ((id_type == 1) && (p_preset->get_or_env("codesign/password", ENV_WIN_CODESIGN_PASS) != "")) {
@@ -628,10 +628,10 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 			} else {
 				args.push_back("sha256");
 			}
-#else
+#else // WINDOWS_ENABLED
 			args.push_back("-ts");
 			args.push_back(p_preset->get("codesign/timestamp_server_url"));
-#endif
+#endif // WINDOWS_ENABLED
 		} else {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Invalid timestamp server."));
 			return FAILED;
@@ -713,7 +713,7 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("Failed to rename temporary file \"%s\"."), p_path + "_signed"));
 		return err;
 	}
-#endif
+#endif // WINDOWS_ENABLED
 
 	return OK;
 }

@@ -640,7 +640,7 @@ bool AnimatedSprite2D::_set(const StringName &p_name, const Variant &p_value) {
 	}
 	return false;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite2D::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite2D::get_sprite_frames);

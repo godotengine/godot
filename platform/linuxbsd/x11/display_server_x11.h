@@ -59,7 +59,7 @@
 #include <xkbcommon/xkbcommon-compose.h>
 #include <xkbcommon/xkbcommon.h>
 #endif
-#endif
+#endif // SOWRAP_ENABLED
 
 #undef CursorShape // Xlib macro conflicting with our type.
 
@@ -205,7 +205,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool xkb_loaded_v08p = false;
 	xkb_context *xkb_ctx = nullptr;
 	xkb_compose_table *dead_tbl = nullptr;
-#endif
+#endif // XKB_ENABLED
 
 	HashMap<DisplayServerEnums::WindowID, WindowData> windows;
 
@@ -412,7 +412,7 @@ public:
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
-#endif
+#endif // SPEECHD_ENABLED
 
 #if defined(DBUS_ENABLED)
 	virtual bool is_dark_mode_supported() const override;
@@ -422,7 +422,7 @@ public:
 
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
 	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
-#endif
+#endif // defined(DBUS_ENABLED)
 
 	virtual void beep() const override;
 

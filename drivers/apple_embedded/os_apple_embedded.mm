@@ -67,7 +67,7 @@
 #if defined(VULKAN_ENABLED)
 #include <drivers/vulkan/godot_vulkan.h>
 #endif // VULKAN_ENABLED
-#endif
+#endif // defined(RD_ENABLED)
 
 // Initialization order between compilation units is not guaranteed,
 // so we use this as a hack to ensure certain code is called before
@@ -186,7 +186,7 @@ void OS_AppleEmbedded::initialize_joypads() {
 		memdelete(joypad_sdl);
 		joypad_sdl = nullptr;
 	}
-#endif
+#endif // SDL_ENABLED
 }
 
 void OS_AppleEmbedded::initialize_modules() {
@@ -437,7 +437,7 @@ String OS_AppleEmbedded::get_resource_dir() const {
 	} else {
 		return remote_fs_dir;
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 String OS_AppleEmbedded::get_bundle_resource_dir() const {
@@ -537,7 +537,7 @@ String OS_AppleEmbedded::get_processor_name() const {
 			}
 		}
 	}
-#endif
+#endif // defined(IOS_SIMULATOR) || defined(VISIONOS_SIMULATOR)
 	return OS::get_processor_name();
 }
 

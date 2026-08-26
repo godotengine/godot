@@ -44,7 +44,7 @@
 #include "platform/android/thread_jandroid.h"
 
 #include <thirdparty/swappy-frame-pacing/swappyVk.h>
-#endif
+#endif // defined(SWAPPY_FRAME_PACING_ENABLED)
 
 #define ARRAY_SIZE(a) std_size(a)
 
@@ -657,7 +657,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 			free(swappy_required_extensions);
 		}
 	}
-#endif
+#endif // defined(SWAPPY_FRAME_PACING_ENABLED)
 
 #ifdef DEV_ENABLED
 	for (uint32_t i = 0; i < device_extension_count; i++) {
@@ -1430,7 +1430,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 
 		create_info_next = &memory_report_info;
 	}
-#endif
+#endif // defined(VK_TRACK_DEVICE_MEMORY)
 
 	VkPhysicalDeviceAccelerationStructureFeaturesKHR acceleration_structure_features = {};
 	if (acceleration_structure_capabilities.acceleration_structure_support) {
@@ -1921,7 +1921,7 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 		swappy_frame_pacer_enable = false;
 		OS::get_singleton()->print("VulkanHooks detected (e.g. OpenXR): Force-disabling Swappy Frame Pacing.\n");
 	}
-#endif
+#endif // defined(SWAPPY_FRAME_PACING_ENABLED)
 
 	shader_container_format.set_debug_info_enabled(Engine::get_singleton()->is_generate_spirv_debug_info_enabled());
 
@@ -1931,7 +1931,7 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 
 	pipeline_statistics.file_access->store_csv_line({ "name", "hash", "stage", "spec", "glslang", "re-spirv", "time" });
 	pipeline_statistics.file_access->flush();
-#endif
+#endif // RECORD_PIPELINE_STATISTICS
 
 	return OK;
 }
@@ -3056,7 +3056,7 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 	for (uint32_t i = 0; i < p_acceleration_structure_barriers.size(); i++) {
 		print_line(vformat("  VkBufferMemoryBarrier #%d src 0x%uX dst 0x%uX acceleration structure buffer 0x%ux", i, vk_accel_barriers[i].srcAccessMask, vk_accel_barriers[i].dstAccessMask, uint64_t(vk_accel_barriers[i].buffer)));
 	}
-#endif
+#endif // PRINT_NATIVE_COMMANDS
 
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
 	vkCmdPipelineBarrier(
@@ -3216,7 +3216,7 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 		// Reuse the stored VkQueue handle; the Android Emulator's gfxstream driver returns a different one from each vkGetDeviceQueue() call.
 		SwappyVk_setQueueFamilyIndex(vk_device, queue_family[picked_queue_index].queue, family_index);
 	}
-#endif
+#endif // defined(SWAPPY_FRAME_PACING_ENABLED)
 
 	// Create the virtual queue.
 	CommandQueue *command_queue = memnew(CommandQueue);
@@ -3367,9 +3367,9 @@ Error RenderingDeviceDriverVulkan::command_queue_execute_and_present(CommandQueu
 		} else {
 			err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
 		}
-#else
+#else // defined(SWAPPY_FRAME_PACING_ENABLED)
 		err = device_functions.QueuePresentKHR(device_queue.queue, &present_info);
-#endif
+#endif // defined(SWAPPY_FRAME_PACING_ENABLED)
 
 		device_queue.submit_mutex.unlock();
 
@@ -3684,7 +3684,7 @@ void RenderingDeviceDriverVulkan::_swap_chain_release(SwapChain *swap_chain) {
 			SwappyVk_setWindow(vk_device, swap_chain->vk_swapchain, nullptr);
 			SwappyVk_destroySwapchain(vk_device, swap_chain->vk_swapchain);
 		}
-#endif
+#endif // defined(SWAPPY_FRAME_PACING_ENABLED)
 		device_functions.DestroySwapchainKHR(vk_device, swap_chain->vk_swapchain, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SWAPCHAIN_KHR));
 		swap_chain->vk_swapchain = VK_NULL_HANDLE;
 	}
@@ -3922,7 +3922,7 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 				break;
 		}
 	}
-#endif
+#endif // defined(SWAPPY_FRAME_PACING_ENABLED)
 
 	uint32_t image_count = 0;
 	err = device_functions.GetSwapchainImagesKHR(vk_device, swap_chain->vk_swapchain, &image_count, nullptr);
@@ -4209,7 +4209,7 @@ void RenderingDeviceDriverVulkan::swap_chain_set_max_fps(SwapChainID p_swap_chai
 		const uint64_t max_time = p_max_fps > 0 ? uint64_t((1000.0 * 1000.0 * 1000.0) / p_max_fps) : 0;
 		SwappyVk_setSwapIntervalNS(vk_device, swap_chain->vk_swapchain, MAX(swap_chain->refresh_duration, max_time));
 	}
-#endif
+#endif // SWAPPY_FRAME_PACING_ENABLED
 }
 
 void RenderingDeviceDriverVulkan::swap_chain_free(SwapChainID p_swap_chain) {
@@ -4254,7 +4254,7 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::framebuffer_create(RenderPassID 
 		const TextureInfo *attachment_info = (const TextureInfo *)p_attachments[i].id;
 		print_line(vformat("  Attachment #%d: IMAGE 0x%uX VIEW 0x%uX", i, uint64_t(attachment_info->vk_view_create_info.image), uint64_t(attachment_info->vk_view)));
 	}
-#endif
+#endif // PRINT_NATIVE_COMMANDS
 
 	Framebuffer *framebuffer = memnew(Framebuffer);
 	framebuffer->vk_framebuffer = vk_framebuffer;
@@ -5174,7 +5174,7 @@ void RenderingDeviceDriverVulkan::command_copy_texture(CommandBufferID p_cmd_buf
 	if (dst_tex_info->transient) {
 		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_dst_texture must not be used in command_copy_texture.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	vkCmdCopyImage(command_buffer->vk_command_buffer, src_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], dst_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], p_regions.size(), vk_copy_regions);
 }
@@ -5204,7 +5204,7 @@ void RenderingDeviceDriverVulkan::command_resolve_texture(CommandBufferID p_cmd_
 	if (dst_tex_info->transient) {
 		ERR_PRINT("TEXTURE_USAGE_TRANSIENT_BIT p_dst_texture must not be used in command_resolve_texture.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	vkCmdResolveImage(command_buffer->vk_command_buffer, src_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_src_texture_layout], dst_tex_info->vk_view_create_info.image, RD_TO_VK_LAYOUT[p_dst_texture_layout], 1, &vk_resolve);
 }
@@ -6168,7 +6168,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 	respv_size.clear();
 	respv_run_time.resize_initialized(stage_count);
 	respv_size.resize_initialized(stage_count);
-#endif
+#endif // RECORD_PIPELINE_STATISTICS
 
 	respv_shader_modules.clear();
 	specialization_entries.clear();
@@ -6205,7 +6205,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 					}
 
 					print_line(vformat("re-spirv transformed the shader from %d bytes to %d bytes with constants %s (%d).", shader_info->respv_stage_shaders[i].inlinedSpirvWords.size() * sizeof(uint32_t), respv_optimized_data.size(), spec_constants, p_shader.id));
-#endif
+#endif // RESPV_VERBOSE
 
 					// Create the shader module with the optimized output.
 					VkShaderModule shader_module = VK_NULL_HANDLE;
@@ -6305,7 +6305,7 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 
 		pipeline_statistics.file_access->flush();
 	}
-#endif
+#endif // RECORD_PIPELINE_STATISTICS
 
 	// Destroy any modules created temporarily by re-spirv.
 	for (VkShaderModule vk_module : respv_shader_modules) {
@@ -6389,9 +6389,9 @@ RDD::AccelerationStructureID RenderingDeviceDriverVulkan::blas_create(VectorView
 	_acceleration_structure_create(VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR, size_info, accel_info);
 
 	return AccelerationStructureID(accel_info);
-#else
+#else // VULKAN_RAYTRACING_ENABLED
 	return AccelerationStructureID();
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 }
 
 #if VULKAN_RAYTRACING_ENABLED
@@ -6409,7 +6409,7 @@ static _FORCE_INLINE_ void _store_transform_transposed_3x4(const Transform3D &p_
 	r_mtx.matrix[2][2] = p_mtx.basis.rows[2][2];
 	r_mtx.matrix[2][3] = p_mtx.origin.z;
 }
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 
 RDD::AccelerationStructureID RenderingDeviceDriverVulkan::tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) {
 #if VULKAN_RAYTRACING_ENABLED
@@ -6436,9 +6436,9 @@ RDD::AccelerationStructureID RenderingDeviceDriverVulkan::tlas_create(uint32_t p
 
 	_acceleration_structure_create(VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR, size_info, accel_info);
 	return AccelerationStructureID(accel_info);
-#else
+#else // VULKAN_RAYTRACING_ENABLED
 	return AccelerationStructureID();
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 }
 
 void RenderingDeviceDriverVulkan::acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) {
@@ -6461,7 +6461,7 @@ void RenderingDeviceDriverVulkan::acceleration_structure_instance_write(uint8_t 
 	// reads from a potentially write-combined memory pointer, which is prohibitively slow.
 	// To solve this, we fill the instance data on the stack, and copy it all at once.
 	memcpy(r_driver_instance, &vk_instance, sizeof(VkAccelerationStructureInstanceKHR));
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 }
 
 #if VULKAN_RAYTRACING_ENABLED
@@ -6487,7 +6487,7 @@ void RenderingDeviceDriverVulkan::_acceleration_structure_create(VkAccelerationS
 	VkResult err = device_functions.CreateAccelerationStructureKHR(vk_device, &accel_create_info, nullptr, &r_accel_info->vk_acceleration_structure);
 	ERR_FAIL_COND_MSG(err, vformat("Couldn't create Vulkan raytracing acceleration structure (VkResult error %d).", err));
 	r_accel_info->build_info.dstAccelerationStructure = r_accel_info->vk_acceleration_structure;
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 }
 
 void RenderingDeviceDriverVulkan::acceleration_structure_free(AccelerationStructureID p_acceleration_structure) {
@@ -6501,7 +6501,7 @@ void RenderingDeviceDriverVulkan::acceleration_structure_free(AccelerationStruct
 		device_functions.DestroyAccelerationStructureKHR(vk_device, accel_info->vk_acceleration_structure, nullptr);
 	}
 	VersatileResource::free(resources_allocator, accel_info);
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 }
 
 uint32_t RenderingDeviceDriverVulkan::acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) {
@@ -6537,7 +6537,7 @@ void RenderingDeviceDriverVulkan::command_build_blas(CommandBufferID p_cmd_buffe
 	const VkAccelerationStructureBuildRangeInfoKHR *range_infos = accel_info->range_infos.ptr();
 
 	device_functions.CmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_infos);
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 }
 
 void RenderingDeviceDriverVulkan::command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) {
@@ -6555,7 +6555,7 @@ void RenderingDeviceDriverVulkan::command_build_tlas(CommandBufferID p_cmd_buffe
 	const VkAccelerationStructureBuildRangeInfoKHR *range_infos = accel_info->range_infos.ptr();
 
 	device_functions.CmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_infos);
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 }
 
 void RenderingDeviceDriverVulkan::command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) {
@@ -6578,7 +6578,7 @@ void RenderingDeviceDriverVulkan::command_trace_rays(CommandBufferID p_cmd_buffe
 	VkStridedDeviceAddressRegionKHR hit_sbt = _sbt_to_vk_strided_device_address_region(p_hit_sbt);
 	VkStridedDeviceAddressRegionKHR callable_sbt = {};
 	device_functions.CmdTraceRaysKHR(command_buffer->vk_command_buffer, &raygen_sbt, &miss_sbt, &hit_sbt, &callable_sbt, p_width, p_height, p_depth);
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 }
 
 // --- PIPELINE ---
@@ -6677,9 +6677,9 @@ RDD::RaytracingPipelineID RenderingDeviceDriverVulkan::raytracing_pipeline_creat
 	ERR_FAIL_COND_V_MSG(err, RaytracingPipelineID(), vformat("Couldn't create Vulkan raytracing pipelines (VkResult error %d).", err));
 
 	return RaytracingPipelineID(vk_pipeline);
-#else
+#else // VULKAN_RAYTRACING_ENABLED
 	return RaytracingPipelineID();
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 }
 
 void RenderingDeviceDriverVulkan::raytracing_pipeline_free(RaytracingPipelineID p_pipeline) {
@@ -6701,9 +6701,9 @@ bool RenderingDeviceDriverVulkan::raytracing_pipeline_get_shader_group_handles(R
 		r_data += p_data_stride_bytes;
 	}
 	return true;
-#else
+#else // VULKAN_RAYTRACING_ENABLED
 	return false;
-#endif
+#endif // VULKAN_RAYTRACING_ENABLED
 }
 
 /*****************/
@@ -6976,7 +6976,7 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 	if (breadcrumb_offset >= BREADCRUMB_BUFFER_ENTRIES * sizeof(uint32_t) * 2u) {
 		breadcrumb_offset = 0u;
 	}
-#endif
+#endif // defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 }
 
 void RenderingDeviceDriverVulkan::on_device_lost() const {
@@ -7173,7 +7173,7 @@ void RenderingDeviceDriverVulkan::print_lost_device_info() {
 	} else {
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Couldn't map breadcrumb buffer. VkResult = " + itos(map_result));
 	}
-#endif
+#endif // defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	on_device_lost();
 }
 
@@ -7190,7 +7190,7 @@ inline String RenderingDeviceDriverVulkan::get_vulkan_result(VkResult err) {
 	} else if (err == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT) {
 		return "VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT";
 	}
-#endif
+#endif // defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	return itos(err);
 }
 

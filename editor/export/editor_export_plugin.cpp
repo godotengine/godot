@@ -380,7 +380,7 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_ios_linker_flags", "flags"), &EditorExportPlugin::add_apple_embedded_platform_linker_flags);
 	ClassDB::bind_method(D_METHOD("add_ios_bundle_file", "path"), &EditorExportPlugin::add_apple_embedded_platform_bundle_file);
 	ClassDB::bind_method(D_METHOD("add_ios_cpp_code", "code"), &EditorExportPlugin::add_apple_embedded_platform_cpp_code);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("add_macos_plugin_file", "path"), &EditorExportPlugin::add_macos_plugin_file);
 	ClassDB::bind_method(D_METHOD("skip"), &EditorExportPlugin::skip);

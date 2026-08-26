@@ -2033,7 +2033,7 @@ TEST_CASE("[Variant] Writer recursive dictionary on keys") {
 	d1.clear();
 	d2.clear();
 }
-#endif
+#endif // 0
 
 TEST_CASE("[Variant] Object non-pretty prints with correct newlines") {
 	Object *o1 = memnew(Object);

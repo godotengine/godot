@@ -39,7 +39,7 @@
 
 #include <jni.h>
 #include <openxr/openxr_platform.h>
-#endif
+#endif // XR_USE_PLATFORM_ANDROID
 
 class OpenXRAndroidThreadSettingsExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRAndroidThreadSettingsExtension, OpenXRExtensionWrapper);

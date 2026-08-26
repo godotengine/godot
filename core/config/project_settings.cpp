@@ -525,7 +525,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 				info.hint_string = pi->hint_string;
 			}
 			p_list->push_back(info);
-#endif
+#endif // TOOLS_ENABLED
 		} else {
 			p_list->push_back(PropertyInfo(base.type, base.name, PROPERTY_HINT_NONE, "", base.flags));
 		}
@@ -658,7 +658,7 @@ void ProjectSettings::_handle_editor_setting_compat(const String &p_original_set
 		ps->set_setting(p_original_setting, Variant());
 	}
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 /*
  * This method is responsible for loading a project.godot file and/or data file
@@ -741,7 +741,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			// Attempt to load PCK from macOS .app bundle resources.
 			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"), false, 0, true);
 		}
-#endif
+#endif // defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 
 		if (!found) {
 			// Try to load data pack at the location of the executable.
@@ -861,9 +861,9 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			}
 			current_dir = d->get_current_dir();
 		} else {
-#else
+#else // defined(OVERRIDE_PATH_ENABLED)
 		{
-#endif
+#endif // defined(OVERRIDE_PATH_ENABLED)
 			break;
 		}
 	}
@@ -891,7 +891,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 			}
 		}
 	}
-#endif
+#endif // OVERRIDE_ENABLED
 
 	// Updating the default value after the project settings have loaded.
 	bool use_hidden_directory = GLOBAL_GET("application/config/use_hidden_project_data_directory");
@@ -1033,7 +1033,7 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 				break;
 			}
 		}
-#endif
+#endif // DISABLE_DEPRECATED
 		return OK;
 	} else if (err != ERR_FILE_NOT_FOUND) {
 		ERR_PRINT(vformat("Couldn't load file '%s', error code %d.", p_text_path, err));
@@ -1615,7 +1615,7 @@ void ProjectSettings::get_argument_options(const StringName &p_function, int p_i
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void ProjectSettings::set_editor_setting_override(const String &p_setting, const Variant &p_value) {
 	set_setting(EDITOR_SETTING_OVERRIDE_PREFIX + p_setting, p_value);
@@ -1698,7 +1698,7 @@ ProjectSettings::ProjectSettings() {
 			}
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	GLOBAL_DEF_BASIC("application/config/name", "");
 	GLOBAL_DEF(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());

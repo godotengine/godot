@@ -75,7 +75,7 @@ protected:
 
 	void _set_custom_data_array(const Vector<Color> &p_array);
 	Vector<Color> _get_custom_data_array() const;
-#endif
+#endif // DISABLE_DEPRECATED
 	void set_buffer(const Vector<float> &p_buffer);
 	Vector<float> get_buffer() const;
 

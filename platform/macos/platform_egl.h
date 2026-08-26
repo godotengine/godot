@@ -37,4 +37,4 @@
 #include <thirdparty/angle/include/EGL/eglext.h>
 // IWYU pragma: end_exports.
 #undef KHRONOS_STATIC
-#endif
+#endif // defined(ANGLE_ENABLED) && defined(EGL_STATIC)

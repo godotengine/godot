@@ -414,7 +414,7 @@ public:
 		*a_hi = (float)t_hi;
 		*a_lo = (float)t_lo;
 	}
-#endif
+#endif // REAL_T_IS_DOUBLE
 
 	/* Samplers */
 

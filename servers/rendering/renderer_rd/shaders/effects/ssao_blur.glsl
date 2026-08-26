@@ -89,7 +89,7 @@ vec2 sample_blurred_wide(vec2 p_coord) {
 
 	return vec2(ssao_value, packed_edges);
 }
-#endif
+#endif // MODE_WIDE
 
 #ifdef MODE_SMART
 vec2 sample_blurred(vec3 p_pos, vec2 p_coord) {
@@ -120,7 +120,7 @@ vec2 sample_blurred(vec3 p_pos, vec2 p_coord) {
 
 	return vec2(ssao_value, packed_edges);
 }
-#endif
+#endif // MODE_SMART
 
 void main() {
 	// Pixel being shaded
@@ -142,13 +142,13 @@ void main() {
 
 	vec2 sampled = vec2(dot(vals, vec4(0.2)) + center.x * 0.2, center.y);
 
-#else
+#else // MODE_NON_SMART
 #ifdef MODE_SMART
 	vec2 sampled = sample_blurred(vec3(gl_GlobalInvocationID), (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);
 #else // MODE_WIDE
 	vec2 sampled = sample_blurred_wide((vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);
 #endif
 
-#endif
+#endif // MODE_NON_SMART
 	imageStore(dest_image, ivec2(ssC), vec4(sampled, 0.0, 0.0));
 }

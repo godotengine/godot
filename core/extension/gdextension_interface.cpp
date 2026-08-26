@@ -199,7 +199,7 @@ public:
 			_hash = hash_murmur3_one_64((uint64_t)userdata, _hash);
 		}
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	CallableCustomExtension(GDExtensionCallableCustomInfo2 *p_info) {
 		userdata = p_info->callable_userdata;
@@ -246,7 +246,7 @@ static void gdextension_get_godot_version(GDExtensionGodotVersion *r_godot_versi
 	r_godot_version->patch = GODOT_VERSION_PATCH;
 	r_godot_version->string = GODOT_VERSION_FULL_NAME;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 static void gdextension_get_godot_version2(GDExtensionGodotVersion2 *r_godot_version) {
 	r_godot_version->major = GODOT_VERSION_MAJOR;
@@ -273,7 +273,7 @@ static void *gdextension_mem_realloc(void *p_mem, size_t p_size) {
 static void gdextension_mem_free(void *p_mem) {
 	memfree(p_mem);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 static void *gdextension_mem_alloc2(size_t p_size, GDExtensionBool p_prepad_align) {
 	return Memory::alloc_static(p_size, p_prepad_align);
@@ -1409,7 +1409,7 @@ static GDExtensionObjectPtr gdextension_object_cast_to(GDExtensionConstObjectPtr
 
 	return o->is_class_ptr(p_class_tag) ? (GDExtensionObjectPtr)o : (GDExtensionObjectPtr) nullptr;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 static GDObjectInstanceID gdextension_object_get_instance_id(GDExtensionConstObjectPtr p_object) {
 	const Object *o = (const Object *)p_object;
@@ -1644,7 +1644,7 @@ static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionC
 			mb = ClassDB::get_method_with_compatibility(classname, methodname, mapped_hash, &exists);
 		}
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	if (!mb && exists) {
 		ERR_PRINT(vformat("Method '%s.%s' has changed and no compatibility fallback has been provided. Please open an issue.", classname, methodname));
@@ -1664,7 +1664,7 @@ static GDExtensionObjectPtr gdextension_classdb_construct_object2(GDExtensionCon
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	return (GDExtensionObjectPtr)ClassDB::instantiate_without_postinitialization(classname);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 static GDExtensionObjectPtr gdextension_classdb_construct_object3(GDExtensionConstStringNamePtr p_classname) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
@@ -1677,7 +1677,7 @@ static void *gdextension_classdb_get_class_tag(GDExtensionConstStringNamePtr p_c
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(classname);
 	return class_info ? class_info->class_ptr : nullptr;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 static void gdextension_editor_add_plugin(GDExtensionConstStringNamePtr p_classname) {
 #ifdef TOOLS_ENABLED

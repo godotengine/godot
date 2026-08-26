@@ -44,12 +44,12 @@
 	} else { \
 		DEV_ASSERT(is_current_thread_override); \
 	}
-#else
+#else // DEV_ENABLED
 #define LOCK_MUTEX \
 	if (this != MessageQueue::thread_singleton) { \
 		mutex.lock(); \
 	}
-#endif
+#endif // DEV_ENABLED
 
 #define UNLOCK_MUTEX \
 	if (this != MessageQueue::thread_singleton) { \

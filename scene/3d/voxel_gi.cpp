@@ -485,9 +485,9 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 		} else {
 			mmi->set_owner(get_owner());
 		}
-#else
+#else // TOOLS_ENABLED
 		mmi->set_owner(get_owner());
-#endif
+#endif // TOOLS_ENABLED
 
 	} else {
 		Ref<VoxelGIData> probe_data_new = get_probe_data();

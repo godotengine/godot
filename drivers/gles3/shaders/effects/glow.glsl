@@ -67,7 +67,7 @@ void main() {
 	color += textureLod(source_color, uv + vec3(half_pixel, 0.0), 0.0).rgb;
 	color += textureLod(source_color, uv - vec3(half_pixel.x, -half_pixel.y, 0.0), 0.0).rgb;
 	color += textureLod(source_color, uv + vec3(half_pixel.x, -half_pixel.y, 0.0), 0.0).rgb;
-#else
+#else // USE_MULTIVIEW
 	vec2 half_pixel = pixel_size * 0.5;
 	vec2 uv = uv_interp;
 	vec3 color = textureLod(source_color, uv, 0.0).rgb * 4.0;

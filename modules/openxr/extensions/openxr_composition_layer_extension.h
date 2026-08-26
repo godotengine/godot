@@ -39,7 +39,7 @@
 // Copied here from openxr_platform.h, in order to avoid including that whole header,
 // which can cause compilation issues on some platforms.
 typedef XrResult(XRAPI_PTR *PFN_xrCreateSwapchainAndroidSurfaceKHR)(XrSession session, const XrSwapchainCreateInfo *info, XrSwapchain *swapchain, jobject *surface);
-#endif
+#endif // ANDROID_ENABLED
 
 class JavaObject;
 
@@ -200,7 +200,7 @@ private:
 
 	EXT_PROTO_XRRESULT_FUNC1(xrDestroySwapchain, (XrSwapchain), swapchain)
 	EXT_PROTO_XRRESULT_FUNC4(xrCreateSwapchainAndroidSurfaceKHR, (XrSession), session, (const XrSwapchainCreateInfo *), info, (XrSwapchain *), swapchain, (jobject *), surface)
-#endif
+#endif // ANDROID_ENABLED
 
 	struct CompositionLayer {
 		union {
@@ -228,7 +228,7 @@ private:
 			XrSwapchain swapchain = XR_NULL_HANDLE;
 			Ref<JavaObject> surface;
 		} android_surface;
-#endif
+#endif // ANDROID_ENABLED
 
 		PoseSpace pose_space = POSE_WORLD_LOCKED;
 		XrSpace layer_reference_space = XR_NULL_HANDLE;

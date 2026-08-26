@@ -95,7 +95,7 @@
 
 #include "scene/openxr_render_model.h"
 #include "scene/openxr_render_model_manager.h"
-#endif
+#endif // MODULE_GLTF_ENABLED
 
 #ifdef TOOLS_ENABLED
 #include "editor/openxr_editor_plugin.h"
@@ -110,7 +110,7 @@
 #include "editor/openxr_interaction_profile_editor.h"
 //
 #include "editor/editor_node.h"
-#endif
+#endif // TOOLS_ENABLED
 
 static OpenXRAPI *openxr_api = nullptr;
 static OpenXRInteractionProfileMetadata *openxr_interaction_profile_metadata = nullptr;
@@ -129,7 +129,7 @@ static void _editor_init() {
 	OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
 	EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void initialize_openxr_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
@@ -358,7 +358,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 
 		EditorNode::add_init_callback(_editor_init);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void uninitialize_openxr_module(ModuleInitializationLevel p_level) {

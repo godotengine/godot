@@ -128,7 +128,7 @@ static void test_directory(const String &p_dir) {
 				next = dir->get_next();
 				continue;
 			}
-#endif
+#endif // MODULE_MONO_ENABLED
 
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", conf.get_value("input", "use_single_quotes", false));
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_node_path_literals", conf.get_value("input", "add_node_path_literals", false));
@@ -272,4 +272,4 @@ TEST_SUITE("[Modules][GDScript][Completion]") {
 }
 } // namespace GDScriptTests
 
-#endif
+#endif // TOOLS_ENABLED

@@ -244,7 +244,7 @@ protected:
 	void _shaped_text_draw_outline_bind_compat_104872(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 	PackedInt32Array _shaped_text_get_word_breaks_bind_compat_90732(const RID &p_shaped, BitField<TextServer::GraphemeFlag> p_grapheme_flags = GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION) const;
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	static BitField<TextOverrunFlag> get_overrun_flags_from_behavior(OverrunBehavior p_behavior);

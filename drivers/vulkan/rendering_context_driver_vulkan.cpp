@@ -55,7 +55,7 @@ SafeNumeric<size_t> driver_memory_total_alloc_count;
 SafeNumeric<size_t> driver_memory_tracker[RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_COUNT][RenderingContextDriverVulkan::VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
 // Amount of allocations for every object type.
 SafeNumeric<uint32_t> driver_memory_allocation_count[RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_COUNT][RenderingContextDriverVulkan::VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT];
-#endif
+#endif // defined(VK_TRACK_DRIVER_MEMORY)
 
 #if defined(VK_TRACK_DEVICE_MEMORY)
 /*************************************************/
@@ -70,7 +70,7 @@ SafeNumeric<uint64_t> memory_report_total_alloc_count;
 SafeNumeric<size_t> memory_report_mem_usage[RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_COUNT];
 // Amount of device memory allocations for every object type.
 SafeNumeric<size_t> memory_report_allocation_count[RenderingContextDriverVulkan::VK_TRACKED_OBJECT_TYPE_COUNT];
-#endif
+#endif // defined(VK_TRACK_DEVICE_MEMORY)
 
 const char *RenderingContextDriverVulkan::get_tracked_object_name(uint32_t p_type_index) const {
 #if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
@@ -109,9 +109,9 @@ const char *RenderingContextDriverVulkan::get_tracked_object_name(uint32_t p_typ
 		"VMA_BUFFER_OR_IMAGE" };
 
 	return vkTrackedObjectTypeNames[p_type_index];
-#else
+#else // defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 	return "VK_TRACK_*_MEMORY disabled at build time";
-#endif
+#endif // defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 }
 
 #if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
@@ -147,7 +147,7 @@ RenderingContextDriverVulkan::VkTrackedObjectType vk_object_to_tracked_object(Vk
 
 	return (RenderingContextDriverVulkan::VkTrackedObjectType)p_type;
 }
-#endif
+#endif // defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
 
 #if defined(VK_TRACK_DEVICE_MEMORY)
 uint64_t RenderingContextDriverVulkan::get_device_total_memory() const {
@@ -165,7 +165,7 @@ uint64_t RenderingContextDriverVulkan::get_device_memory_by_object_type(uint32_t
 uint64_t RenderingContextDriverVulkan::get_device_allocs_by_object_type(uint32_t p_type) const {
 	return memory_report_allocation_count[p_type].get();
 }
-#endif
+#endif // defined(VK_TRACK_DEVICE_MEMORY)
 
 #if defined(VK_TRACK_DRIVER_MEMORY)
 uint64_t RenderingContextDriverVulkan::get_driver_total_memory() const {
@@ -193,7 +193,7 @@ uint64_t RenderingContextDriverVulkan::get_driver_allocs_by_object_type(uint32_t
 
 	return ret;
 }
-#endif
+#endif // defined(VK_TRACK_DRIVER_MEMORY)
 
 #if defined(VK_TRACK_DEVICE_MEMORY)
 void RenderingContextDriverVulkan::memory_report_callback(const VkDeviceMemoryReportCallbackDataEXT *p_callback_data, void *p_user_data) {
@@ -232,7 +232,7 @@ void RenderingContextDriverVulkan::memory_report_callback(const VkDeviceMemoryRe
 		}
 	}
 }
-#endif
+#endif // defined(VK_TRACK_DEVICE_MEMORY)
 
 VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(VkObjectType p_type) {
 #if !defined(VK_TRACK_DRIVER_MEMORY)
@@ -375,7 +375,7 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 
 	uint32_t type_index = vk_object_to_tracked_object(p_type);
 	return &object_callbacks[type_index];
-#endif
+#endif // !defined(VK_TRACK_DRIVER_MEMORY)
 }
 
 RenderingContextDriverVulkan::RenderingContextDriverVulkan() {

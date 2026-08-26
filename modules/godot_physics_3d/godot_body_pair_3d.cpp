@@ -392,7 +392,7 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 			space->add_debug_contact(global_A + offset_A);
 			space->add_debug_contact(global_B + offset_A);
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		c.rA = global_A - A->get_center_of_mass();
 		c.rB = global_B - B->get_center_of_mass() - offset_B;
@@ -781,7 +781,7 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 			space->add_debug_contact(global_A);
 			space->add_debug_contact(global_B);
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		c.rA = global_A - transform_A.origin - body->get_center_of_mass();
 		c.rB = global_B;

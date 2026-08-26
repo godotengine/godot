@@ -63,7 +63,7 @@
 #include <X11/extensions/Xinerama.h>
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/shape.h>
-#endif
+#endif // SOWRAP_ENABLED
 
 #ifdef RD_ENABLED
 #ifdef VULKAN_ENABLED
@@ -71,7 +71,7 @@
 #endif
 
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-#endif
+#endif // RD_ENABLED
 
 #ifdef GLES3_ENABLED
 #include "x11/detect_prime_x11.h"
@@ -79,7 +79,7 @@
 #include "x11/gl_manager_x11_egl.h"
 
 #include "drivers/gles3/rasterizer_gles3.h"
-#endif
+#endif // GLES3_ENABLED
 
 #ifdef DBUS_ENABLED
 #include "freedesktop_at_spi_monitor.h"
@@ -91,7 +91,7 @@
 #else
 #include <dbus/dbus.h>
 #endif
-#endif
+#endif // DBUS_ENABLED
 
 #ifdef SPEECHD_ENABLED
 #include "tts_linux.h"
@@ -220,7 +220,7 @@ bool DisplayServerX11::has_feature(DisplayServerEnums::Feature p_feature) const 
 		case DisplayServerEnums::FEATURE_NATIVE_COLOR_PICKER: {
 			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_screenshot_supported());
 		} break;
-#endif
+#endif // DBUS_ENABLED
 		case DisplayServerEnums::FEATURE_SCREEN_CAPTURE: {
 			return !xwayland;
 		} break;
@@ -466,7 +466,7 @@ void DisplayServerX11::tts_stop() {
 	tts->stop();
 }
 
-#endif
+#endif // SPEECHD_ENABLED
 
 #ifdef DBUS_ENABLED
 
@@ -527,7 +527,7 @@ Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, con
 	return portal_desktop->file_dialog_show(p_window_id, xid, p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
 }
 
-#endif
+#endif // DBUS_ENABLED
 
 void DisplayServerX11::beep() const {
 	XBell(x11_display, 0);
@@ -1976,7 +1976,7 @@ void DisplayServerX11::screen_set_keep_on(bool p_enable) {
 bool DisplayServerX11::screen_is_kept_on() const {
 	return keep_screen_on;
 }
-#endif
+#endif // DBUS_ENABLED
 
 Vector<DisplayServerEnums::WindowID> DisplayServerX11::get_window_list() const {
 	_THREAD_SAFE_METHOD_
@@ -2103,7 +2103,7 @@ void DisplayServerX11::show_window(DisplayServerEnums::WindowID p_id) {
 			if (gl_manager_egl) {
 				gl_manager_egl->window_resize(p_id, sz.width, sz.height);
 			}
-#endif
+#endif // defined(GLES3_ENABLED)
 		}
 	}
 }
@@ -2141,7 +2141,7 @@ void DisplayServerX11::delete_sub_window(DisplayServerEnums::WindowID p_id) {
 	if (rendering_context) {
 		rendering_context->window_destroy(p_id);
 	}
-#endif
+#endif // defined(RD_ENABLED)
 #ifdef GLES3_ENABLED
 	if (gl_manager) {
 		gl_manager->window_destroy(p_id);
@@ -2149,7 +2149,7 @@ void DisplayServerX11::delete_sub_window(DisplayServerEnums::WindowID p_id) {
 	if (gl_manager_egl) {
 		gl_manager_egl->window_destroy(p_id);
 	}
-#endif
+#endif // GLES3_ENABLED
 
 	AccessibilityServer::get_singleton()->window_destroy(p_id);
 
@@ -2165,7 +2165,7 @@ void DisplayServerX11::delete_sub_window(DisplayServerEnums::WindowID p_id) {
 			wd.xkb_state = nullptr;
 		}
 	}
-#endif
+#endif // XKB_ENABLED
 
 	XUnmapWindow(x11_display, wd.x11_window);
 	XDestroyWindow(x11_display, wd.x11_window);
@@ -2229,7 +2229,7 @@ int64_t DisplayServerX11::window_get_native_handle(DisplayServerEnums::HandleTyp
 			}
 			return 0;
 		}
-#endif
+#endif // GLES3_ENABLED
 		default: {
 			return 0;
 		}
@@ -2408,7 +2408,7 @@ void DisplayServerX11::gl_window_make_current(DisplayServerEnums::WindowID p_win
 	if (gl_manager_egl) {
 		gl_manager_egl->window_make_current(p_window_id);
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 }
 
 void DisplayServerX11::window_set_current_screen(int p_screen, DisplayServerEnums::WindowID p_window) {
@@ -2798,7 +2798,7 @@ void DisplayServerX11::window_set_size(const Size2i p_size, DisplayServerEnums::
 	if (gl_manager_egl) {
 		gl_manager_egl->window_resize(p_window, xwa.width, xwa.height);
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 }
 
 Size2i DisplayServerX11::window_get_size(DisplayServerEnums::WindowID p_window) const {
@@ -3624,7 +3624,7 @@ int DisplayServerX11::accessibility_should_increase_contrast() const {
 		return -1;
 	}
 	return portal_desktop->get_high_contrast();
-#endif
+#endif // DBUS_ENABLED
 	return -1;
 }
 
@@ -3886,7 +3886,7 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 			key = fix_key_label(keysym[0], KeyMappingX11::get_keycode(xkeysym));
 		}
 	}
-#endif
+#endif // XKB_ENABLED
 
 	// If not found, fallback to QWERTY.
 	// This should match the behavior of the event pump
@@ -3909,9 +3909,9 @@ bool DisplayServerX11::color_picker(const Callable &p_callback) {
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
 	return portal_desktop->color_picker(xid, p_callback);
-#else
+#else // DBUS_ENABLED
 	return false;
-#endif
+#endif // DBUS_ENABLED
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
@@ -4040,7 +4040,7 @@ void DisplayServerX11::_handle_key_event(DisplayServerEnums::WindowID p_window, 
 			keysym = String::chr(unicode_cp);
 		}
 	}
-#endif
+#endif // XKB_ENABLED
 
 	// Meanwhile, XLookupString returns keysyms useful for unicode.
 
@@ -4127,7 +4127,7 @@ void DisplayServerX11::_handle_key_event(DisplayServerEnums::WindowID p_window, 
 			return;
 		}
 		memfree(utf8string);
-#else
+#else // X_HAVE_UTF8_STRING
 		do {
 			int mnbytes = XmbLookupString(xic, xkeyevent, xmbstring, xmblen - 1, &keysym_unicode, &status);
 			xmbstring[mnbytes] = '\0';
@@ -4137,7 +4137,7 @@ void DisplayServerX11::_handle_key_event(DisplayServerEnums::WindowID p_window, 
 				xmbstring = (char *)memrealloc(xmbstring, xmblen);
 			}
 		} while (status == XBufferOverflow);
-#endif
+#endif // X_HAVE_UTF8_STRING
 #ifdef XKB_ENABLED
 	} else if (xkeyevent->type == KeyPress && wd.xkb_state && xkb_loaded_v05p) {
 		xkb_compose_feed_result res = xkb_compose_state_feed(wd.xkb_state, keysym_unicode);
@@ -4208,7 +4208,7 @@ void DisplayServerX11::_handle_key_event(DisplayServerEnums::WindowID p_window, 
 				return;
 			}
 		}
-#endif
+#endif // XKB_ENABLED
 	}
 
 	/* Phase 2, obtain a Godot keycode from the keysym */
@@ -4621,7 +4621,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	if (gl_manager_egl) {
 		gl_manager_egl->window_resize(window_id, wd.size.width, wd.size.height);
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 
 	if (wd.rect_changed_callback.is_valid()) {
 		wd.rect_changed_callback.call(new_rect);
@@ -5183,7 +5183,7 @@ void DisplayServerX11::process_events() {
 							curr_pos_elem->value = pos;
 						}
 					} break;
-#endif
+#endif // TOUCH_ENABLED
 				}
 			}
 		}
@@ -5299,7 +5299,7 @@ void DisplayServerX11::process_events() {
 				/*for (int i = 0; i < xi.touch_devices.size(); ++i) {
 					XIGrabDevice(x11_display, xi.touch_devices[i], x11_window, CurrentTime, None, XIGrabModeAsync, XIGrabModeAsync, False, &xi.touch_event_mask);
 				}*/
-#endif
+#endif // TOUCH_ENABLED
 
 				if (!app_focused) {
 					if (OS::get_singleton()->get_main_loop()) {
@@ -5355,7 +5355,7 @@ void DisplayServerX11::process_events() {
 					Input::get_singleton()->parse_input_event(st);
 				}
 				xi.state.clear();
-#endif
+#endif // TOUCH_ENABLED
 			} break;
 
 			case ConfigureNotify: {
@@ -5654,7 +5654,7 @@ void DisplayServerX11::process_events() {
 				} else {
 					DEBUG_LOG_X11("[%u] KeyRelease window=%lu (%u), keycode=%u, time=%lu \n", frame, event.xkey.window, window_id, event.xkey.keycode, event.xkey.time);
 				}
-#endif
+#endif // DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
 				last_timestamp = event.xkey.time;
 
 				// key event is a little complex, so
@@ -5806,7 +5806,7 @@ void DisplayServerX11::release_rendering_thread() {
 	if (gl_manager_egl) {
 		gl_manager_egl->release_current();
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 }
 
 void DisplayServerX11::swap_buffers() {
@@ -5817,7 +5817,7 @@ void DisplayServerX11::swap_buffers() {
 	if (gl_manager_egl) {
 		gl_manager_egl->swap_buffers();
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 }
 
 void DisplayServerX11::_update_context(WindowData &wd) {
@@ -5917,7 +5917,7 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServerEnums::VSyncMode p_vsy
 	if (gl_manager_egl) {
 		gl_manager_egl->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 }
 
 DisplayServerEnums::VSyncMode DisplayServerX11::window_get_vsync_mode(DisplayServerEnums::WindowID p_window) const {
@@ -5934,7 +5934,7 @@ DisplayServerEnums::VSyncMode DisplayServerX11::window_get_vsync_mode(DisplaySer
 	if (gl_manager_egl) {
 		return gl_manager_egl->is_using_vsync() ? DisplayServerEnums::VSYNC_ENABLED : DisplayServerEnums::VSYNC_DISABLED;
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 	return DisplayServerEnums::VSYNC_ENABLED;
 }
 
@@ -6493,7 +6493,7 @@ DisplayServerEnums::WindowID DisplayServerX11::_create_window(DisplayServerEnums
 
 		XFree(vi_list);
 	}
-#endif
+#endif // GLES3_ENABLED
 
 	if (!vi_selected) {
 		long visualMask = VisualScreenMask;
@@ -6661,7 +6661,7 @@ DisplayServerEnums::WindowID DisplayServerX11::_create_window(DisplayServerEnums
 				XISetMask(all_event_mask.mask, XI_TouchEnd);
 				XISetMask(all_event_mask.mask, XI_TouchOwnership);
 			}
-#endif
+#endif // TOUCH_ENABLED
 
 			XISelectEvents(x11_display, wd.x11_window, &all_event_mask, 1);
 		}
@@ -6711,14 +6711,14 @@ DisplayServerEnums::WindowID DisplayServerX11::_create_window(DisplayServerEnums
 				wpd.vulkan.window = wd.x11_window;
 				wpd.vulkan.display = x11_display;
 			}
-#endif
+#endif // VULKAN_ENABLED
 			Error err = rendering_context->window_create(id, &wpd);
 			ERR_FAIL_COND_V_MSG(err != OK, DisplayServerEnums::INVALID_WINDOW_ID, vformat("Can't create a %s window", rendering_driver));
 
 			rendering_context->window_set_size(id, win_rect.size.width, win_rect.size.height);
 			rendering_context->window_set_vsync_mode(id, p_vsync_mode);
 		}
-#endif
+#endif // defined(RD_ENABLED)
 #ifdef GLES3_ENABLED
 		if (gl_manager) {
 			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, win_rect.size.width, win_rect.size.height);
@@ -6729,7 +6729,7 @@ DisplayServerEnums::WindowID DisplayServerX11::_create_window(DisplayServerEnums
 			ERR_FAIL_COND_V_MSG(err != OK, DisplayServerEnums::INVALID_WINDOW_ID, "Failed to create an OpenGLES window.");
 		}
 		window_set_vsync_mode(p_vsync_mode, id);
-#endif
+#endif // GLES3_ENABLED
 
 		//set_class_hint(x11_display, wd.x11_window);
 		XFlush(x11_display);
@@ -6912,7 +6912,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 		xkb_loaded_v08p = false;
 		print_verbose("Detected XKBcommon library version older than 0.8, Unicode key labels disabled.");
 	}
-#endif
+#endif // XKB_ENABLED
 	if (initialize_xext(dylibloader_verbose) != 0) {
 		r_error = ERR_UNAVAILABLE;
 		ERR_FAIL_MSG("Can't load Xext dynamically.");
@@ -6935,13 +6935,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 		r_error = ERR_UNAVAILABLE;
 		ERR_FAIL_MSG("Can't load Xinput2 dynamically.");
 	}
-#else
+#else // SOWRAP_ENABLED
 #ifdef XKB_ENABLED
 	bool xkb_loaded = true;
 	xkb_loaded_v05p = true;
 	xkb_loaded_v08p = true;
 #endif
-#endif
+#endif // SOWRAP_ENABLED
 
 #ifdef XKB_ENABLED
 	if (xkb_loaded) {
@@ -6960,7 +6960,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 			dead_tbl = xkb_compose_table_new_from_locale(xkb_ctx, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
 		}
 	}
-#endif
+#endif // XKB_ENABLED
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
@@ -6975,7 +6975,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 			return;
 		}
 	}
-#endif
+#endif // SOWRAP_ENABLED
 
 	for (int i = 0; i < DisplayServerEnums::CURSOR_MAX; i++) {
 		cursors[i] = None;
@@ -7139,7 +7139,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 	if (tts_enabled) {
 		initialize_tts();
 	}
-#endif
+#endif // SPEECHD_ENABLED
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
@@ -7487,7 +7487,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 		print_verbose("Failed to load DBus library!");
 		dbus_ok = false;
 	}
-#endif
+#endif // SOWRAP_ENABLED
 	if (dbus_ok) {
 		bool ver_ok = false;
 		int version_major = 0;
@@ -7539,7 +7539,7 @@ DisplayServerX11::~DisplayServerX11() {
 		if (rendering_context) {
 			rendering_context->window_destroy(E.key);
 		}
-#endif
+#endif // defined(RD_ENABLED)
 #ifdef GLES3_ENABLED
 		if (gl_manager) {
 			gl_manager->window_destroy(E.key);
@@ -7547,7 +7547,7 @@ DisplayServerX11::~DisplayServerX11() {
 		if (gl_manager_egl) {
 			gl_manager_egl->window_destroy(E.key);
 		}
-#endif
+#endif // GLES3_ENABLED
 
 		AccessibilityServer::get_singleton()->window_destroy(E.key);
 
@@ -7564,7 +7564,7 @@ DisplayServerX11::~DisplayServerX11() {
 				wd.xkb_state = nullptr;
 			}
 		}
-#endif
+#endif // XKB_ENABLED
 		XUnmapWindow(x11_display, wd.x11_window);
 		XDestroyWindow(x11_display, wd.x11_window);
 	}
@@ -7578,7 +7578,7 @@ DisplayServerX11::~DisplayServerX11() {
 			xkb_context_unref(xkb_ctx);
 		}
 	}
-#endif
+#endif // XKB_ENABLED
 
 	//destroy drivers
 #if defined(RD_ENABLED)
@@ -7591,7 +7591,7 @@ DisplayServerX11::~DisplayServerX11() {
 		memdelete(rendering_context);
 		rendering_context = nullptr;
 	}
-#endif
+#endif // defined(RD_ENABLED)
 
 #ifdef GLES3_ENABLED
 	if (gl_manager) {
@@ -7602,7 +7602,7 @@ DisplayServerX11::~DisplayServerX11() {
 		memdelete(gl_manager_egl);
 		gl_manager_egl = nullptr;
 	}
-#endif
+#endif // GLES3_ENABLED
 
 	if (xrandr_handle) {
 		dlclose(xrandr_handle);

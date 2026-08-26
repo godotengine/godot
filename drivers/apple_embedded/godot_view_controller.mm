@@ -217,7 +217,7 @@
 	self.godotLoadingOverlay.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
 
 	[self.view addSubview:self.godotLoadingOverlay];
-#endif
+#endif // !defined(VISIONOS_ENABLED)
 }
 
 - (BOOL)godotViewFinishedSetup:(GDTView *)view {
@@ -269,7 +269,7 @@
 	[rootVC setNeedsUpdateOfHomeIndicatorAutoHidden];
 	[rootVC setNeedsStatusBarAppearanceUpdate];
 }
-#endif
+#endif // IOS_ENABLED
 
 // MARK: Orientation
 
@@ -300,7 +300,7 @@
 									 }
 								 }];
 }
-#endif
+#endif // IOS_ENABLED
 
 - (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
 	if (GLOBAL_GET("display/window/ios/suppress_ui_gesture")) {

@@ -6,7 +6,7 @@ void _integrity_check_all() {
 			_integrity_check_down(root);
 		}
 	}
-#endif
+#endif // BVH_INTEGRITY_CHECKS
 }
 
 void _integrity_check_up(uint32_t p_node_id) {

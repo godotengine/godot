@@ -69,7 +69,7 @@ Error MissingNode::connect(const StringName &p_signal, const Callable &p_callabl
 	}
 	return Object::connect(p_signal, p_callable, p_flags);
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void MissingNode::set_original_class(const String &p_class) {
 	original_class = p_class;

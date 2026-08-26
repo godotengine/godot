@@ -42,6 +42,6 @@
 #ifndef GLAD_GLES2
 #define GLAD_GLES2
 #endif
-#endif
+#endif // ANGLE_ENABLED
 
 #include <thirdparty/glad/glad/gl.h> // IWYU pragma: export.

@@ -169,7 +169,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 			r_res.instantiate();
 			r_res->set_meta("__load_path__", ext_resources[id].path);
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	VariantParser::get_token(p_stream, token, line, r_err_str);
@@ -509,9 +509,9 @@ Error ResourceLoaderText::load() {
 				if (ResourceLoader::get_resource_uid(path) != uid) {
 					WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UID: " + uidt + " - using text path instead: " + path).utf8().get_data());
 				}
-#else
+#else // TOOLS_ENABLED
 				WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UID: " + uidt + " - using text path instead: " + path).utf8().get_data());
-#endif
+#endif // TOOLS_ENABLED
 			}
 		}
 
@@ -551,7 +551,7 @@ Error ResourceLoaderText::load() {
 		// Remember ID for saving.
 		Resource::set_resource_id_for_path(local_path, E.value.path, E.key);
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	while (true) {
 		if (next_tag.name != "sub_resource") {
@@ -1867,13 +1867,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		Ref<Resource> res = E.key;
 		res->set_id_for_path(local_path, attempt);
 	}
-#else
+#else // TOOLS_ENABLED
+
 	// Make sure to start from one, as it makes format more readable.
 	int counter = 1;
 	for (KeyValue<Ref<Resource>, String> &E : external_resources) {
 		E.value = itos(counter++);
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	Vector<ResourceSort> sorted_er;
 

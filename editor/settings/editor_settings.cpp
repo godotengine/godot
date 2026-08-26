@@ -77,7 +77,7 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 	if (renamed) {
 		return _set(*renamed, p_value);
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	bool changed = _set_only(p_name, p_value);
 	if (changed && initialized) {
@@ -169,7 +169,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	if (renamed) {
 		return _get(*renamed, r_ret);
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	if (p_name == "shortcuts") {
 		Array save_array;
@@ -501,9 +501,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		tablet_hints += vformat(",%s:%d", drv_name, i);
 	}
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/input/tablet_driver", -1, tablet_hints);
-#else
+#else // WINDOWS_ENABLED
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/input/tablet_driver", -1, "Default:-1");
-#endif
+#endif // WINDOWS_ENABLED
 
 	String project_manager_screen_hints = "Screen With Mouse Pointer:-4,Screen With Keyboard Focus:-3,Primary Screen:-2";
 	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
@@ -1118,7 +1118,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	}
 	_initial_set("run/window_placement/rect_custom_position", Vector2());
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/screen", -5, screen_hints)
-#endif
+#endif // ANDROID_ENABLED
+
 	// Should match the ANDROID_WINDOW_* constants in 'platform/android/java/editor/src/main/java/org/godotengine/editor/BaseGodotEditor.kt'.
 	String android_window_hints = "Auto (based on screen size):0,Same as Editor:1,Side-by-side with Editor:2";
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/android_window", 0, android_window_hints)
@@ -1130,7 +1131,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	} else {
 		game_embed_mode_hints = "Disabled:-1,Auto (based on screen size):0,Enabled:1";
 	}
-#endif
+#endif // ANDROID_ENABLED
 	int default_game_embed_mode = OS::get_singleton()->has_feature("xr_editor") ? -1 : 0;
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/game_embed_mode", default_game_embed_mode, game_embed_mode_hints);
 
@@ -1383,7 +1384,7 @@ void EditorSettings::_rename_shortcut(const String &p_old_path, const String &p_
 	}
 	shortcuts.erase(p_old_path);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 // PUBLIC METHODS
 
@@ -2050,7 +2051,7 @@ float EditorSettings::get_auto_display_scale() {
 		// platforms, hoping that the user is only using integer-scaled screens.
 		return DisplayServer::get_singleton()->screen_get_max_scale();
 	}
-#endif
+#endif // LINUXBSD_ENABLED
 
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 }

@@ -23,7 +23,7 @@ layout(push_constant, std430) uniform DrawCall {
 	uint sc_packed_1;
 	float sc_packed_2;
 	uint uc_packed_0;
-#endif
+#endif // UBERSHADER
 }
 draw_call;
 
@@ -52,7 +52,7 @@ uint uc_cull_mode() {
 	return (draw_call.uc_packed_0 >> 0) & 3U;
 }
 
-#else
+#else // UBERSHADER
 
 // Pull the constants from the pipeline's specialization constants.
 layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
@@ -71,7 +71,7 @@ float sc_packed_2() {
 	return pso_sc_packed_2;
 }
 
-#endif
+#endif // UBERSHADER
 
 bool sc_use_light_projector() {
 	return ((sc_packed_0() >> 0) & 1U) != 0;
@@ -232,12 +232,12 @@ layout(constant_id = 3) const bool sc_emulate_point_size = false;
 #define VERTEX_INDEX (sc_emulate_point_size ? gl_InstanceIndex : gl_VertexIndex)
 #define INSTANCE_INDEX (sc_emulate_point_size ? (gl_VertexIndex / 6) : gl_InstanceIndex)
 
-#else
+#else // POINT_SIZE_USED
 
 #define VERTEX_INDEX gl_VertexIndex
 #define INSTANCE_INDEX gl_InstanceIndex
 
-#endif
+#endif // POINT_SIZE_USED
 
 // Like the luminance multiplier, but it is only for sky and reflection probes
 // since they are always LDR.

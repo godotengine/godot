@@ -156,7 +156,7 @@ void AnimationLibrary::get_argument_options(const StringName &p_function, int p_
 	}
 	Resource::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void AnimationLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation"), &AnimationLibrary::add_animation);

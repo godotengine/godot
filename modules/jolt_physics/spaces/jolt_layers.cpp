@@ -143,7 +143,7 @@ const char *JoltLayers::GetBroadPhaseLayerName(JPH::BroadPhaseLayer p_layer) con
 	}
 }
 
-#endif
+#endif // defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
 
 bool JoltLayers::ShouldCollide(JPH::ObjectLayer p_encoded_layer1, JPH::ObjectLayer p_encoded_layer2) const {
 	JPH::BroadPhaseLayer broad_phase_layer1 = JoltBroadPhaseLayer::BODY_STATIC;

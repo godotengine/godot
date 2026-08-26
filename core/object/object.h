@@ -613,7 +613,7 @@ protected:
 	};
 
 	mutable VirtualMethodTracker *virtual_method_list = nullptr;
-#endif
+#endif // TOOLS_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 	bool _is_class_bind_compat_118582(const String &p_name) const;
@@ -762,7 +762,7 @@ public:
 	bool is_edited() const;
 	// This function is used to check when something changed beyond a point, it's used mainly for generating previews.
 	uint32_t get_edited_version() const;
-#endif
+#endif // TOOLS_ENABLED
 
 	void set_script_instance(ScriptInstance *p_instance);
 	_FORCE_INLINE_ ScriptInstance *get_script_instance() const { return script_instance; }
@@ -830,7 +830,7 @@ public:
 	bool editor_is_section_unfolded(const String &p_section);
 	const HashSet<String> &editor_get_section_folding() const { return editor_section_folding; }
 	void editor_clear_section_folding() { editor_section_folding.clear(); }
-#endif
+#endif // TOOLS_ENABLED
 
 	// Used by script languages to store binding data.
 	void *get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks);

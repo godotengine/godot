@@ -445,7 +445,7 @@ void EditorSceneTabs::shortcut_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 				return;
 			}
-#endif
+#endif // DISABLE_DEPRECATED
 			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, EditorSceneTabs::_get_context_data(get_current_tab()));
 			accept_event();
 		}

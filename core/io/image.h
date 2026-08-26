@@ -152,7 +152,7 @@ public:
 		ASTC_FORMAT_4x4,
 		ASTC_FORMAT_8x8,
 	};
-#endif
+#endif // DISABLE_DEPRECATED
 
 	enum BPTCFormat {
 		BPTC_DETECT,
@@ -282,7 +282,7 @@ protected:
 	Error _save_exr_bind_compat_117800(const String &p_path, bool p_grayscale = false) const;
 
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 private:
 	Format format = FORMAT_L8;

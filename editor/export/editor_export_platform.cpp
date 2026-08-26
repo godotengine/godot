@@ -1251,7 +1251,7 @@ Error EditorExportPlatform::_script_save_file(const Ref<EditorExportPreset> &p_p
 		cb.callp(args, 7, ret, ce);
 		ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, FAILED, vformat("Failed to execute file save callback: %s.", Variant::get_callable_error_text(cb, args, 7, ce)));
 	} else
-#endif
+#endif // DISABLE_DEPRECATED
 	{
 		Dictionary info;
 		info["path"] = simplify_path(p_info.path);

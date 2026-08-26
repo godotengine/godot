@@ -171,7 +171,7 @@ public:
 	void process(MFXTemporalContext *p_ctx, Params p_params);
 };
 
-#endif
+#endif // METAL_MFXTEMPORAL_ENABLED
 
 } //namespace RendererRD
 

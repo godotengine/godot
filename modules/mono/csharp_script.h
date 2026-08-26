@@ -164,7 +164,7 @@ private:
 
 	bool was_tool_before_reload = false;
 	HashSet<ObjectID> pending_replace_placeholders;
-#endif
+#endif // GD_MONO_HOT_RELOAD
 
 	/**
 	 * Script source code.
@@ -197,7 +197,7 @@ private:
 	bool exports_invalidated = true;
 	void _update_exports_values(HashMap<StringName, Variant> &values, List<PropertyInfo> &propnames);
 	void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
-#endif
+#endif // TOOLS_ENABLED
 
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 	HashSet<StringName> exported_members_names;
@@ -436,7 +436,7 @@ class CSharpLanguage : public ScriptLanguage {
 	EditorLanguage editor_language;
 
 	static void _editor_init_callback();
-#endif
+#endif // TOOLS_ENABLED
 
 	static void *_instance_binding_create_callback(void *p_token, void *p_instance);
 	static void _instance_binding_free_callback(void *p_token, void *p_instance, void *p_binding);

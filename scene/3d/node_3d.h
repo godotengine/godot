@@ -167,7 +167,7 @@ private:
 		bool gizmos_disabled : 1;
 		bool gizmos_dirty : 1;
 		bool transform_gizmo_visible : 1;
-#endif
+#endif // TOOLS_ENABLED
 
 	} data;
 
@@ -288,7 +288,7 @@ public:
 	virtual Transform3D get_local_gizmo_transform() const;
 	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; }
 	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; }
-#endif
+#endif // TOOLS_ENABLED
 	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true) override;
 
 	void set_disable_gizmos(bool p_enabled);

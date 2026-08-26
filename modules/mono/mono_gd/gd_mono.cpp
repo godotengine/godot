@@ -84,8 +84,8 @@ mono_assembly_name_get_name_fn mono_assembly_name_get_name = nullptr;
 mono_assembly_name_get_culture_fn mono_assembly_name_get_culture = nullptr;
 mono_image_open_from_data_with_name_fn mono_image_open_from_data_with_name = nullptr;
 mono_assembly_load_from_full_fn mono_assembly_load_from_full = nullptr;
-#endif
-#endif
+#endif // ANDROID_ENABLED
+#endif // TOOLS_ENABLED
 
 #ifdef _WIN32
 static_assert(sizeof(char_t) == sizeof(char16_t));
@@ -161,7 +161,7 @@ bool try_get_dotnet_root_from_command_line(String &r_dotnet_root) {
 
 	return false;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 String find_hostfxr() {
 #ifdef TOOLS_ENABLED
@@ -184,7 +184,7 @@ String find_hostfxr() {
 			"libraries are not present in the expected locations.");
 
 	return String();
-#else
+#else // TOOLS_ENABLED
 
 #if defined(WINDOWS_ENABLED)
 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
@@ -205,7 +205,7 @@ String find_hostfxr() {
 
 	return String();
 
-#endif
+#endif // TOOLS_ENABLED
 }
 
 #ifndef TOOLS_ENABLED
@@ -233,7 +233,7 @@ String find_monosgen() {
 	}
 
 	return String();
-#endif
+#endif // defined(ANDROID_ENABLED)
 }
 
 String find_coreclr() {
@@ -256,7 +256,7 @@ String find_coreclr() {
 
 	return String();
 }
-#endif
+#endif // TOOLS_ENABLED
 
 bool load_hostfxr(void *&r_hostfxr_dll_handle) {
 	String hostfxr_path = find_hostfxr();
@@ -354,12 +354,12 @@ bool load_coreclr(void *&r_coreclr_dll_handle) {
 	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "mono_assembly_load_from_full", symbol);
 	ERR_FAIL_COND_V(err != OK, false);
 	mono_assembly_load_from_full = (mono_assembly_load_from_full_fn)symbol;
-#endif
+#endif // ANDROID_ENABLED
 
 	return (coreclr_initialize &&
 			coreclr_create_delegate);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 #ifdef TOOLS_ENABLED
 load_assembly_and_get_function_pointer_fn initialize_hostfxr_for_config(const char_t *p_config_path) {
@@ -382,7 +382,7 @@ load_assembly_and_get_function_pointer_fn initialize_hostfxr_for_config(const ch
 
 	return (load_assembly_and_get_function_pointer_fn)load_assembly_and_get_function_pointer;
 }
-#else
+#else // TOOLS_ENABLED
 load_assembly_and_get_function_pointer_fn initialize_hostfxr_self_contained(
 		const char_t *p_main_assembly_path) {
 	hostfxr_handle cxt = nullptr;
@@ -420,7 +420,7 @@ load_assembly_and_get_function_pointer_fn initialize_hostfxr_self_contained(
 
 	return (load_assembly_and_get_function_pointer_fn)load_assembly_and_get_function_pointer;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 #ifdef TOOLS_ENABLED
 using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbacks *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
@@ -461,7 +461,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 
 	return godot_plugins_initialize;
 }
-#else
+#else // TOOLS_ENABLED
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
@@ -518,7 +518,7 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 	ERR_FAIL_COND_V(err != OK, nullptr);
 	return (godot_plugins_initialize_fn)symbol;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 #ifndef TOOLS_ENABLED
 #ifdef ANDROID_ENABLED
@@ -573,7 +573,7 @@ MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p
 
 	return assembly;
 }
-#endif
+#endif // ANDROID_ENABLED
 
 godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
@@ -586,7 +586,7 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
 	if (mono_install_assembly_preload_hook != nullptr) {
 		mono_install_assembly_preload_hook(&load_assembly_from_pck, nullptr);
 	}
-#endif
+#endif // ANDROID_ENABLED
 
 	void *coreclr_handle = nullptr;
 	unsigned int domain_id = 0;
@@ -606,7 +606,7 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
 
 	return godot_plugins_initialize;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 } // namespace
 
@@ -649,7 +649,7 @@ void GDMono::initialize() {
 		OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
 		ERR_FAIL_MSG(".NET: Assemblies not found");
 	}
-#endif
+#endif // !defined(APPLE_EMBEDDED_ENABLED)
 
 	if (load_hostfxr(hostfxr_dll_handle)) {
 		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
@@ -669,12 +669,12 @@ void GDMono::initialize() {
 		if (godot_plugins_initialize == nullptr) {
 			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 		}
-#else
+#else // !defined(TOOLS_ENABLED)
 
 		// Show a message box to the user to make the problem explicit (and explain a potential crash).
 		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, specifically hostfxr.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart Godot."), TTR("Failed to load .NET runtime"));
 		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
-#endif
+#endif // !defined(TOOLS_ENABLED)
 	}
 
 	int32_t interop_funcs_size = 0;
@@ -698,11 +698,11 @@ void GDMono::initialize() {
 	ERR_FAIL_COND_MSG(!init_ok, ".NET: GodotPlugins initialization failed");
 
 	plugin_callbacks = plugin_callbacks_res;
-#else
+#else // TOOLS_ENABLED
 	bool init_ok = godot_plugins_initialize(godot_dll_handle, &managed_callbacks,
 			interop_funcs, interop_funcs_size);
 	ERR_FAIL_COND_MSG(!init_ok, ".NET: GodotPlugins initialization failed");
-#endif
+#endif // TOOLS_ENABLED
 
 	GDMonoCache::update_godot_api_cache(managed_callbacks);
 
@@ -732,7 +732,7 @@ void GDMono::_try_load_project_assembly() {
 		}
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void GDMono::_init_godot_api_hashes() {
 #ifdef DEBUG_ENABLED
@@ -783,7 +783,7 @@ bool GDMono::_load_project_assembly() {
 
 	return success;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 #ifdef GD_MONO_HOT_RELOAD
 void GDMono::reload_failure() {
@@ -830,7 +830,7 @@ Error GDMono::reload_project_assemblies() {
 
 	return OK;
 }
-#endif
+#endif // GD_MONO_HOT_RELOAD
 
 GDMono::GDMono() {
 	singleton = this;
@@ -864,7 +864,7 @@ void GodotSharp::reload_assemblies() {
 	if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed()) {
 		CSharpLanguage::get_singleton()->reload_assemblies();
 	}
-#endif
+#endif // GD_MONO_HOT_RELOAD
 }
 
 GodotSharp::GodotSharp() {

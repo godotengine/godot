@@ -68,12 +68,12 @@ const SourceLocationData *intern_source_location(const void *p_function_ptr, con
 	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name); \
 	static constexpr tracy::SourceLocationData TracyConcat(__tracy_source_location, TracyLine){ m_zone_name, TracyFunction, TracyFile, (uint32_t)TracyLine, 0 }; \
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), true)
-#else
+#else // TRACY_CALLSTACK
 #define GodotProfileZoneGrouped(m_group_name, m_zone_name) \
 	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name); \
 	static constexpr tracy::SourceLocationData TracyConcat(__tracy_source_location, TracyLine){ m_zone_name, TracyFunction, TracyFile, (uint32_t)TracyLine, 0 }; \
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), TRACY_CALLSTACK, true)
-#endif
+#endif // TRACY_CALLSTACK
 
 #define GodotProfileZoneScript(m_ptr, m_file, m_function, m_name, m_line) \
 	tracy::ScopedZone __godot_tracy_script(tracy::intern_source_location(m_ptr, m_file, m_function, m_name, m_line, true))
@@ -87,10 +87,10 @@ const SourceLocationData *intern_source_location(const void *p_function_ptr, con
 	TracyAlloc(m_ptr, m_size); \
 	GODOT_GCC_WARNING_POP
 #define GodotProfileFree(m_ptr) TracyFree(m_ptr)
-#else
+#else // GODOT_PROFILER_TRACK_MEMORY
 #define GodotProfileAlloc(m_ptr, m_size)
 #define GodotProfileFree(m_ptr)
-#endif
+#endif // GODOT_PROFILER_TRACK_MEMORY
 
 void godot_init_profiler();
 void godot_cleanup_profiler();
@@ -238,7 +238,8 @@ private:
 void godot_init_profiler();
 void godot_cleanup_profiler();
 
-#else
+#else // defined(GODOT_USE_INSTRUMENTS)
+
 // No profiling; all macros are stubs.
 
 void godot_init_profiler();

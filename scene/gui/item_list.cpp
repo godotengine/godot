@@ -2312,7 +2312,7 @@ bool ItemList::_set(const StringName &p_name, const Variant &p_value) {
 			set_item_disabled(idx, disabled);
 		}
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 	return false;
 }
 

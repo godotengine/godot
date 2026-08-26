@@ -836,7 +836,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 		particle_vector.resize(particles->amount);
 		particle_array = particle_vector.ptr();
 		godot_webgl2_glGetBufferSubData(GL_ARRAY_BUFFER, 0, particles->amount * sizeof(ParticleInstanceData3D), particle_array);
-#endif
+#endif // __EMSCRIPTEN__
 		SortArray<ParticleInstanceData3D, ParticlesViewSort> sorter;
 		sorter.compare.z_dir = axis;
 		sorter.sort(particle_array, particles->amount);
@@ -1243,7 +1243,7 @@ void ParticlesStorage::_particles_reverse_lifetime_sort(Particles *particles) {
 	particle_vector.resize(particles->amount);
 	particle_array = particle_vector.ptr();
 	godot_webgl2_glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, particle_array);
-#endif
+#endif // __EMSCRIPTEN__
 
 	uint32_t lifetime_split = (MIN(int(particles->amount * particles->sort_buffer_phase), particles->amount - 1) + 1) % particles->amount;
 	for (uint32_t i = 0; i < lifetime_split / 2; i++) {
@@ -1334,7 +1334,7 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			WARN_PRINT("Could not create heightmap texture, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
 		}
-#endif
+#endif // DEBUG_ENABLED
 		GLES3::Utilities::get_singleton()->texture_allocated_data(particles_collision->heightfield_texture, size.x * size.y * 4, "Particles collision heightfield texture");
 
 		particles_collision->heightfield_fb_size = size;

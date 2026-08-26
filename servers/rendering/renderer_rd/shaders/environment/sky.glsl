@@ -100,7 +100,7 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
 /* clang-format on */
-#endif
+#endif // MATERIAL_UNIFORMS_USED
 
 layout(set = 2, binding = 0) uniform texture2D radiance;
 #ifdef USE_CUBEMAP_PASS
@@ -145,7 +145,7 @@ vec3 interleaved_gradient_noise(vec2 pos) {
 	float res = fract(magic.z * fract(dot(pos, magic.xy))) * 2.0 - 1.0;
 	return vec3(res, -res, res) / 255.0;
 }
-#endif
+#endif // USE_DEBANDING
 
 vec4 volumetric_fog_process(vec2 screen_uv) {
 #ifdef USE_MULTIVIEW
@@ -214,14 +214,14 @@ void main() {
 
 	// Unproject will give us the position between the eyes, need to re-offset
 	cube_normal += sky_scene_data.view_eye_offsets[ViewIndex].xyz;
-#else
+#else // USE_MULTIVIEW
 	cube_normal.z = -1.0;
 	cube_normal.x = (uv_interp.x + params.projection.x) / params.projection.y;
 	cube_normal.y = (uv_interp.y + params.projection.z) / params.projection.w;
-#endif
+#endif // USE_MULTIVIEW
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
-#endif
+#endif // USE_CUBEMAP_PASS
 
 	vec2 panorama_coords = vec2(atan2_approx(cube_normal.x, -cube_normal.z), acos_approx(cube_normal.y));
 
@@ -246,7 +246,7 @@ void main() {
 	quarter_res_color = texture(sampler2D(quarter_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3_to_oct_with_border(cube_normal, params.border_size)) / params.luminance_multiplier;
 #endif
 
-#else
+#else // USE_CUBEMAP_PASS
 
 #ifdef USES_HALF_RES_COLOR
 #ifdef USE_MULTIVIEW

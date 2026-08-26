@@ -1413,7 +1413,7 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		dynamic_font->set_antialiasing(p_font_antialiasing);
 		dynamic_font->set_multichannel_signed_distance_field(p_font_msdf);
 		dynamic_font->set_generate_mipmaps(p_font_generate_mipmaps);
-#endif
+#endif // BROTLI_ENABLED
 		default_font = dynamic_font;
 	}
 

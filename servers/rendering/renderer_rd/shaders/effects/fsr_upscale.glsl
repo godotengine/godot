@@ -89,7 +89,7 @@ AF4 FsrRcasLoadF(ASU2 p) {
 }
 void FsrRcasInputF(inout AF1 r, inout AF1 g, inout AF1 b) {}
 
-#else
+#else // MODE_FSR_UPSCALE_FALLBACK
 
 #define FSR_EASU_H
 AH4 FsrEasuRH(AF2 p) {
@@ -111,7 +111,7 @@ AH4 FsrRcasLoadH(ASW2 p) {
 }
 void FsrRcasInputH(inout AH1 r, inout AH1 g, inout AH1 b) {}
 
-#endif
+#endif // MODE_FSR_UPSCALE_FALLBACK
 
 #include "thirdparty/amd-fsr/ffx_fsr1.h"
 
@@ -122,13 +122,13 @@ void fsr_easu_pass(AU2 pos) {
 	FsrEasuH(Gamma2Color, pos, Const0, Const1, Const2, Const3);
 	imageStore(fsr_image, ASU2(pos), AH4(Gamma2Color, 1));
 
-#else
+#else // MODE_FSR_UPSCALE_NORMAL
 
 	AF3 Gamma2Color = AF3(0, 0, 0);
 	FsrEasuF(Gamma2Color, pos, Const0, Const1, Const2, Const3);
 	imageStore(fsr_image, ASU2(pos), AF4(Gamma2Color, 1));
 
-#endif
+#endif // MODE_FSR_UPSCALE_NORMAL
 }
 
 void fsr_rcas_pass(AU2 pos) {
@@ -138,13 +138,13 @@ void fsr_rcas_pass(AU2 pos) {
 	FsrRcasH(Gamma2Color.r, Gamma2Color.g, Gamma2Color.b, pos, Const0);
 	imageStore(fsr_image, ASU2(pos), AH4(Gamma2Color, 1));
 
-#else
+#else // MODE_FSR_UPSCALE_NORMAL
 
 	AF3 Gamma2Color = AF3(0, 0, 0);
 	FsrRcasF(Gamma2Color.r, Gamma2Color.g, Gamma2Color.b, pos, Const0);
 	imageStore(fsr_image, ASU2(pos), AF4(Gamma2Color, 1));
 
-#endif
+#endif // MODE_FSR_UPSCALE_NORMAL
 }
 
 void fsr_pass(AU2 pos) {

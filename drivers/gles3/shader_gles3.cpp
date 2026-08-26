@@ -841,4 +841,4 @@ ShaderGLES3::~ShaderGLES3() {
 		}
 	}
 }
-#endif
+#endif // GLES3_ENABLED

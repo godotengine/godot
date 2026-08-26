@@ -41,7 +41,7 @@
 #else
 #define GD_CLR_STDCALL
 #endif
-#endif
+#endif // GD_CLR_STDCALL
 
 namespace gdmono {
 
@@ -54,7 +54,7 @@ struct PluginCallbacks {
 	FuncLoadToolsAssemblyCallback LoadToolsAssemblyCallback = nullptr;
 	FuncUnloadProjectPluginCallback UnloadProjectPluginCallback = nullptr;
 };
-#endif
+#endif // TOOLS_ENABLED
 
 } // namespace gdmono
 
@@ -109,7 +109,7 @@ public:
 #else
 		return "Release";
 #endif // DEBUG_ENABLED
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	static GDMono *get_singleton() {

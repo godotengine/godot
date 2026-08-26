@@ -110,7 +110,7 @@ const Vector<String> classes_with_csharp_differences = {
 	"PackedVector4Array",
 	"Variant",
 };
-#endif
+#endif // MODULE_MONO_ENABLED
 
 const Vector<String> packed_array_types = {
 	"PackedByteArray",
@@ -1147,7 +1147,7 @@ void EditorHelp::_update_doc() {
 		class_desc->pop(); // color
 		_pop_normal_font();
 	}
-#endif
+#endif // MODULE_MONO_ENABLED
 
 	// Online tutorials
 	if (!cd.tutorials.is_empty()) {
@@ -2804,14 +2804,14 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 				EditorHelpHighlighter::get_singleton()->highlight(p_rt, EditorHelpHighlighter::LANGUAGE_GDSCRIPT, codeblock_text, is_native);
 				codeblock_printed = true;
 			}
-#endif
+#endif // MODULE_GDSCRIPT_ENABLED
 
 #ifdef MODULE_MONO_ENABLED
 			if (!codeblock_printed && lang == "csharp") {
 				EditorHelpHighlighter::get_singleton()->highlight(p_rt, EditorHelpHighlighter::LANGUAGE_CSHARP, codeblock_text, is_native);
 				codeblock_printed = true;
 			}
-#endif
+#endif // MODULE_MONO_ENABLED
 
 			if (!codeblock_printed) {
 				p_rt->add_text(_fix_newlines(codeblock_text));
@@ -5303,7 +5303,7 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 	text_edits[LANGUAGE_GDSCRIPT] = gdscript_text_edit;
 	scripts[LANGUAGE_GDSCRIPT] = gdscript;
 	highlighters[LANGUAGE_GDSCRIPT] = gdscript_highlighter;
-#endif
+#endif // MODULE_GDSCRIPT_ENABLED
 
 #ifdef MODULE_MONO_ENABLED
 	TextEdit *csharp_text_edit = memnew(TextEdit);
@@ -5322,7 +5322,7 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 	text_edits[LANGUAGE_CSHARP] = csharp_text_edit;
 	//scripts[LANGUAGE_CSHARP] = csharp;
 	highlighters[LANGUAGE_CSHARP] = csharp_highlighter;
-#endif
+#endif // MODULE_MONO_ENABLED
 }
 
 EditorHelpHighlighter::~EditorHelpHighlighter() {

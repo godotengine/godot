@@ -46,9 +46,9 @@ constexpr size_t get_aligned_address(size_t p_address, size_t p_alignment) {
 // due to a compiler bug (see GH-113145)
 static constexpr size_t MAX_ALIGN = 16;
 static_assert(MAX_ALIGN % alignof(max_align_t) == 0);
-#else
+#else // defined(__MINGW32__) && !defined(__MINGW64__)
 static constexpr size_t MAX_ALIGN = alignof(max_align_t);
-#endif
+#endif // defined(__MINGW32__) && !defined(__MINGW64__)
 
 // Alignment:  ↓ max_align_t        ↓ uint64_t          ↓ MAX_ALIGN
 //             ┌─────────────────┬──┬────────────────┬──┬───────────...

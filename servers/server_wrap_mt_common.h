@@ -37,9 +37,9 @@
 	if (unlikely(Thread::is_main_thread() && Engine::get_singleton()->notify_frame_server_synced())) { \
 		MAIN_THREAD_SYNC_WARN \
 	}
-#else
+#else // DEBUG_ENABLED
 #define MAIN_THREAD_SYNC_CHECK
-#endif
+#endif // DEBUG_ENABLED
 
 #define FUNC0R(m_r, m_type) \
 	virtual m_r m_type() override { \

@@ -643,9 +643,9 @@ public:
 	bool is_property_pinned(const StringName &p_property) const;
 	virtual StringName get_property_store_alias(const StringName &p_property) const;
 	bool is_part_of_edited_scene() const;
-#else
+#else // TOOLS_ENABLED
 	bool is_part_of_edited_scene() const { return false; }
-#endif
+#endif // TOOLS_ENABLED
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
 
 	/* NOTIFICATIONS */
@@ -738,7 +738,7 @@ public:
 	Node *duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, Node *p_scene_root, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resource_remap) const;
 	void remap_node_resources(Node *p_node, Node *p_scene_root, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resource_remap) const;
 	void remap_nested_resources(Ref<Resource> p_resource, HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
-#endif
+#endif // TOOLS_ENABLED
 
 	// used by editors, to save what has changed only
 	void set_scene_instance_state(const Ref<SceneState> &p_state);
@@ -901,7 +901,7 @@ public:
 	virtual void disconnect(const StringName &p_signal, const Callable &p_callable) override;
 	virtual bool is_connected(const StringName &p_signal, const Callable &p_callable) const override;
 	virtual bool has_connections(const StringName &p_signal) const override;
-#endif
+#endif // DEBUG_ENABLED
 	Node();
 	~Node();
 };
@@ -941,14 +941,14 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 #define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), (m_ret), vformat("%s: The function `%s()` on this node can only be accessed from the main thread. Use `call_deferred()` instead.", get_description(), FUNCTION_STR));
 #define ERR_READ_THREAD_GUARD ERR_FAIL_COND_MSG(!is_readable_from_caller_thread(), vformat("%s: The function `%s()` on this node can only be accessed from either the main thread or a thread group. Use `call_deferred()` instead.", get_description(), FUNCTION_STR));
 #define ERR_READ_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_readable_from_caller_thread(), (m_ret), vformat("%s: The function `%s()` on this node can only be accessed from either the main thread or a thread group. Use `call_deferred()` instead.", get_description(), FUNCTION_STR));
-#else
+#else // DEBUG_ENABLED
 #define ERR_THREAD_GUARD
 #define ERR_THREAD_GUARD_V(m_ret)
 #define ERR_MAIN_THREAD_GUARD
 #define ERR_MAIN_THREAD_GUARD_V(m_ret)
 #define ERR_READ_THREAD_GUARD
 #define ERR_READ_THREAD_GUARD_V(m_ret)
-#endif
+#endif // DEBUG_ENABLED
 
 // Add these macro to your class's 'get_configuration_warnings' function to have warnings show up in the scene tree inspector.
 #define DEPRECATED_NODE_WARNING warnings.push_back(RTR("This node is marked as deprecated and will be removed in future versions.\nPlease check the Godot documentation for information about migration."));

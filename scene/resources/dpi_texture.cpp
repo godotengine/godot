@@ -219,9 +219,9 @@ RID DPITexture::_load_at_scale(double p_scale, bool p_set_size) const {
 	if (err != OK) {
 		return RID();
 	}
-#else
+#else // MODULE_SVG_ENABLED
 	img = Image::create_empty(Math::round(16 * p_scale * base_scale), Math::round(16 * p_scale * base_scale), false, Image::FORMAT_RGBA8);
-#endif
+#endif // MODULE_SVG_ENABLED
 	if (saturation != 1.0) {
 		img->adjust_bcs(1.0, 1.0, saturation);
 	}

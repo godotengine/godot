@@ -49,7 +49,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 		"", "", "",
 		"open_scripts", "script_split_offset", "selected_script", "zoom_factor"
 	};
-#endif
+#endif // DISABLE_DEPRECATED
 
 	static inline ShaderEditorPlugin *shader_editor_plugin = nullptr;
 

@@ -42,4 +42,4 @@ Ref<OpenXRAnchorTracker> OpenXRSpatialAnchorCapability::_create_new_anchor_bind_
 	return create_new_anchor(p_transform, p_spatial_context, Ref<OpenXRStructureBase>());
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

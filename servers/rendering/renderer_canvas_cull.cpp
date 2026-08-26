@@ -1765,7 +1765,7 @@ void RendererCanvasCull::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	int uv_size = p_uvs.size();
 	ERR_FAIL_COND(color_size != 0 && color_size != 1 && color_size != pointcount);
 	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
-#endif
+#endif // DEBUG_ENABLED
 	Vector<int> indices = Geometry2D::triangulate_polygon(p_points);
 	ERR_FAIL_COND_MSG(indices.is_empty(), "Invalid polygon data, triangulation failed.");
 

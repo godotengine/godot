@@ -104,7 +104,7 @@ void main() {
 	}
 	sort_buffer.data[particle].x = dot(params.sort_direction, particles.data[src_particle].xform[3].xyz);
 	sort_buffer.data[particle].y = float(particle);
-#endif
+#endif // MODE_FILL_SORT_BUFFER
 
 #ifdef MODE_FILL_INSTANCES
 
@@ -121,7 +121,7 @@ void main() {
 	} else {
 		particle = uint(sort_buffer.data[particle].y); //use index from sort buffer
 	}
-#else
+#else // USE_SORT_BUFFER
 	if (bool(params.flags & PARAMS_FLAG_ORDER_BY_LIFETIME)) {
 		if (params.trail_size > 1) {
 			uint limit = (params.total_particles / params.trail_size) - params.lifetime_split;
@@ -346,5 +346,5 @@ void main() {
 		instances.data[write_offset + 4] = particles.data[particle].custom;
 	}
 
-#endif
+#endif // MODE_FILL_INSTANCES
 }

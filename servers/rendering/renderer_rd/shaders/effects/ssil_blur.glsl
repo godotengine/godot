@@ -85,7 +85,7 @@ vec4 sample_blurred_wide(ivec2 p_pos, vec2 p_coord) {
 
 	return ssil_value;
 }
-#endif
+#endif // MODE_WIDE
 
 #ifdef MODE_SMART
 vec4 sample_blurred(ivec2 p_pos, vec2 p_coord) {
@@ -112,7 +112,7 @@ vec4 sample_blurred(ivec2 p_pos, vec2 p_coord) {
 
 	return ssil_value;
 }
-#endif
+#endif // MODE_SMART
 
 void main() {
 	// Pixel being shaded
@@ -133,7 +133,7 @@ void main() {
 
 	vec4 sampled = value + center * 0.2;
 
-#else
+#else // MODE_NON_SMART
 #ifdef MODE_SMART
 	vec4 sampled = sample_blurred(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);
 #else // MODE_WIDE

@@ -54,13 +54,13 @@ layout(location = 10) in highp uvec4 in_bone_attrib;
 layout(location = 11) in highp uvec4 in_bone_attrib2;
 layout(location = 12) in mediump vec4 in_weight_attrib;
 layout(location = 13) in mediump vec4 in_weight_attrib2;
-#else
+#else // USE_EIGHT_WEIGHTS
 layout(location = 10) in highp uvec4 in_bone_attrib;
 layout(location = 11) in mediump vec4 in_weight_attrib;
-#endif
+#endif // USE_EIGHT_WEIGHTS
 
 uniform highp sampler2D skeleton_texture; // texunit:0
-#endif
+#endif // USE_SKELETON
 
 /* clang-format on */
 #ifdef MODE_BLEND_PASS
@@ -95,7 +95,7 @@ uniform mediump vec2 skeleton_transform_offset;
 uniform mediump vec2 inverse_transform_x;
 uniform mediump vec2 inverse_transform_y;
 uniform mediump vec2 inverse_transform_offset;
-#endif
+#endif // USE_SKELETON
 
 vec2 signNotZero(vec2 v) {
 	return mix(vec2(-1.0), vec2(1.0), greaterThanEqual(v.xy, vec2(0.0)));
@@ -257,7 +257,7 @@ void main() {
 	m += GET_BONE_MATRIX(bones.y, bones_a.y, bones_b.y, in_weight_attrib2.y);
 	m += GET_BONE_MATRIX(bones.z, bones_a.z, bones_b.z, in_weight_attrib2.z);
 	m += GET_BONE_MATRIX(bones.w, bones_a.w, bones_b.w, in_weight_attrib2.w);
-#endif
+#endif // USE_EIGHT_WEIGHTS
 
 	// Reverse order because its transposed.
 	out_vertex = (vec4(out_vertex, 1.0) * m).xyz;

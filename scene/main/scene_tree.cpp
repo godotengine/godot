@@ -624,7 +624,7 @@ void SceneTree::client_physics_interpolation_add_node_3d(SelfList<Node3D> *p_ele
 void SceneTree::client_physics_interpolation_remove_node_3d(SelfList<Node3D> *p_elem) {
 	_client_physics_interpolation._node_3d_list.remove(p_elem);
 }
-#endif
+#endif // _3D_DISABLED
 
 void SceneTree::iteration_prepare() {
 	if (_physics_interpolation_enabled) {
@@ -681,7 +681,7 @@ void SceneTree::iteration_end() {
 		// should be given an opportunity to keep their previous transforms
 		// up to date.
 		_client_physics_interpolation.physics_process();
-#endif
+#endif // _3D_DISABLED
 	}
 }
 
@@ -994,7 +994,7 @@ void SceneTree::set_debug_navigation_hint(bool p_enabled) {
 bool SceneTree::is_debugging_navigation_hint() const {
 	return debug_navigation_hint;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void SceneTree::set_debug_collisions_color(const Color &p_color) {
 	debug_collisions_color = p_color;
@@ -2043,7 +2043,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 	}
 	MainLoop::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void SceneTree::set_disable_node_threading(bool p_disable) {
 	node_threading_disabled = p_disable;

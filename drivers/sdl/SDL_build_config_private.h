@@ -93,7 +93,7 @@
 //#define HAVE_GETENV 1
 //#define HAVE_SETENV 1
 //#define HAVE_UNSETENV 1
-#endif
+#endif // __linux__
 
 #ifdef DBUS_ENABLED
 #define HAVE_DBUS_DBUS_H 1
@@ -107,7 +107,7 @@
 #ifdef SOWRAP_ENABLED
 #define SDL_UDEV_DYNAMIC "libudev.so.1"
 #endif
-#endif
+#endif // UDEV_ENABLED
 
 #define SDL_LOADSO_DLOPEN 1
 #define SDL_HAPTIC_LINUX 1
@@ -154,7 +154,7 @@
 #define SDL_MAIN_HANDLED 1
 
 // Other platforms are not supported (for now)
-#else
+#else // defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_VISIONOS)
 #error "No SDL build config was found for this platform. Setup one before compiling the engine."
 #endif
 

@@ -43,7 +43,7 @@ typedef void (*PFNGLTEXSTORAGE3DMULTISAMPLEPROC)(GLenum, GLsizei, GLenum, GLsize
 typedef void (*PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei);
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei);
 typedef void (*PFNEGLIMAGETARGETTEXTURE2DOESPROC)(GLenum, void *);
-#endif
+#endif // ANDROID_ENABLED
 
 class String;
 

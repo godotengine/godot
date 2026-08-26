@@ -58,7 +58,7 @@ void initialize_navigation_2d_module(ModuleInitializationLevel p_level) {
 		EditorPlugins::add_by_type<NavigationRegion2DEditorPlugin>();
 		EditorPlugins::add_by_type<NavigationObstacle2DEditorPlugin>();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void uninitialize_navigation_2d_module(ModuleInitializationLevel p_level) {

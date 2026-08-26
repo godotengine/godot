@@ -476,7 +476,7 @@ public:
 
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-#endif
+#endif // DISABLE_DEPRECATED
 
 	// Theming.
 

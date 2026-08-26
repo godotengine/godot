@@ -1077,7 +1077,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 				// or switching to the AssetLib tab (in the editor).
 				// The Project Manager's project filter box is automatically focused in the project manager code.
 				callable_mp((Control *)filter, &Control::grab_focus).call_deferred(false);
-#endif
+#endif // ANDROID_ENABLED
 
 				if (initial_loading) {
 					_repository_changed(0); // Update when shown for the first time.

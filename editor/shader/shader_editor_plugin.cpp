@@ -87,7 +87,7 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 			p_layout->set_value(config_section, new_layout_keys[i], p_layout->get_value(config_section, old_layout_keys[i]));
 		}
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	if (bool(EDITOR_GET("editors/shader_editor/behavior/files/restore_shaders_on_load"))) {
 		script_editor->set_window_layout(p_layout);
@@ -101,7 +101,7 @@ void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 			p_layout->erase_section_key(config_section, old_layout_keys[i]);
 		}
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	script_editor->get_window_layout(p_layout);
 }

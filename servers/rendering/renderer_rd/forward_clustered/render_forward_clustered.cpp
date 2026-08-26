@@ -107,7 +107,7 @@ bool RenderForwardClustered::RenderBufferDataForwardClustered::ensure_mfx_tempor
 	}
 	return false;
 }
-#endif
+#endif // METAL_MFXTEMPORAL_ENABLED
 
 void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 	// JIC, should already have been cleared
@@ -134,7 +134,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 		memdelete(mfx_temporal_context);
 		mfx_temporal_context = nullptr;
 	}
-#endif
+#endif // METAL_MFXTEMPORAL_ENABLED
 
 	if (!render_sdfgi_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_sdfgi_uniform_set)) {
 		RD::get_singleton()->free_rid(render_sdfgi_uniform_set);
@@ -375,7 +375,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 				material_uniform_set = scene_shader.debug_shadow_splits_material_uniform_set;
 				shader = scene_shader.debug_shadow_splits_material_shader_ptr;
 			} else {
-#endif
+#endif // DEBUG_ENABLED
 				material_uniform_set = surf->material_uniform_set;
 				shader = surf->shader;
 				surf->material->set_as_used();
@@ -846,7 +846,7 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.x, &instance_data.prev_transform[3], &instance_data.prev_model_precision[0]);
 			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.y, &instance_data.prev_transform[7], &instance_data.prev_model_precision[1]);
 			RendererRD::MaterialStorage::split_double(inst->prev_transform.origin.z, &instance_data.prev_transform[11], &instance_data.prev_model_precision[2]);
-#endif
+#endif // REAL_T_IS_DOUBLE
 		} else {
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.transform);
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(Transform3D(), instance_data.prev_transform);
@@ -2545,7 +2545,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			}
 
 			RD::get_singleton()->draw_command_end_label();
-#endif
+#endif // METAL_MFXTEMPORAL_ENABLED
 		} else if (using_taa) {
 			RD::get_singleton()->draw_command_begin_label("TAA");
 			RENDER_TIMESTAMP("TAA");
@@ -4299,7 +4299,7 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 	if (!sdcache->compilation_all_element.in_list()) {
 		geometry_surface_compilation_all_list.add(&sdcache->compilation_all_element);
 	}
-#endif
+#endif // PRELOAD_PIPELINES_ON_SURFACE_CACHE_CONSTRUCTION
 }
 
 void RenderForwardClustered::_geometry_instance_add_surface_with_material_chain(GeometryInstanceForwardClustered *ginstance, uint32_t p_surface, SceneShaderForwardClustered::MaterialData *p_material, RID p_mat_src, RID p_mesh) {
@@ -4420,7 +4420,7 @@ void RenderForwardClustered::_geometry_instance_update(RenderGeometryInstance *p
 			_add_geometry(immediate, inst, nullptr, -1, p_depth_pass, p_shadow_pass);
 
 		} break;
-#endif
+#endif // 0
 		case RSE::INSTANCE_PARTICLES: {
 			int draw_passes = particles_storage->particles_get_draw_passes(ginstance->data->base);
 
@@ -5286,7 +5286,7 @@ RenderForwardClustered::~RenderForwardClustered() {
 		memdelete(motion_vectors_store);
 		motion_vectors_store = nullptr;
 	}
-#endif
+#endif // METAL_MFXTEMPORAL_ENABLED
 
 	RD::get_singleton()->free_rid(shadow_sampler);
 	RSG::light_storage->directional_shadow_atlas_set_size(0);

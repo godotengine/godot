@@ -33,7 +33,7 @@ layout(push_constant, std430) uniform DrawCall {
 	uint sc_packed_1;
 	uint sc_packed_2;
 	uint uc_packed_0;
-#endif
+#endif // UBERSHADER
 }
 draw_call;
 
@@ -58,7 +58,7 @@ uint uc_cull_mode() {
 	return (draw_call.uc_packed_0 >> 0) & 3U;
 }
 
-#else
+#else // UBERSHADER
 
 // Pull the constants from the pipeline's specialization constants.
 layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
@@ -72,7 +72,7 @@ uint sc_packed_1() {
 	return pso_sc_packed_1;
 }
 
-#endif
+#endif // UBERSHADER
 
 bool sc_use_forward_gi() {
 	return ((sc_packed_0() >> 0) & 1U) != 0;
@@ -162,12 +162,12 @@ layout(constant_id = 2) const bool sc_emulate_point_size = false;
 #define VERTEX_INDEX (sc_emulate_point_size ? gl_InstanceIndex : gl_VertexIndex)
 #define INSTANCE_INDEX (sc_emulate_point_size ? (gl_VertexIndex / 6) : gl_InstanceIndex)
 
-#else
+#else // POINT_SIZE_USED
 
 #define VERTEX_INDEX gl_VertexIndex
 #define INSTANCE_INDEX gl_InstanceIndex
 
-#endif
+#endif // POINT_SIZE_USED
 
 #define REFLECTION_MULTIPLIER 1.0
 
@@ -430,7 +430,7 @@ layout(r32ui, set = 1, binding = 27) uniform restrict uimage3D geom_facing_grid;
 #define normal_roughness_buffer shadow_atlas
 
 #define multiviewSampler sampler2D
-#else
+#else // MODE_RENDER_SDF
 
 #ifdef USE_MULTIVIEW
 layout(set = 1, binding = 24) uniform texture2DArray depth_buffer;
@@ -448,7 +448,7 @@ layout(set = 1, binding = 27) uniform texture2D ao_buffer;
 layout(set = 1, binding = 28) uniform texture2D ambient_buffer;
 layout(set = 1, binding = 29) uniform texture2D reflection_buffer;
 #define multiviewSampler sampler2D
-#endif
+#endif // USE_MULTIVIEW
 layout(set = 1, binding = 30) uniform texture2DArray sdfgi_lightprobe_texture;
 layout(set = 1, binding = 31) uniform texture3D sdfgi_occlusion_cascades;
 
@@ -484,7 +484,7 @@ layout(set = 1, binding = 35) uniform texture2D ssr_buffer;
 layout(set = 1, binding = 36) uniform texture2D ssr_mip_level_buffer;
 #endif // USE_MULTIVIEW
 
-#endif
+#endif // MODE_RENDER_SDF
 
 vec4 normal_roughness_compatibility(vec4 p_normal_roughness) {
 	float roughness = p_normal_roughness.w;

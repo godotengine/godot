@@ -225,7 +225,7 @@ void GPUParticles2D::set_show_gizmos(bool p_show_gizmos) {
 	show_gizmos = p_show_gizmos;
 	queue_redraw();
 }
-#endif
+#endif // TOOLS_ENABLED
 
 bool GPUParticles2D::is_trail_enabled() const {
 	return trail_enabled;
@@ -745,7 +745,7 @@ void GPUParticles2D::_notification(int p_what) {
 				draw_rect(visibility_rect, Color(0, 0.7, 0.9, 0.4), false);
 				_draw_emission_gizmo();
 			}
-#endif
+#endif // TOOLS_ENABLED
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -871,7 +871,7 @@ void GPUParticles2D::_draw_emission_gizmo() {
 		}
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emitting", "emitting"), &GPUParticles2D::set_emitting);

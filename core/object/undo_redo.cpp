@@ -371,7 +371,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *r_elements, boo
 					if (res) {
 						res->set_edited(true);
 					}
-#endif
+#endif // TOOLS_ENABLED
 				}
 
 				if (method_callback) {
@@ -404,7 +404,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *r_elements, boo
 					if (res) {
 						res->set_edited(true);
 					}
-#endif
+#endif // TOOLS_ENABLED
 				}
 
 				if (property_callback) {

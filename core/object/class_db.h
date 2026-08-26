@@ -86,7 +86,7 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 	return D_METHODP(p_name, sizeof...(p_args) == 0 ? nullptr : (const char *const **)argptrs, sizeof...(p_args));
 }
 
-#else
+#else // DEBUG_ENABLED
 
 // When DEBUG_ENABLED is set this will let the engine know
 // the argument names for easier debugging.
@@ -546,7 +546,7 @@ public:
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...) \
 	::ClassDB::set_method_error_return_values(get_class_static(), m_method, Vector<Error>{ __VA_ARGS__ });
 
-#else
+#else // DEBUG_ENABLED
 
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...)
 

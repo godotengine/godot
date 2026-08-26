@@ -230,7 +230,7 @@ private:
 	BufferID breadcrumb_buffer;
 	uint32_t breadcrumb_offset = 0u;
 	uint32_t breadcrumb_id = 0u;
-#endif
+#endif // defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 
 public:
 	/*****************/

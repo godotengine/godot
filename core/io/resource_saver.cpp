@@ -137,7 +137,7 @@ Error ResourceSaver::save(RequiredParam<Resource> p_resource, const String &p_pa
 
 				((Resource *)resource.ptr())->set_last_modified_time(mt);
 			}
-#endif
+#endif // TOOLS_ENABLED
 
 			if (p_flags & FLAG_CHANGE_PATH) {
 				resource->set_path(old_path);

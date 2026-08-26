@@ -113,7 +113,7 @@ void InputMap::get_argument_options(const StringName &p_function, int p_idx, Lis
 
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void InputMap::add_action(const StringName &p_action, float p_deadzone) {
 	ERR_FAIL_COND_MSG(input_map.has(p_action), vformat("InputMap already has action \"%s\".", String(p_action)));

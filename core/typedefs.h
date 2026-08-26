@@ -104,7 +104,7 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #else
 #define _ALWAYS_INLINE_ inline
 #endif
-#endif
+#endif // _ALWAYS_INLINE_
 
 // Should always inline, except in dev builds because it makes debugging harder,
 // or `size_enabled` builds where inlining is actively avoided.
@@ -114,7 +114,7 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
 #endif
-#endif
+#endif // _FORCE_INLINE_
 
 // Should never inline.
 #ifndef _NO_INLINE_
@@ -125,7 +125,7 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #else
 #define _NO_INLINE_
 #endif
-#endif
+#endif // _NO_INLINE_
 
 // In some cases [[nodiscard]] will get false positives,
 // we can prevent the warning in specific cases by preceding the call with a cast.
@@ -298,13 +298,13 @@ inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 #define GODOT_CLANG_WARNING_IGNORE(m_warning) GODOT_CLANG_PRAGMA(clang diagnostic ignored m_warning)
 #define GODOT_CLANG_WARNING_POP GODOT_CLANG_PRAGMA(clang diagnostic pop)
 #define GODOT_CLANG_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_CLANG_WARNING_PUSH GODOT_CLANG_WARNING_IGNORE(m_warning)
-#else
+#else // defined(__clang__)
 #define GODOT_CLANG_PRAGMA(m_content)
 #define GODOT_CLANG_WARNING_PUSH
 #define GODOT_CLANG_WARNING_IGNORE(m_warning)
 #define GODOT_CLANG_WARNING_POP
 #define GODOT_CLANG_WARNING_PUSH_AND_IGNORE(m_warning)
-#endif
+#endif // defined(__clang__)
 
 #if defined(__GNUC__) && !defined(__clang__)
 #define GODOT_GCC_PRAGMA(m_content) _Pragma(#m_content)
@@ -312,13 +312,13 @@ inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 #define GODOT_GCC_WARNING_IGNORE(m_warning) GODOT_GCC_PRAGMA(GCC diagnostic ignored m_warning)
 #define GODOT_GCC_WARNING_POP GODOT_GCC_PRAGMA(GCC diagnostic pop)
 #define GODOT_GCC_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_GCC_WARNING_PUSH GODOT_GCC_WARNING_IGNORE(m_warning)
-#else
+#else // defined(__GNUC__) && !defined(__clang__)
 #define GODOT_GCC_PRAGMA(m_content)
 #define GODOT_GCC_WARNING_PUSH
 #define GODOT_GCC_WARNING_IGNORE(m_warning)
 #define GODOT_GCC_WARNING_POP
 #define GODOT_GCC_WARNING_PUSH_AND_IGNORE(m_warning)
-#endif
+#endif // defined(__GNUC__) && !defined(__clang__)
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #define GODOT_MSVC_PRAGMA(m_command) __pragma(m_command)
@@ -326,13 +326,13 @@ inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 #define GODOT_MSVC_WARNING_IGNORE(m_warning) GODOT_MSVC_PRAGMA(warning(disable : m_warning))
 #define GODOT_MSVC_WARNING_POP GODOT_MSVC_PRAGMA(warning(pop))
 #define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_MSVC_WARNING_PUSH GODOT_MSVC_WARNING_IGNORE(m_warning)
-#else
+#else // defined(_MSC_VER) && !defined(__clang__)
 #define GODOT_MSVC_PRAGMA(m_command)
 #define GODOT_MSVC_WARNING_PUSH
 #define GODOT_MSVC_WARNING_IGNORE(m_warning)
 #define GODOT_MSVC_WARNING_POP
 #define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
-#endif
+#endif // defined(_MSC_VER) && !defined(__clang__)
 
 // Deprecation warning suppression helper macros.
 #if defined(__clang__)
@@ -366,9 +366,9 @@ constexpr bool is_fully_defined_v = is_fully_defined<T>::value;
 #define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type) \
 	m_keyword m_type; \
 	static_assert(!is_fully_defined_v<m_type>, #m_type " was unexpectedly fully defined. Please check the include hierarchy of '" __FILE__ "' and remove includes that resolve the " #m_keyword ".");
-#else
+#else // SCU_BUILD_ENABLED
 #define STATIC_ASSERT_INCOMPLETE_TYPE(m_keyword, m_type)
-#endif
+#endif // SCU_BUILD_ENABLED
 
 #define _GD_VARNAME_CONCAT_B_(m_ignore, m_name) m_name
 #define _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_B_(hello there, m_a##m_b##m_c)

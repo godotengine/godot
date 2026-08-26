@@ -464,7 +464,7 @@ void GameView::_sessions_changed() {
 			_attach_script_debugger();
 		}
 	}
-#endif
+#endif // MACOS_ENABLED
 }
 
 void GameView::_instance_starting_static(int p_idx, List<String> &r_arguments) {
@@ -1333,14 +1333,14 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
 		remove_args.insert("--display-driver");
 	}
-#endif
+#endif // WAYLAND_ENABLED
 
 #ifdef X11_ENABLED
 	// X11 requires its display driver.
 	if (DisplayServer::get_singleton()->get_name() == "X11") {
 		remove_args.insert("--display-driver");
 	}
-#endif
+#endif // X11_ENABLED
 
 	while (E) {
 		List<String>::Element *N = E->next();
@@ -1376,14 +1376,14 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 		N = r_arguments.insert_after(N, "--display-driver");
 		N = r_arguments.insert_after(N, "wayland");
 	}
-#endif
+#endif // WAYLAND_ENABLED
 
 #ifdef X11_ENABLED
 	if (DisplayServer::get_singleton()->get_name() == "X11") {
 		N = r_arguments.insert_after(N, "--display-driver");
 		N = r_arguments.insert_after(N, "x11");
 	}
-#endif
+#endif // X11_ENABLED
 
 	// Be sure to have the correct window size in the embedded_process control.
 	_update_embed_window_size();
@@ -1877,9 +1877,9 @@ GameViewPlugin::GameViewPlugin() {
 	game_view_debugger.instantiate();
 	EmbeddedProcess *embedded_process = memnew(EmbeddedProcess);
 	setup(game_view_debugger, embedded_process);
-#else
+#else // ANDROID_ENABLED
 	setup_android();
-#endif
+#endif // ANDROID_ENABLED
 }
 
 #ifdef ANDROID_ENABLED
@@ -1902,4 +1902,4 @@ void GameViewPluginBase::_main_screen_tab_changed(EditorDock *game_dock) {
 		previous_tab = EditorNode::get_editor_main_screen()->get_current_tab();
 	}
 }
-#endif
+#endif // ANDROID_ENABLED

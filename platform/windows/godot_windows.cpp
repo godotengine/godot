@@ -55,7 +55,7 @@ extern "C" char *__cdecl pck_section_dummy_call() {
 #elif defined __GNUC__
 static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
 #endif
-#endif
+#endif // TOOLS_ENABLED
 
 char *wc_to_utf8(const wchar_t *wc) {
 	int ulen = WideCharToMultiByte(CP_UTF8, 0, wc, -1, nullptr, 0, nullptr, nullptr);
@@ -147,9 +147,9 @@ int main(int argc, char **argv) {
 	} __except (CrashHandlerException(GetExceptionInformation())) {
 		return 1;
 	}
-#else
+#else // defined(CRASH_HANDLER_EXCEPTION) && defined(_MSC_VER)
 	return _main();
-#endif
+#endif // defined(CRASH_HANDLER_EXCEPTION) && defined(_MSC_VER)
 }
 
 HINSTANCE godot_hinstance = nullptr;

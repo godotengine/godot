@@ -53,7 +53,7 @@ protected:
 	void _unregister_composition_layer_provider_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
 	void _register_projection_views_extension_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
 	void _unregister_projection_views_extension_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	uint64_t get_openxr_version();

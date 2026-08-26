@@ -1842,7 +1842,7 @@ bool CSGBox3D::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void CSGBox3D::set_material(const Ref<Material> &p_material) {
 	material = p_material;

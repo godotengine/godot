@@ -65,7 +65,7 @@ const GUID CLSID_D3D12SDKConfigurationGodot = { 0x7cda6aca, 0xa03e, 0x49c8, { 0x
 #if defined(__GNUC__)
 #undef _MSC_VER
 #endif
-#endif
+#endif // PIX_ENABLED
 
 RenderingContextDriverD3D12::RenderingContextDriverD3D12() {}
 

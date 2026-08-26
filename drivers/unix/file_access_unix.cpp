@@ -113,7 +113,7 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 			}
 		}
 	}
-#endif
+#endif // defined(TOOLS_ENABLED)
 
 	if (is_backup_save_enabled() && (p_mode_flags == WRITE)) {
 		// Set save path to the symlink target, not the link itself.
@@ -249,7 +249,7 @@ String FileAccessUnix::get_real_path() const {
 
 	return result.simplify_path();
 }
-#endif
+#endif // defined(TOOLS_ENABLED)
 
 void FileAccessUnix::seek(uint64_t p_position) {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
@@ -381,7 +381,7 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 		if (modified_time < created_time) {
 			modified_time = created_time;
 		}
-#endif
+#endif // ANDROID_ENABLED
 		return modified_time;
 	} else {
 		return 0;
@@ -446,9 +446,9 @@ bool FileAccessUnix::_get_hidden_attribute(const String &p_file) {
 	ERR_FAIL_COND_V_MSG(err, false, "Failed to get attributes for: " + p_file);
 
 	return (st.st_flags & UF_HIDDEN);
-#else
+#else // defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 	return false;
-#endif
+#endif // defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 }
 
 Error FileAccessUnix::_set_hidden_attribute(const String &p_file, bool p_hidden) {
@@ -466,9 +466,9 @@ Error FileAccessUnix::_set_hidden_attribute(const String &p_file, bool p_hidden)
 	}
 	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to set attributes for: " + p_file);
 	return OK;
-#else
+#else // defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 	return ERR_UNAVAILABLE;
-#endif
+#endif // defined(__FreeBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 }
 
 bool FileAccessUnix::_get_read_only_attribute(const String &p_file) {
@@ -480,9 +480,9 @@ bool FileAccessUnix::_get_read_only_attribute(const String &p_file) {
 	ERR_FAIL_COND_V_MSG(err, false, "Failed to get attributes for: " + p_file);
 
 	return st.st_flags & UF_IMMUTABLE;
-#else
+#else // defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 	return false;
-#endif
+#endif // defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 }
 
 Error FileAccessUnix::_set_read_only_attribute(const String &p_file, bool p_ro) {
@@ -500,9 +500,9 @@ Error FileAccessUnix::_set_read_only_attribute(const String &p_file, bool p_ro) 
 	}
 	ERR_FAIL_COND_V_MSG(err, FAILED, "Failed to set attributes for: " + p_file);
 	return OK;
-#else
+#else // defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 	return ERR_UNAVAILABLE;
-#endif
+#endif // defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 }
 
 PackedByteArray FileAccessUnix::_get_extended_attribute(const String &p_file, const String &p_attribute_name) {
@@ -522,7 +522,7 @@ PackedByteArray FileAccessUnix::_get_extended_attribute(const String &p_file, co
 	data.resize(attr_size);
 	attr_size = getxattr(file.utf8().get_data(), attr_name.get_data(), (void *)data.ptrw(), data.size(), 0, 0);
 	ERR_FAIL_COND_V_MSG(attr_size != data.size(), PackedByteArray(), "Failed to set extended attributes for: " + p_file);
-#else
+#else // defined(__APPLE__)
 	String file = fix_path(p_file);
 	CharString attr_name = ("user." + p_attribute_name).utf8();
 	ssize_t attr_size = getxattr(file.utf8().get_data(), attr_name.get_data(), nullptr, 0);
@@ -548,7 +548,7 @@ Error FileAccessUnix::_set_extended_attribute(const String &p_file, const String
 	if (err != 0) {
 		return FAILED;
 	}
-#else
+#else // defined(__APPLE__)
 	String file = fix_path(p_file);
 	int err = setxattr(file.utf8().get_data(), ("user." + p_attribute_name).utf8().get_data(), (const void *)p_data.ptr(), p_data.size(), 0);
 	if (err != 0) {
@@ -569,7 +569,7 @@ Error FileAccessUnix::_remove_extended_attribute(const String &p_file, const Str
 	if (err != 0) {
 		return FAILED;
 	}
-#else
+#else // defined(__APPLE__)
 	String file = fix_path(p_file);
 	int err = removexattr(file.utf8().get_data(), ("user." + p_attribute_name).utf8().get_data());
 	if (err != 0) {
@@ -598,7 +598,7 @@ PackedStringArray FileAccessUnix::_get_extended_attributes_list(const String &p_
 			}
 		}
 	}
-#else
+#else // defined(__APPLE__)
 	String file = fix_path(p_file);
 	size_t size = listxattr(file.utf8().get_data(), nullptr, 0);
 	if (size > 0) {

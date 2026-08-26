@@ -238,7 +238,7 @@ PackedStringArray MenuButton::get_configuration_warnings() const {
 	warnings.append_array(popup->get_configuration_warnings());
 	return warnings;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 MenuButton::MenuButton(const String &p_text) :
 		Button(p_text) {

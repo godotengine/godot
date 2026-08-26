@@ -52,7 +52,7 @@ void EditorContextMenuPlugin::get_options(const Vector<String> &p_paths, const V
 bool EditorContextMenuPlugin::has_legacy_shortcuts() const {
 	return GDVIRTUAL_IS_OVERRIDDEN(_popup_menu);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void EditorContextMenuPlugin::add_menu_shortcut(const Ref<Shortcut> &p_shortcut, const Callable &p_callable) {
 	context_menu_shortcuts.insert(p_shortcut, p_callable);
@@ -226,7 +226,7 @@ void EditorContextMenuPluginManager::add_options_from_plugins(PopupMenu *p_popup
 		}
 	}
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 Callable EditorContextMenuPluginManager::match_custom_shortcut(EditorContextMenuPlugin::ContextMenuSlot p_slot, const Ref<InputEvent> &p_event) {
 	for (Ref<EditorContextMenuPlugin> &plugin : plugin_list) {
@@ -261,7 +261,7 @@ bool EditorContextMenuPluginManager::activate_custom_option(ContextMenuSlot p_sl
 					invoke_callback(E.value.callable, plugin->legacy_data);
 					return true;
 				}
-#endif
+#endif // DISABLE_DEPRECATED
 				invoke_callback(E.value.callable, plugin->context_data);
 				return true;
 			}

@@ -71,7 +71,7 @@ void LegacyMainScreenContainer::add_child_notify(Node *p_child) {
 
 	callable_mp(p_child, &Node::reparent).call_deferred(dock, false);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void EditorMainScreen::_on_tab_changed(int p_tab) {
 	EditorNode::get_singleton()->update_distraction_free_mode();
@@ -201,7 +201,7 @@ void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
 
 	editor_table.erase(p_editor);
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 EditorMainScreen::EditorMainScreen() :
 		DockTabContainer(EditorDock::DOCK_SLOT_MAIN_SCREEN) {

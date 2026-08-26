@@ -170,5 +170,5 @@ public:
 	int get_debug_contact_count() const;
 	int get_max_debug_contacts() const;
 	void set_max_debug_contacts(int p_count);
-#endif
+#endif // DEBUG_ENABLED
 };

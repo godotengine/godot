@@ -162,7 +162,7 @@ protected:
 	void _add_image_bind_compat_112617(const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), const Variant &p_key = Variant(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false, const String &p_alt_text = String());
 	void _update_image_bind_compat_112617(const Variant &p_key, BitField<ImageUpdateMask> p_mask, const Ref<Texture2D> &p_image, int p_width = 0, int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(), bool p_pad = false, const String &p_tooltip = String(), bool p_width_in_percent = false, bool p_height_in_percent = false);
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 private:
 	struct Item;

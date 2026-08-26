@@ -204,7 +204,7 @@ public:
 	_FORCE_INLINE_ Iterator find(const K &p_key) {
 		return Iterator(find(p_key));
 	}
-#endif
+#endif // 0
 	_FORCE_INLINE_ ConstIterator begin() const {
 		return ConstIterator(front());
 	}
@@ -216,7 +216,7 @@ public:
 	_FORCE_INLINE_ ConstIterator find(const K &p_key) const {
 		return ConstIterator(find(p_key));
 	}
-#endif
+#endif // 0
 private:
 	struct _Data {
 		Element *first = nullptr;

@@ -517,7 +517,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			_calc_reverb_vol(area, listener_area_pos, listener_volume_vector, listener_reverb_vector);
 			_apply_max_volume_from_vector(output_reverb_vector, listener_reverb_vector);
 		}
-#endif
+#endif // PHYSICS_3D_DISABLED
 
 		if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 			Vector3 listener_velocity;

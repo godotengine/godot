@@ -127,7 +127,7 @@ TEST_CASE("[OS] Feature tags") {
 	CHECK_MESSAGE(
 			!OS::get_singleton()->has_feature("template_release"),
 			"The binary does not have the \"template_release\" feature tag.");
-#else
+#else // TOOLS_ENABLED
 	CHECK_MESSAGE(
 			!OS::get_singleton()->has_feature("editor"),
 			"The binary does not have the \"editor\" feature tag.");
@@ -141,7 +141,7 @@ TEST_CASE("[OS] Feature tags") {
 	CHECK_MESSAGE(
 			!OS::get_singleton()->has_feature("template_release"),
 			"The binary does not have the \"template_release\" feature tag.");
-#else
+#else // DEBUG_ENABLED
 	CHECK_MESSAGE(
 			!OS::get_singleton()->has_feature("template_debug"),
 			"The binary does not have the \"template_debug\" feature tag.");
@@ -185,7 +185,7 @@ TEST_CASE("[OS] Execute") {
 	CHECK_MESSAGE(
 			exit_code == 0,
 			"Running the command `cmd /C \"dir > NUL\"` returns a zero (successful) exit code.");
-#else
+#else // WINDOWS_ENABLED
 	List<String> arguments;
 	arguments.push_back("-c");
 	arguments.push_back("ls > /dev/null");
@@ -197,7 +197,7 @@ TEST_CASE("[OS] Execute") {
 	CHECK_MESSAGE(
 			exit_code == 0,
 			"Running the command `sh -c \"ls > /dev/null\"` returns a zero (successful) exit code.");
-#endif
+#endif // WINDOWS_ENABLED
 }
 
 } // namespace TestOS

@@ -999,7 +999,7 @@ void RendererSceneCull::instance_set_transform(RID p_instance, const Transform3D
 		ERR_FAIL_COND(!v.is_finite());
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 	instance->transform = p_transform;
 	_instance_queue_update(instance, true);
 }
@@ -2787,7 +2787,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 	RendererSceneOcclusionCull::get_singleton()->buffer_update(p_viewport, camera_data.main_transform, camera_data.main_projection, camera_data.is_orthogonal);
 
 	_render_scene(&camera_data, p_render_buffers, environment, camera->attributes, compositor, camera->visible_layers, p_scenario, p_viewport, p_shadow_atlas, RID(), -1, p_screen_mesh_lod_threshold, p_window_output_max_value, true, r_render_info);
-#endif
+#endif // _3D_DISABLED
 }
 
 void RendererSceneCull::_visibility_cull_threaded(uint32_t p_thread, VisibilityCullData *cull_data) {
@@ -3090,7 +3090,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 															ERR_PRINT_ONCE("Relevant Omni Light Heap Error");
 														}
 													}
-#endif
+#endif // VERIFY_RELEVANT_LIGHT_HEAP
 													uint32_t replace_index = omni_score_idx[0].second;
 													geom->geometry_instance->pair_light_instance(light->instance, light_type, replace_index);
 													heapify.adjust_heap(0, 0, omni_count, Pair(light_inst_score, replace_index), &omni_score_idx[0]);
@@ -3116,7 +3116,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 															ERR_PRINT_ONCE("Relevant Spot Light Heap Error");
 														}
 													}
-#endif
+#endif // VERIFY_RELEVANT_LIGHT_HEAP
 													uint32_t replace_index = spot_score_idx[0].second;
 													geom->geometry_instance->pair_light_instance(light->instance, light_type, replace_index);
 													heapify.adjust_heap(0, 0, spot_count, Pair(light_inst_score, replace_index), &spot_score_idx[0]);
@@ -3142,7 +3142,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 															ERR_PRINT_ONCE("Relevant Area Light Heap Error");
 														}
 													}
-#endif
+#endif // VERIFY_RELEVANT_LIGHT_HEAP
 													uint32_t replace_index = area_score_idx[0].second;
 													geom->geometry_instance->pair_light_instance(light->instance, light_type, replace_index);
 													heapify.adjust_heap(0, 0, area_count, Pair(light_inst_score, replace_index), &area_score_idx[0]);
@@ -3466,7 +3466,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		time_avg += double(OS::get_singleton()->get_ticks_usec() - time_from) / 1000.0;
 		time_count++;
 		print_line("time taken: " + rtos(time_avg / time_count));
-#endif
+#endif // DEBUG_CULL_TIME
 
 		if (scene_cull_result.mesh_instances.size()) {
 			for (uint64_t i = 0; i < scene_cull_result.mesh_instances.size(); i++) {
@@ -3778,7 +3778,7 @@ void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_rend
 	camera_data.set_camera(Transform3D(), Projection(), true, false);
 
 	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), compositor, p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, p_window_output_max_value, nullptr);
-#endif
+#endif // _3D_DISABLED
 }
 
 bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int p_step) {

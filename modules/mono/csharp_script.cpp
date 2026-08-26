@@ -73,7 +73,7 @@
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/signals_dock.h"
 #endif
-#endif
+#endif // TOOLS_ENABLED
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
@@ -105,7 +105,7 @@ void CSharpLanguage::init() {
 		print_verbose(".NET: Skipping runtime initialization because glue generation is enabled.");
 		return;
 	}
-#endif
+#endif // TOOLS_ENABLED
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_cmdline_args().find("--class-db-json")) {
 		class_db_api_to_json("user://class_db_api.json", ClassDB::API_CORE);
@@ -386,7 +386,7 @@ Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(co
 			templates.append(TEMPLATES[i]);
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 	return templates;
 }
 
@@ -418,11 +418,11 @@ String CSharpLanguage::make_function(const String &, const String &p_name, const
 	// To prevent issues, we have can_make_function() returning false, and make_function() is never implemented.
 	return String();
 }
-#else
+#else // TOOLS_ENABLED
 String CSharpLanguage::make_function(const String &, const String &, const PackedStringArray &) const {
 	return String();
 }
-#endif
+#endif // TOOLS_ENABLED
 
 String CSharpLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
@@ -434,7 +434,7 @@ String CSharpLanguage::_get_indentation() const {
 			return String(" ").repeat(indent_size);
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 	return "\t";
 }
 
@@ -749,7 +749,7 @@ void CSharpLanguage::reload_assemblies() {
 				rc_instances.push_back(Ref<RefCounted>(rc));
 			}
 		}
-#endif
+#endif // TOOLS_ENABLED
 
 		// Save state and remove script from instances
 		RBMap<ObjectID, CSharpScript::StateBackup> &owners_map = scr->pending_reload_state;
@@ -936,9 +936,9 @@ void CSharpLanguage::reload_assemblies() {
 
 					continue;
 				}
-#else
+#else // TOOLS_ENABLED
 				CRASH_COND(si != nullptr);
-#endif
+#endif // TOOLS_ENABLED
 
 				// Re-create the script instance.
 				if (replace_placeholder || scr->is_tool() || ScriptServer::is_scripting_enabled()) {
@@ -1026,9 +1026,9 @@ void CSharpLanguage::reload_assemblies() {
 		InspectorDock::get_inspector_singleton()->update_tree();
 		SignalsDock::get_singleton()->update_lists();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
-#endif
+#endif // GD_MONO_HOT_RELOAD
 
 #ifdef TOOLS_ENABLED
 Error CSharpLanguage::open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) {
@@ -1038,7 +1038,7 @@ Error CSharpLanguage::open_in_external_editor(const Ref<Script> &p_script, int p
 bool CSharpLanguage::overrides_external_editor() {
 	return get_godotsharp_editor()->call("OverridesExternalEditor");
 }
-#endif
+#endif // TOOLS_ENABLED
 
 bool CSharpLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
 	// Not a parser error in our case, but it's still used for other type of errors
@@ -1086,7 +1086,7 @@ void CSharpLanguage::_editor_init_callback() {
 
 	get_singleton()->godotsharp_editor = godotsharp_editor;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void CSharpLanguage::set_language_index(int p_idx) {
 	ERR_FAIL_COND(lang_idx != -1);
@@ -2042,7 +2042,7 @@ CSharpInstance::~CSharpInstance() {
 		HashSet<Object *>::Iterator match = script->instances.find(owner);
 		CRASH_COND(!match);
 		script->instances.remove(match);
-#else
+#else // DEBUG_ENABLED
 		script->instances.erase(owner);
 #endif // DEBUG_ENABLED
 	}
@@ -2068,7 +2068,7 @@ void CSharpScript::_update_exports_values(HashMap<StringName, Variant> &values, 
 		base_script->_update_exports_values(values, propnames);
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript *p_script, const String *p_current_class_name, void *p_props, int32_t p_count) {
 	GDMonoCache::godotsharp_property_info *props = (GDMonoCache::godotsharp_property_info *)p_props;
@@ -2114,7 +2114,7 @@ void GD_CLR_STDCALL CSharpScript::_add_property_default_values_callback(CSharpSc
 		p_script->exported_members_defval_cache[name] = value;
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_update) {
 #ifdef TOOLS_ENABLED
@@ -2122,7 +2122,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 	if (is_editor) {
 		placeholder_fallback_enabled = true; // until proven otherwise
 	}
-#endif
+#endif // TOOLS_ENABLED
 	if (!valid) {
 		return false;
 	}
@@ -2185,7 +2185,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 			}
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	return changed;
 }
@@ -2243,7 +2243,7 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 	if (efs && !p_script->get_path().is_empty()) {
 		efs->update_file(p_script->get_path());
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 // Extract information about the script using the mono class.
@@ -2479,9 +2479,9 @@ PlaceHolderScriptInstance *CSharpScript::placeholder_instance_create(Object *p_t
 	placeholders.insert(si);
 	_update_exports(si);
 	return si;
-#else
+#else // TOOLS_ENABLED
 	return nullptr;
-#endif
+#endif // TOOLS_ENABLED
 }
 
 bool CSharpScript::has_source_code() const {
@@ -2616,7 +2616,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 		if (efs) {
 			efs->update_file(script_path);
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	return OK;
@@ -2639,7 +2639,7 @@ bool CSharpScript::get_property_default_value(const StringName &p_property, Vari
 		return base_script->get_property_default_value(p_property, r_value);
 	}
 
-#endif
+#endif // TOOLS_ENABLED
 	return false;
 }
 
@@ -2728,7 +2728,7 @@ void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 
 		top = top->base_script.ptr();
 	}
-#else
+#else // TOOLS_ENABLED
 	const CSharpScript *top = this;
 	while (top != nullptr) {
 		List<PropertyInfo> props;
@@ -2743,7 +2743,7 @@ void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 
 		top = top->base_script.ptr();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 int CSharpScript::get_member_line(const StringName &p_member) const {

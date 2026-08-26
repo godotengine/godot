@@ -45,9 +45,9 @@ API_AVAILABLE(ios(13.0))
 #else
 @interface GDTMetalLayer : CALayer <GDTDisplayLayer>
 #endif
-#else
+#else // defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
 @interface GDTMetalLayer : CAMetalLayer <GDTDisplayLayer>
-#endif
+#endif // defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
 @end
 
 #if defined(GLES3_ENABLED)
@@ -55,4 +55,4 @@ API_DEPRECATED("OpenGLES is deprecated", ios(2.0, 12.0))
 @interface GDTOpenGLLayer : CAEAGLLayer <GDTDisplayLayer>
 
 @end
-#endif
+#endif // defined(GLES3_ENABLED)

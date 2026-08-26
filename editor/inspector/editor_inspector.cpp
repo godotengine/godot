@@ -1345,7 +1345,7 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 				return;
 			}
-#endif
+#endif // DISABLE_DEPRECATED
 			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _get_context_data());
 			accept_event();
 		}

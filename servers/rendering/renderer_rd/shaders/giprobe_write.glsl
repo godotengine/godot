@@ -56,7 +56,7 @@ layout(set = 0, binding = 3, std140) uniform Lights {
 }
 lights;
 
-#endif
+#endif // MODE_COMPUTE_LIGHT
 
 layout(push_constant, std430) uniform Params {
 	ivec3 limits;
@@ -182,7 +182,7 @@ float get_normal_advance(vec3 p_normal) {
 	return 1.0 / dot(normal, unorm);
 }
 
-#endif
+#endif // MODE_COMPUTE_LIGHT
 
 void main() {
 	uint cell_index = gl_GlobalInvocationID.x;
@@ -266,7 +266,7 @@ void main() {
 		float divisor = mix(8.0, count, params.propagation);
 		output.data[cell_index] = vec4(light_accum / divisor, 0.0);
 	}
-#endif
+#endif // MODE_UPDATE_MIPMAPS
 
 #ifdef MODE_WRITE_TEXTURE
 	{

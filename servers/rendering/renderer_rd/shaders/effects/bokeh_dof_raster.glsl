@@ -56,7 +56,7 @@ layout(set = 1, binding = 0) uniform sampler2D source_weight;
 #ifdef MODE_COMPOSITE_BOKEH
 layout(set = 2, binding = 0) uniform sampler2D original_weight;
 #endif
-#endif
+#endif // MODE_GEN_BLUR_SIZE
 
 //DOF
 // Bokeh single pass implementation based on https://tuxedolabs.blogspot.com/2018/05/bokeh-depth-of-field-in-single-pass.html
@@ -99,7 +99,7 @@ float get_blur_size(float depth) {
 	return 0.0;
 }
 
-#endif
+#endif // MODE_GEN_BLUR_SIZE
 
 #if defined(MODE_BOKEH_BOX) || defined(MODE_BOKEH_HEXAGONAL)
 
@@ -147,7 +147,7 @@ vec4 weighted_filter_dir(vec2 dir, vec2 uv, vec2 pixel_size) {
 	return accum / total;
 }
 
-#endif
+#endif // defined(MODE_BOKEH_BOX) || defined(MODE_BOKEH_HEXAGONAL)
 
 void main() {
 	vec2 pixel_size = 1.0 / vec2(params.size);
@@ -178,7 +178,7 @@ void main() {
 	weight = color.a;
 #endif
 
-#endif
+#endif // MODE_BOKEH_BOX
 
 #ifdef MODE_BOKEH_HEXAGONAL
 
@@ -210,7 +210,7 @@ void main() {
 	weight = color.a;
 #endif
 
-#endif
+#endif // MODE_BOKEH_HEXAGONAL
 
 #ifdef MODE_BOKEH_CIRCULAR
 	if (params.half_size) {
@@ -255,7 +255,7 @@ void main() {
 	weight = color_accum.a;
 #endif
 
-#endif
+#endif // MODE_BOKEH_CIRCULAR
 
 #ifdef MODE_COMPOSITE_BOKEH
 	frag_color.rgb = texture(source_color, uv).rgb;
@@ -272,5 +272,5 @@ void main() {
 
 	// let alpha blending take care of mixing
 	frag_color.a = mix_amount;
-#endif
+#endif // MODE_COMPOSITE_BOKEH
 }

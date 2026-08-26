@@ -236,7 +236,7 @@ void godot_init_profiler() {
 void godot_cleanup_profiler() {
 }
 
-#else
+#else // defined(GODOT_USE_INSTRUMENTS)
 void godot_init_profiler() {
 	// Stub
 }

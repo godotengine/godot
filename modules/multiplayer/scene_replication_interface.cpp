@@ -49,7 +49,7 @@ _FORCE_INLINE_ void SceneReplicationInterface::_profile_node_data(const String &
 		EngineDebugger::profiler_add_frame_data("multiplayer:replication", values);
 	}
 }
-#endif
+#endif // DEBUG_ENABLED
 
 SceneReplicationInterface::TrackedNode &SceneReplicationInterface::_track(const ObjectID &p_id) {
 	if (!tracked_nodes.has(p_id)) {

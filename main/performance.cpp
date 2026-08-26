@@ -291,7 +291,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return PhysicsServer2D::get_singleton()->get_process_info(PS2DE::INFO_COLLISION_PAIRS);
 		case PHYSICS_2D_ISLAND_COUNT:
 			return PhysicsServer2D::get_singleton()->get_process_info(PS2DE::INFO_ISLAND_COUNT);
-#else
+#else // PHYSICS_2D_DISABLED
 		case PHYSICS_2D_ACTIVE_OBJECTS:
 			return 0;
 		case PHYSICS_2D_COLLISION_PAIRS:
@@ -306,7 +306,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return PhysicsServer3D::get_singleton()->get_process_info(PS3DE::INFO_COLLISION_PAIRS);
 		case PHYSICS_3D_ISLAND_COUNT:
 			return PhysicsServer3D::get_singleton()->get_process_info(PS3DE::INFO_ISLAND_COUNT);
-#else
+#else // PHYSICS_3D_DISABLED
 		case PHYSICS_3D_ACTIVE_OBJECTS:
 			return 0;
 		case PHYSICS_3D_COLLISION_PAIRS:

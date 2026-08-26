@@ -51,7 +51,7 @@ vec3 get_sphere_vertex(uint p_vertex_id) {
 layout(location = 0) out vec3 normal_interp;
 layout(location = 1) out flat uint probe_index;
 
-#endif
+#endif // MODE_PROBES
 
 #ifdef MODE_VISIBILITY
 
@@ -98,7 +98,7 @@ void main() {
 	vertex += (cascades.data[params.cascade].offset + vec3(probe_cell) * probe_cell_size) / vec3(1.0, params.y_mult, 1.0);
 
 	gl_Position = scene_data.projection[ViewIndex] * vec4(vertex, 1.0);
-#endif
+#endif // MODE_PROBES
 
 #ifdef MODE_VISIBILITY
 
@@ -158,7 +158,7 @@ void main() {
 
 	gl_Position = scene_data.projection[ViewIndex] * vec4(vertex, 1.0);
 
-#endif
+#endif // MODE_VISIBILITY
 }
 
 #[fragment]
@@ -195,7 +195,7 @@ params;
 layout(location = 0) in vec3 normal_interp;
 layout(location = 1) in flat uint probe_index;
 
-#endif
+#endif // MODE_PROBES
 
 #ifdef MODE_VISIBILITY
 layout(location = 0) in float visibility;
@@ -234,7 +234,7 @@ void main() {
 
 	frag_color = indirect_light;
 
-#endif
+#endif // MODE_PROBES
 
 #ifdef MODE_VISIBILITY
 

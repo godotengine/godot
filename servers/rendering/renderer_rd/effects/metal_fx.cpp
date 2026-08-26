@@ -206,6 +206,6 @@ void MFXTemporalEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_b
 	CallbackArgs::free(&p_userdata);
 }
 
-#endif
+#endif // METAL_MFXTEMPORAL_ENABLED
 
-#endif
+#endif // METAL_ENABLED

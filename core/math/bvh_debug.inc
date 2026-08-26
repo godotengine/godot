@@ -60,4 +60,4 @@ void _debug_recursive_print_tree_node(uint32_t p_node_id, int depth = 0) const {
 		}
 	}
 }
-#endif
+#endif // BVH_VERBOSE

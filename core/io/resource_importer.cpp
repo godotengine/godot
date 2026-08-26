@@ -135,7 +135,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 			r_path_and_type.path = r_path_and_type.path.get_basename() + ".editor." + r_path_and_type.path.get_extension();
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (r_path_and_type.type.is_empty()) {
 		return ERR_FILE_CORRUPT;
@@ -164,7 +164,7 @@ Ref<Resource> ResourceFormatImporter::load(const String &p_path, const String &p
 	if (ResourceImporter::load_on_startup != nullptr) {
 		return ResourceImporter::load_on_startup(this, p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	return load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, false);
 }
@@ -195,7 +195,7 @@ Ref<Resource> ResourceFormatImporter::load_internal(const String &p_path, Error 
 		res->set_import_last_modified_time(res->get_last_modified_time()); //pass this, if used
 		res->set_import_path(pat.path);
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	return res;
 }

@@ -42,7 +42,7 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "main/main.h"
-#endif
+#endif // TOOLS_ENABLED
 
 extern "C" {
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runScene(JNIEnv *p_env, jclass, jstring p_scene, jobjectArray p_scene_args) {
@@ -95,7 +95,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runSc
 		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_orientationChanged(JNIEnv *p_env, jclass, jboolean p_portrait) {
@@ -116,6 +116,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_orien
 			}
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 }

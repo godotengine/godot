@@ -86,7 +86,7 @@ void MultiplayerSpawner::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::STRING, "scenes/" + itos(i), PROPERTY_HINT_FILE, ext_hint, PROPERTY_USAGE_EDITOR));
 	}
 }
-#endif
+#endif // TOOLS_ENABLED
 
 PackedStringArray MultiplayerSpawner::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();

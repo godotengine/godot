@@ -1180,7 +1180,7 @@ double TextServerExtension::font_get_global_oversampling() const {
 void TextServerExtension::font_set_global_oversampling(double p_oversampling) {
 	// NOP
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void TextServerExtension::reference_oversampling_level(double p_oversampling) {
 	GDVIRTUAL_CALL(_reference_oversampling_level, p_oversampling);

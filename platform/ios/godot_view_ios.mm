@@ -59,15 +59,15 @@ GODOT_CLANG_WARNING_POP
 		} else {
 			return nil;
 		}
-#else
+#else // defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
 		layer = [GDTMetalLayer layer];
-#endif
+#endif // defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
 #if defined(GLES3_ENABLED)
 	} else if ([driverName isEqualToString:@"opengl3"]) {
 		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in iOS 12.0.
 		layer = [GDTOpenGLLayer layer];
 		GODOT_CLANG_WARNING_POP
-#endif
+#endif // defined(GLES3_ENABLED)
 	} else {
 		return nil;
 	}

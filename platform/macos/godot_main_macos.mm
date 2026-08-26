@@ -114,11 +114,11 @@ __attribute__((visibility("default"))) int main(int argc, char **argv) {
 		os->wait_for_debugger(wait_for_debugger);
 		print_verbose("Continuing execution.");
 	}
-#else
+#else // TOOLS_ENABLED
 	if (wait_for_debugger > 0) {
 		WARN_PRINT("--os-debug is not supported in release builds.");
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	if (is_embedded) {
 		// No dock icon for the embedded process, as it is hosted in the Godot editor.

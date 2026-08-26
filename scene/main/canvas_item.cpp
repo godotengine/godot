@@ -745,7 +745,7 @@ bool CanvasItem::_property_get_revert(const StringName &p_name, Variant &r_prope
 	}
 	return false;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void CanvasItem::item_rect_changed(bool p_size_changed) {
 	ERR_MAIN_THREAD_GUARD;

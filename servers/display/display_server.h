@@ -516,7 +516,7 @@ public:
 	Error _file_dialog_with_options_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback);
 	TypedArray<Rect2> _get_display_cutouts_bind_compat_119196() const;
 	Rect2i _get_display_safe_area_bind_compat_119196() const;
-#endif
+#endif // DISABLE_DEPRECATED
 
 	virtual void show_emoji_and_symbol_picker() const;
 	virtual bool color_picker(const Callable &p_callback);

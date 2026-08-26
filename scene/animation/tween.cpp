@@ -420,7 +420,7 @@ bool Tween::step(double p_delta) {
 							ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
 						}
 					}
-#endif
+#endif // DEBUG_ENABLED
 				}
 			} else {
 				_start_tweeners();

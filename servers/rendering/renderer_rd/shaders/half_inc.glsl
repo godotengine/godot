@@ -24,7 +24,7 @@
 #define hmat4 f16mat4
 #define saturateHalf(x) min(float16_t(x), HALF_FLT_MAX)
 
-#else
+#else // EXPLICIT_FP16
 
 #define HALF_FLT_MIN float(1.175494351e-38F)
 #define HALF_FLT_MAX float(3.402823466e+38F)
@@ -38,6 +38,6 @@
 #define hmat4 mat4
 #define saturateHalf(x) (x)
 
-#endif
+#endif // EXPLICIT_FP16
 
 #endif // HALF_INC_H

@@ -109,14 +109,14 @@ void main() {
 	vec4 d = textureLod(source_texture, vec3(uv, 3), 0.0);
 	vec4 avg = (a + d) * 0.5;
 
-#else
+#else // MODE_HALF
 	vec4 a = textureLod(source_texture, vec3(uv, 0), 0.0);
 	vec4 b = textureLod(source_texture, vec3(uv, 1), 0.0);
 	vec4 c = textureLod(source_texture, vec3(uv, 2), 0.0);
 	vec4 d = textureLod(source_texture, vec3(uv, 3), 0.0);
 	vec4 avg = (a + b + c + d) * 0.25;
 
-#endif
+#endif // MODE_HALF
 	imageStore(dest_image, ivec2(gl_GlobalInvocationID.xy), avg);
-#endif
+#endif // MODE_SMART
 }

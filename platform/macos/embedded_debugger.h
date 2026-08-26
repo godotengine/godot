@@ -66,5 +66,5 @@ private:
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
-#endif
+#endif // DEBUG_ENABLED
 };

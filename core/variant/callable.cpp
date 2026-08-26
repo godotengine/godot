@@ -99,7 +99,7 @@ Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, Call
 			r_call_error.expected = 0;
 			return ERR_UNCONFIGURED;
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		int argcount = p_argcount + 2;
 		const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);

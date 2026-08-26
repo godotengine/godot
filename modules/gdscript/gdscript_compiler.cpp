@@ -123,7 +123,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 				_set_error(vformat(R"(GDScript bug (please report): Native class "%s" not found.)", result.native_type), nullptr);
 				return GDScriptDataType();
 			}
-#endif
+#endif // DEBUG_ENABLED
 		} break;
 		case GDScriptParser::DataType::SCRIPT: {
 			if (p_handle_metatype && p_datatype.is_meta_type) {
@@ -473,7 +473,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						gen->write_store_named_global(global, identifier);
 						return global;
 					}
-#endif
+#endif // TOOLS_ENABLED
 
 				} break;
 			}
@@ -808,7 +808,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						r_error = ERR_COMPILATION_FAILED;
 						return GDScriptCodeGenerator::Address();
 					}
-#endif
+#endif // DEBUG_ENABLED
 
 					if (MI && MI->value.getter == "") {
 						// Remove result temp as we don't need it.
@@ -998,7 +998,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						return GDScriptCodeGenerator::Address();
 					}
 				}
-#endif
+#endif // DEBUG_ENABLED
 				/* Find chain of sets */
 
 				StringName assign_class_member_property;
@@ -2203,7 +2203,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				if (message.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
-#endif
+#endif // DEBUG_ENABLED
 			} break;
 			case GDScriptParser::Node::BREAKPOINT: {
 #ifdef DEBUG_ENABLED
@@ -2490,7 +2490,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 
 		codegen.generator->set_signature(signature);
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (p_func) {
 		codegen.generator->set_initial_line(p_func->start_line);
@@ -2662,7 +2662,7 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 
 		codegen.generator->set_signature(signature);
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	codegen.generator->set_initial_line(p_class->start_line);
 
@@ -2918,7 +2918,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				} else {
 					p_script->member_default_values.erase(name);
 				}
-#endif
+#endif // TOOLS_ENABLED
 			} break;
 
 			case GDScriptParser::ClassNode::Member::CONSTANT: {

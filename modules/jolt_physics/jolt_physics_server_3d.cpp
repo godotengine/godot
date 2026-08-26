@@ -242,7 +242,7 @@ void JoltPhysicsServer3D::space_set_debug_contacts(RID p_space, int p_max_contac
 	ERR_FAIL_NULL(space);
 
 	space->set_max_debug_contacts(p_max_contacts);
-#endif
+#endif // DEBUG_ENABLED
 }
 
 PackedVector3Array JoltPhysicsServer3D::space_get_contacts(RID p_space) const {
@@ -251,9 +251,9 @@ PackedVector3Array JoltPhysicsServer3D::space_get_contacts(RID p_space) const {
 	ERR_FAIL_NULL_V(space, PackedVector3Array());
 
 	return space->get_debug_contacts();
-#else
+#else // DEBUG_ENABLED
 	return PackedVector3Array();
-#endif
+#endif // DEBUG_ENABLED
 }
 
 int JoltPhysicsServer3D::space_get_contact_count(RID p_space) const {
@@ -262,9 +262,9 @@ int JoltPhysicsServer3D::space_get_contact_count(RID p_space) const {
 	ERR_FAIL_NULL_V(space, 0);
 
 	return space->get_debug_contact_count();
-#else
+#else // DEBUG_ENABLED
 	return 0;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 RID JoltPhysicsServer3D::area_create() {
@@ -1751,7 +1751,7 @@ void JoltPhysicsServer3D::space_dump_debug_snapshot(RID p_space, const String &p
 	space->dump_debug_snapshot(p_dir);
 }
 
-#endif
+#endif // DEBUG_ENABLED
 
 bool JoltPhysicsServer3D::joint_get_enabled(RID p_joint) const {
 	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);

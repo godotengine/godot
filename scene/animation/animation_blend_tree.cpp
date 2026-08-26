@@ -1945,7 +1945,7 @@ void AnimationNodeBlendTree::get_argument_options(const StringName &p_function, 
 	}
 	AnimationRootNode::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void AnimationNodeBlendTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_node", "name", "node", "position"), &AnimationNodeBlendTree::add_node, DEFVAL(Vector2()));

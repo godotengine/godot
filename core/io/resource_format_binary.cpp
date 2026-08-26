@@ -1024,9 +1024,9 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_file, bool p_no_resources, boo
 					if (ResourceLoader::get_resource_uid(res_path) != er.uid) {
 						WARN_PRINT(vformat("'%s': In external resource #%d, invalid UID: '%s' - using text path instead: '%s'.", res_path, i, ResourceUID::get_singleton()->id_to_text(er.uid), er.path));
 					}
-#else
+#else // TOOLS_ENABLED
 					WARN_PRINT(vformat("'%s': In external resource #%d, invalid UID: '%s' - using text path instead: '%s'.", res_path, i, ResourceUID::get_singleton()->id_to_text(er.uid), er.path));
-#endif
+#endif // TOOLS_ENABLED
 				}
 			}
 		}

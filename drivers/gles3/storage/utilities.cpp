@@ -135,7 +135,7 @@ Vector<uint8_t> Utilities::buffer_get_data(GLenum p_target, GLuint p_buffer, uin
 		uint8_t *w = ret.ptrw();
 		godot_webgl2_glGetBufferSubData(p_target, 0, p_buffer_size, w);
 	}
-#else
+#else // defined(__EMSCRIPTEN__)
 	void *data = glMapBufferRange(p_target, 0, p_buffer_size, GL_MAP_READ_BIT);
 	ERR_FAIL_NULL_V(data, Vector<uint8_t>());
 	{
@@ -143,7 +143,7 @@ Vector<uint8_t> Utilities::buffer_get_data(GLenum p_target, GLuint p_buffer, uin
 		memcpy(w, data, p_buffer_size);
 	}
 	glUnmapBuffer(p_target);
-#endif
+#endif // defined(__EMSCRIPTEN__)
 	glBindBuffer(p_target, 0);
 	return ret;
 }

@@ -213,7 +213,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 	_finish_load_extension(extension);
 
 	return LOAD_STATUS_OK;
-#endif
+#endif // TOOLS_ENABLED
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::unload_extension(const String &p_path) {
@@ -366,7 +366,7 @@ void GDExtensionManager::reload_extensions() {
 		// Reload all scripts to clear out old references.
 		callable_mp_static(&GDExtensionManager::_reload_all_scripts).call_deferred();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_extensions) {
@@ -430,7 +430,7 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 		// Reload all scripts to clear out old references.
 		callable_mp_static(&GDExtensionManager::_reload_all_scripts).call_deferred();
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	return needs_restart;
 }

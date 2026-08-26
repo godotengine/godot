@@ -38,7 +38,7 @@
 
 #include <android/log.h>
 #include <jni.h>
-#endif
+#endif // ANDROID_ENABLED
 
 #ifdef ANDROID_ENABLED
 class JavaObject;
@@ -192,7 +192,7 @@ class JavaClass : public RefCounted {
 	HashMap<StringName, List<MethodInfo>> methods;
 	jclass _class;
 	bool is_interface;
-#endif
+#endif // ANDROID_ENABLED
 
 protected:
 	static void _bind_methods();
@@ -222,7 +222,7 @@ class JavaObject : public RefCounted {
 	friend class JavaClass;
 
 	jobject instance = nullptr;
-#endif
+#endif // ANDROID_ENABLED
 
 protected:
 	static void _bind_methods();
@@ -241,7 +241,7 @@ public:
 	JavaObject();
 	JavaObject(const Ref<JavaClass> &p_base, jobject p_instance);
 	~JavaObject();
-#endif
+#endif // ANDROID_ENABLED
 };
 
 class JavaClassWrapper : public Object {
@@ -285,7 +285,7 @@ class JavaClassWrapper : public Object {
 	bool _is_proxy_class(JNIEnv *env, jclass p_class);
 	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
 	bool _wrap_class_components(JNIEnv *p_env, const Ref<JavaClass> &p_java_class, jclass p_class, bool p_allow_non_public_methods_access);
-#endif
+#endif // ANDROID_ENABLED
 
 	Ref<JavaObject> exception;
 

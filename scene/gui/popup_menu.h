@@ -295,7 +295,7 @@ protected:
 	String _get_system_menu_root_bind_compat_87452() const;
 
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
 	// ATTENTION: This is used by the POT generator's scene parser. If the number of properties returned by `_get_items()` ever changes,

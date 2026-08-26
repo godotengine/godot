@@ -91,7 +91,7 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 	} else {
 		return false;
 	}
-#else
+#else // DISABLE_DEPRECATED
 	if (name.begins_with("libraries/")) {
 		String which = name.get_slicec('/', 1);
 		if (has_animation_library(which)) {
@@ -691,9 +691,9 @@ bool AnimationMixer::_update_caches() {
 			mixer_name += vformat(" (at: %s)", scene_path.get_file());
 		}
 	}
-#else
+#else // TOOLS_ENABLED
 	const String mixer_name = "AnimationMixer";
-#endif
+#endif // TOOLS_ENABLED
 
 	Ref<Animation> reset_anim;
 	bool has_reset_anim = has_animation(SceneStringName(RESET));
@@ -896,7 +896,7 @@ bool AnimationMixer::_update_caches() {
 								track_bshape->init_value = reset_anim->track_get_key_value(rt, 0);
 							}
 						}
-#endif
+#endif // _3D_DISABLED
 					} break;
 					case Animation::TYPE_METHOD: {
 						TrackCacheMethod *track_method = memnew(TrackCacheMethod);
@@ -2451,7 +2451,7 @@ void AnimationMixer::get_argument_options(const StringName &p_function, int p_id
 	}
 	Node::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void AnimationMixer::_bind_methods() {
 	/* ---- Data lists ---- */

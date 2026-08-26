@@ -144,7 +144,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 						draw_colored_polygon(decomp[i], c);
 					}
 				}
-#endif
+#endif // TOOLS_ENABLED
 
 				const Color stroke_color = get_tree()->get_debug_collisions_color();
 				draw_polyline(polygon, stroke_color);
@@ -235,7 +235,7 @@ bool CollisionPolygon2D::_edit_use_rect() const {
 bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	return Geometry2D::is_point_in_polygon(p_point, Variant(polygon));
 }
-#endif
+#endif // DEBUG_ENABLED
 
 PackedStringArray CollisionPolygon2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();

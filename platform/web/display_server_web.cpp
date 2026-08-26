@@ -81,7 +81,7 @@ void DisplayServerWeb::fullscreen_change_callback(int p_fullscreen) {
 		callable_mp_static(DisplayServerWeb::_fullscreen_change_callback).call_deferred(p_fullscreen);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_fullscreen_change_callback(p_fullscreen);
 }
@@ -107,7 +107,7 @@ void DisplayServerWeb::drop_files_js_callback(const char **p_filev, int p_filec)
 		callable_mp_static(DisplayServerWeb::_drop_files_js_callback).call_deferred(files);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_drop_files_js_callback(files);
 }
@@ -137,7 +137,7 @@ void DisplayServerWeb::request_quit_callback() {
 		callable_mp_static(DisplayServerWeb::_request_quit_callback).call_deferred();
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_request_quit_callback();
 }
@@ -179,7 +179,7 @@ void DisplayServerWeb::key_callback(int p_pressed, int p_repeat, int p_modifiers
 		callable_mp_static(DisplayServerWeb::_key_callback).call_deferred(code, key, p_pressed, p_repeat, p_modifiers);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_key_callback(code, key, p_pressed, p_repeat, p_modifiers);
 }
@@ -232,7 +232,7 @@ int DisplayServerWeb::mouse_button_callback(int p_pressed, int p_button, double 
 		callable_mp_static(DisplayServerWeb::_mouse_button_callback).call_deferred(p_pressed, p_button, p_x, p_y, p_modifiers);
 		return true;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	return _mouse_button_callback(p_pressed, p_button, p_x, p_y, p_modifiers);
 }
@@ -319,7 +319,7 @@ void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_
 		callable_mp_static(DisplayServerWeb::_mouse_move_callback).call_deferred(p_x, p_y, p_rel_x, p_rel_y, p_modifiers, p_pressure);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_mouse_move_callback(p_x, p_y, p_rel_x, p_rel_y, p_modifiers, p_pressure);
 }
@@ -411,7 +411,7 @@ void DisplayServerWeb::update_voices_callback(int p_size, const char **p_voice) 
 		callable_mp_static(DisplayServerWeb::_update_voices_callback).call_deferred(voices);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_update_voices_callback(voices);
 }
@@ -473,7 +473,7 @@ void DisplayServerWeb::js_utterance_callback(int p_event, int64_t p_id, int p_po
 		callable_mp_static(DisplayServerWeb::_js_utterance_callback).call_deferred(p_event, p_id, p_pos);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_js_utterance_callback(p_event, p_id, p_pos);
 }
@@ -648,7 +648,7 @@ int DisplayServerWeb::mouse_wheel_callback(int p_delta_mode, double p_delta_x, d
 		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).call_deferred(p_delta_mode, p_delta_x, p_delta_y);
 		return true;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	return _mouse_wheel_callback(p_delta_mode, p_delta_x, p_delta_y);
 }
@@ -734,7 +734,7 @@ void DisplayServerWeb::touch_callback(int p_type, int p_count) {
 		callable_mp_static(DisplayServerWeb::_touch_callback).call_deferred(p_type, p_count);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_touch_callback(p_type, p_count);
 }
@@ -792,7 +792,7 @@ void DisplayServerWeb::vk_input_text_callback(const char *p_text, int p_cursor) 
 		callable_mp_static(DisplayServerWeb::_vk_input_text_callback).call_deferred(text, p_cursor);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_vk_input_text_callback(text, p_cursor);
 }
@@ -835,7 +835,7 @@ void DisplayServerWeb::window_blur_callback() {
 		callable_mp_static(DisplayServerWeb::_window_blur_callback).call_deferred();
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_window_blur_callback();
 }
@@ -854,7 +854,7 @@ void DisplayServerWeb::gamepad_callback(int p_index, int p_connected, const char
 		callable_mp_static(DisplayServerWeb::_gamepad_callback).call_deferred(p_index, p_connected, id, guid);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_gamepad_callback(p_index, p_connected, id, guid);
 }
@@ -883,7 +883,7 @@ void DisplayServerWeb::ime_callback(int p_type, const char *p_text) {
 		callable_mp_static(DisplayServerWeb::_ime_callback).call_deferred(p_type, text);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_ime_callback(p_type, text);
 }
@@ -1018,7 +1018,7 @@ void DisplayServerWeb::update_clipboard_callback(const char *p_text) {
 		callable_mp_static(DisplayServerWeb::_update_clipboard_callback).call_deferred(text);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_update_clipboard_callback(text);
 }
@@ -1044,7 +1044,7 @@ void DisplayServerWeb::send_window_event_callback(int p_notification) {
 		callable_mp_static(DisplayServerWeb::_send_window_event_callback).call_deferred(p_notification);
 		return;
 	}
-#endif
+#endif // PROXY_TO_PTHREAD_ENABLED
 
 	_send_window_event_callback(p_notification);
 }
@@ -1157,9 +1157,9 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, DisplayServ
 				"Unable to initialize WebGL 2 video driver");
 		RasterizerDummy::make_current();
 	}
-#else
+#else // GLES3_ENABLED
 	RasterizerDummy::make_current();
-#endif
+#endif // GLES3_ENABLED
 
 	// JS Input interface (js/libs/library_godot_input.js)
 	godot_js_input_mouse_button_cb(&DisplayServerWeb::mouse_button_callback);
@@ -1195,7 +1195,7 @@ DisplayServerWeb::~DisplayServerWeb() {
 		emscripten_webgl_commit_frame();
 		emscripten_webgl_destroy_context(webgl_ctx);
 	}
-#endif
+#endif // GLES3_ENABLED
 }
 
 bool DisplayServerWeb::has_feature(DisplayServerEnums::Feature p_feature) const {

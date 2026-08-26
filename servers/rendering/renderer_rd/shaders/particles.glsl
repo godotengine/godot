@@ -173,7 +173,7 @@ layout(set = 3, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
 /* clang-format on */
-#endif
+#endif // MATERIAL_UNIFORMS_USED
 
 layout(push_constant, std430) uniform Params {
 	float lifetime;
@@ -337,7 +337,7 @@ void main() {
 	if (bool(PARTICLE.flags & PARTICLE_FLAG_ACTIVE)) {
 		PARTICLE.xform[3].xyz += PARTICLE.velocity * local_delta;
 	}
-#endif
+#endif // !defined(DISABLE_VELOCITY)
 
 	if (!params.trail_pass && params.sub_emitter_mode) {
 		if (!bool(PARTICLE.flags & PARTICLE_FLAG_ACTIVE)) {

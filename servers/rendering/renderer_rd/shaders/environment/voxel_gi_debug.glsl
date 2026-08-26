@@ -180,5 +180,5 @@ void main() {
 	if (frag_color.a < limit) {
 		discard;
 	}
-#endif
+#endif // MODE_DEBUG_LIGHT_FULL
 }

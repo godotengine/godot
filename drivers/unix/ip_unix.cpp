@@ -43,7 +43,7 @@
 #include <sys/types.h>
 #endif
 #include <ifaddrs.h>
-#endif
+#endif // ANDROID_ENABLED
 
 #include <arpa/inet.h>
 #include <sys/socket.h>

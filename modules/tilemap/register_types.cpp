@@ -67,7 +67,7 @@ void initialize_tilemap_module(ModuleInitializationLevel p_level) {
 		EditorPlugins::add_by_type<TileSetEditorPlugin>();
 		EditorPlugins::add_by_type<TileMapEditorPlugin>();
 	}
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void uninitialize_tilemap_module(ModuleInitializationLevel p_level) {}

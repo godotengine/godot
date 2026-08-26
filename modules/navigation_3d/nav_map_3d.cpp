@@ -52,7 +52,7 @@ using namespace Nav3D;
 	ERR_PRINT_ONCE("NavigationServer navigation map query failed because it was made before first map synchronization.\n\
 	NavigationServer 'map_changed' signal can be used to receive update notifications.\n\
 	NavigationServer 'map_get_iteration_id()' can be used to check if a map has finished its newest iteration.");
-#else
+#else // DEBUG_ENABLED
 #define NAVMAP_ITERATION_ZERO_ERROR_MSG()
 #endif // DEBUG_ENABLED
 

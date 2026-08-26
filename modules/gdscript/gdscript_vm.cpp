@@ -523,7 +523,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		const char *err_text = "Stack overflow. Check for infinite recursion in your script.";
 		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
 		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
-#endif
+#endif // DEBUG_ENABLED
 		return _get_default_variant_for_data_type(return_type);
 	}
 
@@ -742,7 +742,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	}
 	bool exit_ok = false;
 	int variant_address_limits[ADDR_TYPE_MAX] = { _stack_size, _constant_count, p_instance ? (int)p_instance->members.size() : 0 };
-#endif
+#endif // DEBUG_ENABLED
 
 	bool awaited = false;
 	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptr() : nullptr };
@@ -776,7 +776,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					op_signature = 0xFFFF;
 					_code_ptr[ip + 5] = op_signature;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				// Check if this is the first run. If so, store the current signature for the optimized path.
 				if (unlikely(op_signature == 0)) {
@@ -836,7 +836,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 					*dst = ret;
-#endif
+#endif // DEBUG_ENABLED
 				}
 				ip += 7 + _pointer_size;
 			}
@@ -1027,7 +1027,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
@@ -1061,7 +1061,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				ip += 5;
 			}
 			DISPATCH_OPCODE;
@@ -1097,7 +1097,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				ip += 5;
 			}
 			DISPATCH_OPCODE;
@@ -1133,7 +1133,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 				*dst = ret;
-#endif
+#endif // DEBUG_ENABLED
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
@@ -1169,7 +1169,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 				*dst = ret;
-#endif
+#endif // DEBUG_ENABLED
 				ip += 5;
 			}
 			DISPATCH_OPCODE;
@@ -1201,7 +1201,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Out of bounds get index " + v + " (on base: '" + _get_var_type(src) + "')";
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				ip += 5;
 			}
 			DISPATCH_OPCODE;
@@ -1238,7 +1238,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
@@ -1283,7 +1283,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 				*dst = ret;
-#endif
+#endif // DEBUG_ENABLED
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
@@ -1322,7 +1322,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Error setting property '" + String(*index) + "' with value of type " + Variant::get_type_name(src->get_type()) + ".";
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				ip += 3;
 			}
 			DISPATCH_OPCODE;
@@ -1341,7 +1341,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Internal error getting property: " + String(*index);
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				ip += 3;
 			}
 			DISPATCH_OPCODE;
@@ -1638,7 +1638,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Trying to cast a freed object.";
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				Callable::CallError err;
 				Variant::construct(to_type, *dst, (const Variant **)&src, 1, err);
@@ -1648,7 +1648,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Invalid cast: could not convert value to '" + Variant::get_type_name(to_type) + "'.";
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				ip += 4;
 			}
@@ -1672,7 +1672,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Invalid cast: can't convert a non-object value to an object type.";
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				Object *src_obj = src->operator Object *();
 
 				if (src_obj && !src_obj->is_class(nc->get_name())) {
@@ -1704,7 +1704,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Trying to assign a non-object value to a variable of type '" + base_type->get_path().get_file() + "'.";
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				bool valid = false;
 
@@ -1756,7 +1756,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = _get_call_error("'" + Variant::get_type_name(t) + "' constructor", (const Variant **)argptrs, argc, *dst, err);
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				ip += 3;
 			}
@@ -1931,7 +1931,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 				Variant::Type base_type = base->get_type();
 				Object *base_obj = nullptr;
-#endif
+#endif // DEBUG_ENABLED
 
 				Variant temp_ret;
 				Callable::CallError err;
@@ -1970,7 +1970,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							OPCODE_BREAK;
 						}
 					}
-#endif
+#endif // DEBUG_ENABLED
 				} else {
 					base->callp(*methodname, (const Variant **)argptrs, argc, temp_ret, err);
 				}
@@ -2059,9 +2059,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = METHOD_CALL_ON_NULL_VALUE_ERROR(method);
 					OPCODE_BREAK;
 				}
-#else
+#else // DEBUG_ENABLED
 				Object *base_obj = base->operator Object *();
-#endif
+#endif // DEBUG_ENABLED
 				Variant **argptrs = instruction_args;
 
 #ifdef DEBUG_ENABLED
@@ -2069,7 +2069,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				Variant temp_ret;
 				Callable::CallError err;
@@ -2114,7 +2114,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = _get_call_error("function '" + methodstr + "' in base '" + basestr + "'", (const Variant **)argptrs, argc, temp_ret, err);
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				ip += 3;
 			}
 			DISPATCH_OPCODE;
@@ -2149,7 +2149,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = _get_call_error("static function '" + methodname->string() + "' in type '" + Variant::get_type_name(builtin_type) + "'", argptrs, argc, *ret, err);
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				ip += 4;
 			}
@@ -2178,7 +2178,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				Callable::CallError err;
 				*ret = method->call(nullptr, argptrs, argc, err);
@@ -2189,7 +2189,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
 					function_call_time += t_taken;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				if (err.error != Callable::CallError::CALL_OK) {
 #ifdef DEBUG_ENABLED
@@ -2223,7 +2223,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				GET_INSTRUCTION_ARG(ret, argc);
 				method->validated_call(nullptr, (const Variant **)argptrs, ret);
@@ -2234,7 +2234,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
 					function_call_time += t_taken;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				ip += 3;
 			}
@@ -2260,7 +2260,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				GET_INSTRUCTION_ARG(ret, argc);
 				VariantInternal::initialize(ret, Variant::NIL);
@@ -2272,7 +2272,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
 					function_call_time += t_taken;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				ip += 3;
 			}
@@ -2304,9 +2304,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = METHOD_CALL_ON_NULL_VALUE_ERROR(method);
 					OPCODE_BREAK;
 				}
-#else
+#else // DEBUG_ENABLED
 				Object *base_obj = *VariantInternal::get_object(base);
-#endif
+#endif // DEBUG_ENABLED
 
 				Variant **argptrs = instruction_args;
 
@@ -2315,7 +2315,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				GET_INSTRUCTION_ARG(ret, argc + 1);
 				method->validated_call(base_obj, (const Variant **)argptrs, ret);
@@ -2326,7 +2326,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
 					function_call_time += t_taken;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				ip += 3;
 			}
@@ -2357,16 +2357,16 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = METHOD_CALL_ON_NULL_VALUE_ERROR(method);
 					OPCODE_BREAK;
 				}
-#else
+#else // DEBUG_ENABLED
 				Object *base_obj = *VariantInternal::get_object(base);
-#endif
+#endif // DEBUG_ENABLED
 				Variant **argptrs = instruction_args;
 #ifdef DEBUG_ENABLED
 				uint64_t call_time = 0;
 				if (GDScriptLanguage::get_singleton()->profiling && GDScriptLanguage::get_singleton()->profile_native_calls) {
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				GET_INSTRUCTION_ARG(ret, argc + 1);
 				VariantInternal::initialize(ret, Variant::NIL);
@@ -2378,7 +2378,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					_profile_native_call(t_taken, method->get_name(), method->get_instance_class());
 					function_call_time += t_taken;
 				}
-#endif
+#endif // DEBUG_ENABLED
 
 				ip += 3;
 			}
@@ -2437,7 +2437,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				ip += 3;
 			}
 			DISPATCH_OPCODE;
@@ -2494,7 +2494,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				ip += 3;
 			}
 			DISPATCH_OPCODE;
@@ -2514,7 +2514,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "compiler bug, function name not found";
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				const StringName *methodname = &_global_names_ptr[self_fun];
 
 				GodotProfileZoneScriptSystemCall(methodname, source, name, *methodname, line);
@@ -2677,7 +2677,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = ("Invalid Resume (bug?)");
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				GET_VARIANT_PTR(result, 0);
 				*result = p_state->result;
 				ip += 2;
@@ -2959,7 +2959,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Trying to return a previously freed instance.";
 					OPCODE_BREAK;
 				}
-#else
+#else // DEBUG_ENABLED
 				Object *ret_obj = r->operator Object *();
 #endif // DEBUG_ENABLED
 				if (ret_obj && !ret_obj->is_class(nc->get_name())) {
@@ -3001,7 +3001,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Trying to return a previously freed instance.";
 					OPCODE_BREAK;
 				}
-#else
+#else // DEBUG_ENABLED
 				Object *ret_obj = r->operator Object *();
 #endif // DEBUG_ENABLED
 
@@ -3057,7 +3057,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						err_text = "Unable to iterate on object of type '" + Variant::get_type_name(container->get_type()) + "'.";
 						OPCODE_BREAK;
 					}
-#endif
+#endif // DEBUG_ENABLED
 					int jumpto = _code_ptr[ip + 4];
 					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
 					ip = jumpto;
@@ -3070,7 +3070,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						err_text = "Unable to obtain iterator object of type '" + Variant::get_type_name(container->get_type()) + "'.";
 						OPCODE_BREAK;
 					}
-#endif
+#endif // DEBUG_ENABLED
 					ip += 5; // Skip regular iterate which is always next.
 				}
 			}
@@ -3375,9 +3375,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Trying to iterate on a null value.";
 					OPCODE_BREAK;
 				}
-#else
+#else // DEBUG_ENABLED
 				Object *obj = *VariantInternal::get_object(container);
-#endif
+#endif // DEBUG_ENABLED
 
 				Array ref = { Variant() };
 				VariantInternal::initialize(state, Variant::ARRAY);
@@ -3391,7 +3391,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				if (!has_next.booleanize()) {
 					int jumpto = _code_ptr[ip + 4];
 					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
@@ -3406,7 +3406,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
 						OPCODE_BREAK;
 					}
-#endif
+#endif // DEBUG_ENABLED
 
 					ip += 5; // Loop again.
 				}
@@ -3459,7 +3459,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						err_text = "Unable to iterate on object of type '" + Variant::get_type_name(container->get_type()) + "' (type changed since first iteration?).";
 						OPCODE_BREAK;
 					}
-#endif
+#endif // DEBUG_ENABLED
 					int jumpto = _code_ptr[ip + 4];
 					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
 					ip = jumpto;
@@ -3472,7 +3472,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						err_text = "Unable to obtain iterator object of type '" + Variant::get_type_name(container->get_type()) + "' (but was obtained on first iteration?).";
 						OPCODE_BREAK;
 					}
-#endif
+#endif // DEBUG_ENABLED
 					ip += 5; //loop again
 				}
 			}
@@ -3738,9 +3738,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Trying to iterate on a null value.";
 					OPCODE_BREAK;
 				}
-#else
+#else // DEBUG_ENABLED
 				Object *obj = *VariantInternal::get_object(container);
-#endif
+#endif // DEBUG_ENABLED
 
 				Callable::CallError ce;
 				Variant has_next = obj->callp(CoreStringName(_iter_next), const_cast<const Variant **>(&state), 1, ce);
@@ -3750,7 +3750,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
 					OPCODE_BREAK;
 				}
-#endif
+#endif // DEBUG_ENABLED
 				if (!has_next.booleanize()) {
 					int jumpto = _code_ptr[ip + 4];
 					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
@@ -3766,7 +3766,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
 						OPCODE_BREAK;
 					}
-#endif
+#endif // DEBUG_ENABLED
 
 					ip += 5; // Loop again.
 				}
@@ -3903,7 +3903,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-#endif
+#endif // DEBUG_ENABLED
 				ip += 3;
 			}
 			DISPATCH_OPCODE;
@@ -3962,7 +3962,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				err_text = "Illegal opcode " + itos(_code_ptr[ip]) + " at address " + itos(ip);
 				OPCODE_BREAK;
 			}
-#endif
+#endif // 0
 		}
 
 		OPCODES_END
@@ -3990,7 +3990,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 		// Get a default return type in case of failure
 		retvalue = _get_default_variant_for_data_type(return_type);
-#endif
+#endif // DEBUG_ENABLED
 
 		OPCODE_OUT;
 	}
@@ -4007,7 +4007,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (p_state && !awaited) {
 		// This means we have finished executing a resumed function and it was not awaited again.

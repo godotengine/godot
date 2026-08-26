@@ -504,7 +504,8 @@ void SpinBox::_notification(int p_what) {
 				theme_cache.updown_icon->draw(get_canvas_item(), Point2i(updown_icon_left, updown_icon_top));
 				break; // If updown is a valid texture, skip other arrows (for compatibility).
 			}
-#endif
+#endif // DISABLE_DEPRECATED
+
 			// Draw arrows.
 			draw_texture(up_icon, Point2i(up_icon_left, up_icon_top), up_icon_modulate);
 			draw_texture(down_icon, Point2i(down_icon_left, down_icon_top), down_icon_modulate);

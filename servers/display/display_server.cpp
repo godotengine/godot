@@ -418,7 +418,7 @@ Dictionary DisplayServer::global_menu_get_system_menu_roots() const {
 	return out;
 }
 
-#endif
+#endif // DISABLE_DEPRECATED
 
 bool DisplayServer::tts_is_speaking() const {
 	WARN_PRINT("TTS is not supported by this display server.");
@@ -2155,7 +2155,7 @@ bool DisplayServer::is_rendering_device_supported() {
 		rcd = memnew(RenderingContextDriverMetal);
 		GODOT_CLANG_WARNING_POP
 	}
-#endif
+#endif // METAL_ENABLED
 
 	if (rcd != nullptr) {
 		err = rcd->initialize();
@@ -2237,7 +2237,7 @@ bool DisplayServer::can_create_rendering_device() {
 		rcd = memnew(RenderingContextDriverMetal);
 		GODOT_CLANG_WARNING_POP
 	}
-#endif
+#endif // METAL_ENABLED
 
 	if (rcd != nullptr) {
 		err = rcd->initialize();

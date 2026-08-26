@@ -60,7 +60,7 @@ WebRTCPeerConnection *WebRTCPeerConnection::create(bool p_notify_postinitialize)
 		obj = ClassDB::instantiate_without_postinitialization(default_extension);
 	}
 	return Object::cast_to<WebRTCPeerConnectionExtension>(obj);
-#endif
+#endif // WEB_ENABLED
 }
 
 void WebRTCPeerConnection::_bind_methods() {

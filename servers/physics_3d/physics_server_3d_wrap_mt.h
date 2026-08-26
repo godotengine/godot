@@ -51,7 +51,7 @@
 #else
 #define MAIN_THREAD_SYNC_WARN
 #endif
-#endif
+#endif // DEBUG_ENABLED
 
 #define ServerName PhysicsServer3D
 #define ServerNameWrapMT PhysicsServer3DWrapMT
@@ -107,7 +107,7 @@ public:
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 		return physics_server_3d->shape_collide(p_shape_A, p_xform_A, p_motion_A, p_shape_B, p_xform_B, p_motion_B, r_results, p_result_max, r_result_count);
 	}
-#endif
+#endif // 0
 	/* SPACE API */
 
 	FUNCRID(space);

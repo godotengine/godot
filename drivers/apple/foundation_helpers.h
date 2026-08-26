@@ -64,7 +64,7 @@ NSString *to_nsstring(const CharString &p_str);
  * Converts an NSString to a Godot String without allocating intermediate buffers.
  * */
 String to_string(NSString *p_str);
-#else
+#else // __OBJC__
 /**
  * Converts a Godot String to an NSString without allocating an intermediate UTF-8 buffer.
  * */
@@ -82,6 +82,6 @@ NS::String *to_nsstring(const CharString &p_str);
  * */
 String to_string(NS::String *p_str);
 
-#endif
+#endif // __OBJC__
 
 } //namespace conv

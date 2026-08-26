@@ -52,7 +52,7 @@
 #include <mach/mach_host.h>
 #include <mach/mach_time.h>
 #include <sys/sysctl.h>
-#endif
+#endif // defined(__APPLE__)
 
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 #include <sys/param.h>
@@ -107,7 +107,7 @@ static void _setup_clock() {
 	_clock_scale = ((double)info.numer / (double)info.denom) / 1000.0;
 	_clock_start = mach_absolute_time() * _clock_scale;
 }
-#else
+#else // defined(__APPLE__)
 #if defined(CLOCK_MONOTONIC_RAW) && !defined(WEB_ENABLED) // This is a better clock on Linux.
 #define GODOT_CLOCK CLOCK_MONOTONIC_RAW
 #else
@@ -118,7 +118,7 @@ static void _setup_clock() {
 	ERR_FAIL_COND_MSG(clock_gettime(GODOT_CLOCK, &tv_now) != 0, "OS CLOCK IS NOT WORKING!");
 	_clock_start = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
 }
-#endif
+#endif // defined(__APPLE__)
 
 struct sigaction old_action;
 
@@ -357,7 +357,7 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	struct timespec tv_now = { 0, 0 };
 	clock_gettime(GODOT_CLOCK, &tv_now);
 	uint64_t longtime = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
-#endif
+#endif // defined(__APPLE__)
 	longtime -= _clock_start;
 
 	return longtime;
@@ -391,7 +391,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	if (sysctlbyname("vm.swapusage", &swap_used, &len, nullptr, 0) < 0) {
 		ERR_PRINT(vformat("Could not get vm.swapusage, error code: %d - %s", errno, strerror(errno)));
 	}
-#endif
+#endif // !defined(APPLE_EMBEDDED_ENABLED)
 
 	if (phy_mem != 0) {
 		meminfo["physical"] = phy_mem;
@@ -503,7 +503,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	if ((uvmexp_info.free + uvmexp_info.swpages - uvmexp_info.swpginuse) * pagesize != 0) {
 		meminfo["available"] = (uvmexp_info.free + uvmexp_info.swpages - uvmexp_info.swpginuse) * pagesize;
 	}
-#else
+#else // defined(__NetBSD__)
 	Error err;
 	Ref<FileAccess> f = FileAccess::open("/proc/meminfo", FileAccess::READ, &err);
 	uint64_t mtotal = 0;
@@ -598,7 +598,7 @@ void OS_Unix::_load_iconv() {
 	}
 	_iconv_ok = gd_iconv_open && gd_iconv && gd_iconv_close && gd_locale_charset;
 }
-#endif
+#endif // !defined(__GLIBC__) && !defined(WEB_ENABLED)
 
 String OS_Unix::multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const {
 	ERR_FAIL_COND_V_MSG(!_iconv_ok, String(), "Conversion failed: Unable to load libiconv");
@@ -779,7 +779,7 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 
 #undef CLEAN_PIPES
 	return ret;
-#endif
+#endif // __EMSCRIPTEN__
 }
 
 int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options, pid_t *r_pid) {
@@ -909,7 +909,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 	}
 	return result ? FAILED : OK;
-#endif
+#endif // __EMSCRIPTEN__
 }
 
 Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
@@ -954,7 +954,7 @@ Error OS_Unix::create_process(const String &p_path, const List<String> &p_argume
 		*r_child_id = pid;
 	}
 	return OK;
-#endif
+#endif // __EMSCRIPTEN__
 }
 
 Error OS_Unix::kill(const ProcessID &p_pid) {
@@ -1164,7 +1164,7 @@ String OS_Unix::get_executable_path() const {
 	delete[] resolved_path;
 
 	return path;
-#else
+#else // defined(__APPLE__)
 	ERR_PRINT("Warning, don't know how to obtain executable path on this OS! Please override this function properly.");
 	return OS::get_executable_path();
 #endif
@@ -1293,4 +1293,4 @@ OS_Unix::OS_Unix() {
 	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
-#endif
+#endif // UNIX_ENABLED

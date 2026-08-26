@@ -670,7 +670,7 @@ void process_gi(ivec2 pos, vec3 vertex, inout vec4 ambient_light, inout vec4 ref
 			ambient_light = amb_accum;
 #endif
 		}
-#endif
+#endif // USE_VOXEL_GI_INSTANCES
 	}
 }
 
@@ -702,7 +702,7 @@ void main() {
 			return;
 		}
 	}
-#endif
+#endif // USE_VRS
 
 	if (sc_half_res) {
 		pos <<= 1;
@@ -785,5 +785,5 @@ void main() {
 			imageStore(reflection_buffer, pos + ivec2(3, 3), reflection_light);
 		}
 	}
-#endif
+#endif // USE_VRS
 }

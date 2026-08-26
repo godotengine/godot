@@ -344,11 +344,12 @@ void MetalDeviceProperties::init_limits(MTL::Device *p_device) {
 		limits.temporalScalerInputContentMinScale = 1.0;
 		limits.temporalScalerInputContentMaxScale = 3.0;
 	}
-#else
+#else // METAL_MFXTEMPORAL_ENABLED
+
 	// Defaults taken from macOS 14+
 	limits.temporalScalerInputContentMinScale = 1.0;
 	limits.temporalScalerInputContentMaxScale = 3.0;
-#endif
+#endif // METAL_MFXTEMPORAL_ENABLED
 }
 
 void MetalDeviceProperties::init_os_props() {

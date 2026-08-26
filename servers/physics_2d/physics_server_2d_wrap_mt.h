@@ -51,7 +51,7 @@
 #else
 #define MAIN_THREAD_SYNC_WARN
 #endif
-#endif
+#endif // DEBUG_ENABLED
 
 #define ServerName PhysicsServer2D
 #define ServerNameWrapMT PhysicsServer2DWrapMT

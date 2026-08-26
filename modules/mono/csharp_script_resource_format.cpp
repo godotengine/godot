@@ -39,7 +39,7 @@ static bool _create_project_solution_if_needed() {
 	CRASH_COND(CSharpLanguage::get_singleton()->get_godotsharp_editor() == nullptr);
 	return CSharpLanguage::get_singleton()->get_godotsharp_editor()->call("CreateProjectSolutionIfNeeded");
 }
-#endif
+#endif // TOOLS_ENABLED
 
 Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
@@ -126,7 +126,7 @@ Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, con
 			ERR_PRINT("C# project could not be created; cannot add file: '" + p_path + "'.");
 		}
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	{
 		Error err;

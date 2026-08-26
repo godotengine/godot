@@ -60,7 +60,7 @@ void Decal::set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture) {
 					p_texture->is_class("ViewportTexture"))) {
 		WARN_PRINT(vformat("%s cannot be used as a Decal texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	RS::get_singleton()->decal_set_texture(decal, RSE::DecalTexture(p_type), texture_rid);
 	update_configuration_warnings();

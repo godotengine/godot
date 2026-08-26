@@ -338,7 +338,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 				key = p_decryption_key;
 			}
 		} else
-#endif
+#endif // TOOLS_ENABLED
 		{
 			key.resize(32);
 			memcpy(key.ptrw(), script_encryption_key, 32);
@@ -535,11 +535,11 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		} else {
 			path_to_load = pf.pack.get_base_dir().path_join(simplified_path.replace("res://", ""));
 		}
-#else
+#else // TOOLS_ENABLED
 		if (!pf.salt.is_empty()) {
 			path_to_load = "res://" + (simplified_path + pf.salt).sha256_text();
 		}
-#endif
+#endif // TOOLS_ENABLED
 		Error err = OK;
 		f = FileAccess::open(path_to_load, FileAccess::READ | FileAccess::SKIP_PACK, &err);
 		ERR_FAIL_COND_MSG(err != OK, vformat(R"(Can't open pack-referenced file "%s" from sparse pack "%s" due to error "%s".)", simplified_path, pf.pack, error_names[err]));
@@ -566,7 +566,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 				key = p_decryption_key;
 			}
 		} else
-#endif
+#endif // TOOLS_ENABLED
 		{
 			key.resize(32);
 			memcpy(key.ptrw(), script_encryption_key, 32);

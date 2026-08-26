@@ -1237,7 +1237,7 @@ bool Environment::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void Environment::_bind_methods() {
 	// Background

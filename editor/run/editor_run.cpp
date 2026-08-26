@@ -173,7 +173,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 		// specify which process to use by specifying the run instance number.
 		instance_args.push_back("--run_instance");
 		instance_args.push_back(itos(i));
-#endif
+#endif // ANDROID_ENABLED
 
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			PackedStringArray output;

@@ -155,7 +155,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						return size_32_bits_real_double;
 					case sizeof(uint64_t):
 						return size_64_bits_real_double;
-#endif
+#endif // REAL_T_IS_DOUBLE
 				}
 				return -1;
 			}

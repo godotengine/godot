@@ -3337,7 +3337,7 @@ PackedStringArray PopupMenu::get_configuration_warnings() const {
 
 	return warnings;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 void PopupMenu::add_autohide_area(const Rect2 &p_area) {
 	autohide_areas.push_back(p_area);
@@ -3393,7 +3393,7 @@ bool PopupMenu::_set(const StringName &p_name, const Variant &p_value) {
 			set_item_submenu(idx, subm);
 		}
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 	return false;
 }
 

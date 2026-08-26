@@ -171,9 +171,9 @@ CGDirectDisplayID DisplayServerMacOSBase::_get_display_id_for_screen(NSScreen *p
 	} else {
 		return [[p_screen deviceDescription][@"NSScreenNumber"] unsignedIntValue];
 	}
-#else
+#else // __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
 	return [[p_screen deviceDescription][@"NSScreenNumber"] unsignedIntValue];
-#endif
+#endif // __MAC_OS_X_VERSION_MAX_ALLOWED >= 260000
 }
 
 void DisplayServerMacOSBase::initialize_tts() const {
@@ -553,7 +553,7 @@ void DisplayServerMacOSBase::_update_hdr_output(DisplayServerEnums::WindowID p_w
 	if (hdr_state_changed) {
 		send_window_event_by_id(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED, p_window);
 	}
-#endif
+#endif // RD_ENABLED
 }
 
 bool DisplayServerMacOSBase::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window) const {
@@ -567,7 +567,7 @@ bool DisplayServerMacOSBase::window_is_hdr_output_supported(DisplayServerEnums::
 		renderer_supports_hdr_output = true;
 		surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 	}
-#endif
+#endif // defined(RD_ENABLED)
 	if (!renderer_supports_hdr_output) {
 		return false;
 	}
@@ -593,7 +593,7 @@ void DisplayServerMacOSBase::window_request_hdr_output(const bool p_enabled, Dis
 			renderer_supports_hdr_output = true;
 			surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 		}
-#endif
+#endif // defined(RD_ENABLED)
 		if (!renderer_supports_hdr_output) {
 			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
 			return;

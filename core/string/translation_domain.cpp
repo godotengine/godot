@@ -271,7 +271,7 @@ Ref<Translation> TranslationDomain::get_translation_object(const String &p_local
 	}
 	return res;
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void TranslationDomain::add_translation(const Ref<Translation> &p_translation) {
 	ERR_FAIL_COND_MSG(p_translation.is_null(), "Invalid translation provided.");

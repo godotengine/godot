@@ -65,7 +65,7 @@ float get_blur_size(float depth) {
 	return 0.0;
 }
 
-#endif
+#endif // MODE_GEN_BLUR_SIZE
 
 #if defined(MODE_BOKEH_BOX) || defined(MODE_BOKEH_HEXAGONAL)
 
@@ -111,7 +111,7 @@ vec4 weighted_filter_dir(vec2 dir, vec2 uv, vec2 pixel_size) {
 	return accum / total;
 }
 
-#endif
+#endif // defined(MODE_BOKEH_BOX) || defined(MODE_BOKEH_HEXAGONAL)
 
 void main() {
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
@@ -132,7 +132,7 @@ void main() {
 	vec4 color = imageLoad(color_image, pos);
 	color.a = size;
 	imageStore(color_image, pos, color);
-#endif
+#endif // MODE_GEN_BLUR_SIZE
 
 #ifdef MODE_BOKEH_BOX
 
@@ -149,7 +149,7 @@ void main() {
 
 	imageStore(bokeh_image, pos, color);
 
-#endif
+#endif // MODE_BOKEH_BOX
 
 #ifdef MODE_BOKEH_HEXAGONAL
 
@@ -175,7 +175,7 @@ void main() {
 
 	imageStore(bokeh_image, pos, color);
 
-#endif
+#endif // MODE_BOKEH_HEXAGONAL
 
 #ifdef MODE_BOKEH_CIRCULAR
 
@@ -207,7 +207,7 @@ void main() {
 	color /= accum;
 
 	imageStore(bokeh_image, pos, color);
-#endif
+#endif // MODE_BOKEH_CIRCULAR
 
 #ifdef MODE_COMPOSITE_BOKEH
 
@@ -226,5 +226,5 @@ void main() {
 
 	color.a = 0; //reset alpha
 	imageStore(color_image, pos, color);
-#endif
+#endif // MODE_COMPOSITE_BOKEH
 }

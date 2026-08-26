@@ -223,4 +223,4 @@ public:
 	OS_MacOS_Embedded(const char *p_execpath, int p_argc, char **p_argv);
 };
 
-#endif
+#endif // TOOLS_ENABLED

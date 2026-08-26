@@ -72,7 +72,7 @@ public:
 	virtual bool _edit_use_rotation() const override;
 
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
-#endif
+#endif // TOOLS_ENABLED
 	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true) override;
 
 	void set_position(const Point2 &p_pos);

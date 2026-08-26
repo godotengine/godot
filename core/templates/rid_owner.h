@@ -58,11 +58,12 @@
 // provide correctness.
 #define SYNC_ACQUIRE std::atomic_thread_fence(std::memory_order_acquire);
 #define SYNC_RELEASE std::atomic_thread_fence(std::memory_order_release);
-#else
+#else // WEAK_MEMORY_ORDER
+
 // Compiler barriers are enough in this case.
 #define SYNC_ACQUIRE std::atomic_signal_fence(std::memory_order_acquire);
 #define SYNC_RELEASE std::atomic_signal_fence(std::memory_order_release);
-#endif
+#endif // WEAK_MEMORY_ORDER
 
 class RID_AllocBase {
 	static inline SafeNumeric<uint64_t> base_id{ 1 };

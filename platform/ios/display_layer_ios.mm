@@ -57,7 +57,7 @@
 	} else {
 		NSLog(@"iOS Simulator prior to iOS 13 does not support Metal rendering.");
 	}
-#endif
+#endif // defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
 }
 
 - (void)layoutDisplayLayer {
@@ -133,7 +133,7 @@
 	if (err) {
 		NSLog(@"DrawView: %x error", err);
 	}
-#endif
+#endif // DEBUG_ENABLED
 }
 
 - (void)dealloc {
@@ -192,4 +192,4 @@
 }
 
 @end
-#endif
+#endif // defined(GLES3_ENABLED)

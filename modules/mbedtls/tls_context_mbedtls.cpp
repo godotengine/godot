@@ -145,7 +145,7 @@ Error TLSContextMbedTLS::init_server(int p_transport, Ref<TLSOptions> p_options,
 			mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
 		}
 	} else
-#endif
+#endif // TOOLS_ENABLED
 	{
 		if (!GLOBAL_GET("network/tls/enable_tls_v1.3").operator bool()) {
 			mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
@@ -201,7 +201,7 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 			mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
 		}
 	} else
-#endif
+#endif // TOOLS_ENABLED
 	{
 		if (!GLOBAL_GET("network/tls/enable_tls_v1.3").operator bool()) {
 			mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);

@@ -188,7 +188,7 @@ void main() {
 	dst_vertices.data[dst_offset + 0] = uvertex.x;
 	dst_vertices.data[dst_offset + 1] = uvertex.y;
 
-#else
+#else // MODE_2D
 	vec3 vertex;
 	vec3 normal;
 	vec4 tangent;
@@ -309,5 +309,5 @@ void main() {
 		dst_vertices.data[dst_normal] = encode_tang_to_uint_oct(tangent);
 	}
 
-#endif
+#endif // MODE_2D
 }

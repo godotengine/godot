@@ -36,7 +36,7 @@ precision highp int;
 precision mediump float;
 precision mediump int;
 #endif
-#endif
+#endif // USE_GLES_OVER_GL
 
 uniform highp samplerCube source_cube; //texunit:0
 /* clang-format on */

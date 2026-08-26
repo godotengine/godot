@@ -90,7 +90,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 			sc.bool_value = false;
 			specialization_constants.push_back(sc);
 		}
-#endif
+#endif // defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, ms, RD::PipelineDepthStencilState(), blend_state, 0, 0, specialization_constants);
 	}
 	{

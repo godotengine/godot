@@ -149,7 +149,7 @@ layout(rgba8, set = 0, binding = 7) uniform restrict readonly image2D source_orm
 layout(rgba16f, set = 0, binding = 11) uniform restrict image2D emission;
 layout(r32f, set = 0, binding = 12) uniform restrict image2D depth;
 
-#endif
+#endif // MODE_DYNAMIC_LIGHTING
 
 #ifdef MODE_DYNAMIC_SHRINK
 
@@ -416,7 +416,7 @@ void main() {
 	uvec3 posu = uvec3(cell_data.data[cell_index].position & 0x7FF, (cell_data.data[cell_index].position >> 11) & 0x3FF, cell_data.data[cell_index].position >> 21);
 	vec4 albedo = unpackUnorm4x8(cell_data.data[cell_index].albedo);
 
-#endif
+#endif // MODE_DYNAMIC
 
 	/////////////////COMPUTE LIGHT///////////////////////////////
 
@@ -541,7 +541,7 @@ void main() {
 		float divisor = mix(8.0, count, params.propagation);
 		outputs.data[cell_index] = vec4(light_accum / divisor, 0.0);
 	}
-#endif
+#endif // MODE_UPDATE_MIPMAPS
 
 	///////////////////WRITE TEXTURE/////////////////////////////
 
@@ -697,14 +697,14 @@ void main() {
 				color = result;
 			}
 
-#endif
+#endif // 0
 			color.rgb /= params.dynamic_range;
 			imageStore(color_texture, pos3d, color);
 			//imageStore(color_texture,pos3d,vec4(1,1,1,1));
 		}
 #endif // MODE_DYNAMIC_SHRINK_PLOT
 	}
-#endif
+#endif // MODE_DYNAMIC_SHRINK
 
 #endif // MODE DYNAMIC
 }

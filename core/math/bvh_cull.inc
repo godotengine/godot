@@ -535,9 +535,10 @@ bool _cull_convex_iterative(uint32_t p_node_id, CullParams &r_params, bool p_ful
 						CRASH_COND(test_count > num_results);
 					}
 				}
-#endif
+#endif // BVH_CONVEX_CULL_OPTIMIZED_RIGOR_CHECK
 
-#else
+#else // BVH_CONVEX_CULL_OPTIMIZED
+
 				// not BVH_CONVEX_CULL_OPTIMIZED
 				// test children individually
 				for (int n = 0; n < leaf.num_items; n++) {

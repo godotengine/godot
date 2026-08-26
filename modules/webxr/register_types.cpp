@@ -54,7 +54,7 @@ void initialize_webxr_module(ModuleInitializationLevel p_level) {
 		webxr.instantiate();
 		XRServer::get_singleton()->add_interface(webxr);
 	}
-#endif
+#endif // WEB_ENABLED
 }
 
 void uninitialize_webxr_module(ModuleInitializationLevel p_level) {
@@ -77,5 +77,5 @@ void uninitialize_webxr_module(ModuleInitializationLevel p_level) {
 		// and release
 		webxr.unref();
 	}
-#endif
+#endif // WEB_ENABLED
 }

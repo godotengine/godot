@@ -47,7 +47,7 @@
 #import "drivers/gles3/rasterizer_gles3.h"
 
 #import <platform_gl.h>
-#endif
+#endif // defined(GLES3_ENABLED)
 
 #if defined(RD_ENABLED)
 #import "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -88,11 +88,11 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 		rendering_driver = "vulkan";
 		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
-#endif
+#endif // defined(__x86_64__)
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 	}
-#endif
+#endif // defined(VULKAN_ENABLED)
 #if defined(METAL_ENABLED)
 	if (rendering_driver == "metal") {
 		rendering_context = memnew(RenderingContextDriverMetal);
@@ -111,14 +111,14 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 			} else
-#endif
+#endif // defined(GLES3_ENABLED)
 			{
 				r_error = ERR_CANT_CREATE;
 				ERR_FAIL_MSG("Could not initialize " + rendering_driver);
 			}
 		}
 	}
-#endif
+#endif // defined(RD_ENABLED)
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3_angle") {
@@ -147,7 +147,7 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 		}
 		gl_manager->set_vsync_enabled(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -179,7 +179,7 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 		rendering_context->window_set_size(window_id_counter, render_size.width, render_size.height);
 		rendering_context->window_set_vsync_mode(window_id_counter, p_vsync_mode);
 	}
-#endif
+#endif // defined(RD_ENABLED)
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
@@ -188,7 +188,7 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 	if (rendering_driver == "opengl3_angle") {
 		RasterizerGLES3::make_current(false);
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		rendering_device = memnew(RenderingDevice);
@@ -197,7 +197,7 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 
 		RendererCompositorRD::make_current();
 	}
-#endif
+#endif // defined(RD_ENABLED)
 
 	CGFloat display_scale = state.screen_max_scale;
 	CGFloat render_scale = screen_get_max_scale();
@@ -235,7 +235,7 @@ DisplayServerMacOSEmbedded::~DisplayServerMacOSEmbedded() {
 		memdelete(gl_manager);
 		gl_manager = nullptr;
 	}
-#endif
+#endif // defined(GLES3_ENABLED)
 
 #if defined(RD_ENABLED)
 	if (rendering_device) {
@@ -247,7 +247,7 @@ DisplayServerMacOSEmbedded::~DisplayServerMacOSEmbedded() {
 		memdelete(rendering_context);
 		rendering_context = nullptr;
 	}
-#endif
+#endif // defined(RD_ENABLED)
 }
 
 DisplayServer *DisplayServerMacOSEmbedded::create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t /* p_parent_window */, Error &r_error) {
@@ -607,7 +607,7 @@ Size2i DisplayServerMacOSEmbedded::window_get_size(DisplayServerEnums::WindowID 
 		uint32_t height = rendering_context->surface_get_height(surface);
 		return Size2i(width, height);
 	}
-#endif
+#endif // defined(RD_ENABLED)
 #ifdef GLES3_ENABLED
 	if (gl_manager) {
 		return gl_manager->window_get_size(p_window);

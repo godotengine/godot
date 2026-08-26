@@ -25,7 +25,7 @@ layout(set = 0, binding = 0, std430) restrict readonly buffer OccluderTransforms
 }
 occluder_transforms;
 
-#else
+#else // POSITIONAL_SHADOW
 
 layout(push_constant, std430) uniform Constants {
 	mat4 projection;
@@ -36,7 +36,7 @@ layout(push_constant, std430) uniform Constants {
 }
 constants;
 
-#endif
+#endif // POSITIONAL_SHADOW
 
 #ifdef MODE_SHADOW
 layout(location = 0) out highp float depth;
@@ -57,10 +57,10 @@ void main() {
 	// projection = projection * Projection(Transform3D().looking_at(cam_targets[i], Vector3(0, 0, -1)).affine_inverse());
 	projection *= mat4(vec4(constants.rotation.x, 0.0, constants.rotation.y, 0.0), vec4(constants.rotation.z, 0.0, constants.rotation.w, 0.0), vec4(0.0, -1.0, 0.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 	mat4 modelview = mat4(occluder_transforms.transforms[constants.pad]) * mat4(constants.modelview);
-#else
+#else // POSITIONAL_SHADOW
 	mat4 projection = constants.projection;
 	mat4 modelview = mat4(constants.modelview[0], constants.modelview[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
-#endif
+#endif // POSITIONAL_SHADOW
 
 	highp vec4 vtx = vec4(vertex, 1.0) * modelview;
 
@@ -91,7 +91,7 @@ layout(push_constant, std430) uniform Constants {
 }
 constants;
 
-#else
+#else // POSITIONAL_SHADOW
 
 layout(push_constant, std430) uniform Constants {
 	mat4 projection;
@@ -102,7 +102,7 @@ layout(push_constant, std430) uniform Constants {
 }
 constants;
 
-#endif
+#endif // POSITIONAL_SHADOW
 
 #ifdef MODE_SHADOW
 layout(location = 0) in highp float depth;
@@ -124,7 +124,7 @@ void main() {
 		discard;
 	}
 	distance_buf = depth / constants.z_far;
-#else
+#else // MODE_SHADOW
 	sdf_buf = 1.0;
-#endif
+#endif // MODE_SHADOW
 }

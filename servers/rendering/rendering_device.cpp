@@ -233,7 +233,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_
 			ShaderSpirvVersion spirv_version = driver->get_shader_container_format().get_shader_spirv_version();
 			return compile_glslang_shader(p_stage, ShaderIncludeDB::parse_include_files(p_source_code), language_version, spirv_version, r_error);
 		}
-#endif
+#endif // MODULE_GLSLANG_ENABLED
 		default:
 			ERR_FAIL_V_MSG(Vector<uint8_t>(), "Shader language is not supported.");
 	}
@@ -3581,7 +3581,7 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_
 	for (RD::AttachmentFormat attachment : p_attachments) {
 		print_line("FORMAT:", attachment.format, "SAMPLES:", attachment.samples, "USAGE FLAGS:", attachment.usage_flags);
 	}
-#endif
+#endif // PRINT_FRAMEBUFFER_FORMAT
 
 	return id;
 }
@@ -4087,9 +4087,9 @@ RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferForm
 	} else {
 		index_buffer.max_index = 0xFFFFFFFF;
 	}
-#else
+#else // DEBUG_ENABLED
 	index_buffer.max_index = 0xFFFFFFFF;
-#endif
+#endif // DEBUG_ENABLED
 	index_buffer.size = size_bytes;
 	index_buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_INDEX_BIT);
 	if (p_creation_bits.has_flag(BUFFER_CREATION_AS_STORAGE_BIT)) {
@@ -5066,7 +5066,7 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 		1,
 	};
 	pipeline.validation.primitive_minimum = primitive_minimum[p_render_primitive];
-#endif
+#endif // DEBUG_ENABLED
 
 	// Create ID to associate with this pipeline.
 	RID id = render_pipeline_owner.make_rid(pipeline);
@@ -5839,7 +5839,7 @@ void RenderingDevice::draw_list_bind_render_pipeline(DrawListID p_list, RID p_re
 	draw_list.validation.pipeline_primitive_divisor = pipeline->validation.primitive_divisor;
 	draw_list.validation.pipeline_primitive_minimum = pipeline->validation.primitive_minimum;
 	draw_list.validation.pipeline_push_constant_size = pipeline->push_constant_size;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void RenderingDevice::draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index) {
@@ -5877,7 +5877,7 @@ void RenderingDevice::draw_list_bind_uniform_set(DrawListID p_list, RID p_unifor
 			}
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void RenderingDevice::draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) {
@@ -5984,7 +5984,7 @@ void RenderingDevice::draw_list_bind_vertex_buffers_format(DrawListID p_list, Ve
 			uint32_t instances_allowed = attribute.stride == 0 ? 0 : uint32_t(buffer->size / attribute.stride);
 			max_instances_allowed = MIN(instances_allowed, max_instances_allowed);
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		driver_buffers[i] = buffer->driver_id;
 
@@ -6088,7 +6088,7 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 	for (uint32_t i = 0; i < draw_list.state.set_count; i++) {
@@ -6109,7 +6109,7 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 			}
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 	thread_local LocalVector<RDD::UniformSetID> valid_descriptor_ids;
 	valid_descriptor_ids.clear();
 	valid_descriptor_ids.resize(draw_list.state.set_count);
@@ -6186,7 +6186,7 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 
 		ERR_FAIL_COND_MSG(draw_list.validation.pipeline_uses_restart_indices != draw_list.validation.index_buffer_uses_restart_indices,
 				"The usage of restart indices in index buffer does not match the render primitive in the pipeline.");
-#endif
+#endif // DEBUG_ENABLED
 		uint32_t to_draw = draw_list.validation.index_array_count;
 
 #ifdef DEBUG_ENABLED
@@ -6195,7 +6195,7 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 
 		ERR_FAIL_COND_MSG((to_draw % draw_list.validation.pipeline_primitive_divisor) != 0,
 				"Index amount (" + itos(to_draw) + ") must be a multiple of the amount of indices required by the render primitive (" + itos(draw_list.validation.pipeline_primitive_divisor) + ").");
-#endif
+#endif // DEBUG_ENABLED
 
 		draw_graph.add_draw_list_draw_indexed(to_draw, p_instances, 0);
 	} else {
@@ -6217,7 +6217,7 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 
 		ERR_FAIL_COND_MSG((to_draw % draw_list.validation.pipeline_primitive_divisor) != 0,
 				"Vertex amount (" + itos(to_draw) + ") must be a multiple of the amount of vertices required by the render primitive (" + itos(draw_list.validation.pipeline_primitive_divisor) + ").");
-#endif
+#endif // DEBUG_ENABLED
 
 		draw_graph.add_draw_list_draw(to_draw, p_instances);
 	}
@@ -6252,7 +6252,7 @@ void RenderingDevice::draw_list_draw_indirect(DrawListID p_list, bool p_use_indi
 		ERR_FAIL_COND_MSG(!draw_list.validation.pipeline_push_constant_supplied,
 				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 	for (uint32_t i = 0; i < draw_list.state.set_count; i++) {
@@ -6273,7 +6273,7 @@ void RenderingDevice::draw_list_draw_indirect(DrawListID p_list, bool p_use_indi
 			}
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	// Prepare descriptor sets if the API doesn't use pipeline barriers.
 	if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
@@ -6314,7 +6314,7 @@ void RenderingDevice::draw_list_draw_indirect(DrawListID p_list, bool p_use_indi
 
 		ERR_FAIL_COND_MSG(draw_list.validation.pipeline_uses_restart_indices != draw_list.validation.index_buffer_uses_restart_indices,
 				"The usage of restart indices in index buffer does not match the render primitive in the pipeline.");
-#endif
+#endif // DEBUG_ENABLED
 
 		ERR_FAIL_COND_MSG(p_offset + 20 > buffer->size, "Offset provided (+20) is past the end of buffer.");
 
@@ -6560,7 +6560,7 @@ void RenderingDevice::raytracing_list_bind_uniform_set(RaytracingListID p_list, 
 		ERR_FAIL_NULL(acceleration_structure);
 		ERR_FAIL_COND_MSG(acceleration_structure->invalidated, "Acceleration structure either has not been built yet, or has been invalidated by an operation and needs to be rebuilt.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (p_index > raytracing_list.state.set_count) {
 		raytracing_list.state.set_count = p_index;
@@ -6617,7 +6617,7 @@ void RenderingDevice::raytracing_list_trace_rays(RaytracingListID p_list, uint32
 				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 	for (uint32_t i = 0; i < raytracing_list.state.set_count; i++) {
@@ -6637,7 +6637,7 @@ void RenderingDevice::raytracing_list_trace_rays(RaytracingListID p_list, uint32
 			}
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	// Prepare descriptor sets if the API doesn't use pipeline barriers.
 	if (!driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
@@ -6846,7 +6846,7 @@ void RenderingDevice::compute_list_bind_uniform_set(ComputeListID p_list, RID p_
 			}
 		}
 	}
-#endif
+#endif // 0
 }
 
 void RenderingDevice::compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size) {
@@ -6888,7 +6888,7 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 			"Dispatch amount of Y compute groups (" + itos(p_y_groups) + ") is larger than device limit (" + itos(driver->limit_get(LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Y)) + ")");
 	ERR_FAIL_COND_MSG(p_z_groups > driver->limit_get(LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Z),
 			"Dispatch amount of Z compute groups (" + itos(p_z_groups) + ") is larger than device limit (" + itos(driver->limit_get(LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Z)) + ")");
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 
@@ -6900,7 +6900,7 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 	for (uint32_t i = 0; i < compute_list.state.set_count; i++) {
@@ -6920,7 +6920,7 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 			}
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 	thread_local LocalVector<RDD::UniformSetID> valid_descriptor_ids;
 	valid_descriptor_ids.clear();
 	valid_descriptor_ids.resize(compute_list.state.set_count);
@@ -7012,7 +7012,7 @@ void RenderingDevice::compute_list_dispatch_threads(ComputeListID p_list, uint32
 				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 
 	compute_list_dispatch(p_list, Math::division_round_up(p_x_threads, compute_list.state.local_group_size[0]), Math::division_round_up(p_y_threads, compute_list.state.local_group_size[1]), Math::division_round_up(p_z_threads, compute_list.state.local_group_size[2]));
 }
@@ -7040,7 +7040,7 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 	for (uint32_t i = 0; i < compute_list.state.set_count; i++) {
@@ -7060,7 +7060,7 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 			}
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 	thread_local LocalVector<RDD::UniformSetID> valid_descriptor_ids;
 	valid_descriptor_ids.clear();
 	valid_descriptor_ids.resize(compute_list.state.set_count);
@@ -7174,7 +7174,7 @@ void RenderingDevice::barrier(BitField<BarrierMask> p_from, BitField<BarrierMask
 void RenderingDevice::full_barrier() {
 	WARN_PRINT("Deprecated. Barriers are automatically inserted by RenderingDevice.");
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 /*************************/
 /**** TRANSFER WORKER ****/
@@ -7683,7 +7683,7 @@ void RenderingDevice::_free_internal(RID p_id) {
 		resource_name = resource_names[p_id];
 		resource_names.erase(p_id);
 	}
-#endif
+#endif // DEV_ENABLED
 
 	// Push everything so it's disposed of next time this frame index is processed (means, it's safe to do it).
 	if (texture_owner.owns(p_id)) {
@@ -9338,7 +9338,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_BUFFER);
 	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE);
 	BIND_ENUM_CONSTANT(DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(DATA_FORMAT_R4G4_UNORM_PACK8);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_R4G4B4A4_UNORM_PACK16);
@@ -9582,7 +9582,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_BITFIELD_FLAG(BARRIER_MASK_RASTER);
 	BIND_BITFIELD_FLAG(BARRIER_MASK_ALL_BARRIERS);
 	BIND_BITFIELD_FLAG(BARRIER_MASK_NO_BARRIER);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(TEXTURE_TYPE_1D);
 	BIND_ENUM_CONSTANT(TEXTURE_TYPE_2D);
@@ -9797,7 +9797,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(FINAL_ACTION_MAX);
 	BIND_ENUM_CONSTANT(FINAL_ACTION_READ);
 	BIND_ENUM_CONSTANT(FINAL_ACTION_CONTINUE);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(SHADER_STAGE_VERTEX);
 	BIND_ENUM_CONSTANT(SHADER_STAGE_FRAGMENT);
@@ -10304,7 +10304,7 @@ Vector<int64_t> RenderingDevice::_draw_list_begin_split(RID p_framebuffer, uint3
 Vector<int64_t> RenderingDevice::_draw_list_switch_to_next_pass_split(uint32_t p_splits) {
 	ERR_FAIL_V_MSG(Vector<int64_t>(), "Deprecated. Split draw lists are used automatically by RenderingDevice.");
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void RenderingDevice::_draw_list_set_push_constant(DrawListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size) {
 	ERR_FAIL_COND(p_data_size > (uint32_t)p_data.size());

@@ -265,7 +265,7 @@ static void _error_handler(void *p_self, const char *p_func, const char *p_file,
 
 	OutputDebugStringW((LPCWSTR)err_str.utf16().ptr());
 }
-#endif
+#endif // WINDOWS_DEBUG_OUTPUT_ENABLED
 
 void OS_Windows::initialize() {
 	crash_handler.initialize();
@@ -306,9 +306,9 @@ void OS_Windows::initialize() {
 		delay_resolution = 1000;
 		timeBeginPeriod(1);
 	}
-#else
+#else // WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	delay_resolution = 1000;
-#endif
+#endif // WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -470,7 +470,7 @@ void debug_dynamic_library_check_dependencies(const String &p_path, HashSet<Stri
 		CloseHandle(file);
 	}
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = p_path;
@@ -541,7 +541,7 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 		} else {
 			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, format_error_message(err_code)));
 		}
-#endif
+#endif // DEBUG_ENABLED
 	}
 
 #ifndef DEBUG_ENABLED
@@ -2742,7 +2742,7 @@ bool OS_Windows::_test_create_rendering_device(const String &p_display_driver) c
 		memdelete(rcd);
 		rcd = nullptr;
 	}
-#endif
+#endif // defined(RD_ENABLED)
 
 	return ok;
 }
@@ -2782,7 +2782,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	} else {
 		ok = false;
 	}
-#endif
+#endif // GLES3_ENABLED
 
 	MSG msg = {};
 	while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -2802,7 +2802,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
 	return ok;
 }
-#endif
+#endif // TOOLS_ENABLED
 
 #ifdef _MSC_VER
 #define IAT_HOOK_CALL __declspec(guard(nocf))

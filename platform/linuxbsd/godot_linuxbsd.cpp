@@ -53,7 +53,7 @@ void __cpuid(int *r_cpuinfo, int p_info) {
 			: "=a"(r_cpuinfo[0]), "=r"(r_cpuinfo[1]), "=c"(r_cpuinfo[2]), "=d"(r_cpuinfo[3])
 			: "0"(p_info));
 }
-#endif
+#endif // defined(__x86_64) || defined(__x86_64__)
 
 // For export templates, add a section; the exporter will patch it to enclose
 // the data appended to the executable (bundled PCK).
@@ -65,7 +65,7 @@ extern "C" const char *pck_section_dummy_call() __attribute__((used));
 extern "C" const char *pck_section_dummy_call() {
 	return &dummy[0];
 }
-#endif
+#endif // !defined(TOOLS_ENABLED) && defined(__GNUC__)
 
 int main(int argc, char *argv[]) {
 #if defined(__x86_64) || defined(__x86_64__)
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 		}
 		abort();
 	}
-#endif
+#endif // defined(__x86_64) || defined(__x86_64__)
 
 #if defined(ASAN_ENABLED)
 	// Note: Set stack size to be at least 30 MB (vs 8 MB default) to avoid overflow, address sanitizer can increase stack usage up to 3 times.

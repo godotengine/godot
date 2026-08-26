@@ -550,7 +550,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_godotengine_godot_GodotLib_getRendererIn
 		DisplayServerAndroid::free_vulkan_global_context();
 	}
 #endif // XR_DISABLED
-#endif
+#endif // VULKAN_ENABLED
 
 	String rendering_driver_source = rendering_source_to_string(OS::get_singleton()->get_current_rendering_driver_name_source());
 	String rendering_method_source = rendering_source_to_string(OS::get_singleton()->get_current_rendering_method_source());
@@ -573,9 +573,9 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getEditorSetting(J
 		Variant editor_setting = EDITOR_GET(godot_setting_key);
 		editor_setting_value = (editor_setting.get_type() == Variant::NIL) ? "" : editor_setting;
 	}
-#else
+#else // TOOLS_ENABLED
 	WARN_PRINT("Access to the Editor Settings in only available on Editor builds");
-#endif
+#endif // TOOLS_ENABLED
 
 	return env->NewStringUTF(editor_setting_value.utf8().get_data());
 }
@@ -587,9 +587,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorSetting(JNIE
 		Variant data = _jobject_to_variant(env, p_data);
 		EditorSettings::get_singleton()->set(key, data);
 	}
-#else
+#else // TOOLS_ENABLED
 	WARN_PRINT("Access to the Editor Settings in only available on Editor builds");
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMetadata(JNIEnv *env, jclass clazz, jstring p_section, jstring p_key, jobject p_default_value) {
@@ -603,9 +603,9 @@ JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMe
 		Variant data = EditorSettings::get_singleton()->get_project_metadata(section, key, default_value);
 		result.l = _variant_to_jobject(env, data.get_type(), &data);
 	}
-#else
+#else // TOOLS_ENABLED
 	WARN_PRINT("Access to the Editor Settings Project Metadata is only available on Editor builds");
-#endif
+#endif // TOOLS_ENABLED
 
 	return result.l;
 }
@@ -618,9 +618,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorProjectMetad
 		Variant data = _jobject_to_variant(env, p_data);
 		EditorSettings::get_singleton()->set_project_metadata(section, key, data);
 	}
-#else
+#else // TOOLS_ENABLED
 	WARN_PRINT("Access to the Editor Settings Project Metadata is only available on Editor builds");
-#endif
+#endif // TOOLS_ENABLED
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onNightModeChanged(JNIEnv *env, jclass clazz) {

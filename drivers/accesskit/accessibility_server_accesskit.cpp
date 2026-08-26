@@ -278,7 +278,7 @@ void AccessibilityServerAccessKit::window_deactivation_completed(DisplayServerEn
 	for (const RID &rid : to_delete) {
 		_free_recursive(wd, rid);
 	}
-#endif
+#endif // DEV_ENABLED
 	wd->initial_update_completed = false;
 }
 
@@ -684,13 +684,13 @@ void AccessibilityServerAccessKit::update_if_active(const Callable &p_callable) 
 		if (events) {
 			accesskit_windows_queued_events_raise(events);
 		}
-#endif
+#endif // WINDOWS_ENABLED
 #ifdef MACOS_ENABLED
 		accesskit_macos_queued_events *events = accesskit_macos_subclassing_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
 		if (events) {
 			accesskit_macos_queued_events_raise(events);
 		}
-#endif
+#endif // MACOS_ENABLED
 #ifdef LINUXBSD_ENABLED
 		accesskit_unix_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
 #endif
@@ -723,7 +723,7 @@ void AccessibilityServerAccessKit::set_window_rect(DisplayServerEnums::WindowID 
 	accesskit_rect outer_bounds = { p_rect_out.position.x, p_rect_out.position.y, p_rect_out.position.x + p_rect_out.size.width, p_rect_out.position.y + p_rect_out.size.height };
 	accesskit_rect inner_bounds = { p_rect_in.position.x, p_rect_in.position.y, p_rect_in.position.x + p_rect_in.size.width, p_rect_in.position.y + p_rect_in.size.height };
 	accesskit_unix_adapter_set_root_window_bounds(wd->adapter, outer_bounds, inner_bounds);
-#endif
+#endif // LINUXBSD_ENABLED
 }
 
 void AccessibilityServerAccessKit::set_window_focused(DisplayServerEnums::WindowID p_window_id, bool p_focused) {
@@ -738,7 +738,8 @@ void AccessibilityServerAccessKit::set_window_focused(DisplayServerEnums::Window
 	if (events != nullptr) {
 		accesskit_macos_queued_events_raise(events);
 	}
-#endif
+#endif // MACOS_ENABLED
+
 	// Note: On Windows, the subclassing adapter takes care of this.
 }
 

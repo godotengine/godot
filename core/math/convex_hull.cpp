@@ -82,12 +82,12 @@ subject to the following restrictions:
 		} \
 	} else \
 		((void)0)
-#else
+#else // DEBUG_ENABLED
 #define CHULL_ASSERT(m_cond) \
 	if constexpr (true) { \
 	} else \
 		((void)0)
-#endif
+#endif // DEBUG_ENABLED
 
 #if defined(DEBUG_CONVEX_HULL) || defined(SHOW_ITERATIONS)
 #include <cstdio>
@@ -215,10 +215,10 @@ public:
 					: "0"(low), "1"(high), [bl] "g"(p_other.low), [bh] "g"(p_other.high)
 					: "cc");
 			return result;
-#else
+#else // USE_X86_64_ASM
 			uint64_t lo = low + p_other.low;
 			return Int128(lo, high + p_other.high + (lo < low));
-#endif
+#endif // USE_X86_64_ASM
 		}
 
 		Int128 operator-(const Int128 &p_other) const {
@@ -230,9 +230,9 @@ public:
 					: "0"(low), "1"(high), [bl] "g"(p_other.low), [bh] "g"(p_other.high)
 					: "cc");
 			return result;
-#else
+#else // USE_X86_64_ASM
 			return *this + -p_other;
-#endif
+#endif // USE_X86_64_ASM
 		}
 
 		Int128 &operator+=(const Int128 &p_other) {
@@ -242,14 +242,14 @@ public:
 					: [rl] "=r"(low), [rh] "=r"(high)
 					: "0"(low), "1"(high), [bl] "g"(p_other.low), [bh] "g"(p_other.high)
 					: "cc");
-#else
+#else // USE_X86_64_ASM
 			uint64_t lo = low + p_other.low;
 			if (lo < low) {
 				++high;
 			}
 			low = lo;
 			high += p_other.high;
-#endif
+#endif // USE_X86_64_ASM
 			return *this;
 		}
 
@@ -436,7 +436,7 @@ public:
 		}
 
 		void print_graph();
-#endif
+#endif // DEBUG_CONVEX_HULL
 
 		Point32 operator-(const Vertex &p_other) const {
 			return point - p_other.point;
@@ -496,7 +496,7 @@ public:
 			printf("E%p : %d -> %d,  n=%p p=%p   (0 %d\t%d\t%d) -> (%d %d %d)", this, reverse->target->point.index, target->point.index, next, prev,
 					reverse->target->point.x, reverse->target->point.y, reverse->target->point.z, target->point.x, target->point.y, target->point.z);
 		}
-#endif
+#endif // DEBUG_CONVEX_HULL
 	};
 
 	class Face {
@@ -699,7 +699,7 @@ ConvexHullInternal::Int128 ConvexHullInternal::Int128::mul(int64_t p_left, int64
 			: "cc");
 	return result;
 
-#else
+#else // USE_X86_64_ASM
 	bool negative = p_left < 0;
 	if (negative) {
 		p_left = -p_left;
@@ -710,7 +710,7 @@ ConvexHullInternal::Int128 ConvexHullInternal::Int128::mul(int64_t p_left, int64
 	}
 	DMul<uint64_t, uint32_t>::mul((uint64_t)p_left, (uint64_t)p_right, result.low, result.high);
 	return negative ? -result : result;
-#endif
+#endif // USE_X86_64_ASM
 }
 
 ConvexHullInternal::Int128 ConvexHullInternal::Int128::mul(uint64_t p_left, uint64_t p_right) {
@@ -722,9 +722,9 @@ ConvexHullInternal::Int128 ConvexHullInternal::Int128::mul(uint64_t p_left, uint
 			: "0"(p_left), [p_right] "r"(p_right)
 			: "cc");
 
-#else
+#else // USE_X86_64_ASM
 	DMul<uint64_t, uint32_t>::mul(p_left, p_right, result.low, result.high);
-#endif
+#endif // USE_X86_64_ASM
 
 	return result;
 }
@@ -760,11 +760,11 @@ int32_t ConvexHullInternal::Rational64::compare(const Rational64 &p_other) const
 	// if sign is -1, all bits of result are inverted, which changes the sign of result (and again cannot result in zero)
 	return result ? result ^ sign : 0;
 
-#else
+#else // USE_X86_64_ASM
 
 	return sign * Int128::mul(numerator, p_other.denominator).ucmp(Int128::mul(denominator, p_other.numerator));
 
-#endif
+#endif // USE_X86_64_ASM
 }
 
 int32_t ConvexHullInternal::Rational128::compare(const Rational128 &p_other) const {
@@ -1130,7 +1130,7 @@ void ConvexHullInternal::Vertex::print_graph() {
 		} while (e != edges);
 	}
 }
-#endif
+#endif // DEBUG_CONVEX_HULL
 
 ConvexHullInternal::Orientation ConvexHullInternal::get_orientation(const Edge *p_prev, const Edge *p_next, const Point32 &p_s, const Point32 &p_t) {
 	CHULL_ASSERT(p_prev->reverse->target == p_next->reverse->target);

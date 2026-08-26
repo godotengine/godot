@@ -62,7 +62,7 @@ using Microsoft::WRL::ComPtr;
 #if defined(__GNUC__)
 #undef _MSC_VER
 #endif
-#endif
+#endif // PIX_ENABLED
 
 // Runs constant sanity checks on the structure of the descriptor heap pools to catch implementation errors.
 #define D3D12_DESCRIPTOR_HEAP_VERIFICATION 0
@@ -353,12 +353,12 @@ Error RenderingDeviceDriverD3D12::DescriptorHeap::initialize(ID3D12Device *p_dev
 	if (p_shader_visible) {
 		gpu_handle = heap->GetGPUDescriptorHandleForHeapStart();
 	}
-#else
+#else // defined(_MSC_VER) || !defined(_WIN32)
 	heap->GetCPUDescriptorHandleForHeapStart(&cpu_handle);
 	if (p_shader_visible) {
 		heap->GetGPUDescriptorHandleForHeapStart(&gpu_handle);
 	}
-#endif
+#endif // defined(_MSC_VER) || !defined(_WIN32)
 
 	increment_size = p_device->GetDescriptorHandleIncrementSize(p_type);
 
@@ -2847,7 +2847,7 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 		WARN_PRINT_ONCE("Window transparency is not supported without DirectComposition on D3D12.");
 	}
 	bool create_for_composition = false;
-#endif
+#endif // DCOMP_ENABLED
 
 	DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
 	if (swap_chain->d3d_swap_chain != nullptr) {
@@ -2939,7 +2939,7 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 			ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 		}
 	}
-#endif
+#endif // DCOMP_ENABLED
 
 	res = swap_chain->d3d_swap_chain->GetDesc1(&swap_chain_desc);
 	ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
@@ -3774,7 +3774,7 @@ void RenderingDeviceDriverD3D12::command_uniform_set_prepare_for_use(CommandBuff
 				DEV_ASSERT((wanted_state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS) == (bool)(wanted_state & D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 			}
 		}
-#endif
+#endif // DEV_ENABLED
 
 		// We may have assumed D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE for a resource,
 		// because at uniform set creation time we couldn't know for sure which stages
@@ -6140,7 +6140,7 @@ Error RenderingDeviceDriverD3D12::_initialize_device() {
 			res = info_queue_1->RegisterMessageCallback(&_debug_message_func, D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS, nullptr, &callback_cookie);
 			ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_CANT_CREATE);
 		} else
-#endif
+#endif // CUSTOM_INFO_QUEUE_ENABLED
 		{
 			// Rely on D3D12's own debug printing.
 			if (Engine::get_singleton()->is_abort_on_gpu_errors_enabled()) {
@@ -6353,7 +6353,7 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 		// There are fallbacks in place that work in every case, if less efficient.
 		format_capabilities.relaxed_casting_supported = false;
 		print_verbose("- Relaxed casting supported (but disabled for now)");
-#endif
+#endif // 0
 	} else {
 		print_verbose("- Relaxed casting not supported");
 	}

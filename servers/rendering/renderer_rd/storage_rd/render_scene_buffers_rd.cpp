@@ -149,7 +149,7 @@ void RenderSceneBuffersRD::cleanup() {
 		memdelete(mfx_spatial_context);
 		mfx_spatial_context = nullptr;
 	}
-#endif
+#endif // METAL_ENABLED
 }
 
 void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_config) {
@@ -279,7 +279,7 @@ void RenderSceneBuffersRD::ensure_mfx(RendererRD::MFXSpatialEffect *p_effect) {
 
 	mfx_spatial_context = p_effect->create_context(params);
 }
-#endif
+#endif // METAL_ENABLED
 
 // Named textures
 

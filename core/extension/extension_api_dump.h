@@ -43,4 +43,4 @@ public:
 	static Error validate_extension_json_file(const String &p_path);
 };
 
-#endif
+#endif // TOOLS_ENABLED

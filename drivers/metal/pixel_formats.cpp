@@ -68,12 +68,12 @@
 #define PixelFormatBC6H_RGBFloat PixelFormatInvalid
 #define PixelFormatBC7_RGBAUnorm PixelFormatInvalid
 #define PixelFormatBC7_RGBAUnorm_sRGB PixelFormatInvalid
-#endif
+#endif // !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 160400)
 
 #define PixelFormatDepth16Unorm_Stencil8 PixelFormatDepth32Float_Stencil8
 #define PixelFormatDepth24Unorm_Stencil8 PixelFormatInvalid
 #define PixelFormatX24_Stencil8 PixelFormatInvalid
-#endif
+#endif // TARGET_OS_IPHONE || TARGET_OS_TV
 
 #if TARGET_OS_TV
 #define PixelFormatASTC_4x4_HDR PixelFormatInvalid
@@ -90,7 +90,7 @@
 #define PixelFormatASTC_10x10_HDR PixelFormatInvalid
 #define PixelFormatASTC_12x10_HDR PixelFormatInvalid
 #define PixelFormatASTC_12x12_HDR PixelFormatInvalid
-#endif
+#endif // TARGET_OS_TV
 
 #if !((__MAC_OS_X_VERSION_MAX_ALLOWED >= 140000) || (__IPHONE_OS_VERSION_MAX_ALLOWED >= 170000)) // Xcode 15
 #define VertexFormatFloatRG11B10 VertexFormatInvalid
@@ -133,7 +133,7 @@ bool PixelFormats::isPVRTCFormat(MTL::PixelFormat p_format) {
 			return false;
 	}
 	GODOT_CLANG_WARNING_POP
-#endif
+#endif // defined(VISIONOS_ENABLED)
 }
 
 MTLFormatType PixelFormats::getFormatType(DataFormat p_format) {
@@ -687,7 +687,7 @@ void PixelFormats::initMTLPixelFormatCapabilities() {
 	addMTLPixelFormatDesc(PVRTC_RGBA_4BPP, PVRTC_RGBA_4BPP, RF);
 	addMTLPixelFormatDescSRGB(PVRTC_RGBA_4BPP_sRGB, PVRTC_RGBA_4BPP, RF, PVRTC_RGBA_4BPP);
 	GODOT_CLANG_WARNING_POP
-#endif
+#endif // !defined(VISIONOS_ENABLED)
 
 	addMTLPixelFormatDesc(ETC2_RGB8, ETC2_RGB8, RF);
 	addMTLPixelFormatDescSRGB(ETC2_RGB8_sRGB, ETC2_RGB8, RF, ETC2_RGB8);

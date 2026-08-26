@@ -2385,10 +2385,11 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					ERR_PRINT_ED(vformat(TTR("Couldn't run external program to check for terminal emulator presence: command -v %s"), terminal_emulator));
 				}
 			}
-#else
+#else // LINUXBSD_ENABLED
+
 			// On Windows and macOS, the first (and only) terminal emulator in the list is always available.
 			String chosen_terminal_emulator = terminal_emulators[0];
-#endif
+#endif // LINUXBSD_ENABLED
 
 			List<String> terminal_emulator_args; // Required for `execute()`, as it doesn't accept `Vector<String>`.
 			bool append_default_args = true;
@@ -2419,14 +2420,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					append_default_args = false;
 				}
 			}
-#endif
+#endif // LINUXBSD_ENABLED
 
 #ifdef MACOS_ENABLED
 			if (terminal_emulator_setting.is_empty()) {
 				terminal_emulator_args.push_back("-b");
 				terminal_emulator_args.push_back("com.apple.terminal");
 			}
-#endif
+#endif // MACOS_ENABLED
 
 #ifdef WINDOWS_ENABLED
 			// Prepend default arguments based on the terminal emulator name.
@@ -2442,7 +2443,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				terminal_emulator_args.push_back("cd /d {directory}");
 				append_default_args = false;
 			}
-#endif
+#endif // WINDOWS_ENABLED
 
 			Vector<String> arguments_array = arguments.split(" ");
 			for (const String &argument : arguments_array) {
@@ -2810,7 +2811,7 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return FILE_MENU_OPEN_EXTERNAL;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_key)) {
 		return FILE_MENU_OPEN_IN_TERMINAL;
-#endif
+#endif // !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	} else if (ED_IS_SHORTCUT("filesystem_dock/focus_path", p_key)) {
 		return EXTRA_FOCUS_PATH;
 	} else if (ED_IS_SHORTCUT("editor/open_search", p_key)) {
@@ -3682,7 +3683,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
 		p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_SHOW_IN_EXPLORER), is_directory ? OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN) : OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW));
-#endif
+#endif // !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 
 		current_path = fpath;
 	} else if (no_paths) {
@@ -3698,7 +3699,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		p_popup->add_separator();
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_MENU_OPEN_EXTERNAL);
 	}
-#endif
+#endif // !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 
 	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM)) {
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, FileSystemDock::_get_context_data(p_paths));
@@ -3993,7 +3994,7 @@ bool FileSystemDock::_handle_custom_context_callback(Ref<InputEvent> p_event, co
 		}
 		return true;
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 
 	EditorContextMenuPlugin::OptionsData context_data = create
 			? FileSystemDock::_get_context_data_for_create(base_dir, p_selected.is_empty())
@@ -4517,7 +4518,7 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTRC("Open in File Manager"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::R);
 	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTRC("Open in External Program"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::E);
 	ED_SHORTCUT("filesystem_dock/open_in_terminal", TTRC("Open in Terminal"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::T);
-#endif
+#endif // !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 
 	ED_SHORTCUT("filesystem_dock/focus_path", TTRC("Focus Path"), KeyModifierMask::CMD_OR_CTRL | Key::L);
 	// Allow both Cmd + L and Cmd + Shift + G to match Safari's and Finder's shortcuts respectively.

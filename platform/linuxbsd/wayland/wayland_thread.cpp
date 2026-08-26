@@ -1588,7 +1588,7 @@ void WaylandThread::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_po
 		pos.x = translated_x;
 		pos.y = translated_y;
 	}
-#endif
+#endif // LIBDECOR_ENABLED
 
 	// Looks like the position returned here is relative to the parent. We have to
 	// accumulate it or there's gonna be a lot of confusion godot-side.
@@ -4070,7 +4070,7 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 		libdecor_state_free(state);
 		p_ws->pending_libdecor_configuration = nullptr;
 	}
-#endif
+#endif // LIBDECOR_ENABLED
 
 	if (size_changed || scale_changed) {
 		double win_scale = window_state_get_scale_factor(p_ws);
@@ -4389,7 +4389,7 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 
 		decorated = true;
 	}
-#endif
+#endif // LIBDECOR_ENABLED
 
 	if (!decorated) {
 		// libdecor has failed loading or is disabled, we shall handle xdg_toplevel
@@ -4494,7 +4494,7 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 		positioner_rect.size.width -= corner_x;
 		positioner_rect.size.height -= corner_y;
 	}
-#endif
+#endif // LIBDECOR_ENABLED
 
 	ERR_FAIL_NULL(parent_xdg_surface);
 
@@ -4658,7 +4658,7 @@ Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, 
 			new_size.height = MIN(new_size.height, max_height);
 		}
 	}
-#endif
+#endif // LIBDECOR_ENABLED
 
 	window_state_update_size(&ws, new_size.width, new_size.height);
 
@@ -4758,7 +4758,7 @@ void WaylandThread::window_start_resize(DisplayServerEnums::WindowResizeEdge p_e
 		}
 		libdecor_frame_resize(ws.libdecor_frame, ss->wl_seat, ss->pointer_data.button_serial, edge);
 	}
-#endif
+#endif // LIBDECOR_ENABLED
 }
 
 void WaylandThread::window_set_parent(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id) {
@@ -4779,7 +4779,7 @@ void WaylandThread::window_set_parent(DisplayServerEnums::WindowID p_window_id, 
 		libdecor_frame_set_parent(child.libdecor_frame, parent.libdecor_frame);
 		return;
 	}
-#endif
+#endif // LIBDECOR_ENABLED
 
 	if (child.xdg_toplevel && parent.xdg_toplevel) {
 		xdg_toplevel_set_parent(child.xdg_toplevel, parent.xdg_toplevel);
@@ -4802,7 +4802,7 @@ void WaylandThread::window_set_max_size(DisplayServerEnums::WindowID p_window_id
 	}
 
 	// FIXME: I'm not sure whether we have to commit the surface for this to apply.
-#endif
+#endif // LIBDECOR_ENABLED
 }
 
 void WaylandThread::window_set_min_size(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size) {
@@ -4821,7 +4821,7 @@ void WaylandThread::window_set_min_size(DisplayServerEnums::WindowID p_window_id
 	}
 
 	// FIXME: I'm not sure whether we have to commit the surface for this to apply.
-#endif
+#endif // LIBDECOR_ENABLED
 }
 
 bool WaylandThread::window_can_set_mode(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_window_mode) const {
@@ -4852,7 +4852,7 @@ bool WaylandThread::window_can_set_mode(DisplayServerEnums::WindowID p_window_id
 				// let's act as if we always can.
 				return true;
 			}
-#endif
+#endif // LIBDECOR_ENABLED
 			return ws.can_maximize;
 		};
 
@@ -5120,7 +5120,7 @@ void WaylandThread::set_icon(const Ref<Image> &p_icon, DisplayServerEnums::Windo
 			ERR_FAIL_NULL(toplevel);
 			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, ws.xdg_icon);
 		}
-#endif
+#endif // LIBDECOR_ENABLED
 		if (ws.xdg_toplevel) {
 			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, ws.xdg_icon);
 		}
@@ -5131,7 +5131,7 @@ void WaylandThread::set_icon(const Ref<Image> &p_icon, DisplayServerEnums::Windo
 			ERR_FAIL_NULL(toplevel);
 			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, nullptr);
 		}
-#endif
+#endif // LIBDECOR_ENABLED
 		if (ws.xdg_toplevel) {
 			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, nullptr);
 		}
@@ -5210,7 +5210,7 @@ void WaylandThread::set_default_icon(const Ref<Image> &p_icon) {
 			ERR_FAIL_NULL(toplevel);
 			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, xdg_icon);
 		}
-#endif
+#endif // LIBDECOR_ENABLED
 		if (ws.xdg_toplevel) {
 			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, xdg_icon);
 		}
@@ -5570,7 +5570,7 @@ Error WaylandThread::init() {
 		int fd = open("/tmp/gdembedded.log", O_CREAT | O_RDWR, 0666);
 		dup2(fd, 1);
 		dup2(fd, 2);
-#endif
+#endif // 0
 	}
 
 	if (embedder_socket_path.is_empty()) {

@@ -757,7 +757,7 @@ void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguag
 			size = ShaderLanguage::get_datatype_size(E.value.type);
 		}
 		ERR_CONTINUE(offset + size > p_buffer_size);
-#endif
+#endif // DEBUG_ENABLED
 		uint8_t *data = &p_buffer[offset];
 		HashMap<StringName, Variant>::ConstIterator V = p_parameters.find(E.key);
 
@@ -961,7 +961,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 						roughness_detect_texture = tex;
 						roughness_channel = RSE::TextureDetectRoughnessChannel(p_texture_uniforms[i].hint - ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R);
 					}
-#endif
+#endif // TOOLS_ENABLED
 				}
 #ifdef TOOLS_ENABLED
 				if (roughness_detect_texture && normal_detect_texture && !normal_detect_texture->path.is_empty()) {
@@ -2716,7 +2716,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
 	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
-#endif
+#endif // 0
 
 	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
@@ -2892,7 +2892,7 @@ void SkyShaderData::set_code(const String &p_code) {
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
 	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
-#endif
+#endif // 0
 
 	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
@@ -3172,7 +3172,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	if (uses_normal_texture) {
 		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile renderer.");
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 #if 0
 	print_line("**compiling shader:");
@@ -3190,7 +3190,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
 	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
-#endif
+#endif // 0
 
 	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
@@ -3431,7 +3431,7 @@ void TexBlitShaderData::set_code(const String &p_code) {
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
 	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
-#endif
+#endif // 0
 
 	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
