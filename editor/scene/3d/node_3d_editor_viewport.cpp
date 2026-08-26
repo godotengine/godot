@@ -7186,6 +7186,7 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 			second_split->set_touch_dragger_enabled(touch_optimizations);
 		} break;
 		case NOTIFICATION_PROCESS: {
+			// Only call the code below for a single frame after processing has been enabled.
 			set_process(false);
 
 			Node3DEditorViewport *viewports[4];
@@ -7275,6 +7276,9 @@ void Node3DEditorViewportContainer::set_view(View p_view) {
 		} break;
 	}
 
+	// Force the code in `_notification()` to be called for a single frame on the next frame.
+	// We use this instead of `call_deferred()`, because `call_deferred()`
+	// only works for viewports that didn't change their visibility in the `set_view()` call.
 	set_process(true);
 }
 
