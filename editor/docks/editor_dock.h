@@ -42,6 +42,7 @@ class EditorDock : public MarginContainer {
 
 public:
 	enum DockLayout {
+		DOCK_LAYOUT_NONE = 0,
 		DOCK_LAYOUT_VERTICAL = 1,
 		DOCK_LAYOUT_HORIZONTAL = 2,
 		DOCK_LAYOUT_FLOATING = 4,
@@ -84,7 +85,7 @@ private:
 	bool transient = false;
 	bool closable = false;
 
-	DockLayout current_layout;
+	DockLayout current_layout = DOCK_LAYOUT_NONE;
 	BitField<DockLayout> available_layouts = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_FLOATING;
 
 	bool is_open = false;
