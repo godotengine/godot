@@ -112,7 +112,7 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 	if (!lines.is_empty()) {
 		Vector<Color> colors;
 		colors.resize(lines.size());
-		colors.fill(debug_color);
+		colors.fill(debug_color * Color(1.0, 1.0, 1.0, DEBUG_ALPHA_FACTOR));
 
 		Array lines_array;
 		lines_array.resize(Mesh::ARRAY_MAX);
@@ -127,7 +127,7 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 		}
 
 		if (debug_fill) {
-			Ref<ArrayMesh> array_mesh = get_debug_arraymesh_faces(debug_color * Color(1.0, 1.0, 1.0, 0.0625));
+			Ref<ArrayMesh> array_mesh = get_debug_arraymesh_faces(debug_color);
 			if (array_mesh.is_valid() && array_mesh->get_surface_count() > 0) {
 				Array solid_array = array_mesh->surface_get_arrays(0);
 				debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, solid_array);

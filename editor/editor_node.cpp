@@ -580,6 +580,7 @@ void EditorNode::_update_from_settings() {
 
 	SceneTree *tree = get_tree();
 	tree->set_debug_collisions_color(GLOBAL_GET("debug/shapes/collision/shape_color"));
+	tree->set_debug_collisions_color_3d_modulate_alpha(GLOBAL_GET("debug/shapes/collision/shape_color_3d_modulate_alpha"));
 	tree->set_debug_collision_contact_color(GLOBAL_GET("debug/shapes/collision/contact_color"));
 
 	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("display/window/hdr/request_hdr_output") || ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/viewport/hdr_2d")) {

@@ -835,6 +835,11 @@
 		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color(0, 0.6, 0.7, 0.42)">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
+		<member name="debug/shapes/collision/shape_color_3d_modulate_alpha" type="float" setter="" getter="" default="0.0625">
+			[member debug/shapes/collision/shape_color] is known not to be transparent enough for 3D views.
+			For collision shapes rendered in 3D, [member debug/shapes/collision/shape_color] is modulated by [code]Color(1.0, 1.0, 1.0, modulate_alpha)[/code] where [code]modulate_alpha[/code] is this value.
+			If you find the collision shape colors to be too faint even if you make their debug color fully opaque, you should bring this value closer to [code]1.0[/code].
+		</member>
 		<member name="debug/shapes/navigation/2d/agent_path_color" type="Color" setter="" getter="" default="Color(1, 0, 0, 1)">
 			Color to display enabled navigation agent paths when an agent has debug enabled.
 		</member>
