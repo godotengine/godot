@@ -376,7 +376,10 @@ bool Object::set_native(const StringName &p_name, const Variant &p_value, bool *
 				}
 				return true;
 			}
-			default: {
+			case GDType::Property::Type::INTEGER_CONSTANT:
+			case GDType::Property::Type::METHOD:
+			case GDType::Property::Type::ENUM:
+			case GDType::Property::Type::SIGNAL: {
 				// All other properties are unsettable.
 				if (r_valid) {
 					*r_valid = false;
@@ -426,7 +429,7 @@ bool Object::get_native(const StringName &p_name, Variant &r_value, bool *r_vali
 				if (r_valid) {
 					*r_valid = true;
 				}
-				r_value = property->payload.integer;
+				r_value = property->payload.integer_constant.value;
 				return true;
 			}
 			case GDType::Property::Type::METHOD: {
@@ -441,6 +444,13 @@ bool Object::get_native(const StringName &p_name, Variant &r_value, bool *r_vali
 					*r_valid = true;
 				}
 				r_value = Signal(this, p_name);
+				return true;
+			}
+			case GDType::Property::Type::ENUM: {
+				if (r_valid) {
+					*r_valid = false;
+				}
+				r_value = Variant();
 				return true;
 			}
 		}
@@ -734,7 +744,8 @@ bool Object::has_method(const StringName &p_method) const {
 		return true;
 	}
 
-	if (get_gdtype().get_method_map(false).has(p_method)) {
+	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_method);
+	if (property != nullptr && property->type == GDType::Property::Type::METHOD) {
 		return true;
 	}
 
@@ -866,11 +877,10 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 		return Variant();
 	}
 
-	Variant ret;
 	OBJ_DEBUG_LOCK
 
 	if (script_instance) {
-		ret = script_instance->callp(p_method, p_args, p_argcount, r_error);
+		Variant ret = script_instance->callp(p_method, p_args, p_argcount, r_error);
 		// Force jump table.
 		switch (r_error.error) {
 			case Callable::CallError::CALL_OK:
@@ -889,15 +899,14 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 
 	//extension does not need this, because all methods are registered in MethodBind
 
-	const MethodBind *const *method = get_gdtype().get_method_map(false).getptr(p_method);
-
-	if (method) {
-		ret = (*method)->call(this, p_args, p_argcount, r_error);
-	} else {
+	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_method);
+	if (!property || property->type != GDType::Property::Type::METHOD) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
 	}
 
-	return ret;
+	const MethodBind *method = property->payload.method;
+	return method->call(this, p_args, p_argcount, r_error);
 }
 
 Variant Object::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -909,11 +918,10 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 		return Variant();
 	}
 
-	Variant ret;
 	OBJ_DEBUG_LOCK
 
 	if (script_instance) {
-		ret = script_instance->call_const(p_method, p_args, p_argcount, r_error);
+		Variant ret = script_instance->call_const(p_method, p_args, p_argcount, r_error);
 		//force jumptable
 		switch (r_error.error) {
 			case Callable::CallError::CALL_OK:
@@ -933,19 +941,20 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 
 	//extension does not need this, because all methods are registered in MethodBind
 
-	const MethodBind *const *method = get_gdtype().get_method_map(false).getptr(p_method);
-
-	if (method) {
-		if (!(*method)->is_const()) {
-			r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
-			return ret;
-		}
-		ret = (*method)->call(this, p_args, p_argcount, r_error);
-	} else {
+	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_method);
+	if (!property || property->type != GDType::Property::Type::METHOD) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
 	}
 
-	return ret;
+	const MethodBind *method = property->payload.method;
+
+	if (!method->is_const()) {
+		r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
+		return Variant();
+	}
+
+	return method->call(this, p_args, p_argcount, r_error);
 }
 
 void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const {
@@ -1174,7 +1183,7 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
 	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
-	ERR_FAIL_COND_MSG(get_gdtype().get_signal_map(false).has(p_signal.name), vformat("User signal's name conflicts with a built-in signal of '%s'.", get_class_name()));
+	ERR_FAIL_COND_MSG(get_gdtype().get_property_map().has(p_signal.name), vformat("User signal's name conflicts with a built-in property of '%s'.", get_class_name()));
 
 	ObjectSignalLock signal_lock(this);
 
@@ -1264,7 +1273,8 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		SignalData *s = signal_map.getptr(p_name);
 		if (!s) {
 #ifdef DEBUG_ENABLED
-			bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_name);
+			const GDType::Property *property = get_gdtype().get_property_map().getptr(p_name);
+			bool signal_is_valid = property && property->type == GDType::Property::Type::SIGNAL;
 			//check in script
 			ERR_FAIL_COND_V_MSG(!signal_is_valid && script_instance && !script_instance->get_script()->has_script_signal(p_name), ERR_UNAVAILABLE, vformat("Can't emit non-existing signal \"%s\".", p_name));
 #endif
@@ -1480,7 +1490,8 @@ bool Object::has_signal(const StringName &p_name) const {
 		return true;
 	}
 
-	if (get_gdtype().get_signal_map(false).has(p_name)) {
+	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_name);
+	if (property && property->type == GDType::Property::Type::SIGNAL) {
 		return true;
 	}
 
@@ -1587,7 +1598,8 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal);
+		const GDType::Property *property = get_gdtype().get_property_map().getptr(p_signal);
+		bool signal_is_valid = property && property->type == GDType::Property::Type::SIGNAL;
 		//check in script
 		if (!signal_is_valid && script_instance) {
 			if (script_instance->get_script()->has_script_signal(p_signal)) {
@@ -1645,8 +1657,8 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal);
-		if (signal_is_valid) {
+		const GDType::Property *property = get_gdtype().get_property_map().getptr(p_signal);
+		if (property && property->type == GDType::Property::Type::SIGNAL) {
 			return false;
 		}
 
@@ -1665,8 +1677,8 @@ bool Object::has_connections(const StringName &p_signal) const {
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal);
-		if (signal_is_valid) {
+		const GDType::Property *property = get_gdtype().get_property_map().getptr(p_signal);
+		if (property && property->type == GDType::Property::Type::SIGNAL) {
 			return false;
 		}
 
@@ -1691,7 +1703,8 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal) ||
+		const GDType::Property *property = get_gdtype().get_property_map().getptr(p_signal);
+		bool signal_is_valid = (property && property->type == GDType::Property::Type::SIGNAL) ||
 				(script_instance && script_instance->get_script()->has_script_signal(p_signal));
 		ERR_FAIL_COND_V_MSG(signal_is_valid, false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
 	}
@@ -1714,7 +1727,8 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
-	if (s->slot_map.is_empty() && get_gdtype().get_signal_map(false).has(p_signal)) {
+	const GDType::Property *property = get_gdtype().get_property_map().getptr(p_signal);
+	if (s->slot_map.is_empty() && property && property->type == GDType::Property::Type::SIGNAL) {
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}

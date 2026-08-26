@@ -221,7 +221,7 @@ TEST_CASE("[MethodBind] check all method binds") {
 }
 
 TEST_CASE("[MethodBind] check bound enums") {
-	const AHashMap<StringName, const GDType::EnumInfo *> &enum_map = MethodBindTester::get_gdtype_static().get_enum_map();
+	const AHashMap<StringName, GDType::Property> &property_map = MethodBindTester::get_gdtype_static().get_property_map();
 
 #define BOUND_ENUM_LOOP(m_info, m_value, m_name) \
 	CHECK(m_info->values.has(#m_name)); \
@@ -229,8 +229,10 @@ TEST_CASE("[MethodBind] check bound enums") {
 		CHECK(static_cast<int64_t>(m_value) == m_info->values[#m_name]); \
 	}
 
-	const GDType::EnumInfo *enum_info_test = enum_map.has("Test") ? enum_map.get("Test") : nullptr;
-	CHECK(enum_info_test != nullptr);
+	const GDType::Property *property = property_map.getptr("Test");
+	CHECK(property);
+	CHECK(property->type == GDType::Property::Type::ENUM);
+	const GDType::EnumInfo *enum_info_test = property->payload.enum_info;
 	if (enum_info_test) {
 		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHOD, TEST_METHOD)
 		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHOD_ARGS, TEST_METHOD_ARGS)
@@ -245,8 +247,10 @@ TEST_CASE("[MethodBind] check bound enums") {
 		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_MAX, TEST_MAX)
 	}
 
-	const GDType::EnumInfo *enum_info_test_scoped = enum_map.has("TestScoped") ? enum_map.get("TestScoped") : nullptr;
-	CHECK(enum_info_test_scoped != nullptr);
+	const GDType::Property *property_scoped = property_map.getptr("TestScoped");
+	CHECK(property_scoped);
+	CHECK(property_scoped->type == GDType::Property::Type::ENUM);
+	const GDType::EnumInfo *enum_info_test_scoped = property_scoped->payload.enum_info;
 	if (enum_info_test_scoped) {
 		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHOD, TEST_SCOPED_METHOD)
 		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHOD_ARGS, TEST_SCOPED_METHOD_ARGS)

@@ -287,6 +287,10 @@ private:
 			return script_language->auto_indent_code(r_code, p_from_line, p_to_line);
 		}
 
+		virtual bool validate(const String &p_code, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const override {
+			return script_language->validate(p_code, p_path, r_functions, r_errors, r_warnings, r_safe_lines);
+		}
+
 		EditorAdapter(ScriptLanguageExtension *p_script_language) {
 			script_language = p_script_language;
 		}
@@ -363,7 +367,9 @@ public:
 	EXBIND0R(bool, is_using_templates)
 
 	GDVIRTUAL6RC_REQUIRED(Dictionary, _validate, const String &, const String &, bool, bool, bool, bool)
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override {
+
+#ifdef TOOLS_ENABLED
+	bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<EditorLanguage::ScriptError> *r_errors = nullptr, List<EditorLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_validate, p_script, p_path, r_functions != nullptr, r_errors != nullptr, r_warnings != nullptr, r_safe_lines != nullptr, ret);
 		if (!ret.has("valid")) {
@@ -383,7 +389,7 @@ public:
 				ERR_CONTINUE(!err.has("column"));
 				ERR_CONTINUE(!err.has("message"));
 
-				ScriptError serr;
+				EditorLanguage::ScriptError serr;
 				if (err.has("path")) {
 					serr.path = err["path"];
 				}
@@ -403,14 +409,12 @@ public:
 				Dictionary warn = warning;
 				ERR_CONTINUE(!warn.has("start_line"));
 				ERR_CONTINUE(!warn.has("end_line"));
-				ERR_CONTINUE(!warn.has("code"));
 				ERR_CONTINUE(!warn.has("string_code"));
 				ERR_CONTINUE(!warn.has("message"));
 
-				Warning swarn;
+				EditorLanguage::Warning swarn;
 				swarn.start_line = warn["start_line"];
 				swarn.end_line = warn["end_line"];
-				swarn.code = warn["code"];
 				swarn.string_code = warn["string_code"];
 				swarn.message = warn["message"];
 
@@ -425,6 +429,7 @@ public:
 		}
 		return ret["valid"];
 	}
+#endif
 
 	EXBIND1RC(String, validate_path, const String &)
 #ifndef DISABLE_DEPRECATED

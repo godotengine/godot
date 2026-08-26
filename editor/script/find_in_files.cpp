@@ -842,13 +842,7 @@ void FindInFilesResultsPanel::_remove_result(TreeItem *p_item) {
 }
 
 void FindInFilesResultsPanel::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
-	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
-		results_display->set_theme_type_variation("NoBorderHorizontal");
-		results_display->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
-	} else {
-		results_display->set_theme_type_variation("NoBorderHorizontalBottom");
-		results_display->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
-	}
+	results_display->set_scroll_hint_mode(p_slot == EditorDock::DOCK_SLOT_BOTTOM ? Tree::SCROLL_HINT_MODE_BOTH : Tree::SCROLL_HINT_MODE_TOP);
 }
 
 void FindInFilesResultsPanel::_notification(int p_what) {
@@ -1311,7 +1305,7 @@ FindInFilesResultsPanel::FindInFilesResultsPanel() {
 	}
 
 	results_mc = memnew(MarginContainer);
-	results_mc->set_theme_type_variation("NoBorderHorizontal");
+	results_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 	results_mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	vbc->add_child(results_mc);
 
@@ -1388,7 +1382,7 @@ void FindInFilesContainer::_on_theme_changed() {
 		add_theme_constant_override("margin_top", -bottom_panel_style->get_margin(SIDE_TOP));
 		add_theme_constant_override("margin_left", -bottom_panel_style->get_margin(SIDE_LEFT));
 		add_theme_constant_override("margin_right", -bottom_panel_style->get_margin(SIDE_RIGHT));
-		add_theme_constant_override("margin_bottom", -bottom_panel_style->get_margin(SIDE_BOTTOM));
+		add_theme_constant_override("margin_bottom", get_current_slot() == DOCK_SLOT_BOTTOM ? 0 : -bottom_panel_style->get_margin(SIDE_BOTTOM));
 		end_bulk_theme_override();
 	}
 	hsplit->add_theme_style_override("split_bar_background", get_theme_stylebox(SceneStringName(panel), "ItemListSecondary"));
@@ -1528,6 +1522,10 @@ void FindInFilesContainer::update_layout(EditorDock::DockLayout p_layout, int p_
 			panel->update_layout(p_layout, p_slot);
 		}
 	}
+
+	search_control->set_scroll_hint_mode(p_slot == DOCK_SLOT_BOTTOM ? ScrollContainer::SCROLL_HINT_MODE_BOTTOM_AND_RIGHT : ScrollContainer::SCROLL_HINT_MODE_DISABLED);
+	// Deferring is necessary, or the splitter style won't be correct.
+	callable_mp(this, &FindInFilesContainer::_on_theme_changed).call_deferred();
 }
 
 void FindInFilesContainer::_bind_methods() {
@@ -1545,7 +1543,7 @@ FindInFilesContainer::FindInFilesContainer() {
 	set_icon_name("Search");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_search_results_bottom_panel", TTRC("Toggle Find in Files Bottom Panel")));
 	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
-	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_available_layouts(DOCK_LAYOUT_HORIZONTAL | DOCK_LAYOUT_FLOATING);
 	set_global(false);
 	set_transient(true);
 	set_closable(true);
@@ -1555,6 +1553,7 @@ FindInFilesContainer::FindInFilesContainer() {
 	add_child(hsplit);
 
 	search_control = memnew(FindInFilesSearchPanel);
+	search_control->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_BOTTOM_AND_RIGHT);
 	search_control->connect("find_requested", callable_mp(this, &FindInFilesContainer::_start_find_in_files));
 	search_control->connect("replace_all_requested", callable_mp(this, &FindInFilesContainer::_replace_all));
 	search_control->get_replace_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesContainer::_set_replace_text));

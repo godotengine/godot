@@ -778,7 +778,9 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	AnimationTrackKeyEdit *key_edit = nullptr;
 	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
+	bool update_key_edit_pending = false;
 	void _update_key_edit();
+	void _update_key_edit_callback();
 	void _clear_key_edit();
 
 	Control *box_selection_container = nullptr;
@@ -891,6 +893,7 @@ class AnimationTrackEditor : public VBoxContainer {
 			float time = 0;
 			float transition = 0;
 			Variant value;
+			Animation::HandleMode handle_mode = Animation::HANDLE_MODE_FREE;
 		};
 		Vector<Key> keys;
 	};

@@ -247,12 +247,6 @@ public:
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 
-	static String get_adb_path();
-
-	static String get_apksigner_path(int p_target_sdk = -1, bool p_check_executes = false);
-
-	static String get_java_path();
-
 	static String get_keytool_path();
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;

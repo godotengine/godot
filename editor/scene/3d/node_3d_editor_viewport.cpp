@@ -68,6 +68,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
@@ -3185,30 +3186,31 @@ void Node3DEditorViewport::_project_settings_changed() {
 }
 
 static void override_label_colors(Control *p_control) {
+	const Ref<Theme> &editor_theme = EditorNode::get_singleton()->get_editor_theme();
 	p_control->begin_bulk_theme_override();
-	p_control->add_theme_color_override(SceneStringName(font_color), p_control->get_theme_color(SNAME("font_dark_background_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_hover_color", p_control->get_theme_color(SNAME("font_dark_background_hover_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_focus_color", p_control->get_theme_color(SNAME("font_dark_background_focus_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_pressed_color", p_control->get_theme_color(SNAME("font_dark_background_pressed_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_hover_pressed_color", p_control->get_theme_color(SNAME("font_dark_background_hover_pressed_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override(SceneStringName(font_color), editor_theme->get_color(SNAME("font_dark_background_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_hover_color", editor_theme->get_color(SNAME("font_dark_background_hover_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_focus_color", editor_theme->get_color(SNAME("font_dark_background_focus_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_pressed_color", editor_theme->get_color(SNAME("font_dark_background_pressed_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_hover_pressed_color", editor_theme->get_color(SNAME("font_dark_background_hover_pressed_color"), EditorStringName(Editor)));
 	p_control->end_bulk_theme_override();
 }
 
-static void override_button_stylebox(Button *p_button, const Ref<StyleBox> p_stylebox) {
-	p_button->begin_bulk_theme_override();
-	p_button->add_theme_style_override(CoreStringName(normal), p_stylebox);
-	p_button->add_theme_style_override("normal_mirrored", p_stylebox);
-	p_button->add_theme_style_override(SceneStringName(hover), p_stylebox);
-	p_button->add_theme_style_override("hover_mirrored", p_stylebox);
-	p_button->add_theme_style_override("hover_pressed", p_stylebox);
-	p_button->add_theme_style_override("hover_pressed_mirrored", p_stylebox);
-	p_button->add_theme_style_override(SceneStringName(pressed), p_stylebox);
-	p_button->add_theme_style_override("pressed_mirrored", p_stylebox);
-	p_button->add_theme_style_override("focus", p_stylebox);
-	p_button->add_theme_style_override("focus_mirrored", p_stylebox);
-	p_button->add_theme_style_override("disabled", p_stylebox);
-	p_button->add_theme_style_override("disabled_mirrored", p_stylebox);
-	p_button->end_bulk_theme_override();
+static void override_control_stylebox(Control *p_control, const Ref<StyleBox> p_stylebox) {
+	p_control->begin_bulk_theme_override();
+	p_control->add_theme_style_override(CoreStringName(normal), p_stylebox);
+	p_control->add_theme_style_override("normal_mirrored", p_stylebox);
+	p_control->add_theme_style_override(SceneStringName(hover), p_stylebox);
+	p_control->add_theme_style_override("hover_mirrored", p_stylebox);
+	p_control->add_theme_style_override("hover_pressed", p_stylebox);
+	p_control->add_theme_style_override("hover_pressed_mirrored", p_stylebox);
+	p_control->add_theme_style_override(SceneStringName(pressed), p_stylebox);
+	p_control->add_theme_style_override("pressed_mirrored", p_stylebox);
+	p_control->add_theme_style_override("focus", p_stylebox);
+	p_control->add_theme_style_override("focus_mirrored", p_stylebox);
+	p_control->add_theme_style_override("disabled", p_stylebox);
+	p_control->add_theme_style_override("disabled_mirrored", p_stylebox);
+	p_control->end_bulk_theme_override();
 }
 
 void Node3DEditorViewport::_notification(int p_what) {
@@ -3259,6 +3261,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
 			_update_navigation_controls_visibility();
+			_init_gizmo_instance(index);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -3869,21 +3872,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
-			surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
-			surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
-			surface->connect(SceneStringName(mouse_entered), callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
-			surface->connect(SceneStringName(mouse_exited), callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
-			surface->connect(SceneStringName(focus_entered), callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
-			surface->connect(SceneStringName(focus_exited), callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
-
-			_init_gizmo_instance(index);
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			_finish_gizmo_instances();
-		} break;
-
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_centered_labels();
 
@@ -3894,20 +3882,20 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
 
-			override_button_stylebox(view_display_menu, information_3d_stylebox);
+			override_control_stylebox(view_display_menu, information_3d_stylebox);
 			override_label_colors(view_display_menu);
-			override_button_stylebox(translation_preview_button, information_3d_stylebox);
+			override_control_stylebox(translation_preview_button, information_3d_stylebox);
 			override_label_colors(translation_preview_button);
-			override_button_stylebox(follow_mode, information_3d_stylebox);
+			override_control_stylebox(follow_mode, information_3d_stylebox);
 			override_label_colors(follow_mode);
-			override_button_stylebox(preview_camera, information_3d_stylebox);
+			override_control_stylebox(preview_camera, information_3d_stylebox);
 			override_label_colors(preview_camera);
 
 			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color_dark_background"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color_dark_background"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color_dark_background"), EditorStringName(Editor)));
 
-			override_button_stylebox(pilot_camera, information_3d_stylebox);
+			override_control_stylebox(pilot_camera, information_3d_stylebox);
 			override_label_colors(pilot_camera);
 
 			info_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
@@ -3922,8 +3910,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			frame_time_panel->set_custom_minimum_size(Size2(min_width, 0) * EDSCALE);
 			frame_time_vbox->add_theme_constant_override("separation", Math::round(-1 * EDSCALE));
 
-			cinema_label->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
-			locked_label->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+			override_control_stylebox(cinema_label, information_3d_stylebox);
+			override_label_colors(cinema_label);
+			override_control_stylebox(locked_label, information_3d_stylebox);
+			override_label_colors(locked_label);
 
 			ruler_label->add_theme_color_override(SceneStringName(font_color), Color(1.0, 0.9, 0.0, 1.0));
 			ruler_label->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0));
@@ -6787,7 +6777,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	c->add_child(viewport);
 	surface = memnew(Control);
 	SET_DRAG_FORWARDING_CD(surface, Node3DEditorViewport);
-	add_child(surface);
 	surface->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	surface->set_clip_contents(true);
 	camera = memnew(Camera3D);
@@ -6796,6 +6785,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
+	add_child(surface);
+
+	surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
+	surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
+	surface->connect(SceneStringName(mouse_entered), callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
+	surface->connect(SceneStringName(mouse_exited), callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
+	surface->connect(SceneStringName(focus_entered), callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
+	surface->connect(SceneStringName(focus_exited), callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);
@@ -6807,7 +6804,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_display_menu = memnew(MenuButton);
 	view_display_menu->set_flat(false);
-	view_display_menu->set_h_size_flags(0);
+	view_display_menu->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	view_display_menu->set_shortcut_context(this);
 	view_display_menu->set_accessibility_name(TTRC("View"));
 	view_display_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -6963,7 +6960,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	// Using Control even on macOS to avoid conflict with Quick Open shortcut.
 	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTRC("Toggle Camera Preview"), KeyModifierMask::CTRL | Key::P));
 	vbox->add_child(preview_camera);
-	preview_camera->set_h_size_flags(0);
+	preview_camera->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	preview_camera->set_theme_type_variation("CheckBoxNoIconTint");
 	preview_camera->hide();
 	preview_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
@@ -6973,7 +6970,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	pilot_camera->set_tooltip_text(TTRC("Enable pilot mode for the preview camera.\nAllows WASD movement and mouse look when in preview mode."));
 	pilot_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_pilot_preview", TTRC("Toggle Pilot Mode in Preview")));
 	vbox->add_child(pilot_camera);
-	pilot_camera->set_h_size_flags(0);
+	pilot_camera->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	pilot_camera->set_theme_type_variation("CheckBoxNoIconTint");
 	pilot_camera->hide();
 	pilot_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_pilot_preview));
@@ -7221,6 +7218,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {
+	_finish_gizmo_instances();
 	memdelete(ruler);
 }
 

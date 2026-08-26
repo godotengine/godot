@@ -2320,7 +2320,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 		clear_button = memnew(Button);
 		clear_button->set_text(TTRC("Clear"));
-		clear_button->set_h_size_flags(0);
+		clear_button->set_h_size_flags(SIZE_SHRINK_BEGIN);
 		clear_button->set_disabled(true);
 		clear_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
 		error_hbox->add_child(clear_button);
@@ -2519,9 +2519,6 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 
 		misc->add_child(buttons);
 	}
-
-	msgdialog = memnew(AcceptDialog);
-	add_child(msgdialog);
 
 	_update_buttons_state();
 }

@@ -62,6 +62,8 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
+
 void ExportTemplateManager::_request_mirrors() {
 	mirrors_list->clear();
 	mirrors_empty = true;
@@ -496,6 +498,14 @@ void ExportTemplateManager::_initialize_template_data() {
 
 	{
 		TemplateInfo info;
+		info.name = "visionOS";
+		info.description = TTRC("Build for Apple's visionOS.");
+		info.file_list = { "visionos.zip" };
+		template_data[TemplateID::VISIONOS] = info;
+	}
+
+	{
+		TemplateInfo info;
 		info.name = TTR("ICU Data");
 		info.description = TTRC("Line breaking dictionaries for TextServer, used by certain languages.");
 		info.file_list = { "icudt_godot.dat" };
@@ -545,9 +555,21 @@ void ExportTemplateManager::_initialize_template_data() {
 	}
 	{
 		PlatformInfo info;
+		info.name = "visionOS";
+		info.icon = _get_platform_icon("visionOS");
+#ifndef MODULE_MONO_ENABLED
+		info.templates = { TemplateID::VISIONOS };
+#endif
+		info.group = TTR("Mobile", "Platform Group");
+		platform_map[PlatformID::VISIONOS] = info;
+	}
+	{
+		PlatformInfo info;
 		info.name = "Web";
 		info.icon = _get_platform_icon("Web");
+#ifndef MODULE_MONO_ENABLED
 		info.templates = { TemplateID::WEB, TemplateID::WEB_EXTENSIONS, TemplateID::WEB_NOTHREADS, TemplateID::WEB_EXTENSIONS_NOTHREADS };
+#endif
 		info.group = TTR("Web", "Platform Group");
 		platform_map[PlatformID::WEB] = info;
 	}
@@ -1331,6 +1353,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			platform_map[PlatformID::WEB].group = TTR("Web", "Platform Group");
 			platform_map[PlatformID::ANDROID].group = TTR("Mobile", "Platform Group");
 			platform_map[PlatformID::IOS].group = TTR("Mobile", "Platform Group");
+			platform_map[PlatformID::VISIONOS].group = TTR("Mobile", "Platform Group");
 			platform_map[PlatformID::COMMON].name = TTR("Common");
 			template_data[TemplateID::WEB_EXTENSIONS].name = TTR("Web with Extensions");
 			template_data[TemplateID::WEB_NOTHREADS].name = TTR("Web Single-Threaded");
@@ -1377,7 +1400,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			}
 			progress += indeterminate_count;
 			EditorNode::get_bottom_panel()->get_progress_indicator()->set_value(progress / download_count);
-		}
+		} break;
 	}
 }
 
