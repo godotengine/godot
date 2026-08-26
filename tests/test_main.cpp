@@ -44,14 +44,15 @@
 #include "servers/audio/audio_server.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
-#include "modules/interactive_music/tests/test_audio_stream_interactive.h"
-#include "modules/interactive_music/tests/test_audio_stream_playlist.h"
-#include "modules/interactive_music/tests/test_audio_stream_synchronized.h"
 #include "tests/display_server_mock.h"
 #include "tests/force_link.gen.h"
 #include "tests/signal_watcher.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
+
+#include "modules/interactive_music/tests/test_audio_stream_interactive.h"
+#include "modules/interactive_music/tests/test_audio_stream_playlist.h"
+#include "modules/interactive_music/tests/test_audio_stream_synchronized.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/file_system/editor_paths.h"
