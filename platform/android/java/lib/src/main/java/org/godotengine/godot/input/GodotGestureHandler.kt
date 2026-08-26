@@ -59,7 +59,7 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 
 	var scrollDeadzoneDisabled = false
 
-	var longPressEnabled = false
+	var rightClickEmulation = false
 
 	/**
 	 * Enable haptic feedback on long-press right-click
@@ -69,7 +69,8 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 	private var nextDownIsDoubleTap = false
 	private var dragInProgress = false
 	private var scaleInProgress = false
-	private var contextClickInProgress = false
+	private var longPressInProgress = false
+	private var emulatedRightClickInProgress = false
 	private var pointerCaptureInProgress = false
 
 	private var lastDragX: Float = 0.0f
@@ -92,11 +93,11 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 			if (hapticFeedbackEnabled) {
 				inputHandler.performHapticFeedback()
 			}
-			contextClickRouter(event)
+			handleLongPress(event)
 		}
 	}
 
-	private fun contextClickRouter(event: MotionEvent) {
+	private fun handleLongPress(event: MotionEvent) {
 		if (scaleInProgress || nextDownIsDoubleTap) {
 			return
 		}
@@ -104,14 +105,19 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 		// Cancel the previous down event
 		inputHandler.handleMotionEvent(event, MotionEvent.ACTION_CANCEL)
 
-		// Turn a context click into a single tap right mouse button click.
-		inputHandler.handleMouseEvent(
-			event,
-			MotionEvent.ACTION_DOWN,
-			MotionEvent.BUTTON_SECONDARY,
-			false
-		)
-		contextClickInProgress = true
+		inputHandler.handleTouchEvent(event, event.action, false, true)
+		longPressInProgress = true
+
+		if (rightClickEmulation) {
+			// Turn a long press into a single tap right mouse button click.
+			inputHandler.handleMouseEvent(
+				event,
+				MotionEvent.ACTION_DOWN,
+				MotionEvent.BUTTON_SECONDARY,
+				false
+			)
+			emulatedRightClickInProgress = true
+		}
 	}
 
 	fun onPointerCaptureChange(hasCapture: Boolean) {
@@ -144,17 +150,22 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 			return true
 		}
 
-		if (pointerCaptureInProgress || dragInProgress || contextClickInProgress) {
-			if (contextClickInProgress || GodotInputHandler.isMouseEvent(event)) {
+		if (pointerCaptureInProgress || dragInProgress || emulatedRightClickInProgress) {
+			if (GodotInputHandler.isMouseEvent(event)) {
 				// This may be an ACTION_BUTTON_RELEASE event which we don't handle,
 				// so we convert it to an ACTION_UP event.
 				inputHandler.handleMouseEvent(event, MotionEvent.ACTION_UP)
+			} else if (emulatedRightClickInProgress) {
+				inputHandler.handleMouseEvent(event, MotionEvent.ACTION_UP)
+				// Handling both touch and emulated mouse, so one can ignore the emulated mouse event and continue interacting via touch.
+				inputHandler.handleTouchEvent(event)
 			} else {
 				inputHandler.handleTouchEvent(event)
 			}
 			pointerCaptureInProgress = false
 			dragInProgress = false
-			contextClickInProgress = false
+			longPressInProgress = false
+			emulatedRightClickInProgress = false
 			lastDragX = 0.0f
 			lastDragY = 0.0f
 			return true
@@ -164,14 +175,20 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 	}
 
 	private fun onActionMove(event: MotionEvent): Boolean {
-		if (contextClickInProgress) {
+		var emulatedClickHandled = false
+		if (emulatedRightClickInProgress) {
 			inputHandler.handleMouseEvent(event, event.actionMasked, MotionEvent.BUTTON_SECONDARY, false)
-			return true
-		} else if (scrollDeadzoneDisabled && !scaleInProgress) {
+			emulatedClickHandled = true
+		}
+
+		if ((scrollDeadzoneDisabled || longPressInProgress) && !scaleInProgress) {
 			// The 'onScroll' event is triggered with a long delay.
 			// Force the 'InputEventScreenDrag' event earlier here.
 			// We don't toggle 'dragInProgress' here so that the scaling logic can override the drag operation if needed.
 			// Once the 'onScroll' event kicks-in, 'dragInProgress' will be properly set.
+
+			// Long press drag doesn't invoke `onScroll` event, handling it here.
+
 			if (lastDragX != event.getX(0) || lastDragY != event.getY(0)) {
 				lastDragX = event.getX(0)
 				lastDragY = event.getY(0)
@@ -179,15 +196,15 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 				return true
 			}
 		}
-		return false
+		return emulatedClickHandled
 	}
 
 	override fun onDoubleTapEvent(event: MotionEvent): Boolean {
 		if (event.actionMasked == MotionEvent.ACTION_UP) {
 			nextDownIsDoubleTap = false
 
-			// Long press is restored to its previous value.
-			inputHandler.gestureDetector.setIsLongpressEnabled(longPressEnabled)
+			// Re-enable Long press.
+			inputHandler.gestureDetector.setIsLongpressEnabled(true)
 
 			inputHandler.handleMotionEvent(event, event.actionMasked, true)
 		} else if (event.actionMasked == MotionEvent.ACTION_MOVE && !(scalingEnabled && inputHandler.scaleGestureDetector.isQuickScaleEnabled)) {

@@ -366,7 +366,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchMouseEvent(JN
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint pointer_count, jfloatArray position, jboolean p_double_tap) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint pointer_count, jfloatArray position, jboolean p_double_tap, jboolean p_long_press) {
 	if (step.get() <= STEP_SETUP) {
 		return;
 	}
@@ -381,6 +381,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JN
 		tp.pressure = p[3];
 		tp.tilt = Vector2(p[4], p[5]);
 		tp.double_tap = p_double_tap;
+		tp.long_press = p_long_press;
 		points.push_back(tp);
 	}
 
