@@ -146,6 +146,7 @@ void ScriptTextEditor::EditMenusScTE::EditMenusScTE::_update_breakpoint_list() {
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_breakpoints"), DEBUG_REMOVE_ALL_BREAKPOINTS);
 	breakpoints_menu->set_item_index(-1, 0);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_breakpoint"), DEBUG_TOGGLE_BREAKPOINT);
+	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("debugger/skip_breakpoints"), DEBUG_SKIP_BREAKPOINTS);
 	breakpoints_menu->set_item_index(-1, 0);
 }
 
@@ -2606,6 +2607,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/goto_symbol", TTRC("Lookup Symbol"));
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTRC("Toggle Breakpoint"), Key::F9);
+	ED_SHORTCUT("debugger/skip_breakpoints", TTRC("Skip Breakpoints"));
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
 
 	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTRC("Remove All Breakpoints"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F9);

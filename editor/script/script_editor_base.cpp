@@ -33,6 +33,7 @@
 #include "core/io/json.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_node.h"
 #include "editor/script/find_in_files.h"
 #include "editor/script/script_editor_navigation_marker.h"
@@ -859,6 +860,7 @@ bool CodeEditorBase::_edit_option(int p_option) {
 		case DEBUG_TOGGLE_BREAKPOINT:
 		case DEBUG_REMOVE_ALL_BREAKPOINTS:
 		case DEBUG_GOTO_NEXT_BREAKPOINT:
+		case DEBUG_SKIP_BREAKPOINTS:
 		case DEBUG_GOTO_PREV_BREAKPOINT: {
 			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		}
@@ -939,6 +941,9 @@ bool CodeEditorBase::_edit_option(int p_option) {
 			for (int line : tx->get_breakpointed_lines()) {
 				tx->set_line_as_breakpoint(line, false);
 			}
+		} break;
+		case DEBUG_SKIP_BREAKPOINTS: {
+			EditorDebuggerNode::get_singleton()->debug_skip_breakpoints();
 		} break;
 		default: {
 			return TextEditorBase::_edit_option(p_option);
