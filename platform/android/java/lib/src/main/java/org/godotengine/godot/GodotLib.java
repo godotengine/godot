@@ -111,7 +111,7 @@ public class GodotLib {
 	/**
 	 * Forward touch events.
 	 */
-	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap);
+	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap, boolean longPress);
 
 	/**
 	 * Dispatch mouse events
