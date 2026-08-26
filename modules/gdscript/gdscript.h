@@ -493,7 +493,17 @@ public:
 		}
 
 		call_level->prev = _call_stack;
+
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 12
+		GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wdangling-pointer") // The VM ensures call_level is not freed while it is in use, so this warning is a false positive for GCC 12+.
+#endif
+
 		_call_stack = call_level;
+
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 12
+		GODOT_GCC_WARNING_POP
+#endif
+
 		call_level->stack = p_stack;
 		call_level->instance = p_instance;
 		call_level->function = p_function;
