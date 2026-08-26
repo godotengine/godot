@@ -30,6 +30,9 @@
 
 #pragma once
 
+#include "gdscript_function.h"
+
+#include "core/object/method_bind.h"
 #include "core/object/script_language.h"
 #include "core/variant/variant.h"
 
@@ -44,14 +47,15 @@ struct FunctionInlineCache {
 	CacheState state;
 	bool is_static;
 
-	GDType *type;
+	Variant::Type type;
+	GDType *gdtype;
 	Ref<Script> script;
-	Variant::VariantCacheFunctionCall fn;
+	VariantCallCache fn;
 
 private:
 	void load(Variant &p_base, const StringName &p_method);
 
-	_FORCE_INLINE_ static GDType *get_type(const Variant &v) {
+	_FORCE_INLINE_ static GDType *get_gdtype(const Variant &v) {
 		Variant::Type vtype = v.get_type();
 		if (vtype == Variant::OBJECT) {
 			return const_cast<GDType *>(&(*VariantInternal::get_object(&v))->get_gdtype());
@@ -61,7 +65,7 @@ private:
 	}
 
 	_FORCE_INLINE_ bool hit(Variant &p_base) const {
-		return get_type(p_base) == type && (p_base.get_type() != Variant::OBJECT || script_matches(*VariantInternal::get_object(&p_base)));
+		return p_base.get_type() == type && (p_base.get_type() != Variant::OBJECT || (get_gdtype(p_base) == gdtype && script_matches(*VariantInternal::get_object(&p_base))));
 	}
 
 	_FORCE_INLINE_ bool script_matches(Object *obj) const {
@@ -73,30 +77,39 @@ private:
 	}
 
 public:
-	_FORCE_INLINE_ void callp(Variant &p_base, const StringName &p_method, const Variant **p_args, int p_argcount, Variant *p_ret, Callable::CallError &p_error) {
+	_FORCE_INLINE_ Variant callp(Variant &p_base, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &p_error) {
 		if (unlikely(state == CacheState::UNINITIALIZED)) {
 			load(p_base, p_method);
 		}
 		if (state == CacheState::MONOMORPHIC) {
 			if (likely(hit(p_base))) {
-				if (p_ret != nullptr) {
-					*p_ret = fn(&p_base, p_args, p_argcount, p_error);
-				} else {
-					fn(&p_base, p_args, p_argcount, p_error);
+				switch (fn.type) {
+					case VariantCallCache::Type::GDSCRIPT_FUNCTION: {
+						DEV_ASSERT(p_base.get_type() == Variant::OBJECT);
+						Object *obj = *VariantInternal::get_object(&p_base);
+						return fn.gdscript_function->call(reinterpret_cast<GDScriptInstance *>(obj->get_script_instance()), p_args, p_argcount, p_error);
+					} break;
+					case VariantCallCache::Type::METHOD_BIND: {
+						return fn.method_bind->call(*VariantInternal::get_object(&p_base), p_args, p_argcount, p_error);
+					} break;
+					case VariantCallCache::Type::VARIANT_BUILTIN_METHOD: {
+						Variant ret;
+						fn.variant_builtin_method.call(&p_base, p_args, p_argcount, ret, *fn.variant_builtin_method.default_values, p_error);
+						return ret;
+					}
+					default:
+						WARN_PRINT("Unhandled call cache type");
+						state = CacheState::DISABLED;
 				}
-				return;
 			} else {
 				state = CacheState::DISABLED;
 				// TODO: cleanup?
 			}
 		}
 		// Fallback to variant call
-		if (p_ret != nullptr) {
-			p_base.callp(p_method, p_args, p_argcount, *p_ret, p_error);
-		} else {
-			Variant v;
-			p_base.callp(p_method, p_args, p_argcount, v, p_error);
-		}
+		Variant v;
+		p_base.callp(p_method, p_args, p_argcount, v, p_error);
+		return v;
 	}
 
 	void reset();

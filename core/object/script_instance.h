@@ -69,7 +69,7 @@ public:
 
 	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error); // implement if language supports const functions
 
-	virtual Variant::VariantCacheFunctionCall lookup_function_call(const StringName &p_method_name);
+	virtual VariantCallCache lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error);
 
 	virtual void notification(int p_notification, bool p_reversed = false) = 0;
 	virtual String to_string(bool *r_valid) {

@@ -31,6 +31,7 @@
 #include "gdscript_function.h"
 
 #include "gdscript.h"
+#include "inline_cache.h"
 
 #include "core/object/class_db.h"
 
@@ -159,14 +160,6 @@ Variant GDScriptFunction::get_constant(int p_idx) const {
 StringName GDScriptFunction::get_global_name(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, global_names.size(), "<errgname>");
 	return global_names[p_idx];
-}
-
-Variant GDScriptFunction::call_for_variant_cache(Variant *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err) {
-	if (p_instance->get_type() == Variant::OBJECT) {
-		Object *obj = *VariantInternal::get_object(p_instance);
-		return call(reinterpret_cast<GDScriptInstance *>(obj->get_script_instance()), p_args, p_argcount, r_err);
-	}
-	ERR_FAIL_V_MSG(Variant(), "GDScript cache fail: calling on non object type");
 }
 
 struct _GDFKC {

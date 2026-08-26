@@ -957,11 +957,40 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 	return method->call(this, p_args, p_argcount, r_error);
 }
 
-Variant::VariantCacheFunctionCall Object::lookup_function_call(const StringName &p_method_name) {
-	if (script_instance != nullptr) {
-		return script_instance->lookup_function_call(p_method_name);
+VariantCallCache Object::lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error) {
+	VariantCallCache ret;
+	if (p_method_name == CoreStringName(free_)) {
+		// REVIEW: how to not cache free
+		p_error = Callable::CallError::CALL_OK;
+		return ret;
 	}
-	return Variant::VariantCacheFunctionCall();
+	if (script_instance != nullptr) {
+		ret = script_instance->lookup_function_call(p_method_name, p_error);
+
+		switch (p_error) {
+			case Callable::CallError::CALL_OK:
+				return ret;
+			case Callable::CallError::CALL_ERROR_INVALID_METHOD:
+				break;
+			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
+			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+			case Callable::CallError::CALL_ERROR_METHOD_NOT_CONST:
+				return ret;
+			case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL: {
+			}
+		}
+	}
+
+	const GDType::Member *member = get_gdtype().members().getptr(p_method_name);
+	if (!member || member->type != GDType::Member::Type::METHOD) {
+		p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return VariantCallCache();
+	}
+
+	ret = member->payload.method;
+	p_error = Callable::CallError::CALL_OK;
+	return ret;
 }
 
 void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const {

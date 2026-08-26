@@ -32,6 +32,7 @@
 
 #include "gdscript.h"
 #include "gdscript_function.h"
+#include "inline_cache.h"
 
 #include "core/object/method_bind.h"
 #include "core/string/string_builder.h"

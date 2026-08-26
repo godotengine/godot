@@ -58,8 +58,9 @@ Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p
 	return callp(p_method, p_args, p_argcount, r_error);
 }
 
-Variant::VariantCacheFunctionCall ScriptInstance::lookup_function_call(const StringName &p_method_name) {
-	return Variant::VariantCacheFunctionCall();
+VariantCallCache ScriptInstance::lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error) {
+	p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+	return VariantCallCache();
 }
 
 void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &r_state) {

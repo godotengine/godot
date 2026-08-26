@@ -31,6 +31,7 @@
 #include "gdscript.h"
 #include "gdscript_function.h"
 #include "gdscript_lambda_callable.h"
+#include "inline_cache.h"
 
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -1939,7 +1940,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Callable::CallError err;
 				if (call_ret) {
 					GET_INSTRUCTION_ARG(ret, argc + 1);
-					fn->callp(*base, *methodname, const_cast<const Variant **>(argptrs), argc, &temp_ret, err);
+					temp_ret = fn->callp(*base, *methodname, const_cast<const Variant **>(argptrs), argc, err);
 					*ret = temp_ret;
 #ifdef DEBUG_ENABLED
 					if (ret->get_type() == Variant::NIL) {
@@ -1974,7 +1975,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 #endif
 				} else {
-					fn->callp(*base, *methodname, const_cast<const Variant **>(argptrs), argc, nullptr, err);
+					fn->callp(*base, *methodname, const_cast<const Variant **>(argptrs), argc, err);
 				}
 #ifdef DEBUG_ENABLED
 

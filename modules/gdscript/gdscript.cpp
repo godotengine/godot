@@ -123,6 +123,22 @@ Variant GDScriptNativeClass::callp(const StringName &p_method, const Variant **p
 	return Variant();
 }
 
+VariantCallCache GDScriptNativeClass::lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error) {
+	if (p_method_name == SNAME("new")) {
+		return Object::lookup_function_call(p_method_name, p_error);
+	}
+
+	const MethodBind *method = ClassDB::get_method(name, p_method_name);
+	if (method && method->is_static()) {
+		// Native static method.
+		p_error = Callable::CallError::Error::CALL_OK;
+		return VariantCallCache(method);
+	}
+
+	p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+	return VariantCallCache();
+}
+
 GDScriptFunction *GDScript::_super_constructor(GDScript *p_script) {
 	if (likely(p_script->valid) && p_script->initializer) {
 		return p_script->initializer;
@@ -965,19 +981,36 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 	return Variant();
 }
 
-Variant::VariantCacheFunctionCall GDScript::lookup_function_call(const StringName &p_method) {
+VariantCallCache GDScript::lookup_function_call(const StringName &p_method, Callable::CallError::Error &p_error) {
 	GDScript *top = this;
 	while (top) {
 		if (likely(top->valid)) {
 			HashMap<StringName, GDScriptFunction *>::Iterator E = top->member_functions.find(p_method);
 			if (E) {
 				// TODO: add static call check
-				return std::bind(&GDScriptFunction::call_for_variant_cache, E->value, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+				return VariantCallCache(E->value);
 			}
 		}
 		top = top->base.ptr();
 	}
-	return Variant::VariantCacheFunctionCall();
+
+	// NOTE: I think this should be Object:: but leaving it as is to mirror GDScript::callp
+	VariantCallCache ret = Script::lookup_function_call(p_method, p_error);
+	if (p_error != Callable::CallError::Error::CALL_ERROR_INVALID_METHOD) {
+		return ret;
+	}
+
+	if (_is_abstract && p_method == SNAME("new")) {
+		p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return ret;
+	}
+
+	if (native.is_valid()) {
+		return native->lookup_function_call(p_method, p_error);
+	}
+
+	p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+	return VariantCallCache();
 }
 
 bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
@@ -1981,23 +2014,25 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 	return Variant();
 }
 
-Variant::VariantCacheFunctionCall GDScriptInstance::lookup_function_call(const StringName &p_method) {
-	GDScript *sptr = script.ptr();
+VariantCallCache GDScriptInstance::lookup_function_call(const StringName &p_method, Callable::CallError::Error &p_error) {
 	if (unlikely(p_method == SceneStringName(_ready))) {
-		// Call implicit ready first, including for the super classes recursively.
-		return Variant::VariantCacheFunctionCall();
+		// Do not cache `ready`
+		p_error = Callable::CallError::Error::CALL_OK;
+		return VariantCallCache();
 	}
+	GDScript *sptr = script.ptr();
 	while (sptr) {
 		if (likely(sptr->valid)) {
 			HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(p_method);
 			if (E) {
-				return std::bind(&GDScriptFunction::call_for_variant_cache, E->value, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+				p_error = Callable::CallError::Error::CALL_OK;
+				return VariantCallCache(E->value);
 			}
 		}
 		sptr = sptr->base.ptr();
 	}
-
-	return Variant::VariantCacheFunctionCall();
+	p_error = Callable::CallError::Error::CALL_ERROR_INVALID_METHOD;
+	return VariantCallCache();
 }
 
 void GDScriptInstance::notification(int p_notification, bool p_reversed) {

@@ -61,9 +61,8 @@
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/variant_cache.h"
 #include "core/variant/variant_deep_duplicate.h"
-
-#include <functional>
 
 class GDType;
 class Object;
@@ -823,9 +822,7 @@ public:
 	static int get_utility_function_count();
 
 	// For caching function calls
-	// typedef Variant (*VariantCacheFunctionCall)(Variant *, const Variant **, int, Callable::CallError &);
-	typedef std::function<Variant(Variant *, const Variant **, int, Callable::CallError &)> VariantCacheFunctionCall;
-	VariantCacheFunctionCall lookup_function_call(const StringName &p_method_name);
+	VariantCallCache lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error);
 
 	[[nodiscard]] bool operator==(const Variant &p_variant) const;
 	[[nodiscard]] bool operator<(const Variant &p_variant) const;

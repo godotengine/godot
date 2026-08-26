@@ -36,13 +36,15 @@
 #include "core/variant/variant_internal.h"
 
 void FunctionInlineCache::load(Variant &p_base, const StringName &p_method) {
-	Variant::VariantCacheFunctionCall found = p_base.lookup_function_call(p_method);
-	if (found) {
+	Callable::CallError::Error err;
+	VariantCallCache found = p_base.lookup_function_call(p_method, err);
+	if (found.type != VariantCallCache::Type::INVALID) {
 		// There is a chance another thread already updated while we looked up the function.
 		if (state == CacheState::UNINITIALIZED) {
 			state = CacheState::INITIALIZING;
 			fn = std::move(found);
-			type = get_type(p_base);
+			type = p_base.get_type();
+			gdtype = get_gdtype(p_base);
 			if (p_base.get_type() == Variant::OBJECT) {
 				Object *obj = *VariantInternal::get_object(&p_base);
 
@@ -65,6 +67,7 @@ void FunctionInlineCache::load(Variant &p_base, const StringName &p_method) {
 
 void FunctionInlineCache::reset() {
 	script = nullptr;
-	fn = nullptr;
+	fn = {};
+	type = Variant::NIL;
 	state = CacheState::UNINITIALIZED;
 }

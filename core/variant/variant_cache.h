@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  variant_cache.cpp                                                     */
+/*  variant_cache.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,13 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/object/object.h"
-#include "core/variant/variant.h"
+#pragma once
 
-Variant::VariantCacheFunctionCall Variant::lookup_function_call(const StringName &p_method_name) {
-	// Currently only supports objects
-	if (type == OBJECT) {
-		return _get_obj().obj->lookup_function_call(p_method_name);
-	}
-	return Variant::VariantCacheFunctionCall();
-}
+class GDScriptFunction;
+class MethodBind;
+
+struct VariantCallCache {
+	enum class Type {
+		INVALID,
+		GDSCRIPT_FUNCTION,
+		METHOD_BIND,
+		VARIANT_BUILTIN_METHOD,
+	};
+
+	Type type;
+
+	struct VariantBuiltInMethod {
+		void (*call)(Variant *, const Variant **, int, Variant &, const Vector<Variant> &, Callable::CallError &);
+		const Vector<Variant> *default_values;
+	};
+
+	union {
+		GDScriptFunction *gdscript_function;
+		const MethodBind *method_bind;
+		VariantBuiltInMethod variant_builtin_method;
+	};
+
+	VariantCallCache() : type(Type::INVALID) {}
+	VariantCallCache(GDScriptFunction *p_gdscript_function) : type(Type::GDSCRIPT_FUNCTION), gdscript_function(p_gdscript_function) {}
+	VariantCallCache(const MethodBind *p_method_bind) : type(Type::METHOD_BIND), method_bind(p_method_bind) {}
+	VariantCallCache(
+			void (*p_call)(Variant *, const Variant **, int, Variant &, const Vector<Variant> &, Callable::CallError &),
+			const Vector<Variant> *p_default_values) :
+			type(Type::VARIANT_BUILTIN_METHOD), variant_builtin_method{ p_call, p_default_values } {}
+};
