@@ -157,6 +157,7 @@ void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_canceled) {
 			ev->set_canceled(p_canceled);
 			ev->set_position(touch[i].pos);
 			ev->set_double_tap(touch[i].double_tap);
+			ev->set_long_press(touch[i].long_press);
 			Input::get_singleton()->parse_input_event(ev);
 		}
 	}
@@ -181,6 +182,7 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 				touch.write[i].pressure = p_points[i].pressure;
 				touch.write[i].tilt = p_points[i].tilt;
 				touch.write[i].double_tap = p_points[i].double_tap;
+				touch.write[i].long_press = p_points[i].long_press;
 			}
 
 			//send touch

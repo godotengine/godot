@@ -128,6 +128,7 @@ final class InputEventRunnable implements Runnable {
 	// common touch / mouse fields
 	private int eventAction;
 	private boolean doubleTap;
+	private boolean longPress;
 
 	// Mouse event fields and setter
 	private int buttonsMask;
@@ -154,10 +155,11 @@ final class InputEventRunnable implements Runnable {
 	private int actionPointerId;
 	private int pointerCount;
 	private final float[] positions = new float[MAX_TOUCH_POINTER_COUNT * 6]; // pointerId1, x1, y1, pressure1, tiltX1, tiltY1, pointerId2, etc...
-	void setTouchEvent(MotionEvent event, int eventAction, boolean doubleTap) {
+	void setTouchEvent(MotionEvent event, int eventAction, boolean doubleTap, boolean longPress) {
 		this.currentEventType = EventType.TOUCH;
 		this.eventAction = eventAction;
 		this.doubleTap = doubleTap;
+		this.longPress = longPress;
 		this.actionPointerId = event.getPointerId(event.getActionIndex());
 		this.pointerCount = Math.min(event.getPointerCount(), MAX_TOUCH_POINTER_COUNT);
 		for (int i = 0; i < pointerCount; i++) {
@@ -287,7 +289,8 @@ final class InputEventRunnable implements Runnable {
 							actionPointerId,
 							pointerCount,
 							positions,
-							doubleTap);
+							doubleTap,
+							longPress);
 					break;
 
 				case MAGNIFY:

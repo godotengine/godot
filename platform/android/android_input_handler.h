@@ -44,6 +44,7 @@ public:
 		float pressure = 0;
 		Vector2 tilt;
 		bool double_tap = false;
+		bool long_press = false;
 	};
 
 	struct MouseEventInfo {

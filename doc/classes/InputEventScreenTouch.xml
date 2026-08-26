@@ -19,6 +19,10 @@
 		<member name="index" type="int" setter="set_index" getter="get_index" default="0">
 			The touch index in the case of a multi-touch event. One index = one finger.
 		</member>
+		<member name="long_press" type="bool" setter="set_long_press" getter="is_long_press" default="false">
+			If [code]true[/code], the touch's state is a long press.
+			[b]Note:[/b] This is only supported on Android.
+		</member>
 		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
 			The touch position in the viewport the node is in, using the coordinate system of this viewport.
 		</member>
