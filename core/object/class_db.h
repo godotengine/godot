@@ -260,9 +260,7 @@ public:
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_NULL(t);
-		t->creation_func = &creator<T>;
 		t->exposed = false;
-		t->is_virtual = false;
 		t->class_ptr = T::get_class_ptr_static();
 		t->api = current_api;
 		T::register_custom_data_to_otdb();
