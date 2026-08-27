@@ -50,6 +50,8 @@
 #include "core/string/string_name.h"
 #include "core/variant/variant_parser.h"
 
+#include <functional>
+
 #ifdef TOOLS_ENABLED
 #include "editor/file_system/editor_file_system.h"
 #endif
@@ -76,11 +78,63 @@ const MethodBind *godotsharp_method_bind_get_method_with_compatibility(const Str
 }
 
 godotsharp_class_creation_func godotsharp_get_class_constructor(const StringName *p_classname) {
-	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(*p_classname);
-	if (class_info) {
+	if (const ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(*p_classname)) {
 		return class_info->creation_func;
+	} else {
+		return nullptr;
 	}
-	return nullptr;
+}
+
+const ClassDB::ClassInfo* godotsharp_get_class_info(const StringName *p_classname) {
+	return ClassDB::classes.getptr(*p_classname);
+}
+
+Object *godotsharp_instantiate_with_class_info(const ClassDB::ClassInfo *p_class_info, bool p_notify_postinitialize) {
+#ifdef TOOLS_ENABLED
+	bool is_editor_hint = Engine::get_singleton()->is_editor_hint();
+	if ((p_class_info->api == ClassDB::API_EDITOR || p_class_info->api == ClassDB::API_EDITOR_EXTENSION) && !is_editor_hint) {
+		ERR_PRINT(vformat("Class '%s' can only be instantiated by editor.", String(p_class_info->gdtype->get_name())));
+		return nullptr;
+	}
+
+	// Try to create placeholder.
+	if (p_class_info->is_runtime && is_editor_hint) {
+		bool can_create_placeholder = false;
+		if (p_class_info->gdextension) {
+			if (p_class_info->gdextension->create_instance2) {
+				can_create_placeholder = true;
+			}
+#ifndef DISABLE_DEPRECATED
+			else if (p_class_info->gdextension->create_instance) {
+				can_create_placeholder = true;
+			}
+#endif // DISABLE_DEPRECATED
+		} else if (!p_class_info->inherits_ptr || !p_class_info->inherits_ptr->creation_func) {
+			ERR_PRINT(vformat("Cannot make a placeholder instance of runtime class %s because its parent cannot be constructed.", p_class_info->gdtype->get_name()));
+		} else {
+			can_create_placeholder = true;
+		}
+
+		if (can_create_placeholder) {
+			ObjectGDExtension *extension = ClassDB::get_placeholder_extension(p_class_info->gdtype->get_name());
+			return (Object *)extension->create_instance2(extension->class_userdata, p_notify_postinitialize);
+		}
+	}
+#endif // TOOLS_ENABLED
+
+	if (p_class_info->gdextension && p_class_info->gdextension->create_instance2) {
+		ObjectGDExtension *extension = p_class_info->gdextension;
+		return (Object *)extension->create_instance2(extension->class_userdata, p_notify_postinitialize);
+	}
+#ifndef DISABLE_DEPRECATED
+	else if (p_class_info->gdextension && p_class_info->gdextension->create_instance) {
+		ObjectGDExtension *extension = p_class_info->gdextension;
+		return (Object *)extension->create_instance(extension->class_userdata);
+	}
+#endif // DISABLE_DEPRECATED
+	else {
+		return p_class_info->creation_func(p_notify_postinitialize);
+	}
 }
 
 Object *godotsharp_engine_get_singleton(const String *p_name) {
@@ -495,6 +549,7 @@ void godotsharp_packed_string_array_add(PackedStringArray *r_dest, const String 
 
 void godotsharp_callable_new_with_delegate(GCHandleIntPtr p_delegate_handle, void *p_trampoline,
 		const Object *p_object, Callable *r_callable) {
+	ERR_FAIL_COND_MSG(p_delegate_handle.value == nullptr, "Expected parameter `delegate_handle` to be non-null.");
 	// TODO: Use pooling for ManagedCallable instances.
 	ObjectID objid = p_object ? p_object->get_instance_id() : ObjectID();
 	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle, p_trampoline, objid));
@@ -1620,6 +1675,8 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_method_bind_get_method_with_compatibility,
 	(void *)godotsharp_get_class_constructor,
+	(void *)godotsharp_get_class_info,
+	(void *)godotsharp_instantiate_with_class_info,
 	(void *)godotsharp_engine_get_singleton,
 	(void *)godotsharp_stack_info_vector_resize,
 	(void *)godotsharp_stack_info_vector_destroy,

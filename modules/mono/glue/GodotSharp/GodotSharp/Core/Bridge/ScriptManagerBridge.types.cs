@@ -17,8 +17,14 @@ public static partial class ScriptManagerBridge
     private class ScriptTypeBiMap
     {
         public readonly ReaderWriterLockSlim ReadWriteLock = new(LockRecursionPolicy.SupportsRecursion);
-        private System.Collections.Generic.Dictionary<IntPtr, Type> _scriptTypeMap = new();
-        private System.Collections.Generic.Dictionary<Type, IntPtr> _typeScriptMap = new();
+        private Dictionary<IntPtr, Type> _scriptTypeMap = new();
+        private Dictionary<Type, IntPtr> _typeScriptMap = new();
+
+        public void ClearNonGodotSharpTypes()
+        {
+            AssemblyUtils.RemoveNonGodotSharpTypes(_scriptTypeMap);
+            AssemblyUtils.RemoveNonGodotSharpTypes(_typeScriptMap);
+        }
 
         public void Add(IntPtr scriptPtr, Type scriptType)
         {
@@ -65,10 +71,16 @@ public static partial class ScriptManagerBridge
 
     private class PathScriptTypeBiMap
     {
-        private System.Collections.Generic.Dictionary<string, Type> _pathTypeMap = new();
-        private System.Collections.Generic.Dictionary<Type, string> _typePathMap = new();
+        private Dictionary<string, Type> _pathTypeMap = new();
+        private Dictionary<Type, string> _typePathMap = new();
 
-        public System.Collections.Generic.Dictionary<string, Type>.KeyCollection Paths => _pathTypeMap.Keys;
+        public Dictionary<string, Type>.KeyCollection Paths => _pathTypeMap.Keys;
+
+        public void ClearNonGodotSharpTypes()
+        {
+            AssemblyUtils.RemoveNonGodotSharpTypes(_pathTypeMap);
+            AssemblyUtils.RemoveNonGodotSharpTypes(_typePathMap);
+        }
 
         public void Add(string scriptPath, Type scriptType)
         {

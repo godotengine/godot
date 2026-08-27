@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -75,6 +76,20 @@ namespace Godot.Bridge
 
         private static ConcurrentDictionary<IntPtr, (string? assemblyName, string classFullName)>
             _scriptDataForReload = new();
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static void OnBeforeAssemblyUnload()
+        {
+            _scriptTypeBiMap.ClearNonGodotSharpTypes();
+            _pathTypeBiMap.ClearNonGodotSharpTypes();
+
+            // TODO: We shouldn't do this..
+            foreach (var value in _alcData.Values) {
+                value.Clear();
+            }
+
+            _alcData.Clear();
+        }
 
         [UnmanagedCallersOnly]
         internal static void FrameCallback()
@@ -692,6 +707,7 @@ namespace Godot.Bridge
                 _scriptTypeBiMap.ReadWriteLock.EnterWriteLock();
                 try
                 {
+                    _scriptTypeBiMap.Remove(scriptPtr);
                     _scriptTypeBiMap.Add(scriptPtr, scriptType);
                 }
                 finally

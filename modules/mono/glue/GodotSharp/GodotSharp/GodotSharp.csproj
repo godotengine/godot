@@ -54,6 +54,7 @@
 
   <!-- Sources -->
   <ItemGroup>
+    <Compile Include="AssemblyUtils.cs" />
     <Compile Include="Core\Aabb.cs" />
     <Compile Include="Core\Attributes\ExportToolButtonAttribute.cs" />
     <Compile Include="Core\Bridge\GodotSerializationInfo.cs" />

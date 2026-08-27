@@ -3739,6 +3739,11 @@ void ScriptEditor::update_docs_from_script(const Ref<Script> &p_script) {
 	ERR_FAIL_COND(p_script.is_null());
 
 	for (const DocData::ClassDoc &cd : p_script->get_documentation()) {
+		if (cd.name.is_empty()) {
+			ERR_PRINT(String("Expected `cd.name` to be non-empty. Script path: " + p_script->get_path()));
+			continue;
+		}
+
 		EditorHelp::get_doc_data()->add_doc(cd);
 		update_doc(cd.name);
 	}

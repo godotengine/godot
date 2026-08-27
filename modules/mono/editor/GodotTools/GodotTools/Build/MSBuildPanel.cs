@@ -204,7 +204,6 @@ namespace GodotTools.Build
         {
             Name = "MSBuild".TTR();
             IconName = "BuildCSharp";
-            DefaultSlot = EditorDock.DockSlot.Bottom;
             AvailableLayouts = DockLayout.Horizontal | DockLayout.Floating;
             Global = false;
             Transient = true;

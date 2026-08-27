@@ -547,6 +547,9 @@ public:
 	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
 	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
+
+	Error generate_gdextension_cs_api(const String &p_project_dir) const;
+
 	Variant class_call_static(const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error);
 
 	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;

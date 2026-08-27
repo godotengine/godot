@@ -4537,6 +4537,11 @@ int Main::start() {
 			for (const String &path : paths) {
 				Ref<GDScript> gdscript = ResourceLoader::load(path);
 				for (const DocData::ClassDoc &class_doc : gdscript->get_documentation()) {
+					if (class_doc.name.is_empty()) {
+						ERR_PRINT(String("Expected `class_doc.name` to be non-empty. Script Path: " + gdscript->get_path()));
+						continue;
+					}
+
 					docs.add_doc(class_doc);
 				}
 			}

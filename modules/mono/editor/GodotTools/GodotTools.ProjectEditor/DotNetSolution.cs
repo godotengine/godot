@@ -165,5 +165,66 @@ EndProject";
                 File.WriteAllText(slnPath, result);
             }
         }
+
+        public static bool EnsureProjectInSolution(string slnPath, string projectName,
+            string projectPathRelativeToSln, string projectGuid, IEnumerable<string> configs)
+        {
+            if (!File.Exists(slnPath))
+                return false;
+
+            string content = File.ReadAllText(slnPath);
+            string normalizedPath = projectPathRelativeToSln.Replace("/", "\\", StringComparison.Ordinal);
+
+            // Skip if the project is already in the solution.
+            if (content.Contains($"\"{normalizedPath}\"", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            string nl = content.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
+
+            // Build project declaration.
+            string projectDecl = string.Format(CultureInfo.InvariantCulture, _projectDeclaration,
+                projectName, normalizedPath, projectGuid);
+            projectDecl = projectDecl.Replace("\r\n", "\n", StringComparison.Ordinal)
+                .Replace("\n", nl, StringComparison.Ordinal);
+
+            // Build project configuration entries.
+            var projConfigSb = new StringBuilder();
+            bool firstConfig = true;
+            foreach (string config in configs)
+            {
+                if (!firstConfig)
+                    projConfigSb.Append(nl);
+                string entry = string.Format(CultureInfo.InvariantCulture,
+                    _projectPlatformsConfig, projectGuid, config);
+                entry = entry.Replace("\r\n", "\n", StringComparison.Ordinal)
+                    .Replace("\n", nl, StringComparison.Ordinal);
+                projConfigSb.Append(entry);
+                firstConfig = false;
+            }
+            string projConfigEntries = projConfigSb.ToString();
+
+            // Insert project declaration before "Global" line.
+            string globalMarker = nl + "Global" + nl;
+            int globalIdx = content.IndexOf(globalMarker, StringComparison.Ordinal);
+            if (globalIdx == -1)
+                return false;
+
+            content = content.Insert(globalIdx + nl.Length, projectDecl + nl);
+
+            // Insert project configuration entries at the end of ProjectConfigurationPlatforms section.
+            int postSolutionIdx = content.IndexOf(
+                "GlobalSection(ProjectConfigurationPlatforms)", StringComparison.Ordinal);
+            if (postSolutionIdx == -1)
+                return false;
+
+            int endSectionIdx = content.IndexOf("EndGlobalSection", postSolutionIdx, StringComparison.Ordinal);
+            if (endSectionIdx == -1)
+                return false;
+
+            content = content.Insert(endSectionIdx, projConfigEntries + nl);
+
+            File.WriteAllText(slnPath, content, Encoding.UTF8);
+            return true;
+        }
     }
 }

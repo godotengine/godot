@@ -3,6 +3,7 @@ namespace Godot.SourceGenerators
     public static class GodotClasses
     {
         public const string GodotObject = "Godot.GodotObject";
+        public const string Resource = "Godot.Resource";
         public const string Node = "Godot.Node";
         public const string Callable = "Godot.Callable";
         public const string AssemblyHasScriptsAttr = "Godot.AssemblyHasScriptsAttribute";

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -153,6 +154,10 @@ namespace GodotPlugins
 
                 ScriptManagerBridge.LookupScriptsInAssembly(projectAssembly);
 
+                ForceAssemblyEvaluation(projectAssembly);
+
+                Godot.Constructors.LoadGDExtensionMethodConstructors();
+
                 return godot_bool.True;
             }
             catch (Exception e)
@@ -244,6 +249,10 @@ namespace GodotPlugins
 
                 Console.WriteLine("Unloading assembly load context...");
 
+                Godot.Constructors.UnloadGDExtensionMethodConstructors();
+                ScriptManagerBridge.OnBeforeAssemblyUnload();
+                Godot.GodotObject.OnBeforeAssemblyUnload();
+
                 pluginLoadContext.Unload();
 
                 int startTimeMs = Environment.TickCount;
@@ -286,6 +295,34 @@ namespace GodotPlugins
                 // TODO: How to log exceptions from GodotPlugins? (delegate pointer?)
                 Console.Error.WriteLine(e);
                 return false;
+            }
+        }
+
+        static void ForceAssemblyEvaluation(Assembly assembly)
+        {
+            try
+            {
+                // Get all types from the assembly
+                Type[] types = assembly.GetTypes();
+
+                foreach (Type type in types)
+                {
+                    try
+                    {
+                        RuntimeHelpers.RunClassConstructor(type.TypeHandle);
+                    }
+                    catch (Exception ex)
+                    {
+                        Godot.GD.PrintErr($"Failed to initialize type {type.FullName}: {ex.Message}");
+                    }
+                }
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                // Handle cases where some types can't be loaded
+                Godot.GD.PrintErr(
+                    $"Some types couldn't be loaded: {string.Join(", ", ex.LoaderExceptions.Select(e => e.Message))}"
+                );
             }
         }
     }

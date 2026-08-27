@@ -670,7 +670,7 @@ void CSharpLanguage::reload_assemblies() {
 		for (SelfList<ManagedCallable> *elem = ManagedCallable::instances.first(); elem; elem = elem->next()) {
 			ManagedCallable *managed_callable = elem->self();
 
-			ERR_CONTINUE(managed_callable->delegate_handle.value == nullptr);
+			ERR_CONTINUE_MSG(managed_callable->delegate_handle.value == nullptr, "Expected `delegate_handle.value` to be non-null.");
 
 			if (!GDMonoCache::managed_callbacks.GCHandleBridge_GCHandleIsTargetCollectible(managed_callable->delegate_handle)) {
 				continue;
@@ -1147,7 +1147,7 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	// workaround to allow GDExtension classes to be used from C# so long as they're only used through base classes that
 	// are registered from the engine. This will likely need to be removed whenever proper support for GDExtension
 	// classes is added to C#. See #75955 for more details.
-	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->gdtype->get_name()))) {
+	while (classinfo && (!classinfo->exposed || ignored_types.has(classinfo->gdtype->get_name()))) {
 		classinfo = classinfo->inherits_ptr;
 	}
 
@@ -1385,7 +1385,7 @@ void CSharpLanguage::tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_i
 		// but the managed instance is alive, the refcount will be 1 instead of 0.
 		// See: godot_icall_RefCounted_Dtor(MonoObject *p_obj, Object *p_ptr)
 
-		// May not me referenced yet, so we must use init_ref() instead of reference()
+		// May not be referenced yet, so we must use init_ref() instead of reference()
 		if (rc->init_ref()) {
 			CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
 		}

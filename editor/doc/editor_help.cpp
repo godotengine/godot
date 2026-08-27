@@ -216,6 +216,36 @@ static String _contextualize_class_specifier(const String &p_class_specifier, co
 
 /// EditorHelp ///
 
+// TODO: This is sometimes used directly as `doc->something`, other times as `EditorHelp::get_doc_data()`, which is thread-safe.
+// Might this be a problem?
+
+static bool _attempt_doc_load(const String &p_class) {
+	// Docgen always happens in the outer-most class: it also generates docs for inner classes.
+	const String outer_class = p_class.get_slicec('.', 0);
+	if (!ScriptServer::is_global_class(outer_class)) {
+		return false;
+	}
+
+	// `ResourceLoader` is used in order to have a script-agnostic way to load scripts.
+	// This forces GDScript to compile the code, which is unnecessary for docgen, but it's a good compromise right now.
+	const Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(outer_class), outer_class);
+	if (script.is_valid()) {
+		const Vector<DocData::ClassDoc> docs = script->get_documentation();
+		for (int j = 0; j < docs.size(); j++) {
+			const DocData::ClassDoc &doc = docs.get(j);
+			if (doc.name.is_empty()) {
+				ERR_PRINT(String("Expected `class_doc.name` to be non-empty. Class name: " + p_class));
+				continue;
+			}
+
+			EditorHelp::get_doc_data()->add_doc(doc);
+		}
+		return true;
+	}
+
+	return false;
+}
+
 void EditorHelp::_update_theme_item_cache() {
 	VBoxContainer::_update_theme_item_cache();
 

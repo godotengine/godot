@@ -42,6 +42,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
+#include "core/version.h"
 #include "main/main.h"
 
 StringBuilder &operator<<(StringBuilder &r_sb, const String &p_string) {
@@ -79,6 +80,12 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define BINDINGS_CLASS_CONSTRUCTOR "Constructors"
 #define BINDINGS_CLASS_CONSTRUCTOR_EDITOR "EditorConstructors"
 #define BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY "BuiltInMethodConstructors"
+#define BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_DICTIONARY "GDExtensionMethodConstructors"
+
+#define BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR BINDINGS_CLASS_CONSTRUCTOR BINDINGS_GDEXTENSION_SUFFIX
+#define BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_METHOD "AddConstructors" BINDINGS_GDEXTENSION_SUFFIX
+#define BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_EDITOR BINDINGS_CLASS_CONSTRUCTOR_EDITOR BINDINGS_GDEXTENSION_SUFFIX
+#define BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_EDITOR_METHOD "AddEditorConstructors" BINDINGS_GDEXTENSION_SUFFIX
 
 #define CS_PARAM_MEMORYOWN "memoryOwn"
 #define CS_PARAM_METHODBIND "method"
@@ -92,6 +99,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CS_METHOD_HAS_GODOT_CLASS_SIGNAL "HasGodotClassSignal"
 
 #define CS_STATIC_FIELD_NATIVE_CTOR "NativeCtor"
+#define CS_STATIC_FIELD_CLASS_INFO "ClassInfo"
 #define CS_STATIC_FIELD_METHOD_BIND_PREFIX "MethodBind"
 #define CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX "MethodProxyName_"
 #define CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX "SignalProxyName_"
@@ -100,6 +108,8 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define ICALL_CLASSDB_GET_METHOD "ClassDB_get_method"
 #define ICALL_CLASSDB_GET_METHOD_WITH_COMPATIBILITY "ClassDB_get_method_with_compatibility"
 #define ICALL_CLASSDB_GET_CONSTRUCTOR "ClassDB_get_constructor"
+#define ICALL_CLASSDB_GET_CLASS_INFO "ClassDB_get_class_info"
+#define ICALL_CLASSDB_INSTANTIATE_WITH_CLASS_INFO "ClassDB_instantiate_with_class_info"
 
 #define C_LOCAL_RET "ret"
 #define C_LOCAL_VARARG_RET "vararg_ret"
@@ -686,7 +696,15 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					if (!_validate_api_type(target_itype, p_itype)) {
 						_append_xml_undeclared(xml_output, target_itype->proxy_name);
 					} else {
-						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+						xml_output.append("<see cref=\"");
+
+						if (target_itype->api_type == ClassDB::API_EXTENSION || target_itype->api_type == ClassDB::API_EDITOR_EXTENSION) {
+							xml_output.append(BINDINGS_GDEXTENSION_NAMESPACE);
+						} else {
+							xml_output.append(BINDINGS_NAMESPACE);
+						}
+
+						xml_output.append(".");
 						xml_output.append(target_itype->proxy_name);
 						xml_output.append("\"/>");
 					}
@@ -844,7 +862,9 @@ void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeI
 	} else {
 		if (p_target_cname == "_init") {
 			// The _init method is not declared in C#, reference the constructor instead
-			p_output.append("'new " BINDINGS_NAMESPACE ".");
+			p_output.append("'new ");
+			p_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+			p_output.append(".");
 			p_output.append(p_target_itype->proxy_name);
 			p_output.append("()'");
 		} else if (p_target_cname == "to_string") {
@@ -854,7 +874,9 @@ void BindingsGenerator::_append_text_method(StringBuilder &p_output, const TypeI
 			const MethodInterface *target_imethod = p_target_itype->find_method_by_name(p_target_cname);
 
 			if (target_imethod) {
-				p_output.append("'" BINDINGS_NAMESPACE ".");
+				p_output.append("'");
+				p_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+				p_output.append(".");
 				p_output.append(p_target_itype->proxy_name);
 				p_output.append(".");
 				p_output.append(target_imethod->proxy_name);
@@ -921,7 +943,9 @@ void BindingsGenerator::_append_text_member(StringBuilder &p_output, const TypeI
 		}
 
 		if (target_iprop) {
-			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append("'");
+			p_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+			p_output.append(".");
 			p_output.append(current_itype->proxy_name);
 			p_output.append(".");
 			p_output.append(target_iprop->proxy_name);
@@ -952,7 +976,9 @@ void BindingsGenerator::_append_text_signal(StringBuilder &p_output, const TypeI
 		const SignalInterface *target_isignal = p_target_itype->find_signal_by_name(p_target_cname);
 
 		if (target_isignal) {
-			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append("'");
+			p_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+			p_output.append(".");
 			p_output.append(p_target_itype->proxy_name);
 			p_output.append(".");
 			p_output.append(target_isignal->proxy_name);
@@ -979,11 +1005,13 @@ void BindingsGenerator::_append_text_enum(StringBuilder &p_output, const TypeInt
 	if (enum_match) {
 		const TypeInterface &target_enum_itype = enum_match->value;
 
-		p_output.append("'" BINDINGS_NAMESPACE ".");
+		p_output.append("'");
+		p_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+		p_output.append(".");
 		p_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
 		p_output.append("'");
 	} else {
-		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_target_cname)) {
+		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_link_target)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
 		}
 
@@ -1022,7 +1050,9 @@ void BindingsGenerator::_append_text_constant(StringBuilder &p_output, const Typ
 
 		if (target_iconst) {
 			// Found constant in current class
-			p_output.append("'" BINDINGS_NAMESPACE ".");
+			p_output.append("'");
+			p_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+			p_output.append(".");
 			p_output.append(p_target_itype->proxy_name);
 			p_output.append(".");
 			p_output.append(target_iconst->proxy_name);
@@ -1040,7 +1070,9 @@ void BindingsGenerator::_append_text_constant(StringBuilder &p_output, const Typ
 			}
 
 			if (target_iconst) {
-				p_output.append("'" BINDINGS_NAMESPACE ".");
+				p_output.append("'");
+				p_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+				p_output.append(".");
 				p_output.append(p_target_itype->proxy_name);
 				p_output.append(".");
 				p_output.append(target_ienum->proxy_name);
@@ -1125,8 +1157,10 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 		_append_xml_undeclared(p_xml_output, p_link_target);
 	} else {
 		if (p_target_cname == "_init") {
-			// The _init method is not declared in C#, reference the constructor instead.
-			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+			// The _init method is not declared in C#, reference the constructor instead
+			p_xml_output.append("<see cref=\"");
+			p_xml_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+			p_xml_output.append(".");
 			p_xml_output.append(p_target_itype->proxy_name);
 			p_xml_output.append(".");
 			p_xml_output.append(p_target_itype->proxy_name);
@@ -1142,7 +1176,9 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 				if (!_validate_api_type(p_target_itype, p_source_itype)) {
 					_append_xml_undeclared(p_xml_output, method_name);
 				} else {
-					p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+					p_xml_output.append("<see cref=\"");
+					p_xml_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+					p_xml_output.append(".");
 					p_xml_output.append(method_name);
 					p_xml_output.append("(");
 					bool first_key = true;
@@ -1212,7 +1248,9 @@ void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const Ty
 			if (!_validate_api_type(p_target_itype, p_source_itype)) {
 				_append_xml_undeclared(p_xml_output, member_name);
 			} else {
-				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+				p_xml_output.append("<see cref=\"");
+				p_xml_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+				p_xml_output.append(".");
 				p_xml_output.append(member_name);
 				p_xml_output.append("\"/>");
 			}
@@ -1246,7 +1284,9 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 			if (!_validate_api_type(p_target_itype, p_source_itype)) {
 				_append_xml_undeclared(p_xml_output, signal_name);
 			} else {
-				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+				p_xml_output.append("<see cref=\"");
+				p_xml_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+				p_xml_output.append(".");
 				p_xml_output.append(signal_name);
 				p_xml_output.append("\"/>");
 			}
@@ -1275,12 +1315,14 @@ void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const Type
 		if (!_validate_api_type(p_target_itype, p_source_itype)) {
 			_append_xml_undeclared(p_xml_output, target_enum_itype.proxy_name);
 		} else {
-			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+			p_xml_output.append("<see cref=\"");
+			p_xml_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+			p_xml_output.append(".");
 			p_xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
 			p_xml_output.append("\"/>");
 		}
 	} else {
-		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_target_cname)) {
+		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_link_target)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
 		}
 
@@ -1319,7 +1361,9 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 
 		if (target_iconst) {
 			// Found constant in current class
-			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+			p_xml_output.append("<see cref=\"");
+			p_xml_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+			p_xml_output.append(".");
 			p_xml_output.append(p_target_itype->proxy_name);
 			p_xml_output.append(".");
 			p_xml_output.append(target_iconst->proxy_name);
@@ -1337,7 +1381,9 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 			}
 
 			if (target_iconst) {
-				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+				p_xml_output.append("<see cref=\"");
+				p_xml_output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+				p_xml_output.append(".");
 				p_xml_output.append(p_target_itype->proxy_name);
 				p_xml_output.append(".");
 				p_xml_output.append(target_ienum->proxy_name);
@@ -1471,7 +1517,7 @@ int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
 		for (i = 0; i < candidate_len && i < parts.size(); i++) {
 			if (front_parts[i] != parts[i]) {
 				// HARDCODED: Some Flag enums have the prefix 'FLAG_' for everything except 'FLAGS_DEFAULT' (same for 'METHOD_FLAG_' and'METHOD_FLAGS_DEFAULT').
-				bool hardcoded_exc = (i == candidate_len - 1 && ((front_parts[i] == "FLAGS" && parts[i] == "FLAG") || (front_parts[i] == "FLAG" && parts[i] == "FLAGS")));
+				bool hardcoded_exc = i == candidate_len - 1 && ((front_parts[i] == "FLAGS" && parts[i] == "FLAG") || (front_parts[i] == "FLAG" && parts[i] == "FLAGS"));
 				if (!hardcoded_exc) {
 					break;
 				}
@@ -1566,7 +1612,7 @@ Error BindingsGenerator::_populate_method_icalls_table(const TypeInterface &p_it
 		List<InternalCall>::Element *match = method_icalls.find(im_icall);
 
 		if (match) {
-			if (p_itype.api_type != ClassDB::API_EDITOR) {
+			if (p_itype.api_type != ClassDB::API_EDITOR && p_itype.api_type != ClassDB::API_EDITOR_EXTENSION) {
 				match->get().editor_only = false;
 			}
 			method_icalls_map.insert(&imethod, &match->get());
@@ -1791,7 +1837,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
 		const TypeInterface &itype = E.value;
 
-		if (itype.api_type == ClassDB::API_EDITOR) {
+		if (itype.api_type == ClassDB::API_EDITOR || itype.api_type == ClassDB::API_EDITOR_EXTENSION) {
 			continue;
 		}
 
@@ -1810,28 +1856,82 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	}
 
 	// Generate source file for built-in type constructor dictionary.
-
 	{
-		StringBuilder cs_built_in_ctors_content;
+		StringBuilder out;
 
-		cs_built_in_ctors_content.append("namespace " BINDINGS_NAMESPACE ";\n\n");
-		cs_built_in_ctors_content.append("using System;\n"
-										 "using System.Collections.Generic;\n"
-										 "\n");
-		cs_built_in_ctors_content.append("internal static class " BINDINGS_CLASS_CONSTRUCTOR "\n{");
+		out << "namespace " BINDINGS_NAMESPACE ";\n\n";
+		out << "using System;\n"
+			   "using System.Collections.Generic;\n"
+			   "using System.Reflection;\n"
+			   "using System.Linq;\n"
+			   "\n";
+		out << "public static class " BINDINGS_CLASS_CONSTRUCTOR "\n{";
 
-		cs_built_in_ctors_content.append(MEMBER_BEGIN "internal static readonly Dictionary<string, Func<IntPtr, GodotObject>> " BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ";\n");
+		out << MEMBER_BEGIN "internal static readonly Dictionary<string, Func<IntPtr, GodotObject>> " BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY " = new();\n";
+		out << MEMBER_BEGIN "internal static readonly Dictionary<string, Func<IntPtr, GodotObject>> " BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_DICTIONARY " = new();\n";
+		out << MEMBER_BEGIN "internal static bool TriedLoadingGDExtension;\n";
 
-		cs_built_in_ctors_content.append(MEMBER_BEGIN "public static GodotObject Invoke(string nativeTypeNameStr, IntPtr nativeObjectPtr)\n");
-		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
-		cs_built_in_ctors_content.append(INDENT2 "if (!" BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ".TryGetValue(nativeTypeNameStr, out var constructor))\n");
-		cs_built_in_ctors_content.append(INDENT3 "throw new InvalidOperationException(\"Wrapper class not found for type: \" + nativeTypeNameStr);\n");
-		cs_built_in_ctors_content.append(INDENT2 "return constructor(nativeObjectPtr);\n");
-		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
+		out << MEMBER_BEGIN "public static GodotObject Invoke(string nativeTypeNameStr, IntPtr nativeObjectPtr)\n"
+			<< INDENT1 OPEN_BLOCK
+			<< INDENT2 "if (" BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ".TryGetValue(nativeTypeNameStr, out var constructor))\n"
+			<< INDENT3 "return constructor(nativeObjectPtr);\n\n";
 
-		cs_built_in_ctors_content.append(MEMBER_BEGIN "static " BINDINGS_CLASS_CONSTRUCTOR "()\n");
-		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
-		cs_built_in_ctors_content.append(INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY " = new();\n");
+		out << INDENT2 "if (!TriedLoadingGDExtension)\n"
+			<< INDENT3 "LoadGDExtensionMethodConstructors();\n\n";
+
+		out << INDENT2 "if (" BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_DICTIONARY ".TryGetValue(nativeTypeNameStr, out constructor))\n"
+			<< INDENT3 "return constructor(nativeObjectPtr);\n\n";
+
+		out << INDENT2 "throw new InvalidOperationException(\"Wrapper class not found for type: \" + nativeTypeNameStr);\n";
+
+		out << INDENT1 CLOSE_BLOCK;
+
+		// Unload GDExtension Constructors Method
+		out << INDENT1 << "public static void UnloadGDExtensionMethodConstructors()\n"
+			<< INDENT1 OPEN_BLOCK
+			<< INDENT2 "GD.Print(\"Unloading GdExtension method constructors...\");\n"
+			<< INDENT2 "TriedLoadingGDExtension = false;\n"
+			<< INDENT2 "GDExtensionMethodConstructors.Clear();\n"
+			<< INDENT1 CLOSE_BLOCK;
+
+		out << MEMBER_BEGIN "public static void LoadGDExtensionMethodConstructors()\n"
+			<< INDENT1 OPEN_BLOCK
+			<< INDENT2 "GD.Print(\"Loading GdExtension method constructors...\");\n"
+			<< INDENT2 "TriedLoadingGDExtension = true;\n"
+			<< INDENT2 "var extensionsAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == \"" BINDINGS_GDEXTENSION_ASSEMBLY_NAME "\");\n"
+			<< INDENT2 "\n"
+			<< INDENT2 "// It's fine if the assembly doesn't exist, not all projects use it.\n"
+			<< INDENT2 "if (extensionsAssembly == null) " OPEN_BLOCK
+			<< INDENT3 "// Assemblies are lazily loaded, it's possible that it exists but isn't referenced by the user project, let's try manually loading it.\n"
+			<< INDENT3 "try { extensionsAssembly = Assembly.Load(\"" BINDINGS_GDEXTENSION_ASSEMBLY_NAME "\"); }\n"
+			<< INDENT3 "catch (Exception err) " OPEN_BLOCK
+			<< INDENT4 "GD.Print(\n"
+			<< INDENT4 "\t\"Failed to load assembly `" BINDINGS_GDEXTENSION_ASSEMBLY_NAME "`, skipping loading of GDExtension method constructors.\\n\"\n"
+			<< INDENT4 "\t+ \"This is expected if your project does not use the CSharpGDExtension bindings.\\n\"\n"
+			<< INDENT4 "\t+ $\"Error message: \\n\\t{err}\"\n"
+			<< INDENT4 ");\n"
+			<< INDENT4 "return;\n"
+			<< INDENT3 CLOSE_BLOCK
+			<< INDENT2 CLOSE_BLOCK
+			<< INDENT2 "\n"
+			<< INDENT2 "var constructorsType = extensionsAssembly.GetType(\"" BINDINGS_GDEXTENSION_NAMESPACE "." BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR "\");\n"
+			<< INDENT2 "if (constructorsType == null) " OPEN_BLOCK
+			<< INDENT3 BINDINGS_GLOBAL_SCOPE_CLASS ".PrintErr(\"BUG: Assembly `" BINDINGS_GDEXTENSION_ASSEMBLY_NAME "` exists but it does not contain the expected type `" BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR "`.\");\n"
+			<< INDENT3 "return;\n"
+			<< INDENT2 CLOSE_BLOCK
+			<< INDENT2 "\n"
+			<< INDENT2 "var populateConstructorMethod = constructorsType.GetMethod(\"" BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_METHOD "\", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);\n"
+			<< INDENT2 "if (populateConstructorMethod == null) " OPEN_BLOCK
+			<< INDENT3 BINDINGS_GLOBAL_SCOPE_CLASS ".PrintErr(\"BUG: Type `" BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR "` exists but it does not contain the expected method `" BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_METHOD "`.\");\n"
+			<< INDENT3 "return;\n"
+			<< INDENT2 CLOSE_BLOCK
+			<< INDENT2 "\n"
+			<< INDENT2 "populateConstructorMethod.Invoke(null, [" BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_DICTIONARY "]);\n"
+			<< INDENT1 CLOSE_BLOCK;
+
+		out << MEMBER_BEGIN "static " BINDINGS_CLASS_CONSTRUCTOR "()\n";
+		out << INDENT1 OPEN_BLOCK;
+		out << INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY " = new();\n";
 
 		for (const KeyValue<StringName, TypeInterface> &E : obj_types) {
 			const TypeInterface &itype = E.value;
@@ -1841,86 +1941,105 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 			}
 
 			if (itype.is_deprecated) {
-				cs_built_in_ctors_content.append("#pragma warning disable CS0618\n");
+				out << "#pragma warning disable CS0618\n";
 			}
 
-			cs_built_in_ctors_content.append(INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ".Add(\"");
-			cs_built_in_ctors_content.append(itype.name);
-			cs_built_in_ctors_content.append("\", " CS_PARAM_INSTANCE " => new ");
-			cs_built_in_ctors_content.append(itype.proxy_name);
+			out << INDENT2 BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY ".Add(\"";
+			out << itype.name;
+			out << "\", " CS_PARAM_INSTANCE " => new ";
+			out << itype.proxy_name;
 			if (itype.is_singleton && !itype.is_compat_singleton) {
-				cs_built_in_ctors_content.append("Instance");
+				out << "Instance";
 			}
-			cs_built_in_ctors_content.append("(" CS_PARAM_INSTANCE "));\n");
+			out << "(" CS_PARAM_INSTANCE "));\n";
 
 			if (itype.is_deprecated) {
-				cs_built_in_ctors_content.append("#pragma warning restore CS0618\n");
+				out << "#pragma warning restore CS0618\n";
 			}
 		}
 
-		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
+		out << INDENT2 "\n";
+		out << INDENT2 "LoadGDExtensionMethodConstructors();\n";
+		out << INDENT1 CLOSE_BLOCK;
 
-		cs_built_in_ctors_content.append(CLOSE_BLOCK);
+		out << CLOSE_BLOCK;
 
 		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR ".cs");
-		RETURN_IF_ERROR(_save_file(constructors_file, cs_built_in_ctors_content));
+	Error err = _save_file(constructors_file, out);
+
+	if (err != OK) {
+		return err;
+	}
 
 		compile_items.push_back(constructors_file);
 	}
 
 	// Generate native calls
 
-	StringBuilder cs_icalls_content;
+	{
+		StringBuilder out;
 
-	cs_icalls_content.append("namespace " BINDINGS_NAMESPACE ";\n\n");
-	cs_icalls_content.append("using System;\n"
-							 "using System.Diagnostics.CodeAnalysis;\n"
-							 "using System.Runtime.InteropServices;\n"
-							 "using Godot.NativeInterop;\n"
-							 "\n");
-	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n");
-	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n");
-	cs_icalls_content.append("[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n");
-	cs_icalls_content.append("[System.Runtime.CompilerServices.SkipLocalsInit]\n");
-	cs_icalls_content.append("internal static class " BINDINGS_CLASS_NATIVECALLS "\n{");
+		out << "namespace " BINDINGS_NAMESPACE ";\n\n";
+		out << "using System;\n"
+			   "using System.Diagnostics.CodeAnalysis;\n"
+			   "using System.Runtime.InteropServices;\n"
+			   "using Godot.NativeInterop;\n"
+			   "\n";
+		out << "[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n";
+		out << "[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n";
+		out << "[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n";
+		out << "[System.Runtime.CompilerServices.SkipLocalsInit]\n";
+		out << "internal static class " BINDINGS_CLASS_NATIVECALLS "\n{";
 
-	cs_icalls_content.append(MEMBER_BEGIN "internal static ulong godot_api_hash = ");
-	cs_icalls_content.append(String::num_uint64(ClassDB::get_api_hash(ClassDB::API_CORE)) + ";\n");
+		out << MEMBER_BEGIN "internal static ulong godot_api_hash = ";
+		out << (String::num_uint64(ClassDB::get_api_hash(ClassDB::API_CORE)) + ";\n");
 
-	cs_icalls_content.append(MEMBER_BEGIN "private const int VarArgsSpanThreshold = 10;\n");
+		out << MEMBER_BEGIN "private const int VarArgsSpanThreshold = 10;\n";
 
-	for (const InternalCall &icall : method_icalls) {
-		if (icall.editor_only) {
-			continue;
+		for (const InternalCall &icall : method_icalls) {
+			if (icall.editor_only) {
+				continue;
+			}
+			Error err = _generate_cs_native_calls(icall, out);
+			if (err != OK) {
+				return err;
+			}
 		}
-		RETURN_IF_ERROR(_generate_cs_native_calls(icall, cs_icalls_content));
+
+		out << CLOSE_BLOCK;
+
+		String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
+
+		Error err = _save_file(internal_methods_file, out);
+		if (err != OK) {
+			return err;
+		}
+
+		compile_items.push_back(internal_methods_file);
 	}
-
-	cs_icalls_content.append(CLOSE_BLOCK);
-
-	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
-
-	RETURN_IF_ERROR(_save_file(internal_methods_file, cs_icalls_content));
-
-	compile_items.push_back(internal_methods_file);
 
 	// Generate GeneratedIncludes.props
 
-	StringBuilder includes_props_content;
-	includes_props_content.append("<Project>\n"
-								  "  <ItemGroup>\n");
+	{
+		StringBuilder out;
+		out << "<Project>\n"
+			   "  <ItemGroup>\n";
 
-	for (int i = 0; i < compile_items.size(); i++) {
-		String include = Path::relative_to(compile_items[i], p_proj_dir).replace_char('/', '\\');
-		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
+		for (int i = 0; i < compile_items.size(); i++) {
+			String include = Path::relative_to(compile_items[i], p_proj_dir).replace_char('/', '\\');
+			out << ("    <Compile Include=\"" + include + "\" />\n");
+		}
+
+		out << "  </ItemGroup>\n"
+			   "</Project>\n";
+
+		String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
+
+	Error err = _save_file(includes_props_file, out);
+	if (err != OK) {
+		return err;
 	}
-
-	includes_props_content.append("  </ItemGroup>\n"
-								  "</Project>\n");
-
-	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
-
-	RETURN_IF_ERROR(_save_file(includes_props_file, includes_props_content));
+}
 
 	return OK;
 }
@@ -1972,6 +2091,10 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		StringBuilder cs_built_in_ctors_content;
 
 		cs_built_in_ctors_content.append("namespace " BINDINGS_NAMESPACE ";\n\n");
+		cs_built_in_ctors_content.append("using System;\n");
+		cs_built_in_ctors_content.append("using System.Collections.Generic;\n");
+		cs_built_in_ctors_content.append("using System.Reflection;\n");
+		cs_built_in_ctors_content.append("using System.Linq;\n");
 		cs_built_in_ctors_content.append("internal static class " BINDINGS_CLASS_CONSTRUCTOR_EDITOR "\n{");
 
 		cs_built_in_ctors_content.append(MEMBER_BEGIN "private static void AddEditorConstructors()\n");
@@ -2003,6 +2126,30 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 			}
 		}
 
+		cs_built_in_ctors_content.append(INDENT2 "\n");
+		cs_built_in_ctors_content.append(INDENT2 "PopulateGDExtensionEditorConstructorMethods(builtInMethodConstructors);\n");
+		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
+
+		cs_built_in_ctors_content.append(MEMBER_BEGIN "private static void PopulateGDExtensionEditorConstructorMethods(Dictionary<string, Func<IntPtr, GodotObject>> builtInMethodConstructors)\n");
+		cs_built_in_ctors_content.append(INDENT1 OPEN_BLOCK);
+		cs_built_in_ctors_content.append(INDENT2 "var extensionsAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name == \"" BINDINGS_GDEXTENSION_ASSEMBLY_NAME "\");\n");
+		cs_built_in_ctors_content.append(INDENT2 "\n");
+		cs_built_in_ctors_content.append(INDENT2 "// It's fine if the assembly doesn't exist, not all projects use it.\n");
+		cs_built_in_ctors_content.append(INDENT2 "if (extensionsAssembly == null) return;\n");
+		cs_built_in_ctors_content.append(INDENT2 "\n");
+		cs_built_in_ctors_content.append(INDENT2 "var constructorsType = extensionsAssembly.GetType(\"" BINDINGS_GDEXTENSION_NAMESPACE "." BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_EDITOR "\");\n");
+		cs_built_in_ctors_content.append(INDENT2 "if (constructorsType == null) " OPEN_BLOCK);
+		cs_built_in_ctors_content.append(INDENT3 BINDINGS_GLOBAL_SCOPE_CLASS ".PrintErr(\"BUG: Assembly `" BINDINGS_GDEXTENSION_ASSEMBLY_NAME "` exists but it does not contain the expected type `" BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_EDITOR "`.\");\n");
+		cs_built_in_ctors_content.append(INDENT3 "return;\n");
+		cs_built_in_ctors_content.append(INDENT2 CLOSE_BLOCK);
+		cs_built_in_ctors_content.append(INDENT2 "\n");
+		cs_built_in_ctors_content.append(INDENT2 "var populateConstructorMethod = constructorsType.GetMethod(\"" BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_EDITOR_METHOD "\", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);\n");
+		cs_built_in_ctors_content.append(INDENT2 "if (populateConstructorMethod == null) " OPEN_BLOCK);
+		cs_built_in_ctors_content.append(INDENT3 BINDINGS_GLOBAL_SCOPE_CLASS ".PrintErr(\"BUG: Type `" BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_EDITOR "` exists but it does not contain the expected method `" BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_EDITOR_METHOD "`.\");\n");
+		cs_built_in_ctors_content.append(INDENT3 "return;\n");
+		cs_built_in_ctors_content.append(INDENT2 CLOSE_BLOCK);
+		cs_built_in_ctors_content.append(INDENT2 "\n");
+		cs_built_in_ctors_content.append(INDENT2 "populateConstructorMethod.Invoke(null, [builtInMethodConstructors]);\n");
 		cs_built_in_ctors_content.append(INDENT1 CLOSE_BLOCK);
 
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
@@ -2120,7 +2267,7 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 // - Csc warning e.g.:
 // ObjectType/LineEdit.cs(140,38): warning CS0108: 'LineEdit.FocusMode' hides inherited member 'Control.FocusMode'. Use the new keyword if hiding was intended.
 Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const String &p_output_file) {
-	CRASH_COND(!itype.is_object_type);
+	ERR_FAIL_COND_V_MSG(!itype.is_object_type, ERR_BUG, "Expected itype `" + itype.cname + "` to be an object type.");
 
 	bool is_derived_type = itype.base_name != StringName();
 
@@ -2137,7 +2284,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	StringBuilder output;
 
-	output.append("namespace " BINDINGS_NAMESPACE ";\n\n");
+	output.append("namespace ");
+	output.append(is_generating_gdextension ? BINDINGS_GDEXTENSION_NAMESPACE : BINDINGS_NAMESPACE);
+	output.append(";\n\n");
+
+	if (is_generating_gdextension) {
+		output.append("using " BINDINGS_NAMESPACE ";\n");
+	}
 
 	output.append("using System;\n"); // IntPtr
 	output.append("using System.ComponentModel;\n"); // EditorBrowsable
@@ -2147,7 +2300,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.append("\n#nullable disable\n");
 
 	const DocData::ClassDoc *class_doc = itype.class_doc;
-
 	if (class_doc && class_doc->description.size()) {
 		String xml_summary = bbcode_to_xml(fix_doc_description(class_doc->description), &itype);
 		Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
@@ -2180,14 +2332,23 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	output.append("public ");
 	if (itype.is_singleton) {
-		output.append("static partial class ");
+		if (is_generating_gdextension) {
+			output.append("static class ");
+		} else {
+			output.append("static partial class ");
+		}
 	} else {
 		// Even if the class is not instantiable, we can't declare it abstract because
 		// the engine can still instantiate them and return them via the scripting API.
 		// Example: `SceneTreeTimer` returned from `SceneTree.create_timer`.
 		// See the reverted commit: ef5672d3f94a7321ed779c922088bb72adbb1521
-		output.append("partial class ");
+		if (is_generating_gdextension) {
+			output.append("class ");
+		} else {
+			output.append("partial class ");
+		}
 	}
+
 	output.append(itype.proxy_name);
 
 	if (is_derived_type && !itype.is_singleton) {
@@ -2341,12 +2502,20 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		// partial class declarations then it becomes harder to tell (Rider warns about this).
 
 		if (itype.is_instantiable) {
-			// Add native constructor static field
-
-			output << MEMBER_BEGIN << "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-				   << INDENT1 "private static readonly unsafe delegate* unmanaged<godot_bool, IntPtr> "
-				   << CS_STATIC_FIELD_NATIVE_CTOR " = " ICALL_CLASSDB_GET_CONSTRUCTOR
-				   << "(" BINDINGS_NATIVE_NAME_FIELD ");\n";
+			if (is_generating_gdextension) {
+				// GDExtension types don't have a unique function pointer capable of instantiating themselves + the Godot Wrapper.
+				// So in the GDExtension bindings we use the class info data to construct the whole thing instead.
+				output << MEMBER_BEGIN << "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+					   << INDENT1 "private static readonly IntPtr "
+					   << CS_STATIC_FIELD_CLASS_INFO " = " ICALL_CLASSDB_GET_CLASS_INFO
+					   << "(" BINDINGS_NATIVE_NAME_FIELD ");\n";
+			} else {
+				// Add native constructor static field
+				output << MEMBER_BEGIN << "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+					   << INDENT1 "private static readonly unsafe delegate* unmanaged<godot_bool, IntPtr> "
+					   << CS_STATIC_FIELD_NATIVE_CTOR " = " ICALL_CLASSDB_GET_CONSTRUCTOR
+					   << "(" BINDINGS_NATIVE_NAME_FIELD ");\n";
+			}
 		}
 
 		if (is_derived_type) {
@@ -2354,17 +2523,27 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			if (itype.is_instantiable) {
 				output << MEMBER_BEGIN "public " << itype.proxy_name << "() : this("
 					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
-					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
-					   << INDENT3 "ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR ", "
-					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
-					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
-					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
+					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK;
+
+				// GdExtension bindings instantiate by using the class info.
+				if (is_generating_gdextension) {
+					output << INDENT3 "ConstructAndInitialize("
+						   << ICALL_CLASSDB_INSTANTIATE_WITH_CLASS_INFO "(" CS_STATIC_FIELD_CLASS_INFO ", true), "
+						   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
+						   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+						   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
+				} else {
+					output << INDENT3 "ConstructAndInitialize(" CS_STATIC_FIELD_NATIVE_CTOR "(godot_bool.True), "
+						   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
+						   << (itype.is_ref_counted ? "true" : "false") << ");\n"
+						   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
+				}
 			} else {
 				// Hide the constructor
 				output << MEMBER_BEGIN "internal " << itype.proxy_name << "() : this("
 					   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
 					   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
-					   << INDENT3 "ConstructAndInitialize(null, "
+					   << INDENT3 "ConstructAndInitialize(IntPtr.Zero, "
 					   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
 					   << (itype.is_ref_counted ? "true" : "false") << ");\n"
 					   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
@@ -2374,7 +2553,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				   << (itype.memory_own ? "true" : "false") << ")\n" OPEN_BLOCK_L1
 				   << INDENT2 "NativePtr = " CS_PARAM_INSTANCE ";\n"
 				   << INDENT2 "unsafe\n" INDENT2 OPEN_BLOCK
-				   << INDENT3 "ConstructAndInitialize(null, "
+				   << INDENT3 "ConstructAndInitialize(IntPtr.Zero, "
 				   << BINDINGS_NATIVE_NAME_FIELD ", CachedType, refCounted: "
 				   << (itype.is_ref_counted ? "true" : "false") << ");\n"
 				   << CLOSE_BLOCK_L2 CLOSE_BLOCK_L1;
@@ -2736,8 +2915,8 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	ERR_FAIL_COND_V_MSG(prop_itype->is_singleton, ERR_BUG,
 			"Property type is a singleton: '" + p_itype.name + "." + String(p_iprop.cname) + "'.");
 
-	if (p_itype.api_type == ClassDB::API_CORE) {
-		ERR_FAIL_COND_V_MSG(prop_itype->api_type == ClassDB::API_EDITOR, ERR_BUG,
+	if (p_itype.api_type == ClassDB::API_CORE || p_itype.api_type == ClassDB::API_EXTENSION) {
+		ERR_FAIL_COND_V_MSG(prop_itype->api_type == ClassDB::API_EDITOR || prop_itype->api_type == ClassDB::API_EDITOR_EXTENSION, ERR_BUG,
 				"Property '" + p_itype.name + "." + String(p_iprop.cname) + "' has type '" + prop_itype->name +
 						"' from the editor API. Core API cannot have dependencies on the editor API.");
 	}
@@ -2834,15 +3013,20 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	return OK;
 }
 
-Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output, bool p_use_span) {
+Error BindingsGenerator::_generate_cs_method(
+		const BindingsGenerator::TypeInterface &p_itype,
+		const BindingsGenerator::MethodInterface &p_imethod,
+		int &p_method_bind_count,
+		StringBuilder &p_output,
+		bool p_use_span) {
 	const TypeInterface *return_type = _get_type_or_singleton_or_null(p_imethod.return_type);
 	ERR_FAIL_NULL_V_MSG(return_type, ERR_BUG, "Return type '" + p_imethod.return_type.cname + "' was not found.");
 
 	ERR_FAIL_COND_V_MSG(return_type->is_singleton, ERR_BUG,
 			"Method return type is a singleton: '" + p_itype.name + "." + p_imethod.name + "'.");
 
-	if (p_itype.api_type == ClassDB::API_CORE) {
-		ERR_FAIL_COND_V_MSG(return_type->api_type == ClassDB::API_EDITOR, ERR_BUG,
+	if (p_itype.api_type == ClassDB::API_CORE || p_itype.api_type == ClassDB::API_EXTENSION) {
+		ERR_FAIL_COND_V_MSG(return_type->api_type == ClassDB::API_EDITOR || return_type->api_type == ClassDB::API_EDITOR_EXTENSION, ERR_BUG,
 				"Method '" + p_itype.name + "." + p_imethod.name + "' has return type '" + return_type->name +
 						"' from the editor API. Core API cannot have dependencies on the editor API.");
 	}
@@ -2909,14 +3093,14 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		ERR_FAIL_COND_V_MSG(arg_type->is_singleton, ERR_BUG,
 				"Argument type is a singleton: '" + iarg.name + "' of method '" + p_itype.name + "." + p_imethod.name + "'.");
 
-		if (p_itype.api_type == ClassDB::API_CORE) {
-			ERR_FAIL_COND_V_MSG(arg_type->api_type == ClassDB::API_EDITOR, ERR_BUG,
+		if (p_itype.api_type == ClassDB::API_CORE || p_itype.api_type == ClassDB::API_EXTENSION) {
+			ERR_FAIL_COND_V_MSG(arg_type->api_type == ClassDB::API_EDITOR || arg_type->api_type == ClassDB::API_EDITOR_EXTENSION, ERR_BUG,
 					"Argument '" + iarg.name + "' of method '" + p_itype.name + "." + p_imethod.name + "' has type '" +
 							arg_type->name + "' from the editor API. Core API cannot have dependencies on the editor API.");
 		}
 
 		if (iarg.default_argument.size()) {
-			CRASH_COND_MSG(!_arg_default_value_is_assignable_to_type(iarg.def_param_value, *arg_type),
+			ERR_FAIL_COND_V_MSG(!_arg_default_value_is_assignable_to_type(iarg.def_param_value, *arg_type), ERR_BUG,
 					"Invalid default value for parameter '" + iarg.name + "' of method '" + p_itype.name + "." + p_imethod.name + "'.");
 		}
 
@@ -3129,11 +3313,17 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		HashMap<const MethodInterface *, const InternalCall *>::ConstIterator match = method_icalls_map.find(&p_imethod);
-		ERR_FAIL_NULL_V(match, ERR_BUG);
+		ERR_FAIL_NULL_V_MSG(match, ERR_BUG, "Could not find InternalCall mapping for method `" + p_imethod.name + "`.");
 
 		const InternalCall *im_icall = match->value;
 
-		String im_call = im_icall->editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS;
+		String im_call;
+		if (im_icall->editor_only) {
+			im_call = is_generating_gdextension ? BINDINGS_GDEXTENSION_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS_EDITOR;
+		} else {
+			im_call = is_generating_gdextension ? BINDINGS_GDEXTENSION_CLASS_NATIVECALLS : BINDINGS_CLASS_NATIVECALLS;
+		}
+
 		im_call += ".";
 		im_call += im_icall->name;
 
@@ -3171,8 +3361,8 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		ERR_FAIL_COND_V_MSG(arg_type->is_singleton, ERR_BUG,
 				"Argument type is a singleton: '" + iarg.name + "' of signal '" + p_itype.name + "." + p_isignal.name + "'.");
 
-		if (p_itype.api_type == ClassDB::API_CORE) {
-			ERR_FAIL_COND_V_MSG(arg_type->api_type == ClassDB::API_EDITOR, ERR_BUG,
+		if (p_itype.api_type == ClassDB::API_CORE || p_itype.api_type == ClassDB::API_EXTENSION) {
+			ERR_FAIL_COND_V_MSG(arg_type->api_type == ClassDB::API_EDITOR || arg_type->api_type == ClassDB::API_EDITOR_EXTENSION, ERR_BUG,
 					"Argument '" + iarg.name + "' of signal '" + p_itype.name + "." + p_isignal.name + "' has type '" +
 							arg_type->name + "' from the editor API. Core API cannot have dependencies on the editor API.");
 		}
@@ -3667,8 +3857,8 @@ const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface
 		ERR_FAIL_COND_V_MSG(param_itype->is_singleton, "",
 				"Generic type parameter is a singleton: '" + param_itype->name + "'.");
 
-		if (p_itype.api_type == ClassDB::API_CORE) {
-			ERR_FAIL_COND_V_MSG(param_itype->api_type == ClassDB::API_EDITOR, "",
+		if (p_itype.api_type == ClassDB::API_CORE || p_itype.api_type == ClassDB::API_EXTENSION) {
+			ERR_FAIL_COND_V_MSG(param_itype->api_type == ClassDB::API_EDITOR || param_itype->api_type == ClassDB::API_EDITOR_EXTENSION, "",
 					"Generic type parameter '" + param_itype->name + "' has type from the editor API." +
 							" Core API cannot have dependencies on the editor API.");
 		}
@@ -4079,10 +4269,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = return_info.class_name;
 
 				bool bad_reference_hint = !imethod.is_virtual && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE &&
-						ClassDB::is_parent_class(return_info.class_name, name_cache.type_RefCounted);
+						ClassDB::is_parent_class(return_info.class_name, name_cache.type_Resource);
 				ERR_FAIL_COND_V_MSG(bad_reference_hint, false,
-						String() + "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
-								" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");
+						String() + "Return type is resource but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
+								" Are you returning a resource type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");
 			} else if (return_info.type == Variant::ARRAY && return_info.hint == PROPERTY_HINT_ARRAY_TYPE) {
 				imethod.return_type.cname = Variant::get_type_name(return_info.type) + "_@generic";
 				imethod.return_type.generic_type_parameters.push_back(TypeReference(return_info.hint_string));
@@ -5207,7 +5397,9 @@ void BindingsGenerator::_log(const char *p_format, ...) {
 void BindingsGenerator::_initialize() {
 	initialized = false;
 
-	EditorHelp::generate_doc(false);
+	if (!is_generating_gdextension) {
+		EditorHelp::generate_doc(false);
+	}
 
 	enum_types.clear();
 
@@ -5257,6 +5449,379 @@ static void cleanup_and_exit_godot() {
 	::exit(0);
 }
 
+Error BindingsGenerator::generate_gdextension_cs_api(const String &p_proj_dir) {
+	BindingsGenerator bindgen = BindingsGenerator(true);
+	bindgen.set_log_print_enabled(true);
+
+	ERR_FAIL_COND_V(!bindgen.initialized, ERR_UNCONFIGURED);
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
+
+	if (!DirAccess::exists(p_proj_dir)) {
+		Error err = da->make_dir_recursive(p_proj_dir);
+		ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Cannot create directory '" + p_proj_dir + "'.");
+	}
+
+	da->change_dir(p_proj_dir);
+	da->make_dir("Generated");
+	da->make_dir("Generated/GodotObjects");
+
+	String base_gen_dir = Path::join(p_proj_dir, "Generated");
+	String godot_objects_gen_dir = Path::join(base_gen_dir, "GodotObjects");
+
+	Vector<String> compile_items;
+
+	HashSet<const InternalCall *> icalls_used;
+	List<const TypeInterface *> types_generated;
+	List<const TypeInterface *> editor_types_generated;
+
+	for (const KeyValue<StringName, TypeInterface> &E : bindgen.obj_types) {
+		const TypeInterface &itype = E.value;
+
+		if (itype.api_type == ClassDB::API_EXTENSION) {
+			types_generated.push_back(&itype);
+		} else if (itype.api_type == ClassDB::API_EDITOR_EXTENSION) {
+			editor_types_generated.push_back(&itype);
+		} else {
+			continue;
+		}
+
+		// Gather all icalls we'll use.
+		for (const MethodInterface &imethod : itype.methods) {
+			if (imethod.is_virtual) {
+				continue;
+			}
+			HashMap<const MethodInterface *, const InternalCall *>::ConstIterator match = bindgen.method_icalls_map.find(&imethod);
+			ERR_FAIL_NULL_V_MSG(match, ERR_BUG, "Could not find InternalCall mapping for method `" + imethod.name + "`.");
+
+			const InternalCall *im_icall = match->value;
+			icalls_used.insert(im_icall);
+		}
+
+		String output_file = Path::join(godot_objects_gen_dir, itype.proxy_name + ".cs");
+		Error err = bindgen._generate_cs_type(itype, output_file);
+
+		if (err == ERR_SKIP) {
+			continue;
+		}
+
+		if (err != OK) {
+			return err;
+		}
+
+		compile_items.push_back(output_file);
+	}
+
+	// Generate source file for gdextension type constructor dictionary.
+	{
+		StringBuilder out;
+
+		out << "namespace " BINDINGS_GDEXTENSION_NAMESPACE ";\n\n";
+		out << "using System;\n";
+		out << "using System.Collections.Generic;\n";
+		out << "using " BINDINGS_NAMESPACE ";\n";
+		out << "\n";
+		out << "internal static class " BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR "\n{";
+
+		out << MEMBER_BEGIN "private static void " BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_METHOD "(Dictionary<string, Func<IntPtr, GodotObject>> builtInMethodConstructors)\n";
+		out << INDENT1 OPEN_BLOCK;
+
+		List<String> types_added;
+
+		for (const TypeInterface *itype_ptr : types_generated) {
+			const TypeInterface &itype = *itype_ptr;
+
+			if (itype.is_singleton_instance) {
+				continue;
+			}
+
+			if (itype.is_deprecated) {
+				out << "#pragma warning disable CS0618\n";
+			}
+
+			out << INDENT2 "builtInMethodConstructors[\"";
+			out << itype.name;
+			out << "\"] = " CS_PARAM_INSTANCE " => new ";
+			out << itype.proxy_name;
+			if (itype.is_singleton && !itype.is_compat_singleton) {
+				out << "Instance";
+			}
+			out << "(" CS_PARAM_INSTANCE ");\n";
+
+			if (itype.is_deprecated) {
+				out << "#pragma warning restore CS0618\n";
+			}
+
+			types_added.push_back(itype.cname);
+		}
+
+		out << INDENT2 "\n";
+		out << INDENT2 "GD.Print(\"GDExtension constructors registered: " << String::num_uint64(types_added.size()) << "\");\n";
+
+		out << INDENT1 CLOSE_BLOCK;
+		out << CLOSE_BLOCK;
+
+		String constructors_file = Path::join(base_gen_dir, BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR ".cs");
+		Error err = bindgen._save_file(constructors_file, out);
+
+		if (err != OK) {
+			return err;
+		}
+
+		compile_items.push_back(constructors_file);
+	}
+
+	// Generate source file for gdextension editor type constructor dictionary.
+	{
+		StringBuilder out;
+
+		out << "namespace " BINDINGS_GDEXTENSION_NAMESPACE ";\n\n";
+		out << "using System;\n";
+		out << "using System.Collections.Generic;\n";
+		out << "using " BINDINGS_NAMESPACE ";\n";
+		out << "\n";
+		out << "internal static class " BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_EDITOR "\n{";
+
+		out << MEMBER_BEGIN "private static void " BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_EDITOR_METHOD "(Dictionary<string, Func<IntPtr, GodotObject>> builtInMethodConstructors)\n";
+		out << INDENT1 OPEN_BLOCK;
+
+		for (const TypeInterface *itype_ptr : editor_types_generated) {
+			const TypeInterface &itype = *itype_ptr;
+
+			if (itype.is_singleton_instance) {
+				continue;
+			}
+
+			if (itype.is_deprecated) {
+				out << "#pragma warning disable CS0618\n";
+			}
+
+			out << INDENT2 "builtInMethodConstructors[\"";
+			out << itype.name;
+			out << "\"] = " CS_PARAM_INSTANCE " => new ";
+			out << itype.proxy_name;
+			if (itype.is_singleton && !itype.is_compat_singleton) {
+				out << "Instance";
+			}
+			out << "(" CS_PARAM_INSTANCE ");\n";
+
+			if (itype.is_deprecated) {
+				out << "#pragma warning restore CS0618\n";
+			}
+		}
+
+		out << INDENT1 CLOSE_BLOCK;
+		out << CLOSE_BLOCK;
+
+		String constructors_file = Path::join(base_gen_dir, BINDINGS_GDEXTENSION_CLASS_CONSTRUCTOR_EDITOR ".cs");
+		Error err = bindgen._save_file(constructors_file, out);
+
+		if (err != OK) {
+			return err;
+		}
+
+		compile_items.push_back(constructors_file);
+	}
+
+	// Generate native calls
+	{
+		StringBuilder out;
+
+		out << "namespace " BINDINGS_GDEXTENSION_NAMESPACE ";\n\n";
+		out << "using " BINDINGS_NAMESPACE ";\n"
+			   "using System;\n"
+			   "using System.Diagnostics.CodeAnalysis;\n"
+			   "using System.Runtime.InteropServices;\n"
+			   "using Godot.NativeInterop;\n"
+			   "\n";
+
+		out << "[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n";
+		out << "[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n";
+		out << "[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n";
+		out << "[System.Runtime.CompilerServices.SkipLocalsInit]\n";
+		out << "internal static class " BINDINGS_GDEXTENSION_CLASS_NATIVECALLS "\n{";
+
+		out << MEMBER_BEGIN "internal static ulong godot_api_hash = ";
+		out << (String::num_uint64(ClassDB::get_api_hash(ClassDB::API_CORE)) + ";\n");
+
+		out << MEMBER_BEGIN "private const int VarArgsSpanThreshold = 10;\n";
+
+		for (const InternalCall *icall : icalls_used) {
+			if (icall->editor_only) {
+				continue;
+			}
+
+			Error err = bindgen._generate_cs_native_calls(*icall, out);
+			if (err != OK) {
+				return err;
+			}
+		}
+
+		for (const InternalCall &icall : bindgen.method_icalls) {
+			if (icall.api_type != ClassDB::API_EXTENSION || icalls_used.has(&icall)) {
+				continue;
+			}
+
+			Error err = bindgen._generate_cs_native_calls(icall, out);
+			if (err != OK) {
+				return err;
+			}
+		}
+
+		out << CLOSE_BLOCK;
+
+		String internal_methods_file = Path::join(base_gen_dir, BINDINGS_GDEXTENSION_CLASS_NATIVECALLS ".cs");
+
+		Error err = bindgen._save_file(internal_methods_file, out);
+		if (err != OK) {
+			return err;
+		}
+
+		compile_items.push_back(internal_methods_file);
+	}
+
+	// Generate native editor calls
+	{
+		StringBuilder out;
+
+		out << "namespace " BINDINGS_GDEXTENSION_NAMESPACE ";\n\n"
+			   "using " BINDINGS_NAMESPACE ";\n"
+			   "using System;\n"
+			   "using System.Diagnostics.CodeAnalysis;\n"
+			   "using System.Runtime.InteropServices;\n"
+			   "using Godot.NativeInterop;\n"
+			   "\n";
+
+		out << "[SuppressMessage(\"ReSharper\", \"InconsistentNaming\")]\n"
+			   "[SuppressMessage(\"ReSharper\", \"RedundantUnsafeContext\")]\n"
+			   "[SuppressMessage(\"ReSharper\", \"RedundantNameQualifier\")]\n"
+			   "[System.Runtime.CompilerServices.SkipLocalsInit]\n";
+
+		out << "internal static class " BINDINGS_GDEXTENSION_CLASS_NATIVECALLS_EDITOR "\n" OPEN_BLOCK
+			<< INDENT1 "internal static ulong godot_api_hash = "
+			<< String::num_uint64(ClassDB::get_api_hash(ClassDB::API_EDITOR)) << ";\n"
+			<< MEMBER_BEGIN "private const int VarArgsSpanThreshold = 10;\n"
+			<< "\n";
+
+		for (const InternalCall *icall : icalls_used) {
+			if (!icall->editor_only) {
+				continue;
+			}
+
+			Error err = bindgen._generate_cs_native_calls(*icall, out);
+			if (err != OK) {
+				return err;
+			}
+		}
+
+		for (const InternalCall &icall : bindgen.method_icalls) {
+			if (icall.api_type != ClassDB::API_EDITOR_EXTENSION || icalls_used.has(&icall)) {
+				continue;
+			}
+
+			Error err = bindgen._generate_cs_native_calls(icall, out);
+			if (err != OK) {
+				return err;
+			}
+		}
+
+		out << CLOSE_BLOCK;
+
+		String internal_methods_file = Path::join(base_gen_dir, BINDINGS_GDEXTENSION_CLASS_NATIVECALLS_EDITOR ".cs");
+
+		Error err = bindgen._save_file(internal_methods_file, out);
+		if (err != OK) {
+			return err;
+		}
+
+		compile_items.push_back(internal_methods_file);
+	}
+
+	// Generate .csproj file
+	{
+		StringBuilder out;
+
+		out << "<Project Sdk=\"Microsoft.NET.Sdk\">\n";
+		out << "    <PropertyGroup>\n";
+		out << "        <AssemblyName>" BINDINGS_GDEXTENSION_ASSEMBLY_NAME "</AssemblyName>\n";
+		out << "        <TargetFramework>net8.0</TargetFramework>\n";
+		out << "        <LangVersion>12</LangVersion>\n";
+		out << "        <EnableDynamicLoading>true</EnableDynamicLoading>\n";
+		out << "        <RootNamespace>" BINDINGS_GDEXTENSION_NAMESPACE "</RootNamespace>\n";
+		out << "        <EnableDefaultItems>false</EnableDefaultItems>\n";
+		out << "        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>\n";
+		out << "    </PropertyGroup>\n";
+		out << "    <ItemGroup>\n";
+		out << "        <PackageReference Include=\"GodotSharp\" Version=\"" GODOT_VERSION_NUMBER "-" GODOT_VERSION_STATUS "\"/>\n";
+		out << "        <PackageReference Include=\"GodotSharpEditor\" Version=\"" GODOT_VERSION_NUMBER "-" GODOT_VERSION_STATUS "\"/>\n";
+		out << "    </ItemGroup>\n";
+		out << "    <Import Condition=\" '$(GodotSkipGenerated)' == '' \" Project=\"Generated\\GeneratedIncludes.props\" />\n";
+		out << "</Project>\n";
+
+		String csproj_file = Path::join(p_proj_dir, GDEXTENSION_API_SOLUTION_NAME ".csproj");
+		Error err = bindgen._save_file(csproj_file, out);
+
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	// Generate .editorconfig file
+	{
+		StringBuilder out;
+
+		out << "[*.cs]\n";
+		out << "root = true\n";
+		out << "generated_code = true\n";
+		out << "dotnet_analyzer_diagnostic.severity = none\n";
+
+		String editorconfig_file = Path::join(p_proj_dir, ".editorconfig");
+		Error err = bindgen._save_file(editorconfig_file, out);
+
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	// Generate .gdignore file
+	{
+		StringBuilder out;
+		out << "";
+
+		String gdignore_file = Path::join(p_proj_dir, ".gdignore");
+		Error err = bindgen._save_file(gdignore_file, out);
+
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	// Generate GeneratedIncludes.props
+	{
+		StringBuilder out;
+		out << "<Project>\n";
+		out << "  <ItemGroup>\n";
+
+		for (int i = 0; i < compile_items.size(); i++) {
+			String include = Path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
+			out << ("    <Compile Include=\"" + include + "\" />\n");
+		}
+
+		out << "  </ItemGroup>\n";
+		out << "</Project>\n";
+
+		String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
+
+		Error err = bindgen._save_file(includes_props_file, out);
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	return OK;
+}
+
 void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) {
 	String glue_dir_path;
 
@@ -5270,7 +5835,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				glue_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINT(generate_all_glue_option + ": No output directory specified (expected path to '{GODOT_ROOT}/modules/mono/glue').");
+				ERR_PRINT(generate_all_glue_option + ": No output directory specified (expected Path to '{GODOT_ROOT}/modules/mono/glue').");
 				// Exit once done with invalid command line arguments.
 				cleanup_and_exit_godot();
 			}

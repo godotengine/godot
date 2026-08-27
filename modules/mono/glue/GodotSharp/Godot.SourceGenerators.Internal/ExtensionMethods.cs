@@ -94,6 +94,13 @@ internal static class ExtensionMethods
         };
     }
 
+    public static string NameWithTypeParameters(this INamedTypeSymbol symbol)
+    {
+        return symbol.IsGenericType && symbol.TypeParameters.Length > 0 ?
+            string.Concat(symbol.Name, "<", string.Join(", ", symbol.TypeParameters), ">") :
+            symbol.Name;
+    }
+
     private static SymbolDisplayFormat FullyQualifiedFormatOmitGlobal { get; } =
         SymbolDisplayFormat.FullyQualifiedFormat
             .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);

@@ -116,6 +116,110 @@ namespace GodotTools
             return true;
         }
 
+        private bool GenerateGDExtensionBindings()
+        {
+            using (var pr = new EditorProgress(
+                       "generate_csharp_gdextension_bindings",
+                       "Generating C# GDExtension bindings...".TTR(),
+                       4
+                   ))
+            {
+                pr.Step("Deleting old C# GDExtension bindings...".TTR());
+
+                string bindingsPath = GodotSharpDirs.GDExtensionBindingsPath;
+                if (System.IO.Directory.Exists(bindingsPath))
+                {
+                    var err = Godot.OS.MoveToTrash(bindingsPath);
+                    if (err != Error.Ok)
+                    {
+                        ShowErrorDialog($"Could not delete old C# GDExtension bindings' project, OS returned error: {err}.\n"
+                            + $"Bindings path: \"{bindingsPath}\".");
+                        return false;
+                    }
+                }
+
+                pr.Step("Creating C# GDExtension bindings' project directory...".TTR());
+                try
+                {
+                    System.IO.Directory.CreateDirectory(bindingsPath);
+                }
+                catch (Exception err)
+                {
+                    ShowErrorDialog($"Could not create C# GDExtension bindings' project folder. \nError: {err}.");
+                    return false;
+                }
+
+                pr.Step("Generating C# GDExtension bindings' project... (Ignore console warnings)");
+
+                {
+                    var err = ClassDB.GenerateGdextensionCsApi(bindingsPath);
+                    if (err != Error.Ok)
+                    {
+                        ShowErrorDialog($"Could not generate C# GDExtension bindings, error: {err}." );
+                        return false;
+                    }
+                }
+
+                pr.Step("Adding GDExtension bindings to project and solution...".TTR());
+                string gdExtCsprojPath = GodotSharpDirs.GDExtensionBindingsProjectPath;
+                AddGDExtensionProjectReference(gdExtCsprojPath);
+                AddGDExtensionProjectToSolution(gdExtCsprojPath);
+            }
+
+            GD.Print("C# GDExtension Bindings were successfully generated, please restart the editor.");
+
+            return true;
+        }
+
+        private static void AddGDExtensionProjectReference(string gdExtCsprojPath)
+        {
+            if (!System.IO.File.Exists(gdExtCsprojPath) || !System.IO.File.Exists(GodotSharpDirs.ProjectCsProjPath))
+                return;
+
+            try
+            {
+                string csprojDir = Path.GetDirectoryName(GodotSharpDirs.ProjectCsProjPath)!;
+                string gdExtRelPath = Path.GetRelativePath(csprojDir, gdExtCsprojPath);
+
+                if (ProjectUtils.EnsureProjectReference(GodotSharpDirs.ProjectCsProjPath, gdExtRelPath))
+                {
+                    GD.Print("Added ProjectReference to GDExtension bindings in main project.");
+                }
+            }
+            catch (Exception err)
+            {
+                GD.PushWarning($"Could not add ProjectReference to main project: {err.Message}");
+            }
+        }
+
+        private static void AddGDExtensionProjectToSolution(string gdExtCsprojPath)
+        {
+            if (!System.IO.File.Exists(gdExtCsprojPath) || !System.IO.File.Exists(GodotSharpDirs.ProjectSlnPath))
+                return;
+
+            try
+            {
+                string slnDir = Path.GetDirectoryName(GodotSharpDirs.ProjectSlnPath)!;
+                string gdExtRelPath = Path.GetRelativePath(slnDir, gdExtCsprojPath);
+                string projectName = Path.GetFileNameWithoutExtension(gdExtCsprojPath);
+                string projectGuid = Guid.NewGuid().ToString().ToUpperInvariant();
+
+                if (DotNetSolution.EnsureProjectInSolution(
+                        GodotSharpDirs.ProjectSlnPath,
+                        projectName,
+                        gdExtRelPath,
+                        projectGuid,
+                        new List<string> { "Debug", "ExportDebug", "ExportRelease" }))
+                {
+                    GD.Print("Added GDExtension bindings project to solution.");
+                }
+            }
+            catch (Exception err)
+            {
+                GD.PushWarning($"Could not add GDExtension bindings project to solution: {err.Message}");
+            }
+        }
+
         private void _ShowDotnetFeatures()
         {
             MSBuildPanel.Open();
@@ -138,6 +242,11 @@ namespace GodotTools
                     }
                     break;
                 }
+                case MenuOptions.GenerateGDExtensionBindings:
+                {
+                    GenerateGDExtensionBindings();
+                    break;
+                }
                 default:
                     throw new ArgumentOutOfRangeException(nameof(id), id, "Invalid menu option");
             }
@@ -157,6 +266,7 @@ namespace GodotTools
         private enum MenuOptions
         {
             CreateSln,
+            GenerateGDExtensionBindings,
         }
 
         public void ShowErrorDialog(string message, string title = "Error")
@@ -545,6 +655,7 @@ namespace GodotTools
                 _toolBarBuildButton.Hide();
             }
             _menuPopup.AddItem("Create C# solution".TTR(), (int)MenuOptions.CreateSln);
+            _menuPopup.AddItem("Generate C# GDExtension Bindings".TTR(), (int)MenuOptions.GenerateGDExtensionBindings);
 
             _menuPopup.IdPressed += _MenuOptionPressed;
 

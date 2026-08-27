@@ -222,5 +222,41 @@ namespace GodotTools.ProjectEditor
                 return false;
             }
         }
+
+        /// <summary>
+        /// Ensures that the specified .csproj file contains a ProjectReference to the given path.
+        /// If the reference already exists (case-insensitive, path-separator-normalized comparison),
+        /// no changes are made and <c>false</c> is returned.
+        /// Otherwise, a new ProjectReference is added, the file is saved, and <c>true</c> is returned.
+        /// </summary>
+        /// <param name="csprojPath">Absolute path to the .csproj file to modify.</param>
+        /// <param name="referencePath">Relative path to the referenced project (as it should appear in the Include attribute).</param>
+        /// <returns><c>true</c> if a new reference was added; <c>false</c> if it already existed or the file could not be opened.</returns>
+        public static bool EnsureProjectReference(string csprojPath, string referencePath)
+        {
+            const string ProjectReference = "ProjectReference";
+            var PathNormalized = (string path) => path.Replace("/", "\\", StringComparison.Ordinal);
+
+            var root = ProjectRootElement.Open(csprojPath, ProjectCollection.GlobalProjectCollection, preserveFormatting: true);
+            if (root == null)
+                return false;
+
+            string normalizedRef = PathNormalized(referencePath);
+
+            foreach (var itemGroup in root.ItemGroups)
+            {
+                foreach (var item in itemGroup.Items)
+                {
+                    var normalizedInclude = PathNormalized(item.Include);
+                    if (item.ItemType == ProjectReference && normalizedInclude.Equals(normalizedRef, StringComparison.Ordinal))
+                        return false;
+                }
+            }
+
+            var newGroup = root.AddItemGroup();
+            newGroup.AddItem(ProjectReference, referencePath);
+            root.Save();
+            return true;
+        }
     }
 }

@@ -52,6 +52,7 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
+#include "modules/mono/editor/semver.h"
 
 #ifdef UNIX_ENABLED
 #include <dlfcn.h>

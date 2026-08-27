@@ -2255,6 +2255,11 @@ void EditorFileSystem::_update_script_documentation() {
 					scr->reload_from_file();
 				}
 				for (const DocData::ClassDoc &cd : scr->get_documentation()) {
+					if (cd.name.is_empty()) {
+						ERR_PRINT(String("Expected `class_doc.name` to be non-empty. Script path: " + scr->get_path()));
+						continue;
+					}
+
 					EditorHelp::add_doc(cd);
 					if (!first_scan) {
 						// Update the documentation in the Script Editor if it is open.

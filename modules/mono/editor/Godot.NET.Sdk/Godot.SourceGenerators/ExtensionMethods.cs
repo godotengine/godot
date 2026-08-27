@@ -32,12 +32,44 @@ namespace Godot.SourceGenerators
             disabledGenerators != null &&
             disabledGenerators.Split(';').Contains(generatorName));
 
-        public static bool InheritsFrom(this ITypeSymbol? symbol, string assemblyName, string typeFullName)
+        public static bool InheritsGodotObject(this ITypeSymbol? symbol)
         {
             while (symbol != null)
             {
-                if (symbol.ContainingAssembly?.Name == assemblyName &&
-                    symbol.FullQualifiedNameOmitGlobal() == typeFullName)
+                if (symbol.ContainingNamespace?.Name is "Godot" &&
+                    symbol.FullQualifiedNameOmitGlobal() == GodotClasses.GodotObject)
+                {
+                    return true;
+                }
+
+                symbol = symbol.BaseType;
+            }
+
+            return false;
+        }
+
+        public static bool InheritsResource(this ITypeSymbol? symbol)
+        {
+            while (symbol != null)
+            {
+                if (symbol.ContainingNamespace?.Name is "Godot" &&
+                    symbol.FullQualifiedNameOmitGlobal() == GodotClasses.Resource)
+                {
+                    return true;
+                }
+
+                symbol = symbol.BaseType;
+            }
+
+            return false;
+        }
+
+        public static bool InheritsNode(this ITypeSymbol? symbol)
+        {
+            while (symbol != null)
+            {
+                if (symbol.ContainingNamespace?.Name is "Godot" &&
+                    symbol.FullQualifiedNameOmitGlobal() == GodotClasses.Node)
                 {
                     return true;
                 }
@@ -54,7 +86,7 @@ namespace Godot.SourceGenerators
 
             while (symbol != null)
             {
-                if (symbol.ContainingAssembly?.Name == "GodotSharp")
+                if (symbol.ContainingNamespace?.Name is "Godot" or "Godot.GDExtensionBindings")
                     return symbol;
 
                 symbol = symbol.BaseType;
@@ -91,7 +123,7 @@ namespace Godot.SourceGenerators
             var classTypeSymbol = sm.GetDeclaredSymbol(cds);
 
             if (classTypeSymbol?.BaseType == null
-                || !classTypeSymbol.BaseType.InheritsFrom("GodotSharp", GodotClasses.GodotObject))
+                || !classTypeSymbol.BaseType.InheritsGodotObject())
             {
                 symbol = null;
                 return false;
@@ -179,6 +211,13 @@ namespace Godot.SourceGenerators
                 Accessibility.Public => "public",
                 _ => "",
             };
+        }
+
+        public static string NameWithTypeParameters(this INamedTypeSymbol symbol)
+        {
+            return symbol.IsGenericType && symbol.TypeParameters.Length > 0 ?
+                string.Concat(symbol.Name, "<", string.Join(", ", symbol.TypeParameters), ">") :
+                symbol.Name;
         }
 
         private static SymbolDisplayFormat FullyQualifiedFormatOmitGlobal { get; } =
