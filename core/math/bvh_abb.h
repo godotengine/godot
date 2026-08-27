@@ -267,7 +267,7 @@ struct BVH_ABB {
 	// Actually surface area metric.
 	real_t get_area() const {
 		POINT d = calculate_size();
-		return 2.0f * (d.x * d.y + d.y * d.z + d.z * d.x);
+		return 2.0 * (d.x * d.y + d.y * d.z + d.z * d.x);
 	}
 
 	void set_to_max_opposite_extents() {

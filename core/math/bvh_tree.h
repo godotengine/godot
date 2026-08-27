@@ -37,12 +37,17 @@
 // It also means that the splitting logic etc have to be completely different
 // to a simpler tree.
 // Note that MAX_CHILDREN should be fixed at 2 for now.
-
 #include "core/math/aabb.h"
 #include "core/math/bvh_abb.h"
 #include "core/math/vector3.h"
+#include "core/version_generated.gen.h"
+#if GODOT_VERSION_MAJOR >= 4
 #include "core/templates/local_vector.h"
 #include "core/templates/pooled_list.h"
+#else
+#include "core/local_vector.h"
+#include "core/pooled_list.h"
+#endif
 
 #define BVHABB_CLASS BVH_ABB<BOUNDS, POINT>
 
@@ -50,8 +55,17 @@
 #define BVH_EXPAND_LEAF_AABBS
 
 // never do these checks in release
-#ifdef DEV_ENABLED
+#if ((GODOT_VERSION_MAJOR >= 4) && defined(DEV_ENABLED)) || (defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED))
 //#define BVH_VERBOSE
+
+#ifdef BVH_VERBOSE
+#if GODOT_VERSION_MAJOR >= 4
+#include "core/variant/variant.h"
+#else
+#include "core/print_string.h"
+#endif
+#endif
+
 //#define BVH_VERBOSE_TREE
 //#define BVH_VERBOSE_PAIRING
 //#define BVH_VERBOSE_MOVES
@@ -134,7 +148,11 @@ public:
 	// request new addition to stack
 	T *request() {
 		if (depth > threshold) {
+#if GODOT_VERSION_MAJOR >= 4
 			if (aux_stack.is_empty()) {
+#else
+			if (aux_stack.empty()) {
+#endif
 				aux_stack.resize(ALLOCA_STACK_SIZE * 2);
 				memcpy(aux_stack.ptr(), stack, get_alloca_stacksize());
 			} else {
@@ -150,7 +168,7 @@ public:
 template <typename T>
 class BVH_DummyPairTestFunction {
 public:
-	static bool user_collision_check(T *p_a, T *p_b) {
+	static bool user_pair_check(const T *p_a, const T *p_b) {
 		// return false if no collision, decided by masks etc
 		return true;
 	}
@@ -159,7 +177,7 @@ public:
 template <typename T>
 class BVH_DummyCullTestFunction {
 public:
-	static bool user_cull_check(T *p_a, T *p_b) {
+	static bool user_cull_check(const T *p_a, const T *p_b) {
 		// return false if no collision
 		return true;
 	}
@@ -229,7 +247,7 @@ private:
 
 		// no need to keep back references for children at the moment
 
-		uint32_t sibling_id = 0; // always a node id, as tnode is never a leaf
+		uint32_t sibling_id = BVHCommon::INVALID; // always a node id, as tnode is never a leaf
 		bool sibling_present = false;
 
 		// if there are more children, or this is the root node, don't try and delete
