@@ -87,7 +87,7 @@ void CollisionShape2D::_notification(int p_what) {
 			unparenting = false;
 			can_update_body = get_tree()->is_editor_hint();
 			if (!get_tree()->is_editor_hint()) {
-				_update_xform_in_parent();
+				// _update_xform_in_parent();
 				//display above all else
 				set_z_as_relative(false);
 				set_z(VS::CANVAS_ITEM_Z_MAX - 1);

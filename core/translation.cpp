@@ -772,7 +772,7 @@ Vector<String> TranslationServer::get_all_locale_names() {
 	const char **ptr = locale_names;
 
 	while (*ptr) {
-		locales.push_back(*ptr);
+		locales.push_back(String::utf8(*ptr));
 		ptr++;
 	}
 
