@@ -565,11 +565,38 @@ class Godot private constructor(val context: Context) {
 					java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed"))
 			Log.d(TAG, "Render view should be transparent: $shouldBeTransparent")
 
+			val activity = host.activity
+
+			val display = activity?.display
+			var highestRefreshRate = 60.0
+			if (display != null) {
+				val supportedRefreshRates = display.getSupportedRefreshRates()
+				for (refreshRate in supportedRefreshRates) {
+					Log.d(TAG, "Supported refresh rate: ${refreshRate} Hz")
+					highestRefreshRate = maxOf(highestRefreshRate, refreshRate.toDouble())
+				}
+
+				Log.d(TAG, "Highest supported refresh rate: ${highestRefreshRate} Hz")
+			}
+
+			// Some devices running Android 15 or later default to 60 Hz unless the app
+			// requests a higher refresh rate, even if the device supports higher refresh rates.
+			//
+			// Set refresh rate to match the FPS limit defined in the project settings.
+			// This improves battery life on devices with a refresh rate above 60 Hz,
+			// and avoids jitter on devices with a refresh rate that is not a multiple of 60 Hz.
+			var refreshRate = Integer.parseInt(GodotLib.getGlobal("application/run/max_fps"))
+			if (refreshRate == 0) {
+				// No FPS limit. Request the highest supported refresh rate to match Android <= 14 behavior.
+				refreshRate = highestRefreshRate.toInt()
+				Log.d(TAG, "Requesting refresh rate: ${refreshRate} Hz")
+			}
+
 			val nativeRenderer = getNativeRenderer()
 			if (nativeRenderer == "vulkan") {
-				renderView = GodotVulkanRenderView(this, godotInputHandler, shouldBeTransparent)
+				renderView = GodotVulkanRenderView(this, godotInputHandler, shouldBeTransparent, refreshRate)
 			} else if (nativeRenderer == "opengl3") {
-				renderView = GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent)
+				renderView = GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl, shouldBeTransparent, refreshRate)
 			} else {
 				throw IllegalStateException("No native renderer is available.")
 			}
@@ -588,7 +615,6 @@ class Godot private constructor(val context: Context) {
 			editText.setView(renderView)
 			io.setEdit(editText)
 
-			val activity = host.activity
 			// Listeners for keyboard height.
 			val topView = activity?.window?.decorView ?: providedContainerLayout
 			// Report the height of virtual keyboard as it changes during the animation.

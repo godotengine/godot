@@ -39,11 +39,15 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
+import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.Keep;
@@ -54,20 +58,35 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 	private final Godot godot;
 	private final GodotInputHandler mInputHandler;
 	private final VkRenderer mRenderer;
+	private final int mRefreshRate;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotVulkanRenderView(Godot godot, GodotInputHandler inputHandler, boolean shouldBeTranslucent) {
+	public GodotVulkanRenderView(Godot godot, GodotInputHandler inputHandler, boolean shouldBeTranslucent, int refreshRate) {
 		super(godot.getContext());
 
 		this.godot = godot;
 		mInputHandler = inputHandler;
 		mRenderer = new VkRenderer();
+		mRefreshRate = refreshRate;
 		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
 		setFocusableInTouchMode(true);
 		setClickable(false);
 
 		if (shouldBeTranslucent) {
 			this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+		}
+	}
+
+	@Override
+	public void surfaceCreated(SurfaceHolder holder) {
+		super.surfaceCreated(holder);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			Log.i("Godot", "Vulkan: Setting frame rate to " + mRefreshRate);
+			holder.getSurface().setFrameRate(
+					mRefreshRate,
+					Surface.FRAME_RATE_COMPATIBILITY_DEFAULT,
+					Surface.CHANGE_FRAME_RATE_ALWAYS);
 		}
 	}
 
