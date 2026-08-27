@@ -1567,9 +1567,14 @@ void EditorSettings::save() {
 	if (!singleton.ptr()) {
 		return;
 	}
+	// Only save if a setting has been changed or
+	// the setting file for this version does not exist yet.
+	// Fixes issues when multiple editor instances are open.
+	if (singleton->changed_settings.is_empty() && FileAccess::exists(singleton->get_path())) {
+		return;
+	}
 
 	Error err = ResourceSaver::save(singleton);
-
 	if (err != OK) {
 		ERR_PRINT("Error saving editor settings to " + singleton->get_path());
 	} else {
