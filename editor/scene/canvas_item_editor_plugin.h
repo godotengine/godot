@@ -43,6 +43,7 @@ class CreateDialog;
 class EditorData;
 class EditorSelection;
 class EditorZoomWidget;
+class Gradient;
 class HScrollBar;
 class HSplitContainer;
 class MenuButton;
@@ -129,6 +130,8 @@ private:
 		SHOW_GUIDES,
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
+		SHOW_INFORMATION,
+		SHOW_FRAME_TIME,
 		SHOW_POSITION_GIZMOS,
 		SHOW_LOCK_GIZMOS,
 		SHOW_GROUP_GIZMOS,
@@ -546,6 +549,8 @@ private:
 			const Node *p_current);
 
 	VBoxContainer *controls_vb = nullptr;
+	Control *info_panel_container = nullptr;
+	Control *frame_time_panel_container = nullptr;
 	Button *button_center_view = nullptr;
 	EditorZoomWidget *zoom_widget = nullptr;
 	void _update_zoom(real_t p_zoom);
@@ -611,6 +616,8 @@ public:
 	CanvasItemEditorViewport *get_viewport_control() { return viewport; }
 
 	Control *get_controls_container() { return controls_vb; }
+	Control *get_info_panel_container() { return info_panel_container; }
+	Control *get_frame_time_panel_container() { return frame_time_panel_container; }
 
 	void find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 
@@ -622,6 +629,9 @@ public:
 	bool is_grid_visible() const;
 	Vector2 get_grid_step() const { return grid_step; }
 	Vector2 get_grid_offset() const { return grid_offset; }
+
+	double get_zoom() const { return zoom; }
+	Point2 get_view_offset() const { return view_offset; }
 
 	void edit(CanvasItem *p_canvas_item);
 
@@ -667,6 +677,12 @@ public:
 class CanvasItemEditorViewport : public Control {
 	GDCLASS(CanvasItemEditorViewport, Control);
 
+	static constexpr int32_t FRAME_TIME_HISTORY = 20;
+	double cpu_time_history[FRAME_TIME_HISTORY];
+	int cpu_time_history_index;
+	double gpu_time_history[FRAME_TIME_HISTORY];
+	int gpu_time_history_index;
+
 	// The type of node that will be created when dropping texture into the viewport.
 	String default_texture_node_type;
 	// Node types that are available to select from when dropping texture into viewport.
@@ -682,6 +698,19 @@ class CanvasItemEditorViewport : public Control {
 	AcceptDialog *texture_node_type_selector = nullptr;
 	RichTextLabel *tooltip_panel = nullptr;
 	Ref<ButtonGroup> button_group;
+
+	PanelContainer *info_panel = nullptr;
+	Label *info_label = nullptr;
+
+	Ref<Gradient> frame_time_gradient;
+	PanelContainer *frame_time_panel = nullptr;
+	VBoxContainer *frame_time_vbox = nullptr;
+	Label *cpu_time_label = nullptr;
+	Label *gpu_time_label = nullptr;
+	Label *fps_label = nullptr;
+
+	bool show_information = false;
+	bool show_frame_time = false;
 
 	void _on_mouse_exit();
 	void _on_select_texture_node_type(Object *selected);
@@ -708,6 +737,12 @@ public:
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
 	void set_hint_label(const String &p_title, const String &p_description) const;
+
+	void set_show_information(bool p_enabled);
+	bool is_showing_information() const;
+
+	void set_show_frame_time(bool p_enabled);
+	bool is_showing_frame_time() const;
 
 	CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor);
 	~CanvasItemEditorViewport();
