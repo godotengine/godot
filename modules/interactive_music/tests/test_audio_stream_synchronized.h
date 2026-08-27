@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_audio_stream_synchronized.cpp                                    */
+/*  test_audio_stream_synchronized.h                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_audio_stream_interactive.cpp                                     */
+/*  test_audio_stream_interactive.h                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
