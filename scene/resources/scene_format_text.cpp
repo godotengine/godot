@@ -274,11 +274,11 @@ Error ResourceInteractiveLoaderText::poll() {
 
 		String path = local_path + "::" + itos(id);
 
-		//bool exists=ResourceCache::has(path);
+		// bool exists=ResourceCache::has(path);
 
 		Ref<Resource> res;
 
-		if (!ResourceCache::has(path)) { //only if it doesn't exist
+		if (!ResourceCache::has(path)) { // only if it doesn't exist
 
 			Object *obj = ObjectTypeDB::instance(type);
 			if (!obj) {
@@ -321,7 +321,7 @@ Error ResourceInteractiveLoaderText::poll() {
 				if (res.is_valid()) {
 					res->set(assign, value);
 				}
-				//it's assignment
+				// it's assignment
 			} else if (next_tag.name != String()) {
 
 				error = OK;
@@ -388,7 +388,7 @@ Error ResourceInteractiveLoaderText::poll() {
 
 			if (assign != String()) {
 				resource->set(assign, value);
-				//it's assignment
+				// it's assignment
 			} else if (next_tag.name != String()) {
 
 				error = ERR_FILE_CORRUPT;
@@ -439,14 +439,14 @@ Error ResourceInteractiveLoaderText::poll() {
 
 		if (next_tag.fields.has("parent")) {
 			NodePath np = next_tag.fields["parent"];
-			np.prepend_period(); //compatible to how it manages paths internally
+			np.prepend_period(); // compatible to how it manages paths internally
 			parent = packed_scene->get_state()->add_node_path(np);
 		}
 
 		if (next_tag.fields.has("type")) {
 			type = packed_scene->get_state()->add_name(next_tag.fields["type"]);
 		} else {
-			type = SceneState::TYPE_INSTANCED; //no type? assume this was instanced
+			type = SceneState::TYPE_INSTANCED; // no type? assume this was instanced
 		}
 
 		if (next_tag.fields.has("instance")) {
@@ -479,7 +479,7 @@ Error ResourceInteractiveLoaderText::poll() {
 			owner = packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
 		} else {
 			if (parent != -1 && !(type == SceneState::TYPE_INSTANCED && instance == -1))
-				owner = 0; //if no owner, owner is root
+				owner = 0; // if no owner, owner is root
 		}
 
 		int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance);
@@ -515,7 +515,7 @@ Error ResourceInteractiveLoaderText::poll() {
 				int nameidx = packed_scene->get_state()->add_name(assign);
 				int valueidx = packed_scene->get_state()->add_value(value);
 				packed_scene->get_state()->add_node_property(node_id, nameidx, valueidx);
-				//it's assignment
+				// it's assignment
 			} else if (next_tag.name != String()) {
 
 				error = OK;
@@ -798,7 +798,7 @@ Error ResourceInteractiveLoaderText::get_export_data(FileAccess *p_f, ExportData
 					pdata.value = value;
 					res_data.properties.push_back(pdata);
 
-					//it's assignment
+					// it's assignment
 				} else if (next_tag.name != String()) {
 
 					error = OK;
@@ -848,7 +848,7 @@ Error ResourceInteractiveLoaderText::get_export_data(FileAccess *p_f, ExportData
 					pdata.name = assign;
 					pdata.value = value;
 					res_data.properties.push_back(pdata);
-					//it's assignment
+					// it's assignment
 				} else if (next_tag.name != String()) {
 
 					error = ERR_FILE_CORRUPT;
@@ -933,11 +933,11 @@ Error ResourceInteractiveLoaderText::get_export_data(FileAccess *p_f, ExportData
 					pdata.name = assign;
 					pdata.value = value;
 					node_data.properties.push_back(pdata);
-					//it's assignment
+					// it's assignment
 				} else if (next_tag.name != String()) {
-					break; //something else
+					break; // something else
 				} else {
-					//all done?
+					// all done?
 					return OK;
 				}
 			}
@@ -1065,7 +1065,7 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 	open(p_f, true);
 	ERR_FAIL_COND_V(error != OK, error);
 	ignore_resource_parsing = true;
-	//FileAccess
+	// FileAccess
 
 	FileAccess *fw = NULL;
 
@@ -1087,7 +1087,7 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 
 		if (next_tag.name != "ext_resource") {
 
-			//nothing was done
+			// nothing was done
 			if (!fw)
 				return OK;
 
@@ -1127,7 +1127,7 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 			}
 
 			if (relative) {
-				//restore relative
+				// restore relative
 				path = base_path.path_to_file(path);
 			}
 
@@ -1341,12 +1341,12 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
 	else if (ext != "tres")
 		return String();
 
-	//for anyhting else must test..
+	// for anyhting else must test..
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
 
-		return ""; //could not rwead
+		return ""; // could not rwead
 	}
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
@@ -1410,15 +1410,6 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 }
 
 /*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
 
 String ResourceFormatSaverTextInstance::_write_resources(void *ud, const RES &p_resource) {
 
@@ -1437,13 +1428,13 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 			return "SubResource( " + itos(internal_resources[res]) + " )";
 		} else if (res->get_path().length() && res->get_path().find("::") == -1) {
 
-			//external resource
+			// external resource
 			String path = relative_paths ? local_path.path_to_file(res->get_path()) : res->get_path();
 			return "Resource( \"" + path + "\" )";
 		} else {
 			ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
 			ERR_FAIL_V("null");
-			//internal resource
+			// internal resource
 		}
 	}
 
@@ -1489,7 +1480,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				I = I->next();
 			}
 
-			resource_set.insert(res); //saved after, so the childs it needs are available when loaded
+			resource_set.insert(res); // saved after, so the childs it needs are available when loaded
 			saved_resources.push_back(res);
 
 		} break;
@@ -1559,7 +1550,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	_find_resources(p_resource, true);
 
 	if (packed_scene.is_valid()) {
-		//add instances to external resources if saving a packed scene
+		// add instances to external resources if saving a packed scene
 		for (int i = 0; i < packed_scene->get_state()->get_node_count(); i++) {
 			if (packed_scene->get_state()->is_node_instance_placeholder(i))
 				continue;
@@ -1579,19 +1570,19 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		if (packed_scene.is_null())
 			title += "type=\"" + p_resource->get_type() + "\" ";
 		int load_steps = saved_resources.size() + external_resources.size();
-		//if (packed_scene.is_valid()) {
+		// if (packed_scene.is_valid()) {
 		//	load_steps+=packed_scene->get_node_count();
-		//}
-		//no, better to not use load steps from nodes, no point to that
+		// }
+		// no, better to not use load steps from nodes, no point to that
 
 		if (load_steps > 1) {
 			title += "load_steps=" + itos(load_steps) + " ";
 		}
 		title += "format=" + itos(FORMAT_VERSION) + "";
-		//title+="engine_version=\""+itos(VERSION_MAJOR)+"."+itos(VERSION_MINOR)+"\"";
+		// title+="engine_version=\""+itos(VERSION_MAJOR)+"."+itos(VERSION_MINOR)+"\"";
 
 		f->store_string(title);
-		f->store_line("]\n"); //one empty line
+		f->store_line("]\n"); // one empty line
 	}
 
 	Vector<RES> sorted_er;
@@ -1605,11 +1596,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	for (int i = 0; i < sorted_er.size(); i++) {
 		String p = sorted_er[i]->get_path();
 
-		f->store_string("[ext_resource path=\"" + p + "\" type=\"" + sorted_er[i]->get_save_type() + "\" id=" + itos(i + 1) + "]\n"); //bundled
+		f->store_string("[ext_resource path=\"" + p + "\" type=\"" + sorted_er[i]->get_save_type() + "\" id=" + itos(i + 1) + "]\n"); // bundled
 	}
 
 	if (external_resources.size())
-		f->store_line(String()); //separate
+		f->store_line(String()); // separate
 
 	Set<int> used_indices;
 
@@ -1620,7 +1611,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 			if (res->get_subindex() != 0) {
 				if (used_indices.has(res->get_subindex())) {
-					res->set_subindex(0); //repeated
+					res->set_subindex(0); // repeated
 				} else {
 					used_indices.insert(res->get_subindex());
 				}
@@ -1635,7 +1626,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		bool main = (E->next() == NULL);
 
 		if (main && packed_scene.is_valid())
-			break; //save as a scene
+			break; // save as a scene
 
 		if (main) {
 			f->store_line("[resource]\n");
@@ -1690,7 +1681,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	}
 
 	if (packed_scene.is_valid()) {
-		//if this is a scene, save nodes and connections!
+		// if this is a scene, save nodes and connections!
 		Ref<SceneState> state = packed_scene->get_state();
 		for (int i = 0; i < state->get_node_count(); i++) {
 
@@ -1752,7 +1743,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 
 			if (state->get_node_property_count(i)) {
-				//add space
+				// add space
 				f->store_line(String());
 			}
 		}
@@ -1794,7 +1785,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	}
 
 	f->close();
-	//memdelete(f);
+	// memdelete(f);
 
 	return OK;
 }
@@ -1816,9 +1807,9 @@ bool ResourceFormatSaverText::recognize(const RES &p_resource) const {
 void ResourceFormatSaverText::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 
 	if (p_resource->get_type() == "PackedScene")
-		p_extensions->push_back("tscn"); //text scene
+		p_extensions->push_back("tscn"); // text scene
 	else
-		p_extensions->push_back("tres"); //text resource
+		p_extensions->push_back("tres"); // text resource
 }
 
 ResourceFormatSaverText *ResourceFormatSaverText::singleton = NULL;

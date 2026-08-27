@@ -41,7 +41,7 @@
 #include <wchar.h>
 
 #ifdef _MSC_VER
-#define S_ISREG(m) ((m)&_S_IFREG)
+#define S_ISREG(m) ((m) & _S_IFREG)
 #endif
 
 void FileAccessWindows::check_errors() const {
@@ -86,13 +86,14 @@ Error FileAccessWindows::_open(const String &p_filename, int p_mode_flags) {
 	if (is_backup_save_enabled() && p_mode_flags & WRITE && !(p_mode_flags & READ)) {
 		save_path = filename;
 		filename = filename + ".tmp";
-		//print_line("saving instead to "+path);
 	}
 
-	f = _wfopen(filename.c_str(), mode_string);
+	// Authorize opening the same file more than once if it's a READ only access
+	f = _wfsopen((LPCWSTR)(filename.c_str()), mode_string, _SH_DENYNO);
 
-	if (f == NULL) {
+	if (f == nullptr) {
 		last_error = ERR_FILE_CANT_OPEN;
+
 		return ERR_FILE_CANT_OPEN;
 	} else {
 		last_error = OK;
@@ -109,12 +110,6 @@ void FileAccessWindows::close() {
 	f = NULL;
 
 	if (save_path != "") {
-
-		//unlink(save_path.utf8().get_data());
-		//print_line("renaming..");
-		//_wunlink(save_path.c_str()); //unlink if exists
-		//int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
-
 		bool rename_error;
 
 #ifdef WINRT_ENABLED
@@ -126,10 +121,10 @@ void FileAccessWindows::close() {
 #else
 		if (!PathFileExistsW(save_path.c_str())) {
 #endif
-			//creating new file
+			// creating new file
 			rename_error = _wrename((save_path + ".tmp").c_str(), save_path.c_str()) != 0;
 		} else {
-			//atomic replace for existing file
+			// atomic replace for existing file
 			rename_error = !ReplaceFileW(save_path.c_str(), (save_path + ".tmp").c_str(), NULL, 2 | 4, NULL, NULL);
 		}
 		if (rename_error && close_fail_notify) {
@@ -222,15 +217,17 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, int p_length) {
 bool FileAccessWindows::file_exists(const String &p_name) {
 
 	FILE *g;
-	//printf("opening file %s\n", p_fname.c_str());
+
 	String filename = fix_path(p_name);
-	g = _wfopen(filename.c_str(), L"rb");
-	if (g == NULL) {
 
+	// Authorize opening the same file more than once if it's a READ only access
+	g = _wfsopen((LPCWSTR)(filename.c_str()), L"rb", _SH_DENYNO);
+	if (g == nullptr) {
 		return false;
-	} else {
 
+	} else {
 		fclose(g);
+
 		return true;
 	}
 }

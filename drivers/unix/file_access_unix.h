@@ -33,6 +33,7 @@
 
 #include "os/file_access.h"
 #include "os/memory.h"
+#include <fcntl.h>
 #include <stdio.h>
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)

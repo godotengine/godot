@@ -424,7 +424,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				text_edit->show();
 				text_edit->set_text(v);
 
-				//action_buttons[0];
+				// action_buttons[0];
 
 				int button_margin = get_constant("button_margin", "Dialogs");
 				int margin = get_constant("margin", "Dialogs");
@@ -593,7 +593,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		case Variant::COLOR: {
 
 			if (!color_picker) {
-				//late init for performance
+				// late init for performance
 				color_picker = memnew(ColorPicker);
 				add_child(color_picker);
 				color_picker->hide();
@@ -898,11 +898,11 @@ void CustomPropertyEditor::_type_create_selected(int p_idx) {
 
 		ERR_FAIL_INDEX(p_idx, inheritors_array.size());
 
-		//List<String> inheritors;
-		//ObjectTypeDB::get_inheriters_from(hint_text,&inheritors);
-		//inheritors.push_front(hint_text);
+		// List<String> inheritors;
+		// ObjectTypeDB::get_inheriters_from(hint_text,&inheritors);
+		// inheritors.push_front(hint_text);
 
-		//ERR_FAIL_INDEX( p_idx, inheritors.size() );
+		// ERR_FAIL_INDEX( p_idx, inheritors.size() );
 		String intype = inheritors_array[p_idx];
 
 		Object *obj = ObjectTypeDB::instance(intype);
@@ -938,7 +938,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 		if (!node) {
 			v = p_path;
 			emit_signal("variant_changed");
-			call_deferred("hide"); //to not mess with dialogs
+			call_deferred("hide"); // to not mess with dialogs
 			return;
 		}
 
@@ -950,7 +950,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 	v = p_path;
 	emit_signal("variant_changed");
-	call_deferred("hide"); //to not mess with dialogs
+	call_deferred("hide"); // to not mess with dialogs
 }
 
 void CustomPropertyEditor::_action_pressed(int p_which) {
@@ -1140,7 +1140,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		case Variant::IMAGE: {
 
 			if (p_which == 0) {
-				//new image too difficult
+				// new image too difficult
 				ERR_PRINT("New Image Unimplemented");
 
 			} else if (p_which == 1) {
@@ -1219,7 +1219,7 @@ void CustomPropertyEditor::_drag_easing(const InputEvent &p_ev) {
 		val = Math::absf(val);
 
 		val = Math::log(val) / Math::log(2);
-		//logspace
+		// logspace
 		val += rel * 0.05;
 		//
 
@@ -1229,7 +1229,7 @@ void CustomPropertyEditor::_drag_easing(const InputEvent &p_ev) {
 
 		v = val;
 		easing_draw->update();
-		//emit_signal("variant_changed");
+		// emit_signal("variant_changed");
 		emit_signal("variant_changed");
 	}
 	if (p_ev.type == InputEvent::MOUSE_BUTTON && p_ev.mouse_button.button_index == BUTTON_LEFT) {
@@ -1244,7 +1244,7 @@ void CustomPropertyEditor::_draw_easing() {
 	Rect2 r(Point2(), s);
 	r = r.grow(3);
 	get_stylebox("normal", "LineEdit")->draw(ci, r);
-	//VisualServer::get_singleton()->canvas_item_add
+	// VisualServer::get_singleton()->canvas_item_add
 
 	int points = 48;
 
@@ -1731,7 +1731,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	error = memnew(ConfirmationDialog);
 	error->set_title(TTR("Error!"));
 	add_child(error);
-	//error->get_cancel()->hide();
+	// error->get_cancel()->hide();
 
 	type_button = memnew(MenuButton);
 	add_child(type_button);
@@ -1752,7 +1752,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	easing_draw->hide();
 	easing_draw->connect("draw", this, "_draw_easing");
 	easing_draw->connect("input_event", this, "_drag_easing");
-	//easing_draw->emit_signal(SceneStringNames::get_singleton()->input_event,InputEvent());
+	// easing_draw->emit_signal(SceneStringNames::get_singleton()->input_event,InputEvent());
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
 
 	menu = memnew(PopupMenu);
@@ -1848,7 +1848,7 @@ bool PropertyEditor::_get_instanced_node_original_property(const StringName &p_p
 			}
 		}
 		if (node == edited_scene) {
-			//just in case
+			// just in case
 			break;
 		}
 		node = node->get_owner();
@@ -1884,19 +1884,19 @@ bool PropertyEditor::_is_property_different(const Variant &p_current, const Vari
 				found_state = true;
 			}
 			if (node == edited_scene) {
-				//just in case
+				// just in case
 				break;
 			}
 			node = node->get_owner();
 		}
 
 		if (!found_state)
-			return false; //pointless to check if we are not comparing against anything.
+			return false; // pointless to check if we are not comparing against anything.
 	}
 
 	if (p_orig.get_type() == Variant::NIL) {
 
-		//special cases
+		// special cases
 		if (p_current.is_zero() && p_usage & PROPERTY_USAGE_STORE_IF_NONZERO)
 			return false;
 		if (p_current.is_one() && p_usage & PROPERTY_USAGE_STORE_IF_NONONE)
@@ -1907,7 +1907,7 @@ bool PropertyEditor::_is_property_different(const Variant &p_current, const Vari
 		float a = p_current;
 		float b = p_orig;
 
-		return Math::abs(a - b) > CMP_EPSILON; //this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+		return Math::abs(a - b) > CMP_EPSILON; // this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
 	}
 
 	return bool(Variant::evaluate(Variant::OP_NOT_EQUAL, p_current, p_orig));
@@ -2007,7 +2007,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 				break;
 			}
 
-			//p_item->set_cell_mode( 1, TreeItem::CELL_MODE_RANGE );
+			// p_item->set_cell_mode( 1, TreeItem::CELL_MODE_RANGE );
 
 			if (p_type == Variant::REAL) {
 				p_item->set_range(1, obj->get(p_name));
@@ -2052,7 +2052,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 		case Variant::COLOR: {
 
 			tree->update();
-			//p_item->set_text(1,obj->get(p_name));
+			// p_item->set_text(1,obj->get(p_name));
 
 		} break;
 		case Variant::IMAGE: {
@@ -2131,7 +2131,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 				if (res->is_type("Script")) {
 					p_item->set_text(1, res->get_path().get_file());
 				} else if (!res->is_type("Texture")) {
-					//texture already previews via itself
+					// texture already previews via itself
 					EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_resource_preview_done", p_item->get_instance_ID());
 				}
 			}
@@ -2168,7 +2168,7 @@ void PropertyEditor::_check_reload_status(const String &p_name, TreeItem *item) 
 
 			bool changed = _is_property_different(v, vorig, usage);
 
-			//if ((found!=-1 && !is_disabled)!=changed) {
+			// if ((found!=-1 && !is_disabled)!=changed) {
 
 			if (changed) {
 
@@ -2183,14 +2183,14 @@ void PropertyEditor::_check_reload_status(const String &p_name, TreeItem *item) 
 	if (!has_reload && !obj->get_script().is_null()) {
 		Ref<Script> scr = obj->get_script();
 		Variant orig_value;
-		if (scr->get_property_default_value(p_name, orig_value)) {
+		if (!scr.is_null() && scr->get_property_default_value(p_name, orig_value)) {
 			if (orig_value != obj->get(p_name)) {
 				has_reload = true;
 			}
 		}
 	}
 
-	//print_line("found: "+itos(found)+" has reload: "+itos(has_reload)+" is_disabled "+itos(is_disabled));
+	// print_line("found: "+itos(found)+" has reload: "+itos(has_reload)+" is_disabled "+itos(is_disabled));
 	if (found != -1 && !has_reload) {
 
 		if (!is_disabled) {
@@ -2638,7 +2638,7 @@ void PropertyEditor::update_tree() {
 
 		PropertyInfo &p = I->get();
 
-		//make sure the property can be edited
+		// make sure the property can be edited
 
 		if (p.usage & PROPERTY_USAGE_CATEGORY) {
 
@@ -2647,7 +2647,7 @@ void PropertyEditor::update_tree() {
 
 			List<PropertyInfo>::Element *N = I->next();
 			bool valid = true;
-			//if no properties in category, skip
+			// if no properties in category, skip
 			while (N) {
 				if (N->get().usage & PROPERTY_USAGE_EDITOR)
 					break;
@@ -2658,7 +2658,7 @@ void PropertyEditor::update_tree() {
 				N = N->next();
 			}
 			if (!valid)
-				continue; //empty, ignore
+				continue; // empty, ignore
 			TreeItem *sep = tree->create_item(root);
 			current_category = sep;
 			String type = p.name;
@@ -2689,7 +2689,7 @@ void PropertyEditor::update_tree() {
 
 				sep->set_tooltip(0, TTR("Class:") + " " + p.name + ":\n\n" + class_descr_cache[type]);
 			}
-			//sep->set_custom_color(0,Color(1,1,1));
+			// sep->set_custom_color(0,Color(1,1,1));
 
 			continue;
 		} else if (!(p.usage & PROPERTY_USAGE_EDITOR))
@@ -2713,9 +2713,9 @@ void PropertyEditor::update_tree() {
 				continue;
 		}
 
-		//printf("property %s\n",p.name.ascii().get_data());
+		// printf("property %s\n",p.name.ascii().get_data());
 		TreeItem *parent = get_parent_node(path, item_path, current_category ? current_category : root);
-		//if (parent->get_parent()==root)
+		// if (parent->get_parent()==root)
 		//	parent=root;
 		int level = 0;
 		if (parent != root) {
@@ -2736,7 +2736,7 @@ void PropertyEditor::update_tree() {
 
 		if (level > 0) {
 			item->set_custom_bg_color(0, col);
-			//item->set_custom_bg_color(1,col);
+			// item->set_custom_bg_color(1,col);
 		}
 		item->set_editable(0, false);
 		item->set_selectable(0, false);
@@ -2786,7 +2786,7 @@ void PropertyEditor::update_tree() {
 				item->set_tooltip(0, TTR("Property:") + " " + p.name + "\n\n" + descr);
 			}
 		}
-		//EditorHelp::get_doc_data();
+		// EditorHelp::get_doc_data();
 
 		Dictionary d;
 		d["name"] = p.name;
@@ -2806,7 +2806,7 @@ void PropertyEditor::update_tree() {
 			item->select(1);
 		}
 
-		//printf("property %s type %i\n",p.name.ascii().get_data(),p.type);
+		// printf("property %s type %i\n",p.name.ascii().get_data(),p.type);
 		switch (p.type) {
 
 			case Variant::BOOL: {
@@ -2846,7 +2846,7 @@ void PropertyEditor::update_tree() {
 
 					item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
 					item->set_editable(1, !read_only);
-					//item->set_icon( 0, get_icon("Curve","EditorIcons"));
+					// item->set_icon( 0, get_icon("Curve","EditorIcons"));
 
 					Vector<String> values = p.hint_string.split(",");
 					String flags;
@@ -3278,7 +3278,7 @@ void PropertyEditor::update_tree() {
 					if (res->is_type("Script")) {
 						item->set_text(1, res->get_path().get_file());
 					} else if (!res->is_type("Texture")) {
-						//texture already previews via itself
+						// texture already previews via itself
 						EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_resource_preview_done", item->get_instance_ID());
 					}
 				}
@@ -3286,7 +3286,7 @@ void PropertyEditor::update_tree() {
 				if (type != String()) {
 					if (type.find(",") != -1)
 						type = type.get_slice(",", 0);
-					//printf("prop %s , type %s\n",p.name.ascii().get_data(),p.hint_string.ascii().get_data());
+					// printf("prop %s , type %s\n",p.name.ascii().get_data(),p.hint_string.ascii().get_data());
 					if (has_icon(type, "EditorIcons"))
 						item->set_icon(0, get_icon(type, "EditorIcons"));
 					else
@@ -3322,7 +3322,7 @@ void PropertyEditor::update_tree() {
 				Variant v = obj->get(p.name);
 
 				if (_is_property_different(v, vorig, usage)) {
-					//print_line("FOR "+String(p.name)+" RELOAD WITH: "+String(v)+"("+Variant::get_type_name(v.get_type())+")=="+String(vorig)+"("+Variant::get_type_name(vorig.get_type())+")");
+					// print_line("FOR "+String(p.name)+" RELOAD WITH: "+String(v)+"("+Variant::get_type_name(v.get_type())+")=="+String(vorig)+"("+Variant::get_type_name(vorig.get_type())+")");
 					item->add_button(1, get_icon("ReloadSmall", "EditorIcons"), 3);
 					has_reload = true;
 				}
@@ -3410,7 +3410,7 @@ void PropertyEditor::_edit_set(const String &p_name, const Variant &p_value, con
 		}
 	}
 
-	if (!undo_redo || obj->cast_to<ArrayPropertyEdit>()) { //kind of hacky
+	if (!undo_redo || obj->cast_to<ArrayPropertyEdit>()) { // kind of hacky
 
 		obj->set(p_name, p_value);
 		_changed_callbacks(obj, p_name);
@@ -3446,14 +3446,14 @@ void PropertyEditor::_item_edited() {
 
 	TreeItem *item = tree->get_edited();
 	if (!item)
-		return; //it all happened too fast..
+		return; // it all happened too fast..
 
 	Dictionary d = item->get_metadata(0);
 
 	String name = d["name"];
 
 	if (tree->get_edited_column() == 0) {
-		//property checked
+		// property checked
 		if (autoclear) {
 			if (!item->is_checked(0)) {
 				obj->set(name, Variant());
@@ -3614,7 +3614,7 @@ void PropertyEditor::_custom_editor_request(bool p_arrow) {
 	ERR_FAIL_COND(!item);
 	Dictionary d = item->get_metadata(0);
 
-	//int type=d["type"];
+	// int type=d["type"];
 	String name = d["name"];
 	Variant::Type type = Variant::NIL;
 	if (d.has("type"))
@@ -3692,7 +3692,7 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 			return;
 		String prop = d["name"];
 		emit_signal("property_keyed", prop, obj->get(prop), true);
-		//set_range(p_column, ti->get_range(p_column)+1.0 );
+		// set_range(p_column, ti->get_range(p_column)+1.0 );
 		call_deferred("_set_range_def", ti, prop, ti->get_range(p_column) + 1.0);
 	} else if (p_button == 3) {
 
@@ -3748,7 +3748,7 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 			Variant v = obj->get(n);
 			custom_editor->edit(obj, n, (Variant::Type)t, v, h, ht);
-			//Rect2 where=tree->get_custom_popup_rect();
+			// Rect2 where=tree->get_custom_popup_rect();
 			if (h == PROPERTY_HINT_FILE || h == PROPERTY_HINT_DIR || h == PROPERTY_HINT_GLOBAL_DIR || h == PROPERTY_HINT_GLOBAL_FILE) {
 
 				Rect2 where = tree->get_item_rect(ti, 1);
@@ -3866,7 +3866,7 @@ void PropertyEditor::_filter_changed(const String &p_text) {
 void PropertyEditor::_resource_preview_done(const String &p_path, const Ref<Texture> &p_preview, Variant p_ud) {
 
 	if (p_preview.is_null())
-		return; //don't bother with empty preview
+		return; // don't bother with empty preview
 
 	ObjectID id = p_ud;
 	Object *obj = ObjectDB::get_instance(id);
@@ -3880,7 +3880,7 @@ void PropertyEditor::_resource_preview_done(const String &p_path, const Ref<Text
 
 	int tw = EditorSettings::get_singleton()->get("property_editor/texture_preview_width");
 
-	ti->set_icon(1, p_preview); //should be scaled I think?
+	ti->set_icon(1, p_preview); // should be scaled I think?
 	ti->set_icon_max_width(1, tw);
 	ti->set_text(1, "");
 }
@@ -4023,7 +4023,7 @@ PropertyEditor::PropertyEditor() {
 	tree->set_column_expand(1, true);
 	tree->set_column_min_width(1, 18);
 
-	//tree->set_hide_root(true);
+	// tree->set_hide_root(true);
 	add_child(tree);
 
 	tree->connect("item_edited", this, "_item_edited", varray(), CONNECT_DEFERRED);

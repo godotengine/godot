@@ -116,7 +116,7 @@ Error AudioDriverWASAPI::init_device(bool reinit) {
 	IMMDeviceEnumerator *enumerator = NULL;
 	IMMDevice *device = NULL;
 
-	CoInitialize(NULL);
+	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);

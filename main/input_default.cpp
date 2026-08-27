@@ -97,7 +97,7 @@ bool InputDefault::is_joy_button_pressed(int p_device, int p_button) {
 bool InputDefault::is_action_pressed(const StringName &p_action) {
 
 	if (custom_action_press.has(p_action))
-		return true; //simpler
+		return true; // simpler
 
 	const List<InputEvent> *alist = InputMap::get_singleton()->get_action_list(p_action);
 	if (!alist)
@@ -160,7 +160,7 @@ String InputDefault::get_joy_name(int p_idx) {
 
 	_THREAD_SAFE_METHOD_
 	return joy_names[p_idx].name;
-};
+}
 
 Vector2 InputDefault::get_joy_vibration_strength(int p_device) {
 	if (joy_vibration.has(p_device)) {
@@ -196,7 +196,7 @@ static String _hex_str(uint8_t p_byte) {
 	ret[1] = dict[p_byte & 0xf];
 
 	return ret;
-};
+}
 
 void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid) {
 
@@ -214,8 +214,8 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 			int uidlen = MIN(p_name.length(), 16);
 			for (int i = 0; i < uidlen; i++) {
 				uidname = uidname + _hex_str(p_name[i]);
-			};
-		};
+			}
+		}
 		js.uid = uidname;
 		js.connected = true;
 		int mapping = fallback_mapping;
@@ -223,8 +223,8 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 			if (js.uid == map_db[i].uid) {
 				mapping = i;
 				js.name = map_db[i].name;
-			};
-		};
+			}
+		}
 		js.mapping = mapping;
 	} else {
 		js.connected = false;
@@ -235,12 +235,12 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 
 			int c = _combine_device(i, p_idx);
 			joy_buttons_pressed.erase(c);
-		};
-	};
+		}
+	}
 	joy_names[p_idx] = js;
 
 	emit_signal("joy_connection_changed", p_idx, p_connected);
-};
+}
 
 Vector3 InputDefault::get_gravity() {
 
@@ -748,6 +748,7 @@ InputDefault::InputDefault() {
 	fallback_mapping = -1;
 
 	String env_mapping = OS::get_singleton()->get_environment("SDL_GAMECONTROLLERCONFIG");
+
 	if (env_mapping != "") {
 
 		Vector<String> entries = env_mapping.split("\n");
@@ -755,54 +756,57 @@ InputDefault::InputDefault() {
 			if (entries[i] == "")
 				continue;
 			parse_mapping(entries[i]);
-		};
-	};
+		}
+	}
 
 	int i = 0;
 	while (s_ControllerMappings[i]) {
 
 		parse_mapping(s_ControllerMappings[i++]);
-	};
+	}
 }
 
 uint32_t InputDefault::joy_button(uint32_t p_last_id, int p_device, int p_button, bool p_pressed) {
 
 	_THREAD_SAFE_METHOD_;
+	ERR_FAIL_INDEX_V(p_button, JOY_BUTTON_MAX + 19, p_last_id);
 	Joystick &joy = joy_names[p_device];
-	//printf("got button %i, mapping is %i\n", p_button, joy.mapping);
+
 	if (joy.last_buttons[p_button] == p_pressed) {
 		return p_last_id;
-		//printf("same button value\n");
 	}
+
 	joy.last_buttons[p_button] = p_pressed;
+
 	if (joy.mapping == -1) {
 		return _button_event(p_last_id, p_device, p_button, p_pressed);
-	};
+	}
 
 	Map<int, JoyEvent>::Element *el = map_db[joy.mapping].buttons.find(p_button);
+
 	if (!el) {
-		//don't process un-mapped events for now, it could mess things up badly for devices with additional buttons/axis
-		//return _button_event(p_last_id, p_device, p_button, p_pressed);
+		// don't process un-mapped events for now, it could mess things up badly for devices with additional buttons/axis
 		return p_last_id;
-	};
+	}
 
 	JoyEvent map = el->get();
+
 	if (map.type == TYPE_BUTTON) {
-		//fake additional axis event for triggers
+		// fake additional axis event for triggers
 		if (map.index == JOY_L2 || map.index == JOY_R2) {
 			float value = p_pressed ? 1.0f : 0.0f;
 			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
 			p_last_id = _axis_event(p_last_id, p_device, axis, value);
 		}
 		return _button_event(p_last_id, p_device, map.index, p_pressed);
-	};
+	}
 
 	if (map.type == TYPE_AXIS) {
 		return _axis_event(p_last_id, p_device, map.index, p_pressed ? 1.0 : 0.0);
-	};
+	}
 
 	return p_last_id; // no event?
-};
+}
 
 uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, const JoyAxis &p_value) {
 
@@ -827,7 +831,7 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 		return p_last_id;
 	}
 
-	//when changing direction quickly, insert fake event to release pending inputmap actions
+	// when changing direction quickly, insert fake event to release pending inputmap actions
 	float last = joy.last_axis[p_axis];
 	if (p_value.min == 0 && (last < 0.25 || last > 0.75) && (last - 0.5) * (p_value.value - 0.5) < 0) {
 		JoyAxis jx;
@@ -846,18 +850,18 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 
 	if (joy.mapping == -1) {
 		return _axis_event(p_last_id, p_device, p_axis, val);
-	};
+	}
 
 	Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
 	if (!el) {
-		//return _axis_event(p_last_id, p_device, p_axis, p_value);
+		// return _axis_event(p_last_id, p_device, p_axis, p_value);
 		return p_last_id;
-	};
+	}
 
 	JoyEvent map = el->get();
 
 	if (map.type == TYPE_BUTTON) {
-		//send axis event for triggers
+		// send axis event for triggers
 		if (map.index == JOY_L2 || map.index == JOY_R2) {
 			float value = p_value.min == 0 ? p_value.value : 0.5f + p_value.value / 2.0f;
 			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
@@ -903,17 +907,17 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 		if (pressed == joy_buttons_pressed.has(_combine_device(map.index, p_device))) {
 			// button already pressed or released, this is an axis bounce value
 			return p_last_id;
-		};
+		}
 		return _button_event(p_last_id, p_device, map.index, pressed);
-	};
+	}
 
 	if (map.type == TYPE_AXIS) {
 
 		return _axis_event(p_last_id, p_device, map.index, val);
-	};
-	//printf("invalid mapping\n");
+	}
+
 	return p_last_id;
-};
+}
 
 uint32_t InputDefault::joy_hat(uint32_t p_last_id, int p_device, int p_val) {
 
@@ -926,28 +930,28 @@ uint32_t InputDefault::joy_hat(uint32_t p_last_id, int p_device, int p_val) {
 		map = hat_map_default;
 	} else {
 		map = map_db[joy.mapping].hat;
-	};
+	}
 
 	int cur_val = joy_names[p_device].hat_current;
 
 	if ((p_val & HAT_MASK_UP) != (cur_val & HAT_MASK_UP)) {
 		p_last_id = _button_event(p_last_id, p_device, map[HAT_UP].index, p_val & HAT_MASK_UP);
-	};
+	}
 
 	if ((p_val & HAT_MASK_RIGHT) != (cur_val & HAT_MASK_RIGHT)) {
 		p_last_id = _button_event(p_last_id, p_device, map[HAT_RIGHT].index, p_val & HAT_MASK_RIGHT);
-	};
+	}
 	if ((p_val & HAT_MASK_DOWN) != (cur_val & HAT_MASK_DOWN)) {
 		p_last_id = _button_event(p_last_id, p_device, map[HAT_DOWN].index, p_val & HAT_MASK_DOWN);
-	};
+	}
 	if ((p_val & HAT_MASK_LEFT) != (cur_val & HAT_MASK_LEFT)) {
 		p_last_id = _button_event(p_last_id, p_device, map[HAT_LEFT].index, p_val & HAT_MASK_LEFT);
-	};
+	}
 
 	joy_names[p_device].hat_current = p_val;
 
 	return p_last_id;
-};
+}
 
 uint32_t InputDefault::_button_event(uint32_t p_last_id, int p_device, int p_index, bool p_pressed) {
 
@@ -961,7 +965,7 @@ uint32_t InputDefault::_button_event(uint32_t p_last_id, int p_device, int p_ind
 	parse_input_event(ievent);
 
 	return p_last_id;
-};
+}
 
 uint32_t InputDefault::_axis_event(uint32_t p_last_id, int p_device, int p_axis, float p_value) {
 
@@ -975,7 +979,7 @@ uint32_t InputDefault::_axis_event(uint32_t p_last_id, int p_device, int p_axis,
 	parse_input_event(ievent);
 
 	return p_last_id;
-};
+}
 
 InputDefault::JoyEvent InputDefault::_find_to_event(String p_to) {
 
@@ -991,14 +995,14 @@ InputDefault::JoyEvent InputDefault::_find_to_event(String p_to) {
 	while (buttons[i]) {
 
 		if (p_to == buttons[i]) {
-			//printf("mapping button %s\n", buttons[i]);
+			// printf("mapping button %s\n", buttons[i]);
 			ret.type = TYPE_BUTTON;
 			ret.index = i;
 			ret.value = 0;
 			return ret;
-		};
+		}
 		++i;
-	};
+	}
 
 	i = 0;
 	while (axis[i]) {
@@ -1008,12 +1012,12 @@ InputDefault::JoyEvent InputDefault::_find_to_event(String p_to) {
 			ret.index = i;
 			ret.value = 0;
 			return ret;
-		};
+		}
 		++i;
-	};
+	}
 
 	return ret;
-};
+}
 
 void InputDefault::parse_mapping(String p_mapping) {
 
@@ -1069,12 +1073,11 @@ void InputDefault::parse_mapping(String p_mapping) {
 				case 8:
 					mapping.hat[HAT_LEFT] = to_event;
 					break;
-			};
-		};
-	};
+			}
+		}
+	}
 	map_db.push_back(mapping);
-	//printf("added mapping with uuid %ls\n", mapping.uid.c_str());
-};
+}
 
 void InputDefault::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	parse_mapping(p_mapping);
@@ -1112,7 +1115,7 @@ void InputDefault::set_fallback_mapping(String p_guid) {
 	}
 }
 
-//Defaults to simple implementation for platforms with a fixed gamepad layout, like consoles.
+// Defaults to simple implementation for platforms with a fixed gamepad layout, like consoles.
 bool InputDefault::is_joy_known(int p_device) {
 
 	return OS::get_singleton()->is_joy_known(p_device);
@@ -1122,7 +1125,7 @@ String InputDefault::get_joy_guid(int p_device) const {
 	return OS::get_singleton()->get_joy_guid(p_device);
 }
 
-//platforms that use the remapping system can override and call to these ones
+// platforms that use the remapping system can override and call to these ones
 bool InputDefault::is_joy_mapped(int p_device) {
 	int mapping = joy_names[p_device].mapping;
 	return mapping != -1 ? (mapping != fallback_mapping) : false;
