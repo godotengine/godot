@@ -91,6 +91,7 @@ private:
 		} else {
 			_noise->remove_meta("_preview_in_3d_space_");
 		}
+		update_preview();
 	}
 
 	void _notification(int p_what) {
