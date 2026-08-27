@@ -230,6 +230,7 @@
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/bone_constraint_3d.h"
+#include "scene/3d/bone_space_adjuster_3d.h"
 #include "scene/3d/bone_twist_disperser_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/ccd_ik_3d.h"
@@ -341,7 +342,6 @@
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
-#include "scene/3d/bone_spreader_3d.h"
 #include "scene/3d/physics/animatable_body_3d.h"
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
@@ -740,7 +740,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SoftBody3D);
 #endif // PHYSICS_3D_DISABLED
 
-	GDREGISTER_CLASS(BoneSpreader3D);
+	GDREGISTER_CLASS(BoneSpaceAdjuster3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
 	GDREGISTER_CLASS(LookAtModifier3D);
 #ifndef DISABLE_DEPRECATED

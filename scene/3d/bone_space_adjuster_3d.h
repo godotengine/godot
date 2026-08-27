@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  bone_spreader_3d.h                                                    */
+/*  bone_space_adjuster_3d.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,14 +32,14 @@
 
 #include "scene/3d/skeleton_modifier_3d.h"
 
-class BoneSpreader3D : public SkeletonModifier3D {
-	GDCLASS(BoneSpreader3D, SkeletonModifier3D);
+class BoneSpaceAdjuster3D : public SkeletonModifier3D {
+	GDCLASS(BoneSpaceAdjuster3D, SkeletonModifier3D);
 
 	const Vector3 INITIAL_SCALE = Vector3(1, 1, 1);
 	bool use_bone_skin_scale_for_all_bones = true;
 
 public:
-	struct BoneSpreader3DSetting {
+	struct BoneSpaceAdjuster3DSetting {
 		StringName bone_name;
 		int bone = -1;
 		bool use_bone_skin_scale = true;
@@ -47,7 +47,7 @@ public:
 	};
 
 protected:
-	LocalVector<BoneSpreader3DSetting> settings;
+	LocalVector<BoneSpaceAdjuster3DSetting> settings;
 
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
