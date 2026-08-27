@@ -64,6 +64,18 @@ public:
 		VISIONOS_XR_SIGNAL_MAX,
 	};
 
+	enum ImmersionStyle {
+		IMMERSION_STYLE_FULL,
+		IMMERSION_STYLE_MIXED,
+		IMMERSION_STYLE_PROGRESSIVE,
+	};
+
+	enum Visibility {
+		VISIBILITY_AUTOMATIC,
+		VISIBILITY_VISIBLE,
+		VISIBILITY_HIDDEN,
+	};
+
 private:
 	bool initialized = false;
 	XRInterface::TrackingStatus tracking_state;
@@ -142,9 +154,16 @@ private:
 		SafeNumeric<uint32_t> cached_render_target_width{ 0 };
 		SafeNumeric<uint32_t> cached_render_target_height{ 0 };
 
+		// Wraps cp_drawable_encode_present in a drawable render context with a no-op pass,
+		// required by Compositor Services when the layer supports progressive immersion.
+		// p_command_buffer is an id<MTLCommandBuffer> bridge-cast to void *, since this header
+		// is included from non-Objective-C++ translation units.
+		static void encode_drawable_no_op_and_present(cp_drawable_t p_drawable, cp_frame_t p_frame, void *p_command_buffer);
+
 	public:
 		void initialize();
 		void uninitialize();
+		void prepare_screen();
 
 		void set_minimum_supported_near_plane(float p_minimum_supported_near_plane);
 		// p_current_frame should be an cp_frame_t pointer casted to uint64_t
@@ -217,6 +236,18 @@ public:
 	virtual XRInterface::PlayAreaMode get_play_area_mode() const override;
 	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
 
+	float get_current_render_quality();
+	void set_current_render_quality(float p_render_quality);
+
+	ImmersionStyle get_immersion_style();
+	void set_immersion_style(ImmersionStyle p_immersion_style);
+
+	Visibility get_upper_limb_visibility();
+	void set_upper_limb_visibility(Visibility p_upper_limb_visibility);
+
+	Visibility get_persistent_system_overlays();
+	void set_persistent_system_overlays(Visibility p_persistent_system_overlays);
+
 	// Methods called from the game thread
 	virtual void process() override;
 	virtual Size2 get_render_target_size() override;
@@ -260,5 +291,8 @@ public:
 		return rt.get_vrs_texture();
 	}
 };
+
+VARIANT_ENUM_CAST(VisionOSXRInterface::ImmersionStyle);
+VARIANT_ENUM_CAST(VisionOSXRInterface::Visibility);
 
 #endif // VISIONOS_ENABLED

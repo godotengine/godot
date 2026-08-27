@@ -48,7 +48,7 @@
 			Interpolation method used to resize application icon.
 		</member>
 		<member name="application/immersion_style" type="int" setter="" getter="">
-			The immersion style, only applicable if you have chosen the [code]Immersive[/code] app role. It can be [code]Full[/code] for a VR experience, or [code]Mixed[/code] for a mixed reality experience where the rendered content is display along with the real environment.
+			Initial immersion style, only applicable if you have chosen the [code]Immersive[/code] app role. It can be [code]Full[/code] for a VR experience; [code]Mixed[/code] for a mixed reality experience where the rendered content is displayed along with the real environment; or [code]Progressive[/code] for a portal style experience where the user controls the immersion level. Change it at runtime with [member VisionOSXRInterface.immersion_style].
 		</member>
 		<member name="application/min_visionos_version" type="String" setter="" getter="">
 		</member>

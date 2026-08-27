@@ -138,7 +138,14 @@ def configure(env: "SConsEnvironment"):
     )
 
     env.Prepend(CPPPATH=["#platform/visionos"])
-    env.Append(CPPDEFINES=["VISIONOS_ENABLED", "APPLE_EMBEDDED_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
+    env.Append(
+        CPPDEFINES=[
+            "VISIONOS_ENABLED",
+            "APPLE_EMBEDDED_ENABLED",
+            "UNIX_ENABLED",
+            "COREAUDIO_ENABLED",
+        ]
+    )
 
     if env["vulkan"]:
         print_warning("The visionOS platform does not support the Vulkan rendering driver")

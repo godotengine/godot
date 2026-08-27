@@ -39,6 +39,9 @@ ios_lib = env_ios.add_library("ios", mm_file_names + list(swift_module))
 if "LIBS_EXTERNAL" in env_ios:
     env_ios.Depends(ios_lib, env_ios["LIBS_EXTERNAL"])
 
+# Build the Swift->ObjC interop header before any ObjC++ source that #imports it.
+env_ios.Depends(ios_lib, env_ios["SWIFT_OBJC_HEADER_TARGET"])
+
 combine_command = env_ios.CommandNoCache(
     "#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib] + env_ios["LIBS"], env.Run(combine_libs_apple_embedded)
 )

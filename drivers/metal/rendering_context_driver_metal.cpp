@@ -420,6 +420,8 @@ public:
 	SurfaceCompositorServices(MTL::Device *p_device) :
 			Surface(p_device) {
 		dummy_framebuffer.set_texture_count(1);
+		// Force the first screen_prepare_for_drawing to call resize() so the swap-chain format gets reported.
+		needs_resize = true;
 	}
 
 	~SurfaceCompositorServices() override {
@@ -431,7 +433,9 @@ public:
 	}
 
 	Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) override final {
-		// Surface cannot be resized in Compositor Services mode
+		// Compositor Services owns the swap chain; just report the format so the engine can initialize.
+		r_format = RDD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		r_color_space = RDD::COLOR_SPACE_REC709_LINEAR;
 		return OK;
 	}
 

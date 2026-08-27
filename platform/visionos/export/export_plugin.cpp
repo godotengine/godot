@@ -59,7 +59,7 @@ void EditorExportPlatformVisionOS::get_export_options(List<ExportOption> *r_opti
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_visionos_version"), get_minimum_deployment_target()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/app_role", PROPERTY_HINT_ENUM, "Window,Immersive"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/immersion_style", PROPERTY_HINT_ENUM, "Full,Mixed"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/immersion_style", PROPERTY_HINT_ENUM, "Full,Mixed,Progressive"), 1));
 
 	// Front layer falls back to the project icon; middle/back use a black placeholder when unset.
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_front_layer_1024x1024", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
@@ -229,6 +229,11 @@ String EditorExportPlatformVisionOS::_process_config_file_line(const Ref<EditorE
 	} else if (p_line.contains("$valid_archs")) {
 		strnew += p_line.replace("$valid_archs", "arm64") + "\n";
 
+		// Application Scene Manifest - Supports Multiple Scenes
+	} else if (p_line.contains("$application_supports_multiple_scenes")) {
+		// visionOS overridden to true to support changing immersion style at runtime.
+		strnew += p_line.replace("$application_supports_multiple_scenes", "<true/>") + "\n";
+
 		// Application Scene Manifest - Default Session Role
 	} else if (p_line.contains("$application_scene_manifest_default_session_role")) {
 		int app_role_enum = (int)p_preset->get("application/app_role");
@@ -260,6 +265,9 @@ String EditorExportPlatformVisionOS::_process_config_file_line(const Ref<EditorE
 				break;
 			case 1: // Mixed
 				initial_immersion_style = "UIImmersionStyleMixed";
+				break;
+			case 2: // Progressive
+				initial_immersion_style = "UIImmersionStyleProgressive";
 				break;
 		}
 
