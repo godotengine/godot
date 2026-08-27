@@ -45,6 +45,7 @@ class ReparentDialog;
 class Shader;
 class ShaderCreateDialog;
 class ShaderMaterial;
+class StyleBoxFlat;
 class TextureRect;
 class VBoxContainer;
 
@@ -99,6 +100,10 @@ class SceneTreeDock : public EditorDock {
 	enum {
 		EDIT_SUBRESOURCE_BASE = 100
 	};
+
+	struct ThemeCache {
+		Ref<StyleBoxFlat> item_highlight;
+	} theme_cache;
 
 	Vector<ObjectID> subresources;
 
@@ -245,9 +250,14 @@ class SceneTreeDock : public EditorDock {
 	Object *edited_object_at_drag_start = nullptr;
 	bool scene_tree_drag_active = false;
 
+	ObjectID highlighted_item;
+	float highlight_timer = 0;
+
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _scene_tree_gui_input(Ref<InputEvent> p_event);
+	void _scene_tree_draw();
+	void _scene_tree_item_selected();
 
 	void _new_scene_from(const String &p_file);
 	void _set_node_owner_recursive(Node *p_node, Node *p_owner, const HashMap<const Node *, Node *> &p_inverse_duplimap);
@@ -257,6 +267,7 @@ class SceneTreeDock : public EditorDock {
 	void _selection_changed();
 	void _update_script_button();
 	void _queue_update_script_button();
+	void _cancel_highlight();
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, HashMap<Node *, NodePath> *p_renames);
 	bool _has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const;
@@ -335,6 +346,7 @@ public:
 	void clear_previous_node_selection();
 	void set_selection(const Vector<Node *> &p_nodes);
 	void set_selected(Node *p_node, bool p_emit_selected = false);
+	void highlight_node(Node *p_node);
 	void fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<Node *, NodePath> *p_renames);
 	void perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims = nullptr, LocalVector<Pair<StringName, StringName>> *r_folded_group_renames = nullptr);
 	void perform_node_replace(Node *p_base, Node *p_node, Node *p_by_node);
