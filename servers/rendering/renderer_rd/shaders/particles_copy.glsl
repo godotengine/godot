@@ -199,7 +199,6 @@ void main() {
 						oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c);
 				vec3 new_up = rotated * params.align_up;
 				mat3 local = mat3(normalize(cross(new_up, params.sort_direction)), new_up, params.sort_direction);
-				local = local * mat3(txform);
 				txform[0].xyz = local[0];
 				txform[1].xyz = local[1];
 				txform[2].xyz = local[2];
