@@ -4435,9 +4435,9 @@ void DisplayServerWindows::_reconcile_shift_state(DisplayServerEnums::WindowID p
 	}
 }
 
-void DisplayServerWindows::process_raw_input() {
+bool DisplayServerWindows::process_raw_input() {
 	if (!use_raw_input) {
-		return;
+		return true;
 	}
 
 	// Use the same window the mouse is captured for in _set_mouse_mode_impl(),
@@ -4453,6 +4453,7 @@ void DisplayServerWindows::process_raw_input() {
 	UINT raw_mouse_events = 0;
 	Vector2 coalesced_raw_mouse_motion;
 	bool coalesced_raw_mouse_left_button_down = false;
+	bool has_touch_events = false;
 	const bool coalesce_all_raw_mouse_motion = Input::get_singleton()->is_using_accumulated_input();
 	auto flush_coalesced_raw_mouse_motion = [&]() {
 		_process_raw_mouse_motion(coalesced_raw_mouse_motion, coalesced_raw_mouse_left_button_down, window_id);
@@ -4470,7 +4471,7 @@ void DisplayServerWindows::process_raw_input() {
 		// message (the minimum required buffer), not a message count.
 		if (GetRawInputBuffer(nullptr, &n_buffer, sizeof(RAWINPUTHEADER)) != 0 || n_buffer == 0) {
 			flush_coalesced_raw_mouse_motion();
-			return;
+			return has_touch_events;
 		}
 
 		UINT dw_size = n_buffer * sizeof(RAWINPUT);
@@ -4481,7 +4482,7 @@ void DisplayServerWindows::process_raw_input() {
 		if (n_read == (UINT)-1 || n_read == 0) {
 			delete[] lpb;
 			flush_coalesced_raw_mouse_motion();
-			return;
+			return has_touch_events;
 		}
 
 		PRAWINPUT raw = (PRAWINPUT)lpb;
@@ -4496,6 +4497,11 @@ void DisplayServerWindows::process_raw_input() {
 				_process_raw_input_event(*raw, window_id);
 			}
 			if (raw->header.dwType == RIM_TYPEMOUSE) {
+				constexpr ULONG MI_WP_SIGNATURE = 0xFF515700;
+				constexpr ULONG SIGNATURE_MASK = 0xFFFFFF00;
+				if ((raw->data.mouse.ulExtraInformation & SIGNATURE_MASK) == MI_WP_SIGNATURE) {
+					has_touch_events = true;
+				}
 				raw_mouse_events++;
 			}
 			// Move to next RAWINPUT in buffer.
@@ -4503,6 +4509,7 @@ void DisplayServerWindows::process_raw_input() {
 		}
 		delete[] lpb;
 	}
+	return has_touch_events;
 }
 
 void DisplayServerWindows::process_events() {
@@ -4518,7 +4525,7 @@ void DisplayServerWindows::process_events() {
 
 	_THREAD_SAFE_LOCK_
 
-	process_raw_input();
+	bool has_touch_events = process_raw_input();
 
 	// The pump throttles only what the hardware can flood, and drains the rest.
 	// See <https://ph3at.github.io/posts/Windows-Input/> for more information.
@@ -4553,17 +4560,26 @@ void DisplayServerWindows::process_events() {
 		}
 		return ret;
 	};
-	while (peek_discrete()) {
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
-	}
-	if (PeekMessageW(&msg, nullptr, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) {
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
-	}
-	if (PeekMessageW(&msg, nullptr, WM_NCMOUSEMOVE, WM_NCMOUSEMOVE, PM_REMOVE)) {
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
+	if (has_touch_events) {
+		// Process all messages.
+		while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+	} else {
+		// Process non-mouse move messages.
+		while (peek_discrete()) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+		if (PeekMessageW(&msg, nullptr, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+		if (PeekMessageW(&msg, nullptr, WM_NCMOUSEMOVE, WM_NCMOUSEMOVE, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
 	}
 	_reconcile_shift_state(_get_focused_window_or_popup());
 	_THREAD_SAFE_UNLOCK_
