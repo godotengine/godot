@@ -187,6 +187,7 @@ private:
 		bool use_custom_word_separators = false;
 		Callable inline_object_parser;
 		Callable style_parser;
+		Callable bidi_override_parser;
 
 		mutable bool max_line_width_dirty = true;
 		mutable bool max_line_height_dirty = true;
@@ -213,6 +214,7 @@ private:
 		void set_draw_control_chars(bool p_enabled);
 		void set_inline_object_parser(const Callable &p_parser);
 		void set_style_parser(const Callable &p_parser);
+		void set_bidi_override_parser(const Callable &p_parser) { bidi_override_parser = p_parser; }
 		void set_visible_character_limit(int p_visible_characters);
 
 		int get_line_height() const;
@@ -343,6 +345,7 @@ private:
 
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
+	Array _parse_structured_text(const String &p_text) const;
 
 	void _clear();
 	void _update_caches(bool p_invalidate_all = false);

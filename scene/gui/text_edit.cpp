@@ -389,7 +389,7 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 		for (int i = 0; i < p_line; i++) {
 			line_character_offset += text[i].data.length() + 1; // Include the newline between TextEdit lines.
 		}
-		int remaining_characters = visible_character_limit - line_character_offset;
+		int remaining_characters = visible_character_limit >= 0 ? MAX(0, visible_character_limit - line_character_offset) : -1;
 		Array object_infos;
 		if (inline_object_parser.is_valid()) {
 			// Insert inline object.
@@ -498,9 +498,12 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 	}
 	if (!bidi_override_with_ime.is_empty()) {
 		TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), bidi_override_with_ime);
-		if (text_line.data_buf_disp.is_valid()) {
-			TS->shaped_text_set_bidi_override(text_line.data_buf_disp->get_rid(), bidi_override_with_ime);
-		}
+	}
+	if (text_line.data_buf_disp.is_valid()) {
+		// BiDi ranges must describe the visible prefix, not the untruncated line.
+		// Reparse it so structured text and custom parsers retain their behavior.
+		const String display_text = text_with_ime.substr(0, text_line.data_buf_disp->get_range().y);
+		text_line.data_buf_disp->set_bidi_override(bidi_override_parser.call(display_text));
 	}
 
 	if (!p_text_changed) {
@@ -10348,9 +10351,14 @@ void TextEdit::_draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const
 	}
 }
 
+Array TextEdit::_parse_structured_text(const String &p_text) const {
+	return structured_text_parser(st_parser, st_args, p_text);
+}
+
 TextEdit::TextEdit(const String &p_placeholder) {
 	placeholder_data_buf.instantiate();
 	carets.push_back(Caret());
+	text.set_bidi_override_parser(callable_mp(this, &TextEdit::_parse_structured_text));
 
 	clear();
 	set_focus_mode(FOCUS_ALL);
