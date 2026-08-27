@@ -857,16 +857,22 @@
 		</method>
 		<method name="get_display_cutouts" qualifiers="const">
 			<return type="Rect2[]" />
+			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns an [Array] of [Rect2], each of which is the bounding rectangle for a display cutout or notch. These are non-functional areas on edge-to-edge screens used by cameras and sensors. Returns an empty array if the device does not have cutouts. See also [method get_display_safe_area].
-				[b]Note:[/b] Currently only implemented on Android. Other platforms will return an empty array even if they do have display cutouts or notches.
+				[b]Note:[/b] The returned rectangles are relative to the physical screen and not the virtual desktop.
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
+				[b]Note:[/b] Currently only implemented on Android and macOS. Other platforms will return an empty array even if they do have display cutouts or notches.
 			</description>
 		</method>
 		<method name="get_display_safe_area" qualifiers="const">
 			<return type="Rect2i" />
+			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the unobscured area of the display where interactive controls should be rendered. See also [method get_display_cutouts].
-				[b]Note:[/b] Currently only implemented on Android and iOS. On other platforms, [code]screen_get_usable_rect(SCREEN_OF_MAIN_WINDOW)[/code] will be returned as a fallback. See also [method screen_get_usable_rect].
+				[b]Note:[/b] The returned rectangle is relative to the physical screen and not the virtual desktop.
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
+				[b]Note:[/b] Currently only implemented on Android, iOS, and macOS. On other platforms, [code]screen_get_usable_rect(SCREEN_OF_MAIN_WINDOW)[/code] will be returned as a fallback. See also [method screen_get_usable_rect].
 			</description>
 		</method>
 		<method name="get_keyboard_focus_screen" qualifiers="const">
@@ -1576,6 +1582,14 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="hide_toast_notification">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Hides the toast notification with [param id] returned by [method send_toast_notification].
+				[b]Note:[/b] This method is only implemented on Windows.
+			</description>
+		</method>
 		<method name="ime_get_selection" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
@@ -1785,9 +1799,8 @@
 		<method name="screen_get_max_scale" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the greatest scale factor of all screens.
-				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Returns the greatest scale factor of all screens. See also [method screen_get_scale].
+				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
 			</description>
 		</method>
 		<method name="screen_get_orientation" qualifiers="const">
@@ -1844,11 +1857,11 @@
 			<return type="float" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the scale factor of the specified screen by index. Returns [code]1.0[/code] if [param screen] is invalid.
+				Returns the scale factor of the specified screen by index. Returns [code]1.0[/code] if [param screen] is invalid. See also [method screen_get_max_scale].
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] for hiDPI (Retina) screens, and [code]1.0[/code] for all other cases.
 				[b]Note:[/b] On Linux (Wayland), the returned value is accurate only when [param screen] is [constant SCREEN_OF_MAIN_WINDOW]. Due to API limitations, passing a direct index will return a rounded-up integer, if the screen has a fractional scale (e.g. [code]1.25[/code] would get rounded up to [code]2.0[/code]).
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, and Linux (Wayland). On other platforms, this method always returns [code]1.0[/code].
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, Linux, and Windows. On other platforms, this method always returns [code]1.0[/code].
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">
@@ -1890,6 +1903,17 @@
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 				[b]Note:[/b] This method is implemented on Android and iOS.
 				[b]Note:[/b] On iOS, this method has no effect if [member ProjectSettings.display/window/handheld/orientation] is not set to [constant SCREEN_SENSOR].
+			</description>
+		</method>
+		<method name="send_toast_notification">
+			<return type="int" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="text" type="String" />
+			<param index="2" name="image" type="Texture2D" />
+			<param index="3" name="callback" type="Callable" />
+			<description>
+				Displays a toast notification with [param title], [param text], and optionally [param image]. [param image] should be square, have a maximum edge length of 512 pixels, and should not exceed 4 MB when encoded as PNG. [param callback] should accept two arguments: [int] (notification ID) and [enum NotificationStatus]. Returns the notification ID or [constant INVALID_NOTIFICATION_ID] if it failed.
+				[b]Note:[/b] This method is only implemented on Windows.
 			</description>
 		</method>
 		<method name="set_hardware_keyboard_connection_change_callback">
@@ -3142,6 +3166,9 @@
 		<constant name="INVALID_INDICATOR_ID" value="-1">
 			The ID that refers to a nonexistent application status indicator.
 		</constant>
+		<constant name="INVALID_NOTIFICATION_ID" value="-1">
+			The ID that refers to a nonexistent toast notification.
+		</constant>
 		<constant name="SCREEN_LANDSCAPE" value="0" enum="ScreenOrientation">
 			Default landscape orientation.
 		</constant>
@@ -3423,6 +3450,15 @@
 		</constant>
 		<constant name="WINDOW_EDGE_MAX" value="8" enum="WindowResizeEdge">
 			Represents the size of the [enum WindowResizeEdge] enum.
+		</constant>
+		<constant name="NOTIFICATION_ACTIVATED" value="0" enum="NotificationStatus">
+			User activates a toast notification through a click or touch.
+		</constant>
+		<constant name="NOTIFICATION_DISMISSED" value="1" enum="NotificationStatus">
+			A toast notification expires or is explicitly dismissed by the user.
+		</constant>
+		<constant name="NOTIFICATION_FAILED" value="2" enum="NotificationStatus">
+			Attempts to raise a toast notification failed.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
 			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).

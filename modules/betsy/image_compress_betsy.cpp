@@ -331,22 +331,25 @@ void BetsyCompressor::finish() {
 
 // Helper functions.
 
-static int get_next_multiple(int n, int m) {
-	return n + (m - (n % m));
-}
+static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool &r_convert_rgb_to_rgba, RD::TextureView &r_view) {
+	r_convert_rgb_to_rgba = false;
 
-static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool &r_is_rgb) {
-	r_is_rgb = false;
-
+	// The code for RGB formats is commented-out for now since it didn't lead to noticeable improvements.
 	switch (r_img->get_format()) {
 		case Image::FORMAT_L8:
-			r_img->convert(Image::FORMAT_RGBA8);
-			r_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			r_view.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_g = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_b = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+			r_format = RD::DATA_FORMAT_R8_UNORM;
 			break;
 
 		case Image::FORMAT_LA8:
-			r_img->convert(Image::FORMAT_RGBA8);
-			r_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			r_view.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_g = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_b = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_a = RD::TEXTURE_SWIZZLE_G;
+			r_format = RD::DATA_FORMAT_R8G8_UNORM;
 			break;
 
 		case Image::FORMAT_R8:
@@ -358,12 +361,24 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool
 			break;
 
 		case Image::FORMAT_RGB8:
-			r_is_rgb = true;
-			r_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			r_convert_rgb_to_rgba = true; // !RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R8G8B8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT);
+			r_format = r_convert_rgb_to_rgba ? RD::DATA_FORMAT_R8G8B8A8_UNORM : RD::DATA_FORMAT_R8G8B8_UNORM;
 			break;
 
 		case Image::FORMAT_RGBA8:
 			r_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+			break;
+
+		case Image::FORMAT_RGBA4444:
+			r_view.swizzle_r = RD::TEXTURE_SWIZZLE_B;
+			r_view.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_view.swizzle_b = RD::TEXTURE_SWIZZLE_R;
+			r_view.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+			r_format = RD::DATA_FORMAT_B4G4R4A4_UNORM_PACK16;
+			break;
+
+		case Image::FORMAT_RGB565:
+			r_format = RD::DATA_FORMAT_R5G6B5_UNORM_PACK16;
 			break;
 
 		case Image::FORMAT_RH:
@@ -375,8 +390,8 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool
 			break;
 
 		case Image::FORMAT_RGBH:
-			r_is_rgb = true;
-			r_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			r_convert_rgb_to_rgba = true; //!RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R16G16B16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT);
+			r_format = r_convert_rgb_to_rgba ? RD::DATA_FORMAT_R16G16B16A16_SFLOAT : RD::DATA_FORMAT_R16G16B16_SFLOAT;
 			break;
 
 		case Image::FORMAT_RGBAH:
@@ -392,8 +407,8 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool
 			break;
 
 		case Image::FORMAT_RGBF:
-			r_is_rgb = true;
-			r_format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+			r_convert_rgb_to_rgba = true; //!RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R32G32B32_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT);
+			r_format = r_convert_rgb_to_rgba ? RD::DATA_FORMAT_R32G32B32A32_SFLOAT : RD::DATA_FORMAT_R32G32B32_SFLOAT;
 			break;
 
 		case Image::FORMAT_RGBAF:
@@ -413,8 +428,8 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format, bool
 			break;
 
 		case Image::FORMAT_RGB16:
-			r_is_rgb = true;
-			r_format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
+			r_convert_rgb_to_rgba = true; //!RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_R16G16B16_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT);
+			r_format = r_convert_rgb_to_rgba ? RD::DATA_FORMAT_R16G16B16A16_UNORM : RD::DATA_FORMAT_R16G16B16_UNORM;
 			break;
 
 		case Image::FORMAT_RGBA16:
@@ -441,11 +456,12 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		return ERR_INVALID_DATA;
 	}
 
-	int img_width = r_img->get_width();
-	int img_height = r_img->get_height();
-	if (img_width % 4 != 0 || img_height % 4 != 0) {
-		img_width = img_width <= 2 ? img_width : (img_width + 3) & ~3;
-		img_height = img_height <= 2 ? img_height : (img_height + 3) & ~3;
+	int img_width = (r_img->get_width() + 3) & ~0x03;
+	int img_height = (r_img->get_height() + 3) & ~0x03;
+
+	if (r_img->get_width() != img_width || r_img->get_height() != img_height) {
+		// Align the image to 4x4 texels.
+		r_img->resize(img_width, img_height, Image::INTERPOLATE_NEAREST);
 	}
 
 	Error err = OK;
@@ -478,11 +494,12 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		src_texture_format.depth = 1;
 		src_texture_format.mipmaps = 1;
 		src_texture_format.texture_type = RD::TEXTURE_TYPE_2D;
-		src_texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		src_texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	}
 
+	RD::TextureView src_texture_view;
 	bool needs_rgb_to_rgba = false;
-	err = get_src_texture_format(r_img, src_texture_format.format, needs_rgb_to_rgba);
+	err = get_src_texture_format(r_img, src_texture_format.format, needs_rgb_to_rgba, src_texture_view);
 
 	if (err != OK) {
 		return err;
@@ -490,7 +507,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 	// For the destination format just copy the source format and change the usage bits.
 	RD::TextureFormat dst_texture_format = src_texture_format;
-	dst_texture_format.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+	dst_texture_format.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 	dst_texture_format.format = dst_rd_format;
 
 	RD::TextureFormat dst_texture_format_alpha;
@@ -549,39 +566,6 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 		dst_texture_format.height = (height + 3) >> 2;
 		dst_texture_format.width = (width + 3) >> 2;
 
-		// Pad textures to nearest block by smearing.
-		if (width != src_mip_w || height != src_mip_h) {
-			const uint8_t *src_mip_read = r_img->ptr() + src_mip_ofs;
-
-			// Reserve the buffer for padded image data.
-			int px_size = Image::get_format_pixel_size(r_img->get_format());
-			src_image_ptr[0].resize(width * height * px_size);
-			uint8_t *ptrw = src_image_ptr[0].ptrw();
-
-			int x = 0, y = 0;
-			for (y = 0; y < src_mip_h; y++) {
-				for (x = 0; x < src_mip_w; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, src_mip_read + (src_mip_w * y + x) * px_size, px_size);
-				}
-
-				// First, smear in x.
-				for (; x < width; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - 1) * px_size, px_size);
-				}
-			}
-
-			// Then, smear in y.
-			for (; y < height; y++) {
-				for (x = 0; x < width; x++) {
-					memcpy(ptrw + (width * y + x) * px_size, ptrw + (width * y + x - width) * px_size, px_size);
-				}
-			}
-		} else {
-			// Create a buffer filled with the source mip layer data.
-			src_image_ptr[0].resize(src_mip_size);
-			memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
-		}
-
 		// Create the textures on the GPU.
 		RID src_texture;
 		RID dst_texture_primary = compress_rd->texture_create(dst_texture_format, RD::TextureView());
@@ -609,11 +593,11 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 			}
 
 			// The source 'RGB' buffer.
-			RID source_buffer = compress_rd->storage_buffer_create(src_image_ptr[0].size(), src_image_ptr[0].span());
+			RID source_buffer = compress_rd->storage_buffer_create(src_mip_size, Span<uint8_t>(r_img->ptr() + src_mip_ofs, src_mip_size));
 
 			RD::TextureFormat rgba_texture_format = src_texture_format;
-			rgba_texture_format.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-			src_texture = compress_rd->texture_create(rgba_texture_format, RD::TextureView());
+			rgba_texture_format.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+			src_texture = compress_rd->texture_create(rgba_texture_format, src_texture_view);
 
 			Vector<RD::Uniform> uniforms;
 			{
@@ -647,13 +631,17 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 			push_constant.height = height;
 
 			compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(RGBToRGBAPushConstant));
-			compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 8) / 8, get_next_multiple(height, 8) / 8, 1);
+			compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 8), Math::division_round_up(height, 8), 1);
 
 			compress_rd->compute_list_end();
 
 			compress_rd->free_rid(source_buffer);
 		} else {
-			src_texture = compress_rd->texture_create(src_texture_format, RD::TextureView(), src_images);
+			// Create a buffer filled with the source mip layer data.
+			src_image_ptr[0].resize(src_mip_size);
+			memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + src_mip_ofs, src_mip_size);
+
+			src_texture = compress_rd->texture_create(src_texture_format, src_texture_view, src_images);
 		}
 
 		{
@@ -698,7 +686,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					push_constant.sizeY = 1.0f / height;
 
 					compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC6PushConstant));
-					compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+					compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 32), Math::division_round_up(height, 32), 1);
 				} break;
 
 				case BETSY_SHADER_BC1_STANDARD: {
@@ -706,7 +694,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					push_constant.num_refines = 2;
 
 					compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC1PushConstant));
-					compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+					compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 32), Math::division_round_up(height, 32), 1);
 				} break;
 
 				case BETSY_SHADER_BC4_UNSIGNED: {
@@ -714,7 +702,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 					push_constant.channel_idx = 0;
 
 					compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC4PushConstant));
-					compress_rd->compute_list_dispatch(compute_list, 1, get_next_multiple(width, 16) / 16, get_next_multiple(height, 16) / 16);
+					compress_rd->compute_list_dispatch(compute_list, 1, Math::division_round_up(width, 16), Math::division_round_up(height, 16));
 				} break;
 
 				default: {
@@ -768,7 +756,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 				push_constant.channel_idx = dest_format == Image::FORMAT_DXT5 ? 3 : 1;
 
 				compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(BC4PushConstant));
-				compress_rd->compute_list_dispatch(compute_list, 1, get_next_multiple(width, 16) / 16, get_next_multiple(height, 16) / 16);
+				compress_rd->compute_list_dispatch(compute_list, 1, Math::division_round_up(width, 16), Math::division_round_up(height, 16));
 
 				compress_rd->compute_list_end();
 			}
@@ -814,7 +802,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 				compress_rd->compute_list_bind_compute_pipeline(compute_list, stitch_shader.pipeline);
 				compress_rd->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
-				compress_rd->compute_list_dispatch(compute_list, get_next_multiple(width, 32) / 32, get_next_multiple(height, 32) / 32, 1);
+				compress_rd->compute_list_dispatch(compute_list, Math::division_round_up(width, 32), Math::division_round_up(height, 32), 1);
 
 				compress_rd->compute_list_end();
 

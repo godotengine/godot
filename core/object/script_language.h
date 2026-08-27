@@ -41,6 +41,10 @@ class ScriptLanguage;
 template <typename T>
 class TypedArray;
 
+#ifdef TOOLS_ENABLED
+class EditorLanguage;
+#endif // TOOLS_ENABLED
+
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
 class ScriptServer {
@@ -173,7 +177,7 @@ public:
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
-	virtual bool is_valid() const = 0;
+	virtual bool is_script_valid() const = 0;
 	virtual bool is_abstract() const = 0;
 
 	virtual ScriptLanguage *get_language() const = 0;
@@ -221,24 +225,10 @@ public:
 	virtual void finish() = 0;
 
 	/* EDITOR FUNCTIONS */
-	struct Warning {
-		/// One-based.
-		int start_line = 0;
-		/// One-based.
-		int end_line = 0;
-		int code;
-		String string_code;
-		String message;
-	};
-
-	struct ScriptError {
-		String path;
-		/// One-based.
-		int line = -1;
-		/// One-based.
-		int column = -1;
-		String message;
-	};
+#ifdef TOOLS_ENABLED
+	// Must not return `nullptr`. `EditorLanguage` can be used as default implementation for languages without editor support.
+	virtual EditorLanguage *get_editor_language() = 0;
+#endif // TOOLS_ENABLED
 
 	enum TemplateLocation {
 		TEMPLATE_BUILT_IN,
@@ -267,7 +257,6 @@ public:
 		}
 	};
 
-	void get_core_type_words(List<String> *p_core_type_words) const;
 	virtual Vector<String> get_reserved_words() const = 0;
 	virtual bool is_control_flow_keyword(const String &p_string) const = 0;
 	virtual Vector<String> get_comment_delimiters() const = 0;
@@ -276,12 +265,10 @@ public:
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }
 	virtual bool can_inherit_from_file() const { return false; }
-	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const = 0;
 	virtual bool can_make_function() const { return true; }
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
@@ -360,54 +347,6 @@ public:
 		TypedArray<int> charac;
 	};
 
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
-
-	enum LookupResultType {
-		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.
-		LOOKUP_RESULT_CLASS,
-		LOOKUP_RESULT_CLASS_CONSTANT,
-		LOOKUP_RESULT_CLASS_PROPERTY,
-		LOOKUP_RESULT_CLASS_METHOD,
-		LOOKUP_RESULT_CLASS_SIGNAL,
-		LOOKUP_RESULT_CLASS_ENUM,
-		LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE, // Deprecated.
-		LOOKUP_RESULT_CLASS_ANNOTATION,
-		LOOKUP_RESULT_LOCAL_CONSTANT,
-		LOOKUP_RESULT_LOCAL_VARIABLE,
-		LOOKUP_RESULT_MAX,
-	};
-
-	struct LookupResult {
-		LookupResultType type;
-
-		// For `CLASS_*`.
-		String class_name;
-		String class_member;
-
-		// For `LOCAL_*`.
-		String description;
-		bool is_deprecated = false;
-		String deprecated_message;
-		bool is_experimental = false;
-		String experimental_message;
-
-		// For `LOCAL_*`.
-		String doc_type;
-		String enumeration;
-		bool is_bitfield = false;
-
-		// For `LOCAL_*`.
-		String value;
-
-		// `SCRIPT_LOCATION` and `LOCAL_*` must have, `CLASS_*` can have.
-		Ref<Script> script;
-		String script_path;
-		int location = -1;
-	};
-
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
-
-	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) {}
 	virtual void remove_named_global_constant(const StringName &p_name) {}
@@ -439,11 +378,10 @@ public:
 	virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
 
 	virtual void reload_all_scripts() = 0;
-	virtual void reload_scripts(const Array &p_scripts, bool p_soft_reload) = 0;
-	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) = 0;
+	virtual void reload_scripts(const Array &p_scripts) = 0;
+	virtual void reload_tool_script(const Ref<Script> &p_script) = 0;
 	/* LOADER FUNCTIONS */
 
-	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const = 0;
 	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const = 0;
 	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const = 0;

@@ -95,18 +95,18 @@ class GodotHingeJoint3D : public GodotJoint3D {
 	real_t m_appliedImpulse = 0.0;
 
 public:
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_HINGE; }
+	virtual PS3DE::JointType get_type() const override { return PS3DE::JOINT_TYPE_HINGE; }
 
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
 
 	real_t get_hinge_angle();
 
-	void set_param(PhysicsServer3D::HingeJointParam p_param, real_t p_value);
-	real_t get_param(PhysicsServer3D::HingeJointParam p_param) const;
+	void set_param(PS3DE::HingeJointParam p_param, real_t p_value);
+	real_t get_param(PS3DE::HingeJointParam p_param) const;
 
-	void set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_value);
-	bool get_flag(PhysicsServer3D::HingeJointFlag p_flag) const;
+	void set_flag(PS3DE::HingeJointFlag p_flag, bool p_value);
+	bool get_flag(PS3DE::HingeJointFlag p_flag) const;
 
 	GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &frameA, const Transform3D &frameB);
 	GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB, const Vector3 &axisInA, const Vector3 &axisInB);

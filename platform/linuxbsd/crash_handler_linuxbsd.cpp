@@ -93,10 +93,10 @@ static void handle_crash(int sig) {
 
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
-	String _execpath = OS::get_singleton()->get_executable_path();
+	String exec_path = OS::get_singleton()->get_executable_path();
 
-	if (FileAccess::exists(_execpath + ".debugsymbols")) {
-		_execpath = _execpath + ".debugsymbols";
+	if (FileAccess::exists(exec_path + ".debugsymbols")) {
+		exec_path = exec_path + ".debugsymbols";
 	}
 
 	String msg;
@@ -151,7 +151,7 @@ static void handle_crash(int sig) {
 			args.push_back(str);
 		}
 		args.push_back("-e");
-		args.push_back(_execpath);
+		args.push_back(exec_path);
 		args.push_back("-f");
 		args.push_back("-p");
 		args.push_back("-C");

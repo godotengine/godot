@@ -320,6 +320,9 @@
 		<member name="docks/scene_tree/center_node_on_reparent" type="bool" setter="" getter="">
 			If [code]true[/code], new node created when reparenting node(s) will be positioned at the average position of the selected node(s).
 		</member>
+		<member name="docks/scene_tree/derive_script_globals_by_name" type="bool" setter="" getter="">
+			If [code]true[/code], when extending a script, the global class name of the script is inserted in the script creation dialog, if it exists. If [code]false[/code], the script's file path is always inserted.
+		</member>
 		<member name="docks/scene_tree/hide_filtered_out_parents" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will only show nodes that match the filter, without showing parents that don't. This settings can also be changed in the Scene dock's top menu.
 		</member>
@@ -986,6 +989,9 @@
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
 			Specific to the macOS platform.
 		</member>
+		<member name="interface/editor/appearance/max_sticky_tree_items" type="int" setter="" getter="">
+			The maximum number of tree items allowed to stick to the top while its children are in view. A value of [code]0[/code] disables sticking.
+		</member>
 		<member name="interface/editor/appearance/project_manager_screen" type="int" setter="" getter="">
 			The preferred monitor to display the project manager.
 		</member>
@@ -1048,6 +1054,9 @@
 		</member>
 		<member name="interface/editor/docks/dock_tab_style" type="int" setter="" getter="">
 			Tab style of editor docks, except bottom docks.
+		</member>
+		<member name="interface/editor/docks/main_screen_dock_tab_style" type="int" setter="" getter="">
+			Tab style of editor docks located at the editor's main screen.
 		</member>
 		<member name="interface/editor/fonts/code_font" type="String" setter="" getter="">
 			The font to use for the script editor. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
@@ -1129,9 +1138,6 @@
 		<member name="interface/editor/timers/unfocused_low_processor_mode_sleep_usec" type="int" setter="" getter="">
 			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 10 FPS when the editor window is unfocused. See also [member interface/editor/timers/low_processor_mode_sleep_usec].
 			[b]Note:[/b] This setting is ignored if [member interface/editor/display/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
-		</member>
-		<member name="interface/editors/derive_script_globals_by_name" type="bool" setter="" getter="">
-			If [code]true[/code], when extending a script, the global class name of the script is inserted in the script creation dialog, if it exists. If [code]false[/code], the script's file path is always inserted.
 		</member>
 		<member name="interface/inspector/auto_unfold_foreign_scenes" type="bool" setter="" getter="">
 			If [code]true[/code], automatically unfolds Inspector property groups containing modified values when opening a scene for the first time. Only affects scenes without saved folding preferences and only unfolds groups with properties that have been changed from their default values.
@@ -1529,6 +1535,9 @@
 		<member name="text_editor/behavior/general/empty_selection_clipboard" type="bool" setter="" getter="">
 			If [code]true[/code], copying or cutting without a selection is performed on all lines with a caret. Otherwise, copy and cut require a selection.
 		</member>
+		<member name="text_editor/behavior/general/find_in_file_extensions" type="PackedStringArray" setter="" getter="">
+			Text-based file extensions to include in the editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
+		</member>
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.
 		</member>
@@ -1751,6 +1760,9 @@
 		<member name="text_editor/theme/highlighting/engine_type_color" type="Color" setter="" getter="">
 			The script editor's engine type color ([Object], [Mesh], [Node], ...).
 		</member>
+		<member name="text_editor/theme/highlighting/error_underline_color" type="Color" setter="" getter="">
+			The script editor's color for the squiggly lines shown under code producing errors.
+		</member>
 		<member name="text_editor/theme/highlighting/executing_line_color" type="Color" setter="" getter="">
 			The script editor's color for the debugger's executing line icon (displayed in the gutter).
 		</member>
@@ -1832,6 +1844,9 @@
 		</member>
 		<member name="text_editor/theme/highlighting/warning_color" type="Color" setter="" getter="">
 			The script editor's background color for lines with warnings. This should be set to a translucent color so that it can display on top of other line color modifiers such as [member text_editor/theme/highlighting/current_line_color].
+		</member>
+		<member name="text_editor/theme/highlighting/warning_underline_color" type="Color" setter="" getter="">
+			The script editor's color for the squiggly lines shown under code producing warnings.
 		</member>
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].

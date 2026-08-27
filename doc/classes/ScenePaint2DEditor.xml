@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScenePaint2DEditor" inherits="Control" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Class for interacting with the 2D editor's Scene Paint Mode.
+	</brief_description>
+	<description>
+		This class is available only in the editor and cannot be instantiated. Access it using [method EditorInterface.get_scene_paint_2d].
+		It provides methods for editor plugins to interact with the scene painting tool.
+		Plugins can register custom scene providers, and set the scene to be painted.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_painted_scene" qualifiers="const">
+			<return type="Node2D" />
+			<description>
+				Returns the painted scene, or [code]null[/code] if none is selected. The returned scene's properties can be edited.
+				[b]Warning:[/b] Removing and freeing this node will render the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="register_scene_provider">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Registers a custom scene provider.
+				When the scene picker tool is active and the user clicks on [param control], the [param callback] is invoked and must return a [Node2D].
+				The returned scene becomes the new painting sample.
+			</description>
+		</method>
+		<method name="set_painted_scene">
+			<return type="void" />
+			<param index="0" name="scene" type="Node2D" />
+			<description>
+				Sets the scene sample to be painted.
+			</description>
+		</method>
+		<method name="unregister_scene_provider">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<description>
+				Removes a previously registered scene provider.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -114,7 +114,7 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 				return !was_freed;
 			}
 
-			if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
+			if (!obj->is_class(native_type)) {
 				return false;
 			}
 			return true;
@@ -285,27 +285,6 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 	return resume(arg);
 }
 
-bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
-	if (function == nullptr) {
-		return false;
-	}
-
-	if (p_extended_check) {
-		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
-
-		// Script gone?
-		if (!scripts_list.in_list()) {
-			return false;
-		}
-		// Class instance gone? (if not static function)
-		if (state.instance && !instances_list.in_list()) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	ERR_FAIL_NULL_V(function, Variant());
 	{
@@ -362,8 +341,6 @@ void GDScriptFunctionState::_clear_connections() {
 }
 
 void GDScriptFunctionState::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("resume", "arg"), &GDScriptFunctionState::resume, DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("is_valid", "extended_check"), &GDScriptFunctionState::is_valid, DEFVAL(false));
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_signal_callback", &GDScriptFunctionState::_signal_callback, MethodInfo("_signal_callback"));
 
 	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
@@ -374,11 +351,23 @@ GDScriptFunctionState::GDScriptFunctionState() :
 		instances_list(this) {
 }
 
-GDScriptFunctionState::~GDScriptFunctionState() {
-	{
-		MutexLock lock(GDScriptLanguage::singleton->mutex);
-		scripts_list.remove_from_list();
-		instances_list.remove_from_list();
-		_clear_stack();
+void GDScriptFunctionState::clear() {
+	if (cleared) {
+		return;
 	}
+	ERR_FAIL_NULL_MSG(GDScriptLanguage::singleton, "GDScript bug (please report): Function state was not cleared before language shutdown.");
+	MutexLock lock(GDScriptLanguage::singleton->mutex);
+	if (cleared) {
+		return;
+	}
+	cleared = true;
+
+	_clear_connections();
+	scripts_list.remove_from_list();
+	instances_list.remove_from_list();
+	_clear_stack();
+}
+
+GDScriptFunctionState::~GDScriptFunctionState() {
+	clear();
 }

@@ -43,6 +43,7 @@ SurfaceTool::SimplifyScaleFunc SurfaceTool::simplify_scale_func = nullptr;
 SurfaceTool::GenerateRemapFunc SurfaceTool::generate_remap_func = nullptr;
 SurfaceTool::RemapVertexFunc SurfaceTool::remap_vertex_func = nullptr;
 SurfaceTool::RemapIndexFunc SurfaceTool::remap_index_func = nullptr;
+SurfaceTool::GenerateTangentsFunc SurfaceTool::generate_tangents_func = nullptr;
 
 void SurfaceTool::strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices) {
 	ERR_FAIL_COND_MSG(!generate_remap_func || !remap_vertex_func || !remap_index_func, "Meshoptimizer library is not initialized.");
@@ -93,10 +94,6 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 	}
 
 	if (normal != p_vertex.normal) {
-		return false;
-	}
-
-	if (binormal != p_vertex.binormal) {
 		return false;
 	}
 
@@ -235,8 +232,7 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 	vtx.uv2 = last_uv2;
 	vtx.weights = last_weights;
 	vtx.bones = last_bones;
-	vtx.tangent = last_tangent.normal;
-	vtx.binormal = last_normal.cross(last_tangent.normal).normalized() * last_tangent.d;
+	vtx.tangent = last_tangent;
 	vtx.smooth_group = last_smooth_group;
 
 	for (int i = 0; i < RSE::ARRAY_CUSTOM_COUNT; i++) {
@@ -317,7 +313,7 @@ void SurfaceTool::set_tangent(const Plane &p_tangent) {
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_TANGENT));
 
 	format |= Mesh::ARRAY_FORMAT_TANGENT;
-	last_tangent = p_tangent;
+	last_tangent = Vector4(p_tangent.normal.x, p_tangent.normal.y, p_tangent.normal.z, p_tangent.d);
 }
 
 void SurfaceTool::set_uv(const Vector2 &p_uv) {
@@ -483,10 +479,7 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx * 4 + 0] = v.tangent.x;
 					w[idx * 4 + 1] = v.tangent.y;
 					w[idx * 4 + 2] = v.tangent.z;
-
-					//float d = v.tangent.dot(v.binormal,v.normal);
-					float d = v.binormal.dot(v.normal.cross(v.tangent));
-					w[idx * 4 + 3] = d < 0 ? -1 : 1;
+					w[idx * 4 + 3] = v.tangent.w;
 				}
 
 				a[i] = array;
@@ -882,9 +875,7 @@ void SurfaceTool::create_vertex_array_from_arrays(const Array &p_arrays, LocalVe
 			v.normal = narr[i];
 		}
 		if (lformat & RSE::ARRAY_FORMAT_TANGENT) {
-			v.tangent = Vector3(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2]);
-			float d = tarr[i * 4 + 3];
-			v.binormal = v.normal.cross(v.tangent).normalized() * d;
+			v.tangent = Vector4(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
 		}
 		if (lformat & RSE::ARRAY_FORMAT_COLOR) {
 			v.color = carr[i];
@@ -984,7 +975,6 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
 	Array arr = p_existing->surface_get_blend_shape_arrays(p_surface);
-	Array blend_shape_names;
 	int32_t shape_idx = -1;
 	for (int32_t i = 0; i < p_existing->get_blend_shape_count(); i++) {
 		String name = p_existing->get_blend_shape_name(i);
@@ -1039,6 +1029,7 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 		}
 	}
 	int vfrom = vertex_array.size();
+	float flip = p_xform.basis.determinant() < 0 ? -1.0f : 1.0f;
 
 	for (Vertex &v : nvertices) {
 		v.vertex = p_xform.xform(v.vertex);
@@ -1046,8 +1037,8 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 			v.normal = p_xform.basis.xform(v.normal);
 		}
 		if (nformat & RSE::ARRAY_FORMAT_TANGENT) {
-			v.tangent = p_xform.basis.xform(v.tangent);
-			v.binormal = p_xform.basis.xform(v.binormal);
+			Vector3 tangent = p_xform.basis.xform(Vector3(v.tangent.x, v.tangent.y, v.tangent.z));
+			v.tangent = Vector4(tangent.x, tangent.y, tangent.z, v.tangent.w * flip);
 		}
 
 		vertex_array.push_back(v);
@@ -1062,125 +1053,105 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 	}
 }
 
-//mikktspace callbacks
-namespace {
-struct TangentGenerationContextUserData {
-	LocalVector<SurfaceTool::Vertex> *vertices;
-	LocalVector<int> *indices;
+struct TangentVertex {
+	float position[3];
+	float normal[3];
+	float uv[2];
 };
-} // namespace
 
-int SurfaceTool::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
-	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-
-	if (triangle_data.indices->size() > 0) {
-		return triangle_data.indices->size() / 3;
-	} else {
-		return triangle_data.vertices->size() / 3;
+static void _propagate_tangents_or_split(LocalVector<SurfaceTool::Vertex> &r_vertex_array, LocalVector<int> &r_index_array, const float *p_tangents, bool p_split) {
+	// Seed each vertex with one of its corner tangents; the loop below fixes any mismatches.
+	for (size_t i = 0; i < r_index_array.size(); i++) {
+		Vector4 tangent(p_tangents[i * 4 + 0], p_tangents[i * 4 + 1], p_tangents[i * 4 + 2], p_tangents[i * 4 + 3]);
+		r_vertex_array[r_index_array[i]].tangent = Vector4(p_tangents[i * 4 + 0], p_tangents[i * 4 + 1], p_tangents[i * 4 + 2], p_tangents[i * 4 + 3]);
 	}
-}
 
-int SurfaceTool::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
-	return 3; //always 3
-}
+	if (!p_split) {
+		return;
+	}
 
-void SurfaceTool::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
-	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vector3 v;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			v = triangle_data.vertices->operator[](index).vertex;
+	LocalVector<uint32_t> splits;
+	splits.resize(r_vertex_array.size());
+	memset(splits.ptr(), -1, splits.size() * sizeof(uint32_t)); // ~0u means "no split copy"
+
+	for (size_t i = 0; i < r_index_array.size(); i++) {
+		// Walk the chain of split copies looking for a vertex whose tangent matches.
+		Vector4 tangent(p_tangents[i * 4 + 0], p_tangents[i * 4 + 1], p_tangents[i * 4 + 2], p_tangents[i * 4 + 3]);
+		uint32_t v = r_index_array[i];
+		while (v != ~0u && r_vertex_array[v].tangent != tangent) {
+			v = splits[v];
 		}
-	} else {
-		v = triangle_data.vertices->operator[](iFace * 3 + iVert).vertex;
-	}
 
-	fvPosOut[0] = v.x;
-	fvPosOut[1] = v.y;
-	fvPosOut[2] = v.z;
-}
-
-void SurfaceTool::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
-	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vector3 v;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			v = triangle_data.vertices->operator[](index).normal;
+		// No match in chain: append a new split copy with the target tangent and chain it.
+		if (v == ~0u) {
+			v = r_vertex_array.size();
+			r_vertex_array.push_back(r_vertex_array[r_index_array[i]]);
+			r_vertex_array[v].tangent = tangent;
+			splits.push_back(splits[r_index_array[i]]);
+			splits[r_index_array[i]] = v;
 		}
-	} else {
-		v = triangle_data.vertices->operator[](iFace * 3 + iVert).normal;
-	}
 
-	fvNormOut[0] = v.x;
-	fvNormOut[1] = v.y;
-	fvNormOut[2] = v.z;
-}
-
-void SurfaceTool::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
-	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vector2 v;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			v = triangle_data.vertices->operator[](index).uv;
-		}
-	} else {
-		v = triangle_data.vertices->operator[](iFace * 3 + iVert).uv;
-	}
-
-	fvTexcOut[0] = v.x;
-	fvTexcOut[1] = v.y;
-}
-
-void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
-		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
-	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
-	Vertex *vtx = nullptr;
-	if (triangle_data.indices->size() > 0) {
-		uint32_t index = triangle_data.indices->operator[](iFace * 3 + iVert);
-		if (index < triangle_data.vertices->size()) {
-			vtx = &triangle_data.vertices->operator[](index);
-		}
-	} else {
-		vtx = &triangle_data.vertices->operator[](iFace * 3 + iVert);
-	}
-
-	if (vtx != nullptr) {
-		vtx->tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
-		vtx->binormal = Vector3(-fvBiTangent[0], -fvBiTangent[1], -fvBiTangent[2]); // for some reason these are reversed, something with the coordinate system in Godot
+		r_index_array[i] = int(v);
 	}
 }
 
-void SurfaceTool::generate_tangents() {
+void SurfaceTool::_generate_tangents_bind() {
+	generate_tangents(/*split*/ false);
+}
+
+void SurfaceTool::generate_tangents(bool p_split) {
+	ERR_FAIL_COND_MSG(!generate_tangents_func, "Meshoptimizer library is not initialized.");
 	ERR_FAIL_COND_MSG(!(format & Mesh::ARRAY_FORMAT_TEX_UV), "UVs are required to generate tangents.");
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
+	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
 
-	SMikkTSpaceInterface mkif;
-	mkif.m_getNormal = mikktGetNormal;
-	mkif.m_getNumFaces = mikktGetNumFaces;
-	mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
-	mkif.m_getPosition = mikktGetPosition;
-	mkif.m_getTexCoord = mikktGetTexCoord;
-	mkif.m_setTSpace = mikktSetTSpaceDefault;
-	mkif.m_setTSpaceBasic = nullptr;
-
-	SMikkTSpaceContext msc;
-	msc.m_pInterface = &mkif;
-
-	TangentGenerationContextUserData triangle_data;
-	triangle_data.vertices = &vertex_array;
-	for (Vertex &vertex : vertex_array) {
-		vertex.binormal = Vector3();
-		vertex.tangent = Vector3();
+	if (vertex_array.is_empty()) {
+		format |= Mesh::ARRAY_FORMAT_TANGENT;
+		return;
 	}
-	triangle_data.indices = &index_array;
-	msc.m_pUserData = &triangle_data;
 
-	bool res = genTangSpaceDefault(&msc);
+	size_t corner_count = index_array.size() > 0 ? index_array.size() : vertex_array.size();
+	ERR_FAIL_COND(corner_count % 3 != 0);
 
-	ERR_FAIL_COND(!res);
+	// We can't operate on SurfaceTool::Vertex directly because in double-precision builds, vectors use double components
+	// So we convert the inputs to single precision floats before generating tangents.
+	LocalVector<TangentVertex> tangent_vertices;
+	tangent_vertices.resize(vertex_array.size());
+
+	for (size_t i = 0; i < vertex_array.size(); i++) {
+		const Vertex &vertex = vertex_array[i];
+		TangentVertex &tangent_vertex = tangent_vertices[i];
+
+		tangent_vertex.position[0] = vertex.vertex.x;
+		tangent_vertex.position[1] = vertex.vertex.y;
+		tangent_vertex.position[2] = vertex.vertex.z;
+		tangent_vertex.normal[0] = vertex.normal.x;
+		tangent_vertex.normal[1] = vertex.normal.y;
+		tangent_vertex.normal[2] = vertex.normal.z;
+		tangent_vertex.uv[0] = vertex.uv.x;
+		tangent_vertex.uv[1] = vertex.uv.y;
+	}
+
+	const TangentVertex *vertices = tangent_vertices.ptr();
+
+	LocalVector<float> tangents;
+	tangents.resize(corner_count * 4);
+
+	generate_tangents_func(tangents.ptr(),
+			index_array.size() > 0 ? reinterpret_cast<const unsigned int *>(index_array.ptr()) : nullptr, corner_count,
+			vertices->position, tangent_vertices.size(), sizeof(TangentVertex),
+			vertices->normal, sizeof(TangentVertex),
+			vertices->uv, sizeof(TangentVertex), 0);
+
+	if (index_array.size() > 0) {
+		_propagate_tangents_or_split(vertex_array, index_array, tangents.ptr(), p_split);
+	} else {
+		for (size_t i = 0; i < corner_count; i++) {
+			Vector4 tangent(tangents[i * 4 + 0], tangents[i * 4 + 1], tangents[i * 4 + 2], tangents[i * 4 + 3]);
+			vertex_array[i].tangent = tangent;
+		}
+	}
+
 	format |= Mesh::ARRAY_FORMAT_TANGENT;
 }
 
@@ -1366,7 +1337,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("index"), &SurfaceTool::index);
 	ClassDB::bind_method(D_METHOD("deindex"), &SurfaceTool::deindex);
 	ClassDB::bind_method(D_METHOD("generate_normals", "flip"), &SurfaceTool::generate_normals, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("generate_tangents"), &SurfaceTool::generate_tangents);
+	ClassDB::bind_method(D_METHOD("generate_tangents"), &SurfaceTool::_generate_tangents_bind);
 
 	ClassDB::bind_method(D_METHOD("optimize_indices_for_cache"), &SurfaceTool::optimize_indices_for_cache);
 

@@ -57,6 +57,7 @@ class AnimationTreeEditor : public EditorDock {
 
 	ScrollContainer *path_edit = nullptr;
 	HBoxContainer *path_hb = nullptr;
+	HBoxContainer *status_bar = nullptr;
 	RichTextLabel *current_scope_error_label = nullptr;
 	Button *error_button = nullptr;
 	ScrollContainer *error_scroll = nullptr;

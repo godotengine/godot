@@ -58,7 +58,7 @@ Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p
 	return callp(p_method, p_args, p_argcount, r_error);
 }
 
-void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) {
+void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &r_state) {
 	List<PropertyInfo> pinfo;
 	get_property_list(&pinfo);
 	for (const PropertyInfo &E : pinfo) {
@@ -66,7 +66,7 @@ void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) 
 			Pair<StringName, Variant> p;
 			p.first = E.name;
 			if (get(p.first, p.second)) {
-				state.push_back(p);
+				r_state.push_back(p);
 			}
 		}
 	}

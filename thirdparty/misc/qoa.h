@@ -580,7 +580,9 @@ unsigned int qoa_decode_header(const unsigned char *bytes, int size, qoa_desc *q
 
 unsigned int qoa_decode_frame(const unsigned char *bytes, unsigned int size, qoa_desc *qoa, short *sample_data, unsigned int *frame_len) {
 	unsigned int p = 0;
-	*frame_len = 0;
+	if (frame_len) {
+		*frame_len = 0;
+	}
 
 	if (size < 8 + QOA_LMS_LEN * 4 * qoa->channels) {
 		return 0;
@@ -645,7 +647,9 @@ unsigned int qoa_decode_frame(const unsigned char *bytes, unsigned int size, qoa
 		}
 	}
 
-	*frame_len = samples;
+	if (frame_len) {
+		*frame_len = samples;
+	}
 	return p;
 }
 

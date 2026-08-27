@@ -16,7 +16,9 @@
 			<param index="1" name="event" type="InputEvent" />
 			<param index="2" name="shape_idx" type="int" />
 			<description>
-				Accepts unhandled [InputEvent]s. [param shape_idx] is the child index of the clicked [Shape2D]. Connect to [signal input_event] to easily pick up these events.
+				Detects unhandled mouse and touch [InputEvent]s through [param event] when they happen while hovering over the object. Gesture events are not detected. [param viewport] is the [Viewport] that the event originated in (for viewports other than the main one to be detected, [member Viewport.physics_object_picking] needs to be set to [code]true[/code]). [param shape_idx] is the index of the detected shape from [PhysicsServer2D].
+				See also [method Node._unhandled_input], [method shape_find_owner], and [method shape_owner_get_owner].
+				[b]Note:[/b] [InputEventScreenDrag] events are triggered if the drag events started while hovering the object, or when the object is in the path of the drag event.
 				[b]Note:[/b] [method _input_event] requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
@@ -263,7 +265,7 @@
 			<param index="1" name="event" type="InputEvent" />
 			<param index="2" name="shape_idx" type="int" />
 			<description>
-				Emitted when an input event occurs. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. See [method _input_event] for details.
+				Emitted when an unhandled input event occurs. Requires [member input_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. See [method _input_event] for details.
 			</description>
 		</signal>
 		<signal name="mouse_entered">

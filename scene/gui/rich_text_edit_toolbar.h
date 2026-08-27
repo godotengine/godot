@@ -64,10 +64,22 @@ class RichTextEditToolbar : public HBoxContainer {
 	NodePath rich_text_edit_path;
 	ObjectID rich_text_edit_id;
 
+	// The controls live in rows instead of directly on the toolbar so the
+	// second half can drop to its own line without rebuilding anything.
+	bool two_row_layout = false;
+	VBoxContainer *rows_box = nullptr;
+	HBoxContainer *first_row = nullptr;
+	HBoxContainer *second_row = nullptr;
+	// Marks the group break that the row break replaces in two-row layout.
+	VSeparator *row_break_separator = nullptr;
+	// The tail of the toolbar, in order, that moves to the second row.
+	Vector<Control *> second_row_items;
+
 	Button *bold_button = nullptr;
 	Button *italic_button = nullptr;
 	Button *underline_button = nullptr;
 	Button *strikethrough_button = nullptr;
+	Button *overline_button = nullptr;
 	Button *quote_button = nullptr;
 	Button *horizontal_rule_button = nullptr;
 	Button *outline_button = nullptr;
@@ -153,6 +165,7 @@ class RichTextEditToolbar : public HBoxContainer {
 
 	void _apply_toolbar_icons();
 	void _apply_toolbar_style();
+	void _apply_row_layout();
 	void _style_tool_button(Button *p_button);
 	void _style_dropdown_button(Button *p_button);
 	void _style_menu_item_button(Button *p_button);
@@ -178,6 +191,7 @@ class RichTextEditToolbar : public HBoxContainer {
 	void _pressed_italic();
 	void _pressed_underline();
 	void _pressed_strikethrough();
+	void _pressed_overline();
 	void _pressed_quote();
 	void _pressed_horizontal_rule();
 	void _pressed_outline_color();
@@ -220,6 +234,9 @@ public:
 
 	void set_rich_text_edit_path(const NodePath &p_path);
 	NodePath get_rich_text_edit_path() const;
+
+	void set_two_row_layout(bool p_enabled);
+	bool is_two_row_layout() const;
 
 	RichTextEdit *get_rich_text_edit() const;
 

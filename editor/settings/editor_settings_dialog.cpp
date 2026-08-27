@@ -48,6 +48,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/settings/input_event_configuration_dialog.h"
+#include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/debugger/view_3d_controller.h"
@@ -56,6 +57,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "scene/main/timer.h"
 
 void EditorSettingsDialog::ok_pressed() {
 	if (!EditorSettings::get_singleton()) {
@@ -89,12 +91,15 @@ void EditorSettingsDialog::_settings_property_edited() {
 	} else if (full_name == "editors/3d/navigation/orbit_mouse_button" || full_name == "editors/3d/navigation/pan_mouse_button" || full_name == "editors/3d/navigation/zoom_mouse_button" || full_name == "editors/3d/navigation/emulate_3_button_mouse") {
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
 	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
-		update_navigation_preset();
+		update_3d_navigation_preset();
 		_update_shortcuts();
+	} else if (full_name == "interface/editor/appearance/custom_display_scale") {
+		// The "Custom" display scale is index 7 in the setting's enum hint.
+		EditorSettings::get_singleton()->set_manually("interface/editor/appearance/display_scale", 7);
 	}
 }
 
-void EditorSettingsDialog::update_navigation_preset() {
+void EditorSettingsDialog::update_3d_navigation_preset() {
 	View3DController::NavigationScheme nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
 	View3DController::NavigationMouseButton set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
 	View3DController::NavigationMouseButton set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
@@ -231,6 +236,11 @@ void EditorSettingsDialog::popup_edit_settings() {
 		saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
 	}
 
+#ifdef ANDROID_ENABLED
+	// The Android Editor's aspect ratio may change when the device orientation changes, and `saved_size` may correspond to a different orientation (example, a very small width if it was last opened in portrait mode).
+	// Always reset the popup size so that it covers most of the available area.
+	popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
+#else
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else if (_is_in_project_manager()) {
@@ -238,6 +248,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	} else {
 		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
+#endif
 
 	_focus_current_search_box();
 }
@@ -254,6 +265,32 @@ void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_nam
 	EditorNode::get_log()->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
+void EditorSettingsDialog::_create_setting_override(const String &p_setting, const Variant p_value) {
+	ProjectSettings::get_singleton()->set_editor_setting_override(p_setting, p_value);
+	ProjectSettings::get_singleton()->save();
+
+	if (is_visible() && p_setting.begins_with(inspector->get_current_section())) {
+		inspector->get_inspector()->update_tree();
+	}
+	if (ProjectSettingsEditor::get_singleton()->is_visible()) {
+		ProjectSettingsEditor::get_singleton()->get_inspector()->update_category_list();
+	}
+}
+
+void EditorSettingsDialog::_remove_setting_override(const String &p_setting) {
+	ProjectSettings::get_singleton()->set_editor_setting_override(p_setting, Variant());
+	ProjectSettings::get_singleton()->save();
+	EditorSettings::get_singleton()->mark_setting_changed(p_setting);
+	EditorNode::get_singleton()->notify_settings_overrides_changed();
+
+	if (is_visible() && p_setting.begins_with(inspector->get_current_section())) {
+		inspector->get_inspector()->update_tree();
+	}
+	if (ProjectSettingsEditor::get_singleton()->is_visible()) {
+		ProjectSettingsEditor::get_singleton()->get_inspector()->update_category_list();
+	}
+}
+
 void EditorSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -264,8 +301,6 @@ void EditorSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			EditorSettingsPropertyWrapper::restart_request_callback = callable_mp(this, &EditorSettingsDialog::_editor_restart_request);
-
 			if (_is_in_project_manager()) {
 				return;
 			}
@@ -955,11 +990,15 @@ void EditorSettingsDialog::_editor_restart_close() {
 void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
+	ClassDB::bind_method(D_METHOD("_create_setting_override"), &EditorSettingsDialog::_create_setting_override);
+	ClassDB::bind_method(D_METHOD("_remove_setting_override"), &EditorSettingsDialog::_remove_setting_override);
 
 	ADD_SIGNAL(MethodInfo("restart_requested"));
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
+	singleton = this;
+
 	set_title(TTRC("Editor Settings"));
 	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
@@ -1049,7 +1088,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_theme_type_variation("NoBorderBottomPanel");
 	tab_shortcuts->add_child(mc);
 
 	shortcuts = memnew(Tree);
@@ -1060,6 +1099,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_titles_visible(true);
 	shortcuts->set_column_title(0, TTRC("Name"));
 	shortcuts->set_column_title(1, TTRC("Binding"));
+	shortcuts->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	shortcuts->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
 	mc->add_child(shortcuts);
@@ -1088,7 +1128,13 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	EditorInspector::add_inspector_plugin(plugin);
 }
 
+EditorSettingsDialog::~EditorSettingsDialog() {
+	singleton = nullptr;
+}
+
 void EditorSettingsPropertyWrapper::_setup_override_info() {
+	bottom_editor_separation = true;
+
 	override_container = memnew(HBoxContainer);
 
 	override_icon = memnew(TextureRect);
@@ -1147,21 +1193,29 @@ void EditorSettingsPropertyWrapper::_update_override() {
 }
 
 void EditorSettingsPropertyWrapper::_create_override() {
-	ProjectSettings::get_singleton()->set_editor_setting_override(property, EDITOR_GET(property));
+	const Variant setting_value = EDITOR_GET(property);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Add project override for setting: %s"), property));
+	undo_redo->add_do_method(EditorSettingsDialog::get_singleton(), "_create_setting_override", property, setting_value);
+	undo_redo->add_undo_method(EditorSettingsDialog::get_singleton(), "_remove_setting_override", property);
+	undo_redo->commit_action(false);
+
+	ProjectSettings::get_singleton()->set_editor_setting_override(property, setting_value);
 	ProjectSettings::get_singleton()->save();
 	_update_override();
 }
 
 void EditorSettingsPropertyWrapper::_remove_override() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Remove project override for setting: %s"), property));
+	undo_redo->add_do_method(EditorSettingsDialog::get_singleton(), "_remove_setting_override", property);
+	undo_redo->add_undo_method(EditorSettingsDialog::get_singleton(), "_create_setting_override", property, ProjectSettings::get_singleton()->get_editor_setting_override(property));
+	undo_redo->commit_action(false);
+
 	ProjectSettings::get_singleton()->set_editor_setting_override(property, Variant());
 	ProjectSettings::get_singleton()->save();
-	EditorSettings::get_singleton()->mark_setting_changed(property);
-	EditorNode::get_singleton()->notify_settings_overrides_changed();
 	_update_override();
-
-	if (usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
-		restart_request_callback.call();
-	}
 }
 
 void EditorSettingsPropertyWrapper::_notification(int p_what) {

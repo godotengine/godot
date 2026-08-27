@@ -40,6 +40,10 @@ TEST_FORCE_LINK(test_navigation_server_2d)
 #include "scene/2d/polygon_2d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
+#include "servers/navigation_2d/navigation_path_query_parameters_2d.h"
+#include "servers/navigation_2d/navigation_path_query_result_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "tests/signal_watcher.h"
 

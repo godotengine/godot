@@ -84,6 +84,22 @@ String EditorPaths::get_debug_keystore_path() const {
 #endif
 }
 
+String EditorPaths::get_default_android_sdk_path() const {
+#ifdef WINDOWS_ENABLED
+	return OS::get_singleton()->get_environment("LOCALAPPDATA").path_join("Android/Sdk");
+#elif LINUXBSD_ENABLED
+	return OS::get_singleton()->get_environment("HOME").path_join("Android/Sdk");
+#elif MACOS_ENABLED
+	return OS::get_singleton()->get_environment("HOME").path_join("Library/Android/sdk");
+#else
+	return get_cache_dir().path_join("android-sdk");
+#endif
+}
+
+String EditorPaths::get_default_java_sdk_path() const {
+	return get_cache_dir().path_join("java-sdk");
+}
+
 // This returns paths like "res://.godot/editor".
 String EditorPaths::get_project_settings_dir() const {
 	return get_project_data_dir().path_join("editor");

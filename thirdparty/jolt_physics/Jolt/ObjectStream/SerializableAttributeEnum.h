@@ -51,7 +51,7 @@ inline void AddSerializableAttributeEnum(RTTI &inRTTI, uint inOffset, const char
 
 // JPH_ADD_ENUM_ATTRIBUTE_WITH_ALIAS
 #define JPH_ADD_ENUM_ATTRIBUTE_WITH_ALIAS(class_name, member_name, alias_name) \
-	AddSerializableAttributeEnum<decltype(class_name::member_name)>(inRTTI, offsetof(class_name, member_name), alias_name);
+	JPH::AddSerializableAttributeEnum<decltype(class_name::member_name)>(inRTTI, offsetof(class_name, member_name), alias_name);
 
 // JPH_ADD_ENUM_ATTRIBUTE
 #define JPH_ADD_ENUM_ATTRIBUTE(class_name, member_name) \

@@ -7,6 +7,18 @@
 		A resource used by [AnimationNodeBlendTree].
 		[AnimationNodeBlendSpace2D] represents a virtual 2D space on which [AnimationRootNode]s are placed. Outputs the linear blend of the three adjacent animations using a [Vector2] weight. Adjacent in this context means the three [AnimationRootNode]s making up the triangle that contains the current value.
 		You can add vertices to the blend space with [method add_blend_point] and automatically triangulate it by setting [member auto_triangles] to [code]true[/code]. Otherwise, use [method add_triangle] and [method remove_triangle] to triangulate the blend space by hand.
+
+		Optionally, signals can be used by setting an [AnimationNodeObserverBlendSpace] through [AnimationTree].
+		[codeblocks]
+		[gdscript]
+		var observer = tree.get("parameters/BlendSpace/observer")
+		observer.closest_point_changed.connect(on_closest_point_changed)
+		[/gdscript]
+		[csharp]
+		var observer = animationTree.Get("parameters/BlendSpace/observer").As&lt;AnimationNodeObserverBlendSpace&gt;();
+		observer.ClosestPointChanged += OnClosestPointChanged;
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>

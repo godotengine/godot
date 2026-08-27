@@ -386,10 +386,6 @@ CopyEffects::~CopyEffects() {
 
 	RD::get_singleton()->free_rid(filter.coefficient_buffer);
 
-	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
-		RD::get_singleton()->free_rid(filter.image_uniform_set);
-	}
-
 	if (RD::get_singleton()->uniform_set_is_valid(filter.uniform_set)) {
 		RD::get_singleton()->free_rid(filter.uniform_set);
 	}
@@ -1252,7 +1248,9 @@ void CopyEffects::octmap_filter(RID p_source_octmap, const Vector<RID> &p_dest_o
 	push_constant.border_size[0] = p_border_size;
 	push_constant.border_size[1] = 1.0f - p_border_size * 2.0f;
 
-	Vector<RD::Uniform> uniforms;
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
+
 	for (int i = 0; i < p_dest_octmap.size(); i++) {
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
@@ -1260,10 +1258,6 @@ void CopyEffects::octmap_filter(RID p_source_octmap, const Vector<RID> &p_dest_o
 		u.append_id(p_dest_octmap[i]);
 		uniforms.push_back(u);
 	}
-	if (RD::get_singleton()->uniform_set_is_valid(filter.image_uniform_set)) {
-		RD::get_singleton()->free_rid(filter.image_uniform_set);
-	}
-	filter.image_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, filter.compute_shader.version_get_shader(filter.shader_version, 0), 2);
 
 	// setup our uniforms
 	RID default_mipmap_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -1298,7 +1292,7 @@ void CopyEffects::octmap_filter(RID p_source_octmap, const Vector<RID> &p_dest_o
 	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, filter.compute_pipelines[mode].get_rid());
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_source_octmap), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, filter.uniform_set, 1);
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, filter.image_uniform_set, 2);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache_vec(shader, 2, uniforms), 2);
 
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(OctmapFilterPushConstant));
 

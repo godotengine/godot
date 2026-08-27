@@ -170,24 +170,24 @@ void RemoteDebuggerPeerTCP::_read_in() {
 	}
 }
 
-Error RemoteDebuggerPeerTCP::_try_connect(Ref<StreamPeerSocket> tcp_client) {
+Error RemoteDebuggerPeerTCP::_try_connect(Ref<StreamPeerSocket> p_tcp_client) {
 	const int tries = 6;
 	const int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
 
 	for (int i = 0; i < tries; i++) {
-		tcp_client->poll();
-		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
+		p_tcp_client->poll();
+		if (p_tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
 			print_verbose("Remote Debugger: Connected!");
 			break;
 		} else {
 			const int ms = waits[i];
 			OS::get_singleton()->delay_usec(ms * 1000);
-			print_verbose("Remote Debugger: Connection failed with status: '" + String::num_int64(tcp_client->get_status()) + "', retrying in " + String::num_int64(ms) + " msec.");
+			print_verbose("Remote Debugger: Connection failed with status: '" + String::num_int64(p_tcp_client->get_status()) + "', retrying in " + String::num_int64(ms) + " msec.");
 		}
 	}
 
-	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
-		ERR_PRINT(vformat("Remote Debugger: Unable to connect. Status: %s.", String::num_int64(tcp_client->get_status())));
+	if (p_tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
+		ERR_PRINT(vformat("Remote Debugger: Unable to connect. Status: %s.", String::num_int64(p_tcp_client->get_status())));
 		return FAILED;
 	}
 	return OK;

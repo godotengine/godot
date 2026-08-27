@@ -57,6 +57,22 @@ internal class VkRenderer {
 
 	private val pluginRegistry: GodotPluginRegistry = GodotPluginRegistry.getPluginRegistry()
 
+	internal var initialized = false
+		private set
+	private var rendererResumed = false
+
+	internal fun initialize(): Boolean {
+		if (!initialized) {
+			// Check the app is resumed to initialize the renderer.
+			if (rendererResumed) {
+				Log.v(TAG, "Initializing renderer...")
+				initialized = true
+			}
+		}
+
+		return initialized
+	}
+
 	/**
 	 * Called when the surface is created and signals the beginning of rendering.
 	 */
@@ -93,6 +109,8 @@ internal class VkRenderer {
 	 * Called when the rendering thread is resumed.
 	 */
 	fun onVkResume() {
+		Log.v(TAG, "Renderer resumed")
+		rendererResumed = true
 		GodotLib.onRendererResumed()
 	}
 
@@ -100,6 +118,8 @@ internal class VkRenderer {
 	 * Called when the rendering thread is paused.
 	 */
 	fun onVkPause() {
+		Log.v(TAG, "Renderer paused")
+		rendererResumed = false
 		GodotLib.onRendererPaused()
 	}
 
@@ -107,7 +127,7 @@ internal class VkRenderer {
 	 * Invoked when the render thread is in the process of shutting down.
 	 */
 	fun onRenderThreadExiting() {
-		Log.d(TAG, "Destroying Godot Engine")
+		Log.v(TAG, "Destroying Godot Engine")
 		GodotLib.ondestroy()
 	}
 }

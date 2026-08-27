@@ -71,6 +71,15 @@ Vector<SharedObject> GDExtensionLibraryLoader::find_extension_dependencies(const
 	return dependencies_shared_objects;
 }
 
+bool GDExtensionLibraryLoader::match_all_tags(PackedStringArray p_tags, std::function<bool(String)> p_has_feature) {
+	for (const String &tag : p_tags) {
+		if (!p_has_feature(tag)) {
+			return false;
+		}
+	}
+	return true;
+}
+
 String GDExtensionLibraryLoader::find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags) {
 	// First, check the explicit libraries.
 	if (p_config->has_section("libraries")) {
@@ -176,10 +185,7 @@ String GDExtensionLibraryLoader::find_extension_library(const String &p_path, Re
 }
 
 Error GDExtensionLibraryLoader::open_library(const String &p_path) {
-	Error err = parse_gdextension_file(p_path);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(parse_gdextension_file(p_path));
 
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(library_path);
 
@@ -198,7 +204,7 @@ Error GDExtensionLibraryLoader::open_library(const String &p_path) {
 	};
 
 	// Apple has a complex lookup system which goes beyond looking up the filename, so we try that first.
-	err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
+	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
 	if (err != OK) {
 #ifdef APPLE_EMBEDDED_ENABLED
 		err = OS::get_singleton()->open_dynamic_library(String(), library, &data);
@@ -283,6 +289,31 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 		return err;
 	}
 
+	PackedStringArray include_tags = config->get_value("configuration", "include_tags", PackedStringArray());
+	PackedStringArray exclude_tags = config->get_value("configuration", "exclude_tags", PackedStringArray());
+	std::function<bool(String)> has_tag = [](const String &p_feature) {
+		return OS::get_singleton()->has_feature(p_feature);
+	};
+	if (include_tags.size()) {
+		bool matches = false;
+		for (const String &tag : include_tags) {
+			matches = match_all_tags(tag.split(".", false), has_tag);
+			if (matches) {
+				break;
+			}
+		}
+		if (!matches) {
+			return ERR_SKIP;
+		}
+	}
+	if (exclude_tags.size()) {
+		for (const String &tag : exclude_tags) {
+			if (match_all_tags(tag.split(".", false), has_tag)) {
+				return ERR_SKIP;
+			}
+		}
+	}
+
 	if (!config->has_section_key("configuration", "entry_symbol")) {
 		ERR_PRINT(vformat("GDExtension configuration file must contain a \"configuration/entry_symbol\" key: '%s'.", p_path));
 		return ERR_INVALID_DATA;
@@ -362,7 +393,7 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 		}
 	}
 
-	library_path = find_extension_library(p_path, config, [](const String &p_feature) { return OS::get_singleton()->has_feature(p_feature); });
+	library_path = find_extension_library(p_path, config, has_tag);
 
 	if (library_path.is_empty()) {
 		const String os_arch = OS::get_singleton()->get_name().to_lower() + "." + Engine::get_singleton()->get_architecture_name();

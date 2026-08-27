@@ -24,7 +24,7 @@
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform from the [CanvasLayer]s coordinate system to the [Viewport]s coordinate system.
+				Returns the transform from the [CanvasLayer]'s coordinate system to the [Viewport]'s coordinate system.
 			</description>
 		</method>
 		<method name="hide">

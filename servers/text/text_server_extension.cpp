@@ -35,6 +35,7 @@
 void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_has_feature, "feature");
 	GDVIRTUAL_BIND(_get_name);
+	GDVIRTUAL_BIND(_get_short_name);
 	GDVIRTUAL_BIND(_get_features);
 
 	GDVIRTUAL_BIND(_free_rid, "rid");
@@ -411,6 +412,16 @@ bool TextServerExtension::has_feature(Feature p_feature) const {
 String TextServerExtension::get_name() const {
 	String ret = "Unknown";
 	GDVIRTUAL_CALL(_get_name, ret);
+	return ret;
+}
+
+String TextServerExtension::get_short_name() const {
+	String ret = "unknown";
+	GDVIRTUAL_CALL(_get_short_name, ret);
+	if (ret == "unknown") {
+		// Fall back to a simplified version of the full name if not overridden.
+		ret = get_name().to_lower().replace_char(' ', '_');
+	}
 	return ret;
 }
 
@@ -1460,13 +1471,13 @@ bool TextServerExtension::shaped_text_is_ready(const RID &p_shaped) const {
 }
 
 const Glyph *TextServerExtension::shaped_text_get_glyphs(const RID &p_shaped) const {
-	GDExtensionConstPtr<const Glyph> ret;
+	GDExtensionPtr<const Glyph> ret;
 	GDVIRTUAL_CALL(_shaped_text_get_glyphs, p_shaped, ret);
 	return ret;
 }
 
 const Glyph *TextServerExtension::shaped_text_sort_logical(const RID &p_shaped) {
-	GDExtensionConstPtr<const Glyph> ret;
+	GDExtensionPtr<const Glyph> ret;
 	GDVIRTUAL_CALL(_shaped_text_sort_logical, p_shaped, ret);
 	return ret;
 }
@@ -1520,7 +1531,7 @@ int64_t TextServerExtension::shaped_text_get_ellipsis_pos(const RID &p_shaped) c
 }
 
 const Glyph *TextServerExtension::shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const {
-	GDExtensionConstPtr<const Glyph> ret;
+	GDExtensionPtr<const Glyph> ret;
 	GDVIRTUAL_CALL(_shaped_text_get_ellipsis_glyphs, p_shaped, ret);
 	return ret;
 }

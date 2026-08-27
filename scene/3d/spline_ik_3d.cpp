@@ -201,9 +201,7 @@ void SplineIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 		return;
 	}
 	for (uint32_t i = 0; i < setting->solver_info_list.size(); i++) {
-		if (setting->solver_info_list[i]) {
-			memdelete(setting->solver_info_list[i]);
-		}
+		memdelete(setting->solver_info_list[i]);
 	}
 	setting->solver_info_list.clear();
 	setting->solver_info_list.resize_initialized(setting->joints.size());

@@ -9,18 +9,6 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="codeLens" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
-			<return type="Array" />
-			<param index="0" name="params" type="Dictionary" />
-			<description>
-			</description>
-		</method>
-		<method name="colorPresentation" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
-			<return type="Array" />
-			<param index="0" name="params" type="Dictionary" />
-			<description>
-			</description>
-		</method>
 		<method name="completion" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
 			<return type="Array" />
 			<param index="0" name="params" type="Dictionary" />
@@ -70,12 +58,6 @@
 			</description>
 		</method>
 		<method name="documentSymbol" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
-			<return type="Array" />
-			<param index="0" name="params" type="Dictionary" />
-			<description>
-			</description>
-		</method>
-		<method name="foldingRange" deprecated="Accessing LSP endpoints directly might lead to unwanted side effects. Connect to the server via TCP, like a regular language server client.">
 			<return type="Array" />
 			<param index="0" name="params" type="Dictionary" />
 			<description>

@@ -34,6 +34,7 @@
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "scene/resources/3d/primitive_meshes.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/material.h"
 
 class Camera3D;

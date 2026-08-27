@@ -654,6 +654,9 @@
 		<theme_item name="scroll_border" data_type="constant" type="int" default="4">
 			The maximum distance between the mouse cursor and the control's border to trigger border scrolling when dragging.
 		</theme_item>
+		<theme_item name="scroll_max_sticky_items" data_type="constant" type="int" default="0">
+			The maximum number of tree items allowed to stick to the top while its children are in view. A value of [code]0[/code] disables sticking.
+		</theme_item>
 		<theme_item name="scroll_speed" data_type="constant" type="int" default="12">
 			The speed of border scrolling.
 		</theme_item>

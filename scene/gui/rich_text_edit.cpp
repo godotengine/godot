@@ -34,6 +34,8 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/string/string_builder.h"
+#include "core/templates/hashfuncs.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -48,438 +50,2217 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
-struct StyleSpanCompare {
-	_FORCE_INLINE_ bool operator()(const RichTextEdit::StyleSpan &p_a, const RichTextEdit::StyleSpan &p_b) const {
-		if (p_a.from == p_b.from) {
-			return p_a.to < p_b.to;
-		}
-		return p_a.from < p_b.from;
-	}
-};
-
-static PackedByteArray rich_text_clipboard_protobuf;
+// The process-wide rich clipboard: the copied range as a self-contained
+// document (image textures are reloaded on paste, so none are retained here)
+// and the plain text the system clipboard received with it.
+static RichTextDocument rich_text_clipboard;
+static bool rich_text_clipboard_valid = false;
 static String rich_text_clipboard_plain_text;
+
+// Undo keeps the formatting of this much recently removed text.
+static constexpr int MAX_REMOVED_FRAGMENTS = 1024;
+static constexpr int MAX_REMOVED_FRAGMENT_CHARS = 8 * 1024 * 1024;
+
+// Theme items that feed the per-run render information.
+static const char *STYLE_THEME_FONTS[] = { "bold_font", "italics_font", "bold_italics_font", "mono_font" };
+static const char *STYLE_THEME_COLORS[] = { "link_color", "link_hover_color", "link_visited_color", "link_active_color", "quote_color", "quote_border_color", "divider_color" };
+static const char *STYLE_THEME_CONSTANTS[] = { "quote_margin_top", "quote_margin_bottom", "quote_border_width", "quote_padding", "divider_margin_top", "divider_margin_bottom", "divider_width" };
 
 bool RichTextEdit::_is_url_auto_open_allowed(const String &p_url) {
 	const String url = p_url.strip_edges().to_lower();
 	return url.begins_with("http://") || url.begins_with("https://");
 }
 
-String RichTextEdit::_serialize_bbcode() const {
-	return _make_document().to_bbcode();
+/* Style table. */
+
+uint32_t RichTextEdit::_hash_style(const TextStyle &p_style) {
+	// Only fields that take part in Style::operator== contribute, so equal
+	// styles always share a hash.
+	uint32_t flags = 0;
+	const bool bits[] = { p_style.bold, p_style.italic, p_style.has_underline, p_style.underline, p_style.strikethrough, p_style.overline, p_style.code,
+		p_style.has_color, p_style.has_bg_color, p_style.has_fg_color, p_style.has_outline_color, p_style.has_outline_size, p_style.has_url,
+		p_style.url_visited, p_style.list_capitalize };
+	for (uint32_t i = 0; i < std_size(bits); i++) {
+		flags |= (bits[i] ? 1u : 0u) << i;
+	}
+	uint32_t h = hash_murmur3_one_32(flags);
+	if (p_style.has_color) {
+		h = hash_murmur3_one_32(p_style.color.to_rgba32(), h);
+	}
+	if (p_style.has_bg_color) {
+		h = hash_murmur3_one_32(p_style.bg_color.to_rgba32(), h);
+	}
+	if (p_style.has_fg_color) {
+		h = hash_murmur3_one_32(p_style.fg_color.to_rgba32(), h);
+	}
+	if (p_style.has_outline_color) {
+		h = hash_murmur3_one_32(p_style.outline_color.to_rgba32(), h);
+	}
+	if (p_style.has_outline_size) {
+		h = hash_murmur3_one_32(p_style.outline_size, h);
+	}
+	h = hash_murmur3_one_32(p_style.font_size, h);
+	h = hash_murmur3_one_32(p_style.alignment, h);
+	h = hash_murmur3_one_32(p_style.indent_level, h);
+	h = hash_murmur3_one_32(p_style.list_type, h);
+	h = hash_murmur3_one_32(p_style.list_start, h);
+	h = hash_murmur3_one_32(p_style.block_group, h);
+	h = hash_murmur3_one_32(p_style.font.hash(), h);
+	h = hash_murmur3_one_32(p_style.url.hash(), h);
+	h = hash_murmur3_one_32(p_style.url_tooltip.hash(), h);
+	h = hash_murmur3_one_32(p_style.language.hash(), h);
+	h = hash_murmur3_one_32(p_style.block_tag.hash(), h);
+	for (const String &tag : p_style.preserved_tags) {
+		h = hash_murmur3_one_32(tag.hash(), h);
+	}
+	return hash_fmix32(h);
+}
+
+int RichTextEdit::_intern_style(const TextStyle &p_style) {
+	if (p_style.is_default()) {
+		return 0;
+	}
+	const uint32_t hash = _hash_style(p_style);
+	LocalVector<int> *ids = style_ids_by_hash.getptr(hash);
+	if (ids != nullptr) {
+		for (int id : *ids) {
+			if (styles[id] == p_style) {
+				return id;
+			}
+		}
+	}
+	const int id = styles.size();
+	styles.push_back(p_style);
+	style_render_infos.push_back(Dictionary());
+	style_render_info_valid.push_back(false);
+	if (ids == nullptr) {
+		ids = &style_ids_by_hash.insert(hash, LocalVector<int>())->value;
+	}
+	ids->push_back(id);
+	return id;
+}
+
+void RichTextEdit::_clear_style_render_infos() {
+	for (uint32_t i = 0; i < style_render_info_valid.size(); i++) {
+		style_render_info_valid[i] = false;
+		style_render_infos[i] = Dictionary();
+	}
+}
+
+Dictionary RichTextEdit::_get_style_render_info(int p_style) const {
+	if (style_render_info_valid[p_style]) {
+		return style_render_infos[p_style];
+	}
+	const TextStyle &style = styles[p_style];
+	Ref<Font> font;
+	if (!style.font.is_empty()) {
+		font = ResourceLoader::load(style.font, "Font");
+	} else if (style.code) {
+		font = get_theme_font(SNAME("mono_font"));
+	} else if (style.bold && style.italic) {
+		font = get_theme_font(SNAME("bold_italics_font"));
+	} else if (style.bold) {
+		font = get_theme_font(SNAME("bold_font"));
+	} else if (style.italic) {
+		font = get_theme_font(SNAME("italics_font"));
+	}
+
+	Dictionary info;
+	if (style.has_color) {
+		info["color"] = style.color;
+	} else if (!style.url.is_empty()) {
+		if (active_meta == style.url) {
+			info["color"] = get_theme_color(SNAME("link_active_color"), SNAME("RichTextEdit"));
+		} else if (meta_hovering && current_meta == style.url) {
+			info["color"] = get_theme_color(SNAME("link_hover_color"), SNAME("RichTextEdit"));
+		} else if (style.url_visited || visited_links.has(style.url)) {
+			info["color"] = get_theme_color(SNAME("link_visited_color"), SNAME("RichTextEdit"));
+		} else {
+			info["color"] = get_theme_color(SNAME("link_color"), SNAME("RichTextEdit"));
+		}
+	}
+	if (style.has_bg_color) {
+		info["bg_color"] = style.bg_color;
+	}
+	if (style.has_fg_color) {
+		info["fg_color"] = style.fg_color;
+	}
+	if (style.has_outline_color) {
+		info["outline_color"] = style.outline_color;
+	}
+	if (style.has_outline_size) {
+		info["outline_size"] = style.outline_size;
+	}
+	const bool underline = style.has_underline ? style.underline : !style.url.is_empty();
+	if (underline) {
+		info["underline"] = true;
+	}
+	if (!style.url.is_empty()) {
+		info["url"] = style.url;
+	}
+	if (style.strikethrough) {
+		info["strikethrough"] = true;
+	}
+	if (style.overline) {
+		info["overline"] = true;
+	}
+	for (const KeyValue<Variant, Variant> &paint : decoration_paint) {
+		info[paint.key] = paint.value;
+	}
+	if (font.is_valid()) {
+		info["font"] = font;
+	}
+	if (style.font_size > 0) {
+		info["font_size"] = style.font_size;
+	}
+	if (style.alignment >= 0) {
+		info["alignment"] = style.alignment;
+	}
+	if (style.indent_level > 0) {
+		info["indent_level"] = style.indent_level;
+	}
+	if (style.list_type > 0) {
+		info["list_type"] = style.list_type;
+		if (style.list_start > 0) {
+			info["list_start"] = style.list_start;
+		}
+		info["list_capitalize"] = style.list_capitalize;
+	}
+	if (style.block_tag == "quote" || style.block_tag.begins_with("quote ")) {
+		info["quote"] = true;
+		info["quote_group"] = style.block_group;
+		info["quote_margin_top"] = get_theme_constant(SNAME("quote_margin_top"), SNAME("RichTextEdit"));
+		info["quote_margin_bottom"] = get_theme_constant(SNAME("quote_margin_bottom"), SNAME("RichTextEdit"));
+		info["quote_border_color"] = get_theme_color(SNAME("quote_border_color"), SNAME("RichTextEdit"));
+		info["quote_border_width"] = get_theme_constant(SNAME("quote_border_width"), SNAME("RichTextEdit"));
+		info["quote_padding"] = get_theme_constant(SNAME("quote_padding"), SNAME("RichTextEdit"));
+		if (!style.has_color) {
+			info["color"] = get_theme_color(SNAME("quote_color"), SNAME("RichTextEdit"));
+		}
+	}
+	style_render_infos[p_style] = info;
+	style_render_info_valid[p_style] = true;
+	return info;
+}
+
+/* Model. */
+
+void RichTextEdit::_set_paragraph_line_height(Paragraph &r_paragraph, const String &p_line_height) {
+	r_paragraph.line_height = p_line_height;
+	r_paragraph.line_height_kind = 0;
+	r_paragraph.line_height_value = 0.0;
+	const String value = p_line_height.strip_edges().to_lower();
+	if (value.is_empty() || value == "normal" || !RichTextDocument::is_valid_line_height(value)) {
+		return;
+	}
+	if (value.ends_with("px")) {
+		r_paragraph.line_height_kind = 1;
+		r_paragraph.line_height_value = value.left(value.length() - 2).strip_edges().to_float();
+	} else if (value.ends_with("%")) {
+		r_paragraph.line_height_kind = 2;
+		r_paragraph.line_height_value = value.left(value.length() - 1).strip_edges().to_float();
+	} else {
+		r_paragraph.line_height_kind = 3;
+		r_paragraph.line_height_value = value.to_float();
+	}
+}
+
+void RichTextEdit::_reset_model() {
+	paragraphs.clear();
+	paragraphs.resize(MAX(get_line_count(), 1));
+	styles.clear();
+	styles.push_back(TextStyle());
+	style_ids_by_hash.clear();
+	style_render_infos.clear();
+	style_render_infos.push_back(Dictionary());
+	style_render_info_valid.clear();
+	style_render_info_valid.push_back(true);
+	removed_fragments.clear();
+	removed_fragments_chars = 0;
+	pending_fragment_active = false;
+	pending_fragment.clear();
+	list_numbers_valid = 0;
+	model_revision++;
+}
+
+void RichTextEdit::_ensure_model_size() {
+	// TextEdit::clear() and other base-class paths can replace the lines
+	// without an edit notification; fall back to plain paragraphs then.
+	const int line_count = get_line_count();
+	if ((int)paragraphs.size() != line_count) {
+		paragraphs.clear();
+		paragraphs.resize(line_count);
+		list_numbers_valid = 0;
+		model_revision++;
+	}
+}
+
+int RichTextEdit::_get_style_id_at(int p_line, int p_column) const {
+	if (p_line < 0 || p_line >= (int)paragraphs.size() || p_column < 0) {
+		return 0;
+	}
+	const Paragraph &paragraph = paragraphs[p_line];
+	if (p_column >= _get_line_length(p_line)) {
+		// The paragraph break; the last paragraph has none.
+		return p_line < (int)paragraphs.size() - 1 ? paragraph.eol_style : 0;
+	}
+	int low = 0;
+	int high = (int)paragraph.runs.size() - 1;
+	while (low <= high) {
+		const int mid = (low + high) / 2;
+		const StyleRun &run = paragraph.runs[mid];
+		if (p_column < run.from) {
+			high = mid - 1;
+		} else if (p_column >= run.to) {
+			low = mid + 1;
+		} else {
+			return run.style;
+		}
+	}
+	return 0;
+}
+
+int RichTextEdit::_get_insertion_style_id(int p_line, int p_column) const {
+	// Typed text continues the character before it, except at the start of a
+	// paragraph, where it takes the style of what it is inserted in front of.
+	const int length = _get_line_length(p_line);
+	if (p_column == 0 && (length > 0 || p_line < (int)paragraphs.size() - 1)) {
+		return _get_style_id_at(p_line, 0);
+	}
+	if (p_column > 0) {
+		return _get_style_id_at(p_line, p_column - 1);
+	}
+	if (p_line > 0) {
+		return paragraphs[p_line - 1].eol_style;
+	}
+	return 0;
+}
+
+void RichTextEdit::_normalize_runs(LocalVector<StyleRun> &r_runs) {
+	struct RunCompare {
+		_FORCE_INLINE_ bool operator()(const StyleRun &p_a, const StyleRun &p_b) const {
+			return p_a.from < p_b.from;
+		}
+	};
+	r_runs.sort_custom<RunCompare>();
+	LocalVector<StyleRun> merged;
+	merged.reserve(r_runs.size());
+	for (const StyleRun &run : r_runs) {
+		if (run.from >= run.to || run.style == 0) {
+			continue;
+		}
+		if (!merged.is_empty() && merged[merged.size() - 1].to == run.from && merged[merged.size() - 1].style == run.style) {
+			merged[merged.size() - 1].to = run.to;
+		} else {
+			merged.push_back(run);
+		}
+	}
+	r_runs = merged;
+}
+
+void RichTextEdit::_set_runs_range(LocalVector<StyleRun> &r_runs, int p_from, int p_to, int p_style) {
+	if (p_from >= p_to) {
+		return;
+	}
+	LocalVector<StyleRun> updated;
+	updated.reserve(r_runs.size() + 2);
+	for (const StyleRun &run : r_runs) {
+		if (run.to <= p_from || run.from >= p_to) {
+			updated.push_back(run);
+			continue;
+		}
+		if (run.from < p_from) {
+			updated.push_back({ run.from, p_from, run.style });
+		}
+		if (run.to > p_to) {
+			updated.push_back({ p_to, run.to, run.style });
+		}
+	}
+	if (p_style != 0) {
+		updated.push_back({ p_from, p_to, p_style });
+	}
+	r_runs = updated;
+	_normalize_runs(r_runs);
+}
+
+void RichTextEdit::_model_changed(int p_from_line, int p_to_line, bool p_invalidate) {
+	model_revision++;
+	list_numbers_valid = MIN(list_numbers_valid, MAX(p_from_line, 0));
+	if (p_invalidate && get_line_count() > 0) {
+		_invalidate_lines(p_from_line, p_to_line);
+	}
+	_style_changed();
+}
+
+int RichTextEdit::_get_line_start(int p_line) const {
+	if (p_line >= get_line_count()) {
+		return _get_total_character_count() + 1;
+	}
+	return _get_line_character_offset(MAX(p_line, 0));
+}
+
+void RichTextEdit::_offset_to_line_column(int p_offset, int &r_line, int &r_column) const {
+	int low = 0;
+	int high = get_line_count() - 1;
+	while (low < high) {
+		const int mid = (low + high + 1) / 2;
+		if (_get_line_character_offset(mid) <= p_offset) {
+			low = mid;
+		} else {
+			high = mid - 1;
+		}
+	}
+	r_line = low;
+	r_column = CLAMP(p_offset - _get_line_character_offset(low), 0, _get_line_length(low));
+}
+
+int RichTextEdit::_get_caret_offset() const {
+	return _get_line_start(get_caret_line()) + get_caret_column();
+}
+
+bool RichTextEdit::_get_selection_range(int &r_from_line, int &r_from_column, int &r_to_line, int &r_to_column) const {
+	if (!has_selection()) {
+		return false;
+	}
+	r_from_line = get_selection_from_line();
+	r_from_column = get_selection_from_column();
+	r_to_line = get_selection_to_line();
+	r_to_column = get_selection_to_column();
+	return r_from_line != r_to_line || r_from_column != r_to_column;
+}
+
+bool RichTextEdit::_get_selection_offsets(int &r_from, int &r_to) const {
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	if (!_get_selection_range(from_line, from_column, to_line, to_column)) {
+		return false;
+	}
+	r_from = _get_line_start(from_line) + from_column;
+	r_to = _get_line_start(to_line) + to_column;
+	return true;
+}
+
+void RichTextEdit::_get_selected_line_range(int &r_from_line, int &r_to_line) const {
+	r_from_line = has_selection() ? get_selection_from_line() : get_caret_line();
+	r_to_line = has_selection() ? get_selection_to_line() : get_caret_line();
+}
+
+RichTextEdit::TextStyle RichTextEdit::_get_style_at_offset(int p_offset) const {
+	int line = 0;
+	int column = 0;
+	_offset_to_line_column(p_offset, line, column);
+	return styles[_get_style_id_at(line, column)];
+}
+
+/* Fragments. */
+
+String RichTextEdit::_get_text_range(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const {
+	StringBuilder builder;
+	for (int line = p_from_line; line <= p_to_line; line++) {
+		const String line_text = get_line(line);
+		const int from = line == p_from_line ? p_from_column : 0;
+		const int to = line == p_to_line ? p_to_column : line_text.length();
+		if (line > p_from_line) {
+			builder.append("\n");
+		}
+		builder.append(line_text.substr(from, to - from));
+	}
+	return builder.as_string();
+}
+
+LocalVector<RichTextEdit::Paragraph> RichTextEdit::_extract_slices(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const {
+	LocalVector<Paragraph> slices;
+	slices.resize(p_to_line - p_from_line + 1);
+	for (int line = p_from_line; line <= p_to_line; line++) {
+		const Paragraph &paragraph = paragraphs[line];
+		Paragraph &slice = slices[line - p_from_line];
+		const int from = line == p_from_line ? p_from_column : 0;
+		const int to = line == p_to_line ? p_to_column : _get_line_length(line);
+		for (const StyleRun &run : paragraph.runs) {
+			const int run_from = MAX(run.from, from);
+			const int run_to = MIN(run.to, to);
+			if (run_from < run_to) {
+				slice.runs.push_back({ run_from - from, run_to - from, run.style });
+			}
+		}
+		for (const InlineObject &object : paragraph.objects) {
+			if (object.column >= from && object.column < to) {
+				InlineObject copy = object;
+				copy.column -= from;
+				slice.objects.push_back(copy);
+			}
+		}
+		slice.eol_style = line < p_to_line ? paragraph.eol_style : 0;
+		_set_paragraph_line_height(slice, paragraph.line_height);
+	}
+	return slices;
+}
+
+bool RichTextEdit::_slices_have_formatting(const LocalVector<Paragraph> &p_slices) const {
+	for (const Paragraph &slice : p_slices) {
+		if (!slice.runs.is_empty() || slice.eol_style != 0 || !slice.objects.is_empty() || !slice.line_height.is_empty()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void RichTextEdit::_insert_slices(int p_line, int p_column, const LocalVector<Paragraph> &p_slices, bool p_restore_line_heights) {
+	ERR_FAIL_COND(p_slices.is_empty());
+	ERR_FAIL_INDEX(p_line, (int)paragraphs.size());
+
+	// Split the target paragraph at the insertion column.
+	Paragraph &target = paragraphs[p_line];
+	LocalVector<StyleRun> left_runs;
+	LocalVector<StyleRun> right_runs;
+	for (const StyleRun &run : target.runs) {
+		if (run.to <= p_column) {
+			left_runs.push_back(run);
+		} else if (run.from >= p_column) {
+			right_runs.push_back({ run.from - p_column, run.to - p_column, run.style });
+		} else {
+			left_runs.push_back({ run.from, p_column, run.style });
+			right_runs.push_back({ 0, run.to - p_column, run.style });
+		}
+	}
+	LocalVector<InlineObject> left_objects;
+	LocalVector<InlineObject> right_objects;
+	for (const InlineObject &object : target.objects) {
+		if (object.column < p_column) {
+			left_objects.push_back(object);
+		} else {
+			InlineObject moved = object;
+			moved.column -= p_column;
+			right_objects.push_back(moved);
+		}
+	}
+	const int original_eol = target.eol_style;
+	const String original_line_height = target.line_height;
+
+	auto append = [this](Paragraph &r_to, const Paragraph &p_from, int p_shift) {
+		for (const StyleRun &run : p_from.runs) {
+			r_to.runs.push_back({ run.from + p_shift, run.to + p_shift, run.style });
+		}
+		for (const InlineObject &object : p_from.objects) {
+			InlineObject moved = object;
+			moved.column += p_shift;
+			if (moved.id == 0) {
+				moved.id = next_object_id++;
+			}
+			r_to.objects.push_back(moved);
+		}
+	};
+	auto append_split = [](Paragraph &r_to, const LocalVector<StyleRun> &p_runs, const LocalVector<InlineObject> &p_objects, int p_shift) {
+		for (const StyleRun &run : p_runs) {
+			r_to.runs.push_back({ run.from + p_shift, run.to + p_shift, run.style });
+		}
+		for (const InlineObject &object : p_objects) {
+			InlineObject moved = object;
+			moved.column += p_shift;
+			r_to.objects.push_back(moved);
+		}
+	};
+
+	const int new_lines = p_slices.size() - 1;
+	if (new_lines == 0) {
+		Paragraph merged;
+		append_split(merged, left_runs, left_objects, 0);
+		append(merged, p_slices[0], p_column);
+		append_split(merged, right_runs, right_objects, p_column + p_slices[0].length);
+		merged.eol_style = original_eol;
+		_set_paragraph_line_height(merged, original_line_height);
+		_normalize_runs(merged.runs);
+		paragraphs[p_line] = merged;
+		return;
+	}
+
+	Paragraph first;
+	append_split(first, left_runs, left_objects, 0);
+	append(first, p_slices[0], p_column);
+	first.eol_style = p_slices[0].eol_style;
+	Paragraph last;
+	append(last, p_slices[new_lines], 0);
+	append_split(last, right_runs, right_objects, p_slices[new_lines].length);
+	last.eol_style = original_eol;
+
+	// Paragraph metadata travels with the paragraph's first character: text
+	// inserted at the start of a paragraph pushes it down to the last line.
+	if (p_restore_line_heights) {
+		_set_paragraph_line_height(first, p_slices[0].line_height);
+		_set_paragraph_line_height(last, p_slices[new_lines].line_height);
+	} else if (p_column == 0) {
+		_set_paragraph_line_height(first, p_slices[0].line_height);
+		_set_paragraph_line_height(last, original_line_height);
+	} else {
+		_set_paragraph_line_height(first, original_line_height);
+		_set_paragraph_line_height(last, p_slices[new_lines].line_height);
+	}
+	_normalize_runs(first.runs);
+	_normalize_runs(last.runs);
+
+	// Open a gap of new_lines paragraphs after the target in one move.
+	const int old_size = paragraphs.size();
+	paragraphs.resize(old_size + new_lines);
+	for (int i = old_size - 1; i > p_line; i--) {
+		paragraphs[i + new_lines] = std::move(paragraphs[i]);
+	}
+	paragraphs[p_line] = first;
+	for (int i = 1; i < new_lines; i++) {
+		Paragraph middle;
+		append(middle, p_slices[i], 0);
+		middle.eol_style = p_slices[i].eol_style;
+		_set_paragraph_line_height(middle, p_slices[i].line_height);
+		_normalize_runs(middle.runs);
+		paragraphs[p_line + i] = middle;
+	}
+	paragraphs[p_line + new_lines] = last;
+}
+
+void RichTextEdit::_remove_model_range(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
+	Paragraph &first = paragraphs[p_from_line];
+	const Paragraph &last = paragraphs[p_to_line];
+	const int removed = p_from_line == p_to_line ? p_to_column - p_from_column : 0;
+
+	Paragraph merged;
+	for (const StyleRun &run : first.runs) {
+		if (run.from < p_from_column) {
+			merged.runs.push_back({ run.from, MIN(run.to, p_from_column), run.style });
+		}
+	}
+	for (const InlineObject &object : first.objects) {
+		if (object.column < p_from_column) {
+			merged.objects.push_back(object);
+		}
+	}
+	const int shift = p_from_line == p_to_line ? -removed : p_from_column - p_to_column;
+	for (const StyleRun &run : last.runs) {
+		if (run.to > p_to_column) {
+			merged.runs.push_back({ MAX(run.from, p_to_column) + shift, run.to + shift, run.style });
+		}
+	}
+	for (const InlineObject &object : last.objects) {
+		if (object.column >= p_to_column) {
+			InlineObject moved = object;
+			moved.column += shift;
+			merged.objects.push_back(moved);
+		}
+	}
+	merged.eol_style = last.eol_style;
+	// Paragraph metadata travels with the paragraph's first character, as on
+	// insertion: removing from the start of a line leaves the joined text
+	// starting with the last paragraph's text.
+	_set_paragraph_line_height(merged, p_from_column > 0 ? first.line_height : last.line_height);
+	_normalize_runs(merged.runs);
+	paragraphs[p_from_line] = merged;
+
+	const int removed_lines = p_to_line - p_from_line;
+	if (removed_lines > 0) {
+		const int old_size = paragraphs.size();
+		for (int i = p_to_line + 1; i < old_size; i++) {
+			paragraphs[i - removed_lines] = std::move(paragraphs[i]);
+		}
+		paragraphs.resize(old_size - removed_lines);
+	}
+}
+
+void RichTextEdit::_text_inserting(int p_line, int p_column, const String &p_text) {
+	if (setting_bbcode_text) {
+		return;
+	}
+	_ensure_model_size();
+	ERR_FAIL_INDEX(p_line, (int)paragraphs.size());
+
+	const Vector<String> pieces = p_text.split("\n");
+	LocalVector<Paragraph> slices;
+	bool restore_line_heights = false;
+	bool have_slices = false;
+	bool inherit_style = false;
+	const bool undo_redo = _is_applying_undo_redo();
+	if (undo_redo) {
+		// TextEdit puts back exactly the text an edit removed: restore its
+		// formatting. Text without a record was unformatted.
+		for (int i = (int)removed_fragments.size() - 1; i >= 0; i--) {
+			RemovedFragment &fragment = removed_fragments[i];
+			if (fragment.line == p_line && fragment.column == p_column && fragment.text == p_text) {
+				slices = fragment.slices;
+				removed_fragments_chars -= fragment.text.length();
+				removed_fragments.remove_at(i);
+				have_slices = true;
+				restore_line_heights = true;
+				break;
+			}
+		}
+	} else if (pending_fragment_active && p_text == pending_fragment_text) {
+		slices = pending_fragment;
+		inherit_style = pending_fragment_inherit_style;
+		pending_fragment_active = false;
+		pending_fragment.clear();
+		have_slices = slices.size() == (uint32_t)pieces.size();
+	}
+
+	int style = 0;
+	if (!undo_redo) {
+		style = typing_style_override ? _intern_style(typing_style) : _get_insertion_style_id(p_line, p_column);
+	}
+	if (!have_slices) {
+		slices.clear();
+		slices.resize(pieces.size());
+	}
+	for (int i = 0; i < pieces.size(); i++) {
+		Paragraph &slice = slices[i];
+		slice.length = pieces[i].length();
+		// Typed text, and inserted objects, take the style typing would use.
+		if ((!have_slices || inherit_style) && style != 0) {
+			if (slice.length > 0 && slice.runs.is_empty()) {
+				slice.runs.push_back({ 0, slice.length, style });
+			}
+			if (i < pieces.size() - 1 && slice.eol_style == 0) {
+				slice.eol_style = style;
+			}
+		}
+	}
+
+	// An unstyled paragraph break typed in front of a block paragraph mark
+	// leaves the new empty paragraph plain instead of extending the block.
+	bool plain_moved_mark = false;
+	if (!have_slices && !undo_redo && p_text == "\n" && styles[style].block_tag.is_empty() && p_line < (int)paragraphs.size() - 1 && p_column == _get_line_length(p_line)) {
+		const int mark = paragraphs[p_line].eol_style;
+		const int before = p_column > 0 ? _get_style_id_at(p_line, p_column - 1) : (p_line > 0 ? paragraphs[p_line - 1].eol_style : 0);
+		plain_moved_mark = mark != 0 && !styles[mark].block_tag.is_empty() && before == mark;
+	}
+
+	_insert_slices(p_line, p_column, slices, restore_line_heights);
+	if (plain_moved_mark) {
+		paragraphs[p_line + 1].eol_style = 0;
+	}
+	typing_style_override = false;
+	_model_changed(p_line, p_line + pieces.size() - 1, false);
+}
+
+void RichTextEdit::_text_removing(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
+	if (setting_bbcode_text) {
+		return;
+	}
+	_ensure_model_size();
+	ERR_FAIL_INDEX(p_to_line, (int)paragraphs.size());
+
+	// Remember the removed formatting for undo and redo. Plain removals are
+	// recorded too, so an older record at the same place cannot be matched.
+	RemovedFragment fragment;
+	fragment.line = p_from_line;
+	fragment.column = p_from_column;
+	fragment.text = _get_text_range(p_from_line, p_from_column, p_to_line, p_to_column);
+	fragment.slices = _extract_slices(p_from_line, p_from_column, p_to_line, p_to_column);
+	for (int i = 0; i < (int)fragment.slices.size(); i++) {
+		const int from = i == 0 ? p_from_column : 0;
+		const int to = p_from_line + i == p_to_line ? p_to_column : _get_line_length(p_from_line + i);
+		fragment.slices[i].length = to - from;
+	}
+	bool removes_selected_object = false;
+	for (const Paragraph &slice : fragment.slices) {
+		for (const InlineObject &object : slice.objects) {
+			removes_selected_object = removes_selected_object || object.id == selected_object_id;
+		}
+	}
+	removed_fragments_chars += fragment.text.length();
+	removed_fragments.push_back(fragment);
+	while (!removed_fragments.is_empty() && ((int)removed_fragments.size() > MAX_REMOVED_FRAGMENTS || removed_fragments_chars > MAX_REMOVED_FRAGMENT_CHARS)) {
+		removed_fragments_chars -= removed_fragments[0].text.length();
+		removed_fragments.remove_at(0);
+	}
+
+	_remove_model_range(p_from_line, p_from_column, p_to_line, p_to_column);
+	_model_changed(p_from_line, p_from_line, false);
+	if (removes_selected_object) {
+		_clear_selected_image();
+	}
+}
+
+/* Documents. */
+
+RichTextDocument RichTextEdit::_make_range_document(int p_from_line, int p_from_column, int p_to_line, int p_to_column) const {
+	RichTextDocument document;
+	document.text = _get_text_range(p_from_line, p_from_column, p_to_line, p_to_column);
+
+	// Runs of equal style that touch across paragraph breaks become one span.
+	RichTextDocument::StyleSpan open;
+	int open_style = 0;
+	auto flush = [&]() {
+		if (open_style != 0) {
+			open.style = styles[open_style];
+			document.spans.push_back(open);
+			open_style = 0;
+		}
+	};
+	auto emit = [&](int p_from, int p_to, int p_style) {
+		if (p_style == 0 || p_from >= p_to) {
+			return;
+		}
+		if (open_style == p_style && open.to == p_from) {
+			open.to = p_to;
+			return;
+		}
+		flush();
+		open.from = p_from;
+		open.to = p_to;
+		open_style = p_style;
+	};
+
+	int base = 0;
+	for (int line = p_from_line; line <= p_to_line; line++) {
+		const Paragraph &paragraph = paragraphs[line];
+		const int from = line == p_from_line ? p_from_column : 0;
+		const int to = line == p_to_line ? p_to_column : _get_line_length(line);
+		for (const StyleRun &run : paragraph.runs) {
+			const int run_from = MAX(run.from, from);
+			const int run_to = MIN(run.to, to);
+			if (run_from < run_to) {
+				emit(base + run_from - from, base + run_to - from, run.style);
+			}
+		}
+		for (const InlineObject &object : paragraph.objects) {
+			if (object.column < from || object.column >= to) {
+				continue;
+			}
+			const int offset = base + object.column - from;
+			if (object.is_image) {
+				RichTextDocument::InlineImage image = object.image;
+				image.offset = offset;
+				document.images.push_back(image);
+			} else {
+				RichTextDocument::RawInline raw_inline;
+				raw_inline.offset = offset;
+				raw_inline.bbcode = object.raw_bbcode;
+				document.raw_inlines.push_back(raw_inline);
+			}
+		}
+		if (!paragraph.line_height.is_empty()) {
+			RichTextDocument::LineHeightSpan line_height;
+			line_height.line_start = base;
+			line_height.value = paragraph.line_height;
+			document.line_heights.push_back(line_height);
+		}
+		base += to - from;
+		if (line < p_to_line) {
+			emit(base, base + 1, paragraph.eol_style);
+			base++;
+		}
+	}
+	flush();
+	return document;
 }
 
 RichTextDocument RichTextEdit::_make_document() const {
-	RichTextDocument document;
-	document.text = TextEdit::get_text();
-	for (const StyleSpan &span : style_spans) {
-		RichTextDocument::StyleSpan doc_span;
-		doc_span.from = span.from;
-		doc_span.to = span.to;
-		doc_span.style = span.style;
-		document.spans.push_back(doc_span);
+	const int last_line = get_line_count() - 1;
+	if (last_line < 0 || (int)paragraphs.size() != get_line_count()) {
+		RichTextDocument document;
+		document.text = TextEdit::get_text();
+		return document;
 	}
-	for (const RichTextDocument::InlineImage &image : images) {
-		if (image.offset >= 0 && image.offset < document.text.length() && document.text[image.offset] == RichTextDocument::OBJECT_REPLACEMENT_CHAR) {
-			document.images.push_back(image);
-		}
-	}
-	for (const RichTextDocument::RawInline &raw_inline : raw_inlines) {
-		if (raw_inline.offset >= 0 && raw_inline.offset < document.text.length() && document.text[raw_inline.offset] == RichTextDocument::OBJECT_REPLACEMENT_CHAR) {
-			document.raw_inlines.push_back(raw_inline);
-		}
-	}
-	document.line_heights = line_height_spans;
+	RichTextDocument document = _make_range_document(0, 0, last_line, _get_line_length(last_line));
 	document.canonicalize();
 	return document;
 }
 
-void RichTextEdit::_mark_bbcode_dirty() {
-	bbcode_dirty = true;
+LocalVector<RichTextEdit::Paragraph> RichTextEdit::_document_to_slices(const RichTextDocument &p_document) {
+	const Vector<String> pieces = p_document.text.split("\n");
+	LocalVector<Paragraph> slices;
+	slices.resize(pieces.size());
+	LocalVector<int> starts;
+	starts.resize(pieces.size() + 1);
+	starts[0] = 0;
+	for (int i = 0; i < pieces.size(); i++) {
+		slices[i].length = pieces[i].length();
+		starts[i + 1] = starts[i] + pieces[i].length() + 1;
+	}
+	auto line_at = [&](int p_offset) {
+		int low = 0;
+		int high = pieces.size() - 1;
+		while (low < high) {
+			const int mid = (low + high + 1) / 2;
+			if (starts[mid] <= p_offset) {
+				low = mid;
+			} else {
+				high = mid - 1;
+			}
+		}
+		return low;
+	};
+
+	for (const RichTextDocument::StyleSpan &span : p_document.spans) {
+		const int style = _intern_style(span.style);
+		if (style == 0 || span.from >= span.to) {
+			continue;
+		}
+		for (int line = line_at(span.from); line < pieces.size() && starts[line] < span.to; line++) {
+			const int line_end = starts[line] + pieces[line].length();
+			const int from = MAX(span.from, starts[line]) - starts[line];
+			const int to = MIN(span.to, line_end) - starts[line];
+			if (from < to) {
+				slices[line].runs.push_back({ from, to, style });
+			}
+			// The span covers this paragraph's break.
+			if (line < pieces.size() - 1 && span.from <= line_end && span.to > line_end) {
+				slices[line].eol_style = style;
+			}
+		}
+	}
+	for (Paragraph &slice : slices) {
+		_normalize_runs(slice.runs);
+	}
+
+	for (const RichTextDocument::InlineImage &image : p_document.images) {
+		if (image.offset < 0 || image.offset >= p_document.text.length()) {
+			continue;
+		}
+		const int line = line_at(image.offset);
+		InlineObject object;
+		object.column = image.offset - starts[line];
+		object.is_image = true;
+		object.image = image;
+		if (object.image.texture.is_null()) {
+			object.image.texture = RichTextDocument::load_image_texture(object.image.source);
+		}
+		slices[line].objects.push_back(object);
+	}
+	for (const RichTextDocument::RawInline &raw_inline : p_document.raw_inlines) {
+		if (raw_inline.offset < 0 || raw_inline.offset >= p_document.text.length()) {
+			continue;
+		}
+		const int line = line_at(raw_inline.offset);
+		InlineObject object;
+		object.column = raw_inline.offset - starts[line];
+		object.is_image = false;
+		object.raw_bbcode = raw_inline.bbcode;
+		slices[line].objects.push_back(object);
+	}
+	struct ObjectCompare {
+		_FORCE_INLINE_ bool operator()(const InlineObject &p_a, const InlineObject &p_b) const {
+			return p_a.column < p_b.column;
+		}
+	};
+	for (Paragraph &slice : slices) {
+		slice.objects.sort_custom<ObjectCompare>();
+	}
+
+	for (const RichTextDocument::LineHeightSpan &line_height : p_document.line_heights) {
+		const int line = line_at(line_height.line_start);
+		if (starts[line] == line_height.line_start) {
+			_set_paragraph_line_height(slices[line], line_height.value);
+		}
+	}
+	return slices;
 }
 
-void RichTextEdit::_apply_document(const RichTextDocument &p_document) {
-	style_spans.clear();
-	deleted_style_ranges_for_undo.clear();
-	deleted_images_for_undo.clear();
-	deleted_raw_inlines_for_undo.clear();
-	for (const RichTextDocument::StyleSpan &doc_span : p_document.spans) {
-		StyleSpan span;
-		span.from = doc_span.from;
-		span.to = doc_span.to;
-		span.style = doc_span.style;
-		style_spans.push_back(span);
-	}
-	images = p_document.images;
-	for (RichTextDocument::InlineImage &image : images) {
-		if (image.texture.is_null()) {
-			image.texture = RichTextDocument::load_image_texture(image.source);
+void RichTextEdit::_load_document(const RichTextDocument &p_document, const String &p_bbcode) {
+	_clear_selected_image();
+	_reset_model();
+	LocalVector<Paragraph> loaded = _document_to_slices(p_document);
+	for (Paragraph &paragraph : loaded) {
+		for (InlineObject &object : paragraph.objects) {
+			object.id = next_object_id++;
 		}
 	}
-	raw_inlines = p_document.raw_inlines;
-	line_height_spans = p_document.line_heights;
-}
+	paragraphs = loaded;
 
-void RichTextEdit::_sync_style_spans_for_text_change(const String &p_old_text, const String &p_new_text) {
-	int prefix = 0;
-	const int old_len = p_old_text.length();
-	const int new_len = p_new_text.length();
-	while (prefix < old_len && prefix < new_len && p_old_text[prefix] == p_new_text[prefix]) {
-		prefix++;
-	}
+	// TextEdit shapes every line once while inserting the text; the style
+	// parser already reads the final paragraphs.
+	setting_bbcode_text = true;
+	TextEdit::set_text(p_document.text);
+	setting_bbcode_text = false;
+	_ensure_model_size();
 
-	int suffix = 0;
-	while (suffix < old_len - prefix && suffix < new_len - prefix && p_old_text[old_len - suffix - 1] == p_new_text[new_len - suffix - 1]) {
-		suffix++;
-	}
-
-	const int old_from = prefix;
-	const int old_to = old_len - suffix;
-	const int new_to = new_len - suffix;
-	const int delta = (new_to - old_from) - (old_to - old_from);
-	TextStyle insertion_style;
-	if (new_to > old_from) {
-		if (typing_style_override) {
-			insertion_style = typing_style;
-		} else if ((old_from == 0 || p_old_text[old_from - 1] == '\n') && old_from < old_len) {
-			insertion_style = _get_style_at_offset(old_from);
-		} else if (old_from > 0) {
-			insertion_style = _get_style_at_offset(old_from - 1);
-		} else {
-			insertion_style = _get_style_at_offset(old_from);
-		}
-	}
-	const bool inserted_unstyled_paragraph_break = old_from == old_to && new_to == old_from + 1 && old_from < p_new_text.length() && p_new_text[old_from] == '\n' && insertion_style.block_tag.is_empty();
-
-	if (old_to > old_from) {
-		DeletedStyleRange deleted_range;
-		deleted_range.offset = old_from;
-		deleted_range.text = p_old_text.substr(old_from, old_to - old_from);
-		for (const StyleSpan &span : style_spans) {
-			if (span.to <= old_from || span.from >= old_to) {
-				continue;
-			}
-
-			StyleSpan deleted_span;
-			deleted_span.from = MAX(span.from, old_from) - old_from;
-			deleted_span.to = MIN(span.to, old_to) - old_from;
-			deleted_span.style = span.style;
-			if (deleted_span.from < deleted_span.to) {
-				deleted_range.spans.push_back(deleted_span);
-			}
-		}
-		deleted_style_ranges_for_undo.push_back(deleted_range);
-	}
-
-	Vector<StyleSpan> updated;
-	for (StyleSpan span : style_spans) {
-		if (span.to <= old_from) {
-			updated.push_back(span);
-		} else if (span.from >= old_to) {
-			span.from += delta;
-			span.to += delta;
-			updated.push_back(span);
-		} else {
-			if (span.from < old_from) {
-				StyleSpan left = span;
-				left.to = old_from;
-				updated.push_back(left);
-			}
-			if (span.to > old_to) {
-				StyleSpan right = span;
-				right.from = new_to;
-				if (inserted_unstyled_paragraph_break && !span.style.block_tag.is_empty() && old_from < p_old_text.length() && p_old_text[old_from] == '\n') {
-					right.from++;
-				}
-				right.to = span.to + delta;
-				if (right.from < right.to) {
-					updated.push_back(right);
-				}
-			}
-		}
-	}
-	style_spans = updated;
-	_sync_inline_objects_for_text_change(p_old_text, p_new_text, old_from, old_to, new_to);
-
-	if (new_to > old_from) {
-		const String inserted_text = p_new_text.substr(old_from, new_to - old_from);
-		bool restored_deleted_styles = false;
-		for (int i = deleted_style_ranges_for_undo.size() - 1; i >= 0; i--) {
-			const DeletedStyleRange &deleted_range = deleted_style_ranges_for_undo[i];
-			if (deleted_range.offset != old_from || deleted_range.text != inserted_text) {
-				continue;
-			}
-
-			for (StyleSpan span : deleted_range.spans) {
-				span.from += old_from;
-				span.to += old_from;
-				if (span.from < span.to) {
-					style_spans.push_back(span);
-				}
-			}
-			deleted_style_ranges_for_undo.remove_at(i);
-			restored_deleted_styles = true;
-			break;
-		}
-
-		if (restored_deleted_styles) {
-			_merge_adjacent_spans();
-		} else if (!insertion_style.is_default()) {
-			_replace_style_range(old_from, new_to, insertion_style);
-		} else {
-			_merge_adjacent_spans();
-		}
-	} else {
-		_merge_adjacent_spans();
-	}
 	typing_style_override = false;
+	removed_fragments.clear();
+	removed_fragments_chars = 0;
+	clear_undo_history();
+	_model_changed(0, 0, false);
+	bbcode_text = p_bbcode;
+	bbcode_revision = use_bbcode ? model_revision : 0;
 }
 
-void RichTextEdit::_sync_line_height_spans_for_text_change(const String &p_old_text, const String &p_new_text) {
-	int prefix = 0;
-	const int old_len = p_old_text.length();
-	const int new_len = p_new_text.length();
-	while (prefix < old_len && prefix < new_len && p_old_text[prefix] == p_new_text[prefix]) {
-		prefix++;
-	}
-
-	int suffix = 0;
-	while (suffix < old_len - prefix && suffix < new_len - prefix && p_old_text[old_len - suffix - 1] == p_new_text[new_len - suffix - 1]) {
-		suffix++;
-	}
-
-	const int old_from = prefix;
-	const int old_to = old_len - suffix;
-	const int new_to = new_len - suffix;
-	const int delta = (new_to - old_from) - (old_to - old_from);
-	const String inserted_text = p_new_text.substr(old_from, new_to - old_from);
-	const bool inserted_newline_at_line_start = old_from == old_to && !inserted_text.is_empty() && inserted_text[0] == '\n';
-
-	Vector<RichTextDocument::LineHeightSpan> updated;
-	for (RichTextDocument::LineHeightSpan span : line_height_spans) {
-		int mapped = span.line_start;
-		if (span.line_start >= old_to) {
-			mapped += delta;
-		} else if (span.line_start >= old_from) {
-			mapped = new_to;
-		}
-		if (span.line_start == old_from && inserted_newline_at_line_start) {
-			mapped = new_to;
-		}
-
-		mapped = CLAMP(mapped, 0, new_len);
-		while (mapped > 0 && p_new_text[mapped - 1] != '\n') {
-			mapped--;
-		}
-		span.line_start = mapped;
-
-		bool duplicate = false;
-		for (const RichTextDocument::LineHeightSpan &existing : updated) {
-			if (existing.line_start == span.line_start) {
-				duplicate = true;
-				break;
-			}
-		}
-		if (!duplicate) {
-			updated.push_back(span);
-		}
-	}
-	line_height_spans = updated;
+String RichTextEdit::_serialize_bbcode() const {
+	return _make_document().to_bbcode();
 }
 
-void RichTextEdit::_sync_inline_objects_for_text_change(const String &p_old_text, const String &p_new_text, int p_old_from, int p_old_to, int p_new_to) {
-	const int delta = (p_new_to - p_old_from) - (p_old_to - p_old_from);
-	Vector<int> old_inline_offsets;
-	for (int i = p_old_from; i < p_old_to && i < p_old_text.length(); i++) {
-		if (p_old_text[i] == RichTextDocument::OBJECT_REPLACEMENT_CHAR) {
-			old_inline_offsets.push_back(i);
-		}
-	}
-	Vector<int> new_inline_offsets;
-	for (int i = p_old_from; i < p_new_to && i < p_new_text.length(); i++) {
-		if (p_new_text[i] == RichTextDocument::OBJECT_REPLACEMENT_CHAR) {
-			new_inline_offsets.push_back(i);
-		}
-	}
-
-	Vector<RichTextDocument::InlineImage> updated_images;
-	for (const RichTextDocument::InlineImage &image : images) {
-		if (image.offset < p_old_from) {
-			updated_images.push_back(image);
-		} else if (image.offset >= p_old_to) {
-			RichTextDocument::InlineImage updated_image = image;
-			updated_image.offset += delta;
-			updated_images.push_back(updated_image);
-		} else {
-			const int inline_index = old_inline_offsets.find(image.offset);
-			if (inline_index >= 0 && inline_index < new_inline_offsets.size()) {
-				RichTextDocument::InlineImage updated_image = image;
-				updated_image.offset = new_inline_offsets[inline_index];
-				updated_images.push_back(updated_image);
-			} else {
-				deleted_images_for_undo.push_back(image);
-			}
-		}
-	}
-	for (int offset : new_inline_offsets) {
-		bool has_image = false;
-		for (const RichTextDocument::InlineImage &image : updated_images) {
-			if (image.offset == offset) {
-				has_image = true;
-				break;
-			}
-		}
-		if (has_image) {
-			continue;
-		}
-		for (int i = deleted_images_for_undo.size() - 1; i >= 0; i--) {
-			if (deleted_images_for_undo[i].offset == offset) {
-				updated_images.push_back(deleted_images_for_undo[i]);
-				deleted_images_for_undo.remove_at(i);
-				break;
-			}
-		}
-	}
-	images = updated_images;
-
-	Vector<RichTextDocument::RawInline> updated_raw_inlines;
-	for (const RichTextDocument::RawInline &raw_inline : raw_inlines) {
-		if (raw_inline.offset < p_old_from) {
-			updated_raw_inlines.push_back(raw_inline);
-		} else if (raw_inline.offset >= p_old_to) {
-			RichTextDocument::RawInline updated_raw_inline = raw_inline;
-			updated_raw_inline.offset += delta;
-			updated_raw_inlines.push_back(updated_raw_inline);
-		} else {
-			const int inline_index = old_inline_offsets.find(raw_inline.offset);
-			if (inline_index >= 0 && inline_index < new_inline_offsets.size()) {
-				RichTextDocument::RawInline updated_raw_inline = raw_inline;
-				updated_raw_inline.offset = new_inline_offsets[inline_index];
-				updated_raw_inlines.push_back(updated_raw_inline);
-			} else {
-				deleted_raw_inlines_for_undo.push_back(raw_inline);
-			}
-		}
-	}
-	for (int offset : new_inline_offsets) {
-		bool has_raw_inline = false;
-		for (const RichTextDocument::RawInline &raw_inline : updated_raw_inlines) {
-			if (raw_inline.offset == offset) {
-				has_raw_inline = true;
-				break;
-			}
-		}
-		if (has_raw_inline) {
-			continue;
-		}
-		for (int i = deleted_raw_inlines_for_undo.size() - 1; i >= 0; i--) {
-			if (deleted_raw_inlines_for_undo[i].offset == offset) {
-				updated_raw_inlines.push_back(deleted_raw_inlines_for_undo[i]);
-				deleted_raw_inlines_for_undo.remove_at(i);
-				break;
-			}
-		}
-	}
-	raw_inlines = updated_raw_inlines;
+void RichTextEdit::_mark_bbcode_dirty() {
+	model_revision++;
 }
 
-void RichTextEdit::_update_bbcode_from_text() {
+void RichTextEdit::_lines_edited(int p_from_line, int p_to_line) {
 	if (setting_bbcode_text) {
 		return;
 	}
-
-	const bool had_style_data = !style_spans.is_empty() || !images.is_empty() || !raw_inlines.is_empty() || !line_height_spans.is_empty() || typing_style_override;
-	syncing_text_change = true;
-	String new_text = TextEdit::get_text();
-	const auto count_object_replacement_chars = [](const String &p_text) {
-		int count = 0;
-		for (int i = 0; i < p_text.length(); i++) {
-			if (p_text[i] == RichTextDocument::OBJECT_REPLACEMENT_CHAR) {
-				count++;
-			}
+	// An empty paragraph is formatted by paragraph marks. TextEdit skips
+	// reshaping a line whose text did not change (a break typed at its end),
+	// and the empty paragraph after an edit reads the mark before it.
+	const int first = MIN(p_from_line, p_to_line);
+	for (int line : { first, MAX(p_from_line, p_to_line) + 1 }) {
+		if (line >= 0 && line < get_line_count() && _get_line_length(line) == 0) {
+			_invalidate_lines(line, line);
 		}
-		return count;
-	};
-	const auto inline_metadata_matches_text = [&](const String &p_text) {
-		HashSet<int> offsets;
-		for (const RichTextDocument::InlineImage &image : images) {
-			if (image.offset < 0 || image.offset >= p_text.length() || p_text[image.offset] != RichTextDocument::OBJECT_REPLACEMENT_CHAR || offsets.has(image.offset)) {
-				return false;
-			}
-			offsets.insert(image.offset);
-		}
-		for (const RichTextDocument::RawInline &raw_inline : raw_inlines) {
-			if (raw_inline.offset < 0 || raw_inline.offset >= p_text.length() || p_text[raw_inline.offset] != RichTextDocument::OBJECT_REPLACEMENT_CHAR || offsets.has(raw_inline.offset)) {
-				return false;
-			}
-			offsets.insert(raw_inline.offset);
-		}
-		return (int)offsets.size() == count_object_replacement_chars(p_text);
-	};
-	const bool skip_metadata_resync = pending_inline_metadata_restore_sync &&
-			count_object_replacement_chars(tracked_text) != count_object_replacement_chars(new_text) &&
-			inline_metadata_matches_text(new_text);
-	pending_inline_metadata_restore_sync = false;
-	if (!skip_metadata_resync) {
-		_sync_style_spans_for_text_change(tracked_text, new_text);
 	}
-	tracked_text = new_text;
-	source_text = new_text;
-	_mark_bbcode_dirty();
-	syncing_text_change = false;
-	if (selected_image_offset >= 0 && (selected_image_offset >= new_text.length() || new_text[selected_image_offset] != RichTextDocument::OBJECT_REPLACEMENT_CHAR)) {
-		_clear_selected_image();
-	}
-	_sync_selected_image_edit_controls();
+}
 
-	_refresh_style_rendering();
-	if (had_style_data || !style_spans.is_empty() || !images.is_empty() || !raw_inlines.is_empty() || typing_style_override) {
+void RichTextEdit::_update_bbcode_from_text() {
+	// The edit hooks already updated the paragraphs; announce the change.
+	if (!setting_bbcode_text) {
 		_style_changed();
 	}
 }
 
-void RichTextEdit::_replace_style_range(int p_from, int p_to, const TextStyle &p_style) {
-	if (p_from > p_to) {
-		SWAP(p_from, p_to);
+/* TextEdit callbacks. */
+
+Array RichTextEdit::_get_line_style_spans(int p_line) const {
+	Array result;
+	if (p_line < 0 || p_line >= (int)paragraphs.size() || p_line >= get_line_count()) {
+		return result;
 	}
-	if (p_from == p_to) {
-		typing_style = p_style;
+	auto add = [&](int p_style, int p_from, int p_to) {
+		const Dictionary base = _get_style_render_info(p_style);
+		if (base.is_empty()) {
+			return;
+		}
+		Dictionary info = base.duplicate();
+		info["from"] = p_from;
+		info["to"] = p_to;
+		result.push_back(info);
+	};
+	const Paragraph &paragraph = paragraphs[p_line];
+	const int length = _get_line_length(p_line);
+	if (length == 0) {
+		// An empty paragraph is formatted by its paragraph mark; a mark that
+		// ends here (the previous one) still contributes its block formatting.
+		const int previous = p_line > 0 ? paragraphs[p_line - 1].eol_style : 0;
+		const int own = p_line < (int)paragraphs.size() - 1 ? paragraph.eol_style : 0;
+		if (previous != 0 && previous != own) {
+			add(previous, 0, 0);
+		}
+		if (own != 0) {
+			add(own, 0, 1);
+		}
+		return result;
+	}
+	for (const StyleRun &run : paragraph.runs) {
+		if (run.from < length) {
+			add(run.style, run.from, MIN(run.to, length));
+		}
+	}
+	return result;
+}
+
+String RichTextEdit::_get_line_height_for_line(int p_line) const {
+	if (p_line < 0 || p_line >= (int)paragraphs.size()) {
+		return String();
+	}
+	return paragraphs[p_line].line_height;
+}
+
+int RichTextEdit::_get_visual_line_wrap_height(int p_line, int p_wrap_index) const {
+	if (p_line < 0 || p_line >= (int)paragraphs.size() || paragraphs[p_line].line_height_kind == 0) {
+		return TextEdit::_get_visual_line_wrap_height(p_line, p_wrap_index);
+	}
+	const Paragraph &paragraph = paragraphs[p_line];
+	const int top_margin = _get_visual_line_wrap_top_margin(p_line, p_wrap_index);
+	const int bottom_margin = _get_visual_line_wrap_bottom_margin(p_line, p_wrap_index);
+	const int content_height = MAX(_get_visual_line_wrap_content_height(p_line, p_wrap_index) - top_margin - bottom_margin, 1);
+	int line_box_height = content_height;
+	switch (paragraph.line_height_kind) {
+		case 1:
+			line_box_height = MAX(0, (int)Math::ceil(paragraph.line_height_value));
+			break;
+		case 2:
+			line_box_height = Math::ceil(content_height * paragraph.line_height_value / 100.0);
+			break;
+		default:
+			line_box_height = Math::ceil(content_height * paragraph.line_height_value);
+			break;
+	}
+	return MAX(line_box_height + top_margin + bottom_margin, 1);
+}
+
+int RichTextEdit::_get_list_item_number(int p_line, int p_list_type, int p_list_start) const {
+	if (p_list_start > 0) {
+		return p_list_start;
+	}
+	if (p_list_type < 1 || p_list_type > 4 || p_line < 0) {
+		return 1;
+	}
+	// Each paragraph advances the counter of every list type it uses; an
+	// explicit start resets that counter. Counters are kept per line boundary.
+	const int line_count = paragraphs.size();
+	p_line = MIN(p_line, line_count);
+	if ((int)list_counters.size() < (line_count + 1) * 4) {
+		list_counters.resize((line_count + 1) * 4);
+	}
+	if (list_numbers_valid <= 0) {
+		for (int t = 0; t < 4; t++) {
+			list_counters[t] = 1;
+		}
+		list_numbers_valid = 0;
+	}
+	list_numbers_valid = MIN(list_numbers_valid, line_count);
+	while (list_numbers_valid < p_line) {
+		const int line = list_numbers_valid;
+		int counters[4];
+		for (int t = 0; t < 4; t++) {
+			counters[t] = list_counters[line * 4 + t];
+		}
+		bool seen[4] = { false, false, false, false };
+		auto count = [&](int p_style) {
+			const TextStyle &style = styles[p_style];
+			if (style.list_type < 1 || style.list_type > 4 || seen[style.list_type - 1]) {
+				return;
+			}
+			seen[style.list_type - 1] = true;
+			if (style.list_start > 0) {
+				counters[style.list_type - 1] = MAX(1, style.list_start);
+			}
+			counters[style.list_type - 1]++;
+		};
+		const Paragraph &paragraph = paragraphs[line];
+		if (_get_line_length(line) == 0) {
+			const int previous = line > 0 ? paragraphs[line - 1].eol_style : 0;
+			const int own = line < line_count - 1 ? paragraph.eol_style : 0;
+			if (previous != 0 && previous != own) {
+				count(previous);
+			}
+			if (own != 0) {
+				count(own);
+			}
+		} else {
+			for (const StyleRun &run : paragraph.runs) {
+				count(run.style);
+			}
+		}
+		for (int t = 0; t < 4; t++) {
+			list_counters[(line + 1) * 4 + t] = counters[t];
+		}
+		list_numbers_valid++;
+	}
+	return list_counters[p_line * 4 + p_list_type - 1];
+}
+
+/* Style queries. */
+
+RichTextEdit::TextStyle RichTextEdit::_get_selection_common_style() const {
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	if (!_get_selection_range(from_line, from_column, to_line, to_column)) {
+		return typing_style;
+	}
+	return styles[_get_style_id_at(from_line, from_column)];
+}
+
+RichTextEdit::TextStyle RichTextEdit::get_current_style() const {
+	// The selection start, or the character before the caret.
+	const int line = has_selection() ? get_selection_from_line() : get_caret_line();
+	int column = 0;
+	if (has_selection()) {
+		column = get_selection_from_column();
+	} else {
+		column = MAX(get_caret_column() - 1, 0);
+	}
+	return styles[_get_style_id_at(line, column)];
+}
+
+int RichTextEdit::_get_default_font_size() const {
+	const int text_edit_font_size = get_theme_font_size(SceneStringName(font_size));
+	if (text_edit_font_size > 0) {
+		return text_edit_font_size;
+	}
+
+	return 16;
+}
+
+void RichTextEdit::_caret_style_context_changed() {
+	typing_style_override = false;
+	// Moving the caret retargets the edit, so it ends any run in progress.
+	_break_style_run();
+}
+
+const LocalVector<RichTextEdit::StyleSpan> &RichTextEdit::get_style_spans() const {
+	if (style_spans_revision != model_revision) {
+		style_spans_cache.clear();
+		const RichTextDocument document = _make_document();
+		for (const RichTextDocument::StyleSpan &span : document.spans) {
+			StyleSpan style_span;
+			style_span.from = span.from;
+			style_span.to = span.to;
+			style_span.style = span.style;
+			style_spans_cache.push_back(style_span);
+		}
+		style_spans_revision = model_revision;
+	}
+	return style_spans_cache;
+}
+
+/* Undo. */
+
+Ref<RichTextEdit::StyleState> RichTextEdit::_capture_style_state(int p_from_line, int p_to_line) const {
+	Ref<StyleState> state;
+	state.instantiate();
+	p_from_line = CLAMP(p_from_line, 0, (int)paragraphs.size() - 1);
+	p_to_line = CLAMP(p_to_line, p_from_line, (int)paragraphs.size() - 1);
+	state->first_line = p_from_line;
+	state->paragraphs.resize(p_to_line - p_from_line + 1);
+	for (int line = p_from_line; line <= p_to_line; line++) {
+		state->paragraphs[line - p_from_line] = paragraphs[line];
+	}
+	state->typing_style = typing_style;
+	state->typing_style_override = typing_style_override;
+	return state;
+}
+
+void RichTextEdit::_restore_style_state(const Ref<StyleState> &p_state) {
+	ERR_FAIL_COND(p_state.is_null());
+	const int count = p_state->paragraphs.size();
+	ERR_FAIL_COND_MSG(p_state->first_line + count > (int)paragraphs.size(), "Rich text style history does not match the document.");
+	bool selected_object_exists = false;
+	for (int i = 0; i < count; i++) {
+		paragraphs[p_state->first_line + i] = p_state->paragraphs[i];
+	}
+	if (selected_object_id != 0) {
+		selected_object_exists = _find_object(selected_object_id) != nullptr;
+	}
+	typing_style = p_state->typing_style;
+	typing_style_override = p_state->typing_style_override;
+	// A changed paragraph mark also formats the empty paragraph after it.
+	_model_changed(p_state->first_line, p_state->first_line + count, true);
+	if (selected_object_id != 0 && !selected_object_exists) {
+		_clear_selected_image();
+	}
+}
+
+// Properties whose repeated application is treated as one editing gesture: the
+// two spinner-driven sizes, which are clicked or dragged in bursts, and the
+// outline color, which streams values while its picker is dragged.
+bool RichTextEdit::_is_coalescing_style_property(StyleProperty p_property) {
+	return p_property == STYLE_PROPERTY_FONT_SIZE || p_property == STYLE_PROPERTY_OUTLINE_SIZE || p_property == STYLE_PROPERTY_OUTLINE_COLOR;
+}
+
+void RichTextEdit::_break_style_run() {
+	style_run_active = false;
+	style_run_before.unref();
+}
+
+void RichTextEdit::_push_style_undo(const Ref<StyleState> &p_before, bool p_isolate) {
+	const int count = p_before->paragraphs.size();
+	const Ref<StyleState> after = _capture_style_state(p_before->first_line, p_before->first_line + count - 1);
+	if (p_isolate) {
+		push_custom_undo_operation_isolated(SNAME("rich_text_edit_style"), p_before, after);
+	} else {
+		push_custom_undo_operation(SNAME("rich_text_edit_style"), p_before, after);
+	}
+}
+
+void RichTextEdit::_apply_custom_undo_operation(const StringName &p_type, const Variant &p_data) {
+	if (p_type == SNAME("rich_text_edit_style")) {
+		_restore_style_state(p_data);
+		_sync_selected_image_edit_controls();
+	}
+}
+
+/* Style edits. */
+
+template <typename F>
+bool RichTextEdit::_restyle_lines(int p_from_line, int p_to_line, F p_restyle) {
+	// p_restyle(line, paragraph) edits one paragraph and reports a change.
+	bool changed = false;
+	for (int line = p_from_line; line <= p_to_line; line++) {
+		changed = p_restyle(line, paragraphs[line]) || changed;
+	}
+	return changed;
+}
+
+// The style ids covering [p_from, p_to) of a paragraph, gaps included as 0.
+static void _collect_segments(const LocalVector<RichTextEdit::StyleRun> &p_runs, int p_from, int p_to, LocalVector<RichTextEdit::StyleRun> &r_segments) {
+	r_segments.clear();
+	int cursor = p_from;
+	for (const RichTextEdit::StyleRun &run : p_runs) {
+		if (run.to <= cursor) {
+			continue;
+		}
+		if (run.from >= p_to) {
+			break;
+		}
+		if (run.from > cursor) {
+			r_segments.push_back({ cursor, run.from, 0 });
+		}
+		const int to = MIN(run.to, p_to);
+		r_segments.push_back({ MAX(run.from, cursor), to, run.style });
+		cursor = to;
+	}
+	if (cursor < p_to) {
+		r_segments.push_back({ cursor, p_to, 0 });
+	}
+}
+
+void RichTextEdit::_apply_style_property_to_selection(StyleProperty p_property, const Variant &p_value, bool p_record_undo) {
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	if (!_get_selection_range(from_line, from_column, to_line, to_column)) {
+		// Without a selection the property applies to what typing would insert
+		// at the caret, on top of the formatting already there.
+		const TextStyle current = typing_style_override ? typing_style : styles[_get_insertion_style_id(get_caret_line(), get_caret_column())];
+		TextStyle style = current;
+		_apply_style_property(style, style, p_property, p_value);
+		if (style == current) {
+			return;
+		}
+
+		typing_style = style;
+		typing_style_override = true;
+		if (p_record_undo) {
+			_style_changed();
+		}
 		return;
 	}
 
-	const int text_len = TextEdit::get_text().length();
-	p_from = CLAMP(p_from, 0, text_len);
-	p_to = CLAMP(p_to, 0, text_len);
+	const TextStyle reference = _get_selection_common_style();
+	HashMap<int, int> restyled;
+	auto restyle = [&](int p_style) {
+		const int *existing = restyled.getptr(p_style);
+		if (existing != nullptr) {
+			return *existing;
+		}
+		TextStyle style = styles[p_style];
+		_apply_style_property(style, reference, p_property, p_value);
+		const int id = _intern_style(style);
+		restyled.insert(p_style, id);
+		return id;
+	};
 
-	Vector<StyleSpan> updated;
-	for (const StyleSpan &span : style_spans) {
-		if (span.to <= p_from || span.from >= p_to) {
-			updated.push_back(span);
+	const Ref<StyleState> before = _capture_style_state(from_line, to_line);
+	LocalVector<StyleRun> segments;
+	const bool changed = _restyle_lines(from_line, to_line, [&](int p_line, Paragraph &r_paragraph) {
+		const int from = p_line == from_line ? from_column : 0;
+		const int to = p_line == to_line ? to_column : _get_line_length(p_line);
+		bool line_changed = false;
+		_collect_segments(r_paragraph.runs, from, to, segments);
+		for (const StyleRun &segment : segments) {
+			const int style = restyle(segment.style);
+			if (style != segment.style) {
+				_set_runs_range(r_paragraph.runs, segment.from, segment.to, style);
+				line_changed = true;
+			}
+		}
+		// The paragraph break is part of the selection.
+		if (p_line < to_line) {
+			const int style = restyle(r_paragraph.eol_style);
+			if (style != r_paragraph.eol_style) {
+				r_paragraph.eol_style = style;
+				line_changed = true;
+			}
+		}
+		return line_changed;
+	});
+	if (!changed) {
+		return;
+	}
+	_model_changed(from_line, to_line + 1);
+	if (p_record_undo) {
+		const Vector4i range(from_line, from_column, to_line, to_column);
+		const bool continues_run = style_run_active && style_run_property == p_property && style_run_range == range && _is_coalescing_style_property(p_property);
+		// A run keeps the state from before its first edit, so one undo returns
+		// to the value the field held before the burst began.
+		if (!continues_run || !amend_custom_undo_operation(SNAME("rich_text_edit_style"), _capture_style_state(from_line, to_line))) {
+			_push_style_undo(before);
+			style_run_active = _is_coalescing_style_property(p_property);
+			style_run_property = p_property;
+			style_run_range = range;
+		}
+	}
+}
+
+void RichTextEdit::_apply_style_property_to_url_ranges(StyleProperty p_property, const Variant &p_value) {
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	const bool has_range = _get_selection_range(from_line, from_column, to_line, to_column);
+	if (!has_range) {
+		from_line = to_line = get_caret_line();
+		from_column = to_column = get_caret_column();
+	}
+
+	// Links are edited as a whole: every link the selection (or the caret, or
+	// the character before it) touches, extended over adjacent paragraphs.
+	struct Position {
+		int line = 0;
+		int column = 0;
+	};
+	LocalVector<Position> seeds;
+	auto consider = [&](int p_line, int p_column) {
+		const int style = _get_style_id_at(p_line, p_column);
+		if (style != 0 && !styles[style].url.is_empty()) {
+			seeds.push_back({ p_line, p_column });
+		}
+	};
+	if (has_range) {
+		for (int line = from_line; line <= to_line; line++) {
+			const int from = line == from_line ? from_column : 0;
+			const int to = line == to_line ? to_column : _get_line_length(line) + 1;
+			for (const StyleRun &run : paragraphs[line].runs) {
+				if (run.from < to && run.to > from) {
+					consider(line, MAX(run.from, from));
+				}
+			}
+			if (line < to_line) {
+				consider(line, _get_line_length(line));
+			}
+		}
+	} else {
+		consider(from_line, from_column);
+		if (from_column > 0) {
+			consider(from_line, from_column - 1);
+		}
+	}
+	if (seeds.is_empty()) {
+		return;
+	}
+
+	int first_line = from_line;
+	int last_line = to_line;
+	HashMap<int, int> restyled;
+	auto restyle = [&](int p_style) {
+		const int *existing = restyled.getptr(p_style);
+		if (existing != nullptr) {
+			return *existing;
+		}
+		TextStyle style = styles[p_style];
+		_apply_style_property(style, style, p_property, p_value);
+		const int id = _intern_style(style);
+		restyled.insert(p_style, id);
+		return id;
+	};
+
+	// Walk each link's characters in both directions while the style holds.
+	struct Edit {
+		int line = 0;
+		int from = 0;
+		int to = 0;
+		bool eol = false;
+		int style = 0;
+	};
+	LocalVector<Edit> edits;
+	auto collect = [&](int p_line, int p_column) {
+		const int style = _get_style_id_at(p_line, p_column);
+		int line = p_line;
+		int column = p_column;
+		// Backward to the first character of the link.
+		while (true) {
+			if (column > 0 && _get_style_id_at(line, column - 1) == style) {
+				column--;
+				continue;
+			}
+			if (column == 0 && line > 0 && paragraphs[line - 1].eol_style == style) {
+				line--;
+				column = _get_line_length(line);
+				continue;
+			}
+			break;
+		}
+		first_line = MIN(first_line, line);
+		// Forward over its characters and paragraph marks.
+		while (line < (int)paragraphs.size()) {
+			const int length = _get_line_length(line);
+			int end = column;
+			while (end < length && _get_style_id_at(line, end) == style) {
+				end++;
+			}
+			if (end > column) {
+				edits.push_back({ line, column, end, false, style });
+			}
+			if (end == length && line < (int)paragraphs.size() - 1 && paragraphs[line].eol_style == style) {
+				edits.push_back({ line, length, length + 1, true, style });
+				line++;
+				column = 0;
+				continue;
+			}
+			break;
+		}
+		last_line = MAX(last_line, line);
+	};
+	for (const Position &seed : seeds) {
+		collect(seed.line, seed.column);
+	}
+
+	const Ref<StyleState> before = _capture_style_state(first_line, last_line);
+	bool changed = false;
+	for (const Edit &edit : edits) {
+		const int style = restyle(edit.style);
+		if (style == edit.style) {
 			continue;
 		}
-		if (span.from < p_from) {
-			StyleSpan left = span;
-			left.to = p_from;
-			updated.push_back(left);
+		if (edit.eol) {
+			paragraphs[edit.line].eol_style = style;
+		} else {
+			_set_runs_range(paragraphs[edit.line].runs, edit.from, edit.to, style);
 		}
-		if (span.to > p_to) {
-			StyleSpan right = span;
-			right.from = p_to;
-			right.to = span.to;
-			updated.push_back(right);
+		changed = true;
+	}
+	if (!changed) {
+		return;
+	}
+	_model_changed(first_line, last_line + 1);
+	_push_style_undo(before);
+}
+
+void RichTextEdit::_apply_block_tag_to_selected_lines(const String &p_tag) {
+	int from_line = 0;
+	int to_line = 0;
+	_get_selected_line_range(from_line, to_line);
+
+	// Every call is one editing gesture. Lines it touches share a single group
+	// id so their quote borders draw as one continuous box; a later call (even
+	// over lines directly adjacent to this one) gets a new id, so the two
+	// groups stay visually separate instead of merging.
+	const int block_group = p_tag == "quote" ? ++next_block_group_id : 0;
+	HashMap<int, int> restyled;
+	const Ref<StyleState> before = _capture_style_state(from_line, to_line);
+	LocalVector<StyleRun> segments;
+	const bool changed = _restyle_lines(from_line, to_line, [&](int p_line, Paragraph &r_paragraph) {
+		const int length = _get_line_length(p_line);
+		if (length == 0) {
+			return false;
+		}
+		bool line_changed = false;
+		_collect_segments(r_paragraph.runs, 0, length, segments);
+		for (const StyleRun &segment : segments) {
+			int style = 0;
+			const int *existing = restyled.getptr(segment.style);
+			if (existing != nullptr) {
+				style = *existing;
+			} else {
+				TextStyle updated = styles[segment.style];
+				_apply_style_property(updated, updated, STYLE_PROPERTY_BLOCK_TAG, p_tag);
+				updated.block_group = block_group;
+				style = _intern_style(updated);
+				restyled.insert(segment.style, style);
+			}
+			if (style != segment.style) {
+				_set_runs_range(r_paragraph.runs, segment.from, segment.to, style);
+				line_changed = true;
+			}
+		}
+		return line_changed;
+	});
+	if (!changed) {
+		return;
+	}
+	_model_changed(from_line, to_line + 1);
+	_push_style_undo(before);
+}
+
+void RichTextEdit::_clear_block_tag_from_selected_lines(const String &p_tag) {
+	int from_line = 0;
+	int to_line = 0;
+	_get_selected_line_range(from_line, to_line);
+	const Ref<StyleState> before = _capture_style_state(from_line, to_line);
+	LocalVector<StyleRun> segments;
+	const bool changed = _restyle_lines(from_line, to_line, [&](int p_line, Paragraph &r_paragraph) {
+		const int length = _get_line_length(p_line);
+		if (length == 0) {
+			return false;
+		}
+		bool line_changed = false;
+		_collect_segments(r_paragraph.runs, 0, length, segments);
+		for (const StyleRun &segment : segments) {
+			TextStyle style = styles[segment.style];
+			if (style.block_tag != p_tag) {
+				continue;
+			}
+			style.block_tag = "";
+			style.block_group = 0;
+			if (p_tag == "ul" || p_tag == "ol") {
+				style.indent_level = MAX(0, style.indent_level - 1);
+				style.list_type = 0;
+				style.list_start = -1;
+				style.list_capitalize = false;
+				if (style.indent_level > 0) {
+					style.block_tag = "indent";
+				}
+			}
+			_set_runs_range(r_paragraph.runs, segment.from, segment.to, _intern_style(style));
+			line_changed = true;
+		}
+		return line_changed;
+	});
+	if (!changed) {
+		return;
+	}
+	_model_changed(from_line, to_line + 1);
+	_push_style_undo(before);
+}
+
+void RichTextEdit::_toggle_block_tag_on_selected_lines(const String &p_tag) {
+	int from_line = 0;
+	int to_line = 0;
+	_get_selected_line_range(from_line, to_line);
+	bool all_lines_have_tag = true;
+	bool has_text_line = false;
+
+	for (int line = from_line; line <= to_line; line++) {
+		if (_get_line_length(line) == 0) {
+			continue;
+		}
+		has_text_line = true;
+		if (styles[_get_style_id_at(line, 0)].block_tag != p_tag) {
+			all_lines_have_tag = false;
+			break;
 		}
 	}
 
-	if (!p_style.is_default()) {
-		StyleSpan replacement;
-		replacement.from = p_from;
-		replacement.to = p_to;
-		replacement.style = p_style;
-		updated.push_back(replacement);
+	if (!has_text_line || !all_lines_have_tag) {
+		_apply_block_tag_to_selected_lines(p_tag);
+		return;
 	}
 
-	style_spans = updated;
-	_merge_adjacent_spans();
+	_clear_block_tag_from_selected_lines(p_tag);
+}
+
+void RichTextEdit::decrease_indent() {
+	int from_line = 0;
+	int to_line = 0;
+	_get_selected_line_range(from_line, to_line);
+	const Ref<StyleState> before = _capture_style_state(from_line, to_line);
+	LocalVector<StyleRun> segments;
+	const bool changed = _restyle_lines(from_line, to_line, [&](int p_line, Paragraph &r_paragraph) {
+		const int length = _get_line_length(p_line);
+		if (length == 0) {
+			return false;
+		}
+		bool line_changed = false;
+		_collect_segments(r_paragraph.runs, 0, length, segments);
+		for (const StyleRun &segment : segments) {
+			TextStyle style = styles[segment.style];
+			if (style.indent_level <= 0) {
+				continue;
+			}
+			style.indent_level = MAX(0, style.indent_level - 1);
+			if (style.indent_level == 0 && (style.block_tag == "indent" || style.block_tag == "ul" || style.block_tag == "ol")) {
+				style.block_tag = "";
+				style.list_type = 0;
+				style.list_start = -1;
+				style.list_capitalize = false;
+			} else if (style.block_tag == "indent" && style.indent_level > 0) {
+				style.block_tag = "indent";
+			}
+			_set_runs_range(r_paragraph.runs, segment.from, segment.to, _intern_style(style));
+			line_changed = true;
+		}
+		return line_changed;
+	});
+	if (!changed) {
+		return;
+	}
+	_model_changed(from_line, to_line + 1);
+	_push_style_undo(before);
+}
+
+void RichTextEdit::begin_selection_color_preview() {
+	if (style_preview_active) {
+		return;
+	}
+
+	style_preview_active = true;
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	style_preview_had_selection = _get_selection_range(from_line, from_column, to_line, to_column);
+	if (!style_preview_had_selection) {
+		from_line = to_line = get_caret_line();
+	}
+	style_preview_before = _capture_style_state(from_line, to_line);
+}
+
+void RichTextEdit::preview_selection_color(const Color &p_color) {
+	if (!style_preview_active) {
+		begin_selection_color_preview();
+	}
+	_apply_style_property_to_selection(STYLE_PROPERTY_COLOR, p_color, false);
+}
+
+void RichTextEdit::end_selection_color_preview(bool p_commit) {
+	if (!style_preview_active) {
+		return;
+	}
+
+	const Ref<StyleState> before = style_preview_before;
+	const bool had_selection = style_preview_had_selection;
+	style_preview_active = false;
+	style_preview_had_selection = false;
+	style_preview_before.unref();
+	if (before.is_null()) {
+		return;
+	}
+
+	if (p_commit) {
+		if (had_selection) {
+			_push_style_undo(before);
+		}
+		_style_changed();
+	} else {
+		_restore_style_state(before);
+	}
+}
+
+void RichTextEdit::begin_selection_bg_color_preview() {
+	begin_selection_color_preview();
+}
+
+void RichTextEdit::preview_selection_bg_color(const Color &p_color) {
+	if (!style_preview_active) {
+		begin_selection_bg_color_preview();
+	}
+	_apply_style_property_to_selection(STYLE_PROPERTY_BG_COLOR, p_color, false);
+}
+
+void RichTextEdit::end_selection_bg_color_preview(bool p_commit) {
+	end_selection_color_preview(p_commit);
+}
+
+void RichTextEdit::set_selection_url(const String &p_url) {
+	const Vector<uint64_t> image_ids = _get_selected_image_ids();
+	if (!image_ids.is_empty()) {
+		int first_line = INT_MAX;
+		int last_line = -1;
+		for (uint64_t id : image_ids) {
+			int line = 0;
+			if (_find_object(id, &line) != nullptr) {
+				first_line = MIN(first_line, line);
+				last_line = MAX(last_line, line);
+			}
+		}
+		if (last_line < 0) {
+			return;
+		}
+		const Ref<StyleState> before = _capture_style_state(first_line, last_line);
+		bool changed = false;
+		for (uint64_t id : image_ids) {
+			InlineObject *object = _find_object(id);
+			if (object == nullptr) {
+				continue;
+			}
+			const String previous = object->image.options.has("link") ? object->image.options["link"] : String();
+			if (p_url.is_empty()) {
+				object->image.options.erase("link");
+			} else {
+				object->image.options["link"] = p_url;
+			}
+			changed = changed || previous != p_url;
+		}
+		if (changed) {
+			_push_style_undo(before, true);
+			_model_changed(first_line, last_line);
+		}
+		return;
+	}
+	_apply_style_property_to_selection(STYLE_PROPERTY_URL, p_url);
+}
+
+void RichTextEdit::set_selection_line_height(const String &p_line_height) {
+	const String line_height = p_line_height.strip_edges();
+	if (!RichTextDocument::is_valid_line_height(line_height)) {
+		return;
+	}
+
+	int first_line = get_caret_line();
+	int last_line = first_line;
+	if (has_selection()) {
+		first_line = get_selection_from_line();
+		last_line = get_selection_to_line();
+		if (last_line > first_line && get_selection_to_column() == 0) {
+			last_line--;
+		}
+	}
+
+	const Ref<StyleState> before = _capture_style_state(first_line, last_line);
+	bool changed = false;
+	for (int line = first_line; line <= last_line; line++) {
+		if (paragraphs[line].line_height != line_height) {
+			_set_paragraph_line_height(paragraphs[line], line_height);
+			changed = true;
+		}
+	}
+	if (!changed) {
+		return;
+	}
+	_push_style_undo(before);
+	_model_changed(first_line, last_line);
+}
+
+void RichTextEdit::clear_selection_line_height() {
+	int first_line = get_caret_line();
+	int last_line = first_line;
+	if (has_selection()) {
+		first_line = get_selection_from_line();
+		last_line = get_selection_to_line();
+		if (last_line > first_line && get_selection_to_column() == 0) {
+			last_line--;
+		}
+	}
+	const Ref<StyleState> before = _capture_style_state(first_line, last_line);
+	bool changed = false;
+	for (int line = first_line; line <= last_line; line++) {
+		if (!paragraphs[line].line_height.is_empty()) {
+			_set_paragraph_line_height(paragraphs[line], String());
+			changed = true;
+		}
+	}
+	if (!changed) {
+		return;
+	}
+	_push_style_undo(before);
+	_model_changed(first_line, last_line);
+}
+
+String RichTextEdit::get_current_line_height() const {
+	const String value = _get_line_height_for_line(has_selection() ? get_selection_from_line() : get_caret_line());
+	return value.is_empty() ? String("normal") : value;
+}
+
+int RichTextEdit::get_current_font_size() const {
+	const TextStyle style = get_current_style();
+	return style.font_size > 0 ? style.font_size : _get_default_font_size();
+}
+
+/* Style templates. */
+
+// A style template is the BBCode of a one-character document ("X") whose run
+// carries the inline style and whose paragraph carries the line height.
+static bool _parse_style_template(const String &p_template, RichTextDocument &r_document) {
+	if (p_template.is_empty()) {
+		r_document = RichTextDocument();
+		r_document.text = "X";
+		return true;
+	}
+	r_document = RichTextDocument::parse_bbcode(p_template);
+	return r_document.text == "X";
+}
+
+Dictionary RichTextEdit::get_style_template_values(const String &p_template) {
+	RichTextDocument document;
+	if (p_template.is_empty() || !_parse_style_template(p_template, document)) {
+		return Dictionary();
+	}
+	const TextStyle style = document.spans.is_empty() ? TextStyle() : document.spans[0].style;
+	Dictionary values;
+	String decoration;
+	if (style.has_underline && style.underline) {
+		decoration = "underline";
+	}
+	if (style.overline) {
+		decoration += decoration.is_empty() ? "overline" : " overline";
+	}
+	if (style.strikethrough) {
+		decoration += decoration.is_empty() ? "line-through" : " line-through";
+	}
+	values["TD"] = decoration;
+	values["I"] = style.italic ? "1" : "";
+	values["BG"] = style.has_bg_color ? "#" + style.bg_color.to_html(style.bg_color.a < 1) : "";
+	values["OC"] = style.has_outline_color ? "#" + style.outline_color.to_html(style.outline_color.a < 1) : "";
+	values["OW"] = style.has_outline_size ? itos(style.outline_size) + "px" : "";
+	return values;
+}
+
+String RichTextEdit::get_selection_style_template() const {
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	if (!_get_selection_range(from_line, from_column, to_line, to_column)) {
+		return String();
+	}
+	RichTextDocument template_document;
+	template_document.text = "X";
+	const int style = _get_style_id_at(from_line, from_column);
+	if (style != 0) {
+		RichTextDocument::StyleSpan span;
+		span.from = 0;
+		span.to = 1;
+		span.style = styles[style];
+		template_document.spans.push_back(span);
+	}
+	const String line_height = _get_line_height_for_line(from_line);
+	if (!line_height.is_empty()) {
+		RichTextDocument::LineHeightSpan span;
+		span.line_start = 0;
+		span.value = line_height;
+		template_document.line_heights.push_back(span);
+	}
+	return template_document.to_bbcode();
+}
+
+bool RichTextEdit::apply_style_template(const String &p_template, const Dictionary &p_overrides) {
+	RichTextDocument template_document;
+	// CSS-only Label templates use the same atomic replacement as native
+	// Article templates. An empty template starts from plain inline formatting.
+	if (!_parse_style_template(p_template, template_document)) {
+		ERR_PRINT("Unable to apply rich-text style template: it must format a single \"X\".");
+		return false;
+	}
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	if (!_get_selection_range(from_line, from_column, to_line, to_column)) {
+		return false;
+	}
+	const bool full_lines = from_column == 0 &&
+			(to_column == _get_line_length(to_line) || (to_column == 0 && to_line > from_line));
+	const int final_line = to_column == 0 && to_line > from_line ? to_line - 1 : to_line;
+
+	TextStyle desired;
+	if (!template_document.spans.is_empty()) {
+		desired = template_document.spans[0].style;
+	}
+	if (p_overrides.has("FS")) {
+		const String size = String(p_overrides["FS"]).strip_edges();
+		if (size.ends_with("px")) {
+			desired.font_size = size.substr(0, size.length() - 2).to_int();
+		}
+	}
+	if (p_overrides.has("FF")) {
+		desired.font = String(p_overrides["FF"]);
+	}
+	if (p_overrides.has("FW")) {
+		desired.bold = String(p_overrides["FW"]).to_int() >= 600;
+	}
+	if (p_overrides.has("I")) {
+		desired.italic = String(p_overrides["I"]) == "1";
+	}
+	if (p_overrides.has("BG")) {
+		const String color_text = String(p_overrides["BG"]);
+		desired.has_bg_color = Color::html_is_valid(color_text);
+		if (desired.has_bg_color) {
+			desired.bg_color = Color::html(color_text);
+		}
+	}
+	if (p_overrides.has("OC")) {
+		const String color_text = String(p_overrides["OC"]);
+		desired.has_outline_color = Color::html_is_valid(color_text);
+		if (desired.has_outline_color) {
+			desired.outline_color = Color::html(color_text);
+		}
+	}
+	if (p_overrides.has("OW")) {
+		desired.outline_size = MAX(0, String(p_overrides["OW"]).to_int());
+		desired.has_outline_size = desired.outline_size > 0;
+	}
+	if (p_overrides.has("COL")) {
+		const String color_text = String(p_overrides["COL"]);
+		if (Color::html_is_valid(color_text)) {
+			desired.has_color = true;
+			desired.color = Color::html(color_text);
+		}
+	}
+	if (p_overrides.has("TD")) {
+		const String decoration = String(p_overrides["TD"]);
+		desired.has_underline = decoration.contains("underline");
+		desired.underline = desired.has_underline;
+		desired.overline = decoration.contains("overline");
+		desired.strikethrough = decoration.contains("line-through");
+	}
+	if (p_overrides.has("TA")) {
+		const String alignment = String(p_overrides["TA"]);
+		desired.alignment = HORIZONTAL_ALIGNMENT_LEFT;
+		if (alignment == "center") {
+			desired.alignment = HORIZONTAL_ALIGNMENT_CENTER;
+		} else if (alignment == "right") {
+			desired.alignment = HORIZONTAL_ALIGNMENT_RIGHT;
+		} else if (alignment == "justify") {
+			desired.alignment = HORIZONTAL_ALIGNMENT_FILL;
+		}
+		if (desired.block_tag.is_empty() || desired.block_tag == "left" || desired.block_tag == "center" || desired.block_tag == "right" || desired.block_tag == "fill") {
+			desired.block_tag = alignment == "justify" ? "fill" : alignment;
+		}
+	}
+	if (full_lines && desired.block_tag == "quote") {
+		desired.block_group = ++next_block_group_id;
+	}
+
+	HashMap<int, int> replaced;
+	auto replacement = [&](int p_style) {
+		if (full_lines) {
+			return _intern_style(desired);
+		}
+		const int *existing = replaced.getptr(p_style);
+		if (existing != nullptr) {
+			return *existing;
+		}
+		// A partial selection takes the inline style only; the paragraph keeps
+		// its block formatting.
+		const TextStyle &original = styles[p_style];
+		TextStyle style = desired;
+		style.alignment = original.alignment;
+		style.indent_level = original.indent_level;
+		style.list_type = original.list_type;
+		style.list_start = original.list_start;
+		style.list_capitalize = original.list_capitalize;
+		style.block_tag = original.block_tag;
+		style.block_group = original.block_group;
+		const int id = _intern_style(style);
+		replaced.insert(p_style, id);
+		return id;
+	};
+
+	const Ref<StyleState> before = _capture_style_state(from_line, to_line);
+	LocalVector<StyleRun> segments;
+	bool changed = _restyle_lines(from_line, to_line, [&](int p_line, Paragraph &r_paragraph) {
+		const int from = p_line == from_line ? from_column : 0;
+		const int to = p_line == to_line ? to_column : _get_line_length(p_line);
+		bool line_changed = false;
+		_collect_segments(r_paragraph.runs, from, to, segments);
+		for (const StyleRun &segment : segments) {
+			const int style = replacement(segment.style);
+			if (style != segment.style) {
+				_set_runs_range(r_paragraph.runs, segment.from, segment.to, style);
+				line_changed = true;
+			}
+		}
+		if (p_line < to_line) {
+			const int style = replacement(r_paragraph.eol_style);
+			if (style != r_paragraph.eol_style) {
+				r_paragraph.eol_style = style;
+				line_changed = true;
+			}
+		}
+		return line_changed;
+	});
+	if (full_lines) {
+		String line_height = template_document.line_heights.is_empty() ? String() : template_document.line_heights[0].value;
+		if (p_overrides.has("LH")) {
+			const String override_height = String(p_overrides["LH"]);
+			line_height = override_height == "normal" ? String() : override_height;
+		}
+		for (int line = from_line; line <= final_line; line++) {
+			if (paragraphs[line].line_height != line_height) {
+				_set_paragraph_line_height(paragraphs[line], line_height);
+				changed = true;
+			}
+		}
+	}
+	if (!changed) {
+		return true;
+	}
+	_model_changed(from_line, to_line + 1);
+	_push_style_undo(before);
+	return true;
+}
+
+/* Rich clipboard. */
+
+void RichTextEdit::copy_rich_text() {
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	if (!_get_selection_range(from_line, from_column, to_line, to_column)) {
+		rich_text_clipboard = RichTextDocument();
+		rich_text_clipboard_valid = false;
+		rich_text_clipboard_plain_text = String();
+		TextEdit::copy();
+		return;
+	}
+	RichTextDocument selection = _make_range_document(from_line, from_column, to_line, to_column);
+	for (RichTextDocument::InlineImage &image : selection.images) {
+		image.texture.unref();
+	}
+	selection.canonicalize();
+	rich_text_clipboard = selection;
+	rich_text_clipboard_valid = true;
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD)) {
+		TextEdit::copy();
+		rich_text_clipboard_plain_text = DisplayServer::get_singleton()->clipboard_get();
+	} else {
+		// Headless tests and platforms without a system clipboard still retain
+		// the process-local structured clipboard.
+		rich_text_clipboard_plain_text = selection.text;
+	}
+}
+
+bool RichTextEdit::paste_rich_text() {
+	const bool has_clipboard = DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD);
+	if (!rich_text_clipboard_valid || (has_clipboard && DisplayServer::get_singleton()->clipboard_get() != rich_text_clipboard_plain_text)) {
+		return false;
+	}
+	// The insertion hook formats the pasted text with the copied paragraphs.
+	pending_fragment = _document_to_slices(rich_text_clipboard);
+	pending_fragment_text = rich_text_clipboard.text;
+	pending_fragment_inherit_style = false;
+	pending_fragment_active = true;
+	begin_complex_operation();
+	if (has_clipboard) {
+		TextEdit::paste();
+	} else {
+		insert_text_at_caret(rich_text_clipboard.text);
+	}
+	end_complex_operation();
+	pending_fragment_active = false;
+	pending_fragment.clear();
+	return true;
+}
+
+/* Text. */
+
+void RichTextEdit::set_text(const String &p_text) {
+	RichTextDocument document;
+	if (use_bbcode) {
+		document = RichTextDocument::parse_bbcode(p_text);
+	} else {
+		document.text = p_text.remove_char('\r');
+	}
+	_load_document(document, use_bbcode ? p_text : String());
+}
+
+String RichTextEdit::get_text() const {
+	return use_bbcode ? get_bbcode_text() : TextEdit::get_text();
+}
+
+void RichTextEdit::set_bbcode_text(const String &p_bbcode) {
+	use_bbcode = true;
+	_load_document(RichTextDocument::parse_bbcode(p_bbcode), p_bbcode);
+}
+
+String RichTextEdit::get_bbcode_text() const {
+	if (bbcode_revision != model_revision) {
+		bbcode_text = _serialize_bbcode();
+		bbcode_revision = model_revision;
+	}
+	return bbcode_text;
+}
+
+void RichTextEdit::set_outline_over_fill(bool p_enabled) {
+	if (outline_over_fill == p_enabled) {
+		return;
+	}
+	outline_over_fill = p_enabled;
+	queue_redraw();
+}
+
+bool RichTextEdit::is_outline_over_fill() const {
+	return outline_over_fill;
+}
+
+void RichTextEdit::set_decoration_paint(const Dictionary &p_paint) {
+	if (decoration_paint == p_paint) {
+		return;
+	}
+	decoration_paint = p_paint.duplicate();
+	// Paint lives in the per-run render information; reshape with it.
+	_refresh_all_styles();
+}
+
+void RichTextEdit::_style_changed() {
+	_mark_bbcode_dirty();
+	if (!is_inside_tree() || text_style_changed_dirty) {
+		return;
+	}
+
+	text_style_changed_dirty = true;
+	callable_mp(this, &RichTextEdit::_emit_text_style_changed).call_deferred();
+}
+
+bool RichTextEdit::has_pending_layout() const {
+	return _has_pending_shaping();
+}
+
+void RichTextEdit::_deferred_layout_progressed(bool p_finished) {
+	// Background shaping refines the content height over many frames. Layouts
+	// that follow it hear about it a few times a second and when it is done.
+	if (content_height_signal_queued || !is_inside_tree()) {
+		return;
+	}
+	const uint64_t now = OS::get_singleton()->get_ticks_usec();
+	if (!p_finished && now - content_height_signal_usec < 150000) {
+		return;
+	}
+	content_height_signal_usec = now;
+	content_height_signal_queued = true;
+	callable_mp(this, &RichTextEdit::_emit_content_height_changed).call_deferred();
+}
+
+void RichTextEdit::_emit_content_height_changed() {
+	content_height_signal_queued = false;
+	emit_signal(SNAME("content_height_changed"));
+}
+
+void RichTextEdit::_emit_text_style_changed() {
+	text_style_changed_dirty = false;
+	emit_signal(SNAME("text_style_changed"));
+}
+
+void RichTextEdit::_refresh_all_styles() {
+	_clear_style_render_infos();
+	if (get_line_count() > 0) {
+		_invalidate_lines(0, get_line_count() - 1);
+	}
+}
+
+void RichTextEdit::_queue_full_style_refresh() {
+	if (style_refresh_queued) {
+		return;
+	}
+	style_refresh_queued = true;
+	callable_mp(this, &RichTextEdit::_refresh_queued_styles).call_deferred();
+}
+
+void RichTextEdit::_refresh_queued_styles() {
+	style_refresh_queued = false;
+	_refresh_all_styles();
+}
+
+void RichTextEdit::_update_theme_item_cache() {
+	TextEdit::_update_theme_item_cache();
+	// Theme updates happen for any change up the tree; only reshape when an
+	// item the run styles use actually changed.
+	bool changed = false;
+	auto check = [&](const StringName &p_name, const Variant &p_value) {
+		const Variant *previous = style_theme_values.getptr(p_name);
+		if (previous == nullptr || *previous != p_value) {
+			style_theme_values[p_name] = p_value;
+			changed = true;
+		}
+	};
+	for (const char *name : STYLE_THEME_FONTS) {
+		check(name, get_theme_font(name));
+	}
+	for (const char *name : STYLE_THEME_COLORS) {
+		check(name, get_theme_color(name, SNAME("RichTextEdit")));
+	}
+	for (const char *name : STYLE_THEME_CONSTANTS) {
+		check(name, get_theme_constant(name, SNAME("RichTextEdit")));
+	}
+	if (!changed) {
+		return;
+	}
+	// TextEdit reshapes every line itself when its own font or size changes;
+	// otherwise reshape here, but only if runs were rendered with old values.
+	bool base_changed = false;
+	const Variant base_font = get_theme_font(SceneStringName(font));
+	const Variant base_size = get_theme_font_size(SceneStringName(font_size));
+	for (const KeyValue<StringName, Variant> &base : { KeyValue<StringName, Variant>(SNAME("font"), base_font), KeyValue<StringName, Variant>(SNAME("font_size"), base_size) }) {
+		const Variant *previous = style_theme_values.getptr(base.key);
+		base_changed = base_changed || previous == nullptr || *previous != base.value;
+		style_theme_values[base.key] = base.value;
+	}
+	bool rendered = false;
+	for (uint32_t i = 1; i < style_render_info_valid.size() && !rendered; i++) {
+		rendered = style_render_info_valid[i];
+	}
+	_clear_style_render_infos();
+	if (rendered && !base_changed) {
+		_queue_full_style_refresh();
+	}
 }
 
 void RichTextEdit::_apply_style_property(TextStyle &r_style, const TextStyle &p_toggle_reference, StyleProperty p_property, const Variant &p_value) const {
@@ -496,6 +2277,9 @@ void RichTextEdit::_apply_style_property(TextStyle &r_style, const TextStyle &p_
 			break;
 		case STYLE_PROPERTY_STRIKETHROUGH:
 			r_style.strikethrough = p_value.get_type() == Variant::BOOL ? bool(p_value) : !p_toggle_reference.strikethrough;
+			break;
+		case STYLE_PROPERTY_OVERLINE:
+			r_style.overline = p_value.get_type() == Variant::BOOL ? bool(p_value) : !p_toggle_reference.overline;
 			break;
 		case STYLE_PROPERTY_COLOR:
 			r_style.has_color = true;
@@ -599,857 +2383,15 @@ void RichTextEdit::_apply_style_property(TextStyle &r_style, const TextStyle &p_
 	}
 }
 
-void RichTextEdit::_apply_style_property_to_selection(StyleProperty p_property, const Variant &p_value, bool p_record_undo) {
-	int from = 0;
-	int to = 0;
-	const bool has_range = _get_selection_offsets(from, to);
-	if (!has_range) {
-		TextStyle style = typing_style;
-		_apply_style_property(style, style, p_property, p_value);
-		if ((style == typing_style && typing_style_override) || (!typing_style_override && style.is_default())) {
-			return;
-		}
+/* URLs. */
 
-		typing_style = style;
-		typing_style_override = true;
-		if (p_record_undo) {
-			source_text = TextEdit::get_text();
-			_mark_bbcode_dirty();
-		}
-		_refresh_style_rendering();
-		if (p_record_undo) {
-			_style_changed();
-		}
-		return;
-	}
-
-	const TextStyle first_selected_style = _get_selection_common_style();
-	Vector<int> boundaries;
-	boundaries.push_back(from);
-	boundaries.push_back(to);
-	for (const StyleSpan &span : style_spans) {
-		if (span.from > from && span.from < to) {
-			boundaries.push_back(span.from);
-		}
-		if (span.to > from && span.to < to) {
-			boundaries.push_back(span.to);
-		}
-	}
-	boundaries.sort();
-
-	Vector<StyleSpan> before_spans = style_spans;
-	Vector<RichTextDocument::InlineImage> before_images = images;
-	Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-	for (int i = 0; i < boundaries.size() - 1; i++) {
-		const int segment_from = boundaries[i];
-		const int segment_to = boundaries[i + 1];
-		if (segment_from == segment_to) {
-			continue;
-		}
-
-		TextStyle style = _get_style_at_offset(segment_from);
-		_apply_style_property(style, first_selected_style, p_property, p_value);
-		_replace_style_range(segment_from, segment_to, style);
-	}
-
-	if (before_spans == style_spans && before_typing_style == typing_style && before_typing_style_override == typing_style_override) {
-		return;
-	}
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	if (p_record_undo) {
-		if (!_amend_style_run(p_property, from, to)) {
-			_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override);
-			style_run_active = _is_coalescing_style_property(p_property);
-			style_run_property = p_property;
-			style_run_from = from;
-			style_run_to = to;
-		}
-	}
-	_refresh_style_rendering();
-	if (p_record_undo) {
-		_style_changed();
-	}
-}
-
-void RichTextEdit::_apply_style_property_to_url_ranges(StyleProperty p_property, const Variant &p_value) {
-	int from = 0;
-	int to = 0;
-	const bool has_range = _get_selection_offsets(from, to);
-	if (!has_range) {
-		const int caret_offset = _get_caret_offset();
-		from = caret_offset;
-		to = caret_offset;
-	}
-
-	Vector<int> touched_indices;
-	for (int i = 0; i < style_spans.size(); i++) {
-		const StyleSpan &span = style_spans[i];
-		if (span.style.url.is_empty()) {
-			continue;
-		}
-		const bool touches_range = has_range ? (span.from < to && span.to > from) : (span.from <= from && span.to >= from);
-		const bool touches_previous_character = !has_range && from > 0 && span.from <= from - 1 && span.to > from - 1;
-		if (touches_range || touches_previous_character) {
-			touched_indices.push_back(i);
-		}
-	}
-
-	if (touched_indices.is_empty()) {
-		return;
-	}
-
-	const Vector<StyleSpan> before_spans = style_spans;
-	const Vector<RichTextDocument::InlineImage> before_images = images;
-	const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	const Vector<RichTextDocument::LineHeightSpan> before_line_heights = line_height_spans;
-	const TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-
-	for (int index : touched_indices) {
-		TextStyle style = style_spans[index].style;
-		_apply_style_property(style, style, p_property, p_value);
-		style_spans.write[index].style = style;
-	}
-
-	_merge_adjacent_spans();
-	if (before_spans == style_spans) {
-		return;
-	}
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override, &before_line_heights);
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	_refresh_style_rendering();
-	_style_changed();
-}
-
-Vector<int> RichTextEdit::_get_style_boundaries_for_range(int p_from, int p_to) const {
-	Vector<int> boundaries;
-	boundaries.push_back(p_from);
-	boundaries.push_back(p_to);
-	for (const StyleSpan &span : style_spans) {
-		if (span.from > p_from && span.from < p_to) {
-			boundaries.push_back(span.from);
-		}
-		if (span.to > p_from && span.to < p_to) {
-			boundaries.push_back(span.to);
-		}
-	}
-	boundaries.sort();
-	return boundaries;
-}
-
-void RichTextEdit::_apply_block_tag_to_selected_lines(const String &p_tag) {
-	const int from_line = has_selection() ? get_selection_from_line() : get_caret_line();
-	const int to_line = has_selection() ? get_selection_to_line() : get_caret_line();
-	const Vector<StyleSpan> before_spans = style_spans;
-	const Vector<RichTextDocument::InlineImage> before_images = images;
-	const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	const TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-
-	// Every call is one editing gesture. Lines it touches share a single group
-	// id so their quote borders draw as one continuous box; a later call (even
-	// over lines directly adjacent to this one) gets a new id, so the two
-	// groups stay visually separate instead of merging.
-	const int block_group = p_tag == "quote" ? ++next_block_group_id : 0;
-
-	for (int line = from_line; line <= to_line; line++) {
-		const int line_start = _get_line_start_offset(line);
-		const int line_end = line_start + get_line(line).length();
-		if (line_start == line_end) {
-			continue;
-		}
-		const Vector<int> boundaries = _get_style_boundaries_for_range(line_start, line_end);
-		for (int i = 0; i < boundaries.size() - 1; i++) {
-			const int segment_from = boundaries[i];
-			const int segment_to = boundaries[i + 1];
-			if (segment_from == segment_to) {
-				continue;
-			}
-			TextStyle style = _get_style_at_offset(segment_from);
-			_apply_style_property(style, style, STYLE_PROPERTY_BLOCK_TAG, p_tag);
-			style.block_group = block_group;
-			_replace_style_range(segment_from, segment_to, style);
-		}
-	}
-
-	if (before_spans == style_spans) {
-		return;
-	}
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override);
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	_refresh_style_rendering();
-	_style_changed();
-}
-
-void RichTextEdit::_clear_block_tag_from_selected_lines(const String &p_tag) {
-	const int from_line = has_selection() ? get_selection_from_line() : get_caret_line();
-	const int to_line = has_selection() ? get_selection_to_line() : get_caret_line();
-	const Vector<StyleSpan> before_spans = style_spans;
-	const Vector<RichTextDocument::InlineImage> before_images = images;
-	const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	const TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-
-	for (int line = from_line; line <= to_line; line++) {
-		const int line_start = _get_line_start_offset(line);
-		const int line_end = line_start + get_line(line).length();
-		if (line_start == line_end) {
-			continue;
-		}
-
-		const Vector<int> boundaries = _get_style_boundaries_for_range(line_start, line_end);
-		for (int i = 0; i < boundaries.size() - 1; i++) {
-			const int segment_from = boundaries[i];
-			const int segment_to = boundaries[i + 1];
-			if (segment_from == segment_to) {
-				continue;
-			}
-			TextStyle style = _get_style_at_offset(segment_from);
-			if (style.block_tag != p_tag) {
-				continue;
-			}
-			style.block_tag = "";
-			style.block_group = 0;
-			if (p_tag == "ul" || p_tag == "ol") {
-				style.indent_level = MAX(0, style.indent_level - 1);
-				style.list_type = 0;
-				style.list_start = -1;
-				style.list_capitalize = false;
-				if (style.indent_level > 0) {
-					style.block_tag = "indent";
-				}
-			}
-			_replace_style_range(segment_from, segment_to, style);
-		}
-	}
-
-	if (before_spans == style_spans) {
-		return;
-	}
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override);
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	_refresh_style_rendering();
-	_style_changed();
-}
-
-void RichTextEdit::_toggle_block_tag_on_selected_lines(const String &p_tag) {
-	const int from_line = has_selection() ? get_selection_from_line() : get_caret_line();
-	const int to_line = has_selection() ? get_selection_to_line() : get_caret_line();
-	bool all_lines_have_tag = true;
-	bool has_text_line = false;
-
-	for (int line = from_line; line <= to_line; line++) {
-		const int line_start = _get_line_start_offset(line);
-		const int line_end = line_start + get_line(line).length();
-		if (line_start == line_end) {
-			continue;
-		}
-		has_text_line = true;
-		const TextStyle style = _get_style_at_offset(line_start);
-		if (style.block_tag != p_tag) {
-			all_lines_have_tag = false;
-			break;
-		}
-	}
-
-	if (!has_text_line || !all_lines_have_tag) {
-		_apply_block_tag_to_selected_lines(p_tag);
-		return;
-	}
-
-	_clear_block_tag_from_selected_lines(p_tag);
-}
-
-RichTextEdit::TextStyle RichTextEdit::_get_insertion_style_at_offset(int p_offset) const {
-	const int caret_line = get_caret_line();
-	const int line_start = _get_line_start_offset(caret_line);
-	const int line_length = get_line(caret_line).length();
-	if (p_offset == line_start && line_length > 0) {
-		return _get_style_at_offset(line_start);
-	}
-	if (p_offset > line_start) {
-		return _get_style_at_offset(p_offset - 1);
-	}
-	return typing_style;
-}
-
-RichTextEdit::TextStyle RichTextEdit::_get_style_at_offset(int p_offset) const {
-	for (const StyleSpan &span : style_spans) {
-		if (p_offset >= span.from && p_offset < span.to) {
-			return span.style;
-		}
-	}
-	return TextStyle();
-}
-
-RichTextEdit::TextStyle RichTextEdit::_get_selection_common_style() const {
-	int from = 0;
-	int to = 0;
-	if (!_get_selection_offsets(from, to)) {
-		return typing_style;
-	}
-	return _get_style_at_offset(from);
-}
-
-int RichTextEdit::_get_default_font_size() const {
-	const int text_edit_font_size = get_theme_font_size(SceneStringName(font_size));
-	if (text_edit_font_size > 0) {
-		return text_edit_font_size;
-	}
-
-	const int rich_text_label_font_size = get_theme_font_size(SNAME("normal_font_size"), SNAME("RichTextLabel"));
-	if (rich_text_label_font_size > 0) {
-		return rich_text_label_font_size;
-	}
-
-	return 16;
-}
-
-void RichTextEdit::_merge_adjacent_spans() {
-	style_spans.sort_custom<StyleSpanCompare>();
-	Vector<StyleSpan> merged;
-	for (const StyleSpan &span : style_spans) {
-		if (span.from >= span.to || span.style.is_default()) {
-			continue;
-		}
-		if (!merged.is_empty() && merged.write[merged.size() - 1].to == span.from && merged[merged.size() - 1].style == span.style) {
-			merged.write[merged.size() - 1].to = span.to;
-		} else {
-			merged.push_back(span);
-		}
-	}
-	style_spans = merged;
-}
-
-int RichTextEdit::_get_line_start_offset(int p_line) const {
-	int offset = 0;
-	for (int i = 0; i < p_line; i++) {
-		offset += get_line(i).length() + 1;
-	}
-	return offset;
-}
-
-int RichTextEdit::_get_caret_offset() const {
-	return _get_line_start_offset(get_caret_line()) + get_caret_column();
-}
-
-bool RichTextEdit::_get_selection_offsets(int &r_from, int &r_to) const {
-	if (!has_selection()) {
+bool RichTextEdit::_get_url_style_at(int p_line, int p_column, TextStyle &r_style) const {
+	const int style = _get_style_id_at(p_line, p_column);
+	if (style == 0 || styles[style].url.is_empty()) {
 		return false;
 	}
-	r_from = _get_line_start_offset(get_selection_from_line()) + get_selection_from_column();
-	r_to = _get_line_start_offset(get_selection_to_line()) + get_selection_to_column();
-	if (r_from > r_to) {
-		SWAP(r_from, r_to);
-	}
-	return r_from != r_to;
-}
-
-void RichTextEdit::_apply_style_to_selection(const TextStyle &p_style) {
-	Vector<StyleSpan> before_spans = style_spans;
-	Vector<RichTextDocument::InlineImage> before_images = images;
-	Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-	int from = 0;
-	int to = 0;
-	const bool has_range = _get_selection_offsets(from, to);
-	if (has_range) {
-		_replace_style_range(from, to, p_style);
-	} else {
-		typing_style = p_style;
-		typing_style_override = true;
-	}
-
-	if (has_range) {
-		_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override);
-	}
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	_refresh_style_rendering();
-	_style_changed();
-}
-
-void RichTextEdit::_caret_style_context_changed() {
-	if (!syncing_text_change) {
-		typing_style_override = false;
-	}
-	// Moving the caret retargets the edit, so it ends any run in progress.
-	_break_style_run();
-}
-
-Variant RichTextEdit::_make_style_state_variant(const Vector<StyleSpan> &p_spans, const Vector<RichTextDocument::InlineImage> &p_images, const Vector<RichTextDocument::RawInline> &p_raw_inlines, const TextStyle &p_typing_style, bool p_typing_style_override, const Vector<RichTextDocument::LineHeightSpan> *p_line_heights) const {
-	Dictionary state;
-	const Vector<RichTextDocument::LineHeightSpan> &state_line_heights = p_line_heights != nullptr ? *p_line_heights : line_height_spans;
-	Array spans;
-	for (const StyleSpan &span : p_spans) {
-		Dictionary style;
-		style["bold"] = span.style.bold;
-		style["italic"] = span.style.italic;
-		style["has_underline"] = span.style.has_underline;
-		style["underline"] = span.style.underline;
-		style["strikethrough"] = span.style.strikethrough;
-		style["code"] = span.style.code;
-		style["has_color"] = span.style.has_color;
-		style["color"] = span.style.color;
-		style["has_bg_color"] = span.style.has_bg_color;
-		style["bg_color"] = span.style.bg_color;
-		style["has_fg_color"] = span.style.has_fg_color;
-		style["fg_color"] = span.style.fg_color;
-		style["has_outline_color"] = span.style.has_outline_color;
-		style["outline_color"] = span.style.outline_color;
-		style["has_outline_size"] = span.style.has_outline_size;
-		style["outline_size"] = span.style.outline_size;
-		style["has_url"] = span.style.has_url;
-		style["url_visited"] = span.style.url_visited;
-		style["font_size"] = span.style.font_size;
-		style["alignment"] = span.style.alignment;
-		style["indent_level"] = span.style.indent_level;
-		style["list_type"] = span.style.list_type;
-		style["list_start"] = span.style.list_start;
-		style["list_capitalize"] = span.style.list_capitalize;
-		style["font"] = span.style.font;
-		style["url"] = span.style.url;
-		style["url_tooltip"] = span.style.url_tooltip;
-		style["language"] = span.style.language;
-		style["block_tag"] = span.style.block_tag;
-		style["block_group"] = span.style.block_group;
-		Array preserved_tags;
-		for (const String &tag : span.style.preserved_tags) {
-			preserved_tags.push_back(tag);
-		}
-		style["preserved_tags"] = preserved_tags;
-
-		Dictionary span_data;
-		span_data["from"] = span.from;
-		span_data["to"] = span.to;
-		span_data["style"] = style;
-		spans.push_back(span_data);
-	}
-
-	Array image_data_array;
-	for (const RichTextDocument::InlineImage &image : p_images) {
-		Dictionary image_data;
-		image_data["offset"] = image.offset;
-		image_data["source"] = image.source;
-		Dictionary options;
-		for (const KeyValue<String, String> &E : image.options) {
-			options[E.key] = E.value;
-		}
-		image_data["options"] = options;
-		image_data_array.push_back(image_data);
-	}
-	state["images"] = image_data_array;
-
-	Array raw_inline_data_array;
-	for (const RichTextDocument::RawInline &raw_inline : p_raw_inlines) {
-		Dictionary raw_inline_data;
-		raw_inline_data["offset"] = raw_inline.offset;
-		raw_inline_data["bbcode"] = raw_inline.bbcode;
-		raw_inline_data_array.push_back(raw_inline_data);
-	}
-	state["raw_inlines"] = raw_inline_data_array;
-
-	Array line_height_data_array;
-	for (const RichTextDocument::LineHeightSpan &line_height : state_line_heights) {
-		Dictionary line_height_data;
-		line_height_data["line_start"] = line_height.line_start;
-		line_height_data["value"] = line_height.value;
-		line_height_data_array.push_back(line_height_data);
-	}
-	state["line_heights"] = line_height_data_array;
-
-	Dictionary typing_style_data;
-	typing_style_data["bold"] = p_typing_style.bold;
-	typing_style_data["italic"] = p_typing_style.italic;
-	typing_style_data["has_underline"] = p_typing_style.has_underline;
-	typing_style_data["underline"] = p_typing_style.underline;
-	typing_style_data["strikethrough"] = p_typing_style.strikethrough;
-	typing_style_data["code"] = p_typing_style.code;
-	typing_style_data["has_color"] = p_typing_style.has_color;
-	typing_style_data["color"] = p_typing_style.color;
-	typing_style_data["has_bg_color"] = p_typing_style.has_bg_color;
-	typing_style_data["bg_color"] = p_typing_style.bg_color;
-	typing_style_data["has_fg_color"] = p_typing_style.has_fg_color;
-	typing_style_data["fg_color"] = p_typing_style.fg_color;
-	typing_style_data["has_outline_color"] = p_typing_style.has_outline_color;
-	typing_style_data["outline_color"] = p_typing_style.outline_color;
-	typing_style_data["has_outline_size"] = p_typing_style.has_outline_size;
-	typing_style_data["outline_size"] = p_typing_style.outline_size;
-	typing_style_data["has_url"] = p_typing_style.has_url;
-	typing_style_data["url_visited"] = p_typing_style.url_visited;
-	typing_style_data["font_size"] = p_typing_style.font_size;
-	typing_style_data["alignment"] = p_typing_style.alignment;
-	typing_style_data["indent_level"] = p_typing_style.indent_level;
-	typing_style_data["list_type"] = p_typing_style.list_type;
-	typing_style_data["list_start"] = p_typing_style.list_start;
-	typing_style_data["list_capitalize"] = p_typing_style.list_capitalize;
-	typing_style_data["font"] = p_typing_style.font;
-	typing_style_data["url"] = p_typing_style.url;
-	typing_style_data["url_tooltip"] = p_typing_style.url_tooltip;
-	typing_style_data["language"] = p_typing_style.language;
-	typing_style_data["block_tag"] = p_typing_style.block_tag;
-	typing_style_data["block_group"] = p_typing_style.block_group;
-
-	state["spans"] = spans;
-	state["typing_style"] = typing_style_data;
-	state["typing_style_override"] = p_typing_style_override;
-	return state;
-}
-
-void RichTextEdit::_restore_style_state_variant(const Variant &p_state) {
-	Dictionary state = p_state;
-	Array spans = state.get("spans", Array());
-
-	Vector<StyleSpan> restored_spans;
-	for (Dictionary span_data : spans) {
-		Dictionary style_data = span_data.get("style", Dictionary());
-
-		StyleSpan span;
-		span.from = span_data.get("from", 0);
-		span.to = span_data.get("to", 0);
-		span.style.bold = style_data.get("bold", false);
-		span.style.italic = style_data.get("italic", false);
-		span.style.has_underline = style_data.get("has_underline", false);
-		span.style.underline = style_data.get("underline", false);
-		span.style.strikethrough = style_data.get("strikethrough", false);
-		span.style.code = style_data.get("code", false);
-		span.style.has_color = style_data.get("has_color", false);
-		span.style.color = style_data.get("color", Color());
-		span.style.has_bg_color = style_data.get("has_bg_color", false);
-		span.style.bg_color = style_data.get("bg_color", Color());
-		span.style.has_fg_color = style_data.get("has_fg_color", false);
-		span.style.fg_color = style_data.get("fg_color", Color());
-		span.style.has_outline_color = style_data.get("has_outline_color", false);
-		span.style.outline_color = style_data.get("outline_color", Color());
-		span.style.has_outline_size = style_data.get("has_outline_size", false);
-		span.style.outline_size = style_data.get("outline_size", 0);
-		span.style.has_url = style_data.get("has_url", false);
-		span.style.url_visited = style_data.get("url_visited", false);
-		span.style.font_size = style_data.get("font_size", 0);
-		span.style.alignment = style_data.get("alignment", -1);
-		span.style.indent_level = style_data.get("indent_level", 0);
-		span.style.list_type = style_data.get("list_type", 0);
-		span.style.list_start = style_data.get("list_start", -1);
-		span.style.list_capitalize = style_data.get("list_capitalize", false);
-		span.style.font = style_data.get("font", String());
-		span.style.url = style_data.get("url", String());
-		span.style.url_tooltip = style_data.get("url_tooltip", String());
-		span.style.language = style_data.get("language", String());
-		span.style.block_tag = style_data.get("block_tag", String());
-		span.style.block_group = style_data.get("block_group", 0);
-		Array preserved_tags = style_data.get("preserved_tags", Array());
-		for (const Variant &preserved_tag : preserved_tags) {
-			span.style.preserved_tags.push_back(preserved_tag);
-		}
-		restored_spans.push_back(span);
-	}
-
-	Vector<RichTextDocument::InlineImage> restored_images;
-	Array image_data_array = state.get("images", Array());
-	for (Dictionary image_data : image_data_array) {
-		RichTextDocument::InlineImage image;
-		image.offset = image_data.get("offset", 0);
-		image.source = image_data.get("source", String());
-		Dictionary options = image_data.get("options", Dictionary());
-		for (const KeyValue<Variant, Variant> &kv : options) {
-			image.options[kv.key] = kv.value;
-		}
-		image.texture = RichTextDocument::load_image_texture(image.source);
-		restored_images.push_back(image);
-	}
-
-	Vector<RichTextDocument::RawInline> restored_raw_inlines;
-	Array raw_inline_data_array = state.get("raw_inlines", Array());
-	for (Dictionary raw_inline_data : raw_inline_data_array) {
-		RichTextDocument::RawInline raw_inline;
-		raw_inline.offset = raw_inline_data.get("offset", 0);
-		raw_inline.bbcode = raw_inline_data.get("bbcode", String());
-		restored_raw_inlines.push_back(raw_inline);
-	}
-
-	Vector<RichTextDocument::LineHeightSpan> restored_line_heights;
-	Array line_height_data_array = state.get("line_heights", Array());
-	for (Dictionary line_height_data : line_height_data_array) {
-		RichTextDocument::LineHeightSpan line_height;
-		line_height.line_start = line_height_data.get("line_start", 0);
-		line_height.value = line_height_data.get("value", String());
-		if (RichTextDocument::is_valid_line_height(line_height.value)) {
-			restored_line_heights.push_back(line_height);
-		}
-	}
-
-	Dictionary typing_style_data = state.get("typing_style", Dictionary());
-	TextStyle restored_typing_style;
-	restored_typing_style.bold = typing_style_data.get("bold", false);
-	restored_typing_style.italic = typing_style_data.get("italic", false);
-	restored_typing_style.has_underline = typing_style_data.get("has_underline", false);
-	restored_typing_style.underline = typing_style_data.get("underline", false);
-	restored_typing_style.strikethrough = typing_style_data.get("strikethrough", false);
-	restored_typing_style.code = typing_style_data.get("code", false);
-	restored_typing_style.has_color = typing_style_data.get("has_color", false);
-	restored_typing_style.color = typing_style_data.get("color", Color());
-	restored_typing_style.has_bg_color = typing_style_data.get("has_bg_color", false);
-	restored_typing_style.bg_color = typing_style_data.get("bg_color", Color());
-	restored_typing_style.has_fg_color = typing_style_data.get("has_fg_color", false);
-	restored_typing_style.fg_color = typing_style_data.get("fg_color", Color());
-	restored_typing_style.has_outline_color = typing_style_data.get("has_outline_color", false);
-	restored_typing_style.outline_color = typing_style_data.get("outline_color", Color());
-	restored_typing_style.has_outline_size = typing_style_data.get("has_outline_size", false);
-	restored_typing_style.outline_size = typing_style_data.get("outline_size", 0);
-	restored_typing_style.has_url = typing_style_data.get("has_url", false);
-	restored_typing_style.url_visited = typing_style_data.get("url_visited", false);
-	restored_typing_style.font_size = typing_style_data.get("font_size", 0);
-	restored_typing_style.alignment = typing_style_data.get("alignment", -1);
-	restored_typing_style.indent_level = typing_style_data.get("indent_level", 0);
-	restored_typing_style.list_type = typing_style_data.get("list_type", 0);
-	restored_typing_style.list_start = typing_style_data.get("list_start", -1);
-	restored_typing_style.list_capitalize = typing_style_data.get("list_capitalize", false);
-	restored_typing_style.font = typing_style_data.get("font", String());
-	restored_typing_style.url = typing_style_data.get("url", String());
-	restored_typing_style.url_tooltip = typing_style_data.get("url_tooltip", String());
-	restored_typing_style.language = typing_style_data.get("language", String());
-	restored_typing_style.block_tag = typing_style_data.get("block_tag", String());
-	restored_typing_style.block_group = typing_style_data.get("block_group", 0);
-
-	const bool restored_inline_metadata = images != restored_images || raw_inlines != restored_raw_inlines;
-	style_spans = restored_spans;
-	images = restored_images;
-	raw_inlines = restored_raw_inlines;
-	line_height_spans = restored_line_heights;
-	typing_style = restored_typing_style;
-	typing_style_override = state.get("typing_style_override", false);
-	pending_inline_metadata_restore_sync = restored_inline_metadata;
-	_merge_adjacent_spans();
-	_refresh_style_rendering();
-	_style_changed();
-}
-
-// Properties whose repeated application is treated as one editing gesture: the
-// two spinner-driven sizes, which are clicked or dragged in bursts, and the
-// outline color, which streams values while its picker is dragged.
-bool RichTextEdit::_is_coalescing_style_property(StyleProperty p_property) {
-	return p_property == STYLE_PROPERTY_FONT_SIZE || p_property == STYLE_PROPERTY_OUTLINE_SIZE || p_property == STYLE_PROPERTY_OUTLINE_COLOR;
-}
-
-bool RichTextEdit::_amend_style_run(StyleProperty p_property, int p_from, int p_to) {
-	if (!style_run_active || !_is_coalescing_style_property(p_property)) {
-		return false;
-	}
-	// A run covers repeated edits of one property over one range. Retargeting
-	// either of those is a new gesture and deserves its own undo step.
-	if (style_run_property != p_property || style_run_from != p_from || style_run_to != p_to) {
-		return false;
-	}
-
-	// The before state stays where the run started, so a single undo returns to
-	// the value the field held before the burst began. A false return means some
-	// other edit has taken over the pending operation and the run is over.
-	return amend_custom_undo_operation(SNAME("rich_text_edit_style"), _make_style_state_variant(style_spans, images, raw_inlines, typing_style, typing_style_override));
-}
-
-void RichTextEdit::_break_style_run() {
-	style_run_active = false;
-}
-
-void RichTextEdit::_push_style_undo_snapshot(const Vector<StyleSpan> &p_before_spans, const Vector<RichTextDocument::InlineImage> &p_before_images, const Vector<RichTextDocument::RawInline> &p_before_raw_inlines, const TextStyle &p_before_typing_style, bool p_before_typing_style_override, const Vector<RichTextDocument::LineHeightSpan> *p_before_line_heights, bool p_isolate) {
-	const Vector<RichTextDocument::LineHeightSpan> &before_line_heights = p_before_line_heights != nullptr ? *p_before_line_heights : line_height_spans;
-	if (p_before_spans == style_spans && p_before_images == images && p_before_raw_inlines == raw_inlines && before_line_heights == line_height_spans && p_before_typing_style == typing_style && p_before_typing_style_override == typing_style_override) {
-		return;
-	}
-
-	const Variant before_state = _make_style_state_variant(p_before_spans, p_before_images, p_before_raw_inlines, p_before_typing_style, p_before_typing_style_override, &before_line_heights);
-	const Variant after_state = _make_style_state_variant(style_spans, images, raw_inlines, typing_style, typing_style_override);
-	if (p_isolate) {
-		push_custom_undo_operation_isolated(SNAME("rich_text_edit_style"), before_state, after_state);
-	} else {
-		push_custom_undo_operation(SNAME("rich_text_edit_style"), before_state, after_state);
-	}
-}
-
-void RichTextEdit::_refresh_style_rendering() {
-	set_style_parser(callable_mp(this, &RichTextEdit::_get_line_style_spans));
-	if (images.is_empty() && raw_inlines.is_empty()) {
-		set_inline_object_handlers(Callable(), Callable(), Callable());
-	} else {
-		set_inline_object_handlers(callable_mp(this, &RichTextEdit::_get_line_inline_objects), callable_mp(this, &RichTextEdit::_draw_inline_object), callable_mp(this, &RichTextEdit::_inline_object_clicked));
-	}
-	queue_redraw();
-}
-
-void RichTextEdit::_style_changed() {
-	_mark_bbcode_dirty();
-	if (!is_inside_tree() || text_style_changed_dirty) {
-		return;
-	}
-
-	text_style_changed_dirty = true;
-	callable_mp(this, &RichTextEdit::_emit_text_style_changed).call_deferred();
-}
-
-void RichTextEdit::_emit_text_style_changed() {
-	text_style_changed_dirty = false;
-	emit_signal(SNAME("text_style_changed"));
-}
-
-Array RichTextEdit::_get_line_style_spans(int p_line) const {
-	Array result;
-	const int line_start = _get_line_start_offset(p_line);
-	const int line_length = get_line(p_line).length();
-	const int line_style_length = MAX(line_length, 1);
-	const int line_style_end = line_start + line_style_length;
-	for (const StyleSpan &span : style_spans) {
-		const bool covers_empty_line_at_span_end = line_length == 0 && span.to == line_start && span.from < span.to;
-		if (!covers_empty_line_at_span_end && (span.to <= line_start || span.from >= line_style_end)) {
-			continue;
-		}
-
-		Ref<Font> font;
-		int font_size = span.style.font_size;
-		if (!span.style.font.is_empty()) {
-			font = ResourceLoader::load(span.style.font, "Font");
-		} else if (span.style.code) {
-			font = get_theme_font(SNAME("mono_font"), SNAME("RichTextLabel"));
-		} else if (span.style.bold && span.style.italic) {
-			font = get_theme_font(SNAME("bold_italics_font"), SNAME("RichTextLabel"));
-		} else if (span.style.bold) {
-			font = get_theme_font(SNAME("bold_font"), SNAME("RichTextLabel"));
-		} else if (span.style.italic) {
-			font = get_theme_font(SNAME("italics_font"), SNAME("RichTextLabel"));
-		}
-
-		Dictionary info;
-		info["from"] = MAX(span.from, line_start) - line_start;
-		info["to"] = MIN(span.to, line_style_end) - line_start;
-		if (span.style.has_color) {
-			info["color"] = span.style.color;
-		} else if (!span.style.url.is_empty()) {
-			if (active_meta == span.style.url) {
-				info["color"] = get_theme_color(SNAME("link_active_color"), SNAME("RichTextEdit"));
-			} else if (meta_hovering && current_meta == span.style.url) {
-				info["color"] = get_theme_color(SNAME("link_hover_color"), SNAME("RichTextEdit"));
-			} else if (span.style.url_visited || visited_links.has(span.style.url)) {
-				info["color"] = get_theme_color(SNAME("link_visited_color"), SNAME("RichTextEdit"));
-			} else {
-				info["color"] = get_theme_color(SNAME("link_color"), SNAME("RichTextEdit"));
-			}
-		}
-		if (span.style.has_bg_color) {
-			info["bg_color"] = span.style.bg_color;
-		}
-		if (span.style.has_fg_color) {
-			info["fg_color"] = span.style.fg_color;
-		}
-		if (span.style.has_outline_color) {
-			info["outline_color"] = span.style.outline_color;
-		}
-		if (span.style.has_outline_size) {
-			info["outline_size"] = span.style.outline_size;
-		}
-		const bool underline = span.style.has_underline ? span.style.underline : !span.style.url.is_empty();
-		if (underline) {
-			info["underline"] = true;
-		}
-		if (!span.style.url.is_empty()) {
-			info["url"] = span.style.url;
-		}
-		if (span.style.strikethrough) {
-			info["strikethrough"] = true;
-		}
-		if (font.is_valid()) {
-			info["font"] = font;
-		}
-		if (font_size > 0) {
-			info["font_size"] = font_size;
-		}
-		if (span.style.alignment >= 0) {
-			info["alignment"] = span.style.alignment;
-		}
-		if (span.style.indent_level > 0) {
-			info["indent_level"] = span.style.indent_level;
-		}
-		if (span.style.list_type > 0) {
-			info["list_type"] = span.style.list_type;
-			if (span.style.list_start > 0) {
-				info["list_start"] = span.style.list_start;
-			}
-			info["list_capitalize"] = span.style.list_capitalize;
-		}
-		if (span.style.block_tag == "quote" || span.style.block_tag.begins_with("quote ")) {
-			info["quote"] = true;
-			info["quote_group"] = span.style.block_group;
-			info["quote_margin_top"] = get_theme_constant(SNAME("quote_margin_top"), SNAME("RichTextEdit"));
-			info["quote_margin_bottom"] = get_theme_constant(SNAME("quote_margin_bottom"), SNAME("RichTextEdit"));
-			info["quote_border_color"] = get_theme_color(SNAME("quote_border_color"), SNAME("RichTextEdit"));
-			info["quote_border_width"] = get_theme_constant(SNAME("quote_border_width"), SNAME("RichTextEdit"));
-			info["quote_padding"] = get_theme_constant(SNAME("quote_padding"), SNAME("RichTextEdit"));
-			if (!span.style.has_color) {
-				info["color"] = get_theme_color(SNAME("quote_color"), SNAME("RichTextEdit"));
-			}
-		}
-		if (info.size() > 2) {
-			result.push_back(info);
-		}
-	}
-	return result;
-}
-
-String RichTextEdit::_get_line_height_for_line(int p_line) const {
-	const int line_start = _get_line_start_offset(p_line);
-	for (const RichTextDocument::LineHeightSpan &line_height : line_height_spans) {
-		if (line_height.line_start == line_start) {
-			return line_height.value;
-		}
-	}
-	return String();
-}
-
-int RichTextEdit::_get_visual_line_wrap_height(int p_line, int p_wrap_index) const {
-	const String value = _get_line_height_for_line(p_line).strip_edges().to_lower();
-	if (value.is_empty() || value == "normal" || !RichTextDocument::is_valid_line_height(value)) {
-		return TextEdit::_get_visual_line_wrap_height(p_line, p_wrap_index);
-	}
-
-	const int top_margin = _get_visual_line_wrap_top_margin(p_line, p_wrap_index);
-	const int bottom_margin = _get_visual_line_wrap_bottom_margin(p_line, p_wrap_index);
-	const int content_height = MAX(_get_visual_line_wrap_content_height(p_line, p_wrap_index) - top_margin - bottom_margin, 1);
-	int line_box_height = content_height;
-	if (value.ends_with("px")) {
-		line_box_height = MAX(0, Math::ceil(value.left(value.length() - 2).strip_edges().to_float()));
-	} else if (value.ends_with("%")) {
-		line_box_height = Math::ceil(content_height * value.left(value.length() - 1).strip_edges().to_float() / 100.0);
-	} else {
-		line_box_height = Math::ceil(content_height * value.to_float());
-	}
-	return MAX(line_box_height + top_margin + bottom_margin, 1);
-}
-
-bool RichTextEdit::_get_url_at_offset(int p_offset, String &r_url) const {
-	TextStyle style;
-	if (!_get_url_style_at_offset(p_offset, style)) {
-		return false;
-	}
-	r_url = style.url;
+	r_style = styles[style];
 	return true;
-}
-
-bool RichTextEdit::_get_url_style_at_offset(int p_offset, TextStyle &r_style) const {
-	if (p_offset < 0) {
-		return false;
-	}
-	for (const StyleSpan &span : style_spans) {
-		if (span.from <= p_offset && span.to > p_offset && !span.style.url.is_empty()) {
-			r_style = span.style;
-			return true;
-		}
-	}
-	return false;
 }
 
 bool RichTextEdit::_get_url_at_position(const Point2 &p_position, String &r_url) const {
@@ -1468,14 +2410,12 @@ bool RichTextEdit::_get_url_style_at_position(const Point2 &p_position, TextStyl
 		return false;
 	}
 
-	const int line_length = get_line(line).length();
-	const int column = CLAMP(pos.x, 0, line_length);
-	const int offset = _get_line_start_offset(line) + column;
-	if (_get_url_style_at_offset(offset, r_style)) {
+	const int column = CLAMP(pos.x, 0, _get_line_length(line));
+	if (_get_url_style_at(line, column, r_style)) {
 		return true;
 	}
 	if (column > 0) {
-		return _get_url_style_at_offset(offset - 1, r_style);
+		return _get_url_style_at(line, column - 1, r_style);
 	}
 	return false;
 }
@@ -1489,6 +2429,7 @@ void RichTextEdit::_update_meta_hover(const Point2 &p_position) {
 			}
 			meta_hovering = true;
 			current_meta = meta;
+			_clear_style_render_infos();
 			emit_signal(SNAME("meta_hover_started"), meta);
 			queue_redraw();
 		}
@@ -1496,6 +2437,7 @@ void RichTextEdit::_update_meta_hover(const Point2 &p_position) {
 		meta_hovering = false;
 		emit_signal(SNAME("meta_hover_ended"), current_meta);
 		current_meta = String();
+		_clear_style_render_infos();
 		queue_redraw();
 	}
 }
@@ -1509,6 +2451,7 @@ bool RichTextEdit::_activate_url_at_position(const Point2 &p_position) {
 	if (has_connections(SNAME("meta_clicked"))) {
 		active_meta = meta;
 		visited_links.insert(meta);
+		_clear_style_render_infos();
 		queue_redraw();
 		emit_signal(SNAME("meta_clicked"), meta);
 		return true;
@@ -1517,6 +2460,7 @@ bool RichTextEdit::_activate_url_at_position(const Point2 &p_position) {
 	if (_is_url_auto_open_allowed(meta)) {
 		active_meta = meta;
 		visited_links.insert(meta);
+		_clear_style_render_infos();
 		queue_redraw();
 		OS::get_singleton()->shell_open(meta.strip_edges());
 		return true;
@@ -1538,6 +2482,8 @@ bool RichTextEdit::_should_activate_url(const Ref<InputEventMouseButton> &p_mous
 	return false;
 }
 
+/* Paragraph breaks. */
+
 void RichTextEdit::_insert_newline(bool p_shift_pressed) {
 	if (!is_editable()) {
 		return;
@@ -1550,105 +2496,68 @@ void RichTextEdit::_insert_newline(bool p_shift_pressed) {
 
 	const int line = get_caret_line();
 	const int column = get_caret_column();
-	const int caret_offset = _get_caret_offset();
-	const String old_text = TextEdit::get_text();
-	if (line < 0 || line >= get_line_count() || caret_offset < 0) {
+	if (line < 0 || line >= get_line_count()) {
 		return;
 	}
+	_ensure_model_size();
 
-	const int line_length = get_line(line).length();
+	const int line_length = _get_line_length(line);
 	const bool at_line_beginning = column == 0 || line_length == 0;
-	TextStyle style_at_caret;
+	int style_at_caret = 0;
 	if (line_length == 0) {
-		style_at_caret = typing_style_override ? typing_style : _get_style_at_offset(caret_offset);
+		style_at_caret = typing_style_override ? _intern_style(typing_style) : _get_style_id_at(line, column);
 	} else if (at_line_beginning) {
-		style_at_caret = _get_style_at_offset(caret_offset);
+		style_at_caret = _get_style_id_at(line, 0);
 	} else {
-		style_at_caret = _get_style_at_offset(caret_offset - 1);
+		style_at_caret = _get_style_id_at(line, column - 1);
 	}
 
-	if (p_shift_pressed && caret_offset < old_text.length() && old_text[caret_offset] == '\n' && !style_at_caret.is_default()) {
-		const Vector<StyleSpan> before_spans = style_spans;
-
+	if (p_shift_pressed && column == line_length && line < get_line_count() - 1 && style_at_caret != 0) {
+		// Shift+Enter at the end of a formatted paragraph starts a plain one:
+		// neither paragraph break keeps the formatting.
 		typing_style = TextStyle();
 		typing_style_override = true;
 		insert_text_at_caret("\n");
-		const String new_text = TextEdit::get_text();
-		_sync_inline_objects_for_text_change(old_text, new_text, caret_offset, caret_offset, caret_offset + 1);
-
-		Vector<StyleSpan> updated_spans;
-		for (StyleSpan span : before_spans) {
-			if (span.to <= caret_offset) {
-				updated_spans.push_back(span);
-			} else if (span.from >= caret_offset) {
-				span.from++;
-				span.to++;
-				updated_spans.push_back(span);
-			} else {
-				StyleSpan left = span;
-				left.to = caret_offset;
-				if (left.from < left.to) {
-					updated_spans.push_back(left);
-				}
-
-				StyleSpan right = span;
-				right.from = caret_offset + 2;
-				right.to = span.to + 1;
-				if (right.from < right.to) {
-					updated_spans.push_back(right);
-				}
-			}
+		if (line + 1 < (int)paragraphs.size() && paragraphs[line + 1].eol_style != 0) {
+			paragraphs[line + 1].eol_style = 0;
+			_model_changed(line + 1, line + 2);
 		}
-
-		style_spans = updated_spans;
-		_merge_adjacent_spans();
 		typing_style = TextStyle();
 		typing_style_override = true;
-		tracked_text = new_text;
-		source_text = new_text;
-		_mark_bbcode_dirty();
-		_refresh_style_rendering();
-		_style_changed();
 		accept_event();
 		return;
 	}
 
-	typing_style = p_shift_pressed ? TextStyle() : style_at_caret;
+	typing_style = p_shift_pressed ? TextStyle() : styles[style_at_caret];
 	typing_style_override = true;
 	insert_text_at_caret("\n");
-	if (tracked_text != TextEdit::get_text()) {
-		_update_bbcode_from_text();
-	}
-
 	if (p_shift_pressed && at_line_beginning) {
-		typing_style = style_at_caret;
-		typing_style_override = true;
+		typing_style = styles[style_at_caret];
 	} else {
-		typing_style = p_shift_pressed ? TextStyle() : style_at_caret;
-		typing_style_override = true;
+		typing_style = p_shift_pressed ? TextStyle() : styles[style_at_caret];
 	}
-
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	_refresh_style_rendering();
+	typing_style_override = true;
 	_style_changed();
 	accept_event();
 }
 
-Dictionary RichTextEdit::_make_image_inline_info(const RichTextDocument::InlineImage &p_image, int p_column) const {
+/* Inline objects. */
+
+Dictionary RichTextEdit::_make_image_inline_info(const InlineObject &p_object) const {
+	const RichTextDocument::InlineImage &image = p_object.image;
 	Dictionary info;
-	info["column"] = p_column;
-	info["offset"] = p_image.offset;
+	info["column"] = p_object.column;
+	info["object_id"] = (int64_t)p_object.id;
 	info["cursor_shape"] = CURSOR_ARROW;
 
 	Size2 texture_size;
-	if (p_image.texture.is_valid()) {
-		texture_size = p_image.texture->get_size();
+	if (image.texture.is_valid()) {
+		texture_size = image.texture->get_size();
 	}
 
 	float width = 0.0;
 	float height = 0.0;
-	const String size_text = p_image.options.has("size") ? p_image.options["size"] : String();
+	const String size_text = image.options.has("size") ? image.options["size"] : String();
 	if (!size_text.is_empty()) {
 		Vector<String> parts = size_text.to_lower().split("x");
 		if (parts.size() == 2) {
@@ -1658,11 +2567,11 @@ Dictionary RichTextEdit::_make_image_inline_info(const RichTextDocument::InlineI
 			width = size_text.to_float();
 		}
 	}
-	if (p_image.options.has("width")) {
-		width = p_image.options["width"].to_float();
+	if (image.options.has("width")) {
+		width = image.options["width"].to_float();
 	}
-	if (p_image.options.has("height")) {
-		height = p_image.options["height"].to_float();
+	if (image.options.has("height")) {
+		height = image.options["height"].to_float();
 	}
 
 	if (width > 0.0 || height > 0.0) {
@@ -1692,10 +2601,30 @@ Dictionary RichTextEdit::_make_image_inline_info(const RichTextDocument::InlineI
 	return info;
 }
 
-RichTextDocument::InlineImage *RichTextEdit::_get_image_at_offset(int p_offset) {
-	for (RichTextDocument::InlineImage &image : images) {
-		if (image.offset == p_offset) {
-			return &image;
+RichTextEdit::InlineObject *RichTextEdit::_find_object(uint64_t p_id, int *r_line) {
+	if (p_id == 0) {
+		return nullptr;
+	}
+	for (uint32_t line = 0; line < paragraphs.size(); line++) {
+		for (InlineObject &object : paragraphs[line].objects) {
+			if (object.id == p_id) {
+				if (r_line != nullptr) {
+					*r_line = line;
+				}
+				return &object;
+			}
+		}
+	}
+	return nullptr;
+}
+
+const RichTextEdit::InlineObject *RichTextEdit::_get_object_at(int p_line, int p_column) const {
+	if (p_line < 0 || p_line >= (int)paragraphs.size()) {
+		return nullptr;
+	}
+	for (const InlineObject &object : paragraphs[p_line].objects) {
+		if (object.column == p_column) {
+			return &object;
 		}
 	}
 	return nullptr;
@@ -1750,129 +2679,93 @@ float RichTextEdit::_get_fill_image_width() const {
 	return MAX(1.0f, fill_width);
 }
 
-void RichTextEdit::_insert_image_with_options(const String &p_source, const HashMap<String, String> &p_options) {
-	Vector<StyleSpan> before_spans = style_spans;
-	Vector<RichTextDocument::InlineImage> before_images = images;
-	Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	Vector<RichTextDocument::LineHeightSpan> before_line_heights = line_height_spans;
-	TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-	const int insert_offset = _get_caret_offset();
-
+void RichTextEdit::_insert_objects(const String &p_text, const LocalVector<Paragraph> &p_slices) {
+	// The insertion hook places the objects; the text takes the style typing
+	// would give it there.
+	pending_fragment = p_slices;
+	pending_fragment_text = p_text;
+	pending_fragment_inherit_style = true;
+	pending_fragment_active = true;
 	begin_complex_operation();
-	insert_text_at_caret(String::chr(RichTextDocument::OBJECT_REPLACEMENT_CHAR));
-	const String new_text = TextEdit::get_text();
-	_sync_style_spans_for_text_change(tracked_text, new_text);
-	_sync_line_height_spans_for_text_change(tracked_text, new_text);
-
-	images.clear();
-	for (RichTextDocument::InlineImage image : before_images) {
-		if (image.offset >= insert_offset) {
-			image.offset++;
-		}
-		images.push_back(image);
-	}
-	raw_inlines.clear();
-	for (RichTextDocument::RawInline raw_inline : before_raw_inlines) {
-		if (raw_inline.offset >= insert_offset) {
-			raw_inline.offset++;
-		}
-		raw_inlines.push_back(raw_inline);
-	}
-
-	RichTextDocument::InlineImage image;
-	image.offset = insert_offset;
-	image.source = p_source;
-	image.options = p_options;
-	image.texture = RichTextDocument::load_image_texture(image.source);
-	images.push_back(image);
-	tracked_text = new_text;
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override, &before_line_heights);
+	insert_text_at_caret(p_text);
 	end_complex_operation();
+	pending_fragment_active = false;
+	pending_fragment.clear();
+}
 
-	_refresh_style_rendering();
-	_style_changed();
+void RichTextEdit::insert_image(const String &p_source, int p_width, int p_height, const String &p_alt) {
+	HashMap<String, String> options;
+	if (p_width >= 0) {
+		options["width"] = itos(p_width);
+	}
+	if (p_height >= 0) {
+		options["height"] = itos(p_height);
+	}
+	if (!p_alt.is_empty()) {
+		options["alt"] = p_alt;
+	}
+
+	LocalVector<Paragraph> slices;
+	slices.resize(1);
+	slices[0].length = 1;
+	InlineObject object;
+	object.is_image = true;
+	object.image.source = p_source;
+	object.image.options = options;
+	object.image.texture = RichTextDocument::load_image_texture(p_source);
+	slices[0].objects.push_back(object);
+	_insert_objects(String::chr(RichTextDocument::OBJECT_REPLACEMENT_CHAR), slices);
 }
 
 void RichTextEdit::insert_horizontal_rule() {
-	Vector<StyleSpan> before_spans = style_spans;
-	Vector<RichTextDocument::InlineImage> before_images = images;
-	Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	Vector<RichTextDocument::LineHeightSpan> before_line_heights = line_height_spans;
-	TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-
 	// A rule always sits alone on its own line: break out of any text before
 	// the caret, and always leave the caret on a fresh line after it.
-	const String prefix = get_caret_column() > 0 ? "\n" : "";
-	const int insert_offset = _get_caret_offset();
-	const int object_offset = insert_offset + prefix.length();
-	const int inserted_length = prefix.length() + 2; // prefix + OBJECT_REPLACEMENT_CHAR + trailing "\n".
-
-	begin_complex_operation();
-	insert_text_at_caret(prefix + String::chr(RichTextDocument::OBJECT_REPLACEMENT_CHAR) + "\n");
-	const String new_text = TextEdit::get_text();
-	_sync_style_spans_for_text_change(tracked_text, new_text);
-	_sync_line_height_spans_for_text_change(tracked_text, new_text);
-
-	images.clear();
-	for (RichTextDocument::InlineImage image : before_images) {
-		if (image.offset >= insert_offset) {
-			image.offset += inserted_length;
-		}
-		images.push_back(image);
-	}
-	raw_inlines.clear();
-	for (RichTextDocument::RawInline raw_inline : before_raw_inlines) {
-		if (raw_inline.offset >= insert_offset) {
-			raw_inline.offset += inserted_length;
-		}
-		raw_inlines.push_back(raw_inline);
-	}
-
-	RichTextDocument::RawInline hr_inline;
-	hr_inline.offset = object_offset;
-	hr_inline.bbcode = "[hr]";
-	raw_inlines.push_back(hr_inline);
-
-	tracked_text = new_text;
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override, &before_line_heights);
-	end_complex_operation();
-
-	_refresh_style_rendering();
-	_style_changed();
+	const bool break_before = get_caret_column() > 0;
+	LocalVector<Paragraph> slices;
+	slices.resize(break_before ? 3 : 2);
+	Paragraph &rule = slices[break_before ? 1 : 0];
+	rule.length = 1;
+	InlineObject object;
+	object.is_image = false;
+	object.raw_bbcode = "[hr]";
+	rule.objects.push_back(object);
+	_insert_objects((break_before ? String("\n") : String()) + String::chr(RichTextDocument::OBJECT_REPLACEMENT_CHAR) + "\n", slices);
 }
 
-Vector<int> RichTextEdit::_get_selected_image_offsets() const {
-	Vector<int> offsets;
-	int from = 0;
-	int to = 0;
-	if (_get_selection_offsets(from, to)) {
-		for (const RichTextDocument::InlineImage &image : images) {
-			if (image.offset >= from && image.offset < to) {
-				offsets.push_back(image.offset);
+Vector<uint64_t> RichTextEdit::_get_selected_image_ids() const {
+	Vector<uint64_t> ids;
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	if (_get_selection_range(from_line, from_column, to_line, to_column)) {
+		for (int line = from_line; line <= to_line; line++) {
+			const int from = line == from_line ? from_column : 0;
+			const int to = line == to_line ? to_column : _get_line_length(line);
+			for (const InlineObject &object : paragraphs[line].objects) {
+				if (object.is_image && object.column >= from && object.column < to) {
+					ids.push_back(object.id);
+				}
 			}
 		}
-		return offsets;
+		return ids;
 	}
 
-	if (selected_image_offset >= 0) {
-		offsets.push_back(selected_image_offset);
-		return offsets;
+	if (selected_object_id != 0) {
+		ids.push_back(selected_object_id);
+		return ids;
 	}
 
-	const int caret_offset = _get_caret_offset();
-	for (const RichTextDocument::InlineImage &image : images) {
-		if (image.offset == caret_offset || (caret_offset > 0 && image.offset == caret_offset - 1)) {
-			offsets.push_back(image.offset);
+	const int line = get_caret_line();
+	const int column = get_caret_column();
+	for (int candidate : { column, column - 1 }) {
+		const InlineObject *object = _get_object_at(line, candidate);
+		if (object != nullptr && object->is_image) {
+			ids.push_back(object->id);
 			break;
 		}
 	}
-	return offsets;
+	return ids;
 }
 
 void RichTextEdit::_ensure_image_edit_controls() {
@@ -2074,25 +2967,26 @@ void RichTextEdit::_ensure_image_edit_controls() {
 }
 
 void RichTextEdit::_sync_selected_image_edit_controls() {
-	if (image_edit_bar == nullptr || selected_image_offset < 0) {
+	if (image_edit_bar == nullptr || selected_object_id == 0) {
 		return;
 	}
 
-	RichTextDocument::InlineImage *image = _get_image_at_offset(selected_image_offset);
-	if (image == nullptr) {
+	InlineObject *object = _find_object(selected_object_id);
+	if (object == nullptr || !object->is_image) {
 		_clear_selected_image();
 		return;
 	}
 
+	const RichTextDocument::InlineImage &image = object->image;
 	updating_image_edit_controls = true;
 	const Size2 fallback_size(image_width_spin->get_value(), image_height_spin->get_value());
-	const Size2 image_size = _get_image_option_size(*image, fallback_size);
+	const Size2 image_size = _get_image_option_size(image, fallback_size);
 	image_width_spin->set_value(image_size.x);
 	image_height_spin->set_value(image_size.y);
-	image_alt_edit->set_text(image->options.has("alt") ? image->options["alt"] : String());
-	image_link_edit->set_text(image->options.has("link") ? image->options["link"] : String());
-	image_ratio_button->set_pressed_no_signal(!image->options.has("_keep_ratio") || image->options["_keep_ratio"] == "true");
-	image_fill_width_button->set_pressed_no_signal(image->options.has("_fill_width") && image->options["_fill_width"] == "true");
+	image_alt_edit->set_text(image.options.has("alt") ? image.options["alt"] : String());
+	image_link_edit->set_text(image.options.has("link") ? image.options["link"] : String());
+	image_ratio_button->set_pressed_no_signal(!image.options.has("_keep_ratio") || image.options["_keep_ratio"] == "true");
+	image_fill_width_button->set_pressed_no_signal(image.options.has("_fill_width") && image.options["_fill_width"] == "true");
 	updating_image_edit_controls = false;
 }
 
@@ -2114,24 +3008,25 @@ void RichTextEdit::_image_edit_control_gui_input(const Ref<InputEvent> &p_event)
 	}
 }
 
-void RichTextEdit::_select_image(int p_offset, const Rect2 &p_screen_rect) {
-	selected_image_offset = p_offset;
-	_ensure_image_edit_controls();
-
-	RichTextDocument::InlineImage *image = _get_image_at_offset(p_offset);
-	if (image == nullptr) {
+void RichTextEdit::_select_image(uint64_t p_id, const Rect2 &p_screen_rect) {
+	InlineObject *object = _find_object(p_id);
+	if (object == nullptr || !object->is_image) {
 		_clear_selected_image();
 		return;
 	}
+	selected_object_id = p_id;
+	_ensure_image_edit_controls();
+	object = _find_object(p_id);
 
+	const RichTextDocument::InlineImage &image = object->image;
 	updating_image_edit_controls = true;
-	const Size2 image_size = _get_image_option_size(*image, p_screen_rect.size);
+	const Size2 image_size = _get_image_option_size(image, p_screen_rect.size);
 	image_width_spin->set_value(image_size.x);
 	image_height_spin->set_value(image_size.y);
-	image_alt_edit->set_text(image->options.has("alt") ? image->options["alt"] : String());
-	image_link_edit->set_text(image->options.has("link") ? image->options["link"] : String());
-	image_ratio_button->set_pressed_no_signal(!image->options.has("_keep_ratio") || image->options["_keep_ratio"] == "true");
-	image_fill_width_button->set_pressed_no_signal(image->options.has("_fill_width") && image->options["_fill_width"] == "true");
+	image_alt_edit->set_text(image.options.has("alt") ? image.options["alt"] : String());
+	image_link_edit->set_text(image.options.has("link") ? image.options["link"] : String());
+	image_ratio_button->set_pressed_no_signal(!image.options.has("_keep_ratio") || image.options["_keep_ratio"] == "true");
+	image_fill_width_button->set_pressed_no_signal(image.options.has("_fill_width") && image.options["_fill_width"] == "true");
 	updating_image_edit_controls = false;
 
 	// The design keeps the property panel at the same fixed width as the image
@@ -2158,7 +3053,7 @@ void RichTextEdit::_select_image(int p_offset, const Rect2 &p_screen_rect) {
 }
 
 void RichTextEdit::_clear_selected_image() {
-	selected_image_offset = -1;
+	selected_object_id = 0;
 	if (image_edit_bar != nullptr) {
 		image_edit_bar->hide();
 	}
@@ -2169,59 +3064,52 @@ void RichTextEdit::_clear_selected_image() {
 }
 
 void RichTextEdit::_commit_selected_image_options(const String &p_width, const String &p_height, const String &p_alt, const String &p_link, bool p_record_undo) {
-	if (selected_image_offset < 0) {
-		return;
-	}
-	const Vector<StyleSpan> before_spans = style_spans;
-	const Vector<RichTextDocument::InlineImage> before_images = images;
-	const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	const TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-	RichTextDocument::InlineImage *image = _get_image_at_offset(selected_image_offset);
-	if (image == nullptr) {
+	int line = 0;
+	InlineObject *object = _find_object(selected_object_id, &line);
+	if (object == nullptr) {
 		_clear_selected_image();
 		return;
 	}
+	const Ref<StyleState> before = _capture_style_state(line, line);
+	object = _find_object(selected_object_id);
+	HashMap<String, String> &options = object->image.options;
 
-	image->options.erase("size");
+	options.erase("size");
 	if (p_width.is_empty()) {
-		image->options.erase("width");
+		options.erase("width");
 	} else {
-		image->options["width"] = p_width;
+		options["width"] = p_width;
 	}
 	if (p_height.is_empty()) {
-		image->options.erase("height");
+		options.erase("height");
 	} else {
-		image->options["height"] = p_height;
+		options["height"] = p_height;
 	}
 	if (p_alt.is_empty()) {
-		image->options.erase("alt");
+		options.erase("alt");
 	} else {
-		image->options["alt"] = p_alt;
+		options["alt"] = p_alt;
 	}
 	if (p_link.is_empty()) {
-		image->options.erase("link");
+		options.erase("link");
 	} else {
-		image->options["link"] = p_link;
+		options["link"] = p_link;
 	}
 
 	if (p_record_undo) {
-		_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override, nullptr, true);
+		_push_style_undo(before, true);
 	}
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	_refresh_style_rendering();
-	_style_changed();
+	_model_changed(line, line);
 }
 
 void RichTextEdit::_selected_image_width_changed(double p_value) {
-	if (updating_image_edit_controls || selected_image_offset < 0) {
+	if (updating_image_edit_controls || selected_object_id == 0) {
 		return;
 	}
 	if (image_ratio_button != nullptr && image_ratio_button->is_pressed()) {
-		RichTextDocument::InlineImage *image = _get_image_at_offset(selected_image_offset);
-		if (image != nullptr) {
-			const Size2 current_size = _get_image_option_size(*image, Size2(image_width_spin->get_value(), image_height_spin->get_value()));
+		InlineObject *object = _find_object(selected_object_id);
+		if (object != nullptr) {
+			const Size2 current_size = _get_image_option_size(object->image, Size2(image_width_spin->get_value(), image_height_spin->get_value()));
 			if (current_size.x > 0.0f) {
 				updating_image_edit_controls = true;
 				image_height_spin->set_value(MAX(1.0, p_value * current_size.y / current_size.x));
@@ -2233,13 +3121,13 @@ void RichTextEdit::_selected_image_width_changed(double p_value) {
 }
 
 void RichTextEdit::_selected_image_height_changed(double p_value) {
-	if (updating_image_edit_controls || selected_image_offset < 0) {
+	if (updating_image_edit_controls || selected_object_id == 0) {
 		return;
 	}
 	if (image_ratio_button != nullptr && image_ratio_button->is_pressed()) {
-		RichTextDocument::InlineImage *image = _get_image_at_offset(selected_image_offset);
-		if (image != nullptr) {
-			const Size2 current_size = _get_image_option_size(*image, Size2(image_width_spin->get_value(), image_height_spin->get_value()));
+		InlineObject *object = _find_object(selected_object_id);
+		if (object != nullptr) {
+			const Size2 current_size = _get_image_option_size(object->image, Size2(image_width_spin->get_value(), image_height_spin->get_value()));
 			if (current_size.y > 0.0f) {
 				updating_image_edit_controls = true;
 				image_width_spin->set_value(MAX(1.0, p_value * current_size.x / current_size.y));
@@ -2251,61 +3139,58 @@ void RichTextEdit::_selected_image_height_changed(double p_value) {
 }
 
 void RichTextEdit::_selected_image_ratio_toggled(bool p_pressed) {
-	if (updating_image_edit_controls || selected_image_offset < 0) {
+	if (updating_image_edit_controls || selected_object_id == 0) {
 		return;
 	}
-	const Vector<StyleSpan> before_spans = style_spans;
-	const Vector<RichTextDocument::InlineImage> before_images = images;
-	const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	const TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-	RichTextDocument::InlineImage *image = _get_image_at_offset(selected_image_offset);
-	if (image == nullptr) {
+	int line = 0;
+	InlineObject *object = _find_object(selected_object_id, &line);
+	if (object == nullptr) {
 		_clear_selected_image();
 		return;
 	}
+	const Ref<StyleState> before = _capture_style_state(line, line);
+	object = _find_object(selected_object_id);
 
 	if (p_pressed) {
-		image->options.erase("_keep_ratio"); // Kept ratio is the default; absence means on.
+		object->image.options.erase("_keep_ratio"); // Kept ratio is the default; absence means on.
 	} else {
-		image->options["_keep_ratio"] = "false";
+		object->image.options["_keep_ratio"] = "false";
 	}
 	_commit_selected_image_options(String::num_real(image_width_spin->get_value(), false), String::num_real(image_height_spin->get_value(), false), image_alt_edit->get_text(), image_link_edit->get_text(), false);
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override, nullptr, true);
+	_push_style_undo(before, true);
 }
 
 void RichTextEdit::_selected_image_fill_width_toggled(bool p_pressed) {
-	if (updating_image_edit_controls || selected_image_offset < 0) {
+	if (updating_image_edit_controls || selected_object_id == 0) {
 		return;
 	}
-	const Vector<StyleSpan> before_spans = style_spans;
-	const Vector<RichTextDocument::InlineImage> before_images = images;
-	const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	const TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-	RichTextDocument::InlineImage *image = _get_image_at_offset(selected_image_offset);
-	if (image == nullptr) {
+	int line = 0;
+	InlineObject *object = _find_object(selected_object_id, &line);
+	if (object == nullptr) {
 		_clear_selected_image();
 		return;
 	}
+	const Ref<StyleState> before = _capture_style_state(line, line);
+	object = _find_object(selected_object_id);
+	HashMap<String, String> &options = object->image.options;
 
 	Size2 target_size;
 	if (p_pressed) {
-		const Size2 current_size = _get_image_option_size(*image, Size2(image_width_spin->get_value(), image_height_spin->get_value()));
-		image->options["_fill_width"] = "true";
-		image->options["_previous_width"] = String::num_real(current_size.x, false);
-		image->options["_previous_height"] = String::num_real(current_size.y, false);
+		const Size2 current_size = _get_image_option_size(object->image, Size2(image_width_spin->get_value(), image_height_spin->get_value()));
+		options["_fill_width"] = "true";
+		options["_previous_width"] = String::num_real(current_size.x, false);
+		options["_previous_height"] = String::num_real(current_size.y, false);
 		const float fill_width = _get_fill_image_width();
 		target_size = Size2(fill_width, MAX(1.0f, fill_width * current_size.y / current_size.x));
 	} else {
-		image->options.erase("_fill_width");
-		if (image->options.has("_previous_width") && image->options.has("_previous_height")) {
-			target_size = Size2(image->options["_previous_width"].to_float(), image->options["_previous_height"].to_float());
+		options.erase("_fill_width");
+		if (options.has("_previous_width") && options.has("_previous_height")) {
+			target_size = Size2(options["_previous_width"].to_float(), options["_previous_height"].to_float());
 		} else {
-			target_size = _get_image_option_size(*image, Size2(image_width_spin->get_value(), image_height_spin->get_value()));
+			target_size = _get_image_option_size(object->image, Size2(image_width_spin->get_value(), image_height_spin->get_value()));
 		}
-		image->options.erase("_previous_width");
-		image->options.erase("_previous_height");
+		options.erase("_previous_width");
+		options.erase("_previous_height");
 	}
 
 	updating_image_edit_controls = true;
@@ -2313,28 +3198,28 @@ void RichTextEdit::_selected_image_fill_width_toggled(bool p_pressed) {
 	image_height_spin->set_value(MAX(1.0f, target_size.y));
 	updating_image_edit_controls = false;
 	_commit_selected_image_options(String::num_real(image_width_spin->get_value(), false), String::num_real(image_height_spin->get_value(), false), image_alt_edit->get_text(), image_link_edit->get_text(), false);
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override, nullptr, true);
+	_push_style_undo(before, true);
 }
 
 void RichTextEdit::_selected_image_reset() {
-	if (selected_image_offset < 0) {
+	if (selected_object_id == 0) {
 		return;
 	}
 	_commit_selected_image_options(String(), String(), image_alt_edit != nullptr ? image_alt_edit->get_text() : String(), image_link_edit != nullptr ? image_link_edit->get_text() : String());
-	RichTextDocument::InlineImage *image = _get_image_at_offset(selected_image_offset);
-	if (image != nullptr) {
-		const Size2 natural_size = _get_image_option_size(*image, Size2(1, 1));
+	InlineObject *object = _find_object(selected_object_id);
+	if (object != nullptr) {
+		const Size2 natural_size = _get_image_option_size(object->image, Size2(1, 1));
 		updating_image_edit_controls = true;
 		image_width_spin->set_value(natural_size.x);
 		image_height_spin->set_value(natural_size.y);
-		image_ratio_button->set_pressed_no_signal(!image->options.has("_keep_ratio") || image->options["_keep_ratio"] == "true");
+		image_ratio_button->set_pressed_no_signal(!object->image.options.has("_keep_ratio") || object->image.options["_keep_ratio"] == "true");
 		image_fill_width_button->set_pressed_no_signal(false);
 		updating_image_edit_controls = false;
 	}
 }
 
 void RichTextEdit::_pressed_selected_image_details() {
-	if (selected_image_offset < 0 || image_details_popup == nullptr) {
+	if (selected_object_id == 0 || image_details_popup == nullptr) {
 		return;
 	}
 	image_details_popup->set_position(get_screen_position() + image_edit_bar->get_position() + Vector2(0, image_edit_bar->get_size().y + 4));
@@ -2343,7 +3228,7 @@ void RichTextEdit::_pressed_selected_image_details() {
 }
 
 void RichTextEdit::_apply_selected_image_details() {
-	if (selected_image_offset < 0) {
+	if (selected_object_id == 0) {
 		return;
 	}
 	_commit_selected_image_options(String::num_real(image_width_spin->get_value(), false), String::num_real(image_height_spin->get_value(), false), image_alt_edit->get_text(), image_link_edit->get_text());
@@ -2352,14 +3237,56 @@ void RichTextEdit::_apply_selected_image_details() {
 	}
 }
 
+void RichTextEdit::set_selection_image_size(int p_width, int p_height) {
+	if (p_width < 0 && p_height < 0) {
+		return;
+	}
+
+	const Vector<uint64_t> ids = _get_selected_image_ids();
+	int first_line = INT_MAX;
+	int last_line = -1;
+	for (uint64_t id : ids) {
+		int line = 0;
+		if (_find_object(id, &line) != nullptr) {
+			first_line = MIN(first_line, line);
+			last_line = MAX(last_line, line);
+		}
+	}
+	if (last_line < 0) {
+		return;
+	}
+
+	const Ref<StyleState> before = _capture_style_state(first_line, last_line);
+	for (uint64_t id : ids) {
+		InlineObject *object = _find_object(id);
+		if (object == nullptr) {
+			continue;
+		}
+		HashMap<String, String> &options = object->image.options;
+		options.erase("size");
+		if (p_width >= 0) {
+			options["width"] = itos(p_width);
+		} else {
+			options.erase("width");
+		}
+		if (p_height >= 0) {
+			options["height"] = itos(p_height);
+		} else {
+			options.erase("height");
+		}
+	}
+	_push_style_undo(before);
+	_model_changed(first_line, last_line);
+}
+
 bool RichTextEdit::_is_horizontal_rule_bbcode(const String &p_bbcode) {
 	return p_bbcode == "[hr]" || p_bbcode.begins_with("[hr ") || p_bbcode.begins_with("[hr=");
 }
 
-Dictionary RichTextEdit::_make_horizontal_rule_inline_info(int p_offset, int p_column) const {
+Dictionary RichTextEdit::_make_horizontal_rule_inline_info(const InlineObject &p_object) const {
 	Dictionary info;
-	info["column"] = p_column;
-	info["offset"] = p_offset;
+	info["column"] = p_object.column;
+	info["object_id"] = (int64_t)p_object.id;
 	info["cursor_shape"] = CURSOR_ARROW;
 	info["horizontal_rule"] = true;
 	info["width"] = MAX(1.0f, _get_fill_image_width());
@@ -2372,28 +3299,17 @@ Dictionary RichTextEdit::_make_horizontal_rule_inline_info(int p_offset, int p_c
 
 Array RichTextEdit::_get_line_inline_objects(int p_line, const String &p_line_text) const {
 	Array result;
-	const int line_start = _get_line_start_offset(p_line);
-	for (int i = 0; i < p_line_text.length(); i++) {
-		if (p_line_text[i] != RichTextDocument::OBJECT_REPLACEMENT_CHAR) {
+	if (p_line < 0 || p_line >= (int)paragraphs.size()) {
+		return result;
+	}
+	for (const InlineObject &object : paragraphs[p_line].objects) {
+		if (object.column >= p_line_text.length() || p_line_text[object.column] != RichTextDocument::OBJECT_REPLACEMENT_CHAR) {
 			continue;
 		}
-		const int offset = line_start + i;
-		bool found = false;
-		for (const RichTextDocument::InlineImage &image : images) {
-			if (image.offset == offset) {
-				result.push_back(_make_image_inline_info(image, i));
-				found = true;
-				break;
-			}
-		}
-		if (found) {
-			continue;
-		}
-		for (const RichTextDocument::RawInline &raw_inline : raw_inlines) {
-			if (raw_inline.offset == offset && _is_horizontal_rule_bbcode(raw_inline.bbcode)) {
-				result.push_back(_make_horizontal_rule_inline_info(offset, i));
-				break;
-			}
+		if (object.is_image) {
+			result.push_back(_make_image_inline_info(object));
+		} else if (_is_horizontal_rule_bbcode(object.raw_bbcode)) {
+			result.push_back(_make_horizontal_rule_inline_info(object));
 		}
 	}
 	return result;
@@ -2428,59 +3344,99 @@ void RichTextEdit::_draw_inline_object(const Dictionary &p_info, const Rect2 &p_
 		RS::get_singleton()->canvas_item_add_rect(text_canvas_item, Rect2(Point2(draw_rect.position.x + draw_rect.size.x - 1, draw_rect.position.y), Size2(1, draw_rect.size.y)), outline_color);
 	};
 
-	int offset = p_info.get("offset", -1);
-	if (offset < 0) {
-		int line = p_info.get("line", -1);
-		int column = p_info.get("column", -1);
-		if (line < 0 || column < 0) {
-			return;
-		}
-		offset = _get_line_start_offset(line) + column;
-	}
-	if (offset < 0) {
+	const InlineObject *object = _get_object_at(p_info.get("line", -1), p_info.get("column", -1));
+	if (object == nullptr || !object->is_image) {
+		draw_placeholder();
 		return;
 	}
-	for (const RichTextDocument::InlineImage &image : images) {
-		if (image.offset != offset) {
-			continue;
-		}
-		if (image.texture.is_valid()) {
-			if (src_rect.has_area()) {
-				const Size2 texture_size = image.texture->get_size();
-				image.texture->draw_rect_region(text_canvas_item, draw_rect, Rect2(src_rect.position * texture_size, src_rect.size * texture_size), Color(1, 1, 1));
-			} else {
-				image.texture->draw_rect(text_canvas_item, draw_rect, false, Color(1, 1, 1));
-			}
+	const RichTextDocument::InlineImage &image = object->image;
+	if (image.texture.is_valid()) {
+		if (src_rect.has_area()) {
+			const Size2 texture_size = image.texture->get_size();
+			image.texture->draw_rect_region(text_canvas_item, draw_rect, Rect2(src_rect.position * texture_size, src_rect.size * texture_size), Color(1, 1, 1));
 		} else {
-			draw_placeholder();
+			image.texture->draw_rect(text_canvas_item, draw_rect, false, Color(1, 1, 1));
 		}
-		if (selected_image_offset == offset) {
-			const Color selection_color = Color(0.25, 0.55, 1.0, 1.0);
-			RS::get_singleton()->canvas_item_add_rect(text_canvas_item, Rect2(draw_rect.position, Size2(draw_rect.size.x, 2)), selection_color);
-			RS::get_singleton()->canvas_item_add_rect(text_canvas_item, Rect2(Point2(draw_rect.position.x, draw_rect.position.y + draw_rect.size.y - 2), Size2(draw_rect.size.x, 2)), selection_color);
-			RS::get_singleton()->canvas_item_add_rect(text_canvas_item, Rect2(draw_rect.position, Size2(2, draw_rect.size.y)), selection_color);
-			RS::get_singleton()->canvas_item_add_rect(text_canvas_item, Rect2(Point2(draw_rect.position.x + draw_rect.size.x - 2, draw_rect.position.y), Size2(2, draw_rect.size.y)), selection_color);
-		}
-		return;
+	} else {
+		draw_placeholder();
 	}
-	draw_placeholder();
+	if (selected_object_id == object->id) {
+		const Color selection_color = Color(0.25, 0.55, 1.0, 1.0);
+		RS::get_singleton()->canvas_item_add_rect(text_canvas_item, Rect2(draw_rect.position, Size2(draw_rect.size.x, 2)), selection_color);
+		RS::get_singleton()->canvas_item_add_rect(text_canvas_item, Rect2(Point2(draw_rect.position.x, draw_rect.position.y + draw_rect.size.y - 2), Size2(draw_rect.size.x, 2)), selection_color);
+		RS::get_singleton()->canvas_item_add_rect(text_canvas_item, Rect2(draw_rect.position, Size2(2, draw_rect.size.y)), selection_color);
+		RS::get_singleton()->canvas_item_add_rect(text_canvas_item, Rect2(Point2(draw_rect.position.x + draw_rect.size.x - 2, draw_rect.position.y), Size2(2, draw_rect.size.y)), selection_color);
+	}
 }
 
 void RichTextEdit::_inline_object_clicked(const Dictionary &p_info, const Rect2 &p_rect) {
 	if (p_info.get("horizontal_rule", false)) {
 		return;
 	}
-	int offset = p_info.get("offset", -1);
-	if (offset < 0) {
-		int line = p_info.get("line", -1);
-		int column = p_info.get("column", -1);
-		if (line >= 0 && column >= 0) {
-			offset = _get_line_start_offset(line) + column;
-		}
+	const uint64_t id = (int64_t)p_info.get("object_id", 0);
+	if (id != 0) {
+		_select_image(id, p_rect);
 	}
-	if (offset >= 0) {
-		_select_image(offset, p_rect);
+}
+
+bool RichTextEdit::_is_text_clipping_enabled() const {
+	// Content only draws outside the control when both axes are visible.
+	return overflow_x != OVERFLOW_VISIBLE || overflow_y != OVERFLOW_VISIBLE;
+}
+
+TextEdit::ScrollBarMode RichTextEdit::_get_axis_scroll_bar_mode(Overflow p_axis, Overflow p_other_axis) {
+	// Like CSS, a visible axis next to a clipped one computes to auto.
+	if (p_axis == OVERFLOW_VISIBLE && p_other_axis != OVERFLOW_VISIBLE) {
+		return SCROLL_BAR_MODE_AUTO;
 	}
+	switch (p_axis) {
+		case OVERFLOW_VISIBLE:
+		case OVERFLOW_HIDDEN:
+			return SCROLL_BAR_MODE_NEVER;
+		case OVERFLOW_SCROLL:
+			return SCROLL_BAR_MODE_ALWAYS;
+		case OVERFLOW_AUTO:
+			break;
+	}
+	return SCROLL_BAR_MODE_AUTO;
+}
+
+TextEdit::ScrollBarMode RichTextEdit::_get_h_scroll_bar_mode() const {
+	return _get_axis_scroll_bar_mode(overflow_x, overflow_y);
+}
+
+TextEdit::ScrollBarMode RichTextEdit::_get_v_scroll_bar_mode() const {
+	return _get_axis_scroll_bar_mode(overflow_y, overflow_x);
+}
+
+void RichTextEdit::set_overflow_x(Overflow p_overflow) {
+	ERR_FAIL_INDEX((int)p_overflow, OVERFLOW_SCROLL + 1);
+	if (overflow_x == p_overflow) {
+		return;
+	}
+	overflow_x = p_overflow;
+	_update_text_clipping();
+}
+
+RichTextEdit::Overflow RichTextEdit::get_overflow_x() const {
+	return overflow_x;
+}
+
+void RichTextEdit::set_overflow_y(Overflow p_overflow) {
+	ERR_FAIL_INDEX((int)p_overflow, OVERFLOW_SCROLL + 1);
+	if (overflow_y == p_overflow) {
+		return;
+	}
+	overflow_y = p_overflow;
+	_update_text_clipping();
+}
+
+RichTextEdit::Overflow RichTextEdit::get_overflow_y() const {
+	return overflow_y;
+}
+
+int RichTextEdit::get_content_height() const {
+	return _get_visible_content_height();
 }
 
 void RichTextEdit::_notification(int p_what) {
@@ -2488,47 +3444,13 @@ void RichTextEdit::_notification(int p_what) {
 		meta_hovering = false;
 		emit_signal(SNAME("meta_hover_ended"), current_meta);
 		current_meta = String();
+		_clear_style_render_infos();
 	}
 	if (p_what == NOTIFICATION_MOUSE_EXIT && !active_meta.is_empty()) {
 		active_meta = String();
+		_clear_style_render_infos();
 		queue_redraw();
 	}
-}
-
-void RichTextEdit::set_text(const String &p_text) {
-	source_text = p_text;
-	setting_bbcode_text = true;
-	if (use_bbcode) {
-		RichTextDocument document = RichTextDocument::parse_bbcode(p_text);
-		_apply_document(document);
-		TextEdit::set_text(document.text);
-		tracked_text = document.text;
-		bbcode_text = p_text;
-		bbcode_dirty = false;
-	} else {
-		TextEdit::set_text(p_text);
-		tracked_text = p_text;
-		style_spans.clear();
-		deleted_style_ranges_for_undo.clear();
-		images.clear();
-		raw_inlines.clear();
-		line_height_spans.clear();
-		_mark_bbcode_dirty();
-	}
-	setting_bbcode_text = false;
-
-	typing_style_override = false;
-	clear_undo_history();
-	_refresh_style_rendering();
-	_style_changed();
-	if (use_bbcode) {
-		bbcode_text = p_text;
-		bbcode_dirty = false;
-	}
-}
-
-String RichTextEdit::get_text() const {
-	return use_bbcode ? get_bbcode_text() : source_text;
 }
 
 void RichTextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
@@ -2548,7 +3470,7 @@ void RichTextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		_insert_newline(key->is_shift_pressed());
 		return;
 	}
-	if (key.is_valid() && key->is_pressed() && !key->is_echo() && key->is_action("ui_cancel", true) && selected_image_offset >= 0) {
+	if (key.is_valid() && key->is_pressed() && !key->is_echo() && key->is_action("ui_cancel", true) && selected_object_id != 0) {
 		_clear_selected_image();
 		accept_event();
 		return;
@@ -2564,10 +3486,11 @@ void RichTextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			accept_event();
 			return;
 		}
-	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && selected_image_offset >= 0) {
+	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && selected_object_id != 0) {
 		_clear_selected_image();
 	} else if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && !active_meta.is_empty()) {
 		active_meta = String();
+		_clear_style_render_infos();
 		queue_redraw();
 	}
 
@@ -2660,37 +3583,6 @@ RichTextEdit::LinkActivationMode RichTextEdit::get_link_activation_mode() const 
 	return link_activation_mode;
 }
 
-void RichTextEdit::set_bbcode_text(const String &p_bbcode) {
-	use_bbcode = true;
-	source_text = p_bbcode;
-	RichTextDocument document = RichTextDocument::parse_bbcode(p_bbcode);
-
-	setting_bbcode_text = true;
-	bbcode_text = p_bbcode;
-	bbcode_dirty = false;
-	_apply_document(document);
-	TextEdit::set_text(document.text);
-	tracked_text = document.text;
-	setting_bbcode_text = false;
-
-	_merge_adjacent_spans();
-	typing_style_override = false;
-	deleted_style_ranges_for_undo.clear();
-	clear_undo_history();
-	_refresh_style_rendering();
-	_style_changed();
-	bbcode_text = p_bbcode;
-	bbcode_dirty = false;
-}
-
-String RichTextEdit::get_bbcode_text() const {
-	if (bbcode_dirty) {
-		bbcode_text = _serialize_bbcode();
-		bbcode_dirty = false;
-	}
-	return bbcode_text;
-}
-
 void RichTextEdit::set_visible_characters(int p_visible) {
 	_set_visible_characters(p_visible);
 }
@@ -2713,150 +3605,6 @@ void RichTextEdit::set_visible_characters_behavior(TextServer::VisibleCharacters
 
 TextServer::VisibleCharactersBehavior RichTextEdit::get_visible_characters_behavior() const {
 	return _get_visible_characters_behavior();
-}
-
-PackedByteArray RichTextEdit::get_document_protobuf() const {
-	return _make_document().to_protobuf();
-}
-
-bool RichTextEdit::set_document_protobuf(const PackedByteArray &p_data) {
-	RichTextDocument document;
-	String error;
-	if (!RichTextDocument::parse_protobuf(p_data, document, &error)) {
-		ERR_PRINT("Unable to load rich-text protobuf: " + error);
-		return false;
-	}
-	const Vector<StyleSpan> before_spans = style_spans;
-	const Vector<RichTextDocument::InlineImage> before_images = images;
-	const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	const TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-	setting_bbcode_text = true;
-	_apply_document(document);
-	TextEdit::set_text(document.text);
-	tracked_text = document.text;
-	source_text = use_bbcode ? document.to_bbcode() : document.text;
-	bbcode_text = document.to_bbcode();
-	bbcode_dirty = false;
-	setting_bbcode_text = false;
-	_merge_adjacent_spans();
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override);
-	_refresh_style_rendering();
-	_style_changed();
-	return true;
-}
-
-void RichTextEdit::copy_rich_text() {
-	int from, to;
-	if (!_get_selection_offsets(from, to) || from == to) {
-		rich_text_clipboard_protobuf.clear();
-		rich_text_clipboard_plain_text = String();
-		TextEdit::copy();
-		return;
-	}
-	RichTextDocument source = _make_document();
-	RichTextDocument selection;
-	selection.text = source.text.substr(from, to - from);
-	for (const RichTextDocument::StyleSpan &span : source.spans) {
-		if (span.to <= from || span.from >= to) {
-			continue;
-		}
-		RichTextDocument::StyleSpan clipped = span;
-		clipped.from = MAX(span.from, from) - from;
-		clipped.to = MIN(span.to, to) - from;
-		selection.spans.push_back(clipped);
-	}
-	for (RichTextDocument::InlineImage image : source.images) {
-		if (image.offset >= from && image.offset < to) {
-			image.offset -= from;
-			selection.images.push_back(image);
-		}
-	}
-	for (RichTextDocument::RawInline raw : source.raw_inlines) {
-		if (raw.offset >= from && raw.offset < to) {
-			raw.offset -= from;
-			selection.raw_inlines.push_back(raw);
-		}
-	}
-	int selection_line_start = from;
-	while (selection_line_start > 0 && source.text[selection_line_start - 1] != '\n') {
-		selection_line_start--;
-	}
-	for (const RichTextDocument::LineHeightSpan &line_height : source.line_heights) {
-		if (line_height.line_start != selection_line_start && (line_height.line_start < selection_line_start || line_height.line_start >= to)) {
-			continue;
-		}
-		RichTextDocument::LineHeightSpan clipped = line_height;
-		clipped.line_start = line_height.line_start == selection_line_start ? 0 : line_height.line_start - from;
-		selection.line_heights.push_back(clipped);
-	}
-	selection.canonicalize();
-	rich_text_clipboard_protobuf = selection.to_protobuf();
-	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD)) {
-		TextEdit::copy();
-		rich_text_clipboard_plain_text = DisplayServer::get_singleton()->clipboard_get();
-	} else {
-		// Headless tests and platforms without a system clipboard still retain
-		// the process-local structured clipboard.
-		rich_text_clipboard_plain_text = selection.text;
-	}
-}
-
-bool RichTextEdit::paste_rich_text() {
-	const bool has_clipboard = DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD);
-	if (rich_text_clipboard_protobuf.is_empty() || (has_clipboard && DisplayServer::get_singleton()->clipboard_get() != rich_text_clipboard_plain_text)) {
-		return false;
-	}
-	RichTextDocument pasted;
-	if (!RichTextDocument::parse_protobuf(rich_text_clipboard_protobuf, pasted)) {
-		return false;
-	}
-	int from, to;
-	if (!_get_selection_offsets(from, to)) {
-		from = to = _get_caret_offset();
-	}
-	const Vector<StyleSpan> before_spans = style_spans;
-	const Vector<RichTextDocument::InlineImage> before_images = images;
-	const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	const Vector<RichTextDocument::LineHeightSpan> before_line_heights = line_height_spans;
-	const TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-	if (has_clipboard) {
-		TextEdit::paste();
-	} else {
-		insert_text_at_caret(pasted.text);
-	}
-	const int inserted_to = from + pasted.text.length();
-	_replace_style_range(from, inserted_to, TextStyle());
-	for (const RichTextDocument::StyleSpan &span : pasted.spans) {
-		StyleSpan shifted;
-		shifted.from = from + span.from;
-		shifted.to = from + span.to;
-		shifted.style = span.style;
-		style_spans.push_back(shifted);
-	}
-	for (RichTextDocument::InlineImage image : pasted.images) {
-		image.offset += from;
-		images.push_back(image);
-	}
-	for (RichTextDocument::RawInline raw : pasted.raw_inlines) {
-		raw.offset += from;
-		raw_inlines.push_back(raw);
-	}
-	for (RichTextDocument::LineHeightSpan line_height : pasted.line_heights) {
-		line_height.line_start += from;
-		line_height_spans.push_back(line_height);
-	}
-	_merge_adjacent_spans();
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override, &before_line_heights);
-	source_text = use_bbcode ? _serialize_bbcode() : TextEdit::get_text();
-	_refresh_style_rendering();
-	_style_changed();
-	return true;
-}
-
-const Vector<RichTextEdit::StyleSpan> &RichTextEdit::get_style_spans() const {
-	return style_spans;
 }
 
 void RichTextEdit::set_bold() {
@@ -2907,6 +3655,18 @@ void RichTextEdit::toggle_strikethrough() {
 	_apply_style_property_to_selection(STYLE_PROPERTY_STRIKETHROUGH);
 }
 
+void RichTextEdit::set_overline() {
+	_apply_style_property_to_selection(STYLE_PROPERTY_OVERLINE, true);
+}
+
+void RichTextEdit::clear_overline() {
+	_apply_style_property_to_selection(STYLE_PROPERTY_OVERLINE, false);
+}
+
+void RichTextEdit::toggle_overline() {
+	_apply_style_property_to_selection(STYLE_PROPERTY_OVERLINE);
+}
+
 void RichTextEdit::set_selection_color(const Color &p_color) {
 	_apply_style_property_to_selection(STYLE_PROPERTY_COLOR, p_color);
 }
@@ -2939,83 +3699,6 @@ void RichTextEdit::clear_selection_outline_size() {
 	_apply_style_property_to_selection(STYLE_PROPERTY_CLEAR_OUTLINE_SIZE);
 }
 
-void RichTextEdit::begin_selection_color_preview() {
-	if (style_preview_active) {
-		return;
-	}
-
-	style_preview_active = true;
-	int from = 0;
-	int to = 0;
-	style_preview_had_selection = _get_selection_offsets(from, to);
-	style_preview_before_spans = style_spans;
-	style_preview_before_typing_style = typing_style;
-	style_preview_before_typing_style_override = typing_style_override;
-}
-
-void RichTextEdit::preview_selection_color(const Color &p_color) {
-	if (!style_preview_active) {
-		begin_selection_color_preview();
-	}
-	_apply_style_property_to_selection(STYLE_PROPERTY_COLOR, p_color, false);
-}
-
-void RichTextEdit::end_selection_color_preview(bool p_commit) {
-	if (!style_preview_active) {
-		return;
-	}
-
-	const Vector<StyleSpan> before_spans = style_preview_before_spans;
-	const TextStyle before_typing_style = style_preview_before_typing_style;
-	const bool before_typing_style_override = style_preview_before_typing_style_override;
-	const bool had_selection = style_preview_had_selection;
-	style_preview_active = false;
-	style_preview_had_selection = false;
-	style_preview_before_spans.clear();
-
-	if (p_commit) {
-		if (had_selection) {
-			_push_style_undo_snapshot(before_spans, images, raw_inlines, before_typing_style, before_typing_style_override);
-		}
-		source_text = TextEdit::get_text();
-		_mark_bbcode_dirty();
-		_style_changed();
-	} else {
-		style_spans = before_spans;
-		typing_style = before_typing_style;
-		typing_style_override = before_typing_style_override;
-		_merge_adjacent_spans();
-		source_text = TextEdit::get_text();
-		_mark_bbcode_dirty();
-		_refresh_style_rendering();
-	}
-}
-
-void RichTextEdit::begin_selection_bg_color_preview() {
-	if (style_preview_active) {
-		return;
-	}
-
-	style_preview_active = true;
-	int from = 0;
-	int to = 0;
-	style_preview_had_selection = _get_selection_offsets(from, to);
-	style_preview_before_spans = style_spans;
-	style_preview_before_typing_style = typing_style;
-	style_preview_before_typing_style_override = typing_style_override;
-}
-
-void RichTextEdit::preview_selection_bg_color(const Color &p_color) {
-	if (!style_preview_active) {
-		begin_selection_bg_color_preview();
-	}
-	_apply_style_property_to_selection(STYLE_PROPERTY_BG_COLOR, p_color, false);
-}
-
-void RichTextEdit::end_selection_bg_color_preview(bool p_commit) {
-	end_selection_color_preview(p_commit);
-}
-
 void RichTextEdit::set_selection_font_size(int p_size) {
 	_apply_style_property_to_selection(STYLE_PROPERTY_FONT_SIZE, p_size);
 }
@@ -3030,37 +3713,6 @@ void RichTextEdit::set_selection_font(const String &p_font) {
 
 void RichTextEdit::clear_selection_font() {
 	_apply_style_property_to_selection(STYLE_PROPERTY_CLEAR_FONT);
-}
-
-void RichTextEdit::set_selection_url(const String &p_url) {
-	const Vector<int> image_offsets = _get_selected_image_offsets();
-	if (!image_offsets.is_empty()) {
-		const Vector<StyleSpan> before_spans = style_spans;
-		const Vector<RichTextDocument::InlineImage> before_images = images;
-		const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-		const Vector<RichTextDocument::LineHeightSpan> before_line_heights = line_height_spans;
-		const TextStyle before_typing_style = typing_style;
-		const bool before_typing_style_override = typing_style_override;
-		for (int offset : image_offsets) {
-			RichTextDocument::InlineImage *image = _get_image_at_offset(offset);
-			if (image != nullptr) {
-				if (p_url.is_empty()) {
-					image->options.erase("link");
-				} else {
-					image->options["link"] = p_url;
-				}
-			}
-		}
-		if (before_images != images) {
-			_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override, &before_line_heights, true);
-			source_text = TextEdit::get_text();
-			_mark_bbcode_dirty();
-			_refresh_style_rendering();
-			_style_changed();
-		}
-		return;
-	}
-	_apply_style_property_to_selection(STYLE_PROPERTY_URL, p_url);
 }
 
 void RichTextEdit::clear_selection_url() {
@@ -3087,143 +3739,8 @@ void RichTextEdit::toggle_code() {
 	_apply_style_property_to_selection(STYLE_PROPERTY_CODE);
 }
 
-void RichTextEdit::set_selection_line_height(const String &p_line_height) {
-	const String line_height = p_line_height.strip_edges();
-	if (!RichTextDocument::is_valid_line_height(line_height)) {
-		return;
-	}
-
-	int first_line = get_caret_line();
-	int last_line = first_line;
-	if (has_selection()) {
-		first_line = get_selection_from_line();
-		last_line = get_selection_to_line();
-		if (last_line > first_line && get_selection_to_column() == 0) {
-			last_line--;
-		}
-	}
-
-	const Vector<RichTextDocument::LineHeightSpan> before_line_heights = line_height_spans;
-	for (int line = first_line; line <= last_line; line++) {
-		const int line_start = _get_line_start_offset(line);
-		bool replaced = false;
-		for (RichTextDocument::LineHeightSpan &span : line_height_spans) {
-			if (span.line_start == line_start) {
-				span.value = line_height;
-				replaced = true;
-				break;
-			}
-		}
-		if (!replaced) {
-			RichTextDocument::LineHeightSpan span;
-			span.line_start = line_start;
-			span.value = line_height;
-			line_height_spans.push_back(span);
-		}
-	}
-	if (before_line_heights == line_height_spans) {
-		return;
-	}
-	_push_style_undo_snapshot(style_spans, images, raw_inlines, typing_style, typing_style_override, &before_line_heights);
-	_mark_bbcode_dirty();
-	_refresh_style_rendering();
-	_style_changed();
-}
-
-void RichTextEdit::clear_selection_line_height() {
-	int first_line = get_caret_line();
-	int last_line = first_line;
-	if (has_selection()) {
-		first_line = get_selection_from_line();
-		last_line = get_selection_to_line();
-		if (last_line > first_line && get_selection_to_column() == 0) {
-			last_line--;
-		}
-	}
-	const Vector<RichTextDocument::LineHeightSpan> before_line_heights = line_height_spans;
-	for (int line = first_line; line <= last_line; line++) {
-		const int line_start = _get_line_start_offset(line);
-		for (int i = line_height_spans.size() - 1; i >= 0; i--) {
-			if (line_height_spans[i].line_start == line_start) {
-				line_height_spans.remove_at(i);
-			}
-		}
-	}
-	if (before_line_heights == line_height_spans) {
-		return;
-	}
-	_push_style_undo_snapshot(style_spans, images, raw_inlines, typing_style, typing_style_override, &before_line_heights);
-	_mark_bbcode_dirty();
-	_refresh_style_rendering();
-	_style_changed();
-}
-
-String RichTextEdit::get_current_line_height() const {
-	const String value = _get_line_height_for_line(has_selection() ? get_selection_from_line() : get_caret_line());
-	return value.is_empty() ? String("normal") : value;
-}
-
 void RichTextEdit::set_selection_line_spacing(int p_spacing) {
 	set_selection_line_height(itos(MAX(0, p_spacing)) + "px");
-}
-
-void RichTextEdit::insert_image(const String &p_source, int p_width, int p_height, const String &p_alt) {
-	HashMap<String, String> options;
-	if (p_width >= 0) {
-		options["width"] = itos(p_width);
-	}
-	if (p_height >= 0) {
-		options["height"] = itos(p_height);
-	}
-	if (!p_alt.is_empty()) {
-		options["alt"] = p_alt;
-	}
-
-	_insert_image_with_options(p_source, options);
-}
-
-void RichTextEdit::set_selection_image_size(int p_width, int p_height) {
-	if (p_width < 0 && p_height < 0) {
-		return;
-	}
-
-	const Vector<int> offsets = _get_selected_image_offsets();
-	if (offsets.is_empty()) {
-		return;
-	}
-
-	const Vector<StyleSpan> before_spans = style_spans;
-	const Vector<RichTextDocument::InlineImage> before_images = images;
-	const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	const TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-
-	for (int offset : offsets) {
-		RichTextDocument::InlineImage *image = _get_image_at_offset(offset);
-		if (image == nullptr) {
-			continue;
-		}
-		image->options.erase("size");
-		if (p_width >= 0) {
-			image->options["width"] = itos(p_width);
-		} else {
-			image->options.erase("width");
-		}
-		if (p_height >= 0) {
-			image->options["height"] = itos(p_height);
-		} else {
-			image->options.erase("height");
-		}
-	}
-
-	if (before_images == images) {
-		return;
-	}
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override);
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	_refresh_style_rendering();
-	_style_changed();
 }
 
 void RichTextEdit::set_alignment(HorizontalAlignment p_alignment) {
@@ -3280,77 +3797,8 @@ void RichTextEdit::clear_ordered_list() {
 	_clear_block_tag_from_selected_lines("ol");
 }
 
-int RichTextEdit::get_current_font_size() const {
-	int offset = 0;
-	if (has_selection()) {
-		int to = 0;
-		_get_selection_offsets(offset, to);
-	} else {
-		const int caret_line = get_caret_line();
-		const int caret_column = get_caret_column();
-		const int line_start = _get_line_start_offset(caret_line);
-		if (caret_column == 0) {
-			offset = line_start;
-		} else {
-			offset = line_start + caret_column - 1;
-		}
-	}
-
-	const TextStyle style = _get_style_at_offset(offset);
-	return style.font_size > 0 ? style.font_size : _get_default_font_size();
-}
-
 void RichTextEdit::increase_indent() {
 	_apply_block_tag_to_selected_lines("indent");
-}
-
-void RichTextEdit::decrease_indent() {
-	int from_line = has_selection() ? get_selection_from_line() : get_caret_line();
-	int to_line = has_selection() ? get_selection_to_line() : get_caret_line();
-	const Vector<StyleSpan> before_spans = style_spans;
-	const Vector<RichTextDocument::InlineImage> before_images = images;
-	const Vector<RichTextDocument::RawInline> before_raw_inlines = raw_inlines;
-	const TextStyle before_typing_style = typing_style;
-	const bool before_typing_style_override = typing_style_override;
-
-	for (int line = from_line; line <= to_line; line++) {
-		const int line_start = _get_line_start_offset(line);
-		const int line_end = line_start + get_line(line).length();
-		if (line_start == line_end) {
-			continue;
-		}
-		const Vector<int> boundaries = _get_style_boundaries_for_range(line_start, line_end);
-		for (int i = 0; i < boundaries.size() - 1; i++) {
-			const int segment_from = boundaries[i];
-			const int segment_to = boundaries[i + 1];
-			if (segment_from == segment_to) {
-				continue;
-			}
-			TextStyle style = _get_style_at_offset(segment_from);
-			if (style.indent_level <= 0) {
-				continue;
-			}
-			style.indent_level = MAX(0, style.indent_level - 1);
-			if (style.indent_level == 0 && (style.block_tag == "indent" || style.block_tag == "ul" || style.block_tag == "ol")) {
-				style.block_tag = "";
-				style.list_type = 0;
-				style.list_start = -1;
-				style.list_capitalize = false;
-			} else if (style.block_tag == "indent" && style.indent_level > 0) {
-				style.block_tag = "indent";
-			}
-			_replace_style_range(segment_from, segment_to, style);
-		}
-	}
-
-	if (before_spans == style_spans) {
-		return;
-	}
-	_push_style_undo_snapshot(before_spans, before_images, before_raw_inlines, before_typing_style, before_typing_style_override);
-	source_text = TextEdit::get_text();
-	_mark_bbcode_dirty();
-	_refresh_style_rendering();
-	_style_changed();
 }
 
 void RichTextEdit::_validate_property(PropertyInfo &p_property) const {
@@ -3359,16 +3807,15 @@ void RichTextEdit::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void RichTextEdit::_apply_custom_undo_operation(const StringName &p_type, const Variant &p_data) {
-	if (p_type == SNAME("rich_text_edit_style")) {
-		_restore_style_state_variant(p_data);
-		_sync_selected_image_edit_controls();
-	}
-}
-
 void RichTextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_bbcode", "enable"), &RichTextEdit::set_use_bbcode);
 	ClassDB::bind_method(D_METHOD("is_using_bbcode"), &RichTextEdit::is_using_bbcode);
+	ClassDB::bind_method(D_METHOD("set_overflow_x", "overflow"), &RichTextEdit::set_overflow_x);
+	ClassDB::bind_method(D_METHOD("get_overflow_x"), &RichTextEdit::get_overflow_x);
+	ClassDB::bind_method(D_METHOD("set_overflow_y", "overflow"), &RichTextEdit::set_overflow_y);
+	ClassDB::bind_method(D_METHOD("get_overflow_y"), &RichTextEdit::get_overflow_y);
+	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextEdit::get_content_height);
+	ClassDB::bind_method(D_METHOD("has_pending_layout"), &RichTextEdit::has_pending_layout);
 	ClassDB::bind_method(D_METHOD("set_link_activation_mode", "mode"), &RichTextEdit::set_link_activation_mode);
 	ClassDB::bind_method(D_METHOD("get_link_activation_mode"), &RichTextEdit::get_link_activation_mode);
 	ClassDB::bind_method(D_METHOD("set_bbcode_text", "text"), &RichTextEdit::set_bbcode_text);
@@ -3379,8 +3826,13 @@ void RichTextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_visible_characters_behavior"), &RichTextEdit::get_visible_characters_behavior);
 	ClassDB::bind_method(D_METHOD("set_visible_ratio", "ratio"), &RichTextEdit::set_visible_ratio);
 	ClassDB::bind_method(D_METHOD("get_visible_ratio"), &RichTextEdit::get_visible_ratio);
-	ClassDB::bind_method(D_METHOD("get_document_protobuf"), &RichTextEdit::get_document_protobuf);
-	ClassDB::bind_method(D_METHOD("set_document_protobuf", "data"), &RichTextEdit::set_document_protobuf);
+	ClassDB::bind_static_method("RichTextEdit", D_METHOD("get_style_template_values", "template"), &RichTextEdit::get_style_template_values);
+	ClassDB::bind_method(D_METHOD("set_decoration_paint", "paint"), &RichTextEdit::set_decoration_paint);
+	ClassDB::bind_method(D_METHOD("set_outline_over_fill", "enabled"), &RichTextEdit::set_outline_over_fill);
+	ClassDB::bind_method(D_METHOD("is_outline_over_fill"), &RichTextEdit::is_outline_over_fill);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "outline_over_fill"), "set_outline_over_fill", "is_outline_over_fill");
+	ClassDB::bind_method(D_METHOD("get_selection_style_template"), &RichTextEdit::get_selection_style_template);
+	ClassDB::bind_method(D_METHOD("apply_style_template", "template", "overrides"), &RichTextEdit::apply_style_template, DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("copy_rich_text"), &RichTextEdit::copy_rich_text);
 	ClassDB::bind_method(D_METHOD("paste_rich_text"), &RichTextEdit::paste_rich_text);
 	ClassDB::bind_method(D_METHOD("set_bold"), &RichTextEdit::set_bold);
@@ -3395,6 +3847,9 @@ void RichTextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_strikethrough"), &RichTextEdit::set_strikethrough);
 	ClassDB::bind_method(D_METHOD("clear_strikethrough"), &RichTextEdit::clear_strikethrough);
 	ClassDB::bind_method(D_METHOD("toggle_strikethrough"), &RichTextEdit::toggle_strikethrough);
+	ClassDB::bind_method(D_METHOD("set_overline"), &RichTextEdit::set_overline);
+	ClassDB::bind_method(D_METHOD("clear_overline"), &RichTextEdit::clear_overline);
+	ClassDB::bind_method(D_METHOD("toggle_overline"), &RichTextEdit::toggle_overline);
 	ClassDB::bind_method(D_METHOD("set_selection_color", "color"), &RichTextEdit::set_selection_color);
 	ClassDB::bind_method(D_METHOD("clear_selection_color"), &RichTextEdit::clear_selection_color);
 	ClassDB::bind_method(D_METHOD("set_selection_bg_color", "color"), &RichTextEdit::set_selection_bg_color);
@@ -3443,9 +3898,16 @@ void RichTextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(LINK_ACTIVATION_CLICK);
 	BIND_ENUM_CONSTANT(LINK_ACTIVATION_DISABLED);
 
+	BIND_ENUM_CONSTANT(OVERFLOW_AUTO);
+	BIND_ENUM_CONSTANT(OVERFLOW_VISIBLE);
+	BIND_ENUM_CONSTANT(OVERFLOW_HIDDEN);
+	BIND_ENUM_CONSTANT(OVERFLOW_SCROLL);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "link_activation_mode", PROPERTY_HINT_ENUM, "Auto,Ctrl Click,Click,Disabled"), "set_link_activation_mode", "get_link_activation_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bbcode_text", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bbcode_text", "get_bbcode_text");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "overflow_x", PROPERTY_HINT_ENUM, "Auto,Visible,Hidden,Scroll"), "set_overflow_x", "get_overflow_x");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "overflow_y", PROPERTY_HINT_ENUM, "Auto,Visible,Hidden,Scroll"), "set_overflow_y", "get_overflow_y");
 	// These properties must follow text/bbcode_text so their values are applied
 	// against the final parsed character count when a scene is restored.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
@@ -3456,90 +3918,41 @@ void RichTextEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("meta_hover_started", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("meta_hover_ended", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("text_style_changed"));
+	ADD_SIGNAL(MethodInfo("content_height_changed"));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, RichTextEdit, tooltip_panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextEdit, tooltip_font_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, RichTextEdit, tooltip_font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, RichTextEdit, tooltip_font_size);
 
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_COLOR, get_class_static(), "link_color", "link_color",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_COLOR, get_class_static(), "link_hover_color", "link_hover_color",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_COLOR, get_class_static(), "link_visited_color", "link_visited_color",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_COLOR, get_class_static(), "link_active_color", "link_active_color",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_COLOR, get_class_static(), "quote_color", "quote_color",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_COLOR, get_class_static(), "quote_border_color", "quote_border_color",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), "quote_margin_top", "quote_margin_top",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), "quote_margin_bottom", "quote_margin_bottom",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), "quote_border_width", "quote_border_width",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), "quote_padding", "quote_padding",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_COLOR, get_class_static(), "divider_color", "divider_color",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), "divider_margin_top", "divider_margin_top",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), "divider_margin_bottom", "divider_margin_bottom",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
-	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), "divider_width", "divider_width",
-			[](Node *p_instance, const StringName &, const StringName &) {
-				RichTextEdit *rich_text_edit = Object::cast_to<RichTextEdit>(p_instance);
-				rich_text_edit->_refresh_style_rendering();
-			});
+	// The run styles read these items; _update_theme_item_cache() reshapes
+	// the document when one of them actually changes.
+	const auto registered_only = [](Node *, const StringName &, const StringName &) {};
+	for (const char *name : STYLE_THEME_FONTS) {
+		ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_FONT, get_class_static(), name, name, registered_only);
+	}
+	for (const char *name : STYLE_THEME_COLORS) {
+		ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_COLOR, get_class_static(), name, name, registered_only);
+	}
+	for (const char *name : STYLE_THEME_CONSTANTS) {
+		ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_CONSTANT, get_class_static(), name, name, registered_only);
+	}
 }
 
 RichTextEdit::RichTextEdit() {
+	styles.push_back(TextStyle());
+	style_render_infos.push_back(Dictionary());
+	style_render_info_valid.push_back(true);
+	paragraphs.resize(1);
+
+	// The parsers are installed once; edits reshape only the lines they touch,
+	// and bulk changes of long documents shape lines as they are drawn.
+	_set_deferred_shaping_enabled(true);
 	set_style_parser(callable_mp(this, &RichTextEdit::_get_line_style_spans));
+	set_inline_object_handlers(callable_mp(this, &RichTextEdit::_get_line_inline_objects), callable_mp(this, &RichTextEdit::_draw_inline_object), callable_mp(this, &RichTextEdit::_inline_object_clicked));
 	set_deselect_on_focus_loss_enabled(false);
 
-	source_text = TextEdit::get_text();
-	tracked_text = TextEdit::get_text();
 	connect(SceneStringName(text_changed), callable_mp(this, &RichTextEdit::_update_bbcode_from_text));
+	connect("lines_edited_from", callable_mp(this, &RichTextEdit::_lines_edited));
 	connect("caret_changed", callable_mp(this, &RichTextEdit::_caret_style_context_changed));
 }

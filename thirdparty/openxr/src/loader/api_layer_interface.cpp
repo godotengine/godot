@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -424,9 +424,9 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
         }
 
         // Add this API layer to the vector
-        api_layer_interfaces.emplace_back(new ApiLayerInterface(manifest_file->LayerName(), layer_library, supported_extensions,
-                                                                api_layer_info.getInstanceProcAddr,
-                                                                api_layer_info.createApiLayerInstance));
+        auto iface = std::make_unique<ApiLayerInterface>(manifest_file->LayerName(), layer_library, supported_extensions,
+                                                         api_layer_info.getInstanceProcAddr, api_layer_info.createApiLayerInstance);
+        api_layer_interfaces.emplace_back(std::move(iface));
 
         // If we load one, clear all errors.
         any_loaded = true;

@@ -1,0 +1,10 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 3: Could not find base class "InnerA".
+>> ERROR at line 7: Could not find base class "InnerB".
+>> ERROR at line 10: Could not find base class "InnerC".
+>> ERROR at line 15: Cyclic inheritance.
+>> ERROR at line 18: Classes can not inherit from their own members.
+>> ERROR at line 22: Cyclic inheritance.
+>> ERROR at line 25: Classes can not inherit from their own members.
+>> ERROR at line 33: Cyclic inheritance.
+>> ERROR at line 37: Classes can not inherit from their own members.

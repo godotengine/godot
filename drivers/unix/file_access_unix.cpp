@@ -508,11 +508,11 @@ Error FileAccessUnix::_set_read_only_attribute(const String &p_file, bool p_ro) 
 PackedByteArray FileAccessUnix::_get_extended_attribute(const String &p_file, const String &p_attribute_name) {
 	ERR_FAIL_COND_V(p_attribute_name.is_empty(), PackedByteArray());
 
-	String file = fix_path(p_file);
 	PackedByteArray data;
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(WEB_ENABLED)
 	// Not supported.
 #elif defined(__APPLE__)
+	String file = fix_path(p_file);
 	CharString attr_name = p_attribute_name.utf8();
 	ssize_t attr_size = getxattr(file.utf8().get_data(), attr_name.get_data(), nullptr, 0, 0, 0);
 	if (attr_size <= 0) {
@@ -523,6 +523,7 @@ PackedByteArray FileAccessUnix::_get_extended_attribute(const String &p_file, co
 	attr_size = getxattr(file.utf8().get_data(), attr_name.get_data(), (void *)data.ptrw(), data.size(), 0, 0);
 	ERR_FAIL_COND_V_MSG(attr_size != data.size(), PackedByteArray(), "Failed to set extended attributes for: " + p_file);
 #else
+	String file = fix_path(p_file);
 	CharString attr_name = ("user." + p_attribute_name).utf8();
 	ssize_t attr_size = getxattr(file.utf8().get_data(), attr_name.get_data(), nullptr, 0);
 	if (attr_size <= 0) {
@@ -539,15 +540,16 @@ PackedByteArray FileAccessUnix::_get_extended_attribute(const String &p_file, co
 Error FileAccessUnix::_set_extended_attribute(const String &p_file, const String &p_attribute_name, const PackedByteArray &p_data) {
 	ERR_FAIL_COND_V(p_attribute_name.is_empty(), FAILED);
 
-	String file = fix_path(p_file);
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(WEB_ENABLED)
 	// Not supported.
 #elif defined(__APPLE__)
+	String file = fix_path(p_file);
 	int err = setxattr(file.utf8().get_data(), p_attribute_name.utf8().get_data(), (const void *)p_data.ptr(), p_data.size(), 0, 0);
 	if (err != 0) {
 		return FAILED;
 	}
 #else
+	String file = fix_path(p_file);
 	int err = setxattr(file.utf8().get_data(), ("user." + p_attribute_name).utf8().get_data(), (const void *)p_data.ptr(), p_data.size(), 0);
 	if (err != 0) {
 		return FAILED;
@@ -559,15 +561,16 @@ Error FileAccessUnix::_set_extended_attribute(const String &p_file, const String
 Error FileAccessUnix::_remove_extended_attribute(const String &p_file, const String &p_attribute_name) {
 	ERR_FAIL_COND_V(p_attribute_name.is_empty(), FAILED);
 
-	String file = fix_path(p_file);
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(WEB_ENABLED)
 	// Not supported.
 #elif defined(__APPLE__)
+	String file = fix_path(p_file);
 	int err = removexattr(file.utf8().get_data(), p_attribute_name.utf8().get_data(), 0);
 	if (err != 0) {
 		return FAILED;
 	}
 #else
+	String file = fix_path(p_file);
 	int err = removexattr(file.utf8().get_data(), ("user." + p_attribute_name).utf8().get_data());
 	if (err != 0) {
 		return FAILED;
@@ -578,10 +581,10 @@ Error FileAccessUnix::_remove_extended_attribute(const String &p_file, const Str
 
 PackedStringArray FileAccessUnix::_get_extended_attributes_list(const String &p_file) {
 	PackedStringArray ret;
-	String file = fix_path(p_file);
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(WEB_ENABLED)
 	// Not supported.
 #elif defined(__APPLE__)
+	String file = fix_path(p_file);
 	size_t size = listxattr(file.utf8().get_data(), nullptr, 0, 0);
 	if (size > 0) {
 		PackedByteArray data;
@@ -596,6 +599,7 @@ PackedStringArray FileAccessUnix::_get_extended_attributes_list(const String &p_
 		}
 	}
 #else
+	String file = fix_path(p_file);
 	size_t size = listxattr(file.utf8().get_data(), nullptr, 0);
 	if (size > 0) {
 		PackedByteArray data;

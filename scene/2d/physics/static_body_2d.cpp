@@ -33,6 +33,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/resources/physics_material.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/capsule_shape_2d.h"
@@ -51,13 +52,13 @@ RID StaticBody2D::_navmesh_source_geometry_parser;
 void StaticBody2D::set_constant_linear_velocity(const Vector2 &p_vel) {
 	constant_linear_velocity = p_vel;
 
-	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, constant_linear_velocity);
+	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PS2DE::BODY_STATE_LINEAR_VELOCITY, constant_linear_velocity);
 }
 
 void StaticBody2D::set_constant_angular_velocity(real_t p_vel) {
 	constant_angular_velocity = p_vel;
 
-	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, constant_angular_velocity);
+	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PS2DE::BODY_STATE_ANGULAR_VELOCITY, constant_angular_velocity);
 }
 
 Vector2 StaticBody2D::get_constant_linear_velocity() const {
@@ -87,11 +88,11 @@ Ref<PhysicsMaterial> StaticBody2D::get_physics_material_override() const {
 
 void StaticBody2D::_reload_physics_characteristics() {
 	if (physics_material_override.is_null()) {
-		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_BOUNCE, 0);
-		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_FRICTION, 1);
+		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_BOUNCE, 0);
+		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_FRICTION, 1);
 	} else {
-		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_BOUNCE, physics_material_override->computed_bounce());
-		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_FRICTION, physics_material_override->computed_friction());
+		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_BOUNCE, physics_material_override->computed_bounce());
+		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_FRICTION, physics_material_override->computed_friction());
 	}
 }
 
@@ -236,6 +237,6 @@ void StaticBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "constant_angular_velocity", PROPERTY_HINT_NONE, U"radians_as_degrees,suffix:\u00B0/s"), "set_constant_angular_velocity", "get_constant_angular_velocity");
 }
 
-StaticBody2D::StaticBody2D(PhysicsServer2D::BodyMode p_mode) :
+StaticBody2D::StaticBody2D(PS2DE::BodyMode p_mode) :
 		PhysicsBody2D(p_mode) {
 }

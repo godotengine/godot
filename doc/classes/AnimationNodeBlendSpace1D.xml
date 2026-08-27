@@ -7,6 +7,18 @@
 		A resource used by [AnimationNodeBlendTree].
 		[AnimationNodeBlendSpace1D] represents a virtual axis on which any type of [AnimationRootNode]s can be added using [method add_blend_point]. Outputs the linear blend of the two [AnimationRootNode]s adjacent to the current value.
 		You can set the extents of the axis with [member min_space] and [member max_space].
+
+		Optionally, signals can be used by setting an [AnimationNodeObserverBlendSpace] through [AnimationTree].
+		[codeblocks]
+		[gdscript]
+		var observer = tree.get("parameters/BlendSpace/observer")
+		observer.closest_point_changed.connect(on_closest_point_changed)
+		[/gdscript]
+		[csharp]
+		var observer = animationTree.Get("parameters/BlendSpace/observer").As&lt;AnimationNodeObserverBlendSpace&gt;();
+		observer.ClosestPointChanged += OnClosestPointChanged;
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>

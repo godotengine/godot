@@ -34,6 +34,7 @@
 
 #include "core/config/engine.h"
 #include "core/input/input.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/gui/window_wrapper.h"
 #include "scene/main/window.h"
@@ -130,6 +131,13 @@ bool GameViewDebuggerMacOS::_msg_warp_mouse(const Array &p_args) {
 	return true;
 }
 
+bool GameViewDebuggerMacOS::_msg_alert(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 2, false, "alert: invalid number of arguments.");
+
+	OS::get_singleton()->alert(p_args[0], p_args[1]);
+	return true;
+}
+
 void GameViewDebuggerMacOS::_init_capture_message_handlers() {
 	parse_message_handlers["game_view:set_context_id"] = &GameViewDebuggerMacOS::_msg_set_context_id;
 	parse_message_handlers["game_view:cursor_set_shape"] = &GameViewDebuggerMacOS::_msg_cursor_set_shape;
@@ -138,6 +146,7 @@ void GameViewDebuggerMacOS::_init_capture_message_handlers() {
 	parse_message_handlers["game_view:window_set_ime_active"] = &GameViewDebuggerMacOS::_msg_window_set_ime_active;
 	parse_message_handlers["game_view:window_set_ime_position"] = &GameViewDebuggerMacOS::_msg_window_set_ime_position;
 	parse_message_handlers["game_view:warp_mouse"] = &GameViewDebuggerMacOS::_msg_warp_mouse;
+	parse_message_handlers["game_view:alert"] = &GameViewDebuggerMacOS::_msg_alert;
 }
 
 bool GameViewDebuggerMacOS::capture(const String &p_message, const Array &p_data, int p_session) {

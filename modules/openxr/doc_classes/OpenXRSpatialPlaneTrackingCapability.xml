@@ -9,10 +9,22 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_built_in_tracking_state">
+			<return type="int" enum="OpenXRSpatialEntityExtension.TrackingState" />
+			<description>
+				Returns the state of the built-in tracking system.
+			</description>
+		</method>
 		<method name="is_supported">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if plane tracking is supported by the current device.
+			</description>
+		</method>
+		<method name="start_built_in_tracking">
+			<return type="bool" />
+			<description>
+				Starts the built-in plane tracking logic. This will fail if built-in tracking is already enabled.
 			</description>
 		</method>
 		<method name="start_entity_discovery">
@@ -29,6 +41,13 @@
 				If [param next_snapshot_query] is non-null, then pass this to the [code]next[/code] parameter in [method OpenXRSpatialEntityExtension.query_snapshot].
 				[param user_callback], when non-null, is called with two parameters usually twice. The first parameter is the [RID] of the discovery snapshot and the second parameter is a boolean where [code]false[/code] indicates the discovery snapshot is about to be processed, and [code]true[/code] indicates the discovery snapshot has been processed and [param component_data] has valid data. The second call is skipped if an error was encountered.
 				The returned [OpenXRFutureResult] is identical to the return from [method OpenXRSpatialEntityExtension.discover_spatial_entities].
+			</description>
+		</method>
+		<method name="stop_built_in_tracking">
+			<return type="void" />
+			<param index="0" name="clear_trackers" type="bool" default="true" />
+			<description>
+				Stops the built-in plane tracking logic.
 			</description>
 		</method>
 	</methods>

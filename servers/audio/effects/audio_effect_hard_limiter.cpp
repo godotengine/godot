@@ -158,5 +158,5 @@ void AudioEffectHardLimiter::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pre_gain_db", PROPERTY_HINT_RANGE, "-24,24,0.01,suffix:dB"), "set_pre_gain_db", "get_pre_gain_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ceiling_db", PROPERTY_HINT_RANGE, "-24,0.0,0.01,suffix:dB"), "set_ceiling_db", "get_ceiling_db");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "release", PROPERTY_HINT_RANGE, "0.01,3,0.01"), "set_release", "get_release");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "release", PROPERTY_HINT_RANGE, "0.01,3,0.01,suffix:s"), "set_release", "get_release");
 }

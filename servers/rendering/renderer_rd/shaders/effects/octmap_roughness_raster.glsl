@@ -52,7 +52,7 @@ void main() {
 	} else {
 		vec3 N = oct_to_vec3_with_border(uv_interp, params.border_size.y);
 		vec4 sum = vec4(0.0, 0.0, 0.0, 0.0);
-		float solid_angle_texel = 4.0 * M_PI / (params.dest_size * params.dest_size);
+		float solid_angle_texel = 4.0 * M_PI / (params.source_size * params.source_size);
 		float roughness2 = params.roughness * params.roughness;
 		float roughness4 = roughness2 * roughness2;
 

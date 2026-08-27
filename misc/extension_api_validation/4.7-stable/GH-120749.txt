@@ -1,0 +1,7 @@
+GH-120749
+---------
+
+Validate extension JSON: Error: Field 'classes/AudioEffectInstance/methods/_process/arguments/0': type changed value in new API, from "const void*" to "const AudioFrame*".
+Validate extension JSON: Error: Field 'classes/MovieWriter/methods/_write_frame/arguments/1': type changed value in new API, from "const void*" to "const int32_t*".
+
+Removing `GDExtensionConstPtr<T>` in favor of `GDExtensionPtr<const T>` fixed the pointee type name of these virtual method arguments.

@@ -6,7 +6,7 @@
 
 #include <Jolt/Core/Reference.h>
 #include <Jolt/Physics/Collision/PhysicsMaterial.h>
-#include <Jolt/Core/StreamUtils.h>
+#include <Jolt/Core/ObjectToIDMap.h>
 
 JPH_NAMESPACE_BEGIN
 

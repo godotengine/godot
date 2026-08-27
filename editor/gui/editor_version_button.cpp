@@ -32,6 +32,7 @@
 
 #include "core/os/time.h"
 #include "core/version.h"
+#include "editor/gui/editor_toaster.h"
 #include "servers/display/display_server.h"
 
 String _get_version_string(EditorVersionButton::VersionFormat p_format) {
@@ -80,6 +81,10 @@ void EditorVersionButton::_notification(int p_what) {
 
 void EditorVersionButton::pressed() {
 	DisplayServer::get_singleton()->clipboard_set(_get_version_string(FORMAT_WITH_BUILD));
+	EditorToaster *toaster = EditorToaster::get_singleton();
+	if (toaster) {
+		toaster->popup_str(TTR("Copied Godot editor version."));
+	}
 }
 
 EditorVersionButton::EditorVersionButton(VersionFormat p_format) {

@@ -46,6 +46,7 @@ public:
 		bool has_underline = false;
 		bool underline = false;
 		bool strikethrough = false;
+		bool overline = false;
 		bool code = false;
 		bool has_color = false;
 		bool has_bg_color = false;
@@ -137,12 +138,6 @@ public:
 	static bool is_valid_line_height(const String &p_value);
 	static RichTextDocument parse_bbcode(const String &p_bbcode);
 	String to_bbcode() const;
-
-	/// Deterministic protobuf representation of the native block tree. Text is
-	/// split into paragraph blocks, paragraph line-height metadata, and canonical adjacent inline runs. This is
-	/// the persistence/transport format; BBCode is intentionally not involved.
-	PackedByteArray to_protobuf() const;
-	static bool parse_protobuf(const PackedByteArray &p_data, RichTextDocument &r_document, String *r_error = nullptr);
 	void canonicalize();
 
 private:

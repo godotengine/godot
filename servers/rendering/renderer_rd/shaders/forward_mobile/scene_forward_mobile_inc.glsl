@@ -217,6 +217,10 @@ bool sc_directional_light_blend_split(uint i) {
 	return ((sc_packed_1() >> (23 + i)) & 1U) != 0;
 }
 
+bool sc_use_lightmap_specular() {
+	return ((sc_packed_1() >> 31) & 1U) != 0;
+}
+
 half sc_luminance_multiplier() {
 	return half(sc_packed_2());
 }
@@ -292,7 +296,7 @@ directional_lights;
 #define LIGHTMAP_SHADOWMASK_MODE_ONLY 3
 
 struct Lightmap {
-	mat3 normal_xform;
+	mat3x4 normal_xform_and_specular_intensity; // "normal_xform" is the 3x3 matrix. "specular_intensity" is the 4th row of the 1st column.
 	vec2 light_texture_size;
 	float exposure_normalization;
 	uint flags;
@@ -327,9 +331,9 @@ global_shader_uniforms;
 
 layout(set = 0, binding = 14) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
 
-layout(set = 0, binding = 15) uniform sampler2D ltc_lut1;
+layout(set = 0, binding = 15) uniform texture2D ltc_lut1;
 
-layout(set = 0, binding = 16) uniform sampler2D ltc_lut2;
+layout(set = 0, binding = 16) uniform texture2D ltc_lut2;
 
 layout(set = 0, binding = 17) uniform texture2D area_light_atlas;
 

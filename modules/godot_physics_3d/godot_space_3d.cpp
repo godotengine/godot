@@ -60,7 +60,7 @@ _FORCE_INLINE_ static bool _can_collide_with(GodotCollisionObject3D *p_object, u
 	return true;
 }
 
-int GodotPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
+int GodotPhysicsDirectSpaceState3D::intersect_point(const PS3DT::PointParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) {
 	ERR_FAIL_COND_V(space->locked, false);
 	int amount = space->broadphase->cull_point(p_parameters.position, space->intersection_query_results, GodotSpace3D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 	int cc = 0;
@@ -107,7 +107,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_par
 	return cc;
 }
 
-bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parameters, RayResult &r_result) {
+bool GodotPhysicsDirectSpaceState3D::intersect_ray(const PS3DT::RayParameters &p_parameters, PS3DT::RayResult &r_result) {
 	ERR_FAIL_COND_V(space->locked, false);
 
 	Vector3 begin, end;
@@ -207,7 +207,7 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 	return true;
 }
 
-int GodotPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) {
+int GodotPhysicsDirectSpaceState3D::intersect_shape(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) {
 	if (p_result_max <= 0) {
 		return 0;
 	}
@@ -262,7 +262,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_par
 	return cc;
 }
 
-bool GodotPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, ShapeRestInfo *r_info) {
+bool GodotPhysicsDirectSpaceState3D::cast_motion(const PS3DT::ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, PS3DT::ShapeRestInfo *r_info) {
 	GodotShape3D *shape = GodotPhysicsServer3D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
 	ERR_FAIL_NULL_V(shape, false);
 
@@ -381,7 +381,7 @@ bool GodotPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_parame
 	return true;
 }
 
-bool GodotPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) {
+bool GodotPhysicsDirectSpaceState3D::collide_shape(const PS3DT::ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) {
 	if (p_result_max <= 0) {
 		return false;
 	}
@@ -511,7 +511,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vect
 	rd->best_result.local_shape = rd->local_shape;
 }
 
-bool GodotPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) {
+bool GodotPhysicsDirectSpaceState3D::rest_info(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeRestInfo *r_info) {
 	GodotShape3D *shape = GodotPhysicsServer3D::godot_singleton->shape_owner.get_or_null(p_parameters.shape_rid);
 	ERR_FAIL_NULL_V(shape, false);
 
@@ -649,7 +649,7 @@ int GodotSpace3D::_cull_aabb_for_body(GodotBody3D *p_body, const AABB &p_aabb) {
 	return amount;
 }
 
-bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult *r_result) {
+bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PS3DT::MotionParameters &p_parameters, PS3DT::MotionResult *r_result) {
 	//give me back regular physics engine logic
 	//this is madness
 	//and most people using this function will think
@@ -657,10 +657,10 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 	//this took about a week to get right..
 	//but is it right? who knows at this point..
 
-	ERR_FAIL_COND_V(p_parameters.max_collisions < 0 || p_parameters.max_collisions > PhysicsServer3D::MotionResult::MAX_COLLISIONS, false);
+	ERR_FAIL_COND_V(p_parameters.max_collisions < 0 || p_parameters.max_collisions > PS3DT::MotionResult::MAX_COLLISIONS, false);
 
 	if (r_result) {
-		*r_result = PhysicsServer3D::MotionResult();
+		*r_result = PS3DT::MotionResult();
 	}
 
 	AABB body_aabb;
@@ -817,7 +817,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 			// Colliding separation rays allows to properly snap to the ground,
 			// otherwise it's not needed in regular motion.
-			if (!p_parameters.collide_separation_ray && (body_shape->get_type() == PhysicsServer3D::SHAPE_SEPARATION_RAY)) {
+			if (!p_parameters.collide_separation_ray && (body_shape->get_type() == PS3DE::SHAPE_SEPARATION_RAY)) {
 				// When slide on slope is on, separation ray shape acts like a regular shape.
 				if (!static_cast<GodotSeparationRayShape3D *>(body_shape)->get_slide_on_slope()) {
 					continue;
@@ -934,7 +934,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 		Transform3D ugt = body_transform;
 		ugt.origin += p_parameters.motion * unsafe;
 
-		_RestResultData results[PhysicsServer3D::MotionResult::MAX_COLLISIONS];
+		_RestResultData results[PS3DT::MotionResult::MAX_COLLISIONS];
 
 		_RestCallbackData rcd;
 		if (p_parameters.max_collisions > 1) {
@@ -985,7 +985,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 				for (int collision_index = 0; collision_index < rcd.result_count; ++collision_index) {
 					const _RestResultData &result = (collision_index > 0) ? rcd.other_results[collision_index - 1] : rcd.best_result;
 
-					PhysicsServer3D::MotionCollision &collision = r_result->collisions[collision_index];
+					PS3DT::MotionCollision &collision = r_result->collisions[collision_index];
 
 					collision.collider = result.object->get_self();
 					collision.collider_id = result.object->get_instance_id();
@@ -1189,52 +1189,52 @@ void GodotSpace3D::update() {
 	broadphase->update();
 }
 
-void GodotSpace3D::set_param(PhysicsServer3D::SpaceParameter p_param, real_t p_value) {
+void GodotSpace3D::set_param(PS3DE::SpaceParameter p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
+		case PS3DE::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
 			contact_recycle_radius = p_value;
 			break;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION:
+		case PS3DE::SPACE_PARAM_CONTACT_MAX_SEPARATION:
 			contact_max_separation = p_value;
 			break;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION:
+		case PS3DE::SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION:
 			contact_max_allowed_penetration = p_value;
 			break;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_DEFAULT_BIAS:
+		case PS3DE::SPACE_PARAM_CONTACT_DEFAULT_BIAS:
 			contact_bias = p_value;
 			break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
+		case PS3DE::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
 			body_linear_velocity_sleep_threshold = p_value;
 			break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
+		case PS3DE::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
 			body_angular_velocity_sleep_threshold = p_value;
 			break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP:
+		case PS3DE::SPACE_PARAM_BODY_TIME_TO_SLEEP:
 			body_time_to_sleep = p_value;
 			break;
-		case PhysicsServer3D::SPACE_PARAM_SOLVER_ITERATIONS:
+		case PS3DE::SPACE_PARAM_SOLVER_ITERATIONS:
 			solver_iterations = p_value;
 			break;
 	}
 }
 
-real_t GodotSpace3D::get_param(PhysicsServer3D::SpaceParameter p_param) const {
+real_t GodotSpace3D::get_param(PS3DE::SpaceParameter p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
+		case PS3DE::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
 			return contact_recycle_radius;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION:
+		case PS3DE::SPACE_PARAM_CONTACT_MAX_SEPARATION:
 			return contact_max_separation;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION:
+		case PS3DE::SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION:
 			return contact_max_allowed_penetration;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_DEFAULT_BIAS:
+		case PS3DE::SPACE_PARAM_CONTACT_DEFAULT_BIAS:
 			return contact_bias;
-		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
+		case PS3DE::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
 			return body_linear_velocity_sleep_threshold;
-		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
+		case PS3DE::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
 			return body_angular_velocity_sleep_threshold;
-		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP:
+		case PS3DE::SPACE_PARAM_BODY_TIME_TO_SLEEP:
 			return body_time_to_sleep;
-		case PhysicsServer3D::SPACE_PARAM_SOLVER_ITERATIONS:
+		case PS3DE::SPACE_PARAM_SOLVER_ITERATIONS:
 			return solver_iterations;
 	}
 	return 0;

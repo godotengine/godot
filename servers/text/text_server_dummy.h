@@ -41,6 +41,7 @@ class TextServerDummy : public TextServerExtension {
 public:
 	virtual bool has_feature(Feature p_feature) const override { return false; }
 	virtual String get_name() const override { return "Dummy"; }
+	virtual String get_short_name() const override { return "dummy"; }
 	virtual int64_t get_features() const override { return 0; }
 	virtual void free_rid(const RID &p_rid) override {}
 	virtual bool has(const RID &p_rid) override { return false; }

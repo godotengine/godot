@@ -68,7 +68,7 @@ void CollideSphereVsTriangles::Collide(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2,
 		return;
 
 	// Calculate penetration depth
-	float penetration_depth = mRadius - sqrt(point2_len_sq);
+	float penetration_depth = mRadius - Sqrt(point2_len_sq);
 	if (-penetration_depth >= mCollector.GetEarlyOutFraction())
 		return;
 

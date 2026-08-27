@@ -33,7 +33,10 @@
 #include "scene/gui/box_container.h"
 
 class Button;
+class ConfirmationDialog;
+class EditorValidationPanel;
 class FileDialog;
+class LineEdit;
 class SceneCreateDialog;
 class ScriptCreateDialog;
 class Tree;
@@ -48,7 +51,8 @@ class EditorAutoloadSettings : public VBoxContainer {
 	};
 
 	String path = "res://";
-	String autoload_changed = "autoload_changed";
+	const StringName autoload_changed = "autoload_changed";
+	String pending_autoload_path;
 
 	struct AutoloadInfo {
 		String name;
@@ -77,7 +81,12 @@ class EditorAutoloadSettings : public VBoxContainer {
 	ScriptCreateDialog *script_create_dialog = nullptr;
 	SceneCreateDialog *scene_create_dialog = nullptr;
 
+	ConfirmationDialog *name_dialog = nullptr;
+	LineEdit *name_edit = nullptr;
+	EditorValidationPanel *name_validator = nullptr;
+
 	bool _autoload_name_is_valid(const String &p_name, String *r_error = nullptr);
+	void _validate_autoload_name();
 
 	void _autoload_selected();
 	void _autoload_edited();
@@ -94,6 +103,8 @@ class EditorAutoloadSettings : public VBoxContainer {
 	void _script_created(Ref<Script> p_script);
 	void _scene_created();
 	void _add_autoload(const String &p_name, const String &p_path);
+	void _try_add_autoload(const String &p_name, const String &p_path);
+	void _confirm_autoload_name();
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_control);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) const;
@@ -106,8 +117,8 @@ protected:
 public:
 	void init_autoloads();
 	void update_autoload();
-	bool autoload_add(const String &p_name, const String &p_path);
-	void autoload_remove(const String &p_name);
+	bool autoload_add(const String &p_name, const String &p_path, bool p_use_undo);
+	void autoload_remove(const StringName &p_name);
 
 	EditorAutoloadSettings();
 	~EditorAutoloadSettings();

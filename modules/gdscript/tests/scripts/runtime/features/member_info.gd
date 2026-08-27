@@ -1,5 +1,17 @@
 class_name TestMemberInfo
 
+class TestSpecialBase:
+	static func _static_init(): pass
+	func _init(_param: int = 1): pass
+
+class TestSpecialExplicitReturn extends TestSpecialBase:
+	static func _static_init() -> void: pass
+	func _init(_param: int = 2) -> void: pass
+
+class TestSpecialImplicitReturn extends TestSpecialBase:
+	static func _static_init(): pass
+	func _init(_param: int = 3): pass
+
 class MyClass:
 	pass
 
@@ -71,7 +83,19 @@ signal test_signal_7(a: TestMemberInfo, b: Array[TestMemberInfo], c: Dictionary[
 signal test_signal_8(a: MyClass, b: Array[MyClass], c: Dictionary[MyClass, MyClass])
 @warning_ignore_restore("unused_signal")
 
+func check_special_methods(instance: Object) -> void:
+	for method in instance.get_method_list():
+		if str(method.name) in ["_init", "_static_init"]:
+			var return_type: Dictionary = method.return
+			print('%s # %s' % [Utils.get_method_signature(method), Utils.get_type_extended_info(return_type)])
+
 func test():
+	check_special_methods(TestSpecialExplicitReturn.new())
+	print("---")
+	check_special_methods(TestSpecialImplicitReturn.new())
+
+	print("===")
+
 	var script: Script = get_script()
 	for property in script.get_property_list():
 		if str(property.name).begins_with("test_"):

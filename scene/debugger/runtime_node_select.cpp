@@ -61,6 +61,7 @@
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
 #endif // PHYSICS_3D_DISABLED
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
@@ -177,7 +178,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	view_3d_controller->set_z_far(camera_zfar);
 
 	view_3d_controller->set_invert_x_axis(p_settings.get("editors/3d/navigation/invert_x_axis", false));
-	view_3d_controller->set_invert_x_axis(p_settings.get("editors/3d/navigation/invert_y_axis", false));
+	view_3d_controller->set_invert_y_axis(p_settings.get("editors/3d/navigation/invert_y_axis", false));
 
 	view_3d_controller->set_warped_mouse_panning(p_settings.get("editors/3d/navigation/warped_mouse_panning", true));
 
@@ -290,14 +291,18 @@ void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 	camera_override = p_enabled;
 
 	if (camera_first_override) {
+#ifndef _2D_DISABLED
 		_reset_camera_2d();
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 		_reset_camera_3d();
 #endif // _3D_DISABLED
 
 		camera_first_override = false;
 	} else if (p_enabled) {
+#ifndef _2D_DISABLED
 		_update_view_2d();
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 		Window *root = SceneTree::get_singleton()->get_root();
@@ -1155,7 +1160,9 @@ void RuntimeNodeSelect::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_ev
 	view_2d_offset.x -= scroll.x / view_2d_zoom;
 	view_2d_offset.y -= scroll.y / view_2d_zoom;
 
+#ifndef _2D_DISABLED
 	_update_view_2d();
+#endif // _2D_DISABLED
 }
 
 // A very shallow copy of the same function inside CanvasItemEditor.
@@ -1178,9 +1185,12 @@ void RuntimeNodeSelect::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Re
 		view_2d_offset = view_offset_int + (view_offset_frac * closest_zoom_factor).round() / closest_zoom_factor;
 	}
 
+#ifndef _2D_DISABLED
 	_update_view_2d();
+#endif // _2D_DISABLED
 }
 
+#ifndef _2D_DISABLED
 void RuntimeNodeSelect::_reset_camera_2d() {
 	camera_first_override = true;
 	Window *root = SceneTree::get_singleton()->get_root();
@@ -1211,6 +1221,7 @@ void RuntimeNodeSelect::_update_view_2d() {
 
 	_queue_selection_update();
 }
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 
@@ -1230,9 +1241,9 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 #ifndef PHYSICS_3D_DISABLED
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::RayResult result;
+	PS3DT::RayResult result;
 	HashSet<RID> excluded;
-	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	PS3DT::RayParameters ray_params;
 	ray_params.from = pos;
 	ray_params.to = to;
 	ray_params.collide_with_areas = true;
@@ -1356,13 +1367,17 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::ShapeResult results[32];
-	PhysicsDirectSpaceState3D::ShapeParameters shape_params;
+	PS3DT::ShapeResult results[32];
+	PS3DT::ShapeParameters shape_params;
 	shape_params.shape_rid = shape->get_rid();
 	shape_params.collide_with_areas = true;
 	const int num_hits = ss->intersect_shape(shape_params, results, 32);
 	for (int i = 0; i < num_hits; i++) {
-		const PhysicsDirectSpaceState3D::ShapeResult &result = results[i];
+		const PS3DT::ShapeResult &result = results[i];
+		if (!result.collider) {
+			continue;
+		}
+
 		SelectResult res;
 		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
@@ -1535,7 +1550,9 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 	if (game_camera) {
 		Transform3D transform = game_camera->get_camera_transform();
 		transform.translate_local(0, 0, -cursor.distance);
-		cursor.pos = transform.origin;
+		cursor.pos_x = transform.origin.x;
+		cursor.pos_y = transform.origin.y;
+		cursor.pos_z = transform.origin.z;
 
 		cursor.x_rot = -game_camera->get_global_rotation().x;
 		cursor.y_rot = -game_camera->get_global_rotation().y;

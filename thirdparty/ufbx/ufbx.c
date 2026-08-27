@@ -874,7 +874,7 @@ enum { UFBX_MAXIMUM_ALIGNMENT = sizeof(void*) > 8 ? sizeof(void*) : 8 };
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 21, 3)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 23, 0)
 ufbx_abi_data_def const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -5417,6 +5417,7 @@ static const char ufbxi_KeyAttrRefCount[] = "KeyAttrRefCount";
 static const char ufbxi_KeyCount[] = "KeyCount";
 static const char ufbxi_KeyTime[] = "KeyTime";
 static const char ufbxi_KeyValueFloat[] = "KeyValueFloat";
+static const char ufbxi_KeyVer[] = "KeyVer";
 static const char ufbxi_Key[] = "Key";
 static const char ufbxi_KnotVectorU[] = "KnotVectorU";
 static const char ufbxi_KnotVectorV[] = "KnotVectorV";
@@ -5514,9 +5515,11 @@ static const char ufbxi_RightCamera[] = "RightCamera";
 static const char ufbxi_RootNode[] = "RootNode";
 static const char ufbxi_Root[] = "Root";
 static const char ufbxi_RotationAccumulationMode[] = "RotationAccumulationMode";
+static const char ufbxi_RotationActive[] = "RotationActive";
 static const char ufbxi_RotationOffset[] = "RotationOffset";
 static const char ufbxi_RotationOrder[] = "RotationOrder";
 static const char ufbxi_RotationPivot[] = "RotationPivot";
+static const char ufbxi_RotationSpaceForLimitOnly[] = "RotationSpaceForLimitOnly";
 static const char ufbxi_Rotation[] = "Rotation";
 static const char ufbxi_S[] = "S\0\0";
 static const char ufbxi_ScaleAccumulationMode[] = "ScaleAccumulationMode";
@@ -5719,6 +5722,7 @@ static const ufbx_string ufbxi_strings[] = {
 	{ ufbxi_KeyCount, 8 },
 	{ ufbxi_KeyTime, 7 },
 	{ ufbxi_KeyValueFloat, 13 },
+	{ ufbxi_KeyVer, 6 },
 	{ ufbxi_KnotVector, 10 },
 	{ ufbxi_KnotVectorU, 11 },
 	{ ufbxi_KnotVectorV, 11 },
@@ -5816,9 +5820,11 @@ static const ufbx_string ufbxi_strings[] = {
 	{ ufbxi_RootNode, 8 },
 	{ ufbxi_Rotation, 8 },
 	{ ufbxi_RotationAccumulationMode, 24 },
+	{ ufbxi_RotationActive, 14 },
 	{ ufbxi_RotationOffset, 14 },
 	{ ufbxi_RotationOrder, 13 },
 	{ ufbxi_RotationPivot, 13 },
+	{ ufbxi_RotationSpaceForLimitOnly, 25 },
 	{ ufbxi_S, 1 },
 	{ ufbxi_ScaleAccumulationMode, 21 },
 	{ ufbxi_Scaling, 7 },
@@ -9870,7 +9876,16 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_ascii_next_token(ufbxi_context *
 			c = ufbxi_ascii_next(uc);
 		}
 		// Skip closing quote
-		ufbxi_ascii_next(uc);
+		char next = ufbxi_ascii_next(uc);
+
+		// Check if the next character is ':', in some legacy FBX files we have names with
+		// spaces, like `"Transport Tool Settings": { ... }`
+		if (next == ':') {
+			token->value.name_len = token->str_len;
+			token->type = UFBXI_ASCII_NAME;
+			ufbxi_ascii_next(uc);
+		}
+
 	} else {
 		// Single character token
 		token->type = c;
@@ -11576,6 +11591,16 @@ static ufbxi_forceinline bool ufbxi_is_quat_identity(ufbx_quat v)
 	return (v.x == 0.0) & (v.y == 0.0) & (v.z == 0.0) & (v.w == 1.0);
 }
 
+static ufbxi_unused ufbxi_forceinline bool ufbxi_is_vec3_equal(ufbx_vec3 a, ufbx_vec3 b)
+{
+	return (a.x == b.x) & (a.y == b.y) & (a.z == b.z);
+}
+
+static ufbxi_unused ufbxi_forceinline bool ufbxi_is_quat_equal(ufbx_quat a, ufbx_quat b)
+{
+	return (a.x == b.x) & (a.y == b.y) & (a.z == b.z) & (a.w == b.w);
+}
+
 static ufbxi_noinline bool ufbxi_is_transform_identity(const ufbx_transform *t)
 {
 	return (bool)((int)ufbxi_is_vec3_zero(t->translation) & (int)ufbxi_is_quat_identity(t->rotation) & (int)ufbxi_is_vec3_one(t->scale));
@@ -12032,7 +12057,7 @@ static bool ufbxi_match_version_string(const char *fmt, ufbx_string str, uint32_
 			}
 			if (pos >= str.length) return false;
 			pos++;
-		} else if (c == '/' || c == '.' || c == '(' || c == ')') {
+		} else if (c == '/' || c == '.' || c == '(' || c == ')' || c == '_') {
 			if (pos >= str.length) return false;
 			if (str.data[pos] != c) return false;
 			pos++;
@@ -12081,6 +12106,9 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_match_exporter(ufbxi_context *uc
 	} else if (ufbxi_match_version_string("motionbuilder/mocap/online version ?.?", creator, version)) {
 		uc->exporter = UFBX_EXPORTER_MOTION_BUILDER;
 		uc->exporter_version = ufbx_pack_version(version[0], version[1], 0);
+	} else if (ufbxi_match_version_string("ufbx_write", creator, version)) {
+		uc->exporter = UFBX_EXPORTER_UFBX_WRITE;
+		uc->exporter_version = ufbx_pack_version(0, 0, 1);
 	}
 
 	uc->scene.metadata.exporter = uc->exporter;
@@ -14808,6 +14836,16 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_constraint(ufbxi_context *u
 
 ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_synthetic_attribute(ufbxi_context *uc, ufbxi_node *node, ufbxi_element_info *info, ufbx_string type_str, const char *sub_type, const char *super_type)
 {
+	// Some legacy (version 6000) files store mesh nodes without any `sub_type`
+	// There seems to be no robust indicator, so detect it from `Vertices` and `PolygonVertexIndex`
+	if (sub_type == ufbxi_empty_char) {
+		ufbxi_node *node_vertices = ufbxi_find_child(node, ufbxi_Vertices);
+		ufbxi_node *node_indices = ufbxi_find_child(node, ufbxi_PolygonVertexIndex);
+		if (node_vertices && node_indices) {
+			sub_type = ufbxi_Mesh;
+		}
+	}
+
 	if ((sub_type == ufbxi_empty_char || sub_type == ufbxi_Model) && type_str.data == ufbxi_Model) {
 		// Plain model
 		return 1;
@@ -15301,6 +15339,18 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_take_anim_channel(ufbxi_con
 
 	if (uc->opts.ignore_animation) return 1;
 
+	int32_t key_ver = 0;
+	ufbxi_ignore(ufbxi_find_val1(node, ufbxi_KeyVer, "I", &key_ver));
+	if (key_ver <= 0) {
+		if (uc->version < 5000) {
+			key_ver = 4003;
+		} else if (uc->version < 6000) {
+			key_ver = 4004;
+		} else {
+			key_ver = 4005;
+		}
+	}
+
 	size_t num_keys = 0;
 	ufbxi_check(ufbxi_find_val1(node, ufbxi_KeyCount, "Z", &num_keys));
 	curve->keyframes.data = ufbxi_push(&uc->result, ufbx_keyframe, num_keys);
@@ -15364,14 +15414,21 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_take_anim_channel(ufbxi_con
 				slope_right = (float)data[0];
 				next_slope_left = (float)data[1];
 				data += 2;
+				// TODO: This looks very suspicious, but we have observed files with
+				// KeyVer=4002 -> followed by 'n', then next key
+				// KeyVer=4003 -> no weight mode, directly followed by key
+				// KeyVer=4004 -> followed by 'n', then next key
+				if (key_ver == 4003) {
+					num_weights = 0;
+				}
 			} else if (slope_mode == 'a') {
 				// Parameterless slope mode 'a' seems to appear in baked animations. Let's just assume
 				// automatic tangents for now as they're the least likely to break with
 				// objectionable artifacts. We need to defer the automatic tangent resolve
 				// until we have read the next time/value.
-				// TODO: Solve what this is more thoroughly
+				// TODO: Solve what this is more thoroughly, using auto slope for now to reduce artifacts
 				auto_slope = true;
-				if (uc->version == 5000) {
+				if (key_ver <= 4004) {
 					num_weights = 0;
 				}
 			} else if (slope_mode == 'p') {
@@ -15379,15 +15436,45 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_take_anim_channel(ufbxi_con
 				// Also it seems to have _two_ trailing weights values, currently observed:
 				// `n,n` and `a,X,Y,n`...
 				// Ignore unknown values for now
+				// TODO: Solve what this is more thoroughly, using auto slope for now to reduce artifacts
+				auto_slope = true;
 				ufbxi_check(data_end - data >= 2);
 				data += 2;
-				num_weights = 2;
+				if (key_ver <= 4004) {
+					num_weights = 1;
+				} else {
+					num_weights = 2;
+				}
+			} else if (slope_mode == 'q') {
+				// TODO: What is this mode? It seems to have negative values sometimes?
+				// Also it seems to have _two_ trailing weights values, currently observed:
+				// `d,d` and `n`...
+				// Ignore unknown values for now
+				// TODO: This has only been observed with KeyVer=4003/4005, it might have two weights in 4004
+				// TODO: Solve what this is more thoroughly, using auto slope for now to reduce artifacts
+				auto_slope = true;
+				ufbxi_check(data_end - data >= 2);
+				data += 2;
+				if (key_ver <= 4004) {
+					num_weights = 1;
+				} else {
+					num_weights = 2;
+				}
 			} else if (slope_mode == 't') {
 				// TODO: What is this mode? It seems that it does not have any weights and the
 				// third value seems _tiny_ (around 1e-30?)
+				// TODO: This looks like simple TCB parameters, currently falling back to auto.
+				auto_slope = true;
 				ufbxi_check(data_end - data >= 3);
 				data += 3;
 				num_weights = 0;
+			} else if (slope_mode == 'd') {
+				// TODO: What is this mode? It has a single parameter (currently observed `0`)
+				// and a single weight.
+				// TODO: Solve what this is more thoroughly, using auto slope for now to reduce artifacts
+				auto_slope = true;
+				ufbxi_check(data_end - data >= 1);
+				data += 1;
 			} else {
 				ufbxi_fail("Unknown slope mode");
 			}
@@ -15428,9 +15515,13 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_take_anim_channel(ufbxi_con
 			key->interpolation = UFBX_INTERPOLATION_LINEAR;
 		} else if (mode == 'C') {
 			// Constant interpolation: Single parameter (use prev/next)
-			ufbxi_check(data_end - data >= 1);
-			key->interpolation = ufbxi_double_to_char(data[0]) == 'n' ? UFBX_INTERPOLATION_CONSTANT_NEXT : UFBX_INTERPOLATION_CONSTANT_PREV;
-			data += 1;
+			if (key_ver >= 4004) {
+				ufbxi_check(data_end - data >= 1);
+				key->interpolation = ufbxi_double_to_char(data[0]) == 'n' ? UFBX_INTERPOLATION_CONSTANT_NEXT : UFBX_INTERPOLATION_CONSTANT_PREV;
+				data += 1;
+			} else {
+				key->interpolation = UFBX_INTERPOLATION_CONSTANT_PREV;
+			}
 		} else {
 			ufbxi_fail("Unknown key mode");
 		}
@@ -19392,6 +19483,7 @@ static const ufbxi_shader_mapping ufbxi_obj_fbx_mapping[] = {
 	{ UFBX_MATERIAL_FBX_NORMAL_MAP, 0, 0, ufbxi_mat_string("norm") },
 	{ UFBX_MATERIAL_FBX_DISPLACEMENT, 0, 0, ufbxi_mat_string("disp") },
 	{ UFBX_MATERIAL_FBX_BUMP, 0, 0, ufbxi_mat_string("bump") },
+	{ UFBX_MATERIAL_FBX_BUMP, 0, 0, ufbxi_mat_string("Bump") },
 };
 
 static const ufbxi_shader_mapping ufbxi_fbx_lambert_shader_pbr_mapping[] = {
@@ -19737,6 +19829,7 @@ static const ufbxi_shader_mapping ufbxi_obj_pbr_mapping[] = {
 	{ UFBX_MATERIAL_PBR_TRANSMISSION_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1|UFBXI_SHADER_MAPPING_WIDEN_TO_RGB, 0, ufbxi_mat_string("Tf") },
 	{ UFBX_MATERIAL_PBR_DISPLACEMENT_MAP, 0, 0, ufbxi_mat_string("disp") },
 	{ UFBX_MATERIAL_PBR_NORMAL_MAP, 0, 0, ufbxi_mat_string("bump") },
+	{ UFBX_MATERIAL_PBR_NORMAL_MAP, 0, 0, ufbxi_mat_string("Bump") },
 	{ UFBX_MATERIAL_PBR_NORMAL_MAP, 0, 0, ufbxi_mat_string("norm") },
 	{ UFBX_MATERIAL_PBR_SHEEN_COLOR, UFBXI_SHADER_MAPPING_DEFAULT_W_1|UFBXI_SHADER_MAPPING_WIDEN_TO_RGB, 0, ufbxi_mat_string("Ps") },
 	{ UFBX_MATERIAL_PBR_COAT_FACTOR, 0, 0, ufbxi_mat_string("Pc") },
@@ -22690,6 +22783,56 @@ ufbxi_noinline static ufbx_transform ufbxi_get_geometry_transform(const ufbx_pro
 	return t;
 }
 
+ufbxi_noinline static ufbx_quat ufbxi_get_rotation(const ufbx_props *props, ufbx_rotation_order order, const ufbx_node *node)
+{
+	ufbx_vec3 rotation = ufbxi_find_vec3(props, ufbxi_Lcl_Rotation, 0.0f, 0.0f, 0.0f);
+	ufbx_vec3 pre_rotation = ufbxi_find_vec3(props, ufbxi_PreRotation, 0.0f, 0.0f, 0.0f);
+	ufbx_vec3 post_rotation = ufbxi_find_vec3(props, ufbxi_PostRotation, 0.0f, 0.0f, 0.0f);
+
+	ufbx_transform t = { { 0,0,0 }, { 0,0,0,1 }, { 1,1,1 }};
+
+	if (node->has_adjust_transform) {
+		ufbxi_mul_rotate_quat(&t, node->adjust_post_rotation);
+	}
+
+	if (node->use_rotation_space) {
+		ufbxi_mul_inv_rotate(&t, post_rotation, UFBX_ROTATION_ORDER_XYZ);
+		ufbxi_mul_rotate(&t, rotation, order);
+		ufbxi_mul_rotate(&t, pre_rotation, UFBX_ROTATION_ORDER_XYZ);
+	} else {
+		ufbxi_mul_rotate(&t, rotation, UFBX_ROTATION_ORDER_XYZ);
+	}
+
+	if (node->has_adjust_transform) {
+		ufbxi_mul_rotate_quat(&t, node->adjust_pre_rotation);
+	}
+
+	if (node->adjust_mirror_axis) {
+		ufbxi_mirror_rotation(&t.rotation, node->adjust_mirror_axis);
+	}
+
+	return t.rotation;
+}
+
+ufbxi_noinline static ufbx_vec3 ufbxi_get_scale(const ufbx_props *props, const ufbx_node *node)
+{
+	ufbx_vec3 scaling = ufbxi_find_vec3(props, ufbxi_Lcl_Scaling, 1.0f, 1.0f, 1.0f);
+
+	ufbx_transform t = { { 0,0,0 }, { 0,0,0,1 }, { 1,1,1 }};
+
+	if (node->has_adjust_transform) {
+		ufbxi_mul_scale_real(&t, node->adjust_post_scale);
+	}
+
+	ufbxi_mul_scale(&t, scaling);
+
+	if (node->has_adjust_transform) {
+		ufbxi_mul_scale_real(&t, node->adjust_pre_scale);
+	}
+
+	return t.scale;
+}
+
 ufbxi_noinline static ufbx_transform ufbxi_get_transform(const ufbx_props *props, ufbx_rotation_order order, const ufbx_node *node, const ufbx_vec3 *translation_scale)
 {
 	ufbx_vec3 scale_pivot = ufbxi_find_vec3(props, ufbxi_ScalingPivot, 0.0f, 0.0f, 0.0f);
@@ -22727,9 +22870,13 @@ ufbxi_noinline static ufbx_transform ufbxi_get_transform(const ufbx_props *props
 	ufbxi_add_translate(&t, scale_offset);
 
 	ufbxi_sub_translate(&t, rot_pivot);
-	ufbxi_mul_inv_rotate(&t, post_rotation, UFBX_ROTATION_ORDER_XYZ);
-	ufbxi_mul_rotate(&t, rotation, order);
-	ufbxi_mul_rotate(&t, pre_rotation, UFBX_ROTATION_ORDER_XYZ);
+	if (node->use_rotation_space) {
+		ufbxi_mul_inv_rotate(&t, post_rotation, UFBX_ROTATION_ORDER_XYZ);
+		ufbxi_mul_rotate(&t, rotation, order);
+		ufbxi_mul_rotate(&t, pre_rotation, UFBX_ROTATION_ORDER_XYZ);
+	} else {
+		ufbxi_mul_rotate(&t, rotation, UFBX_ROTATION_ORDER_XYZ);
+	}
 	ufbxi_add_translate(&t, rot_pivot);
 
 	ufbxi_add_translate(&t, rot_offset);
@@ -22750,53 +22897,11 @@ ufbxi_noinline static ufbx_transform ufbxi_get_transform(const ufbx_props *props
 		ufbxi_mirror_rotation(&t.rotation, node->adjust_mirror_axis);
 	}
 
+	// Make sure the fast paths are identical to this function.
+	ufbxi_regression_assert(ufbxi_is_quat_equal(t.rotation, ufbxi_get_rotation(props, order, node)));
+	ufbxi_regression_assert(ufbxi_is_vec3_equal(t.scale, ufbxi_get_scale(props, node)));
+
 	return t;
-}
-
-ufbxi_noinline static ufbx_quat ufbxi_get_rotation(const ufbx_props *props, ufbx_rotation_order order, const ufbx_node *node)
-{
-	ufbx_vec3 rotation = ufbxi_find_vec3(props, ufbxi_Lcl_Rotation, 0.0f, 0.0f, 0.0f);
-	ufbx_vec3 pre_rotation = ufbxi_find_vec3(props, ufbxi_PreRotation, 0.0f, 0.0f, 0.0f);
-	ufbx_vec3 post_rotation = ufbxi_find_vec3(props, ufbxi_PostRotation, 0.0f, 0.0f, 0.0f);
-
-	ufbx_transform t = { { 0,0,0 }, { 0,0,0,1 }, { 1,1,1 }};
-
-	if (node->has_adjust_transform) {
-		ufbxi_mul_rotate_quat(&t, node->adjust_post_rotation);
-	}
-
-	ufbxi_mul_inv_rotate(&t, post_rotation, UFBX_ROTATION_ORDER_XYZ);
-	ufbxi_mul_rotate(&t, rotation, order);
-	ufbxi_mul_rotate(&t, pre_rotation, UFBX_ROTATION_ORDER_XYZ);
-
-	if (node->has_adjust_transform) {
-		ufbxi_mul_rotate_quat(&t, node->adjust_pre_rotation);
-	}
-
-	if (node->adjust_mirror_axis) {
-		ufbxi_mirror_rotation(&t.rotation, node->adjust_mirror_axis);
-	}
-
-	return t.rotation;
-}
-
-ufbxi_noinline static ufbx_vec3 ufbxi_get_scale(const ufbx_props *props, const ufbx_node *node)
-{
-	ufbx_vec3 scaling = ufbxi_find_vec3(props, ufbxi_Lcl_Scaling, 1.0f, 1.0f, 1.0f);
-
-	ufbx_transform t = { { 0,0,0 }, { 0,0,0,1 }, { 1,1,1 }};
-
-	if (node->has_adjust_transform) {
-		ufbxi_mul_scale_real(&t, node->adjust_post_scale);
-	}
-
-	ufbxi_mul_scale(&t, scaling);
-
-	if (node->has_adjust_transform) {
-		ufbxi_mul_scale_real(&t, node->adjust_pre_scale);
-	}
-
-	return t.scale;
 }
 
 ufbxi_noinline static ufbx_transform ufbxi_get_texture_transform(const ufbx_props *props)
@@ -22853,6 +22958,10 @@ ufbxi_noinline static void ufbxi_update_node(ufbx_node *node, const ufbx_transfo
 	node->euler_rotation = ufbxi_find_vec3(&node->props, ufbxi_Lcl_Rotation, 0.0f, 0.0f, 0.0f);
 
 	if (!node->is_root) {
+		const bool rotation_active = ufbxi_find_int(&node->props, ufbxi_RotationActive, 1) != 0;
+		const bool rotation_limit_only = ufbxi_find_int(&node->props, ufbxi_RotationSpaceForLimitOnly, 0) != 0;
+		node->use_rotation_space = rotation_active && !rotation_limit_only;
+
 		const ufbx_vec3 *transform_scale = NULL;
 		if (node->parent && node->parent->scale_helper) {
 			transform_scale = &node->parent->scale_helper->local_transform.scale;
@@ -33093,4 +33202,3 @@ ufbx_abi ufbx_vec3 ufbx_get_weighted_face_normal(const ufbx_vertex_vec3 *positio
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic pop
 #endif
-

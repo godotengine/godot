@@ -77,7 +77,7 @@ void ThemeDB::initialize_theme() {
 
 	Ref<Font> project_font;
 	if (!project_font_path.is_empty()) {
-		project_font = ResourceLoader::load(project_font_path);
+		project_font = ResourceLoader::load(project_font_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 		if (project_font.is_valid()) {
 			set_fallback_font(project_font);
 		} else {

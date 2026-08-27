@@ -30,12 +30,15 @@
 
 #pragma once
 
+#include "core/templates/paged_allocator.h"
+#include "drivers/metal/metal_allocator.h"
 #include "drivers/metal/metal_device_profile.h"
 #include "drivers/metal/metal_objects_shared.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
 
+#include <optional>
 #include <variant>
 
 class RenderingShaderContainerFormatMetal;
@@ -70,6 +73,7 @@ protected:
 	RenderingContextDriverMetal *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
 	MTL::Device *device = nullptr;
+	MetalAllocator *allocator = nullptr;
 
 	uint32_t _frame_count = 1;
 	/// frame_index is a cyclic counter derived from the current frame number modulo frame_count,
@@ -109,22 +113,23 @@ protected:
 	// If this is not nullptr, there are pending copy operations.
 	NS::SharedPtr<MTL::CommandBuffer> copy_queue_command_buffer;
 	NS::SharedPtr<MTL::BlitCommandEncoder> copy_queue_blit_encoder;
-	NS::SharedPtr<MTL::Buffer> copy_queue_buffer;
+	MetalBuffer copy_queue_buffer;
 	NS::UInteger copy_queue_buffer_offset = 0;
 
 	_FORCE_INLINE_ NS::UInteger _copy_queue_buffer_available() const {
-		return copy_queue_buffer.get()->length() - copy_queue_buffer_offset;
+		return copy_queue_buffer.buffer.get()->length() - copy_queue_buffer_offset;
 	}
 
-	/// Marks p_size bytes as consumed from the copy queue buffer, aligning the offset to 16 bytes.
+	/// Marks p_size bytes as consumed from the copy queue buffer, aligning the new offset to 16 bytes.
 	_FORCE_INLINE_ void _copy_queue_buffer_consume(NS::UInteger p_size) {
-		NS::UInteger aligned_offset = round_up_to_alignment(copy_queue_buffer_offset, 16);
-		copy_queue_buffer_offset = aligned_offset + p_size;
+		// Round up the end of the consumed region so the next copy starts aligned and the offset
+		// never exceeds the buffer length (which would underflow _copy_queue_buffer_available()).
+		copy_queue_buffer_offset = round_up_to_alignment(copy_queue_buffer_offset + p_size, 16);
 	}
 
 	/// Returns a pointer to the current position in the copy queue buffer.
 	_FORCE_INLINE_ void *_copy_queue_buffer_ptr() const {
-		return static_cast<uint8_t *>(copy_queue_buffer.get()->contents()) + copy_queue_buffer_offset;
+		return static_cast<uint8_t *>(copy_queue_buffer.buffer.get()->contents()) + copy_queue_buffer_offset;
 	}
 
 	_FORCE_INLINE_ MTL::CommandBuffer *_copy_queue_command_buffer() {
@@ -178,7 +183,10 @@ protected:
 	 * there are no more references to the MDLibrary associated with the cache entry.
 	 */
 	HashMap<SHA256Digest, ShaderCacheEntry *> _shader_cache;
-	void shader_cache_free_entry(const SHA256Digest &key);
+	Mutex _shader_cache_lock;
+	void shader_cache_free_entry(ShaderCacheEntry *p_entry);
+	std::optional<std::shared_ptr<MDLibrary>> shader_cache_get_library(const SHA256Digest &key);
+	void shader_cache_set_entry(const SHA256Digest &key, ShaderCacheEntry *p_entry);
 
 public:
 	virtual Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override = 0;
@@ -188,9 +196,7 @@ public:
 #pragma mark - Buffers
 
 public:
-	struct BufferInfo {
-		NS::SharedPtr<MTL::Buffer> metal_buffer;
-
+	struct BufferInfo : MetalBuffer {
 		_FORCE_INLINE_ bool is_dynamic() const { return _frame_idx != UINT32_MAX; }
 		_FORCE_INLINE_ uint32_t frame_index() const { return _frame_idx; }
 		_FORCE_INLINE_ void set_frame_index(uint32_t p_frame_index) { _frame_idx = p_frame_index; }
@@ -215,9 +221,17 @@ public:
 
 private:
 	// Returns true if the texture is a valid linear format.
-	bool is_valid_linear(TextureFormat const &p_format) const;
+	bool is_valid_linear(const TextureFormat &p_format) const;
 
 public:
+	struct TextureInfo : MetalTexture {
+		// Backing buffer for linear (buffer-backed) textures; empty otherwise.
+		MetalBuffer linear_backing;
+		// True if `texture` stores an MTLRasterizationRateMap in place of a texture.
+		// If this flag is set, cast `texture` to MTL::RasterizationRateMap before use.
+		bool rasterization_rate_map = false;
+	};
+
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
 	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) override final;
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) override final;
@@ -530,9 +544,10 @@ public:
 
 	// Metal-specific.
 	MTL::Device *get_device() const { return device; }
+	MetalAllocator *get_allocator() const { return allocator; }
 	PixelFormats &get_pixel_formats() const { return *pixel_formats; }
 	MDResourceCache &get_resource_cache() const { return *resource_cache; }
-	MetalDeviceProperties const &get_device_properties() const { return *device_properties; }
+	const MetalDeviceProperties &get_device_properties() const { return *device_properties; }
 
 	_FORCE_INLINE_ uint32_t get_metal_buffer_index_for_vertex_attribute_binding(uint32_t p_binding) {
 		return (device_properties->limits.maxPerStageBufferCount - 1) - p_binding;
@@ -545,7 +560,19 @@ public:
 	_FORCE_INLINE_ uint32_t frame_index() const { return _frame_index; }
 	_FORCE_INLINE_ uint32_t frames_drawn() const { return _frames_drawn; }
 
+private:
+	/*********************/
+	/**** BOOKKEEPING ****/
+	/*********************/
+
+	using VersatileResource = VersatileResourceTemplate<
+			BufferInfo,
+			TextureInfo>;
+	PagedAllocator<VersatileResource, true> resources_allocator;
+
 	/******************/
+
+public:
 	RenderingDeviceDriverMetal(RenderingContextDriverMetal *p_context_driver);
 	~RenderingDeviceDriverMetal();
 };

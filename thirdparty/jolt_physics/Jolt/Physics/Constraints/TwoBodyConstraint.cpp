@@ -22,18 +22,38 @@ JPH_IMPLEMENT_SERIALIZABLE_ABSTRACT(TwoBodyConstraintSettings)
 
 void TwoBodyConstraint::BuildIslands(uint32 inConstraintIndex, IslandBuilder &ioBuilder, BodyManager &inBodyManager)
 {
+#ifdef JPH_ENABLE_ASSERTS
+	// Validates that a body that is sleeping has zero velocity.
+	mBody1->ValidateMotion();
+	mBody2->ValidateMotion();
+#endif
+
+	bool body1_dynamic = mBody1->IsDynamic();
+	bool body2_dynamic = mBody2->IsDynamic();
+
 	// Activate bodies
 	BodyID body_ids[2];
 	int num_bodies = 0;
-	if (mBody1->IsDynamic() && !mBody1->IsActive())
+	if (body1_dynamic && !mBody1->IsActive())
 		body_ids[num_bodies++] = mBody1->GetID();
-	if (mBody2->IsDynamic() && !mBody2->IsActive())
+	if (body2_dynamic && !mBody2->IsActive())
 		body_ids[num_bodies++] = mBody2->GetID();
 	if (num_bodies > 0)
 		inBodyManager.ActivateBodies(body_ids, num_bodies);
 
-	// Link the bodies into the same island
-	ioBuilder.LinkConstraint(inConstraintIndex, mBody1->GetIndexInActiveBodiesInternal(), mBody2->GetIndexInActiveBodiesInternal());
+	// Link the two bodies only if both are dynamic. If one of them is static or kinematic they don't need to go into
+	// the same simulation island as a constraint cannot affect the velocity of a kinematic body.
+	if (body1_dynamic && body2_dynamic)
+		ioBuilder.LinkBodies(mBody1->GetIndexInActiveBodiesInternal(), mBody2->GetIndexInActiveBodiesInternal());
+
+	// Link the constraint to the first dynamic body
+	if (body1_dynamic)
+		ioBuilder.LinkConstraint(inConstraintIndex, mBody1->GetIndexInActiveBodiesInternal());
+	else
+	{
+		JPH_ASSERT(body2_dynamic);
+		ioBuilder.LinkConstraint(inConstraintIndex, mBody2->GetIndexInActiveBodiesInternal());
+	}
 }
 
 uint TwoBodyConstraint::BuildIslandSplits(LargeIslandSplitter &ioSplitter) const

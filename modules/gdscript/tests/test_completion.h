@@ -32,6 +32,7 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "../editor/gdscript_editor_language.h"
 #include "../gdscript.h"
 #include "gdscript_test_runner.h"
 
@@ -184,7 +185,7 @@ static void test_directory(const String &p_dir) {
 				owner->set_script(scr);
 			}
 
-			GDScriptLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
+			GDScriptEditorLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
 			ERR_PRINT_ON;
 
 			String contains_excluded;
@@ -207,7 +208,7 @@ static void test_directory(const String &p_dir) {
 				}
 			}
 			CHECK_MESSAGE(contains_excluded.is_empty(), "Autocompletion suggests illegal option '", contains_excluded, "' for '", path.path_join(next), "'.");
-			CHECK(include.is_empty());
+			CHECK_MESSAGE(include.is_empty(), "An autocompletion option is missing for '", path.path_join(next), "'.");
 
 			String expected_call_hint = conf.get_value("output", "call_hint", call_hint);
 			bool expected_forced = conf.get_value("output", "forced", forced);
@@ -215,9 +216,7 @@ static void test_directory(const String &p_dir) {
 			CHECK(expected_call_hint == call_hint);
 			CHECK(expected_forced == forced);
 
-			if (scene) {
-				memdelete(scene);
-			}
+			memdelete(scene);
 		}
 		next = dir->get_next();
 	}

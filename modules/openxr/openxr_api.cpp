@@ -1868,13 +1868,9 @@ void OpenXRAPI::cleanup_extension_wrappers() {
 #ifndef DISABLE_DEPRECATED
 		// Fix crash when the extension wrapper comes from GDExtension.
 		OpenXRExtensionWrapperExtension *gdextension_extension_wrapper = dynamic_cast<OpenXRExtensionWrapperExtension *>(extension_wrapper);
-		if (gdextension_extension_wrapper) {
-			memdelete(gdextension_extension_wrapper);
-		} else
+		memdelete(gdextension_extension_wrapper);
 #endif
-		{
-			memdelete(extension_wrapper);
-		}
+		memdelete(extension_wrapper);
 	}
 	registered_extension_wrappers.clear();
 }
@@ -2542,7 +2538,7 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 		bool use_subsampled_images = subsampled_images_enabled && subsampled_images_allowed;
 		if (render_state.use_subsampled_images != use_subsampled_images) {
 			render_state.use_subsampled_images = use_subsampled_images;
-			if (!subsampled_images_allowed) {
+			if (subsampled_images_enabled && !subsampled_images_allowed) {
 				WARN_PRINT("Foveation with subsampled images was enabled, but rendering features are in use that have forced it to be disabled.");
 			}
 			should_recreate_swapchain = true;

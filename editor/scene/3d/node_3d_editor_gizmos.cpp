@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/primitive_meshes.h"
@@ -253,6 +254,10 @@ void EditorNode3DGizmo::add_mesh(const Ref<Mesh> &p_mesh, const Ref<Material> &p
 void EditorNode3DGizmo::_update_bvh() {
 	ERR_FAIL_NULL(spatial_node);
 
+	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) {
+		return;
+	}
+
 	Transform3D transform = spatial_node->get_global_transform();
 
 	float effective_icon_size = selectable_icon_size > 0.0f ? selectable_icon_size : 0.0f;
@@ -266,11 +271,7 @@ void EditorNode3DGizmo::_update_bvh() {
 	if (!collision_meshes.is_empty()) {
 		for (Ref<TriangleMesh> collision_mesh : collision_meshes) {
 			if (collision_mesh.is_valid()) {
-				for (const Face3 &face : collision_mesh->get_faces()) {
-					aabb.expand_to(transform.xform(face.vertex[0]));
-					aabb.expand_to(transform.xform(face.vertex[1]));
-					aabb.expand_to(transform.xform(face.vertex[2]));
-				}
+				aabb.merge_with(transform.xform(collision_mesh->get_aabb()));
 			}
 		}
 	}
@@ -802,7 +803,7 @@ void EditorNode3DGizmo::create() {
 
 	bvh_node_id = Node3DEditor::get_singleton()->insert_gizmo_bvh_node(
 			spatial_node,
-			AABB(spatial_node->get_position(), Vector3(0, 0, 0)));
+			AABB(spatial_node->get_global_position(), Vector3(0, 0, 0)));
 
 	transform();
 }
@@ -838,11 +839,17 @@ void EditorNode3DGizmo::free() {
 }
 
 void EditorNode3DGizmo::set_hidden(bool p_hidden) {
+	if (hidden == p_hidden) {
+		return;
+	}
+
 	hidden = p_hidden;
 	int layer = hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
 	for (int i = 0; i < instances.size(); ++i) {
 		RS::get_singleton()->instance_set_layer_mask(instances[i].instance, layer);
 	}
+
+	_update_bvh();
 }
 
 void EditorNode3DGizmo::set_plugin(EditorNode3DGizmoPlugin *p_plugin) {
@@ -863,6 +870,7 @@ void EditorNode3DGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorNode3DGizmo::set_hidden);
 	ClassDB::bind_method(D_METHOD("is_subgizmo_selected", "id"), &EditorNode3DGizmo::is_subgizmo_selected);
 	ClassDB::bind_method(D_METHOD("get_subgizmo_selection"), &EditorNode3DGizmo::get_subgizmo_selection);
+	ClassDB::bind_method(D_METHOD("is_selected"), &EditorNode3DGizmo::is_selected);
 
 	GDVIRTUAL_BIND(_redraw);
 	GDVIRTUAL_BIND(_get_handle_name, "id", "secondary");

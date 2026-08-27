@@ -94,7 +94,17 @@ TEST_CASE("[String] UTF8") {
 	CHECK(parsed == u32str);
 
 	parsed.clear();
+	err = parsed.append_utf8(expected.utf8().span());
+	CHECK(err == OK);
+	CHECK(parsed == u32str);
+
+	parsed.clear();
 	err = parsed.append_utf8((const char *)u8str);
+	CHECK(err == OK);
+	CHECK(parsed == u32str);
+
+	parsed.clear();
+	err = parsed.append_utf8(Span(u8str).reinterpret<char>());
 	CHECK(err == OK);
 	CHECK(parsed == u32str);
 
@@ -113,7 +123,17 @@ TEST_CASE("[String] UTF16") {
 	CHECK(parsed == u32str);
 
 	parsed.clear();
+	err = parsed.append_utf16(expected.utf16().span());
+	CHECK(err == OK);
+	CHECK(parsed == u32str);
+
+	parsed.clear();
 	err = parsed.append_utf16(u16str);
+	CHECK(err == OK);
+	CHECK(parsed == u32str);
+
+	parsed.clear();
+	err = parsed.append_utf16(Span(u16str));
 	CHECK(err == OK);
 	CHECK(parsed == u32str);
 
@@ -1416,9 +1436,17 @@ TEST_CASE("[String] match") {
 
 TEST_CASE("[String] IPVX address to string") {
 	IPAddress ip0("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
+	CHECK(ip0.is_valid());
+
 	IPAddress ip(0x0123, 0x4567, 0x89ab, 0xcdef, true);
+	CHECK(ip.is_valid());
+
 	IPAddress ip2("fe80::52e5:49ff:fe93:1baf");
+	CHECK(ip2.is_valid());
+
 	IPAddress ip3("::ffff:192.168.0.1");
+	CHECK(ip3.is_valid());
+
 	String ip4 = "192.168.0.1";
 	CHECK(ip4.is_valid_ip_address());
 

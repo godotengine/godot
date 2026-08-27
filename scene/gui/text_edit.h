@@ -145,8 +145,6 @@ private:
 		};
 
 		struct Line {
-			Vector<Gutter> gutters;
-
 			String data;
 			Array bidi_override;
 			Ref<TextParagraph> data_buf;
@@ -157,12 +155,22 @@ private:
 			String ime_data;
 			Array ime_bidi_override;
 
+			LocalVector<Gutter> gutters;
 			Color background_color = Color(0, 0, 0, 0);
 			bool hidden = false;
+
+			// Cached values.
 			int line_count = 0;
 			int height = 0;
 			int width = 0;
-			float indent_ofs = -1.0;
+			mutable float indent_ofs = -1.0;
+			// Sum of the visual row heights of this line, -1 when stale.
+			mutable int visual_height = -1;
+			// Deferred shaping: the shaped data is stale until the line is
+			// shaped again (on first read, or in the background).
+			bool shape_pending = false;
+			bool pending_text_changed = false;
+			bool pending_font_changed = false;
 
 			Line() {
 				data_buf.instantiate();
@@ -173,7 +181,7 @@ private:
 		bool is_dirty = false;
 		bool tab_size_dirty = false;
 
-		mutable Vector<Line> text;
+		LocalVector<Line> text;
 		Ref<Font> font;
 		int font_size = -1;
 		int font_height = 0;
@@ -202,7 +210,58 @@ private:
 		bool indent_wrapped_lines = false;
 		int visible_character_limit = -1;
 
+		// Prefix sums over lines, extended on demand. Entry i holds the value at
+		// the start of line i (characters including newlines, or visual pixels);
+		// entries [0, *_valid] are current.
+		mutable LocalVector<int> char_offsets;
+		mutable int char_offsets_valid = 0;
+		mutable LocalVector<int> visual_offsets;
+		mutable int visual_offsets_valid = 0;
+
+		void _invalidate_char_offsets(int p_from_line) const { char_offsets_valid = MIN(char_offsets_valid, MAX(p_from_line, 0)); }
+
+		// Bulk invalidations of large documents queue their lines instead of
+		// shaping them. The text measured so far estimates the queued lines.
+		bool deferred_shaping_enabled = false;
+		int bulk_invalidation_depth = 0;
+		bool shaping_pending_line = false;
+		int pending_shape_count = 0;
+		mutable double shaped_width_sum = 0.0;
+		mutable int64_t shaped_char_sum = 0;
+
+		void _ensure_shaped(int p_line) const {
+			if (text[p_line].shape_pending) {
+				const_cast<Text *>(this)->_shape_pending_line(p_line);
+			}
+		}
+		void _shape_pending_line(int p_line);
+
 	public:
+		// Invalidating more lines than this at once defers their shaping.
+		static constexpr int BULK_SHAPE_THRESHOLD = 64;
+		struct BulkInvalidation {
+			Text &owner;
+			bool active = false;
+			BulkInvalidation(Text &p_owner, int p_line_count) :
+					owner(p_owner), active(p_line_count > BULK_SHAPE_THRESHOLD) {
+				if (active) {
+					owner.bulk_invalidation_depth++;
+				}
+			}
+			~BulkInvalidation() {
+				if (active) {
+					owner.bulk_invalidation_depth--;
+				}
+			}
+		};
+		void set_deferred_shaping_enabled(bool p_enabled);
+		bool is_line_shape_pending(int p_line) const { return text[p_line].shape_pending; }
+		int get_pending_shape_count() const { return pending_shape_count; }
+		int find_pending_line(int p_from) const;
+		void shape_line(int p_line) const { _ensure_shaped(p_line); }
+		// The wrap count without shaping a pending line (an estimate then).
+		int get_line_wrap_amount_estimate(int p_line) const { return text[p_line].line_count - 1; }
+
 		void set_tab_size(int p_tab_size);
 		int get_tab_size() const;
 		void set_indent_wrapped_lines(bool p_enabled);
@@ -244,8 +303,8 @@ private:
 		const Vector<RID> get_accessibility_elements(int p_line);
 		void update_accessibility(int p_line, RID p_root);
 		void clear_accessibility() {
-			for (int i = 0; i < text.size(); i++) {
-				text.write[i].accessibility_text_root_element.clear();
+			for (Line &line : text) {
+				line.accessibility_text_root_element.clear();
 			}
 		}
 
@@ -263,11 +322,21 @@ private:
 		void remove_range(int p_from_line, int p_to_line);
 		int size() const { return text.size(); }
 		void clear();
+		void swap_additional_data(int p_from_line, int p_to_line);
 
-		void invalidate_cache(int p_line, bool p_text_changed = false);
+		void invalidate_cache(int p_line, bool p_text_changed = false, bool p_font_changed = true);
 		void invalidate_font();
 		void invalidate_all();
 		void invalidate_all_lines();
+
+		int get_line_char_offset(int p_line) const;
+		int find_line_at_char_offset(int p_offset) const;
+		int get_visual_height_cache(int p_line) const { return text[p_line].visual_height; }
+		void set_visual_height_cache(int p_line, int p_height) const { text[p_line].visual_height = p_height; }
+		void invalidate_visual_offsets(int p_from_line) const { visual_offsets_valid = MIN(visual_offsets_valid, MAX(p_from_line, 0)); }
+		void invalidate_all_visual_heights() const;
+		LocalVector<int> &get_visual_offsets() const { return visual_offsets; }
+		int &get_visual_offsets_valid() const { return visual_offsets_valid; }
 
 		_FORCE_INLINE_ const String &operator[](int p_line) const;
 		_FORCE_INLINE_ const String &get_text_with_ime(int p_line) const;
@@ -275,31 +344,35 @@ private:
 		/* Gutters. */
 		void add_gutter(int p_at);
 		void remove_gutter(int p_gutter);
-		void move_gutters(int p_from_line, int p_to_line);
 
-		void set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata) { text.write[p_line].gutters.write[p_gutter].metadata = p_metadata; }
+		void set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata) { text[p_line].gutters[p_gutter].metadata = p_metadata; }
 		const Variant &get_line_gutter_metadata(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].metadata; }
 
-		void set_line_gutter_text(int p_line, int p_gutter, const String &p_text) { text.write[p_line].gutters.write[p_gutter].text = p_text; }
+		void set_line_gutter_text(int p_line, int p_gutter, const String &p_text) { text[p_line].gutters[p_gutter].text = p_text; }
 		const String &get_line_gutter_text(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].text; }
 
-		void set_line_gutter_icon(int p_line, int p_gutter, const Ref<Texture2D> &p_icon) { text.write[p_line].gutters.write[p_gutter].icon = p_icon; }
+		void set_line_gutter_icon(int p_line, int p_gutter, const Ref<Texture2D> &p_icon) { text[p_line].gutters[p_gutter].icon = p_icon; }
 		const Ref<Texture2D> &get_line_gutter_icon(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].icon; }
 
-		void set_line_gutter_item_color(int p_line, int p_gutter, const Color &p_color) { text.write[p_line].gutters.write[p_gutter].color = p_color; }
+		void set_line_gutter_item_color(int p_line, int p_gutter, const Color &p_color) { text[p_line].gutters[p_gutter].color = p_color; }
 		const Color &get_line_gutter_item_color(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].color; }
 
-		void set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable) { text.write[p_line].gutters.write[p_gutter].clickable = p_clickable; }
+		void set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable) { text[p_line].gutters[p_gutter].clickable = p_clickable; }
 		bool is_line_gutter_clickable(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].clickable; }
 
 		/* Line style. */
-		void set_line_background_color(int p_line, const Color &p_color) { text.write[p_line].background_color = p_color; }
+		void set_line_background_color(int p_line, const Color &p_color) { text[p_line].background_color = p_color; }
 		const Color get_line_background_color(int p_line) const { return text[p_line].background_color; }
 	};
 
 	/* Text */
 	Text text;
 	RID text_ci;
+	bool text_decoration_scale_tracking = false;
+	real_t text_decoration_pixel_size = 1.0;
+	real_t _get_text_decoration_pixel_size() const;
+	void _update_text_decoration_scale();
+	void _set_text_decoration_scale_tracking(bool p_enable);
 	bool setting_text = false;
 	int visible_characters = -1;
 	float visible_ratio = 1.0;
@@ -322,6 +395,21 @@ private:
 	// Text properties.
 	String ime_text = "";
 	Point2 ime_selection;
+
+	// Underline effects.
+	struct Underline {
+		Color color;
+		int start_line;
+		int start_column;
+		int end_line;
+		int end_column;
+
+		bool contains_line(int p_line) const {
+			return start_line <= p_line && p_line <= end_line;
+		}
+	};
+	LocalVector<Underline> underlines;
+	void _cut_line_from_underline(Underline &r_ul, int p_line);
 
 	// Placeholder
 	String placeholder_text = "";
@@ -389,8 +477,8 @@ private:
 			TYPE_REMOVE,
 			TYPE_CUSTOM,
 		};
-		Vector<Caret> start_carets;
-		Vector<Caret> end_carets;
+		LocalVector<Caret> start_carets;
+		LocalVector<Caret> end_carets;
 
 		Type type = TYPE_NONE;
 		int from_line = 0;
@@ -417,6 +505,7 @@ private:
 	int complex_operation_count = 0;
 	bool next_operation_is_complex = false;
 	bool skip_next_complex_end_marker = false;
+	bool applying_undo_redo = false;
 
 	TextOperation current_op;
 	List<TextOperation> undo_stack;
@@ -472,8 +561,8 @@ private:
 		int column = 0;
 	};
 
-	// Vector containing all the carets, index '0' is the "main caret" and should never be removed.
-	Vector<Caret> carets;
+	// LocalVector containing all the carets, index '0' is the "main caret" and should never be removed.
+	LocalVector<Caret> carets;
 
 	bool setting_caret_line = false;
 	bool caret_pos_dirty = false;
@@ -511,6 +600,7 @@ private:
 	bool _is_line_col_in_range(int p_line, int p_column, int p_from_line, int p_from_column, int p_to_line, int p_to_column, bool p_include_edges = true) const;
 
 	void _offset_carets_after(int p_old_line, int p_old_column, int p_new_line, int p_new_column, bool p_include_selection_begin = true, bool p_include_selection_end = true);
+	void _offset_underlines_after(int p_old_line, int p_old_column, int p_new_line, int p_new_column);
 
 	void _cancel_drag_and_drop_text();
 
@@ -532,8 +622,40 @@ private:
 	uint64_t last_dblclk = 0;
 	Vector2 last_dblclk_pos;
 
+	bool touch_dragging_starting = false;
+	bool touch_dragging_in_progress = false;
+	bool touch_dragging_deaccel = false;
+	Vector2 drag_accum;
+	Vector2 drag_from;
+	Vector2 drag_speed;
+	Vector2 last_drag_accum;
+	double time_since_motion = 0.0;
+	bool pan_gesture_performed = false;
+
+	enum SelectionHandleDragType {
+		SELECTION_HANDLE_NONE,
+		SELECTION_HANDLE_START,
+		SELECTION_HANDLE_END,
+	};
+
+	SelectionHandleDragType selection_handle_drag_type = SELECTION_HANDLE_NONE;
+	float selection_handle_radius;
+	int dragging_caret_index = -1;
+	Vector2 selection_handle_drag_offset;
+	bool show_selection_handle = false;
+	bool selection_handle_enabled = true;
+	Vector<Point2i> _get_selection_handles_pos(int p_cursor) const;
+	bool _is_first_column(int p_line, int p_column) const;
+	void _draw_selection_handle(Vector2 p_pos) const;
+
+	void _cancel_inertial_scroll();
+
+	void _on_drag_or_mouse_motion_event(Vector2i p_event_position, bool p_is_left_click_or_drag);
+
 	void _selection_changed(int p_caret = -1);
 	void _click_selection_held();
+
+	void _selection_mode_update();
 
 	void _update_selection_mode_pointer(bool p_initial = false);
 	void _update_selection_mode_word(bool p_initial = false);
@@ -573,15 +695,34 @@ private:
 
 	bool scrolling = false;
 	bool updating_scrolls = false;
-	mutable bool visible_content_height_cache_dirty = true;
-	mutable int visible_content_height_cache = 0;
+
+	// Rows are only drawn where the viewport can show them. When that skips
+	// content, the drawn area is remembered so a scrolled canvas redraws.
+	Rect2 draw_cull_rect;
+	bool draw_cull_tracking = false;
+	Rect2 _get_viewport_visible_rect() const;
+	void _update_draw_cull();
+	void _set_draw_cull_tracking(bool p_enable);
+	void _check_draw_cull();
+
+	int _get_line_visual_height(int p_line) const;
+	int _get_line_visual_offset(int p_line) const;
+	int _get_line_at_visual_offset(int p_offset) const;
+
+	// Background shaping of lines queued by bulk invalidations.
+	int pending_shape_cursor = 0;
+	int drawn_first_line = 0;
+	int drawn_last_line = INT_MAX;
+	mutable int64_t measured_row_height_sum = 0;
+	mutable int64_t measured_row_count = 0;
+	int _get_estimated_row_height() const;
+	void _process_pending_shaping();
 
 	void _update_scrollbars();
 	int _get_control_height() const;
 	int _get_default_line_height() const;
 	int _get_line_extra_top_margin(int p_line, int p_wrap_index) const;
 	int _get_line_extra_bottom_margin(int p_line, int p_wrap_index) const;
-	int _get_visible_content_height() const;
 
 	void _v_scroll_input();
 	void _scroll_moved(double p_to_val);
@@ -618,7 +759,7 @@ private:
 	void _update_minimap_drag();
 
 	/* Gutters. */
-	Vector<GutterInfo> gutters;
+	LocalVector<GutterInfo> gutters;
 	int gutters_width = 0;
 	int gutter_padding = 0;
 	Vector2i hovered_gutter = Vector2i(-1, -1); // X = gutter index, Y = row.
@@ -724,6 +865,28 @@ private:
 	bool _clear_carets_and_selection();
 
 protected:
+	// CSS `-webkit-text-stroke`: a run's outline is painted over its fill
+	// (centered on the glyph edge) instead of under it.
+	bool outline_over_fill = false;
+
+	// Subclasses may opt out of the text viewport without changing wrapping
+	// width. TextEdit and CodeEdit retain their normal clipping and scrolling.
+	virtual bool _is_text_clipping_enabled() const { return true; }
+
+	// Subclasses may force each text scroll bar to always or never be shown
+	// instead of following the content size. TextEdit and CodeEdit stay
+	// automatic on both axes.
+	enum ScrollBarMode {
+		SCROLL_BAR_MODE_AUTO,
+		SCROLL_BAR_MODE_NEVER,
+		SCROLL_BAR_MODE_ALWAYS,
+	};
+	virtual ScrollBarMode _get_h_scroll_bar_mode() const { return SCROLL_BAR_MODE_AUTO; }
+	virtual ScrollBarMode _get_v_scroll_bar_mode() const { return SCROLL_BAR_MODE_AUTO; }
+
+	void _update_text_clipping();
+	int _get_visible_content_height() const;
+
 	void _set_visible_characters(int p_visible);
 	int _get_visible_characters() const;
 	void _set_visible_ratio(float p_ratio);
@@ -742,8 +905,25 @@ protected:
 	bool amend_custom_undo_operation(const StringName &p_type, const Variant &p_after);
 	virtual void _apply_custom_undo_operation(const StringName &p_type, const Variant &p_data) {}
 
+	// Called just before text is inserted or removed, with the exact range, so a
+	// subclass can update line-aligned data before the affected lines reshape.
+	virtual void _text_inserting(int p_line, int p_column, const String &p_text) {}
+	virtual void _text_removing(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {}
+	bool _is_applying_undo_redo() const { return applying_undo_redo; }
+	// Reshapes a range of lines after a subclass changed their style data.
+	void _invalidate_lines(int p_from_line, int p_to_line);
+	// The marker number of an ordered list paragraph.
+	virtual int _get_list_item_number(int p_line, int p_list_type, int p_list_start) const;
+	// Lets bulk invalidations of large documents defer shaping lines that are
+	// not drawn; they are shaped on first use or in the background.
+	void _set_deferred_shaping_enabled(bool p_enabled) { text.set_deferred_shaping_enabled(p_enabled); }
+	bool _has_pending_shaping() const { return text.get_pending_shape_count() > 0; }
+	// Background shaping refined the estimated height of the content;
+	// p_finished is true once every queued line is shaped.
+	virtual void _deferred_layout_progressed(bool p_finished) {}
+
 #ifndef DISABLE_DEPRECATED
-	void _set_selection_mode_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
+	void _set_selection_mode_bind_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
 	Point2i _get_line_column_at_pos_bind_compat_100913(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
@@ -829,6 +1009,24 @@ protected:
 	GDVIRTUAL1(_paste_primary_clipboard, int)
 
 public:
+	void clear_underlines() { underlines.clear(); }
+	void add_underline(const Color &p_color, int p_start_line, int p_start_column, int p_end_line, int p_end_column) {
+		Underline u;
+		u.color = p_color;
+		u.start_line = p_start_line;
+		u.start_column = p_start_column;
+		u.end_line = p_end_line;
+		u.end_column = p_end_column;
+		underlines.push_back(u);
+	}
+	void update_underline_color(const Color &p_original_color, const Color &p_new_color) {
+		for (Underline &ul : underlines) {
+			if (ul.color == p_original_color) {
+				ul.color = p_new_color;
+			}
+		}
+	}
+
 	/* General overrides. */
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
@@ -1091,6 +1289,9 @@ public:
 
 	void deselect(int p_caret = -1);
 	void delete_selection(int p_caret = -1);
+
+	void set_selection_handle_enabled(bool p_enabled);
+	bool is_selection_handle_enabled() const;
 
 	/* Line wrapping. */
 	void set_line_wrapping_mode(LineWrappingMode p_wrapping_mode);

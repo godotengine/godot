@@ -195,8 +195,9 @@ void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p
 	_property_list.clear();
 	_document = p_document;
 	String image_format_hint_string = "None,PNG,JPEG";
+	const Vector<Ref<GLTFDocumentExtension>> all_extensions = GLTFDocument::get_all_gltf_document_extensions();
 	// If an extension allows saving images in different formats, add to the enum.
-	for (Ref<GLTFDocumentExtension> &extension : GLTFDocument::get_all_gltf_document_extensions()) {
+	for (const Ref<GLTFDocumentExtension> &extension : all_extensions) {
 		PackedStringArray saveable_image_formats = extension->get_saveable_image_formats();
 		for (int i = 0; i < saveable_image_formats.size(); i++) {
 			image_format_hint_string += "," + saveable_image_formats[i];
@@ -219,7 +220,7 @@ void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p
 		_property_list.push_back(visibility_mode_prop);
 	}
 	// Now that the above code set up base glTF stuff, add properties from all document extensions.
-	for (Ref<GLTFDocumentExtension> &extension : GLTFDocument::get_all_gltf_document_extensions()) {
+	for (const Ref<GLTFDocumentExtension> &extension : all_extensions) {
 		// Set up to listen for property changes.
 		const Callable on_prop_changed = callable_mp(this, &EditorSceneExporterGLTFSettings::_on_extension_property_list_changed);
 		if (!extension->is_connected(CoreStringName(property_list_changed), on_prop_changed)) {

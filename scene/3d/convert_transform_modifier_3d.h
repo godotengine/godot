@@ -53,8 +53,16 @@ public:
 		float reference_range_min = 0.0;
 		float reference_range_max = 0.0;
 
+		bool global = false;
 		bool relative = true;
 		bool additive = false;
+
+		bool is_global() {
+			if (reference_type == REFERENCE_TYPE_NODE) {
+				return false;
+			}
+			return global;
+		}
 
 		bool is_relative() {
 			if (reference_type == REFERENCE_TYPE_NODE) {
@@ -95,6 +103,9 @@ public:
 	float get_reference_range_min(int p_index) const;
 	void set_reference_range_max(int p_index, float p_range_max);
 	float get_reference_range_max(int p_index) const;
+
+	void set_global(int p_index, bool p_enabled);
+	bool is_global(int p_index) const;
 
 	void set_relative(int p_index, bool p_enabled);
 	bool is_relative(int p_index) const;

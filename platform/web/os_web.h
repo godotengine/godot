@@ -108,6 +108,8 @@ public:
 
 	bool is_userfs_persistent() const override;
 
+	Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
+
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;

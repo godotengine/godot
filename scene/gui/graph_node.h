@@ -67,6 +67,7 @@ class GraphNode : public GraphElement {
 		int max_size = -1;
 		bool will_stretch = false;
 		int final_size = 0;
+		float stretch_ratio = 0.0;
 	};
 
 	enum CustomAccessibilityAction {

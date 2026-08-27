@@ -5,6 +5,7 @@
 #pragma once
 
 #include <Jolt/Core/HashTable.h>
+#include <Jolt/Core/UnorderedMapFwd.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -25,7 +26,7 @@ public:
 /// @tparam Value Value type
 /// @tparam Hash Hash function (note should be 64-bits)
 /// @tparam KeyEqual Equality comparison function
-template <class Key, class Value, class Hash = JPH::Hash<Key>, class KeyEqual = std::equal_to<Key>>
+template <class Key, class Value, class Hash, class KeyEqual>
 class UnorderedMap : public HashTable<Key, std::pair<Key, Value>, UnorderedMapDetail<Key, Value>, Hash, KeyEqual>
 {
 	using Base = HashTable<Key, std::pair<Key, Value>, UnorderedMapDetail<Key, Value>, Hash, KeyEqual>;

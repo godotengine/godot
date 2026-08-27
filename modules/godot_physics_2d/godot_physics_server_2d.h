@@ -69,7 +69,7 @@ class GodotPhysicsServer2D : public PhysicsServer2D {
 	SelfList<GodotCollisionObject2D>::List pending_shape_update_list;
 	void _update_shapes();
 
-	RID _shape_create(ShapeType p_shape);
+	RID _shape_create(PS2DE::ShapeType p_shape);
 
 public:
 	struct CollCbkData {
@@ -96,7 +96,7 @@ public:
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) override;
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) override;
 
-	virtual ShapeType shape_get_type(RID p_shape) const override;
+	virtual PS2DE::ShapeType shape_get_type(RID p_shape) const override;
 	virtual Variant shape_get_data(RID p_shape) const override;
 	virtual real_t shape_get_custom_solver_bias(RID p_shape) const override;
 
@@ -108,8 +108,8 @@ public:
 	virtual void space_set_active(RID p_space, bool p_active) override;
 	virtual bool space_is_active(RID p_space) const override;
 
-	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) override;
-	virtual real_t space_get_param(RID p_space, SpaceParameter p_param) const override;
+	virtual void space_set_param(RID p_space, PS2DE::SpaceParameter p_param, real_t p_value) override;
+	virtual real_t space_get_param(RID p_space, PS2DE::SpaceParameter p_param) const override;
 
 	virtual void space_set_debug_contacts(RID p_space, int p_max_contacts) override;
 	virtual Vector<Vector2> space_get_contacts(RID p_space) const override;
@@ -144,10 +144,10 @@ public:
 	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_id) override;
 	virtual ObjectID area_get_canvas_instance_id(RID p_area) const override;
 
-	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) override;
+	virtual void area_set_param(RID p_area, PS2DE::AreaParameter p_param, const Variant &p_value) override;
 	virtual void area_set_transform(RID p_area, const Transform2D &p_transform) override;
 
-	virtual Variant area_get_param(RID p_area, AreaParameter p_param) const override;
+	virtual Variant area_get_param(RID p_area, PS2DE::AreaParameter p_param) const override;
 	virtual Transform2D area_get_transform(RID p_area) const override;
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable) override;
 
@@ -170,8 +170,8 @@ public:
 	virtual void body_set_space(RID p_body, RID p_space) override;
 	virtual RID body_get_space(RID p_body) const override;
 
-	virtual void body_set_mode(RID p_body, BodyMode p_mode) override;
-	virtual BodyMode body_get_mode(RID p_body) const override;
+	virtual void body_set_mode(RID p_body, PS2DE::BodyMode p_mode) override;
+	virtual PS2DE::BodyMode body_get_mode(RID p_body) const override;
 
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) override;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) override;
@@ -193,8 +193,8 @@ public:
 	virtual void body_attach_canvas_instance_id(RID p_body, ObjectID p_id) override;
 	virtual ObjectID body_get_canvas_instance_id(RID p_body) const override;
 
-	virtual void body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode) override;
-	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const override;
+	virtual void body_set_continuous_collision_detection_mode(RID p_body, PS2DE::CCDMode p_mode) override;
+	virtual PS2DE::CCDMode body_get_continuous_collision_detection_mode(RID p_body) const override;
 
 	virtual void body_set_collision_layer(RID p_body, uint32_t p_layer) override;
 	virtual uint32_t body_get_collision_layer(RID p_body) const override;
@@ -205,13 +205,13 @@ public:
 	virtual void body_set_collision_priority(RID p_body, real_t p_priority) override;
 	virtual real_t body_get_collision_priority(RID p_body) const override;
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) override;
-	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const override;
+	virtual void body_set_param(RID p_body, PS2DE::BodyParameter p_param, const Variant &p_value) override;
+	virtual Variant body_get_param(RID p_body, PS2DE::BodyParameter p_param) const override;
 
 	virtual void body_reset_mass_properties(RID p_body) override;
 
-	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override;
-	virtual Variant body_get_state(RID p_body, BodyState p_state) const override;
+	virtual void body_set_state(RID p_body, PS2DE::BodyState p_state, const Variant &p_variant) override;
+	virtual Variant body_get_state(RID p_body, PS2DE::BodyState p_state) const override;
 
 	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) override;
 	virtual void body_apply_torque_impulse(RID p_body, real_t p_torque) override;
@@ -253,7 +253,7 @@ public:
 
 	virtual void body_set_pickable(RID p_body, bool p_pickable) override;
 
-	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override;
+	virtual bool body_test_motion(RID p_body, const PS2DT::MotionParameters &p_parameters, PS2DT::MotionResult *r_result = nullptr) override;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) override;
@@ -264,8 +264,8 @@ public:
 
 	virtual void joint_clear(RID p_joint) override;
 
-	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value) override;
-	virtual real_t joint_get_param(RID p_joint, JointParam p_param) const override;
+	virtual void joint_set_param(RID p_joint, PS2DE::JointParam p_param, real_t p_value) override;
+	virtual real_t joint_get_param(RID p_joint, PS2DE::JointParam p_param) const override;
 
 	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disabled) override;
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override;
@@ -274,14 +274,14 @@ public:
 	virtual void joint_make_groove(RID p_joint, const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, RID p_body_a, RID p_body_b) override;
 	virtual void joint_make_damped_spring(RID p_joint, const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, RID p_body_a, RID p_body_b = RID()) override;
 
-	virtual void pin_joint_set_flag(RID p_joint, PinJointFlag p_flag, bool p_enabled) override;
-	virtual bool pin_joint_get_flag(RID p_joint, PinJointFlag p_flag) const override;
-	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) override;
-	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const override;
-	virtual void damped_spring_joint_set_param(RID p_joint, DampedSpringParam p_param, real_t p_value) override;
-	virtual real_t damped_spring_joint_get_param(RID p_joint, DampedSpringParam p_param) const override;
+	virtual void pin_joint_set_flag(RID p_joint, PS2DE::PinJointFlag p_flag, bool p_enabled) override;
+	virtual bool pin_joint_get_flag(RID p_joint, PS2DE::PinJointFlag p_flag) const override;
+	virtual void pin_joint_set_param(RID p_joint, PS2DE::PinJointParam p_param, real_t p_value) override;
+	virtual real_t pin_joint_get_param(RID p_joint, PS2DE::PinJointParam p_param) const override;
+	virtual void damped_spring_joint_set_param(RID p_joint, PS2DE::DampedSpringParam p_param, real_t p_value) override;
+	virtual real_t damped_spring_joint_get_param(RID p_joint, PS2DE::DampedSpringParam p_param) const override;
 
-	virtual JointType joint_get_type(RID p_joint) const override;
+	virtual PS2DE::JointType joint_get_type(RID p_joint) const override;
 
 	/* MISC */
 
@@ -297,7 +297,7 @@ public:
 
 	virtual bool is_flushing_queries() const override { return flushing_queries; }
 
-	int get_process_info(ProcessInfo p_info) override;
+	int get_process_info(PS2DE::ProcessInfo p_info) override;
 
 	GodotPhysicsServer2D(bool p_using_threads = false);
 	~GodotPhysicsServer2D() {}

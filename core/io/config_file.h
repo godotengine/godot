@@ -40,8 +40,8 @@ class ConfigFile : public RefCounted {
 
 	HashMap<String, HashMap<String, Variant>> values;
 
-	Error _internal_load(const String &p_path, Ref<FileAccess> f);
-	Error _internal_save(Ref<FileAccess> file);
+	Error _internal_load(const String &p_path, Ref<FileAccess> p_file);
+	Error _internal_save(Ref<FileAccess> p_file);
 
 	Error _parse(const String &p_path, VariantParser::Stream *p_stream);
 

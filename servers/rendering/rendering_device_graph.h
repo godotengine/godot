@@ -173,6 +173,7 @@ public:
 		RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
+		RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ,
 		RESOURCE_USAGE_GENERAL,
 		RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ,
 		RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE,
@@ -182,6 +183,8 @@ public:
 	struct ResourceTracker {
 		uint32_t reference_count = 0;
 		int64_t command_frame = -1;
+		int32_t command_index = -1;
+		uint32_t usage_index = UINT32_MAX;
 		BitField<RDD::PipelineStageBits> previous_frame_stages = {};
 		BitField<RDD::PipelineStageBits> current_frame_stages = {};
 		int32_t read_full_command_list_index = -1;
@@ -213,6 +216,8 @@ public:
 		_FORCE_INLINE_ void reset_if_outdated(int64_t new_command_frame) {
 			if (new_command_frame != command_frame) {
 				command_frame = new_command_frame;
+				command_index = -1;
+				usage_index = UINT32_MAX;
 				previous_frame_stages = current_frame_stages;
 				current_frame_stages.clear();
 				read_full_command_list_index = -1;
@@ -255,6 +260,7 @@ public:
 
 	struct WorkaroundsState {
 		bool draw_list_found = false;
+		bool bound_any_draw_list_pipeline = false;
 	};
 
 	enum AttachmentOperation {

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -540,7 +540,7 @@ static void ParseExtension(Json::Value const &ext, std::vector<ExtensionListing>
         if (ext_version.isUInt()) {
             ext_listing.extension_version = ext_version.asUInt();
         } else {
-            ext_listing.extension_version = atoi(ext_version.asString().c_str());
+            ext_listing.extension_version = strtoul(ext_version.asString().c_str(), nullptr, 10);
         }
         extensions.push_back(ext_listing);
     }
@@ -640,10 +640,10 @@ void RuntimeManifestFile::CreateIfValid(const Json::Value &root_node, const std:
     }
 
     // Add this runtime manifest file
-    manifest_files.emplace_back(new RuntimeManifestFile(filename, lib_path));
+    std::unique_ptr<RuntimeManifestFile> manifest{new RuntimeManifestFile(filename, lib_path)};
+    manifest_files.emplace_back(std::move(manifest));
 
-    // Add any extensions to it after the fact.
-    // Handle any renamed functions
+    // Add any extensions to it after the fact, while handling any renamed functions
     manifest_files.back()->ParseCommon(runtime_root_node);
 }
 
@@ -816,24 +816,29 @@ void ApiLayerManifestFile::CreateIfValid(ManifestFileType type, const std::strin
         LoaderLogger::LogErrorMessage("", error_ss.str());
         return;
     }
+
+    // Figure out enabled state of implicit layers
     if (MANIFEST_TYPE_IMPLICIT_API_LAYER == type) {
         bool enabled = true;
         // Implicit layers require the disable environment variable.
-        if (layer_root_node["disable_environment"].isNull() || !layer_root_node["disable_environment"].isString()) {
+        auto &disable_env_node = layer_root_node["disable_environment"];
+        if (disable_env_node.isNull() || !disable_env_node.isString()) {
             error_ss << "Implicit layer " << filename << " is missing \"disable_environment\"";
             LoaderLogger::LogErrorMessage("", error_ss.str());
             return;
         }
-        // Check if there's an enable environment variable provided
-        if (!layer_root_node["enable_environment"].isNull() && layer_root_node["enable_environment"].isString()) {
-            std::string env_var = layer_root_node["enable_environment"].asString();
+        // Check if there's an enable environment variable provided: If so, it must be set in the environment.
+        auto &enable_env_node = layer_root_node["enable_environment"];
+        if (!enable_env_node.isNull() && enable_env_node.isString()) {
+            std::string env_var = enable_env_node.asString();
             // If it's not set in the environment, disable the layer
             if (!LoaderProperty::IsSet(env_var)) {
                 enabled = false;
             }
         }
+
         // Check for the disable environment variable, which must be provided in the JSON
-        std::string env_var = layer_root_node["disable_environment"].asString();
+        std::string env_var = disable_env_node.asString();
         // If the env var is set, disable the layer. Disable env var overrides enable above
         if (LoaderProperty::IsSet(env_var)) {
             enabled = false;
@@ -859,7 +864,17 @@ void ApiLayerManifestFile::CreateIfValid(ManifestFileType type, const std::strin
         return;
     }
 
-    uint32_t implementation_version = atoi(layer_root_node["implementation_version"].asString().c_str());
+    uint32_t implementation_version = 0;
+    {
+        std::string implementation_version_str = layer_root_node["implementation_version"].asString();
+        char *end_ptr;
+        implementation_version = strtoul(implementation_version_str.c_str(), &end_ptr, 10);
+        if (*end_ptr != '\0') {
+            error_ss << "layer " << filename << " has invalid implementation version.";
+            LoaderLogger::LogWarningMessage("", error_ss.str());
+            return;
+        }
+    }
     std::string library_path = layer_root_node["library_path"].asString();
 
     // If the library_path variable has no directory symbol, it's just a file name and should be accessible on the
@@ -890,10 +905,11 @@ void ApiLayerManifestFile::CreateIfValid(ManifestFileType type, const std::strin
     }
 
     // Add this layer manifest file
-    manifest_files.emplace_back(
-        new ApiLayerManifestFile(type, filename, layer_name, description, api_version, implementation_version, library_path));
+    std::unique_ptr<ApiLayerManifestFile> manifest{
+        new ApiLayerManifestFile(type, filename, layer_name, description, api_version, implementation_version, library_path)};
+    manifest_files.emplace_back(std::move(manifest));
 
-    // Add any extensions to it after the fact.
+    // Add any extensions to it after the fact, while handling any renamed functions
     manifest_files.back()->ParseCommon(layer_root_node);
 }
 

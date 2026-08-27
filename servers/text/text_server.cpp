@@ -70,7 +70,7 @@ void TextServerManager::add_interface(const Ref<TextServer> &p_interface) {
 	};
 
 	interfaces.push_back(p_interface);
-	print_verbose("TextServer: Added interface \"" + p_interface->get_name() + "\"");
+	print_verbose("TextServer: Added interface \"" + p_interface->get_name() + "\" (" + p_interface->get_short_name() + ")");
 	emit_signal(SNAME("interface_added"), p_interface->get_name());
 }
 
@@ -87,7 +87,7 @@ void TextServerManager::remove_interface(const Ref<TextServer> &p_interface) {
 	};
 
 	ERR_FAIL_COND_MSG(idx == -1, "Interface not found.");
-	print_verbose("TextServer: Removed interface \"" + p_interface->get_name() + "\"");
+	print_verbose("TextServer: Removed interface \"" + p_interface->get_name() + "\" (" + p_interface->get_short_name() + ")");
 	emit_signal(SNAME("interface_removed"), p_interface->get_name());
 	interfaces.remove_at(idx);
 }
@@ -122,6 +122,7 @@ TypedArray<Dictionary> TextServerManager::get_interfaces() const {
 
 		iface_info["id"] = i;
 		iface_info["name"] = interfaces[i]->get_name();
+		iface_info["short_name"] = interfaces[i]->get_short_name();
 
 		ret.push_back(iface_info);
 	};
@@ -135,7 +136,7 @@ void TextServerManager::set_primary_interface(const Ref<TextServer> &p_primary_i
 		primary_interface.unref();
 	} else {
 		primary_interface = p_primary_interface;
-		print_verbose("TextServer: Primary interface set to: \"" + primary_interface->get_name() + "\".");
+		print_verbose("TextServer: Primary interface set to: \"" + primary_interface->get_name() + "\" (" + primary_interface->get_short_name() + ").");
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED);
@@ -200,6 +201,7 @@ double TextServer::vp_oversampling = 0.0;
 void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &TextServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &TextServer::get_name);
+	ClassDB::bind_method(D_METHOD("get_short_name"), &TextServer::get_short_name);
 	ClassDB::bind_method(D_METHOD("get_features"), &TextServer::get_features);
 	ClassDB::bind_method(D_METHOD("load_support_data", "filename"), &TextServer::load_support_data);
 
@@ -837,6 +839,22 @@ bool TextServer::shaped_text_has_visible_chars(const RID &p_shaped) const {
 	return false;
 }
 
+// Spaces before a break opportunity hang past the line end (CSS Text 3
+// "hanging" white space): they never push the word before them onto the next
+// line. A space run without a break after it (NBSP) is ordinary content.
+static bool _is_hanging_space(const Glyph *p_gl, int p_size, int p_index) {
+	for (int i = p_index; i < p_size;) {
+		if ((p_gl[i].flags & TextServer::GRAPHEME_IS_SPACE) != TextServer::GRAPHEME_IS_SPACE || (p_gl[i].flags & TextServer::GRAPHEME_IS_BREAK_HARD) == TextServer::GRAPHEME_IS_BREAK_HARD) {
+			return false;
+		}
+		if ((p_gl[i].flags & TextServer::GRAPHEME_IS_BREAK_SOFT) == TextServer::GRAPHEME_IS_BREAK_SOFT) {
+			return true;
+		}
+		i += MAX(1, (int)p_gl[i].count);
+	}
+	return false;
+}
+
 PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped, const PackedFloat32Array &p_width, int64_t p_start, bool p_once, BitField<TextServer::LineBreakFlag> p_break_flags) const {
 	PackedInt32Array lines;
 
@@ -900,7 +918,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 			for (int j = i; j < l_size && l_gl[i].end == l_gl[j].end && l_gl[i].start == l_gl[j].start; j++) {
 				adv += l_gl[j].advance * l_gl[j].repeat;
 			}
-			if ((l_width > 0) && (width + adv > l_width) && (last_safe_break >= 0)) {
+			if ((l_width > 0) && (width + adv > l_width) && (last_safe_break >= 0) && !_is_hanging_space(l_gl, l_size, i)) {
 				int cur_safe_brk = last_safe_break;
 				if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) || p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES)) {
 					int start_pos = prev_safe_break;
@@ -1083,7 +1101,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 			for (int j = i; j < l_size && l_gl[i].end == l_gl[j].end && l_gl[i].start == l_gl[j].start; j++) {
 				adv += l_gl[j].advance * l_gl[j].repeat;
 			}
-			if ((l_width > 0) && (width + adv > l_width) && (last_safe_break >= 0)) {
+			if ((l_width > 0) && (width + adv > l_width) && (last_safe_break >= 0) && !_is_hanging_space(l_gl, l_size, i)) {
 				int cur_safe_brk = last_safe_break;
 				if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) || p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES)) {
 					int start_pos = prev_safe_break;
@@ -1252,8 +1270,6 @@ PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, Bi
 }
 
 CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_position) const {
-	Vector<Rect2> carets;
-
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	const Vector2 &range = shaped_text_get_range(p_shaped);
 	real_t ascent = shaped_text_get_ascent(p_shaped);
