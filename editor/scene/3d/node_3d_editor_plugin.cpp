@@ -3233,6 +3233,7 @@ Node3DEditor::Node3DEditor() {
 	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
 	set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_3d"));
+	set_allow_switch_screen(true);
 
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
