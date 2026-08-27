@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationStateContext" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Runtime context passed to [AnimationStateEvent] callbacks.
+	</brief_description>
+	<description>
+		[AnimationStateContext] encapsulates live playback information (such as target node, active mixer, elapsed time, duration, frame delta, and blend weight) passed to [AnimationStateEvent] virtual methods ([method AnimationStateEvent._start], [method AnimationStateEvent._update], [method AnimationStateEvent._end], [method AnimationStateEvent._cancel]).
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="animation" type="Animation" setter="" getter="get_animation">
+			The [Animation] resource currently being played.
+		</member>
+		<member name="delta" type="float" setter="" getter="get_delta" default="0.0">
+			The frame delta time of the current playback tick.
+		</member>
+		<member name="duration" type="float" setter="" getter="get_duration" default="0.0">
+			The total duration (in seconds) of this state event keyframe.
+		</member>
+		<member name="elapsed" type="float" setter="" getter="get_elapsed" default="0.0">
+			The time elapsed (in seconds) since the state event started.
+		</member>
+		<member name="mixer" type="AnimationMixer" setter="" getter="get_mixer">
+			The [AnimationMixer] (or [AnimationPlayer] / [AnimationTree]) playing this animation.
+		</member>
+		<member name="target" type="Object" setter="" getter="get_target">
+			The target [Object] (usually a [Node]) bound to the animation track.
+		</member>
+		<member name="weight" type="float" setter="" getter="get_weight" default="1.0">
+			The current blend weight of the animation during playback.
+		</member>
+	</members>
+</class>

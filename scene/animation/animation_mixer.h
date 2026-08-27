@@ -34,8 +34,8 @@
 #include "scene/animation/tween.h"
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
-#include "scene/resources/animation_state_event.h"
 #include "scene/resources/animation_library.h"
+#include "scene/resources/animation_state_event.h"
 #include "scene/resources/audio/audio_stream_polyphonic.h"
 
 class AnimatedValuesBackup;

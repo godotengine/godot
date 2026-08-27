@@ -58,12 +58,16 @@ protected:
 public:
 	StringName event_name;
 	Color tag_color = Color(0.3, 0.6, 0.9, 0.8);
+	double trigger_weight_threshold = 0.0;
 
 	void set_event_name(const StringName &p_name);
 	StringName get_event_name() const;
 
 	void set_tag_color(const Color &p_color);
 	Color get_tag_color() const;
+
+	void set_trigger_weight_threshold(double p_threshold);
+	double get_trigger_weight_threshold() const;
 
 	virtual void start(const Ref<AnimationStateContext> &p_context);
 	virtual void update(const Ref<AnimationStateContext> &p_context, double p_delta);

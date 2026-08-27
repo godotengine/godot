@@ -1932,12 +1932,16 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					for (int k = 0; k < key_count; k++) {
 						double k_start = a->state_event_track_get_key_start_time(i, k);
 						double k_end = a->state_event_track_get_key_end_time(i, k);
-						
+						Ref<AnimationStateEvent> ev = a->state_event_track_get_key_event(i, k);
+
 						bool is_active = false;
 						if (time >= k_start && time < k_end) {
-							is_active = true;
+							// Only play a Animation State Event if the threshold is high enough
+							if (ev.is_null() || blend >= ev->get_trigger_weight_threshold()) {
+								is_active = true;
+							}
 						}
-						
+
 						if (is_active) {
 							keys_should_be_active.insert(k);
 						}
@@ -1955,9 +1959,9 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								} else {
 									double k_start = a->state_event_track_get_key_start_time(i, k);
 									double k_end = a->state_event_track_get_key_end_time(i, k);
-									if (!backward && time >= k_end) {
+									if (!backward && (time >= k_end || looped_flag != Animation::LOOPED_FLAG_NONE)) {
 										ev->end(ctx);
-									} else if (backward && time <= k_start) {
+									} else if (backward && (time <= k_start || looped_flag != Animation::LOOPED_FLAG_NONE)) {
 										ev->end(ctx);
 									} else {
 										ev->cancel(ctx);

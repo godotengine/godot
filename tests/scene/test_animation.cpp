@@ -33,6 +33,7 @@
 TEST_FORCE_LINK(test_animation)
 
 #include "scene/resources/animation.h"
+#include "scene/resources/animation_state_event.h"
 
 namespace TestAnimation {
 
@@ -306,6 +307,66 @@ TEST_CASE("[Animation] Create Bezier track") {
 	CHECK(animation->try_scale_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	CHECK(animation->try_blend_shape_track_interpolate(0, 0.0, nullptr) == ERR_INVALID_PARAMETER);
 	ERR_PRINT_ON;
+}
+
+TEST_CASE("[Animation] Create State Event track") {
+	Ref<Animation> animation = memnew(Animation);
+	const int track_index = animation->add_track(Animation::TYPE_STATE_EVENT);
+	CHECK(track_index == 0);
+	CHECK(animation->track_get_type(0) == Animation::TYPE_STATE_EVENT);
+	animation->track_set_path(track_index, NodePath("Player"));
+
+	Ref<AnimationStateEvent> event = memnew(AnimationStateEvent);
+	event->set_event_name("AttackHitbox");
+	event->set_trigger_weight_threshold(0.25);
+
+	animation->state_event_track_insert_key(track_index, 0.2, 0.4, event);
+
+	CHECK(animation->get_track_count() == 1);
+	CHECK(animation->track_get_key_count(0) == 1);
+	CHECK(animation->state_event_track_get_key_start_time(0, 0) == doctest::Approx(0.2));
+	CHECK(animation->state_event_track_get_key_duration(0, 0) == doctest::Approx(0.4));
+	CHECK(animation->state_event_track_get_key_end_time(0, 0) == doctest::Approx(0.6));
+
+	Ref<AnimationStateEvent> fetched_event = animation->state_event_track_get_key_event(0, 0);
+	CHECK(fetched_event.is_valid());
+	CHECK(fetched_event->get_event_name() == StringName("AttackHitbox"));
+	CHECK(fetched_event->get_trigger_weight_threshold() == doctest::Approx(0.25));
+
+	// Test modifying start time, duration, and end time.
+	animation->state_event_track_set_key_duration(0, 0, 0.5);
+	CHECK(animation->state_event_track_get_key_duration(0, 0) == doctest::Approx(0.5));
+	CHECK(animation->state_event_track_get_key_end_time(0, 0) == doctest::Approx(0.7));
+
+	animation->state_event_track_set_key_start_time(0, 0, 0.3);
+	CHECK(animation->state_event_track_get_key_start_time(0, 0) == doctest::Approx(0.3));
+	CHECK(animation->state_event_track_get_key_end_time(0, 0) == doctest::Approx(0.8));
+
+	animation->state_event_track_set_key_end_time(0, 0, 1.0);
+	CHECK(animation->state_event_track_get_key_end_time(0, 0) == doctest::Approx(1.0));
+	CHECK(animation->state_event_track_get_key_duration(0, 0) == doctest::Approx(0.7));
+}
+
+TEST_CASE("[AnimationStateEvent] Properties and threshold") {
+	Ref<AnimationStateEvent> event = memnew(AnimationStateEvent);
+	event->set_event_name("CustomState");
+	event->set_tag_color(Color(1.0, 0.0, 0.0, 1.0));
+	event->set_trigger_weight_threshold(0.5);
+
+	CHECK(event->get_event_name() == StringName("CustomState"));
+	CHECK(event->get_tag_color() == Color(1.0, 0.0, 0.0, 1.0));
+	CHECK(event->get_trigger_weight_threshold() == doctest::Approx(0.5));
+
+	Ref<AnimationStateContext> context = memnew(AnimationStateContext);
+	context->set_duration(1.5);
+	context->set_elapsed(0.5);
+	context->set_delta(0.016);
+	context->set_weight(0.8);
+
+	CHECK(context->get_duration() == doctest::Approx(1.5));
+	CHECK(context->get_elapsed() == doctest::Approx(0.5));
+	CHECK(context->get_delta() == doctest::Approx(0.016));
+	CHECK(context->get_weight() == doctest::Approx(real_t(0.8)));
 }
 
 } // namespace TestAnimation

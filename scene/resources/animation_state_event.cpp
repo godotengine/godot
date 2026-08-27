@@ -98,8 +98,12 @@ void AnimationStateEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tag_color", "color"), &AnimationStateEvent::set_tag_color);
 	ClassDB::bind_method(D_METHOD("get_tag_color"), &AnimationStateEvent::get_tag_color);
 
+	ClassDB::bind_method(D_METHOD("set_trigger_weight_threshold", "threshold"), &AnimationStateEvent::set_trigger_weight_threshold);
+	ClassDB::bind_method(D_METHOD("get_trigger_weight_threshold"), &AnimationStateEvent::get_trigger_weight_threshold);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "event_name"), "set_event_name", "get_event_name");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tag_color"), "set_tag_color", "get_tag_color");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trigger_weight_threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_trigger_weight_threshold", "get_trigger_weight_threshold");
 }
 
 void AnimationStateEvent::set_event_name(const StringName &p_name) {
@@ -116,6 +120,14 @@ void AnimationStateEvent::set_tag_color(const Color &p_color) {
 
 Color AnimationStateEvent::get_tag_color() const {
 	return tag_color;
+}
+
+void AnimationStateEvent::set_trigger_weight_threshold(double p_threshold) {
+	trigger_weight_threshold = p_threshold;
+}
+
+double AnimationStateEvent::get_trigger_weight_threshold() const {
+	return trigger_weight_threshold;
 }
 
 void AnimationStateEvent::start(const Ref<AnimationStateContext> &p_context) {

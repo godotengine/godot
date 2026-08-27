@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationStateEvent" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base resource for duration-based state events in an [Animation] track.
+	</brief_description>
+	<description>
+		An [AnimationStateEvent] is a custom resource used within [constant Animation.TYPE_STATE_EVENT] tracks to execute continuous, lifecycle-based logic across an animation duration span.
+		By overriding [method _start], [method _update], [method _end], and [method _cancel], developers can implement state-driven behaviors such as active melee hitboxes, invulnerability frames, footstep audio, and visual trails without polling in [code]_process()[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_cancel" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="context" type="AnimationStateContext" />
+			<description>
+				Called when animation playback is interrupted, seeked away, stopped, or blended out before the state finishes naturally.
+			</description>
+		</method>
+		<method name="_end" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="context" type="AnimationStateContext" />
+			<description>
+				Called when animation playback naturally exits the state duration or when the animation finishes.
+			</description>
+		</method>
+		<method name="_start" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="context" type="AnimationStateContext" />
+			<description>
+				Called once when animation playback enters the keyframe's start time.
+			</description>
+		</method>
+		<method name="_update" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="context" type="AnimationStateContext" />
+			<param index="1" name="delta" type="float" />
+			<description>
+				Called every process frame while playback remains active within the state duration.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="event_name" type="StringName" setter="set_event_name" getter="get_event_name" default="&amp;&quot;&quot;">
+			The display name of the event shown on the timeline strip.
+		</member>
+		<member name="tag_color" type="Color" setter="set_tag_color" getter="get_tag_color" default="Color(0.3, 0.6, 0.9, 0.8)">
+			The color of the timeline strip rendered in the animation track editor.
+		</member>
+		<member name="trigger_weight_threshold" type="float" setter="set_trigger_weight_threshold" getter="get_trigger_weight_threshold" default="0.0">
+			The minimum blending weight threshold (between [code]0.0[/code] and [code]1.0[/code]) required for this event to trigger and execute during playback blending. If the animation's blend weight is below this threshold, the event will not start, and active events will be cancelled.
+		</member>
+	</members>
+</class>

@@ -434,6 +434,75 @@
 				Sets the given marker's color.
 			</description>
 		</method>
+		<method name="state_event_track_get_key_duration" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="state_event_track_get_key_end_time" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="state_event_track_get_key_event" qualifiers="const">
+			<return type="Resource" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="state_event_track_get_key_start_time" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="state_event_track_insert_key">
+			<return type="int" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time" type="float" />
+			<param index="2" name="duration" type="float" default="0.0" />
+			<param index="3" name="event" type="Resource" default="null" />
+			<description>
+			</description>
+		</method>
+		<method name="state_event_track_set_key_duration">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="duration" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="state_event_track_set_key_end_time">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="end_time" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="state_event_track_set_key_event">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="event" type="Resource" />
+			<description>
+			</description>
+		</method>
+		<method name="state_event_track_set_key_start_time">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="start_time" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="track_find_key" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />
@@ -720,6 +789,8 @@
 		</constant>
 		<constant name="TYPE_ANIMATION" value="8" enum="TrackType">
 			Animation tracks play animations in other [AnimationPlayer] nodes.
+		</constant>
+		<constant name="TYPE_STATE_EVENT" value="9" enum="TrackType">
 		</constant>
 		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">
 			No interpolation (nearest value).
