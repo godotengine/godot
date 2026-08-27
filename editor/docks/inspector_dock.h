@@ -145,6 +145,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void focus_search();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void open_resource(const String &p_type);
 	void clear();
