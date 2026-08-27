@@ -51,6 +51,7 @@
 #endif
 #include "scene/gui/box_container.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/tree.h"
 
 void ScenePaint2DEditor::_can_handle(bool p_is_node_2d, bool p_edit) {
@@ -393,6 +394,16 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 		node_2d->set_owner(scene);
 		node_2d->set_meta("_scene_painted", true);
 		node_2d->set_global_position(pos);
+		if (randomize_rotation || randomize_scale) {
+			if (randomize_rotation) {
+				float rand_rot_deg = rand_rot_min + Math::randf() * (rand_rot_max - rand_rot_min);
+				node_2d->set_rotation(Math::deg_to_rad(rand_rot_deg));
+			}
+			if (randomize_scale) {
+				float rand_scale = rand_scale_min + Math::randf() * (rand_scale_max - rand_scale_min);
+				node_2d->set_scale(Vector2(rand_scale, rand_scale));
+			}
+		}
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Paint Node(s)"), UndoRedo::MERGE_ALL);
@@ -401,6 +412,12 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 		undo_redo->add_do_method(node_2d, "set_owner", scene);
 		undo_redo->add_do_method(node_2d, "set_meta", "_scene_painted", true);
 		undo_redo->add_do_method(node_2d, "set_global_position", pos);
+		if (randomize_rotation) {
+			undo_redo->add_do_method(node_2d, "set_rotation", node_2d->get_rotation());
+		}
+		if (randomize_scale) {
+			undo_redo->add_do_method(node_2d, "set_scale", node_2d->get_scale());
+		}
 		undo_redo->add_undo_method(node, "remove_child", node_2d);
 		undo_redo->commit_action(false);
 		emit_signal(SNAME("scene_painted"), node_2d);
@@ -717,6 +734,9 @@ void ScenePaint2DEditor::_advanced_settings_id_pressed(int p_id) {
 			advanced_settings_popup->set_item_checked(p_id, is_cheked);
 			allow_overlapping = is_cheked;
 		} break;
+		case MENU_ITEM_RANDOMIZE_SETTINGS: {
+			callable_mp(this, &ScenePaint2DEditor::_randomize_settings_pressed).call_deferred();
+		} break;
 	}
 }
 
@@ -757,6 +777,40 @@ ScenePaint2DEditor::PaintMode ScenePaint2DEditor::_reload_paint_mode() {
 void ScenePaint2DEditor::_grid_step_changed() {
 	grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
 	grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
+}
+
+void ScenePaint2DEditor::_randomize_settings_pressed() {
+	randomize_popup->reset_size();
+	randomize_popup->set_position(advanced_settings_button->get_screen_position() + Vector2(0, advanced_settings_button->get_size().height));
+	randomize_popup->popup();
+}
+
+void ScenePaint2DEditor::_randomize_rotation_toggled(bool p_pressed) {
+	randomize_rotation = p_pressed;
+	rand_rot_min_spin->set_editable(p_pressed);
+	rand_rot_max_spin->set_editable(p_pressed);
+}
+
+void ScenePaint2DEditor::_randomize_scale_toggled(bool p_pressed) {
+	randomize_scale = p_pressed;
+	rand_scale_min_spin->set_editable(p_pressed);
+	rand_scale_max_spin->set_editable(p_pressed);
+}
+
+void ScenePaint2DEditor::_rand_rot_min_changed(double p_value) {
+	rand_rot_min = p_value;
+}
+
+void ScenePaint2DEditor::_rand_rot_max_changed(double p_value) {
+	rand_rot_max = p_value;
+}
+
+void ScenePaint2DEditor::_rand_scale_min_changed(double p_value) {
+	rand_scale_min = p_value;
+}
+
+void ScenePaint2DEditor::_rand_scale_max_changed(double p_value) {
+	rand_scale_max = p_value;
 }
 
 void ScenePaint2DEditor::_bind_methods() {
@@ -976,6 +1030,75 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	advanced_settings_popup->add_check_item(TTRC("Allow Overlapping"), MENU_ITEM_ALLOW_OVERLAPPING);
 	advanced_settings_popup->set_item_tooltip(-1, TTRC("Allow painting over existing painted scenes.\nHold Shift while painting to temporarily toggle this option."));
 	advanced_settings_popup->set_item_disabled(-1, true);
+	advanced_settings_popup->add_separator();
+	advanced_settings_popup->add_item(TTRC("Randomize Settings..."), MENU_ITEM_RANDOMIZE_SETTINGS);
+	advanced_settings_popup->set_item_tooltip(-1, TTRC("Open settings for random rotation and scale of painted nodes."));
+
+	randomize_popup = memnew(PopupPanel);
+	add_child(randomize_popup);
+
+	VBoxContainer *randomize_vbox = memnew(VBoxContainer);
+	randomize_popup->add_child(randomize_vbox);
+
+	randomize_rotation_check = memnew(CheckBox);
+	randomize_rotation_check->set_text(TTRC("Randomize Rotation"));
+	randomize_rotation_check->connect(SceneStringName(toggled), callable_mp(this, &ScenePaint2DEditor::_randomize_rotation_toggled));
+	randomize_vbox->add_child(randomize_rotation_check);
+
+	HBoxContainer *rot_hbox = memnew(HBoxContainer);
+	Label *rot_min_label = memnew(Label);
+	rot_min_label->set_text(TTRC("Min:"));
+	rot_hbox->add_child(rot_min_label);
+	rand_rot_min_spin = memnew(SpinBox);
+	rand_rot_min_spin->set_min(-360.0);
+	rand_rot_min_spin->set_max(360.0);
+	rand_rot_min_spin->set_step(1.0);
+	rand_rot_min_spin->set_value(rand_rot_min);
+	rand_rot_min_spin->set_editable(false);
+	rand_rot_min_spin->connect(SceneStringName(value_changed), callable_mp(this, &ScenePaint2DEditor::_rand_rot_min_changed));
+	rot_hbox->add_child(rand_rot_min_spin);
+	Label *rot_max_label = memnew(Label);
+	rot_max_label->set_text(TTRC("Max:"));
+	rot_hbox->add_child(rot_max_label);
+	rand_rot_max_spin = memnew(SpinBox);
+	rand_rot_max_spin->set_min(-360.0);
+	rand_rot_max_spin->set_max(360.0);
+	rand_rot_max_spin->set_step(1.0);
+	rand_rot_max_spin->set_value(rand_rot_max);
+	rand_rot_max_spin->set_editable(false);
+	rand_rot_max_spin->connect(SceneStringName(value_changed), callable_mp(this, &ScenePaint2DEditor::_rand_rot_max_changed));
+	rot_hbox->add_child(rand_rot_max_spin);
+	randomize_vbox->add_child(rot_hbox);
+
+	randomize_scale_check = memnew(CheckBox);
+	randomize_scale_check->set_text(TTRC("Randomize Scale"));
+	randomize_scale_check->connect(SceneStringName(toggled), callable_mp(this, &ScenePaint2DEditor::_randomize_scale_toggled));
+	randomize_vbox->add_child(randomize_scale_check);
+
+	HBoxContainer *scale_hbox = memnew(HBoxContainer);
+	Label *scale_min_label = memnew(Label);
+	scale_min_label->set_text(TTRC("Min:"));
+	scale_hbox->add_child(scale_min_label);
+	rand_scale_min_spin = memnew(SpinBox);
+	rand_scale_min_spin->set_min(0.01);
+	rand_scale_min_spin->set_max(10.0);
+	rand_scale_min_spin->set_step(0.01);
+	rand_scale_min_spin->set_value(rand_scale_min);
+	rand_scale_min_spin->set_editable(false);
+	rand_scale_min_spin->connect(SceneStringName(value_changed), callable_mp(this, &ScenePaint2DEditor::_rand_scale_min_changed));
+	scale_hbox->add_child(rand_scale_min_spin);
+	Label *scale_max_label = memnew(Label);
+	scale_max_label->set_text(TTRC("Max:"));
+	scale_hbox->add_child(scale_max_label);
+	rand_scale_max_spin = memnew(SpinBox);
+	rand_scale_max_spin->set_min(0.01);
+	rand_scale_max_spin->set_max(10.0);
+	rand_scale_max_spin->set_step(0.01);
+	rand_scale_max_spin->set_value(rand_scale_max);
+	rand_scale_max_spin->set_editable(false);
+	rand_scale_max_spin->connect(SceneStringName(value_changed), callable_mp(this, &ScenePaint2DEditor::_rand_scale_max_changed));
+	scale_hbox->add_child(rand_scale_max_spin);
+	randomize_vbox->add_child(scale_hbox);
 
 	advanced_settings_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ScenePaint2DEditor::_advanced_settings_id_pressed));
 }
