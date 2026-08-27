@@ -15,7 +15,7 @@ files = [
 
 prog = env.add_program('#bin/godot', files)
 
-if (env['target'] == "debug" or env['target'] == "release_debug"):
+if env['separate_debug_symbols'] and (env['target'] == "debug" or env['target'] == "release_debug"):
     # Build the .dSYM file for atos
     action = "dsymutil " + File(prog)[0].path + " -o " + File(prog)[0].path + ".dSYM"
     env.AddPostAction(prog, action)

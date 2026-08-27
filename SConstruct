@@ -65,11 +65,15 @@ elif (os.name == "nt"):
     if (os.getenv("VCINSTALLDIR") == None or platform_arg == "android" or platform_arg == "javascript"):
         custom_tools = ['mingw']
 
+# We let SCons build its default ENV as it includes OS-specific things which we don't
+# want to have to pull in manually.
+# Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
 env_base = Environment(tools=custom_tools)
-if 'TERM' in os.environ:
-    env_base['ENV']['TERM'] = os.environ['TERM']
-env_base.AppendENVPath('PATH', os.getenv('PATH'))
-env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
+env_base.PrependENVPath("PATH", os.getenv("PATH"))
+env_base.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
+if "TERM" in os.environ:  # Used for colored output.
+    env_base["ENV"]["TERM"] = os.environ["TERM"]
+
 env_base.global_defaults = global_defaults
 env_base.android_maven_repos = []
 env_base.android_flat_dirs = []
@@ -295,10 +299,23 @@ if selected_platform in platform_list:
     # must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
     detect.configure(env)
 
+    # Set our C and C++ standard requirements.
+    # Prepending to make it possible to override.
+    is_msvc = os.name == "nt" and os.getenv("VCINSTALLDIR") and (platform_arg == "windows" or platform_arg == "uwp")
+    if (not is_msvc):
+        # Specifying GNU extensions support explicitly, which are supported by both GCC and Clang.
+        # We don't support C++17 so stick to earlier standards.
+        # When 2.1 was actively worked on, we were using GCC 5 which defaults to C++98, so use that.
+        env.Prepend(CFLAGS=["-std=gnu11"])
+        env.Prepend(CXXFLAGS=["-std=gnu++98"])
+    else:
+        # MSVC doesn't support setting C++ to pre-C++14 standards, so do nothing and hope it works.
+        pass
+
     if (env["warnings"] == 'yes'):
         print("WARNING: warnings=yes is deprecated; assuming warnings=all")
 
-    if (os.name == "nt" and os.getenv("VCINSTALLDIR") and (platform_arg == "windows" or platform_arg == "uwp")): # MSVC, needs to stand out of course
+    if (is_msvc): # MSVC
         disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4800'] # Truncations, narrowing conversions...
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['/Wall']) # Implies /W4

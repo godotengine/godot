@@ -33,5 +33,7 @@ obj = env_ios.Object('godot_iphone.cpp')
 
 prog = None
 prog = env_ios.add_program('#bin/godot', [obj] + iphone_lib)
-action = "$IPHONEPATH/usr/bin/dsymutil " + File(prog)[0].path + " -o " + File(prog)[0].path + ".dSYM"
-env.AddPostAction(prog, action)
+
+if env['separate_debug_symbols']:
+    action = "$IPHONEPATH/usr/bin/dsymutil " + File(prog)[0].path + " -o " + File(prog)[0].path + ".dSYM"
+    env.AddPostAction(prog, action)

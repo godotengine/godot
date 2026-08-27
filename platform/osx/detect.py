@@ -23,7 +23,7 @@ def get_opts():
 
     return [
         ('osxcross_sdk', 'OSXCross SDK version', 'darwin14'),
-
+        ('separate_debug_symbols', 'Extract debug symbols in .dSYM archive', False),
     ]
 
 
