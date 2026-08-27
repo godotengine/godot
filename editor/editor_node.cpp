@@ -472,18 +472,90 @@ void EditorNode::_update_from_settings() {
 	if (!is_inside_tree()) {
 		return;
 	}
-	_update_title();
 
-	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
-	if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
-		Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
-		scene_root->set_default_canvas_item_texture_filter(tf);
+	SceneTree *tree = get_tree();
+
+	// ===========
+	// Application
+	// ===========
+	// Config
+	// ------
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("application/config/name")) {
+		_update_title();
 	}
-	int current_repeat = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_repeat");
-	if (current_repeat != scene_root->get_default_canvas_item_texture_repeat()) {
-		Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
-		scene_root->set_default_canvas_item_texture_repeat(tr);
+
+	// =====
+	// Debug
+	// =====
+	// Shapes
+	// ------
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("debug/shapes")) {
+		// Collision.
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("debug/shapes/collision")) {
+			tree->set_debug_collision_contact_color(
+					Color(GLOBAL_GET("debug/shapes/collision/contact_color")));
+
+			tree->set_debug_collisions_color(
+					Color(GLOBAL_GET("debug/shapes/collision/shape_color")));
+		}
+
+#ifdef DEBUG_ENABLED
+		// Navigation.
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("debug/shapes/navigation")) {
+			// - 2D.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("debug/shapes/navigation/2d")) {
+				NavigationServer2D::get_singleton()->set_debug_navigation_edge_connection_color(
+						Color(GLOBAL_GET("debug/shapes/navigation/2d/edge_connection_color")));
+				NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_connections(
+						bool(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_connections")));
+				NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_lines(
+						bool(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_lines")));
+				NavigationServer2D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(
+						bool(GLOBAL_GET("debug/shapes/navigation/2d/enable_geometry_face_random_color")));
+				NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_color(
+						Color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_color")));
+				NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(
+						Color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_disabled_color")));
+				NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_color(
+						Color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_color")));
+				NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(
+						Color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_disabled_color")));
+			}
+
+			// - 3D.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("debug/shapes/navigation/3d")) {
+				NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(
+						Color(GLOBAL_GET("debug/shapes/navigation/3d/edge_connection_color")));
+				NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections(
+						bool(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections")));
+				NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections_xray(
+						bool(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections_xray")));
+				NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(
+						bool(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines")));
+				NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines_xray(
+						bool(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines_xray")));
+				NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(
+						bool(GLOBAL_GET("debug/shapes/navigation/3d/enable_geometry_face_random_color")));
+				NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(
+						Color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_color")));
+				NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(
+						Color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_disabled_color")));
+				NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(
+						Color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_color")));
+				NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(
+						Color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_disabled_color")));
+			}
+		}
+
+#endif // DEBUG_ENABLED
 	}
+
+	// ====================
+	// Internationalization
+	// ====================
+	// Locale
+	// ------
+
 	String current_fallback_locale = GLOBAL_GET("internationalization/locale/fallback");
 	if (current_fallback_locale != TranslationServer::get_singleton()->get_fallback_locale()) {
 		TranslationServer::get_singleton()->set_fallback_locale(current_fallback_locale);
@@ -494,96 +566,267 @@ void EditorNode::_update_from_settings() {
 		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 	}
 
-	RSE::DOFBokehShape dof_shape = RSE::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
-	RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
-	RSE::DOFBlurQuality dof_quality = RSE::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));
-	bool dof_jitter = GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter");
-	RS::get_singleton()->camera_attributes_set_dof_blur_quality(dof_quality, dof_jitter);
-	RS::get_singleton()->environment_set_ssao_quality(RSE::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
-	RS::get_singleton()->screen_space_roughness_limiter_set_active(GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled"), GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount"), GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit"));
-	bool glow_bicubic = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
-	RS::get_singleton()->environment_set_ssil_quality(RSE::EnvironmentSSILQuality(int(GLOBAL_GET("rendering/environment/ssil/quality"))), GLOBAL_GET("rendering/environment/ssil/half_size"), GLOBAL_GET("rendering/environment/ssil/adaptive_target"), GLOBAL_GET("rendering/environment/ssil/blur_passes"), GLOBAL_GET("rendering/environment/ssil/fadeout_from"), GLOBAL_GET("rendering/environment/ssil/fadeout_to"));
-	RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
-	RS::get_singleton()->environment_set_ssr_half_size(GLOBAL_GET("rendering/environment/screen_space_reflection/half_size"));
-	RSE::SubSurfaceScatteringQuality sss_quality = RSE::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
-	RS::get_singleton()->sub_surface_scattering_set_quality(sss_quality);
-	float sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
-	float sss_depth_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale");
-	RS::get_singleton()->sub_surface_scattering_set_scale(sss_scale, sss_depth_scale);
+	// =========
+	// Rendering
+	// =========
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering")) {
+		// 2D
+		// --
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/2d")) {
+			// SDF.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/2d/sdf")) {
+				scene_root->set_sdf_oversize(
+						Viewport::SDFOversize(
+								int(GLOBAL_GET("rendering/2d/sdf/oversize"))));
+				scene_root->set_sdf_scale(
+						Viewport::SDFScale(
+								int(GLOBAL_GET("rendering/2d/sdf/scale"))));
+			}
 
-	uint32_t directional_shadow_size = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size");
-	uint32_t directional_shadow_16_bits = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits");
-	RS::get_singleton()->directional_shadow_atlas_set_size(directional_shadow_size, directional_shadow_16_bits);
+			// Shadow atlas.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/2d/shadow_atlas")) {
+				RS::get_singleton()->canvas_set_shadow_texture_size(
+						int(GLOBAL_GET("rendering/2d/shadow_atlas/size")));
+			}
 
-	RSE::ShadowQuality shadows_quality = RSE::ShadowQuality(int(GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality")));
-	RS::get_singleton()->positional_soft_shadow_filter_set_quality(shadows_quality);
-	RSE::ShadowQuality directional_shadow_quality = RSE::ShadowQuality(int(GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality")));
-	RS::get_singleton()->directional_soft_shadow_filter_set_quality(directional_shadow_quality);
-	float probe_update_speed = GLOBAL_GET("rendering/lightmapping/probe_capture/update_speed");
-	RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
-	RSE::EnvironmentSDFGIFramesToConverge frames_to_converge = RSE::EnvironmentSDFGIFramesToConverge(int(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge")));
-	RS::get_singleton()->environment_set_sdfgi_frames_to_converge(frames_to_converge);
-	RSE::EnvironmentSDFGIRayCount ray_count = RSE::EnvironmentSDFGIRayCount(int(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count")));
-	RS::get_singleton()->environment_set_sdfgi_ray_count(ray_count);
-	RSE::VoxelGIQuality voxel_gi_quality = RSE::VoxelGIQuality(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")));
-	RS::get_singleton()->voxel_gi_set_quality(voxel_gi_quality);
-	RS::get_singleton()->environment_set_volumetric_fog_volume_size(GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"), GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
-	RS::get_singleton()->environment_set_volumetric_fog_filter_active(bool(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter")));
-	RS::get_singleton()->canvas_set_shadow_texture_size(GLOBAL_GET("rendering/2d/shadow_atlas/size"));
+			// Snap.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/2d/snap")) {
+				scene_root->set_snap_2d_transforms_to_pixel(
+						bool(GLOBAL_GET("rendering/2d/snap/snap_2d_transforms_to_pixel")));
+				scene_root->set_snap_2d_vertices_to_pixel(
+						bool(GLOBAL_GET("rendering/2d/snap/snap_2d_vertices_to_pixel")));
+			}
+		}
 
-	bool use_half_res_gi = GLOBAL_GET("rendering/global_illumination/gi/use_half_resolution");
-	RS::get_singleton()->gi_set_use_half_resolution(use_half_res_gi);
+		// Anti-aliasing
+		// -------------
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/anti_aliasing")) {
+			// Quality.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/anti_aliasing/quality")) {
+				bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
+				scene_root->set_use_debanding(use_debanding);
+				// 2D doesn't use a dedicated SubViewport like 3D does, so we apply it on the root viewport instead.
+				get_viewport()->set_use_debanding(use_debanding);
+				RS::get_singleton()->material_set_use_debanding(use_debanding);
 
-	bool snap_2d_transforms = GLOBAL_GET("rendering/2d/snap/snap_2d_transforms_to_pixel");
-	scene_root->set_snap_2d_transforms_to_pixel(snap_2d_transforms);
-	bool snap_2d_vertices = GLOBAL_GET("rendering/2d/snap/snap_2d_vertices_to_pixel");
-	scene_root->set_snap_2d_vertices_to_pixel(snap_2d_vertices);
+				scene_root->set_msaa_2d(
+						Viewport::MSAA(
+								int(GLOBAL_GET("rendering/anti_aliasing/quality/msaa_2d"))));
+			}
 
-	Viewport::SDFOversize sdf_oversize = Viewport::SDFOversize(int(GLOBAL_GET("rendering/2d/sdf/oversize")));
-	scene_root->set_sdf_oversize(sdf_oversize);
-	Viewport::SDFScale sdf_scale = Viewport::SDFScale(int(GLOBAL_GET("rendering/2d/sdf/scale")));
-	scene_root->set_sdf_scale(sdf_scale);
+			// Screen-space roughness limiter.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group(
+						"rendering/anti_aliasing/screen_space_roughness_limiter")) {
+				RS::get_singleton()->screen_space_roughness_limiter_set_active(
+						bool(GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled")),
+						float(GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount")),
+						float(GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit")));
+			}
+		}
 
-	Viewport::MSAA msaa = Viewport::MSAA(int(GLOBAL_GET("rendering/anti_aliasing/quality/msaa_2d")));
-	scene_root->set_msaa_2d(msaa);
+		// Camera
+		// ------
+		// Depth of field.
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/camera/depth_of_field")) {
+			RS::get_singleton()->camera_attributes_set_dof_blur_quality(
+					RSE::DOFBlurQuality(
+							int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))),
+					bool(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter")));
+			RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(
+					RSE::DOFBokehShape(
+							int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
+		}
 
-	// 2D doesn't use a dedicated SubViewport like 3D does, so we apply it on the root viewport instead.
-	bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
-	scene_root->set_use_debanding(use_debanding);
-	get_viewport()->set_use_debanding(use_debanding);
+		// Environment
+		// -----------
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/environment")) {
+			// Glow.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/environment/glow")) {
+				bool glow_bicubic = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
+				RS::get_singleton()->environment_glow_set_use_bicubic_upscale(glow_bicubic);
+			}
 
-	// Enable HDR if requested.
-	const bool hdr_requested = GLOBAL_GET("display/window/hdr/request_hdr_output");
-	DisplayServer::get_singleton()->window_request_hdr_output(hdr_requested);
+			// Screen-space reflection.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group(
+						"rendering/environment/screen_space_reflection")) {
+				RS::get_singleton()->environment_set_ssr_half_size(
+						bool(GLOBAL_GET("rendering/environment/screen_space_reflection/half_size")));
+			}
 
-	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
-	scene_root->set_use_hdr_2d(use_hdr_2d || hdr_requested);
-	get_viewport()->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+			// SSAO.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/environment/ssao")) {
+				RS::get_singleton()->environment_set_ssao_quality(
+						RSE::EnvironmentSSAOQuality(
+								int(GLOBAL_GET("rendering/environment/ssao/quality"))),
+						bool(GLOBAL_GET("rendering/environment/ssao/half_size")),
+						float(GLOBAL_GET("rendering/environment/ssao/adaptive_target")),
+						int(GLOBAL_GET("rendering/environment/ssao/blur_passes")),
+						float(GLOBAL_GET("rendering/environment/ssao/fadeout_from")),
+						float(GLOBAL_GET("rendering/environment/ssao/fadeout_to")));
+			}
 
-	if (hdr_requested && !use_hdr_2d) {
-		WARN_PRINT_ED("HDR 2D was automatically enabled because HDR output was requested in project settings. To avoid this warning, enable rendering/viewport/hdr_2d in the Project Settings.");
+			// SSIL.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/environment/ssil")) {
+				RS::get_singleton()->environment_set_ssil_quality(
+						RSE::EnvironmentSSILQuality(
+								int(GLOBAL_GET("rendering/environment/ssil/quality"))),
+						bool(GLOBAL_GET("rendering/environment/ssil/half_size")),
+						float(GLOBAL_GET("rendering/environment/ssil/adaptive_target")),
+						int(GLOBAL_GET("rendering/environment/ssil/blur_passes")),
+						float(GLOBAL_GET("rendering/environment/ssil/fadeout_from")),
+						float(GLOBAL_GET("rendering/environment/ssil/fadeout_to")));
+			}
+
+			// Sub-surface scattering.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/environment/subsurface_scattering")) {
+				RS::get_singleton()->sub_surface_scattering_set_scale(
+						float(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale")),
+						float(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale")));
+				RS::get_singleton()->sub_surface_scattering_set_quality(
+						RSE::SubSurfaceScatteringQuality(
+								int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality"))));
+			}
+
+			// Volumetric fog.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/environment/volumetric_fog")) {
+				RS::get_singleton()->environment_set_volumetric_fog_filter_active(
+						bool(GLOBAL_GET("rendering/environment/volumetric_fog/use_filter")));
+				RS::get_singleton()->environment_set_volumetric_fog_volume_size(
+						GLOBAL_GET("rendering/environment/volumetric_fog/volume_size"),
+						GLOBAL_GET("rendering/environment/volumetric_fog/volume_depth"));
+			}
+		}
+
+		// Global illumination.
+		// --------------------
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/global_illumination")) {
+			// GI.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/global_illumination/gi")) {
+				RS::get_singleton()->gi_set_use_half_resolution(
+						bool(GLOBAL_GET("rendering/global_illumination/gi/use_half_resolution")));
+			}
+
+			// SDFGI.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/global_illumination/sdfgi")) {
+				RS::get_singleton()->environment_set_sdfgi_frames_to_converge(
+						RSE::EnvironmentSDFGIFramesToConverge(
+								int(GLOBAL_GET("rendering/global_illumination/sdfgi/frames_to_converge"))));
+				RS::get_singleton()->environment_set_sdfgi_ray_count(
+						RSE::EnvironmentSDFGIRayCount(
+								int(GLOBAL_GET("rendering/global_illumination/sdfgi/probe_ray_count"))));
+			}
+
+			// Voxel GI.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/global_illumination/voxel_gi")) {
+				RS::get_singleton()->voxel_gi_set_quality(
+						RSE::VoxelGIQuality(
+								int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality"))));
+			}
+		}
+
+		// Lightmapping.
+		// -------------
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/lightmapping")) {
+			// Lightmap GI.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/lightmapping/lightmap_gi")) {
+				RS::get_singleton()->lightmaps_set_bicubic_filter(
+						bool(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter")));
+			}
+
+			// Probe capture.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/lightmapping/probe_capture")) {
+				RS::get_singleton()->lightmap_set_probe_capture_update_speed(
+						float(GLOBAL_GET("rendering/lightmapping/probe_capture/update_speed")));
+			}
+		}
+
+		// Lights and shadows.
+		// -------------------
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/lights_and_shadows")) {
+			// Directional shadow.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/lights_and_shadows/directional_shadow")) {
+				RS::get_singleton()->directional_shadow_atlas_set_size(
+						uint32_t(GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size")),
+						uint32_t(GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits")));
+			}
+
+			// Positional shadow.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/lights_and_shadows/positional_shadow")) {
+				RS::get_singleton()->positional_soft_shadow_filter_set_quality(
+						RSE::ShadowQuality(
+								int(GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality"))));
+			}
+		}
+
+		// Mesh LOD.
+		// ---------
+		// LOD change.
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/mesh_lod/lod_change")) {
+			scene_root->set_mesh_lod_threshold(
+					float(GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels")));
+		}
+
+		// Textures.
+		// ---------
+		if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/textures")) {
+			// Canvas textures.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/textures/canvas_textures")) {
+				int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
+				if (current_filter != scene_root->get_default_canvas_item_texture_filter()) {
+					Viewport::DefaultCanvasItemTextureFilter tf = (Viewport::DefaultCanvasItemTextureFilter)current_filter;
+					scene_root->set_default_canvas_item_texture_filter(tf);
+				}
+
+				int current_repeat = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_repeat");
+				if (current_repeat != scene_root->get_default_canvas_item_texture_repeat()) {
+					Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
+					scene_root->set_default_canvas_item_texture_repeat(tr);
+				}
+			}
+
+			// Decals.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/textures/decals")) {
+				RS::get_singleton()->decals_set_filter(
+						RSE::DecalFilter(
+								int(GLOBAL_GET("rendering/textures/decals/filter"))));
+			}
+
+			// Light projectors.
+			if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/textures/light_projectors")) {
+				RS::get_singleton()->light_projectors_set_filter(
+						RSE::LightProjectorFilter(
+								int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
+			}
+		}
 	}
+	// =====
+	// Misc.
+	// =====
 
-	float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
-	scene_root->set_mesh_lod_threshold(mesh_lod_threshold);
+	// HDR settings
+	// ------------
+	const char *RENDERING_VIEWPORT_HDR_2D =
+			"rendering/viewport/hdr_2d";
+	const char *DISPLAY_WINDOW_HDR_REQUEST_HDR_OUTPUT =
+			"display/window/hdr/request_hdr_output";
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group(RENDERING_VIEWPORT_HDR_2D) || ProjectSettings::get_singleton()->check_changed_settings_in_group(DISPLAY_WINDOW_HDR_REQUEST_HDR_OUTPUT)) {
+		// Enable HDR if requested.
+		const bool hdr_requested = GLOBAL_GET(DISPLAY_WINDOW_HDR_REQUEST_HDR_OUTPUT);
+		const bool use_hdr_2d = GLOBAL_GET(RENDERING_VIEWPORT_HDR_2D);
+		DisplayServer::get_singleton()->window_request_hdr_output(
+				hdr_requested);
+		scene_root->set_use_hdr_2d(use_hdr_2d || hdr_requested);
+		get_viewport()->set_use_hdr_2d(use_hdr_2d || hdr_requested);
 
-	RS::get_singleton()->decals_set_filter(RSE::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
-	RS::get_singleton()->light_projectors_set_filter(RSE::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
-	RS::get_singleton()->lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
-	RS::get_singleton()->material_set_use_debanding(GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding"));
-
-	SceneTree *tree = get_tree();
-	tree->set_debug_collisions_color(GLOBAL_GET("debug/shapes/collision/shape_color"));
-	tree->set_debug_collision_contact_color(GLOBAL_GET("debug/shapes/collision/contact_color"));
-
-	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("display/window/hdr/request_hdr_output") || ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/viewport/hdr_2d")) {
-		const bool use_hdr = GLOBAL_GET("display/window/hdr/request_hdr_output").operator bool() || GLOBAL_GET("rendering/viewport/hdr_2d").operator bool();
+		if (hdr_requested && !use_hdr_2d) {
+			WARN_PRINT_ED("HDR 2D was automatically enabled because HDR output was requested in project settings. To avoid this warning, enable rendering/viewport/hdr_2d in the Project Settings.");
+		}
 
 		LocalVector<ObjectID> invalid_viewports;
 		for (const ObjectID &id : hdr_viewports) {
 			Viewport *vp = ObjectDB::get_instance<Viewport>(id);
 			if (vp) {
-				vp->set_use_hdr_2d(use_hdr);
+				vp->set_use_hdr_2d(use_hdr_2d);
 			} else {
 				invalid_viewports.push_back(id);
 			}
@@ -594,31 +837,17 @@ void EditorNode::_update_from_settings() {
 		}
 	}
 
+	// --------
+	// Imports.
+	// --------
+
 	ResourceImporterTexture::get_singleton()->update_imports();
 
+	// -------------
+	// Translations.
+	// -------------
+
 	_update_translations();
-
-#ifdef DEBUG_ENABLED
-	NavigationServer2D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/2d/edge_connection_color"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_color"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_color"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_disabled_color"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_disabled_color"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_connections"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_lines"));
-	NavigationServer2D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/2d/enable_geometry_face_random_color"));
-
-	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/3d/edge_connection_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_disabled_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_disabled_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections_xray"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines_xray"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/3d/enable_geometry_face_random_color"));
-#endif // DEBUG_ENABLED
 }
 
 void EditorNode::_gdextensions_reloaded() {
