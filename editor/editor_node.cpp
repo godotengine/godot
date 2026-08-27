@@ -9220,12 +9220,7 @@ EditorNode::EditorNode() {
 	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(right_menu_hb);
 
-	// FIXME: There has to be a simpler way to determine correct index.
-#ifdef ANDROID_ENABLED
-	title_bar->move_child(editor_main_screen->get_internal_container(), title_bar->get_child_count() / 2);
-#else
-	title_bar->move_child(editor_main_screen->get_internal_container(), left_menu_spacer ? 3 : 2);
-#endif
+	title_bar->move_child(editor_main_screen->get_internal_container(), left_spacer->get_index());
 
 	renderer = memnew(OptionButton);
 	renderer->set_flat(true);
