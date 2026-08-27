@@ -1710,8 +1710,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_type_variation("MainToolBarMargin", "MarginContainer");
 		p_theme->set_constant("margin_left", "MainToolBarMargin", EDSCALE_RND(4));
 		p_theme->set_constant("margin_right", "MainToolBarMargin", EDSCALE_RND(4));
-		p_theme->set_constant("margin_top", "MainToolBarMargin", EDSCALE_RND(p_config.base_margin * 0.5));
-		p_theme->set_constant("margin_bottom", "MainToolBarMargin", EDSCALE_RND(p_config.base_margin * 0.5));
+		p_theme->set_constant("margin_top", "MainToolBarMargin", EDSCALE);
+		p_theme->set_constant("margin_bottom", "MainToolBarMargin", EDSCALE);
 
 		// 2D and 3D contextual toolbar.
 		// Use a custom stylebox to make contextual menu items stand out from the rest.
@@ -2206,6 +2206,16 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			style_button_group->set_bg_color(p_config.surface_lower_color.lerp(p_config.mono_color_inv, 0.15).lightened(0.02));
 
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
+		}
+
+		// VSeparatorButtonGroup.
+		{
+			p_theme->set_type_variation("VSeparatorButtonGroup", "VSeparator");
+
+			Ref<StyleBoxLine> style_v_separator = p_theme->get_stylebox(SNAME("separator"), SNAME("VSeparator"))->duplicate();
+			style_v_separator->set_color(p_config.base_color);
+
+			p_theme->set_stylebox("separator", "VSeparatorButtonGroup", style_v_separator);
 		}
 
 		// TreeLineEdit.
