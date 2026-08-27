@@ -1703,6 +1703,7 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			main_screen_button_hover->set_content_margin((Side)i, p_config.button_style_hover->get_content_margin((Side)i));
 		}
 		p_theme->set_color("font_selected_color", "MainScreenContainer", p_config.accent_color);
+		p_theme->set_color("font_unselected_color", "MainScreenContainer", p_config.font_color);
 		p_theme->set_color("icon_selected_color", "MainScreenContainer", p_config.accent_color);
 		p_theme->set_stylebox("tab_unselected", "MainScreenContainer", menu_transparent_style);
 		p_theme->set_stylebox("tab_selected", "MainScreenContainer", menu_transparent_style);
