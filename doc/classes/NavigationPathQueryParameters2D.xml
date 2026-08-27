@@ -47,7 +47,7 @@
 			The pathfinding algorithm used in the path query.
 		</member>
 		<member name="simplify_epsilon" type="float" setter="set_simplify_epsilon" getter="get_simplify_epsilon" default="0.0">
-			The path simplification amount in worlds units.
+			The path simplification amount in world units.
 		</member>
 		<member name="simplify_path" type="bool" setter="set_simplify_path" getter="get_simplify_path" default="false">
 			If [code]true[/code] a simplified version of the path will be returned with less critical path points removed. The simplification amount is controlled by [member simplify_epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
@@ -68,7 +68,7 @@
 			Applies a funnel algorithm to the raw path corridor found by the pathfinding algorithm. This will result in the shortest path possible inside the path corridor. This postprocessing very much depends on the navigation mesh polygon layout and the created corridor. Especially tile- or gridbased layouts can face artificial corners with diagonal movement due to a jagged path corridor imposed by the cell shapes.
 		</constant>
 		<constant name="PATH_POSTPROCESSING_EDGECENTERED" value="1" enum="PathPostProcessing">
-			Centers every path position in the middle of the traveled navigation mesh polygon edge. This creates better paths for tile- or gridbased layouts that restrict the movement to the cells center.
+			Centers every position in the middle of the traveled navigation mesh's polygon edge. This creates better paths for tile- or grid-based layouts that restrict the movement to the cells' centers.
 		</constant>
 		<constant name="PATH_POSTPROCESSING_NONE" value="2" enum="PathPostProcessing">
 			Applies no postprocessing and returns the raw path corridor as found by the pathfinding algorithm.

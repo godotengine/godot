@@ -11,7 +11,7 @@
 #include <Jolt/Physics/Body/MotionQuality.h>
 #include <Jolt/Physics/Body/AllowedDOFs.h>
 #include <Jolt/ObjectStream/SerializableObject.h>
-#include <Jolt/Core/StreamUtils.h>
+#include <Jolt/Core/ObjectToIDMap.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -36,6 +36,10 @@ public:
 							BodyCreationSettings() = default;
 							BodyCreationSettings(const ShapeSettings *inShape, RVec3Arg inPosition, QuatArg inRotation, EMotionType inMotionType, ObjectLayer inObjectLayer) : mPosition(inPosition), mRotation(inRotation), mObjectLayer(inObjectLayer), mMotionType(inMotionType), mShape(inShape) { }
 							BodyCreationSettings(const Shape *inShape, RVec3Arg inPosition, QuatArg inRotation, EMotionType inMotionType, ObjectLayer inObjectLayer) : mPosition(inPosition), mRotation(inRotation), mObjectLayer(inObjectLayer), mMotionType(inMotionType), mShapePtr(inShape) { }
+
+	/// Test if two BodyCreationSettings are equal
+	bool					operator == (const BodyCreationSettings &inRHS) const;
+	bool					operator != (const BodyCreationSettings &inRHS) const			{ return !(*this == inRHS); }
 
 	/// Access to the shape settings object. This contains serializable (non-runtime optimized) information about the Shape.
 	const ShapeSettings *	GetShapeSettings() const										{ return mShape; }

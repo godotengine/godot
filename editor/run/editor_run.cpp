@@ -168,6 +168,13 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 			instance_starting_callback(i, instance_args);
 		}
 
+#ifdef ANDROID_ENABLED
+		// Each run instance is mapped to a specific process on Android, so for multiple instances run, we need to
+		// specify which process to use by specifying the run instance number.
+		instance_args.push_back("--run_instance");
+		instance_args.push_back(itos(i));
+#endif
+
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			PackedStringArray output;
 			output.reserve_exact(instance_args.size() + 1);

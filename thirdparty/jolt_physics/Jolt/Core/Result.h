@@ -8,7 +8,7 @@ JPH_NAMESPACE_BEGIN
 
 /// Helper class that either contains a valid result or an error
 template <class Type>
-class Result
+class [[nodiscard]] Result
 {
 public:
 	/// Default constructor

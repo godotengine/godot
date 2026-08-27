@@ -30,7 +30,12 @@
 
 #pragma once
 
-#include "servers/physics_3d/physics_server_3d.h"
+#include "core/os/mutex.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
+#include "core/templates/self_list.h"
+#include "core/variant/variant.h"
+#include "servers/physics_3d/physics_server_3d_enums.h"
 
 #include <Jolt/Jolt.h>
 
@@ -102,8 +107,8 @@ public:
 
 	bool is_stepping() const { return stepping; }
 
-	double get_param(PhysicsServer3D::SpaceParameter p_param) const;
-	void set_param(PhysicsServer3D::SpaceParameter p_param, double p_value);
+	double get_param(PS3DE::SpaceParameter p_param) const;
+	void set_param(PS3DE::SpaceParameter p_param, double p_value);
 
 	JPH::PhysicsSystem &get_physics_system() const { return *physics_system; }
 

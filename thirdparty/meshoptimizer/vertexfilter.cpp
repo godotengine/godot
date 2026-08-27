@@ -894,7 +894,7 @@ static void decodeFilterOctSimd8(signed char* data, size_t count)
 		v128_t z = wasm_f32x4_sub(wasm_f32x4_convert_i32x4(zf), wasm_f32x4_add(wasm_f32x4_abs(x), wasm_f32x4_abs(y)));
 
 		// fixup octahedral coordinates for z<0
-		// note: i32x4_min with 0 is equvalent to f32x4_min
+		// note: i32x4_min with 0 is equivalent to f32x4_min
 		v128_t t = wasm_i32x4_min(z, wasm_i32x4_splat(0));
 
 		x = wasm_f32x4_add(x, wasm_v128_xor(t, wasm_v128_and(x, sign)));
@@ -949,7 +949,7 @@ static void decodeFilterOctSimd16(short* data, size_t count)
 		v128_t z = wasm_f32x4_sub(wasm_f32x4_convert_i32x4(zf), wasm_f32x4_add(wasm_f32x4_abs(x), wasm_f32x4_abs(y)));
 
 		// fixup octahedral coordinates for z<0
-		// note: i32x4_min with 0 is equvalent to f32x4_min
+		// note: i32x4_min with 0 is equivalent to f32x4_min
 		v128_t t = wasm_i32x4_min(z, wasm_i32x4_splat(0));
 
 		x = wasm_f32x4_add(x, wasm_v128_xor(t, wasm_v128_and(x, sign)));
@@ -1188,8 +1188,9 @@ inline int optlog2(float v)
 	} u;
 
 	u.f = v;
-	// +1 accounts for implicit 1. in mantissa; denormalized numbers will end up clamped to min_exp by calling code
-	return v == 0 ? 0 : int((u.ui >> 23) & 0xff) - 127 + 1;
+	// +1 accounts for implicit 1. in mantissa; zero and denormalized numbers will end up clamped to min_exp by calling code
+	// this is important for shared exponent modes, as a zero component should not inflate the shared exponent
+	return int((u.ui >> 23) & 0xff) - 127 + 1;
 }
 
 // optimized variant of ldexp
@@ -1276,6 +1277,7 @@ void meshopt_encodeFilterOct(void* destination, size_t count, size_t stride, int
 {
 	assert(stride == 4 || stride == 8);
 	assert(bits >= 2 && bits <= 16);
+	assert(stride == 8 || bits <= 8);
 
 	signed char* d8 = static_cast<signed char*>(destination);
 	short* d16 = static_cast<short*>(destination);
@@ -1366,11 +1368,12 @@ void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, in
 
 	const int min_exp = -100;
 
+	// used to track maximum exponent for EncodeExpSharedComponent and zero exponent reuse for EncodeExpSeparate
+	for (size_t j = 0; j < stride_float; ++j)
+		component_exp[j] = (mode == meshopt_EncodeExpSeparate) ? 0 : min_exp;
+
 	if (mode == meshopt_EncodeExpSharedComponent)
 	{
-		for (size_t j = 0; j < stride_float; ++j)
-			component_exp[j] = min_exp;
-
 		for (size_t i = 0; i < count; ++i)
 		{
 			const float* v = &data[i * stride_float];
@@ -1408,7 +1411,9 @@ void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, in
 			{
 				int e = optlog2(v[j]);
 
-				component_exp[j] = (min_exp < e) ? e : min_exp;
+				// zero values inherit the last encoded exponent to keep the encoded data more compressible
+				if (v[j] != 0)
+					component_exp[j] = (min_exp < e) ? e : min_exp;
 			}
 		}
 		else if (mode == meshopt_EncodeExpClamped)
@@ -1446,6 +1451,7 @@ void meshopt_encodeFilterColor(void* destination, size_t count, size_t stride, i
 {
 	assert(stride == 4 || stride == 8);
 	assert(bits >= 2 && bits <= 16);
+	assert(stride == 8 || bits <= 8);
 
 	unsigned char* d8 = static_cast<unsigned char*>(destination);
 	unsigned short* d16 = static_cast<unsigned short*>(destination);

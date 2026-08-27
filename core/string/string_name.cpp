@@ -72,7 +72,8 @@ void StringName::cleanup() {
 		data.sort_custom<DebugSortReferences>();
 		int unreferenced_stringnames = 0;
 		int rarely_referenced_stringnames = 0;
-		for (int i = 0; i < data.size(); i++) {
+		const int data_size = data.size();
+		for (int i = 0; i < data_size; i++) {
 			print_line(itos(i + 1) + ": " + data[i]->name + " - " + itos(data[i]->debug_references));
 			if (data[i]->debug_references == 0) {
 				unreferenced_stringnames += 1;
@@ -81,8 +82,8 @@ void StringName::cleanup() {
 			}
 		}
 
-		print_line(vformat("\nOut of %d StringNames, %d StringNames were never referenced during this run (0 times) (%.2f%%).", data.size(), unreferenced_stringnames, unreferenced_stringnames / float(data.size()) * 100));
-		print_line(vformat("Out of %d StringNames, %d StringNames were rarely referenced during this run (1-4 times) (%.2f%%).", data.size(), rarely_referenced_stringnames, rarely_referenced_stringnames / float(data.size()) * 100));
+		print_line(vformat("\nOut of %d StringNames, %d StringNames were never referenced during this run (0 times) (%.2f%%).", data_size, unreferenced_stringnames, unreferenced_stringnames / float(data_size) * 100));
+		print_line(vformat("Out of %d StringNames, %d StringNames were rarely referenced during this run (1-4 times) (%.2f%%).", data_size, rarely_referenced_stringnames, rarely_referenced_stringnames / float(data_size) * 100));
 	}
 #endif
 	int lost_strings = 0;

@@ -235,30 +235,30 @@ void JoltSpace3D::call_queries() {
 	}
 }
 
-double JoltSpace3D::get_param(PhysicsServer3D::SpaceParameter p_param) const {
+double JoltSpace3D::get_param(PS3DE::SpaceParameter p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_RECYCLE_RADIUS: {
+		case PS3DE::SPACE_PARAM_CONTACT_RECYCLE_RADIUS: {
 			return SPACE_DEFAULT_CONTACT_RECYCLE_RADIUS;
 		}
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION: {
+		case PS3DE::SPACE_PARAM_CONTACT_MAX_SEPARATION: {
 			return SPACE_DEFAULT_CONTACT_MAX_SEPARATION;
 		}
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION: {
+		case PS3DE::SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION: {
 			return SPACE_DEFAULT_CONTACT_MAX_ALLOWED_PENETRATION;
 		}
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_DEFAULT_BIAS: {
+		case PS3DE::SPACE_PARAM_CONTACT_DEFAULT_BIAS: {
 			return SPACE_DEFAULT_CONTACT_DEFAULT_BIAS;
 		}
-		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD: {
+		case PS3DE::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD: {
 			return SPACE_DEFAULT_SLEEP_THRESHOLD_LINEAR;
 		}
-		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD: {
+		case PS3DE::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD: {
 			return SPACE_DEFAULT_SLEEP_THRESHOLD_ANGULAR;
 		}
-		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP: {
+		case PS3DE::SPACE_PARAM_BODY_TIME_TO_SLEEP: {
 			return JoltProjectSettings::sleep_time_threshold;
 		}
-		case PhysicsServer3D::SPACE_PARAM_SOLVER_ITERATIONS: {
+		case PS3DE::SPACE_PARAM_SOLVER_ITERATIONS: {
 			return SPACE_DEFAULT_SOLVER_ITERATIONS;
 		}
 		default: {
@@ -267,30 +267,30 @@ double JoltSpace3D::get_param(PhysicsServer3D::SpaceParameter p_param) const {
 	}
 }
 
-void JoltSpace3D::set_param(PhysicsServer3D::SpaceParameter p_param, double p_value) {
+void JoltSpace3D::set_param(PS3DE::SpaceParameter p_param, double p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_RECYCLE_RADIUS: {
+		case PS3DE::SPACE_PARAM_CONTACT_RECYCLE_RADIUS: {
 			WARN_PRINT("Space-specific contact recycle radius is not supported when using Jolt Physics. Any such value will be ignored.");
 		} break;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION: {
+		case PS3DE::SPACE_PARAM_CONTACT_MAX_SEPARATION: {
 			WARN_PRINT("Space-specific contact max separation is not supported when using Jolt Physics. Any such value will be ignored.");
 		} break;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION: {
+		case PS3DE::SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION: {
 			WARN_PRINT("Space-specific contact max allowed penetration is not supported when using Jolt Physics. Any such value will be ignored.");
 		} break;
-		case PhysicsServer3D::SPACE_PARAM_CONTACT_DEFAULT_BIAS: {
+		case PS3DE::SPACE_PARAM_CONTACT_DEFAULT_BIAS: {
 			WARN_PRINT("Space-specific contact default bias is not supported when using Jolt Physics. Any such value will be ignored.");
 		} break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD: {
+		case PS3DE::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD: {
 			WARN_PRINT("Space-specific linear velocity sleep threshold is not supported when using Jolt Physics. Any such value will be ignored.");
 		} break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD: {
+		case PS3DE::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD: {
 			WARN_PRINT("Space-specific angular velocity sleep threshold is not supported when using Jolt Physics. Any such value will be ignored.");
 		} break;
-		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP: {
+		case PS3DE::SPACE_PARAM_BODY_TIME_TO_SLEEP: {
 			WARN_PRINT("Space-specific body sleep time is not supported when using Jolt Physics. Any such value will be ignored.");
 		} break;
-		case PhysicsServer3D::SPACE_PARAM_SOLVER_ITERATIONS: {
+		case PS3DE::SPACE_PARAM_SOLVER_ITERATIONS: {
 			WARN_PRINT("Space-specific solver iterations is not supported when using Jolt Physics. Any such value will be ignored.");
 		} break;
 		default: {

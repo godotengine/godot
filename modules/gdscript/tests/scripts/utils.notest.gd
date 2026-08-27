@@ -51,6 +51,15 @@ static func get_type(property: Dictionary, is_return: bool = false) -> String:
 	return type_string(property.type)
 
 
+static func get_type_extended_info(property: Dictionary) -> String:
+	return 'hint=%s hint_string="%s" usage=%s class_name=&"%s"' % [
+		get_property_hint_name(property.hint).trim_prefix("PROPERTY_HINT_"),
+		get_property_hint_string(property).c_escape(),
+		get_property_usage_string(property.usage).replace("PROPERTY_USAGE_", ""),
+		str(property.class_name).c_escape(),
+	]
+
+
 static func get_property_signature(
 		property: Dictionary,
 		base: Object = null,
@@ -79,12 +88,9 @@ static func get_property_extended_info(
 		base: Object = null,
 		is_static: bool = false,
 ) -> String:
-	return '%s\n  hint=%s hint_string="%s" usage=%s class_name=&"%s"' % [
+	return '%s\n  %s' % [
 		get_property_signature(property, base, is_static),
-		get_property_hint_name(property.hint).trim_prefix("PROPERTY_HINT_"),
-		get_property_hint_string(property).c_escape(),
-		get_property_usage_string(property.usage).replace("PROPERTY_USAGE_", ""),
-		str(property.class_name).c_escape(),
+		get_type_extended_info(property),
 	]
 
 

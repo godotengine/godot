@@ -640,7 +640,9 @@ void EditorData::instantiate_object_properties(Object *p_object) {
 
 	for (const PropertyInfo &pi : pinfo) {
 		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
-			Object *prop = ClassDB::instantiate(pi.class_name);
+			// For comma-separated lists, instantiate the first item in the list (which is assumed to cover the most common use case).
+			// This is a situation where listing a subclass before a parent class makes sense (e.g. "NoiseTexture2D,Texture2D").
+			Object *prop = ClassDB::instantiate(String(pi.class_name).get_slicec(',', 0));
 			p_object->set(pi.name, prop);
 		}
 	}
@@ -1015,9 +1017,7 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 
 void EditorData::clear_edited_scenes() {
 	for (int i = 0; i < edited_scene.size(); i++) {
-		if (edited_scene[i].root) {
-			memdelete(edited_scene[i].root);
-		}
+		memdelete(edited_scene[i].root);
 	}
 	edited_scene.clear();
 	SceneTree::get_singleton()->set_edited_scene_root(nullptr);
@@ -1274,7 +1274,7 @@ void EditorSelection::_node_removed(Node *p_node) {
 	}
 
 	Object *meta = selection[nid];
-	memdelete_notnull(meta);
+	memdelete(meta);
 	selection.erase(nid);
 	changed = true;
 	node_list_changed = true;
@@ -1312,7 +1312,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	changed = true;
 	node_list_changed = true;
 	Object *meta = selection[nid];
-	memdelete_notnull(meta);
+	memdelete(meta);
 	selection.erase(nid);
 
 	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));

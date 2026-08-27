@@ -62,18 +62,29 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::PAGEDOWN              ,"PageDown"},
 	{Key::SHIFT                 ,"Shift"},
 	{Key::CTRL                  ,"Ctrl"},
+	// Include all strings for all platforms. The first string
+	// should be the one expected from get_keycode_string().
 #if defined(MACOS_ENABLED)
 	{Key::META                  ,"Command"},
+	{Key::META                  ,"Windows"},
+	{Key::META                  ,"Meta"},
 	{Key::CMD_OR_CTRL           ,"Command"},
 	{Key::ALT                   ,"Option"},
+	{Key::ALT                   ,"Alt"},
 #elif defined(WINDOWS_ENABLED)
 	{Key::META                  ,"Windows"},
-	{Key::CMD_OR_CTRL           ,"Ctrl"},
-	{Key::ALT                   ,"Alt"},
-#else
+	{Key::META                  ,"Command"},
 	{Key::META                  ,"Meta"},
 	{Key::CMD_OR_CTRL           ,"Ctrl"},
 	{Key::ALT                   ,"Alt"},
+	{Key::ALT                   ,"Option"},
+#else
+	{Key::META                  ,"Meta"},
+	{Key::META                  ,"Windows"},
+	{Key::META                  ,"Command"},
+	{Key::CMD_OR_CTRL           ,"Ctrl"},
+	{Key::ALT                   ,"Alt"},
+	{Key::ALT                   ,"Option"},
 #endif
 	{Key::CAPSLOCK              ,"CapsLock"},
 	{Key::NUMLOCK               ,"NumLock"},

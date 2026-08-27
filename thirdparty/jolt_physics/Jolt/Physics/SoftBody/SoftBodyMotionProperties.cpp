@@ -413,7 +413,7 @@ void SoftBodyMotionProperties::ApplyDihedralBendConstraints(const SoftBodyUpdate
 		// Calculate constraint equation
 		// As per "Strain Based Dynamics" Appendix A we need to negate the gradients when (n1 x n2) . e > 0, instead we make sure that the sign of the constraint equation is correct
 		float sign = Sign(n2.Cross(n1).Dot(e));
-		float d = n1.Dot(n2) / sqrt(n1_len_sq_n2_len_sq);
+		float d = n1.Dot(n2) / Sqrt(n1_len_sq_n2_len_sq);
 		float c = sign * ACosApproximate(d) - b->mInitialAngle;
 
 		// Ensure the range is -PI to PI
@@ -545,7 +545,7 @@ void SoftBodyMotionProperties::ApplySkinConstraints(const SoftBodyUpdateContext 
 				if (delta_len_sq < Square(s->mBackStopRadius))
 				{
 					// Push the vertex to the surface of the back stop sphere
-					float delta_len = sqrt(delta_len_sq);
+					float delta_len = Sqrt(delta_len_sq);
 					vertex.mPosition = delta_len > 0.0f?
 						center + delta * (s->mBackStopRadius / delta_len)
 						: center + skin_state.mNormal * s->mBackStopRadius;
@@ -559,7 +559,7 @@ void SoftBodyMotionProperties::ApplySkinConstraints(const SoftBodyUpdateContext 
 				float delta_len_sq = delta.LengthSq();
 				float max_distance_sq = Square(max_distance);
 				if (delta_len_sq > max_distance_sq)
-					vertex.mPosition = skin_pos + delta * sqrt(max_distance_sq / delta_len_sq);
+					vertex.mPosition = skin_pos + delta * Sqrt(max_distance_sq / delta_len_sq);
 			}
 		}
 		else
@@ -693,7 +693,7 @@ void SoftBodyMotionProperties::ApplyLRAConstraints(uint inStartIndex, uint inEnd
 		Vec3 delta = vertex1.mPosition - x0;
 		float delta_len_sq = delta.LengthSq();
 		if (delta_len_sq > Square(lra->mMaxDistance))
-			vertex1.mPosition = x0 + delta * lra->mMaxDistance / sqrt(delta_len_sq);
+			vertex1.mPosition = x0 + delta * lra->mMaxDistance / Sqrt(delta_len_sq);
 	}
 }
 
@@ -858,7 +858,7 @@ void SoftBodyMotionProperties::UpdateSoftBodyState(SoftBodyUpdateContext &ioCont
 
 		// Clamp if velocity is too high
 		if (v_sq > max_linear_velocity_sq)
-			v.mVelocity *= sqrt(max_linear_velocity_sq / v_sq);
+			v.mVelocity *= Sqrt(max_linear_velocity_sq / v_sq);
 
 		// Calculate local linear/angular velocity
 		linear_velocity += v.mVelocity;

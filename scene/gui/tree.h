@@ -156,6 +156,11 @@ private:
 	TreeItem *first_child = nullptr;
 	TreeItem *last_child = nullptr;
 
+	int cached_start = 0;
+	int cached_label_height = 0;
+	int cached_total_end = 0;
+	Point2 sticky_offset;
+
 	LocalVector<TreeItem *> children_cache;
 	bool is_root = false; // For tree root.
 	Tree *tree = nullptr; // Tree (for reference).
@@ -278,6 +283,8 @@ private:
 public:
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
+
+	Ref<TextParagraph> _get_text_buf(int p_column) const;
 
 	void set_description(int p_column, String p_text);
 	String get_description(int p_column) const;
@@ -518,6 +525,10 @@ private:
 	bool propagate_mouse_activated = false;
 	float content_scale_factor = 0.0;
 
+	int sticky_stack_end = 0;
+	LocalVector<TreeItem *> sticky_candidates;
+	LocalVector<TreeItem *> sticky_list;
+
 	Rect2 custom_popup_rect;
 	int edited_col = -1;
 	int selected_col = -1;
@@ -562,6 +573,7 @@ private:
 	RID custom_ci; // Separate canvas item for drawing custom content.
 	RID header_ci; // Separate canvas item for drawing column headers.
 	RID content_ci; // Separate canvas item for drawing tree rows.
+	RID last_sticky_ci; // Separate canvas item for drawing the last sticky item, which can partially hide underneath other sticky items.
 	RID drop_indicator_ci;
 
 	VBoxContainer *popup_editor_vb = nullptr;
@@ -589,10 +601,10 @@ private:
 	void update_column(int p_col);
 	void update_item_cell(TreeItem *p_item, int p_col) const;
 	void update_item_cache(TreeItem *p_item) const;
-	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color) const;
-	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height);
+	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color, const RID &p_ci) const;
+	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height, const RID &p_ci);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
-	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod);
+	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod, bool p_first_call = true, bool p_skip_children = false);
 	void _line_editor_submit(String p_text);
 	void _apply_multiline_edit(bool p_hide_focus = false);
 	void _text_editor_popup_modal_close();
@@ -600,6 +612,7 @@ private:
 	void value_editor_changed(double p_value);
 	void _update_popup_menu(const TreeItem::Cell &p_cell);
 	void _update_value_editor(const TreeItem::Cell &p_cell);
+	String _get_range_cell_text(const TreeItem::Cell &p_cell) const;
 
 	void popup_select(int p_option);
 
@@ -695,6 +708,7 @@ private:
 
 		int scroll_border = 0;
 		int scroll_speed = 0;
+		int scroll_max_sticky_items = 5;
 
 		int scrollbar_margin_top = -1;
 		int scrollbar_margin_right = -1;
@@ -750,7 +764,7 @@ private:
 
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 
-	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &r_height, int &r_section) const;
+	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &r_height, int &r_section, bool p_sticky_check = true) const;
 
 	void _find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index, int &r_section) const;
 

@@ -32,7 +32,7 @@
 
 #include "jolt_object_3d.h"
 
-#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_enums.h"
 
 #include <Jolt/Jolt.h>
 
@@ -41,6 +41,7 @@
 
 class JoltArea3D;
 class JoltSpace3D;
+class PhysicsServer3DRenderingServerHandler;
 
 class JoltSoftBody3D final : public JoltObject3D {
 	HashSet<int> pinned_vertices;
@@ -152,8 +153,8 @@ public:
 	float get_drag() const;
 	void set_drag(float p_drag);
 
-	Variant get_state(PhysicsServer3D::BodyState p_state) const;
-	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_value);
+	Variant get_state(PS3DE::BodyState p_state) const;
+	void set_state(PS3DE::BodyState p_state, const Variant &p_value);
 
 	Transform3D get_transform() const;
 	void set_transform(const Transform3D &p_transform);

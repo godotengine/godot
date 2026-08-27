@@ -7,10 +7,8 @@
 #include <Jolt/Physics/SoftBody/SoftBodySharedSettings.h>
 #include <Jolt/Physics/SoftBody/SoftBodyUpdateContext.h>
 #include <Jolt/ObjectStream/TypeDeclarations.h>
-#include <Jolt/Core/StreamIn.h>
-#include <Jolt/Core/StreamOut.h>
+#include <Jolt/Core/StreamUtils.h>
 #include <Jolt/Core/QuickSort.h>
-#include <Jolt/Core/UnorderedMap.h>
 #include <Jolt/Core/UnorderedSet.h>
 #include <Jolt/Core/BinaryHeap.h>
 
@@ -524,7 +522,7 @@ void SoftBodySharedSettings::CalculateBendConstraintConstants()
 		// Normals of both triangles
 		Vec3 n1 = e0.Cross(e1);
 		Vec3 n2 = e2.Cross(e0);
-		float denom = sqrt(n1.LengthSq() * n2.LengthSq());
+		float denom = Sqrt(n1.LengthSq() * n2.LengthSq());
 		if (denom < 1.0e-12f)
 			b.mInitialAngle = 0.0f;
 		else

@@ -941,7 +941,7 @@ static void quadricFromAttributes(Quadric& Q, QuadricGrad* G, const Vector3& p0,
 
 		Q.c += w * (gw * gw);
 
-		// the only remaining sum components are ones that depend on attr; these will be addded during error evaluation, see quadricError
+		// the only remaining sum components are ones that depend on attr; these will be added during error evaluation, see quadricError
 		G[k].gx = w * gx;
 		G[k].gy = w * gy;
 		G[k].gz = w * gz;
@@ -2652,6 +2652,7 @@ size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* ind
 	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
 	assert(vertex_positions_stride % sizeof(float) == 0);
 	assert(target_index_count <= index_count);
+	assert(target_error >= 0);
 
 	// we expect to get ~2 triangles/vertex in the output
 	size_t target_cell_count = target_index_count / 6;
@@ -2850,7 +2851,7 @@ size_t meshopt_simplifyPoints(unsigned int* destination, const float* vertex_pos
 	size_t min_vertices = 0;
 	size_t max_vertices = vertex_count;
 
-	// instead of starting in the middle, let's guess as to what the answer might be! triangle count usually grows as a square of grid size...
+	// instead of starting in the middle, let's guess as to what the answer might be! surface point count usually grows as a square of grid size...
 	int next_grid_size = int(sqrtf(float(target_cell_count)) + 0.5f);
 
 	for (int pass = 0; pass < 10 + kInterpolationPasses; ++pass)

@@ -152,6 +152,7 @@ void MetalDeviceProperties::init_features(MTL::Device *p_device) {
 	features.argument_buffers_tier = p_device->argumentBuffersSupport();
 	features.supports_image_atomic_32_bit = p_device->supportsFamily(MTL::GPUFamilyApple6);
 	features.supports_image_atomic_64_bit = p_device->supportsFamily(GPUFamilyApple9) || (p_device->supportsFamily(MTL::GPUFamilyApple8) && p_device->supportsFamily(MTL::GPUFamilyMac2));
+	features.supports_msaa_depth_resolve = p_device->supportsFamily(MTL::GPUFamilyMetal3) || p_device->supportsFamily(MTL::GPUFamilyApple3) || p_device->supportsFamily(MTL::GPUFamilyMac2);
 
 	if (features.msl_target_version >= MSL_VERSION_31) {
 		// Native atomics are only supported on 3.1 and above.

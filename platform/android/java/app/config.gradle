@@ -2,17 +2,21 @@ ext.versions = [
     androidGradlePlugin: '8.6.1',
     compileSdk         : 36,
     // Also update:
-    // - 'platform/android/export/export_plugin.cpp#DEFAULT_MIN_SDK_VERSION'
+    // - 'editor/export/android_sdk_manager.h#DEFAULT_MIN_SDK_VERSION'
     // - 'platform/android/detect.py#get_min_target_api()'
     minSdk             : 24,
-    // Also update 'platform/android/export/export_plugin.cpp#DEFAULT_TARGET_SDK_VERSION'
+    // Also update 'editor/export/android_sdk_manager.h#DEFAULT_TARGET_SDK_VERSION'.
     targetSdk          : 36,
+    // Also update 'editor/export/android_sdk_manager.cpp#ANDROID_SDK_PACKAGES[build-tools]'.
     buildTools         : '36.1.0',
     kotlinVersion      : '2.1.21',
     fragmentVersion    : '1.8.6',
     nexusPublishVersion: '1.3.0',
+    // Also update 'editor/export/android_sdk_manager.h#DEFAULT_JAVA_VERSION'.
     javaVersion        : JavaVersion.VERSION_17,
-    // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
+    // Also update:
+    // - 'editor/export/android_sdk_manager.cpp#ANDROID_SDK_PACKAGES[ndk]'
+    // - 'platform/android/detect.py#get_ndk_version()'
     ndkVersion         : '29.0.14206865',
     splashscreenVersion: '1.0.1',
     // 'openxrLoaderVersion' should be set to XR_CURRENT_API_VERSION, see 'thirdparty/openxr'

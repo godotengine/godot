@@ -323,7 +323,7 @@ typedef struct TEXRHeader {
 
   int compression_type;        // compression type(TINYEXR_COMPRESSIONTYPE_*)
   int *requested_pixel_types;  // Filled initially by
-                               // ParseEXRHeaderFrom(Meomory|File), then users
+                               // ParseEXRHeaderFrom(Memory|File), then users
                                // can edit it(only valid for HALF pixel type
                                // channel)
   // name attribute required for multipart files;
@@ -2281,14 +2281,15 @@ inline void outputBits(int nBits, long long bits, long long &c, int &lc,
   while (lc >= 8) *out++ = static_cast<char>((c >> (lc -= 8)));
 }
 
-inline long long getBits(int nBits, long long &c, int &lc, const char *&in) {
+inline long long getBits(int nBits, unsigned long long &c, int &lc,
+                         const char *&in) {
   while (lc < nBits) {
     c = (c << 8) | *(reinterpret_cast<const unsigned char *>(in++));
     lc += 8;
   }
 
   lc -= nBits;
-  return (c >> lc) & ((1 << nBits) - 1);
+  return static_cast<long long>((c >> lc) & ((1ULL << nBits) - 1ULL));
 }
 
 //
@@ -2605,7 +2606,7 @@ static bool hufUnpackEncTable(
   memset(hcode, 0, sizeof(long long) * HUF_ENCSIZE);
 
   const char *p = *pcode;
-  long long c = 0;
+  unsigned long long c = 0;
   int lc = 0;
 
   for (; im <= iM; im++) {
@@ -2857,10 +2858,10 @@ static int hufEncode            // return: output size (in bits)
 // instead of "inline" functions.
 //
 
-#define getChar(c, lc, in)                   \
-  {                                          \
-    c = (c << 8) | *(unsigned char *)(in++); \
-    lc += 8;                                 \
+#define getChar(c, lc, in)                                    \
+  {                                                           \
+    c = (c << 8) | *(reinterpret_cast<const unsigned char *>(in++)); \
+    lc += 8;                                                  \
   }
 
 #if 0
@@ -2886,7 +2887,8 @@ static int hufEncode            // return: output size (in bits)
     }                                            \
   }
 #else
-static bool getCode(int po, int rlc, long long &c, int &lc, const char *&in,
+static bool getCode(int po, int rlc, unsigned long long &c, int &lc,
+                    const char *&in,
                     const char *in_end, unsigned short *&out,
                     const unsigned short *ob, const unsigned short *oe) {
   (void)ob;
@@ -2903,7 +2905,7 @@ static bool getCode(int po, int rlc, long long &c, int &lc, const char *&in,
 
     lc -= 8;
 
-    unsigned char cs = (c >> lc);
+    unsigned char cs = static_cast<unsigned char>((c >> lc) & 0xffu);
 
     if (out + cs > oe) return false;
 
@@ -2934,7 +2936,7 @@ static bool hufDecode(const long long *hcode,  // i : encoding table
                       int no,  // i : expected output size (in bytes)
                       unsigned short *out)  //  o: uncompressed output buffer
 {
-  long long c = 0;
+  unsigned long long c = 0;
   int lc = 0;
   unsigned short *outb = out;          // begin
   unsigned short *oe = out + no;       // end
@@ -2989,8 +2991,8 @@ static bool hufDecode(const long long *hcode,  // i : encoding table
             getChar(c, lc, in);
 
           if (lc >= l) {
-            if (hufCode(hcode[pl.p[j]]) ==
-                ((c >> (lc - l)) & (((long long)(1) << l) - 1))) {
+            if (static_cast<unsigned long long>(hufCode(hcode[pl.p[j]])) ==
+                ((c >> (lc - l)) & ((1ULL << l) - 1ULL))) {
               //
               // Found : get long code
               //
@@ -9734,6 +9736,284 @@ int SaveEXRMultipartImageToFile(const EXRImage* exr_images,
   return TINYEXR_SUCCESS;
 }
 
+namespace tinyexr {
+
+// Decompress a deep payload (offset table or sample data). DecompressZip handles
+// NONE (sizes equal -> memcpy) and ZIP/ZIPS; RLE is separate. PIZ etc. are not
+// supported for deep data.
+static bool DecompressDeep(int compression_type, unsigned char *dst,
+                           size_t dst_size, const unsigned char *src,
+                           size_t src_size) {
+  if (dst_size == 0) return true;
+  if (compression_type == TINYEXR_COMPRESSIONTYPE_RLE) {
+    return DecompressRle(dst, static_cast<unsigned long>(dst_size), src,
+                         static_cast<unsigned long>(src_size));
+  }
+  unsigned long ul = static_cast<unsigned long>(dst_size);
+  if (!DecompressZip(dst, &ul, src, static_cast<unsigned long>(src_size)))
+    return false;
+  return ul == dst_size;
+}
+
+// Decode a single-level deep *tiled* part into the scanline-organized DeepImage
+// (offset_table[y][x] = cumulative count within row y; image[c][y] = that row's
+// samples concatenated in x order). `marker` points at the tile offset table.
+static int DecodeDeepTiled(DeepImage *deep_image,
+                           const std::vector<ChannelInfo> &channels,
+                           int num_channels, int compression_type,
+                           int data_width, int data_height, int tile_size_x,
+                           int tile_size_y, int tile_level_mode,
+                           const unsigned char *head,
+                           const unsigned char *marker, size_t file_size,
+                           const char **err) {
+  if (tile_size_x <= 0 || tile_size_y <= 0) {
+    SetErrorMessage("Invalid tile size in deep tiled image", err);
+    return TINYEXR_ERROR_INVALID_DATA;
+  }
+  if (tile_level_mode != 0) {
+    SetErrorMessage(
+        "Only single-level (ONE_LEVEL) deep tiled images are supported", err);
+    return TINYEXR_ERROR_UNSUPPORTED_FORMAT;
+  }
+  if (data_width <= 0 || data_height <= 0 || num_channels < 1) {
+    SetErrorMessage("Invalid deep tiled image dimensions", err);
+    return TINYEXR_ERROR_INVALID_DATA;
+  }
+  if (!(compression_type == TINYEXR_COMPRESSIONTYPE_NONE ||
+        compression_type == TINYEXR_COMPRESSIONTYPE_RLE ||
+        compression_type == TINYEXR_COMPRESSIONTYPE_ZIPS ||
+        compression_type == TINYEXR_COMPRESSIONTYPE_ZIP)) {
+    SetErrorMessage("Unsupported compression for deep tiled image", err);
+    return TINYEXR_ERROR_UNSUPPORTED_FORMAT;
+  }
+
+  const unsigned char *file_end = head + file_size;
+
+  std::vector<int> ch_size(static_cast<size_t>(num_channels));
+  int sample_size = 0;
+  for (int c = 0; c < num_channels; c++) {
+    int pt = channels[static_cast<size_t>(c)].pixel_type, ps;
+    if (pt == TINYEXR_PIXELTYPE_HALF) {
+      ps = 2;
+    } else if (pt == TINYEXR_PIXELTYPE_UINT || pt == TINYEXR_PIXELTYPE_FLOAT) {
+      ps = 4;
+    } else {
+      SetErrorMessage("Invalid pixel type in deep tiled image", err);
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+    ch_size[static_cast<size_t>(c)] = ps;
+    sample_size += ps;
+  }
+
+  int num_x_tiles = (data_width + tile_size_x - 1) / tile_size_x;
+  int num_y_tiles = (data_height + tile_size_y - 1) / tile_size_y;
+  size_t num_tiles = static_cast<size_t>(num_x_tiles) * static_cast<size_t>(num_y_tiles);
+
+  if (marker + num_tiles * sizeof(tinyexr_uint64) > file_end) {
+    SetErrorMessage("Corrupt deep tiled offset table", err);
+    return TINYEXR_ERROR_INVALID_DATA;
+  }
+  std::vector<tinyexr_uint64> tile_offsets(num_tiles ? num_tiles : 1);
+  for (size_t i = 0; i < num_tiles; i++) {
+    tinyexr_uint64 off;
+    memcpy(&off, marker, sizeof(off));
+    swap8(&off);
+    marker += sizeof(off);
+    tile_offsets[i] = off;
+  }
+
+  std::vector<int> counts(static_cast<size_t>(data_width) *
+                              static_cast<size_t>(data_height),
+                          0);
+
+  // ---- Pass 1: per-tile offset tables -> per-pixel sample counts ----
+  for (size_t t = 0; t < num_tiles; t++) {
+    const unsigned char *p = head + tile_offsets[t];
+    if (p < head || p + 40 > file_end) {
+      SetErrorMessage("Corrupt deep tile chunk", err);
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+    int tileX, tileY, levelX, levelY;
+    memcpy(&tileX, p + 0, 4); memcpy(&tileY, p + 4, 4);
+    memcpy(&levelX, p + 8, 4); memcpy(&levelY, p + 12, 4);
+    swap4(&tileX); swap4(&tileY); swap4(&levelX); swap4(&levelY);
+    tinyexr_int64 pots, psds, usds;
+    memcpy(&pots, p + 16, 8); memcpy(&psds, p + 24, 8); memcpy(&usds, p + 32, 8);
+    swap8(reinterpret_cast<tinyexr_uint64 *>(&pots));
+    swap8(reinterpret_cast<tinyexr_uint64 *>(&psds));
+    swap8(reinterpret_cast<tinyexr_uint64 *>(&usds));
+    (void)psds; (void)usds;
+    if (levelX != 0 || levelY != 0) {
+      SetErrorMessage("Unsupported deep tile level", err);
+      return TINYEXR_ERROR_UNSUPPORTED_FORMAT;
+    }
+    if (tileX < 0 || tileY < 0 || tileX >= num_x_tiles || tileY >= num_y_tiles ||
+        pots < 0) {
+      SetErrorMessage("Corrupt deep tile header", err);
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+    const unsigned char *otab_packed = p + 40;
+    if (otab_packed + pots > file_end) {
+      SetErrorMessage("Corrupt deep tile offset table", err);
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+    int x0 = tileX * tile_size_x, y0 = tileY * tile_size_y;
+    int tw = (tile_size_x < data_width - x0) ? tile_size_x : (data_width - x0);
+    int th = (tile_size_y < data_height - y0) ? tile_size_y : (data_height - y0);
+    size_t need = static_cast<size_t>(tw) * static_cast<size_t>(th);
+    std::vector<int> otab(need ? need : 1);
+    if (!DecompressDeep(compression_type,
+                        reinterpret_cast<unsigned char *>(&otab[0]),
+                        need * sizeof(int), otab_packed,
+                        static_cast<size_t>(pots))) {
+      SetErrorMessage("Failed to decompress deep tile offset table", err);
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+    // The sample-count table is cumulative per scanline row within the tile.
+    for (int ry = 0; ry < th; ry++) {
+      int prev = 0;
+      for (int rx = 0; rx < tw; rx++) {
+        int cum = otab[static_cast<size_t>(ry) * static_cast<size_t>(tw) +
+                       static_cast<size_t>(rx)];
+        int cnt = cum - prev;
+        if (cnt < 0) {
+          SetErrorMessage("Corrupt deep tile (negative sample count)", err);
+          return TINYEXR_ERROR_INVALID_DATA;
+        }
+        counts[static_cast<size_t>(y0 + ry) * static_cast<size_t>(data_width) +
+               static_cast<size_t>(x0 + rx)] = cnt;
+        prev = cum;
+      }
+    }
+  }
+
+  // ---- Build offset_table[y][x] and allocate per-row sample arrays ----
+  deep_image->offset_table =
+      static_cast<int **>(malloc(sizeof(int *) * static_cast<size_t>(data_height)));
+  std::vector<size_t> row_samples(static_cast<size_t>(data_height), 0);
+  for (int y = 0; y < data_height; y++) {
+    deep_image->offset_table[y] =
+        static_cast<int *>(malloc(sizeof(int) * static_cast<size_t>(data_width)));
+    int run = 0;
+    for (int x = 0; x < data_width; x++) {
+      run += counts[static_cast<size_t>(y) * static_cast<size_t>(data_width) +
+                    static_cast<size_t>(x)];
+      deep_image->offset_table[y][x] = run;
+    }
+    row_samples[static_cast<size_t>(y)] = static_cast<size_t>(run);
+  }
+
+  deep_image->image = static_cast<float ***>(
+      malloc(sizeof(float **) * static_cast<size_t>(num_channels)));
+  for (int c = 0; c < num_channels; c++) {
+    deep_image->image[c] = static_cast<float **>(
+        malloc(sizeof(float *) * static_cast<size_t>(data_height)));
+    for (int y = 0; y < data_height; y++) {
+      size_t n = row_samples[static_cast<size_t>(y)];
+      deep_image->image[c][y] =
+          static_cast<float *>(malloc(sizeof(float) * (n ? n : 1)));
+    }
+  }
+
+  // ---- Pass 2: per-tile (channel-planar) sample data -> scatter ----
+  for (size_t t = 0; t < num_tiles; t++) {
+    const unsigned char *p = head + tile_offsets[t];
+    int tileX, tileY;
+    memcpy(&tileX, p + 0, 4); memcpy(&tileY, p + 4, 4);
+    swap4(&tileX); swap4(&tileY);
+    tinyexr_int64 pots, psds, usds;
+    memcpy(&pots, p + 16, 8); memcpy(&psds, p + 24, 8); memcpy(&usds, p + 32, 8);
+    swap8(reinterpret_cast<tinyexr_uint64 *>(&pots));
+    swap8(reinterpret_cast<tinyexr_uint64 *>(&psds));
+    swap8(reinterpret_cast<tinyexr_uint64 *>(&usds));
+    if (psds < 0 || usds < 0) {
+      SetErrorMessage("Corrupt deep tile sample sizes", err);
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+    const unsigned char *samp_packed = p + 40 + pots;
+    if (samp_packed + psds > file_end) {
+      SetErrorMessage("Corrupt deep tile sample data", err);
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+    int x0 = tileX * tile_size_x, y0 = tileY * tile_size_y;
+    int tw = (tile_size_x < data_width - x0) ? tile_size_x : (data_width - x0);
+    int th = (tile_size_y < data_height - y0) ? tile_size_y : (data_height - y0);
+
+    tinyexr_uint64 tile_total = 0;
+    for (int ry = 0; ry < th; ry++)
+      for (int rx = 0; rx < tw; rx++)
+        tile_total += static_cast<tinyexr_uint64>(
+            counts[static_cast<size_t>(y0 + ry) * static_cast<size_t>(data_width) +
+                   static_cast<size_t>(x0 + rx)]);
+    if (usds != static_cast<tinyexr_int64>(tile_total) *
+                    static_cast<tinyexr_int64>(sample_size)) {
+      SetErrorMessage("Deep tile sample size mismatch", err);
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+    std::vector<unsigned char> sbuf(static_cast<size_t>(usds) ? static_cast<size_t>(usds) : 1);
+    if (!DecompressDeep(compression_type, &sbuf[0], static_cast<size_t>(usds),
+                        samp_packed, static_cast<size_t>(psds))) {
+      SetErrorMessage("Failed to decompress deep tile sample data", err);
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+
+    // Sample data is stored one tile-row at a time, each row channel-planar
+    // (i.e. the tile is a stack of `th` deep "scanlines" of width `tw`), which
+    // is why the offset table is cumulative per row.
+    (void)tile_total;
+    size_t offset = 0;  // byte offset within sbuf
+    for (int ry = 0; ry < th; ry++) {
+      int gy = y0 + ry;
+      for (int c = 0; c < num_channels; c++) {
+        int ps = ch_size[static_cast<size_t>(c)];
+        int pt = channels[static_cast<size_t>(c)].pixel_type;
+        size_t local = 0;  // sample index within this (row, channel) block
+        for (int rx = 0; rx < tw; rx++) {
+          int gx = x0 + rx;
+          int cnt = counts[static_cast<size_t>(gy) * static_cast<size_t>(data_width) +
+                           static_cast<size_t>(gx)];
+          int row_start = deep_image->offset_table[gy][gx] - cnt;
+          float *dst = deep_image->image[c][gy] + row_start;
+          const unsigned char *sp = &sbuf[offset + local * static_cast<size_t>(ps)];
+          for (int s = 0; s < cnt; s++) {
+            if (pt == TINYEXR_PIXELTYPE_UINT) {
+              unsigned int ui;
+              cpy4(&ui, reinterpret_cast<const unsigned int *>(sp + static_cast<size_t>(s) * 4));
+              dst[s] = static_cast<float>(ui);
+            } else if (pt == TINYEXR_PIXELTYPE_HALF) {
+              FP16 h;
+              cpy2(&h.u, reinterpret_cast<const unsigned short *>(sp + static_cast<size_t>(s) * 2));
+              dst[s] = half_to_float(h).f;
+            } else {
+              float f;
+              cpy4(&f, reinterpret_cast<const float *>(sp + static_cast<size_t>(s) * 4));
+              dst[s] = f;
+            }
+          }
+          local += static_cast<size_t>(cnt);
+        }
+        offset += local * static_cast<size_t>(ps);
+      }
+    }
+  }
+
+  deep_image->width = data_width;
+  deep_image->height = data_height;
+  deep_image->num_channels = num_channels;
+  deep_image->channel_names = static_cast<const char **>(
+      malloc(sizeof(const char *) * static_cast<size_t>(num_channels)));
+  for (int c = 0; c < num_channels; c++) {
+#ifdef _WIN32
+    deep_image->channel_names[c] = _strdup(channels[static_cast<size_t>(c)].name.c_str());
+#else
+    deep_image->channel_names[c] = strdup(channels[static_cast<size_t>(c)].name.c_str());
+#endif
+  }
+  return TINYEXR_SUCCESS;
+}
+
+}  // namespace tinyexr
+
 int LoadDeepEXR(DeepImage *deep_image, const char *filename, const char **err) {
   if (deep_image == NULL) {
     tinyexr::SetErrorMessage("Invalid argument for LoadDeepEXR", err);
@@ -9785,6 +10065,10 @@ int LoadDeepEXR(DeepImage *deep_image, const char *filename, const char **err) {
   int num_scanline_blocks = 1;  // 16 for ZIP compression.
   int compression_type = -1;
   int num_channels = -1;
+  bool is_tiled = false;       // deep *tiled* part (type == "deeptile")
+  int tile_size_x = -1;
+  int tile_size_y = -1;
+  int tile_level_mode = 0;     // 0 = ONE_LEVEL
   std::vector<tinyexr::ChannelInfo> channels;
 
   // Read attributes
@@ -9871,6 +10155,19 @@ int LoadDeepEXR(DeepImage *deep_image, const char *filename, const char **err) {
       tinyexr::swap4(&y);
       tinyexr::swap4(&w);
       tinyexr::swap4(&h);
+    } else if (attr_name.compare("tiles") == 0) {
+      // Deep tiled part: parse the tile descriptor (xSize, ySize, mode).
+      is_tiled = true;
+      if (data.size() >= 9) {
+        memcpy(&tile_size_x, &data.at(0), sizeof(int));
+        memcpy(&tile_size_y, &data.at(4), sizeof(int));
+        tinyexr::swap4(&tile_size_x);
+        tinyexr::swap4(&tile_size_y);
+        tile_level_mode = data[8] & 0x3;
+      }
+    } else if (attr_name.compare("type") == 0 && data.size() >= 8 &&
+               memcmp(&data[0], "deeptile", 8) == 0) {
+      is_tiled = true;
     }
   }
 
@@ -9882,6 +10179,15 @@ int LoadDeepEXR(DeepImage *deep_image, const char *filename, const char **err) {
 
   int data_width = dw - dx + 1;
   int data_height = dh - dy + 1;
+
+  if (is_tiled) {
+    return tinyexr::DecodeDeepTiled(deep_image, channels, num_channels,
+                                    compression_type, data_width, data_height,
+                                    tile_size_x, tile_size_y, tile_level_mode,
+                                    reinterpret_cast<const unsigned char *>(head),
+                                    reinterpret_cast<const unsigned char *>(marker),
+                                    file.size, err);
+  }
 
   // Read offset tables.
   int num_blocks = data_height / num_scanline_blocks;

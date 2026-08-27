@@ -110,7 +110,9 @@ namespace Godot.SourceGenerators
             source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             source.Append("\n{\n");
 
-            var members = symbol.GetMembers();
+            var members = symbol.GetMembers()
+                .Where(m => !m.GetAttributes()
+                    .Any(a => a.AttributeClass?.IsGodotIgnoreMemberAttribute() ?? false));
 
             var propertySymbols = members
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)

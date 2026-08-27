@@ -36,6 +36,7 @@
 #include "godot_collision_object_2d.h"
 
 #include "core/typedefs.h"
+#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
 
 class GodotPhysicsDirectSpaceState2D : public PhysicsDirectSpaceState2D {
 	GDCLASS(GodotPhysicsDirectSpaceState2D, PhysicsDirectSpaceState2D);
@@ -43,12 +44,12 @@ class GodotPhysicsDirectSpaceState2D : public PhysicsDirectSpaceState2D {
 public:
 	GodotSpace2D *space = nullptr;
 
-	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override;
-	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override;
-	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) override;
-	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) override;
-	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) override;
-	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) override;
+	virtual int intersect_point(const PS2DT::PointParameters &p_parameters, PS2DT::ShapeResult *r_results, int p_result_max) override;
+	virtual bool intersect_ray(const PS2DT::RayParameters &p_parameters, PS2DT::RayResult &r_result) override;
+	virtual int intersect_shape(const PS2DT::ShapeParameters &p_parameters, PS2DT::ShapeResult *r_results, int p_result_max) override;
+	virtual bool cast_motion(const PS2DT::ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) override;
+	virtual bool collide_shape(const PS2DT::ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) override;
+	virtual bool rest_info(const PS2DT::ShapeParameters &p_parameters, PS2DT::ShapeRestInfo *r_info) override;
 
 	GodotPhysicsDirectSpaceState2D() {}
 };
@@ -174,8 +175,8 @@ public:
 	real_t get_last_step() const { return last_step; }
 	void set_last_step(real_t p_step) { last_step = p_step; }
 
-	void set_param(PhysicsServer2D::SpaceParameter p_param, real_t p_value);
-	real_t get_param(PhysicsServer2D::SpaceParameter p_param) const;
+	void set_param(PS2DE::SpaceParameter p_param, real_t p_value);
+	real_t get_param(PS2DE::SpaceParameter p_param) const;
 
 	void set_island_count(int p_island_count) { island_count = p_island_count; }
 	int get_island_count() const { return island_count; }
@@ -185,7 +186,7 @@ public:
 
 	int get_collision_pairs() const { return collision_pairs; }
 
-	bool test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::MotionParameters &p_parameters, PhysicsServer2D::MotionResult *r_result);
+	bool test_body_motion(GodotBody2D *p_body, const PS2DT::MotionParameters &p_parameters, PS2DT::MotionResult *r_result);
 
 	void set_debug_contacts(int p_amount) { contact_debug.resize(p_amount); }
 	_FORCE_INLINE_ bool is_debugging_contacts() const { return !contact_debug.is_empty(); }

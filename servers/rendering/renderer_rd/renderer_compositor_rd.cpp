@@ -61,6 +61,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServerEnums::Win
 		RID rd_texture = texture_storage->render_target_get_rd_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(rd_texture.is_null());
 
+		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : (p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER : BLIT_MODE_NORMAL);
+
 		HashMap<RID, RID>::Iterator it = render_target_descriptors.find(rd_texture);
 		if (it == render_target_descriptors.end() || !RD::get_singleton()->uniform_set_is_valid(it->value)) {
 			Vector<RD::Uniform> uniforms;
@@ -70,13 +72,12 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServerEnums::Win
 			u.append_id(blit.sampler);
 			u.append_id(rd_texture);
 			uniforms.push_back(u);
-			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
+			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, mode), 0);
 
 			it = render_target_descriptors.insert(rd_texture, uniform_set);
 		}
 
 		Size2 screen_size(RD::get_singleton()->screen_get_width(p_screen), RD::get_singleton()->screen_get_height(p_screen));
-		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : (p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER : BLIT_MODE_NORMAL);
 
 		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit_pipelines.pipelines[mode]);
 		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);

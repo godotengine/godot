@@ -166,6 +166,11 @@ android {
         android {
             dimension "android_distribution"
             missingDimensionStrategy 'products', 'editor'
+            ndk {
+                if (!detectedAbis.isEmpty()) {
+                    abiFilters += detectedAbis
+                }
+            }
         }
         horizonos {
             dimension "android_distribution"

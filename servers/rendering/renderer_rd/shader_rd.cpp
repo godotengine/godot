@@ -258,6 +258,7 @@ void ShaderRD::_initialize_version(Version *p_version) {
 	p_version->variants.resize_initialized(variant_defines.size());
 	p_version->variant_data.resize(variant_defines.size());
 	p_version->group_compilation_tasks.resize_initialized(group_enabled.size());
+	p_version->group_loaded_from_cache.resize_initialized(group_enabled.size());
 }
 
 void ShaderRD::_clear_version(Version *p_version) {
@@ -611,6 +612,16 @@ String ShaderRD::_get_cache_file_path(Version *p_version, int p_group, const Str
 	return shader_cache_dir.path_join(relative_path);
 }
 
+void ShaderRD::_load_variant_from_cache(uint32_t p_variant, CompileData p_data) {
+	uint32_t variant = group_to_variant_map[p_data.group][p_variant];
+	if (!variants_enabled[variant]) {
+		p_data.version->variants.write[variant] = RID();
+		return; // Variant is disabled, return.
+	}
+
+	p_data.version->variants.write[variant] = RD::get_singleton()->shader_create_from_bytecode_with_samplers(p_data.version->variant_data[variant], p_data.version->variants[variant], immutable_samplers);
+}
+
 bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 	String api_safe_name = String(RD::get_singleton()->get_device_api_name()).validate_filename().to_lower();
 	Ref<FileAccess> f;
@@ -663,28 +674,14 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		p_version->variant_data.write[variant_id] = variant_bytes;
 	}
 
-	for (uint32_t i = 0; i < variant_count; i++) {
-		int variant_id = group_to_variant_map[p_group][i];
-		if (!variants_enabled[variant_id]) {
-			p_version->variants.write[variant_id] = RID();
-			continue;
-		}
-		print_verbose(vformat("Loading cache for shader %s, variant %d", name, i));
-		{
-			RID shader = RD::get_singleton()->shader_create_from_bytecode_with_samplers(p_version->variant_data[variant_id], p_version->variants[variant_id], immutable_samplers);
-			if (shader.is_null()) {
-				for (uint32_t j = 0; j < i; j++) {
-					int variant_free_id = group_to_variant_map[p_group][j];
-					RD::get_singleton()->free_rid(p_version->variants[variant_free_id]);
-				}
-				ERR_FAIL_COND_V(shader.is_null(), false);
-			}
+	CompileData compile_data;
+	compile_data.version = p_version;
+	compile_data.group = p_group;
 
-			p_version->variants.write[variant_id] = shader;
-		}
-	}
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_load_variant_from_cache, compile_data, variant_count, -1, true, "LoadVariantFromCache");
+	p_version->group_compilation_tasks.write[p_group] = group_task;
+	p_version->group_loaded_from_cache.write[p_group] = true;
 
-	p_version->valid = true;
 	return true;
 }
 
@@ -734,6 +731,7 @@ void ShaderRD::_compile_version_start(Version *p_version, int p_group) {
 
 	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_compile_variant, compile_data, group_to_variant_map[p_group].size(), -1, true, SNAME("ShaderCompilation"));
 	p_version->group_compilation_tasks.write[p_group] = group_task;
+	p_version->group_loaded_from_cache.write[p_group] = false;
 }
 
 void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
@@ -773,7 +771,7 @@ void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
 		return;
 	}
 #if ENABLE_SHADER_CACHE
-	else if (shader_cache_user_dir_valid) {
+	else if (shader_cache_user_dir_valid && !p_version->group_loaded_from_cache[p_group]) {
 		_save_to_cache(p_version, p_group);
 	}
 #endif

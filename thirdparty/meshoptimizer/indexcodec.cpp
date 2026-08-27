@@ -21,7 +21,7 @@ typedef unsigned int EdgeFifo[16][2];
 
 static const unsigned char kCodeAuxEncodingTable[16] = {
     0x00, 0x76, 0x87, 0x56, 0x67, 0x78, 0xa9, 0x86, 0x65, 0x89, 0x68, 0x98, 0x01, 0x69,
-    0, 0, // last two entries aren't used for encoding
+    0, 0 // last two entries aren't used for encoding
 };
 
 static int rotateTriangle(unsigned int a, unsigned int b, unsigned int c, unsigned int next)

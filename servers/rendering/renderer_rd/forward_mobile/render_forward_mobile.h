@@ -168,7 +168,7 @@ private:
 
 	/* Render Scene */
 
-	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, const RendererRD::MaterialStorage::Samplers &p_samplers, bool p_use_directional_shadow_atlas = false, uint32_t p_pass_offset = 0u);
+	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, bool p_is_multiview, RID p_radiance_texture, const RendererRD::MaterialStorage::Samplers &p_samplers, bool p_use_directional_shadow_atlas = false, uint32_t p_pass_offset = 0u);
 	void _pre_opaque_render(RenderDataRD *p_render_data);
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
@@ -186,7 +186,7 @@ private:
 	/* Light map */
 
 	struct LightmapData {
-		float normal_xform[12];
+		float normal_xform_and_specular_intensity[12];
 		float texture_size[2];
 		float exposure_normalization;
 		uint32_t flags;
@@ -289,6 +289,7 @@ private:
 		LightmapData lightmaps[MAX_LIGHTMAPS];
 		RID lightmap_ids[MAX_LIGHTMAPS];
 		bool lightmap_has_sh[MAX_LIGHTMAPS];
+		bool lightmap_has_specular[MAX_LIGHTMAPS];
 		uint32_t lightmaps_used = 0;
 		uint32_t max_lightmaps;
 		RID lightmap_buffer;
@@ -402,7 +403,8 @@ private:
 			struct {
 				uint32_t lod_index : 8;
 				uint32_t uses_lightmap : 1;
-				uint32_t reserved : 23;
+				uint32_t uses_lightmap_specular : 1;
+				uint32_t reserved : 22;
 			};
 			uint32_t value;
 		};
@@ -490,7 +492,8 @@ protected:
 				// Needs to be grouped together to be used in RenderElementInfo, as the value is masked directly.
 				uint64_t lod_index : 8;
 				uint64_t uses_lightmap : 1;
-				uint64_t pad : 3;
+				uint64_t uses_lightmap_specular : 1;
+				uint64_t pad : 2;
 
 				// Sorted based on optimal order for respecting priority and reducing the amount of rebinding of shaders, materials,
 				// and geometry. This current order was found to be the most optimal in large projects. If you wish to measure

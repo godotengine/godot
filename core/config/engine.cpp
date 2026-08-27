@@ -174,18 +174,18 @@ Dictionary Engine::get_version_info() const {
 	return dict;
 }
 
-static Array array_from_info(const char *const *info_list) {
+static Array array_from_info(const char *const *p_info_list) {
 	Array arr;
-	for (int i = 0; info_list[i] != nullptr; i++) {
-		arr.push_back(String::utf8(info_list[i]));
+	for (int i = 0; p_info_list[i] != nullptr; i++) {
+		arr.push_back(String::utf8(p_info_list[i]));
 	}
 	return arr;
 }
 
-static Array array_from_info_count(const char *const *info_list, int info_count) {
+static Array array_from_info_count(const char *const *p_info_list, int p_info_count) {
 	Array arr;
-	for (int i = 0; i < info_count; i++) {
-		arr.push_back(String::utf8(info_list[i]));
+	for (int i = 0; i < p_info_count; i++) {
+		arr.push_back(String::utf8(p_info_list[i]));
 	}
 	return arr;
 }

@@ -304,7 +304,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 
 		if (write_movie_file.is_empty()) {
 			// TODO: Provide options to directly resolve the issue with a custom dialog.
-			EditorNode::get_singleton()->show_accept(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the Editor > Movie Writer category.\nAlternatively, for running single scenes, a `movie_file` string metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."), TTR("OK"));
+			EditorNode::get_singleton()->show_warning(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the Editor > Movie Writer category.\nAlternatively, for running single scenes, a `movie_file` string metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."));
 			return;
 		}
 	}
@@ -325,7 +325,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 
 			Node *scene_root = get_tree()->get_edited_scene_root();
 			if (!scene_root) {
-				EditorNode::get_singleton()->show_accept(TTR("There is no defined scene to run."), TTR("OK"));
+				EditorNode::get_singleton()->show_warning(TTR("There is no defined scene to run."));
 				return;
 			}
 
@@ -364,7 +364,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 	Error error = editor_run.run(run_filename, write_movie_file, args);
 	if (error != OK) {
 		EditorDebuggerNode::get_singleton()->stop();
-		EditorNode::get_singleton()->show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
+		EditorNode::get_singleton()->show_warning(TTR("Could not start subprocess(es)!"));
 		return;
 	}
 

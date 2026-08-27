@@ -4,7 +4,8 @@
 		Toolbar with common formatting controls for [RichTextEdit].
 	</brief_description>
 	<description>
-		[RichTextEditToolbar] provides common formatting controls for a [RichTextEdit]. It includes controls for bold, italic, underline, strikethrough, font size, foreground color, background color, outline color and width, quote blocks, alignment, indentation, URL links, lists, image insertion, and CSS-compatible line height.
+		[RichTextEditToolbar] provides common formatting controls for a [RichTextEdit]. It includes controls for bold, italic, underline, strikethrough, overline, font size, foreground color, background color, outline color and width, quote blocks, alignment, indentation, URL links, lists, image insertion, and CSS-compatible line height.
+		Use [member two_row_layout] to fold the controls onto two rows when the toolbar has to fit a narrow container.
 		Assign [member rich_text_edit_path] to the [RichTextEdit] to format. If the path is empty, the toolbar looks for a sibling [RichTextEdit] when it enters the scene tree.
 		The controls follow the target editor's caret position: the font size field shows the size at the caret, and the formatting toggles, the list buttons and the alignment dropdown show the formatting that is already applied there.
 		The three color buttons each open a [ColorPicker]. The font and background color buttons preview the color on the selection while the picker is open and commit the final color as a single undoable formatting action when the popup closes. The background color button starts out with no color, and its picker is headed by a [b]No Color[/b] row that returns to that state.
@@ -37,6 +38,9 @@
 			Path to the [RichTextEdit] controlled by this toolbar. Leave this empty to use the first sibling [RichTextEdit] found in the scene tree.
 		</member>
 		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="0" />
+		<member name="two_row_layout" type="bool" setter="set_two_row_layout" getter="is_two_row_layout" default="false">
+			If [code]true[/code], the controls are laid out on two rows instead of one: the first row holds the character formatting, font size, and the font, background and outline color controls, and the second row holds the horizontal rule, quote, alignment, indentation, list, link, image and line-height controls. The toolbar becomes narrower and twice as tall. Can be changed at any time, including at run time.
+		</member>
 	</members>
 	<theme_items>
 		<theme_item name="accent_color" data_type="color" type="Color" default="Color(0.37254903, 0.69803923, 0.9411765, 1)">
@@ -134,6 +138,9 @@
 		</theme_item>
 		<theme_item name="outline" data_type="icon" type="Texture2D">
 			Icon for the outline color button. The picked color is previewed as a bar drawn below the icon.
+		</theme_item>
+		<theme_item name="overline" data_type="icon" type="Texture2D">
+			Icon for the overline formatting button.
 		</theme_item>
 		<theme_item name="quote" data_type="icon" type="Texture2D">
 			Icon for the quote button.

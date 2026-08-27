@@ -51,6 +51,9 @@
 		<member name="materials/extract_path" type="String" setter="" getter="" default="&quot;&quot;">
 			Path extracted materials are saved to. If empty, source scene path is used.
 		</member>
+		<member name="mesh_library/create_categories_from_hierarchy" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], categories will be automatically set according to the node hierarchy, using the names of the parent nodes.
+		</member>
 		<member name="mesh_library/use_node_names_as_mesh_names" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the mesh names will be set to the names of the nodes in the 3D model file. If [code]false[/code], the mesh names will be set to the names of the meshes in the 3D model file. Enabling this is a common work-around when the author of the 3D model file did not properly set the mesh names in Blender or other 3D modeling apps. For example, a file may have a node named "Turret" with a mesh named "Cube.002", so enabling this option will set the mesh name to "Turret" instead of "Cube_002".
 		</member>
