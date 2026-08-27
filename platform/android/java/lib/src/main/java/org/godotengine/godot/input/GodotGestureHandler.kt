@@ -114,7 +114,8 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 				event,
 				MotionEvent.ACTION_DOWN,
 				MotionEvent.BUTTON_SECONDARY,
-				false
+				false,
+				true
 			)
 			emulatedRightClickInProgress = true
 		}
@@ -156,7 +157,7 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 				// so we convert it to an ACTION_UP event.
 				inputHandler.handleMouseEvent(event, MotionEvent.ACTION_UP)
 			} else if (emulatedRightClickInProgress) {
-				inputHandler.handleMouseEvent(event, MotionEvent.ACTION_UP)
+				inputHandler.handleMouseEvent(event, MotionEvent.ACTION_UP, event.buttonState, false, true)
 				// Handling both touch and emulated mouse, so one can ignore the emulated mouse event and continue interacting via touch.
 				inputHandler.handleTouchEvent(event)
 			} else {
@@ -177,7 +178,7 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 	private fun onActionMove(event: MotionEvent): Boolean {
 		var emulatedClickHandled = false
 		if (emulatedRightClickInProgress) {
-			inputHandler.handleMouseEvent(event, event.actionMasked, MotionEvent.BUTTON_SECONDARY, false)
+			inputHandler.handleMouseEvent(event, event.actionMasked, MotionEvent.BUTTON_SECONDARY, false, true)
 			emulatedClickHandled = true
 		}
 

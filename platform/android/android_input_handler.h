@@ -86,11 +86,11 @@ private:
 
 	void _wheel_button_click(BitField<MouseButtonMask> event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor);
 
-	void _parse_mouse_event_info(BitField<MouseButtonMask> event_buttons_mask, bool p_pressed, bool p_canceled, bool p_double_click, bool p_source_mouse_relative);
+	void _parse_mouse_event_info(BitField<MouseButtonMask> event_buttons_mask, bool p_pressed, bool p_canceled, bool p_double_click, bool p_source_mouse_relative, bool p_emulated);
 
-	void _release_mouse_event_info(bool p_source_mouse_relative = false);
+	void _release_mouse_event_info(bool p_source_mouse_relative = false, bool emulated = false);
 
-	void _cancel_mouse_event_info(bool p_source_mouse_relative = false);
+	void _cancel_mouse_event_info(bool p_source_mouse_relative = false, bool emulated = false);
 
 	void _parse_all_touch(bool p_pressed, bool p_canceled = false);
 
@@ -99,7 +99,7 @@ private:
 	void _cancel_all_touch();
 
 public:
-	void process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative, float p_pressure, Vector2 p_tilt);
+	void process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative, float p_pressure, Vector2 p_tilt, bool p_emulated);
 	void process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
 	void process_magnify(Point2 p_pos, float p_factor);
 	void process_pan(Point2 p_pos, Vector2 p_delta);
