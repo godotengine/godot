@@ -286,6 +286,122 @@ next4:
 	return true;
 }
 
+Rect2 Rect2::intersection_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
+		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+	}
+#endif
+
+	if ((Math::is_zero_approx(p_xform.columns[0].y) && Math::is_zero_approx(p_xform.columns[1].x)) ||
+			(Math::is_zero_approx(p_xform.columns[0].x) && Math::is_zero_approx(p_xform.columns[1].y))) {
+		return intersection(p_xform.xform(p_rect));
+	}
+
+	if (!intersects_transformed(p_xform, p_rect)) {
+		return Rect2();
+	}
+
+	const Vector2 xf_points[4] = {
+		p_xform.xform(p_rect.position),
+		p_xform.xform(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y)),
+		p_xform.xform(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y + p_rect.size.y)),
+		p_xform.xform(Vector2(p_rect.position.x, p_rect.position.y + p_rect.size.y)),
+	};
+
+	// Use Sutherland–Hodgman algorithm.
+
+	Vector2 subject[8];
+	int subject_count = 4;
+	subject[0] = xf_points[0];
+	subject[1] = xf_points[1];
+	subject[2] = xf_points[2];
+	subject[3] = xf_points[3];
+
+	const Vector2 min = position;
+	const Vector2 max = position + size;
+	Vector2 intersected;
+
+	for (int edge = 0; edge < 4; edge++) {
+		const int axis = edge % 2;
+		const int another_axis = 1 - axis;
+		const bool is_min = (edge < 2);
+		intersected[axis] = is_min ? min[axis] : max[axis];
+
+		Vector2 output[8];
+		int output_count = 0;
+
+		Vector2 prev = subject[subject_count - 1];
+		bool prev_in_halfplane = is_min ? (prev[axis] >= intersected[axis]) : (prev[axis] <= intersected[axis]);
+
+		for (int i = 0; i < subject_count; i++) {
+			const Vector2 &curr = subject[i];
+			bool curr_in_halfplane = is_min ? (curr[axis] >= intersected[axis]) : (curr[axis] <= intersected[axis]);
+			if (prev_in_halfplane != curr_in_halfplane) {
+				// Entering/exiting the half-plane.
+				real_t t = (intersected[axis] - prev[axis]) / (curr[axis] - prev[axis]);
+				intersected[another_axis] = prev[another_axis] + (curr[another_axis] - prev[another_axis]) * t;
+				output[output_count++] = intersected;
+			}
+			if (curr_in_halfplane) {
+				output[output_count++] = curr;
+			}
+			prev = curr;
+			prev_in_halfplane = curr_in_halfplane;
+		}
+
+		for (int i = 0; i < output_count; i++) {
+			subject[i] = output[i];
+		}
+
+		subject_count = output_count;
+		if (subject_count == 0) {
+			break;
+		}
+	}
+
+	if (subject_count > 0) {
+		return Rect2::from_points(subject, subject_count);
+	}
+
+	// Perform a reverse containment test; the current rect may be inside the transformed rect.
+
+	const Vector2 corners[4] = {
+		position,
+		Vector2(max.x, min.y),
+		max,
+		Vector2(min.x, max.y)
+	};
+
+	Vector2 inside_points[4];
+	int inside_count = 0;
+
+	for (int point_idx = 0; point_idx < 4; point_idx++) {
+		bool has_pos = false;
+		bool has_neg = false;
+		for (int idx = 0; idx < 4; idx++) {
+			const int next_idx = (idx + 1) % 4;
+			Vector2 v0 = xf_points[next_idx] - xf_points[idx];
+			Vector2 v1 = corners[point_idx] - xf_points[idx];
+			real_t cross = v0.cross(v1);
+			if (cross > CMP_EPSILON) {
+				has_pos = true;
+			}
+			if (cross < -CMP_EPSILON) {
+				has_neg = true;
+			}
+			if (has_pos && has_neg) {
+				break;
+			}
+		}
+		if (!(has_pos && has_neg)) {
+			inside_points[inside_count++] = corners[point_idx];
+		}
+	}
+
+	return inside_count > 0 ? Rect2::from_points(inside_points, inside_count) : Rect2();
+}
+
 Rect2::operator String() const {
 	return "[P: " + position.operator String() + ", S: " + size.operator String() + "]";
 }

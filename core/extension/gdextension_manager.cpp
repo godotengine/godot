@@ -122,7 +122,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &
 	return load_extension_with_loader(p_path, loader);
 }
 
-GDExtensionManager::LoadStatus GDExtensionManager::load_extension_from_function(const String &p_path, GDExtensionConstPtr<const GDExtensionInitializationFunction> p_init_func) {
+GDExtensionManager::LoadStatus GDExtensionManager::load_extension_from_function(const String &p_path, GDExtensionPtr<const GDExtensionInitializationFunction> p_init_func) {
 	Ref<GDExtensionFunctionLoader> func_loader;
 	func_loader.instantiate();
 	func_loader->set_initialization_function((GDExtensionInitializationFunction)*p_init_func.data);
@@ -140,6 +140,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 	extension.instantiate();
 	Error err = extension->open_library(p_path, p_loader);
 	if (err != OK) {
+		if (err == ERR_SKIP) {
+			return LOAD_STATUS_NOT_LOADED;
+		}
 		return LOAD_STATUS_FAILED;
 	}
 
@@ -192,6 +195,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 
 	Error err = extension->open_library(p_path, extension->loader);
 	if (err != OK) {
+		if (err == ERR_SKIP) {
+			return LOAD_STATUS_NOT_LOADED;
+		}
 		return LOAD_STATUS_FAILED;
 	}
 

@@ -31,9 +31,12 @@
 package org.godotengine.editor.embed
 
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Color
 import android.graphics.Point
 import android.os.Bundle
+import android.util.Log
 import android.util.Rational
 import android.view.Gravity
 import android.view.MotionEvent
@@ -58,8 +61,12 @@ class EmbeddedGodotGame : GodotGame() {
 		private const val PREFS_NAME = "embedded_game_window_prefs"
 		private const val KEY_X = "embedded_window_x"
 		private const val KEY_Y = "embedded_window_y"
+		private const val KEY_X_PORTRAIT = "embedded_window_portrait_x"
+		private const val KEY_Y_PORTRAIT = "embedded_window_portrait_y"
 		private const val KEY_WIDTH = "embedded_window_width"
 		private const val KEY_HEIGHT = "embedded_window_height"
+		private const val KEY_WIDTH_PORTRAIT = "embedded_window_portrait_width"
+		private const val KEY_HEIGHT_PORTRAIT = "embedded_window_portrait_height"
 		private const val KEY_FREE_RESIZE = "is_free_resize"
 
 		private const val RESIZE_THRESHOLD = 80f
@@ -76,6 +83,7 @@ class EmbeddedGodotGame : GodotGame() {
 	private var layoutHeightInPx = 0
 	private var isFullscreen = false
 	private var gameRequestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+	private var currentOrientation = Configuration.ORIENTATION_UNDEFINED
 
 	private var resizingEnabled = false
 	private var isResizing = false
@@ -92,15 +100,7 @@ class EmbeddedGodotGame : GodotGame() {
 	private val lockAspectRatioCheckBox: CheckBox by lazy { findViewById(R.id.lockAspectRatioCheckBox) }
 	private val cornerHandles = mutableListOf<View>()
 
-	private val screenBounds: android.graphics.Rect by lazy {
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-			windowManager.currentWindowMetrics.bounds
-		} else {
-			val size = Point()
-			windowManager.defaultDisplay.getRealSize(size)
-			android.graphics.Rect(0, 0, size.x, size.y)
-		}
-	}
+	private lateinit var screenBounds: android.graphics.Rect
 
 	private val maxAllowedWidth: Int get() = (screenBounds.width() * MAX_SCREEN_PERCENT).toInt()
 	private val maxAllowedHeight: Int get() = (screenBounds.height() * MAX_SCREEN_PERCENT).toInt()
@@ -122,6 +122,9 @@ class EmbeddedGodotGame : GodotGame() {
 
 		setFinishOnTouchOutside(false)
 
+		currentOrientation = applicationContext.resources.configuration.orientation
+		screenBounds = calculateScreenBounds()
+
 		val layoutParams = window.attributes
 		layoutParams.flags = layoutParams.flags or FLAG_NOT_TOUCH_MODAL or FLAG_WATCH_OUTSIDE_TOUCH
 		layoutParams.flags = layoutParams.flags and FLAG_DIM_BEHIND.inv()
@@ -134,6 +137,31 @@ class EmbeddedGodotGame : GodotGame() {
 	}
 
 	override fun getGodotAppLayout() = R.layout.godot_embedded_game_layout
+
+	override fun onConfigurationChanged(newConfig: Configuration) {
+		super.onConfigurationChanged(newConfig)
+		if (currentOrientation != newConfig.orientation) {
+			currentOrientation = newConfig.orientation
+			screenBounds = calculateScreenBounds()
+
+			if (!isFullscreen) {
+				// Update Game Window size and position
+				val layoutParams = window.attributes
+				loadWindowBounds(window.attributes)
+				window.attributes = layoutParams
+			}
+		}
+	}
+
+	private fun calculateScreenBounds(): android.graphics.Rect {
+		return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+			windowManager.currentWindowMetrics.bounds
+		} else {
+			val size = Point()
+			windowManager.defaultDisplay.getRealSize(size)
+			android.graphics.Rect(0, 0, size.x, size.y)
+		}
+	}
 
 	private fun setupOverlayUI() {
 		lockAspectRatioCheckBox.isChecked = !isFreeResize
@@ -342,11 +370,12 @@ class EmbeddedGodotGame : GodotGame() {
 		val layoutParams = window.attributes
 		layoutWidthInPx = layoutParams.width
 		layoutHeightInPx = layoutParams.height
+		Log.d("test", currentOrientation.toString())
 		getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().apply {
-			putInt(KEY_X, layoutParams.x)
-			putInt(KEY_Y, layoutParams.y)
-			putInt(KEY_WIDTH, layoutParams.width)
-			putInt(KEY_HEIGHT, layoutParams.height)
+			putInt(if (currentOrientation == ORIENTATION_PORTRAIT) KEY_X_PORTRAIT else KEY_X, layoutParams.x)
+			putInt(if (currentOrientation == ORIENTATION_PORTRAIT) KEY_Y_PORTRAIT else KEY_Y, layoutParams.y)
+			putInt(if (currentOrientation == ORIENTATION_PORTRAIT) KEY_WIDTH_PORTRAIT else KEY_WIDTH, layoutParams.width)
+			putInt(if (currentOrientation == ORIENTATION_PORTRAIT) KEY_HEIGHT_PORTRAIT else KEY_HEIGHT, layoutParams.height)
 			putBoolean(KEY_FREE_RESIZE, isFreeResize)
 			apply()
 		}
@@ -358,10 +387,15 @@ class EmbeddedGodotGame : GodotGame() {
 	private fun loadWindowBounds(layoutParams: WindowManager.LayoutParams) {
 		val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
 		isFreeResize = prefs.getBoolean(KEY_FREE_RESIZE, false)
-		layoutWidthInPx = prefs.getInt(KEY_WIDTH, defaultWidthInPx)
-		layoutHeightInPx = prefs.getInt(KEY_HEIGHT, defaultHeightInPx)
-		layoutParams.x = prefs.getInt(KEY_X, screenBounds.width() - layoutWidthInPx)
-		layoutParams.y = prefs.getInt(KEY_Y, screenBounds.height() - layoutHeightInPx)
+		if (currentOrientation == ORIENTATION_PORTRAIT) {
+			layoutWidthInPx = prefs.getInt(KEY_WIDTH_PORTRAIT, defaultHeightInPx)
+			layoutHeightInPx = prefs.getInt(KEY_HEIGHT_PORTRAIT, defaultWidthInPx)
+		} else {
+			layoutWidthInPx = prefs.getInt(KEY_WIDTH, defaultWidthInPx)
+			layoutHeightInPx = prefs.getInt(KEY_HEIGHT, defaultHeightInPx)
+		}
+		layoutParams.x = prefs.getInt(if (currentOrientation == ORIENTATION_PORTRAIT) KEY_X_PORTRAIT else KEY_X, screenBounds.width() - layoutWidthInPx)
+		layoutParams.y = prefs.getInt(if (currentOrientation == ORIENTATION_PORTRAIT) KEY_Y_PORTRAIT else KEY_Y, screenBounds.height() - layoutHeightInPx)
 		layoutParams.width = layoutWidthInPx
 		layoutParams.height = layoutHeightInPx
 		lockedAspectRatio = layoutParams.width.toFloat() / layoutParams.height.toFloat().coerceAtLeast(1f)

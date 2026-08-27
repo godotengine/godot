@@ -1,24 +1,26 @@
 # Basic GDScript module architecture
+
 This provides some basic information in how GDScript is implemented and integrates with the rest of the engine. You can learn more about GDScript in the [documentation](https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/index.html). It describes the syntax and user facing systems and concepts, and can be used as a reference for what user expectations are.
 
 For general language design guidelines, please visit the [contributing docs](https://contributing.godotengine.org/en/latest/engine/guidelines/gdscript_language_guidelines.html).
+
 
 ## Integration into Godot
 
 GDScript is integrated into Godot as a module. Since modules are optional, this means that Godot may be built without GDScript and work perfectly fine without it!
 
-The GDScript module interfaces with Godot's codebase by inheriting from the engine's scripting-related classes. New languages inherit from [`ScriptLanguage`](/core/object/script_language.h), and are registered in Godot's [`ScriptServer`](/core/object/script_language.h). Scripts, referring to a file containing code, are represented in the engine by the `Script` class. Instances of that script, which are used at runtime when actually executing the code, inherit from [`ScriptInstance`](/core/object/script_instance.h).
+The GDScript module interfaces with Godot's codebase by inheriting from the engine's scripting-related classes. New languages inherit from [`ScriptLanguage`](../../core/object/script_language.h), and are registered in Godot's [`ScriptServer`](../../core/object/script_language.h). Scripts, referring to a file containing code, are represented in the engine by the `Script` class. Instances of that script, which are used at runtime when actually executing the code, inherit from [`ScriptInstance`](../../core/object/script_instance.h).
 
-To access Godot's internal classes, GDScript uses [`ClassDB`](/core/object/class_db.h). `ClassDB` is where Godot registers classes, methods and properties that it wants exposed to its scripting system. This is how GDScript understands that `Node2D` is a class it can use, and that it has a `get_parent()` method.
+To access Godot's internal classes, GDScript uses [`ClassDB`](../../core/object/class_db.h). `ClassDB` is where Godot registers classes, methods and properties that it wants exposed to its scripting system. This is how GDScript understands that `Node2D` is a class it can use, and that it has a `get_parent()` method.
 
-[Built-in GDScript methods](https://docs.godotengine.org/en/latest/classes/class_@gdscript.html#methods) are defined and exported by [`GDScriptUtilityFunctions`](gdscript_utility_functions.h), whereas [global scope methods](https://docs.godotengine.org/en/latest/classes/class_%2540globalscope.html) are registered in [`Variant::_register_variant_utility_functions()`](/core/variant/variant_utility.cpp).
+[Built-in GDScript methods](https://docs.godotengine.org/en/latest/classes/class_%40gdscript.html#methods) are defined and exported by [`GDScriptUtilityFunctions`](gdscript_utility_functions.h), whereas [global scope methods](https://docs.godotengine.org/en/latest/classes/class_%40globalscope.html#methods) are registered in [`Variant::_register_variant_utility_functions()`](../../core/variant/variant_utility.cpp).
 
 
 ## Compilation
 
 Scripts can be at different stages of compilation. The process isn't entirely linear, but consists of this general order: tokenizing, parsing, analyzing, and finally compiling. This process is the same for scripts in the editor and scripts in an exported game. Scripts are stored as text files in both cases, and the compilation process must happen in full before the bytecode can be passed to the virtual machine and run.
 
-The main class of the GDScript module is the [`GDScript`](gdscript.h) class, which represents a class defined in GDScript. Each `.gd` file is called a _class file_ because it implicitly defines a class in GDScript, and thus results in an associated `GDScript` object. However, GDScript classes may define [_inner classes_](https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_basics.html#inner-classes), and those are also represented by further `GDScript` objects, even though they are not in files of their own.
+The main class of the GDScript module is the [`GDScript`](gdscript.h) class, which represents a class defined in GDScript. Each `.gd` file is called a _class file_ because it implicitly defines a class in GDScript, and thus results in an associated `GDScript` object. However, GDScript classes may define [_inner classes_](https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/gdscript_basics.html#inner-classes), and those are also represented by further `GDScript` objects, even though they are not in files of their own.
 
 The `GDScript` class contains all the information related to the corresponding GDScript class: its name and path, its members like variables, functions, symbols, signals, implicit methods like initializers, etc. This is the main class that the compilation step deals with.
 
@@ -83,7 +85,7 @@ A fundamental cyclic dependency problem occurs when the types of two different m
 
 ### Compiling (see [`GDScriptCompiler`](gdscript_compiler.h))
 
-Compiling is the final step in making a GDScript executable in the [virtual machine](gdscript_vm.h) (VM). The compiler takes a `GDScript` object and an AST, and uses another class, [`GDScriptByteCodeGenerator`](gdscript_byte_codegen.h), to generate bytecode corresponding to the class. In doing this, it creates the objects that the VM understands how to run, like [`GDScriptFunction`](gdscript_function.h), and completes a few extra tasks needed for compilation, such as populating runtime class member information.
+Compiling is the final step in making a GDScript executable in the [virtual machine](gdscript_vm.cpp) (VM). The compiler takes a `GDScript` object and an AST, and uses another class, [`GDScriptByteCodeGenerator`](gdscript_byte_codegen.h), to generate bytecode corresponding to the class. In doing this, it creates the objects that the VM understands how to run, like [`GDScriptFunction`](gdscript_function.h), and completes a few extra tasks needed for compilation, such as populating runtime class member information.
 
 Importantly, the compilation process of a class, specifically the `GDScriptCompiler::_compile_class()` method, _cannot_ depend on information obtained by calling `GDScriptCompiler::_compile_class()` on another class, for the same cyclic dependency reasons explained in the previous section.
 Any information that can only be obtained or populated during the compilation step, when `GDScript` objects become available, must be handled before `GDScriptCompiler::_compile_class()` is called. This process is centralized in `GDScriptCompiler::_prepare_compilation()` which works as the compile-time equivalent of `GDScriptAnalyzer::resolve_class_interface()`: it populates a `GDScript`'s "interface" exclusively with information from the analysis step, and without processing other external classes. This information may then be referenced by other classes without introducing problematic cycles.
@@ -127,5 +129,5 @@ There are many other classes in the GDScript module. Here is a brief overview of
 - [`GDScriptFunction`](gdscript_function.h), which represents an executable GDScript function. The relevant file contains both static as well as runtime information.
 - The [virtual machine](gdscript_vm.cpp) is essentially defined as calling `GDScriptFunction::call()`.
 - Editor-related functions can be found in parts of `GDScriptLanguage`, originally declared in [`gdscript.h`](gdscript.h) but defined in [`gdscript_editor.cpp`](gdscript_editor.cpp). Code highlighting can be found in [`GDScriptSyntaxHighlighter`](editor/gdscript_highlighter.h).
-- GDScript decompilation is found in [`gdscript_disassembler.cpp`](gdscript_disassembler.h), defined as `GDScriptFunction::disassemble()`.
+- GDScript decompilation is found in [`gdscript_disassembler.cpp`](gdscript_disassembler.cpp), defined as `GDScriptFunction::disassemble()`.
 - Documentation generation from GDScript comments in [`GDScriptDocGen`](editor/gdscript_docgen.h)

@@ -113,7 +113,7 @@ private:
 
 	static Error _parse_sub_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	static Error _parse_ext_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
-	void _printerr();
+	String _get_error_string();
 
 	VariantParser::ResourceParser rp;
 

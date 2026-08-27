@@ -35,8 +35,8 @@
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "servers/audio/audio_effect.h"
+#include "servers/audio/audio_frame.h"
 #include "servers/audio/audio_server.h"
-#include "servers/audio/audio_stream.h"
 #include "servers/audio/effects/audio_effect_amplify.h"
 #include "servers/audio/effects/audio_effect_capture.h"
 #include "servers/audio/effects/audio_effect_chorus.h"
@@ -53,7 +53,6 @@
 #include "servers/audio/effects/audio_effect_reverb.h"
 #include "servers/audio/effects/audio_effect_spectrum_analyzer.h"
 #include "servers/audio/effects/audio_effect_stereo_enhance.h"
-#include "servers/audio/effects/audio_stream_generator.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
 #include "servers/debugger/servers_debugger.h"
@@ -86,22 +85,30 @@
 
 // 2D physics and navigation.
 #ifndef NAVIGATION_2D_DISABLED
+#include "servers/navigation_2d/navigation_path_query_parameters_2d.h"
+#include "servers/navigation_2d/navigation_path_query_result_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d_manager.h"
 #endif // NAVIGATION_2D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"
 #include "servers/physics_2d/physics_server_2d_dummy.h"
 #include "servers/physics_2d/physics_server_2d_extension.h"
+#include "servers/physics_2d/physics_server_2d_manager.h"
 #endif // PHYSICS_2D_DISABLED
 
 // 3D physics and navigation.
 #ifndef NAVIGATION_3D_DISABLED
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
+#include "servers/navigation_3d/navigation_path_query_result_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d_manager.h"
 #endif // NAVIGATION_3D_DISABLED
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_3d/physics_server_3d.h"
 #include "servers/physics_3d/physics_server_3d_dummy.h"
 #include "servers/physics_3d/physics_server_3d_extension.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 #endif // PHYSICS_3D_DISABLED
 
 // XR
@@ -163,7 +170,9 @@ void register_server_types() {
 	GDREGISTER_ABSTRACT_CLASS(AccessibilityServer);
 	GDREGISTER_ABSTRACT_CLASS(DisplayServer);
 	GDREGISTER_ABSTRACT_CLASS(RenderingServer);
+
 	GDREGISTER_CLASS(AudioServer);
+	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 
 	GDREGISTER_CLASS(NativeMenu);
 
@@ -171,11 +180,6 @@ void register_server_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 
-	GDREGISTER_CLASS(AudioStream);
-	GDREGISTER_CLASS(AudioStreamPlayback);
-	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlaybackResampled);
-	GDREGISTER_CLASS(AudioStreamMicrophone);
-	GDREGISTER_CLASS(AudioStreamRandomizer);
 	GDREGISTER_CLASS(AudioSample);
 	GDREGISTER_CLASS(AudioSamplePlayback);
 	GDREGISTER_VIRTUAL_CLASS(AudioEffect);
@@ -183,9 +187,6 @@ void register_server_types() {
 	GDREGISTER_CLASS(AudioEffectEQ);
 	GDREGISTER_CLASS(AudioEffectFilter);
 	GDREGISTER_CLASS(AudioBusLayout);
-
-	GDREGISTER_CLASS(AudioStreamGenerator);
-	GDREGISTER_ABSTRACT_CLASS(AudioStreamGeneratorPlayback);
 
 	{
 		//audio effects

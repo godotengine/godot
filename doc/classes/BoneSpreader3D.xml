@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BoneSpreader3D" inherits="SkeletonModifier3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Inputs a scale and converts it to the position of a child bone.
+	</brief_description>
+	<description>
+		Inputs a scale and converts it to the position of a child bone. Intended for use in combination with [method Skeleton3D.set_bone_skin_scale].
+		This modifier repositions child bones to follow the skin transformation by [method Skeleton3D.set_bone_skin_scale] in cases when you want to adjust bone length using [method Skeleton3D.set_bone_skin_scale] or when the bone has multiple child bones.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_setting">
+			<return type="void" />
+			<description>
+				Clears all settings.
+			</description>
+		</method>
+		<method name="get_bone" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the scaled bone of the setting at [param index].
+			</description>
+		</method>
+		<method name="get_bone_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the scaled bone name of the setting at [param index].
+			</description>
+		</method>
+		<method name="get_bone_scale" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the scale of the setting at [param index].
+			</description>
+		</method>
+		<method name="is_using_bone_skin_scale" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns whether to use the [code]skin_scale[/code] property of a [Skeleton3D]'s bone of the setting at [param index].
+			</description>
+		</method>
+		<method name="set_bone">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone" type="int" />
+			<description>
+				Sets the scaled bone of the setting at [param index].
+			</description>
+		</method>
+		<method name="set_bone_name">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="bone_name" type="StringName" />
+			<description>
+				Sets the scaled bone name of the setting at [param index].
+			</description>
+		</method>
+		<method name="set_bone_scale">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="scale" type="Vector3" />
+			<description>
+				When [method is_using_bone_skin_scale] returns [code]false[/code], sets the scale of the setting at [param index].
+				[b]Note:[/b] The [param scale] value is recommended to be non-zero.
+			</description>
+		</method>
+		<method name="set_use_bone_skin_scale">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets whether to use the [code]skin_scale[/code] property of a [Skeleton3D]'s bone of the setting at [param index].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="setting_size" type="int" setter="set_setting_size" getter="get_setting_size">
+			The number of settings in the modifier.
+		</member>
+		<member name="use_bone_skin_scale_for_all_bones" type="bool" setter="set_use_bone_skin_scale_for_all_bones" getter="are_all_bones_using_bone_skin_scale" default="true">
+			If [code]true[/code], this modifier processes all bones for which [method Skeleton3D.get_bone_skin_scale] is not [code]Vector3(1, 1, 1)[/code].
+			If [code]false[/code], this modifier allows you to configure whether to process bone skin scaling individually in the settings.
+		</member>
+	</members>
+</class>

@@ -34,11 +34,172 @@ TEST_FORCE_LINK(test_rich_text_edit)
 
 #ifndef ADVANCED_GUI_DISABLED
 
+#include "scene/gui/code_edit.h"
 #include "scene/gui/rich_text_edit.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 namespace TestRichTextEdit {
+
+TEST_CASE("[SceneTree][RichTextEdit] Display overflow preserves editing and the document") {
+	RichTextEdit *edit = memnew(RichTextEdit);
+	SceneTree::get_singleton()->get_root()->add_child(edit);
+	edit->set_size(Size2(160, 60));
+	edit->set_use_bbcode(true);
+	const String bbcode = "[b]A long unwrapped first line of text[/b]\nSecond\nThird\nFourth\nFifth";
+	edit->set_bbcode_text(bbcode);
+	MessageQueue::get_singleton()->flush();
+	const Size2 original_size = edit->get_size();
+	const int original_width = edit->get_line_width(0);
+	CHECK(edit->get_h_scroll_bar()->is_visible());
+	CHECK(edit->get_v_scroll_bar()->is_visible());
+
+	edit->set_caret_line(0);
+	edit->set_caret_column(1);
+	edit->begin_complex_operation();
+	edit->insert_text_at_caret("X");
+	edit->end_complex_operation();
+	MessageQueue::get_singleton()->flush();
+	const PackedByteArray edited_document = edit->get_document_protobuf();
+	CHECK(edit->has_undo());
+
+	// The option is inert while editable, regardless of assignment order.
+	edit->set_display_overflow_enabled(true);
+	MessageQueue::get_singleton()->flush();
+	CHECK(edit->get_h_scroll_bar()->is_visible());
+	CHECK(edit->get_v_scroll_bar()->is_visible());
+	edit->set_h_scroll(30);
+	edit->set_v_scroll(1);
+	CHECK(edit->get_h_scroll() > 0);
+	CHECK(edit->get_v_scroll() > 0);
+
+	edit->set_editable(false);
+	MessageQueue::get_singleton()->flush();
+	CHECK_FALSE(edit->get_h_scroll_bar()->is_visible());
+	CHECK_FALSE(edit->get_v_scroll_bar()->is_visible());
+	CHECK(edit->get_h_scroll() == 0);
+	CHECK(edit->get_v_scroll() == 0);
+	CHECK(edit->get_first_visible_line() == 0);
+	CHECK(edit->get_size() == original_size);
+	CHECK(edit->get_document_protobuf() == edited_document);
+
+	// Turning the option off also restores the viewport while still read-only.
+	edit->set_display_overflow_enabled(false);
+	MessageQueue::get_singleton()->flush();
+	CHECK(edit->get_h_scroll_bar()->is_visible());
+	CHECK(edit->get_v_scroll_bar()->is_visible());
+	edit->set_display_overflow_enabled(true);
+	for (int i = 0; i < 10; i++) {
+		edit->set_editable(true);
+		MessageQueue::get_singleton()->flush();
+		CHECK(edit->get_h_scroll_bar()->is_visible());
+		CHECK(edit->get_v_scroll_bar()->is_visible());
+		edit->set_editable(false);
+		MessageQueue::get_singleton()->flush();
+		CHECK_FALSE(edit->get_h_scroll_bar()->is_visible());
+		CHECK_FALSE(edit->get_v_scroll_bar()->is_visible());
+	}
+	CHECK(edit->get_document_protobuf() == edited_document);
+	edit->set_editable(true);
+	edit->undo();
+	MessageQueue::get_singleton()->flush();
+	CHECK(edit->get_bbcode_text() == bbcode);
+	CHECK(edit->get_line_width(0) == original_width);
+	memdelete(edit);
+}
+
+TEST_CASE("[SceneTree][RichTextEdit] Display overflow does not change default text viewports") {
+	TextEdit *edit = nullptr;
+	SUBCASE("TextEdit") {
+		edit = memnew(TextEdit);
+	}
+	SUBCASE("CodeEdit") {
+		edit = memnew(CodeEdit);
+	}
+	SUBCASE("RichTextEdit without opt-in") {
+		edit = memnew(RichTextEdit);
+	}
+	SceneTree::get_singleton()->get_root()->add_child(edit);
+	edit->set_size(Size2(100, 50));
+	edit->set_text("A very long first line that must scroll\n2\n3\n4\n5");
+	for (bool editable : { true, false, true }) {
+		edit->set_editable(editable);
+		MessageQueue::get_singleton()->flush();
+		CHECK(edit->get_h_scroll_bar()->is_visible());
+		CHECK(edit->get_v_scroll_bar()->is_visible());
+		edit->set_h_scroll(20);
+		CHECK(edit->get_h_scroll() == 20);
+	}
+	memdelete(edit);
+}
+
+TEST_CASE("[SceneTree][RichTextEdit] Display overflow wraps at the authored width") {
+	RichTextEdit *edit = memnew(RichTextEdit);
+	RichTextEdit *reference = memnew(RichTextEdit);
+	Window *root = SceneTree::get_singleton()->get_root();
+	for (RichTextEdit *control : { edit, reference }) {
+		root->add_child(control);
+		control->set_editable(false);
+		control->set_line_wrapping_mode(TextEdit::LINE_WRAPPING_BOUNDARY);
+		control->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+		control->set_text("one two three four five six seven eight nine ten eleven twelve");
+	}
+	edit->set_size(Size2(160, 40));
+	reference->set_size(Size2(160, 600));
+	edit->set_display_overflow_enabled(true);
+	MessageQueue::get_singleton()->flush();
+	CHECK(edit->get_size() == Size2(160, 40));
+	CHECK(edit->get_line_wrap_count(0) > 0);
+	CHECK(edit->get_line_wrapped_text(0) == reference->get_line_wrapped_text(0));
+	CHECK_FALSE(edit->get_v_scroll_bar()->is_visible());
+	for (int visible : { 0, 4, 12, -1 }) {
+		edit->set_visible_characters(visible);
+		reference->set_visible_characters(visible);
+		MessageQueue::get_singleton()->flush();
+		CHECK(edit->get_line_wrapped_text(0) == reference->get_line_wrapped_text(0));
+		CHECK(edit->get_size() == Size2(160, 40));
+	}
+	memdelete(reference);
+	memdelete(edit);
+}
+
+TEST_CASE("[SceneTree][RichTextEdit] Content height measures without resizing") {
+	RichTextEdit *edit = memnew(RichTextEdit);
+	RichTextEdit *reference = memnew(RichTextEdit);
+	for (RichTextEdit *control : { edit, reference }) {
+		SceneTree::get_singleton()->get_root()->add_child(control);
+		control->set_use_bbcode(true);
+		control->set_editable(false);
+		control->set_display_overflow_enabled(true);
+		control->set_line_wrapping_mode(TextEdit::LINE_WRAPPING_BOUNDARY);
+		control->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	}
+	reference->set_fit_content_height_enabled(true);
+	for (const String &bbcode : { String(), String("one two three four five six seven eight nine ten"), String("[font_size=52]Big[/font_size]\nSmall\n"), String("[quote]A quoted paragraph\nwith another line[/quote]") }) {
+		edit->set_bbcode_text(bbcode);
+		reference->set_bbcode_text(bbcode);
+		for (int width : { 160, 280 }) {
+			edit->set_size(Size2(width, 20));
+			reference->set_size(Size2(width, 20));
+			for (int visible : { 0, 3, -1 }) {
+				edit->set_visible_characters(visible);
+				reference->set_visible_characters(visible);
+				MessageQueue::get_singleton()->flush();
+				const Size2 size = edit->get_size();
+				const PackedByteArray document = edit->get_document_protobuf();
+				const int expected = reference->get_minimum_size().y - reference->get_theme_stylebox("read_only")->get_minimum_size().y;
+				CHECK(edit->get_content_height() == expected);
+				CHECK(edit->get_size() == size);
+				CHECK(edit->get_size() == Size2(width, 20));
+				CHECK(edit->get_document_protobuf() == document);
+				CHECK(edit->get_visible_characters() == visible);
+				CHECK_FALSE(edit->is_fit_content_height_enabled());
+			}
+		}
+	}
+	memdelete(reference);
+	memdelete(edit);
+}
 
 TEST_CASE("[SceneTree][RichTextEdit] Before shaping measures the visible prefix") {
 	RichTextEdit *edit = memnew(RichTextEdit);

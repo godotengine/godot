@@ -111,7 +111,9 @@ namespace Godot.SourceGenerators
 
             var exportedMembers = new List<ExportedPropertyMetadata>();
 
-            var members = symbol.GetMembers();
+            var members = symbol.GetMembers()
+                .Where(m => !m.GetAttributes()
+                    .Any(a => a.AttributeClass?.IsGodotIgnoreMemberAttribute() ?? false));
 
             var exportedProperties = members
                 .Where(s => s.Kind == SymbolKind.Property)

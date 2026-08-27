@@ -164,7 +164,7 @@ public:
 	virtual bool is_dark_mode() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
-	virtual Rect2i get_display_safe_area() const override;
+	virtual Rect2i get_display_safe_area(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;

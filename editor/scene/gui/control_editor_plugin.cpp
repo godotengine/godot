@@ -58,16 +58,16 @@ void ControlPositioningWarning::_update_warning() {
 	Node *parent_node = control_node->get_parent_control();
 	if (!parent_node) {
 		title_icon->set_texture(get_editor_theme_icon(SNAME("SubViewport")));
-		title_label->set_text(TTR("This node doesn't have a control parent."));
-		hint_label->set_text(TTR("Use the appropriate layout properties depending on where you are going to put it."));
+		title_label->set_text(TTRC("This node doesn't have a control parent."));
+		hint_label->set_text(TTRC("Use the appropriate layout properties depending on where you are going to put it."));
 	} else if (Object::cast_to<Container>(parent_node)) {
 		title_icon->set_texture(get_editor_theme_icon(SNAME("ContainerLayout")));
-		title_label->set_text(TTR("This node is a child of a container."));
-		hint_label->set_text(TTR("Use container properties for positioning."));
+		title_label->set_text(TTRC("This node is a child of a container."));
+		hint_label->set_text(TTRC("Use container properties for positioning."));
 	} else {
 		title_icon->set_texture(get_editor_theme_icon(SNAME("ControlLayout")));
-		title_label->set_text(TTR("This node is a child of a regular control."));
-		hint_label->set_text(TTR("Use anchors and the rectangle for positioning."));
+		title_label->set_text(TTRC("This node is a child of a regular control."));
+		hint_label->set_text(TTRC("Use anchors and the rectangle for positioning."));
 	}
 
 	bg_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("bg_group_note"), SNAME("EditorProperty")));
@@ -77,14 +77,14 @@ void ControlPositioningWarning::_update_toggler() {
 	Ref<Texture2D> arrow;
 	if (hint_label->is_visible()) {
 		arrow = get_theme_icon(SNAME("arrow"), SNAME("Tree"));
-		set_tooltip_text(TTR("Collapse positioning hint."));
+		set_tooltip_text(TTRC("Collapse positioning hint."));
 	} else {
 		if (is_layout_rtl()) {
 			arrow = get_theme_icon(SNAME("arrow_collapsed"), SNAME("Tree"));
 		} else {
 			arrow = get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
 		}
-		set_tooltip_text(TTR("Expand positioning hint."));
+		set_tooltip_text(TTRC("Expand positioning hint."));
 	}
 
 	hint_icon->set_texture(arrow);
@@ -244,6 +244,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	options->set_flat(true);
 	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(options);
@@ -282,9 +283,11 @@ void EditorPropertySizeFlags::_preset_selected(int p_which) {
 			break;
 	}
 
-	bool is_expand = flag_expand->is_visible() && flag_expand->is_pressed();
-	if (is_expand) {
+	if (flag_expand->is_visible() && flag_expand->is_pressed()) {
 		value |= Control::SIZE_EXPAND;
+	}
+	if (flag_maximize->is_visible() && flag_maximize->is_pressed()) {
+		value |= Control::SIZE_MAXIMIZE;
 	}
 
 	emit_changed(get_edited_property(), value);
@@ -304,6 +307,20 @@ void EditorPropertySizeFlags::_expand_toggled() {
 	emit_changed(get_edited_property(), value);
 }
 
+void EditorPropertySizeFlags::_maximize_toggled() {
+	uint32_t value = get_edited_property_value();
+
+	if (flag_maximize->is_visible() && flag_maximize->is_pressed()) {
+		value |= Control::SIZE_MAXIMIZE;
+	} else {
+		value ^= Control::SIZE_MAXIMIZE;
+	}
+
+	// Keep the custom preset selected as we toggle individual flags.
+	keep_selected_preset = true;
+	emit_changed(get_edited_property(), value);
+}
+
 void EditorPropertySizeFlags::_flag_toggled() {
 	uint32_t value = 0;
 	for (int i = 0; i < flag_checks.size(); i++) {
@@ -313,9 +330,11 @@ void EditorPropertySizeFlags::_flag_toggled() {
 		}
 	}
 
-	bool is_expand = flag_expand->is_visible() && flag_expand->is_pressed();
-	if (is_expand) {
+	if (flag_expand->is_visible() && flag_expand->is_pressed()) {
 		value |= Control::SIZE_EXPAND;
+	}
+	if (flag_maximize->is_visible() && flag_maximize->is_pressed()) {
+		value |= Control::SIZE_MAXIMIZE;
 	}
 
 	// Keep the custom preset selected as we toggle individual flags.
@@ -335,22 +354,23 @@ void EditorPropertySizeFlags::update_property() {
 		}
 	}
 
-	bool is_expand = value & Control::SIZE_EXPAND;
-	flag_expand->set_pressed(is_expand);
+	flag_expand->set_pressed(value & Control::SIZE_EXPAND);
+	flag_maximize->set_pressed(value & Control::SIZE_MAXIMIZE);
 
 	if (keep_selected_preset) {
 		keep_selected_preset = false;
 		return;
 	}
 
+	uint32_t size_flags_without_modifiers = value & ~(Control::SIZE_EXPAND | Control::SIZE_MAXIMIZE);
 	FlagPreset preset = SIZE_FLAGS_PRESET_CUSTOM;
-	if (value == Control::SIZE_FILL || value == (Control::SIZE_FILL | Control::SIZE_EXPAND)) {
+	if (size_flags_without_modifiers == Control::SIZE_FILL) {
 		preset = SIZE_FLAGS_PRESET_FILL;
-	} else if (value == Control::SIZE_SHRINK_BEGIN || value == (Control::SIZE_SHRINK_BEGIN | Control::SIZE_EXPAND)) {
+	} else if (size_flags_without_modifiers == Control::SIZE_SHRINK_BEGIN) {
 		preset = SIZE_FLAGS_PRESET_SHRINK_BEGIN;
-	} else if (value == Control::SIZE_SHRINK_CENTER || value == (Control::SIZE_SHRINK_CENTER | Control::SIZE_EXPAND)) {
+	} else if (size_flags_without_modifiers == Control::SIZE_SHRINK_CENTER) {
 		preset = SIZE_FLAGS_PRESET_SHRINK_CENTER;
-	} else if (value == Control::SIZE_SHRINK_END || value == (Control::SIZE_SHRINK_END | Control::SIZE_EXPAND)) {
+	} else if (size_flags_without_modifiers == Control::SIZE_SHRINK_END) {
 		preset = SIZE_FLAGS_PRESET_SHRINK_END;
 	}
 
@@ -366,9 +386,10 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 
 	if (p_options.is_empty()) {
 		flag_presets->clear();
-		flag_presets->add_item(TTR("Container Default"));
+		flag_presets->add_item(TTRC("Container Default"));
 		flag_presets->set_disabled(true);
 		flag_expand->set_visible(false);
+		flag_maximize->set_visible(false);
 		return;
 	}
 
@@ -378,7 +399,7 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 		int64_t current_val = text_split[1].to_int();
 		flags[current_val] = text_split[0];
 
-		if (current_val == SIZE_EXPAND) {
+		if (current_val == SIZE_EXPAND || current_val == SIZE_MAXIMIZE) {
 			continue;
 		}
 
@@ -405,20 +426,21 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 
 	flag_presets->clear();
 	if (flags.has(SIZE_FILL)) {
-		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(wide_preset_icon), TTR("Fill"), SIZE_FLAGS_PRESET_FILL);
+		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(wide_preset_icon), TTRC("Fill"), SIZE_FLAGS_PRESET_FILL);
 	}
 	// Shrink Begin is the same as no flags at all, as such it cannot be disabled.
-	flag_presets->add_icon_item(gui_base->get_editor_theme_icon(begin_preset_icon), TTR("Shrink Begin"), SIZE_FLAGS_PRESET_SHRINK_BEGIN);
+	flag_presets->add_icon_item(gui_base->get_editor_theme_icon(begin_preset_icon), TTRC("Shrink Begin"), SIZE_FLAGS_PRESET_SHRINK_BEGIN);
 	if (flags.has(SIZE_SHRINK_CENTER)) {
-		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(SNAME("ControlAlignCenter")), TTR("Shrink Center"), SIZE_FLAGS_PRESET_SHRINK_CENTER);
+		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(SNAME("ControlAlignCenter")), TTRC("Shrink Center"), SIZE_FLAGS_PRESET_SHRINK_CENTER);
 	}
 	if (flags.has(SIZE_SHRINK_END)) {
-		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(end_preset_icon), TTR("Shrink End"), SIZE_FLAGS_PRESET_SHRINK_END);
+		flag_presets->add_icon_item(gui_base->get_editor_theme_icon(end_preset_icon), TTRC("Shrink End"), SIZE_FLAGS_PRESET_SHRINK_END);
 	}
 	flag_presets->add_separator();
-	flag_presets->add_item(TTR("Custom"), SIZE_FLAGS_PRESET_CUSTOM);
+	flag_presets->add_item(TTRC("Custom"), SIZE_FLAGS_PRESET_CUSTOM);
 
 	flag_expand->set_visible(flags.has(SIZE_EXPAND));
+	flag_maximize->set_visible(flags.has(SIZE_MAXIMIZE));
 }
 
 EditorPropertySizeFlags::EditorPropertySizeFlags() {
@@ -427,6 +449,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 
 	flag_presets = memnew(OptionButton);
 	flag_presets->set_clip_text(true);
+	flag_presets->set_fit_to_longest_item(false);
 	flag_presets->set_flat(true);
 	flag_presets->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	vb->add_child(flag_presets);
@@ -439,11 +462,18 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	vb->add_child(flag_options);
 
 	flag_expand = memnew(CheckBox);
-	flag_expand->set_text(TTR("Expand"));
+	flag_expand->set_text(TTRC("Expand"));
 	flag_expand->set_clip_text(true);
 	vb->add_child(flag_expand);
 	add_focusable(flag_expand);
 	flag_expand->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertySizeFlags::_expand_toggled));
+
+	flag_maximize = memnew(CheckBox);
+	flag_maximize->set_text(TTRC("Maximize"));
+	flag_maximize->set_clip_text(true);
+	vb->add_child(flag_maximize);
+	add_focusable(flag_maximize);
+	flag_maximize->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertySizeFlags::_maximize_toggled));
 }
 
 bool EditorInspectorPluginControl::can_handle(Object *p_object) {
@@ -721,6 +751,9 @@ void SizeFlagPresetPicker::_preset_button_pressed(const int p_preset) {
 	if (expand_button->is_pressed()) {
 		flags |= SIZE_EXPAND;
 	}
+	if (maximize_button->is_pressed()) {
+		flags |= SIZE_MAXIMIZE;
+	}
 
 	emit_signal("size_flags_selected", flags);
 	_update_preset_button_state(p_preset);
@@ -728,6 +761,10 @@ void SizeFlagPresetPicker::_preset_button_pressed(const int p_preset) {
 
 void SizeFlagPresetPicker::_expand_button_pressed() {
 	emit_signal("expand_flag_toggled", expand_button->is_pressed());
+}
+
+void SizeFlagPresetPicker::_maximize_button_pressed() {
+	emit_signal("maximize_flag_toggled", maximize_button->is_pressed());
 }
 
 void SizeFlagPresetPicker::set_allowed_flags(Vector<SizeFlags> &p_flags) {
@@ -738,10 +775,17 @@ void SizeFlagPresetPicker::set_allowed_flags(Vector<SizeFlags> &p_flags) {
 
 	expand_button->set_disabled(!p_flags.has(SIZE_EXPAND));
 	if (p_flags.has(SIZE_EXPAND)) {
-		expand_button->set_tooltip_text(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
+		expand_button->set_tooltip_text(TTRC("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
 	} else {
 		expand_button->set_pressed(false);
-		expand_button->set_tooltip_text(TTR("Some parents of the selected nodes do not support the Expand flag."));
+		expand_button->set_tooltip_text(TTRC("Some parents of the selected nodes do not support the Expand flag."));
+	}
+	maximize_button->set_disabled(!p_flags.has(SIZE_MAXIMIZE));
+	if (p_flags.has(SIZE_MAXIMIZE)) {
+		maximize_button->set_tooltip_text(TTRC("Enable to also set the Maximize flag.\nDisable to only set Shrink/Fill/Expand flags."));
+	} else {
+		maximize_button->set_pressed(false);
+		maximize_button->set_tooltip_text(TTRC("Some parents of the selected nodes do not support the Maximize flag."));
 	}
 }
 
@@ -751,6 +795,10 @@ void SizeFlagPresetPicker::set_selected_preset(int p_preset) {
 
 void SizeFlagPresetPicker::set_expand_flag(bool p_expand) {
 	expand_button->set_pressed(p_expand);
+}
+
+void SizeFlagPresetPicker::set_maximize_flag(bool p_maximize) {
+	maximize_button->set_pressed(p_maximize);
 }
 
 void SizeFlagPresetPicker::_notification(int p_notification) {
@@ -776,6 +824,7 @@ void SizeFlagPresetPicker::_notification(int p_notification) {
 void SizeFlagPresetPicker::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("size_flags_selected", PropertyInfo(Variant::INT, "size_flags")));
 	ADD_SIGNAL(MethodInfo("expand_flag_toggled", PropertyInfo(Variant::BOOL, "expand_flag")));
+	ADD_SIGNAL(MethodInfo("maximize_flag_toggled", PropertyInfo(Variant::BOOL, "maximize_flag")));
 }
 
 SizeFlagPresetPicker::SizeFlagPresetPicker(bool p_vertical) {
@@ -789,18 +838,25 @@ SizeFlagPresetPicker::SizeFlagPresetPicker(bool p_vertical) {
 	main_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(main_row);
 
-	_add_row_button(main_row, SIZE_SHRINK_BEGIN, TTR("Shrink Begin"));
-	_add_row_button(main_row, SIZE_SHRINK_CENTER, TTR("Shrink Center"));
-	_add_row_button(main_row, SIZE_SHRINK_END, TTR("Shrink End"));
+	_add_row_button(main_row, SIZE_SHRINK_BEGIN, TTRC("Shrink Begin"));
+	_add_row_button(main_row, SIZE_SHRINK_CENTER, TTRC("Shrink Center"));
+	_add_row_button(main_row, SIZE_SHRINK_END, TTRC("Shrink End"));
 	_add_separator(main_row, memnew(VSeparator));
-	_add_row_button(main_row, SIZE_FILL, TTR("Fill"));
+	_add_row_button(main_row, SIZE_FILL, TTRC("Fill"));
 
 	expand_button = memnew(CheckButton);
 	expand_button->set_flat(true);
-	expand_button->set_text(TTR("Expand"));
-	expand_button->set_tooltip_text(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
+	expand_button->set_text(TTRC("Expand"));
+	expand_button->set_tooltip_text(TTRC("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
 	expand_button->connect(SceneStringName(pressed), callable_mp(this, &SizeFlagPresetPicker::_expand_button_pressed));
 	main_vb->add_child(expand_button);
+
+	maximize_button = memnew(CheckButton);
+	maximize_button->set_flat(true);
+	maximize_button->set_text(TTRC("Maximize"));
+	maximize_button->set_tooltip_text(TTRC("Enable to also set the Maximize flag.\nDisable to only set Shrink/Fill/Expand flags."));
+	maximize_button->connect(SceneStringName(pressed), callable_mp(this, &SizeFlagPresetPicker::_maximize_button_pressed));
+	main_vb->add_child(maximize_button);
 }
 
 // Toolbar.
@@ -810,13 +866,21 @@ void ControlEditorToolbar::_anchors_preset_selected(int p_preset) {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
+	if (!reposition_button->is_pressed()) {
+		undo_redo->create_action(TTR("Change Anchors, Grow Direction"));
+	} else {
+		undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
+	}
 
 	for (Node *E : selection) {
 		Control *control = Object::cast_to<Control>(E);
 		if (control) {
 			undo_redo->add_do_property(control, "layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS);
 			undo_redo->add_do_property(control, "anchors_preset", preset);
+			if (!reposition_button->is_pressed()) {
+				undo_redo->add_do_property(control, "position", control->get_position());
+				undo_redo->add_do_property(control, "size", control->get_size());
+			}
 			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
 		}
 	}
@@ -940,6 +1004,41 @@ void ControlEditorToolbar::_expand_flag_toggled(bool p_expand, bool p_vertical) 
 	undo_redo->commit_action();
 }
 
+void ControlEditorToolbar::_maximize_flag_toggled(bool p_maximize, bool p_vertical) {
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	if (p_vertical) {
+		undo_redo->create_action(TTR("Change Vertical Maximize Flag"));
+	} else {
+		undo_redo->create_action(TTR("Change Horizontal Maximize Flag"));
+	}
+
+	for (Node *E : selection) {
+		Control *control = Object::cast_to<Control>(E);
+		if (control) {
+			int old_flags = p_vertical ? control->get_v_size_flags() : control->get_h_size_flags();
+			int new_flags = old_flags;
+
+			if (p_maximize) {
+				new_flags |= Control::SIZE_MAXIMIZE;
+			} else {
+				new_flags &= ~Control::SIZE_MAXIMIZE;
+			}
+
+			if (p_vertical) {
+				undo_redo->add_do_method(control, "set_v_size_flags", new_flags);
+				undo_redo->add_undo_method(control, "set_v_size_flags", old_flags);
+			} else {
+				undo_redo->add_do_method(control, "set_h_size_flags", new_flags);
+				undo_redo->add_undo_method(control, "set_h_size_flags", old_flags);
+			}
+		}
+	}
+
+	undo_redo->commit_action();
+}
+
 Vector2 ControlEditorToolbar::_position_to_anchor(const Control *p_control, Vector2 position) {
 	ERR_FAIL_NULL_V(p_control, Vector2());
 
@@ -1022,6 +1121,8 @@ void ControlEditorToolbar::_update_container_sizing_selection_ui(bool p_pressed)
 	bool all_v_shrink_fill_same = true;
 	bool all_h_expand = true;
 	bool all_v_expand = true;
+	bool all_h_maximize = true;
+	bool all_v_maximize = true;
 	int first_h_flags = -1;
 	int first_v_flags = -1;
 
@@ -1034,8 +1135,8 @@ void ControlEditorToolbar::_update_container_sizing_selection_ui(bool p_pressed)
 
 		const int h_flags = control->get_h_size_flags();
 		const int v_flags = control->get_v_size_flags();
-		const int h_shrink_fill = h_flags & ~(Control::SIZE_EXPAND);
-		const int v_shrink_fill = v_flags & ~(Control::SIZE_EXPAND);
+		const int h_shrink_fill = h_flags & ~(Control::SIZE_EXPAND | Control::SIZE_MAXIMIZE);
+		const int v_shrink_fill = v_flags & ~(Control::SIZE_EXPAND | Control::SIZE_MAXIMIZE);
 
 		if (first_h_flags == -1) {
 			first_h_flags = h_shrink_fill;
@@ -1055,6 +1156,13 @@ void ControlEditorToolbar::_update_container_sizing_selection_ui(bool p_pressed)
 		if (!(v_flags & Control::SIZE_EXPAND)) {
 			all_v_expand = false;
 		}
+
+		if (!(h_flags & Control::SIZE_MAXIMIZE)) {
+			all_h_maximize = false;
+		}
+		if (!(v_flags & Control::SIZE_MAXIMIZE)) {
+			all_v_maximize = false;
+		}
 	}
 
 	container_h_picker->set_selected_preset(all_h_shrink_fill_same ? first_h_flags : -1);
@@ -1062,6 +1170,9 @@ void ControlEditorToolbar::_update_container_sizing_selection_ui(bool p_pressed)
 
 	container_h_picker->set_expand_flag(all_h_expand);
 	container_v_picker->set_expand_flag(all_v_expand);
+
+	container_h_picker->set_maximize_flag(all_h_maximize);
+	container_v_picker->set_maximize_flag(all_v_maximize);
 }
 
 void ControlEditorToolbar::_selection_changed() {
@@ -1077,6 +1188,7 @@ void ControlEditorToolbar::_selection_changed() {
 		SIZE_SHRINK_END,
 		SIZE_FILL,
 		SIZE_EXPAND,
+		SIZE_MAXIMIZE,
 	};
 	Vector<SizeFlags> allowed_v_flags = {
 		SIZE_SHRINK_BEGIN,
@@ -1084,6 +1196,7 @@ void ControlEditorToolbar::_selection_changed() {
 		SIZE_SHRINK_END,
 		SIZE_FILL,
 		SIZE_EXPAND,
+		SIZE_MAXIMIZE,
 	};
 
 	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
@@ -1172,6 +1285,7 @@ void ControlEditorToolbar::_selection_changed() {
 				SIZE_SHRINK_END,
 				SIZE_FILL,
 				SIZE_EXPAND,
+				SIZE_MAXIMIZE,
 			};
 
 			container_h_picker->set_allowed_flags(allowed_all_flags);
@@ -1195,58 +1309,67 @@ void ControlEditorToolbar::_notification(int p_what) {
 ControlEditorToolbar::ControlEditorToolbar() {
 	// Anchor and offset tools.
 	anchors_button = memnew(ControlEditorPopupButton);
-	anchors_button->set_tooltip_text(TTR("Presets for the anchor and offset values of a Control node."));
+	anchors_button->set_tooltip_text(TTRC("Presets for the anchor and offset values of a Control node."));
 	anchors_button->connect(SceneStringName(toggled), callable_mp(this, &ControlEditorToolbar::_update_anchor_selection_ui));
 	add_child(anchors_button);
 
 	Label *anchors_label = memnew(Label);
-	anchors_label->set_text(TTR("Anchor preset"));
+	anchors_label->set_text(TTRC("Anchor preset"));
 	anchors_button->get_popup_hbox()->add_child(anchors_label);
 	anchors_picker = memnew(AnchorPresetPicker);
 	anchors_picker->set_h_size_flags(SIZE_SHRINK_CENTER);
 	anchors_button->get_popup_hbox()->add_child(anchors_picker);
 	anchors_picker->connect("anchors_preset_selected", callable_mp(this, &ControlEditorToolbar::_anchors_preset_selected));
 
+	reposition_button = memnew(CheckBox);
+	reposition_button->set_text(TTRC("Reposition"));
+	reposition_button->set_tooltip_text(TTRC("If disabled, picking a preset will only adjust the anchors, without moving the Control."));
+	reposition_button->set_h_size_flags(SIZE_SHRINK_CENTER);
+	reposition_button->set_pressed(true);
+	anchors_button->get_popup_hbox()->add_child(reposition_button);
+
 	anchors_button->get_popup_hbox()->add_child(memnew(HSeparator));
 
 	Button *keep_ratio_button = memnew(Button);
 	keep_ratio_button->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-	keep_ratio_button->set_text(TTR("Set to Current Ratio"));
-	keep_ratio_button->set_tooltip_text(TTR("Adjust anchors and offsets to match the current rect size."));
+	keep_ratio_button->set_text(TTRC("Set to Current Ratio"));
+	keep_ratio_button->set_tooltip_text(TTRC("Adjust anchors and offsets to match the current rect size."));
 	anchors_button->get_popup_hbox()->add_child(keep_ratio_button);
 	keep_ratio_button->connect(SceneStringName(pressed), callable_mp(this, &ControlEditorToolbar::_anchors_to_current_ratio));
 
 	anchor_mode_button = memnew(Button);
 	anchor_mode_button->set_theme_type_variation(SceneStringName(FlatButton));
 	anchor_mode_button->set_toggle_mode(true);
-	anchor_mode_button->set_tooltip_text(TTR("When active, moving Control nodes changes their anchors instead of their offsets."));
+	anchor_mode_button->set_tooltip_text(TTRC("When active, moving Control nodes changes their anchors instead of their offsets."));
 	anchor_mode_button->set_accessibility_name(TTRC("Change Anchors"));
 	add_child(anchor_mode_button);
 	anchor_mode_button->connect(SceneStringName(toggled), callable_mp(this, &ControlEditorToolbar::_anchor_mode_toggled));
 
 	// Container tools.
 	containers_button = memnew(ControlEditorPopupButton);
-	containers_button->set_tooltip_text(TTR("Sizing settings for children of a Container node."));
+	containers_button->set_tooltip_text(TTRC("Sizing settings for children of a Container node."));
 	containers_button->connect(SceneStringName(toggled), callable_mp(this, &ControlEditorToolbar::_update_container_sizing_selection_ui));
 	add_child(containers_button);
 
 	Label *container_h_label = memnew(Label);
-	container_h_label->set_text(TTR("Horizontal alignment"));
+	container_h_label->set_text(TTRC("Horizontal alignment"));
 	containers_button->get_popup_hbox()->add_child(container_h_label);
 	container_h_picker = memnew(SizeFlagPresetPicker(false));
 	containers_button->get_popup_hbox()->add_child(container_h_picker);
 	container_h_picker->connect("size_flags_selected", callable_mp(this, &ControlEditorToolbar::_container_flags_selected).bind(false));
 	container_h_picker->connect("expand_flag_toggled", callable_mp(this, &ControlEditorToolbar::_expand_flag_toggled).bind(false));
+	container_h_picker->connect("maximize_flag_toggled", callable_mp(this, &ControlEditorToolbar::_maximize_flag_toggled).bind(false));
 
 	containers_button->get_popup_hbox()->add_child(memnew(HSeparator));
 
 	Label *container_v_label = memnew(Label);
-	container_v_label->set_text(TTR("Vertical alignment"));
+	container_v_label->set_text(TTRC("Vertical alignment"));
 	containers_button->get_popup_hbox()->add_child(container_v_label);
 	container_v_picker = memnew(SizeFlagPresetPicker(true));
 	containers_button->get_popup_hbox()->add_child(container_v_picker);
 	container_v_picker->connect("size_flags_selected", callable_mp(this, &ControlEditorToolbar::_container_flags_selected).bind(true));
 	container_v_picker->connect("expand_flag_toggled", callable_mp(this, &ControlEditorToolbar::_expand_flag_toggled).bind(true));
+	container_v_picker->connect("maximize_flag_toggled", callable_mp(this, &ControlEditorToolbar::_maximize_flag_toggled).bind(true));
 
 	// Editor connections.
 	editor_selection = EditorNode::get_singleton()->get_editor_selection();

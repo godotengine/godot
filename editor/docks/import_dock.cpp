@@ -64,7 +64,6 @@ public:
 			values[p_name] = p_value;
 			if (checking) {
 				checked.insert(p_name);
-				notify_property_list_changed();
 			}
 			return true;
 		}
@@ -785,7 +784,7 @@ ImportDock::ImportDock() {
 	hb->add_child(preset);
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_theme_type_variation("NoBorderPanel");
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	content->add_child(mc);
 

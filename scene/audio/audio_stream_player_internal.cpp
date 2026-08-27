@@ -34,7 +34,8 @@
 #include "core/object/callable_mp.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
+#include "servers/audio/audio_server.h"
 
 void AudioStreamPlayerInternal::_set_process(bool p_enabled) {
 	if (physical) {
@@ -61,6 +62,10 @@ void AudioStreamPlayerInternal::_update_stream_parameters() {
 			playback_parameters.insert(key, pd);
 		}
 	}
+}
+
+bool AudioStreamPlayerInternal::_is_sample() {
+	return (AudioServer::get_singleton()->get_default_playback_type() == AuSE::PlaybackType::PLAYBACK_TYPE_SAMPLE && get_playback_type() == AuSE::PlaybackType::PLAYBACK_TYPE_DEFAULT) || get_playback_type() == AuSE::PlaybackType::PLAYBACK_TYPE_SAMPLE;
 }
 
 void AudioStreamPlayerInternal::process() {
@@ -337,11 +342,11 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::get_stream_playback() {
 	return stream_playbacks[stream_playbacks.size() - 1];
 }
 
-void AudioStreamPlayerInternal::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+void AudioStreamPlayerInternal::set_playback_type(AuSE::PlaybackType p_playback_type) {
 	playback_type = p_playback_type;
 }
 
-AudioServer::PlaybackType AudioStreamPlayerInternal::get_playback_type() const {
+AuSE::PlaybackType AudioStreamPlayerInternal::get_playback_type() const {
 	return playback_type;
 }
 

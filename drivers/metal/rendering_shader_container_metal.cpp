@@ -702,7 +702,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 		}
 
 		if (!resources.stage_inputs.empty()) {
-			for (Resource const &res : resources.stage_inputs) {
+			for (const Resource &res : resources.stage_inputs) {
 				uint32_t binding = compiler.get_automatic_msl_resource_binding(res.id);
 				if (binding != (uint32_t)-1) {
 					stage_data.vertex_input_binding_mask |= 1 << binding;

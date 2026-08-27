@@ -51,6 +51,13 @@ public:
 		LINK_ACTIVATION_DISABLED,
 	};
 
+	enum Overflow {
+		OVERFLOW_AUTO,
+		OVERFLOW_VISIBLE,
+		OVERFLOW_HIDDEN,
+		OVERFLOW_SCROLL,
+	};
+
 	using TextStyle = RichTextDocument::Style;
 
 	struct StyleSpan {
@@ -63,6 +70,7 @@ public:
 	};
 
 private:
+	Dictionary decoration_paint;
 	struct DeletedStyleRange {
 		int offset = 0;
 		String text;
@@ -74,6 +82,7 @@ private:
 		STYLE_PROPERTY_ITALIC,
 		STYLE_PROPERTY_UNDERLINE,
 		STYLE_PROPERTY_STRIKETHROUGH,
+		STYLE_PROPERTY_OVERLINE,
 		STYLE_PROPERTY_COLOR,
 		STYLE_PROPERTY_CLEAR_COLOR,
 		STYLE_PROPERTY_BG_COLOR,
@@ -107,6 +116,7 @@ private:
 	Vector<RichTextDocument::RawInline> deleted_raw_inlines_for_undo;
 	bool setting_bbcode_text = false;
 	bool use_bbcode = false;
+	Overflow overflow = OVERFLOW_AUTO;
 	mutable bool bbcode_dirty = true;
 	bool syncing_text_change = false;
 	bool pending_inline_metadata_restore_sync = false;
@@ -226,6 +236,8 @@ private:
 	void _inline_object_clicked(const Dictionary &p_info, const Rect2 &p_rect);
 
 protected:
+	virtual bool _is_text_clipping_enabled() const override;
+	virtual ScrollBarMode _get_scroll_bar_mode() const override;
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
 	virtual void _apply_custom_undo_operation(const StringName &p_type, const Variant &p_data) override;
@@ -240,6 +252,9 @@ public:
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 	void set_use_bbcode(bool p_enable);
 	bool is_using_bbcode() const;
+	void set_overflow(Overflow p_overflow);
+	Overflow get_overflow() const;
+	int get_content_height() const;
 	void set_link_activation_mode(LinkActivationMode p_mode);
 	LinkActivationMode get_link_activation_mode() const;
 
@@ -253,6 +268,8 @@ public:
 	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
 	PackedByteArray get_document_protobuf() const;
 	bool set_document_protobuf(const PackedByteArray &p_data);
+	PackedByteArray get_selection_style_template() const;
+	bool apply_style_template(const PackedByteArray &p_data, const Dictionary &p_overrides = Dictionary());
 	void copy_rich_text();
 	bool paste_rich_text();
 
@@ -270,6 +287,9 @@ public:
 	void set_strikethrough();
 	void clear_strikethrough();
 	void toggle_strikethrough();
+	void set_overline();
+	void clear_overline();
+	void toggle_overline();
 	void set_selection_color(const Color &p_color);
 	void clear_selection_color();
 	void set_selection_bg_color(const Color &p_color);
@@ -298,6 +318,8 @@ public:
 	void set_selection_line_height(const String &p_line_height);
 	void clear_selection_line_height();
 	String get_current_line_height() const;
+	void set_decoration_paint(const Dictionary &p_paint);
+	static Dictionary get_style_template_values(const PackedByteArray &p_data);
 	void set_selection_line_spacing(int p_spacing);
 	void insert_image(const String &p_source, int p_width = -1, int p_height = -1, const String &p_alt = String());
 	void set_selection_image_size(int p_width, int p_height);
@@ -320,3 +342,4 @@ public:
 };
 
 VARIANT_ENUM_CAST(RichTextEdit::LinkActivationMode);
+VARIANT_ENUM_CAST(RichTextEdit::Overflow);

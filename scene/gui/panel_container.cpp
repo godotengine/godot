@@ -33,16 +33,7 @@
 #include "scene/theme/theme_db.h"
 
 Size2 PanelContainer::get_minimum_size() const {
-	Size2 ms;
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
-		if (!c) {
-			continue;
-		}
-
-		Size2 minsize = c->get_bound_minimum_size();
-		ms = ms.max(minsize);
-	}
+	Size2 ms = Container::get_minimum_size();
 
 	if (theme_cache.panel_style.is_valid()) {
 		ms += theme_cache.panel_style->get_minimum_size();
@@ -84,6 +75,7 @@ Vector<int> PanelContainer::get_allowed_size_flags_horizontal() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 
@@ -93,6 +85,7 @@ Vector<int> PanelContainer::get_allowed_size_flags_vertical() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 

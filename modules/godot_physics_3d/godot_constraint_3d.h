@@ -67,7 +67,7 @@ public:
 	virtual GodotSoftBody3D *get_soft_body_ptr(int p_index) const { return nullptr; }
 	virtual int get_soft_body_count() const { return 0; }
 
-	_FORCE_INLINE_ void set_priority(int p_priority) { priority = p_priority; }
+	_FORCE_INLINE_ void set_priority(int p_priority) { priority = MAX(0, p_priority); }
 	_FORCE_INLINE_ int get_priority() const { return priority; }
 
 	_FORCE_INLINE_ void disable_collisions_between_bodies(const bool p_disabled) { disabled_collisions_between_bodies = p_disabled; }

@@ -52,8 +52,10 @@
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
+#include "scene/resources/3d/sky_material.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
+#include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server.h"
 
 static bool _has_sub_resources(const Ref<Resource> &p_res) {
@@ -640,6 +642,12 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			Ref<Resource> old_edited_resource = edited_resource;
 			edited_resource = resp;
 			_resource_changed();
+
+			if (edited_resource.is_valid() && bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"))) {
+				// Expand newly created resources, as the user will most likely want to change at least one property within the resource.
+				// This is disabled when resources are forcibly opened in a new inspector, as it would be too intrusive.
+				emit_signal(SNAME("_resource_expand_requested"), edited_resource, false);
+			}
 		} break;
 	}
 }
@@ -861,6 +869,8 @@ void EditorResourcePicker::_ensure_allowed_types() const {
 		const String base = allowed_types[i].strip_edges();
 		if (base == "BaseMaterial3D") {
 			allowed_types_with_convert.insert("Texture2D");
+		} else if (base == "PanoramaSkyMaterial") {
+			allowed_types_with_convert.insert("Texture2D");
 		} else if (ClassDB::is_parent_class("ShaderMaterial", base)) {
 			allowed_types_with_convert.insert("Shader");
 		} else if (ClassDB::is_parent_class("ImageTexture", base)) {
@@ -1002,6 +1012,16 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					break;
 				}
 
+				if (at == "PanoramaSkyMaterial" && Ref<Texture2D>(dropped_resource).is_valid()) {
+					Ref<PanoramaSkyMaterial> mat = edited_resource;
+					if (mat.is_null()) {
+						mat.instantiate();
+					}
+					mat->set_panorama(dropped_resource);
+					dropped_resource = mat;
+					break;
+				}
+
 				if (at == "ShaderMaterial" && Ref<Shader>(dropped_resource).is_valid()) {
 					Ref<ShaderMaterial> mat = edited_resource;
 					if (mat.is_null()) {
@@ -1058,6 +1078,7 @@ void EditorResourcePicker::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), PropertyInfo(Variant::BOOL, "inspect")));
 	ADD_SIGNAL(MethodInfo("resource_changed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
+	ADD_SIGNAL(MethodInfo("_resource_expand_requested", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), PropertyInfo(Variant::BOOL, "inspect")));
 }
 
 void EditorResourcePicker::_notification(int p_what) {
@@ -1161,6 +1182,15 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 	}
 
 	return types;
+}
+
+void EditorResourcePicker::make_passthrough(bool p_passthrough) {
+	assign_button->set_mouse_filter(p_passthrough ? Control::MOUSE_FILTER_PASS : Control::MOUSE_FILTER_STOP);
+	if (p_passthrough) {
+		assign_button->disconnect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
+	} else {
+		assign_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
+	}
 }
 
 bool EditorResourcePicker::is_resource_allowed(const Ref<Resource> &p_resource) {

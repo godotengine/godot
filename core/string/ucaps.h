@@ -3034,7 +3034,7 @@ static const int reverse_caps_table[UTL_LEN][2] = {
 	{ 0x1E921, 0x1E943 },
 };
 
-inline int _find_upper(int ch) {
+inline int _find_upper(int p_ch) {
 	int low = 0;
 	int high = LTU_LEN - 1;
 	int middle;
@@ -3042,19 +3042,19 @@ inline int _find_upper(int ch) {
 	while (low <= high) {
 		middle = (low + high) / 2;
 
-		if (ch < caps_table[middle][0]) {
+		if (p_ch < caps_table[middle][0]) {
 			high = middle - 1; // Search low end of array.
-		} else if (caps_table[middle][0] < ch) {
+		} else if (caps_table[middle][0] < p_ch) {
 			low = middle + 1; // Search high end of array.
 		} else {
 			return caps_table[middle][1];
 		}
 	}
 
-	return ch;
+	return p_ch;
 }
 
-inline int _find_lower(int ch) {
+inline int _find_lower(int p_ch) {
 	int low = 0;
 	int high = UTL_LEN - 1;
 	int middle;
@@ -3062,14 +3062,14 @@ inline int _find_lower(int ch) {
 	while (low <= high) {
 		middle = (low + high) / 2;
 
-		if (ch < reverse_caps_table[middle][0]) {
+		if (p_ch < reverse_caps_table[middle][0]) {
 			high = middle - 1; // Search low end of array.
-		} else if (reverse_caps_table[middle][0] < ch) {
+		} else if (reverse_caps_table[middle][0] < p_ch) {
 			low = middle + 1; // Search high end of array.
 		} else {
 			return reverse_caps_table[middle][1];
 		}
 	}
 
-	return ch;
+	return p_ch;
 }

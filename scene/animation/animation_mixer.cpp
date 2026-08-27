@@ -40,8 +40,8 @@
 #include "scene/animation/animation_player.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/resources/animation.h"
+#include "scene/resources/audio/audio_stream.h"
 #include "servers/audio/audio_server.h"
-#include "servers/audio/audio_stream.h"
 
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_stream_player_3d.h"
@@ -302,9 +302,9 @@ Error AnimationMixer::add_animation_library(const StringName &p_name, const Ref<
 
 	for (const AnimationLibraryData &lib : animation_libraries) {
 		ERR_FAIL_COND_V_MSG(lib.name == p_name, ERR_ALREADY_EXISTS, "Can't add animation library twice with name: " + String(p_name));
-		ERR_FAIL_COND_V_MSG(lib.library == p_animation_library, ERR_ALREADY_EXISTS, "Can't add animation library twice (adding as '" + p_name.operator String() + "', exists as '" + lib.name.operator String() + "'.");
+		ERR_FAIL_COND_V_MSG(lib.library == p_animation_library, ERR_ALREADY_EXISTS, "Can't add animation library twice (adding as '" + p_name.string() + "', exists as '" + lib.name.string() + "'.");
 
-		if (lib.name.operator String() >= p_name.operator String()) {
+		if (lib.name.string() >= p_name.string()) {
 			break;
 		}
 
@@ -583,18 +583,20 @@ bool AnimationMixer::is_dummy() const {
 /* -- Caches for blending --------------------- */
 /* -------------------------------------------- */
 
-void AnimationMixer::_clear_caches() {
+void AnimationMixer::_clear_caches(bool p_clear_track_cache) {
 	_init_root_motion_cache();
 	_clear_audio_streams();
 	_clear_playing_caches();
+	capture_cache.clear();
+	if (!p_clear_track_cache) {
+		return;
+	}
 	for (KeyValue<Animation::TrackCacheID, TrackCache *> &K : track_cache) {
 		memdelete(K.value);
 	}
 	track_cache.clear();
 	animation_track_num_to_track_cache.clear();
 	cache_valid = false;
-	capture_cache.clear();
-
 	emit_signal(SNAME("caches_cleared"));
 }
 
@@ -604,6 +606,15 @@ void AnimationMixer::_clear_audio_streams() {
 		playing_audio_stream_players[i]->call(SNAME("set_stream"), Ref<AudioStream>());
 	}
 	playing_audio_stream_players.clear();
+
+	// Unref the playback handle so it doesn't keep the AudioStreamPlaybackPolyphonic
+	// alive after the AudioStreamPlayer node may have been deleted while stopped.
+	// It is re-acquired lazily on the next play.
+	for (KeyValue<Animation::TrackCacheID, TrackCache *> &K : track_cache) {
+		if (K.value->type == Animation::TYPE_AUDIO) {
+			static_cast<TrackCacheAudio *>(K.value)->audio_stream_playback.unref();
+		}
+	}
 }
 
 void AnimationMixer::_clear_playing_caches() {
@@ -905,7 +916,7 @@ bool AnimationMixer::_update_caches() {
 						track_audio->object_id = child->get_instance_id();
 						track_audio->audio_stream.instantiate();
 						track_audio->audio_stream->set_polyphony(audio_max_polyphony);
-						track_audio->playback_type = (AudioServer::PlaybackType)(int)(child->call(SNAME("get_playback_type")));
+						track_audio->playback_type = (AuSE::PlaybackType)(int)(child->call(SNAME("get_playback_type")));
 						track_audio->bus = (StringName)(child->call(SNAME("get_bus")));
 
 						track = track_audio;
@@ -2541,6 +2552,12 @@ void AnimationMixer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
 	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);
+
+	// TODO Note: These used to be bound in AnimationPlayer::_bind_methods, indicating it
+	//            was originally meant to be exposed to AnimationPlayer instead of AnimationMixer.
+	//            This should be investigated, to either move the binding or remove this comment.
+	ClassDB::bind_method(D_METHOD("find_animation", "animation"), &AnimationMixer::find_animation);
+	ClassDB::bind_method(D_METHOD("find_animation_library", "animation"), &AnimationMixer::find_animation_library);
 }
 
 AnimationMixer::AnimationMixer() {

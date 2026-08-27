@@ -1115,10 +1115,10 @@
 			The node's global position, relative to the world (usually to the [CanvasLayer]).
 		</member>
 		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection" default="1">
-			Controls the direction on the horizontal axis in which the control should grow if its horizontal minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
+			Controls the direction on the horizontal axis in which the control should grow or shrink if its horizontal size is changed.
 		</member>
 		<member name="grow_vertical" type="int" setter="set_v_grow_direction" getter="get_v_grow_direction" enum="Control.GrowDirection" default="1">
-			Controls the direction on the vertical axis in which the control should grow if its vertical minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
+			Controls the direction on the vertical axis in which the control should grow or shrink if its vertical size is changed.
 		</member>
 		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
 			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew). See also [method is_layout_rtl].
@@ -1556,6 +1556,11 @@
 		<constant name="SIZE_SHRINK_END" value="8" enum="SizeFlags" is_bitfield="true">
 			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
+		<constant name="SIZE_MAXIMIZE" value="16" enum="SizeFlags" is_bitfield="true">
+			Tells the parent [Container] to use the node's [member custom_maximum_size] when doing minimum size calculations. Use with [member size_flags_horizontal] and [member size_flags_vertical].
+			[b]Note:[/b] Setting this flag does not necessarily mean the node will be resized to its maximum size, as the parent container may not have enough space to do so.
+			[b]Note:[/b] If this node is a child of a Container that enables the [member size_flags_stretch_ratio] property on its children for layout, nodes with this flag set will be given priority in stretching. If multiple nodes have this flag set, their relative stretch ratios will still be respected.
+		</constant>
 		<constant name="MOUSE_FILTER_STOP" value="0" enum="MouseFilter">
 			The control will receive mouse movement input events and mouse button input events if clicked on through [method _gui_input]. The control will also receive the [signal mouse_entered] and [signal mouse_exited] signals. These events are automatically marked as handled, and they will not propagate further to other controls. This also results in blocking signals in other controls.
 		</constant>
@@ -1568,13 +1573,13 @@
 			[b]Note:[/b] If the control has received [signal mouse_entered] but not [signal mouse_exited], changing the [member mouse_filter] to [constant MOUSE_FILTER_IGNORE] will cause [signal mouse_exited] to be emitted.
 		</constant>
 		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
-			The control will grow to the left or top to make up if its minimum size is changed to be greater than its current size on the respective axis.
+			The control will grow/shrink to the left or top if its size is changed to be larger/smaller than its current size on the respective axis.
 		</constant>
 		<constant name="GROW_DIRECTION_END" value="1" enum="GrowDirection">
-			The control will grow to the right or bottom to make up if its minimum size is changed to be greater than its current size on the respective axis.
+			The control will grow/shrink to the right or bottom if its size is changed to be larger/smaller than its current size on the respective axis.
 		</constant>
 		<constant name="GROW_DIRECTION_BOTH" value="2" enum="GrowDirection">
-			The control will grow in both directions equally to make up if its minimum size is changed to be greater than its current size.
+			The control will grow/shrink in both directions equally if its size is changed to be larger/smaller than its current size.
 		</constant>
 		<constant name="ANCHOR_BEGIN" value="0" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the origin of the node's [code]Rect[/code], in the top left. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].

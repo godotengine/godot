@@ -34,7 +34,7 @@
 
 #include "core/object/class_db.h"
 
-void TextEdit::_set_selection_mode_compat_86978(SelectionMode p_mode, int p_line, int p_column, int p_caret) {
+void TextEdit::_set_selection_mode_bind_compat_86978(SelectionMode p_mode, int p_line, int p_column, int p_caret) {
 	set_selection_mode(p_mode);
 }
 
@@ -43,7 +43,7 @@ Point2i TextEdit::_get_line_column_at_pos_bind_compat_100913(const Point2i &p_po
 }
 
 void TextEdit::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("set_selection_mode", "mode", "line", "column", "caret_index"), &TextEdit::_set_selection_mode_compat_86978, DEFVAL(-1), DEFVAL(-1), DEFVAL(0));
+	ClassDB::bind_compatibility_method(D_METHOD("set_selection_mode", "mode", "line", "column", "caret_index"), &TextEdit::_set_selection_mode_bind_compat_86978, DEFVAL(-1), DEFVAL(-1), DEFVAL(0));
 	ClassDB::bind_compatibility_method(D_METHOD("get_line_column_at_pos", "position", "allow_out_of_bounds"), &TextEdit::_get_line_column_at_pos_bind_compat_100913, DEFVAL(true));
 }
 

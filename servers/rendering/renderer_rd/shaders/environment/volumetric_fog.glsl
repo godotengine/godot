@@ -43,7 +43,7 @@ layout(set = 1, binding = 1) volatile buffer emissive_only_map_buffer {
 	uint emissive_only_map[];
 };
 #else
-layout(r32ui, set = 1, binding = 1) uniform volatile uimage3D emissive_only_map;
+layout(r32ui, set = 1, binding = 1) volatile uniform uimage3D emissive_only_map;
 #endif
 
 layout(set = 1, binding = 2, std140) uniform SceneParams {
@@ -76,8 +76,8 @@ layout(set = 1, binding = 4) volatile buffer light_only_map_buffer {
 	uint light_only_map[];
 };
 #else
-layout(r32ui, set = 1, binding = 3) uniform volatile uimage3D density_only_map;
-layout(r32ui, set = 1, binding = 4) uniform volatile uimage3D light_only_map;
+layout(r32ui, set = 1, binding = 3) volatile uniform uimage3D density_only_map;
+layout(r32ui, set = 1, binding = 4) volatile uniform uimage3D light_only_map;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED

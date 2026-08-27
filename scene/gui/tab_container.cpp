@@ -38,11 +38,17 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
-TabContainer::CachedTab &TabContainer::get_pending_tab(int p_idx) const {
+bool TabContainer::_is_tab_bar_owned() const {
+	return internal_container->get_parent() == this;
+}
+
+TabContainer::CachedTab *TabContainer::get_pending_tab(int p_idx) const {
 	if (p_idx >= pending_tabs.size()) {
-		pending_tabs.resize(p_idx + 1);
+		ERR_FAIL_COND_V(pending_tabs.resize(p_idx + 1) != OK, nullptr);
 	}
-	return pending_tabs.write[p_idx];
+	ERR_FAIL_INDEX_V(p_idx, pending_tabs.size(), nullptr);
+
+	return pending_tabs.ptrw() + p_idx;
 }
 
 int TabContainer::_get_tab_height() const {
@@ -157,7 +163,7 @@ void TabContainer::_notification(int p_what) {
 			Size2 size = get_size();
 
 			// Draw only the tab area if the header is hidden.
-			if (!tabs_visible) {
+			if (!tabs_visible || !_is_tab_bar_owned()) {
 				theme_cache.panel_style->draw(canvas, Rect2(0, 0, size.width, size.height));
 				return;
 			}
@@ -278,12 +284,14 @@ void TabContainer::_repaint_internal() {
 
 	// Move the TabBar to the top or bottom.
 	// Don't change the left and right offsets since the TabBar will resize and may change tab offset.
-	if (tabs_position == POSITION_BOTTOM) {
-		internal_container->set_anchor_and_offset(SIDE_BOTTOM, 1.0, -bottom_margin);
-		internal_container->set_anchor_and_offset(SIDE_TOP, 1.0, top_margin - _get_tab_height());
-	} else {
-		internal_container->set_anchor_and_offset(SIDE_TOP, 0.0, top_margin);
-		internal_container->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height() - bottom_margin);
+	if (_is_tab_bar_owned()) {
+		if (tabs_position == POSITION_BOTTOM) {
+			internal_container->set_anchor_and_offset(SIDE_BOTTOM, 1.0, -bottom_margin);
+			internal_container->set_anchor_and_offset(SIDE_TOP, 1.0, top_margin - _get_tab_height());
+		} else {
+			internal_container->set_anchor_and_offset(SIDE_TOP, 0.0, top_margin);
+			internal_container->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height() - bottom_margin);
+		}
 	}
 
 	updating_visibility = true;
@@ -294,7 +302,7 @@ void TabContainer::_repaint_internal() {
 			c->show();
 			c->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
-			if (tabs_visible) {
+			if (tabs_visible && _is_tab_bar_owned()) {
 				if (tabs_position == POSITION_BOTTOM) {
 					c->set_offset(SIDE_BOTTOM, -_get_tab_height());
 				} else {
@@ -317,6 +325,9 @@ void TabContainer::_repaint_internal() {
 }
 
 void TabContainer::_update_margins() {
+	if (!_is_tab_bar_owned()) {
+		return;
+	}
 	// Directly check for validity, to avoid errors when quitting.
 	bool has_popup = popup_obj_id.is_valid();
 
@@ -412,11 +423,7 @@ void TabContainer::_drag_move_tab(int p_from_index, int p_to_index) {
 }
 
 void TabContainer::_drag_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index) {
-	HBoxContainer *parent = Object::cast_to<HBoxContainer>(p_from_tabbar->get_parent()); // The internal container.
-	if (!parent) {
-		return;
-	}
-	TabContainer *from_tab_container = Object::cast_to<TabContainer>(parent->get_parent());
+	TabContainer *from_tab_container = TabContainer::get_tab_bar_container(p_from_tabbar);
 	if (!from_tab_container) {
 		return;
 	}
@@ -784,6 +791,19 @@ TabBar::AlignmentMode TabContainer::get_tab_alignment() const {
 	return tab_bar->get_tab_alignment();
 }
 
+void TabContainer::set_tab_sizing(TabBar::SizingMode p_sizing) {
+	if (tab_bar->get_tab_sizing() == p_sizing) {
+		return;
+	}
+
+	tab_bar->set_tab_sizing(p_sizing);
+	_update_margins();
+}
+
+TabBar::SizingMode TabContainer::get_tab_sizing() const {
+	return tab_bar->get_tab_sizing();
+}
+
 void TabContainer::set_tabs_position(TabPosition p_tabs_position) {
 	ERR_FAIL_INDEX(p_tabs_position, POSITION_MAX);
 	if (p_tabs_position == tabs_position) {
@@ -823,7 +843,7 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	}
 
 	tabs_visible = p_visible;
-	tab_bar->set_visible(tabs_visible);
+	internal_container->set_visible(tabs_visible);
 
 	_repaint_call_deferred();
 	queue_redraw();
@@ -848,9 +868,10 @@ bool TabContainer::is_all_tabs_in_front() const {
 void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		CachedTab &tab = get_pending_tab(p_tab);
-		tab.title = p_title;
-		tab.has_title = true;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->title = p_title;
+		tab->has_title = true;
 		return;
 	}
 	ERR_FAIL_NULL(child);
@@ -886,7 +907,9 @@ String TabContainer::get_tab_tooltip(int p_tab) const {
 void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		get_pending_tab(p_tab).icon = p_icon;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->icon = p_icon;
 		return;
 	}
 
@@ -924,7 +947,9 @@ int TabContainer::get_tab_icon_max_width(int p_tab) const {
 void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		get_pending_tab(p_tab).disabled = p_disabled;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->disabled = p_disabled;
 		return;
 	}
 
@@ -948,7 +973,9 @@ bool TabContainer::is_tab_disabled(int p_tab) const {
 void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		get_pending_tab(p_tab).hidden = p_hidden;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->hidden = p_hidden;
 		return;
 	}
 	ERR_FAIL_NULL(child);
@@ -994,7 +1021,7 @@ Ref<Texture2D> TabContainer::get_tab_button_icon(int p_tab) const {
 Size2 TabContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	Size2 ms;
 
-	if (tabs_visible) {
+	if (tabs_visible && _is_tab_bar_owned()) {
 		ms = p_use_desired_sizes ? tab_bar->get_bound_desired_size() : tab_bar->get_minimum_size();
 		ms.width += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
 		ms.height += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
@@ -1018,8 +1045,13 @@ Size2 TabContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 			continue;
 		}
 
-		Size2 cms = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
-		largest_child_min_size = largest_child_min_size.max(cms);
+		Size2 min_size = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
+		Size2 max_size = c->get_custom_maximum_size();
+
+		real_t width = (max_size.x >= 0 && c->get_h_size_flags().has_flag(Control::SIZE_MAXIMIZE)) ? max_size.x : min_size.x;
+		real_t height = (max_size.y >= 0 && c->get_v_size_flags().has_flag(Control::SIZE_MAXIMIZE)) ? max_size.y : min_size.y;
+
+		largest_child_min_size = largest_child_min_size.max(Size2(width, height));
 	}
 	ms.height += largest_child_min_size.height;
 
@@ -1176,11 +1208,15 @@ bool TabContainer::get_use_hidden_tabs_for_min_size() const {
 }
 
 Vector<int> TabContainer::get_allowed_size_flags_horizontal() const {
-	return Vector<int>();
+	Vector<int> flags;
+	flags.append(SIZE_MAXIMIZE);
+	return flags;
 }
 
 Vector<int> TabContainer::get_allowed_size_flags_vertical() const {
-	return Vector<int>();
+	Vector<int> flags;
+	flags.append(SIZE_MAXIMIZE);
+	return flags;
 }
 
 void TabContainer::_bind_methods() {
@@ -1195,6 +1231,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_control", "tab_idx"), &TabContainer::get_tab_control);
 	ClassDB::bind_method(D_METHOD("set_tab_alignment", "alignment"), &TabContainer::set_tab_alignment);
 	ClassDB::bind_method(D_METHOD("get_tab_alignment"), &TabContainer::get_tab_alignment);
+	ClassDB::bind_method(D_METHOD("set_tab_sizing", "tab_sizing"), &TabContainer::set_tab_sizing);
+	ClassDB::bind_method(D_METHOD("get_tab_sizing"), &TabContainer::get_tab_sizing);
 	ClassDB::bind_method(D_METHOD("set_tabs_position", "tabs_position"), &TabContainer::set_tabs_position);
 	ClassDB::bind_method(D_METHOD("get_tabs_position"), &TabContainer::get_tabs_position);
 	ClassDB::bind_method(D_METHOD("set_clip_tabs", "clip_tabs"), &TabContainer::set_clip_tabs);
@@ -1249,6 +1287,7 @@ void TabContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_alignment", "get_tab_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_sizing", PROPERTY_HINT_ENUM, "Fit Content,Uniform,Justify,Expand"), "set_tab_sizing", "get_tab_sizing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1"), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_tabs_position", "get_tabs_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
@@ -1322,7 +1361,21 @@ void TabContainer::_bind_methods() {
 	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
+TabContainer *TabContainer::get_tab_bar_container(TabBar *p_tab_bar) {
+	if (!p_tab_bar) {
+		return nullptr;
+	}
+	HBoxContainer *parent = Object::cast_to<HBoxContainer>(p_tab_bar->get_parent()); // The internal container.
+	if (!parent || !parent->has_meta(TAB_CONTAINER_META)) {
+		return nullptr;
+	}
+	return Object::cast_to<TabContainer>(parent->get_meta(TAB_CONTAINER_META).get_validated_object());
+}
+
 TabContainer::TabContainer() {
+	if (TAB_CONTAINER_META.is_empty()) {
+		TAB_CONTAINER_META = StringName("_tab_container", true);
+	}
 	connect(SceneStringName(maximum_size_changed), callable_mp(this, &TabContainer::_maximum_size_changed));
 
 	internal_container = memnew(HBoxContainer);
@@ -1330,6 +1383,7 @@ TabContainer::TabContainer() {
 	internal_container->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	internal_container->set_use_parent_material(true);
 	add_child(internal_container, false, INTERNAL_MODE_FRONT);
+	internal_container->set_meta(TAB_CONTAINER_META, this);
 
 	tab_bar = memnew(TabBar);
 	SET_DRAG_FORWARDING_GCDU(tab_bar, TabContainer);

@@ -220,6 +220,7 @@ public:
 	virtual String get_executable_path() const override;
 
 	virtual String get_locale() const override;
+	virtual Vector<String> get_preferred_locales() const override;
 
 	virtual String get_processor_name() const override;
 

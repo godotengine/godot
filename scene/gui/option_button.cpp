@@ -71,6 +71,11 @@ Size2 OptionButton::get_minimum_size() const {
 		minsize = content_size + padding;
 	}
 
+	if (fit_to_longest_item) {
+		// Make the width at least the width of the popup.
+		minsize.width = MAX(minsize.width, popup->get_contents_minimum_size().width);
+	}
+
 	return minsize;
 }
 

@@ -1,0 +1,6 @@
+GH-121123
+---------
+
+Validate extension JSON: Error: Field 'classes/OpenXRSpatialEntityExtension/methods/create_spatial_context/arguments': size changed value in new API, from 3 to 4.
+
+Added new optional `p_failure_callback` method to `create_spatial_context`.

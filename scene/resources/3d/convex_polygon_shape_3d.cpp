@@ -127,5 +127,5 @@ void ConvexPolygonShape3D::_bind_methods() {
 }
 
 ConvexPolygonShape3D::ConvexPolygonShape3D() :
-		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CONVEX_POLYGON)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PS3DE::SHAPE_CONVEX_POLYGON)) {
 }

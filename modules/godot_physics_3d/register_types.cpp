@@ -35,6 +35,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 #include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 
 static PhysicsServer3D *_createGodotPhysics3DCallback() {

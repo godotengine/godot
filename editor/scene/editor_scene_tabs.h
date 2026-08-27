@@ -88,6 +88,7 @@ private:
 	void _update_scene_list();
 
 	void _tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_tab);
+	static Dictionary _get_context_data(int p_current_tab);
 
 	void _global_menu_scene(const Variant &p_tag);
 	void _global_menu_new_window(const Variant &p_tag);
