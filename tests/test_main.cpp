@@ -50,10 +50,6 @@
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 
-#include "modules/interactive_music/tests/test_audio_stream_interactive.h"
-#include "modules/interactive_music/tests/test_audio_stream_playlist.h"
-#include "modules/interactive_music/tests/test_audio_stream_synchronized.h"
-
 #ifdef TOOLS_ENABLED
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"

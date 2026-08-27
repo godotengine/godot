@@ -30,10 +30,10 @@
 
 #pragma once
 
+#include "../audio_stream_synchronized.h"
+
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
-
-#include "modules/interactive_music/audio_stream_synchronized.h"
 
 namespace TestAudioStreamSynchronized {
 
