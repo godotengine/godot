@@ -264,13 +264,13 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 	}
 }
 
-void AndroidInputHandler::_cancel_mouse_event_info(bool p_source_mouse_relative) {
+void AndroidInputHandler::_cancel_mouse_event_info(bool p_source_mouse_relative, bool p_emulated) {
 	buttons_state = BitField<MouseButtonMask>();
-	_parse_mouse_event_info(BitField<MouseButtonMask>(), false, true, false, p_source_mouse_relative);
+	_parse_mouse_event_info(BitField<MouseButtonMask>(), false, true, false, p_source_mouse_relative, p_emulated);
 	mouse_event_info.valid = false;
 }
 
-void AndroidInputHandler::_parse_mouse_event_info(BitField<MouseButtonMask> event_buttons_mask, bool p_pressed, bool p_canceled, bool p_double_click, bool p_source_mouse_relative) {
+void AndroidInputHandler::_parse_mouse_event_info(BitField<MouseButtonMask> event_buttons_mask, bool p_pressed, bool p_canceled, bool p_double_click, bool p_source_mouse_relative, bool p_emulated) {
 	if (!mouse_event_info.valid) {
 		return;
 	}
@@ -295,15 +295,18 @@ void AndroidInputHandler::_parse_mouse_event_info(BitField<MouseButtonMask> even
 	ev->set_button_index(_button_index_from_mask(changed_button_mask));
 	ev->set_button_mask(event_buttons_mask);
 	ev->set_double_click(p_double_click);
+	if (p_emulated) {
+		ev->set_device(InputEvent::DEVICE_ID_EMULATION);
+	}
 	Input::get_singleton()->parse_input_event(ev);
 }
 
-void AndroidInputHandler::_release_mouse_event_info(bool p_source_mouse_relative) {
-	_parse_mouse_event_info(BitField<MouseButtonMask>(), false, false, false, p_source_mouse_relative);
+void AndroidInputHandler::_release_mouse_event_info(bool p_source_mouse_relative, bool p_emulated) {
+	_parse_mouse_event_info(BitField<MouseButtonMask>(), false, false, false, p_source_mouse_relative, p_emulated);
 	mouse_event_info.valid = false;
 }
 
-void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative, float p_pressure, Vector2 p_tilt) {
+void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative, float p_pressure, Vector2 p_tilt, bool p_emulated) {
 	BitField<MouseButtonMask> event_buttons_mask = _android_button_mask_to_godot_button_mask(p_event_android_buttons_mask);
 	switch (p_event_action) {
 		case AMOTION_EVENT_ACTION_HOVER_MOVE: // hover move
@@ -317,6 +320,9 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 			ev->set_global_position(p_event_pos);
 			ev->set_relative(p_event_pos - hover_prev_pos);
 			ev->set_relative_screen_position(ev->get_relative());
+			if (p_emulated) {
+				ev->set_device(InputEvent::DEVICE_ID_EMULATION);
+			}
 			Input::get_singleton()->parse_input_event(ev);
 			hover_prev_pos = p_event_pos;
 		} break;
@@ -325,20 +331,24 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 		case AMOTION_EVENT_ACTION_BUTTON_PRESS: {
 			// Release any remaining touches or mouse event
 			_release_mouse_event_info();
-			_release_all_touch();
+			if (!p_emulated) {
+				// In case of emulation, preserve touch state so one can ignore the emulated mouse event and continue interacting via touch.
+				// p_emulated = true, is set only for emulated right clicks.
+				_release_all_touch();
+			}
 
 			mouse_event_info.valid = true;
 			mouse_event_info.pos = p_event_pos;
-			_parse_mouse_event_info(event_buttons_mask, true, false, p_double_click, p_source_mouse_relative);
+			_parse_mouse_event_info(event_buttons_mask, true, false, p_double_click, p_source_mouse_relative, p_emulated);
 		} break;
 
 		case AMOTION_EVENT_ACTION_CANCEL: {
-			_cancel_mouse_event_info(p_source_mouse_relative);
+			_cancel_mouse_event_info(p_source_mouse_relative, p_emulated);
 		} break;
 
 		case AMOTION_EVENT_ACTION_UP:
 		case AMOTION_EVENT_ACTION_BUTTON_RELEASE: {
-			_release_mouse_event_info(p_source_mouse_relative);
+			_release_mouse_event_info(p_source_mouse_relative, p_emulated);
 		} break;
 
 		case AMOTION_EVENT_ACTION_MOVE: {
@@ -365,6 +375,9 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 			ev->set_button_mask(event_buttons_mask);
 			ev->set_pressure(p_pressure);
 			ev->set_tilt(p_tilt);
+			if (p_emulated) {
+				ev->set_device(InputEvent::DEVICE_ID_EMULATION);
+			}
 			Input::get_singleton()->parse_input_event(ev);
 		} break;
 
@@ -380,6 +393,9 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 				ev->set_global_position(p_event_pos);
 			}
 			ev->set_pressed(true);
+			if (p_emulated) {
+				ev->set_device(InputEvent::DEVICE_ID_EMULATION);
+			}
 			buttons_state = event_buttons_mask;
 			if (p_delta.y > 0) {
 				_wheel_button_click(event_buttons_mask, ev, MouseButton::WHEEL_UP, p_delta.y);

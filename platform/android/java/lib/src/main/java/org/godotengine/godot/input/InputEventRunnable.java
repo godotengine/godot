@@ -136,7 +136,8 @@ final class InputEventRunnable implements Runnable {
 	private float pressure;
 	private float tiltX;
 	private float tiltY;
-	void setMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY) {
+	private boolean emulated;
+	void setMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY, boolean emulated) {
 		this.currentEventType = EventType.MOUSE;
 		this.eventAction = eventAction;
 		this.buttonsMask = buttonsMask;
@@ -149,6 +150,7 @@ final class InputEventRunnable implements Runnable {
 		this.pressure = pressure;
 		this.tiltX = tiltX;
 		this.tiltY = tiltY;
+		this.emulated = emulated;
 	}
 
 	// Touch event fields and setter
@@ -280,7 +282,8 @@ final class InputEventRunnable implements Runnable {
 							sourceMouseRelative,
 							pressure,
 							tiltX,
-							tiltY);
+							tiltY,
+							emulated);
 					break;
 
 				case TOUCH:
