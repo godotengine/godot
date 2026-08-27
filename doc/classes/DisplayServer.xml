@@ -923,12 +923,12 @@
 			<description>
 				Returns the ID of the window at the specified screen [param position] (in pixels). On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
 				[codeblock lang=text]
-				* (0, 0)        +-------+
-				                |       |
-				+-------------+ |       |
-				|             | |       |
-				|             | |       |
-				+-------------+ +-------+
+				* (0, 0)        ┌───────┐
+				                │       │
+				┌─────────────┐ │       │
+				│             │ │       │
+				│             │ │       │
+				└─────────────┘ └───────┘
 				[/codeblock]
 			</description>
 		</method>
@@ -1827,12 +1827,12 @@
 			<description>
 				Returns the screen's top-left corner position in pixels. Returns [constant Vector2i.ZERO] if [param screen] is invalid. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin might be located outside any display like this:
 				[codeblock lang=text]
-				* (0, 0)        +-------+
-				                |       |
-				+-------------+ |       |
-				|             | |       |
-				|             | |       |
-				+-------------+ +-------+
+				* (0, 0)        ┌───────┐
+				                │       │
+				┌─────────────┐ │       │
+				│             │ │       │
+				│             │ │       │
+				└─────────────┘ └───────┘
 				[/codeblock]
 				See also [method screen_get_size].
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
@@ -2589,12 +2589,12 @@
 			<description>
 				Sets the position of the given window to [param position]. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
 				[codeblock lang=text]
-				* (0, 0)        +-------+
-				                |       |
-				+-------------+ |       |
-				|             | |       |
-				|             | |       |
-				+-------------+ +-------+
+				* (0, 0)        ┌───────┐
+				                │       │
+				┌─────────────┐ │       │
+				│             │ │       │
+				│             │ │       │
+				└─────────────┘ └───────┘
 				[/codeblock]
 				See also [method window_get_position] and [method window_set_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.position] instead.
