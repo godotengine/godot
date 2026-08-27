@@ -51,6 +51,7 @@ FileAccess *FileAccess::create(AccessType p_access) {
 
 	FileAccess *ret = create_func[p_access]();
 	ret->_set_access_type(p_access);
+
 	return ret;
 }
 
@@ -74,15 +75,14 @@ void FileAccess::_set_access_type(AccessType p_access) {
 FileAccess *FileAccess::create_for_path(const String &p_path) {
 
 	FileAccess *ret = NULL;
+
 	if (p_path.begins_with("res://")) {
-
 		ret = create(ACCESS_RESOURCES);
-	} else if (p_path.begins_with("user://")) {
 
+	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
 
 	} else {
-
 		ret = create(ACCESS_FILESYSTEM);
 	}
 
@@ -102,8 +102,10 @@ FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_er
 	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
 		ret = PackedData::get_singleton()->try_open_path(p_path);
 		if (ret) {
-			if (r_error)
+			if (r_error) {
 				*r_error = OK;
+			}
+
 			return ret;
 		}
 	}
@@ -111,10 +113,11 @@ FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_er
 	ret = create_for_path(p_path);
 	Error err = ret->_open(p_path, p_mode_flags);
 
-	if (r_error)
+	if (r_error) {
 		*r_error = err;
-	if (err != OK) {
+	}
 
+	if (err != OK) {
 		memdelete(ret);
 		ret = NULL;
 	}

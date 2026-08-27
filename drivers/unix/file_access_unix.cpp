@@ -37,15 +37,20 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#if defined(UNIX_ENABLED)
+#include <unistd.h>
+#endif
+
 #ifndef ANDROID_ENABLED
 #include <sys/statvfs.h>
 #endif
 
 #ifdef MSVC
-#define S_ISREG(m) ((m)&_S_IFREG)
+#define S_ISREG(m) ((m) & _S_IFREG)
+#include <io.h>
 #endif
 #ifndef S_ISREG
-#define S_ISREG(m) ((m)&S_IFREG)
+#define S_ISREG(m) ((m) & S_IFREG)
 #endif
 
 void FileAccessUnix::check_errors() const {
@@ -65,50 +70,69 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	f = NULL;
 
 	path = fix_path(p_path);
-	//printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
+	// printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
 
 	ERR_FAIL_COND_V(f, ERR_ALREADY_IN_USE);
 	const char *mode_string;
 
-	if (p_mode_flags == READ)
+	if (p_mode_flags == READ) {
 		mode_string = "rb";
-	else if (p_mode_flags == WRITE)
+	} else if (p_mode_flags == WRITE) {
 		mode_string = "wb";
-	else if (p_mode_flags == READ_WRITE)
+	} else if (p_mode_flags == READ_WRITE) {
 		mode_string = "rb+";
-	else if (p_mode_flags == WRITE_READ)
+	} else if (p_mode_flags == WRITE_READ) {
 		mode_string = "wb+";
-	else
+	} else {
 		return ERR_INVALID_PARAMETER;
+	}
 
 	/* pretty much every implementation that uses fopen as primary
 	   backend (unix-compatible mostly) supports utf8 encoding */
 
-	//printf("opening %s as %s\n", p_path.utf8().get_data(), path.utf8().get_data());
 	struct stat st;
-	if (stat(path.utf8().get_data(), &st) == 0) {
+	int err = stat(path.utf8().get_data(), &st);
+	if (!err) {
+		switch (st.st_mode & S_IFMT) {
+			case S_IFLNK:
+			case S_IFREG:
+				break;
+			default:
+				return ERR_FILE_CANT_OPEN;
+		}
+	}
 
-		if (!S_ISREG(st.st_mode))
-			return ERR_FILE_CANT_OPEN;
-	};
-
-	if (is_backup_save_enabled() && p_mode_flags & WRITE && !(p_mode_flags & READ)) {
+	if (is_backup_save_enabled() && (p_mode_flags & WRITE) && !(p_mode_flags & READ)) {
 		save_path = path;
 		path = path + ".tmp";
-		//print_line("saving instead to "+path);
 	}
 
 	f = fopen(path.utf8().get_data(), mode_string);
 
-	if (f == NULL) {
+	if (f == nullptr) {
 		last_error = ERR_FILE_CANT_OPEN;
 		return ERR_FILE_CANT_OPEN;
-	} else {
-		last_error = OK;
-		flags = p_mode_flags;
-		return OK;
 	}
+
+	// Set close on exec to avoid leaking it to subprocesses.
+	int fd = fileno(f);
+
+	if (fd != -1) {
+#if defined(NO_FCNTL)
+		unsigned long par = 0;
+		ioctl(fd, FIOCLEX, &par);
+#else
+		int opts = fcntl(fd, F_GETFD);
+		fcntl(fd, F_SETFD, opts | FD_CLOEXEC);
+#endif
+	}
+
+	last_error = OK;
+	flags = p_mode_flags;
+
+	return OK;
 }
+
 void FileAccessUnix::close() {
 
 	if (!f)
@@ -120,8 +144,6 @@ void FileAccessUnix::close() {
 	}
 	if (save_path != "") {
 
-		//unlink(save_path.utf8().get_data());
-		//print_line("renaming..");
 		int rename_error = rename((save_path + ".tmp").utf8().get_data(), save_path.utf8().get_data());
 
 		if (rename_error && close_fail_notify) {
@@ -213,17 +235,32 @@ void FileAccessUnix::store_buffer(const uint8_t *p_src, int p_length) {
 
 bool FileAccessUnix::file_exists(const String &p_path) {
 
-	FILE *g;
-	//printf("opening file %s\n", p_fname.c_str());
+	struct stat st;
 	String filename = fix_path(p_path);
-	g = fopen(filename.utf8().get_data(), "rb");
-	if (g == NULL) {
 
+	int err = stat(filename.utf8().get_data(), &st);
+
+	if (err) {
 		return false;
-	} else {
+	}
 
-		fclose(g);
-		return true;
+#ifdef UNIX_ENABLED
+	// See if we have access to the file
+	if (access(filename.utf8().get_data(), F_OK)) {
+		return false;
+	}
+#else
+	if (_access(filename.utf8().get_data(), 4) == -1)
+		return false;
+#endif
+
+	// See if this is a regular file
+	switch (st.st_mode & S_IFMT) {
+		case S_IFLNK:
+		case S_IFREG:
+			return true;
+		default:
+			return false;
 	}
 }
 
