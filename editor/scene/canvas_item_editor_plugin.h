@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
@@ -38,9 +39,11 @@ class Button;
 class ButtonGroup;
 class CanvasItemEditorViewport;
 class ConfirmationDialog;
+class CreateDialog;
 class EditorData;
 class EditorSelection;
 class EditorZoomWidget;
+class Gradient;
 class HScrollBar;
 class HSplitContainer;
 class MenuButton;
@@ -72,8 +75,8 @@ public:
 	Dictionary undo_state;
 };
 
-class CanvasItemEditor : public VBoxContainer {
-	GDCLASS(CanvasItemEditor, VBoxContainer);
+class CanvasItemEditor : public EditorDock {
+	GDCLASS(CanvasItemEditor, EditorDock);
 
 public:
 	enum Tool {
@@ -127,6 +130,8 @@ private:
 		SHOW_GUIDES,
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
+		SHOW_INFORMATION,
+		SHOW_FRAME_TIME,
 		SHOW_POSITION_GIZMOS,
 		SHOW_LOCK_GIZMOS,
 		SHOW_GROUP_GIZMOS,
@@ -201,7 +206,7 @@ private:
 	bool selection_menu_additive_selection = false;
 
 	Tool tool = TOOL_SELECT;
-	Control *viewport = nullptr;
+	CanvasItemEditorViewport *viewport = nullptr;
 	Control *viewport_scrollable = nullptr;
 
 	HScrollBar *h_scroll = nullptr;
@@ -376,6 +381,7 @@ private:
 
 	PopupMenu *selection_menu = nullptr;
 	PopupMenu *add_node_menu = nullptr;
+	CreateDialog *add_node_dialog = nullptr;
 
 	Control *top_ruler = nullptr;
 	Control *left_ruler = nullptr;
@@ -417,6 +423,7 @@ private:
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
 	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items, bool p_allow_locked = false);
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	Dictionary _get_context_data();
 
 	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append);
 
@@ -440,8 +447,8 @@ private:
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
 	void _add_node_pressed(int p_result);
-	void _adjust_new_node_position(Node *p_node);
-	void _reset_create_position();
+	void _create_node();
+	void _instantiate_scene(const String &p_path);
 	void _update_editor_settings();
 	void _prepare_grid_menu();
 	void _on_grid_menu_id_pressed(int p_id);
@@ -542,6 +549,8 @@ private:
 			const Node *p_current);
 
 	VBoxContainer *controls_vb = nullptr;
+	Control *info_panel_container = nullptr;
+	Control *frame_time_panel_container = nullptr;
 	Button *button_center_view = nullptr;
 	EditorZoomWidget *zoom_widget = nullptr;
 	void _update_zoom(real_t p_zoom);
@@ -604,9 +613,11 @@ public:
 
 	VSplitContainer *get_bottom_split();
 
-	Control *get_viewport_control() { return viewport; }
+	CanvasItemEditorViewport *get_viewport_control() { return viewport; }
 
 	Control *get_controls_container() { return controls_vb; }
+	Control *get_info_panel_container() { return info_panel_container; }
+	Control *get_frame_time_panel_container() { return frame_time_panel_container; }
 
 	void find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 
@@ -617,6 +628,10 @@ public:
 
 	bool is_grid_visible() const;
 	Vector2 get_grid_step() const { return grid_step; }
+	Vector2 get_grid_offset() const { return grid_offset; }
+
+	double get_zoom() const { return zoom; }
+	Point2 get_view_offset() const { return view_offset; }
 
 	void edit(CanvasItem *p_canvas_item);
 
@@ -627,6 +642,9 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	ThemePreviewMode get_theme_preview() const { return theme_preview; }
+
+	bool cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
+	void add_node_to_scene(Node *p_parent, Node *p_child, const Vector2 &p_target_position);
 
 	EditorSelection *editor_selection = nullptr;
 
@@ -642,7 +660,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_plugin_name() const override { return TTRC("2D"); }
+	virtual String get_plugin_name() const override { return "2D"; }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -658,6 +676,12 @@ public:
 
 class CanvasItemEditorViewport : public Control {
 	GDCLASS(CanvasItemEditorViewport, Control);
+
+	static constexpr int32_t FRAME_TIME_HISTORY = 20;
+	double cpu_time_history[FRAME_TIME_HISTORY];
+	int cpu_time_history_index;
+	double gpu_time_history[FRAME_TIME_HISTORY];
+	int gpu_time_history_index;
 
 	// The type of node that will be created when dropping texture into the viewport.
 	String default_texture_node_type;
@@ -675,6 +699,19 @@ class CanvasItemEditorViewport : public Control {
 	RichTextLabel *tooltip_panel = nullptr;
 	Ref<ButtonGroup> button_group;
 
+	PanelContainer *info_panel = nullptr;
+	Label *info_label = nullptr;
+
+	Ref<Gradient> frame_time_gradient;
+	PanelContainer *frame_time_panel = nullptr;
+	VBoxContainer *frame_time_vbox = nullptr;
+	Label *cpu_time_label = nullptr;
+	Label *gpu_time_label = nullptr;
+	Label *fps_label = nullptr;
+
+	bool show_information = false;
+	bool show_frame_time = false;
+
 	void _on_mouse_exit();
 	void _on_select_texture_node_type(Object *selected);
 	void _on_change_type_confirmed();
@@ -683,16 +720,14 @@ class CanvasItemEditorViewport : public Control {
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();
 
-	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
 	bool _is_any_texture_selected() const;
 	void _create_texture_node(Node *p_parent, Node *p_child, const String &p_path, const Point2 &p_point);
 	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
+	void _create_mesh_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();
 	void _update_theme();
-
-	void _show_tooltip(const String &p_title, const String &p_description) const;
 
 protected:
 	void _notification(int p_what);
@@ -700,6 +735,14 @@ protected:
 public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
+
+	void set_hint_label(const String &p_title, const String &p_description) const;
+
+	void set_show_information(bool p_enabled);
+	bool is_showing_information() const;
+
+	void set_show_frame_time(bool p_enabled);
+	bool is_showing_frame_time() const;
 
 	CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor);
 	~CanvasItemEditorViewport();

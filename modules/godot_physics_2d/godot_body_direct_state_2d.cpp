@@ -80,7 +80,7 @@ real_t GodotPhysicsDirectBodyState2D::get_angular_velocity() const {
 }
 
 void GodotPhysicsDirectBodyState2D::set_transform(const Transform2D &p_transform) {
-	body->set_state(PhysicsServer2D::BODY_STATE_TRANSFORM, p_transform);
+	body->set_state(PS2DE::BODY_STATE_TRANSFORM, p_transform);
 }
 
 Transform2D GodotPhysicsDirectBodyState2D::get_transform() const {

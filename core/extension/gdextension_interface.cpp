@@ -1580,7 +1580,7 @@ static void gdextension_placeholder_script_instance_update(GDExtensionScriptInst
 	placeholder->update(properties_list, values_map);
 }
 
-static GDExtensionScriptInstancePtr gdextension_object_get_script_instance(GDExtensionConstObjectPtr p_object, GDExtensionConstObjectPtr p_language) {
+static GDExtensionScriptInstanceDataPtr gdextension_object_get_script_instance(GDExtensionConstObjectPtr p_object, GDExtensionConstObjectPtr p_language) {
 	if (!p_object || !p_language) {
 		return nullptr;
 	}
@@ -1634,7 +1634,7 @@ static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionC
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	const StringName methodname = *reinterpret_cast<const StringName *>(p_methodname);
 	bool exists = false;
-	MethodBind *mb = ClassDB::get_method_with_compatibility(classname, methodname, p_hash, &exists);
+	const MethodBind *mb = ClassDB::get_method_with_compatibility(classname, methodname, p_hash, &exists);
 
 #ifndef DISABLE_DEPRECATED
 	// If lookup failed, see if this is one of the broken hashes from issue #81386.

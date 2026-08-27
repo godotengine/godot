@@ -70,7 +70,7 @@ class RenderingShaderContainerFormat;
 template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
-	static constexpr size_t MAX_RESOURCE_SIZE = Span(RESOURCE_SIZES).max();
+	static constexpr size_t MAX_RESOURCE_SIZE = Span<size_t>(RESOURCE_SIZES).max();
 	uint8_t data[MAX_RESOURCE_SIZE];
 
 	template <typename T>
@@ -157,6 +157,7 @@ public:
 	enum MemoryAllocationType {
 		MEMORY_ALLOCATION_TYPE_CPU, // For images, CPU allocation also means linear, GPU is tiling optimal.
 		MEMORY_ALLOCATION_TYPE_GPU,
+		MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE, // Supported on UMA devices or discrete devices with ReBAR.
 	};
 
 	/*****************/

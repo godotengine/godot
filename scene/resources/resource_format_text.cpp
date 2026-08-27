@@ -37,8 +37,8 @@
 #include "core/object/script_language.h"
 #include "scene/property_utils.h"
 
-void ResourceLoaderText::_printerr() {
-	ERR_PRINT(vformat("%s:%d - Parse Error: %s.", res_path, lines, error_text));
+String ResourceLoaderText::_get_error_string() {
+	return vformat("%s:%d - Parse Error: %s.", res_path, lines, error_text);
 }
 
 Ref<Resource> ResourceLoaderText::get_resource() {
@@ -151,7 +151,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 					if (ResourceLoader::get_abort_on_missing_resources()) {
 						error = ERR_FILE_MISSING_DEPENDENCIES;
 						error_text = "[ext_resource] referenced non-existent resource at: " + path;
-						_printerr();
+						ERR_PRINT(_get_error_string());
 						err = error;
 					} else {
 						ResourceLoader::notify_dependency_error(local_path, path, type);
@@ -201,6 +201,11 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("name")) {
 				name = packed_scene->get_state()->add_name(next_tag.fields["name"]);
+			} else {
+				error = ERR_FILE_CORRUPT;
+				error_text = "Missing 'name' field from node tag";
+				ERR_PRINT(_get_error_string());
+				return Ref<PackedScene>();
 			}
 
 			if (next_tag.fields.has("parent")) {
@@ -248,7 +253,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				if (packed_scene->get_state()->get_node_count() == 0) {
 					error = ERR_FILE_CORRUPT;
 					error_text = "Instance Placeholder can't be used for inheritance";
-					_printerr();
+					ERR_PRINT(_get_error_string());
 					return Ref<PackedScene>();
 				}
 
@@ -311,25 +316,29 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 		} else if (next_tag.name == "connection") {
 			if (!next_tag.fields.has("from")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'from' field from connection tag";
+				error_text = "Missing 'from' field from connection tag";
+				ERR_PRINT(_get_error_string());
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("to")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'to' field from connection tag";
+				error_text = "Missing 'to' field from connection tag";
+				ERR_PRINT(_get_error_string());
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("signal")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'signal' field from connection tag";
+				error_text = "Missing 'signal' field from connection tag";
+				ERR_PRINT(_get_error_string());
 				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("method")) {
 				error = ERR_FILE_CORRUPT;
-				error_text = "missing 'method' field from connection tag";
+				error_text = "Missing 'method' field from connection tag";
+				ERR_PRINT(_get_error_string());
 				return Ref<PackedScene>();
 			}
 
@@ -381,7 +390,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (error) {
 				if (error != ERR_FILE_EOF) {
-					_printerr();
+					ERR_PRINT(_get_error_string());
 					return Ref<PackedScene>();
 				} else {
 					error = OK;
@@ -392,7 +401,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			if (!next_tag.fields.has("path")) {
 				error = ERR_FILE_CORRUPT;
 				error_text = "Missing 'path' field from editable tag";
-				_printerr();
+				ERR_PRINT(_get_error_string());
 				return Ref<PackedScene>();
 			}
 
@@ -404,7 +413,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (error) {
 				if (error != ERR_FILE_EOF) {
-					_printerr();
+					ERR_PRINT(_get_error_string());
 					return Ref<PackedScene>();
 				} else {
 					error = OK;
@@ -414,7 +423,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 		} else {
 			error = ERR_FILE_CORRUPT;
 			error_text = vformat("Unknown tag '%s' in file", next_tag.name);
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return Ref<PackedScene>();
 		}
 	}
@@ -466,21 +475,21 @@ Error ResourceLoaderText::load() {
 		if (!next_tag.fields.has("path")) {
 			error = ERR_FILE_CORRUPT;
 			error_text = "Missing 'path' in external resource tag";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return error;
 		}
 
 		if (!next_tag.fields.has("type")) {
 			error = ERR_FILE_CORRUPT;
 			error_text = "Missing 'type' in external resource tag";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return error;
 		}
 
 		if (!next_tag.fields.has("id")) {
 			error = ERR_FILE_CORRUPT;
 			error_text = "Missing 'id' in external resource tag";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return error;
 		}
 
@@ -522,7 +531,7 @@ Error ResourceLoaderText::load() {
 			if (ResourceLoader::get_abort_on_missing_resources()) {
 				error = ERR_FILE_CORRUPT;
 				error_text = "[ext_resource] referenced non-existent resource at: " + path;
-				_printerr();
+				ERR_PRINT(_get_error_string());
 				return error;
 			} else {
 				ResourceLoader::notify_dependency_error(local_path, path, type);
@@ -532,7 +541,7 @@ Error ResourceLoaderText::load() {
 		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
 
 		if (error) {
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return error;
 		}
 	}
@@ -552,14 +561,14 @@ Error ResourceLoaderText::load() {
 		if (!next_tag.fields.has("type")) {
 			error = ERR_FILE_CORRUPT;
 			error_text = "Missing 'type' in external resource tag";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return error;
 		}
 
 		if (!next_tag.fields.has("id")) {
 			error = ERR_FILE_CORRUPT;
 			error_text = "Missing 'id' in external resource tag";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return error;
 		}
 
@@ -602,7 +611,7 @@ Error ResourceLoaderText::load() {
 						obj = missing_resource.ptr();
 					} else {
 						error_text = vformat("Can't create sub resource of type '%s'", type);
-						_printerr();
+						ERR_PRINT(_get_error_string());
 						error = ERR_FILE_CORRUPT;
 						return error;
 					}
@@ -611,7 +620,7 @@ Error ResourceLoaderText::load() {
 				Resource *r = Object::cast_to<Resource>(obj);
 				if (!r) {
 					error_text = vformat("Can't create sub resource of type '%s' as it's not a resource type", type);
-					_printerr();
+					ERR_PRINT(_get_error_string());
 					error = ERR_FILE_CORRUPT;
 					return error;
 				}
@@ -646,7 +655,7 @@ Error ResourceLoaderText::load() {
 			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
 
 			if (error) {
-				_printerr();
+				ERR_PRINT(_get_error_string());
 				return error;
 			}
 
@@ -702,7 +711,7 @@ Error ResourceLoaderText::load() {
 			} else {
 				error = ERR_FILE_CORRUPT;
 				error_text = "Premature end of file while parsing [sub_resource]";
-				_printerr();
+				ERR_PRINT(_get_error_string());
 				return error;
 			}
 		}
@@ -723,7 +732,7 @@ Error ResourceLoaderText::load() {
 
 		if (is_scene) {
 			error_text = "Unexpected 'resource' tag in a scene file";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			error = ERR_FILE_CORRUPT;
 			return error;
 		}
@@ -748,7 +757,7 @@ Error ResourceLoaderText::load() {
 						obj = missing_resource.ptr();
 					} else {
 						error_text = vformat("Can't create sub resource of type '%s'", res_type);
-						_printerr();
+						ERR_PRINT(_get_error_string());
 						error = ERR_FILE_CORRUPT;
 						return error;
 					}
@@ -757,7 +766,7 @@ Error ResourceLoaderText::load() {
 				Resource *r = Object::cast_to<Resource>(obj);
 				if (!r) {
 					error_text = vformat("Can't create sub resource of type '%s' as it's not a resource type", res_type);
-					_printerr();
+					ERR_PRINT(_get_error_string());
 					error = ERR_FILE_CORRUPT;
 					return error;
 				}
@@ -776,7 +785,7 @@ Error ResourceLoaderText::load() {
 
 			if (error) {
 				if (error != ERR_FILE_EOF) {
-					_printerr();
+					ERR_PRINT(_get_error_string());
 					return error;
 				}
 				// EOF, Done parsing.
@@ -839,7 +848,7 @@ Error ResourceLoaderText::load() {
 			} else if (!next_tag.name.is_empty()) {
 				error = ERR_FILE_CORRUPT;
 				error_text = "Extra tag found when parsing main resource file";
-				_printerr();
+				ERR_PRINT(_get_error_string());
 				return error;
 			} else {
 				break;
@@ -870,7 +879,7 @@ Error ResourceLoaderText::load() {
 	if (next_tag.name == "node") {
 		if (!is_scene) {
 			error_text = "Unexpected 'node' tag in a resource file";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			error = ERR_FILE_CORRUPT;
 			return error;
 		}
@@ -902,7 +911,7 @@ Error ResourceLoaderText::load() {
 		return error;
 	} else {
 		error_text = vformat("Unknown tag '%s' in file", next_tag.name);
-		_printerr();
+		ERR_PRINT(_get_error_string());
 		error = ERR_FILE_CORRUPT;
 		return error;
 	}
@@ -932,14 +941,14 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 		if (!next_tag.fields.has("type")) {
 			error = ERR_FILE_CORRUPT;
 			error_text = "Missing 'type' in external resource tag";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return;
 		}
 
 		if (!next_tag.fields.has("id")) {
 			error = ERR_FILE_CORRUPT;
 			error_text = "Missing 'id' in external resource tag";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return;
 		}
 
@@ -981,7 +990,7 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 		if (err) {
 			print_line(error_text + " - " + itos(lines));
 			error_text = "Unexpected end of file";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			error = ERR_FILE_CORRUPT;
 			return;
 		}
@@ -1005,6 +1014,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 
 		if (err != OK) {
 			error = ERR_FILE_CORRUPT;
+			ERR_PRINT(_get_error_string());
 			ERR_FAIL_V(error);
 		}
 
@@ -1144,7 +1154,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 
 	if (err) {
 		error = err;
-		_printerr();
+		ERR_PRINT(_get_error_string());
 		return;
 	}
 
@@ -1152,7 +1162,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 		format_version = tag.fields["format"];
 		if (format_version > FORMAT_VERSION) {
 			error_text = "Saved with newer format version";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			error = ERR_FILE_UNRECOGNIZED;
 			return;
 		}
@@ -1166,7 +1176,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 	} else if (tag.name == "gd_resource") {
 		if (!tag.fields.has("type")) {
 			error_text = "Missing 'type' field in 'gd_resource' tag";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			error = ERR_PARSE_ERROR;
 			return;
 		}
@@ -1179,7 +1189,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 
 	} else {
 		error_text = vformat("Unrecognized file type '%s'", tag.name);
-		_printerr();
+		ERR_PRINT(_get_error_string());
 		error = ERR_PARSE_ERROR;
 		return;
 	}
@@ -1195,7 +1205,7 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 
 		if (err) {
 			error_text = "Unexpected end of file";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			error = ERR_FILE_CORRUPT;
 		}
 	}
@@ -1223,7 +1233,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp_new);
 
 		if (error) {
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return error;
 		}
 	}
@@ -1233,7 +1243,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			if (!next_tag.fields.has("type")) {
 				error = ERR_FILE_CORRUPT;
 				error_text = "Missing 'type' in external resource tag";
-				_printerr();
+				ERR_PRINT(_get_error_string());
 				return error;
 			}
 
@@ -1254,7 +1264,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 					return OK;
 				}
 
-				_printerr();
+				ERR_PRINT(_get_error_string());
 				return error;
 			}
 
@@ -1266,7 +1276,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			} else {
 				error = ERR_FILE_CORRUPT;
 				error_text = "Premature end of file while parsing [sub_resource]";
-				_printerr();
+				ERR_PRINT(_get_error_string());
 				return error;
 			}
 		}
@@ -1278,7 +1288,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 		if (!is_scene) {
 			error = ERR_FILE_CORRUPT;
 			error_text = "Unexpected 'node' tag in a resource file";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return error;
 		}
 
@@ -1296,7 +1306,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 				if (error == ERR_FILE_MISSING_DEPENDENCIES) {
 					// Resource loading error, just skip it.
 				} else if (error != ERR_FILE_EOF) {
-					_printerr();
+					ERR_PRINT(_get_error_string());
 					return error;
 				} else {
 					return OK;
@@ -1311,7 +1321,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			} else {
 				error = ERR_FILE_CORRUPT;
 				error_text = "Premature end of file while parsing [sub_resource]";
-				_printerr();
+				ERR_PRINT(_get_error_string());
 				return error;
 			}
 		}
@@ -1334,7 +1344,7 @@ String ResourceLoaderText::recognize_script_class(Ref<FileAccess> p_f) {
 	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
 
 	if (err) {
-		_printerr();
+		ERR_PRINT(_get_error_string());
 		return "";
 	}
 
@@ -1342,7 +1352,7 @@ String ResourceLoaderText::recognize_script_class(Ref<FileAccess> p_f) {
 		int fmt = tag.fields["format"];
 		if (fmt > FORMAT_VERSION) {
 			error_text = "Saved with newer format version";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return "";
 		}
 	}
@@ -1372,7 +1382,7 @@ String ResourceLoaderText::recognize(Ref<FileAccess> p_f) {
 	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
 
 	if (err) {
-		_printerr();
+		ERR_PRINT(_get_error_string());
 		return "";
 	}
 
@@ -1380,7 +1390,7 @@ String ResourceLoaderText::recognize(Ref<FileAccess> p_f) {
 		int fmt = tag.fields["format"];
 		if (fmt > FORMAT_VERSION) {
 			error_text = "Saved with newer format version";
-			_printerr();
+			ERR_PRINT(_get_error_string());
 			return "";
 		}
 	}
@@ -1395,7 +1405,7 @@ String ResourceLoaderText::recognize(Ref<FileAccess> p_f) {
 
 	if (!tag.fields.has("type")) {
 		error_text = "Missing 'type' field in 'gd_resource' tag";
-		_printerr();
+		ERR_PRINT(_get_error_string());
 		return "";
 	}
 
@@ -1416,7 +1426,7 @@ ResourceUID::ID ResourceLoaderText::get_uid(Ref<FileAccess> p_f) {
 	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
 
 	if (err) {
-		_printerr();
+		ERR_PRINT(_get_error_string());
 		return ResourceUID::INVALID_ID;
 	}
 
@@ -1994,7 +2004,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				}
 
 				String vars;
-				VariantWriter::write_to_string(value, vars, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(value, vars, true, _write_resources, this, use_compat);
 				f->store_string(name.property_name_encode() + " = " + vars + "\n");
 			}
 		}
@@ -2072,14 +2082,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			if (!instance_placeholder.is_empty()) {
 				String vars;
 				f->store_string(" instance_placeholder=");
-				VariantWriter::write_to_string(instance_placeholder, vars, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(instance_placeholder, vars, true, _write_resources, this, use_compat);
 				f->store_string(vars);
 			}
 
 			if (instance.is_valid()) {
 				String vars;
 				f->store_string(" instance=");
-				VariantWriter::write_to_string(instance, vars, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(instance, vars, true, _write_resources, this, use_compat);
 				f->store_string(vars);
 			}
 
@@ -2087,7 +2097,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 			for (int j = 0; j < state->get_node_property_count(i); j++) {
 				String vars;
-				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, true, _write_resources, this, use_compat);
 
 				f->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
 			}
@@ -2135,7 +2145,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			f->store_string(connstr);
 			if (binds.size()) {
 				String vars;
-				VariantWriter::write_to_string(binds, vars, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(binds, vars, true, _write_resources, this, use_compat);
 				f->store_string(" binds= " + vars);
 			}
 

@@ -375,7 +375,7 @@ void OpenXRExtensionWrapper::on_state_exiting() {
 bool OpenXRExtensionWrapper::on_event_polled(const XrEventDataBuffer &p_event) {
 	bool event_polled;
 
-	if (GDVIRTUAL_CALL(_on_event_polled, GDExtensionConstPtr<void>(&p_event), event_polled)) {
+	if (GDVIRTUAL_CALL(_on_event_polled, GDExtensionPtr<const void>(&p_event), event_polled)) {
 		return event_polled;
 	}
 
@@ -385,7 +385,7 @@ bool OpenXRExtensionWrapper::on_event_polled(const XrEventDataBuffer &p_event) {
 void *OpenXRExtensionWrapper::set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, const Dictionary &p_property_values, void *p_next_pointer) {
 	uint64_t pointer = 0;
 
-	if (GDVIRTUAL_CALL(_set_viewport_composition_layer_and_get_next_pointer, GDExtensionConstPtr<void>(p_layer), p_property_values, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+	if (GDVIRTUAL_CALL(_set_viewport_composition_layer_and_get_next_pointer, GDExtensionPtr<const void>(p_layer), p_property_values, GDExtensionPtr<void>(p_next_pointer), pointer)) {
 		return reinterpret_cast<void *>(pointer);
 	}
 
@@ -393,7 +393,7 @@ void *OpenXRExtensionWrapper::set_viewport_composition_layer_and_get_next_pointe
 }
 
 void OpenXRExtensionWrapper::on_viewport_composition_layer_destroyed(const XrCompositionLayerBaseHeader *p_layer) {
-	GDVIRTUAL_CALL(_on_viewport_composition_layer_destroyed, GDExtensionConstPtr<void>(p_layer));
+	GDVIRTUAL_CALL(_on_viewport_composition_layer_destroyed, GDExtensionPtr<const void>(p_layer));
 }
 
 void OpenXRExtensionWrapper::get_viewport_composition_layer_extension_properties(List<PropertyInfo> *p_property_list) {

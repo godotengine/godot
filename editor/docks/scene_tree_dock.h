@@ -102,8 +102,6 @@ class SceneTreeDock : public EditorDock {
 
 	Vector<ObjectID> subresources;
 
-	bool reset_create_dialog = false;
-
 	int current_option = 0;
 
 	MarginContainer *main_mc = nullptr;
@@ -264,14 +262,14 @@ class SceneTreeDock : public EditorDock {
 	bool _has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const;
 
 	void _normalize_drop(Node *&to_node, int &to_pos, int p_type);
-	Array _get_selection_array();
 
-	void _nodes_dragged(const Array &p_nodes, NodePath p_to, int p_type);
-	void _files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type);
-	void _script_dropped(const String &p_file, NodePath p_to);
+	void _nodes_dragged(const Array &p_nodes, Node *p_to_node, int p_type);
+	void _files_dropped(const Vector<String> &p_files, Node *p_to_node, int p_type);
+	void _script_dropped(const String &p_file, Node *p_to_node);
 	void _quick_open(const String &p_file_path);
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
+	void _setup_tree_menu();
 	void _update_tree_menu();
 
 	void _filter_changed(const String &p_filter);
@@ -305,6 +303,7 @@ class SceneTreeDock : public EditorDock {
 	bool determine_path_automatically = true;
 
 	static void _update_configuration_warning();
+	static Dictionary _get_context_data(const List<Node *> &p_selected_nodes);
 
 	bool _update_node_path(Node *p_root_node, NodePath &r_node_path, HashMap<Node *, NodePath> *p_renames) const;
 	void _check_object_properties_recursive(Node *p_root_node, Object *p_obj, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
@@ -337,7 +336,7 @@ public:
 	void set_selection(const Vector<Node *> &p_nodes);
 	void set_selected(Node *p_node, bool p_emit_selected = false);
 	void fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<Node *, NodePath> *p_renames);
-	void perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims = nullptr);
+	void perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims = nullptr, LocalVector<Pair<StringName, StringName>> *r_folded_group_renames = nullptr);
 	void perform_node_replace(Node *p_base, Node *p_node, Node *p_by_node);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 	EditorData *get_editor_data() { return editor_data; }
@@ -355,9 +354,6 @@ public:
 
 	void attach_shader_to_selected(int p_preferred_mode = -1);
 	void open_shader_dialog(const Ref<ShaderMaterial> &p_for_material, int p_preferred_mode = -1);
-
-	void open_add_child_dialog();
-	void open_instance_child_dialog();
 
 	List<Node *> paste_nodes(bool p_paste_as_sibling = false);
 	void paste_node_as_replacement();

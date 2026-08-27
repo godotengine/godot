@@ -124,7 +124,7 @@ public:
 		if (closest_points_dist_sq > 0.0f)
 		{
 			// Collision within convex radius, adjust points for convex radius
-			float v_len = sqrt(closest_points_dist_sq); // GetClosestPoints function returns |ioV|^2 when return value < FLT_MAX
+			float v_len = Sqrt(closest_points_dist_sq); // GetClosestPoints function returns |ioV|^2 when return value < FLT_MAX
 			outPointA += ioV * (inConvexRadiusA / v_len);
 			outPointB -= ioV * (inConvexRadiusB / v_len);
 			return EStatus::Colliding;

@@ -36,6 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 #include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 
 PhysicsServer3D *create_jolt_physics_server() {

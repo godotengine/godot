@@ -346,8 +346,9 @@ RID RenderingDevice::blas_create(Span<AccelerationStructureGeometry> p_geometrie
 
 			uint32_t index_stride = (index_buffer->format == INDEX_BUFFER_FORMAT_UINT32 ? sizeof(uint32_t) : sizeof(uint16_t));
 			ERR_FAIL_COND_V_MSG((rd_geometry.index_offset + rd_geometry.index_count * index_stride) > index_buffer->size, RID(), "The specified index offset and count are outside the range of the index buffer.");
-			ERR_FAIL_COND_V_MSG(index_buffer->max_index >= rd_geometry.vertex_count, RID(), "The index buffer contains an index that is outside the specified vertex range.");
-
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_COND_V_MSG(index_buffer->max_index != 0xFFFFFFFF && index_buffer->max_index >= rd_geometry.vertex_count, RID(), "The index buffer contains an index that is outside the specified vertex range.");
+#endif
 			rdd_geometry.index_buffer = index_buffer->driver_id;
 			rdd_geometry.index_offset = rd_geometry.index_offset;
 			rdd_geometry.index_count = rd_geometry.index_count;
@@ -833,6 +834,24 @@ Error RenderingDevice::hit_sbt_range_update(RID p_hit_sbt, HitShaderBindingTable
 /**** BUFFER MANAGEMENT ****/
 /***************************/
 
+RDD::MemoryAllocationType RenderingDevice::_get_buffer_alloc_type(bool p_has_initial_data, Thread::ID p_thread_id) const {
+	bool gpu_mappable = false;
+
+	if (p_has_initial_data && driver->has_feature(SUPPORTS_GPU_MAPPABLE_BUFFER)) {
+		// Integrated GPUs have no cost when copying to GPU mappable buffers.
+		if (device.type == RenderingContextDriver::DEVICE_TYPE_INTEGRATED_GPU) {
+			gpu_mappable = true;
+		} else {
+			// Discrete GPUs can have extra cost when copying to GPU mappable buffers. Avoid that work on the render thread.
+			if (p_thread_id != render_thread_id) {
+				gpu_mappable = true;
+			}
+		}
+	}
+
+	return gpu_mappable ? RDD::MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE : RDD::MEMORY_ALLOCATION_TYPE_GPU;
+}
+
 RenderingDevice::Buffer *RenderingDevice::_get_buffer_from_owner(RID p_buffer) {
 	Buffer *buffer = nullptr;
 	if (vertex_buffer_owner.owns(p_buffer)) {
@@ -851,30 +870,41 @@ RenderingDevice::Buffer *RenderingDevice::_get_buffer_from_owner(RID p_buffer) {
 }
 
 Error RenderingDevice::_buffer_initialize(Buffer *p_buffer, Span<uint8_t> p_data, uint32_t p_required_align) {
-	uint32_t transfer_worker_offset;
-	TransferWorker *transfer_worker = _acquire_transfer_worker(p_data.size(), p_required_align, transfer_worker_offset);
-	p_buffer->transfer_worker_index = transfer_worker->index;
+	if (p_buffer->alloc_type == RDD::MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE) {
+		// Copy directly to the buffer if available.
+		uint8_t *data_ptr = driver->buffer_map(p_buffer->driver_id);
+		ERR_FAIL_NULL_V(data_ptr, ERR_CANT_CREATE);
 
-	{
-		MutexLock lock(transfer_worker->operations_mutex);
-		p_buffer->transfer_worker_operation = ++transfer_worker->operations_counter;
+		memcpy(data_ptr, p_data.ptr(), p_data.size());
+
+		driver->buffer_unmap(p_buffer->driver_id);
+	} else {
+		// Otherwise, use a transfer worker.
+		uint32_t transfer_worker_offset;
+		TransferWorker *transfer_worker = _acquire_transfer_worker(p_data.size(), p_required_align, transfer_worker_offset);
+		p_buffer->transfer_worker_index = transfer_worker->index;
+
+		{
+			MutexLock lock(transfer_worker->operations_mutex);
+			p_buffer->transfer_worker_operation = ++transfer_worker->operations_counter;
+		}
+
+		// Copy to the worker's staging buffer.
+		uint8_t *data_ptr = driver->buffer_map(transfer_worker->staging_buffer);
+		ERR_FAIL_NULL_V(data_ptr, ERR_CANT_CREATE);
+
+		memcpy(data_ptr + transfer_worker_offset, p_data.ptr(), p_data.size());
+		driver->buffer_unmap(transfer_worker->staging_buffer);
+
+		// Copy from the staging buffer to the real buffer.
+		RDD::BufferCopyRegion region;
+		region.src_offset = transfer_worker_offset;
+		region.dst_offset = 0;
+		region.size = p_data.size();
+		driver->command_copy_buffer(transfer_worker->command_buffer, transfer_worker->staging_buffer, p_buffer->driver_id, region);
+
+		_release_transfer_worker(transfer_worker);
 	}
-
-	// Copy to the worker's staging buffer.
-	uint8_t *data_ptr = driver->buffer_map(transfer_worker->staging_buffer);
-	ERR_FAIL_NULL_V(data_ptr, ERR_CANT_CREATE);
-
-	memcpy(data_ptr + transfer_worker_offset, p_data.ptr(), p_data.size());
-	driver->buffer_unmap(transfer_worker->staging_buffer);
-
-	// Copy from the staging buffer to the real buffer.
-	RDD::BufferCopyRegion region;
-	region.src_offset = transfer_worker_offset;
-	region.dst_offset = 0;
-	region.size = p_data.size();
-	driver->command_copy_buffer(transfer_worker->command_buffer, transfer_worker->staging_buffer, p_buffer->driver_id, region);
-
-	_release_transfer_worker(transfer_worker);
 
 	return OK;
 }
@@ -943,10 +973,7 @@ Error RenderingDevice::_staging_buffer_allocate(StagingBuffers &p_staging_buffer
 					// Guess we did.. ok, let's see if we can insert a new block.
 					if ((uint64_t)p_staging_buffers.blocks.size() * p_staging_buffers.block_size < p_staging_buffers.max_size) {
 						// We can, so we are safe.
-						Error err = _insert_staging_block(p_staging_buffers);
-						if (err) {
-							return err;
-						}
+						RETURN_IF_ERROR(_insert_staging_block(p_staging_buffers));
 						// Claim for this frame.
 						p_staging_buffers.blocks.write[p_staging_buffers.current].frame_used = frames_drawn;
 					} else {
@@ -971,10 +998,7 @@ Error RenderingDevice::_staging_buffer_allocate(StagingBuffers &p_staging_buffer
 			// This block may still be in use, let's not touch it unless we have to, so.. can we create a new one?
 			if ((uint64_t)p_staging_buffers.blocks.size() * p_staging_buffers.block_size < p_staging_buffers.max_size) {
 				// We are still allowed to create a new block, so let's do that and insert it for current pos.
-				Error err = _insert_staging_block(p_staging_buffers);
-				if (err) {
-					return err;
-				}
+				RETURN_IF_ERROR(_insert_staging_block(p_staging_buffers));
 				// Claim for this frame.
 				p_staging_buffers.blocks.write[p_staging_buffers.current].frame_used = frames_drawn;
 			} else {
@@ -1106,10 +1130,7 @@ Error RenderingDevice::_buffer_update(Buffer *p_buffer, RID p_buffer_id, uint32_
 		uint32_t block_write_amount;
 		StagingRequiredAction required_action;
 
-		Error err = _staging_buffer_allocate(upload_staging_buffers, MIN(to_submit, upload_staging_buffers.block_size), required_align, block_write_offset, block_write_amount, required_action);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_staging_buffer_allocate(upload_staging_buffers, MIN(to_submit, upload_staging_buffers.block_size), required_align, block_write_offset, block_write_amount, required_action));
 
 		if (!command_buffer_copies_vector.is_empty() && required_action == STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL) {
 			if (_buffer_make_mutable(p_buffer, p_buffer_id)) {
@@ -1355,10 +1376,7 @@ Error RenderingDevice::buffer_get_data_async(RID p_buffer, const Callable &p_cal
 	uint32_t to_submit = p_size;
 	uint32_t submit_from = 0;
 	while (to_submit > 0) {
-		Error err = _staging_buffer_allocate(download_staging_buffers, MIN(to_submit, download_staging_buffers.block_size), required_align, block_write_offset, block_write_amount, required_action);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_staging_buffer_allocate(download_staging_buffers, MIN(to_submit, download_staging_buffers.block_size), required_align, block_write_offset, block_write_amount, required_action));
 
 		const bool flush_frames = (get_data_request.frame_local_count > 0) && required_action == STAGING_REQUIRED_ACTION_FLUSH_AND_STALL_ALL;
 		if (flush_frames) {
@@ -1473,7 +1491,9 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT);
 	}
 
-	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
+	buffer.alloc_type = _get_buffer_alloc_type(!p_data.is_empty(), Thread::get_caller_id());
+
+	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, buffer.alloc_type, frames_drawn);
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
 	// Storage buffers are assumed to be mutable.
@@ -2027,11 +2047,11 @@ RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view,
 	return id;
 }
 
-static _ALWAYS_INLINE_ void _copy_region(uint8_t const *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_x, uint32_t p_src_y, uint32_t p_src_w, uint32_t p_src_h, uint32_t p_src_full_w, uint32_t p_dst_pitch, uint32_t p_unit_size) {
+static _ALWAYS_INLINE_ void _copy_region(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_x, uint32_t p_src_y, uint32_t p_src_w, uint32_t p_src_h, uint32_t p_src_full_w, uint32_t p_dst_pitch, uint32_t p_unit_size) {
 	uint32_t src_offset = (p_src_y * p_src_full_w + p_src_x) * p_unit_size;
 	uint32_t dst_offset = 0;
 	for (uint32_t y = p_src_h; y > 0; y--) {
-		uint8_t const *__restrict src = p_src + src_offset;
+		const uint8_t *__restrict src = p_src + src_offset;
 		uint8_t *__restrict dst = p_dst + dst_offset;
 		for (uint32_t x = p_src_w * p_unit_size; x > 0; x--) {
 			*dst = *src;
@@ -2122,7 +2142,6 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 	get_compressed_image_format_block_dimensions(texture->format, block_w, block_h);
 
 	uint32_t pixel_size = get_image_format_pixel_size(texture->format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(texture->format);
 	uint32_t block_size = get_compressed_image_format_block_byte_size(texture->format);
 
 	// The algorithm operates on two passes, one to figure out the total size the staging buffer will require to allocate and another one where the copy is actually performed.
@@ -2180,11 +2199,10 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 					}
 				}
 
-				uint32_t pitch = (width * pixel_size * block_w) >> pixel_rshift;
+				uint32_t pitch = get_compressed_image_format_pixels_shifted(texture->format, width * pixel_size * block_w);
 				uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
 				pitch = STEPIFY(pitch, pitch_step);
-				uint32_t to_allocate = pitch * height;
-				to_allocate >>= pixel_rshift;
+				uint32_t to_allocate = get_compressed_image_format_pixels_shifted(texture->format, pitch * height);
 
 				if (copy_pass) {
 					const uint8_t *read_ptr_mipmap_layer = read_ptr_mipmap + (tight_mip_size / depth) * z;
@@ -2282,7 +2300,6 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 	get_compressed_image_format_block_dimensions(texture->format, block_w, block_h);
 
 	uint32_t pixel_size = get_image_format_pixel_size(texture->format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(texture->format);
 	uint32_t block_size = get_compressed_image_format_block_byte_size(texture->format);
 
 	uint32_t region_size = texture_upload_region_size_px;
@@ -2317,7 +2334,7 @@ Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vec
 					uint32_t region_logic_w = MIN(region_size, logic_width - x);
 					uint32_t region_logic_h = MIN(region_size, logic_height - y);
 
-					uint32_t region_pitch = (region_w * pixel_size * block_w) >> pixel_rshift;
+					uint32_t region_pitch = get_compressed_image_format_pixels_shifted(texture->format, region_w * pixel_size * block_w);
 					uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
 					region_pitch = STEPIFY(region_pitch, pitch_step);
 					uint32_t to_allocate = region_pitch * region_h;
@@ -2573,6 +2590,10 @@ uint32_t RenderingDevice::_texture_vrs_method_to_usage_bits() const {
 			return RDD::TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDD::TEXTURE_USAGE_VRS_FRAGMENT_DENSITY_MAP_BIT;
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			// Rasterization rate map is not a real texture and it's readonly from shaders.
+			// Its usage is managed by the Metal rendering driver, so it doesn't need any usage bits.
+			return 0;
 		default:
 			return 0;
 	}
@@ -2811,10 +2832,8 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 	uint32_t block_w, block_h;
 	get_compressed_image_format_block_dimensions(tex->format, block_w, block_h);
 
-	uint32_t pixel_size = get_image_format_pixel_size(tex->format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(tex->format);
-
 	uint32_t w, h, d;
+	uint32_t pixel_size = get_image_format_pixel_size(tex->format);
 	uint32_t required_align = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT);
 	uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
 	uint32_t region_size = texture_download_region_size_px;
@@ -2837,7 +2856,7 @@ Error RenderingDevice::texture_get_data_async(RID p_texture, uint32_t p_layer, c
 
 					uint32_t region_logic_w = MIN(region_size, logic_w - x);
 					uint32_t region_logic_h = MIN(region_size, logic_h - y);
-					uint32_t region_pitch = (region_w * pixel_size * block_w) >> pixel_rshift;
+					uint32_t region_pitch = get_compressed_image_format_pixels_shifted(tex->format, region_w * pixel_size * block_w);
 					region_pitch = STEPIFY(region_pitch, pitch_step);
 
 					uint32_t to_allocate = region_pitch * region_h;
@@ -3390,6 +3409,8 @@ RDD::RenderPassID RenderingDevice::_render_pass_create(RenderingDeviceDriver *p_
 		}
 	}
 
+	// Note: We can ignore the case when the method is VRS_METHOD_RASTERIZATION_RATE_MAP, as
+	// the fragment_density_map_attachment_reference parameter is ignored by the Metal rendering driver
 	RDD::AttachmentReference fragment_density_map_attachment_reference;
 	if (p_vrs_method == VRS_METHOD_FRAGMENT_DENSITY_MAP && p_vrs_attachment >= 0) {
 		fragment_density_map_attachment_reference.attachment = p_vrs_attachment;
@@ -3418,6 +3439,8 @@ RDG::ResourceUsage RenderingDevice::_vrs_usage_from_method(VRSMethod p_method) {
 			return RDG::RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDG::RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ;
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			return RDG::RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ;
 		default:
 			return RDG::RESOURCE_USAGE_NONE;
 	}
@@ -3429,6 +3452,10 @@ RDD::PipelineStageBits RenderingDevice::_vrs_stages_from_method(VRSMethod p_meth
 			return RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT;
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			// Rasterization rate map is not a real texture and it's readonly from shaders.
+			// Its usage is managed by the Metal rendering driver, so it doesn't need any pipeline stage bits.
+			return RDD::PipelineStageBits(0);
 		default:
 			return RDD::PipelineStageBits(0);
 	}
@@ -3440,6 +3467,10 @@ RDD::TextureLayout RenderingDevice::_vrs_layout_from_method(VRSMethod p_method) 
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL;
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			return RDD::TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL;
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			// Rasterization rate map is not a real texture and it's readonly from shaders.
+			// Its usage is managed by the Metal rendering driver, so it doesn't need a layout.
+			return RDD::TEXTURE_LAYOUT_UNDEFINED;
 		default:
 			return RDD::TEXTURE_LAYOUT_UNDEFINED;
 	}
@@ -3452,6 +3483,8 @@ void RenderingDevice::_vrs_detect_method() {
 		vrs_method = VRS_METHOD_FRAGMENT_SHADING_RATE;
 	} else if (fdm_capabilities.attachment_supported) {
 		vrs_method = VRS_METHOD_FRAGMENT_DENSITY_MAP;
+	} else if (driver->has_feature(SUPPORTS_RASTERIZATION_RATE_MAP)) {
+		vrs_method = VRS_METHOD_RASTERIZATION_RATE_MAP;
 	}
 
 	switch (vrs_method) {
@@ -3462,6 +3495,12 @@ void RenderingDevice::_vrs_detect_method() {
 		case VRS_METHOD_FRAGMENT_DENSITY_MAP:
 			vrs_format = DATA_FORMAT_R8G8_UNORM;
 			vrs_texel_size = Vector2i(32, 32).clamp(fdm_capabilities.min_texel_size, fdm_capabilities.max_texel_size);
+			break;
+		case VRS_METHOD_RASTERIZATION_RATE_MAP:
+			// Rasterization rate map is not a real texture. It's a opaque object that contains screen space distortion metadata.
+			// For the sake of consistency with other APIs, we wrap it as a texture.
+			vrs_format = DATA_FORMAT_R8_UINT;
+			vrs_texel_size = Vector2i(16, 16);
 			break;
 		default:
 			break;
@@ -3662,6 +3701,7 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 	attachments.resize(p_texture_attachments.size());
 	Size2i size;
 	bool size_set = false;
+	Size2i vrs_overridden_size;
 	for (int i = 0; i < p_texture_attachments.size(); i++) {
 		AttachmentFormat af;
 		Texture *texture = texture_owner.get_or_null(p_texture_attachments[i]);
@@ -3676,6 +3716,12 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 			if (i != 0 && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
 				// Detect if the texture is the fragment density map and it's not the first attachment.
 				vrs_attachment = i;
+			}
+
+			// Rasterization map enables a bigger logical viewport than the physical texture.
+			if (texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT && vrs_method == VRS_METHOD_RASTERIZATION_RATE_MAP) {
+				vrs_overridden_size.width = texture->width;
+				vrs_overridden_size.height = texture->height;
 			}
 
 			if (!size_set) {
@@ -3704,6 +3750,10 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 	}
 
 	ERR_FAIL_COND_V_MSG(!size_set, RID(), "All attachments unused.");
+
+	if (vrs_overridden_size != Size2i()) {
+		size = vrs_overridden_size;
+	}
 
 	FramebufferFormatID format_id = framebuffer_format_create_multipass(attachments, p_passes, p_view_count, vrs_attachment);
 	if (format_id == INVALID_ID) {
@@ -3833,7 +3883,10 @@ RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p
 	if (p_creation_bits.has_flag(BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT)) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT);
 	}
-	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
+
+	buffer.alloc_type = _get_buffer_alloc_type(!p_data.is_empty(), Thread::get_caller_id());
+
+	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, buffer.alloc_type, frames_drawn);
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
 	// Vertex buffers are assumed to be immutable unless they don't have initial data or they've been marked for storage explicitly.
@@ -3902,7 +3955,7 @@ RenderingDevice::VertexFormatID RenderingDevice::vertex_format_create(const Vect
 	}
 
 	RDD::VertexFormatID driver_id = driver->vertex_format_create(vertex_descriptions, bindings);
-	ERR_FAIL_COND_V(!driver_id, 0);
+	ERR_FAIL_COND_V(!driver_id, INVALID_ID);
 
 	VertexFormatID id = (vertex_format_cache.size() | ((int64_t)ID_TYPE_VERTEX_FORMAT << ID_BASE_SHIFT));
 	vertex_format_cache[key] = id;
@@ -4048,7 +4101,10 @@ RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferForm
 	if (p_creation_bits.has_flag(BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT)) {
 		index_buffer.usage.set_flag(RDD::BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT);
 	}
-	index_buffer.driver_id = driver->buffer_create(index_buffer.size, index_buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
+
+	index_buffer.alloc_type = _get_buffer_alloc_type(!p_data.is_empty(), Thread::get_caller_id());
+
+	index_buffer.driver_id = driver->buffer_create(index_buffer.size, index_buffer.usage, index_buffer.alloc_type, frames_drawn);
 	ERR_FAIL_COND_V(!index_buffer.driver_id, RID());
 
 	// Index buffers are assumed to be immutable unless they don't have initial data.
@@ -4114,6 +4170,7 @@ static const char *SHADER_UNIFORM_NAMES[RenderingDevice::UNIFORM_TYPE_MAX] = {
 	"InputAttachment",
 	"UniformBufferDynamic",
 	"StorageBufferDynamic",
+	"AccelerationStructure",
 };
 
 String RenderingDevice::_shader_uniform_debug(RID p_shader, int p_set) {
@@ -4130,6 +4187,16 @@ String RenderingDevice::_shader_uniform_debug(RID p_shader, int p_set) {
 				ret += "\n";
 			}
 			ret += "Set: " + itos(i) + " Binding: " + itos(ui.binding) + " Type: " + SHADER_UNIFORM_NAMES[ui.type] + " Writable: " + (ui.writable ? "Y" : "N") + " Length: " + itos(ui.length);
+
+			if (ui.texture_type != TEXTURE_TYPE_MAX) {
+				ret += " Texture Type: ";
+				ret += TEXTURE_TYPE_NAMES[ui.texture_type];
+			}
+
+			if (ui.texture_format != DATA_FORMAT_MAX) {
+				ret += " Texture Format: ";
+				ret += FORMAT_NAMES[ui.texture_format];
+			}
 		}
 	}
 	return ret;
@@ -4156,8 +4223,6 @@ RID RenderingDevice::shader_create_from_bytecode(const Vector<uint8_t> &p_shader
 }
 
 RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint8_t> &p_shader_binary, RID p_placeholder, const Vector<PipelineImmutableSampler> &p_immutable_samplers) {
-	_THREAD_SAFE_METHOD_
-
 	Ref<RenderingShaderContainer> shader_container = driver->get_shader_container_format().create_container();
 	ERR_FAIL_COND_V(shader_container.is_null(), RID());
 
@@ -4180,6 +4245,8 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 
 	RDD::ShaderID shader_id = driver->shader_create_from_container(shader_container, driver_immutable_samplers);
 	ERR_FAIL_COND_V(!shader_id, RID());
+
+	_THREAD_SAFE_METHOD_
 
 	// All good, let's create modules.
 
@@ -4300,7 +4367,10 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 		// stick to the known/intended use cases and scream if we deviate from it.
 		buffer.usage.clear_flag(RDD::BUFFER_USAGE_TRANSFER_TO_BIT);
 	}
-	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, RDD::MEMORY_ALLOCATION_TYPE_GPU, frames_drawn);
+
+	buffer.alloc_type = _get_buffer_alloc_type(!p_data.is_empty(), Thread::get_caller_id());
+
+	buffer.driver_id = driver->buffer_create(buffer.size, buffer.usage, buffer.alloc_type, frames_drawn);
 	ERR_FAIL_COND_V(!buffer.driver_id, RID());
 
 	// Uniform buffers are assumed to be immutable unless they don't have initial data.
@@ -4684,6 +4754,10 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					buffer = vertex_buffer_owner.get_or_null(buffer_id);
 
 					ERR_FAIL_COND_V_MSG(!(buffer->usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT)), RID(), "Vertex buffer supplied (binding: " + itos(uniform.binding) + ") was not created with storage flag.");
+				} else if (index_buffer_owner.owns(buffer_id)) {
+					buffer = index_buffer_owner.get_or_null(buffer_id);
+
+					ERR_FAIL_COND_V_MSG(!(buffer->usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT)), RID(), "Index buffer supplied (binding: " + itos(uniform.binding) + ") was not created with storage flag.");
 				}
 				ERR_FAIL_NULL_V_MSG(buffer, RID(), "Storage buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
@@ -6260,7 +6334,7 @@ void RenderingDevice::draw_list_draw_indirect(DrawListID p_list, bool p_use_indi
 	_check_transfer_worker_buffer(buffer);
 }
 
-void RenderingDevice::draw_list_set_viewport(DrawListID p_list, const Rect2 &p_rect) {
+void RenderingDevice::draw_list_set_viewport(DrawListID p_list, const Rect2i &p_rect) {
 	ERR_FAIL_COND(!draw_list.active);
 
 	if (p_rect.get_area() == 0) {
@@ -9031,6 +9105,8 @@ bool RenderingDevice::has_feature(const Features p_feature) const {
 		case SUPPORTS_ATTACHMENT_VRS: {
 			const RDD::FragmentShadingRateCapabilities &fsr_capabilities = driver->get_fragment_shading_rate_capabilities();
 			const RDD::FragmentDensityMapCapabilities &fdm_capabilities = driver->get_fragment_density_map_capabilities();
+			// The VRS_METHOD_RASTERIZATION_RATE_MAP method is managed by the Metal rendering driver, so it doesn't
+			// report the SUPPORTS_ATTACHMENT_VRS feature, to avoid VRS texture creation logic.
 			return fsr_capabilities.attachment_supported || fdm_capabilities.attachment_supported;
 		}
 		default:
@@ -9759,6 +9835,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUPPORTS_RAY_QUERY);
 	BIND_ENUM_CONSTANT(SUPPORTS_RAYTRACING_PIPELINE);
 	BIND_ENUM_CONSTANT(SUPPORTS_HDR_OUTPUT);
+	BIND_ENUM_CONSTANT(SUPPORTS_RASTERIZATION_RATE_MAP);
 
 	BIND_ENUM_CONSTANT(LIMIT_MAX_BOUND_UNIFORM_SETS);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS);

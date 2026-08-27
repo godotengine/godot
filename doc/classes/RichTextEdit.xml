@@ -12,6 +12,7 @@
 		- [code skip-lint][i][/code] for italic text.
 		- [code skip-lint][u][/code] for underlined text.
 		- [code skip-lint][s][/code] for strikethrough text.
+		- [code skip-lint][o][/code] for overlined text. [code skip-lint][overline][/code] is accepted as an alias when parsing.
 		- [code skip-lint][color][/code] for foreground color.
 		- [code skip-lint][font_size][/code] and [code skip-lint][size][/code] for font size.
 		- [code skip-lint][font][/code] and [code skip-lint][code][/code] for font selection.
@@ -122,6 +123,12 @@
 				Removes the [code]visited[/code] attribute from URL ranges touched by the selection. If there is no selection, removes it from the URL range at the caret, if any.
 			</description>
 		</method>
+		<method name="clear_overline">
+			<return type="void" />
+			<description>
+				Removes overline formatting from the current selection. If there is no selection, removes overline from the typing style used for newly inserted text.
+			</description>
+		</method>
 		<method name="clear_strikethrough">
 			<return type="void" />
 			<description>
@@ -157,6 +164,13 @@
 			<param index="0" name="commit" type="bool" />
 			<description>
 				Ends the active color preview. If [param commit] is [code]true[/code], the previewed color change is kept as one undoable formatting action when text is selected. If [param commit] is [code]false[/code], the saved formatting state is restored.
+			</description>
+		</method>
+		<method name="get_content_height" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the height of the laid-out document at the current wrapping width, including line spacing and paragraph margins but excluding the control's style box margins. This includes content outside the control's rectangle and does not resize the control or require [member TextEdit.scroll_fit_content_height].
+				With [member visible_characters_behavior] set to [constant TextServer.VC_CHARS_BEFORE_SHAPING], wrapping and font metrics reflect the revealed characters, but unrevealed logical lines still occupy empty text rows. Other visibility modes retain the complete document's layout height. Set [member visible_characters] to [code]-1[/code] to measure the complete text. An empty document occupies one empty text row.
 			</description>
 		</method>
 		<method name="get_current_font_size" qualifiers="const">
@@ -334,6 +348,12 @@
 				Sets the [code]visited[/code] attribute on URL ranges touched by the selection. If there is no selection, sets it on the URL range at the caret, if any.
 			</description>
 		</method>
+		<method name="set_overline">
+			<return type="void" />
+			<description>
+				Adds overline formatting to the current selection. If there is no selection, adds overline to the typing style used for newly inserted text.
+			</description>
+		</method>
 		<method name="set_strikethrough">
 			<return type="void" />
 			<description>
@@ -376,6 +396,12 @@
 				Toggles ordered list formatting on the selected lines, or the current line if there is no selection.
 			</description>
 		</method>
+		<method name="toggle_overline">
+			<return type="void" />
+			<description>
+				Toggles overline formatting on the current selection. If there is no selection, toggles overline in the typing style used for newly inserted text.
+			</description>
+		</method>
 		<method name="toggle_quote">
 			<return type="void" />
 			<description>
@@ -411,6 +437,11 @@
 		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" overrides="TextEdit" default="false" />
 		<member name="link_activation_mode" type="int" setter="set_link_activation_mode" getter="get_link_activation_mode" enum="RichTextEdit.LinkActivationMode" default="0">
 			Controls how URL metadata is activated. In [constant LINK_ACTIVATION_AUTO], editable controls require [kbd]Ctrl[/kbd] + click ([kbd]Cmd[/kbd] + click on macOS), while non-editable controls activate links with a normal click.
+		</member>
+		<member name="overflow" type="int" setter="set_overflow" getter="get_overflow" enum="RichTextEdit.Overflow" default="0">
+			Controls how content that does not fit the control's rectangle is handled. See [enum Overflow]. This property is independent from [member TextEdit.editable] and can be changed at run time.
+			Text always wraps and aligns using the control's own width; the control is never resized to fit its content, and the document, undo history, focus, mouse filtering, selection, and caret settings are not affected.
+			[b]Note:[/b] With [constant OVERFLOW_VISIBLE], [member Control.clip_contents] on this control or an ancestor, as well as the containing [Viewport], can still clip the output. [member visible_characters] and [member visible_ratio] continue to limit the displayed text in every mode. Drawing overflow processes all visible text rows, so [constant OVERFLOW_VISIBLE] is intended for display content rather than very large documents.
 		</member>
 		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			The number of characters to display. If set to [code]-1[/code], all characters are displayed. See [member visible_characters_behavior] to configure how revealing characters affects text shaping.
@@ -463,6 +494,18 @@
 		<constant name="LINK_ACTIVATION_DISABLED" value="3" enum="LinkActivationMode">
 			Disables URL metadata activation.
 		</constant>
+		<constant name="OVERFLOW_AUTO" value="0" enum="Overflow">
+			Shows the horizontal scrollbar only when the content is wider than the control, and the vertical scrollbar only when the content is taller than the control. Content that does not fit is clipped.
+		</constant>
+		<constant name="OVERFLOW_VISIBLE" value="1" enum="Overflow">
+			Never shows scrollbars and lets text and inline objects draw outside the control's rectangle. Scroll offsets are reset to zero. Centered and right-aligned lines may extend to the left when wider than the control.
+		</constant>
+		<constant name="OVERFLOW_HIDDEN" value="2" enum="Overflow">
+			Never shows scrollbars and clips content that does not fit the control's rectangle. Scroll offsets are reset to zero, so the content is always anchored at the top-left corner of the viewport.
+		</constant>
+		<constant name="OVERFLOW_SCROLL" value="3" enum="Overflow">
+			Always shows both the horizontal and the vertical scrollbar, even when the content fits the control. Content that does not fit is clipped.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="link_active_color" data_type="color" type="Color" default="Color(1, 0, 0, 1)">
@@ -497,6 +540,18 @@
 		</theme_item>
 		<theme_item name="quote_padding" data_type="constant" type="int" default="16">
 			Horizontal padding between the quote border and quote text.
+		</theme_item>
+		<theme_item name="bold_font" data_type="font" type="Font">
+			Font used for bold text. Custom themes should provide a bold face matching the base [theme_item TextEdit.font].
+		</theme_item>
+		<theme_item name="bold_italics_font" data_type="font" type="Font">
+			Font used for text that is both bold and italic.
+		</theme_item>
+		<theme_item name="italics_font" data_type="font" type="Font">
+			Font used for italic text.
+		</theme_item>
+		<theme_item name="mono_font" data_type="font" type="Font">
+			Font used for code text.
 		</theme_item>
 		<theme_item name="tooltip_font" data_type="font" type="Font">
 			Font used by URL metadata tooltips.

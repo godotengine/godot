@@ -34,6 +34,7 @@
 
 #include "core/object/callable_mp.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d_manager.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/navigation_link_2d_editor_plugin.h"

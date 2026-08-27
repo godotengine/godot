@@ -204,9 +204,9 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 	shape_A_ptr->get_supports(p_xform_A.basis.xform_inv(mnormal).normalized(), max_supports, supports_A, support_count_A, support_type_A);
 
 	// Cast a segment from each support point of A in the motion direction.
-	int segment_support_idx = -1;
-	float segment_hit_length = FLT_MAX;
 	Vector3 segment_hit_local;
+	real_t segment_hit_length = FLT_MAX;
+	int segment_support_idx = -1;
 	for (int i = 0; i < support_count_A; i++) {
 		supports_A[i] = p_xform_A.xform(supports_A[i]);
 
@@ -224,7 +224,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		Vector3 rpos, rnorm;
 		int fi = -1;
 		if (p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm, fi, true)) {
-			float hit_length = local_from.distance_to(rpos);
+			real_t hit_length = local_from.distance_to(rpos);
 			if (hit_length < segment_hit_length) {
 				segment_support_idx = i;
 				segment_hit_length = hit_length;
@@ -268,8 +268,8 @@ bool GodotBodyPair3D::setup(real_t p_step) {
 		return false;
 	}
 
-	collide_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC) && A->collides_with(B);
-	collide_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC) && B->collides_with(A);
+	collide_A = (A->get_mode() > PS3DE::BODY_MODE_KINEMATIC) && A->collides_with(B);
+	collide_B = (B->get_mode() > PS3DE::BODY_MODE_KINEMATIC) && B->collides_with(A);
 
 	report_contacts_only = false;
 	if (!collide_A && !collide_B) {
@@ -701,7 +701,7 @@ bool GodotBodySoftBodyPair3D::setup(real_t p_step) {
 		return false;
 	}
 
-	body_collides = (body->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC) && body->collides_with(soft_body);
+	body_collides = (body->get_mode() > PS3DE::BODY_MODE_KINEMATIC) && body->collides_with(soft_body);
 	soft_body_collides = soft_body->collides_with(body);
 
 	if (!body_collides && !soft_body_collides) {

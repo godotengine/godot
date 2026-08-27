@@ -966,7 +966,13 @@ void SceneTree::set_quit_on_go_back(bool p_enable) {
 
 #ifdef DEBUG_ENABLED
 void SceneTree::set_debug_collisions_hint(bool p_enabled) {
+	if (debug_collisions_hint == p_enabled) {
+		return;
+	}
 	debug_collisions_hint = p_enabled;
+	if (root) {
+		root->propagate_notification(Node::NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED);
+	}
 }
 
 bool SceneTree::is_debugging_collisions_hint() const {
@@ -1628,18 +1634,16 @@ void SceneTree::_flush_delete_queue() {
 
 	while (delete_queue.size()) {
 		Object *obj = ObjectDB::get_instance(delete_queue.front()->get());
-		if (obj) {
-			memdelete(obj);
-		}
+		memdelete(obj);
 		delete_queue.pop_front();
 	}
 }
 
-void SceneTree::queue_delete(RequiredParam<Object> rp_object) {
+void SceneTree::queue_delete(RequiredParam<Object> p_object) {
 	_THREAD_SAFE_METHOD_
-	EXTRACT_PARAM_OR_FAIL(p_object, rp_object);
-	p_object->_is_queued_for_deletion = true;
-	delete_queue.push_back(p_object->get_instance_id());
+	EXTRACT_PARAM_OR_FAIL(object, p_object);
+	object->_is_queued_for_deletion = true;
+	delete_queue.push_back(object->get_instance_id());
 }
 
 int SceneTree::get_node_count() const {
@@ -1674,9 +1678,7 @@ void SceneTree::_flush_scene_change() {
 	if (prev_scene_id.is_valid()) {
 		// Might have already been freed externally.
 		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
-		if (prev_scene) {
-			memdelete(prev_scene);
-		}
+		memdelete(prev_scene);
 		prev_scene_id = ObjectID();
 	}
 
@@ -1710,18 +1712,18 @@ Error SceneTree::change_scene_to_file(const String &p_path) {
 	return change_scene_to_packed(new_scene);
 }
 
-Error SceneTree::change_scene_to_packed(RequiredParam<PackedScene> rp_scene) {
-	EXTRACT_PARAM_OR_FAIL_V_MSG(p_scene, rp_scene, ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
+Error SceneTree::change_scene_to_packed(RequiredParam<PackedScene> p_scene) {
+	EXTRACT_PARAM_OR_FAIL_V_MSG(scene, p_scene, ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
 
-	Node *new_scene = p_scene->instantiate();
+	Node *new_scene = scene->instantiate();
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
 	return change_scene_to_node(new_scene);
 }
 
-Error SceneTree::change_scene_to_node(RequiredParam<Node> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_V_MSG(p_node, rp_node, ERR_INVALID_PARAMETER, "Can't change to a null node. Use unload_current_scene() if you wish to unload it.");
-	ERR_FAIL_COND_V_MSG(p_node->is_inside_tree(), ERR_UNCONFIGURED, "The new scene node can't already be inside scene tree.");
+Error SceneTree::change_scene_to_node(RequiredParam<Node> p_node) {
+	EXTRACT_PARAM_OR_FAIL_V_MSG(node, p_node, ERR_INVALID_PARAMETER, "Can't change to a null node. Use unload_current_scene() if you wish to unload it.");
+	ERR_FAIL_COND_V_MSG(node->is_inside_tree(), ERR_UNCONFIGURED, "The new scene node can't already be inside scene tree.");
 
 	// If called again while a change is pending.
 	if (pending_new_scene_id.is_valid()) {
@@ -1740,7 +1742,7 @@ Error SceneTree::change_scene_to_node(RequiredParam<Node> rp_node) {
 	}
 	DEV_ASSERT(!current_scene);
 
-	pending_new_scene_id = p_node->get_instance_id();
+	pending_new_scene_id = node->get_instance_id();
 	return OK;
 }
 
@@ -2036,7 +2038,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 	if (add_options) {
 		HashMap<StringName, String> global_groups(ProjectSettings::get_singleton()->get_global_groups_list());
 		for (const KeyValue<StringName, String> &E : global_groups) {
-			r_options->push_back(E.key.operator String().quote());
+			r_options->push_back(E.key.string().quote());
 		}
 	}
 	MainLoop::get_argument_options(p_function, p_idx, r_options);
@@ -2099,7 +2101,9 @@ SceneTree::SceneTree() {
 	// Initialize network state.
 	set_multiplayer(MultiplayerAPI::create_default_interface());
 
+#ifndef _2D_DISABLED
 	root->set_as_audio_listener_2d(true);
+#endif // _2D_DISABLED
 	current_scene = nullptr;
 
 	const int msaa_mode_2d = GLOBAL_GET("rendering/anti_aliasing/quality/msaa_2d");
@@ -2229,16 +2233,12 @@ SceneTree::SceneTree() {
 SceneTree::~SceneTree() {
 	if (prev_scene_id.is_valid()) {
 		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
-		if (prev_scene) {
-			memdelete(prev_scene);
-		}
+		memdelete(prev_scene);
 		prev_scene_id = ObjectID();
 	}
 	if (pending_new_scene_id.is_valid()) {
 		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
-		if (pending_new_scene) {
-			memdelete(pending_new_scene);
-		}
+		memdelete(pending_new_scene);
 		pending_new_scene_id = ObjectID();
 	}
 	if (root) {

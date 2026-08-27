@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -92,11 +92,6 @@ jobs:
             echo "::warning::ANGLE SDK installation failed, building without ANGLE support."
             echo "ANGLE_ENABLED=no" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Download WinRT components
-        shell: sh
-        run: python ./misc/scripts/install_winrt.py
-        continue-on-error: true
 
       - name: Download pre-built AccessKit
         shell: sh

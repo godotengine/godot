@@ -1,10 +1,10 @@
 """Functions used to generate source files during build time"""
 
-import os
+import subprocess
 
 
 def make_debug_linuxbsd(target, source, env):
     dst = str(target[0])
-    os.system('objcopy --only-keep-debug "{0}" "{0}.debugsymbols"'.format(dst))
-    os.system('strip --strip-debug --strip-unneeded "{0}"'.format(dst))
-    os.system('objcopy --add-gnu-debuglink="{0}.debugsymbols" "{0}"'.format(dst))
+    subprocess.run(["objcopy", "--only-keep-debug", dst, f"{dst}.debugsymbols"], check=True)
+    subprocess.run(["strip", "--strip-debug", "--strip-unneeded", dst], check=True)
+    subprocess.run(["objcopy", f"--add-gnu-debuglink={dst}.debugsymbols", dst], check=True)

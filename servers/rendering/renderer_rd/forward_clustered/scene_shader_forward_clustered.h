@@ -128,6 +128,7 @@ public:
 				uint32_t multimesh_has_custom_data : 1;
 				uint32_t fog_use_legacy_blending : 1;
 				uint32_t cluster_has_area_light : 1;
+				uint32_t use_lightmap_specular : 1;
 			};
 		};
 
@@ -355,6 +356,7 @@ public:
 	RID debug_shadow_splits_material_shader;
 	RID debug_shadow_splits_material;
 	RID default_shader_rd;
+	RID default_multiview_shader_rd; // This is lazily initialized, use "get_default_shader_rd" instead.
 	RID default_shader_sdfgi_rd;
 
 	RID default_vec4_xform_buffer;
@@ -385,6 +387,7 @@ public:
 	bool is_multiview_shader_group_enabled() const;
 	bool is_advanced_shader_group_enabled(bool p_multiview) const;
 	uint32_t get_pipeline_compilations(RSE::PipelineSource p_source);
+	RID get_default_shader_rd(bool p_is_multiview = false);
 };
 
 } // namespace RendererSceneRenderImplementation

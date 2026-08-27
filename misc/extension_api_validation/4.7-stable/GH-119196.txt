@@ -1,0 +1,8 @@
+GH-119196
+--------------
+
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/DisplayServer/methods/get_display_cutouts': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/DisplayServer/methods/get_display_safe_area': arguments
+
+Added optional screen parameter to get_display_cutouts and get_display_safe_area for macOS implementation.
+Compatibility methods registered.

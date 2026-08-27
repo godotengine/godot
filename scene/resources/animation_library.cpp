@@ -151,7 +151,7 @@ void AnimationLibrary::get_argument_options(const StringName &p_function, int p_
 		LocalVector<StringName> names;
 		get_animation_list(&names);
 		for (const StringName &E : names) {
-			r_options->push_back(E.operator String().quote());
+			r_options->push_back(E.string().quote());
 		}
 	}
 	Resource::get_argument_options(p_function, p_idx, r_options);

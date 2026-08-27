@@ -129,7 +129,7 @@ public:
 				uint32_t directional_lights : 2;
 				uint32_t decals : 1;
 				uint32_t directional_light_blend_splits : 8;
-				uint32_t padding_1 : 1;
+				uint32_t use_lightmap_specular : 1;
 			};
 		};
 
@@ -357,6 +357,7 @@ public:
 	RID debug_shadow_splits_material_shader;
 	RID debug_shadow_splits_material;
 	RID default_shader_rd;
+	RID default_multiview_shader_rd; // This is lazily initialized, use "get_default_shader_rd" instead.
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
@@ -386,6 +387,7 @@ public:
 	void enable_fp16_shader_group();
 	void enable_multiview_shader_group();
 	bool is_multiview_shader_group_enabled() const;
+	RID get_default_shader_rd(bool p_is_multiview = false);
 };
 
 } // namespace RendererSceneRenderImplementation

@@ -191,8 +191,8 @@ public:
 	virtual Dictionary get_viewport_composition_layer_extension_property_defaults(); // Get the default values for the additional property definitions for OpenXRCompositionLayer.
 	virtual void *set_android_surface_swapchain_create_info_and_get_next_pointer(const Dictionary &p_property_values, void *p_next_pointer);
 
-	GDVIRTUAL3R(uint64_t, _set_viewport_composition_layer_and_get_next_pointer, GDExtensionConstPtr<void>, Dictionary, GDExtensionPtr<void>);
-	GDVIRTUAL1(_on_viewport_composition_layer_destroyed, GDExtensionConstPtr<void>);
+	GDVIRTUAL3R(uint64_t, _set_viewport_composition_layer_and_get_next_pointer, GDExtensionPtr<const void>, Dictionary, GDExtensionPtr<void>);
+	GDVIRTUAL1(_on_viewport_composition_layer_destroyed, GDExtensionPtr<const void>);
 	GDVIRTUAL0R(TypedArray<Dictionary>, _get_viewport_composition_layer_extension_properties);
 	GDVIRTUAL0R(Dictionary, _get_viewport_composition_layer_extension_property_defaults);
 	GDVIRTUAL2R(uint64_t, _set_android_surface_swapchain_create_info_and_get_next_pointer, Dictionary, GDExtensionPtr<void>);
@@ -201,7 +201,7 @@ public:
 	// Should return true if the event was handled, false otherwise.
 	virtual bool on_event_polled(const XrEventDataBuffer &event);
 
-	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionConstPtr<void>);
+	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionPtr<const void>);
 
 	OpenXRExtensionWrapper();
 	virtual ~OpenXRExtensionWrapper() override;

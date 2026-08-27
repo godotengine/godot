@@ -12,7 +12,11 @@ JPH_NAMESPACE_BEGIN
 
 inline LFHMAllocator::~LFHMAllocator()
 {
+#if JPH_DEFAULT_ALLOCATE_ALIGNMENT < 16
 	AlignedFree(mObjectStore);
+#else
+	Free(mObjectStore);
+#endif
 }
 
 inline void LFHMAllocator::Init(uint inObjectStoreSizeBytes)
@@ -20,7 +24,11 @@ inline void LFHMAllocator::Init(uint inObjectStoreSizeBytes)
 	JPH_ASSERT(mObjectStore == nullptr);
 
 	mObjectStoreSizeBytes = inObjectStoreSizeBytes;
+#if JPH_DEFAULT_ALLOCATE_ALIGNMENT < 16
 	mObjectStore = reinterpret_cast<uint8 *>(JPH::AlignedAllocate(inObjectStoreSizeBytes, 16));
+#else
+	mObjectStore = reinterpret_cast<uint8 *>(JPH::Allocate(inObjectStoreSizeBytes));
+#endif
 }
 
 inline void LFHMAllocator::Clear()
@@ -124,7 +132,11 @@ void LockFreeHashMap<Key, Value>::Init(uint32 inMaxBuckets)
 	mNumBuckets = inMaxBuckets;
 	mMaxBuckets = inMaxBuckets;
 
+#if JPH_DEFAULT_ALLOCATE_ALIGNMENT < 16
 	mBuckets = reinterpret_cast<atomic<uint32> *>(AlignedAllocate(inMaxBuckets * sizeof(atomic<uint32>), 16));
+#else
+	mBuckets = reinterpret_cast<atomic<uint32> *>(Allocate(inMaxBuckets * sizeof(atomic<uint32>)));
+#endif
 
 	Clear();
 }
@@ -132,7 +144,11 @@ void LockFreeHashMap<Key, Value>::Init(uint32 inMaxBuckets)
 template <class Key, class Value>
 LockFreeHashMap<Key, Value>::~LockFreeHashMap()
 {
+#if JPH_DEFAULT_ALLOCATE_ALIGNMENT < 16
 	AlignedFree(mBuckets);
+#else
+	Free(mBuckets);
+#endif
 }
 
 template <class Key, class Value>
@@ -238,6 +254,12 @@ template <class Key, class Value>
 inline const typename LockFreeHashMap<Key, Value>::KeyValue *LockFreeHashMap<Key, Value>::FromHandle(uint32 inHandle) const
 {
 	return mAllocator.template FromOffset<const KeyValue>(inHandle);
+}
+
+template <class Key, class Value>
+inline typename LockFreeHashMap<Key, Value>::KeyValue *LockFreeHashMap<Key, Value>::FromHandle(uint32 inHandle)
+{
+	return mAllocator.template FromOffset<KeyValue>(inHandle);
 }
 
 template <class Key, class Value>

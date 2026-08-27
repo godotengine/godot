@@ -712,7 +712,7 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 				scripts_to_reload.push_back(script);
 			}
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->reload_scripts(scripts_to_reload, true);
+				ScriptServer::get_language(i)->reload_scripts(scripts_to_reload);
 			}
 		}
 		script_paths_to_reload.clear();

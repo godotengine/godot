@@ -171,6 +171,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 #if defined(VK_TRACK_DEVICE_MEMORY)
 	bool device_memory_report_support = false;
 #endif
+	bool device_local_host_visible_host_coherent_memory_support = false;
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	// Swappy frame pacer for Android.
 	bool swappy_frame_pacer_enable = false;
@@ -546,7 +547,7 @@ private:
 		VkDescriptorPool vk_descriptor_pool = VK_NULL_HANDLE;
 		VkDescriptorPool vk_linear_descriptor_pool = VK_NULL_HANDLE;
 		DescriptorSetPools::Iterator pool_sets_it;
-		TightLocalVector<BufferInfo const *, uint32_t> dynamic_buffers;
+		TightLocalVector<const BufferInfo *, uint32_t> dynamic_buffers;
 	};
 
 	bool adreno_5xx_empty_descriptor_set_layout_workaround = false;

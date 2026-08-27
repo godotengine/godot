@@ -69,6 +69,7 @@ bool RichTextDocument::Style::operator==(const Style &p_other) const {
 			has_underline == p_other.has_underline &&
 			underline == p_other.underline &&
 			strikethrough == p_other.strikethrough &&
+			overline == p_other.overline &&
 			code == p_other.code &&
 			has_color == p_other.has_color &&
 			(!has_color || color == p_other.color) &&
@@ -98,7 +99,7 @@ bool RichTextDocument::Style::operator==(const Style &p_other) const {
 }
 
 bool RichTextDocument::Style::is_default() const {
-	return !bold && !italic && !has_underline && !underline && !strikethrough && !code &&
+	return !bold && !italic && !has_underline && !underline && !strikethrough && !overline && !code &&
 			!has_color && !has_bg_color && !has_fg_color && !has_outline_color && !has_outline_size &&
 			font_size <= 0 && alignment < 0 && indent_level <= 0 && list_type == 0 && list_start < 0 &&
 			font.is_empty() && !has_url && !url_visited && url.is_empty() && url_tooltip.is_empty() && language.is_empty() &&
@@ -417,6 +418,8 @@ RichTextDocument RichTextDocument::parse_bbcode(const String &p_bbcode) {
 			next_style.underline = true;
 		} else if (tag.name == "s") {
 			next_style.strikethrough = true;
+		} else if (tag.name == "o" || tag.name == "overline") {
+			next_style.overline = true;
 		} else if (tag.name == "code") {
 			next_style.code = true;
 		} else if (tag.name == "url") {
@@ -713,6 +716,9 @@ String RichTextDocument::to_bbcode() const {
 		}
 		if (p_style.strikethrough) {
 			add_tag(tags, "[s]", "[/s]");
+		}
+		if (p_style.overline) {
+			add_tag(tags, "[o]", "[/o]");
 		}
 		if (p_style.has_underline && p_style.underline) {
 			add_tag(tags, "[u]", "[/u]");
@@ -1013,6 +1019,7 @@ static void write_style(PBWriter &r_writer, const RichTextDocument::Style &p_sty
 	if (p_style.block_group != 0) {
 		r_writer.integer(26, p_style.block_group);
 	}
+	r_writer.boolean(27, p_style.overline);
 }
 
 static bool read_style(PBReader &r_reader, RichTextDocument::Style &r_style) {
@@ -1027,6 +1034,11 @@ static bool read_style(PBReader &r_reader, RichTextDocument::Style &r_style) {
 				return false;
 			}
 			r_style.block_group = int(value);
+		} else if (field == 27 && wire == 0) {
+			if (!r_reader.varint(value)) {
+				return false;
+			}
+			r_style.overline = value;
 		} else if (field >= 1 && field <= 19 && wire == 0) {
 			if (!r_reader.varint(value)) {
 				return false;

@@ -82,6 +82,7 @@ private:
 		HashMap<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
 		Vector<WorkerThreadPool::GroupID> group_compilation_tasks;
+		Vector<bool> group_loaded_from_cache;
 
 		Vector<Vector<uint8_t>> variant_data;
 		Vector<RID> variants;
@@ -178,6 +179,7 @@ private:
 	String _version_get_sha1(Version *p_version) const;
 	String _get_cache_file_relative_path(Version *p_version, int p_group, const String &p_api_name);
 	String _get_cache_file_path(Version *p_version, int p_group, const String &p_api_name, bool p_user_dir);
+	void _load_variant_from_cache(uint32_t p_variant, CompileData p_data);
 	bool _load_from_cache(Version *p_version, int p_group);
 	void _save_to_cache(Version *p_version, int p_group);
 	void _initialize_cache();

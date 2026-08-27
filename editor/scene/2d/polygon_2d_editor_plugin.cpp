@@ -34,7 +34,6 @@
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/os/os.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
@@ -614,6 +613,30 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 						previous_colors.remove_at(closest);
 					}
 
+					Array polygons = node->get_polygons().duplicate(); // Copy because it's a reference.
+					for (int i = polygons.size() - 1; i >= 0; --i) {
+						Vector<int> points = polygons[i];
+
+						bool uses_removed_vertex = false;
+						bool modified = false;
+						for (int j = 0; j < points.size(); ++j) {
+							if (points[j] == closest) {
+								uses_removed_vertex = true;
+								break;
+							}
+							if (points[j] > closest) {
+								points.set(j, points[j] - 1);
+								modified = true;
+							}
+						}
+
+						if (uses_removed_vertex) {
+							polygons.remove_at(i);
+						} else if (modified) {
+							polygons[i] = points;
+						}
+					}
+
 					undo_redo->create_action(TTR("Remove Internal Vertex"));
 					undo_redo->add_do_method(node, "set_uv", previous_uv);
 					undo_redo->add_undo_method(node, "set_uv", node->get_uv());
@@ -621,6 +644,8 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					undo_redo->add_undo_method(node, "set_polygon", node->get_polygon());
 					undo_redo->add_do_method(node, "set_vertex_colors", previous_colors);
 					undo_redo->add_undo_method(node, "set_vertex_colors", node->get_vertex_colors());
+					undo_redo->add_do_method(node, "set_polygons", polygons);
+					undo_redo->add_undo_method(node, "set_polygons", node->get_polygons());
 					for (int i = 0; i < node->get_bone_count(); i++) {
 						Vector<float> bonew = node->get_bone_weights(i);
 						bonew.remove_at(closest);
@@ -696,6 +721,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 							polygon_create.clear();
 						} else if (!polygon_create.has(closest)) {
+							create_to = mtx.affine_inverse().xform(mb->get_position());
 							//add temporarily if not exists
 							polygon_create.push_back(closest);
 						}
@@ -1074,8 +1100,6 @@ void Polygon2DEditor::_canvas_draw() {
 
 	Ref<Texture2D> base_tex = node->get_texture();
 
-	String warning;
-
 	Transform2D mtx;
 	mtx.columns[2] = -draw_offset * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
@@ -1392,9 +1416,8 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_CREATE]->set_tooltip_text(TTR("Create Polygon"));
 	action_buttons[ACTION_CREATE_INTERNAL]->set_tooltip_text(TTR("Create Internal Vertex"));
 	action_buttons[ACTION_REMOVE_INTERNAL]->set_tooltip_text(TTR("Remove Internal Vertex"));
-	Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 	// TRANSLATORS: %s is Control or Command key name.
-	action_buttons[ACTION_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), find_keycode_name(key)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), find_keycode_name(key)));
+	action_buttons[ACTION_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), keycode_get_string(Key::CMD_OR_CTRL)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), keycode_get_string(Key::CMD_OR_CTRL)));
 	action_buttons[ACTION_MOVE]->set_tooltip_text(TTR("Move Polygon"));
 	action_buttons[ACTION_ROTATE]->set_tooltip_text(TTR("Rotate Polygon"));
 	action_buttons[ACTION_SCALE]->set_tooltip_text(TTR("Scale Polygon"));
@@ -1557,7 +1580,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	bone_scroll_main_vb->set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 	sync_bones = memnew(Button(TTR("Sync Bones to Polygon")));
 	bone_scroll_main_vb->add_child(sync_bones);
-	sync_bones->set_h_size_flags(0);
+	sync_bones->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	sync_bones->connect(SceneStringName(pressed), callable_mp(this, &Polygon2DEditor::_sync_bones));
 	uv_main_hsc->add_child(bone_scroll_main_vb);
 	bone_scroll = memnew(ScrollContainer);

@@ -232,6 +232,7 @@ void RichTextEditToolbar::_update_controls_from_target() {
 	italic_button->set_pressed_no_signal(has_target && style.italic);
 	underline_button->set_pressed_no_signal(has_target && style.has_underline && style.underline);
 	strikethrough_button->set_pressed_no_signal(has_target && style.strikethrough);
+	overline_button->set_pressed_no_signal(has_target && style.overline);
 
 	// Quote, lists, alignment and indentation all share the block tag slot.
 	const String block_tag = has_target ? style.block_tag : String();
@@ -243,8 +244,9 @@ void RichTextEditToolbar::_update_controls_from_target() {
 	align_left_button->set_pressed_no_signal(block_tag != "center" && block_tag != "right");
 	_set_button_icon(alignment_button, block_tag == "center" ? SNAME("align_center") : (block_tag == "right" ? SNAME("align_right") : SNAME("align_left")));
 	if (target != nullptr && line_height_button != nullptr) {
+		// The button itself is only highlighted while its popup is open; the
+		// active line height is shown by the checked preset inside the popup.
 		const String line_height = target->get_current_line_height();
-		line_height_button->set_pressed_no_signal(!line_height.is_empty() && line_height != "normal");
 		if (line_height_line_edit != nullptr && (line_height_popup == nullptr || !line_height_popup->is_visible())) {
 			line_height_line_edit->set_text(line_height == "normal" ? "1" : line_height);
 		}
@@ -662,6 +664,7 @@ void RichTextEditToolbar::_apply_toolbar_icons() {
 	_set_button_icon(italic_button, SNAME("italic"));
 	_set_button_icon(underline_button, SNAME("underline"));
 	_set_button_icon(strikethrough_button, SNAME("strikethrough"));
+	_set_button_icon(overline_button, SNAME("overline"));
 	_set_button_icon(quote_button, SNAME("quote"));
 	_set_button_icon(horizontal_rule_button, SNAME("horizontal_rule"));
 	_set_button_icon(indent_decrease_button, SNAME("indent_decrease"));
@@ -687,14 +690,46 @@ void RichTextEditToolbar::_apply_toolbar_icons() {
 	}
 }
 
+void RichTextEditToolbar::_apply_row_layout() {
+	if (first_row == nullptr || second_row == nullptr) {
+		return;
+	}
+	// Detach the whole tail before reattaching it so the controls keep their
+	// authored order whichever row they end up on.
+	HBoxContainer *row = two_row_layout ? second_row : first_row;
+	for (Control *item : second_row_items) {
+		if (Node *parent = item->get_parent()) {
+			parent->remove_child(item);
+		}
+	}
+	for (Control *item : second_row_items) {
+		row->add_child(item, false, INTERNAL_MODE_FRONT);
+	}
+	second_row->set_visible(two_row_layout);
+	// In two-row layout the row break itself separates the two groups.
+	if (row_break_separator != nullptr) {
+		row_break_separator->set_visible(!two_row_layout);
+	}
+	// The minimum height depends on the row count. Outside the tree the ready
+	// notification applies the style anyway, and theme lookups are not usable.
+	if (is_inside_tree()) {
+		_apply_toolbar_style();
+	}
+}
+
 void RichTextEditToolbar::_apply_toolbar_style() {
 	const Ref<StyleBox> panel = get_theme_stylebox(SceneStringName(panel), SNAME("RichTextEditToolbar"));
 	const int button_size = get_theme_constant(SNAME("button_size"), SNAME("RichTextEditToolbar"));
+	const int separation = get_theme_constant(SNAME("separation"));
+	if (rows_box != nullptr) {
+		rows_box->add_theme_constant_override(SNAME("separation"), separation);
+	}
 	if (panel.is_valid()) {
-		set_custom_minimum_size(Size2(0, button_size + panel->get_margin(SIDE_TOP) + panel->get_margin(SIDE_BOTTOM)));
+		const int rows = two_row_layout ? 2 : 1;
+		const int rows_height = button_size * rows + separation * (rows - 1);
+		set_custom_minimum_size(Size2(0, rows_height + panel->get_margin(SIDE_TOP) + panel->get_margin(SIDE_BOTTOM)));
 		// HBoxContainer does not inset for the background it draws, so the
 		// panel's horizontal padding is reproduced with spacers.
-		const int separation = get_theme_constant(SNAME("separation"));
 		if (paddings.size() == 2) {
 			paddings[0]->set_custom_minimum_size(Size2(MAX(0, panel->get_margin(SIDE_LEFT) - separation), 0));
 			paddings[1]->set_custom_minimum_size(Size2(MAX(0, panel->get_margin(SIDE_RIGHT) - separation), 0));
@@ -705,6 +740,7 @@ void RichTextEditToolbar::_apply_toolbar_style() {
 	_style_tool_button(italic_button);
 	_style_tool_button(underline_button);
 	_style_tool_button(strikethrough_button);
+	_style_tool_button(overline_button);
 	_style_tool_button(quote_button);
 	_style_tool_button(horizontal_rule_button);
 	_style_tool_button(indent_decrease_button);
@@ -767,6 +803,12 @@ void RichTextEditToolbar::_apply_toolbar_style() {
 	_apply_color_button_previews();
 
 	update_minimum_size();
+	// The toolbar is fit-content: the panel has to end at the last control, so
+	// shrink back to the new minimum instead of keeping a width that was sized
+	// for a different row count or button size. A container re-fits its child
+	// on the next layout pass anyway, so this only matters when the toolbar is
+	// placed freely.
+	reset_size();
 	queue_redraw();
 }
 
@@ -920,6 +962,9 @@ void RichTextEditToolbar::_dropdown_button_down(int p_dropdown) {
 void RichTextEditToolbar::_dropdown_popup_hidden(int p_dropdown) {
 	if (Button *button = _get_dropdown_button(p_dropdown)) {
 		button->set_pressed_no_signal(false);
+		// A dropdown button that keeps keyboard focus after its popup closes
+		// still looks active and takes the next click as a plain focus click.
+		button->release_focus();
 	}
 }
 
@@ -970,6 +1015,13 @@ void RichTextEditToolbar::_pressed_underline() {
 void RichTextEditToolbar::_pressed_strikethrough() {
 	if (RichTextEdit *target = _get_rich_text_edit()) {
 		target->toggle_strikethrough();
+		target->grab_focus();
+	}
+}
+
+void RichTextEditToolbar::_pressed_overline() {
+	if (RichTextEdit *target = _get_rich_text_edit()) {
+		target->toggle_overline();
 		target->grab_focus();
 	}
 }
@@ -1067,14 +1119,13 @@ void RichTextEditToolbar::_image_file_selected(const String &p_path) {
 
 void RichTextEditToolbar::_pressed_line_height() {
 	if (line_height_popup_was_open) {
+		// The click that reached the button had already dismissed the popup, and
+		// the toggle it performed on the way has to be undone.
 		line_height_popup_was_open = false;
 		line_height_button->set_pressed_no_signal(false);
 		return;
 	}
-	if (!line_height_button->is_pressed()) {
-		line_height_popup->hide();
-		return;
-	}
+	line_height_button->set_pressed_no_signal(true);
 	if (RichTextEdit *target = _get_rich_text_edit()) {
 		const String line_height = target->get_current_line_height();
 		line_height_line_edit->set_text(line_height == "normal" ? "1" : line_height);
@@ -1085,12 +1136,12 @@ void RichTextEditToolbar::_pressed_line_height() {
 }
 
 void RichTextEditToolbar::_line_height_preset_selected(const String &p_value) {
+	if (line_height_popup != nullptr) {
+		line_height_popup->hide();
+	}
 	if (RichTextEdit *target = _get_rich_text_edit()) {
 		target->set_selection_line_height(p_value);
 		target->grab_focus();
-	}
-	if (line_height_popup != nullptr) {
-		line_height_popup->hide();
 	}
 }
 
@@ -1102,12 +1153,12 @@ void RichTextEditToolbar::_line_height_apply_pressed() {
 		}
 		return;
 	}
+	if (line_height_popup != nullptr) {
+		line_height_popup->hide();
+	}
 	if (RichTextEdit *target = _get_rich_text_edit()) {
 		target->set_selection_line_height(value);
 		target->grab_focus();
-	}
-	if (line_height_popup != nullptr) {
-		line_height_popup->hide();
 	}
 }
 
@@ -1395,6 +1446,18 @@ NodePath RichTextEditToolbar::get_rich_text_edit_path() const {
 	return rich_text_edit_path;
 }
 
+void RichTextEditToolbar::set_two_row_layout(bool p_enabled) {
+	if (two_row_layout == p_enabled) {
+		return;
+	}
+	two_row_layout = p_enabled;
+	_apply_row_layout();
+}
+
+bool RichTextEditToolbar::is_two_row_layout() const {
+	return two_row_layout;
+}
+
 RichTextEdit *RichTextEditToolbar::get_rich_text_edit() const {
 	return _get_rich_text_edit();
 }
@@ -1403,8 +1466,11 @@ void RichTextEditToolbar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rich_text_edit_path", "path"), &RichTextEditToolbar::set_rich_text_edit_path);
 	ClassDB::bind_method(D_METHOD("get_rich_text_edit_path"), &RichTextEditToolbar::get_rich_text_edit_path);
 	ClassDB::bind_method(D_METHOD("get_rich_text_edit"), &RichTextEditToolbar::get_rich_text_edit);
+	ClassDB::bind_method(D_METHOD("set_two_row_layout", "enabled"), &RichTextEditToolbar::set_two_row_layout);
+	ClassDB::bind_method(D_METHOD("is_two_row_layout"), &RichTextEditToolbar::is_two_row_layout);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "rich_text_edit_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, RichTextEdit::get_class_static()), "set_rich_text_edit_path", "get_rich_text_edit_path");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "two_row_layout"), "set_two_row_layout", "is_two_row_layout");
 
 	auto update_icons = [](Node *p_instance, const StringName &, const StringName &) {
 		RichTextEditToolbar *toolbar = Object::cast_to<RichTextEditToolbar>(p_instance);
@@ -1413,7 +1479,7 @@ void RichTextEditToolbar::_bind_methods() {
 		}
 	};
 	const char *icon_items[] = {
-		"bold", "italic", "underline", "strikethrough", "quote", "align",
+		"bold", "italic", "underline", "strikethrough", "overline", "quote", "align",
 		"align_left", "align_center", "align_right", "indent_decrease",
 		"indent_increase", "link", "ordered_list", "unordered_list",
 		"font_color", "background_color", "outline", "dropdown_caret",
@@ -1487,15 +1553,16 @@ RichTextEditToolbar::RichTextEditToolbar() {
 		VSeparator *separator = memnew(VSeparator);
 		separator->set_custom_minimum_size(Size2(1, DEFAULT_SEPARATOR_HEIGHT));
 		separator->set_v_size_flags(SIZE_SHRINK_CENTER);
-		add_child(separator, false, INTERNAL_MODE_FRONT);
+		first_row->add_child(separator, false, INTERNAL_MODE_FRONT);
 		separators.push_back(separator);
+		return separator;
 	};
 
 	// Buttons within one design group sit closer together than the groups do.
 	auto add_group = [&]() {
 		HBoxContainer *group = memnew(HBoxContainer);
 		group->add_theme_constant_override("separation", GROUP_SEPARATION);
-		add_child(group, false, INTERNAL_MODE_FRONT);
+		first_row->add_child(group, false, INTERNAL_MODE_FRONT);
 		return group;
 	};
 
@@ -1543,7 +1610,18 @@ RichTextEditToolbar::RichTextEditToolbar() {
 
 	add_toolbar_padding();
 
-	// Bold / Italic / Underline / Strikethrough.
+	// Every control lives in a row so that switching to the two-row layout only
+	// has to move the second half across, never rebuild it.
+	rows_box = memnew(VBoxContainer);
+	rows_box->set_v_size_flags(SIZE_SHRINK_CENTER);
+	add_child(rows_box, false, INTERNAL_MODE_FRONT);
+	first_row = memnew(HBoxContainer);
+	rows_box->add_child(first_row, false, INTERNAL_MODE_FRONT);
+	second_row = memnew(HBoxContainer);
+	second_row->hide();
+	rows_box->add_child(second_row, false, INTERNAL_MODE_FRONT);
+
+	// Bold / Italic / Underline / Strikethrough / Overline.
 	HBoxContainer *format_group = add_group();
 	bold_button = make_button(format_group, RTR("Bold"), true);
 	bold_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_bold));
@@ -1553,11 +1631,13 @@ RichTextEditToolbar::RichTextEditToolbar() {
 	underline_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_underline));
 	strikethrough_button = make_button(format_group, RTR("Strikethrough"), true);
 	strikethrough_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_strikethrough));
+	overline_button = make_button(format_group, RTR("Overline"), true);
+	overline_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_overline));
 
 	add_toolbar_separator();
 
 	// Font size.
-	make_number_field(this, font_size_field, font_size_spin);
+	make_number_field(first_row, font_size_field, font_size_spin);
 	font_size_spin->set_min(1);
 	font_size_spin->set_max(256);
 	font_size_spin->set_value(16);
@@ -1606,7 +1686,7 @@ RichTextEditToolbar::RichTextEditToolbar() {
 	add_toolbar_separator();
 
 	// Outline: a color button and a width field sitting directly on the toolbar.
-	outline_button = make_button(this, RTR("Outline Color"), true);
+	outline_button = make_button(first_row, RTR("Outline Color"), true);
 	outline_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_outline_color));
 	outline_button->connect(SNAME("button_down"), callable_mp(this, &RichTextEditToolbar::_dropdown_button_down).bind(DROPDOWN_OUTLINE_COLOR));
 
@@ -1619,28 +1699,31 @@ RichTextEditToolbar::RichTextEditToolbar() {
 	outline_color_bar->set_offset(SIDE_BOTTOM, -COLOR_PREVIEW_BOTTOM);
 	outline_button->add_child(outline_color_bar, false, INTERNAL_MODE_FRONT);
 
-	make_number_field(this, outline_size_field, outline_size_spin);
+	make_number_field(first_row, outline_size_field, outline_size_spin);
 	outline_size_spin->set_min(0);
 	outline_size_spin->set_max(32);
 	outline_size_spin->set_value(0);
 	outline_size_spin->connect(SceneStringName(value_changed), callable_mp(this, &RichTextEditToolbar::_outline_size_changed));
 
-	add_toolbar_separator();
+	// The design's two-row layout breaks here, so everything from this point on
+	// is what moves to the second row.
+	row_break_separator = add_toolbar_separator();
+	const int second_row_start = first_row->get_child_count(true) - 1;
 
 	// Horizontal rule: a one-shot insertion action, like image insertion.
-	horizontal_rule_button = make_button(this, RTR("Horizontal Rule"), false);
+	horizontal_rule_button = make_button(first_row, RTR("Horizontal Rule"), false);
 	horizontal_rule_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_horizontal_rule));
 
 	add_toolbar_separator();
 
 	// Quote.
-	quote_button = make_button(this, RTR("Quote"), true);
+	quote_button = make_button(first_row, RTR("Quote"), true);
 	quote_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_quote));
 
 	add_toolbar_separator();
 
 	// Paragraph alignment.
-	alignment_button = make_button(this, RTR("Paragraph Alignment"), true);
+	alignment_button = make_button(first_row, RTR("Paragraph Alignment"), true);
 	alignment_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_alignment));
 	alignment_button->connect(SNAME("button_down"), callable_mp(this, &RichTextEditToolbar::_dropdown_button_down).bind(DROPDOWN_ALIGNMENT));
 	add_dropdown_caret(alignment_button);
@@ -1681,7 +1764,7 @@ RichTextEditToolbar::RichTextEditToolbar() {
 	add_toolbar_separator();
 
 	// URL link.
-	link_button = make_button(this, RTR("Insert Link"), true);
+	link_button = make_button(first_row, RTR("Insert Link"), true);
 	link_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_link));
 	link_button->connect(SNAME("button_down"), callable_mp(this, &RichTextEditToolbar::_dropdown_button_down).bind(DROPDOWN_LINK));
 	add_dropdown_caret(link_button);
@@ -1719,14 +1802,14 @@ RichTextEditToolbar::RichTextEditToolbar() {
 
 	// Image insertion opens the native file browser when the platform supports
 	// it, while keeping the same compact toolbar button geometry as the design.
-	insert_image_button = make_button(this, RTR("Insert Image"), false);
+	insert_image_button = make_button(first_row, RTR("Insert Image"), false);
 	insert_image_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_insert_image));
 
 	add_toolbar_separator();
 
 	// CSS line-height dropdown: presets are direct actions, while the custom
 	// field accepts unitless values, percentages, px values, and "normal".
-	line_height_button = make_button(this, RTR("Line Height"), true);
+	line_height_button = make_button(first_row, RTR("Line Height"), true);
 	line_height_button->connect(SceneStringName(pressed), callable_mp(this, &RichTextEditToolbar::_pressed_line_height));
 	line_height_button->connect(SNAME("button_down"), callable_mp(this, &RichTextEditToolbar::_dropdown_button_down).bind(DROPDOWN_LINE_HEIGHT));
 	add_dropdown_caret(line_height_button);
@@ -1799,6 +1882,12 @@ RichTextEditToolbar::RichTextEditToolbar() {
 	alignment_popup->connect(SNAME("popup_hide"), callable_mp(this, &RichTextEditToolbar::_dropdown_popup_hidden).bind(DROPDOWN_ALIGNMENT));
 	link_popup->connect(SNAME("popup_hide"), callable_mp(this, &RichTextEditToolbar::_dropdown_popup_hidden).bind(DROPDOWN_LINK));
 	line_height_popup->connect(SNAME("popup_hide"), callable_mp(this, &RichTextEditToolbar::_dropdown_popup_hidden).bind(DROPDOWN_LINE_HEIGHT));
+
+	for (int i = second_row_start; i < first_row->get_child_count(true); i++) {
+		if (Control *item = Object::cast_to<Control>(first_row->get_child(i, true))) {
+			second_row_items.push_back(item);
+		}
+	}
 
 	add_toolbar_padding();
 }

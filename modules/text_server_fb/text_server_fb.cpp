@@ -89,6 +89,10 @@ String TextServerFallback::_get_name() const {
 	return "Fallback (Built-in)";
 }
 
+String TextServerFallback::_get_short_name() const {
+	return "fallback";
+}
+
 int64_t TextServerFallback::_get_features() const {
 	int64_t interface_features = FEATURE_SIMPLE_LAYOUT | FEATURE_FONT_BITMAP;
 #ifdef MODULE_FREETYPE_ENABLED
@@ -2697,6 +2701,8 @@ Vector2 TextServerFallback::_font_get_kerning(const RID &p_font_rid, int64_t p_s
 			int32_t glyph_a = FT_Get_Char_Index(fd->face, p_glyph_pair.x);
 			int32_t glyph_b = FT_Get_Char_Index(fd->face, p_glyph_pair.y);
 			FT_Get_Kerning(fd->face, glyph_a, glyph_b, FT_KERNING_DEFAULT, &delta);
+			delta.x /= 64;
+			delta.y /= 64;
 			if (fd->msdf) {
 				return Vector2(delta.x, delta.y) * (double)p_size / (double)fd->msdf_source_size;
 			} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {

@@ -68,6 +68,7 @@ private:
 #endif
 
 public:
+	static bool match_all_tags(PackedStringArray p_tags, std::function<bool(String)> p_has_feature);
 	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
 	static Vector<SharedObject> find_extension_dependencies(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature);
 

@@ -77,6 +77,7 @@ class PopupMenu : public Popup {
 		int state = 0;
 		bool separator = false;
 		bool disabled = false;
+		bool indeterminate = false;
 		bool dirty = true;
 		int id = 0;
 		Variant metadata;
@@ -218,6 +219,8 @@ class PopupMenu : public Popup {
 		Ref<Texture2D> checked_disabled;
 		Ref<Texture2D> unchecked;
 		Ref<Texture2D> unchecked_disabled;
+		Ref<Texture2D> indeterminate;
+		Ref<Texture2D> indeterminate_disabled;
 		Ref<Texture2D> radio_checked;
 		Ref<Texture2D> radio_checked_disabled;
 		Ref<Texture2D> radio_unchecked;
@@ -246,7 +249,7 @@ class PopupMenu : public Popup {
 
 	void _draw_items();
 	void _update_search_bar_visibility();
-	void _items_focus_entered();
+	bool _highlight_first_available_item(int p_from = 0, int p_to = -1, bool p_reversed = false);
 	void _search_bar_text_changed(const String &p_new_text);
 	void _search_bar_focus_entered();
 	void _filter_items(const String &p_query);
@@ -288,8 +291,8 @@ protected:
 	void _add_icon_shortcut_bind_compat_36493(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void _clear_bind_compat_79965();
 
-	void _set_system_menu_root_compat_87452(const String &p_special);
-	String _get_system_menu_root_compat_87452() const;
+	void _set_system_menu_root_bind_compat_87452(const String &p_special);
+	String _get_system_menu_root_bind_compat_87452() const;
 
 	static void _bind_compatibility_methods();
 #endif
@@ -338,6 +341,7 @@ public:
 	void set_item_icon_max_width(int p_idx, int p_width);
 	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
 	void set_item_checked(int p_idx, bool p_checked);
+	void set_item_indeterminate(int p_idx, bool p_indeterminate);
 	void set_item_id(int p_idx, int p_id);
 	void set_item_accelerator(int p_idx, Key p_accel);
 	void set_item_metadata(int p_idx, const Variant &p_meta);
@@ -368,6 +372,7 @@ public:
 	int get_item_icon_max_width(int p_idx) const;
 	Color get_item_icon_modulate(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
+	bool is_item_indeterminate(int p_idx) const;
 	int get_item_id(int p_idx) const;
 	int get_item_index(int p_id) const;
 	Key get_item_accelerator(int p_idx) const;

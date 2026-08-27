@@ -2286,10 +2286,10 @@ Vector<RBMap<real_t, Vector3>> Curve3D::_tessellate_even_length(int p_max_stages
 }
 
 bool Curve3D::_filter_property(const String &p_name, int p_index) const {
-	if (p_index == 0) {
+	if (!closed && p_index == 0) {
 		return p_name != "in";
 	}
-	if (p_index == get_point_count() - 1) {
+	if (!closed && p_index == get_point_count() - 1) {
 		return p_name != "out";
 	}
 	return true;

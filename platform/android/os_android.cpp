@@ -61,6 +61,7 @@
 #endif
 
 #include <dlfcn.h>
+#include <stdlib.h>
 #include <sys/system_properties.h>
 
 const char *OS_Android::ANDROID_EXEC_PATH = "apk";
@@ -86,7 +87,7 @@ String _remove_symlink(const String &dir) {
 _FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
 	ERR_FAIL_NULL_V(EditorNode::get_singleton(), nullptr);
 	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
-	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor_by_name("Game"));
 }
 #endif
 
@@ -383,14 +384,17 @@ bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 	if (!main_loop) {
 		return false;
 	}
-	DisplayServerAndroid::get_singleton()->reset_swap_buffers_flag();
-	DisplayServerAndroid::get_singleton()->process_events();
+	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+	ERR_FAIL_NULL_V(dsa, true);
+	dsa->reset_swap_buffers_flag();
+	dsa->process_events();
+
 	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
 	bool exit = Main::iteration();
 
 	if (r_should_swap_buffers) {
 		*r_should_swap_buffers = !is_in_low_processor_usage_mode() ||
-				DisplayServerAndroid::get_singleton()->should_swap_buffers() ||
+				dsa->should_swap_buffers() ||
 				RenderingServer::get_singleton()->has_changed() ||
 				current_frames_drawn != Engine::get_singleton()->get_frames_drawn();
 	}
@@ -436,17 +440,25 @@ void OS_Android::_on_distraction_free_mode_changed(bool p_enable) {
 #endif
 
 void OS_Android::main_loop_focusout() {
-	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
+	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+	if (dsa) {
+		dsa->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
+	}
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 	}
 
-	// Only pause when we are not in PiP mode.
-	audio_driver_android.set_pause(!DisplayServerAndroid::get_singleton()->is_in_pip_mode());
+	if (dsa) {
+		// Only pause when we are not in PiP mode.
+		audio_driver_android.set_pause(!dsa->is_in_pip_mode());
+	}
 }
 
 void OS_Android::main_loop_focusin() {
-	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
+	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+	if (dsa) {
+		dsa->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
+	}
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 	}
@@ -485,6 +497,10 @@ String OS_Android::get_model_name() const {
 	}
 
 	return OS_Unix::get_model_name();
+}
+
+String OS_Android::get_processor_name() const {
+	return get_system_property("ro.soc.model");
 }
 
 String OS_Android::get_data_path() const {
@@ -791,15 +807,9 @@ Error OS_Android::move_to_trash(const String &p_path) {
 
 	// Check if it's a directory
 	if (da_ref->dir_exists(p_path)) {
-		Error err = da_ref->change_dir(p_path);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(da_ref->change_dir(p_path));
 		// This is directory, let's erase its contents
-		err = da_ref->erase_contents_recursive();
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(da_ref->erase_contents_recursive());
 		// Remove the top directory
 		return da_ref->remove(p_path);
 	} else if (da_ref->file_exists(p_path)) {
@@ -974,6 +984,11 @@ Error OS_Android::kill(const ProcessID &p_pid) {
 
 String OS_Android::get_system_ca_certificates() {
 	return godot_java->get_ca_certificates();
+}
+
+Error OS_Android::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	arc4random_buf(r_buffer, p_bytes);
+	return OK;
 }
 
 Error OS_Android::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {

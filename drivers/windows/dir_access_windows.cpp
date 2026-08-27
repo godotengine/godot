@@ -93,7 +93,14 @@ Error DirAccessWindows::list_dir_begin() {
 	_cishidden = false;
 
 	list_dir_end();
-	p->h = FindFirstFileExW((LPCWSTR)(String(current_dir + "\\*").utf16().get_data()), FindExInfoStandard, &p->fu, FindExSearchNameMatch, nullptr, 0);
+
+	String dir_glob = current_dir;
+	if (dir_glob.ends_with("\\")) {
+		dir_glob += "*";
+	} else {
+		dir_glob += "\\*";
+	}
+	p->h = FindFirstFileExW((LPCWSTR)(dir_glob.utf16().get_data()), FindExInfoStandard, &p->fu, FindExSearchNameMatch, nullptr, 0);
 
 	if (p->h == INVALID_HANDLE_VALUE) {
 		return ERR_CANT_OPEN;
@@ -143,8 +150,14 @@ void DirAccessWindows::_update_drives() {
 			String drive = String::chr('A' + i) + ':';
 			String path = drive + '\\';
 			String label;
+			Char16String cs = path.utf16();
+			UINT type = GetDriveTypeW((LPCWSTR)cs.get_data());
+			if (type == DRIVE_REMOTE) {
+				drives.push_back(DriveInfo{ drive, "<network>" });
+				continue;
+			}
 			char16_t wlabel[4096];
-			if (GetVolumeInformationW((LPCWSTR)(path).utf16().get_data(), (LPWSTR)wlabel, 4096, nullptr, nullptr, nullptr, nullptr, 0)) {
+			if (GetVolumeInformationW((LPCWSTR)cs.get_data(), (LPWSTR)wlabel, 4096, nullptr, nullptr, nullptr, nullptr, 0)) {
 				label = String::utf16(wlabel);
 			}
 			drives.push_back(DriveInfo{ drive, label });

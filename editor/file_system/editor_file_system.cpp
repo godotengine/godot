@@ -57,9 +57,6 @@ EditorFileSystem *EditorFileSystem::singleton = nullptr;
 int EditorFileSystem::nb_files_total = 0;
 EditorFileSystem::ScannedDirectory *EditorFileSystem::first_scan_root_dir = nullptr;
 
-//the name is the version, to keep compatibility with different versions of Godot
-#define CACHE_FILE_NAME "filesystem_cache10"
-
 int EditorFileSystemDirectory::find_file_index(const String &p_file) const {
 	for (int i = 0; i < files.size(); i++) {
 		if (files[i]->file == p_file) {
@@ -416,8 +413,6 @@ void EditorFileSystem::_scan_filesystem() {
 	sources_changed.clear();
 	file_cache.clear();
 
-	String project = ProjectSettings::get_singleton()->get_resource_path();
-
 	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().path_join(CACHE_FILE_NAME);
 	{
 		Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::READ);
@@ -457,11 +452,7 @@ void EditorFileSystem::_scan_filesystem() {
 					// The last section (deps) may contain the same splitter, so limit the maxsplit to 8 to get the complete deps.
 					Vector<String> split = l.split("::", true, 8);
 					ERR_CONTINUE(split.size() < 9);
-					String name = split[0];
-					String file;
-
-					file = name;
-					name = cpath.path_join(name);
+					const String name = cpath.path_join(split[0]);
 
 					FileCache fc;
 					fc.type = split[1].get_slicec('/', 0);
@@ -543,7 +534,9 @@ void EditorFileSystem::_scan_filesystem() {
 		first_scan_root_dir = nullptr;
 		memdelete(processed_files);
 	} else {
-		//on the first scan this is done from the main thread after re-importing
+		// A local `sd` is created only on non-first scan, otherwise `sd` is not owned by this function.
+		memdelete(sd);
+		// On the first scan this is done from the main thread after re-importing.
 		_save_filesystem_cache();
 	}
 
@@ -1031,7 +1024,7 @@ bool EditorFileSystem::_update_scan_actions() {
 		}
 	}
 
-	memdelete_notnull(ep);
+	memdelete(ep);
 
 	if (_scan_extensions()) {
 		//needs editor restart
@@ -1122,9 +1115,7 @@ void EditorFileSystem::scan() {
 		scanning = true;
 		scan_total = 0;
 		_scan_filesystem();
-		if (filesystem) {
-			memdelete(filesystem);
-		}
+		memdelete(filesystem);
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
 		new_filesystem = nullptr;
@@ -1758,12 +1749,8 @@ void EditorFileSystem::_notification(int p_what) {
 				set_process(false);
 			}
 
-			if (filesystem) {
-				memdelete(filesystem);
-			}
-			if (new_filesystem) {
-				memdelete(new_filesystem);
-			}
+			memdelete(filesystem);
+			memdelete(new_filesystem);
 			filesystem = nullptr;
 			new_filesystem = nullptr;
 		} break;
@@ -1807,9 +1794,7 @@ void EditorFileSystem::_notification(int p_what) {
 				} else if (!scanning && thread.is_started()) {
 					set_process(false);
 
-					if (filesystem) {
-						memdelete(filesystem);
-					}
+					memdelete(filesystem);
 					filesystem = new_filesystem;
 					new_filesystem = nullptr;
 					thread.wait_to_finish();
@@ -2187,7 +2172,7 @@ void EditorFileSystem::_update_script_classes() {
 			}
 		}
 
-		memdelete_notnull(ep);
+		memdelete(ep);
 
 		update_script_paths.clear();
 	}
@@ -2284,7 +2269,7 @@ void EditorFileSystem::_update_script_documentation() {
 		}
 	}
 
-	memdelete_notnull(ep);
+	memdelete(ep);
 
 	update_script_paths_documentation.clear();
 }
@@ -2359,7 +2344,7 @@ void EditorFileSystem::_update_scene_groups() {
 			}
 		}
 
-		memdelete_notnull(ep);
+		memdelete(ep);
 		update_scene_paths.clear();
 	}
 
@@ -2749,7 +2734,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 					v = source_file_options[file][base];
 				}
 				String value;
-				VariantWriter::write_to_string(v, value);
+				VariantWriter::write_to_string(v, value, true);
 				f->store_line(base + "=" + value);
 			}
 		}
@@ -2987,11 +2972,15 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 
 		if (meta != Variant()) {
-			f->store_line("metadata=" + meta.get_construct_string());
+			String value;
+			VariantWriter::write_to_string(meta, value, true);
+			f->store_line("metadata=" + value);
 		}
 
 		if (generator_parameters != Variant()) {
-			f->store_line("generator_parameters=" + generator_parameters.get_construct_string());
+			String value;
+			VariantWriter::write_to_string(generator_parameters, value, true);
+			f->store_line("generator_parameters=" + value);
 		}
 
 		f->store_line("");
@@ -3006,7 +2995,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 			}
 
 			String value;
-			VariantWriter::write_to_string(genf, value);
+			VariantWriter::write_to_string(genf, value, true);
 			f->store_line("files=" + value);
 			f->store_line("");
 		}
@@ -3030,7 +3019,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		for (const ResourceImporter::ImportOption &E : opts) {
 			String base = E.option.name;
 			String value;
-			VariantWriter::write_to_string(params[base], value);
+			VariantWriter::write_to_string(params[base], value, true);
 			f->store_line(base + "=" + value);
 		}
 	}
@@ -3127,10 +3116,7 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (FileAccess::exists(p_from + ".import")) {
-		Error err = da->copy(p_from, p_to);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(da->copy(p_from, p_to));
 
 		// Save the new .import file
 		Ref<ConfigFile> cfg;
@@ -3139,26 +3125,19 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		String importer_name = cfg->get_value("remap", "importer");
 
 		if (importer_name == "keep" || importer_name == "skip") {
-			err = da->copy(p_from + ".import", p_to + ".import");
-			return err;
+			return da->copy(p_from + ".import", p_to + ".import");
 		}
 
 		// Roll a new uid for this copied .import file to avoid conflict.
 		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id_for_path(p_to);
 		cfg->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(res_uid));
-		err = cfg->save(p_to + ".import");
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(cfg->save(p_to + ".import"));
 
 		// Make sure it's immediately added to the map so we can remap dependencies if we want to after this.
 		ResourceUID::get_singleton()->add_id(res_uid, p_to);
 	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
 		// Files which do not use an uid can just be copied.
-		Error err = da->copy(p_from, p_to);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(da->copy(p_from, p_to));
 	} else {
 		// Load the resource and save it again in the new location (this generates a new UID).
 		Error err = OK;
@@ -3422,7 +3401,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	ResourceUID::get_singleton()->update_cache(); // After reimporting, update the cache.
 	_save_filesystem_cache();
 
-	memdelete_notnull(ep);
+	memdelete(ep);
 
 	_process_update_pending();
 
@@ -3438,7 +3417,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		emit_signal(SNAME("filesystem_changed"));
 	}
 	emit_signal(SNAME("resources_reimported"), reloads);
-	memdelete_notnull(ep);
+	memdelete(ep);
 }
 
 Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters) {
@@ -3599,10 +3578,7 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 }
 
 Error EditorFileSystem::copy_file(const String &p_from, const String &p_to) {
-	Error err = _copy_file(p_from, p_to);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_copy_file(p_from, p_to));
 
 	EditorFileSystemDirectory *parent = get_filesystem_path(p_to.get_base_dir());
 	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
@@ -3634,7 +3610,7 @@ Error EditorFileSystem::copy_directory(const String &p_from, const String &p_to)
 				ep->step(tuple.key.get_file(), i++, false);
 			}
 		}
-		memdelete_notnull(ep);
+		memdelete(ep);
 	}
 
 	// Now remap any internal dependencies (within the folder) to use the new files.
@@ -3653,7 +3629,7 @@ Error EditorFileSystem::copy_directory(const String &p_from, const String &p_to)
 				ep->step(tuple.key.get_file(), i++, false);
 			}
 		}
-		memdelete_notnull(ep);
+		memdelete(ep);
 	}
 
 	EditorFileSystemDirectory *efd = get_filesystem_path(p_to);
@@ -3825,9 +3801,7 @@ EditorFileSystem::EditorFileSystem() {
 }
 
 EditorFileSystem::~EditorFileSystem() {
-	if (filesystem) {
-		memdelete(filesystem);
-	}
+	memdelete(filesystem);
 	filesystem = nullptr;
 	ResourceSaver::set_get_resource_id_for_path(nullptr);
 }

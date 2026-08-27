@@ -148,7 +148,7 @@ EditorDebuggerInspector::~EditorDebuggerInspector() {
 
 void EditorDebuggerInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("objects_edited", PropertyInfo(Variant::ARRAY, "ids"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value"), PropertyInfo(Variant::STRING, "field")));
+	ADD_SIGNAL(MethodInfo("objects_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "int;Variant"), PropertyInfo(Variant::STRING, "field")));
 	ADD_SIGNAL(MethodInfo("object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 }
 
@@ -173,7 +173,7 @@ void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
 	emit_signal(SNAME("object_selected"), p_object);
 }
 
-EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p_arr) {
+EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p_arr, int p_debugger_id) {
 	ERR_FAIL_COND_V(p_arr.is_empty(), nullptr);
 
 	TypedArray<uint64_t> ids;
@@ -203,6 +203,7 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 		remote_objects = memnew(EditorDebuggerRemoteObjects);
 		remote_objects->remote_object_ids = ids;
 		remote_objects->remote_object_ids.make_read_only();
+		remote_objects->debugger_id = p_debugger_id;
 		remote_objects->connect("values_edited", callable_mp(this, &EditorDebuggerInspector::_objects_edited));
 		remote_objects_list.push_back(remote_objects);
 	}
@@ -344,6 +345,8 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 				}
 			}
 		}
+	} else {
+		has_custom_class = false;
 	}
 
 	if (!has_custom_class && class_name != SNAME("Object")) {
@@ -446,7 +449,13 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 		v = Object::cast_to<EncodedObjectAsID>(v)->get_object_id();
 		h = PROPERTY_HINT_OBJECT_ID;
 		hs = var.type_hint;
+
+		// Makes the call stack select the node in the remote tree. See https://github.com/godotengine/godot/issues/79477
+		if (n == "self") {
+			_object_selected(v);
+		}
 	}
+
 	String type;
 	switch (var.type) {
 		case 0:
@@ -498,7 +507,7 @@ void EditorDebuggerInspector::clear_stack_variables() {
 
 String EditorDebuggerInspector::get_stack_variable(const String &p_var) {
 	for (KeyValue<StringName, TypedDictionary<uint64_t, Variant>> &E : variables->prop_values) {
-		String v = E.key.operator String();
+		String v = E.key.string();
 		if (v.get_slicec('/', 1) == p_var) {
 			return variables->get_variant(v);
 		}

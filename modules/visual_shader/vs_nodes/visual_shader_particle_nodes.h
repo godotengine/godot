@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include "modules/visual_shader/visual_shader.h"
+#include "../visual_shader.h"
 
 class ImageTexture;
+class Mesh;
 
 // Emit nodes
 
@@ -57,8 +58,7 @@ public:
 	bool is_show_prop_names() const override;
 
 	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
-
-	VisualShaderNodeParticleEmitter();
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_PARTICLES; }
 };
 
 class VisualShaderNodeParticleSphereEmitter : public VisualShaderNodeParticleEmitter {
@@ -157,7 +157,7 @@ public:
 
 	Vector<StringName> get_editable_properties() const override;
 	HashMap<StringName, String> get_editable_properties_names() const override;
-	Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
+	Vector<ShaderGraph::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const override;
 
 	VisualShaderNodeParticleMeshEmitter();
 };
@@ -189,6 +189,7 @@ public:
 	Vector<StringName> get_editable_properties() const override;
 
 	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_PARTICLES; }
 
 	VisualShaderNodeParticleMultiplyByAxisAngle();
 };
@@ -211,6 +212,7 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_PARTICLES; }
 
 	VisualShaderNodeParticleConeVelocity();
 };
@@ -254,6 +256,7 @@ public:
 	OpType get_op_type() const;
 
 	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_PARTICLES; }
 
 	VisualShaderNodeParticleRandomness();
 };
@@ -298,6 +301,7 @@ public:
 	Mode get_mode() const;
 
 	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_PARTICLES; }
 
 	VisualShaderNodeParticleAccelerator();
 };
@@ -318,8 +322,6 @@ public:
 	virtual bool is_port_separator(int p_index) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
-
-	VisualShaderNodeParticleOutput();
 };
 
 class VisualShaderNodeParticleEmit : public VisualShaderNode {
@@ -362,6 +364,7 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override { return p_mode == Shader::MODE_PARTICLES; }
 
 	VisualShaderNodeParticleEmit();
 };

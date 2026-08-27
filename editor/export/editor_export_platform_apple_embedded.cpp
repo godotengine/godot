@@ -206,11 +206,17 @@ String EditorExportPlatformAppleEmbedded::get_export_option_warning(const Editor
 			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 				return TTR("\"Shader Baker\" doesn't work with the Compatibility renderer.");
 			} else if (OS::get_singleton()->get_current_rendering_method() != export_renderer) {
-				return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include core shaders. Switch to \"%s\" renderer temporarily to fix this."), export_renderer);
+				return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include core shaders. Switch to the \"%s\" renderer temporarily to fix this."), export_renderer);
 			}
 		}
 	}
 	return String();
+}
+
+void EditorExportPlatformAppleEmbedded::get_usage_descriptions(List<EditorExportPlatformAppleEmbedded::UsageDescription> *r_descriptions) const {
+	r_descriptions->push_back({ "privacy/camera_usage_description", "NSCameraUsageDescription", "Provide a message if you need to use the camera" });
+	r_descriptions->push_back({ "privacy/microphone_usage_description", "NSMicrophoneUsageDescription", "Provide a message if you need to use the microphone" });
+	r_descriptions->push_back({ "privacy/photolibrary_usage_description", "NSPhotoLibraryUsageDescription", "Provide a message if you need access to the photo library" });
 }
 
 void EditorExportPlatformAppleEmbedded::_notification(int p_what) {
@@ -330,12 +336,12 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data/accessible_from_files_app"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data/accessible_from_itunes_sharing"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/camera_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the camera"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/camera_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/microphone_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photolibrary_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	List<UsageDescription> usage_descriptions;
+	get_usage_descriptions(&usage_descriptions);
+	for (const UsageDescription &usage_description : usage_descriptions) {
+		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, usage_description.preset_key, PROPERTY_HINT_PLACEHOLDER_TEXT, usage_description.placeholder), ""));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, usage_description.preset_key + "_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+	}
 
 	for (uint64_t i = 0; i < std_size(api_info); ++i) {
 		String prop_name = vformat("privacy/%s_access_reasons", api_info[i].prop_name);
@@ -416,6 +422,12 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$modules_buildphase", p_config.modules_buildphase) + "\n";
 	} else if (p_line.contains("$modules_buildgrp")) {
 		strnew += p_line.replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
+	} else if (p_line.contains("$spm_packages")) {
+		strnew += p_line.replace("$spm_packages", p_config.spm_packages) + "\n";
+	} else if (p_line.contains("$spm_package_refs")) {
+		strnew += p_line.replace("$spm_package_refs", p_config.spm_package_refs) + "\n";
+	} else if (p_line.contains("$spm_package_products")) {
+		strnew += p_line.replace("$spm_package_products", p_config.spm_package_products) + "\n";
 	} else if (p_line.contains("$name")) {
 		strnew += p_line.replace("$name", p_config.pkg_name) + "\n";
 	} else if (p_line.contains("$bundle_identifier")) {
@@ -984,10 +996,7 @@ Error EditorExportPlatformAppleEmbedded::_convert_to_framework(const String &p_s
 	}
 
 	if (!filesystem_da->dir_exists(p_destination)) {
-		Error make_dir_err = filesystem_da->make_dir_recursive(p_destination);
-		if (make_dir_err) {
-			return make_dir_err;
-		}
+		RETURN_IF_ERROR(filesystem_da->make_dir_recursive(p_destination));
 	}
 
 	String asset = p_source.ends_with("/") ? p_source.left(-1) : p_source;
@@ -1250,10 +1259,7 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 		destination = destination_dir;
 
 		// Convert to framework and copy.
-		Error err = _convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier"));
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier")));
 	} else if (p_is_framework && asset.ends_with(".xcframework")) {
 		// For Apple Embedded platforms we need to turn .dylib inside .xcframework
 		// into .framework to be able to send application to AppStore
@@ -1279,22 +1285,13 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 
 		if (dylibs > 0) {
 			// Convert to framework and copy.
-			Error err = _convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier"));
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERROR(_convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier")));
 		} else {
 			// Copy as is.
 			if (!filesystem_da->dir_exists(destination_dir)) {
-				Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
-				if (make_dir_err) {
-					return make_dir_err;
-				}
+				RETURN_IF_ERROR(filesystem_da->make_dir_recursive(destination_dir));
 			}
-			Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
-			if (err) {
-				return err;
-			}
+			RETURN_IF_ERROR(dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination));
 		}
 	} else if (p_is_framework && asset.ends_with(".framework")) {
 		// Framework.
@@ -1314,15 +1311,9 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 
 		// Copy as is.
 		if (!filesystem_da->dir_exists(destination_dir)) {
-			Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
-			if (make_dir_err) {
-				return make_dir_err;
-			}
+			RETURN_IF_ERROR(filesystem_da->make_dir_recursive(destination_dir));
 		}
-		Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination));
 	} else {
 		// Unknown resource.
 		asset_path = base_dir;
@@ -1341,15 +1332,9 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 
 		// Copy as is.
 		if (!filesystem_da->dir_exists(destination_dir)) {
-			Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
-			if (make_dir_err) {
-				return make_dir_err;
-			}
+			RETURN_IF_ERROR(filesystem_da->make_dir_recursive(destination_dir));
 		}
-		Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination));
 	}
 
 	if (asset_path.ends_with("/")) {
@@ -1645,10 +1630,95 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 		p_config_data.linker_flags += result_linker_flags;
 	}
 
+	// SPM Packages
+	{
+		PbxId pbx_id;
+		pbx_id.high_bits = 0xDEB00000;
+		pbx_id.mid_bits = 0;
+		pbx_id.low_bits = 0;
+
+		HashMap<String, PluginConfigAppleEmbedded::SPMPackage> unique_packages;
+
+		// Collect from .gdip plugin configs
+		for (int i = 0; i < enabled_plugins.size(); i++) {
+			for (const PluginConfigAppleEmbedded::SPMPackage &package : enabled_plugins[i].spm_packages) {
+				if (!unique_packages.has(package.url)) {
+					unique_packages[package.url] = package;
+				} else {
+					for (const String &product : package.products) {
+						if (!unique_packages[package.url].products.has(product)) {
+							unique_packages[package.url].products.push_back(product);
+						}
+					}
+				}
+			}
+		}
+
+		// Also collect from EditorExportPlugins (added using add_apple_embedded_platform_spm_package() method)
+		Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+		for (int i = 0; i < export_plugins.size(); i++) {
+			for (const EditorExportPlugin::AppleEmbeddedSPMPackage &ep_package : export_plugins[i]->get_apple_embedded_platform_spm_packages()) {
+				if (!unique_packages.has(ep_package.url)) {
+					PluginConfigAppleEmbedded::SPMPackage package;
+					package.url = ep_package.url;
+					package.version = ep_package.version;
+					package.products = ep_package.products;
+					unique_packages[ep_package.url] = package;
+				} else {
+					for (const String &product : ep_package.products) {
+						if (!unique_packages[ep_package.url].products.has(product)) {
+							unique_packages[ep_package.url].products.push_back(product);
+						}
+					}
+				}
+			}
+		}
+
+		Vector<String> sorted_package_urls;
+		for (const KeyValue<String, PluginConfigAppleEmbedded::SPMPackage> &E : unique_packages) {
+			sorted_package_urls.push_back(E.key);
+		}
+		sorted_package_urls.sort();
+
+		for (const String &url : sorted_package_urls) {
+			const PluginConfigAppleEmbedded::SPMPackage &package = unique_packages[url];
+			String package_id = (++pbx_id).str();
+			String package_name = package.url.get_file().get_basename();
+
+			p_config_data.spm_packages += vformat("\t\t\t\t%s /* %s */,\n", package_id, package_name);
+
+			p_config_data.spm_package_refs += vformat("\t\t%s /* %s */ = {\n", package_id, package_name);
+			p_config_data.spm_package_refs += "\t\t\tisa = XCRemoteSwiftPackageReference;\n";
+			p_config_data.spm_package_refs += vformat("\t\t\trepositoryURL = \"%s\";\n", package.url);
+			p_config_data.spm_package_refs += "\t\t\trequirement = {\n";
+			p_config_data.spm_package_refs += "\t\t\t\tkind = exactVersion;\n";
+			p_config_data.spm_package_refs += vformat("\t\t\t\tversion = %s;\n", package.version);
+			p_config_data.spm_package_refs += "\t\t\t};\n";
+			p_config_data.spm_package_refs += "\t\t};\n";
+
+			for (const String &product : package.products) {
+				String product_id = (++pbx_id).str();
+				String build_file_id = (++pbx_id).str();
+
+				p_config_data.spm_package_products += vformat("\t\t%s /* %s */ = {\n", product_id, product);
+				p_config_data.spm_package_products += "\t\t\tisa = XCSwiftPackageProductDependency;\n";
+				p_config_data.spm_package_products += vformat("\t\t\tpackage = %s /* %s */;\n", package_id, package_name);
+				p_config_data.spm_package_products += vformat("\t\t\tproductName = \"%s\";\n", product);
+				p_config_data.spm_package_products += "\t\t};\n";
+
+				p_config_data.modules_buildfile += vformat("\t\t%s /* %s in Frameworks */ = {isa = PBXBuildFile; productRef = %s /* %s */; };\n", build_file_id, product, product_id, product);
+
+				p_config_data.modules_buildphase += vformat("\t\t\t\t%s /* %s in Frameworks */,\n", build_file_id, product);
+			}
+		}
+	}
+
 	return OK;
 }
 
 Error EditorExportPlatformAppleEmbedded::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	Error result = customize_exported_project(p_preset, p_debug, p_path, p_flags);
+	ERR_FAIL_COND_V_MSG(result != OK, FAILED, "Error customizing export project");
 	return _export_project_helper(p_preset, p_debug, p_path, p_flags, p_notify, false);
 }
 
@@ -1819,11 +1889,14 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		String(" ").join(_get_preset_architectures(p_preset)),
 		_get_linker_flags(),
 		_get_cpp_code(),
-		"",
-		"",
-		"",
-		"",
-		Vector<String>(),
+		"", // modules_buildfile
+		"", // modules_fileref
+		"", // modules_buildphase
+		"", // modules_buildgrp
+		"", // spm_packages
+		"", // spm_package_refs
+		"", // spm_package_products
+		Vector<String>(), // capabilities
 	};
 
 	config_data.plist_content += p_preset->get("application/additional_plist_content").operator String() + "\n";
@@ -1854,6 +1927,21 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		return err;
 	}
 
+	// Generate a unique name for the launch screen to avoid caching.
+	{
+		const String custom_launch_image_2x = p_preset->get("storyboard/custom_image@2x");
+		const String custom_launch_image_3x = p_preset->get("storyboard/custom_image@3x");
+
+		String launch_image_hash;
+		if (custom_launch_image_2x.length() > 0 && custom_launch_image_3x.length() > 0) {
+			Vector<String> launch_scr_files;
+			launch_scr_files.push_back(custom_launch_image_2x);
+			launch_scr_files.push_back(custom_launch_image_3x);
+			launch_image_hash = "_" + FileAccess::get_multiple_md5(launch_scr_files);
+		}
+		launch_screen_image_file_name = "SplashImage" + launch_image_hash;
+	}
+
 	//export rest of the files
 	int ret = unzGoToFirstFile(src_pkg_zip);
 	Vector<uint8_t> project_file_data;
@@ -1882,6 +1970,8 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		unzCloseCurrentFile(src_pkg_zip);
 
 		//write
+
+		file = file.replace("Images.xcassets/SplashImage.imageset", "Images.xcassets/" + launch_screen_image_file_name + ".imageset");
 
 		if (files_to_parse.has(file)) {
 			_fix_config_file(p_preset, data, config_data, p_debug);
@@ -1969,9 +2059,8 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
-	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
-	Dictionary photolibrary_usage_descriptions = p_preset->get("privacy/photolibrary_usage_description_localized");
+	List<UsageDescription> usage_descriptions;
+	get_usage_descriptions(&usage_descriptions);
 
 	const String project_name = get_project_setting(p_preset, "application/config/name");
 	const Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
@@ -1988,9 +2077,9 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
 			f->store_line("CFBundleDisplayName = \"" + project_name.xml_escape(true) + "\";");
-			f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String().xml_escape(true) + "\";");
-			f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String().xml_escape(true) + "\";");
-			f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photolibrary_usage_description").operator String().xml_escape(true) + "\";");
+			for (const UsageDescription &usage_description : usage_descriptions) {
+				f->store_line(usage_description.plist_key + " = \"" + p_preset->get(usage_description.preset_key).operator String().xml_escape(true) + "\";");
+			}
 		}
 
 		for (const String &lang : locales) {
@@ -2006,7 +2095,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 			if (appnames.is_empty()) {
 				domain->set_locale_override(lang);
-				const String &name = domain->translate(project_name, String());
+				String name = domain->translate(project_name, String());
 				if (name != project_name) {
 					f->store_line("CFBundleDisplayName = \"" + name.xml_escape(true) + "\";");
 				}
@@ -2014,14 +2103,11 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String().xml_escape(true) + "\";");
 			}
 
-			if (camera_usage_descriptions.has(lang)) {
-				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
-			}
-			if (microphone_usage_descriptions.has(lang)) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
-			}
-			if (photolibrary_usage_descriptions.has(lang)) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + photolibrary_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
+			for (const UsageDescription &usage_description : usage_descriptions) {
+				Dictionary localized = p_preset->get(usage_description.preset_key + "_localized");
+				if (localized.has(lang)) {
+					f->store_line(usage_description.plist_key + " = \"" + localized[lang].operator String().xml_escape(true) + "\";");
+				}
 			}
 		}
 	}
@@ -2041,7 +2127,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		}
 	}
 
-	String iconset_dir = binary_dir + "/Images.xcassets/AppIcon.appiconset/";
+	String iconset_dir = binary_dir + "/Images.xcassets/" + _get_iconset_dir_name() + "/";
 	err = OK;
 	if (!tmp_app_path->dir_exists(iconset_dir)) {
 		err = tmp_app_path->make_dir_recursive(iconset_dir);
@@ -2058,13 +2144,14 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	}
 
 	{
-		String splash_image_path = binary_dir + "/Images.xcassets/SplashImage.imageset/";
+		String splash_image_path = binary_dir + "/Images.xcassets/" + launch_screen_image_file_name + ".imageset/";
 
 		Ref<DirAccess> launch_screen_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (launch_screen_da.is_null()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not access the filesystem."));
 			return ERR_CANT_CREATE;
 		}
+		launch_screen_da->make_dir_recursive(splash_image_path);
 
 		print_line("Exporting launch screen storyboard");
 
@@ -2119,8 +2206,6 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	if (ep.step("Making .xcarchive", 3)) {
 		return ERR_SKIP;
 	}
-
-	String platform_name = get_platform_name();
 
 	String archive_path = p_path.get_basename() + ".xcarchive";
 	List<String> archive_args;
@@ -2270,6 +2355,162 @@ bool EditorExportPlatformAppleEmbedded::has_valid_export_configuration(const Ref
 #endif // !(MODULE_MONO_ENABLED && !MACOS_ENABLED)
 }
 
+Error EditorExportPlatformAppleEmbedded::_export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) {
+	String json_description = "{\"images\":[";
+	String sizes;
+
+	Ref<DirAccess> da = DirAccess::open(p_iconset_dir);
+	if (da.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat(TTR("Could not open a directory at path \"%s\"."), p_iconset_dir));
+		return ERR_CANT_OPEN;
+	}
+
+	Color boot_bg_color = get_project_setting(p_preset, "application/boot_splash/bg_color");
+
+	enum IconColorMode {
+		ICON_NORMAL,
+		ICON_DARK,
+		ICON_TINTED,
+		ICON_MAX,
+	};
+
+	Vector<IconInfo> icon_infos = get_icon_infos();
+	bool first_icon = true;
+	for (int i = 0; i < icon_infos.size(); ++i) {
+		for (int color_mode = ICON_NORMAL; color_mode < ICON_MAX; color_mode++) {
+			IconInfo info = icon_infos[i];
+			int side_size = String(info.actual_size_side).to_int();
+			String key = info.preset_key;
+			String exp_name = info.export_name;
+			if (color_mode == ICON_DARK) {
+				key += "_dark";
+				exp_name += "_dark";
+			} else if (color_mode == ICON_TINTED) {
+				key += "_tinted";
+				exp_name += "_tinted";
+			}
+			exp_name += ".png";
+			String icon_path = p_preset->get(key);
+			bool resize_waning = true;
+			if (icon_path.is_empty()) {
+				// Load and resize base icon.
+				key = "icons/icon_1024x1024";
+				if (color_mode == ICON_DARK) {
+					key += "_dark";
+				} else if (color_mode == ICON_TINTED) {
+					key += "_tinted";
+				}
+				icon_path = p_preset->get(key);
+				resize_waning = false;
+			}
+			if (icon_path.is_empty()) {
+				if (color_mode != ICON_NORMAL) {
+					continue;
+				}
+				// Resize main app icon.
+				icon_path = get_project_setting(p_preset, "application/config/icon");
+				Error err = OK;
+				Ref<Image> img = _load_icon_or_splash_image(icon_path, &err);
+				if (err != OK || img.is_null() || img->is_empty()) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Invalid icon (%s): '%s'.", info.preset_key, icon_path));
+					return ERR_UNCONFIGURED;
+				} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
+					img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+					Ref<Image> new_img = Image::create_empty(side_size, side_size, false, Image::FORMAT_RGBA8);
+					new_img->fill(boot_bg_color);
+					_blend_and_rotate(new_img, img, false);
+					err = new_img->save_png(p_iconset_dir + exp_name);
+				} else {
+					img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+					err = img->save_png(p_iconset_dir + exp_name);
+				}
+				if (err) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Failed to export icon (%s): '%s'.", info.preset_key, icon_path));
+					return err;
+				}
+			} else {
+				// Load custom icon and resize if required.
+				Error err = OK;
+				Ref<Image> img = _load_icon_or_splash_image(icon_path, &err);
+				if (err != OK || img.is_null() || img->is_empty()) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Invalid icon (%s): '%s'.", info.preset_key, icon_path));
+					return ERR_UNCONFIGURED;
+				} else if (info.force_opaque && img->detect_alpha() != Image::ALPHA_NONE) {
+					if (resize_waning) {
+						add_message(EXPORT_MESSAGE_WARNING, TTR("Export Icons"), vformat("Icon (%s) must be opaque.", info.preset_key));
+					}
+					img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+					Ref<Image> new_img = Image::create_empty(side_size, side_size, false, Image::FORMAT_RGBA8);
+					new_img->fill(boot_bg_color);
+					_blend_and_rotate(new_img, img, false);
+					err = new_img->save_png(p_iconset_dir + exp_name);
+				} else if (img->get_width() != side_size || img->get_height() != side_size) {
+					if (resize_waning) {
+						add_message(EXPORT_MESSAGE_WARNING, TTR("Export Icons"), vformat("Icon (%s): '%s' has incorrect size %s and was automatically resized to %s.", info.preset_key, icon_path, img->get_size(), Vector2i(side_size, side_size)));
+					}
+					img->resize(side_size, side_size, (Image::Interpolation)(p_preset->get("application/icon_interpolation").operator int()));
+					err = img->save_png(p_iconset_dir + exp_name);
+				} else if (!icon_path.ends_with(".png")) {
+					err = img->save_png(p_iconset_dir + exp_name);
+				} else {
+					err = da->copy(icon_path, p_iconset_dir + exp_name);
+				}
+
+				if (err) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat("Failed to export icon (%s): '%s'.", info.preset_key, icon_path));
+					return err;
+				}
+			}
+			sizes += String(info.actual_size_side) + "\n";
+			if (first_icon) {
+				first_icon = false;
+			} else {
+				json_description += ",";
+			}
+			json_description += String("{");
+			if (color_mode != ICON_NORMAL) {
+				json_description += String("\"appearances\":[{");
+				json_description += String("\"appearance\":\"luminosity\",");
+				if (color_mode == ICON_DARK) {
+					json_description += String("\"value\":\"dark\"");
+				} else if (color_mode == ICON_TINTED) {
+					json_description += String("\"value\":\"tinted\"");
+				}
+				json_description += String("}],");
+			}
+			json_description += String("\"idiom\":") + "\"" + info.idiom + "\",";
+			json_description += String("\"platform\":\"" + get_platform_name() + "\",");
+			json_description += String("\"size\":") + "\"" + info.unscaled_size + "\",";
+			if (String(info.scale) != "1x") {
+				json_description += String("\"scale\":") + "\"" + info.scale + "\",";
+			}
+			json_description += String("\"filename\":") + "\"" + exp_name + "\"";
+			json_description += String("}");
+		}
+	}
+	json_description += "],\"info\":{\"author\":\"xcode\",\"version\":1}}";
+
+	Ref<FileAccess> json_file = FileAccess::open(p_iconset_dir + "Contents.json", FileAccess::WRITE);
+	if (json_file.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat(TTR("Could not write to a file at path \"%s\"."), p_iconset_dir + "Contents.json"));
+		return ERR_CANT_CREATE;
+	}
+
+	CharString json_utf8 = json_description.utf8();
+	json_file->store_buffer((const uint8_t *)json_utf8.get_data(), json_utf8.length());
+
+	Ref<FileAccess> sizes_file = FileAccess::open(p_iconset_dir + "sizes", FileAccess::WRITE);
+	if (sizes_file.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export Icons"), vformat(TTR("Could not write to a file at path \"%s\"."), p_iconset_dir + "sizes"));
+		return ERR_CANT_CREATE;
+	}
+
+	CharString sizes_utf8 = sizes.utf8();
+	sizes_file->store_buffer((const uint8_t *)sizes_utf8.get_data(), sizes_utf8.length());
+
+	return OK;
+}
+
 bool EditorExportPlatformAppleEmbedded::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
 	String err;
 	bool valid = true;
@@ -2291,6 +2532,9 @@ bool EditorExportPlatformAppleEmbedded::has_valid_project_configuration(const Re
 	}
 
 	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
+		if (EditorNode::is_cmdline_mode()) {
+			err += vformat(TTR("ETC2/ASTC texture compression is required for %s export. In the Project Settings, search for 'ETC2' in the search field, or enable 'Advanced Settings', and go to Rendering > Textures > VRAM Compression to enable 'Import ETC2 ASTC'."), get_name()) + "\n";
+		}
 		valid = false;
 	}
 

@@ -1808,6 +1808,7 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	if (p_frames.is_null()) {
 		frames.unref();
 		_remove_sprite_node();
+		close();
 		return;
 	}
 
@@ -2042,9 +2043,7 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 	}
 
 	bool show_node_edit = false;
-	AnimatedSprite2D *as2d = Object::cast_to<AnimatedSprite2D>(selected);
-	AnimatedSprite3D *as3d = Object::cast_to<AnimatedSprite3D>(selected);
-	if (as2d || as3d) {
+	if (selected && selected->has_method("get_sprite_frames")) {
 		if (frames != selected->call("get_sprite_frames")) {
 			_remove_sprite_node();
 		} else {
@@ -2593,8 +2592,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	MarginContainer *split_sheet_zoom_margin = memnew(MarginContainer);
 	split_sheet_panel->add_child(split_sheet_zoom_margin);
-	split_sheet_zoom_margin->set_h_size_flags(0);
-	split_sheet_zoom_margin->set_v_size_flags(0);
+	split_sheet_zoom_margin->set_h_size_flags(SIZE_SHRINK_BEGIN);
+	split_sheet_zoom_margin->set_v_size_flags(SIZE_SHRINK_BEGIN);
 	split_sheet_zoom_margin->add_theme_constant_override("margin_top", 5);
 	split_sheet_zoom_margin->add_theme_constant_override("margin_left", 5);
 	HBoxContainer *split_sheet_zoom_hb = memnew(HBoxContainer);

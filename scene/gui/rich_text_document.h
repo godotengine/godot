@@ -46,6 +46,7 @@ public:
 		bool has_underline = false;
 		bool underline = false;
 		bool strikethrough = false;
+		bool overline = false;
 		bool code = false;
 		bool has_color = false;
 		bool has_bg_color = false;

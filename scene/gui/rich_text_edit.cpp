@@ -497,6 +497,9 @@ void RichTextEdit::_apply_style_property(TextStyle &r_style, const TextStyle &p_
 		case STYLE_PROPERTY_STRIKETHROUGH:
 			r_style.strikethrough = p_value.get_type() == Variant::BOOL ? bool(p_value) : !p_toggle_reference.strikethrough;
 			break;
+		case STYLE_PROPERTY_OVERLINE:
+			r_style.overline = p_value.get_type() == Variant::BOOL ? bool(p_value) : !p_toggle_reference.overline;
+			break;
 		case STYLE_PROPERTY_COLOR:
 			r_style.has_color = true;
 			r_style.color = p_value;
@@ -903,11 +906,6 @@ int RichTextEdit::_get_default_font_size() const {
 		return text_edit_font_size;
 	}
 
-	const int rich_text_label_font_size = get_theme_font_size(SNAME("normal_font_size"), SNAME("RichTextLabel"));
-	if (rich_text_label_font_size > 0) {
-		return rich_text_label_font_size;
-	}
-
 	return 16;
 }
 
@@ -995,6 +993,7 @@ Variant RichTextEdit::_make_style_state_variant(const Vector<StyleSpan> &p_spans
 		style["has_underline"] = span.style.has_underline;
 		style["underline"] = span.style.underline;
 		style["strikethrough"] = span.style.strikethrough;
+		style["overline"] = span.style.overline;
 		style["code"] = span.style.code;
 		style["has_color"] = span.style.has_color;
 		style["color"] = span.style.color;
@@ -1071,6 +1070,7 @@ Variant RichTextEdit::_make_style_state_variant(const Vector<StyleSpan> &p_spans
 	typing_style_data["has_underline"] = p_typing_style.has_underline;
 	typing_style_data["underline"] = p_typing_style.underline;
 	typing_style_data["strikethrough"] = p_typing_style.strikethrough;
+	typing_style_data["overline"] = p_typing_style.overline;
 	typing_style_data["code"] = p_typing_style.code;
 	typing_style_data["has_color"] = p_typing_style.has_color;
 	typing_style_data["color"] = p_typing_style.color;
@@ -1119,6 +1119,7 @@ void RichTextEdit::_restore_style_state_variant(const Variant &p_state) {
 		span.style.has_underline = style_data.get("has_underline", false);
 		span.style.underline = style_data.get("underline", false);
 		span.style.strikethrough = style_data.get("strikethrough", false);
+		span.style.overline = style_data.get("overline", false);
 		span.style.code = style_data.get("code", false);
 		span.style.has_color = style_data.get("has_color", false);
 		span.style.color = style_data.get("color", Color());
@@ -1192,6 +1193,7 @@ void RichTextEdit::_restore_style_state_variant(const Variant &p_state) {
 	restored_typing_style.has_underline = typing_style_data.get("has_underline", false);
 	restored_typing_style.underline = typing_style_data.get("underline", false);
 	restored_typing_style.strikethrough = typing_style_data.get("strikethrough", false);
+	restored_typing_style.overline = typing_style_data.get("overline", false);
 	restored_typing_style.code = typing_style_data.get("code", false);
 	restored_typing_style.has_color = typing_style_data.get("has_color", false);
 	restored_typing_style.color = typing_style_data.get("color", Color());
@@ -1315,13 +1317,13 @@ Array RichTextEdit::_get_line_style_spans(int p_line) const {
 		if (!span.style.font.is_empty()) {
 			font = ResourceLoader::load(span.style.font, "Font");
 		} else if (span.style.code) {
-			font = get_theme_font(SNAME("mono_font"), SNAME("RichTextLabel"));
+			font = get_theme_font(SNAME("mono_font"));
 		} else if (span.style.bold && span.style.italic) {
-			font = get_theme_font(SNAME("bold_italics_font"), SNAME("RichTextLabel"));
+			font = get_theme_font(SNAME("bold_italics_font"));
 		} else if (span.style.bold) {
-			font = get_theme_font(SNAME("bold_font"), SNAME("RichTextLabel"));
+			font = get_theme_font(SNAME("bold_font"));
 		} else if (span.style.italic) {
-			font = get_theme_font(SNAME("italics_font"), SNAME("RichTextLabel"));
+			font = get_theme_font(SNAME("italics_font"));
 		}
 
 		Dictionary info;
@@ -1361,6 +1363,9 @@ Array RichTextEdit::_get_line_style_spans(int p_line) const {
 		}
 		if (span.style.strikethrough) {
 			info["strikethrough"] = true;
+		}
+		if (span.style.overline) {
+			info["overline"] = true;
 		}
 		if (font.is_valid()) {
 			info["font"] = font;
@@ -2483,6 +2488,41 @@ void RichTextEdit::_inline_object_clicked(const Dictionary &p_info, const Rect2 
 	}
 }
 
+bool RichTextEdit::_is_text_clipping_enabled() const {
+	// Only OVERFLOW_VISIBLE lets the content draw outside the control.
+	return overflow != OVERFLOW_VISIBLE;
+}
+
+TextEdit::ScrollBarMode RichTextEdit::_get_scroll_bar_mode() const {
+	switch (overflow) {
+		case OVERFLOW_VISIBLE:
+		case OVERFLOW_HIDDEN:
+			return SCROLL_BAR_MODE_NEVER;
+		case OVERFLOW_SCROLL:
+			return SCROLL_BAR_MODE_ALWAYS;
+		case OVERFLOW_AUTO:
+			break;
+	}
+	return SCROLL_BAR_MODE_AUTO;
+}
+
+void RichTextEdit::set_overflow(Overflow p_overflow) {
+	ERR_FAIL_INDEX((int)p_overflow, OVERFLOW_SCROLL + 1);
+	if (overflow == p_overflow) {
+		return;
+	}
+	overflow = p_overflow;
+	_update_text_clipping();
+}
+
+RichTextEdit::Overflow RichTextEdit::get_overflow() const {
+	return overflow;
+}
+
+int RichTextEdit::get_content_height() const {
+	return _get_visible_content_height();
+}
+
 void RichTextEdit::_notification(int p_what) {
 	if (p_what == NOTIFICATION_MOUSE_EXIT && meta_hovering) {
 		meta_hovering = false;
@@ -2905,6 +2945,18 @@ void RichTextEdit::clear_strikethrough() {
 
 void RichTextEdit::toggle_strikethrough() {
 	_apply_style_property_to_selection(STYLE_PROPERTY_STRIKETHROUGH);
+}
+
+void RichTextEdit::set_overline() {
+	_apply_style_property_to_selection(STYLE_PROPERTY_OVERLINE, true);
+}
+
+void RichTextEdit::clear_overline() {
+	_apply_style_property_to_selection(STYLE_PROPERTY_OVERLINE, false);
+}
+
+void RichTextEdit::toggle_overline() {
+	_apply_style_property_to_selection(STYLE_PROPERTY_OVERLINE);
 }
 
 void RichTextEdit::set_selection_color(const Color &p_color) {
@@ -3369,6 +3421,9 @@ void RichTextEdit::_apply_custom_undo_operation(const StringName &p_type, const 
 void RichTextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_bbcode", "enable"), &RichTextEdit::set_use_bbcode);
 	ClassDB::bind_method(D_METHOD("is_using_bbcode"), &RichTextEdit::is_using_bbcode);
+	ClassDB::bind_method(D_METHOD("set_overflow", "overflow"), &RichTextEdit::set_overflow);
+	ClassDB::bind_method(D_METHOD("get_overflow"), &RichTextEdit::get_overflow);
+	ClassDB::bind_method(D_METHOD("get_content_height"), &RichTextEdit::get_content_height);
 	ClassDB::bind_method(D_METHOD("set_link_activation_mode", "mode"), &RichTextEdit::set_link_activation_mode);
 	ClassDB::bind_method(D_METHOD("get_link_activation_mode"), &RichTextEdit::get_link_activation_mode);
 	ClassDB::bind_method(D_METHOD("set_bbcode_text", "text"), &RichTextEdit::set_bbcode_text);
@@ -3395,6 +3450,9 @@ void RichTextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_strikethrough"), &RichTextEdit::set_strikethrough);
 	ClassDB::bind_method(D_METHOD("clear_strikethrough"), &RichTextEdit::clear_strikethrough);
 	ClassDB::bind_method(D_METHOD("toggle_strikethrough"), &RichTextEdit::toggle_strikethrough);
+	ClassDB::bind_method(D_METHOD("set_overline"), &RichTextEdit::set_overline);
+	ClassDB::bind_method(D_METHOD("clear_overline"), &RichTextEdit::clear_overline);
+	ClassDB::bind_method(D_METHOD("toggle_overline"), &RichTextEdit::toggle_overline);
 	ClassDB::bind_method(D_METHOD("set_selection_color", "color"), &RichTextEdit::set_selection_color);
 	ClassDB::bind_method(D_METHOD("clear_selection_color"), &RichTextEdit::clear_selection_color);
 	ClassDB::bind_method(D_METHOD("set_selection_bg_color", "color"), &RichTextEdit::set_selection_bg_color);
@@ -3443,9 +3501,15 @@ void RichTextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(LINK_ACTIVATION_CLICK);
 	BIND_ENUM_CONSTANT(LINK_ACTIVATION_DISABLED);
 
+	BIND_ENUM_CONSTANT(OVERFLOW_AUTO);
+	BIND_ENUM_CONSTANT(OVERFLOW_VISIBLE);
+	BIND_ENUM_CONSTANT(OVERFLOW_HIDDEN);
+	BIND_ENUM_CONSTANT(OVERFLOW_SCROLL);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "link_activation_mode", PROPERTY_HINT_ENUM, "Auto,Ctrl Click,Click,Disabled"), "set_link_activation_mode", "get_link_activation_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bbcode_text", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bbcode_text", "get_bbcode_text");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "overflow", PROPERTY_HINT_ENUM, "Auto,Visible,Hidden,Scroll"), "set_overflow", "get_overflow");
 	// These properties must follow text/bbcode_text so their values are applied
 	// against the final parsed character count when a scene is restored.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
@@ -3461,6 +3525,13 @@ void RichTextEdit::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, RichTextEdit, tooltip_font_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, RichTextEdit, tooltip_font);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, RichTextEdit, tooltip_font_size);
+
+	for (const char *font_name : { "bold_font", "italics_font", "bold_italics_font", "mono_font" }) {
+		ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_FONT, get_class_static(), font_name, font_name,
+				[](Node *p_instance, const StringName &, const StringName &) {
+					Object::cast_to<RichTextEdit>(p_instance)->_refresh_style_rendering();
+				});
+	}
 
 	ThemeDB::get_singleton()->bind_class_item(Theme::DATA_TYPE_COLOR, get_class_static(), "link_color", "link_color",
 			[](Node *p_instance, const StringName &, const StringName &) {

@@ -20,7 +20,7 @@ public:
 	static constexpr uint Capacity = N;
 
 	/// Default constructor
-						StaticArray() = default;
+						StaticArray() { /* We specifically don't want to initialize the union */ }
 
 	/// Constructor from initializer list
 	explicit			StaticArray(std::initializer_list<T> inList)
@@ -296,16 +296,12 @@ public:
 	}
 
 protected:
-	struct alignas(T) Storage
-	{
-		uint8			mData[sizeof(T)];
-	};
-
-	static_assert(sizeof(T) == sizeof(Storage), "Mismatch in size");
-	static_assert(alignof(T) == alignof(Storage), "Mismatch in alignment");
-
 	size_type			mSize = 0;
-	Storage				mElements[N];
+	union // Prevent constructors from being called for mElements
+	{
+		T				mElements[N];
+		uint8			mDummy;
+	};
 };
 
 JPH_NAMESPACE_END

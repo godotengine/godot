@@ -30,7 +30,9 @@
 
 #pragma once
 
-#include "servers/physics_3d/physics_server_3d.h"
+#include "core/math/transform_3d.h"
+#include "core/templates/rid.h"
+#include "servers/physics_3d/physics_server_3d_enums.h"
 
 #include <Jolt/Jolt.h>
 
@@ -46,6 +48,7 @@ protected:
 
 	int velocity_iterations = 0;
 	int position_iterations = 0;
+	int solver_priority = 1;
 
 	JPH::Ref<JPH::Constraint> jolt_ref;
 
@@ -63,6 +66,9 @@ protected:
 
 	void _update_enabled();
 	void _update_iterations();
+	void _update_priority();
+
+	void _update_joint();
 
 	void _enabled_changed();
 	void _iterations_changed();
@@ -74,7 +80,7 @@ public:
 	JoltJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);
 	virtual ~JoltJoint3D();
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
+	virtual PS3DE::JointType get_type() const { return PS3DE::JOINT_TYPE_MAX; }
 
 	RID get_rid() const { return rid; }
 	void set_rid(const RID &p_rid) { rid = p_rid; }
@@ -86,7 +92,7 @@ public:
 	bool is_enabled() const { return enabled; }
 	void set_enabled(bool p_enabled);
 
-	int get_solver_priority() const;
+	int get_solver_priority() const { return solver_priority; }
 	void set_solver_priority(int p_priority);
 
 	int get_solver_velocity_iterations() const { return velocity_iterations; }

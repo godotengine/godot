@@ -35,6 +35,7 @@
 #include "core/object/class_db.h"
 #include "scene/gui/label.h"
 #include "scene/main/timer.h"
+#include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
 void BaseButton::_unpress_group() {
@@ -63,32 +64,34 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (p_event->get_device() != InputEvent::DEVICE_ID_EMULATION) {
-		Ref<InputEventScreenTouch> touch = p_event;
-		if (touch.is_valid()) {
-			if (status.touch_index == -1) {
-				if (touch->is_pressed()) {
-					status.touch_index = touch->get_index();
-					status.press_attempt = true;
-					status.pressing_inside = has_point(touch->get_position());
-					on_action_event(p_event);
-				}
-			} else if (touch->get_index() == status.touch_index) {
-				if (!touch->is_pressed()) {
-					status.touch_index = -1;
-					on_action_event(p_event);
-				}
+	if (p_event->get_device() == InputEvent::DEVICE_ID_EMULATION) {
+		return;
+	}
+
+	Ref<InputEventScreenTouch> touch = p_event;
+	if (touch.is_valid()) {
+		if (status.touch_index == -1) {
+			if (touch->is_pressed()) {
+				status.touch_index = touch->get_index();
+				status.press_attempt = true;
+				status.pressing_inside = has_point(touch->get_position());
+				on_action_event(p_event);
+			}
+		} else if (touch->get_index() == status.touch_index) {
+			if (!touch->is_pressed()) {
+				status.touch_index = -1;
+				on_action_event(p_event);
 			}
 		}
+	}
 
-		Ref<InputEventScreenDrag> drag = p_event;
-		if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
-			bool last_press_inside = status.pressing_inside;
-			status.pressing_inside = has_point(drag->get_position());
+	Ref<InputEventScreenDrag> drag = p_event;
+	if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
+		bool last_press_inside = status.pressing_inside;
+		status.pressing_inside = has_point(drag->get_position());
 
-			if (last_press_inside != status.pressing_inside) {
-				queue_redraw();
-			}
+		if (last_press_inside != status.pressing_inside) {
+			queue_redraw();
 		}
 	}
 
@@ -115,23 +118,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void BaseButton::_accessibility_action_click(const Variant &p_data) {
-	if (toggle_mode) {
-		status.pressed = !status.pressed;
-
-		if (status.pressed) {
-			_unpress_group();
-			if (button_group.is_valid()) {
-				button_group->emit_signal(SceneStringName(pressed), this);
-			}
-		}
-
-		_toggled(status.pressed);
-		_pressed();
-	} else {
-		_pressed();
-	}
-	queue_accessibility_update();
-	queue_redraw();
+	press();
 }
 
 void BaseButton::_notification(int p_what) {
@@ -251,24 +238,25 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 
 	if (status.press_attempt && status.pressing_inside) {
 		if (toggle_mode) {
-			bool is_pressed = p_event->is_pressed();
-			if ((is_pressed && action_mode == ACTION_MODE_BUTTON_PRESS) || (!is_pressed && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (p_event->is_released() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
 					status.touch_index = -1; // Action completed, release matching touch so later taps aren't dropped if a modal consumes the release.
 				}
+
 				status.pressed = !status.pressed;
+
 				_unpress_group();
 				if (button_group.is_valid()) {
 					button_group->emit_signal(SceneStringName(pressed), this);
 				}
+
 				_toggled(status.pressed);
 				_pressed();
-				queue_accessibility_update();
 			}
 		} else {
-			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (p_event->is_released() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				_pressed();
 			}
 		}
@@ -283,6 +271,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 		}
 	}
 
+	queue_accessibility_update();
 	queue_redraw();
 }
 
@@ -316,6 +305,29 @@ void BaseButton::set_disabled(bool p_disabled) {
 
 bool BaseButton::is_disabled() const {
 	return status.disabled;
+}
+
+void BaseButton::press() {
+	if (is_disabled()) {
+		return;
+	}
+
+	if (toggle_mode) {
+		status.pressed = !status.pressed;
+
+		_unpress_group();
+		if (button_group.is_valid()) {
+			button_group->emit_signal(SceneStringName(pressed), this);
+		}
+
+		_toggled(status.pressed);
+		_pressed();
+	} else {
+		_pressed();
+	}
+
+	queue_accessibility_update();
+	queue_redraw();
 }
 
 void BaseButton::set_pressed(bool p_pressed) {
@@ -392,6 +404,16 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 			return DRAW_NORMAL;
 		}
 	}
+}
+
+bool BaseButton::has_point(const Point2 &p_point) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	bool ret;
+	if (GDVIRTUAL_CALL(_has_point, p_point, ret)) {
+		return ret;
+	}
+	Rect2 rect = Rect2(Point2(), get_size()).grow(theme_cache.click_margin);
+	return rect.has_area() && rect.has_point(p_point);
 }
 
 void BaseButton::set_toggle_mode(bool p_on) {
@@ -473,21 +495,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (!is_disabled() && p_event->is_pressed() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
-		if (toggle_mode) {
-			status.pressed = !status.pressed;
-
-			_unpress_group();
-			if (button_group.is_valid()) {
-				button_group->emit_signal(SceneStringName(pressed), this);
-			}
-
-			_toggled(status.pressed);
-			_pressed();
-			queue_accessibility_update();
-		} else {
-			_pressed();
-		}
-		queue_redraw();
+		press();
 		accept_event();
 
 		if (shortcut_feedback && is_inside_tree()) {
@@ -578,23 +586,33 @@ PackedStringArray BaseButton::get_configuration_warnings() const {
 }
 
 void BaseButton::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("press"), &BaseButton::press);
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &BaseButton::set_pressed);
-	ClassDB::bind_method(D_METHOD("is_pressed"), &BaseButton::is_pressed);
 	ClassDB::bind_method(D_METHOD("set_pressed_no_signal", "pressed"), &BaseButton::set_pressed_no_signal);
+
+	ClassDB::bind_method(D_METHOD("is_pressed"), &BaseButton::is_pressed);
 	ClassDB::bind_method(D_METHOD("is_hovered"), &BaseButton::is_hovered);
+
 	ClassDB::bind_method(D_METHOD("set_toggle_mode", "enabled"), &BaseButton::set_toggle_mode);
 	ClassDB::bind_method(D_METHOD("is_toggle_mode"), &BaseButton::is_toggle_mode);
+
 	ClassDB::bind_method(D_METHOD("set_shortcut_in_tooltip", "enabled"), &BaseButton::set_shortcut_in_tooltip);
 	ClassDB::bind_method(D_METHOD("is_shortcut_in_tooltip_enabled"), &BaseButton::is_shortcut_in_tooltip_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &BaseButton::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &BaseButton::is_disabled);
+
 	ClassDB::bind_method(D_METHOD("set_action_mode", "mode"), &BaseButton::set_action_mode);
 	ClassDB::bind_method(D_METHOD("get_action_mode"), &BaseButton::get_action_mode);
+
 	ClassDB::bind_method(D_METHOD("set_button_mask", "mask"), &BaseButton::set_button_mask);
 	ClassDB::bind_method(D_METHOD("get_button_mask"), &BaseButton::get_button_mask);
+
 	ClassDB::bind_method(D_METHOD("get_draw_mode"), &BaseButton::get_draw_mode);
+
 	ClassDB::bind_method(D_METHOD("set_keep_pressed_outside", "enabled"), &BaseButton::set_keep_pressed_outside);
 	ClassDB::bind_method(D_METHOD("is_keep_pressed_outside"), &BaseButton::is_keep_pressed_outside);
+
 	ClassDB::bind_method(D_METHOD("set_shortcut_feedback", "enabled"), &BaseButton::set_shortcut_feedback);
 	ClassDB::bind_method(D_METHOD("is_shortcut_feedback"), &BaseButton::is_shortcut_feedback);
 
@@ -616,7 +634,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "button_pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left,Mouse Right,Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, ButtonGroup::get_class_static()), "set_button_group", "get_button_group");
 
@@ -624,6 +642,8 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, BaseButton, click_margin);
 
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);
