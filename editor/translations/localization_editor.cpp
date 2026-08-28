@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/string/translation_server.h"
@@ -42,6 +43,8 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
+#include "editor/themes/editor_scale.h"
+#include "editor/translations/editor_translation.h"
 #include "editor/translations/editor_translation_parser.h"
 #include "editor/translations/template_generator.h"
 #include "scene/gui/control.h"
@@ -88,7 +91,7 @@ void LocalizationEditor::add_translation(const String &p_translation) {
 	_translation_add(translations);
 }
 
-void LocalizationEditor::_translation_add(const PackedStringArray &p_paths) {
+void LocalizationEditor::_translation_add(const PackedStringArray &p_paths, bool p_with_undo) {
 	PackedStringArray translations = GLOBAL_GET("internationalization/locale/translations");
 	int count = 0;
 	for (const String &path : p_paths) {
@@ -102,19 +105,51 @@ void LocalizationEditor::_translation_add(const PackedStringArray &p_paths) {
 		return;
 	}
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTRN("Add %d Translation", "Add %d Translations", count), count));
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", translations);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", GLOBAL_GET("internationalization/locale/translations"));
-	undo_redo->add_do_method(this, "update_translations");
-	undo_redo->add_undo_method(this, "update_translations");
-	undo_redo->add_do_method(this, "emit_signal", localization_changed);
-	undo_redo->add_undo_method(this, "emit_signal", localization_changed);
-	undo_redo->commit_action();
+	if (p_with_undo) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(vformat(TTRN("Add %d Translation", "Add %d Translations", count), count));
+		undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", translations);
+		undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/translations", GLOBAL_GET("internationalization/locale/translations"));
+		undo_redo->add_do_method(this, "update_translations");
+		undo_redo->add_undo_method(this, "update_translations");
+		undo_redo->add_do_method(this, "emit_signal", localization_changed);
+		undo_redo->add_undo_method(this, "emit_signal", localization_changed);
+		undo_redo->commit_action();
+	} else {
+		ProjectSettings::get_singleton()->set_setting("internationalization/locale/translations", translations);
+		update_translations();
+		emit_signal(localization_changed);
+	}
 }
 
 void LocalizationEditor::_translation_file_open() {
 	translation_file_open->popup_file_dialog();
+}
+
+void LocalizationEditor::_open_builtin_translations_dialog() {
+	if (!builtin_locale_tree->get_root()) {
+		builtin_locale_tree->create_item();
+
+		for (const String &locale : get_editor_locales()) {
+			// FIXME: Exclude locales that don't have extractable translation, or its completion is low.
+			TreeItem *locale_item = builtin_locale_tree->create_item();
+			locale_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+			locale_item->set_editable(0, true);
+			locale_item->set_text(0, TranslationServer::get_singleton()->get_locale_name(locale));
+			locale_item->set_metadata(0, locale);
+		}
+		_update_create_button();
+
+		Ref<Translation> dummy;
+		dummy.instantiate();
+		List<String> extensions;
+		ResourceSaver::get_recognized_extensions(dummy, &extensions);
+
+		for (const String &ext : extensions) {
+			translation_format->add_item(ext);
+		}
+	}
+	builtin_translations_dialog->popup_centered(Vector2i(400, 0));
 }
 
 void LocalizationEditor::_translation_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
@@ -142,6 +177,36 @@ void LocalizationEditor::_translation_delete(Object *p_item, int p_column, int p
 	undo_redo->add_do_method(this, "emit_signal", localization_changed);
 	undo_redo->add_undo_method(this, "emit_signal", localization_changed);
 	undo_redo->commit_action();
+}
+
+void LocalizationEditor::_create_builtin_translations(const String &p_dir) {
+	PackedStringArray new_translation_list;
+	const String format = translation_format->get_text();
+
+	for (TreeItem *locale_item = builtin_locale_tree->get_root()->get_first_child(); locale_item; locale_item = locale_item->get_next()) {
+		if (!locale_item->is_checked(0)) {
+			continue;
+		}
+		const String locale = locale_item->get_metadata(0);
+		Ref<Translation> translation = get_extractable_translation(locale);
+		const String path = vformat("%s/godot_translation_%s.%s", p_dir, locale, format);
+
+		if (ResourceSaver::save(translation, path) == OK) {
+			new_translation_list.push_back(path);
+		}
+	}
+	_translation_add(new_translation_list);
+}
+
+void LocalizationEditor::_update_create_button() {
+	bool any_checked = false;
+	for (TreeItem *locale_item = builtin_locale_tree->get_root()->get_first_child(); locale_item; locale_item = locale_item->get_next()) {
+		if (locale_item->is_checked(0)) {
+			any_checked = true;
+			break;
+		}
+	}
+	builtin_translations_dialog->get_ok_button()->set_disabled(!any_checked);
 }
 
 void LocalizationEditor::_translation_res_file_open() {
@@ -775,6 +840,11 @@ LocalizationEditor::LocalizationEditor() {
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_file_open));
 		thb->add_child(addtr);
 
+		Button *adddtr = memnew(Button(TTRC("Add Built-in Translations...")));
+		adddtr->set_tooltip_text(TTRC("Create and add translation files for built-in strings."));
+		adddtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_open_builtin_translations_dialog));
+		thb->add_child(adddtr);
+
 		MarginContainer *mc = memnew(MarginContainer);
 		mc->set_theme_type_variation("NoBorderBottomWideWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -795,6 +865,33 @@ LocalizationEditor::LocalizationEditor() {
 		translation_file_open->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
 		translation_file_open->connect("files_selected", callable_mp(this, &LocalizationEditor::_translation_add));
 		add_child(translation_file_open);
+
+		builtin_translations_dialog = memnew(ConfirmationDialog);
+		builtin_translations_dialog->set_title(TTRC("Add Built-in Translations"));
+		builtin_translations_dialog->set_ok_button_text(TTRC("Create..."));
+		add_child(builtin_translations_dialog);
+
+		VBoxContainer *def_vb = memnew(VBoxContainer);
+		builtin_translations_dialog->add_child(def_vb);
+
+		builtin_locale_tree = memnew(Tree);
+		builtin_locale_tree->set_hide_root(true);
+		builtin_locale_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		builtin_locale_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+		builtin_locale_tree->set_custom_minimum_size(Vector2(0, 200 * EDSCALE));
+		def_vb->add_margin_child(TTRC("Select Locales:"), builtin_locale_tree)->set_v_size_flags(SIZE_EXPAND_FILL);
+		builtin_locale_tree->connect("item_edited", callable_mp(this, &LocalizationEditor::_update_create_button));
+
+		translation_format = memnew(OptionButton);
+		translation_format->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		def_vb->add_margin_child(TTRC("Translation Format:"), translation_format);
+
+		builtin_translations_folder = memnew(EditorFileDialog);
+		builtin_translations_folder->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
+		add_child(builtin_translations_folder);
+		builtin_translations_folder->connect("dir_selected", callable_mp(this, &LocalizationEditor::_create_builtin_translations));
+
+		builtin_translations_dialog->connect(SceneStringName(confirmed), callable_mp((FileDialog *)builtin_translations_folder, &FileDialog::popup_file_dialog), CONNECT_DEFERRED);
 	}
 
 	{

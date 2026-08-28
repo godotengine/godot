@@ -3648,23 +3648,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 		OS::get_singleton()->benchmark_end_measure("Startup", "Setup Window and Boot");
 	}
 
-	MAIN_PRINT("Main: Load Translations and Remaps");
-
-	/* Setup translations and remaps */
-
-	{
-		OS::get_singleton()->benchmark_begin_measure("Startup", "Translations and Remaps");
-
-		translation_server->setup(); //register translations, load them, etc.
-		if (!locale.is_empty()) {
-			translation_server->set_locale(locale);
-		}
-		translation_server->load_project_translations(translation_server->get_main_domain());
-		ResourceLoader::load_translation_remaps(); //load remaps for resources
-
-		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
-	}
-
 	MAIN_PRINT("Main: Load TextServer");
 
 	/* Setup Text Server */
@@ -3756,6 +3739,23 @@ Error Main::setup2(bool p_show_boot_logo) {
 	register_driver_types();
 
 	register_scene_singletons();
+
+	MAIN_PRINT("Main: Load Translations and Remaps");
+
+	/* Setup translations and remaps */
+
+	{
+		OS::get_singleton()->benchmark_begin_measure("Startup", "Translations and Remaps");
+
+		translation_server->setup(); //register translations, load them, etc.
+		if (!locale.is_empty()) {
+			translation_server->set_locale(locale);
+		}
+		translation_server->load_project_translations(translation_server->get_main_domain());
+		ResourceLoader::load_translation_remaps(); //load remaps for resources
+
+		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
+	}
 
 	{
 		OS::get_singleton()->benchmark_begin_measure("Scene", "Modules and Extensions");

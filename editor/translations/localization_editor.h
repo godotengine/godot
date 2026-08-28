@@ -44,6 +44,10 @@ class LocalizationEditor : public VBoxContainer {
 
 	EditorLocaleDialog *locale_select = nullptr;
 	EditorFileDialog *translation_file_open = nullptr;
+	ConfirmationDialog *builtin_translations_dialog = nullptr;
+	Tree *builtin_locale_tree = nullptr;
+	OptionButton *translation_format = nullptr;
+	EditorFileDialog *builtin_translations_folder = nullptr;
 
 	Button *translation_res_option_add_button = nullptr;
 	EditorFileDialog *translation_res_file_open_dialog = nullptr;
@@ -66,8 +70,11 @@ class LocalizationEditor : public VBoxContainer {
 	HashMap<Tree *, StringName> tree_settings;
 
 	void _translation_file_open();
-	void _translation_add(const PackedStringArray &p_paths);
+	void _open_builtin_translations_dialog();
+	void _translation_add(const PackedStringArray &p_paths, bool p_with_undo = true);
 	void _translation_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
+	void _create_builtin_translations(const String &p_dir);
+	void _update_create_button();
 
 	void _translation_res_file_open();
 	void _translation_res_add(const PackedStringArray &p_paths);
