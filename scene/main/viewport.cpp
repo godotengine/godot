@@ -4328,7 +4328,7 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 			Vector<DisplayServerEnums::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
 			for (const DisplayServerEnums::WindowID &window_id : wl) {
 				const Window *w = Window::get_from_id(window_id);
-				if (w && is_ancestor_of(w)) {
+				if (w && w != this && is_ancestor_of(w)) {
 					// Prevent change when this viewport has child windows that are displayed as native windows.
 					allow_change = false;
 					break;
