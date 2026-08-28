@@ -4442,9 +4442,11 @@ void EditorNode::replace_resources_in_scenes(const Vector<Ref<Resource>> &p_sour
 }
 
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
+#ifndef DISABLE_DEPRECATED
 	if (p_editor->has_main_screen()) {
 		singleton->editor_main_screen->add_main_plugin(p_editor);
 	}
+#endif
 	singleton->editor_data.add_editor_plugin(p_editor);
 	singleton->add_child(p_editor);
 	if (p_config_changed) {
@@ -4453,9 +4455,11 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 }
 
 void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
+#ifndef DISABLE_DEPRECATED
 	if (p_editor->has_main_screen()) {
 		singleton->editor_main_screen->remove_main_plugin(p_editor);
 	}
+#endif
 	p_editor->make_visible(false);
 	p_editor->clear();
 	if (p_config_changed) {

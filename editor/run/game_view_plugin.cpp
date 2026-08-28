@@ -1829,7 +1829,10 @@ void GameViewPluginBase::_focus_another_editor() {
 		if (last_editor.is_empty() || (last_editor == "Script" && ScriptEditor::get_singleton()->get_current_layout() == EditorDock::DOCK_LAYOUT_FLOATING)) {
 			CanvasItemEditor::get_singleton()->make_visible();
 		} else {
-			EditorInterface::get_singleton()->set_main_screen_editor(last_editor);
+			EditorDock *last_dock = EditorDockManager::get_singleton()->get_dock_by_name(last_editor);
+			if (last_dock && last_dock->get_current_layout() == EditorDock::DOCK_LAYOUT_MAIN_SCREEN) {
+				last_dock->make_visible();
+			}
 		}
 	}
 }
