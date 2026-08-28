@@ -59,6 +59,9 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
+		<member name="minimum_character_count" type="int" setter="set_minimum_character_count" getter="get_minimum_character_count" default="-1">
+			Determines the minimum width of the [SpinBox] by overriding the [theme_item LineEdit.minimum_character_width] property of the internal [LineEdit]. If [code]-1[/code], the size will be adjusted automatically to match the longest possible text length from the range of available values.
+		</member>
 		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;">
 			Adds the specified prefix string before the numerical value of the [SpinBox].
 		</member>
