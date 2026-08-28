@@ -4240,8 +4240,10 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 #endif // TOOLS_ENABLED
 	Ref<GLTFNode> gltf_node;
 	gltf_node.instantiate();
-	if (p_current->has_method("is_visible")) {
-		bool visible = p_current->call("is_visible");
+
+	Callable::CallError err;
+	bool visible = p_current->callp(SceneStringName(is_visible), nullptr, 0, err);
+	if (err.error == Callable::CallError::CALL_OK) {
 		if (!visible && _visibility_mode == VISIBILITY_MODE_EXCLUDE) {
 			return;
 		}

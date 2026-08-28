@@ -239,6 +239,8 @@ protected:
 	void _accessibility_action_click(const Variant &p_data);
 
 public:
+	static String get_property_warning(Object *p_object, const StringName &p_property);
+
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
 
 	String get_tooltip_string(const String &p_string) const;

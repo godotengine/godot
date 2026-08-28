@@ -3354,8 +3354,12 @@ Node *EditorPropertyNodePath::get_base_node() {
 		return base_node;
 	}
 
-	if (get_edited_object()->has_method("get_root_path")) {
-		return Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
+	{
+		Callable::CallError err;
+		Object *root_node = get_edited_object()->callp(SNAME("get_root_path"), nullptr, 0, err);
+		if (err.error == Callable::CallError::CALL_OK) {
+			return Object::cast_to<Node>(root_node);
+		}
 	}
 
 	if (!base_node) {
