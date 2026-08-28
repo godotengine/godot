@@ -230,20 +230,32 @@ Error EditorExportPlatformPC::_unzip_debugsymbols(Ref<DirAccess> &p_da, const St
 }
 
 bool EditorExportPlatformPC::_copy_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_symbols_path, Error &r_err) {
-	r_err = OK;
-
-	if (FileAccess::exists(p_symbols_path)) {
-		r_err = p_da->copy(p_symbols_path, p_path + ".debugsymbols");
-	} else if (FileAccess::exists(p_symbols_path + ".zip")) {
-		r_err = _unzip_debugsymbols(p_da, p_path + ".debugsymbols", p_symbols_path.get_file(), p_symbols_path + ".zip");
-	} else {
-		return false;
+	Error err = FAILED;
+	// Try ".debugsymbols".
+	if (FileAccess::exists(p_symbols_path + ".debugsymbols")) {
+		err = p_da->copy(p_symbols_path + ".debugsymbols", p_path + ".debugsymbols");
+	} else if (FileAccess::exists(p_symbols_path + ".debugsymbols.zip")) {
+		err = _unzip_debugsymbols(p_da, p_path + ".debugsymbols", p_symbols_path.get_file(), p_symbols_path + ".debugsymbols.zip");
 	}
-	if (r_err == OK) {
+	if (err == OK) {
 		r_err = fixup_debug_symbol_link(p_path, p_path.get_file() + ".debugsymbols");
+		return true;
 	}
 
-	return r_err == OK;
+	// Try ".pdb".
+	if (FileAccess::exists(p_symbols_path.get_basename() + ".pdb")) {
+		err = p_da->copy(p_symbols_path.get_basename() + ".pdb", p_path + ".pdb");
+	} else if (FileAccess::exists(p_symbols_path.get_basename() + ".pdb.zip")) {
+		err = _unzip_debugsymbols(p_da, p_path + ".pdb", p_symbols_path.get_basename() + ".pdb", p_symbols_path.get_basename() + ".pdb.zip");
+	}
+	if (err == OK) {
+		r_err = fixup_debug_symbol_link(p_path, p_path.get_file() + ".pdb");
+		return true;
+	}
+
+	// Not found.
+	r_err = OK;
+	return false;
 }
 
 Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
@@ -296,10 +308,10 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 		}
 	}
 	if (err == OK && copy_debug_symbols) {
-		_copy_debugsymbols(da, p_path, template_path + ".debugsymbols", err);
+		_copy_debugsymbols(da, p_path, template_path, err);
 		if (err == OK && copy_wrapper) {
 			for (int i = 0; wrapper_extensions[i]; ++i) {
-				if (_copy_debugsymbols(da, p_path.get_basename() + ".console.exe", template_path.get_basename() + wrapper_extensions[i] + ".debugsymbols", err)) {
+				if (_copy_debugsymbols(da, p_path.get_basename() + ".console.exe", template_path.get_basename() + wrapper_extensions[i], err)) {
 					break;
 				}
 			}
