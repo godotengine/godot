@@ -164,6 +164,13 @@ if env["builtin_harfbuzz"]:
     if env["platform"] in ["android", "linuxbsd", "web"]:
         env_harfbuzz.Append(CPPDEFINES=["HAVE_PTHREAD"])
 
+    # GCC's `-fsanitize=bounds-strict` shows false positives for HarfBuzz's
+    # variable-length arrays as one-element trailing arrays (see `HB_VAR_ARRAY`).
+    # HarfBuzz has its own way of validating the bounds, so this is safe to disable.
+    # Disable this sanitizer for HarfBuzz to avoid a false positive showing in sanitizer output.
+    if env["platform"] == "linuxbsd" and env["use_ubsan"] and not env["use_llvm"]:
+        env_harfbuzz.Append(CCFLAGS=["-fno-sanitize=bounds-strict"])
+
     env_text_server_adv.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
     lib = env_harfbuzz.add_library("harfbuzz_builtin", thirdparty_sources)
