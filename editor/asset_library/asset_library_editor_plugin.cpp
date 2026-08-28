@@ -1053,6 +1053,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 				EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_margins));
 			} else if (ProjectManager::get_singleton()) {
 				ProjectManager::get_singleton()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_margins));
+				_update_margins();
 			}
 		} break;
 
@@ -1199,7 +1200,12 @@ void EditorAssetLibrary::update_layout(EditorDock::DockLayout p_layout, int p_sl
 		remove_theme_constant_override("margin_right");
 		remove_theme_constant_override("margin_bottom");
 	} else {
-		int margin = EditorNode::get_singleton()->get_editor_theme()->get_constant("base_margin", EditorStringName(Editor));
+		int margin;
+		if (EditorNode::get_singleton()) {
+			margin = EditorNode::get_singleton()->get_editor_theme()->get_constant("base_margin", EditorStringName(Editor));
+		} else {
+			margin = ProjectManager::get_singleton()->get_theme_constant("base_margin", EditorStringName(Editor));
+		}
 		add_theme_constant_override("margin_left", margin);
 		add_theme_constant_override("margin_right", margin);
 		add_theme_constant_override("margin_bottom", margin);
