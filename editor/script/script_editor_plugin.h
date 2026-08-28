@@ -130,6 +130,7 @@ class DocumentOutline : public VBoxContainer {
 	bool help_overview_enabled = false;
 
 	Control *current_editor = nullptr;
+	bool updating_outline = false;
 
 	void _toggle_sort(bool p_alphabetic_sort);
 	void _tree_selected();
