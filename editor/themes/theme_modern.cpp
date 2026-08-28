@@ -1735,6 +1735,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_color("font_selected_color", "MainScreenContainer", p_config.accent_color);
 		p_theme->set_color("font_unselected_color", "MainScreenContainer", p_config.font_color);
 		p_theme->set_color("icon_selected_color", "MainScreenContainer", p_config.accent_color);
+		p_theme->set_color("icon_unselected_color", "MainScreenContainer", p_config.icon_normal_color);
+		p_theme->set_constant("h_separation", "MainScreenContainer", 4);
 		p_theme->set_stylebox("tab_unselected", "MainScreenContainer", p_config.base_empty_wide_style);
 		p_theme->set_stylebox("tab_selected", "MainScreenContainer", p_config.base_empty_wide_style);
 		p_theme->set_stylebox("tab_hovered", "MainScreenContainer", p_config.base_empty_wide_style);
