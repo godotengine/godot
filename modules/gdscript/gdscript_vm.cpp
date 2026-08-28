@@ -1924,7 +1924,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_INSTRUCTION_ARG(base, argc);
 				Variant **argptrs = instruction_args;
 
-				FunctionInlineCache *fn = reinterpret_cast<FunctionInlineCache *>(&_code_ptr[ip + 3]);
+				FunctionInlineCache *fn = FunctionInlineCache::get_ptr(reinterpret_cast<uintptr_t>(&_code_ptr[ip + 3]));
 
 #ifdef DEBUG_ENABLED
 				uint64_t call_time = 0;

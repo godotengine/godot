@@ -398,7 +398,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	}
 
 	for (int i : function_inline_cache_locations) {
-		reinterpret_cast<FunctionInlineCache *>(&function->_code_ptr[i])->reset();
+		FunctionInlineCache::get_ptr(reinterpret_cast<uintptr_t>(&function->_code_ptr[i]))->reset();
 	}
 	function->function_inline_cache_locations = function_inline_cache_locations;
 

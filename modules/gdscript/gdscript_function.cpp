@@ -247,7 +247,7 @@ GDScriptFunction::~GDScriptFunction() {
 	return_type.script_type_ref = Ref<Script>();
 
 	for (int i : function_inline_cache_locations) {
-		reinterpret_cast<FunctionInlineCache *>(&_code_ptr[i])->reset();
+		FunctionInlineCache::get_ptr(reinterpret_cast<uintptr_t>(&_code_ptr[i]))->reset();
 	}
 
 #ifdef DEBUG_ENABLED

@@ -113,6 +113,12 @@ public:
 	}
 
 	void reset();
+
+	static _FORCE_INLINE_ FunctionInlineCache *get_ptr(uintptr_t start_idx) {
+		// Use next aligned location
+		return reinterpret_cast<FunctionInlineCache *>((start_idx + alignof(FunctionInlineCache) - 1) & -static_cast<intptr_t>(alignof(FunctionInlineCache)));
+	}
 };
 
-constexpr size_t FunctionInlineCacheIntSize = (sizeof(FunctionInlineCache) + sizeof(int) - 1) / sizeof(int);
+// Rounds up and add space for alignment
+constexpr size_t FunctionInlineCacheIntSize = (sizeof(FunctionInlineCache) + alignof(FunctionInlineCache) - 1) / sizeof(int);
