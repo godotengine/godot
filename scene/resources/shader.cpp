@@ -280,6 +280,8 @@ void Shader::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_shader_uniform_list", "get_groups"), &Shader::_get_shader_uniform_list, DEFVAL(false));
 
+	ClassDB::bind_method(D_METHOD("set_include_path", "path"), &Shader::set_include_path);
+
 	ClassDB::bind_method(D_METHOD("inspect_native_shader_code"), &Shader::inspect_native_shader_code);
 	ClassDB::set_method_flags(get_class_static(), StringName("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
