@@ -60,8 +60,11 @@ class SpinBox : public Range {
 		int buttons_left = 0;
 		int button_up_height = 0;
 		int button_down_height = 0;
+		int up_button_x = 0;
+		int down_button_x = 0;
 		int second_button_top = 0;
 		int buttons_separator_top = 0;
+		int buttons_separator_x = 0;
 		int field_and_buttons_separator_left = 0;
 		int field_and_buttons_separator_width = 0;
 	} sizing_cache;
@@ -149,10 +152,19 @@ class SpinBox : public Range {
 	void _mouse_exited();
 	void _update_buttons_state_for_current_value();
 
+	enum StepperMode {
+		DISPLAY_NONE,
+		DISPLAY_VERTICALLY,
+		DISPLAY_HORIZONTALLY,
+		DISPLAY_SPLIT_HORIZONTALLY
+	};
+
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _value_changed(double p_value) override;
 	void _validate_property(PropertyInfo &p_property) const;
+
+	StepperMode stepper_mode = DISPLAY_VERTICALLY;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -187,5 +199,10 @@ public:
 	void set_custom_arrow_round(bool p_round);
 	bool is_custom_arrow_rounding() const;
 
+	void set_stepper_mode(StepperMode p_mode);
+	StepperMode get_stepper_mode() const;
+
 	SpinBox();
 };
+
+VARIANT_ENUM_CAST(SpinBox::StepperMode);
