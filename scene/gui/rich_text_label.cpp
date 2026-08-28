@@ -1157,6 +1157,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 		double l_height = text_buf->get_line_ascent(line) + text_buf->get_line_descent(line);
 		if (p_ofs.y + off.y + l_height <= 0) {
+			if (p_frame == main && visible_line_count == 0 && text_buf->get_line_count() > line + 1) {
+				Vector2i range = main->lines[first_line].text_buf->get_line_range(line + 1);
+				character_inside_first_drawn_subline = range.x;
+			}
+
 			off.y += l_height;
 			continue;
 		}
@@ -2823,7 +2828,8 @@ void RichTextLabel::_notification(int p_what) {
 
 			// Search for the first line.
 			int to_line = main->first_invalid_line.load();
-			int from_line = _find_first_line(0, to_line, vofs);
+			first_line = _find_first_line(0, to_line, vofs);
+			int from_line = first_line;
 
 			// Bottom margin for text clipping.
 			float v_limit = theme_cache.normal_style->get_margin(SIDE_BOTTOM);
@@ -2868,6 +2874,7 @@ void RichTextLabel::_notification(int p_what) {
 			visible_paragraph_count = 0;
 			visible_line_count = 0;
 			visible_rect = Rect2i();
+			character_inside_first_drawn_subline = 0;
 
 			// New cache draw.
 			Point2 ofs = text_rect.get_position() + Vector2(0, vbegin + main->lines[from_line].offset.y - vofs);
@@ -4173,7 +4180,16 @@ bool RichTextLabel::_validate_line_caches() {
 			total_height = _update_scroll_exceeds(total_height, ctrl_height, wrap_width, i, old_scroll, text_rect.size.height);
 			main->first_resized_line.store(i);
 		}
-
+		if (!(scroll_follow && scroll_following)) {
+			int offset_y = 0;
+			for (int i = 0; i < main->lines[first_line].text_buf->get_line_count(); i++) {
+				if (character_inside_first_drawn_subline >= main->lines[first_line].text_buf->get_line_range(i).x && character_inside_first_drawn_subline < main->lines[first_line].text_buf->get_line_range(i).y) {
+					break;
+				}
+				offset_y += main->lines[first_line].text_buf->get_line_ascent(i) + main->lines[first_line].text_buf->get_line_descent(i) + theme_cache.line_separation;
+			}
+			vscroll->set_value(main->lines[first_line].offset.y + offset_y + theme_cache.line_separation);
+		}
 		main->first_resized_line.store(main->lines.size());
 
 		if (fit_content) {
