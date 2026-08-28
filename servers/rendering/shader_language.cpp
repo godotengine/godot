@@ -234,6 +234,8 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"FILTER_LINEAR_MIPMAP_ANISOTROPIC",
 	"REPEAT_ENABLE",
 	"REPEAT_DISABLE",
+	"NO_STORAGE",
+	"NO_EDITOR",
 	"SHADER_TYPE",
 	"CURSOR",
 	"ERROR",
@@ -411,6 +413,11 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC, "filter_linear_mipmap_anisotropic", CF_UNSPECIFIED, {}, {} },
 	{ TK_REPEAT_ENABLE, "repeat_enable", CF_UNSPECIFIED, {}, {} },
 	{ TK_REPEAT_DISABLE, "repeat_disable", CF_UNSPECIFIED, {}, {} },
+
+	// usage flags
+
+	{ TK_HINT_NO_STORAGE, "no_storage", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_NO_EDITOR, "no_editor", CF_UNSPECIFIED, {}, {} },
 
 	{ TK_ERROR, nullptr, CF_UNSPECIFIED, {}, {} }
 };
@@ -1307,6 +1314,21 @@ String ShaderLanguage::get_texture_repeat_name(TextureRepeat p_repeat) {
 	return result;
 }
 
+String ShaderLanguage::get_unset_property_usage_name(PropertyUsageFlags p_usage) {
+	String result;
+	switch (p_usage) {
+		case PROPERTY_USAGE_STORAGE: {
+			result = "no_storage";
+		} break;
+		case PROPERTY_USAGE_EDITOR: {
+			result = "no_editor";
+		} break;
+		default: {
+		} break;
+	}
+	return result;
+}
+
 bool ShaderLanguage::is_token_nonvoid_datatype(TokenType p_type) {
 	return is_token_datatype(p_type) && p_type != TK_TYPE_VOID;
 }
@@ -1320,6 +1342,7 @@ void ShaderLanguage::clear() {
 	current_uniform_filter = FILTER_DEFAULT;
 	current_uniform_repeat = REPEAT_DEFAULT;
 	current_uniform_instance_index_defined = false;
+	current_property_usage = PROPERTY_USAGE_DEFAULT;
 
 	completion_type = COMPLETION_NONE;
 	completion_block = nullptr;
@@ -5250,6 +5273,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_MAX:
 			break;
 	}
+	pi.usage = p_uniform.property_usage;
 	return pi;
 }
 
@@ -9918,6 +9942,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							ShaderNode::Uniform::Hint new_hint = ShaderNode::Uniform::HINT_NONE;
 							TextureFilter new_filter = FILTER_DEFAULT;
 							TextureRepeat new_repeat = REPEAT_DEFAULT;
+							PropertyUsageFlags unset_property_usage = PROPERTY_USAGE_NONE;
 
 							switch (tk.type) {
 								case TK_HINT_SOURCE_COLOR: {
@@ -10066,6 +10091,12 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									}
 
 									new_hint = ShaderNode::Uniform::HINT_ENUM;
+								} break;
+								case TK_HINT_NO_STORAGE: {
+									unset_property_usage = PROPERTY_USAGE_STORAGE;
+								} break;
+								case TK_HINT_NO_EDITOR: {
+									unset_property_usage = PROPERTY_USAGE_EDITOR;
 								} break;
 								case TK_HINT_INSTANCE_INDEX: {
 									if (custom_instance_index != -1) {
@@ -10222,6 +10253,16 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								}
 							}
 
+							if (unset_property_usage != PROPERTY_USAGE_NONE) {
+								if (!(uniform.property_usage & unset_property_usage)) {
+									_set_error(vformat(RTR("Duplicated property usage flag '%s'."), get_unset_property_usage_name(unset_property_usage)));
+									return ERR_PARSE_ERROR;
+								} else {
+									uniform.property_usage &= ~unset_property_usage;
+									current_property_usage = uniform.property_usage;
+								}
+							}
+
 							if (new_filter != FILTER_DEFAULT) {
 								if (uniform.filter != FILTER_DEFAULT) {
 									if (uniform.filter == new_filter) {
@@ -10319,6 +10360,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					current_uniform_filter = FILTER_DEFAULT;
 					current_uniform_repeat = REPEAT_DEFAULT;
 					current_uniform_instance_index_defined = false;
+					current_property_usage = PROPERTY_USAGE_DEFAULT;
 				} else { // varying
 					ShaderNode::Varying varying;
 					varying.type = type;
@@ -12222,6 +12264,12 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				ScriptLanguage::CodeCompletionOption option("instance_index", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				option.insert_text = "instance_index(0)";
 				r_options->push_back(option);
+			}
+			if (current_property_usage & PROPERTY_USAGE_STORAGE) {
+				r_options->push_back({ "no_storage", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT });
+			}
+			if (current_property_usage & PROPERTY_USAGE_EDITOR) {
+				r_options->push_back({ "no_editor", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT });
 			}
 		} break;
 	}
