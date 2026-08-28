@@ -32,6 +32,8 @@
 
 #include "core/os/keyboard.h"
 
+#include <Carbon/Carbon.h>
+
 class KeyMappingMacOS {
 	KeyMappingMacOS() {}
 
@@ -44,6 +46,7 @@ public:
 	static Key translate_key(unsigned int p_key);
 	static unsigned int unmap_key(Key p_key);
 	static Key remap_key(unsigned int p_key, unsigned int p_state, bool p_unicode);
+	static Key remap_key(const UCKeyboardLayout *p_layout, unsigned int p_key, unsigned int p_state, bool p_unicode);
 	static KeyLocation translate_location(unsigned int p_key);
 
 	// Mapping for menu shortcuts.
