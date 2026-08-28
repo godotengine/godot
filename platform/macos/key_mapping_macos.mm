@@ -386,10 +386,15 @@ Key KeyMappingMacOS::remap_key(unsigned int p_key, unsigned int p_state, bool p_
 	UniChar chars[256] = {};
 	UniCharCount real_length = 0;
 
+	// `UCKeyTranslate` expects Carbon modifier bits, not `NSEventModifierFlags`.
+	// Only Command is passed, so layouts that remap keys while Command is held
+	// (e.g. "Dvorak - QWERTY ⌘") produce the same keycodes as native apps.
+	UInt32 carbon_modifiers = (p_state & NSEventModifierFlagCommand) ? cmdKey : 0;
+
 	OSStatus err = UCKeyTranslate(keyboard_layout,
 			p_key,
 			kUCKeyActionDisplay,
-			(p_unicode) ? 0 : (p_state >> 8) & 0xFF,
+			(p_unicode) ? 0 : (carbon_modifiers >> 8) & 0xFF,
 			LMGetKbdType(),
 			kUCKeyTranslateNoDeadKeysBit,
 			&keys_down,
