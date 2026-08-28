@@ -148,6 +148,7 @@
 #include "editor/settings/editor_settings_dialog.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/shader/editor_native_shader_source_visualizer.h"
+#include "editor/shader/shader_editor_plugin.h"
 #include "editor/shader/shader_text_editor.h"
 #include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_scale.h"
@@ -9768,7 +9769,7 @@ EditorNode::EditorNode() {
 	{
 		const String output_key = log->get_effective_layout_key();
 		const String audio_key = audio_bus_editor->get_effective_layout_key();
-		const String shader_key = ScriptEditor::get_bottom_script_editor()->get_effective_layout_key();
+		const String shader_key = ShaderEditorPlugin::get_singleton()->get_shader_dock()->get_effective_layout_key();
 
 		Dictionary offsets;
 		offsets[output_key] = -270;
