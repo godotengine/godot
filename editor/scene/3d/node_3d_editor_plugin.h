@@ -372,6 +372,7 @@ private:
 	EditorSpinSlider *textures_min_lod_slider = nullptr;
 	CheckBox *textures_budget_enable = nullptr;
 	EditorSpinSlider *textures_budget_slider = nullptr;
+	VSeparator *textures_button_separator = nullptr;
 
 	enum TextureQualityPreset {
 		TEXTURE_QUALITY_VERY_LOW,
