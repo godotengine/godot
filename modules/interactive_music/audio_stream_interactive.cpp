@@ -709,6 +709,11 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 				if (end == 0) {
 					// Stream does not have a length.
 					src_fade_wait = 0;
+				} else if (transition.fade_mode == AudioStreamInteractive::FADE_CROSS) {
+					// Calculate total fade duration in seconds
+					float fade_time_sec = transition.fade_beats * beat_sec;
+					// Start the crossfade EARLY so it finishes exactly at 'end'
+					src_fade_wait = MAX(0.0f, (end - current_pos) - fade_time_sec);
 				} else {
 					src_fade_wait = end - current_pos;
 				}
@@ -727,7 +732,12 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 		// Source has no BPM, so just simple transition.
 		if (transition.from_time == AudioStreamInteractive::TRANSITION_FROM_TIME_END && from_state.stream->get_length() > 0) {
 			float end = from_state.stream->get_length();
-			src_fade_wait = end - current_pos;
+			if (transition.fade_mode == AudioStreamInteractive::FADE_CROSS) {
+				// Start the crossfade EARLY so it finishes exactly at 'end'
+				src_fade_wait = MAX(0.0f, (end - current_pos) - transition.fade_beats);
+			} else {
+				src_fade_wait = end - current_pos;
+			}
 			if (!from_state.stream->has_loop()) {
 				src_no_loop = true;
 			}
