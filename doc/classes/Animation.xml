@@ -439,6 +439,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
+				Returns the duration of the key identified by [param key_idx] in seconds. The [param track_idx] must be the index of a State Event Track.
 			</description>
 		</method>
 		<method name="state_event_track_get_key_end_time" qualifiers="const">
@@ -446,6 +447,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
+				Returns the end time (start + duration) of the key identified by [param key_idx]. The [param track_idx] must be the index of a State Event Track.
 			</description>
 		</method>
 		<method name="state_event_track_get_key_event" qualifiers="const">
@@ -453,6 +455,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
+				Returns the [AnimationStateEvent] resource of the key identified by [param key_idx]. The [param track_idx] must be the index of a State Event Track.
 			</description>
 		</method>
 		<method name="state_event_track_get_key_start_time" qualifiers="const">
@@ -460,6 +463,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
+				Returns the start time of the key identified by [param key_idx]. The [param track_idx] must be the index of a State Event Track.
 			</description>
 		</method>
 		<method name="state_event_track_insert_key">
@@ -469,6 +473,7 @@
 			<param index="2" name="duration" type="float" default="0.0" />
 			<param index="3" name="event" type="Resource" default="null" />
 			<description>
+				Inserts a State Event key at [param time] with [param duration] and [param event]. The [param track_idx] must be the index of a State Event Track. [param event] should be an [AnimationStateEvent] resource (or [code]null[/code]). Returns the new key index. Duration is clamped to at least [code]0.0001[/code] to ensure the strip is visible and triggers correctly.
 			</description>
 		</method>
 		<method name="state_event_track_set_key_duration">
@@ -477,6 +482,7 @@
 			<param index="1" name="key_idx" type="int" />
 			<param index="2" name="duration" type="float" />
 			<description>
+				Sets the duration of the key identified by [param key_idx]. The [param track_idx] must be the index of a State Event Track. Duration is clamped to at least [code]0.0001[/code].
 			</description>
 		</method>
 		<method name="state_event_track_set_key_end_time">
@@ -485,6 +491,7 @@
 			<param index="1" name="key_idx" type="int" />
 			<param index="2" name="end_time" type="float" />
 			<description>
+				Sets the end time of the key identified by [param key_idx]. This adjusts the duration so that [code]start + duration = end_time[/code]. The [param track_idx] must be the index of a State Event Track.
 			</description>
 		</method>
 		<method name="state_event_track_set_key_event">
@@ -493,6 +500,17 @@
 			<param index="1" name="key_idx" type="int" />
 			<param index="2" name="event" type="Resource" />
 			<description>
+				Sets the [AnimationStateEvent] resource for the key identified by [param key_idx]. The [param track_idx] must be the index of a State Event Track. Pass [code]null[/code] to clear.
+			</description>
+		</method>
+		<method name="state_event_track_set_key_start_and_duration">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="start_time" type="float" />
+			<param index="3" name="duration" type="float" />
+			<description>
+				Atomically sets both start time and duration for the key identified by [param key_idx]. This is used by the editor to avoid intermediate invalid states and index corruption when resizing the start handle. The [param track_idx] must be the index of a State Event Track.
 			</description>
 		</method>
 		<method name="state_event_track_set_key_start_time">
@@ -501,6 +519,7 @@
 			<param index="1" name="key_idx" type="int" />
 			<param index="2" name="start_time" type="float" />
 			<description>
+				Sets the start time of the key identified by [param key_idx]. The key is re-sorted by time. The [param track_idx] must be the index of a State Event Track.
 			</description>
 		</method>
 		<method name="track_find_key" qualifiers="const">
@@ -791,6 +810,7 @@
 			Animation tracks play animations in other [AnimationPlayer] nodes.
 		</constant>
 		<constant name="TYPE_STATE_EVENT" value="9" enum="TrackType">
+			State Event tracks hold [AnimationStateEvent] resources over a duration interval. Each key defines a time strip with start and duration; while playback time is inside the interval, the track has a non-zero effective blend weight, and the weight meets the event's [member AnimationStateEvent.trigger_weight_threshold], the event's [method AnimationStateEvent._start], [method AnimationStateEvent._update], [method AnimationStateEvent._end] / [method AnimationStateEvent._cancel] lifecycle is driven by [AnimationMixer].
 		</constant>
 		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">
 			No interpolation (nearest value).

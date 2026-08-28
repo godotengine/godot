@@ -4049,7 +4049,7 @@ int Animation::state_event_track_insert_key(int p_track, double p_time, double p
 
 	StateEventKey k;
 	k.time = p_time;
-	k.duration = MAX(0.0, p_duration);
+	k.duration = MAX(0.0001, p_duration);
 	k.event = p_event;
 
 	int ret = _insert(p_time, et->events, k);
@@ -4065,7 +4065,7 @@ void Animation::state_event_track_set_key_duration(int p_track, int p_key, doubl
 	StateEventTrack *et = static_cast<StateEventTrack *>(t);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key, et->events.size());
 
-	et->events[p_key].duration = MAX(0.0, p_duration);
+	et->events[p_key].duration = MAX(0.0001, p_duration);
 	emit_changed();
 }
 
@@ -4096,7 +4096,7 @@ void Animation::state_event_track_set_key_end_time(int p_track, int p_key, doubl
 	StateEventTrack *et = static_cast<StateEventTrack *>(t);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key, et->events.size());
 
-	double new_duration = MAX(0.0, p_end_time - et->events[p_key].time);
+	double new_duration = MAX(0.0001, p_end_time - et->events[p_key].time);
 	state_event_track_set_key_duration(p_track, p_key, new_duration);
 }
 
@@ -4109,6 +4109,22 @@ double Animation::state_event_track_get_key_end_time(int p_track, int p_key) con
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_key, et->events.size(), 0.0);
 
 	return et->events[p_key].time + et->events[p_key].duration;
+}
+
+void Animation::state_event_track_set_key_start_and_duration(int p_track, int p_key, double p_start_time, double p_duration) {
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_STATE_EVENT);
+
+	StateEventTrack *et = static_cast<StateEventTrack *>(t);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_key, et->events.size());
+
+	StateEventKey key = et->events[p_key];
+	key.time = p_start_time;
+	key.duration = MAX(0.0001, p_duration);
+	et->events.remove_at(p_key);
+	_insert(p_start_time, et->events, key);
+	emit_changed();
 }
 
 void Animation::state_event_track_set_key_event(int p_track, int p_key, const Ref<Resource> &p_event) {
@@ -4334,6 +4350,7 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("state_event_track_get_key_start_time", "track_idx", "key_idx"), &Animation::state_event_track_get_key_start_time);
 	ClassDB::bind_method(D_METHOD("state_event_track_set_key_end_time", "track_idx", "key_idx", "end_time"), &Animation::state_event_track_set_key_end_time);
 	ClassDB::bind_method(D_METHOD("state_event_track_get_key_end_time", "track_idx", "key_idx"), &Animation::state_event_track_get_key_end_time);
+	ClassDB::bind_method(D_METHOD("state_event_track_set_key_start_and_duration", "track_idx", "key_idx", "start_time", "duration"), &Animation::state_event_track_set_key_start_and_duration);
 	ClassDB::bind_method(D_METHOD("state_event_track_set_key_event", "track_idx", "key_idx", "event"), &Animation::state_event_track_set_key_event);
 	ClassDB::bind_method(D_METHOD("state_event_track_get_key_event", "track_idx", "key_idx"), &Animation::state_event_track_get_key_event);
 

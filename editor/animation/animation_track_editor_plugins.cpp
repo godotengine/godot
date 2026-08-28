@@ -1623,6 +1623,25 @@ void AnimationTrackEditTypeStateEvent::gui_input(const Ref<InputEvent> &p_event)
 
 		if (len_resizing_start) {
 			new_start = get_editor()->snap_time(prev_start + ofs_local);
+			// Clamp to preserve sorted order and avoid index corruption on undo/redo.
+			int key_count = get_animation()->track_get_key_count(get_track());
+			if (len_resizing_index > 0) {
+				double prev_key_end = get_animation()->state_event_track_get_key_end_time(get_track(), len_resizing_index - 1);
+				double prev_key_start = get_animation()->state_event_track_get_key_start_time(get_track(), len_resizing_index - 1);
+				double min_start = MAX(prev_key_start + 0.0001, prev_key_end - prev_duration + 0.0001);
+				// Allow overlapping but keep ordering: must stay after previous start.
+				min_start = MAX(min_start, prev_key_start + 0.0001);
+				if (new_start < min_start) {
+					new_start = min_start;
+				}
+			}
+			if (len_resizing_index + 1 < key_count) {
+				double next_start = get_animation()->state_event_track_get_key_start_time(get_track(), len_resizing_index + 1);
+				if (new_start >= next_start) {
+					new_start = next_start - 0.0001;
+				}
+			}
+			new_start = MAX(0.0, new_start);
 			new_duration = MAX(0.0001, (prev_start + prev_duration) - new_start);
 		} else {
 			float new_end = get_editor()->snap_time((prev_start + prev_duration) + ofs_local);
@@ -1632,11 +1651,12 @@ void AnimationTrackEditTypeStateEvent::gui_input(const Ref<InputEvent> &p_event)
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Resize State Event Strip"));
 		if (len_resizing_start) {
-			undo_redo->add_do_method(get_animation().ptr(), "state_event_track_set_key_start_time", get_track(), len_resizing_index, new_start);
-			undo_redo->add_undo_method(get_animation().ptr(), "state_event_track_set_key_start_time", get_track(), len_resizing_index, prev_start);
+			undo_redo->add_do_method(get_animation().ptr(), "state_event_track_set_key_start_and_duration", get_track(), len_resizing_index, new_start, new_duration);
+			undo_redo->add_undo_method(get_animation().ptr(), "state_event_track_set_key_start_and_duration", get_track(), len_resizing_index, prev_start, prev_duration);
+		} else {
+			undo_redo->add_do_method(get_animation().ptr(), "state_event_track_set_key_duration", get_track(), len_resizing_index, new_duration);
+			undo_redo->add_undo_method(get_animation().ptr(), "state_event_track_set_key_duration", get_track(), len_resizing_index, prev_duration);
 		}
-		undo_redo->add_do_method(get_animation().ptr(), "state_event_track_set_key_duration", get_track(), len_resizing_index, new_duration);
-		undo_redo->add_undo_method(get_animation().ptr(), "state_event_track_set_key_duration", get_track(), len_resizing_index, prev_duration);
 		undo_redo->commit_action();
 
 		len_resizing = false;

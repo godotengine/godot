@@ -92,6 +92,7 @@ public:
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 		real_t weight = 0.0;
 		LocalVector<real_t> *track_weights = nullptr;
+		uint64_t instance_id = 0;
 	};
 
 	struct AnimationInstance {
@@ -310,8 +311,8 @@ protected:
 			Ref<AnimationStateContext> context;
 			bool started = false;
 		};
-		// Map from animation instance ID and key index to active event instance
-		AHashMap<ObjectID, AHashMap<int, ActiveEvent>> active_events;
+		// Map from playback instance ID and source track/key index to active event instance.
+		AHashMap<ObjectID, AHashMap<uint64_t, ActiveEvent>> active_events;
 
 		TrackCacheStateEvent(const TrackCacheStateEvent &p_other) :
 				TrackCache(p_other),
@@ -321,13 +322,43 @@ protected:
 			type = Animation::TYPE_STATE_EVENT;
 		}
 
-		~TrackCacheStateEvent() override {
-			for (KeyValue<ObjectID, AHashMap<int, ActiveEvent>> &E : active_events) {
-				for (KeyValue<int, ActiveEvent> &ae : E.value) {
-					if (ae.value.event_res.is_valid() && ae.value.context.is_valid()) {
-						ae.value.event_res->cancel(ae.value.context);
-					}
+		static uint64_t make_active_key(int p_track, int p_key) {
+			return (uint64_t(uint32_t(p_track)) << 32) | uint32_t(p_key);
+		}
+
+		void take_all_active_events(LocalVector<ActiveEvent> &r_events) {
+			for (const KeyValue<ObjectID, AHashMap<uint64_t, ActiveEvent>> &E : active_events) {
+				for (const KeyValue<uint64_t, ActiveEvent> &ae : E.value) {
+					r_events.push_back(ae.value);
 				}
+			}
+			active_events.clear();
+		}
+
+		void take_events_for_animation(ObjectID p_animation_id, LocalVector<ActiveEvent> &r_events) {
+			AHashMap<uint64_t, ActiveEvent> *events = active_events.getptr(p_animation_id);
+			if (!events) {
+				return;
+			}
+			for (const KeyValue<uint64_t, ActiveEvent> &E : *events) {
+				r_events.push_back(E.value);
+			}
+			active_events.erase(p_animation_id);
+		}
+
+		void take_events_not_in(const HashSet<ObjectID> &p_valid_ids, LocalVector<ActiveEvent> &r_events) {
+			LocalVector<ObjectID> to_erase;
+			for (const KeyValue<ObjectID, AHashMap<uint64_t, ActiveEvent>> &E : active_events) {
+				if (p_valid_ids.has(E.key)) {
+					continue;
+				}
+				for (const KeyValue<uint64_t, ActiveEvent> &ae : E.value) {
+					r_events.push_back(ae.value);
+				}
+				to_erase.push_back(E.key);
+			}
+			for (ObjectID id : to_erase) {
+				active_events.erase(id);
 			}
 		}
 	};
@@ -352,6 +383,8 @@ protected:
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;
 	uint64_t animation_instance_weight_pass_counter = 0;
+	bool state_event_callback_in_progress = false;
+	bool state_event_clear_caches_pending = false;
 	AHashMap<NodePath, int> track_map;
 	uint64_t track_map_version = 1;
 	int track_count = 0;
@@ -402,6 +435,11 @@ protected:
 	void _blend_apply();
 	virtual void _blend_post_process();
 	void _call_object(ObjectID p_object_id, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred);
+	void _state_event_start(const Ref<AnimationStateEvent> &p_event, const Ref<AnimationStateContext> &p_context);
+	void _state_event_update(const Ref<AnimationStateEvent> &p_event, const Ref<AnimationStateContext> &p_context, double p_delta);
+	void _state_event_end(const Ref<AnimationStateEvent> &p_event, const Ref<AnimationStateContext> &p_context);
+	void _state_event_cancel(const Ref<AnimationStateEvent> &p_event, const Ref<AnimationStateContext> &p_context);
+	void _cancel_state_events(LocalVector<TrackCacheStateEvent::ActiveEvent> &p_events);
 
 	/* ---- Capture feature ---- */
 	struct CaptureCache {

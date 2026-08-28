@@ -532,6 +532,7 @@ public:
 	double state_event_track_get_key_start_time(int p_track, int p_key) const;
 	void state_event_track_set_key_end_time(int p_track, int p_key, double p_end_time);
 	double state_event_track_get_key_end_time(int p_track, int p_key) const;
+	void state_event_track_set_key_start_and_duration(int p_track, int p_key, double p_start_time, double p_duration);
 	void state_event_track_set_key_event(int p_track, int p_key, const Ref<Resource> &p_event);
 	Ref<Resource> state_event_track_get_key_event(int p_track, int p_key) const;
 

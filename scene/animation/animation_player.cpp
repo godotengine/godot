@@ -253,6 +253,7 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 	pi.is_external_seeking = !p_internal_seeked && !p_started;
 	pi.looped_flag = looped_flag;
 	pi.weight = p_blend;
+	pi.instance_id = cd.instance_id;
 	make_animation_instance(cd.animation_name, pi);
 }
 
@@ -542,6 +543,7 @@ void AnimationPlayer::play_section(const StringName &p_name, double p_start_time
 		}
 	}
 
+	c.current.instance_id = ++playback_instance_id;
 	c.seeked = false;
 	c.started = true;
 

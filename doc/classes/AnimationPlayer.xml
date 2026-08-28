@@ -229,7 +229,7 @@
 			<param index="2" name="update_only" type="bool" default="false" />
 			<description>
 				Seeks the animation to the [param seconds] point in time (in seconds). If [param update] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [param seconds] are skipped.
-				If [param update_only] is [code]true[/code], the method / audio / animation playback tracks will not be processed.
+				If [param update_only] is [code]true[/code], the method / audio / animation playback tracks will not be processed. State Event tracks will not start or update events, and any active State Events will be cancelled.
 				[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal AnimationMixer.animation_finished]. If you want to skip animation and emit the signal, use [method AnimationMixer.advance].
 			</description>
 		</method>

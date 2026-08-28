@@ -123,7 +123,7 @@ Color AnimationStateEvent::get_tag_color() const {
 }
 
 void AnimationStateEvent::set_trigger_weight_threshold(double p_threshold) {
-	trigger_weight_threshold = p_threshold;
+	trigger_weight_threshold = CLAMP(p_threshold, 0.0, 1.0);
 }
 
 double AnimationStateEvent::get_trigger_weight_threshold() const {

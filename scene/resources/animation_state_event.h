@@ -47,6 +47,11 @@ public:
 class AnimationStateEvent : public Resource {
 	GDCLASS(AnimationStateEvent, Resource);
 
+private:
+	StringName event_name;
+	Color tag_color = Color(0.3, 0.6, 0.9, 0.8);
+	double trigger_weight_threshold = 0.0;
+
 protected:
 	static void _bind_methods();
 
@@ -56,9 +61,6 @@ protected:
 	GDVIRTUAL1(_cancel, Ref<AnimationStateContext>)
 
 public:
-	StringName event_name;
-	Color tag_color = Color(0.3, 0.6, 0.9, 0.8);
-	double trigger_weight_threshold = 0.0;
 
 	void set_event_name(const StringName &p_name);
 	StringName get_event_name() const;

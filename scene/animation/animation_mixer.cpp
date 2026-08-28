@@ -584,11 +584,30 @@ bool AnimationMixer::is_dummy() const {
 /* -------------------------------------------- */
 
 void AnimationMixer::_clear_caches(bool p_clear_track_cache) {
+	if (state_event_callback_in_progress) {
+		state_event_clear_caches_pending = true;
+		return;
+	}
+
 	_init_root_motion_cache();
 	_clear_audio_streams();
 	_clear_playing_caches();
 	capture_cache.clear();
+
+	LocalVector<TrackCacheStateEvent::ActiveEvent> state_events_to_cancel;
+	for (KeyValue<Animation::TrackCacheID, TrackCache *> &K : track_cache) {
+		if (K.value->type == Animation::TYPE_STATE_EVENT) {
+			TrackCacheStateEvent *se = static_cast<TrackCacheStateEvent *>(K.value);
+			se->take_all_active_events(state_events_to_cancel);
+		}
+	}
+	_cancel_state_events(state_events_to_cancel);
+	bool clear_caches_pending = state_event_clear_caches_pending;
+	state_event_clear_caches_pending = false;
 	if (!p_clear_track_cache) {
+		if (clear_caches_pending) {
+			_clear_caches();
+		}
 		return;
 	}
 	for (KeyValue<Animation::TrackCacheID, TrackCache *> &K : track_cache) {
@@ -721,6 +740,11 @@ bool AnimationMixer::_update_caches() {
 			// If not valid, delete track.
 			if (track && (track->type != track_cache_type || ObjectDB::get_instance(track->object_id) == nullptr)) {
 				playing_caches.erase(track);
+				if (track->type == Animation::TYPE_STATE_EVENT) {
+					LocalVector<TrackCacheStateEvent::ActiveEvent> state_events_to_cancel;
+					static_cast<TrackCacheStateEvent *>(track)->take_all_active_events(state_events_to_cancel);
+					_cancel_state_events(state_events_to_cancel);
+				}
 				memdelete(track);
 				track_cache.erase(track_unique_id);
 				track = nullptr;
@@ -931,8 +955,19 @@ bool AnimationMixer::_update_caches() {
 
 					} break;
 					case Animation::TYPE_STATE_EVENT: {
+						if (resource.is_valid() || !leftover_path.is_empty()) {
+							if (check_path) {
+								WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', StateEvent track does not support sub-resources or subpaths: '" + String(path) + "'. Expected Node path. This track will be ignored.");
+							}
+							continue;
+						}
+						Node *node_target = Object::cast_to<Node>(child);
+						if (!node_target) {
+							ERR_PRINT(mixer_name + ": '" + String(E) + "', StateEvent track does not point to a Node: '" + String(path) + "'.");
+							continue;
+						}
 						TrackCacheStateEvent *track_se = memnew(TrackCacheStateEvent);
-						track_se->object_id = child->get_instance_id();
+						track_se->object_id = node_target->get_instance_id();
 						track = track_se;
 					} break;
 					default: {
@@ -990,7 +1025,14 @@ bool AnimationMixer::_update_caches() {
 	}
 
 	for (const Animation::TrackCacheID &unique_id : to_delete) {
-		memdelete(track_cache[unique_id]);
+		TrackCache *tc = track_cache[unique_id];
+		LocalVector<TrackCacheStateEvent::ActiveEvent> state_events_to_cancel;
+		if (tc->type == Animation::TYPE_STATE_EVENT) {
+			TrackCacheStateEvent *se = static_cast<TrackCacheStateEvent *>(tc);
+			se->take_all_active_events(state_events_to_cancel);
+		}
+		_cancel_state_events(state_events_to_cancel);
+		memdelete(tc);
 		track_cache.erase(unique_id);
 	}
 
@@ -1241,8 +1283,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 #ifdef TOOLS_ENABLED
 	bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
 #endif // TOOLS_ENABLED
+	HashSet<ObjectID> seen_instance_ids;
 	for (const AnimationInstance &ai : animation_instances) {
 		const Ref<Animation> &a = ai.animation;
+		ObjectID instance_id = ObjectID(ai.playback_info.instance_id ? ai.playback_info.instance_id : a->get_instance_id());
+		seen_instance_ids.insert(instance_id);
 		double time = ai.playback_info.time;
 		double delta = ai.playback_info.delta;
 		double start = ai.playback_info.start;
@@ -1283,15 +1328,19 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 				blend = weight;
 			}
 
+			Animation::TrackType ttype = animation_track->type;
 			if (!deterministic) {
 				// If non-deterministic, do normalization.
 				// It would be better to make this if statement outside the for loop, but come here since too much code...
 				if (Math::is_zero_approx(track->total_weight)) {
-					continue;
+					if (ttype != Animation::TYPE_STATE_EVENT) {
+						continue;
+					}
+					blend = 0.0;
+				} else {
+					blend = blend / track->total_weight;
 				}
-				blend = blend / track->total_weight;
 			}
-			Animation::TrackType ttype = animation_track->type;
 			track->root_motion = root_motion_track == animation_track->path;
 			switch (ttype) {
 				case Animation::TYPE_POSITION_3D: {
@@ -1910,9 +1959,6 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 				} break;
 				case Animation::TYPE_STATE_EVENT: {
-					if (p_update_only) {
-						continue;
-					}
 					TrackCacheStateEvent *t = static_cast<TrackCacheStateEvent *>(track);
 					Object *t_obj = ObjectDB::get_instance(t->object_id);
 					Node *node = t_obj ? Object::cast_to<Node>(t_obj) : nullptr;
@@ -1920,11 +1966,24 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						continue;
 					}
 
-					ObjectID oid = a->get_instance_id();
-					if (!t->active_events.has(oid)) {
-						t->active_events[oid] = AHashMap<int, TrackCacheStateEvent::ActiveEvent>();
+					ObjectID instance_id = ObjectID(ai.playback_info.instance_id ? ai.playback_info.instance_id : a->get_instance_id());
+					if (p_update_only) {
+						LocalVector<TrackCacheStateEvent::ActiveEvent> state_events_to_cancel;
+						t->take_events_for_animation(instance_id, state_events_to_cancel);
+						_cancel_state_events(state_events_to_cancel);
+						continue;
 					}
-					AHashMap<int, TrackCacheStateEvent::ActiveEvent> &map = t->active_events[oid];
+#ifdef TOOLS_ENABLED
+					if (!can_call) {
+						LocalVector<TrackCacheStateEvent::ActiveEvent> state_events_to_clear;
+						t->take_events_for_animation(instance_id, state_events_to_clear);
+						continue;
+					}
+#endif // TOOLS_ENABLED
+					if (!t->active_events.has(instance_id)) {
+						t->active_events[instance_id] = AHashMap<uint64_t, TrackCacheStateEvent::ActiveEvent>();
+					}
+					AHashMap<uint64_t, TrackCacheStateEvent::ActiveEvent> &map = t->active_events[instance_id];
 
 					int key_count = a->track_get_key_count(i);
 					HashSet<int> keys_should_be_active;
@@ -1937,7 +1996,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						bool is_active = false;
 						if (time >= k_start && time < k_end) {
 							// Only play a Animation State Event if the threshold is high enough
-							if (ev.is_null() || blend >= ev->get_trigger_weight_threshold()) {
+							if (!Math::is_zero_approx(blend) && (ev.is_null() || blend >= ev->get_trigger_weight_threshold())) {
 								is_active = true;
 							}
 						}
@@ -1947,32 +2006,94 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						}
 					}
 
-					LocalVector<int> to_remove;
-					for (const KeyValue<int, TrackCacheStateEvent::ActiveEvent> &E : map) {
-						int k = E.key;
+					// Handle events that were completely skipped due to large delta (e.g. advance(1.0) jumping over 0.2-0.6).
+					// Detect keys whose start was crossed during the travelled interval but whose end is already behind us.
+					if (!seeked && !Math::is_zero_approx(delta)) {
+						LocalVector<int> crossed;
+						a->track_get_key_indices_in_range(i, time, delta, start, end, &crossed, looped_flag);
+						for (int ck : crossed) {
+							if (keys_should_be_active.has(ck)) {
+								continue;
+							}
+							Ref<AnimationStateEvent> ev2 = a->state_event_track_get_key_event(i, ck);
+							if (Math::is_zero_approx(blend) || (ev2.is_valid() && blend < ev2->get_trigger_weight_threshold())) {
+								continue;
+							}
+							double ks = a->state_event_track_get_key_start_time(i, ck);
+							double ke = a->state_event_track_get_key_end_time(i, ck);
+							bool skipped_whole = false;
+							if (!backward && time >= ke && ke > ks) {
+								skipped_whole = true;
+							} else if (backward && time < ks) {
+								skipped_whole = true;
+							}
+							if (skipped_whole) {
+								Ref<AnimationStateEvent> ev = ev2;
+								if (ev.is_valid()) {
+									Ref<AnimationStateContext> ctx;
+									ctx.instantiate();
+									ctx->set_target(node);
+									ctx->set_mixer(this);
+									ctx->set_animation(a);
+									double dur = a->state_event_track_get_key_duration(i, ck);
+									ctx->set_duration(dur);
+									ctx->set_elapsed(backward ? dur : 0.0);
+									ctx->set_delta(delta);
+									ctx->set_weight(blend);
+									_state_event_start(ev, ctx);
+									ctx->set_elapsed(backward ? 0.0 : dur);
+									_state_event_end(ev, ctx);
+								} else if (ev.is_null()) {
+									// Null event still counts as traversed but no callbacks.
+								}
+							}
+						}
+					}
+
+					LocalVector<uint64_t> to_remove;
+					LocalVector<TrackCacheStateEvent::ActiveEvent> to_end;
+					LocalVector<TrackCacheStateEvent::ActiveEvent> to_cancel;
+					for (const KeyValue<uint64_t, TrackCacheStateEvent::ActiveEvent> &E : map) {
+						if (uint32_t(E.key >> 32) != uint32_t(i)) {
+							continue;
+						}
+						int k = int(uint32_t(E.key));
 						if (!keys_should_be_active.has(k)) {
 							Ref<AnimationStateContext> ctx = E.value.context;
 							Ref<AnimationStateEvent> ev = E.value.event_res;
 							if (ev.is_valid() && ctx.is_valid()) {
 								if (seeked) {
-									ev->cancel(ctx);
+									to_cancel.push_back(E.value);
 								} else {
 									double k_start = a->state_event_track_get_key_start_time(i, k);
 									double k_end = a->state_event_track_get_key_end_time(i, k);
-									if (!backward && (time >= k_end || looped_flag != Animation::LOOPED_FLAG_NONE)) {
-										ev->end(ctx);
+									bool below_threshold = Math::is_zero_approx(blend) || blend < ev->get_trigger_weight_threshold();
+									if (below_threshold) {
+										to_cancel.push_back(E.value);
+									} else if (!backward && (time >= k_end || looped_flag != Animation::LOOPED_FLAG_NONE)) {
+										ctx->set_elapsed(a->state_event_track_get_key_duration(i, k));
+										ctx->set_delta(delta);
+										ctx->set_weight(blend);
+										to_end.push_back(E.value);
 									} else if (backward && (time <= k_start || looped_flag != Animation::LOOPED_FLAG_NONE)) {
-										ev->end(ctx);
+										ctx->set_elapsed(0.0);
+										ctx->set_delta(delta);
+										ctx->set_weight(blend);
+										to_end.push_back(E.value);
 									} else {
-										ev->cancel(ctx);
+										to_cancel.push_back(E.value);
 									}
 								}
 							}
-							to_remove.push_back(k);
+							to_remove.push_back(E.key);
 						}
 					}
-					for (int k : to_remove) {
+					for (uint64_t k : to_remove) {
 						map.erase(k);
+					}
+					_cancel_state_events(to_cancel);
+					for (const TrackCacheStateEvent::ActiveEvent &E : to_end) {
+						_state_event_end(E.event_res, E.context);
 					}
 
 					for (int k : keys_should_be_active) {
@@ -1980,7 +2101,8 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						double k_dur = a->state_event_track_get_key_duration(i, k);
 						double elapsed = time - k_start;
 
-						if (!map.has(k)) {
+						uint64_t active_key = TrackCacheStateEvent::make_active_key(i, k);
+						if (!map.has(active_key)) {
 							TrackCacheStateEvent::ActiveEvent ae;
 							ae.event_res = a->state_event_track_get_key_event(i, k);
 							if (ae.event_res.is_valid()) {
@@ -1992,23 +2114,34 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 								ae.context->set_elapsed(elapsed);
 								ae.context->set_delta(delta);
 								ae.context->set_weight(blend);
-								ae.event_res->start(ae.context);
 								ae.started = true;
 							}
-							map[k] = ae;
+							map[active_key] = ae;
+							_state_event_start(ae.event_res, ae.context);
 						} else {
-							TrackCacheStateEvent::ActiveEvent &ae = map[k];
+							TrackCacheStateEvent::ActiveEvent ae = map[active_key];
 							if (ae.event_res.is_valid() && ae.context.is_valid()) {
 								ae.context->set_elapsed(elapsed);
 								ae.context->set_delta(delta);
 								ae.context->set_weight(blend);
-								ae.event_res->update(ae.context, delta);
+								_state_event_update(ae.event_res, ae.context, delta);
 							}
 						}
 					}
 				} break;
 			}
 		}
+	}
+	for (KeyValue<Animation::TrackCacheID, TrackCache *> &K : track_cache) {
+		if (K.value->type != Animation::TYPE_STATE_EVENT) {
+			continue;
+		}
+		LocalVector<TrackCacheStateEvent::ActiveEvent> state_events_to_cancel;
+		static_cast<TrackCacheStateEvent *>(K.value)->take_events_not_in(seen_instance_ids, state_events_to_cancel);
+		_cancel_state_events(state_events_to_cancel);
+	}
+	if (state_event_clear_caches_pending) {
+		_clear_caches();
 	}
 	is_GDVIRTUAL_CALL_post_process_key_value = true;
 }
@@ -2206,6 +2339,59 @@ void AnimationMixer::_call_object(ObjectID p_object_id, const StringName &p_meth
 		Callable::CallError ce;
 		t_obj->callp(p_method, argptrs, argcount, ce);
 	}
+}
+
+void AnimationMixer::_state_event_start(const Ref<AnimationStateEvent> &p_event, const Ref<AnimationStateContext> &p_context) {
+	if (p_event.is_null() || p_context.is_null()) {
+		return;
+	}
+	bool was_in_progress = state_event_callback_in_progress;
+	state_event_callback_in_progress = true;
+	p_event->start(p_context);
+	state_event_callback_in_progress = was_in_progress;
+}
+
+void AnimationMixer::_state_event_update(const Ref<AnimationStateEvent> &p_event, const Ref<AnimationStateContext> &p_context, double p_delta) {
+	if (p_event.is_null() || p_context.is_null()) {
+		return;
+	}
+	bool was_in_progress = state_event_callback_in_progress;
+	state_event_callback_in_progress = true;
+	p_event->update(p_context, p_delta);
+	state_event_callback_in_progress = was_in_progress;
+}
+
+void AnimationMixer::_state_event_end(const Ref<AnimationStateEvent> &p_event, const Ref<AnimationStateContext> &p_context) {
+	if (p_event.is_null() || p_context.is_null()) {
+		return;
+	}
+	bool was_in_progress = state_event_callback_in_progress;
+	state_event_callback_in_progress = true;
+	p_event->end(p_context);
+	state_event_callback_in_progress = was_in_progress;
+}
+
+void AnimationMixer::_state_event_cancel(const Ref<AnimationStateEvent> &p_event, const Ref<AnimationStateContext> &p_context) {
+	if (p_event.is_null() || p_context.is_null()) {
+		return;
+	}
+	bool was_in_progress = state_event_callback_in_progress;
+	state_event_callback_in_progress = true;
+	p_event->cancel(p_context);
+	state_event_callback_in_progress = was_in_progress;
+}
+
+void AnimationMixer::_cancel_state_events(LocalVector<TrackCacheStateEvent::ActiveEvent> &p_events) {
+#ifdef TOOLS_ENABLED
+	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
+		p_events.clear();
+		return;
+	}
+#endif // TOOLS_ENABLED
+	for (const TrackCacheStateEvent::ActiveEvent &E : p_events) {
+		_state_event_cancel(E.event_res, E.context);
+	}
+	p_events.clear();
 }
 
 void AnimationMixer::make_animation_instance(const StringName &p_name, const PlaybackInfo &p_playback_info) {

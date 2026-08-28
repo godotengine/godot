@@ -48,6 +48,8 @@ public:
 	int update_calls = 0;
 	int end_calls = 0;
 	int cancel_calls = 0;
+	double end_elapsed = 0.0;
+	bool clear_caches_on_cancel = false;
 
 	virtual void start(const Ref<AnimationStateContext> &p_context) override {
 		start_calls++;
@@ -57,9 +59,13 @@ public:
 	}
 	virtual void end(const Ref<AnimationStateContext> &p_context) override {
 		end_calls++;
+		end_elapsed = p_context->get_elapsed();
 	}
 	virtual void cancel(const Ref<AnimationStateContext> &p_context) override {
 		cancel_calls++;
+		if (clear_caches_on_cancel) {
+			p_context->get_mixer()->clear_caches();
+		}
 	}
 };
 
@@ -133,12 +139,147 @@ TEST_CASE("[SceneTree][AnimationPlayer] State Event playback lifecycle") {
 	CHECK(event->start_calls == 1);
 	CHECK(event->update_calls == 1);
 	CHECK(event->end_calls == 1);
+	CHECK(event->end_elapsed == doctest::Approx(0.4));
 
 	// Test cancellation when seeked away during active window
 	player->seek(0.3, true);
 	CHECK(event->start_calls == 2);
 	player->stop();
 	CHECK(event->cancel_calls == 1);
+
+	SceneTree::get_singleton()->get_root()->remove_child(root);
+	memdelete(player);
+	memdelete(root);
+}
+
+TEST_CASE("[SceneTree][AnimationPlayer] State Event cleanup with retained caches") {
+	Node *root = memnew(Node);
+	SceneTree::get_singleton()->get_root()->add_child(root);
+
+	AnimationPlayer *player = memnew(AnimationPlayer);
+	root->add_child(player);
+	player->set_root_node(NodePath(".."));
+	player->set_clear_cache_on_stop_enabled(false);
+
+	Ref<Animation> anim = memnew(Animation);
+	anim->set_length(1.0);
+	int track = anim->add_track(Animation::TYPE_STATE_EVENT);
+	anim->track_set_path(track, NodePath("."));
+	Ref<MockTestStateEvent> event = memnew(MockTestStateEvent);
+	anim->state_event_track_insert_key(track, 0.2, 0.4, event);
+
+	Ref<AnimationLibrary> lib = memnew(AnimationLibrary);
+	lib->add_animation("test", anim);
+	player->add_animation_library("", lib);
+
+	player->play("test");
+	player->advance(0.3);
+	CHECK(event->start_calls == 1);
+
+	player->stop();
+	CHECK(event->cancel_calls == 1);
+
+	player->play("test");
+	player->advance(0.3);
+	CHECK(event->start_calls == 2);
+
+	SceneTree::get_singleton()->get_root()->remove_child(root);
+	memdelete(player);
+	memdelete(root);
+}
+
+TEST_CASE("[SceneTree][AnimationPlayer] State Event update-only seek cleanup") {
+	Node *root = memnew(Node);
+	SceneTree::get_singleton()->get_root()->add_child(root);
+
+	AnimationPlayer *player = memnew(AnimationPlayer);
+	root->add_child(player);
+	player->set_root_node(NodePath(".."));
+
+	Ref<Animation> anim = memnew(Animation);
+	anim->set_length(1.0);
+	int track = anim->add_track(Animation::TYPE_STATE_EVENT);
+	anim->track_set_path(track, NodePath("."));
+	Ref<MockTestStateEvent> event = memnew(MockTestStateEvent);
+	anim->state_event_track_insert_key(track, 0.2, 0.4, event);
+
+	Ref<AnimationLibrary> lib = memnew(AnimationLibrary);
+	lib->add_animation("test", anim);
+	player->add_animation_library("", lib);
+
+	player->play("test");
+	player->advance(0.3);
+	CHECK(event->start_calls == 1);
+
+	player->seek(0.0, true, true);
+	CHECK(event->cancel_calls == 1);
+
+	player->advance(0.3);
+	CHECK(event->start_calls == 2);
+
+	SceneTree::get_singleton()->get_root()->remove_child(root);
+	memdelete(player);
+	memdelete(root);
+}
+
+TEST_CASE("[SceneTree][AnimationPlayer] State Event callbacks can clear caches") {
+	Node *root = memnew(Node);
+	SceneTree::get_singleton()->get_root()->add_child(root);
+
+	AnimationPlayer *player = memnew(AnimationPlayer);
+	root->add_child(player);
+	player->set_root_node(NodePath(".."));
+
+	Ref<Animation> anim = memnew(Animation);
+	anim->set_length(1.0);
+	int track = anim->add_track(Animation::TYPE_STATE_EVENT);
+	anim->track_set_path(track, NodePath("."));
+	Ref<MockTestStateEvent> event = memnew(MockTestStateEvent);
+	event->clear_caches_on_cancel = true;
+	anim->state_event_track_insert_key(track, 0.2, 0.4, event);
+
+	Ref<AnimationLibrary> lib = memnew(AnimationLibrary);
+	lib->add_animation("test", anim);
+	player->add_animation_library("", lib);
+
+	player->play("test");
+	player->advance(0.3);
+	player->stop();
+	CHECK(event->cancel_calls == 1);
+
+	SceneTree::get_singleton()->get_root()->remove_child(root);
+	memdelete(player);
+	memdelete(root);
+}
+
+TEST_CASE("[SceneTree][AnimationPlayer] State Event tracks keep independent state") {
+	Node *root = memnew(Node);
+	SceneTree::get_singleton()->get_root()->add_child(root);
+
+	AnimationPlayer *player = memnew(AnimationPlayer);
+	root->add_child(player);
+	player->set_root_node(NodePath(".."));
+
+	Ref<Animation> anim = memnew(Animation);
+	anim->set_length(1.0);
+	int first_track = anim->add_track(Animation::TYPE_STATE_EVENT);
+	int second_track = anim->add_track(Animation::TYPE_STATE_EVENT);
+	anim->track_set_path(first_track, NodePath("."));
+	anim->track_set_path(second_track, NodePath("."));
+
+	Ref<MockTestStateEvent> first_event = memnew(MockTestStateEvent);
+	Ref<MockTestStateEvent> second_event = memnew(MockTestStateEvent);
+	anim->state_event_track_insert_key(first_track, 0.2, 0.4, first_event);
+	anim->state_event_track_insert_key(second_track, 0.2, 0.4, second_event);
+
+	Ref<AnimationLibrary> lib = memnew(AnimationLibrary);
+	lib->add_animation("test", anim);
+	player->add_animation_library("", lib);
+
+	player->play("test");
+	player->advance(0.3);
+	CHECK(first_event->start_calls == 1);
+	CHECK(second_event->start_calls == 1);
 
 	SceneTree::get_singleton()->get_root()->remove_child(root);
 	memdelete(player);
