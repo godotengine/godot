@@ -1670,20 +1670,6 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_constant("margin_left", "MainToolBarMargin", EDSCALE_RND(4));
 		p_theme->set_constant("margin_right", "MainToolBarMargin", EDSCALE_RND(4));
 
-		// 2D and 3D contextual toolbar.
-		// Use a custom stylebox to make contextual menu items stand out from the rest.
-		// This helps with editor usability as contextual menu items change when selecting nodes,
-		// even though it may not be immediately obvious at first.
-		Ref<StyleBoxFlat> toolbar_stylebox = memnew(StyleBoxFlat);
-		toolbar_stylebox->set_bg_color(p_config.accent_color * Color(1, 1, 1, 0.1));
-		toolbar_stylebox->set_anti_aliased(false);
-		// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
-		toolbar_stylebox->set_border_color(p_config.accent_color);
-		toolbar_stylebox->set_border_width(SIDE_BOTTOM, Math::round(EDSCALE_RND(2)));
-		toolbar_stylebox->set_content_margin(SIDE_BOTTOM, 0);
-		toolbar_stylebox->set_expand_margin_individual(EDSCALE_RND(4), EDSCALE_RND(2), EDSCALE_RND(4), EDSCALE_RND(4));
-		p_theme->set_stylebox("ContextualToolbar", EditorStringName(EditorStyles), toolbar_stylebox);
-
 		// Script editor.
 		p_theme->set_stylebox("ScriptEditor", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 
@@ -2080,16 +2066,21 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerTabbarInner", EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 		}
 
-		// PanelContainerButtonGroup.
+		// PanelContainerButtonGroup & PanelContainerContextualGroup.
 		{
 			p_theme->set_type_variation("PanelContainerButtonGroup", "PanelContainer");
-
 			Ref<StyleBoxFlat> style_button_group = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
 			style_button_group->set_content_margin_all(p_config.base_margin * EDSCALE);
 			style_button_group->set_corner_radius_all(p_config.corner_radius);
 			style_button_group->set_bg_color(p_config.dark_color_1.lerp(p_config.mono_color, 0.15));
-
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
+
+			p_theme->set_type_variation("PanelContainerContextualGroup", "PanelContainer");
+			Ref<StyleBoxFlat> style_context_group = style_button_group->duplicate();
+			style_context_group->set_bg_color(p_config.accent_color * Color(1, 1, 1, 0.1));
+			style_context_group->set_border_color(p_config.accent_color);
+			style_context_group->set_border_width(SIDE_BOTTOM, Math::round(EDSCALE_RND(2)));
+			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerContextualGroup", style_context_group);
 		}
 
 		// VSeparatorButtonGroup.

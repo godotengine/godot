@@ -47,6 +47,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/editor_toolbar_group.h"
 #include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/3d/gizmos/audio_listener_3d_gizmo_plugin.h"
@@ -100,7 +101,6 @@
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
@@ -2577,8 +2577,6 @@ void Node3DEditor::_update_theme() {
 	sun_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
 	environ_sky_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
 	environ_ground_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
-
-	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 }
 
 void Node3DEditor::_notification(int p_what) {
@@ -2763,7 +2761,7 @@ void Node3DEditor::_update_context_toolbar() {
 		sep->set_visible(!first_visible && child->is_visible());
 	}
 
-	context_toolbar_panel->set_visible(has_visible);
+	Object::cast_to<EditorToolbarGroup>(context_toolbar_hbox->get_parent())->set_visible(has_visible);
 }
 
 void Node3DEditor::set_can_preview(Camera3D *p_preview) {
@@ -3699,10 +3697,7 @@ Node3DEditor::Node3DEditor() {
 	main_flow->add_child(memnew(VSeparator));
 #endif
 
-	context_toolbar_panel = memnew(PanelContainer);
-	context_toolbar_hbox = memnew(HBoxContainer);
-	context_toolbar_panel->add_child(context_toolbar_hbox);
-	main_flow->add_child(context_toolbar_panel);
+	context_toolbar_hbox = EditorToolbarGroup::create(main_flow, true);
 
 	// Get the view menu popup and have it stay open when a checkable item is selected
 	p = view_layout_menu->get_popup();

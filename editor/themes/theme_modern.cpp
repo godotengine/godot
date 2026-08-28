@@ -1713,15 +1713,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_constant("margin_top", "MainToolBarMargin", EDSCALE);
 		p_theme->set_constant("margin_bottom", "MainToolBarMargin", EDSCALE);
 
-		// 2D and 3D contextual toolbar.
-		// Use a custom stylebox to make contextual menu items stand out from the rest.
-		// This helps with editor usability as contextual menu items change when selecting nodes,
-		// even though it may not be immediately obvious at first.
-		Ref<StyleBoxFlat> toolbar_stylebox = p_config.base_style->duplicate();
-		toolbar_stylebox->set_bg_color(p_config.surface_higher_color);
-		toolbar_stylebox->set_content_margin_all(0);
-		p_theme->set_stylebox("ContextualToolbar", EditorStringName(EditorStyles), toolbar_stylebox);
-
 		// Script editor.
 		p_theme->set_stylebox("ScriptEditor", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 
@@ -2196,16 +2187,19 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerTabbarInner", style_tabbar_background_inner);
 		}
 
-		// PanelContainerButtonGroup.
+		// PanelContainerButtonGroup & PanelContainerContextualGroup.
 		{
 			p_theme->set_type_variation("PanelContainerButtonGroup", "PanelContainer");
-
 			Ref<StyleBoxFlat> style_button_group = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
 			style_button_group->set_content_margin_all(p_config.base_margin * EDSCALE);
 			style_button_group->set_corner_radius_all(p_config.corner_radius > 0 ? (p_config.corner_radius + p_config.base_margin) * EDSCALE : 0);
 			style_button_group->set_bg_color(p_config.surface_lower_color.lerp(p_config.mono_color_inv, 0.15).lightened(0.02));
-
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
+
+			p_theme->set_type_variation("PanelContainerContextualGroup", "PanelContainer");
+			Ref<StyleBoxFlat> style_context_group = style_button_group->duplicate();
+			style_context_group->set_bg_color(p_config.surface_higher_color);
+			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerContextualGroup", style_context_group);
 		}
 
 		// VSeparatorButtonGroup.

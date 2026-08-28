@@ -4478,12 +4478,10 @@ void CanvasItemEditor::_update_editor_settings() {
 	// with the red color.
 	const Color key_auto_color = EditorThemeManager::is_dark_icon_and_font() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
 	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
-	animation_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+	animation_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiDropdown")));
 
 	selection_rectangle_color = EDITOR_GET("editors/2d/selection_rectangle_color");
 	locked_selection_rectangle_color = EDITOR_GET("editors/2d/locked_selection_rectangle_color");
-
-	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 
 	simple_panning = EDITOR_GET("editors/panning/simple_panning");
 	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), simple_panning);
@@ -5752,7 +5750,7 @@ void CanvasItemEditor::_update_context_toolbar() {
 		sep->set_visible(!first_visible && child->is_visible());
 	}
 
-	context_toolbar_panel->set_visible(has_visible);
+	Object::cast_to<EditorToolbarGroup>(context_toolbar_hbox->get_parent())->set_visible(has_visible);
 }
 
 void CanvasItemEditor::add_control_to_left_panel(Control *p_control) {
@@ -6238,10 +6236,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_flow->add_child(memnew(VSeparator));
 
 	// Contextual toolbars.
-	context_toolbar_panel = memnew(PanelContainer);
-	context_toolbar_hbox = memnew(HBoxContainer);
-	context_toolbar_panel->add_child(context_toolbar_hbox);
-	main_flow->add_child(context_toolbar_panel);
+	context_toolbar_hbox = EditorToolbarGroup::create(main_flow, true);
 
 	// Animation controls.
 	animation_hb = memnew(HBoxContainer);
