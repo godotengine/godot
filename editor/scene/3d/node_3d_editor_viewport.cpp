@@ -5008,7 +5008,7 @@ void Node3DEditorViewport::switch_preview_camera(Camera3D *p_new_camera) {
 }
 
 void Node3DEditorViewport::update_transform_gizmo_view() {
-	if (!is_visible_in_tree()) {
+	if (!camera->is_inside_tree()) {
 		return;
 	}
 

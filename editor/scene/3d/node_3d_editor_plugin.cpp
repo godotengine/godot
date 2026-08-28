@@ -2642,6 +2642,17 @@ void Node3DEditor::_notification(int p_what) {
 			environ_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				set_process(true);
+				set_physics_process(true);
+				refresh_dirty_gizmos();
+			} else {
+				set_process(false);
+				set_physics_process(false);
+			}
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d")) {
 				const Color selection_box_color = EDITOR_GET("editors/3d/selection_box_color");
@@ -4248,13 +4259,6 @@ void Node3DEditorPlugin::edited_scene_changed() {
 void Node3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		spatial_editor->make_visible();
-		spatial_editor->set_process(true);
-		spatial_editor->set_physics_process(true);
-		spatial_editor->refresh_dirty_gizmos();
-	} else {
-		spatial_editor->hide();
-		spatial_editor->set_process(false);
-		spatial_editor->set_physics_process(false);
 	}
 }
 
