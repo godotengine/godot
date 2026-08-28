@@ -2318,6 +2318,8 @@ void AnimationTrackEdit::_notification(int p_what) {
 						text = TTR("Audio Clips:");
 					} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
 						text = TTR("Animation Clips:");
+					} else if (animation->track_get_type(track) == Animation::TYPE_STATE_EVENT) {
+						text = TTR("State Events:");
 					} else {
 						text += anim_path.get_concatenated_subnames();
 					}
