@@ -13,8 +13,8 @@
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
 		<link title="Matrices and transforms">$DOCS_URL/tutorials/math/matrices_and_transforms.html</link>
-		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
-		<link title="2.5D Game Demo">https://godotengine.org/asset-library/asset/2783</link>
+		<link title="Matrix Transform Demo">https://store.godotengine.org/asset/godot-foundation/matrix-transform-demo/</link>
+		<link title="2.5D Game Demo">https://store.godotengine.org/asset/godot-foundation/project-with-gdscript-2-5d-demo/</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Transform2D">

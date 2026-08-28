@@ -8,7 +8,7 @@
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="3D Platformer Demo">https://store.godotengine.org/asset/godot-foundation/platformer-3d-demo/</link>
+		<link title="Third Person Shooter (TPS) Demo">https://store.godotengine.org/asset/godot-foundation/third-person-shooter-demo/</link>
 	</tutorials>
 </class>

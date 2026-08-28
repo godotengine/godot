@@ -8,6 +8,6 @@
 		[b]Note:[/b] [TextureCubemapArrayRD] is intended for low-level usage with [RenderingDevice]. For most use cases, use [CubemapArray] instead.
 	</description>
 	<tutorials>
-		<link title="Compute Texture demo">https://godotengine.org/asset-library/asset/2764</link>
+		<link title="Compute Texture demo">https://store.godotengine.org/asset/godot-foundation/compute-texture-demo/</link>
 	</tutorials>
 </class>

@@ -16,10 +16,10 @@
 		[b]Note:[/b] Some nodes such as [Decal], [Light3D], and [PointLight2D] do not support using [ViewportTexture] directly. To use texture data from a [ViewportTexture] in these nodes, you need to create an [ImageTexture] by calling [method Texture2D.get_image] on the [ViewportTexture] and passing the result to [method ImageTexture.create_from_image]. This conversion is a slow operation, so it should not be performed every frame.
 	</description>
 	<tutorials>
-		<link title="GUI in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2807</link>
-		<link title="3D in 2D Viewport Demo">https://godotengine.org/asset-library/asset/2804</link>
-		<link title="2D in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2803</link>
-		<link title="3D Resolution Scaling Demo">https://godotengine.org/asset-library/asset/2805</link>
+		<link title="GUI in 3D Viewport Demo">https://store.godotengine.org/asset/godot-foundation/gui-in-3d-demo/</link>
+		<link title="3D in 2D Viewport Demo">https://store.godotengine.org/asset/godot-foundation/viewport-3d-in-2d-demo/</link>
+		<link title="2D in 3D Viewport Demo">https://store.godotengine.org/asset/godot-foundation/viewport-2d-in-3d-demo/</link>
+		<link title="3D Resolution Scaling Demo">https://store.godotengine.org/asset/godot-foundation/viewport-3d-resolution-scaling-demo/</link>
 	</tutorials>
 	<members>
 		<member name="viewport_path" type="NodePath" setter="set_viewport_path_in_scene" getter="get_viewport_path_in_scene" default="NodePath(&quot;&quot;)">
