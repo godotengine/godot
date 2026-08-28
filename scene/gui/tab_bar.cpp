@@ -341,6 +341,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 		Ref<InputEventJoypadButton> joypadbutton_event = p_event;
 		bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
 		if (p_event->is_action("ui_right", true)) {
+			grab_focus(); // Ensure focus is visible.
 			if (is_joypad_event) {
 				if (!input->is_action_just_pressed_by_event("ui_right", p_event, true)) {
 					return;
@@ -351,6 +352,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_left", true)) {
+			grab_focus();
 			if (is_joypad_event) {
 				if (!input->is_action_just_pressed_by_event("ui_left", p_event, true)) {
 					return;
