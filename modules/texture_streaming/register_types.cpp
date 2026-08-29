@@ -40,6 +40,10 @@
 static TextureStreaming *_texture_streaming_server = nullptr;
 
 void initialize_texture_streaming_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+		TextureStreaming::register_project_settings();
+	}
+
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(TextureStreaming);
 
