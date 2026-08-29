@@ -745,9 +745,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PhysicalBoneSimulator3D);
 	GDREGISTER_CLASS(PhysicalBone3D);
 	GDREGISTER_CLASS(SoftBody3D);
-#endif // PHYSICS_3D_DISABLED
 
 	GDREGISTER_CLASS(BoneSpreader3D);
+#endif // PHYSICS_3D_DISABLED
 	GDREGISTER_CLASS(BoneAttachment3D);
 	GDREGISTER_CLASS(LookAtModifier3D);
 #ifndef DISABLE_DEPRECATED
