@@ -30,6 +30,7 @@
 
 #include "debug_effects.h"
 
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
@@ -38,6 +39,8 @@
 using namespace RendererRD;
 
 DebugEffects::DebugEffects() {
+	static_assert(sizeof(HddagiScreenProbeMontagePushConstant) == 32u, "HDDAGI screen-probe montage push constant must match the shader layout.");
+
 	{
 		// Shadow Frustum debug shader
 		Vector<String> modes;
@@ -62,6 +65,24 @@ DebugEffects::DebugEffects() {
 		motion_vectors.shader_version = motion_vectors.shader.version_create();
 
 		motion_vectors.pipeline.setup(motion_vectors.shader.version_get_shader(motion_vectors.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_blend(), 0);
+	}
+
+	{
+		Vector<String> modes;
+		modes.push_back("");
+		modes.push_back("\n#define USE_MULTIVIEW\n");
+		hddagi_screen_probe_montage.shader.initialize(modes);
+		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
+			hddagi_screen_probe_montage.shader.set_variant_enabled(HDDAGI_SCREEN_PROBE_MONTAGE_MULTIVIEW, false);
+		}
+		hddagi_screen_probe_montage.shader_version = hddagi_screen_probe_montage.shader.version_create();
+		for (int i = 0; i < HDDAGI_SCREEN_PROBE_MONTAGE_MAX; i++) {
+			if (hddagi_screen_probe_montage.shader.is_variant_enabled(i)) {
+				hddagi_screen_probe_montage.pipelines[i].setup(hddagi_screen_probe_montage.shader.version_get_shader(hddagi_screen_probe_montage.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+			} else {
+				hddagi_screen_probe_montage.pipelines[i].clear();
+			}
+		}
 	}
 }
 
@@ -177,6 +198,7 @@ DebugEffects::~DebugEffects() {
 	}
 
 	motion_vectors.shader.version_free(motion_vectors.shader_version);
+	hddagi_screen_probe_montage.shader.version_free(hddagi_screen_probe_montage.shader_version);
 }
 
 void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_projection, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect) {
@@ -376,5 +398,61 @@ void DebugEffects::draw_motion_vectors(RID p_velocity, RID p_depth, RID p_dest_f
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 #endif
 
+	RD::get_singleton()->draw_list_end();
+}
+
+void DebugEffects::draw_hddagi_screen_probe_montage(RID p_dest_fb, const Rect2i &p_rect, RID p_resolved_radiance, RID p_selected_radiance, RID p_probe_surface, RID p_trace_debug, RID p_hiz, RID p_normal_roughness, RID p_velocity, RID p_directional_radiance, RID p_directional_filtered, RID p_directional_irradiance, RID p_directional_adaptive_tile_data, RID p_directional_history_age, RID p_directional_adaptive_counter, float p_selected_radiance_scale, uint32_t p_flags, uint32_t p_surface_layer_stride, uint32_t p_surface_history_slot, uint32_t p_hiz_mip_count, bool p_multiview) {
+	ERR_FAIL_COND(p_dest_fb.is_null());
+	ERR_FAIL_COND(p_resolved_radiance.is_null() || p_selected_radiance.is_null());
+	ERR_FAIL_COND(p_probe_surface.is_null() || p_trace_debug.is_null() || p_hiz.is_null());
+	ERR_FAIL_COND(p_normal_roughness.is_null() || p_velocity.is_null());
+	ERR_FAIL_COND(p_directional_radiance.is_null() || p_directional_filtered.is_null() || p_directional_irradiance.is_null());
+	ERR_FAIL_COND(p_directional_adaptive_tile_data.is_null() || p_directional_history_age.is_null() || p_directional_adaptive_counter.is_null());
+	ERR_FAIL_COND((p_flags & HDDAGI_SCREEN_PROBE_MONTAGE_HAS_DIRECTIONAL_ADAPTIVE) != 0 && (p_flags & HDDAGI_SCREEN_PROBE_MONTAGE_HAS_DIRECTIONAL_ATLAS) == 0);
+	ERR_FAIL_COND(p_multiview && (p_surface_layer_stride == 0 || p_surface_history_slot >= p_surface_layer_stride));
+
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+
+	const HddagiScreenProbeMontageMode mode = p_multiview ? HDDAGI_SCREEN_PROBE_MONTAGE_MULTIVIEW : HDDAGI_SCREEN_PROBE_MONTAGE_MONO;
+	RID shader = hddagi_screen_probe_montage.shader.version_get_shader(hddagi_screen_probe_montage.shader_version, mode);
+	ERR_FAIL_COND(shader.is_null());
+
+	RID linear_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID nearest_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID nearest_mipmap_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID uniform_set = uniform_set_cache->get_cache(
+			shader, 0,
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ linear_sampler, p_resolved_radiance })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>({ linear_sampler, p_selected_radiance })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 2, Vector<RID>({ nearest_sampler, p_probe_surface })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 3, Vector<RID>({ nearest_sampler, p_trace_debug })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 4, Vector<RID>({ nearest_mipmap_sampler, p_hiz })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 5, Vector<RID>({ nearest_sampler, p_normal_roughness })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 6, Vector<RID>({ nearest_sampler, p_velocity })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 7, Vector<RID>({ nearest_sampler, p_directional_radiance })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 8, Vector<RID>({ nearest_sampler, p_directional_filtered })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 9, Vector<RID>({ nearest_sampler, p_directional_irradiance })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 10, Vector<RID>({ nearest_sampler, p_directional_adaptive_tile_data })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 11, Vector<RID>({ nearest_sampler, p_directional_history_age })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 12, Vector<RID>({ nearest_sampler, p_directional_adaptive_counter })));
+	ERR_FAIL_COND(uniform_set.is_null());
+
+	HddagiScreenProbeMontagePushConstant push_constant = {};
+	push_constant.resolution[0] = p_rect.size.x;
+	push_constant.resolution[1] = p_rect.size.y;
+	push_constant.selected_radiance_scale = p_selected_radiance_scale;
+	push_constant.flags = p_flags;
+	push_constant.surface_layer_stride = p_surface_layer_stride;
+	push_constant.surface_history_slot = p_surface_history_slot;
+	push_constant.hiz_mip_count = p_hiz_mip_count;
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, p_rect);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, hddagi_screen_probe_montage.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_fb)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set, 0);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(push_constant));
+	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
 	RD::get_singleton()->draw_list_end();
 }

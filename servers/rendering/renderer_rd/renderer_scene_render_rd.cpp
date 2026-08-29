@@ -1031,6 +1031,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p
 		case RSE::VIEWPORT_DEBUG_DRAW_SSAO:
 		case RSE::VIEWPORT_DEBUG_DRAW_SSIL:
 		case RSE::VIEWPORT_DEBUG_DRAW_HDDAGI:
+		case RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_SCREEN_PROBES:
 		case RSE::VIEWPORT_DEBUG_DRAW_GI_BUFFER:
 		case RSE::VIEWPORT_DEBUG_DRAW_OCCLUDERS:
 			can_use_effects = true;

@@ -3290,6 +3290,8 @@ void GI::init(SkyRD *p_sky) {
 		screen_probe_modes.push_back("\n#define MODE_APPLY\n#define MODE_SVGF_APPLY\n");
 		screen_probe_modes.push_back("\n#define MODE_TRACE\n#define MODE_SPECULAR_TRACE\n");
 		screen_probe_modes.push_back("\n#define MODE_SPECULAR_APPLY\n");
+		screen_probe_modes.push_back("\n#define MODE_TRACE\n#define MODE_DEBUG_MONTAGE\n");
+		screen_probe_modes.push_back("\n#define MODE_TRACE\n#define MODE_IRRADIANCE_CACHE_QUERY\n#define MODE_DEBUG_MONTAGE\n");
 		DEV_ASSERT(screen_probe_modes.size() == HDDAGIShader::SCREEN_PROBE_MODE_MAX);
 
 		String screen_probe_defines;
@@ -3305,6 +3307,7 @@ void GI::init(SkyRD *p_sky) {
 			const HDDAGIShader::ScreenProbeMode irradiance_cache_modes[] = {
 				HDDAGIShader::SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE,
 				HDDAGIShader::SCREEN_PROBE_MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE,
+				HDDAGIShader::SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE_DEBUG,
 			};
 			for (HDDAGIShader::ScreenProbeMode mode : irradiance_cache_modes) {
 				hddagi_shader.screen_probe.set_variant_enabled(mode, false);
@@ -3678,6 +3681,14 @@ RID GI::RenderBuffersGI::get_voxel_gi_buffer() {
 
 void GI::RenderBuffersGI::free_data() {
 	hddagi_specular_reflection_valid = false;
+	screen_probe_debug_montage_valid = false;
+	screen_probe_debug_svgf_output_valid = false;
+	screen_probe_debug_hiz_valid = false;
+	screen_probe_debug_directional_valid = false;
+	screen_probe_debug_radiance_scale = 1.0f;
+	screen_probe_debug_surface_layer_stride = 1;
+	screen_probe_debug_surface_history_slot = 0;
+	screen_probe_debug_hiz_mip_count = 0;
 	screen_probe_svgf.clear();
 	screen_probe_specular_svgf.clear();
 	screen_probe_irradiance_cache.clear();

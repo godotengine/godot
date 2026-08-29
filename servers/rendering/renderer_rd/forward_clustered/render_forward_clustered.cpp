@@ -55,6 +55,10 @@ using namespace RendererSceneRenderImplementation;
 
 #define FADE_ALPHA_PASS_THRESHOLD 0.999
 
+static bool is_hddagi_screen_probe_debug_draw(RSE::ViewportDebugDraw p_debug_draw) {
+	return p_debug_draw == RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_SCREEN_PROBES;
+}
+
 void RenderForwardClustered::RenderBufferDataForwardClustered::ensure_specular() {
 	ERR_FAIL_NULL(render_buffers);
 
@@ -1737,7 +1741,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			}
 		}
 
-		gi.process_hddagi_screen_probes(rb, p_normal_roughness_slices, depth_pyramid_is_built ? depth_pyramid_views : nullptr, previous_screen_color_views, previous_screen_depth_views, previous_screen_color_valid, depth_pyramid_size, depth_pyramid_mip_count, depth_pyramid_is_built && screen_probe_detail_trace_requested, p_render_data->environment, p_render_data->scene_data->view_count, gi_size, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->taa_jitter, p_render_data->scene_data->cam_transform, exposure_normalization, ibl_exposure_normalization, environment_get_hddagi_screen_probe_size(p_render_data->environment), environment_get_hddagi_screen_probe_normal_bias(p_render_data->environment), environment_get_hddagi_screen_probe_mode(p_render_data->environment));
+		gi.process_hddagi_screen_probes(rb, p_normal_roughness_slices, depth_pyramid_is_built ? depth_pyramid_views : nullptr, previous_screen_color_views, previous_screen_depth_views, previous_screen_color_valid, depth_pyramid_size, depth_pyramid_mip_count, depth_pyramid_is_built && screen_probe_detail_trace_requested, p_render_data->environment, p_render_data->scene_data->view_count, gi_size, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->taa_jitter, p_render_data->scene_data->cam_transform, exposure_normalization, ibl_exposure_normalization, environment_get_hddagi_screen_probe_size(p_render_data->environment), environment_get_hddagi_screen_probe_normal_bias(p_render_data->environment), environment_get_hddagi_screen_probe_mode(p_render_data->environment), is_hddagi_screen_probe_debug_draw(get_debug_draw_mode()));
 	} else if (!p_render_data->reflection_probe.is_valid()) {
 		gi.disable_hddagi_screen_probes(rb);
 	}
@@ -1890,7 +1894,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				bool irradiance_cache_multibounce_active = false;
 				if (irradiance_cache_multibounce_requested && p_render_data->environment.is_valid() &&
 						environment_get_hddagi_enabled(p_render_data->environment) &&
-						environment_get_hddagi_screen_probes_enabled(p_render_data->environment) &&
+						(environment_get_hddagi_screen_probes_enabled(p_render_data->environment) || is_hddagi_screen_probe_debug_draw(get_debug_draw_mode())) &&
 						environment_get_hddagi_screen_probe_mode(p_render_data->environment) != RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER &&
 						get_debug_draw_mode() != RSE::VIEWPORT_DEBUG_DRAW_UNSHADED &&
 						GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_radiance_cache") == 1 &&
@@ -1955,7 +1959,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			p_render_data->environment.is_valid() &&
 			environment_get_hddagi_enabled(p_render_data->environment) &&
 			get_debug_draw_mode() != RSE::VIEWPORT_DEBUG_DRAW_UNSHADED &&
-			environment_get_hddagi_screen_probes_enabled(p_render_data->environment);
+			(environment_get_hddagi_screen_probes_enabled(p_render_data->environment) || is_hddagi_screen_probe_debug_draw(get_debug_draw_mode()));
 	const bool hddagi_directional_screen_probes_active = hddagi_screen_probes_active &&
 			environment_get_hddagi_screen_probe_mode(p_render_data->environment) == RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER;
 	const bool hddagi_svgf_screen_probes_active = hddagi_screen_probes_active &&
@@ -2050,7 +2054,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				}
 			}
 		}
-		using_hddagi_screen_probes = using_hddagi && environment_get_hddagi_screen_probes_enabled(p_render_data->environment);
+		using_hddagi_screen_probes = using_hddagi && (environment_get_hddagi_screen_probes_enabled(p_render_data->environment) || is_hddagi_screen_probe_debug_draw(get_debug_draw_mode()));
 		using_hddagi_specular_screen_radiance = using_hddagi_screen_probes && GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections");
 
 		if (p_render_data->scene_data->view_count > 1) {
@@ -2785,6 +2789,151 @@ void RenderForwardClustered::_render_buffers_debug_draw(const RenderDataRD *p_re
 		}
 		RID reflection_texture = rb->get_texture(RB_SCOPE_GI, RB_TEX_REFLECTION);
 		copy_effects->copy_to_fb_rect(ambient_texture, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false, false, true, reflection_texture, rb->get_view_count() > 1);
+	}
+
+	if (is_hddagi_screen_probe_debug_draw(get_debug_draw_mode()) && debug_effects != nullptr && rb->has_custom_data(RB_SCOPE_GI)) {
+		Ref<RendererRD::GI::RenderBuffersGI> rbgi = rb->get_custom_data(RB_SCOPE_GI);
+		const uint32_t view_count = rb->get_view_count();
+		const bool multiview = view_count > 1;
+		const Size2i internal_size = rb->get_internal_size();
+		auto texture_valid = [](RID p_texture) {
+			return p_texture.is_valid() && RD::get_singleton()->texture_is_valid(p_texture);
+		};
+		auto texture_format_matches = [&](const StringName &p_scope, const StringName &p_name, RD::DataFormat p_format, const Size2i &p_size, uint32_t p_layers, uint32_t p_mipmaps) {
+			if (!rb->has_texture(p_scope, p_name)) {
+				return false;
+			}
+			const RD::TextureFormat format = rb->get_texture_format(p_scope, p_name);
+			return p_size.x > 0 && p_size.y > 0 && format.format == p_format && format.width == uint32_t(p_size.x) && format.height == uint32_t(p_size.y) &&
+					format.mipmaps == p_mipmaps && format.array_layers == p_layers && texture_valid(rb->get_texture(p_scope, p_name));
+		};
+		if (rbgi.is_valid() && rbgi->screen_probe_debug_montage_valid &&
+				(rbgi->screen_probe_debug_surface_layer_stride == 1u || rbgi->screen_probe_debug_surface_layer_stride == 2u) &&
+				rbgi->screen_probe_debug_surface_history_slot < rbgi->screen_probe_debug_surface_layer_stride &&
+				rb->has_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_SURFACE) &&
+				rb->has_texture(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG, RB_TEX_HDDAGI_SCREEN_PROBE_TRACE_DEBUG) &&
+				rb->has_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_RESOLVED_RADIANCE)) {
+			const bool directional_frame = rbgi->screen_probe_debug_directional_valid;
+			const RD::TextureFormat surface_format = rb->get_texture_format(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_SURFACE);
+			const RD::TextureFormat trace_debug_format = rb->get_texture_format(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG, RB_TEX_HDDAGI_SCREEN_PROBE_TRACE_DEBUG);
+			const RD::TextureFormat resolved_format = rb->get_texture_format(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_RESOLVED_RADIANCE);
+			RID probe_surface_texture = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_SURFACE);
+			RID trace_debug_texture = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG, RB_TEX_HDDAGI_SCREEN_PROBE_TRACE_DEBUG);
+			RID resolved_radiance = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_RESOLVED_RADIANCE);
+			const Size2i full_resolution_size = internal_size;
+			const Size2i half_resolution_size(internal_size.x >> 1, internal_size.y >> 1);
+			const bool resolved_size_valid = directional_frame ? resolved_format.width == uint32_t(full_resolution_size.x) && resolved_format.height == uint32_t(full_resolution_size.y) : (resolved_format.width == uint32_t(full_resolution_size.x) && resolved_format.height == uint32_t(full_resolution_size.y)) || (half_resolution_size.x > 0 && half_resolution_size.y > 0 && resolved_format.width == uint32_t(half_resolution_size.x) && resolved_format.height == uint32_t(half_resolution_size.y));
+			const bool surface_valid = surface_format.format == RD::DATA_FORMAT_R32G32B32A32_UINT && surface_format.width > 0 && surface_format.height > 0 && surface_format.mipmaps == 1 &&
+					surface_format.array_layers == view_count * rbgi->screen_probe_debug_surface_layer_stride && texture_valid(probe_surface_texture);
+			const bool trace_debug_valid = trace_debug_format.format == RD::DATA_FORMAT_R32_UINT && trace_debug_format.width == surface_format.width && trace_debug_format.height > 0 &&
+					(directional_frame ? trace_debug_format.height <= surface_format.height : trace_debug_format.height == surface_format.height) && trace_debug_format.mipmaps == 1 &&
+					trace_debug_format.array_layers == view_count && texture_valid(trace_debug_texture);
+			const bool resolved_valid = resolved_format.format == RD::DATA_FORMAT_R16G16B16A16_SFLOAT && resolved_size_valid && resolved_format.mipmaps == 1 && resolved_format.array_layers == view_count && texture_valid(resolved_radiance);
+			if (!surface_valid || !trace_debug_valid || !resolved_valid) {
+				return;
+			}
+			const Size2i surface_size(surface_format.width, surface_format.height);
+			const Size2i trace_debug_size(trace_debug_format.width, trace_debug_format.height);
+			const Size2i resolved_size(resolved_format.width, resolved_format.height);
+
+			uint32_t montage_flags = 0;
+			RID selected_radiance = resolved_radiance;
+			float selected_radiance_scale = 1.0f;
+			if (rbgi->screen_probe_debug_svgf_output_valid && texture_format_matches(RB_SCOPE_HDDAGI_SCREEN_PROBE_DENOISER, RB_TEX_HDDAGI_SCREEN_PROBE_DENOISER_OUTPUT, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, resolved_size, view_count, 1)) {
+				selected_radiance = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBE_DENOISER, RB_TEX_HDDAGI_SCREEN_PROBE_DENOISER_OUTPUT);
+				selected_radiance_scale = rbgi->screen_probe_debug_radiance_scale;
+				montage_flags |= RendererRD::DebugEffects::HDDAGI_SCREEN_PROBE_MONTAGE_HAS_SELECTED_OUTPUT;
+			}
+
+			const RID default_black = texture_storage->texture_rd_get_default(multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+			const RID default_normal = texture_storage->texture_rd_get_default(multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_NORMAL : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_NORMAL);
+			RID hiz = default_black;
+			if (rbgi->screen_probe_debug_hiz_valid && rbgi->screen_probe_debug_hiz_mip_count > 0 && texture_format_matches(RB_SCOPE_SS_HIZ, RB_HIZ, RD::DATA_FORMAT_R32_SFLOAT, internal_size, view_count, rbgi->screen_probe_debug_hiz_mip_count)) {
+				hiz = rb->get_texture(RB_SCOPE_SS_HIZ, RB_HIZ);
+				montage_flags |= RendererRD::DebugEffects::HDDAGI_SCREEN_PROBE_MONTAGE_HAS_HIZ;
+			}
+
+			RID normal_roughness = default_normal;
+			if (rb_data->has_normal_roughness()) {
+				const RID candidate = rb_data->get_normal_roughness();
+				const RD::TextureFormat format = rb->get_texture_format(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_NORMAL_ROUGHNESS);
+				if (format.format == RD::DATA_FORMAT_R8G8B8A8_UNORM && format.width == uint32_t(internal_size.x) && format.height == uint32_t(internal_size.y) && format.mipmaps == 1 && format.array_layers == view_count && texture_valid(candidate)) {
+					normal_roughness = candidate;
+					montage_flags |= RendererRD::DebugEffects::HDDAGI_SCREEN_PROBE_MONTAGE_HAS_NORMAL_ROUGHNESS;
+				}
+			}
+
+			RID velocity = default_black;
+			if (rb->has_velocity_buffer(false)) {
+				const RID candidate = rb->get_velocity_buffer(false);
+				if (texture_valid(candidate)) {
+					const RD::TextureFormat format = RD::get_singleton()->texture_get_format(candidate);
+					if (format.format == RD::DATA_FORMAT_R16G16_SFLOAT && format.width == uint32_t(internal_size.x) && format.height == uint32_t(internal_size.y) && format.mipmaps == 1 && format.array_layers == view_count) {
+						velocity = candidate;
+						montage_flags |= RendererRD::DebugEffects::HDDAGI_SCREEN_PROBE_MONTAGE_HAS_VELOCITY;
+					}
+				}
+			}
+
+			RID probe_surface = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_SURFACE);
+			RID trace_debug = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG, RB_TEX_HDDAGI_SCREEN_PROBE_TRACE_DEBUG);
+			if (!multiview) {
+				probe_surface = rb->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_SURFACE, rbgi->screen_probe_debug_surface_history_slot, 0);
+			}
+
+			RID directional_radiance = selected_radiance;
+			RID directional_filtered = selected_radiance;
+			RID directional_irradiance = selected_radiance;
+			RID directional_adaptive_tile_data = probe_surface;
+			RID directional_history_age = trace_debug;
+			RID directional_adaptive_counter = trace_debug;
+			const Size2i directional_atlas_size = surface_size * 8;
+			if (rbgi->screen_probe_debug_directional_valid &&
+					texture_format_matches(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_RADIANCE, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, directional_atlas_size, view_count * 2u, 1) &&
+					texture_format_matches(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_FILTER_SCRATCH, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, directional_atlas_size, view_count * 2u, 1) &&
+					texture_format_matches(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_IRRADIANCE, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, directional_atlas_size, view_count, 1)) {
+				if (multiview) {
+					directional_radiance = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_RADIANCE);
+					directional_filtered = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_FILTER_SCRATCH);
+					directional_irradiance = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_IRRADIANCE);
+				} else {
+					directional_radiance = rb->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_RADIANCE, rbgi->screen_probe_debug_surface_history_slot, 0);
+					directional_filtered = rb->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_FILTER_SCRATCH, rbgi->screen_probe_debug_surface_history_slot, 0);
+					directional_irradiance = rb->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_IRRADIANCE, 0, 0);
+				}
+				if (texture_valid(directional_radiance) && texture_valid(directional_filtered) && texture_valid(directional_irradiance)) {
+					montage_flags |= RendererRD::DebugEffects::HDDAGI_SCREEN_PROBE_MONTAGE_HAS_DIRECTIONAL_ATLAS;
+				}
+
+				if ((montage_flags & RendererRD::DebugEffects::HDDAGI_SCREEN_PROBE_MONTAGE_HAS_DIRECTIONAL_ATLAS) != 0 &&
+						texture_format_matches(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_TILE_DATA, RD::DATA_FORMAT_R32G32B32A32_UINT, trace_debug_size, view_count * 2u, 1) &&
+						texture_format_matches(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_HISTORY_AGE, RD::DATA_FORMAT_R8_UINT, surface_size, view_count * 2u, 1) &&
+						texture_format_matches(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_COUNTER, RD::DATA_FORMAT_R32_UINT, Size2i(1, 1), view_count, 1)) {
+					if (multiview) {
+						directional_adaptive_tile_data = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_TILE_DATA);
+						directional_history_age = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_HISTORY_AGE);
+						directional_adaptive_counter = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_COUNTER);
+					} else {
+						directional_adaptive_tile_data = rb->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_TILE_DATA, rbgi->screen_probe_debug_surface_history_slot, 0);
+						directional_history_age = rb->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_HISTORY_AGE, rbgi->screen_probe_debug_surface_history_slot, 0);
+						directional_adaptive_counter = rb->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_COUNTER, 0, 0);
+					}
+					if (texture_valid(directional_adaptive_tile_data) && texture_valid(directional_history_age) && texture_valid(directional_adaptive_counter)) {
+						montage_flags |= RendererRD::DebugEffects::HDDAGI_SCREEN_PROBE_MONTAGE_HAS_DIRECTIONAL_ADAPTIVE;
+					}
+				}
+			}
+
+			if (texture_valid(default_black) && texture_valid(default_normal) && texture_valid(probe_surface) && texture_valid(trace_debug) && texture_valid(hiz) && texture_valid(normal_roughness) && texture_valid(velocity) &&
+					texture_valid(directional_radiance) && texture_valid(directional_filtered) && texture_valid(directional_irradiance) && texture_valid(directional_adaptive_tile_data) && texture_valid(directional_history_age) && texture_valid(directional_adaptive_counter)) {
+				const Size2i rtsize = texture_storage->render_target_get_size(render_target);
+				debug_effects->draw_hddagi_screen_probe_montage(
+						texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2i(), rtsize), resolved_radiance, selected_radiance, probe_surface, trace_debug,
+						hiz, normal_roughness, velocity, directional_radiance, directional_filtered, directional_irradiance, directional_adaptive_tile_data, directional_history_age,
+						directional_adaptive_counter, selected_radiance_scale, montage_flags, rbgi->screen_probe_debug_surface_layer_stride, rbgi->screen_probe_debug_surface_history_slot,
+						rbgi->screen_probe_debug_hiz_mip_count, multiview);
+			}
+		}
 	}
 }
 

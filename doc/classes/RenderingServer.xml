@@ -5743,6 +5743,10 @@
 			Internal buffer is drawn instead of regular scene so you can see the per-pixel output that will be used by post-processing effects.
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_HDDAGI_SCREEN_PROBES" value="29" enum="ViewportDebugDraw">
+			Draws a 3×3 debug view of Dynamic GI screen-probe data.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
+		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="16" enum="ViewportDebugDraw" deprecated="Use [constant VIEWPORT_DEBUG_DRAW_HDDAGI] instead.">
 			Alias for [constant VIEWPORT_DEBUG_DRAW_HDDAGI].
 		</constant>

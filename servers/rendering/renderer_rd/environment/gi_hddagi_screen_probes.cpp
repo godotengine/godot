@@ -70,6 +70,14 @@ void GI::disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		rbgi = p_render_buffers->get_custom_data(RB_SCOPE_GI);
 		if (rbgi.is_valid()) {
 			rbgi->hddagi_specular_reflection_valid = false;
+			rbgi->screen_probe_debug_montage_valid = false;
+			rbgi->screen_probe_debug_svgf_output_valid = false;
+			rbgi->screen_probe_debug_hiz_valid = false;
+			rbgi->screen_probe_debug_directional_valid = false;
+			rbgi->screen_probe_debug_radiance_scale = 1.0f;
+			rbgi->screen_probe_debug_surface_layer_stride = 1;
+			rbgi->screen_probe_debug_surface_history_slot = 0;
+			rbgi->screen_probe_debug_hiz_mip_count = 0;
 			if (rbgi->screen_probe_scene_data_ubo.is_valid()) {
 				RD::get_singleton()->free_rid(rbgi->screen_probe_scene_data_ubo);
 				rbgi->screen_probe_scene_data_ubo = RID();
@@ -81,6 +89,7 @@ void GI::disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	}
 	p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBE_DENOISER);
 	p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS);
+	p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG);
 	p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBES);
 
 	if (!p_render_buffers->has_custom_data(RB_SCOPE_HDDAGI)) {
@@ -104,7 +113,7 @@ void GI::disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	hddagi->screen_probe_previous_exposure_normalization = 1.0f;
 }
 
-void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, const RID *p_previous_screen_color_slices, const RID *p_previous_screen_depth_slices, bool p_previous_screen_color_valid, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Vector3 *p_eye_offsets, const Vector2 &p_taa_jitter, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias, RSE::EnvironmentHDDAGIScreenProbeMode p_mode) {
+void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, const RID *p_previous_screen_color_slices, const RID *p_previous_screen_depth_slices, bool p_previous_screen_color_valid, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Vector3 *p_eye_offsets, const Vector2 &p_taa_jitter, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias, RSE::EnvironmentHDDAGIScreenProbeMode p_mode, bool p_debug_montage) {
 	ERR_FAIL_COND(p_render_buffers.is_null());
 	ERR_FAIL_INDEX(int(p_mode), int(RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_MAX));
 	if (p_view_count == 0 || p_view_count > 2 || p_gi_size.x <= 0 || p_gi_size.y <= 0 || p_normal_roughness_slices == nullptr || p_projections == nullptr || p_eye_offsets == nullptr) {
@@ -127,6 +136,14 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		disable_hddagi_screen_probes(p_render_buffers);
 		return;
 	}
+	rbgi->screen_probe_debug_montage_valid = false;
+	rbgi->screen_probe_debug_svgf_output_valid = false;
+	rbgi->screen_probe_debug_hiz_valid = false;
+	rbgi->screen_probe_debug_directional_valid = false;
+	rbgi->screen_probe_debug_radiance_scale = 1.0f;
+	rbgi->screen_probe_debug_surface_layer_stride = 1;
+	rbgi->screen_probe_debug_surface_history_slot = 0;
+	rbgi->screen_probe_debug_hiz_mip_count = 0;
 	if (!hddagi_shader.screen_probe_available) {
 		disable_hddagi_screen_probes(p_render_buffers);
 		WARN_PRINT_ONCE("HDDAGI screen probes are unavailable because their compute shaders could not be created.");
@@ -548,6 +565,38 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		return;
 	}
 
+	RID trace_debug_slices[2];
+	bool debug_montage = false;
+	if (p_debug_montage) {
+		auto debug_texture_matches = [&]() {
+			if (!p_render_buffers->has_texture(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG, RB_TEX_HDDAGI_SCREEN_PROBE_TRACE_DEBUG)) {
+				return false;
+			}
+			const RD::TextureFormat format = p_render_buffers->get_texture_format(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG, RB_TEX_HDDAGI_SCREEN_PROBE_TRACE_DEBUG);
+			return format.format == RD::DATA_FORMAT_R32_UINT && format.width == uint32_t(probe_atlas_size.x) && format.height == uint32_t(probe_atlas_size.y) &&
+					format.mipmaps == 1 && format.array_layers == p_view_count &&
+					p_render_buffers->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG, RB_TEX_HDDAGI_SCREEN_PROBE_TRACE_DEBUG).is_valid();
+		};
+		if (!debug_texture_matches()) {
+			p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG);
+			p_render_buffers->create_texture(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG, RB_TEX_HDDAGI_SCREEN_PROBE_TRACE_DEBUG, RD::DATA_FORMAT_R32_UINT,
+					RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT, RD::TEXTURE_SAMPLES_1, probe_atlas_size, p_view_count);
+		}
+		debug_montage = debug_texture_matches();
+		for (uint32_t v = 0; v < p_view_count && debug_montage; v++) {
+			trace_debug_slices[v] = p_render_buffers->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG, RB_TEX_HDDAGI_SCREEN_PROBE_TRACE_DEBUG, v, 0);
+			debug_montage = trace_debug_slices[v].is_valid();
+		}
+		if (debug_montage && directional_gather) {
+			RD::get_singleton()->texture_clear(p_render_buffers->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG, RB_TEX_HDDAGI_SCREEN_PROBE_TRACE_DEBUG), Color(), 0, 1, 0, p_view_count);
+		} else if (!debug_montage) {
+			p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG);
+			WARN_PRINT_ONCE("HDDAGI screen-probe debug data could not be allocated.");
+		}
+	} else {
+		p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG);
+	}
+
 	bool specular_resources_recreated = false;
 	if (specular_reflections) {
 		auto specular_texture_matches = [&](const StringName &p_name, RD::DataFormat p_format) {
@@ -756,6 +805,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	RID directional_trace_sky_sets[2];
 	RID directional_filter_sets[2][SCREEN_PROBE_DIRECTIONAL_FILTER_PASS_COUNT];
 	RID directional_irradiance_sets[2];
+	RID trace_debug_sets[2];
 	RID resolve_sets[2];
 	RID svgf_resolve_sets[2];
 	RID apply_sets[2];
@@ -770,7 +820,27 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	RID specular_motion[2];
 	RID specular_denoised[2];
 	uint32_t view_flags[2] = {};
-	const HDDAGIShader::ScreenProbeMode trace_mode = irradiance_cache_active ? HDDAGIShader::SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE : HDDAGIShader::SCREEN_PROBE_MODE_TRACE;
+	const HDDAGIShader::ScreenProbeMode production_trace_mode = irradiance_cache_active ? HDDAGIShader::SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE : HDDAGIShader::SCREEN_PROBE_MODE_TRACE;
+	HDDAGIShader::ScreenProbeMode trace_mode = production_trace_mode;
+	if (debug_montage && !directional_gather) {
+		const HDDAGIShader::ScreenProbeMode debug_mode = irradiance_cache_active ? HDDAGIShader::SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE_DEBUG : HDDAGIShader::SCREEN_PROBE_MODE_TRACE_DEBUG;
+		bool debug_mode_valid = hddagi_shader.screen_probe_shader_version[debug_mode].is_valid() && hddagi_shader.screen_probe_pipeline[debug_mode].is_valid();
+		RID debug_irradiance_cache_set;
+		if (debug_mode_valid && irradiance_cache_active) {
+			debug_irradiance_cache_set = rbgi->screen_probe_irradiance_cache.get_uniform_set(hddagi_shader.screen_probe_shader_version[debug_mode], 2);
+			debug_mode_valid = RD::get_singleton()->uniform_set_is_valid(debug_irradiance_cache_set);
+		}
+		if (debug_mode_valid) {
+			trace_mode = debug_mode;
+			if (irradiance_cache_active) {
+				irradiance_cache_trace_set = debug_irradiance_cache_set;
+			}
+		} else {
+			debug_montage = false;
+			p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBE_DEBUG);
+			WARN_PRINT_ONCE("HDDAGI screen-probe debug shaders could not be created.");
+		}
+	}
 	const HDDAGIShader::ScreenProbeMode resolve_mode = directional_gather ? HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE : HDDAGIShader::SCREEN_PROBE_MODE_RESOLVE;
 	const HDDAGIShader::ScreenProbeMode svgf_resolve_mode = directional_gather ? HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF : HDDAGIShader::SCREEN_PROBE_MODE_RESOLVE_SVGF;
 	bool pipelines_valid = hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_SURFACE].is_valid() &&
@@ -950,6 +1020,11 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, linear_mipmap_sampler),
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, hddagi->lightprobe_specular_tex));
 		}
+		if (debug_montage && !directional_gather) {
+			trace_debug_sets[v] = UniformSetCacheRD::get_singleton()->get_cache(
+					hddagi_shader.screen_probe_shader_version[trace_mode], 3,
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 0, trace_debug_slices[v]));
+		}
 		if (directional_gather) {
 			resolve_sets[v] = UniformSetCacheRD::get_singleton()->get_cache(
 					hddagi_shader.screen_probe_shader_version[resolve_mode], 0,
@@ -1092,6 +1167,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		} else {
 			sets_valid = sets_valid && RD::get_singleton()->uniform_set_is_valid(trace_sets[v]) && RD::get_singleton()->uniform_set_is_valid(trace_sky_sets[v]);
 		}
+		sets_valid = sets_valid && (!debug_montage || directional_gather || RD::get_singleton()->uniform_set_is_valid(trace_debug_sets[v]));
 		if (!sets_valid) {
 			disable_hddagi_screen_probes(p_render_buffers);
 			WARN_PRINT_ONCE("HDDAGI screen probe resources could not be bound.");
@@ -1193,6 +1269,9 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 			if (irradiance_cache_active) {
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, irradiance_cache_trace_set, 2);
 			}
+			if (debug_montage) {
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, trace_debug_sets[v], 3);
+			}
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_atlas_size.x, probe_atlas_size.y, 1);
 			RD::get_singleton()->compute_list_add_barrier(compute_list);
@@ -1236,6 +1315,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		}
 	}
 	RD::get_singleton()->compute_list_end();
+	bool svgf_all_views_succeeded = false;
 	if (svgf_active) {
 		bool svgf_succeeded[2] = {};
 		bool svgf_failed = false;
@@ -1268,6 +1348,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		if (svgf_failed) {
 			rbgi->screen_probe_svgf.clear();
 		}
+		svgf_all_views_succeeded = !svgf_failed;
 
 		compute_list = RD::get_singleton()->compute_list_begin();
 		for (uint32_t v = 0; v < p_view_count; v++) {
@@ -1331,6 +1412,14 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		RD::get_singleton()->compute_list_end();
 		rbgi->hddagi_specular_reflection_valid = true;
 	}
+	rbgi->screen_probe_debug_montage_valid = debug_montage;
+	rbgi->screen_probe_debug_svgf_output_valid = debug_montage && svgf_all_views_succeeded;
+	rbgi->screen_probe_debug_hiz_valid = debug_montage && detail_trace;
+	rbgi->screen_probe_debug_directional_valid = debug_montage && directional_gather;
+	rbgi->screen_probe_debug_radiance_scale = rbgi->screen_probe_debug_svgf_output_valid ? 1.0f / SCREEN_PROBE_SVGF_SCENE_TO_SIGNAL_SCALE : 1.0f;
+	rbgi->screen_probe_debug_surface_layer_stride = directional_gather ? 2u : 1u;
+	rbgi->screen_probe_debug_surface_history_slot = rbgi->screen_probe_debug_surface_layer_stride == 2u ? current_history_slot : 0u;
+	rbgi->screen_probe_debug_hiz_mip_count = rbgi->screen_probe_debug_hiz_valid ? detail_trace_mip_count : 0u;
 	RD::get_singleton()->draw_command_end_label();
 
 	hddagi->screen_probe_history_initialized = true;

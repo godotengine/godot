@@ -27,6 +27,19 @@ const uint SCREEN_PROBE_FLAG_SPECULAR_MOTION_VALID = 1u << 4u;
 const uint SCREEN_PROBE_FLAG_SPECULAR_SCREEN_RADIANCE_VALID = 1u << 5u;
 const uint SCREEN_PROBE_SKY_COLOR = 1u;
 const uint SCREEN_PROBE_SKY_TEXTURE = 2u;
+const uint SCREEN_PROBE_DEBUG_VALID = 1u << 0u;
+const uint SCREEN_PROBE_DEBUG_DETAIL_HIT = 1u << 1u;
+const uint SCREEN_PROBE_DEBUG_DETAIL_MISS = 1u << 2u;
+const uint SCREEN_PROBE_DEBUG_DETAIL_REJECTED = 1u << 3u;
+const uint SCREEN_PROBE_DEBUG_SCREEN_HDDAGI = 1u << 4u;
+const uint SCREEN_PROBE_DEBUG_HDDA_VOXEL = 1u << 5u;
+const uint SCREEN_PROBE_DEBUG_SKY = 1u << 6u;
+const uint SCREEN_PROBE_DEBUG_SCREEN_RADIANCE_FALLBACK = 1u << 7u;
+const uint SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE = 1u << 8u;
+const uint SCREEN_PROBE_DEBUG_SCREEN_IRRADIANCE_CACHE = 1u << 9u;
+const uint SCREEN_PROBE_DEBUG_HDDA_IRRADIANCE_CACHE = 1u << 10u;
+const uint SCREEN_PROBE_DEBUG_SOURCE_MASK = SCREEN_PROBE_DEBUG_SCREEN_HDDAGI | SCREEN_PROBE_DEBUG_HDDA_VOXEL | SCREEN_PROBE_DEBUG_SKY | SCREEN_PROBE_DEBUG_SCREEN_IRRADIANCE_CACHE | SCREEN_PROBE_DEBUG_HDDA_IRRADIANCE_CACHE;
+const uint SCREEN_PROBE_DEBUG_SOURCE_STATE_MASK = SCREEN_PROBE_DEBUG_SOURCE_MASK | SCREEN_PROBE_DEBUG_SCREEN_RADIANCE_FALLBACK;
 const float SCREEN_PROBE_DETAIL_TRACE_MAX_DISTANCE = 2.0;
 const float SCREEN_PROBE_SPECULAR_DETAIL_TRACE_MAX_DISTANCE = 50.0;
 
@@ -121,6 +134,15 @@ struct ScreenProbeSceneData {
 	mat4 temporal_projection[2];
 	mat4 previous_temporal_projection[2];
 };
+
+#if defined(MODE_DEBUG_MONTAGE) && defined(MODE_TRACE)
+layout(r32ui, set = 3, binding = 0) uniform restrict writeonly uimage2D trace_debug_output;
+#endif
+
+#ifdef MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE
+void screen_probe_debug_mark(uint bits) {}
+void screen_probe_debug_set_source(uint source) {}
+#endif
 
 #ifdef MODE_SURFACE
 
@@ -1181,6 +1203,59 @@ void screen_probe_surface_main() {
 
 #if defined(MODE_TRACE) || defined(MODE_SPECULAR_TRACE)
 
+#ifdef MODE_DEBUG_MONTAGE
+
+uint screen_probe_debug_bits;
+uint screen_probe_debug_source;
+
+void screen_probe_debug_begin() {
+	screen_probe_debug_bits = 0u;
+	screen_probe_debug_source = 0u;
+}
+
+void screen_probe_debug_mark(uint bits) {
+	screen_probe_debug_bits |= bits;
+}
+
+void screen_probe_debug_mark_source(uint bits) {
+	screen_probe_debug_source |= bits & SCREEN_PROBE_DEBUG_SOURCE_STATE_MASK;
+}
+
+void screen_probe_debug_begin_source() {
+	screen_probe_debug_source = 0u;
+}
+
+void screen_probe_debug_set_source(uint source) {
+	screen_probe_debug_source = (screen_probe_debug_source & ~SCREEN_PROBE_DEBUG_SOURCE_MASK) | (source & SCREEN_PROBE_DEBUG_SOURCE_MASK);
+}
+
+void screen_probe_debug_commit_source() {
+	screen_probe_debug_bits |= screen_probe_debug_source;
+}
+
+void screen_probe_debug_select_source() {
+	screen_probe_debug_bits = (screen_probe_debug_bits & ~SCREEN_PROBE_DEBUG_SOURCE_STATE_MASK) | screen_probe_debug_source;
+}
+
+void screen_probe_debug_store(ivec2 probe_position) {
+	if (all(greaterThanEqual(probe_position, ivec2(0))) && all(lessThan(probe_position, imageSize(trace_debug_output)))) {
+		imageStore(trace_debug_output, probe_position, uvec4(screen_probe_debug_bits, 0u, 0u, 0u));
+	}
+}
+
+#else
+
+void screen_probe_debug_begin() {}
+void screen_probe_debug_mark(uint bits) {}
+void screen_probe_debug_mark_source(uint bits) {}
+void screen_probe_debug_begin_source() {}
+void screen_probe_debug_set_source(uint source) {}
+void screen_probe_debug_commit_source() {}
+void screen_probe_debug_select_source() {}
+void screen_probe_debug_store(ivec2 probe_position) {}
+
+#endif
+
 bool detail_trace_project(vec3 view_position, out vec3 r_screen_position) {
 	vec4 clip = scene_data.projection[params.view_index] * vec4(view_position, 1.0);
 	if (!(clip.w > 1e-6) || any(isnan(clip)) || any(isinf(clip))) {
@@ -1262,22 +1337,26 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 		return false;
 	}
 	if (any(isnan(ray_direction_view)) || any(isinf(ray_direction_view))) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_DETAIL_MISS | SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
 		return false;
 	}
 	if (ray_direction_view.z > 0.0) {
 		max_distance = min(max_distance, (-0.001 - origin_view.z) / ray_direction_view.z);
 	}
 	if (!(max_distance > 0.02)) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_DETAIL_MISS);
 		return false;
 	}
 
 	vec3 screen_start;
 	vec3 screen_end;
 	if (!detail_trace_project(origin_view, screen_start) || !detail_trace_project(origin_view + ray_direction_view * max_distance, screen_end)) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_DETAIL_MISS);
 		return false;
 	}
 	vec3 screen_delta = screen_end - screen_start;
 	if (abs(screen_delta.z) < 1e-5 || all(lessThan(abs(screen_delta.xy), vec2(1e-7)))) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_DETAIL_MISS);
 		return false;
 	}
 
@@ -1298,6 +1377,7 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 	vec2 positive_edge_t = max(edge_t0, edge_t1);
 	float trace_t_max = min(segment_t, min(positive_edge_t.x, positive_edge_t.y));
 	if (!(trace_t_max > 0.0)) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_DETAIL_MISS);
 		return false;
 	}
 
@@ -1317,6 +1397,7 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 	float receiver_exclusion = max(0.02, abs(origin_view.z) * 2.0 / detail_size.y);
 	const float candidate_normal_threshold = -0.05;
 #endif
+	bool rejected_candidate = false;
 
 	while (mip_level >= 0 && iterations_remaining > 0 && trace_t < trace_t_max) {
 		vec3 current_screen = screen_start + screen_direction * trace_t;
@@ -1373,9 +1454,11 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 				if (!any(isnan(endpoint_world)) && !any(isinf(endpoint_world)) && !any(isnan(endpoint_normal_world)) && !any(isinf(endpoint_normal_world))) {
 					r_endpoint_world = endpoint_world;
 					r_endpoint_normal_world = endpoint_normal_world;
+					screen_probe_debug_mark(SCREEN_PROBE_DEBUG_DETAIL_HIT);
 					return true;
 				}
 			}
+			rejected_candidate = true;
 
 			trace_t = max(cell_exit_t, candidate_t + 1e-6);
 #ifdef MODE_SPECULAR_TRACE
@@ -1397,6 +1480,7 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 		}
 		iterations_remaining--;
 	}
+	screen_probe_debug_mark(rejected_candidate ? SCREEN_PROBE_DEBUG_DETAIL_REJECTED : SCREEN_PROBE_DEBUG_DETAIL_MISS);
 	return false;
 }
 
@@ -1642,6 +1726,10 @@ bool query_endpoint_radiance(vec3 endpoint_world, vec3 endpoint_normal_world, ve
 	HDDAGIIrradianceCacheLookup irradiance_cache_lookup = hddagi_irradiance_cache_lookup(endpoint_world, endpoint_normal_world, trace_origin_world);
 	if (irradiance_cache_lookup.has_radiance && (hddagi_irradiance_cache_multibounce_enabled() || !irradiance_cache_lookup.needs_refresh)) {
 		r_radiance = irradiance_cache_lookup.radiance;
+		if (any(isnan(r_radiance)) || any(isinf(r_radiance)) || any(lessThan(r_radiance, vec3(0.0)))) {
+			screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
+		}
+		screen_probe_debug_set_source(SCREEN_PROBE_DEBUG_SCREEN_IRRADIANCE_CACHE);
 		return true;
 	}
 #endif
@@ -1651,6 +1739,7 @@ bool query_endpoint_radiance(vec3 endpoint_world, vec3 endpoint_normal_world, ve
 	normal_scaled.y *= hddagi.y_mult;
 	float normal_length_squared = dot(normal_scaled, normal_scaled);
 	if (!(normal_length_squared > 1e-8) || any(isnan(endpoint_scaled)) || any(isinf(endpoint_scaled)) || any(isnan(normal_scaled)) || any(isinf(normal_scaled))) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
 		return false;
 	}
 	normal_scaled *= inversesqrt(normal_length_squared);
@@ -1717,15 +1806,25 @@ bool query_endpoint_radiance(vec3 endpoint_world, vec3 endpoint_normal_world, ve
 				hddagi_irradiance_cache_submit(irradiance_cache_lookup, endpoint_world, endpoint_normal_world, filtered_radiance);
 			}
 			r_radiance = irradiance_cache_lookup.has_radiance ? irradiance_cache_lookup.radiance : filtered_radiance;
+			if (any(isnan(r_radiance)) || any(isinf(r_radiance)) || any(lessThan(r_radiance, vec3(0.0)))) {
+				screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
+			}
+			screen_probe_debug_set_source(irradiance_cache_lookup.has_radiance ? SCREEN_PROBE_DEBUG_SCREEN_IRRADIANCE_CACHE : SCREEN_PROBE_DEBUG_SCREEN_HDDAGI);
 #else
 			r_radiance = filtered_radiance;
+			screen_probe_debug_set_source(SCREEN_PROBE_DEBUG_SCREEN_HDDAGI);
 #endif
 			return true;
 		}
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
 	}
 #ifdef MODE_IRRADIANCE_CACHE_QUERY
 	if (irradiance_cache_lookup.has_radiance) {
 		r_radiance = irradiance_cache_lookup.radiance;
+		if (any(isnan(r_radiance)) || any(isinf(r_radiance)) || any(lessThan(r_radiance, vec3(0.0)))) {
+			screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
+		}
+		screen_probe_debug_set_source(SCREEN_PROBE_DEBUG_SCREEN_IRRADIANCE_CACHE);
 		return true;
 	}
 #endif
@@ -2019,6 +2118,7 @@ bool trace_hddagi_sample(ivec2 origin_position, float origin_depth, vec3 origin_
 	vec3 origin_view = compute_view_position(vec3(origin_uv, origin_depth));
 	ray_direction_view = normalize(ray_direction_view);
 	if (any(isnan(origin_view)) || any(isinf(origin_view)) || any(isnan(ray_direction_view)) || any(isinf(ray_direction_view))) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
 		return false;
 	}
 	mat3 camera_basis = mat3(scene_data.cam_transform);
@@ -2030,6 +2130,8 @@ bool trace_hddagi_sample(ivec2 origin_position, float origin_depth, vec3 origin_
 		if (!query_endpoint_radiance(r_endpoint_world, r_endpoint_normal_world, trace_origin_world, r_radiance)) {
 			r_radiance = sample_environment(ray_direction_view);
 			r_hit_cascade = HDDAGI_TRACE_SCREEN_ENDPOINT_SKY_FALLBACK;
+			screen_probe_debug_mark_source(SCREEN_PROBE_DEBUG_SCREEN_RADIANCE_FALLBACK);
+			screen_probe_debug_set_source(SCREEN_PROBE_DEBUG_SKY);
 		}
 		return true;
 	}
@@ -2042,6 +2144,7 @@ bool trace_hddagi_sample(ivec2 origin_position, float origin_depth, vec3 origin_
 	ray_direction = normalize(ray_direction);
 	hddagi_normal = normalize(hddagi_normal);
 	if (any(isnan(ray_direction)) || any(isinf(ray_direction)) || any(isnan(hddagi_normal)) || any(isinf(hddagi_normal))) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
 		return false;
 	}
 
@@ -2142,6 +2245,10 @@ bool trace_hddagi_sample(ivec2 origin_position, float origin_depth, vec3 origin_
 		irradiance_cache_lookup = hddagi_irradiance_cache_lookup(r_endpoint_world, r_endpoint_normal_world, trace_origin_world);
 		if (irradiance_cache_lookup.has_radiance && (hddagi_irradiance_cache_multibounce_enabled() || !irradiance_cache_lookup.needs_refresh)) {
 			r_radiance = irradiance_cache_lookup.radiance;
+			if (!hddagi_irradiance_cache_is_finite(r_radiance) || any(lessThan(r_radiance, vec3(0.0)))) {
+				screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
+			}
+			screen_probe_debug_set_source(SCREEN_PROBE_DEBUG_HDDA_IRRADIANCE_CACHE);
 			return true;
 		}
 	}
@@ -2191,8 +2298,15 @@ bool trace_hddagi_sample(ivec2 origin_position, float origin_depth, vec3 origin_
 	} else if (irradiance_cache_lookup.has_radiance) {
 		r_radiance = irradiance_cache_lookup.radiance;
 	}
+	screen_probe_debug_set_source(irradiance_cache_lookup.has_radiance ? SCREEN_PROBE_DEBUG_HDDA_IRRADIANCE_CACHE : SCREEN_PROBE_DEBUG_HDDA_VOXEL);
+#else
+	screen_probe_debug_set_source(SCREEN_PROBE_DEBUG_HDDA_VOXEL);
 #endif
-	return !any(isnan(r_radiance)) && !any(isinf(r_radiance)) && !any(lessThan(r_radiance, vec3(0.0)));
+	bool radiance_valid = !any(isnan(r_radiance)) && !any(isinf(r_radiance)) && !any(lessThan(r_radiance, vec3(0.0)));
+	if (!radiance_valid) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
+	}
+	return radiance_valid;
 }
 
 bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origin_normal, vec3 ray_direction_view, out vec3 r_radiance, out float r_hit_distance) {
@@ -2211,8 +2325,11 @@ bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origi
 		vec3 origin_world = (scene_data.cam_transform * vec4(compute_view_position(vec3(origin_uv, origin_depth)), 1.0)).xyz;
 		r_hit_distance = clamp(length(endpoint_world - origin_world), 0.0, 65504.0);
 		if (isnan(r_hit_distance) || isinf(r_hit_distance)) {
+			screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
 			r_hit_distance = 0.0;
 		}
+	} else if (hit && (any(isnan(endpoint_world)) || any(isinf(endpoint_world)))) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
 	}
 	return hit;
 }
@@ -3220,14 +3337,17 @@ void screen_probe_trace_main() {
 	if (any(greaterThanEqual(probe_position, imageSize(raw_radiance_output)))) {
 		return;
 	}
+	screen_probe_debug_begin();
 
 	ivec2 origin_position;
 	float origin_depth;
 	vec3 origin_normal;
 	if (!load_probe_surface(probe_position, origin_position, origin_depth, origin_normal)) {
 		imageStore(raw_radiance_output, probe_position, vec4(0.0));
+		screen_probe_debug_store(probe_position);
 		return;
 	}
+	screen_probe_debug_mark(SCREEN_PROBE_DEBUG_VALID);
 
 	uint candidate_count = clamp(params.candidate_count, 1u, 8u);
 	bool guided_sampling = (params.flags & SCREEN_PROBE_FLAG_GUIDED_SAMPLING) != 0u;
@@ -3249,10 +3369,13 @@ void screen_probe_trace_main() {
 		}
 		vec3 candidate_radiance;
 		float candidate_hit_distance;
+		screen_probe_debug_begin_source();
 		if (!trace_hddagi_radiance(origin_position, origin_depth, origin_normal, ray_direction, candidate_radiance, candidate_hit_distance)) {
 			candidate_radiance = sample_environment(ray_direction);
 			candidate_hit_distance = 65504.0;
+			screen_probe_debug_set_source(SCREEN_PROBE_DEBUG_SKY);
 		}
+		screen_probe_debug_commit_source();
 		float cosine_pdf = max(dot(origin_normal, ray_direction), 0.0) / PI;
 		radiance += candidate_radiance * hddagi.energy * (cosine_pdf / max(proposal_pdf, 1e-8));
 		hit_distance += candidate_hit_distance;
@@ -3260,10 +3383,18 @@ void screen_probe_trace_main() {
 	radiance /= float(candidate_count);
 	hit_distance /= float(candidate_count);
 	if (any(isnan(radiance)) || any(isinf(radiance)) || isnan(hit_distance) || isinf(hit_distance)) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
 		imageStore(raw_radiance_output, probe_position, vec4(0.0));
+		screen_probe_debug_store(probe_position);
 		return;
 	}
+#ifdef MODE_DEBUG_MONTAGE
+	if (any(lessThan(radiance, vec3(0.0))) || hit_distance < 0.0) {
+		screen_probe_debug_mark(SCREEN_PROBE_DEBUG_INVALID_OR_NONFINITE);
+	}
+#endif
 	imageStore(raw_radiance_output, probe_position, clamp(vec4(radiance, hit_distance), vec4(0.0), vec4(65504.0)));
+	screen_probe_debug_store(probe_position);
 }
 
 
