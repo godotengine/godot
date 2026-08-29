@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		VertexPerformanceManager holds the active [VertexPerformanceProfile], pushes its values into engine and project settings, and monitors sustained frame-time degradation to scale rendering cost down (and back up) at runtime.
-		It is registered as a singleton under the name [code]Vertex/Performance[/code]. Enable monitoring to let it reduce the 3D render scale automatically when the engine sustains frame times above the profile threshold, and recover when performance is comfortable.
+		It is registered as a singleton under the name [code]VertexPerformance[/code]. Enable monitoring to let it reduce the 3D render scale automatically when the engine sustains frame times above the profile threshold, and recover when performance is comfortable.
 	</description>
 	<methods>
 		<method name="apply_to_project_settings">

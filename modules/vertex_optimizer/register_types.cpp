@@ -47,7 +47,7 @@ void initialize_vertex_optimizer_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(VertexProjectOptimizer);
 
 	vertex_project_optimizer = memnew(VertexProjectOptimizer);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Vertex/Optimizer", vertex_project_optimizer, "VertexProjectOptimizer"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("VertexOptimizer", vertex_project_optimizer, "VertexProjectOptimizer"));
 }
 
 void uninitialize_vertex_optimizer_module(ModuleInitializationLevel p_level) {

@@ -192,7 +192,7 @@ Dictionary VertexAIAssistant::optimize_project(const Dictionary &p_args) const {
 	Dictionary plan;
 	plan["action"] = "optimize_project";
 	// Delegate to the Vertex optimizer singleton when present (looked up by name).
-	Object *opt = Engine::get_singleton()->get_singleton_object("Vertex/Optimizer");
+	Object *opt = Engine::get_singleton()->get_singleton_object("VertexOptimizer");
 	if (opt) {
 		plan["report"] = opt->call("analyze_project", String("res://"));
 	}
@@ -202,7 +202,7 @@ Dictionary VertexAIAssistant::optimize_project(const Dictionary &p_args) const {
 Dictionary VertexAIAssistant::reduce_memory_usage(const Dictionary &p_args) const {
 	Dictionary plan;
 	plan["action"] = "reduce_memory_usage";
-	Object *opt = Engine::get_singleton()->get_singleton_object("Vertex/Optimizer");
+	Object *opt = Engine::get_singleton()->get_singleton_object("VertexOptimizer");
 	if (opt) {
 		Dictionary metrics = opt->call("get_runtime_metrics");
 		plan["metrics"] = metrics;

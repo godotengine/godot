@@ -47,7 +47,7 @@ void initialize_vertex_perf_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(VertexPerformanceManager);
 
 	vertex_performance_manager = memnew(VertexPerformanceManager);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Vertex/Performance", vertex_performance_manager, "VertexPerformanceManager"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("VertexPerformance", vertex_performance_manager, "VertexPerformanceManager"));
 }
 
 void uninitialize_vertex_perf_module(ModuleInitializationLevel p_level) {

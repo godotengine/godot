@@ -49,7 +49,7 @@ void initialize_vertex_ai_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(VertexAIAssistant);
 
 	vertex_ai_assistant = memnew(VertexAIAssistant);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Vertex/AI", vertex_ai_assistant, "VertexAIAssistant"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("VertexAI", vertex_ai_assistant, "VertexAIAssistant"));
 }
 
 void uninitialize_vertex_ai_module(ModuleInitializationLevel p_level) {
