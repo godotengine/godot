@@ -2297,7 +2297,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_get_format", "texture"), &RenderingServer::texture_get_format);
 
 	ClassDB::bind_method(D_METHOD("texture_set_force_redraw_if_visible", "texture", "enable"), &RenderingServer::texture_set_force_redraw_if_visible);
-	ClassDB::bind_method(D_METHOD("texture_rd_create", "rd_texture", "layer_type"), &RenderingServer::texture_rd_create, DEFVAL(RSE::TEXTURE_LAYERED_2D_ARRAY));
+	ClassDB::bind_method(D_METHOD("texture_rd_create", "rd_texture", "layer_type", "format_hint"), &RenderingServer::texture_rd_create, DEFVAL(RSE::TEXTURE_LAYERED_2D_ARRAY), DEFVAL(Image::FORMAT_MAX));
 	ClassDB::bind_method(D_METHOD("texture_get_rd_texture", "texture", "srgb"), &RenderingServer::texture_get_rd_texture, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("texture_get_native_handle", "texture", "srgb"), &RenderingServer::texture_get_native_handle, DEFVAL(false));
 

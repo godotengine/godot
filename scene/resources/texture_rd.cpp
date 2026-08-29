@@ -42,6 +42,10 @@ void Texture2DRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_rd_rid", "texture_rd_rid"), &Texture2DRD::set_texture_rd_rid);
 	ClassDB::bind_method(D_METHOD("get_texture_rd_rid"), &Texture2DRD::get_texture_rd_rid);
 
+	ClassDB::bind_method(D_METHOD("set_rg8_semantics", "rg8_semantics"), &Texture2DRD::set_rg8_semantics);
+	ClassDB::bind_method(D_METHOD("get_rg8_semantics"), &Texture2DRD::get_rg8_semantics);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rg8_semantics"), "set_rg8_semantics", "get_rg8_semantics");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "texture_rd_rid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_texture_rd_rid", "get_texture_rd_rid");
 }
 
@@ -51,6 +55,21 @@ int Texture2DRD::get_width() const {
 
 int Texture2DRD::get_height() const {
 	return size.height;
+}
+
+void Texture2DRD::set_rg8_semantics(bool p_rg8_semantics) {
+	if (rg8_semantics == p_rg8_semantics) {
+		return;
+	}
+	rg8_semantics = p_rg8_semantics;
+	if (texture_rd_rid.is_valid()) {
+		set_texture_rd_rid(texture_rd_rid); // recreate to ensure that the semantics are correct
+	}
+	emit_changed();
+}
+
+bool Texture2DRD::get_rg8_semantics() const {
+	return rg8_semantics;
 }
 
 RID Texture2DRD::get_rid() const {
@@ -104,10 +123,12 @@ void Texture2DRD::_set_texture_rd_rid(RID p_texture_rd_rid) {
 
 	texture_rd_rid = p_texture_rd_rid;
 
+	const Image::Format format_hint = rg8_semantics ? Image::FORMAT_RG8 : Image::FORMAT_MAX;
+
 	if (texture_rid.is_valid()) {
-		RS::get_singleton()->texture_replace(texture_rid, RS::get_singleton()->texture_rd_create(p_texture_rd_rid));
+		RS::get_singleton()->texture_replace(texture_rid, RS::get_singleton()->texture_rd_create(p_texture_rd_rid, RSE::TEXTURE_LAYERED_2D_ARRAY, format_hint));
 	} else {
-		texture_rid = RS::get_singleton()->texture_rd_create(p_texture_rd_rid);
+		texture_rid = RS::get_singleton()->texture_rd_create(p_texture_rd_rid, RSE::TEXTURE_LAYERED_2D_ARRAY, format_hint);
 	}
 
 	notify_property_list_changed();

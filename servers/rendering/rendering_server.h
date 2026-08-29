@@ -97,6 +97,7 @@ protected:
 	void _instance_reset_physics_interpolation_bind_compat_104269(RID p_instance);
 	void _viewport_set_size_bind_compat_115799(RID p_viewport, int p_width, int p_height);
 	void _particles_request_process_time_bind_compat_109142(RID p_particles, real_t p_request_process_time);
+	RID _texture_rd_create_bind_compat_122983(RID p_rd_texture, RSE::TextureLayeredType p_layer_type);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -156,7 +157,7 @@ public:
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
-	virtual RID texture_rd_create(const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type = RSE::TEXTURE_LAYERED_2D_ARRAY) = 0;
+	virtual RID texture_rd_create(const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type = RSE::TEXTURE_LAYERED_2D_ARRAY, Image::Format p_format_hint = Image::FORMAT_MAX) = 0;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
 

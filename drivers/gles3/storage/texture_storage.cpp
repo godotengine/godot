@@ -1992,7 +1992,7 @@ Size2 TextureStorage::texture_size_with_proxy(RID p_texture) {
 	}
 }
 
-void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type) {
+void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type, Image::Format p_format_hint) {
 }
 
 RID TextureStorage::texture_get_rd_texture(RID p_texture, bool p_srgb) const {
