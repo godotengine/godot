@@ -432,11 +432,13 @@ def generate_scu_files(max_includes_per_scu):
             "/core/templates",
             "/core/threads",
             "/core/variant",
+            "/platform/macos",
             "/scene",
             "/servers",
             "/servers/rendering",
         ],
-        ["test_macros", "test_main"],
+        # `test_key_mapping_macos` includes Carbon, whose QuickDraw types clash with engine types.
+        ["test_macros", "test_main", "test_key_mapping_macos"],
     )
 
     # Finally change back the path to the calling folder

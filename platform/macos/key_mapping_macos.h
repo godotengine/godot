@@ -32,7 +32,7 @@
 
 #include "core/os/keyboard.h"
 
-#include <Carbon/Carbon.h>
+struct UCKeyboardLayout;
 
 class KeyMappingMacOS {
 	KeyMappingMacOS() {}
