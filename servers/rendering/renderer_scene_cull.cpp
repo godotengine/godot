@@ -2194,9 +2194,9 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 	// Discard scale
 	const Transform3D light_transform = p_instance->transform.orthonormalized();
-	const Vector3 cam_basis_x = light_transform.basis.get_column(Vector3::AXIS_X); // Already normalized
-	const Vector3 cam_basis_y = light_transform.basis.get_column(Vector3::AXIS_Y);
-	const Vector3 cam_basis_z = light_transform.basis.get_column(Vector3::AXIS_Z);
+	const Vector3 light_basis_x = light_transform.basis.get_column(Vector3::AXIS_X); // Already normalized
+	const Vector3 light_basis_y = light_transform.basis.get_column(Vector3::AXIS_Y);
+	const Vector3 light_basis_z = light_transform.basis.get_column(Vector3::AXIS_Z);
 
 	for (int i = 0; i < splits; i++) {
 		RENDER_TIMESTAMP("Cull DirectionalLight3D, Split " + itos(i));
@@ -2264,14 +2264,14 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 		light_view_frustum_rect_max += light_transform.basis.xform_inv(p_cam_transform.origin);
 
 		//z_vec points against the camera, like in default opengl
-		real_t z_min_cam = cam_basis_z.dot(frustum_centroid_world) - frustum_circumscribing_radius;
+		real_t z_min_cam = light_basis_z.dot(frustum_centroid_world) - frustum_circumscribing_radius;
 
 		{
 			real_t soft_shadow_expand = 0;
 			float soft_shadow_angle = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE);
 
 			if (soft_shadow_angle > 0.0) {
-				float z_range = (cam_basis_z.dot(frustum_centroid_world) + frustum_circumscribing_radius + pancake_size) - z_min_cam;
+				float z_range = (light_basis_z.dot(frustum_centroid_world) + frustum_circumscribing_radius + pancake_size) - z_min_cam;
 				soft_shadow_expand = Math::tan(Math::deg_to_rad(soft_shadow_angle)) * z_range;
 			}
 
@@ -2290,14 +2290,14 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 		light_frustum_planes.resize(6);
 
 		//right/left
-		light_frustum_planes.write[0] = Plane(cam_basis_x, light_view_frustum_rect_max.x);
-		light_frustum_planes.write[1] = Plane(-cam_basis_x, -light_view_frustum_rect_min.x);
+		light_frustum_planes.write[0] = Plane(light_basis_x, light_view_frustum_rect_max.x);
+		light_frustum_planes.write[1] = Plane(-light_basis_x, -light_view_frustum_rect_min.x);
 		//top/bottom
-		light_frustum_planes.write[2] = Plane(cam_basis_y, light_view_frustum_rect_max.y);
-		light_frustum_planes.write[3] = Plane(-cam_basis_y, -light_view_frustum_rect_min.y);
+		light_frustum_planes.write[2] = Plane(light_basis_y, light_view_frustum_rect_max.y);
+		light_frustum_planes.write[3] = Plane(-light_basis_y, -light_view_frustum_rect_min.y);
 		//near/far
-		light_frustum_planes.write[4] = Plane(cam_basis_z, light_view_frustum_rect_max.z + 1e6);
-		light_frustum_planes.write[5] = Plane(-cam_basis_z, -light_view_frustum_rect_min.z); // z_min is ok, since casters further than far-light plane are not needed
+		light_frustum_planes.write[4] = Plane(light_basis_z, light_view_frustum_rect_max.z + 1e6);
+		light_frustum_planes.write[5] = Plane(-light_basis_z, -light_view_frustum_rect_min.z); // z_min is ok, since casters further than far-light plane are not needed
 
 		// Add two texels (one on each side) as margin to compensate for under-rounding of pixel positions
 		frustum_circumscribing_radius *= texture_size / (texture_size - 2.0);
@@ -2317,7 +2317,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 		// a pre pass will need to be needed to determine the actual z-near to be used
 
 		// Snap z to very coarse steps to prevent flickering caused by z changing despite x and y being correctly pinned to a grid point.
-		light_view_frustum_rect_max.z = Math::snapped(cam_basis_z.dot(frustum_centroid_world) + frustum_circumscribing_radius * 2, frustum_circumscribing_radius) + pancake_size;
+		light_view_frustum_rect_max.z = Math::snapped(light_basis_z.dot(frustum_centroid_world) + frustum_circumscribing_radius * 2, frustum_circumscribing_radius) + pancake_size;
 
 		{
 			Projection ortho_camera;
@@ -2327,7 +2327,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 			Vector2 bound_half = light_view_fullrect_size * 0.5;
 			ortho_camera.set_orthogonal(-bound_half.x, bound_half.x, -bound_half.y, bound_half.y, 0, (light_view_frustum_rect_max.z - z_min_cam));
-			ortho_transform.origin = cam_basis_x * texel_snapped_frustum_centroid.x + cam_basis_y * texel_snapped_frustum_centroid.y + cam_basis_z * light_view_frustum_rect_max.z;
+			ortho_transform.origin = light_basis_x * texel_snapped_frustum_centroid.x + light_basis_y * texel_snapped_frustum_centroid.y + light_basis_z * light_view_frustum_rect_max.z;
 
 			Vector2 light_view_fullrect_min = Vector2(texel_snapped_frustum_centroid.x, texel_snapped_frustum_centroid.y) - light_view_fullrect_size / 2;
 			Vector2 light_view_fullrect_max = Vector2(texel_snapped_frustum_centroid.x, texel_snapped_frustum_centroid.y) + light_view_fullrect_size / 2;
@@ -2340,7 +2340,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			cull.shadows[p_shadow_index].cascades[i].split = distances[i + 1];
 			cull.shadows[p_shadow_index].cascades[i].shadow_texel_size = frustum_circumscribing_radius * 2.0 / texture_size;
 			cull.shadows[p_shadow_index].cascades[i].bias_scale = (light_view_frustum_rect_max.z - z_min_cam);
-			cull.shadows[p_shadow_index].cascades[i].range_begin = light_view_frustum_rect_max.z - cam_basis_z.dot(p_cam_transform.origin);
+			cull.shadows[p_shadow_index].cascades[i].range_begin = light_view_frustum_rect_max.z - light_basis_z.dot(p_cam_transform.origin);
 			cull.shadows[p_shadow_index].cascades[i].uv_scale = uv_scale;
 		}
 	}
