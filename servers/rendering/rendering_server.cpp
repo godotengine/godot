@@ -3087,7 +3087,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect", "fog_mode"), &RenderingServer::environment_set_fog, DEFVAL(RSE::ENV_FOG_MODE_EXPONENTIAL));
 	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "curve", "begin", "end"), &RenderingServer::environment_set_fog_depth);
 	ClassDB::bind_method(D_METHOD("environment_set_hddagi", "env", "enable", "cascades", "cascade_format", "min_cell_size", "filter_probes", "bounce_feedback", "read_sky", "energy", "normal_bias", "reflection_bias", "probe_bias", "occlusion_bias", "filter_reflection", "filter_ambient"), &RenderingServer::environment_set_hddagi);
-	ClassDB::bind_method(D_METHOD("environment_set_hddagi_screen_probes", "env", "enable", "probe_size", "normal_bias"), &RenderingServer::environment_set_hddagi_screen_probes);
+	ClassDB::bind_method(D_METHOD("environment_set_hddagi_screen_probes", "env", "enable", "probe_size", "normal_bias", "mode"), &RenderingServer::environment_set_hddagi_screen_probes, DEFVAL(RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED));
 	ClassDB::bind_method(D_METHOD("environment_set_hddagi_camera_local_anchor_offset", "env", "offset"), &RenderingServer::environment_set_hddagi_camera_local_anchor_offset);
 	ClassDB::bind_method(D_METHOD("environment_set_hddagi_cascade_forward_offset", "env", "offset"), &RenderingServer::environment_set_hddagi_cascade_forward_offset);
 	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
@@ -3163,6 +3163,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT);
 	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT);
 	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_MAX);
+
+	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED);
+	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER);
+	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CONVERGE_IN_6_FRAMES);
 	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CONVERGE_IN_12_FRAMES);

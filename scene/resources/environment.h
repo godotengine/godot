@@ -77,6 +77,12 @@ public:
 		DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT,
 	};
 
+	enum DynamicGIScreenProbeMode {
+		DYNAMIC_GI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED,
+		DYNAMIC_GI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER,
+		DYNAMIC_GI_SCREEN_PROBE_MODE_MAX,
+	};
+
 #ifndef DISABLE_DEPRECATED
 	enum SDFGIYScale {
 		SDFGI_Y_SCALE_50_PERCENT,
@@ -170,6 +176,7 @@ private:
 	float dynamic_gi_normal_bias = 1.1;
 	float dynamic_gi_probe_bias = 1.1;
 	bool dynamic_gi_screen_probes_enabled = false;
+	DynamicGIScreenProbeMode dynamic_gi_screen_probe_mode = DYNAMIC_GI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED;
 	int dynamic_gi_screen_probe_size = 1;
 	float dynamic_gi_screen_probe_normal_bias = 1.1;
 	Vector3 dynamic_gi_camera_local_anchor_offset;
@@ -364,6 +371,8 @@ public:
 	float get_dynamic_gi_probe_bias() const;
 	void set_dynamic_gi_screen_probes_enabled(bool p_enabled);
 	bool is_dynamic_gi_screen_probes_enabled() const;
+	void set_dynamic_gi_screen_probe_mode(DynamicGIScreenProbeMode p_mode);
+	DynamicGIScreenProbeMode get_dynamic_gi_screen_probe_mode() const;
 	void set_dynamic_gi_screen_probe_size(int p_size);
 	int get_dynamic_gi_screen_probe_size() const;
 	void set_dynamic_gi_screen_probe_normal_bias(float p_bias);
@@ -509,6 +518,7 @@ VARIANT_ENUM_CAST(Environment::AmbientSource)
 VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::DynamicGICascadeFormat)
+VARIANT_ENUM_CAST(Environment::DynamicGIScreenProbeMode)
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(Environment::SDFGIYScale)
 #endif

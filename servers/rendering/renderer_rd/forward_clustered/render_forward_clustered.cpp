@@ -1714,7 +1714,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			}
 		}
 
-		gi.process_hddagi_screen_probes(rb, p_normal_roughness_slices, depth_pyramid_is_built ? depth_pyramid_views : nullptr, depth_pyramid_size, depth_pyramid_mip_count, depth_pyramid_is_built, p_render_data->environment, p_render_data->scene_data->view_count, gi_size, p_render_data->scene_data->view_projection, p_render_data->scene_data->taa_jitter, p_render_data->scene_data->cam_transform, exposure_normalization, ibl_exposure_normalization, environment_get_hddagi_screen_probe_size(p_render_data->environment), environment_get_hddagi_screen_probe_normal_bias(p_render_data->environment));
+		gi.process_hddagi_screen_probes(rb, p_normal_roughness_slices, depth_pyramid_is_built ? depth_pyramid_views : nullptr, depth_pyramid_size, depth_pyramid_mip_count, depth_pyramid_is_built, p_render_data->environment, p_render_data->scene_data->view_count, gi_size, p_render_data->scene_data->view_projection, p_render_data->scene_data->taa_jitter, p_render_data->scene_data->cam_transform, exposure_normalization, ibl_exposure_normalization, environment_get_hddagi_screen_probe_size(p_render_data->environment), environment_get_hddagi_screen_probe_normal_bias(p_render_data->environment), environment_get_hddagi_screen_probe_mode(p_render_data->environment));
 	} else if (!p_render_data->reflection_probe.is_valid()) {
 		gi.disable_hddagi_screen_probes(rb);
 	}
@@ -1872,6 +1872,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				if (irradiance_cache_multibounce_requested && p_render_data->environment.is_valid() &&
 						environment_get_hddagi_enabled(p_render_data->environment) &&
 						environment_get_hddagi_screen_probes_enabled(p_render_data->environment) &&
+						environment_get_hddagi_screen_probe_mode(p_render_data->environment) != RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER &&
 						get_debug_draw_mode() != RSE::VIEWPORT_DEBUG_DRAW_UNSHADED &&
 						GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_radiance_cache") == 1 &&
 						HDDAGIScreenProbeIrradianceCache::is_supported() &&
@@ -2744,7 +2745,13 @@ void RenderForwardClustered::_render_buffers_debug_draw(const RenderDataRD *p_re
 
 	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_GI_BUFFER && rb->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT)) {
 		Size2i rtsize = texture_storage->render_target_get_size(render_target);
-		RID ambient_texture = rb->get_texture(RB_SCOPE_GI, RB_TEX_AMBIENT);
+		RID ambient_texture;
+		if (rb->has_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_AMBIENT)) {
+			ambient_texture = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_AMBIENT);
+		}
+		if (!ambient_texture.is_valid()) {
+			ambient_texture = rb->get_texture(RB_SCOPE_GI, RB_TEX_AMBIENT);
+		}
 		RID reflection_texture = rb->get_texture(RB_SCOPE_GI, RB_TEX_REFLECTION);
 		copy_effects->copy_to_fb_rect(ambient_texture, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false, false, true, reflection_texture, rb->get_view_count() > 1);
 	}
@@ -3795,7 +3802,16 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		RD::Uniform u;
 		u.binding = 28;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		RID texture = rb_data.is_valid() && rb->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT) ? rb->get_texture(RB_SCOPE_GI, RB_TEX_AMBIENT) : texture_storage->texture_rd_get_default(is_multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+		RID texture;
+		if (rb_data.is_valid() && rb->has_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_AMBIENT)) {
+			texture = rb->get_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_AMBIENT);
+		}
+		if (!texture.is_valid() && rb_data.is_valid() && rb->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT)) {
+			texture = rb->get_texture(RB_SCOPE_GI, RB_TEX_AMBIENT);
+		}
+		if (!texture.is_valid()) {
+			texture = texture_storage->texture_rd_get_default(is_multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+		}
 		u.append_id(texture);
 		uniforms.push_back(u);
 	}

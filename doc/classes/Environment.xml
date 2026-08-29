@@ -280,6 +280,9 @@
 		<member name="dynamic_gi_read_sky_light" type="bool" setter="set_dynamic_gi_read_sky_light" getter="is_dynamic_gi_reading_sky_light" default="true">
 			Allows Dynamic GI probes to sample sky light when rays miss geometry.
 		</member>
+		<member name="dynamic_gi_screen_probe_mode" type="int" setter="set_dynamic_gi_screen_probe_mode" getter="get_dynamic_gi_screen_probe_mode" enum="Environment.DynamicGIScreenProbeMode" default="0">
+			Screen-probe sampling mode. Directional Gather traces an 8 × 8 directional field and ignores stochastic-only settings.
+		</member>
 		<member name="dynamic_gi_screen_probe_normal_bias" type="float" setter="set_dynamic_gi_screen_probe_normal_bias" getter="get_dynamic_gi_screen_probe_normal_bias" default="1.1">
 			Normal bias for screen-probe rays.
 		</member>
@@ -677,6 +680,15 @@
 		</constant>
 		<constant name="DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT" value="3" enum="DynamicGICascadeFormat">
 			Uses a 16 × 16 × 16 cascade format scaled to 50% height.
+		</constant>
+		<constant name="DYNAMIC_GI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED" value="0" enum="DynamicGIScreenProbeMode">
+			Uses stochastic sampling and integration for Dynamic GI screen probes.
+		</constant>
+		<constant name="DYNAMIC_GI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER" value="1" enum="DynamicGIScreenProbeMode">
+			Traces a fixed 8 × 8 directional field for each Dynamic GI screen probe.
+		</constant>
+		<constant name="DYNAMIC_GI_SCREEN_PROBE_MODE_MAX" value="2" enum="DynamicGIScreenProbeMode">
+			Represents the size of the [enum DynamicGIScreenProbeMode] enum.
 		</constant>
 		<constant name="SDFGI_Y_SCALE_50_PERCENT" value="0" enum="SDFGIYScale" deprecated="Use [constant DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT] instead.">
 			Maps to [constant DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT] when used by the deprecated SDFGI compatibility API.

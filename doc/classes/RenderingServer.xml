@@ -1463,8 +1463,9 @@
 			<param index="1" name="enable" type="bool" />
 			<param index="2" name="probe_size" type="int" />
 			<param index="3" name="normal_bias" type="float" />
+			<param index="4" name="mode" type="int" enum="RenderingServer.EnvironmentHDDAGIScreenProbeMode" default="0" />
 			<description>
-				Configures Dynamic GI screen probes for the specified environment RID. See [member Environment.dynamic_gi_screen_probes_enabled], [member Environment.dynamic_gi_screen_probe_size], and [member Environment.dynamic_gi_screen_probe_normal_bias].
+				Configures Dynamic GI screen probes for [param env]. [param probe_size] only applies to [constant ENV_HDDAGI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED].
 			</description>
 		</method>
 		<method name="environment_set_sdfgi" deprecated="Use [method environment_set_hddagi] instead.">
@@ -5956,6 +5957,15 @@
 		</constant>
 		<constant name="ENV_HDDAGI_CASCADE_FORMAT_MAX" value="4" enum="EnvironmentHDDAGICascadeFormat">
 			Represents the size of the [enum EnvironmentHDDAGICascadeFormat] enum.
+		</constant>
+		<constant name="ENV_HDDAGI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED" value="0" enum="EnvironmentHDDAGIScreenProbeMode">
+			Uses stochastic sampling and integration for Dynamic GI screen probes.
+		</constant>
+		<constant name="ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER" value="1" enum="EnvironmentHDDAGIScreenProbeMode">
+			Traces a fixed 8 × 8 directional field for each Dynamic GI screen probe.
+		</constant>
+		<constant name="ENV_HDDAGI_SCREEN_PROBE_MODE_MAX" value="2" enum="EnvironmentHDDAGIScreenProbeMode">
+			Represents the size of the [enum EnvironmentHDDAGIScreenProbeMode] enum.
 		</constant>
 		<constant name="ENV_HDDAGI_CONVERGE_IN_6_FRAMES" value="0" enum="EnvironmentHDDAGIFramesToConverge">
 			Converges Dynamic GI (HDDAGI) in 6 frames. This is the most responsive option, but produces lower-quality lighting.

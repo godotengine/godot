@@ -839,10 +839,12 @@ void RendererEnvironmentStorage::environment_set_hddagi(RID p_env, bool p_enable
 	env->hddagi_filter_ambient = p_filter_ambient;
 }
 
-void RendererEnvironmentStorage::environment_set_hddagi_screen_probes(RID p_env, bool p_enable, int p_probe_size, float p_normal_bias) {
+void RendererEnvironmentStorage::environment_set_hddagi_screen_probes(RID p_env, bool p_enable, int p_probe_size, float p_normal_bias, RSE::EnvironmentHDDAGIScreenProbeMode p_mode) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
+	ERR_FAIL_INDEX(int(p_mode), int(RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_MAX));
 	env->hddagi_screen_probes_enabled = p_enable;
+	env->hddagi_screen_probe_mode = p_mode;
 	env->hddagi_screen_probe_size = CLAMP(p_probe_size, 1, 32);
 	env->hddagi_screen_probe_normal_bias = CLAMP(p_normal_bias, -8.0f, 8.0f);
 }
@@ -965,6 +967,12 @@ bool RendererEnvironmentStorage::environment_get_hddagi_screen_probes_enabled(RI
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, false);
 	return env->hddagi_screen_probes_enabled;
+}
+
+RSE::EnvironmentHDDAGIScreenProbeMode RendererEnvironmentStorage::environment_get_hddagi_screen_probe_mode(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED);
+	return env->hddagi_screen_probe_mode;
 }
 
 int RendererEnvironmentStorage::environment_get_hddagi_screen_probe_size(RID p_env) const {

@@ -598,6 +598,16 @@ bool Environment::is_dynamic_gi_screen_probes_enabled() const {
 	return dynamic_gi_screen_probes_enabled;
 }
 
+void Environment::set_dynamic_gi_screen_probe_mode(DynamicGIScreenProbeMode p_mode) {
+	ERR_FAIL_INDEX(int(p_mode), int(DYNAMIC_GI_SCREEN_PROBE_MODE_MAX));
+	dynamic_gi_screen_probe_mode = p_mode;
+	_update_dynamic_gi();
+}
+
+Environment::DynamicGIScreenProbeMode Environment::get_dynamic_gi_screen_probe_mode() const {
+	return dynamic_gi_screen_probe_mode;
+}
+
 void Environment::set_dynamic_gi_screen_probe_size(int p_size) {
 	dynamic_gi_screen_probe_size = CLAMP(p_size, 1, 32);
 	_update_dynamic_gi();
@@ -651,7 +661,12 @@ void Environment::_update_dynamic_gi() {
 			dynamic_gi_probe_bias,
 			true,
 			true);
-	RS::get_singleton()->environment_set_hddagi_screen_probes(environment, dynamic_gi_screen_probes_enabled, dynamic_gi_screen_probe_size, dynamic_gi_screen_probe_normal_bias);
+	RS::get_singleton()->environment_set_hddagi_screen_probes(
+			environment,
+			dynamic_gi_screen_probes_enabled,
+			dynamic_gi_screen_probe_size,
+			dynamic_gi_screen_probe_normal_bias,
+			RSE::EnvironmentHDDAGIScreenProbeMode(dynamic_gi_screen_probe_mode));
 	RS::get_singleton()->environment_set_hddagi_camera_local_anchor_offset(environment, dynamic_gi_camera_local_anchor_offset);
 	RS::get_singleton()->environment_set_hddagi_cascade_forward_offset(environment, dynamic_gi_cascade_forward_offset);
 }
@@ -1580,6 +1595,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_probe_bias"), &Environment::get_dynamic_gi_probe_bias);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_screen_probes_enabled", "enabled"), &Environment::set_dynamic_gi_screen_probes_enabled);
 	ClassDB::bind_method(D_METHOD("is_dynamic_gi_screen_probes_enabled"), &Environment::is_dynamic_gi_screen_probes_enabled);
+	ClassDB::bind_method(D_METHOD("set_dynamic_gi_screen_probe_mode", "mode"), &Environment::set_dynamic_gi_screen_probe_mode);
+	ClassDB::bind_method(D_METHOD("get_dynamic_gi_screen_probe_mode"), &Environment::get_dynamic_gi_screen_probe_mode);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_screen_probe_size", "size"), &Environment::set_dynamic_gi_screen_probe_size);
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_screen_probe_size"), &Environment::get_dynamic_gi_screen_probe_size);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_screen_probe_normal_bias", "bias"), &Environment::set_dynamic_gi_screen_probe_normal_bias);
@@ -1605,6 +1622,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_normal_bias"), "set_dynamic_gi_normal_bias", "get_dynamic_gi_normal_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_probe_bias"), "set_dynamic_gi_probe_bias", "get_dynamic_gi_probe_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_screen_probes_enabled"), "set_dynamic_gi_screen_probes_enabled", "is_dynamic_gi_screen_probes_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_gi_screen_probe_mode", PROPERTY_HINT_ENUM, "Stochastic Integrated,Directional Gather"), "set_dynamic_gi_screen_probe_mode", "get_dynamic_gi_screen_probe_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dynamic_gi_screen_probe_size", PROPERTY_HINT_RANGE, "1,32,1"), "set_dynamic_gi_screen_probe_size", "get_dynamic_gi_screen_probe_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_screen_probe_normal_bias", PROPERTY_HINT_RANGE, "-8,8,0.01"), "set_dynamic_gi_screen_probe_normal_bias", "get_dynamic_gi_screen_probe_normal_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "dynamic_gi_camera_local_anchor_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_dynamic_gi_camera_local_anchor_offset", "get_dynamic_gi_camera_local_anchor_offset");
@@ -1853,6 +1871,10 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x16x16);
 	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT);
 	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT);
+
+	BIND_ENUM_CONSTANT(DYNAMIC_GI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED);
+	BIND_ENUM_CONSTANT(DYNAMIC_GI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER);
+	BIND_ENUM_CONSTANT(DYNAMIC_GI_SCREEN_PROBE_MODE_MAX);
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_50_PERCENT);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);

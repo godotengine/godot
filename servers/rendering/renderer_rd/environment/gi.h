@@ -73,6 +73,13 @@
 #define RB_TEX_HDDAGI_SCREEN_PROBE_SURFACE SNAME("screen_probe_surface")
 #define RB_TEX_HDDAGI_SCREEN_PROBE_RAW_RADIANCE SNAME("raw_radiance")
 #define RB_TEX_HDDAGI_SCREEN_PROBE_RESOLVED_RADIANCE SNAME("resolved_radiance")
+#define RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_RADIANCE SNAME("directional_radiance")
+#define RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_HISTORY_AGE SNAME("directional_history_age")
+#define RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_FILTER_SCRATCH SNAME("directional_filter_scratch")
+#define RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_IRRADIANCE SNAME("directional_irradiance")
+#define RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_AMBIENT_U32 SNAME("directional_ambient_u32")
+#define RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_AMBIENT SNAME("directional_ambient")
+
 #define RB_TEX_HDDAGI_SCREEN_PROBE_DENOISER_INPUT SNAME("input")
 #define RB_TEX_HDDAGI_SCREEN_PROBE_DENOISER_NORMAL_ROUGHNESS SNAME("normal_roughness")
 #define RB_TEX_HDDAGI_SCREEN_PROBE_DENOISER_VIEW_Z SNAME("view_z")
@@ -491,8 +498,13 @@ private:
 			SCREEN_PROBE_MODE_SURFACE,
 			SCREEN_PROBE_MODE_TRACE,
 			SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE,
+			SCREEN_PROBE_MODE_DIRECTIONAL_TRACE,
+			SCREEN_PROBE_MODE_DIRECTIONAL_FILTER,
+			SCREEN_PROBE_MODE_DIRECTIONAL_IRRADIANCE,
 			SCREEN_PROBE_MODE_RESOLVE,
 			SCREEN_PROBE_MODE_RESOLVE_SVGF,
+			SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE,
+			SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF,
 			SCREEN_PROBE_MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE,
 			SCREEN_PROBE_MODE_APPLY,
 			SCREEN_PROBE_MODE_APPLY_SVGF,
@@ -518,6 +530,8 @@ private:
 			enum {
 				FLAG_DETAIL_TRACE = 1u << 0u,
 				FLAG_GUIDED_SAMPLING = 1u << 1u,
+				FLAG_DIRECTIONAL_SURFACE_FOOTPRINT = 1u << 2u,
+				FLAG_DIRECTIONAL_HISTORY_VALID = 1u << 3u,
 			};
 
 			int32_t gi_size[2];
@@ -529,11 +543,14 @@ private:
 			uint32_t flags;
 
 			float normal_bias;
+			float spatial_depth_tolerance_scale;
+			float history_depth_tolerance;
+			float history_normal_threshold;
+
 			uint32_t candidate_count;
 			uint32_t sky_mode;
 			float sky_energy;
 			uint32_t detail_trace_mip_count;
-			uint32_t padding[3];
 
 			float sky_color[4];
 		};
@@ -818,7 +835,13 @@ public:
 		Size2i screen_probe_history_screen_size;
 		uint32_t screen_probe_history_view_count = 0;
 		uint32_t screen_probe_history_configuration = 0;
+		uint32_t screen_probe_history_slot = 0;
+		uint32_t screen_probe_history_sequence = 0;
+		RSE::EnvironmentHDDAGIScreenProbeMode screen_probe_requested_mode = RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED;
+		bool screen_probe_directional_allocation_failed = false;
 		bool screen_probe_previous_camera_valid = false;
+		Projection screen_probe_previous_projection[2];
+		Projection screen_probe_previous_temporal_projection[2];
 		Projection screen_probe_previous_svgf_projection[2];
 		Vector2 screen_probe_previous_taa_jitter;
 		Transform3D screen_probe_previous_cam_transform;
@@ -944,6 +967,10 @@ public:
 		float cam_transform[16];
 		float projection[2][16];
 		float radiance_inverse_xform[12];
+		float previous_cam_inv_transform[16];
+		float previous_inv_projection[2][16];
+		float temporal_projection[2][16];
+		float previous_temporal_projection[2][16];
 	};
 
 	struct PushConstant {
@@ -1027,7 +1054,7 @@ public:
 
 	void setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used);
 	void process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_hddagi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances);
-	void process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Vector2 &p_taa_jitter, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias);
+	void process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Vector2 &p_taa_jitter, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias, RSE::EnvironmentHDDAGIScreenProbeMode p_mode);
 	void disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers);
 
 	RID voxel_gi_instance_create(RID p_base);
