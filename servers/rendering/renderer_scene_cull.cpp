@@ -157,6 +157,10 @@ bool RendererSceneCull::is_camera(RID p_camera) const {
 	return camera_owner.owns(p_camera);
 }
 
+RID RendererSceneCull::camera_get_environment(RID p_camera, RID p_scenario) {
+	return _render_get_environment(p_camera, p_scenario);
+}
+
 /* OCCLUDER API */
 
 RID RendererSceneCull::occluder_allocate() {

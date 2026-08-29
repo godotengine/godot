@@ -855,6 +855,22 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 		}
 	}
 
+	for (Viewport *vp : sorted_active_viewports) {
+		bool hddagi_screen_probe_motion_vectors = false;
+#ifndef _3D_DISABLED
+		if (vp->last_pass == draw_viewports_pass && !vp->disable_3d && RSG::scene->is_camera(vp->camera) && RSG::scene->is_scenario(vp->scenario) && vp->debug_draw != RSE::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+			const RID environment = RSG::scene->camera_get_environment(vp->camera, vp->scenario);
+			const bool hddagi_screen_probes_active = RSG::scene->is_environment(environment) &&
+					RSG::scene->environment_get_hddagi_enabled(environment) &&
+					RSG::scene->environment_get_hddagi_screen_probes_enabled(environment);
+			hddagi_screen_probe_motion_vectors = hddagi_screen_probes_active &&
+					(RSG::scene->environment_get_hddagi_screen_probe_mode(environment) == RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER ||
+							GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_denoiser") == 1);
+		}
+#endif // _3D_DISABLED
+		_viewport_set_hddagi_screen_probe_motion_vectors(vp, hddagi_screen_probe_motion_vectors);
+	}
+
 	int vertices_drawn = 0;
 	int objects_drawn = 0;
 	int draw_calls_used = 0;
@@ -954,6 +970,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 
 		if (vp->update_mode == RSE::VIEWPORT_UPDATE_ONCE) {
 			vp->update_mode = RSE::VIEWPORT_UPDATE_DISABLED;
+			_viewport_set_hddagi_screen_probe_motion_vectors(vp, false);
 		}
 
 		RENDER_TIMESTAMP("< Render Viewport " + itos(i));
@@ -1121,7 +1138,7 @@ void RendererViewport::_viewport_set_size(Viewport *p_viewport, int p_width, int
 bool RendererViewport::_viewport_requires_motion_vectors(Viewport *p_viewport) {
 	return p_viewport->use_taa ||
 			RSE::scaling_3d_mode_type(p_viewport->scaling_3d_mode) == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL ||
-			p_viewport->debug_draw == RSE::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS || p_viewport->force_motion_vectors;
+			p_viewport->debug_draw == RSE::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS || p_viewport->force_motion_vectors || p_viewport->hddagi_screen_probe_motion_vectors;
 }
 
 void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
@@ -1133,6 +1150,7 @@ void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
 		viewport->occlusion_buffer_dirty = true;
 		active_viewports.push_back(viewport);
 	} else {
+		_viewport_set_hddagi_screen_probe_motion_vectors(viewport, false);
 		active_viewports.erase(viewport);
 	}
 
@@ -1208,6 +1226,9 @@ void RendererViewport::viewport_set_update_mode(RID p_viewport, RSE::ViewportUpd
 	ERR_FAIL_NULL(viewport);
 
 	viewport->update_mode = p_mode;
+	if (p_mode == RSE::VIEWPORT_UPDATE_DISABLED) {
+		_viewport_set_hddagi_screen_probe_motion_vectors(viewport, false);
+	}
 }
 
 RSE::ViewportUpdateMode RendererViewport::viewport_get_update_mode(RID p_viewport) const {
@@ -1499,6 +1520,19 @@ void RendererViewport::_viewport_set_force_motion_vectors(RendererViewport::View
 	}
 
 	_configure_3d_render_buffers(p_viewport);
+}
+
+void RendererViewport::_viewport_set_hddagi_screen_probe_motion_vectors(RendererViewport::Viewport *p_viewport, bool p_enabled) {
+	if (p_viewport->hddagi_screen_probe_motion_vectors == p_enabled) {
+		return;
+	}
+
+	const bool motion_vectors_before = _viewport_requires_motion_vectors(p_viewport);
+	p_viewport->hddagi_screen_probe_motion_vectors = p_enabled;
+	const bool motion_vectors_after = _viewport_requires_motion_vectors(p_viewport);
+	if (motion_vectors_before != motion_vectors_after) {
+		num_viewports_with_motion_vectors += motion_vectors_after ? 1 : -1;
+	}
 }
 
 void RendererViewport::viewport_set_use_occlusion_culling(RID p_viewport, bool p_use_occlusion_culling) {

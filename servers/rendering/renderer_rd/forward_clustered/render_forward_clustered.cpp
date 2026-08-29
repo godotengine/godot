@@ -1132,10 +1132,11 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				bool uses_particles = inst->base_flags & INSTANCE_DATA_FLAG_PARTICLES;
 				bool is_multimesh_with_motion = !uses_particles && (inst->base_flags & INSTANCE_DATA_FLAG_MULTIMESH) && mesh_storage->_multimesh_uses_motion_vectors_offsets(inst->data->base);
 				bool is_dynamic = transform_changed || has_mesh_instance || uses_particles || is_multimesh_with_motion;
-				if (p_pass_mode == PASS_MODE_COLOR && p_using_motion_pass) {
-					uses_motion = is_dynamic;
-				} else if (is_dynamic) {
+				if (is_dynamic) {
 					flags |= INSTANCE_DATA_FLAGS_DYNAMIC;
+					if (p_pass_mode == PASS_MODE_COLOR && p_using_motion_pass) {
+						uses_motion = true;
+					}
 				}
 			}
 		}
@@ -1930,15 +1931,18 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	bool using_upscaling = scale_type != SCALE_NONE;
-	const bool hddagi_svgf_motion_vectors_required =
+	const bool hddagi_screen_probes_active =
 			!is_reflection_probe &&
 			rb->has_custom_data(RB_SCOPE_HDDAGI) &&
 			p_render_data->environment.is_valid() &&
 			environment_get_hddagi_enabled(p_render_data->environment) &&
 			get_debug_draw_mode() != RSE::VIEWPORT_DEBUG_DRAW_UNSHADED &&
-			environment_get_hddagi_screen_probes_enabled(p_render_data->environment) &&
-			GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_denoiser") == 1 &&
-			HDDAGIScreenProbeSVGF::is_supported();
+			environment_get_hddagi_screen_probes_enabled(p_render_data->environment);
+	const bool hddagi_directional_screen_probes_active = hddagi_screen_probes_active &&
+			environment_get_hddagi_screen_probe_mode(p_render_data->environment) == RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER;
+	const bool hddagi_svgf_screen_probes_active = hddagi_screen_probes_active &&
+			GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_denoiser") == 1 && HDDAGIScreenProbeSVGF::is_supported();
+	const bool hddagi_screen_probe_motion_vectors_required = hddagi_directional_screen_probes_active || hddagi_svgf_screen_probes_active;
 
 	// check if we need motion vectors
 	bool motion_vectors_required;
@@ -1955,7 +1959,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	//p_render_data->scene_data->subsurface_scatter_width = subsurface_scatter_size;
-	p_render_data->scene_data->calculate_motion_vectors = motion_vectors_required || hddagi_svgf_motion_vectors_required;
+	p_render_data->scene_data->calculate_motion_vectors = motion_vectors_required || hddagi_screen_probe_motion_vectors_required;
 	p_render_data->scene_data->directional_light_count = 0;
 	p_render_data->scene_data->opaque_prepass_threshold = 0.99f;
 
@@ -2086,18 +2090,18 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				depth_framebuffer = rb_data->get_depth_fb();
 			} break;
 			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS: {
-				depth_framebuffer = rb_data->get_depth_fb(RenderBufferDataForwardClustered::DEPTH_FB_ROUGHNESS, hddagi_svgf_motion_vectors_required);
+				depth_framebuffer = rb_data->get_depth_fb(RenderBufferDataForwardClustered::DEPTH_FB_ROUGHNESS, hddagi_screen_probe_motion_vectors_required);
 				depth_pass_clear.push_back(Color(0, 0, 0, 0));
-				if (hddagi_svgf_motion_vectors_required) {
+				if (hddagi_screen_probe_motion_vectors_required) {
 					depth_pass_clear.push_back(Color(0, 0, 0, 0));
 					depth_pass_clear.push_back(Color(0, 0, 0, 0));
 				}
 			} break;
 			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI: {
-				depth_framebuffer = rb_data->get_depth_fb(RenderBufferDataForwardClustered::DEPTH_FB_ROUGHNESS_VOXELGI, hddagi_svgf_motion_vectors_required);
+				depth_framebuffer = rb_data->get_depth_fb(RenderBufferDataForwardClustered::DEPTH_FB_ROUGHNESS_VOXELGI, hddagi_screen_probe_motion_vectors_required);
 				depth_pass_clear.push_back(Color(0, 0, 0, 0));
 				depth_pass_clear.push_back(Color(0, 0, 0, 0));
-				if (hddagi_svgf_motion_vectors_required) {
+				if (hddagi_screen_probe_motion_vectors_required) {
 					depth_pass_clear.push_back(Color(0, 0, 0, 0));
 				}
 			} break;
@@ -2286,7 +2290,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, nullptr, is_multiview, RID(), samplers, depth_prepass_uniform_buffer_index);
 
 		bool finish_depth = using_ssao || using_ssil || using_hddagi || using_voxelgi || ce_pre_opaque_resolved_depth || ce_post_opaque_resolved_depth;
-		const uint32_t depth_pass_flags = hddagi_svgf_motion_vectors_required ? COLOR_PASS_FLAG_MOTION_VECTORS : 0;
+		const uint32_t depth_pass_flags = hddagi_screen_probe_motion_vectors_required ? COLOR_PASS_FLAG_MOTION_VECTORS : 0;
 		RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, depth_pass_mode, depth_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, base_specialization, !is_reflection_probe);
 		_render_list_with_draw_list(&render_list_params, depth_framebuffer, RD::DrawFlags(needs_pre_resolve ? RD::DRAW_DEFAULT_ALL : RD::DRAW_CLEAR_ALL), depth_pass_clear, 0.0f, 0u, p_render_data->render_region);
 
@@ -2297,7 +2301,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			RD::get_singleton()->draw_command_begin_label("Resolve Depth Pre-Pass (MSAA)");
 			if (depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS || depth_pass_mode == PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI) {
 				for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-					resolve_effects->resolve_gi(rb->get_depth_msaa(v), rb_data->get_normal_roughness_msaa(v), using_voxelgi ? rb_data->get_voxelgi_msaa(v) : RID(), hddagi_svgf_motion_vectors_required ? rb->get_velocity_buffer(true, v) : RID(), rb->get_depth_texture(v), rb_data->get_normal_roughness(v), using_voxelgi ? rb_data->get_voxelgi(v) : RID(), hddagi_svgf_motion_vectors_required ? rb->get_velocity_buffer(false, v) : RID(), rb->get_internal_size(), texture_multisamples[msaa]);
+					resolve_effects->resolve_gi(rb->get_depth_msaa(v), rb_data->get_normal_roughness_msaa(v), using_voxelgi ? rb_data->get_voxelgi_msaa(v) : RID(), hddagi_screen_probe_motion_vectors_required ? rb->get_velocity_buffer(true, v) : RID(), rb->get_depth_texture(v), rb_data->get_normal_roughness(v), using_voxelgi ? rb_data->get_voxelgi(v) : RID(), hddagi_screen_probe_motion_vectors_required ? rb->get_velocity_buffer(false, v) : RID(), rb->get_internal_size(), texture_multisamples[msaa]);
 				}
 			} else if (finish_depth) {
 				for (uint32_t v = 0; v < rb->get_view_count(); v++) {

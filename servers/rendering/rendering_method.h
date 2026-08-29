@@ -60,6 +60,7 @@ public:
 	virtual void camera_set_compositor(RID p_camera, RID p_compositor) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 	virtual bool is_camera(RID p_camera) const = 0;
+	virtual RID camera_get_environment(RID p_camera, RID p_scenario) = 0;
 
 	virtual RID occluder_allocate() = 0;
 	virtual void occluder_initialize(RID p_occluder) = 0;

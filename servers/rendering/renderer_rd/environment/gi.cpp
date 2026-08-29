@@ -3275,6 +3275,8 @@ void GI::init(SkyRD *p_sky) {
 		screen_probe_modes.push_back("\n#define MODE_SURFACE\n");
 		screen_probe_modes.push_back("\n#define MODE_TRACE\n");
 		screen_probe_modes.push_back("\n#define MODE_TRACE\n#define MODE_IRRADIANCE_CACHE_QUERY\n");
+		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_ADAPTIVE_MARK\n");
+		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_ADAPTIVE_SPAWN\n");
 		screen_probe_modes.push_back("\n#define MODE_TRACE\n#define MODE_DIRECTIONAL_TRACE\n");
 		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_FILTER\n");
 		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_IRRADIANCE\n");

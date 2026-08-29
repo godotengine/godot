@@ -5959,10 +5959,10 @@
 			Represents the size of the [enum EnvironmentHDDAGICascadeFormat] enum.
 		</constant>
 		<constant name="ENV_HDDAGI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED" value="0" enum="EnvironmentHDDAGIScreenProbeMode">
-			Uses stochastic sampling and integration for Dynamic GI screen probes.
+			Uses stochastic sampling for each screen probe.
 		</constant>
 		<constant name="ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER" value="1" enum="EnvironmentHDDAGIScreenProbeMode">
-			Traces a fixed 8 × 8 directional field for each Dynamic GI screen probe.
+			Uses adaptive 8 × 8 directional sampling for each screen probe.
 		</constant>
 		<constant name="ENV_HDDAGI_SCREEN_PROBE_MODE_MAX" value="2" enum="EnvironmentHDDAGIScreenProbeMode">
 			Represents the size of the [enum EnvironmentHDDAGIScreenProbeMode] enum.
