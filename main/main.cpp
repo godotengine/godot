@@ -3891,6 +3891,16 @@ void Main::setup_boot_logo() {
 	GodotProfileZone("setup_boot_logo");
 	MAIN_PRINT("Main: Load Boot Image");
 
+	// VERTEX: configurable export branding. "Powered by Vertex" attribution is
+	// shown by default on exported games but can be disabled or customized.
+	// Custom splash/logo/background reuse the existing application/boot_splash/*
+	// settings; these Vertex keys add an on/off toggle, an attribution string,
+	// and a fast splash fade-in duration (0 = instant). Legally required
+	// third-party attribution is preserved in the splash image and LICENSE.txt.
+	GLOBAL_DEF_BASIC("Vertex/export/show_powered_by_vertex", true);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "Vertex/export/attribution", PROPERTY_HINT_PLACEHOLDER_TEXT, "e.g. Powered by Vertex"), "Powered by Vertex");
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "Vertex/export/splash_fade_seconds", PROPERTY_HINT_RANGE, "0,2,0.05"), 0.3);
+
 #if !defined(TOOLS_ENABLED) && defined(WEB_ENABLED)
 	bool show_logo = false;
 #else
