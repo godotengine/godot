@@ -101,6 +101,27 @@ public:
 		virtual void set_joy_motion_sensors_enabled(bool p_enable) {}
 
 		virtual int get_joy_num_touchpads() const { return 0; }
+
+#undef CursorShape
+	enum CursorShape {
+		CURSOR_ARROW,
+		CURSOR_IBEAM,
+		CURSOR_POINTING_HAND,
+		CURSOR_CROSS,
+		CURSOR_WAIT,
+		CURSOR_BUSY,
+		CURSOR_DRAG,
+		CURSOR_CAN_DROP,
+		CURSOR_FORBIDDEN,
+		CURSOR_VSIZE,
+		CURSOR_HSIZE,
+		CURSOR_BDIAGSIZE,
+		CURSOR_FDIAGSIZE,
+		CURSOR_MOVE,
+		CURSOR_VSPLIT,
+		CURSOR_HSPLIT,
+		CURSOR_HELP,
+		CURSOR_MAX
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -159,7 +180,9 @@ private:
 		} cache;
 	};
 
-	HashMap<StringName, ActionState> action_states;
+	// Key -> player_id.
+	// Value -> All available actions to that player.
+	HashMap<int, HashMap<StringName, ActionState>> action_states;
 
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
@@ -226,6 +249,7 @@ private:
 	struct Joypad {
 		StringName name;
 		StringName uid;
+		PlayerID player_id = PlayerID::P1;
 		bool connected = false;
 		bool is_known = false;
 		bool last_buttons[(size_t)JoyButton::MAX] = { false };
@@ -346,6 +370,17 @@ private:
 	bool _should_ignore_joypad_events() const;
 
 #ifndef DISABLE_DEPRECATED
+	bool _is_action_pressed_bind_compat_111404(const StringName &p_action, bool p_exact = false) const;
+	bool _is_action_just_pressed_bind_compat_111404(const StringName &p_action, bool p_exact = false) const;
+	bool _is_action_just_released_bind_compat_111404(const StringName &p_action, bool p_exact = false) const;
+	bool _is_action_just_pressed_by_event_bind_compat_111404(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact = false) const;
+	bool _is_action_just_released_by_event_bind_compat_111404(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact = false) const;
+	float _get_action_strength_bind_compat_111404(const StringName &p_action, bool p_exact = false) const;
+	float _get_action_raw_strength_bind_compat_111404(const StringName &p_action, bool p_exact = false) const;
+	float _get_axis_bind_compat_111404(const StringName &p_negative_action, const StringName &p_positive_action) const;
+	Vector2 _get_vector_bind_compat_111404(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone = -1.0f) const;
+	void _action_press_bind_compat_111404(const StringName &p_action, float p_strength = 1.f);
+	void _action_release_bind_compat_111404(const StringName &p_action);
 	void _vibrate_handheld_bind_compat_91143(int p_duration_ms = 500);
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
@@ -374,16 +409,19 @@ public:
 	bool is_key_label_pressed(Key p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
 	bool is_joy_button_pressed(int p_device, JoyButton p_button) const;
-	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
-	bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const;
-	bool is_action_just_released(const StringName &p_action, bool p_exact = false) const;
-	bool is_action_just_pressed_by_event(const StringName &p_action, RequiredParam<InputEvent> p_event, bool p_exact = false) const;
-	bool is_action_just_released_by_event(const StringName &p_action, RequiredParam<InputEvent> p_event, bool p_exact = false) const;
-	float get_action_strength(const StringName &p_action, bool p_exact = false) const;
-	float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const;
 
-	float get_axis(const StringName &p_negative_action, const StringName &p_positive_action) const;
-	Vector2 get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone = -1.0f) const;
+	bool is_action_pressed(const StringName &p_action, bool p_exact = false, PlayerID p_player_id = PlayerID::P1) const;
+	bool is_action_just_pressed(const StringName &p_action, bool p_exact = false, PlayerID p_player_id = PlayerID::P1) const;
+	bool is_action_just_released(const StringName &p_action, bool p_exact = false, PlayerID p_player_id = PlayerID::P1) const;
+	bool is_action_just_pressed_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact = false, PlayerID p_player_id = PlayerID::P1) const;
+	bool is_action_just_released_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact = false, PlayerID p_player_id = PlayerID::P1) const;
+	float get_action_strength(const StringName &p_action, bool p_exact = false, PlayerID p_player_id = PlayerID::P1) const;
+	float get_action_raw_strength(const StringName &p_action, bool p_exact = false, PlayerID p_player_id = PlayerID::P1) const;
+
+	float get_axis(const StringName &p_negative_action, const StringName &p_positive_action, PlayerID p_player_id = PlayerID::P1) const;
+	Vector2 get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone = -1.0f, PlayerID p_player_id = PlayerID::P1) const;
+
+	HashMap<int, Joypad> _get_joy_names() const { return joy_names; }
 
 	float get_joy_axis(int p_device, JoyAxis p_axis) const;
 	String get_joy_name(int p_idx);
@@ -462,8 +500,8 @@ public:
 
 	void set_mouse_position(const Point2 &p_posf);
 
-	void action_press(const StringName &p_action, float p_strength = 1.f);
-	void action_release(const StringName &p_action);
+	void action_press(const StringName &p_action, float p_strength = 1.f, PlayerID p_player_id = PlayerID::P1);
+	void action_release(const StringName &p_action, PlayerID p_player_id = PlayerID::P1);
 
 	void set_emulate_touch_from_mouse(bool p_emulate);
 	bool is_emulating_touch_from_mouse() const;
@@ -491,6 +529,8 @@ public:
 
 	bool is_joy_known(int p_device);
 	String get_joy_guid(int p_device) const;
+	PlayerID get_joy_player_id(int p_device) const;
+	void set_joy_player_id(int p_device, PlayerID p_player_id);
 	bool should_ignore_device(int p_vendor_id, int p_product_id) const;
 	Dictionary get_joy_info(int p_device) const;
 	void set_fallback_mapping(const String &p_guid);

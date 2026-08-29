@@ -17,6 +17,7 @@
 			<return type="void" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="strength" type="float" default="1.0" />
+			<param index="2" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Simulates pressing the specified input action.
 				The [param strength] can be used for non-boolean actions, it's ranged between [code]0.0[/code] and [code]1.0[/code] representing the intensity of the given action.
@@ -26,6 +27,7 @@
 		<method name="action_release">
 			<return type="void" />
 			<param index="0" name="action" type="StringName" />
+			<param index="1" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Releases the specified input action, if the action is currently pressed.
 			</description>
@@ -68,6 +70,7 @@
 			<return type="float" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns a value between [code]0.0[/code] and [code]1.0[/code] representing the raw intensity of the given action, ignoring the action's deadzone. In most cases, you should use [method get_action_strength] instead.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -77,6 +80,7 @@
 			<return type="float" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns a value between [code]0.0[/code] and [code]1.0[/code] representing the intensity of the given action. In a joypad, for example, the further away the axis (analog sticks or L2, R2 triggers) is from the dead zone, the closer the value will be to [code]1.0[/code]. If the action is mapped to a control that has no axis such as the keyboard, the value returned will be [code]0.0[/code] or [code]1.0[/code].
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -86,6 +90,7 @@
 			<return type="float" />
 			<param index="0" name="negative_action" type="StringName" />
 			<param index="1" name="positive_action" type="StringName" />
+			<param index="2" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns axis input value by specifying two actions, one negative and one positive.
 				This is a shorthand for writing [code]Input.get_action_strength("positive_action") - Input.get_action_strength("negative_action")[/code].
@@ -257,6 +262,13 @@
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
+		<method name="get_joy_player_id" qualifiers="const">
+			<return type="int" enum="PlayerID" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the player id the device is assigned to.
+			</description>
+		</method>
 		<method name="get_joy_vibration_duration">
 			<return type="float" />
 			<param index="0" name="device" type="int" />
@@ -315,6 +327,7 @@
 			<param index="2" name="negative_y" type="StringName" />
 			<param index="3" name="positive_y" type="StringName" />
 			<param index="4" name="deadzone" type="float" default="-1.0" />
+			<param index="5" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns an input vector by specifying four actions for the positive and negative X and Y axes.
 				This method is useful when getting vector input, such as from a joystick, directional pad, arrows, or WASD. The vector has its length limited to [code]1.0[/code] and has a circular deadzone, which is useful for using vector input as movement.
@@ -350,6 +363,7 @@
 			<return type="bool" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns [code]true[/code] when the user has [i]started[/i] pressing the action event in the current frame or physics tick. It will only return [code]true[/code] on the frame or tick that the user pressed down the button.
 				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
@@ -364,6 +378,7 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="event" type="InputEvent" />
 			<param index="2" name="exact_match" type="bool" default="false" />
+			<param index="3" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns [code]true[/code] when the user has [i]started[/i] pressing the action event in the current frame or physics tick, and the first event that triggered action press in the current frame/physics tick was [param event]. It will only return [code]true[/code] on the frame or tick that the user pressed down the button.
 				This is useful for code that needs to run only once when an action is pressed, and the action is processed during input handling (e.g. [method Node._input]).
@@ -376,6 +391,7 @@
 			<return type="bool" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns [code]true[/code] when the user [i]stops[/i] pressing the action event in the current frame or physics tick. It will only return [code]true[/code] on the frame or tick that the user releases the button.
 				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] not pressed. An action can be released and pressed again rapidly, and [code]true[/code] will still be returned so as not to miss input.
@@ -388,6 +404,7 @@
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="event" type="InputEvent" />
 			<param index="2" name="exact_match" type="bool" default="false" />
+			<param index="3" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns [code]true[/code] when the user [i]stops[/i] pressing the action event in the current frame or physics tick, and the first event that triggered action release in the current frame/physics tick was [param event]. It will only return [code]true[/code] on the frame or tick that the user releases the button.
 				This is useful when an action is processed during input handling (e.g. [method Node._input]).
@@ -399,6 +416,7 @@
 			<return type="bool" />
 			<param index="0" name="action" type="StringName" />
 			<param index="1" name="exact_match" type="bool" default="false" />
+			<param index="2" name="player_id" type="int" enum="PlayerID" default="0" />
 			<description>
 				Returns [code]true[/code] if you are pressing the action event.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
@@ -706,6 +724,14 @@
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
+		<method name="set_joy_player_id">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="player_id" type="int" enum="PlayerID" />
+			<description>
+				Sets the player id the device is assigned to.
+			</description>
+		</method>
 		<method name="set_magnetometer">
 			<return type="void" />
 			<param index="0" name="value" type="Vector3" />
@@ -989,6 +1015,9 @@
 		</constant>
 		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
 			Help cursor. Usually a question mark.
+		</constant>
+		<constant name="PLAYERS_MAX" value="8">
+			Max number of allowed players by the engine.
 		</constant>
 	</constants>
 </class>

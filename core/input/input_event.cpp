@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "input_event.h"
+#include "input_event.compat.inc"
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
@@ -48,17 +50,80 @@ int InputEvent::get_device() const {
 	return device;
 }
 
+void InputEvent::set_player(PlayerID p_player) {
+	player = p_player;
+	emit_changed();
+}
+
+PlayerID InputEvent::get_player() const {
+	return player;
+}
+
+void InputEvent::set_player_from_device() {
+	// 	ProjectSettings *ps = ProjectSettings::get_singleton();
+	Ref<InputEvent> event = Ref<InputEvent>(this);
+
+	// Keyboard events.
+
+	Ref<InputEventKey> k = event;
+	if (k.is_valid()) {
+		player = (PlayerID)(GLOBAL_GET("input/keyboard_player_id_override").operator int());
+		return;
+	}
+
+	// Mouse events.
+
+	Ref<InputEventMouseButton> mb = event;
+	Ref<InputEventMouseMotion> mm = event;
+	if (mb.is_valid() || mm.is_valid()) {
+		player = (PlayerID)(GLOBAL_GET("input/mouse_player_id_override").operator int());
+		return;
+	}
+
+	// Joypad events.
+
+	Ref<InputEventJoypadButton> jb = event;
+	Ref<InputEventJoypadMotion> jm = event;
+	if (jb.is_valid() || jm.is_valid()) {
+		Input *input = Input::get_singleton();
+		HashMap<int, Input::Joypad>::Iterator E = input->_get_joy_names().find(device);
+
+		if (!E) {
+			player = PlayerID::P1;
+			return;
+		}
+
+		player = E->value.player_id;
+	}
+
+	// Touch events.
+
+	Ref<InputEventScreenTouch> st = event;
+	Ref<InputEventScreenDrag> sd = event;
+	Ref<InputEventGesture> ge = event;
+	if (st.is_valid() || sd.is_valid() || ge.is_valid()) {
+		player = (PlayerID)(GLOBAL_GET("input/touch_player_id_override").operator int());
+		return;
+	}
+}
+
 bool InputEvent::is_action(const StringName &p_action, bool p_exact_match) const {
 	return InputMap::get_singleton()->event_is_action(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match);
 }
 
-bool InputEvent::is_action_pressed(const StringName &p_action, bool p_allow_echo, bool p_exact_match) const {
+bool InputEvent::is_action_pressed(const StringName &p_action, bool p_allow_echo, bool p_exact_match, PlayerID p_player_id) const {
+	if (player != p_player_id) {
+		return false;
+	}
 	bool pressed_state;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed_state, nullptr, nullptr);
 	return valid && pressed_state && (p_allow_echo || !is_echo());
 }
 
-bool InputEvent::is_action_released(const StringName &p_action, bool p_exact_match) const {
+bool InputEvent::is_action_released(const StringName &p_action, bool p_exact_match, PlayerID p_player_id) const {
+	if (player != p_player_id) {
+		return false;
+	}
 	bool pressed_state;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed_state, nullptr, nullptr);
 	return valid && !pressed_state;
@@ -68,13 +133,19 @@ bool InputEvent::is_action_just_pressed_or_echo(const StringName &p_action, bool
 	return is_action(p_action, p_exact_match) && (is_echo() || Input::get_singleton()->is_action_just_pressed_by_event(p_action, const_cast<InputEvent *>(this)));
 }
 
-float InputEvent::get_action_strength(const StringName &p_action, bool p_exact_match) const {
+float InputEvent::get_action_strength(const StringName &p_action, bool p_exact_match, PlayerID p_player_id) const {
+	if (player != p_player_id) {
+		return 0.0f;
+	}
 	float strength;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, nullptr, &strength, nullptr);
 	return valid ? strength : 0.0f;
 }
 
-float InputEvent::get_action_raw_strength(const StringName &p_action, bool p_exact_match) const {
+float InputEvent::get_action_raw_strength(const StringName &p_action, bool p_exact_match, PlayerID p_player_id) const {
+	if (player != p_player_id) {
+		return 0.0f;
+	}
 	float raw_strength;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, nullptr, nullptr, &raw_strength);
 	return valid ? raw_strength : 0.0f;
@@ -116,10 +187,14 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &InputEvent::set_device);
 	ClassDB::bind_method(D_METHOD("get_device"), &InputEvent::get_device);
 
+	ClassDB::bind_method(D_METHOD("set_player", "player"), &InputEvent::set_player);
+	ClassDB::bind_method(D_METHOD("get_player"), &InputEvent::get_player);
+	ClassDB::bind_method(D_METHOD("set_player_from_device"), &InputEvent::set_player_from_device);
+
 	ClassDB::bind_method(D_METHOD("is_action", "action", "exact_match"), &InputEvent::is_action, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "allow_echo", "exact_match"), &InputEvent::is_action_pressed, DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("is_action_released", "action", "exact_match"), &InputEvent::is_action_released, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match"), &InputEvent::get_action_strength, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "allow_echo", "exact_match", "player_id"), &InputEvent::is_action_pressed, DEFVAL(false), DEFVAL(false), DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("is_action_released", "action", "exact_match", "player_id"), &InputEvent::is_action_released, DEFVAL(false), DEFVAL(PlayerID::P1));
+	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match", "player_id"), &InputEvent::get_action_strength, DEFVAL(false), DEFVAL(PlayerID::P1));
 
 	ClassDB::bind_method(D_METHOD("is_canceled"), &InputEvent::is_canceled);
 	ClassDB::bind_method(D_METHOD("is_pressed"), &InputEvent::is_pressed);
@@ -137,6 +212,7 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("xformed_by", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "player"), "set_player", "get_player");
 
 	BIND_CONSTANT(DEVICE_ID_EMULATION);
 	BIND_CONSTANT(DEVICE_ID_KEYBOARD);
@@ -764,6 +840,7 @@ RequiredResult<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &
 	mb.instantiate();
 
 	mb->set_device(get_device());
+	mb->set_player_from_device();
 	mb->set_window_id(get_window_id());
 	mb->set_modifiers_from_event(this);
 
@@ -983,6 +1060,7 @@ RequiredResult<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &
 	mm.instantiate();
 
 	mm->set_device(get_device());
+	mm->set_player_from_device();
 	mm->set_window_id(get_window_id());
 
 	mm->set_modifiers_from_event(this);
@@ -1388,6 +1466,7 @@ RequiredResult<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &
 	Ref<InputEventScreenTouch> st;
 	st.instantiate();
 	st->set_device(get_device());
+	st->set_player_from_device();
 	st->set_window_id(get_window_id());
 	st->set_index(index);
 	st->set_position(p_xform.xform(pos + p_local_ofs));
@@ -1513,6 +1592,7 @@ RequiredResult<InputEvent> InputEventScreenDrag::xformed_by(const Transform2D &p
 	sd.instantiate();
 
 	sd->set_device(get_device());
+	sd->set_player_from_device();
 	sd->set_window_id(get_window_id());
 
 	sd->set_index(index);
@@ -1731,6 +1811,7 @@ RequiredResult<InputEvent> InputEventMagnifyGesture::xformed_by(const Transform2
 	ev.instantiate();
 
 	ev->set_device(get_device());
+	ev->set_player_from_device();
 	ev->set_window_id(get_window_id());
 
 	ev->set_modifiers_from_event(this);
@@ -1773,6 +1854,7 @@ RequiredResult<InputEvent> InputEventPanGesture::xformed_by(const Transform2D &p
 	ev.instantiate();
 
 	ev->set_device(get_device());
+	ev->set_player_from_device();
 	ev->set_window_id(get_window_id());
 
 	ev->set_modifiers_from_event(this);
