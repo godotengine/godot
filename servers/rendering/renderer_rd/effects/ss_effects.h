@@ -52,6 +52,7 @@
 #define RB_SCOPE_SSIL SNAME("rb_ssil")
 #define RB_SCOPE_SSAO SNAME("rb_ssao")
 #define RB_SCOPE_SSR SNAME("rb_ssr")
+#define RB_SCOPE_SS_HIZ SNAME("rb_ss_hiz")
 
 #define RB_LINEAR_DEPTH SNAME("linear_depth")
 #define RB_FINAL SNAME("final")
@@ -143,14 +144,23 @@ public:
 	/* Screen Space Reflection */
 	void ssr_set_half_size(bool p_half_size);
 
+	struct ScreenSpaceDepthPyramidRenderBuffers {
+		Size2i size;
+		uint32_t mipmaps = 1;
+	};
+
+	bool screen_space_depth_pyramid_allocate(Ref<RenderSceneBuffersRD> p_render_buffers, ScreenSpaceDepthPyramidRenderBuffers &p_depth_pyramid_buffers);
+	bool screen_space_depth_pyramid_build(Ref<RenderSceneBuffersRD> p_render_buffers, ScreenSpaceDepthPyramidRenderBuffers &p_depth_pyramid_buffers, RendererRD::CopyEffects &p_copy_effects);
+	RID screen_space_depth_pyramid_get_view(Ref<RenderSceneBuffersRD> p_render_buffers, const ScreenSpaceDepthPyramidRenderBuffers &p_depth_pyramid_buffers, uint32_t p_view);
+
 	struct SSRRenderBuffers {
 		Size2i size;
 		uint32_t mipmaps = 1;
 		bool half_size = false;
 	};
 
-	void ssr_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RD::DataFormat p_color_format);
-	void screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RID *p_normal_roughness_slices, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const Projection *p_projections, const Projection *p_reprojections, const Vector3 *p_eye_offsets, RendererRD::CopyEffects &p_copy_effects);
+	void ssr_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, ScreenSpaceDepthPyramidRenderBuffers &p_depth_pyramid_buffers, const RD::DataFormat p_color_format);
+	void screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, ScreenSpaceDepthPyramidRenderBuffers &p_depth_pyramid_buffers, bool p_depth_pyramid_is_built, const RID *p_normal_roughness_slices, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const Projection *p_projections, const Projection *p_reprojections, const Vector3 *p_eye_offsets, RendererRD::CopyEffects &p_copy_effects);
 
 	/* subsurface scattering */
 	void sss_set_quality(RSE::SubSurfaceScatteringQuality p_quality);
@@ -496,6 +506,8 @@ private:
 		RID resolve_shader_version;
 		PipelineDeferredRD resolve_pipeline;
 	} ssr;
+
+	bool _screen_space_depth_pyramid_build_mips(Ref<RenderSceneBuffersRD> p_render_buffers, const StringName &p_context, const Size2i &p_size, uint32_t p_mipmaps, bool p_first_mip_from_scene_depth);
 
 	/* Subsurface scattering */
 

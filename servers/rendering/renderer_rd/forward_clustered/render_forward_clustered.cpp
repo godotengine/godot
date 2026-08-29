@@ -123,6 +123,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
 		render_buffers->clear_context(RB_SCOPE_SSIL);
 		render_buffers->clear_context(RB_SCOPE_SSAO);
 		render_buffers->clear_context(RB_SCOPE_SSR);
+		render_buffers->clear_context(RB_SCOPE_SS_HIZ);
 	}
 
 	if (cluster_builder) {
@@ -1506,7 +1507,7 @@ void RenderForwardClustered::_process_ssil(Ref<RenderSceneBuffersRD> p_render_bu
 	rb_data->ss_effects_data.ssil_last_frame_transform = transform;
 }
 
-void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_slices, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_transform) {
+void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_slices, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_transform, bool p_depth_pyramid_is_built) {
 	ERR_FAIL_NULL(ss_effects);
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
@@ -1515,7 +1516,7 @@ void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buf
 
 	RENDER_TIMESTAMP("Process SSR");
 
-	ss_effects->ssr_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssr, p_render_buffers->get_base_data_format());
+	ss_effects->ssr_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssr, rb_data->ss_effects_data.depth_pyramid, p_render_buffers->get_base_data_format());
 
 	Projection reprojections[RendererSceneRender::MAX_RENDER_VIEWS];
 
@@ -1531,7 +1532,7 @@ void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buf
 	}
 	rb_data->ss_effects_data.ssr_last_frame_transform = p_transform;
 
-	ss_effects->screen_space_reflection(p_render_buffers, rb_data->ss_effects_data.ssr, p_normal_slices, environment_get_ssr_max_steps(p_environment), environment_get_ssr_fade_in(p_environment), environment_get_ssr_fade_out(p_environment), environment_get_ssr_depth_tolerance(p_environment), p_projections, reprojections, p_eye_offsets, *copy_effects);
+	ss_effects->screen_space_reflection(p_render_buffers, rb_data->ss_effects_data.ssr, rb_data->ss_effects_data.depth_pyramid, p_depth_pyramid_is_built, p_normal_slices, environment_get_ssr_max_steps(p_environment), environment_get_ssr_fade_in(p_environment), environment_get_ssr_fade_out(p_environment), environment_get_ssr_depth_tolerance(p_environment), p_projections, reprojections, p_eye_offsets, *copy_effects);
 }
 
 void RenderForwardClustered::_copy_framebuffer_to_ss_effects(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr) {
@@ -1541,7 +1542,7 @@ void RenderForwardClustered::_copy_framebuffer_to_ss_effects(Ref<RenderSceneBuff
 	ss_effects->copy_internal_texture_to_last_frame(p_render_buffers, *copy_effects);
 }
 
-void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer) {
+void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, bool p_depth_pre_pass_completed, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_hddagi, bool p_use_hddagi_screen_probes, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer) {
 	// Render shadows while GI is rendering, due to how barriers are handled, this should happen at the same time
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
@@ -1631,7 +1632,49 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	}
 
 	if (render_gi) {
-		gi.process_gi(rb, p_normal_roughness_slices, p_voxel_gi_buffer, p_render_data->environment, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, *p_render_data->voxel_gi_instances);
+		gi.process_gi(rb, p_use_hddagi, p_normal_roughness_slices, p_voxel_gi_buffer, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, *p_render_data->voxel_gi_instances);
+	}
+
+	RID depth_pyramid_views[RendererSceneRender::MAX_RENDER_VIEWS] = {};
+	Size2i depth_pyramid_size;
+	uint32_t depth_pyramid_mip_count = 0;
+	bool depth_pyramid_is_built = false;
+	if (p_depth_pre_pass_completed && p_use_hddagi_screen_probes && rb_data.is_valid() && ss_effects != nullptr && copy_effects != nullptr && GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_detail_trace")) {
+		RENDER_TIMESTAMP("Prepare Shared Hi-Z for HDDAGI Screen Probes");
+		if (ss_effects->screen_space_depth_pyramid_allocate(rb, rb_data->ss_effects_data.depth_pyramid) && ss_effects->screen_space_depth_pyramid_build(rb, rb_data->ss_effects_data.depth_pyramid, *copy_effects)) {
+			depth_pyramid_is_built = true;
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				depth_pyramid_views[v] = ss_effects->screen_space_depth_pyramid_get_view(rb, rb_data->ss_effects_data.depth_pyramid, v);
+				depth_pyramid_is_built = depth_pyramid_is_built && depth_pyramid_views[v].is_valid();
+			}
+			depth_pyramid_size = rb_data->ss_effects_data.depth_pyramid.size;
+			depth_pyramid_mip_count = rb_data->ss_effects_data.depth_pyramid.mipmaps;
+		}
+	}
+
+	if (p_use_hddagi_screen_probes && rb->has_custom_data(RB_SCOPE_HDDAGI)) {
+		Size2i gi_size = rb->get_internal_size();
+		if (gi.is_using_half_resolution()) {
+			gi_size.x >>= 1;
+			gi_size.y >>= 1;
+		}
+
+		float exposure_normalization = 1.0f;
+		float ibl_exposure_normalization = 1.0f;
+		if (p_render_data->camera_attributes.is_valid()) {
+			exposure_normalization = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+			if (p_render_data->environment.is_valid()) {
+				const RID sky_rid = environment_get_sky(p_render_data->environment);
+				if (sky_rid.is_valid()) {
+					const float current_exposure = exposure_normalization * environment_get_bg_intensity(p_render_data->environment) / rb->get_luminance_multiplier();
+					ibl_exposure_normalization = current_exposure / MAX(0.001f, sky.sky_get_baked_exposure(sky_rid));
+				}
+			}
+		}
+
+		gi.process_hddagi_screen_probes(rb, p_normal_roughness_slices, depth_pyramid_is_built ? depth_pyramid_views : nullptr, depth_pyramid_size, depth_pyramid_mip_count, depth_pyramid_is_built, p_render_data->environment, p_render_data->scene_data->view_count, gi_size, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform, exposure_normalization, ibl_exposure_normalization, environment_get_hddagi_screen_probe_size(p_render_data->environment), environment_get_hddagi_screen_probe_normal_bias(p_render_data->environment));
+	} else if (!p_render_data->reflection_probe.is_valid()) {
+		gi.disable_hddagi_screen_probes(rb);
 	}
 
 	if (render_shadows) {
@@ -1664,7 +1707,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		}
 
 		if (p_use_ssr) {
-			_process_ssr(rb, p_render_data->environment, p_normal_roughness_slices, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform);
+			_process_ssr(rb, p_render_data->environment, p_normal_roughness_slices, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, depth_pyramid_is_built);
 		}
 	}
 
@@ -1862,6 +1905,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_separate_specular = false;
 	bool using_ssr = false;
 	bool using_hddagi = false;
+	bool using_hddagi_screen_probes = false;
 	bool using_voxelgi = false;
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_ssil = !is_reflection_probe && p_render_data->environment.is_valid() && environment_get_ssil_enabled(p_render_data->environment);
@@ -1902,7 +1946,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		if (p_render_data->environment.is_valid()) {
 			if (environment_get_hddagi_enabled(p_render_data->environment) && get_debug_draw_mode() != RSE::VIEWPORT_DEBUG_DRAW_UNSHADED) {
-				using_hddagi = true;
+				using_hddagi = rb->has_custom_data(RB_SCOPE_HDDAGI);
 			}
 			if (environment_get_ssr_enabled(p_render_data->environment)) {
 				if (!p_render_data->transparent_bg) {
@@ -1912,6 +1956,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				}
 			}
 		}
+		using_hddagi_screen_probes = using_hddagi && environment_get_hddagi_screen_probes_enabled(p_render_data->environment);
 
 		if (p_render_data->scene_data->view_count > 1) {
 			color_pass_flags |= COLOR_PASS_FLAG_MULTIVIEW;
@@ -2137,7 +2182,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	bool debug_voxelgis = get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION;
 	bool debug_hddagi_probes = get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES;
-	bool force_depth_pre_pass = scene_state.used_opaque_stencil;
+	bool force_depth_pre_pass = scene_state.used_opaque_stencil || using_hddagi_screen_probes;
 	bool depth_pre_pass = (force_depth_pre_pass || scene_shader.depth_prepass_enabled) && depth_framebuffer.is_valid();
 
 	SceneShaderForwardClustered::ShaderSpecialization base_specialization = scene_shader.default_specialization;
@@ -2207,7 +2252,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			normal_roughness_views[v] = rb_data->get_normal_roughness(v);
 		}
 	}
-	_pre_opaque_render(p_render_data, using_ssao, using_ssil, using_ssr, using_hddagi || using_voxelgi, normal_roughness_views, rb_data.is_valid() && rb_data->has_voxelgi() ? rb_data->get_voxelgi() : RID());
+	_pre_opaque_render(p_render_data, depth_pre_pass, using_ssao, using_ssil, using_ssr, using_hddagi, using_hddagi_screen_probes, using_hddagi || using_voxelgi, normal_roughness_views, rb_data.is_valid() && rb_data->has_voxelgi() ? rb_data->get_voxelgi() : RID());
 
 	if (current_cluster_builder) {
 		base_specialization.cluster_has_area_light = current_cluster_builder->get_cluster_count_by_type(ClusterBuilderRD::ELEMENT_TYPE_AREA_LIGHT) != 0;

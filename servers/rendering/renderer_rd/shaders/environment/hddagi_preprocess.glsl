@@ -39,6 +39,8 @@ layout(r8ui, set = 0, binding = 10) uniform restrict writeonly uimage3D dst_diso
 layout(r32ui, set = 0, binding = 11) uniform restrict writeonly uimage3D voxel_neighbours;
 layout(r32ui, set = 0, binding = 12) uniform restrict uimage3D light_tex;
 
+const uint LIGHT_CELL_VALID_BIT = 1u << 26u;
+
 shared uint normal_facings[6 * 6 * 6];
 
 uint get_normal_facing(ivec3 p_pos) {
@@ -490,6 +492,7 @@ void main() {
 	uint occlusionu = 0;
 	bool voxels_found = false;
 	ivec3 base_dst_pos;
+	uint neighbour_voxels = 0u;
 
 	if (thread_active) {
 		uint solid = get_normal_facing(local);
@@ -585,14 +588,10 @@ void main() {
 		}
 
 		base_dst_pos = (pos + params.region_world_pos * REGION_SIZE) & (params.grid_size - 1);
-		ivec3 dst_pos = base_dst_pos + params.grid_size.y * params.cascade;
+		ivec3 dst_pos = base_dst_pos + ivec3(0, params.grid_size.y * params.cascade, 0);
 		imageStore(dst_disocclusion, dst_pos, uvec4(disocclusion));
 
-		if (solid != 0) {
-			thread_active = false; // No further use for this, this is a solid voxel.
-		} else if (use_for_filter) {
-			uint neighbour_voxels = 0;
-
+		if (solid == 0u && use_for_filter) {
 			for (int i = 0; i < facing_direction_count; i++) {
 				ivec3 neighbour = ivec3(sign(facing_directions[i]));
 				ivec3 neighbour_pos = local + neighbour;
@@ -654,13 +653,14 @@ void main() {
 				}
 			}
 
-			ivec3 store_pos = (pos + params.region_world_pos * REGION_SIZE) & (params.grid_size - ivec3(1));
-			store_pos.y += params.grid_size.y * params.cascade;
-			imageStore(voxel_neighbours, store_pos, uvec4(neighbour_voxels));
-			if (!voxels_found) {
-				// Light voxels won't be stored here, but still ensure this is black to avoid light leaking from outside.
-				imageStore(light_tex, store_pos, uvec4(0));
-			}
+		}
+
+		imageStore(voxel_neighbours, dst_pos, uvec4(neighbour_voxels));
+		if (!voxels_found) {
+			imageStore(light_tex, dst_pos, uvec4(0));
+		}
+		if (solid != 0u) {
+			thread_active = false; // No further use for this, this is a solid voxel.
 		}
 	}
 
@@ -741,6 +741,8 @@ void main() {
 		index += store_from_index;
 
 		if (index < params.maximum_light_cells) {
+			ivec3 metadata_pos = base_dst_pos + ivec3(0, params.grid_size.y * params.cascade, 0);
+			imageStore(voxel_neighbours, metadata_pos, uvec4(neighbour_voxels | LIGHT_CELL_VALID_BIT));
 			normal_accum = normalize(normal_accum);
 			albedo_accum.rgb /= albedo_accum.a;
 			emission_accum.rgb /= emission_accum.a;
@@ -760,6 +762,9 @@ void main() {
 			dst_process_voxels.data[index].emission = rgbe_encode(emission_accum.rgb);
 
 			dst_process_voxels.data[index].occlusion = occlusionu;
+		} else {
+			ivec3 metadata_pos = base_dst_pos + ivec3(0, params.grid_size.y * params.cascade, 0);
+			imageStore(light_tex, metadata_pos, uvec4(0));
 		}
 	}
 

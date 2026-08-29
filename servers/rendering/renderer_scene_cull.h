@@ -1345,6 +1345,7 @@ public:
 	// HDDAGI
 
 	PASS15(environment_set_hddagi, RID, bool, int, RSE::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, float, bool, bool)
+	PASS4(environment_set_hddagi_screen_probes, RID, bool, int, float)
 	PASS2(environment_set_hddagi_camera_local_anchor_offset, RID, const Vector3 &)
 	PASS2(environment_set_hddagi_cascade_forward_offset, RID, float)
 	PASS1RC(Vector3, environment_get_hddagi_camera_local_anchor_offset, RID)
@@ -1359,6 +1360,9 @@ public:
 	PASS1RC(float, environment_get_hddagi_energy, RID)
 	PASS1RC(float, environment_get_hddagi_normal_bias, RID)
 	PASS1RC(float, environment_get_hddagi_probe_bias, RID)
+	PASS1RC(bool, environment_get_hddagi_screen_probes_enabled, RID)
+	PASS1RC(int, environment_get_hddagi_screen_probe_size, RID)
+	PASS1RC(float, environment_get_hddagi_screen_probe_normal_bias, RID)
 
 	PASS1(environment_set_hddagi_frames_to_converge, RSE::EnvironmentHDDAGIFramesToConverge)
 	PASS1(environment_set_hddagi_frames_to_update_light, RSE::EnvironmentHDDAGIFramesToUpdateLight)

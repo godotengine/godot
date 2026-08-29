@@ -367,7 +367,7 @@ void main() {
 
 		if (true) {
 			// Check the neighbours!
-			uint neighbour_bits = imageLoad(voxel_neighbours, read_cell + ivec3(0, (params.grid_size.y * hit_cascade), 0)).r;
+			uint neighbour_bits = imageLoad(voxel_neighbours, read_cell + ivec3(0, (params.grid_size.y * hit_cascade), 0)).r & ((1u << 26u) - 1u);
 			vec3 cascade_ofs = cascades.data[hit_cascade].offset;
 			float to_cell = cascades.data[hit_cascade].to_cell;
 			float cascade_cell_size = 1.0 / to_cell;

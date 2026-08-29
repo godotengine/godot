@@ -1457,6 +1457,16 @@
 				Sets the number of frames over which inactive Dynamic GI probes are processed. Inactive probes are not connected to geometry and are not visible to the camera. Equivalent to [member ProjectSettings.rendering/global_illumination/hddagi/frames_to_update_inactive_probes].
 			</description>
 		</method>
+		<method name="environment_set_hddagi_screen_probes">
+			<return type="void" />
+			<param index="0" name="env" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<param index="2" name="probe_size" type="int" />
+			<param index="3" name="normal_bias" type="float" />
+			<description>
+				Configures Dynamic GI screen probes for the specified environment RID. See [member Environment.dynamic_gi_screen_probes_enabled], [member Environment.dynamic_gi_screen_probe_size], and [member Environment.dynamic_gi_screen_probe_normal_bias].
+			</description>
+		</method>
 		<method name="environment_set_sdfgi" deprecated="Use [method environment_set_hddagi] instead.">
 			<return type="void" />
 			<param index="0" name="env" type="RID" />

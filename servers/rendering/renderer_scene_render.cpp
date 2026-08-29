@@ -665,6 +665,10 @@ void RendererSceneRender::environment_set_hddagi(RID p_env, bool p_enable, int p
 	environment_storage.environment_set_hddagi(p_env, p_enable, p_cascades, p_cascade_format, p_min_cell_size, p_filter_probes, p_bounce_feedback, p_read_sky, p_energy, p_normal_bias, p_reflection_bias, p_probe_bias, p_occlusion_bias, p_filter_reflection, p_filter_ambient);
 }
 
+void RendererSceneRender::environment_set_hddagi_screen_probes(RID p_env, bool p_enable, int p_probe_size, float p_normal_bias) {
+	environment_storage.environment_set_hddagi_screen_probes(p_env, p_enable, p_probe_size, p_normal_bias);
+}
+
 void RendererSceneRender::environment_set_hddagi_camera_local_anchor_offset(RID p_env, const Vector3 &p_offset) {
 	environment_storage.environment_set_hddagi_camera_local_anchor_offset(p_env, p_offset);
 }
@@ -739,6 +743,18 @@ bool RendererSceneRender::environment_get_hddagi_filter_reflection(RID p_env) co
 
 bool RendererSceneRender::environment_get_hddagi_filter_ambient(RID p_env) const {
 	return environment_storage.environment_get_hddagi_filter_ambient(p_env);
+}
+
+bool RendererSceneRender::environment_get_hddagi_screen_probes_enabled(RID p_env) const {
+	return environment_storage.environment_get_hddagi_screen_probes_enabled(p_env);
+}
+
+int RendererSceneRender::environment_get_hddagi_screen_probe_size(RID p_env) const {
+	return environment_storage.environment_get_hddagi_screen_probe_size(p_env);
+}
+
+float RendererSceneRender::environment_get_hddagi_screen_probe_normal_bias(RID p_env) const {
+	return environment_storage.environment_get_hddagi_screen_probe_normal_bias(p_env);
 }
 
 // Adjustments

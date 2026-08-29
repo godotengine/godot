@@ -42,6 +42,7 @@
 #include "servers/rendering/renderer_rd/shaders/environment/hddagi_filter.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/hddagi_integrate.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/hddagi_preprocess.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/hddagi_screen_probe.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_buffer_custom_data_rd.h"
@@ -51,6 +52,7 @@
 
 #define RB_SCOPE_GI SNAME("rbgi")
 #define RB_SCOPE_HDDAGI SNAME("hddagi")
+#define RB_SCOPE_HDDAGI_SCREEN_PROBES SNAME("hddagi_screen_probes")
 
 #define RB_TEX_AMBIENT SNAME("ambient")
 #define RB_TEX_REFLECTION SNAME("reflection")
@@ -63,6 +65,10 @@
 #define RB_TEX_AMBIENT_REFLECTION_BLEND_FILTERED SNAME("ambient_reflection_blend_filtered")
 
 #define RB_TEX_REFLECTION_U32_FILTERED SNAME("reflection_u32_filtered")
+
+#define RB_TEX_HDDAGI_SCREEN_PROBE_SURFACE SNAME("screen_probe_surface")
+#define RB_TEX_HDDAGI_SCREEN_PROBE_RAW_RADIANCE SNAME("raw_radiance")
+#define RB_TEX_HDDAGI_SCREEN_PROBE_RESOLVED_RADIANCE SNAME("resolved_radiance")
 
 // Forward declare RenderDataRD and RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
 class RenderDataRD;
@@ -161,6 +167,7 @@ public:
 
 private:
 	static GI *singleton;
+	RendererRD::SkyRD *sky = nullptr;
 
 	/* VOXEL GI STORAGE */
 
@@ -470,6 +477,47 @@ private:
 		RID integrate_pipeline[INTEGRATE_MODE_MAX];
 		RID integrate_default_sky_uniform_set;
 
+		enum ScreenProbeMode {
+			SCREEN_PROBE_MODE_SURFACE,
+			SCREEN_PROBE_MODE_TRACE,
+			SCREEN_PROBE_MODE_RESOLVE,
+			SCREEN_PROBE_MODE_APPLY,
+			SCREEN_PROBE_MODE_MAX,
+		};
+
+		enum ScreenProbeSkyMode {
+			SCREEN_PROBE_SKY_DISABLED,
+			SCREEN_PROBE_SKY_COLOR,
+			SCREEN_PROBE_SKY_TEXTURE,
+		};
+
+		struct ScreenProbePushConstant {
+			enum {
+				FLAG_DETAIL_TRACE = 1 << 0,
+			};
+
+			int32_t gi_size[2];
+			int32_t screen_size[2];
+
+			int32_t probe_size;
+			uint32_t view_index;
+			uint32_t frame_index;
+			uint32_t flags;
+
+			float normal_bias;
+			uint32_t sky_mode;
+			float sky_energy;
+			uint32_t detail_trace_mip_count;
+
+			float sky_color[4];
+		};
+
+		HddagiScreenProbeShaderRD screen_probe;
+		RID screen_probe_shader;
+		RID screen_probe_shader_version[SCREEN_PROBE_MODE_MAX];
+		RID screen_probe_pipeline[SCREEN_PROBE_MODE_MAX];
+		bool screen_probe_available = false;
+
 	} hddagi_shader;
 
 public:
@@ -499,6 +547,7 @@ public:
 		bool using_half_size_gi = false;
 
 		RID scene_data_ubo;
+		RID screen_probe_scene_data_ubo;
 
 		RID get_voxel_gi_buffer();
 
@@ -830,6 +879,13 @@ public:
 		float pad2;
 	};
 
+	struct ScreenProbeSceneData {
+		float inv_projection[2][16];
+		float cam_transform[16];
+		float projection[2][16];
+		float radiance_inverse_xform[12];
+	};
+
 	struct PushConstant {
 		uint32_t max_voxel_gi_instances;
 		uint32_t high_quality_vct;
@@ -905,11 +961,14 @@ public:
 
 	void init(RendererRD::SkyRD *p_sky);
 	void free();
+	bool is_using_half_resolution() const { return half_resolution; }
 
 	Ref<HDDAGI> create_hddagi(RID p_env, const Vector3 &p_world_anchor, const Vector3 &p_planar_world_forward, float p_cascade_forward_offset, uint32_t p_requested_history_size);
 
 	void setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used);
-	void process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances);
+	void process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_hddagi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances);
+	void process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias);
+	void disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers);
 
 	RID voxel_gi_instance_create(RID p_base);
 	void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform);

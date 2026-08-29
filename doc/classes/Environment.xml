@@ -280,6 +280,15 @@
 		<member name="dynamic_gi_read_sky_light" type="bool" setter="set_dynamic_gi_read_sky_light" getter="is_dynamic_gi_reading_sky_light" default="true">
 			Allows Dynamic GI probes to sample sky light when rays miss geometry.
 		</member>
+		<member name="dynamic_gi_screen_probe_normal_bias" type="float" setter="set_dynamic_gi_screen_probe_normal_bias" getter="get_dynamic_gi_screen_probe_normal_bias" default="1.1">
+			Normal bias for screen-probe rays.
+		</member>
+		<member name="dynamic_gi_screen_probe_size" type="int" setter="set_dynamic_gi_screen_probe_size" getter="get_dynamic_gi_screen_probe_size" default="1">
+			Size of each stochastic screen probe in internal GI pixels. Smaller values increase detail and GPU cost.
+		</member>
+		<member name="dynamic_gi_screen_probes_enabled" type="bool" setter="set_dynamic_gi_screen_probes_enabled" getter="is_dynamic_gi_screen_probes_enabled" default="false">
+			Enables screen probes for finer Dynamic GI detail.
+		</member>
 		<member name="fog_aerial_perspective" type="float" setter="set_fog_aerial_perspective" getter="get_fog_aerial_perspective" default="0.0">
 			If set above [code]0.0[/code] (exclusive), blends between the fog's color and the color of the background [Sky], as read from the radiance cubemap. This has a small performance cost when set above [code]0.0[/code]. Must have [member background_mode] set to [constant BG_SKY].
 			This is useful to simulate [url=https://en.wikipedia.org/wiki/Aerial_perspective]aerial perspective[/url] in large scenes with low density fog. However, it is not very useful for high-density fog, as the sky will shine through. When set to [code]1.0[/code], the fog color comes completely from the [Sky]. If set to [code]0.0[/code], aerial perspective is disabled.

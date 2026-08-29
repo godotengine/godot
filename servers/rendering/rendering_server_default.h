@@ -892,6 +892,7 @@ public:
 	FUNC1(environment_set_volumetric_fog_filter_active, bool)
 
 	FUNC15(environment_set_hddagi, RID, bool, int, RSE::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, float, bool, bool)
+	FUNC4(environment_set_hddagi_screen_probes, RID, bool, int, float)
 	FUNC2(environment_set_hddagi_camera_local_anchor_offset, RID, const Vector3 &)
 	FUNC2(environment_set_hddagi_cascade_forward_offset, RID, float)
 	FUNC1(environment_set_hddagi_frames_to_converge, RSE::EnvironmentHDDAGIFramesToConverge)

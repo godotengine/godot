@@ -3093,6 +3093,8 @@ GI::~GI() {
 }
 
 void GI::init(SkyRD *p_sky) {
+	sky = p_sky;
+
 	/* GI */
 
 	{
@@ -3220,6 +3222,33 @@ void GI::init(SkyRD *p_sky) {
 				uniforms,
 				hddagi_shader.integrate.version_get_shader(hddagi_shader.integrate_shader, 0),
 				1);
+	}
+
+	{
+		static_assert(sizeof(HDDAGIShader::ScreenProbePushConstant) == 64, "Screen probe push constant must match the shader ABI.");
+		static_assert(sizeof(ScreenProbeSceneData) == 368, "Screen probe scene data must match the shader ABI.");
+
+		Vector<String> screen_probe_modes;
+		screen_probe_modes.push_back("\n#define MODE_SURFACE\n");
+		screen_probe_modes.push_back("\n#define MODE_TRACE\n");
+		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n");
+		screen_probe_modes.push_back("\n#define MODE_APPLY\n");
+
+		String screen_probe_defines;
+		if (p_sky->sky_use_octmap_array) {
+			screen_probe_defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY\n";
+		}
+
+		hddagi_shader.screen_probe.initialize(screen_probe_modes, screen_probe_defines);
+		hddagi_shader.screen_probe_shader = hddagi_shader.screen_probe.version_create();
+		hddagi_shader.screen_probe_available = hddagi_shader.screen_probe.version_is_valid(hddagi_shader.screen_probe_shader);
+		for (int i = 0; i < HDDAGIShader::SCREEN_PROBE_MODE_MAX; i++) {
+			hddagi_shader.screen_probe_shader_version[i] = hddagi_shader.screen_probe.version_get_shader(hddagi_shader.screen_probe_shader, i);
+			if (hddagi_shader.screen_probe_shader_version[i].is_valid()) {
+				hddagi_shader.screen_probe_pipeline[i] = RD::get_singleton()->compute_pipeline_create(hddagi_shader.screen_probe_shader_version[i]);
+			}
+			hddagi_shader.screen_probe_available = hddagi_shader.screen_probe_available && hddagi_shader.screen_probe_pipeline[i].is_valid();
+		}
 	}
 
 	//GK
@@ -3421,6 +3450,9 @@ void GI::free() {
 	if (hddagi_shader.integrate_shader.is_valid()) {
 		hddagi_shader.integrate.version_free(hddagi_shader.integrate_shader);
 	}
+	if (hddagi_shader.screen_probe_shader.is_valid()) {
+		hddagi_shader.screen_probe.version_free(hddagi_shader.screen_probe_shader);
+	}
 	if (hddagi_shader.preprocess_shader.is_valid()) {
 		hddagi_shader.preprocess.version_free(hddagi_shader.preprocess_shader);
 	}
@@ -3533,6 +3565,11 @@ RID GI::RenderBuffersGI::get_voxel_gi_buffer() {
 }
 
 void GI::RenderBuffersGI::free_data() {
+	if (screen_probe_scene_data_ubo.is_valid()) {
+		RD::get_singleton()->free_rid(screen_probe_scene_data_ubo);
+		screen_probe_scene_data_ubo = RID();
+	}
+
 	if (scene_data_ubo.is_valid()) {
 		RD::get_singleton()->free_rid(scene_data_ubo);
 		scene_data_ubo = RID();
@@ -3544,49 +3581,64 @@ void GI::RenderBuffersGI::free_data() {
 	}
 }
 
-void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances) {
+void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_hddagi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
-	ERR_FAIL_COND_MSG(p_view_count > 2, "Maximum of 2 views supported for Processing GI.");
-
-	RD::get_singleton()->draw_command_begin_label("GI Render");
-
+	ERR_FAIL_NULL(texture_storage);
 	ERR_FAIL_COND(p_render_buffers.is_null());
+	ERR_FAIL_COND_MSG(p_view_count == 0 || p_view_count > 2, "Processing GI requires between 1 and 2 views.");
+	ERR_FAIL_NULL(p_normal_roughness_slices);
+	ERR_FAIL_NULL(p_projections);
+	ERR_FAIL_NULL(p_eye_offsets);
 
 	Ref<RenderBuffersGI> rbgi = p_render_buffers->get_custom_data(RB_SCOPE_GI);
 	ERR_FAIL_COND(rbgi.is_null());
+
+	RD::get_singleton()->draw_command_begin_label("GI Render");
 
 	Size2i internal_size = p_render_buffers->get_internal_size();
 
 	if (rbgi->using_half_size_gi != half_resolution) {
 		p_render_buffers->clear_context(RB_SCOPE_GI);
 	}
+	Size2i gi_size = internal_size;
+	if (half_resolution) {
+		gi_size.x >>= 1;
+		gi_size.y >>= 1;
+	}
+	if (p_render_buffers->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT_U32)) {
+		const RD::TextureFormat ambient_format = p_render_buffers->get_texture_format(RB_SCOPE_GI, RB_TEX_AMBIENT_U32);
+		if (ambient_format.width != uint32_t(gi_size.x) || ambient_format.height != uint32_t(gi_size.y) || ambient_format.array_layers != p_view_count) {
+			p_render_buffers->clear_context(RB_SCOPE_GI);
+		}
+	}
 
 	if (!p_render_buffers->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT)) {
-		Size2i size = internal_size;
-
-		if (half_resolution) {
-			size.x >>= 1;
-			size.y >>= 1;
-		}
+		Size2i size = gi_size;
 
 		RD::TextureFormat tf;
 		tf.format = RD::DATA_FORMAT_R32_UINT;
+		if (p_view_count > 1) {
+			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		}
 		tf.width = size.x;
 		tf.height = size.y;
 		tf.depth = 1;
-		tf.array_layers = 1;
+		tf.array_layers = p_view_count;
 		tf.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
 		tf.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		RD::TextureFormat tf_blend;
 		tf_blend.format = RD::DATA_FORMAT_R8G8_UNORM;
+		if (p_view_count > 1) {
+			tf_blend.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		}
 
 		tf_blend.width = size.x;
 		tf_blend.height = size.y;
 		tf_blend.depth = 1;
-		tf_blend.array_layers = 1;
+		tf_blend.array_layers = p_view_count;
 		tf_blend.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
 		p_render_buffers->create_texture_from_format(RB_SCOPE_GI, RB_TEX_AMBIENT_U32, tf);
@@ -3665,7 +3717,10 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 	if (p_render_buffers->has_custom_data(RB_SCOPE_HDDAGI)) {
 		hddagi = p_render_buffers->get_custom_data(RB_SCOPE_HDDAGI);
 	}
-	bool use_hddagi = hddagi.is_valid();
+	bool use_hddagi = p_use_hddagi && hddagi.is_valid() && !hddagi->cascades.is_empty() &&
+			hddagi->voxel_bits_tex.is_valid() && hddagi->voxel_region_tex.is_valid() && hddagi->voxel_light_tex.is_valid() &&
+			hddagi->lightprobe_specular_tex.is_valid() && hddagi->get_lightprobe_diffuse_texture().is_valid() &&
+			hddagi->voxel_disocclusion_tex.is_valid() && hddagi->voxel_light_neighbour_data.is_valid();
 
 	uint32_t pipeline_specialization = 0;
 	if (rbgi->using_half_size_gi) {
