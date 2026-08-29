@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VertexBenchmarkRunner" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Collects per-frame metrics for named workloads and computes aggregates.
+	</brief_description>
+	<description>
+		Spawn a workload (sprites, particles, tilemaps, physics bodies, large scenes, textures, UI, mobile workloads) from scripting, then call [method record_sample] once per frame and [method finalize_workload] to compute min/max/avg FPS, avg frame time, draw calls, texture/video memory and static memory. Use [method mark_startup_start] / [method mark_startup_end] to measure cold-start time. Run after every major change to detect regressions.
+	</description>
+	<methods>
+		<method name="finalize_workload">
+			<return type="Dictionary" />
+			<param index="0" name="workload" type="String" />
+			<description>
+				Computes and stores the aggregate for the given workload, returning it.
+			</description>
+		</method>
+		<method name="mark_startup_end">
+			<return type="Dictionary" />
+			<description>
+				Returns [code]{"startup_time_ms": float}[/code] since [method mark_startup_start].
+			</description>
+		</method>
+		<method name="mark_startup_start">
+			<return type="void" />
+			<description>
+				Marks the start of a startup-time measurement.
+			</description>
+		</method>
+		<method name="record_sample">
+			<return type="void" />
+			<param index="0" name="workload" type="String" />
+			<description>
+				Records one frame of performance counters for the named workload. Call once per frame during the workload.
+			</description>
+		</method>
+		<method name="sample_now">
+			<return type="Dictionary" />
+			<description>
+				Returns the current performance counters (FPS, frame time, draw calls, memory, etc.) without recording.
+			</description>
+		</method>
+		<method name="to_dictionary">
+			<return type="Dictionary" />
+			<description>
+				Returns all samples and aggregates.
+			</description>
+		</method>
+	</methods>
+</class>

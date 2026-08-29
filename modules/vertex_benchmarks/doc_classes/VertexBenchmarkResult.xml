@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VertexBenchmarkResult" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Holds benchmark samples and aggregates.
+	</brief_description>
+	<description>
+		Stores per-frame samples keyed by workload name and aggregate dictionaries computed by [VertexBenchmarkRunner].
+	</description>
+	<methods>
+		<method name="to_dictionary">
+			<return type="Dictionary" />
+			<description>
+				Serializes samples and aggregates to a dictionary.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -1,6 +1,12 @@
 ext.versions = [
     androidGradlePlugin: '8.6.1',
     compileSdk         : 36,
+    // VERTEX: minimum API target. Godot 4.8 requires AndroidX (Jetifier) and an
+    // NDK whose libc++/headers assume API 24+; AndroidX core libraries also
+    // floor at API 21 but the engine's toolchain and OpenSL/NDK APIs used here
+    // effectively require 24. Lowering minSdk to 21 would need disabling/changing
+    // AndroidX dependencies, the NDK toolchain, and several platform APIs.
+    // See AGENTS.md "Android compat" for the documented limitation.
     // Also update:
     // - 'editor/export/android_sdk_manager.h#DEFAULT_MIN_SDK_VERSION'
     // - 'platform/android/detect.py#get_min_target_api()'
