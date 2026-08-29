@@ -3991,7 +3991,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					case GDScriptParser::ClassNode::Member::CLASS: {
 						String doc_type_name;
 						String doc_enum_name;
-						GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(member.get_datatype()), doc_type_name, doc_enum_name);
+						GDScriptDocGen::doctype_from_datatype(GDScriptAnalyzer::type_from_metatype(member.get_datatype()), doc_type_name, doc_enum_name);
 
 						r_result.type = EditorLanguage::LookupResult::Type::CLASS;
 						r_result.class_name = doc_type_name;
@@ -4019,7 +4019,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				if (member.type != GDScriptParser::ClassNode::Member::CLASS) {
 					String doc_type_name;
 					String doc_enum_name;
-					GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(base_type), doc_type_name, doc_enum_name);
+					GDScriptDocGen::doctype_from_datatype(GDScriptAnalyzer::type_from_metatype(base_type), doc_type_name, doc_enum_name);
 
 					r_result.class_name = doc_type_name;
 					r_result.class_member = name;
@@ -4238,7 +4238,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					if (base_type.enum_values.has(p_symbol)) {
 						String doc_type_name;
 						String doc_enum_name;
-						GDScriptDocGen::doctype_from_gdtype(GDScriptAnalyzer::type_from_metatype(base_type), doc_type_name, doc_enum_name);
+						GDScriptDocGen::doctype_from_datatype(GDScriptAnalyzer::type_from_metatype(base_type), doc_type_name, doc_enum_name);
 
 						if (CoreConstants::is_global_enum(doc_enum_name)) {
 							r_result.type = EditorLanguage::LookupResult::Type::CLASS_CONSTANT;
@@ -4480,7 +4480,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 								break;
 						}
 
-						GDScriptDocGen::doctype_from_gdtype(local.get_datatype(), r_result.doc_type, r_result.enumeration);
+						GDScriptDocGen::doctype_from_datatype(local.get_datatype(), r_result.doc_type, r_result.enumeration);
 
 						r_result.script_path = base_type.script_path;
 						r_result.location = local.start_line;
