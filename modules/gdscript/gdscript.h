@@ -192,6 +192,8 @@ private:
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 	void _update_exports_down(bool p_base_exports_changed);
+	void _collect_executable_lines(HashSet<int> &r_lines) const;
+	int _get_previous_executable_line(int p_line) const;
 #endif
 
 #ifdef DEBUG_ENABLED
