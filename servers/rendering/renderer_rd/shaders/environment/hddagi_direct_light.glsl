@@ -86,6 +86,9 @@ lights;
 
 #ifndef MODE_PROCESS_STATIC
 layout(set = 0, binding = 9) uniform texture2DArray lightprobe_texture;
+#ifdef MODE_WRITE_ALBEDO
+layout(r16ui, set = 0, binding = 10) uniform restrict writeonly uimage3D dst_albedo;
+#endif
 #endif
 
 layout(set = 1, binding = 0) uniform texture2D area_light_atlas;
@@ -582,6 +585,9 @@ void main() {
 	positioni = (positioni + cascades.data[params.cascade].region_world_offset * REGION_SIZE) & (params.grid_size - 1);
 	positioni.y += int(params.cascade) * params.grid_size.y;
 	imageStore(dst_light, positioni, uvec4(rgbe_encode(light_accum.rgb)));
+#ifdef MODE_WRITE_ALBEDO
+	imageStore(dst_albedo, positioni, uvec4(voxel_albedo & 0xffffu));
+#endif
 
 #endif
 }

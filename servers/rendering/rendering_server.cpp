@@ -3824,8 +3824,13 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Faster),2,4,8,16 (Slower)"), 2);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_update_inactive_probes", PROPERTY_HINT_ENUM, "1 (Faster),2,4,8 (Slower)"), 3);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_candidate_count", PROPERTY_HINT_RANGE, "1,8,1"), 1);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_denoiser", PROPERTY_HINT_ENUM, "Disabled:0,SVGF:1"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_denoiser_quality", PROPERTY_HINT_ENUM, "Low (Faster),Medium,High (Slower)"), 2);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_detail_trace", false);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_guided_sampling", false);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_radiance_cache", PROPERTY_HINT_ENUM, "Disabled:0,Irradiance Cache:1"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/global_illumination/hddagi/screen_probe_radiance_cache_minimum_cell_size", PROPERTY_HINT_RANGE, "0.001,1.0,0.001,or_greater,suffix:m"), 0.04);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_radiance_cache_multibounce", false);
 #ifndef DISABLE_DEPRECATED
 	GLOBAL_DEF_INTERNAL("rendering/global_illumination/sdfgi/probe_ray_count", 1);
 	GLOBAL_DEF_INTERNAL("rendering/global_illumination/sdfgi/frames_to_converge", 5);

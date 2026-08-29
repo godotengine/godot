@@ -49,6 +49,13 @@ const Vector3i GI::HDDAGI::Cascade::DIRTY_ALL = Vector3i(0x7FFFFFFF, 0x7FFFFFFF,
 
 GI *GI::singleton = nullptr;
 
+bool GI::is_hddagi_irradiance_cache_multibounce_shader_ready() const {
+	return hddagi_shader.direct_light_shader_version[HDDAGIShader::DIRECT_LIGHT_MODE_DYNAMIC_ALBEDO].is_valid() &&
+			hddagi_shader.direct_light_pipeline[HDDAGIShader::DIRECT_LIGHT_MODE_DYNAMIC_ALBEDO].is_valid() &&
+			hddagi_shader.screen_probe_shader_version[HDDAGIShader::SCREEN_PROBE_MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE].is_valid() &&
+			hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE].is_valid();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // VOXEL GI STORAGE
 
@@ -1051,6 +1058,7 @@ GI::HDDAGI::~HDDAGI() {
 	free_texture(voxel_disocclusion_tex);
 	free_texture(voxel_light_tex_data);
 	free_texture(voxel_light_neighbour_data);
+	free_texture(voxel_albedo_data);
 	free_texture(region_version_data);
 
 	RD::get_singleton()->free_rid(light_process_buffer_render);
@@ -1180,7 +1188,8 @@ void GI::HDDAGI::update_light() {
 	/* Update dynamic light */
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.direct_light_pipeline[HDDAGIShader::DIRECT_LIGHT_MODE_DYNAMIC]);
+	const int direct_light_mode = screen_probe_radiance_cache_multibounce_active ? HDDAGIShader::DIRECT_LIGHT_MODE_DYNAMIC_ALBEDO : HDDAGIShader::DIRECT_LIGHT_MODE_DYNAMIC;
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.direct_light_pipeline[direct_light_mode]);
 
 	HDDAGIShader::DirectLightPushConstant push_constant;
 
@@ -1192,13 +1201,13 @@ void GI::HDDAGI::update_light() {
 	push_constant.probe_axis_size[1] = cascade_size[1] / REGION_CELLS + 1;
 	push_constant.probe_axis_size[2] = cascade_size[2] / REGION_CELLS + 1;
 
-	push_constant.bounce_feedback = bounce_feedback;
+	push_constant.bounce_feedback = screen_probe_radiance_cache_multibounce_active ? 0.0f : bounce_feedback;
 	push_constant.y_mult = y_mult;
 	push_constant.use_occlusion = uses_occlusion;
 	push_constant.probe_cell_size = REGION_CELLS;
 
 	RID area_light_atlas_uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
-			gi->hddagi_shader.direct_light_shader_version[HDDAGIShader::DIRECT_LIGHT_MODE_DYNAMIC],
+			gi->hddagi_shader.direct_light_shader_version[direct_light_mode],
 			1,
 			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, RendererRD::TextureStorage::get_singleton()->area_light_atlas_get_texture()),
 			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
@@ -1211,7 +1220,7 @@ void GI::HDDAGI::update_light() {
 
 		cascades[i].dynamic_lights_dirty = false;
 
-		if (gi->hddagi_frames_to_update_light == RSE::ENV_HDDAGI_UPDATE_LIGHT_IN_1_FRAME) {
+		if (screen_probe_radiance_cache_multibounce_mode_changed || gi->hddagi_frames_to_update_light == RSE::ENV_HDDAGI_UPDATE_LIGHT_IN_1_FRAME) {
 			push_constant.process_offset = 0;
 			push_constant.process_increment = 1;
 		} else {
@@ -1225,18 +1234,21 @@ void GI::HDDAGI::update_light() {
 			push_constant.process_increment = frames_to_update;
 		}
 
-		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
-				gi->hddagi_shader.direct_light_shader_version[HDDAGIShader::DIRECT_LIGHT_MODE_DYNAMIC],
-				0,
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_bits_tex),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_region_tex),
-				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)),
-				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 4, cascade.light_process_dispatch_buffer_copy),
-				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, cascade.light_process_buffer),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, voxel_light_tex_data),
-				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, cascades_ubo),
-				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 8, cascade.light_position_bufer),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 9, lightprobe_diffuse_tex));
+		LocalVector<RD::Uniform> direct_light_uniforms;
+		direct_light_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_bits_tex));
+		direct_light_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_region_tex));
+		direct_light_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
+		direct_light_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 4, cascade.light_process_dispatch_buffer_copy));
+		direct_light_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, cascade.light_process_buffer));
+		direct_light_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, voxel_light_tex_data));
+		direct_light_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, cascades_ubo));
+		direct_light_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 8, cascade.light_position_bufer));
+		direct_light_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 9, lightprobe_diffuse_tex));
+		if (screen_probe_radiance_cache_multibounce_active) {
+			direct_light_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, voxel_albedo_data));
+		}
+		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(
+				gi->hddagi_shader.direct_light_shader_version[direct_light_mode], 0, direct_light_uniforms);
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, area_light_atlas_uniform_set, 1);
@@ -1246,7 +1258,36 @@ void GI::HDDAGI::update_light() {
 	}
 
 	RD::get_singleton()->compute_list_end();
+	screen_probe_radiance_cache_multibounce_mode_changed = false;
 	RD::get_singleton()->draw_command_end_label();
+}
+
+void GI::HDDAGI::set_screen_probe_radiance_cache_multibounce_active(bool p_active) {
+	if (!p_active) {
+		screen_probe_radiance_cache_multibounce_allocation_failed = false;
+	} else if (screen_probe_radiance_cache_multibounce_allocation_failed) {
+		p_active = false;
+	}
+	if (p_active && !voxel_albedo_data.is_valid()) {
+		RD::TextureFormat texture_format;
+		texture_format.format = RD::DATA_FORMAT_R16_UINT;
+		texture_format.width = cascade_size.x;
+		texture_format.height = cascade_size.y * cascades.size();
+		texture_format.depth = cascade_size.z;
+		texture_format.texture_type = RD::TEXTURE_TYPE_3D;
+		texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		voxel_albedo_data = create_clear_texture(texture_format, "HDDAGI Cascade Surface Albedo");
+		if (!voxel_albedo_data.is_valid()) {
+			screen_probe_radiance_cache_multibounce_allocation_failed = true;
+			WARN_PRINT_ONCE("Unable to allocate the HDDAGI surface-albedo volume required by irradiance-cache multi-bounce.");
+			p_active = false;
+		}
+	}
+	if (screen_probe_radiance_cache_multibounce_active == p_active) {
+		return;
+	}
+	screen_probe_radiance_cache_multibounce_active = p_active;
+	screen_probe_radiance_cache_multibounce_mode_changed = true;
 }
 
 void GI::HDDAGI::update_probes(RID p_env, SkyRD::Sky *p_sky, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform) {
@@ -3179,6 +3220,7 @@ void GI::init(SkyRD *p_sky) {
 		Vector<String> direct_light_modes;
 		direct_light_modes.push_back("\n#define MODE_PROCESS_STATIC\n");
 		direct_light_modes.push_back("\n#define MODE_PROCESS_DYNAMIC\n");
+		direct_light_modes.push_back("\n#define MODE_PROCESS_DYNAMIC\n#define MODE_WRITE_ALBEDO\n");
 		hddagi_shader.direct_light.initialize(direct_light_modes, defines);
 		hddagi_shader.direct_light_shader = hddagi_shader.direct_light.version_create();
 		for (int i = 0; i < HDDAGIShader::DIRECT_LIGHT_MODE_MAX; i++) {
@@ -3226,13 +3268,19 @@ void GI::init(SkyRD *p_sky) {
 
 	{
 		static_assert(sizeof(HDDAGIShader::ScreenProbePushConstant) == 80, "Screen probe push constant must match the shader ABI.");
+		static_assert(sizeof(HDDAGIShader::ScreenProbeSVGFPreparePushConstant) == 112, "Screen probe SVGF prepare push constant must match the shader ABI.");
 		static_assert(sizeof(ScreenProbeSceneData) == 368, "Screen probe scene data must match the shader ABI.");
 
 		Vector<String> screen_probe_modes;
 		screen_probe_modes.push_back("\n#define MODE_SURFACE\n");
 		screen_probe_modes.push_back("\n#define MODE_TRACE\n");
+		screen_probe_modes.push_back("\n#define MODE_TRACE\n#define MODE_IRRADIANCE_CACHE_QUERY\n");
 		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n");
+		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n#define MODE_SVGF_PREPARE\n");
+		screen_probe_modes.push_back("\n#define MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE\n");
 		screen_probe_modes.push_back("\n#define MODE_APPLY\n");
+		screen_probe_modes.push_back("\n#define MODE_APPLY\n#define MODE_SVGF_APPLY\n");
+		DEV_ASSERT(screen_probe_modes.size() == HDDAGIShader::SCREEN_PROBE_MODE_MAX);
 
 		String screen_probe_defines;
 		if (p_sky->sky_use_octmap_array) {
@@ -3241,14 +3289,62 @@ void GI::init(SkyRD *p_sky) {
 		screen_probe_defines += "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n";
 
 		hddagi_shader.screen_probe.initialize(screen_probe_modes, screen_probe_defines);
+		const bool irradiance_cache_supported = HDDAGIScreenProbeIrradianceCache::is_supported();
+		if (!irradiance_cache_supported) {
+			const HDDAGIShader::ScreenProbeMode irradiance_cache_modes[] = {
+				HDDAGIShader::SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE,
+				HDDAGIShader::SCREEN_PROBE_MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE,
+			};
+			for (HDDAGIShader::ScreenProbeMode mode : irradiance_cache_modes) {
+				hddagi_shader.screen_probe.set_variant_enabled(mode, false);
+			}
+		}
+		if (!HDDAGIScreenProbeSVGF::is_supported()) {
+			const HDDAGIShader::ScreenProbeMode svgf_modes[] = {
+				HDDAGIShader::SCREEN_PROBE_MODE_RESOLVE_SVGF,
+				HDDAGIShader::SCREEN_PROBE_MODE_APPLY_SVGF,
+			};
+			for (HDDAGIShader::ScreenProbeMode mode : svgf_modes) {
+				hddagi_shader.screen_probe.set_variant_enabled(mode, false);
+			}
+		}
 		hddagi_shader.screen_probe_shader = hddagi_shader.screen_probe.version_create();
-		hddagi_shader.screen_probe_available = hddagi_shader.screen_probe.version_is_valid(hddagi_shader.screen_probe_shader);
 		for (int i = 0; i < HDDAGIShader::SCREEN_PROBE_MODE_MAX; i++) {
+			if (!hddagi_shader.screen_probe.is_variant_enabled(i)) {
+				continue;
+			}
 			hddagi_shader.screen_probe_shader_version[i] = hddagi_shader.screen_probe.version_get_shader(hddagi_shader.screen_probe_shader, i);
 			if (hddagi_shader.screen_probe_shader_version[i].is_valid()) {
 				hddagi_shader.screen_probe_pipeline[i] = RD::get_singleton()->compute_pipeline_create(hddagi_shader.screen_probe_shader_version[i]);
 			}
-			hddagi_shader.screen_probe_available = hddagi_shader.screen_probe_available && hddagi_shader.screen_probe_pipeline[i].is_valid();
+		}
+		const HDDAGIShader::ScreenProbeMode required_modes[] = {
+			HDDAGIShader::SCREEN_PROBE_MODE_SURFACE,
+			HDDAGIShader::SCREEN_PROBE_MODE_TRACE,
+			HDDAGIShader::SCREEN_PROBE_MODE_RESOLVE,
+			HDDAGIShader::SCREEN_PROBE_MODE_APPLY,
+		};
+		hddagi_shader.screen_probe_available = true;
+		for (HDDAGIShader::ScreenProbeMode mode : required_modes) {
+			hddagi_shader.screen_probe_available = hddagi_shader.screen_probe_available && hddagi_shader.screen_probe_pipeline[mode].is_valid();
+		}
+
+		if (irradiance_cache_supported) {
+			Vector<String> irradiance_cache_modes;
+			irradiance_cache_modes.push_back("\n#define MODE_CLEAR\n");
+			irradiance_cache_modes.push_back("\n#define MODE_AGE\n");
+			irradiance_cache_modes.push_back("\n#define MODE_PROCESS\n");
+			irradiance_cache_modes.push_back("\n#define MODE_RESOLVE\n");
+			irradiance_cache_modes.push_back("\n#define MODE_RESET\n");
+			DEV_ASSERT(irradiance_cache_modes.size() == HDDAGIShader::SCREEN_PROBE_IRRADIANCE_CACHE_MAX);
+			hddagi_shader.screen_probe_irradiance_cache.initialize(irradiance_cache_modes);
+			hddagi_shader.screen_probe_irradiance_cache_shader = hddagi_shader.screen_probe_irradiance_cache.version_create();
+			for (int i = 0; i < HDDAGIShader::SCREEN_PROBE_IRRADIANCE_CACHE_MAX; i++) {
+				hddagi_shader.screen_probe_irradiance_cache_shader_version[i] = hddagi_shader.screen_probe_irradiance_cache.version_get_shader(hddagi_shader.screen_probe_irradiance_cache_shader, i);
+				if (hddagi_shader.screen_probe_irradiance_cache_shader_version[i].is_valid()) {
+					hddagi_shader.screen_probe_irradiance_cache_pipeline[i] = RD::get_singleton()->compute_pipeline_create(hddagi_shader.screen_probe_irradiance_cache_shader_version[i]);
+				}
+			}
 		}
 	}
 
@@ -3454,6 +3550,9 @@ void GI::free() {
 	if (hddagi_shader.screen_probe_shader.is_valid()) {
 		hddagi_shader.screen_probe.version_free(hddagi_shader.screen_probe_shader);
 	}
+	if (hddagi_shader.screen_probe_irradiance_cache_shader.is_valid()) {
+		hddagi_shader.screen_probe_irradiance_cache.version_free(hddagi_shader.screen_probe_irradiance_cache_shader);
+	}
 	if (hddagi_shader.preprocess_shader.is_valid()) {
 		hddagi_shader.preprocess.version_free(hddagi_shader.preprocess_shader);
 	}
@@ -3566,6 +3665,9 @@ RID GI::RenderBuffersGI::get_voxel_gi_buffer() {
 }
 
 void GI::RenderBuffersGI::free_data() {
+	screen_probe_svgf.clear();
+	screen_probe_irradiance_cache.clear();
+
 	if (screen_probe_scene_data_ubo.is_valid()) {
 		RD::get_singleton()->free_rid(screen_probe_scene_data_ubo);
 		screen_probe_scene_data_ubo = RID();

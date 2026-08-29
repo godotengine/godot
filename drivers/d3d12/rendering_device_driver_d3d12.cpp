@@ -6010,6 +6010,20 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 	switch (p_limit) {
 		case LIMIT_MAX_BOUND_UNIFORM_SETS:
 			return safe_unbounded;
+		case LIMIT_MAX_TEXTURES_PER_UNIFORM_SET:
+		case LIMIT_MAX_TEXTURES_PER_SHADER_STAGE:
+			return device_limits.max_srvs_per_shader_stage;
+		case LIMIT_MAX_SAMPLERS_PER_UNIFORM_SET:
+		case LIMIT_MAX_SAMPLERS_PER_SHADER_STAGE:
+			return device_limits.max_samplers_across_all_stages;
+		case LIMIT_MAX_STORAGE_BUFFERS_PER_UNIFORM_SET:
+		case LIMIT_MAX_STORAGE_IMAGES_PER_UNIFORM_SET:
+		case LIMIT_MAX_STORAGE_BUFFERS_PER_SHADER_STAGE:
+		case LIMIT_MAX_STORAGE_IMAGES_PER_SHADER_STAGE:
+			return device_limits.max_uavs_across_all_stages;
+		case LIMIT_MAX_UNIFORM_BUFFERS_PER_UNIFORM_SET:
+		case LIMIT_MAX_UNIFORM_BUFFERS_PER_SHADER_STAGE:
+			return device_limits.max_cbvs_per_shader_stage;
 		case LIMIT_MAX_TEXTURE_ARRAY_LAYERS:
 			return D3D12_REQ_TEXTURE2D_ARRAY_AXIS_DIMENSION;
 		case LIMIT_MAX_TEXTURE_SIZE_1D:
@@ -6020,8 +6034,8 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 			return D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
 		case LIMIT_MAX_TEXTURE_SIZE_CUBE:
 			return D3D12_REQ_TEXTURECUBE_DIMENSION;
-		case LIMIT_MAX_TEXTURES_PER_SHADER_STAGE:
-			return device_limits.max_srvs_per_shader_stage;
+		case LIMIT_MAX_PUSH_CONSTANT_SIZE:
+			return PUSH_CONSTANT_SIZE;
 		case LIMIT_MAX_UNIFORM_BUFFER_SIZE:
 			return 65536;
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_X:

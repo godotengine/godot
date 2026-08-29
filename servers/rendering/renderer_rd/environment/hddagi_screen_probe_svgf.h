@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  resolve.h                                                             */
+/*  hddagi_screen_probe_svgf.h                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,52 +30,62 @@
 
 #pragma once
 
-#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/shaders/effects/resolve.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/effects/resolve_raster.glsl.gen.h"
+#include "core/math/projection.h"
+#include "core/math/transform_3d.h"
+#include "servers/rendering/rendering_device.h"
 
-namespace RendererRD {
-
-class Resolve {
-private:
-	bool prefer_raster_effects;
-
-	struct ResolvePushConstant {
-		int32_t screen_size[2];
-		int32_t samples;
-		uint32_t pad;
-	};
-
-	enum ResolveMode {
-		RESOLVE_MODE_GI,
-		RESOLVE_MODE_GI_VOXEL_GI,
-		RESOLVE_MODE_GI_MOTION_VECTORS,
-		RESOLVE_MODE_GI_VOXEL_GI_MOTION_VECTORS,
-		RESOLVE_MODE_DEPTH,
-		RESOLVE_MODE_MAX
-	};
-
-	struct ResolveShader {
-		ResolvePushConstant push_constant;
-		ResolveShaderRD shader;
-		RID shader_version;
-		RID pipelines[RESOLVE_MODE_MAX]; //3 quality levels
-	} resolve;
-
-	struct ResolveRasterShader {
-		ResolvePushConstant push_constant;
-		ResolveRasterShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipeline;
-	} resolve_raster;
-
+class HDDAGIScreenProbeSVGF {
 public:
-	Resolve(bool p_prefer_raster_effects);
-	~Resolve();
+	enum Quality {
+		QUALITY_LOW,
+		QUALITY_MEDIUM,
+		QUALITY_HIGH,
+		QUALITY_MAX,
+	};
 
-	void resolve_gi(RID p_source_depth, RID p_source_normal_roughness, RID p_source_voxel_gi, RID p_source_motion_vectors, RID p_dest_depth, RID p_dest_normal_roughness, RID p_dest_voxel_gi, RID p_dest_motion_vectors, Vector2i p_screen_size, int p_samples);
-	void resolve_depth(RID p_source_depth, RID p_dest_depth, Vector2i p_screen_size, int p_samples);
-	void resolve_depth_raster(RID p_source_rd_texture, RID p_dest_framebuffer, int p_samples);
+	struct FrameSettings {
+		Projection projection;
+		Projection previous_projection;
+		Transform3D camera_transform;
+		Transform3D previous_camera_transform;
+		Vector2 taa_jitter;
+		Vector2 previous_taa_jitter;
+		Size2i size;
+		float denoising_range = 500000.0f;
+		Quality quality = QUALITY_HIGH;
+		bool history_valid = false;
+	};
+
+	struct Resources {
+		RID motion_vectors;
+		RID normal_roughness;
+		RID view_z;
+		RID diffuse_radiance_hit_distance;
+		RID output_diffuse_radiance_hit_distance;
+
+		bool is_valid() const {
+			return motion_vectors.is_valid() && normal_roughness.is_valid() && view_z.is_valid() &&
+					diffuse_radiance_hit_distance.is_valid() && output_diffuse_radiance_hit_distance.is_valid() &&
+					diffuse_radiance_hit_distance != output_diffuse_radiance_hit_distance &&
+					motion_vectors != output_diffuse_radiance_hit_distance;
+		}
+	};
+
+	static bool is_supported();
+	static constexpr uint32_t get_atrous_iteration_count(Quality p_quality) {
+		return p_quality == QUALITY_LOW ? 2u : (p_quality == QUALITY_MEDIUM ? 3u : 4u);
+	}
+
+	Error denoise(uint32_t p_view_id, const FrameSettings &p_frame, const Resources &p_resources);
+	void clear();
+
+	HDDAGIScreenProbeSVGF();
+	~HDDAGIScreenProbeSVGF();
+
+	HDDAGIScreenProbeSVGF(const HDDAGIScreenProbeSVGF &) = delete;
+	HDDAGIScreenProbeSVGF &operator=(const HDDAGIScreenProbeSVGF &) = delete;
+
+private:
+	struct Implementation;
+	Implementation *implementation = nullptr;
 };
-
-} // namespace RendererRD
