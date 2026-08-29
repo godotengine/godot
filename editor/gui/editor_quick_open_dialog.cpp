@@ -747,7 +747,7 @@ void QuickOpenResultContainer::_add_candidate(QuickOpenResultCandidate &p_candid
 	String file_path = ResourceUID::get_singleton()->get_id_path(p_candidate.uid);
 
 	// Verify that a PackedScene is actually a "real" Scene if in a Open Scene context.
-	if (base_types[0] == SNAME("PackedScene")) {
+	if (base_types.size() == 1 && base_types[0] == SNAME("PackedScene")) {
 		static FixedVector<String, 3> valid_extensions = { "tscn", "scn", "res" };
 		bool is_valid_type = false;
 		for (const String &ext : valid_extensions) {
