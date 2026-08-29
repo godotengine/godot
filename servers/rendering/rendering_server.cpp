@@ -3835,6 +3835,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_radiance_cache", PROPERTY_HINT_ENUM, "Disabled:0,Irradiance Cache:1"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/global_illumination/hddagi/screen_probe_radiance_cache_minimum_cell_size", PROPERTY_HINT_RANGE, "0.001,1.0,0.001,or_greater,suffix:m"), 0.04);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_radiance_cache_multibounce", false);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_specular_reflections", false);
 #ifndef DISABLE_DEPRECATED
 	GLOBAL_DEF_INTERNAL("rendering/global_illumination/sdfgi/probe_ray_count", 1);
 	GLOBAL_DEF_INTERNAL("rendering/global_illumination/sdfgi/frames_to_converge", 5);

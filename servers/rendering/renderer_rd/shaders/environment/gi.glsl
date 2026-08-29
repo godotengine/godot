@@ -235,6 +235,7 @@ ivec2 probe_to_tex(ivec3 local_probe, int p_cascade) {
 }
 
 #define ROUGHNESS_TO_REFLECTION_TRESHOOLD 0.25
+#define ROUGHNESS_TO_REFLECTION_FULL_BLUR 0.40
 
 bool bayer_dither(float value) {
 #if DITHER_SIZE == 3
@@ -649,7 +650,7 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 			probe_ref_full_light = vec3(0.0);
 		}
 
-		probe_ref_light = mix(probe_ref_light, probe_ref_full_light, smoothstep(ROUGHNESS_TO_REFLECTION_TRESHOOLD, 1.0, roughness));
+		probe_ref_light = mix(probe_ref_light, probe_ref_full_light, smoothstep(ROUGHNESS_TO_REFLECTION_TRESHOOLD, ROUGHNESS_TO_REFLECTION_FULL_BLUR, roughness));
 
 		specular_accum += probe_ref_light * weight;
 

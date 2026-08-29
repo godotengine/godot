@@ -21,6 +21,7 @@ layout(set = 1, binding = 0, std140) uniform FrameData {
 	mat4 current_view_to_previous_view;
 	mat4 current_view_to_world;
 	mat4 previous_view_to_world;
+	vec4 taa_jitter;
 }
 frame_data;
 
@@ -41,6 +42,11 @@ layout(rgba16f, set = 0, binding = 9) uniform restrict writeonly image2D current
 layout(rgba16f, set = 0, binding = 10) uniform restrict writeonly image2D current_moments_output;
 layout(rgba8, set = 0, binding = 11) uniform restrict writeonly image2D current_normal_roughness_output;
 layout(r32f, set = 0, binding = 12) uniform restrict writeonly image2D current_view_z_output;
+
+const int SPECULAR_NEIGHBORHOOD_RADIUS = 2;
+const int SPECULAR_NEIGHBORHOOD_SHARED_SIZE = 12;
+const int SPECULAR_NEIGHBORHOOD_SHARED_COUNT = SPECULAR_NEIGHBORHOOD_SHARED_SIZE * SPECULAR_NEIGHBORHOOD_SHARED_SIZE;
+shared vec4 specular_neighborhood_ycocg[SPECULAR_NEIGHBORHOOD_SHARED_SIZE][SPECULAR_NEIGHBORHOOD_SHARED_SIZE];
 
 #endif
 
@@ -65,6 +71,8 @@ layout(set = 0, binding = 3) uniform texture2D current_view_z_input;
 layout(set = 0, binding = 4) uniform sampler nearest_sampler;
 layout(rgba16f, set = 0, binding = 5) uniform restrict writeonly image2D filtered_signal_output;
 layout(set = 0, binding = 6) uniform texture2D current_raw_signal_input;
+layout(set = 0, binding = 7) uniform texture2D current_roughness_input;
+layout(set = 0, binding = 8) uniform texture2D current_motion_input;
 
 #endif
 
@@ -73,6 +81,14 @@ const float FP16_MAX = 65504.0;
 const float HISTORY_LENGTH_STORAGE_SCALE = 255.0;
 const float MOMENT_LUMINANCE_SCALE = 64.0;
 const float MOMENT_LUMINANCE_MAX = 255.0;
+const float SPECULAR_METADATA_QUANTIZATION = 31.0;
+const float SPECULAR_HIT_METADATA_QUANTIZATION = 7.0;
+const float SPECULAR_SOURCE_METADATA_QUANTIZATION = 3.0;
+const float SPECULAR_HIT_LOG_RANGE = 16.0;
+const float SPECULAR_MOMENT_LUMINANCE_SCALE = 16.0;
+const float SPECULAR_DENOISER_TONEMAP_RANGE = 10.0;
+const float SPECULAR_DENOISER_INV_TONEMAP_RANGE = 1.0 / SPECULAR_DENOISER_TONEMAP_RANGE;
+const float SPECULAR_DENOISER_MAX_LUMINANCE = 8.0;
 
 bool svgf_finite_float(float value) {
 	return !isnan(value) && !isinf(value);
@@ -94,11 +110,78 @@ float svgf_luminance(vec3 value) {
 	return max(dot(max(value, vec3(0.0)), LUMINANCE_WEIGHTS), 0.0);
 }
 
+vec3 svgf_specular_project_denoiser_space(vec3 value) {
+	value = max(value, vec3(0.0));
+	float signal_luminance = svgf_luminance(value);
+	if (signal_luminance > SPECULAR_DENOISER_MAX_LUMINANCE) {
+		value *= SPECULAR_DENOISER_MAX_LUMINANCE / signal_luminance;
+	}
+	return value;
+}
+
+vec3 svgf_specular_to_denoiser_space(vec3 value) {
+	value = max(value, vec3(0.0));
+	value /= 1.0 + svgf_luminance(value) * SPECULAR_DENOISER_INV_TONEMAP_RANGE;
+	return svgf_specular_project_denoiser_space(value);
+}
+
+vec3 svgf_specular_from_denoiser_space(vec3 value) {
+	value = svgf_specular_project_denoiser_space(value);
+	float inverse_weight = 1.0 / max(1.0 - svgf_luminance(value) * SPECULAR_DENOISER_INV_TONEMAP_RANGE, 1e-3);
+	return value * inverse_weight;
+}
+
+vec3 svgf_rgb_to_ycocg(vec3 value) {
+	return vec3(
+			dot(value, vec3(0.25, 0.5, 0.25)),
+			dot(value, vec3(0.5, 0.0, -0.5)),
+			dot(value, vec3(-0.25, 0.5, -0.25)));
+}
+
+vec3 svgf_ycocg_to_rgb(vec3 value) {
+	return vec3(value.x + value.y - value.z, value.x + value.z, value.x - value.y - value.z);
+}
+
+float svgf_filter_luminance(vec3 value, bool specular_mode) {
+	float luminance = svgf_luminance(value);
+	return specular_mode ? min(luminance * SPECULAR_MOMENT_LUMINANCE_SCALE, MOMENT_LUMINANCE_MAX) : luminance * MOMENT_LUMINANCE_SCALE;
+}
+
+float svgf_hit_log(float hit_distance) {
+	return log2(1.0 + clamp(hit_distance, 0.0, FP16_MAX)) / SPECULAR_HIT_LOG_RANGE;
+}
+
 vec4 svgf_sanitize_signal(vec4 value) {
 	if (!svgf_finite_vec4(value)) {
 		return vec4(0.0);
 	}
 	return clamp(value, vec4(0.0), vec4(FP16_MAX));
+}
+
+vec2 svgf_unpack_specular_roughness_source(float packed_value) {
+	float packed = floor(clamp(packed_value, 0.0, 1.0) * 255.0 + 0.5);
+	float screen_source = floor(packed / 128.0);
+	float roughness_bin = packed - screen_source * 128.0;
+	return vec2(roughness_bin / 127.0, screen_source);
+}
+
+float svgf_pack_specular_metadata(float roughness, float hit_distance, float screen_confidence) {
+	float roughness_bin = floor(clamp(roughness, 0.0, 1.0) * SPECULAR_METADATA_QUANTIZATION + 0.5);
+	float hit_bin = floor(clamp(svgf_hit_log(hit_distance), 0.0, 1.0) * SPECULAR_HIT_METADATA_QUANTIZATION + 0.5);
+	float source_bin = floor(clamp(screen_confidence, 0.0, 1.0) * SPECULAR_SOURCE_METADATA_QUANTIZATION + 0.5);
+	return (roughness_bin * 32.0 + hit_bin * 4.0 + source_bin) / 1023.0;
+}
+
+vec3 svgf_unpack_specular_metadata(float metadata) {
+	float packed = floor(clamp(metadata, 0.0, 1.0) * 1023.0 + 0.5);
+	float roughness_bin = floor(packed / 32.0);
+	float remainder = packed - roughness_bin * 32.0;
+	float hit_bin = floor(remainder / 4.0);
+	float source_bin = remainder - hit_bin * 4.0;
+	return vec3(
+			roughness_bin / SPECULAR_METADATA_QUANTIZATION,
+			hit_bin / SPECULAR_HIT_METADATA_QUANTIZATION,
+			source_bin / SPECULAR_SOURCE_METADATA_QUANTIZATION);
 }
 
 bool svgf_decode_normal(vec4 encoded, out vec3 r_normal) {
@@ -207,15 +290,74 @@ bool svgf_history_tap_valid(ivec2 tap_pos, ivec2 size, bool current_dynamic, vec
 	return abs(dot(previous_position - expected_previous_position, current_normal_previous_view)) <= plane_tolerance;
 }
 
+bool svgf_specular_neighborhood(vec3 center_signal, out vec3 r_center, out vec3 r_extent) {
+	vec3 center_ycocg = svgf_rgb_to_ycocg(center_signal);
+	vec3 sample_sum = center_ycocg;
+	vec3 sample_square_sum = center_ycocg * center_ycocg;
+	float sample_count = 1.0;
+	ivec2 shared_center = ivec2(gl_LocalInvocationID.xy) + ivec2(SPECULAR_NEIGHBORHOOD_RADIUS);
+	for (int y = -SPECULAR_NEIGHBORHOOD_RADIUS; y <= SPECULAR_NEIGHBORHOOD_RADIUS; y++) {
+		for (int x = -SPECULAR_NEIGHBORHOOD_RADIUS; x <= SPECULAR_NEIGHBORHOOD_RADIUS; x++) {
+			if ((x == 0 && y == 0) || (abs(x) == SPECULAR_NEIGHBORHOOD_RADIUS && abs(y) == SPECULAR_NEIGHBORHOOD_RADIUS)) {
+				continue;
+			}
+			vec4 packed_sample = specular_neighborhood_ycocg[shared_center.y + y][shared_center.x + x];
+			if (packed_sample.w < 0.5) {
+				continue;
+			}
+			vec3 sample_ycocg = packed_sample.xyz;
+			sample_sum += sample_ycocg;
+			sample_square_sum += sample_ycocg * sample_ycocg;
+			sample_count += 1.0;
+		}
+	}
+	if (sample_count < 2.0) {
+		r_center = center_ycocg;
+		r_extent = vec3(0.0);
+		return false;
+	}
+	r_center = sample_sum / sample_count;
+	vec3 variance = max(sample_square_sum / sample_count - r_center * r_center, vec3(0.0));
+	r_extent = sqrt(variance);
+	return svgf_finite_vec3(r_center) && svgf_finite_vec3(r_extent);
+}
+
 void svgf_temporal_main() {
 	ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 size = imageSize(current_signal_output);
-	if (any(greaterThanEqual(pixel, size))) {
+	bool specular_mode = (params.control.x & 2u) != 0u;
+	bool pixel_in_bounds = all(lessThan(pixel, size));
+	if (specular_mode) {
+		ivec2 shared_origin = ivec2(gl_WorkGroupID.xy) * ivec2(gl_WorkGroupSize.xy) - ivec2(SPECULAR_NEIGHBORHOOD_RADIUS);
+		for (uint shared_index = gl_LocalInvocationIndex; shared_index < uint(SPECULAR_NEIGHBORHOOD_SHARED_COUNT); shared_index += gl_WorkGroupSize.x * gl_WorkGroupSize.y) {
+			ivec2 shared_position = ivec2(int(shared_index) % SPECULAR_NEIGHBORHOOD_SHARED_SIZE, int(shared_index) / SPECULAR_NEIGHBORHOOD_SHARED_SIZE);
+			ivec2 sample_position = shared_origin + shared_position;
+			vec4 packed_sample = vec4(0.0);
+			if (all(greaterThanEqual(sample_position, ivec2(0))) && all(lessThan(sample_position, size))) {
+				float sample_view_z = texelFetch(sampler2D(current_view_z_input, nearest_sampler), sample_position, 0).r;
+				vec4 sample_signal = texelFetch(sampler2D(current_signal_input, nearest_sampler), sample_position, 0);
+				if (svgf_valid_view_z(sample_view_z) && svgf_finite_vec4(sample_signal) && sample_signal.a > 0.0) {
+					packed_sample = vec4(svgf_rgb_to_ycocg(svgf_specular_to_denoiser_space(sample_signal.rgb)), 1.0);
+				}
+			}
+			specular_neighborhood_ycocg[shared_position.y][shared_position.x] = packed_sample;
+		}
+		memoryBarrierShared();
+		barrier();
+	}
+	if (!pixel_in_bounds) {
 		return;
 	}
 
 	vec4 current_signal = svgf_sanitize_signal(texelFetch(sampler2D(current_signal_input, nearest_sampler), pixel, 0));
+	if (specular_mode) {
+		current_signal.rgb = svgf_specular_to_denoiser_space(current_signal.rgb);
+	}
 	vec4 current_encoded_normal = texelFetch(sampler2D(current_normal_roughness_input, nearest_sampler), pixel, 0);
+	vec2 current_specular_guide = specular_mode ? svgf_unpack_specular_roughness_source(current_encoded_normal.a) : vec2(clamp(current_encoded_normal.a, 0.0, 1.0), 0.0);
+	float current_roughness = current_specular_guide.x;
+	float current_screen_confidence = current_specular_guide.y;
+	float current_hit_log = svgf_hit_log(current_signal.a);
 	float current_view_z = texelFetch(sampler2D(current_view_z_input, nearest_sampler), pixel, 0).r;
 	vec3 current_normal;
 	bool current_surface_valid = svgf_valid_view_z(current_view_z) && svgf_decode_normal(current_encoded_normal, current_normal);
@@ -232,12 +374,13 @@ void svgf_temporal_main() {
 	vec3 accumulated_history = vec3(0.0);
 	vec2 accumulated_moments = vec2(0.0);
 	float accumulated_history_length = 0.0;
+	float accumulated_history_screen_confidence = 0.0;
 	float history_weight_sum = 0.0;
-	if (params.control.x != 0u && current_surface_valid && motion_valid) {
+	if ((params.control.x & 1u) != 0u && current_surface_valid && motion_valid) {
 		vec2 motion = motion_sample.xy;
 		vec2 current_uv = (vec2(pixel) + 0.5) / vec2(size);
 		vec2 current_surface_uv = current_uv + current_surface_uv_offset;
-		vec2 previous_uv = current_surface_uv + motion;
+		vec2 previous_uv = current_surface_uv + motion + (frame_data.taa_jitter.zw - frame_data.taa_jitter.xy) * 0.5;
 		vec3 current_view_position;
 		if (svgf_finite_vec4(motion_sample) && svgf_finite_vec2(previous_uv) && svgf_finite_vec2(current_surface_uv) &&
 				svgf_reconstruct_view(frame_data.current_inv_projection, current_surface_uv, current_view_z, (params.control.w & 1u) != 0u, current_view_position)) {
@@ -265,9 +408,20 @@ void svgf_temporal_main() {
 							if (!svgf_finite_vec4(history_signal)) {
 								continue;
 							}
+							float history_screen_confidence = 0.0;
+							if (specular_mode) {
+								vec3 history_metadata = svgf_unpack_specular_metadata(history_signal.a);
+								float mirror_response = 1.0 - smoothstep(0.03, 0.18, current_roughness);
+								float hit_log_tolerance = mix(1.0, 1.0 / SPECULAR_HIT_METADATA_QUANTIZATION, mirror_response);
+								if (abs(history_metadata.x - current_roughness) > 0.08 || abs(history_metadata.y - current_hit_log) > hit_log_tolerance) {
+									continue;
+								}
+								history_screen_confidence = history_metadata.z;
+							}
 							accumulated_history += max(history_signal.rgb, vec3(0.0)) * tap_weight;
 							accumulated_moments += tap_moments * tap_weight;
 							accumulated_history_length += tap_history_length * tap_weight;
+							accumulated_history_screen_confidence += history_screen_confidence * tap_weight;
 							history_weight_sum += tap_weight;
 						}
 					}
@@ -276,22 +430,49 @@ void svgf_temporal_main() {
 		}
 	}
 
-	float current_luminance = svgf_luminance(current_signal.rgb) * MOMENT_LUMINANCE_SCALE;
-	float current_moment_luminance = min(current_luminance, MOMENT_LUMINANCE_MAX);
+	float current_moment_luminance = min(svgf_filter_luminance(current_signal.rgb, specular_mode), MOMENT_LUMINANCE_MAX);
 	vec4 output_signal = current_signal;
 	vec2 output_moments = vec2(current_moment_luminance, current_moment_luminance * current_moment_luminance);
 	float history_length = current_surface_valid ? 1.0 : 0.0;
-	// Screen-probe noise is tile-correlated, so geometry validation rejects history without spatial clamping.
+	float output_screen_confidence = current_screen_confidence;
 	if (current_surface_valid && history_weight_sum > 1e-5) {
 		vec3 history_signal = accumulated_history / history_weight_sum;
 		vec2 previous_moments = accumulated_moments / history_weight_sum;
 		float previous_history_length = accumulated_history_length / history_weight_sum;
-		// Reduce confidence when only part of the bilinear footprint reprojects.
+		float previous_screen_confidence = accumulated_history_screen_confidence / history_weight_sum;
 		float reprojection_quality = sqrt(clamp(history_weight_sum, 0.0, 1.0));
-		history_length = max(1.0, min(previous_history_length + 1.0, params.atrous.w) * reprojection_quality);
-		float signal_alpha = max(1.0 / max(history_length, 1.0), 0.02);
+		float maximum_history_length = params.atrous.w;
+		float history_confidence = 1.0;
+		if (specular_mode) {
+			if ((params.control.x & 4u) != 0u) {
+				maximum_history_length = mix(2.0, maximum_history_length, clamp(current_roughness / 0.05, 0.0, 1.0));
+			}
+			vec3 neighborhood_center;
+			vec3 neighborhood_extent;
+			if (svgf_specular_neighborhood(current_signal.rgb, neighborhood_center, neighborhood_extent)) {
+				vec3 history_ycocg = svgf_rgb_to_ycocg(history_signal);
+				vec3 clamped_history_ycocg = clamp(history_ycocg, neighborhood_center - neighborhood_extent, neighborhood_center + neighborhood_extent);
+				vec3 normalized_history_error = abs(clamped_history_ycocg - history_ycocg) / max(neighborhood_extent, vec3(0.1));
+				history_confidence = clamp(1.0 - length(normalized_history_error), 0.0, 1.0);
+				history_confidence = history_confidence * 0.75 + 0.25;
+				history_signal = svgf_specular_project_denoiser_space(svgf_ycocg_to_rgb(clamped_history_ycocg));
+			}
+		}
+		float advanced_history_length = specular_mode ? previous_history_length * history_confidence + 1.0 : previous_history_length + 1.0;
+		history_length = max(1.0, min(advanced_history_length, maximum_history_length) * reprojection_quality);
+		float signal_alpha = 1.0 / max(history_length, 1.0);
 		output_signal.rgb = mix(history_signal, current_signal.rgb, signal_alpha);
 		output_moments = mix(max(previous_moments, vec2(0.0)), vec2(current_moment_luminance, current_moment_luminance * current_moment_luminance), signal_alpha);
+		output_screen_confidence = mix(previous_screen_confidence, current_screen_confidence, signal_alpha);
+		if (specular_mode) {
+			float source_step = 1.0 / SPECULAR_SOURCE_METADATA_QUANTIZATION;
+			float source_delta = current_screen_confidence - previous_screen_confidence;
+			if (abs(source_delta) > source_step * 0.5) {
+				float minimum_tracked_confidence = previous_screen_confidence + sign(source_delta) * min(abs(source_delta), source_step);
+				output_screen_confidence = source_delta > 0.0 ? max(output_screen_confidence, minimum_tracked_confidence) : min(output_screen_confidence, minimum_tracked_confidence);
+			}
+			output_screen_confidence = clamp(output_screen_confidence, 0.0, 1.0);
+		}
 	}
 
 	output_signal = svgf_sanitize_signal(output_signal);
@@ -299,8 +480,7 @@ void svgf_temporal_main() {
 		output_moments = vec2(current_moment_luminance, current_moment_luminance * current_moment_luminance);
 	}
 	output_moments = clamp(output_moments, vec2(0.0), vec2(FP16_MAX));
-	// Alpha remains the current raw hit distance rather than temporal confidence.
-	output_signal.a = current_signal.a;
+	output_signal.a = specular_mode ? svgf_pack_specular_metadata(current_roughness, current_signal.a, output_screen_confidence) : current_signal.a;
 	imageStore(current_signal_output, pixel, output_signal);
 	imageStore(current_moments_output, pixel, vec4(output_moments, current_surface_valid && motion_valid ? motion_sample.zw : vec2(0.0)));
 	current_encoded_normal.a = history_length / HISTORY_LENGTH_STORAGE_SCALE;
@@ -456,6 +636,9 @@ float svgf_variance_from_moments(vec2 moments, float history_length) {
 void svgf_store_atrous(ivec2 pixel, vec3 signal, float variance) {
 	float packed_value = clamp(variance, 0.0, FP16_MAX);
 	if ((params.control.z & 2u) != 0u) {
+		if ((params.control.x & 2u) != 0u) {
+			signal = svgf_specular_from_denoiser_space(signal);
+		}
 		float hit_distance = texelFetch(sampler2D(current_raw_signal_input, nearest_sampler), pixel, 0).a;
 		packed_value = svgf_finite_float(hit_distance) ? clamp(hit_distance, 0.0, FP16_MAX) : 0.0;
 	}
@@ -474,6 +657,18 @@ void svgf_atrous_main() {
 	float center_variance = first_iteration ? 0.0 : center_signal.a;
 	float center_view_z = texelFetch(sampler2D(current_view_z_input, nearest_sampler), pixel, 0).r;
 	vec4 center_encoded_normal = texelFetch(sampler2D(current_normal_roughness_input, nearest_sampler), pixel, 0);
+	bool specular_mode = (params.control.x & 2u) != 0u;
+	float center_packed_roughness_source = texelFetch(sampler2D(current_roughness_input, nearest_sampler), pixel, 0).a;
+	vec2 center_specular_guide = specular_mode ? svgf_unpack_specular_roughness_source(center_packed_roughness_source) : vec2(center_packed_roughness_source, 0.0);
+	float center_roughness = center_specular_guide.x;
+	float motion_pixels = 0.0;
+	if (specular_mode) {
+		vec2 motion = texelFetch(sampler2D(current_motion_input, nearest_sampler), pixel, 0).xy;
+		if (svgf_finite_vec2(motion)) {
+			motion_pixels = length(motion * vec2(size));
+		}
+	}
+	float motion_filter_response = smoothstep(0.25, 4.0, motion_pixels);
 	vec3 center_normal;
 	if (!svgf_valid_view_z(center_view_z) || !svgf_decode_normal(center_encoded_normal, center_normal)) {
 		svgf_store_atrous(pixel, center_signal.rgb, center_variance);
@@ -481,7 +676,7 @@ void svgf_atrous_main() {
 	}
 	float history_length = center_encoded_normal.a * HISTORY_LENGTH_STORAGE_SCALE;
 	int step_width = max(int(params.control.y), 1);
-	float center_luminance = svgf_luminance(center_signal.rgb) * MOMENT_LUMINANCE_SCALE;
+	float center_luminance = svgf_filter_luminance(center_signal.rgb, specular_mode);
 	vec2 center_moments = texelFetch(sampler2D(temporal_moments_input, nearest_sampler), pixel, 0).xy;
 	if (first_iteration) {
 		vec2 moments = center_moments;
@@ -529,11 +724,22 @@ void svgf_atrous_main() {
 
 	// A sparse 3x3 A-Trous kernel limits guide and signal fetches.
 	const float kernel[2] = float[](0.44198, 0.27901);
-	float temporal_confidence = smoothstep(4.0, 16.0, history_length);
+	float temporal_confidence = smoothstep(4.0, min(16.0, params.atrous.w), history_length);
 	// Relax luminance rejection while moments are young, then restore the base threshold.
 	float history_fix_relaxation = mix(1.75, 1.0, temporal_confidence);
-	float luminance_scale = (params.tuning.w * sqrt(max(center_variance, params.atrous.z)) + MOMENT_LUMINANCE_SCALE * 1e-4) * history_fix_relaxation;
+	if (specular_mode) {
+		history_fix_relaxation *= mix(1.0, 1.35, motion_filter_response);
+	}
+	float luminance_domain_scale = specular_mode ? SPECULAR_MOMENT_LUMINANCE_SCALE : MOMENT_LUMINANCE_SCALE;
+	float luminance_scale = (params.tuning.w * sqrt(max(center_variance, params.atrous.z)) + luminance_domain_scale * 1e-4) * history_fix_relaxation;
+	if (specular_mode) {
+		float roughness_filter_response = smoothstep(0.08, 0.50, center_roughness);
+		luminance_scale *= mix(1.0, 1.6, roughness_filter_response) * mix(1.0, 2.25, motion_filter_response);
+	}
 	float normal_power = params.atrous.x * sqrt(float(step_width)) * mix(0.5, 1.0, temporal_confidence);
+	if (specular_mode) {
+		normal_power *= mix(1.0, 0.8, motion_filter_response);
+	}
 	float center_weight = kernel[0] * kernel[0];
 	vec3 signal_sum = center_signal.rgb * center_weight;
 	float variance_sum = center_variance * center_weight * center_weight;
@@ -571,6 +777,11 @@ void svgf_atrous_main() {
 				continue;
 			}
 			float normal_weight = pow(max(dot(center_normal, sample_normal), 0.0), normal_power);
+			if (specular_mode) {
+				float sample_packed_roughness_source = texelFetch(sampler2D(current_roughness_input, nearest_sampler), sample_pos, 0).a;
+				float sample_roughness = svgf_unpack_specular_roughness_source(sample_packed_roughness_source).x;
+				normal_weight *= exp2(-abs(sample_roughness - center_roughness) * 32.0);
+			}
 			if (normal_weight <= 1e-4) {
 				continue;
 			}
@@ -593,7 +804,7 @@ void svgf_atrous_main() {
 			}
 
 			float kernel_weight = kernel[abs(x)] * kernel[abs(y)];
-			float sample_luminance = svgf_luminance(sample_signal.rgb) * MOMENT_LUMINANCE_SCALE;
+			float sample_luminance = svgf_filter_luminance(sample_signal.rgb, specular_mode);
 			float luminance_delta = abs(center_luminance - sample_luminance) / luminance_scale;
 			float luminance_weight = exp(-luminance_delta);
 			float weight = kernel_weight * normal_weight * luminance_weight;

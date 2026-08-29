@@ -23,9 +23,15 @@ const uint SCREEN_PROBE_FLAG_DIRECTIONAL_SURFACE_FOOTPRINT = 1u << 2u;
 const uint SCREEN_PROBE_FLAG_DIRECTIONAL_HISTORY_VALID = 1u << 3u;
 const uint SCREEN_PROBE_FLAG_DIRECTIONAL_ADAPTIVE = 1u << 4u;
 const uint SCREEN_PROBE_FLAG_DIRECTIONAL_MOTION_VALID = 1u << 5u;
+const uint SCREEN_PROBE_FLAG_SPECULAR_MOTION_VALID = 1u << 4u;
+const uint SCREEN_PROBE_FLAG_SPECULAR_SCREEN_RADIANCE_VALID = 1u << 5u;
 const uint SCREEN_PROBE_SKY_COLOR = 1u;
 const uint SCREEN_PROBE_SKY_TEXTURE = 2u;
 const float SCREEN_PROBE_DETAIL_TRACE_MAX_DISTANCE = 2.0;
+const float SCREEN_PROBE_SPECULAR_DETAIL_TRACE_MAX_DISTANCE = 50.0;
+
+const int HDDAGI_TRACE_SCREEN_ENDPOINT = -2;
+const int HDDAGI_TRACE_SCREEN_ENDPOINT_SKY_FALLBACK = -3;
 
 const int HDDAGI_REGION_SIZE = 8;
 const int HDDAGI_HDDA_FP_BITS = 10;
@@ -76,6 +82,11 @@ layout(push_constant, std430) uniform Params {
 	uint detail_trace_mip_count;
 
 	vec4 sky_color;
+
+#if defined(MODE_SPECULAR_TRACE) || defined(MODE_SPECULAR_APPLY)
+	vec4 specular_tuning;
+	vec4 specular_eye_offset_exposure;
+#endif
 #ifdef MODE_SVGF_PREPARE
 	float denoising_range;
 	float scene_to_svgf_scale;
@@ -141,9 +152,9 @@ layout(rgba32ui, set = 0, binding = 9) uniform restrict readonly uimage2D adapti
 
 #endif
 
-#if defined(MODE_TRACE) || defined(MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE)
+#if defined(MODE_TRACE) || defined(MODE_SPECULAR_TRACE) || defined(MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE)
 
-#ifdef MODE_TRACE
+#if defined(MODE_TRACE) || defined(MODE_SPECULAR_TRACE)
 layout(rgba32ui, set = 0, binding = 0) uniform restrict readonly uimage2D screen_probe_surface_input;
 layout(rgba16f, set = 0, binding = 1) uniform restrict writeonly image2D raw_radiance_output;
 #endif
@@ -173,7 +184,7 @@ layout(r8ui, set = 0, binding = 8) uniform restrict readonly uimage3D hddagi_vox
 layout(set = 0, binding = 9, std140) uniform SceneDataBuffer {
 	ScreenProbeSceneData scene_data;
 };
-#ifdef MODE_TRACE
+#if defined(MODE_TRACE) || defined(MODE_SPECULAR_TRACE)
 layout(set = 0, binding = 10) uniform texture2D detail_hiz_buffer;
 layout(set = 0, binding = 11) uniform texture2D detail_normal_roughness_buffer;
 #endif
@@ -188,6 +199,15 @@ layout(set = 0, binding = 18) uniform texture2D directional_depth_buffer;
 layout(set = 0, binding = 19) uniform texture2D directional_previous_filtered_radiance_input;
 layout(r8ui, set = 0, binding = 20) uniform restrict writeonly uimage2D directional_trace_count_output;
 #endif
+#ifdef MODE_SPECULAR_TRACE
+layout(set = 0, binding = 12) uniform texture2D specular_depth_buffer;
+layout(set = 0, binding = 13) uniform texture2D specular_velocity_buffer;
+layout(rgba8, set = 0, binding = 14) uniform restrict writeonly image2D specular_normal_roughness_output;
+layout(r32f, set = 0, binding = 15) uniform restrict writeonly image2D specular_view_z_output;
+layout(rgba16f, set = 0, binding = 16) uniform restrict writeonly image2D specular_motion_output;
+layout(set = 0, binding = 17) uniform texture2D specular_screen_radiance_buffer;
+layout(set = 0, binding = 18) uniform texture2D specular_previous_depth_buffer;
+#endif
 #ifdef MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE
 layout(r16ui, set = 0, binding = 10) uniform restrict readonly uimage3D hddagi_albedo_cascades;
 #endif
@@ -198,9 +218,18 @@ layout(set = 1, binding = 0) uniform texture2DArray sky_radiance;
 layout(set = 1, binding = 0) uniform texture2D sky_radiance;
 #endif
 layout(set = 1, binding = 1) uniform sampler sky_sampler;
-#ifdef MODE_TRACE
+#if defined(MODE_TRACE) || defined(MODE_SPECULAR_TRACE)
 layout(set = 1, binding = 2) uniform texture2DArray hddagi_lightprobe_specular;
 #endif
+
+#endif
+
+#ifdef MODE_SPECULAR_APPLY
+
+layout(set = 0, binding = 0) uniform texture2D specular_radiance_input;
+layout(set = 0, binding = 1) uniform sampler specular_nearest_sampler;
+layout(r32ui, set = 0, binding = 2) uniform coherent uimage2D reflection_output;
+layout(set = 0, binding = 3) uniform texture2D specular_normal_roughness_input;
 
 #endif
 
@@ -275,16 +304,25 @@ float hash_float(uvec3 value) {
 	return float(hash_uvec3(value) & 0x00ffffffu) / float(0x01000000u);
 }
 
+const uvec2 R2_WEYL_INCREMENT = uvec2(3242174889u, 2447445413u);
+
 float uint_to_unit_float(uint value) {
 	return float(value >> 8u) * (1.0 / 16777216.0);
 }
 
+vec2 sample_r2_sequence(uvec2 position, uint sequence_index, uint stream) {
+	uvec2 scramble = uvec2(
+			hash_uvec3(uvec3(position, stream ^ 0xa511e9b3u)),
+			hash_uvec3(uvec3(position, stream ^ 0x63d83595u)));
+	uvec2 sequence = scramble + uvec2(sequence_index) * R2_WEYL_INCREMENT;
+	return vec2(uint_to_unit_float(sequence.x), uint_to_unit_float(sequence.y));
+}
+
 vec2 sample_r2_sequence(uvec2 position, uint sequence_index) {
-	const uvec2 r2_increment = uvec2(3242174889u, 2447445413u);
 	uvec2 scramble = uvec2(
 			hash_uvec3(uvec3(position, 0xe145f4edu)),
 			hash_uvec3(uvec3(position, 0x0c8f49b7u)));
-	uvec2 sequence = scramble + uvec2(sequence_index) * r2_increment;
+	uvec2 sequence = scramble + uvec2(sequence_index) * R2_WEYL_INCREMENT;
 	return vec2(uint_to_unit_float(sequence.x), uint_to_unit_float(sequence.y));
 }
 
@@ -299,6 +337,36 @@ vec3 tangent_to_world(vec3 local_direction, vec3 normal) {
 	vec3 tangent = normalize(cross(up, normal));
 	vec3 bitangent = cross(normal, tangent);
 	return normalize(tangent * local_direction.x + bitangent * local_direction.y + normal * local_direction.z);
+}
+
+vec3 world_to_tangent(vec3 world_direction, vec3 normal) {
+	vec3 up = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
+	vec3 tangent = normalize(cross(up, normal));
+	vec3 bitangent = cross(normal, tangent);
+	return vec3(dot(world_direction, tangent), dot(world_direction, bitangent), dot(world_direction, normal));
+}
+
+vec3 sample_bounded_ggx_vndf_reflection(vec3 view_local, float alpha, vec2 random_sample) {
+	alpha = clamp(alpha, 1e-6, 1.0);
+	vec3 stretched_view = normalize(vec3(alpha * view_local.xy, max(view_local.z, 1e-6)));
+
+	float phi = TAU * random_sample.x;
+	float scale = 1.0 + length(view_local.xy);
+	float alpha_squared = alpha * alpha;
+	float scale_squared = scale * scale;
+	float bound = (1.0 - alpha_squared) * scale_squared /
+			max(scale_squared + alpha_squared * view_local.z * view_local.z, 1e-8);
+	float cap = bound * stretched_view.z;
+	float reflected_z_stretched = (1.0 - random_sample.y) * (1.0 + cap) - cap;
+	float reflected_xy_length = sqrt(clamp(1.0 - reflected_z_stretched * reflected_z_stretched, 0.0, 1.0));
+	vec3 reflected_stretched = vec3(
+			reflected_xy_length * cos(phi),
+			reflected_xy_length * sin(phi),
+			reflected_z_stretched);
+
+	vec3 microfacet_stretched = stretched_view + reflected_stretched;
+	vec3 microfacet_normal = normalize(vec3(alpha * microfacet_stretched.xy, microfacet_stretched.z));
+	return reflect(-view_local, microfacet_normal);
 }
 
 #if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_DIRECTIONAL_FILTER) || defined(MODE_DIRECTIONAL_IRRADIANCE) || defined(MODE_DIRECTIONAL_RESOLVE) || defined(MODE_DIRECTIONAL_ADAPTIVE_MARK) || defined(MODE_DIRECTIONAL_ADAPTIVE_SPAWN)
@@ -446,7 +514,14 @@ uint rgbe_encode(vec3 rgb) {
 	return exponent | (encoded_rgb.b << 18u) | (encoded_rgb.g << 9u) | (encoded_rgb.r & 0x1ffu);
 }
 
-#if defined(MODE_TRACE) || defined(MODE_RESOLVE) || defined(MODE_DIRECTIONAL_FILTER) || defined(MODE_DIRECTIONAL_ADAPTIVE_MARK) || defined(MODE_DIRECTIONAL_ADAPTIVE_SPAWN)
+#ifdef MODE_SPECULAR_APPLY
+vec3 rgbe_decode(uint packed_rgbe) {
+	vec4 rgbe = vec4((uvec4(packed_rgbe) >> uvec4(0, 9, 18, 27)) & uvec4(0x1ff, 0x1ff, 0x1ff, 0x1f));
+	return rgbe.rgb * pow(2.0, rgbe.a - 15.0 - 9.0);
+}
+#endif
+
+#if defined(MODE_TRACE) || defined(MODE_SPECULAR_TRACE) || defined(MODE_RESOLVE) || defined(MODE_DIRECTIONAL_FILTER) || defined(MODE_DIRECTIONAL_ADAPTIVE_MARK) || defined(MODE_DIRECTIONAL_ADAPTIVE_SPAWN)
 
 vec3 compute_view_position(vec3 screen_position) {
 	vec4 position = vec4(screen_position.xy * 2.0 - 1.0, screen_position.z, 1.0);
@@ -1104,7 +1179,7 @@ void screen_probe_surface_main() {
 
 #endif
 
-#ifdef MODE_TRACE
+#if defined(MODE_TRACE) || defined(MODE_SPECULAR_TRACE)
 
 bool detail_trace_project(vec3 view_position, out vec3 r_screen_position) {
 	vec4 clip = scene_data.projection[params.view_index] * vec4(view_position, 1.0);
@@ -1178,7 +1253,11 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 	r_endpoint_world = vec3(0.0);
 	r_endpoint_normal_world = vec3(0.0, 0.0, 1.0);
 
+#ifdef MODE_SPECULAR_TRACE
+	float max_distance = min(SCREEN_PROBE_SPECULAR_DETAIL_TRACE_MAX_DISTANCE, distance_limit);
+#else
 	float max_distance = min(SCREEN_PROBE_DETAIL_TRACE_MAX_DISTANCE, distance_limit);
+#endif
 	if ((params.flags & SCREEN_PROBE_FLAG_DETAIL_TRACE) == 0u || !(max_distance > 0.0) || params.detail_trace_mip_count == 0u || any(lessThanEqual(params.screen_size, ivec2(0)))) {
 		return false;
 	}
@@ -1226,10 +1305,18 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 	vec2 next_cell_uv = (start_cell + positive_cell_step) * inverse_detail_size + cell_boundary_bias;
 	vec2 start_cell_t = (next_cell_uv - screen_start.xy) * inverse_direction_xy;
 	float trace_t = max(min(start_cell_t.x, start_cell_t.y), 0.0);
+	int max_mip = int(params.detail_trace_mip_count) - 1;
+#ifdef MODE_SPECULAR_TRACE
+	int mip_level = min(2, max_mip);
+	int iterations_remaining = 50;
+	float receiver_exclusion = max(0.01, abs(origin_view.z) / detail_size.y);
+	const float candidate_normal_threshold = -0.01;
+#else
 	int mip_level = 0;
 	int iterations_remaining = 48;
-	int max_mip = int(params.detail_trace_mip_count) - 1;
 	float receiver_exclusion = max(0.02, abs(origin_view.z) * 2.0 / detail_size.y);
+	const float candidate_normal_threshold = -0.05;
+#endif
 
 	while (mip_level >= 0 && iterations_remaining > 0 && trace_t < trace_t_max) {
 		vec3 current_screen = screen_start + screen_direction * trace_t;
@@ -1263,11 +1350,15 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 				if (candidate_valid) {
 					vec2 candidate_uv = (vec2(candidate_pixel) + 0.5) * inverse_detail_size;
 					candidate_view = compute_view_position(vec3(candidate_uv, candidate_depth));
-					candidate_valid = !any(isnan(candidate_view)) && !any(isinf(candidate_view)) && detail_trace_geometric_normal(candidate_pixel, candidate_view, shading_normal_view, shading_normal_valid, candidate_normal_view) && dot(ray_direction_view, candidate_normal_view) < -0.05;
+					candidate_valid = !any(isnan(candidate_view)) && !any(isinf(candidate_view)) && detail_trace_geometric_normal(candidate_pixel, candidate_view, shading_normal_view, shading_normal_valid, candidate_normal_view) && dot(ray_direction_view, candidate_normal_view) < candidate_normal_threshold;
 				}
 				if (candidate_valid) {
 					float candidate_distance = dot(candidate_view - origin_view, ray_direction_view);
+#ifdef MODE_SPECULAR_TRACE
+					float thickness = clamp(abs(candidate_view.z) * 0.004, 0.04, 0.25);
+#else
 					float thickness = clamp(abs(candidate_view.z) * 0.0015, 0.025, 0.10);
+#endif
 					vec3 ray_closest_view = origin_view + ray_direction_view * candidate_distance;
 					vec3 candidate_ray_view = compute_view_position(candidate_screen);
 					vec3 ray_error = candidate_view - ray_closest_view;
@@ -1287,7 +1378,11 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 			}
 
 			trace_t = max(cell_exit_t, candidate_t + 1e-6);
+#ifdef MODE_SPECULAR_TRACE
+			mip_level = min(2, max_mip);
+#else
 			mip_level = 0;
+#endif
 			iterations_remaining--;
 			continue;
 		}
@@ -1307,7 +1402,7 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 
 #endif
 
-#if defined(MODE_TRACE) || defined(MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE)
+#if defined(MODE_TRACE) || defined(MODE_SPECULAR_TRACE) || defined(MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE)
 
 #ifndef MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE
 uvec4 load_probe_surface_texel(ivec2 position) {
@@ -1931,9 +2026,10 @@ bool trace_hddagi_sample(ivec2 origin_position, float origin_depth, vec3 origin_
 	vec3 trace_origin_world = ray_position + scene_data.cam_transform[3].xyz;
 
 	if (trace_screen_detail(origin_view, ray_direction_view, detail_distance_limit, r_endpoint_world, r_endpoint_normal_world)) {
-		r_hit_cascade = -2;
+		r_hit_cascade = HDDAGI_TRACE_SCREEN_ENDPOINT;
 		if (!query_endpoint_radiance(r_endpoint_world, r_endpoint_normal_world, trace_origin_world, r_radiance)) {
 			r_radiance = sample_environment(ray_direction_view);
+			r_hit_cascade = HDDAGI_TRACE_SCREEN_ENDPOINT_SKY_FALLBACK;
 		}
 		return true;
 	}
@@ -2103,9 +2199,14 @@ bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origi
 	int hit_cascade;
 	vec3 endpoint_world;
 	vec3 endpoint_normal_world;
-	bool hit = trace_hddagi_sample(origin_position, origin_depth, origin_normal, ray_direction_view, SCREEN_PROBE_DETAIL_TRACE_MAX_DISTANCE, r_radiance, hit_cascade, endpoint_world, endpoint_normal_world);
+#ifdef MODE_SPECULAR_TRACE
+	const float detail_distance_limit = SCREEN_PROBE_SPECULAR_DETAIL_TRACE_MAX_DISTANCE;
+#else
+	const float detail_distance_limit = SCREEN_PROBE_DETAIL_TRACE_MAX_DISTANCE;
+#endif
+	bool hit = trace_hddagi_sample(origin_position, origin_depth, origin_normal, ray_direction_view, detail_distance_limit, r_radiance, hit_cascade, endpoint_world, endpoint_normal_world);
 	r_hit_distance = 0.0;
-	if (hit && (hit_cascade >= 0 || hit_cascade == -2) && !any(isnan(endpoint_world)) && !any(isinf(endpoint_world))) {
+	if (hit && (hit_cascade >= 0 || hit_cascade <= HDDAGI_TRACE_SCREEN_ENDPOINT) && !any(isnan(endpoint_world)) && !any(isinf(endpoint_world))) {
 		vec2 origin_uv = (vec2(origin_position) + 0.5) / vec2(params.screen_size);
 		vec3 origin_world = (scene_data.cam_transform * vec4(compute_view_position(vec3(origin_uv, origin_depth)), 1.0)).xyz;
 		r_hit_distance = clamp(length(endpoint_world - origin_world), 0.0, 65504.0);
@@ -2829,6 +2930,291 @@ void directional_trace_main() {
 
 #endif
 
+#ifdef MODE_SPECULAR_TRACE
+
+const float SPECULAR_INVALID_VIEW_Z = 65505.0;
+
+bool specular_load_full_resolution_surface(ivec2 screen_position, out float r_depth, out vec3 r_normal, out float r_roughness, out bool r_dynamic) {
+	r_depth = texelFetch(sampler2D(specular_depth_buffer, linear_sampler), screen_position, 0).r;
+	r_dynamic = false;
+	if (r_depth <= 0.0) {
+		return false;
+	}
+	vec4 normal_roughness = texelFetch(sampler2D(detail_normal_roughness_buffer, linear_sampler), screen_position, 0);
+	r_dynamic = normal_roughness.w > 0.5;
+	float encoded_roughness = r_dynamic ? 1.0 - normal_roughness.w : normal_roughness.w;
+	r_roughness = clamp(encoded_roughness / (127.0 / 255.0), 0.0, 1.0);
+	return decode_normal(normal_roughness.xyz, r_normal);
+}
+
+bool specular_select_full_resolution_surface(ivec2 output_position, ivec2 output_size, out ivec2 r_screen_position, out float r_depth, out vec3 r_normal, out float r_roughness, out bool r_dynamic) {
+	ivec2 footprint_begin = (output_position * params.screen_size + output_size - ivec2(1)) / output_size;
+	ivec2 footprint_end = ((output_position + ivec2(1)) * params.screen_size + output_size - ivec2(1)) / output_size;
+	footprint_begin = clamp(footprint_begin, ivec2(0), params.screen_size - ivec2(1));
+	footprint_end = clamp(footprint_end, footprint_begin + ivec2(1), params.screen_size);
+	r_screen_position = clamp((footprint_begin + footprint_end - ivec2(1)) / 2, ivec2(0), params.screen_size - ivec2(1));
+	r_depth = 0.0;
+	r_normal = vec3(0.0, 0.0, 1.0);
+	r_roughness = 1.0;
+	r_dynamic = false;
+	bool found_surface = false;
+	for (int y = footprint_begin.y; y < footprint_end.y; y++) {
+		for (int x = footprint_begin.x; x < footprint_end.x; x++) {
+			ivec2 candidate_position = ivec2(x, y);
+			float candidate_depth;
+			vec3 candidate_normal;
+			float candidate_roughness;
+			bool candidate_dynamic;
+			if (!specular_load_full_resolution_surface(candidate_position, candidate_depth, candidate_normal, candidate_roughness, candidate_dynamic)) {
+				continue;
+			}
+			if (!found_surface || candidate_depth > r_depth) {
+				found_surface = true;
+				r_screen_position = candidate_position;
+				r_depth = candidate_depth;
+				r_normal = candidate_normal;
+				r_roughness = candidate_roughness;
+				r_dynamic = candidate_dynamic;
+			}
+		}
+	}
+	return found_surface;
+}
+
+bool specular_clip_to_uv(vec4 clip_position, out vec2 r_uv) {
+	if (!(clip_position.w > 1e-6) || any(isnan(clip_position)) || any(isinf(clip_position))) {
+		r_uv = vec2(0.0);
+		return false;
+	}
+	r_uv = clip_position.xy / clip_position.w * 0.5 + 0.5;
+	return !any(isnan(r_uv)) && !any(isinf(r_uv));
+}
+
+bool specular_sample_screen_radiance(vec3 endpoint_world, out vec3 r_radiance, out float r_confidence) {
+	r_radiance = vec3(0.0);
+	r_confidence = 0.0;
+	if ((params.flags & SCREEN_PROBE_FLAG_SPECULAR_SCREEN_RADIANCE_VALID) == 0u || any(isnan(endpoint_world)) || any(isinf(endpoint_world))) {
+		return false;
+	}
+
+	vec3 current_view = transpose(mat3(scene_data.cam_transform)) * (endpoint_world - scene_data.cam_transform[3].xyz);
+	vec3 previous_view = (scene_data.previous_cam_inv_transform * vec4(endpoint_world, 1.0)).xyz;
+	vec4 previous_clip = inverse(scene_data.previous_inv_projection[params.view_index]) * vec4(previous_view, 1.0);
+	vec2 current_raster_uv;
+	vec2 current_stable_uv;
+	vec2 previous_raster_uv;
+	vec2 previous_stable_uv;
+	if (!specular_clip_to_uv(scene_data.projection[params.view_index] * vec4(current_view, 1.0), current_raster_uv) ||
+			!specular_clip_to_uv(scene_data.temporal_projection[params.view_index] * vec4(current_view, 1.0), current_stable_uv) ||
+			!specular_clip_to_uv(previous_clip, previous_raster_uv) ||
+			!specular_clip_to_uv(scene_data.previous_temporal_projection[params.view_index] * vec4(previous_view, 1.0), previous_stable_uv)) {
+		return false;
+	}
+	float expected_previous_depth = previous_clip.z / previous_clip.w;
+	if (isnan(expected_previous_depth) || isinf(expected_previous_depth) || expected_previous_depth < 0.0 || expected_previous_depth > 1.0) {
+		return false;
+	}
+
+	ivec2 history_size = textureSize(sampler2D(specular_screen_radiance_buffer, linear_sampler), 0);
+	if (any(lessThanEqual(history_size, ivec2(0)))) {
+		return false;
+	}
+
+	ivec2 endpoint_pixel = clamp(ivec2(floor(current_raster_uv * vec2(params.screen_size))), ivec2(0), params.screen_size - ivec2(1));
+	float endpoint_roughness_dynamic = texelFetch(sampler2D(detail_normal_roughness_buffer, linear_sampler), endpoint_pixel, 0).a;
+	bool dynamic_endpoint = endpoint_roughness_dynamic > 0.5;
+	vec2 history_uv = previous_raster_uv;
+	float object_motion_pixels = 0.0;
+	if ((params.flags & SCREEN_PROBE_FLAG_SPECULAR_MOTION_VALID) != 0u) {
+		vec2 endpoint_velocity = texelFetch(sampler2D(specular_velocity_buffer, linear_sampler), endpoint_pixel, 0).xy;
+		if (!any(isnan(endpoint_velocity)) && !any(isinf(endpoint_velocity))) {
+			vec2 current_jitter_uv = current_raster_uv - current_stable_uv;
+			vec2 previous_jitter_uv = previous_raster_uv - previous_stable_uv;
+			history_uv = current_raster_uv + endpoint_velocity + previous_jitter_uv - current_jitter_uv;
+			object_motion_pixels = length((history_uv - previous_raster_uv) * vec2(history_size));
+		}
+	} else if (dynamic_endpoint) {
+		return false;
+	}
+
+	vec2 half_texel = 0.5 / vec2(history_size);
+	if (any(lessThan(history_uv, half_texel)) || any(greaterThan(history_uv, vec2(1.0) - half_texel))) {
+		return false;
+	}
+	ivec2 previous_depth_size = textureSize(sampler2D(specular_previous_depth_buffer, linear_sampler), 0);
+	if (any(notEqual(previous_depth_size, history_size))) {
+		return false;
+	}
+	ivec2 previous_depth_position = clamp(ivec2(floor(history_uv * vec2(previous_depth_size))), ivec2(0), previous_depth_size - ivec2(1));
+	float actual_previous_depth = texelFetch(sampler2D(specular_previous_depth_buffer, linear_sampler), previous_depth_position, 0).r;
+	if (isnan(actual_previous_depth) || isinf(actual_previous_depth) || actual_previous_depth <= 0.0 || abs(actual_previous_depth - expected_previous_depth) >= 0.005) {
+		return false;
+	}
+
+	vec3 screen_radiance = textureLod(sampler2D(specular_screen_radiance_buffer, linear_sampler), history_uv, 0.0).rgb;
+	if (any(isnan(screen_radiance)) || any(isinf(screen_radiance)) || any(lessThan(screen_radiance, vec3(0.0)))) {
+		return false;
+	}
+	float exposure_scale = clamp(params.specular_eye_offset_exposure.w, 1.0 / 16.0, 16.0);
+	r_radiance = screen_radiance * exposure_scale;
+	vec2 edge_texels = min(history_uv, vec2(1.0) - history_uv) * vec2(history_size);
+	float edge_confidence = smoothstep(0.5, 2.0, min(edge_texels.x, edge_texels.y));
+	float motion_confidence = mix(1.0, 0.2, smoothstep(1.0, 24.0, object_motion_pixels));
+	if (dynamic_endpoint) {
+		motion_confidence *= 0.9;
+	}
+	r_confidence = edge_confidence * motion_confidence;
+	return r_confidence > 0.0;
+}
+
+vec4 specular_pack_normal_roughness(vec3 world_normal, float roughness, bool screen_radiance_used) {
+	float maximum_component = max(abs(world_normal.x), max(abs(world_normal.y), abs(world_normal.z)));
+	world_normal /= max(maximum_component, 1e-6);
+	float roughness_bin = floor(clamp(roughness, 0.0, 1.0) * 127.0 + 0.5);
+	float packed_roughness_source = (roughness_bin + (screen_radiance_used ? 128.0 : 0.0)) / 255.0;
+	return vec4(world_normal * 0.5 + 0.5, packed_roughness_source);
+}
+
+void specular_store_guides(ivec2 output_position, ivec2 screen_position, bool valid_surface, bool dynamic_surface, vec3 view_position, vec3 view_normal, float roughness, bool screen_radiance_used) {
+	float normal_length_squared = dot(view_normal, view_normal);
+	valid_surface = valid_surface && !any(isnan(view_position)) && !any(isinf(view_position)) &&
+			!any(isnan(view_normal)) && !any(isinf(view_normal)) && normal_length_squared > 1e-6;
+	view_normal = valid_surface ? view_normal * inversesqrt(max(normal_length_squared, 1e-6)) : vec3(0.0, 0.0, 1.0);
+	vec3 world_normal = normalize(mat3(scene_data.cam_transform) * view_normal);
+	if (any(isnan(world_normal)) || any(isinf(world_normal))) {
+		world_normal = vec3(0.0, 1.0, 0.0);
+		valid_surface = false;
+	}
+
+	vec2 velocity = vec2(0.0);
+	if (valid_surface && (params.flags & SCREEN_PROBE_FLAG_SPECULAR_MOTION_VALID) != 0u) {
+		velocity = texelFetch(sampler2D(specular_velocity_buffer, linear_sampler), screen_position, 0).xy;
+		if (any(isnan(velocity)) || any(isinf(velocity))) {
+			velocity = vec2(0.0);
+		}
+	}
+	vec2 resolve_uv = (vec2(output_position) + 0.5) / vec2(imageSize(specular_motion_output));
+	vec2 surface_uv = (vec2(screen_position) + 0.5) / vec2(params.screen_size);
+	vec2 surface_uv_offset = valid_surface ? surface_uv - resolve_uv : vec2(0.0);
+	if (valid_surface && dynamic_surface && (params.flags & SCREEN_PROBE_FLAG_SPECULAR_MOTION_VALID) != 0u) {
+		surface_uv_offset.y += 2.0;
+	}
+	float view_z = valid_surface ? abs(view_position.z) : SPECULAR_INVALID_VIEW_Z;
+	roughness = valid_surface ? roughness : 1.0;
+
+	imageStore(specular_normal_roughness_output, output_position, specular_pack_normal_roughness(world_normal, roughness, screen_radiance_used));
+	imageStore(specular_view_z_output, output_position, vec4(view_z, 0.0, 0.0, 0.0));
+	imageStore(specular_motion_output, output_position, vec4(velocity, surface_uv_offset));
+}
+
+void specular_trace_main() {
+	ivec2 output_position = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 output_size = imageSize(raw_radiance_output);
+	if (any(greaterThanEqual(output_position, output_size))) {
+		return;
+	}
+
+	ivec2 screen_position = ivec2(0);
+	float origin_depth;
+	vec3 origin_normal;
+	float roughness;
+	bool dynamic_surface;
+	if (!specular_select_full_resolution_surface(output_position, output_size, screen_position, origin_depth, origin_normal, roughness, dynamic_surface)) {
+		imageStore(raw_radiance_output, output_position, vec4(0.0));
+		specular_store_guides(output_position, screen_position, false, false, vec3(0.0), vec3(0.0, 0.0, 1.0), 1.0, false);
+		return;
+	}
+
+	vec2 origin_uv = (vec2(screen_position) + 0.5) / vec2(params.screen_size);
+	vec3 view_position = compute_view_position(vec3(origin_uv, origin_depth));
+	vec3 eye_to_surface = view_position - params.specular_eye_offset_exposure.xyz;
+	float eye_distance_squared = dot(eye_to_surface, eye_to_surface);
+	vec3 view_direction = eye_distance_squared > 1e-10 ? -eye_to_surface * inversesqrt(eye_distance_squared) : vec3(0.0, 0.0, 1.0);
+	bool valid_orientation = !any(isnan(view_direction)) && !any(isinf(view_direction)) && dot(origin_normal, view_direction) > 1e-5;
+	if (!valid_orientation || roughness >= params.specular_tuning.y) {
+		imageStore(raw_radiance_output, output_position, vec4(0.0));
+		specular_store_guides(output_position, screen_position, valid_orientation, dynamic_surface, view_position, origin_normal, roughness, false);
+		return;
+	}
+
+	vec3 view_local = world_to_tangent(view_direction, origin_normal);
+	view_local.z = max(view_local.z, 1e-5);
+	view_local = normalize(view_local);
+	uint specular_stream = 0x53504543u ^ (params.view_index * 0x9e3779b9u);
+	vec3 ray_local = vec3(0.0);
+	bool valid_ray = false;
+	if (roughness < 0.001) {
+		ray_local = vec3(-view_local.xy, view_local.z);
+		valid_ray = ray_local.z > 1e-5;
+	} else {
+		float alpha = max(roughness * roughness, params.specular_tuning.w);
+		for (uint attempt = 0u; attempt < 8u; attempt++) {
+			uint attempt_stream = specular_stream ^ (attempt * 0x85ebca6bu);
+			vec2 random_sample = sample_r2_sequence(uvec2(output_position), params.frame_index, attempt_stream);
+			random_sample.y *= 0.9;
+			ray_local = sample_bounded_ggx_vndf_reflection(view_local, alpha, random_sample);
+			valid_ray = ray_local.z > 1e-5 && !any(isnan(ray_local)) && !any(isinf(ray_local));
+			if (valid_ray) {
+				break;
+			}
+		}
+	}
+	if (!valid_ray) {
+		imageStore(raw_radiance_output, output_position, vec4(0.0));
+		specular_store_guides(output_position, screen_position, true, dynamic_surface, view_position, origin_normal, roughness, false);
+		return;
+	}
+	vec3 ray_direction = tangent_to_world(ray_local, origin_normal);
+
+	vec3 sample_radiance = vec3(0.0);
+	float hit_distance = 0.0;
+	vec3 endpoint_world = vec3(0.0);
+	bool screen_radiance_used = false;
+	if ((params.flags & SCREEN_PROBE_FLAG_DETAIL_TRACE) != 0u &&
+			(params.flags & SCREEN_PROBE_FLAG_SPECULAR_SCREEN_RADIANCE_VALID) != 0u) {
+		vec3 endpoint_normal_world;
+		if (trace_screen_detail(view_position, ray_direction, SCREEN_PROBE_SPECULAR_DETAIL_TRACE_MAX_DISTANCE, endpoint_world, endpoint_normal_world)) {
+			float screen_confidence;
+			if (specular_sample_screen_radiance(endpoint_world, sample_radiance, screen_confidence) && screen_confidence >= 0.75) {
+				vec3 receiver_world = (scene_data.cam_transform * vec4(view_position, 1.0)).xyz;
+				hit_distance = clamp(length(endpoint_world - receiver_world), 0.0, 65504.0);
+				screen_radiance_used = true;
+			}
+		}
+	}
+	if (!screen_radiance_used) {
+		int hit_cascade;
+		vec3 endpoint_normal_world;
+		bool trace_hit = trace_hddagi_sample(screen_position, origin_depth, origin_normal, ray_direction, 0.0,
+				sample_radiance, hit_cascade, endpoint_world, endpoint_normal_world);
+		if (trace_hit && hit_cascade >= 0 && !any(isnan(endpoint_world)) && !any(isinf(endpoint_world))) {
+			vec3 receiver_world = (scene_data.cam_transform * vec4(view_position, 1.0)).xyz;
+			hit_distance = clamp(length(endpoint_world - receiver_world), 0.0, 65504.0);
+		}
+		if (!trace_hit) {
+			sample_radiance = sample_environment(ray_direction);
+			hit_distance = 65504.0;
+		}
+	}
+	vec3 traced_radiance = sample_radiance * (screen_radiance_used ? 1.0 : hddagi.energy);
+	specular_store_guides(output_position, screen_position, true, dynamic_surface, view_position, origin_normal, roughness, screen_radiance_used);
+
+	vec4 radiance_hit_distance = vec4(traced_radiance, hit_distance);
+	if (any(isnan(radiance_hit_distance)) || any(isinf(radiance_hit_distance))) {
+		radiance_hit_distance = vec4(0.0);
+	} else {
+		radiance_hit_distance.rgb = max(radiance_hit_distance.rgb, vec3(0.0));
+		float maximum_radiance_component = max(radiance_hit_distance.r, max(radiance_hit_distance.g, radiance_hit_distance.b));
+		if (maximum_radiance_component > params.specular_tuning.z) {
+			radiance_hit_distance.rgb *= params.specular_tuning.z / maximum_radiance_component;
+		}
+		radiance_hit_distance.a = clamp(radiance_hit_distance.a, 0.0, 65504.0);
+	}
+	imageStore(raw_radiance_output, output_position, radiance_hit_distance);
+}
+
+#endif
+
 void screen_probe_trace_main() {
 	ivec2 probe_position = ivec2(gl_GlobalInvocationID.xy);
 	if (any(greaterThanEqual(probe_position, imageSize(raw_radiance_output)))) {
@@ -2852,7 +3238,7 @@ void screen_probe_trace_main() {
 	vec3 radiance = vec3(0.0);
 	float hit_distance = 0.0;
 	for (uint candidate = 0u; candidate < candidate_count; candidate++) {
-		vec2 sample_position = sample_r2_sequence(uvec2(probe_position), params.frame_index * candidate_count + candidate);
+		vec2 sample_position = sample_r2_sequence(uvec2(probe_position), params.frame_index * candidate_count + candidate, 0x44544330u);
 		float proposal_pdf;
 		vec3 ray_direction;
 		if (guided_sampling) {
@@ -3559,6 +3945,34 @@ void screen_probe_apply_main() {
 
 #endif
 
+#ifdef MODE_SPECULAR_APPLY
+
+void specular_apply_main() {
+	ivec2 output_position = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 reflection_size = imageSize(reflection_output);
+	if (any(greaterThanEqual(output_position, reflection_size))) {
+		return;
+	}
+
+	ivec2 signal_size = textureSize(sampler2D(specular_radiance_input, specular_nearest_sampler), 0);
+	ivec2 signal_position = clamp(output_position * signal_size / reflection_size, ivec2(0), signal_size - ivec2(1));
+	float packed_roughness_source = floor(texelFetch(sampler2D(specular_normal_roughness_input, specular_nearest_sampler), signal_position, 0).a * 255.0 + 0.5);
+	float roughness = (packed_roughness_source - floor(packed_roughness_source / 128.0) * 128.0) / 127.0;
+	float authority = 1.0 - smoothstep(params.specular_tuning.x, params.specular_tuning.y, roughness);
+	if (authority <= 0.0) {
+		return;
+	}
+
+	vec3 traced_radiance = texelFetch(sampler2D(specular_radiance_input, specular_nearest_sampler), signal_position, 0).rgb;
+	if (any(isnan(traced_radiance)) || any(isinf(traced_radiance))) {
+		return;
+	}
+	vec3 fallback_radiance = rgbe_decode(imageLoad(reflection_output, output_position).r);
+	imageStore(reflection_output, output_position, uvec4(rgbe_encode(mix(fallback_radiance, max(traced_radiance, vec3(0.0)), authority))));
+}
+
+#endif
+
 void main() {
 #ifdef MODE_SURFACE
 	screen_probe_surface_main();
@@ -3570,6 +3984,8 @@ void main() {
 	irradiance_cache_update_multibounce_main();
 #elif defined(MODE_DIRECTIONAL_TRACE)
 	directional_trace_main();
+#elif defined(MODE_SPECULAR_TRACE)
+	specular_trace_main();
 #elif defined(MODE_TRACE)
 	screen_probe_trace_main();
 #elif defined(MODE_DIRECTIONAL_FILTER)
@@ -3580,5 +3996,7 @@ void main() {
 	screen_probe_resolve_main();
 #elif defined(MODE_APPLY)
 	screen_probe_apply_main();
+#elif defined(MODE_SPECULAR_APPLY)
+	specular_apply_main();
 #endif
 }

@@ -54,6 +54,11 @@ static constexpr uint32_t SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CANDIDATE_COUNT = 8u
 static constexpr uint32_t SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_MAX_PER_TILE = 8u;
 static constexpr uint32_t SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CAPACITY_DIVISOR = 2u;
 static constexpr uint32_t SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_WORKGROUP_SIZE = 8u;
+static constexpr float SCREEN_PROBE_SPECULAR_FULL_AUTHORITY_ROUGHNESS = 0.30f;
+static constexpr float SCREEN_PROBE_SPECULAR_FALLBACK_ROUGHNESS = 0.40f;
+static constexpr float SCREEN_PROBE_SPECULAR_RADIANCE_MAX = 40.0f;
+static constexpr float SCREEN_PROBE_SPECULAR_MIN_GGX_ALPHA = 0.001f;
+static constexpr float SCREEN_PROBE_SPECULAR_DENOISING_RANGE = 65504.0f;
 
 void GI::disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers) {
 	if (p_render_buffers.is_null()) {
@@ -64,15 +69,18 @@ void GI::disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	if (p_render_buffers->has_custom_data(RB_SCOPE_GI)) {
 		rbgi = p_render_buffers->get_custom_data(RB_SCOPE_GI);
 		if (rbgi.is_valid()) {
+			rbgi->hddagi_specular_reflection_valid = false;
 			if (rbgi->screen_probe_scene_data_ubo.is_valid()) {
 				RD::get_singleton()->free_rid(rbgi->screen_probe_scene_data_ubo);
 				rbgi->screen_probe_scene_data_ubo = RID();
 			}
 			rbgi->screen_probe_svgf.clear();
+			rbgi->screen_probe_specular_svgf.clear();
 			rbgi->screen_probe_irradiance_cache.clear();
 		}
 	}
 	p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBE_DENOISER);
+	p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS);
 	p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBES);
 
 	if (!p_render_buffers->has_custom_data(RB_SCOPE_HDDAGI)) {
@@ -93,12 +101,13 @@ void GI::disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	hddagi->screen_probe_history_sequence = 0;
 	hddagi->screen_probe_directional_allocation_failed = false;
 	hddagi->screen_probe_previous_camera_valid = false;
+	hddagi->screen_probe_previous_exposure_normalization = 1.0f;
 }
 
-void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Vector2 &p_taa_jitter, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias, RSE::EnvironmentHDDAGIScreenProbeMode p_mode) {
+void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, const RID *p_previous_screen_color_slices, const RID *p_previous_screen_depth_slices, bool p_previous_screen_color_valid, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Vector3 *p_eye_offsets, const Vector2 &p_taa_jitter, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias, RSE::EnvironmentHDDAGIScreenProbeMode p_mode) {
 	ERR_FAIL_COND(p_render_buffers.is_null());
 	ERR_FAIL_INDEX(int(p_mode), int(RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_MAX));
-	if (p_view_count == 0 || p_view_count > 2 || p_gi_size.x <= 0 || p_gi_size.y <= 0 || p_normal_roughness_slices == nullptr || p_projections == nullptr) {
+	if (p_view_count == 0 || p_view_count > 2 || p_gi_size.x <= 0 || p_gi_size.y <= 0 || p_normal_roughness_slices == nullptr || p_projections == nullptr || p_eye_offsets == nullptr) {
 		disable_hddagi_screen_probes(p_render_buffers);
 		ERR_FAIL_MSG("HDDAGI screen probes require valid render data for one or two views.");
 	}
@@ -127,6 +136,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		disable_hddagi_screen_probes(p_render_buffers);
 		return;
 	}
+	rbgi->hddagi_specular_reflection_valid = false;
 
 	const Size2i internal_size = p_render_buffers->get_internal_size();
 	if (hddagi->screen_probe_requested_mode != p_mode) {
@@ -192,11 +202,30 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		return;
 	}
 
-	bool detail_trace = p_detail_trace && p_hiz_slices != nullptr && p_hiz_size == internal_size && p_hiz_mip_count > 0;
-	for (uint32_t v = 0; v < p_view_count && detail_trace; v++) {
-		detail_trace = p_hiz_slices[v].is_valid();
+	bool hiz_available = p_hiz_slices != nullptr && p_hiz_size == internal_size && p_hiz_mip_count > 0;
+	for (uint32_t v = 0; v < p_view_count && hiz_available; v++) {
+		hiz_available = p_hiz_slices[v].is_valid();
 	}
+	const bool detail_trace = p_detail_trace && hiz_available;
 	const uint32_t detail_trace_mip_count = detail_trace ? CLAMP(p_hiz_mip_count, 1u, 16u) : 0u;
+	bool specular_reflections = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections") &&
+			p_render_buffers->has_texture(RB_SCOPE_GI, RB_TEX_REFLECTION_U32);
+	if (specular_reflections &&
+			(!hddagi_shader.screen_probe_shader_version[HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_TRACE].is_valid() || !hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_TRACE].is_valid() ||
+					!hddagi_shader.screen_probe_shader_version[HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_APPLY].is_valid() || !hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_APPLY].is_valid())) {
+		specular_reflections = false;
+		WARN_PRINT_ONCE("HDDAGI specular reflections are unavailable because required resources could not be created.");
+	}
+	const bool specular_detail_trace = specular_reflections && hiz_available;
+	bool specular_screen_radiance_available = specular_detail_trace && p_previous_screen_color_valid && p_previous_screen_color_slices != nullptr && p_previous_screen_depth_slices != nullptr;
+	for (uint32_t v = 0; v < p_view_count && specular_screen_radiance_available; v++) {
+		specular_screen_radiance_available = p_previous_screen_color_slices[v].is_valid() && p_previous_screen_depth_slices[v].is_valid() &&
+				RD::get_singleton()->texture_size(p_previous_screen_color_slices[v]) == internal_size && RD::get_singleton()->texture_size(p_previous_screen_depth_slices[v]) == internal_size;
+	}
+	if (!specular_reflections) {
+		p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS);
+		rbgi->screen_probe_specular_svgf.clear();
+	}
 
 	uint32_t transport_configuration = hash_murmur3_one_64(p_environment.get_id());
 	transport_configuration = hash_murmur3_one_32(hddagi->reads_sky ? 1u : 0u, transport_configuration);
@@ -519,6 +548,45 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		return;
 	}
 
+	bool specular_resources_recreated = false;
+	if (specular_reflections) {
+		auto specular_texture_matches = [&](const StringName &p_name, RD::DataFormat p_format) {
+			if (!p_render_buffers->has_texture(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, p_name)) {
+				return false;
+			}
+			const RD::TextureFormat format = p_render_buffers->get_texture_format(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, p_name);
+			return format.format == p_format && format.width == uint32_t(p_gi_size.x) && format.height == uint32_t(p_gi_size.y) && format.mipmaps == 1 && format.array_layers == p_view_count &&
+					p_render_buffers->get_texture(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, p_name).is_valid();
+		};
+		bool specular_resources_valid = specular_texture_matches(RB_TEX_HDDAGI_SPECULAR_RAW, RD::DATA_FORMAT_R16G16B16A16_SFLOAT) &&
+				specular_texture_matches(RB_TEX_HDDAGI_SPECULAR_NORMAL_ROUGHNESS, RD::DATA_FORMAT_R8G8B8A8_UNORM) &&
+				specular_texture_matches(RB_TEX_HDDAGI_SPECULAR_VIEW_Z, RD::DATA_FORMAT_R32_SFLOAT) &&
+				specular_texture_matches(RB_TEX_HDDAGI_SPECULAR_MOTION, RD::DATA_FORMAT_R16G16B16A16_SFLOAT) &&
+				specular_texture_matches(RB_TEX_HDDAGI_SPECULAR_DENOISED, RD::DATA_FORMAT_R16G16B16A16_SFLOAT);
+		if (!specular_resources_valid) {
+			specular_resources_recreated = true;
+			p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS);
+			rbgi->screen_probe_specular_svgf.clear();
+			const uint32_t usage = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+			p_render_buffers->create_texture(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, RB_TEX_HDDAGI_SPECULAR_RAW, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, usage, RD::TEXTURE_SAMPLES_1, p_gi_size, p_view_count);
+			p_render_buffers->create_texture(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, RB_TEX_HDDAGI_SPECULAR_NORMAL_ROUGHNESS, RD::DATA_FORMAT_R8G8B8A8_UNORM, usage, RD::TEXTURE_SAMPLES_1, p_gi_size, p_view_count);
+			p_render_buffers->create_texture(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, RB_TEX_HDDAGI_SPECULAR_VIEW_Z, RD::DATA_FORMAT_R32_SFLOAT, usage, RD::TEXTURE_SAMPLES_1, p_gi_size, p_view_count);
+			p_render_buffers->create_texture(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, RB_TEX_HDDAGI_SPECULAR_MOTION, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, usage, RD::TEXTURE_SAMPLES_1, p_gi_size, p_view_count);
+			p_render_buffers->create_texture(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, RB_TEX_HDDAGI_SPECULAR_DENOISED, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, usage, RD::TEXTURE_SAMPLES_1, p_gi_size, p_view_count);
+			specular_resources_valid = specular_texture_matches(RB_TEX_HDDAGI_SPECULAR_RAW, RD::DATA_FORMAT_R16G16B16A16_SFLOAT) &&
+					specular_texture_matches(RB_TEX_HDDAGI_SPECULAR_NORMAL_ROUGHNESS, RD::DATA_FORMAT_R8G8B8A8_UNORM) &&
+					specular_texture_matches(RB_TEX_HDDAGI_SPECULAR_VIEW_Z, RD::DATA_FORMAT_R32_SFLOAT) &&
+					specular_texture_matches(RB_TEX_HDDAGI_SPECULAR_MOTION, RD::DATA_FORMAT_R16G16B16A16_SFLOAT) &&
+					specular_texture_matches(RB_TEX_HDDAGI_SPECULAR_DENOISED, RD::DATA_FORMAT_R16G16B16A16_SFLOAT);
+		}
+		if (!specular_resources_valid) {
+			p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS);
+			rbgi->screen_probe_specular_svgf.clear();
+			specular_reflections = false;
+			WARN_PRINT_ONCE("HDDAGI specular reflection textures could not be allocated.");
+		}
+	}
+
 	bool svgf_active = false;
 	bool svgf_resources_recreated = false;
 	RID svgf_velocity[2];
@@ -594,25 +662,38 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 			WARN_PRINT_ONCE(vformat("Unknown HDDAGI screen-probe denoiser setting %d; using Disabled.", denoiser_setting));
 		}
 	}
+	RID specular_velocity[2];
+	bool specular_motion_valid = specular_reflections && p_render_buffers->has_velocity_buffer(false);
+	for (uint32_t v = 0; v < p_view_count && specular_motion_valid; v++) {
+		specular_velocity[v] = p_render_buffers->get_velocity_buffer(false, v);
+		specular_motion_valid = specular_velocity[v].is_valid() && RD::get_singleton()->texture_is_valid(specular_velocity[v]) && RD::get_singleton()->texture_size(specular_velocity[v]) == internal_size;
+	}
+	const bool specular_svgf_active = specular_reflections && denoiser_setting == 1 && HDDAGIScreenProbeSVGF::is_supported() && specular_motion_valid;
+	if (!specular_svgf_active) {
+		rbgi->screen_probe_specular_svgf.clear();
+	}
 
 	const bool history_configuration_valid = !resources_recreated && hddagi->screen_probe_history_initialized && hddagi->screen_probe_history_probe_size == probe_size &&
 			hddagi->screen_probe_history_gi_size == p_gi_size && hddagi->screen_probe_history_screen_size == internal_size &&
 			hddagi->screen_probe_history_view_count == p_view_count && hddagi->screen_probe_history_configuration == configuration;
-	const bool common_history_valid = history_configuration_valid && hddagi->screen_probe_previous_camera_valid && !camera_cut;
+	const bool camera_history_valid = hddagi->screen_probe_previous_camera_valid && !camera_cut;
+	const bool common_history_valid = history_configuration_valid && camera_history_valid;
 	const bool history_valid = directional_gather && common_history_valid;
 	const bool svgf_history_valid = svgf_active && common_history_valid && !svgf_resources_recreated;
+	const bool specular_history_valid = specular_reflections && common_history_valid && !specular_resources_recreated;
+	const bool specular_screen_radiance_valid = specular_reflections && specular_screen_radiance_available && camera_history_valid;
 	const bool reset_history = resources_recreated || !history_configuration_valid || camera_cut;
 	const uint32_t current_history_slot = reset_history ? 0u : (hddagi->screen_probe_history_slot ^ 1u);
 	const uint32_t previous_history_slot = current_history_slot ^ 1u;
 	const uint32_t history_sequence = reset_history ? 0u : ((hddagi->screen_probe_history_sequence + 1u) & SCREEN_PROBE_HISTORY_SEQUENCE_MASK);
 
 	ScreenProbeSceneData scene_data = {};
-	const Transform3D previous_cam_inv_transform = common_history_valid ? hddagi->screen_probe_previous_cam_transform.affine_inverse() : p_cam_transform.affine_inverse();
+	const Transform3D previous_cam_inv_transform = camera_history_valid ? hddagi->screen_probe_previous_cam_transform.affine_inverse() : p_cam_transform.affine_inverse();
 	for (uint32_t v = 0; v < p_view_count; v++) {
 		const Projection raster_projection = raster_correction * p_projections[v];
-		const Projection previous_raster_projection = common_history_valid ? hddagi->screen_probe_previous_projection[v] : raster_projection;
+		const Projection previous_raster_projection = camera_history_valid ? hddagi->screen_probe_previous_projection[v] : raster_projection;
 		const Projection temporal_projection = temporal_correction * p_projections[v];
-		const Projection previous_temporal_projection = common_history_valid ? hddagi->screen_probe_previous_temporal_projection[v] : temporal_projection;
+		const Projection previous_temporal_projection = camera_history_valid ? hddagi->screen_probe_previous_temporal_projection[v] : temporal_projection;
 		RendererRD::MaterialStorage::store_camera(raster_projection.inverse(), scene_data.inv_projection[v]);
 		RendererRD::MaterialStorage::store_camera(raster_projection, scene_data.projection[v]);
 		RendererRD::MaterialStorage::store_camera(previous_raster_projection.inverse(), scene_data.previous_inv_projection[v]);
@@ -654,6 +735,17 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	svgf_prepare_push_constant.scene_to_svgf_scale = SCREEN_PROBE_SVGF_SCENE_TO_SIGNAL_SCALE;
 	svgf_prepare_push_constant.input_radiance_max = SCREEN_PROBE_SVGF_INPUT_RADIANCE_MAX;
 	svgf_prepare_push_constant.input_hit_distance_max = SCREEN_PROBE_SVGF_INPUT_HIT_DISTANCE_MAX;
+	HDDAGIShader::ScreenProbeSpecularPushConstant specular_push_constant = {};
+	specular_push_constant.base = push_constant;
+	specular_push_constant.base.flags = (specular_detail_trace ? HDDAGIShader::ScreenProbePushConstant::FLAG_DETAIL_TRACE : 0u) |
+			(specular_motion_valid ? HDDAGIShader::ScreenProbePushConstant::FLAG_SPECULAR_MOTION_VALID : 0u) |
+			(specular_screen_radiance_valid ? HDDAGIShader::ScreenProbePushConstant::FLAG_SPECULAR_SCREEN_RADIANCE_VALID : 0u);
+	specular_push_constant.base.detail_trace_mip_count = specular_detail_trace ? CLAMP(p_hiz_mip_count, 1u, 16u) : 0u;
+	specular_push_constant.tuning[0] = SCREEN_PROBE_SPECULAR_FULL_AUTHORITY_ROUGHNESS;
+	specular_push_constant.tuning[1] = SCREEN_PROBE_SPECULAR_FALLBACK_ROUGHNESS;
+	specular_push_constant.tuning[2] = SCREEN_PROBE_SPECULAR_RADIANCE_MAX;
+	specular_push_constant.tuning[3] = SCREEN_PROBE_SPECULAR_MIN_GGX_ALPHA;
+	specular_push_constant.eye_offset_exposure[3] = specular_screen_radiance_valid ? p_exposure_normalization / MAX(hddagi->screen_probe_previous_exposure_normalization, 0.001f) : 1.0f;
 
 	RID surface_sets[2];
 	RID trace_sets[2];
@@ -668,6 +760,15 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	RID svgf_resolve_sets[2];
 	RID apply_sets[2];
 	RID svgf_apply_sets[2];
+	RID specular_trace_sets[2];
+	RID specular_trace_sky_sets[2];
+	RID specular_apply_sets[2];
+	RID specular_denoised_apply_sets[2];
+	RID specular_raw[2];
+	RID specular_normal_roughness[2];
+	RID specular_view_z[2];
+	RID specular_motion[2];
+	RID specular_denoised[2];
 	uint32_t view_flags[2] = {};
 	const HDDAGIShader::ScreenProbeMode trace_mode = irradiance_cache_active ? HDDAGIShader::SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE : HDDAGIShader::SCREEN_PROBE_MODE_TRACE;
 	const HDDAGIShader::ScreenProbeMode resolve_mode = directional_gather ? HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE : HDDAGIShader::SCREEN_PROBE_MODE_RESOLVE;
@@ -691,6 +792,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		return;
 	}
 	bool svgf_sets_valid = true;
+	bool specular_sets_valid = specular_reflections;
 	RD::TextureView packed_ambient_view;
 	packed_ambient_view.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 	for (uint32_t v = 0; v < p_view_count; v++) {
@@ -921,6 +1023,60 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, ambient_output),
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, apply_base_ambient));
 		}
+		if (specular_reflections) {
+			specular_raw[v] = p_render_buffers->get_texture_slice(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, RB_TEX_HDDAGI_SPECULAR_RAW, v, 0);
+			specular_normal_roughness[v] = p_render_buffers->get_texture_slice(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, RB_TEX_HDDAGI_SPECULAR_NORMAL_ROUGHNESS, v, 0);
+			specular_view_z[v] = p_render_buffers->get_texture_slice(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, RB_TEX_HDDAGI_SPECULAR_VIEW_Z, v, 0);
+			specular_motion[v] = p_render_buffers->get_texture_slice(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, RB_TEX_HDDAGI_SPECULAR_MOTION, v, 0);
+			specular_denoised[v] = p_render_buffers->get_texture_slice(RB_SCOPE_HDDAGI_SPECULAR_REFLECTIONS, RB_TEX_HDDAGI_SPECULAR_DENOISED, v, 0);
+			const RID velocity = specular_motion_valid ? specular_velocity[v] : detail_hiz_fallback;
+			const RID previous_color = specular_screen_radiance_valid ? p_previous_screen_color_slices[v] : detail_hiz_fallback;
+			const RID previous_depth = specular_screen_radiance_valid ? p_previous_screen_depth_slices[v] : detail_hiz_fallback;
+			const HDDAGIShader::ScreenProbeMode specular_trace_mode = HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_TRACE;
+			specular_trace_sets[v] = UniformSetCacheRD::get_singleton()->get_cache(
+					hddagi_shader.screen_probe_shader_version[specular_trace_mode], 0,
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 0, surface),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, specular_raw[v]),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, hddagi->voxel_bits_tex),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, hddagi->voxel_region_tex),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 4, hddagi->voxel_light_tex),
+					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 5, linear_mipmap_sampler),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, hddagi->voxel_light_neighbour_data),
+					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, hddagi_ubo),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 8, hddagi->voxel_disocclusion_tex),
+					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 9, rbgi->screen_probe_scene_data_ubo),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 10, specular_detail_trace ? p_hiz_slices[v] : detail_hiz_fallback),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 11, normal_roughness),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 12, depth),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 13, velocity),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 14, specular_normal_roughness[v]),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 15, specular_view_z[v]),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 16, specular_motion[v]),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 17, previous_color),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 18, previous_depth));
+			specular_trace_sky_sets[v] = UniformSetCacheRD::get_singleton()->get_cache(
+					hddagi_shader.screen_probe_shader_version[specular_trace_mode], 1,
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, sky_texture),
+					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, linear_mipmap_sampler),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, hddagi->lightprobe_specular_tex));
+			specular_apply_sets[v] = UniformSetCacheRD::get_singleton()->get_cache(
+					hddagi_shader.screen_probe_shader_version[HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_APPLY], 0,
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, specular_raw[v]),
+					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, nearest_sampler),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_REFLECTION_U32, v, 0)),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, specular_normal_roughness[v]));
+			if (specular_svgf_active) {
+				specular_denoised_apply_sets[v] = UniformSetCacheRD::get_singleton()->get_cache(
+						hddagi_shader.screen_probe_shader_version[HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_APPLY], 0,
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, specular_denoised[v]),
+						RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, nearest_sampler),
+						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, p_render_buffers->get_texture_slice(RB_SCOPE_GI, RB_TEX_REFLECTION_U32, v, 0)),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, specular_normal_roughness[v]));
+			}
+			specular_sets_valid = specular_sets_valid && specular_raw[v].is_valid() && specular_normal_roughness[v].is_valid() && specular_view_z[v].is_valid() && specular_motion[v].is_valid() && specular_denoised[v].is_valid() &&
+					RD::get_singleton()->uniform_set_is_valid(specular_trace_sets[v]) && RD::get_singleton()->uniform_set_is_valid(specular_trace_sky_sets[v]) && RD::get_singleton()->uniform_set_is_valid(specular_apply_sets[v]) &&
+					(!specular_svgf_active || RD::get_singleton()->uniform_set_is_valid(specular_denoised_apply_sets[v]));
+		}
 
 		bool sets_valid = RD::get_singleton()->uniform_set_is_valid(surface_sets[v]) && RD::get_singleton()->uniform_set_is_valid(resolve_sets[v]) && RD::get_singleton()->uniform_set_is_valid(apply_sets[v]);
 		if (svgf_active) {
@@ -946,6 +1102,11 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		clear_svgf();
 		svgf_active = false;
 		WARN_PRINT_ONCE("HDDAGI screen-probe SVGF resources could not be bound; using the unfiltered signal.");
+	}
+	if (specular_reflections && !specular_sets_valid) {
+		specular_reflections = false;
+		rbgi->screen_probe_specular_svgf.clear();
+		WARN_PRINT_ONCE("HDDAGI specular reflection resources could not be bound.");
 	}
 
 	RD::get_singleton()->draw_command_begin_label("HDDAGI Screen Probes");
@@ -1061,6 +1222,18 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, resolve_size.x, resolve_size.y, 1);
 		}
+		if (specular_reflections) {
+			specular_push_constant.base.view_index = v;
+			specular_push_constant.eye_offset_exposure[0] = p_eye_offsets[v].x;
+			specular_push_constant.eye_offset_exposure[1] = p_eye_offsets[v].y;
+			specular_push_constant.eye_offset_exposure[2] = p_eye_offsets[v].z;
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_TRACE]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, specular_trace_sets[v], 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, specular_trace_sky_sets[v], 1);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &specular_push_constant, sizeof(specular_push_constant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_gi_size.x, p_gi_size.y, 1);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+		}
 	}
 	RD::get_singleton()->compute_list_end();
 	if (svgf_active) {
@@ -1107,6 +1280,57 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		}
 		RD::get_singleton()->compute_list_end();
 	}
+	if (specular_reflections) {
+		bool specular_svgf_succeeded[2] = {};
+		bool specular_svgf_failed = false;
+		if (specular_svgf_active) {
+			for (uint32_t v = 0; v < p_view_count; v++) {
+				HDDAGIScreenProbeSVGF::FrameSettings frame;
+				frame.projection = p_projections[v];
+				frame.previous_projection = specular_history_valid ? hddagi->screen_probe_previous_svgf_projection[v] : p_projections[v];
+				frame.camera_transform = p_cam_transform;
+				frame.previous_camera_transform = specular_history_valid ? hddagi->screen_probe_previous_cam_transform : p_cam_transform;
+				frame.taa_jitter = p_taa_jitter;
+				frame.previous_taa_jitter = specular_history_valid ? hddagi->screen_probe_previous_taa_jitter : p_taa_jitter;
+				frame.size = p_gi_size;
+				frame.denoising_range = SCREEN_PROBE_SPECULAR_DENOISING_RANGE;
+				frame.quality = svgf_quality;
+				frame.history_valid = specular_history_valid;
+				frame.specular = true;
+				frame.specular_full_resolution = p_gi_size == internal_size;
+
+				HDDAGIScreenProbeSVGF::Resources resources;
+				resources.motion_vectors = specular_motion[v];
+				resources.normal_roughness = specular_normal_roughness[v];
+				resources.view_z = specular_view_z[v];
+				resources.diffuse_radiance_hit_distance = specular_raw[v];
+				resources.output_diffuse_radiance_hit_distance = specular_denoised[v];
+				const Error error = rbgi->screen_probe_specular_svgf.denoise(v, frame, resources);
+				specular_svgf_succeeded[v] = error == OK;
+				if (error != OK) {
+					specular_svgf_failed = true;
+					WARN_PRINT_ONCE(vformat("HDDAGI specular SVGF failed with error %d; using the unfiltered signal.", error));
+				}
+			}
+			if (specular_svgf_failed) {
+				rbgi->screen_probe_specular_svgf.clear();
+			}
+		}
+
+		compute_list = RD::get_singleton()->compute_list_begin();
+		for (uint32_t v = 0; v < p_view_count; v++) {
+			specular_push_constant.base.view_index = v;
+			specular_push_constant.eye_offset_exposure[0] = p_eye_offsets[v].x;
+			specular_push_constant.eye_offset_exposure[1] = p_eye_offsets[v].y;
+			specular_push_constant.eye_offset_exposure[2] = p_eye_offsets[v].z;
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_APPLY]);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, specular_svgf_succeeded[v] ? specular_denoised_apply_sets[v] : specular_apply_sets[v], 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &specular_push_constant, sizeof(specular_push_constant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_gi_size.x, p_gi_size.y, 1);
+		}
+		RD::get_singleton()->compute_list_end();
+		rbgi->hddagi_specular_reflection_valid = true;
+	}
 	RD::get_singleton()->draw_command_end_label();
 
 	hddagi->screen_probe_history_initialized = true;
@@ -1124,5 +1348,6 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	}
 	hddagi->screen_probe_previous_taa_jitter = p_taa_jitter;
 	hddagi->screen_probe_previous_cam_transform = p_cam_transform;
+	hddagi->screen_probe_previous_exposure_normalization = p_exposure_normalization;
 	hddagi->screen_probe_previous_camera_valid = true;
 }

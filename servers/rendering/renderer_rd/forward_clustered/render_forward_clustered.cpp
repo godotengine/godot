@@ -117,6 +117,7 @@ bool RenderForwardClustered::RenderBufferDataForwardClustered::ensure_mfx_tempor
 #endif
 
 void RenderForwardClustered::RenderBufferDataForwardClustered::free_data() {
+	ss_effects_data.last_frame_valid = false;
 	// JIC, should already have been cleared
 	if (render_buffers) {
 		render_buffers->clear_context(RB_SCOPE_FORWARD_CLUSTERED);
@@ -818,6 +819,10 @@ uint32_t RenderForwardClustered::_setup_environment(const RenderDataRD *p_render
 				if (rd->has_custom_data(RB_SCOPE_FORWARD_CLUSTERED)) {
 					rb_data = rd->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
 					ss_flags |= (rb_data.is_valid() && !rb_data->ss_effects_data.ssr.half_size) ? (1 << 3) : 0;
+				}
+				if (rd->has_custom_data(RB_SCOPE_GI)) {
+					Ref<RendererRD::GI::RenderBuffersGI> rbgi = rd->get_custom_data(RB_SCOPE_GI);
+					ss_flags |= (rbgi.is_valid() && rbgi->hddagi_specular_reflection_valid) ? (1 << 4) : 0;
 				}
 			}
 		}
@@ -1682,7 +1687,24 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	Size2i depth_pyramid_size;
 	uint32_t depth_pyramid_mip_count = 0;
 	bool depth_pyramid_is_built = false;
-	if (p_depth_pre_pass_completed && p_use_hddagi_screen_probes && rb_data.is_valid() && ss_effects != nullptr && copy_effects != nullptr && GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_detail_trace")) {
+	const bool screen_probe_detail_trace_requested = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_detail_trace");
+	const bool screen_probe_specular_requested = p_use_hddagi_screen_probes && GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections");
+	RID previous_screen_color_views[RendererSceneRender::MAX_RENDER_VIEWS] = {};
+	RID previous_screen_depth_views[RendererSceneRender::MAX_RENDER_VIEWS] = {};
+	bool previous_screen_color_valid = false;
+	if (rb_data.is_valid() && ss_effects != nullptr && (p_use_ssil || p_use_ssr || screen_probe_specular_requested)) {
+		const bool history_preserved = ss_effects->allocate_last_frame_buffer(rb, p_use_ssil, p_use_ssr, screen_probe_specular_requested);
+		rb_data->ss_effects_data.last_frame_valid = rb_data->ss_effects_data.last_frame_valid && history_preserved;
+		previous_screen_color_valid = screen_probe_specular_requested && rb_data->ss_effects_data.last_frame_valid &&
+				rb->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME) && rb->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH);
+		for (uint32_t v = 0; v < rb->get_view_count() && previous_screen_color_valid; v++) {
+			previous_screen_color_views[v] = rb->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME, v, 0);
+			previous_screen_depth_views[v] = rb->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH, v, 0);
+			previous_screen_color_valid = previous_screen_color_views[v].is_valid() && previous_screen_depth_views[v].is_valid() &&
+					RD::get_singleton()->texture_size(previous_screen_color_views[v]) == rb->get_internal_size() && RD::get_singleton()->texture_size(previous_screen_depth_views[v]) == rb->get_internal_size();
+		}
+	}
+	if (p_depth_pre_pass_completed && p_use_hddagi_screen_probes && rb_data.is_valid() && ss_effects != nullptr && copy_effects != nullptr && (screen_probe_detail_trace_requested || screen_probe_specular_requested)) {
 		RENDER_TIMESTAMP("Prepare Shared Hi-Z for HDDAGI Screen Probes");
 		if (ss_effects->screen_space_depth_pyramid_allocate(rb, rb_data->ss_effects_data.depth_pyramid) && ss_effects->screen_space_depth_pyramid_build(rb, rb_data->ss_effects_data.depth_pyramid, *copy_effects)) {
 			depth_pyramid_is_built = true;
@@ -1715,7 +1737,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			}
 		}
 
-		gi.process_hddagi_screen_probes(rb, p_normal_roughness_slices, depth_pyramid_is_built ? depth_pyramid_views : nullptr, depth_pyramid_size, depth_pyramid_mip_count, depth_pyramid_is_built, p_render_data->environment, p_render_data->scene_data->view_count, gi_size, p_render_data->scene_data->view_projection, p_render_data->scene_data->taa_jitter, p_render_data->scene_data->cam_transform, exposure_normalization, ibl_exposure_normalization, environment_get_hddagi_screen_probe_size(p_render_data->environment), environment_get_hddagi_screen_probe_normal_bias(p_render_data->environment), environment_get_hddagi_screen_probe_mode(p_render_data->environment));
+		gi.process_hddagi_screen_probes(rb, p_normal_roughness_slices, depth_pyramid_is_built ? depth_pyramid_views : nullptr, previous_screen_color_views, previous_screen_depth_views, previous_screen_color_valid, depth_pyramid_size, depth_pyramid_mip_count, depth_pyramid_is_built && screen_probe_detail_trace_requested, p_render_data->environment, p_render_data->scene_data->view_count, gi_size, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->taa_jitter, p_render_data->scene_data->cam_transform, exposure_normalization, ibl_exposure_normalization, environment_get_hddagi_screen_probe_size(p_render_data->environment), environment_get_hddagi_screen_probe_normal_bias(p_render_data->environment), environment_get_hddagi_screen_probe_mode(p_render_data->environment));
 	} else if (!p_render_data->reflection_probe.is_valid()) {
 		gi.disable_hddagi_screen_probes(rb);
 	}
@@ -1728,10 +1750,6 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		// Note, in multiview we're allocating buffers for each eye/view we're rendering.
 		// This should allow most of the processing to happen in parallel even if we're doing
 		// drawcalls per eye/view. It will all sync up at the barrier.
-
-		if (p_use_ssil || p_use_ssr) {
-			ss_effects->allocate_last_frame_buffer(rb, p_use_ssil, p_use_ssr);
-		}
 
 		if (p_use_ssao || p_use_ssil) {
 			RENDER_TIMESTAMP("Prepare Depth for SSAO/SSIL");
@@ -1942,7 +1960,9 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			environment_get_hddagi_screen_probe_mode(p_render_data->environment) == RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER;
 	const bool hddagi_svgf_screen_probes_active = hddagi_screen_probes_active &&
 			GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_denoiser") == 1 && HDDAGIScreenProbeSVGF::is_supported();
-	const bool hddagi_screen_probe_motion_vectors_required = hddagi_directional_screen_probes_active || hddagi_svgf_screen_probes_active;
+	const bool hddagi_specular_reflections_active = hddagi_screen_probes_active &&
+			GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections");
+	const bool hddagi_screen_probe_motion_vectors_required = hddagi_directional_screen_probes_active || hddagi_svgf_screen_probes_active || hddagi_specular_reflections_active;
 
 	// check if we need motion vectors
 	bool motion_vectors_required;
@@ -1976,6 +1996,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_ssr = false;
 	bool using_hddagi = false;
 	bool using_hddagi_screen_probes = false;
+	bool using_hddagi_specular_screen_radiance = false;
 	bool using_voxelgi = false;
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_ssil = !is_reflection_probe && p_render_data->environment.is_valid() && environment_get_ssil_enabled(p_render_data->environment);
@@ -2030,6 +2051,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			}
 		}
 		using_hddagi_screen_probes = using_hddagi && environment_get_hddagi_screen_probes_enabled(p_render_data->environment);
+		using_hddagi_specular_screen_radiance = using_hddagi_screen_probes && GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections");
 
 		if (p_render_data->scene_data->view_count > 1) {
 			color_pass_flags |= COLOR_PASS_FLAG_MULTIVIEW;
@@ -2599,10 +2621,15 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RD::get_singleton()->draw_command_end_label();
 
-	RD::get_singleton()->draw_command_begin_label("Copy Framebuffer for SSIL/SSR");
-	if (using_ssil || using_ssr) {
-		RENDER_TIMESTAMP("Copy Final Framebuffer (SSIL/SSR)");
+	RD::get_singleton()->draw_command_begin_label("Copy Framebuffer for Screen-Space Lighting");
+	if (using_ssil || using_ssr || using_hddagi_specular_screen_radiance) {
+		RENDER_TIMESTAMP("Copy Final Framebuffer (SSIL/SSR/HDDAGI)");
 		_copy_framebuffer_to_ss_effects(rb, using_ssil, using_ssr);
+		if (rb_data.is_valid()) {
+			rb_data->ss_effects_data.last_frame_valid = true;
+		}
+	} else if (rb_data.is_valid()) {
+		rb_data->ss_effects_data.last_frame_valid = false;
 	}
 	RD::get_singleton()->draw_command_end_label();
 
@@ -3960,6 +3987,15 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		uniforms.push_back(u);
 	}
 #endif // MODULE_TEXTURE_STREAMING_ENABLED
+	{
+		RD::Uniform u;
+		u.binding = 39;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		RID blend = rb.is_valid() && rb->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND) ? rb->get_texture(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND) : RID();
+		RID texture = blend.is_valid() ? blend : texture_storage->texture_rd_get_default(is_multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+		u.append_id(texture);
+		uniforms.push_back(u);
+	}
 
 	return UniformSetCacheRD::get_singleton()->get_cache_vec(scene_shader.get_default_shader_rd(is_multiview), RENDER_PASS_UNIFORM_SET, uniforms);
 }

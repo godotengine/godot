@@ -58,6 +58,7 @@ struct alignas(16) SVGFFrameData {
 	float current_view_to_previous_view[16] = {};
 	float current_view_to_world[16] = {};
 	float previous_view_to_world[16] = {};
+	float taa_jitter[4] = {};
 };
 
 struct alignas(16) SVGFPushConstant {
@@ -66,7 +67,7 @@ struct alignas(16) SVGFPushConstant {
 	float atrous[4] = {};
 };
 
-static_assert(sizeof(SVGFFrameData) == 320u, "SVGF frame uniform ABI must remain 320 bytes.");
+static_assert(sizeof(SVGFFrameData) == 336u, "SVGF frame uniform ABI must remain 336 bytes.");
 static_assert(sizeof(SVGFPushConstant) == 48u, "SVGF push-constant ABI must remain 48 bytes.");
 
 } // namespace
@@ -317,6 +318,10 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		RendererRD::MaterialStorage::store_transform(current_view_to_previous_view, frame_data.current_view_to_previous_view);
 		RendererRD::MaterialStorage::store_transform(p_frame.camera_transform, frame_data.current_view_to_world);
 		RendererRD::MaterialStorage::store_transform(p_frame.previous_camera_transform, frame_data.previous_view_to_world);
+		frame_data.taa_jitter[0] = p_frame.taa_jitter.x;
+		frame_data.taa_jitter[1] = p_frame.taa_jitter.y;
+		frame_data.taa_jitter[2] = p_frame.previous_taa_jitter.x;
+		frame_data.taa_jitter[3] = p_frame.previous_taa_jitter.y;
 
 		RenderingDevice *rd = RenderingDevice::get_singleton();
 		ERR_FAIL_NULL_V(rd, ERR_UNAVAILABLE);
@@ -329,20 +334,21 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		const uint32_t previous_slot = view->history_slot;
 		const uint32_t current_slot = previous_slot ^ 1u;
 		const bool history_valid = p_frame.history_valid && view->history_initialized;
-		const uint32_t iteration_count = HDDAGIScreenProbeSVGF::get_atrous_iteration_count(p_frame.quality);
+		const uint32_t iteration_count = p_frame.specular ? 1u : HDDAGIScreenProbeSVGF::get_atrous_iteration_count(p_frame.quality);
 
 		SVGFPushConstant push_constant = {};
-		push_constant.control[0] = history_valid ? 1u : 0u;
+		push_constant.control[0] = (history_valid ? 1u : 0u) | (p_frame.specular ? 2u : 0u) |
+				(p_frame.specular && p_frame.specular_full_resolution ? 4u : 0u);
 		push_constant.control[3] = (p_frame.projection.is_orthogonal() ? 1u : 0u) | (p_frame.previous_projection.is_orthogonal() ? 2u : 0u);
 		push_constant.tuning[0] = p_frame.denoising_range;
-		push_constant.tuning[1] = 0.9f;
-		push_constant.tuning[2] = 0.005f;
-		push_constant.tuning[3] = 2.0f;
-		push_constant.atrous[0] = 8.0f;
-		push_constant.atrous[1] = 0.005f;
+		push_constant.tuning[1] = p_frame.specular ? 0.95f : 0.9f;
+		push_constant.tuning[2] = p_frame.specular ? 0.0025f : 0.005f;
+		push_constant.tuning[3] = p_frame.specular ? 2.5f : 2.0f;
+		push_constant.atrous[0] = p_frame.specular ? 12.0f : 8.0f;
+		push_constant.atrous[1] = p_frame.specular ? 0.003f : 0.005f;
 		// Scale luminance moments separately to avoid FP16 underflow in the scene / 512 radiance domain.
 		push_constant.atrous[2] = 4.0e-5f;
-		push_constant.atrous[3] = 30.0f;
+		push_constant.atrous[3] = p_frame.specular ? 12.0f : 30.0f;
 
 		UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 		ERR_FAIL_NULL_V(uniform_set_cache, ERR_UNAVAILABLE);
@@ -351,7 +357,8 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		const RID atrous_shader = shader.version_get_shader(shader_version, SVGF_MODE_ATROUS);
 		ERR_FAIL_COND_V(temporal_shader.is_null() || history_fix_shader.is_null() || atrous_shader.is_null(), ERR_CANT_CREATE);
 
-		// Use the external output as transient storage until history reconstruction completes.
+		const RID temporal_signal_destination = p_frame.specular ? view->history_signal[current_slot] : view->filter_scratch;
+		const RID temporal_moments_destination = p_frame.specular ? view->history_moments[current_slot] : p_resources.output_diffuse_radiance_hit_distance;
 		const RID temporal_set = uniform_set_cache->get_cache(
 				temporal_shader, 0,
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_resources.diffuse_radiance_hit_distance),
@@ -363,25 +370,29 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, view->history_normal_roughness[previous_slot]),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 7, view->history_view_z[previous_slot]),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 8, nearest_sampler),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, view->filter_scratch),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, p_resources.output_diffuse_radiance_hit_distance),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, temporal_signal_destination),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 10, temporal_moments_destination),
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 11, view->history_normal_roughness[current_slot]),
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 12, view->history_view_z[current_slot]));
 		const RID temporal_frame_data_set = uniform_set_cache->get_cache(
 				temporal_shader, 1,
 				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 0, view->frame_data_buffer));
-		const RID history_fix_set = uniform_set_cache->get_cache(
-				history_fix_shader, 0,
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, view->filter_scratch),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_resources.output_diffuse_radiance_hit_distance),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, view->history_normal_roughness[current_slot]),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, view->history_view_z[current_slot]),
-				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, nearest_sampler),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, view->history_signal[current_slot]),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, view->history_moments[current_slot]));
-		const RID history_fix_frame_data_set = uniform_set_cache->get_cache(
-				history_fix_shader, 1,
-				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 0, view->frame_data_buffer));
+		RID history_fix_set;
+		RID history_fix_frame_data_set;
+		if (!p_frame.specular) {
+			history_fix_set = uniform_set_cache->get_cache(
+					history_fix_shader, 0,
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, view->filter_scratch),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_resources.output_diffuse_radiance_hit_distance),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, view->history_normal_roughness[current_slot]),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, view->history_view_z[current_slot]),
+					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, nearest_sampler),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, view->history_signal[current_slot]),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, view->history_moments[current_slot]));
+			history_fix_frame_data_set = uniform_set_cache->get_cache(
+					history_fix_shader, 1,
+					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 0, view->frame_data_buffer));
+		}
 		RID atrous_sets[MAX_ATROUS_ITERATION_COUNT];
 		RID signal_source = view->history_signal[current_slot];
 		const bool first_iteration_writes_output = (iteration_count & 1u) != 0u;
@@ -396,11 +407,14 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 			atrous_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, nearest_sampler));
 			atrous_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, signal_destination));
 			atrous_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, p_resources.diffuse_radiance_hit_distance));
+			atrous_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 7, p_resources.normal_roughness));
+			atrous_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 8, p_resources.motion_vectors));
 			atrous_sets[iteration] = uniform_set_cache->get_cache_vec(atrous_shader, 0, atrous_uniforms);
 			signal_source = signal_destination;
 		}
 
-		if (!temporal_set.is_valid() || !temporal_frame_data_set.is_valid() || !history_fix_set.is_valid() || !history_fix_frame_data_set.is_valid() ||
+		if (!temporal_set.is_valid() || !temporal_frame_data_set.is_valid() ||
+				(!p_frame.specular && (!history_fix_set.is_valid() || !history_fix_frame_data_set.is_valid())) ||
 				signal_source != p_resources.output_diffuse_radiance_hit_distance) {
 			return ERR_CANT_CREATE;
 		}
@@ -419,14 +433,16 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		rd->compute_list_dispatch_threads(compute_list, p_frame.size.x, p_frame.size.y, 1);
 		rd->compute_list_add_barrier(compute_list);
 
-		push_constant.control[1] = HISTORY_FIX_BASE_PIXEL_STRIDE;
-		push_constant.control[2] = HISTORY_FIX_FRAME_COUNT;
-		rd->compute_list_bind_compute_pipeline(compute_list, pipelines[SVGF_MODE_HISTORY_FIX]);
-		rd->compute_list_bind_uniform_set(compute_list, history_fix_set, 0);
-		rd->compute_list_bind_uniform_set(compute_list, history_fix_frame_data_set, 1);
-		rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
-		rd->compute_list_dispatch_threads(compute_list, p_frame.size.x, p_frame.size.y, 1);
-		rd->compute_list_add_barrier(compute_list);
+		if (!p_frame.specular) {
+			push_constant.control[1] = HISTORY_FIX_BASE_PIXEL_STRIDE;
+			push_constant.control[2] = HISTORY_FIX_FRAME_COUNT;
+			rd->compute_list_bind_compute_pipeline(compute_list, pipelines[SVGF_MODE_HISTORY_FIX]);
+			rd->compute_list_bind_uniform_set(compute_list, history_fix_set, 0);
+			rd->compute_list_bind_uniform_set(compute_list, history_fix_frame_data_set, 1);
+			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
+			rd->compute_list_dispatch_threads(compute_list, p_frame.size.x, p_frame.size.y, 1);
+			rd->compute_list_add_barrier(compute_list);
+		}
 
 		for (uint32_t iteration = 0; iteration < iteration_count; iteration++) {
 			push_constant.control[1] = 1u << iteration;

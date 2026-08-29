@@ -104,6 +104,8 @@ public:
 		ClusterBuilderRD *cluster_builder = nullptr;
 
 		struct SSEffectsData {
+			bool last_frame_valid = false;
+
 			Projection ssil_last_frame_projections[RendererSceneRender::MAX_RENDER_VIEWS];
 			Transform3D ssil_last_frame_transform;
 

@@ -54,6 +54,8 @@ public:
 		float denoising_range = 500000.0f;
 		Quality quality = QUALITY_HIGH;
 		bool history_valid = false;
+		bool specular = false;
+		bool specular_full_resolution = false;
 	};
 
 	struct Resources {

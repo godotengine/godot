@@ -1685,6 +1685,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 indirect_specular_light = vec3(0.0, 0.0, 0.0);
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
+	float hddagi_reflection_coverage = 1.0;
 #ifndef MODE_UNSHADED
 	// Used in regular draw pass and when drawing SDFs for HDDAGI and materials for VoxelGI.
 	emission *= scene_data.emissive_exposure_normalization;
@@ -2024,12 +2025,17 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef USE_MULTIVIEW
 		vec4 buffer_ambient = textureLod(sampler2DArray(ambient_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
 		vec4 buffer_reflection = textureLod(sampler2DArray(reflection_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
+		vec2 buffer_blend = textureLod(sampler2DArray(ambient_reflection_blend_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0).rg;
 #else // USE_MULTIVIEW
 		vec4 buffer_ambient = textureLod(sampler2D(ambient_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
 		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
+		vec2 buffer_blend = textureLod(sampler2D(ambient_reflection_blend_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0).rg;
 #endif // USE_MULTIVIEW
 
+		buffer_ambient.a = buffer_blend.r;
+		buffer_reflection.a = buffer_blend.g;
 		ambient_light = mix(ambient_light, buffer_ambient.rgb, buffer_ambient.a);
+		hddagi_reflection_coverage = buffer_reflection.a;
 		indirect_specular_light = mix(indirect_specular_light, buffer_reflection.rgb, buffer_reflection.a);
 	}
 #endif // !USE_LIGHTMAP
@@ -2192,6 +2198,9 @@ void fragment_shader(in SceneData scene_data) {
 		}
 
 		float specular_occlusion = area / (M_TAU * (1.0 - cos_a_s));
+		if (!sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI)) {
+			specular_occlusion = mix(1.0, specular_occlusion, hddagi_reflection_coverage);
+		}
 		indirect_specular_light *= specular_occlusion;
 #else // BENT_NORMAL_MAP_USED
 		float specular_occlusion = (ambient_light.r * 0.3 + ambient_light.g * 0.59 + ambient_light.b * 0.11) * 2.0; // Luminance of ambient light.
@@ -2201,6 +2210,9 @@ void fragment_shader(in SceneData scene_data) {
 		// 10.0 is a magic number, it gives the intended effect in most scenarios.
 		// Low enough for occlusion, high enough for reaction to lights and shadows.
 		specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+		if (!sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI)) {
+			specular_occlusion = mix(1.0, specular_occlusion, hddagi_reflection_coverage);
+		}
 		indirect_specular_light *= specular_occlusion;
 #endif // BENT_NORMAL_MAP_USED
 #endif // SPECULAR_OCCLUSION_DISABLED
@@ -2217,6 +2229,8 @@ void fragment_shader(in SceneData scene_data) {
 		}
 
 		//process ssr
+		bool hddagi_unified_specular = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_HDDAGI_UNIFIED_SPECULAR) &&
+				!sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI);
 		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
 			bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
 
@@ -2244,6 +2258,10 @@ void fragment_shader(in SceneData scene_data) {
 
 			// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
 			ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
+			if (hddagi_unified_specular) {
+				const float unified_specular_authority = 1.0 - smoothstep(0.30, 0.40, roughness);
+				ssr *= 1.0 - hddagi_reflection_coverage * unified_specular_authority;
+			}
 
 			// Alpha is premultiplied.
 			indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;

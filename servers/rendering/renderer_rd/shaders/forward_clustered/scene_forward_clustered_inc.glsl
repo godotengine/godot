@@ -201,6 +201,7 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL (1 << 1)
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR (1 << 2)
 #define SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR (1 << 3)
+#define SCREEN_SPACE_EFFECTS_FLAGS_HDDAGI_UNIFIED_SPECULAR (1 << 4)
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
@@ -438,6 +439,7 @@ layout(set = 1, binding = 26) uniform texture2DArray normal_roughness_buffer;
 layout(set = 1, binding = 27) uniform texture2DArray ao_buffer;
 layout(set = 1, binding = 28) uniform texture2DArray ambient_buffer;
 layout(set = 1, binding = 29) uniform texture2DArray reflection_buffer;
+layout(set = 1, binding = 39) uniform texture2DArray ambient_reflection_blend_buffer;
 #define multiviewSampler sampler2DArray
 #else // USE_MULTIVIEW
 layout(set = 1, binding = 24) uniform texture2D depth_buffer;
@@ -446,6 +448,7 @@ layout(set = 1, binding = 26) uniform texture2D normal_roughness_buffer;
 layout(set = 1, binding = 27) uniform texture2D ao_buffer;
 layout(set = 1, binding = 28) uniform texture2D ambient_buffer;
 layout(set = 1, binding = 29) uniform texture2D reflection_buffer;
+layout(set = 1, binding = 39) uniform texture2D ambient_reflection_blend_buffer;
 #define multiviewSampler sampler2D
 #endif
 layout(set = 1, binding = 30) uniform texture2DArray hddagi_lightprobe_specular;

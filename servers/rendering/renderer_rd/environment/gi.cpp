@@ -3269,6 +3269,7 @@ void GI::init(SkyRD *p_sky) {
 	{
 		static_assert(sizeof(HDDAGIShader::ScreenProbePushConstant) == 80, "Screen probe push constant must match the shader ABI.");
 		static_assert(sizeof(HDDAGIShader::ScreenProbeSVGFPreparePushConstant) == 112, "Screen probe SVGF prepare push constant must match the shader ABI.");
+		static_assert(sizeof(HDDAGIShader::ScreenProbeSpecularPushConstant) == 112, "Screen probe specular push constant must match the shader ABI.");
 		static_assert(sizeof(ScreenProbeSceneData) == 816, "Screen probe scene data must match the shader ABI.");
 
 		Vector<String> screen_probe_modes;
@@ -3287,6 +3288,8 @@ void GI::init(SkyRD *p_sky) {
 		screen_probe_modes.push_back("\n#define MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE\n");
 		screen_probe_modes.push_back("\n#define MODE_APPLY\n");
 		screen_probe_modes.push_back("\n#define MODE_APPLY\n#define MODE_SVGF_APPLY\n");
+		screen_probe_modes.push_back("\n#define MODE_TRACE\n#define MODE_SPECULAR_TRACE\n");
+		screen_probe_modes.push_back("\n#define MODE_SPECULAR_APPLY\n");
 		DEV_ASSERT(screen_probe_modes.size() == HDDAGIShader::SCREEN_PROBE_MODE_MAX);
 
 		String screen_probe_defines;
@@ -3674,7 +3677,9 @@ RID GI::RenderBuffersGI::get_voxel_gi_buffer() {
 }
 
 void GI::RenderBuffersGI::free_data() {
+	hddagi_specular_reflection_valid = false;
 	screen_probe_svgf.clear();
+	screen_probe_specular_svgf.clear();
 	screen_probe_irradiance_cache.clear();
 
 	if (screen_probe_scene_data_ubo.is_valid()) {

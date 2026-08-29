@@ -3112,6 +3112,9 @@
 		<member name="rendering/global_illumination/hddagi/screen_probe_radiance_cache_multibounce" type="bool" setter="" getter="" default="false">
 			Enables multibounce lighting in the irradiance cache.
 		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_specular_reflections" type="bool" setter="" getter="" default="false">
+			Uses screen-space tracing to improve HDDAGI reflections on smooth surfaces.
+		</member>
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
 			The VoxelGI quality to use. High quality leads to more precise lighting and better reflections, but is slower to render. This setting does not affect the baked data and doesn't require baking the [VoxelGI] again to apply.
 			[b]Note:[/b] This property is only read when the project starts. To control VoxelGI quality at runtime, call [method RenderingServer.voxel_gi_set_quality] instead.

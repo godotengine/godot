@@ -363,36 +363,49 @@ SSEffects::SSEffects() {
 	}
 }
 
-void SSEffects::allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr) {
+bool SSEffects::allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr, bool p_use_hddagi_specular) {
 	Size2i last_frame_size = p_render_buffers->get_internal_size();
 	uint32_t mipmaps = 1;
 	uint32_t view_count = p_render_buffers->get_view_count();
 
-	if (!p_use_ssil && p_use_ssr && ssr_half_size) {
+	if (!p_use_hddagi_specular && !p_use_ssil && p_use_ssr && ssr_half_size) {
 		last_frame_size /= 2;
 	}
 
 	if (p_use_ssil) {
 		mipmaps = 6;
+	} else if (p_use_hddagi_specular && p_use_ssr && ssr_half_size) {
+		mipmaps = 2;
 	}
 
 	bool should_create = true;
-	bool has_texture = p_render_buffers->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME);
+	const bool has_color = p_render_buffers->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME);
+	const bool has_depth = p_render_buffers->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH);
 
-	if (has_texture) {
+	if (has_color && has_depth == p_use_hddagi_specular) {
 		RID last_frame_texture = p_render_buffers->get_texture(RB_SCOPE_SSLF, RB_LAST_FRAME);
 		RD::TextureFormat texture_format = RD::get_singleton()->texture_get_format(last_frame_texture);
-		should_create = texture_format.width != (uint32_t)last_frame_size.width || texture_format.height != (uint32_t)last_frame_size.height || texture_format.mipmaps != mipmaps || texture_format.array_layers != view_count;
+		should_create = texture_format.format != RD::DATA_FORMAT_R16G16B16A16_SFLOAT || texture_format.width != (uint32_t)last_frame_size.width || texture_format.height != (uint32_t)last_frame_size.height || texture_format.mipmaps != mipmaps || texture_format.array_layers != view_count;
+		if (!should_create && p_use_hddagi_specular) {
+			RID last_frame_depth = p_render_buffers->get_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH);
+			RD::TextureFormat depth_format = RD::get_singleton()->texture_get_format(last_frame_depth);
+			should_create = depth_format.format != RD::DATA_FORMAT_R32_SFLOAT || depth_format.width != (uint32_t)last_frame_size.width || depth_format.height != (uint32_t)last_frame_size.height || depth_format.mipmaps != 1 || depth_format.array_layers != view_count;
+		}
 	}
 
 	if (should_create) {
-		if (has_texture) {
+		if (has_color || has_depth) {
 			p_render_buffers->clear_context(RB_SCOPE_SSLF);
 		}
 
 		RID last_frame_texture = p_render_buffers->create_texture(RB_SCOPE_SSLF, RB_LAST_FRAME, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT, RD::TEXTURE_SAMPLES_1, last_frame_size, view_count, mipmaps);
 		RD::get_singleton()->texture_clear(last_frame_texture, Color(0, 0, 0, 0), 0, mipmaps, 0, view_count);
+		if (p_use_hddagi_specular) {
+			RID last_frame_depth = p_render_buffers->create_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH, RD::DATA_FORMAT_R32_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT, RD::TEXTURE_SAMPLES_1, last_frame_size, view_count, 1);
+			RD::get_singleton()->texture_clear(last_frame_depth, Color(0, 0, 0, 0), 0, 1, 0, view_count);
+		}
 	}
+	return !should_create;
 }
 
 void SSEffects::copy_internal_texture_to_last_frame(Ref<RenderSceneBuffersRD> p_render_buffers, CopyEffects &p_copy_effects) {
@@ -416,6 +429,13 @@ void SSEffects::copy_internal_texture_to_last_frame(Ref<RenderSceneBuffersRD> p_
 			} else {
 				p_copy_effects.make_mipmap(source, dest, dest_size);
 			}
+		}
+	}
+	if (p_render_buffers->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH)) {
+		for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
+			RID source = p_render_buffers->get_depth_texture(v);
+			RID dest = p_render_buffers->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH, v, 0);
+			p_copy_effects.copy_depth_to_rect(source, dest, Rect2i(Vector2i(), RD::get_singleton()->texture_size(dest)));
 		}
 	}
 }
@@ -1711,7 +1731,7 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 
 		RID last_frame_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME, v, 0);
 		if (ssr_half_size && RD::get_singleton()->texture_size(last_frame_texture) != p_ssr_buffers.size) {
-			// SSIL is likely also enabled. The texture we need is in the second mipmap in this case.
+			// Full-resolution history uses the second mipmap for half-resolution SSR.
 			last_frame_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME, v, 1);
 		}
 
