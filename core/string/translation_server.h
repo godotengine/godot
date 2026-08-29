@@ -93,6 +93,7 @@ class TranslationServer : public Object {
 	static inline HashMap<String, String> plural_rules_map;
 	static inline HashMap<String, int> num_system_map;
 	static inline HashMap<String, HashSet<String>> language_script_map;
+	static inline HashMap<String, String> language_script_default;
 
 	void init_locale_info();
 
@@ -154,6 +155,7 @@ public:
 	String get_percent_sign(const String &p_locale) const;
 
 	String standardize_locale(const String &p_locale, bool p_add_defaults = false) const;
+	Dictionary standardize_locale_dict(const String &p_locale, bool p_add_defaults = false) const;
 
 	int compare_locales(const String &p_locale_a, const String &p_locale_b) const;
 
