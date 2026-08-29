@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VertexAIContext" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Aggregated context the Vertex AI assistant reasons over.
+	</brief_description>
+	<description>
+		VertexAIContext gathers a nested dictionary describing the project: file structure, scripts, scenes, shaders, assets, and an error log section. Use [method build_from_project] to populate it, then pass it to a backend or inspect it via [method to_dictionary].
+	</description>
+	<methods>
+		<method name="build_from_project">
+			<return type="void" />
+			<param index="0" name="root" type="String" default="&quot;res://&quot;" />
+			<description>
+				Walks the project filesystem (up to a reasonable depth) and categorizes files into project_structure, scripts, scenes, shaders and assets sections.
+			</description>
+		</method>
+		<method name="to_dictionary">
+			<return type="Dictionary" />
+			<description>
+				Returns the raw context dictionary.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="data" type="Dictionary" setter="set_data" getter="get_data">
+			The underlying context dictionary.
+		</member>
+	</members>
+</class>

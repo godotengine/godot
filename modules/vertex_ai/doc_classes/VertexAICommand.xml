@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VertexAICommand" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A named, documented action the Vertex AI assistant can perform.
+	</brief_description>
+	<description>
+		A VertexAICommand binds a human-readable name and description to a Callable handler. Set [member is_destructive] to [code]true[/code] for actions that change project files or scene state; the assistant will require an explicit confirmation before executing them.
+	</description>
+	<methods>
+		<method name="to_dictionary">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary describing the command (name, description, is_destructive).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="description" type="String" setter="set_description" getter="get_description" default="&quot;&quot;">
+			Human-readable description shown in command listings.
+		</member>
+		<member name="handler" type="Callable" setter="set_handler" getter="get_handler">
+			The Callable invoked when the command is executed.
+		</member>
+		<member name="is_destructive" type="bool" setter="set_is_destructive" getter="get_is_destructive" default="false">
+			If [code]true[/code], the command requires confirmation before execution.
+		</member>
+		<member name="name" type="String" setter="set_name" getter="get_name" default="&quot;&quot;">
+			The command name used to invoke it.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VertexAIAssistant" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Vertex AI assistant architecture for project understanding and assisted editing.
+	</brief_description>
+	<description>
+		VertexAIAssistant maintains a registry of named commands, gathers context (project structure, scripts, scenes, shaders, assets, errors, logs, profiler/perf results) and dispatches commands through a pluggable backend Callable. Destructive commands require an explicit confirmation: [method request] returns a pending action with a token that must be passed to [method confirm] before execution. The engine makes no network calls; a real LLM is wired in by setting [member backend]. Built-in commands (create_player, create_scene, fix_error, optimize_project, reduce_memory_usage, explain_node, create_animation, create_ui, optimize_shader) return structured plans rather than mutating files directly.
+	</description>
+	<methods>
+		<method name="confirm">
+			<return type="Dictionary" />
+			<param index="0" name="token" type="int" />
+			<description>
+				Confirms and executes a pending destructive command identified by the token returned from [method request]. Returns [code]{"executed": bool, "result": Variant, "command": String}[/code].
+			</description>
+		</method>
+		<method name="get_backend">
+			<return type="Callable" />
+			<description>
+				Returns the configured backend Callable.
+			</description>
+		</method>
+		<method name="get_command">
+			<return type="VertexAICommand" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns the command registered under the given name, or null.
+			</description>
+		</method>
+		<method name="get_error_log">
+			<return type="Dictionary" />
+			<description>
+				Returns the accumulated error log.
+			</description>
+		</method>
+		<method name="has_command">
+			<return type="bool" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns [code]true[/code] if a command with the given name is registered.
+			</description>
+		</method>
+		<method name="list_commands">
+			<return type="Array" />
+			<description>
+				Returns an array of dictionaries describing all registered commands.
+			</description>
+		</method>
+		<method name="push_error_entry">
+			<return type="void" />
+			<param index="0" name="key" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Adds an entry to the error log so the assistant can reason over it.
+			</description>
+		</method>
+		<method name="register_command">
+			<return type="void" />
+			<param index="0" name="command" type="VertexAICommand" />
+			<description>
+				Registers a command.
+			</description>
+		</method>
+		<method name="request">
+			<return type="Dictionary" />
+			<param index="0" name="command" type="String" />
+			<param index="1" name="args" type="Dictionary" default="{}" />
+			<description>
+				Requests execution of a command. If the command is destructive, returns [code]{"needs_confirmation": true, "token": int, "message": String}[/code]; otherwise executes immediately and returns [code]{"needs_confirmation": false, "result": Variant, "message": "ok"}[/code].
+			</description>
+		</method>
+		<method name="set_backend">
+			<return type="void" />
+			<param index="0" name="backend" type="Callable" />
+			<description>
+				Sets the pluggable backend Callable invoked before command execution, receiving a dictionary with the command name and gathered context.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="command_executed">
+			<param index="0" name="command" type="String" />
+			<param index="1" name="result" type="Dictionary" />
+			<description>
+				Emitted when a command finishes executing.
+			</description>
+		</signal>
+		<signal name="command_requested">
+			<param index="0" name="command" type="String" />
+			<param index="1" name="args" type="Dictionary" />
+			<description>
+				Emitted when a command is requested.
+			</description>
+		</signal>
+		<signal name="confirmation_required">
+			<param index="0" name="token" type="int" />
+			<param index="1" name="command" type="String" />
+			<description>
+				Emitted when a destructive command needs confirmation.
+			</description>
+		</signal>
+	</signals>
+</class>
