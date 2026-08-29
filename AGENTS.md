@@ -64,5 +64,29 @@ required Godot + third-party copyright/license notices.
 
 ## Progress log
 - [done] vertex-engine branch created.
-- [wip] Branding: version.py + splash + editor titles + module scaffolds.
+- [done] Branding: version.py (name/short_name), config dirs (vertex/Vertex),
+  splash PNGs + app icon (Vertex V logo), editor titles/strings, export
+  'Powered by Vertex' settings. Godot/third-party notices preserved.
+- [done] Module: vertex_perf — VertexPerformanceProfile (presets Ultra Low /
+  Low / Balanced / High / Ultra / Custom + adaptive quality + budgets) and
+  VertexPerformanceManager singleton (VertexPerformance).
+- [done] Module: vertex_optimizer — VertexProjectOptimizer (VertexOptimizer)
+  + VertexOptimizationReport. Analyzes assets + live counters; safe-only
+  auto-opts with dry-run.
+- [done] Module: vertex_ai — VertexAIAssistant (VertexAI), VertexAICommand,
+  VertexAIContext. Command registry, context gathering, confirm-before-
+  destructive, pluggable backend Callable, built-in commands return plans.
+- [done] Module: vertex_mobile_editor — VertexMobileSettings + editor plugin
+  (TOOLS_ENABLED) with touch-friendly layout panel.
+- [done] Module: vertex_benchmarks — VertexBenchmarkRunner +
+  VertexBenchmarkResult (FPS/frame/draw/mem/startup collection).
+- [done] Project Manager wiring: new projects seeded with
+  Vertex/Performance/* keys.
+- [done] Android: documented minSdk 24 limitation in config.gradle.
 - See git log on `vertex-engine` for incremental commits.
+
+## Singleton names (slash-free to avoid project-setting path semantics)
+- VertexPerformance  -> VertexPerformanceManager
+- VertexOptimizer     -> VertexProjectOptimizer
+- VertexAI            -> VertexAIAssistant
+Project-setting KEYS use slashes (Vertex/Performance/*, Vertex/export/*).
