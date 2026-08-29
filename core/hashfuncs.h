@@ -81,7 +81,7 @@ static inline uint32_t hash_one_uint64(uint64_t p_int) {
 	v = v ^ (v >> 11);
 	v = v + (v << 6);
 	v = v ^ (v >> 22);
-	return (int)v;
+	return (uint32_t)v;
 }
 
 static inline uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) {

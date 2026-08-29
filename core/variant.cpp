@@ -2554,7 +2554,7 @@ uint32_t Variant::recursive_hash(int p_recursion_count) const {
 			return _data._bool ? 1 : 0;
 		} break;
 		case INT: {
-			return _data._int;
+			return (uint32_t)_data._int;
 		} break;
 		case REAL: {
 			return hash_djb2_one_float(_data._real);

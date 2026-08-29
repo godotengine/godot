@@ -38,6 +38,7 @@
 #include "servers/audio/audio_effect.h"
 
 #include <atomic>
+#include <cstdint>
 
 class AudioDriverDummy;
 class AudioStream;
@@ -131,7 +132,7 @@ class AudioDriverManager {
 	};
 
 public:
-	enum MuteFlags {
+	enum MuteFlags : uint32_t {
 		// User enables or disables audio, e.g. via button in editor.
 		MUTE_FLAG_DISABLED = 1 << 0,
 		// Whether app is in focus.
