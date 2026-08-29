@@ -58,6 +58,7 @@
 #include "scene/gui/tree.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
+#include "scene/resources/shader.h"
 #include "servers/rendering/rendering_server.h"
 
 // TODO: Would be nice in Vector and Vectors.
@@ -257,6 +258,7 @@ void FindInFilesSearch::_scan_dir(const String &p_path, PackedStringArray &r_out
 		return;
 	}
 
+	const bool scene_allowed = extension_filter.has("gd") || extension_filter.has("gdshader");
 	dir->list_dir_begin();
 
 	// Limit to 100,000 iterations to avoid an infinite loop just in case
@@ -290,7 +292,7 @@ void FindInFilesSearch::_scan_dir(const String &p_path, PackedStringArray &r_out
 
 		} else {
 			String file_ext = file.get_extension();
-			if (extension_filter.has(file_ext)) {
+			if (extension_filter.has(file_ext) || (file_ext == "tscn" && scene_allowed)) {
 				String file_path = p_path.path_join(file);
 				bool case_sensitive = dir->is_case_sensitive(p_path);
 
@@ -335,24 +337,79 @@ void FindInFilesSearch::_scan_file(const String &p_fpath) {
 	Vector<String> lines;
 
 	CodeTextEditor *code_text_editor = get_code_edit(p_fpath);
+	// For when the scene is open in the editor but the resource isn't.
+	const Ref<Resource> res = ResourceCache::get_ref(p_fpath);
+	const Ref<Script> script = res;
+	const Ref<Shader> shader = res;
+
 	if (code_text_editor) {
 		lines = code_text_editor->get_text_editor()->get_text().split("\n");
+	} else if (script.is_valid()) {
+		lines = script->get_source_code().split("\n");
+	} else if (shader.is_valid()) {
+		lines = shader->get_code().split("\n");
+	} else if (p_fpath.contains("::")) {
+		return;
 	} else {
 		Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
 		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
 		lines = f->get_as_text().split("\n");
 	}
 
-	int line_number = 0;
+	const bool is_scene = p_fpath.has_extension("tscn");
+	const bool scene_is_open = is_scene ? EditorNode::get_singleton()->is_scene_open(p_fpath) : false;
+	const String sr_header = "[sub_resource type=\"";
+	const String scr_source_header = "script/source = \"";
+	const String sh_source_header = "code = \"";
+	bool in_code_section = false;
+	String sub_resource_type = "N/A";
+	String path = p_fpath;
+	HashSet<String> valid_sr_types = HashSet<String>();
+	if (extension_filter.has("gd")) {
+		valid_sr_types.insert("GDScript");
+	}
+	if (extension_filter.has("gdshader")) {
+		valid_sr_types.insert("Shader");
+	}
 
+	int line_number = 0;
 	for (const String &line : lines) {
 		// Line number starts at 1.
 		++line_number;
 		int begin = 0;
 		int end = 0;
 
+		if (is_scene) {
+			if (line.begins_with(sr_header)) {
+				sub_resource_type = line.trim_prefix(sr_header).get_slicec('"', 0);
+				in_code_section = false;
+				if (scene_is_open) {
+					String prefix = sr_header + sub_resource_type + "\" id=\"";
+					String res_id = line.trim_prefix(prefix).get_slicec('"', 0);
+					_scan_file(p_fpath + "::" + res_id);
+				}
+			} else if (line.begins_with("[")) {
+				sub_resource_type = "N/A";
+				in_code_section = false;
+			}
+
+			if (scene_is_open) {
+				continue;
+			}
+
+			if (!extension_filter.has("tscn")) {
+				if (!in_code_section && (line.begins_with(scr_source_header) || line.begins_with(sh_source_header))) {
+					in_code_section = true;
+					continue; // Skipped to not accidentally change source header
+				}
+				if (!in_code_section || !valid_sr_types.has(sub_resource_type)) {
+					continue;
+				}
+			}
+		}
+
 		while (find_next(line, pattern, end, match_case, whole_words, begin, end)) {
-			emit_signal(SNAME("result_found"), p_fpath, line_number, begin, end, line);
+			emit_signal(SNAME("result_found"), path, line_number, begin, end, line);
 		}
 	}
 }
@@ -1113,6 +1170,7 @@ void FindInFilesResultsPanel::replace_all() {
 		_remove_result(item);
 	}
 
+	_save_files_to_save();
 	emit_signal(SNAME("files_modified"));
 }
 
@@ -1134,6 +1192,7 @@ void FindInFilesResultsPanel::_on_button_clicked(TreeItem *p_item, int p_column,
 			const String path = p_item->get_parent()->get_metadata(0);
 			_apply_replaces_in_file(path, locations, rt);
 		}
+		_save_files_to_save();
 		emit_signal(SNAME("files_modified"));
 	}
 
@@ -1141,19 +1200,28 @@ void FindInFilesResultsPanel::_on_button_clicked(TreeItem *p_item, int p_column,
 }
 
 void FindInFilesResultsPanel::_apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text) {
+	String raw_path = p_fpath.get_slice("::", 0);
+
 	CodeTextEditor *code_text_editor = get_code_edit(p_fpath);
 	CodeEdit *code_edit = nullptr;
 	if (code_text_editor) {
 		code_edit = code_text_editor->get_text_editor();
 	}
+	const Ref<Resource> res = ResourceCache::get_ref(p_fpath);
+	const Ref<Script> script = res;
+	const Ref<Shader> shader = res;
+
 	Ref<FileAccess> f;
 	Vector<String> lines;
-
 	if (code_edit) {
 		lines = code_edit->get_text().split("\n");
+	} else if (script.is_valid()) {
+		lines = script->get_source_code().split("\n");
+	} else if (shader.is_valid()) {
+		lines = shader->get_code().split("\n");
 	} else {
-		f = FileAccess::open(p_fpath, FileAccess::READ);
-		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
+		f = FileAccess::open(raw_path, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + raw_path + "'.");
 		lines = f->get_as_text().split("\n");
 	}
 
@@ -1185,20 +1253,38 @@ void FindInFilesResultsPanel::_apply_replaces_in_file(const String &p_fpath, con
 		code_edit->emit_signal(SceneStringName(text_changed));
 		code_text_editor->set_edit_state(nav_state);
 		code_edit->end_complex_operation();
+	} else if (script.is_valid()) {
+		script->set_source_code(final_text);
+		script->set_edited(true);
+		files_to_save.insert(raw_path, script);
+	} else if (shader.is_valid()) {
+		shader->set_code(final_text);
+		shader->set_edited(true);
+		files_to_save.insert(raw_path, shader);
 	} else {
 		// Now the modified contents are in the buffer, rewrite the file with our changes.
-		Error err = f->reopen(p_fpath, FileAccess::WRITE);
-		ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + p_fpath + "'.");
+		Error err = f->reopen(raw_path, FileAccess::WRITE);
+		ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + raw_path + "'.");
 		f->store_string(final_text);
 		f->close();
 
-		Ref<Resource> res = ResourceCache::get_ref(p_fpath);
 		if (res.is_valid()) {
 			res->reload_from_file();
 		}
 
-		EditorFileSystem::get_singleton()->update_file(p_fpath);
+		EditorFileSystem::get_singleton()->update_file(raw_path);
 	}
+}
+
+void FindInFilesResultsPanel::_save_files_to_save() {
+	for (const KeyValue<String, Ref<Resource>> &path_res : files_to_save) {
+		if (path_res.key.has_extension("tscn")) {
+			EditorNode::get_singleton()->save_scene_to_path(path_res.key);
+		} else {
+			EditorNode::get_singleton()->save_resource_in_path(path_res.value, path_res.key);
+		}
+	}
+	files_to_save.clear();
 }
 
 void FindInFilesResultsPanel::_update_matches_text() {

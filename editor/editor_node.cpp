@@ -138,6 +138,7 @@
 #include "editor/scene/particle_process_material_editor_plugin.h"
 #include "editor/script/editor_script.h"
 #include "editor/script/find_in_files.h"
+#include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/script_text_editor.h"
 #include "editor/script/text_editor.h"
 #include "editor/settings/editor_build_profile.h"
@@ -148,6 +149,7 @@
 #include "editor/settings/editor_settings_dialog.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/shader/editor_native_shader_source_visualizer.h"
+#include "editor/shader/shader_editor_plugin.h"
 #include "editor/shader/shader_text_editor.h"
 #include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_scale.h"
@@ -1753,6 +1755,85 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 	}
 
 	InspectorDock::get_singleton()->edit_resource(res);
+	return OK;
+}
+
+Error EditorNode::edit_text_resource(const String p_resource, int p_line, int p_begin, int p_end) {
+	// Opens a text resource in it's appropriate editor and focuses it.
+	// If p_resource is a scene it must end with the resource id or p_line must be set.
+	String path = p_resource;
+	if (p_resource.has_extension("tscn") && ResourceLoader::exists(p_resource)) {
+		Ref<Resource> res = ResourceLoader::load(p_resource);
+		const PackedStringArray lines = FileAccess::get_file_as_string(p_resource).split("\n");
+		if (p_line > lines.size()) {
+			return ERR_INVALID_PARAMETER;
+		}
+
+		ERR_FAIL_COND_V_MSG(p_line == -1, ERR_INVALID_PARAMETER, vformat("No line or resource specified in %s.", p_resource));
+
+		const char *scr_header = "[sub_resource type=\"GDScript\" id=\"";
+		const char *sh_header = "[sub_resource type=\"Shader\" id=\"";
+		const char *scr_source_header = "script/source = \"";
+		const char *sh_source_header = "code = \"";
+		String res_id;
+
+		// Search the scene backwards from the found line.
+		int scan_line = p_line - 1;
+		while (scan_line >= 0) {
+			const String &line = lines[scan_line];
+			if (line.begins_with(scr_source_header) || line.begins_with(sh_source_header)) {
+				// Adjust line relative to the script beginning.
+				p_line -= scan_line;
+			} else if (line.begins_with(scr_header)) {
+				res_id = line.trim_prefix(scr_header).get_slicec('"', 0);
+				break;
+			} else if (line.begins_with(sh_header)) {
+				res_id = line.trim_prefix(sh_header).get_slicec('"', 0);
+				break;
+			} else {
+				ERR_FAIL_COND_V_MSG(line == "\"", ERR_INVALID_PARAMETER, vformat("Line %d in %s is outside of a valid resource.", p_line, path));
+			}
+			scan_line--;
+		}
+
+		ERR_FAIL_COND_V_MSG(scan_line == -1, ERR_INVALID_PARAMETER, vformat("Line %d in %s is outside of a valid resource.", p_line, path));
+
+		EditorNode::get_singleton()->open_scene(p_resource);
+		if (!res_id.is_empty()) {
+			path = p_resource + "::" + res_id;
+		}
+	}
+
+	Error err = load_resource(path);
+	if (err) {
+		return err;
+	}
+	if (p_line == -1) {
+		return OK;
+	}
+
+	const Ref<Resource> res = ResourceCache::get_ref(path);
+	ScriptEditorPlugin *script_editor_plugin = ScriptEditorPlugin::get_singleton();
+	ShaderEditorPlugin *shader_editor_plugin = ShaderEditorPlugin::get_singleton();
+	ScriptEditor *script_editor = nullptr;
+
+	ScriptEditorNavigationMarker::get_singleton()->locate_begin();
+	if (script_editor_plugin && script_editor_plugin->handles(res.ptr())) {
+		script_editor = ScriptEditor::get_singleton();
+	} else if (shader_editor_plugin && shader_editor_plugin->handles(res.ptr())) {
+		script_editor = ScriptEditor::get_bottom_script_editor();
+	}
+
+	script_editor->edit(res, p_line - 1, 0);
+	if (p_begin == -1) {
+		ScriptEditorNavigationMarker::get_singleton()->locate_end();
+		return OK;
+	}
+
+	int end = p_end == -1 ? p_begin : p_end;
+	TextEditorBase *teb = Object::cast_to<TextEditorBase>(script_editor->get_current_editor());
+	teb->goto_line_selection(p_line - 1, p_begin, end);
+	ScriptEditorNavigationMarker::get_singleton()->locate_end();
 	return OK;
 }
 
