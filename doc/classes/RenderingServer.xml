@@ -1420,6 +1420,22 @@
 				Configures Dynamic GI (HDDAGI) for the specified environment RID. See [code]dynamic_gi_*[/code] properties in [Environment] for more information.
 			</description>
 		</method>
+		<method name="environment_set_hddagi_camera_local_anchor_offset">
+			<return type="void" />
+			<param index="0" name="env" type="RID" />
+			<param index="1" name="offset" type="Vector3" />
+			<description>
+				Sets the camera-local cascade anchor offset for [param env].
+			</description>
+		</method>
+		<method name="environment_set_hddagi_cascade_forward_offset">
+			<return type="void" />
+			<param index="0" name="env" type="RID" />
+			<param index="1" name="offset" type="float" />
+			<description>
+				Sets the cascade forward offset for [param env].
+			</description>
+		</method>
 		<method name="environment_set_hddagi_frames_to_converge">
 			<return type="void" />
 			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentHDDAGIFramesToConverge" />

@@ -276,7 +276,7 @@ struct HDDAGIProbeCascadeData {
 	ivec3 region_world_offset;
 	float to_cell; // 1/bounds * grid_size
 
-	vec3 pad;
+	vec3 blend_position;
 	float exposure_normalization;
 
 	uvec4 pad2;

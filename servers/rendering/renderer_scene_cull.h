@@ -1345,6 +1345,10 @@ public:
 	// HDDAGI
 
 	PASS15(environment_set_hddagi, RID, bool, int, RSE::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, float, bool, bool)
+	PASS2(environment_set_hddagi_camera_local_anchor_offset, RID, const Vector3 &)
+	PASS2(environment_set_hddagi_cascade_forward_offset, RID, float)
+	PASS1RC(Vector3, environment_get_hddagi_camera_local_anchor_offset, RID)
+	PASS1RC(float, environment_get_hddagi_cascade_forward_offset, RID)
 
 	PASS1RC(bool, environment_get_hddagi_enabled, RID)
 	PASS1RC(int, environment_get_hddagi_cascades, RID)

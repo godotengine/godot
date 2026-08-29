@@ -4089,7 +4089,7 @@ void RenderForwardClustered::sub_surface_scattering_set_scale(float p_scale, flo
 
 RenderForwardClustered *RenderForwardClustered::singleton = nullptr;
 
-void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) {
+void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Transform3D &p_camera_transform) {
 	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
 	ERR_FAIL_COND(rb.is_null());
 	Ref<RendererRD::GI::HDDAGI> hddagi;
@@ -4125,13 +4125,24 @@ void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_rend
 		rb->set_custom_data(RB_SCOPE_HDDAGI, hddagi);
 	}
 
+	const Basis &camera_basis = p_camera_transform.basis;
+	const Vector3 world_anchor = p_camera_transform.origin + camera_basis.xform(environment_get_hddagi_camera_local_anchor_offset(p_environment));
+	const float cascade_forward_offset = environment_get_hddagi_cascade_forward_offset(p_environment);
+	Vector3 planar_world_forward = -camera_basis.get_column(2);
+	planar_world_forward.y = 0.0f;
+	if (!planar_world_forward.is_zero_approx()) {
+		planar_world_forward.normalize();
+	} else {
+		planar_world_forward = Vector3();
+	}
+
 	if (hddagi.is_null()) {
 		// re-create
-		hddagi = gi.create_hddagi(p_environment, p_world_position, requested_history_size);
+		hddagi = gi.create_hddagi(p_environment, world_anchor, planar_world_forward, cascade_forward_offset, requested_history_size);
 		rb->set_custom_data(RB_SCOPE_HDDAGI, hddagi);
 	} else {
 		//check for updates
-		hddagi->update(p_environment, p_world_position);
+		hddagi->update(p_environment, world_anchor, planar_world_forward, cascade_forward_offset);
 	}
 
 	hddagi->update_cascades();

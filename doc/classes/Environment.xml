@@ -241,11 +241,17 @@
 		<member name="dynamic_gi_bounce_feedback" type="float" setter="set_dynamic_gi_bounce_feedback" getter="get_dynamic_gi_bounce_feedback" default="0.5">
 			How much light bounces back to the probes. This increases the amount of indirect light received on surfaces.
 		</member>
+		<member name="dynamic_gi_camera_local_anchor_offset" type="Vector3" setter="set_dynamic_gi_camera_local_anchor_offset" getter="get_dynamic_gi_camera_local_anchor_offset" default="Vector3(0, 0, 0)">
+			Camera-local offset of the Dynamic GI cascade anchor.
+		</member>
 		<member name="dynamic_gi_cascade0_distance" type="float" setter="set_dynamic_gi_cascade0_distance" getter="get_dynamic_gi_cascade0_distance" default="12.8">
 			Maximum distance for the first cascade. Use mostly as reference, as changing this also changes cell size.
 		</member>
 		<member name="dynamic_gi_cascade_format" type="int" setter="set_dynamic_gi_cascade_format" getter="get_dynamic_gi_cascade_format" enum="Environment.DynamicGICascadeFormat" default="2">
 			The storage and height format used by Dynamic GI cascades. See [enum DynamicGICascadeFormat].
+		</member>
+		<member name="dynamic_gi_cascade_forward_offset" type="float" setter="set_dynamic_gi_cascade_forward_offset" getter="get_dynamic_gi_cascade_forward_offset" default="0.0">
+			Camera-forward offset of each cascade, as a fraction of its width.
 		</member>
 		<member name="dynamic_gi_cascades" type="int" setter="set_dynamic_gi_cascades" getter="get_dynamic_gi_cascades" default="4">
 			The amount of cascades used for global illumination. More cascades allows the global illumination to reach further away, but at the same time it costs more memory and GPU performance. Adjust this value to what you find necessary in your game.

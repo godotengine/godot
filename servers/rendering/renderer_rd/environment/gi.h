@@ -613,6 +613,7 @@ public:
 			//cascade blocks are full-size for volume (128^3), half size for albedo/emission
 			float cell_size;
 			Vector3i position;
+			Vector3 blend_position;
 
 			static const Vector3i DIRTY_ALL;
 			Vector3i dirty_regions; //(0,0,0 is not dirty, negative is refresh from the end, DIRTY_ALL is refresh all.
@@ -722,8 +723,8 @@ public:
 		virtual void free_data() override;
 		~HDDAGI();
 
-		void create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi);
-		void update(RID p_env, const Vector3 &p_world_position);
+		void create(RID p_env, const Vector3 &p_world_anchor, const Vector3 &p_planar_world_forward, float p_cascade_forward_offset, uint32_t p_requested_history_size, GI *p_gi);
+		void update(RID p_env, const Vector3 &p_world_anchor, const Vector3 &p_planar_world_forward, float p_cascade_forward_offset);
 		void update_light();
 		void update_probes(RID p_env, RendererRD::SkyRD::Sky *p_sky, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform);
 		void store_probes();
@@ -795,7 +796,7 @@ public:
 			int32_t region_world_offset[3];
 			float to_cell; // 1/bounds * grid_size
 
-			uint32_t pad[3];
+			float blend_position[3];
 			float exposure_normalization;
 
 			uint32_t pad2[4];
@@ -905,7 +906,7 @@ public:
 	void init(RendererRD::SkyRD *p_sky);
 	void free();
 
-	Ref<HDDAGI> create_hddagi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
+	Ref<HDDAGI> create_hddagi(RID p_env, const Vector3 &p_world_anchor, const Vector3 &p_planar_world_forward, float p_cascade_forward_offset, uint32_t p_requested_history_size);
 
 	void setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used);
 	void process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances);

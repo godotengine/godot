@@ -3317,8 +3317,8 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	scene_render->set_scene_pass(render_pass);
 
 	if (p_reflection_probe.is_null()) {
-		//no rendering code here, this is only to set up what needs to be done, request regions, etc.
-		scene_render->hddagi_update(p_render_buffers, p_environment, camera_position); //update conditions for HDDAGI (whether its used or not)
+		// No rendering happens here; this only updates HDDAGI coverage and requests dirty regions.
+		scene_render->hddagi_update(p_render_buffers, p_environment, p_camera_data->main_transform);
 	}
 
 	RENDER_TIMESTAMP("Update Visibility Dependencies");

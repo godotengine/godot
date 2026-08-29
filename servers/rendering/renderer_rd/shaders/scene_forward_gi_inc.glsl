@@ -218,7 +218,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 		vec3 diffuse, specular;
 		sdfvoxel_gi_process(cascade, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse, specular);
 		vec3 blend_from = ((vec3(hddagi.probe_axis_size) - 1) / 2.0);
-		vec3 inner_pos = cam_pos * hddagi.cascades[cascade].to_probe;
+		vec3 inner_pos = (cam_pos - hddagi.cascades[cascade].blend_position) * hddagi.cascades[cascade].to_probe;
 		vec3 inner_dist = blend_from - abs(inner_pos);
 		float min_d = min(inner_dist.x, min(inner_dist.y, inner_dist.z));
 		blend = clamp(1.0 - smoothstep(0.5, 2.5, min_d), 0, 1);

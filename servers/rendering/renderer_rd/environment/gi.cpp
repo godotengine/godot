@@ -345,7 +345,7 @@ static RID create_clear_texture(const RD::TextureFormat &p_format, const String 
 	return texture;
 }
 
-void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi) {
+void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_anchor, const Vector3 &p_planar_world_forward, float p_cascade_forward_offset, uint32_t p_requested_history_size, GI *p_gi) {
 	//RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	//RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -617,8 +617,9 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_r
 		cascade.light_position_bufer = RD::get_singleton()->storage_buffer_create(sizeof(HDDAGIShader::Light) * MAX(HDDAGI::MAX_STATIC_LIGHTS, HDDAGI::MAX_DYNAMIC_LIGHTS));
 
 		cascade.cell_size = base_cell_size;
-		Vector3 world_position = p_world_position;
+		Vector3 world_position = p_world_anchor + p_planar_world_forward * (cascade.cell_size * float(cascade_size.x) * p_cascade_forward_offset);
 		world_position.y *= y_mult;
+		cascade.blend_position = world_position;
 		Vector3i probe_cells = cascade_size / REGION_CELLS;
 		Vector3 probe_size = Vector3(1, 1, 1) * cascade.cell_size * Vector3(probe_cells);
 		Vector3i probe_pos = Vector3i((world_position / probe_size + Vector3(0.5, 0.5, 0.5)).floor());
@@ -1085,7 +1086,7 @@ GI::HDDAGI::~HDDAGI() {
 	}
 }
 
-void GI::HDDAGI::update(RID p_env, const Vector3 &p_world_position) {
+void GI::HDDAGI::update(RID p_env, const Vector3 &p_world_anchor, const Vector3 &p_planar_world_forward, float p_cascade_forward_offset) {
 	bounce_feedback = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_bounce_feedback(p_env);
 	energy = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_energy(p_env);
 	reads_sky = RendererSceneRenderRD::get_singleton()->environment_get_hddagi_read_sky_light(p_env);
@@ -1107,8 +1108,9 @@ void GI::HDDAGI::update(RID p_env, const Vector3 &p_world_position) {
 		Vector3 probe_half_size = Vector3(1, 1, 1) * cascade.cell_size * float(REGION_CELLS) * 0.5;
 		probe_half_size = Vector3(0, 0, 0);
 
-		Vector3 world_position = p_world_position;
+		Vector3 world_position = p_world_anchor + p_planar_world_forward * (cascade.cell_size * float(cascade_size.x) * p_cascade_forward_offset);
 		world_position.y *= y_mult;
+		cascade.blend_position = world_position;
 		Vector3i pos_in_cascade = Vector3i((world_position + probe_half_size) / cascade.cell_size);
 
 		for (int j = 0; j < 3; j++) {
@@ -1817,6 +1819,10 @@ void GI::HDDAGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_
 		c.region_world_offset[2] = cascades[i].position.z / REGION_CELLS;
 
 		c.to_cell = 1.0 / cascades[i].cell_size;
+		const Vector3 blend_position = cascades[i].blend_position - cam_origin;
+		c.blend_position[0] = blend_position.x;
+		c.blend_position[1] = blend_position.y;
+		c.blend_position[2] = blend_position.z;
 		c.exposure_normalization = 1.0;
 		if (p_render_data->camera_attributes.is_valid()) {
 			float exposure_normalization = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
@@ -3424,11 +3430,11 @@ void GI::free() {
 	}
 }
 
-Ref<GI::HDDAGI> GI::create_hddagi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size) {
+Ref<GI::HDDAGI> GI::create_hddagi(RID p_env, const Vector3 &p_world_anchor, const Vector3 &p_planar_world_forward, float p_cascade_forward_offset, uint32_t p_requested_history_size) {
 	Ref<HDDAGI> hddagi;
 	hddagi.instantiate();
 
-	hddagi->create(p_env, p_world_position, p_requested_history_size, this);
+	hddagi->create(p_env, p_world_anchor, p_planar_world_forward, p_cascade_forward_offset, p_requested_history_size, this);
 
 	return hddagi;
 }

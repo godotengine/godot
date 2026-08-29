@@ -67,7 +67,7 @@ public:
 
 	/* HDDAGI UPDATE */
 
-	virtual void hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) = 0;
+	virtual void hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Transform3D &p_camera_transform) = 0;
 	virtual int hddagi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const = 0;
 	virtual AABB hddagi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const = 0;
 	virtual uint32_t hddagi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const = 0;
@@ -238,6 +238,10 @@ public:
 
 	// HDDAGI
 	void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RSE::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_bias, bool p_filter_reflection, bool p_filter_ambient);
+	void environment_set_hddagi_camera_local_anchor_offset(RID p_env, const Vector3 &p_offset);
+	void environment_set_hddagi_cascade_forward_offset(RID p_env, float p_offset);
+	Vector3 environment_get_hddagi_camera_local_anchor_offset(RID p_env) const;
+	float environment_get_hddagi_cascade_forward_offset(RID p_env) const;
 	bool environment_get_hddagi_enabled(RID p_env) const;
 	int environment_get_hddagi_cascades(RID p_env) const;
 	float environment_get_hddagi_min_cell_size(RID p_env) const;

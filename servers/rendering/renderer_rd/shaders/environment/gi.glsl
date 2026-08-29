@@ -48,7 +48,7 @@ struct ProbeCascadeData {
 	ivec3 region_world_offset;
 	float to_cell; // 1/bounds * grid_size
 
-	vec3 pad;
+	vec3 blend_position;
 	float exposure_normalization;
 
 	uvec4 pad2;
@@ -711,7 +711,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 			//process blend
 			vec3 blend_from = ((vec3(hddagi.probe_axis_size) - 1) / 2.0);
 
-			vec3 inner_pos = cam_pos * hddagi.cascades[cascade].to_probe;
+			vec3 inner_pos = (cam_pos - hddagi.cascades[cascade].blend_position) * hddagi.cascades[cascade].to_probe;
 
 			vec3 inner_dist = blend_from - abs(inner_pos);
 

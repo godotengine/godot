@@ -169,6 +169,8 @@ private:
 	float dynamic_gi_energy = 1.0;
 	float dynamic_gi_normal_bias = 1.1;
 	float dynamic_gi_probe_bias = 1.1;
+	Vector3 dynamic_gi_camera_local_anchor_offset;
+	float dynamic_gi_cascade_forward_offset = 0.0;
 	void _update_dynamic_gi();
 
 	// Glow
@@ -357,6 +359,10 @@ public:
 	float get_dynamic_gi_normal_bias() const;
 	void set_dynamic_gi_probe_bias(float p_bias);
 	float get_dynamic_gi_probe_bias() const;
+	void set_dynamic_gi_camera_local_anchor_offset(const Vector3 &p_offset);
+	Vector3 get_dynamic_gi_camera_local_anchor_offset() const;
+	void set_dynamic_gi_cascade_forward_offset(float p_offset);
+	float get_dynamic_gi_cascade_forward_offset() const;
 
 #ifndef DISABLE_DEPRECATED
 	void set_sdfgi_enabled(bool p_enabled);

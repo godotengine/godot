@@ -839,6 +839,30 @@ void RendererEnvironmentStorage::environment_set_hddagi(RID p_env, bool p_enable
 	env->hddagi_filter_ambient = p_filter_ambient;
 }
 
+void RendererEnvironmentStorage::environment_set_hddagi_camera_local_anchor_offset(RID p_env, const Vector3 &p_offset) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->hddagi_camera_local_anchor_offset = p_offset;
+}
+
+void RendererEnvironmentStorage::environment_set_hddagi_cascade_forward_offset(RID p_env, float p_offset) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->hddagi_cascade_forward_offset = CLAMP(p_offset, 0.0f, 0.3f);
+}
+
+Vector3 RendererEnvironmentStorage::environment_get_hddagi_camera_local_anchor_offset(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, Vector3());
+	return env->hddagi_camera_local_anchor_offset;
+}
+
+float RendererEnvironmentStorage::environment_get_hddagi_cascade_forward_offset(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.0f);
+	return env->hddagi_cascade_forward_offset;
+}
+
 bool RendererEnvironmentStorage::environment_get_hddagi_enabled(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, false);
