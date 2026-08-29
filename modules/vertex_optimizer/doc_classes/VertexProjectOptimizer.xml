@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VertexProjectOptimizer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Analyzes a Vertex project for performance risk and recommends optimizations.
+	</brief_description>
+	<description>
+		VertexProjectOptimizer scans the project directory for large/expensive assets and reads live engine performance counters (FPS, draw calls, texture/video memory, object/node/orphan counts, physics load), then produces a [VertexOptimizationReport] with severity-tagged recommendations. Destructive or irreversible actions are never applied automatically; [method apply_safe_optimizations] only performs non-destructive engine-side nudges and supports a dry-run mode.
+	</description>
+	<methods>
+		<method name="analyze_project">
+			<return type="VertexOptimizationReport" />
+			<param index="0" name="root" type="String" default="&quot;res://&quot;" />
+			<description>
+				Scans the given project root (default [code]res://[/code]) and returns a report with metrics and recommendations.
+			</description>
+		</method>
+		<method name="apply_safe_optimizations">
+			<return type="Dictionary" />
+			<param index="0" name="report" type="VertexOptimizationReport" />
+			<param index="1" name="dry_run" type="bool" default="true" />
+			<description>
+				Applies only non-destructive engine-side optimizations. When [param dry_run] is [code]true[/code] (default) no changes are made; a dictionary of actions that [i]would[/i] be applied is returned. File modifications are never performed automatically.
+			</description>
+		</method>
+		<method name="get_runtime_metrics">
+			<return type="Dictionary" />
+			<description>
+				Returns live performance counters from the engine [Performance] singleton.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="high_draw_call_threshold" type="int" setter="set_high_draw_call_threshold" getter="get_high_draw_call_threshold" default="500">
+			Draw-call count above which a draw-call recommendation is emitted.
+		</member>
+		<member name="large_asset_threshold_kb" type="int" setter="set_large_asset_threshold_kb" getter="get_large_asset_threshold_kb" default="10240">
+			Size threshold (KB) for large non-texture assets (audio, scenes).
+		</member>
+		<member name="large_particle_threshold" type="int" setter="set_large_particle_threshold" getter="get_large_particle_threshold" default="5000">
+			Particle count above which a particle recommendation is emitted.
+		</member>
+		<member name="large_texture_threshold_kb" type="int" setter="set_large_texture_threshold_kb" getter="get_large_texture_threshold_kb" default="4096">
+			Texture size (KB) above which a texture recommendation is emitted.
+		</member>
+	</members>
+</class>

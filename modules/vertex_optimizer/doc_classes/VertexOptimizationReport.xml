@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VertexOptimizationReport" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Report produced by [VertexProjectOptimizer].
+	</brief_description>
+	<description>
+		Contains measured runtime metrics and a list of recommendations, each with a severity, message, optional action, and target. Use [method to_dictionary] to serialize it.
+	</description>
+	<methods>
+		<method name="add_recommendation">
+			<return type="void" />
+			<param index="0" name="severity" type="int" enum="VertexOptimizationReport.Severity" />
+			<param index="1" name="message" type="String" />
+			<param index="2" name="action" type="String" default="&quot;&quot;" />
+			<param index="3" name="target" type="String" default="&quot;&quot;" />
+			<description>
+				Appends a recommendation.
+			</description>
+		</method>
+		<method name="get_critical_count">
+			<return type="int" />
+			<description>
+				Returns the number of critical recommendations.
+			</description>
+		</method>
+		<method name="get_recommendation">
+			<return type="Dictionary" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the recommendation at the given index, or an empty dictionary if out of range.
+			</description>
+		</method>
+		<method name="get_recommendation_count">
+			<return type="int" />
+			<description>
+				Returns the number of recommendations.
+			</description>
+		</method>
+		<method name="get_recommendations">
+			<return type="Array" />
+			<description>
+				Returns all recommendations as an array of dictionaries.
+			</description>
+		</method>
+		<method name="get_warning_count">
+			<return type="int" />
+			<description>
+				Returns the number of warning recommendations.
+			</description>
+		</method>
+		<method name="to_dictionary">
+			<return type="Dictionary" />
+			<description>
+				Serializes the report to a dictionary.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="metrics" type="Dictionary" setter="set_metrics" getter="get_metrics">
+			Measured runtime metrics.
+		</member>
+	</members>
+	<constants>
+		<constant name="SEVERITY_INFO" value="0" enum="Severity">
+			Informational recommendation.
+		</constant>
+		<constant name="SEVERITY_WARNING" value="1" enum="Severity">
+			Warning recommendation.
+		</constant>
+		<constant name="SEVERITY_CRITICAL" value="2" enum="Severity">
+			Critical recommendation.
+		</constant>
+	</constants>
+</class>
