@@ -98,6 +98,7 @@ enum PropertyHint {
 	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_LOCALE_ID,
+	PROPERTY_HINT_INT_IS_OBJECTID,
 	PROPERTY_HINT_MAX,
 	// When updating PropertyHint, also sync the hardcoded list in VisualScriptEditorVariableEdit
 };
@@ -483,11 +484,11 @@ private:
 
 			_FORCE_INLINE_ bool operator<(const Target &p_target) const { return (_id == p_target._id) ? (method < p_target.method) : (_id < p_target._id); }
 
+			Target() {}
 			Target(const ObjectID &p_id, const StringName &p_method) :
 					_id(p_id),
 					method(p_method) {
 			}
-			Target() { _id = 0; }
 		};
 
 		struct Slot {
@@ -825,7 +826,7 @@ class ObjectDB {
 	static HashMap<ObjectID, Object *> instances;
 	static HashMap<Object *, ObjectID, ObjectPtrHash> instance_checks;
 
-	static ObjectID instance_counter;
+	static uint64_t instance_counter;
 	friend class Object;
 	friend void unregister_core_types();
 

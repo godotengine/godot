@@ -101,7 +101,7 @@ int Physics2DDirectSpaceStateSW::_intersect_point_impl(const Vector2 &p_point, S
 		}
 
 		r_results[cc].collider_id = col_obj->get_instance_id();
-		if (r_results[cc].collider_id != 0) {
+		if (r_results[cc].collider_id.is_valid()) {
 			r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
 		}
 		r_results[cc].rid = col_obj->get_self();
@@ -190,7 +190,7 @@ bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2 &p_from, const Vec
 	}
 
 	r_result.collider_id = res_obj->get_instance_id();
-	if (r_result.collider_id != 0) {
+	if (r_result.collider_id.is_valid()) {
 		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
 	}
 	r_result.normal = res_normal;
@@ -239,7 +239,7 @@ int Physics2DDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Trans
 		}
 
 		r_results[cc].collider_id = col_obj->get_instance_id();
-		if (r_results[cc].collider_id != 0) {
+		if (r_results[cc].collider_id.is_valid()) {
 			r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
 		}
 		r_results[cc].rid = col_obj->get_self();
@@ -729,7 +729,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	//but is it right? who knows at this point..
 
 	if (r_result) {
-		r_result->collider_id = 0;
+		r_result->collider_id = ObjectID();
 		r_result->collider_shape = 0;
 	}
 
