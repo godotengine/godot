@@ -852,7 +852,7 @@ void EditorResourcePicker::_ensure_allowed_types() const {
 
 	for (const String &S : allowed_types) {
 		const String base = S.strip_edges();
-		if (base.begins_with("-")) {
+		if (base.begins_with("-") || base.begins_with("Script")) {
 			final_allowed.erase(base.right(-1));
 			continue;
 		}
@@ -860,7 +860,9 @@ void EditorResourcePicker::_ensure_allowed_types() const {
 	}
 
 	for (const StringName &SN : final_allowed) {
-		allowed_types_without_convert.insert(SN);
+		if (SN != "GDScript") {
+			allowed_types_without_convert.insert(SN);
+		}
 	}
 
 	allowed_types_with_convert = HashSet<StringName>(allowed_types_without_convert);
