@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VertexPerformanceProfile" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Serializable Vertex performance profile for a quality/perf trade-off tier.
+	</brief_description>
+	<description>
+		A VertexPerformanceProfile encodes per-tier trade-offs for rendering, physics, audio and memory. Apply one of the presets with [method apply_preset], or tweak individual members for a custom profile. Pass it to [VertexPerformanceManager] to apply it to the running project.
+	</description>
+	<methods>
+		<method name="apply_preset">
+			<return type="void" />
+			<param index="0" name="preset" type="int" enum="VertexPerformanceProfile.Preset" />
+			<description>
+				Resets all members to the values of the given preset.
+			</description>
+		</method>
+		<method name="from_dictionary">
+			<return type="void" />
+			<param index="0" name="dict" type="Dictionary" />
+			<description>
+				Loads members from a dictionary previously produced by [method to_dictionary].
+			</description>
+		</method>
+		<method name="get_preset">
+			<return type="int" enum="VertexPerformanceProfile.Preset" />
+			<description>
+				Returns the preset most recently applied.
+			</description>
+		</method>
+		<method name="to_dictionary">
+			<return type="Dictionary" />
+			<description>
+				Serializes all members to a dictionary.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="adaptive_frame_time_threshold_ms" type="float" setter="set_adaptive_frame_time_threshold_ms" getter="get_adaptive_frame_time_threshold_ms" default="33.3">
+			Frame time (ms) above which a frame counts as "slow" for adaptive scaling (default ~30 FPS).
+		</member>
+		<member name="adaptive_min_render_scale_pct" type="int" setter="set_adaptive_min_render_scale_pct" getter="get_adaptive_min_render_scale_pct" default="50">
+			Floor (percent) the adaptive system will not reduce the render scale below.
+		</member>
+		<member name="adaptive_quality" type="bool" setter="set_adaptive_quality" getter="get_adaptive_quality" default="true">
+			Enables automatic scaling of expensive effects on sustained frame-time problems.
+		</member>
+		<member name="asset_cache_budget_mb" type="int" setter="set_asset_cache_budget_mb" getter="get_asset_cache_budget_mb" default="256">
+			Target asset cache budget in megabytes.
+		</member>
+		<member name="audio_quality" type="int" setter="set_audio_quality" getter="get_audio_quality" default="2">
+			Audio quality tier (0=low .. 2=high).
+		</member>
+		<member name="lighting_quality" type="int" setter="set_lighting_quality" getter="get_lighting_quality" default="2">
+			Lighting quality tier (0=minimal .. 3=full).
+		</member>
+		<member name="max_particles" type="int" setter="set_max_particles" getter="get_max_particles" default="2000">
+			Cap on simultaneous particles.
+		</member>
+		<member name="particles_enabled" type="bool" setter="set_particles_enabled" getter="get_particles_enabled" default="true">
+			Whether particles are processed.
+		</member>
+		<member name="physics_ticks_per_second" type="int" setter="set_physics_ticks_per_second" getter="get_physics_ticks_per_second" default="60">
+			Physics simulation frequency.
+		</member>
+		<member name="post_processing_quality" type="int" setter="set_post_processing_quality" getter="get_post_processing_quality" default="2">
+			Post-processing quality tier (0=off .. 3=full).
+		</member>
+		<member name="render_scale" type="float" setter="set_render_scale" getter="get_render_scale" default="1.0">
+			Viewport 3D render scale multiplier (0.5 - 1.0 typical).
+		</member>
+		<member name="resolution_height" type="int" setter="set_resolution_height" getter="get_resolution_height" default="720">
+			Base viewport height.
+		</member>
+		<member name="resolution_width" type="int" setter="set_resolution_width" getter="get_resolution_width" default="1280">
+			Base viewport width.
+		</member>
+		<member name="shader_quality" type="int" setter="set_shader_quality" getter="get_shader_quality" default="2">
+			Shader quality tier (0=minimal .. 2=full).
+		</member>
+		<member name="shadow_quality" type="int" setter="set_shadow_quality" getter="get_shadow_quality" default="2">
+			Shadow quality tier (0=off .. 3=high).
+		</member>
+		<member name="target_fps" type="int" setter="set_target_fps" getter="get_target_fps" default="60">
+			Target/max FPS.
+		</member>
+		<member name="texture_compression" type="int" setter="set_texture_compression" getter="get_texture_compression" default="1">
+			Texture compression scheme (0=fast, 1=ETC2/ASTC, 2=ASTC high).
+		</member>
+		<member name="texture_memory_budget_mb" type="int" setter="set_texture_memory_budget_mb" getter="get_texture_memory_budget_mb" default="512">
+			Texture memory budget in megabytes (0 = unlimited).
+		</member>
+		<member name="texture_quality" type="int" setter="set_texture_quality" getter="get_texture_quality" default="2">
+			Texture quality tier (0=lowest .. 3=highest).
+		</member>
+		<member name="vsync" type="bool" setter="set_vsync" getter="get_vsync" default="true">
+			Whether VSync is enabled.
+		</member>
+	</members>
+	<constants>
+		<constant name="PRESET_ULTRA_LOW" value="0" enum="Preset">
+			Maximum savings for low-end Android and very weak hardware.
+		</constant>
+		<constant name="PRESET_LOW" value="1" enum="Preset">
+			Aggressive savings for entry-level devices.
+		</constant>
+		<constant name="PRESET_BALANCED" value="2" enum="Preset">
+			Sensible middle ground for most devices.
+		</constant>
+		<constant name="PRESET_HIGH" value="3" enum="Preset">
+			High fidelity for capable devices.
+		</constant>
+		<constant name="PRESET_ULTRA" value="4" enum="Preset">
+			Maximum fidelity for high-end devices.
+		</constant>
+		<constant name="PRESET_CUSTOM" value="5" enum="Preset">
+			User-customized; values are not overridden by a preset.
+		</constant>
+	</constants>
+</class>

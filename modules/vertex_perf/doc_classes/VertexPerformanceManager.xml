@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VertexPerformanceManager" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Drives Vertex's adaptive performance system.
+	</brief_description>
+	<description>
+		VertexPerformanceManager holds the active [VertexPerformanceProfile], pushes its values into engine and project settings, and monitors sustained frame-time degradation to scale rendering cost down (and back up) at runtime.
+		It is registered as a singleton under the name [code]Vertex/Performance[/code]. Enable monitoring to let it reduce the 3D render scale automatically when the engine sustains frame times above the profile threshold, and recover when performance is comfortable.
+	</description>
+	<methods>
+		<method name="apply_to_project_settings">
+			<return type="void" />
+			<description>
+				Writes the active profile into existing project settings (resolution, render scale, MSAA, max FPS, physics ticks, and Vertex quality budgets) so they take effect on the next launch and for subsystems that read them globally.
+			</description>
+		</method>
+		<method name="apply_live">
+			<return type="void" />
+			<description>
+				Applies settings that can take effect immediately on the running scene tree (render scale, max FPS, physics tick rate).
+			</description>
+		</method>
+		<method name="create_profile">
+			<return type="VertexPerformanceProfile" />
+			<param index="0" name="preset" type="int" />
+			<description>
+				Creates a new profile initialized from one of the [enum VertexPerformanceProfile.Preset] values and returns it.
+			</description>
+		</method>
+		<method name="get_status">
+			<return type="Dictionary" />
+			<description>
+				Returns a dictionary with the current monitoring state: [code]monitoring_enabled[/code], [code]current_render_scale[/code], [code]profile_render_scale[/code], [code]fps[/code], [code]slow_frame_streak[/code], [code]fast_frame_streak[/code].
+			</description>
+		</method>
+		<method name="reset_adaptive">
+			<return type="void" />
+			<description>
+				Resets the adaptive streak counters and restores the render scale to the profile's baseline.
+			</description>
+		</method>
+		<method name="set_current_render_scale">
+			<return type="void" />
+			<param index="0" name="scale" type="float" />
+			<description>
+				Manually sets the live 3D render scale (clamped between 0.25 and 2.0).
+			</description>
+		</method>
+		<method name="tick">
+			<return type="void" />
+			<description>
+				Performs one adaptive-quality evaluation. Called automatically by the internal monitor timer when monitoring is enabled; can also be called manually from scripting or tests.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="monitoring_enabled" type="bool" setter="set_monitoring_enabled" getter="get_monitoring_enabled" default="false">
+			If [code]true[/code], adaptive quality monitoring is active and the render scale may be adjusted automatically.
+		</member>
+		<member name="profile" type="VertexPerformanceProfile" setter="set_profile" getter="get_profile">
+			The active performance profile whose values are applied and monitored.
+		</member>
+	</members>
+	<signals>
+		<signal name="adaptive_quality_changed">
+			<param index="0" name="new_render_scale" type="float" />
+			<description>
+				Emitted when the adaptive system changes the live render scale.
+			</description>
+		</signal>
+	</signals>
+</class>
