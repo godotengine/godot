@@ -528,7 +528,7 @@ public:
 		typename T_STORAGE::Shader *shader_cache;
 		bool rebind_shader;
 		bool prev_use_skeleton;
-		bool prev_distance_field;
+		bool prev_distance_field = false;
 		int last_blend_mode;
 		RID canvas_last_material;
 		Color final_modulate;
