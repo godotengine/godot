@@ -315,8 +315,8 @@ struct GodotConcavePolygonShape3D : public GodotConcaveShape3D {
 		int indices[3] = {};
 	};
 
-	Vector<Face> faces;
-	Vector<Vector3> vertices;
+	LocalVector<Face> faces;
+	LocalVector<Vector3> vertices;
 
 	struct BVH {
 		AABB aabb;
@@ -326,7 +326,7 @@ struct GodotConcavePolygonShape3D : public GodotConcaveShape3D {
 		int face_index = 0;
 	};
 
-	Vector<BVH> bvh;
+	LocalVector<BVH> bvh;
 
 	struct _CullParams {
 		AABB aabb;
