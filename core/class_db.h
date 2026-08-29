@@ -171,6 +171,13 @@ public:
 	static void register_class() {
 		GLOBAL_LOCK_FUNCTION;
 		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
+
+		// FORCE COMPILER INSTANTIATION:
+		// There is a bug with some compilers, that they aggressively strip classes
+		// from the binary, and cause errors at runtime.
+		// This line attempt to prevent this by forcing the compiler to link all classes.
+		(void)&T::get_class_static;
+
 		T::initialize_class();
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
