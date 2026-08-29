@@ -602,6 +602,16 @@ void ProjectDialog::ok_pressed() {
 			initial_settings[extra_setting.key] = extra_setting.value;
 		}
 
+		// VERTEX: write default performance profile / target platform / low-end
+		// optimization selections into the new project. These are consumed by the
+		// vertex_perf module's VertexPerformanceManager at runtime. Values map to
+		// VertexPerformanceProfile.Preset (2 = Balanced). Selection UI in the
+		// Project Manager can set these before creation; defaults are sensible.
+		initial_settings["Vertex/Performance/profile_preset"] = 2; // Balanced.
+		initial_settings["Vertex/Performance/target_platform"] = "android";
+		initial_settings["Vertex/Performance/optimize_for_low_end"] = false;
+		initial_settings["Vertex/Performance/adaptive_quality"] = true;
+
 		Error err = ProjectSettings::get_singleton()->save_custom(path.path_join("project.godot"), initial_settings, Vector<String>(), false);
 		if (err != OK) {
 			_set_message(TTRC("Couldn't create project.godot in project path."), MESSAGE_ERROR);
