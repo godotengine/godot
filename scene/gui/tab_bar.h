@@ -210,6 +210,8 @@ private:
 	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_index);
 	void _accessibility_action_focus(const Variant &p_data, int p_index);
 
+	Size2 _get_minimum_size() const;
+
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
@@ -345,7 +347,6 @@ public:
 	void set_switch_on_release(bool p_switch) { switch_on_release = p_switch; }
 
 	Rect2 get_tab_rect(int p_tab) const;
-	Size2 get_minimum_size() const override;
 	Size2 get_desired_size() const override;
 
 	TabBar();

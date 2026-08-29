@@ -47,7 +47,7 @@ static inline Color _select_color(const Color &p_override_color, const Color &p_
 	return p_override_color.a > 0 ? p_override_color : p_default_color;
 }
 
-Size2 TabBar::get_minimum_size() const {
+Size2 TabBar::_get_minimum_size() const {
 	Size2 ms;
 	Size2 combined_max = get_combined_maximum_size();
 
@@ -2338,6 +2338,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_deselect_enabled", "enabled"), &TabBar::set_deselect_enabled);
 	ClassDB::bind_method(D_METHOD("get_deselect_enabled"), &TabBar::get_deselect_enabled);
 	ClassDB::bind_method(D_METHOD("clear_tabs"), &TabBar::clear_tabs);
+
+	ClassDB::bind_virtual_method_answer("_get_minimum_size", &TabBar::_get_minimum_size);
 
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
