@@ -142,47 +142,91 @@ Size2 TabBar::get_minimum_size() const {
 	return ms;
 }
 
+bool TabBar::_handle_scroll_button(const Point2 &p_pos) {
+	if (is_layout_rtl()) {
+		if (p_pos.x < theme_cache.decrement_icon->get_width()) {
+			if (missing_right) {
+				offset++;
+				_update_cache();
+				queue_redraw();
+			}
+			return true;
+		} else if (p_pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
+			if (offset > 0) {
+				offset--;
+				_update_cache();
+				queue_redraw();
+			}
+			return true;
+		}
+	} else {
+		int limit = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+		if (p_pos.x > limit + theme_cache.decrement_icon->get_width()) {
+			if (missing_right) {
+				offset++;
+				_update_cache();
+				queue_redraw();
+			}
+			return true;
+		} else if (p_pos.x > limit) {
+			if (offset > 0) {
+				offset--;
+				_update_cache();
+				queue_redraw();
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void TabBar::_update_scroll_button_highlight(const Point2 &p_pos) {
+	if (is_layout_rtl()) {
+		if (p_pos.x < theme_cache.decrement_icon->get_width()) {
+			if (highlight_arrow != 1) {
+				highlight_arrow = 1;
+				queue_redraw();
+			}
+		} else if (p_pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
+			if (highlight_arrow != 0) {
+				highlight_arrow = 0;
+				queue_redraw();
+			}
+		} else if (highlight_arrow != -1) {
+			highlight_arrow = -1;
+			queue_redraw();
+		}
+	} else {
+		int limit_minus_buttons = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
+		if (p_pos.x > limit_minus_buttons + theme_cache.decrement_icon->get_width()) {
+			if (highlight_arrow != 1) {
+				highlight_arrow = 1;
+				queue_redraw();
+			}
+		} else if (p_pos.x > limit_minus_buttons) {
+			if (highlight_arrow != 0) {
+				highlight_arrow = 0;
+				queue_redraw();
+			}
+		} else if (highlight_arrow != -1) {
+			highlight_arrow = -1;
+			queue_redraw();
+		}
+	}
+}
+
 void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	Ref<InputEventMouseMotion> mm = p_event;
+	int event_device_id = p_event->get_device();
 
-	if (mm.is_valid()) {
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		Point2 pos = mm->get_position();
 
 		if (buttons_visible) {
-			if (is_layout_rtl()) {
-				if (pos.x < theme_cache.decrement_icon->get_width()) {
-					if (highlight_arrow != 1) {
-						highlight_arrow = 1;
-						queue_redraw();
-					}
-				} else if (pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
-					if (highlight_arrow != 0) {
-						highlight_arrow = 0;
-						queue_redraw();
-					}
-				} else if (highlight_arrow != -1) {
-					highlight_arrow = -1;
-					queue_redraw();
-				}
-			} else {
-				int limit_minus_buttons = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
-				if (pos.x > limit_minus_buttons + theme_cache.decrement_icon->get_width()) {
-					if (highlight_arrow != 1) {
-						highlight_arrow = 1;
-						queue_redraw();
-					}
-				} else if (pos.x > limit_minus_buttons) {
-					if (highlight_arrow != 0) {
-						highlight_arrow = 0;
-						queue_redraw();
-					}
-				} else if (highlight_arrow != -1) {
-					highlight_arrow = -1;
-					queue_redraw();
-				}
-			}
+			_update_scroll_button_highlight(pos);
 		}
 
 		if (get_viewport()->gui_is_dragging() && can_drop_data(pos, get_viewport()->gui_get_drag_data())) {
@@ -199,7 +243,8 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 
-	if (mb.is_valid()) {
+	if (mb.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		can_start_drag_drop = true;
 		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::WHEEL_UP || (is_layout_rtl() ? mb->get_button_index() == MouseButton::WHEEL_RIGHT : mb->get_button_index() == MouseButton::WHEEL_LEFT)) && !mb->is_command_or_control_pressed()) {
 			if (scrolling_enabled && buttons_visible) {
 				if (offset > 0) {
@@ -253,39 +298,8 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			bool selecting = mb->get_button_index() == MouseButton::LEFT || (select_with_rmb && mb->get_button_index() == MouseButton::RIGHT);
 
 			if (buttons_visible && selecting) {
-				if (is_layout_rtl()) {
-					if (pos.x < theme_cache.decrement_icon->get_width()) {
-						if (missing_right) {
-							offset++;
-							_update_cache();
-							queue_redraw();
-						}
-						return;
-					} else if (pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
-						if (offset > 0) {
-							offset--;
-							_update_cache();
-							queue_redraw();
-						}
-						return;
-					}
-				} else {
-					int limit = get_size().width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
-					if (pos.x > limit + theme_cache.decrement_icon->get_width()) {
-						if (missing_right) {
-							offset++;
-							_update_cache();
-							queue_redraw();
-						}
-						return;
-					} else if (pos.x > limit) {
-						if (offset > 0) {
-							offset--;
-							_update_cache();
-							queue_redraw();
-						}
-						return;
-					}
+				if (_handle_scroll_button(pos)) {
+					return;
 				}
 			}
 
@@ -333,6 +347,167 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		}
+	}
+
+	Ref<InputEventScreenDrag> drag = p_event;
+	if (drag.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		Point2 pos = drag->get_position();
+
+		if (buttons_visible) {
+			_update_scroll_button_highlight(pos);
+		}
+
+		if (get_viewport()->gui_is_dragging() && can_drop_data(pos, get_viewport()->gui_get_drag_data())) {
+			touch_long_press_dragging = true;
+			dragging_valid_tab = true;
+			queue_redraw();
+		}
+
+		if (scrolling_enabled && buttons_visible && touch_dragging_starting && !dragging_valid_tab) {
+			Vector2 motion = drag->get_relative();
+
+			if (!touch_dragging_in_progress) {
+				drag_accum += motion;
+				if (drag_accum.length() > DRAG_THRESHOLD) {
+					touch_dragging_in_progress = true;
+					tab_pressing = -1;
+
+					if (rb_pressing || cb_pressing) {
+						rb_pressing = false;
+						cb_pressing = false;
+						queue_redraw();
+					}
+				}
+			}
+
+			if (touch_dragging_in_progress) {
+				float direction = is_layout_rtl() ? -1.0f : 1.0f;
+				drag_accum.x += motion.x * direction;
+
+				const float scroll_threshold = 40.0f;
+
+				while (drag_accum.x <= -scroll_threshold) {
+					if (missing_right && offset < tabs.size()) {
+						offset++;
+						_update_cache(false);
+						queue_redraw();
+						drag_accum.x += scroll_threshold;
+					} else {
+						drag_accum.x = 0.0f;
+						break;
+					}
+				}
+
+				while (drag_accum.x >= scroll_threshold) {
+					if (offset > 0) {
+						offset--;
+						_update_cache(false);
+						queue_redraw();
+						drag_accum.x -= scroll_threshold;
+					} else {
+						drag_accum.x = 0.0f;
+						break;
+					}
+				}
+			}
+		}
+
+		return;
+	}
+
+	Ref<InputEventScreenTouch> touch = p_event;
+	if (touch.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		Point2 pos = touch->get_position();
+
+		if (touch->is_pressed() && touch->is_long_press()) {
+			can_start_drag_drop = true;
+			return;
+		}
+
+		if (touch->is_released() && touch->is_long_press()) {
+			// Show context menu.
+			if (!touch_long_press_dragging) {
+				int tab_idx = get_tab_idx_at_point(pos);
+				if (tab_idx != -1) {
+					emit_signal(SNAME("tab_rmb_clicked"), tab_idx);
+				}
+			}
+			can_start_drag_drop = false;
+			touch_long_press_dragging = false;
+			return;
+		}
+
+		if (touch->is_pressed()) {
+			can_start_drag_drop = false;
+			touch_dragging_starting = true;
+			touch_dragging_in_progress = false;
+			drag_accum = Vector2();
+			tab_pressing = -1;
+
+			if (buttons_visible) {
+				if (_handle_scroll_button(pos)) {
+					return;
+				}
+			}
+
+			if (tabs.is_empty()) {
+				// Return early if there are no actual tabs to handle input for.
+				return;
+			}
+
+			int found = get_tab_idx_at_point(pos);
+			if (found != -1) {
+				tab_pressing = found;
+
+				// Clicking right button icon.
+				if (tabs[found].rb_rect.has_point(pos)) {
+					rb_pressing = true;
+					_update_hover();
+					queue_redraw();
+					return;
+				}
+
+				// Clicking close button.
+				if (tabs[found].cb_rect.has_point(pos) && (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && found == current))) {
+					cb_pressing = true;
+					_update_hover();
+					queue_redraw();
+					return;
+				}
+			}
+		}
+
+		if (touch->is_released()) {
+			if (!touch_dragging_in_progress) {
+				if (rb_pressing) {
+					if (rb_hover != -1) {
+						emit_signal(SNAME("tab_button_pressed"), rb_hover);
+					}
+				} else if (cb_pressing) {
+					if (cb_hover != -1) {
+						emit_signal(SNAME("tab_close_pressed"), cb_hover);
+					}
+				} else if (tab_pressing != -1 && !tabs[tab_pressing].disabled) {
+					// Selecting a tab.
+					int found = get_tab_idx_at_point(pos);
+					if (found == tab_pressing) {
+						if (deselect_enabled && get_current_tab() == found) {
+							set_current_tab(-1);
+						} else {
+							set_current_tab(found);
+						}
+						emit_signal(SNAME("tab_clicked"), found);
+					}
+				}
+			}
+
+			rb_pressing = false;
+			cb_pressing = false;
+			tab_pressing = -1;
+			touch_dragging_starting = false;
+			touch_dragging_in_progress = false;
+		}
+		return;
 	}
 
 	if (p_event->is_pressed()) {
@@ -1620,6 +1795,10 @@ void TabBar::remove_tab(int p_idx) {
 }
 
 Variant TabBar::get_drag_data(const Point2 &p_point) {
+	if (!can_start_drag_drop) {
+		return Variant();
+	}
+
 	Variant drag_data = Control::get_drag_data(p_point);
 	if (drag_data != Variant()) {
 		return drag_data;
