@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VertexMobileSettings" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Touch-friendly editor layout settings for the Vertex mobile editor.
+	</brief_description>
+	<description>
+		Centralizes sizes and gesture thresholds so the editor is re-laid-out for small touchscreens and virtual keyboards rather than simply shrunk. Used by the Vertex mobile editor plugin.
+	</description>
+	<methods>
+		<method name="from_dictionary">
+			<return type="void" />
+			<param index="0" name="dict" type="Dictionary" />
+			<description>
+				Loads settings from a dictionary produced by [method to_dictionary].
+			</description>
+		</method>
+		<method name="to_dictionary">
+			<return type="Dictionary" />
+			<description>
+				Serializes all settings to a dictionary.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="compact_mode" type="bool" setter="set_compact_mode" getter="get_compact_mode" default="false">
+			Enables a compact, touch-first layout.
+		</member>
+		<member name="compact_toolbar_height" type="float" setter="set_compact_toolbar_height" getter="get_compact_toolbar_height" default="44.0">
+			Height of the compact toolbar in dp.
+		</member>
+		<member name="gesture_pan_threshold" type="float" setter="set_gesture_pan_threshold" getter="get_gesture_pan_threshold" default="8.0">
+			Minimum pan distance before a touch is treated as a drag.
+		</member>
+		<member name="panel_toggle_size" type="float" setter="set_panel_toggle_size" getter="get_panel_toggle_size" default="40.0">
+			Size of collapsible-panel toggle buttons in dp.
+		</member>
+		<member name="panels_collapsed" type="bool" setter="set_panels_collapsed" getter="get_panels_collapsed" default="false">
+			Whether dock panels are collapsed to maximize editing area.
+		</member>
+		<member name="pinch_zoom_max" type="float" setter="set_pinch_zoom_max" getter="get_pinch_zoom_max" default="4.0">
+			Maximum pinch-zoom factor.
+		</member>
+		<member name="pinch_zoom_min" type="float" setter="set_pinch_zoom_min" getter="get_pinch_zoom_min" default="0.25">
+			Minimum pinch-zoom factor.
+		</member>
+		<member name="screen_density_dp" type="int" setter="set_screen_density_dp" getter="get_screen_density_dp" default="0">
+			Override screen density in dp (0 = auto-detect).
+		</member>
+		<member name="touch_target_size" type="float" setter="set_touch_target_size" getter="get_touch_target_size" default="48.0">
+			Minimum touch-target size in dp for interactive controls.
+		</member>
+		<member name="virtual_keyboard_assist" type="bool" setter="set_virtual_keyboard_assist" getter="get_virtual_keyboard_assist" default="true">
+			Whether to assist layout adjustments for the virtual keyboard.
+		</member>
+	</members>
+</class>
