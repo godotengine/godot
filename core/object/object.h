@@ -521,6 +521,8 @@ protected:
 
 	// Used in gdvirtual.gen.h
 	void _gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const;
+	bool _gdvirtual_is_method_overridden(const StringName &p_fn_name) const;
+	Variant _gdvirtual_call_method(const StringName &p_fn_name, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	friend class GDExtensionMethodBind;
 	_ALWAYS_INLINE_ const ObjectGDExtension *_get_extension() const { return _extension; }

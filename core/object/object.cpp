@@ -986,6 +986,22 @@ void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr,
 	r_fn_ptr = fn_ptr;
 }
 
+bool Object::_gdvirtual_is_method_overridden(const StringName &p_fn_name) const {
+	return ClassDB::has_virtual_method_answer(get_class_name(), p_fn_name);
+}
+
+Variant Object::_gdvirtual_call_method(const StringName &p_fn_name, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	const MethodBind *mb = ClassDB::get_virtual_method_answer(get_class_name(), p_fn_name);
+	if (!mb) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
+	}
+
+	OBJ_DEBUG_LOCK
+
+	return mb->call(this, p_args, p_argcount, r_error);
+}
+
 void Object::_notification_forward(int p_notification) {
 	// Notify classes starting with Object and ending with most derived subclass.
 	// e.g. Object -> Node -> Node3D

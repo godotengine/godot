@@ -14,6 +14,20 @@ script_has_method = """ScriptInstance *_script_instance = ((Object *)(this))->ge
 			return true;\\
 		}"""
 
+cpp_call = """if (_gdvirtual_is_method_overridden(_gdvirtual_##$VARNAME##_sn)) {\\
+			Callable::CallError ce;\\
+			$CALLSIARGS\\
+			$CALLSIBEGINconst_cast<self_type *>(this)->_gdvirtual_call_method(_gdvirtual_##$VARNAME##_sn, $CALLSIARGPASS, ce);\\
+			if (ce.error == Callable::CallError::CALL_OK) {\\
+				$CALLSIRET\\
+				return true;\\
+			}\\
+		}"""
+
+cpp_has_method = """if (_gdvirtual_is_method_overridden(_gdvirtual_##$VARNAME##_sn)) {\\
+			return true;\\
+		}"""
+
 proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 	mutable void *_gdvirtual_##$VARNAME = nullptr;\\
 	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_call($CALLARGS) $CONST {\\
@@ -36,6 +50,7 @@ proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 				return true;\\
 			}\\
 		}\\
+		$CPPCALL\\
 		$REQCHECK\\
 		$RVOID\\
 		return false;\\
@@ -51,6 +66,7 @@ proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 				return true;\\
 			}\\
 		}\\
+		$CPPHASMETHOD\\
 		return false;\\
 	}\\
 	_FORCE_INLINE_ static MethodInfo _gdvirtual_##$VARNAME##_get_method_info() {\\
@@ -72,6 +88,8 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
     else:
         s = s.replace("$SCRIPTCALL", script_call)
         s = s.replace("$SCRIPTHASMETHOD", script_has_method)
+    s = s.replace("$CPPCALL", cpp_call)
+    s = s.replace("$CPPHASMETHOD", cpp_has_method)
 
     sproto = str(argcount)
     method_info = ""
