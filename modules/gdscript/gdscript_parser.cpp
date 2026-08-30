@@ -1353,8 +1353,13 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 				getter_used = true;
 			}
 		} else {
-			// TODO: Update message to only have the missing one if it's the case.
-			push_error(R"(Expected "get" or "set" for property declaration.)");
+			if (!setter_used && getter_used) {
+				push_error(R"(Expected "set" for property declaration.)");
+			} else if (setter_used && !getter_used) {
+				push_error(R"(Expected "get" for property declaration.)");
+			} else {
+				push_error(R"(Expected "get" or "set" for property declaration.)");
+			}
 		}
 
 		if (i == 0 && p_variable->property == VariableNode::PROP_SETGET) {
