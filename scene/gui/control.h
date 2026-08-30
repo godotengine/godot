@@ -289,6 +289,8 @@ private:
 		bool clip_contents = false;
 		bool disable_visibility_clip = false;
 
+		bool vibrate_on_long_press = true;
+
 		CursorShape default_cursor = CURSOR_ARROW;
 
 		// Focus.
@@ -702,6 +704,9 @@ public:
 	bool is_focus_owner_in_shortcut_context() const;
 	void set_shortcut_context(const Node *p_node);
 	Node *get_shortcut_context() const;
+
+	void set_vibrate_on_long_press(bool p_enable);
+	bool is_vibrate_on_long_press() const;
 
 	// Drag and drop handling.
 

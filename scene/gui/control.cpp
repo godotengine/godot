@@ -2576,6 +2576,11 @@ Transform2D Control::get_offset_transform() const {
 // Input events.
 
 void Control::_call_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventScreenTouch> touch = p_event;
+	if (data.vibrate_on_long_press && touch.is_valid() && touch->is_pressed() && touch->is_long_press()) {
+		OS::get_singleton()->vibrate_handheld(80);
+	}
+
 	if (p_event->get_device() != InputEvent::DEVICE_ID_INTERNAL) {
 		emit_signal(SceneStringName(gui_input), p_event); // Signal should be first, so it's possible to override an event (and then accept it).
 	}
@@ -2727,6 +2732,19 @@ Node *Control::get_shortcut_context() const {
 	Node *ctx_node = Object::cast_to<Node>(ctx_obj);
 
 	return ctx_node;
+}
+
+void Control::set_vibrate_on_long_press(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
+	if (data.vibrate_on_long_press == p_enable) {
+		return;
+	}
+	data.vibrate_on_long_press = p_enable;
+}
+
+bool Control::is_vibrate_on_long_press() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return data.vibrate_on_long_press;
 }
 
 bool Control::is_focus_owner_in_shortcut_context() const {
@@ -4943,6 +4961,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut_context", "node"), &Control::set_shortcut_context);
 	ClassDB::bind_method(D_METHOD("get_shortcut_context"), &Control::get_shortcut_context);
 
+	ClassDB::bind_method(D_METHOD("set_vibrate_on_long_press", "enable"), &Control::set_vibrate_on_long_press);
+	ClassDB::bind_method(D_METHOD("is_vibrate_on_long_press"), &Control::is_vibrate_on_long_press);
+
 	ClassDB::bind_method(D_METHOD("update_maximum_size"), &Control::update_maximum_size);
 	ClassDB::bind_method(D_METHOD("update_minimum_size"), &Control::update_minimum_size);
 
@@ -5073,6 +5094,7 @@ void Control::_bind_methods() {
 
 	ADD_GROUP("Input", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut_context", PROPERTY_HINT_NODE_TYPE, "Node"), "set_shortcut_context", "get_shortcut_context");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vibrate_on_long_press"), "set_vibrate_on_long_press", "is_vibrate_on_long_press");
 
 	ADD_GROUP("Accessibility", "accessibility_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_name"), "set_accessibility_name", "get_accessibility_name");
