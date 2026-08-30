@@ -79,6 +79,7 @@ Patches:
 - `0004-remove-tinydds-qoi.patch` (GH-97582)
 - `0005-msvc-include-ctype.patch` (GH-106155)
 - `0006-clang-warning-exclude.patch` (GH-121604)
+- `0007-mcmodel-medium-section-conflict.patch` (GH-123001)
 
 
 ## brotli
