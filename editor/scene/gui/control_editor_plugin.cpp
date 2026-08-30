@@ -1039,6 +1039,24 @@ void ControlEditorToolbar::_maximize_flag_toggled(bool p_maximize, bool p_vertic
 	undo_redo->commit_action();
 }
 
+void ControlEditorToolbar::_stretch_ratio_changed(double p_stretch_ratio) {
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTRC("Change Stretch Ratio"), UndoRedo::MERGE_ENDS);
+
+	for (Node *E : selection) {
+		Control *control = Object::cast_to<Control>(E);
+		if (control) {
+			double old_stretch_ratio = control->get_stretch_ratio();
+			undo_redo->add_do_method(control, "set_stretch_ratio", p_stretch_ratio);
+			undo_redo->add_undo_method(control, "set_stretch_ratio", old_stretch_ratio);
+		}
+	}
+
+	undo_redo->commit_action();
+}
+
 Vector2 ControlEditorToolbar::_position_to_anchor(const Control *p_control, Vector2 position) {
 	ERR_FAIL_NULL_V(p_control, Vector2());
 
@@ -1125,6 +1143,7 @@ void ControlEditorToolbar::_update_container_sizing_selection_ui(bool p_pressed)
 	bool all_v_maximize = true;
 	int first_h_flags = -1;
 	int first_v_flags = -1;
+	float first_stretch_ratio = -1.0;
 
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 	for (Node *E : selection) {
@@ -1137,6 +1156,7 @@ void ControlEditorToolbar::_update_container_sizing_selection_ui(bool p_pressed)
 		const int v_flags = control->get_v_size_flags();
 		const int h_shrink_fill = h_flags & ~(Control::SIZE_EXPAND | Control::SIZE_MAXIMIZE);
 		const int v_shrink_fill = v_flags & ~(Control::SIZE_EXPAND | Control::SIZE_MAXIMIZE);
+		const double stretch_ratio = control->get_stretch_ratio();
 
 		if (first_h_flags == -1) {
 			first_h_flags = h_shrink_fill;
@@ -1148,6 +1168,10 @@ void ControlEditorToolbar::_update_container_sizing_selection_ui(bool p_pressed)
 			first_v_flags = v_shrink_fill;
 		} else if (v_shrink_fill != first_v_flags) {
 			all_v_shrink_fill_same = false;
+		}
+
+		if (first_stretch_ratio < 0.0) {
+			first_stretch_ratio = stretch_ratio;
 		}
 
 		if (!(h_flags & Control::SIZE_EXPAND)) {
@@ -1173,6 +1197,8 @@ void ControlEditorToolbar::_update_container_sizing_selection_ui(bool p_pressed)
 
 	container_h_picker->set_maximize_flag(all_h_maximize);
 	container_v_picker->set_maximize_flag(all_v_maximize);
+
+	container_stretch_ratio_slider->set_value_no_signal(first_stretch_ratio);
 }
 
 void ControlEditorToolbar::_selection_changed() {
@@ -1370,6 +1396,19 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	container_v_picker->connect("size_flags_selected", callable_mp(this, &ControlEditorToolbar::_container_flags_selected).bind(true));
 	container_v_picker->connect("expand_flag_toggled", callable_mp(this, &ControlEditorToolbar::_expand_flag_toggled).bind(true));
 	container_v_picker->connect("maximize_flag_toggled", callable_mp(this, &ControlEditorToolbar::_maximize_flag_toggled).bind(true));
+
+	containers_button->get_popup_hbox()->add_child(memnew(HSeparator));
+
+	Label *stretch_ratio_label = memnew(Label);
+	stretch_ratio_label->set_text(TTRC("Stretch Ratio"));
+	containers_button->get_popup_hbox()->add_child(stretch_ratio_label);
+	container_stretch_ratio_slider = memnew(EditorSpinSlider);
+	containers_button->get_popup_hbox()->add_child(container_stretch_ratio_slider);
+	container_stretch_ratio_slider->connect("value_changed", callable_mp(this, &ControlEditorToolbar::_stretch_ratio_changed));
+	container_stretch_ratio_slider->set_min(0.0);
+	container_stretch_ratio_slider->set_max(20.0);
+	container_stretch_ratio_slider->set_allow_greater(true);
+	container_stretch_ratio_slider->set_step(0.01);
 
 	// Editor connections.
 	editor_selection = EditorNode::get_singleton()->get_editor_selection();
