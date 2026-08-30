@@ -32,6 +32,7 @@
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "servers/audio/audio_server.h"
 
 float AudioStreamPreview::get_length() const {
@@ -125,6 +126,10 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 	int frames_total = AudioServer::get_singleton()->get_mix_rate() * preview->preview->length;
 	int frames_todo = frames_total;
 
+	const uint64_t update_interval_usec = 16000; // Roughly 60 Hz.
+	uint64_t time_accum_usec = 0;
+	uint64_t last_time_usec = OS::get_singleton()->get_ticks_usec();
+
 	preview->playback->start();
 
 	while (frames_todo) {
@@ -162,8 +167,17 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 		}
 
 		frames_todo -= to_read;
-		callable_mp(singleton, &AudioStreamPreviewGenerator::_update_emit).call_deferred(preview->id);
+
+		uint64_t new_time_usec = OS::get_singleton()->get_ticks_usec();
+		time_accum_usec += new_time_usec - last_time_usec;
+		last_time_usec = new_time_usec;
+		if (time_accum_usec >= update_interval_usec) {
+			time_accum_usec = 0;
+			callable_mp(singleton, &AudioStreamPreviewGenerator::_update_emit).call_deferred(preview->id);
+		}
 	}
+
+	callable_mp(singleton, &AudioStreamPreviewGenerator::_update_emit).call_deferred(preview->id);
 
 	preview->preview->version++;
 
