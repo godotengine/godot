@@ -147,45 +147,41 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 	return nd * pow(max(distance, 0.0001), -decay);
 }
 
-void compute_area_light(uint index, vec3 position, out float attenuation, out vec3 light_vec, out float light_distance, out vec3 texture_color) {
+void compute_area_light(uint index, vec3 position, vec3 normal, out float attenuation, out vec3 light_vec, out float light_distance, out vec3 texture_color) {
 	vec3 area_width = lights.data[index].area_width.xyz;
 	vec3 area_height = lights.data[index].area_height.xyz;
 	vec3 area_direction = lights.data[index].direction;
-	float a_len = length(area_width);
-	float b_len = length(area_height);
-	vec3 area_width_norm = normalize(area_width);
-	vec3 area_height_norm = normalize(area_height);
-	float a_half_len = a_len / 2.0;
-	float b_half_len = b_len / 2.0;
+	vec3 area_width_normalized = normalize(area_width);
+	vec3 area_height_normalized = normalize(area_height);
 	vec3 light_center = lights.data[index].position;
-	vec3 light_to_vert = position - light_center;
-	vec3 pos_local_to_light = vec3(dot(light_to_vert, area_width_norm), dot(light_to_vert, area_height_norm), dot(light_to_vert, -area_direction));
-	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0.0);
-	float inv_center_range = lights.data[index].inv_spot_attenuation;
-	vec3 closest_point_on_light = light_center + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm;
-	vec3 light_rel_vec = closest_point_on_light - position;
-	light_distance = length(light_rel_vec);
-	const float EPSILON = 1e-4f;
-	light_vec = light_distance < EPSILON ? area_direction : light_rel_vec / light_distance;
-	float max_mipmap = lights.data[index].cos_spot_angle;
+	light_center.y /= params.y_mult;
+	vec3 light_to_position = position - light_center;
+	vec2 position_on_light = vec2(dot(light_to_position, area_width_normalized), dot(light_to_position, area_height_normalized));
+	vec2 half_size = vec2(length(area_width), length(area_height)) * 0.5;
+	position_on_light = clamp(position_on_light, -half_size, half_size);
 
-	if (light_distance * inv_center_range >= 1.0) {
+	vec3 closest_point_on_light = light_center + position_on_light.x * area_width_normalized + position_on_light.y * area_height_normalized;
+	vec3 light_relative_vector = closest_point_on_light - position;
+	light_distance = length(light_relative_vector);
+	light_vec = light_distance > 0.0001 ? light_relative_vector / light_distance : -area_direction;
+
+	if (light_distance * lights.data[index].inv_spot_attenuation >= 1.0) {
 		attenuation = 0.0;
 		return;
 	}
 
-	vec3 h_area_width = area_width / 2.0;
-	vec3 h_area_height = area_height / 2.0;
+	vec3 half_width = area_width * 0.5;
+	vec3 half_height = area_height * 0.5;
 	vec3 light_points[4];
-	light_points[0] = lights.data[index].position - h_area_width - h_area_height - position;
-	light_points[1] = lights.data[index].position + h_area_width - h_area_height - position;
-	light_points[2] = lights.data[index].position + h_area_width + h_area_height - position;
-	light_points[3] = lights.data[index].position - h_area_width + h_area_height - position;
+	light_points[0] = light_center - half_width - half_height - position;
+	light_points[1] = light_center + half_width - half_height - position;
+	light_points[2] = light_center + half_width + half_height - position;
+	light_points[3] = light_center - half_width + half_height - position;
 
+	// LTC already includes inverse-square falloff.
 	attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[index].radius, lights.data[index].attenuation - 2.0);
 	float ltc_diffuse = 0.0;
-	vec3 ltc_normal = light_vec;
-	ltc_evaluate_diff(ltc_normal, light_points, lights.data[index].area_projector_rect, max_mipmap, area_light_atlas, linear_sampler_with_mipmaps, ltc_diffuse, texture_color);
+	ltc_evaluate_diff(normal, light_points, lights.data[index].area_projector_rect, lights.data[index].cos_spot_angle, area_light_atlas, linear_sampler_with_mipmaps, ltc_diffuse, texture_color);
 	attenuation *= ltc_diffuse;
 }
 
@@ -517,17 +513,28 @@ void main() {
 				attenuation *= 1.0 - pow(spot_rim, lights.data[i].inv_spot_attenuation);
 			} break;
 			case LIGHT_TYPE_AREA: {
-				const float EPSILON = 1e-7f;
 				vec3 area_width = lights.data[i].area_width.xyz;
 				vec3 area_height = lights.data[i].area_height.xyz;
-				if (dot(area_width, area_width) < EPSILON || dot(area_height, area_height) < EPSILON) {
+				if (dot(area_width, area_width) < 1e-7 || dot(area_height, area_height) < 1e-7) {
 					continue;
 				}
-				if (dot(lights.data[i].direction, position - lights.data[i].position) <= 0.0) {
+				vec3 world_position = position;
+				world_position.y /= params.y_mult;
+				vec3 world_light_position = lights.data[i].position;
+				world_light_position.y /= params.y_mult;
+				if (dot(lights.data[i].direction, world_position - world_light_position) <= 0.0) {
 					continue;
 				}
-				compute_area_light(i, position, attenuation, direction, light_distance, texture_color);
-				attenuation *= max(0.0, dot(normal, direction));
+
+				vec3 lighting_direction;
+				float world_light_distance;
+				compute_area_light(i, world_position, normal, attenuation, lighting_direction, world_light_distance, texture_color);
+
+				vec3 trace_direction = lighting_direction;
+				trace_direction.y *= params.y_mult;
+				float trace_scale = length(trace_direction);
+				direction = trace_direction / max(trace_scale, 0.000001);
+				light_distance = world_light_distance * trace_scale;
 			} break;
 			default: {
 				continue;

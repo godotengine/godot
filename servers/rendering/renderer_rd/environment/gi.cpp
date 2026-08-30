@@ -1878,7 +1878,7 @@ void GI::HDDAGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_
 	for (uint32_t i = 0; i < cascades.size(); i++) {
 		HDDAGI::Cascade &cascade = cascades[i];
 
-		HDDAGIShader::Light lights[HDDAGI::MAX_DYNAMIC_LIGHTS];
+		HDDAGIShader::Light lights[HDDAGI::MAX_DYNAMIC_LIGHTS] = {};
 		uint32_t idx = 0;
 		for (uint32_t j = 0; j < (uint32_t)p_render_data->hddagi_update_data->directional_lights->size(); j++) {
 			if (idx == HDDAGI::MAX_DYNAMIC_LIGHTS) {
@@ -1924,6 +1924,9 @@ void GI::HDDAGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_
 		AABB cascade_aabb;
 		cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -(cascade_size / 2) + cascade.position)) * cascade.cell_size;
 		cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cascade.cell_size;
+		// Cascade coordinates are stretched on Y; light bounds are world-space.
+		cascade_aabb.position.y /= y_mult;
+		cascade_aabb.size.y /= y_mult;
 
 		for (uint32_t j = 0; j < p_render_data->hddagi_update_data->positional_light_count; j++) {
 			if (idx == HDDAGI::MAX_DYNAMIC_LIGHTS) {
@@ -1995,25 +1998,34 @@ void GI::HDDAGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_
 			if (lights[idx].type == RSE::LIGHT_AREA) {
 				Vector3 area_vec_a = light_transform.basis.get_column(0).normalized() * area_size.x;
 				Vector3 area_vec_b = light_transform.basis.get_column(1).normalized() * area_size.y;
-				Rect2 proj_rect = texture_storage->area_light_atlas_get_texture_rect(RSG::light_storage->light_area_get_texture(light));
+
+				Vector3 area_direction = -light_transform.basis.get_column(Vector3::AXIS_Z).normalized();
+				lights[idx].direction[0] = area_direction.x;
+				lights[idx].direction[1] = area_direction.y;
+				lights[idx].direction[2] = area_direction.z;
+
 				lights[idx].area_width[0] = area_vec_a.x;
 				lights[idx].area_width[1] = area_vec_a.y;
 				lights[idx].area_width[2] = area_vec_a.z;
 				lights[idx].area_height[0] = area_vec_b.x;
 				lights[idx].area_height[1] = area_vec_b.y;
 				lights[idx].area_height[2] = area_vec_b.z;
+
+				Rect2 proj_rect = texture_storage->area_light_atlas_get_texture_rect(RSG::light_storage->light_area_get_texture(light));
 				lights[idx].area_projector_rect[0] = proj_rect.position.x;
 				lights[idx].area_projector_rect[1] = proj_rect.position.y;
 				lights[idx].area_projector_rect[2] = proj_rect.size.x;
 				lights[idx].area_projector_rect[3] = proj_rect.size.y;
 
-				Size2i texture_size = proj_rect.size * texture_storage->area_light_atlas_get_size();
+				Size2i texture_size = (proj_rect.size * texture_storage->area_light_atlas_get_size()).ceil();
 				lights[idx].cos_spot_angle = MIN(Math::floor(Math::log2(MAX(MIN(texture_size.x, texture_size.y), 1.0f))), texture_storage->area_light_atlas_get_mipmaps()) - 1.0f;
 				lights[idx].inv_spot_attenuation = 1.0f / (lights[idx].radius + area_size.length() / 2.0f);
 
 				if (RSG::light_storage->light_area_get_normalize_energy(light)) {
 					float surface_area = area_size.x * area_size.y;
-					lights[idx].energy /= surface_area;
+					if (surface_area > 0.0f) {
+						lights[idx].energy /= surface_area;
+					}
 				}
 			}
 
@@ -2038,7 +2050,7 @@ void GI::HDDAGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderSce
 
 	update_cascades();
 
-	HDDAGIShader::Light lights[HDDAGI::MAX_STATIC_LIGHTS];
+	HDDAGIShader::Light lights[HDDAGI::MAX_STATIC_LIGHTS] = {};
 	uint32_t light_count[HDDAGI::MAX_STATIC_LIGHTS];
 
 	for (uint32_t i = 0; i < p_cascade_count; i++) {
@@ -2051,6 +2063,9 @@ void GI::HDDAGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderSce
 			AABB cascade_aabb;
 			cascade_aabb.position = Vector3((Vector3i(1, 1, 1) * -(cascade_size / 2) + cc.position)) * cc.cell_size;
 			cascade_aabb.size = Vector3(1, 1, 1) * cascade_size * cc.cell_size;
+			// Cascade coordinates are stretched on Y; light bounds are world-space.
+			cascade_aabb.position.y /= y_mult;
+			cascade_aabb.size.y /= y_mult;
 
 			int idx = 0;
 
@@ -2127,25 +2142,34 @@ void GI::HDDAGI::render_static_lights(RenderDataRD *p_render_data, Ref<RenderSce
 				if (lights[idx].type == RSE::LIGHT_AREA) {
 					Vector3 area_vec_a = light_transform.basis.get_column(0).normalized() * area_size.x;
 					Vector3 area_vec_b = light_transform.basis.get_column(1).normalized() * area_size.y;
-					Rect2 proj_rect = texture_storage->area_light_atlas_get_texture_rect(RSG::light_storage->light_area_get_texture(light));
+
+					Vector3 area_direction = -light_transform.basis.get_column(Vector3::AXIS_Z).normalized();
+					lights[idx].direction[0] = area_direction.x;
+					lights[idx].direction[1] = area_direction.y;
+					lights[idx].direction[2] = area_direction.z;
+
 					lights[idx].area_width[0] = area_vec_a.x;
 					lights[idx].area_width[1] = area_vec_a.y;
 					lights[idx].area_width[2] = area_vec_a.z;
 					lights[idx].area_height[0] = area_vec_b.x;
 					lights[idx].area_height[1] = area_vec_b.y;
 					lights[idx].area_height[2] = area_vec_b.z;
+
+					Rect2 proj_rect = texture_storage->area_light_atlas_get_texture_rect(RSG::light_storage->light_area_get_texture(light));
 					lights[idx].area_projector_rect[0] = proj_rect.position.x;
 					lights[idx].area_projector_rect[1] = proj_rect.position.y;
 					lights[idx].area_projector_rect[2] = proj_rect.size.x;
 					lights[idx].area_projector_rect[3] = proj_rect.size.y;
 
-					Size2i texture_size = proj_rect.size * texture_storage->area_light_atlas_get_size();
+					Size2i texture_size = (proj_rect.size * texture_storage->area_light_atlas_get_size()).ceil();
 					lights[idx].cos_spot_angle = MIN(Math::floor(Math::log2(MAX(MIN(texture_size.x, texture_size.y), 1.0f))), texture_storage->area_light_atlas_get_mipmaps()) - 1.0f;
 					lights[idx].inv_spot_attenuation = 1.0f / (lights[idx].radius + area_size.length() / 2.0f);
 
 					if (RSG::light_storage->light_area_get_normalize_energy(light)) {
 						float surface_area = area_size.x * area_size.y;
-						lights[idx].energy /= surface_area;
+						if (surface_area > 0.0f) {
+							lights[idx].energy /= surface_area;
+						}
 					}
 				}
 
