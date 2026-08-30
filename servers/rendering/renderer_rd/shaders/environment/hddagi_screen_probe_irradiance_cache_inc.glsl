@@ -266,9 +266,9 @@ bool hddagi_irradiance_cache_evaluate(uint entry_index, vec3 normal, out vec3 r_
 		return false;
 	}
 	vec3 radiance = vec3(
-			dot(hddagi_irradiance_cache_sh[sh_base + 0u], basis),
-			dot(hddagi_irradiance_cache_sh[sh_base + 1u], basis),
-			dot(hddagi_irradiance_cache_sh[sh_base + 2u], basis)) /
+							dot(hddagi_irradiance_cache_sh[sh_base + 0u], basis),
+							dot(hddagi_irradiance_cache_sh[sh_base + 1u], basis),
+							dot(hddagi_irradiance_cache_sh[sh_base + 2u], basis)) /
 			normalization;
 	if (!hddagi_irradiance_cache_is_finite(radiance)) {
 		return false;

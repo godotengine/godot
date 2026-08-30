@@ -185,10 +185,10 @@ void hddagi_irradiance_cache_resolve(uint entry_index) {
 		uint sh_base = entry_index * 4u;
 		for (uint channel = 0u; channel < 3u; channel++) {
 			vec4 estimate = vec4(
-					float(hddagi_irradiance_cache_accumulation[accumulation_base + channel * 4u + 0u]),
-					float(hddagi_irradiance_cache_accumulation[accumulation_base + channel * 4u + 1u]),
-					float(hddagi_irradiance_cache_accumulation[accumulation_base + channel * 4u + 2u]),
-					float(hddagi_irradiance_cache_accumulation[accumulation_base + channel * 4u + 3u])) *
+									float(hddagi_irradiance_cache_accumulation[accumulation_base + channel * 4u + 0u]),
+									float(hddagi_irradiance_cache_accumulation[accumulation_base + channel * 4u + 1u]),
+									float(hddagi_irradiance_cache_accumulation[accumulation_base + channel * 4u + 2u]),
+									float(hddagi_irradiance_cache_accumulation[accumulation_base + channel * 4u + 3u])) *
 					inverse_weight;
 			hddagi_irradiance_cache_sh[sh_base + channel] = history_weight == 0.0 ? estimate : mix(hddagi_irradiance_cache_sh[sh_base + channel], estimate, blend);
 		}

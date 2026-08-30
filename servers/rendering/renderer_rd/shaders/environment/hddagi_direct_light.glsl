@@ -25,7 +25,7 @@ struct ProcessVoxel {
 	uint position; // xyz 10 bit packed - then 2 extra bits for dynamic and static pending
 	uint albedo_normal; // 0 - 16, 17 - 31 normal in octahedral format
 	uint emission; // RGBE emission
-	uint occlusion; // cached 4 bits occlusion for each 8 neighbouring probes
+	uint occlusion; // cached 4 bits occlusion for each 8 neighboring probes
 };
 
 #define PROCESS_STATIC_PENDING_BIT 0x80000000

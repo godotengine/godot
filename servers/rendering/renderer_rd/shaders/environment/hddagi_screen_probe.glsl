@@ -3397,7 +3397,6 @@ void screen_probe_trace_main() {
 	screen_probe_debug_store(probe_position);
 }
 
-
 #endif
 
 #endif

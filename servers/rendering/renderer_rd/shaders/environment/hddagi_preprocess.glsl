@@ -61,7 +61,7 @@ struct ProcessVoxel {
 	uint position; // xyz 10 bit packed - then 2 extra bits for dynamic and static pending
 	uint albedo_normal; // 0 - 16, 17 - 31 normal in octahedral format
 	uint emission; // RGBE emission
-	uint occlusion; // cached 4 bits occlusion for each 8 neighbouring probes
+	uint occlusion; // cached 4 bits occlusion for each 8 neighboring probes
 };
 
 #endif
@@ -593,8 +593,8 @@ void main() {
 
 		if (solid == 0u && use_for_filter) {
 			for (int i = 0; i < facing_direction_count; i++) {
-				ivec3 neighbour = ivec3(sign(facing_directions[i]));
-				ivec3 neighbour_pos = local + neighbour;
+				ivec3 neighbor = ivec3(sign(facing_directions[i]));
+				ivec3 neighbour_pos = local + neighbor;
 				uint n = get_normal_facing(neighbour_pos);
 				if (n == 0) {
 					continue; // Nothing here
@@ -642,17 +642,16 @@ void main() {
 						}
 
 						if (occlusions >= 2) {
-							continue; // Occluded from here, ignore. May be unoccluded from another neighbour.
+							continue; // Occluded from here, ignore. May be unoccluded from another neighbor.
 						}
 					}
 
 					const uint reverse_map[27] = uint[](6, 14, 18, 9, 4, 21, 11, 16, 23, 7, 2, 19, 0, 0, 1, 12, 3, 24, 8, 15, 20, 10, 5, 22, 13, 17, 25);
 					ivec3 abs_pos = nn_rel + ivec3(1);
-					// All good, this is a valid neighbour!
+					// All good, this is a valid neighbor!
 					neighbour_voxels |= 1 << reverse_map[abs_pos.z * 3 * 3 + abs_pos.y * 3 + abs_pos.x];
 				}
 			}
-
 		}
 
 		imageStore(voxel_neighbours, dst_pos, uvec4(neighbour_voxels));
@@ -768,7 +767,7 @@ void main() {
 		}
 	}
 
-	// Compute probe neighbours
+	// Compute probe neighbors
 
 #endif
 

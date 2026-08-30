@@ -483,8 +483,7 @@ vec3 directional_capacity_debug_color(vec2 uv, vec2 pixel) {
 	vec3 color = vec3(0.008);
 	if (data.w > 0u) {
 		float demand = float(min(data.w, 8u)) / 8.0;
-		color = data.y == data.w ? mix(vec3(0.015, 0.16, 0.035), vec3(0.04, 1.0, 0.18), demand) :
-				(data.y > 0u ? mix(vec3(0.2, 0.08, 0.01), vec3(1.0, 0.7, 0.015), demand) : mix(vec3(0.2, 0.01, 0.01), vec3(1.0, 0.025, 0.01), demand));
+		color = data.y == data.w ? mix(vec3(0.015, 0.16, 0.035), vec3(0.04, 1.0, 0.18), demand) : (data.y > 0u ? mix(vec3(0.2, 0.08, 0.01), vec3(1.0, 0.7, 0.015), demand) : mix(vec3(0.2, 0.01, 0.01), vec3(1.0, 0.025, 0.01), demand));
 	}
 	color *= directional_grid_factor(uv * vec2(tile_data_size));
 	if (uv.y >= 0.88) {
@@ -499,49 +498,132 @@ uint glyph_row(uint character, int row) {
 	if (row < 0 || row >= 5) {
 		return 0u;
 	}
-	if (character == 65u) { uint rows[5] = uint[](6u, 9u, 15u, 9u, 9u); return rows[row]; }
-	if (character == 67u) { uint rows[5] = uint[](7u, 8u, 8u, 8u, 7u); return rows[row]; }
-	if (character == 68u) { uint rows[5] = uint[](14u, 9u, 9u, 9u, 14u); return rows[row]; }
-	if (character == 70u) { uint rows[5] = uint[](15u, 8u, 14u, 8u, 8u); return rows[row]; }
-	if (character == 72u) { uint rows[5] = uint[](9u, 9u, 15u, 9u, 9u); return rows[row]; }
-	if (character == 73u) { uint rows[5] = uint[](15u, 6u, 6u, 6u, 15u); return rows[row]; }
-	if (character == 76u) { uint rows[5] = uint[](8u, 8u, 8u, 8u, 15u); return rows[row]; }
-	if (character == 77u) { uint rows[5] = uint[](9u, 15u, 15u, 9u, 9u); return rows[row]; }
-	if (character == 78u) { uint rows[5] = uint[](9u, 13u, 11u, 9u, 9u); return rows[row]; }
-	if (character == 79u) { uint rows[5] = uint[](6u, 9u, 9u, 9u, 6u); return rows[row]; }
-	if (character == 80u) { uint rows[5] = uint[](14u, 9u, 14u, 8u, 8u); return rows[row]; }
-	if (character == 82u) { uint rows[5] = uint[](14u, 9u, 14u, 10u, 9u); return rows[row]; }
-	if (character == 83u) { uint rows[5] = uint[](7u, 8u, 6u, 1u, 14u); return rows[row]; }
-	if (character == 84u) { uint rows[5] = uint[](15u, 6u, 6u, 6u, 6u); return rows[row]; }
-	if (character == 85u) { uint rows[5] = uint[](9u, 9u, 9u, 9u, 6u); return rows[row]; }
-	if (character == 87u) { uint rows[5] = uint[](9u, 9u, 15u, 15u, 9u); return rows[row]; }
-	if (character == 90u) { uint rows[5] = uint[](15u, 1u, 2u, 4u, 15u); return rows[row]; }
+	if (character == 65u) {
+		uint rows[5] = uint[](6u, 9u, 15u, 9u, 9u);
+		return rows[row];
+	}
+	if (character == 67u) {
+		uint rows[5] = uint[](7u, 8u, 8u, 8u, 7u);
+		return rows[row];
+	}
+	if (character == 68u) {
+		uint rows[5] = uint[](14u, 9u, 9u, 9u, 14u);
+		return rows[row];
+	}
+	if (character == 70u) {
+		uint rows[5] = uint[](15u, 8u, 14u, 8u, 8u);
+		return rows[row];
+	}
+	if (character == 72u) {
+		uint rows[5] = uint[](9u, 9u, 15u, 9u, 9u);
+		return rows[row];
+	}
+	if (character == 73u) {
+		uint rows[5] = uint[](15u, 6u, 6u, 6u, 15u);
+		return rows[row];
+	}
+	if (character == 76u) {
+		uint rows[5] = uint[](8u, 8u, 8u, 8u, 15u);
+		return rows[row];
+	}
+	if (character == 77u) {
+		uint rows[5] = uint[](9u, 15u, 15u, 9u, 9u);
+		return rows[row];
+	}
+	if (character == 78u) {
+		uint rows[5] = uint[](9u, 13u, 11u, 9u, 9u);
+		return rows[row];
+	}
+	if (character == 79u) {
+		uint rows[5] = uint[](6u, 9u, 9u, 9u, 6u);
+		return rows[row];
+	}
+	if (character == 80u) {
+		uint rows[5] = uint[](14u, 9u, 14u, 8u, 8u);
+		return rows[row];
+	}
+	if (character == 82u) {
+		uint rows[5] = uint[](14u, 9u, 14u, 10u, 9u);
+		return rows[row];
+	}
+	if (character == 83u) {
+		uint rows[5] = uint[](7u, 8u, 6u, 1u, 14u);
+		return rows[row];
+	}
+	if (character == 84u) {
+		uint rows[5] = uint[](15u, 6u, 6u, 6u, 6u);
+		return rows[row];
+	}
+	if (character == 85u) {
+		uint rows[5] = uint[](9u, 9u, 9u, 9u, 6u);
+		return rows[row];
+	}
+	if (character == 87u) {
+		uint rows[5] = uint[](9u, 9u, 15u, 15u, 9u);
+		return rows[row];
+	}
+	if (character == 90u) {
+		uint rows[5] = uint[](15u, 1u, 2u, 4u, 15u);
+		return rows[row];
+	}
 	return 0u;
 }
 
 uint panel_label_character(int panel, int index) {
-	if (panel == 0) { uint label[3] = uint[](70u, 73u, 78u); return label[index]; }
+	if (panel == 0) {
+		uint label[3] = uint[](70u, 73u, 78u);
+		return label[index];
+	}
 	if (panel == 1) {
-		if ((params.flags & MONTAGE_FLAG_DIRECTIONAL_ATLAS_VALID) != 0u) { uint label[3] = uint[](82u, 65u, 68u); return label[index]; }
-		uint label[3] = uint[](82u, 65u, 87u); return label[index];
+		if ((params.flags & MONTAGE_FLAG_DIRECTIONAL_ATLAS_VALID) != 0u) {
+			uint label[3] = uint[](82u, 65u, 68u);
+			return label[index];
+		}
+		uint label[3] = uint[](82u, 65u, 87u);
+		return label[index];
 	}
 	if (panel == 2) {
-		if ((params.flags & MONTAGE_FLAG_DIRECTIONAL_ATLAS_VALID) != 0u) { uint label[3] = uint[](70u, 76u, 84u); return label[index]; }
-		uint label[3] = uint[](68u, 73u, 70u); return label[index];
+		if ((params.flags & MONTAGE_FLAG_DIRECTIONAL_ATLAS_VALID) != 0u) {
+			uint label[3] = uint[](70u, 76u, 84u);
+			return label[index];
+		}
+		uint label[3] = uint[](68u, 73u, 70u);
+		return label[index];
 	}
 	if (panel == 3) {
-		if ((params.flags & MONTAGE_FLAG_DIRECTIONAL_ATLAS_VALID) != 0u) { uint label[3] = uint[](73u, 82u, 82u); return label[index]; }
-		uint label[3] = uint[](70u, 84u, 82u); return label[index];
+		if ((params.flags & MONTAGE_FLAG_DIRECTIONAL_ATLAS_VALID) != 0u) {
+			uint label[3] = uint[](73u, 82u, 82u);
+			return label[index];
+		}
+		uint label[3] = uint[](70u, 84u, 82u);
+		return label[index];
 	}
-	if (panel == 4) { uint label[3] = uint[](72u, 73u, 84u); return label[index]; }
-	if (panel == 5) { uint label[3] = uint[](83u, 85u, 82u); return label[index]; }
-	if (panel == 6) { uint label[3] = uint[](72u, 73u, 90u); return label[index]; }
+	if (panel == 4) {
+		uint label[3] = uint[](72u, 73u, 84u);
+		return label[index];
+	}
+	if (panel == 5) {
+		uint label[3] = uint[](83u, 85u, 82u);
+		return label[index];
+	}
+	if (panel == 6) {
+		uint label[3] = uint[](72u, 73u, 90u);
+		return label[index];
+	}
 	if (panel == 7) {
-		if ((params.flags & MONTAGE_FLAG_DIRECTIONAL_ATLAS_VALID) != 0u) { uint label[3] = uint[](65u, 68u, 80u); return label[index]; }
-		uint label[3] = uint[](78u, 82u, 77u); return label[index];
+		if ((params.flags & MONTAGE_FLAG_DIRECTIONAL_ATLAS_VALID) != 0u) {
+			uint label[3] = uint[](65u, 68u, 80u);
+			return label[index];
+		}
+		uint label[3] = uint[](78u, 82u, 77u);
+		return label[index];
 	}
-	if ((params.flags & MONTAGE_FLAG_DIRECTIONAL_ATLAS_VALID) != 0u) { uint label[3] = uint[](67u, 65u, 80u); return label[index]; }
-	uint label[3] = uint[](77u, 79u, 84u); return label[index];
+	if ((params.flags & MONTAGE_FLAG_DIRECTIONAL_ATLAS_VALID) != 0u) {
+		uint label[3] = uint[](67u, 65u, 80u);
+		return label[index];
+	}
+	uint label[3] = uint[](77u, 79u, 84u);
+	return label[index];
 }
 
 bool panel_label_pixel(int panel, vec2 tile_pixel, vec2 tile_size) {

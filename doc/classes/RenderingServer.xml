@@ -5747,12 +5747,6 @@
 			Draws a 3×3 debug view of Dynamic GI screen-probe data.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="16" enum="ViewportDebugDraw" deprecated="Use [constant VIEWPORT_DEBUG_DRAW_HDDAGI] instead.">
-			Alias for [constant VIEWPORT_DEBUG_DRAW_HDDAGI].
-		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="17" enum="ViewportDebugDraw" deprecated="Use [constant VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES] instead.">
-			Alias for [constant VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES].
-		</constant>
 		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
 			Variable rate shading is disabled.
 		</constant>
@@ -6021,78 +6015,6 @@
 		</constant>
 		<constant name="ENV_HDDAGI_INACTIVE_PROBE_MAX" value="4" enum="EnvironmentHDDAGIInactiveProbeFrames">
 			Represents the size of the [enum EnvironmentHDDAGIInactiveProbeFrames] enum.
-		</constant>
-		<constant name="ENV_SDFGI_Y_SCALE_50_PERCENT" value="0" enum="EnvironmentSDFGIYScale" deprecated="Use [constant ENV_HDDAGI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT] instead.">
-			Uses the HDDAGI cascade format with 50% height.
-		</constant>
-		<constant name="ENV_SDFGI_Y_SCALE_75_PERCENT" value="1" enum="EnvironmentSDFGIYScale" deprecated="Use [constant ENV_HDDAGI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT] instead.">
-			Uses the HDDAGI cascade format with 75% height.
-		</constant>
-		<constant name="ENV_SDFGI_Y_SCALE_100_PERCENT" value="2" enum="EnvironmentSDFGIYScale" deprecated="Use [constant ENV_HDDAGI_CASCADE_FORMAT_16x16x16] instead.">
-			Uses the full-height HDDAGI cascade format.
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_4" value="0" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
-			Former SDFGI ray-count value kept for compatibility.
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_8" value="1" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
-			Former SDFGI ray-count value kept for compatibility.
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_16" value="2" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
-			Former SDFGI ray-count value kept for compatibility.
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_32" value="3" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
-			Former SDFGI ray-count value kept for compatibility.
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_64" value="4" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
-			Former SDFGI ray-count value kept for compatibility.
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_96" value="5" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
-			Former SDFGI ray-count value kept for compatibility.
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_128" value="6" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
-			Former SDFGI ray-count value kept for compatibility.
-		</constant>
-		<constant name="ENV_SDFGI_RAY_COUNT_MAX" value="7" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
-			Represents the size of the deprecated [enum EnvironmentSDFGIRayCount] enum.
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_5_FRAMES" value="0" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_6_FRAMES] instead.">
-			Maps to the corresponding supported HDDAGI convergence duration.
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_10_FRAMES" value="1" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_12_FRAMES] instead.">
-			Maps to the corresponding supported HDDAGI convergence duration.
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_15_FRAMES" value="2" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_18_FRAMES] instead.">
-			Maps to the corresponding supported HDDAGI convergence duration.
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_20_FRAMES" value="3" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_24_FRAMES] instead.">
-			Maps to the corresponding supported HDDAGI convergence duration.
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_25_FRAMES" value="4" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_24_FRAMES] instead.">
-			Maps to the corresponding supported HDDAGI convergence duration.
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_IN_30_FRAMES" value="5" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_32_FRAMES] instead.">
-			Maps to the corresponding supported HDDAGI convergence duration.
-		</constant>
-		<constant name="ENV_SDFGI_CONVERGE_MAX" value="6" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_MAX] instead.">
-			Represents the size of the deprecated [enum EnvironmentSDFGIFramesToConverge] enum.
-		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME" value="0" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_IN_1_FRAME] instead.">
-			Updates indirect light from dynamic lights in 1 frame.
-		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_2_FRAMES" value="1" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_IN_2_FRAMES] instead.">
-			Updates indirect light from dynamic lights in 2 frames.
-		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES" value="2" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_IN_4_FRAMES] instead.">
-			Updates indirect light from dynamic lights in 4 frames.
-		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_8_FRAMES" value="3" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_IN_8_FRAMES] instead.">
-			Updates indirect light from dynamic lights in 8 frames.
-		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_16_FRAMES" value="4" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_IN_16_FRAMES] instead.">
-			Updates indirect light from dynamic lights in 16 frames.
-		</constant>
-		<constant name="ENV_SDFGI_UPDATE_LIGHT_MAX" value="5" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_MAX] instead.">
-			Represents the size of the deprecated [enum EnvironmentSDFGIFramesToUpdateLight] enum.
 		</constant>
 		<constant name="SUB_SURFACE_SCATTERING_QUALITY_DISABLED" value="0" enum="SubSurfaceScatteringQuality">
 			Disables subsurface scattering entirely, even on materials that have [member BaseMaterial3D.subsurf_scatter_enabled] set to [code]true[/code]. This has the lowest GPU requirements.
@@ -6490,6 +6412,84 @@
 		<constant name="FEATURE_SHADERS" value="0" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
 		</constant>
 		<constant name="FEATURE_MULTITHREADED" value="1" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="16" enum="ViewportDebugDraw" deprecated="Use [constant VIEWPORT_DEBUG_DRAW_HDDAGI] instead.">
+			Alias for [constant VIEWPORT_DEBUG_DRAW_HDDAGI].
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="17" enum="ViewportDebugDraw" deprecated="Use [constant VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES] instead.">
+			Alias for [constant VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES].
+		</constant>
+		<constant name="ENV_SDFGI_Y_SCALE_50_PERCENT" value="0" enum="EnvironmentSDFGIYScale" deprecated="Use [constant ENV_HDDAGI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT] instead.">
+			Uses the HDDAGI cascade format with 50% height.
+		</constant>
+		<constant name="ENV_SDFGI_Y_SCALE_75_PERCENT" value="1" enum="EnvironmentSDFGIYScale" deprecated="Use [constant ENV_HDDAGI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT] instead.">
+			Uses the HDDAGI cascade format with 75% height.
+		</constant>
+		<constant name="ENV_SDFGI_Y_SCALE_100_PERCENT" value="2" enum="EnvironmentSDFGIYScale" deprecated="Use [constant ENV_HDDAGI_CASCADE_FORMAT_16x16x16] instead.">
+			Uses the full-height HDDAGI cascade format.
+		</constant>
+		<constant name="ENV_SDFGI_RAY_COUNT_4" value="0" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
+			Former SDFGI ray-count value kept for compatibility.
+		</constant>
+		<constant name="ENV_SDFGI_RAY_COUNT_8" value="1" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
+			Former SDFGI ray-count value kept for compatibility.
+		</constant>
+		<constant name="ENV_SDFGI_RAY_COUNT_16" value="2" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
+			Former SDFGI ray-count value kept for compatibility.
+		</constant>
+		<constant name="ENV_SDFGI_RAY_COUNT_32" value="3" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
+			Former SDFGI ray-count value kept for compatibility.
+		</constant>
+		<constant name="ENV_SDFGI_RAY_COUNT_64" value="4" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
+			Former SDFGI ray-count value kept for compatibility.
+		</constant>
+		<constant name="ENV_SDFGI_RAY_COUNT_96" value="5" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
+			Former SDFGI ray-count value kept for compatibility.
+		</constant>
+		<constant name="ENV_SDFGI_RAY_COUNT_128" value="6" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
+			Former SDFGI ray-count value kept for compatibility.
+		</constant>
+		<constant name="ENV_SDFGI_RAY_COUNT_MAX" value="7" enum="EnvironmentSDFGIRayCount" deprecated="HDDAGI does not expose a ray-count setting; this constant has no effect.">
+			Represents the size of the deprecated [enum EnvironmentSDFGIRayCount] enum.
+		</constant>
+		<constant name="ENV_SDFGI_CONVERGE_IN_5_FRAMES" value="0" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_6_FRAMES] instead.">
+			Maps to the corresponding supported HDDAGI convergence duration.
+		</constant>
+		<constant name="ENV_SDFGI_CONVERGE_IN_10_FRAMES" value="1" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_12_FRAMES] instead.">
+			Maps to the corresponding supported HDDAGI convergence duration.
+		</constant>
+		<constant name="ENV_SDFGI_CONVERGE_IN_15_FRAMES" value="2" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_18_FRAMES] instead.">
+			Maps to the corresponding supported HDDAGI convergence duration.
+		</constant>
+		<constant name="ENV_SDFGI_CONVERGE_IN_20_FRAMES" value="3" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_24_FRAMES] instead.">
+			Maps to the corresponding supported HDDAGI convergence duration.
+		</constant>
+		<constant name="ENV_SDFGI_CONVERGE_IN_25_FRAMES" value="4" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_24_FRAMES] instead.">
+			Maps to the corresponding supported HDDAGI convergence duration.
+		</constant>
+		<constant name="ENV_SDFGI_CONVERGE_IN_30_FRAMES" value="5" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_IN_32_FRAMES] instead.">
+			Maps to the corresponding supported HDDAGI convergence duration.
+		</constant>
+		<constant name="ENV_SDFGI_CONVERGE_MAX" value="6" enum="EnvironmentSDFGIFramesToConverge" deprecated="Use [constant ENV_HDDAGI_CONVERGE_MAX] instead.">
+			Represents the size of the deprecated [enum EnvironmentSDFGIFramesToConverge] enum.
+		</constant>
+		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME" value="0" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_IN_1_FRAME] instead.">
+			Updates indirect light from dynamic lights in 1 frame.
+		</constant>
+		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_2_FRAMES" value="1" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_IN_2_FRAMES] instead.">
+			Updates indirect light from dynamic lights in 2 frames.
+		</constant>
+		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES" value="2" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_IN_4_FRAMES] instead.">
+			Updates indirect light from dynamic lights in 4 frames.
+		</constant>
+		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_8_FRAMES" value="3" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_IN_8_FRAMES] instead.">
+			Updates indirect light from dynamic lights in 8 frames.
+		</constant>
+		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_16_FRAMES" value="4" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_IN_16_FRAMES] instead.">
+			Updates indirect light from dynamic lights in 16 frames.
+		</constant>
+		<constant name="ENV_SDFGI_UPDATE_LIGHT_MAX" value="5" enum="EnvironmentSDFGIFramesToUpdateLight" deprecated="Use [constant ENV_HDDAGI_UPDATE_LIGHT_MAX] instead.">
+			Represents the size of the deprecated [enum EnvironmentSDFGIFramesToUpdateLight] enum.
 		</constant>
 	</constants>
 </class>

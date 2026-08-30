@@ -475,7 +475,7 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_anchor, const Vector3 
 			tf_neighbour.format = RD::DATA_FORMAT_R32_UINT;
 			tf_neighbour.height *= cascades.size();
 
-			voxel_light_neighbour_data = create_clear_texture(tf_neighbour, "HDDAGI Cascade Light Neighbours");
+			voxel_light_neighbour_data = create_clear_texture(tf_neighbour, "HDDAGI Cascade Light Neighbors");
 		}
 
 		{ // Albedo texture, this is anisotropic (x6).
@@ -574,7 +574,7 @@ void GI::HDDAGI::create(RID p_env, const Vector3 &p_world_anchor, const Vector3 
 		tf_neighbours.depth = 1;
 		tf_neighbours.array_layers = cascades.size();
 		tf_neighbours.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
-		lightprobe_neighbour_visibility_map = create_clear_texture(tf_neighbours, String("HDDAGI Neighbour Visibility Map"));
+		lightprobe_neighbour_visibility_map = create_clear_texture(tf_neighbours, String("HDDAGI Neighbor Visibility Map"));
 
 		RD::TextureFormat tf_geometry_proximity = tf_neighbours;
 
@@ -759,9 +759,9 @@ void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p
 			}
 		}
 
-		push_constant.upper_region_world_pos[0] = upper_position[0] / REGION_CELLS;
-		push_constant.upper_region_world_pos[1] = upper_position[1] / REGION_CELLS;
-		push_constant.upper_region_world_pos[2] = upper_position[2] / REGION_CELLS;
+		push_constant.upper_region_world_pos[0] = upper_position[0] / float(REGION_CELLS);
+		push_constant.upper_region_world_pos[1] = upper_position[1] / float(REGION_CELLS);
+		push_constant.upper_region_world_pos[2] = upper_position[2] / float(REGION_CELLS);
 
 	} else {
 		push_constant.upper_region_world_pos[0] = 0;
@@ -813,9 +813,9 @@ void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p
 			for (int i = 0; i < 3; i++) {
 				if (scroll[i] > 0) {
 					push_constant_scroll.limit[i] = cascade_size[i] - scroll[i];
-					push_constant_scroll.offset[i] = 1; //+1 because one extra is rendered below for consistency with neighbouring voxels.
+					push_constant_scroll.offset[i] = 1; //+1 because one extra is rendered below for consistency with neighboring voxels.
 				} else if (scroll[i] < 0) {
-					push_constant_scroll.limit[i] = cascade_size[i] - 1; // -1 because one extra is rendered below for consistency with neighbouring voxels.
+					push_constant_scroll.limit[i] = cascade_size[i] - 1; // -1 because one extra is rendered below for consistency with neighboring voxels.
 					push_constant_scroll.offset[i] = -scroll[i];
 				} else {
 					push_constant_scroll.limit[i] = cascade_size[i];
@@ -952,7 +952,7 @@ void GI::HDDAGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p
 		cascades[cascade].dynamic_lights_dirty = true;
 	}
 
-	{ // Probe Neighbours (no barrier needed)
+	{ // Probe Neighbors (no barrier needed)
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, gi->hddagi_shader.preprocess_pipeline[HDDAGIShader::PRE_PROCESS_LIGHTPROBE_NEIGHBOURS]);
 
 		RID uniform_set = UniformSetCacheRD::get_singleton()->get_cache(
@@ -1732,7 +1732,7 @@ void GI::HDDAGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, co
 	if (gi->hddagi_debug_probe_dir != Vector3()) {
 		uint32_t cascade = 0;
 		Vector3 offset = Vector3((Vector3i(1, 1, 1) * -(cascade_size / 2) + cascades[cascade].position)) * cascades[cascade].cell_size * Vector3(1.0, 1.0 / y_mult, 1.0);
-		Vector3 probe_size = cascades[cascade].cell_size * REGION_CELLS * Vector3(1.0, 1.0 / y_mult, 1.0);
+		Vector3 probe_size = cascades[cascade].cell_size * float(REGION_CELLS) * Vector3(1.0, 1.0 / y_mult, 1.0);
 		Vector3 ray_from = gi->hddagi_debug_probe_pos;
 		Vector3 ray_to = gi->hddagi_debug_probe_pos + gi->hddagi_debug_probe_dir * cascades[cascade].cell_size * Math::sqrt(3.0) * cascade_size[0];
 		float sphere_radius = 0.2;
@@ -3455,7 +3455,7 @@ void GI::init(SkyRD *p_sky) {
 		default_hddagi_voxel_disocclusion_texture = create_clear_texture(tf_default_hddagi, "Default HDDAGI Voxel Disocclusion");
 
 		tf_default_hddagi.format = RD::DATA_FORMAT_R32_UINT;
-		default_hddagi_voxel_neighbours_texture = create_clear_texture(tf_default_hddagi, "Default HDDAGI Voxel Neighbours");
+		default_hddagi_voxel_neighbours_texture = create_clear_texture(tf_default_hddagi, "Default HDDAGI Voxel Neighbors");
 	}
 	{
 		String defines;
