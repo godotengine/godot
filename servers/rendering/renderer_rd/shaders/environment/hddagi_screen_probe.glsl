@@ -8,7 +8,8 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-const uint SCREEN_PROBE_FLAG_DETAIL_TRACE = 1u;
+const uint SCREEN_PROBE_FLAG_DETAIL_TRACE = 1u << 0u;
+const uint SCREEN_PROBE_FLAG_GUIDED_SAMPLING = 1u << 1u;
 const uint SCREEN_PROBE_SKY_COLOR = 1u;
 const uint SCREEN_PROBE_SKY_TEXTURE = 2u;
 const float SCREEN_PROBE_DETAIL_TRACE_MAX_DISTANCE = 2.0;
@@ -29,9 +30,11 @@ layout(push_constant, std430) uniform Params {
 	uint flags;
 
 	float normal_bias;
+	uint candidate_count;
 	uint sky_mode;
 	float sky_energy;
 	uint detail_trace_mip_count;
+	uint padding[3];
 
 	vec4 sky_color;
 }
@@ -105,6 +108,7 @@ layout(set = 1, binding = 0) uniform texture2DArray sky_radiance;
 layout(set = 1, binding = 0) uniform texture2D sky_radiance;
 #endif
 layout(set = 1, binding = 1) uniform sampler sky_sampler;
+layout(set = 1, binding = 2) uniform texture2DArray hddagi_lightprobe_specular;
 
 #endif
 
@@ -931,6 +935,115 @@ bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origi
 	return !any(isnan(r_radiance)) && !any(isinf(r_radiance)) && !any(lessThan(r_radiance, vec3(0.0)));
 }
 
+const int GUIDED_SAMPLING_BIN_COUNT = 8;
+const float GUIDED_SAMPLING_BASELINE_MIX = 0.5;
+const float PI = 3.141592653589793;
+
+struct GuidedSamplingDistribution {
+	vec4 cdf_low;
+	vec4 cdf_high;
+};
+
+float guided_sampling_cdf_at(GuidedSamplingDistribution distribution, int bin) {
+	return bin < 4 ? distribution.cdf_low[bin] : distribution.cdf_high[bin - 4];
+}
+
+ivec3 positive_mod(ivec3 value, ivec3 divisor) {
+	return ((value % divisor) + divisor) % divisor;
+}
+
+GuidedSamplingDistribution build_guided_sampling_distribution(ivec2 origin_position, float origin_depth, vec3 origin_normal) {
+	GuidedSamplingDistribution distribution;
+	distribution.cdf_low = vec4(0.0);
+	distribution.cdf_high = vec4(0.0);
+	float guide_weights[GUIDED_SAMPLING_BIN_COUNT];
+	float guide_weight_sum = 0.0;
+	for (int bin = 0; bin < GUIDED_SAMPLING_BIN_COUNT; bin++) {
+		guide_weights[bin] = 0.0;
+	}
+
+	vec2 origin_uv = (vec2(origin_position) + 0.5) / vec2(params.screen_size);
+	vec3 receiver_position = mat3(scene_data.cam_transform) * compute_view_position(vec3(origin_uv, origin_depth));
+	receiver_position.y *= hddagi.y_mult;
+	vec3 receiver_normal = mat3(scene_data.cam_transform) * origin_normal;
+	receiver_normal.y *= hddagi.y_mult;
+	float normal_length_squared = dot(receiver_normal, receiver_normal);
+	int cascade = -1;
+	ivec3 nearest_probe = ivec3(0);
+	if (!any(isnan(receiver_position)) && !any(isinf(receiver_position)) && !any(isnan(receiver_normal)) && !any(isinf(receiver_normal)) && normal_length_squared > 1e-12) {
+		receiver_normal *= inversesqrt(normal_length_squared);
+		for (int candidate_cascade = 0; candidate_cascade < hddagi.max_cascades; candidate_cascade++) {
+			vec3 cascade_position = (receiver_position - hddagi.cascades[candidate_cascade].position) * hddagi.cascades[candidate_cascade].to_cell;
+			if (all(greaterThanEqual(cascade_position, vec3(0.0))) && all(lessThan(cascade_position, vec3(hddagi.grid_size)))) {
+				vec3 absolute_normal = abs(receiver_normal);
+				vec3 ray_bias = receiver_normal / max(max(absolute_normal.x, absolute_normal.y), absolute_normal.z);
+				vec3 biased_position = cascade_position + ray_bias * params.normal_bias;
+				nearest_probe = clamp(ivec3(floor(biased_position / float(HDDAGI_REGION_SIZE) + 0.5)), ivec3(0), hddagi.probe_axis_size - ivec3(1));
+				cascade = candidate_cascade;
+				break;
+			}
+		}
+	}
+
+	if (cascade >= 0) {
+		ivec3 wrapped_probe = positive_mod(hddagi.cascades[cascade].region_world_offset + nearest_probe, hddagi.probe_axis_size);
+		ivec2 probe_tile = wrapped_probe.xy + ivec2(0, wrapped_probe.z * hddagi.probe_axis_size.y);
+		vec2 atlas_size = vec2(textureSize(sampler2DArray(hddagi_lightprobe_specular, sky_sampler), 0).xy);
+		vec2 atlas_base = vec2(probe_tile * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1));
+		for (int bin = 0; bin < GUIDED_SAMPLING_BIN_COUNT; bin++) {
+			int radial_bin = bin / 4;
+			int azimuth_bin = bin - radial_bin * 4;
+			vec2 representative_sample = vec2((float(radial_bin) + 0.5) * 0.5, (float(azimuth_bin) + 0.5) * 0.25);
+			vec3 direction_view = tangent_to_world(cosine_sample_hemisphere(representative_sample), origin_normal);
+			vec3 direction_camera = mat3(scene_data.cam_transform) * direction_view;
+			direction_camera.y *= hddagi.y_mult;
+			direction_camera = normalize(direction_camera);
+			vec2 atlas_uv = (atlas_base + vec3_to_oct(direction_camera) * float(LIGHTPROBE_OCT_SIZE)) / atlas_size;
+			vec3 guide_radiance = textureLod(sampler2DArray(hddagi_lightprobe_specular, sky_sampler), vec3(atlas_uv, float(cascade)), 0.0).rgb;
+			float guide_luminance = dot(max(guide_radiance, vec3(0.0)), vec3(0.2126, 0.7152, 0.0722));
+			float guide_weight = !isnan(guide_luminance) && !isinf(guide_luminance) ? sqrt(max(guide_luminance, 0.0)) : 0.0;
+			guide_weights[bin] = guide_weight;
+			guide_weight_sum += guide_weight;
+		}
+	}
+
+	bool uniform_guide = cascade < 0 || isnan(guide_weight_sum) || isinf(guide_weight_sum) || guide_weight_sum <= 1e-8;
+	float cumulative_probability = 0.0;
+	for (int bin = 0; bin < GUIDED_SAMPLING_BIN_COUNT; bin++) {
+		float guide_probability = uniform_guide ? 1.0 / float(GUIDED_SAMPLING_BIN_COUNT) : guide_weights[bin] / guide_weight_sum;
+		float probability = GUIDED_SAMPLING_BASELINE_MIX / float(GUIDED_SAMPLING_BIN_COUNT) + (1.0 - GUIDED_SAMPLING_BASELINE_MIX) * guide_probability;
+		cumulative_probability += probability;
+		if (bin < 4) {
+			distribution.cdf_low[bin] = cumulative_probability;
+		} else {
+			distribution.cdf_high[bin - 4] = cumulative_probability;
+		}
+	}
+	distribution.cdf_high.w = 1.0;
+	return distribution;
+}
+
+vec3 sample_guided_direction(GuidedSamplingDistribution distribution, vec2 random_sample, vec3 normal, out float r_proposal_pdf) {
+	float selector = min(random_sample.x, uintBitsToFloat(0x3f7fffffu));
+	int selected_bin = GUIDED_SAMPLING_BIN_COUNT - 1;
+	for (int bin = 0; bin < GUIDED_SAMPLING_BIN_COUNT - 1; bin++) {
+		if (selector < guided_sampling_cdf_at(distribution, bin)) {
+			selected_bin = bin;
+			break;
+		}
+	}
+	float cdf_min = selected_bin == 0 ? 0.0 : guided_sampling_cdf_at(distribution, selected_bin - 1);
+	float bin_probability = max(guided_sampling_cdf_at(distribution, selected_bin) - cdf_min, 1e-8);
+	float within_radial_bin = clamp((selector - cdf_min) / bin_probability, 0.0, uintBitsToFloat(0x3f7fffffu));
+	int radial_bin = selected_bin / 4;
+	int azimuth_bin = selected_bin - radial_bin * 4;
+	vec2 cosine_sample = vec2((float(radial_bin) + within_radial_bin) * 0.5, (float(azimuth_bin) + min(random_sample.y, uintBitsToFloat(0x3f7fffffu))) * 0.25);
+	vec3 direction = tangent_to_world(cosine_sample_hemisphere(cosine_sample), normal);
+	float cosine_pdf = max(dot(normal, direction), 0.0) / PI;
+	r_proposal_pdf = max(cosine_pdf * float(GUIDED_SAMPLING_BIN_COUNT) * bin_probability, 1e-8);
+	return direction;
+}
+
 void screen_probe_trace_main() {
 	ivec2 probe_position = ivec2(gl_GlobalInvocationID.xy);
 	if (any(greaterThanEqual(probe_position, imageSize(raw_radiance_output)))) {
@@ -945,13 +1058,31 @@ void screen_probe_trace_main() {
 		return;
 	}
 
-	vec2 sample_position = sample_r2_sequence(uvec2(probe_position), params.frame_index);
-	vec3 ray_direction = tangent_to_world(cosine_sample_hemisphere(sample_position), origin_normal);
-	vec3 radiance;
-	if (!trace_hddagi_radiance(origin_position, origin_depth, origin_normal, ray_direction, radiance)) {
-		radiance = sample_environment(ray_direction);
+	uint candidate_count = clamp(params.candidate_count, 1u, 8u);
+	bool guided_sampling = (params.flags & SCREEN_PROBE_FLAG_GUIDED_SAMPLING) != 0u;
+	GuidedSamplingDistribution guided_distribution;
+	if (guided_sampling) {
+		guided_distribution = build_guided_sampling_distribution(origin_position, origin_depth, origin_normal);
 	}
-	radiance *= hddagi.energy;
+	vec3 radiance = vec3(0.0);
+	for (uint candidate = 0u; candidate < candidate_count; candidate++) {
+		vec2 sample_position = sample_r2_sequence(uvec2(probe_position), params.frame_index * candidate_count + candidate);
+		float proposal_pdf;
+		vec3 ray_direction;
+		if (guided_sampling) {
+			ray_direction = sample_guided_direction(guided_distribution, sample_position, origin_normal, proposal_pdf);
+		} else {
+			ray_direction = tangent_to_world(cosine_sample_hemisphere(sample_position), origin_normal);
+			proposal_pdf = max(dot(origin_normal, ray_direction), 0.0) / PI;
+		}
+		vec3 candidate_radiance;
+		if (!trace_hddagi_radiance(origin_position, origin_depth, origin_normal, ray_direction, candidate_radiance)) {
+			candidate_radiance = sample_environment(ray_direction);
+		}
+		float cosine_pdf = max(dot(origin_normal, ray_direction), 0.0) / PI;
+		radiance += candidate_radiance * hddagi.energy * (cosine_pdf / max(proposal_pdf, 1e-8));
+	}
+	radiance /= float(candidate_count);
 	if (any(isnan(radiance)) || any(isinf(radiance))) {
 		imageStore(raw_radiance_output, probe_position, vec4(0.0));
 		return;

@@ -71,7 +71,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	}
 	if (rbgi.is_null() || hddagi.is_null() || hddagi->cascades.is_empty() || !hddagi_ubo.is_valid() ||
 			!hddagi->voxel_bits_tex.is_valid() || !hddagi->voxel_region_tex.is_valid() || !hddagi->voxel_light_tex.is_valid() ||
-			!hddagi->voxel_light_neighbour_data.is_valid() || !hddagi->voxel_disocclusion_tex.is_valid()) {
+			!hddagi->voxel_light_neighbour_data.is_valid() || !hddagi->voxel_disocclusion_tex.is_valid() || !hddagi->lightprobe_specular_tex.is_valid()) {
 		disable_hddagi_screen_probes(p_render_buffers);
 		return;
 	}
@@ -89,6 +89,8 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	const int probe_size = CLAMP(p_probe_size, 1, 32);
 	const Size2i probe_atlas_size((p_gi_size.x + probe_size - 1) / probe_size, (p_gi_size.y + probe_size - 1) / probe_size);
 	const float normal_bias = CLAMP(p_normal_bias, -8.0f, 8.0f);
+	const uint32_t candidate_count = uint32_t(CLAMP(GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_candidate_count"), 1, 8));
+	const bool guided_sampling = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_guided_sampling");
 
 	bool resources_valid = p_render_buffers->has_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_SURFACE) &&
 			p_render_buffers->has_texture(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_RAW_RADIANCE) &&
@@ -151,7 +153,9 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	push_constant.probe_size = probe_size;
 	push_constant.frame_index = uint32_t(RSG::rasterizer->get_frame_number());
 	push_constant.normal_bias = normal_bias;
+	push_constant.candidate_count = candidate_count;
 	push_constant.sky_mode = HDDAGIShader::SCREEN_PROBE_SKY_DISABLED;
+	push_constant.flags = guided_sampling ? HDDAGIShader::ScreenProbePushConstant::FLAG_GUIDED_SAMPLING : 0u;
 
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
@@ -193,7 +197,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		detail_trace = p_hiz_slices[v].is_valid();
 	}
 	if (detail_trace) {
-		push_constant.flags = HDDAGIShader::ScreenProbePushConstant::FLAG_DETAIL_TRACE;
+		push_constant.flags |= HDDAGIShader::ScreenProbePushConstant::FLAG_DETAIL_TRACE;
 		push_constant.detail_trace_mip_count = p_hiz_mip_count;
 	}
 
@@ -246,7 +250,8 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		trace_sky_sets[v] = UniformSetCacheRD::get_singleton()->get_cache(
 				hddagi_shader.screen_probe_shader_version[HDDAGIShader::SCREEN_PROBE_MODE_TRACE], 1,
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, sky_texture),
-				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, linear_mipmap_sampler));
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, linear_mipmap_sampler),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, hddagi->lightprobe_specular_tex));
 		resolve_sets[v] = UniformSetCacheRD::get_singleton()->get_cache(
 				hddagi_shader.screen_probe_shader_version[HDDAGIShader::SCREEN_PROBE_MODE_RESOLVE], 0,
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 0, surface),

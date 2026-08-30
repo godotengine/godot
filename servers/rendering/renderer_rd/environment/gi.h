@@ -493,7 +493,8 @@ private:
 
 		struct ScreenProbePushConstant {
 			enum {
-				FLAG_DETAIL_TRACE = 1 << 0,
+				FLAG_DETAIL_TRACE = 1u << 0u,
+				FLAG_GUIDED_SAMPLING = 1u << 1u,
 			};
 
 			int32_t gi_size[2];
@@ -505,9 +506,11 @@ private:
 			uint32_t flags;
 
 			float normal_bias;
+			uint32_t candidate_count;
 			uint32_t sky_mode;
 			float sky_energy;
 			uint32_t detail_trace_mip_count;
+			uint32_t padding[3];
 
 			float sky_color[4];
 		};

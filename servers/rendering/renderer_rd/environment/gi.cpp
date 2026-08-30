@@ -3225,7 +3225,7 @@ void GI::init(SkyRD *p_sky) {
 	}
 
 	{
-		static_assert(sizeof(HDDAGIShader::ScreenProbePushConstant) == 64, "Screen probe push constant must match the shader ABI.");
+		static_assert(sizeof(HDDAGIShader::ScreenProbePushConstant) == 80, "Screen probe push constant must match the shader ABI.");
 		static_assert(sizeof(ScreenProbeSceneData) == 368, "Screen probe scene data must match the shader ABI.");
 
 		Vector<String> screen_probe_modes;
@@ -3238,6 +3238,7 @@ void GI::init(SkyRD *p_sky) {
 		if (p_sky->sky_use_octmap_array) {
 			screen_probe_defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY\n";
 		}
+		screen_probe_defines += "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n";
 
 		hddagi_shader.screen_probe.initialize(screen_probe_modes, screen_probe_defines);
 		hddagi_shader.screen_probe_shader = hddagi_shader.screen_probe.version_create();
