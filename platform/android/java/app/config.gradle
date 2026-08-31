@@ -15,7 +15,7 @@ ext.versions = [
     // Also update 'editor/export/android_sdk_manager.h#DEFAULT_JAVA_VERSION'.
     javaVersion        : JavaVersion.VERSION_17,
     // Also update:
-    // - 'editor/export/android_sdk_manager.cpp#ANDROID_SDK_PACKAGES[ndk]'
+    // - 'editor/export/android_sdk_manager.cpp#ANDROID_NDK_PACKAGES[ndk]'
     // - 'platform/android/detect.py#get_ndk_version()'
     ndkVersion         : '29.0.14206865',
     splashscreenVersion: '1.0.1',
