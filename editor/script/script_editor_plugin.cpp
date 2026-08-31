@@ -4448,6 +4448,56 @@ void ScriptEditor::_goto_line(int p_line) {
 	}
 }
 
+void ScriptEditor::_script_classes_updated() {
+	LocalVector<StringName> current_classes;
+	ScriptServer::get_global_class_list(current_classes);
+
+	bool changed = false;
+	if (current_classes.size() != last_known_global_classes.size()) {
+		changed = true;
+	} else {
+		for (const StringName &name : current_classes) {
+			if (!last_known_global_classes.has(name)) {
+				changed = true;
+				break;
+			}
+			const GlobalClassData &gcd = last_known_global_classes[name];
+			if (gcd.path != ScriptServer::get_global_class_path(name) ||
+					gcd.base != ScriptServer::get_global_class_base(name) ||
+					gcd.is_abstract != ScriptServer::is_global_class_abstract(name) ||
+					gcd.is_tool != ScriptServer::is_global_class_tool(name)) {
+				changed = true;
+				break;
+			}
+		}
+	}
+
+	if (!changed) {
+		return;
+	}
+
+	last_known_global_classes.clear();
+	for (const StringName &name : current_classes) {
+		GlobalClassData gcd;
+		gcd.path = ScriptServer::get_global_class_path(name);
+		gcd.base = ScriptServer::get_global_class_base(name);
+		gcd.is_abstract = ScriptServer::is_global_class_abstract(name);
+		gcd.is_tool = ScriptServer::is_global_class_tool(name);
+		last_known_global_classes[name] = gcd;
+	}
+
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		ScriptServer::get_language(i)->reload_all_scripts();
+	}
+
+	for (Control *editor : script_container->get_all_editors()) {
+		ScriptTextEditor *se = Object::cast_to<ScriptTextEditor>(editor);
+		if (se) {
+			se->validate_script();
+		}
+	}
+}
+
 TypedArray<ScriptEditorBase> ScriptEditor::_get_open_script_editors() const {
 	TypedArray<ScriptEditorBase> script_editors;
 	for (Control *editor : script_container->get_all_editors()) {
@@ -4544,6 +4594,18 @@ ScriptEditor::ScriptEditor() {
 	find_in_files->connect("files_modified", callable_mp(script_container, &DocumentEditorContainer::reload_open_files));
 
 	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &ScriptEditor::_update_margins));
+
+	LocalVector<StringName> initial_classes;
+	ScriptServer::get_global_class_list(initial_classes);
+	for (const StringName &name : initial_classes) {
+		GlobalClassData gcd;
+		gcd.path = ScriptServer::get_global_class_path(name);
+		gcd.base = ScriptServer::get_global_class_base(name);
+		gcd.is_abstract = ScriptServer::is_global_class_abstract(name);
+		gcd.is_tool = ScriptServer::is_global_class_tool(name);
+		last_known_global_classes[name] = gcd;
+	}
+	EditorFileSystem::get_singleton()->connect("script_classes_updated", callable_mp(this, &ScriptEditor::_script_classes_updated));
 }
 
 ScriptEditor::~ScriptEditor() {

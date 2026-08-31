@@ -512,6 +512,15 @@ class ScriptEditor : public EditorDock {
 
 	bool external_editor_active = false;
 
+	struct GlobalClassData {
+		String path;
+		StringName base;
+		bool is_abstract = false;
+		bool is_tool = false;
+	};
+	HashMap<StringName, GlobalClassData> last_known_global_classes;
+	void _script_classes_updated();
+
 	void _on_find_in_files_result_selected(const String &p_path, int p_line_number, int p_begin, int p_end);
 
 	TypedArray<ScriptEditorBase> _get_open_script_editors() const;
