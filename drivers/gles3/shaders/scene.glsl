@@ -178,6 +178,7 @@ layout(location = 21) in highp uvec4 prev_instance_color_custom_data;
 #endif // USE_INSTANCING
 #endif // RENDER_MOTION_VECTORS
 
+#define FLAGS_POSITIVE_DET (1 << 0)
 #define FLAGS_NON_UNIFORM_SCALE (1 << 4)
 
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
@@ -765,7 +766,12 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	// Normalize TBN vectors to account for model/normal transforms that may have scale
 #ifdef NORMAL_USED
 	normal_interp = normalize(normal);
+#ifdef DO_SIDE_CHECK
+	if (!bool(model_flags_input & uint(FLAGS_POSITIVE_DET))) {
+		normal_interp = -normal_interp;
+	}
 #endif
+#endif // #ifdef NORMAL_USED
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 	tangent_interp = normalize(tangent);

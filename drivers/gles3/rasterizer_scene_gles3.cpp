@@ -1342,6 +1342,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 		if (inst->non_uniform_scale) {
 			flags |= INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE;
 		}
+		flags |= inst->mirror ? static_cast<uint32_t>(0) : static_cast<uint32_t>(INSTANCE_DATA_FLAG_POSITIVE_DET);
 
 		// Sets the index values for lookup in the shader
 		// This has to be done after _setup_lights was called this frame
