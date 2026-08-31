@@ -1369,7 +1369,7 @@ void DisplayServer::unregister_additional_output(Object *p_object) {
 }
 
 void DisplayServer::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("orientation_changed", PropertyInfo(Variant::INT, "orientation")));
+	ADD_SIGNAL(MethodInfo("orientation_changed", PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, "DisplayServer.SensorOrientation")));
 
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
@@ -1907,6 +1907,10 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR_PORTRAIT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR);
+
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_UNDEFINED);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_PORTRAIT);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_LANDSCAPE);
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_DEFAULT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_MULTILINE);
