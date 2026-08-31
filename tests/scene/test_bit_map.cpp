@@ -463,13 +463,6 @@ TEST_CASE("[BitMap] Clip to polygon") {
 	reset_bit_map(bit_map);
 	bit_map.set_bit_rect(Rect2i(124, 112, 8, 32), true);
 	bit_map.set_bit_rect(Rect2i(112, 124, 32, 8), true);
-	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256), 2.0, true);
-	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
-	CHECK_MESSAGE(polygons[0].size() == 12, "The polygon should have exactly 12 points");
-
-	reset_bit_map(bit_map);
-	bit_map.set_bit_rect(Rect2i(124, 112, 8, 32), true);
-	bit_map.set_bit_rect(Rect2i(112, 124, 32, 8), true);
 	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 128, 128));
 	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
 	CHECK_MESSAGE(polygons[0].size() == 6, "The polygon should have exactly 6 points");
@@ -504,6 +497,45 @@ TEST_CASE("[BitMap] Clip to polygon") {
 	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 4, 4));
 	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
 	CHECK_MESSAGE(polygons[0].size() == 6, "The polygon should have exactly 6 points");
+
+	// Testing Advanced RDP below
+	// Make sure no additional points are added to non-intersecting polygons
+	reset_bit_map(bit_map);
+	bit_map.set_bit_rect(Rect2i(124, 112, 8, 32), true);
+	bit_map.set_bit_rect(Rect2i(112, 124, 32, 8), true);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256), 2.0, true);
+	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
+	CHECK_MESSAGE(polygons[0].size() == 12, "The polygon should have exactly 12 points");
+
+	// 1 error per Chain
+	reset_bit_map(bit_map);
+	Dictionary data;
+	data["size"] = Vector2i(36, 20);
+	data["data"] = PackedByteArray{ 0, 0, 0, 0, 112, 0, 0, 0, 0, 13, 0, 0, 0, 128, 1, 0, 0, 0, 48, 0, 0, 0, 0, 6, 0, 0, 0, 192, 0, 0, 0, 0, 24, 0, 0, 0, 0, 3, 0, 0, 0, 96, 0, 0, 0, 0, 12, 0, 0, 0, 128, 1, 0, 0, 0, 48, 0, 0, 0, 0, 6, 0, 0, 0, 192, 0, 0, 0, 0, 8, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	bit_map.set("data", data);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256), 2.0, true);
+	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
+	CHECK_MESSAGE(polygons[0].size() == 7, "The polygon should have exactly 7 points");
+
+	// Multiple separate initial intersections in 1 chain
+	reset_bit_map(bit_map);
+	data.clear();
+	data["size"] = Vector2i(36, 20);
+	data["data"] = PackedByteArray{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 255, 3, 0, 0, 12, 96, 0, 0, 0, 0, 12, 0, 0, 0, 128, 0, 0, 0, 0, 24, 0, 0, 0, 0, 1, 0, 0, 0, 16, 0, 0, 0, 0, 1, 0, 0, 248, 24, 0, 0, 192, 216, 0, 0, 0, 7, 7, 0, 0, 16, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	bit_map.set("data", data);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256), 6.0, true);
+	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
+	CHECK_MESSAGE(polygons[0].size() == 9, "The polygon should have exactly 9 points");
+
+	// 1 chain fix causes new chain error
+	reset_bit_map(bit_map);
+	data.clear();
+	data["size"] = Vector2i(36, 20);
+	data["data"] = PackedByteArray{ 48, 0, 0, 0, 0, 6, 0, 0, 0, 192, 0, 0, 0, 0, 24, 0, 0, 0, 8, 1, 0, 0, 128, 16, 0, 0, 0, 8, 1, 0, 0, 128, 16, 0, 0, 0, 8, 1, 0, 0, 128, 19, 0, 0, 0, 104, 1, 0, 0, 128, 16, 0, 0, 0, 8, 1, 0, 0, 128, 16, 0, 0, 0, 232, 1, 0, 0, 128, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	bit_map.set("data", data);
+	polygons = bit_map.clip_opaque_to_polygons(Rect2i(0, 0, 256, 256), 3.0, true);
+	CHECK_MESSAGE(polygons.size() == 1, "We should have exactly 1 polygon");
+	CHECK_MESSAGE(polygons[0].size() == 10, "The polygon should have exactly 10 points");
 }
 
 } // namespace TestBitMap
