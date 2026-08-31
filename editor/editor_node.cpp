@@ -8267,6 +8267,17 @@ void EditorNode::_add_to_main_menu(const String &p_name, PopupMenu *p_menu) {
 	main_menu_items.push_back(p_menu);
 }
 
+void EditorNode::add_control_to_toolbar(Control *p_control) {
+	title_bar->add_child(p_control);
+	if (right_menu_spacer) {
+		title_bar->move_child(p_control, right_menu_spacer->get_index());
+	}
+}
+
+void EditorNode::remove_control_from_toolbar(Control *p_control) {
+	title_bar->remove_child(p_control);
+}
+
 void EditorNode::_update_main_menu_type() {
 	bool can_expand = bool(EDITOR_GET("interface/editor/appearance/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EXTEND_TO_TITLE);
 	bool use_menu_button = EDITOR_GET("interface/editor/appearance/collapse_main_menu");
