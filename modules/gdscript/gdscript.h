@@ -389,6 +389,7 @@ public:
 	void set_path(const String &p_path);
 
 	void reload_members();
+	Variant _get_default_value_for_member(const KeyValue<StringName, GDScript::MemberInfo> &p_member_index);
 
 	virtual const Variant get_rpc_config() const;
 

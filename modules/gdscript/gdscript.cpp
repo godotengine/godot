@@ -2043,16 +2043,31 @@ void GDScriptInstance::reload_members() {
 	new_members.resize(script->member_indices.size());
 
 	// Transfer the old members into their new position.
-	for (KeyValue<StringName, GDScript::MemberInfo> &E : script->member_indices) {
-		const GDScript::MemberInfo *old = script->old_member_indices.getptr(E.key);
+	for (KeyValue<StringName, GDScript::MemberInfo> &current_member_index : script->member_indices) {
+		// Try to find the member in the existing list
+		const GDScript::MemberInfo *old = script->old_member_indices.getptr(current_member_index.key);
 		if (old != nullptr) {
+			// If found, transfer it
 			Variant value = members[old->index];
-			new_members[E.value.index] = value;
+			new_members[current_member_index.value.index] = value;
+		} else {
+			// If not found, attempt to set the default value
+			new_members[current_member_index.value.index] = _get_default_value_for_member(current_member_index);
 		}
 	}
 	members = std::move(new_members);
 
 #endif
+}
+
+Variant GDScriptInstance::_get_default_value_for_member(const KeyValue<StringName, GDScript::MemberInfo> &p_member_index) {
+#ifdef TOOLS_ENABLED
+	if (script->member_default_values.has(p_member_index.key)) {
+		return script->member_default_values.get(p_member_index.key);
+	}
+#endif
+
+	return GDScriptFunction::get_default_variant_for_data_type(p_member_index.value.data_type);
 }
 
 GDScriptInstance::~GDScriptInstance() {
