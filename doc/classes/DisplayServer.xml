@@ -1932,6 +1932,15 @@
 				[b]Note:[/b] Requires support for [constant FEATURE_ICON].
 			</description>
 		</method>
+		<method name="set_native_callback">
+			<return type="void" />
+			<param index="0" name="type" type="int" enum="DisplayServer.NativeCallbackType" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Sets callbacks for low-level internal events for use in plugins.
+				[b]Note:[/b] This method is only implemented on Windows.
+			</description>
+		</method>
 		<method name="set_native_icon">
 			<return type="void" />
 			<param index="0" name="filename" type="String" />
@@ -3519,6 +3528,18 @@
 		<constant name="GLX_FBCONFIG" value="7" enum="HandleType">
 			The [code]GLXFBConfig[/code] for the window.
 			[b]Note:[/b] Only available on Linux when using X11.
+		</constant>
+		<constant name="NATIVE_CB_WINDOW_CREATE" value="0" enum="NativeCallbackType">
+			- Windows: Called from [code]WM_NCCREATE[/code]. Callbacks have the following arguments: [code]window_id: int, handle: HWND[/code].
+		</constant>
+		<constant name="NATIVE_CB_WINDOW_DESTROY" value="1" enum="NativeCallbackType">
+			- Windows: Called from [code]WM_DESTROY[/code]. Callbacks have the following arguments: [code]window_id: int, handle: HWND[/code].
+		</constant>
+		<constant name="NATIVE_CB_RAW_INPUT" value="2" enum="NativeCallbackType">
+			- Windows: Called from [code]WM_INPUT[/code] and raw input handler. Callbacks have the following arguments: [code]window_id: int, raw_input: PRAWINPUT[/code].
+		</constant>
+		<constant name="NATIVE_CB_MAX" value="3" enum="NativeCallbackType">
+			Represents the size of the [enum NativeCallbackType] enum.
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
 			Utterance has begun to be spoken.

@@ -280,6 +280,8 @@ class DisplayServerWindows : public DisplayServer {
 	bool get_object_received = false;
 	HANDLE power_request;
 
+	Callable native_cb[DisplayServerEnums::NATIVE_CB_MAX];
+
 	TTS_Windows *tts = nullptr;
 	NativeMenuWindows *native_menu = nullptr;
 	ITaskbarList3 *taskbar = nullptr;
@@ -585,6 +587,8 @@ public:
 
 	virtual bool has_feature(DisplayServerEnums::Feature p_feature) const override;
 	virtual String get_name() const override;
+
+	virtual void set_native_callback(DisplayServerEnums::NativeCallbackType p_type, const Callable &p_callback) override;
 
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;

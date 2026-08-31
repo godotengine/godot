@@ -122,6 +122,8 @@ public:
 	virtual void release_rendering_thread();
 	virtual void swap_buffers();
 
+	virtual void set_native_callback(DisplayServerEnums::NativeCallbackType p_type, const Callable &p_callback) {}
+
 	virtual void beep() const;
 
 	/* RENDERING DEVICE */
@@ -652,6 +654,7 @@ VARIANT_ENUM_CAST_EXT(DisplayServerEnums::CursorShape, DisplayServer::CursorShap
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::VirtualKeyboardType, DisplayServer::VirtualKeyboardType)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::ScreenOrientation, DisplayServer::ScreenOrientation)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::HandleType, DisplayServer::HandleType)
+VARIANT_ENUM_CAST_EXT(DisplayServerEnums::NativeCallbackType, DisplayServer::NativeCallbackType)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::WindowMode, DisplayServer::WindowMode)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::WindowFlags, DisplayServer::WindowFlags)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::WindowEvent, DisplayServer::WindowEvent)

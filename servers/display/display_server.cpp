@@ -1453,6 +1453,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_color"), &DisplayServer::get_base_color);
 	ClassDB::bind_method(D_METHOD("set_system_theme_change_callback", "callable"), &DisplayServer::set_system_theme_change_callback);
 
+	ClassDB::bind_method(D_METHOD("set_native_callback", "type", "callable"), &DisplayServer::set_native_callback);
+
 	ClassDB::bind_method(D_METHOD("mouse_set_mode", "mouse_mode"), &DisplayServer::mouse_set_mode);
 	ClassDB::bind_method(D_METHOD("mouse_get_mode"), &DisplayServer::mouse_get_mode);
 
@@ -2007,6 +2009,11 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::EGL_CONFIG);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::GLX_VISUALID);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::GLX_FBCONFIG);
+
+	BIND_ENUM_CONSTANT(DisplayServerEnums::NATIVE_CB_WINDOW_CREATE);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::NATIVE_CB_WINDOW_DESTROY);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::NATIVE_CB_RAW_INPUT);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::NATIVE_CB_MAX);
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::TTS_UTTERANCE_STARTED);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::TTS_UTTERANCE_ENDED);
