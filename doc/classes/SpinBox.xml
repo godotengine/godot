@@ -66,6 +66,12 @@
 			- [code]"%d ms"[/code] displays as an integer with milliseconds unit (e.g. [code]420 ms[/code]).
 			- [code]"%0.2f%%"[/code] displays as a percentage, with 2 decimal places of precision (e.g. [code]21.37%[/code]).
 		</member>
+		<member name="format_auto_translate_mode" type="int" setter="set_format_auto_translate_mode" getter="get_format_auto_translate_mode" enum="Node.AutoTranslateMode" default="2">
+			Auto-translation mode for the [member format]. Useful when the format has a word that can be translated.
+		</member>
+		<member name="plural_format" type="String" setter="set_plural_format" getter="get_plural_format">
+			Plural version of [member format]. Used only if [member format] is not empty and [member format_auto_translate_mode] is not disabled. See also [method Object.tr_n].
+		</member>
 		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;" deprecated="Use [member format] instead.">
 			Adds the specified prefix string before the numerical value of the [SpinBox]. This is used only if [member format] is empty.
 		</member>

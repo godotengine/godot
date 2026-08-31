@@ -100,7 +100,7 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	if (!line_edit->is_editing() && !format.is_empty() && !use_default_format) {
 		const Variant current_value = get_value();
 		bool error = false;
-		const String text = format.sprintf(Span(&current_value, 1), &error);
+		const String text = _get_xl_format().sprintf(Span(&current_value, 1), &error);
 		if (error) {
 			line_edit->set_text_with_selection(RTR("<Invalid>"));
 			return;
@@ -124,7 +124,7 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 		if (!format.is_empty()) {
 			const Variant current_value = value;
 			bool error = false;
-			value = format.sprintf(Span(&current_value, 1), &error);
+			value = _get_xl_format().sprintf(Span(&current_value, 1), &error);
 			if (error) {
 				line_edit->set_text_with_selection(RTR("<Invalid>"));
 				return;
@@ -210,6 +210,21 @@ void SpinBox::_text_changed(const String &p_string) {
 	if (update_on_text_changed && !text.begins_with(".")) {
 		line_edit->set_caret_column(cursor_pos);
 	}
+}
+
+String SpinBox::_get_xl_format() const {
+	bool translated = false;
+	if (format_auto_translate_mode == AUTO_TRANSLATE_MODE_ALWAYS) {
+		translated = true;
+	} else if (format_auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT) {
+		translated = can_auto_translate();
+	}
+	if (!translated) {
+		return format;
+	} else if (plural_format.is_empty()) {
+		return tr(format);
+	}
+	return tr_n(format, plural_format, get_value());
 }
 
 LineEdit *SpinBox::get_line_edit() {
@@ -553,6 +568,9 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (format_auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+				_update_text();
+			}
 			queue_redraw();
 		} break;
 
@@ -591,6 +609,36 @@ void SpinBox::set_format(const String &p_format) {
 
 String SpinBox::get_format() const {
 	return format;
+}
+
+void SpinBox::set_plural_format(const String &p_format) {
+	if (plural_format == p_format) {
+		return;
+	}
+	plural_format = p_format;
+
+	_update_text();
+	update_configuration_warnings();
+}
+
+void SpinBox::set_format_with_plural(const String &p_format, const String &p_plural) {
+	if (format == p_format && plural_format == p_format) {
+		return;
+	}
+	format = p_format;
+	plural_format = p_plural;
+
+	_update_text();
+	update_configuration_warnings();
+}
+
+void SpinBox::set_format_auto_translate_mode(AutoTranslateMode p_mode) {
+	if (format_auto_translate_mode == p_mode) {
+		return;
+	}
+	format_auto_translate_mode = p_mode;
+	_update_text();
+	notify_property_list_changed();
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -692,6 +740,17 @@ PackedStringArray SpinBox::get_configuration_warnings() const {
 			warnings.push_back(vformat(RTR("The format property is not valid: %s."), error_str));
 		}
 	}
+	if (!plural_format.is_empty()) {
+		bool error = false;
+		const Variant test_value = 0.0;
+		const String error_str = plural_format.sprintf(Span(&test_value, 1), &error);
+		if (error) {
+			warnings.push_back(vformat(RTR("The plural_format property is not valid: %s."), error_str));
+		}
+		if (format.is_empty()) {
+			warnings.push_back(RTR("The format property is empty, while plural_format was specified. It will have no effect."));
+		}
+	}
 	return warnings;
 }
 
@@ -710,6 +769,8 @@ void SpinBox::_update_buttons_state_for_current_value() {
 void SpinBox::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "exp_edit") {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (format_auto_translate_mode == AUTO_TRANSLATE_MODE_DISABLED && p_property.name == "plural_format") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -718,6 +779,10 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &SpinBox::get_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("set_format", "format"), &SpinBox::set_format);
 	ClassDB::bind_method(D_METHOD("get_format"), &SpinBox::get_format);
+	ClassDB::bind_method(D_METHOD("set_plural_format", "format"), &SpinBox::set_plural_format);
+	ClassDB::bind_method(D_METHOD("get_plural_format"), &SpinBox::get_plural_format);
+	ClassDB::bind_method(D_METHOD("set_format_auto_translate_mode", "mode"), &SpinBox::set_format_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_format_auto_translate_mode"), &SpinBox::get_format_auto_translate_mode);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
@@ -740,14 +805,18 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_arrow_round"), "set_custom_arrow_round", "is_custom_arrow_rounding");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
+
+	ADD_GROUP("Format", "");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "format", PROPERTY_HINT_PLACEHOLDER_TEXT, "%s"), "set_format", "get_format");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "plural_format", PROPERTY_HINT_PLACEHOLDER_TEXT, "%s"), "set_plural_format", "get_plural_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "format_auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_format_auto_translate_mode", "get_format_auto_translate_mode");
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 #endif
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_arrow_round"), "set_custom_arrow_round", "is_custom_arrow_rounding");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_vertical_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, field_and_buttons_separation);
