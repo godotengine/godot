@@ -46,6 +46,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 
@@ -732,12 +733,12 @@ EditorBuildProfile::EditorBuildProfile() {
 	build_option_settings.insert(BUILD_OPTION_OPENGL, settings_opengl);
 
 	HashMap<String, LocalVector<Variant>> settings_phy_godot_3d = {
-		{ "physics/3d/physics_engine", { "DEFAULT", "GodotPhysics3D" } },
+		{ "physics/3d/physics_engine", { "DEFAULT", PhysicsServer3DManager::GODOT_PHYSICS_3D_NAME } },
 	};
 	build_option_settings.insert(BUILD_OPTION_PHYSICS_GODOT_3D, settings_phy_godot_3d);
 
 	HashMap<String, LocalVector<Variant>> settings_jolt = {
-		{ "physics/3d/physics_engine", { "Jolt Physics" } },
+		{ "physics/3d/physics_engine", { PhysicsServer3DManager::JOLT_PHYSICS_NAME } },
 	};
 	build_option_settings.insert(BUILD_OPTION_PHYSICS_JOLT, settings_jolt);
 

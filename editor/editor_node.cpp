@@ -186,6 +186,7 @@
 #include "servers/display/display_server_enums.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -8431,7 +8432,7 @@ HashMap<String, Variant> EditorNode::get_initial_settings() {
 	settings["display/window/stretch/mode"] = "canvas_items";
 	settings["gui/common/auto_focus_strategy"] = Control::AutoFocusStrategy::STRATEGY_BALLOON;
 	settings["input_devices/joypads/ignore_joypad_on_unfocused_application"] = true;
-	settings["physics/3d/physics_engine"] = "Jolt Physics";
+	settings["physics/3d/physics_engine"] = PhysicsServer3DManager::JOLT_PHYSICS_NAME;
 	settings["rendering/rendering_device/driver.windows"] = "d3d12";
 	settings["rendering/lights_and_shadows/multi_bounce_occlusion/enabled"] = true;
 	return settings;
