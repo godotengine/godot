@@ -583,7 +583,10 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	ofs += 4;
 	uint32_t name_len = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
-	ERR_FAIL_COND_V_MSG(name_len + (sync_len * 4) > uint32_t(p_buffer_len - ofs), ERR_INVALID_DATA, vformat("Invalid spawn packet size: %d, wants: %d", p_buffer_len, ofs + name_len + (sync_len * 4)));
+	// sync_len * 4 wraps in 32-bit math (e.g. 0x40000001 * 4 == 4), passing the check below.
+	const int64_t remaining = int64_t(p_buffer_len) - int64_t(ofs);
+	const int64_t wanted = int64_t(name_len) + int64_t(sync_len) * 4;
+	ERR_FAIL_COND_V_MSG(wanted > remaining, ERR_INVALID_DATA, vformat("Invalid spawn packet size: %d, wants: %d", p_buffer_len, ofs + wanted));
 	List<uint32_t> sync_ids;
 	for (uint32_t i = 0; i < sync_len; i++) {
 		sync_ids.push_back(decode_uint32(&p_buffer[ofs]));
