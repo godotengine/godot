@@ -162,7 +162,7 @@ void EditorTitleBar::_notification(int p_what) {
 				fit_child_in_rect(next, Rect2i(offset + c_size.width, 0, next->get_position().x + next->get_size().x - (offset + c_size.width), title_size.height));
 
 				int center = title_size.x / 2;
-				int width = MIN(center - prev->get_position().x, next->get_end().x - center) * 1.9;
+				int width = MIN(center - prev->get_position().x, next->get_position().x + next->get_size().x - center) * 1.9;
 				fit_child_in_rect(base, Rect2i(center - width / 2, 0, width, title_size.height));
 			}
 		} break;
