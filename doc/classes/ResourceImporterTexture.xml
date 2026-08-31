@@ -81,9 +81,6 @@
 			The downside of mipmaps is that they increase memory usage by roughly 33%.
 			It's recommended to enable mipmaps in 3D. However, in 2D, this should only be enabled if your project visibly benefits from having mipmaps enabled. If the camera never zooms out significantly, there won't be a benefit to enabling mipmaps but memory usage will increase.
 		</member>
-		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
-			Unimplemented. This currently has no effect when changed.
-		</member>
 		<member name="mipmaps/preserve_alpha_test_coverage" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], automatically adjusts alpha values to maintain consistent coverage when alpha testing is used. This is especially useful for hair, foliage, or other alpha-tested materials, as it prevents fading or popping artifacts across mipmap levels (LODs). This option is intended for color textures and clamps the alpha channel in the 0.0 - 1.0 range.
 		</member>
