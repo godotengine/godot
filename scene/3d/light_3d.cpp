@@ -655,10 +655,6 @@ OmniLight3D::ShadowMode OmniLight3D::get_shadow_mode() const {
 PackedStringArray OmniLight3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Light3D::get_configuration_warnings();
 
-	if (!has_shadow() && get_projector().is_valid()) {
-		warnings.push_back(RTR("Projector texture only works with shadows active."));
-	}
-
 	if (get_projector().is_valid() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
 		warnings.push_back(RTR("Projector textures are not supported when using the Compatibility renderer yet. Support will be added in a future release."));
 	}
@@ -689,10 +685,6 @@ PackedStringArray SpotLight3D::get_configuration_warnings() const {
 
 	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
 		warnings.push_back(RTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."));
-	}
-
-	if (!has_shadow() && get_projector().is_valid()) {
-		warnings.push_back(RTR("Projector texture only works with shadows active."));
 	}
 
 	if (get_projector().is_valid() && (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy")) {
