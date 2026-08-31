@@ -324,8 +324,8 @@ public:
 		return -1;
 	}
 
-	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
-	virtual void get_members(HashSet<StringName> *p_members) override;
+	virtual void get_constants(HashMap<StringName, Variant> *r_constants) override;
+	virtual void get_members(HashSet<StringName> *r_members) override;
 
 	virtual const Variant get_rpc_config() const override;
 
@@ -363,14 +363,14 @@ public:
 
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
-	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
+	virtual void get_property_list(List<PropertyInfo> *r_properties) const;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
 	virtual void validate_property(PropertyInfo &p_property) const;
 
 	virtual bool property_can_revert(const StringName &p_name) const;
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const;
 
-	virtual void get_method_list(List<MethodInfo> *p_list) const;
+	virtual void get_method_list(List<MethodInfo> *r_list) const;
 	virtual bool has_method(const StringName &p_method) const;
 
 	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
@@ -611,10 +611,10 @@ public:
 	virtual int debug_get_stack_level_line(int p_level) const override;
 	virtual String debug_get_stack_level_function(int p_level) const override;
 	virtual String debug_get_stack_level_source(int p_level) const override;
-	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
-	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual void debug_get_stack_level_locals(int p_level, List<String> *r_locals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual void debug_get_stack_level_members(int p_level, List<String> *r_members, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override;
 	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) override;
-	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual void debug_get_globals(List<String> *r_globals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) override;
 
 	virtual void reload_all_scripts() override;
@@ -623,17 +623,17 @@ public:
 
 	virtual void frame() override;
 
-	virtual void get_public_functions(List<MethodInfo> *p_functions) const override;
-	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const override;
-	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override;
+	virtual void get_public_functions(List<MethodInfo> *r_functions) const override;
+	virtual void get_public_constants(List<Pair<String, Variant>> *r_constants) const override;
+	virtual void get_public_annotations(List<MethodInfo> *r_annotations) const override;
 
 	virtual void profiling_start() override;
 	virtual void profiling_stop() override;
 	virtual void profiling_set_save_native_calls(bool p_enable) override;
 	void profiling_collate_native_call_data(bool p_accumulated);
 
-	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override;
-	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override;
+	virtual int profiling_get_accumulated_data(ProfilingInfo *r_info_arr, int p_info_max) override;
+	virtual int profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_info_max) override;
 
 	/* GLOBAL CLASSES */
 

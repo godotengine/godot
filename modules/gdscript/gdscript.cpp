@@ -908,18 +908,18 @@ ScriptLanguage *GDScript::get_language() const {
 	return GDScriptLanguage::get_singleton();
 }
 
-void GDScript::get_constants(HashMap<StringName, Variant> *p_constants) {
-	if (p_constants) {
+void GDScript::get_constants(HashMap<StringName, Variant> *r_constants) {
+	if (r_constants) {
 		for (const KeyValue<StringName, Variant> &E : constants) {
-			(*p_constants)[E.key] = E.value;
+			(*r_constants)[E.key] = E.value;
 		}
 	}
 }
 
-void GDScript::get_members(HashSet<StringName> *p_members) {
-	if (p_members) {
+void GDScript::get_members(HashSet<StringName> *r_members) {
+	if (r_members) {
 		for (const StringName &E : members) {
-			p_members->insert(E);
+			r_members->insert(E);
 		}
 	}
 }
@@ -1729,7 +1729,7 @@ void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
+void GDScriptInstance::get_property_list(List<PropertyInfo> *r_properties) const {
 	// exported members, not done yet!
 
 	const GDScript *sptr = script.ptr();
@@ -1834,12 +1834,12 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		}
 
 #ifdef TOOLS_ENABLED
-		p_properties->push_back(sptr->get_class_category());
+		r_properties->push_back(sptr->get_class_category());
 #endif // TOOLS_ENABLED
 
 		for (PropertyInfo &prop : props) {
 			validate_property(prop);
-			p_properties->push_back(prop);
+			r_properties->push_back(prop);
 		}
 
 		props.clear();
@@ -1893,11 +1893,11 @@ bool GDScriptInstance::property_get_revert(const StringName &p_name, Variant &r_
 	return false;
 }
 
-void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
+void GDScriptInstance::get_method_list(List<MethodInfo> *r_list) const {
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
 		for (const KeyValue<StringName, GDScriptFunction *> &E : sptr->member_functions) {
-			p_list->push_back(E.value->get_method_info());
+			r_list->push_back(E.value->get_method_info());
 		}
 		sptr = sptr->base.ptr();
 	}
@@ -2330,7 +2330,7 @@ void GDScriptLanguage::profiling_stop() {
 #endif
 }
 
-int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) {
+int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *r_info_arr, int p_info_max) {
 	int current = 0;
 #ifdef DEBUG_ENABLED
 
@@ -2343,24 +2343,24 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, 
 			break;
 		}
 		int last_non_internal = current;
-		p_info_arr[current].call_count = elem->self()->profile.call_count.get();
-		p_info_arr[current].self_time = elem->self()->profile.self_time.get();
-		p_info_arr[current].total_time = elem->self()->profile.total_time.get();
-		p_info_arr[current].signature = elem->self()->profile.signature;
+		r_info_arr[current].call_count = elem->self()->profile.call_count.get();
+		r_info_arr[current].self_time = elem->self()->profile.self_time.get();
+		r_info_arr[current].total_time = elem->self()->profile.total_time.get();
+		r_info_arr[current].signature = elem->self()->profile.signature;
 		current++;
 
 		int nat_time = 0;
 		HashMap<String, GDScriptFunction::Profile::NativeProfile>::ConstIterator nat_calls = elem->self()->profile.native_calls.begin();
 		while (nat_calls) {
-			p_info_arr[current].call_count = nat_calls->value.call_count;
-			p_info_arr[current].total_time = nat_calls->value.total_time;
-			p_info_arr[current].self_time = nat_calls->value.total_time;
-			p_info_arr[current].signature = nat_calls->value.signature;
+			r_info_arr[current].call_count = nat_calls->value.call_count;
+			r_info_arr[current].total_time = nat_calls->value.total_time;
+			r_info_arr[current].self_time = nat_calls->value.total_time;
+			r_info_arr[current].signature = nat_calls->value.signature;
 			nat_time += nat_calls->value.total_time;
 			current++;
 			++nat_calls;
 		}
-		p_info_arr[last_non_internal].internal_time = nat_time;
+		r_info_arr[last_non_internal].internal_time = nat_time;
 		elem = elem->next();
 	}
 #endif
@@ -2368,7 +2368,7 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, 
 	return current;
 }
 
-int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) {
+int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_info_max) {
 	int current = 0;
 
 #ifdef DEBUG_ENABLED
@@ -2382,25 +2382,25 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_
 		}
 		if (elem->self()->profile.last_frame_call_count > 0) {
 			int last_non_internal = current;
-			p_info_arr[current].call_count = elem->self()->profile.last_frame_call_count;
-			p_info_arr[current].self_time = elem->self()->profile.last_frame_self_time;
-			p_info_arr[current].total_time = elem->self()->profile.last_frame_total_time;
-			p_info_arr[current].signature = elem->self()->profile.signature;
+			r_info_arr[current].call_count = elem->self()->profile.last_frame_call_count;
+			r_info_arr[current].self_time = elem->self()->profile.last_frame_self_time;
+			r_info_arr[current].total_time = elem->self()->profile.last_frame_total_time;
+			r_info_arr[current].signature = elem->self()->profile.signature;
 			current++;
 
 			int nat_time = 0;
 			HashMap<String, GDScriptFunction::Profile::NativeProfile>::ConstIterator nat_calls = elem->self()->profile.last_native_calls.begin();
 			while (nat_calls) {
-				p_info_arr[current].call_count = nat_calls->value.call_count;
-				p_info_arr[current].total_time = nat_calls->value.total_time;
-				p_info_arr[current].self_time = nat_calls->value.total_time;
-				p_info_arr[current].internal_time = nat_calls->value.total_time;
-				p_info_arr[current].signature = nat_calls->value.signature;
+				r_info_arr[current].call_count = nat_calls->value.call_count;
+				r_info_arr[current].total_time = nat_calls->value.total_time;
+				r_info_arr[current].self_time = nat_calls->value.total_time;
+				r_info_arr[current].internal_time = nat_calls->value.total_time;
+				r_info_arr[current].signature = nat_calls->value.signature;
 				nat_time += nat_calls->value.total_time;
 				current++;
 				++nat_calls;
 			}
-			p_info_arr[last_non_internal].internal_time = nat_time;
+			r_info_arr[last_non_internal].internal_time = nat_time;
 		}
 		elem = elem->next();
 	}

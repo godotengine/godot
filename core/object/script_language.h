@@ -188,13 +188,13 @@ public:
 	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const = 0;
 
 	virtual void update_exports() {} //editor tool
-	virtual void get_script_method_list(List<MethodInfo> *p_list) const = 0;
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const = 0;
+	virtual void get_script_method_list(List<MethodInfo> *r_list) const = 0;
+	virtual void get_script_property_list(List<PropertyInfo> *r_list) const = 0;
 
 	virtual int get_member_line(const StringName &p_member) const { return -1; }
 
-	virtual void get_constants(HashMap<StringName, Variant> *p_constants) {}
-	virtual void get_members(HashSet<StringName> *p_members) {}
+	virtual void get_constants(HashMap<StringName, Variant> *r_constants) {}
+	virtual void get_members(HashSet<StringName> *r_members) {}
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
@@ -369,10 +369,10 @@ public:
 	virtual int debug_get_stack_level_line(int p_level) const = 0;
 	virtual String debug_get_stack_level_function(int p_level) const = 0;
 	virtual String debug_get_stack_level_source(int p_level) const = 0;
-	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
-	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
+	virtual void debug_get_stack_level_locals(int p_level, List<String> *r_locals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
+	virtual void debug_get_stack_level_members(int p_level, List<String> *r_members, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) { return nullptr; }
-	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
+	virtual void debug_get_globals(List<String> *r_globals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
@@ -382,9 +382,9 @@ public:
 	virtual void reload_tool_script(const Ref<Script> &p_script) = 0;
 	/* LOADER FUNCTIONS */
 
-	virtual void get_public_functions(List<MethodInfo> *p_functions) const = 0;
-	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const = 0;
-	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const = 0;
+	virtual void get_public_functions(List<MethodInfo> *r_functions) const = 0;
+	virtual void get_public_constants(List<Pair<String, Variant>> *r_constants) const = 0;
+	virtual void get_public_annotations(List<MethodInfo> *r_annotations) const = 0;
 
 	struct ProfilingInfo {
 		StringName signature;
@@ -398,8 +398,8 @@ public:
 	virtual void profiling_stop() = 0;
 	virtual void profiling_set_save_native_calls(bool p_enable) = 0;
 
-	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
-	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
+	virtual int profiling_get_accumulated_data(ProfilingInfo *r_info_arr, int p_info_max) = 0;
+	virtual int profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_info_max) = 0;
 
 	virtual void frame();
 
@@ -424,14 +424,14 @@ class PlaceHolderScriptInstance : public ScriptInstance {
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value) override;
 	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
-	virtual void get_property_list(List<PropertyInfo> *p_properties) const override;
+	virtual void get_property_list(List<PropertyInfo> *r_properties) const override;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
-	virtual void validate_property(PropertyInfo &p_property) const override {}
+	virtual void validate_property(PropertyInfo &p_property) const override {} // TODO: Should this be `r_property`?
 
 	virtual bool property_can_revert(const StringName &p_name) const override { return false; }
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override { return false; }
 
-	virtual void get_method_list(List<MethodInfo> *p_list) const override;
+	virtual void get_method_list(List<MethodInfo> *r_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
 
 	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
@@ -450,6 +450,7 @@ public:
 
 	Object *get_owner() override { return owner; }
 
+	// TODO: Should these be `r_properties` and `r_values`?
 	void update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values); //likely changed in editor
 
 	virtual bool is_placeholder() const override { return true; }
