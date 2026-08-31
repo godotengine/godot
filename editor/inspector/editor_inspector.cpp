@@ -4612,16 +4612,23 @@ void EditorInspector::update_tree() {
 			}
 
 			// Create an EditorInspectorCategory and add it to the inspector.
-			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
-			category->set_property_info(p);
-			category->set_color_level(category_color_level);
-			main_vbox->add_child(category);
-			category_vbox = nullptr; // Reset.
+			//
+			// Do not create a category for RefCounted to avoid cluttering the inspector
+			// with a category that is present on every resource, especially in subresources.
+			// The Resource category is already always present in this case to distinguish
+			// "generic" properties from those specific to certain resource types.
+			if (p.name != "RefCounted") {
+				EditorInspectorCategory *category = memnew(EditorInspectorCategory);
+				category->set_property_info(p);
+				category->set_color_level(category_color_level);
+				main_vbox->add_child(category);
+				category_vbox = nullptr; // Reset.
 
-			// Set the category info.
-			category->set_tooltip_text(category_tooltip);
-			if (!is_custom_category) {
-				category->set_doc_class_name(doc_name);
+				// Set the category info.
+				category->set_tooltip_text(category_tooltip);
+				if (!is_custom_category) {
+					category->set_doc_class_name(doc_name);
+				}
 			}
 
 			// Add editors at the start of a category.
