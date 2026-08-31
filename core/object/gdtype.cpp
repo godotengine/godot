@@ -72,14 +72,18 @@ void GDType::initialize() {
 	if (super_type) {
 		// Now that a subtype is registered, the supertype cannot change anymore.
 		// Otherwise, our caches would become invalid.
-		// This shouldn't be a problem, since classes should register all their
-		// parts in _bind_methods, which is called on registration.
-		super_type->init_state = InitState::FINALIZED;
+		// For internal classes, finalize() will already have been called by this point.
+		// This is not the case for GDExtensions, which currently do not trigger finalize().
+		finalize();
 
 		_members = super_type->_members;
 	}
 
 	init_state = InitState::MUTABLE;
+}
+
+void GDType::finalize() {
+	init_state = InitState::FINALIZED;
 }
 
 void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
