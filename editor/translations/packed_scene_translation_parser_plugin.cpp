@@ -149,10 +149,15 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 
 			if (auto_translating && !tabcontainer_paths.is_empty() && ClassDB::is_parent_class(node_type, "Control") &&
 					parent_path == tabcontainer_paths[tabcontainer_paths.size() - 1]) {
-				String tab_title = state->get_node_name(i);	// default is node name
-				for (int j = 0; j < state->get_node_property_count(i); j++) { // could iterate backward to find faster
-					if (state->get_node_property_name(i, j) == "metadata/_tab_name") {
+				String tab_title = state->get_node_name(i); // default is node name
+				for (int j = state->get_node_property_count(i) - 1; j >= 0; j--) {
+					// backward iteration because the metadata is always at the end
+					String property = state->get_node_property_name(i, j);
+					if (property == "metadata/_tab_name") {
 						tab_title = (String)state->get_node_property_value(i, j);
+						break;
+					}
+					if (!property.begins_with("metadata/")) {
 						break;
 					}
 				}
