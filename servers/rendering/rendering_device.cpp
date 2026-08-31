@@ -154,6 +154,34 @@ static RD::HitShaderBindingTableRange _encode_hit_sbt_range(uint32_t p_offset, u
 
 #define SECONDARY_COMMAND_BUFFERS_PER_FRAME 0
 
+#ifdef DEBUG_ENABLED
+
+// The settings above can also be overridden at runtime with environment variables for debugging purposes.
+
+void RenderingDevice::_configure_draw_graph_flags() {
+	draw_graph_reorder_commands = (RENDER_GRAPH_REORDER == 1);
+	draw_graph_full_barriers = (RENDER_GRAPH_FULL_BARRIERS == 1);
+
+	String reorder = OS::get_singleton()->get_environment("GODOT_RG_REORDER");
+	String full_barriers = OS::get_singleton()->get_environment("GODOT_RG_FULL_BARRIERS");
+
+	if (!reorder.is_empty()) {
+		draw_graph_reorder_commands = (reorder == "1");
+	}
+	if (!full_barriers.is_empty()) {
+		draw_graph_full_barriers = (full_barriers == "1");
+	}
+
+	if (!draw_graph_reorder_commands) {
+		print_line("RG: Disable reordering");
+	}
+	if (draw_graph_full_barriers) {
+		print_line("RG: Enable full barriers");
+	}
+}
+
+#endif
+
 RenderingDevice *RenderingDevice::singleton = nullptr;
 
 RenderingDevice *RenderingDevice::get_singleton() {
@@ -936,6 +964,9 @@ Error RenderingDevice::_insert_staging_block(StagingBuffers &p_staging_buffers) 
 
 	block.driver_id = driver->buffer_create(p_staging_buffers.block_size, p_staging_buffers.usage_bits, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
 	ERR_FAIL_COND_V(!block.driver_id, ERR_CANT_CREATE);
+#if DEV_ENABLED
+	driver->set_object_name(RDD::OBJECT_TYPE_BUFFER, block.driver_id, "Staging");
+#endif
 
 	block.frame_used = 0;
 	block.fill_amount = 0;
@@ -2188,7 +2219,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 			write_ptr = driver->buffer_map(transfer_worker->staging_buffer);
 			ERR_FAIL_NULL_V(write_ptr, ERR_CANT_CREATE);
 
-			if (driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+			if (driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS) && driver->api_trait_get(RDD::API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS)) {
 				// Transition the texture to the optimal layout.
 				RDD::TextureBarrier tb;
 				tb.texture = texture->driver_id;
@@ -2255,7 +2286,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 			driver->buffer_unmap(transfer_worker->staging_buffer);
 
 			// If the texture does not have a tracker, it means it must be transitioned to the sampling state.
-			if (texture->draw_tracker == nullptr && driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+			if (texture->draw_tracker == nullptr && driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS) && driver->api_trait_get(RDD::API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS)) {
 				RDD::TextureBarrier tb;
 				tb.texture = texture->driver_id;
 				tb.src_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
@@ -8333,8 +8364,16 @@ void RenderingDevice::_end_frame() {
 	GodotProfileZoneGrouped(_profile_zone, "_submit_transfer_barriers");
 	_submit_transfer_barriers(command_buffer);
 
+#ifdef DEBUG_ENABLED
+	bool reorder_commands = draw_graph_reorder_commands;
+	bool full_barriers = draw_graph_full_barriers;
+#else
+	constexpr bool reorder_commands = (RENDER_GRAPH_REORDER == 1);
+	constexpr bool full_barriers = (RENDER_GRAPH_FULL_BARRIERS == 1);
+#endif
+
 	GodotProfileZoneGrouped(_profile_zone, "draw_graph.end");
-	draw_graph.end(RENDER_GRAPH_REORDER == 1, RENDER_GRAPH_FULL_BARRIERS == 1, command_buffer, frames[frame].command_buffer_pool);
+	draw_graph.end(reorder_commands, full_barriers, command_buffer, frames[frame].command_buffer_pool);
 	GodotProfileZoneGrouped(_profile_zone, "driver->command_buffer_end");
 	driver->command_buffer_end(command_buffer);
 	GodotProfileZoneGrouped(_profile_zone, "driver->end_segment");
@@ -8740,6 +8779,11 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	driver->command_buffer_begin(frames[0].command_buffer);
 
 	// Create draw graph and start it initialized as well.
+
+#ifdef DEBUG_ENABLED
+	_configure_draw_graph_flags();
+#endif
+
 	draw_graph.initialize(driver, &_render_pass_create_from_graph, frames.size(), main_queue_family, SECONDARY_COMMAND_BUFFERS_PER_FRAME);
 	draw_graph.begin();
 

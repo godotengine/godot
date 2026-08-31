@@ -1759,6 +1759,13 @@ private:
 
 	RenderingDeviceGraph draw_graph;
 
+#ifdef DEBUG_ENABLED
+	bool draw_graph_reorder_commands = true;
+	bool draw_graph_full_barriers = false;
+
+	void _configure_draw_graph_flags();
+#endif
+
 	/**************************/
 	/**** QUEUE MANAGEMENT ****/
 	/**************************/

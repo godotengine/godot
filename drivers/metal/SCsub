@@ -31,6 +31,11 @@ thirdparty_sources += [
     "#thirdparty/metal-cpp/metal_cpp.cpp",
 ]
 
+# Include OffsetAllocator
+thirdparty_sources += [
+    "#thirdparty/offset_allocator/offsetAllocator.cpp",
+]
+
 env_metal.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
 env_metal.Prepend(CPPPATH=[thirdparty_spirv_headers_dir + "include/spirv/unified1"])
 

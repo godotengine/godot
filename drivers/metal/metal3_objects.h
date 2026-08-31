@@ -51,6 +51,7 @@
 /**************************************************************************/
 
 #include "drivers/metal/metal_objects_shared.h"
+#include "drivers/metal/rendering_device_driver_metal.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
@@ -260,6 +261,41 @@ struct DirectEncoder {
 			encoder(p_encoder), cache(p_cache), mode(p_mode) {}
 };
 
+// A pool of GPU timestamps, backed by a timestamp counter sample buffer.
+//
+// The sample buffer uses shared storage, so results are resolved on the CPU and
+// no blit pass is required to make them readable.
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) QueryPool {
+	NS::SharedPtr<MTL::CounterSampleBuffer> sample_buffer;
+	// A one byte private buffer, filled by the timestamp encoder so it always
+	// carries at least one command.
+	NS::SharedPtr<MTL::Buffer> dummy_buffer;
+	// The counter sample buffer timestamp domain is not queryable, so it is
+	// correlated against the CPU clock. queryTimestampFrequency() describes the
+	// Metal 4 counter heap domain instead, and is roughly 33x off here.
+	MTL::Device *device = nullptr;
+	MTL::Timestamp cpu_base = 0;
+	MTL::Timestamp gpu_base = 0;
+	double timestamp_to_nano = 0.0;
+	uint32_t count = 0;
+
+	QueryPool() = default;
+
+	// Resolves the GPU to CPU tick ratio on first use, once enough time has
+	// elapsed since creation for the correlation to be meaningful.
+	double _resolve_timestamp_to_nano();
+
+public:
+	// Returns nullptr if the device does not expose the timestamp counter set.
+	static QueryPool *create(MTL::Device *p_device, uint32_t p_count);
+
+	MTL::CounterSampleBuffer *get_sample_buffer() const { return sample_buffer.get(); }
+	MTL::Buffer *get_dummy_buffer() const { return dummy_buffer.get(); }
+	uint32_t get_count() const { return count; }
+
+	void get_results(uint32_t p_count, uint64_t *r_results);
+};
+
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDCommandBuffer : public MDCommandBufferBase {
 	friend class MDUniformSet;
 
@@ -278,22 +314,23 @@ private:
 	/// Allocates from the ring buffer for dynamic argument buffers.
 	Alloc allocate_arg_buffer(uint32_t p_size);
 
-	struct {
-		NS::SharedPtr<MTL::ResidencySet> rs;
-	} _frame_state;
+	// Heaps made resident on this command buffer's encoders (barriers mode only).
+	LocalVector<MTL::Heap *> _resident_heaps;
+	uint64_t _resident_heaps_generation = 0;
+
+	void _encode_residency(MTL::RenderCommandEncoder *p_enc);
+	void _encode_residency(MTL::ComputeCommandEncoder *p_enc);
 
 #pragma mark - Synchronization
 
-	enum {
-		STAGE_RENDER,
-		STAGE_COMPUTE,
-		STAGE_BLIT,
-		STAGE_MAX,
-	};
-	bool use_barriers = false;
-	MTL::Stages pending_after_stages[STAGE_MAX] = { 0, 0, 0 };
-	MTL::Stages pending_before_queue_stages[STAGE_MAX] = { 0, 0, 0 };
-	void _encode_barrier(MTL::CommandEncoder *p_enc);
+	RDM::SyncMode sync_mode = RDM::SyncMode::Barriers;
+
+	void _fence_wait(MTL::RenderCommandEncoder *p_enc);
+	void _fence_wait(MTL::ComputeCommandEncoder *p_enc);
+	void _fence_wait(MTL::BlitCommandEncoder *p_enc);
+	void _fence_update(MTL::RenderCommandEncoder *p_enc);
+	void _fence_update(MTL::ComputeCommandEncoder *p_enc);
+	void _fence_update(MTL::BlitCommandEncoder *p_enc);
 
 	void reset();
 
@@ -304,7 +341,10 @@ private:
 	MTL::CommandBuffer *command_buffer();
 
 	void _end_compute_dispatch();
+	void _end_inline_render();
 	void _end_blit();
+	void _pop_active_encoder_labels();
+	void _set_inline_render_encoder(MTL::RenderCommandEncoder *p_encoder);
 	MTL::BlitCommandEncoder *_ensure_blit_encoder();
 
 	enum class CopySource {
@@ -338,7 +378,10 @@ protected:
 	const MDSubpass &get_current_subpass() const override { return render.get_subpass(); }
 	LocalVector<RDD::RenderPassClearValue> &get_clear_values() override { return render.clear_values; }
 	const Rect2i &get_render_area() const override { return render.render_area; }
-	void end_render_encoding() override { render.end_encoding(); }
+	void end_render_encoding() override {
+		_fence_update(render.encoder.get());
+		render.end_encoding();
+	}
 
 public:
 	struct RenderState : public RenderStateBase {
@@ -346,7 +389,7 @@ public:
 		MDFrameBuffer *frameBuffer = nullptr;
 		MDRenderPipeline *pipeline = nullptr;
 		LocalVector<RDD::RenderPassClearValue> clear_values;
-		uint32_t current_subpass = UINT32_MAX;
+		MDSubpass *current_subpass = nullptr;
 		Rect2i render_area;
 		bool is_rendering_entire_area = false;
 		NS::SharedPtr<MTL::RenderPassDescriptor> desc;
@@ -367,8 +410,8 @@ public:
 		void end_encoding();
 
 		_ALWAYS_INLINE_ const MDSubpass &get_subpass() const {
-			DEV_ASSERT(pass != nullptr);
-			return pass->subpasses[current_subpass];
+			DEV_ASSERT(current_subpass != nullptr);
+			return *current_subpass;
 		}
 
 		_FORCE_INLINE_ void mark_viewport_dirty() {
@@ -490,6 +533,14 @@ public:
 		}
 	} compute;
 
+	struct {
+		NS::SharedPtr<MTL::RenderCommandEncoder> encoder;
+
+		_FORCE_INLINE_ void reset() {
+			encoder.reset();
+		}
+	} inline_render;
+
 	// State specific to a blit pass.
 	struct {
 		NS::SharedPtr<MTL::BlitCommandEncoder> encoder;
@@ -502,9 +553,9 @@ public:
 		return commandBuffer.get();
 	}
 
-	void begin() override;
-	void commit() override;
-	void end() override;
+	void _begin() override;
+	void _commit() override;
+	void _end() override;
 
 	void bind_pipeline(RDD::PipelineID p_pipeline) override;
 
@@ -540,6 +591,8 @@ public:
 
 #pragma mark - Compute Commands
 
+	void compute_begin_pass() override;
+	void compute_end_pass() override;
 	void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override;
 	void compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) override;
 	void compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset) override;
@@ -558,6 +611,10 @@ public:
 	void copy_texture(RDD::TextureID p_src_texture, RDD::TextureID p_dst_texture, VectorView<RDD::TextureCopyRegion> p_regions) override;
 	void copy_buffer_to_texture(RDD::BufferID p_src_buffer, RDD::TextureID p_dst_texture, VectorView<RDD::BufferTextureCopyRegion> p_regions) override;
 	void copy_texture_to_buffer(RDD::TextureID p_src_texture, RDD::BufferID p_dst_buffer, VectorView<RDD::BufferTextureCopyRegion> p_regions) override;
+
+#pragma mark - Timestamp
+
+	void timestamp_write(QueryPool *p_pool, uint32_t p_index);
 
 #pragma mark - Synchronization
 
