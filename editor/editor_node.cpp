@@ -8432,6 +8432,7 @@ HashMap<String, Variant> EditorNode::get_initial_settings() {
 	settings["gui/common/auto_focus_strategy"] = Control::AutoFocusStrategy::STRATEGY_BALLOON;
 	settings["input_devices/joypads/ignore_joypad_on_unfocused_application"] = true;
 	settings["physics/3d/physics_engine"] = "Jolt Physics";
+	settings["physics/2d/solver/default_contact_bias"] = 0.2;
 	settings["rendering/rendering_device/driver.windows"] = "d3d12";
 	settings["rendering/lights_and_shadows/multi_bounce_occlusion/enabled"] = true;
 	return settings;
