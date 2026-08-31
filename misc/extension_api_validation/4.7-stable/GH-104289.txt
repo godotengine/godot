@@ -1,0 +1,6 @@
+GH-104289
+--------------
+
+Validate extension JSON: Error: Field 'classes/Image/methods/generate_mipmaps/arguments': size changed value in new API, from 1 to 3.
+
+Added two additional parameters to _generate_mipmaps. Compatibility method registered.

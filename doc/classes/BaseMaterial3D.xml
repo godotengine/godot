@@ -585,7 +585,7 @@
 			The material will use the texture's alpha values for transparency. This is the slowest to render, and disables shadow casting.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency" keywords="TRANSPARENCY_ALPHA_TEST">
-			The material will cut off all values below a threshold, the rest will remain opaque. The opaque portions will be rendered in the depth prepass. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows.
+			The material will cut off all values below a threshold, the rest will remain opaque. The opaque portions will be rendered in the depth prepass. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows. For textures using this mode see the [code]Preserve Alpha Test Coverage[/code] option in the texture import settings to improve distant rendering and popping.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_HASH" value="3" enum="Transparency">
 			The material will cut off all values below a spatially-deterministic threshold, the rest will remain opaque. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows. Alpha hashing is suited for hair rendering.
