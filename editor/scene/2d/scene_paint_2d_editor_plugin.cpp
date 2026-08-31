@@ -403,6 +403,7 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 		undo_redo->add_do_method(node_2d, "set_global_position", pos);
 		undo_redo->add_undo_method(node, "remove_child", node_2d);
 		undo_redo->commit_action(false);
+		emit_signal(SNAME("scene_painted"), node_2d);
 	}
 
 	CanvasItemEditor::get_singleton()->update_viewport();
@@ -763,6 +764,7 @@ void ScenePaint2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_scene_provider", "control"), &ScenePaint2DEditor::unregister_scene_provider);
 	ClassDB::bind_method(D_METHOD("set_painted_scene", "scene"), &ScenePaint2DEditor::set_painted_scene);
 	ClassDB::bind_method(D_METHOD("get_painted_scene"), &ScenePaint2DEditor::get_painted_scene);
+	ADD_SIGNAL(MethodInfo("scene_painted", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node2D::get_class_static())));
 }
 
 void ScenePaint2DEditor::_notification(int p_what) {
