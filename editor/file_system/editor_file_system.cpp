@@ -510,8 +510,7 @@ void EditorFileSystem::_scan_filesystem() {
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	if (first_scan) {
 		sd = first_scan_root_dir;
-		// Will be updated on scan.
-		ResourceUID::get_singleton()->clear();
+		ResourceUID::get_singleton()->copy_and_clear_cache();
 		ResourceUID::scan_for_uid_on_startup = nullptr;
 		processed_files = memnew(HashSet<String>());
 	} else {
@@ -1115,6 +1114,7 @@ void EditorFileSystem::scan() {
 		scanning = true;
 		scan_total = 0;
 		_scan_filesystem();
+		ResourceUID::get_singleton()->clear_copy();
 		memdelete(filesystem);
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
@@ -1793,6 +1793,7 @@ void EditorFileSystem::_notification(int p_what) {
 					}
 				} else if (!scanning && thread.is_started()) {
 					set_process(false);
+					ResourceUID::get_singleton()->clear_copy();
 
 					memdelete(filesystem);
 					filesystem = new_filesystem;
