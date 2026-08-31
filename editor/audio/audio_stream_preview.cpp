@@ -57,11 +57,11 @@ float AudioStreamPreview::get_max(float p_time, float p_time_next) const {
 		time_to = time_from + 1;
 	}
 
-	uint8_t vmax = 0;
+	uint8_t vmax = preview[time_from * 2 + 1];
 
-	for (int i = time_from; i < time_to; i++) {
+	for (int i = time_from + 1; i < time_to; i++) {
 		uint8_t v = preview[i * 2 + 1];
-		if (i == 0 || v > vmax) {
+		if (v > vmax) {
 			vmax = v;
 		}
 	}
@@ -88,11 +88,11 @@ float AudioStreamPreview::get_min(float p_time, float p_time_next) const {
 		time_to = time_from + 1;
 	}
 
-	uint8_t vmin = 255;
+	uint8_t vmin = preview[time_from * 2];
 
-	for (int i = time_from; i < time_to; i++) {
+	for (int i = time_from + 1; i < time_to; i++) {
 		uint8_t v = preview[i * 2];
-		if (i == 0 || v < vmin) {
+		if (v < vmin) {
 			vmin = v;
 		}
 	}
