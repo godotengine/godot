@@ -34,6 +34,8 @@
 #include "core/os/memory.h"
 #include "core/os/thread.h"
 
+static_assert(std::is_same_v<Thread::ID, uint64_t>);
+
 GDType::GDType(const GDType *p_super_type, StringName p_name) :
 		super_type(p_super_type), name(std::move(p_name)) {
 	name_hierarchy.push_back(name);
@@ -68,13 +70,19 @@ GDType::~GDType() {
 
 void GDType::initialize() {
 	ERR_FAIL_COND(init_state != InitState::UNINITIALIZED);
+	owning_thread_id = Thread::get_caller_id();
 
 	if (super_type) {
-		// Now that a subtype is registered, the supertype cannot change anymore.
-		// Otherwise, our caches would become invalid.
-		// This shouldn't be a problem, since classes should register all their
-		// parts in _bind_methods, which is called on registration.
-		super_type->init_state = InitState::FINALIZED;
+		if (super_type->init_state != InitState::FINALIZED) {
+			if (super_type->owning_thread_id != Thread::get_caller_id()) {
+				WARN_PRINT("Finalizing a GDType from a subtype from another thread.");
+			}
+			// Now that a subtype is registered, the supertype cannot change anymore.
+			// Otherwise, our caches would become invalid.
+			// This shouldn't be a problem, since classes should register all their
+			// parts in _bind_methods, which is called on registration.
+			super_type->init_state = InitState::FINALIZED;
+		}
 
 		_members = super_type->_members;
 	}
@@ -83,7 +91,7 @@ void GDType::initialize() {
 }
 
 void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
-	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
 	ERR_FAIL_COND_MSG(_members.has(p_name), vformat("Object '%s' already has member '%s'.", get_name(), p_name));
 
@@ -127,7 +135,7 @@ const GDType::EnumInfo *GDType::get_integer_constant_enum(const StringName &p_na
 }
 
 void GDType::add_signal(MethodInfo p_signal) {
-	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
 
 	const StringName signal_name(p_signal.name);
@@ -140,7 +148,7 @@ void GDType::add_signal(MethodInfo p_signal) {
 }
 
 bool GDType::bind_method(MethodBind *p_method, bool p_take_ownership) {
-	ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+	ERR_FAIL_COND_V(Thread::get_caller_id() != owning_thread_id, false);
 	ERR_FAIL_COND_V(init_state != InitState::MUTABLE, false);
 
 	if (_members.has(p_method->get_name())) {
@@ -160,7 +168,7 @@ bool GDType::bind_method(MethodBind *p_method, bool p_take_ownership) {
 }
 
 void GDType::set_method_flags(const StringName &p_method, int p_flags) {
-	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
 
 	const Member *member = _self_members.getptr(p_method);
@@ -171,7 +179,7 @@ void GDType::set_method_flags(const StringName &p_method, int p_flags) {
 }
 
 bool GDType::bind_compatibility_method(MethodBind *p_method) {
-	ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
+	ERR_FAIL_COND_V(Thread::get_caller_id() != owning_thread_id, false);
 	ERR_FAIL_COND_V(init_state != InitState::MUTABLE, false);
 
 	if (!self_compatibility_method_map.has(p_method->get_name())) {
@@ -183,7 +191,7 @@ bool GDType::bind_compatibility_method(MethodBind *p_method) {
 
 void GDType::add_property(const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter,
 		int p_index) {
-	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
 
 	ERR_FAIL_COND_MSG(_members.has(p_pinfo.name), vformat("Object '%s' already has member '%s'.", get_name(), p_pinfo.name));
@@ -226,7 +234,7 @@ void GDType::add_property(const PropertyInfo &p_pinfo, const StringName &p_sette
 }
 
 void GDType::add_to_ordered_properties(const PropertyInfo &p_pinfo) {
-	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
 
 	PropertyInfo *info = memnew(PropertyInfo(p_pinfo));

@@ -122,6 +122,7 @@ public:
 protected:
 	const GDType *super_type;
 	mutable InitState init_state = InitState::UNINITIALIZED;
+	uint64_t owning_thread_id = 0;
 
 	StringName name;
 	/// Contains all the class names in order:
