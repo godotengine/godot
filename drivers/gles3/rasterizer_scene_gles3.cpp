@@ -1364,7 +1364,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					RID light = light_storage->light_instance_get_base_light(light_instance);
 					int32_t shadow_id = light_storage->light_instance_get_shadow_id(light_instance);
 
-					if (light_storage->light_has_shadow(light) && shadow_id >= 0) {
+					if (light_storage->light_has_shadow(light) && shadow_id >= 0 && light_storage->light_instance_has_shadow_atlas(light_instance, p_render_data->shadow_atlas)) {
 						GeometryInstanceGLES3::LightPass pass;
 						pass.light_id = light_storage->light_instance_get_gl_id(light_instance);
 						pass.shadow_id = shadow_id;
@@ -1372,7 +1372,9 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 						pass.is_omni = true;
 						inst->light_passes.push_back(pass);
 					} else {
-						// Lights without shadow can all go in base pass.
+						// Lights without a shadow, or without a slot in this render's
+						// shadow atlas (e.g. on a viewport with a zero-size atlas),
+						// can all go in the base pass.
 						inst->omni_light_gl_cache.push_back((uint32_t)light_storage->light_instance_get_gl_id(light_instance));
 					}
 				}
@@ -1387,14 +1389,16 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					RID light = light_storage->light_instance_get_base_light(light_instance);
 					int32_t shadow_id = light_storage->light_instance_get_shadow_id(light_instance);
 
-					if (light_storage->light_has_shadow(light) && shadow_id >= 0) {
+					if (light_storage->light_has_shadow(light) && shadow_id >= 0 && light_storage->light_instance_has_shadow_atlas(light_instance, p_render_data->shadow_atlas)) {
 						GeometryInstanceGLES3::LightPass pass;
 						pass.light_id = light_storage->light_instance_get_gl_id(light_instance);
 						pass.shadow_id = shadow_id;
 						pass.light_instance_rid = light_instance;
 						inst->light_passes.push_back(pass);
 					} else {
-						// Lights without shadow can all go in base pass.
+						// Lights without a shadow, or without a slot in this render's
+						// shadow atlas (e.g. on a viewport with a zero-size atlas),
+						// can all go in the base pass.
 						inst->spot_light_gl_cache.push_back((uint32_t)light_storage->light_instance_get_gl_id(light_instance));
 					}
 				}
