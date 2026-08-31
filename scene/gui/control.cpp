@@ -36,6 +36,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/math/geometry_2d.h"
 #include "core/math/transform_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -3340,7 +3341,8 @@ NodePath Control::get_focus_previous() const {
 	return data.focus_prev;
 }
 
-#define MAX_NEIGHBOR_SEARCH_COUNT 512
+constexpr int MAX_NEIGHBOR_SEARCH_COUNT = 512;
+constexpr real_t NO_SCORE = 1e10;
 
 Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 	ERR_FAIL_INDEX_V((int)p_side, 4, nullptr);
@@ -3361,7 +3363,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		return c;
 	}
 
-	real_t square_of_dist = 1e14;
+	real_t score = NO_SCORE;
 	Control *result = nullptr;
 
 	const Vector2 dir[4] = {
@@ -3411,7 +3413,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 				}
 
 				if (follow_focus || sc_maxd > maxd) {
-					_window_find_focus_neighbor(vdir, base, r, clamp, maxd, square_of_dist, &result);
+					_window_find_focus_neighbor(vdir, base, r, clamp, maxd, score, &result);
 				}
 
 				if (result == nullptr) {
@@ -3457,7 +3459,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		return nullptr;
 	}
 
-	_window_find_focus_neighbor(vdir, base, r, clamp, maxd, square_of_dist, &result);
+	_window_find_focus_neighbor(vdir, base, r, clamp, maxd, score, &result);
 
 	return result;
 }
@@ -3466,7 +3468,7 @@ Control *Control::find_valid_focus_neighbor(Side p_side) const {
 	return const_cast<Control *>(this)->_get_focus_neighbor(p_side);
 }
 
-void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest) {
+void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_score, Control **r_closest) {
 	if (Object::cast_to<Viewport>(p_at)) {
 		return; // Bye.
 	}
@@ -3478,45 +3480,25 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	bool in_container = container ? container->is_ancestor_of(this) : false;
 
 	if (c && c != this && ((c->get_focus_mode_with_override() == FOCUS_ALL) || (ac_enabled && c->get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)) && !in_container && p_clamp.intersects(c->get_global_rect())) {
-		Rect2 r_c = c->get_global_rect();
-		r_c = r_c.intersection(p_clamp);
-		real_t begin_d = p_dir.dot(r_c.get_position());
-		real_t end_d = p_dir.dot(r_c.get_end());
-		real_t max = MAX(begin_d, end_d);
+		real_t score = NO_SCORE;
+		switch (GLOBAL_GET_CACHED(int, "gui/common/auto_focus_strategy")) {
+			case AutoFocusStrategy::STRATEGY_LEGACY:
+				score = _focus_strategy_legacy(p_dir, *c, p_rect, p_clamp, p_min);
+				break;
+			case AutoFocusStrategy::STRATEGY_BALLOON:
+				score = _focus_strategy_balloon(p_dir, *c, p_clamp);
+				break;
+			default:
+				ERR_PRINT_ONCE("Unknown auto focus strategy. Using default strategy.");
+				score = _focus_strategy_balloon(p_dir, *c, p_clamp);
+				break;
+		}
 
-		// Use max to allow navigation to overlapping controls (for ScrollContainer case).
-		if (max > (p_min + CMP_EPSILON)) {
-			// Calculate the shortest distance. (No shear transform)
-			// Flip along axis(es) so that C falls in the first quadrant of c (as origin) for easy calculation.
-			// The same transformation would put the direction vector in the positive direction (+x or +y).
-			//       |           -------------
-			//       |           |     |     |
-			//       |           |-----C-----|
-			//   ----|---a       |     |     |
-			//   |   |   |       b------------
-			//  -|---c---|----------------------->
-			//   |   |   |
-			//   ----|----
-			// cC = ca + ab + bC
-			// The shortest distance is the vector ab's length or its positive projection length.
-
-			Vector2 cC_origin = r_c.get_center() - p_rect.get_center();
-			Vector2 cC = cC_origin.abs(); // Converted to fall in the first quadrant of c.
-
-			Vector2 ab = cC - 0.5 * r_c.get_size() - 0.5 * p_rect.get_size();
-
-			real_t min_d_squared = 0.0;
-			if (ab.x > 0.0) {
-				min_d_squared += ab.x * ab.x;
-			}
-			if (ab.y > 0.0) {
-				min_d_squared += ab.y * ab.y;
-			}
-
-			if (min_d_squared < r_closest_dist_squared || *r_closest == nullptr) {
-				r_closest_dist_squared = min_d_squared;
+		if (score != NO_SCORE) {
+			if (score < r_score || *r_closest == nullptr) {
+				r_score = score;
 				*r_closest = c;
-			} else if (min_d_squared == r_closest_dist_squared) {
+			} else if (score == r_score) {
 				// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
 				// is right next to the currently focused control (e.g. in BoxContainer with
 				// separation overridden to 0). This needs specific handling so that the correct
@@ -3527,7 +3509,7 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 				Point2 closest_center = closest->get_global_rect().get_center();
 
 				// Tie-break in favor of the control most aligned with p_dir.
-				if (Math::abs(p_dir.cross(cC_origin)) < Math::abs(p_dir.cross(closest_center - p_center))) {
+				if (Math::abs(p_dir.cross(c->get_rect().get_center() - p_center)) < Math::abs(p_dir.cross(closest_center - p_center))) {
 					*r_closest = c;
 				}
 			}
@@ -3559,8 +3541,118 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 				continue; // Already searched in it, skip it.
 			}
 		}
-		_window_find_focus_neighbor(p_dir, child, p_rect, intersection, p_min, r_closest_dist_squared, r_closest);
+		_window_find_focus_neighbor(p_dir, child, p_rect, intersection, p_min, r_score, r_closest);
 	}
+}
+
+real_t Control::_focus_strategy_legacy(const Vector2 &p_dir, const Control &p_c, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min) {
+	Rect2 r_c = p_c.get_global_rect();
+	r_c = r_c.intersection(p_clamp);
+	real_t begin_d = p_dir.dot(r_c.get_position());
+	real_t end_d = p_dir.dot(r_c.get_end());
+	real_t max = MAX(begin_d, end_d);
+
+	// Use max to allow navigation to overlapping controls (for ScrollContainer case).
+	if (max > (p_min + CMP_EPSILON)) {
+		// Calculate the shortest distance. (No shear transform)
+		// Flip along axis(es) so that C falls in the first quadrant of c (as origin) for easy calculation.
+		// The same transformation would put the direction vector in the positive direction (+x or +y).
+		//       |           -------------
+		//       |           |     |     |
+		//       |           |-----C-----|
+		//   ----|---a       |     |     |
+		//   |   |   |       b------------
+		//  -|---c---|----------------------->
+		//   |   |   |
+		//   ----|----
+		// cC = ca + ab + bC
+		// The shortest distance is the vector ab's length or its positive projection length.
+
+		Vector2 cC_origin = r_c.get_center() - p_rect.get_center();
+		Vector2 cC = cC_origin.abs(); // Converted to fall in the first quadrant of c.
+
+		Vector2 ab = cC - 0.5 * r_c.get_size() - 0.5 * p_rect.get_size();
+
+		real_t min_d_squared = 0.0;
+		if (ab.x > 0.0) {
+			min_d_squared += ab.x * ab.x;
+		}
+		if (ab.y > 0.0) {
+			min_d_squared += ab.y * ab.y;
+		}
+
+		return min_d_squared;
+	}
+
+	return NO_SCORE;
+}
+
+real_t Control::_focus_strategy_balloon_candidate_score(const Vector2 &p_start, const Vector2 &p_dir, const Pair<Vector2, Vector2> &p_edge) {
+	// Slightly tweaked line intersection algorithm, which clamps out-of-bounds intersections.
+	Vector2 edge_dir = p_edge.second - p_edge.first;
+	Vector2 normal = Vector2(-edge_dir.y, edge_dir.x).normalized();
+	Vector2 intersect_dir = p_dir + normal;
+
+	Vector2 touch(Math::INF, Math::INF);
+	if (!Geometry2D::line_intersects_line(p_start, intersect_dir, p_edge.first, edge_dir, touch)) {
+		return -1;
+	}
+
+	// Clamp resulting intersection to P1-P2 segment.
+	if ((touch - p_edge.second).dot(-edge_dir) < 0) {
+		touch = p_edge.second;
+	}
+	if ((touch - p_edge.first).dot(edge_dir) < 0) {
+		touch = p_edge.first;
+	}
+
+	Vector2 hit = touch - p_start;
+	return p_dir.dot(hit) / hit.length_squared();
+}
+
+real_t Control::_focus_strategy_balloon(const Vector2 &p_dir, const Control &p_candidate, const Rect2 &p_clamp) {
+	// Algorithm proposed and designed by Rune Skovbo Johansen & Adriaan de Jongh.
+
+	// Compute the starting point by intersecting the input direction to a normalized Rect2.
+	Vector2 starting_point;
+	const Rect2 normalized_rect = Rect2(0, 0, 1, 1);
+	if (!normalized_rect.intersects_ray(normalized_rect.get_center(), p_dir, &starting_point)) {
+		// This scenario is theoretically impossible; this should always find an intersection for rays
+		// starting within the `Rect2` (even for `dir == Vector2.ZER0`, as the algorithm applies an epsilon)
+		DEV_ASSERT(false);
+		ERR_PRINT("Internal bug, please report: failed to find input direction intersection in Control's rect during neighbor focus search.");
+		return NO_SCORE;
+	}
+
+	// Convert the normalized intersection by first restoring local size, then multiplying with global transform.
+	starting_point *= get_size();
+	starting_point = get_global_transform_const().xform(starting_point);
+
+	real_t score = -1;
+
+	// Fetch the corners of the Control's rect in global coordinates.
+	const Rect2 candidate_rect = p_candidate.get_global_rect().intersection(p_clamp);
+	const Transform2D candidate_transform = p_candidate.get_global_transform_const();
+	Vector2 point_a = candidate_transform.xform(Vector2());
+	Vector2 point_b = candidate_transform.xform(Vector2(candidate_rect.size.x, 0));
+	Vector2 point_c = candidate_transform.xform(candidate_rect.size);
+	Vector2 point_d = candidate_transform.xform(Vector2(0, candidate_rect.size.y));
+
+	const Pair<Vector2, Vector2> candidates[] = {
+		Pair(point_a, point_b),
+		Pair(point_b, point_c),
+		Pair(point_c, point_d),
+		Pair(point_d, point_a),
+	};
+
+	for (const Pair<Vector2, Vector2> &edge : candidates) {
+		real_t candidate_score = _focus_strategy_balloon_candidate_score(starting_point, p_dir, edge);
+		score = MAX(score, candidate_score);
+	}
+
+	// Valid scores are in the range of (0, 1]. For this algorithm, higher scores are better; however,
+	// Godot is looking for minimal score, so we invert the range.
+	return score > 0 ? (1 - score) : NO_SCORE;
 }
 
 // Rendering.
