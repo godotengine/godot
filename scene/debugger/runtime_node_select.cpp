@@ -88,6 +88,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	Window *root = SceneTree::get_singleton()->get_root();
 	ERR_FAIL_COND(root->is_connected(SceneStringName(window_input), callable_mp(this, &RuntimeNodeSelect::_root_window_input)));
 
+	root->connect(SceneStringName(ready), callable_mp(this, &RuntimeNodeSelect::_root_ready), CONNECT_ONE_SHOT);
 	root->connect(SceneStringName(window_input), callable_mp(this, &RuntimeNodeSelect::_root_window_input));
 	root->connect("size_changed", callable_mp(this, &RuntimeNodeSelect::_queue_selection_update), CONNECT_DEFERRED);
 
@@ -151,18 +152,18 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 
 	view_3d_controller->set_freelook_scheme((View3DController::FreelookScheme)p_settings.get("editors/3d/freelook/freelook_navigation_scheme", View3DController::FREELOOK_DEFAULT).operator int());
 	view_3d_controller->set_freelook_base_speed(p_settings.get("editors/3d/freelook/freelook_base_speed", 5));
-	view_3d_controller->set_freelook_sensitivity(p_settings.get("editors/3d/freelook/freelook_sensitivity", 0.25));
+	view_3d_controller->set_freelook_factor(p_settings.get("editors/3d/freelook/freelook_factor", 1.0));
 	view_3d_controller->set_freelook_inertia(p_settings.get("editors/3d/freelook/freelook_inertia", 0));
 	view_3d_controller->set_freelook_speed_zoom_link(p_settings.get("editors/3d/freelook/freelook_speed_zoom_link", false));
 	view_3d_controller->set_freelook_invert_y_axis(p_settings.get("editors/3d/freelook/freelook_invert_y_axis", false));
 
-	view_3d_controller->set_translation_sensitivity(p_settings.get("editors/3d/navigation_feel/translation_sensitivity", 1));
-	view_3d_controller->set_translation_inertia(p_settings.get("editors/3d/navigation_feel/translation_inertia", 0));
+	view_3d_controller->set_pan_factor(p_settings.get("editors/3d/navigation_feel/pan_factor", 1.0));
+	view_3d_controller->set_pan_inertia(p_settings.get("editors/3d/navigation_feel/pan_inertia", 0));
 
 	view_3d_controller->set_pan_mouse_button(p_settings.get("editors/3d/navigation/pan_mouse_button", View3DController::NAV_MOUSE_BUTTON_MIDDLE));
 
 	view_3d_controller->set_orbit_mouse_button(p_settings.get("editors/3d/navigation/orbit_mouse_button", View3DController::NAV_MOUSE_BUTTON_MIDDLE));
-	view_3d_controller->set_orbit_sensitivity(p_settings.get("editors/3d/navigation_feel/orbit_sensitivity", 0.004));
+	view_3d_controller->set_orbit_factor(p_settings.get("editors/3d/navigation_feel/orbit_factor", 1.0));
 	view_3d_controller->set_orbit_inertia(p_settings.get("editors/3d/navigation_feel/orbit_inertia", 0));
 
 	view_3d_controller->set_zoom_style(p_settings.get("editors/3d/navigation/zoom_style", View3DController::ZOOM_VERTICAL));
@@ -1570,6 +1571,14 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 		override_camera->set_transform(view_3d_controller->to_camera_transform());
 		override_camera->set_perspective(camera_fov * cursor.fov_scale, camera_znear, camera_zfar);
 	}
+}
+
+void RuntimeNodeSelect::_root_ready() {
+	Window *root = SceneTree::get_singleton()->get_root();
+
+#ifndef _3D_DISABLED
+	view_3d_controller->set_viewport(root->get_viewport());
+#endif // _3D_DISABLED
 }
 
 RuntimeNodeSelect::SelectionBox::~SelectionBox() {

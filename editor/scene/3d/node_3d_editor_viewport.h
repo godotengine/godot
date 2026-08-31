@@ -341,6 +341,7 @@ private:
 
 	Vector3 _get_camera_position() const;
 	Vector3 _get_camera_normal() const;
+	Point2 _camera_unproject_position_safely(Vector3 p_position);
 	Vector3 _get_screen_to_space(const Vector3 &p_vector3);
 	Vector<Plane> _build_screen_frustum(const Point2 &p_min, const Point2 &p_max);
 

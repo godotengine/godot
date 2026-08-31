@@ -3988,7 +3988,7 @@ void Node3DEditorViewport::_update_view_3d_controller(bool p_update_all) {
 	if (p_update_all || EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d")) {
 		view_3d_controller->set_pan_mouse_button((View3DController::NavigationMouseButton)EDITOR_GET("editors/3d/navigation/pan_mouse_button").operator int());
 
-		view_3d_controller->set_orbit_sensitivity(EDITOR_GET("editors/3d/navigation_feel/orbit_sensitivity"));
+		view_3d_controller->set_orbit_factor(EDITOR_GET("editors/3d/navigation_feel/orbit_factor"));
 		view_3d_controller->set_orbit_inertia(EDITOR_GET("editors/3d/navigation_feel/orbit_inertia"));
 		view_3d_controller->set_orbit_mouse_button((View3DController::NavigationMouseButton)EDITOR_GET("editors/3d/navigation/orbit_mouse_button").operator int());
 
@@ -3998,13 +3998,13 @@ void Node3DEditorViewport::_update_view_3d_controller(bool p_update_all) {
 
 		view_3d_controller->set_freelook_scheme((View3DController::FreelookScheme)EDITOR_GET("editors/3d/freelook/freelook_navigation_scheme").operator int());
 		view_3d_controller->set_freelook_base_speed(EDITOR_GET("editors/3d/freelook/freelook_base_speed"));
-		view_3d_controller->set_freelook_sensitivity(EDITOR_GET("editors/3d/freelook/freelook_sensitivity"));
+		view_3d_controller->set_freelook_factor(EDITOR_GET("editors/3d/freelook/freelook_factor"));
 		view_3d_controller->set_freelook_inertia(EDITOR_GET("editors/3d/freelook/freelook_inertia"));
 		view_3d_controller->set_freelook_speed_zoom_link(EDITOR_GET("editors/3d/freelook/freelook_speed_zoom_link"));
 		view_3d_controller->set_freelook_invert_y_axis(EDITOR_GET("editors/3d/freelook/freelook_invert_y_axis"));
 
-		view_3d_controller->set_translation_sensitivity(EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity"));
-		view_3d_controller->set_translation_inertia(EDITOR_GET("editors/3d/navigation_feel/translation_inertia"));
+		view_3d_controller->set_pan_factor(EDITOR_GET("editors/3d/navigation_feel/pan_factor"));
+		view_3d_controller->set_pan_inertia(EDITOR_GET("editors/3d/navigation_feel/pan_inertia"));
 
 		view_3d_controller->set_angle_snap_threshold(EDITOR_GET("editors/3d/navigation_feel/angle_snap_threshold"));
 
@@ -5010,6 +5010,18 @@ void Node3DEditorViewport::switch_preview_camera(Camera3D *p_new_camera) {
 	surface->queue_redraw();
 }
 
+Point2 Node3DEditorViewport::_camera_unproject_position_safely(Vector3 p_position) {
+	if (!camera->is_inside_tree()) {
+		return Point2();
+	}
+
+	if (camera->is_position_behind(p_position)) {
+		return Point2();
+	}
+
+	return camera->unproject_position(p_position);
+}
+
 void Node3DEditorViewport::update_transform_gizmo_view() {
 	if (!camera->is_inside_tree()) {
 		return;
@@ -5036,8 +5048,8 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	const Vector3 camy = -camera_xform.get_basis().get_column(1).normalized();
 	const Plane p = Plane(camz, camera_xform.origin);
 	const real_t gizmo_d = MAX(Math::abs(p.distance_to(xform.origin)), CMP_EPSILON);
-	const real_t d0 = camera->unproject_position(camera_xform.origin + camz * gizmo_d).y;
-	const real_t d1 = camera->unproject_position(camera_xform.origin + camz * gizmo_d + camy).y;
+	const real_t d0 = _camera_unproject_position_safely(camera_xform.origin + camz * gizmo_d).y;
+	const real_t d1 = _camera_unproject_position_safely(camera_xform.origin + camz * gizmo_d + camy).y;
 	const real_t dd = MAX(Math::abs(d0 - d1), CMP_EPSILON);
 
 	const real_t gizmo_size = EDITOR_GET("editors/3d/manipulator_gizmo_size");
@@ -7207,6 +7219,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_3d_controller.instantiate();
 	view_3d_controller->set_auto_orthogonal_allowed(view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_AUTO_ORTHOGONAL)));
+	view_3d_controller->set_viewport(viewport);
 	view_3d_controller->connect("view_state_changed", callable_mp(this, &Node3DEditorViewport::_view_state_changed));
 	view_3d_controller->connect("fov_scaled", callable_mp((CanvasItem *)surface, &CanvasItem::queue_redraw));
 	view_3d_controller->connect("freelook_changed", callable_mp(this, &Node3DEditorViewport::_freelook_changed));

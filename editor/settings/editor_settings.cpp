@@ -995,10 +995,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/3d/navigation/warped_mouse_panning", true, true);
 
 	// 3D: Navigation feel
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/orbit_sensitivity", 0.25, "0.01,20,0.001")
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/translation_sensitivity", 1.0, "0.01,20,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/orbit_factor", 1.0, U"0.1,3.0,0.1,suffix:×,or_greater")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/pan_factor", 1.0, U"0.1,3.0,0.1,suffix:×,or_greater")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/orbit_inertia", 0.0, "0,1,0.001")
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/translation_inertia", 0.05, "0,1,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/pan_inertia", 0.05, "0,1,0.001")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/zoom_inertia", 0.05, "0,1,0.001")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/angle_snap_threshold", 10.0, "1,20,0.1,degrees")
 	_initial_set("editors/3d/navigation/show_viewport_rotation_gizmo", true);
@@ -1010,7 +1010,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// 3D: Freelook
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_navigation_scheme", 0, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)")
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_sensitivity", 0.25, "0.01,2,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_factor", 1.0, U"0.1,3.0,0.1,suffix:×,or_greater")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_inertia", 0.05, "0,1,0.001")
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_base_speed", 5.0, "0,10,0.01,or_greater")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_activation_modifier", 0, "None,Shift,Alt,Meta,Ctrl")
@@ -1360,6 +1360,10 @@ void EditorSettings::_handle_setting_compatibility() {
 	_rename_setting("interface/editor/collapse_main_menu", "interface/editor/appearance/collapse_main_menu");
 	_rename_setting("asset_library/use_threads", "asset_store/use_threads");
 	_rename_setting("interface/editors/derive_script_globals_by_name", "docks/scene_tree/derive_script_globals_by_name");
+	_rename_setting("editors/3d/navigation_feel/translation_inertia", "editors/3d/navigation_feel/pan_inertia");
+	_convert_setting_3d_navigation_sensitivity_to_factor("editors/3d/navigation_feel/translation_sensitivity", "editors/3d/navigation_feel/pan_factor", 1.0);
+	_convert_setting_3d_navigation_sensitivity_to_factor("editors/3d/navigation_feel/orbit_sensitivity", "editors/3d/navigation_feel/orbit_factor", 0.25);
+	_convert_setting_3d_navigation_sensitivity_to_factor("editors/3d/freelook/freelook_sensitivity", "editors/3d/freelook/freelook_factor", 0.25);
 
 	// Handle renamed shortcuts.
 	_rename_shortcut("editor/editor_assetlib", "editor/editor_asset_store");
@@ -1367,6 +1371,25 @@ void EditorSettings::_handle_setting_compatibility() {
 	_rename_shortcut("script_editor/window_move_down", "script_editor/move_document_down");
 	_rename_shortcut("script_editor/window_sort", "script_editor/sort_documents");
 	_rename_shortcut("script_text_editor/replace_in_files", "editor/replace_in_files");
+}
+
+void EditorSettings::_convert_setting_3d_navigation_sensitivity_to_factor(const String &p_setting_old, const String &p_setting_new, float p_default_sensitivity) {
+	ERR_FAIL_COND(Math::is_zero_approx(p_default_sensitivity));
+	ERR_FAIL_COND(p_default_sensitivity < 0.0);
+
+	if (has_setting(p_setting_old)) {
+		float setting_value = get_setting(p_setting_old);
+		float setting_factor = setting_value / p_default_sensitivity;
+		set_setting(p_setting_old, setting_factor);
+	}
+
+	if (ProjectSettings::get_singleton()->has_editor_setting_override(p_setting_old)) {
+		float setting_value = ProjectSettings::get_singleton()->get_editor_setting_override(p_setting_old);
+		float setting_factor = setting_value / p_default_sensitivity;
+		ProjectSettings::get_singleton()->set_editor_setting_override(p_setting_old, setting_factor);
+	}
+
+	_rename_setting(p_setting_old, p_setting_new);
 }
 
 void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {
