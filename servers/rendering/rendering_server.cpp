@@ -2240,7 +2240,7 @@ void RenderingServer::get_argument_options(const StringName &p_function, int p_i
 				r_options->push_back(E.string().quote());
 			}
 		} else if (pf == "has_os_feature") {
-			for (const String E : { "\"rgtc\"", "\"s3tc\"", "\"bptc\"", "\"etc\"", "\"etc2\"", "\"astc\"" }) {
+			for (const String E : { "\"rgtc\"", "\"s3tc\"", "\"bptc\"", "\"etc\"", "\"etc2\"", "\"astc\"", "\"astc_hdr\"" }) {
 				r_options->push_back(E);
 			}
 		}
