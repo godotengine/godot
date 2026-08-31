@@ -229,7 +229,6 @@ void GDScriptParser::clear() {
 }
 
 void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
-	// TODO: Improve error reporting by pointing at source code.
 	// TODO: Errors might point at more than one place at once (e.g. show previous declaration).
 	panic_mode = true;
 	ParserError err;
@@ -2246,8 +2245,6 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 		current_suite->has_unreachable_code = true;
 		if (current_function) {
 			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
-		} else {
-			// TODO: Properties setters and getters with unreachable code are not being warned
 		}
 	}
 #endif
@@ -2260,7 +2257,6 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 }
 
 GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
-	// TODO: Add assert message.
 	AssertNode *assert = alloc_node<AssertNode>();
 
 	push_multiline(true);
