@@ -195,8 +195,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the hyperbolic arc (also called inverse) sine of <paramref name="s"/> in radians.
-        /// Use it to get the angle from an angle's sine in hyperbolic space if
-        /// <paramref name="s"/> is larger or equal to 1.
+        /// Use it to get the angle from an angle's sine in hyperbolic space.
         /// </summary>
         /// <param name="s">The input hyperbolic sine value.</param>
         /// <returns>
@@ -210,8 +209,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the hyperbolic arc (also called inverse) sine of <paramref name="s"/> in radians.
-        /// Use it to get the angle from an angle's sine in hyperbolic space if
-        /// <paramref name="s"/> is larger or equal to 1.
+        /// Use it to get the angle from an angle's sine in hyperbolic space.
         /// </summary>
         /// <param name="s">The input hyperbolic sine value.</param>
         /// <returns>
