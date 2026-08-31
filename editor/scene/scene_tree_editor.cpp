@@ -2037,11 +2037,17 @@ bool SceneTreeEditor::_is_script_type(const StringName &p_type) const {
 }
 
 NodePath SceneTreeEditor::_get_node_path(Node *p_node) const {
-	return get_scene_node()->get_path_to(p_node);
+	if (likely(get_scene_node())) {
+		return get_scene_node()->get_path_to(p_node);
+	}
+	return NodePath();
 }
 
 Node *SceneTreeEditor::_get_node(const NodePath &p_path) const {
-	return get_scene_node()->get_node(p_path);
+	if (likely(get_scene_node())) {
+		return get_scene_node()->get_node(p_path);
+	}
+	return nullptr;
 }
 
 bool SceneTreeEditor::_has_drop_selection(TreeItem *p_item, const Point2 &p_point) const {
