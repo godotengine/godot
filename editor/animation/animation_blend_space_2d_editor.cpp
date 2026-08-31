@@ -1263,7 +1263,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	snap_x = memnew(SpinBox);
 	top_hf->add_child(snap_x);
-	snap_x->set_prefix("x:");
+	snap_x->set_format("x: %s");
 	snap_x->set_min(0.01);
 	snap_x->set_step(0.01);
 	snap_x->set_max(1000);
@@ -1271,7 +1271,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	snap_y = memnew(SpinBox);
 	top_hf->add_child(snap_y);
-	snap_y->set_prefix("y:");
+	snap_y->set_format("y: %s");
 	snap_y->set_min(0.01);
 	snap_y->set_step(0.01);
 	snap_y->set_max(1000);
@@ -1293,7 +1293,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	cyclic_length_value->set_max(99.0);
 	cyclic_length_value->set_step(0.001);
 	cyclic_length_value->set_allow_greater(true);
-	cyclic_length_value->set_suffix("s");
+	cyclic_length_value->set_format("%s s");
 	cyclic_length_value->set_accessibility_name(TTRC("Cyclic Length"));
 	cyclic_length_value->set_tooltip_text(TTR("Cycle length in seconds for cyclic sync. All animations are time-scaled to complete one cycle in this duration."));
 	top_hf->add_child(cyclic_length_value);
