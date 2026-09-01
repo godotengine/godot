@@ -15,8 +15,8 @@
 			<param index="1" name="bottom_radius" type="float" />
 			<param index="2" name="mid_height" type="float" />
 			<description>
-			Return the angle of the tangent between the top and bottom hemispheres.
-			It is positive when [member bottom_radius] is bigger than [member top_radius], and is in the range [code][-pi/2:pi/2][/code].
+				Return the angle of the tangent between the top and bottom hemispheres.
+				It is positive when [member bottom_radius] is bigger than [member top_radius], and is in the range [code][-pi/2:pi/2][/code].
 			</description>
 		</method>
 	</methods>
