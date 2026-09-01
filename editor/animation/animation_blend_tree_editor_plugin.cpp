@@ -34,6 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/templates/a_hash_set.h"
 #include "core/templates/rb_set.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -852,7 +853,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 	updating = true;
 
-	HashSet<NodePath> paths;
+	AHashSet<NodePath> paths;
 	HashMap<NodePath, RBSet<String>> types;
 	{
 		for (const StringName &E : tree->get_sorted_animation_list()) {
