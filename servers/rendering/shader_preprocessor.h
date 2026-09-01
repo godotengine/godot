@@ -227,7 +227,7 @@ public:
 #ifdef TOOLS_ENABLED
 	typedef void (*IncludeCompletionFunction)(List<EditorLanguage::CompletionOption> *);
 
-	Error preprocess_for_editor(const String &p_code, const String &p_filename, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, List<Region> *r_regions = nullptr, List<EditorLanguage::CompletionOption> *r_completion_options = nullptr, List<EditorLanguage::CompletionOption> *r_completion_defines = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
+	Error preprocess_for_editor(const String &p_code, const String &p_filename, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, List<Region> *r_regions = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<EditorLanguage::CompletionOption> *r_completion_options = nullptr, List<EditorLanguage::CompletionOption> *r_completion_defines = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
 #endif
 
 	static void get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords, bool p_ignore_context_keywords = false);
