@@ -75,9 +75,7 @@ Variant PListNode::get_value() const {
 			Vector<uint8_t> buf;
 			{
 				buf.resize(strlen / 4 * 3 + 1);
-				uint8_t *w = buf.ptrw();
-
-				ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &arr_len, (unsigned char *)data_string.get_data(), strlen) != OK, Vector<uint8_t>());
+				ERR_FAIL_COND_V(CryptoCore::b64_decode(buf.ptrw(), buf.size(), &arr_len, (unsigned char *)data_string.get_data(), strlen) != OK, Vector<uint8_t>());
 			}
 			buf.resize(arr_len);
 			return buf;

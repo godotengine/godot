@@ -32,7 +32,7 @@
 
 real_t Triangulate::get_area(const Vector<Vector2> &p_contour) {
 	int n = p_contour.size();
-	const Vector2 *c = &p_contour[0];
+	const Vector2 *c = p_contour.ptr();
 
 	real_t A = 0.0;
 
@@ -75,7 +75,7 @@ bool Triangulate::is_inside_triangle(real_t p_ax, real_t p_ay, real_t p_bx, real
 bool Triangulate::snip(const Vector<Vector2> &p_contour, int p_u, int p_v, int p_w, int p_n, const Vector<int> &p_values, bool p_relaxed) {
 	int p;
 	real_t Ax, Ay, Bx, By, Cx, Cy, Px, Py;
-	const Vector2 *contour = &p_contour[0];
+	const Vector2 *contour = p_contour.ptr();
 
 	Ax = contour[p_values[p_u]].x;
 	Ay = contour[p_values[p_u]].y;

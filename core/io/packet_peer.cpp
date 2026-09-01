@@ -71,8 +71,7 @@ Error PacketPeer::put_packet_buffer(const Vector<uint8_t> &p_buffer) {
 		return OK;
 	}
 
-	const uint8_t *r = p_buffer.ptr();
-	return put_packet(&r[0], len);
+	return put_packet(p_buffer.ptr(), len);
 }
 
 Error PacketPeer::get_var(Variant &r_variant, bool p_allow_objects) {
@@ -197,7 +196,7 @@ Error PacketPeerStream::_poll_buffer() const {
 		return OK;
 	}
 
-	int w = ring_buffer.write(&input_buffer[0], read);
+	int w = ring_buffer.write(input_buffer.ptr(), read);
 	ERR_FAIL_COND_V(w != read, ERR_BUG);
 
 	return OK;
@@ -244,7 +243,7 @@ Error PacketPeerStream::get_packet(const uint8_t **r_buffer, int &r_buffer_size)
 	ring_buffer.read(lbuf, 4); //get rid of first 4 bytes
 	ring_buffer.read(input_buffer.ptrw(), len); // read packet
 
-	*r_buffer = &input_buffer[0];
+	*r_buffer = input_buffer.ptr();
 	r_buffer_size = len;
 	return OK;
 }
@@ -270,7 +269,7 @@ Error PacketPeerStream::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 		dst[i] = p_buffer[i];
 	}
 
-	return peer->put_data(&output_buffer[0], p_buffer_size + 4);
+	return peer->put_data(output_buffer.ptr(), p_buffer_size + 4);
 }
 
 int PacketPeerStream::get_max_packet_size() const {

@@ -52,14 +52,13 @@ Error HashingContext::update(const PackedByteArray &p_chunk) {
 	ERR_FAIL_NULL_V(ctx, ERR_UNCONFIGURED);
 	size_t len = p_chunk.size();
 	ERR_FAIL_COND_V(len == 0, FAILED);
-	const uint8_t *r = p_chunk.ptr();
 	switch (type) {
 		case HASH_MD5:
-			return ((CryptoCore::MD5Context *)ctx)->update(&r[0], len);
+			return ((CryptoCore::MD5Context *)ctx)->update(p_chunk.ptr(), len);
 		case HASH_SHA1:
-			return ((CryptoCore::SHA1Context *)ctx)->update(&r[0], len);
+			return ((CryptoCore::SHA1Context *)ctx)->update(p_chunk.ptr(), len);
 		case HASH_SHA256:
-			return ((CryptoCore::SHA256Context *)ctx)->update(&r[0], len);
+			return ((CryptoCore::SHA256Context *)ctx)->update(p_chunk.ptr(), len);
 	}
 	return ERR_UNAVAILABLE;
 }

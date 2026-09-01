@@ -156,11 +156,8 @@ bool OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	hash_table.resize(size);
 	bucket_table.resize(bucket_table_size);
 
-	int *htwb = hash_table.ptrw();
-	int *btwb = bucket_table.ptrw();
-
-	uint32_t *htw = (uint32_t *)&htwb[0];
-	uint32_t *btw = (uint32_t *)&btwb[0];
+	uint32_t *htw = (uint32_t *)hash_table.ptrw();
+	uint32_t *btw = (uint32_t *)bucket_table.ptrw();
 
 	int btindex = 0;
 
@@ -243,12 +240,9 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 	CharString str = p_src_text.string().utf8();
 	uint32_t h = hash(0, str.get_data());
 
-	const int *htr = hash_table.ptr();
-	const uint32_t *htptr = (const uint32_t *)&htr[0];
-	const int *btr = bucket_table.ptr();
-	const uint32_t *btptr = (const uint32_t *)&btr[0];
-	const uint8_t *sr = strings.ptr();
-	const char *sptr = (const char *)&sr[0];
+	const uint32_t *htptr = (const uint32_t *)hash_table.ptr();
+	const uint32_t *btptr = (const uint32_t *)bucket_table.ptr();
+	const char *sptr = (const char *)strings.ptr();
 
 	uint32_t p = htptr[h % htsize];
 
@@ -286,12 +280,9 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 Vector<String> OptimizedTranslation::get_translated_message_list() const {
 	Vector<String> msgs;
 
-	const int *htr = hash_table.ptr();
-	const uint32_t *htptr = (const uint32_t *)&htr[0];
-	const int *btr = bucket_table.ptr();
-	const uint32_t *btptr = (const uint32_t *)&btr[0];
-	const uint8_t *sr = strings.ptr();
-	const char *sptr = (const char *)&sr[0];
+	const uint32_t *htptr = (const uint32_t *)hash_table.ptr();
+	const uint32_t *btptr = (const uint32_t *)bucket_table.ptr();
+	const char *sptr = (const char *)strings.ptr();
 
 	for (int i = 0; i < hash_table.size(); i++) {
 		uint32_t p = htptr[i];

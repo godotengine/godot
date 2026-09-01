@@ -148,8 +148,8 @@ StringName ResourceLoaderBinary::_get_string() {
 		if (len == 0) {
 			return StringName();
 		}
-		f->get_buffer((uint8_t *)&str_buf[0], len);
-		return String::utf8(&str_buf[0], len);
+		f->get_buffer((uint8_t *)str_buf.ptr(), len);
+		return String::utf8(str_buf.ptr(), len);
 	}
 
 	return string_map[id];
@@ -854,11 +854,11 @@ static void save_ustring(Ref<FileAccess> r_file, const String &p_string) {
 }
 
 static String get_ustring(Ref<FileAccess> r_file) {
-	int len = r_file->get_32();
-	Vector<char> str_buf;
+	uint32_t len = r_file->get_32();
+	LocalVector<char> str_buf;
 	str_buf.resize(len);
-	r_file->get_buffer((uint8_t *)&str_buf[0], len);
-	return String::utf8(&str_buf[0], len);
+	r_file->get_buffer((uint8_t *)str_buf.ptr(), len);
+	return String::utf8(str_buf.ptr(), len);
 }
 
 String ResourceLoaderBinary::get_unicode_string() {
@@ -869,8 +869,8 @@ String ResourceLoaderBinary::get_unicode_string() {
 	if (len == 0) {
 		return String();
 	}
-	f->get_buffer((uint8_t *)&str_buf[0], len);
-	return String::utf8(&str_buf[0], len);
+	f->get_buffer((uint8_t *)str_buf.ptrw(), len);
+	return String::utf8(str_buf.ptr(), len);
 }
 
 void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_file, HashSet<StringName> *p_classes) {

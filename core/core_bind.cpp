@@ -1328,14 +1328,13 @@ String Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) {
 	Error err = encode_variant(p_var, nullptr, len, p_full_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, "", "Error when trying to encode Variant.");
 
-	Vector<uint8_t> buff;
+	LocalVector<uint8_t> buff;
 	buff.resize(len);
-	uint8_t *w = buff.ptrw();
 
-	err = encode_variant(p_var, &w[0], len, p_full_objects);
+	err = encode_variant(p_var, buff.ptr(), len, p_full_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, "", "Error when trying to encode Variant.");
 
-	String ret = CryptoCore::b64_encode_str(&w[0], len);
+	String ret = CryptoCore::b64_encode_str(buff.ptr(), len);
 	ERR_FAIL_COND_V(ret.is_empty(), ret);
 
 	return ret;
@@ -1345,15 +1344,14 @@ Variant Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects) 
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
-	Vector<uint8_t> buf;
+	LocalVector<uint8_t> buf;
 	buf.resize(strlen / 4 * 3 + 1);
-	uint8_t *w = buf.ptrw();
 
 	size_t len = 0;
-	ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, Variant());
+	ERR_FAIL_COND_V(CryptoCore::b64_decode(buf.ptr(), buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, Variant());
 
 	Variant v;
-	Error err = decode_variant(v, &w[0], len, nullptr, p_allow_objects);
+	Error err = decode_variant(v, buf.ptr(), len, nullptr, p_allow_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, Variant(), "Error when trying to decode Variant.");
 
 	return v;
@@ -1373,9 +1371,7 @@ Vector<uint8_t> Marshalls::base64_to_raw(const String &p_str) {
 	Vector<uint8_t> buf;
 	{
 		buf.resize(strlen / 4 * 3 + 1);
-		uint8_t *w = buf.ptrw();
-
-		ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &arr_len, (unsigned char *)cstr.get_data(), strlen) != OK, Vector<uint8_t>());
+		ERR_FAIL_COND_V(CryptoCore::b64_decode(buf.ptrw(), buf.size(), &arr_len, (unsigned char *)cstr.get_data(), strlen) != OK, Vector<uint8_t>());
 	}
 	buf.resize(arr_len);
 
@@ -1396,15 +1392,14 @@ String Marshalls::base64_to_utf8(const String &p_str) {
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
-	Vector<uint8_t> buf;
+	LocalVector<uint8_t> buf;
 	buf.resize(strlen / 4 * 3 + 1 + 1);
-	uint8_t *w = buf.ptrw();
 
 	size_t len = 0;
-	ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, String());
+	ERR_FAIL_COND_V(CryptoCore::b64_decode(buf.ptr(), buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, String());
 
-	w[len] = 0;
-	String ret = String::utf8((char *)&w[0]);
+	buf[len] = 0;
+	String ret = String::utf8((char *)buf.ptr());
 
 	return ret;
 }

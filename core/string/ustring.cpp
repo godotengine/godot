@@ -3088,7 +3088,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	}
 
 	//int str_len=p_str.length();
-	const String *keys = &p_keys[0];
+	const String *keys = p_keys.ptr();
 	int key_count = p_keys.size();
 	int len = length();
 
@@ -3453,7 +3453,7 @@ bool String::_base_is_subsequence_of(const String &p_string, bool p_case_insensi
 	}
 
 	const char32_t *src = &operator[](0);
-	const char32_t *tgt = &p_string[0];
+	const char32_t *tgt = p_string.ptr();
 
 	for (; *src && *tgt; tgt++) {
 		bool match = false;

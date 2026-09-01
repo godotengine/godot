@@ -615,8 +615,7 @@ Error VariantParser::_parse_byte_array(Stream *p_stream, Vector<uint8_t> &r_cons
 
 		size_t arr_len = 0;
 		r_construct.resize(strlen / 4 * 3 + 1);
-		uint8_t *w = r_construct.ptrw();
-		Error err = CryptoCore::b64_decode(&w[0], r_construct.size(), &arr_len, (unsigned char *)cstr.get_data(), strlen);
+		Error err = CryptoCore::b64_decode(r_construct.ptrw(), r_construct.size(), &arr_len, (unsigned char *)cstr.get_data(), strlen);
 		if (err) {
 			r_err_str = "Invalid base64-encoded string";
 			return ERR_PARSE_ERROR;

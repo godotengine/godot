@@ -409,7 +409,7 @@ public:
 			return 0;
 		}
 
-		Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(&p_convex[0], p_convex.size());
+		Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(p_convex.ptr(), p_convex.size());
 		if (convex_points.is_empty()) {
 			return 0;
 		}
@@ -422,9 +422,9 @@ public:
 		params.tester = p_tester;
 		params.tree_collision_mask = p_tree_collision_mask;
 
-		params.hull.planes = &p_convex[0];
+		params.hull.planes = p_convex.ptr();
 		params.hull.num_planes = p_convex.size();
-		params.hull.points = &convex_points[0];
+		params.hull.points = convex_points.ptr();
 		params.hull.num_points = convex_points.size();
 
 		tree.cull_convex(params);

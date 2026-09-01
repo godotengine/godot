@@ -296,7 +296,7 @@ void DynamicBVH::optimize_bottom_up() {
 	if (bvh_root) {
 		LocalVector<Node *> leaves;
 		_fetch_leaves(bvh_root, leaves);
-		_bottom_up(&leaves[0], leaves.size());
+		_bottom_up(leaves.ptr(), leaves.size());
 		bvh_root = leaves[0];
 	}
 }
@@ -305,7 +305,7 @@ void DynamicBVH::optimize_top_down(int p_bu_threshold) {
 	if (bvh_root) {
 		LocalVector<Node *> leaves;
 		_fetch_leaves(bvh_root, leaves);
-		bvh_root = _top_down(&leaves[0], leaves.size(), p_bu_threshold);
+		bvh_root = _top_down(leaves.ptr(), leaves.size(), p_bu_threshold);
 	}
 }
 

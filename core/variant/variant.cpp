@@ -3014,8 +3014,7 @@ uint32_t Variant::recursive_hash(int p_recursion_count) const {
 			const PackedByteArray &arr = PackedArrayRef<uint8_t>::get_array(_data.packed_array);
 			int len = arr.size();
 			if (likely(len)) {
-				const uint8_t *r = arr.ptr();
-				return hash_murmur3_buffer((uint8_t *)&r[0], len);
+				return hash_murmur3_buffer(arr.ptr(), len);
 			} else {
 				return hash_murmur3_one_64(0);
 			}
@@ -3025,8 +3024,7 @@ uint32_t Variant::recursive_hash(int p_recursion_count) const {
 			const PackedInt32Array &arr = PackedArrayRef<int32_t>::get_array(_data.packed_array);
 			int len = arr.size();
 			if (likely(len)) {
-				const int32_t *r = arr.ptr();
-				return hash_murmur3_buffer((uint8_t *)&r[0], len * sizeof(int32_t));
+				return hash_murmur3_buffer((uint8_t *)arr.ptr(), len * sizeof(int32_t));
 			} else {
 				return hash_murmur3_one_64(0);
 			}
@@ -3036,8 +3034,7 @@ uint32_t Variant::recursive_hash(int p_recursion_count) const {
 			const PackedInt64Array &arr = PackedArrayRef<int64_t>::get_array(_data.packed_array);
 			int len = arr.size();
 			if (likely(len)) {
-				const int64_t *r = arr.ptr();
-				return hash_murmur3_buffer((uint8_t *)&r[0], len * sizeof(int64_t));
+				return hash_murmur3_buffer((uint8_t *)arr.ptr(), len * sizeof(int64_t));
 			} else {
 				return hash_murmur3_one_64(0);
 			}

@@ -848,8 +848,7 @@ struct _VariantCall {
 		if (p_instance->size() == 0) {
 			return String();
 		}
-		const uint8_t *r = p_instance->ptr();
-		String s = String::hex_encode_buffer(&r[0], p_instance->size());
+		String s = String::hex_encode_buffer(p_instance->ptr(), p_instance->size());
 		return s;
 	}
 
@@ -924,18 +923,16 @@ struct _VariantCall {
 	static bool func_PackedByteArray_has_encoded_var(PackedByteArray *p_instance, int64_t p_offset, bool p_allow_objects) {
 		uint64_t size = p_instance->size();
 		ERR_FAIL_COND_V(p_offset < 0, false);
-		const uint8_t *r = p_instance->ptr();
 		Variant ret;
-		Error err = decode_variant(ret, r + p_offset, size - p_offset, nullptr, p_allow_objects);
+		Error err = decode_variant(ret, p_instance->ptr() + p_offset, size - p_offset, nullptr, p_allow_objects);
 		return err == OK;
 	}
 
 	static Variant func_PackedByteArray_decode_var(PackedByteArray *p_instance, int64_t p_offset, bool p_allow_objects) {
 		uint64_t size = p_instance->size();
 		ERR_FAIL_COND_V(p_offset < 0, Variant());
-		const uint8_t *r = p_instance->ptr();
 		Variant ret;
-		Error err = decode_variant(ret, r + p_offset, size - p_offset, nullptr, p_allow_objects);
+		Error err = decode_variant(ret, p_instance->ptr() + p_offset, size - p_offset, nullptr, p_allow_objects);
 		if (err != OK) {
 			ret = Variant();
 		}
@@ -945,10 +942,9 @@ struct _VariantCall {
 	static int64_t func_PackedByteArray_decode_var_size(PackedByteArray *p_instance, int64_t p_offset, bool p_allow_objects) {
 		uint64_t size = p_instance->size();
 		ERR_FAIL_COND_V(p_offset < 0, 0);
-		const uint8_t *r = p_instance->ptr();
 		Variant ret;
 		int r_size;
-		Error err = decode_variant(ret, r + p_offset, size - p_offset, &r_size, p_allow_objects);
+		Error err = decode_variant(ret, p_instance->ptr() + p_offset, size - p_offset, &r_size, p_allow_objects);
 		if (err == OK) {
 			return r_size;
 		}
@@ -962,10 +958,9 @@ struct _VariantCall {
 			return dest;
 		}
 		ERR_FAIL_COND_V_MSG(size % sizeof(int32_t), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit integer) to convert to PackedInt32Array.");
-		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int32_t));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(int32_t));
+		memcpy(dest.ptrw(), p_instance->ptr(), dest.size() * sizeof(int32_t));
 		return dest;
 	}
 
@@ -976,10 +971,9 @@ struct _VariantCall {
 			return dest;
 		}
 		ERR_FAIL_COND_V_MSG(size % sizeof(int64_t), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit integer) to convert to PackedInt64Array.");
-		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(int64_t));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(int64_t));
+		memcpy(dest.ptrw(), p_instance->ptr(), dest.size() * sizeof(int64_t));
 		return dest;
 	}
 
@@ -990,10 +984,9 @@ struct _VariantCall {
 			return dest;
 		}
 		ERR_FAIL_COND_V_MSG(size % sizeof(float), dest, "PackedByteArray size must be a multiple of 4 (size of 32-bit float) to convert to PackedFloat32Array.");
-		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(float));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(float));
+		memcpy(dest.ptrw(), p_instance->ptr(), dest.size() * sizeof(float));
 		return dest;
 	}
 
@@ -1004,10 +997,9 @@ struct _VariantCall {
 			return dest;
 		}
 		ERR_FAIL_COND_V_MSG(size % sizeof(double), dest, "PackedByteArray size must be a multiple of 8 (size of 64-bit double) to convert to PackedFloat64Array.");
-		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(double));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(double));
+		memcpy(dest.ptrw(), p_instance->ptr(), dest.size() * sizeof(double));
 		return dest;
 	}
 
@@ -1018,10 +1010,9 @@ struct _VariantCall {
 			return dest;
 		}
 		ERR_FAIL_COND_V_MSG(size % sizeof(Vector2), dest, "PackedByteArray size must be a multiple of " + itos(sizeof(Vector2)) + " (size of Vector2) to convert to PackedVector2Array.");
-		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(Vector2));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(Vector2));
+		memcpy(dest.ptrw(), p_instance->ptr(), dest.size() * sizeof(Vector2));
 		return dest;
 	}
 
@@ -1032,10 +1023,9 @@ struct _VariantCall {
 			return dest;
 		}
 		ERR_FAIL_COND_V_MSG(size % sizeof(Vector3), dest, "PackedByteArray size must be a multiple of " + itos(sizeof(Vector3)) + " (size of Vector3) to convert to PackedVector3Array.");
-		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(Vector3));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(Vector3));
+		memcpy(dest.ptrw(), p_instance->ptr(), dest.size() * sizeof(Vector3));
 		return dest;
 	}
 
@@ -1046,10 +1036,9 @@ struct _VariantCall {
 			return dest;
 		}
 		ERR_FAIL_COND_V_MSG(size % sizeof(Vector4), dest, "PackedByteArray size must be a multiple of " + itos(sizeof(Vector4)) + " (size of Vector4) to convert to PackedVector4Array.");
-		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(Vector4));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(Vector4));
+		memcpy(dest.ptrw(), p_instance->ptr(), dest.size() * sizeof(Vector4));
 		return dest;
 	}
 
@@ -1060,24 +1049,21 @@ struct _VariantCall {
 			return dest;
 		}
 		ERR_FAIL_COND_V_MSG(size % sizeof(Color), dest, "PackedByteArray size must be a multiple of " + itos(sizeof(Color)) + " (size of Color variant) to convert to PackedColorArray.");
-		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(Color));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
-		memcpy(dest.ptrw(), r, dest.size() * sizeof(Color));
+		memcpy(dest.ptrw(), p_instance->ptr(), dest.size() * sizeof(Color));
 		return dest;
 	}
 
 	static void func_PackedByteArray_encode_u8(PackedByteArray *p_instance, int64_t p_offset, int64_t p_value) {
 		uint64_t size = p_instance->size();
 		ERR_FAIL_COND(p_offset < 0 || p_offset > int64_t(size) - 1);
-		uint8_t *w = p_instance->ptrw();
-		*((uint8_t *)&w[p_offset]) = p_value;
+		*((uint8_t *)&p_instance->write[p_offset]) = p_value;
 	}
 	static void func_PackedByteArray_encode_s8(PackedByteArray *p_instance, int64_t p_offset, int64_t p_value) {
 		uint64_t size = p_instance->size();
 		ERR_FAIL_COND(p_offset < 0 || p_offset > int64_t(size) - 1);
-		uint8_t *w = p_instance->ptrw();
-		*((int8_t *)&w[p_offset]) = p_value;
+		*((int8_t *)&p_instance->write[p_offset]) = p_value;
 	}
 
 	static void func_PackedByteArray_encode_u16(PackedByteArray *p_instance, int64_t p_offset, int64_t p_value) {

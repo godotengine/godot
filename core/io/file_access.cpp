@@ -365,10 +365,8 @@ Variant FileAccess::get_var(bool p_allow_objects) const {
 	Vector<uint8_t> buff = get_buffer(len);
 	ERR_FAIL_COND_V((uint32_t)buff.size() != len, Variant());
 
-	const uint8_t *r = buff.ptr();
-
 	Variant v;
-	Error err = decode_variant(v, &r[0], len, nullptr, p_allow_objects);
+	Error err = decode_variant(v, buff.ptr(), len, nullptr, p_allow_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, Variant(), "Error when trying to encode Variant.");
 
 	return v;
@@ -819,12 +817,12 @@ bool FileAccess::store_string(const String &p_string) {
 	}
 
 	CharString cs = p_string.utf8();
-	return store_buffer((uint8_t *)&cs[0], cs.length());
+	return store_buffer((uint8_t *)cs.ptrw(), cs.length());
 }
 
 bool FileAccess::store_pascal_string(const String &p_string) {
 	CharString cs = p_string.utf8();
-	return store_32(cs.length()) && store_buffer((uint8_t *)&cs[0], cs.length());
+	return store_32(cs.length()) && store_buffer((uint8_t *)cs.ptrw(), cs.length());
 }
 
 String FileAccess::get_pascal_string() {
@@ -891,8 +889,7 @@ bool FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
 	Vector<uint8_t> buff;
 	buff.resize(len);
 
-	uint8_t *w = buff.ptrw();
-	err = encode_variant(p_var, &w[0], len, p_full_objects);
+	err = encode_variant(p_var, buff.ptrw(), len, p_full_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, false, "Error when trying to encode Variant.");
 
 	return store_32(uint32_t(len)) && store_buffer(buff);
