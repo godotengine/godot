@@ -607,6 +607,10 @@ protected:
 	// waited in the current level.
 	bool _fence_updated[2] = { false, false };
 	bool _fence_level_dirty = false;
+	// true when the next encoder continues the encoder just closed and must
+	// therefore wait F_cur rather than F_prev. Metal does not order encoders, so
+	// subpasses split across encoders require an explicit dependency.
+	bool _fence_wait_current_level = false;
 #ifdef DEV_ENABLED
 	// Set by _fence_to_wait(), consumed by _fence_to_update(): every encoder
 	// that updates F_cur must have waited F_prev, or the level chain breaks.
