@@ -5209,6 +5209,8 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 	int min_chars = 0;
 	int min_decimals = 0;
 	bool in_decimals = false;
+	bool localize = false;
+	String locale;
 	bool pad_with_zeros = false;
 	bool left_justified = false;
 	bool show_sign = false;
@@ -5225,6 +5227,28 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 			switch (c) {
 				case '%': { // Replace %% with %
 					formatted += c;
+					in_format = false;
+					break;
+				}
+				case 'l': {
+					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					if (index >= p_values.size()) {
+						return "not enough arguments for format string";
+					}
+
+					if (!p_values[index].is_string()) {
+						return "a string is required";
+					}
+
+					locale = p_values[index];
+					if (TranslationServer::get_singleton()) {
+						localize = true;
+					}
+
+					if (selected_index == -1) {
+						++value_index;
+					}
+					used_args[index] = true;
 					in_format = false;
 					break;
 				}
@@ -5296,12 +5320,17 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 						}
 					}
 
+					if (localize && !locale.is_empty()) {
+						str = TranslationServer::get_singleton()->format_number(str, locale);
+					}
+
 					formatted += str;
 					if (selected_index == -1) {
 						++value_index;
 					}
 					used_args[index] = true;
 					in_format = false;
+					localize = false;
 
 					break;
 				}
@@ -5346,12 +5375,17 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 						}
 					}
 
+					if (localize && !locale.is_empty()) {
+						str = TranslationServer::get_singleton()->format_number(str, locale);
+					}
+
 					formatted += str;
 					if (selected_index == -1) {
 						++value_index;
 					}
 					used_args[index] = true;
 					in_format = false;
+					localize = false;
 					break;
 				}
 				case 'v': { // Vector2/3/4/2i/3i/4i
@@ -5420,12 +5454,17 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					}
 					str += ")";
 
+					if (localize && !locale.is_empty()) {
+						str = TranslationServer::get_singleton()->format_number(str, locale);
+					}
+
 					formatted += str;
 					if (selected_index == -1) {
 						++value_index;
 					}
 					used_args[index] = true;
 					in_format = false;
+					localize = false;
 					break;
 				}
 				case 's': { // String
@@ -5448,6 +5487,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					}
 					used_args[index] = true;
 					in_format = false;
+					localize = false;
 					break;
 				}
 				case 'c': {
@@ -5490,6 +5530,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					}
 					used_args[index] = true;
 					in_format = false;
+					localize = false;
 					break;
 				}
 				case '-': { // Left justify
