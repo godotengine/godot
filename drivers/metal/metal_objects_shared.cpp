@@ -441,7 +441,8 @@ MTL::Fence *MDCommandBufferBase::_fence_to_wait() {
 	if (!_fences[0]) {
 		return nullptr;
 	}
-	uint32_t i = (_fence_level + 1) & 1;
+	uint32_t i = _fence_wait_current_level ? (_fence_level & 1) : ((_fence_level + 1) & 1);
+	_fence_wait_current_level = false;
 #ifdef DEV_ENABLED
 	_fence_wait_issued = true;
 #endif

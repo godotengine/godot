@@ -1277,6 +1277,8 @@ void MDCommandBuffer::render_next_subpass() {
 	MDSubpass *prev_subpass = render.current_subpass;
 	if (prev_subpass != nullptr) {
 		_end_render_pass();
+		// The closed encoder updated F_cur, and this subpass depends on it.
+		_fence_wait_current_level = true;
 	}
 
 	render.current_subpass = (prev_subpass == nullptr)

@@ -1684,6 +1684,17 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 
 	size_t subpass_count = p_subpasses.size();
 
+#ifdef DEV_ENABLED
+	// This loop validates the assumption that Godot configures subpass N is
+	// dependent on all prior subpasses (transitively).
+	for (uint32_t i = 0; i < p_subpass_dependencies.size(); i++) {
+		const SubpassDependency &dep = p_subpass_dependencies[i];
+		// If this asserts, then MDCommandBuffer::render_next_subpass will need
+		// to be updated, as it assumes subpass N must complete before N+1 starts.
+		DEV_ASSERT(dep.src_subpass < dep.dst_subpass && "unimplemented: subpass dependency not covered by the sequential subpass fence chain");
+	}
+#endif
+
 	LocalVector<MDSubpass> subpasses;
 	subpasses.resize(subpass_count);
 	for (uint32_t i = 0; i < subpass_count; i++) {
