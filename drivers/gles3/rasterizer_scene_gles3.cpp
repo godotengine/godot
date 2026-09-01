@@ -2838,7 +2838,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			spec_constant_base_flags |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
 		}
 
-		if (render_data.environment.is_null() || (render_data.environment.is_valid() && !environment_get_fog_enabled(render_data.environment))) {
+		if (render_data.environment.is_null() || (render_data.environment.is_valid() && !environment_get_fog_enabled(render_data.environment)) || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 			spec_constant_base_flags |= SceneShaderGLES3::DISABLE_FOG;
 		}
 
