@@ -2341,13 +2341,13 @@
 			Z key.
 		</constant>
 		<constant name="KEY_BRACKETLEFT" value="91" enum="Key" keywords="open square bracket">
-			Left bracket ([code][lb][/code]) key.
+			Left bracket ([code skip-lint][[/code]) key.
 		</constant>
 		<constant name="KEY_BACKSLASH" value="92" enum="Key">
 			Backslash ([code]\[/code]) key.
 		</constant>
 		<constant name="KEY_BRACKETRIGHT" value="93" enum="Key" keywords="close square bracket">
-			Right bracket ([code][rb][/code]) key.
+			Right bracket ([code]][/code]) key.
 		</constant>
 		<constant name="KEY_ASCIICIRCUM" value="94" enum="Key" keywords="caret">
 			Caret ([code]^[/code]) key.
