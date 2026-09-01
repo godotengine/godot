@@ -31,6 +31,82 @@
 		<member name="compress/normal_map" type="int" setter="" getter="" default="0">
 			When using a texture as normal map, only the red and green channels are required. Given regular texture compression algorithms produce artifacts that don't look that nice in normal maps, the RGTC compression format is the best fit for this data. Forcing this option to Enable will make Godot import the image as RGTC compressed. By default, it's set to Detect. This means that if the texture is ever detected to be used as a normal map, it will be changed to Enable and reimported automatically.
 		</member>
+		<member name="mipmaps/alpha_test_threshold" type="float" setter="" getter="" default="0.5">
+			The alpha threshold used when preserving alpha test coverage across mipmap levels. The coverage is measured at mipmap 0 using the setting and the lower mipmaps are adjusted to match that coverage. Higher values preserve more detail, lower values create softer edges. Note that this threshold is independent from the [code]Alpha Scissor Threshold[/code] set on the material and they both may need to be tuned for optimal results.
+		</member>
+		<member name="mipmaps/preserve_alpha_test_coverage" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], automatically adjusts alpha values to maintain consistent coverage when alpha testing is used. This is especially useful for hair, foliage, or other alpha-tested materials, as it prevents fading or popping artifacts across mipmap levels (LODs). This option is intended for color textures and clamps the alpha channel in the 0.0 - 1.0 range.
+		</member>
+		<member name="process/channel_remap/alpha" type="int" setter="" getter="" default="3">
+			Specifies the data source of the output image's alpha channel.
+			[b]Red:[/b] Use the values from the source image's red channel.
+			[b]Green:[/b] Use the values from the source image's green channel.
+			[b]Blue:[/b] Use the values from the source image's blue channel.
+			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
+			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
+			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
+			[b]Alpha Inverted:[/b] Use inverted values from the source image's alpha channel ([code]1.0 - A[/code]).
+			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
+			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
+			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+		</member>
+		<member name="process/channel_remap/blue" type="int" setter="" getter="" default="2">
+			Specifies the data source of the output image's blue channel.
+			[b]Red:[/b] Use the values from the source image's red channel.
+			[b]Green:[/b] Use the values from the source image's green channel.
+			[b]Blue:[/b] Use the values from the source image's blue channel.
+			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
+			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
+			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
+			[b]Alpha Inverted:[/b] Use inverted values from the source image's alpha channel ([code]1.0 - A[/code]).
+			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
+			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
+			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+		</member>
+		<member name="process/channel_remap/green" type="int" setter="" getter="" default="1">
+			Specifies the data source of the output image's green channel.
+			[b]Red:[/b] Use the values from the source image's red channel.
+			[b]Green:[/b] Use the values from the source image's green channel.
+			[b]Blue:[/b] Use the values from the source image's blue channel.
+			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
+			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
+			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
+			[b]Alpha Inverted:[/b] Use inverted values from the source image's alpha channel ([code]1.0 - A[/code]).
+			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
+			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
+			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+		</member>
+		<member name="process/channel_remap/red" type="int" setter="" getter="" default="0">
+			Specifies the data source of the output image's red channel.
+			[b]Red:[/b] Use the values from the source image's red channel.
+			[b]Green:[/b] Use the values from the source image's green channel.
+			[b]Blue:[/b] Use the values from the source image's blue channel.
+			[b]Alpha:[/b] Use the values from the source image's alpha channel.
+			[b]Red Inverted:[/b] Use inverted values from the source image's red channel ([code]1.0 - R[/code]).
+			[b]Green Inverted:[/b] Use inverted values from the source image's green channel ([code]1.0 - G[/code]).
+			[b]Blue Inverted:[/b] Use inverted values from the source image's blue channel ([code]1.0 - B[/code]).
+			[b]Alpha Inverted:[/b] Use inverted values from the source image's alpha channel ([code]1.0 - A[/code]).
+			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
+			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
+			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+		</member>
+		<member name="process/hdr_as_srgb" type="bool" setter="" getter="" default="false">
+			Some HDR images you can find online may be broken and contain data that is encoded using the nonlinear sRGB transfer function (instead of using linear encoding). It is advised not to use those files. If you absolutely have to, enabling [member process/hdr_as_srgb] will make them look correct.
+			[b]Warning:[/b] Enabling [member process/hdr_as_srgb] on well-formatted HDR images will cause the resulting image to look too dark, so leave this on [code]false[/code] if unsure.
+		</member>
+		<member name="process/hdr_clamp_exposure" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], clamps exposure in the imported high dynamic range images using a smart clamping formula (without introducing [i]visible[/i] clipping).
+			Some HDR panorama images you can find online may contain extremely bright pixels, due to being taken from real life sources without any clipping.
+			While these HDR panorama images are accurate to real life, this can cause the radiance map generated by Godot to contain sparkles when used as a background sky. This can be seen in material reflections (even on rough materials in extreme cases). Enabling [member process/hdr_clamp_exposure] can resolve this.
+		</member>
+		<member name="process/size_limit" type="int" setter="" getter="" default="0">
+			If set to a value greater than [code]0[/code], the size of the texture is limited on import to a value smaller than or equal to the value specified here. For non-square textures, the size limit affects the longer dimension, with the shorter dimension scaled to preserve aspect ratio. Resizing is performed using cubic interpolation.
+			This can be used to reduce memory usage without affecting the source images, or avoid issues with textures not displaying on mobile/web platforms (as these usually can't display textures larger than 4096×4096).
+			[b]Note:[/b] Even if this is set to [code]0[/code], import size is limited to 32768 pixels for technical reasons (width or height, whichever is larger).
+		</member>
 		<member name="roughness/mode" type="int" setter="" getter="" default="0">
 			The color channel to consider as a roughness map in this texture. Only effective if Roughness &gt; Src Normal is not empty.
 		</member>
