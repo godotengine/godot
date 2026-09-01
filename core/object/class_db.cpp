@@ -69,6 +69,8 @@ HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
 
 #ifdef TOOLS_ENABLED
+HashMap<StringName, ClassDB::StaticArgOptionGetter> ClassDB::static_arg_options_getters;
+
 HashMap<StringName, ObjectGDExtension> ClassDB::placeholder_extensions;
 
 class PlaceholderExtensionInstance {
@@ -1880,6 +1882,24 @@ void ClassDB::get_class_dependencies(const StringName &p_class, List<StringName>
 
 	for (const StringName &dep : ti->dependency_list) {
 		r_rependencies->push_back(dep);
+	}
+}
+
+void ClassDB::get_argument_options_getters(const StringName &p_class, List<ClassDB::StaticArgOptionGetter> *r_arg_option_getters) {
+	Locker::Lock lock(Locker::STATE_READ);
+
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_NULL_MSG(ti, vformat("Cannot get class '%s'.", String(p_class)));
+
+	while (ti) {
+		ClassDB::StaticArgOptionGetter *arg_option_getter_ptr = nullptr;
+		if (ti->gdtype) {
+			arg_option_getter_ptr = ClassDB::static_arg_options_getters.getptr(ti->gdtype->get_name());
+		}
+		if (arg_option_getter_ptr) {
+			r_arg_option_getters->push_back(*arg_option_getter_ptr);
+		}
+		ti = ti->inherits_ptr;
 	}
 }
 #endif // TOOLS_ENABLED
