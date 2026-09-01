@@ -935,7 +935,8 @@ struct MSDFThreadData {
 };
 
 static msdfgen::Point2 ft_point2(const FT_Vector &vector) {
-	return msdfgen::Point2(vector.x / 60.0f, vector.y / 60.0f);
+	// FreeType outline coordinates are 26.6 fixed point, so one pixel is 64 units.
+	return msdfgen::Point2(vector.x / 64.0, vector.y / 64.0);
 }
 
 static int ft_move_to(const FT_Vector *to, void *user) {
