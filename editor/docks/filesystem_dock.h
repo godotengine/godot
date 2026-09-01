@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/string/regex.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/file_system/editor_file_system.h"
@@ -183,6 +184,8 @@ private:
 	MenuButton *file_list_button_sort = nullptr;
 
 	PackedStringArray searched_tokens;
+	String searched_string;
+	RegEx searched_string_as_regex;
 	Vector<String> uncollapsed_paths_before_search;
 
 	HBoxContainer *path_hb = nullptr;
