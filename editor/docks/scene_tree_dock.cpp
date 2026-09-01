@@ -129,7 +129,7 @@ void SceneTreeDock::_handle_hover_to_inspect() {
 
 	if (item) {
 		const NodePath &np = item->get_metadata(0);
-		node_hovered_now = get_node_or_null(np);
+		node_hovered_now = edited_scene->get_node_or_null(np);
 		if (node_hovered_previously != node_hovered_now) {
 			inspect_hovered_node_delay->start();
 		}
