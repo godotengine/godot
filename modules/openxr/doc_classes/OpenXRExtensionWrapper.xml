@@ -14,6 +14,23 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_camera_offsets" qualifiers="virtual">
+			<return type="Transform3D[]" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Returns an array of offsets for each view rendered for the given camera, if this camera is handled by this extension. [param tracker_name] refers to the camera tracker for which we're retrieving this.
+			</description>
+		</method>
+		<method name="_get_camera_projections" qualifiers="virtual">
+			<return type="Projection[]" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="z_near" type="float" />
+			<param index="3" name="z_far" type="float" />
+			<description>
+				Returns an array of projections for each view rendered for the given camera, if this camera is handled by this extension. [param tracker_name] refers to the camera tracker for which we're retrieving this.
+			</description>
+		</method>
 		<method name="_get_composition_layer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
