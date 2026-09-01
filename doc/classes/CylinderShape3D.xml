@@ -22,6 +22,9 @@
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
 			Radius of the ends of the cylinder.
 		</member>
+		<member name="tapered" type="bool" setter="" getter="is_tapered">
+			[code]true[/code] if the capsule is tapered, that is [member top_radius] is different from [member bottom_radius].
+		</member>
 		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius" default="0.5">
 			Radius of the top circle.
 		</member>

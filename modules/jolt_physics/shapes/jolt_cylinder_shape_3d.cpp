@@ -78,6 +78,10 @@ void JoltCylinderShape3D::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);
 
 	const Dictionary data = p_data;
+
+	const Variant maybe_tapered = data.get("tapered", Variant());
+	bool has_tapered = maybe_tapered.get_type() == Variant::BOOL;
+
 	//tapered capsule
 	const Variant maybe_radius_top = data.get("radius_top", Variant());
 	bool has_top_radius = maybe_radius_top.get_type() == Variant::FLOAT;
@@ -105,6 +109,22 @@ void JoltCylinderShape3D::set_data(const Variant &p_data) {
 		new_height = maybe_height;
 	} else {
 		ERR_FAIL_MSG("Failed to create capsule: Missing height parameters");
+	}
+
+	if (has_tapered) {
+		if (maybe_tapered.booleanize()) {
+			//tapered: prefer top and bottom radius
+			if (has_bottom_radius && has_top_radius) {
+				new_radius_bottom = maybe_radius_bottom;
+				new_radius_top = maybe_radius_top;
+			}
+		} else {
+			//non-tapered: prefer radius
+			if (has_radius) {
+				new_radius_bottom = maybe_radius;
+				new_radius_top = maybe_radius;
+			}
+		}
 	}
 
 	if (unlikely(new_radius_top == radius_top && new_radius_bottom == radius_bottom && new_height == height)) {

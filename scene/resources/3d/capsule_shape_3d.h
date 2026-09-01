@@ -31,7 +31,6 @@
 #pragma once
 
 #include "scene/resources/3d/shape_3d.h"
-#include "servers/physics_3d/physics_server_3d.h"
 
 class ArrayMesh;
 

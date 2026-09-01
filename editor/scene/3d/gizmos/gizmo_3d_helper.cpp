@@ -357,7 +357,7 @@ void Gizmo3DHelper::tapered_capsule_commit_handle(int p_id, bool p_cancel, Objec
 			ur->add_undo_method(p_object, "set_bottom_radius", restore.y);
 			break;
 		case tapered_revolution_handle::RADIUS:
-			action_name = TTR("Change Cylinder Radius");
+			action_name = TTR("Change Capsule Radius");
 			ur->create_action(action_name);
 			ur->add_do_method(p_object, "set_radius", p_object->get("radius"));
 			ur->add_undo_method(p_object, "set_top_radius", restore.x);

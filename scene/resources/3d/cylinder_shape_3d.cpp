@@ -32,6 +32,7 @@
 
 #include "core/object/class_db.h"
 #include "scene/resources/3d/primitive_meshes.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #include "servers/physics_3d/physics_server_3d_manager.h"
 
 Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
@@ -43,11 +44,11 @@ Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
 	real_t h = get_height();
 	for (size_t k = 0; k < 2; k++) {
 		bool is_top = !k;
-		real_t radius = is_top ? get_top_radius() : get_bottom_radius();
+		real_t circle_radius = is_top ? get_top_radius() : get_bottom_radius();
 		real_t y = is_top ? h / 2 : -h / 2;
 		for (int i = 0; i <= 360; i += circle_step) {
 			real_t ra = Math::deg_to_rad((real_t)i);
-			Point2 a = Vector2(Math::cos(ra), Math::sin(ra)) * radius;
+			Point2 a = Vector2(Math::cos(ra), Math::sin(ra)) * circle_radius;
 
 			Vector3 newpoint(a.x, y, a.y);
 			points.push_back(newpoint);
@@ -96,17 +97,19 @@ real_t CylinderShape3D::get_enclosing_radius() const {
 
 void CylinderShape3D::_update_shape() {
 	Dictionary d;
-	d["radius_top"] = top_radius;
-	d["radius_bottom"] = bottom_radius;
-	d["radius"] = (top_radius + bottom_radius) / 2.0;
-	d["height"] = height;
+	d.reserve(5);
+	d["radius_top"] = get_top_radius();
+	d["radius_bottom"] = get_bottom_radius();
+	d["radius"] = get_radius();
+	d["height"] = get_height();
+	d["tapered"] = is_tapered();
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
 }
 
 void CylinderShape3D::set_top_radius(real_t p_top_radius) {
 	ERR_FAIL_COND_MSG(p_top_radius < 0, "CylinderShape3D top_radius cannot be negative.");
-	top_radius = p_top_radius < 0 ? 0 : p_top_radius;
+	top_radius = MAX(p_top_radius, 0);
 	_update_shape();
 	emit_changed();
 }
@@ -117,7 +120,7 @@ real_t CylinderShape3D::get_top_radius() const {
 
 void CylinderShape3D::set_bottom_radius(real_t p_bottom_radius) {
 	ERR_FAIL_COND_MSG(p_bottom_radius < 0, "CylinderShape3D bottom_radius cannot be negative.");
-	bottom_radius = p_bottom_radius < 0 ? 0 : p_bottom_radius;
+	bottom_radius = MAX(p_bottom_radius, 0);
 	_update_shape();
 	emit_changed();
 }
@@ -128,7 +131,7 @@ real_t CylinderShape3D::get_bottom_radius() const {
 
 void CylinderShape3D::set_radius(const real_t p_radius) {
 	ERR_FAIL_COND_MSG(p_radius <= 0.0f, "CylinderShape3D radius cannot be negative.");
-	top_radius = (p_radius < 0 ? 0 : p_radius);
+	top_radius = MAX(p_radius, 0);
 	bottom_radius = top_radius;
 	_update_shape();
 	emit_changed();
@@ -140,7 +143,7 @@ real_t CylinderShape3D::get_radius() const {
 
 void CylinderShape3D::set_height(real_t p_height) {
 	ERR_FAIL_COND_MSG(p_height <= 0.0f, "CylinderShape3D height must be positive.");
-	height = p_height < CMP_EPSILON ? CMP_EPSILON : p_height;
+	height = MAX(p_height, CMP_EPSILON);
 	_update_shape();
 	emit_changed();
 }
@@ -159,16 +162,19 @@ void CylinderShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CylinderShape3D::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &CylinderShape3D::get_height);
 
+	ClassDB::bind_method(D_METHOD("is_tapered"), &CylinderShape3D::is_tapered);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_top_radius", "get_top_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "is_tapered");
 
 	ADD_LINKED_PROPERTY("radius", "top_radius");
 	ADD_LINKED_PROPERTY("radius", "bottom_radius");
 
-	ADD_LINKED_PROPERTY("radius", "top_radius");
-	ADD_LINKED_PROPERTY("radius", "bottom_radius");
+	ADD_LINKED_PROPERTY("top_radius", "radius");
+	ADD_LINKED_PROPERTY("bottom_radius", "radius");
 }
 
 CylinderShape3D::CylinderShape3D() :
