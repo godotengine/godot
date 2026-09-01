@@ -3432,6 +3432,14 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 			_static = base_type.is_meta_type;
 		}
+	} else if (call->is_super) {
+		base = p_context.base;
+
+		if (p_context.current_class) {
+			base_type = p_context.current_class->base_type;
+			base_type.is_meta_type = false;
+			_static = !p_context.current_function || p_context.current_function->is_static;
+		}
 	} else if (Variant::has_utility_function(call->function_name)) {
 		MethodInfo info = Variant::get_utility_function_info(call->function_name);
 		r_arghint = _make_arguments_hint(info, p_argidx);
@@ -3457,7 +3465,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			i++;
 		}
 		return;
-	} else if (call->is_super || callee_type == GDScriptParser::Node::IDENTIFIER) {
+	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 		base = p_context.base;
 
 		if (p_context.current_class) {
