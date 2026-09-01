@@ -1070,7 +1070,7 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 			}
 		} break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
-			tex = get_editor_theme_icon(SNAME("Enum"));
+			tex = get_editor_theme_icon(SNAME("MemberEnum"));
 			break;
 		case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
 			tex = get_editor_theme_icon(SNAME("File"));
