@@ -5853,6 +5853,11 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 			String base_type;
 			if (ScriptServer::is_global_class(p_class)) {
 				base_type = ScriptServer::get_global_class_native_base(p_class);
+
+				// HACK: Due to a design flaw in `ScriptLanguage::get_global_class_name`, it is not always possible to determine the base class. See GH-122220.
+				if (base_type.is_empty()) {
+					base_type = Object::get_class_static();
+				}
 			} else {
 				Ref<Script> scr = ResourceLoader::load(p_script_path, "Script");
 				if (scr.is_valid()) {
