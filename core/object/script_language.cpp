@@ -691,15 +691,15 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 	return false;
 }
 
-void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
+void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *r_properties) const {
 	if (script->is_placeholder_fallback_enabled()) {
 		for (const PropertyInfo &E : properties) {
-			p_properties->push_back(E);
+			r_properties->push_back(E);
 		}
 	} else {
 		for (const PropertyInfo &E : properties) {
 			PropertyInfo pinfo = E;
-			p_properties->push_back(E);
+			r_properties->push_back(E);
 		}
 	}
 }
@@ -726,13 +726,13 @@ Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_n
 	return Variant::NIL;
 }
 
-void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
+void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *r_list) const {
 	if (script->is_placeholder_fallback_enabled()) {
 		return;
 	}
 
 	if (script.is_valid()) {
-		script->get_script_method_list(p_list);
+		script->get_script_method_list(r_list);
 	}
 }
 
