@@ -801,9 +801,9 @@ String AnimationNodeStateMachineEditor::get_tooltip(const Point2 &p_pos) const {
 
 	String tooltip_text;
 	if (hovered_node_area == HOVER_NODE_PLAY) {
-		tooltip_text = vformat(TTR("Play/Travel to %s"), hovered_node_name);
+		tooltip_text = vformat(TTR("Play/Travel to %s."), hovered_node_name);
 	} else if (hovered_node_area == HOVER_NODE_EDIT) {
-		tooltip_text = vformat(TTR("Edit %s"), hovered_node_name);
+		tooltip_text = vformat(TTR("Open %s in editor."), hovered_node_name);
 	} else {
 		tooltip_text = hovered_node_name;
 	}
