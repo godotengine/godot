@@ -248,13 +248,11 @@ static inline half_float qlog12_to_half_slow(uint32_t qlog12)
 //half_float g_qlog12_to_half[4096];
 //float g_qlog12_to_float[4096];
 
-static half_float g_qlog16_to_half[65536];
-
 inline half_float qlog_to_half(uint32_t val, uint32_t bits)
 {
-	assert((bits >= 5) && (bits <= 16));
+	assert((bits >= 7) && (bits <= 16));
 	assert(val < (1U << bits));
-	return g_qlog16_to_half[val << (16 - bits)];
+	return qlog_to_half_slow(val, bits);
 }
 
 // nearest values given a positive half float value (only)
@@ -435,7 +433,6 @@ static void init_qlog_tables()
 	for (uint32_t i = 0; i <= 65535; i++)
 	{
 		half_float h = qlog16_to_half_slow(i);
-		g_qlog16_to_half[i] = h;
 
 		qlog16_to_float[i] = half_to_float(h);
 	}
