@@ -8,6 +8,18 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_tangent_angle" qualifiers="static">
+			<return type="float" />
+			<param index="0" name="top_radius" type="float" />
+			<param index="1" name="bottom_radius" type="float" />
+			<param index="2" name="mid_height" type="float" />
+			<description>
+			Return the angle of the tangent between the top and bottom hemispheres.
+			It is positive when [member bottom_radius] is bigger than [member top_radius], and is in the range [code][-pi/2:pi/2][/code].
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius" default="0.5">
 			Radius of the bottom hemisphere. If different from [member top_radius], the capsule becomes tapered.
@@ -30,8 +42,8 @@
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="16">
 			Number of rings along the height of the capsule.
 		</member>
-		<member name="tapered" type="bool" setter="" getter="is_tapered" default="false">
-			Check if the capsule is tapered or not
+		<member name="tapered" type="bool" setter="" getter="is_tapered">
+			[code]true[/code] if the capsule is tapered, that is [member top_radius] is different from [member bottom_radius].
 		</member>
 		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius" default="0.5">
 			Radius of the top hemisphere. If different from [member bottom_radius], the capsule becomes tapered.

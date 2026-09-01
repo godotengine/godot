@@ -108,7 +108,10 @@ void MeshInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int
 		helper->tapered_capsule_set_handle(segment, p_id, top_radius, bottom_radius, mid_height);
 		capsule_mesh->set_top_radius(top_radius);
 		capsule_mesh->set_bottom_radius(bottom_radius);
-		capsule_mesh->set_mid_height(mid_height);
+		//only set height if it was changed, to allow keeping height
+		if (p_id == Gizmo3DHelper::tapered_revolution_handle::HEIGHT) {
+			capsule_mesh->set_mid_height(mid_height);
+		}
 	}
 
 	const Ref<CylinderMesh> cylinder_mesh = mesh->get_mesh();

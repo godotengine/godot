@@ -588,12 +588,14 @@ void CapsuleMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rings", "rings"), &CapsuleMesh::set_rings);
 	ClassDB::bind_method(D_METHOD("get_rings"), &CapsuleMesh::get_rings);
 
+	ClassDB::bind_static_method("CapsuleMesh", D_METHOD("get_tangent_angle", "top_radius", "bottom_radius", "mid_height"), &CapsuleMesh::get_tangent_angle);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100.0,0.001,or_greater,suffix:m"), "set_top_radius", "get_top_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100.0,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0,100.0,0.001,or_greater,suffix:m"), "set_mid_height", "get_mid_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,100.0,0.001,or_greater,suffix:m", PROPERTY_USAGE_EDITOR), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, ""), "", "is_tapered");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "is_tapered");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "4,128,1,or_greater"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "4,64,1,or_greater"), "set_rings", "get_rings");
