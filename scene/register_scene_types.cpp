@@ -157,6 +157,7 @@
 #include "scene/resources/shader_resource_format.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sky.h"
+#include "scene/resources/streamed_texture.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
@@ -169,6 +170,7 @@
 #include "scene/resources/texture_rd.h"
 #include "scene/resources/theme.h"
 #include "scene/resources/video_stream.h"
+#include "scene/resources/world_2d.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
@@ -177,7 +179,7 @@
 #include "scene/resources/animated_texture.h"
 #endif
 
-// 2D
+#ifndef _2D_DISABLED
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/2d/audio_stream_player_2d.h"
@@ -208,11 +210,11 @@
 #include "scene/resources/2d/skeleton/skeleton_modification_2d_stackholder.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_2d_twoboneik.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_stack_2d.h"
-#include "scene/resources/world_2d.h"
 #ifndef DISABLE_DEPRECATED
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #endif
+#endif // _2D_DISABLED
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/2d/navigation/navigation_agent_2d.h"
@@ -250,6 +252,7 @@
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/limit_angular_velocity_modifier_3d.h"
+#include "scene/3d/line_3d.h"
 #include "scene/3d/look_at_modifier_3d.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -270,6 +273,7 @@
 #include "scene/3d/spring_bone_collision_sphere_3d.h"
 #include "scene/3d/spring_bone_simulator_3d.h"
 #include "scene/3d/sprite_3d.h"
+#include "scene/3d/trail_3d.h"
 #include "scene/3d/two_bone_ik_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
@@ -338,6 +342,7 @@
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
+#include "scene/3d/bone_spreader_3d.h"
 #include "scene/3d/physics/animatable_body_3d.h"
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
@@ -378,7 +383,8 @@
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
-static Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_stream_texture;
+static Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_compressed_texture;
+static Ref<ResourceFormatLoaderStreamedTexture2D> resource_loader_streamed_texture;
 static Ref<ResourceFormatLoaderCompressedTextureLayered> resource_loader_texture_layered;
 static Ref<ResourceFormatLoaderCompressedTexture3D> resource_loader_texture_3d;
 
@@ -398,8 +404,13 @@ void register_scene_types() {
 	Node::init_node_hrcr();
 
 	if constexpr (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
-		resource_loader_stream_texture.instantiate();
-		ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
+		resource_loader_compressed_texture.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_compressed_texture);
+	}
+
+	if constexpr (GD_IS_CLASS_ENABLED(StreamedTexture2D)) {
+		resource_loader_streamed_texture.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_streamed_texture);
 	}
 
 	if constexpr (GD_IS_CLASS_ENABLED(TextureLayered)) {
@@ -594,10 +605,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationPlayer);
 	GDREGISTER_CLASS(AnimationTree);
 	GDREGISTER_CLASS(AnimationNode);
+	GDREGISTER_ABSTRACT_CLASS(AnimationNodeObserver);
 	GDREGISTER_CLASS(AnimationRootNode);
 	GDREGISTER_CLASS(AnimationNodeBlendTree);
 	GDREGISTER_CLASS(AnimationNodeBlendSpace1D);
 	GDREGISTER_CLASS(AnimationNodeBlendSpace2D);
+	GDREGISTER_CLASS(AnimationNodeObserverBlendSpace);
 	GDREGISTER_CLASS(AnimationNodeStateMachine);
 	GDREGISTER_CLASS(AnimationNodeStateMachinePlayback);
 	GDREGISTER_VIRTUAL_CLASS(AnimationNodeExtension);
@@ -606,6 +619,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeStateMachineTransition);
 	GDREGISTER_CLASS(AnimationNodeOutput);
 	GDREGISTER_CLASS(AnimationNodeOneShot);
+	GDREGISTER_CLASS(AnimationNodeObserverOneShot);
 	GDREGISTER_CLASS(AnimationNodeAnimation);
 	GDREGISTER_CLASS(AnimationNodeAdd2);
 	GDREGISTER_CLASS(AnimationNodeAdd3);
@@ -615,6 +629,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeTimeScale);
 	GDREGISTER_CLASS(AnimationNodeTimeSeek);
 	GDREGISTER_CLASS(AnimationNodeTransition);
+	GDREGISTER_CLASS(AnimationNodeObserverTransition);
 
 	GDREGISTER_CLASS(ShaderGlobalsOverride); // can be used in any shader
 
@@ -662,6 +677,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(LightmapGIData);
 	GDREGISTER_CLASS(LightmapProbe);
 	GDREGISTER_ABSTRACT_CLASS(Lightmapper);
+
+	GDREGISTER_CLASS(Line3D);
+	GDREGISTER_CLASS(Trail3D);
+
 	GDREGISTER_CLASS(GPUParticles3D);
 	GDREGISTER_ABSTRACT_CLASS(GPUParticlesCollision3D);
 	GDREGISTER_CLASS(GPUParticlesCollisionBox3D);
@@ -676,7 +695,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Marker3D);
 	GDREGISTER_CLASS(RootMotionView);
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
-	GDREGISTER_CLASS(ModifierBoneTarget3D);
 	GDREGISTER_CLASS(RetargetModifier3D);
 	GDREGISTER_VIRTUAL_CLASS(JointLimitation3D);
 	GDREGISTER_CLASS(JointLimitationCone3D);
@@ -699,6 +717,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(JacobianIK3D);
 	GDREGISTER_CLASS(LimitAngularVelocityModifier3D);
 	GDREGISTER_CLASS(BoneTwistDisperser3D);
+	GDREGISTER_CLASS(ModifierBoneTarget3D);
 
 #ifndef XR_DISABLED
 	GDREGISTER_CLASS(XRCamera3D);
@@ -728,6 +747,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SoftBody3D);
 #endif // PHYSICS_3D_DISABLED
 
+	GDREGISTER_CLASS(BoneSpreader3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
 	GDREGISTER_CLASS(LookAtModifier3D);
 #ifndef DISABLE_DEPRECATED
@@ -788,14 +808,17 @@ void register_scene_types() {
 	CanvasItemMaterial::init_shaders();
 	GDREGISTER_CLASS(BlitMaterial);
 
+	// SpriteFrames is needed by both AnimatedSprite2D and AnimatedSprite3D.
+	GDREGISTER_CLASS(SpriteFrames);
+
 	/* REGISTER 2D */
 
+#ifndef _2D_DISABLED
 	GDREGISTER_CLASS(Node2D);
 	GDREGISTER_CLASS(CanvasGroup);
 	GDREGISTER_CLASS(CPUParticles2D);
 	GDREGISTER_CLASS(GPUParticles2D);
 	GDREGISTER_CLASS(Sprite2D);
-	GDREGISTER_CLASS(SpriteFrames);
 	GDREGISTER_CLASS(AnimatedSprite2D);
 	GDREGISTER_CLASS(Marker2D);
 	GDREGISTER_CLASS(Line2D);
@@ -860,6 +883,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SkeletonModification2DJiggle);
 	GDREGISTER_CLASS(SkeletonModification2DPhysicalBones);
 #endif // PHYSICS_2D_DISABLED
+#endif // _2D_DISABLED
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -935,6 +959,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(World2D);
 	GDREGISTER_CLASS(Sky);
 	GDREGISTER_CLASS(CompressedTexture2D);
+	GDREGISTER_CLASS(StreamedTexture2D);
 	GDREGISTER_CLASS(PortableCompressedTexture2D);
 	GDREGISTER_CLASS(ImageTexture);
 	GDREGISTER_CLASS(AtlasTexture);
@@ -1023,6 +1048,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
+#ifndef _2D_DISABLED
 	GDREGISTER_CLASS(AudioStreamPlayer2D);
 	GDREGISTER_CLASS(Curve2D);
 	GDREGISTER_CLASS(Path2D);
@@ -1064,6 +1090,7 @@ void register_scene_types() {
 	StaticBody2D::navmesh_parse_init();
 #endif // PHYSICS_2D_DISABLED
 #endif // NAVIGATION_2D_DISABLED
+#endif // _2D_DISABLED
 
 #ifndef NAVIGATION_3D_DISABLED
 	// 3D nodes that support navmesh baking need to server register their source geometry parsers.
@@ -1306,6 +1333,9 @@ void register_scene_types() {
 		// RenderingServer needs to exist for this to succeed.
 		ColorPickerShape::init_shaders();
 		GraphEdit::init_shaders();
+#ifndef _3D_DISABLED
+		Trail3D::init_shaders();
+#endif //_3D_DISABLED
 	}
 
 	SceneDebugger::initialize();
@@ -1329,8 +1359,13 @@ void unregister_scene_types() {
 	}
 
 	if constexpr (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
-		resource_loader_stream_texture.unref();
+		ResourceLoader::remove_resource_format_loader(resource_loader_compressed_texture);
+		resource_loader_compressed_texture.unref();
+	}
+
+	if constexpr (GD_IS_CLASS_ENABLED(StreamedTexture2D)) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_streamed_texture);
+		resource_loader_streamed_texture.unref();
 	}
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_text);
@@ -1362,6 +1397,7 @@ void unregister_scene_types() {
 	PanoramaSkyMaterial::cleanup_shader();
 	ProceduralSkyMaterial::cleanup_shader();
 	FogMaterial::cleanup_shader();
+	Trail3D::finish_shaders();
 #endif // _3D_DISABLED
 
 	ParticleProcessMaterial::finish_shaders();

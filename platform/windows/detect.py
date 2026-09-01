@@ -151,23 +151,6 @@ def check_mssdk_version(env, version, msvc_ver):
         print_error(f"Specified Windows SDK version {mssdk} is not installed, installed versions are: {mssdk_list}.")
         sys.exit(255)
 
-    if env["winrt"]:
-        if msvc_ver == "14.2":  # Visual Studio 2019, force supported SDK.
-            if "10.0.22621.0" in mssdk_list:
-                mssdk = "10.0.22621.0"
-            else:
-                print_error(
-                    "Visual Studio 2019 require Windows SDK 10.0.22621.0 to use WinRT, install supported Windows SDK version "
-                    'or disable WinRT support by passing "winrt=no" to the SCons command line.'
-                )
-                sys.exit(255)
-        elif ver_parse(mssdk)[2] < 22621:
-            print_error(
-                "Windows SDK 10.0.22621.0 or newer is required to use WinRT, install supported Windows SDK version "
-                'or disable WinRT support by passing "winrt=no" to the SCons command line.'
-            )
-            sys.exit(255)
-
     print(f"Using Visual Studio {msvc_ver} with Windows SDK {mssdk}.")
     return mssdk
 
@@ -232,7 +215,6 @@ def get_opts():
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
         BoolVariable("silence_msvc", "Silence MSVC's cl/link stdout bloat, redirecting any errors to stderr.", True),
-        BoolVariable("winrt", "Use WinRT API (OneCore TTS support).", True),
         # Screen reader support.
         (
             "accesskit_sdk_path",
@@ -244,12 +226,6 @@ def get_opts():
             "angle_libs",
             "Path to the ANGLE static libraries",
             os.path.join(deps_folder, "angle"),
-        ),
-        # WinRT.
-        (
-            "winrt_path",
-            "Path to the WinRT headers (MinGW only)",
-            os.path.join(deps_folder, "winrt_mingw"),
         ),
         # Direct3D 12 support.
         (
@@ -484,7 +460,6 @@ def configure_msvc(env: "SConsEnvironment"):
                 env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/msvc/static"])
             LIBS += [
                 "accesskit",
-                "uiautomationcore",
                 "runtimeobject",
                 "propsys",
                 "oleaut32",
@@ -497,9 +472,9 @@ def configure_msvc(env: "SConsEnvironment"):
             print_error(
                 "The screen reader support driver requires dependencies to be installed.\n"
                 f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
-                "See the documentation for more information:\n"
-                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+                "See the documentation for more information:\n\t"
+                "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html#compiling-with-accesskit-support"
+                "\nAlternatively, disable this driver by compiling with `accesskit=no` explicitly."
             )
             env["accesskit"] = False
 
@@ -554,9 +529,9 @@ def configure_msvc(env: "SConsEnvironment"):
                 print_warning(
                     "The ANGLE rendering driver requires dependencies to be installed.\n"
                     f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_angle.py')}`.\n"
-                    "See the documentation for more information:\n"
-                    "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                    "Alternatively, disable this driver by compiling with `angle=no` explicitly."
+                    "See the documentation for more information:\n\t"
+                    "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html#compiling-with-angle-support"
+                    "\nAlternatively, disable this driver by compiling with `angle=no` explicitly."
                 )
                 env["angle"] = False
 
@@ -868,30 +843,6 @@ def configure_mingw(env: "SConsEnvironment"):
         ]
     )
 
-    if env["winrt"]:
-        if not os.path.exists(env["winrt_path"]):
-            prefix = os.getenv("MINGW_PREFIX", "")
-            msys = os.getenv("MSYSTEM", "")
-            if msys != "" and prefix != "":
-                if not os.path.exists(os.path.join(prefix, "include/winrt")):
-                    print_warning(
-                        "The WinRT/OneCore API requires dependencies to be installed.\n"
-                        f"You can install them by installing `cppwinrt` MSYS2 package or by running `python {os.path.join('misc', 'scripts', 'install_winrt.py')}`.\n"
-                        "See the documentation for more information:\n"
-                        "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                        "Alternatively, disable this driver by compiling with `winrt=no` explicitly."
-                    )
-                env["winrt"] = False
-            else:
-                print_warning(
-                    "The WinRT/OneCore API requires dependencies to be installed.\n"
-                    f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_winrt.py')}`.\n"
-                    "See the documentation for more information:\n"
-                    "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                    "Alternatively, disable this driver by compiling with `winrt=no` explicitly."
-                )
-                env["winrt"] = False
-
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
             env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
@@ -911,7 +862,6 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(
                 LIBS=[
                     "accesskit",
-                    "uiautomationcore." + env["arch"],
                     "runtimeobject",
                     "propsys",
                     "oleaut32",
@@ -926,9 +876,9 @@ def configure_mingw(env: "SConsEnvironment"):
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"
                 f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
-                "See the documentation for more information:\n"
-                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+                "See the documentation for more information:\n\t"
+                "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html#compiling-with-accesskit-support"
+                "\nAlternatively, disable this driver by compiling with `accesskit=no` explicitly."
             )
             env["accesskit"] = False
 
@@ -993,44 +943,13 @@ def configure_mingw(env: "SConsEnvironment"):
                 print_warning(
                     "The ANGLE rendering driver requires dependencies to be installed.\n"
                     f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_angle.py')}`.\n"
-                    "See the documentation for more information:\n"
-                    "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                    "Alternatively, disable this driver by compiling with `angle=no` explicitly."
+                    "See the documentation for more information:\n\t"
+                    "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html#compiling-with-angle-support"
+                    "\nAlternatively, disable this driver by compiling with `angle=no` explicitly."
                 )
                 env["angle"] = False
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
-
-    # dlltool
-    env["DEF"] = get_detected(env, "dlltool")
-    env["DEFCOM"] = "$DEF $DEFFLAGS -d $SOURCE -l $TARGET"
-    env["DEFCOMSTR"] = "$CXXCOMSTR"
-    env["DEFPREFIX"] = "$LIBPREFIX"
-    env["DEFSUFFIX"] = ".${__env__['arch']}$LIBSUFFIX"
-    env["DEFSRCSUFFIX"] = ".${__env__['arch']}.def"
-    DEF_ALIASES = {
-        "x86_32": "i386",
-        "x86_64": "i386:x86-64",
-        "arm32": "arm",
-        "arm64": "arm64",
-    }
-    env.Append(DEFFLAGS=["-m", DEF_ALIASES[env["arch"]]])
-    if env["arch"] == "x86_32":
-        env.Append(DEFFLAGS=["-k"])
-    else:
-        env.Append(DEFFLAGS=["--no-leading-underscore"])
-
-    env.Append(
-        BUILDERS={
-            "DEFLIB": env.Builder(
-                action=env.Run("$DEFCOM", "$DEFCOMSTR"),
-                prefix="$DEFPREFIX",
-                suffix="$DEFSUFFIX",
-                src_suffix="$DEFSRCSUFFIX",
-                emitter=methods.redirect_emitter,
-            )
-        }
-    )
 
 
 def configure(env: "SConsEnvironment"):
@@ -1056,8 +975,8 @@ def check_d3d12_installed(env, suffix):
         print_error(
             "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
             f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_d3d12_sdk_windows.py')}`.\n"
-            "See the documentation for more information:\n"
-            "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-            "Alternatively, disable this driver by compiling with `d3d12=no` explicitly."
+            "See the documentation for more information:\n\t"
+            "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html#installing-direct3d-12-requirements"
+            "\nAlternatively, disable this driver by compiling with `d3d12=no` explicitly."
         )
         sys.exit(255)

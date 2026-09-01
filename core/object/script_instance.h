@@ -39,7 +39,7 @@ class ScriptInstance {
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value) = 0;
 	virtual bool get(const StringName &p_name, Variant &r_ret) const = 0;
-	virtual void get_property_list(List<PropertyInfo> *p_properties) const = 0;
+	virtual void get_property_list(List<PropertyInfo> *r_properties) const = 0;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const = 0;
 	virtual void validate_property(PropertyInfo &p_property) const = 0;
 
@@ -49,7 +49,7 @@ public:
 	virtual Object *get_owner() { return nullptr; }
 	virtual void get_property_state(List<Pair<StringName, Variant>> &r_state);
 
-	virtual void get_method_list(List<MethodInfo> *p_list) const = 0;
+	virtual void get_method_list(List<MethodInfo> *r_list) const = 0;
 	virtual bool has_method(const StringName &p_method) const = 0;
 
 	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;

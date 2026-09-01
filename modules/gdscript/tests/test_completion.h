@@ -208,7 +208,7 @@ static void test_directory(const String &p_dir) {
 				}
 			}
 			CHECK_MESSAGE(contains_excluded.is_empty(), "Autocompletion suggests illegal option '", contains_excluded, "' for '", path.path_join(next), "'.");
-			CHECK(include.is_empty());
+			CHECK_MESSAGE(include.is_empty(), "An autocompletion option is missing for '", path.path_join(next), "'.");
 
 			String expected_call_hint = conf.get_value("output", "call_hint", call_hint);
 			bool expected_forced = conf.get_value("output", "forced", forced);

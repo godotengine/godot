@@ -120,15 +120,15 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		}
 	}
 
-	if (scr_lang != nullptr) {
-		/* Core types. */
-		const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
-		List<String> core_types;
-		scr_lang->get_core_type_words(&core_types);
-		for (const String &E : core_types) {
-			highlighter->add_keyword_color(E, basetype_color);
+	/* Variant types. */
+	const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
+	for (int type = 0; type < Variant::Type::VARIANT_MAX; type++) {
+		if (type != Variant::Type::NIL && type != Variant::Type::OBJECT) {
+			highlighter->add_keyword_color(Variant::get_type_name((Variant::Type)type), basetype_color);
 		}
+	}
 
+	if (scr_lang != nullptr) {
 		/* Reserved words. */
 		const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 		const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");

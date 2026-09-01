@@ -572,18 +572,18 @@ bool Area3D::has_overlapping_areas() const {
 	return !area_map.is_empty();
 }
 
-bool Area3D::overlaps_area(RequiredParam<Node> rp_area) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_area, rp_area, false);
-	HashMap<ObjectID, AreaState>::ConstIterator E = area_map.find(p_area->get_instance_id());
+bool Area3D::overlaps_area(RequiredParam<Node> p_area) const {
+	EXTRACT_PARAM_OR_FAIL_V(check_area, p_area, false);
+	HashMap<ObjectID, AreaState>::ConstIterator E = area_map.find(check_area->get_instance_id());
 	if (!E) {
 		return false;
 	}
 	return E->value.in_tree;
 }
 
-bool Area3D::overlaps_body(RequiredParam<Node> rp_body) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_body, rp_body, false);
-	HashMap<ObjectID, BodyState>::ConstIterator E = body_map.find(p_body->get_instance_id());
+bool Area3D::overlaps_body(RequiredParam<Node> p_body) const {
+	EXTRACT_PARAM_OR_FAIL_V(body, p_body, false);
+	HashMap<ObjectID, BodyState>::ConstIterator E = body_map.find(body->get_instance_id());
 	if (!E) {
 		return false;
 	}

@@ -146,6 +146,14 @@ bool sc_cluster_has_area_light() {
 	return ((sc_packed_1() >> 5) & 1U) != 0;
 }
 
+bool sc_use_lightmap_specular() {
+	return ((sc_packed_1() >> 6) & 1U) != 0;
+}
+
+bool sc_material_feedback() {
+	return ((sc_packed_1() >> 7) & 1U) != 0;
+}
+
 float sc_luminance_multiplier() {
 	// Not used in clustered renderer but we share some code with the mobile renderer that requires this.
 	return 1.0;
@@ -228,7 +236,7 @@ directional_lights;
 #define LIGHTMAP_SHADOWMASK_MODE_ONLY 3
 
 struct Lightmap {
-	mat3 normal_xform;
+	mat3x4 normal_xform_and_specular_intensity; // "normal_xform" is the 3x3 matrix. "specular_intensity" is the 4th row of the 1st column.
 	vec2 light_texture_size;
 	float exposure_normalization;
 	uint flags;
@@ -352,7 +360,8 @@ implementation_data_block;
 struct InstanceData {
 	mat3x4 transform;
 	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
-	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	vec3 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	uint material_feedback_index; // Index into the material feedback buffer.
 	vec4 uv_scale;
 	uint flags;
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
@@ -502,6 +511,14 @@ vec2 prefiltered_dfg(float lod, float NoV) {
 vec3 get_energy_compensation(vec3 f0, float env) {
 	return 1.0 + f0 * (1.0 / env - 1.0);
 }
+
+#ifdef TEXTURE_STREAMING
+// Texture streaming material feedback buffer access
+layout(set = 1, binding = 37, std430) buffer restrict MaterialFeedbackBuffer {
+	uint data[];
+}
+material_feedback;
+#endif
 
 /* Set 2 Skeleton & Instancing (can change per item) */
 

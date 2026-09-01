@@ -2181,7 +2181,84 @@ void Image::normalize() {
 	}
 }
 
-Error Image::generate_mipmaps(bool p_renormalize) {
+float Image::_alpha_test_coverage(const uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_alpha_ref, float p_alpha_scale) const {
+	int right_step = (p_width == 1) ? 0 : 1;
+	int down_step = (p_height == 1) ? 0 : p_width;
+
+	float coverage = 0.0f;
+
+	const uint32_t n = 4;
+
+	// Guard against textures that are only 1px in either dimension
+	uint32_t cell_w = MAX(1u, p_width - 1);
+	uint32_t cell_h = MAX(1u, p_height - 1);
+
+	for (uint32_t y = 0; y < cell_h; y++) {
+		for (uint32_t x = 0; x < cell_w; x++) {
+			uint32_t i = y * cell_w + x;
+
+			float alpha00 = CLAMP(_get_color_at_ofs(p_dst, i).a * p_alpha_scale, 0.0, 1.0);
+			float alpha10 = CLAMP(_get_color_at_ofs(p_dst, i + right_step).a * p_alpha_scale, 0.0, 1.0);
+			float alpha01 = CLAMP(_get_color_at_ofs(p_dst, i + down_step).a * p_alpha_scale, 0.0, 1.0);
+			float alpha11 = CLAMP(_get_color_at_ofs(p_dst, i + right_step + down_step).a * p_alpha_scale, 0.0, 1.0);
+
+			float texel_coverage = 0.0f;
+			for (uint32_t sy = 0; sy < n; sy++) {
+				float fy = (sy + 0.5f) / n;
+				for (uint32_t sx = 0; sx < n; sx++) {
+					float fx = (sx + 0.5f) / n;
+					float alpha = alpha00 * (1 - fx) * (1 - fy) + alpha10 * fx * (1 - fy) + alpha01 * (1 - fx) * fy + alpha11 * fx * fy;
+					if (alpha > p_alpha_ref) {
+						texel_coverage += 1.0f;
+					}
+				}
+			}
+			coverage += texel_coverage / (n * n);
+		}
+	}
+	return coverage / float(cell_w * cell_h);
+}
+
+void Image::_scale_alpha_to_coverage(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_desired_coverage, float p_alpha_ref) {
+	float min_alpha_scale = 0.0f;
+	float max_alpha_scale = 4.0f;
+	float alpha_scale = 1.0f;
+	float best_alpha_scale = 1.0f;
+	float best_error = 999999.9f;
+
+	// Determine desired scale using a binary search. Hardcoded to 10 steps max.
+	for (int i = 0; i < 10; i++) {
+		float current_coverage = _alpha_test_coverage(p_dst, p_width, p_height, p_alpha_ref, alpha_scale);
+
+		float error = Math::abs(current_coverage - p_desired_coverage);
+		if (error < best_error) {
+			best_error = error;
+			best_alpha_scale = alpha_scale;
+		}
+
+		if (current_coverage < p_desired_coverage) {
+			min_alpha_scale = alpha_scale;
+		} else if (current_coverage > p_desired_coverage) {
+			max_alpha_scale = alpha_scale;
+		} else {
+			break;
+		}
+
+		alpha_scale = (min_alpha_scale + max_alpha_scale) * 0.5f;
+	}
+
+	_scale_mipmap_alpha_bias(p_dst, p_width, p_height, best_alpha_scale, 0.0f);
+}
+
+void Image::_scale_mipmap_alpha_bias(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_scale, float p_bias) {
+	for (uint32_t i = 0; i < p_width * p_height; i++) {
+		Color c = _get_color_at_ofs(p_dst, i);
+		c.a = CLAMP(c.a * p_scale + p_bias, 0.0f, 1.0f);
+		_set_color_at_ofs(p_dst, i, c);
+	}
+}
+
+Error Image::generate_mipmaps(bool p_renormalize, bool p_preserve_alpha_test_coverage, float p_alpha_test_threshold) {
 	ERR_FAIL_COND_V_MSG(is_compressed(), ERR_UNAVAILABLE, "Cannot generate mipmaps from compressed image formats.");
 	ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
 
@@ -2195,12 +2272,21 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 	int prev_h = height;
 	int prev_w = width;
 
+	float desired_atc = 0.0f;
+	if (p_preserve_alpha_test_coverage) {
+		desired_atc = _alpha_test_coverage(wp, width, height, p_alpha_test_threshold, 1.0);
+	}
+
 	for (int i = 1; i <= gen_mipmap_count; i++) {
 		int64_t ofs;
 		int w, h;
 		_get_mipmap_offset_and_size(i, ofs, w, h);
 
 		_generate_mipmap_from_format(format, wp + prev_ofs, wp + ofs, prev_w, prev_h, p_renormalize);
+
+		if (p_preserve_alpha_test_coverage) {
+			_scale_alpha_to_coverage(wp + ofs, w, h, desired_atc, p_alpha_test_threshold);
+		}
 
 		prev_ofs = ofs;
 		prev_w = w;
@@ -3893,7 +3979,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("crop", "width", "height"), &Image::crop);
 	ClassDB::bind_method(D_METHOD("flip_x"), &Image::flip_x);
 	ClassDB::bind_method(D_METHOD("flip_y"), &Image::flip_y);
-	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize", "preserve_alpha_test_coverage", "alpha_test_threshold"), &Image::generate_mipmaps, DEFVAL(false), DEFVAL(false), DEFVAL(0.5f));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
 #ifndef DISABLE_DEPRECATED

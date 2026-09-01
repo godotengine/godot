@@ -131,11 +131,8 @@ struct ObjectGDExtension {
 
 	/// A type for this Object extension.
 	/// This is not exposed through the GDExtension API (yet) so it is inferred from above parameters.
-	GDType *gdtype;
-	void create_gdtype();
-	void destroy_gdtype();
-
-	~ObjectGDExtension();
+	/// The GDType's lifetime is (usually) owned by ClassDB.
+	const GDType *gdtype = nullptr;
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
@@ -248,7 +245,7 @@ private:
 #define GDCLASS(m_class, m_inherits) \
 	GDSOFTCLASS(m_class, m_inherits) \
 private: \
-	void operator=(const m_class &p_rval) {} \
+	void operator=(const m_class &p_rval) = delete; \
 	friend class ::ClassDB; \
 \
 	static GDType &get_gdtype_static_mutable() { \
@@ -693,6 +690,10 @@ public:
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get(const StringName &p_name, bool *r_valid = nullptr) const;
+	/// Like set/get but only uses the internal path. Used from ClassDB::set_property and for GDScript optimization.
+	bool set_native(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
+	bool get_native(const StringName &p_name, Variant &r_value, bool *r_valid = nullptr) const;
+
 	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 

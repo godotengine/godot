@@ -1,0 +1,6 @@
+GH-120609
+--------------
+Validate extension JSON: Error: Field 'classes/Skeleton3D/methods/reset_bone_pose/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Skeleton3D/methods/reset_bone_poses': arguments
+
+Added optional argument. Compatibility methods registered.

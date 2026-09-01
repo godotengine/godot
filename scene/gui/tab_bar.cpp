@@ -220,6 +220,10 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
+		if (hover != -1 && mb->get_button_index() == MouseButton::LEFT) {
+			accept_event();
+		}
+
 		if (rb_pressing && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			if (rb_hover != -1) {
 				emit_signal(SNAME("tab_button_pressed"), rb_hover);
@@ -337,6 +341,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 		Ref<InputEventJoypadButton> joypadbutton_event = p_event;
 		bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
 		if (p_event->is_action("ui_right", true)) {
+			grab_focus(); // Ensure focus is visible.
 			if (is_joypad_event) {
 				if (!input->is_action_just_pressed_by_event("ui_right", p_event, true)) {
 					return;
@@ -347,6 +352,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_left", true)) {
+			grab_focus();
 			if (is_joypad_event) {
 				if (!input->is_action_just_pressed_by_event("ui_left", p_event, true)) {
 					return;
@@ -2138,6 +2144,9 @@ void TabBar::ensure_tab_visible(int p_idx) {
 }
 
 Rect2 TabBar::get_tab_rect(int p_tab) const {
+	if (p_tab < 0) {
+		p_tab += tabs.size();
+	}
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
 
 	if (is_layout_rtl()) {

@@ -244,6 +244,7 @@ public:
 	FUNC0RC(RID, texture_drawable_get_default_material)
 
 	FUNC2(texture_replace, RID, RID)
+	FUNC2(texture_replace_compatible, RID, RID)
 
 	FUNC3(texture_set_size_override, RID, int, int)
 // FIXME: Disabled during Vulkan refactoring, should be ported.
@@ -266,6 +267,8 @@ public:
 	FUNCRIDTEX2(texture_rd, const RID &, const RSE::TextureLayeredType)
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
+
+	FUNC2(texture_2d_attach_streaming_state, RID, RID);
 
 	/* SHADER API */
 
@@ -549,6 +552,8 @@ public:
 	FUNC2(lightmap_set_shadowmask_textures, RID, RID)
 	FUNC1R(RSE::ShadowmaskMode, lightmap_get_shadowmask_mode, RID)
 	FUNC2(lightmap_set_shadowmask_mode, RID, RSE::ShadowmaskMode)
+	FUNC1R(float, lightmap_get_specular_intensity, RID)
+	FUNC2(lightmap_set_specular_intensity, RID, float)
 
 	/* Shadow Atlas */
 	FUNC0R(RID, shadow_atlas_create)

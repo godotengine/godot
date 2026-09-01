@@ -671,7 +671,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 
 	// Create object instance for test.
-	Object *obj = ClassDB::instantiate(script->get_native()->get_name());
+	Object *obj = ClassDB::instantiate(script->get_instance_base_type());
 	Ref<RefCounted> obj_ref;
 	if (obj->is_ref_counted()) {
 		obj_ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));

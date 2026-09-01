@@ -161,16 +161,16 @@ TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
 	return ret;
 }
 
-void PhysicsBody2D::add_collision_exception_with(RequiredParam<Node> rp_node) {
-	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
-	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
+void PhysicsBody2D::add_collision_exception_with(RequiredParam<Node> p_node) {
+	EXTRACT_PARAM_OR_FAIL(node, p_node);
+	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(node);
 	ERR_FAIL_NULL_MSG(physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_add_collision_exception(get_rid(), physics_body->get_rid());
 }
 
-void PhysicsBody2D::remove_collision_exception_with(RequiredParam<Node> rp_node) {
-	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
-	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
+void PhysicsBody2D::remove_collision_exception_with(RequiredParam<Node> p_node) {
+	EXTRACT_PARAM_OR_FAIL(node, p_node);
+	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(node);
 	ERR_FAIL_NULL_MSG(physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_remove_collision_exception(get_rid(), physics_body->get_rid());
 }

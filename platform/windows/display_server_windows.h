@@ -252,6 +252,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
 	int key_event_pos;
+	bool legacy_shift_pressed[2] = {};
 
 	bool old_invalid;
 	int old_x, old_y;
@@ -551,10 +552,11 @@ class DisplayServerWindows : public DisplayServer {
 	HWND _find_window_from_process_id(ProcessID p_pid, HWND p_current_hwnd);
 
 	void initialize_tts() const;
-	void process_raw_input();
+	bool process_raw_input();
 	Vector2 _get_raw_mouse_motion(const RAWINPUT &p_raw, DisplayServerEnums::WindowID p_window_id);
 	void _process_raw_mouse_motion(const Vector2 &p_relative, bool p_left_button_down, DisplayServerEnums::WindowID p_window_id);
 	void _process_raw_input_event(const RAWINPUT &p_raw, DisplayServerEnums::WindowID p_window_id);
+	void _reconcile_shift_state(DisplayServerEnums::WindowID p_window_id);
 
 	struct ScreenHdrData {
 		bool hdr_supported = false;
@@ -568,6 +570,10 @@ class DisplayServerWindows : public DisplayServer {
 	ScreenHdrData _get_screen_hdr_data(DisplayServerEnums::WindowID p_window, bool p_include_sdr_white_level) const;
 	void _update_hdr_output_for_window(DisplayServerEnums::WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data);
 	void _legacy_update_hdr_output_for_tracked_windows(bool p_include_sdr_white_level);
+
+	String _get_app_id() const;
+	String _get_app_name() const;
+	bool _try_create_shortcut();
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -741,6 +747,9 @@ public:
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
 	virtual DisplayServerEnums::CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape = DisplayServerEnums::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
+
+	virtual DisplayServerEnums::NotificationID send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) override;
+	virtual void hide_toast_notification(DisplayServerEnums::NotificationID p_id) override;
 
 	virtual bool get_swap_cancel_ok() override;
 

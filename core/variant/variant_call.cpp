@@ -1222,8 +1222,7 @@ struct _VariantCall {
 	static void add_variant_constant(int p_type, const StringName &p_constant_name, const Variant &p_constant_value) {
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_COND(variant_constants[p_type].has(p_constant_name));
-		ERR_FAIL_COND(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type)).get_enum_map(true).has(p_constant_name));
-		ERR_FAIL_COND(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type)).get_integer_constant_map(true).has(p_constant_name));
+		ERR_FAIL_COND(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type)).members(true).has(p_constant_name));
 #endif // DEBUG_ENABLED
 		variant_constants[p_type][p_constant_name] = p_constant_value;
 	}
@@ -1655,8 +1654,11 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 
-	for (const KeyValue<StringName, int64_t> &E : _get_gdtype_for_type(p_type).get_integer_constant_map(false)) {
-		if (_get_gdtype_for_type(p_type).get_integer_constant_enum(E.key, false) == nullptr) {
+	for (const KeyValue<StringName, GDType::Member> &E : _get_gdtype_for_type(p_type).members()) {
+		if (E.value.type != GDType::Member::Type::INTEGER_CONSTANT) {
+			continue;
+		}
+		if (!E.value.payload.integer_constant.enum_info) {
 			p_constants->push_back(E.key);
 		}
 	}
@@ -1676,9 +1678,9 @@ int Variant::get_constants_count_for_type(Variant::Type p_type) {
 
 bool Variant::has_constant(Variant::Type p_type, const StringName &p_value) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
+	const GDType::Member *member = _get_gdtype_for_type(p_type).members().getptr(p_value);
 	const bool is_non_enum_integer_constant =
-			_get_gdtype_for_type(p_type).get_integer_constant_map(false).has(p_value) &&
-			_get_gdtype_for_type(p_type).get_integer_constant_enum(p_value, false) == nullptr;
+			member && member->type == GDType::Member::Type::INTEGER_CONSTANT && !member->payload.integer_constant.enum_info;
 	return is_non_enum_integer_constant || _VariantCall::variant_constants[p_type].has(p_value);
 }
 
@@ -1689,12 +1691,12 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
 
-	const int64_t *int_value = _get_gdtype_for_type(p_type).get_integer_constant_map(false).getptr(p_value);
-	if (int_value && _get_gdtype_for_type(p_type).get_integer_constant_enum(p_value, false) == nullptr) {
+	const GDType::Member *member = _get_gdtype_for_type(p_type).members().getptr(p_value);
+	if (member && member->type == GDType::Member::Type::INTEGER_CONSTANT && !member->payload.integer_constant.enum_info) {
 		if (r_valid) {
 			*r_valid = true;
 		}
-		return *int_value;
+		return member->payload.integer_constant.value;
 	}
 
 	HashMap<StringName, Variant>::Iterator F = _VariantCall::variant_constants[p_type].find(p_value);
@@ -1710,19 +1712,21 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 
 void Variant::get_enums_for_type(Variant::Type p_type, List<StringName> *p_enums) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
-	for (const KeyValue<StringName, const GDType::EnumInfo *> &E : _get_gdtype_for_type(p_type).get_enum_map(false)) {
-		p_enums->push_back(E.key);
+	for (const KeyValue<StringName, GDType::Member> &E : _get_gdtype_for_type(p_type).members()) {
+		if (E.value.type == GDType::Member::Type::ENUM) {
+			p_enums->push_back(E.key);
+		}
 	}
 }
 
 void Variant::get_enumerations_for_enum(Variant::Type p_type, const StringName &p_enum_name, List<StringName> *p_enumerations) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
-	const GDType::EnumInfo *const *enum_info = _get_gdtype_for_type(p_type).get_enum_map(false).getptr(p_enum_name);
-	if (!enum_info) {
+	const GDType::Member *member = _get_gdtype_for_type(p_type).members().getptr(p_enum_name);
+	if (!member || member->type != GDType::Member::Type::ENUM) {
 		return;
 	}
 
-	for (const KeyValue<StringName, int64_t> &V : (*enum_info)->values) {
+	for (const KeyValue<StringName, int64_t> &V : member->payload.enum_info->values) {
 		p_enumerations->push_back(V.key);
 	}
 }
@@ -1733,12 +1737,12 @@ int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name,
 	}
 
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
-	const GDType::EnumInfo *const *enum_info = _get_gdtype_for_type(p_type).get_enum_map(false).getptr(p_enum_name);
-	if (!enum_info) {
+	const GDType::Member *member = _get_gdtype_for_type(p_type).members().getptr(p_enum_name);
+	if (!member || member->type != GDType::Member::Type::ENUM) {
 		return -1;
 	}
 
-	const int64_t *enum_value = (*enum_info)->values.getptr(p_enumeration);
+	const int64_t *enum_value = member->payload.enum_info->values.getptr(p_enumeration);
 	if (!enum_value) {
 		return -1;
 	}
@@ -1752,7 +1756,8 @@ int Variant::get_enum_value(Variant::Type p_type, const StringName &p_enum_name,
 
 bool Variant::has_enum(Variant::Type p_type, const StringName &p_enum_name) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	return _get_gdtype_for_type(p_type).get_enum_map(false).has(p_enum_name);
+	const GDType::Member *member = _get_gdtype_for_type(p_type).members().getptr(p_enum_name);
+	return member && member->type == GDType::Member::Type::ENUM;
 }
 
 StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringName &p_enumeration) {

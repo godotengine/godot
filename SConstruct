@@ -261,6 +261,7 @@ opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
+opts.Add(BoolVariable("disable_2d", "Disable 2D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("disable_physics_2d", "Disable 2D physics nodes and server", False))
@@ -716,35 +717,17 @@ cc_version_metadata1 = cc_version["metadata1"]
 
 if cc_version_major == -1:
     print_warning(
-        "Couldn't detect compiler version, skipping version checks. "
-        "Build may fail if the compiler doesn't support C++17 fully."
+        "Couldn't detect compiler version, skipping version checks. Build may fail if the compiler doesn't support C++17 fully."
     )
 elif methods.using_gcc(env):
-    if env.get("winrt"):
-        if cc_version_major < 11:
-            print_error(
-                "Detected GCC version older than 11, which does not fully support "
-                "C++20, or has bugs when compiling Godot. Supported versions are 12 "
-                "and later. Use a newer GCC version, or Clang 14 or later by passing "
-                '"use_llvm=yes" to the SCons command line, or disable WinRT support by '
-                'passing "winrt=no" to the SCons command line.'
-            )
-            Exit(255)
-    else:
-        if cc_version_major < 9:
-            print_error(
-                "Detected GCC version older than 9, which does not fully support "
-                "C++17, or has bugs when compiling Godot. Supported versions are 9 "
-                "and later. Use a newer GCC version, or Clang 6 or later by passing "
-                '"use_llvm=yes" to the SCons command line.'
-            )
-            Exit(255)
+    if cc_version_major < 11:
+        print_error(
+            f'Detected GCC version {cc_version_major} while Godot requires GCC 11 or newer. Use a newer GCC version, or Clang 9 or newer by passing "use_llvm=yes" to the SCons command line.'
+        )
+        Exit(255)
     if cc_version_metadata1 == "win32":
         print_error(
-            "Detected mingw version is not using posix threads. Only posix "
-            "version of mingw is supported. "
-            'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
-            "to switch to posix threads."
+            'Detected mingw version is not using posix threads. Only posix version of mingw is supported. Use "update-alternatives --config x86_64-w64-mingw32-g++" to switch to posix threads.'
         )
         Exit(255)
 elif methods.using_clang(env):
@@ -753,28 +736,18 @@ elif methods.using_clang(env):
     if methods.is_apple_clang(env):
         if cc_version_major < 16:
             print_error(
-                "Detected Apple Clang version older than 16, supported versions are Apple Clang 16 (Xcode 16) and later."
+                f"Detected Apple Clang version {cc_version_major} while Godot requires Apple Clang 16 (Xcode 16) or newer."
             )
             Exit(255)
     else:
-        if env.get("winrt"):
-            if cc_version_major < 13:
-                print_error(
-                    "Detected Clang version older than 13, which does not fully support "
-                    "C++20. Supported versions are Clang 14 and later, or disable WinRT "
-                    'support by passing "winrt=no" to the SCons command line.'
-                )
-                Exit(255)
-        else:
-            if cc_version_major < 6:
-                print_error(
-                    "Detected Clang version older than 6, which does not fully support "
-                    "C++17. Supported versions are Clang 6 and later."
-                )
-                Exit(255)
-            elif env["debug_paths_relative"] and cc_version_major < 10:
-                print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
-                env["debug_paths_relative"] = False
+        if cc_version_major < 9:
+            print_error(
+                f"Detected Clang version {cc_version_major} while Godot requires Clang 9 or newer. Use a newer Clang version, or GCC 11 or newer."
+            )
+            Exit(255)
+        elif env["debug_paths_relative"] and cc_version_major < 10:
+            print_warning("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+            env["debug_paths_relative"] = False
 
 elif env.msvc:
     if cc_version_major == 16 and cc_version_minor < 11:
@@ -1030,7 +1003,11 @@ else:  # GCC, Clang
 
     if env["werror"]:
         env.AppendUnique(CCFLAGS=["-Werror"])
-        env.AppendUnique(LINKFLAGS=["-Wl,--fatal-warnings" if env["platform"] != "macos" else "-Wl,-fatal_warnings"])
+        if env["platform"] != "macos":
+            env.AppendUnique(LINKFLAGS=["-Wl,--fatal-warnings"])
+        elif env["arch"] != "x86_64":
+            # Disabled for x86-64 macOS build due to MoltenVK min. target version mismatch.
+            env.AppendUnique(LINKFLAGS=["-Wl,-fatal_warnings"])
 
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()
@@ -1057,6 +1034,7 @@ sys.modules.pop("detect")
 if env.editor_build:
     unsupported_opts = []
     for disable_opt in [
+        "disable_2d",
         "disable_3d",
         "disable_advanced_gui",
         "disable_physics_2d",
@@ -1074,6 +1052,11 @@ if env.editor_build:
         )
         Exit(255)
 
+if env["disable_2d"]:
+    env.Append(CPPDEFINES=["_2D_DISABLED"])
+    env["disable_navigation_2d"] = True
+    env["disable_physics_2d"] = True
+    env["tests"] = False
 if env["disable_3d"]:
     env.Append(CPPDEFINES=["_3D_DISABLED"])
     env["disable_navigation_3d"] = True

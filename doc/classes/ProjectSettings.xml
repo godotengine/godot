@@ -433,6 +433,11 @@
 		<member name="application/run/print_header" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the engine header is printed in the console on startup. This header describes the current version of the engine, as well as the renderer being used. This behavior can also be disabled on the command line with the [code]--no-header[/code] option.
 		</member>
+		<member name="application/run/use_game_mode" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the engine will request [url=https://github.com/FeralInteractive/gamemode]GameMode[/url] to be activated. This allows optimizing system performance during gameplay, e.g. by using a specific CPU governor or forcing a high GPU power state. The GameMode daemon needs to be installed and running on the system to work (typically available as [code]gamemode[/code] in Linux distribution repositories).
+			[b]Note:[/b] This setting does not affect the editor itself, although it affects projects being run from the editor.
+			[b]Note:[/b] This setting is available only on Linux.
+		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
@@ -1230,6 +1235,11 @@
 		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
+		<member name="gui/common/auto_focus_strategy" type="int" setter="" getter="" default="0">
+			Determines what strategy to use when inferring the top/left/right/bottom [Control] to focus if no neighbor is defined.
+			- [b]Legacy[/b] is the old focus strategy up until Godot 4.8. It shouldn't be used for new projects, as the new default (Balloon) yields more intuitive results.
+			- [b]Balloon[/b] searches for both the closest and most aligned [Control] node in the input direction, akin to an expanding balloon which stops at the first node it finds.
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
@@ -1713,6 +1723,10 @@
 		</member>
 		<member name="input_devices/sensors/enable_accelerometer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the accelerometer sensor is enabled and [method Input.get_accelerometer] returns valid data.
+		</member>
+		<member name="input_devices/sensors/enable_device_orientation" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the device orientation sensor is enabled and [method Input.get_device_orientation] returns valid data. This uses hardware-level sensor fusion (rotation vector on Android, [code]CMDeviceMotion.attitude[/code] on iOS) to provide a stable device orientation quaternion without drift.
+			[b]Note:[/b] On Android, this registers [code]TYPE_GAME_ROTATION_VECTOR[/code] (preferred, no magnetometer) or [code]TYPE_ROTATION_VECTOR[/code] (fallback). On iOS, the attitude is read from the already-active [code]CMMotionManager.deviceMotion[/code].
 		</member>
 		<member name="input_devices/sensors/enable_gravity" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the gravity sensor is enabled and [method Input.get_gravity] returns valid data.
@@ -3164,6 +3178,10 @@
 		<member name="rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/lights_and_shadows/multi_bounce_occlusion/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], approximates local multi-bounce global illumination in ambient occlusion by integrating albedo information.
+			[b]Note:[/b] Multi-bounce occlusion is only supported in the Forward+ rendering method.
+		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_16_bits" type="bool" setter="" getter="" default="true">
 			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
@@ -3208,6 +3226,11 @@
 		<member name="rendering/limits/global_shader_variables/buffer_size" type="int" setter="" getter="" default="65536">
 			The maximum number of uniforms that can be used by the global shader uniform buffer. Each item takes up one slot. In other words, a single uniform float and a uniform vec4 will take the same amount of space in the buffer.
 			[b]Note:[/b] When using the Compatibility renderer, most mobile devices (and all web exports) will be limited to a maximum size of 1024 due to hardware constraints.
+		</member>
+		<member name="rendering/limits/opengl/max_decals" type="int" setter="" getter="" default="64">
+			Max number of decals that can be rendered in a frame. This is further limited by hardware support. Setting this low will reduce memory usage, may decrease shader compile times, and may result in faster rendering on low-end, mobile, or web devices.
+			[b]Note:[/b] This setting is only effective when using the Compatibility rendering method, not Forward+ and Mobile.
+			[b]Note:[/b] Regardless of this setting's value, the number of decals on each surface is limited to 8.
 		</member>
 		<member name="rendering/limits/opengl/max_lights_per_object" type="int" setter="" getter="" default="8">
 			Max number of omnilights and spotlights renderable per object. At the default value of 8, this means that each surface can be affected by up to 8 omnilights and 8 spotlights. This is further limited by hardware support and [member rendering/limits/opengl/max_renderable_lights]. Setting this low will slightly reduce memory usage, may decrease shader compile times, and may result in faster rendering on low-end, mobile, or web devices.
@@ -3491,6 +3514,29 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
+		<member name="rendering/textures/streaming/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables texture streaming. This system dynamically loads and unloads texture mipmaps based on visibility, reducing VRAM usage. Useful for projects with many large textures.
+		</member>
+		<member name="rendering/textures/streaming/inactivity_decay_rate_ms" type="int" setter="" getter="" default="5000">
+			The time (in milliseconds) per mipmap level of quality decay for textures that are no longer visible. When a streamed texture is not requested by the feedback system (e.g., it's off-screen or occluded), its resolution will gradually decrease by one mipmap level for each interval of this duration.
+			For example, with the default value of [code]5000[/code] ms, a texture that hasn't been visible for 10 seconds will have its quality reduced by 2 mipmap levels.
+			Set to [code]0[/code] to disable inactivity decay entirely, keeping textures at their last requested resolution indefinitely.
+		</member>
+		<member name="rendering/textures/streaming/max_lod" type="int" setter="" getter="" default="3">
+			The maximum LOD (mipmap level) that streamed textures can load. Lower values allow higher resolution textures but use more VRAM. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution).
+		</member>
+		<member name="rendering/textures/streaming/max_ops_per_second" type="int" setter="" getter="" default="200">
+			The maximum number of texture streaming operations (loading/unloading mipmaps) per second. Higher values allow faster adaptation to scene changes but may impact performance.
+		</member>
+		<member name="rendering/textures/streaming/memory_budget_enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], limits the maximum VRAM allocated for streamed textures to the value specified in [member rendering/textures/streaming/memory_budget_mb]. If exceeded, the system reduces the resolution of textures to stay within budget.
+		</member>
+		<member name="rendering/textures/streaming/memory_budget_mb" type="int" setter="" getter="" default="512">
+			The maximum VRAM (in megabytes) allocated for streamed textures. If exceeded, the system reduces the resolution of less important textures to stay within budget.
+		</member>
+		<member name="rendering/textures/streaming/min_lod" type="int" setter="" getter="" default="0">
+			The minimum LOD (mipmap level) that streamed textures start at when loaded. Higher values result in lower initial resolution and faster loading. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution).
+		</member>
 		<member name="rendering/textures/vram_compression/cache_gpu_compressor" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), making subsequent imports faster at the cost of increased memory usage.
 		</member>
@@ -3674,6 +3720,24 @@
 		</member>
 		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], Godot will compile shaders required for XR.
+		</member>
+		<member name="xr/visionos/dynamic_render_quality/enable" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables Dynamic Render Quality for the visionOS XR module. If enabled, you can dynamically set the render quality according to the complexity of your rendered scene. Higher render qualities increase the resolution of the textures provided by the visionOS XR module.
+		</member>
+		<member name="xr/visionos/dynamic_render_quality/maximum_quality" type="float" setter="" getter="" default="0.38">
+			Set this value to the minimum value that makes sense for your app. The supported range is from [code]0.0[/code] (exclusive) to [code]1.0[/code] (inclusive). Setting a maximum render quality that you never use at runtime will use more memory than necessary.
+		</member>
+		<member name="xr/visionos/enable_controller_tracking" type="bool" setter="" getter="" default="false">
+			Enables and initializes visionOS controller tracking.
+		</member>
+		<member name="xr/visionos/enable_hand_tracking" type="bool" setter="" getter="" default="false">
+			Enables and initializes visionOS hand tracking.
+		</member>
+		<member name="xr/visionos/persistent_system_overlays" type="int" setter="" getter="" default="0">
+			Initial visibility of the system overlays, such as the Home indicator, for the visionOS XR module's immersive scene. Change it at runtime with [member VisionOSXRInterface.persistent_system_overlays]. See [url=https://developer.apple.com/documentation/swiftui/view/persistentsystemoverlays(_:)]persistentSystemOverlays(_:)[/url].
+		</member>
+		<member name="xr/visionos/upper_limb_visibility" type="int" setter="" getter="" default="0">
+			Initial visibility of the user's upper limbs for the visionOS XR module's immersive scene. Change it at runtime with [member VisionOSXRInterface.upper_limb_visibility]. See [url=https://developer.apple.com/documentation/swiftui/scene/upperlimbvisibility(_:)]upperLimbVisibility(_:)[/url].
 		</member>
 	</members>
 	<signals>

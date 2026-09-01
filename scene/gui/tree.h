@@ -284,6 +284,8 @@ public:
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
 
+	Ref<TextParagraph> _get_text_buf(int p_column) const;
+
 	void set_description(int p_column, String p_text);
 	String get_description(int p_column) const;
 

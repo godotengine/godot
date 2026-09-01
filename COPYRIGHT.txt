@@ -144,6 +144,12 @@ Copyright: 2001, Robert Penner
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
+Files: scene/3d/trail_3d.cpp
+ scene/3d/trail_3d.h
+Comment: CozyCubeGames' trail and lines plugin
+Copyright: 2024, CozyCubeGames
+License: Expat
+
 Files: servers/audio/effects/audio_effect_pitch_shift.cpp
 Copyright: 2014-present Godot Engine contributors
  2007-2014 Juan Linietsky, Ariel Manzur
@@ -472,6 +478,11 @@ Comment: FastNoise Lite
 Copyright: 2023, Jordan Peck and contributors
 License: Expat
 
+Files: thirdparty/misc/gamemode_client.h
+Comment: GameMode client
+Copyright: 2017-2024, Feral Interactive
+License: BSD-3-clause
+
 Files: thirdparty/misc/ifaddrs-android.cc
  thirdparty/misc/ifaddrs-android.h
 Comment: libjingle
@@ -537,6 +548,11 @@ License: BSD-2-clause
 Files: thirdparty/msdfgen/*
 Comment: Multi-channel signed distance field generator
 Copyright: 2014-2025, Viktor Chlumsky
+License: Expat
+
+Files: thirdparty/offset_allocator/*
+Comment: OffsetAllocator
+Copyright: 2023, Sebastian Aaltonen
 License: Expat
 
 Files: thirdparty/openxr/*

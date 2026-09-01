@@ -24,7 +24,7 @@ CheckOptions:
   modernize-use-default-member-init.IgnoreMacros: false
   modernize-use-default-member-init.UseAssignment: true
   readability-identifier-naming.ParameterCase: lower_case
-  readability-identifier-naming.ParameterIgnoredRegexp: ^rp?_[^A-Z]*
+  readability-identifier-naming.ParameterIgnoredRegexp: ^r_[a-z0-9_]*[a-z0-9]$
   readability-identifier-naming.ParameterPrefix: p_
   readability-operators-representation.BinaryOperators: "&&;&=;&;|;~;!;!=;||;|=;^;^="
   readability-operators-representation.OverloadedOperators: "&&;&=;&;|;~;!;!=;||;|=;^;^="

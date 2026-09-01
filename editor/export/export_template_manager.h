@@ -134,6 +134,7 @@ class ExportTemplateManager : public AcceptDialog {
 		ANDROID,
 
 		IOS,
+		VISIONOS,
 
 		ICU_DATA,
 	};
@@ -145,6 +146,7 @@ class ExportTemplateManager : public AcceptDialog {
 		WEB,
 		ANDROID,
 		IOS,
+		VISIONOS,
 		COMMON,
 	};
 
@@ -238,7 +240,6 @@ class ExportTemplateManager : public AcceptDialog {
 	void _update_version_list();
 	void _update_template_tree();
 	void _fill_template_tree(Tree *p_tree, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_current_version);
-	void _update_template_tree_with_folding();
 	void _update_install_button();
 	bool _can_download_templates();
 
@@ -301,10 +302,12 @@ public:
 	static String get_android_source_zip(const Ref<EditorExportPreset> &p_preset);
 	static String get_android_template_identifier(const Ref<EditorExportPreset> &p_preset);
 
-	bool is_android_template_installed(const Ref<EditorExportPreset> &p_preset);
-	bool can_install_android_template(const Ref<EditorExportPreset> &p_preset);
-	Error install_android_template(const Ref<EditorExportPreset> &p_preset);
-	Error install_android_template_from_file(const String &p_file, const Ref<EditorExportPreset> &p_preset);
+	static bool is_android_template_installed(const Ref<EditorExportPreset> &p_preset);
+	static bool is_android_build_version_valid(const Ref<EditorExportPreset> &p_preset);
+	static bool can_install_android_template(const Ref<EditorExportPreset> &p_preset);
+	static Error delete_android_build_directory(const Ref<EditorExportPreset> &p_preset);
+	static Error install_android_template(const Ref<EditorExportPreset> &p_preset);
+	static Error install_android_template_from_file(const String &p_file, const Ref<EditorExportPreset> &p_preset);
 
 	void popup_manager();
 	bool is_downloading() const;

@@ -381,6 +381,7 @@ Error RenderingDeviceDriverD3D12::DescriptorHeap::allocate(uint32_t p_descriptor
 	ERR_FAIL_COND_V_MSG(FAILED(hr), ERR_CANT_CREATE, "Allocate failed with error " + vformat("0x%08ux", (uint64_t)hr) + ".");
 
 	r_allocation.virtual_alloc_handle = virtual_alloc.AllocHandle;
+	r_allocation.offset = offset;
 	r_allocation.cpu_handle = get_cpu_handle(cpu_handle, offset, increment_size);
 	r_allocation.gpu_handle = get_gpu_handle(gpu_handle, offset, increment_size);
 
@@ -874,8 +875,11 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 		p_size = p_size * frames.size();
 	}
 
+	bool buffer_device_address = p_usage.has_flag(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
+	ERR_FAIL_COND_V_MSG(buffer_device_address && !shader_capabilities.buffer_device_address_supported(), RDD::BufferID(), "Buffer device address is unsupported on this device.");
+
 	CD3DX12_RESOURCE_DESC1 resource_desc = CD3DX12_RESOURCE_DESC1::Buffer(p_size);
-	if (p_usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT)) {
+	if (p_usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT) || buffer_device_address) {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 	} else {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
@@ -890,12 +894,22 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 			bool is_dst = p_usage.has_flag(BUFFER_USAGE_TRANSFER_TO_BIT);
 			if (is_src && !is_dst) {
 				// Looks like a staging buffer: CPU maps, writes sequentially, then GPU copies to VRAM.
-				allocation_desc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+				if (buffer_device_address) {
+					// Use the custom UPLOAD pool to bypass the runtime validation that prevents ALLOW_UNORDERED_ACCESS from being used.
+					allocation_desc.CustomPool = custom_upload_pool.Get();
+				} else {
+					allocation_desc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+				}
 				initial_state = D3D12_RESOURCE_STATE_GENERIC_READ;
 			}
 			if (is_dst && !is_src) {
 				// Looks like a readback buffer: GPU copies from VRAM, then CPU maps and reads.
-				allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
+				if (buffer_device_address) {
+					// Use the custom READBACK pool to bypass the runtime validation that prevents ALLOW_UNORDERED_ACCESS from being used.
+					allocation_desc.CustomPool = custom_readback_pool.Get();
+				} else {
+					allocation_desc.HeapType = D3D12_HEAP_TYPE_READBACK;
+				}
 				initial_state = D3D12_RESOURCE_STATE_COPY_DEST;
 			}
 		} break;
@@ -911,6 +925,15 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 
 				// We can't use STORAGE for write access, just for read.
 				resource_desc.Flags = resource_desc.Flags & ~D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+			}
+		} break;
+		case MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE: {
+			if (misc_features_support.gpu_upload_heap_supported) {
+				allocation_desc.HeapType = D3D12_HEAP_TYPE_GPU_UPLOAD;
+			} else if (misc_features_support.uma_supported) {
+				allocation_desc.CustomPool = custom_upload_pool.Get();
+			} else {
+				ERR_FAIL_V_MSG(BufferID(), "GPU mappable buffers are unsupported on this device.");
 			}
 		} break;
 	}
@@ -940,6 +963,31 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
+	// If device address usage is requested, create a UAV descriptor expected by spirv2dxil.
+	DescriptorHeap::Allocation device_address_uav_alloc = {};
+	if (buffer_device_address) {
+		Error err;
+		{
+			MutexLock lock(resource_descriptor_heap_mutex);
+
+			err = resource_descriptor_heap.allocate(1, device_address_uav_alloc);
+		}
+
+		if (unlikely(err != OK)) {
+			ERR_FAIL_COND_V_MSG(err == ERR_OUT_OF_MEMORY, BufferID(), "Cannot create buffer because there's not enough room in the RESOURCES descriptor heap.\n"
+																	  "Please increase the value of the rendering/rendering_device/d3d12/max_resource_descriptors project setting.");
+
+			ERR_FAIL_V_MSG(BufferID(), "Failed to allocate buffer descriptor.");
+		}
+
+		D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
+		uav_desc.Format = DXGI_FORMAT_R32_TYPELESS;
+		uav_desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+		uav_desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+		uav_desc.Buffer.NumElements = p_size / 4;
+		device->CreateUnorderedAccessView(buffer.Get(), nullptr, &uav_desc, device_address_uav_alloc.cpu_handle);
+	}
+
 	// Bookkeep.
 
 	BufferInfo *buf_info;
@@ -965,6 +1013,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 	buf_info->states_ptr = &buf_info->owner_info.states;
 	buf_info->gpu_virtual_address = buffer->GetGPUVirtualAddress();
 	buf_info->size = original_size;
+	buf_info->device_address_uav_alloc = device_address_uav_alloc;
 	buf_info->flags.is_dynamic = p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT);
 
 	return BufferID(buf_info);
@@ -978,6 +1027,13 @@ bool RenderingDeviceDriverD3D12::buffer_set_texel_format(BufferID p_buffer, Data
 
 void RenderingDeviceDriverD3D12::buffer_free(BufferID p_buffer) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
+
+	if (buf_info->device_address_uav_alloc.virtual_alloc_handle != 0) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		resource_descriptor_heap.free(buf_info->device_address_uav_alloc);
+	}
+
 	if (buf_info->is_dynamic()) {
 		buf_info->resource->Unmap(0, &VOID_RANGE);
 		VersatileResource::free(resources_allocator, (BufferDynamicInfo *)buf_info);
@@ -1035,7 +1091,9 @@ uint64_t RenderingDeviceDriverD3D12::buffer_get_dynamic_offsets(Span<BufferID> p
 
 uint64_t RenderingDeviceDriverD3D12::buffer_get_device_address(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
-	return buf_info->gpu_virtual_address;
+	DEV_ASSERT(buf_info->device_address_uav_alloc.virtual_alloc_handle);
+	// This is the format expected by spirv2dxil. The descriptor is loaded via ResourceDescriptorHeap using the index in the high 32 bits of the device address.
+	return (buf_info->device_address_uav_alloc.offset << 32ull) | (0xD3ull << 56);
 }
 
 /*****************/
@@ -1202,7 +1260,88 @@ void RenderingDeviceDriverD3D12::_discard_texture_subresources(const TextureInfo
 	}
 }
 
+bool RenderingDeviceDriverD3D12::_data_format_is_compressed(DataFormat p_format) {
+	switch (p_format) {
+		case DATA_FORMAT_BC1_RGB_UNORM_BLOCK:
+		case DATA_FORMAT_BC1_RGB_SRGB_BLOCK:
+		case DATA_FORMAT_BC1_RGBA_UNORM_BLOCK:
+		case DATA_FORMAT_BC1_RGBA_SRGB_BLOCK:
+		case DATA_FORMAT_BC2_UNORM_BLOCK:
+		case DATA_FORMAT_BC2_SRGB_BLOCK:
+		case DATA_FORMAT_BC3_UNORM_BLOCK:
+		case DATA_FORMAT_BC3_SRGB_BLOCK:
+		case DATA_FORMAT_BC4_UNORM_BLOCK:
+		case DATA_FORMAT_BC4_SNORM_BLOCK:
+		case DATA_FORMAT_BC5_UNORM_BLOCK:
+		case DATA_FORMAT_BC5_SNORM_BLOCK:
+		case DATA_FORMAT_BC6H_UFLOAT_BLOCK:
+		case DATA_FORMAT_BC6H_SFLOAT_BLOCK:
+		case DATA_FORMAT_BC7_UNORM_BLOCK:
+		case DATA_FORMAT_BC7_SRGB_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
+		case DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
+		case DATA_FORMAT_EAC_R11_UNORM_BLOCK:
+		case DATA_FORMAT_EAC_R11_SNORM_BLOCK:
+		case DATA_FORMAT_EAC_R11G11_UNORM_BLOCK:
+		case DATA_FORMAT_EAC_R11G11_SNORM_BLOCK:
+		case DATA_FORMAT_ASTC_4x4_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_5x4_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_5x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_5x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_6x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_8x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x6_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_8x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x8_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_10x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x6_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_10x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x8_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_10x8_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x10_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_10x10_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_12x10_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_12x10_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_5x4_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_5x5_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_6x5_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_8x5_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_8x6_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_10x5_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_10x6_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_10x8_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_10x10_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_12x10_SFLOAT_BLOCK: // HDR variant.
+		case DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK: // HDR variant.
+			return true;
+		default:
+			return false;
+	}
+}
+
 bool RenderingDeviceDriverD3D12::_unordered_access_supported_by_format(DataFormat p_format) {
+	// Compressed formats don't support UAV.
+	if (_data_format_is_compressed(p_format)) {
+		return false;
+	}
+
 	switch (p_format) {
 		case DATA_FORMAT_R4G4_UNORM_PACK8:
 		case DATA_FORMAT_R4G4B4A4_UNORM_PACK16:
@@ -1333,6 +1472,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_STORAGE_BIT)) {
+		ERR_FAIL_COND_V_MSG(_data_format_is_compressed(p_format.format), TextureID(), "Storage textures are not supported for this format.");
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT)) {
@@ -2230,7 +2370,18 @@ static void _rd_stages_and_access_to_d3d12(BitField<RDD::PipelineStageBits> p_st
 	}
 }
 
-static D3D12_BARRIER_LAYOUT _rd_texture_layout_to_d3d12_barrier_layout(RDD::TextureLayout p_texture_layout) {
+static D3D12_BARRIER_LAYOUT _rd_texture_layout_to_d3d12_barrier_layout(RDD::TextureLayout p_texture_layout, D3D12_COMMAND_LIST_TYPE p_list_type) {
+	// Copy queues can only use COMMON or UNDEFINED layouts - they don't support COPY_SOURCE/COPY_DEST with enhanced barriers.
+	if (p_list_type == D3D12_COMMAND_LIST_TYPE_COPY) {
+		switch (p_texture_layout) {
+			case RDD::TEXTURE_LAYOUT_UNDEFINED:
+				return D3D12_BARRIER_LAYOUT_UNDEFINED;
+			default:
+				// All other layouts must be COMMON for copy queues.
+				return D3D12_BARRIER_LAYOUT_COMMON;
+		}
+	}
+
 	switch (p_texture_layout) {
 		case RDD::TEXTURE_LAYOUT_UNDEFINED:
 			return D3D12_BARRIER_LAYOUT_UNDEFINED;
@@ -2282,6 +2433,8 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 		return;
 	}
 
+	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)(p_cmd_buffer.id);
+
 	// Convert the RDD barriers to D3D12 enhanced barriers.
 	thread_local LocalVector<D3D12_GLOBAL_BARRIER> global_barriers;
 	thread_local LocalVector<D3D12_BUFFER_BARRIER> buffer_barriers;
@@ -2323,8 +2476,8 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 		}
 		_rd_stages_and_access_to_d3d12(p_src_stages, texture_barrier_rd.prev_layout, texture_barrier_rd.src_access, texture_barrier_d3d12.SyncBefore, texture_barrier_d3d12.AccessBefore);
 		_rd_stages_and_access_to_d3d12(p_dst_stages, texture_barrier_rd.next_layout, texture_barrier_rd.dst_access, texture_barrier_d3d12.SyncAfter, texture_barrier_d3d12.AccessAfter);
-		texture_barrier_d3d12.LayoutBefore = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.prev_layout);
-		texture_barrier_d3d12.LayoutAfter = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.next_layout);
+		texture_barrier_d3d12.LayoutBefore = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.prev_layout, cmd_buf_info->list_type);
+		texture_barrier_d3d12.LayoutAfter = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.next_layout, cmd_buf_info->list_type);
 		texture_barrier_d3d12.pResource = texture_info->resource;
 		if (texture_barrier_rd.subresources.mipmap_count == texture_info->mipmaps && texture_barrier_rd.subresources.layer_count == texture_info->layers) {
 			// So, all resources. Then, let's be explicit about it so D3D12 doesn't think
@@ -2371,7 +2524,6 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 	}
 
 	if (barrier_groups_count) {
-		const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)(p_cmd_buffer.id);
 		cmd_buf_info->cmd_list_7->Barrier(barrier_groups_count, barrier_groups);
 	}
 }
@@ -2606,6 +2758,7 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 	// Bookkeep
 
 	CommandBufferInfo *cmd_buf_info = VersatileResource::allocate<CommandBufferInfo>(resources_allocator);
+	cmd_buf_info->list_type = list_type;
 	cmd_buf_info->cmd_allocator = cmd_allocator;
 	cmd_buf_info->cmd_list = cmd_list;
 
@@ -3379,7 +3532,13 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 
 	// Allocate range for resource descriptors.
 	if (uniform_set.resource_descriptor_count > 0) {
-		Error err = resource_descriptor_heap.allocate(uniform_set.resource_descriptor_count, uniform_set_info->resource_descriptor_heap_alloc);
+		Error err;
+		{
+			MutexLock lock(resource_descriptor_heap_mutex);
+
+			err = resource_descriptor_heap.allocate(uniform_set.resource_descriptor_count, uniform_set_info->resource_descriptor_heap_alloc);
+		}
+
 		if (unlikely(err != OK)) {
 			VersatileResource::free(resources_allocator, uniform_set_info);
 
@@ -3414,6 +3573,8 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 		}
 		sampler_key = hash_fmix32(sampler_key);
 
+		MutexLock lock(sampler_descriptor_heap_mutex);
+
 		RBMap<uint32_t, SamplerDescriptorHeapAllocation>::Iterator find_result = sampler_descriptor_heap_allocations.find(sampler_key);
 		if (find_result != sampler_descriptor_heap_allocations.end()) {
 			uniform_set_info->sampler_descriptor_heap_alloc = &find_result->value;
@@ -3424,7 +3585,12 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 
 			Error err = sampler_descriptor_heap.allocate(uniform_set.sampler_descriptor_count, *uniform_set_info->sampler_descriptor_heap_alloc);
 			if (unlikely(err != OK)) {
-				resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+				{
+					MutexLock resource_descriptor_heap_mutex_lock(resource_descriptor_heap_mutex);
+
+					resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+				}
+
 				VersatileResource::free(resources_allocator, uniform_set_info);
 
 				ERR_FAIL_COND_V_MSG(err == ERR_OUT_OF_MEMORY, UniformSetID(), "Cannot create uniform set because there's not enough room in the SAMPLERS descriptors heap.\n"
@@ -3615,9 +3781,15 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 void RenderingDeviceDriverD3D12::uniform_set_free(UniformSetID p_uniform_set) {
 	UniformSetInfo *uniform_set_info = (UniformSetInfo *)p_uniform_set.id;
 
-	resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+	if (uniform_set_info->resource_descriptor_heap_alloc.virtual_alloc_handle != 0) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		resource_descriptor_heap.free(uniform_set_info->resource_descriptor_heap_alloc);
+	}
 
 	if (uniform_set_info->sampler_descriptor_heap_alloc != nullptr) {
+		MutexLock lock(sampler_descriptor_heap_mutex);
+
 		if ((--uniform_set_info->sampler_descriptor_heap_alloc->use_count) == 0) {
 			sampler_descriptor_heap.free(*uniform_set_info->sampler_descriptor_heap_alloc);
 			sampler_descriptor_heap_allocations.erase(uniform_set_info->sampler_descriptor_heap_alloc->key);
@@ -3805,7 +3977,13 @@ RenderingDeviceDriverD3D12::DescriptorHeap::Allocation RenderingDeviceDriverD3D1
 	} else {
 		DescriptorHeap::Allocation descriptor_allocation = {};
 
-		Error err = resource_descriptor_heap.allocate(1, descriptor_allocation);
+		Error err;
+		{
+			MutexLock lock(resource_descriptor_heap_mutex);
+
+			err = resource_descriptor_heap.allocate(1, descriptor_allocation);
+		}
+
 		ERR_FAIL_COND_V_MSG(err == ERR_OUT_OF_MEMORY, DescriptorHeap::Allocation(), "Cannot allocate per frame descriptor because there's not enough room in the RESOURCES descriptor heap.\n"
 																					"Please increase the value of the rendering/rendering_device/d3d12/max_resource_descriptors project setting.");
 
@@ -3906,13 +4084,39 @@ void RenderingDeviceDriverD3D12::command_copy_texture(CommandBufferID p_cmd_buff
 			UINT dst_subresource = _compute_subresource_from_layers(dst_tex_info, p_regions[i].dst_subresources, j);
 			CD3DX12_TEXTURE_COPY_LOCATION src_location(src_tex_info->resource, src_subresource);
 			CD3DX12_TEXTURE_COPY_LOCATION dst_location(dst_tex_info->resource, dst_subresource);
-			src_box.left = p_regions[i].src_offset.x;
-			src_box.top = p_regions[i].src_offset.y;
-			src_box.front = p_regions[i].src_offset.z;
-			src_box.right = p_regions[i].src_offset.x + p_regions[i].size.x;
-			src_box.bottom = p_regions[i].src_offset.y + p_regions[i].size.y;
-			src_box.back = p_regions[i].src_offset.z + p_regions[i].size.z;
-			cmd_buf_info->cmd_list->CopyTextureRegion(&dst_location, p_regions[i].dst_offset.x, p_regions[i].dst_offset.y, p_regions[i].dst_offset.z, &src_location, &src_box);
+
+			// Detect whole-subresource copies so we can pass nullptr instead of an
+			// explicit box. Some D3D12 drivers reject full-box copies on the
+			// smallest block-compressed mips. I think this is because for compressed formats you need copy
+			// at block granularity, and the box calculation may end up with an invalid box.
+			// Copying the full resource allows it to calculate the box itself and avoid the issue.
+			const uint32_t src_mip_abs = src_tex_info->base_mip + p_regions[i].src_subresources.mipmap;
+			const uint32_t src_sub_width = MAX(1U, uint32_t(src_tex_info->desc.Width >> src_mip_abs));
+			const uint32_t src_sub_height = (src_tex_info->desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE1D)
+					? 1U
+					: MAX(1U, uint32_t(src_tex_info->desc.Height) >> src_mip_abs);
+			const uint32_t src_sub_depth = (src_tex_info->desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE3D)
+					? MAX(1U, uint32_t(src_tex_info->desc.DepthOrArraySize) >> src_mip_abs)
+					: 1U;
+
+			const bool full_subresource =
+					p_regions[i].src_offset == Vector3i() &&
+					p_regions[i].dst_offset == Vector3i() &&
+					p_regions[i].size.x == int32_t(src_sub_width) &&
+					p_regions[i].size.y == int32_t(src_sub_height) &&
+					p_regions[i].size.z == int32_t(src_sub_depth);
+
+			if (full_subresource) {
+				cmd_buf_info->cmd_list->CopyTextureRegion(&dst_location, 0, 0, 0, &src_location, nullptr);
+			} else {
+				src_box.left = p_regions[i].src_offset.x;
+				src_box.top = p_regions[i].src_offset.y;
+				src_box.front = p_regions[i].src_offset.z;
+				src_box.right = p_regions[i].src_offset.x + p_regions[i].size.x;
+				src_box.bottom = p_regions[i].src_offset.y + p_regions[i].size.y;
+				src_box.back = p_regions[i].src_offset.z + p_regions[i].size.z;
+				cmd_buf_info->cmd_list->CopyTextureRegion(&dst_location, p_regions[i].dst_offset.x, p_regions[i].dst_offset.y, p_regions[i].dst_offset.z, &src_location, &src_box);
+			}
 		}
 	}
 }
@@ -4787,6 +4991,8 @@ void RenderingDeviceDriverD3D12::command_render_clear_attachments(CommandBufferI
 }
 
 void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
+	_command_check_descriptor_sets(p_cmd_buffer);
+
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 
 	const PipelineInfo *pipeline_info = (const PipelineInfo *)p_pipeline.id;
@@ -5372,6 +5578,8 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 // ----- COMMANDS -----
 
 void RenderingDeviceDriverD3D12::command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
+	_command_check_descriptor_sets(p_cmd_buffer);
+
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 
 	const PipelineInfo *pipeline_info = (const PipelineInfo *)p_pipeline.id;
@@ -5679,10 +5887,15 @@ void RenderingDeviceDriverD3D12::end_segment() {
 	FrameInfo &f = frames[frame_idx];
 
 	// Free leftover descriptors.
-	for (uint32_t i = f.descriptor_allocation_count; i < f.descriptor_allocations.size(); i++) {
-		resource_descriptor_heap.free(f.descriptor_allocations[i]);
+	if (f.descriptor_allocation_count < f.descriptor_allocations.size()) {
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		for (uint32_t i = f.descriptor_allocation_count; i < f.descriptor_allocations.size(); i++) {
+			resource_descriptor_heap.free(f.descriptor_allocations[i]);
+		}
+
+		f.descriptor_allocations.resize(f.descriptor_allocation_count);
 	}
-	f.descriptor_allocations.resize(f.descriptor_allocation_count);
 
 	segment_begun = false;
 }
@@ -5861,7 +6074,9 @@ uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 			return D3D12_TEXTURE_DATA_PITCH_ALIGNMENT;
 		case API_TRAIT_SECONDARY_VIEWPORT_SCISSOR:
 			return false;
-		case API_TRAIT_CLEARS_WITH_COPY_ENGINE:
+		case API_TRAIT_BUFFER_CLEARS_WITH_COPY_ENGINE:
+			return false;
+		case API_TRAIT_TEXTURE_CLEARS_WITH_COPY_ENGINE:
 			return false;
 		case API_TRAIT_USE_GENERAL_IN_COPY_QUEUES:
 			return true;
@@ -5881,7 +6096,7 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
-			return true;
+			return shader_capabilities.buffer_device_address_supported();
 		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
 			return true;
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
@@ -5890,6 +6105,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return false;
 		case SUPPORTS_HDR_OUTPUT:
 			return true;
+		case SUPPORTS_GPU_MAPPABLE_BUFFER:
+			return misc_features_support.uma_supported || misc_features_support.gpu_upload_heap_supported;
 		default:
 			return false;
 	}
@@ -5945,9 +6162,13 @@ RenderingDeviceDriverD3D12::RenderingDeviceDriverD3D12(RenderingContextDriverD3D
 RenderingDeviceDriverD3D12::~RenderingDeviceDriverD3D12() {
 	rtv_descriptor_heap_pool.free(null_rtv_alloc);
 
-	for (FrameInfo &f : frames) {
-		for (DescriptorHeap::Allocation &alloc : f.descriptor_allocations) {
-			resource_descriptor_heap.free(alloc);
+	{
+		MutexLock lock(resource_descriptor_heap_mutex);
+
+		for (FrameInfo &f : frames) {
+			for (DescriptorHeap::Allocation &alloc : f.descriptor_allocations) {
+				resource_descriptor_heap.free(alloc);
+			}
 		}
 	}
 
@@ -6320,6 +6541,42 @@ Error RenderingDeviceDriverD3D12::_initialize_allocator() {
 		// Print it as a warning (instead of verbose) because in the rare chance this lesser-used code path
 		// causes bugs, we get an inkling of what's going on (i.e. in order to repro bugs locally).
 		print_verbose("D3D12: Device does NOT support GPU UPLOAD heap. ReBAR must be enabled for this feature. Regular UPLOAD heaps will be used as fallback.");
+	}
+
+	misc_features_support.uma_supported = allocator->IsUMA();
+	misc_features_support.gpu_upload_heap_supported = allocator->IsGPUUploadHeapSupported();
+
+	// If UMA is supported but GPU upload heap isn't, the same functionality can be achieved
+	// by creating resources from a pool with the same properties as an upload heap.
+	//
+	// We also create this pool to support buffer device addresses for UPLOAD heaps.
+	// The limitation preventing UPLOAD heaps from being used for unordered access is a
+	// runtime validation that GPUs normally support with the same heap properties.
+	if (shader_capabilities.buffer_device_address_supported() || (misc_features_support.uma_supported && !misc_features_support.gpu_upload_heap_supported)) {
+		D3D12MA::POOL_DESC pool_desc = {};
+#if defined(_MSC_VER) || !defined(_WIN32)
+		pool_desc.HeapProperties = device->GetCustomHeapProperties(0, D3D12_HEAP_TYPE_UPLOAD);
+#else
+		device->GetCustomHeapProperties(&pool_desc.HeapProperties, 0, D3D12_HEAP_TYPE_UPLOAD);
+#endif
+		pool_desc.HeapFlags = D3D12MA_RECOMMENDED_HEAP_FLAGS | D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS;
+		res = allocator->CreatePool(&pool_desc, custom_upload_pool.GetAddressOf());
+
+		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::Allocator::CreatePool failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+	}
+
+	// Also create a pool for READBACK heaps.
+	if (shader_capabilities.buffer_device_address_supported()) {
+		D3D12MA::POOL_DESC pool_desc = {};
+#if defined(_MSC_VER) || !defined(_WIN32)
+		pool_desc.HeapProperties = device->GetCustomHeapProperties(0, D3D12_HEAP_TYPE_READBACK);
+#else
+		device->GetCustomHeapProperties(&pool_desc.HeapProperties, 0, D3D12_HEAP_TYPE_READBACK);
+#endif
+		pool_desc.HeapFlags = D3D12MA_RECOMMENDED_HEAP_FLAGS | D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS;
+		res = allocator->CreatePool(&pool_desc, custom_readback_pool.GetAddressOf());
+
+		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), ERR_CANT_CREATE, "D3D12MA::Allocator::CreatePool failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	}
 
 	return OK;

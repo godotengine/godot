@@ -46,11 +46,13 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 
 const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
+	"disable_2d",
 	"disable_3d",
 	"disable_navigation_2d",
 	"disable_navigation_3d",
@@ -84,6 +86,7 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 
 const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
+	false, // 2D
 	false, // 3D
 	false, // NAVIGATION_2D
 	false, // NAVIGATION_3D
@@ -117,6 +120,7 @@ const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX
 
 const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
+	true, // 2D
 	true, // 3D
 	true, // NAVIGATION_2D
 	true, // NAVIGATION_3D
@@ -150,6 +154,7 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 
 // Options that require some resource explicitly asking for them when detecting from the project.
 const bool EditorBuildProfile::build_option_explicit_use[BUILD_OPTION_MAX] = {
+	false, // 2D
 	false, // 3D
 	false, // NAVIGATION_2D
 	false, // NAVIGATION_3D
@@ -182,6 +187,7 @@ const bool EditorBuildProfile::build_option_explicit_use[BUILD_OPTION_MAX] = {
 };
 
 const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_category[BUILD_OPTION_MAX] = {
+	BUILD_OPTION_CATEGORY_GENERAL, // 2D
 	BUILD_OPTION_CATEGORY_GENERAL, // 3D
 	BUILD_OPTION_CATEGORY_GENERAL, // NAVIGATION_2D
 	BUILD_OPTION_CATEGORY_GENERAL, // NAVIGATION_3D
@@ -262,6 +268,13 @@ const HashMap<EditorBuildProfile::BuildOption, LocalVector<EditorBuildProfile::B
 
 // Should also contain classes not derived from either `Resource` or `Node`.
 const HashMap<EditorBuildProfile::BuildOption, LocalVector<String>> EditorBuildProfile::build_option_classes = {
+	{ BUILD_OPTION_2D, {
+			"Curve2D",
+			"Node2D",
+			"OccluderPolygon2D",
+			"SkeletonModificationStack2D",
+			"SkeletonModification2D",
+	} },
 	{ BUILD_OPTION_3D, {
 			"Node3D",
 	} },
@@ -407,6 +420,7 @@ String EditorBuildProfile::get_force_detect_classes() const {
 String EditorBuildProfile::get_build_option_name(BuildOption p_build_option) {
 	ERR_FAIL_INDEX_V(p_build_option, BUILD_OPTION_MAX, String());
 	const char *build_option_names[BUILD_OPTION_MAX] = {
+		TTRC("2D Engine"),
 		TTRC("3D Engine"),
 		TTRC("Navigation (2D)"),
 		TTRC("Navigation (3D)"),
@@ -444,6 +458,7 @@ String EditorBuildProfile::get_build_option_description(BuildOption p_build_opti
 	ERR_FAIL_INDEX_V(p_build_option, BUILD_OPTION_MAX, String());
 
 	const char *build_option_descriptions[BUILD_OPTION_MAX] = {
+		TTRC("2D Nodes for 2D games. Does not include Control nodes, which are always available."),
 		TTRC("3D Nodes as well as RenderingServer access to 3D features.\nNote that the Geometry3D singleton remains available even with this item disabled."),
 		TTRC("NavigationServer and capabilities for 2D."),
 		TTRC("NavigationServer and capabilities for 3D."),
@@ -620,6 +635,7 @@ void EditorBuildProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_to_file", "path"), &EditorBuildProfile::save_to_file);
 	ClassDB::bind_method(D_METHOD("load_from_file", "path"), &EditorBuildProfile::load_from_file);
 
+	BIND_ENUM_CONSTANT(BUILD_OPTION_2D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_3D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_NAVIGATION_2D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_NAVIGATION_3D);
@@ -717,12 +733,12 @@ EditorBuildProfile::EditorBuildProfile() {
 	build_option_settings.insert(BUILD_OPTION_OPENGL, settings_opengl);
 
 	HashMap<String, LocalVector<Variant>> settings_phy_godot_3d = {
-		{ "physics/3d/physics_engine", { "DEFAULT", "GodotPhysics3D" } },
+		{ "physics/3d/physics_engine", { "DEFAULT", PhysicsServer3DManager::GODOT_PHYSICS_3D_NAME } },
 	};
 	build_option_settings.insert(BUILD_OPTION_PHYSICS_GODOT_3D, settings_phy_godot_3d);
 
 	HashMap<String, LocalVector<Variant>> settings_jolt = {
-		{ "physics/3d/physics_engine", { "Jolt Physics" } },
+		{ "physics/3d/physics_engine", { PhysicsServer3DManager::JOLT_PHYSICS_NAME } },
 	};
 	build_option_settings.insert(BUILD_OPTION_PHYSICS_JOLT, settings_jolt);
 
@@ -738,9 +754,11 @@ void EditorBuildProfileManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			String last_file = EditorSettings::get_singleton()->get_project_metadata("build_profile", "last_file_path", "");
-			if (!last_file.is_empty()) {
-				_import_profile(last_file);
+			if (!last_file.is_empty() && !_import_profile(last_file)) {
+				// Keep the profile path if it fails, in case the user recovers or recreates it.
+				_set_profile_path(last_file);
 			}
+
 			if (edited.is_null()) {
 				edited.instantiate();
 				_update_edited_profile();
@@ -768,8 +786,8 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 		} break;
 
 		case ACTION_SAVE: {
-			if (!profile_path->get_text().is_empty()) {
-				Error err = edited->save_to_file(profile_path->get_text());
+			if (!profile_path.is_empty() && FileAccess::exists(profile_path)) {
+				Error err = edited->save_to_file(profile_path);
 				if (err != OK) {
 					EditorNode::get_singleton()->show_warning(TTRC("File saving failed."));
 				}
@@ -779,11 +797,11 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 		}
 		case ACTION_SAVE_AS: {
 			export_profile->popup_file_dialog();
-			export_profile->set_current_file(profile_path->get_text());
+			export_profile->set_current_file(profile_path);
 		} break;
 
 		case ACTION_NEW: {
-			confirm_dialog->set_text(TTRC("Create a new profile?"));
+			confirm_dialog->set_text(TTRC("Unset the current profile?"));
 			confirm_dialog->popup_centered();
 		} break;
 
@@ -1128,7 +1146,7 @@ void EditorBuildProfileManager::_action_confirm() {
 		} break;
 
 		case ACTION_NEW: {
-			profile_path->set_text("");
+			_set_profile_path("");
 			edited.instantiate();
 			_update_edited_profile();
 		} break;
@@ -1325,21 +1343,28 @@ void EditorBuildProfileManager::_force_detect_classes_changed(const String &p_te
 	edited->set_force_detect_classes(force_detect_classes->get_text());
 }
 
-void EditorBuildProfileManager::_import_profile(const String &p_path) {
+void EditorBuildProfileManager::_set_profile_path(const String &p_path) {
+	profile_label->set_text(p_path.is_empty() ? TTR("[Unsaved Profile]") : ProjectSettings::get_singleton()->localize_path(p_path));
+	profile_path = p_path;
+	profile_actions[ACTION_NEW]->set_disabled(p_path.is_empty());
+	EditorSettings::get_singleton()->set_project_metadata("build_profile", "last_file_path", p_path);
+}
+
+bool EditorBuildProfileManager::_import_profile(const String &p_path) {
 	Ref<EditorBuildProfile> profile;
 	profile.instantiate();
 	Error err = profile->load_from_file(p_path);
 	String basefile = p_path.get_file();
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("File '%s' format is invalid, import aborted."), basefile));
-		return;
+		return false;
 	}
 
-	profile_path->set_text(p_path);
-	EditorSettings::get_singleton()->set_project_metadata("build_profile", "last_file_path", p_path);
-
+	_set_profile_path(p_path);
 	edited = profile;
 	_update_edited_profile();
+
+	return true;
 }
 
 void EditorBuildProfileManager::_export_profile(const String &p_path) {
@@ -1348,8 +1373,7 @@ void EditorBuildProfileManager::_export_profile(const String &p_path) {
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving profile to path: '%s'."), p_path));
 	} else {
-		profile_path->set_text(p_path);
-		EditorSettings::get_singleton()->set_project_metadata("build_profile", "last_file_path", p_path);
+		_set_profile_path(p_path);
 	}
 }
 
@@ -1368,14 +1392,17 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	add_child(main_vbc);
 
 	HBoxContainer *path_hbc = memnew(HBoxContainer);
-	profile_path = memnew(LineEdit);
-	path_hbc->add_child(profile_path);
-	profile_path->set_accessibility_name(TTRC("Profile Path"));
-	profile_path->set_editable(true);
-	profile_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	profile_label = memnew(Label);
+	path_hbc->add_child(profile_label);
+	profile_label->set_text(TTR("[Unsaved Profile]"));
+	profile_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	profile_label->set_accessibility_name(TTRC("Profile Path"));
+	profile_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	profile_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	profile_actions[ACTION_NEW] = memnew(Button(TTRC("New")));
+	profile_actions[ACTION_NEW] = memnew(Button(TTRC("New/Unset")));
 	path_hbc->add_child(profile_actions[ACTION_NEW]);
+	profile_actions[ACTION_NEW]->set_disabled(true);
 	profile_actions[ACTION_NEW]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
 
 	profile_actions[ACTION_LOAD] = memnew(Button(TTRC("Load")));

@@ -114,39 +114,6 @@ Object::Connection::operator Variant() const {
 	return d;
 }
 
-void ObjectGDExtension::create_gdtype() {
-	ERR_FAIL_COND(gdtype);
-
-	gdtype = memnew(GDType(ClassDB::get_gdtype(parent_class_name), class_name));
-	gdtype->initialize();
-}
-
-void ObjectGDExtension::destroy_gdtype() {
-	ERR_FAIL_COND(!gdtype);
-
-#ifdef TOOLS_ENABLED
-	if (!is_placeholder) {
-#endif
-		memdelete(const_cast<GDType *>(gdtype));
-#ifdef TOOLS_ENABLED
-	}
-#endif
-
-	gdtype = nullptr;
-}
-
-ObjectGDExtension::~ObjectGDExtension() {
-	if (gdtype) {
-#ifdef TOOLS_ENABLED
-		if (!is_placeholder) {
-#endif
-			memdelete(const_cast<GDType *>(gdtype));
-#ifdef TOOLS_ENABLED
-		}
-#endif
-	}
-}
-
 bool Object::Connection::operator<(const Connection &p_conn) const {
 	if (signal == p_conn.signal) {
 		return callable < p_conn.callable;
@@ -253,10 +220,8 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 	}
 
 	// Try built-in setter.
-	{
-		if (ClassDB::set_property(this, p_name, p_value, r_valid)) {
-			return;
-		}
+	if (set_native(p_name, p_value, r_valid)) {
+		return;
 	}
 
 	if (p_name == CoreStringName(script)) {
@@ -324,13 +289,8 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 	}
 
 	// Try built-in getter.
-	{
-		if (ClassDB::get_property(const_cast<Object *>(this), p_name, ret)) {
-			if (r_valid) {
-				*r_valid = true;
-			}
-			return ret;
-		}
+	if (Variant value; get_native(p_name, value, r_valid)) {
+		return value;
 	}
 
 	if (p_name == CoreStringName(script)) {
@@ -384,6 +344,132 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		}
 		return Variant();
 	}
+}
+
+bool Object::set_native(const StringName &p_name, const Variant &p_value, bool *r_valid) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_name);
+	if (member) {
+		switch (member->type) {
+			case GDType::Member::Type::PROPERTY: {
+				const GDType::Member::Property &psg = member->payload.property;
+				if (!psg.setter) {
+					if (r_valid) {
+						*r_valid = false;
+					}
+					return true;
+				}
+
+				Callable::CallError ce;
+
+				if (psg.index >= 0) {
+					Variant index = psg.index;
+					const Variant *arg[2] = { &index, &p_value };
+					//p_object->call(psg->setter,arg,2,ce);
+					psg.setter->call(this, arg, 2, ce);
+				} else {
+					const Variant *arg[1] = { &p_value };
+					psg.setter->call(this, arg, 1, ce);
+				}
+
+				if (r_valid) {
+					*r_valid = ce.error == Callable::CallError::CALL_OK;
+				}
+				return true;
+			}
+			case GDType::Member::Type::INTEGER_CONSTANT:
+			case GDType::Member::Type::METHOD:
+			case GDType::Member::Type::ENUM:
+			case GDType::Member::Type::SIGNAL: {
+				// All other properties are unsettable.
+				if (r_valid) {
+					*r_valid = false;
+				}
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Object::get_native(const StringName &p_name, Variant &r_value, bool *r_valid) const {
+	const GDType::Member *member = get_gdtype().members().getptr(p_name);
+	if (member) {
+		switch (member->type) {
+			case GDType::Member::Type::PROPERTY: {
+				const GDType::Member::Property &psg = member->payload.property;
+				if (!psg.getter) {
+					if (r_valid) {
+						*r_valid = true; // Set to true for compat reasons.
+					}
+					r_value = Variant();
+					return true;
+				}
+
+				Callable::CallError ce;
+				if (psg.index >= 0) {
+					Variant index = psg.index;
+					const Variant *arg[1] = { &index };
+					r_value = psg.getter->call(const_cast<Object *>(this), arg, 1, ce);
+				} else {
+					r_value = psg.getter->call(const_cast<Object *>(this), nullptr, 0, ce);
+				}
+
+				if (ce.error != Callable::CallError::CALL_OK) {
+					if (r_valid) {
+						*r_valid = false;
+					}
+					r_value = Variant();
+				} else if (r_valid) {
+					*r_valid = true;
+				}
+				return true;
+			}
+			case GDType::Member::Type::INTEGER_CONSTANT: {
+				if (r_valid) {
+					*r_valid = true;
+				}
+				r_value = member->payload.integer_constant.value;
+				return true;
+			}
+			case GDType::Member::Type::METHOD: {
+				if (r_valid) {
+					*r_valid = true;
+				}
+				r_value = Callable(this, p_name);
+				return true;
+			}
+			case GDType::Member::Type::SIGNAL: {
+				if (r_valid) {
+					*r_valid = true;
+				}
+				r_value = Signal(this, p_name);
+				return true;
+			}
+			case GDType::Member::Type::ENUM: {
+				if (r_valid) {
+					*r_valid = false;
+				}
+				r_value = Variant();
+				return true;
+			}
+		}
+	}
+
+	// The "free()" method is special, so we assume it exists and return a Callable.
+	if (p_name == CoreStringName(free_)) {
+		if (r_valid) {
+			*r_valid = true;
+		}
+
+		r_value = Callable(this, p_name);
+		return true;
+	}
+
+	if (r_valid) {
+		*r_valid = false;
+	}
+	return false;
 }
 
 void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
@@ -658,8 +744,8 @@ bool Object::has_method(const StringName &p_method) const {
 		return true;
 	}
 
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
-	if (method != nullptr) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_method);
+	if (member != nullptr && member->type == GDType::Member::Type::METHOD) {
 		return true;
 	}
 
@@ -791,11 +877,10 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 		return Variant();
 	}
 
-	Variant ret;
 	OBJ_DEBUG_LOCK
 
 	if (script_instance) {
-		ret = script_instance->callp(p_method, p_args, p_argcount, r_error);
+		Variant ret = script_instance->callp(p_method, p_args, p_argcount, r_error);
 		// Force jump table.
 		switch (r_error.error) {
 			case Callable::CallError::CALL_OK:
@@ -814,15 +899,14 @@ Variant Object::callp(const StringName &p_method, const Variant **p_args, int p_
 
 	//extension does not need this, because all methods are registered in MethodBind
 
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
-
-	if (method) {
-		ret = method->call(this, p_args, p_argcount, r_error);
-	} else {
+	const GDType::Member *member = get_gdtype().members().getptr(p_method);
+	if (!member || member->type != GDType::Member::Type::METHOD) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
 	}
 
-	return ret;
+	const MethodBind *method = member->payload.method;
+	return method->call(this, p_args, p_argcount, r_error);
 }
 
 Variant Object::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -834,11 +918,10 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 		return Variant();
 	}
 
-	Variant ret;
 	OBJ_DEBUG_LOCK
 
 	if (script_instance) {
-		ret = script_instance->call_const(p_method, p_args, p_argcount, r_error);
+		Variant ret = script_instance->call_const(p_method, p_args, p_argcount, r_error);
 		//force jumptable
 		switch (r_error.error) {
 			case Callable::CallError::CALL_OK:
@@ -858,19 +941,20 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 
 	//extension does not need this, because all methods are registered in MethodBind
 
-	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
-
-	if (method) {
-		if (!method->is_const()) {
-			r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
-			return ret;
-		}
-		ret = method->call(this, p_args, p_argcount, r_error);
-	} else {
+	const GDType::Member *member = get_gdtype().members().getptr(p_method);
+	if (!member || member->type != GDType::Member::Type::METHOD) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
 	}
 
-	return ret;
+	const MethodBind *method = member->payload.method;
+
+	if (!method->is_const()) {
+		r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
+		return Variant();
+	}
+
+	return method->call(this, p_args, p_argcount, r_error);
 }
 
 void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const {
@@ -1099,7 +1183,7 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
 	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
-	ERR_FAIL_COND_MSG(get_gdtype().get_signal_map(false).has(p_signal.name), vformat("User signal's name conflicts with a built-in signal of '%s'.", get_class_name()));
+	ERR_FAIL_COND_MSG(get_gdtype().members().has(p_signal.name), vformat("User signal's name conflicts with a built-in member of '%s'.", get_class_name()));
 
 	ObjectSignalLock signal_lock(this);
 
@@ -1189,7 +1273,8 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		SignalData *s = signal_map.getptr(p_name);
 		if (!s) {
 #ifdef DEBUG_ENABLED
-			bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_name);
+			const GDType::Member *member = get_gdtype().members().getptr(p_name);
+			bool signal_is_valid = member && member->type == GDType::Member::Type::SIGNAL;
 			//check in script
 			ERR_FAIL_COND_V_MSG(!signal_is_valid && script_instance && !script_instance->get_script()->has_script_signal(p_name), ERR_UNAVAILABLE, vformat("Can't emit non-existing signal \"%s\".", p_name));
 #endif
@@ -1229,16 +1314,11 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 	OBJ_DEBUG_LOCK
 
-	// If this is a ref-counted object, prevent it from being destroyed during signal
-	// emission, which is needed in certain edge cases; e.g., GH-73889 and GH-109471.
-	// Moreover, since signals can be emitted from constructors (classic example being
-	// notify_property_list_changed), we must be careful not to do the ref init ourselves,
-	// which would lead to the object being destroyed at the end of this function.
-	bool pending_unref = Object::cast_to<RefCounted>(this) ? ((RefCounted *)this)->reference() : false;
-
 	Error err = OK;
 
-	Vector<const Variant *> append_source_mem;
+	LocalVector<const Variant *> append_source_mem;
+	// If this is a ref-counted object, `source` also prevents it from being destroyed during
+	// signal emission, which is needed in certain edge cases; e.g., GH-73889 and GH-109471.
 	Variant source = this;
 
 	for (uint32_t i = 0; i < slot_count; ++i) {
@@ -1259,7 +1339,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			int source_index = p_argcount - callable.get_unbound_arguments_count();
 			if (source_index >= 0) {
 				append_source_mem.resize(p_argcount + 1);
-				const Variant **args_mem = append_source_mem.ptrw();
+				const Variant **args_mem = append_source_mem.ptr();
 
 				for (int j = 0; j < source_index; j++) {
 					args_mem[j] = p_args[j];
@@ -1317,14 +1397,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		memfree(slot_flags);
 	}
 
-	if (pending_unref) {
-		// We have to do the same Ref<T> would do. We can't just use Ref<T>
-		// because it would do the init ref logic, which is something this function
-		// shouldn't do, as explained above.
-		if (((RefCounted *)this)->unreference()) {
-			memdelete(this);
-		}
-	}
+	(void)source; // Ensure it's scoped to the function so it lives up to the end.
 
 	return err;
 }
@@ -1417,7 +1490,8 @@ bool Object::has_signal(const StringName &p_name) const {
 		return true;
 	}
 
-	if (get_gdtype().get_signal_map(false).has(p_name)) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_name);
+	if (member && member->type == GDType::Member::Type::SIGNAL) {
 		return true;
 	}
 
@@ -1524,7 +1598,8 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal);
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		bool signal_is_valid = member && member->type == GDType::Member::Type::SIGNAL;
 		//check in script
 		if (!signal_is_valid && script_instance) {
 			if (script_instance->get_script()->has_script_signal(p_signal)) {
@@ -1582,8 +1657,8 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal);
-		if (signal_is_valid) {
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		if (member && member->type == GDType::Member::Type::SIGNAL) {
 			return false;
 		}
 
@@ -1602,8 +1677,8 @@ bool Object::has_connections(const StringName &p_signal) const {
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal);
-		if (signal_is_valid) {
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		if (member && member->type == GDType::Member::Type::SIGNAL) {
 			return false;
 		}
 
@@ -1628,7 +1703,8 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = get_gdtype().get_signal_map(false).has(p_signal) ||
+		const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+		bool signal_is_valid = (member && member->type == GDType::Member::Type::SIGNAL) ||
 				(script_instance && script_instance->get_script()->has_script_signal(p_signal));
 		ERR_FAIL_COND_V_MSG(signal_is_valid, false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
 	}
@@ -1651,7 +1727,8 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	s->slot_map.erase(*p_callable.get_base_comparator());
 
-	if (s->slot_map.is_empty() && get_gdtype().get_signal_map(false).has(p_signal)) {
+	const GDType::Member *member = get_gdtype().members().getptr(p_signal);
+	if (s->slot_map.is_empty() && member && member->type == GDType::Member::Type::SIGNAL) {
 		//not user signal, delete
 		signal_map.erase(p_signal);
 	}
@@ -2529,8 +2606,8 @@ void ObjectDB::cleanup() {
 			// Ensure calling the native classes because if a leaked instance has a script
 			// that overrides any of those methods, it'd not be OK to call them at this point,
 			// now the scripting languages have already been terminated.
-			MethodBind *node_get_path = ClassDB::get_method("Node", "get_path");
-			MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
+			const MethodBind *node_get_path = ClassDB::get_method("Node", "get_path");
+			const MethodBind *resource_get_path = ClassDB::get_method("Resource", "get_path");
 			Callable::CallError call_error;
 
 			for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {

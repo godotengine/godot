@@ -229,7 +229,6 @@ void GDScriptParser::clear() {
 }
 
 void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
-	// TODO: Improve error reporting by pointing at source code.
 	// TODO: Errors might point at more than one place at once (e.g. show previous declaration).
 	panic_mode = true;
 	ParserError err;
@@ -763,14 +762,10 @@ void GDScriptParser::parse_program() {
 					break;
 				}
 			}
-		} else if (check(GDScriptTokenizer::Token::LITERAL) && current.literal.get_type() == Variant::STRING) {
-			// Allow strings in class body as multiline comments.
-			advance();
-			if (!match(GDScriptTokenizer::Token::NEWLINE)) {
-				push_error("Expected newline after comment string.");
-			}
 		} else {
-			break;
+			if (!parse_standalone_string()) {
+				break;
+			}
 		}
 	}
 
@@ -806,12 +801,7 @@ void GDScriptParser::parse_program() {
 				can_have_class_or_extends = false;
 				break;
 			case GDScriptTokenizer::Token::LITERAL:
-				if (current.literal.get_type() == Variant::STRING) {
-					// Allow strings in class body as multiline comments.
-					advance();
-					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
-						push_error("Expected newline after comment string.");
-					}
+				if (parse_standalone_string()) {
 					break;
 				}
 				[[fallthrough]];
@@ -1201,12 +1191,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				class_end = true;
 				break;
 			case GDScriptTokenizer::Token::LITERAL:
-				if (current.literal.get_type() == Variant::STRING) {
-					// Allow strings in class body as multiline comments.
-					advance();
-					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
-						push_error("Expected newline after comment string.");
-					}
+				if (parse_standalone_string()) {
 					break;
 				}
 				[[fallthrough]];
@@ -1681,7 +1666,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 
 #ifdef TOOLS_ENABLED
 	// Enum values documentation.
-	for (int i = 0; i < enum_node->values.size(); i++) {
+	for (uint32_t i = 0; i < enum_node->values.size(); i++) {
 		int enum_value_line = enum_node->values[i].line;
 		int doc_comment_line = enum_value_line - 1;
 
@@ -1697,7 +1682,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 		}
 
 		if (named) {
-			enum_node->values.write[i].doc_data = doc_data;
+			enum_node->values[i].doc_data = doc_data;
 		} else {
 			current_class->set_enum_value_doc_data(enum_node->values[i].identifier->name, doc_data);
 		}
@@ -2204,12 +2189,6 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						// Standalone lambdas can't be used, so make this an error.
 						push_error("Standalone lambdas cannot be accessed. Consider assigning it to a variable.", expression);
 						break;
-					case Node::LITERAL:
-						// Allow strings as multiline comments.
-						if (static_cast<GDScriptParser::LiteralNode *>(expression)->value.get_type() != Variant::STRING) {
-							push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
-						}
-						break;
 					case Node::TERNARY_OPERATOR:
 						push_warning(expression, GDScriptWarning::STANDALONE_TERNARY);
 						break;
@@ -2266,8 +2245,6 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 		current_suite->has_unreachable_code = true;
 		if (current_function) {
 			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
-		} else {
-			// TODO: Properties setters and getters with unreachable code are not being warned
 		}
 	}
 #endif
@@ -2280,7 +2257,6 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 }
 
 GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
-	// TODO: Add assert message.
 	AssertNode *assert = alloc_node<AssertNode>();
 
 	push_multiline(true);
@@ -2568,7 +2544,7 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		if (guard == nullptr) {
 			push_error(R"(Expected expression for pattern guard after "when".)");
 		} else {
-			branch->guard_body->statements.append(guard);
+			branch->guard_body->statements.push_back(guard);
 		}
 		current_suite = parent_block;
 		complete_extents(branch->guard_body);
@@ -3906,7 +3882,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 			} else if (container_type->container_types.size() > 0) {
 				push_error("Nested typed collections are not supported.");
 			} else {
-				type->container_types.append(container_type);
+				type->container_types.push_back(container_type);
 			}
 			first_pass = false;
 		} while (match(GDScriptTokenizer::Token::COMMA));
@@ -3928,6 +3904,21 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 
 	complete_extents(type);
 	return type;
+}
+
+bool GDScriptParser::parse_standalone_string() {
+	if (check(GDScriptTokenizer::Token::LITERAL) && current.literal.get_type() == Variant::STRING) {
+		// For compatibility we allow standalone strings without erroring.
+		advance();
+#ifdef DEBUG_ENABLED
+		push_warning(previous.start_line, previous.start_column, previous.end_line, previous.end_column, GDScriptWarning::STANDALONE_EXPRESSION);
+#endif
+		if (!match(GDScriptTokenizer::Token::NEWLINE)) {
+			push_error("Expected newline after comment string.");
+		}
+		return true;
+	}
+	return false;
 }
 
 #ifdef TOOLS_ENABLED
@@ -4218,7 +4209,7 @@ GDScriptParser::ClassDocData GDScriptParser::parse_class_doc_comment(int p_line,
 					link = stripped_line.substr(colon_pos).strip_edges();
 				}
 
-				result.tutorials.append(Pair<String, String>(title, link));
+				result.tutorials.push_back(Pair<String, String>(title, link));
 				continue;
 			} else if (stripped_line == "@deprecated" || stripped_line.begins_with("@deprecated:")) {
 				result.is_deprecated = true;
@@ -4423,7 +4414,7 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 
 	// Some annotations need to be resolved and applied in the parser.
 	if (p_annotation->name == SNAME("@icon") || p_annotation->name == SNAME("@warning_ignore_start") || p_annotation->name == SNAME("@warning_ignore_restore")) {
-		for (int i = 0; i < p_annotation->arguments.size(); i++) {
+		for (uint32_t i = 0; i < p_annotation->arguments.size(); i++) {
 			ExpressionNode *argument = p_annotation->arguments[i];
 
 			if (argument->type != Node::LITERAL) {
@@ -4680,7 +4671,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	variable->export_info.hint = t_hint;
 
 	String hint_string;
-	for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
+	for (uint32_t i = 0; i < p_annotation->resolved_arguments.size(); i++) {
 		String arg_string = String(p_annotation->resolved_arguments[i]);
 
 		if (p_annotation->name != SNAME("@export_placeholder")) {
@@ -5170,10 +5161,10 @@ bool GDScriptParser::warning_ignore_annotation(AnnotationNode *p_annotation, Nod
 				case Node::FUNCTION: {
 					FunctionNode *function = static_cast<FunctionNode *>(p_target);
 					end_line = function->start_line;
-					for (int i = 0; i < function->parameters.size(); i++) {
-						end_line = MAX(end_line, function->parameters[i]->end_line);
-						if (function->parameters[i]->initializer != nullptr) {
-							end_line = MAX(end_line, function->parameters[i]->initializer->end_line);
+					for (const ParameterNode *param : function->parameters) {
+						end_line = MAX(end_line, param->end_line);
+						if (param->initializer != nullptr) {
+							end_line = MAX(end_line, param->initializer->end_line);
 						}
 					}
 				} break;
@@ -5181,8 +5172,8 @@ bool GDScriptParser::warning_ignore_annotation(AnnotationNode *p_annotation, Nod
 				case Node::MATCH_BRANCH: {
 					MatchBranchNode *branch = static_cast<MatchBranchNode *>(p_target);
 					end_line = branch->start_line;
-					for (int i = 0; i < branch->patterns.size(); i++) {
-						end_line = MAX(end_line, branch->patterns[i]->end_line);
+					for (const PatternNode *pattern : branch->patterns) {
+						end_line = MAX(end_line, pattern->end_line);
 					}
 				} break;
 
@@ -5259,7 +5250,7 @@ bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target
 		unsigned char permission_args = 0;
 		unsigned char transfer_mode_args = 0;
 
-		for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
+		for (uint32_t i = 0; i < p_annotation->resolved_arguments.size(); i++) {
 			if (i == 3) {
 				rpc_config["channel"] = p_annotation->resolved_arguments[i].operator int();
 				continue;
@@ -5660,7 +5651,7 @@ void GDScriptParser::TreePrinter::push_text(const String &p_text) {
 void GDScriptParser::TreePrinter::print_annotation(const AnnotationNode *p_annotation) {
 	push_text(p_annotation->name);
 	push_text(" (");
-	for (int i = 0; i < p_annotation->arguments.size(); i++) {
+	for (uint32_t i = 0; i < p_annotation->arguments.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -5669,9 +5660,9 @@ void GDScriptParser::TreePrinter::print_annotation(const AnnotationNode *p_annot
 	push_line(")");
 }
 
-void GDScriptParser::TreePrinter::print_array(ArrayNode *p_array) {
+void GDScriptParser::TreePrinter::print_array(const ArrayNode *p_array) {
 	push_text("[ ");
-	for (int i = 0; i < p_array->elements.size(); i++) {
+	for (uint32_t i = 0; i < p_array->elements.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -5680,13 +5671,13 @@ void GDScriptParser::TreePrinter::print_array(ArrayNode *p_array) {
 	push_text(" ]");
 }
 
-void GDScriptParser::TreePrinter::print_assert(AssertNode *p_assert) {
+void GDScriptParser::TreePrinter::print_assert(const AssertNode *p_assert) {
 	push_text("Assert ( ");
 	print_expression(p_assert->condition);
 	push_line(" )");
 }
 
-void GDScriptParser::TreePrinter::print_assignment(AssignmentNode *p_assignment) {
+void GDScriptParser::TreePrinter::print_assignment(const AssignmentNode *p_assignment) {
 	switch (p_assignment->assignee->type) {
 		case Node::IDENTIFIER:
 			print_identifier(static_cast<IdentifierNode *>(p_assignment->assignee));
@@ -5741,12 +5732,12 @@ void GDScriptParser::TreePrinter::print_assignment(AssignmentNode *p_assignment)
 	push_line();
 }
 
-void GDScriptParser::TreePrinter::print_await(AwaitNode *p_await) {
+void GDScriptParser::TreePrinter::print_await(const AwaitNode *p_await) {
 	push_text("Await ");
 	print_expression(p_await->to_await);
 }
 
-void GDScriptParser::TreePrinter::print_binary_op(BinaryOpNode *p_binary_op) {
+void GDScriptParser::TreePrinter::print_binary_op(const BinaryOpNode *p_binary_op) {
 	// Surround in parenthesis for disambiguation.
 	push_text("(");
 	print_expression(p_binary_op->left_operand);
@@ -5817,7 +5808,7 @@ void GDScriptParser::TreePrinter::print_binary_op(BinaryOpNode *p_binary_op) {
 	push_text(")");
 }
 
-void GDScriptParser::TreePrinter::print_call(CallNode *p_call) {
+void GDScriptParser::TreePrinter::print_call(const CallNode *p_call) {
 	if (p_call->is_super) {
 		push_text("super");
 		if (p_call->callee != nullptr) {
@@ -5828,7 +5819,7 @@ void GDScriptParser::TreePrinter::print_call(CallNode *p_call) {
 		print_expression(p_call->callee);
 	}
 	push_text("( ");
-	for (int i = 0; i < p_call->arguments.size(); i++) {
+	for (uint32_t i = 0; i < p_call->arguments.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -5837,13 +5828,13 @@ void GDScriptParser::TreePrinter::print_call(CallNode *p_call) {
 	push_text(" )");
 }
 
-void GDScriptParser::TreePrinter::print_cast(CastNode *p_cast) {
+void GDScriptParser::TreePrinter::print_cast(const CastNode *p_cast) {
 	print_expression(p_cast->operand);
 	push_text(" AS ");
 	print_type(p_cast->cast_type);
 }
 
-void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
+void GDScriptParser::TreePrinter::print_class(const ClassNode *p_class) {
 	for (const AnnotationNode *E : p_class->annotations) {
 		print_annotation(E);
 	}
@@ -5875,9 +5866,7 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 
 	increase_indent();
 
-	for (int i = 0; i < p_class->members.size(); i++) {
-		const ClassNode::Member &m = p_class->members[i];
-
+	for (const ClassNode::Member &m : p_class->members) {
 		switch (m.type) {
 			case ClassNode::Member::CLASS:
 				print_class(m.m_class);
@@ -5910,7 +5899,7 @@ void GDScriptParser::TreePrinter::print_class(ClassNode *p_class) {
 	decrease_indent();
 }
 
-void GDScriptParser::TreePrinter::print_constant(ConstantNode *p_constant) {
+void GDScriptParser::TreePrinter::print_constant(const ConstantNode *p_constant) {
 	push_text("Constant ");
 	print_identifier(p_constant->identifier);
 
@@ -5927,79 +5916,79 @@ void GDScriptParser::TreePrinter::print_constant(ConstantNode *p_constant) {
 	push_line();
 }
 
-void GDScriptParser::TreePrinter::print_dictionary(DictionaryNode *p_dictionary) {
+void GDScriptParser::TreePrinter::print_dictionary(const DictionaryNode *p_dictionary) {
 	push_line("{");
 	increase_indent();
-	for (int i = 0; i < p_dictionary->elements.size(); i++) {
-		print_expression(p_dictionary->elements[i].key);
+	for (const DictionaryNode::Pair &element : p_dictionary->elements) {
+		print_expression(element.key);
 		if (p_dictionary->style == DictionaryNode::PYTHON_DICT) {
 			push_text(" : ");
 		} else {
 			push_text(" = ");
 		}
-		print_expression(p_dictionary->elements[i].value);
+		print_expression(element.value);
 		push_line(" ,");
 	}
 	decrease_indent();
 	push_text("}");
 }
 
-void GDScriptParser::TreePrinter::print_expression(ExpressionNode *p_expression) {
+void GDScriptParser::TreePrinter::print_expression(const ExpressionNode *p_expression) {
 	if (p_expression == nullptr) {
 		push_text("<invalid expression>");
 		return;
 	}
 	switch (p_expression->type) {
 		case Node::ARRAY:
-			print_array(static_cast<ArrayNode *>(p_expression));
+			print_array(static_cast<const ArrayNode *>(p_expression));
 			break;
 		case Node::ASSIGNMENT:
-			print_assignment(static_cast<AssignmentNode *>(p_expression));
+			print_assignment(static_cast<const AssignmentNode *>(p_expression));
 			break;
 		case Node::AWAIT:
-			print_await(static_cast<AwaitNode *>(p_expression));
+			print_await(static_cast<const AwaitNode *>(p_expression));
 			break;
 		case Node::BINARY_OPERATOR:
-			print_binary_op(static_cast<BinaryOpNode *>(p_expression));
+			print_binary_op(static_cast<const BinaryOpNode *>(p_expression));
 			break;
 		case Node::CALL:
-			print_call(static_cast<CallNode *>(p_expression));
+			print_call(static_cast<const CallNode *>(p_expression));
 			break;
 		case Node::CAST:
-			print_cast(static_cast<CastNode *>(p_expression));
+			print_cast(static_cast<const CastNode *>(p_expression));
 			break;
 		case Node::DICTIONARY:
-			print_dictionary(static_cast<DictionaryNode *>(p_expression));
+			print_dictionary(static_cast<const DictionaryNode *>(p_expression));
 			break;
 		case Node::GET_NODE:
-			print_get_node(static_cast<GetNodeNode *>(p_expression));
+			print_get_node(static_cast<const GetNodeNode *>(p_expression));
 			break;
 		case Node::IDENTIFIER:
-			print_identifier(static_cast<IdentifierNode *>(p_expression));
+			print_identifier(static_cast<const IdentifierNode *>(p_expression));
 			break;
 		case Node::LAMBDA:
-			print_lambda(static_cast<LambdaNode *>(p_expression));
+			print_lambda(static_cast<const LambdaNode *>(p_expression));
 			break;
 		case Node::LITERAL:
-			print_literal(static_cast<LiteralNode *>(p_expression));
+			print_literal(static_cast<const LiteralNode *>(p_expression));
 			break;
 		case Node::PRELOAD:
-			print_preload(static_cast<PreloadNode *>(p_expression));
+			print_preload(static_cast<const PreloadNode *>(p_expression));
 			break;
 		case Node::SELF:
-			print_self(static_cast<SelfNode *>(p_expression));
+			print_self(static_cast<const SelfNode *>(p_expression));
 			break;
 		case Node::SUBSCRIPT:
-			print_subscript(static_cast<SubscriptNode *>(p_expression));
+			print_subscript(static_cast<const SubscriptNode *>(p_expression));
 			break;
 		case Node::TERNARY_OPERATOR:
-			print_ternary_op(static_cast<TernaryOpNode *>(p_expression));
+			print_ternary_op(static_cast<const TernaryOpNode *>(p_expression));
 			break;
 		case Node::TYPE_TEST:
-			print_type_test(static_cast<TypeTestNode *>(p_expression));
+			print_type_test(static_cast<const TypeTestNode *>(p_expression));
 			break;
 		case Node::UNARY_OPERATOR:
-			print_unary_op(static_cast<UnaryOpNode *>(p_expression));
+			print_unary_op(static_cast<const UnaryOpNode *>(p_expression));
 			break;
 		default:
 			push_text(vformat("<unknown expression %d>", p_expression->type));
@@ -6007,7 +5996,7 @@ void GDScriptParser::TreePrinter::print_expression(ExpressionNode *p_expression)
 	}
 }
 
-void GDScriptParser::TreePrinter::print_enum(EnumNode *p_enum) {
+void GDScriptParser::TreePrinter::print_enum(const EnumNode *p_enum) {
 	push_text("Enum ");
 	if (p_enum->identifier != nullptr) {
 		print_identifier(p_enum->identifier);
@@ -6017,8 +6006,7 @@ void GDScriptParser::TreePrinter::print_enum(EnumNode *p_enum) {
 
 	push_line(" {");
 	increase_indent();
-	for (int i = 0; i < p_enum->values.size(); i++) {
-		const EnumNode::Value &item = p_enum->values[i];
+	for (const EnumNode::Value &item : p_enum->values) {
 		print_identifier(item.identifier);
 		push_text(" = ");
 		push_text(itos(item.value));
@@ -6028,7 +6016,7 @@ void GDScriptParser::TreePrinter::print_enum(EnumNode *p_enum) {
 	push_line("}");
 }
 
-void GDScriptParser::TreePrinter::print_for(ForNode *p_for) {
+void GDScriptParser::TreePrinter::print_for(const ForNode *p_for) {
 	push_text("For ");
 	print_identifier(p_for->variable);
 	push_text(" IN ");
@@ -6042,7 +6030,7 @@ void GDScriptParser::TreePrinter::print_for(ForNode *p_for) {
 	decrease_indent();
 }
 
-void GDScriptParser::TreePrinter::print_function(FunctionNode *p_function, const String &p_context) {
+void GDScriptParser::TreePrinter::print_function(const FunctionNode *p_function, const String &p_context) {
 	for (const AnnotationNode *E : p_function->annotations) {
 		print_annotation(E);
 	}
@@ -6057,7 +6045,7 @@ void GDScriptParser::TreePrinter::print_function(FunctionNode *p_function, const
 		push_text("<anonymous>");
 	}
 	push_text("( ");
-	for (int i = 0; i < p_function->parameters.size(); i++) {
+	for (uint32_t i = 0; i < p_function->parameters.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -6069,14 +6057,14 @@ void GDScriptParser::TreePrinter::print_function(FunctionNode *p_function, const
 	decrease_indent();
 }
 
-void GDScriptParser::TreePrinter::print_get_node(GetNodeNode *p_get_node) {
+void GDScriptParser::TreePrinter::print_get_node(const GetNodeNode *p_get_node) {
 	if (p_get_node->use_dollar) {
 		push_text("$");
 	}
 	push_text(p_get_node->full_path);
 }
 
-void GDScriptParser::TreePrinter::print_identifier(IdentifierNode *p_identifier) {
+void GDScriptParser::TreePrinter::print_identifier(const IdentifierNode *p_identifier) {
 	if (p_identifier != nullptr) {
 		push_text(p_identifier->name);
 	} else {
@@ -6084,7 +6072,7 @@ void GDScriptParser::TreePrinter::print_identifier(IdentifierNode *p_identifier)
 	}
 }
 
-void GDScriptParser::TreePrinter::print_if(IfNode *p_if, bool p_is_elif) {
+void GDScriptParser::TreePrinter::print_if(const IfNode *p_if, bool p_is_elif) {
 	if (p_is_elif) {
 		push_text("Elif ");
 	} else {
@@ -6106,10 +6094,10 @@ void GDScriptParser::TreePrinter::print_if(IfNode *p_if, bool p_is_elif) {
 	}
 }
 
-void GDScriptParser::TreePrinter::print_lambda(LambdaNode *p_lambda) {
+void GDScriptParser::TreePrinter::print_lambda(const LambdaNode *p_lambda) {
 	print_function(p_lambda->function, "Lambda");
 	push_text("| captures [ ");
-	for (int i = 0; i < p_lambda->captures.size(); i++) {
+	for (uint32_t i = 0; i < p_lambda->captures.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -6118,7 +6106,7 @@ void GDScriptParser::TreePrinter::print_lambda(LambdaNode *p_lambda) {
 	push_line(" ]");
 }
 
-void GDScriptParser::TreePrinter::print_literal(LiteralNode *p_literal) {
+void GDScriptParser::TreePrinter::print_literal(const LiteralNode *p_literal) {
 	// Prefix for string types.
 	switch (p_literal->value.get_type()) {
 		case Variant::NODE_PATH:
@@ -6146,20 +6134,20 @@ void GDScriptParser::TreePrinter::print_literal(LiteralNode *p_literal) {
 	}
 }
 
-void GDScriptParser::TreePrinter::print_match(MatchNode *p_match) {
+void GDScriptParser::TreePrinter::print_match(const MatchNode *p_match) {
 	push_text("Match ");
 	print_expression(p_match->test);
 	push_line(" :");
 
 	increase_indent();
-	for (int i = 0; i < p_match->branches.size(); i++) {
-		print_match_branch(p_match->branches[i]);
+	for (const GDScriptParser::MatchBranchNode *branch : p_match->branches) {
+		print_match_branch(branch);
 	}
 	decrease_indent();
 }
 
-void GDScriptParser::TreePrinter::print_match_branch(MatchBranchNode *p_match_branch) {
-	for (int i = 0; i < p_match_branch->patterns.size(); i++) {
+void GDScriptParser::TreePrinter::print_match_branch(const MatchBranchNode *p_match_branch) {
+	for (uint32_t i = 0; i < p_match_branch->patterns.size(); i++) {
 		if (i > 0) {
 			push_text(" , ");
 		}
@@ -6173,7 +6161,7 @@ void GDScriptParser::TreePrinter::print_match_branch(MatchBranchNode *p_match_br
 	decrease_indent();
 }
 
-void GDScriptParser::TreePrinter::print_match_pattern(PatternNode *p_match_pattern) {
+void GDScriptParser::TreePrinter::print_match_pattern(const PatternNode *p_match_pattern) {
 	switch (p_match_pattern->pattern_type) {
 		case PatternNode::PT_LITERAL:
 			print_literal(p_match_pattern->literal);
@@ -6193,7 +6181,7 @@ void GDScriptParser::TreePrinter::print_match_pattern(PatternNode *p_match_patte
 			break;
 		case PatternNode::PT_ARRAY:
 			push_text("[ ");
-			for (int i = 0; i < p_match_pattern->array.size(); i++) {
+			for (uint32_t i = 0; i < p_match_pattern->array.size(); i++) {
 				if (i > 0) {
 					push_text(" , ");
 				}
@@ -6203,7 +6191,7 @@ void GDScriptParser::TreePrinter::print_match_pattern(PatternNode *p_match_patte
 			break;
 		case PatternNode::PT_DICTIONARY:
 			push_text("{ ");
-			for (int i = 0; i < p_match_pattern->dictionary.size(); i++) {
+			for (uint32_t i = 0; i < p_match_pattern->dictionary.size(); i++) {
 				if (i > 0) {
 					push_text(" , ");
 				}
@@ -6222,7 +6210,7 @@ void GDScriptParser::TreePrinter::print_match_pattern(PatternNode *p_match_patte
 	}
 }
 
-void GDScriptParser::TreePrinter::print_parameter(ParameterNode *p_parameter) {
+void GDScriptParser::TreePrinter::print_parameter(const ParameterNode *p_parameter) {
 	print_identifier(p_parameter->identifier);
 	if (p_parameter->datatype_specifier != nullptr) {
 		push_text(" : ");
@@ -6234,13 +6222,13 @@ void GDScriptParser::TreePrinter::print_parameter(ParameterNode *p_parameter) {
 	}
 }
 
-void GDScriptParser::TreePrinter::print_preload(PreloadNode *p_preload) {
+void GDScriptParser::TreePrinter::print_preload(const PreloadNode *p_preload) {
 	push_text(R"(Preload ( ")");
 	push_text(p_preload->resolved_path);
 	push_text(R"(" )");
 }
 
-void GDScriptParser::TreePrinter::print_return(ReturnNode *p_return) {
+void GDScriptParser::TreePrinter::print_return(const ReturnNode *p_return) {
 	push_text("Return");
 	if (p_return->return_value != nullptr) {
 		push_text(" ");
@@ -6249,7 +6237,7 @@ void GDScriptParser::TreePrinter::print_return(ReturnNode *p_return) {
 	push_line();
 }
 
-void GDScriptParser::TreePrinter::print_self(SelfNode *p_self) {
+void GDScriptParser::TreePrinter::print_self(const SelfNode *p_self) {
 	push_text("Self(");
 	if (p_self->current_class->identifier != nullptr) {
 		print_identifier(p_self->current_class->identifier);
@@ -6259,17 +6247,17 @@ void GDScriptParser::TreePrinter::print_self(SelfNode *p_self) {
 	push_text(")");
 }
 
-void GDScriptParser::TreePrinter::print_signal(SignalNode *p_signal) {
+void GDScriptParser::TreePrinter::print_signal(const SignalNode *p_signal) {
 	push_text("Signal ");
 	print_identifier(p_signal->identifier);
 	push_text("( ");
-	for (int i = 0; i < p_signal->parameters.size(); i++) {
-		print_parameter(p_signal->parameters[i]);
+	for (const ParameterNode *param : p_signal->parameters) {
+		print_parameter(param);
 	}
 	push_line(" )");
 }
 
-void GDScriptParser::TreePrinter::print_subscript(SubscriptNode *p_subscript) {
+void GDScriptParser::TreePrinter::print_subscript(const SubscriptNode *p_subscript) {
 	print_expression(p_subscript->base);
 	if (p_subscript->is_attribute) {
 		push_text(".");
@@ -6281,31 +6269,31 @@ void GDScriptParser::TreePrinter::print_subscript(SubscriptNode *p_subscript) {
 	}
 }
 
-void GDScriptParser::TreePrinter::print_statement(Node *p_statement) {
+void GDScriptParser::TreePrinter::print_statement(const Node *p_statement) {
 	switch (p_statement->type) {
 		case Node::ASSERT:
-			print_assert(static_cast<AssertNode *>(p_statement));
+			print_assert(static_cast<const AssertNode *>(p_statement));
 			break;
 		case Node::VARIABLE:
-			print_variable(static_cast<VariableNode *>(p_statement));
+			print_variable(static_cast<const VariableNode *>(p_statement));
 			break;
 		case Node::CONSTANT:
-			print_constant(static_cast<ConstantNode *>(p_statement));
+			print_constant(static_cast<const ConstantNode *>(p_statement));
 			break;
 		case Node::IF:
-			print_if(static_cast<IfNode *>(p_statement));
+			print_if(static_cast<const IfNode *>(p_statement));
 			break;
 		case Node::FOR:
-			print_for(static_cast<ForNode *>(p_statement));
+			print_for(static_cast<const ForNode *>(p_statement));
 			break;
 		case Node::WHILE:
-			print_while(static_cast<WhileNode *>(p_statement));
+			print_while(static_cast<const WhileNode *>(p_statement));
 			break;
 		case Node::MATCH:
-			print_match(static_cast<MatchNode *>(p_statement));
+			print_match(static_cast<const MatchNode *>(p_statement));
 			break;
 		case Node::RETURN:
-			print_return(static_cast<ReturnNode *>(p_statement));
+			print_return(static_cast<const ReturnNode *>(p_statement));
 			break;
 		case Node::BREAK:
 			push_line("Break");
@@ -6320,11 +6308,11 @@ void GDScriptParser::TreePrinter::print_statement(Node *p_statement) {
 			push_line("Breakpoint");
 			break;
 		case Node::ASSIGNMENT:
-			print_assignment(static_cast<AssignmentNode *>(p_statement));
+			print_assignment(static_cast<const AssignmentNode *>(p_statement));
 			break;
 		default:
 			if (p_statement->is_expression()) {
-				print_expression(static_cast<ExpressionNode *>(p_statement));
+				print_expression(static_cast<const ExpressionNode *>(p_statement));
 				push_line();
 			} else {
 				push_line(vformat("<unknown statement %d>", p_statement->type));
@@ -6333,13 +6321,13 @@ void GDScriptParser::TreePrinter::print_statement(Node *p_statement) {
 	}
 }
 
-void GDScriptParser::TreePrinter::print_suite(SuiteNode *p_suite) {
-	for (int i = 0; i < p_suite->statements.size(); i++) {
-		print_statement(p_suite->statements[i]);
+void GDScriptParser::TreePrinter::print_suite(const SuiteNode *p_suite) {
+	for (const Node *stmt : p_suite->statements) {
+		print_statement(stmt);
 	}
 }
 
-void GDScriptParser::TreePrinter::print_ternary_op(TernaryOpNode *p_ternary_op) {
+void GDScriptParser::TreePrinter::print_ternary_op(const TernaryOpNode *p_ternary_op) {
 	// Surround in parenthesis for disambiguation.
 	push_text("(");
 	print_expression(p_ternary_op->true_expr);
@@ -6350,11 +6338,11 @@ void GDScriptParser::TreePrinter::print_ternary_op(TernaryOpNode *p_ternary_op) 
 	push_text(")");
 }
 
-void GDScriptParser::TreePrinter::print_type(TypeNode *p_type) {
+void GDScriptParser::TreePrinter::print_type(const TypeNode *p_type) {
 	if (p_type->type_chain.is_empty()) {
 		push_text("Void");
 	} else {
-		for (int i = 0; i < p_type->type_chain.size(); i++) {
+		for (uint32_t i = 0; i < p_type->type_chain.size(); i++) {
 			if (i > 0) {
 				push_text(".");
 			}
@@ -6363,13 +6351,13 @@ void GDScriptParser::TreePrinter::print_type(TypeNode *p_type) {
 	}
 }
 
-void GDScriptParser::TreePrinter::print_type_test(TypeTestNode *p_test) {
+void GDScriptParser::TreePrinter::print_type_test(const TypeTestNode *p_test) {
 	print_expression(p_test->operand);
 	push_text(" IS ");
 	print_type(p_test->test_type);
 }
 
-void GDScriptParser::TreePrinter::print_unary_op(UnaryOpNode *p_unary_op) {
+void GDScriptParser::TreePrinter::print_unary_op(const UnaryOpNode *p_unary_op) {
 	// Surround in parenthesis for disambiguation.
 	push_text("(");
 	switch (p_unary_op->operation) {
@@ -6391,7 +6379,7 @@ void GDScriptParser::TreePrinter::print_unary_op(UnaryOpNode *p_unary_op) {
 	push_text(")");
 }
 
-void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
+void GDScriptParser::TreePrinter::print_variable(const VariableNode *p_variable) {
 	for (const AnnotationNode *E : p_variable->annotations) {
 		print_annotation(E);
 	}
@@ -6464,7 +6452,7 @@ void GDScriptParser::TreePrinter::print_variable(VariableNode *p_variable) {
 	push_line();
 }
 
-void GDScriptParser::TreePrinter::print_while(WhileNode *p_while) {
+void GDScriptParser::TreePrinter::print_while(const WhileNode *p_while) {
 	push_text("While ");
 	print_expression(p_while->condition);
 	push_line(" :");

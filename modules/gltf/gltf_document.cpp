@@ -1454,6 +1454,10 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			uint64_t flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			Dictionary mesh_prim = primitives[j];
 
+			ERR_FAIL_COND_V(!mesh_prim.has("attributes"), ERR_PARSE_ERROR);
+			const Dictionary a = mesh_prim["attributes"];
+			has_vertex_color = a.has("COLOR_0");
+
 			// Read the material.
 			Ref<Material> mat;
 			String mat_name;
@@ -1499,10 +1503,6 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			// Read the mesh primitive data into Godot ArrayMesh array data.
 			Array array;
 			array.resize(Mesh::ARRAY_MAX);
-
-			ERR_FAIL_COND_V(!mesh_prim.has("attributes"), ERR_PARSE_ERROR);
-
-			Dictionary a = mesh_prim["attributes"];
 
 			Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_TRIANGLES;
 			if (mesh_prim.has("mode")) {
@@ -1654,9 +1654,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					}
 				}
 			}
-			if (a.has("COLOR_0")) {
+			if (has_vertex_color) {
 				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a["COLOR_0"], indices_mapping);
-				has_vertex_color = true;
 			}
 			if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
 				PackedInt32Array joints_0 = _decode_accessor_as_int32s(p_state, a["JOINTS_0"], indices_vec4_mapping);
@@ -4241,8 +4240,10 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 #endif // TOOLS_ENABLED
 	Ref<GLTFNode> gltf_node;
 	gltf_node.instantiate();
-	if (p_current->has_method("is_visible")) {
-		bool visible = p_current->call("is_visible");
+
+	Callable::CallError err;
+	bool visible = p_current->callp(SceneStringName(is_visible), nullptr, 0, err);
+	if (err.error == Callable::CallError::CALL_OK) {
 		if (!visible && _visibility_mode == VISIBILITY_MODE_EXCLUDE) {
 			return;
 		}
@@ -6012,6 +6013,8 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 					if (bind_name == StringName()) {
 						bind_name = godot_skeleton->get_bone_name(bone_i);
 					}
+					Vector3 skin_scale = godot_skeleton->get_bone_skin_scale(bone_i);
+					bind_pose = bind_pose.scaled(skin_scale);
 					GLTFNodeIndex skeleton_bone_i = gltf_skeleton->joints[bone_i];
 					gltf_skin->joints_original.push_back(skeleton_bone_i);
 					gltf_skin->joints.push_back(skeleton_bone_i);
@@ -7238,11 +7241,8 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	p_state->set_base_path(p_path.get_base_dir());
 	p_state->filename = p_path.get_file();
-	Error err = _serialize(p_state);
-	if (err != OK) {
-		return err;
-	}
-	err = _serialize_file(p_state, p_path);
+	RETURN_IF_ERROR(_serialize(p_state));
+	Error err = _serialize_file(p_state, p_path);
 	if (err != OK) {
 		return Error::FAILED;
 	}

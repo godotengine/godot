@@ -173,7 +173,7 @@ Vector<String> ScriptTextEditor::get_functions() {
 	List<String> fnc;
 
 	Ref<Script> script = edited_res;
-	if (script.is_valid() && script->get_language()->validate(text, script->get_path(), &fnc)) {
+	if (script.is_valid() && script->get_language()->get_editor_language()->validate(text, script->get_path(), nullptr, nullptr, &fnc, nullptr)) {
 		//if valid rewrite functions to latest
 		functions.clear();
 		for (const String &E : fnc) {
@@ -745,7 +745,7 @@ void ScriptTextEditor::_update_background_color() {
 
 	// Set the warning background.
 	if (warning_line_color.a != 0.0 || warning_underline_color.a != 0.0) {
-		for (const ScriptLanguage::Warning &warning : warnings) {
+		for (const EditorLanguage::Warning &warning : warnings) {
 			int warning_start_line = CLAMP(warning.start_line - 1, 0, te->get_line_count() - 1);
 			int warning_start_column = warning.start_column - 1;
 			int warning_end_line = CLAMP(warning.end_line - 1, 0, te->get_line_count() - 1);
@@ -772,7 +772,7 @@ void ScriptTextEditor::_update_background_color() {
 
 	// Set the error background.
 	if (marked_line_color.a != 0.0 || error_underline_color.a != 0.0) {
-		for (const ScriptLanguage::ScriptError &error : errors) {
+		for (const EditorLanguage::ScriptError &error : errors) {
 			int error_start_line = CLAMP(error.start_line - 1, 0, te->get_line_count() - 1);
 			int error_start_column = error.start_column - 1;
 			int error_end_line = CLAMP(error.end_line - 1, 0, te->get_line_count() - 1);
@@ -889,7 +889,7 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 }
 
 struct ScriptErrorLineComparator {
-	bool operator()(const ScriptLanguage::ScriptError &p_a, const ScriptLanguage::ScriptError &p_b) const {
+	bool operator()(const EditorLanguage::ScriptError &p_a, const EditorLanguage::ScriptError &p_b) const {
 		if (p_a.start_line != p_b.start_line) {
 			return p_a.start_line < p_b.start_line;
 		}
@@ -909,12 +909,12 @@ void ScriptTextEditor::_validate_script() {
 	safe_lines.clear();
 
 	Ref<Script> script = edited_res;
-	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
+	if (!script->get_language()->get_editor_language()->validate(text, script->get_path(), &errors, &warnings, &fnc, &safe_lines)) {
 		errors.sort_custom<ScriptErrorLineComparator>();
 
-		List<ScriptLanguage::ScriptError>::Element *E = errors.front();
+		List<EditorLanguage::ScriptError>::Element *E = errors.front();
 		while (E) {
-			List<ScriptLanguage::ScriptError>::Element *next_E = E->next();
+			List<EditorLanguage::ScriptError>::Element *next_E = E->next();
 			if ((E->get().path.is_empty() && !script->get_path().is_empty()) || E->get().path != script->get_path()) {
 				depended_errors[E->get().path].push_back(E->get());
 				E->erase();
@@ -992,7 +992,7 @@ void ScriptTextEditor::_update_warnings() {
 
 	// Add script warnings.
 	warnings_panel->push_table(3);
-	for (const ScriptLanguage::Warning &w : warnings) {
+	for (const EditorLanguage::Warning &w : warnings) {
 		Dictionary ignore_meta;
 		ignore_meta["line"] = w.start_line - 1;
 		ignore_meta["code"] = w.string_code.to_lower();
@@ -1026,7 +1026,7 @@ void ScriptTextEditor::_update_errors() {
 
 	errors_panel->clear();
 	errors_panel->push_table(2);
-	for (const ScriptLanguage::ScriptError &err : errors) {
+	for (const EditorLanguage::ScriptError &err : errors) {
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.start_line - 1);
 		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -1042,7 +1042,7 @@ void ScriptTextEditor::_update_errors() {
 	}
 	errors_panel->pop(); // Table
 
-	for (const KeyValue<String, List<ScriptLanguage::ScriptError>> &KV : depended_errors) {
+	for (const KeyValue<String, List<EditorLanguage::ScriptError>> &KV : depended_errors) {
 		Dictionary click_meta_script;
 		click_meta_script["path"] = KV.key;
 		click_meta_script["line"] = 0;
@@ -1056,7 +1056,7 @@ void ScriptTextEditor::_update_errors() {
 
 		errors_panel->push_indent(1);
 		errors_panel->push_table(2);
-		for (const ScriptLanguage::ScriptError &err : KV.value) {
+		for (const EditorLanguage::ScriptError &err : KV.value) {
 			Dictionary click_meta;
 			click_meta["path"] = KV.key;
 			click_meta["line"] = err.start_line - 1;
@@ -1671,13 +1671,20 @@ void ScriptTextEditor::_update_connected_methods() {
 }
 
 void ScriptTextEditor::shortcut_input(const Ref<InputEvent> &p_event) {
-	if (!p_event->is_pressed() || p_event->is_echo()) {
+	if (!code_editor->is_visible_in_tree() || !p_event->is_pressed() || p_event->is_echo()) {
 		return;
 	}
 
 	const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, p_event);
 	if (custom_callback.is_valid()) {
-		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, code_editor->get_text_editor());
+#ifndef DISABLE_DEPRECATED
+		if (p_event->get_meta("_legacy_shortcut", false)) {
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, code_editor->get_text_editor());
+			accept_event();
+			return;
+		}
+#endif
+		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _get_context_data());
 		accept_event();
 	}
 }
@@ -1778,7 +1785,7 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				// Auto indent all lines that have a caret or selection on it.
 				Vector<Point2i> line_ranges = tx->get_line_ranges_from_carets();
 				for (Point2i line_range : line_ranges) {
-					scr->get_language()->auto_indent_code(text, line_range.x, line_range.y);
+					scr->get_language()->get_editor_language()->format_code(text, line_range.x, line_range.y);
 					if (line_range.x < begin) {
 						begin = line_range.x;
 					}
@@ -1790,7 +1797,7 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				// Auto indent entire text.
 				begin = 0;
 				end = tx->get_line_count() - 1;
-				scr->get_language()->auto_indent_code(text, begin, end);
+				scr->get_language()->get_editor_language()->format_code(text, begin, end);
 			}
 
 			// Apply auto indented code.
@@ -1859,7 +1866,7 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				return true;
 			}
 			if (p_op >= EditorContextMenuPlugin::BASE_ID) {
-				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, p_op, tx);
+				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, p_op);
 			}
 		}
 	}
@@ -2379,7 +2386,7 @@ void ScriptTextEditor::_assign_dragged_export_variables() {
 		bool script_has_errors = false;
 		String scr_path = si->get_script()->get_path();
 
-		for (const ScriptLanguage::ScriptError &error : errors) {
+		for (const EditorLanguage::ScriptError &error : errors) {
 			if (error.path == scr_path) {
 				script_has_errors = true;
 				break;
@@ -2500,8 +2507,6 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 
 void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, const Vector2 &p_position) {
 	CodeEditorBase::_make_context_menu(p_selection, p_foldable, p_position, false);
-	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
-	_popup_move_item(EDIT_UNINDENT, context_menu);
 
 	if (p_selection) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
@@ -2520,10 +2525,23 @@ void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bo
 		}
 	}
 
-	const PackedStringArray paths = { String(code_editor->get_text_editor()->get_path()) };
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, paths);
+	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE)) {
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, _get_context_data());
+#ifndef DISABLE_DEPRECATED
+		const PackedStringArray paths = { String(code_editor->get_text_editor()->get_path()) };
+		Ref<Script> edited_script = get_edited_resource();
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, paths, code_editor->get_text_editor(), 500);
+#endif
+	}
 
 	_show_context_menu(p_position);
+}
+
+Dictionary ScriptTextEditor::_get_context_data() const {
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["code_edit"] = code_editor->get_text_editor();
+	context_data["file_path"] = get_edited_resource()->get_path();
+	return context_data;
 }
 
 void ScriptTextEditor::register_editor() {
@@ -2565,8 +2583,6 @@ void ScriptTextEditor::register_editor() {
 
 	ED_SHORTCUT_AND_COMMAND("script_text_editor/replace", TTRC("Replace..."), KeyModifierMask::CTRL | Key::R);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/replace", "macos", KeyModifierMask::ALT | KeyModifierMask::META | Key::F);
-
-	ED_SHORTCUT("script_text_editor/replace_in_files", TTRC("Replace in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
 
 	ED_SHORTCUT("script_text_editor/show_tooltip", TTRC("Show Tooltip"), KeyModifierMask::ALT | Key::SLASH, true);
 	ED_SHORTCUT("script_text_editor/contextual_help", TTRC("Contextual Help"), KeyModifierMask::ALT | Key::F1);

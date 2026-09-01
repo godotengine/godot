@@ -276,18 +276,18 @@ void RayCast2D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void RayCast2D::add_exception(RequiredParam<const CollisionObject2D> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject2D.");
-	add_exception_rid(p_node->get_rid());
+void RayCast2D::add_exception(RequiredParam<const CollisionObject2D> p_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(node, p_node, "The passed Node must be an instance of CollisionObject2D.");
+	add_exception_rid(node->get_rid());
 }
 
 void RayCast2D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void RayCast2D::remove_exception(RequiredParam<const CollisionObject2D> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject2D.");
-	remove_exception_rid(p_node->get_rid());
+void RayCast2D::remove_exception(RequiredParam<const CollisionObject2D> p_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(node, p_node, "The passed Node must be an instance of CollisionObject2D.");
+	remove_exception_rid(node->get_rid());
 }
 
 void RayCast2D::clear_exceptions() {

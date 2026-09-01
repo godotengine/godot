@@ -44,6 +44,7 @@
 #include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
+#include "editor/export/android_sdk_manager.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_plugin.h"
 #include "editor/export/export_template_manager.h"
@@ -228,8 +229,6 @@ static const char *ANDROID_PERMS[] = {
 	nullptr
 };
 
-static const char *MISMATCHED_VERSIONS_MESSAGE = "Android build version mismatch:\n| Template installed: %s\n| Requested version: %s\nPlease reinstall Android build template from 'Project' menu.";
-
 static const char *GDEXTENSION_LIBS_PATH = "libs/gdextensionlibs.json";
 
 // This template string must be in sync with the content of 'platform/android/java/lib/src/main/java/res/mipmap-anydpi-v26/icon.xml'.
@@ -300,10 +299,6 @@ static const int EXPORT_FORMAT_AAB = 1;
 static const char *APK_ASSETS_DIRECTORY = "src/main/assets";
 static const char *AAB_ASSETS_DIRECTORY = "assetPackInstallTime/src/main/assets";
 
-static const int DEFAULT_MIN_SDK_VERSION = 24; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
-static const int VULKAN_MIN_SDK_VERSION = 29; // Minimum recommended sdk version for Vulkan 1.1 support. See https://developer.android.com/games/develop/vulkan/native-engine-support#recommendations
-static const int DEFAULT_TARGET_SDK_VERSION = 36; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
-
 #ifndef ANDROID_ENABLED
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 	if (!EditorSettings::get_singleton()) {
@@ -343,7 +338,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 #endif // DISABLE_DEPRECATED
 
 		// Check for devices updates
-		String adb = get_adb_path();
+		String adb = AndroidSDKManager::get_adb_path();
 		// adb.exe was locking the editor_doc_cache file on startup. Adding a check for is_editor_ready provides just enough time
 		// to regenerate the doc cache.
 		if (ea->has_runnable_preset.is_set() && FileAccess::exists(adb) && EditorNode::get_singleton()->is_editor_ready()) {
@@ -468,7 +463,7 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 	}
 
 	if (ea->has_runnable_preset.is_set() && EDITOR_GET("export/android/shutdown_adb_on_exit")) {
-		String adb = get_adb_path();
+		String adb = AndroidSDKManager::get_adb_path();
 		if (!FileAccess::exists(adb)) {
 			return; //adb not configured
 		}
@@ -656,7 +651,8 @@ bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, c
 		".webp", // Same reasoning as .png
 		".cfb", // Don't let small config files slow-down startup
 		".scn", // Binary scenes are usually already compressed
-		".ctex", // Streamable textures are usually already compressed
+		".ctex", // Compressed textures are usually already compressed
+		".stex", // Streamable textures are already compressed
 		".pck", // Pack.
 		// Trailer for easier processing
 		nullptr
@@ -830,17 +826,14 @@ Error EditorExportPlatformAndroid::save_apk_so(const Ref<EditorExportPreset> &p_
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
+Error EditorExportPlatformAndroid::save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data) {
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 
-	const String simplified_path = simplify_path(p_path);
+	const String simplified_path = EditorExportPlatform::simplify_path(p_info.path);
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_store_temp_file(p_preset, simplified_path, p_data, enc_data, sd));
 
 	String dst_path;
 	if (ed->pd.salt.length() == 32) {
@@ -856,7 +849,7 @@ Error EditorExportPlatformAndroid::save_apk_file(const Ref<EditorExportPreset> &
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
+Error EditorExportPlatformAndroid::ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data) {
 	return OK;
 }
 
@@ -2127,17 +2120,17 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 					return vformat(TTR("\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."), min_sdk_str);
 				} else {
 					int min_sdk_int = min_sdk_str.to_int();
-					if (min_sdk_int < DEFAULT_MIN_SDK_VERSION) {
-						return vformat(TTR("\"Min SDK\" cannot be lower than %d, which is the version needed by the Godot library."), DEFAULT_MIN_SDK_VERSION);
+					if (min_sdk_int < AndroidSDKManager::DEFAULT_MIN_SDK_VERSION) {
+						return vformat(TTR("\"Min SDK\" cannot be lower than %d, which is the version needed by the Godot library."), AndroidSDKManager::DEFAULT_MIN_SDK_VERSION);
 					}
 				}
 			}
 		} else if (p_name == "gradle_build/target_sdk") {
 			String target_sdk_str = p_preset->get("gradle_build/target_sdk");
-			int target_sdk_int = DEFAULT_TARGET_SDK_VERSION;
+			int target_sdk_int = AndroidSDKManager::DEFAULT_TARGET_SDK_VERSION;
 
 			String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-			int min_sdk_int = _uses_vulkan(Ref<EditorExportPreset>(p_preset)) ? VULKAN_MIN_SDK_VERSION : DEFAULT_MIN_SDK_VERSION;
+			int min_sdk_int = _uses_vulkan(Ref<EditorExportPreset>(p_preset)) ? AndroidSDKManager::VULKAN_MIN_SDK_VERSION : AndroidSDKManager::DEFAULT_MIN_SDK_VERSION;
 			if (min_sdk_str.is_valid_int()) {
 				min_sdk_int = min_sdk_str.to_int();
 			}
@@ -2198,9 +2191,9 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "gradle_build/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK, false, true));
 	// Using String instead of int to default to an empty string (no override) with placeholder for instructions (see GH-62465).
 	// This implies doing validation that the string is a proper int.
-	const String min_sdk_placeholder = _uses_vulkan(nullptr) ? vformat("%d (Vulkan default)", VULKAN_MIN_SDK_VERSION) : vformat("%d (default)", DEFAULT_MIN_SDK_VERSION);
+	const String min_sdk_placeholder = _uses_vulkan(nullptr) ? vformat("%d (Vulkan default)", AndroidSDKManager::VULKAN_MIN_SDK_VERSION) : vformat("%d (default)", AndroidSDKManager::DEFAULT_MIN_SDK_VERSION);
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, min_sdk_placeholder), "", false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", AndroidSDKManager::DEFAULT_TARGET_SDK_VERSION)), "", false, true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "gradle_build/custom_theme_attributes", PROPERTY_HINT_DICTIONARY_TYPE, "String;String"), Dictionary()));
 
@@ -2433,7 +2426,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 	EditorProgress ep("run", vformat(TTR("Running on %s"), devices[p_device - 1].name), 3);
 
-	String adb = get_adb_path();
+	String adb = AndroidSDKManager::get_adb_path();
 
 	// Export_temp APK.
 	if (ep.step(TTR("Exporting APK..."), 0)) {
@@ -2682,15 +2675,6 @@ Ref<Texture2D> EditorExportPlatformAndroid::get_run_icon() const {
 	return run_icon;
 }
 
-String EditorExportPlatformAndroid::get_java_path() {
-	String exe_ext;
-	if (OS::get_singleton()->get_name() == "Windows") {
-		exe_ext = ".exe";
-	}
-	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
-	return java_sdk_path.path_join("bin/java" + exe_ext);
-}
-
 String EditorExportPlatformAndroid::get_keytool_path() {
 	String exe_ext;
 	if (OS::get_singleton()->get_name() == "Windows") {
@@ -2698,136 +2682,6 @@ String EditorExportPlatformAndroid::get_keytool_path() {
 	}
 	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
 	return java_sdk_path.path_join("bin/keytool" + exe_ext);
-}
-
-String EditorExportPlatformAndroid::get_adb_path() {
-	String exe_ext;
-	if (OS::get_singleton()->get_name() == "Windows") {
-		exe_ext = ".exe";
-	}
-	String sdk_path = EDITOR_GET("export/android/android_sdk_path");
-	return sdk_path.path_join("platform-tools/adb" + exe_ext);
-}
-
-String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_check_executes) {
-	if (p_target_sdk == -1) {
-		p_target_sdk = DEFAULT_TARGET_SDK_VERSION;
-	}
-	String exe_ext;
-	if (OS::get_singleton()->get_name() == "Windows") {
-		exe_ext = ".bat";
-	}
-	String apksigner_command_name = "apksigner" + exe_ext;
-	String sdk_path = EDITOR_GET("export/android/android_sdk_path");
-	String apksigner_path;
-
-	Error errn;
-	String build_tools_dir = sdk_path.path_join("build-tools");
-	Ref<DirAccess> da = DirAccess::open(build_tools_dir, &errn);
-	if (errn != OK) {
-		print_error("Unable to open Android 'build-tools' directory.");
-		return apksigner_path;
-	}
-
-	// There are additional versions directories we need to go through.
-	Vector<String> dir_list = da->get_directories();
-
-	// We need to use the version of build_tools that matches the Target SDK
-	// If somehow we can't find that, we see if a version between 28 and the default target SDK exists.
-	// We need to avoid versions <= 27 because they fail on Java versions >9
-	// If we can't find that, we just use the first valid version.
-	Vector<String> ideal_versions;
-	Vector<String> other_versions;
-	Vector<String> versions;
-	bool found_target_sdk = false;
-	// We only allow for versions <= 27 if specifically set
-	int min_version = p_target_sdk <= 27 ? p_target_sdk : 28;
-	for (String sub_dir : dir_list) {
-		if (!sub_dir.begins_with(".")) {
-			Vector<String> ver_numbers = sub_dir.split(".");
-			// Dir not a version number, will use as last resort
-			if (!ver_numbers.size() || !ver_numbers[0].is_valid_int()) {
-				other_versions.push_back(sub_dir);
-				continue;
-			}
-			int ver_number = ver_numbers[0].to_int();
-			if (ver_number == p_target_sdk) {
-				found_target_sdk = true;
-				//ensure this is in front of the ones we check
-				versions.push_back(sub_dir);
-			} else {
-				if (ver_number >= min_version && ver_number <= DEFAULT_TARGET_SDK_VERSION) {
-					ideal_versions.push_back(sub_dir);
-				} else {
-					other_versions.push_back(sub_dir);
-				}
-			}
-		}
-	}
-	// we will check ideal versions first, then other versions.
-	versions.append_array(ideal_versions);
-	versions.append_array(other_versions);
-
-	if (!versions.size()) {
-		print_error("Unable to find the 'apksigner' tool.");
-		return apksigner_path;
-	}
-
-	int i;
-	bool failed = false;
-	String version_to_use;
-
-	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
-	if (!java_sdk_path.is_empty()) {
-		OS::get_singleton()->set_environment("JAVA_HOME", java_sdk_path);
-
-#ifdef UNIX_ENABLED
-		String env_path = OS::get_singleton()->get_environment("PATH");
-		if (!env_path.contains(java_sdk_path)) {
-			OS::get_singleton()->set_environment("PATH", java_sdk_path + "/bin:" + env_path);
-		}
-#endif
-	}
-
-	List<String> args;
-	args.push_back("--version");
-	String output;
-	int retval;
-	Error err;
-	for (i = 0; i < versions.size(); i++) {
-		// Check if the tool is here.
-		apksigner_path = build_tools_dir.path_join(versions[i]).path_join(apksigner_command_name);
-		if (FileAccess::exists(apksigner_path)) {
-			version_to_use = versions[i];
-			// If we aren't exporting, just break here.
-			if (!p_check_executes) {
-				break;
-			}
-			// we only check to see if it executes on export because it is slow to load
-			err = OS::get_singleton()->execute(apksigner_path, args, &output, &retval, false);
-			if (err || retval) {
-				failed = true;
-			} else {
-				break;
-			}
-		}
-	}
-	if (i == versions.size()) {
-		if (failed) {
-			print_error("All located 'apksigner' tools in " + build_tools_dir + " failed to execute");
-			return "<FAILED>";
-		} else {
-			print_error("Unable to find the 'apksigner' tool.");
-			return "";
-		}
-	}
-	if (!found_target_sdk) {
-		print_line("Could not find version of build tools that matches Target SDK, using " + version_to_use);
-	} else if (failed && found_target_sdk) {
-		print_line("Version of build tools that matches Target SDK failed to execute, using " + version_to_use);
-	}
-
-	return apksigner_path;
 }
 
 static bool has_valid_keystore_credentials(String &r_error_str, const String &p_keystore, const String &p_username, const String &p_password, const String &p_type) {
@@ -2984,28 +2838,38 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			err += template_err;
 		}
 	} else {
-		// Validate the custom gradle android source template.
-		bool android_source_template_valid = false;
-		const String android_source_template = p_preset->get("gradle_build/android_source_template");
-		if (!android_source_template.is_empty()) {
-			android_source_template_valid = FileAccess::exists(android_source_template);
-			if (!android_source_template_valid) {
-				err += TTR("Custom Android source template not found.") + "\n";
+		r_missing_templates = false;
+		valid = true;
+
+		// Check if the build template is already installed and is valid.
+		bool android_build_installed_and_valid = false;
+		if (ExportTemplateManager::is_android_template_installed(p_preset)) {
+			if (ExportTemplateManager::is_android_build_version_valid(p_preset)) {
+				android_build_installed_and_valid = true;
+			} else {
+				bool can_automatically_delete_build_dir = EDITOR_GET("export/android/build/automatically_delete_build_directory");
+				if (!can_automatically_delete_build_dir) {
+					// Show an error requesting the user to delete the current build directory manually.
+					err += vformat(TTR("Invalid build directory. Manually delete \"%s\" or enable automatic deletion in the Editor Settings (Export > Android > Build > Automatically Delete Build Directory)."), ExportTemplateManager::get_android_build_directory(p_preset)) + "\n";
+					valid = false;
+				}
 			}
 		}
 
-		// Validate the installed build template.
-		bool installed_android_build_template = FileAccess::exists(ExportTemplateManager::get_android_build_directory(p_preset).path_join("build.gradle"));
-		if (!installed_android_build_template) {
-			if (!android_source_template_valid) {
-				r_missing_templates = !exists_export_template("android_source.zip", &err);
+		if (!android_build_installed_and_valid) {
+			// Validate the custom gradle android source templates.
+			const String android_source_template = p_preset->get("gradle_build/android_source_template");
+			if (!android_source_template.is_empty()) {
+				if (!FileAccess::exists(android_source_template)) {
+					err += TTR("Custom Android source template not found.") + "\n";
+					valid = false;
+				}
+			} else {
+				// Default android build template validation.
+				valid = exists_export_template("android_source.zip", &err);
+				r_missing_templates = !valid;
 			}
-			err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
-		} else {
-			r_missing_templates = false;
 		}
-
-		valid = installed_android_build_template && !r_missing_templates;
 	}
 
 	// Validate the rest of the export configuration.
@@ -3045,77 +2909,25 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 	}
 
 #ifndef ANDROID_ENABLED
-	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
-	if (java_sdk_path.is_empty()) {
-		err += TTR("A valid Java SDK path is required in Editor Settings.") + "\n";
+	if (!AndroidSDKManager::is_java_sdk_setup(&err)) {
 		valid = false;
-	} else {
-		// Validate the given path by checking that `java` is present under the `bin` directory.
-		Error errn;
-		// Check for the bin directory.
-		Ref<DirAccess> da = DirAccess::open(java_sdk_path.path_join("bin"), &errn);
-		if (errn != OK) {
-			err += TTR("Invalid Java SDK path in Editor Settings.") + " ";
-			err += TTR("Missing 'bin' directory!");
-			err += "\n";
-			valid = false;
-		} else {
-			// Check for the `java` command.
-			String java_path = get_java_path();
-			if (!FileAccess::exists(java_path)) {
-				err += TTR("Unable to find 'java' command using the Java SDK path.") + " ";
-				err += TTR("Please check the Java SDK directory specified in Editor Settings.");
-				err += "\n";
-				valid = false;
-			}
-		}
 	}
-
-	String sdk_path = EDITOR_GET("export/android/android_sdk_path");
-	if (sdk_path.is_empty()) {
-		err += TTR("A valid Android SDK path is required in Editor Settings.") + "\n";
-		valid = false;
-	} else {
-		Error errn;
-		// Check for the platform-tools directory.
-		Ref<DirAccess> da = DirAccess::open(sdk_path.path_join("platform-tools"), &errn);
-		if (errn != OK) {
-			err += TTR("Invalid Android SDK path in Editor Settings.") + " ";
-			err += TTR("Missing 'platform-tools' directory!");
-			err += "\n";
-			valid = false;
-		}
-
-		// Validate that adb is available.
-		String adb_path = get_adb_path();
-		if (!FileAccess::exists(adb_path)) {
-			err += TTR("Unable to find Android SDK platform-tools' adb command.") + " ";
-			err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
-			err += "\n";
-			valid = false;
-		}
-
-		// Check for the build-tools directory.
-		Ref<DirAccess> build_tools_da = DirAccess::open(sdk_path.path_join("build-tools"), &errn);
-		if (errn != OK) {
-			err += TTR("Invalid Android SDK path in Editor Settings.") + " ";
-			err += TTR("Missing 'build-tools' directory!");
-			err += "\n";
-			valid = false;
-		}
-
+	if (AndroidSDKManager::is_android_sdk_setup(&err)) {
+		// Validate that apksigner is available.
 		String target_sdk_version = p_preset->get("gradle_build/target_sdk");
 		if (!target_sdk_version.is_valid_int()) {
-			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
+			target_sdk_version = itos(AndroidSDKManager::DEFAULT_TARGET_SDK_VERSION);
 		}
-		// Validate that apksigner is available.
-		String apksigner_path = get_apksigner_path(target_sdk_version.to_int());
+
+		String apksigner_path = AndroidSDKManager::get_apksigner_path(target_sdk_version.to_int());
 		if (!FileAccess::exists(apksigner_path)) {
 			err += TTR("Unable to find Android SDK build-tools' apksigner command.") + " ";
 			err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
 			err += "\n";
 			valid = false;
 		}
+	} else {
+		valid = false;
 	}
 #endif
 
@@ -3152,18 +2964,7 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	}
 
 	bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-	if (gradle_build_enabled) {
-		String build_version_path = ExportTemplateManager::get_android_build_directory(p_preset).get_base_dir().path_join(".build_version");
-		Ref<FileAccess> f = FileAccess::open(build_version_path, FileAccess::READ);
-		if (f.is_valid()) {
-			String current_version = ExportTemplateManager::get_android_template_identifier(p_preset);
-			String installed_version = f->get_line().strip_edges();
-			if (current_version != installed_version) {
-				err += vformat(TTR(MISMATCHED_VERSIONS_MESSAGE), installed_version, current_version);
-				err += "\n";
-			}
-		}
-	} else {
+	if (!gradle_build_enabled) {
 		if (_is_transparency_allowed(p_preset)) {
 			// Warning only, so don't override `valid`.
 			err += vformat(TTR("\"Use Gradle Build\" is required for transparent background on Android"));
@@ -3172,13 +2973,13 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	}
 
 	String target_sdk_str = p_preset->get("gradle_build/target_sdk");
-	int target_sdk_int = DEFAULT_TARGET_SDK_VERSION;
+	int target_sdk_int = AndroidSDKManager::DEFAULT_TARGET_SDK_VERSION;
 	if (!target_sdk_str.is_empty()) { // Empty means no override, nothing to do.
 		if (target_sdk_str.is_valid_int()) {
 			target_sdk_int = target_sdk_str.to_int();
-			if (target_sdk_int > DEFAULT_TARGET_SDK_VERSION) {
+			if (target_sdk_int > AndroidSDKManager::DEFAULT_TARGET_SDK_VERSION) {
 				// Warning only, so don't override `valid`.
-				err += vformat(TTR("\"Target SDK\" %d is higher than the default version %d. This may work, but wasn't tested and may be unstable."), target_sdk_int, DEFAULT_TARGET_SDK_VERSION);
+				err += vformat(TTR("\"Target SDK\" %d is higher than the default version %d. This may work, but wasn't tested and may be unstable."), target_sdk_int, AndroidSDKManager::DEFAULT_TARGET_SDK_VERSION);
 				err += "\n";
 			}
 		}
@@ -3193,16 +2994,16 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 
 	if (_uses_vulkan(p_preset)) {
 		String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-		int min_sdk_int = VULKAN_MIN_SDK_VERSION;
+		int min_sdk_int = AndroidSDKManager::VULKAN_MIN_SDK_VERSION;
 		if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
 			if (min_sdk_str.is_valid_int()) {
 				min_sdk_int = min_sdk_str.to_int();
 			}
 		}
 		bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-		if (min_sdk_int < VULKAN_MIN_SDK_VERSION && !fallback_to_opengl3) {
+		if (min_sdk_int < AndroidSDKManager::VULKAN_MIN_SDK_VERSION && !fallback_to_opengl3) {
 			// Warning only, so don't override `valid`.
-			err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
+			err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), AndroidSDKManager::VULKAN_MIN_SDK_VERSION, current_renderer);
 			err += "\n";
 		}
 	}
@@ -3364,10 +3165,10 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 #else
 	String target_sdk_version = p_preset->get("gradle_build/target_sdk");
 	if (!target_sdk_version.is_valid_int()) {
-		target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
+		target_sdk_version = itos(AndroidSDKManager::DEFAULT_TARGET_SDK_VERSION);
 	}
 
-	String apksigner = get_apksigner_path(target_sdk_version.to_int(), true);
+	String apksigner = AndroidSDKManager::get_apksigner_path(target_sdk_version.to_int(), true);
 	print_verbose("Starting signing of the APK binary using " + apksigner);
 	if (apksigner == "<FAILED>") {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("All 'apksigner' tools located in Android SDK 'build-tools' directory failed to execute. Please check that you have the correct version installed for your target sdk version. The resulting APK is unsigned."));
@@ -3628,33 +3429,7 @@ Error EditorExportPlatformAndroid::_generate_sparse_pck_metadata(const Ref<Edito
 
 	Vector<uint8_t> key;
 	if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
-		String script_key = _get_script_encryption_key(p_preset);
-		key.resize(32);
-		if (script_key.length() == 64) {
-			for (int i = 0; i < 32; i++) {
-				int v = 0;
-				if (i * 2 < script_key.length()) {
-					char32_t ct = script_key[i * 2];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct << 4;
-				}
-
-				if (i * 2 + 1 < script_key.length()) {
-					char32_t ct = script_key[i * 2 + 1];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
-					}
-					v |= ct;
-				}
-				key.write[i] = v;
-			}
-		}
+		key = p_preset->resolve_script_encryption_key();
 	}
 
 	if (!EditorExportPlatform::_encrypt_and_store_directory(ftmp, p_pack_data, key, p_preset->get_seed(), 0)) {
@@ -3758,21 +3533,19 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 
 	if (use_gradle_build) {
+		if (ep.step(TTR("Starting gradle build..."), 0)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Starting gradle build...");
 		//test that installed build version is alright
 		{
-			print_verbose("Checking build version...");
-			String gradle_base_directory = gradle_build_directory.get_base_dir();
-			Ref<FileAccess> f = FileAccess::open(gradle_base_directory.path_join(".build_version"), FileAccess::READ);
-			if (f.is_null()) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
-				return ERR_UNCONFIGURED;
+			if (ep.step(TTR("Checking build directory..."), 10)) {
+				return ERR_SKIP;
 			}
-			String current_version = ExportTemplateManager::get_android_template_identifier(p_preset);
-			String installed_version = f->get_line().strip_edges();
-			print_verbose("- build version: " + installed_version);
-			if (installed_version != current_version) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR(MISMATCHED_VERSIONS_MESSAGE), installed_version, current_version));
+			print_verbose("Checking build directory...");
+			err = EditorNode::get_singleton()->setup_android_build_template(p_preset, true);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unable to set up Android build directory. Please fix by manually deleting the \"%s\" directory and try again. Or enable automatic deletion in the Editor Settings (Export > Android > Build > Automatically Delete Build Directory)."), gradle_build_directory));
 				return ERR_UNCONFIGURED;
 			}
 		}
@@ -3810,6 +3583,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_clear_assets_directory(p_preset);
 		String gdextension_libs_path = gradle_build_directory.path_join(GDEXTENSION_LIBS_PATH);
 		_remove_copied_libs(gdextension_libs_path);
+
+		if (ep.step(TTR("Exporting project files..."), 20)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Exporting project files...");
 		CustomExportData user_data;
 		user_data.assets_directory = assets_directory;
@@ -3820,7 +3597,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		} else {
 			user_data.pd.path = "assets.sparsepck";
 			user_data.pd.use_sparse_pck = true;
-			if (p_preset->get_enc_directory()) {
+			if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
 				RandomPCG rng = RandomPCG(p_preset->get_seed());
 				for (int i = 0; i < 32; i++) {
 					user_data.pd.salt += String::chr(1 + rng.rand() % 254);
@@ -3850,6 +3627,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			fa->store_string(JSON::stringify(user_data.libs, "\t"));
 		}
 
+		if (ep.step(TTR("Storing command line flags..."), 30)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Storing command line flags...");
 		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 
@@ -3876,11 +3656,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String version_name = p_preset->get_version("version/name");
 		String min_sdk_version = p_preset->get("gradle_build/min_sdk");
 		if (!min_sdk_version.is_valid_int()) {
-			min_sdk_version = _uses_vulkan(p_preset) ? itos(VULKAN_MIN_SDK_VERSION) : itos(DEFAULT_MIN_SDK_VERSION);
+			min_sdk_version = _uses_vulkan(p_preset) ? itos(AndroidSDKManager::VULKAN_MIN_SDK_VERSION) : itos(AndroidSDKManager::DEFAULT_MIN_SDK_VERSION);
 		}
 		String target_sdk_version = p_preset->get("gradle_build/target_sdk");
 		if (!target_sdk_version.is_valid_int()) {
-			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
+			target_sdk_version = itos(AndroidSDKManager::DEFAULT_TARGET_SDK_VERSION);
 		}
 		String enabled_abi_string = join_abis(enabled_abis, "|", false);
 		String sign_flag = bool_to_string(should_sign);
@@ -3968,6 +3748,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.
 		// Any non-sensitive additions to the command line arguments must be done above this section.
 		// Sensitive additions must be done below the logging statement.
+		if (ep.step(TTR("Build Android project..."), 40)) {
+			return ERR_SKIP;
+		}
 		print_verbose("Build Android project using gradle command: " + String("\n") + build_command + " " + join_list(cmdline, String(" ")));
 
 		if (should_sign) {
@@ -4088,6 +3871,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		print_verbose("Successfully completed Android gradle build.");
 #endif
+		if (ep.step(TTR("Build complete."), 105)) {
+			return ERR_SKIP;
+		}
 		return OK;
 	}
 	// This is the start of the Legacy build system
@@ -4327,7 +4113,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		ed.apk = unaligned_apk;
 		ed.pd.path = "assets.sparsepck";
 		ed.pd.use_sparse_pck = true;
-		if (p_preset->get_enc_directory()) {
+		if (p_preset->get_enc_pck() && p_preset->get_enc_directory()) {
 			RandomPCG rng = RandomPCG(p_preset->get_seed());
 			for (int i = 0; i < 32; i++) {
 				ed.pd.salt += String::chr(1 + rng.rand() % 254);

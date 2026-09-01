@@ -94,6 +94,7 @@ ignore-words-list = [
 	"mis",
 	"nd",
 	"numer",
+	"optin",
 	"ot",
 	"outin",
 	"parm",

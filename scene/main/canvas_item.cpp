@@ -35,7 +35,9 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#ifndef _2D_DISABLED
 #include "scene/2d/canvas_group.h"
+#endif // _2D_DISABLED
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -973,51 +975,51 @@ void CanvasItem::draw_circle(const Point2 &p_pos, real_t p_radius, const Color &
 	draw_ellipse(p_pos, p_radius, p_radius, p_color, p_filled, p_width, p_antialiased);
 }
 
-void CanvasItem::draw_texture(RequiredParam<Texture2D> rp_texture, const Point2 &p_pos, const Color &p_modulate) {
+void CanvasItem::draw_texture(RequiredParam<Texture2D> p_texture, const Point2 &p_pos, const Color &p_modulate) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	EXTRACT_PARAM_OR_FAIL(p_texture, rp_texture);
+	EXTRACT_PARAM_OR_FAIL(texture, p_texture);
 
-	p_texture->draw(canvas_item, p_pos, p_modulate, false);
+	texture->draw(canvas_item, p_pos, p_modulate, false);
 }
 
-void CanvasItem::draw_texture_rect(RequiredParam<Texture2D> rp_texture, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) {
+void CanvasItem::draw_texture_rect(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	EXTRACT_PARAM_OR_FAIL(p_texture, rp_texture);
-	p_texture->draw_rect(canvas_item, p_rect, p_tile, p_modulate, p_transpose);
+	EXTRACT_PARAM_OR_FAIL(texture, p_texture);
+	texture->draw_rect(canvas_item, p_rect, p_tile, p_modulate, p_transpose);
 }
 
-void CanvasItem::draw_texture_rect_region(RequiredParam<Texture2D> rp_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) {
+void CanvasItem::draw_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_texture, rp_texture);
-	p_texture->draw_rect_region(canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv);
+	EXTRACT_PARAM_OR_FAIL(texture, p_texture);
+	texture->draw_rect_region(canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
-void CanvasItem::draw_msdf_texture_rect_region(RequiredParam<Texture2D> rp_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, double p_outline, double p_pixel_range, double p_scale) {
+void CanvasItem::draw_msdf_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, double p_outline, double p_pixel_range, double p_scale) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_texture, rp_texture);
-	RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(canvas_item, p_rect, p_texture->get_rid(), p_src_rect, p_modulate, p_outline, p_pixel_range, p_scale);
+	EXTRACT_PARAM_OR_FAIL(texture, p_texture);
+	RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(canvas_item, p_rect, texture->get_rid(), p_src_rect, p_modulate, p_outline, p_pixel_range, p_scale);
 }
 
-void CanvasItem::draw_lcd_texture_rect_region(RequiredParam<Texture2D> rp_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate) {
+void CanvasItem::draw_lcd_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_texture, rp_texture);
-	RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(canvas_item, p_rect, p_texture->get_rid(), p_src_rect, p_modulate);
+	EXTRACT_PARAM_OR_FAIL(texture, p_texture);
+	RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(canvas_item, p_rect, texture->get_rid(), p_src_rect, p_modulate);
 }
 
-void CanvasItem::draw_style_box(RequiredParam<StyleBox> rp_style_box, const Rect2 &p_rect) {
+void CanvasItem::draw_style_box(RequiredParam<StyleBox> p_style_box, const Rect2 &p_rect) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	EXTRACT_PARAM_OR_FAIL(p_style_box, rp_style_box);
+	EXTRACT_PARAM_OR_FAIL(style_box, p_style_box);
 
-	p_style_box->draw(canvas_item, p_rect);
+	style_box->draw(canvas_item, p_rect);
 }
 
 void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
@@ -1084,69 +1086,69 @@ void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Colo
 	draw_polygon(p_points, { p_color }, p_uvs, p_texture);
 }
 
-void CanvasItem::draw_mesh(RequiredParam<Mesh> rp_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform, const Color &p_modulate) {
+void CanvasItem::draw_mesh(RequiredParam<Mesh> p_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform, const Color &p_modulate) {
 	ERR_THREAD_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_mesh, rp_mesh);
+	EXTRACT_PARAM_OR_FAIL(mesh, p_mesh);
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 
-	RenderingServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), p_transform, p_modulate, texture_rid);
+	RenderingServer::get_singleton()->canvas_item_add_mesh(canvas_item, mesh->get_rid(), p_transform, p_modulate, texture_rid);
 }
 
-void CanvasItem::draw_multimesh(RequiredParam<MultiMesh> rp_multimesh, const Ref<Texture2D> &p_texture) {
+void CanvasItem::draw_multimesh(RequiredParam<MultiMesh> p_multimesh, const Ref<Texture2D> &p_texture) {
 	ERR_THREAD_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_multimesh, rp_multimesh);
+	EXTRACT_PARAM_OR_FAIL(multimesh, p_multimesh);
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
-	RenderingServer::get_singleton()->canvas_item_add_multimesh(canvas_item, p_multimesh->get_rid(), texture_rid);
+	RenderingServer::get_singleton()->canvas_item_add_multimesh(canvas_item, multimesh->get_rid(), texture_rid);
 }
 
-void CanvasItem::draw_string(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
+void CanvasItem::draw_string(RequiredParam<Font> p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
+	EXTRACT_PARAM_OR_FAIL(font, p_font);
 
-	p_font->draw_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_modulate, p_jst_flags, p_direction, p_orientation, p_oversampling);
+	font->draw_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_modulate, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_multiline_string(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
+void CanvasItem::draw_multiline_string(RequiredParam<Font> p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
+	EXTRACT_PARAM_OR_FAIL(font, p_font);
 
-	p_font->draw_multiline_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation, p_oversampling);
+	font->draw_multiline_string(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_string_outline(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
+void CanvasItem::draw_string_outline(RequiredParam<Font> p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
+	EXTRACT_PARAM_OR_FAIL(font, p_font);
 
-	p_font->draw_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_size, p_modulate, p_jst_flags, p_direction, p_orientation, p_oversampling);
+	font->draw_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_size, p_modulate, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_multiline_string_outline(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
+void CanvasItem::draw_multiline_string_outline(RequiredParam<Font> p_font, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
+	EXTRACT_PARAM_OR_FAIL(font, p_font);
 
-	p_font->draw_multiline_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_size, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation, p_oversampling);
+	font->draw_multiline_string_outline(canvas_item, p_pos, p_text, p_alignment, p_width, p_font_size, p_max_lines, p_size, p_modulate, p_brk_flags, p_jst_flags, p_direction, p_orientation, p_oversampling);
 }
 
-void CanvasItem::draw_char(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_char, int p_font_size, const Color &p_modulate, float p_oversampling) const {
+void CanvasItem::draw_char(RequiredParam<Font> p_font, const Point2 &p_pos, const String &p_char, int p_font_size, const Color &p_modulate, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 	ERR_FAIL_COND(p_char.length() != 1);
-	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
+	EXTRACT_PARAM_OR_FAIL(font, p_font);
 
-	p_font->draw_char(canvas_item, p_pos, p_char[0], p_font_size, p_modulate, p_oversampling);
+	font->draw_char(canvas_item, p_pos, p_char[0], p_font_size, p_modulate, p_oversampling);
 }
 
-void CanvasItem::draw_char_outline(RequiredParam<Font> rp_font, const Point2 &p_pos, const String &p_char, int p_font_size, int p_size, const Color &p_modulate, float p_oversampling) const {
+void CanvasItem::draw_char_outline(RequiredParam<Font> p_font, const Point2 &p_pos, const String &p_char, int p_font_size, int p_size, const Color &p_modulate, float p_oversampling) const {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 	ERR_FAIL_COND(p_char.length() != 1);
-	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
+	EXTRACT_PARAM_OR_FAIL(font, p_font);
 
-	p_font->draw_char_outline(canvas_item, p_pos, p_char[0], p_font_size, p_size, p_modulate, p_oversampling);
+	font->draw_char_outline(canvas_item, p_pos, p_char[0], p_font_size, p_size, p_modulate, p_oversampling);
 }
 
 void CanvasItem::_notify_transform_deferred() {
@@ -1348,12 +1350,12 @@ Vector2 CanvasItem::make_canvas_position_local(const Vector2 &screen_point) cons
 	return local_matrix.xform(screen_point);
 }
 
-RequiredResult<InputEvent> CanvasItem::make_input_local(RequiredParam<InputEvent> rp_event) const {
+RequiredResult<InputEvent> CanvasItem::make_input_local(RequiredParam<InputEvent> p_event) const {
 	ERR_READ_THREAD_GUARD_V(Ref<InputEvent>());
-	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, Ref<InputEvent>());
-	ERR_FAIL_COND_V(!is_inside_tree(), p_event);
+	EXTRACT_PARAM_OR_FAIL_V(event, p_event, Ref<InputEvent>());
+	ERR_FAIL_COND_V(!is_inside_tree(), event);
 
-	return p_event->xformed_by((get_canvas_transform() * get_global_transform()).affine_inverse());
+	return event->xformed_by((get_canvas_transform() * get_global_transform()).affine_inverse());
 }
 
 Vector2 CanvasItem::get_global_mouse_position() const {
@@ -1401,11 +1403,13 @@ PackedStringArray CanvasItem::get_configuration_warnings() const {
 				warned_about_ancestor_clipping = true;
 			}
 
+#ifndef _2D_DISABLED
 			CanvasGroup *as_canvas_group = Object::cast_to<CanvasGroup>(n);
 			if (!warned_about_canvasgroup_ancestor && as_canvas_group) {
 				warnings.push_back(vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its children."), as_canvas_group->get_name()));
 				warned_about_canvasgroup_ancestor = true;
 			}
+#endif // _2D_DISABLED
 
 			// Only break out early once both warnings have been triggered, so
 			// that the user is aware of both possible reasons for clipping not working.
@@ -1855,10 +1859,12 @@ void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
 
 	update_configuration_warnings();
 
+#ifndef _2D_DISABLED
 	if (Object::cast_to<CanvasGroup>(this) != nullptr) {
 		//avoid accidental bugs, make this not work on CanvasGroup
 		return;
 	}
+#endif // _2D_DISABLED
 
 	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CanvasGroupMode(clip_children_mode));
 }

@@ -17,7 +17,7 @@ compatibility_platform_aliases = {
 }
 
 # CPU architecture options.
-architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc64", "wasm32", "wasm64", "loongarch64"]
+architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc64", "wasm32", "loongarch64"]
 architecture_aliases = {
     "x86": "x86_32",
     "x64": "x86_64",
@@ -348,12 +348,16 @@ def setup_swift_builder(
 
     bridging_header_path = current_path + "/" + bridging_header_filename
     swift_module_name = "godot_swift_module"
+    # Standard `<module>-Swift.h` name plus `.gen.h` so it's covered by `*.gen.*` in `.gitignore`.
+    swift_objc_header_path = current_path + "/" + swift_module_name + "-Swift.gen.h"
     env["SWIFTC"] = swiftc_path  # Swift compiler
     # Flags for the whole-module Swift compile.
     common_swift_flags = [
         "-warnings-as-errors",
         "-cxx-interoperability-mode=default",
         "-emit-object",
+        "-emit-objc-header-path",
+        swift_objc_header_path,
         "-target",
         swiftc_target,
         "-sdk",
@@ -368,6 +372,7 @@ def setup_swift_builder(
         "-I./",  # Pass the current directory as the header root so bridging headers can include files from any point of the hierarchy
     ]
     # All sources are compiled together into a single object, which requires whole-module mode.
+    # Whole-module mode is also required for `-emit-objc-header-path`; per-file mode drops it.
     env["SWIFTCFLAGS"] = ["-wmo"] + common_swift_flags
 
     if "osxcross" in env:
@@ -404,14 +409,23 @@ def setup_swift_builder(
 
         return swift_action
 
-    # Define Builder that compiles all Swift sources into a single object file.
+    def swift_emitter(target, source, env):
+        # Redirect the object, but keep the interop header next to the Swift sources so
+        # ObjC++ in the same directory resolves it with a quoted `#import`.
+        target, source = methods.redirect_emitter(target, source, env)
+        return target + [env.File(swift_objc_header_path)], source
+
+    # Define Builder that compiles all Swift sources into a single object file plus the
+    # `@objc` interop header.
     swift_builder = Builder(
-        generator=generate_swift_action, suffix=env["OBJSUFFIX"], src_suffix=".swift", emitter=methods.redirect_emitter
+        generator=generate_swift_action, suffix=env["OBJSUFFIX"], src_suffix=".swift", emitter=swift_emitter
     )
 
     env.Append(BUILDERS={"SwiftModule": swift_builder})
 
     swift_sources = [env.File(current_path + "/" + file) for file in all_swift_files]
-    swift_module = env.SwiftModule(current_path + "/" + swift_module_name, swift_sources)
+    swift_module, swift_objc_header = env.SwiftModule(current_path + "/" + swift_module_name, swift_sources)
+    # Lets ObjC++ sources that `#import` the interop header order against its generation.
+    env["SWIFT_OBJC_HEADER_TARGET"] = swift_objc_header
 
-    return swift_module
+    return [swift_module]

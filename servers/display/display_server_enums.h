@@ -172,6 +172,15 @@ enum ScreenOrientation {
 	SCREEN_SENSOR,
 };
 
+// Values returned by the DisplayServer `orientation_changed` signal.
+// Unlike ScreenOrientation, which represents the desired screen orientation and can be used to get or set the screen orientation,
+// SensorOrientation represents the actual screen orientation detected. It can be used with ScreenOrientation::SCREEN_SENSOR.
+enum SensorOrientation {
+	SENSOR_ORIENTATION_UNDEFINED,
+	SENSOR_ORIENTATION_PORTRAIT,
+	SENSOR_ORIENTATION_LANDSCAPE,
+};
+
 /* WINDOW */
 
 typedef int WindowID;
@@ -179,7 +188,8 @@ typedef int WindowID;
 enum {
 	MAIN_WINDOW_ID = 0,
 	INVALID_WINDOW_ID = -1,
-	INVALID_INDICATOR_ID = -1
+	INVALID_INDICATOR_ID = -1,
+	INVALID_NOTIFICATION_ID = -1,
 };
 
 enum HandleType {
@@ -286,6 +296,16 @@ enum FileDialogMode {
 	FILE_DIALOG_MODE_OPEN_ANY,
 	FILE_DIALOG_MODE_SAVE_FILE,
 	FILE_DIALOG_MODE_SAVE_MAX
+};
+
+/* NOTIFICATIONS */
+
+typedef int NotificationID;
+
+enum NotificationStatus {
+	NOTIFICATION_ACTIVATED,
+	NOTIFICATION_DISMISSED,
+	NOTIFICATION_FAILED,
 };
 
 /* STATUS INDICATOR */

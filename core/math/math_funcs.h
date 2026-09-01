@@ -265,6 +265,32 @@ constexpr int64_t division_round_up(int64_t p_num, int64_t p_den) {
 constexpr uint64_t division_round_up(uint64_t p_num, uint64_t p_den) {
 	return (p_num + p_den - 1) / p_den;
 }
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4146) // Unary minus operator applied to unsigned type, result still unsigned
+constexpr int32_t division_no_overflow(int32_t p_num, int32_t p_den) {
+	if (unlikely(p_den == -1)) {
+		return int32_t(-uint32_t(p_num));
+	}
+	return p_num / p_den;
+}
+constexpr int64_t division_no_overflow(int64_t p_num, int64_t p_den) {
+	if (unlikely(p_den == -1)) {
+		return int64_t(-uint64_t(p_num));
+	}
+	return p_num / p_den;
+}
+GODOT_MSVC_WARNING_POP
+constexpr int32_t modulo_no_overflow(int32_t p_num, int32_t p_den) {
+	if (unlikely(p_den == -1)) {
+		return 0;
+	}
+	return p_num % p_den;
+}
+constexpr int64_t modulo_no_overflow(int64_t p_num, int64_t p_den) {
+	if (unlikely(p_den == -1)) {
+		return 0;
+	}
+	return p_num % p_den;
+}
 
 constexpr bool is_finite(double p_val) {
 	return !is_nan(p_val) && !is_inf(p_val);

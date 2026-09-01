@@ -98,6 +98,10 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val EXTRA_IS_GAME_EMBEDDED = "is_game_embedded"
 		internal const val EXTRA_IS_GAME_RUNNING = "is_game_running"
 
+		// Benchmarking extras.
+		private const val EXTRA_LOAD_EMPTY_BENCHMARK_PROJECT = "load_empty_benchmark_project"
+		private const val EXTRA_BENCHMARK_RENDERING_METHOD = "benchmark_rendering_method"
+
 		// Command line arguments.
 		private const val FULLSCREEN_ARG = "--fullscreen"
 		private const val FULLSCREEN_ARG_SHORT = "-f"
@@ -108,12 +112,19 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val XR_MODE_ARG = "--xr-mode"
 		private const val SCENE_ARG = "--scene"
 		private const val PATH_ARG = "--path"
+		private const val RUN_INSTANCE_ARG = "--run_instance"
 
 		// Info for the various classes used by the editor.
 		internal val EDITOR_MAIN_INFO = EditorWindowInfo(GodotEditor::class.java, 777, "")
-		internal val RUN_GAME_INFO = EditorWindowInfo(GodotGame::class.java, 667, ":GodotGame", LaunchPolicy.AUTO)
 		internal val EMBEDDED_RUN_GAME_INFO = EditorWindowInfo(EmbeddedGodotGame::class.java, 2667, ":EmbeddedGodotGame")
 		internal val XR_RUN_GAME_INFO = EditorWindowInfo(GodotXRGame::class.java, 1667, ":GodotXRGame")
+
+		internal val RUN_GAME_INFO_0 = EditorWindowInfo(GodotGame0::class.java, 667, ":GodotGame0", LaunchPolicy.AUTO)
+		internal val RUN_GAME_INFO_1 = EditorWindowInfo(GodotGame1::class.java, 668, ":GodotGame1", LaunchPolicy.AUTO)
+
+		private fun isRunGameInfo(editorWindowInfo: EditorWindowInfo): Boolean {
+			return editorWindowInfo == RUN_GAME_INFO_0 || editorWindowInfo == RUN_GAME_INFO_1
+		}
 
 		/** Default behavior, means we check project settings **/
 		private const val XR_MODE_DEFAULT = "default"
@@ -166,11 +177,21 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		private const val PREF_KEY_DONT_SHOW_GAME_RESUME_HINT = "pref_key_dont_show_game_resume_hint"
 
 		@JvmStatic
-		fun isRunningInInstrumentation(): Boolean {
+		fun isRunningInInstrumentationOrUserTestHarness(): Boolean {
+			// Check if running in user test harness.
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && ActivityManager.isRunningInUserTestHarness()) {
+				return true
+			}
+
 			if (BuildConfig.BUILD_TYPE == "release") {
 				return false
 			}
 
+			if (BuildConfig.BUILD_TYPE == "benchmark") {
+				return true
+			}
+
+			// Check if running in instrumentation.
 			return try {
 				Class.forName("org.godotengine.editor.GodotEditorTest")
 				true
@@ -249,18 +270,21 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		return mutableSetOf()
 	}
 
+	override fun shouldSanitizeLaunchIntent(): Boolean {
+		return BuildConfig.BUILD_TYPE == "release" || (isRunningInInstrumentationOrUserTestHarness() && BuildConfig.BUILD_TYPE != "benchmark")
+	}
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		installSplashScreen()
 
 		val editorWindowInfo = getEditorWindowInfo()
-		if (editorWindowInfo == EDITOR_MAIN_INFO || editorWindowInfo == RUN_GAME_INFO) {
+		if (editorWindowInfo == EDITOR_MAIN_INFO || isRunGameInfo(editorWindowInfo)) {
 			enableEdgeToEdge()
 		}
 
 		// Skip permissions request if running in a device farm (e.g. firebase test lab) or if requested via the launch
 		// intent (e.g. instrumentation tests).
-		val skipPermissionsRequest = isRunningInInstrumentation() ||
-			Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && ActivityManager.isRunningInUserTestHarness()
+		val skipPermissionsRequest = isRunningInInstrumentationOrUserTestHarness()
 		if (!skipPermissionsRequest) {
 			// We exclude certain permissions from the set we request at startup, as they'll be
 			// requested on demand based on use cases.
@@ -433,6 +457,51 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 					}
 				}
 			}
+
+			else -> {
+				if (BuildConfig.BUILD_TYPE == "benchmark") {
+					val benchmarkRenderingMethod = intent.getStringExtra(EXTRA_BENCHMARK_RENDERING_METHOD)
+					if (!benchmarkRenderingMethod.isNullOrBlank()) {
+						updatedCommandLineParams.addAll(arrayOf("--rendering-method", benchmarkRenderingMethod))
+					}
+
+					val shouldLoadEmptyBenchmarkProject = intent.getBooleanExtra(EXTRA_LOAD_EMPTY_BENCHMARK_PROJECT, false)
+					if (shouldLoadEmptyBenchmarkProject) {
+						val projectParentDir = getExternalFilesDir(null)
+						if (projectParentDir != null) {
+							val benchmarkDir = File(projectParentDir, "godot_benchmark")
+							try {
+								Log.v(TAG, "Benchmark directory is $benchmarkDir")
+								if (!benchmarkDir.exists()) {
+									if (benchmarkDir.mkdirs()) {
+										Log.v(TAG, "Created benchmark directory: $benchmarkDir")
+									} else {
+										Log.e(TAG, "Unable to create editor benchmark directory")
+									}
+								}
+
+								val projectMetadata = File(benchmarkDir, "project.godot")
+								if (projectMetadata.createNewFile()) {
+									Log.v(TAG, "Created project metadata file: $projectMetadata")
+								}
+
+								// Load the empty project.
+								updatedCommandLineParams.addAll(
+									arrayOf(
+										EDITOR_ARG,
+										PATH_ARG,
+										benchmarkDir.canonicalPath
+									)
+								)
+							} catch(e: Exception) {
+								Log.e(TAG, "Unable to set up benchmark directory", e)
+							}
+						} else {
+							Log.e(TAG, "Unable to access empty benchmark project directory.")
+						}
+					}
+				}
+			}
 		}
 
 		super.handleStartIntent(intent, newLaunch)
@@ -479,7 +548,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	private fun updateWindowAppearance() {
 		val editorWindowInfo = getEditorWindowInfo()
-		if (editorWindowInfo == EDITOR_MAIN_INFO || editorWindowInfo == RUN_GAME_INFO) {
+		if (editorWindowInfo == EDITOR_MAIN_INFO || isRunGameInfo(editorWindowInfo)) {
 			godot?.apply {
 				enableImmersiveMode(isInImmersiveMode(), true)
 				enableEdgeToEdge(isInEdgeToEdgeMode(), true)
@@ -504,7 +573,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		if (getEditorWindowInfo() == EDITOR_MAIN_INFO &&
 			godot?.isEditorHint() == true &&
 			(editorMessageDispatcher.hasEditorConnection(EMBEDDED_RUN_GAME_INFO) ||
-				editorMessageDispatcher.hasEditorConnection(RUN_GAME_INFO))) {
+				editorMessageDispatcher.hasEditorConnection(RUN_GAME_INFO_0) ||
+				editorMessageDispatcher.hasEditorConnection(RUN_GAME_INFO_1))) {
 			// If this is the editor window, and this is not the project manager, and we have a running game, then show
 			// a hint for how to resume the playing game.
 			val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
@@ -528,7 +598,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		if (updatedCommandLineParams.isNotEmpty()) {
 			params.addAll(updatedCommandLineParams)
 		}
-		if (BuildConfig.BUILD_TYPE == "debug" && !params.contains("--benchmark")) {
+		if ((BuildConfig.BUILD_TYPE == "debug" || BuildConfig.BUILD_TYPE == "benchmark") && !params.contains("--benchmark")) {
 			params.add("--benchmark")
 		}
 		return params
@@ -537,6 +607,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	protected fun retrieveEditorWindowInfo(args: Array<String>, gameEmbedMode: GameEmbedMode): EditorWindowInfo {
 		var hasEditor = false
 		var xrMode = XR_MODE_DEFAULT
+		var runInstance = 0
 
 		var i = 0
 		while (i < args.size) {
@@ -544,6 +615,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				EDITOR_ARG, EDITOR_ARG_SHORT, EDITOR_PROJECT_MANAGER_ARG, EDITOR_PROJECT_MANAGER_ARG_SHORT -> hasEditor = true
 				XR_MODE_ARG -> {
 					xrMode = args[i++]
+				}
+				RUN_INSTANCE_ARG -> {
+					val runInstanceValue = args[i++]
+					try {
+						runInstance = runInstanceValue.toInt()
+					} catch (e: NumberFormatException) {
+						Log.w(TAG, "Unable to parse run instance number: $runInstanceValue", e)
+					}
 				}
 			}
 		}
@@ -561,26 +640,29 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			if ((xrMode == XR_MODE_DEFAULT && GodotLib.getGlobal("xr/openxr/enabled").toBoolean())) {
 				val hybridLaunchMode = getHybridAppLaunchMode()
 
-				return if (hybridLaunchMode == HybridMode.PANEL) {
-					RUN_GAME_INFO
+				if (hybridLaunchMode != HybridMode.PANEL) {
+					return XR_RUN_GAME_INFO
 				} else {
-					XR_RUN_GAME_INFO
+					// Hybrid launch mode is PANEL, fall-through and return RUN_GAME_INFO.
 				}
 			}
 
-			// Native XR devices don't support embed mode yet.
-			return RUN_GAME_INFO
+			// XR devices support doing multiple runs; check which run we are performing.
+			return when (runInstance) {
+				1 -> RUN_GAME_INFO_1
+				else -> RUN_GAME_INFO_0
+			}
 		}
 
 		// Project manager doesn't support embed mode.
 		if (godot?.isProjectManagerHint() == true) {
-			return RUN_GAME_INFO
+			return RUN_GAME_INFO_0
 		}
 
-		// Check for embed mode launch.
+		// Check for embed mode launch (not supported on native XR devices).
 		val resolvedEmbedMode = resolveGameEmbedModeIfNeeded(gameEmbedMode)
 		return if (resolvedEmbedMode == GameEmbedMode.DISABLED) {
-			RUN_GAME_INFO
+			RUN_GAME_INFO_0
 		} else {
 			EMBEDDED_RUN_GAME_INFO
 		}
@@ -588,7 +670,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	private fun getEditorWindowInfoForInstanceId(instanceId: Int): EditorWindowInfo? {
 		return when (instanceId) {
-			RUN_GAME_INFO.windowId -> RUN_GAME_INFO
+			RUN_GAME_INFO_0.windowId -> RUN_GAME_INFO_0
+			RUN_GAME_INFO_1.windowId -> RUN_GAME_INFO_1
 			EDITOR_MAIN_INFO.windowId -> EDITOR_MAIN_INFO
 			XR_RUN_GAME_INFO.windowId -> XR_RUN_GAME_INFO
 			EMBEDDED_RUN_GAME_INFO.windowId -> EMBEDDED_RUN_GAME_INFO
@@ -601,7 +684,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		// fullscreen mode, we want to remain in fullscreen mode.
 		// This doesn't apply to the play / game window since for that window fullscreen is
 		// controlled by the game logic.
-		val updatedArgs = if ((editorWindowInfo == EDITOR_MAIN_INFO || editorWindowInfo == RUN_GAME_INFO) &&
+		val updatedArgs = if ((editorWindowInfo == EDITOR_MAIN_INFO || isRunGameInfo(editorWindowInfo)) &&
 			godot?.isInImmersiveMode() == true &&
 			!args.contains(FULLSCREEN_ARG) &&
 			!args.contains(FULLSCREEN_ARG_SHORT)
@@ -666,7 +749,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun onGodotForceQuit(instance: Godot) {
-		if (!isRunningInInstrumentation()) {
+		if (!isRunningInInstrumentationOrUserTestHarness()) {
 			// For instrumented tests, we disable force-quitting to allow the tests to complete successfully, otherwise
 			// they fail when the process crashes.
 			super.onGodotForceQuit(instance)
@@ -892,7 +975,9 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	internal fun onEditorConnected(editorId: Int) {
 		Log.d(TAG, "Editor $editorId connected!")
 		when (editorId) {
-			EMBEDDED_RUN_GAME_INFO.windowId, RUN_GAME_INFO.windowId -> {
+			EMBEDDED_RUN_GAME_INFO.windowId,
+			RUN_GAME_INFO_0.windowId,
+			RUN_GAME_INFO_1.windowId -> {
 				runOnUiThread {
 					embeddedGameViewContainerWindow?.isVisible = false
 				}
@@ -934,7 +1019,9 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		activeWorkspace = workspace
 
 		if (workspace == GAME_WORKSPACE && shouldShowGameMenuBar()) {
-			if (editorMessageDispatcher.bringEditorWindowToFront(EMBEDDED_RUN_GAME_INFO) || editorMessageDispatcher.bringEditorWindowToFront(RUN_GAME_INFO)) {
+			if (editorMessageDispatcher.bringEditorWindowToFront(EMBEDDED_RUN_GAME_INFO) ||
+				editorMessageDispatcher.bringEditorWindowToFront(RUN_GAME_INFO_0) ||
+				editorMessageDispatcher.bringEditorWindowToFront(RUN_GAME_INFO_1)) {
 				return
 			}
 
@@ -947,19 +1034,19 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		}
 
 		if (!isLargeScreen) {
-			toggleScriptEditorOrientation()
+			toggleEditorOrientation()
 		}
 	}
 
 	override fun onDistractionFreeModeChanged(enabled: Boolean) {
 		distractionFreeModeEnabled = enabled
 		if (!isLargeScreen) {
-			toggleScriptEditorOrientation()
+			toggleEditorOrientation()
 		}
 	}
 
-	private fun toggleScriptEditorOrientation() {
-		if (activeWorkspace == SCRIPT_WORKSPACE && distractionFreeModeEnabled) {
+	private fun toggleEditorOrientation() {
+		if (distractionFreeModeEnabled) {
 			changingOrientationAllowed = true
 			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
 		} else if (changingOrientationAllowed) {

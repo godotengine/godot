@@ -114,8 +114,8 @@ def configure(env: "SConsEnvironment"):
     cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
 
     # Minimum emscripten requirements.
-    if cc_semver < (4, 0, 0):
-        print_error("The minimum Emscripten version to build Godot is 4.0.0, detected: %s.%s.%s" % cc_semver)
+    if cc_semver < (6, 0, 1):
+        print_error("The minimum Emscripten version to build Godot is 6.0.1, detected: %s.%s.%s" % cc_semver)
         sys.exit(255)
 
     env.Append(LIBEMITTER=[library_emitter])
@@ -124,7 +124,7 @@ def configure(env: "SConsEnvironment"):
     env["EXPORTED_RUNTIME_METHODS"] = []
 
     # Validate arch.
-    supported_arches = ["wasm32", "wasm64"]
+    supported_arches = ["wasm32"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
     try:
@@ -168,12 +168,6 @@ def configure(env: "SConsEnvironment"):
     if env["lto"] == "auto":  # Enable LTO for production.
         env["lto"] = "thin"
 
-    if env["lto"] == "thin" and cc_semver < (4, 0, 9):
-        print_warning(
-            '"lto=thin" support requires Emscripten 4.0.9 (detected %s.%s.%s), using "lto=full" instead.' % cc_semver
-        )
-        env["lto"] = "full"
-
     if env["lto"] != "none":
         if env["lto"] == "thin":
             env.Append(CCFLAGS=["-flto=thin"])
@@ -199,13 +193,6 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-sSAFE_HEAP=1"])
 
     # Closure compiler
-    if env["use_closure_compiler"] and cc_semver < (4, 0, 11):
-        print_warning(
-            '"use_closure_compiler=yes" support requires Emscripten 4.0.11 (detected %s.%s.%s), using "use_closure_compiler=no" instead.'
-            % cc_semver
-        )
-        env["use_closure_compiler"] = False
-
     if env["use_closure_compiler"]:
         # For emscripten support code.
         env.Append(LINKFLAGS=["--closure", "1"])
@@ -269,11 +256,11 @@ def configure(env: "SConsEnvironment"):
     if env["threads"]:
         # Thread support (via SharedArrayBuffer).
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
-        env.Append(CCFLAGS=["-sUSE_PTHREADS=1"])
-        env.Append(LINKFLAGS=["-sUSE_PTHREADS=1"])
+        env.Append(CCFLAGS=["-pthread"])
+        env.Append(LINKFLAGS=["-pthread"])
         env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
         env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=\"Module['emscriptenPoolSize']||8\""])
-        env.Append(LINKFLAGS=["-sWASM_MEM_MAX=2048MB"])
+        env.Append(LINKFLAGS=["-sMAXIMUM_MEMORY=2048MB"])
         if not env["dlink_enabled"]:
             # Workaround https://github.com/emscripten-core/emscripten/issues/21844#issuecomment-2116936414.
             # Not needed (and potentially dangerous) when dlink_enabled=yes, since we set EXPORT_ALL=1 in that case.
@@ -300,8 +287,6 @@ def configure(env: "SConsEnvironment"):
         env.extra_suffix = ".dlink" + env.extra_suffix
 
     env.Append(LINKFLAGS=["-sWASM_BIGINT"])
-    env.Append(CCFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])
-    env.Append(LINKFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])
 
     # Run the main application in a web worker
     if env["proxy_to_pthread"]:

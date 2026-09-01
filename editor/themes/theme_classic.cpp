@@ -1685,8 +1685,6 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_stylebox("ContextualToolbar", EditorStringName(EditorStyles), toolbar_stylebox);
 
 		// Script editor.
-		p_theme->set_stylebox("ScriptEditorPanel", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(p_config.base_margin, 0, p_config.base_margin, p_config.base_margin));
-		p_theme->set_stylebox("ScriptEditorPanelFloating", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 		p_theme->set_stylebox("ScriptEditor", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 
 		// Game view.
@@ -1704,14 +1702,15 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			menu_transparent_style->set_content_margin((Side)i, p_config.button_style->get_content_margin((Side)i));
 			main_screen_button_hover->set_content_margin((Side)i, p_config.button_style_hover->get_content_margin((Side)i));
 		}
-		p_theme->set_stylebox(CoreStringName(normal), "MainScreenButton", menu_transparent_style);
-		p_theme->set_stylebox("normal_mirrored", "MainScreenButton", menu_transparent_style);
-		p_theme->set_stylebox(SceneStringName(pressed), "MainScreenButton", menu_transparent_style);
-		p_theme->set_stylebox("pressed_mirrored", "MainScreenButton", menu_transparent_style);
-		p_theme->set_stylebox(SceneStringName(hover), "MainScreenButton", main_screen_button_hover);
-		p_theme->set_stylebox("hover_mirrored", "MainScreenButton", main_screen_button_hover);
-		p_theme->set_stylebox("hover_pressed", "MainScreenButton", main_screen_button_hover);
-		p_theme->set_stylebox("hover_pressed_mirrored", "MainScreenButton", main_screen_button_hover);
+		p_theme->set_color("font_selected_color", "MainScreenContainer", p_config.accent_color);
+		p_theme->set_color("font_unselected_color", "MainScreenContainer", p_config.font_color);
+		p_theme->set_color("icon_selected_color", "MainScreenContainer", p_config.accent_color);
+		p_theme->set_color("icon_unselected_color", "MainScreenContainer", Color(1, 1, 1, 1));
+		p_theme->set_constant("h_separation", "MainScreenContainer", 4);
+		p_theme->set_stylebox("tab_unselected", "MainScreenContainer", menu_transparent_style);
+		p_theme->set_stylebox("tab_selected", "MainScreenContainer", menu_transparent_style);
+		p_theme->set_stylebox("tab_hovered", "MainScreenContainer", main_screen_button_hover);
+		p_theme->set_constant("tab_separation", "MainScreenContainer", 4 * EDSCALE);
 
 		p_theme->set_type_variation("MainMenuBar", "FlatMenuButton");
 		p_theme->set_stylebox(CoreStringName(normal), "MainMenuBar", menu_transparent_style);
@@ -1768,7 +1767,6 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_stylebox("tabbar_background", "BottomPanel", style_bottom_panel_tabbar);
 		p_theme->set_stylebox("tab_selected", "BottomPanel", style_bottom_tab_selected);
 		p_theme->set_stylebox("tab_hovered", "BottomPanel", style_bottom_tab_hover);
-		p_theme->set_stylebox("tab_focus", "BottomPanel", menu_transparent_style);
 		p_theme->set_stylebox("tab_unselected", "BottomPanel", style_bottom_tab);
 		p_theme->set_color("font_unselected_color", "BottomPanel", p_config.font_color);
 		p_theme->set_color("font_hovered_color", "BottomPanel", p_config.font_hover_color);
@@ -2094,6 +2092,16 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			style_button_group->set_bg_color(p_config.dark_color_1.lerp(p_config.mono_color, 0.15));
 
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
+		}
+
+		// VSeparatorButtonGroup.
+		{
+			p_theme->set_type_variation("VSeparatorButtonGroup", "VSeparator");
+
+			Ref<StyleBoxLine> style_v_separator = p_theme->get_stylebox(SNAME("separator"), SNAME("VSeparator"))->duplicate();
+			style_v_separator->set_color(p_config.base_color);
+
+			p_theme->set_stylebox("separator", "VSeparatorButtonGroup", style_v_separator);
 		}
 
 		// TreeLineEdit.

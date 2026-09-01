@@ -291,6 +291,7 @@ private:
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);
+	bool _handle_custom_context_callback(Ref<InputEvent> p_event, const PackedStringArray &p_selected);
 
 	HashSet<String> _get_valid_conversions_for_file_paths(const Vector<String> &p_paths);
 
@@ -388,6 +389,8 @@ private:
 
 	Vector<String> _tree_get_selected(bool remove_self_inclusion = true, bool p_include_unselected_cursor = false) const;
 	Vector<String> _file_list_get_selected() const;
+	static Dictionary _get_context_data(const PackedStringArray &p_selected_files);
+	static Dictionary _get_context_data_for_create(const String &p_base_dir, bool p_needs_prefix);
 
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 

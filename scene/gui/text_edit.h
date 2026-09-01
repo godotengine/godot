@@ -145,8 +145,6 @@ private:
 		};
 
 		struct Line {
-			Vector<Gutter> gutters;
-
 			String data;
 			Array bidi_override;
 			Ref<TextParagraph> data_buf;
@@ -155,12 +153,15 @@ private:
 			String ime_data;
 			Array ime_bidi_override;
 
+			LocalVector<Gutter> gutters;
 			Color background_color = Color(0, 0, 0, 0);
 			bool hidden = false;
+
+			// Cached values.
 			int line_count = 0;
 			int height = 0;
 			int width = 0;
-			float indent_ofs = -1.0;
+			mutable float indent_ofs = -1.0;
 
 			Line() {
 				data_buf.instantiate();
@@ -171,7 +172,7 @@ private:
 		bool is_dirty = false;
 		bool tab_size_dirty = false;
 
-		mutable Vector<Line> text;
+		LocalVector<Line> text;
 		Ref<Font> font;
 		int font_size = -1;
 		int font_height = 0;
@@ -233,8 +234,8 @@ private:
 		const Vector<RID> get_accessibility_elements(int p_line);
 		void update_accessibility(int p_line, RID p_root);
 		void clear_accessibility() {
-			for (int i = 0; i < text.size(); i++) {
-				text.write[i].accessibility_text_root_element.clear();
+			for (Line &line : text) {
+				line.accessibility_text_root_element.clear();
 			}
 		}
 
@@ -250,6 +251,7 @@ private:
 		void remove_range(int p_from_line, int p_to_line);
 		int size() const { return text.size(); }
 		void clear();
+		void swap_additional_data(int p_from_line, int p_to_line);
 
 		void invalidate_cache(int p_line, bool p_text_changed = false);
 		void invalidate_font();
@@ -262,25 +264,24 @@ private:
 		/* Gutters. */
 		void add_gutter(int p_at);
 		void remove_gutter(int p_gutter);
-		void move_gutters(int p_from_line, int p_to_line);
 
-		void set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata) { text.write[p_line].gutters.write[p_gutter].metadata = p_metadata; }
+		void set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata) { text[p_line].gutters[p_gutter].metadata = p_metadata; }
 		const Variant &get_line_gutter_metadata(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].metadata; }
 
-		void set_line_gutter_text(int p_line, int p_gutter, const String &p_text) { text.write[p_line].gutters.write[p_gutter].text = p_text; }
+		void set_line_gutter_text(int p_line, int p_gutter, const String &p_text) { text[p_line].gutters[p_gutter].text = p_text; }
 		const String &get_line_gutter_text(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].text; }
 
-		void set_line_gutter_icon(int p_line, int p_gutter, const Ref<Texture2D> &p_icon) { text.write[p_line].gutters.write[p_gutter].icon = p_icon; }
+		void set_line_gutter_icon(int p_line, int p_gutter, const Ref<Texture2D> &p_icon) { text[p_line].gutters[p_gutter].icon = p_icon; }
 		const Ref<Texture2D> &get_line_gutter_icon(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].icon; }
 
-		void set_line_gutter_item_color(int p_line, int p_gutter, const Color &p_color) { text.write[p_line].gutters.write[p_gutter].color = p_color; }
+		void set_line_gutter_item_color(int p_line, int p_gutter, const Color &p_color) { text[p_line].gutters[p_gutter].color = p_color; }
 		const Color &get_line_gutter_item_color(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].color; }
 
-		void set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable) { text.write[p_line].gutters.write[p_gutter].clickable = p_clickable; }
+		void set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable) { text[p_line].gutters[p_gutter].clickable = p_clickable; }
 		bool is_line_gutter_clickable(int p_line, int p_gutter) const { return text[p_line].gutters[p_gutter].clickable; }
 
 		/* Line style. */
-		void set_line_background_color(int p_line, const Color &p_color) { text.write[p_line].background_color = p_color; }
+		void set_line_background_color(int p_line, const Color &p_color) { text[p_line].background_color = p_color; }
 		const Color get_line_background_color(int p_line) const { return text[p_line].background_color; }
 	};
 
@@ -320,8 +321,7 @@ private:
 		}
 	};
 	LocalVector<Underline> underlines;
-	Vector<Underline> _cut_line_from_underline(const Underline &p_ul, int p_line);
-	Vector<Underline> _get_underline_data_for_line(int p_line);
+	void _cut_line_from_underline(Underline &r_ul, int p_line);
 
 	// Placeholder
 	String placeholder_text = "";
@@ -387,8 +387,8 @@ private:
 			TYPE_INSERT,
 			TYPE_REMOVE
 		};
-		Vector<Caret> start_carets;
-		Vector<Caret> end_carets;
+		LocalVector<Caret> start_carets;
+		LocalVector<Caret> end_carets;
 
 		Type type = TYPE_NONE;
 		int from_line = 0;
@@ -466,8 +466,8 @@ private:
 		int column = 0;
 	};
 
-	// Vector containing all the carets, index '0' is the "main caret" and should never be removed.
-	Vector<Caret> carets;
+	// LocalVector containing all the carets, index '0' is the "main caret" and should never be removed.
+	LocalVector<Caret> carets;
 
 	bool setting_caret_line = false;
 	bool caret_pos_dirty = false;
@@ -560,6 +560,8 @@ private:
 	void _selection_changed(int p_caret = -1);
 	void _click_selection_held();
 
+	void _selection_mode_update();
+
 	void _update_selection_mode_pointer(bool p_initial = false);
 	void _update_selection_mode_word(bool p_initial = false);
 	void _update_selection_mode_line(bool p_initial = false);
@@ -636,7 +638,7 @@ private:
 	void _update_minimap_drag();
 
 	/* Gutters. */
-	Vector<GutterInfo> gutters;
+	LocalVector<GutterInfo> gutters;
 	int gutters_width = 0;
 	int gutter_padding = 0;
 	Vector2i hovered_gutter = Vector2i(-1, -1); // X = gutter index, Y = row.

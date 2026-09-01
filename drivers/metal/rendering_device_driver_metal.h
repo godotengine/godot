@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/templates/paged_allocator.h"
+#include "drivers/metal/metal_allocator.h"
 #include "drivers/metal/metal_device_profile.h"
 #include "drivers/metal/metal_objects_shared.h"
 #include "servers/rendering/rendering_device_driver.h"
@@ -65,12 +67,19 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	template <typename T>
 	using Result = std::variant<T, Error>;
 
+public:
+	enum SyncMode {
+		HazardTracking = 0,
+		Barriers,
+	};
+
 #pragma mark - Generic
 
 protected:
 	RenderingContextDriverMetal *context_driver = nullptr;
 	RenderingContextDriver::Device context_device;
 	MTL::Device *device = nullptr;
+	MetalAllocator *allocator = nullptr;
 
 	uint32_t _frame_count = 1;
 	/// frame_index is a cyclic counter derived from the current frame number modulo frame_count,
@@ -94,27 +103,19 @@ protected:
 	// DEV: When true, attempting to create a pipeline will fail if it cannot use the archive.
 	bool archive_fail_on_miss = false;
 
-	/// Resources to be added to the `main_residency_set`.
-	LocalVector<MTL::Resource *> _residency_add;
-	/// Resources to be removed from the `main_residency_set`.
-	LocalVector<MTL::Resource *> _residency_del;
-
 #pragma mark - Copy Queue
 
 	Mutex copy_queue_mutex;
 	/// A command queue used for internal copy operations.
 	NS::SharedPtr<MTL::CommandQueue> copy_queue;
-	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-	NS::SharedPtr<MTL::ResidencySet> copy_queue_rs;
-	GODOT_CLANG_WARNING_POP
 	// If this is not nullptr, there are pending copy operations.
 	NS::SharedPtr<MTL::CommandBuffer> copy_queue_command_buffer;
 	NS::SharedPtr<MTL::BlitCommandEncoder> copy_queue_blit_encoder;
-	NS::SharedPtr<MTL::Buffer> copy_queue_buffer;
+	MetalBuffer copy_queue_buffer;
 	NS::UInteger copy_queue_buffer_offset = 0;
 
 	_FORCE_INLINE_ NS::UInteger _copy_queue_buffer_available() const {
-		return copy_queue_buffer.get()->length() - copy_queue_buffer_offset;
+		return copy_queue_buffer.buffer.get()->length() - copy_queue_buffer_offset;
 	}
 
 	/// Marks p_size bytes as consumed from the copy queue buffer, aligning the new offset to 16 bytes.
@@ -126,7 +127,7 @@ protected:
 
 	/// Returns a pointer to the current position in the copy queue buffer.
 	_FORCE_INLINE_ void *_copy_queue_buffer_ptr() const {
-		return static_cast<uint8_t *>(copy_queue_buffer.get()->contents()) + copy_queue_buffer_offset;
+		return static_cast<uint8_t *>(copy_queue_buffer.buffer.get()->contents()) + copy_queue_buffer_offset;
 	}
 
 	_FORCE_INLINE_ MTL::CommandBuffer *_copy_queue_command_buffer() {
@@ -160,12 +161,24 @@ protected:
 	NS::SharedPtr<MTL::ResidencySet> main_residency_set;
 	GODOT_CLANG_WARNING_POP
 
-	bool use_barriers = false;
+	SyncMode sync_mode = Barriers;
 	MTL::ResourceOptions base_hazard_tracking = MTL::ResourceHazardTrackingModeTracked;
 
+	/// Textures imported via texture_create_from_extension. They are not heap-backed,
+	/// so barriers mode must make them resident explicitly at encoder creation time.
+	Mutex imported_textures_mutex;
+	LocalVector<MTL::Texture *> imported_textures;
+
+public:
+	void encode_imported_resources(MTL::RenderCommandEncoder *p_enc);
+	void encode_imported_resources(MTL::ComputeCommandEncoder *p_enc);
+
+protected:
 	virtual Error _create_device();
-	virtual void _track_resource(MTL::Resource *p_resource);
-	virtual void _untrack_resource(MTL::Resource *p_resource);
+	/// Resolves the final sync_mode for this driver (may downgrade/upgrade
+	/// based on OS support). Called from _initialize() before the allocator
+	/// is created, so use_heaps sees the final value.
+	virtual void _resolve_sync_mode() {}
 	void _check_capabilities();
 	Error _initialize(uint32_t p_device_index, uint32_t p_frame_count);
 
@@ -193,9 +206,7 @@ public:
 #pragma mark - Buffers
 
 public:
-	struct BufferInfo {
-		NS::SharedPtr<MTL::Buffer> metal_buffer;
-
+	struct BufferInfo : MetalBuffer {
 		_FORCE_INLINE_ bool is_dynamic() const { return _frame_idx != UINT32_MAX; }
 		_FORCE_INLINE_ uint32_t frame_index() const { return _frame_idx; }
 		_FORCE_INLINE_ void set_frame_index(uint32_t p_frame_index) { _frame_idx = p_frame_index; }
@@ -223,6 +234,17 @@ private:
 	bool is_valid_linear(const TextureFormat &p_format) const;
 
 public:
+	struct TextureInfo : MetalTexture {
+		// Backing buffer for linear (buffer-backed) textures; empty otherwise.
+		MetalBuffer linear_backing;
+		// True if `texture` stores an MTLRasterizationRateMap in place of a texture.
+		// If this flag is set, cast `texture` to MTL::RasterizationRateMap before use.
+		bool rasterization_rate_map = false;
+		// True for texture_create_from_extension imports (needs explicit
+		// residency in Metal 3 barriers mode; see encode_imported_resources).
+		bool imported = false;
+	};
+
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
 	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) override final;
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) override final;
@@ -451,6 +473,9 @@ public:
 
 	// ----- COMMANDS -----
 
+	virtual void command_begin_compute_pass(CommandBufferID p_cmd_buffer) override final;
+	virtual void command_end_compute_pass(CommandBufferID p_cmd_buffer) override final;
+
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) override final;
 	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override final;
@@ -493,19 +518,20 @@ public:
 	// ----- TIMESTAMP -----
 
 	// Basic.
-	virtual QueryPoolID timestamp_query_pool_create(uint32_t p_query_count) override final;
-	virtual void timestamp_query_pool_free(QueryPoolID p_pool_id) override final;
-	virtual void timestamp_query_pool_get_results(QueryPoolID p_pool_id, uint32_t p_query_count, uint64_t *r_results) override final;
-	virtual uint64_t timestamp_query_result_to_time(uint64_t p_result) override final;
+	virtual QueryPoolID timestamp_query_pool_create(uint32_t p_query_count) override;
+	virtual void timestamp_query_pool_free(QueryPoolID p_pool_id) override;
+	virtual void timestamp_query_pool_get_results(QueryPoolID p_pool_id, uint32_t p_query_count, uint64_t *r_results) override;
+	virtual uint64_t timestamp_query_result_to_time(uint64_t p_result) override;
 
 	// Commands.
-	virtual void command_timestamp_query_pool_reset(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_query_count) override final;
-	virtual void command_timestamp_write(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_index) override final;
+	virtual void command_timestamp_query_pool_reset(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_query_count) override;
+	virtual void command_timestamp_write(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_index) override;
 
 #pragma mark - Labels
 
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) override final;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) override final;
+	virtual void command_group_end(CommandBufferID p_cmd_buffer) override final;
 
 #pragma mark - Debug
 
@@ -535,6 +561,7 @@ public:
 
 	// Metal-specific.
 	MTL::Device *get_device() const { return device; }
+	MetalAllocator *get_allocator() const { return allocator; }
 	PixelFormats &get_pixel_formats() const { return *pixel_formats; }
 	MDResourceCache &get_resource_cache() const { return *resource_cache; }
 	const MetalDeviceProperties &get_device_properties() const { return *device_properties; }
@@ -550,7 +577,19 @@ public:
 	_FORCE_INLINE_ uint32_t frame_index() const { return _frame_index; }
 	_FORCE_INLINE_ uint32_t frames_drawn() const { return _frames_drawn; }
 
+private:
+	/*********************/
+	/**** BOOKKEEPING ****/
+	/*********************/
+
+	using VersatileResource = VersatileResourceTemplate<
+			BufferInfo,
+			TextureInfo>;
+	PagedAllocator<VersatileResource, true> resources_allocator;
+
 	/******************/
+
+public:
 	RenderingDeviceDriverMetal(RenderingContextDriverMetal *p_context_driver);
 	~RenderingDeviceDriverMetal();
 };

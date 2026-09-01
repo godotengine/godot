@@ -474,8 +474,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Editor
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/localization/localize_settings", true, "")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
+	const String dock_tab_style_hint = "Text Only,Icon Only,Text and Icon";
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", 0, dock_tab_style_hint)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", 0, dock_tab_style_hint)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/main_screen_dock_tab_style", 2, dock_tab_style_hint)
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/localization/ui_layout_direction", 0, "Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// Display what the Auto display scale setting effectively corresponds to.
@@ -1357,6 +1359,7 @@ void EditorSettings::_handle_setting_compatibility() {
 	_rename_shortcut("script_editor/window_move_up", "script_editor/move_document_up");
 	_rename_shortcut("script_editor/window_move_down", "script_editor/move_document_down");
 	_rename_shortcut("script_editor/window_sort", "script_editor/sort_documents");
+	_rename_shortcut("script_text_editor/replace_in_files", "editor/replace_in_files");
 }
 
 void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {
@@ -1507,6 +1510,11 @@ void EditorSettings::setup_language(bool p_initial_setup) {
 
 	if (lang == "en") {
 		TranslationServer::get_singleton()->set_locale(lang);
+
+		TranslationServer::get_singleton()->get_editor_domain()->clear();
+		TranslationServer::get_singleton()->get_property_domain()->clear();
+		TranslationServer::get_singleton()->get_doc_domain()->clear();
+
 		emit_signal("_translation_changed");
 		return; // Default, nothing to do.
 	}
@@ -1559,9 +1567,14 @@ void EditorSettings::save() {
 	if (!singleton.ptr()) {
 		return;
 	}
+	// Only save if a setting has been changed or
+	// the setting file for this version does not exist yet.
+	// Fixes issues when multiple editor instances are open.
+	if (singleton->changed_settings.is_empty() && FileAccess::exists(singleton->get_path())) {
+		return;
+	}
 
 	Error err = ResourceSaver::save(singleton);
-
 	if (err != OK) {
 		ERR_PRINT("Error saving editor settings to " + singleton->get_path());
 	} else {
@@ -2039,35 +2052,7 @@ float EditorSettings::get_auto_display_scale() {
 	}
 #endif
 
-#if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED) || defined(WINDOWS_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
-#else
-
-	// Fallback logic based on resolution and reported DPI (only used for Linux/X11 and Web).
-	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
-
-	if (DisplayServer::get_singleton()->screen_get_size(screen) == Vector2i()) {
-		// Invalid screen size, skip.
-		return 1.0;
-	}
-
-	// Use the smallest dimension to use a correct display scale on portrait displays.
-	const int smallest_dimension = MIN(DisplayServer::get_singleton()->screen_get_size(screen).x, DisplayServer::get_singleton()->screen_get_size(screen).y);
-	if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && smallest_dimension >= 1400) {
-		// hiDPI display.
-		return 2.0;
-	} else if (smallest_dimension >= 1700) {
-		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
-		// Use an intermediate scale to handle this situation.
-		return 1.5;
-	} else if (smallest_dimension <= 800) {
-		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
-		// Icons won't look great, but this is better than having editor elements overflow from its window.
-		return 0.75;
-	}
-	return 1.0;
-
-#endif // defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED) || defined(WINDOWS_ENABLED) || defined(ANDROID_ENABLED)
 }
 
 String EditorSettings::get_language() const {

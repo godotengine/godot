@@ -52,7 +52,7 @@ void Container::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	control->connect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
+	control->connect(SceneStringName(size_flags_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->connect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->connect(SceneStringName(maximum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->connect("_desired_size_changed", callable_mp(this, &Container::_child_desired_size_changed));
@@ -81,7 +81,7 @@ void Container::remove_child_notify(Node *p_child) {
 		return;
 	}
 
-	control->disconnect(SceneStringName(size_flags_changed), callable_mp(this, &Container::queue_sort));
+	control->disconnect(SceneStringName(size_flags_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->disconnect(SceneStringName(minimum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->disconnect(SceneStringName(maximum_size_changed), callable_mp(this, &Container::_child_minsize_changed));
 	control->disconnect("_desired_size_changed", callable_mp(this, &Container::_child_desired_size_changed));
@@ -89,6 +89,28 @@ void Container::remove_child_notify(Node *p_child) {
 
 	update_minimum_size();
 	queue_sort();
+}
+
+Size2 Container::get_minimum_size() const {
+	Size2 min_size;
+
+	for (Node *child : iterate_children()) {
+		Control *c = as_sortable_control(child, SortableVisibilityMode::VISIBLE);
+		if (!c) {
+			continue;
+		}
+
+		Size2 minsize = c->get_bound_minimum_size();
+		Size2 maxsize = c->get_custom_maximum_size();
+
+		real_t width = (c->get_h_size_flags().has_flag(SIZE_MAXIMIZE) && maxsize.x >= 0) ? maxsize.x : minsize.x;
+		real_t height = (c->get_v_size_flags().has_flag(SIZE_MAXIMIZE) && maxsize.y >= 0) ? maxsize.y : minsize.y;
+
+		min_size.x = MAX(min_size.x, width);
+		min_size.y = MAX(min_size.y, height);
+	}
+
+	return min_size;
 }
 
 void Container::_sort_children() {
@@ -108,17 +130,17 @@ void Container::_sort_children() {
 	layout_pending_finish();
 }
 
-void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &p_rect) {
-	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
-	ERR_FAIL_COND(p_child->get_parent() != this);
+void Container::fit_child_in_rect(RequiredParam<Control> p_child, const Rect2 &p_rect) {
+	EXTRACT_PARAM_OR_FAIL(child, p_child);
+	ERR_FAIL_COND(child->get_parent() != this);
 
 	bool rtl = is_layout_rtl();
-	Size2 minsize = p_child->get_combined_minimum_size();
-	Size2 desired_size = p_child->get_bound_desired_size();
-	Size2 maxsize = p_child->get_combined_maximum_size();
+	Size2 minsize = child->get_combined_minimum_size();
+	Size2 desired_size = child->get_bound_desired_size();
+	Size2 maxsize = child->get_combined_maximum_size();
 	Rect2 r = p_rect;
-	BitField<SizeFlags> h_size_flags = p_child->get_h_size_flags();
-	BitField<SizeFlags> v_size_flags = p_child->get_v_size_flags();
+	BitField<SizeFlags> h_size_flags = child->get_h_size_flags();
+	BitField<SizeFlags> v_size_flags = child->get_v_size_flags();
 
 	if (!h_size_flags.has_flag(SIZE_FILL)) {
 		float final_width = minsize.width;
@@ -150,9 +172,9 @@ void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &
 		}
 	}
 
-	p_child->set_rect(r);
-	p_child->set_rotation(0);
-	p_child->set_scale(Vector2(1, 1));
+	child->set_rect(r);
+	child->set_rotation(0);
+	child->set_scale(Vector2(1, 1));
 }
 
 void Container::queue_sort() {
@@ -194,6 +216,7 @@ Vector<int> Container::get_allowed_size_flags_horizontal() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 
@@ -208,6 +231,7 @@ Vector<int> Container::get_allowed_size_flags_vertical() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 

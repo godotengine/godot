@@ -31,20 +31,26 @@
 #pragma once
 
 #include "core/math/dynamic_bvh.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
 #include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/popup.h"
 
+#include "modules/modules_enabled.gen.h"
+
 class AcceptDialog;
 class Button;
+class CheckBox;
 class ColorPickerButton;
 class ConfirmationDialog;
 class DirectionalLight3D;
 class EditorSelection;
 class EditorSpinSlider;
+class HSlider;
 class HSplitContainer;
+class Label;
 class LineEdit;
 class MenuButton;
 class Node3DEditorViewport;
@@ -57,8 +63,8 @@ class VSeparator;
 class VSplitContainer;
 class WorldEnvironment;
 
-class Node3DEditor : public VBoxContainer {
-	GDCLASS(Node3DEditor, VBoxContainer);
+class Node3DEditor : public EditorDock {
+	GDCLASS(Node3DEditor, EditorDock);
 
 public:
 	static const unsigned int VIEWPORTS_COUNT = 4;
@@ -218,6 +224,10 @@ private:
 	PopupMenu *gizmos_menu = nullptr;
 	MenuButton *view_layout_menu = nullptr;
 
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	MenuButton *textures_layout_menu = nullptr;
+#endif
+
 	AcceptDialog *accept = nullptr;
 
 	ConfirmationDialog *snap_dialog = nullptr;
@@ -347,6 +357,43 @@ private:
 	Button *environ_add_to_scene = nullptr;
 
 	Button *sun_environ_settings = nullptr;
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	Button *textures_button = nullptr;
+	PopupPanel *textures_popup = nullptr;
+	Button *textures_very_low = nullptr;
+	Button *textures_low = nullptr;
+	Button *textures_medium = nullptr;
+	Button *textures_high = nullptr;
+	Button *textures_very_high = nullptr;
+	Button *textures_max = nullptr;
+	Button *textures_manual = nullptr;
+	EditorSpinSlider *textures_max_lod_slider = nullptr;
+	EditorSpinSlider *textures_min_lod_slider = nullptr;
+	CheckBox *textures_budget_enable = nullptr;
+	EditorSpinSlider *textures_budget_slider = nullptr;
+
+	enum TextureQualityPreset {
+		TEXTURE_QUALITY_VERY_LOW,
+		TEXTURE_QUALITY_LOW,
+		TEXTURE_QUALITY_MEDIUM,
+		TEXTURE_QUALITY_HIGH,
+		TEXTURE_QUALITY_VERY_HIGH,
+		TEXTURE_QUALITY_MAX,
+	};
+
+	void _textures_button_pressed();
+	void _textures_button_update_state();
+	void _textures_close(const Ref<InputEvent> &p_event);
+	void _textures_preset_pressed(int p_preset);
+	void _textures_max_lod_changed(float p_value);
+	void _textures_min_lod_changed(float p_value);
+	void _textures_budget_toggled(bool p_enabled);
+	void _textures_budget_changed(float p_value);
+	void _textures_load_settings();
+	void _textures_apply_settings();
+	void _textures_save_pressed();
+#endif
 
 	DirectionalLight3D *preview_sun = nullptr;
 	bool preview_sun_dangling = false;
@@ -519,7 +566,7 @@ class Node3DEditorPlugin : public EditorPlugin {
 
 public:
 	Node3DEditor *get_spatial_editor() { return spatial_editor; }
-	virtual String get_plugin_name() const override { return TTRC("3D"); }
+	virtual String get_plugin_name() const override { return "3D"; }
 	bool has_main_screen() const override { return true; }
 	virtual void make_visible(bool p_visible) override;
 	virtual void edit(Object *p_object) override;

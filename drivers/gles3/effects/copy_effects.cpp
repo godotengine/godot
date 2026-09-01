@@ -117,7 +117,7 @@ CopyEffects::~CopyEffects() {
 }
 
 void CopyEffects::copy_to_rect(const Rect2 &p_rect, bool p_linear_to_srgb) {
-	uint64_t specializations = p_linear_to_srgb ? CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
+	uint64_t specializations = p_linear_to_srgb ? (uint64_t)CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
 
 	bool success = copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION, specializations);
 	if (!success) {
@@ -134,7 +134,7 @@ void CopyEffects::copy_to_rect_3d(const Rect2 &p_rect, float p_layer, int p_type
 	CopyShaderGLES3::ShaderVariant variant = p_type == Texture::TYPE_LAYERED
 			? CopyShaderGLES3::MODE_COPY_SECTION_2D_ARRAY
 			: CopyShaderGLES3::MODE_COPY_SECTION_3D;
-	uint64_t specializations = p_linear_to_srgb ? CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
+	uint64_t specializations = p_linear_to_srgb ? (uint64_t)CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
 
 	bool success = copy.shader.version_bind_shader(copy.shader_version, variant, specializations);
 	if (!success) {
@@ -150,7 +150,7 @@ void CopyEffects::copy_to_rect_3d(const Rect2 &p_rect, float p_layer, int p_type
 void CopyEffects::copy_with_lens_distortion(const Rect2 &p_rect, float p_layer, const Vector2 &p_eye_center, float p_k1, float p_k2, float p_upscale, float p_aspect_ration, bool p_linear_to_srgb) {
 	CopyShaderGLES3::ShaderVariant variant = CopyShaderGLES3::MODE_LENS_DISTORTION;
 
-	uint64_t specializations = p_linear_to_srgb ? CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
+	uint64_t specializations = p_linear_to_srgb ? (uint64_t)CopyShaderGLES3::CONVERT_LINEAR_TO_SRGB : 0;
 
 	bool success = copy.shader.version_bind_shader(copy.shader_version, variant, specializations);
 	if (!success) {

@@ -127,14 +127,18 @@ RDD::BufferID RenderingDeviceDriverMetal::buffer_create(uint64_t p_size, BitFiel
 				options = base_hazard_tracking | MTL::ResourceStorageModePrivate;
 			}
 			break;
+		case MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE:
+			options = base_hazard_tracking | MTL::ResourceStorageModeShared;
+			break;
 	}
 
-	MTL::Buffer *obj = device->newBuffer(p_size, options);
-	ERR_FAIL_NULL_V_MSG(obj, BufferID(), "Can't create buffer of size: " + itos(p_size));
+	MetalBuffer buffer = allocator->new_buffer(p_size, options);
+	ERR_FAIL_NULL_V_MSG(buffer.buffer.get(), BufferID(), "Can't create buffer of size: " + itos(p_size));
 
 	BufferInfo *buf_info;
 	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
-		MetalBufferDynamicInfo *dyn_buffer = memnew(MetalBufferDynamicInfo);
+		static_assert(sizeof(MetalBufferDynamicInfo) <= sizeof(VersatileResource));
+		MetalBufferDynamicInfo *dyn_buffer = VersatileResource::allocate<MetalBufferDynamicInfo>(resources_allocator);
 		buf_info = dyn_buffer;
 #ifdef DEBUG_ENABLED
 		dyn_buffer->last_frame_mapped = p_frames_drawn - 1ul;
@@ -142,11 +146,9 @@ RDD::BufferID RenderingDeviceDriverMetal::buffer_create(uint64_t p_size, BitFiel
 		dyn_buffer->set_frame_index(0u);
 		dyn_buffer->size_bytes = round_up_to_alignment(original_size, 16u);
 	} else {
-		buf_info = memnew(BufferInfo);
+		buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
 	}
-	buf_info->metal_buffer = NS::TransferPtr(obj);
-
-	_track_resource(buf_info->metal_buffer.get());
+	*static_cast<MetalBuffer *>(buf_info) = buffer;
 
 	return BufferID(buf_info);
 }
@@ -159,24 +161,24 @@ bool RenderingDeviceDriverMetal::buffer_set_texel_format(BufferID p_buffer, Data
 void RenderingDeviceDriverMetal::buffer_free(BufferID p_buffer) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
 
-	_untrack_resource(buf_info->metal_buffer.get());
+	allocator->free_buffer(*buf_info);
 
 	if (buf_info->is_dynamic()) {
-		memdelete((MetalBufferDynamicInfo *)buf_info);
+		VersatileResource::free(resources_allocator, (MetalBufferDynamicInfo *)buf_info);
 	} else {
-		memdelete(buf_info);
+		VersatileResource::free(resources_allocator, buf_info);
 	}
 }
 
 uint64_t RenderingDeviceDriverMetal::buffer_get_allocation_size(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
-	return buf_info->metal_buffer.get()->allocatedSize();
+	return buf_info->buffer.get()->allocatedSize();
 }
 
 uint8_t *RenderingDeviceDriverMetal::buffer_map(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
-	ERR_FAIL_COND_V_MSG(buf_info->metal_buffer.get()->storageMode() != MTL::StorageModeShared, nullptr, "Unable to map private buffers");
-	return (uint8_t *)buf_info->metal_buffer.get()->contents();
+	ERR_FAIL_COND_V_MSG(buf_info->buffer.get()->storageMode() != MTL::StorageModeShared, nullptr, "Unable to map private buffers");
+	return (uint8_t *)buf_info->buffer.get()->contents();
 }
 
 void RenderingDeviceDriverMetal::buffer_unmap(BufferID p_buffer) {
@@ -190,7 +192,7 @@ uint8_t *RenderingDeviceDriverMetal::buffer_persistent_map_advance(BufferID p_bu
 	ERR_FAIL_COND_V_MSG(buf_info->last_frame_mapped == p_frames_drawn, nullptr, "Buffers with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT must only be mapped once per frame. Otherwise there could be race conditions with the GPU. Amalgamate all data uploading into one map(), use an extra buffer or remove the bit.");
 	buf_info->last_frame_mapped = p_frames_drawn;
 #endif
-	return (uint8_t *)buf_info->metal_buffer.get()->contents() + buf_info->next_frame_index(_frame_count) * buf_info->size_bytes;
+	return (uint8_t *)buf_info->buffer.get()->contents() + buf_info->next_frame_index(_frame_count) * buf_info->size_bytes;
 }
 
 uint64_t RenderingDeviceDriverMetal::buffer_get_dynamic_offsets(Span<BufferID> p_buffers) {
@@ -213,7 +215,7 @@ uint64_t RenderingDeviceDriverMetal::buffer_get_dynamic_offsets(Span<BufferID> p
 uint64_t RenderingDeviceDriverMetal::buffer_get_device_address(BufferID p_buffer) {
 	if (__builtin_available(iOS 16.0, macOS 13.0, *)) {
 		const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
-		return buf_info->metal_buffer.get()->gpuAddress();
+		return buf_info->buffer.get()->gpuAddress();
 	} else {
 #if DEV_ENABLED
 		WARN_PRINT_ONCE("buffer_get_device_address is not supported on this OS version.");
@@ -402,7 +404,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 
 	// Allocate memory.
 
-	MTL::Texture *obj = nullptr;
+	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
 	if (is_linear) {
 		// Linear textures are restricted to 2D textures, a single mipmap level and a single array layer.
 		MTL::PixelFormat pixel_format = desc->pixelFormat();
@@ -412,42 +414,69 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 		size_t bytes_per_layer = formats.getBytesPerLayer(pixel_format, bytes_per_row, p_format.height);
 		size_t byte_count = bytes_per_layer * p_format.depth * p_format.array_layers;
 
-		MTL::Buffer *buf = device->newBuffer(byte_count, options);
-		obj = buf->newTexture(desc.get(), 0, bytes_per_row);
-		buf->release();
-
-		_track_resource(buf);
+		tex_info->linear_backing = allocator->new_buffer(byte_count, options);
+		if (tex_info->linear_backing.buffer) {
+			tex_info->texture = NS::TransferPtr(tex_info->linear_backing.buffer->newTexture(desc.get(), 0, bytes_per_row));
+		}
 	} else {
-		obj = device->newTexture(desc.get());
+		*static_cast<MetalTexture *>(tex_info) = allocator->new_texture(desc.get());
 	}
-	ERR_FAIL_NULL_V_MSG(obj, TextureID(), "Unable to create texture.");
+	if (!tex_info->texture) {
+		allocator->free_buffer(tex_info->linear_backing);
+		VersatileResource::free(resources_allocator, tex_info);
+		ERR_FAIL_V_MSG(TextureID(), "Unable to create texture.");
+	}
 
-	_track_resource(obj);
-
-	return TextureID(reinterpret_cast<uint64_t>(obj));
+	return TextureID(tex_info);
 }
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) {
 	MTL::Texture *res = reinterpret_cast<MTL::Texture *>(p_native_texture);
 
+	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
+
+	id native_obj = (id)(void *)p_native_texture;
+	if (class_conforms_to_protocol_recursive(object_getClass(native_obj), objc_getProtocol("MTLRasterizationRateMap"))) {
+		// A rate map is not a texture. Do not create a view, track residency, or set a label.
+		tex_info->rasterization_rate_map = true;
+		tex_info->texture = NS::RetainPtr(reinterpret_cast<MTL::Texture *>(p_native_texture));
+		return TextureID(tex_info);
+	}
+
+	tex_info->imported = true;
+
 	// If the requested format is different, we need to create a view.
 	MTL::PixelFormat format = (MTL::PixelFormat)pixel_formats->getMTLPixelFormat(p_format);
 	if (res->pixelFormat() != format) {
 		MTL::TextureSwizzleChannels swizzle = MTL::TextureSwizzleChannels::Default();
-		// newTextureView returns retain count of 1.
-		res = res->newTextureView(format, res->textureType(), NS::Range::Make(0, res->mipmapLevelCount()), NS::Range::Make(0, p_array_layers), swizzle);
-		ERR_FAIL_NULL_V_MSG(res, TextureID(), "Unable to create texture view.");
+		MTL::Texture *view = res->newTextureView(format, res->textureType(), NS::Range::Make(0, res->mipmapLevelCount()), NS::Range::Make(0, p_array_layers), swizzle);
+		if (view == nullptr) {
+			VersatileResource::free(resources_allocator, tex_info);
+			ERR_FAIL_V_MSG(TextureID(), "Unable to create texture view.");
+		}
+		tex_info->texture = NS::TransferPtr(view);
 	} else {
-		res->retain();
+		tex_info->texture = NS::RetainPtr(res);
 	}
 
-	_track_resource(res);
+	{
+		MutexLock lock(imported_textures_mutex);
+		imported_textures.push_back(tex_info->texture.get());
+	}
 
-	return TextureID(reinterpret_cast<uint64_t>(res));
+	if (main_residency_set) {
+		main_residency_set->addAllocation(tex_info->texture.get());
+		main_residency_set->commit();
+	}
+
+	return TextureID(tex_info);
 }
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared(TextureID p_original_texture, const TextureView &p_view) {
-	MTL::Texture *src_texture = reinterpret_cast<MTL::Texture *>(p_original_texture.id);
+	TextureInfo *src_info = (TextureInfo *)p_original_texture.id;
+	ERR_FAIL_COND_V_MSG(src_info->rasterization_rate_map, TextureID(), "Cannot create a shared texture from a rasterization rate map.");
+
+	MTL::Texture *src_texture = src_info->texture.get();
 
 	NS::UInteger slices = src_texture->arrayLength();
 	if (src_texture->textureType() == MTL::TextureTypeCube) {
@@ -482,12 +511,17 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared(TextureID p_ori
 #undef SWIZZLE
 	MTL::Texture *obj = src_texture->newTextureView(format, src_texture->textureType(), NS::Range::Make(0, src_texture->mipmapLevelCount()), NS::Range::Make(0, slices), swizzle);
 	ERR_FAIL_NULL_V_MSG(obj, TextureID(), "Unable to create shared texture");
-	_track_resource(obj);
-	return TextureID(reinterpret_cast<uint64_t>(obj));
+
+	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
+	tex_info->texture = NS::TransferPtr(obj);
+	return TextureID(tex_info);
 }
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) {
-	MTL::Texture *src_texture = reinterpret_cast<MTL::Texture *>(p_original_texture.id);
+	TextureInfo *src_info = (TextureInfo *)p_original_texture.id;
+	ERR_FAIL_COND_V_MSG(src_info->rasterization_rate_map, TextureID(), "Cannot create a shared texture from a rasterization rate map.");
+
+	MTL::Texture *src_texture = src_info->texture.get();
 
 	static const MTL::TextureType VIEW_TYPES[] = {
 		MTL::TextureType1D, // MTLTextureType1D
@@ -537,26 +571,41 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared_from_slice(Text
 #undef SWIZZLE
 	MTL::Texture *obj = src_texture->newTextureView(format, textureType, NS::Range::Make(p_mipmap, p_mipmaps), NS::Range::Make(p_layer, p_layers), swizzle);
 	ERR_FAIL_NULL_V_MSG(obj, TextureID(), "Unable to create shared texture");
-	_track_resource(obj);
-	return TextureID(reinterpret_cast<uint64_t>(obj));
+
+	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
+	tex_info->texture = NS::TransferPtr(obj);
+	return TextureID(tex_info);
 }
 
 void RenderingDeviceDriverMetal::texture_free(TextureID p_texture) {
-	MTL::Texture *obj = reinterpret_cast<MTL::Texture *>(p_texture.id);
-	_untrack_resource(obj);
-	obj->release();
+	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
+	if (tex_info->imported) {
+		MutexLock lock(imported_textures_mutex);
+		imported_textures.erase(tex_info->texture.get());
+
+		if (main_residency_set) {
+			main_residency_set->removeAllocation(tex_info->texture.get());
+			main_residency_set->commit();
+		}
+	}
+	allocator->free_texture(*tex_info);
+	allocator->free_buffer(tex_info->linear_backing);
+	VersatileResource::free(resources_allocator, tex_info);
 }
 
 uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_texture) {
-	// p_texture can contain a wrapped MTLRasterizationRateMap as returned by VisionOSXRInterface,
-	// which (unlike MTLTexture) lacks the allocatedSize method. sendMessageSafe will check that
-	// it responds to the selector before calling it
-	NS::Object *obj = reinterpret_cast<NS::Object *>(p_texture.id);
-	return NS::Object::sendMessageSafe<NS::UInteger>(obj, _MTL_PRIVATE_SEL(allocatedSize));
+	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
+	if (tex_info->rasterization_rate_map) {
+		return 0;
+	}
+	return tex_info->texture.get()->allocatedSize();
 }
 
 void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) {
-	MTL::Texture *obj = reinterpret_cast<MTL::Texture *>(p_texture.id);
+	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
+	ERR_FAIL_COND_MSG(tex_info->rasterization_rate_map, "Cannot get copyable layout for rasterization rate map.");
+
+	MTL::Texture *obj = tex_info->texture.get();
 
 	PixelFormats &pf = *pixel_formats;
 	DataFormat format = pf.getDataFormat(obj->pixelFormat());
@@ -575,7 +624,10 @@ void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture
 }
 
 Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture, uint32_t p_layer) {
-	MTL::Texture *obj = reinterpret_cast<MTL::Texture *>(p_texture.id);
+	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
+	ERR_FAIL_COND_V_MSG(tex_info->rasterization_rate_map, Vector<uint8_t>(), "Cannot get data for a rasterization rate map.");
+
+	MTL::Texture *obj = tex_info->texture.get();
 	ERR_FAIL_COND_V_MSG(obj->storageMode() != MTL::StorageModeShared, Vector<uint8_t>(), "Texture must be created with TEXTURE_USAGE_CPU_READ_BIT set.");
 
 	MTL::Buffer *buf = obj->buffer();
@@ -914,10 +966,10 @@ void RenderingDeviceDriverMetal::_swap_chain_release_buffers(SwapChain *p_swap_c
 
 RDD::SwapChainID RenderingDeviceDriverMetal::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
 	const RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(p_surface);
-	if (use_barriers) {
-		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-		add_residency_set_to_main_queue(surface->get_residency_set());
-		GODOT_CLANG_WARNING_POP
+	if (sync_mode != HazardTracking) {
+		if (__builtin_available(macOS 26.0, iOS 26.0, tvOS 26.0, visionOS 26.0, *)) {
+			add_residency_set_to_main_queue(surface->get_residency_set());
+		}
 	}
 
 	SwapChain *swap_chain = memnew(SwapChain);
@@ -951,10 +1003,7 @@ Error RenderingDeviceDriverMetal::swap_chain_resize(CommandQueueID p_cmd_queue, 
 
 	DataFormat new_data_format = DATA_FORMAT_MAX;
 	ColorSpace new_color_space = COLOR_SPACE_MAX;
-	Error err = surface->resize(p_desired_framebuffer_count, new_data_format, new_color_space);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(surface->resize(p_desired_framebuffer_count, new_data_format, new_color_space));
 
 	if (new_data_format != swap_chain->data_format) {
 		_swap_chain_release(swap_chain);
@@ -1015,11 +1064,11 @@ void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain
 
 void RenderingDeviceDriverMetal::swap_chain_free(SwapChainID p_swap_chain) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-	if (use_barriers) {
-		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-		RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
-		remove_residency_set_to_main_queue(surface->get_residency_set());
-		GODOT_CLANG_WARNING_POP
+	if (sync_mode != HazardTracking) {
+		if (__builtin_available(macOS 26.0, iOS 26.0, tvOS 26.0, visionOS 26.0, *)) {
+			RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
+			remove_residency_set_to_main_queue(surface->get_residency_set());
+		}
 	}
 	_swap_chain_release(swap_chain);
 	memdelete(swap_chain);
@@ -1036,33 +1085,24 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 
 	for (uint32_t i = 0; i < p_attachments.size(); i += 1) {
 		const MDAttachment &a = pass->attachments[i];
-		id native_attachment = (id)(void *)p_attachments[i].id;
-		Class cls = object_getClass(native_attachment);
-
-		MTL::Texture *tex = nullptr;
-		bool attachment_is_rasterization_rate_map = false;
-		if (class_conforms_to_protocol_recursive(cls, objc_getProtocol("MTLRasterizationRateMap"))) {
-			rasterization_rate_map = reinterpret_cast<MTL::RasterizationRateMap *>(p_attachments[i].id);
-			attachment_is_rasterization_rate_map = true;
-		} else if (class_conforms_to_protocol_recursive(cls, objc_getProtocol("MTLTexture"))) {
-			tex = reinterpret_cast<MTL::Texture *>(p_attachments[i].id);
-		}
-		if (tex == nullptr && !attachment_is_rasterization_rate_map) {
-#if DEV_ENABLED
-			WARN_PRINT("Invalid texture for attachment " + itos(i));
-#endif
+		TextureInfo *tex_info = (TextureInfo *)p_attachments[i].id;
+		if (tex_info->rasterization_rate_map) {
+			rasterization_rate_map = reinterpret_cast<MTL::RasterizationRateMap *>(tex_info->texture.get());
+			textures.write[i] = nullptr;
+		} else {
+			textures.write[i] = tex_info->texture.get();
 		}
 		if (a.samples > 1) {
+			MTL::Texture *tex = textures[i];
 			if (tex != nullptr && tex->sampleCount() != a.samples) {
 #if DEV_ENABLED
 				WARN_PRINT("Mismatched sample count for attachment " + itos(i) + "; expected " + itos(a.samples) + ", got " + itos(tex->sampleCount()));
 #endif
 			}
 		}
-		textures.write[i] = tex;
 	}
 
-	MDFrameBuffer *fb = memnew(MDFrameBuffer(textures, Size2i(p_width, p_height)));
+	MDFrameBufferTexture *fb = memnew(MDFrameBufferTexture(textures, Size2i(p_width, p_height)));
 	fb->rasterization_rate_map = rasterization_rate_map;
 	return FramebufferID(fb);
 }
@@ -1353,7 +1393,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 			}
 		};
 #define ADD_USAGE(res, stage, usage) \
-	if (!use_barriers) { \
+	if (sync_mode == HazardTracking) { \
 		add_usage(res, stage, usage); \
 	}
 
@@ -1376,7 +1416,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 					uint32_t count = uniform.ids.size() / 2;
 					for (uint32_t j = 0; j < count; j += 1) {
 						MTL::SamplerState *sampler = reinterpret_cast<MTL::SamplerState *>(uniform.ids[j * 2 + 0].id);
-						MTL::Texture *texture = reinterpret_cast<MTL::Texture *>(uniform.ids[j * 2 + 1].id);
+						MTL::Texture *texture = ((TextureInfo *)uniform.ids[j * 2 + 1].id)->texture.get();
 						*(MTL::ResourceID *)(ptr + idx.texture + j) = texture->gpuResourceID();
 						*(MTL::ResourceID *)(ptr + idx.sampler + j) = sampler->gpuResourceID();
 
@@ -1386,7 +1426,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 				case UNIFORM_TYPE_TEXTURE: {
 					size_t count = uniform.ids.size();
 					for (size_t j = 0; j < count; j += 1) {
-						MTL::Texture *texture = reinterpret_cast<MTL::Texture *>(uniform.ids[j].id);
+						MTL::Texture *texture = ((TextureInfo *)uniform.ids[j].id)->texture.get();
 						*(MTL::ResourceID *)(ptr + idx.texture + j) = texture->gpuResourceID();
 
 						ADD_USAGE(texture, ui.active_stages, ui.usage);
@@ -1395,7 +1435,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 				case UNIFORM_TYPE_IMAGE: {
 					size_t count = uniform.ids.size();
 					for (size_t j = 0; j < count; j += 1) {
-						MTL::Texture *texture = reinterpret_cast<MTL::Texture *>(uniform.ids[j].id);
+						MTL::Texture *texture = ((TextureInfo *)uniform.ids[j].id)->texture.get();
 						*(MTL::ResourceID *)(ptr + idx.texture + j) = texture->gpuResourceID();
 						ADD_USAGE(texture, ui.active_stages, ui.usage);
 
@@ -1421,14 +1461,14 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 				case UNIFORM_TYPE_STORAGE_BUFFER:
 				case UNIFORM_TYPE_UNIFORM_BUFFER: {
 					const BufferInfo *buffer = (const BufferInfo *)uniform.ids[0].id;
-					*(MTLGPUAddress *)(ptr + idx.buffer) = buffer->metal_buffer.get()->gpuAddress();
+					*(MTLGPUAddress *)(ptr + idx.buffer) = buffer->buffer.get()->gpuAddress();
 
-					ADD_USAGE(buffer->metal_buffer.get(), ui.active_stages, ui.usage);
+					ADD_USAGE(buffer->buffer.get(), ui.active_stages, ui.usage);
 				} break;
 				case UNIFORM_TYPE_INPUT_ATTACHMENT: {
 					size_t count = uniform.ids.size();
 					for (size_t j = 0; j < count; j += 1) {
-						MTL::Texture *texture = reinterpret_cast<MTL::Texture *>(uniform.ids[j].id);
+						MTL::Texture *texture = ((TextureInfo *)uniform.ids[j].id)->texture.get();
 						*(MTL::ResourceID *)(ptr + idx.texture + j) = texture->gpuResourceID();
 
 						ADD_USAGE(texture, ui.active_stages, ui.usage);
@@ -1438,9 +1478,9 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 				case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 					// Encode the base GPU address (frame 0); it will be updated at bind time.
 					const MetalBufferDynamicInfo *buffer = (const MetalBufferDynamicInfo *)uniform.ids[0].id;
-					*(MTLGPUAddress *)(ptr + idx.buffer) = buffer->metal_buffer.get()->gpuAddress();
+					*(MTLGPUAddress *)(ptr + idx.buffer) = buffer->buffer.get()->gpuAddress();
 
-					ADD_USAGE(buffer->metal_buffer.get(), ui.active_stages, ui.usage);
+					ADD_USAGE(buffer->buffer.get(), ui.active_stages, ui.usage);
 				} break;
 				default: {
 					DEV_ASSERT(false);
@@ -1450,7 +1490,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 
 #undef ADD_USAGE
 
-		if (!use_barriers) {
+		if (sync_mode == HazardTracking) {
 			for (const KeyValue<MTL::Resource *, StageResourceUsage> &keyval : bound_resources) {
 				ResourceVector *resources = set->usage_to_resources.getptr(keyval.value);
 				if (resources == nullptr) {
@@ -1464,14 +1504,13 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 		}
 
 		if (!is_dynamic) {
-			set->arg_buffer = NS::TransferPtr(device->newBuffer(shader_set.buffer_size, base_hazard_tracking | MTL::ResourceStorageModePrivate));
+			set->arg_buffer = allocator->new_buffer(shader_set.buffer_size, base_hazard_tracking | MTL::ResourceStorageModePrivate);
 #if DEV_ENABLED
 			char label[64];
 			snprintf(label, sizeof(label), "Uniform Set %u", p_set_index);
-			set->arg_buffer->setLabel(NS::String::string(label, NS::UTF8StringEncoding));
+			set->arg_buffer.buffer->setLabel(NS::String::string(label, NS::UTF8StringEncoding));
 #endif
-			_track_resource(set->arg_buffer.get());
-			_copy_queue_copy_to_buffer(arg_buffer_data, set->arg_buffer.get());
+			_copy_queue_copy_to_buffer(arg_buffer_data, set->arg_buffer.buffer.get());
 		} else {
 			// Store the arg buffer data for dynamic uniform sets.
 			// It will be copied and updated at bind time.
@@ -1492,9 +1531,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 
 void RenderingDeviceDriverMetal::uniform_set_free(UniformSetID p_uniform_set) {
 	MDUniformSet *obj = (MDUniformSet *)p_uniform_set.id;
-	if (obj->arg_buffer) {
-		_untrack_resource(obj->arg_buffer.get());
-	}
+	allocator->free_buffer(obj->arg_buffer);
 	memdelete(obj);
 }
 
@@ -1647,10 +1684,21 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 
 	size_t subpass_count = p_subpasses.size();
 
-	Vector<MDSubpass> subpasses;
+#ifdef DEV_ENABLED
+	// This loop validates the assumption that Godot configures subpass N is
+	// dependent on all prior subpasses (transitively).
+	for (uint32_t i = 0; i < p_subpass_dependencies.size(); i++) {
+		const SubpassDependency &dep = p_subpass_dependencies[i];
+		// If this asserts, then MDCommandBuffer::render_next_subpass will need
+		// to be updated, as it assumes subpass N must complete before N+1 starts.
+		DEV_ASSERT(dep.src_subpass < dep.dst_subpass && "unimplemented: subpass dependency not covered by the sequential subpass fence chain");
+	}
+#endif
+
+	LocalVector<MDSubpass> subpasses;
 	subpasses.resize(subpass_count);
 	for (uint32_t i = 0; i < subpass_count; i++) {
-		MDSubpass &subpass = subpasses.write[i];
+		MDSubpass &subpass = subpasses[i];
 		subpass.subpass_index = i;
 		subpass.view_count = p_view_count;
 		subpass.input_references = p_subpasses[i].input_references;
@@ -1671,12 +1719,12 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		MTL::StoreActionDontCare, // ATTACHMENT_STORE_OP_DONT_CARE
 	};
 
-	Vector<MDAttachment> attachments;
+	LocalVector<MDAttachment> attachments;
 	attachments.resize(p_attachments.size());
 
 	for (uint32_t i = 0; i < p_attachments.size(); i++) {
 		const Attachment &a = p_attachments[i];
-		MDAttachment &mda = attachments.write[i];
+		MDAttachment &mda = attachments[i];
 		MTL::PixelFormat format = pf.getMTLPixelFormat(a.format);
 		mda.format = format;
 		if (a.samples > TEXTURE_SAMPLES_1) {
@@ -1698,7 +1746,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 			mda.type |= MDAttachmentType::Color;
 		}
 	}
-	MDRenderPass *obj = memnew(MDRenderPass(attachments, subpasses));
+	MDRenderPass *obj = memnew(MDRenderPass(std::move(attachments), std::move(subpasses)));
 	return RenderPassID(obj);
 }
 
@@ -2236,6 +2284,16 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 
 // ----- COMMANDS -----
 
+void RenderingDeviceDriverMetal::command_begin_compute_pass(CommandBufferID p_cmd_buffer) {
+	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
+	cb->compute_begin_pass();
+}
+
+void RenderingDeviceDriverMetal::command_end_compute_pass(CommandBufferID p_cmd_buffer) {
+	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
+	cb->compute_end_pass();
+}
+
 void RenderingDeviceDriverMetal::command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
 	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
 	cb->bind_pipeline(p_pipeline);
@@ -2414,6 +2472,14 @@ void RenderingDeviceDriverMetal::command_end_label(CommandBufferID p_cmd_buffer)
 	cb->end_label();
 }
 
+void RenderingDeviceDriverMetal::command_group_end(CommandBufferID p_cmd_buffer) {
+	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
+	// Closing the encoder here is what guarantees no encoder straddles a level
+	// boundary, which is what makes per-encoder fences sufficient.
+	cb->end();
+	cb->advance_sync_level();
+}
+
 #pragma mark - Debug
 
 void RenderingDeviceDriverMetal::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
@@ -2439,15 +2505,17 @@ void RenderingDeviceDriverMetal::set_object_name(ObjectType p_type, ID p_driver_
 
 	switch (p_type) {
 		case OBJECT_TYPE_TEXTURE: {
-			MTL::Texture *tex = reinterpret_cast<MTL::Texture *>(p_driver_id.id);
-			tex->setLabel(label);
+			TextureInfo *tex_info = (TextureInfo *)p_driver_id.id;
+			if (!tex_info->rasterization_rate_map) {
+				tex_info->texture.get()->setLabel(label);
+			}
 		} break;
 		case OBJECT_TYPE_SAMPLER: {
 			// Can't set label after creation.
 		} break;
 		case OBJECT_TYPE_BUFFER: {
 			const BufferInfo *buf_info = (const BufferInfo *)p_driver_id.id;
-			buf_info->metal_buffer.get()->setLabel(label);
+			buf_info->buffer.get()->setLabel(label);
 		} break;
 		case OBJECT_TYPE_SHADER: {
 			MDShader *shader = (MDShader *)(p_driver_id.id);
@@ -2462,7 +2530,7 @@ void RenderingDeviceDriverMetal::set_object_name(ObjectType p_type, ID p_driver_
 		} break;
 		case OBJECT_TYPE_UNIFORM_SET: {
 			MDUniformSet *set = (MDUniformSet *)(p_driver_id.id);
-			set->arg_buffer->setLabel(label);
+			set->arg_buffer.buffer->setLabel(label);
 		} break;
 		case OBJECT_TYPE_PIPELINE: {
 			// Can't set label after creation.
@@ -2491,10 +2559,18 @@ uint64_t RenderingDeviceDriverMetal::get_resource_native_handle(DriverResource p
 			return 0;
 		}
 		case DRIVER_RESOURCE_TEXTURE: {
-			return p_driver_id.id;
+			if (p_driver_id.id == 0) {
+				return 0;
+			}
+			TextureInfo *tex_info = (TextureInfo *)p_driver_id.id;
+			return (uint64_t)(uintptr_t)tex_info->texture.get();
 		}
 		case DRIVER_RESOURCE_TEXTURE_VIEW: {
-			return p_driver_id.id;
+			if (p_driver_id.id == 0) {
+				return 0;
+			}
+			TextureInfo *tex_info = (TextureInfo *)p_driver_id.id;
+			return (uint64_t)(uintptr_t)tex_info->texture.get();
 		}
 		case DRIVER_RESOURCE_TEXTURE_DATA_FORMAT: {
 			return 0;
@@ -2506,7 +2582,11 @@ uint64_t RenderingDeviceDriverMetal::get_resource_native_handle(DriverResource p
 			return 0;
 		}
 		case DRIVER_RESOURCE_BUFFER: {
-			return p_driver_id.id;
+			if (p_driver_id.id == 0) {
+				return 0;
+			}
+			const BufferInfo *buf_info = (const BufferInfo *)p_driver_id.id;
+			return (uint64_t)(uintptr_t)buf_info->buffer.get();
 		}
 		case DRIVER_RESOURCE_COMPUTE_PIPELINE: {
 			MDComputePipeline *pipeline = (MDComputePipeline *)(p_driver_id.id);
@@ -2532,8 +2612,7 @@ void RenderingDeviceDriverMetal::_copy_queue_copy_to_buffer(Span<uint8_t> p_src_
 
 	memcpy(_copy_queue_buffer_ptr(), p_src_data.ptr(), p_src_data.size());
 
-	copy_queue_rs.get()->addAllocation(p_dst_buffer);
-	blit_encoder->copyFromBuffer(copy_queue_buffer.get(), copy_queue_buffer_offset, p_dst_buffer, p_dst_offset, p_src_data.size());
+	blit_encoder->copyFromBuffer(copy_queue_buffer.buffer.get(), copy_queue_buffer_offset, p_dst_buffer, p_dst_offset, p_src_data.size());
 
 	_copy_queue_buffer_consume(p_src_data.size());
 }
@@ -2543,16 +2622,12 @@ void RenderingDeviceDriverMetal::_copy_queue_flush() {
 		return;
 	}
 
-	copy_queue_rs.get()->addAllocation(copy_queue_buffer.get());
-	copy_queue_rs.get()->commit();
-
 	copy_queue_blit_encoder.get()->endEncoding();
 	copy_queue_blit_encoder.reset();
 	copy_queue_command_buffer.get()->commit();
 	copy_queue_command_buffer.get()->waitUntilCompleted();
 	copy_queue_command_buffer.reset();
 	copy_queue_buffer_offset = 0;
-	copy_queue_rs.get()->removeAllAllocations();
 }
 
 Error RenderingDeviceDriverMetal::_copy_queue_initialize() {
@@ -2563,20 +2638,8 @@ Error RenderingDeviceDriverMetal::_copy_queue_initialize() {
 	ERR_FAIL_COND_V(!copy_queue, ERR_CANT_CREATE);
 
 	// Reserve 64 KiB for copy commands. If the buffer fills, it will be flushed automatically.
-	copy_queue_buffer = NS::TransferPtr(device->newBuffer(64 * 1024, MTL::ResourceStorageModeShared | MTL::ResourceHazardTrackingModeUntracked));
-	copy_queue_buffer.get()->setLabel(MTLSTR("Copy Command Scratch Buffer"));
-
-	if (__builtin_available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 1.0, *)) {
-		if (device_properties->features.supports_residency_sets) {
-			MTL::ResidencySetDescriptor *rs_desc = MTL::ResidencySetDescriptor::alloc()->init();
-			rs_desc->setInitialCapacity(2);
-			rs_desc->setLabel(MTLSTR("Copy Queue Residency Set"));
-			NS::Error *error = nullptr;
-			copy_queue_rs = NS::TransferPtr(device->newResidencySet(rs_desc, &error));
-			rs_desc->release();
-			copy_queue.get()->addResidencySet(copy_queue_rs.get());
-		}
-	}
+	copy_queue_buffer = allocator->new_buffer(64 * 1024, MTL::ResourceStorageModeShared | MTL::ResourceHazardTrackingModeUntracked);
+	copy_queue_buffer.buffer.get()->setLabel(MTLSTR("Copy Command Scratch Buffer"));
 
 	return OK;
 }
@@ -2711,8 +2774,12 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 uint64_t RenderingDeviceDriverMetal::api_trait_get(ApiTrait p_trait) {
 	switch (p_trait) {
 		case API_TRAIT_HONORS_PIPELINE_BARRIERS:
-			return use_barriers;
-		case API_TRAIT_CLEARS_WITH_COPY_ENGINE:
+			return sync_mode == Barriers;
+		case API_TRAIT_BUFFER_CLEARS_WITH_COPY_ENGINE:
+			return true;
+		case API_TRAIT_TEXTURE_CLEARS_WITH_COPY_ENGINE:
+			return false;
+		case API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS:
 			return false;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
@@ -2749,6 +2816,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 #endif
 			return is_supported;
 		}
+		case SUPPORTS_GPU_MAPPABLE_BUFFER:
+			return true;
 		default:
 			return false;
 	}
@@ -2800,6 +2869,12 @@ RenderingDeviceDriverMetal::RenderingDeviceDriverMetal(RenderingContextDriverMet
 		archive_fail_on_miss = true;
 	}
 
+	// Barriers is the default; "none" selects native hazard tracking.
+	// Unrecognized values intentionally keep the default.
+	if (String res = OS::get_singleton()->get_environment("GODOT_MTL_SYNC_MODE"); res == U"none") {
+		sync_mode = HazardTracking;
+	}
+
 #if TARGET_OS_OSX
 	if (String res = OS::get_singleton()->get_environment("GODOT_MTL_SHADER_LOAD_STRATEGY"); res == U"lazy") {
 		_shader_load_strategy = ShaderLoadStrategy::LAZY;
@@ -2818,6 +2893,27 @@ RenderingDeviceDriverMetal::~RenderingDeviceDriverMetal() {
 	memdelete(shader_container_format);
 	memdelete(pixel_formats);
 	memdelete(device_properties);
+
+	if (allocator != nullptr) {
+		allocator->free_buffer(copy_queue_buffer);
+
+#ifdef DEBUG_ENABLED
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			MetalAllocatorStats stats;
+			allocator->get_stats(stats);
+			const char *pool_names[3] = { "private", "shared", "shared_wc" };
+			for (uint32_t i = 0; i < 3; i++) {
+				const MetalAllocatorStats::Pool &p = stats.pools[i];
+				print_verbose(vformat("Metal allocator pool %s: %d blocks, %s reserved, %s used, %d live allocations, %d dedicated (%s).",
+						pool_names[i], p.block_count, String::humanize_size(p.reserved_bytes), String::humanize_size(p.used_bytes),
+						p.allocation_count, p.dedicated_count, String::humanize_size(p.dedicated_bytes)));
+			}
+		}
+#endif
+
+		memdelete(allocator);
+		allocator = nullptr;
+	}
 }
 
 #pragma mark - Initialization
@@ -2832,15 +2928,17 @@ Error RenderingDeviceDriverMetal::_create_device() {
 	return OK;
 }
 
-void RenderingDeviceDriverMetal::_track_resource(MTL::Resource *p_resource) {
-	if (use_barriers) {
-		_residency_add.push_back(p_resource);
+void RenderingDeviceDriverMetal::encode_imported_resources(MTL::RenderCommandEncoder *p_enc) {
+	MutexLock lock(imported_textures_mutex);
+	if (!imported_textures.is_empty()) {
+		p_enc->useResources((const MTL::Resource *const *)imported_textures.ptr(), imported_textures.size(), MTL::ResourceUsageRead, MTL::RenderStageVertex | MTL::RenderStageFragment);
 	}
 }
 
-void RenderingDeviceDriverMetal::_untrack_resource(MTL::Resource *p_resource) {
-	if (use_barriers) {
-		_residency_del.push_back(p_resource);
+void RenderingDeviceDriverMetal::encode_imported_resources(MTL::ComputeCommandEncoder *p_enc) {
+	MutexLock lock(imported_textures_mutex);
+	if (!imported_textures.is_empty()) {
+		p_enc->useResources((const MTL::Resource *const *)imported_textures.ptr(), imported_textures.size(), MTL::ResourceUsageRead);
 	}
 }
 
@@ -2912,6 +3010,20 @@ Error RenderingDeviceDriverMetal::_initialize(uint32_t p_device_index, uint32_t 
 	context_device = context_driver->device_get(p_device_index);
 	Error err = _create_device();
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+
+	// Must be resolved before the allocator is created, so use_heaps sees the
+	// final sync_mode.
+	_resolve_sync_mode();
+
+	// Must be created before _copy_queue_initialize(), which sources its scratch
+	// buffer from the allocator. Barriers mode implies heap suballocation:
+	// on Metal 3 it is the residency mechanism (useHeaps), and Metal 4 always
+	// runs barriers.
+	bool use_heaps = sync_mode == Barriers;
+	allocator = MetalAllocator::create(device, use_heaps);
+	if (use_heaps) {
+		print_verbose("Metal: heap suballocation enabled.");
+	}
 
 	device_properties = memnew(MetalDeviceProperties(device));
 	pixel_formats = memnew(PixelFormats(device, device_properties->features));

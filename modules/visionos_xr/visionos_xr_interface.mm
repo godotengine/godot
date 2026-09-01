@@ -34,20 +34,25 @@
 
 #include "visionos_simd_helpers.h"
 
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/input/input.h"
+#include "core/math/transform_3d.h"
 #include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/os/thread.h"
+#include "core/string/print_string.h"
 #include "drivers/metal/metal3_objects.h"
-#include "drivers/metal/rendering_device_driver_metal.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server.h" // ERR_NOT_ON_RENDER_THREAD_V
+#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/rendering_server_types.h"
+#include "servers/xr/xr_server.h"
 
 #include "platform/visionos/godot_app_delegate_service_visionos.h"
 
-#import <ARKit/ARKit.h>
-#import <CompositorServices/CompositorServices.h>
-
 const String VisionOSXRInterface::name = "visionOS";
-
-ar_world_tracking_provider_t VisionOSXRInterface::world_tracking_provider = nullptr;
 
 StringName VisionOSXRInterface::get_signal_name(SignalEnum p_signal) {
 	switch (p_signal) {
@@ -81,6 +86,28 @@ void VisionOSXRInterface::_bind_methods() {
 	for (int i = 0; i < VISIONOS_XR_SIGNAL_MAX; i++) {
 		ADD_SIGNAL(MethodInfo(get_signal_name((SignalEnum)i)));
 	}
+
+	ClassDB::bind_method(D_METHOD("get_current_render_quality"), &VisionOSXRInterface::get_current_render_quality);
+	ClassDB::bind_method(D_METHOD("set_current_render_quality", "render_quality"), &VisionOSXRInterface::set_current_render_quality);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "current_render_quality"), "set_current_render_quality", "get_current_render_quality");
+
+	BIND_ENUM_CONSTANT(IMMERSION_STYLE_FULL);
+	BIND_ENUM_CONSTANT(IMMERSION_STYLE_MIXED);
+	BIND_ENUM_CONSTANT(IMMERSION_STYLE_PROGRESSIVE);
+	ClassDB::bind_method(D_METHOD("get_immersion_style"), &VisionOSXRInterface::get_immersion_style);
+	ClassDB::bind_method(D_METHOD("set_immersion_style", "immersion_style"), &VisionOSXRInterface::set_immersion_style);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "immersion_style", PROPERTY_HINT_ENUM, "Full,Mixed,Progressive"), "set_immersion_style", "get_immersion_style");
+
+	BIND_ENUM_CONSTANT(VISIBILITY_AUTOMATIC);
+	BIND_ENUM_CONSTANT(VISIBILITY_VISIBLE);
+	BIND_ENUM_CONSTANT(VISIBILITY_HIDDEN);
+	ClassDB::bind_method(D_METHOD("get_upper_limb_visibility"), &VisionOSXRInterface::get_upper_limb_visibility);
+	ClassDB::bind_method(D_METHOD("set_upper_limb_visibility", "upper_limb_visibility"), &VisionOSXRInterface::set_upper_limb_visibility);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "upper_limb_visibility", PROPERTY_HINT_ENUM, "Automatic,Visible,Hidden"), "set_upper_limb_visibility", "get_upper_limb_visibility");
+
+	ClassDB::bind_method(D_METHOD("get_persistent_system_overlays"), &VisionOSXRInterface::get_persistent_system_overlays);
+	ClassDB::bind_method(D_METHOD("set_persistent_system_overlays", "persistent_system_overlays"), &VisionOSXRInterface::set_persistent_system_overlays);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "persistent_system_overlays", PROPERTY_HINT_ENUM, "Automatic,Visible,Hidden"), "set_persistent_system_overlays", "get_persistent_system_overlays");
 }
 
 VisionOSXRInterface::VisionOSXRInterface() {}
@@ -104,7 +131,11 @@ XRInterface::TrackingStatus VisionOSXRInterface::get_tracking_status() const {
 }
 
 bool VisionOSXRInterface::is_initialized() const {
-	return (initialized);
+	return initialized;
+}
+
+void VisionOSXRInterface::RenderThread::set_world_tracking_provider(uint64_t p_world_tracking_provider) {
+	this->world_tracking_provider = (__bridge ar_world_tracking_provider_t)(void *)p_world_tracking_provider;
 }
 
 bool VisionOSXRInterface::initialize() {
@@ -113,47 +144,81 @@ bool VisionOSXRInterface::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, false);
 
+	// Checking features
+	GDTRenderMode app_delegate_render_mode = GDTAppDelegateServiceVisionOS.renderMode;
+	cs.enabled = (app_delegate_render_mode == GDTRenderModeCompositorServices);
+	hands.enabled = GLOBAL_GET("xr/visionos/enable_hand_tracking");
+	controllers.enabled = GLOBAL_GET("xr/visionos/enable_controller_tracking");
+
+	// ARKit session
+	ar_session = ar_session_create();
+
+	// CompositorServices
+	if (cs.enabled) {
+		cs.initialize(xr_server);
+
+		// RenderThread
+		rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL_V(rendering_server, false);
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::initialize));
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_world_tracking_provider).bind((uint64_t)(__bridge void *)cs.world_tracking_provider));
+
+		float minimum_supported_near_plane = cp_layer_renderer_capabilities_supported_minimum_near_plane_distance(cs.layer_renderer_capabilities);
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_minimum_supported_near_plane).bind(minimum_supported_near_plane));
+
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::prepare_screen));
+
+		// Make this our primary interface, since it's used for rendering
+		xr_server->set_primary_interface(this);
+	}
+
+	// Hand tracking
+	if (hands.enabled) {
+		hands.initialize(xr_server);
+	}
+
+	// Controllers
+	if (controllers.enabled) {
+		controllers.initialize(xr_server, this);
+	}
+
+	// Running the ARKit session for head tracking, at first
+	run_ar_session();
+
+	// Check the authorizations asynchronously
+	if (hands.enabled || controllers.enabled) {
+		update_authorizations_async();
+	}
+
+	initialized = true;
+
+	print_verbose(String("VisionOSXRInterface initialized with:") + " compositorservices=" + (cs.enabled ? "yes" : "no") + " hands=" + (hands.enabled ? "yes" : "no") + " controllers=" + (controllers.enabled ? "yes" : "no"));
+
+	return initialized;
+}
+
+bool VisionOSXRInterface::CompositorServicesData::initialize(XRServer *p_xr_server) {
 	String driver_name = OS::get_singleton()->get_current_rendering_driver_name().to_lower();
 	ERR_FAIL_COND_V_MSG(driver_name != "metal", false, "The visionOS XR interface requires the Metal rendering driver.");
-
-	GDTRenderMode app_delegate_render_mode = GDTAppDelegateServiceVisionOS.renderMode;
-	ERR_FAIL_COND_V_MSG(app_delegate_render_mode != GDTRenderModeCompositorServices, false, "The visionOS XR interface requires GDTRenderModeCompositorServices render mode.");
 
 	layer_renderer = GDTAppDelegateServiceVisionOS.layerRenderer;
 	layer_renderer_capabilities = GDTAppDelegateServiceVisionOS.layerRendererCapabilities;
 
-	ERR_FAIL_NULL_V_MSG(layer_renderer, false, "GDTAppDelegateServiceVisionOS.layerRenderer not set");
-	ERR_FAIL_NULL_V_MSG(layer_renderer_capabilities, false, "GDTAppDelegateServiceVisionOS.layerRendererCapabilities not set");
+	ERR_FAIL_NULL_V_MSG(layer_renderer, false, "GDTAppDelegateServiceVisionOS.layerRenderer not set.");
+	ERR_FAIL_NULL_V_MSG(layer_renderer_capabilities, false, "GDTAppDelegateServiceVisionOS.layerRendererCapabilities not set.");
 
-	// ARKit session initialization
-	ar_session = ar_session_create();
 	ar_world_tracking_configuration_t world_tracking_configuration = ar_world_tracking_configuration_create();
 	world_tracking_provider = ar_world_tracking_provider_create(world_tracking_configuration);
 	current_device_anchor = ar_device_anchor_create();
-	ar_data_providers_t data_providers = ar_data_providers_create();
-	ar_data_providers_add_data_provider(data_providers, world_tracking_provider);
-	ar_session_run(ar_session, data_providers);
 
 	// Head tracker initialization
 	head_tracker.instantiate();
 	head_tracker->set_tracker_type(XRServer::TRACKER_HEAD);
 	head_tracker->set_tracker_name("head");
 	head_tracker->set_tracker_desc("Device head pose");
-	xr_server->add_tracker(head_tracker);
+	p_xr_server->add_tracker(head_tracker);
 
-	// RenderThread
-	rendering_server = RenderingServer::get_singleton();
-	ERR_FAIL_NULL_V(rendering_server, false);
-	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::initialize));
-
-	float minimum_supported_near_plane = cp_layer_renderer_capabilities_supported_minimum_near_plane_distance(layer_renderer_capabilities);
-	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_minimum_supported_near_plane).bind(minimum_supported_near_plane));
-
-	// Make this our primary interface
-	xr_server->set_primary_interface(this);
-
-	initialized = true;
-	return initialized;
+	return true;
 }
 
 void VisionOSXRInterface::uninitialize() {
@@ -161,22 +226,44 @@ void VisionOSXRInterface::uninitialize() {
 		return;
 	}
 
-	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::uninitialize));
+	if (cs.enabled && rendering_server) {
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::uninitialize));
+	}
 
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
-		if (head_tracker.is_valid()) {
-			xr_server->remove_tracker(head_tracker);
-			head_tracker.unref();
+		if (controllers.enabled) {
+			controllers.uninitialize(xr_server);
 		}
 
-		if (xr_server->get_primary_interface() == this) {
-			// no longer our primary interface
-			xr_server->set_primary_interface(nullptr);
+		if (hands.enabled) {
+			if (hands.left_hand_tracker.is_valid()) {
+				xr_server->remove_tracker(hands.left_hand_tracker);
+				hands.left_hand_tracker.unref();
+			}
+			if (hands.right_hand_tracker.is_valid()) {
+				xr_server->remove_tracker(hands.right_hand_tracker);
+				hands.right_hand_tracker.unref();
+			}
+		}
+
+		if (cs.enabled) {
+			if (cs.head_tracker.is_valid()) {
+				xr_server->remove_tracker(cs.head_tracker);
+				cs.head_tracker.unref();
+			}
+
+			if (xr_server->get_primary_interface() == this) {
+				// no longer our primary interface
+				xr_server->set_primary_interface(nullptr);
+			}
 		}
 
 		initialized = false;
 	}
+
+	// equivalent to "ar_release(ar_session)" since automatic reference counting is enabled
+	ar_session = nullptr;
 }
 
 void VisionOSXRInterface::RenderThread::initialize() {
@@ -190,25 +277,32 @@ void VisionOSXRInterface::RenderThread::initialize() {
 	initialized = true;
 }
 
+void VisionOSXRInterface::RenderThread::prepare_screen() {
+	ERR_NOT_ON_RENDER_THREAD;
+
+	// Trigger the swap-chain resize so the format is initialized; must happen outside any submission.
+	rendering_device->screen_prepare_for_drawing(DisplayServerEnums::MAIN_WINDOW_ID);
+}
+
 void VisionOSXRInterface::RenderThread::uninitialize() {
 	ERR_NOT_ON_RENDER_THREAD;
 	if (current_color_texture_id != RID()) {
-		rendering_device->texture_owner.free(current_color_texture_id);
+		rendering_device->free_rid(current_color_texture_id);
 	}
 	if (current_depth_texture_id != RID()) {
-		rendering_device->texture_owner.free(current_depth_texture_id);
+		rendering_device->free_rid(current_depth_texture_id);
 	}
 	if (current_rasterization_rate_map_id != RID()) {
-		rendering_device->texture_owner.free(current_rasterization_rate_map_id);
+		rendering_device->free_rid(current_rasterization_rate_map_id);
 	}
 	initialized = false;
 }
 
 void VisionOSXRInterface::update_layer_renderer(cp_layer_renderer_t p_layer_renderer, cp_layer_renderer_capabilities_t p_layer_renderer_capabilities) {
-	layer_renderer = p_layer_renderer;
-	layer_renderer_capabilities = p_layer_renderer_capabilities;
+	cs.layer_renderer = p_layer_renderer;
+	cs.layer_renderer_capabilities = p_layer_renderer_capabilities;
 
-	float minimum_supported_near_plane = cp_layer_renderer_capabilities_supported_minimum_near_plane_distance(layer_renderer_capabilities);
+	float minimum_supported_near_plane = cp_layer_renderer_capabilities_supported_minimum_near_plane_distance(cs.layer_renderer_capabilities);
 	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_minimum_supported_near_plane).bind(minimum_supported_near_plane));
 }
 
@@ -237,26 +331,242 @@ bool VisionOSXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return p_mode == XR_PLAY_AREA_ROOMSCALE;
 }
 
+float VisionOSXRInterface::get_current_render_quality() {
+	return cp_layer_renderer_get_render_quality(cs.layer_renderer);
+}
+
+void VisionOSXRInterface::set_current_render_quality(float p_render_quality) {
+	ERR_FAIL_COND_MSG(!GDTAppDelegateServiceVisionOS.isDynamicRenderQualityEnabled, "Attempting to set current render quality but Dynamic Render Quality has not been enabled in Project Settings.");
+	float maxRenderQuality = GDTAppDelegateServiceVisionOS.maxRenderQuality;
+	ERR_FAIL_COND_MSG(p_render_quality > GDTAppDelegateServiceVisionOS.maxRenderQuality, vformat("Attempting to set a current render quality higher than the Max Render Quality configured in Project Settings (%f).", maxRenderQuality));
+	cp_layer_renderer_set_render_quality(cs.layer_renderer, p_render_quality);
+}
+
+VisionOSXRInterface::ImmersionStyle VisionOSXRInterface::get_immersion_style() {
+	switch (GDTAppDelegateServiceVisionOS.immersionStyle) {
+		case GDTImmersionStyleFull:
+			return IMMERSION_STYLE_FULL;
+		case GDTImmersionStyleMixed:
+			return IMMERSION_STYLE_MIXED;
+		case GDTImmersionStyleProgressive:
+			return IMMERSION_STYLE_PROGRESSIVE;
+		default:
+			return IMMERSION_STYLE_FULL;
+	}
+}
+
+void VisionOSXRInterface::set_immersion_style(ImmersionStyle p_immersion_style) {
+	switch (p_immersion_style) {
+		case IMMERSION_STYLE_FULL:
+			GDTAppDelegateServiceVisionOS.immersionStyle = GDTImmersionStyleFull;
+			break;
+		case IMMERSION_STYLE_MIXED:
+			GDTAppDelegateServiceVisionOS.immersionStyle = GDTImmersionStyleMixed;
+			break;
+		case IMMERSION_STYLE_PROGRESSIVE:
+			GDTAppDelegateServiceVisionOS.immersionStyle = GDTImmersionStyleProgressive;
+			break;
+	}
+}
+
+VisionOSXRInterface::Visibility VisionOSXRInterface::get_upper_limb_visibility() {
+	switch (GDTAppDelegateServiceVisionOS.upperLimbVisibility) {
+		case GDTVisibilityAutomatic:
+			return VISIBILITY_AUTOMATIC;
+		case GDTVisibilityVisible:
+			return VISIBILITY_VISIBLE;
+		case GDTVisibilityHidden:
+			return VISIBILITY_HIDDEN;
+		default:
+			return VISIBILITY_AUTOMATIC;
+	}
+}
+
+void VisionOSXRInterface::set_upper_limb_visibility(Visibility p_upper_limb_visibility) {
+	switch (p_upper_limb_visibility) {
+		case VISIBILITY_AUTOMATIC:
+			GDTAppDelegateServiceVisionOS.upperLimbVisibility = GDTVisibilityAutomatic;
+			break;
+		case VISIBILITY_VISIBLE:
+			GDTAppDelegateServiceVisionOS.upperLimbVisibility = GDTVisibilityVisible;
+			break;
+		case VISIBILITY_HIDDEN:
+			GDTAppDelegateServiceVisionOS.upperLimbVisibility = GDTVisibilityHidden;
+			break;
+	}
+}
+
+VisionOSXRInterface::Visibility VisionOSXRInterface::get_persistent_system_overlays() {
+	switch (GDTAppDelegateServiceVisionOS.persistentSystemOverlays) {
+		case GDTVisibilityAutomatic:
+			return VISIBILITY_AUTOMATIC;
+		case GDTVisibilityVisible:
+			return VISIBILITY_VISIBLE;
+		case GDTVisibilityHidden:
+			return VISIBILITY_HIDDEN;
+		default:
+			return VISIBILITY_AUTOMATIC;
+	}
+}
+
+void VisionOSXRInterface::set_persistent_system_overlays(Visibility p_persistent_system_overlays) {
+	switch (p_persistent_system_overlays) {
+		case VISIBILITY_AUTOMATIC:
+			GDTAppDelegateServiceVisionOS.persistentSystemOverlays = GDTVisibilityAutomatic;
+			break;
+		case VISIBILITY_VISIBLE:
+			GDTAppDelegateServiceVisionOS.persistentSystemOverlays = GDTVisibilityVisible;
+			break;
+		case VISIBILITY_HIDDEN:
+			GDTAppDelegateServiceVisionOS.persistentSystemOverlays = GDTVisibilityHidden;
+			break;
+	}
+}
+
 void VisionOSXRInterface::set_head_pose_from_arkit() {
-	ERR_FAIL_NULL_MSG(current_frame, "Current frame is nil, process() has probably not been called, using identity transform.");
+	ERR_FAIL_NULL_MSG(cs.current_frame, "Current frame is nil, process() has probably not been called, using identity transform.");
 
-	cp_frame_timing_t frame_timing = cp_frame_predict_timing(current_frame);
+	cs.current_timing = cp_frame_predict_timing(cs.current_frame);
 
-	CFTimeInterval presentation_time = cp_time_to_cf_time_interval(cp_frame_timing_get_presentation_time(frame_timing));
-	ar_device_anchor_query_status_t query_anchor_result = ar_world_tracking_provider_query_device_anchor_at_timestamp(world_tracking_provider, presentation_time, current_device_anchor);
+	CFTimeInterval presentation_time = cp_time_to_cf_time_interval(cp_frame_timing_get_presentation_time(cs.current_timing));
+	ar_device_anchor_query_status_t query_anchor_result = ar_world_tracking_provider_query_device_anchor_at_timestamp(cs.world_tracking_provider, presentation_time, cs.current_device_anchor);
 
 	if (query_anchor_result != ar_device_anchor_query_status_success) {
 		tracking_state = XRInterface::XR_NOT_TRACKING;
-		ERR_FAIL_MSG("cannot query device anchor, result: " + itos(query_anchor_result));
+		ERR_FAIL_MSG("Cannot query device anchor, result: " + itos(query_anchor_result) + ".");
 	}
 
-	simd_float4x4 origin_from_head_simd = ar_anchor_get_origin_from_anchor_transform(current_device_anchor);
+	simd_float4x4 origin_from_head_simd = ar_anchor_get_origin_from_anchor_transform(cs.current_device_anchor);
 	tracking_state = XRInterface::XR_NORMAL_TRACKING;
 
-	if (head_tracker.is_valid()) {
+	if (cs.head_tracker.is_valid()) {
 		// Set our head position (in real space, reference frame and world scale is applied later)
-		head_tracker->set_pose("default", MTL::simd_to_transform3D(origin_from_head_simd), Vector3(), Vector3(), XRPose::XR_TRACKING_CONFIDENCE_HIGH);
+		cs.head_tracker->set_pose("default", MTL::simd_to_transform3D(origin_from_head_simd), Vector3(), Vector3(), XRPose::XR_TRACKING_CONFIDENCE_HIGH);
 	}
+}
+
+namespace {
+VisionOSAuthorizationStatus convert(ar_authorization_status_t p_status) {
+	switch (p_status) {
+		case ar_authorization_status_not_determined:
+			return VisionOSAuthorizationStatus::NOT_DETERMINED;
+		case ar_authorization_status_allowed:
+			return VisionOSAuthorizationStatus::ALLOWED;
+		case ar_authorization_status_denied:
+			return VisionOSAuthorizationStatus::DENIED;
+	}
+	// Unknown/future cases
+	return VisionOSAuthorizationStatus::NOT_DETERMINED;
+}
+} // namespace
+
+void VisionOSXRInterface::update_authorizations_async() {
+	uintptr_t types = ar_authorization_type_none;
+
+	if (hands.enabled) {
+		types |= ar_authorization_type_hand_tracking;
+	}
+
+	if (controllers.enabled) {
+		types |= ar_authorization_type_accessory_tracking;
+	}
+
+	if (types == ar_authorization_type_none) {
+		// Nothing to request
+		return;
+	}
+
+	Ref<VisionOSXRInterface> ref_this = this;
+	ar_session_request_authorization(ar_session, static_cast<ar_authorization_type_t>(types), ^(ar_authorization_results_t authorization_results, ar_error_t _Nullable error) {
+		dispatch_async(dispatch_get_main_queue(), ^(void) {
+			ERR_FAIL_COND_MSG(error != nullptr, "Could not query ARKit authorizations.");
+
+			if (ref_this->is_initialized()) {
+				ref_this->update_from_authorizations(authorization_results);
+			}
+		});
+	});
+}
+
+void VisionOSXRInterface::update_from_authorizations(ar_authorization_results_t p_authorization_results) {
+	VisionOSAuthorizationStatus previous_hands = hands.authorization;
+	VisionOSAuthorizationStatus previous_controllers = controllers.authorization;
+
+	ar_authorization_results_enumerate_results(p_authorization_results, ^bool(ar_authorization_result_t authorization_result) {
+		ar_authorization_type_t type = ar_authorization_result_get_authorization_type(authorization_result);
+		ar_authorization_status_t status = ar_authorization_result_get_status(authorization_result);
+
+		switch (type) {
+			case ar_authorization_type_hand_tracking:
+				hands.authorization = convert(status);
+				if (status == ar_authorization_status_denied) {
+					ERR_PRINT("Hand tracking not authorized. Enable it in `Settings > Privacy` and restart the app.");
+				}
+				break;
+			case ar_authorization_type_accessory_tracking:
+				controllers.authorization = convert(status);
+				if (status == ar_authorization_status_denied) {
+					ERR_PRINT("Controller tracking not authorized. Enable it in `Settings > Privacy` and restart the app.");
+				}
+				break;
+			default:
+				break;
+		}
+
+		return true; // continue with the enumeration
+	});
+
+	// If something changed, re-run the ARKit session with updated authorizations
+	if (previous_hands != hands.authorization || previous_controllers != controllers.authorization) {
+		run_ar_session();
+	}
+}
+
+void VisionOSXRInterface::run_ar_session() {
+	ar_data_providers_t ar_data_providers = ar_data_providers_create();
+
+	if (cs.enabled) {
+		ar_data_providers_add_data_provider(ar_data_providers, cs.world_tracking_provider);
+	}
+
+	if (hands.active()) {
+		ar_data_providers_add_data_provider(ar_data_providers, hands.hand_tracking_provider);
+	}
+
+	if (controllers.active()) {
+		ar_data_providers_add_data_provider(ar_data_providers, controllers.accessory_tracking_provider);
+	}
+
+	// Running the ARSession with the given providers, after it has been configured
+	ar_session_run(ar_session, ar_data_providers);
+}
+
+CFTimeInterval VisionOSXRInterface::get_trackable_anchor_time() {
+	// Computing the time to use for pose prediction
+	CFTimeInterval trackable_anchor_time = 0;
+
+	if (cs.enabled) {
+		// If CompositorServices is enabled, use its presentation time for pose prediction
+		trackable_anchor_time = cp_time_to_cf_time_interval(cp_frame_timing_get_trackable_anchor_time(cs.current_timing));
+	} else {
+		// If not using CompositorServices, we obtain the estimatedPresentationTime from the active UIScene
+		UIWindowScene *window_scene = nil;
+		for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+			if ([scene isKindOfClass:[UIWindowScene class]]) {
+				UIWindowScene *window_scene_candidate = (UIWindowScene *)scene;
+				if (window_scene_candidate.activationState == UISceneActivationStateForegroundActive) {
+					window_scene = window_scene_candidate;
+					break;
+				}
+			}
+		}
+		if (window_scene != nil) {
+			UIUpdateInfo *ui_update_info = [UIUpdateInfo currentUpdateInfoForWindowScene:window_scene];
+			trackable_anchor_time = ui_update_info.estimatedPresentationTime;
+		}
+	}
+
+	return trackable_anchor_time;
 }
 
 void VisionOSXRInterface::process() {
@@ -264,15 +574,29 @@ void VisionOSXRInterface::process() {
 		return;
 	}
 
-	current_frame = cp_layer_renderer_query_next_frame(layer_renderer);
+	if (cs.enabled) {
+		cs.current_frame = cp_layer_renderer_query_next_frame(cs.layer_renderer);
 
-	ERR_FAIL_NULL_MSG(current_frame, "Layer renderer unexpectedly returned a nil frame, the layer renderer has probably been invalidated and it hasn't been updated to a new one.");
+		ERR_FAIL_NULL_MSG(cs.current_frame, "Layer renderer unexpectedly returned a nil frame, the layer renderer has probably been invalidated and it hasn't been updated to a new one.");
 
-	// Set head pose before engine update, so scripts can access fresh head tracker data
-	set_head_pose_from_arkit();
+		// Set head pose before engine update, so scripts can access fresh head tracker data
+		set_head_pose_from_arkit();
 
-	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_current_frame).bind((uint64_t)current_frame));
-	rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::start_frame_update));
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_current_frame).bind((uint64_t)cs.current_frame));
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::start_frame_update));
+	}
+
+	if (hands.active() || controllers.active()) {
+		CFTimeInterval trackable_anchor_time = get_trackable_anchor_time();
+
+		if (hands.active()) {
+			hands.update_hand_trackers_from_arkit(trackable_anchor_time);
+		}
+
+		if (controllers.active()) {
+			controllers.update_controller_trackers_from_arkit(trackable_anchor_time);
+		}
+	}
 }
 
 Size2 VisionOSXRInterface::get_render_target_size() {
@@ -294,7 +618,7 @@ void VisionOSXRInterface::RenderThread::set_current_frame(uint64_t p_current_fra
 	ar_device_anchor_query_status_t query_anchor_result = ar_world_tracking_provider_query_device_anchor_at_timestamp(world_tracking_provider, presentation_time, current_device_anchor);
 
 	if (query_anchor_result != ar_device_anchor_query_status_success) {
-		ERR_FAIL_MSG("Cannot query device anchor, result: " + itos(query_anchor_result));
+		ERR_FAIL_MSG("Cannot query device anchor, result: " + itos(query_anchor_result) + ".");
 	}
 
 	simd_float4x4 origin_from_head_simd = ar_anchor_get_origin_from_anchor_transform(current_device_anchor);
@@ -318,8 +642,8 @@ Transform3D VisionOSXRInterface::RenderThread::get_camera_transform() {
 	ERR_FAIL_NULL_V(xr_server, camera_transform);
 	// scale our origin point of our transform
 	float world_scale = xr_server->get_world_scale();
-	origin_from_head.origin *= world_scale;
 	camera_transform = origin_from_head;
+	camera_transform.origin *= world_scale;
 	return camera_transform;
 }
 
@@ -343,7 +667,7 @@ Transform3D VisionOSXRInterface::RenderThread::get_transform_for_view(uint32_t p
 		float world_scale = xr_server->get_world_scale();
 		origin_from_eye.origin *= world_scale;
 	} else {
-		ERR_PRINT("vision_vr_interface not initialized, returning received camera transform");
+		ERR_PRINT("vision_vr_interface not initialized, returning received camera transform.");
 		origin_from_eye = Transform3D();
 	}
 	Transform3D reference_frame = xr_server->get_reference_frame();
@@ -465,7 +789,7 @@ void VisionOSXRInterface::RenderThread::pre_render() {
 			current_drawable = drawable;
 		}
 	}
-	ERR_FAIL_NULL_MSG(current_drawable, "Built-in drawable not found, aborting");
+	ERR_FAIL_NULL_MSG(current_drawable, "Built-in drawable not found, aborting.");
 
 	// Cache the render target size so it can be read from the game thread.
 	id<MTLTexture> color_texture = cp_drawable_get_color_texture(current_drawable, 0);
@@ -475,7 +799,7 @@ void VisionOSXRInterface::RenderThread::pre_render() {
 	if (current_device_anchor != nil) {
 		cp_drawable_set_device_anchor(current_drawable, current_device_anchor);
 	} else {
-		ERR_PRINT("Current device anchor is nil, will present drawable without a device anchor");
+		ERR_PRINT("Current device anchor is nil, will present drawable without a device anchor.");
 	}
 }
 
@@ -492,6 +816,42 @@ Vector<RenderingServerTypes::BlitToScreen> VisionOSXRInterface::RenderThread::po
 	return Vector<RenderingServerTypes::BlitToScreen>();
 }
 
+// Wraps cp_drawable_encode_present in a drawable render context with a no-op load/store pass,
+// which Compositor Services requires whenever the layer supports progressive immersion.
+void VisionOSXRInterface::RenderThread::encode_drawable_no_op_and_present(cp_drawable_t p_drawable, cp_frame_t p_frame, void *p_command_buffer) {
+	id<MTLCommandBuffer> command_buffer = (__bridge id<MTLCommandBuffer>)p_command_buffer;
+	// A nil command buffer makes the Compositor Services API fail.
+	ERR_FAIL_NULL_MSG(command_buffer, "Command buffer is nil, cannot add a drawable render context.");
+	cp_drawable_render_context_t drawable_render_context = cp_drawable_add_render_context(p_drawable, command_buffer);
+
+	id<MTLTexture> color_texture = cp_drawable_get_color_texture(p_drawable, 0);
+	id<MTLTexture> depth_texture = cp_drawable_get_depth_texture(p_drawable, 0);
+
+	MTLRenderPassDescriptor *render_pass_descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+	render_pass_descriptor.colorAttachments[0].texture = color_texture;
+	render_pass_descriptor.colorAttachments[0].loadAction = MTLLoadActionLoad;
+	render_pass_descriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
+	// Compositor Services' compositing pipeline has no stencil attachment.
+	render_pass_descriptor.depthAttachment.texture = depth_texture;
+	render_pass_descriptor.depthAttachment.loadAction = MTLLoadActionLoad;
+	render_pass_descriptor.depthAttachment.storeAction = MTLStoreActionStore;
+	render_pass_descriptor.renderTargetArrayLength = cp_frame_get_drawable_target_view_count(p_frame, cp_drawable_get_target(p_drawable));
+	size_t count = cp_drawable_get_rasterization_rate_map_count(p_drawable);
+	if (count > 0) {
+		id<MTLRasterizationRateMap> rasterization_rate_map = cp_drawable_get_rasterization_rate_map(p_drawable, 0);
+		MTLSize logical_size = rasterization_rate_map.screenSize;
+		render_pass_descriptor.rasterizationRateMap = rasterization_rate_map;
+		render_pass_descriptor.renderTargetWidth = logical_size.width;
+		render_pass_descriptor.renderTargetHeight = logical_size.height;
+	}
+
+	id<MTLRenderCommandEncoder> command_encoder = [command_buffer renderCommandEncoderWithDescriptor:render_pass_descriptor];
+
+	cp_drawable_render_context_end_encoding(drawable_render_context, command_encoder);
+
+	cp_drawable_encode_present(p_drawable, command_buffer);
+}
+
 void VisionOSXRInterface::RenderThread::encode_present(MTL3::MDCommandBuffer *p_cmd_buffer) {
 	ERR_NOT_ON_RENDER_THREAD;
 
@@ -500,7 +860,7 @@ void VisionOSXRInterface::RenderThread::encode_present(MTL3::MDCommandBuffer *p_
 	}
 
 	ERR_FAIL_NULL_MSG(current_drawable, "Current drawable is nil, process() has probably not been called.");
-	cp_drawable_encode_present(current_drawable, (__bridge id<MTLCommandBuffer>)p_cmd_buffer->get_command_buffer());
+	encode_drawable_no_op_and_present(current_drawable, current_frame, p_cmd_buffer->get_command_buffer());
 	current_drawable = nullptr;
 }
 
@@ -524,7 +884,7 @@ RID VisionOSXRInterface::RenderThread::get_color_texture() {
 	}
 
 	if (current_color_texture_id != RID()) {
-		rendering_device->texture_owner.free(current_color_texture_id);
+		rendering_device->free_rid(current_color_texture_id);
 	}
 
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, pre_render() has probably not been called.");
@@ -553,7 +913,7 @@ RID VisionOSXRInterface::RenderThread::get_depth_texture() {
 	}
 
 	if (current_depth_texture_id != RID()) {
-		rendering_device->texture_owner.free(current_depth_texture_id);
+		rendering_device->free_rid(current_depth_texture_id);
 	}
 
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, pre_render() has probably not been called.");
@@ -563,7 +923,7 @@ RID VisionOSXRInterface::RenderThread::get_depth_texture() {
 			MTL::texture_type_from_metal(depth_texture.textureType),
 			pixel_formats->getDataFormat((MTL::PixelFormat)depth_texture.pixelFormat),
 			MTL::texture_samples_from_metal(depth_texture.sampleCount),
-			RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT,
+			RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT,
 			(uint64_t)depth_texture,
 			depth_texture.width,
 			depth_texture.height,
@@ -582,34 +942,36 @@ RID VisionOSXRInterface::RenderThread::get_vrs_texture() {
 	}
 
 	if (current_rasterization_rate_map_id != RID()) {
-		rendering_device->texture_owner.free(current_rasterization_rate_map_id);
+		rendering_device->free_rid(current_rasterization_rate_map_id);
 	}
 
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, pre_render() has probably not been called.");
 	size_t count = cp_drawable_get_rasterization_rate_map_count(current_drawable);
-	ERR_FAIL_COND_V_MSG(count == 0, RID(), "No rasterizationRateMaps found");
+	ERR_FAIL_COND_V_MSG(count == 0, RID(), "No rasterizationRateMaps found.");
 	id<MTLRasterizationRateMap> rasterization_rate_map = cp_drawable_get_rasterization_rate_map(current_drawable, 0);
 	MTLSize logical_size = rasterization_rate_map.screenSize;
 
-	RD::Texture texture;
-	texture.driver_id = RDD::TextureID((__bridge void *)rasterization_rate_map);
-	texture.usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
-	texture.width = logical_size.width;
-	texture.height = logical_size.height;
-	texture.layers = rasterization_rate_map.layerCount;
-	// The following spoofed values are unused, but they are required
-	// to pass RenderingDevice::_render_pass_create() validation
-	texture.type = RDD::TEXTURE_TYPE_2D_ARRAY;
-	texture.format = RDD::DATA_FORMAT_R8_UINT;
-	texture.samples = RDD::TEXTURE_SAMPLES_1;
-	texture.depth = 1;
-	texture.mipmaps = 1;
-	ERR_FAIL_COND_V(!texture.driver_id, RID());
-
-	current_rasterization_rate_map = texture;
-	current_rasterization_rate_map_id = rendering_device->texture_owner.make_rid(current_rasterization_rate_map);
+	// The type, format and sample count are spoofed. They satisfy
+	// RenderingDevice::_render_pass_create() validation and have no other use.
+	current_rasterization_rate_map_id = rendering_device->texture_create_from_extension(
+			RD::TEXTURE_TYPE_2D_ARRAY,
+			RD::DATA_FORMAT_R8_UINT,
+			RD::TEXTURE_SAMPLES_1,
+			RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT,
+			(uint64_t)(__bridge void *)rasterization_rate_map,
+			logical_size.width,
+			logical_size.height,
+			1,
+			rasterization_rate_map.layerCount,
+			1);
 
 	return current_rasterization_rate_map_id;
+}
+
+void VisionOSXRInterface::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
+	if (controllers.enabled) {
+		controllers.trigger_haptic_pulse(p_action_name, p_tracker_name, p_frequency, p_amplitude, p_duration_sec, p_delay_sec);
+	}
 }
 
 #endif // VISIONOS_ENABLED

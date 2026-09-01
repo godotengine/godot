@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "editor/gui/code_editor.h"
 #include "editor/script/script_editor_base.h"
 #include "editor/script/script_editor_plugin.h"
@@ -63,9 +64,9 @@ class ScriptTextEditor : public CodeEditorBase {
 	Label *drag_info_label = nullptr;
 
 	Vector<String> functions;
-	List<ScriptLanguage::Warning> warnings;
-	List<ScriptLanguage::ScriptError> errors;
-	HashMap<String, List<ScriptLanguage::ScriptError>> depended_errors;
+	List<EditorLanguage::Warning> warnings;
+	List<EditorLanguage::ScriptError> errors;
+	HashMap<String, List<EditorLanguage::ScriptError>> depended_errors;
 	HashSet<int> safe_lines;
 
 	List<Connection> missing_connections;
@@ -186,6 +187,7 @@ protected:
 	void _goto_line(int p_line);
 
 	void _make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, const Vector2 &p_pos);
+	Dictionary _get_context_data() const;
 
 	virtual void _text_edit_gui_input(const Ref<InputEvent> &p_ev) override;
 	virtual bool _edit_option(int p_op) override;

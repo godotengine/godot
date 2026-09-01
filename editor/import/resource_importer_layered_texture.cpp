@@ -172,7 +172,7 @@ void ResourceImporterLayeredTexture::get_import_options(const String &p_path, Li
 	}
 }
 
-void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressProfile p_vram_compression_profile, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2, Image::BPTCFormat p_bptc_format) {
+void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressProfile p_vram_compression_profile, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, Image::BPTCFormat p_bptc_format) {
 	Vector<Ref<Image>> mipmap_images; //for 3D
 
 	if (mode == MODE_3D) {
@@ -181,10 +181,6 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 		for (int i = 0; i < p_images.size(); i++) {
 			if (p_images.write[i]->has_mipmaps()) {
 				p_images.write[i]->clear_mipmaps();
-			}
-
-			if (p_force_po2) {
-				p_images.write[i]->resize_to_po2();
 			}
 		}
 
@@ -259,10 +255,6 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 		}
 	} else {
 		for (int i = 0; i < p_images.size(); i++) {
-			if (p_force_po2) {
-				p_images.write[i]->resize_to_po2();
-			}
-
 			if (p_mipmaps) {
 				p_images.write[i]->generate_mipmaps(p_csource == Image::COMPRESS_SOURCE_NORMAL);
 			} else {
@@ -346,10 +338,7 @@ Error ResourceImporterLayeredTexture::import(ResourceUID::ID p_source_id, const 
 
 	Ref<Image> image;
 	image.instantiate();
-	Error err = ImageLoader::load_image(p_source_file, image);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(ImageLoader::load_image(p_source_file, image));
 
 	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
 		//if using video ram, optimize
@@ -511,7 +500,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 	if (r_texture_import->compress_mode != COMPRESS_VRAM_COMPRESSED) {
 		// Import normally.
 		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, r_texture_import->basisu_params,
-				Image::COMPRESS_S3TC /* IGNORED */, Image::COMPRESS_PROFILE_AUTOMATIC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false, Image::BPTC_DETECT);
+				Image::COMPRESS_S3TC /* IGNORED */, Image::COMPRESS_PROFILE_AUTOMATIC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, Image::BPTC_DETECT);
 		return;
 	}
 	// Must import in all formats, in order of priority (so platform chooses the best supported one. IE, etc2 over etc).
@@ -567,7 +556,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 
 	if (use_uncompressed) {
 		_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + extension, COMPRESS_VRAM_UNCOMPRESSED, r_texture_import->lossy, r_texture_import->basisu_params,
-				Image::COMPRESS_S3TC /* IGNORED */, Image::COMPRESS_PROFILE_AUTOMATIC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, false, Image::BPTC_DETECT);
+				Image::COMPRESS_S3TC /* IGNORED */, Image::COMPRESS_PROFILE_AUTOMATIC /* IGNORED */, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, Image::BPTC_DETECT);
 	} else {
 		if (can_s3tc_bptc) {
 			Image::CompressMode image_compress_mode;
@@ -581,7 +570,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 				image_compress_mode = Image::COMPRESS_S3TC;
 				image_compress_format = "s3tc";
 			}
-			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, r_texture_import->basisu_params, image_compress_mode, r_texture_import->compression_profile, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true, image_bptc_format);
+			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, r_texture_import->basisu_params, image_compress_mode, r_texture_import->compression_profile, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, image_bptc_format);
 			r_texture_import->platform_variants->push_back(image_compress_format);
 		}
 
@@ -595,7 +584,7 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 				image_compress_mode = Image::COMPRESS_ETC2;
 				image_compress_format = "etc2";
 			}
-			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, r_texture_import->basisu_params, image_compress_mode, r_texture_import->compression_profile, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, true, Image::BPTC_DETECT);
+			_save_tex(*r_texture_import->slices, r_texture_import->save_path + "." + image_compress_format + "." + extension, r_texture_import->compress_mode, r_texture_import->lossy, r_texture_import->basisu_params, image_compress_mode, r_texture_import->compression_profile, *r_texture_import->csource, r_texture_import->used_channels, r_texture_import->mipmaps, Image::BPTC_DETECT);
 			r_texture_import->platform_variants->push_back(image_compress_format);
 		}
 	}

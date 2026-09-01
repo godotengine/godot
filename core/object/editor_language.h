@@ -119,6 +119,55 @@ public:
 	 */
 	virtual int32_t find_function(const String &p_function, const String &p_code) const { return -1; }
 
+	/**
+	 * Called by the editor to reformat a section of code.
+	 *
+	 * In the case of GDScript the only supported kind of formatting is auto-indentation.
+	 *
+	 * @param r_code The current content of the source fragment. Implementations should also use this to return the formatted code. Either by formatting in place or through assignment.
+	 * @param p_from_line First line to be formatted (inclusive).
+	 * @param p_to_line Last line to be formatted (inclusive).
+	 */
+	virtual void format_code(String &r_code, uint32_t p_from_line, uint32_t p_to_line) const {}
+
+	struct Warning {
+		/// One-based.
+		int start_line = 0;
+		int start_column = -1;
+
+		/// One-based.
+		int end_line = 0;
+		int end_column = -1;
+
+		String string_code;
+		String message;
+	};
+
+	struct ScriptError {
+		String path;
+		/// All one-based.
+		int start_line = -1;
+		int start_column = -1;
+		int end_line = -1;
+		int end_column = -1;
+		String message;
+	};
+
+	/**
+	 * Called by the editor to check a source fragment for diagnostics (warnings and errors).
+	 *
+	 * The language should also return a list of functions for the editor to show in the outline. It can also specify safe lines for highlighting. In the future those features might be separated.
+	 *
+	 * @param p_code The current content of the source fragment.
+	 * @param p_path The path which identifies the source fragment. Implementations MAY support paths to builtin resources, or return an error for those.
+	 * @param r_errors The returned errors of the script. Might be `nullptr` if the caller does not care.
+	 * @param r_warnings The returned warnings of the script. Might be `nullptr` if the caller does not care.
+	 * @param r_functions The returned functions for the outline. Might be `nullptr` if the caller does not care.
+	 * @param r_safe_lines The returned safe-lines, this is a GDScript specific concept. Might be `nullptr` if the caller does not care.
+	 * @return `true` if the script has no errors, otherwise `false`.
+	 */
+	virtual bool validate(const String &p_code, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const { return true; }
+
 	virtual ~EditorLanguage() = default;
 };
 

@@ -1829,7 +1829,7 @@
 			<return type="bool" />
 			<param index="0" name="feature" type="String" />
 			<description>
-				Returns [code]true[/code] if the OS supports a certain [param feature]. Features might be [code]s3tc[/code], [code]etc[/code], and [code]etc2[/code].
+				Returns [code]true[/code] if the OS supports a certain [param feature]. Features might be [code]s3tc[/code], [code]rgtc[/code], [code]bptc[/code], [code]etc[/code], [code]etc2[/code], [code]astc[/code], and [code]astc_hdr[/code].
 			</description>
 		</method>
 		<method name="instance_attach_object_instance_id">
@@ -4064,6 +4064,16 @@
 			<param index="1" name="by_texture" type="RID" />
 			<description>
 				Replaces [param texture]'s texture data by the texture specified by the [param by_texture] RID, without changing [param texture]'s RID.
+			</description>
+		</method>
+		<method name="texture_replace_compatible">
+			<return type="void" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="by_texture" type="RID" />
+			<description>
+				Replaces [param texture]'s texture data by the texture specified by the [param by_texture] RID, without changing [param texture]'s RID.
+				Unlike [method texture_replace], this method automatically patches any uniform sets that reference [param texture] so they point to the new underlying resource. This makes it suitable for replacing textures that are already bound in materials or shaders without invalidating existing draw state. The new texture may have different dimensions (e.g. for texture streaming mip level changes).
+				Textures that are not compatible will likely cause rendering errors, so it's recommended to only use this method on textures that are compatible with each other (e.g. same format and usage flags).
 			</description>
 		</method>
 		<method name="texture_set_force_redraw_if_visible">

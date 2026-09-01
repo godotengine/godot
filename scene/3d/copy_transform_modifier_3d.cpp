@@ -46,6 +46,8 @@ bool CopyTransformModifier3D::_set(const StringName &p_path, const Variant &p_va
 			set_axis_flags(which, static_cast<BitField<AxisFlag>>((int)p_value));
 		} else if (what == "invert") {
 			set_invert_flags(which, static_cast<BitField<AxisFlag>>((int)p_value));
+		} else if (what == "global") {
+			set_global(which, p_value);
 		} else if (what == "relative") {
 			set_relative(which, p_value);
 		} else if (what == "additive") {
@@ -71,6 +73,8 @@ bool CopyTransformModifier3D::_get(const StringName &p_path, Variant &r_ret) con
 			r_ret = (int)get_axis_flags(which);
 		} else if (what == "invert") {
 			r_ret = (int)get_invert_flags(which);
+		} else if (what == "global") {
+			r_ret = is_global(which);
 		} else if (what == "relative") {
 			r_ret = is_relative(which);
 		} else if (what == "additive") {
@@ -92,6 +96,7 @@ void CopyTransformModifier3D::_get_property_list(List<PropertyInfo> *p_list) con
 		props.push_back(PropertyInfo(Variant::INT, path + "copy", PROPERTY_HINT_FLAGS, "Position,Rotation,Scale"));
 		props.push_back(PropertyInfo(Variant::INT, path + "axes", PROPERTY_HINT_FLAGS, "X,Y,Z"));
 		props.push_back(PropertyInfo(Variant::INT, path + "invert", PROPERTY_HINT_FLAGS, "X,Y,Z"));
+		props.push_back(PropertyInfo(Variant::BOOL, path + "global"));
 		props.push_back(PropertyInfo(Variant::BOOL, path + "relative"));
 		props.push_back(PropertyInfo(Variant::BOOL, path + "additive"));
 	}
@@ -106,8 +111,10 @@ void CopyTransformModifier3D::_validate_dynamic_prop(PropertyInfo &p_property) c
 	PackedStringArray split = p_property.name.split("/");
 	if (split.size() > 2 && split[0] == "settings") {
 		int which = split[1].to_int();
-		if (split[2].begins_with("relative") && get_reference_type(which) != REFERENCE_TYPE_BONE) {
-			p_property.usage = PROPERTY_USAGE_NONE;
+		if (get_reference_type(which) != REFERENCE_TYPE_BONE) {
+			if (split[2].begins_with("global") || split[2].begins_with("relative")) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
 		}
 	}
 }
@@ -299,6 +306,18 @@ bool CopyTransformModifier3D::is_axis_z_inverted(int p_index) const {
 	return setting->invert_flags.has_flag(AXIS_FLAG_Z);
 }
 
+void CopyTransformModifier3D::set_global(int p_index, bool p_enabled) {
+	ERR_FAIL_INDEX(p_index, (int)settings.size());
+	CopyTransform3DSetting *setting = static_cast<CopyTransform3DSetting *>(settings[p_index]);
+	setting->global = p_enabled;
+}
+
+bool CopyTransformModifier3D::is_global(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
+	CopyTransform3DSetting *setting = static_cast<CopyTransform3DSetting *>(settings[p_index]);
+	return setting->is_global();
+}
+
 void CopyTransformModifier3D::set_relative(int p_index, bool p_enabled) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	CopyTransform3DSetting *setting = static_cast<CopyTransform3DSetting *>(settings[p_index]);
@@ -352,6 +371,8 @@ void CopyTransformModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis_z_inverted", "index", "enabled"), &CopyTransformModifier3D::set_axis_z_inverted);
 	ClassDB::bind_method(D_METHOD("is_axis_z_inverted", "index"), &CopyTransformModifier3D::is_axis_z_inverted);
 
+	ClassDB::bind_method(D_METHOD("set_global", "index", "enabled"), &CopyTransformModifier3D::set_global);
+	ClassDB::bind_method(D_METHOD("is_global", "index"), &CopyTransformModifier3D::is_global);
 	ClassDB::bind_method(D_METHOD("set_relative", "index", "enabled"), &CopyTransformModifier3D::set_relative);
 	ClassDB::bind_method(D_METHOD("is_relative", "index"), &CopyTransformModifier3D::is_relative);
 	ClassDB::bind_method(D_METHOD("set_additive", "index", "enabled"), &CopyTransformModifier3D::set_additive);
@@ -372,12 +393,31 @@ void CopyTransformModifier3D::_bind_methods() {
 
 void CopyTransformModifier3D::_process_constraint_by_bone(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, int p_reference_bone, float p_amount) {
 	CopyTransform3DSetting *setting = static_cast<CopyTransform3DSetting *>(settings[p_index]);
-	Transform3D destination = p_skeleton->get_bone_pose(p_reference_bone);
+	Transform3D destination;
+	Transform3D to_apply_space;
+	bool is_global = setting->is_global();
+	if (is_global) {
+		Transform3D apply_parent_global_pose;
+		int apply_parent = p_skeleton->get_bone_parent(p_apply_bone);
+		if (apply_parent >= 0) {
+			apply_parent_global_pose = p_skeleton->get_bone_global_pose(apply_parent);
+		}
+		to_apply_space = apply_parent_global_pose.affine_inverse();
+		destination = to_apply_space * p_skeleton->get_bone_global_pose(p_reference_bone);
+	} else {
+		destination = p_skeleton->get_bone_pose(p_reference_bone);
+	}
 	if (setting->is_relative()) {
-		Vector3 scl_relative = destination.basis.get_scale() / p_skeleton->get_bone_rest(p_reference_bone).basis.get_scale();
-		destination.basis = p_skeleton->get_bone_rest(p_reference_bone).basis.get_rotation_quaternion().inverse() * destination.basis.get_rotation_quaternion();
+		Transform3D reference_rest;
+		if (is_global) {
+			reference_rest = to_apply_space * p_skeleton->get_bone_global_rest(p_reference_bone);
+		} else {
+			reference_rest = p_skeleton->get_bone_rest(p_reference_bone);
+		}
+		Vector3 scl_relative = destination.basis.get_scale() / reference_rest.basis.get_scale();
+		destination.basis = reference_rest.basis.get_rotation_quaternion().inverse() * destination.basis.get_rotation_quaternion();
 		destination.basis.scale_local(scl_relative);
-		destination.origin = destination.origin - p_skeleton->get_bone_rest(p_reference_bone).origin;
+		destination.origin = destination.origin - reference_rest.origin;
 	}
 	_process_copy(p_index, p_skeleton, p_apply_bone, destination, p_amount);
 }

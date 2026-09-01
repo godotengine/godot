@@ -1140,7 +1140,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		Ref<StyleBoxFlat> grabber_hl_style = p_config.base_style->duplicate();
 		grabber_hl_style->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.5));
 
-		int scroll_margin = EDSCALE_RND(p_config.enable_touch_optimizations ? 10 : 3);
+		int scroll_margin = EDSCALE_RND(p_config.enable_touch_optimizations ? 13 : 3);
 
 		// HScrollBar.
 
@@ -1710,8 +1710,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_type_variation("MainToolBarMargin", "MarginContainer");
 		p_theme->set_constant("margin_left", "MainToolBarMargin", EDSCALE_RND(4));
 		p_theme->set_constant("margin_right", "MainToolBarMargin", EDSCALE_RND(4));
-		p_theme->set_constant("margin_top", "MainToolBarMargin", EDSCALE_RND(p_config.base_margin * 0.5));
-		p_theme->set_constant("margin_bottom", "MainToolBarMargin", EDSCALE_RND(p_config.base_margin * 0.5));
+		p_theme->set_constant("margin_top", "MainToolBarMargin", EDSCALE);
+		p_theme->set_constant("margin_bottom", "MainToolBarMargin", EDSCALE);
 
 		// 2D and 3D contextual toolbar.
 		// Use a custom stylebox to make contextual menu items stand out from the rest.
@@ -1723,8 +1723,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("ContextualToolbar", EditorStringName(EditorStyles), toolbar_stylebox);
 
 		// Script editor.
-		p_theme->set_stylebox("ScriptEditorPanel", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(p_config.base_margin, 0, p_config.base_margin, p_config.base_margin));
-		p_theme->set_stylebox("ScriptEditorPanelFloating", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 		p_theme->set_stylebox("ScriptEditor", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 
 		// Game view.
@@ -1734,14 +1732,15 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(panel), "GamePanel", game_panel);
 
 		// Main menu.
-		p_theme->set_stylebox(CoreStringName(normal), "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("normal_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox(SceneStringName(pressed), "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("pressed_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox(SceneStringName(hover), "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("hover_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("hover_pressed", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("hover_pressed_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
+		p_theme->set_color("font_selected_color", "MainScreenContainer", p_config.accent_color);
+		p_theme->set_color("font_unselected_color", "MainScreenContainer", p_config.font_color);
+		p_theme->set_color("icon_selected_color", "MainScreenContainer", p_config.accent_color);
+		p_theme->set_color("icon_unselected_color", "MainScreenContainer", p_config.icon_normal_color);
+		p_theme->set_constant("h_separation", "MainScreenContainer", 4);
+		p_theme->set_stylebox("tab_unselected", "MainScreenContainer", p_config.base_empty_wide_style);
+		p_theme->set_stylebox("tab_selected", "MainScreenContainer", p_config.base_empty_wide_style);
+		p_theme->set_stylebox("tab_hovered", "MainScreenContainer", p_config.base_empty_wide_style);
+		p_theme->set_constant("tab_separation", "MainScreenContainer", 8 * EDSCALE);
 
 		// Main screen buttons.
 		const Color mb_font_color = p_config.font_color * Color(1, 1, 1, 0.95);
@@ -1816,7 +1815,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("tabbar_background", "BottomPanel", style_bottom_panel_tabbar);
 		p_theme->set_stylebox("tab_selected", "BottomPanel", bottom_panel_button_pressed);
 		p_theme->set_stylebox("tab_hovered", "BottomPanel", bottom_panel_button_hover);
-		p_theme->set_stylebox("tab_focus", "BottomPanel", p_config.base_empty_style);
 		p_theme->set_stylebox("tab_unselected", "BottomPanel", style_bottom_tab);
 		p_theme->set_color("font_unselected_color", "BottomPanel", p_config.font_color);
 		p_theme->set_color("font_hovered_color", "BottomPanel", p_config.font_hover_color);
@@ -1999,6 +1997,13 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(hover), "EditorLogFilterButton", p_config.flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), "EditorLogFilterButton", p_config.flat_button_pressed);
 			p_theme->set_stylebox("hover_pressed", "EditorLogFilterButton", p_config.flat_button_hover_pressed);
+
+			p_theme->set_type_variation("TouchActionsPanelButton", "FlatButtonNoIconTint");
+			Ref<StyleBoxFlat> tap_button_hover = p_config.flat_button_hover->duplicate();
+			Color hover_color = p_config.flat_button_hover_color;
+			hover_color.a = 0.25f;
+			tap_button_hover->set_bg_color(hover_color);
+			p_theme->set_stylebox(SceneStringName(hover), "TouchActionsPanelButton", tap_button_hover);
 		}
 
 		// Checkbox.
@@ -2203,6 +2208,16 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			style_button_group->set_bg_color(p_config.surface_lower_color.lerp(p_config.mono_color_inv, 0.15).lightened(0.02));
 
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
+		}
+
+		// VSeparatorButtonGroup.
+		{
+			p_theme->set_type_variation("VSeparatorButtonGroup", "VSeparator");
+
+			Ref<StyleBoxLine> style_v_separator = p_theme->get_stylebox(SNAME("separator"), SNAME("VSeparator"))->duplicate();
+			style_v_separator->set_color(p_config.base_color);
+
+			p_theme->set_stylebox("separator", "VSeparatorButtonGroup", style_v_separator);
 		}
 
 		// TreeLineEdit.

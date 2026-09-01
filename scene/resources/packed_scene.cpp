@@ -40,11 +40,14 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/container_type_validate.h"
-#include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/missing_node.h"
 #include "scene/property_utils.h"
+
+#ifndef _2D_DISABLED
+#include "scene/2d/node_2d.h"
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
@@ -409,8 +412,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
 						if (Object::cast_to<Control>(ret_nodes[n.parent])) {
 							obj = memnew(Control);
+#ifndef _2D_DISABLED
 						} else if (Object::cast_to<Node2D>(ret_nodes[n.parent])) {
 							obj = memnew(Node2D);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 						} else if (Object::cast_to<Node3D>(ret_nodes[n.parent])) {
 							obj = memnew(Node3D);
@@ -1201,10 +1206,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		Error err = _parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map, ids_saved);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map, ids_saved));
 	}
 
 	return OK;
@@ -1404,10 +1406,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 	// Recursively parse child connections.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *child = p_node->get_child(i);
-		Error err = _parse_connections(p_owner, child, name_map, variant_map, node_map, nodepath_map);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_parse_connections(p_owner, child, name_map, variant_map, node_map, nodepath_map));
 	}
 
 	return OK;

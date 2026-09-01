@@ -1100,7 +1100,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						Dictionary d2;
 						d2["name"] = String(method_name);
 
-						MethodBind *method = ClassDB::get_method(class_name, method_name);
+						const MethodBind *method = ClassDB::get_method(class_name, method_name);
 						if (!method) {
 							continue;
 						}
