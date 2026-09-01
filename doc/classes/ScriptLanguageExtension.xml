@@ -435,7 +435,9 @@
 		</constant>
 		<constant name="CODE_COMPLETION_KIND_KEYWORD" value="10" enum="CodeCompletionKind">
 		</constant>
-		<constant name="CODE_COMPLETION_KIND_MAX" value="11" enum="CodeCompletionKind">
+		<constant name="CODE_COMPLETION_KIND_USER_SNIPPET" value="11" enum="CodeCompletionKind">
+		</constant>
+		<constant name="CODE_COMPLETION_KIND_MAX" value="12" enum="CodeCompletionKind">
 		</constant>
 	</constants>
 </class>
