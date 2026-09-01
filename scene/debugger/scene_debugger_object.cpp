@@ -338,7 +338,27 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 				}
 			}
 		}
-		nodes.push_back(RemoteNode(count, n->get_name(), class_name.is_empty() ? n->get_class() : class_name, n->get_instance_id(), n->get_scene_file_path(), view_flags));
+
+		Vector<String> script_class_chain;
+		Ref<Script> item_script = n->get_script();
+		while (item_script.is_valid()) {
+			String global_name = item_script->get_global_name();
+			if (!global_name.is_empty()) {
+				script_class_chain.push_back(global_name);
+			}
+			item_script = item_script->get_base_script();
+		}
+
+		Vector<String> groups;
+		List<Node::GroupInfo> group_info_list;
+		n->get_groups(&group_info_list);
+		for (const Node::GroupInfo &group_info : group_info_list) {
+			if (group_info.persistent) {
+				groups.push_back(group_info.name);
+			}
+		}
+
+		nodes.push_back(RemoteNode(count, n->get_name(), class_name.is_empty() ? n->get_class() : class_name, n->get_instance_id(), n->get_scene_file_path(), view_flags, script_class_chain, n->get_class(), groups));
 	}
 }
 
@@ -350,21 +370,27 @@ void SceneDebuggerTree::serialize(Array &p_arr) {
 		p_arr.push_back(n.id);
 		p_arr.push_back(n.scene_file_path);
 		p_arr.push_back(n.view_flags);
+		p_arr.push_back(n.script_class_chain);
+		p_arr.push_back(n.native_class_name);
+		p_arr.push_back(n.groups);
 	}
 }
 
 void SceneDebuggerTree::deserialize(const Array &p_arr) {
 	int idx = 0;
 	while (p_arr.size() > idx) {
-		ERR_FAIL_COND(p_arr.size() < 6);
+		ERR_FAIL_COND(p_arr.size() < 9);
 		CHECK_TYPE(p_arr[idx], INT); // child_count.
 		CHECK_TYPE(p_arr[idx + 1], STRING); // name.
 		CHECK_TYPE(p_arr[idx + 2], STRING); // type_name.
 		CHECK_TYPE(p_arr[idx + 3], INT); // id.
 		CHECK_TYPE(p_arr[idx + 4], STRING); // scene_file_path.
 		CHECK_TYPE(p_arr[idx + 5], INT); // view_flags.
-		nodes.push_back(RemoteNode(p_arr[idx], p_arr[idx + 1], p_arr[idx + 2], p_arr[idx + 3], p_arr[idx + 4], p_arr[idx + 5]));
-		idx += 6;
+		CHECK_TYPE(p_arr[idx + 6], PACKED_STRING_ARRAY); // script_class_chain.
+		CHECK_TYPE(p_arr[idx + 7], STRING); // native_class_name.
+		CHECK_TYPE(p_arr[idx + 8], PACKED_STRING_ARRAY); // groups.
+		nodes.push_back(RemoteNode(p_arr[idx], p_arr[idx + 1], p_arr[idx + 2], p_arr[idx + 3], p_arr[idx + 4], p_arr[idx + 5], p_arr[idx + 6], p_arr[idx + 7], p_arr[idx + 8]));
+		idx += 9;
 	}
 }
 

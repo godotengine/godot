@@ -81,6 +81,9 @@ private:
 	void _item_menu_id_pressed(int p_option);
 	void _file_selected(const String &p_file);
 
+	static bool _type_matches_class_term(TreeItem *p_item, const String &p_term);
+	static bool _item_matches_all_terms(TreeItem *p_item, const PackedStringArray &p_terms);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);

@@ -195,6 +195,83 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, Mou
 	item_menu->popup();
 }
 
+bool EditorDebuggerTree::_type_matches_class_term(TreeItem *p_item, const String &p_term) {
+	if (p_term.is_empty()) {
+		// Defend against https://github.com/godotengine/godot/issues/82473
+		return true;
+	}
+
+	const PackedStringArray script_class_chain = p_item->get_meta("_script_class_chain", PackedStringArray());
+	for (const String &global_name : script_class_chain) {
+		if (global_name.to_lower().contains(p_term)) {
+			return true;
+		}
+	}
+
+	String type = p_item->get_meta("_native_class_name", String());
+	while (type != "Node") {
+		if (type.to_lower().contains(p_term)) {
+			return true;
+		}
+
+		type = ClassDB::get_parent_class(type);
+	}
+
+	return false;
+}
+
+bool EditorDebuggerTree::_item_matches_all_terms(TreeItem *p_item, const PackedStringArray &p_terms) {
+	if (p_terms.is_empty()) {
+		return true;
+	}
+
+	const PackedStringArray groups = p_item->get_meta("_groups", PackedStringArray());
+
+	for (int i = 0; i < p_terms.size(); i++) {
+		const String &term = p_terms[i];
+
+		// Recognize special filter.
+		if (term.contains_char(':') && !term.get_slicec(':', 0).is_empty()) {
+			String parameter = term.get_slicec(':', 0);
+			String argument = term.get_slicec(':', 1);
+
+			if (parameter == "type" || parameter == "t") {
+				// Filter by Type.
+				if (!_type_matches_class_term(p_item, argument)) {
+					return false;
+				}
+			} else if (parameter == "group" || parameter == "g") {
+				// Filter by Group.
+				if (argument.is_empty()) {
+					// When argument is empty, match all Nodes belonging to any exposed group.
+					if (groups.is_empty()) {
+						return false;
+					}
+				} else {
+					bool term_in_groups = false;
+					for (const String &group : groups) {
+						if (group.to_lower().contains(argument)) {
+							term_in_groups = true;
+							break;
+						}
+					}
+					if (!term_in_groups) {
+						return false;
+					}
+				}
+			}
+			// SceneTreeEditor will set filter_term_warning if the filter is unrecognized.
+		} else {
+			// Default.
+			if (!p_item->get_text(0).to_lower().contains(term)) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 /// Populates inspect_scene_tree given data in nodes as a flat list, encoded depth first.
 ///
 /// Given a nodes array like [R,A,B,C,D,E] the following Tree will be generated, assuming
@@ -214,6 +291,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 	updating_scene_tree = true;
 	const String filter = SceneTreeDock::get_singleton()->get_filter();
+	PackedStringArray terms = filter.to_lower().split_spaces();
 	LocalVector<TreeItem *> select_items;
 	bool hide_filtered_out_parents = EDITOR_GET("docks/scene_tree/hide_filtered_out_parents");
 	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree.
@@ -234,7 +312,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 			if (!(--p.child_count)) { // If no child left, remove it.
 				parents.pop_front();
 
-				if (hide_filtered_out_parents && !filter.is_subsequence_ofn(parent->get_text(0))) {
+				if (hide_filtered_out_parents && !_item_matches_all_terms(parent, terms)) {
 					if (parent == get_root()) {
 						set_hide_root(true);
 					} else {
@@ -280,6 +358,9 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 			}
 		}
 		item->set_meta("node_path", current_path + "/" + item->get_text(0));
+		item->set_meta("_script_class_chain", PackedStringArray(node.script_class_chain));
+		item->set_meta("_native_class_name", node.native_class_name);
+		item->set_meta("_groups", PackedStringArray(node.groups));
 
 		// Select previously selected nodes.
 		if (inspected_object_ids.has(uint64_t(node.id))) {
@@ -326,12 +407,12 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 		// Add in front of the parents stack if children are expected.
 		if (node.child_count) {
-			parents.push_front(ParentItem(item, node.child_count, filter.is_subsequence_ofn(item->get_text(0))));
+			parents.push_front(ParentItem(item, node.child_count, _item_matches_all_terms(item, terms)));
 		} else {
 			// Apply filters.
 			while (parent) {
 				const bool had_siblings = item->get_prev() || item->get_next();
-				if (filter.is_subsequence_ofn(item->get_text(0))) {
+				if (_item_matches_all_terms(item, terms)) {
 					break; // Filter matches, must survive.
 				}
 

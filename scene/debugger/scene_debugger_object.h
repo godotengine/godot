@@ -68,6 +68,9 @@ public:
 		ObjectID id;
 		String scene_file_path;
 		uint8_t view_flags = 0;
+		Vector<String> script_class_chain;
+		String native_class_name;
+		Vector<String> groups;
 
 		enum ViewFlags {
 			VIEW_HAS_VISIBLE_METHOD = 1 << 1,
@@ -75,7 +78,7 @@ public:
 			VIEW_VISIBLE_IN_TREE = 1 << 3,
 		};
 
-		RemoteNode(int p_child, const String &p_name, const String &p_type, ObjectID p_id, const String p_scene_file_path, int p_view_flags) {
+		RemoteNode(int p_child, const String &p_name, const String &p_type, ObjectID p_id, const String p_scene_file_path, int p_view_flags, const Vector<String> &p_script_class_chain, const String &p_native_class_name, const Vector<String> &p_groups) {
 			child_count = p_child;
 			name = p_name;
 			type_name = p_type;
@@ -83,6 +86,9 @@ public:
 
 			scene_file_path = p_scene_file_path;
 			view_flags = p_view_flags;
+			script_class_chain = p_script_class_chain;
+			native_class_name = p_native_class_name;
+			groups = p_groups;
 		}
 
 		RemoteNode() {}
