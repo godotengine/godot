@@ -322,7 +322,7 @@ void AudioStreamImportSettingsDialog::_draw_indicator() {
 	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
 
 	float ofs_x = (_current - zoom_bar->get_value()) * rect.size.width / zoom_bar->get_page();
-	if (ofs_x < 0 || ofs_x >= rect.size.width) {
+	if (ofs_x < 0 || ofs_x > rect.size.width) {
 		return;
 	}
 
