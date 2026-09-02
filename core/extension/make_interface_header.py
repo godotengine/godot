@@ -58,6 +58,9 @@ extern "C" {
             kind = type["kind"]
 
             check_type(kind, type, valid_data_types)
+            if type["name"] in BASE_TYPES:
+                raise Exception(f"Type '{type['name']}' shadows a built-in type")
+            check_duplicate(type["name"], valid_data_types, "type")
             valid_data_types[type["name"]] = type
 
             if "deprecated" in type:
@@ -111,6 +114,7 @@ extern "C" {
                 ["name", "arguments", "since", "description"],
                 ["return_value", "see", "legacy_type_name", "deprecated"],
             )
+            check_duplicate(interface["name"], valid_interfaces, "interface function")
             valid_interfaces[interface["name"]] = interface
             if "deprecated" in interface:
                 check_allowed_keys(interface["deprecated"], ["since"], ["message", "replace_with"])
@@ -156,6 +160,13 @@ def check_formatting(buffer, data, filename):
         print(" *** Apply this patch to fix: ***\n")
         print("\n".join(diff))
         raise Exception(f"Formatting issues in {filename}")
+
+
+# Note: most symbols (enum values, struct members, argument names) already cause a compile error if duplicated.
+# However, some C/C++ compilers allow duplicate typedefs if they're identical -> check those in Python.
+def check_duplicate(name, defined, what):
+    if name in defined:
+        raise Exception(f"Found duplicate {what} '{name}'")
 
 
 def check_allowed_keys(data, required, optional=[]):

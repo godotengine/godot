@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -279,22 +280,12 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	}
 
 	// Check file extension.
-	String extension = p.get_extension();
-	List<String> extensions;
-
-	// Get all possible extensions for script.
-	for (int l = 0; l < language_menu->get_item_count(); l++) {
-		ScriptServer::get_language(l)->get_recognized_extensions(&extensions);
-	}
-
 	bool found = false;
 	bool match = false;
-	for (const String &E : extensions) {
-		if (E.nocasecmp_to(extension) == 0) {
+	for (int l = 0; l < language_menu->get_item_count(); l++) {
+		if (p.has_extension(ScriptServer::get_language(l)->get_extension())) {
 			found = true;
-			if (E == ScriptServer::get_language(language_menu->get_selected())->get_extension()) {
-				match = true;
-			}
+			match = l == language_menu->get_selected();
 			break;
 		}
 	}
@@ -414,6 +405,9 @@ void ScriptCreateDialog::_load_exist() {
 
 void ScriptCreateDialog::_language_changed(int l) {
 	language = ScriptServer::get_language(l);
+	if (language == nullptr) {
+		return;
+	}
 
 	can_inherit_from_file = language->can_inherit_from_file();
 	supports_built_in = language->supports_builtin_mode();
@@ -462,15 +456,9 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	}
 
 	file_browse->set_customization_flag_enabled(FileDialog::CUSTOMIZATION_OVERWRITE_WARNING, false);
+
 	file_browse->clear_filters();
-	List<String> extensions;
-
-	int lang = language_menu->get_selected();
-	ScriptServer::get_language(lang)->get_recognized_extensions(&extensions);
-
-	for (const String &E : extensions) {
-		file_browse->add_filter("*." + E);
-	}
+	file_browse->add_filter("*." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
 
 	file_browse->set_current_path(file_path->get_text());
 	file_browse->popup_file_dialog();
@@ -528,6 +516,9 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 }
 
 void ScriptCreateDialog::_update_template_menu() {
+	if (language == nullptr) {
+		return;
+	}
 	bool is_language_using_templates = language->is_using_templates();
 	template_menu->set_disabled(false);
 	template_menu->clear();
@@ -899,8 +890,18 @@ ScriptCreateDialog::ScriptCreateDialog() {
 			default_language = i;
 		}
 	}
-	if (default_language >= 0) {
+	if (ScriptServer::get_language_count() == 0) {
+		// Edge Case 1: No scripting languages exist at all.
+		get_ok_button()->set_disabled(true); // Explicitly disable the confirmation button to prevent downstream crashes.
+		language_menu->set_disabled(true);
+		language_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		language_menu->add_item(TTR("No Scripting Languages Available"));
+	} else if (default_language >= 0) {
+		// Normal Case: GDScript is available, select it.
 		language_menu->select(default_language);
+	} else {
+		// Edge Case 2: Languages exist (like C#), but GDScript is disabled.
+		language_menu->select(0);
 	}
 
 	language_menu->connect(SceneStringName(item_selected), callable_mp(this, &ScriptCreateDialog::_language_changed));
@@ -1006,6 +1007,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	add_child(file_browse);
 	set_ok_button_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
+	alert->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

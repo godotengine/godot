@@ -34,11 +34,8 @@
 
 #include "core/templates/hash_set.h"
 
-// FIXME: platform_gl.h includes windows.h via egl.h, which defines ConnectFlags.
-// This breaks include project_settings.h in config.cpp, so we include object.h first.
-#include "core/object/object.h"
-
-#include "platform_gl.h"
+#include <platform_gl.h>
+#undef ConnectFlags // Defined by windows.h through egl.h, breaks object.h.
 
 #ifdef ANDROID_ENABLED
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLint, GLsizei);
@@ -68,6 +65,7 @@ public:
 	GLint64 max_uniform_buffer_size = 0;
 	uint32_t max_shader_varyings = 0;
 
+	int64_t max_decals = 64;
 	int64_t max_renderable_elements = 0;
 	int64_t max_renderable_lights = 0;
 	int64_t max_lights_per_object = 0;

@@ -30,18 +30,18 @@
 
 #import "godot_view_controller.h"
 
-#import "display_server_apple_embedded.h"
-#import "godot_keyboard_input_view.h"
-#import "godot_view_apple_embedded.h"
-#import "godot_view_renderer.h"
-#import "key_mapping_apple_embedded.h"
-#import "os_apple_embedded.h"
-
 #include "core/config/project_settings.h"
+#import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/godot_keyboard_input_view.h"
+#import "drivers/apple_embedded/godot_view_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_renderer.h"
+#import "drivers/apple_embedded/key_mapping_apple_embedded.h"
+#import "drivers/apple_embedded/os_apple_embedded.h"
 #include "servers/camera/camera_server.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>
+#import <objc/runtime.h>
 
 @interface GDTViewController () <GDTViewDelegate>
 
@@ -172,6 +172,9 @@
 - (void)viewDidAppear:(BOOL)animated {
 	[super viewDidAppear:animated];
 	[self.godotView startRendering];
+#ifdef IOS_ENABLED
+	[self propagateUIPreferencesToRootViewController];
+#endif
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -237,6 +240,37 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+// Propagate UI preferences to the root VC (the SwiftUI hosting controller doesn't delegate these).
+#ifdef IOS_ENABLED
+- (void)propagateUIPreferencesToRootViewController {
+	UIViewController *rootVC = self.view.window.rootViewController;
+	if (!rootVC || rootVC == self) {
+		return;
+	}
+
+	Class rootClass = [rootVC class];
+
+	SEL selectors[] = {
+		@selector(preferredScreenEdgesDeferringSystemGestures),
+		@selector(prefersHomeIndicatorAutoHidden),
+		@selector(prefersStatusBarHidden),
+		@selector(shouldAutorotate),
+		@selector(supportedInterfaceOrientations),
+	};
+
+	for (SEL sel : selectors) {
+		Method method = class_getInstanceMethod([GDTViewController class], sel);
+		if (!class_addMethod(rootClass, sel, method_getImplementation(method), method_getTypeEncoding(method))) {
+			method_setImplementation(class_getInstanceMethod(rootClass, sel), method_getImplementation(method));
+		}
+	}
+
+	[rootVC setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+	[rootVC setNeedsUpdateOfHomeIndicatorAutoHidden];
+	[rootVC setNeedsStatusBarAppearanceUpdate];
+}
+#endif
+
 // MARK: Orientation
 
 #ifdef IOS_ENABLED
@@ -256,11 +290,11 @@
 
 									 DisplayServer *display_server = DisplayServer::get_singleton();
 									 if (display_server) {
-										 int out = 0;
+										 int out = DisplayServerEnums::SENSOR_ORIENTATION_UNDEFINED;
 										 if (UIInterfaceOrientationIsPortrait(orientation)) {
-											 out = 1;
+											 out = DisplayServerEnums::SENSOR_ORIENTATION_PORTRAIT;
 										 } else if (UIInterfaceOrientationIsLandscape(orientation)) {
-											 out = 2;
+											 out = DisplayServerEnums::SENSOR_ORIENTATION_LANDSCAPE;
 										 }
 										 display_server->emit_signal("orientation_changed", out);
 									 }

@@ -329,6 +329,7 @@ void RemoteDebugger::_send_stack_vars(List<String> &p_names, List<Variant> &p_va
 		stvar.name = E->get();
 		stvar.value = F->get();
 		stvar.type = p_type;
+		stvar.type_hint = DebuggerMarshalls::parse_type_from_variant(F->get());
 		send_message("stack_frame_var", stvar.serialize());
 		E = E->next();
 		F = F->next();
@@ -711,7 +712,7 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 				scripts_to_reload.push_back(script);
 			}
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->reload_scripts(scripts_to_reload, true);
+				ScriptServer::get_language(i)->reload_scripts(scripts_to_reload);
 			}
 		}
 		script_paths_to_reload.clear();

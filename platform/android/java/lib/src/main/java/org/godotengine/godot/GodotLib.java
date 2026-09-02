@@ -33,6 +33,7 @@ package org.godotengine.godot;
 import org.godotengine.godot.gl.GodotRenderer;
 import org.godotengine.godot.io.directory.DirectoryAccessHandler;
 import org.godotengine.godot.io.file.FileAccessHandler;
+import org.godotengine.godot.nativeapi.GodotNativeBridge;
 import org.godotengine.godot.tts.GodotTTS;
 import org.godotengine.godot.utils.GodotNetUtils;
 import org.godotengine.godot.variant.Callable;
@@ -56,13 +57,13 @@ public class GodotLib {
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
 	public static native boolean initialize(
-			Godot p_instance,
-			AssetManager p_asset_manager,
+			GodotNativeBridge nativeBridge,
+			AssetManager assetManager,
 			GodotIO godotIO,
 			GodotNetUtils netUtils,
 			DirectoryAccessHandler directoryAccessHandler,
 			FileAccessHandler fileAccessHandler,
-			boolean use_apk_expansion);
+			boolean useApkExpansion);
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
@@ -144,6 +145,12 @@ public class GodotLib {
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void gyroscope(float x, float y, float z);
+
+	/**
+	 * Forward device orientation (rotation vector) events as a quaternion.
+	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
+	 */
+	public static native void deviceOrientation(float x, float y, float z, float w);
 
 	/**
 	 * Forward regular key events.
@@ -320,4 +327,6 @@ public class GodotLib {
 	static native boolean isProjectManagerHint();
 
 	static native boolean hasFeature(String feature);
+
+	static native void onPictureInPictureModeChanged(boolean isInPictureInPictureMode);
 }

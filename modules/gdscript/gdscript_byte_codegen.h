@@ -100,15 +100,8 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	int current_line = 0;
 	int instr_args_max = 0;
 
-#ifdef DEBUG_ENABLED
-	List<int> temp_stack;
-#endif
-
 	HashMap<Variant, int> constant_map;
 	RBMap<StringName, int> name_map;
-#ifdef TOOLS_ENABLED
-	Vector<StringName> named_globals;
-#endif
 	RBMap<Variant::ValidatedOperatorEvaluator, int> operator_func_map;
 	RBMap<Variant::ValidatedSetter, int> setters_map;
 	RBMap<Variant::ValidatedGetter, int> getters_map;
@@ -120,7 +113,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	RBMap<Variant::ValidatedConstructor, int> constructors_map;
 	RBMap<Variant::ValidatedUtilityFunction, int> utilities_map;
 	RBMap<GDScriptUtilityFunctions::FunctionPtr, int> gds_utilities_map;
-	RBMap<MethodBind *, int> method_bind_map;
+	RBMap<const MethodBind *, int> method_bind_map;
 	RBMap<GDScriptFunction *, int> lambdas_map;
 
 #ifdef DEBUG_ENABLED
@@ -335,7 +328,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return pos;
 	}
 
-	int get_method_bind_pos(MethodBind *p_method) {
+	int get_method_bind_pos(const MethodBind *p_method) {
 		if (method_bind_map.has(p_method)) {
 			return method_bind_map[p_method];
 		}
@@ -443,7 +436,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		opcodes.push_back(get_gds_utility_pos(p_gds_utility));
 	}
 
-	void append(MethodBind *p_method) {
+	void append(const MethodBind *p_method) {
 		opcodes.push_back(get_method_bind_pos(p_method));
 	}
 
@@ -522,12 +515,11 @@ public:
 	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_native_static_validated(const Address &p_target, MethodBind *p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
-	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_native_static_validated(const Address &p_target, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_method_bind(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
+	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
-	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures, bool p_use_self) override;
 	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) override;
 	virtual void write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) override;
@@ -552,7 +544,7 @@ public:
 	virtual void write_continue() override;
 	virtual void write_breakpoint() override;
 	virtual void write_newline(int p_line) override;
-	virtual void write_return(const Address &p_return_value) override;
+	virtual void write_return(const Address &p_return_value, bool p_use_conversion) override;
 	virtual void write_assert(const Address &p_test, const Address &p_message) override;
 
 	virtual ~GDScriptByteCodeGenerator();

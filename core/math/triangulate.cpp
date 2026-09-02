@@ -30,9 +30,9 @@
 
 #include "triangulate.h"
 
-real_t Triangulate::get_area(const Vector<Vector2> &contour) {
-	int n = contour.size();
-	const Vector2 *c = &contour[0];
+real_t Triangulate::get_area(const Vector<Vector2> &p_contour) {
+	int n = p_contour.size();
+	const Vector2 *c = &p_contour[0];
 
 	real_t A = 0.0;
 
@@ -44,70 +44,66 @@ real_t Triangulate::get_area(const Vector<Vector2> &contour) {
 
 /* `is_inside_triangle` decides if a point P is inside the triangle
  * defined by A, B, C. */
-bool Triangulate::is_inside_triangle(real_t Ax, real_t Ay,
-		real_t Bx, real_t By,
-		real_t Cx, real_t Cy,
-		real_t Px, real_t Py,
-		bool include_edges) {
+bool Triangulate::is_inside_triangle(real_t p_ax, real_t p_ay, real_t p_bx, real_t p_by, real_t p_cx, real_t p_cy, real_t p_px, real_t p_py, bool p_include_edges) {
 	real_t ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
 	real_t cCROSSap, bCROSScp, aCROSSbp;
 
-	ax = Cx - Bx;
-	ay = Cy - By;
-	bx = Ax - Cx;
-	by = Ay - Cy;
-	cx = Bx - Ax;
-	cy = By - Ay;
-	apx = Px - Ax;
-	apy = Py - Ay;
-	bpx = Px - Bx;
-	bpy = Py - By;
-	cpx = Px - Cx;
-	cpy = Py - Cy;
+	ax = p_cx - p_bx;
+	ay = p_cy - p_by;
+	bx = p_ax - p_cx;
+	by = p_ay - p_cy;
+	cx = p_bx - p_ax;
+	cy = p_by - p_ay;
+	apx = p_px - p_ax;
+	apy = p_py - p_ay;
+	bpx = p_px - p_bx;
+	bpy = p_py - p_by;
+	cpx = p_px - p_cx;
+	cpy = p_py - p_cy;
 
 	aCROSSbp = ax * bpy - ay * bpx;
 	cCROSSap = cx * apy - cy * apx;
 	bCROSScp = bx * cpy - by * cpx;
 
-	if (include_edges) {
+	if (p_include_edges) {
 		return ((aCROSSbp > 0.0f) && (bCROSScp > 0.0f) && (cCROSSap > 0.0f));
 	} else {
 		return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0.0f));
 	}
 }
 
-bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V, bool relaxed) {
+bool Triangulate::snip(const Vector<Vector2> &p_contour, int p_u, int p_v, int p_w, int p_n, const Vector<int> &p_values, bool p_relaxed) {
 	int p;
 	real_t Ax, Ay, Bx, By, Cx, Cy, Px, Py;
 	const Vector2 *contour = &p_contour[0];
 
-	Ax = contour[V[u]].x;
-	Ay = contour[V[u]].y;
+	Ax = contour[p_values[p_u]].x;
+	Ay = contour[p_values[p_u]].y;
 
-	Bx = contour[V[v]].x;
-	By = contour[V[v]].y;
+	Bx = contour[p_values[p_v]].x;
+	By = contour[p_values[p_v]].y;
 
-	Cx = contour[V[w]].x;
-	Cy = contour[V[w]].y;
+	Cx = contour[p_values[p_w]].x;
+	Cy = contour[p_values[p_w]].y;
 
 	// It can happen that the triangulation ends up with three aligned vertices to deal with.
 	// In this scenario, making the check below strict may reject the possibility of
 	// forming a last triangle with these aligned vertices, preventing the triangulation
 	// from completing.
 	// To avoid that we allow zero-area triangles if all else failed.
-	float threshold = relaxed ? -CMP_EPSILON : CMP_EPSILON;
+	float threshold = p_relaxed ? -CMP_EPSILON : CMP_EPSILON;
 
 	if (threshold > (((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax)))) {
 		return false;
 	}
 
-	for (p = 0; p < n; p++) {
-		if ((p == u) || (p == v) || (p == w)) {
+	for (p = 0; p < p_n; p++) {
+		if ((p == p_u) || (p == p_v) || (p == p_w)) {
 			continue;
 		}
-		Px = contour[V[p]].x;
-		Py = contour[V[p]].y;
-		if (is_inside_triangle(Ax, Ay, Bx, By, Cx, Cy, Px, Py, relaxed)) {
+		Px = contour[p_values[p]].x;
+		Py = contour[p_values[p]].y;
+		if (is_inside_triangle(Ax, Ay, Bx, By, Cx, Cy, Px, Py, p_relaxed)) {
 			return false;
 		}
 	}
@@ -115,10 +111,10 @@ bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, in
 	return true;
 }
 
-bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &result) {
+bool Triangulate::triangulate(const Vector<Vector2> &p_contour, Vector<int> &r_result) {
 	/* allocate and initialize list of Vertices in polygon */
 
-	int n = contour.size();
+	int n = p_contour.size();
 	if (n < 3) {
 		return false;
 	}
@@ -128,7 +124,7 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 
 	/* we want a counter-clockwise polygon in V */
 
-	if (0.0f < get_area(contour)) {
+	if (0.0f < get_area(p_contour)) {
 		for (int v = 0; v < n; v++) {
 			V.write[v] = v;
 		}
@@ -178,7 +174,7 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 			w = 0; /* next     */
 		}
 
-		if (snip(contour, u, v, w, nv, V, relaxed)) {
+		if (snip(p_contour, u, v, w, nv, V, relaxed)) {
 			int a, b, c, s, t;
 
 			/* true names of the vertices */
@@ -187,9 +183,9 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 			c = V[w];
 
 			/* output Triangle */
-			result.push_back(a);
-			result.push_back(b);
-			result.push_back(c);
+			r_result.push_back(a);
+			r_result.push_back(b);
+			r_result.push_back(c);
 
 			/* remove v from remaining polygon */
 			for (s = v, t = v + 1; t < nv; s++, t++) {

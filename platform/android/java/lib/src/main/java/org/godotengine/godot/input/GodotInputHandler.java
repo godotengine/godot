@@ -41,12 +41,14 @@ import android.content.res.Configuration;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.hardware.input.InputManager;
 import android.os.Build;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.GestureDetector;
+import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -87,8 +89,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	private final Godot godot;
 	private final InputManager mInputManager;
 	private final WindowManager windowManager;
-	private final GestureDetector gestureDetector;
-	private final ScaleGestureDetector scaleGestureDetector;
+	final GestureDetector gestureDetector;
+	final ScaleGestureDetector scaleGestureDetector;
 	private final GodotGestureHandler godotGestureHandler;
 
 	/**
@@ -111,9 +113,12 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 		this.godotGestureHandler = new GodotGestureHandler(this);
 		this.gestureDetector = new GestureDetector(context, godotGestureHandler);
-		this.gestureDetector.setIsLongpressEnabled(false);
+		enableLongPress(false);
+
 		this.scaleGestureDetector = new ScaleGestureDetector(context, godotGestureHandler);
 		this.scaleGestureDetector.setStylusScaleEnabled(true);
+		this.scaleGestureDetector.setQuickScaleEnabled(false);
+
 		Configuration config = context.getResources().getConfiguration();
 		hasHardwareKeyboardConfig = config.keyboard != Configuration.KEYBOARD_NOKEYS &&
 				config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
@@ -124,6 +129,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	 */
 	public void enableLongPress(boolean enable) {
 		this.gestureDetector.setIsLongpressEnabled(enable);
+		this.godotGestureHandler.setLongPressEnabled(enable);
 	}
 
 	/**
@@ -134,12 +140,30 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	/**
+	 * Enable haptic feedback (vibration) when a long-press right-click is triggered.
+	 */
+	public void enableHapticFeedback(boolean enable) {
+		this.godotGestureHandler.setHapticFeedbackEnabled(enable);
+	}
+
+	/**
+	 * Perform haptic feedback on the render view.
+	 */
+	void performHapticFeedback() {
+		GodotRenderView view = godot.getRenderView();
+		if (view != null) {
+			view.getView().performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+		}
+	}
+
+	/**
 	 * Enable multi-fingers pan & scale gestures. This is false by default.
 	 * <p>
 	 * Note: This may interfere with multi-touch handling / support.
 	 */
 	public void enablePanningAndScalingGestures(boolean enable) {
-		this.godotGestureHandler.setPanningAndScalingEnabled(enable);
+		this.godotGestureHandler.setPanningEnabled(enable);
+		this.godotGestureHandler.setScalingEnabled(enable);
 	}
 
 	/**
@@ -776,10 +800,16 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		}
 	}
 
+	// Scratch buffer reused by onSensorChanged() to avoid per-event allocations
+	// on the sensor callback, which can fire at 50-200 Hz. Sensor events are
+	// dispatched serially to a single listener, so this does not need to be
+	// synchronized.
+	private final float[] orientationQuaternion = new float[4];
+
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		final float[] values = event.values;
-		if (values == null || values.length != 3) {
+		if (values == null) {
 			return;
 		}
 
@@ -790,6 +820,38 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 		if (cachedRotation == -1) {
 			updateCachedRotation();
+		}
+
+		int sensorType = event.sensor.getType();
+
+		// Rotation vector sensors return 4~5 values (quaternion), handle before the length==3 check.
+		if (sensorType == Sensor.TYPE_GAME_ROTATION_VECTOR || sensorType == Sensor.TYPE_ROTATION_VECTOR) {
+			if (values.length < 4) {
+				return;
+			}
+			SensorManager.getQuaternionFromVector(orientationQuaternion, values);
+			// quaternion from Android: [w, x, y, z], expressed in the device's
+			// natural frame. Identity pose per Android's reference frame:
+			// device lying flat, screen up, with the long edge pointing toward
+			// magnetic north. Holding the device upright is therefore *not*
+			// identity; callers should not be surprised if the quaternion is
+			// non-trivial even when the device feels "still".
+			//
+			// Deliberately NOT remapped for the current display rotation. The
+			// quaternion stays in the device's physical frame, matching iOS
+			// CMDeviceMotion.attitude (which is likewise independent of the UI
+			// orientation), so both platforms report the same orientation for
+			// the same physical pose regardless of auto-rotate.
+
+			// Pass to JNI as (x, y, z, w) matching Godot's Quaternion constructor order.
+			runnable.setOrientationEvent(orientationQuaternion[1], orientationQuaternion[2], orientationQuaternion[3], orientationQuaternion[0]);
+			godot.runOnRenderThread(runnable);
+			return;
+		}
+
+		// 3-component sensors (accelerometer, gravity, magnetometer, gyroscope).
+		if (values.length != 3) {
+			return;
 		}
 
 		float rotatedValue0 = 0f;

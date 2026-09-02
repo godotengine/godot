@@ -50,7 +50,7 @@ public:
 
 	bool is_available(MetaControllers p_type);
 
-	virtual void on_register_metadata() override;
+	virtual void on_register_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata) override;
 
 private:
 	bool available[META_MAX_CONTROLLERS] = { false, false, false };

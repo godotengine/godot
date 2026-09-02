@@ -34,7 +34,6 @@
 
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
-#include "core/os/thread.h"
 #include "core/string/string_name.h"
 #include "core/templates/pair.h"
 #include "core/templates/self_list.h"
@@ -360,7 +359,7 @@ private:
 
 	SelfList<GDScriptFunction> function_list{ this };
 	mutable Variant nil;
-	HashMap<int, Variant::Type> temporary_slots;
+	TightLocalVector<Pair<int, Variant::Type>> temporary_slots;
 	List<StackDebug> stack_debug;
 
 	Vector<int> code;
@@ -379,7 +378,7 @@ private:
 	Vector<Variant::ValidatedConstructor> constructors;
 	Vector<Variant::ValidatedUtilityFunction> utilities;
 	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
-	Vector<MethodBind *> methods;
+	Vector<const MethodBind *> methods;
 	Vector<GDScriptFunction *> lambdas;
 
 	int _code_size = 0;
@@ -415,7 +414,7 @@ private:
 	const Variant::ValidatedConstructor *_constructors_ptr = nullptr;
 	const Variant::ValidatedUtilityFunction *_utilities_ptr = nullptr;
 	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
-	MethodBind **_methods_ptr = nullptr;
+	const MethodBind *const *_methods_ptr = nullptr;
 	GDScriptFunction **_lambdas_ptr = nullptr;
 
 #ifdef DEBUG_ENABLED
@@ -449,10 +448,11 @@ private:
 		HashMap<String, NativeProfile> native_calls;
 		HashMap<String, NativeProfile> last_native_calls;
 	} profile;
-#endif
 
 	String _get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	String _get_callable_call_error(const String &p_where, const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
+#endif
+
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
 public:
@@ -501,21 +501,31 @@ public:
 
 class GDScriptFunctionState : public RefCounted {
 	GDCLASS(GDScriptFunctionState, RefCounted);
+
 	friend class GDScriptFunction;
+
 	GDScriptFunction *function = nullptr;
 	GDScriptFunction::CallState state;
-	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Ref<GDScriptFunctionState> first_state;
 
 	SelfList<GDScriptFunctionState> scripts_list;
 	SelfList<GDScriptFunctionState> instances_list;
 
+	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant resume(const Variant &p_arg);
+
 protected:
 	static void _bind_methods();
 
+private:
+	bool cleared = false;
+
 public:
-	bool is_valid(bool p_extended_check = false) const;
-	Variant resume(const Variant &p_arg = Variant());
+	/**
+	 * Transfers the object into a zombie state, in which it has no functionality anymore and can outlive `GDScriptLanguage`.
+	 * A cleared function state does not hold any references and thus can not be locked up in a ref cycle.
+	 * Callers SHOULD hold a reference to the object while calling `clear`.
+	 */
+	void clear();
 
 #ifdef DEBUG_ENABLED
 	// Returns a human-readable representation of the function.

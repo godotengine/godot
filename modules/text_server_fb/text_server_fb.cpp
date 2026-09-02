@@ -33,7 +33,9 @@
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/io/file_access.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/object/callable_mp.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
@@ -85,6 +87,10 @@ bool TextServerFallback::_has_feature(Feature p_feature) const {
 
 String TextServerFallback::_get_name() const {
 	return "Fallback (Built-in)";
+}
+
+String TextServerFallback::_get_short_name() const {
+	return "fallback";
 }
 
 int64_t TextServerFallback::_get_features() const {
@@ -1547,6 +1553,51 @@ bool TextServerFallback::_font_is_modulate_color_glyphs(const RID &p_font_rid) c
 	return fd->modulate_color_glyphs;
 }
 
+int64_t TextServerFallback::_font_get_palette_count(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, 0);
+
+	return 0;
+}
+
+String TextServerFallback::_font_get_palette_name(const RID &p_font_rid, int64_t p_index) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, String());
+
+	return String();
+}
+
+Vector<Color> TextServerFallback::_font_get_palette_colors(const RID &p_font_rid, int64_t p_index) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, Vector<Color>());
+
+	return Vector<Color>();
+}
+
+void TextServerFallback::_font_set_palette_custom_colors(const RID &p_font_rid, const Vector<Color> &p_colors) {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+}
+
+Vector<Color> TextServerFallback::_font_get_palette_custom_colors(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, Vector<Color>());
+
+	return Vector<Color>();
+}
+
+int64_t TextServerFallback::_font_get_used_palette(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, 0);
+
+	return 0;
+}
+
+void TextServerFallback::_font_set_used_palette(const RID &p_font_rid, int64_t p_index) {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+}
+
 void TextServerFallback::_font_set_hinting(const RID &p_font_rid, TextServer::Hinting p_hinting) {
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL(fd);
@@ -2650,6 +2701,8 @@ Vector2 TextServerFallback::_font_get_kerning(const RID &p_font_rid, int64_t p_s
 			int32_t glyph_a = FT_Get_Char_Index(fd->face, p_glyph_pair.x);
 			int32_t glyph_b = FT_Get_Char_Index(fd->face, p_glyph_pair.y);
 			FT_Get_Kerning(fd->face, glyph_a, glyph_b, FT_KERNING_DEFAULT, &delta);
+			delta.x /= 64;
+			delta.y /= 64;
 			if (fd->msdf) {
 				return Vector2(delta.x, delta.y) * (double)p_size / (double)fd->msdf_source_size;
 			} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
@@ -3614,12 +3667,15 @@ void TextServerFallback::_generate_runs(ShapedTextDataFallback *p_sd) const {
 				p_sd->runs.push_back(run);
 			}
 			run.range = Vector2i(gl.start, gl.end);
+			run.gl_range = Vector2i(i, i);
 			run.font_rid = gl.font_rid;
 			run.font_size = gl.font_size;
 			run.span_index = span;
 		}
 		run.range.x = MIN(run.range.x, gl.start);
 		run.range.y = MAX(run.range.y, gl.end);
+		run.gl_range.x = MIN(run.gl_range.x, i);
+		run.gl_range.y = MAX(run.gl_range.y, i);
 	}
 	if (run.span_index >= 0) {
 		p_sd->runs.push_back(run);
@@ -3666,6 +3722,20 @@ Vector2i TextServerFallback::_shaped_get_run_range(const RID &p_shaped, int64_t 
 	}
 	ERR_FAIL_INDEX_V(p_index, sd->runs.size(), Vector2i());
 	return sd->runs[p_index].range;
+}
+
+Vector2i TextServerFallback::_shaped_get_run_glyph_range(const RID &p_shaped, int64_t p_index) const {
+	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_NULL_V(sd, Vector2i());
+	MutexLock lock(sd->mutex);
+	if (!sd->valid.is_set()) {
+		const_cast<TextServerFallback *>(this)->_shaped_text_shape(p_shaped);
+	}
+	if (sd->runs_dirty) {
+		_generate_runs(sd);
+	}
+	ERR_FAIL_INDEX_V(p_index, sd->runs.size(), Vector2i());
+	return sd->runs[p_index].gl_range;
 }
 
 RID TextServerFallback::_shaped_get_run_font_rid(const RID &p_shaped, int64_t p_index) const {
@@ -4873,7 +4943,8 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				for (int j = span.end - 1; j >= span.start; j--) {
 					last_non_zero_w = j;
 					uint32_t idx = (int32_t)sd->text[j - sd->start];
-					if (!is_control(idx) && !(idx >= 0x200B && idx <= 0x200D)) {
+					bool zero_w_idx = (sd->preserve_control) ? (idx == 0x200B || idx == 0xFEFF) : ((idx >= 0x200B && idx <= 0x200D) || idx == 0x2060 || idx == 0xFEFF);
+					if (!is_control(idx) && !zero_w_idx) {
 						break;
 					}
 				}
@@ -4888,7 +4959,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				gl.count = 1;
 				gl.font_size = span.font_size;
 				gl.index = (int32_t)sd->text[j - sd->start]; // Use codepoint.
-				bool zw = (gl.index >= 0x200b && gl.index <= 0x200d);
+				bool zw = (sd->preserve_control) ? (gl.index == 0x200B || gl.index == 0xFEFF) : ((gl.index >= 0x200B && gl.index <= 0x200D) || gl.index == 0x2060 || gl.index == 0xFEFF);
 				if (gl.index == 0x0009 || gl.index == 0x000b || zw) {
 					gl.index = 0x0020;
 				}
@@ -4974,6 +5045,10 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 						sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 						sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 					}
+				}
+				if (zw) {
+					gl.index = 0;
+					gl.advance = 0.0;
 				}
 				sd->width += gl.advance;
 				sd->glyphs.push_back(gl);

@@ -32,14 +32,14 @@
 
 #include "jolt_shaped_object_3d.h"
 
-#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_enums.h"
 
 class JoltBody3D;
 class JoltSoftBody3D;
 
 class JoltArea3D final : public JoltShapedObject3D {
 public:
-	typedef PhysicsServer3D::AreaSpaceOverrideMode OverrideMode;
+	typedef PS3DE::AreaSpaceOverrideMode OverrideMode;
 
 private:
 	struct BodyIDHasher {
@@ -115,9 +115,9 @@ private:
 	float wind_pressure = 0.0f;
 	float wind_attenuation_factor = 0.0f;
 
-	OverrideMode gravity_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
-	OverrideMode linear_damp_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
-	OverrideMode angular_damp_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
+	OverrideMode gravity_mode = PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
+	OverrideMode linear_damp_mode = PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
+	OverrideMode angular_damp_mode = PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
 
 	bool monitorable = false;
 	bool point_gravity = false;
@@ -137,12 +137,12 @@ private:
 	void _add_shape_pair(Overlap &p_overlap, const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id);
 	bool _remove_shape_pair(Overlap &p_overlap, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id);
 
-	void _flush_events(OverlapsById &p_objects, const Callable &p_callback);
-
-	void _report_event(const Callable &p_callback, PhysicsServer3D::AreaBodyStatus p_status, const RID &p_other_rid, ObjectID p_other_instance_id, int p_other_shape_index, int p_self_shape_index) const;
+	void _flush_events(OverlapsById &p_objects, Callable &p_callback);
+	void _report_event(Callable &p_callback, PS3DE::AreaBodyStatus p_status, const RID &p_other_rid, ObjectID p_other_instance_id, int p_other_shape_index, int p_self_shape_index);
 
 	void _notify_body_entered(const JPH::BodyID &p_body_id);
 	void _notify_body_exited(const JPH::BodyID &p_body_id);
+	void _notify_bodies_updated(bool p_priority_changed = false);
 
 	void _remove_all_overlaps();
 
@@ -161,13 +161,13 @@ public:
 
 	void set_transform(Transform3D p_transform);
 
-	Variant get_param(PhysicsServer3D::AreaParameter p_param) const;
-	void set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value);
+	Variant get_param(PS3DE::AreaParameter p_param) const;
+	void set_param(PS3DE::AreaParameter p_param, const Variant &p_value);
 
-	bool has_body_monitor_callback() const { return body_monitor_callback.is_valid(); }
+	bool has_body_monitor_callback() const { return !body_monitor_callback.is_null(); }
 	void set_body_monitor_callback(const Callable &p_callback);
 
-	bool has_area_monitor_callback() const { return area_monitor_callback.is_valid(); }
+	bool has_area_monitor_callback() const { return !area_monitor_callback.is_null(); }
 	void set_area_monitor_callback(const Callable &p_callback);
 
 	bool is_monitoring_bodies() const { return has_body_monitor_callback(); }
@@ -189,35 +189,35 @@ public:
 
 	virtual bool reports_contacts() const override { return false; }
 
-	bool is_point_gravity() const { return point_gravity; }
-	void set_point_gravity(bool p_enabled) { point_gravity = p_enabled; }
-
 	float get_priority() const { return priority; }
-	void set_priority(float p_priority) { priority = p_priority; }
+	void set_priority(float p_priority);
 
 	float get_gravity() const { return gravity; }
-	void set_gravity(float p_gravity) { gravity = p_gravity; }
+	void set_gravity(float p_gravity);
+
+	bool is_point_gravity() const { return point_gravity; }
+	void set_point_gravity(bool p_enabled);
 
 	float get_point_gravity_distance() const { return point_gravity_distance; }
-	void set_point_gravity_distance(float p_distance) { point_gravity_distance = p_distance; }
+	void set_point_gravity_distance(float p_distance);
 
 	float get_linear_damp() const { return linear_damp; }
-	void set_area_linear_damp(float p_damp) { linear_damp = p_damp; }
+	void set_linear_damp(float p_damp);
 
 	float get_angular_damp() const { return angular_damp; }
-	void set_area_angular_damp(float p_damp) { angular_damp = p_damp; }
+	void set_angular_damp(float p_damp);
 
 	OverrideMode get_gravity_mode() const { return gravity_mode; }
-	void set_gravity_mode(OverrideMode p_mode) { gravity_mode = p_mode; }
+	void set_gravity_mode(OverrideMode p_mode);
 
 	OverrideMode get_linear_damp_mode() const { return linear_damp_mode; }
-	void set_linear_damp_mode(OverrideMode p_mode) { linear_damp_mode = p_mode; }
+	void set_linear_damp_mode(OverrideMode p_mode);
 
 	OverrideMode get_angular_damp_mode() const { return angular_damp_mode; }
-	void set_angular_damp_mode(OverrideMode p_mode) { angular_damp_mode = p_mode; }
+	void set_angular_damp_mode(OverrideMode p_mode);
 
 	Vector3 get_gravity_vector() const { return gravity_vector; }
-	void set_gravity_vector(const Vector3 &p_vector) { gravity_vector = p_vector; }
+	void set_gravity_vector(const Vector3 &p_vector);
 
 	float get_wind_pressure() const { return wind_pressure; }
 	void set_wind_pressure(float p_wind_pressure) { wind_pressure = p_wind_pressure; }
@@ -240,8 +240,6 @@ public:
 	bool area_shape_exited(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id);
 
 	bool shape_exited(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id);
-	void body_exited(const JPH::BodyID &p_body_id, bool p_notify = true);
-	void area_exited(const JPH::BodyID &p_body_id);
 
 	void call_queries();
 
@@ -251,28 +249,28 @@ public:
 	// Incorporates the value provided by `p_getter` into `p_value` according to the override mode `p_mode`.
 	// Returns true if further calls to this function should stop (i.e. value has been replaced entirely).
 	template <typename TValue, typename TGetter>
-	static bool apply_override(TValue &p_value, PhysicsServer3D::AreaSpaceOverrideMode p_mode, TGetter &&p_getter);
+	static bool apply_override(TValue &p_value, PS3DE::AreaSpaceOverrideMode p_mode, TGetter &&p_getter);
 };
 
 template <typename TValue, typename TGetter>
-inline bool JoltArea3D::apply_override(TValue &p_value, PhysicsServer3D::AreaSpaceOverrideMode p_mode, TGetter &&p_getter) {
+inline bool JoltArea3D::apply_override(TValue &p_value, PS3DE::AreaSpaceOverrideMode p_mode, TGetter &&p_getter) {
 	switch (p_mode) {
-		case PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED: {
+		case PS3DE::AREA_SPACE_OVERRIDE_DISABLED: {
 			return false;
 		}
-		case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE: {
+		case PS3DE::AREA_SPACE_OVERRIDE_COMBINE: {
 			p_value += p_getter();
 			return false;
 		}
-		case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+		case PS3DE::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
 			p_value += p_getter();
 			return true;
 		}
-		case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE: {
+		case PS3DE::AREA_SPACE_OVERRIDE_REPLACE: {
 			p_value = p_getter();
 			return true;
 		}
-		case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+		case PS3DE::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
 			p_value = p_getter();
 			return false;
 		}

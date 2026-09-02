@@ -30,8 +30,6 @@
 
 #pragma once
 
-#include "jni_utils.h"
-
 #include "core/math/rect2i.h"
 #include "core/variant/typed_array.h"
 
@@ -44,25 +42,25 @@ private:
 	jobject godot_io_instance;
 	jclass cls;
 
-	jmethodID _open_URI = 0;
-	jmethodID _get_cache_dir = 0;
-	jmethodID _get_data_dir = 0;
-	jmethodID _get_temp_dir = 0;
-	jmethodID _get_display_cutouts = 0;
-	jmethodID _get_display_rotation = 0;
-	jmethodID _get_display_safe_area = 0;
-	jmethodID _get_locale = 0;
-	jmethodID _get_model = 0;
-	jmethodID _get_screen_DPI = 0;
-	jmethodID _get_scaled_density = 0;
-	jmethodID _get_screen_refresh_rate = 0;
-	jmethodID _get_unique_id = 0;
-	jmethodID _show_keyboard = 0;
-	jmethodID _hide_keyboard = 0;
-	jmethodID _has_hardware_keyboard = 0;
-	jmethodID _set_screen_orientation = 0;
-	jmethodID _get_screen_orientation = 0;
-	jmethodID _get_system_dir = 0;
+	jmethodID _open_URI = nullptr;
+	jmethodID _get_cache_dir = nullptr;
+	jmethodID _get_data_dir = nullptr;
+	jmethodID _get_temp_dir = nullptr;
+	jmethodID _get_display_cutouts = nullptr;
+	jmethodID _get_display_rotation = nullptr;
+	jmethodID _get_display_safe_area = nullptr;
+	jmethodID _get_locale = nullptr;
+	jmethodID _get_model = nullptr;
+	jmethodID _get_screen_DPI = nullptr;
+	jmethodID _get_scaled_density = nullptr;
+	jmethodID _get_screen_refresh_rate = nullptr;
+	jmethodID _get_unique_id = nullptr;
+	jmethodID _show_keyboard = nullptr;
+	jmethodID _hide_keyboard = nullptr;
+	jmethodID _has_hardware_keyboard = nullptr;
+	jmethodID _set_screen_orientation = nullptr;
+	jmethodID _get_screen_orientation = nullptr;
+	jmethodID _get_system_dir = nullptr;
 
 public:
 	GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instance);

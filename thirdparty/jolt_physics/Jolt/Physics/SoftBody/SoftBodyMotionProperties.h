@@ -176,6 +176,9 @@ public:
 	/// Update the velocities of all rigid bodies that we collided with. Not part of the public API.
 	void								UpdateRigidBodyVelocities(const SoftBodyUpdateContext &inContext, BodyInterface &inBodyInterface);
 
+	/// Set a flag to indicate that the ContactListener::OnSoftBodyContactAdded should be called
+	inline void							RequestContactCallback()					{ mNeedContactCallback.store(true, memory_order_relaxed); }
+
 private:
 	// SoftBodyManifold needs to have access to CollidingShape
 	friend class SoftBodyManifold;

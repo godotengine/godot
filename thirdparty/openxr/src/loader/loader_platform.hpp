@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -159,7 +159,7 @@ static inline void LoaderPlatformLibraryClose(LoaderPlatformLibraryHandle librar
 
 static inline void *LoaderPlatformLibraryGetProcAddr(LoaderPlatformLibraryHandle library, const std::string &name) {
     assert(library);
-    assert(name.size() > 0);
+    assert(!name.empty());
     return reinterpret_cast<void *>(GetProcAddress(library, name.c_str()));
 }
 

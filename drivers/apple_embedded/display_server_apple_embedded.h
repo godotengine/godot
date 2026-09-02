@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/os/thread_safe.h"
 #include "servers/display/display_server.h"
 
 #if defined(RD_ENABLED)
@@ -37,9 +38,9 @@
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#import "rendering_context_driver_vulkan_apple_embedded.h"
+#import "drivers/apple_embedded/rendering_context_driver_vulkan_apple_embedded.h"
 
-#include "drivers/vulkan/godot_vulkan.h"
+#include <drivers/vulkan/godot_vulkan.h>
 #endif // VULKAN_ENABLED
 
 #if defined(METAL_ENABLED)
@@ -89,7 +90,7 @@ class DisplayServerAppleEmbedded : public DisplayServer {
 	void initialize_tts() const;
 
 	bool edr_requested = false;
-	void _update_hdr_output();
+	void _update_hdr_output(bool edr_headroom_changed);
 	float _calculate_current_reference_luminance() const;
 
 protected:
@@ -145,6 +146,7 @@ public:
 	void update_accelerometer(const Vector3 &p_accelerometer);
 	void update_magnetometer(const Vector3 &p_magnetometer);
 	void update_gyroscope(const Vector3 &p_gyroscope);
+	void update_device_orientation(const Quaternion &p_orientation);
 
 	// MARK: -
 
@@ -163,7 +165,7 @@ public:
 	virtual bool is_dark_mode() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
-	virtual Rect2i get_display_safe_area() const override;
+	virtual Rect2i get_display_safe_area(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;

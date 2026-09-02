@@ -107,8 +107,8 @@ struct _IP_ResolverPrivate {
 		}
 	}
 
-	static void _thread_function(void *self) {
-		_IP_ResolverPrivate *ipr = static_cast<_IP_ResolverPrivate *>(self);
+	static void _thread_function(void *p_self) {
+		_IP_ResolverPrivate *ipr = static_cast<_IP_ResolverPrivate *>(p_self);
 
 		while (!ipr->thread_abort.is_set()) {
 			ipr->sem.wait();

@@ -86,7 +86,6 @@ void EditorPerformanceProfiler::_update_monitor_value(Monitor *p_monitor, float 
 	const String label = EditorPerformanceProfiler::_format_label(p_value, p_monitor->type);
 	item->set_text(1, label);
 
-	String tooltip;
 	switch (p_monitor->type) {
 		case Performance::MONITOR_TYPE_MEMORY:
 		case Performance::MONITOR_TYPE_TIME: {

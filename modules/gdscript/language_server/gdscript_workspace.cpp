@@ -30,6 +30,7 @@
 
 #include "gdscript_workspace.h"
 
+#include "../editor/gdscript_editor_language.h"
 #include "../gdscript.h"
 #include "../gdscript_parser.h"
 #include "gdscript_language_protocol.h"
@@ -37,6 +38,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/object/script_language.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
@@ -423,7 +425,7 @@ bool GDScriptWorkspace::can_rename(const LSP::TextDocumentPositionParams &p_doc_
 	String path = get_file_path(p_doc_pos.textDocument.uri);
 	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 	if (parser) {
-		_ALLOW_DISCARD_ parser->get_identifier_under_position(p_doc_pos.position, r_range);
+		_ALLOW_DISCARD_ parser->get_symbol_name_under_position(p_doc_pos.position, r_range);
 		r_symbol = *reference_symbol;
 		return true;
 	}
@@ -434,7 +436,7 @@ bool GDScriptWorkspace::can_rename(const LSP::TextDocumentPositionParams &p_doc_
 Vector<LSP::Location> GDScriptWorkspace::find_usages_in_file(const LSP::DocumentSymbol &p_symbol, const String &p_file_path) {
 	Vector<LSP::Location> usages;
 
-	String identifier = p_symbol.name;
+	const String &identifier = p_symbol.name;
 	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(p_file_path);
 	if (parser) {
 		const PackedStringArray &content = parser->get_lines();
@@ -452,18 +454,30 @@ Vector<LSP::Location> GDScriptWorkspace::find_usages_in_file(const LSP::Document
 				params.position.line = i;
 				params.position.character = character;
 
-				const LSP::DocumentSymbol *other_symbol = resolve_symbol(params);
+				LSP::Range range;
+				String identifier_under_cursor = parser->get_symbol_name_under_position(params.position, range);
 
-				if (other_symbol == &p_symbol) {
-					LSP::Location loc;
-					loc.uri = text_doc.uri;
-					loc.range.start = params.position;
-					loc.range.end.line = params.position.line;
-					loc.range.end.character = params.position.character + identifier.length();
-					usages.append(loc);
+				if (identifier_under_cursor == identifier) {
+					const LSP::DocumentSymbol *other_symbol = resolve_symbol(params);
+
+					if (other_symbol == &p_symbol) {
+						LSP::Location loc;
+						loc.uri = text_doc.uri;
+						loc.range.start = params.position;
+						loc.range.end.line = params.position.line;
+						loc.range.end.character = params.position.character + identifier.length();
+						usages.append(loc);
+					}
 				}
 
-				character = line.find(identifier, character + 1);
+				if (identifier_under_cursor.length() < identifier.length()) {
+					// `get_symbol_name_under_position` is supposed to recognize all possible symbol names. Since a simple string search already confirmed
+					// the presence of `p_symbol.name` in the text, this case has to be a bug.
+					ERR_PRINT(vformat("LSP Bug, please report. \"get_symbol_name_under_position\" did not correctly resolve \"%s\"", identifier));
+					character = line.find(identifier, character + 1);
+				} else {
+					character = line.find(identifier, range.end.character);
+				}
 			}
 		}
 	}
@@ -625,7 +639,7 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<S
 		}
 
 		String code = parser->get_text_for_completion(p_params.position);
-		GDScriptLanguage::get_singleton()->complete_code(code, path, current, r_options, forced, call_hint);
+		GDScriptEditorLanguage::get_singleton()->complete_code(code, path, current, r_options, forced, call_hint);
 	}
 }
 
@@ -636,46 +650,45 @@ const LSP::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const LSP::TextDocu
 
 	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 	if (parser) {
-		String symbol_identifier = p_symbol_name;
-		if (symbol_identifier.get_slice_count("(") > 0) {
-			symbol_identifier = symbol_identifier.get_slicec('(', 0);
+		String symbol_name = p_symbol_name;
+		if (symbol_name.get_slice_count("(") > 0) {
+			symbol_name = symbol_name.get_slicec('(', 0);
 		}
 
 		LSP::Position pos = p_doc_pos.position;
-		if (symbol_identifier.is_empty()) {
+		if (symbol_name.is_empty()) {
 			LSP::Range range;
-			symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, range);
+			symbol_name = parser->get_symbol_name_under_position(p_doc_pos.position, range);
 			pos.character = range.end.character;
 		}
 
-		if (!symbol_identifier.is_empty()) {
-			if (ScriptServer::is_global_class(symbol_identifier)) {
-				String class_path = ScriptServer::get_global_class_path(symbol_identifier);
+		if (!symbol_name.is_empty()) {
+			if (ScriptServer::is_global_class(symbol_name)) {
+				String class_path = ScriptServer::get_global_class_path(symbol_name);
 				symbol = get_script_symbol(class_path);
 
 			} else {
-				ScriptLanguage::LookupResult ret;
-				if (symbol_identifier == "new" && parser->get_lines()[p_doc_pos.position.line].remove_chars(" \t").contains("new(")) {
-					symbol_identifier = "_init";
+				EditorLanguage::LookupResult ret;
+				// TODO: `lookup_code` should already account for this. We might be able to simplify code here.
+				if (symbol_name == "new" && parser->get_lines()[p_doc_pos.position.line].remove_chars(" \t").contains("new(")) {
+					symbol_name = "_init";
 				}
-				if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_identifier, p_func_required), symbol_identifier, path, nullptr, ret)) {
+				if (OK == GDScriptEditorLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_name, p_func_required), symbol_name, path, nullptr, ret)) {
 					if (ret.location >= 0) {
 						String target_script_path = path;
-						if (ret.script.is_valid()) {
-							target_script_path = ret.script->get_path();
-						} else if (!ret.script_path.is_empty()) {
+						if (!ret.script_path.is_empty()) {
 							target_script_path = ret.script_path;
 						}
 
 						const ExtendGDScriptParser *target_parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(target_script_path);
 						if (target_parser) {
-							symbol = target_parser->get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(ret.location), symbol_identifier);
+							symbol = target_parser->get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(ret.location), symbol_name);
 
 							if (symbol) {
 								switch (symbol->kind) {
 									case LSP::SymbolKind::Function: {
-										if (symbol->name != symbol_identifier) {
-											symbol = get_parameter_symbol(symbol, symbol_identifier);
+										if (symbol->name != symbol_name) {
+											symbol = get_parameter_symbol(symbol, symbol_name);
 										}
 									} break;
 								}
@@ -683,15 +696,15 @@ const LSP::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const LSP::TextDocu
 						}
 					} else {
 						String member = ret.class_member;
-						if (member.is_empty() && symbol_identifier != ret.class_name) {
-							member = symbol_identifier;
+						if (member.is_empty() && symbol_name != ret.class_name) {
+							member = symbol_name;
 						}
 						symbol = get_native_symbol(ret.class_name, member);
 					}
 				} else {
-					symbol = get_local_symbol_at(parser, symbol_identifier, p_doc_pos.position);
+					symbol = get_local_symbol_at(parser, symbol_name, p_doc_pos.position);
 					if (!symbol) {
-						symbol = parser->get_member_symbol(symbol_identifier);
+						symbol = parser->get_member_symbol(symbol_name);
 					}
 				}
 			}
@@ -757,7 +770,8 @@ Error GDScriptWorkspace::resolve_signature(const LSP::TextDocumentPositionParams
 				if (symbol->kind == LSP::SymbolKind::Method || symbol->kind == LSP::SymbolKind::Function) {
 					LSP::SignatureInformation signature_info;
 					signature_info.label = symbol->detail;
-					signature_info.documentation = symbol->render();
+					const HashSet<String> &allowed_tags = GDScriptLanguageProtocol::get_singleton()->get_client_markdown_allowed_html_tags();
+					signature_info.documentation = symbol->render(allowed_tags);
 
 					for (int i = 0; i < symbol->children.size(); i++) {
 						const LSP::DocumentSymbol &arg = symbol->children[i];

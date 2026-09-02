@@ -30,22 +30,14 @@
 
 #pragma once
 
-#include "crash_handler_windows.h"
-#include "key_mapping_windows.h"
-#include "tts_windows.h"
-
 #include "core/config/project_settings.h"
 #include "core/input/input_event.h"
 #include "core/io/image.h"
 #include "core/os/process_id.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/rb_map.h"
-#include "drivers/wasapi/audio_driver_wasapi.h"
-#include "drivers/winmidi/midi_driver_winmidi.h"
-#include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
@@ -56,16 +48,16 @@
 #endif
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 #include "gl_manager_windows_angle.h"
+#endif // ANGLE_ENABLED
 #include "gl_manager_windows_native.h"
 #endif // GLES3_ENABLED
 
-#include <io.h>
-#include <cstdio>
-
-#define WIN32_LEAN_AND_MEAN
-#include <shobjidl.h>
 #include <windows.h>
+
+#include <io.h>
+#include <shobjidl.h>
 #include <windowsx.h>
 
 // WinTab API
@@ -160,7 +152,7 @@ enum PreferredAppMode {
 	APPMODE_MAX = 4
 };
 
-typedef const char *(CDECL *WineGetVersionPtr)(void);
+typedef const char *(CDECL *WineGetVersionPtr)();
 typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
@@ -191,6 +183,8 @@ typedef struct {
 
 class DropTargetWindows;
 class NativeMenuWindows;
+class TTS_Windows;
+class WinRTWindowData;
 
 #ifndef WDA_EXCLUDEFROMCAPTURE
 #define WDA_EXCLUDEFROMCAPTURE 0x00000011
@@ -258,13 +252,16 @@ class DisplayServerWindows : public DisplayServer {
 
 	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
 	int key_event_pos;
+	bool legacy_shift_pressed[2] = {};
 
 	bool old_invalid;
 	int old_x, old_y;
 	Point2i center;
 
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	GLManagerANGLE_Windows *gl_manager_angle = nullptr;
+#endif
 	GLManagerNative_Windows *gl_manager_native = nullptr;
 #endif
 
@@ -274,11 +271,6 @@ class DisplayServerWindows : public DisplayServer {
 #endif
 
 	RBMap<int, Vector2> touch_state;
-
-	Vector<BYTE> icon_buffer_big;
-	HICON icon_big = nullptr;
-	Vector<BYTE> icon_buffer_small;
-	HICON icon_small = nullptr;
 
 	int pressrc;
 	HINSTANCE hInstance; // Holds The Instance Of The Application
@@ -292,9 +284,13 @@ class DisplayServerWindows : public DisplayServer {
 	NativeMenuWindows *native_menu = nullptr;
 	ITaskbarList3 *taskbar = nullptr;
 
+	bool has_winrt_queue = false;
+	void _winrt_adv_color_info_cb(DisplayServerEnums::WindowID p_id);
+
 	struct WindowData {
 		HWND hWnd;
 		DisplayServerEnums::WindowID id;
+		WinRTWindowData *wrt_wd = nullptr;
 
 		Vector<Vector2> mpath;
 		DisplayServerEnums::ProgressState progress_state = DisplayServerEnums::PROGRESS_STATE_NOPROGRESS;
@@ -323,7 +319,9 @@ class DisplayServerWindows : public DisplayServer {
 		bool exclusive = false;
 		bool rendering_context_window_created = false;
 		bool gl_native_window_created = false;
+#ifdef ANGLE_ENABLED
 		bool gl_angle_window_created = false;
+#endif
 		bool mpass = false;
 		bool sharp_corners = false;
 		bool hide_from_capture = false;
@@ -358,6 +356,11 @@ class DisplayServerWindows : public DisplayServer {
 		Point2 last_pos;
 
 		ObjectID instance_id;
+		bool icon_set = false;
+		Vector<BYTE> icon_buffer_big;
+		HICON icon_big = nullptr;
+		Vector<BYTE> icon_buffer_small;
+		HICON icon_small = nullptr;
 
 		// IME
 		HIMC im_himc;
@@ -390,7 +393,7 @@ class DisplayServerWindows : public DisplayServer {
 
 		bool initialized = false;
 
-		HWND parent_hwnd = 0;
+		HWND parent_hwnd = nullptr;
 
 		bool no_redirection_bitmap = false;
 	};
@@ -404,6 +407,8 @@ class DisplayServerWindows : public DisplayServer {
 
 	Error _create_window(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, DisplayServerEnums::WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
 	void _destroy_window(DisplayServerEnums::WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
+
+	void _window_set_native_icon(const String &p_filename, DisplayServerEnums::WindowID p_window);
 
 #ifdef RD_ENABLED
 	Error _create_rendering_context_window(DisplayServerEnums::WindowID p_window_id, const String &p_rendering_driver);
@@ -434,7 +439,7 @@ class DisplayServerWindows : public DisplayServer {
 	HashMap<DisplayServerEnums::IndicatorID, IndicatorData> indicators;
 
 	struct FileDialogData {
-		HWND hwnd_owner = 0;
+		HWND hwnd_owner = nullptr;
 		Rect2i wrect;
 		String appid;
 		String title;
@@ -538,8 +543,8 @@ class DisplayServerWindows : public DisplayServer {
 	String _get_klid(HKL p_hkl) const;
 
 	struct EmbeddedProcessData {
-		HWND window_handle = 0;
-		HWND parent_window_handle = 0;
+		HWND window_handle = nullptr;
+		HWND parent_window_handle = nullptr;
 		bool is_visible = false;
 	};
 	HashMap<ProcessID, EmbeddedProcessData *> embedded_processes;
@@ -547,6 +552,11 @@ class DisplayServerWindows : public DisplayServer {
 	HWND _find_window_from_process_id(ProcessID p_pid, HWND p_current_hwnd);
 
 	void initialize_tts() const;
+	bool process_raw_input();
+	Vector2 _get_raw_mouse_motion(const RAWINPUT &p_raw, DisplayServerEnums::WindowID p_window_id);
+	void _process_raw_mouse_motion(const Vector2 &p_relative, bool p_left_button_down, DisplayServerEnums::WindowID p_window_id);
+	void _process_raw_input_event(const RAWINPUT &p_raw, DisplayServerEnums::WindowID p_window_id);
+	void _reconcile_shift_state(DisplayServerEnums::WindowID p_window_id);
 
 	struct ScreenHdrData {
 		bool hdr_supported = false;
@@ -557,9 +567,13 @@ class DisplayServerWindows : public DisplayServer {
 	};
 	AHashMap<int, ScreenHdrData> hdr_output_cache;
 
-	ScreenHdrData _get_screen_hdr_data(int p_screen) const;
+	ScreenHdrData _get_screen_hdr_data(DisplayServerEnums::WindowID p_window, bool p_include_sdr_white_level) const;
 	void _update_hdr_output_for_window(DisplayServerEnums::WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data);
-	void _update_hdr_output_for_tracked_windows();
+	void _legacy_update_hdr_output_for_tracked_windows(bool p_include_sdr_white_level);
+
+	String _get_app_id() const;
+	String _get_app_name() const;
+	bool _try_create_shortcut();
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -616,6 +630,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
 	virtual Ref<Image> screen_get_image(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
@@ -677,6 +692,8 @@ public:
 	virtual void window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
+	virtual void window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+
 	virtual bool window_is_maximize_allowed(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
@@ -730,6 +747,9 @@ public:
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
 	virtual DisplayServerEnums::CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape = DisplayServerEnums::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
+
+	virtual DisplayServerEnums::NotificationID send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) override;
+	virtual void hide_toast_notification(DisplayServerEnums::NotificationID p_id) override;
 
 	virtual bool get_swap_cancel_ok() override;
 

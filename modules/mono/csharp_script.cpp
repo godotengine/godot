@@ -30,14 +30,18 @@
 
 #include "csharp_script.h"
 
+#include "godotsharp_defs.h"
 #include "godotsharp_dirs.h"
-#include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
 #include "utils/naming_utils.h"
-#include "utils/path_utils.h"
 #include "utils/string_utils.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "managed_callable.h"
+#include "utils/path_utils.h"
+#endif
 
 #ifdef DEBUG_ENABLED
 #include "class_db_api_json.h"
@@ -61,23 +65,19 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
-#include "editor/docks/inspector_dock.h"
-#include "editor/docks/signals_dock.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/signals_dock.h"
+#endif
 #endif
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
 const Vector<String> ignored_types = {};
-
-#ifdef TOOLS_ENABLED
-static bool _create_project_solution_if_needed() {
-	CRASH_COND(CSharpLanguage::get_singleton()->get_godotsharp_editor() == nullptr);
-	return CSharpLanguage::get_singleton()->get_godotsharp_editor()->call("CreateProjectSolutionIfNeeded");
-}
-#endif
 
 CSharpLanguage *CSharpLanguage::singleton = nullptr;
 
@@ -563,20 +563,20 @@ struct CSharpScriptDepSort {
 void CSharpLanguage::reload_all_scripts() {
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		reload_assemblies(false);
+		reload_assemblies();
 	}
 #endif
 }
 
-void CSharpLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
+void CSharpLanguage::reload_scripts(const Array &p_scripts) {
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		reload_assemblies(p_soft_reload);
+		reload_assemblies();
 	}
 #endif
 }
 
-void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
+void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script) {
 	CRASH_COND(!Engine::get_singleton()->is_editor_hint());
 
 #ifdef TOOLS_ENABLED
@@ -585,7 +585,7 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		reload_assemblies(p_soft_reload);
+		reload_assemblies();
 	}
 #endif
 }
@@ -622,7 +622,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 	return true;
 }
 
-void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
+void CSharpLanguage::reload_assemblies() {
 	ERR_FAIL_NULL(gdmono);
 	if (!gdmono->is_runtime_initialized()) {
 		return;
@@ -865,7 +865,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 
 		if (!scr->get_path().is_empty() && !scr->get_path().begins_with("csharp://")) {
-			scr->reload(p_soft_reload);
+			scr->reload();
 
 			if (!scr->valid) {
 				scr->pending_reload_instances.clear();
@@ -894,7 +894,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 					continue;
 				}
 
-				if (!ClassDB::is_parent_class(obj->get_class_name(), native_name)) {
+				if (!obj->is_class(native_name)) {
 					// No longer inherits the same compatible type, can't reload
 					scr->pending_reload_state.erase(obj_id);
 					continue;
@@ -1030,10 +1030,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 }
 #endif
 
-void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("cs");
-}
-
 #ifdef TOOLS_ENABLED
 Error CSharpLanguage::open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) {
 	return (Error)(int)get_godotsharp_editor()->call("OpenInExternalEditor", p_script, p_line, p_col);
@@ -1151,14 +1147,14 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	// workaround to allow GDExtension classes to be used from C# so long as they're only used through base classes that
 	// are registered from the engine. This will likely need to be removed whenever proper support for GDExtension
 	// classes is added to C#. See #75955 for more details.
-	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->name))) {
+	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->gdtype->get_name()))) {
 		classinfo = classinfo->inherits_ptr;
 	}
 
 	ERR_FAIL_NULL_V(classinfo, false);
-	type_name = classinfo->name;
+	type_name = classinfo->gdtype->get_name();
 
-	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), type_name);
+	bool parent_is_object_class = p_object->is_class(type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, false,
 			"Type inherits from native type '" + type_name + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
 
@@ -1513,7 +1509,7 @@ bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
-void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
+void CSharpInstance::get_property_list(List<PropertyInfo> *r_properties) const {
 	List<PropertyInfo> props;
 	ERR_FAIL_COND(script.is_null());
 #ifdef TOOLS_ENABLED
@@ -1528,7 +1524,7 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 	for (PropertyInfo &prop : props) {
 		validate_property(prop);
-		p_properties->push_back(prop);
+		r_properties->push_back(prop);
 	}
 
 	// Call _get_property_list
@@ -1549,7 +1545,7 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 		} else {
 			Array array = ret;
 			for (int i = 0, size = array.size(); i < size; i++) {
-				p_properties->push_back(PropertyInfo::from_dict(array.get(i)));
+				r_properties->push_back(PropertyInfo::from_dict(array.get(i)));
 			}
 		}
 	}
@@ -1569,7 +1565,7 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 		for (PropertyInfo &prop : props) {
 			validate_property(prop);
-			p_properties->push_back(prop);
+			r_properties->push_back(prop);
 		}
 
 		top = top->base_script.ptr();
@@ -1646,12 +1642,12 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 	return true;
 }
 
-void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
-	if (!script->is_valid() || !script->valid) {
+void CSharpInstance::get_method_list(List<MethodInfo> *r_list) const {
+	if (!script->is_script_valid() || !script->valid) {
 		return;
 	}
 
-	script->get_script_method_list(p_list);
+	script->get_script_method_list(r_list);
 }
 
 bool CSharpInstance::has_method(const StringName &p_method) const {
@@ -1668,7 +1664,7 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 }
 
 int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
-	if (!script->is_valid() || !script->valid) {
+	if (!script->is_script_valid() || !script->valid) {
 		if (r_is_valid) {
 			*r_is_valid = false;
 		}
@@ -2464,7 +2460,7 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
 	ERR_FAIL_COND_V(native_name == StringName(), nullptr);
 
-	if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
+	if (!p_this->is_class(native_name)) {
 		if (EngineDebugger::is_active()) {
 			CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
 					"Script inherits from native type '" + String(native_name) +
@@ -2486,11 +2482,6 @@ PlaceHolderScriptInstance *CSharpScript::placeholder_instance_create(Object *p_t
 #else
 	return nullptr;
 #endif
-}
-
-bool CSharpScript::instance_has(const Object *p_this) const {
-	MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-	return instances.has((Object *)p_this);
 }
 
 bool CSharpScript::has_source_code() const {
@@ -2810,132 +2801,12 @@ CSharpScript::~CSharpScript() {
 	}
 }
 
-void CSharpScript::get_members(HashSet<StringName> *p_members) {
+void CSharpScript::get_members(HashSet<StringName> *r_members) {
 #ifdef DEBUG_ENABLED
-	if (p_members) {
+	if (r_members) {
 		for (const StringName &member_name : exported_members_names) {
-			p_members->insert(member_name);
+			r_members->insert(member_name);
 		}
 	}
 #endif // DEBUG_ENABLED
-}
-
-/*************** RESOURCE ***************/
-
-Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	if (r_error) {
-		*r_error = ERR_FILE_CANT_OPEN;
-	}
-
-	// TODO ignore anything inside bin/ and obj/ in tools builds?
-
-	String real_path = p_path;
-	if (p_path.begins_with("csharp://")) {
-		// This is a virtual path used by generic types, extract the real path.
-		real_path = "res://" + p_path.trim_prefix("csharp://");
-		real_path = real_path.substr(0, real_path.rfind_char(':'));
-	}
-
-	Ref<CSharpScript> scr;
-
-	if (GDMonoCache::godot_api_cache_updated) {
-		GDMonoCache::managed_callbacks.ScriptManagerBridge_GetOrCreateScriptBridgeForPath(&p_path, &scr);
-		ERR_FAIL_COND_V_MSG(scr.is_null(), Ref<Resource>(), "Could not create C# script '" + real_path + "'.");
-	} else {
-		scr.instantiate();
-	}
-
-#ifdef DEBUG_ENABLED
-	Error err = scr->load_source_code(real_path);
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load C# script file '" + real_path + "'.");
-#endif // DEBUG_ENABLED
-
-	// Only one instance of a C# script is allowed to exist.
-	ERR_FAIL_COND_V_MSG(!scr->get_path().is_empty() && scr->get_path() != p_original_path, Ref<Resource>(),
-			"The C# script path is different from the path it was registered in the C# dictionary.");
-
-	Ref<Resource> existing = ResourceCache::get_ref(p_path);
-	switch (p_cache_mode) {
-		case ResourceFormatLoader::CACHE_MODE_IGNORE:
-		case ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP:
-			break;
-		case ResourceFormatLoader::CACHE_MODE_REUSE:
-			if (existing.is_null()) {
-				scr->set_path(p_original_path);
-			} else {
-				scr = existing;
-			}
-			break;
-		case ResourceFormatLoader::CACHE_MODE_REPLACE:
-		case ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP:
-			scr->set_path(p_original_path, true);
-			break;
-	}
-
-	scr->reload();
-
-	if (r_error) {
-		*r_error = OK;
-	}
-
-	return scr;
-}
-
-void ResourceFormatLoaderCSharpScript::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("cs");
-}
-
-bool ResourceFormatLoaderCSharpScript::handles_type(const String &p_type) const {
-	return p_type == "Script" || p_type == CSharpLanguage::get_singleton()->get_type();
-}
-
-String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path) const {
-	return p_path.has_extension("cs") ? CSharpLanguage::get_singleton()->get_type() : "";
-}
-
-Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	Ref<CSharpScript> sqscr = p_resource;
-	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
-
-	String source = sqscr->get_source_code();
-
-#ifdef TOOLS_ENABLED
-	if (!FileAccess::exists(p_path)) {
-		// The file does not yet exist, let's assume the user just created this script. In such
-		// cases we need to check whether the solution and csproj were already created or not.
-		if (!_create_project_solution_if_needed()) {
-			ERR_PRINT("C# project could not be created; cannot add file: '" + p_path + "'.");
-		}
-	}
-#endif
-
-	{
-		Error err;
-		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save C# script file '" + p_path + "'.");
-
-		file->store_string(source);
-
-		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-			return ERR_CANT_CREATE;
-		}
-	}
-
-#ifdef TOOLS_ENABLED
-	if (ScriptServer::is_reload_scripts_on_save_enabled()) {
-		CSharpLanguage::get_singleton()->reload_tool_script(p_resource, false);
-	}
-#endif
-
-	return OK;
-}
-
-void ResourceFormatSaverCSharpScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
-	if (Object::cast_to<CSharpScript>(p_resource.ptr())) {
-		p_extensions->push_back("cs");
-	}
-}
-
-bool ResourceFormatSaverCSharpScript::recognize(const Ref<Resource> &p_resource) const {
-	return Object::cast_to<CSharpScript>(p_resource.ptr()) != nullptr;
 }

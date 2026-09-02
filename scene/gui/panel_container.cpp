@@ -30,24 +30,42 @@
 
 #include "panel_container.h"
 
-#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
 Size2 PanelContainer::get_minimum_size() const {
-	Size2 ms;
+	Size2 ms = Container::get_minimum_size();
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms += theme_cache.panel_style->get_minimum_size();
+	}
+	return ms;
+}
+
+Size2 PanelContainer::get_desired_size() const {
+	Size2 ds;
+
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
 		if (!c) {
 			continue;
 		}
 
-		Size2 minsize = c->get_combined_minimum_size();
-		ms = ms.max(minsize);
+		Size2 minsize = c->get_desired_size();
+		ds = ds.max(minsize);
 	}
+	if (theme_cache.panel_style.is_valid()) {
+		ds += theme_cache.panel_style->get_minimum_size();
+	}
+	return ds;
+}
+
+Size2 PanelContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
 
 	if (theme_cache.panel_style.is_valid()) {
-		ms += theme_cache.panel_style->get_minimum_size();
+		ms -= theme_cache.panel_style->get_minimum_size();
 	}
+
 	return ms;
 }
 
@@ -57,6 +75,7 @@ Vector<int> PanelContainer::get_allowed_size_flags_horizontal() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 
@@ -66,6 +85,7 @@ Vector<int> PanelContainer::get_allowed_size_flags_vertical() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 

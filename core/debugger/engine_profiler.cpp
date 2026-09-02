@@ -31,7 +31,7 @@
 #include "engine_profiler.h"
 
 #include "core/debugger/engine_debugger.h"
-#include "core/object/class_db.h"
+#include "core/object/class_db.h" // IWYU pragma: keep. `GDVIRTUAL_BIND` macro.
 
 void EngineProfiler::_bind_methods() {
 	GDVIRTUAL_BIND(_toggle, "enable", "options");

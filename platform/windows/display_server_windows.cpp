@@ -31,13 +31,17 @@
 #include "display_server_windows.h"
 
 #include "drop_target_windows.h"
+#include "key_mapping_windows.h"
 #include "native_menu_windows.h"
 #include "os_windows.h"
+#include "tts_windows.h"
 #include "wgl_detect_version.h"
+#include "winrt_utils.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/xml_parser.h"
@@ -47,10 +51,10 @@
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
-#include "scene/main/window.h"
 #include "scene/resources/texture.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
@@ -61,6 +65,7 @@
 #endif
 #if defined(D3D12_ENABLED)
 #include "drivers/d3d12/rendering_context_driver_d3d12.h"
+
 #include <dxgi1_6.h>
 #endif
 #if defined(GLES3_ENABLED)
@@ -71,11 +76,13 @@
 #include <dwmapi.h>
 #include <propkey.h>
 #include <propvarutil.h>
+#include <psapi.h>
 #include <shellapi.h>
 #include <shellscalingapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
 #include <wbemcli.h>
+#include <windns.h> // For QWORD.
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
@@ -118,6 +125,40 @@ static void track_mouse_leave_event(HWND hWnd) {
 	tme.hwndTrack = hWnd;
 	tme.dwHoverTime = HOVER_DEFAULT;
 	TrackMouseEvent(&tme);
+}
+
+static void update_ime_form_positions(HIMC p_himc, const Point2i &p_pos) {
+	if (p_himc == (HIMC) nullptr) {
+		return;
+	}
+
+	COMPOSITIONFORM cps = {};
+	cps.dwStyle = CFS_POINT;
+	cps.ptCurrentPos.x = p_pos.x;
+	cps.ptCurrentPos.y = p_pos.y;
+	ImmSetCompositionWindow(p_himc, &cps);
+
+	LOGFONT logFont = {};
+
+	logFont.lfHeight = 1; // em height
+	logFont.lfQuality = CLEARTYPE_QUALITY;
+
+	ImmSetCompositionFontA(p_himc, &logFont);
+
+	CANDIDATEFORM cf = {};
+	cf.dwIndex = 0;
+
+	cf.dwStyle = CFS_CANDIDATEPOS;
+	cf.ptCurrentPos.x = p_pos.x;
+	cf.ptCurrentPos.y = p_pos.y;
+	ImmSetCandidateWindow(p_himc, &cf);
+
+	cf.dwStyle = CFS_EXCLUDE;
+	cf.rcArea.left = p_pos.x;
+	cf.rcArea.right = p_pos.x;
+	cf.rcArea.top = p_pos.y;
+	cf.rcArea.bottom = p_pos.y;
+	ImmSetCandidateWindow(p_himc, &cf);
 }
 
 bool DisplayServerWindows::has_feature(DisplayServerEnums::Feature p_feature) const {
@@ -248,6 +289,37 @@ void DisplayServerWindows::_set_mouse_mode_impl(DisplayServerEnums::MouseMode p_
 			SetCapture(wd.hWnd);
 
 			_register_raw_input_devices(window_id);
+
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
+
+			Ref<InputEventMouseMotion> mm;
+			mm.instantiate();
+
+			mm->set_window_id(window_id);
+			mm->set_pressure(windows[window_id].last_pressure);
+			mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+			mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
+			mm->set_button_mask(mouse_get_button_state());
+
+			mm->set_position(center);
+			mm->set_global_position(center);
+			mm->set_relative(Vector2(0, 0));
+			mm->set_relative_screen_position(Vector2(0, 0));
+			mm->set_velocity(Vector2(0, 0));
+			mm->set_screen_velocity(Vector2(0, 0));
+
+			mm->set_global_position(center);
+			mm->set_velocity(Vector2(0, 0));
+			mm->set_screen_velocity(Vector2(0, 0));
+
+			if (windows[window_id].window_focused || window_get_active_popup() == window_id) {
+				Input::get_singleton()->parse_input_event(mm);
+			}
+
+			old_x = center.x;
+			old_y = center.y;
 		}
 	} else {
 		// Mouse is free to move around (not captured or confined).
@@ -291,26 +363,20 @@ bool DisplayServerWindows::_has_moving_window() const {
 void DisplayServerWindows::_register_raw_input_devices(DisplayServerEnums::WindowID p_target_window) {
 	use_raw_input = true;
 
-	RAWINPUTDEVICE rid[2] = {};
-	rid[0].usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
-	rid[0].usUsage = 0x02; // HID_USAGE_GENERIC_MOUSE
-	rid[0].dwFlags = 0;
-
-	rid[1].usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
-	rid[1].usUsage = 0x06; // HID_USAGE_GENERIC_KEYBOARD
-	rid[1].dwFlags = 0;
+	RAWINPUTDEVICE rid = {};
+	rid.usUsagePage = 0x01; // HID_USAGE_PAGE_GENERIC
+	rid.usUsage = 0x02; // HID_USAGE_GENERIC_MOUSE
+	rid.dwFlags = 0;
 
 	if (p_target_window != DisplayServerEnums::INVALID_WINDOW_ID && windows.has(p_target_window)) {
 		// Follow the defined window
-		rid[0].hwndTarget = windows[p_target_window].hWnd;
-		rid[1].hwndTarget = windows[p_target_window].hWnd;
+		rid.hwndTarget = windows[p_target_window].hWnd;
 	} else {
-		// Follow the keyboard focus
-		rid[0].hwndTarget = nullptr;
-		rid[1].hwndTarget = nullptr;
+		// Follow the mouse focus
+		rid.hwndTarget = nullptr;
 	}
 
-	if (RegisterRawInputDevices(rid, 2, sizeof(rid[0])) == FALSE) {
+	if (RegisterRawInputDevices(&rid, 1, sizeof(rid)) == FALSE) {
 		// Registration failed.
 		use_raw_input = false;
 	}
@@ -561,13 +627,13 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			ds->file_dialog_wnd[hwnd_dialog] = fd;
 		}
 
-		HICON mainwindow_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_SMALL, 0);
-		if (mainwindow_icon) {
-			SendMessage(hwnd_dialog, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
+		HICON w_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_SMALL, 0);
+		if (w_icon) {
+			SendMessage(hwnd_dialog, WM_SETICON, ICON_SMALL, (LPARAM)w_icon);
 		}
-		mainwindow_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_BIG, 0);
-		if (mainwindow_icon) {
-			SendMessage(hwnd_dialog, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
+		w_icon = (HICON)SendMessage(fd->hwnd_owner, WM_GETICON, ICON_BIG, 0);
+		if (w_icon) {
+			SendMessage(hwnd_dialog, WM_SETICON, ICON_BIG, (LPARAM)w_icon);
 		}
 		IPropertyStore *prop_store;
 		HRESULT hr = SHGetPropertyStoreForWindow(hwnd_dialog, IID_IPropertyStore, (void **)&prop_store);
@@ -801,30 +867,110 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 	}
 }
 
+String DisplayServerWindows::_get_app_id() const {
+	static String appname;
+	if (appname.is_empty()) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
+		} else {
+			String name = GLOBAL_GET("application/config/name");
+			String version = GLOBAL_GET("application/config/version");
+			if (version.is_empty()) {
+				version = "0";
+			}
+			String clean_app_name = name.to_pascal_case();
+			for (int i = 0; i < clean_app_name.length(); i++) {
+				if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
+					clean_app_name[i] = '_';
+				}
+			}
+			clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
+			appname = "Godot." + clean_app_name + "." + version;
+		}
+	}
+	return appname;
+}
+
+String DisplayServerWindows::_get_app_name() const {
+	static String appname;
+	if (appname.is_empty()) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			appname = "Godot";
+		} else {
+			appname = GLOBAL_GET("application/config/name");
+		}
+	}
+	return appname;
+}
+
+bool DisplayServerWindows::_try_create_shortcut() {
+	String path = vformat("%s\\Microsoft\\Windows\\Start Menu\\Programs\\%s.lnk", OS::get_singleton()->get_environment("APPDATA"), _get_app_name());
+	Char16String cs_path = path.utf16();
+	DWORD attributes = GetFileAttributesW((PCWSTR)cs_path.get_data());
+
+	if (attributes < 0xFFFFFFF) {
+		return true;
+	} else {
+		wchar_t exe_path[MAX_PATH];
+		DWORD sz = GetModuleFileNameExW(GetCurrentProcess(), nullptr, exe_path, ARRAYSIZE(exe_path));
+		if (sz == 0) {
+			return false;
+		}
+
+		bool done = false;
+		IShellLinkW *shell_link = nullptr;
+		HRESULT hr = CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shell_link));
+		if (SUCCEEDED(hr)) {
+			shell_link->SetPath(exe_path);
+			shell_link->SetArguments(L"");
+
+			IPropertyStore *prop_store = nullptr;
+			hr = shell_link->QueryInterface(IID_PPV_ARGS(&prop_store));
+			if (SUCCEEDED(hr)) {
+				PROPVARIANT val;
+				String appid = _get_app_id();
+				InitPropVariantFromString((PCWSTR)appid.utf16().get_data(), &val);
+				prop_store->SetValue(PKEY_AppUserModel_ID, val);
+				prop_store->Commit();
+
+				IPersistFile *persist_file = nullptr;
+				hr = shell_link->QueryInterface(IID_PPV_ARGS(&persist_file));
+				if (SUCCEEDED(hr)) {
+					hr = persist_file->Save((PCWSTR)cs_path.get_data(), true);
+					if (SUCCEEDED(hr)) {
+						done = true;
+					}
+					persist_file->Release();
+				}
+				PropVariantClear(&val);
+				prop_store->Release();
+			}
+			shell_link->Release();
+		}
+		return done;
+	}
+}
+
+DisplayServerEnums::NotificationID DisplayServerWindows::send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) {
+	if (!has_winrt_queue) {
+		return DisplayServerEnums::INVALID_NOTIFICATION_ID;
+	}
+	if (!_try_create_shortcut()) {
+		return DisplayServerEnums::INVALID_NOTIFICATION_ID;
+	}
+	return WinRTUtils::send_toast_notification(p_title, p_text, p_image, p_callback);
+}
+
+void DisplayServerWindows::hide_toast_notification(DisplayServerEnums::NotificationID p_id) {
+	if (has_winrt_queue) {
+		WinRTUtils::hide_toast_notification(p_id);
+	}
+}
+
 Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, DisplayServerEnums::WindowID p_window_id) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), DisplayServerEnums::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
-
-	String appname;
-	if (Engine::get_singleton()->is_editor_hint()) {
-		appname = "Godot.GodotEditor." + String(GODOT_VERSION_BRANCH);
-	} else {
-		String name = GLOBAL_GET("application/config/name");
-		String version = GLOBAL_GET("application/config/version");
-		if (version.is_empty()) {
-			version = "0";
-		}
-		String clean_app_name = name.to_pascal_case();
-		for (int i = 0; i < clean_app_name.length(); i++) {
-			if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
-				clean_app_name[i] = '_';
-			}
-		}
-		clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
-		appname = "Godot." + clean_app_name + "." + version;
-	}
-
 	FileDialogData *fd = memnew(FileDialogData);
 	if (windows.has(p_window_id) && !windows[p_window_id].is_popup) {
 		fd->hwnd_owner = windows[p_window_id].hWnd;
@@ -835,7 +981,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 		fd->hwnd_owner = nullptr;
 		fd->wrect = Rect2i(CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT);
 	}
-	fd->appid = appname;
+	fd->appid = _get_app_id();
 	fd->title = p_title;
 	fd->current_directory = p_current_directory;
 	fd->root = p_root;
@@ -1450,6 +1596,12 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	return data.dpi;
 }
 
+float DisplayServerWindows::screen_get_scale(int p_screen) const {
+	// Windows always reports the monitor DPI as 96 when the scale option in Windows' settings is set to 100%,
+	// regardless of the monitor's resolution and physical size. This value is then multiplied by the scale factor.
+	return screen_get_dpi(p_screen) / 96.0;
+}
+
 Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 	Point2i pos = p_position + _get_screens_origin();
 
@@ -1540,11 +1692,11 @@ Ref<Image> DisplayServerWindows::screen_get_image_rect(const Rect2i &p_rect) con
 	POINT p2;
 	p2.x = pos.x + size.x;
 	p2.y = pos.y + size.y;
-	LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
-	LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p1);
+	LogicalToPhysicalPointForPerMonitorDPI(nullptr, &p2);
 
 	Ref<Image> img;
-	HDC dc = GetDC(0);
+	HDC dc = GetDC(nullptr);
 	if (dc) {
 		HDC hdc = CreateCompatibleDC(dc);
 		int width = p2.x - p1.x;
@@ -1577,7 +1729,7 @@ Ref<Image> DisplayServerWindows::screen_get_image_rect(const Rect2i &p_rect) con
 			}
 			DeleteDC(hdc);
 		}
-		ReleaseDC(NULL, dc);
+		ReleaseDC(nullptr, dc);
 	}
 
 	return img;
@@ -1775,7 +1927,7 @@ DisplayServerEnums::WindowID DisplayServerWindows::create_sub_window(DisplayServ
 #endif
 
 	DisplayServerEnums::WindowID window_id = window_id_counter;
-	Error err = _create_window(window_id, p_mode, p_flags, p_rect, p_exclusive, p_transient_parent, NULL, no_redirection_bitmap);
+	Error err = _create_window(window_id, p_mode, p_flags, p_rect, p_exclusive, p_transient_parent, nullptr, no_redirection_bitmap);
 	ERR_FAIL_COND_V_MSG(err != OK, DisplayServerEnums::INVALID_WINDOW_ID, "Failed to create sub window.");
 	++window_id_counter;
 
@@ -1917,7 +2069,15 @@ void DisplayServerWindows::delete_sub_window(DisplayServerEnums::WindowID p_wind
 	WindowData &wd = windows[p_window];
 
 	while (wd.transient_children.size()) {
-		window_set_transient(*wd.transient_children.begin(), DisplayServerEnums::INVALID_WINDOW_ID);
+		DisplayServerEnums::WindowID wid = *wd.transient_children.begin();
+		if (windows.has(wid)) {
+			WindowData &wd_window = windows[wid];
+			wd_window.transient_parent = DisplayServerEnums::INVALID_WINDOW_ID;
+			if (wd_window.exclusive) {
+				SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
+			}
+		}
+		wd.transient_children.erase(wid);
 	}
 
 	if (wd.transient_parent != DisplayServerEnums::INVALID_WINDOW_ID) {
@@ -1934,9 +2094,11 @@ void DisplayServerWindows::delete_sub_window(DisplayServerEnums::WindowID p_wind
 	}
 #endif
 #ifdef GLES3_ENABLED
+#ifdef ANGLE_ENABLED
 	if (gl_manager_angle) {
 		gl_manager_angle->window_destroy(p_window);
 	}
+#endif
 	if (gl_manager_native) {
 		gl_manager_native->window_destroy(p_window);
 	}
@@ -1951,9 +2113,11 @@ void DisplayServerWindows::delete_sub_window(DisplayServerEnums::WindowID p_wind
 
 void DisplayServerWindows::gl_window_make_current(DisplayServerEnums::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->window_make_current(p_window_id);
 	}
+#endif
 	if (gl_manager_native) {
 		gl_manager_native->window_make_current(p_window_id);
 	}
@@ -1981,21 +2145,27 @@ int64_t DisplayServerWindows::window_get_native_handle(DisplayServerEnums::Handl
 			if (gl_manager_native) {
 				return (int64_t)gl_manager_native->get_hglrc(p_window);
 			}
+#if defined(ANGLE_ENABLED)
 			if (gl_manager_angle) {
 				return (int64_t)gl_manager_angle->get_context(p_window);
 			}
+#endif
 			return 0;
 		}
 		case DisplayServerEnums::EGL_DISPLAY: {
+#if defined(ANGLE_ENABLED)
 			if (gl_manager_angle) {
 				return (int64_t)gl_manager_angle->get_display(p_window);
 			}
+#endif
 			return 0;
 		}
 		case DisplayServerEnums::EGL_CONFIG: {
+#if defined(ANGLE_ENABLED)
 			if (gl_manager_angle) {
 				return (int64_t)gl_manager_angle->get_config(p_window);
 			}
+#endif
 			return 0;
 		}
 #endif
@@ -2103,7 +2273,7 @@ Size2i DisplayServerWindows::window_get_title_size(const String &p_title, Displa
 			size.y = MAX(size.y, rect.bottom - rect.top);
 		}
 	}
-	if (icon_big) {
+	if (wd.icon_big || wd.icon_small) {
 		size.x += 32;
 	} else {
 		size.x += 16;
@@ -2565,15 +2735,26 @@ void DisplayServerWindows::_update_window_style(DisplayServerEnums::WindowID p_w
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
-	if (icon_big && !icon_small) {
-		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
-		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_big);
-	} else {
-		if (icon_big) {
-			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+	if (wd.icon_set) {
+		if (wd.icon_big && !wd.icon_small) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_big);
+		} else {
+			if (wd.icon_big) {
+				SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+			}
+			if (wd.icon_small) {
+				SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_small);
+			}
 		}
-		if (icon_small) {
-			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
+	} else if (p_window != DisplayServerEnums::MAIN_WINDOW_ID) {
+		HICON mainwindow_icon = (HICON)SendMessage(windows[DisplayServerEnums::MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
+		if (mainwindow_icon) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)mainwindow_icon);
+		}
+		mainwindow_icon = (HICON)SendMessage(windows[DisplayServerEnums::MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_BIG, 0);
+		if (mainwindow_icon) {
+			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)mainwindow_icon);
 		}
 	}
 
@@ -2943,7 +3124,7 @@ void DisplayServerWindows::window_set_taskbar_progress_value(float p_value, Disp
 		return;
 	}
 	if (taskbar == nullptr) {
-		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+		if (CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
 			taskbar = nullptr;
 			return;
 		} else {
@@ -2961,7 +3142,7 @@ void DisplayServerWindows::window_set_taskbar_progress_state(DisplayServerEnums:
 	WindowData &wd = windows[p_window];
 	wd.progress_state = p_state;
 	if (taskbar == nullptr) {
-		if (CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
+		if (CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_ITaskbarList, (void **)&taskbar) != S_OK) {
 			taskbar = nullptr;
 			return;
 		} else {
@@ -3163,11 +3344,7 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, Display
 		return;
 	}
 
-	COMPOSITIONFORM cps;
-	cps.dwStyle = CFS_POINT;
-	cps.ptCurrentPos.x = wd.im_position.x;
-	cps.ptCurrentPos.y = wd.im_position.y;
-	ImmSetCompositionWindow(himc, &cps);
+	update_ime_form_positions(himc, wd.im_position);
 	ImmReleaseContext(wd.hWnd, himc);
 }
 
@@ -3355,7 +3532,7 @@ static BOOL CALLBACK _enum_proc_find_window_from_process_id_callback(HWND hWnd, 
 
 HWND DisplayServerWindows::_find_window_from_process_id(ProcessID p_pid, HWND p_current_hwnd) {
 	DWORD pid = p_pid;
-	WindowEnumData ed = { pid, p_current_hwnd, NULL };
+	WindowEnumData ed = { pid, p_current_hwnd, nullptr };
 
 	// First, check our own child, maybe it's already embedded.
 	if (!EnumChildWindows(p_current_hwnd, _enum_proc_find_window_from_process_id_callback, (LPARAM)&ed) && (GetLastError() == ERROR_SUCCESS)) {
@@ -3369,48 +3546,66 @@ HWND DisplayServerWindows::_find_window_from_process_id(ProcessID p_pid, HWND p_
 		return ed.hWnd;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 // Get screen HDR capabilities for internal use only.
-DisplayServerWindows::ScreenHdrData DisplayServerWindows::_get_screen_hdr_data(int p_screen) const {
+DisplayServerWindows::ScreenHdrData DisplayServerWindows::_get_screen_hdr_data(DisplayServerEnums::WindowID p_window, bool p_include_sdr_white_level) const {
 	ScreenHdrData data;
-	HMONITOR monitor = _get_hmonitor_of_screen(p_screen);
-	if (!monitor) {
-		return data;
-	}
+	const WindowData &wd = windows[p_window];
+	if (WinRTUtils::window_has_display_info(wd.wrt_wd)) {
+		WinRTUtils::window_get_advanced_color_info(wd.wrt_wd, data.hdr_supported, data.min_luminance, data.max_luminance, data.max_average_luminance, data.sdr_white_level);
+	} else {
+		int screen = window_get_current_screen(p_window);
+		HMONITOR monitor = _get_hmonitor_of_screen(screen);
+		if (!monitor) {
+			return data;
+		}
 
 #ifdef D3D12_ENABLED
-	// A dynamic cast is used here because the rendering context is not an Object and Object:cast is not supported.
-	RenderingContextDriverD3D12 *rendering_context_d3d12 = dynamic_cast<RenderingContextDriverD3D12 *>(rendering_context);
-	if (rendering_context_d3d12) {
-		IDXGIFactory2 *dxgi_factory = rendering_context_d3d12->dxgi_factory_get();
+		// A dynamic cast is used here because the rendering context is not an Object and Object:cast is not supported.
+		RenderingContextDriverD3D12 *rendering_context_d3d12 = dynamic_cast<RenderingContextDriverD3D12 *>(rendering_context);
+		if (rendering_context_d3d12) {
+			IDXGIFactory2 *dxgi_factory = rendering_context_d3d12->dxgi_factory_get();
 
-		DXGI_OUTPUT_DESC1 desc;
-		if (_get_monitor_desc(monitor, dxgi_factory, desc)) {
-			data.hdr_supported = desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
-			data.min_luminance = desc.MinLuminance;
-			data.max_luminance = desc.MaxLuminance;
-			data.max_average_luminance = desc.MaxFullFrameLuminance;
+			DXGI_OUTPUT_DESC1 desc;
+			if (_get_monitor_desc(monitor, dxgi_factory, desc)) {
+				data.hdr_supported = desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020;
+				data.min_luminance = desc.MinLuminance;
+				data.max_luminance = desc.MaxLuminance;
+				data.max_average_luminance = desc.MaxFullFrameLuminance;
+			}
 		}
-	}
 #endif // D3D12_ENABLED
 
-	uint32_t path_count = 0;
-	uint32_t mode_count = 0;
+		if (p_include_sdr_white_level) {
+			uint32_t path_count = 0;
+			uint32_t mode_count = 0;
 
-	if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &path_count, &mode_count) == ERROR_SUCCESS) {
-		LocalVector<DISPLAYCONFIG_PATH_INFO> paths;
-		LocalVector<DISPLAYCONFIG_MODE_INFO> modes;
-		paths.resize(path_count);
-		modes.resize(mode_count);
+			if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &path_count, &mode_count) == ERROR_SUCCESS) {
+				LocalVector<DISPLAYCONFIG_PATH_INFO> paths;
+				LocalVector<DISPLAYCONFIG_MODE_INFO> modes;
+				paths.resize(path_count);
+				modes.resize(mode_count);
 
-		if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &path_count, paths.ptr(), &mode_count, modes.ptr(), nullptr) == ERROR_SUCCESS) {
-			data.sdr_white_level = _get_sdr_white_level_for_hmonitor(monitor, paths);
+				if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &path_count, paths.ptr(), &mode_count, modes.ptr(), nullptr) == ERROR_SUCCESS) {
+					data.sdr_white_level = _get_sdr_white_level_for_hmonitor(monitor, paths);
+				}
+			}
 		}
 	}
 
 	return data;
+}
+
+void DisplayServerWindows::_winrt_adv_color_info_cb(DisplayServerEnums::WindowID p_id) {
+	if (!windows.has(p_id)) {
+		return;
+	}
+	WindowData &wd = windows[p_id];
+
+	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(p_id, true);
+	_update_hdr_output_for_window(p_id, wd, data);
 }
 
 void DisplayServerWindows::_update_hdr_output_for_window(DisplayServerEnums::WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data) {
@@ -3418,16 +3613,22 @@ void DisplayServerWindows::_update_hdr_output_for_window(DisplayServerEnums::Win
 	if (rendering_context) {
 		bool current_hdr_enabled = rendering_context->window_get_hdr_output_enabled(p_window);
 		bool desired_hdr_enabled = p_window_data.hdr_output_requested && p_screen_data.hdr_supported;
+		bool hdr_state_changed = false;
 
 		if (current_hdr_enabled != desired_hdr_enabled) {
 			rendering_context->window_set_hdr_output_enabled(p_window, desired_hdr_enabled);
 			rendering_context->window_set_hdr_output_linear_luminance_scale(p_window, 80.0f);
+			hdr_state_changed = true;
 		}
 
 		// If auto reference luminance is enabled, update it based on the current SDR white level.
 		if (p_window_data.hdr_output_reference_luminance < 0.0f) {
 			if (p_screen_data.sdr_white_level > 0.0f) {
-				rendering_context->window_set_hdr_output_reference_luminance(p_window, p_screen_data.sdr_white_level);
+				float current_ref_luminance = rendering_context->window_get_hdr_output_reference_luminance(p_window);
+				if (!Math::is_equal_approx(current_ref_luminance, p_screen_data.sdr_white_level)) {
+					rendering_context->window_set_hdr_output_reference_luminance(p_window, p_screen_data.sdr_white_level);
+					hdr_state_changed = true;
+				}
 			}
 			// If we cannot get the SDR white level, leave the previous value unchanged.
 		}
@@ -3435,23 +3636,35 @@ void DisplayServerWindows::_update_hdr_output_for_window(DisplayServerEnums::Win
 		// If auto max luminance is enabled, update it based on the screen's max luminance.
 		if (p_window_data.hdr_output_max_luminance < 0.0f) {
 			if (p_screen_data.max_luminance > 0.0f) {
-				rendering_context->window_set_hdr_output_max_luminance(p_window, p_screen_data.max_luminance);
+				float current_max_luminance = rendering_context->window_get_hdr_output_max_luminance(p_window);
+				if (!Math::is_equal_approx(current_max_luminance, p_screen_data.max_luminance)) {
+					rendering_context->window_set_hdr_output_max_luminance(p_window, p_screen_data.max_luminance);
+					hdr_state_changed = true;
+				}
 			}
 			// If we cannot get the screen's max luminance, leave the previous value unchanged.
+		}
+
+		// Trigger HDR output changed event if any HDR parameter was modified.
+		if (hdr_state_changed) {
+			_send_window_event(p_window_data, DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 		}
 	}
 #endif // RD_ENABLED
 }
 
-void DisplayServerWindows::_update_hdr_output_for_tracked_windows() {
+void DisplayServerWindows::_legacy_update_hdr_output_for_tracked_windows(bool p_include_sdr_white_level) {
 	hdr_output_cache.clear();
 	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+		if (WinRTUtils::window_has_display_info(E.value.wrt_wd)) {
+			continue; // Updated by "_winrt_adv_color_info_cb" callback.
+		}
 		if (E.value.hdr_output_requested) {
 			int screen = window_get_current_screen(E.key);
 
 			ScreenHdrData data;
 			if (!hdr_output_cache.has(screen)) {
-				data = _get_screen_hdr_data(screen);
+				data = _get_screen_hdr_data(E.key, p_include_sdr_white_level);
 				hdr_output_cache.insert(screen, data);
 			} else {
 				data = hdr_output_cache[screen];
@@ -4012,24 +4225,26 @@ Key DisplayServerWindows::keyboard_get_label_from_physical(Key p_keycode) const 
 }
 
 void DisplayServerWindows::show_emoji_and_symbol_picker() const {
-	// Send Win + Period shortcut, there's no non-WinRT public API.
+	if (!WinRTUtils::try_show_onecore_emoji_picker()) {
+		// Send Win + Period shortcut.
 
-	INPUT input[4] = {};
-	input[0].type = INPUT_KEYBOARD; // Win down.
-	input[0].ki.wVk = VK_LWIN;
+		INPUT input[4] = {};
+		input[0].type = INPUT_KEYBOARD; // Win down.
+		input[0].ki.wVk = VK_LWIN;
 
-	input[1].type = INPUT_KEYBOARD; // Period down.
-	input[1].ki.wVk = VK_OEM_PERIOD;
+		input[1].type = INPUT_KEYBOARD; // Period down.
+		input[1].ki.wVk = VK_OEM_PERIOD;
 
-	input[2].type = INPUT_KEYBOARD; // Win up.
-	input[2].ki.wVk = VK_LWIN;
-	input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+		input[2].type = INPUT_KEYBOARD; // Win up.
+		input[2].ki.wVk = VK_LWIN;
+		input[2].ki.dwFlags = KEYEVENTF_KEYUP;
 
-	input[3].type = INPUT_KEYBOARD; // Period up.
-	input[3].ki.wVk = VK_OEM_PERIOD;
-	input[3].ki.dwFlags = KEYEVENTF_KEYUP;
+		input[3].type = INPUT_KEYBOARD; // Period up.
+		input[3].ki.wVk = VK_OEM_PERIOD;
+		input[3].ki.dwFlags = KEYEVENTF_KEYUP;
 
-	SendInput(4, input, sizeof(INPUT));
+		SendInput(4, input, sizeof(INPUT));
+	}
 }
 
 String DisplayServerWindows::_get_keyboard_layout_display_name(const String &p_klid) const {
@@ -4119,6 +4334,184 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 	return ret;
 }
 
+Vector2 DisplayServerWindows::_get_raw_mouse_motion(const RAWINPUT &p_raw, DisplayServerEnums::WindowID p_window_id) {
+	if (p_raw.data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
+		return Vector2(p_raw.data.mouse.lLastX, p_raw.data.mouse.lLastY);
+	} else if (p_raw.data.mouse.usFlags == MOUSE_MOVE_ABSOLUTE) {
+		int n_screen_width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+		int n_screen_height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+		int n_screen_left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+		int n_screen_top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+
+		Vector2 abs_pos = Vector2(
+				(double(p_raw.data.mouse.lLastX) - 65536.0 / (n_screen_width)) * n_screen_width / 65536.0 + n_screen_left,
+				(double(p_raw.data.mouse.lLastY) - 65536.0 / (n_screen_height)) * n_screen_height / 65536.0 + n_screen_top);
+
+		POINT coords; // Client coords.
+		coords.x = abs_pos.x;
+		coords.y = abs_pos.y;
+
+		ScreenToClient(windows[p_window_id].hWnd, &coords);
+
+		Vector2 relative(coords.x - old_x, coords.y - old_y);
+		old_x = coords.x;
+		old_y = coords.y;
+		return relative;
+	}
+	return Vector2();
+}
+
+void DisplayServerWindows::_process_raw_mouse_motion(const Vector2 &p_relative, bool p_left_button_down, DisplayServerEnums::WindowID p_window_id) {
+	if (p_relative == Vector2()) {
+		return;
+	}
+
+	Ref<InputEventMouseMotion> mm;
+	mm.instantiate();
+	const BitField<WinKeyModifierMask> &mods = _get_mods();
+
+	mm->set_window_id(p_window_id);
+	mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+	mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+	mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+	mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
+
+	mm->set_pressure(p_left_button_down ? 1.0f : 0.0f);
+	mm->set_button_mask(mouse_get_button_state());
+
+	Point2i c(windows[p_window_id].width / 2, windows[p_window_id].height / 2);
+
+	// Centering just so it works as before.
+	POINT pos = { (int)c.x, (int)c.y };
+	ClientToScreen(windows[p_window_id].hWnd, &pos);
+	SetCursorPos(pos.x, pos.y);
+
+	mm->set_position(c);
+	mm->set_global_position(c);
+	mm->set_velocity(Vector2(0, 0));
+	mm->set_screen_velocity(Vector2(0, 0));
+	mm->set_relative(p_relative);
+	mm->set_relative_screen_position(p_relative);
+
+	if (windows[p_window_id].window_focused || windows[p_window_id].is_popup) {
+		Input::get_singleton()->parse_input_event(mm);
+	}
+}
+
+void DisplayServerWindows::_process_raw_input_event(const RAWINPUT &p_raw, DisplayServerEnums::WindowID p_window_id) {
+	if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED && p_raw.header.dwType == RIM_TYPEMOUSE) {
+		_process_raw_mouse_motion(
+				_get_raw_mouse_motion(p_raw, p_window_id),
+				p_raw.data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN,
+				p_window_id);
+	}
+}
+
+void DisplayServerWindows::_reconcile_shift_state(DisplayServerEnums::WindowID p_window_id) {
+	if (!windows.has(p_window_id)) {
+		p_window_id = DisplayServerEnums::MAIN_WINDOW_ID;
+	}
+
+	const BitField<WinKeyModifierMask> &mods = _get_mods();
+	for (int shift_index = 0; shift_index < 2; shift_index++) {
+		const int virtual_key = shift_index == 0 ? VK_LSHIFT : VK_RSHIFT;
+		if (!legacy_shift_pressed[shift_index] || GetAsyncKeyState(virtual_key) < 0) {
+			continue;
+		}
+		ERR_CONTINUE(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+
+		KeyEvent ke;
+		ke.shift = GetAsyncKeyState(shift_index == 0 ? VK_RSHIFT : VK_LSHIFT) < 0;
+		ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+		ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+		ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+		ke.meta = mods.has_flag(WinKeyModifierMask::META);
+		ke.uMsg = WM_KEYUP;
+		ke.window_id = p_window_id;
+		ke.wParam = VK_SHIFT;
+		ke.lParam = (shift_index == 0 ? 0x2A : 0x36) << 16 | (1LL << 30) | (1LL << 31);
+		key_event_buffer[key_event_pos++] = ke;
+		legacy_shift_pressed[shift_index] = false;
+	}
+}
+
+bool DisplayServerWindows::process_raw_input() {
+	if (!use_raw_input) {
+		return true;
+	}
+
+	// Use the same window the mouse is captured for in _set_mouse_mode_impl(),
+	// which is not necessarily the main window.
+	DisplayServerEnums::WindowID window_id = _get_focused_window_or_popup();
+	if (!windows.has(window_id)) {
+		window_id = DisplayServerEnums::MAIN_WINDOW_ID;
+	}
+
+	// Normal 8 kHz frames stay precise; only a larger-sized tail that originates
+	// from a stall is coalesced.
+	constexpr UINT MAX_RAW_MOUSE_EVENTS_PER_FRAME = 512;
+	UINT raw_mouse_events = 0;
+	Vector2 coalesced_raw_mouse_motion;
+	bool coalesced_raw_mouse_left_button_down = false;
+	bool has_touch_events = false;
+	const bool coalesce_all_raw_mouse_motion = Input::get_singleton()->is_using_accumulated_input();
+	auto flush_coalesced_raw_mouse_motion = [&]() {
+		_process_raw_mouse_motion(coalesced_raw_mouse_motion, coalesced_raw_mouse_left_button_down, window_id);
+		coalesced_raw_mouse_motion = Vector2();
+		coalesced_raw_mouse_left_button_down = false;
+	};
+
+	// Read until the raw queue is empty. A small pass cap can never catch up
+	// after a long stall reaches Windows' 10,000-message queue limit, but a
+	// stall-sized captured mouse tail is coalesced below before it reaches the
+	// rest of the engine.
+	while (true) {
+		UINT n_buffer = 0;
+		// With a null buffer, this reports the byte size of the first pending
+		// message (the minimum required buffer), not a message count.
+		if (GetRawInputBuffer(nullptr, &n_buffer, sizeof(RAWINPUTHEADER)) != 0 || n_buffer == 0) {
+			flush_coalesced_raw_mouse_motion();
+			return has_touch_events;
+		}
+
+		UINT dw_size = n_buffer * sizeof(RAWINPUT);
+		LPBYTE lpb = new BYTE[dw_size];
+
+		// NOTE: Use dw_size, not n_buffer.
+		UINT n_read = GetRawInputBuffer((PRAWINPUT)lpb, &dw_size, sizeof(RAWINPUTHEADER));
+		if (n_read == (UINT)-1 || n_read == 0) {
+			delete[] lpb;
+			flush_coalesced_raw_mouse_motion();
+			return has_touch_events;
+		}
+
+		PRAWINPUT raw = (PRAWINPUT)lpb;
+		for (UINT i = 0; i < n_read; ++i) {
+			if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED &&
+					raw->header.dwType == RIM_TYPEMOUSE &&
+					(coalesce_all_raw_mouse_motion || raw_mouse_events >= MAX_RAW_MOUSE_EVENTS_PER_FRAME)) {
+				coalesced_raw_mouse_motion += _get_raw_mouse_motion(*raw, window_id);
+				coalesced_raw_mouse_left_button_down = coalesced_raw_mouse_left_button_down ||
+						(raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN);
+			} else {
+				_process_raw_input_event(*raw, window_id);
+			}
+			if (raw->header.dwType == RIM_TYPEMOUSE) {
+				constexpr ULONG MI_WP_SIGNATURE = 0xFF515700;
+				constexpr ULONG SIGNATURE_MASK = 0xFFFFFF00;
+				if ((raw->data.mouse.ulExtraInformation & SIGNATURE_MASK) == MI_WP_SIGNATURE) {
+					has_touch_events = true;
+				}
+				raw_mouse_events++;
+			}
+			// Move to next RAWINPUT in buffer.
+			raw = NEXTRAWINPUTBLOCK(raw);
+		}
+		delete[] lpb;
+	}
+	return has_touch_events;
+}
+
 void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
@@ -4131,11 +4524,64 @@ void DisplayServerWindows::process_events() {
 	}
 
 	_THREAD_SAFE_LOCK_
+
+	bool has_touch_events = process_raw_input();
+
+	// The pump throttles only what the hardware can flood, and drains the rest.
+	// See <https://ph3at.github.io/posts/Windows-Input/> for more information.
+	//
+	// - WM_INPUT is never dispatched from here: pulling raw input through
+	//   PeekMessage() one message at a time is what collapses the pump at high
+	//   polling rates (2,000 Hz and above). It stays in the queue for the next
+	//   buffered read in process_raw_input().
+	// - WM_MOUSEMOVE and WM_NCMOUSEMOVE are synthesized on demand from the
+	//   hardware input stream, so while the mouse is moving, the queue never
+	//   reads empty and an unbounded pump spins until the mouse stops. They are
+	//   dispatched at most once per frame each. No motion is lost: they carry
+	//   the latest (coalesced) cursor position, and the relative motion derived
+	//   from successive positions preserves the total delta. Captured mouse
+	//   mode gets its sub-frame motion from raw input.
+	// - Everything else (keys, characters, mouse buttons, wheel, system
+	//   messages) is discrete and low-rate, and is drained fully. Capping these
+	//   would split the WM_CHAR posted by TranslateMessage() from its
+	//   WM_KEYDOWN across frames, which breaks the pairing logic in
+	//   _process_key_events() and makes keys fire twice.
 	MSG msg = {};
-	while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
+	auto peek_discrete = [&] {
+		BOOL ret = PeekMessageW(&msg, nullptr, 0, WM_NCMOUSEMOVE - 1, PM_REMOVE);
+		if (!ret) {
+			ret = PeekMessageW(&msg, nullptr, WM_NCMOUSEMOVE + 1, WM_INPUT - 1, PM_REMOVE);
+		}
+		if (!ret) {
+			ret = PeekMessageW(&msg, nullptr, WM_INPUT + 1, WM_MOUSEMOVE - 1, PM_REMOVE);
+		}
+		if (!ret) {
+			ret = PeekMessageW(&msg, nullptr, WM_MOUSEMOVE + 1, std::numeric_limits<UINT>::max(), PM_REMOVE);
+		}
+		return ret;
+	};
+	if (has_touch_events) {
+		// Process all messages.
+		while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+	} else {
+		// Process non-mouse move messages.
+		while (peek_discrete()) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+		if (PeekMessageW(&msg, nullptr, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+		if (PeekMessageW(&msg, nullptr, WM_NCMOUSEMOVE, WM_NCMOUSEMOVE, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
 	}
+	_reconcile_shift_state(_get_focused_window_or_popup());
 	_THREAD_SAFE_UNLOCK_
 
 	if (tts) {
@@ -4149,7 +4595,16 @@ void DisplayServerWindows::process_events() {
 
 	// Poll HDR output state for windows that have requested it.
 	// Needed to detect changes in luminance values due to a lack of Windows events for such changes.
-	_update_hdr_output_for_tracked_windows();
+	// System-reported max luminance changes when the user adjust the screen brightness of a laptop
+	// with a built-in HDR screen. Additionally, some computers may continue to report a
+	// DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709 color space for a period of time after the
+	// WM_DISPLAYCHANGE event is received by Godot which means we must poll this regularly to
+	// capture this change in HDR capabilities of the screen triggered by the Win + Alt + B shortcut.
+	// The SDR white level (reference white luminance) does not need to be polled every frame
+	// because the only way to adjust this is to leave the Godot Window and adjust the SDR/HDR
+	// Content Brightness Windows display setting. This means the user must return to the Godot
+	// window, which triggers a WM_WINDOWPOSCHANGED event.
+	_legacy_update_hdr_output_for_tracked_windows(false);
 
 	LocalVector<List<FileDialogData *>::Element *> to_remove;
 	for (List<FileDialogData *>::Element *E = file_dialogs.front(); E; E = E->next()) {
@@ -4178,9 +4633,11 @@ void DisplayServerWindows::force_process_and_drop_events() {
 
 void DisplayServerWindows::release_rendering_thread() {
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->release_current();
 	}
+#endif
 	if (gl_manager_native) {
 		gl_manager_native->release_current();
 	}
@@ -4189,9 +4646,11 @@ void DisplayServerWindows::release_rendering_thread() {
 
 void DisplayServerWindows::swap_buffers() {
 #if defined(GLES3_ENABLED)
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->swap_buffers();
 	}
+#endif
 	if (gl_manager_native) {
 		gl_manager_native->swap_buffers();
 	}
@@ -4199,17 +4658,29 @@ void DisplayServerWindows::swap_buffers() {
 }
 
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+		if (E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+			continue;
+		}
+		_window_set_native_icon(p_filename, E.key);
+	}
+}
+
+void DisplayServerWindows::_window_set_native_icon(const String &p_filename, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	if (icon_big) {
-		DestroyIcon(icon_big);
-		icon_buffer_big.clear();
-		icon_big = nullptr;
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.icon_big) {
+		DestroyIcon(wd.icon_big);
+		wd.icon_buffer_big.clear();
+		wd.icon_big = nullptr;
 	}
-	if (icon_small) {
-		DestroyIcon(icon_small);
-		icon_buffer_small.clear();
-		icon_small = nullptr;
+	if (wd.icon_small) {
+		DestroyIcon(wd.icon_small);
+		wd.icon_buffer_small.clear();
+		wd.icon_small = nullptr;
 	}
 
 	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::READ);
@@ -4269,45 +4740,65 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 
 	// Read the big icon.
 	DWORD bytecount_big = icon_dir->idEntries[big_icon_index].dwBytesInRes;
-	icon_buffer_big.resize(bytecount_big);
+	wd.icon_buffer_big.resize(bytecount_big);
 	pos = icon_dir->idEntries[big_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&icon_buffer_big.write[0], bytecount_big);
-	icon_big = CreateIconFromResourceEx((PBYTE)&icon_buffer_big.write[0], bytecount_big, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
-	ERR_FAIL_NULL_MSG(icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
+	f->get_buffer((uint8_t *)&wd.icon_buffer_big.write[0], bytecount_big);
+	wd.icon_big = CreateIconFromResourceEx((PBYTE)&wd.icon_buffer_big.write[0], bytecount_big, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
+	ERR_FAIL_NULL_MSG(wd.icon_big, "Could not create " + itos(big_icon_width) + "x" + itos(big_icon_width) + " @" + itos(big_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Read the small icon.
 	DWORD bytecount_small = icon_dir->idEntries[small_icon_index].dwBytesInRes;
-	icon_buffer_small.resize(bytecount_small);
+	wd.icon_buffer_small.resize(bytecount_small);
 	pos = icon_dir->idEntries[small_icon_index].dwImageOffset;
 	f->seek(pos);
-	f->get_buffer((uint8_t *)&icon_buffer_small.write[0], bytecount_small);
-	icon_small = CreateIconFromResourceEx((PBYTE)&icon_buffer_small.write[0], bytecount_small, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
-	ERR_FAIL_NULL_MSG(icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
+	f->get_buffer((uint8_t *)&wd.icon_buffer_small.write[0], bytecount_small);
+	wd.icon_small = CreateIconFromResourceEx((PBYTE)&wd.icon_buffer_small.write[0], bytecount_small, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
+	ERR_FAIL_NULL_MSG(wd.icon_small, "Could not create 16x16 @" + itos(small_icon_cc) + " icon, error: " + format_error_message(GetLastError()) + ".");
 
 	// Online tradition says to be sure last error is cleared and set the small icon first.
 	int err = 0;
 	SetLastError(err);
 
-	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
-		SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
-		SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+	wd.icon_set = true;
+	SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_small);
+	SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+	if (p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+		for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+			if (!E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+				SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_small);
+				SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+			}
+		}
 	}
+
 	memdelete(icon_dir);
 }
 
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+		if (E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+			continue;
+		}
+		window_set_icon(p_icon, E.key);
+	}
+}
+
+void DisplayServerWindows::window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	if (icon_big) {
-		DestroyIcon(icon_big);
-		icon_buffer_big.clear();
-		icon_big = nullptr;
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.icon_big) {
+		DestroyIcon(wd.icon_big);
+		wd.icon_buffer_big.clear();
+		wd.icon_big = nullptr;
 	}
-	if (icon_small) {
-		DestroyIcon(icon_small);
-		icon_buffer_small.clear();
-		icon_small = nullptr;
+	if (wd.icon_small) {
+		DestroyIcon(wd.icon_small);
+		wd.icon_buffer_small.clear();
+		wd.icon_small = nullptr;
 	}
 
 	if (p_icon.is_valid()) {
@@ -4321,8 +4812,8 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 
 		// Create temporary bitmap buffer.
 		int icon_len = 40 + h * w * 4;
-		icon_buffer_big.resize(icon_len);
-		BYTE *icon_bmp = icon_buffer_big.ptrw();
+		wd.icon_buffer_big.resize(icon_len);
+		BYTE *icon_bmp = wd.icon_buffer_big.ptrw();
 
 		encode_uint32(40, &icon_bmp[0]);
 		encode_uint32(w, &icon_bmp[4]);
@@ -4349,17 +4840,32 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 				wpx[3] = rpx[3];
 			}
 		}
-		icon_big = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
-		ERR_FAIL_NULL(icon_big);
+		wd.icon_big = CreateIconFromResourceEx(icon_bmp, icon_len, TRUE, 0x00030000, 0, 0, LR_DEFAULTSIZE);
+		ERR_FAIL_NULL(wd.icon_big);
 
-		for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
-			SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_big);
-			SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
+		wd.icon_set = true;
+		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_big);
+		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+
+		if (p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+			for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+				if (!E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+					SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_big);
+					SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
+				}
+			}
 		}
 	} else {
-		for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
-			SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, 0);
-			SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, 0);
+		wd.icon_set = false;
+		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, 0);
+		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, 0);
+		if (p_window == DisplayServerEnums::MAIN_WINDOW_ID) {
+			for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+				if (!E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+					SendMessage(E.value.hWnd, WM_SETICON, ICON_SMALL, 0);
+					SendMessage(E.value.hWnd, WM_SETICON, ICON_BIG, 0);
+				}
+			}
 		}
 	}
 }
@@ -4585,9 +5091,11 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServerEnums::VSyncMode p
 	if (gl_manager_native) {
 		gl_manager_native->set_use_vsync(p_window, p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
+#if defined(ANGLE_ENABLED)
 	if (gl_manager_angle) {
 		gl_manager_angle->set_use_vsync(p_vsync_mode != DisplayServerEnums::VSYNC_DISABLED);
 	}
+#endif
 #endif
 }
 
@@ -4603,9 +5111,11 @@ DisplayServerEnums::VSyncMode DisplayServerWindows::window_get_vsync_mode(Displa
 	if (gl_manager_native) {
 		return gl_manager_native->is_using_vsync(p_window) ? DisplayServerEnums::VSYNC_ENABLED : DisplayServerEnums::VSYNC_DISABLED;
 	}
+#ifdef ANGLE_ENABLED
 	if (gl_manager_angle) {
 		return gl_manager_angle->is_using_vsync() ? DisplayServerEnums::VSYNC_ENABLED : DisplayServerEnums::VSYNC_DISABLED;
 	}
+#endif
 #endif
 	return DisplayServerEnums::VSYNC_ENABLED;
 }
@@ -4613,36 +5123,63 @@ DisplayServerEnums::VSyncMode DisplayServerWindows::window_get_vsync_mode(Displa
 bool DisplayServerWindows::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	bool renderer_supports_hdr_output = false;
+	bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
-	if (rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
-		return false; // HDR output is not supported by the rendering device.
+	if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+		renderer_supports_hdr_output = true;
+		surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 	}
 #endif
+	if (!renderer_supports_hdr_output) {
+		return false;
+	}
+
+	if (!surface_supports_hdr_output) {
+		return false;
+	}
 
 	// The window supports HDR if the screen it is on supports HDR.
-	int screen = window_get_current_screen(p_window);
-	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(p_window, false);
 	return data.hdr_supported;
 }
 
 void DisplayServerWindows::window_request_hdr_output(const bool p_enable, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND(!windows.has(p_window));
+	if (p_enable) {
+		bool renderer_supports_hdr_output = false;
+		bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
-	ERR_FAIL_COND_EDMSG(p_enable && (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) == false, "HDR output is not supported by the rendering device.");
+		if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+			renderer_supports_hdr_output = true;
+			surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
+		}
 #endif
+		if (!renderer_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
+			return;
+		}
+
+		if (!surface_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but the window does not support an HDR format.");
+			return;
+		}
+	}
 
 	WindowData &wd = windows[p_window];
 	wd.hdr_output_requested = p_enable;
 
-	int screen = window_get_current_screen(p_window);
-	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+	DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(p_window, true);
 	_update_hdr_output_for_window(p_window, wd, data);
 }
 
 bool DisplayServerWindows::window_is_hdr_output_requested(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
 	return wd.hdr_output_requested;
 }
@@ -4650,6 +5187,7 @@ bool DisplayServerWindows::window_is_hdr_output_requested(DisplayServerEnums::Wi
 bool DisplayServerWindows::window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_hdr_output_enabled(p_window);
@@ -4662,6 +5200,7 @@ bool DisplayServerWindows::window_is_hdr_output_enabled(DisplayServerEnums::Wind
 void DisplayServerWindows::window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	if (Math::is_equal_approx(wd.hdr_output_reference_luminance, p_reference_luminance)) {
@@ -4672,14 +5211,14 @@ void DisplayServerWindows::window_set_hdr_output_reference_luminance(const float
 
 	// Negative luminance means auto-adjust
 	if (wd.hdr_output_reference_luminance < 0.0f) {
-		int screen = window_get_current_screen(p_window);
-		DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+		DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(p_window, true);
 		_update_hdr_output_for_window(p_window, wd, data);
 	} else {
 		// Otherwise, apply the requested luminance
 #if defined(RD_ENABLED)
 		if (rendering_context) {
 			rendering_context->window_set_hdr_output_reference_luminance(p_window, p_reference_luminance);
+			_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 		}
 #endif
 	}
@@ -4688,6 +5227,7 @@ void DisplayServerWindows::window_set_hdr_output_reference_luminance(const float
 float DisplayServerWindows::window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V(!windows.has(p_window), 0.0);
 	const WindowData &wd = windows[p_window];
 	return wd.hdr_output_reference_luminance;
 }
@@ -4695,6 +5235,7 @@ float DisplayServerWindows::window_get_hdr_output_reference_luminance(DisplaySer
 float DisplayServerWindows::window_get_hdr_output_current_reference_luminance(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V(!windows.has(p_window), 0.0);
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_hdr_output_reference_luminance(p_window);
@@ -4707,6 +5248,7 @@ float DisplayServerWindows::window_get_hdr_output_current_reference_luminance(Di
 void DisplayServerWindows::window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	if (Math::is_equal_approx(wd.hdr_output_max_luminance, p_max_luminance)) {
@@ -4717,14 +5259,14 @@ void DisplayServerWindows::window_set_hdr_output_max_luminance(const float p_max
 
 	// Negative luminance means auto-adjust
 	if (wd.hdr_output_max_luminance < 0.0f) {
-		int screen = window_get_current_screen(p_window);
-		DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(screen);
+		DisplayServerWindows::ScreenHdrData data = _get_screen_hdr_data(p_window, true);
 		_update_hdr_output_for_window(p_window, wd, data);
 	} else {
 		// Otherwise, apply the requested luminance
 #if defined(RD_ENABLED)
 		if (rendering_context) {
 			rendering_context->window_set_hdr_output_max_luminance(p_window, p_max_luminance);
+			_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 		}
 #endif
 	}
@@ -4733,6 +5275,7 @@ void DisplayServerWindows::window_set_hdr_output_max_luminance(const float p_max
 float DisplayServerWindows::window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V(!windows.has(p_window), 0.0);
 	const WindowData &wd = windows[p_window];
 	return wd.hdr_output_max_luminance;
 }
@@ -4740,6 +5283,7 @@ float DisplayServerWindows::window_get_hdr_output_max_luminance(DisplayServerEnu
 float DisplayServerWindows::window_get_hdr_output_current_max_luminance(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V(!windows.has(p_window), 0.0);
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_hdr_output_max_luminance(p_window);
@@ -4752,6 +5296,7 @@ float DisplayServerWindows::window_get_hdr_output_current_max_luminance(DisplayS
 float DisplayServerWindows::window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_COND_V(!windows.has(p_window), 1.0);
 #if defined(RD_ENABLED)
 	if (rendering_context) {
 		return rendering_context->window_get_output_max_linear_value(p_window);
@@ -5428,103 +5973,20 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
+			// The bulk of raw input is drained in batch by process_raw_input()
+			// before the message pump runs. This only sees WM_INPUT messages the
+			// pump picks up afterwards (it peeks the full message range whenever
+			// the app is not focused, and raw input can also arrive while the pump
+			// itself is running). Without this fallback, DefWindowProc() would
+			// free their data unread.
 			UINT dwSize;
+			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER)) != 0 || dwSize == 0) {
+				break;
+			}
 
-			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
 			LPBYTE lpb = new BYTE[dwSize];
-			if (lpb == nullptr) {
-				return 0;
-			}
-
-			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
-				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
-			}
-
-			RAWINPUT *raw = (RAWINPUT *)lpb;
-
-			const BitField<WinKeyModifierMask> &mods = _get_mods();
-			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
-				if (raw->data.keyboard.VKey == VK_SHIFT) {
-					// If multiple Shifts are held down at the same time,
-					// Windows natively only sends a KEYUP for the last one to be released.
-					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
-						// Make sure to check the latest key state since
-						// we're in the middle of the message queue.
-						if (GetAsyncKeyState(VK_SHIFT) < 0) {
-							// A Shift is released, but another Shift is still held
-							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
-
-							KeyEvent ke;
-							ke.shift = false;
-							ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
-							ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
-							ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
-							ke.meta = mods.has_flag(WinKeyModifierMask::META);
-							ke.uMsg = WM_KEYUP;
-							ke.window_id = window_id;
-
-							ke.wParam = VK_SHIFT;
-							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
-							// Bit 30 -> key was previously down, bit 31 -> key is being released.
-							ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
-							key_event_buffer[key_event_pos++] = ke;
-						}
-					}
-				}
-			} else if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED && raw->header.dwType == RIM_TYPEMOUSE) {
-				Ref<InputEventMouseMotion> mm;
-				mm.instantiate();
-
-				mm->set_window_id(window_id);
-				mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
-				mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
-				mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
-				mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
-
-				mm->set_pressure((raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN) ? 1.0f : 0.0f);
-
-				mm->set_button_mask(mouse_get_button_state());
-
-				Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
-
-				// Centering just so it works as before.
-				POINT pos = { (int)c.x, (int)c.y };
-				ClientToScreen(windows[window_id].hWnd, &pos);
-				SetCursorPos(pos.x, pos.y);
-
-				mm->set_position(c);
-				mm->set_global_position(c);
-				mm->set_velocity(Vector2(0, 0));
-				mm->set_screen_velocity(Vector2(0, 0));
-
-				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
-					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
-
-				} else if (raw->data.mouse.usFlags == MOUSE_MOVE_ABSOLUTE) {
-					int nScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-					int nScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-					int nScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
-					int nScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
-
-					Vector2 abs_pos(
-							(double(raw->data.mouse.lLastX) - 65536.0 / (nScreenWidth)) * nScreenWidth / 65536.0 + nScreenLeft,
-							(double(raw->data.mouse.lLastY) - 65536.0 / (nScreenHeight)) * nScreenHeight / 65536.0 + nScreenTop);
-
-					POINT coords; // Client coords.
-					coords.x = abs_pos.x;
-					coords.y = abs_pos.y;
-
-					ScreenToClient(hWnd, &coords);
-
-					mm->set_relative(Vector2(coords.x - old_x, coords.y - old_y));
-					old_x = coords.x;
-					old_y = coords.y;
-				}
-				mm->set_relative_screen_position(mm->get_relative());
-
-				if ((windows[window_id].window_focused || windows[window_id].is_popup) && mm->get_relative() != Vector2()) {
-					Input::get_singleton()->parse_input_event(mm);
-				}
+			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize) {
+				_process_raw_input_event(*(RAWINPUT *)lpb, window_id);
 			}
 			delete[] lpb;
 		} break;
@@ -6237,7 +6699,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_DISPLAYCHANGE: {
 			// Update HDR capabilities and reference luminance when display changes.
-			_update_hdr_output_for_tracked_windows();
+			_legacy_update_hdr_output_for_tracked_windows(true);
 		} break;
 
 		case WM_WINDOWPOSCHANGED: {
@@ -6319,9 +6781,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (window.create_completed && gl_manager_native && window.gl_native_window_created) {
 					gl_manager_native->window_resize(window_id, window.width + off.x, window.height + off.y);
 				}
+#if defined(ANGLE_ENABLED)
 				if (window.create_completed && gl_manager_angle && window.gl_angle_window_created) {
 					gl_manager_angle->window_resize(window_id, window.width + off.x, window.height + off.y);
 				}
+#endif
 #endif
 			}
 
@@ -6334,9 +6798,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (window.rect_changed_callback.is_valid()) {
 					window.rect_changed_callback.call(Rect2i(window.last_pos.x, window.last_pos.y, window.width, window.height));
 				}
-
-				// Update HDR capabilities and reference luminance when window moves to different screen.
-				_update_hdr_output_for_tracked_windows();
 
 				// Update cursor clip region after window rect has changed.
 				if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
@@ -6375,6 +6836,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 				}
 			}
+
+			// Update HDR capabilities and reference luminance when window moves to different screen.
+			// Also update when Godot has regained focus because the user may have adjusted their SDR white
+			// level while Godot was not in focus.
+			_legacy_update_hdr_output_for_tracked_windows(true);
 
 			// Return here to prevent WM_MOVE and WM_SIZE from being sent
 			// See: https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-windowposchanged#remarks
@@ -6418,6 +6884,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (windows[window_id].ime_in_progress) {
 				break;
 			}
+			if (wParam == VK_SHIFT) {
+				const int shift_index = ((lParam >> 16) & 0xFF) == 0x36 ? 1 : 0;
+				legacy_shift_pressed[shift_index] = uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN;
+			}
 
 			if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 				// When SetCapture is used, ALT+F4 hotkey is ignored by Windows, so handle it ourselves
@@ -6453,20 +6923,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		} break;
 		case WM_IME_COMPOSITION: {
-			CANDIDATEFORM cf;
-			cf.dwIndex = 0;
-
-			cf.dwStyle = CFS_CANDIDATEPOS;
-			cf.ptCurrentPos.x = windows[window_id].im_position.x;
-			cf.ptCurrentPos.y = windows[window_id].im_position.y;
-			ImmSetCandidateWindow(windows[window_id].im_himc, &cf);
-
-			cf.dwStyle = CFS_EXCLUDE;
-			cf.rcArea.left = windows[window_id].im_position.x;
-			cf.rcArea.right = windows[window_id].im_position.x;
-			cf.rcArea.top = windows[window_id].im_position.y;
-			cf.rcArea.bottom = windows[window_id].im_position.y;
-			ImmSetCandidateWindow(windows[window_id].im_himc, &cf);
+			update_ime_form_positions(windows[window_id].im_himc, windows[window_id].im_position);
 
 			if (windows[window_id].ime_active) {
 				SetCaretPos(windows[window_id].im_position.x, windows[window_id].im_position.y);
@@ -6590,6 +7047,8 @@ void DisplayServerWindows::_process_activate_event(DisplayServerEnums::WindowID 
 		_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 	} else { // WM_INACTIVE.
 		Input::get_singleton()->release_pressed_events();
+		legacy_shift_pressed[0] = false;
+		legacy_shift_pressed[1] = false;
 		track_mouse_leave_event(wd.hWnd);
 		// Release capture unconditionally because it can be set due to dragging, in addition to captured mode.
 		// When the user is moving a window, it's important to not ReleaseCapture because it will cause
@@ -6913,6 +7372,10 @@ Error DisplayServerWindows::_create_window(DisplayServerEnums::WindowID p_window
 
 		wd.parent_hwnd = p_parent_hwnd;
 
+		if (has_winrt_queue) {
+			wd.wrt_wd = WinRTUtils::create_wd(wd.hWnd, callable_mp(this, &DisplayServerWindows::_winrt_adv_color_info_cb), wd.id);
+		}
+
 		// Detach the input queue from the parent window.
 		// This prevents the embedded window from waiting on the main window's input queue,
 		// causing lags input lags when resizing or moving the main window.
@@ -6945,9 +7408,14 @@ Error DisplayServerWindows::_create_window(DisplayServerEnums::WindowID p_window
 		}
 
 		wd.exclusive = p_exclusive;
+		bool on_top = (p_flags & DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP_BIT && p_mode != DisplayServerEnums::WINDOW_MODE_FULLSCREEN && p_mode != DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
 		if (wd_transient_parent) {
-			wd.transient_parent = p_transient_parent;
-			wd_transient_parent->transient_children.insert(id);
+			if (on_top) {
+				ERR_PRINT("Windows with the 'on top' can't become transient.");
+			} else {
+				wd.transient_parent = p_transient_parent;
+				wd_transient_parent->transient_children.insert(id);
+			}
 		}
 
 		wd.sharp_corners = p_flags & DisplayServerEnums::WINDOW_FLAG_SHARP_CORNERS_BIT;
@@ -7011,25 +7479,8 @@ Error DisplayServerWindows::_create_window(DisplayServerEnums::WindowID p_window
 		HRESULT hr = SHGetPropertyStoreForWindow(wd.hWnd, IID_IPropertyStore, (void **)&prop_store);
 		if (hr == S_OK) {
 			PROPVARIANT val;
-			String appname;
-			if (Engine::get_singleton()->is_editor_hint()) {
-				appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
-			} else {
-				String name = GLOBAL_GET("application/config/name");
-				String version = GLOBAL_GET("application/config/version");
-				if (version.is_empty()) {
-					version = "0";
-				}
-				String clean_app_name = name.to_pascal_case();
-				for (int i = 0; i < clean_app_name.length(); i++) {
-					if (!is_ascii_alphanumeric_char(clean_app_name[i]) && clean_app_name[i] != '_' && clean_app_name[i] != '.') {
-						clean_app_name[i] = '_';
-					}
-				}
-				clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
-				appname = "Godot." + clean_app_name + "." + version;
-			}
-			InitPropVariantFromString((PCWSTR)appname.utf16().get_data(), &val);
+			String appid = _get_app_id();
+			InitPropVariantFromString((PCWSTR)appid.utf16().get_data(), &val);
 			prop_store->SetValue(PKEY_AppUserModel_ID, val);
 			prop_store->Release();
 		}
@@ -7089,6 +7540,21 @@ void DisplayServerWindows::_destroy_window(DisplayServerEnums::WindowID p_window
 		wd.drop_target->Release();
 	}
 
+	if (wd.icon_big) {
+		DestroyIcon(wd.icon_big);
+		wd.icon_buffer_big.clear();
+		wd.icon_big = nullptr;
+	}
+	if (wd.icon_small) {
+		DestroyIcon(wd.icon_small);
+		wd.icon_buffer_small.clear();
+		wd.icon_small = nullptr;
+	}
+
+	if (has_winrt_queue) {
+		WinRTUtils::destroy_wd(wd.wrt_wd);
+		wd.wrt_wd = nullptr;
+	}
 	DestroyWindow(wd.hWnd);
 	windows.erase(p_window_id);
 }
@@ -7150,7 +7616,7 @@ Error DisplayServerWindows::_create_gl_window(DisplayServerEnums::WindowID p_win
 
 		wd.gl_native_window_created = true;
 	}
-
+#ifdef ANGLE_ENABLED
 	if (gl_manager_angle) {
 		WindowData &wd = windows[p_window_id];
 
@@ -7159,6 +7625,7 @@ Error DisplayServerWindows::_create_gl_window(DisplayServerEnums::WindowID p_win
 
 		wd.gl_angle_window_created = true;
 	}
+#endif
 
 	return OK;
 }
@@ -7418,12 +7885,16 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 
 	rendering_driver = p_rendering_driver;
 
-	// Init TTS
+	native_menu = memnew(NativeMenuWindows);
+
+	// Init WinRT API and create dispatch queue.
+	has_winrt_queue = WinRTUtils::create_queue(_get_app_id());
+
+	// Init TTS (note: should be called after WinRT init).
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
 		initialize_tts();
 	}
-	native_menu = memnew(NativeMenuWindows);
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
@@ -7433,11 +7904,15 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 	os_ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
 
 	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
+#if defined(ANGLE_ENABLED)
 	bool is_wine = false;
+#endif
 	if (nt_lib) {
 		WineGetVersionPtr wine_get_version = (WineGetVersionPtr)(void *)GetProcAddress(nt_lib, "wine_get_version"); // Do not read Windows build number under Wine, it can be set to arbitrary value.
 		if (wine_get_version) {
+#if defined(ANGLE_ENABLED)
 			is_wine = true;
+#endif
 		} else {
 			RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)(void *)GetProcAddress(nt_lib, "RtlGetVersion");
 			if (RtlGetVersion) {
@@ -7540,7 +8015,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 
 	HMODULE comctl32 = LoadLibraryW(L"comctl32.dll");
 	if (comctl32) {
-		typedef BOOL(WINAPI * InitCommonControlsExPtr)(_In_ const INITCOMMONCONTROLSEX *picce);
+		typedef BOOL(WINAPI * InitCommonControlsExPtr)(const _In_ INITCOMMONCONTROLSEX *picce);
 		InitCommonControlsExPtr init_common_controls_ex = (InitCommonControlsExPtr)(void *)GetProcAddress(comctl32, "InitCommonControlsEx");
 
 		// Fails if the incorrect version was loaded. Probably not a big enough deal to print an error about.
@@ -7626,7 +8101,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
 	}
 
-	HWND parent_hwnd = NULL;
+	HWND parent_hwnd = nullptr;
 	if (p_parent_window) {
 		// Parented window.
 		parent_hwnd = (HWND)p_parent_window;
@@ -7759,15 +8234,21 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 #endif
 
 #if defined(GLES3_ENABLED)
-
+#if defined(ANGLE_ENABLED)
 	bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_angle");
 	bool show_warning = true;
+#endif
 
 	if (rendering_driver == "opengl3") {
 		// There's no native OpenGL drivers on Windows for ARM, always enable fallback.
 #if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+#if defined(ANGLE_ENABLED)
 		fallback = true;
 		show_warning = false;
+#else
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Could not initialize OpenGL.");
+#endif
 #else
 		typedef BOOL(WINAPI * IsWow64Process2Ptr)(HANDLE, USHORT *, USHORT *);
 
@@ -7779,13 +8260,19 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 				machine_arch = 0;
 			}
 			if (machine_arch == 0xAA64) {
+#if defined(ANGLE_ENABLED)
 				fallback = true;
 				show_warning = false;
+#else
+				r_error = ERR_UNAVAILABLE;
+				ERR_FAIL_MSG("Could not initialize OpenGL.");
+#endif
 			}
 		}
 #endif
 	}
 
+#if defined(ANGLE_ENABLED)
 	bool gl_supported = true;
 	if (fallback && !is_wine && (rendering_driver == "opengl3")) {
 		Dictionary gl_info = detect_wgl();
@@ -7841,11 +8328,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 			gl_manager_angle = nullptr;
 			bool fallback_to_native = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
 			if (fallback_to_native && gl_supported) {
-#ifdef EGL_STATIC
 				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
-#else
-				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dll and libGLESv2.dll) are missing, switching to native OpenGL.");
-#endif
 				rendering_driver = "opengl3";
 			} else {
 				r_error = ERR_UNAVAILABLE;
@@ -7853,6 +8336,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 			}
 		}
 	}
+#endif // ANGLE_ENABLED
 	if (rendering_driver == "opengl3") {
 		gl_manager_native = memnew(GLManagerNative_Windows);
 		tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
@@ -7904,6 +8388,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		}
 		RasterizerGLES3::make_current(true);
 	}
+#ifdef ANGLE_ENABLED
 	if (rendering_driver == "opengl3_angle") {
 		if (_create_gl_window(DisplayServerEnums::MAIN_WINDOW_ID) != OK) {
 			memdelete(gl_manager_angle);
@@ -7914,6 +8399,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		}
 		RasterizerGLES3::make_current(false);
 	}
+#endif
 #endif
 
 	window_set_vsync_mode(p_vsync_mode, DisplayServerEnums::MAIN_WINDOW_ID);
@@ -8003,7 +8489,9 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 #endif
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
+#ifdef ANGLE_ENABLED
 	drivers.push_back("opengl3_angle");
+#endif
 #endif
 	drivers.push_back("dummy");
 
@@ -8073,13 +8561,15 @@ DisplayServerWindows::~DisplayServerWindows() {
 	}
 
 #ifdef SDL_ENABLED
-	if (joypad_sdl) {
-		memdelete(joypad_sdl);
-	}
+	memdelete(joypad_sdl);
 #endif
 	touch_state.clear();
 
 	cursors_cache.clear();
+
+	if (has_winrt_queue) {
+		WinRTUtils::destroy_queue();
+	}
 
 	// Destroy all status indicators.
 	for (HashMap<DisplayServerEnums::IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E; ++E) {
@@ -8145,33 +8635,22 @@ DisplayServerWindows::~DisplayServerWindows() {
 	}
 #endif
 
-	if (icon_big) {
-		DestroyIcon(icon_big);
-		icon_buffer_big.clear();
-		icon_big = nullptr;
-	}
-	if (icon_small) {
-		DestroyIcon(icon_small);
-		icon_buffer_small.clear();
-		icon_small = nullptr;
-	}
-
 	if (restore_mouse_trails > 1) {
 		SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, nullptr, 0);
 	}
 #ifdef GLES3_ENABLED
+#ifdef ANGLE_ENABLED
 	if (gl_manager_angle) {
 		memdelete(gl_manager_angle);
 		gl_manager_angle = nullptr;
 	}
+#endif
 	if (gl_manager_native) {
 		memdelete(gl_manager_native);
 		gl_manager_native = nullptr;
 	}
 #endif
-	if (tts) {
-		memdelete(tts);
-	}
+	memdelete(tts);
 
 	OleUninitialize();
 }

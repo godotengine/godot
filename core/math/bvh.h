@@ -50,10 +50,11 @@
 // TYPE_BODY
 // and pairable_mask is either 0 if static, or set to all if non static
 
-#include "bvh_tree.h"
-
+#include "core/math/bvh_tree.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/mutex.h"
+
+#include <climits> // INT_MAX
 
 #define BVHTREE_CLASS BVH_Tree<T, NUM_TREES, 2, MAX_ITEMS, USER_PAIR_TEST_FUNCTION, USER_CULL_TEST_FUNCTION, USE_PAIRS, BOUNDS, POINT>
 #define BVH_LOCKED_FUNCTION BVHLockedFunction _lock_guard(&_mutex, BVH_THREAD_SAFE &&_thread_safe);
@@ -180,17 +181,20 @@ public:
 	uint32_t get_tree_id(uint32_t p_handle) const {
 		BVHHandle h;
 		h.set(p_handle);
+		BVH_LOCKED_FUNCTION
 		return item_get_tree_id(h);
 	}
 	int get_subindex(uint32_t p_handle) const {
 		BVHHandle h;
 		h.set(p_handle);
+		BVH_LOCKED_FUNCTION
 		return item_get_subindex(h);
 	}
 
 	T *get(uint32_t p_handle) const {
 		BVHHandle h;
 		h.set(p_handle);
+		BVH_LOCKED_FUNCTION
 		return item_get_userdata(h);
 	}
 
@@ -483,6 +487,7 @@ public:
 	void item_get_AABB(BVHHandle p_handle, BOUNDS &r_aabb) {
 		DEV_ASSERT(!p_handle.is_invalid());
 		BVHABB_CLASS abb;
+		BVH_LOCKED_FUNCTION
 		tree.item_get_ABB(p_handle, abb);
 		abb.to(r_aabb);
 	}
@@ -573,18 +578,22 @@ private:
 
 	// find all the existing paired aabbs that are no longer
 	// paired, and send callbacks
-	void _find_leavers(BVHHandle p_handle, const BVHABB_CLASS &expanded_abb_from, bool p_full_check) {
+	void _find_leavers(BVHHandle p_handle, const BVHABB_CLASS &p_expanded_abb_from, bool p_full_check) {
 		typename BVHTREE_CLASS::ItemPairs &p_from = tree._pairs[p_handle.id()];
 
-		BVHABB_CLASS abb_from = expanded_abb_from;
+		BVHABB_CLASS abb_from = p_expanded_abb_from;
 
 		// remove from pairing list for every partner
-		for (unsigned int n = 0; n < p_from.extended_pairs.size(); n++) {
+		for (uint32_t n = 0; n < p_from.extended_pairs.size(); n++) {
 			BVHHandle h_to = p_from.extended_pairs[n].handle;
 			if (_find_leavers_process_pair(p_from, abb_from, p_handle, h_to, p_full_check)) {
 				// we need to keep the counter n up to date if we deleted a pair
 				// as the number of items in p_from.extended_pairs will have decreased by 1
 				// and we don't want to miss an item
+
+				// Note this can overflow to UINT32_MAX if we process the 0th element,
+				// but it's fine as it will increment back to zero next loop,
+				// it is not UB with uint32_t.
 				n--;
 			}
 		}
@@ -691,7 +700,7 @@ private:
 		_tick++;
 	}
 
-	void _add_changed_item(BVHHandle p_handle, const BOUNDS &aabb, bool p_check_aabb = true) {
+	void _add_changed_item(BVHHandle p_handle, const BOUNDS &p_aabb, bool p_check_aabb = true) {
 		// Note that non pairable items can pair with pairable,
 		// so all types must be added to the list
 
@@ -708,13 +717,13 @@ private:
 		// passing p_check_aabb false disables the optimization which prevents collision checks if
 		// the aabb hasn't changed. This is needed where set_pairable has been called, but the position
 		// has not changed.
-		if (p_check_aabb && tree.expanded_aabb_encloses_not_shrink(expanded_aabb, aabb)) {
+		if (p_check_aabb && tree.expanded_aabb_encloses_not_shrink(expanded_aabb, p_aabb)) {
 			return;
 		}
 
 		// ALWAYS update the new expanded aabb, even if already changed once
 		// this tick, because it is vital that the AABB is kept up to date
-		expanded_aabb = aabb;
+		expanded_aabb = p_aabb;
 		expanded_aabb.grow_by(tree._pairing_expansion);
 #endif
 
@@ -795,7 +804,7 @@ private:
 		Mutex *_mutex = nullptr;
 	};
 
-	Mutex _mutex;
+	mutable Mutex _mutex;
 
 	// local toggle for turning on and off thread safety in project settings
 	bool _thread_safe = BVH_THREAD_SAFE;

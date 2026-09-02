@@ -30,6 +30,7 @@
 
 #include "animation_library_editor.h"
 
+#include "core/io/config_file.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -212,7 +213,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 		} break;
 		case FILE_MENU_MAKE_LIBRARY_UNIQUE: {
 			StringName lib_name = file_dialog_library;
-			List<StringName> animation_list;
+			LocalVector<StringName> animation_list;
 
 			Ref<AnimationLibrary> ald = memnew(AnimationLibrary);
 			al->get_animation_list(&animation_list);
@@ -377,7 +378,7 @@ void AnimationLibraryEditor::_load_files(const PackedStringArray &p_paths) {
 					continue;
 				}
 
-				List<StringName> libs;
+				LocalVector<StringName> libs;
 				mixer->get_animation_library_list(&libs);
 				bool is_already_added = false;
 				for (const StringName &K : libs) {
@@ -423,7 +424,7 @@ void AnimationLibraryEditor::_load_files(const PackedStringArray &p_paths) {
 					continue;
 				}
 
-				List<StringName> anims;
+				LocalVector<StringName> anims;
 				al->get_animation_list(&anims);
 				bool is_already_added = false;
 				for (const StringName &K : anims) {
@@ -686,7 +687,7 @@ void AnimationLibraryEditor::update_tree() {
 	Color ss_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 
 	TreeItem *root = tree->create_item();
-	List<StringName> libs;
+	LocalVector<StringName> libs;
 	const Vector<String> collapsed_libs = _load_mixer_libs_folding();
 
 	mixer->get_animation_library_list(&libs);
@@ -743,7 +744,7 @@ void AnimationLibraryEditor::update_tree() {
 
 		libitem->set_custom_bg_color(0, ss_color);
 
-		List<StringName> animations;
+		LocalVector<StringName> animations;
 		al->get_animation_list(&animations);
 		for (const StringName &L : animations) {
 			TreeItem *anitem = tree->create_item(libitem);
@@ -888,7 +889,7 @@ String AnimationLibraryEditor::_get_mixer_signature() const {
 	String signature = String();
 
 	// Get all libraries sorted for consistency
-	List<StringName> libs;
+	LocalVector<StringName> libs;
 	mixer->get_animation_library_list(&libs);
 	libs.sort_custom<StringName::AlphCompare>();
 
@@ -897,7 +898,7 @@ String AnimationLibraryEditor::_get_mixer_signature() const {
 		signature += "::" + String(lib_name);
 		Ref<AnimationLibrary> lib = mixer->get_animation_library(lib_name);
 		if (lib.is_valid()) {
-			List<StringName> anims;
+			LocalVector<StringName> anims;
 			lib->get_animation_list(&anims);
 			anims.sort_custom<StringName::AlphCompare>();
 			for (const StringName &anim_name : anims) {
@@ -1023,6 +1024,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	add_child(vb);
 
 	error_dialog = memnew(AcceptDialog);
+	error_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	error_dialog->set_title(TTRC("Error:"));
 	add_child(error_dialog);
 }

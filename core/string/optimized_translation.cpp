@@ -29,12 +29,13 @@
 /**************************************************************************/
 
 #include "optimized_translation.h"
+#include "optimized_translation.compat.inc"
 
 #include "core/object/class_db.h"
 #include "core/templates/pair.h"
 
 extern "C" {
-#include "thirdparty/misc/smaz.h"
+#include <thirdparty/misc/smaz.h>
 }
 
 struct CompressedString {
@@ -43,11 +44,11 @@ struct CompressedString {
 	int offset = 0;
 };
 
-void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
+bool OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	// This method compresses a Translation instance.
 	// Right now, it doesn't handle context or plurals.
 #ifdef TOOLS_ENABLED
-	ERR_FAIL_COND(p_from.is_null());
+	ERR_FAIL_COND_V(p_from.is_null(), false);
 
 	List<StringName> keys;
 	{
@@ -55,7 +56,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		p_from->get_message_list(&raw_keys);
 
 		for (const StringName &key : raw_keys) {
-			const String key_str = key.operator String();
+			const String key_str = key.string();
 			int p = key_str.find_char(0x04);
 			if (p == -1) {
 				keys.push_back(key);
@@ -84,7 +85,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 	for (const StringName &E : keys) {
 		//hash string
-		CharString cs = E.operator String().utf8();
+		CharString cs = E.string().utf8();
 		uint32_t h = hash(0, cs.get_data());
 		Pair<int, CharString> p;
 		p.first = idx;
@@ -92,7 +93,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		buckets.write[h % size].push_back(p);
 
 		//compress string
-		CharString src_s = p_from->get_message(E).operator String().utf8();
+		CharString src_s = p_from->get_message(E).string().utf8();
 		CompressedString ps;
 		ps.orig_len = src_s.size();
 		ps.offset = total_compression_size;
@@ -150,7 +151,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		bucket_table_size += 2 + b.size() * 4;
 	}
 
-	ERR_FAIL_COND(bucket_table_size == 0);
+	ERR_FAIL_COND_V(bucket_table_size == 0, false);
 
 	hash_table.resize(size);
 	bucket_table.resize(bucket_table_size);
@@ -189,14 +190,17 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		memcpy(&cw[compressed[i].offset], compressed[i].compressed.get_data(), compressed[i].compressed.size());
 	}
 
-	ERR_FAIL_COND(btindex != bucket_table_size);
+	ERR_FAIL_COND_V(btindex != bucket_table_size, false);
 	set_locale(p_from->get_locale());
 
+	return true;
+#else
+	return false;
 #endif
 }
 
 bool OptimizedTranslation::_set(const StringName &p_name, const Variant &p_value) {
-	String prop_name = p_name.operator String();
+	String prop_name = p_name.string();
 	if (prop_name == "hash_table") {
 		hash_table = p_value;
 	} else if (prop_name == "bucket_table") {
@@ -213,7 +217,7 @@ bool OptimizedTranslation::_set(const StringName &p_name, const Variant &p_value
 }
 
 bool OptimizedTranslation::_get(const StringName &p_name, Variant &r_ret) const {
-	String prop_name = p_name.operator String();
+	String prop_name = p_name.string();
 	if (prop_name == "hash_table") {
 		r_ret = hash_table;
 	} else if (prop_name == "bucket_table") {
@@ -236,7 +240,7 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 		return StringName();
 	}
 
-	CharString str = p_src_text.operator String().utf8();
+	CharString str = p_src_text.string().utf8();
 	uint32_t h = hash(0, str.get_data());
 
 	const int *htr = hash_table.ptr();

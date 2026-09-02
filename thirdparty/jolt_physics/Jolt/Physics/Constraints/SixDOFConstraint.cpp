@@ -296,7 +296,7 @@ void SixDOFConstraint::CacheRotationPositionMotorActive()
 {
 	mRotationPositionMotorActive = 0;
 	for (int i = 0; i < 3; ++i)
-		if (mMotorState[EAxis::RotationX + i] == EMotorState::Position)
+		if (IsPositionMotor(mMotorState[EAxis::RotationX + i]))
 			mRotationPositionMotorActive |= 1 << i;
 }
 
@@ -409,7 +409,7 @@ void SixDOFConstraint::SetupVelocityConstraint(float inDeltaTime)
 			}
 
 			if (constraint_active)
-				mTranslationConstraintPart[i].CalculateConstraintPropertiesWithSettings(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, translation_axis, 0.0f, constraint_value, mLimitsSpringSettings[i]);
+				mTranslationConstraintPart[i].CalculateConstraintPropertiesWithSettingsForLimit(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, translation_axis, 0.0f, constraint_value, mLimitsSpringSettings[i]);
 			else
 				mTranslationConstraintPart[i].Deactivate();
 
@@ -431,7 +431,17 @@ void SixDOFConstraint::SetupVelocityConstraint(float inDeltaTime)
 				{
 					const SpringSettings &spring_settings = mMotorSettings[i].mSpringSettings;
 					if (spring_settings.HasStiffness())
-						mMotorTranslationConstraintPart[i].CalculateConstraintPropertiesWithSettings(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, translation_axis, 0.0f, translation_axis.Dot(u) - mTargetPosition[i], spring_settings);
+						mMotorTranslationConstraintPart[i].CalculateConstraintPropertiesWithSettingsForMotor(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, translation_axis, 0.0f, translation_axis.Dot(u) - mTargetPosition[i], spring_settings);
+					else
+						mMotorTranslationConstraintPart[i].Deactivate();
+					break;
+				}
+
+			case EMotorState::PositionAndVelocity:
+				{
+					const SpringSettings &spring_settings = mMotorSettings[i].mSpringSettings;
+					if (spring_settings.HasStiffnessOrDamping())
+						mMotorTranslationConstraintPart[i].CalculateConstraintPropertiesWithSettingsForMotor(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, translation_axis, -mTargetVelocity[i], translation_axis.Dot(u) - mTargetPosition[i], spring_settings);
 					else
 						mMotorTranslationConstraintPart[i].Deactivate();
 					break;
@@ -562,7 +572,17 @@ void SixDOFConstraint::SetupVelocityConstraint(float inDeltaTime)
 					{
 						const SpringSettings &spring_settings = mMotorSettings[axis].mSpringSettings;
 						if (spring_settings.HasStiffness())
-							mMotorRotationConstraintPart[i].CalculateConstraintPropertiesWithSettings(inDeltaTime, *mBody1, *mBody2, rotation_axis, 0.0f, rotation_error[i], spring_settings);
+							mMotorRotationConstraintPart[i].CalculateConstraintPropertiesWithSettingsForMotor(inDeltaTime, *mBody1, *mBody2, rotation_axis, 0.0f, rotation_error[i], spring_settings);
+						else
+							mMotorRotationConstraintPart[i].Deactivate();
+						break;
+					}
+
+				case EMotorState::PositionAndVelocity:
+					{
+						const SpringSettings &spring_settings = mMotorSettings[axis].mSpringSettings;
+						if (spring_settings.HasStiffnessOrDamping())
+							mMotorRotationConstraintPart[i].CalculateConstraintPropertiesWithSettingsForMotor(inDeltaTime, *mBody1, *mBody2, rotation_axis, -mTargetAngularVelocity[i], rotation_error[i], spring_settings);
 						else
 							mMotorRotationConstraintPart[i].Deactivate();
 						break;
@@ -635,6 +655,7 @@ bool SixDOFConstraint::SolveVelocityConstraint(float inDeltaTime)
 
 				case EMotorState::Velocity:
 				case EMotorState::Position:
+				case EMotorState::PositionAndVelocity:
 					// Drive motor
 					impulse |= mMotorTranslationConstraintPart[i].SolveVelocityConstraint(*mBody1, *mBody2, mTranslationAxis[i], inDeltaTime * mMotorSettings[i].mMinForceLimit, inDeltaTime * mMotorSettings[i].mMaxForceLimit);
 					break;
@@ -658,6 +679,7 @@ bool SixDOFConstraint::SolveVelocityConstraint(float inDeltaTime)
 
 				case EMotorState::Velocity:
 				case EMotorState::Position:
+				case EMotorState::PositionAndVelocity:
 					// Drive motor
 					impulse |= mMotorRotationConstraintPart[i].SolveVelocityConstraint(*mBody1, *mBody2, mRotationAxis[i], inDeltaTime * mMotorSettings[axis].mMinTorqueLimit, inDeltaTime * mMotorSettings[axis].mMaxTorqueLimit);
 					break;
@@ -803,15 +825,15 @@ void SixDOFConstraint::DrawConstraint(DebugRenderer *inRenderer) const
 	// Draw target rotation
 	Quat m_swing, m_twist;
 	mTargetOrientation.GetSwingTwist(m_swing, m_twist);
-	if (mMotorState[EAxis::RotationX] == EMotorState::Position)
+	if (IsPositionMotor(mMotorState[EAxis::RotationX]))
 		inRenderer->DrawLine(position1, position1 + mDrawConstraintSize * (rotation1 * m_twist).RotateAxisY(), Color::sYellow);
-	if (mMotorState[EAxis::RotationY] == EMotorState::Position || mMotorState[EAxis::RotationZ] == EMotorState::Position)
+	if (IsPositionMotor(mMotorState[EAxis::RotationY]) || IsPositionMotor(mMotorState[EAxis::RotationZ]))
 		inRenderer->DrawLine(position1, position1 + mDrawConstraintSize * (rotation1 * m_swing).RotateAxisX(), Color::sYellow);
 
 	// Draw target angular velocity
 	Vec3 target_angular_velocity = Vec3::sZero();
 	for (int i = 0; i < 3; ++i)
-		if (mMotorState[EAxis::RotationX + i] == EMotorState::Velocity)
+		if (IsVelocityMotor(mMotorState[EAxis::RotationX + i]))
 			target_angular_velocity.SetComponent(i, mTargetAngularVelocity[i]);
 	if (target_angular_velocity != Vec3::sZero())
 		inRenderer->DrawArrow(position1, position1 + rotation2 * target_angular_velocity, Color::sRed, 0.1f);

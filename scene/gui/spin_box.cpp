@@ -54,6 +54,15 @@ void SpinBoxLineEdit::_accessibility_action_dec(const Variant &p_data) {
 	}
 }
 
+String SpinBoxLineEdit::_get_accessibility_name() const {
+	SpinBox *parent_sb = Object::cast_to<SpinBox>(get_parent());
+	if (parent_sb) {
+		return parent_sb->_get_accessibility_name();
+	} else {
+		return Control::_get_accessibility_name();
+	}
+}
+
 void SpinBoxLineEdit::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_what) {
@@ -64,7 +73,6 @@ void SpinBoxLineEdit::_notification(int p_what) {
 			SpinBox *parent_sb = Object::cast_to<SpinBox>(get_parent());
 			if (parent_sb) {
 				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SPIN_BUTTON);
-				AccessibilityServer::get_singleton()->update_set_name(ae, parent_sb->get_accessibility_name());
 				AccessibilityServer::get_singleton()->update_set_description(ae, parent_sb->get_accessibility_description());
 				AccessibilityServer::get_singleton()->update_set_live(ae, parent_sb->get_accessibility_live());
 				AccessibilityServer::get_singleton()->update_set_num_value(ae, parent_sb->get_value());
@@ -83,12 +91,24 @@ void SpinBoxLineEdit::_notification(int p_what) {
 }
 
 Size2 SpinBox::get_minimum_size() const {
-	Size2 ms = line_edit->get_combined_minimum_size();
+	Size2 ms = line_edit->get_bound_minimum_size();
 	ms.width += sizing_cache.buttons_block_width;
 	return ms;
 }
 
 void SpinBox::_update_text(bool p_only_update_if_value_changed) {
+	if (!line_edit->is_editing() && !format.is_empty() && !use_default_format) {
+		const Variant current_value = get_value();
+		bool error = false;
+		const String text = format.sprintf(Span(&current_value, 1), &error);
+		if (error) {
+			line_edit->set_text_with_selection(RTR("<Invalid>"));
+			return;
+		}
+		line_edit->set_text_with_selection(text);
+		return;
+	}
+
 	double step = get_step();
 	String value = String::num(get_value(), Math::range_step_decimals(step));
 	if (is_localizing_numeral_system()) {
@@ -101,11 +121,23 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	last_text_value = value;
 
 	if (!line_edit->is_editing()) {
-		if (!prefix.is_empty()) {
-			value = prefix + " " + value;
-		}
-		if (!suffix.is_empty()) {
-			value += " " + suffix;
+		if (!format.is_empty()) {
+			const Variant current_value = value;
+			bool error = false;
+			value = format.sprintf(Span(&current_value, 1), &error);
+			if (error) {
+				line_edit->set_text_with_selection(RTR("<Invalid>"));
+				return;
+			}
+#ifndef DISABLE_DEPRECATED
+		} else {
+			if (!prefix.is_empty()) {
+				value = prefix + " " + value;
+			}
+			if (!suffix.is_empty()) {
+				value += " " + suffix;
+			}
+#endif
 		}
 	}
 
@@ -144,8 +176,6 @@ void SpinBox::_text_submitted(const String &p_string) {
 	const String &lang = _get_locale();
 	text = text.replace_char(';', ',');
 	text = TranslationServer::get_singleton()->parse_number(text, lang);
-	// Ignore the prefix and suffix in the expression.
-	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
 
 	Error err = expr->parse(text);
 
@@ -153,7 +183,6 @@ void SpinBox::_text_submitted(const String &p_string) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = p_string;
 		text = TranslationServer::get_singleton()->parse_number(text, lang);
-		text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
 
 		err = expr->parse(text);
 		if (err != OK) {
@@ -375,7 +404,6 @@ void SpinBox::_line_edit_editing_toggled(bool p_toggled_on) {
 		if (Input::get_singleton()->is_action_pressed("ui_cancel") || line_edit->get_text().is_empty()) {
 			_update_text(); // Revert text if editing was canceled.
 		} else {
-			line_edit->set_text(line_edit->get_text().trim_suffix(".").trim_suffix(","));
 			_update_text(true); // Update text in case value was changed this frame (e.g. on `focus_exited`).
 			_text_submitted(line_edit->get_text());
 		}
@@ -550,6 +578,22 @@ HorizontalAlignment SpinBox::get_horizontal_alignment() const {
 	return line_edit->get_horizontal_alignment();
 }
 
+void SpinBox::set_format(const String &p_format) {
+	if (format == p_format) {
+		return;
+	}
+	format = p_format;
+	use_default_format = p_format.contains("%s");
+
+	_update_text();
+	update_configuration_warnings();
+}
+
+String SpinBox::get_format() const {
+	return format;
+}
+
+#ifndef DISABLE_DEPRECATED
 void SpinBox::set_suffix(const String &p_suffix) {
 	if (suffix == p_suffix) {
 		return;
@@ -575,6 +619,7 @@ void SpinBox::set_prefix(const String &p_prefix) {
 String SpinBox::get_prefix() const {
 	return prefix;
 }
+#endif
 
 void SpinBox::set_update_on_text_changed(bool p_enabled) {
 	if (update_on_text_changed == p_enabled) {
@@ -633,6 +678,21 @@ bool SpinBox::is_custom_arrow_rounding() const {
 
 void SpinBox::_value_changed(double p_value) {
 	_update_buttons_state_for_current_value();
+	Range::_value_changed(p_value);
+}
+
+PackedStringArray SpinBox::get_configuration_warnings() const {
+	PackedStringArray warnings = Range::get_configuration_warnings();
+
+	if (!format.is_empty()) {
+		bool error = false;
+		const Variant test_value = 0.0;
+		const String error_str = format.sprintf(Span(&test_value, 1), &error);
+		if (error) {
+			warnings.push_back(vformat(RTR("The format property is not valid: %s."), error_str));
+		}
+	}
+	return warnings;
 }
 
 void SpinBox::_update_buttons_state_for_current_value() {
@@ -656,10 +716,14 @@ void SpinBox::_validate_property(PropertyInfo &p_property) const {
 void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &SpinBox::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &SpinBox::get_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("set_format", "format"), &SpinBox::set_format);
+	ClassDB::bind_method(D_METHOD("get_format"), &SpinBox::get_format);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
 	ClassDB::bind_method(D_METHOD("set_prefix", "prefix"), &SpinBox::set_prefix);
 	ClassDB::bind_method(D_METHOD("get_prefix"), &SpinBox::get_prefix);
+#endif
 	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("set_custom_arrow_step", "arrow_step"), &SpinBox::set_custom_arrow_step);
 	ClassDB::bind_method(D_METHOD("get_custom_arrow_step"), &SpinBox::get_custom_arrow_step);
@@ -676,8 +740,11 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "format", PROPERTY_HINT_PLACEHOLDER_TEXT, "%s"), "set_format", "get_format");
+#ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_arrow_round"), "set_custom_arrow_round", "is_custom_arrow_rounding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
@@ -726,6 +793,7 @@ void SpinBox::_bind_methods() {
 SpinBox::SpinBox() {
 	line_edit = memnew(SpinBoxLineEdit);
 	line_edit->set_emoji_menu_enabled(false);
+	line_edit->set_use_parent_material(true);
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
 	line_edit->set_theme_type_variation("SpinBoxInnerLineEdit");

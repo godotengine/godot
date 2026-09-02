@@ -32,8 +32,9 @@
 
 TEST_FORCE_LINK(test_fontfile)
 
-#include "modules/modules_enabled.gen.h" // For freetype.
 #include "scene/resources/font.h"
+
+#include "modules/modules_enabled.gen.h" // For freetype.
 
 namespace TestFontFile {
 

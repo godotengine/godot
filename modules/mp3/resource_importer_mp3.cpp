@@ -30,7 +30,8 @@
 
 #include "resource_importer_mp3.h"
 
-#include "core/io/file_access.h"
+#include "audio_stream_mp3.h"
+
 #include "core/io/resource_saver.h"
 
 #ifdef TOOLS_ENABLED

@@ -49,9 +49,11 @@
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h" // SceneTree:get_root()
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/audio/audio_server.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
 
 #ifndef _3D_DISABLED
@@ -100,9 +102,7 @@ void SceneDebugger::initialize() {
 }
 
 void SceneDebugger::deinitialize() {
-	if (singleton) {
-		memdelete(singleton);
-	}
+	memdelete(singleton);
 }
 
 #ifdef DEBUG_ENABLED
@@ -137,8 +137,24 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 	}
 }
 
+void SceneDebugger::_on_window_size_changed() {
+	_msg_window_request_size(Array());
+}
+
+void SceneDebugger::_on_output_max_linear_value_changed(float max_linear_value) {
+	_msg_hdr_output_request_state(Array());
+}
+
 Error SceneDebugger::_msg_setup_scene(const Array &p_args) {
 	SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
+	return OK;
+}
+
+Error SceneDebugger::_msg_setup_game_view(const Array &p_args) {
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->connect("size_changed", callable_mp_static(SceneDebugger::_on_window_size_changed));
+	root->connect("output_max_linear_value_changed", callable_mp_static(SceneDebugger::_on_output_max_linear_value_changed));
+	EngineDebugger::get_singleton()->send_message("game_view:setup_complete", Array());
 	return OK;
 }
 
@@ -218,11 +234,56 @@ Error SceneDebugger::_msg_debug_mute_audio(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_window_request_size(const Array &p_args) {
+	Array size;
+	size.append(SceneTree::get_singleton()->get_root()->get_size());
+	EngineDebugger::get_singleton()->send_message("game_view:window_size", size);
+	return OK;
+}
+
+Error SceneDebugger::_msg_hdr_output_request_state(const Array &p_args) {
+	DisplayServer *ds = DisplayServer::get_singleton();
+	bool renderer_supports_hdr_output = false;
+#if defined(RD_ENABLED)
+	RenderingDevice *rendering_device = RD::get_singleton();
+	if (rendering_device && rendering_device->has_feature(RD::SUPPORTS_HDR_OUTPUT)) {
+		renderer_supports_hdr_output = true;
+	}
+#endif
+
+	Array state;
+	state.append(ds->window_is_hdr_output_requested());
+	state.append(ds->window_is_hdr_output_enabled());
+	state.append(ds->window_get_hdr_output_current_reference_luminance());
+	state.append(ds->window_get_hdr_output_current_max_luminance());
+	state.append(ds->window_get_output_max_linear_value());
+	state.append(ds->has_feature(DisplayServerEnums::Feature::FEATURE_HDR_OUTPUT));
+	state.append(renderer_supports_hdr_output);
+
+	EngineDebugger::get_singleton()->send_message("game_view:hdr_state", state);
+	return OK;
+}
+
+Error SceneDebugger::_msg_hdr_output_toggle_requested(const Array &p_args) {
+	DisplayServer *ds = DisplayServer::get_singleton();
+	ds->window_request_hdr_output(!ds->window_is_hdr_output_requested());
+	return OK;
+}
+
+Error SceneDebugger::_msg_set_debug_collisions(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	bool enabled = p_args[0];
+	SceneTree::get_singleton()->set_debug_collisions_hint(enabled);
+	return OK;
+}
+
 Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enable = p_args[0];
 	bool from_editor = p_args[1];
+#ifndef _2D_DISABLED
 	SceneTree::get_singleton()->get_root()->enable_camera_2d_override(enable);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	SceneTree::get_singleton()->get_root()->enable_camera_3d_override(enable);
 #endif // _3D_DISABLED
@@ -425,6 +486,7 @@ Error SceneDebugger::_msg_runtime_node_select_set_prefer_group(const Array &p_ar
 	return OK;
 }
 
+#ifndef _2D_DISABLED
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_reset_camera_2d();
 	return OK;
@@ -440,6 +502,7 @@ Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_3d(const Array &p_args) {
@@ -496,6 +559,13 @@ Error SceneDebugger::_msg_rq_screenshot(const Array &p_args) {
 		}
 		suffix_i += 1;
 	}
+	img->convert(Image::FORMAT_RGBA8);
+#ifdef RD_ENABLED
+	RenderingDevice *rendering_device = RD::get_singleton();
+	if (rendering_device && RenderingServer::get_singleton()->viewport_is_using_hdr_2d(viewport->get_viewport_rid())) {
+		img->linear_to_srgb();
+	}
+#endif
 	img->save_png(path);
 
 	Array arr;
@@ -513,9 +583,7 @@ Error SceneDebugger::_msg_report_window_focused(const Array &p_args) {
 
 	bool focused = p_args[0];
 	Input::get_singleton()->embedder_focused = focused;
-	if (Input::get_singleton()->_should_ignore_joypad_events()) {
-		Input::get_singleton()->release_pressed_events();
-	}
+	Input::get_singleton()->release_pressed_events();
 	return OK;
 }
 
@@ -548,6 +616,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 
 void SceneDebugger::_init_message_handlers() {
 	message_handlers["setup_scene"] = _msg_setup_scene;
+	message_handlers["setup_game_view"] = _msg_setup_game_view;
 	message_handlers["setup_embedded_shortcuts"] = _msg_setup_embedded_shortcuts;
 	message_handlers["request_scene_tree"] = _msg_request_scene_tree;
 	message_handlers["save_node"] = _msg_save_node;
@@ -560,8 +629,14 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["next_frame"] = _msg_next_frame;
 	message_handlers["speed_changed"] = _msg_speed_changed;
 	message_handlers["debug_mute_audio"] = _msg_debug_mute_audio;
+	message_handlers["window_request_size"] = _msg_window_request_size;
+	message_handlers["hdr_output_request_state"] = _msg_hdr_output_request_state;
+	message_handlers["hdr_output_toggle_requested"] = _msg_hdr_output_toggle_requested;
+	message_handlers["set_debug_collisions"] = _msg_set_debug_collisions;
 	message_handlers["override_cameras"] = _msg_override_cameras;
+#ifndef _2D_DISABLED
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	message_handlers["transform_camera_3d"] = _msg_transform_camera_3d;
 #endif // _3D_DISABLED
@@ -590,10 +665,12 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["runtime_node_select_set_visible"] = _msg_runtime_node_select_set_visible;
 	message_handlers["runtime_node_select_set_avoid_locked"] = _msg_runtime_node_select_set_avoid_locked;
 	message_handlers["runtime_node_select_set_prefer_group"] = _msg_runtime_node_select_set_prefer_group;
+#ifndef _2D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_2d"] = _msg_runtime_node_select_reset_camera_2d;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_3d"] = _msg_runtime_node_select_reset_camera_3d;
-#endif
+#endif // _3D_DISABLED
 	message_handlers["rq_screenshot"] = _msg_rq_screenshot;
 	message_handlers["report_window_focused"] = _msg_report_window_focused;
 }

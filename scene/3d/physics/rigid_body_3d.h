@@ -33,6 +33,8 @@
 #include "core/templates/vset.h"
 #include "scene/3d/physics/physics_body_3d.h"
 
+class PhysicsMaterial;
+
 class RigidBody3D : public PhysicsBody3D {
 	GDCLASS(RigidBody3D, PhysicsBody3D);
 
@@ -170,6 +172,14 @@ public:
 
 	void set_linear_velocity(const Vector3 &p_velocity);
 	Vector3 get_linear_velocity() const override;
+
+	_FORCE_INLINE_ Vector3 get_velocity_at_local_position(const Vector3 &p_position) const {
+		return linear_velocity + angular_velocity.cross(p_position + get_global_position() - to_global(center_of_mass));
+	}
+
+	_FORCE_INLINE_ Vector3 get_velocity_at_position(const Vector3 &p_position) const {
+		return linear_velocity + angular_velocity.cross(p_position - to_global(center_of_mass));
+	}
 
 	void set_axis_velocity(const Vector3 &p_axis);
 

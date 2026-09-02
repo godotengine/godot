@@ -30,8 +30,8 @@
 
 #include "embedded_process_macos.h"
 
-#include "platform/macos/display_server_macos.h"
-#include "platform/macos/display_server_macos_embedded.h"
+#include "../display_server_macos.h"
+#include "../display_server_macos_embedded.h"
 
 #include "core/input/input_event_codec.h"
 #include "core/os/main_loop.h"
@@ -39,6 +39,7 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
+#include "editor/run/game_view_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
@@ -195,7 +196,7 @@ void EmbeddedProcessMacOS::mouse_set_mode(DisplayServerEnums::MouseMode p_mode) 
 	mouse_mode = p_mode;
 	// If the mouse is anything other than visible, we must ensure the Game view is active and the layer focused.
 	if (mouse_mode != DisplayServerEnums::MOUSE_MODE_VISIBLE) {
-		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_GAME);
+		GameView::get_dock()->make_visible();
 		layer_host->grab_focus();
 	}
 	DisplayServer::get_singleton()->mouse_set_mode(p_mode);
@@ -353,8 +354,35 @@ void LayerHost::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	// Convert from editor pixels to points for the game.
+	float inv_scale = 1.0f / DisplayServer::get_singleton()->screen_get_max_scale();
+	Ref<InputEvent> event = p_event;
+
+	{
+		Ref<InputEventMouse> e = p_event;
+		if (e.is_valid()) {
+			e = e->duplicate();
+			e->set_position(e->get_position() * inv_scale);
+			e->set_global_position(e->get_global_position() * inv_scale);
+			Ref<InputEventMouseMotion> mm = e;
+			if (mm.is_valid()) {
+				mm->set_relative(mm->get_relative() * inv_scale);
+			}
+			event = e;
+		}
+	}
+
+	{
+		Ref<InputEventGesture> e = p_event;
+		if (e.is_valid()) {
+			e = e->duplicate();
+			e->set_position(e->get_position() * inv_scale);
+			event = e;
+		}
+	}
+
 	PackedByteArray data;
-	if (encode_input_event(p_event, data)) {
+	if (encode_input_event(event, data)) {
 		if (script_debugger != nullptr) {
 			script_debugger->send_message("embed:event", { data });
 		}

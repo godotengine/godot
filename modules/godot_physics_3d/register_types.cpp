@@ -35,6 +35,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 #include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 
 static PhysicsServer3D *_createGodotPhysics3DCallback() {
@@ -53,8 +54,8 @@ void initialize_godot_physics_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		return;
 	}
-	PhysicsServer3DManager::get_singleton()->register_server("GodotPhysics3D", callable_mp_static(_createGodotPhysics3DCallback));
-	PhysicsServer3DManager::get_singleton()->set_default_server("GodotPhysics3D");
+	PhysicsServer3DManager::get_singleton()->register_server(PhysicsServer3DManager::GODOT_PHYSICS_3D_NAME, callable_mp_static(_createGodotPhysics3DCallback));
+	PhysicsServer3DManager::get_singleton()->set_default_server(PhysicsServer3DManager::GODOT_PHYSICS_3D_NAME);
 }
 
 void uninitialize_godot_physics_3d_module(ModuleInitializationLevel p_level) {

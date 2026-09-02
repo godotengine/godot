@@ -34,9 +34,10 @@
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "editor/script/script_text_editor.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "servers/display/display_server.h"
 
@@ -56,10 +57,7 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rename", "params"), &GDScriptTextDocument::rename);
 	ClassDB::bind_method(D_METHOD("prepareRename", "params"), &GDScriptTextDocument::prepareRename);
 	ClassDB::bind_method(D_METHOD("references", "params"), &GDScriptTextDocument::references);
-	ClassDB::bind_method(D_METHOD("foldingRange", "params"), &GDScriptTextDocument::foldingRange);
-	ClassDB::bind_method(D_METHOD("codeLens", "params"), &GDScriptTextDocument::codeLens);
 	ClassDB::bind_method(D_METHOD("documentLink", "params"), &GDScriptTextDocument::documentLink);
-	ClassDB::bind_method(D_METHOD("colorPresentation", "params"), &GDScriptTextDocument::colorPresentation);
 	ClassDB::bind_method(D_METHOD("hover", "params"), &GDScriptTextDocument::hover);
 	ClassDB::bind_method(D_METHOD("definition", "params"), &GDScriptTextDocument::definition);
 	ClassDB::bind_method(D_METHOD("declaration", "params"), &GDScriptTextDocument::declaration);
@@ -95,13 +93,12 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 	Dictionary dict = p_param;
 	LSP::TextDocumentIdentifier doc;
 	doc.load(dict["textDocument"]);
-	String text = dict["text"];
 
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
 	Ref<GDScript> scr = ResourceLoader::load(path);
 	if (scr.is_valid() && (scr->load_source_code(path) == OK)) {
 		if (scr->is_tool()) {
-			scr->get_language()->reload_tool_script(scr, true);
+			scr->get_language()->reload_tool_script(scr);
 		} else {
 			scr->reload(true);
 		}
@@ -175,65 +172,7 @@ Array GDScriptTextDocument::documentHighlight(const Dictionary &p_params) {
 }
 
 Array GDScriptTextDocument::completion(const Dictionary &p_params) {
-	Array arr;
-
-	LSP::CompletionParams params;
-	params.load(p_params);
-	Dictionary request_data = params.to_json();
-
-	List<ScriptLanguage::CodeCompletionOption> options;
-	GDScriptLanguageProtocol::get_singleton()->get_workspace()->completion(params, &options);
-
-	if (!options.is_empty()) {
-		int i = 0;
-		arr.resize(options.size());
-
-		for (const ScriptLanguage::CodeCompletionOption &option : options) {
-			LSP::CompletionItem item;
-			item.label = option.display;
-			item.data = request_data;
-			item.insertText = option.insert_text;
-
-			switch (option.kind) {
-				case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
-					item.kind = LSP::CompletionItemKind::Enum;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_CLASS:
-					item.kind = LSP::CompletionItemKind::Class;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
-					item.kind = LSP::CompletionItemKind::Property;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
-					item.kind = LSP::CompletionItemKind::Method;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
-					item.kind = LSP::CompletionItemKind::Event;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
-					item.kind = LSP::CompletionItemKind::Constant;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
-					item.kind = LSP::CompletionItemKind::Variable;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
-					item.kind = LSP::CompletionItemKind::File;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
-					item.kind = LSP::CompletionItemKind::Snippet;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
-					item.kind = LSP::CompletionItemKind::Text;
-					break;
-				default: {
-				}
-			}
-
-			arr[i] = item.to_json();
-			i++;
-		}
-	}
-	return arr;
+	return GDScriptLanguageProtocol::get_singleton()->lsp_completion(p_params);
 }
 
 Dictionary GDScriptTextDocument::rename(const Dictionary &p_params) {
@@ -301,7 +240,8 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	}
 
 	if (symbol) {
-		item.documentation = symbol->render();
+		const HashSet<String> &allowed_tags = GDScriptLanguageProtocol::get_singleton()->get_client_markdown_allowed_html_tags();
+		item.documentation = symbol->render(allowed_tags);
 	}
 
 	if (item.kind == LSP::CompletionItemKind::Event) {
@@ -323,14 +263,6 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	return item.to_json(true);
 }
 
-Array GDScriptTextDocument::foldingRange(const Dictionary &p_params) {
-	return Array();
-}
-
-Array GDScriptTextDocument::codeLens(const Dictionary &p_params) {
-	return Array();
-}
-
 Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
 	Array ret;
 
@@ -345,10 +277,6 @@ Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
 	return ret;
 }
 
-Array GDScriptTextDocument::colorPresentation(const Dictionary &p_params) {
-	return Array();
-}
-
 Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 	LSP::TextDocumentPositionParams params;
 	params.load(p_params);
@@ -356,7 +284,8 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 	const LSP::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
 	if (symbol) {
 		LSP::Hover hover;
-		hover.contents = symbol->render();
+		const HashSet<String> &allowed_tags = GDScriptLanguageProtocol::get_singleton()->get_client_markdown_allowed_html_tags();
+		hover.contents = symbol->render(allowed_tags);
 		hover.range.start = params.position;
 		hover.range.end = params.position;
 		return hover.to_json();
@@ -366,9 +295,10 @@ Variant GDScriptTextDocument::hover(const Dictionary &p_params) {
 		Array contents;
 		List<const LSP::DocumentSymbol *> list;
 		GDScriptLanguageProtocol::get_singleton()->resolve_related_symbols(params, list);
+		const HashSet<String> &allowed_tags = GDScriptLanguageProtocol::get_singleton()->get_client_markdown_allowed_html_tags();
 		for (const LSP::DocumentSymbol *&E : list) {
 			if (const LSP::DocumentSymbol *s = E) {
-				contents.push_back(s->render().value);
+				contents.push_back(s->render(allowed_tags).value);
 			}
 		}
 		ret["contents"] = contents;
@@ -412,7 +342,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 				case LSP::SymbolKind::Function:
 					id = "class_method:" + symbol->native_class + ":" + symbol->name;
 					break;
-				default:
+				default: // Deprecated.
 					id = "class_global:" + symbol->native_class + ":" + symbol->name;
 					break;
 			}

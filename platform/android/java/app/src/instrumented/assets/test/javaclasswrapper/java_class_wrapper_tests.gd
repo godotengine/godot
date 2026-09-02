@@ -20,6 +20,10 @@ func run_tests():
 
 	__exec_test(test_callable)
 
+	__exec_test(test_interface_callable_proxy)
+
+	__exec_test(test_interface_object_proxy)
+
 	print("JavaClassWrapper tests finished.")
 	print("Tests started: " + str(_test_started))
 	print("Tests completed: " + str(_test_completed))
@@ -168,4 +172,35 @@ func test_callable() -> bool:
 	android_runtime.createRunnableFromGodotCallable(cb1).run()
 	assert_equal(cb1_data['called'], true)
 
+	return true
+
+func test_interface_callable_proxy() -> bool:
+	var cb1_data := {called = false, content = ""}
+	var cb1 = func (content: String) -> void:
+		cb1_data['called'] = true
+		cb1_data['content'] = content
+
+	var printer_proxy = JavaClassWrapper.create_sam_callback("android.util.Printer", cb1)
+	assert_true(printer_proxy != null)
+
+	printer_proxy.println("This is a callback test")
+	assert_equal(cb1_data['called'], true)
+	assert_equal(cb1_data['content'], "This is a callback test")
+	return true
+
+class PrintProxy:
+	var test_data := {called = false, content = ""}
+
+	func println(content: String) -> void:
+		test_data['called'] = true
+		test_data['content'] = content
+
+func test_interface_object_proxy() -> bool:
+	var print_object = PrintProxy.new()
+	var proxy = JavaClassWrapper.create_proxy(print_object, ["android.util.Printer"])
+	assert_true(proxy != null)
+
+	proxy.println("This is proxy test")
+	assert_equal(print_object.test_data['called'], true)
+	assert_equal(print_object.test_data['content'], "This is proxy test")
 	return true

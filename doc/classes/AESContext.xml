@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AESContext" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AESContext" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides access to AES encryption/decryption of raw data.
 	</brief_description>
@@ -85,11 +85,11 @@
 				Close this AES context so it can be started again. See [method start].
 			</description>
 		</method>
-		<method name="get_iv_state">
+		<method name="get_iv_state" deprecated="Extracting the IV state is no longer supported">
 			<return type="PackedByteArray" />
 			<description>
-				Get the current IV state for this context (IV gets updated when calling [method update]). You normally don't need this function.
-				[b]Note:[/b] This function only makes sense when the context is started with [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
+				Returns an empty [PackedByteArray].
+				[b]Note:[/b] This method used to return the active IV state as modified by one or more [method update] calls. This is no longer supported.
 			</description>
 		</method>
 		<method name="start">

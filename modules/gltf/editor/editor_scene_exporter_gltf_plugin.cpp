@@ -46,10 +46,6 @@ String SceneExporterGLTFPlugin::get_plugin_name() const {
 	return "ConvertGLTF2";
 }
 
-bool SceneExporterGLTFPlugin::has_main_screen() const {
-	return false;
-}
-
 SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	_gltf_document.instantiate();
 	// Set up the file dialog.
@@ -113,7 +109,6 @@ void SceneExporterGLTFPlugin::_popup_gltf_export_dialog() {
 void SceneExporterGLTFPlugin::_export_scene_as_gltf() {
 	Node *root = EditorNode::get_singleton()->get_tree()->get_edited_scene_root();
 	ERR_FAIL_NULL(root);
-	List<String> deps;
 	Ref<GLTFState> state;
 	state.instantiate();
 	state->set_copyright(_export_settings->get_copyright());

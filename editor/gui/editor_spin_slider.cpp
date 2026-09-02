@@ -36,7 +36,6 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
@@ -44,12 +43,17 @@
 #include "scene/theme/theme_db.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
-	String value = get_text_value() + suffix;
+	const String base_tooltip = Range::get_tooltip(p_pos);
+
+	const String value = get_text_value() + suffix;
 	if (!read_only && grabber->is_visible()) {
 		String tooltip = value;
-		Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
+		if (!base_tooltip.is_empty()) {
+			tooltip += "\n" + TTR(base_tooltip);
+		}
+
 		if (!editing_integer) {
-			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), find_keycode_name(key));
+			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), keycode_get_string(Key::CMD_OR_CTRL));
 		}
 		return tooltip + "\n" + TTR("Hold Shift for more precise changes.");
 	}
@@ -57,13 +61,12 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 }
 
 Size2 EditorSpinSlider::get_minimum_size() const {
-	Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"));
-	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
+	Size2 ms = theme_cache.normal->get_minimum_size();
+	Ref<Texture2D> updown = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
+	ms.width += updown->get_width();
 
-	Size2 ms = sb->get_minimum_size();
-	ms.height += font->get_height(font_size);
-	ms.height = MAX(ms.height, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor)));
+	ms.height += theme_cache.font->get_height(theme_cache.font_size);
+	ms.height = MAX(ms.height, theme_cache.inspector_property_height);
 
 	return ms;
 }
@@ -325,9 +328,9 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 	// Add a left margin to the stylebox to make the number align with the Label
 	// when it's edited. The LineEdit "focus" stylebox uses the "normal" stylebox's
 	// default margins.
-	Ref<StyleBox> stylebox = get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"))->duplicate();
+	Ref<StyleBox> stylebox = theme_cache.normal->duplicate();
 	// TODO: Handle this internally instead of relying on the theme.
-	int margin = get_theme_constant(get_label().is_empty() ? SNAME("line_edit_margin_empty") : SNAME("line_edit_margin"), SNAME("EditorSpinSlider"));
+	int margin = get_label().is_empty() ? theme_cache.line_edit_margin_empty : theme_cache.line_edit_margin;
 	stylebox->set_content_margin(is_layout_rtl() ? SIDE_RIGHT : SIDE_LEFT, margin);
 
 	value_input->add_theme_style_override(CoreStringName(normal), stylebox);
@@ -340,39 +343,35 @@ void EditorSpinSlider::_draw_spin_slider() {
 	bool rtl = is_layout_rtl();
 	Vector2 size = get_size();
 
-	Ref<StyleBox> sb = get_theme_stylebox(read_only ? SNAME("read_only") : CoreStringName(normal), SNAME("LineEdit"));
+	Ref<StyleBox> sb = read_only ? theme_cache.read_only : theme_cache.normal;
 	if (!flat) {
 		draw_style_box(sb, Rect2(Vector2(), size));
 	}
-	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
+	Ref<Font> font = theme_cache.font;
+	int font_size = theme_cache.font_size;
 	int sep_base = 4 * EDSCALE;
 	int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
 	int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
 
-	Ref<Texture2D> updown = get_theme_icon(read_only ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
-
 	String numstr = get_text_value();
 
 	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
-	Color fc = get_theme_color(read_only ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit"));
-	Color lc = get_theme_color(read_only ? SNAME("read_only_label_color") : SNAME("label_color"));
+	Color fc = read_only ? theme_cache.font_uneditable_color : theme_cache.font_color;
+	Color lc = read_only ? theme_cache.read_only_label_color : theme_cache.label_color;
 
 	if (flat && !label.is_empty()) {
-		Ref<StyleBox> label_bg = get_theme_stylebox(SNAME("label_bg"), SNAME("EditorSpinSlider"));
 		if (rtl) {
-			draw_style_box(label_bg, Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
+			draw_style_box(theme_cache.label_bg, Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
 		} else {
-			draw_style_box(label_bg, Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
+			draw_style_box(theme_cache.label_bg, Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
 		}
 	}
 
 	if (has_focus(true)) {
-		Ref<StyleBox> focus = get_theme_stylebox(SNAME("focus"), SNAME("LineEdit"));
-		draw_style_box(focus, Rect2(Vector2(), size));
+		draw_style_box(theme_cache.focus, Rect2(Vector2(), size));
 	}
 
 	if (rtl) {
@@ -458,9 +457,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 			if (display_grabber) {
 				Ref<Texture2D> grabber_tex;
 				if (mouse_over_grabber || grabbing_grabber) {
-					grabber_tex = get_theme_icon(SNAME("grabber_highlight"), SNAME("HSlider"));
+					grabber_tex = theme_cache.grabber_highlight;
 				} else {
-					grabber_tex = get_theme_icon(SNAME("grabber"), SNAME("HSlider"));
+					grabber_tex = theme_cache.grabber;
 				}
 
 				if (grabber->get_texture() != grabber_tex) {
@@ -484,7 +483,6 @@ void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			grabbing_spinner_speed = editing_integer ? EDITOR_GET("interface/inspector/integer_drag_speed") : EDITOR_GET("interface/inspector/float_drag_speed");
-			_update_value_input_stylebox();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
@@ -578,7 +576,11 @@ bool EditorSpinSlider::is_editing_integer() const {
 }
 
 void EditorSpinSlider::set_label(const String &p_label) {
+	if (label == p_label) {
+		return;
+	}
 	label = p_label;
+	_update_value_input_stylebox();
 	queue_redraw();
 }
 
@@ -778,8 +780,26 @@ void EditorSpinSlider::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("value_focus_entered"));
 	ADD_SIGNAL(MethodInfo("value_focus_exited"));
 
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_CONSTANT, EditorSpinSlider, inspector_property_height, "inspector_property_height", "Editor");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, EditorSpinSlider, line_edit_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, EditorSpinSlider, line_edit_margin_empty);
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, EditorSpinSlider, font_color, "font_color", "LineEdit");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, EditorSpinSlider, font_uneditable_color, "font_uneditable_color", "LineEdit");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, EditorSpinSlider, label_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, EditorSpinSlider, read_only_label_color);
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_FONT, EditorSpinSlider, font, "font", "LineEdit");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_FONT_SIZE, EditorSpinSlider, font_size, "font_size", "LineEdit");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, normal, "normal", "LineEdit");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, read_only, "read_only", "LineEdit");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, label_bg);
+
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, EditorSpinSlider, updown_icon, "updown");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, EditorSpinSlider, updown_disabled_icon, "updown_disabled");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, EditorSpinSlider, grabber_highlight, "grabber_highlight", "HSlider");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, EditorSpinSlider, grabber, "grabber", "HSlider");
 }
 
 void EditorSpinSlider::_ensure_value_input() {

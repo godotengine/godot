@@ -33,10 +33,11 @@
 #include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/io/image.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/math/expression.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/os/os.h"
 #include "scene/gui/color_mode.h"
 #include "scene/gui/color_picker_shape.h"
 #include "scene/gui/file_dialog.h"
@@ -60,6 +61,10 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
+
+#ifdef MACOS_ENABLED
+#include "core/os/os.h"
+#endif
 
 static inline bool is_color_overbright(const Color &color) {
 	return (color.r > 1.0) || (color.g > 1.0) || (color.b > 1.0);
@@ -99,7 +104,7 @@ void ColorPicker::_notification(int p_what) {
 #ifdef MACOS_ENABLED
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible_in_tree()) {
-				perm_hb->set_visible(!OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
+				perm_hb->set_visible(sampler_visible && !OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
 			}
 		} break;
 #endif
@@ -427,7 +432,7 @@ void ColorPicker::_slider_value_changed() {
 		color_normalized = modes[current_mode]->get_color();
 	}
 	_normalized_apply_intensity_to_color();
-	intensity_value->set_prefix(intensity < 0 ? "" : "+");
+	intensity_value->set_format(intensity < 0 ? "" : "+%s");
 
 	modes[current_mode]->_value_changed();
 
@@ -590,7 +595,7 @@ Color ColorPicker::_color_apply_intensity(const Color &col) const {
 	Color result;
 	float multiplier = Math::pow(2, intensity);
 	for (int i = 0; i < 3; i++) {
-		result.components[i] = linear_color.components[i] * multiplier;
+		result[i] = linear_color[i] * multiplier;
 	}
 	result.a = col.a;
 	return result.linear_to_srgb();
@@ -604,7 +609,7 @@ void ColorPicker::_copy_color_to_normalized_and_intensity() {
 	Color linear_color = color.srgb_to_linear();
 	float multiplier = MAX(1, MAX(MAX(linear_color.r, linear_color.g), linear_color.b));
 	for (int i = 0; i < 3; i++) {
-		color_normalized.components[i] = linear_color.components[i] / multiplier;
+		color_normalized[i] = linear_color[i] / multiplier;
 	}
 	color_normalized.a = linear_color.a;
 	color_normalized = color_normalized.linear_to_srgb();
@@ -738,7 +743,7 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 		alpha_slider->set_step(step);
 		alpha_slider->set_value(modes[current_mode]->get_alpha_slider_value());
 		intensity_slider->set_value(intensity);
-		intensity_value->set_prefix(intensity < 0 ? "" : "+");
+		intensity_value->set_format(intensity < 0 ? "" : "+%s");
 	}
 
 	_update_text_value();
@@ -1942,6 +1947,9 @@ void ColorPicker::set_sampler_visible(bool p_visible) {
 	}
 	sampler_visible = p_visible;
 	sample_hbc->set_visible(p_visible);
+#ifdef MACOS_ENABLED
+	perm_hb->set_visible(p_visible && !OS::get_singleton()->get_granted_permissions().has("macos.permission.RECORD_SCREEN"));
+#endif
 }
 
 bool ColorPicker::is_sampler_visible() const {

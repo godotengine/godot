@@ -30,11 +30,11 @@
 
 #pragma once
 
+#include "../jsonrpc.h"
+
 #include "core/object/callable_mp.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
-
-#include "../jsonrpc.h"
 
 namespace TestJSONRPC {
 
@@ -195,6 +195,36 @@ TEST_CASE("[JSONRPC] mixed batch") {
 	expected.push_back(expected_2);
 
 	test_process_action(in, expected, true);
+}
+
+class TestHandlerJSONRPC : public Object {
+public:
+	bool called_1 = false;
+	bool called_2 = false;
+
+	void method1(const Variant &p_arg) {
+		called_1 = true;
+	}
+
+	void method2(const Variant &p_arg) {
+		called_2 = true;
+	}
+};
+
+TEST_CASE("[JSONRPC] process response") {
+	TestHandlerJSONRPC *handler = memnew(TestHandlerJSONRPC);
+	JSONRPC *jsonrpc = memnew(JSONRPC);
+
+	jsonrpc->set_response_handler(1, callable_mp(handler, &TestHandlerJSONRPC::method1));
+	jsonrpc->set_response_handler(2, callable_mp(handler, &TestHandlerJSONRPC::method2));
+
+	jsonrpc->process_action(jsonrpc->make_response(Variant(), 1));
+
+	CHECK(handler->called_1);
+	CHECK_FALSE(handler->called_2);
+
+	memdelete(jsonrpc);
+	memdelete(handler);
 }
 
 } // namespace TestJSONRPC

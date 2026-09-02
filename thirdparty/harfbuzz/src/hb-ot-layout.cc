@@ -2072,21 +2072,25 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
 void hb_ot_map_t::substitute (const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
   GSUBProxy proxy (font->face);
+  char tag[5] = {0};
+  hb_tag_to_string (chosen_script[0], tag);
   if (buffer->messaging () &&
-      !buffer->message (font, "start table GSUB script tag '%c%c%c%c'", HB_UNTAG (chosen_script[0]))) return;
+      !buffer->message (font, "start table GSUB script tag '%s'", tag)) return;
   apply (proxy, plan, font, buffer);
   if (buffer->messaging ())
-    (void) buffer->message (font, "end table GSUB script tag '%c%c%c%c'", HB_UNTAG (chosen_script[0]));
+    (void) buffer->message (font, "end table GSUB script tag '%s'", tag);
 }
 
 void hb_ot_map_t::position (const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
 {
   GPOSProxy proxy (font->face);
+  char tag[5] = {0};
+  hb_tag_to_string (chosen_script[0], tag);
   if (buffer->messaging () &&
-      !buffer->message (font, "start table GPOS script tag '%c%c%c%c'", HB_UNTAG (chosen_script[1]))) return;
+      !buffer->message (font, "start table GPOS script tag '%s'", tag)) return;
   apply (proxy, plan, font, buffer);
   if (buffer->messaging ())
-    (void) buffer->message (font, "end table GPOS script tag '%c%c%c%c'", HB_UNTAG (chosen_script[1]));
+    (void) buffer->message (font, "end table GPOS script tag '%s'", tag);
 }
 
 void

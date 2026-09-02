@@ -30,6 +30,7 @@
 
 #include "post_import_plugin_skeleton_rest_fixer.h"
 
+#include "core/io/resource_importer.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/retarget_modifier_3d.h"
@@ -52,6 +53,7 @@ void PostImportPluginSkeletonRestFixer::get_internal_import_options(InternalImpo
 						Variant::STRING, U"retarget/rest_fixer/\u26A0_validation_warning/skeleton_bones_must_be_renamed",
 						PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY),
 				Variant(skeleton_bones_must_be_renamed_warning)));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/copy_bone_skin_scale"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/use_global_pose"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::STRING, "retarget/rest_fixer/original_skeleton_name"), "OriginalSkeleton"));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/fix_silhouette/enable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -74,13 +76,13 @@ Variant PostImportPluginSkeletonRestFixer::get_internal_option_visibility(Intern
 			}
 		} else if (p_option == "retarget/rest_fixer/keep_global_rest_on_leftovers") {
 			return int(p_options["retarget/rest_fixer/retarget_method"]) == 1;
-		} else if (p_option == "retarget/rest_fixer/original_skeleton_name" || p_option == "retarget/rest_fixer/use_global_pose") {
+		} else if (p_option == "retarget/rest_fixer/original_skeleton_name" || p_option == "retarget/rest_fixer/copy_bone_skin_scale" || p_option == "retarget/rest_fixer/use_global_pose") {
 			return int(p_options["retarget/rest_fixer/retarget_method"]) == 2;
 		} else if (p_option.begins_with("retarget/") && p_option.ends_with("skeleton_bones_must_be_renamed")) {
 			return int(p_options["retarget/rest_fixer/retarget_method"]) == 2 && bool(p_options["retarget/bone_renamer/rename_bones"]) == false;
 		}
 	}
-	return true;
+	return Variant();
 }
 
 void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options) {
@@ -167,9 +169,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 				while (nodes.size()) {
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-					List<StringName> anims;
-					ap->get_animation_list(&anims);
-					for (const StringName &name : anims) {
+					for (const StringName &name : ap->get_sorted_animation_list()) {
 						Ref<Animation> anim = ap->get_animation(name);
 						int track_len = anim->get_track_count();
 						for (int i = 0; i < track_len; i++) {
@@ -235,9 +235,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 			while (nodes.size()) {
 				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-				List<StringName> anims;
-				ap->get_animation_list(&anims);
-				for (const StringName &name : anims) {
+				for (const StringName &name : ap->get_sorted_animation_list()) {
 					if (String(name).contains_char('/')) {
 						continue; // Avoid animation library which may be created by importer dynamically.
 					}
@@ -407,9 +405,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 					TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 					while (nodes.size()) {
 						AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-						List<StringName> anims;
-						ap->get_animation_list(&anims);
-						for (const StringName &name : anims) {
+						for (const StringName &name : ap->get_sorted_animation_list()) {
 							Ref<Animation> anim = ap->get_animation(name);
 							int track_len = anim->get_track_count();
 							for (int i = 0; i < track_len; i++) {
@@ -467,6 +463,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 		}
 
 		bool is_using_modifier = int(p_options["retarget/rest_fixer/retarget_method"]) == 2;
+		bool is_copying_bone_skin_scale = bool(p_options["retarget/rest_fixer/copy_bone_skin_scale"]);
 		bool is_using_global_pose = bool(p_options["retarget/rest_fixer/use_global_pose"]);
 		Skeleton3D *orig_skeleton = nullptr;
 		Skeleton3D *profile_skeleton = nullptr;
@@ -568,6 +565,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				orig_skeleton->set_owner(owner);
 				orig_skeleton->set_unique_name_in_owner(true);
 
+				mod->set_copy_bone_skin_scale(is_copying_bone_skin_scale);
 				mod->set_use_global_pose(is_using_global_pose);
 				mod->set_profile(profile);
 
@@ -579,9 +577,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 					String general_skeleton_pathname = UNIQUE_NODE_PREFIX + profile_skeleton->get_name();
 					while (nodes.size()) {
 						AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-						List<StringName> anims;
-						ap->get_animation_list(&anims);
-						for (const StringName &name : anims) {
+						for (const StringName &name : ap->get_sorted_animation_list()) {
 							Ref<Animation> anim = ap->get_animation(name);
 							int track_len = anim->get_track_count();
 							for (int i = 0; i < track_len; i++) {
@@ -604,7 +600,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 											Vector<StringName> names = anim->track_get_path(i).get_names();
 											names.remove_at(0);
 											for (int j = 0; j < names.size(); j++) {
-												path_string += "/" + names[j].operator String();
+												path_string += "/" + names[j].string();
 											}
 										}
 										if (anim->track_get_path(i).get_subname_count() > 0) {
@@ -715,9 +711,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				while (nodes.size()) {
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
 					ERR_CONTINUE(!ap);
-					List<StringName> anims;
-					ap->get_animation_list(&anims);
-					for (const StringName &name : anims) {
+					for (const StringName &name : ap->get_sorted_animation_list()) {
 						Ref<Animation> anim = ap->get_animation(name);
 						int track_len = anim->get_track_count();
 						for (int i = 0; i < track_len; i++) {
@@ -846,9 +840,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 			while (nodes.size()) {
 				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
-				List<StringName> anims;
-				ap->get_animation_list(&anims);
-				for (const StringName &name : anims) {
+				for (const StringName &name : ap->get_sorted_animation_list()) {
 					Ref<Animation> anim = ap->get_animation(name);
 					int track_len = anim->get_track_count();
 					for (int i = 0; i < track_len; i++) {

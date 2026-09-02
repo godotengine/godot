@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LineEdit" inherits="Control" keywords="text, input" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="LineEdit" inherits="Control" api_type="core" keywords="text, input" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An input field for single-line text.
 	</brief_description>
@@ -38,6 +38,7 @@
 		- [kbd]Cmd + Left Arrow[/kbd]: Same as [kbd]Home[/kbd], move the caret to the beginning of the line
 		- [kbd]Cmd + Right Arrow[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
 		[b]Note:[/b] Caret movement shortcuts listed above are not affected by [member shortcut_keys_enabled].
+		[note]Column numbers are [i]zero-based[/i], like elements of an array. For example, [member caret_column] being [code]0[/code] indicates the caret is on the first column (i.e., before the first character).[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -587,7 +588,7 @@
 			The caret's width in pixels. Greater values can be used to improve accessibility by ensuring the caret is easily visible, or to ensure consistency with a large font size.
 		</theme_item>
 		<theme_item name="minimum_character_width" data_type="constant" type="int" default="4">
-			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'M' characters (i.e. this number of 'M' characters can be displayed without scrolling).
+			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'W' characters (i.e. this number of 'W' characters can be displayed without scrolling).
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.

@@ -32,6 +32,7 @@
 
 #include "core/core_bind.h"
 #include "core/io/compression.h"
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "scene/debugger/scene_debugger_object.h"
@@ -275,7 +276,7 @@ void GameStateSnapshot::_get_rc_cycles(
 		}
 
 		SnapshotDataObject *next = objects[next_child.value];
-		if (next != nullptr && next->is_class(RefCounted::get_class_static()) && !next->is_class(WeakRef::get_class_static()) && !p_traversed_objs.has(next)) {
+		if (next != nullptr && next->is_class(RefCounted::get_class_static()) && !next->is_class("WeakRef") && !p_traversed_objs.has(next)) {
 			HashSet<SnapshotDataObject *> traversed_copy(p_traversed_objs);
 			if (p_obj != p_source_obj) {
 				traversed_copy.insert(p_obj);
@@ -308,7 +309,7 @@ void GameStateSnapshot::recompute_references() {
 	}
 
 	for (const KeyValue<ObjectID, SnapshotDataObject *> &obj : objects) {
-		if (!obj.value->is_class(RefCounted::get_class_static()) || obj.value->is_class(WeakRef::get_class_static())) {
+		if (!obj.value->is_class(RefCounted::get_class_static()) || obj.value->is_class("WeakRef")) {
 			continue;
 		}
 		LocalVector<String> cycles;

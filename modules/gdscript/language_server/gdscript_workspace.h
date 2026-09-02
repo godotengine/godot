@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "core/error/error_macros.h"
 #include "gdscript_extend_parser.h"
 #include "godot_lsp.h"
 
+#include "core/error/error_macros.h"
 #include "core/variant/variant.h"
 
 class GDScriptWorkspace : public RefCounted {
@@ -72,9 +72,6 @@ protected:
 	void apply_new_signal(Object *obj, String function, PackedStringArray args);
 
 public:
-	String root;
-	String root_uri;
-
 	HashMap<StringName, ClassMembers> native_members;
 
 public:

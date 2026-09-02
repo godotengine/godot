@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_fb_display_refresh_rate_extension.h"
+
 #include "../openxr_interface.h"
 
 OpenXRDisplayRefreshRateExtension *OpenXRDisplayRefreshRateExtension::singleton = nullptr;

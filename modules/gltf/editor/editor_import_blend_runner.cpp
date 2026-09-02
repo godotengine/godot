@@ -31,6 +31,7 @@
 #include "editor_import_blend_runner.h"
 
 #include "core/io/http_client.h"
+#include "core/io/xml_parser.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
@@ -216,6 +217,7 @@ HTTPClient::Status EditorImportBlendRunner::connect_blender_rpc(const Ref<HTTPCl
 	bool done = false;
 	while (!done) {
 		OS::get_singleton()->delay_usec(wait_usecs);
+		attempts++;
 		status = p_client->get_status();
 		switch (status) {
 			case HTTPClient::STATUS_RESOLVING:
@@ -349,10 +351,7 @@ bool EditorImportBlendRunner::_extract_error_message_xml(const Vector<uint8_t> &
 Error EditorImportBlendRunner::do_import_direct(const Dictionary &p_options) {
 	// Export glTF directly.
 	String python = vformat(PYTHON_SCRIPT_DIRECT, dict_to_python(p_options));
-	Error err = start_blender(python, true);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(start_blender(python, true));
 
 	return OK;
 }

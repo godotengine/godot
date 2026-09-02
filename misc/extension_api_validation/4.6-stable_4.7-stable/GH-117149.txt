@@ -1,0 +1,5 @@
+GH-117149
+---------
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 9 to 11.
+
+Optional "palette_index" and "custom_colors" arguments added. Compatibility method registered.

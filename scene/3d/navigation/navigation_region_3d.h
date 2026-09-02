@@ -46,8 +46,6 @@ class NavigationRegion3D : public Node3D {
 	real_t travel_cost = 1.0;
 	Ref<NavigationMesh> navigation_mesh;
 
-	Transform3D current_global_transform;
-
 	void _navigation_mesh_changed();
 
 	AABB bounds;

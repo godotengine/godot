@@ -47,16 +47,3 @@ index e8cc5ff1d9..ee0cc188fc 100644
 +        _glad_gles_loader_handle = NULL;
      }
  }
- 
-diff --git a/thirdparty/glad/glad/gl.h b/thirdparty/glad/glad/gl.h
-index 7f77d6a13f..307ea4dbb8 100644
---- a/thirdparty/glad/glad/gl.h
-+++ b/thirdparty/glad/glad/gl.h
-@@ -67,6 +67,7 @@
- #endif
- 
- #define GLAD_GL
-+#define GLAD_GLES2
- #define GLAD_OPTION_GL_LOADER
- 
- #ifdef __cplusplus

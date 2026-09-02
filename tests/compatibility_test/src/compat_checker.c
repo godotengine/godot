@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "compat_checker.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>

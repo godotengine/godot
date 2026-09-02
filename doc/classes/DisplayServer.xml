@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DisplayServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="DisplayServer" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A server interface for low-level window management.
 	</brief_description>
@@ -221,7 +221,7 @@
 		<method name="accessibility_update_set_bounds" deprecated="Use [AccessibilityServer] instead.">
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
-			<param index="1" name="p_rect" type="Rect2" />
+			<param index="1" name="rect" type="Rect2" />
 			<description>
 				Sets element bounding box, relative to the node position.
 			</description>
@@ -857,16 +857,22 @@
 		</method>
 		<method name="get_display_cutouts" qualifiers="const">
 			<return type="Rect2[]" />
+			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns an [Array] of [Rect2], each of which is the bounding rectangle for a display cutout or notch. These are non-functional areas on edge-to-edge screens used by cameras and sensors. Returns an empty array if the device does not have cutouts. See also [method get_display_safe_area].
-				[b]Note:[/b] Currently only implemented on Android. Other platforms will return an empty array even if they do have display cutouts or notches.
+				[b]Note:[/b] The returned rectangles are relative to the physical screen and not the virtual desktop.
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
+				[b]Note:[/b] Currently only implemented on Android and macOS. Other platforms will return an empty array even if they do have display cutouts or notches.
 			</description>
 		</method>
 		<method name="get_display_safe_area" qualifiers="const">
 			<return type="Rect2i" />
+			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the unobscured area of the display where interactive controls should be rendered. See also [method get_display_cutouts].
-				[b]Note:[/b] Currently only implemented on Android and iOS. On other platforms, [code]screen_get_usable_rect(SCREEN_OF_MAIN_WINDOW)[/code] will be returned as a fallback. See also [method screen_get_usable_rect].
+				[b]Note:[/b] The returned rectangle is relative to the physical screen and not the virtual desktop.
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
+				[b]Note:[/b] Currently only implemented on Android, iOS, and macOS. On other platforms, [code]screen_get_usable_rect(SCREEN_OF_MAIN_WINDOW)[/code] will be returned as a fallback. See also [method screen_get_usable_rect].
 			</description>
 		</method>
 		<method name="get_keyboard_focus_screen" qualifiers="const">
@@ -1576,6 +1582,14 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="hide_toast_notification">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Hides the toast notification with [param id] returned by [method send_toast_notification].
+				[b]Note:[/b] This method is only implemented on Windows.
+			</description>
+		</method>
 		<method name="ime_get_selection" qualifiers="const">
 			<return type="Vector2i" />
 			<description>
@@ -1602,6 +1616,14 @@
 			<description>
 				Returns [code]true[/code] if OS supports dark mode.
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
+			</description>
+		</method>
+		<method name="is_in_pip_mode">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns [code]true[/code] if the application is in picture-in-picture mode.
+				[b]Note:[/b] This method is implemented on Android.
 			</description>
 		</method>
 		<method name="is_touchscreen_available" qualifiers="const">
@@ -1695,6 +1717,33 @@
 				Sets the current mouse mode. See also [method mouse_get_mode].
 			</description>
 		</method>
+		<method name="pip_mode_enter">
+			<return type="void" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Enters picture-in-picture mode.
+				[b]Note:[/b] This method is implemented on Android.
+			</description>
+		</method>
+		<method name="pip_mode_set_aspect_ratio">
+			<return type="void" />
+			<param index="0" name="numerator" type="int" />
+			<param index="1" name="denominator" type="int" />
+			<param index="2" name="window_id" type="int" default="0" />
+			<description>
+				Specifies the aspect ratio for picture-in-picture mode.
+				[b]Note:[/b] This method is implemented on Android.
+			</description>
+		</method>
+		<method name="pip_mode_set_auto_enter_on_background">
+			<return type="void" />
+			<param index="0" name="auto_enter_on_background" type="bool" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Specifies whether picture-in-picture mode should be entered automatically when the application goes in the background.
+				[b]Note:[/b] This method is implemented on Android.
+			</description>
+		</method>
 		<method name="process_events">
 			<return type="void" />
 			<description>
@@ -1750,9 +1799,8 @@
 		<method name="screen_get_max_scale" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the greatest scale factor of all screens.
-				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Returns the greatest scale factor of all screens. See also [method screen_get_scale].
+				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
 			</description>
 		</method>
 		<method name="screen_get_orientation" qualifiers="const">
@@ -1809,11 +1857,11 @@
 			<return type="float" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the scale factor of the specified screen by index. Returns [code]1.0[/code] if [param screen] is invalid.
+				Returns the scale factor of the specified screen by index. Returns [code]1.0[/code] if [param screen] is invalid. See also [method screen_get_max_scale].
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] for hiDPI (Retina) screens, and [code]1.0[/code] for all other cases.
 				[b]Note:[/b] On Linux (Wayland), the returned value is accurate only when [param screen] is [constant SCREEN_OF_MAIN_WINDOW]. Due to API limitations, passing a direct index will return a rounded-up integer, if the screen has a fractional scale (e.g. [code]1.25[/code] would get rounded up to [code]2.0[/code]).
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, and Linux (Wayland). On other platforms, this method always returns [code]1.0[/code].
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, Linux, and Windows. On other platforms, this method always returns [code]1.0[/code].
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">
@@ -1857,6 +1905,17 @@
 				[b]Note:[/b] On iOS, this method has no effect if [member ProjectSettings.display/window/handheld/orientation] is not set to [constant SCREEN_SENSOR].
 			</description>
 		</method>
+		<method name="send_toast_notification">
+			<return type="int" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="text" type="String" />
+			<param index="2" name="image" type="Texture2D" />
+			<param index="3" name="callback" type="Callable" />
+			<description>
+				Displays a toast notification with [param title], [param text], and optionally [param image]. [param image] should be square, have a maximum edge length of 512 pixels, and should not exceed 4 MB when encoded as PNG. [param callback] should accept two arguments: [int] (notification ID) and [enum NotificationStatus]. Returns the notification ID or [constant INVALID_NOTIFICATION_ID] if it failed.
+				[b]Note:[/b] This method is only implemented on Windows.
+			</description>
+		</method>
 		<method name="set_hardware_keyboard_connection_change_callback">
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
@@ -1869,7 +1928,7 @@
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
 			<description>
-				Sets the window icon (usually displayed in the top-left corner) with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
+				Sets the application icon and icons of all windows with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
 				[b]Note:[/b] Requires support for [constant FEATURE_ICON].
 			</description>
 		</method>
@@ -2211,7 +2270,7 @@
 			<return type="float" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the maximum value for linear color components that can be displayed for the window specified by [param window_id], regardless of SDR or HDR output. Returns [code]1.0[/code] if HDR is not enabled or not supported. When HDR output is enabled, this is calculated based on [method window_get_hdr_output_current_reference_luminance] and [method window_get_hdr_output_current_max_luminance]. This value is used by tonemapping and other [Environment] effects to ensure that bright colors are presented in the range that can be displayed by this window. Corresponds to [method Window.get_output_max_linear_value].
+				Returns the maximum value for linear color components that can be displayed for the window specified by [param window_id], regardless of SDR or HDR output. Returns [code]1.0[/code] if HDR is not enabled or not supported. When HDR output is enabled, this is calculated based on [method window_get_hdr_output_current_reference_luminance] and [method window_get_hdr_output_current_max_luminance]. The [signal Window.output_max_linear_value_changed] signal will be emitted whenever this value changes. This value is used by tonemapping and other [Environment] effects to ensure that bright colors are presented in the range that can be displayed by this window. Corresponds to [method Window.get_output_max_linear_value].
 			</description>
 		</method>
 		<method name="window_get_popup_safe_rect" qualifiers="const">
@@ -2396,6 +2455,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the maximum luminance in nits (cd/m²) for HDR output by the window specified by [param window_id]. If [param max_luminance] is negative, the window uses the screen's maximum luminance that is reported by the operating system. By default, this luminance is set to [code]-1.0[/code] for every window. Typically this property should be left at this default value, but may optionally be exposed through in-game settings to allow the player to correct an inaccurate maximum luminance reported by the operating system. See also [method window_get_hdr_output_current_max_luminance] and [method window_get_hdr_output_max_luminance].
+				[b]Note:[/b] This method is only implemented on macOS and Windows. Other platforms will always use the screen's maximum luminance that is reported by the operating system.
 			</description>
 		</method>
 		<method name="window_set_hdr_output_reference_luminance">
@@ -2404,6 +2464,16 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the reference white luminance in nits (cd/m²) for HDR output by the window specified by [param window_id]. If [param reference_luminance] is negative, the window automatically adjusts to the brightness set by the operating system. By default, this luminance is set to [code]-1.0[/code] for every window. Typically this property should be left at this default value, but may optionally be exposed as an "HDR Brightness" in-game setting to allow the player to adjust the brightness of their game, independently of their device settings. See also [method window_get_hdr_output_current_reference_luminance] and [method window_get_hdr_output_reference_luminance].
+				[b]Note:[/b] This method is only implemented on Windows. Other platforms will always use the reference luminance that is reported by the operating system.
+			</description>
+		</method>
+		<method name="window_set_icon">
+			<return type="void" />
+			<param index="0" name="icon" type="Image" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the window icon (usually displayed in the top-left corner) for the window specified by [param window_id].
+				[b]Note:[/b] This method is implemented on Linux and Windows.
 			</description>
 		</method>
 		<method name="window_set_ime_active">
@@ -2638,10 +2708,9 @@
 	</methods>
 	<signals>
 		<signal name="orientation_changed">
-			<param index="0" name="orientation" type="int" />
+			<param index="0" name="orientation" type="int" enum="DisplayServer.SensorOrientation" />
 			<description>
-				Emitted when the device orientation changes. [param orientation] is the new orientation.
-				Returns [code]1[/code] for portrait, [code]2[/code] for landscape, and [code]0[/code] if the orientation is undefined.
+				Emitted when the screen orientation changes. [param orientation] is the new orientation.
 				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</signal>
@@ -2654,7 +2723,7 @@
 			Display server supports multiple windows that can be moved outside of the main window. [b]Windows, macOS, Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_TOUCHSCREEN" value="2" enum="Feature">
-			Display server supports touchscreen input. [b]Windows, Linux (X11), Android, iOS, Web[/b]
+			Display server supports touchscreen input. [b]Windows, Linux (X11/Wayland), Android, iOS, Web[/b]
 		</constant>
 		<constant name="FEATURE_MOUSE" value="3" enum="Feature">
 			Display server supports mouse input. [b]Windows, macOS, Linux (X11/Wayland), Android, Web[/b]
@@ -2751,7 +2820,10 @@
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
 		</constant>
 		<constant name="FEATURE_HDR_OUTPUT" value="35" enum="Feature">
-			Display server supports HDR output. [b]macOS, iOS, visionOS, Windows[/b]
+			Display server supports HDR output. [b]Linux (Wayland), macOS, iOS, visionOS, Windows[/b]
+		</constant>
+		<constant name="FEATURE_PIP_MODE" value="36" enum="Feature">
+			Display server supports putting the application in picture-in-picture mode. [b]Android[/b]
 		</constant>
 		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Unknown or custom role.
@@ -3093,6 +3165,9 @@
 		<constant name="INVALID_INDICATOR_ID" value="-1">
 			The ID that refers to a nonexistent application status indicator.
 		</constant>
+		<constant name="INVALID_NOTIFICATION_ID" value="-1">
+			The ID that refers to a nonexistent toast notification.
+		</constant>
 		<constant name="SCREEN_LANDSCAPE" value="0" enum="ScreenOrientation">
 			Default landscape orientation.
 		</constant>
@@ -3113,6 +3188,15 @@
 		</constant>
 		<constant name="SCREEN_SENSOR" value="6" enum="ScreenOrientation">
 			Automatic landscape or portrait orientation (default or reverse depending on sensor).
+		</constant>
+		<constant name="SENSOR_ORIENTATION_UNDEFINED" value="0" enum="SensorOrientation">
+			Unspecified screen sensor orientation.
+		</constant>
+		<constant name="SENSOR_ORIENTATION_PORTRAIT" value="1" enum="SensorOrientation">
+			Portrait orientation (either standard portrait or reverse portrait).
+		</constant>
+		<constant name="SENSOR_ORIENTATION_LANDSCAPE" value="2" enum="SensorOrientation">
+			Landscape orientation (either standard landscape or reverse landscape).
 		</constant>
 		<constant name="KEYBOARD_TYPE_DEFAULT" value="0" enum="VirtualKeyboardType">
 			Default text virtual keyboard.
@@ -3255,12 +3339,15 @@
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
 			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_BORDERLESS" value="1" enum="WindowFlags">
 			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_ALWAYS_ON_TOP" value="2" enum="WindowFlags">
 			The window is floating on top of all other windows. This flag is ignored for full-screen windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
 			The window background can be transparent.
@@ -3270,9 +3357,11 @@
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_POPUP" value="5" enum="WindowFlags">
 			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [method window_set_transient]).
+			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_EXTEND_TO_TITLE" value="6" enum="WindowFlags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons.
@@ -3282,6 +3371,7 @@
 		</constant>
 		<constant name="WINDOW_FLAG_MOUSE_PASSTHROUGH" value="7" enum="WindowFlags">
 			All mouse events are passed to the underlying window of the same application.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_SHARP_CORNERS" value="8" enum="WindowFlags">
 			Window style is overridden, forcing sharp corners.
@@ -3294,14 +3384,15 @@
 		</constant>
 		<constant name="WINDOW_FLAG_POPUP_WM_HINT" value="10" enum="WindowFlags">
 			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+			[b]Note:[/b] This flag is implemented on Linux (Wayland).
 		</constant>
 		<constant name="WINDOW_FLAG_MINIMIZE_DISABLED" value="11" enum="WindowFlags">
 			Window minimize button is disabled.
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_MAXIMIZE_DISABLED" value="12" enum="WindowFlags">
 			Window maximize button is disabled.
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_MAX" value="13" enum="WindowFlags">
 			Represents the size of the [enum WindowFlags] enum.
@@ -3337,6 +3428,10 @@
 			Sent when the window has been forcibly closed by the display server. The window will immediately hide and clean any internal rendering references.
 			[b]Note:[/b] This flag is implemented only on Linux (Wayland).
 		</constant>
+		<constant name="WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED" value="9" enum="WindowEvent">
+			Sent when the output max linear value returned by [method Window.get_output_max_linear_value] has changed.
+			This occurs when HDR output is enabled or disabled and when any HDR output luminance values of the window have changed, such as when the player adjusts their screen brightness setting or moves the window to a different screen.
+		</constant>
 		<constant name="WINDOW_EDGE_TOP_LEFT" value="0" enum="WindowResizeEdge">
 			Top-left edge of a window.
 		</constant>
@@ -3363,6 +3458,15 @@
 		</constant>
 		<constant name="WINDOW_EDGE_MAX" value="8" enum="WindowResizeEdge">
 			Represents the size of the [enum WindowResizeEdge] enum.
+		</constant>
+		<constant name="NOTIFICATION_ACTIVATED" value="0" enum="NotificationStatus">
+			User activates a toast notification through a click or touch.
+		</constant>
+		<constant name="NOTIFICATION_DISMISSED" value="1" enum="NotificationStatus">
+			A toast notification expires or is explicitly dismissed by the user.
+		</constant>
+		<constant name="NOTIFICATION_FAILED" value="2" enum="NotificationStatus">
+			Attempts to raise a toast notification failed.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
 			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).

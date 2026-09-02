@@ -1,0 +1,6 @@
+GH-121895
+---------
+
+Validate extension JSON: Error: Field 'classes/DisplayServer/signals/orientation_changed/arguments/0': type changed value in new API, from "int" to "enum::DisplayServer.SensorOrientation".
+
+Added a dedicated enum for the `orientation_changed` signal to make it easier to validate the orientation returned by the signal. The underlying int values remain unchanged.

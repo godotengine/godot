@@ -1,0 +1,11 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 5: The member "V" already exists in parent class A.
+>> ERROR at line 7: Class "Vector2" hides a built-in type.
+>> ERROR at line 8: The member "Vector2i" cannot have the same name as a builtin type.
+>> ERROR at line 9: The member "Vector3" cannot have the same name as a builtin type.
+>> ERROR at line 10: The member "Vector3i" cannot have the same name as a builtin type.
+>> ERROR at line 11: The member "Node" shadows a native class.
+>> ERROR at line 12: Member "script" redefined (original in native class 'RefCounted')
+>> ERROR at line 15: Member "changed" redefined (original in native class 'Resource')
+>> ERROR at line 16: Member "resource_name" redefined (original in native class 'Resource')
+>> ERROR at line 17: Member "NOTIFICATION_POSTINITIALIZE" redefined (original in native class 'Resource')

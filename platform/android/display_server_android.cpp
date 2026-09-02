@@ -72,6 +72,12 @@ bool DisplayServerAndroid::has_feature(DisplayServerEnums::Feature p_feature) co
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
+		case DisplayServerEnums::FEATURE_PIP_MODE: {
+			GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+			ERR_FAIL_NULL_V(godot_java, false);
+			return godot_java->is_pip_mode_supported();
+		} break;
+
 		case DisplayServerEnums::FEATURE_CURSOR_SHAPE:
 		//case DisplayServerEnums::FEATURE_CUSTOM_CURSOR_SHAPE:
 		//case DisplayServerEnums::FEATURE_HIDPI:
@@ -224,6 +230,7 @@ void DisplayServerAndroid::emit_input_dialog_callback(String p_text) {
 }
 
 Error DisplayServerAndroid::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND_V(p_window_id != DisplayServerEnums::MAIN_WINDOW_ID, ERR_UNAVAILABLE);
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL_V(godot_java, FAILED);
 	file_picker_callback = p_callback;
@@ -248,13 +255,21 @@ Color DisplayServerAndroid::get_base_color() const {
 	return godot_java->get_base_color();
 }
 
-TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts() const {
+TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, TypedArray<Rect2>());
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Array());
 	return godot_io_java->get_display_cutouts();
 }
 
-Rect2i DisplayServerAndroid::get_display_safe_area() const {
+Rect2i DisplayServerAndroid::get_display_safe_area(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Rect2i());
 	return godot_io_java->get_display_safe_area();
@@ -360,8 +375,9 @@ float DisplayServerAndroid::screen_get_scale(int p_screen) const {
 	// Update the scale to avoid cropping.
 	Size2i screen_size = screen_get_size(p_screen);
 	if (screen_size != Size2i()) {
-		float width_scale = screen_size.width / (float)OS_Android::DEFAULT_WINDOW_WIDTH;
-		float height_scale = screen_size.height / (float)OS_Android::DEFAULT_WINDOW_HEIGHT;
+		bool is_portrait = screen_size.height > screen_size.width;
+		float width_scale = screen_size.width / (float)(is_portrait ? OS_Android::DEFAULT_WINDOW_HEIGHT : OS_Android::DEFAULT_WINDOW_WIDTH);
+		float height_scale = screen_size.height / (float)(is_portrait ? OS_Android::DEFAULT_WINDOW_WIDTH : OS_Android::DEFAULT_WINDOW_HEIGHT);
 		screen_scale = MIN(screen_scale, MIN(width_scale, height_scale));
 	}
 
@@ -423,18 +439,22 @@ bool DisplayServerAndroid::has_hardware_keyboard() const {
 }
 
 void DisplayServerAndroid::window_set_window_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
 	window_event_callback = p_callable;
 }
 
 void DisplayServerAndroid::window_set_input_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
 	input_event_callback = p_callable;
 }
 
 void DisplayServerAndroid::window_set_input_text_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
 	input_text_callback = p_callable;
 }
 
 void DisplayServerAndroid::window_set_rect_changed_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
 	rect_changed_callback = p_callable;
 }
 
@@ -517,10 +537,12 @@ int64_t DisplayServerAndroid::window_get_native_handle(DisplayServerEnums::Handl
 }
 
 void DisplayServerAndroid::window_attach_instance_id(ObjectID p_instance, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
 	window_attached_instance_id = p_instance;
 }
 
 ObjectID DisplayServerAndroid::window_get_attached_instance_id(DisplayServerEnums::WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != DisplayServerEnums::MAIN_WINDOW_ID, ObjectID());
 	return window_attached_instance_id;
 }
 
@@ -835,9 +857,7 @@ DisplayServerAndroid::~DisplayServerAndroid() {
 	}
 
 #if defined(RD_ENABLED)
-	if (rendering_device) {
-		memdelete(rendering_device);
-	}
+	memdelete(rendering_device);
 
 	free_vulkan_global_context();
 #endif
@@ -857,6 +877,10 @@ void DisplayServerAndroid::process_magnetometer(const Vector3 &p_magnetometer) {
 
 void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
 	Input::get_singleton()->set_gyroscope(p_gyroscope);
+}
+
+void DisplayServerAndroid::process_device_orientation(const Quaternion &p_orientation) {
+	Input::get_singleton()->set_device_orientation(p_orientation);
 }
 
 void DisplayServerAndroid::_mouse_update_mode() {
@@ -1002,4 +1026,32 @@ void DisplayServerAndroid::set_icon(const Ref<Image> &p_icon) {
 
 bool DisplayServerAndroid::is_window_transparency_available() const {
 	return GLOBAL_GET_CACHED(bool, "display/window/per_pixel_transparency/allowed");
+}
+
+bool DisplayServerAndroid::is_in_pip_mode(DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND_V(p_window != DisplayServerEnums::MAIN_WINDOW_ID, false);
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, false);
+	return godot_java->is_in_pip_mode();
+}
+
+void DisplayServerAndroid::pip_mode_enter(DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL(godot_java);
+	godot_java->enter_pip_mode();
+}
+
+void DisplayServerAndroid::pip_mode_set_aspect_ratio(int p_numerator, int p_denominator, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL(godot_java);
+	godot_java->set_pip_mode_aspect_ratio(p_numerator, p_denominator);
+}
+
+void DisplayServerAndroid::pip_mode_set_auto_enter_on_background(bool p_auto_enter_on_background, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL(godot_java);
+	godot_java->set_auto_enter_pip_mode_on_background(p_auto_enter_on_background);
 }

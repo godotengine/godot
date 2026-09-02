@@ -53,6 +53,7 @@
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
+
 #include <cstddef>
 
 /** The buffer index to use for vertex content. */
@@ -120,6 +121,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	bool supports_native_image_atomics = false; /**< If true, native image atomic operations are supported by the OS. */
 	bool supports_border_color = false; /**< If true, sampler border color (clamp-to-border) is supported. Requires Apple7+. */
 	bool supports_residency_sets = false; /**< If true, residency sets (MTLResidencySet) are supported by the OS. */
+	bool supports_msaa_depth_resolve = false;
 
 	/*!
 	 * Check if argument buffers are fully supported, which requires tier 2 support and no need for argument encoders.

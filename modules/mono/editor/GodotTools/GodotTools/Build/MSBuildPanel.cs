@@ -88,7 +88,7 @@ namespace GodotTools.Build
             if (Internal.IsAssembliesReloadingNeeded())
             {
                 BuildManager.UpdateLastValidBuildDateTime();
-                Internal.ReloadAssemblies(softReload: false);
+                Internal.ReloadAssemblies();
             }
         }
 
@@ -109,7 +109,7 @@ namespace GodotTools.Build
             if (Internal.IsAssembliesReloadingNeeded())
             {
                 BuildManager.UpdateLastValidBuildDateTime();
-                Internal.ReloadAssemblies(softReload: false);
+                Internal.ReloadAssemblies();
             }
         }
 

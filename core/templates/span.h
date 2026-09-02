@@ -38,7 +38,9 @@ bool are_spans_equal(const LHS *p_lhs, const RHS *p_rhs, size_t p_size) {
 	if constexpr (std::is_same_v<LHS, RHS> && std::is_fundamental_v<LHS>) {
 		// Optimize trivial type comparison.
 		// is_trivially_equality_comparable would help, but it doesn't exist.
-		return memcmp(p_lhs, p_rhs, p_size * sizeof(LHS)) == 0;
+		// memcmp requires pointer argument to be valid even on size = 0 (C11 §7.24.1(2)).
+		// Span allows ptr arguments to be invalid as long as size = 0, so only call when p_size > 0.
+		return p_size == 0 || memcmp(p_lhs, p_rhs, p_size * sizeof(LHS)) == 0;
 	} else {
 		// Normal case: Need to iterate the array manually.
 		for (size_t j = 0; j < p_size; j++) {
@@ -128,7 +130,7 @@ public:
 	/// Find the index of the given value using binary search.
 	/// Note: Assumes that elements in the span are sorted. Otherwise, use find() instead.
 	template <typename Comparator = Comparator<T>>
-	constexpr uint64_t bisect(const T &p_value, bool p_before, Comparator compare = Comparator()) const;
+	constexpr uint64_t bisect(const T &p_value, bool p_before, Comparator p_compare = Comparator()) const;
 
 	/// The caller is responsible to ensure size() > 0.
 	constexpr T max() const;
@@ -193,13 +195,13 @@ constexpr uint64_t Span<T>::count(const T &p_val) const {
 
 template <typename T>
 template <typename Comparator>
-constexpr uint64_t Span<T>::bisect(const T &p_value, bool p_before, Comparator compare) const {
+constexpr uint64_t Span<T>::bisect(const T &p_value, bool p_before, Comparator p_compare) const {
 	uint64_t lo = 0;
 	uint64_t hi = size();
 	if (p_before) {
 		while (lo < hi) {
 			const uint64_t mid = (lo + hi) / 2;
-			if (compare(ptr()[mid], p_value)) {
+			if (p_compare(ptr()[mid], p_value)) {
 				lo = mid + 1;
 			} else {
 				hi = mid;
@@ -208,7 +210,7 @@ constexpr uint64_t Span<T>::bisect(const T &p_value, bool p_before, Comparator c
 	} else {
 		while (lo < hi) {
 			const uint64_t mid = (lo + hi) / 2;
-			if (compare(p_value, ptr()[mid])) {
+			if (p_compare(p_value, ptr()[mid])) {
 				hi = mid;
 			} else {
 				lo = mid + 1;

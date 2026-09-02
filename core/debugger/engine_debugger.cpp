@@ -80,7 +80,7 @@ void EngineDebugger::profiler_enable(const StringName &p_name, bool p_enabled, c
 void EngineDebugger::profiler_add_frame_data(const StringName &p_name, const Array &p_data) {
 	ERR_FAIL_COND_MSG(!profilers.has(p_name), vformat("Can't add frame data, no profiler: '%s'.", p_name));
 	Profiler &p = profilers[p_name];
-	if (p.add) {
+	if (p.active && p.add) {
 		p.add(p.data, p_data);
 	}
 }
@@ -138,8 +138,8 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bo
 		CreatePeerFunc *create_fn = protocols.getptr(proto);
 		ERR_FAIL_NULL_MSG(create_fn, vformat("Invalid protocol: %s.", proto));
 
-		RemoteDebuggerPeer *peer = (*create_fn)(p_uri);
-		if (!peer) {
+		Ref<RemoteDebuggerPeer> peer = (*create_fn)(p_uri);
+		if (peer.is_null()) {
 			return;
 		}
 		singleton = memnew(RemoteDebugger(Ref<RemoteDebuggerPeer>(peer)));
@@ -191,9 +191,7 @@ void EngineDebugger::deinitialize() {
 }
 
 EngineDebugger::~EngineDebugger() {
-	if (script_debugger) {
-		memdelete(script_debugger);
-	}
+	memdelete(script_debugger);
 	script_debugger = nullptr;
 	singleton = nullptr;
 }

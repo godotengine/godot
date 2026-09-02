@@ -41,9 +41,8 @@ class GridContainer : public Container {
 	} theme_cache;
 
 private:
-	int rows = 1;
-	int columns = 1;
-	bool vertical = true;
+	void _resort();
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
 
 protected:
 	bool is_fixed = false;
@@ -63,6 +62,7 @@ public:
 	bool is_vertical() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
 
 	int get_h_separation() const;
 

@@ -30,11 +30,8 @@
 
 #pragma once
 
-#include "core/io/image_loader.h"
 #include "core/io/stream_peer_tls.h"
 #include "core/io/tcp_server.h"
-#include "core/io/zip_io.h"
-#include "editor/file_system/editor_paths.h"
 
 class EditorHTTPServer : public RefCounted {
 	GDSOFTCLASS(EditorHTTPServer, RefCounted);

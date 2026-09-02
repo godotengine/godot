@@ -42,6 +42,7 @@
 #include <windows.h>
 
 #include <dwmapi.h>
+
 #include <cstdio>
 #include <cstdlib>
 

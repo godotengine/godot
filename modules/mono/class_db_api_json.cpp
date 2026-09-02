@@ -35,7 +35,6 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
-#include "core/version.h"
 
 void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	Dictionary classes_dict;
@@ -51,16 +50,19 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 		}
 
 		Dictionary class_dict;
-		classes_dict[t->name] = class_dict;
+		classes_dict[t->gdtype->get_name()] = class_dict;
 
-		class_dict["inherits"] = t->inherits;
+		class_dict["inherits"] = t->gdtype->get_super_type_name();
 
 		{ //methods
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
-				String name = F.key.operator String();
+			for (const KeyValue<StringName, GDType::Member> &F : t->gdtype->members(true)) {
+				if (F.value.type != GDType::Member::Type::METHOD) {
+					continue;
+				}
+				String name = F.key.string();
 
 				ERR_CONTINUE(name.is_empty());
 
@@ -79,7 +81,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				Dictionary method_dict;
 				methods.push_back(method_dict);
 
-				MethodBind *mb = t->method_map[F];
+				const MethodBind *mb = t->gdtype->members(true)[F].payload.method;
 				method_dict["name"] = mb->get_name();
 				method_dict["argument_count"] = mb->get_argument_count();
 				method_dict["return_type"] = mb->get_argument_type(-1);
@@ -122,7 +124,10 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
+			for (const KeyValue<StringName, GDType::Member> &F : t->gdtype->members(true)) {
+				if (F.value.type != GDType::Member::Type::INTEGER_CONSTANT) {
+					continue;
+				}
 				snames.push_back(F.key);
 			}
 
@@ -135,7 +140,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				constants.push_back(constant_dict);
 
 				constant_dict["name"] = F;
-				constant_dict["value"] = t->constant_map[F];
+				constant_dict["value"] = t->gdtype->members(true)[F].payload.integer_constant.value;
 			}
 
 			if (!constants.is_empty()) {
@@ -147,7 +152,10 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
+			for (const KeyValue<StringName, GDType::Member> &F : t->gdtype->members(true)) {
+				if (F.value.type != GDType::Member::Type::SIGNAL) {
+					continue;
+				}
 				snames.push_back(F.key);
 			}
 
@@ -159,7 +167,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				Dictionary signal_dict;
 				signals.push_back(signal_dict);
 
-				MethodInfo &mi = t->signal_map[F];
+				const MethodInfo &mi = *t->gdtype->members(true)[F].payload.signal;
 				signal_dict["name"] = F;
 
 				Array arguments;
@@ -180,10 +188,11 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			for (const KeyValue<StringName, ClassDB::PropertySetGet> &F : t->property_setget) {
-				snames.push_back(F.key);
+			for (const KeyValue<StringName, GDType::Member> &kv : t->gdtype->members(true)) {
+				if (kv.value.type == GDType::Member::Type::PROPERTY) {
+					snames.push_back(kv.key);
+				}
 			}
-
 			snames.sort_custom<StringName::AlphCompare>();
 
 			Array properties;
@@ -192,11 +201,12 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				Dictionary property_dict;
 				properties.push_back(property_dict);
 
-				ClassDB::PropertySetGet *psg = t->property_setget.getptr(F);
+				const GDType::Member &property = t->gdtype->members(true)[F];
+				const GDType::Member::Property &psg = property.payload.property;
 
 				property_dict["name"] = F;
-				property_dict["setter"] = psg->setter;
-				property_dict["getter"] = psg->getter;
+				property_dict["setter"] = psg.setter;
+				property_dict["getter"] = psg.getter;
 			}
 
 			if (!properties.is_empty()) {
@@ -207,15 +217,15 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 		Array property_list;
 
 		//property list
-		for (const PropertyInfo &F : t->property_list) {
+		for (const PropertyInfo *F : t->gdtype->get_ordered_self_properties()) {
 			Dictionary property_dict;
 			property_list.push_back(property_dict);
 
-			property_dict["name"] = F.name;
-			property_dict["type"] = F.type;
-			property_dict["hint"] = F.hint;
-			property_dict["hint_string"] = F.hint_string;
-			property_dict["usage"] = F.usage;
+			property_dict["name"] = F->name;
+			property_dict["type"] = F->type;
+			property_dict["hint"] = F->hint;
+			property_dict["hint_string"] = F->hint_string;
+			property_dict["usage"] = F->usage;
 		}
 
 		if (!property_list.is_empty()) {

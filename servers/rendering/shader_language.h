@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/property_info.h"
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
@@ -195,6 +196,8 @@ public:
 		TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC,
 		TK_REPEAT_ENABLE,
 		TK_REPEAT_DISABLE,
+		TK_HINT_NO_STORAGE,
+		TK_HINT_NO_EDITOR,
 		TK_SHADER_TYPE,
 		TK_CURSOR,
 		TK_ERROR,
@@ -709,9 +712,9 @@ public:
 			TextureRepeat repeat = REPEAT_DEFAULT;
 			float hint_range[3];
 			PackedStringArray hint_enum_names;
+			uint32_t property_usage = PROPERTY_USAGE_DEFAULT;
 			int instance_index = 0;
 			String group;
-			String subgroup;
 
 			_FORCE_INLINE_ bool is_texture() const {
 				// Order is assigned to -1 for texture uniforms.
@@ -750,14 +753,14 @@ public:
 			StringName struct_name;
 			DataPrecision precision;
 			//for passing textures as arguments
-			bool tex_argument_check;
+			bool tex_argument_check = false;
 			TextureFilter tex_argument_filter;
 			TextureRepeat tex_argument_repeat;
-			bool tex_builtin_check;
+			bool tex_builtin_check = false;
 			StringName tex_builtin;
-			ShaderNode::Uniform::Hint tex_hint;
-			bool is_const;
-			int array_size;
+			ShaderNode::Uniform::Hint tex_hint = ShaderNode::Uniform::HINT_NONE;
+			bool is_const = false;
+			int array_size = 0;
 
 			HashMap<StringName, HashSet<int>> tex_argument_connect;
 		};
@@ -846,12 +849,17 @@ public:
 	static String get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint);
 	static String get_texture_filter_name(TextureFilter p_filter);
 	static String get_texture_repeat_name(TextureRepeat p_repeat);
+	static String get_unset_property_usage_name(PropertyUsageFlags p_usage);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
 	static bool is_token_operator_assign(TokenType p_type);
 	static bool is_token_hint(TokenType p_type);
 
-	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, Scalar *p_value = nullptr);
+	static bool convert_operator(const OperatorNode *p_operator, DataType p_to_type, Scalar *p_value = nullptr, bool p_in_constructor = false);
+	static bool convert_constant(const ConstantNode *p_constant, DataType p_to_type, Scalar *p_value = nullptr, bool p_in_constructor = false);
+	static bool convert_scalar(DataType p_from_type, DataType p_to_type, const Scalar *p_scalar = nullptr, Scalar *p_value = nullptr);
+	static bool convert_boolean_scalar(DataType p_from_type, DataType p_to_type, const Scalar *p_scalar = nullptr, Scalar *p_value = nullptr);
+
 	static DataType get_scalar_type(DataType p_type);
 	static int get_cardinality(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
@@ -1063,7 +1071,6 @@ private:
 	bool is_shader_inc = false;
 
 	String current_uniform_group_name;
-	String current_uniform_subgroup_name;
 
 	VaryingFunctionNames varying_function_names;
 	uint32_t base_varying_index = 0;
@@ -1181,6 +1188,7 @@ private:
 	TextureFilter current_uniform_filter = FILTER_DEFAULT;
 	TextureRepeat current_uniform_repeat = REPEAT_DEFAULT;
 	bool current_uniform_instance_index_defined = false;
+	uint32_t current_property_usage = PROPERTY_USAGE_DEFAULT;
 	int completion_line = 0;
 	BlockNode *completion_block = nullptr;
 	DataType completion_base;
@@ -1202,6 +1210,7 @@ private:
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 	static const BuiltinFuncConstArgs builtin_func_const_args[];
+	static const BuiltinEntry builtin_vectorized_constructors[];
 	static const BuiltinEntry frag_only_func_defs[];
 
 	static bool is_const_suffix_lut_initialized;
@@ -1256,6 +1265,7 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
+	static bool is_builtin_vec_constructor(const String &p_name);
 	static bool is_builtin_func_out_parameter(const String &p_name, int p_param);
 
 	struct ShaderCompileInfo {

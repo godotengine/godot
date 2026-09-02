@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2016, Oculus VR, LLC.
 //
 // SPDX-License-Identifier: Apache-2.0

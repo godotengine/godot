@@ -30,11 +30,19 @@
 
 #include "margin_container.h"
 
-#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
 Size2 MarginContainer::get_minimum_size() const {
-	Size2 max;
+	Size2 max = Container::get_minimum_size();
+
+	max.width += (theme_cache.margin_left + theme_cache.margin_right);
+	max.height += (theme_cache.margin_top + theme_cache.margin_bottom);
+
+	return max;
+}
+
+Size2 MarginContainer::get_desired_size() const {
+	Size2 ds;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
@@ -42,19 +50,23 @@ Size2 MarginContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2 s = c->get_combined_minimum_size();
-		if (s.width > max.width) {
-			max.width = s.width;
-		}
-		if (s.height > max.height) {
-			max.height = s.height;
-		}
+		Size2 s = c->get_desired_size();
+		ds = ds.max(s);
 	}
 
-	max.width += (theme_cache.margin_left + theme_cache.margin_right);
-	max.height += (theme_cache.margin_top + theme_cache.margin_bottom);
+	ds.width += (theme_cache.margin_left + theme_cache.margin_right);
+	ds.height += (theme_cache.margin_top + theme_cache.margin_bottom);
 
-	return max;
+	return ds;
+}
+
+Size2 MarginContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	ms.width -= (theme_cache.margin_left + theme_cache.margin_right);
+	ms.height -= (theme_cache.margin_top + theme_cache.margin_bottom);
+
+	return ms;
 }
 
 Vector<int> MarginContainer::get_allowed_size_flags_horizontal() const {
@@ -63,6 +75,7 @@ Vector<int> MarginContainer::get_allowed_size_flags_horizontal() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 
@@ -72,6 +85,7 @@ Vector<int> MarginContainer::get_allowed_size_flags_vertical() const {
 	flags.append(SIZE_SHRINK_BEGIN);
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
+	flags.append(SIZE_MAXIMIZE);
 	return flags;
 }
 

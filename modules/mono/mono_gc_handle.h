@@ -30,7 +30,11 @@
 
 #pragma once
 
-#include "core/object/ref_counted.h"
+#include "core/typedefs.h"
+
+#ifdef DEBUG_ENABLED
+#include "core/error/error_macros.h"
+#endif
 
 namespace gdmono {
 

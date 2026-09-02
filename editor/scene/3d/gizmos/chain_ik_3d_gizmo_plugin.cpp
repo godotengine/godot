@@ -31,6 +31,8 @@
 #include "chain_ik_3d_gizmo_plugin.h"
 
 #include "editor/settings/editor_settings.h"
+#include "scene/3d/iterate_ik_3d.h"
+#include "scene/resources/surface_tool.h"
 
 ChainIK3DGizmoPlugin::SelectionMaterials ChainIK3DGizmoPlugin::selection_materials;
 

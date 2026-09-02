@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/triangulate.h"
 #include "core/object/callable_mp.h"
@@ -49,6 +50,14 @@
 
 RID Occluder3D::get_rid() const {
 	return occluder;
+}
+
+void Occluder3D::_bind_methods() {
+	// TODO Note: These used to be bound in ArrayOccluder3D::_bind_methods, indicating they
+	//            were originally meant to be exposed to ArrayOccluder3D instead of Occluder3D.
+	//            This should be investigated, to either move the binding or remove this comment.
+	ClassDB::bind_method(D_METHOD("get_vertices"), &Occluder3D::get_vertices);
+	ClassDB::bind_method(D_METHOD("get_indices"), &Occluder3D::get_indices);
 }
 
 void Occluder3D::_update() {
@@ -171,10 +180,7 @@ void ArrayOccluder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_arrays", "vertices", "indices"), &ArrayOccluder3D::set_arrays);
 
 	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &ArrayOccluder3D::set_vertices);
-	ClassDB::bind_method(D_METHOD("get_vertices"), &ArrayOccluder3D::get_vertices);
-
 	ClassDB::bind_method(D_METHOD("set_indices", "indices"), &ArrayOccluder3D::set_indices);
-	ClassDB::bind_method(D_METHOD("get_indices"), &ArrayOccluder3D::get_indices);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_indices", "get_indices");
@@ -457,8 +463,9 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 	update_configuration_warnings();
 
 #ifdef TOOLS_ENABLED
-	// PolygonOccluder3D is edited via an editor plugin, this ensures the plugin is shown/hidden when necessary
-	if (Engine::get_singleton()->is_editor_hint()) {
+	// PolygonOccluder3D is edited via an editor plugin, this ensures the plugin is shown/hidden when necessary.
+	// HACK: This should only be called when this node is the currently edited object (i.e. when edited through the inspector) to prevent side effects. We use `is_part_of_edited_scene()` as approximation.
+	if (is_part_of_edited_scene()) {
 		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_current).call_deferred();
 	}
 #endif

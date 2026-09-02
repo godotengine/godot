@@ -74,6 +74,7 @@ private:
 	void _on_remove_action_set();
 
 	void _on_remove_action(Object *p_action_editor);
+	void _on_rename_action(Object *p_action_editor);
 
 protected:
 	static void _bind_methods();

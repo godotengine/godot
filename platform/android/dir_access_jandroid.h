@@ -30,12 +30,9 @@
 
 #pragma once
 
-#include "java_godot_lib_jni.h"
-
-#include "core/io/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
 
-#include <cstdio>
+#include <jni.h>
 
 /// Android implementation of the DirAccess interface used to provide access to
 /// ACCESS_FILESYSTEM and ACCESS_RESOURCES directory resources.

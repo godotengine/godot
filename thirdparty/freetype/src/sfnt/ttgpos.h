@@ -5,7 +5,7 @@
  *   Routines to parse and access the 'GPOS' table for simple kerning
  *   (specification).
  *
- * Copyright (C) 2024-2025 by
+ * Copyright (C) 2024-2026 by
  * David Saltzman
  *
  * This file is part of the FreeType project, and may only be used,

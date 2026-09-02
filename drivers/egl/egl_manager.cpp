@@ -30,6 +30,8 @@
 
 #include "egl_manager.h"
 
+#ifdef EGL_ENABLED
+
 #include "core/config/engine.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
@@ -39,8 +41,6 @@
 #ifdef WINDOWS_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
-
-#ifdef EGL_ENABLED
 
 #if defined(EGL_STATIC)
 
@@ -350,6 +350,7 @@ void EGLManager::release_current() {
 	GLDisplay &current_display = displays[current_window->gldisplay_id];
 
 	eglMakeCurrent(current_display.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	current_window = nullptr;
 }
 
 void EGLManager::swap_buffers() {

@@ -91,7 +91,6 @@ class MultiMeshEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "MultiMesh"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

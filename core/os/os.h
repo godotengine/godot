@@ -121,7 +121,7 @@ protected:
 
 	friend class Main;
 	// Needed by tests to setup command-line args.
-	friend int test_main(int argc, char *argv[]);
+	friend int test_main(int p_argc, char *p_argv[]);
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	bool _separate_thread_render = false;
@@ -212,7 +212,7 @@ public:
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); }
 	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return Vector<String>(); }
 	virtual String get_executable_path() const;
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool p_read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
 	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) { return Dictionary(); }
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); }
@@ -270,7 +270,7 @@ public:
 		String name;
 	};
 
-	virtual DateTime get_datetime(bool utc = false) const = 0;
+	virtual DateTime get_datetime(bool p_utc = false) const = 0;
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
 	virtual double get_unix_time() const;
 
@@ -308,6 +308,7 @@ public:
 	bool is_separate_thread_rendering_enabled() const { return _separate_thread_render; }
 
 	virtual String get_locale() const;
+	virtual Vector<String> get_preferred_locales() const { return Vector<String>{ get_locale() }; }
 	String get_locale_language() const;
 
 	virtual uint64_t get_embedded_pck_offset() const;
@@ -339,6 +340,8 @@ public:
 	};
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
+
+	virtual String expand_path(const String &p_path) const;
 
 	virtual Error move_to_trash(const String &p_path) { return FAILED; }
 

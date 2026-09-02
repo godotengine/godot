@@ -10,7 +10,7 @@ def export_icon_builder(target, source, env):
     src_name = src_path.stem
     platform = src_path.parent.parent.stem
 
-    with open(str(source[0]), "r") as file:
+    with open(str(source[0]), "r", encoding="utf-8") as file:
         svg = file.read()
 
     with methods.generated_wrapper(str(target[0])) as file:

@@ -32,7 +32,6 @@
 
 #include "core/config/engine.h"
 #include "core/input/input.h"
-#include "core/input/input_map.h"
 #include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
 
@@ -179,10 +178,15 @@ void VirtualJoystick::_reset() {
 	joystick_pos = get_size() * initial_offset_ratio;
 	tip_pos = joystick_pos;
 
-	Input *input = Input::get_singleton();
-	for (const StringName &action : { action_left, action_right, action_down, action_up }) {
-		if (input->is_action_pressed(action)) {
-			input->action_release(action);
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		// Only release actions when not currently in the editor.
+		// Custom input actions are not defined while in the editor,
+		// so this would lead to error spam due to unknown input actions.
+		Input *input = Input::get_singleton();
+		for (const StringName &action : { action_left, action_right, action_down, action_up }) {
+			if (input->is_action_pressed(action)) {
+				input->action_release(action);
+			}
 		}
 	}
 

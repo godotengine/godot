@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/extension/gdextension_library_loader.h"
-#include "editor/export/editor_export.h"
+#include "editor/export/editor_export_plugin.h"
 
 class GDExtensionExportPlugin : public EditorExportPlugin {
 	GDSOFTCLASS(GDExtensionExportPlugin, EditorExportPlugin);
@@ -59,6 +59,32 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		// plugin it's part of, so we abort here.
 		skip();
 		return;
+	}
+
+	PackedStringArray include_tags = config->get_value("configuration", "include_tags", PackedStringArray());
+	PackedStringArray exclude_tags = config->get_value("configuration", "exclude_tags", PackedStringArray());
+	std::function<bool(String)> has_tag = [p_features](const String &p_feature) {
+		return p_features.has(p_feature);
+	};
+	if (include_tags.size()) {
+		bool matches = false;
+		for (const String &tag : include_tags) {
+			if (!GDExtensionLibraryLoader::match_all_tags(tag.split(".", false), has_tag)) {
+				continue;
+			}
+			matches = true;
+			break;
+		}
+		if (!matches) {
+			return; // We can't skip() since the .gdextension file is referenced in the project settings.
+		}
+	}
+	if (exclude_tags.size()) {
+		for (const String &tag : exclude_tags) {
+			if (GDExtensionLibraryLoader::match_all_tags(tag.split(".", false), has_tag)) {
+				return; // We can't skip() since the .gdextension file is referenced in the project settings.
+			}
+		}
 	}
 
 	ERR_FAIL_COND_MSG(!config->has_section_key("configuration", "entry_symbol"), "Failed to export GDExtension file, missing entry symbol: " + p_path);

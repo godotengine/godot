@@ -36,7 +36,6 @@
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/variant/variant_utility.h"
 #include "editor/editor_node.h"
@@ -439,10 +438,21 @@ void EditorResourcePreview::_idle_callback() {
 		return;
 	}
 
+	static uint64_t prev_process_frame = 0;
+	static uint64_t spent_frame_msec = 0;
+
+	uint64_t current_process_frame = Engine::get_singleton()->get_process_frames();
+	if (current_process_frame != prev_process_frame) {
+		prev_process_frame = current_process_frame;
+		spent_frame_msec = 0;
+	}
+
 	// Process preview tasks, trying to leave a little bit of responsiveness worst case.
-	uint64_t start = OS::get_singleton()->get_ticks_msec();
-	while (!singleton->queue.is_empty() && OS::get_singleton()->get_ticks_msec() - start < 100) {
+	while (!singleton->queue.is_empty() && spent_frame_msec < 100) {
+		uint64_t start_msec = OS::get_singleton()->get_ticks_msec();
 		singleton->_iterate();
+		uint64_t end_msec = OS::get_singleton()->get_ticks_msec();
+		spent_frame_msec += end_msec - start_msec;
 	}
 }
 

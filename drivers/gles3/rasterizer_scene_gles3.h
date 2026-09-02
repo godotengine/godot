@@ -69,6 +69,7 @@ enum SceneUniformLocation {
 	SCENE_EMPTY1, // Unused, put here to avoid conflicts with SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION.
 	SCENE_OMNILIGHT_UNIFORM_LOCATION,
 	SCENE_SPOTLIGHT_UNIFORM_LOCATION,
+	SCENE_AREALIGHT_UNIFORM_LOCATION,
 	SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
 	SCENE_MULTIVIEW_UNIFORM_LOCATION,
 	SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION,
@@ -76,6 +77,7 @@ enum SceneUniformLocation {
 	SCENE_EMPTY2, // Unused, put here to avoid conflicts with SKY_MULTIVIEW_UNIFORM_LOCATION.
 	SCENE_PREV_DATA_UNIFORM_LOCATION,
 	SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION,
+	SCENE_DECAL_DATA,
 };
 
 enum SkyUniformLocation {
@@ -86,13 +88,15 @@ enum SkyUniformLocation {
 	SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
 	SKY_EMPTY2, // Unused, put here to avoid conflicts with SCENE_OMNILIGHT_UNIFORM_LOCATION.
 	SKY_EMPTY3, // Unused, put here to avoid conflicts with SCENE_SPOTLIGHT_UNIFORM_LOCATION.
-	SKY_EMPTY4, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION.
-	SKY_EMPTY5, // Unused, put here to avoid conflicts with SCENE_MULTIVIEW_UNIFORM_LOCATION.
-	SKY_EMPTY6, // Unused, put here to avoid conflicts with SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION.
-	SKY_EMPTY7, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_SHADOW_UNIFORM_LOCATION.
+	SKY_EMPTY4, // Unused, put here to avoid conflicts with SCENE_AREALIGHT_UNIFORM_LOCATION.
+	SKY_EMPTY5, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION.
+	SKY_EMPTY6, // Unused, put here to avoid conflicts with SCENE_MULTIVIEW_UNIFORM_LOCATION.
+	SKY_EMPTY7, // Unused, put here to avoid conflicts with SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION.
+	SKY_EMPTY8, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_SHADOW_UNIFORM_LOCATION.
 	SKY_MULTIVIEW_UNIFORM_LOCATION,
-	SKY_EMPTY8, // Unused, put here to avoid conflicts with SCENE_PREV_DATA_UNIFORM_LOCATION.
-	SKY_EMPTY9, // Unused, put here to avoid conflicts with SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION.
+	SKY_EMPTY9, // Unused, put here to avoid conflicts with SCENE_PREV_DATA_UNIFORM_LOCATION.
+	SKY_EMPTY10, // Unused, put here to avoid conflicts with SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION.
+	SKY_EMPTY11, // Unused, put here to avoid conflicts with SCENE_DECAL_DATA.
 };
 
 struct RenderDataGLES3 {
@@ -134,6 +138,7 @@ struct RenderDataGLES3 {
 
 	uint32_t spot_light_count = 0;
 	uint32_t omni_light_count = 0;
+	uint32_t area_light_count = 0;
 
 	float luminance_multiplier = 1.0;
 
@@ -172,6 +177,11 @@ private:
 	GLES3::SceneMaterialData *default_material_data_ptr = nullptr;
 	GLES3::SceneMaterialData *overdraw_material_data_ptr = nullptr;
 
+	struct LTC {
+		RID lut1_texture;
+		RID lut2_texture;
+	} ltc;
+
 	/* LIGHT INSTANCE */
 
 	struct LightData {
@@ -191,6 +201,9 @@ private:
 
 		float pad[3];
 		uint32_t bake_mode;
+
+		float area_width[4]; // 4th is padding
+		float area_height[4];
 	};
 	static_assert(sizeof(LightData) % 16 == 0, "LightData size must be a multiple of 16 bytes");
 
@@ -322,14 +335,20 @@ private:
 
 		uint32_t paired_omni_light_count = 0;
 		uint32_t paired_spot_light_count = 0;
+		uint32_t paired_area_light_count = 0;
 		LocalVector<RID> paired_omni_lights;
 		LocalVector<RID> paired_spot_lights;
+		LocalVector<RID> paired_area_lights;
 		LocalVector<uint32_t> omni_light_gl_cache;
 		LocalVector<uint32_t> spot_light_gl_cache;
+		LocalVector<uint32_t> area_light_gl_cache;
 
 		LocalVector<RID> paired_reflection_probes;
 		LocalVector<RID> reflection_probe_rid_cache;
 		LocalVector<Transform3D> reflection_probes_local_transform_cache;
+
+		uint32_t decals_count = 0;
+		int32_t decals[MAX_DECAL_CULL];
 
 		RID lightmap_instance;
 		Rect2 lightmap_uv_scale;
@@ -350,7 +369,7 @@ private:
 		virtual void clear_light_instances() override;
 		virtual void pair_light_instance(const RID p_light_instance, RSE::LightType light_type, uint32_t placement_idx) override;
 		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
-		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override {}
+		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override;
 		virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override {}
 
 		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override {}
@@ -629,15 +648,19 @@ private:
 
 		LightData *omni_lights = nullptr;
 		LightData *spot_lights = nullptr;
+		LightData *area_lights = nullptr;
 		ShadowData *positional_shadows = nullptr;
 
 		InstanceSort<GLES3::LightInstance> *omni_light_sort;
 		InstanceSort<GLES3::LightInstance> *spot_light_sort;
+		InstanceSort<GLES3::LightInstance> *area_light_sort;
 		GLuint omni_light_buffer = 0;
 		GLuint spot_light_buffer = 0;
+		GLuint area_light_buffer = 0;
 		GLuint positional_shadow_buffer = 0;
 		uint32_t omni_light_count = 0;
 		uint32_t spot_light_count = 0;
+		uint32_t area_light_count = 0;
 		RSE::ShadowQuality positional_shadow_quality = RSE::ShadowQuality::SHADOW_QUALITY_SOFT_LOW;
 
 		DirectionalLightData *directional_lights = nullptr;
@@ -721,9 +744,11 @@ private:
 
 	RenderList render_list[RENDER_LIST_MAX];
 
+	RSE::DecalFilter decals_filter = RSE::DECAL_FILTER_LINEAR_MIPMAPS;
+
 	void _update_scene_ubo(GLuint &p_ubo_buffer, GLuint p_index, uint32_t p_size, const void *p_source_data, String p_name = "");
 
-	void _setup_lights(const RenderDataGLES3 *p_render_data, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_omni_light_count, uint32_t &r_spot_light_count, uint32_t &r_directional_shadow_count);
+	void _setup_lights(const RenderDataGLES3 *p_render_data, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_omni_light_count, uint32_t &r_spot_light_count, uint32_t &r_area_light_count, uint32_t &r_directional_shadow_count);
 	void _setup_environment(const RenderDataGLES3 *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_pancake_shadows, float p_shadow_bias = 0.0);
 	void _fill_render_list(RenderListType p_render_list, const RenderDataGLES3 *p_render_data, PassMode p_pass_mode, bool p_append = false);
 	void _render_shadows(const RenderDataGLES3 *p_render_data, const Size2i &p_viewport_size = Size2i(1, 1));
@@ -732,6 +757,8 @@ private:
 
 	template <PassMode p_pass_mode>
 	_FORCE_INLINE_ void _render_list_template(RenderListParameters *p_params, const RenderDataGLES3 *p_render_data, uint32_t p_from_element, uint32_t p_to_element, bool p_alpha_pass = false);
+
+	_FORCE_INLINE_ uint32_t _indices_to_primitives(RSE::PrimitiveType p_primitive, uint32_t p_indices) const;
 
 protected:
 	double time;
@@ -813,6 +840,7 @@ protected:
 		int mipmap_count = 1;
 
 		RSE::SkyMode mode = RSE::SKY_MODE_AUTOMATIC;
+		RSE::SkyMode internal_mode = RSE::SKY_MODE_INCREMENTAL; // When using SKY_MODE_AUTOMATIC, this is the mode used internally.
 
 		//ReflectionData reflection;
 		bool reflection_dirty = false;
@@ -825,11 +853,19 @@ protected:
 		GLES3::SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position = Vector3(0.0, 0.0, 0.0);
 		float prev_time = 0.0f;
+		float prev_fog_aerial_perspective = 0.0;
+		Color prev_fog_light_color;
+		float prev_fog_sun_scatter = 0.0;
+		bool prev_fog_enabled = false;
+		float prev_fog_density = 0.0;
+		float prev_fog_sky_affect = 0.0;
+		float prev_fog_light_energy = 0.0;
 	};
 
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 
+	GLES3::SkyMaterialData *_get_sky_material_data(RID p_env);
 	void _setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();
@@ -947,6 +983,7 @@ public:
 	void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override;
 
 	TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) override;
+	virtual PackedByteArray bake_render_area_light_atlas(const TypedArray<RID> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps) override { return PackedByteArray(); }
 	void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, GLuint p_framebuffer, const Rect2i &p_region);
 
 	bool free(RID p_rid) override;

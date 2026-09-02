@@ -119,7 +119,7 @@ void TextEdit::Text::set_inline_object_parser(const Callable &p_parser) {
 }
 
 int TextEdit::Text::get_line_width(int p_line, int p_wrap_index) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+	ERR_FAIL_INDEX_V(p_line, (int)text.size(), 0);
 	if (p_wrap_index != -1) {
 		return text[p_line].data_buf->get_line_width(p_wrap_index);
 	}
@@ -173,17 +173,18 @@ BitField<TextServer::LineBreakFlag> TextEdit::Text::get_brk_flags() const {
 }
 
 int TextEdit::Text::get_line_wrap_amount(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+	ERR_FAIL_INDEX_V(p_line, (int)text.size(), 0);
 
 	return text[p_line].line_count - 1;
 }
 
 Vector<Vector2i> TextEdit::Text::get_line_wrap_ranges(int p_line) const {
 	Vector<Vector2i> ret;
-	ERR_FAIL_INDEX_V(p_line, text.size(), ret);
+	ERR_FAIL_INDEX_V(p_line, (int)text.size(), ret);
 
 	Ref<TextParagraph> data_buf = text[p_line].data_buf;
 	int line_count = data_buf->get_line_count();
+	ret.reserve_exact(line_count);
 	for (int i = 0; i < line_count; i++) {
 		ret.push_back(data_buf->get_line_range(i));
 	}
@@ -191,13 +192,13 @@ Vector<Vector2i> TextEdit::Text::get_line_wrap_ranges(int p_line) const {
 }
 
 const Ref<TextParagraph> TextEdit::Text::get_line_data(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), Ref<TextParagraph>());
+	ERR_FAIL_INDEX_V(p_line, (int)text.size(), Ref<TextParagraph>());
 	return text[p_line].data_buf;
 }
 
 float TextEdit::Text::get_indent_offset(int p_line, bool p_rtl) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
-	Line &text_line = text.write[p_line];
+	ERR_FAIL_INDEX_V(p_line, (int)text.size(), 0);
+	const Line &text_line = text[p_line];
 	if (text_line.indent_ofs < 0.0) {
 		int char_count = 0;
 		int line_length = text_line.data.size();
@@ -227,7 +228,7 @@ float TextEdit::Text::get_indent_offset(int p_line, bool p_rtl) const {
 
 _FORCE_INLINE_ const String &TextEdit::Text::operator[](int p_line) const {
 	static const String empty;
-	ERR_FAIL_INDEX_V(p_line, text.size(), empty);
+	ERR_FAIL_INDEX_V(p_line, (int)text.size(), empty);
 	return text[p_line].data;
 }
 
@@ -240,18 +241,18 @@ _FORCE_INLINE_ const String &TextEdit::Text::get_text_with_ime(int p_line) const
 }
 
 const Vector<RID> TextEdit::Text::get_accessibility_elements(int p_line) {
-	ERR_FAIL_INDEX_V(p_line, text.size(), Vector<RID>());
+	ERR_FAIL_INDEX_V(p_line, (int)text.size(), Vector<RID>());
 
 	return text[p_line].accessibility_text_root_element;
 }
 
 void TextEdit::Text::update_accessibility(int p_line, RID p_root) {
-	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_INDEX(p_line, (int)text.size());
 
-	Line &l = text.write[p_line];
+	Line &l = text[p_line];
 	if (l.accessibility_text_root_element.is_empty()) {
 		for (int i = 0; i < l.data_buf->get_line_count(); i++) {
-			bool is_last_line = (p_line == text.size() - 1) && (i == l.data_buf->get_line_count() - 1);
+			bool is_last_line = (p_line == (int)text.size() - 1) && (i == l.data_buf->get_line_count() - 1);
 			RID rid = AccessibilityServer::get_singleton()->create_sub_text_edit_elements(p_root, l.data_buf->get_line_rid(i), max_line_height, p_line, is_last_line);
 			l.accessibility_text_root_element.push_back(rid);
 		}
@@ -270,21 +271,20 @@ inline bool is_inline_info_valid(const Variant &p_info) {
 }
 
 void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
-	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_INDEX(p_line, (int)text.size());
 
-	Line &l = text.write[p_line];
-	for (const RID rid : l.accessibility_text_root_element) {
+	Line &text_line = text[p_line];
+	for (const RID rid : text_line.accessibility_text_root_element) {
 		if (rid.is_valid()) {
 			AccessibilityServer::get_singleton()->free_element(rid);
 		}
 	}
-	l.accessibility_text_root_element.clear();
+	text_line.accessibility_text_root_element.clear();
 
 	if (font.is_null()) {
 		return; // Not in tree?
 	}
 
-	Line &text_line = text.write[p_line];
 	if (p_text_changed) {
 		text_line.data_buf->clear();
 	}
@@ -398,7 +398,7 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 }
 
 void TextEdit::Text::invalidate_all_lines() {
-	for (int i = 0; i < text.size(); i++) {
+	for (int i = 0; i < (int)text.size(); i++) {
 		if (tab_size_dirty) {
 			if (tab_size > 0) {
 				Vector<float> tabs;
@@ -423,7 +423,7 @@ void TextEdit::Text::invalidate_font() {
 		font_height = font->get_height(font_size);
 	}
 
-	for (int i = 0; i < text.size(); i++) {
+	for (int i = 0; i < (int)text.size(); i++) {
 		invalidate_cache(i, false);
 	}
 	is_dirty = false;
@@ -441,7 +441,7 @@ void TextEdit::Text::invalidate_all() {
 		font_height = font->get_height(font_size);
 	}
 
-	for (int i = 0; i < text.size(); i++) {
+	for (int i = 0; i < (int)text.size(); i++) {
 		invalidate_cache(i, true);
 	}
 	is_dirty = false;
@@ -460,32 +460,45 @@ void TextEdit::Text::clear() {
 	invalidate_cache(0, true);
 }
 
+void TextEdit::Text::swap_additional_data(int p_from_line, int p_to_line) {
+	ERR_FAIL_INDEX(p_from_line, (int)text.size());
+	ERR_FAIL_INDEX(p_to_line, (int)text.size());
+
+	SWAP(text[p_to_line].gutters, text[p_from_line].gutters);
+	SWAP(text[p_to_line].background_color, text[p_from_line].background_color);
+	SWAP(text[p_to_line].hidden, text[p_from_line].hidden);
+}
+
 int TextEdit::Text::get_total_visible_line_count() const {
 	return total_visible_line_count;
 }
 
 void TextEdit::Text::set(int p_line, const String &p_text, const Array &p_bidi_override) {
-	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_INDEX(p_line, (int)text.size());
 
-	text.write[p_line].data = p_text;
-	text.write[p_line].ime_data = String();
-	text.write[p_line].bidi_override = p_bidi_override;
-	text.write[p_line].ime_bidi_override.clear();
+	if (text[p_line].data == p_text && text[p_line].bidi_override == p_bidi_override && text[p_line].ime_data == String()) {
+		return;
+	}
+
+	text[p_line].data = p_text;
+	text[p_line].ime_data = String();
+	text[p_line].bidi_override = p_bidi_override;
+	text[p_line].ime_bidi_override.clear();
 	invalidate_cache(p_line, true);
 }
 
 void TextEdit::Text::set_ime(int p_line, const String &p_text, const Array &p_bidi_override) {
-	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_INDEX(p_line, (int)text.size());
 
-	text.write[p_line].ime_data = p_text;
-	text.write[p_line].ime_bidi_override = p_bidi_override;
+	text[p_line].ime_data = p_text;
+	text[p_line].ime_bidi_override = p_bidi_override;
 	invalidate_cache(p_line, true);
 }
 
 void TextEdit::Text::set_hidden(int p_line, bool p_hidden) {
-	ERR_FAIL_INDEX(p_line, text.size());
+	ERR_FAIL_INDEX(p_line, (int)text.size());
 
-	Line &text_line = text.write[p_line];
+	Line &text_line = text[p_line];
 	if (text_line.hidden == p_hidden) {
 		return;
 	}
@@ -506,40 +519,38 @@ void TextEdit::Text::set_hidden(int p_line, bool p_hidden) {
 }
 
 bool TextEdit::Text::is_hidden(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), true);
+	ERR_FAIL_INDEX_V(p_line, (int)text.size(), true);
 	return text[p_line].hidden;
 }
 
 void TextEdit::Text::insert(int p_at, const Vector<String> &p_text, const Vector<Array> &p_bidi_override) {
-	ERR_FAIL_INDEX(p_at, text.size() + 1);
+	ERR_FAIL_INDEX(p_at, (int)text.size() + 1);
 
-	int new_line_count = p_text.size() - 1;
-	if (new_line_count > 0) {
-		text.resize(text.size() + new_line_count);
-		for (int i = (text.size() - 1); i > p_at; i--) {
-			if ((i - new_line_count) <= 0) {
-				break;
-			}
-			text.write[i] = text[i - new_line_count];
-		}
+	set(p_at, p_text[0], p_bidi_override[0]);
+
+	const uint32_t new_line_count = p_text.size() - 1;
+	if (new_line_count == 0) {
+		return;
 	}
 
-	for (int i = 0; i < p_text.size(); i++) {
-		if (i == 0) {
-			set(p_at + i, p_text[i], p_bidi_override[i]);
-			continue;
-		}
+	text.resize(text.size() + new_line_count);
+	const uint32_t first_new_line = p_at + new_line_count;
+	for (uint32_t i = text.size() - 1; i > first_new_line; i--) {
+		text[i] = std::move(text[i - new_line_count]);
+	}
+
+	for (uint32_t i = 1; i < p_text.size(); i++) {
 		Line line;
 		line.gutters.resize(gutter_count);
 		line.data = p_text[i];
 		line.bidi_override = p_bidi_override[i];
-		text.write[p_at + i] = line;
+		text[p_at + i] = line;
 		invalidate_cache(p_at + i, true);
 	}
 }
 
 void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
-	if (p_from_line == p_to_line) {
+	if (p_from_line >= p_to_line) {
 		return;
 	}
 
@@ -558,9 +569,9 @@ void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
 		total_visible_line_count -= text_line.line_count;
 	}
 
-	int diff = p_to_line - p_from_line;
-	for (int i = p_to_line + 1; i < text.size(); i++) {
-		text.write[i - diff] = text[i];
+	const uint32_t diff = p_to_line - p_from_line;
+	for (uint32_t i = p_to_line + 1; i < text.size(); i++) {
+		text[i - diff] = std::move(text[i]);
 	}
 	text.resize(text.size() - diff);
 
@@ -568,32 +579,23 @@ void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
 }
 
 void TextEdit::Text::add_gutter(int p_at) {
-	for (int i = 0; i < text.size(); i++) {
+	for (Line &line : text) {
 		if (p_at < 0 || p_at > gutter_count) {
-			text.write[i].gutters.push_back(Gutter());
+			line.gutters.push_back(Gutter());
 		} else {
-			text.write[i].gutters.insert(p_at, Gutter());
+			line.gutters.insert(p_at, Gutter());
 		}
 	}
 	gutter_count++;
 }
 
 void TextEdit::Text::remove_gutter(int p_gutter) {
-	ERR_FAIL_INDEX(p_gutter, text.size());
+	ERR_FAIL_INDEX(p_gutter, (int)text.size());
 
-	for (int i = 0; i < text.size(); i++) {
-		text.write[i].gutters.remove_at(p_gutter);
+	for (Line &line : text) {
+		line.gutters.remove_at(p_gutter);
 	}
 	gutter_count--;
-}
-
-void TextEdit::Text::move_gutters(int p_from_line, int p_to_line) {
-	ERR_FAIL_INDEX(p_from_line, text.size());
-	ERR_FAIL_INDEX(p_to_line, text.size());
-
-	text.write[p_to_line].gutters = text[p_from_line].gutters;
-	text.write[p_from_line].gutters.clear();
-	text.write[p_from_line].gutters.resize(gutter_count);
 }
 
 void TextEdit::Text::set_use_default_word_separators(bool p_enabled) {
@@ -626,6 +628,7 @@ String TextEdit::Text::get_custom_word_separators() const {
 
 String TextEdit::Text::get_default_word_separators() const {
 	String concat_separators = "!\"#$%&'()*+,-./:;<=>?@[\\]^`{|}~";
+	concat_separators.reserve(concat_separators.length() + 0x70 + 0x40);
 	for (char32_t ch = 0x2000; ch <= 0x206F; ++ch) { // General punctuation block.
 		concat_separators += ch;
 	}
@@ -742,6 +745,14 @@ Ref<StyleBox> TextEdit::_get_current_stylebox() const {
 	return editable ? theme_cache.style_normal : theme_cache.style_readonly;
 }
 
+String TextEdit::_get_accessibility_name() const {
+	if (!placeholder_text.is_empty() && get_accessibility_name().is_empty()) {
+		return atr(placeholder_text);
+	} else {
+		return Control::_get_accessibility_name();
+	}
+}
+
 void TextEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE:
@@ -757,9 +768,7 @@ void TextEdit::_notification(int p_what) {
 			if (text.size() == 1 && text[0].is_empty()) {
 				AccessibilityServer::get_singleton()->update_set_placeholder(ae, atr(placeholder_text));
 			}
-			if (!placeholder_text.is_empty() && get_accessibility_name().is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, atr(placeholder_text));
-			}
+
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, !editable);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_TEXT_SELECTION, callable_mp(this, &TextEdit::_accessibility_action_set_selection));
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_REPLACE_SELECTED_TEXT, callable_mp(this, &TextEdit::_accessibility_action_replace_selected));
@@ -885,7 +894,70 @@ void TextEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (scrolling && get_v_scroll() != target_v_scroll) {
+			if (touch_dragging_starting || touch_dragging_in_progress || touch_dragging_deaccel) {
+				if (touch_dragging_deaccel) {
+					// Deceleration handling loop; finger-up after flick.
+					Vector2 pos = Vector2(h_scroll->get_value(), v_scroll->get_value());
+
+					float line_height = MAX(1, get_line_height());
+					Vector2 frame_movement = drag_speed * get_process_delta_time();
+
+					pos.x += frame_movement.x;
+					pos.y += frame_movement.y / line_height;
+
+					bool turnoff_h = false;
+					bool turnoff_v = false;
+
+					if (pos.x < 0) {
+						pos.x = 0;
+						turnoff_h = true;
+					}
+					if (pos.x > (h_scroll->get_max() - h_scroll->get_page())) {
+						pos.x = h_scroll->get_max() - h_scroll->get_page();
+						turnoff_h = true;
+					}
+
+					if (pos.y < 0) {
+						pos.y = 0;
+						turnoff_v = true;
+					}
+					if (pos.y > (v_scroll->get_max() - v_scroll->get_page())) {
+						pos.y = v_scroll->get_max() - v_scroll->get_page();
+						turnoff_v = true;
+					}
+
+					h_scroll->scroll_to(pos.x);
+					v_scroll->scroll_to(pos.y);
+
+					float sgn_x = drag_speed.x < 0 ? -1 : 1;
+					float val_x = Math::abs(drag_speed.x);
+					val_x -= 1000.0f * get_process_delta_time();
+					if (val_x < 0) {
+						turnoff_h = true;
+					}
+
+					float sgn_y = drag_speed.y < 0 ? -1 : 1;
+					float val_y = Math::abs(drag_speed.y);
+					val_y -= 1000.0f * get_process_delta_time();
+					if (val_y < 0) {
+						turnoff_v = true;
+					}
+
+					drag_speed = Vector2(sgn_x * val_x, sgn_y * val_y);
+
+					if (turnoff_h && turnoff_v) {
+						_cancel_inertial_scroll();
+					}
+				} else {
+					// Active touch scrolling; finger-down.
+					if (time_since_motion == 0.0 || time_since_motion > 0.1) {
+						Vector2 diff = drag_accum - last_drag_accum;
+						last_drag_accum = drag_accum;
+						drag_speed = diff / get_process_delta_time();
+					}
+					time_since_motion += get_process_delta_time();
+				}
+			} else if (scrolling && get_v_scroll() != target_v_scroll) {
 				double target_y = target_v_scroll - get_v_scroll();
 				double dist = std::abs(target_y);
 				// To ensure minimap is responsive override the speed setting.
@@ -904,6 +976,7 @@ void TextEdit::_notification(int p_what) {
 				} else {
 					set_v_scroll(get_v_scroll() + vel);
 				}
+				_selection_mode_update();
 			} else {
 				scrolling = false;
 				minimap_clicked = false;
@@ -948,7 +1021,7 @@ void TextEdit::_notification(int p_what) {
 			int left_margin = Math::ceil(style->get_margin(SIDE_LEFT));
 			int xmargin_beg = left_margin + gutters_width + gutter_padding;
 
-			int xmargin_end = size.width - Math::ceil(style->get_margin(SIDE_RIGHT));
+			int xmargin_end = size.width - Math::floor(style->get_margin(SIDE_RIGHT));
 			if (draw_minimap) {
 				xmargin_end -= minimap_width;
 			}
@@ -967,12 +1040,12 @@ void TextEdit::_notification(int p_what) {
 			}
 #endif // DISABLE_DEPRECATED
 
-			Vector<BraceMatchingData> brace_matching;
+			LocalVector<BraceMatchingData> brace_matching;
 			if (highlight_matching_braces_enabled) {
 				brace_matching.resize(get_caret_count());
 
 				for (int caret = 0; caret < get_caret_count(); caret++) {
-					BraceMatchingData &brace_match = brace_matching.write[caret];
+					BraceMatchingData &brace_match = brace_matching[caret];
 
 					if (get_caret_line(caret) < 0 || get_caret_line(caret) >= text.size() || get_caret_column(caret) < 0) {
 						continue;
@@ -1121,15 +1194,15 @@ void TextEdit::_notification(int p_what) {
 			// Check if highlighted words contain only whitespaces (tabs or spaces).
 			bool only_whitespaces_highlighted = highlighted_text.strip_edges().is_empty();
 
-			Vector<Pair<int, int>> highlighted_lines;
+			LocalVector<Pair<int, int>> highlighted_lines;
 			highlighted_lines.resize(carets.size());
-			Vector<int> carets_wrap_index;
+			LocalVector<int> carets_wrap_index;
 			carets_wrap_index.resize(carets.size());
-			for (int i = 0; i < carets.size(); i++) {
-				carets.write[i].visible = false;
+			for (int i = 0; i < (int)carets.size(); i++) {
+				carets[i].visible = false;
 				int wrap_index = get_caret_wrap_index(i);
-				highlighted_lines.write[i] = Pair<int, int>(get_caret_line(i), wrap_index);
-				carets_wrap_index.write[i] = wrap_index;
+				highlighted_lines[i] = Pair<int, int>(get_caret_line(i), wrap_index);
+				carets_wrap_index[i] = wrap_index;
 			}
 
 			int first_vis_line = get_first_visible_line() - 1;
@@ -1385,9 +1458,9 @@ void TextEdit::_notification(int p_what) {
 
 					int ofs_y = style->get_margin(SIDE_TOP);
 
-					ofs_y += i * row_height + theme_cache.line_spacing / 2;
+					ofs_y += i * row_height;
 					ofs_y -= first_visible_line_wrap_ofs * row_height;
-					ofs_y -= _get_v_scroll_offset() * row_height;
+					ofs_y -= (int)Math::round(_get_v_scroll_offset() * row_height);
 
 					bool clipped = false;
 					if (ofs_y + row_height < top_limit_y) {
@@ -1425,7 +1498,7 @@ void TextEdit::_notification(int p_what) {
 						cache_entry.y_offset = ofs_y;
 
 						int gutter_offset = left_margin;
-						for (int g = 0; g < gutters.size(); g++) {
+						for (int g = 0; g < (int)gutters.size(); g++) {
 							const GutterInfo &gutter = gutters[g];
 
 							if (!gutter.draw || gutter.width <= 0) {
@@ -1464,12 +1537,16 @@ void TextEdit::_notification(int p_what) {
 									gutter_rect.size -= Point2(horizontal_padding, vertical_padding) * 2;
 
 									// Correct icon aspect ratio.
-									float icon_ratio = icon->get_width() / icon->get_height();
+									float icon_ratio = (float)icon->get_width() / (float)icon->get_height();
 									float gutter_ratio = gutter_rect.size.x / gutter_rect.size.y;
 									if (gutter_ratio > icon_ratio) {
-										gutter_rect.size.x = std::floor(icon->get_width() * (gutter_rect.size.y / icon->get_height()));
+										float ratio_width = Math::floor(gutter_rect.size.y * icon_ratio);
+										gutter_rect.position.x += (gutter_rect.size.x - ratio_width) / 2;
+										gutter_rect.size.x = ratio_width;
 									} else {
-										gutter_rect.size.y = std::floor(icon->get_height() * (gutter_rect.size.x / icon->get_width()));
+										float ratio_height = Math::floor(gutter_rect.size.x / icon_ratio);
+										gutter_rect.position.y += (gutter_rect.size.y - ratio_height) / 2;
+										gutter_rect.size.y = ratio_height;
 									}
 									if (rtl) {
 										gutter_rect.position.x = size.width - gutter_rect.position.x - gutter_rect.size.x;
@@ -1504,7 +1581,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					// Validate inline objects.
-					Vector<Dictionary> object_keys;
+					LocalVector<Dictionary> object_keys;
 					if (inline_object_drawer.is_valid()) {
 						for (Variant k : ldata->get_line_objects(line_wrap_index)) {
 							if (!is_inline_info_valid(k)) {
@@ -1757,6 +1834,84 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
+					for (const Underline &u : underlines) {
+						if (line < u.start_line || line > u.end_line) {
+							continue;
+						}
+
+						int start_column = u.start_column;
+						int end_column = u.end_column;
+
+						if (line != u.start_line) {
+							start_column = 0;
+						}
+						if (line != u.end_line) {
+							end_column = last_visible_char;
+						}
+
+						const Vector<Vector2> underline = TS->shaped_text_get_selection(rid, start_column, end_column);
+						Rect2 combined_rect;
+						for (int j = 0; j < underline.size(); j++) {
+							Rect2 rect = Rect2(
+									underline[j].x + char_margin,
+									ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size),
+									underline[j].y - underline[j].x,
+									theme_cache.font_size * 0.1);
+
+							combined_rect = j == 0 ? rect : combined_rect.merge(rect);
+						}
+
+						PackedVector2Array points;
+						PackedColorArray colors;
+
+						float squiggle_top_y = combined_rect.position.y;
+						float squiggle_center_y = combined_rect.position.y + (combined_rect.size.y / 2.0);
+						float squiggle_bottom_y = combined_rect.position.y + combined_rect.size.y;
+
+						float distance = combined_rect.position.x;
+						float end_position = combined_rect.position.x + combined_rect.size.x;
+
+						bool use_top_squiggle = false;
+
+						// Add first point.
+						if (distance >= xmargin_beg && distance <= xmargin_end) {
+							points.append(Vector2(distance, squiggle_center_y));
+							distance += char_w * 0.25;
+						}
+
+						while (true) {
+							if (distance >= xmargin_beg && distance <= xmargin_end) {
+								float y_pos = use_top_squiggle ? squiggle_top_y : squiggle_bottom_y;
+								// Ensure the underline ends at the end of the text.
+								if (distance >= end_position) {
+									if (points.is_empty()) {
+										break;
+									}
+									Vector2 prev_point = points.get(points.size() - 1);
+									float prev_distance = prev_point.x;
+									float ratio_across = (end_position - prev_distance) / (distance - prev_distance);
+									float prev_y = prev_point.y;
+									float mid_y = Math::lerp(prev_y, y_pos, ratio_across);
+									points.append(Vector2(end_position, mid_y));
+									break;
+								}
+								points.append(Vector2(distance, y_pos));
+							}
+							if (distance >= end_position) {
+								break;
+							}
+							distance += char_w * 0.5;
+							use_top_squiggle = !use_top_squiggle;
+						}
+
+						if (points.size() >= 2) {
+							colors.append(u.color);
+							// theme_cache.base_scale is not necessary here, as font size is already dependent on editor scale.
+							// See https://github.com/godotengine/godot/pull/119588#pullrequestreview-4618459305 for more info.
+							RS::get_singleton()->canvas_item_add_polyline(text_ci, points, colors, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size), 1), true);
+						}
+					}
+
 					cache_entry.first_visible_chars.push_back(first_visible_char);
 					cache_entry.last_visible_chars.push_back(last_visible_char);
 
@@ -1775,9 +1930,9 @@ void TextEdit::_notification(int p_what) {
 					// Prevent carets from disappearing at theme scales below 1.0 (if the caret width is 1).
 					const int caret_width = theme_cache.caret_width * MAX(1, theme_cache.base_scale);
 
-					for (int c = 0; c < carets.size(); c++) {
+					for (int c = 0; c < (int)carets.size(); c++) {
 						if (!clipped && get_caret_line(c) == line && carets_wrap_index[c] == line_wrap_index) {
-							carets.write[c].draw_pos.y = ofs_y + ldata->get_line_descent(line_wrap_index);
+							carets[c].draw_pos.y = ofs_y + ldata->get_line_descent(line_wrap_index);
 
 							if (ime_text.is_empty() || ime_selection.y == 0) {
 								// Normal caret.
@@ -1798,13 +1953,13 @@ void TextEdit::_notification(int p_what) {
 								}
 
 								if ((ts_caret.l_caret != Rect2() && (ts_caret.l_dir == TextServer::DIRECTION_AUTO || ts_caret.l_dir == (TextServer::Direction)input_direction)) || (ts_caret.t_caret == Rect2())) {
-									carets.write[c].draw_pos.x = char_margin + ts_caret.l_caret.position.x;
+									carets[c].draw_pos.x = char_margin + ts_caret.l_caret.position.x;
 								} else {
-									carets.write[c].draw_pos.x = char_margin + ts_caret.t_caret.position.x;
+									carets[c].draw_pos.x = char_margin + ts_caret.t_caret.position.x;
 								}
 
 								if (get_caret_draw_pos(c).x >= xmargin_beg && get_caret_draw_pos(c).x <= xmargin_end) {
-									carets.write[c].visible = true;
+									carets[c].visible = true;
 									if (draw_caret || drag_caret_force_displayed) {
 										if (caret_type == CaretType::CARET_TYPE_BLOCK || overtype_mode) {
 											//Block or underline caret, draw trailing carets at full height.
@@ -1913,7 +2068,7 @@ void TextEdit::_notification(int p_what) {
 										}
 										rect.size.y = caret_width;
 										RS::get_singleton()->canvas_item_add_rect(text_ci, rect, theme_cache.caret_color);
-										carets.write[c].draw_pos.x = rect.position.x;
+										carets[c].draw_pos.x = rect.position.x;
 									}
 								}
 								if (ime_selection.y > 0) {
@@ -1932,7 +2087,7 @@ void TextEdit::_notification(int p_what) {
 										}
 										rect.size.y = caret_width * 3;
 										RS::get_singleton()->canvas_item_add_rect(text_ci, rect, theme_cache.caret_color);
-										carets.write[c].draw_pos.x = rect.position.x;
+										carets[c].draw_pos.x = rect.position.x;
 									}
 								}
 							}
@@ -1942,6 +2097,25 @@ void TextEdit::_notification(int p_what) {
 
 				if (!draw_placeholder) {
 					line_drawing_cache[line] = cache_entry;
+				}
+			}
+
+			// Selection handles.
+			if (show_selection_handle && selection_handle_enabled) {
+				for (int c = 0; c < get_caret_count(); c++) {
+					if (!has_selection(c)) {
+						continue;
+					}
+
+					Vector<Point2i> handles_pos = _get_selection_handles_pos(c);
+					Point2i start_pos = handles_pos[0];
+					Point2i end_pos = handles_pos[1];
+					if (start_pos.x != -1) {
+						_draw_selection_handle(start_pos);
+					}
+					if (end_pos.x != -1) {
+						_draw_selection_handle(end_pos);
+					}
 				}
 			}
 
@@ -1979,7 +2153,7 @@ void TextEdit::_notification(int p_what) {
 		} break;
 
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
-			if (has_focus()) {
+			if (has_focus() && editable) {
 				const String &new_ime_text = DisplayServer::get_singleton()->ime_get_text();
 				const Vector2i &new_ime_selection = DisplayServer::get_singleton()->ime_get_selection();
 				if (ime_text == new_ime_text && ime_selection == new_ime_selection) {
@@ -2048,6 +2222,54 @@ void TextEdit::_notification(int p_what) {
 	}
 }
 
+void TextEdit::_draw_selection_handle(Vector2 p_pos) const {
+	Color handle_color = theme_cache.caret_color;
+	int line_height = get_line_height();
+
+	int handle_line_width = theme_cache.caret_width * MAX(1, theme_cache.base_scale);
+	RS::get_singleton()->canvas_item_add_line(text_ci, p_pos, p_pos + Vector2(0, line_height), handle_color, handle_line_width);
+
+	Vector2 circle_center = p_pos + Vector2(0, line_height + selection_handle_radius);
+	RS::get_singleton()->canvas_item_add_circle(text_ci, circle_center, selection_handle_radius, handle_color);
+}
+
+/*
+ * Returns true if p_column is at index 0 or if it is the first character of a wrapped line segment.
+ */
+bool TextEdit::_is_first_column(int p_line, int p_column) const {
+	bool is_first_column = p_column == 0;
+	if (!is_first_column && is_line_wrapped(p_line)) {
+		int wrap_index = get_line_wrap_index_at_column(p_line, p_column);
+		int wrap_index_last_column = get_line_wrap_index_at_column(p_line, p_column - 1);
+		is_first_column = wrap_index != wrap_index_last_column;
+	}
+	return is_first_column;
+}
+
+Vector<Point2i> TextEdit::_get_selection_handles_pos(int p_caret) const {
+	int selection_from_line = get_selection_from_line(p_caret);
+	int selection_from_column = get_selection_from_column(p_caret);
+	int selection_to_line = get_selection_to_line(p_caret);
+	int selection_to_column = get_selection_to_column(p_caret);
+	Rect2i start_rect = get_rect_at_line_column(selection_from_line, selection_from_column);
+	Rect2i end_rect = get_rect_at_line_column(selection_to_line, selection_to_column);
+
+	Point2i start_pos = start_rect.position;
+	if (start_pos.x != -1 && !_is_first_column(selection_from_line, selection_from_column)) {
+		start_pos.x += start_rect.size.x;
+	}
+
+	Point2i end_pos = end_rect.position;
+	if (end_pos.x != -1 && !_is_first_column(selection_to_line, selection_to_column)) {
+		end_pos.x += end_rect.size.x;
+	}
+
+	Vector<Point2i> result;
+	result.push_back(start_pos);
+	result.push_back(end_pos);
+	return result;
+}
+
 void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
@@ -2064,6 +2286,9 @@ void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
 }
 
 bool TextEdit::alt_input(const Ref<InputEvent> &p_gui_input) {
+	if (!editable) {
+		return false;
+	}
 	Ref<InputEventKey> k = p_gui_input;
 	if (k.is_valid()) {
 		// Start Unicode Alt input (hold).
@@ -2244,9 +2469,12 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	double prev_v_scroll = v_scroll->get_value();
 	double prev_h_scroll = h_scroll->get_value();
 
+	int event_device_id = p_gui_input->get_device();
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
-	if (mb.is_valid()) {
+	if (mb.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		show_selection_handle = false; // Hiding selection handle because mouse is used.
+
 		Vector2i mpos = mb->get_position();
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
@@ -2264,6 +2492,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					// Scroll 3 lines.
 					_scroll_up(3 * mb->get_factor(), true);
 				}
+				_selection_mode_update();
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_or_control_pressed()) {
 				if (mb->is_shift_pressed()) {
@@ -2276,14 +2505,17 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					// Scroll 3 lines.
 					_scroll_down(3 * mb->get_factor(), true);
 				}
+				_selection_mode_update();
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
 				h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
 				queue_accessibility_update();
+				_selection_mode_update();
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
 				h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
 				queue_accessibility_update();
+				_selection_mode_update();
 			}
 
 			if (mb->get_button_index() == MouseButton::LEFT) {
@@ -2305,7 +2537,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					emit_signal(SNAME("gutter_clicked"), hovered_gutter.y, hovered_gutter.x);
 					return;
 				}
-				int left_margin = Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT));
+				int left_margin = get_line_start_margin();
 				if (mpos.x < left_margin + gutters_width + gutter_padding) {
 					return;
 				}
@@ -2494,16 +2726,272 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 				}
+
+				if (editable) {
+					_show_virtual_keyboard();
+				}
+			}
+		}
+	}
+
+	Ref<InputEventScreenTouch> touch = p_gui_input;
+	if (touch.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		show_selection_handle = true;
+
+		// Prioritizing selection handle input
+		if (touch->is_pressed() && selection_handle_enabled) {
+			for (int c = 0; c < get_caret_count(); c++) {
+				if (!has_selection(c)) {
+					continue;
+				}
+
+				Vector<Point2i> handles_pos = _get_selection_handles_pos(c);
+				Point2i start_pos = handles_pos[0];
+				Point2i end_pos = handles_pos[1];
+
+				int line_height = get_line_height();
+
+				float start_dist = touch->get_position().distance_to(start_pos + Vector2(0, line_height + selection_handle_radius));
+				bool start_touched = start_pos.x != -1 && start_dist < selection_handle_radius * 2;
+				float end_dist = touch->get_position().distance_to(end_pos + Vector2(0, line_height + selection_handle_radius));
+				bool end_touched = end_pos.x != -1 && end_dist < selection_handle_radius * 2;
+
+				if (!start_touched && !end_touched) {
+					continue;
+				}
+
+				if (start_touched && end_touched) {
+					start_touched = start_dist < end_dist;
+					end_touched = !start_touched;
+				}
+
+				if (start_touched) {
+					selection_handle_drag_type = is_caret_after_selection_origin(c) ? SELECTION_HANDLE_START : SELECTION_HANDLE_END;
+					selection_handle_drag_offset = touch->get_position() - Vector2(start_pos) - Vector2(0, line_height / 2);
+				} else {
+					selection_handle_drag_type = is_caret_after_selection_origin(c) ? SELECTION_HANDLE_END : SELECTION_HANDLE_START;
+					selection_handle_drag_offset = touch->get_position() - Vector2(end_pos) - Vector2(0, line_height / 2);
+				}
+				dragging_caret_index = c;
+				_cancel_inertial_scroll();
+				accept_event();
+				return; // Return early to block default touch logic
+			}
+		}
+
+		if (touch->is_released() && selection_handle_drag_type != SELECTION_HANDLE_NONE) {
+			selection_handle_drag_type = SELECTION_HANDLE_NONE;
+			dragging_caret_index = -1;
+			accept_event();
+			return;
+		}
+
+		if (touch->is_pressed() && !touch->is_double_tap()) {
+			if (draw_minimap) {
+				_update_minimap_click();
+				if (dragging_minimap) {
+					return;
+				}
 			}
 
-			if (editable) {
-				_show_virtual_keyboard();
+			if (touch_dragging_deaccel) {
+				_cancel_inertial_scroll();
 			}
+
+			touch_dragging_starting = true;
+			touch_dragging_in_progress = false;
+
+			drag_speed = Vector2();
+			drag_accum = Vector2();
+			last_drag_accum = Vector2();
+			drag_from = Vector2(prev_h_scroll, prev_v_scroll);
+			touch_dragging_deaccel = false;
+			time_since_motion = 0.0;
+
+			set_process_internal(true);
+		}
+
+		if ((touch->is_pressed() && touch->is_double_tap()) || (touch->is_released() && !touch->is_double_tap() && !touch_dragging_in_progress && !pan_gesture_performed)) {
+			// Otherwise, if we receive a double touch press event, or a single touch release event with no touch dragging having occurred,
+			// we process as a regular tap, similar to how mouse click are handled above omitting logic not relevant to touch taps.
+			// Notice that a key difference from the mouse click handling logic and double tap events is that for single tap, we apply the logic below on release instead of on press.
+			// This is because we're unsure whether single tap press event will end as a single tap press->release event, or turn into a drag (press->drag->release) event.
+			Vector2i touch_pos = touch->get_position();
+			if (is_layout_rtl()) {
+				touch_pos.x = get_size().x - touch_pos.x;
+			}
+			_reset_caret_blink_timer();
+
+			apply_ime();
+
+			Point2i pos = get_line_column_at_pos(touch_pos);
+			int line = pos.y;
+			int col = pos.x;
+
+			// Gutters.
+			Vector2i current_hovered_gutter = _get_hovered_gutter(touch_pos);
+			if (current_hovered_gutter != Vector2i(-1, -1)) {
+				emit_signal(SNAME("gutter_clicked"), current_hovered_gutter.y, current_hovered_gutter.x);
+				return;
+			}
+			int left_margin = get_line_start_margin();
+			if (touch_pos.x < left_margin + gutters_width + gutter_padding) {
+				return;
+			}
+
+			// Minimap.
+			if (draw_minimap) {
+				if (touch->is_double_tap()) {
+					_update_minimap_click();
+					if (dragging_minimap) {
+						return;
+					}
+				} else if (dragging_minimap) {
+					// touch is released, cleanup minimap logic.
+					dragging_minimap = false;
+					can_drag_minimap = false;
+					minimap_clicked = false;
+					return;
+				}
+			}
+
+			// Update caret.
+			if (!touch->is_double_tap()) {
+				// A regular click clears all other carets.
+				int caret = 0;
+				remove_secondary_carets();
+				deselect();
+
+				_push_current_op();
+				set_caret_line(line, false, true, -1, caret);
+				set_caret_column(col, false, caret);
+
+				adjust_viewport_to_caret();
+			} else {
+				// Start double-click select word mode.
+				set_selection_mode(SelectionMode::SELECTION_MODE_WORD);
+				_update_selection_mode_word(true);
+			}
+
+			// Click inline objects.
+			if (inline_object_click_handler.is_valid()) {
+				int xmargin_beg = left_margin + gutters_width + gutter_padding;
+				int wrap_i = get_line_wrap_index_at_column(pos.y, pos.x);
+				const float wrap_indent = _get_wrap_indent_offset(pos.y, wrap_i, is_layout_rtl());
+
+				Ref<TextParagraph> ldata = text.get_line_data(line);
+				for (const Variant &inline_key : ldata->get_line_objects(wrap_i)) {
+					if (!is_inline_info_valid(inline_key)) {
+						continue;
+					}
+					Dictionary info = inline_key.duplicate();
+					info["line"] = line;
+					Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, inline_key);
+					obj_rect.position.x += xmargin_beg + wrap_indent - first_visible_col;
+
+					if (touch_pos.x > obj_rect.position.x && touch_pos.x < obj_rect.get_end().x) {
+						Rect2 col_rect = get_rect_at_line_column(line, col);
+						col_rect.position += get_screen_position() + Vector2(col_rect.size.x, 0);
+						col_rect.size = obj_rect.size;
+						set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_NONE);
+						inline_object_click_handler.call(info, col_rect);
+						break;
+					}
+				}
+			}
+
+			queue_accessibility_update();
+			queue_redraw();
+		}
+
+		if (touch->is_released()) {
+			if (!touch_dragging_in_progress) {
+				// If touch dragging did not occur, we perform some tidy up similar to what's done for the mouse click logic.
+				if (has_ime_text()) {
+					// Ignore mouse up in IME input mode.
+				} else {
+					dragging_selection = false;
+					set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
+					click_select_held->stop();
+					if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
+						DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+					}
+
+					// Avoid showing the virtual keyboard when released on the minimap, or pan gesture performed.
+					if (editable && !dragging_minimap && !pan_gesture_performed) {
+						_show_virtual_keyboard();
+					}
+					dragging_minimap = false;
+					can_drag_minimap = false;
+					pan_gesture_performed = false;
+				}
+			}
+
+			if (touch_dragging_starting || touch_dragging_in_progress) {
+				if (touch->is_canceled() || drag_speed == Vector2()) {
+					_cancel_inertial_scroll();
+				} else {
+					touch_dragging_deaccel = true;
+				}
+			}
+
+			touch_dragging_starting = false;
+			touch_dragging_in_progress = false;
+		}
+	}
+
+	Ref<InputEventScreenDrag> drag = p_gui_input;
+	if (drag.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		show_selection_handle = true; // Showing selection handle because native touch input is used.
+
+		if (selection_handle_drag_type != SELECTION_HANDLE_NONE) {
+			Vector2 corrected_text_pos = drag->get_position() - selection_handle_drag_offset;
+			Point2i pos = get_line_column_at_pos(corrected_text_pos);
+			int c = dragging_caret_index;
+
+			if (selection_handle_drag_type == SELECTION_HANDLE_END) {
+				select(get_selection_origin_line(c), get_selection_origin_column(c), pos.y, pos.x, c);
+			} else {
+				select(pos.y, pos.x, get_caret_line(c), get_caret_column(c), c);
+			}
+
+			accept_event();
+			return;
+		}
+
+		// If we've started dragging and aren't actively processing deceleration momentum
+		if (touch_dragging_starting && !touch_dragging_deaccel) {
+			touch_dragging_in_progress = true;
+			Vector2 motion = drag->get_relative();
+
+			drag_accum -= motion;
+
+			// Convert the vertical accumulation from raw pixels to lines
+			float line_height = MAX(1, get_line_height());
+			float vertical_line_offset = drag_accum.y / line_height;
+
+			Vector2 diff = drag_from + Vector2(drag_accum.x, vertical_line_offset);
+			h_scroll->scroll_to(diff.x);
+			v_scroll->scroll_to(diff.y);
+
+			time_since_motion = 0.0;
+			accept_event();
+			_selection_mode_update();
+		} else {
+			// Likely follow up from a double tap touch event; we apply similar logic as the mouse motion logic.
+			_on_drag_or_mouse_motion_event(drag->get_position(), true);
 		}
 	}
 
 	const Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
+		// A pan gesture starts with two fingers, so we mark both a drag and a pan as in progress.
+		// When the first finger is lifted, it triggers a touch release event that clears touch_dragging_in_progress,
+		// it performs same like the end of a single-finger drag.
+		// pan_gesture_performed remains set until the second touch release event, allowing us
+		// to detect that the interaction was part of a pan gesture and avoid showing the virtual keyboard.
+		touch_dragging_in_progress = true;
+		pan_gesture_performed = true;
 		const real_t delta = pan_gesture->get_delta().y;
 		if (delta < 0) {
 			_scroll_up(-delta, false);
@@ -2514,6 +3002,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 			accept_event(); // Accept event if scroll changed.
 		}
+		_selection_mode_update();
 		queue_accessibility_update();
 
 		return;
@@ -2521,62 +3010,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	Ref<InputEventMouseMotion> mm = p_gui_input;
 
-	if (mm.is_valid()) {
-		Vector2i mpos = mm->get_position();
-		if (is_layout_rtl()) {
-			mpos.x = get_size().x - mpos.x;
-		}
-
-		if (mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && get_viewport()->gui_get_drag_data() == Variant()) {
-			// Update if not in drag and drop.
-			_reset_caret_blink_timer();
-
-			if (draw_minimap && !dragging_selection) {
-				_update_minimap_drag();
-			}
-
-			if (!dragging_minimap && !has_ime_text()) {
-				switch (selecting_mode) {
-					case SelectionMode::SELECTION_MODE_POINTER: {
-						_update_selection_mode_pointer();
-					} break;
-					case SelectionMode::SELECTION_MODE_WORD: {
-						_update_selection_mode_word();
-					} break;
-					case SelectionMode::SELECTION_MODE_LINE: {
-						_update_selection_mode_line();
-					} break;
-					default: {
-						break;
-					}
-				}
-			}
-		}
-
-		// Update hovered gutter.
-		Vector2i current_hovered_gutter = _get_hovered_gutter(mpos);
-		if (current_hovered_gutter != hovered_gutter) {
-			hovered_gutter = current_hovered_gutter;
-			queue_redraw();
-		}
-
-		if (drag_action && can_drop_data(mpos, get_viewport()->gui_get_drag_data())) {
-			apply_ime();
-			// Update drag and drop caret.
-			drag_caret_force_displayed = true;
-			Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
-
-			if (drag_caret_index == -1) {
-				// Force create a new caret for drag and drop.
-				carets.push_back(Caret());
-				drag_caret_index = carets.size() - 1;
-			}
-
-			drag_caret_force_displayed = true;
-			set_caret_line(pos.y, false, true, -1, drag_caret_index);
-			set_caret_column(pos.x, true, drag_caret_index);
-			dragging_selection = true;
-		}
+	if (mm.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		_on_drag_or_mouse_motion_event(mm->get_position(), mm->get_button_mask().has_flag(MouseButtonMask::LEFT));
 	}
 
 	if (draw_minimap && !dragging_selection) {
@@ -2871,6 +3306,59 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 }
 
+void TextEdit::_on_drag_or_mouse_motion_event(Vector2i p_event_position, bool p_is_left_click_or_drag) {
+	if (is_layout_rtl()) {
+		p_event_position.x = get_size().x - p_event_position.x;
+	}
+
+	if (p_is_left_click_or_drag && get_viewport()->gui_get_drag_data() == Variant()) {
+		// Update if not in drag and drop.
+		_reset_caret_blink_timer();
+
+		if (draw_minimap && !dragging_selection) {
+			_update_minimap_drag();
+		}
+
+		if (!dragging_minimap && !has_ime_text()) {
+			_selection_mode_update();
+		}
+	}
+
+	// Update hovered gutter.
+	Vector2i current_hovered_gutter = _get_hovered_gutter(p_event_position);
+	if (current_hovered_gutter != hovered_gutter) {
+		hovered_gutter = current_hovered_gutter;
+		queue_redraw();
+	}
+
+	if (drag_action && can_drop_data(p_event_position, get_viewport()->gui_get_drag_data())) {
+		apply_ime();
+		// Update drag and drop caret.
+		drag_caret_force_displayed = true;
+		Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+
+		if (drag_caret_index == -1) {
+			// Force create a new caret for drag and drop.
+			carets.push_back(Caret());
+			drag_caret_index = carets.size() - 1;
+		}
+
+		drag_caret_force_displayed = true;
+		set_caret_line(pos.y, false, true, -1, drag_caret_index);
+		set_caret_column(pos.x, true, drag_caret_index);
+		dragging_selection = true;
+	}
+}
+
+void TextEdit::_cancel_inertial_scroll() {
+	set_process_internal(false);
+	touch_dragging_deaccel = false;
+	drag_speed = Vector2();
+	drag_accum = Vector2();
+	last_drag_accum = Vector2();
+	drag_from = Vector2();
+}
+
 /* Input actions. */
 void TextEdit::_swap_current_input_direction() {
 	if (input_direction == TEXT_DIRECTION_LTR) {
@@ -2878,7 +3366,7 @@ void TextEdit::_swap_current_input_direction() {
 	} else {
 		input_direction = TEXT_DIRECTION_LTR;
 	}
-	for (int i = 0; i < carets.size(); i++) {
+	for (int i = 0; i < (int)carets.size(); i++) {
 		set_caret_column(get_caret_column(i), i == 0, i);
 	}
 	queue_redraw();
@@ -3179,6 +3667,7 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 			collapse_carets(get_caret_line(caret_index), 0, get_caret_line(caret_index), caret_current_column);
 			set_caret_column(0, caret_index == 0, caret_index);
 			_offset_carets_after(get_caret_line(caret_index), caret_current_column, get_caret_line(caret_index), 0);
+			_offset_underlines_after(get_caret_line(caret_index), caret_current_column, get_caret_line(caret_index), 0);
 			continue;
 		}
 
@@ -3211,6 +3700,7 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 			collapse_carets(get_caret_line(caret_index), column, get_caret_line(caret_index), from_column);
 			set_caret_column(column, caret_index == 0, caret_index);
 			_offset_carets_after(get_caret_line(caret_index), from_column, get_caret_line(caret_index), column);
+			_offset_underlines_after(get_caret_line(caret_index), from_column, get_caret_line(caret_index), column);
 		}
 	}
 
@@ -3286,6 +3776,7 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 		_remove_text(get_caret_line(caret_index), get_caret_column(caret_index), next_line, next_column);
 		collapse_carets(get_caret_line(caret_index), get_caret_column(caret_index), next_line, next_column);
 		_offset_carets_after(next_line, next_column, get_caret_line(caret_index), get_caret_column(caret_index));
+		_offset_underlines_after(next_line, next_column, get_caret_line(caret_index), get_caret_column(caret_index));
 	}
 
 	end_multicaret_edit();
@@ -3397,6 +3888,10 @@ void TextEdit::_update_theme_item_cache() {
 	if (text.get_line_height() + theme_cache.line_spacing < 1) {
 		WARN_PRINT("Line height is too small, please increase font_size and/or line_spacing");
 	}
+
+	// The value was chosen after trying a few different radii.
+	// 10.0 provided the best balance between being easy to grab without making the touch area feel too large.
+	selection_handle_radius = 10.0 * theme_cache.base_scale;
 }
 
 void TextEdit::_update_caches(bool p_invalidate_all) {
@@ -3439,6 +3934,10 @@ void TextEdit::_close_ime_window() {
 void TextEdit::_update_ime_window_position() {
 	DisplayServerEnums::WindowID wid = get_window() ? get_window()->get_window_id() : DisplayServerEnums::INVALID_WINDOW_ID;
 	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
+		return;
+	}
+	if (!editable) {
+		DisplayServer::get_singleton()->window_set_ime_active(false, wid);
 		return;
 	}
 	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
@@ -3616,7 +4115,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_ARROW;
 	}
 
-	int xmargin_end = get_size().width - Math::ceil(style->get_margin(SIDE_RIGHT));
+	int xmargin_end = get_size().width - Math::floor(style->get_margin(SIDE_RIGHT));
 	if (draw_minimap && p_pos.x > xmargin_end - minimap_width && p_pos.x <= xmargin_end) {
 		return CURSOR_ARROW;
 	}
@@ -3975,10 +4474,10 @@ void TextEdit::_clear() {
 	first_visible_col = 0;
 	first_visible_line = 0;
 	first_visible_line_wrap_ofs = 0;
-	carets.write[0].last_fit_x = 0;
+	carets[0].last_fit_x = 0;
 	deselect();
 
-	emit_signal(SNAME("lines_edited_from"), old_text_size, 0);
+	emit_signal(SNAME("lines_edited_from"), old_text_size - 1, 0);
 }
 
 void TextEdit::_set_text(const String &p_text, bool p_emit_signal) {
@@ -4046,6 +4545,7 @@ void TextEdit::set_placeholder(const String &p_text) {
 
 	placeholder_text = p_text;
 	_update_placeholder();
+	update_configuration_warnings();
 	queue_accessibility_update();
 	queue_redraw();
 }
@@ -4078,6 +4578,18 @@ void TextEdit::set_line(int p_line, const String &p_new_text) {
 
 	// Don't offset carets that were on the old line.
 	_offset_carets_after(p_line, old_column, new_line, new_column, false, false);
+
+	// Shift underline start and end columns.
+	int col_delta = new_column - old_column;
+	for (Underline &u : underlines) {
+		if (u.start_line == new_line) {
+			u.start_column += col_delta;
+		}
+
+		if (u.end_line == new_line) {
+			u.end_column += col_delta;
+		}
+	}
 
 	// Set the caret lines to update the column to match visually.
 	for (int i = 0; i < get_caret_count(); i++) {
@@ -4193,6 +4705,21 @@ void TextEdit::swap_lines(int p_from_line, int p_to_line) {
 
 	String from_line_text = get_line(p_from_line);
 	String to_line_text = get_line(p_to_line);
+
+	// Separate underlines on both lines so they can be swapped.
+	// `_cut_line_from_underline` can push to `underlines` so iterate to the original size.
+	// The second cut can operate on the results of the first one, so loop separately.
+	int num_underlines = underlines.size();
+	for (int i = 0; i < num_underlines; i++) {
+		Underline &ul = underlines[i];
+		_cut_line_from_underline(ul, p_from_line);
+	}
+	num_underlines = underlines.size();
+	for (int i = 0; i < num_underlines; i++) {
+		Underline &ul = underlines[i];
+		_cut_line_from_underline(ul, p_to_line);
+	}
+
 	begin_complex_operation();
 	begin_multicaret_edit();
 	// Don't use set_line to avoid clamping and updating carets.
@@ -4216,11 +4743,67 @@ void TextEdit::swap_lines(int p_from_line, int p_to_line) {
 			select(origin_new_line, origin_column, get_caret_line(i), get_caret_column(i), i);
 		}
 	}
+
+	// Swap underlines.
+	for (Underline &ul : underlines) {
+		if (ul.start_line == p_from_line) {
+			ul.start_line = p_to_line;
+			ul.end_line = p_to_line;
+		} else if (ul.start_line == p_to_line) {
+			ul.start_line = p_from_line;
+			ul.end_line = p_from_line;
+		}
+	}
+
 	// If only part of a selection was changed, it may now overlap.
 	merge_overlapping_carets();
 
 	end_multicaret_edit();
 	end_complex_operation();
+}
+
+void TextEdit::_cut_line_from_underline(Underline &r_ul, int p_line) {
+	// If this underline doesn't contain the line we want to cut,
+	// then no cuts are needed.
+	if (!r_ul.contains_line(p_line)) {
+		return;
+	}
+
+	// If this underline is only on the line we want to cut,
+	// then no cuts are needed.
+	if (r_ul.start_line == p_line && r_ul.end_line == p_line) {
+		return;
+	}
+
+	// If this underline ends after line we want to cut,
+	// then add an underline starting after the line to cut.
+	if (r_ul.end_line > p_line) {
+		Underline new_ul;
+		new_ul.start_line = p_line + 1;
+		new_ul.start_column = 0;
+		new_ul.end_line = r_ul.end_line;
+		new_ul.end_column = r_ul.end_column;
+		new_ul.color = r_ul.color;
+		underlines.push_back(new_ul);
+
+		r_ul.end_line = p_line;
+		r_ul.end_column = text[r_ul.end_line].length();
+	}
+
+	// If this underline starts before the line we want to cut,
+	// then add an underline ending before the line to cut.
+	if (r_ul.start_line < p_line) {
+		Underline new_ul;
+		new_ul.start_line = r_ul.start_line;
+		new_ul.start_column = r_ul.start_column;
+		new_ul.end_line = p_line - 1;
+		new_ul.end_column = text[p_line - 1].length();
+		new_ul.color = r_ul.color;
+		underlines.push_back(new_ul);
+
+		r_ul.start_line = p_line;
+		r_ul.start_column = 0;
+	}
 }
 
 void TextEdit::insert_line_at(int p_line, const String &p_text) {
@@ -4232,6 +4815,7 @@ void TextEdit::insert_line_at(int p_line, const String &p_text) {
 	int new_line, new_column;
 	_insert_text(p_line, 0, p_text + "\n", &new_line, &new_column);
 	_offset_carets_after(p_line, 0, new_line, new_column);
+	_offset_underlines_after(p_line, 0, new_line, new_column);
 
 	end_complex_operation();
 }
@@ -4293,6 +4877,7 @@ void TextEdit::remove_line_at(int p_line, bool p_move_carets_down) {
 		merge_overlapping_carets();
 	}
 	_offset_carets_after(next_line, next_column, from_line, from_column);
+	_offset_underlines_after(next_line, next_column, from_line, from_column);
 	end_multicaret_edit();
 	end_complex_operation();
 
@@ -4322,6 +4907,7 @@ void TextEdit::insert_text_at_caret(const String &p_text, int p_caret) {
 		_insert_text(from_line, from_col, p_text, &new_line, &new_column);
 		_update_scrollbars();
 		_offset_carets_after(from_line, from_col, new_line, new_column);
+		_offset_underlines_after(from_line, from_col, new_line, new_column);
 
 		set_caret_line(new_line, false, true, -1, i);
 		set_caret_column(new_column, i == 0, i);
@@ -4345,6 +4931,7 @@ void TextEdit::insert_text(const String &p_text, int p_line, int p_column, bool 
 	_insert_text(p_line, p_column, p_text, &new_line, &new_column);
 
 	_offset_carets_after(p_line, p_column, new_line, new_column, p_before_selection_begin, p_before_selection_end);
+	_offset_underlines_after(p_line, p_column, new_line, new_column);
 
 	end_complex_operation();
 }
@@ -4362,6 +4949,7 @@ void TextEdit::remove_text(int p_from_line, int p_from_column, int p_to_line, in
 	_remove_text(p_from_line, p_from_column, p_to_line, p_to_column);
 	collapse_carets(p_from_line, p_from_column, p_to_line, p_to_column);
 	_offset_carets_after(p_to_line, p_to_column, p_from_line, p_from_column);
+	_offset_underlines_after(p_to_line, p_to_column, p_from_line, p_from_column);
 
 	end_complex_operation();
 }
@@ -4779,7 +5367,7 @@ void TextEdit::undo() {
 	}
 
 	_update_scrollbars();
-	bool dirty_carets = get_caret_count() != undo_stack_pos->get().start_carets.size();
+	bool dirty_carets = get_caret_count() != (int)undo_stack_pos->get().start_carets.size();
 	if (!dirty_carets) {
 		for (int i = 0; i < get_caret_count(); i++) {
 			if (carets[i].line != undo_stack_pos->get().start_carets[i].line || carets[i].column != undo_stack_pos->get().start_carets[i].column) {
@@ -4835,7 +5423,7 @@ void TextEdit::redo() {
 	}
 
 	_update_scrollbars();
-	bool dirty_carets = get_caret_count() != undo_stack_pos->get().end_carets.size();
+	bool dirty_carets = get_caret_count() != (int)undo_stack_pos->get().end_carets.size();
 	if (!dirty_carets) {
 		for (int i = 0; i < get_caret_count(); i++) {
 			if (carets[i].line != undo_stack_pos->get().end_carets[i].line || carets[i].column != undo_stack_pos->get().end_carets[i].column) {
@@ -5007,7 +5595,7 @@ String TextEdit::get_word(int p_line, int p_column) const {
 
 Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line, bool p_clamp_column) const {
 	Ref<StyleBox> style = _get_current_stylebox();
-	float rows = p_pos.y - (style->get_margin(SIDE_TOP) + (theme_cache.line_spacing / 2));
+	float rows = p_pos.y - style->get_margin(SIDE_TOP);
 	rows /= get_line_height();
 	rows += _get_v_scroll_offset();
 	int first_vis_line = get_first_visible_line();
@@ -5101,7 +5689,7 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 
 	Point2i pos, size;
 	pos.y = cache_entry.y_offset + get_line_height() * wrap_index;
-	pos.x = get_total_gutter_width() + Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT)) + wrap_indent - get_h_scroll();
+	pos.x = get_total_gutter_width() + get_line_start_margin() + wrap_indent - get_h_scroll();
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(wrap_index);
 	Vector2 col_bounds = TS->shaped_text_get_grapheme_bounds(text_rid, p_column);
@@ -5111,6 +5699,10 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 	size.y = get_line_height();
 
 	return Rect2i(pos, size);
+}
+
+int TextEdit::get_line_start_margin() const {
+	return Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT));
 }
 
 int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
@@ -5290,7 +5882,7 @@ int TextEdit::add_caret(int p_line, int p_column) {
 
 void TextEdit::remove_caret(int p_caret) {
 	ERR_FAIL_COND_MSG(carets.size() <= 1, "The main caret should not be removed.");
-	ERR_FAIL_INDEX(p_caret, carets.size());
+	ERR_FAIL_INDEX(p_caret, (int)carets.size());
 
 	_caret_changed(p_caret);
 	carets.remove_at(p_caret);
@@ -5306,7 +5898,7 @@ void TextEdit::remove_caret(int p_caret) {
 
 void TextEdit::remove_drag_caret() {
 	if (drag_caret_index >= 0) {
-		if (drag_caret_index < carets.size()) {
+		if (drag_caret_index < (int)carets.size()) {
 			remove_caret(drag_caret_index);
 		}
 		drag_caret_index = -1;
@@ -5372,8 +5964,8 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 		// Copy the selection origin and last fit.
 		set_selection_origin_line(selection_origin_line, true, -1, new_caret_index);
 		set_selection_origin_column(selection_origin_column, new_caret_index);
-		carets.write[new_caret_index].last_fit_x = carets[i].last_fit_x;
-		carets.write[new_caret_index].selection.origin_last_fit_x = carets[i].selection.origin_last_fit_x;
+		carets[new_caret_index].last_fit_x = carets[i].last_fit_x;
+		carets[new_caret_index].selection.origin_last_fit_x = carets[i].selection.origin_last_fit_x;
 
 		// Move the caret up or down one visible line.
 		if (!p_below) {
@@ -5430,8 +6022,8 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 		if (is_selected) {
 			// Make sure selection is active.
 			select(get_selection_origin_line(new_caret_index), get_selection_origin_column(new_caret_index), get_caret_line(new_caret_index), get_caret_column(new_caret_index), new_caret_index);
-			carets.write[new_caret_index].last_fit_x = carets[i].last_fit_x;
-			carets.write[new_caret_index].selection.origin_last_fit_x = carets[i].selection.origin_last_fit_x;
+			carets[new_caret_index].last_fit_x = carets[i].last_fit_x;
+			carets[new_caret_index].selection.origin_last_fit_x = carets[i].selection.origin_last_fit_x;
 		}
 
 		bool check_edges = !has_selection(0) || !has_selection(new_caret_index);
@@ -5442,6 +6034,7 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 			carets.remove_at(new_caret_index);
 			carets.insert(0, new_caret);
 			i++;
+			num_carets += 1;
 		}
 	}
 
@@ -5466,7 +6059,8 @@ struct _CaretSortComparator {
 
 Vector<int> TextEdit::get_sorted_carets(bool p_include_ignored_carets) const {
 	// Returns caret indexes sorted by selection start or caret position from top to bottom of text.
-	Vector<Vector3i> caret_line_col_indexes;
+	LocalVector<Vector3i> caret_line_col_indexes;
+	caret_line_col_indexes.reserve(get_caret_count());
 	for (int i = 0; i < get_caret_count(); i++) {
 		if (!p_include_ignored_carets && multicaret_edit_ignore_caret(i)) {
 			continue;
@@ -5476,7 +6070,7 @@ Vector<int> TextEdit::get_sorted_carets(bool p_include_ignored_carets) const {
 	caret_line_col_indexes.sort_custom<_CaretSortComparator>();
 	Vector<int> sorted;
 	sorted.resize(caret_line_col_indexes.size());
-	for (int i = 0; i < caret_line_col_indexes.size(); i++) {
+	for (int i = 0; i < (int)caret_line_col_indexes.size(); i++) {
 		sorted.set(i, caret_line_col_indexes[i].z);
 	}
 	return sorted;
@@ -5679,17 +6273,17 @@ bool TextEdit::multicaret_edit_ignore_caret(int p_caret) const {
 }
 
 bool TextEdit::is_caret_visible(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), false);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), false);
 	return carets[p_caret].visible;
 }
 
 Point2 TextEdit::get_caret_draw_pos(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), Point2(0, 0));
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), Point2(0, 0));
 	return carets[p_caret].draw_pos;
 }
 
 void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_hidden, int p_wrap_index, int p_caret) {
-	ERR_FAIL_INDEX(p_caret, carets.size());
+	ERR_FAIL_INDEX(p_caret, (int)carets.size());
 	if (setting_caret_line) {
 		return;
 	}
@@ -5713,7 +6307,7 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 		}
 	}
 	bool caret_moved = get_caret_line(p_caret) != p_line;
-	carets.write[p_caret].line = p_line;
+	carets[p_caret].line = p_line;
 
 	int n_col;
 	if (p_wrap_index >= 0) {
@@ -5730,7 +6324,7 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 		n_col = MIN(get_caret_column(p_caret), get_line(p_line).length());
 	}
 	caret_moved = (caret_moved || get_caret_column(p_caret) != n_col);
-	carets.write[p_caret].column = n_col;
+	carets[p_caret].column = n_col;
 
 	// Unselect if the caret moved to the selection origin.
 	if (p_wrap_index >= 0 && has_selection(p_caret) && get_caret_line(p_caret) == get_selection_origin_line(p_caret) && get_caret_column(p_caret) == get_selection_origin_column(p_caret)) {
@@ -5750,23 +6344,23 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 }
 
 int TextEdit::get_caret_line(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), 0);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), 0);
 	return carets[p_caret].line;
 }
 
 void TextEdit::set_caret_column(int p_column, bool p_adjust_viewport, int p_caret) {
-	ERR_FAIL_INDEX(p_caret, carets.size());
+	ERR_FAIL_INDEX(p_caret, (int)carets.size());
 
 	p_column = CLAMP(p_column, 0, get_line(get_caret_line(p_caret)).length());
 
 	bool caret_moved = get_caret_column(p_caret) != p_column;
-	carets.write[p_caret].column = p_column;
+	carets[p_caret].column = p_column;
 
-	carets.write[p_caret].last_fit_x = _get_column_x_offset_for_line(get_caret_column(p_caret), get_caret_line(p_caret), get_caret_column(p_caret));
+	carets[p_caret].last_fit_x = _get_column_x_offset_for_line(get_caret_column(p_caret), get_caret_line(p_caret), get_caret_column(p_caret));
 
 	if (!has_selection(p_caret)) {
 		// Set the selection origin last fit x to be the same, so we can tell if there was a selection.
-		carets.write[p_caret].selection.origin_last_fit_x = carets[p_caret].last_fit_x;
+		carets[p_caret].selection.origin_last_fit_x = carets[p_caret].last_fit_x;
 	}
 
 	// Unselect if the caret moved to the selection origin.
@@ -5785,29 +6379,29 @@ void TextEdit::set_caret_column(int p_column, bool p_adjust_viewport, int p_care
 }
 
 int TextEdit::get_caret_column(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), 0);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), 0);
 	return carets[p_caret].column;
 }
 
 int TextEdit::get_caret_wrap_index(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), 0);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), 0);
 	return get_line_wrap_index_at_column(get_caret_line(p_caret), get_caret_column(p_caret));
 }
 
 String TextEdit::get_word_under_caret(int p_caret) const {
-	ERR_FAIL_COND_V(p_caret >= carets.size() || p_caret < -1, "");
+	ERR_FAIL_COND_V(p_caret >= (int)carets.size() || p_caret < -1, "");
 
 	StringBuilder selected_text;
-	for (int c = 0; c < carets.size(); c++) {
+	for (int c = 0; c < (int)carets.size(); c++) {
 		if (p_caret != -1 && p_caret != c) {
 			continue;
 		}
 
 		PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(get_caret_line(c))->get_rid());
 		for (int i = 0; i < words.size(); i = i + 2) {
-			if (words[i] <= get_caret_column(c) && words[i + 1] > get_caret_column(c)) {
+			if (words[i] <= get_caret_column(c) && words[i + 1] >= get_caret_column(c)) {
 				selected_text += text[get_caret_line(c)].substr(words[i], words[i + 1] - words[i]);
-				if (p_caret == -1 && c != carets.size() - 1) {
+				if (p_caret == -1 && c != (int)carets.size() - 1) {
 					selected_text += "\n";
 				}
 			}
@@ -5880,7 +6474,7 @@ void TextEdit::select_all() {
 }
 
 void TextEdit::select_word_under_caret(int p_caret) {
-	ERR_FAIL_COND(p_caret >= carets.size() || p_caret < -1);
+	ERR_FAIL_COND(p_caret >= (int)carets.size() || p_caret < -1);
 
 	_push_current_op();
 	if (!selecting_enabled) {
@@ -5893,7 +6487,7 @@ void TextEdit::select_word_under_caret(int p_caret) {
 
 	set_selection_mode(SELECTION_MODE_NONE);
 
-	for (int c = 0; c < carets.size(); c++) {
+	for (int c = 0; c < (int)carets.size(); c++) {
 		if (p_caret != -1 && p_caret != c) {
 			continue;
 		}
@@ -6040,21 +6634,18 @@ void TextEdit::select(int p_origin_line, int p_origin_column, int p_caret_line, 
 
 	bool had_selection = has_selection(p_caret);
 	bool activate = p_origin_line != p_caret_line || p_origin_column != p_caret_column;
-	carets.write[p_caret].selection.active = activate;
+	carets[p_caret].selection.active = activate;
 	if (had_selection != activate) {
 		_selection_changed(p_caret);
 	}
-
-	queue_accessibility_update();
-	queue_redraw();
 }
 
 bool TextEdit::has_selection(int p_caret) const {
-	ERR_FAIL_COND_V(p_caret >= carets.size() || p_caret < -1, false);
+	ERR_FAIL_COND_V(p_caret >= (int)carets.size() || p_caret < -1, false);
 	if (p_caret >= 0) {
 		return carets[p_caret].selection.active;
 	}
-	for (int i = 0; i < carets.size(); i++) {
+	for (int i = 0; i < (int)carets.size(); i++) {
 		if (carets[i].selection.active) {
 			return true;
 		}
@@ -6063,7 +6654,7 @@ bool TextEdit::has_selection(int p_caret) const {
 }
 
 String TextEdit::get_selected_text(int p_caret) {
-	ERR_FAIL_COND_V(p_caret >= carets.size() || p_caret < -1, "");
+	ERR_FAIL_COND_V(p_caret >= (int)carets.size() || p_caret < -1, "");
 
 	if (p_caret >= 0) {
 		if (!has_selection(p_caret)) {
@@ -6141,7 +6732,7 @@ void TextEdit::set_selection_origin_line(int p_line, bool p_can_be_hidden, int p
 	if (!selecting_enabled) {
 		return;
 	}
-	ERR_FAIL_INDEX(p_caret, carets.size());
+	ERR_FAIL_INDEX(p_caret, (int)carets.size());
 	p_line = CLAMP(p_line, 0, text.size() - 1);
 
 	if (!p_can_be_hidden) {
@@ -6161,7 +6752,7 @@ void TextEdit::set_selection_origin_line(int p_line, bool p_can_be_hidden, int p
 	}
 
 	bool selection_moved = get_selection_origin_line(p_caret) != p_line;
-	carets.write[p_caret].selection.origin_line = p_line;
+	carets[p_caret].selection.origin_line = p_line;
 
 	int n_col;
 	if (p_wrap_index >= 0) {
@@ -6178,7 +6769,7 @@ void TextEdit::set_selection_origin_line(int p_line, bool p_can_be_hidden, int p
 		n_col = MIN(get_selection_origin_column(p_caret), get_line(p_line).length());
 	}
 	selection_moved = (selection_moved || get_selection_origin_column(p_caret) != n_col);
-	carets.write[p_caret].selection.origin_column = n_col;
+	carets[p_caret].selection.origin_column = n_col;
 
 	// Unselect if the selection origin moved to the caret.
 	if (p_wrap_index >= 0 && has_selection(p_caret) && get_caret_line(p_caret) == get_selection_origin_line(p_caret) && get_caret_column(p_caret) == get_selection_origin_column(p_caret)) {
@@ -6194,15 +6785,15 @@ void TextEdit::set_selection_origin_column(int p_column, int p_caret) {
 	if (!selecting_enabled) {
 		return;
 	}
-	ERR_FAIL_INDEX(p_caret, carets.size());
+	ERR_FAIL_INDEX(p_caret, (int)carets.size());
 
 	p_column = CLAMP(p_column, 0, get_line(get_selection_origin_line(p_caret)).length());
 
 	bool selection_moved = get_selection_origin_column(p_caret) != p_column;
 
-	carets.write[p_caret].selection.origin_column = p_column;
+	carets[p_caret].selection.origin_column = p_column;
 
-	carets.write[p_caret].selection.origin_last_fit_x = _get_column_x_offset_for_line(get_selection_origin_column(p_caret), get_selection_origin_line(p_caret), get_selection_origin_column(p_caret));
+	carets[p_caret].selection.origin_last_fit_x = _get_column_x_offset_for_line(get_selection_origin_column(p_caret), get_selection_origin_line(p_caret), get_selection_origin_column(p_caret));
 
 	// Unselect if the selection origin moved to the caret.
 	if (has_selection(p_caret) && get_caret_line(p_caret) == get_selection_origin_line(p_caret) && get_caret_column(p_caret) == get_selection_origin_column(p_caret)) {
@@ -6210,8 +6801,8 @@ void TextEdit::set_selection_origin_column(int p_column, int p_caret) {
 	}
 
 	if (get_selection_mode() == SELECTION_MODE_NONE || get_selection_mode() == SELECTION_MODE_SHIFT) {
-		carets.write[p_caret].selection.word_begin_column = p_column;
-		carets.write[p_caret].selection.word_end_column = p_column;
+		carets[p_caret].selection.word_begin_column = p_column;
+		carets[p_caret].selection.word_end_column = p_column;
 	}
 
 	if (selection_moved && has_selection(p_caret)) {
@@ -6220,12 +6811,12 @@ void TextEdit::set_selection_origin_column(int p_column, int p_caret) {
 }
 
 int TextEdit::get_selection_origin_line(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), -1);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), -1);
 	return carets[p_caret].selection.origin_line;
 }
 
 int TextEdit::get_selection_origin_column(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), -1);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), -1);
 	return carets[p_caret].selection.origin_column;
 }
 
@@ -6250,7 +6841,7 @@ int TextEdit::get_previous_composite_character_column(int p_line, int p_column) 
 }
 
 int TextEdit::get_selection_from_line(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), -1);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), -1);
 	if (!has_selection(p_caret)) {
 		return carets[p_caret].line;
 	}
@@ -6258,7 +6849,7 @@ int TextEdit::get_selection_from_line(int p_caret) const {
 }
 
 int TextEdit::get_selection_from_column(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), -1);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), -1);
 	if (!has_selection(p_caret)) {
 		return carets[p_caret].column;
 	}
@@ -6272,7 +6863,7 @@ int TextEdit::get_selection_from_column(int p_caret) const {
 }
 
 int TextEdit::get_selection_to_line(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), -1);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), -1);
 	if (!has_selection(p_caret)) {
 		return carets[p_caret].line;
 	}
@@ -6280,7 +6871,7 @@ int TextEdit::get_selection_to_line(int p_caret) const {
 }
 
 int TextEdit::get_selection_to_column(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), -1);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), -1);
 	if (!has_selection(p_caret)) {
 		return carets[p_caret].column;
 	}
@@ -6294,7 +6885,7 @@ int TextEdit::get_selection_to_column(int p_caret) const {
 }
 
 bool TextEdit::is_caret_after_selection_origin(int p_caret) const {
-	ERR_FAIL_INDEX_V(p_caret, carets.size(), false);
+	ERR_FAIL_INDEX_V(p_caret, (int)carets.size(), false);
 	if (!has_selection(p_caret)) {
 		return true;
 	}
@@ -6302,15 +6893,15 @@ bool TextEdit::is_caret_after_selection_origin(int p_caret) const {
 }
 
 void TextEdit::deselect(int p_caret) {
-	ERR_FAIL_COND(p_caret >= carets.size() || p_caret < -1);
+	ERR_FAIL_COND(p_caret >= (int)carets.size() || p_caret < -1);
 	bool selection_changed = false;
 	if (p_caret >= 0) {
-		selection_changed = carets.write[p_caret].selection.active;
-		carets.write[p_caret].selection.active = false;
+		selection_changed = carets[p_caret].selection.active;
+		carets[p_caret].selection.active = false;
 	} else {
-		for (int i = 0; i < carets.size(); i++) {
-			selection_changed |= carets.write[i].selection.active;
-			carets.write[i].selection.active = false;
+		for (int i = 0; i < (int)carets.size(); i++) {
+			selection_changed |= carets[i].selection.active;
+			carets[i].selection.active = false;
 		}
 	}
 	if (selection_changed) {
@@ -6345,6 +6936,7 @@ void TextEdit::delete_selection(int p_caret) {
 
 		_remove_text(selection_from_line, selection_from_column, selection_to_line, selection_to_column);
 		_offset_carets_after(selection_to_line, selection_to_column, selection_from_line, selection_from_column);
+		_offset_underlines_after(selection_to_line, selection_to_column, selection_from_line, selection_from_column);
 		merge_overlapping_carets();
 
 		deselect(i);
@@ -6353,6 +6945,14 @@ void TextEdit::delete_selection(int p_caret) {
 	}
 	end_multicaret_edit();
 	end_complex_operation();
+}
+
+void TextEdit::set_selection_handle_enabled(bool p_enabled) {
+	selection_handle_enabled = p_enabled;
+}
+
+bool TextEdit::is_selection_handle_enabled() const {
+	return selection_handle_enabled;
 }
 
 /* Line wrapping. */
@@ -6480,11 +7080,6 @@ HScrollBar *TextEdit::get_h_scroll_bar() const {
 
 void TextEdit::set_v_scroll(double p_scroll) {
 	v_scroll->set_value(p_scroll);
-	int max_v_scroll = v_scroll->get_max() - v_scroll->get_page();
-	if (p_scroll >= max_v_scroll - 1.0) {
-		_scroll_moved(v_scroll->get_value());
-	}
-	queue_accessibility_update();
 }
 
 double TextEdit::get_v_scroll() const {
@@ -6492,11 +7087,7 @@ double TextEdit::get_v_scroll() const {
 }
 
 void TextEdit::set_h_scroll(int p_scroll) {
-	if (p_scroll < 0) {
-		p_scroll = 0;
-	}
 	h_scroll->set_value(p_scroll);
-	queue_accessibility_update();
 }
 
 int TextEdit::get_h_scroll() const {
@@ -6655,7 +7246,7 @@ int TextEdit::get_total_visible_line_count() const {
 
 // Auto adjust.
 bool TextEdit::is_line_in_viewport(int p_line) const {
-	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 
 	int line_wrap = get_line_wrap_index_at_column(p_line, 0);
 
@@ -6675,7 +7266,7 @@ bool TextEdit::is_line_in_viewport(int p_line) const {
 }
 
 void TextEdit::adjust_viewport_to_caret(int p_caret) {
-	ERR_FAIL_INDEX(p_caret, carets.size());
+	ERR_FAIL_INDEX(p_caret, (int)carets.size());
 
 	// Move viewport so the caret is visible on the screen vertically.
 
@@ -6699,7 +7290,7 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 }
 
 void TextEdit::center_viewport_to_caret(int p_caret) {
-	ERR_FAIL_INDEX(p_caret, carets.size());
+	ERR_FAIL_INDEX(p_caret, (int)carets.size());
 
 	// Move viewport so the caret is in the center of the screen vertically.
 	scrolling = false;
@@ -6745,7 +7336,7 @@ int TextEdit::get_minimap_visible_lines() const {
 
 /* Gutters. */
 void TextEdit::add_gutter(int p_at) {
-	if (p_at < 0 || p_at > gutters.size()) {
+	if (p_at < 0 || p_at > (int)gutters.size()) {
 		gutters.push_back(GutterInfo());
 	} else {
 		gutters.insert(p_at, GutterInfo());
@@ -6760,7 +7351,7 @@ void TextEdit::add_gutter(int p_at) {
 }
 
 void TextEdit::remove_gutter(int p_gutter) {
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 
 	gutters.remove_at(p_gutter);
 
@@ -6773,46 +7364,46 @@ void TextEdit::remove_gutter(int p_gutter) {
 }
 
 int TextEdit::get_gutter_count() const {
-	return gutters.size();
+	return (int)gutters.size();
 }
 
 void TextEdit::set_gutter_name(int p_gutter, const String &p_name) {
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
-	gutters.write[p_gutter].name = p_name;
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
+	gutters[p_gutter].name = p_name;
 }
 
 String TextEdit::get_gutter_name(int p_gutter) const {
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), "");
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), "");
 	return gutters[p_gutter].name;
 }
 
 void TextEdit::set_gutter_type(int p_gutter, GutterType p_type) {
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 
 	if (gutters[p_gutter].type == p_type) {
 		return;
 	}
 
-	gutters.write[p_gutter].type = p_type;
+	gutters[p_gutter].type = p_type;
 	queue_redraw();
 }
 
 TextEdit::GutterType TextEdit::get_gutter_type(int p_gutter) const {
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), GUTTER_TYPE_STRING);
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), GUTTER_TYPE_STRING);
 	return gutters[p_gutter].type;
 }
 
 void TextEdit::set_gutter_width(int p_gutter, int p_width) {
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 	if (gutters[p_gutter].width == p_width) {
 		return;
 	}
-	gutters.write[p_gutter].width = p_width;
+	gutters[p_gutter].width = p_width;
 	_update_gutter_width();
 }
 
 int TextEdit::get_gutter_width(int p_gutter) const {
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), -1);
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), -1);
 	return gutters[p_gutter].width;
 }
 
@@ -6821,42 +7412,42 @@ int TextEdit::get_total_gutter_width() const {
 }
 
 void TextEdit::set_gutter_draw(int p_gutter, bool p_draw) {
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 	if (gutters[p_gutter].draw == p_draw) {
 		return;
 	}
-	gutters.write[p_gutter].draw = p_draw;
+	gutters[p_gutter].draw = p_draw;
 	_update_gutter_width();
 }
 
 bool TextEdit::is_gutter_drawn(int p_gutter) const {
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), false);
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), false);
 	return gutters[p_gutter].draw;
 }
 
 void TextEdit::set_gutter_clickable(int p_gutter, bool p_clickable) {
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 
 	if (gutters[p_gutter].clickable == p_clickable) {
 		return;
 	}
 
-	gutters.write[p_gutter].clickable = p_clickable;
+	gutters[p_gutter].clickable = p_clickable;
 	queue_redraw();
 }
 
 bool TextEdit::is_gutter_clickable(int p_gutter) const {
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), false);
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), false);
 	return gutters[p_gutter].clickable;
 }
 
 void TextEdit::set_gutter_overwritable(int p_gutter, bool p_overwritable) {
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
-	gutters.write[p_gutter].overwritable = p_overwritable;
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
+	gutters[p_gutter].overwritable = p_overwritable;
 }
 
 bool TextEdit::is_gutter_overwritable(int p_gutter) const {
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), false);
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), false);
 	return gutters[p_gutter].overwritable;
 }
 
@@ -6867,7 +7458,7 @@ void TextEdit::merge_gutters(int p_from_line, int p_to_line) {
 		return;
 	}
 
-	for (int i = 0; i < gutters.size(); i++) {
+	for (int i = 0; i < (int)gutters.size(); i++) {
 		if (!gutters[i].overwritable) {
 			continue;
 		}
@@ -6894,32 +7485,32 @@ void TextEdit::merge_gutters(int p_from_line, int p_to_line) {
 }
 
 void TextEdit::set_gutter_custom_draw(int p_gutter, const Callable &p_draw_callback) {
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 
 	if (gutters[p_gutter].custom_draw_callback == p_draw_callback) {
 		return;
 	}
 
-	gutters.write[p_gutter].custom_draw_callback = p_draw_callback;
+	gutters[p_gutter].custom_draw_callback = p_draw_callback;
 	queue_redraw();
 }
 
 // Line gutters.
 void TextEdit::set_line_gutter_metadata(int p_line, int p_gutter, const Variant &p_metadata) {
 	ERR_FAIL_INDEX(p_line, text.size());
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 	text.set_line_gutter_metadata(p_line, p_gutter, p_metadata);
 }
 
 Variant TextEdit::get_line_gutter_metadata(int p_line, int p_gutter) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), "");
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), "");
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), "");
 	return text.get_line_gutter_metadata(p_line, p_gutter);
 }
 
 void TextEdit::set_line_gutter_text(int p_line, int p_gutter, const String &p_text) {
 	ERR_FAIL_INDEX(p_line, text.size());
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 
 	if (text.get_line_gutter_text(p_line, p_gutter) == p_text) {
 		return;
@@ -6931,13 +7522,13 @@ void TextEdit::set_line_gutter_text(int p_line, int p_gutter, const String &p_te
 
 String TextEdit::get_line_gutter_text(int p_line, int p_gutter) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), "");
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), "");
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), "");
 	return text.get_line_gutter_text(p_line, p_gutter);
 }
 
 void TextEdit::set_line_gutter_icon(int p_line, int p_gutter, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_INDEX(p_line, text.size());
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 
 	if (text.get_line_gutter_icon(p_line, p_gutter) == p_icon) {
 		return;
@@ -6949,13 +7540,13 @@ void TextEdit::set_line_gutter_icon(int p_line, int p_gutter, const Ref<Texture2
 
 Ref<Texture2D> TextEdit::get_line_gutter_icon(int p_line, int p_gutter) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), Ref<Texture2D>());
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), Ref<Texture2D>());
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), Ref<Texture2D>());
 	return text.get_line_gutter_icon(p_line, p_gutter);
 }
 
 void TextEdit::set_line_gutter_item_color(int p_line, int p_gutter, const Color &p_color) {
 	ERR_FAIL_INDEX(p_line, text.size());
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 
 	if (text.get_line_gutter_item_color(p_line, p_gutter) == p_color) {
 		return;
@@ -6967,19 +7558,19 @@ void TextEdit::set_line_gutter_item_color(int p_line, int p_gutter, const Color 
 
 Color TextEdit::get_line_gutter_item_color(int p_line, int p_gutter) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), Color());
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), Color());
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), Color());
 	return text.get_line_gutter_item_color(p_line, p_gutter);
 }
 
 void TextEdit::set_line_gutter_clickable(int p_line, int p_gutter, bool p_clickable) {
 	ERR_FAIL_INDEX(p_line, text.size());
-	ERR_FAIL_INDEX(p_gutter, gutters.size());
+	ERR_FAIL_INDEX(p_gutter, (int)gutters.size());
 	text.set_line_gutter_clickable(p_line, p_gutter, p_clickable);
 }
 
 bool TextEdit::is_line_gutter_clickable(int p_line, int p_gutter) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	ERR_FAIL_INDEX_V(p_gutter, gutters.size(), false);
+	ERR_FAIL_INDEX_V(p_gutter, (int)gutters.size(), false);
 	return text.is_line_gutter_clickable(p_line, p_gutter);
 }
 
@@ -7006,12 +7597,16 @@ void TextEdit::set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighte
 		return;
 	}
 
+	if (syntax_highlighter.is_valid()) {
+		syntax_highlighter->disconnect_changed(callable_mp(this, &TextEdit::_syntax_highlighter_changed));
+	}
+
 	syntax_highlighter = p_syntax_highlighter;
 	if (syntax_highlighter.is_valid()) {
 		syntax_highlighter->set_text_edit(this);
+		syntax_highlighter->connect_changed(callable_mp(this, &TextEdit::_syntax_highlighter_changed));
 	}
-	_clear_syntax_highlighting_cache();
-	queue_redraw();
+	_syntax_highlighter_changed();
 }
 
 Ref<SyntaxHighlighter> TextEdit::get_syntax_highlighter() const {
@@ -7436,6 +8031,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("deselect", "caret_index"), &TextEdit::deselect, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("delete_selection", "caret_index"), &TextEdit::delete_selection, DEFVAL(-1));
 
+	ClassDB::bind_method(D_METHOD("set_selection_handle_enabled", "enable"), &TextEdit::set_selection_handle_enabled);
+	ClassDB::bind_method(D_METHOD("is_selection_handle_enabled"), &TextEdit::is_selection_handle_enabled);
+
 	/* Line wrapping. */
 	BIND_ENUM_CONSTANT(LINE_WRAPPING_NONE);
 	BIND_ENUM_CONSTANT(LINE_WRAPPING_BOUNDARY);
@@ -7598,6 +8196,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Arbitrary:1,Word:2,Word (Smart):3"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_wrapped_lines"), "set_indent_wrapped_lines", "is_indent_wrapped_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tab_input_mode"), "set_tab_input_mode", "get_tab_input_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selection_handle_enabled"), "set_selection_handle_enabled", "is_selection_handle_enabled");
 
 	ADD_GROUP("Virtual Keyboard", "virtual_keyboard_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
@@ -7852,6 +8451,7 @@ void TextEdit::_backspace_internal(int p_caret) {
 		_remove_text(from_line, from_column, to_line, to_column);
 		collapse_carets(from_line, from_column, to_line, to_column);
 		_offset_carets_after(to_line, to_column, from_line, from_column);
+		_offset_underlines_after(to_line, to_column, from_line, from_column);
 
 		set_caret_line(from_line, false, true, -1, i);
 		set_caret_column(from_column, i == 0, i);
@@ -7955,6 +8555,10 @@ void TextEdit::_paste_internal(int p_caret) {
 	// Paste a full line. Ignore '\r' characters that may have been added to the clipboard by the OS.
 	if (get_caret_count() == 1 && !has_selection(0) && !cut_copy_line.is_empty() && cut_copy_line == clipboard.remove_char('\r')) {
 		insert_text(clipboard, get_caret_line(), 0);
+
+		_update_scrollbars();
+		adjust_viewport_to_caret(0);
+
 		return;
 	}
 
@@ -8317,7 +8921,7 @@ int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line, int p_column
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
 	int wrap_index = 0;
-	Vector<Vector2i> wrap_ranges = text.get_line_wrap_ranges(p_line);
+	const Vector<Vector2i> wrap_ranges = text.get_line_wrap_ranges(p_line);
 	for (int i = 0; i < wrap_ranges.size(); i++) {
 		if ((p_char >= wrap_ranges[i].x) && (p_char < wrap_ranges[i].y || (i == wrap_ranges.size() - 1 && p_char == wrap_ranges[i].y))) {
 			wrap_index = i;
@@ -8406,6 +9010,49 @@ void TextEdit::_offset_carets_after(int p_old_line, int p_old_column, int p_new_
 	}
 }
 
+void TextEdit::_offset_underlines_after(int p_old_line, int p_old_column, int p_new_line, int p_new_column) {
+	int edit_height = p_new_line - p_old_line;
+	int edit_size = p_new_column - p_old_column;
+	if (edit_height == 0 && edit_size == 0) {
+		return;
+	}
+
+	// We only want to move the end of a highlight's range if the edit being performed
+	// is removing text.
+	bool include_end = edit_height == 0 ? edit_size < 0 : edit_height < 0;
+
+	for (Underline &u : underlines) {
+		int ul_start_line = u.start_line;
+		int ul_start_column = u.start_column;
+		bool ul_start_after = ul_start_line > p_old_line || (ul_start_line == p_old_line && ul_start_column > p_old_column);
+		bool ul_start_at = ul_start_line == p_old_line && ul_start_column == p_old_column;
+		if (ul_start_after || ul_start_at) {
+			ul_start_line += edit_height;
+			if (ul_start_line == p_new_line) {
+				ul_start_column += edit_size;
+			}
+
+			u.start_line = ul_start_line;
+			u.start_column = ul_start_column;
+		}
+
+		// Now for end side of underline!
+		int ul_end_line = u.end_line;
+		int ul_end_column = u.end_column;
+		bool ul_end_after = ul_end_line > p_old_line || (ul_end_line == p_old_line && ul_end_column > p_old_column);
+		bool ul_end_at = ul_end_line == p_old_line && ul_end_column == p_old_column;
+		if (ul_end_after || (ul_end_at && include_end)) {
+			ul_end_line += edit_height;
+			if (ul_end_line == p_new_line) {
+				ul_end_column += edit_size;
+			}
+
+			u.end_line = ul_end_line;
+			u.end_column = ul_end_column;
+		}
+	}
+}
+
 void TextEdit::_cancel_drag_and_drop_text() {
 	// Cancel the drag operation if drag originated from here.
 	if (selection_drag_attempt && get_viewport()) {
@@ -8447,6 +9094,22 @@ void TextEdit::_click_selection_held() {
 	}
 }
 
+void TextEdit::_selection_mode_update() {
+	switch (get_selection_mode()) {
+		case SelectionMode::SELECTION_MODE_POINTER: {
+			_update_selection_mode_pointer();
+		} break;
+		case SelectionMode::SELECTION_MODE_WORD: {
+			_update_selection_mode_word();
+		} break;
+		case SelectionMode::SELECTION_MODE_LINE: {
+			_update_selection_mode_line();
+		} break;
+		default:
+			break;
+	}
+}
+
 void TextEdit::_update_selection_mode_pointer(bool p_initial) {
 	Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
 	int line = pos.y;
@@ -8457,8 +9120,8 @@ void TextEdit::_update_selection_mode_pointer(bool p_initial) {
 		set_selection_origin_line(line, true, -1, caret_index);
 		set_selection_origin_column(column, caret_index);
 		// Set the word begin and end to the column in case the mode changes later.
-		carets.write[caret_index].selection.word_begin_column = column;
-		carets.write[caret_index].selection.word_end_column = column;
+		carets[caret_index].selection.word_begin_column = column;
+		carets[caret_index].selection.word_end_column = column;
 	} else {
 		int origin_line = get_selection_origin_line(caret_index);
 		bool is_new_selection_dir_right = line > origin_line || (line == origin_line && column >= carets[caret_index].selection.word_begin_column);
@@ -8499,8 +9162,8 @@ void TextEdit::_update_selection_mode_word(bool p_initial) {
 	if (p_initial && !has_selection(caret_index)) {
 		// Set the selection origin if there is no existing selection.
 		select(line, beg, line, end, caret_index);
-		carets.write[caret_index].selection.word_begin_column = beg;
-		carets.write[caret_index].selection.word_end_column = end;
+		carets[caret_index].selection.word_begin_column = beg;
+		carets[caret_index].selection.word_end_column = end;
 	} else {
 		// Expand the word selection to the mouse.
 		int origin_line = get_selection_origin_line(caret_index);
@@ -8541,8 +9204,8 @@ void TextEdit::_update_selection_mode_line(bool p_initial) {
 
 	if (p_initial) {
 		// Set the word begin and end to the start and end of the origin line in case the mode changes later.
-		carets.write[caret_index].selection.word_begin_column = 0;
-		carets.write[caret_index].selection.word_end_column = get_line(origin_line).length();
+		carets[caret_index].selection.word_begin_column = 0;
+		carets[caret_index].selection.word_end_column = get_line(origin_line).length();
 	}
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
@@ -8565,7 +9228,7 @@ void TextEdit::_pre_shift_selection(int p_caret) {
 	// Prepare selection to start at current caret position.
 	set_selection_origin_line(get_caret_line(p_caret), true, -1, p_caret);
 	set_selection_origin_column(get_caret_column(p_caret), p_caret);
-	carets.write[p_caret].selection.active = true;
+	carets[p_caret].selection.active = true;
 }
 
 bool TextEdit::_selection_contains(int p_caret, int p_line, int p_column, bool p_include_edges, bool p_only_selections) const {
@@ -8582,7 +9245,7 @@ void TextEdit::_update_wrap_at_column(bool p_force) {
 		new_wrap_at -= minimap_width;
 	}
 	if (v_scroll->is_visible_in_tree()) {
-		new_wrap_at -= v_scroll->get_combined_minimum_size().width;
+		new_wrap_at -= v_scroll->get_bound_minimum_size().width;
 	}
 	/* Give it a little more space. */
 	new_wrap_at -= theme_cache.wrap_offset;
@@ -8629,8 +9292,8 @@ void TextEdit::_update_wrap_at_column(bool p_force) {
 /* Viewport. */
 void TextEdit::_update_scrollbars() {
 	Size2 size = get_size();
-	Size2 hmin = h_scroll->get_combined_minimum_size();
-	Size2 vmin = v_scroll->get_combined_minimum_size();
+	Size2 hmin = h_scroll->get_bound_minimum_size();
+	Size2 vmin = v_scroll->get_bound_minimum_size();
 
 	Ref<StyleBox> style = _get_current_stylebox();
 	v_scroll->set_begin(Point2(size.width - vmin.width, style->get_margin(SIDE_TOP)));
@@ -8659,9 +9322,16 @@ void TextEdit::_update_scrollbars() {
 		update_minimum_size();
 	}
 
+	const Size2 combined_maximum_size = get_combined_maximum_size();
+	const Size2 style_minimum_size = style->get_minimum_size();
+	const bool fit_content_height_exceeds_maximum = fit_content_height && combined_maximum_size.y >= 0 &&
+			style_minimum_size.y + content_size_cache.y > combined_maximum_size.y;
+	const bool fit_content_width_exceeds_maximum = fit_content_width && combined_maximum_size.x >= 0 &&
+			style_minimum_size.x + content_size_cache.x > combined_maximum_size.x;
+
 	updating_scrolls = true;
 
-	if (!fit_content_height && total_rows > visible_rows) {
+	if ((!fit_content_height || fit_content_height_exceeds_maximum) && total_rows > visible_rows) {
 		double visible_rows_exact = (double)_get_control_height() / (double)get_line_height();
 		double fractional_visible_rows = visible_rows_exact - (double)visible_rows;
 		fractional_visible_rows = CLAMP(fractional_visible_rows, 0.0, 1.0);
@@ -8677,7 +9347,7 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->hide();
 	}
 
-	if (total_width > visible_width) {
+	if ((!fit_content_width || fit_content_width_exceeds_maximum) && total_width > visible_width) {
 		h_scroll->show();
 		h_scroll->set_max(total_width);
 		h_scroll->set_page(visible_width);
@@ -8801,7 +9471,7 @@ void TextEdit::_scroll_down(real_t p_delta, bool p_animate) {
 	}
 
 	if (smooth_scroll_enabled) {
-		int max_v_scroll = std::round(v_scroll->get_max() - v_scroll->get_page());
+		double max_v_scroll = v_scroll->get_max() - v_scroll->get_page();
 		if (target_v_scroll > max_v_scroll) {
 			target_v_scroll = max_v_scroll;
 		}
@@ -8825,7 +9495,7 @@ void TextEdit::_scroll_lines_up() {
 	set_v_scroll(get_v_scroll() - 1);
 
 	// Adjust the caret to viewport.
-	for (int i = 0; i < carets.size(); i++) {
+	for (int i = 0; i < (int)carets.size(); i++) {
 		if (has_selection(i)) {
 			continue;
 		}
@@ -8837,6 +9507,8 @@ void TextEdit::_scroll_lines_up() {
 		}
 	}
 	merge_overlapping_carets();
+
+	_selection_mode_update();
 }
 
 void TextEdit::_scroll_lines_down() {
@@ -8847,7 +9519,7 @@ void TextEdit::_scroll_lines_down() {
 	set_v_scroll(get_v_scroll() + 1);
 
 	// Adjust the caret to viewport.
-	for (int i = 0; i < carets.size(); i++) {
+	for (int i = 0; i < (int)carets.size(); i++) {
 		if (has_selection(i)) {
 			continue;
 		}
@@ -8858,13 +9530,14 @@ void TextEdit::_scroll_lines_down() {
 		}
 	}
 	merge_overlapping_carets();
+
+	_selection_mode_update();
 }
 
 void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximize_selection) {
 	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE) {
 		first_visible_col = 0;
 		h_scroll->set_value(first_visible_col);
-		queue_redraw();
 		return;
 	}
 
@@ -8873,7 +9546,7 @@ void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximi
 		visible_width -= minimap_width;
 	}
 	if (v_scroll->is_visible_in_tree()) {
-		visible_width -= v_scroll->get_combined_minimum_size().width;
+		visible_width -= v_scroll->get_bound_minimum_size().width;
 	}
 	visible_width -= 20; // Give it a little more space.
 
@@ -8921,16 +9594,13 @@ void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximi
 	}
 
 	h_scroll->set_value(first_visible_col);
-
-	queue_accessibility_update();
-	queue_redraw();
 }
 
 // Minimap
 
 void TextEdit::_update_minimap_hover() {
 	const Point2 mp = get_local_mouse_pos();
-	const int xmargin_end = get_size().width - Math::ceil(_get_current_stylebox()->get_margin(SIDE_RIGHT));
+	const int xmargin_end = get_size().width - Math::floor(_get_current_stylebox()->get_margin(SIDE_RIGHT));
 
 	bool hovering_sidebar = mp.x > xmargin_end - minimap_width && mp.x < xmargin_end;
 	if (!hovering_sidebar) {
@@ -8957,7 +9627,7 @@ void TextEdit::_update_minimap_hover() {
 void TextEdit::_update_minimap_click() {
 	Point2 mp = get_local_mouse_pos();
 
-	int xmargin_end = get_size().width - Math::ceil(_get_current_stylebox()->get_margin(SIDE_RIGHT));
+	int xmargin_end = get_size().width - Math::floor(_get_current_stylebox()->get_margin(SIDE_RIGHT));
 	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.x > xmargin_end)) {
 		minimap_clicked = false;
 		return;
@@ -9004,9 +9674,9 @@ void TextEdit::_update_minimap_drag() {
 /* Gutters. */
 void TextEdit::_update_gutter_width() {
 	gutters_width = 0;
-	for (int i = 0; i < gutters.size(); i++) {
-		if (gutters[i].draw) {
-			gutters_width += gutters[i].width;
+	for (const GutterInfo &gutter : gutters) {
+		if (gutter.draw) {
+			gutters_width += gutter.width;
 		}
 	}
 	if (gutters_width > 0) {
@@ -9020,7 +9690,7 @@ void TextEdit::_update_gutter_width() {
 }
 
 Vector2i TextEdit::_get_hovered_gutter(const Point2 &p_mouse_pos) const {
-	int left_margin = Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT));
+	int left_margin = get_line_start_margin();
 	if (p_mouse_pos.x > left_margin + gutters_width + gutter_padding) {
 		return Vector2i(-1, -1);
 	}
@@ -9028,7 +9698,7 @@ Vector2i TextEdit::_get_hovered_gutter(const Point2 &p_mouse_pos) const {
 	if (hovered_row == -1) {
 		return Vector2i(-1, -1);
 	}
-	for (int i = 0; i < gutters.size(); i++) {
+	for (int i = 0; i < (int)gutters.size(); i++) {
 		if (!gutters[i].draw || gutters[i].width <= 0) {
 			continue;
 		}
@@ -9073,6 +9743,11 @@ Vector<Pair<int64_t, Color>> TextEdit::_get_line_syntax_highlighting(int p_line)
 
 void TextEdit::_clear_syntax_highlighting_cache() {
 	syntax_highlighting_cache.clear();
+}
+
+void TextEdit::_syntax_highlighter_changed() {
+	_clear_syntax_highlighting_cache();
+	queue_redraw();
 }
 
 /* Deprecated. */
@@ -9205,25 +9880,15 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, int &r_end_line, int &r_end_column) {
 	// Save for undo.
 	ERR_FAIL_INDEX(p_line, text.size());
-	ERR_FAIL_COND(p_char < 0);
+	ERR_FAIL_INDEX(p_char, text[p_line].length() + 1);
 
-	/* STEP 1: Remove \r from source text and separate in substrings. */
+	// Remove \r from source text and separate in substrings.
 	const String text_to_insert = p_text.remove_char('\r');
-	Vector<String> substrings = text_to_insert.split("\n");
 
-	// Is this just a new empty line?
-	bool shift_first_line = p_char == 0 && substrings.size() == 2 && text_to_insert == "\n";
+	const String replace_text = text[p_line].insert(p_char, text_to_insert);
+	const Vector<String> substrings = replace_text.split("\n");
 
-	/* STEP 2: Add spaces if the char is greater than the end of the line. */
-	while (p_char > text[p_line].length()) {
-		text.set(p_line, text[p_line] + String::chr(' '), structured_text_parser(st_parser, st_args, text[p_line] + String::chr(' ')));
-	}
-
-	/* STEP 3: Separate dest string in pre and post text. */
-	String postinsert_text = text[p_line].substr(p_char);
-
-	substrings.write[0] = text[p_line].substr(0, p_char) + substrings[0];
-	substrings.write[substrings.size() - 1] += postinsert_text;
+	const int move_length = text[p_line].length() - p_char;
 
 	Vector<Array> bidi_override;
 	bidi_override.resize(substrings.size());
@@ -9233,15 +9898,14 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 
 	text.insert(p_line, substrings, bidi_override);
 
-	if (shift_first_line) {
-		text.move_gutters(p_line, p_line + 1);
-		text.set_hidden(p_line + 1, text.is_hidden(p_line));
-
-		text.set_hidden(p_line, false);
+	// Treat inserting a new line at the start of a line as the same as inserting at the end of the previous line.
+	if (p_char == 0 && substrings.size() == 2 && text_to_insert == "\n") {
+		// Swap the new additional line data with the old line, so gutters move correctly.
+		text.swap_additional_data(p_line, p_line + 1);
 	}
 
 	r_end_line = p_line + substrings.size() - 1;
-	r_end_column = text[r_end_line].length() - postinsert_text.length();
+	r_end_column = text[r_end_line].length() - move_length;
 
 	TextServer::Direction dir = TS->shaped_text_get_dominant_direction_in_range(text.get_line_data(r_end_line)->get_rid(), (r_end_line == p_line) ? carets[0].column : 0, r_end_column);
 	if (dir != TextServer::DIRECTION_AUTO) {
@@ -9331,11 +9995,17 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
 
+	h_scroll->set_use_parent_material(true);
+	v_scroll->set_use_parent_material(true);
+
 	add_child(h_scroll, false, INTERNAL_MODE_FRONT);
 	add_child(v_scroll, false, INTERNAL_MODE_FRONT);
 
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &TextEdit::_scroll_moved));
 	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &TextEdit::_scroll_moved));
+
+	h_scroll->connect(CoreStringName(changed), callable_mp(this, &TextEdit::_selection_mode_update));
+	v_scroll->connect(CoreStringName(changed), callable_mp(this, &TextEdit::_selection_mode_update));
 
 	v_scroll->connect("scrolling", callable_mp(this, &TextEdit::_v_scroll_input));
 

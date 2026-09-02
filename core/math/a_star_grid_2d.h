@@ -97,13 +97,13 @@ private:
 	};
 
 	struct SortPoints {
-		_FORCE_INLINE_ bool operator()(const Point *A, const Point *B) const { // Returns true when the Point A is worse than Point B.
-			if (A->f_score > B->f_score) {
+		_FORCE_INLINE_ bool operator()(const Point *p_left, const Point *p_right) const { // Returns true when the Point A is worse than Point B.
+			if (p_left->f_score > p_right->f_score) {
 				return true;
-			} else if (A->f_score < B->f_score) {
+			} else if (p_left->f_score < p_right->f_score) {
 				return false;
 			} else {
-				return A->g_score < B->g_score; // If the f_costs are the same then prioritize the points that are further away from the start.
+				return p_left->g_score < p_right->g_score; // If the f_costs are the same then prioritize the points that are further away from the start.
 			}
 		}
 	};

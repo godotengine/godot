@@ -70,4 +70,4 @@ var test_custom_enum_hard_no_export: CustomEnum
 func test():
 	for property in get_property_list():
 		if str(property.name).begins_with("test_"):
-			Utils.print_property_extended_info(property, self)
+			print(Utils.get_property_extended_info(property, self))

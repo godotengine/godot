@@ -34,7 +34,6 @@
 #include "core/object/worker_thread_pool.h"
 #include "core/os/condition_variable.h"
 #include "core/templates/rb_set.h"
-
 #include "editor/export/editor_export_plugin.h"
 
 class ShaderRD;

@@ -1,8 +1,18 @@
 GDTEST_OK
-test begin
+subtest_order begin
 LocalOwner _init
 interrupted_coroutine begin
 Instance _init
 LocalOwner predelete
 Instance predelete
-test end
+subtest_order end
+===
+subtest_resume begin
+Instance _init
+["abc"] <Instance>
+Instance predelete
+---
+Instance _init
+["abc"] <Instance>
+Instance predelete
+subtest_resume end

@@ -41,6 +41,7 @@ class EmbeddedProcessBase;
 class VSeparator;
 class WindowWrapper;
 class ScriptEditorDebugger;
+class EditorDock;
 
 class GameViewDebugger : public EditorDebuggerPlugin {
 	GDCLASS(GameViewDebugger, EditorDebuggerPlugin);
@@ -82,6 +83,9 @@ public:
 
 	bool add_screenshot_callback(const Callable &p_callaback, const Rect2i &p_rect);
 
+	void window_request_size();
+	void hdr_output_request_state();
+
 	void set_suspend(bool p_enabled);
 	void next_frame();
 
@@ -97,6 +101,8 @@ public:
 	void set_selection_prefer_group(bool p_enabled);
 
 	void set_debug_mute_audio(bool p_enabled);
+
+	void toggle_hdr_output_requested();
 
 	void set_camera_override(bool p_enabled);
 	void set_camera_manipulate_mode(EditorDebuggerNode::CameraOverride p_mode);
@@ -119,10 +125,15 @@ class GameView : public VBoxContainer {
 		CAMERA_RESET_3D,
 		CAMERA_MODE_INGAME,
 		CAMERA_MODE_EDITORS,
-		EMBED_RUN_GAME_EMBEDDED,
-		EMBED_MAKE_FLOATING_ON_PLAY,
+		SELECTION_HIDE,
 		SELECTION_AVOID_LOCKED,
 		SELECTION_PREFER_GROUP,
+		WINDOW_SIZE_MODE_FIXED,
+		WINDOW_SIZE_MODE_KEEP_ASPECT,
+		WINDOW_SIZE_MODE_STRETCH,
+		WINDOW_SEPARATOR_DYNAMIC_RANGE,
+		WINDOW_REQUEST_HDR_OUTPUT,
+		WINDOW_HDR_OUTPUT_ERROR,
 	};
 
 	enum EmbedSizeMode {
@@ -142,10 +153,18 @@ class GameView : public VBoxContainer {
 		EMBED_NOT_AVAILABLE_HEADLESS,
 	};
 
+	enum EmbedMode {
+		EMBED_TYPE_DISABLED,
+		EMBED_TYPE_FLOATING,
+		EMBED_TYPE_EDITOR,
+		EMBED_TYPE_MAX,
+	};
+
 	inline static GameView *singleton = nullptr;
 
 	Ref<GameViewDebugger> debugger;
 	WindowWrapper *window_wrapper = nullptr;
+	EditorDock *game_dock = nullptr;
 
 	bool is_feature_enabled = true;
 	int active_sessions = 0;
@@ -163,6 +182,7 @@ class GameView : public VBoxContainer {
 
 	bool debug_mute_audio = false;
 
+	bool selection_hide = true;
 	bool selection_avoid_locked = false;
 	bool selection_prefer_group = false;
 
@@ -172,28 +192,36 @@ class GameView : public VBoxContainer {
 	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
 	Button *select_mode_button[RuntimeNodeSelect::SELECT_MODE_MAX];
 
-	Button *hide_selection = nullptr;
 	MenuButton *selection_options_menu = nullptr;
-
-	Button *debug_mute_audio_button = nullptr;
 
 	Button *camera_override_button = nullptr;
 	MenuButton *camera_override_menu = nullptr;
 
+	Button *debug_mute_audio_button = nullptr;
+
 	HBoxContainer *embedding_hb = nullptr;
-	MenuButton *embed_options_menu = nullptr;
+	MenuButton *game_window_options_menu = nullptr;
 	Label *game_size_label = nullptr;
+	HBoxContainer *game_hb = nullptr;
+	Button *game_embed_mode_button[EmbedMode::EMBED_TYPE_MAX];
 	Panel *panel = nullptr;
 	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
 
-	int const DEFAULT_TIME_SCALE_INDEX = 5;
+	const int DEFAULT_TIME_SCALE_INDEX = 5;
 	Array time_scale_range = { 0.0625f, 0.125f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 4.0f, 8.0f, 16.0f };
 	Array time_scale_label = { "1/16", "1/8", "1/4", "1/2", "3/4", "1.0", "1.25", "1.5", "1.75", "2.0", "4.0", "8.0", "16.0" };
 	int time_scale_index = DEFAULT_TIME_SCALE_INDEX;
 
+	Size2i game_window_size = Size2i(-1, -1);
+	bool hdr_output_enabled = false;
+	float current_max_luminance = 0.0f;
+	float current_reference_luminance = 0.0f;
+	float output_max_linear_value = 1.0f;
+	bool display_server_supports_hdr_output = false;
+	bool renderer_supports_hdr_output = false;
+
 	MenuButton *speed_state_button = nullptr;
-	Button *reset_speed_button = nullptr;
 
 	void _sessions_changed();
 
@@ -205,12 +233,14 @@ class GameView : public VBoxContainer {
 
 	void _node_type_pressed(int p_option);
 	void _select_mode_pressed(int p_option);
+	void _game_embed_mode_pressed(int p_option);
 	void _selection_options_menu_id_pressed(int p_id);
-	void _embed_options_menu_menu_id_pressed(int p_id);
+	void _game_window_options_menu_menu_id_pressed(int p_id);
 
 	void _reset_time_scales();
 	void _speed_state_menu_pressed(int p_id);
 	void _update_speed_buttons();
+	void _update_speed_state_icon(int p_id);
 	void _update_speed_state_color();
 	void _update_speed_state_size();
 
@@ -222,20 +252,22 @@ class GameView : public VBoxContainer {
 	void _stop_pressed();
 	void _embedding_completed();
 	void _embedding_failed();
-	void _embedded_process_updated();
 	void _embedded_process_focused();
 	void _editor_or_project_settings_changed();
 
 	EmbedAvailability _get_embed_available();
 	void _update_ui();
 	void _update_embed_menu_options();
+	void _update_embed_buttons();
+	void _update_game_window_size_label();
 	void _update_embed_window_size();
 	void _update_arguments_for_instance(int p_idx, List<String> &r_arguments);
 	void _show_update_window_wrapper();
 
-	void _hide_selection_toggled(bool p_pressed);
-
 	void _debug_mute_audio_button_pressed();
+	void _setup_complete();
+	void _game_window_size_received(const Array &p_state);
+	void _hdr_state_received(const Array &p_state);
 
 	void _camera_override_button_toggled(bool p_pressed);
 	void _camera_override_menu_id_pressed(int p_id);
@@ -244,7 +276,7 @@ class GameView : public VBoxContainer {
 	void _update_floating_window_settings();
 	void _attach_script_debugger();
 	void _detach_script_debugger();
-	void _remote_window_title_changed(String title);
+	void _remote_window_title_changed(const String &p_title);
 
 	void _debugger_breaked(bool p_breaked, bool p_can_debug);
 
@@ -254,8 +286,12 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_state(const Dictionary &p_state);
-	Dictionary get_state() const;
+	static EditorDock *get_dock() {
+		if (singleton) {
+			return singleton->game_dock;
+		}
+		return nullptr;
+	}
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
@@ -277,6 +313,9 @@ class GameViewPluginBase : public EditorPlugin {
 
 #ifndef ANDROID_ENABLED
 	void _window_visibility_changed(bool p_visible);
+#else
+	int previous_tab = 0;
+	void _main_screen_tab_changed(EditorDock *game_dock);
 #endif // ANDROID_ENABLED
 	void _save_last_editor(const String &p_editor);
 	void _focus_another_editor();
@@ -286,20 +325,20 @@ protected:
 	void _notification(int p_what);
 #ifndef ANDROID_ENABLED
 	void setup(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process);
+#else
+	void setup_android();
 #endif
 
 public:
-	virtual String get_plugin_name() const override { return TTRC("Game"); }
-	bool has_main_screen() const override { return true; }
+	virtual String get_plugin_name() const override { return "Game"; }
 	virtual void edit(Object *p_object) override {}
 	virtual bool handles(Object *p_object) const override { return false; }
-	virtual void selected_notify() override;
 
 	Ref<GameViewDebugger> get_debugger() const { return debugger; }
 
-#ifndef ANDROID_ENABLED
 	virtual void make_visible(bool p_visible) override;
 
+#ifndef ANDROID_ENABLED
 	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
 	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
 #endif // ANDROID_ENABLED

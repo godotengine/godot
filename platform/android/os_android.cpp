@@ -32,32 +32,36 @@
 
 #include "dir_access_jandroid.h"
 #include "display_server_android.h"
-#include "file_access_android.h"
 #include "file_access_filesystem_jandroid.h"
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
 #include "net_socket_android.h"
 
+#ifndef TOOLS_ENABLED
+#include "file_access_android.h"
+#endif
+
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/io/xml_parser.h"
-#include "core/object/callable_mp.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
-#ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-#include "editor/run/game_view_plugin.h"
-#endif
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
 #include "servers/rendering/rendering_server.h"
 
+#ifdef TOOLS_ENABLED
+#include "core/object/callable_mp.h"
+#include "editor/editor_node.h"
+#include "editor/run/game_view_plugin.h"
+#endif
+
 #include <dlfcn.h>
+#include <stdlib.h>
 #include <sys/system_properties.h>
 
 const char *OS_Android::ANDROID_EXEC_PATH = "apk";
@@ -83,7 +87,7 @@ String _remove_symlink(const String &dir) {
 _FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
 	ERR_FAIL_NULL_V(EditorNode::get_singleton(), nullptr);
 	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
-	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor_by_name("Game"));
 }
 #endif
 
@@ -106,25 +110,27 @@ void OS_Android::initialize_core() {
 
 #ifdef TOOLS_ENABLED
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
-#else
+#else // TOOLS_ENABLED
+	FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
+#if defined(OVERRIDE_PATH_ENABLED)
 	if (use_apk_expansion) {
 		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
-	} else {
-		FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
 	}
-#endif
+#endif // defined(OVERRIDE_PATH_ENABLED)
+#endif // TOOLS_ENABLED
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessFilesystemJAndroid>(FileAccess::ACCESS_FILESYSTEM);
 
 #ifdef TOOLS_ENABLED
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
-#else
+#else // TOOLS_ENABLED
+	DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
+#if defined(OVERRIDE_PATH_ENABLED)
 	if (use_apk_expansion) {
 		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
-	} else {
-		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
 	}
-#endif
+#endif // defined(OVERRIDE_PATH_ENABLED)
+#endif // TOOLS_ENABLED
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_FILESYSTEM);
 
@@ -288,7 +294,7 @@ String OS_Android::get_distribution_name() const {
 		return "POSP";
 	} else if (!get_system_property("ro.xtended.version").is_empty()) {
 		return "Project-Xtended";
-	} else if (!get_system_property("org.evolution.version").is_empty()) {
+	} else if (!get_system_property("org.evolution.version").is_empty() || !get_system_property("ro.evolution.version").is_empty()) {
 		return "Evolution X";
 	} else if (!get_system_property("ro.corvus.version").is_empty()) {
 		return "Corvus-Q";
@@ -314,8 +320,8 @@ String OS_Android::get_distribution_name() const {
 
 String OS_Android::get_version() const {
 	const Vector<const char *> roms = { "ro.havoc.version", "org.pex.version", "org.pixelexperience.version",
-		"ro.potato.version", "ro.xtended.version", "org.evolution.version", "ro.corvus.version", "ro.pa.version",
-		"ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.lineage.version" };
+		"ro.potato.version", "ro.xtended.version", "org.evolution.version", "ro.evolution.version", "ro.corvus.version",
+		"ro.pa.version", "ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.lineage.version" };
 	for (int i = 0; i < roms.size(); i++) {
 		String rom_version = get_system_property(roms[i]);
 		if (!rom_version.is_empty()) {
@@ -364,6 +370,10 @@ void OS_Android::main_loop_begin() {
 		if (game_view_plugin != nullptr) {
 			game_view_plugin->connect("main_screen_changed", callable_mp_static(&OS_Android::_on_main_screen_changed));
 		}
+
+		if (EditorNode::get_singleton() != nullptr) {
+			EditorNode::get_singleton()->connect("distraction_free_mode_changed", callable_mp_static(&OS_Android::_on_distraction_free_mode_changed));
+		}
 	}
 #endif
 }
@@ -374,14 +384,17 @@ bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 	if (!main_loop) {
 		return false;
 	}
-	DisplayServerAndroid::get_singleton()->reset_swap_buffers_flag();
-	DisplayServerAndroid::get_singleton()->process_events();
+	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+	ERR_FAIL_NULL_V(dsa, true);
+	dsa->reset_swap_buffers_flag();
+	dsa->process_events();
+
 	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
 	bool exit = Main::iteration();
 
 	if (r_should_swap_buffers) {
 		*r_should_swap_buffers = !is_in_low_processor_usage_mode() ||
-				DisplayServerAndroid::get_singleton()->should_swap_buffers() ||
+				dsa->should_swap_buffers() ||
 				RenderingServer::get_singleton()->has_changed() ||
 				current_frames_drawn != Engine::get_singleton()->get_frames_drawn();
 	}
@@ -395,6 +408,10 @@ void OS_Android::main_loop_end() {
 		GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 		if (game_view_plugin != nullptr) {
 			game_view_plugin->disconnect("main_screen_changed", callable_mp_static(&OS_Android::_on_main_screen_changed));
+		}
+
+		if (EditorNode::get_singleton() != nullptr) {
+			EditorNode::get_singleton()->disconnect("distraction_free_mode_changed", callable_mp_static(&OS_Android::_on_distraction_free_mode_changed));
 		}
 	}
 #endif
@@ -414,18 +431,34 @@ void OS_Android::_on_main_screen_changed(const String &p_screen_name) {
 		OS_Android::get_singleton()->get_godot_java()->on_editor_workspace_selected(p_screen_name);
 	}
 }
+
+void OS_Android::_on_distraction_free_mode_changed(bool p_enable) {
+	if (OS_Android::get_singleton() != nullptr && OS_Android::get_singleton()->get_godot_java() != nullptr) {
+		OS_Android::get_singleton()->get_godot_java()->on_distraction_free_mode_changed(p_enable);
+	}
+}
 #endif
 
 void OS_Android::main_loop_focusout() {
-	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
+	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+	if (dsa) {
+		dsa->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
+	}
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 	}
-	audio_driver_android.set_pause(true);
+
+	if (dsa) {
+		// Only pause when we are not in PiP mode.
+		audio_driver_android.set_pause(!dsa->is_in_pip_mode());
+	}
 }
 
 void OS_Android::main_loop_focusin() {
-	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
+	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+	if (dsa) {
+		dsa->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
+	}
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 	}
@@ -464,6 +497,10 @@ String OS_Android::get_model_name() const {
 	}
 
 	return OS_Unix::get_model_name();
+}
+
+String OS_Android::get_processor_name() const {
+	return get_system_property("ro.soc.model");
 }
 
 String OS_Android::get_data_path() const {
@@ -770,15 +807,9 @@ Error OS_Android::move_to_trash(const String &p_path) {
 
 	// Check if it's a directory
 	if (da_ref->dir_exists(p_path)) {
-		Error err = da_ref->change_dir(p_path);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(da_ref->change_dir(p_path));
 		// This is directory, let's erase its contents
-		err = da_ref->erase_contents_recursive();
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(da_ref->erase_contents_recursive());
 		// Remove the top directory
 		return da_ref->remove(p_path);
 	} else if (da_ref->file_exists(p_path)) {
@@ -953,6 +984,11 @@ Error OS_Android::kill(const ProcessID &p_pid) {
 
 String OS_Android::get_system_ca_certificates() {
 	return godot_java->get_ca_certificates();
+}
+
+Error OS_Android::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	arc4random_buf(r_buffer, p_bytes);
+	return OK;
 }
 
 Error OS_Android::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {

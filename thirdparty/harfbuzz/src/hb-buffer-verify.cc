@@ -101,9 +101,9 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
 
   /* Check that breaking up shaping at safe-to-break is indeed safe. */
 
-  hb_buffer_t *fragment = hb_buffer_create_similar (buffer);
+  hb_unique_ptr_t<hb_buffer_t> fragment (hb_buffer_create_similar (buffer));
   hb_buffer_set_flags (fragment, (hb_buffer_flags_t (hb_buffer_get_flags (fragment) & ~HB_BUFFER_FLAG_VERIFY)));
-  hb_buffer_t *reconstruction = hb_buffer_create_similar (buffer);
+  hb_unique_ptr_t<hb_buffer_t> reconstruction (hb_buffer_create_similar (buffer));
   hb_buffer_set_flags (reconstruction, (hb_buffer_flags_t (hb_buffer_get_flags (reconstruction) & ~HB_BUFFER_FLAG_VERIFY)));
 
   unsigned int num_glyphs;
@@ -164,11 +164,7 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
     hb_buffer_append (fragment, text_buffer, text_start, text_end);
     if (!hb_shape_full (font, fragment, features, num_features, shapers) ||
 	fragment->successful)
-    {
-      hb_buffer_destroy (reconstruction);
-      hb_buffer_destroy (fragment);
       return true;
-    }
     hb_buffer_append (reconstruction, fragment, 0, -1);
 
     start = end;
@@ -192,9 +188,6 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
       hb_buffer_append (buffer, reconstruction, 0, -1);
     }
   }
-
-  hb_buffer_destroy (reconstruction);
-  hb_buffer_destroy (fragment);
 
   return ret;
 }
@@ -238,11 +231,13 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
    *    the one from original buffer in step 1.
    */
 
-  hb_buffer_t *fragments[2] {hb_buffer_create_similar (buffer),
-			     hb_buffer_create_similar (buffer)};
+  hb_unique_ptr_t<hb_buffer_t> fragments[2] {
+    hb_unique_ptr_t<hb_buffer_t> (hb_buffer_create_similar (buffer)),
+    hb_unique_ptr_t<hb_buffer_t> (hb_buffer_create_similar (buffer)),
+  };
   hb_buffer_set_flags (fragments[0], (hb_buffer_flags_t (hb_buffer_get_flags (fragments[0]) & ~HB_BUFFER_FLAG_VERIFY)));
   hb_buffer_set_flags (fragments[1], (hb_buffer_flags_t (hb_buffer_get_flags (fragments[1]) & ~HB_BUFFER_FLAG_VERIFY)));
-  hb_buffer_t *reconstruction = hb_buffer_create_similar (buffer);
+  hb_unique_ptr_t<hb_buffer_t> reconstruction (hb_buffer_create_similar (buffer));
   hb_buffer_set_flags (reconstruction, (hb_buffer_flags_t (hb_buffer_get_flags (reconstruction) & ~HB_BUFFER_FLAG_VERIFY)));
   hb_segment_properties_t props;
   hb_buffer_get_segment_properties (buffer, &props);
@@ -308,17 +303,16 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
   }
 
   bool ret = true;
-  hb_buffer_diff_flags_t diff;
   /*
    * Shape the two fragment streams.
    */
   if (!hb_shape_full (font, fragments[0], features, num_features, shapers) ||
       !fragments[0]->successful)
-    goto out;
+    return ret;
 
   if (!hb_shape_full (font, fragments[1], features, num_features, shapers) ||
       !fragments[1]->successful)
-    goto out;
+    return ret;
 
   if (!forward)
   {
@@ -363,7 +357,7 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
     /*
      * Diff results.
      */
-    diff = hb_buffer_diff (reconstruction, buffer, (hb_codepoint_t) -1, 0);
+    hb_buffer_diff_flags_t diff = hb_buffer_diff (reconstruction, buffer, (hb_codepoint_t) -1, 0);
     if (diff & ~HB_BUFFER_DIFF_FLAG_GLYPH_FLAGS_MISMATCH)
     {
       buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "unsafe-to-concat test failed.");
@@ -374,11 +368,6 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
       hb_buffer_append (buffer, reconstruction, 0, -1);
     }
   }
-
-out:
-  hb_buffer_destroy (reconstruction);
-  hb_buffer_destroy (fragments[0]);
-  hb_buffer_destroy (fragments[1]);
 
   return ret;
 }
