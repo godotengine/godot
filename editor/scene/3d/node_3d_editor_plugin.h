@@ -250,9 +250,9 @@ private:
 	OptionButton *xform_type = nullptr;
 
 	VBoxContainer *settings_vbc = nullptr;
-	SpinBox *settings_fov = nullptr;
-	SpinBox *settings_znear = nullptr;
-	SpinBox *settings_zfar = nullptr;
+	EditorSpinSlider *settings_fov = nullptr;
+	EditorSpinSlider *settings_znear = nullptr;
+	EditorSpinSlider *settings_zfar = nullptr;
 
 	void _snap_changed();
 	void _snap_update();
@@ -549,7 +549,7 @@ public:
 	DynamicBVH::ID insert_gizmo_bvh_node(Node3D *p_node, const AABB &p_aabb);
 	void update_gizmo_bvh_node(DynamicBVH::ID p_id, const AABB &p_aabb);
 	void remove_gizmo_bvh_node(DynamicBVH::ID p_id);
-	Vector<Node3D *> gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_end);
+	Vector<Node3D *> gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_dir, real_t ray_length);
 	Vector<Node3D *> gizmo_bvh_frustum_query(const Vector<Plane> &p_frustum);
 
 	void edit(Node3D *p_spatial);

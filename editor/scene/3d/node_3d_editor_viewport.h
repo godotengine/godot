@@ -341,8 +341,7 @@ private:
 
 	Vector3 _get_camera_position() const;
 	Vector3 _get_camera_normal() const;
-	Vector3 _get_screen_to_space(const Vector3 &p_vector3);
-	Vector<Plane> _build_screen_frustum(const Point2 &p_min, const Point2 &p_max);
+	Vector<Plane> _build_screen_frustum(const Point2 &p_min, const Point2 &p_max, bool p_orthogonal);
 
 	void _select_region();
 	bool _transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
@@ -559,7 +558,9 @@ public:
 	void reset();
 
 	Vector3 get_ray_pos(const Vector2 &p_pos) const;
+	Vector3 get_ray_pos_local(const Vector2 &p_pos) const;
 	Vector3 get_ray(const Vector2 &p_pos) const;
+	Vector3 get_ray_local(const Vector2 &p_pos) const;
 	Point2 point_to_screen(const Vector3 &p_point);
 
 	void focus_selection();
