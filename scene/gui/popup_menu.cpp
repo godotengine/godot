@@ -656,14 +656,18 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 				}
 
 				if (!item_clickable_area.has_point(b->get_position())) {
+					if (mouse_over >= 0) {
+						_mouse_over_update(b->get_position());
+					}
 					return;
 				}
+
 				int over = _get_mouse_over(b->get_position());
 				if (over < 0 || items[over].separator || items[over].disabled || (items[over].submenu && items[over].submenu->is_visible())) {
 					return;
-				} else {
-					_mouse_over_update(b->get_position());
 				}
+
+				_mouse_over_update(b->get_position());
 			} else {
 				if (is_scrolling) {
 					is_scrolling = false;
@@ -684,7 +688,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 
 				int over = _get_mouse_over(b->get_position());
 				if (over < 0) {
-					if (search_bar->is_visible() && search_bar->get_global_rect().has_point(b->get_position() / win_scale)) {
+					if (panel->get_global_rect().has_point(b->get_position() / win_scale)) {
 						return;
 					}
 					if (!was_during_grabbed_click) {
