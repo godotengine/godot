@@ -2724,7 +2724,7 @@ Window *Viewport::get_base_window() {
 }
 
 void Viewport::_gui_remove_focus_for_window(Node *p_window) {
-	if (get_base_window() == p_window) {
+	if (get_base_window() == p_window && !local_focus) {
 		gui_release_focus();
 	}
 }
@@ -2743,7 +2743,12 @@ void Viewport::_gui_control_grab_focus(Control *p_control, bool p_hide_focus) {
 		return;
 	}
 
-	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", get_base_window());
+	if (local_focus) {
+		gui_release_focus();
+	} else {
+		get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", get_base_window());
+	}
+
 	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
 		gui.key_focus = p_control;
 		if (_can_hide_focus_state()) {
@@ -3560,6 +3565,15 @@ void Viewport::push_input(RequiredParam<InputEvent> p_event, bool p_local_coords
 	}
 
 	event_count++;
+}
+
+void Viewport::set_local_focus(bool p_local_focus) {
+	ERR_MAIN_THREAD_GUARD;
+	local_focus = p_local_focus;
+}
+
+bool Viewport::get_local_focus() const {
+	return local_focus;
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -5239,6 +5253,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
 	ClassDB::bind_method(D_METHOD("push_text_input", "text"), &Viewport::push_text_input);
 	ClassDB::bind_method(D_METHOD("push_input", "event", "in_local_coords"), &Viewport::push_input, DEFVAL(false));
+
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("push_unhandled_input", "event", "in_local_coords"), &Viewport::push_unhandled_input, DEFVAL(false));
 #endif // DISABLE_DEPRECATED
@@ -5288,6 +5303,9 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_handle_input_locally", "enable"), &Viewport::set_handle_input_locally);
 	ClassDB::bind_method(D_METHOD("is_handling_input_locally"), &Viewport::is_handling_input_locally);
+
+	ClassDB::bind_method(D_METHOD("set_local_focus", "local_focus"), &Viewport::set_local_focus);
+	ClassDB::bind_method(D_METHOD("get_local_focus"), &Viewport::get_local_focus);
 
 	ClassDB::bind_method(D_METHOD("set_default_canvas_item_texture_filter", "mode"), &Viewport::set_default_canvas_item_texture_filter);
 	ClassDB::bind_method(D_METHOD("get_default_canvas_item_texture_filter"), &Viewport::get_default_canvas_item_texture_filter);
@@ -5383,6 +5401,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_2d", PROPERTY_HINT_RESOURCE_TYPE, World2D::get_class_static(), PROPERTY_USAGE_NONE), "set_world_2d", "get_world_2d");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transparent_bg"), "set_transparent_background", "has_transparent_background");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_focus"), "set_local_focus", "get_local_focus");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_transforms_to_pixel"), "set_snap_2d_transforms_to_pixel", "is_snap_2d_transforms_to_pixel_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_vertices_to_pixel"), "set_snap_2d_vertices_to_pixel", "is_snap_2d_vertices_to_pixel_enabled");
 	ADD_GROUP("Rendering", "");
