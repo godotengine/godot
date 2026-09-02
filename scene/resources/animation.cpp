@@ -4411,10 +4411,10 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 				t1.value = vt->values[i + 1].value;
 				t2.value = vt->values[i + 2].value;
 				if (is_using_angle) {
-					float diff1 = std::fmod(t1.value - t0.value, Math::TAU);
-					t1.value = t0.value + std::fmod(2.0 * diff1, Math::TAU) - diff1;
-					float diff2 = std::fmod(t2.value - t1.value, Math::TAU);
-					t2.value = t1.value + std::fmod(2.0 * diff2, Math::TAU) - diff2;
+					float diff1 = Math::fmod(t1.value - t0.value, static_cast<float>(Math::TAU));
+					t1.value = t0.value + Math::fmod(2.0f * diff1, static_cast<float>(Math::TAU)) - diff1;
+					float diff2 = Math::fmod(t2.value - t1.value, static_cast<float>(Math::TAU));
+					t2.value = t1.value + Math::fmod(2.0f * diff2, static_cast<float>(Math::TAU)) - diff2;
 					if (std::abs(std::abs(diff1) + std::abs(diff2)) >= Math::PI) {
 						break; // Rotation is more than 180 deg, keep key.
 					}
@@ -4475,8 +4475,8 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 				float val_0 = vt->values[0].value;
 				float val_1 = vt->values[1].value;
 				if (is_using_angle) {
-					float diff1 = std::fmod(val_1 - val_0, Math::TAU);
-					val_1 = val_0 + std::fmod(2.0 * diff1, Math::TAU) - diff1;
+					float diff1 = Math::fmod(val_1 - val_0, static_cast<float>(Math::TAU));
+					val_1 = val_0 + Math::fmod(2.0f * diff1, static_cast<float>(Math::TAU)) - diff1;
 				}
 				single_key = std::abs(val_0 - val_1) < p_allowed_precision_error;
 			} break;
