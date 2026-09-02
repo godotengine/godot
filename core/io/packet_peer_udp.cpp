@@ -343,11 +343,11 @@ IPAddress PacketPeerUDP::get_packet_address() const {
 	return packet_ip;
 }
 
-int PacketPeerUDP::get_packet_port() const {
+uint16_t PacketPeerUDP::get_packet_port() const {
 	return packet_port;
 }
 
-int PacketPeerUDP::get_local_port() const {
+uint16_t PacketPeerUDP::get_local_port() const {
 	NetSocket::Address addr;
 	_sock->get_socket_address(&addr);
 	return addr.port();

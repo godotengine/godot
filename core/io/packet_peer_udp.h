@@ -77,13 +77,13 @@ public:
 	Error connect_shared_socket(Ref<NetSocket> p_sock, IPAddress p_ip, uint16_t p_port, UDPServer *ref); // Used by UDPServer
 	void disconnect_shared_socket(); // Used by UDPServer
 	Error store_packet(IPAddress p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size); // Used internally and by UDPServer
-	Error connect_to_host(const IPAddress &p_host, int p_port);
+	Error connect_to_host(const IPAddress &p_host, uint16_t p_port);
 	bool is_socket_connected() const;
 
 	IPAddress get_packet_address() const;
-	int get_packet_port() const;
-	int get_local_port() const;
-	void set_dest_address(const IPAddress &p_address, int p_port);
+	uint16_t get_packet_port() const;
+	uint16_t get_local_port() const;
+	void set_dest_address(const IPAddress &p_address, uint16_t p_port);
 
 	Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
