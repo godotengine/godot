@@ -116,11 +116,11 @@
 			<param index="0" name="camera_attributes" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<param index="2" name="intensity" type="float" />
-			<param index="4" name="object_velocity_multiplier" type="float" />
-			<param index="5" name="movement_velocity_multiplier" type="float" />
-			<param index="6" name="rotation_velocity_multiplier" type="float" />
-			<param index="7" name="velocity_lower_threshold" type="float" />
-			<param index="8" name="velocity_upper_threshold" type="float" />
+			<param index="3" name="object_velocity_multiplier" type="float" />
+			<param index="4" name="movement_velocity_multiplier" type="float" />
+			<param index="5" name="rotation_velocity_multiplier" type="float" />
+			<param index="6" name="velocity_lower_threshold" type="float" />
+			<param index="7" name="velocity_upper_threshold" type="float" />
 			<description>
 				Configures the motion blur effect on the specified [param camera_attributes] resource. See properties in [CameraAttributesPractical] starting from [member CameraAttributesPractical.motion_blur_enabled] for details on each parameter.
 			</description>
