@@ -40,7 +40,7 @@ const std::string* TryGetPropertyOverride(const std::string& name) {
 namespace LoaderProperty {
 
 std::string Get(const std::string& name) {
-    std::lock_guard<std::mutex> lock(GetOverridePropertiesMutex());
+    std::scoped_lock<std::mutex> lock(GetOverridePropertiesMutex());
     const std::string* propertyOverride = TryGetPropertyOverride(name);
     if (propertyOverride != nullptr) {
         return *propertyOverride;
@@ -50,7 +50,7 @@ std::string Get(const std::string& name) {
 }
 
 std::string GetSecure(const std::string& name) {
-    std::lock_guard<std::mutex> lock(GetOverridePropertiesMutex());
+    std::scoped_lock<std::mutex> lock(GetOverridePropertiesMutex());
     const std::string* propertyOverride = TryGetPropertyOverride(name);
     if (propertyOverride != nullptr) {
         return *propertyOverride;
@@ -60,19 +60,19 @@ std::string GetSecure(const std::string& name) {
 }
 
 bool IsSet(const std::string& name) {
-    std::lock_guard<std::mutex> lock(GetOverridePropertiesMutex());
+    std::scoped_lock<std::mutex> lock(GetOverridePropertiesMutex());
     const std::string* propertyOverride = TryGetPropertyOverride(name);
     return propertyOverride != nullptr || PlatformUtilsGetEnvSet(name.c_str());
 }
 
 void SetOverride(std::string name, std::string value) {
-    std::lock_guard<std::mutex> lock(GetOverridePropertiesMutex());
+    std::scoped_lock<std::mutex> lock(GetOverridePropertiesMutex());
     auto& overrideProperties = GetOverrideProperties();
     overrideProperties.insert(std::make_pair(std::move(name), std::move(value)));
 }
 
 void ClearOverrides() {
-    std::lock_guard<std::mutex> lock(GetOverridePropertiesMutex());
+    std::scoped_lock<std::mutex> lock(GetOverridePropertiesMutex());
     auto& overrideProperties = GetOverrideProperties();
     overrideProperties.clear();
 }

@@ -897,7 +897,7 @@ Files extracted from upstream source:
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.60 (64f2b37c8c6da3d83c9b4d11865ba1fb752cb8ec, 2026)
+- Version: 1.1.63 (f2448a8797c85814aa892efc1ab8707900fbcc78, 2026)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -924,6 +924,9 @@ Exclude:
 Additional:
 - Update `openxrLoaderVersion` in `platform/android/java/app/config.gradle`
 
+Patches:
+
+- `0001-remove-try-catch.patch` ([GH-123123](https://github.com/godotengine/godot/pull/123123))
 
 ## pcre2
 
