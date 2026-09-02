@@ -269,7 +269,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 										placeholder_end = from + 1;
 									} else {
 										const String allowed_chars = "+.-*0123456789";
-										const String placeholder_types = "cdfosvxX";
+										const String placeholder_types = "lcdfosvxX";
 										for (int i = 0; i < line_length - from; i++) {
 											if (allowed_chars.contains_char(str[from + i]) &&
 													!placeholder_types.contains_char(str[from + i]) &&

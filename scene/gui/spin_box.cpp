@@ -100,7 +100,13 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	if (!line_edit->is_editing() && !format.is_empty() && !use_default_format) {
 		const Variant current_value = get_value();
 		bool error = false;
-		const String text = format.sprintf(Span(&current_value, 1), &error);
+		Array values;
+		if (is_localizing_numeral_system() && format.contains("%l")) {
+			values = { _get_locale(), current_value };
+		} else {
+			values = { current_value };
+		}
+		const String text = format.sprintf(values, &error);
 		if (error) {
 			line_edit->set_text_with_selection(RTR("<Invalid>"));
 			return;
