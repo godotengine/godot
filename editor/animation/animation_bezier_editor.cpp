@@ -383,7 +383,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			}
 
 			RBMap<String, Vector<int>> track_indices;
-			Vector<String> track_order;
+			LocalVector<String> track_order;
 
 			int track_count = animation->get_track_count();
 			for (int i = 0; i < track_count; ++i) {
