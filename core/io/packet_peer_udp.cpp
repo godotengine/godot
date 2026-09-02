@@ -227,7 +227,7 @@ Error PacketPeerUDP::connect_to_host(const IPAddress &p_host, uint16 p_port) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
 	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!p_host.is_valid(), ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The remote port number must be between 0 and 65535 (inclusive).");
+	ERR_FAIL_COND_V_MSG(p_port == 0, ERR_INVALID_PARAMETER, "The remote port number must be between 0 and 65535 (inclusive).");
 
 	Error err;
 
@@ -353,9 +353,9 @@ int PacketPeerUDP::get_local_port() const {
 	return addr.port();
 }
 
-void PacketPeerUDP::set_dest_address(const IPAddress &p_address, int p_port) {
+void PacketPeerUDP::set_dest_address(const IPAddress &p_address, uint16 p_port) {
 	ERR_FAIL_COND_MSG(connected, "Destination address cannot be set for connected sockets");
-	ERR_FAIL_COND_MSG(p_port < 1 || p_port > 65535, vformat("Can't set UDP peer destination address to port %d. The port number must be between 1 and 65535 (inclusive).", p_port));
+	ERR_FAIL_COND_MSG(p_port == 0, vformat("Can't set UDP peer destination address to port %d. The port number must be between 1 and 65535 (inclusive).", p_port));
 	peer_addr = p_address;
 	peer_port = p_port;
 }
