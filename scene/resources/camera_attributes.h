@@ -81,7 +81,6 @@ private:
 	// Motion blur
 	bool motion_blur_enabled = false;
 	float motion_blur_intensity = 1.0;
-	bool motion_blur_clamp_velocities_to_tile = true;
 	float motion_blur_object_velocity_multiplier = 1.0;
 	float motion_blur_movement_velocity_multiplier = 1.0;
 	float motion_blur_rotation_velocity_multiplier = 1.0;
@@ -113,8 +112,6 @@ public:
 	bool is_motion_blur_enabled() const;
 	void set_motion_blur_intensity(float p_intensity);
 	float get_motion_blur_intensity() const;
-	void set_motion_blur_clamp_velocities_to_tile(bool p_clamp_velocities_to_tile);
-	bool is_motion_blur_clamp_velocities_to_tile() const;
 	void set_motion_blur_object_velocity_multiplier(float p_multiplier);
 	float get_motion_blur_object_velocity_multiplier() const;
 	void set_motion_blur_movement_velocity_multiplier(float p_multiplier);

@@ -171,18 +171,6 @@ float CameraAttributesPractical::get_motion_blur_intensity() const {
 	return motion_blur_intensity;
 }
 
-void CameraAttributesPractical::set_motion_blur_clamp_velocities_to_tile(bool p_clamp_velocities_to_tile) {
-	if (motion_blur_clamp_velocities_to_tile == p_clamp_velocities_to_tile) {
-		return;
-	}
-	motion_blur_clamp_velocities_to_tile = p_clamp_velocities_to_tile;
-	_update_motion_blur();
-}
-
-bool CameraAttributesPractical::is_motion_blur_clamp_velocities_to_tile() const {
-	return motion_blur_clamp_velocities_to_tile;
-}
-
 void CameraAttributesPractical::set_motion_blur_object_velocity_multiplier(float p_multiplier) {
 	p_multiplier = MAX(0.0f, p_multiplier);
 	motion_blur_object_velocity_multiplier = p_multiplier;
@@ -303,7 +291,6 @@ void CameraAttributesPractical::_update_motion_blur() {
 			get_rid(),
 			motion_blur_enabled,
 			motion_blur_intensity,
-			motion_blur_clamp_velocities_to_tile,
 			motion_blur_object_velocity_multiplier,
 			motion_blur_movement_velocity_multiplier,
 			motion_blur_rotation_velocity_multiplier,

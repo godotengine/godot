@@ -116,7 +116,6 @@
 			<param index="0" name="camera_attributes" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<param index="2" name="intensity" type="float" />
-			<param index="3" name="clamp_velocities_to_tile" type="bool" />
 			<param index="4" name="object_velocity_multiplier" type="float" />
 			<param index="5" name="movement_velocity_multiplier" type="float" />
 			<param index="6" name="rotation_velocity_multiplier" type="float" />

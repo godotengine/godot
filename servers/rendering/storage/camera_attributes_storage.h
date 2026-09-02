@@ -51,7 +51,6 @@ private:
 
 		bool motion_blur_enabled = false;
 		float motion_blur_intensity = 1.0;
-		bool motion_blur_clamp_velocities_to_tile = true;
 		float motion_blur_object_velocity_multiplier = 1.0;
 		float motion_blur_movement_velocity_multiplier = 1.0;
 		float motion_blur_rotation_velocity_multiplier = 1.0;
@@ -98,9 +97,8 @@ public:
 	void camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality p_quality);
 	void camera_attributes_set_motion_blur_tile_size(RSE::MotionBlurTileSize p_tile_size);
 
-	void camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, bool p_clamp_velocities_to_tile, float p_object_velocity_multiplier, float p_movement_velocity_multiplier, float p_rotation_velocity_multiplier, float p_velocity_lower_threshold, float p_velocity_upper_threshold);
+	void camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, float p_object_velocity_multiplier, float p_movement_velocity_multiplier, float p_rotation_velocity_multiplier, float p_velocity_lower_threshold, float p_velocity_upper_threshold);
 	float camera_attributes_get_motion_blur_intensity(RID p_camera_attributes);
-	bool camera_attributes_get_motion_blur_clamp_velocities_to_tile(RID p_camera_attributes);
 	float camera_attributes_get_motion_blur_object_velocity_multiplier(RID p_camera_attributes);
 	float camera_attributes_get_motion_blur_movement_velocity_multiplier(RID p_camera_attributes);
 	float camera_attributes_get_motion_blur_rotation_velocity_multiplier(RID p_camera_attributes);

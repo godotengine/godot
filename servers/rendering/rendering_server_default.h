@@ -924,7 +924,7 @@ public:
 	FUNC1(camera_attributes_set_motion_blur_quality, RSE::MotionBlurQuality)
 	FUNC1(camera_attributes_set_motion_blur_tile_size, RSE::MotionBlurTileSize)
 
-	FUNC9(camera_attributes_set_motion_blur, RID, bool, float, bool, float, float, float, float, float)
+	FUNC8(camera_attributes_set_motion_blur, RID, bool, float, float, float, float, float, float)
 
 	FUNC2(camera_attributes_set_dof_blur_quality, RSE::DOFBlurQuality, bool)
 	FUNC1(camera_attributes_set_dof_blur_bokeh_shape, RSE::DOFBokehShape)
