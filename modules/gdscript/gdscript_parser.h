@@ -153,7 +153,7 @@ public:
 		_FORCE_INLINE_ static DataType get_variant_type() { // Default DataType for container elements.
 			DataType datatype;
 			datatype.kind = VARIANT;
-			datatype.type_source = INFERRED;
+			datatype.type_source = ANNOTATED_INFERRED;
 			return datatype;
 		}
 
