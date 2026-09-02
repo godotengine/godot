@@ -79,10 +79,22 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="expression" type="String" />
 			<param index="1" name="input_names" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="2" name="allowed_scope" type="int" enum="Expression.UtilityFunctionTypeFlags" is_bitfield="true" default="7" />
 			<description>
 				Parses the expression and returns an [enum Error] code.
-				You can optionally specify names of variables that may appear in the expression with [param input_names], so that you can bind them when it gets executed.
+				You can optionally specify names of variables that may appear in the expression with [param input_names], so that you can bind them when it gets executed. Use [param allowed_scope] to limit the set of functions available in the expression.
 			</description>
 		</method>
 	</methods>
+	<constants>
+		<constant name="FUNC_TYPE_MATH" value="1" enum="UtilityFunctionTypeFlags" is_bitfield="true">
+			If set, allows using mathematical functions from [@GlobalScope] (for example [method @GlobalScope.round], [method @GlobalScope.cos], or [method @GlobalScope.pow]).
+		</constant>
+		<constant name="FUNC_TYPE_RANDOM" value="2" enum="UtilityFunctionTypeFlags" is_bitfield="true">
+			If set, allows using RNG functions from [@GlobalScope] (for example [method @GlobalScope.randomize], [method @GlobalScope.randi], or [method @GlobalScope.randf]).
+		</constant>
+		<constant name="FUNC_TYPE_GENERAL" value="4" enum="UtilityFunctionTypeFlags" is_bitfield="true">
+			If set, allows using utility functions from [@GlobalScope] (for example [method @GlobalScope.print], [method @GlobalScope.str_to_var], or [method @GlobalScope.instance_from_id]).
+		</constant>
+	</constants>
 </class>
