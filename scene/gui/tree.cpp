@@ -5758,6 +5758,7 @@ void Tree::set_self_modulate(const Color &p_self_modulate) {
 	RS::get_singleton()->canvas_item_set_self_modulate(content_ci, p_self_modulate);
 	RS::get_singleton()->canvas_item_set_self_modulate(custom_ci, p_self_modulate);
 	RS::get_singleton()->canvas_item_set_self_modulate(stylebox_ci, p_self_modulate);
+	RS::get_singleton()->canvas_item_set_self_modulate(drop_indicator_ci, p_self_modulate);
 }
 
 void Tree::_update_all() {
