@@ -2508,10 +2508,14 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Displa
 	rc.bottom = p_position.y + wd.height + offset.y;
 	rc.top = p_position.y + offset.y;
 
-	const DWORD style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
-	const DWORD exStyle = GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE);
+	// extend_to_title windows make the entire window rect the client area.
+	// AdjustWindowRectEx would incorrectly add space for the title bar and borders to the window, whose non-client area is removed.
+	if (!wd.extend_to_title) {
+		const DWORD style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
+		const DWORD exStyle = GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE);
 
-	AdjustWindowRectEx(&rc, style, false, exStyle);
+		AdjustWindowRectEx(&rc, style, false, exStyle);
+	}
 	MoveWindow(wd.hWnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
 	wd.last_pos = p_position;
