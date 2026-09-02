@@ -1981,7 +1981,9 @@ void Control::set_block_minimum_size_adjust(bool p_block) {
 Size2 Control::get_minimum_size() const {
 	ERR_READ_THREAD_GUARD_V(Size2());
 	Vector2 ms;
-	GDVIRTUAL_CALL(_get_minimum_size, ms);
+	if (!GDVIRTUAL_CALL(_get_minimum_size, ms)) {
+		ms = __get_minimum_size();
+	}
 	return ms;
 }
 
@@ -5309,6 +5311,8 @@ void Control::_bind_methods() {
 	GDVIRTUAL_BIND(_get_accessibility_container_name, "node");
 
 	GDVIRTUAL_BIND(_gui_input, "event");
+
+	ClassDB::bind_virtual_method_answer("_get_minimum_size", &Control::__get_minimum_size);
 }
 
 Control::Control() {
