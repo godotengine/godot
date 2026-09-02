@@ -351,7 +351,7 @@
 		<method name="is_finished" qualifiers="const">
 			<return type="bool" />
 			<description>
-				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always return [code]true[/code].
+				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always returns [code]true[/code].
 			</description>
 		</method>
 		<method name="is_menu_visible" qualifiers="const">
@@ -363,7 +363,7 @@
 		<method name="is_ready" qualifiers="const" deprecated="Use [method is_finished] instead.">
 			<return type="bool" />
 			<description>
-				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always return [code]true[/code].
+				If [member threaded] is enabled, returns [code]true[/code] if the background thread has finished text processing, otherwise always returns [code]true[/code].
 			</description>
 		</method>
 		<method name="menu_option">
