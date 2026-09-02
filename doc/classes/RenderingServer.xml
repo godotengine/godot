@@ -2430,11 +2430,11 @@
 				[codeblock]
 				{
 					# Required:
-				    "primitive": RenderingServer.PrimitiveType,
-				    "format": RenderingServer.ArrayFormat,
-				    "vertex_data": PackedByteArray,
-				    "vertex_count": int,
-				    "aabb": AABB,
+					"primitive": RenderingServer.PrimitiveType,
+					"format": RenderingServer.ArrayFormat,
+					"vertex_data": PackedByteArray,
+					"vertex_count": int,
+					"aabb": AABB,
 
 					# Optional:
 					"attribute_data": PackedByteArray,

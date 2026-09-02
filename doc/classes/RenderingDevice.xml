@@ -2374,7 +2374,7 @@
 			rd = RenderingServer.get_rendering_device()
 
 			if rd.has_feature(RenderingDevice.SUPPORTS_RAYTRACING_PIPELINE):
-			    storage_buffer = rd.storage_buffer_create(bytes.size(), bytes, RenderingDevice.BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT)
+				storage_buffer = rd.storage_buffer_create(bytes.size(), bytes, RenderingDevice.BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT)
 			[/gdscript]
 			[/codeblocks]
 		</constant>
