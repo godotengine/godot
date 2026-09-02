@@ -507,24 +507,6 @@ StringName VideoStreamPlayer::get_bus() const {
 	return SceneStringName(Master);
 }
 
-void VideoStreamPlayer::_validate_property(PropertyInfo &p_property) const {
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-	if (p_property.name == "bus") {
-		String options;
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0) {
-				options += ",";
-			}
-			String name = AudioServer::get_singleton()->get_bus_name(i);
-			options += name;
-		}
-
-		p_property.hint_string = options;
-	}
-}
-
 void VideoStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &VideoStreamPlayer::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &VideoStreamPlayer::get_stream);
@@ -586,7 +568,7 @@ void VideoStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffering_msec", PROPERTY_HINT_RANGE, "10,1000,suffix:ms"), "set_buffering_msec", "get_buffering_msec");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", PROPERTY_USAGE_NONE), "set_stream_position", "get_stream_position");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_AUDIO_BUS), "set_bus", "get_bus");
 }
 
 VideoStreamPlayer::~VideoStreamPlayer() {
