@@ -3707,7 +3707,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		// If the method is implemented in the class hierarchy, the virtual/abstract flag will not be set for that `MethodInfo` and the search stops there.
 		// Virtual/abstract check only possible for super calls because class hierarchy is known. Objects may have scripts attached we don't know of at compile-time.
 		if (p_call->is_super) {
-			if (method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
+			if (method_flags.has_flag(METHOD_FLAG_VIRTUAL) && !ClassDB::has_virtual_method_answer(base_type.native_type, p_call->function_name)) {
 				push_error(vformat(R"*(Cannot call the parent class' virtual function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
 			} else if (method_flags.has_flag(METHOD_FLAG_VIRTUAL_REQUIRED)) {
 				push_error(vformat(R"*(Cannot call the parent class' abstract function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
