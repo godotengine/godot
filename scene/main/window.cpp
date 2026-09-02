@@ -641,6 +641,10 @@ void Window::_update_caption_overlay() {
 	bool rtl = false;
 	int w = rtl ? margins.x : margins.y;
 	int h = margins.z;
+
+	// Keep the caption overlay in native window coordinates, independently of
+	// the project's content scaling and global canvas transform.
+	caption_canvas_layer->set_transform(get_final_transform().affine_inverse());
 	caption_overlay->set_size(Size2(w, h));
 
 	if (rtl) {
