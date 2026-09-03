@@ -1017,6 +1017,14 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			r_result.insert(slider3.display, slider3);
 			EditorLanguage::CompletionOption slider4 = _calculate_string_insertion(existing_argument, "hide_control");
 			r_result.insert(slider4.display, slider4);
+			EditorLanguage::CompletionOption slider5 = _calculate_string_insertion(existing_argument, "exp");
+			r_result.insert(slider5.display, slider5);
+			EditorLanguage::CompletionOption slider6 = _calculate_string_insertion(existing_argument, "radians_as_degrees");
+			r_result.insert(slider6.display, slider6);
+			EditorLanguage::CompletionOption slider7 = _calculate_string_insertion(existing_argument, "degrees");
+			r_result.insert(slider7.display, slider7);
+			EditorLanguage::CompletionOption slider8 = _calculate_string_insertion(existing_argument, "suffix:");
+			r_result.insert(slider8.display, slider8);
 		}
 	} else if (p_annotation->name == SNAME("@export_exp_easing")) {
 		if (p_argument == 0 || p_argument == 1) {
