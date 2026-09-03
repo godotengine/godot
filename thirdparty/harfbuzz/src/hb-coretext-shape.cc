@@ -660,9 +660,9 @@ resize_and_retry:
 	  hb_position_t x_advance, y_advance, x_offset, y_offset;
 	  hb_font_get_glyph_advance_for_direction (font, notdef, dir, &x_advance, &y_advance);
 	  hb_font_get_glyph_origin_for_direction (font, notdef, dir, &x_offset, &y_offset);
-	  hb_position_t advance = x_advance + y_advance;
-	  x_offset = -x_offset;
-	  y_offset = -y_offset;
+	  hb_position_t advance = hb_saturate_add (x_advance, y_advance);
+	  x_offset = hb_saturate_neg (x_offset);
+	  y_offset = hb_saturate_neg (y_offset);
 
 	  unsigned int old_len = buffer->len;
 	  for (CFIndex j = range.location; j < range.location + range.length; j++)
@@ -760,7 +760,8 @@ resize_and_retry:
 	hb_glyph_info_t *info = run_info;
 	if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction))
 	{
-	  hb_position_t x_offset = round ((positions[0].x - advances_so_far) * x_mult);
+	  hb_position_t x_offset = hb_clamp_to<hb_position_t> (
+	      round ((positions[0].x - advances_so_far) * x_mult));
 	  for (unsigned int j = 0; j < num_glyphs; j++)
 	  {
 	    CGFloat advance;
@@ -768,16 +769,17 @@ resize_and_retry:
 	      advance = positions[j + 1].x - positions[j].x;
 	    else /* last glyph */
 	      advance = run_advance - (positions[j].x - positions[0].x);
-	    /* int cast necessary to pass through negative values. */
-	    info->mask = (int) round (advance * x_mult);
+	    /* Signed cast necessary to pass through negative values. */
+	    info->mask = (hb_mask_t) hb_clamp_to<int32_t> (round (advance * x_mult));
 	    info->var1.i32 = x_offset;
-	    info->var2.i32 = round (positions[j].y * y_mult);
+	    info->var2.i32 = hb_clamp_to<int32_t> (round (positions[j].y * y_mult));
 	    info++;
 	  }
 	}
 	else
 	{
-	  hb_position_t y_offset = round ((positions[0].y - advances_so_far) * y_mult);
+	  hb_position_t y_offset = hb_clamp_to<hb_position_t> (
+	      round ((positions[0].y - advances_so_far) * y_mult));
 	  for (unsigned int j = 0; j < num_glyphs; j++)
 	  {
 	    CGFloat advance;
@@ -785,9 +787,9 @@ resize_and_retry:
 	      advance = positions[j + 1].y - positions[j].y;
 	    else /* last glyph */
 	      advance = run_advance - (positions[j].y - positions[0].y);
-	    /* int cast necessary to pass through negative values. */
-	    info->mask = (int) round (advance * y_mult);
-	    info->var1.i32 = round (positions[j].x * x_mult);
+	    /* Signed cast necessary to pass through negative values. */
+	    info->mask = (hb_mask_t) hb_clamp_to<int32_t> (round (advance * y_mult));
+	    info->var1.i32 = hb_clamp_to<int32_t> (round (positions[j].x * x_mult));
 	    info->var2.i32 = y_offset;
 	    info++;
 	  }

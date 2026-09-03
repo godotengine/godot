@@ -346,6 +346,12 @@ struct cff2_private_dict_opset_subset_t : dict_opset_t
 	env.clear_args ();
 	break;
 
+      case OpCode_vsindexdict:
+	env.process_vsindex ();
+	dictval.ivs = env.get_ivs ();
+	env.clear_args ();
+	break;
+
       default:
 	SUPER::process_op (op, env);
 	if (!env.argStack.is_empty ()) return;
@@ -531,9 +537,10 @@ struct cff2
     HB_INTERNAL bool get_extents_at (hb_font_t *font,
 				     hb_codepoint_t glyph,
 				     hb_glyph_extents_t *extents,
-				     hb_array_t<const int> coords) const;
+				     hb_array_t<const int> coords,
+				     int64_t *budget = nullptr) const;
     HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const;
-    HB_INTERNAL bool get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords) const;
+    HB_INTERNAL bool get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords, int64_t *budget = nullptr) const;
   };
 
   struct accelerator_subset_t : accelerator_templ_t<cff2_private_dict_opset_subset_t, cff2_private_dict_values_subset_t>

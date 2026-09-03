@@ -65,12 +65,20 @@ hb_draw_quadratic_to_nil (hb_draw_funcs_t *dfuncs, void *draw_data,
 			  float to_x, float to_y,
 			  void *user_data HB_UNUSED)
 {
-#define HB_TWO_THIRD 0.66666666666666666666666667f
+  /* Compute in double precision, so that the result does not depend
+   * on how the compiler evaluates float expressions. */
+#define HB_TWO_THIRD 0.66666666666666666666666667
+  double current_x = (double) st->current_x;
+  double current_y = (double) st->current_y;
+  double cx = (double) control_x;
+  double cy = (double) control_y;
+  double tx = (double) to_x;
+  double ty = (double) to_y;
   dfuncs->emit_cubic_to (draw_data, *st,
-			 st->current_x + (control_x - st->current_x) * HB_TWO_THIRD,
-			 st->current_y + (control_y - st->current_y) * HB_TWO_THIRD,
-			 to_x + (control_x - to_x) * HB_TWO_THIRD,
-			 to_y + (control_y - to_y) * HB_TWO_THIRD,
+			 (float) (current_x + (cx - current_x) * HB_TWO_THIRD),
+			 (float) (current_y + (cy - current_y) * HB_TWO_THIRD),
+			 (float) (tx + (cx - tx) * HB_TWO_THIRD),
+			 (float) (ty + (cy - ty) * HB_TWO_THIRD),
 			 to_x, to_y);
 #undef HB_TWO_THIRD
 }

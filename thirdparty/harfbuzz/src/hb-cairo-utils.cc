@@ -94,6 +94,32 @@ _hb_cairo_destroy_blob (void *p)
   hb_blob_destroy ((hb_blob_t *) p);
 }
 
+void
+_hb_cairo_set_source_color (hb_cairo_context_t *c,
+			    hb_bool_t use_foreground,
+			    hb_color_t color)
+{
+  cairo_t *cr = c->cr;
+
+  if (use_foreground)
+  {
+#ifdef HAVE_CAIRO_USER_SCALED_FONT_GET_FOREGROUND_SOURCE
+    double r, g, b, a;
+    cairo_pattern_t *foreground = cairo_user_scaled_font_get_foreground_source (c->scaled_font);
+    if (cairo_pattern_get_rgba (foreground, &r, &g, &b, &a) == CAIRO_STATUS_SUCCESS)
+      cairo_set_source_rgba (cr, r, g, b, a * hb_color_get_alpha (color) / 255.);
+    else
+#endif
+      cairo_set_source_rgba (cr, 0, 0, 0, hb_color_get_alpha (color) / 255.);
+  }
+  else
+    cairo_set_source_rgba (cr,
+			   hb_color_get_red (color) / 255.,
+			   hb_color_get_green (color) / 255.,
+			   hb_color_get_blue (color) / 255.,
+			   hb_color_get_alpha (color) / 255.);
+}
+
 hb_bool_t
 _hb_cairo_paint_glyph_image (hb_cairo_context_t *c,
 			     hb_blob_t *blob,
@@ -211,7 +237,7 @@ _hb_cairo_get_color_stops (hb_cairo_context_t *c,
     return false;
   if (len > *count)
   {
-    *stops = (hb_color_stop_t *) hb_malloc (len * sizeof (hb_color_stop_t));
+    *stops = (hb_color_stop_t *) hb_malloc2 (len, sizeof (hb_color_stop_t));
     if (unlikely (!*stops))
       return false;
     allocated = true;
@@ -579,7 +605,7 @@ _hb_cairo_paint_sweep_gradient (hb_cairo_context_t *c,
 
   hb_array_t<hb_color_stop_t> (stops, len)
     .qsort ([] (const hb_color_stop_t &a, const hb_color_stop_t &b) {
-      return a.offset < b.offset;
+      return (a.offset > b.offset) - (a.offset < b.offset);
     });
 
   cairo_clip_extents (cr, &x1, &y1, &x2, &y2);

@@ -147,7 +147,11 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
 	  text_start--;
       }
     }
-    assert (text_start < text_end);
+    if (unlikely (text_start >= text_end))
+    {
+      buffer_verify_error (buffer, font, BUFFER_VERIFY_ERROR "unsafe-to-break text range is invalid.");
+      return false;
+    }
 
     if (false)
       printf("start %u end %u text start %u end %u\n", start, end, text_start, text_end);
@@ -163,7 +167,7 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
 
     hb_buffer_append (fragment, text_buffer, text_start, text_end);
     if (!hb_shape_full (font, fragment, features, num_features, shapers) ||
-	fragment->successful)
+	!fragment->successful)
       return true;
     hb_buffer_append (reconstruction, fragment, 0, -1);
 
@@ -380,11 +384,14 @@ hb_buffer_t::verify (hb_buffer_t        *text_buffer,
 		     const char * const *shapers)
 {
   bool ret = true;
-  if (!buffer_verify_monotone (this, font))
+  bool monotone = buffer_verify_monotone (this, font);
+  if (!monotone)
     ret = false;
-  if (!buffer_verify_unsafe_to_break (this, text_buffer, font, features, num_features, shapers))
+  if (monotone &&
+      !buffer_verify_unsafe_to_break (this, text_buffer, font, features, num_features, shapers))
     ret = false;
-  if ((flags & HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT) != 0 &&
+  if (monotone &&
+      (flags & HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT) != 0 &&
       !buffer_verify_unsafe_to_concat (this, text_buffer, font, features, num_features, shapers))
     ret = false;
   if (!ret)

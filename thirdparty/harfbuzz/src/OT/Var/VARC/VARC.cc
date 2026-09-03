@@ -343,6 +343,11 @@ VARC::get_path_at (const hb_varc_context_t &c,
   {
     if (c.draw_session)
     {
+      /* Out of budget: draw nothing, but signal success so remaining
+       * leaves are skipped instead of falling back per-glyph. */
+      if (unlikely (c.budget_left <= 0)) return true;
+      c.budget_left--;
+
       hb_transform_t<> leaf_transform = transform;
       leaf_transform.x0 *= c.font->x_multf;
       leaf_transform.y0 *= c.font->y_multf;
@@ -356,20 +361,23 @@ VARC::get_path_at (const hb_varc_context_t &c,
       hb_draw_session_t transformer_session {transformer_funcs, &context};
       hb_draw_session_t &shape_draw_session = leaf_transform.is_identity () ? *c.draw_session : transformer_session;
 
-      if (c.font->face->table.glyf->get_path_at (c.font, glyph, shape_draw_session, coords, c.scratch.glyf_scratch)) return true;
+      if (c.font->face->table.glyf->get_path_at (c.font, glyph, shape_draw_session, coords, c.scratch.glyf_scratch, nullptr, &c.budget_left)) return true;
 #ifndef HB_NO_CFF
-      if (c.font->face->table.cff2->get_path_at (c.font, glyph, shape_draw_session, coords)) return true;
-      if (c.font->face->table.cff1->get_path (c.font, glyph, shape_draw_session)) return true; // Doesn't have variations
+      if (c.font->face->table.cff2->get_path_at (c.font, glyph, shape_draw_session, coords, &c.budget_left)) return true;
+      if (c.font->face->table.cff1->get_path (c.font, glyph, shape_draw_session, &c.budget_left)) return true; // Doesn't have variations
 #endif
       return false;
     }
     else if (c.extents)
     {
+      if (unlikely (c.budget_left <= 0)) return true;
+      c.budget_left--;
+
       hb_glyph_extents_t glyph_extents;
-      if (!c.font->face->table.glyf->get_extents_at (c.font, glyph, &glyph_extents, coords))
+      if (!c.font->face->table.glyf->get_extents_at (c.font, glyph, &glyph_extents, coords, &c.budget_left))
 #ifndef HB_NO_CFF
-      if (!c.font->face->table.cff2->get_extents_at (c.font, glyph, &glyph_extents, coords))
-      if (!c.font->face->table.cff1->get_extents (c.font, glyph, &glyph_extents)) // Doesn't have variations
+      if (!c.font->face->table.cff2->get_extents_at (c.font, glyph, &glyph_extents, coords, &c.budget_left))
+      if (!c.font->face->table.cff1->get_extents (c.font, glyph, &glyph_extents, &c.budget_left)) // Doesn't have variations
 #endif
 	return false;
 
