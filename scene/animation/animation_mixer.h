@@ -255,6 +255,9 @@ protected:
 	};
 
 	struct TrackCacheMethod : public TrackCache {
+#ifdef TOOLS_ENABLED
+		LocalVector<bool> allowed_to_call_in_editor;
+#endif
 		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
 	};
 
@@ -398,6 +401,11 @@ protected:
 	virtual Variant _post_process_key_value_bind_compat_86687(const Ref<Animation> &p_anim, int p_track, Variant p_value, Object *p_object, int p_object_idx = -1);
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
+
+#ifdef TOOLS_ENABLED
+	/* ---- Method call track security ---- */
+	bool _allowed_to_call_in_editor(ObjectID p_object_id, const StringName &p_method) const;
+#endif // TOOLS_ENABLED
 
 public:
 	/* ---- Data lists ---- */
