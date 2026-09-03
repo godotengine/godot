@@ -353,6 +353,7 @@ public:
 	bool request_stack_dump(const int &p_frame);
 
 	void update_tabs();
+	void add_style();
 	void clear_style();
 	String get_var_value(const String &p_var) const;
 

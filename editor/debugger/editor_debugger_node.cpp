@@ -80,14 +80,13 @@ EditorDebuggerNode::EditorDebuggerNode() {
 		singleton = this;
 	}
 
+	single_session_style.instantiate();
+
 	tabs = memnew(TabContainer);
 	tabs->set_tabs_visible(false);
 	tabs->connect("tab_changed", callable_mp(this, &EditorDebuggerNode::_debugger_changed));
+	tabs->add_theme_style_override(SceneStringName(panel), single_session_style);
 	add_child(tabs);
-
-	Ref<StyleBoxEmpty> empty;
-	empty.instantiate();
-	tabs->add_theme_style_override(SceneStringName(panel), empty);
 
 	auto_switch_remote_scene_tree = EDITOR_GET("debugger/auto_switch_to_remote_scene_tree");
 	_add_debugger();
@@ -133,18 +132,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("clear_breakpoints", callable_mp(this, &EditorDebuggerNode::_breakpoints_cleared_in_tree).bind(id));
 	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors).bind(false));
 
-	if (tabs->get_tab_count() > 0) {
-		get_debugger(0)->clear_style();
-	}
-
 	tabs->add_child(node);
-
-	node->set_name(vformat(TTR("Session %d"), tabs->get_tab_count()));
-	if (tabs->get_tab_count() > 1) {
-		node->clear_style();
-		tabs->set_tabs_visible(true);
-		tabs->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
-	}
 
 	if (!debugger_plugins.is_empty()) {
 		for (Ref<EditorDebuggerPlugin> plugin : debugger_plugins) {
@@ -153,6 +141,29 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	}
 
 	return node;
+}
+
+void EditorDebuggerNode::_update_debugger_tabs() {
+	int active_session = 0;
+	for (int i = 0; i < tabs->get_child_count(); i++) {
+		if (ScriptEditorDebugger *idle_dbg = Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(i))) {
+			idle_dbg->set_name(vformat(TTR("Session %d"), i + 1));
+			bool is_session_active = idle_dbg->is_session_active();
+			tabs->set_tab_hidden(i, !is_session_active);
+			if (is_session_active) {
+				active_session++;
+			}
+		}
+	}
+	tabs->set_tabs_visible(active_session > 1);
+
+	if (tabs->are_tabs_visible()) {
+		get_debugger(0)->clear_style();
+		tabs->add_theme_style_override(SceneStringName(panel), multi_session_style);
+	} else {
+		get_debugger(0)->add_style();
+		tabs->add_theme_style_override(SceneStringName(panel), single_session_style);
+	}
 }
 
 void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
@@ -360,13 +371,16 @@ void EditorDebuggerNode::stop(bool p_force) {
 
 void EditorDebuggerNode::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			multi_session_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles));
+			if (tabs->are_tabs_visible()) {
+				tabs->add_theme_style_override(SceneStringName(panel), multi_session_style);
+			}
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (!EditorThemeManager::is_generated_theme_outdated()) {
 				return;
-			}
-
-			if (tabs->get_tab_count() > 1) {
-				tabs->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
 
 			_update_errors(true);
@@ -463,6 +477,8 @@ void EditorDebuggerNode::_notification(int p_what) {
 				} // Will arrive too late, how does the regular run work?
 
 				debugger->update_live_edit_root();
+
+				_update_debugger_tabs();
 			}
 		} break;
 	}
