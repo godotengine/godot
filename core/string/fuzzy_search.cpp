@@ -308,12 +308,15 @@ void FuzzySearch::_sort_and_filter(Vector<Ref<FuzzySearchMatch>> &p_results) con
 
 	struct FuzzySearchResultComparator {
 		bool operator()(const Ref<FuzzySearchMatch> &p_lhs, const Ref<FuzzySearchMatch> &p_rhs) const {
-			// Sort on (score, length, alphanumeric) to ensure consistent ordering.
+			// Sort on (score, filename length, path length, alphanumeric) to ensure consistent ordering.
 			if (p_lhs->score == p_rhs->score) {
-				if (p_lhs->target.length() == p_rhs->target.length()) {
-					return p_lhs->target < p_rhs->target;
+				if (p_lhs->target.length() - p_lhs->dir_index == p_rhs->target.length() - p_rhs->dir_index) {
+					if (p_lhs->target.length() == p_rhs->target.length()) {
+						return p_lhs->target < p_rhs->target;
+					}
+					return p_lhs->target.length() < p_rhs->target.length();
 				}
-				return p_lhs->target.length() < p_rhs->target.length();
+				return p_lhs->target.length() - p_lhs->dir_index < p_rhs->target.length() - p_rhs->dir_index;
 			}
 			return p_lhs->score > p_rhs->score;
 		}
