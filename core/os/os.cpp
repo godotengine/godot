@@ -283,7 +283,8 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 
 	// Trim trailing periods from the returned value as it's not valid for folder names on Windows.
 	// This check is still applied on non-Windows platforms so the returned value is consistent across platforms.
-	return safe_dir_name.rstrip(".");
+	// Trailing path separators are trimmed too, otherwise joining a file name to the result yields "//".
+	return safe_dir_name.rstrip("./");
 }
 
 // Path to data, config, cache, etc. OS-specific folders

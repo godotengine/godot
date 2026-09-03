@@ -200,4 +200,18 @@ TEST_CASE("[OS] Execute") {
 #endif
 }
 
+TEST_CASE("[OS] Safe directory names") {
+	const OS *os = OS::get_singleton();
+
+	CHECK(os->get_safe_dir_name("a/b\\c") == "a-b-c");
+	CHECK(os->get_safe_dir_name("name...") == "name");
+
+	CHECK(os->get_safe_dir_name("Studio/Game", true) == "Studio/Game");
+	CHECK(os->get_safe_dir_name("Studio/Game/", true) == "Studio/Game");
+	CHECK(os->get_safe_dir_name("Studio\\Game\\", true) == "Studio/Game");
+	CHECK(os->get_safe_dir_name("Game./", true) == "Game");
+	CHECK(os->get_safe_dir_name("Game/.", true) == "Game");
+	CHECK(os->get_safe_dir_name("/", true) == "");
+}
+
 } // namespace TestOS
