@@ -49,33 +49,37 @@
 			The update policy to use for the generated heightmap.
 		</member>
 	</members>
-	<constants>
-		<constant name="RESOLUTION_256" value="0" enum="Resolution">
-			Generate a 256×256 heightmap. Intended for small-scale scenes, or larger scenes with no distant particles.
-		</constant>
-		<constant name="RESOLUTION_512" value="1" enum="Resolution">
-			Generate a 512×512 heightmap. Intended for medium-scale scenes, or larger scenes with no distant particles.
-		</constant>
-		<constant name="RESOLUTION_1024" value="2" enum="Resolution">
-			Generate a 1024×1024 heightmap. Intended for large scenes with distant particles.
-		</constant>
-		<constant name="RESOLUTION_2048" value="3" enum="Resolution">
-			Generate a 2048×2048 heightmap. Intended for very large scenes with distant particles.
-		</constant>
-		<constant name="RESOLUTION_4096" value="4" enum="Resolution">
-			Generate a 4096×4096 heightmap. Intended for huge scenes with distant particles.
-		</constant>
-		<constant name="RESOLUTION_8192" value="5" enum="Resolution">
-			Generate a 8192×8192 heightmap. Intended for gigantic scenes with distant particles.
-		</constant>
-		<constant name="RESOLUTION_MAX" value="6" enum="Resolution">
-			Represents the size of the [enum Resolution] enum.
-		</constant>
-		<constant name="UPDATE_MODE_WHEN_MOVED" value="0" enum="UpdateMode">
-			Only update the heightmap when the [GPUParticlesCollisionHeightField3D] node is moved, or when the camera moves if [member follow_camera_enabled] is [code]true[/code]. An update can be forced by slightly moving the [GPUParticlesCollisionHeightField3D] in any direction, or by calling [method RenderingServer.particles_collision_height_field_update].
-		</constant>
-		<constant name="UPDATE_MODE_ALWAYS" value="1" enum="UpdateMode">
-			Update the heightmap every frame. This has a significant performance cost. This update should only be used when geometry that particles can collide with changes significantly during gameplay.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Resolution">
+			<constant name="RESOLUTION_256" value="0">
+				Generate a 256×256 heightmap. Intended for small-scale scenes, or larger scenes with no distant particles.
+			</constant>
+			<constant name="RESOLUTION_512" value="1">
+				Generate a 512×512 heightmap. Intended for medium-scale scenes, or larger scenes with no distant particles.
+			</constant>
+			<constant name="RESOLUTION_1024" value="2">
+				Generate a 1024×1024 heightmap. Intended for large scenes with distant particles.
+			</constant>
+			<constant name="RESOLUTION_2048" value="3">
+				Generate a 2048×2048 heightmap. Intended for very large scenes with distant particles.
+			</constant>
+			<constant name="RESOLUTION_4096" value="4">
+				Generate a 4096×4096 heightmap. Intended for huge scenes with distant particles.
+			</constant>
+			<constant name="RESOLUTION_8192" value="5">
+				Generate a 8192×8192 heightmap. Intended for gigantic scenes with distant particles.
+			</constant>
+			<constant name="RESOLUTION_MAX" value="6">
+				Represents the size of the [enum Resolution] enum.
+			</constant>
+		</enum>
+		<enum name="UpdateMode">
+			<constant name="UPDATE_MODE_WHEN_MOVED" value="0">
+				Only update the heightmap when the [GPUParticlesCollisionHeightField3D] node is moved, or when the camera moves if [member follow_camera_enabled] is [code]true[/code]. An update can be forced by slightly moving the [GPUParticlesCollisionHeightField3D] in any direction, or by calling [method RenderingServer.particles_collision_height_field_update].
+			</constant>
+			<constant name="UPDATE_MODE_ALWAYS" value="1">
+				Update the heightmap every frame. This has a significant performance cost. This update should only be used when geometry that particles can collide with changes significantly during gameplay.
+			</constant>
+		</enum>
+	</enums>
 </class>

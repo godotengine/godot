@@ -2716,427 +2716,6 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
-			Display server supports global menu. This allows the application to display its menu items in the operating system's top bar. [b]macOS[/b]
-		</constant>
-		<constant name="FEATURE_SUBWINDOWS" value="1" enum="Feature">
-			Display server supports multiple windows that can be moved outside of the main window. [b]Windows, macOS, Linux (X11)[/b]
-		</constant>
-		<constant name="FEATURE_TOUCHSCREEN" value="2" enum="Feature">
-			Display server supports touchscreen input. [b]Windows, Linux (X11/Wayland), Android, iOS, Web[/b]
-		</constant>
-		<constant name="FEATURE_MOUSE" value="3" enum="Feature">
-			Display server supports mouse input. [b]Windows, macOS, Linux (X11/Wayland), Android, Web[/b]
-		</constant>
-		<constant name="FEATURE_MOUSE_WARP" value="4" enum="Feature">
-			Display server supports warping mouse coordinates to keep the mouse cursor constrained within an area, but looping when one of the edges is reached. [b]Windows, macOS, Linux (X11/Wayland)[/b]
-		</constant>
-		<constant name="FEATURE_CLIPBOARD" value="5" enum="Feature">
-			Display server supports setting and getting clipboard data. See also [constant FEATURE_CLIPBOARD_PRIMARY]. [b]Windows, macOS, Linux (X11/Wayland), Android, iOS, Web[/b]
-		</constant>
-		<constant name="FEATURE_VIRTUAL_KEYBOARD" value="6" enum="Feature">
-			Display server supports popping up a virtual keyboard when requested to input text without a physical keyboard. [b]Android, iOS, Web[/b]
-		</constant>
-		<constant name="FEATURE_CURSOR_SHAPE" value="7" enum="Feature">
-			Display server supports setting the mouse cursor shape to be different from the default. [b]Windows, macOS, Linux (X11/Wayland), Android, Web[/b]
-		</constant>
-		<constant name="FEATURE_CUSTOM_CURSOR_SHAPE" value="8" enum="Feature">
-			Display server supports setting the mouse cursor shape to a custom image. [b]Windows, macOS, Linux (X11/Wayland), Web[/b]
-		</constant>
-		<constant name="FEATURE_NATIVE_DIALOG" value="9" enum="Feature">
-			Display server supports spawning text dialogs using the operating system's native look-and-feel. See [method dialog_show]. [b]Windows, macOS[/b]
-		</constant>
-		<constant name="FEATURE_IME" value="10" enum="Feature">
-			Display server supports [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url], which is commonly used for inputting Chinese/Japanese/Korean text. This is handled by the operating system, rather than by Godot. [b]Windows, macOS, Linux (X11)[/b]
-		</constant>
-		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="11" enum="Feature">
-			Display server supports windows can use per-pixel transparency to make windows behind them partially or fully visible. [b]Windows, macOS, Linux (X11/Wayland), Android[/b]
-		</constant>
-		<constant name="FEATURE_HIDPI" value="12" enum="Feature">
-			Display server supports querying the operating system's display scale factor. This allows automatically detecting the hiDPI display [i]reliably[/i], instead of guessing based on the screen resolution and the display's reported DPI (which might be unreliable due to broken monitor EDID). [b]Windows, Linux (Wayland), macOS[/b]
-		</constant>
-		<constant name="FEATURE_ICON" value="13" enum="Feature">
-			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS, Linux (X11/Wayland)[/b]
-			[b]Note:[/b] Use on Wayland requires the compositor to implement the [url=https://wayland.app/protocols/xdg-toplevel-icon-v1#xdg_toplevel_icon_v1]xdg_toplevel_icon_v1[/url] protocol, which not all compositors do. See [url=https://wayland.app/protocols/xdg-toplevel-icon-v1#compositor-support]xdg_toplevel_icon_v1#compositor-support[/url] for more information on individual compositor support.
-		</constant>
-		<constant name="FEATURE_NATIVE_ICON" value="14" enum="Feature">
-			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS[/b]
-		</constant>
-		<constant name="FEATURE_ORIENTATION" value="15" enum="Feature">
-			Display server supports changing the screen orientation. [b]Android, iOS[/b]
-		</constant>
-		<constant name="FEATURE_SWAP_BUFFERS" value="16" enum="Feature">
-			Display server supports V-Sync status can be changed from the default (which is forced to be enabled platforms not supporting this feature). [b]Windows, macOS, Linux (X11/Wayland)[/b]
-		</constant>
-		<constant name="FEATURE_CLIPBOARD_PRIMARY" value="18" enum="Feature">
-			Display server supports Primary clipboard can be used. This is a different clipboard from [constant FEATURE_CLIPBOARD]. [b]Linux (X11/Wayland)[/b]
-		</constant>
-		<constant name="FEATURE_TEXT_TO_SPEECH" value="19" enum="Feature">
-			Display server supports text-to-speech. See [code]tts_*[/code] methods. [b]Windows, macOS, Linux (X11/Wayland), Android, iOS, Web[/b]
-		</constant>
-		<constant name="FEATURE_EXTEND_TO_TITLE" value="20" enum="Feature">
-			Display server supports expanding window content to the title. See [constant WINDOW_FLAG_EXTEND_TO_TITLE]. [b]macOS[/b]
-		</constant>
-		<constant name="FEATURE_SCREEN_CAPTURE" value="21" enum="Feature">
-			Display server supports reading screen pixels. See [method screen_get_pixel].
-		</constant>
-		<constant name="FEATURE_STATUS_INDICATOR" value="22" enum="Feature">
-			Display server supports application status indicators.
-		</constant>
-		<constant name="FEATURE_NATIVE_HELP" value="23" enum="Feature">
-			Display server supports native help system search callbacks. See [method help_set_search_callbacks].
-		</constant>
-		<constant name="FEATURE_NATIVE_DIALOG_INPUT" value="24" enum="Feature">
-			Display server supports spawning text input dialogs using the operating system's native look-and-feel. See [method dialog_input_text]. [b]Windows, macOS[/b]
-		</constant>
-		<constant name="FEATURE_NATIVE_DIALOG_FILE" value="25" enum="Feature">
-			Display server supports spawning dialogs for selecting files or directories using the operating system's native look-and-feel. See [method file_dialog_show]. [b]Windows, macOS, Linux (X11/Wayland), Android[/b]
-		</constant>
-		<constant name="FEATURE_NATIVE_DIALOG_FILE_EXTRA" value="26" enum="Feature">
-			The display server supports all features of [constant FEATURE_NATIVE_DIALOG_FILE], with the added functionality of Options and native dialog file access to [code]res://[/code] and [code]user://[/code] paths. See [method file_dialog_show] and [method file_dialog_with_options_show]. [b]Windows, macOS, Linux (X11/Wayland)[/b]
-		</constant>
-		<constant name="FEATURE_WINDOW_DRAG" value="27" enum="Feature">
-			The display server supports initiating window drag and resize operations on demand. See [method window_start_drag] and [method window_start_resize].
-		</constant>
-		<constant name="FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE" value="28" enum="Feature">
-			Display server supports [constant WINDOW_FLAG_EXCLUDE_FROM_CAPTURE] window flag. [b]Windows, macOS[/b]
-		</constant>
-		<constant name="FEATURE_WINDOW_EMBEDDING" value="29" enum="Feature">
-			Display server supports embedding a window from another process. [b]Windows, Linux (X11), macOS[/b]
-		</constant>
-		<constant name="FEATURE_NATIVE_DIALOG_FILE_MIME" value="30" enum="Feature">
-			Native file selection dialog supports MIME types as filters.
-		</constant>
-		<constant name="FEATURE_EMOJI_AND_SYMBOL_PICKER" value="31" enum="Feature">
-			Display server supports system emoji and symbol picker. [b]Windows, macOS[/b]
-		</constant>
-		<constant name="FEATURE_NATIVE_COLOR_PICKER" value="32" enum="Feature">
-			Display server supports native color picker. [b]Linux (X11/Wayland)[/b]
-		</constant>
-		<constant name="FEATURE_SELF_FITTING_WINDOWS" value="33" enum="Feature">
-			Display server automatically fits popups according to the screen boundaries. Window nodes should not attempt to do that themselves.
-		</constant>
-		<constant name="FEATURE_ACCESSIBILITY_SCREEN_READER" value="34" enum="Feature">
-			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
-		</constant>
-		<constant name="FEATURE_HDR_OUTPUT" value="35" enum="Feature">
-			Display server supports HDR output. [b]Linux (Wayland), macOS, iOS, visionOS, Windows[/b]
-		</constant>
-		<constant name="FEATURE_PIP_MODE" value="36" enum="Feature">
-			Display server supports putting the application in picture-in-picture mode. [b]Android[/b]
-		</constant>
-		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Unknown or custom role.
-		</constant>
-		<constant name="ROLE_DEFAULT_BUTTON" value="1" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Default dialog button element.
-		</constant>
-		<constant name="ROLE_AUDIO" value="2" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Audio player element.
-		</constant>
-		<constant name="ROLE_VIDEO" value="3" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Video player element.
-		</constant>
-		<constant name="ROLE_STATIC_TEXT" value="4" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Non-editable text label.
-		</constant>
-		<constant name="ROLE_CONTAINER" value="5" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Container element. Elements with this role are used for internal structure and ignored by screen readers.
-		</constant>
-		<constant name="ROLE_PANEL" value="6" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Panel container element.
-		</constant>
-		<constant name="ROLE_BUTTON" value="7" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Button element.
-		</constant>
-		<constant name="ROLE_LINK" value="8" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Link element.
-		</constant>
-		<constant name="ROLE_CHECK_BOX" value="9" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Check box element.
-		</constant>
-		<constant name="ROLE_RADIO_BUTTON" value="10" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Radio button element.
-		</constant>
-		<constant name="ROLE_CHECK_BUTTON" value="11" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Check button element.
-		</constant>
-		<constant name="ROLE_SCROLL_BAR" value="12" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Scroll bar element.
-		</constant>
-		<constant name="ROLE_SCROLL_VIEW" value="13" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Scroll container element.
-		</constant>
-		<constant name="ROLE_SPLITTER" value="14" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Container splitter handle element.
-		</constant>
-		<constant name="ROLE_SLIDER" value="15" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Slider element.
-		</constant>
-		<constant name="ROLE_SPIN_BUTTON" value="16" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Spin box element.
-		</constant>
-		<constant name="ROLE_PROGRESS_INDICATOR" value="17" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Progress indicator element.
-		</constant>
-		<constant name="ROLE_TEXT_FIELD" value="18" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Editable text field element.
-		</constant>
-		<constant name="ROLE_MULTILINE_TEXT_FIELD" value="19" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Multiline editable text field element.
-		</constant>
-		<constant name="ROLE_COLOR_PICKER" value="20" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Color picker element.
-		</constant>
-		<constant name="ROLE_TABLE" value="21" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Table element.
-		</constant>
-		<constant name="ROLE_CELL" value="22" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Table/tree cell element.
-		</constant>
-		<constant name="ROLE_ROW" value="23" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Table/tree row element.
-		</constant>
-		<constant name="ROLE_ROW_GROUP" value="24" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Table/tree row group element.
-		</constant>
-		<constant name="ROLE_ROW_HEADER" value="25" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Table/tree row header element.
-		</constant>
-		<constant name="ROLE_COLUMN_HEADER" value="26" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Table/tree column header element.
-		</constant>
-		<constant name="ROLE_TREE" value="27" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Tree view element.
-		</constant>
-		<constant name="ROLE_TREE_ITEM" value="28" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Tree view item element.
-		</constant>
-		<constant name="ROLE_LIST" value="29" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			List element.
-		</constant>
-		<constant name="ROLE_LIST_ITEM" value="30" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			List item element.
-		</constant>
-		<constant name="ROLE_LIST_BOX" value="31" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			List view element.
-		</constant>
-		<constant name="ROLE_LIST_BOX_OPTION" value="32" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			List view item element.
-		</constant>
-		<constant name="ROLE_TAB_BAR" value="33" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Tab bar element.
-		</constant>
-		<constant name="ROLE_TAB" value="34" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Tab bar item element.
-		</constant>
-		<constant name="ROLE_TAB_PANEL" value="35" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Tab panel element.
-		</constant>
-		<constant name="ROLE_MENU_BAR" value="36" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Menu bar element.
-		</constant>
-		<constant name="ROLE_MENU" value="37" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Popup menu element.
-		</constant>
-		<constant name="ROLE_MENU_ITEM" value="38" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Popup menu item element.
-		</constant>
-		<constant name="ROLE_MENU_ITEM_CHECK_BOX" value="39" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Popup menu check button item element.
-		</constant>
-		<constant name="ROLE_MENU_ITEM_RADIO" value="40" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Popup menu radio button item element.
-		</constant>
-		<constant name="ROLE_IMAGE" value="41" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Image element.
-		</constant>
-		<constant name="ROLE_WINDOW" value="42" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Window element.
-		</constant>
-		<constant name="ROLE_TITLE_BAR" value="43" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Embedded window title bar element.
-		</constant>
-		<constant name="ROLE_DIALOG" value="44" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Dialog window element.
-		</constant>
-		<constant name="ROLE_TOOLTIP" value="45" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Tooltip element.
-		</constant>
-		<constant name="ROLE_REGION" value="46" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Region/landmark element. Screen readers can navigate between regions using landmark navigation.
-		</constant>
-		<constant name="ROLE_TEXT_RUN" value="47" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Unifor text run.
-			Note: This role is used for internal text elements, and should not be assigned to nodes.
-		</constant>
-		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType" deprecated="Use [AccessibilityServer] instead.">
-			Popup menu.
-		</constant>
-		<constant name="POPUP_LIST" value="1" enum="AccessibilityPopupType" deprecated="Use [AccessibilityServer] instead.">
-			Popup list.
-		</constant>
-		<constant name="POPUP_TREE" value="2" enum="AccessibilityPopupType" deprecated="Use [AccessibilityServer] instead.">
-			Popup tree view.
-		</constant>
-		<constant name="POPUP_DIALOG" value="3" enum="AccessibilityPopupType" deprecated="Use [AccessibilityServer] instead.">
-			Popup dialog.
-		</constant>
-		<constant name="FLAG_HIDDEN" value="0" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element is hidden for accessibility tools.
-		</constant>
-		<constant name="FLAG_MULTISELECTABLE" value="1" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element supports multiple item selection.
-		</constant>
-		<constant name="FLAG_REQUIRED" value="2" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element require user input.
-		</constant>
-		<constant name="FLAG_VISITED" value="3" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element is a visited link.
-		</constant>
-		<constant name="FLAG_BUSY" value="4" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element content is not ready (e.g. loading).
-		</constant>
-		<constant name="FLAG_MODAL" value="5" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element is modal window.
-		</constant>
-		<constant name="FLAG_TOUCH_PASSTHROUGH" value="6" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element allows touches to be passed through when a screen reader is in touch exploration mode.
-		</constant>
-		<constant name="FLAG_READONLY" value="7" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element is text field with selectable but read-only text.
-		</constant>
-		<constant name="FLAG_DISABLED" value="8" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element is disabled.
-		</constant>
-		<constant name="FLAG_CLIPS_CHILDREN" value="9" enum="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
-			Element clips children.
-		</constant>
-		<constant name="ACTION_CLICK" value="0" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Single click action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_FOCUS" value="1" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Focus action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_BLUR" value="2" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Blur action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_COLLAPSE" value="3" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Collapse action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_EXPAND" value="4" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Expand action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_DECREMENT" value="5" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Decrement action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_INCREMENT" value="6" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Increment action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_HIDE_TOOLTIP" value="7" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Hide tooltip action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_SHOW_TOOLTIP" value="8" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Show tooltip action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_SET_TEXT_SELECTION" value="9" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Set text selection action, callback argument is set to [Dictionary] with the following keys:
-			- [code]"start_element"[/code] accessibility element of the selection start.
-			- [code]"start_char"[/code] character offset relative to the accessibility element of the selection start.
-			- [code]"end_element"[/code] accessibility element of the selection end.
-			- [code]"end_char"[/code] character offset relative to the accessibility element of the selection end.
-		</constant>
-		<constant name="ACTION_REPLACE_SELECTED_TEXT" value="10" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Replace text action, callback argument is set to [String] with the replacement text.
-		</constant>
-		<constant name="ACTION_SCROLL_BACKWARD" value="11" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Scroll backward action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_SCROLL_DOWN" value="12" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Scroll down action, callback argument is set to [enum AccessibilityScrollUnit].
-		</constant>
-		<constant name="ACTION_SCROLL_FORWARD" value="13" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Scroll forward action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_SCROLL_LEFT" value="14" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Scroll left action, callback argument is set to [enum AccessibilityScrollUnit].
-		</constant>
-		<constant name="ACTION_SCROLL_RIGHT" value="15" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Scroll right action, callback argument is set to [enum AccessibilityScrollUnit].
-		</constant>
-		<constant name="ACTION_SCROLL_UP" value="16" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Scroll up action, callback argument is set to [enum AccessibilityScrollUnit].
-		</constant>
-		<constant name="ACTION_SCROLL_INTO_VIEW" value="17" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Scroll into view action, callback argument is set to [enum AccessibilityScrollHint].
-		</constant>
-		<constant name="ACTION_SCROLL_TO_POINT" value="18" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Scroll to point action, callback argument is set to [Vector2] with the relative point coordinates.
-		</constant>
-		<constant name="ACTION_SET_SCROLL_OFFSET" value="19" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Set scroll offset action, callback argument is set to [Vector2] with the scroll offset.
-		</constant>
-		<constant name="ACTION_SET_VALUE" value="20" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Set value action, callback argument is set to [String] or number with the new value.
-		</constant>
-		<constant name="ACTION_SHOW_CONTEXT_MENU" value="21" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Show context menu action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_CUSTOM" value="22" enum="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
-			Custom action, callback argument is set to the integer action ID.
-		</constant>
-		<constant name="LIVE_OFF" value="0" enum="AccessibilityLiveMode" deprecated="Use [AccessibilityServer] instead.">
-			Indicates that updates to the live region should not be presented.
-		</constant>
-		<constant name="LIVE_POLITE" value="1" enum="AccessibilityLiveMode" deprecated="Use [AccessibilityServer] instead.">
-			Indicates that updates to the live region should be presented at the next opportunity (for example at the end of speaking the current sentence).
-		</constant>
-		<constant name="LIVE_ASSERTIVE" value="2" enum="AccessibilityLiveMode" deprecated="Use [AccessibilityServer] instead.">
-			Indicates that updates to the live region have the highest priority and should be presented immediately.
-		</constant>
-		<constant name="SCROLL_UNIT_ITEM" value="0" enum="AccessibilityScrollUnit" deprecated="Use [AccessibilityServer] instead.">
-			The amount by which to scroll. A single item of a list, line of text.
-		</constant>
-		<constant name="SCROLL_UNIT_PAGE" value="1" enum="AccessibilityScrollUnit" deprecated="Use [AccessibilityServer] instead.">
-			The amount by which to scroll. A single page.
-		</constant>
-		<constant name="SCROLL_HINT_TOP_LEFT" value="0" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
-			A preferred position for the node scrolled into view. Top-left edge of the scroll container.
-		</constant>
-		<constant name="SCROLL_HINT_BOTTOM_RIGHT" value="1" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
-			A preferred position for the node scrolled into view. Bottom-right edge of the scroll container.
-		</constant>
-		<constant name="SCROLL_HINT_TOP_EDGE" value="2" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
-			A preferred position for the node scrolled into view. Top edge of the scroll container.
-		</constant>
-		<constant name="SCROLL_HINT_BOTTOM_EDGE" value="3" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
-			A preferred position for the node scrolled into view. Bottom edge of the scroll container.
-		</constant>
-		<constant name="SCROLL_HINT_LEFT_EDGE" value="4" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
-			A preferred position for the node scrolled into view. Left edge of the scroll container.
-		</constant>
-		<constant name="SCROLL_HINT_RIGHT_EDGE" value="5" enum="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
-			A preferred position for the node scrolled into view. Right edge of the scroll container.
-		</constant>
-		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
-			Makes the mouse cursor visible if it is hidden.
-		</constant>
-		<constant name="MOUSE_MODE_HIDDEN" value="1" enum="MouseMode">
-			Makes the mouse cursor hidden if it is visible.
-		</constant>
-		<constant name="MOUSE_MODE_CAPTURED" value="2" enum="MouseMode">
-			Captures the mouse. The mouse will be hidden and its position locked at the center of the window manager's window.
-			[b]Note:[/b] If you want to process the mouse's movement in this mode, you need to use [member InputEventMouseMotion.relative].
-		</constant>
-		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">
-			Confines the mouse cursor to the game window, and make it visible.
-		</constant>
-		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
-			Confines the mouse cursor to the game window, and make it hidden.
-		</constant>
-		<constant name="MOUSE_MODE_MAX" value="5" enum="MouseMode">
-			Max value of the [enum MouseMode].
-		</constant>
 		<constant name="INVALID_SCREEN" value="-1">
 			The ID that refers to a screen that does not exist. This is returned by some [DisplayServer] methods if no screen matches the requested result.
 		</constant>
@@ -3168,377 +2747,846 @@
 		<constant name="INVALID_NOTIFICATION_ID" value="-1">
 			The ID that refers to a nonexistent toast notification.
 		</constant>
-		<constant name="SCREEN_LANDSCAPE" value="0" enum="ScreenOrientation">
-			Default landscape orientation.
-		</constant>
-		<constant name="SCREEN_PORTRAIT" value="1" enum="ScreenOrientation">
-			Default portrait orientation.
-		</constant>
-		<constant name="SCREEN_REVERSE_LANDSCAPE" value="2" enum="ScreenOrientation">
-			Reverse landscape orientation (upside down).
-		</constant>
-		<constant name="SCREEN_REVERSE_PORTRAIT" value="3" enum="ScreenOrientation">
-			Reverse portrait orientation (upside down).
-		</constant>
-		<constant name="SCREEN_SENSOR_LANDSCAPE" value="4" enum="ScreenOrientation">
-			Automatic landscape orientation (default or reverse depending on sensor).
-		</constant>
-		<constant name="SCREEN_SENSOR_PORTRAIT" value="5" enum="ScreenOrientation">
-			Automatic portrait orientation (default or reverse depending on sensor).
-		</constant>
-		<constant name="SCREEN_SENSOR" value="6" enum="ScreenOrientation">
-			Automatic landscape or portrait orientation (default or reverse depending on sensor).
-		</constant>
-		<constant name="SENSOR_ORIENTATION_UNDEFINED" value="0" enum="SensorOrientation">
-			Unspecified screen sensor orientation.
-		</constant>
-		<constant name="SENSOR_ORIENTATION_PORTRAIT" value="1" enum="SensorOrientation">
-			Portrait orientation (either standard portrait or reverse portrait).
-		</constant>
-		<constant name="SENSOR_ORIENTATION_LANDSCAPE" value="2" enum="SensorOrientation">
-			Landscape orientation (either standard landscape or reverse landscape).
-		</constant>
-		<constant name="KEYBOARD_TYPE_DEFAULT" value="0" enum="VirtualKeyboardType">
-			Default text virtual keyboard.
-		</constant>
-		<constant name="KEYBOARD_TYPE_MULTILINE" value="1" enum="VirtualKeyboardType">
-			Multiline virtual keyboard.
-		</constant>
-		<constant name="KEYBOARD_TYPE_NUMBER" value="2" enum="VirtualKeyboardType">
-			Virtual number keypad, useful for PIN entry.
-		</constant>
-		<constant name="KEYBOARD_TYPE_NUMBER_DECIMAL" value="3" enum="VirtualKeyboardType">
-			Virtual number keypad, useful for entering fractional numbers.
-		</constant>
-		<constant name="KEYBOARD_TYPE_PHONE" value="4" enum="VirtualKeyboardType">
-			Virtual phone number keypad.
-		</constant>
-		<constant name="KEYBOARD_TYPE_EMAIL_ADDRESS" value="5" enum="VirtualKeyboardType">
-			Virtual keyboard with additional keys to assist with typing email addresses.
-		</constant>
-		<constant name="KEYBOARD_TYPE_PASSWORD" value="6" enum="VirtualKeyboardType">
-			Virtual keyboard for entering a password. On most platforms, this should disable autocomplete and autocapitalization.
-			[b]Note:[/b] This is not supported on Web. Instead, this behaves identically to [constant KEYBOARD_TYPE_DEFAULT].
-		</constant>
-		<constant name="KEYBOARD_TYPE_URL" value="7" enum="VirtualKeyboardType">
-			Virtual keyboard with additional keys to assist with typing URLs.
-		</constant>
-		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
-			Arrow cursor shape. This is the default when not pointing anything that overrides the mouse cursor, such as a [LineEdit] or [TextEdit].
-		</constant>
-		<constant name="CURSOR_IBEAM" value="1" enum="CursorShape">
-			I-beam cursor shape. This is used by default when hovering a control that accepts text input, such as [LineEdit] or [TextEdit].
-		</constant>
-		<constant name="CURSOR_POINTING_HAND" value="2" enum="CursorShape">
-			Pointing hand cursor shape. This is used by default when hovering a [LinkButton] or a URL tag in a [RichTextLabel].
-		</constant>
-		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
-			Crosshair cursor. This is intended to be displayed when the user needs precise aim over an element, such as a rectangle selection tool or a color picker.
-		</constant>
-		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
-			Wait cursor. On most cursor themes, this displays a spinning icon [i]besides[/i] the arrow. Intended to be used for non-blocking operations (when the user can do something else at the moment). See also [constant CURSOR_BUSY].
-		</constant>
-		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
-			Wait cursor. On most cursor themes, this [i]replaces[/i] the arrow with a spinning icon. Intended to be used for blocking operations (when the user can't do anything else at the moment). See also [constant CURSOR_WAIT].
-		</constant>
-		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
-			Dragging hand cursor. This is displayed during drag-and-drop operations. See also [constant CURSOR_CAN_DROP].
-		</constant>
-		<constant name="CURSOR_CAN_DROP" value="7" enum="CursorShape">
-			"Can drop" cursor. This is displayed during drag-and-drop operations if hovering over a [Control] that can accept the drag-and-drop event. On most cursor themes, this displays a dragging hand with an arrow symbol besides it. See also [constant CURSOR_DRAG].
-		</constant>
-		<constant name="CURSOR_FORBIDDEN" value="8" enum="CursorShape">
-			Forbidden cursor. This is displayed during drag-and-drop operations if the hovered [Control] can't accept the drag-and-drop event.
-		</constant>
-		<constant name="CURSOR_VSIZE" value="9" enum="CursorShape">
-			Vertical resize cursor. Intended to be displayed when the hovered [Control] can be vertically resized using the mouse. See also [constant CURSOR_VSPLIT].
-		</constant>
-		<constant name="CURSOR_HSIZE" value="10" enum="CursorShape">
-			Horizontal resize cursor. Intended to be displayed when the hovered [Control] can be horizontally resized using the mouse. See also [constant CURSOR_HSPLIT].
-		</constant>
-		<constant name="CURSOR_BDIAGSIZE" value="11" enum="CursorShape">
-			Secondary diagonal resize cursor (top-right/bottom-left). Intended to be displayed when the hovered [Control] can be resized on both axes at once using the mouse.
-		</constant>
-		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
-			Main diagonal resize cursor (top-left/bottom-right). Intended to be displayed when the hovered [Control] can be resized on both axes at once using the mouse.
-		</constant>
-		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
-			Move cursor. Intended to be displayed when the hovered [Control] can be moved using the mouse.
-		</constant>
-		<constant name="CURSOR_VSPLIT" value="14" enum="CursorShape">
-			Vertical split cursor. This is displayed when hovering a [Control] with splits that can be vertically resized using the mouse, such as [VSplitContainer]. On some cursor themes, this cursor may have the same appearance as [constant CURSOR_VSIZE].
-		</constant>
-		<constant name="CURSOR_HSPLIT" value="15" enum="CursorShape">
-			Horizontal split cursor. This is displayed when hovering a [Control] with splits that can be horizontally resized using the mouse, such as [HSplitContainer]. On some cursor themes, this cursor may have the same appearance as [constant CURSOR_HSIZE].
-		</constant>
-		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
-			Help cursor. On most cursor themes, this displays a question mark icon instead of the mouse cursor. Intended to be used when the user has requested help on the next element that will be clicked.
-		</constant>
-		<constant name="CURSOR_MAX" value="17" enum="CursorShape">
-			Represents the size of the [enum CursorShape] enum.
-		</constant>
-		<constant name="FILE_DIALOG_MODE_OPEN_FILE" value="0" enum="FileDialogMode">
-			The native file dialog allows selecting one, and only one file.
-		</constant>
-		<constant name="FILE_DIALOG_MODE_OPEN_FILES" value="1" enum="FileDialogMode">
-			The native file dialog allows selecting multiple files.
-		</constant>
-		<constant name="FILE_DIALOG_MODE_OPEN_DIR" value="2" enum="FileDialogMode">
-			The native file dialog only allows selecting a directory, disallowing the selection of any file.
-		</constant>
-		<constant name="FILE_DIALOG_MODE_OPEN_ANY" value="3" enum="FileDialogMode">
-			The native file dialog allows selecting one file or directory.
-		</constant>
-		<constant name="FILE_DIALOG_MODE_SAVE_FILE" value="4" enum="FileDialogMode">
-			The native file dialog will warn when a file exists.
-		</constant>
-		<constant name="WINDOW_MODE_WINDOWED" value="0" enum="WindowMode">
-			Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
-		</constant>
-		<constant name="WINDOW_MODE_MINIMIZED" value="1" enum="WindowMode">
-			Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed.
-		</constant>
-		<constant name="WINDOW_MODE_MAXIMIZED" value="2" enum="WindowMode">
-			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the maximize button is pressed.
-		</constant>
-		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
-			Full screen mode with full multi-window support.
-			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
-			[b]On Android:[/b] This enables immersive mode.
-			[b]On macOS:[/b] A new desktop is used to display the running project.
-			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
-		</constant>
-		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
-			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
-			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
-			[b]Note:[/b] This mode might not work with screen recording software.
-			[b]On Android:[/b] This enables immersive mode.
-			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
-			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
-			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
-			[b]On Linux (Wayland):[/b] Equivalent to [constant WINDOW_MODE_FULLSCREEN].
-			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
-		</constant>
-		<constant name="PROGRESS_STATE_NOPROGRESS" value="0" enum="ProgressState">
-			Stops displaying progress and returns the button to its normal state.
-		</constant>
-		<constant name="PROGRESS_STATE_INDETERMINATE" value="1" enum="ProgressState">
-			The progress indicator shows an indeterminate progress.
-			On Windows, the progress indicator does not grow in size, but cycles repeatedly along the length of the taskbar button by default.
-		</constant>
-		<constant name="PROGRESS_STATE_NORMAL" value="2" enum="ProgressState">
-			The progress indicator shows progress normally.
-		</constant>
-		<constant name="PROGRESS_STATE_ERROR" value="3" enum="ProgressState">
-			The progress indicator shows that an error has occurred.
-			On Windows, the progress indicator turns red by default to show that an error has occurred in one of the windows that is broadcasting progress.
-		</constant>
-		<constant name="PROGRESS_STATE_PAUSED" value="4" enum="ProgressState">
-			The progress indicator shows it was paused.
-			On Windows, the progress indicator turns yellow by default to show that progress is currently stopped in one of the windows but can be resumed by the user.
-		</constant>
-		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
-			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
-		</constant>
-		<constant name="WINDOW_FLAG_BORDERLESS" value="1" enum="WindowFlags">
-			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows.
-			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, and Windows.
-		</constant>
-		<constant name="WINDOW_FLAG_ALWAYS_ON_TOP" value="2" enum="WindowFlags">
-			The window is floating on top of all other windows. This flag is ignored for full-screen windows.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
-		</constant>
-		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
-			The window background can be transparent.
-			[b]Note:[/b] This flag has no effect if [method is_window_transparency_available] returns [code]false[/code].
-			[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
-			[b]Note:[/b] Transparency support is implemented on Android, but can only be enabled via [member ProjectSettings.display/window/per_pixel_transparency/allowed]. This flag has no effect on Android.
-		</constant>
-		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
-			The window can't be focused. No-focus window will ignore all input, except mouse clicks.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
-		</constant>
-		<constant name="WINDOW_FLAG_POPUP" value="5" enum="WindowFlags">
-			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [method window_set_transient]).
-			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, and Windows.
-		</constant>
-		<constant name="WINDOW_FLAG_EXTEND_TO_TITLE" value="6" enum="WindowFlags">
-			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons.
-			Use [method window_set_window_buttons_offset] to adjust minimize/maximize/close buttons offset.
-			Use [method window_get_safe_title_margins] to determine area under the title bar that is not covered by decorations.
-			[b]Note:[/b] This flag is implemented only on macOS.
-		</constant>
-		<constant name="WINDOW_FLAG_MOUSE_PASSTHROUGH" value="7" enum="WindowFlags">
-			All mouse events are passed to the underlying window of the same application.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
-		</constant>
-		<constant name="WINDOW_FLAG_SHARP_CORNERS" value="8" enum="WindowFlags">
-			Window style is overridden, forcing sharp corners.
-			[b]Note:[/b] This flag is implemented only on Windows (11).
-		</constant>
-		<constant name="WINDOW_FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="WindowFlags">
-			Window is excluded from screenshots taken by [method screen_get_image], [method screen_get_image_rect], and [method screen_get_pixel].
-			[b]Note:[/b] This flag is implemented on macOS and Windows (10, 20H1).
-			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
-		</constant>
-		<constant name="WINDOW_FLAG_POPUP_WM_HINT" value="10" enum="WindowFlags">
-			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
-			[b]Note:[/b] This flag is implemented on Linux (Wayland).
-		</constant>
-		<constant name="WINDOW_FLAG_MINIMIZE_DISABLED" value="11" enum="WindowFlags">
-			Window minimize button is disabled.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
-		</constant>
-		<constant name="WINDOW_FLAG_MAXIMIZE_DISABLED" value="12" enum="WindowFlags">
-			Window maximize button is disabled.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
-		</constant>
-		<constant name="WINDOW_FLAG_MAX" value="13" enum="WindowFlags">
-			Represents the size of the [enum WindowFlags] enum.
-		</constant>
-		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
-			Sent when the mouse pointer enters the window.
-		</constant>
-		<constant name="WINDOW_EVENT_MOUSE_EXIT" value="1" enum="WindowEvent">
-			Sent when the mouse pointer exits the window.
-		</constant>
-		<constant name="WINDOW_EVENT_FOCUS_IN" value="2" enum="WindowEvent">
-			Sent when the window grabs focus.
-		</constant>
-		<constant name="WINDOW_EVENT_FOCUS_OUT" value="3" enum="WindowEvent">
-			Sent when the window loses focus.
-		</constant>
-		<constant name="WINDOW_EVENT_CLOSE_REQUEST" value="4" enum="WindowEvent">
-			Sent when the user has attempted to close the window (e.g. close button is pressed).
-		</constant>
-		<constant name="WINDOW_EVENT_GO_BACK_REQUEST" value="5" enum="WindowEvent">
-			Sent when the device "Back" button is pressed.
-			[b]Note:[/b] This event is implemented only on Android.
-		</constant>
-		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
-			Sent when the window is moved to the display with different DPI, or display DPI is changed.
-			[b]Note:[/b] This flag is implemented only on macOS and Linux (Wayland).
-		</constant>
-		<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7" enum="WindowEvent">
-			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode).
-			[b]Note:[/b] This flag is implemented only on macOS.
-		</constant>
-		<constant name="WINDOW_EVENT_FORCE_CLOSE" value="8" enum="WindowEvent">
-			Sent when the window has been forcibly closed by the display server. The window will immediately hide and clean any internal rendering references.
-			[b]Note:[/b] This flag is implemented only on Linux (Wayland).
-		</constant>
-		<constant name="WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED" value="9" enum="WindowEvent">
-			Sent when the output max linear value returned by [method Window.get_output_max_linear_value] has changed.
-			This occurs when HDR output is enabled or disabled and when any HDR output luminance values of the window have changed, such as when the player adjusts their screen brightness setting or moves the window to a different screen.
-		</constant>
-		<constant name="WINDOW_EDGE_TOP_LEFT" value="0" enum="WindowResizeEdge">
-			Top-left edge of a window.
-		</constant>
-		<constant name="WINDOW_EDGE_TOP" value="1" enum="WindowResizeEdge">
-			Top edge of a window.
-		</constant>
-		<constant name="WINDOW_EDGE_TOP_RIGHT" value="2" enum="WindowResizeEdge">
-			Top-right edge of a window.
-		</constant>
-		<constant name="WINDOW_EDGE_LEFT" value="3" enum="WindowResizeEdge">
-			Left edge of a window.
-		</constant>
-		<constant name="WINDOW_EDGE_RIGHT" value="4" enum="WindowResizeEdge">
-			Right edge of a window.
-		</constant>
-		<constant name="WINDOW_EDGE_BOTTOM_LEFT" value="5" enum="WindowResizeEdge">
-			Bottom-left edge of a window.
-		</constant>
-		<constant name="WINDOW_EDGE_BOTTOM" value="6" enum="WindowResizeEdge">
-			Bottom edge of a window.
-		</constant>
-		<constant name="WINDOW_EDGE_BOTTOM_RIGHT" value="7" enum="WindowResizeEdge">
-			Bottom-right edge of a window.
-		</constant>
-		<constant name="WINDOW_EDGE_MAX" value="8" enum="WindowResizeEdge">
-			Represents the size of the [enum WindowResizeEdge] enum.
-		</constant>
-		<constant name="NOTIFICATION_ACTIVATED" value="0" enum="NotificationStatus">
-			User activates a toast notification through a click or touch.
-		</constant>
-		<constant name="NOTIFICATION_DISMISSED" value="1" enum="NotificationStatus">
-			A toast notification expires or is explicitly dismissed by the user.
-		</constant>
-		<constant name="NOTIFICATION_FAILED" value="2" enum="NotificationStatus">
-			Attempts to raise a toast notification failed.
-		</constant>
-		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
-			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
-		</constant>
-		<constant name="VSYNC_ENABLED" value="1" enum="VSyncMode">
-			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate (regardless of [member Engine.max_fps]).
-		</constant>
-		<constant name="VSYNC_ADAPTIVE" value="2" enum="VSyncMode">
-			Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate (regardless of [member Engine.max_fps]). Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
-		</constant>
-		<constant name="VSYNC_MAILBOX" value="3" enum="VSyncMode">
-			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
-			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag (also called "Fast" V-Sync mode). [constant VSYNC_MAILBOX] works best when at least twice as many frames as the display refresh rate are rendered. Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
-		</constant>
-		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
-			Display handle:
-			- Linux (X11): [code]X11::Display*[/code] for the display.
-			- Linux (Wayland): [code]wl_display[/code] for the display.
-			- Android: [code]EGLDisplay[/code] for the display.
-		</constant>
-		<constant name="WINDOW_HANDLE" value="1" enum="HandleType">
-			Window handle:
-			- Windows: [code]HWND[/code] for the window.
-			- Linux (X11): [code]X11::Window*[/code] for the window.
-			- Linux (Wayland): [code]wl_surface[/code] for the window.
-			- macOS: [code]NSWindow*[/code] for the window.
-			- iOS: [code]UIViewController*[/code] for the view controller.
-			- Android: [code]jObject[/code] for the activity.
-		</constant>
-		<constant name="WINDOW_VIEW" value="2" enum="HandleType">
-			Window view:
-			- Windows: [code]HDC[/code] for the window (only with the Compatibility renderer).
-			- macOS: [code]NSView*[/code] for the window main view.
-			- iOS: [code]UIView*[/code] for the window main view.
-		</constant>
-		<constant name="OPENGL_CONTEXT" value="3" enum="HandleType">
-			OpenGL context (only with the Compatibility renderer):
-			- Windows: [code]HGLRC[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
-			- Linux (X11): [code]GLXContext*[/code] for the window.
-			- Linux (Wayland): [code]EGLContext[/code] for the window.
-			- macOS: [code]NSOpenGLContext*[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
-			- Android: [code]EGLContext[/code] for the window.
-		</constant>
-		<constant name="EGL_DISPLAY" value="4" enum="HandleType">
-			- Windows: [code]EGLDisplay[/code] for the window (ANGLE).
-			- macOS: [code]EGLDisplay[/code] for the window (ANGLE).
-			- Linux (Wayland): [code]EGLDisplay[/code] for the window.
-		</constant>
-		<constant name="EGL_CONFIG" value="5" enum="HandleType">
-			- Windows: [code]EGLConfig[/code] for the window (ANGLE).
-			- macOS: [code]EGLConfig[/code] for the window (ANGLE).
-			- Linux (Wayland): [code]EGLConfig[/code] for the window.
-		</constant>
-		<constant name="GLX_VISUALID" value="6" enum="HandleType">
-			The GLX [code]VisualID[/code] for the window.
-			[b]Note:[/b] Only available on Linux when using X11.
-		</constant>
-		<constant name="GLX_FBCONFIG" value="7" enum="HandleType">
-			The [code]GLXFBConfig[/code] for the window.
-			[b]Note:[/b] Only available on Linux when using X11.
-		</constant>
-		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
-			Utterance has begun to be spoken.
-		</constant>
-		<constant name="TTS_UTTERANCE_ENDED" value="1" enum="TTSUtteranceEvent">
-			Utterance was successfully finished.
-		</constant>
-		<constant name="TTS_UTTERANCE_CANCELED" value="2" enum="TTSUtteranceEvent">
-			Utterance was canceled, or TTS service was unable to process it.
-		</constant>
-		<constant name="TTS_UTTERANCE_BOUNDARY" value="3" enum="TTSUtteranceEvent">
-			Utterance reached a word or sentence boundary.
-		</constant>
 	</constants>
+	<enums>
+		<enum name="AccessibilityAction">
+			<constant name="ACTION_CLICK" value="0" deprecated="Use [AccessibilityServer] instead.">
+				Single click action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_FOCUS" value="1" deprecated="Use [AccessibilityServer] instead.">
+				Focus action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_BLUR" value="2" deprecated="Use [AccessibilityServer] instead.">
+				Blur action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_COLLAPSE" value="3" deprecated="Use [AccessibilityServer] instead.">
+				Collapse action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_EXPAND" value="4" deprecated="Use [AccessibilityServer] instead.">
+				Expand action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_DECREMENT" value="5" deprecated="Use [AccessibilityServer] instead.">
+				Decrement action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_INCREMENT" value="6" deprecated="Use [AccessibilityServer] instead.">
+				Increment action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_HIDE_TOOLTIP" value="7" deprecated="Use [AccessibilityServer] instead.">
+				Hide tooltip action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_SHOW_TOOLTIP" value="8" deprecated="Use [AccessibilityServer] instead.">
+				Show tooltip action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_SET_TEXT_SELECTION" value="9" deprecated="Use [AccessibilityServer] instead.">
+				Set text selection action, callback argument is set to [Dictionary] with the following keys:
+				- [code]"start_element"[/code] accessibility element of the selection start.
+				- [code]"start_char"[/code] character offset relative to the accessibility element of the selection start.
+				- [code]"end_element"[/code] accessibility element of the selection end.
+				- [code]"end_char"[/code] character offset relative to the accessibility element of the selection end.
+			</constant>
+			<constant name="ACTION_REPLACE_SELECTED_TEXT" value="10" deprecated="Use [AccessibilityServer] instead.">
+				Replace text action, callback argument is set to [String] with the replacement text.
+			</constant>
+			<constant name="ACTION_SCROLL_BACKWARD" value="11" deprecated="Use [AccessibilityServer] instead.">
+				Scroll backward action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_SCROLL_DOWN" value="12" deprecated="Use [AccessibilityServer] instead.">
+				Scroll down action, callback argument is set to [enum AccessibilityScrollUnit].
+			</constant>
+			<constant name="ACTION_SCROLL_FORWARD" value="13" deprecated="Use [AccessibilityServer] instead.">
+				Scroll forward action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_SCROLL_LEFT" value="14" deprecated="Use [AccessibilityServer] instead.">
+				Scroll left action, callback argument is set to [enum AccessibilityScrollUnit].
+			</constant>
+			<constant name="ACTION_SCROLL_RIGHT" value="15" deprecated="Use [AccessibilityServer] instead.">
+				Scroll right action, callback argument is set to [enum AccessibilityScrollUnit].
+			</constant>
+			<constant name="ACTION_SCROLL_UP" value="16" deprecated="Use [AccessibilityServer] instead.">
+				Scroll up action, callback argument is set to [enum AccessibilityScrollUnit].
+			</constant>
+			<constant name="ACTION_SCROLL_INTO_VIEW" value="17" deprecated="Use [AccessibilityServer] instead.">
+				Scroll into view action, callback argument is set to [enum AccessibilityScrollHint].
+			</constant>
+			<constant name="ACTION_SCROLL_TO_POINT" value="18" deprecated="Use [AccessibilityServer] instead.">
+				Scroll to point action, callback argument is set to [Vector2] with the relative point coordinates.
+			</constant>
+			<constant name="ACTION_SET_SCROLL_OFFSET" value="19" deprecated="Use [AccessibilityServer] instead.">
+				Set scroll offset action, callback argument is set to [Vector2] with the scroll offset.
+			</constant>
+			<constant name="ACTION_SET_VALUE" value="20" deprecated="Use [AccessibilityServer] instead.">
+				Set value action, callback argument is set to [String] or number with the new value.
+			</constant>
+			<constant name="ACTION_SHOW_CONTEXT_MENU" value="21" deprecated="Use [AccessibilityServer] instead.">
+				Show context menu action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_CUSTOM" value="22" deprecated="Use [AccessibilityServer] instead.">
+				Custom action, callback argument is set to the integer action ID.
+			</constant>
+		</enum>
+		<enum name="AccessibilityFlags">
+			<constant name="FLAG_HIDDEN" value="0" deprecated="Use [AccessibilityServer] instead.">
+				Element is hidden for accessibility tools.
+			</constant>
+			<constant name="FLAG_MULTISELECTABLE" value="1" deprecated="Use [AccessibilityServer] instead.">
+				Element supports multiple item selection.
+			</constant>
+			<constant name="FLAG_REQUIRED" value="2" deprecated="Use [AccessibilityServer] instead.">
+				Element require user input.
+			</constant>
+			<constant name="FLAG_VISITED" value="3" deprecated="Use [AccessibilityServer] instead.">
+				Element is a visited link.
+			</constant>
+			<constant name="FLAG_BUSY" value="4" deprecated="Use [AccessibilityServer] instead.">
+				Element content is not ready (e.g. loading).
+			</constant>
+			<constant name="FLAG_MODAL" value="5" deprecated="Use [AccessibilityServer] instead.">
+				Element is modal window.
+			</constant>
+			<constant name="FLAG_TOUCH_PASSTHROUGH" value="6" deprecated="Use [AccessibilityServer] instead.">
+				Element allows touches to be passed through when a screen reader is in touch exploration mode.
+			</constant>
+			<constant name="FLAG_READONLY" value="7" deprecated="Use [AccessibilityServer] instead.">
+				Element is text field with selectable but read-only text.
+			</constant>
+			<constant name="FLAG_DISABLED" value="8" deprecated="Use [AccessibilityServer] instead.">
+				Element is disabled.
+			</constant>
+			<constant name="FLAG_CLIPS_CHILDREN" value="9" deprecated="Use [AccessibilityServer] instead.">
+				Element clips children.
+			</constant>
+		</enum>
+		<enum name="AccessibilityLiveMode">
+			<constant name="LIVE_OFF" value="0" deprecated="Use [AccessibilityServer] instead.">
+				Indicates that updates to the live region should not be presented.
+			</constant>
+			<constant name="LIVE_POLITE" value="1" deprecated="Use [AccessibilityServer] instead.">
+				Indicates that updates to the live region should be presented at the next opportunity (for example at the end of speaking the current sentence).
+			</constant>
+			<constant name="LIVE_ASSERTIVE" value="2" deprecated="Use [AccessibilityServer] instead.">
+				Indicates that updates to the live region have the highest priority and should be presented immediately.
+			</constant>
+		</enum>
+		<enum name="AccessibilityPopupType">
+			<constant name="POPUP_MENU" value="0" deprecated="Use [AccessibilityServer] instead.">
+				Popup menu.
+			</constant>
+			<constant name="POPUP_LIST" value="1" deprecated="Use [AccessibilityServer] instead.">
+				Popup list.
+			</constant>
+			<constant name="POPUP_TREE" value="2" deprecated="Use [AccessibilityServer] instead.">
+				Popup tree view.
+			</constant>
+			<constant name="POPUP_DIALOG" value="3" deprecated="Use [AccessibilityServer] instead.">
+				Popup dialog.
+			</constant>
+		</enum>
+		<enum name="AccessibilityRole">
+			<constant name="ROLE_UNKNOWN" value="0" deprecated="Use [AccessibilityServer] instead.">
+				Unknown or custom role.
+			</constant>
+			<constant name="ROLE_DEFAULT_BUTTON" value="1" deprecated="Use [AccessibilityServer] instead.">
+				Default dialog button element.
+			</constant>
+			<constant name="ROLE_AUDIO" value="2" deprecated="Use [AccessibilityServer] instead.">
+				Audio player element.
+			</constant>
+			<constant name="ROLE_VIDEO" value="3" deprecated="Use [AccessibilityServer] instead.">
+				Video player element.
+			</constant>
+			<constant name="ROLE_STATIC_TEXT" value="4" deprecated="Use [AccessibilityServer] instead.">
+				Non-editable text label.
+			</constant>
+			<constant name="ROLE_CONTAINER" value="5" deprecated="Use [AccessibilityServer] instead.">
+				Container element. Elements with this role are used for internal structure and ignored by screen readers.
+			</constant>
+			<constant name="ROLE_PANEL" value="6" deprecated="Use [AccessibilityServer] instead.">
+				Panel container element.
+			</constant>
+			<constant name="ROLE_BUTTON" value="7" deprecated="Use [AccessibilityServer] instead.">
+				Button element.
+			</constant>
+			<constant name="ROLE_LINK" value="8" deprecated="Use [AccessibilityServer] instead.">
+				Link element.
+			</constant>
+			<constant name="ROLE_CHECK_BOX" value="9" deprecated="Use [AccessibilityServer] instead.">
+				Check box element.
+			</constant>
+			<constant name="ROLE_RADIO_BUTTON" value="10" deprecated="Use [AccessibilityServer] instead.">
+				Radio button element.
+			</constant>
+			<constant name="ROLE_CHECK_BUTTON" value="11" deprecated="Use [AccessibilityServer] instead.">
+				Check button element.
+			</constant>
+			<constant name="ROLE_SCROLL_BAR" value="12" deprecated="Use [AccessibilityServer] instead.">
+				Scroll bar element.
+			</constant>
+			<constant name="ROLE_SCROLL_VIEW" value="13" deprecated="Use [AccessibilityServer] instead.">
+				Scroll container element.
+			</constant>
+			<constant name="ROLE_SPLITTER" value="14" deprecated="Use [AccessibilityServer] instead.">
+				Container splitter handle element.
+			</constant>
+			<constant name="ROLE_SLIDER" value="15" deprecated="Use [AccessibilityServer] instead.">
+				Slider element.
+			</constant>
+			<constant name="ROLE_SPIN_BUTTON" value="16" deprecated="Use [AccessibilityServer] instead.">
+				Spin box element.
+			</constant>
+			<constant name="ROLE_PROGRESS_INDICATOR" value="17" deprecated="Use [AccessibilityServer] instead.">
+				Progress indicator element.
+			</constant>
+			<constant name="ROLE_TEXT_FIELD" value="18" deprecated="Use [AccessibilityServer] instead.">
+				Editable text field element.
+			</constant>
+			<constant name="ROLE_MULTILINE_TEXT_FIELD" value="19" deprecated="Use [AccessibilityServer] instead.">
+				Multiline editable text field element.
+			</constant>
+			<constant name="ROLE_COLOR_PICKER" value="20" deprecated="Use [AccessibilityServer] instead.">
+				Color picker element.
+			</constant>
+			<constant name="ROLE_TABLE" value="21" deprecated="Use [AccessibilityServer] instead.">
+				Table element.
+			</constant>
+			<constant name="ROLE_CELL" value="22" deprecated="Use [AccessibilityServer] instead.">
+				Table/tree cell element.
+			</constant>
+			<constant name="ROLE_ROW" value="23" deprecated="Use [AccessibilityServer] instead.">
+				Table/tree row element.
+			</constant>
+			<constant name="ROLE_ROW_GROUP" value="24" deprecated="Use [AccessibilityServer] instead.">
+				Table/tree row group element.
+			</constant>
+			<constant name="ROLE_ROW_HEADER" value="25" deprecated="Use [AccessibilityServer] instead.">
+				Table/tree row header element.
+			</constant>
+			<constant name="ROLE_COLUMN_HEADER" value="26" deprecated="Use [AccessibilityServer] instead.">
+				Table/tree column header element.
+			</constant>
+			<constant name="ROLE_TREE" value="27" deprecated="Use [AccessibilityServer] instead.">
+				Tree view element.
+			</constant>
+			<constant name="ROLE_TREE_ITEM" value="28" deprecated="Use [AccessibilityServer] instead.">
+				Tree view item element.
+			</constant>
+			<constant name="ROLE_LIST" value="29" deprecated="Use [AccessibilityServer] instead.">
+				List element.
+			</constant>
+			<constant name="ROLE_LIST_ITEM" value="30" deprecated="Use [AccessibilityServer] instead.">
+				List item element.
+			</constant>
+			<constant name="ROLE_LIST_BOX" value="31" deprecated="Use [AccessibilityServer] instead.">
+				List view element.
+			</constant>
+			<constant name="ROLE_LIST_BOX_OPTION" value="32" deprecated="Use [AccessibilityServer] instead.">
+				List view item element.
+			</constant>
+			<constant name="ROLE_TAB_BAR" value="33" deprecated="Use [AccessibilityServer] instead.">
+				Tab bar element.
+			</constant>
+			<constant name="ROLE_TAB" value="34" deprecated="Use [AccessibilityServer] instead.">
+				Tab bar item element.
+			</constant>
+			<constant name="ROLE_TAB_PANEL" value="35" deprecated="Use [AccessibilityServer] instead.">
+				Tab panel element.
+			</constant>
+			<constant name="ROLE_MENU_BAR" value="36" deprecated="Use [AccessibilityServer] instead.">
+				Menu bar element.
+			</constant>
+			<constant name="ROLE_MENU" value="37" deprecated="Use [AccessibilityServer] instead.">
+				Popup menu element.
+			</constant>
+			<constant name="ROLE_MENU_ITEM" value="38" deprecated="Use [AccessibilityServer] instead.">
+				Popup menu item element.
+			</constant>
+			<constant name="ROLE_MENU_ITEM_CHECK_BOX" value="39" deprecated="Use [AccessibilityServer] instead.">
+				Popup menu check button item element.
+			</constant>
+			<constant name="ROLE_MENU_ITEM_RADIO" value="40" deprecated="Use [AccessibilityServer] instead.">
+				Popup menu radio button item element.
+			</constant>
+			<constant name="ROLE_IMAGE" value="41" deprecated="Use [AccessibilityServer] instead.">
+				Image element.
+			</constant>
+			<constant name="ROLE_WINDOW" value="42" deprecated="Use [AccessibilityServer] instead.">
+				Window element.
+			</constant>
+			<constant name="ROLE_TITLE_BAR" value="43" deprecated="Use [AccessibilityServer] instead.">
+				Embedded window title bar element.
+			</constant>
+			<constant name="ROLE_DIALOG" value="44" deprecated="Use [AccessibilityServer] instead.">
+				Dialog window element.
+			</constant>
+			<constant name="ROLE_TOOLTIP" value="45" deprecated="Use [AccessibilityServer] instead.">
+				Tooltip element.
+			</constant>
+			<constant name="ROLE_REGION" value="46" deprecated="Use [AccessibilityServer] instead.">
+				Region/landmark element. Screen readers can navigate between regions using landmark navigation.
+			</constant>
+			<constant name="ROLE_TEXT_RUN" value="47" deprecated="Use [AccessibilityServer] instead.">
+				Unifor text run.
+				Note: This role is used for internal text elements, and should not be assigned to nodes.
+			</constant>
+		</enum>
+		<enum name="AccessibilityScrollHint">
+			<constant name="SCROLL_HINT_TOP_LEFT" value="0" deprecated="Use [AccessibilityServer] instead.">
+				A preferred position for the node scrolled into view. Top-left edge of the scroll container.
+			</constant>
+			<constant name="SCROLL_HINT_BOTTOM_RIGHT" value="1" deprecated="Use [AccessibilityServer] instead.">
+				A preferred position for the node scrolled into view. Bottom-right edge of the scroll container.
+			</constant>
+			<constant name="SCROLL_HINT_TOP_EDGE" value="2" deprecated="Use [AccessibilityServer] instead.">
+				A preferred position for the node scrolled into view. Top edge of the scroll container.
+			</constant>
+			<constant name="SCROLL_HINT_BOTTOM_EDGE" value="3" deprecated="Use [AccessibilityServer] instead.">
+				A preferred position for the node scrolled into view. Bottom edge of the scroll container.
+			</constant>
+			<constant name="SCROLL_HINT_LEFT_EDGE" value="4" deprecated="Use [AccessibilityServer] instead.">
+				A preferred position for the node scrolled into view. Left edge of the scroll container.
+			</constant>
+			<constant name="SCROLL_HINT_RIGHT_EDGE" value="5" deprecated="Use [AccessibilityServer] instead.">
+				A preferred position for the node scrolled into view. Right edge of the scroll container.
+			</constant>
+		</enum>
+		<enum name="AccessibilityScrollUnit">
+			<constant name="SCROLL_UNIT_ITEM" value="0" deprecated="Use [AccessibilityServer] instead.">
+				The amount by which to scroll. A single item of a list, line of text.
+			</constant>
+			<constant name="SCROLL_UNIT_PAGE" value="1" deprecated="Use [AccessibilityServer] instead.">
+				The amount by which to scroll. A single page.
+			</constant>
+		</enum>
+		<enum name="CursorShape">
+			<constant name="CURSOR_ARROW" value="0">
+				Arrow cursor shape. This is the default when not pointing anything that overrides the mouse cursor, such as a [LineEdit] or [TextEdit].
+			</constant>
+			<constant name="CURSOR_IBEAM" value="1">
+				I-beam cursor shape. This is used by default when hovering a control that accepts text input, such as [LineEdit] or [TextEdit].
+			</constant>
+			<constant name="CURSOR_POINTING_HAND" value="2">
+				Pointing hand cursor shape. This is used by default when hovering a [LinkButton] or a URL tag in a [RichTextLabel].
+			</constant>
+			<constant name="CURSOR_CROSS" value="3">
+				Crosshair cursor. This is intended to be displayed when the user needs precise aim over an element, such as a rectangle selection tool or a color picker.
+			</constant>
+			<constant name="CURSOR_WAIT" value="4">
+				Wait cursor. On most cursor themes, this displays a spinning icon [i]besides[/i] the arrow. Intended to be used for non-blocking operations (when the user can do something else at the moment). See also [constant CURSOR_BUSY].
+			</constant>
+			<constant name="CURSOR_BUSY" value="5">
+				Wait cursor. On most cursor themes, this [i]replaces[/i] the arrow with a spinning icon. Intended to be used for blocking operations (when the user can't do anything else at the moment). See also [constant CURSOR_WAIT].
+			</constant>
+			<constant name="CURSOR_DRAG" value="6">
+				Dragging hand cursor. This is displayed during drag-and-drop operations. See also [constant CURSOR_CAN_DROP].
+			</constant>
+			<constant name="CURSOR_CAN_DROP" value="7">
+				"Can drop" cursor. This is displayed during drag-and-drop operations if hovering over a [Control] that can accept the drag-and-drop event. On most cursor themes, this displays a dragging hand with an arrow symbol besides it. See also [constant CURSOR_DRAG].
+			</constant>
+			<constant name="CURSOR_FORBIDDEN" value="8">
+				Forbidden cursor. This is displayed during drag-and-drop operations if the hovered [Control] can't accept the drag-and-drop event.
+			</constant>
+			<constant name="CURSOR_VSIZE" value="9">
+				Vertical resize cursor. Intended to be displayed when the hovered [Control] can be vertically resized using the mouse. See also [constant CURSOR_VSPLIT].
+			</constant>
+			<constant name="CURSOR_HSIZE" value="10">
+				Horizontal resize cursor. Intended to be displayed when the hovered [Control] can be horizontally resized using the mouse. See also [constant CURSOR_HSPLIT].
+			</constant>
+			<constant name="CURSOR_BDIAGSIZE" value="11">
+				Secondary diagonal resize cursor (top-right/bottom-left). Intended to be displayed when the hovered [Control] can be resized on both axes at once using the mouse.
+			</constant>
+			<constant name="CURSOR_FDIAGSIZE" value="12">
+				Main diagonal resize cursor (top-left/bottom-right). Intended to be displayed when the hovered [Control] can be resized on both axes at once using the mouse.
+			</constant>
+			<constant name="CURSOR_MOVE" value="13">
+				Move cursor. Intended to be displayed when the hovered [Control] can be moved using the mouse.
+			</constant>
+			<constant name="CURSOR_VSPLIT" value="14">
+				Vertical split cursor. This is displayed when hovering a [Control] with splits that can be vertically resized using the mouse, such as [VSplitContainer]. On some cursor themes, this cursor may have the same appearance as [constant CURSOR_VSIZE].
+			</constant>
+			<constant name="CURSOR_HSPLIT" value="15">
+				Horizontal split cursor. This is displayed when hovering a [Control] with splits that can be horizontally resized using the mouse, such as [HSplitContainer]. On some cursor themes, this cursor may have the same appearance as [constant CURSOR_HSIZE].
+			</constant>
+			<constant name="CURSOR_HELP" value="16">
+				Help cursor. On most cursor themes, this displays a question mark icon instead of the mouse cursor. Intended to be used when the user has requested help on the next element that will be clicked.
+			</constant>
+			<constant name="CURSOR_MAX" value="17">
+				Represents the size of the [enum CursorShape] enum.
+			</constant>
+		</enum>
+		<enum name="Feature">
+			<constant name="FEATURE_GLOBAL_MENU" value="0" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
+				Display server supports global menu. This allows the application to display its menu items in the operating system's top bar. [b]macOS[/b]
+			</constant>
+			<constant name="FEATURE_SUBWINDOWS" value="1">
+				Display server supports multiple windows that can be moved outside of the main window. [b]Windows, macOS, Linux (X11)[/b]
+			</constant>
+			<constant name="FEATURE_TOUCHSCREEN" value="2">
+				Display server supports touchscreen input. [b]Windows, Linux (X11/Wayland), Android, iOS, Web[/b]
+			</constant>
+			<constant name="FEATURE_MOUSE" value="3">
+				Display server supports mouse input. [b]Windows, macOS, Linux (X11/Wayland), Android, Web[/b]
+			</constant>
+			<constant name="FEATURE_MOUSE_WARP" value="4">
+				Display server supports warping mouse coordinates to keep the mouse cursor constrained within an area, but looping when one of the edges is reached. [b]Windows, macOS, Linux (X11/Wayland)[/b]
+			</constant>
+			<constant name="FEATURE_CLIPBOARD" value="5">
+				Display server supports setting and getting clipboard data. See also [constant FEATURE_CLIPBOARD_PRIMARY]. [b]Windows, macOS, Linux (X11/Wayland), Android, iOS, Web[/b]
+			</constant>
+			<constant name="FEATURE_VIRTUAL_KEYBOARD" value="6">
+				Display server supports popping up a virtual keyboard when requested to input text without a physical keyboard. [b]Android, iOS, Web[/b]
+			</constant>
+			<constant name="FEATURE_CURSOR_SHAPE" value="7">
+				Display server supports setting the mouse cursor shape to be different from the default. [b]Windows, macOS, Linux (X11/Wayland), Android, Web[/b]
+			</constant>
+			<constant name="FEATURE_CUSTOM_CURSOR_SHAPE" value="8">
+				Display server supports setting the mouse cursor shape to a custom image. [b]Windows, macOS, Linux (X11/Wayland), Web[/b]
+			</constant>
+			<constant name="FEATURE_NATIVE_DIALOG" value="9">
+				Display server supports spawning text dialogs using the operating system's native look-and-feel. See [method dialog_show]. [b]Windows, macOS[/b]
+			</constant>
+			<constant name="FEATURE_IME" value="10">
+				Display server supports [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url], which is commonly used for inputting Chinese/Japanese/Korean text. This is handled by the operating system, rather than by Godot. [b]Windows, macOS, Linux (X11)[/b]
+			</constant>
+			<constant name="FEATURE_WINDOW_TRANSPARENCY" value="11">
+				Display server supports windows can use per-pixel transparency to make windows behind them partially or fully visible. [b]Windows, macOS, Linux (X11/Wayland), Android[/b]
+			</constant>
+			<constant name="FEATURE_HIDPI" value="12">
+				Display server supports querying the operating system's display scale factor. This allows automatically detecting the hiDPI display [i]reliably[/i], instead of guessing based on the screen resolution and the display's reported DPI (which might be unreliable due to broken monitor EDID). [b]Windows, Linux (Wayland), macOS[/b]
+			</constant>
+			<constant name="FEATURE_ICON" value="13">
+				Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS, Linux (X11/Wayland)[/b]
+				[b]Note:[/b] Use on Wayland requires the compositor to implement the [url=https://wayland.app/protocols/xdg-toplevel-icon-v1#xdg_toplevel_icon_v1]xdg_toplevel_icon_v1[/url] protocol, which not all compositors do. See [url=https://wayland.app/protocols/xdg-toplevel-icon-v1#compositor-support]xdg_toplevel_icon_v1#compositor-support[/url] for more information on individual compositor support.
+			</constant>
+			<constant name="FEATURE_NATIVE_ICON" value="14">
+				Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS[/b]
+			</constant>
+			<constant name="FEATURE_ORIENTATION" value="15">
+				Display server supports changing the screen orientation. [b]Android, iOS[/b]
+			</constant>
+			<constant name="FEATURE_SWAP_BUFFERS" value="16">
+				Display server supports V-Sync status can be changed from the default (which is forced to be enabled platforms not supporting this feature). [b]Windows, macOS, Linux (X11/Wayland)[/b]
+			</constant>
+			<constant name="FEATURE_CLIPBOARD_PRIMARY" value="18">
+				Display server supports Primary clipboard can be used. This is a different clipboard from [constant FEATURE_CLIPBOARD]. [b]Linux (X11/Wayland)[/b]
+			</constant>
+			<constant name="FEATURE_TEXT_TO_SPEECH" value="19">
+				Display server supports text-to-speech. See [code]tts_*[/code] methods. [b]Windows, macOS, Linux (X11/Wayland), Android, iOS, Web[/b]
+			</constant>
+			<constant name="FEATURE_EXTEND_TO_TITLE" value="20">
+				Display server supports expanding window content to the title. See [constant WINDOW_FLAG_EXTEND_TO_TITLE]. [b]macOS[/b]
+			</constant>
+			<constant name="FEATURE_SCREEN_CAPTURE" value="21">
+				Display server supports reading screen pixels. See [method screen_get_pixel].
+			</constant>
+			<constant name="FEATURE_STATUS_INDICATOR" value="22">
+				Display server supports application status indicators.
+			</constant>
+			<constant name="FEATURE_NATIVE_HELP" value="23">
+				Display server supports native help system search callbacks. See [method help_set_search_callbacks].
+			</constant>
+			<constant name="FEATURE_NATIVE_DIALOG_INPUT" value="24">
+				Display server supports spawning text input dialogs using the operating system's native look-and-feel. See [method dialog_input_text]. [b]Windows, macOS[/b]
+			</constant>
+			<constant name="FEATURE_NATIVE_DIALOG_FILE" value="25">
+				Display server supports spawning dialogs for selecting files or directories using the operating system's native look-and-feel. See [method file_dialog_show]. [b]Windows, macOS, Linux (X11/Wayland), Android[/b]
+			</constant>
+			<constant name="FEATURE_NATIVE_DIALOG_FILE_EXTRA" value="26">
+				The display server supports all features of [constant FEATURE_NATIVE_DIALOG_FILE], with the added functionality of Options and native dialog file access to [code]res://[/code] and [code]user://[/code] paths. See [method file_dialog_show] and [method file_dialog_with_options_show]. [b]Windows, macOS, Linux (X11/Wayland)[/b]
+			</constant>
+			<constant name="FEATURE_WINDOW_DRAG" value="27">
+				The display server supports initiating window drag and resize operations on demand. See [method window_start_drag] and [method window_start_resize].
+			</constant>
+			<constant name="FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE" value="28">
+				Display server supports [constant WINDOW_FLAG_EXCLUDE_FROM_CAPTURE] window flag. [b]Windows, macOS[/b]
+			</constant>
+			<constant name="FEATURE_WINDOW_EMBEDDING" value="29">
+				Display server supports embedding a window from another process. [b]Windows, Linux (X11), macOS[/b]
+			</constant>
+			<constant name="FEATURE_NATIVE_DIALOG_FILE_MIME" value="30">
+				Native file selection dialog supports MIME types as filters.
+			</constant>
+			<constant name="FEATURE_EMOJI_AND_SYMBOL_PICKER" value="31">
+				Display server supports system emoji and symbol picker. [b]Windows, macOS[/b]
+			</constant>
+			<constant name="FEATURE_NATIVE_COLOR_PICKER" value="32">
+				Display server supports native color picker. [b]Linux (X11/Wayland)[/b]
+			</constant>
+			<constant name="FEATURE_SELF_FITTING_WINDOWS" value="33">
+				Display server automatically fits popups according to the screen boundaries. Window nodes should not attempt to do that themselves.
+			</constant>
+			<constant name="FEATURE_ACCESSIBILITY_SCREEN_READER" value="34">
+				Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
+			</constant>
+			<constant name="FEATURE_HDR_OUTPUT" value="35">
+				Display server supports HDR output. [b]Linux (Wayland), macOS, iOS, visionOS, Windows[/b]
+			</constant>
+			<constant name="FEATURE_PIP_MODE" value="36">
+				Display server supports putting the application in picture-in-picture mode. [b]Android[/b]
+			</constant>
+		</enum>
+		<enum name="FileDialogMode">
+			<constant name="FILE_DIALOG_MODE_OPEN_FILE" value="0">
+				The native file dialog allows selecting one, and only one file.
+			</constant>
+			<constant name="FILE_DIALOG_MODE_OPEN_FILES" value="1">
+				The native file dialog allows selecting multiple files.
+			</constant>
+			<constant name="FILE_DIALOG_MODE_OPEN_DIR" value="2">
+				The native file dialog only allows selecting a directory, disallowing the selection of any file.
+			</constant>
+			<constant name="FILE_DIALOG_MODE_OPEN_ANY" value="3">
+				The native file dialog allows selecting one file or directory.
+			</constant>
+			<constant name="FILE_DIALOG_MODE_SAVE_FILE" value="4">
+				The native file dialog will warn when a file exists.
+			</constant>
+		</enum>
+		<enum name="HandleType">
+			<constant name="DISPLAY_HANDLE" value="0">
+				Display handle:
+				- Linux (X11): [code]X11::Display*[/code] for the display.
+				- Linux (Wayland): [code]wl_display[/code] for the display.
+				- Android: [code]EGLDisplay[/code] for the display.
+			</constant>
+			<constant name="WINDOW_HANDLE" value="1">
+				Window handle:
+				- Windows: [code]HWND[/code] for the window.
+				- Linux (X11): [code]X11::Window*[/code] for the window.
+				- Linux (Wayland): [code]wl_surface[/code] for the window.
+				- macOS: [code]NSWindow*[/code] for the window.
+				- iOS: [code]UIViewController*[/code] for the view controller.
+				- Android: [code]jObject[/code] for the activity.
+			</constant>
+			<constant name="WINDOW_VIEW" value="2">
+				Window view:
+				- Windows: [code]HDC[/code] for the window (only with the Compatibility renderer).
+				- macOS: [code]NSView*[/code] for the window main view.
+				- iOS: [code]UIView*[/code] for the window main view.
+			</constant>
+			<constant name="OPENGL_CONTEXT" value="3">
+				OpenGL context (only with the Compatibility renderer):
+				- Windows: [code]HGLRC[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
+				- Linux (X11): [code]GLXContext*[/code] for the window.
+				- Linux (Wayland): [code]EGLContext[/code] for the window.
+				- macOS: [code]NSOpenGLContext*[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
+				- Android: [code]EGLContext[/code] for the window.
+			</constant>
+			<constant name="EGL_DISPLAY" value="4">
+				- Windows: [code]EGLDisplay[/code] for the window (ANGLE).
+				- macOS: [code]EGLDisplay[/code] for the window (ANGLE).
+				- Linux (Wayland): [code]EGLDisplay[/code] for the window.
+			</constant>
+			<constant name="EGL_CONFIG" value="5">
+				- Windows: [code]EGLConfig[/code] for the window (ANGLE).
+				- macOS: [code]EGLConfig[/code] for the window (ANGLE).
+				- Linux (Wayland): [code]EGLConfig[/code] for the window.
+			</constant>
+			<constant name="GLX_VISUALID" value="6">
+				The GLX [code]VisualID[/code] for the window.
+				[b]Note:[/b] Only available on Linux when using X11.
+			</constant>
+			<constant name="GLX_FBCONFIG" value="7">
+				The [code]GLXFBConfig[/code] for the window.
+				[b]Note:[/b] Only available on Linux when using X11.
+			</constant>
+		</enum>
+		<enum name="MouseMode">
+			<constant name="MOUSE_MODE_VISIBLE" value="0">
+				Makes the mouse cursor visible if it is hidden.
+			</constant>
+			<constant name="MOUSE_MODE_HIDDEN" value="1">
+				Makes the mouse cursor hidden if it is visible.
+			</constant>
+			<constant name="MOUSE_MODE_CAPTURED" value="2">
+				Captures the mouse. The mouse will be hidden and its position locked at the center of the window manager's window.
+				[b]Note:[/b] If you want to process the mouse's movement in this mode, you need to use [member InputEventMouseMotion.relative].
+			</constant>
+			<constant name="MOUSE_MODE_CONFINED" value="3">
+				Confines the mouse cursor to the game window, and make it visible.
+			</constant>
+			<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4">
+				Confines the mouse cursor to the game window, and make it hidden.
+			</constant>
+			<constant name="MOUSE_MODE_MAX" value="5">
+				Max value of the [enum MouseMode].
+			</constant>
+		</enum>
+		<enum name="NotificationStatus">
+			<constant name="NOTIFICATION_ACTIVATED" value="0">
+				User activates a toast notification through a click or touch.
+			</constant>
+			<constant name="NOTIFICATION_DISMISSED" value="1">
+				A toast notification expires or is explicitly dismissed by the user.
+			</constant>
+			<constant name="NOTIFICATION_FAILED" value="2">
+				Attempts to raise a toast notification failed.
+			</constant>
+		</enum>
+		<enum name="ProgressState">
+			<constant name="PROGRESS_STATE_NOPROGRESS" value="0">
+				Stops displaying progress and returns the button to its normal state.
+			</constant>
+			<constant name="PROGRESS_STATE_INDETERMINATE" value="1">
+				The progress indicator shows an indeterminate progress.
+				On Windows, the progress indicator does not grow in size, but cycles repeatedly along the length of the taskbar button by default.
+			</constant>
+			<constant name="PROGRESS_STATE_NORMAL" value="2">
+				The progress indicator shows progress normally.
+			</constant>
+			<constant name="PROGRESS_STATE_ERROR" value="3">
+				The progress indicator shows that an error has occurred.
+				On Windows, the progress indicator turns red by default to show that an error has occurred in one of the windows that is broadcasting progress.
+			</constant>
+			<constant name="PROGRESS_STATE_PAUSED" value="4">
+				The progress indicator shows it was paused.
+				On Windows, the progress indicator turns yellow by default to show that progress is currently stopped in one of the windows but can be resumed by the user.
+			</constant>
+		</enum>
+		<enum name="ScreenOrientation">
+			<constant name="SCREEN_LANDSCAPE" value="0">
+				Default landscape orientation.
+			</constant>
+			<constant name="SCREEN_PORTRAIT" value="1">
+				Default portrait orientation.
+			</constant>
+			<constant name="SCREEN_REVERSE_LANDSCAPE" value="2">
+				Reverse landscape orientation (upside down).
+			</constant>
+			<constant name="SCREEN_REVERSE_PORTRAIT" value="3">
+				Reverse portrait orientation (upside down).
+			</constant>
+			<constant name="SCREEN_SENSOR_LANDSCAPE" value="4">
+				Automatic landscape orientation (default or reverse depending on sensor).
+			</constant>
+			<constant name="SCREEN_SENSOR_PORTRAIT" value="5">
+				Automatic portrait orientation (default or reverse depending on sensor).
+			</constant>
+			<constant name="SCREEN_SENSOR" value="6">
+				Automatic landscape or portrait orientation (default or reverse depending on sensor).
+			</constant>
+		</enum>
+		<enum name="SensorOrientation">
+			<constant name="SENSOR_ORIENTATION_UNDEFINED" value="0">
+				Unspecified screen sensor orientation.
+			</constant>
+			<constant name="SENSOR_ORIENTATION_PORTRAIT" value="1">
+				Portrait orientation (either standard portrait or reverse portrait).
+			</constant>
+			<constant name="SENSOR_ORIENTATION_LANDSCAPE" value="2">
+				Landscape orientation (either standard landscape or reverse landscape).
+			</constant>
+		</enum>
+		<enum name="TTSUtteranceEvent">
+			<constant name="TTS_UTTERANCE_STARTED" value="0">
+				Utterance has begun to be spoken.
+			</constant>
+			<constant name="TTS_UTTERANCE_ENDED" value="1">
+				Utterance was successfully finished.
+			</constant>
+			<constant name="TTS_UTTERANCE_CANCELED" value="2">
+				Utterance was canceled, or TTS service was unable to process it.
+			</constant>
+			<constant name="TTS_UTTERANCE_BOUNDARY" value="3">
+				Utterance reached a word or sentence boundary.
+			</constant>
+		</enum>
+		<enum name="VSyncMode">
+			<constant name="VSYNC_DISABLED" value="0">
+				No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
+			</constant>
+			<constant name="VSYNC_ENABLED" value="1">
+				Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate (regardless of [member Engine.max_fps]).
+			</constant>
+			<constant name="VSYNC_ADAPTIVE" value="2">
+				Behaves like [constant VSYNC_DISABLED] when the framerate drops below the screen's refresh rate to reduce stuttering (tearing may be visible). Otherwise, vertical synchronization is enabled to avoid tearing. Framerate is limited by the monitor refresh rate (regardless of [member Engine.max_fps]). Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
+			</constant>
+			<constant name="VSYNC_MAILBOX" value="3">
+				Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
+				Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag (also called "Fast" V-Sync mode). [constant VSYNC_MAILBOX] works best when at least twice as many frames as the display refresh rate are rendered. Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
+			</constant>
+		</enum>
+		<enum name="VirtualKeyboardType">
+			<constant name="KEYBOARD_TYPE_DEFAULT" value="0">
+				Default text virtual keyboard.
+			</constant>
+			<constant name="KEYBOARD_TYPE_MULTILINE" value="1">
+				Multiline virtual keyboard.
+			</constant>
+			<constant name="KEYBOARD_TYPE_NUMBER" value="2">
+				Virtual number keypad, useful for PIN entry.
+			</constant>
+			<constant name="KEYBOARD_TYPE_NUMBER_DECIMAL" value="3">
+				Virtual number keypad, useful for entering fractional numbers.
+			</constant>
+			<constant name="KEYBOARD_TYPE_PHONE" value="4">
+				Virtual phone number keypad.
+			</constant>
+			<constant name="KEYBOARD_TYPE_EMAIL_ADDRESS" value="5">
+				Virtual keyboard with additional keys to assist with typing email addresses.
+			</constant>
+			<constant name="KEYBOARD_TYPE_PASSWORD" value="6">
+				Virtual keyboard for entering a password. On most platforms, this should disable autocomplete and autocapitalization.
+				[b]Note:[/b] This is not supported on Web. Instead, this behaves identically to [constant KEYBOARD_TYPE_DEFAULT].
+			</constant>
+			<constant name="KEYBOARD_TYPE_URL" value="7">
+				Virtual keyboard with additional keys to assist with typing URLs.
+			</constant>
+		</enum>
+		<enum name="WindowEvent">
+			<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0">
+				Sent when the mouse pointer enters the window.
+			</constant>
+			<constant name="WINDOW_EVENT_MOUSE_EXIT" value="1">
+				Sent when the mouse pointer exits the window.
+			</constant>
+			<constant name="WINDOW_EVENT_FOCUS_IN" value="2">
+				Sent when the window grabs focus.
+			</constant>
+			<constant name="WINDOW_EVENT_FOCUS_OUT" value="3">
+				Sent when the window loses focus.
+			</constant>
+			<constant name="WINDOW_EVENT_CLOSE_REQUEST" value="4">
+				Sent when the user has attempted to close the window (e.g. close button is pressed).
+			</constant>
+			<constant name="WINDOW_EVENT_GO_BACK_REQUEST" value="5">
+				Sent when the device "Back" button is pressed.
+				[b]Note:[/b] This event is implemented only on Android.
+			</constant>
+			<constant name="WINDOW_EVENT_DPI_CHANGE" value="6">
+				Sent when the window is moved to the display with different DPI, or display DPI is changed.
+				[b]Note:[/b] This flag is implemented only on macOS and Linux (Wayland).
+			</constant>
+			<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7">
+				Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode).
+				[b]Note:[/b] This flag is implemented only on macOS.
+			</constant>
+			<constant name="WINDOW_EVENT_FORCE_CLOSE" value="8">
+				Sent when the window has been forcibly closed by the display server. The window will immediately hide and clean any internal rendering references.
+				[b]Note:[/b] This flag is implemented only on Linux (Wayland).
+			</constant>
+			<constant name="WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED" value="9">
+				Sent when the output max linear value returned by [method Window.get_output_max_linear_value] has changed.
+				This occurs when HDR output is enabled or disabled and when any HDR output luminance values of the window have changed, such as when the player adjusts their screen brightness setting or moves the window to a different screen.
+			</constant>
+		</enum>
+		<enum name="WindowFlags">
+			<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0">
+				The window can't be resized by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
+			</constant>
+			<constant name="WINDOW_FLAG_BORDERLESS" value="1">
+				The window do not have native title bar and other decorations. This flag is ignored for full-screen windows.
+				[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, and Windows.
+			</constant>
+			<constant name="WINDOW_FLAG_ALWAYS_ON_TOP" value="2">
+				The window is floating on top of all other windows. This flag is ignored for full-screen windows.
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
+			</constant>
+			<constant name="WINDOW_FLAG_TRANSPARENT" value="3">
+				The window background can be transparent.
+				[b]Note:[/b] This flag has no effect if [method is_window_transparency_available] returns [code]false[/code].
+				[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+				[b]Note:[/b] Transparency support is implemented on Android, but can only be enabled via [member ProjectSettings.display/window/per_pixel_transparency/allowed]. This flag has no effect on Android.
+			</constant>
+			<constant name="WINDOW_FLAG_NO_FOCUS" value="4">
+				The window can't be focused. No-focus window will ignore all input, except mouse clicks.
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
+			</constant>
+			<constant name="WINDOW_FLAG_POPUP" value="5">
+				Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [method window_set_transient]).
+				[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, and Windows.
+			</constant>
+			<constant name="WINDOW_FLAG_EXTEND_TO_TITLE" value="6">
+				Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons.
+				Use [method window_set_window_buttons_offset] to adjust minimize/maximize/close buttons offset.
+				Use [method window_get_safe_title_margins] to determine area under the title bar that is not covered by decorations.
+				[b]Note:[/b] This flag is implemented only on macOS.
+			</constant>
+			<constant name="WINDOW_FLAG_MOUSE_PASSTHROUGH" value="7">
+				All mouse events are passed to the underlying window of the same application.
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
+			</constant>
+			<constant name="WINDOW_FLAG_SHARP_CORNERS" value="8">
+				Window style is overridden, forcing sharp corners.
+				[b]Note:[/b] This flag is implemented only on Windows (11).
+			</constant>
+			<constant name="WINDOW_FLAG_EXCLUDE_FROM_CAPTURE" value="9">
+				Window is excluded from screenshots taken by [method screen_get_image], [method screen_get_image_rect], and [method screen_get_pixel].
+				[b]Note:[/b] This flag is implemented on macOS and Windows (10, 20H1).
+				[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
+			</constant>
+			<constant name="WINDOW_FLAG_POPUP_WM_HINT" value="10">
+				Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+				[b]Note:[/b] This flag is implemented on Linux (Wayland).
+			</constant>
+			<constant name="WINDOW_FLAG_MINIMIZE_DISABLED" value="11">
+				Window minimize button is disabled.
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
+			</constant>
+			<constant name="WINDOW_FLAG_MAXIMIZE_DISABLED" value="12">
+				Window maximize button is disabled.
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
+			</constant>
+			<constant name="WINDOW_FLAG_MAX" value="13">
+				Represents the size of the [enum WindowFlags] enum.
+			</constant>
+		</enum>
+		<enum name="WindowMode">
+			<constant name="WINDOW_MODE_WINDOWED" value="0">
+				Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
+			</constant>
+			<constant name="WINDOW_MODE_MINIMIZED" value="1">
+				Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed.
+			</constant>
+			<constant name="WINDOW_MODE_MAXIMIZED" value="2">
+				Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the maximize button is pressed.
+			</constant>
+			<constant name="WINDOW_MODE_FULLSCREEN" value="3">
+				Full screen mode with full multi-window support.
+				Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
+				[b]On Android:[/b] This enables immersive mode.
+				[b]On macOS:[/b] A new desktop is used to display the running project.
+				[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
+			</constant>
+			<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4">
+				A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
+				Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
+				[b]Note:[/b] This mode might not work with screen recording software.
+				[b]On Android:[/b] This enables immersive mode.
+				[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
+				[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
+				[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
+				[b]On Linux (Wayland):[/b] Equivalent to [constant WINDOW_MODE_FULLSCREEN].
+				[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
+			</constant>
+		</enum>
+		<enum name="WindowResizeEdge">
+			<constant name="WINDOW_EDGE_TOP_LEFT" value="0">
+				Top-left edge of a window.
+			</constant>
+			<constant name="WINDOW_EDGE_TOP" value="1">
+				Top edge of a window.
+			</constant>
+			<constant name="WINDOW_EDGE_TOP_RIGHT" value="2">
+				Top-right edge of a window.
+			</constant>
+			<constant name="WINDOW_EDGE_LEFT" value="3">
+				Left edge of a window.
+			</constant>
+			<constant name="WINDOW_EDGE_RIGHT" value="4">
+				Right edge of a window.
+			</constant>
+			<constant name="WINDOW_EDGE_BOTTOM_LEFT" value="5">
+				Bottom-left edge of a window.
+			</constant>
+			<constant name="WINDOW_EDGE_BOTTOM" value="6">
+				Bottom edge of a window.
+			</constant>
+			<constant name="WINDOW_EDGE_BOTTOM_RIGHT" value="7">
+				Bottom-right edge of a window.
+			</constant>
+			<constant name="WINDOW_EDGE_MAX" value="8">
+				Represents the size of the [enum WindowResizeEdge] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

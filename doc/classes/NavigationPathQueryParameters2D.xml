@@ -60,33 +60,39 @@
 			The pathfinding target position in global coordinates.
 		</member>
 	</members>
-	<constants>
-		<constant name="PATHFINDING_ALGORITHM_ASTAR" value="0" enum="PathfindingAlgorithm">
-			The path query uses the default A* pathfinding algorithm.
-		</constant>
-		<constant name="PATH_POSTPROCESSING_CORRIDORFUNNEL" value="0" enum="PathPostProcessing">
-			Applies a funnel algorithm to the raw path corridor found by the pathfinding algorithm. This will result in the shortest path possible inside the path corridor. This postprocessing very much depends on the navigation mesh polygon layout and the created corridor. Especially tile- or gridbased layouts can face artificial corners with diagonal movement due to a jagged path corridor imposed by the cell shapes.
-		</constant>
-		<constant name="PATH_POSTPROCESSING_EDGECENTERED" value="1" enum="PathPostProcessing">
-			Centers every position in the middle of the traveled navigation mesh's polygon edge. This creates better paths for tile- or grid-based layouts that restrict the movement to the cells' centers.
-		</constant>
-		<constant name="PATH_POSTPROCESSING_NONE" value="2" enum="PathPostProcessing">
-			Applies no postprocessing and returns the raw path corridor as found by the pathfinding algorithm.
-		</constant>
-		<constant name="PATH_METADATA_INCLUDE_NONE" value="0" enum="PathMetadataFlags" is_bitfield="true">
-			Don't include any additional metadata about the returned path.
-		</constant>
-		<constant name="PATH_METADATA_INCLUDE_TYPES" value="1" enum="PathMetadataFlags" is_bitfield="true">
-			Include the type of navigation primitive (region or link) that each point of the path goes through.
-		</constant>
-		<constant name="PATH_METADATA_INCLUDE_RIDS" value="2" enum="PathMetadataFlags" is_bitfield="true">
-			Include the [RID]s of the regions and links that each point of the path goes through.
-		</constant>
-		<constant name="PATH_METADATA_INCLUDE_OWNERS" value="4" enum="PathMetadataFlags" is_bitfield="true">
-			Include the [code]ObjectID[/code]s of the [Object]s which manage the regions and links each point of the path goes through.
-		</constant>
-		<constant name="PATH_METADATA_INCLUDE_ALL" value="7" enum="PathMetadataFlags" is_bitfield="true">
-			Include all available metadata about the returned path.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="PathMetadataFlags" is_bitfield="true">
+			<constant name="PATH_METADATA_INCLUDE_NONE" value="0">
+				Don't include any additional metadata about the returned path.
+			</constant>
+			<constant name="PATH_METADATA_INCLUDE_TYPES" value="1">
+				Include the type of navigation primitive (region or link) that each point of the path goes through.
+			</constant>
+			<constant name="PATH_METADATA_INCLUDE_RIDS" value="2">
+				Include the [RID]s of the regions and links that each point of the path goes through.
+			</constant>
+			<constant name="PATH_METADATA_INCLUDE_OWNERS" value="4">
+				Include the [code]ObjectID[/code]s of the [Object]s which manage the regions and links each point of the path goes through.
+			</constant>
+			<constant name="PATH_METADATA_INCLUDE_ALL" value="7">
+				Include all available metadata about the returned path.
+			</constant>
+		</enum>
+		<enum name="PathPostProcessing">
+			<constant name="PATH_POSTPROCESSING_CORRIDORFUNNEL" value="0">
+				Applies a funnel algorithm to the raw path corridor found by the pathfinding algorithm. This will result in the shortest path possible inside the path corridor. This postprocessing very much depends on the navigation mesh polygon layout and the created corridor. Especially tile- or gridbased layouts can face artificial corners with diagonal movement due to a jagged path corridor imposed by the cell shapes.
+			</constant>
+			<constant name="PATH_POSTPROCESSING_EDGECENTERED" value="1">
+				Centers every position in the middle of the traveled navigation mesh's polygon edge. This creates better paths for tile- or grid-based layouts that restrict the movement to the cells' centers.
+			</constant>
+			<constant name="PATH_POSTPROCESSING_NONE" value="2">
+				Applies no postprocessing and returns the raw path corridor as found by the pathfinding algorithm.
+			</constant>
+		</enum>
+		<enum name="PathfindingAlgorithm">
+			<constant name="PATHFINDING_ALGORITHM_ASTAR" value="0">
+				The path query uses the default A* pathfinding algorithm.
+			</constant>
+		</enum>
+	</enums>
 </class>

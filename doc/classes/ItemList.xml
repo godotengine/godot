@@ -502,35 +502,41 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="ICON_MODE_TOP" value="0" enum="IconMode">
-			Icon is drawn above the text.
-		</constant>
-		<constant name="ICON_MODE_LEFT" value="1" enum="IconMode">
-			Icon is drawn to the left of the text.
-		</constant>
-		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
-			Only allow selecting a single item.
-		</constant>
-		<constant name="SELECT_MULTI" value="1" enum="SelectMode">
-			Allows selecting multiple items by holding [kbd]Ctrl[/kbd] or [kbd]Shift[/kbd].
-		</constant>
-		<constant name="SELECT_TOGGLE" value="2" enum="SelectMode">
-			Allows selecting multiple items by toggling them on and off.
-		</constant>
-		<constant name="SCROLL_HINT_MODE_DISABLED" value="0" enum="ScrollHintMode">
-			Scroll hints will never be shown.
-		</constant>
-		<constant name="SCROLL_HINT_MODE_BOTH" value="1" enum="ScrollHintMode">
-			Scroll hints will be shown at the top and bottom.
-		</constant>
-		<constant name="SCROLL_HINT_MODE_TOP" value="2" enum="ScrollHintMode">
-			Only the top scroll hint will be shown.
-		</constant>
-		<constant name="SCROLL_HINT_MODE_BOTTOM" value="3" enum="ScrollHintMode">
-			Only the bottom scroll hint will be shown.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="IconMode">
+			<constant name="ICON_MODE_TOP" value="0">
+				Icon is drawn above the text.
+			</constant>
+			<constant name="ICON_MODE_LEFT" value="1">
+				Icon is drawn to the left of the text.
+			</constant>
+		</enum>
+		<enum name="ScrollHintMode">
+			<constant name="SCROLL_HINT_MODE_DISABLED" value="0">
+				Scroll hints will never be shown.
+			</constant>
+			<constant name="SCROLL_HINT_MODE_BOTH" value="1">
+				Scroll hints will be shown at the top and bottom.
+			</constant>
+			<constant name="SCROLL_HINT_MODE_TOP" value="2">
+				Only the top scroll hint will be shown.
+			</constant>
+			<constant name="SCROLL_HINT_MODE_BOTTOM" value="3">
+				Only the bottom scroll hint will be shown.
+			</constant>
+		</enum>
+		<enum name="SelectMode">
+			<constant name="SELECT_SINGLE" value="0">
+				Only allow selecting a single item.
+			</constant>
+			<constant name="SELECT_MULTI" value="1">
+				Allows selecting multiple items by holding [kbd]Ctrl[/kbd] or [kbd]Shift[/kbd].
+			</constant>
+			<constant name="SELECT_TOGGLE" value="2">
+				Allows selecting multiple items by toggling them on and off.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.65, 0.65, 0.65, 1)">
 			Default text [Color] of the item.

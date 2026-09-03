@@ -267,197 +267,215 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="SESSION_STATE_UNKNOWN" value="0" enum="SessionState">
-			The state of the session is unknown, we haven't tried setting up OpenXR yet.
-		</constant>
-		<constant name="SESSION_STATE_IDLE" value="1" enum="SessionState">
-			The initial state after the OpenXR session is created or after the session is destroyed.
-		</constant>
-		<constant name="SESSION_STATE_READY" value="2" enum="SessionState">
-			OpenXR is ready to begin our session. [signal session_begun] is emitted when we change to this state.
-		</constant>
-		<constant name="SESSION_STATE_SYNCHRONIZED" value="3" enum="SessionState">
-			The application has synched its frame loop with the runtime but we're not rendering anything. [signal session_synchronized] is emitted when we change to this state.
-		</constant>
-		<constant name="SESSION_STATE_VISIBLE" value="4" enum="SessionState">
-			The application has synched its frame loop with the runtime and we're rendering output to the user, however we receive no user input. [signal session_visible] is emitted when we change to this state.
-			[b]Note:[/b] This is the current state just before we get the focused state, whenever the user opens a system menu, switches to another application, or takes off their headset.
-		</constant>
-		<constant name="SESSION_STATE_FOCUSED" value="5" enum="SessionState">
-			The application has synched its frame loop with the runtime, we're rendering output to the user and we're receiving XR input. [signal session_focussed] is emitted when we change to this state.
-			[b]Note:[/b] This is the state OpenXR will be in when the user can fully interact with your game.
-		</constant>
-		<constant name="SESSION_STATE_STOPPING" value="6" enum="SessionState">
-			Our session is being stopped. [signal session_stopping] is emitted when we change to this state.
-		</constant>
-		<constant name="SESSION_STATE_LOSS_PENDING" value="7" enum="SessionState">
-			The session is about to be lost. [signal session_loss_pending] is emitted when we change to this state.
-		</constant>
-		<constant name="SESSION_STATE_EXITING" value="8" enum="SessionState">
-			The OpenXR instance is about to be destroyed and we're exiting. [signal instance_exiting] is emitted when we change to this state.
-		</constant>
-		<constant name="HAND_LEFT" value="0" enum="Hand">
-			Left hand.
-		</constant>
-		<constant name="HAND_RIGHT" value="1" enum="Hand">
-			Right hand.
-		</constant>
-		<constant name="HAND_MAX" value="2" enum="Hand">
-			Maximum value for the hand enum.
-		</constant>
-		<constant name="HAND_MOTION_RANGE_UNOBSTRUCTED" value="0" enum="HandMotionRange">
-			Full hand range, if user closes their hands, we make a full fist.
-		</constant>
-		<constant name="HAND_MOTION_RANGE_CONFORM_TO_CONTROLLER" value="1" enum="HandMotionRange">
-			Conform to controller, if user closes their hands, the tracked data conforms to the shape of the controller.
-		</constant>
-		<constant name="HAND_MOTION_RANGE_MAX" value="2" enum="HandMotionRange">
-			Maximum value for the motion range enum.
-		</constant>
-		<constant name="HAND_TRACKED_SOURCE_UNKNOWN" value="0" enum="HandTrackedSource">
-			The source of hand tracking data is unknown (the extension is likely unsupported).
-		</constant>
-		<constant name="HAND_TRACKED_SOURCE_UNOBSTRUCTED" value="1" enum="HandTrackedSource">
-			The source of hand tracking is unobstructed, this means that an accurate method of hand tracking is used, e.g. optical hand tracking, data gloves, etc.
-		</constant>
-		<constant name="HAND_TRACKED_SOURCE_CONTROLLER" value="2" enum="HandTrackedSource">
-			The source of hand tracking is a controller, bone positions are inferred from controller inputs.
-		</constant>
-		<constant name="HAND_TRACKED_SOURCE_MAX" value="3" enum="HandTrackedSource">
-			Represents the size of the [enum HandTrackedSource] enum.
-		</constant>
-		<constant name="HAND_JOINT_PALM" value="0" enum="HandJoints">
-			Palm joint.
-		</constant>
-		<constant name="HAND_JOINT_WRIST" value="1" enum="HandJoints">
-			Wrist joint.
-		</constant>
-		<constant name="HAND_JOINT_THUMB_METACARPAL" value="2" enum="HandJoints">
-			Thumb metacarpal joint.
-		</constant>
-		<constant name="HAND_JOINT_THUMB_PROXIMAL" value="3" enum="HandJoints">
-			Thumb proximal joint.
-		</constant>
-		<constant name="HAND_JOINT_THUMB_DISTAL" value="4" enum="HandJoints">
-			Thumb distal joint.
-		</constant>
-		<constant name="HAND_JOINT_THUMB_TIP" value="5" enum="HandJoints">
-			Thumb tip joint.
-		</constant>
-		<constant name="HAND_JOINT_INDEX_METACARPAL" value="6" enum="HandJoints">
-			Index finger metacarpal joint.
-		</constant>
-		<constant name="HAND_JOINT_INDEX_PROXIMAL" value="7" enum="HandJoints">
-			Index finger phalanx proximal joint.
-		</constant>
-		<constant name="HAND_JOINT_INDEX_INTERMEDIATE" value="8" enum="HandJoints">
-			Index finger phalanx intermediate joint.
-		</constant>
-		<constant name="HAND_JOINT_INDEX_DISTAL" value="9" enum="HandJoints">
-			Index finger phalanx distal joint.
-		</constant>
-		<constant name="HAND_JOINT_INDEX_TIP" value="10" enum="HandJoints">
-			Index finger tip joint.
-		</constant>
-		<constant name="HAND_JOINT_MIDDLE_METACARPAL" value="11" enum="HandJoints">
-			Middle finger metacarpal joint.
-		</constant>
-		<constant name="HAND_JOINT_MIDDLE_PROXIMAL" value="12" enum="HandJoints">
-			Middle finger phalanx proximal joint.
-		</constant>
-		<constant name="HAND_JOINT_MIDDLE_INTERMEDIATE" value="13" enum="HandJoints">
-			Middle finger phalanx intermediate joint.
-		</constant>
-		<constant name="HAND_JOINT_MIDDLE_DISTAL" value="14" enum="HandJoints">
-			Middle finger phalanx distal joint.
-		</constant>
-		<constant name="HAND_JOINT_MIDDLE_TIP" value="15" enum="HandJoints">
-			Middle finger tip joint.
-		</constant>
-		<constant name="HAND_JOINT_RING_METACARPAL" value="16" enum="HandJoints">
-			Ring finger metacarpal joint.
-		</constant>
-		<constant name="HAND_JOINT_RING_PROXIMAL" value="17" enum="HandJoints">
-			Ring finger phalanx proximal joint.
-		</constant>
-		<constant name="HAND_JOINT_RING_INTERMEDIATE" value="18" enum="HandJoints">
-			Ring finger phalanx intermediate joint.
-		</constant>
-		<constant name="HAND_JOINT_RING_DISTAL" value="19" enum="HandJoints">
-			Ring finger phalanx distal joint.
-		</constant>
-		<constant name="HAND_JOINT_RING_TIP" value="20" enum="HandJoints">
-			Ring finger tip joint.
-		</constant>
-		<constant name="HAND_JOINT_LITTLE_METACARPAL" value="21" enum="HandJoints">
-			Pinky finger metacarpal joint.
-		</constant>
-		<constant name="HAND_JOINT_LITTLE_PROXIMAL" value="22" enum="HandJoints">
-			Pinky finger phalanx proximal joint.
-		</constant>
-		<constant name="HAND_JOINT_LITTLE_INTERMEDIATE" value="23" enum="HandJoints">
-			Pinky finger phalanx intermediate joint.
-		</constant>
-		<constant name="HAND_JOINT_LITTLE_DISTAL" value="24" enum="HandJoints">
-			Pinky finger phalanx distal joint.
-		</constant>
-		<constant name="HAND_JOINT_LITTLE_TIP" value="25" enum="HandJoints">
-			Pinky finger tip joint.
-		</constant>
-		<constant name="HAND_JOINT_MAX" value="26" enum="HandJoints">
-			Represents the size of the [enum HandJoints] enum.
-		</constant>
-		<constant name="PERF_SETTINGS_LEVEL_POWER_SAVINGS" value="0" enum="PerfSettingsLevel">
-			The application has entered a non-XR section (head-locked / static screen), during which power savings are to be prioritized.
-		</constant>
-		<constant name="PERF_SETTINGS_LEVEL_SUSTAINED_LOW" value="1" enum="PerfSettingsLevel">
-			The application has entered a low and stable complexity section, during which reducing power is more important than occasional late rendering frames.
-		</constant>
-		<constant name="PERF_SETTINGS_LEVEL_SUSTAINED_HIGH" value="2" enum="PerfSettingsLevel">
-			The application has entered a high or dynamic complexity section, during which the XR Runtime strives for consistent XR compositing and frame rendering within a thermally sustainable range.
-		</constant>
-		<constant name="PERF_SETTINGS_LEVEL_BOOST" value="3" enum="PerfSettingsLevel">
-			The application has entered a section with very high complexity, during which the XR Runtime is allowed to step up beyond the thermally sustainable range.
-		</constant>
-		<constant name="PERF_SETTINGS_SUB_DOMAIN_COMPOSITING" value="0" enum="PerfSettingsSubDomain">
-			The compositing performance within the runtime has reached a new level.
-		</constant>
-		<constant name="PERF_SETTINGS_SUB_DOMAIN_RENDERING" value="1" enum="PerfSettingsSubDomain">
-			The application rendering performance has reached a new level.
-		</constant>
-		<constant name="PERF_SETTINGS_SUB_DOMAIN_THERMAL" value="2" enum="PerfSettingsSubDomain">
-			The temperature of the device has reached a new level.
-		</constant>
-		<constant name="PERF_SETTINGS_NOTIF_LEVEL_NORMAL" value="0" enum="PerfSettingsNotificationLevel">
-			The sub-domain has reached a level where no further actions other than currently applied are necessary.
-		</constant>
-		<constant name="PERF_SETTINGS_NOTIF_LEVEL_WARNING" value="1" enum="PerfSettingsNotificationLevel">
-			The sub-domain has reached an early warning level where the application should start proactive mitigation actions.
-		</constant>
-		<constant name="PERF_SETTINGS_NOTIF_LEVEL_IMPAIRED" value="2" enum="PerfSettingsNotificationLevel">
-			The sub-domain has reached a critical level where the application should start drastic mitigation actions.
-		</constant>
-		<constant name="HAND_JOINT_NONE" value="0" enum="HandJointFlags" is_bitfield="true">
-			No flags are set.
-		</constant>
-		<constant name="HAND_JOINT_ORIENTATION_VALID" value="1" enum="HandJointFlags" is_bitfield="true">
-			If set, the orientation data is valid, otherwise, the orientation data is unreliable and should not be used.
-		</constant>
-		<constant name="HAND_JOINT_ORIENTATION_TRACKED" value="2" enum="HandJointFlags" is_bitfield="true">
-			If set, the orientation data comes from tracking data, otherwise, the orientation data contains predicted data.
-		</constant>
-		<constant name="HAND_JOINT_POSITION_VALID" value="4" enum="HandJointFlags" is_bitfield="true">
-			If set, the positional data is valid, otherwise, the positional data is unreliable and should not be used.
-		</constant>
-		<constant name="HAND_JOINT_POSITION_TRACKED" value="8" enum="HandJointFlags" is_bitfield="true">
-			If set, the positional data comes from tracking data, otherwise, the positional data contains predicted data.
-		</constant>
-		<constant name="HAND_JOINT_LINEAR_VELOCITY_VALID" value="16" enum="HandJointFlags" is_bitfield="true">
-			If set, our linear velocity data is valid, otherwise, the linear velocity data is unreliable and should not be used.
-		</constant>
-		<constant name="HAND_JOINT_ANGULAR_VELOCITY_VALID" value="32" enum="HandJointFlags" is_bitfield="true">
-			If set, our angular velocity data is valid, otherwise, the angular velocity data is unreliable and should not be used.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Hand">
+			<constant name="HAND_LEFT" value="0">
+				Left hand.
+			</constant>
+			<constant name="HAND_RIGHT" value="1">
+				Right hand.
+			</constant>
+			<constant name="HAND_MAX" value="2">
+				Maximum value for the hand enum.
+			</constant>
+		</enum>
+		<enum name="HandJointFlags" is_bitfield="true">
+			<constant name="HAND_JOINT_NONE" value="0">
+				No flags are set.
+			</constant>
+			<constant name="HAND_JOINT_ORIENTATION_VALID" value="1">
+				If set, the orientation data is valid, otherwise, the orientation data is unreliable and should not be used.
+			</constant>
+			<constant name="HAND_JOINT_ORIENTATION_TRACKED" value="2">
+				If set, the orientation data comes from tracking data, otherwise, the orientation data contains predicted data.
+			</constant>
+			<constant name="HAND_JOINT_POSITION_VALID" value="4">
+				If set, the positional data is valid, otherwise, the positional data is unreliable and should not be used.
+			</constant>
+			<constant name="HAND_JOINT_POSITION_TRACKED" value="8">
+				If set, the positional data comes from tracking data, otherwise, the positional data contains predicted data.
+			</constant>
+			<constant name="HAND_JOINT_LINEAR_VELOCITY_VALID" value="16">
+				If set, our linear velocity data is valid, otherwise, the linear velocity data is unreliable and should not be used.
+			</constant>
+			<constant name="HAND_JOINT_ANGULAR_VELOCITY_VALID" value="32">
+				If set, our angular velocity data is valid, otherwise, the angular velocity data is unreliable and should not be used.
+			</constant>
+		</enum>
+		<enum name="HandJoints">
+			<constant name="HAND_JOINT_PALM" value="0">
+				Palm joint.
+			</constant>
+			<constant name="HAND_JOINT_WRIST" value="1">
+				Wrist joint.
+			</constant>
+			<constant name="HAND_JOINT_THUMB_METACARPAL" value="2">
+				Thumb metacarpal joint.
+			</constant>
+			<constant name="HAND_JOINT_THUMB_PROXIMAL" value="3">
+				Thumb proximal joint.
+			</constant>
+			<constant name="HAND_JOINT_THUMB_DISTAL" value="4">
+				Thumb distal joint.
+			</constant>
+			<constant name="HAND_JOINT_THUMB_TIP" value="5">
+				Thumb tip joint.
+			</constant>
+			<constant name="HAND_JOINT_INDEX_METACARPAL" value="6">
+				Index finger metacarpal joint.
+			</constant>
+			<constant name="HAND_JOINT_INDEX_PROXIMAL" value="7">
+				Index finger phalanx proximal joint.
+			</constant>
+			<constant name="HAND_JOINT_INDEX_INTERMEDIATE" value="8">
+				Index finger phalanx intermediate joint.
+			</constant>
+			<constant name="HAND_JOINT_INDEX_DISTAL" value="9">
+				Index finger phalanx distal joint.
+			</constant>
+			<constant name="HAND_JOINT_INDEX_TIP" value="10">
+				Index finger tip joint.
+			</constant>
+			<constant name="HAND_JOINT_MIDDLE_METACARPAL" value="11">
+				Middle finger metacarpal joint.
+			</constant>
+			<constant name="HAND_JOINT_MIDDLE_PROXIMAL" value="12">
+				Middle finger phalanx proximal joint.
+			</constant>
+			<constant name="HAND_JOINT_MIDDLE_INTERMEDIATE" value="13">
+				Middle finger phalanx intermediate joint.
+			</constant>
+			<constant name="HAND_JOINT_MIDDLE_DISTAL" value="14">
+				Middle finger phalanx distal joint.
+			</constant>
+			<constant name="HAND_JOINT_MIDDLE_TIP" value="15">
+				Middle finger tip joint.
+			</constant>
+			<constant name="HAND_JOINT_RING_METACARPAL" value="16">
+				Ring finger metacarpal joint.
+			</constant>
+			<constant name="HAND_JOINT_RING_PROXIMAL" value="17">
+				Ring finger phalanx proximal joint.
+			</constant>
+			<constant name="HAND_JOINT_RING_INTERMEDIATE" value="18">
+				Ring finger phalanx intermediate joint.
+			</constant>
+			<constant name="HAND_JOINT_RING_DISTAL" value="19">
+				Ring finger phalanx distal joint.
+			</constant>
+			<constant name="HAND_JOINT_RING_TIP" value="20">
+				Ring finger tip joint.
+			</constant>
+			<constant name="HAND_JOINT_LITTLE_METACARPAL" value="21">
+				Pinky finger metacarpal joint.
+			</constant>
+			<constant name="HAND_JOINT_LITTLE_PROXIMAL" value="22">
+				Pinky finger phalanx proximal joint.
+			</constant>
+			<constant name="HAND_JOINT_LITTLE_INTERMEDIATE" value="23">
+				Pinky finger phalanx intermediate joint.
+			</constant>
+			<constant name="HAND_JOINT_LITTLE_DISTAL" value="24">
+				Pinky finger phalanx distal joint.
+			</constant>
+			<constant name="HAND_JOINT_LITTLE_TIP" value="25">
+				Pinky finger tip joint.
+			</constant>
+			<constant name="HAND_JOINT_MAX" value="26">
+				Represents the size of the [enum HandJoints] enum.
+			</constant>
+		</enum>
+		<enum name="HandMotionRange">
+			<constant name="HAND_MOTION_RANGE_UNOBSTRUCTED" value="0">
+				Full hand range, if user closes their hands, we make a full fist.
+			</constant>
+			<constant name="HAND_MOTION_RANGE_CONFORM_TO_CONTROLLER" value="1">
+				Conform to controller, if user closes their hands, the tracked data conforms to the shape of the controller.
+			</constant>
+			<constant name="HAND_MOTION_RANGE_MAX" value="2">
+				Maximum value for the motion range enum.
+			</constant>
+		</enum>
+		<enum name="HandTrackedSource">
+			<constant name="HAND_TRACKED_SOURCE_UNKNOWN" value="0">
+				The source of hand tracking data is unknown (the extension is likely unsupported).
+			</constant>
+			<constant name="HAND_TRACKED_SOURCE_UNOBSTRUCTED" value="1">
+				The source of hand tracking is unobstructed, this means that an accurate method of hand tracking is used, e.g. optical hand tracking, data gloves, etc.
+			</constant>
+			<constant name="HAND_TRACKED_SOURCE_CONTROLLER" value="2">
+				The source of hand tracking is a controller, bone positions are inferred from controller inputs.
+			</constant>
+			<constant name="HAND_TRACKED_SOURCE_MAX" value="3">
+				Represents the size of the [enum HandTrackedSource] enum.
+			</constant>
+		</enum>
+		<enum name="PerfSettingsLevel">
+			<constant name="PERF_SETTINGS_LEVEL_POWER_SAVINGS" value="0">
+				The application has entered a non-XR section (head-locked / static screen), during which power savings are to be prioritized.
+			</constant>
+			<constant name="PERF_SETTINGS_LEVEL_SUSTAINED_LOW" value="1">
+				The application has entered a low and stable complexity section, during which reducing power is more important than occasional late rendering frames.
+			</constant>
+			<constant name="PERF_SETTINGS_LEVEL_SUSTAINED_HIGH" value="2">
+				The application has entered a high or dynamic complexity section, during which the XR Runtime strives for consistent XR compositing and frame rendering within a thermally sustainable range.
+			</constant>
+			<constant name="PERF_SETTINGS_LEVEL_BOOST" value="3">
+				The application has entered a section with very high complexity, during which the XR Runtime is allowed to step up beyond the thermally sustainable range.
+			</constant>
+		</enum>
+		<enum name="PerfSettingsNotificationLevel">
+			<constant name="PERF_SETTINGS_NOTIF_LEVEL_NORMAL" value="0">
+				The sub-domain has reached a level where no further actions other than currently applied are necessary.
+			</constant>
+			<constant name="PERF_SETTINGS_NOTIF_LEVEL_WARNING" value="1">
+				The sub-domain has reached an early warning level where the application should start proactive mitigation actions.
+			</constant>
+			<constant name="PERF_SETTINGS_NOTIF_LEVEL_IMPAIRED" value="2">
+				The sub-domain has reached a critical level where the application should start drastic mitigation actions.
+			</constant>
+		</enum>
+		<enum name="PerfSettingsSubDomain">
+			<constant name="PERF_SETTINGS_SUB_DOMAIN_COMPOSITING" value="0">
+				The compositing performance within the runtime has reached a new level.
+			</constant>
+			<constant name="PERF_SETTINGS_SUB_DOMAIN_RENDERING" value="1">
+				The application rendering performance has reached a new level.
+			</constant>
+			<constant name="PERF_SETTINGS_SUB_DOMAIN_THERMAL" value="2">
+				The temperature of the device has reached a new level.
+			</constant>
+		</enum>
+		<enum name="SessionState">
+			<constant name="SESSION_STATE_UNKNOWN" value="0">
+				The state of the session is unknown, we haven't tried setting up OpenXR yet.
+			</constant>
+			<constant name="SESSION_STATE_IDLE" value="1">
+				The initial state after the OpenXR session is created or after the session is destroyed.
+			</constant>
+			<constant name="SESSION_STATE_READY" value="2">
+				OpenXR is ready to begin our session. [signal session_begun] is emitted when we change to this state.
+			</constant>
+			<constant name="SESSION_STATE_SYNCHRONIZED" value="3">
+				The application has synched its frame loop with the runtime but we're not rendering anything. [signal session_synchronized] is emitted when we change to this state.
+			</constant>
+			<constant name="SESSION_STATE_VISIBLE" value="4">
+				The application has synched its frame loop with the runtime and we're rendering output to the user, however we receive no user input. [signal session_visible] is emitted when we change to this state.
+				[b]Note:[/b] This is the current state just before we get the focused state, whenever the user opens a system menu, switches to another application, or takes off their headset.
+			</constant>
+			<constant name="SESSION_STATE_FOCUSED" value="5">
+				The application has synched its frame loop with the runtime, we're rendering output to the user and we're receiving XR input. [signal session_focussed] is emitted when we change to this state.
+				[b]Note:[/b] This is the state OpenXR will be in when the user can fully interact with your game.
+			</constant>
+			<constant name="SESSION_STATE_STOPPING" value="6">
+				Our session is being stopped. [signal session_stopping] is emitted when we change to this state.
+			</constant>
+			<constant name="SESSION_STATE_LOSS_PENDING" value="7">
+				The session is about to be lost. [signal session_loss_pending] is emitted when we change to this state.
+			</constant>
+			<constant name="SESSION_STATE_EXITING" value="8">
+				The OpenXR instance is about to be destroyed and we're exiting. [signal instance_exiting] is emitted when we change to this state.
+			</constant>
+		</enum>
+	</enums>
 </class>

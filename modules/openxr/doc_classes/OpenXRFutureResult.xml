@@ -50,15 +50,17 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="RESULT_RUNNING" value="0" enum="ResultStatus">
-			The asynchronous function is running.
-		</constant>
-		<constant name="RESULT_FINISHED" value="1" enum="ResultStatus">
-			The asynchronous function has finished.
-		</constant>
-		<constant name="RESULT_CANCELLED" value="2" enum="ResultStatus">
-			The asynchronous function has been cancelled.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ResultStatus">
+			<constant name="RESULT_RUNNING" value="0">
+				The asynchronous function is running.
+			</constant>
+			<constant name="RESULT_FINISHED" value="1">
+				The asynchronous function has finished.
+			</constant>
+			<constant name="RESULT_CANCELLED" value="2">
+				The asynchronous function has been cancelled.
+			</constant>
+		</enum>
+	</enums>
 </class>

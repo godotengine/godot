@@ -83,18 +83,20 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="MARKER_QR_CODE" value="1" enum="MarkerTypeFlags" is_bitfield="true">
-			QR Code.
-		</constant>
-		<constant name="MARKER_MICRO_QR_CODE" value="2" enum="MarkerTypeFlags" is_bitfield="true">
-			Micro QR Code.
-		</constant>
-		<constant name="MARKER_ARUCO" value="4" enum="MarkerTypeFlags" is_bitfield="true">
-			ArUco marker.
-		</constant>
-		<constant name="MARKER_APRIL_TAG" value="8" enum="MarkerTypeFlags" is_bitfield="true">
-			April tag.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="MarkerTypeFlags" is_bitfield="true">
+			<constant name="MARKER_QR_CODE" value="1">
+				QR Code.
+			</constant>
+			<constant name="MARKER_MICRO_QR_CODE" value="2">
+				Micro QR Code.
+			</constant>
+			<constant name="MARKER_ARUCO" value="4">
+				ArUco marker.
+			</constant>
+			<constant name="MARKER_APRIL_TAG" value="8">
+				April tag.
+			</constant>
+		</enum>
+	</enums>
 </class>

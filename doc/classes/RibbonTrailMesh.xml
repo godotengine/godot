@@ -31,12 +31,14 @@
 			The baseline size of the ribbon. The size of a particular section segment is obtained by multiplying this size by the value of the [member curve] at the given distance.
 		</member>
 	</members>
-	<constants>
-		<constant name="SHAPE_FLAT" value="0" enum="Shape">
-			Gives the mesh a single flat face.
-		</constant>
-		<constant name="SHAPE_CROSS" value="1" enum="Shape">
-			Gives the mesh two perpendicular flat faces, making a cross shape.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Shape">
+			<constant name="SHAPE_FLAT" value="0">
+				Gives the mesh a single flat face.
+			</constant>
+			<constant name="SHAPE_CROSS" value="1">
+				Gives the mesh two perpendicular flat faces, making a cross shape.
+			</constant>
+		</enum>
+	</enums>
 </class>

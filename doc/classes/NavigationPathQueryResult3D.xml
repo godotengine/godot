@@ -34,12 +34,14 @@
 			The type of navigation primitive (region or link) that each point of the path goes through.
 		</member>
 	</members>
-	<constants>
-		<constant name="PATH_SEGMENT_TYPE_REGION" value="0" enum="PathSegmentType">
-			This segment of the path goes through a region.
-		</constant>
-		<constant name="PATH_SEGMENT_TYPE_LINK" value="1" enum="PathSegmentType">
-			This segment of the path goes through a link.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="PathSegmentType">
+			<constant name="PATH_SEGMENT_TYPE_REGION" value="0">
+				This segment of the path goes through a region.
+			</constant>
+			<constant name="PATH_SEGMENT_TYPE_LINK" value="1">
+				This segment of the path goes through a link.
+			</constant>
+		</enum>
+	</enums>
 </class>

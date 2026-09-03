@@ -654,100 +654,110 @@
 			Enables/Disable uv clipping when rendering the tiles.
 		</member>
 	</members>
-	<constants>
-		<constant name="TILE_SHAPE_SQUARE" value="0" enum="TileShape">
-			Rectangular tile shape.
-		</constant>
-		<constant name="TILE_SHAPE_ISOMETRIC" value="1" enum="TileShape">
-			Diamond tile shape (for isometric look).
-			[b]Note:[/b] Isometric [TileSet] works best if all sibling [TileMapLayer]s and their parent inheriting from [Node2D] have Y-sort enabled.
-		</constant>
-		<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="TileShape">
-			Rectangular tile shape with one row/column out of two offset by half a tile.
-		</constant>
-		<constant name="TILE_SHAPE_HEXAGON" value="3" enum="TileShape">
-			Hexagonal tile shape.
-		</constant>
-		<constant name="TILE_LAYOUT_STACKED" value="0" enum="TileLayout">
-			Tile coordinates layout where both axis stay consistent with their respective local horizontal and vertical axis.
-		</constant>
-		<constant name="TILE_LAYOUT_STACKED_OFFSET" value="1" enum="TileLayout">
-			Same as [constant TILE_LAYOUT_STACKED], but the first half-offset is negative instead of positive.
-		</constant>
-		<constant name="TILE_LAYOUT_STAIRS_RIGHT" value="2" enum="TileLayout">
-			Tile coordinates layout where the horizontal axis stay horizontal, and the vertical one goes down-right.
-		</constant>
-		<constant name="TILE_LAYOUT_STAIRS_DOWN" value="3" enum="TileLayout">
-			Tile coordinates layout where the vertical axis stay vertical, and the horizontal one goes down-right.
-		</constant>
-		<constant name="TILE_LAYOUT_DIAMOND_RIGHT" value="4" enum="TileLayout">
-			Tile coordinates layout where the horizontal axis goes up-right, and the vertical one goes down-right.
-		</constant>
-		<constant name="TILE_LAYOUT_DIAMOND_DOWN" value="5" enum="TileLayout">
-			Tile coordinates layout where the horizontal axis goes down-right, and the vertical one goes down-left.
-		</constant>
-		<constant name="TILE_OFFSET_AXIS_HORIZONTAL" value="0" enum="TileOffsetAxis">
-			Horizontal half-offset.
-		</constant>
-		<constant name="TILE_OFFSET_AXIS_VERTICAL" value="1" enum="TileOffsetAxis">
-			Vertical half-offset.
-		</constant>
-		<constant name="CELL_NEIGHBOR_RIGHT_SIDE" value="0" enum="CellNeighbor">
-			Neighbor on the right side.
-		</constant>
-		<constant name="CELL_NEIGHBOR_RIGHT_CORNER" value="1" enum="CellNeighbor">
-			Neighbor in the right corner.
-		</constant>
-		<constant name="CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE" value="2" enum="CellNeighbor">
-			Neighbor on the bottom right side.
-		</constant>
-		<constant name="CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER" value="3" enum="CellNeighbor">
-			Neighbor in the bottom right corner.
-		</constant>
-		<constant name="CELL_NEIGHBOR_BOTTOM_SIDE" value="4" enum="CellNeighbor">
-			Neighbor on the bottom side.
-		</constant>
-		<constant name="CELL_NEIGHBOR_BOTTOM_CORNER" value="5" enum="CellNeighbor">
-			Neighbor in the bottom corner.
-		</constant>
-		<constant name="CELL_NEIGHBOR_BOTTOM_LEFT_SIDE" value="6" enum="CellNeighbor">
-			Neighbor on the bottom left side.
-		</constant>
-		<constant name="CELL_NEIGHBOR_BOTTOM_LEFT_CORNER" value="7" enum="CellNeighbor">
-			Neighbor in the bottom left corner.
-		</constant>
-		<constant name="CELL_NEIGHBOR_LEFT_SIDE" value="8" enum="CellNeighbor">
-			Neighbor on the left side.
-		</constant>
-		<constant name="CELL_NEIGHBOR_LEFT_CORNER" value="9" enum="CellNeighbor">
-			Neighbor in the left corner.
-		</constant>
-		<constant name="CELL_NEIGHBOR_TOP_LEFT_SIDE" value="10" enum="CellNeighbor">
-			Neighbor on the top left side.
-		</constant>
-		<constant name="CELL_NEIGHBOR_TOP_LEFT_CORNER" value="11" enum="CellNeighbor">
-			Neighbor in the top left corner.
-		</constant>
-		<constant name="CELL_NEIGHBOR_TOP_SIDE" value="12" enum="CellNeighbor">
-			Neighbor on the top side.
-		</constant>
-		<constant name="CELL_NEIGHBOR_TOP_CORNER" value="13" enum="CellNeighbor">
-			Neighbor in the top corner.
-		</constant>
-		<constant name="CELL_NEIGHBOR_TOP_RIGHT_SIDE" value="14" enum="CellNeighbor">
-			Neighbor on the top right side.
-		</constant>
-		<constant name="CELL_NEIGHBOR_TOP_RIGHT_CORNER" value="15" enum="CellNeighbor">
-			Neighbor in the top right corner.
-		</constant>
-		<constant name="TERRAIN_MODE_MATCH_CORNERS_AND_SIDES" value="0" enum="TerrainMode">
-			Requires both corners and side to match with neighboring tiles' terrains.
-		</constant>
-		<constant name="TERRAIN_MODE_MATCH_CORNERS" value="1" enum="TerrainMode">
-			Requires corners to match with neighboring tiles' terrains.
-		</constant>
-		<constant name="TERRAIN_MODE_MATCH_SIDES" value="2" enum="TerrainMode">
-			Requires sides to match with neighboring tiles' terrains.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="CellNeighbor">
+			<constant name="CELL_NEIGHBOR_RIGHT_SIDE" value="0">
+				Neighbor on the right side.
+			</constant>
+			<constant name="CELL_NEIGHBOR_RIGHT_CORNER" value="1">
+				Neighbor in the right corner.
+			</constant>
+			<constant name="CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE" value="2">
+				Neighbor on the bottom right side.
+			</constant>
+			<constant name="CELL_NEIGHBOR_BOTTOM_RIGHT_CORNER" value="3">
+				Neighbor in the bottom right corner.
+			</constant>
+			<constant name="CELL_NEIGHBOR_BOTTOM_SIDE" value="4">
+				Neighbor on the bottom side.
+			</constant>
+			<constant name="CELL_NEIGHBOR_BOTTOM_CORNER" value="5">
+				Neighbor in the bottom corner.
+			</constant>
+			<constant name="CELL_NEIGHBOR_BOTTOM_LEFT_SIDE" value="6">
+				Neighbor on the bottom left side.
+			</constant>
+			<constant name="CELL_NEIGHBOR_BOTTOM_LEFT_CORNER" value="7">
+				Neighbor in the bottom left corner.
+			</constant>
+			<constant name="CELL_NEIGHBOR_LEFT_SIDE" value="8">
+				Neighbor on the left side.
+			</constant>
+			<constant name="CELL_NEIGHBOR_LEFT_CORNER" value="9">
+				Neighbor in the left corner.
+			</constant>
+			<constant name="CELL_NEIGHBOR_TOP_LEFT_SIDE" value="10">
+				Neighbor on the top left side.
+			</constant>
+			<constant name="CELL_NEIGHBOR_TOP_LEFT_CORNER" value="11">
+				Neighbor in the top left corner.
+			</constant>
+			<constant name="CELL_NEIGHBOR_TOP_SIDE" value="12">
+				Neighbor on the top side.
+			</constant>
+			<constant name="CELL_NEIGHBOR_TOP_CORNER" value="13">
+				Neighbor in the top corner.
+			</constant>
+			<constant name="CELL_NEIGHBOR_TOP_RIGHT_SIDE" value="14">
+				Neighbor on the top right side.
+			</constant>
+			<constant name="CELL_NEIGHBOR_TOP_RIGHT_CORNER" value="15">
+				Neighbor in the top right corner.
+			</constant>
+		</enum>
+		<enum name="TerrainMode">
+			<constant name="TERRAIN_MODE_MATCH_CORNERS_AND_SIDES" value="0">
+				Requires both corners and side to match with neighboring tiles' terrains.
+			</constant>
+			<constant name="TERRAIN_MODE_MATCH_CORNERS" value="1">
+				Requires corners to match with neighboring tiles' terrains.
+			</constant>
+			<constant name="TERRAIN_MODE_MATCH_SIDES" value="2">
+				Requires sides to match with neighboring tiles' terrains.
+			</constant>
+		</enum>
+		<enum name="TileLayout">
+			<constant name="TILE_LAYOUT_STACKED" value="0">
+				Tile coordinates layout where both axis stay consistent with their respective local horizontal and vertical axis.
+			</constant>
+			<constant name="TILE_LAYOUT_STACKED_OFFSET" value="1">
+				Same as [constant TILE_LAYOUT_STACKED], but the first half-offset is negative instead of positive.
+			</constant>
+			<constant name="TILE_LAYOUT_STAIRS_RIGHT" value="2">
+				Tile coordinates layout where the horizontal axis stay horizontal, and the vertical one goes down-right.
+			</constant>
+			<constant name="TILE_LAYOUT_STAIRS_DOWN" value="3">
+				Tile coordinates layout where the vertical axis stay vertical, and the horizontal one goes down-right.
+			</constant>
+			<constant name="TILE_LAYOUT_DIAMOND_RIGHT" value="4">
+				Tile coordinates layout where the horizontal axis goes up-right, and the vertical one goes down-right.
+			</constant>
+			<constant name="TILE_LAYOUT_DIAMOND_DOWN" value="5">
+				Tile coordinates layout where the horizontal axis goes down-right, and the vertical one goes down-left.
+			</constant>
+		</enum>
+		<enum name="TileOffsetAxis">
+			<constant name="TILE_OFFSET_AXIS_HORIZONTAL" value="0">
+				Horizontal half-offset.
+			</constant>
+			<constant name="TILE_OFFSET_AXIS_VERTICAL" value="1">
+				Vertical half-offset.
+			</constant>
+		</enum>
+		<enum name="TileShape">
+			<constant name="TILE_SHAPE_SQUARE" value="0">
+				Rectangular tile shape.
+			</constant>
+			<constant name="TILE_SHAPE_ISOMETRIC" value="1">
+				Diamond tile shape (for isometric look).
+				[b]Note:[/b] Isometric [TileSet] works best if all sibling [TileMapLayer]s and their parent inheriting from [Node2D] have Y-sort enabled.
+			</constant>
+			<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2">
+				Rectangular tile shape with one row/column out of two offset by half a tile.
+			</constant>
+			<constant name="TILE_SHAPE_HEXAGON" value="3">
+				Hexagonal tile shape.
+			</constant>
+		</enum>
+	</enums>
 </class>

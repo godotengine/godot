@@ -352,16 +352,20 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
-		</constant>
-		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].">
-		</constant>
-		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].">
-		</constant>
-		<constant name="ANIMATION_METHOD_CALL_DEFERRED" value="0" enum="AnimationMethodCallMode" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_DEFERRED].">
-		</constant>
-		<constant name="ANIMATION_METHOD_CALL_IMMEDIATE" value="1" enum="AnimationMethodCallMode" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE].">
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AnimationMethodCallMode">
+			<constant name="ANIMATION_METHOD_CALL_DEFERRED" value="0" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_DEFERRED].">
+			</constant>
+			<constant name="ANIMATION_METHOD_CALL_IMMEDIATE" value="1" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE].">
+			</constant>
+		</enum>
+		<enum name="AnimationProcessCallback">
+			<constant name="ANIMATION_PROCESS_PHYSICS" value="0" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
+			</constant>
+			<constant name="ANIMATION_PROCESS_IDLE" value="1" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].">
+			</constant>
+			<constant name="ANIMATION_PROCESS_MANUAL" value="2" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL].">
+			</constant>
+		</enum>
+	</enums>
 </class>

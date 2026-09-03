@@ -365,47 +365,53 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="ALIGNMENT_LEFT" value="0" enum="AlignmentMode">
-			Aligns tabs to the left.
-		</constant>
-		<constant name="ALIGNMENT_CENTER" value="1" enum="AlignmentMode">
-			Aligns tabs in the middle.
-		</constant>
-		<constant name="ALIGNMENT_RIGHT" value="2" enum="AlignmentMode">
-			Aligns tabs to the right.
-		</constant>
-		<constant name="ALIGNMENT_MAX" value="3" enum="AlignmentMode">
-			Represents the size of the [enum AlignmentMode] enum.
-		</constant>
-		<constant name="TAB_SIZING_FIT_CONTENT" value="0" enum="SizingMode">
-			Size tabs individually according to the size of their content.
-		</constant>
-		<constant name="TAB_SIZING_UNIFORM" value="1" enum="SizingMode">
-			Size tabs uniformly, with the widest tab determining the size of all tabs. This may trigger clipping sooner than other sizing modes due to increased tab sizes.
-		</constant>
-		<constant name="TAB_SIZING_JUSTIFY" value="2" enum="SizingMode">
-			Size tabs individually according to their content, expanding to the full width of the tab bar.
-		</constant>
-		<constant name="TAB_SIZING_EXPAND" value="3" enum="SizingMode">
-			Size tabs equally, expanding to the full width of the tab bar if there is room, otherwise fall back to [constant TAB_SIZING_FIT_CONTENT].
-		</constant>
-		<constant name="TAB_SIZING_MAX" value="4" enum="SizingMode">
-			Represents the size of the [enum SizingMode] enum.
-		</constant>
-		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
-			Never show the close buttons.
-		</constant>
-		<constant name="CLOSE_BUTTON_SHOW_ACTIVE_ONLY" value="1" enum="CloseButtonDisplayPolicy">
-			Only show the close button on the currently active tab.
-		</constant>
-		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2" enum="CloseButtonDisplayPolicy">
-			Show the close button on all tabs.
-		</constant>
-		<constant name="CLOSE_BUTTON_MAX" value="3" enum="CloseButtonDisplayPolicy">
-			Represents the size of the [enum CloseButtonDisplayPolicy] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AlignmentMode">
+			<constant name="ALIGNMENT_LEFT" value="0">
+				Aligns tabs to the left.
+			</constant>
+			<constant name="ALIGNMENT_CENTER" value="1">
+				Aligns tabs in the middle.
+			</constant>
+			<constant name="ALIGNMENT_RIGHT" value="2">
+				Aligns tabs to the right.
+			</constant>
+			<constant name="ALIGNMENT_MAX" value="3">
+				Represents the size of the [enum AlignmentMode] enum.
+			</constant>
+		</enum>
+		<enum name="CloseButtonDisplayPolicy">
+			<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0">
+				Never show the close buttons.
+			</constant>
+			<constant name="CLOSE_BUTTON_SHOW_ACTIVE_ONLY" value="1">
+				Only show the close button on the currently active tab.
+			</constant>
+			<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2">
+				Show the close button on all tabs.
+			</constant>
+			<constant name="CLOSE_BUTTON_MAX" value="3">
+				Represents the size of the [enum CloseButtonDisplayPolicy] enum.
+			</constant>
+		</enum>
+		<enum name="SizingMode">
+			<constant name="TAB_SIZING_FIT_CONTENT" value="0">
+				Size tabs individually according to the size of their content.
+			</constant>
+			<constant name="TAB_SIZING_UNIFORM" value="1">
+				Size tabs uniformly, with the widest tab determining the size of all tabs. This may trigger clipping sooner than other sizing modes due to increased tab sizes.
+			</constant>
+			<constant name="TAB_SIZING_JUSTIFY" value="2">
+				Size tabs individually according to their content, expanding to the full width of the tab bar.
+			</constant>
+			<constant name="TAB_SIZING_EXPAND" value="3">
+				Size tabs equally, expanding to the full width of the tab bar if there is room, otherwise fall back to [constant TAB_SIZING_FIT_CONTENT].
+			</constant>
+			<constant name="TAB_SIZING_MAX" value="4">
+				Represents the size of the [enum SizingMode] enum.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="drop_mark_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Modulation color for the [theme_item drop_mark] icon.

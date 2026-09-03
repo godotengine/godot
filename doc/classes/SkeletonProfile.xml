@@ -199,15 +199,17 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="TAIL_DIRECTION_AVERAGE_CHILDREN" value="0" enum="TailDirection">
-			Direction to the average coordinates of bone children.
-		</constant>
-		<constant name="TAIL_DIRECTION_SPECIFIC_CHILD" value="1" enum="TailDirection">
-			Direction to the coordinates of specified bone child.
-		</constant>
-		<constant name="TAIL_DIRECTION_END" value="2" enum="TailDirection">
-			Direction is not calculated.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="TailDirection">
+			<constant name="TAIL_DIRECTION_AVERAGE_CHILDREN" value="0">
+				Direction to the average coordinates of bone children.
+			</constant>
+			<constant name="TAIL_DIRECTION_SPECIFIC_CHILD" value="1">
+				Direction to the coordinates of specified bone child.
+			</constant>
+			<constant name="TAIL_DIRECTION_END" value="2">
+				Direction is not calculated.
+			</constant>
+		</enum>
+	</enums>
 </class>

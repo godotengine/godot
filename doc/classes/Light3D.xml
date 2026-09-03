@@ -134,85 +134,89 @@
 		<member name="shadow_transmittance_bias" type="float" setter="set_param" getter="get_param" default="0.05">
 		</member>
 	</members>
-	<constants>
-		<constant name="PARAM_ENERGY" value="0" enum="Param">
-			Constant for accessing [member light_energy].
-		</constant>
-		<constant name="PARAM_INDIRECT_ENERGY" value="1" enum="Param">
-			Constant for accessing [member light_indirect_energy].
-		</constant>
-		<constant name="PARAM_VOLUMETRIC_FOG_ENERGY" value="2" enum="Param">
-			Constant for accessing [member light_volumetric_fog_energy].
-		</constant>
-		<constant name="PARAM_SPECULAR" value="3" enum="Param">
-			Constant for accessing [member light_specular].
-		</constant>
-		<constant name="PARAM_RANGE" value="4" enum="Param">
-			Constant for accessing [member OmniLight3D.omni_range] or [member SpotLight3D.spot_range].
-		</constant>
-		<constant name="PARAM_SIZE" value="5" enum="Param">
-			Constant for accessing [member light_size].
-		</constant>
-		<constant name="PARAM_ATTENUATION" value="6" enum="Param">
-			Constant for accessing [member OmniLight3D.omni_attenuation] or [member SpotLight3D.spot_attenuation].
-		</constant>
-		<constant name="PARAM_SPOT_ANGLE" value="7" enum="Param">
-			Constant for accessing [member SpotLight3D.spot_angle].
-		</constant>
-		<constant name="PARAM_SPOT_ATTENUATION" value="8" enum="Param">
-			Constant for accessing [member SpotLight3D.spot_angle_attenuation].
-		</constant>
-		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="9" enum="Param">
-			Constant for accessing [member DirectionalLight3D.directional_shadow_max_distance].
-		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="10" enum="Param">
-			Constant for accessing [member DirectionalLight3D.directional_shadow_split_1].
-		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="11" enum="Param">
-			Constant for accessing [member DirectionalLight3D.directional_shadow_split_2].
-		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="12" enum="Param">
-			Constant for accessing [member DirectionalLight3D.directional_shadow_split_3].
-		</constant>
-		<constant name="PARAM_SHADOW_FADE_START" value="13" enum="Param">
-			Constant for accessing [member DirectionalLight3D.directional_shadow_fade_start].
-		</constant>
-		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="14" enum="Param">
-			Constant for accessing [member shadow_normal_bias].
-		</constant>
-		<constant name="PARAM_SHADOW_BIAS" value="15" enum="Param">
-			Constant for accessing [member shadow_bias].
-		</constant>
-		<constant name="PARAM_SHADOW_PANCAKE_SIZE" value="16" enum="Param">
-			Constant for accessing [member DirectionalLight3D.directional_shadow_pancake_size].
-		</constant>
-		<constant name="PARAM_SHADOW_OPACITY" value="17" enum="Param">
-			Constant for accessing [member shadow_opacity].
-		</constant>
-		<constant name="PARAM_SHADOW_BLUR" value="18" enum="Param">
-			Constant for accessing [member shadow_blur].
-		</constant>
-		<constant name="PARAM_TRANSMITTANCE_BIAS" value="19" enum="Param">
-			Constant for accessing [member shadow_transmittance_bias].
-		</constant>
-		<constant name="PARAM_INTENSITY" value="20" enum="Param">
-			Constant for accessing [member light_intensity_lumens] and [member light_intensity_lux]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
-		</constant>
-		<constant name="PARAM_MAX" value="21" enum="Param">
-			Represents the size of the [enum Param] enum.
-		</constant>
-		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
-			Light is ignored when baking. This is the fastest mode, but the light will not be taken into account when baking global illumination. This mode should generally be used for dynamic lights that change quickly, as the effect of global illumination is less noticeable on those lights.
-			[b]Note:[/b] Hiding a light does [i]not[/i] affect baking [LightmapGI]. Hiding a light will still affect baking [VoxelGI] and SDFGI (see [member Environment.sdfgi_enabled]).
-		</constant>
-		<constant name="BAKE_STATIC" value="1" enum="BakeMode">
-			Light is taken into account in static baking ([VoxelGI], [LightmapGI], SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time.
-			[b]Note:[/b] The light is not baked in [LightmapGI] if [member editor_only] is [code]true[/code].
-			[b]Note:[/b] When using [LightmapGI], both the direct and indirect light are baked. Since direct light is baked, the light doesn't display a specular lobe on static lightmapped meshes. Shadows on static lightmapped meshes will also look less detailed, but the light still casts shadows that can be displayed on dynamic objects. Since real-time light computations are skipped on static lightmapped meshes, this bake mode improves runtime performance compared to [constant BAKE_DYNAMIC] and [constant BAKE_DISABLED].
-		</constant>
-		<constant name="BAKE_DYNAMIC" value="2" enum="BakeMode">
-			Light is taken into account in dynamic baking ([VoxelGI] and SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant BAKE_STATIC]. This has a greater performance cost compared to [constant BAKE_STATIC]. When using SDFGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
-			[b]Note:[/b] When using [LightmapGI], the light's indirect light is baked, but direct light and shadows remain real-time. This mode allows performing [i]subtle[/i] changes to a light's color, energy, and position while still looking fairly correct. For example, you can use this to create flickering static torches that have their indirect light baked.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="BakeMode">
+			<constant name="BAKE_DISABLED" value="0">
+				Light is ignored when baking. This is the fastest mode, but the light will not be taken into account when baking global illumination. This mode should generally be used for dynamic lights that change quickly, as the effect of global illumination is less noticeable on those lights.
+				[b]Note:[/b] Hiding a light does [i]not[/i] affect baking [LightmapGI]. Hiding a light will still affect baking [VoxelGI] and SDFGI (see [member Environment.sdfgi_enabled]).
+			</constant>
+			<constant name="BAKE_STATIC" value="1">
+				Light is taken into account in static baking ([VoxelGI], [LightmapGI], SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time.
+				[b]Note:[/b] The light is not baked in [LightmapGI] if [member editor_only] is [code]true[/code].
+				[b]Note:[/b] When using [LightmapGI], both the direct and indirect light are baked. Since direct light is baked, the light doesn't display a specular lobe on static lightmapped meshes. Shadows on static lightmapped meshes will also look less detailed, but the light still casts shadows that can be displayed on dynamic objects. Since real-time light computations are skipped on static lightmapped meshes, this bake mode improves runtime performance compared to [constant BAKE_DYNAMIC] and [constant BAKE_DISABLED].
+			</constant>
+			<constant name="BAKE_DYNAMIC" value="2">
+				Light is taken into account in dynamic baking ([VoxelGI] and SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant BAKE_STATIC]. This has a greater performance cost compared to [constant BAKE_STATIC]. When using SDFGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
+				[b]Note:[/b] When using [LightmapGI], the light's indirect light is baked, but direct light and shadows remain real-time. This mode allows performing [i]subtle[/i] changes to a light's color, energy, and position while still looking fairly correct. For example, you can use this to create flickering static torches that have their indirect light baked.
+			</constant>
+		</enum>
+		<enum name="Param">
+			<constant name="PARAM_ENERGY" value="0">
+				Constant for accessing [member light_energy].
+			</constant>
+			<constant name="PARAM_INDIRECT_ENERGY" value="1">
+				Constant for accessing [member light_indirect_energy].
+			</constant>
+			<constant name="PARAM_VOLUMETRIC_FOG_ENERGY" value="2">
+				Constant for accessing [member light_volumetric_fog_energy].
+			</constant>
+			<constant name="PARAM_SPECULAR" value="3">
+				Constant for accessing [member light_specular].
+			</constant>
+			<constant name="PARAM_RANGE" value="4">
+				Constant for accessing [member OmniLight3D.omni_range] or [member SpotLight3D.spot_range].
+			</constant>
+			<constant name="PARAM_SIZE" value="5">
+				Constant for accessing [member light_size].
+			</constant>
+			<constant name="PARAM_ATTENUATION" value="6">
+				Constant for accessing [member OmniLight3D.omni_attenuation] or [member SpotLight3D.spot_attenuation].
+			</constant>
+			<constant name="PARAM_SPOT_ANGLE" value="7">
+				Constant for accessing [member SpotLight3D.spot_angle].
+			</constant>
+			<constant name="PARAM_SPOT_ATTENUATION" value="8">
+				Constant for accessing [member SpotLight3D.spot_angle_attenuation].
+			</constant>
+			<constant name="PARAM_SHADOW_MAX_DISTANCE" value="9">
+				Constant for accessing [member DirectionalLight3D.directional_shadow_max_distance].
+			</constant>
+			<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="10">
+				Constant for accessing [member DirectionalLight3D.directional_shadow_split_1].
+			</constant>
+			<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="11">
+				Constant for accessing [member DirectionalLight3D.directional_shadow_split_2].
+			</constant>
+			<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="12">
+				Constant for accessing [member DirectionalLight3D.directional_shadow_split_3].
+			</constant>
+			<constant name="PARAM_SHADOW_FADE_START" value="13">
+				Constant for accessing [member DirectionalLight3D.directional_shadow_fade_start].
+			</constant>
+			<constant name="PARAM_SHADOW_NORMAL_BIAS" value="14">
+				Constant for accessing [member shadow_normal_bias].
+			</constant>
+			<constant name="PARAM_SHADOW_BIAS" value="15">
+				Constant for accessing [member shadow_bias].
+			</constant>
+			<constant name="PARAM_SHADOW_PANCAKE_SIZE" value="16">
+				Constant for accessing [member DirectionalLight3D.directional_shadow_pancake_size].
+			</constant>
+			<constant name="PARAM_SHADOW_OPACITY" value="17">
+				Constant for accessing [member shadow_opacity].
+			</constant>
+			<constant name="PARAM_SHADOW_BLUR" value="18">
+				Constant for accessing [member shadow_blur].
+			</constant>
+			<constant name="PARAM_TRANSMITTANCE_BIAS" value="19">
+				Constant for accessing [member shadow_transmittance_bias].
+			</constant>
+			<constant name="PARAM_INTENSITY" value="20">
+				Constant for accessing [member light_intensity_lumens] and [member light_intensity_lux]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
+			</constant>
+			<constant name="PARAM_MAX" value="21">
+				Represents the size of the [enum Param] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -20,18 +20,20 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="THREAD_TYPE_APPLICATION_MAIN" value="0" enum="ThreadType">
-			Hints to the XR runtime that the thread is doing time critical CPU tasks.
-		</constant>
-		<constant name="THREAD_TYPE_APPLICATION_WORKER" value="1" enum="ThreadType">
-			Hints to the XR runtime that the thread is doing background CPU tasks.
-		</constant>
-		<constant name="THREAD_TYPE_RENDERER_MAIN" value="2" enum="ThreadType">
-			Hints to the XR runtime that the thread is doing time critical graphics device tasks.
-		</constant>
-		<constant name="THREAD_TYPE_RENDERER_WORKER" value="3" enum="ThreadType">
-			Hints to the XR runtime that the thread is doing background graphics device tasks.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ThreadType">
+			<constant name="THREAD_TYPE_APPLICATION_MAIN" value="0">
+				Hints to the XR runtime that the thread is doing time critical CPU tasks.
+			</constant>
+			<constant name="THREAD_TYPE_APPLICATION_WORKER" value="1">
+				Hints to the XR runtime that the thread is doing background CPU tasks.
+			</constant>
+			<constant name="THREAD_TYPE_RENDERER_MAIN" value="2">
+				Hints to the XR runtime that the thread is doing time critical graphics device tasks.
+			</constant>
+			<constant name="THREAD_TYPE_RENDERER_WORKER" value="3">
+				Hints to the XR runtime that the thread is doing background graphics device tasks.
+			</constant>
+		</enum>
+	</enums>
 </class>

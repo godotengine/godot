@@ -646,71 +646,77 @@
 			[b]Note:[/b] This is always reset to system endianness, which is little-endian on all supported platforms, whenever you open the file. Therefore, you must set [member big_endian] [i]after[/i] opening the file, not before.
 		</member>
 	</members>
-	<constants>
-		<constant name="READ" value="1" enum="ModeFlags">
-			Opens the file for read operations. The file cursor is positioned at the beginning of the file.
-		</constant>
-		<constant name="WRITE" value="2" enum="ModeFlags">
-			Opens the file for write operations. If the file exists, it is truncated to zero length and its contents are cleared. Otherwise, it is created.
-			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
-		</constant>
-		<constant name="READ_WRITE" value="3" enum="ModeFlags">
-			Opens the file for read and write operations. Does not truncate the file. The file cursor is positioned at the beginning of the file.
-		</constant>
-		<constant name="WRITE_READ" value="7" enum="ModeFlags">
-			Opens the file for read and write operations. If the file exists, it is truncated to zero length and its contents are cleared. Otherwise, it is created. The file cursor is positioned at the beginning of the file.
-			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
-		</constant>
-		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
-			Uses the [url=https://fastlz.org/]FastLZ[/url] compression method.
-		</constant>
-		<constant name="COMPRESSION_DEFLATE" value="1" enum="CompressionMode">
-			Uses the [url=https://en.wikipedia.org/wiki/DEFLATE]DEFLATE[/url] compression method.
-		</constant>
-		<constant name="COMPRESSION_ZSTD" value="2" enum="CompressionMode">
-			Uses the [url=https://facebook.github.io/zstd/]Zstandard[/url] compression method.
-		</constant>
-		<constant name="COMPRESSION_GZIP" value="3" enum="CompressionMode">
-			Uses the [url=https://www.gzip.org/]gzip[/url] compression method.
-		</constant>
-		<constant name="COMPRESSION_BROTLI" value="4" enum="CompressionMode">
-			Uses the [url=https://github.com/google/brotli]brotli[/url] compression method (only decompression is supported).
-		</constant>
-		<constant name="UNIX_READ_OWNER" value="256" enum="UnixPermissionFlags" is_bitfield="true">
-			Read for owner bit.
-		</constant>
-		<constant name="UNIX_WRITE_OWNER" value="128" enum="UnixPermissionFlags" is_bitfield="true">
-			Write for owner bit.
-		</constant>
-		<constant name="UNIX_EXECUTE_OWNER" value="64" enum="UnixPermissionFlags" is_bitfield="true">
-			Execute for owner bit.
-		</constant>
-		<constant name="UNIX_READ_GROUP" value="32" enum="UnixPermissionFlags" is_bitfield="true">
-			Read for group bit.
-		</constant>
-		<constant name="UNIX_WRITE_GROUP" value="16" enum="UnixPermissionFlags" is_bitfield="true">
-			Write for group bit.
-		</constant>
-		<constant name="UNIX_EXECUTE_GROUP" value="8" enum="UnixPermissionFlags" is_bitfield="true">
-			Execute for group bit.
-		</constant>
-		<constant name="UNIX_READ_OTHER" value="4" enum="UnixPermissionFlags" is_bitfield="true">
-			Read for other bit.
-		</constant>
-		<constant name="UNIX_WRITE_OTHER" value="2" enum="UnixPermissionFlags" is_bitfield="true">
-			Write for other bit.
-		</constant>
-		<constant name="UNIX_EXECUTE_OTHER" value="1" enum="UnixPermissionFlags" is_bitfield="true">
-			Execute for other bit.
-		</constant>
-		<constant name="UNIX_SET_USER_ID" value="2048" enum="UnixPermissionFlags" is_bitfield="true">
-			Set user id on execution bit.
-		</constant>
-		<constant name="UNIX_SET_GROUP_ID" value="1024" enum="UnixPermissionFlags" is_bitfield="true">
-			Set group id on execution bit.
-		</constant>
-		<constant name="UNIX_RESTRICTED_DELETE" value="512" enum="UnixPermissionFlags" is_bitfield="true">
-			Restricted deletion (sticky) bit.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="CompressionMode">
+			<constant name="COMPRESSION_FASTLZ" value="0">
+				Uses the [url=https://fastlz.org/]FastLZ[/url] compression method.
+			</constant>
+			<constant name="COMPRESSION_DEFLATE" value="1">
+				Uses the [url=https://en.wikipedia.org/wiki/DEFLATE]DEFLATE[/url] compression method.
+			</constant>
+			<constant name="COMPRESSION_ZSTD" value="2">
+				Uses the [url=https://facebook.github.io/zstd/]Zstandard[/url] compression method.
+			</constant>
+			<constant name="COMPRESSION_GZIP" value="3">
+				Uses the [url=https://www.gzip.org/]gzip[/url] compression method.
+			</constant>
+			<constant name="COMPRESSION_BROTLI" value="4">
+				Uses the [url=https://github.com/google/brotli]brotli[/url] compression method (only decompression is supported).
+			</constant>
+		</enum>
+		<enum name="ModeFlags">
+			<constant name="READ" value="1">
+				Opens the file for read operations. The file cursor is positioned at the beginning of the file.
+			</constant>
+			<constant name="WRITE" value="2">
+				Opens the file for write operations. If the file exists, it is truncated to zero length and its contents are cleared. Otherwise, it is created.
+				[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
+			</constant>
+			<constant name="READ_WRITE" value="3">
+				Opens the file for read and write operations. Does not truncate the file. The file cursor is positioned at the beginning of the file.
+			</constant>
+			<constant name="WRITE_READ" value="7">
+				Opens the file for read and write operations. If the file exists, it is truncated to zero length and its contents are cleared. Otherwise, it is created. The file cursor is positioned at the beginning of the file.
+				[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
+			</constant>
+		</enum>
+		<enum name="UnixPermissionFlags" is_bitfield="true">
+			<constant name="UNIX_READ_OWNER" value="256">
+				Read for owner bit.
+			</constant>
+			<constant name="UNIX_WRITE_OWNER" value="128">
+				Write for owner bit.
+			</constant>
+			<constant name="UNIX_EXECUTE_OWNER" value="64">
+				Execute for owner bit.
+			</constant>
+			<constant name="UNIX_READ_GROUP" value="32">
+				Read for group bit.
+			</constant>
+			<constant name="UNIX_WRITE_GROUP" value="16">
+				Write for group bit.
+			</constant>
+			<constant name="UNIX_EXECUTE_GROUP" value="8">
+				Execute for group bit.
+			</constant>
+			<constant name="UNIX_READ_OTHER" value="4">
+				Read for other bit.
+			</constant>
+			<constant name="UNIX_WRITE_OTHER" value="2">
+				Write for other bit.
+			</constant>
+			<constant name="UNIX_EXECUTE_OTHER" value="1">
+				Execute for other bit.
+			</constant>
+			<constant name="UNIX_SET_USER_ID" value="2048">
+				Set user id on execution bit.
+			</constant>
+			<constant name="UNIX_SET_GROUP_ID" value="1024">
+				Set group id on execution bit.
+			</constant>
+			<constant name="UNIX_RESTRICTED_DELETE" value="512">
+				Restricted deletion (sticky) bit.
+			</constant>
+		</enum>
+	</enums>
 </class>

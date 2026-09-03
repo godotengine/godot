@@ -254,16 +254,18 @@
 			The number of settings.
 		</member>
 	</members>
-	<constants>
-		<constant name="DISPERSE_MODE_EVEN" value="0" enum="DisperseMode">
-			Assign amounts so that they monotonically increase from [code]0.0[/code] to [code]1.0[/code], ensuring all weights are equal. For example, with five joints, the amounts would be [code]0.2[/code], [code]0.4[/code], [code]0.6[/code], [code]0.8[/code], and [code]1.0[/code] starting from the root bone.
-		</constant>
-		<constant name="DISPERSE_MODE_WEIGHTED" value="1" enum="DisperseMode">
-			Assign amounts so that they monotonically increase from [code]0.0[/code] to [code]1.0[/code], based on the length of the bones between joint segments. See also [method set_weight_position].
-		</constant>
-		<constant name="DISPERSE_MODE_CUSTOM" value="2" enum="DisperseMode">
-			You can assign arbitrary amounts to the joint list. See also [method set_joint_twist_amount].
-			When [method is_end_bone_extended] is [code]false[/code], a child of the reference bone exists solely to determine the twist axis, so its custom amount has absolutely no effect at all.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DisperseMode">
+			<constant name="DISPERSE_MODE_EVEN" value="0">
+				Assign amounts so that they monotonically increase from [code]0.0[/code] to [code]1.0[/code], ensuring all weights are equal. For example, with five joints, the amounts would be [code]0.2[/code], [code]0.4[/code], [code]0.6[/code], [code]0.8[/code], and [code]1.0[/code] starting from the root bone.
+			</constant>
+			<constant name="DISPERSE_MODE_WEIGHTED" value="1">
+				Assign amounts so that they monotonically increase from [code]0.0[/code] to [code]1.0[/code], based on the length of the bones between joint segments. See also [method set_weight_position].
+			</constant>
+			<constant name="DISPERSE_MODE_CUSTOM" value="2">
+				You can assign arbitrary amounts to the joint list. See also [method set_joint_twist_amount].
+				When [method is_end_bone_extended] is [code]false[/code], a child of the reference bone exists solely to determine the twist axis, so its custom amount has absolutely no effect at all.
+			</constant>
+		</enum>
+	</enums>
 </class>

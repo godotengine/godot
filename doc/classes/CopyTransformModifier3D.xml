@@ -260,30 +260,34 @@
 			The number of settings in the modifier.
 		</member>
 	</members>
-	<constants>
-		<constant name="TRANSFORM_FLAG_POSITION" value="1" enum="TransformFlag" is_bitfield="true">
-			If set, allows to copy the position.
-		</constant>
-		<constant name="TRANSFORM_FLAG_ROTATION" value="2" enum="TransformFlag" is_bitfield="true">
-			If set, allows to copy the rotation.
-		</constant>
-		<constant name="TRANSFORM_FLAG_SCALE" value="4" enum="TransformFlag" is_bitfield="true">
-			If set, allows to copy the scale.
-		</constant>
-		<constant name="TRANSFORM_FLAG_ALL" value="7" enum="TransformFlag" is_bitfield="true">
-			If set, allows to copy the position/rotation/scale.
-		</constant>
-		<constant name="AXIS_FLAG_X" value="1" enum="AxisFlag" is_bitfield="true">
-			If set, allows to process the X-axis.
-		</constant>
-		<constant name="AXIS_FLAG_Y" value="2" enum="AxisFlag" is_bitfield="true">
-			If set, allows to process the Y-axis.
-		</constant>
-		<constant name="AXIS_FLAG_Z" value="4" enum="AxisFlag" is_bitfield="true">
-			If set, allows to process the Z-axis.
-		</constant>
-		<constant name="AXIS_FLAG_ALL" value="7" enum="AxisFlag" is_bitfield="true">
-			If set, allows to process the all axes.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AxisFlag" is_bitfield="true">
+			<constant name="AXIS_FLAG_X" value="1">
+				If set, allows to process the X-axis.
+			</constant>
+			<constant name="AXIS_FLAG_Y" value="2">
+				If set, allows to process the Y-axis.
+			</constant>
+			<constant name="AXIS_FLAG_Z" value="4">
+				If set, allows to process the Z-axis.
+			</constant>
+			<constant name="AXIS_FLAG_ALL" value="7">
+				If set, allows to process the all axes.
+			</constant>
+		</enum>
+		<enum name="TransformFlag" is_bitfield="true">
+			<constant name="TRANSFORM_FLAG_POSITION" value="1">
+				If set, allows to copy the position.
+			</constant>
+			<constant name="TRANSFORM_FLAG_ROTATION" value="2">
+				If set, allows to copy the rotation.
+			</constant>
+			<constant name="TRANSFORM_FLAG_SCALE" value="4">
+				If set, allows to copy the scale.
+			</constant>
+			<constant name="TRANSFORM_FLAG_ALL" value="7">
+				If set, allows to copy the position/rotation/scale.
+			</constant>
+		</enum>
+	</enums>
 </class>

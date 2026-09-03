@@ -211,81 +211,91 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="XR_NONE" value="0" enum="Capabilities">
-			No XR capabilities.
-		</constant>
-		<constant name="XR_MONO" value="1" enum="Capabilities">
-			This interface can work with normal rendering output (non-HMD based AR).
-		</constant>
-		<constant name="XR_STEREO" value="2" enum="Capabilities">
-			This interface supports stereoscopic rendering.
-		</constant>
-		<constant name="XR_QUAD" value="4" enum="Capabilities">
-			This interface supports quad rendering (not yet supported by Godot).
-		</constant>
-		<constant name="XR_VR" value="8" enum="Capabilities">
-			This interface supports VR.
-		</constant>
-		<constant name="XR_AR" value="16" enum="Capabilities">
-			This interface supports AR (video background and real world tracking).
-		</constant>
-		<constant name="XR_EXTERNAL" value="32" enum="Capabilities">
-			This interface outputs to an external device. If the main viewport is used, the on screen output is an unmodified buffer of either the left or right eye (stretched if the viewport size is not changed to the same aspect ratio of [method get_render_target_size]). Using a separate viewport node frees up the main viewport for other purposes.
-		</constant>
-		<constant name="XR_NORMAL_TRACKING" value="0" enum="TrackingStatus">
-			Tracking is behaving as expected.
-		</constant>
-		<constant name="XR_EXCESSIVE_MOTION" value="1" enum="TrackingStatus">
-			Tracking is hindered by excessive motion (the player is moving faster than tracking can keep up).
-		</constant>
-		<constant name="XR_INSUFFICIENT_FEATURES" value="2" enum="TrackingStatus">
-			Tracking is hindered by insufficient features, it's too dark (for camera-based tracking), player is blocked, etc.
-		</constant>
-		<constant name="XR_UNKNOWN_TRACKING" value="3" enum="TrackingStatus">
-			We don't know the status of the tracking or this interface does not provide feedback.
-		</constant>
-		<constant name="XR_NOT_TRACKING" value="4" enum="TrackingStatus">
-			Tracking is not functional (camera not plugged in or obscured, lighthouses turned off, etc.).
-		</constant>
-		<constant name="XR_PLAY_AREA_UNKNOWN" value="0" enum="PlayAreaMode">
-			Play area mode not set or not available.
-		</constant>
-		<constant name="XR_PLAY_AREA_3DOF" value="1" enum="PlayAreaMode">
-			Play area only supports orientation tracking, no positional tracking, area will center around player.
-		</constant>
-		<constant name="XR_PLAY_AREA_SITTING" value="2" enum="PlayAreaMode">
-			Player is in seated position, limited positional tracking, fixed guardian around player.
-		</constant>
-		<constant name="XR_PLAY_AREA_ROOMSCALE" value="3" enum="PlayAreaMode">
-			Player is free to move around, full positional tracking.
-		</constant>
-		<constant name="XR_PLAY_AREA_STAGE" value="4" enum="PlayAreaMode">
-			Same as [constant XR_PLAY_AREA_ROOMSCALE] but origin point is fixed to the center of the physical space. In this mode, system-level recentering may be disabled, requiring the use of [method XRServer.center_on_hmd].
-		</constant>
-		<constant name="XR_PLAY_AREA_CUSTOM" value="2147483647" enum="PlayAreaMode">
-			Custom play area set by a GDExtension.
-		</constant>
-		<constant name="XR_ENV_BLEND_MODE_OPAQUE" value="0" enum="EnvironmentBlendMode">
-			Opaque blend mode. This is typically used for VR devices.
-		</constant>
-		<constant name="XR_ENV_BLEND_MODE_ADDITIVE" value="1" enum="EnvironmentBlendMode">
-			Additive blend mode. This is typically used for AR devices or VR devices with passthrough.
-		</constant>
-		<constant name="XR_ENV_BLEND_MODE_ALPHA_BLEND" value="2" enum="EnvironmentBlendMode">
-			Alpha blend mode. This is typically used for AR or VR devices with passthrough capabilities. The alpha channel controls how much of the passthrough is visible. Alpha of 0.0 means the passthrough is visible and this pixel works in ADDITIVE mode. Alpha of 1.0 means that the passthrough is not visible and this pixel works in OPAQUE mode.
-		</constant>
-		<constant name="XR_VRS_TEXTURE_FORMAT_UNIFIED" value="0" enum="VRSTextureFormat">
-			The texture format is the same as returned by [method XRVRS.make_vrs_texture].
-		</constant>
-		<constant name="XR_VRS_TEXTURE_FORMAT_FRAGMENT_SHADING_RATE" value="1" enum="VRSTextureFormat">
-			The texture format is the same as expected by the Vulkan [code]VK_KHR_fragment_shading_rate[/code] extension.
-		</constant>
-		<constant name="XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP" value="2" enum="VRSTextureFormat">
-			The texture format is the same as expected by the Vulkan [code]VK_EXT_fragment_density_map[/code] extension.
-		</constant>
-		<constant name="XR_VRS_TEXTURE_FORMAT_RASTERIZATION_RATE_MAP" value="3" enum="VRSTextureFormat">
-			The texture contains a Metal [code]rasterizationRateMap[/code], used for foveated rendering on Apple platforms. It's not a real texture, but instead an opaque wrapper for an [code]MTLRasterizationRateMap[/code] object.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Capabilities">
+			<constant name="XR_NONE" value="0">
+				No XR capabilities.
+			</constant>
+			<constant name="XR_MONO" value="1">
+				This interface can work with normal rendering output (non-HMD based AR).
+			</constant>
+			<constant name="XR_STEREO" value="2">
+				This interface supports stereoscopic rendering.
+			</constant>
+			<constant name="XR_QUAD" value="4">
+				This interface supports quad rendering (not yet supported by Godot).
+			</constant>
+			<constant name="XR_VR" value="8">
+				This interface supports VR.
+			</constant>
+			<constant name="XR_AR" value="16">
+				This interface supports AR (video background and real world tracking).
+			</constant>
+			<constant name="XR_EXTERNAL" value="32">
+				This interface outputs to an external device. If the main viewport is used, the on screen output is an unmodified buffer of either the left or right eye (stretched if the viewport size is not changed to the same aspect ratio of [method get_render_target_size]). Using a separate viewport node frees up the main viewport for other purposes.
+			</constant>
+		</enum>
+		<enum name="EnvironmentBlendMode">
+			<constant name="XR_ENV_BLEND_MODE_OPAQUE" value="0">
+				Opaque blend mode. This is typically used for VR devices.
+			</constant>
+			<constant name="XR_ENV_BLEND_MODE_ADDITIVE" value="1">
+				Additive blend mode. This is typically used for AR devices or VR devices with passthrough.
+			</constant>
+			<constant name="XR_ENV_BLEND_MODE_ALPHA_BLEND" value="2">
+				Alpha blend mode. This is typically used for AR or VR devices with passthrough capabilities. The alpha channel controls how much of the passthrough is visible. Alpha of 0.0 means the passthrough is visible and this pixel works in ADDITIVE mode. Alpha of 1.0 means that the passthrough is not visible and this pixel works in OPAQUE mode.
+			</constant>
+		</enum>
+		<enum name="PlayAreaMode">
+			<constant name="XR_PLAY_AREA_UNKNOWN" value="0">
+				Play area mode not set or not available.
+			</constant>
+			<constant name="XR_PLAY_AREA_3DOF" value="1">
+				Play area only supports orientation tracking, no positional tracking, area will center around player.
+			</constant>
+			<constant name="XR_PLAY_AREA_SITTING" value="2">
+				Player is in seated position, limited positional tracking, fixed guardian around player.
+			</constant>
+			<constant name="XR_PLAY_AREA_ROOMSCALE" value="3">
+				Player is free to move around, full positional tracking.
+			</constant>
+			<constant name="XR_PLAY_AREA_STAGE" value="4">
+				Same as [constant XR_PLAY_AREA_ROOMSCALE] but origin point is fixed to the center of the physical space. In this mode, system-level recentering may be disabled, requiring the use of [method XRServer.center_on_hmd].
+			</constant>
+			<constant name="XR_PLAY_AREA_CUSTOM" value="2147483647">
+				Custom play area set by a GDExtension.
+			</constant>
+		</enum>
+		<enum name="TrackingStatus">
+			<constant name="XR_NORMAL_TRACKING" value="0">
+				Tracking is behaving as expected.
+			</constant>
+			<constant name="XR_EXCESSIVE_MOTION" value="1">
+				Tracking is hindered by excessive motion (the player is moving faster than tracking can keep up).
+			</constant>
+			<constant name="XR_INSUFFICIENT_FEATURES" value="2">
+				Tracking is hindered by insufficient features, it's too dark (for camera-based tracking), player is blocked, etc.
+			</constant>
+			<constant name="XR_UNKNOWN_TRACKING" value="3">
+				We don't know the status of the tracking or this interface does not provide feedback.
+			</constant>
+			<constant name="XR_NOT_TRACKING" value="4">
+				Tracking is not functional (camera not plugged in or obscured, lighthouses turned off, etc.).
+			</constant>
+		</enum>
+		<enum name="VRSTextureFormat">
+			<constant name="XR_VRS_TEXTURE_FORMAT_UNIFIED" value="0">
+				The texture format is the same as returned by [method XRVRS.make_vrs_texture].
+			</constant>
+			<constant name="XR_VRS_TEXTURE_FORMAT_FRAGMENT_SHADING_RATE" value="1">
+				The texture format is the same as expected by the Vulkan [code]VK_KHR_fragment_shading_rate[/code] extension.
+			</constant>
+			<constant name="XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP" value="2">
+				The texture format is the same as expected by the Vulkan [code]VK_EXT_fragment_density_map[/code] extension.
+			</constant>
+			<constant name="XR_VRS_TEXTURE_FORMAT_RASTERIZATION_RATE_MAP" value="3">
+				The texture contains a Metal [code]rasterizationRateMap[/code], used for foveated rendering on Apple platforms. It's not a real texture, but instead an opaque wrapper for an [code]MTLRasterizationRateMap[/code] object.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -113,29 +113,33 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="DRAW_NORMAL" value="0" enum="DrawMode">
-			The normal state (i.e. not pressed, not hovered, not toggled and enabled) of buttons.
-		</constant>
-		<constant name="DRAW_PRESSED" value="1" enum="DrawMode">
-			The state of buttons are pressed.
-		</constant>
-		<constant name="DRAW_HOVER" value="2" enum="DrawMode">
-			The state of buttons are hovered.
-		</constant>
-		<constant name="DRAW_DISABLED" value="3" enum="DrawMode">
-			The state of buttons are disabled.
-		</constant>
-		<constant name="DRAW_HOVER_PRESSED" value="4" enum="DrawMode">
-			The state of buttons are both hovered and pressed.
-		</constant>
-		<constant name="ACTION_MODE_BUTTON_PRESS" value="0" enum="ActionMode">
-			Require just a press to consider the button clicked.
-		</constant>
-		<constant name="ACTION_MODE_BUTTON_RELEASE" value="1" enum="ActionMode">
-			Require a press and a subsequent release before considering the button clicked.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ActionMode">
+			<constant name="ACTION_MODE_BUTTON_PRESS" value="0">
+				Require just a press to consider the button clicked.
+			</constant>
+			<constant name="ACTION_MODE_BUTTON_RELEASE" value="1">
+				Require a press and a subsequent release before considering the button clicked.
+			</constant>
+		</enum>
+		<enum name="DrawMode">
+			<constant name="DRAW_NORMAL" value="0">
+				The normal state (i.e. not pressed, not hovered, not toggled and enabled) of buttons.
+			</constant>
+			<constant name="DRAW_PRESSED" value="1">
+				The state of buttons are pressed.
+			</constant>
+			<constant name="DRAW_HOVER" value="2">
+				The state of buttons are hovered.
+			</constant>
+			<constant name="DRAW_DISABLED" value="3">
+				The state of buttons are disabled.
+			</constant>
+			<constant name="DRAW_HOVER_PRESSED" value="4">
+				The state of buttons are both hovered and pressed.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="click_margin" data_type="constant" type="int" default="0">
 			Defines the margin around the button's area that still counts as a valid click. This is useful to make it easier to click small buttons.

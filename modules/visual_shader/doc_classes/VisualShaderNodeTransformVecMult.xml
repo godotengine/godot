@@ -13,21 +13,23 @@
 			The multiplication type to be performed.
 		</member>
 	</members>
-	<constants>
-		<constant name="OP_AxB" value="0" enum="Operator">
-			Multiplies transform [code]a[/code] by the vector [code]b[/code].
-		</constant>
-		<constant name="OP_BxA" value="1" enum="Operator">
-			Multiplies vector [code]b[/code] by the transform [code]a[/code].
-		</constant>
-		<constant name="OP_3x3_AxB" value="2" enum="Operator">
-			Multiplies transform [code]a[/code] by the vector [code]b[/code], skipping the last row and column of the transform.
-		</constant>
-		<constant name="OP_3x3_BxA" value="3" enum="Operator">
-			Multiplies vector [code]b[/code] by the transform [code]a[/code], skipping the last row and column of the transform.
-		</constant>
-		<constant name="OP_MAX" value="4" enum="Operator">
-			Represents the size of the [enum Operator] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Operator">
+			<constant name="OP_AxB" value="0">
+				Multiplies transform [code]a[/code] by the vector [code]b[/code].
+			</constant>
+			<constant name="OP_BxA" value="1">
+				Multiplies vector [code]b[/code] by the transform [code]a[/code].
+			</constant>
+			<constant name="OP_3x3_AxB" value="2">
+				Multiplies transform [code]a[/code] by the vector [code]b[/code], skipping the last row and column of the transform.
+			</constant>
+			<constant name="OP_3x3_BxA" value="3">
+				Multiplies vector [code]b[/code] by the transform [code]a[/code], skipping the last row and column of the transform.
+			</constant>
+			<constant name="OP_MAX" value="4">
+				Represents the size of the [enum Operator] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

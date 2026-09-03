@@ -279,48 +279,50 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="RESULT_SUCCESS" value="0" enum="Result">
-			Request successful.
-		</constant>
-		<constant name="RESULT_CHUNKED_BODY_SIZE_MISMATCH" value="1" enum="Result">
-			Request failed due to a mismatch between the expected and actual chunked body size during transfer. Possible causes include network errors, server misconfiguration, or issues with chunked encoding.
-		</constant>
-		<constant name="RESULT_CANT_CONNECT" value="2" enum="Result">
-			Request failed while connecting.
-		</constant>
-		<constant name="RESULT_CANT_RESOLVE" value="3" enum="Result">
-			Request failed while resolving.
-		</constant>
-		<constant name="RESULT_CONNECTION_ERROR" value="4" enum="Result">
-			Request failed due to connection (read/write) error.
-		</constant>
-		<constant name="RESULT_TLS_HANDSHAKE_ERROR" value="5" enum="Result">
-			Request failed on TLS handshake.
-		</constant>
-		<constant name="RESULT_NO_RESPONSE" value="6" enum="Result">
-			Request does not have a response (yet).
-		</constant>
-		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7" enum="Result">
-			Request exceeded its maximum size limit, see [member body_size_limit].
-		</constant>
-		<constant name="RESULT_BODY_DECOMPRESS_FAILED" value="8" enum="Result">
-			Request failed due to an error while decompressing the response body. Possible causes include unsupported or incorrect compression format, corrupted data, or incomplete transfer.
-		</constant>
-		<constant name="RESULT_REQUEST_FAILED" value="9" enum="Result">
-			Request failed (currently unused).
-		</constant>
-		<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="10" enum="Result">
-			HTTPRequest couldn't open the download file.
-		</constant>
-		<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="11" enum="Result">
-			HTTPRequest couldn't write to the download file.
-		</constant>
-		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="12" enum="Result">
-			Request reached its maximum redirect limit, see [member max_redirects].
-		</constant>
-		<constant name="RESULT_TIMEOUT" value="13" enum="Result">
-			Request failed due to a timeout. If you expect requests to take a long time, try increasing the value of [member timeout] or setting it to [code]0.0[/code] to remove the timeout completely.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Result">
+			<constant name="RESULT_SUCCESS" value="0">
+				Request successful.
+			</constant>
+			<constant name="RESULT_CHUNKED_BODY_SIZE_MISMATCH" value="1">
+				Request failed due to a mismatch between the expected and actual chunked body size during transfer. Possible causes include network errors, server misconfiguration, or issues with chunked encoding.
+			</constant>
+			<constant name="RESULT_CANT_CONNECT" value="2">
+				Request failed while connecting.
+			</constant>
+			<constant name="RESULT_CANT_RESOLVE" value="3">
+				Request failed while resolving.
+			</constant>
+			<constant name="RESULT_CONNECTION_ERROR" value="4">
+				Request failed due to connection (read/write) error.
+			</constant>
+			<constant name="RESULT_TLS_HANDSHAKE_ERROR" value="5">
+				Request failed on TLS handshake.
+			</constant>
+			<constant name="RESULT_NO_RESPONSE" value="6">
+				Request does not have a response (yet).
+			</constant>
+			<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7">
+				Request exceeded its maximum size limit, see [member body_size_limit].
+			</constant>
+			<constant name="RESULT_BODY_DECOMPRESS_FAILED" value="8">
+				Request failed due to an error while decompressing the response body. Possible causes include unsupported or incorrect compression format, corrupted data, or incomplete transfer.
+			</constant>
+			<constant name="RESULT_REQUEST_FAILED" value="9">
+				Request failed (currently unused).
+			</constant>
+			<constant name="RESULT_DOWNLOAD_FILE_CANT_OPEN" value="10">
+				HTTPRequest couldn't open the download file.
+			</constant>
+			<constant name="RESULT_DOWNLOAD_FILE_WRITE_ERROR" value="11">
+				HTTPRequest couldn't write to the download file.
+			</constant>
+			<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="12">
+				Request reached its maximum redirect limit, see [member max_redirects].
+			</constant>
+			<constant name="RESULT_TIMEOUT" value="13">
+				Request failed due to a timeout. If you expect requests to take a long time, try increasing the value of [member timeout] or setting it to [code]0.0[/code] to remove the timeout completely.
+			</constant>
+		</enum>
+	</enums>
 </class>

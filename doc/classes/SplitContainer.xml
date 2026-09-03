@@ -99,20 +99,22 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="DRAGGER_VISIBLE" value="0" enum="DraggerVisibility">
-			The split dragger icon is always visible when [theme_item autohide] is [code]false[/code], otherwise visible only when the cursor hovers it.
-			The size of the grabber icon determines the minimum [theme_item separation].
-			The dragger icon is automatically hidden if the length of the grabber icon is longer than the split bar.
-		</constant>
-		<constant name="DRAGGER_HIDDEN" value="1" enum="DraggerVisibility">
-			The split dragger icon is never visible regardless of the value of [theme_item autohide].
-			The size of the grabber icon determines the minimum [theme_item separation].
-		</constant>
-		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2" enum="DraggerVisibility">
-			The split dragger icon is not visible, and the split bar is collapsed to zero thickness.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DraggerVisibility">
+			<constant name="DRAGGER_VISIBLE" value="0">
+				The split dragger icon is always visible when [theme_item autohide] is [code]false[/code], otherwise visible only when the cursor hovers it.
+				The size of the grabber icon determines the minimum [theme_item separation].
+				The dragger icon is automatically hidden if the length of the grabber icon is longer than the split bar.
+			</constant>
+			<constant name="DRAGGER_HIDDEN" value="1">
+				The split dragger icon is never visible regardless of the value of [theme_item autohide].
+				The size of the grabber icon determines the minimum [theme_item separation].
+			</constant>
+			<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2">
+				The split dragger icon is not visible, and the split bar is collapsed to zero thickness.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="touch_dragger_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.3)">
 			The color of the touch dragger.

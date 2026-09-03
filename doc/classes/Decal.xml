@@ -114,21 +114,23 @@
 			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB]. Only positive values are valid (negative values will be clamped to [code]0.0[/code]). See also [member lower_fade].
 		</member>
 	</members>
-	<constants>
-		<constant name="TEXTURE_ALBEDO" value="0" enum="DecalTexture">
-			[Texture2D] corresponding to [member texture_albedo].
-		</constant>
-		<constant name="TEXTURE_NORMAL" value="1" enum="DecalTexture">
-			[Texture2D] corresponding to [member texture_normal].
-		</constant>
-		<constant name="TEXTURE_ORM" value="2" enum="DecalTexture">
-			[Texture2D] corresponding to [member texture_orm].
-		</constant>
-		<constant name="TEXTURE_EMISSION" value="3" enum="DecalTexture">
-			[Texture2D] corresponding to [member texture_emission].
-		</constant>
-		<constant name="TEXTURE_MAX" value="4" enum="DecalTexture">
-			Max size of [enum DecalTexture] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DecalTexture">
+			<constant name="TEXTURE_ALBEDO" value="0">
+				[Texture2D] corresponding to [member texture_albedo].
+			</constant>
+			<constant name="TEXTURE_NORMAL" value="1">
+				[Texture2D] corresponding to [member texture_normal].
+			</constant>
+			<constant name="TEXTURE_ORM" value="2">
+				[Texture2D] corresponding to [member texture_orm].
+			</constant>
+			<constant name="TEXTURE_EMISSION" value="3">
+				[Texture2D] corresponding to [member texture_emission].
+			</constant>
+			<constant name="TEXTURE_MAX" value="4">
+				Max size of [enum DecalTexture] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

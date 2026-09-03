@@ -348,90 +348,98 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
-			Particles are drawn in the order emitted.
-		</constant>
-		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
-			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
-		</constant>
-		<constant name="DRAW_ORDER_VIEW_DEPTH" value="2" enum="DrawOrder">
-			Particles are drawn in order of depth.
-		</constant>
-		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set initial velocity properties.
-		</constant>
-		<constant name="PARAM_ANGULAR_VELOCITY" value="1" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set angular velocity properties.
-		</constant>
-		<constant name="PARAM_ORBIT_VELOCITY" value="2" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set orbital velocity properties.
-		</constant>
-		<constant name="PARAM_LINEAR_ACCEL" value="3" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set linear acceleration properties.
-		</constant>
-		<constant name="PARAM_RADIAL_ACCEL" value="4" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set radial acceleration properties.
-		</constant>
-		<constant name="PARAM_TANGENTIAL_ACCEL" value="5" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set tangential acceleration properties.
-		</constant>
-		<constant name="PARAM_DAMPING" value="6" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set damping properties.
-		</constant>
-		<constant name="PARAM_ANGLE" value="7" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set angle properties.
-		</constant>
-		<constant name="PARAM_SCALE" value="8" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set scale properties.
-		</constant>
-		<constant name="PARAM_HUE_VARIATION" value="9" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set hue variation properties.
-		</constant>
-		<constant name="PARAM_ANIM_SPEED" value="10" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set animation speed properties.
-		</constant>
-		<constant name="PARAM_ANIM_OFFSET" value="11" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set animation offset properties.
-		</constant>
-		<constant name="PARAM_MAX" value="12" enum="Parameter">
-			Represents the size of the [enum Parameter] enum.
-		</constant>
-		<constant name="PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY" value="0" enum="ParticleFlags">
-			Use with [method set_particle_flag] to set [member particle_flag_align_y].
-		</constant>
-		<constant name="PARTICLE_FLAG_ROTATE_Y" value="1" enum="ParticleFlags">
-			Use with [method set_particle_flag] to set [member particle_flag_rotate_y].
-		</constant>
-		<constant name="PARTICLE_FLAG_DISABLE_Z" value="2" enum="ParticleFlags">
-			Use with [method set_particle_flag] to set [member particle_flag_disable_z].
-		</constant>
-		<constant name="PARTICLE_FLAG_MAX" value="3" enum="ParticleFlags">
-			Represents the size of the [enum ParticleFlags] enum.
-		</constant>
-		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
-			All particles will be emitted from a single point.
-		</constant>
-		<constant name="EMISSION_SHAPE_SPHERE" value="1" enum="EmissionShape">
-			Particles will be emitted in the volume of a sphere.
-		</constant>
-		<constant name="EMISSION_SHAPE_SPHERE_SURFACE" value="2" enum="EmissionShape">
-			Particles will be emitted on the surface of a sphere.
-		</constant>
-		<constant name="EMISSION_SHAPE_BOX" value="3" enum="EmissionShape">
-			Particles will be emitted in the volume of a box.
-		</constant>
-		<constant name="EMISSION_SHAPE_POINTS" value="4" enum="EmissionShape">
-			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle color will be modulated by [member emission_colors].
-		</constant>
-		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="5" enum="EmissionShape">
-			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
-		</constant>
-		<constant name="EMISSION_SHAPE_RING" value="6" enum="EmissionShape">
-			Particles will be emitted in a ring or cylinder.
-		</constant>
-		<constant name="EMISSION_SHAPE_MAX" value="7" enum="EmissionShape">
-			Represents the size of the [enum EmissionShape] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DrawOrder">
+			<constant name="DRAW_ORDER_INDEX" value="0">
+				Particles are drawn in the order emitted.
+			</constant>
+			<constant name="DRAW_ORDER_LIFETIME" value="1">
+				Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
+			</constant>
+			<constant name="DRAW_ORDER_VIEW_DEPTH" value="2">
+				Particles are drawn in order of depth.
+			</constant>
+		</enum>
+		<enum name="EmissionShape">
+			<constant name="EMISSION_SHAPE_POINT" value="0">
+				All particles will be emitted from a single point.
+			</constant>
+			<constant name="EMISSION_SHAPE_SPHERE" value="1">
+				Particles will be emitted in the volume of a sphere.
+			</constant>
+			<constant name="EMISSION_SHAPE_SPHERE_SURFACE" value="2">
+				Particles will be emitted on the surface of a sphere.
+			</constant>
+			<constant name="EMISSION_SHAPE_BOX" value="3">
+				Particles will be emitted in the volume of a box.
+			</constant>
+			<constant name="EMISSION_SHAPE_POINTS" value="4">
+				Particles will be emitted at a position chosen randomly among [member emission_points]. Particle color will be modulated by [member emission_colors].
+			</constant>
+			<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="5">
+				Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
+			</constant>
+			<constant name="EMISSION_SHAPE_RING" value="6">
+				Particles will be emitted in a ring or cylinder.
+			</constant>
+			<constant name="EMISSION_SHAPE_MAX" value="7">
+				Represents the size of the [enum EmissionShape] enum.
+			</constant>
+		</enum>
+		<enum name="Parameter">
+			<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set initial velocity properties.
+			</constant>
+			<constant name="PARAM_ANGULAR_VELOCITY" value="1">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set angular velocity properties.
+			</constant>
+			<constant name="PARAM_ORBIT_VELOCITY" value="2">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set orbital velocity properties.
+			</constant>
+			<constant name="PARAM_LINEAR_ACCEL" value="3">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set linear acceleration properties.
+			</constant>
+			<constant name="PARAM_RADIAL_ACCEL" value="4">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set radial acceleration properties.
+			</constant>
+			<constant name="PARAM_TANGENTIAL_ACCEL" value="5">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set tangential acceleration properties.
+			</constant>
+			<constant name="PARAM_DAMPING" value="6">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set damping properties.
+			</constant>
+			<constant name="PARAM_ANGLE" value="7">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set angle properties.
+			</constant>
+			<constant name="PARAM_SCALE" value="8">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set scale properties.
+			</constant>
+			<constant name="PARAM_HUE_VARIATION" value="9">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set hue variation properties.
+			</constant>
+			<constant name="PARAM_ANIM_SPEED" value="10">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set animation speed properties.
+			</constant>
+			<constant name="PARAM_ANIM_OFFSET" value="11">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_curve] to set animation offset properties.
+			</constant>
+			<constant name="PARAM_MAX" value="12">
+				Represents the size of the [enum Parameter] enum.
+			</constant>
+		</enum>
+		<enum name="ParticleFlags">
+			<constant name="PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY" value="0">
+				Use with [method set_particle_flag] to set [member particle_flag_align_y].
+			</constant>
+			<constant name="PARTICLE_FLAG_ROTATE_Y" value="1">
+				Use with [method set_particle_flag] to set [member particle_flag_rotate_y].
+			</constant>
+			<constant name="PARTICLE_FLAG_DISABLE_Z" value="2">
+				Use with [method set_particle_flag] to set [member particle_flag_disable_z].
+			</constant>
+			<constant name="PARTICLE_FLAG_MAX" value="3">
+				Represents the size of the [enum ParticleFlags] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

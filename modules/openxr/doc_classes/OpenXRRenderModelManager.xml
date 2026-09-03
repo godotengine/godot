@@ -31,18 +31,20 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="RENDER_MODEL_TRACKER_ANY" value="0" enum="RenderModelTracker">
-			All active render models are shown regardless of what tracker they relate to.
-		</constant>
-		<constant name="RENDER_MODEL_TRACKER_NONE_SET" value="1" enum="RenderModelTracker">
-			Only active render models are shown that are not related to any tracker we manage.
-		</constant>
-		<constant name="RENDER_MODEL_TRACKER_LEFT_HAND" value="2" enum="RenderModelTracker">
-			Only active render models are shown that are related to the left hand tracker.
-		</constant>
-		<constant name="RENDER_MODEL_TRACKER_RIGHT_HAND" value="3" enum="RenderModelTracker">
-			Only active render models are shown that are related to the right hand tracker.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="RenderModelTracker">
+			<constant name="RENDER_MODEL_TRACKER_ANY" value="0">
+				All active render models are shown regardless of what tracker they relate to.
+			</constant>
+			<constant name="RENDER_MODEL_TRACKER_NONE_SET" value="1">
+				Only active render models are shown that are not related to any tracker we manage.
+			</constant>
+			<constant name="RENDER_MODEL_TRACKER_LEFT_HAND" value="2">
+				Only active render models are shown that are related to the left hand tracker.
+			</constant>
+			<constant name="RENDER_MODEL_TRACKER_RIGHT_HAND" value="3">
+				Only active render models are shown that are related to the right hand tracker.
+			</constant>
+		</enum>
+	</enums>
 </class>

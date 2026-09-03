@@ -55,24 +55,28 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="SWITCH_MODE_IMMEDIATE" value="0" enum="SwitchMode">
-			Switch to the next state immediately. The current state will end and blend into the beginning of the new one.
-		</constant>
-		<constant name="SWITCH_MODE_SYNC" value="1" enum="SwitchMode">
-			Switch to the next state immediately, but will seek the new state to the playback position of the old state.
-		</constant>
-		<constant name="SWITCH_MODE_AT_END" value="2" enum="SwitchMode">
-			Wait for the current state playback to end, then switch to the beginning of the next state animation.
-		</constant>
-		<constant name="ADVANCE_MODE_DISABLED" value="0" enum="AdvanceMode">
-			Don't use this transition.
-		</constant>
-		<constant name="ADVANCE_MODE_ENABLED" value="1" enum="AdvanceMode">
-			Only use this transition during [method AnimationNodeStateMachinePlayback.travel].
-		</constant>
-		<constant name="ADVANCE_MODE_AUTO" value="2" enum="AdvanceMode">
-			Automatically use this transition if the [member advance_condition] and [member advance_expression] checks are [code]true[/code] (if assigned).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AdvanceMode">
+			<constant name="ADVANCE_MODE_DISABLED" value="0">
+				Don't use this transition.
+			</constant>
+			<constant name="ADVANCE_MODE_ENABLED" value="1">
+				Only use this transition during [method AnimationNodeStateMachinePlayback.travel].
+			</constant>
+			<constant name="ADVANCE_MODE_AUTO" value="2">
+				Automatically use this transition if the [member advance_condition] and [member advance_expression] checks are [code]true[/code] (if assigned).
+			</constant>
+		</enum>
+		<enum name="SwitchMode">
+			<constant name="SWITCH_MODE_IMMEDIATE" value="0">
+				Switch to the next state immediately. The current state will end and blend into the beginning of the new one.
+			</constant>
+			<constant name="SWITCH_MODE_SYNC" value="1">
+				Switch to the next state immediately, but will seek the new state to the playback position of the old state.
+			</constant>
+			<constant name="SWITCH_MODE_AT_END" value="2">
+				Wait for the current state playback to end, then switch to the beginning of the next state animation.
+			</constant>
+		</enum>
+	</enums>
 </class>

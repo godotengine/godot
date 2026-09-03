@@ -490,406 +490,448 @@
 			Scales the object being rendered towards the camera to avoid clipping into things like walls. This is intended to be used for objects that are fixed with respect to the camera like player arms, tools, etc. Lighting and shadows will continue to work correctly when this setting is adjusted, but screen-space effects like SSAO and SSR may break with lower scales. Therefore, try to keep this setting as close to [code]1.0[/code] as possible.
 		</member>
 	</members>
-	<constants>
-		<constant name="TEXTURE_ALBEDO" value="0" enum="TextureParam">
-			Texture specifying per-pixel color.
-		</constant>
-		<constant name="TEXTURE_METALLIC" value="1" enum="TextureParam">
-			Texture specifying per-pixel metallic value.
-		</constant>
-		<constant name="TEXTURE_ROUGHNESS" value="2" enum="TextureParam">
-			Texture specifying per-pixel roughness value.
-		</constant>
-		<constant name="TEXTURE_EMISSION" value="3" enum="TextureParam">
-			Texture specifying per-pixel emission color.
-		</constant>
-		<constant name="TEXTURE_NORMAL" value="4" enum="TextureParam">
-			Texture specifying per-pixel normal vector.
-		</constant>
-		<constant name="TEXTURE_BENT_NORMAL" value="18" enum="TextureParam">
-			Texture specifying per-pixel bent normal vector.
-		</constant>
-		<constant name="TEXTURE_RIM" value="5" enum="TextureParam">
-			Texture specifying per-pixel rim value.
-		</constant>
-		<constant name="TEXTURE_CLEARCOAT" value="6" enum="TextureParam">
-			Texture specifying per-pixel clearcoat value.
-		</constant>
-		<constant name="TEXTURE_FLOWMAP" value="7" enum="TextureParam">
-			Texture specifying per-pixel flowmap direction for use with [member anisotropy].
-		</constant>
-		<constant name="TEXTURE_AMBIENT_OCCLUSION" value="8" enum="TextureParam">
-			Texture specifying per-pixel ambient occlusion value.
-		</constant>
-		<constant name="TEXTURE_HEIGHTMAP" value="9" enum="TextureParam">
-			Texture specifying per-pixel height.
-		</constant>
-		<constant name="TEXTURE_SUBSURFACE_SCATTERING" value="10" enum="TextureParam">
-			Texture specifying per-pixel subsurface scattering.
-		</constant>
-		<constant name="TEXTURE_SUBSURFACE_TRANSMITTANCE" value="11" enum="TextureParam">
-			Texture specifying per-pixel transmittance for subsurface scattering.
-		</constant>
-		<constant name="TEXTURE_BACKLIGHT" value="12" enum="TextureParam">
-			Texture specifying per-pixel backlight color.
-		</constant>
-		<constant name="TEXTURE_REFRACTION" value="13" enum="TextureParam">
-			Texture specifying per-pixel refraction strength.
-		</constant>
-		<constant name="TEXTURE_DETAIL_MASK" value="14" enum="TextureParam">
-			Texture specifying per-pixel detail mask blending value.
-		</constant>
-		<constant name="TEXTURE_DETAIL_ALBEDO" value="15" enum="TextureParam">
-			Texture specifying per-pixel detail color.
-		</constant>
-		<constant name="TEXTURE_DETAIL_NORMAL" value="16" enum="TextureParam">
-			Texture specifying per-pixel detail normal.
-		</constant>
-		<constant name="TEXTURE_ORM" value="17" enum="TextureParam">
-			Texture holding ambient occlusion, roughness, and metallic.
-		</constant>
-		<constant name="TEXTURE_MAX" value="19" enum="TextureParam">
-			Represents the size of the [enum TextureParam] enum.
-		</constant>
-		<constant name="TEXTURE_FILTER_NEAREST" value="0" enum="TextureFilter">
-			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
-		</constant>
-		<constant name="TEXTURE_FILTER_LINEAR" value="1" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
-		</constant>
-		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="2" enum="TextureFilter">
-			The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
-		</constant>
-		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="3" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
-		</constant>
-		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="4" enum="TextureFilter">
-			The texture filter reads from the nearest pixel and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look pixelated from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
-		</constant>
-		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look smooth from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
-		</constant>
-		<constant name="TEXTURE_FILTER_MAX" value="6" enum="TextureFilter">
-			Represents the size of the [enum TextureFilter] enum.
-		</constant>
-		<constant name="DETAIL_UV_1" value="0" enum="DetailUV">
-			Use [code]UV[/code] with the detail texture.
-		</constant>
-		<constant name="DETAIL_UV_2" value="1" enum="DetailUV">
-			Use [code]UV2[/code] with the detail texture.
-		</constant>
-		<constant name="TRANSPARENCY_DISABLED" value="0" enum="Transparency">
-			The material will not use transparency. This is the fastest to render.
-		</constant>
-		<constant name="TRANSPARENCY_ALPHA" value="1" enum="Transparency">
-			The material will use the texture's alpha values for transparency. This is the slowest to render, and disables shadow casting.
-		</constant>
-		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency" keywords="TRANSPARENCY_ALPHA_TEST">
-			The material will cut off all values below a threshold, the rest will remain opaque. The opaque portions will be rendered in the depth prepass. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows. For textures using this mode see the [code]Preserve Alpha Test Coverage[/code] option in the texture import settings to improve distant rendering and popping.
-		</constant>
-		<constant name="TRANSPARENCY_ALPHA_HASH" value="3" enum="Transparency">
-			The material will cut off all values below a spatially-deterministic threshold, the rest will remain opaque. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows. Alpha hashing is suited for hair rendering.
-		</constant>
-		<constant name="TRANSPARENCY_ALPHA_DEPTH_PRE_PASS" value="4" enum="Transparency">
-			The material will use the texture's alpha value for transparency, but will discard fragments with an alpha of less than 0.99 during the depth prepass and fragments with an alpha less than 0.1 during the shadow pass. This also supports casting shadows.
-		</constant>
-		<constant name="TRANSPARENCY_MAX" value="5" enum="Transparency">
-			Represents the size of the [enum Transparency] enum.
-		</constant>
-		<constant name="SHADING_MODE_UNSHADED" value="0" enum="ShadingMode">
-			The object will not receive shadows. This is the fastest to render, but it disables all interactions with lights.
-		</constant>
-		<constant name="SHADING_MODE_PER_PIXEL" value="1" enum="ShadingMode">
-			The object will be shaded per pixel. Useful for realistic shading effects.
-		</constant>
-		<constant name="SHADING_MODE_PER_VERTEX" value="2" enum="ShadingMode">
-			The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality.
-		</constant>
-		<constant name="SHADING_MODE_MAX" value="3" enum="ShadingMode">
-			Represents the size of the [enum ShadingMode] enum.
-		</constant>
-		<constant name="FEATURE_EMISSION" value="0" enum="Feature">
-			Constant for setting [member emission_enabled].
-		</constant>
-		<constant name="FEATURE_NORMAL_MAPPING" value="1" enum="Feature">
-			Constant for setting [member normal_enabled].
-		</constant>
-		<constant name="FEATURE_RIM" value="2" enum="Feature">
-			Constant for setting [member rim_enabled].
-		</constant>
-		<constant name="FEATURE_CLEARCOAT" value="3" enum="Feature">
-			Constant for setting [member clearcoat_enabled].
-		</constant>
-		<constant name="FEATURE_ANISOTROPY" value="4" enum="Feature">
-			Constant for setting [member anisotropy_enabled].
-		</constant>
-		<constant name="FEATURE_AMBIENT_OCCLUSION" value="5" enum="Feature">
-			Constant for setting [member ao_enabled].
-		</constant>
-		<constant name="FEATURE_HEIGHT_MAPPING" value="6" enum="Feature">
-			Constant for setting [member heightmap_enabled].
-		</constant>
-		<constant name="FEATURE_SUBSURFACE_SCATTERING" value="7" enum="Feature">
-			Constant for setting [member subsurf_scatter_enabled].
-		</constant>
-		<constant name="FEATURE_SUBSURFACE_TRANSMITTANCE" value="8" enum="Feature">
-			Constant for setting [member subsurf_scatter_transmittance_enabled].
-		</constant>
-		<constant name="FEATURE_BACKLIGHT" value="9" enum="Feature">
-			Constant for setting [member backlight_enabled].
-		</constant>
-		<constant name="FEATURE_REFRACTION" value="10" enum="Feature">
-			Constant for setting [member refraction_enabled].
-		</constant>
-		<constant name="FEATURE_DETAIL" value="11" enum="Feature">
-			Constant for setting [member detail_enabled].
-		</constant>
-		<constant name="FEATURE_BENT_NORMAL_MAPPING" value="12" enum="Feature">
-			Constant for setting [member bent_normal_enabled].
-		</constant>
-		<constant name="FEATURE_MAX" value="13" enum="Feature">
-			Represents the size of the [enum Feature] enum.
-		</constant>
-		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
-			Default blend mode. The color of the object is blended over the background based on the object's alpha value.
-		</constant>
-		<constant name="BLEND_MODE_ADD" value="1" enum="BlendMode">
-			The color of the object is added to the background.
-		</constant>
-		<constant name="BLEND_MODE_SUB" value="2" enum="BlendMode">
-			The color of the object is subtracted from the background.
-		</constant>
-		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
-			The color of the object is multiplied by the background.
-		</constant>
-		<constant name="BLEND_MODE_PREMULT_ALPHA" value="4" enum="BlendMode">
-			The color of the object is added to the background and the alpha channel is used to mask out the background. This is effectively a hybrid of the blend mix and add modes, useful for effects like fire where you want the flame to add but the smoke to mix. By default, this works with unshaded materials using premultiplied textures. For shaded materials, use the [code]PREMUL_ALPHA_FACTOR[/code] built-in so that lighting can be modulated as well.
-		</constant>
-		<constant name="ALPHA_ANTIALIASING_OFF" value="0" enum="AlphaAntiAliasing">
-			Disables Alpha AntiAliasing for the material.
-		</constant>
-		<constant name="ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE" value="1" enum="AlphaAntiAliasing">
-			Enables AlphaToCoverage. Alpha values in the material are passed to the AntiAliasing sample mask.
-		</constant>
-		<constant name="ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE" value="2" enum="AlphaAntiAliasing">
-			Enables AlphaToCoverage and forces all non-zero alpha values to [code]1[/code]. Alpha values in the material are passed to the AntiAliasing sample mask.
-		</constant>
-		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0" enum="DepthDrawMode">
-			Default depth draw mode. Depth is drawn only for opaque objects during the opaque prepass (if any) and during the opaque pass.
-		</constant>
-		<constant name="DEPTH_DRAW_ALWAYS" value="1" enum="DepthDrawMode">
-			Objects will write to depth during the opaque and the transparent passes. Transparent objects that are close to the camera may obscure other transparent objects behind them.
-			[b]Note:[/b] This does not influence whether transparent objects are included in the depth prepass or not. For that, see [enum Transparency].
-		</constant>
-		<constant name="DEPTH_DRAW_DISABLED" value="2" enum="DepthDrawMode">
-			Objects will not write their depth to the depth buffer, even during the depth prepass (if enabled).
-		</constant>
-		<constant name="DEPTH_TEST_DEFAULT" value="0" enum="DepthTest">
-			Depth test will discard the pixel if it is behind other pixels.
-		</constant>
-		<constant name="DEPTH_TEST_INVERTED" value="1" enum="DepthTest">
-			Depth test will discard the pixel if it is in front of other pixels. Useful for stencil effects.
-		</constant>
-		<constant name="CULL_BACK" value="0" enum="CullMode">
-			Default cull mode. The back of the object is culled when not visible. Back face triangles will be culled when facing the camera. This results in only the front side of triangles being drawn. For closed-surface meshes, this means that only the exterior of the mesh will be visible.
-		</constant>
-		<constant name="CULL_FRONT" value="1" enum="CullMode">
-			Front face triangles will be culled when facing the camera. This results in only the back side of triangles being drawn. For closed-surface meshes, this means that the interior of the mesh will be drawn instead of the exterior.
-		</constant>
-		<constant name="CULL_DISABLED" value="2" enum="CullMode">
-			No face culling is performed; both the front face and back face will be visible.
-		</constant>
-		<constant name="FLAG_DISABLE_DEPTH_TEST" value="0" enum="Flags">
-			Disables the depth test, so this object is drawn on top of all others drawn before it. This puts the object in the transparent draw pass where it is sorted based on distance to camera. Objects drawn after it in the draw order may cover it. This also disables writing to depth.
-		</constant>
-		<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="1" enum="Flags">
-			Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh.
-		</constant>
-		<constant name="FLAG_SRGB_VERTEX_COLOR" value="2" enum="Flags">
-			Vertex colors are considered to be stored in nonlinear sRGB encoding and are converted to linear encoding during rendering. See also [member vertex_color_is_srgb].
-			[b]Note:[/b] Only effective when using the Forward+ and Mobile rendering methods.
-		</constant>
-		<constant name="FLAG_USE_POINT_SIZE" value="3" enum="Flags">
-			Uses point size to alter the size of primitive points. Also changes the albedo texture lookup to use [code]POINT_COORD[/code] instead of [code]UV[/code].
-		</constant>
-		<constant name="FLAG_FIXED_SIZE" value="4" enum="Flags">
-			Object is scaled by depth so that it always appears the same size on screen.
-		</constant>
-		<constant name="FLAG_BILLBOARD_KEEP_SCALE" value="5" enum="Flags">
-			Shader will keep the scale set for the mesh. Otherwise the scale is lost when billboarding. Only applies when [member billboard_mode] is [constant BILLBOARD_ENABLED].
-		</constant>
-		<constant name="FLAG_UV1_USE_TRIPLANAR" value="6" enum="Flags">
-			Use triplanar texture lookup for all texture lookups that would normally use [code]UV[/code].
-		</constant>
-		<constant name="FLAG_UV2_USE_TRIPLANAR" value="7" enum="Flags">
-			Use triplanar texture lookup for all texture lookups that would normally use [code]UV2[/code].
-		</constant>
-		<constant name="FLAG_UV1_USE_WORLD_TRIPLANAR" value="8" enum="Flags">
-			Use triplanar texture lookup for all texture lookups that would normally use [code]UV[/code].
-		</constant>
-		<constant name="FLAG_UV2_USE_WORLD_TRIPLANAR" value="9" enum="Flags">
-			Use triplanar texture lookup for all texture lookups that would normally use [code]UV2[/code].
-		</constant>
-		<constant name="FLAG_AO_ON_UV2" value="10" enum="Flags">
-			Use [code]UV2[/code] coordinates to look up from the [member ao_texture].
-		</constant>
-		<constant name="FLAG_EMISSION_ON_UV2" value="11" enum="Flags">
-			Use [code]UV2[/code] coordinates to look up from the [member emission_texture].
-		</constant>
-		<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="12" enum="Flags">
-			Forces the shader to convert albedo from nonlinear sRGB encoding to linear encoding. See also [member albedo_texture_force_srgb].
-		</constant>
-		<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="13" enum="Flags">
-			Disables receiving shadows from other objects.
-		</constant>
-		<constant name="FLAG_DISABLE_AMBIENT_LIGHT" value="14" enum="Flags">
-			Disables receiving ambient light.
-		</constant>
-		<constant name="FLAG_USE_SHADOW_TO_OPACITY" value="15" enum="Flags">
-			Enables the shadow to opacity feature.
-		</constant>
-		<constant name="FLAG_USE_TEXTURE_REPEAT" value="16" enum="Flags">
-			Enables the texture to repeat when UV coordinates are outside the 0-1 range. If using one of the linear filtering modes, this can result in artifacts at the edges of a texture when the sampler filters across the edges of the texture.
-		</constant>
-		<constant name="FLAG_INVERT_HEIGHTMAP" value="17" enum="Flags">
-			Invert values read from a depth texture to convert them to height values (heightmap).
-		</constant>
-		<constant name="FLAG_SUBSURFACE_MODE_SKIN" value="18" enum="Flags">
-			Enables the skin mode for subsurface scattering which is used to improve the look of subsurface scattering when used for human skin.
-		</constant>
-		<constant name="FLAG_PARTICLE_TRAILS_MODE" value="19" enum="Flags">
-			Enables parts of the shader required for [GPUParticles3D] trails to function. This also requires using a mesh with appropriate skinning, such as [RibbonTrailMesh] or [TubeTrailMesh]. Enabling this feature outside of materials used in [GPUParticles3D] meshes will break material rendering.
-		</constant>
-		<constant name="FLAG_ALBEDO_TEXTURE_MSDF" value="20" enum="Flags">
-			Enables multichannel signed distance field rendering shader.
-		</constant>
-		<constant name="FLAG_DISABLE_FOG" value="21" enum="Flags">
-			Disables receiving depth-based or volumetric fog.
-		</constant>
-		<constant name="FLAG_DISABLE_SPECULAR_OCCLUSION" value="22" enum="Flags">
-			Disables specular occlusion.
-		</constant>
-		<constant name="FLAG_USE_Z_CLIP_SCALE" value="23" enum="Flags">
-			Enables using [member z_clip_scale].
-		</constant>
-		<constant name="FLAG_USE_FOV_OVERRIDE" value="24" enum="Flags">
-			Enables using [member fov_override].
-		</constant>
-		<constant name="FLAG_MAX" value="25" enum="Flags">
-			Represents the size of the [enum Flags] enum.
-		</constant>
-		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
-			Default diffuse scattering algorithm.
-		</constant>
-		<constant name="DIFFUSE_LAMBERT" value="1" enum="DiffuseMode">
-			Diffuse scattering ignores roughness.
-		</constant>
-		<constant name="DIFFUSE_LAMBERT_WRAP" value="2" enum="DiffuseMode">
-			Extends Lambert to cover more than 90 degrees when roughness increases.
-		</constant>
-		<constant name="DIFFUSE_TOON" value="3" enum="DiffuseMode">
-			Uses a hard cut for lighting, with smoothing affected by roughness.
-		</constant>
-		<constant name="SPECULAR_SCHLICK_GGX" value="0" enum="SpecularMode">
-			Default specular blob.
-			[b]Note:[/b] Forward+ uses multiscattering for more accurate reflections, although the impact of multiscattering is more noticeable on rough metallic surfaces than on smooth, non-metallic surfaces.
-			[b]Note:[/b] Mobile and Compatibility don't perform multiscattering for performance reasons. Instead, they perform single scattering, which means rough metallic surfaces may look slightly darker than intended.
-		</constant>
-		<constant name="SPECULAR_TOON" value="1" enum="SpecularMode">
-			Toon blob which changes size based on roughness.
-		</constant>
-		<constant name="SPECULAR_DISABLED" value="2" enum="SpecularMode">
-			No specular blob. This is slightly faster to render than other specular modes.
-		</constant>
-		<constant name="BILLBOARD_DISABLED" value="0" enum="BillboardMode">
-			Billboard mode is disabled.
-		</constant>
-		<constant name="BILLBOARD_ENABLED" value="1" enum="BillboardMode">
-			The object's Z axis will always face the camera.
-		</constant>
-		<constant name="BILLBOARD_FIXED_Y" value="2" enum="BillboardMode">
-			The object's X axis will always face the camera.
-		</constant>
-		<constant name="BILLBOARD_PARTICLES" value="3" enum="BillboardMode">
-			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes (flipbook animation). Enables [code]particles_anim_*[/code] properties.
-			The [member ParticleProcessMaterial.anim_speed_min] or [member CPUParticles3D.anim_speed_min] should also be set to a value bigger than zero for the animation to play.
-		</constant>
-		<constant name="TEXTURE_CHANNEL_RED" value="0" enum="TextureChannel">
-			Used to read from the red channel of a texture.
-		</constant>
-		<constant name="TEXTURE_CHANNEL_GREEN" value="1" enum="TextureChannel">
-			Used to read from the green channel of a texture.
-		</constant>
-		<constant name="TEXTURE_CHANNEL_BLUE" value="2" enum="TextureChannel">
-			Used to read from the blue channel of a texture.
-		</constant>
-		<constant name="TEXTURE_CHANNEL_ALPHA" value="3" enum="TextureChannel">
-			Used to read from the alpha channel of a texture.
-		</constant>
-		<constant name="TEXTURE_CHANNEL_GRAYSCALE" value="4" enum="TextureChannel">
-			Used to read from the linear (non-perceptual) average of the red, green and blue channels of a texture.
-		</constant>
-		<constant name="EMISSION_OP_ADD" value="0" enum="EmissionOperator">
-			Adds the emission color to the color from the emission texture.
-		</constant>
-		<constant name="EMISSION_OP_MULTIPLY" value="1" enum="EmissionOperator">
-			Multiplies the emission color by the color from the emission texture.
-		</constant>
-		<constant name="DISTANCE_FADE_DISABLED" value="0" enum="DistanceFadeMode">
-			Do not use distance fade.
-		</constant>
-		<constant name="DISTANCE_FADE_PIXEL_ALPHA" value="1" enum="DistanceFadeMode">
-			Smoothly fades the object out based on each pixel's distance from the camera using the alpha channel.
-		</constant>
-		<constant name="DISTANCE_FADE_PIXEL_DITHER" value="2" enum="DistanceFadeMode">
-			Smoothly fades the object out based on each pixel's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA].
-		</constant>
-		<constant name="DISTANCE_FADE_OBJECT_DITHER" value="3" enum="DistanceFadeMode">
-			Smoothly fades the object out based on the object's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA] and [constant DISTANCE_FADE_PIXEL_DITHER].
-		</constant>
-		<constant name="STENCIL_MODE_DISABLED" value="0" enum="StencilMode">
-			Disables stencil operations.
-		</constant>
-		<constant name="STENCIL_MODE_OUTLINE" value="1" enum="StencilMode">
-			Stencil preset which applies an outline to the object.
-			[b]Note:[/b] Requires a [member Material.next_pass] material which will be automatically applied. Any manual changes made to [member Material.next_pass] will be lost when the stencil properties are modified or the scene is reloaded. To safely apply a [member Material.next_pass] material on a material that uses stencil presets, use [member GeometryInstance3D.material_overlay] instead.
-		</constant>
-		<constant name="STENCIL_MODE_XRAY" value="2" enum="StencilMode">
-			Stencil preset which shows a silhouette of the object behind walls.
-			[b]Note:[/b] Requires a [member Material.next_pass] material which will be automatically applied. Any manual changes made to [member Material.next_pass] will be lost when the stencil properties are modified or the scene is reloaded. To safely apply a [member Material.next_pass] material on a material that uses stencil presets, use [member GeometryInstance3D.material_overlay] instead.
-		</constant>
-		<constant name="STENCIL_MODE_CUSTOM" value="3" enum="StencilMode">
-			Enables stencil operations without a preset.
-		</constant>
-		<constant name="STENCIL_FLAG_READ" value="1" enum="StencilFlags">
-			The material will only be rendered where it passes a stencil comparison with existing stencil buffer values.
-		</constant>
-		<constant name="STENCIL_FLAG_WRITE" value="2" enum="StencilFlags">
-			The material will write the reference value to the stencil buffer where it passes the depth test.
-		</constant>
-		<constant name="STENCIL_FLAG_WRITE_DEPTH_FAIL" value="4" enum="StencilFlags">
-			The material will write the reference value to the stencil buffer where it fails the depth test.
-		</constant>
-		<constant name="STENCIL_COMPARE_ALWAYS" value="0" enum="StencilCompare">
-			Always passes the stencil test.
-		</constant>
-		<constant name="STENCIL_COMPARE_LESS" value="1" enum="StencilCompare">
-			Passes the stencil test when the reference value is less than the existing stencil value.
-		</constant>
-		<constant name="STENCIL_COMPARE_EQUAL" value="2" enum="StencilCompare">
-			Passes the stencil test when the reference value is equal to the existing stencil value.
-		</constant>
-		<constant name="STENCIL_COMPARE_LESS_OR_EQUAL" value="3" enum="StencilCompare">
-			Passes the stencil test when the reference value is less than or equal to the existing stencil value.
-		</constant>
-		<constant name="STENCIL_COMPARE_GREATER" value="4" enum="StencilCompare">
-			Passes the stencil test when the reference value is greater than the existing stencil value.
-		</constant>
-		<constant name="STENCIL_COMPARE_NOT_EQUAL" value="5" enum="StencilCompare">
-			Passes the stencil test when the reference value is not equal to the existing stencil value.
-		</constant>
-		<constant name="STENCIL_COMPARE_GREATER_OR_EQUAL" value="6" enum="StencilCompare">
-			Passes the stencil test when the reference value is greater than or equal to the existing stencil value.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AlphaAntiAliasing">
+			<constant name="ALPHA_ANTIALIASING_OFF" value="0">
+				Disables Alpha AntiAliasing for the material.
+			</constant>
+			<constant name="ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE" value="1">
+				Enables AlphaToCoverage. Alpha values in the material are passed to the AntiAliasing sample mask.
+			</constant>
+			<constant name="ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE" value="2">
+				Enables AlphaToCoverage and forces all non-zero alpha values to [code]1[/code]. Alpha values in the material are passed to the AntiAliasing sample mask.
+			</constant>
+		</enum>
+		<enum name="BillboardMode">
+			<constant name="BILLBOARD_DISABLED" value="0">
+				Billboard mode is disabled.
+			</constant>
+			<constant name="BILLBOARD_ENABLED" value="1">
+				The object's Z axis will always face the camera.
+			</constant>
+			<constant name="BILLBOARD_FIXED_Y" value="2">
+				The object's X axis will always face the camera.
+			</constant>
+			<constant name="BILLBOARD_PARTICLES" value="3">
+				Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes (flipbook animation). Enables [code]particles_anim_*[/code] properties.
+				The [member ParticleProcessMaterial.anim_speed_min] or [member CPUParticles3D.anim_speed_min] should also be set to a value bigger than zero for the animation to play.
+			</constant>
+		</enum>
+		<enum name="BlendMode">
+			<constant name="BLEND_MODE_MIX" value="0">
+				Default blend mode. The color of the object is blended over the background based on the object's alpha value.
+			</constant>
+			<constant name="BLEND_MODE_ADD" value="1">
+				The color of the object is added to the background.
+			</constant>
+			<constant name="BLEND_MODE_SUB" value="2">
+				The color of the object is subtracted from the background.
+			</constant>
+			<constant name="BLEND_MODE_MUL" value="3">
+				The color of the object is multiplied by the background.
+			</constant>
+			<constant name="BLEND_MODE_PREMULT_ALPHA" value="4">
+				The color of the object is added to the background and the alpha channel is used to mask out the background. This is effectively a hybrid of the blend mix and add modes, useful for effects like fire where you want the flame to add but the smoke to mix. By default, this works with unshaded materials using premultiplied textures. For shaded materials, use the [code]PREMUL_ALPHA_FACTOR[/code] built-in so that lighting can be modulated as well.
+			</constant>
+		</enum>
+		<enum name="CullMode">
+			<constant name="CULL_BACK" value="0">
+				Default cull mode. The back of the object is culled when not visible. Back face triangles will be culled when facing the camera. This results in only the front side of triangles being drawn. For closed-surface meshes, this means that only the exterior of the mesh will be visible.
+			</constant>
+			<constant name="CULL_FRONT" value="1">
+				Front face triangles will be culled when facing the camera. This results in only the back side of triangles being drawn. For closed-surface meshes, this means that the interior of the mesh will be drawn instead of the exterior.
+			</constant>
+			<constant name="CULL_DISABLED" value="2">
+				No face culling is performed; both the front face and back face will be visible.
+			</constant>
+		</enum>
+		<enum name="DepthDrawMode">
+			<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0">
+				Default depth draw mode. Depth is drawn only for opaque objects during the opaque prepass (if any) and during the opaque pass.
+			</constant>
+			<constant name="DEPTH_DRAW_ALWAYS" value="1">
+				Objects will write to depth during the opaque and the transparent passes. Transparent objects that are close to the camera may obscure other transparent objects behind them.
+				[b]Note:[/b] This does not influence whether transparent objects are included in the depth prepass or not. For that, see [enum Transparency].
+			</constant>
+			<constant name="DEPTH_DRAW_DISABLED" value="2">
+				Objects will not write their depth to the depth buffer, even during the depth prepass (if enabled).
+			</constant>
+		</enum>
+		<enum name="DepthTest">
+			<constant name="DEPTH_TEST_DEFAULT" value="0">
+				Depth test will discard the pixel if it is behind other pixels.
+			</constant>
+			<constant name="DEPTH_TEST_INVERTED" value="1">
+				Depth test will discard the pixel if it is in front of other pixels. Useful for stencil effects.
+			</constant>
+		</enum>
+		<enum name="DetailUV">
+			<constant name="DETAIL_UV_1" value="0">
+				Use [code]UV[/code] with the detail texture.
+			</constant>
+			<constant name="DETAIL_UV_2" value="1">
+				Use [code]UV2[/code] with the detail texture.
+			</constant>
+		</enum>
+		<enum name="DiffuseMode">
+			<constant name="DIFFUSE_BURLEY" value="0">
+				Default diffuse scattering algorithm.
+			</constant>
+			<constant name="DIFFUSE_LAMBERT" value="1">
+				Diffuse scattering ignores roughness.
+			</constant>
+			<constant name="DIFFUSE_LAMBERT_WRAP" value="2">
+				Extends Lambert to cover more than 90 degrees when roughness increases.
+			</constant>
+			<constant name="DIFFUSE_TOON" value="3">
+				Uses a hard cut for lighting, with smoothing affected by roughness.
+			</constant>
+		</enum>
+		<enum name="DistanceFadeMode">
+			<constant name="DISTANCE_FADE_DISABLED" value="0">
+				Do not use distance fade.
+			</constant>
+			<constant name="DISTANCE_FADE_PIXEL_ALPHA" value="1">
+				Smoothly fades the object out based on each pixel's distance from the camera using the alpha channel.
+			</constant>
+			<constant name="DISTANCE_FADE_PIXEL_DITHER" value="2">
+				Smoothly fades the object out based on each pixel's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA].
+			</constant>
+			<constant name="DISTANCE_FADE_OBJECT_DITHER" value="3">
+				Smoothly fades the object out based on the object's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA] and [constant DISTANCE_FADE_PIXEL_DITHER].
+			</constant>
+		</enum>
+		<enum name="EmissionOperator">
+			<constant name="EMISSION_OP_ADD" value="0">
+				Adds the emission color to the color from the emission texture.
+			</constant>
+			<constant name="EMISSION_OP_MULTIPLY" value="1">
+				Multiplies the emission color by the color from the emission texture.
+			</constant>
+		</enum>
+		<enum name="Feature">
+			<constant name="FEATURE_EMISSION" value="0">
+				Constant for setting [member emission_enabled].
+			</constant>
+			<constant name="FEATURE_NORMAL_MAPPING" value="1">
+				Constant for setting [member normal_enabled].
+			</constant>
+			<constant name="FEATURE_RIM" value="2">
+				Constant for setting [member rim_enabled].
+			</constant>
+			<constant name="FEATURE_CLEARCOAT" value="3">
+				Constant for setting [member clearcoat_enabled].
+			</constant>
+			<constant name="FEATURE_ANISOTROPY" value="4">
+				Constant for setting [member anisotropy_enabled].
+			</constant>
+			<constant name="FEATURE_AMBIENT_OCCLUSION" value="5">
+				Constant for setting [member ao_enabled].
+			</constant>
+			<constant name="FEATURE_HEIGHT_MAPPING" value="6">
+				Constant for setting [member heightmap_enabled].
+			</constant>
+			<constant name="FEATURE_SUBSURFACE_SCATTERING" value="7">
+				Constant for setting [member subsurf_scatter_enabled].
+			</constant>
+			<constant name="FEATURE_SUBSURFACE_TRANSMITTANCE" value="8">
+				Constant for setting [member subsurf_scatter_transmittance_enabled].
+			</constant>
+			<constant name="FEATURE_BACKLIGHT" value="9">
+				Constant for setting [member backlight_enabled].
+			</constant>
+			<constant name="FEATURE_REFRACTION" value="10">
+				Constant for setting [member refraction_enabled].
+			</constant>
+			<constant name="FEATURE_DETAIL" value="11">
+				Constant for setting [member detail_enabled].
+			</constant>
+			<constant name="FEATURE_BENT_NORMAL_MAPPING" value="12">
+				Constant for setting [member bent_normal_enabled].
+			</constant>
+			<constant name="FEATURE_MAX" value="13">
+				Represents the size of the [enum Feature] enum.
+			</constant>
+		</enum>
+		<enum name="Flags">
+			<constant name="FLAG_DISABLE_DEPTH_TEST" value="0">
+				Disables the depth test, so this object is drawn on top of all others drawn before it. This puts the object in the transparent draw pass where it is sorted based on distance to camera. Objects drawn after it in the draw order may cover it. This also disables writing to depth.
+			</constant>
+			<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="1">
+				Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh.
+			</constant>
+			<constant name="FLAG_SRGB_VERTEX_COLOR" value="2">
+				Vertex colors are considered to be stored in nonlinear sRGB encoding and are converted to linear encoding during rendering. See also [member vertex_color_is_srgb].
+				[b]Note:[/b] Only effective when using the Forward+ and Mobile rendering methods.
+			</constant>
+			<constant name="FLAG_USE_POINT_SIZE" value="3">
+				Uses point size to alter the size of primitive points. Also changes the albedo texture lookup to use [code]POINT_COORD[/code] instead of [code]UV[/code].
+			</constant>
+			<constant name="FLAG_FIXED_SIZE" value="4">
+				Object is scaled by depth so that it always appears the same size on screen.
+			</constant>
+			<constant name="FLAG_BILLBOARD_KEEP_SCALE" value="5">
+				Shader will keep the scale set for the mesh. Otherwise the scale is lost when billboarding. Only applies when [member billboard_mode] is [constant BILLBOARD_ENABLED].
+			</constant>
+			<constant name="FLAG_UV1_USE_TRIPLANAR" value="6">
+				Use triplanar texture lookup for all texture lookups that would normally use [code]UV[/code].
+			</constant>
+			<constant name="FLAG_UV2_USE_TRIPLANAR" value="7">
+				Use triplanar texture lookup for all texture lookups that would normally use [code]UV2[/code].
+			</constant>
+			<constant name="FLAG_UV1_USE_WORLD_TRIPLANAR" value="8">
+				Use triplanar texture lookup for all texture lookups that would normally use [code]UV[/code].
+			</constant>
+			<constant name="FLAG_UV2_USE_WORLD_TRIPLANAR" value="9">
+				Use triplanar texture lookup for all texture lookups that would normally use [code]UV2[/code].
+			</constant>
+			<constant name="FLAG_AO_ON_UV2" value="10">
+				Use [code]UV2[/code] coordinates to look up from the [member ao_texture].
+			</constant>
+			<constant name="FLAG_EMISSION_ON_UV2" value="11">
+				Use [code]UV2[/code] coordinates to look up from the [member emission_texture].
+			</constant>
+			<constant name="FLAG_ALBEDO_TEXTURE_FORCE_SRGB" value="12">
+				Forces the shader to convert albedo from nonlinear sRGB encoding to linear encoding. See also [member albedo_texture_force_srgb].
+			</constant>
+			<constant name="FLAG_DONT_RECEIVE_SHADOWS" value="13">
+				Disables receiving shadows from other objects.
+			</constant>
+			<constant name="FLAG_DISABLE_AMBIENT_LIGHT" value="14">
+				Disables receiving ambient light.
+			</constant>
+			<constant name="FLAG_USE_SHADOW_TO_OPACITY" value="15">
+				Enables the shadow to opacity feature.
+			</constant>
+			<constant name="FLAG_USE_TEXTURE_REPEAT" value="16">
+				Enables the texture to repeat when UV coordinates are outside the 0-1 range. If using one of the linear filtering modes, this can result in artifacts at the edges of a texture when the sampler filters across the edges of the texture.
+			</constant>
+			<constant name="FLAG_INVERT_HEIGHTMAP" value="17">
+				Invert values read from a depth texture to convert them to height values (heightmap).
+			</constant>
+			<constant name="FLAG_SUBSURFACE_MODE_SKIN" value="18">
+				Enables the skin mode for subsurface scattering which is used to improve the look of subsurface scattering when used for human skin.
+			</constant>
+			<constant name="FLAG_PARTICLE_TRAILS_MODE" value="19">
+				Enables parts of the shader required for [GPUParticles3D] trails to function. This also requires using a mesh with appropriate skinning, such as [RibbonTrailMesh] or [TubeTrailMesh]. Enabling this feature outside of materials used in [GPUParticles3D] meshes will break material rendering.
+			</constant>
+			<constant name="FLAG_ALBEDO_TEXTURE_MSDF" value="20">
+				Enables multichannel signed distance field rendering shader.
+			</constant>
+			<constant name="FLAG_DISABLE_FOG" value="21">
+				Disables receiving depth-based or volumetric fog.
+			</constant>
+			<constant name="FLAG_DISABLE_SPECULAR_OCCLUSION" value="22">
+				Disables specular occlusion.
+			</constant>
+			<constant name="FLAG_USE_Z_CLIP_SCALE" value="23">
+				Enables using [member z_clip_scale].
+			</constant>
+			<constant name="FLAG_USE_FOV_OVERRIDE" value="24">
+				Enables using [member fov_override].
+			</constant>
+			<constant name="FLAG_MAX" value="25">
+				Represents the size of the [enum Flags] enum.
+			</constant>
+		</enum>
+		<enum name="ShadingMode">
+			<constant name="SHADING_MODE_UNSHADED" value="0">
+				The object will not receive shadows. This is the fastest to render, but it disables all interactions with lights.
+			</constant>
+			<constant name="SHADING_MODE_PER_PIXEL" value="1">
+				The object will be shaded per pixel. Useful for realistic shading effects.
+			</constant>
+			<constant name="SHADING_MODE_PER_VERTEX" value="2">
+				The object will be shaded per vertex. Useful when you want cheaper shaders and do not care about visual quality.
+			</constant>
+			<constant name="SHADING_MODE_MAX" value="3">
+				Represents the size of the [enum ShadingMode] enum.
+			</constant>
+		</enum>
+		<enum name="SpecularMode">
+			<constant name="SPECULAR_SCHLICK_GGX" value="0">
+				Default specular blob.
+				[b]Note:[/b] Forward+ uses multiscattering for more accurate reflections, although the impact of multiscattering is more noticeable on rough metallic surfaces than on smooth, non-metallic surfaces.
+				[b]Note:[/b] Mobile and Compatibility don't perform multiscattering for performance reasons. Instead, they perform single scattering, which means rough metallic surfaces may look slightly darker than intended.
+			</constant>
+			<constant name="SPECULAR_TOON" value="1">
+				Toon blob which changes size based on roughness.
+			</constant>
+			<constant name="SPECULAR_DISABLED" value="2">
+				No specular blob. This is slightly faster to render than other specular modes.
+			</constant>
+		</enum>
+		<enum name="StencilCompare">
+			<constant name="STENCIL_COMPARE_ALWAYS" value="0">
+				Always passes the stencil test.
+			</constant>
+			<constant name="STENCIL_COMPARE_LESS" value="1">
+				Passes the stencil test when the reference value is less than the existing stencil value.
+			</constant>
+			<constant name="STENCIL_COMPARE_EQUAL" value="2">
+				Passes the stencil test when the reference value is equal to the existing stencil value.
+			</constant>
+			<constant name="STENCIL_COMPARE_LESS_OR_EQUAL" value="3">
+				Passes the stencil test when the reference value is less than or equal to the existing stencil value.
+			</constant>
+			<constant name="STENCIL_COMPARE_GREATER" value="4">
+				Passes the stencil test when the reference value is greater than the existing stencil value.
+			</constant>
+			<constant name="STENCIL_COMPARE_NOT_EQUAL" value="5">
+				Passes the stencil test when the reference value is not equal to the existing stencil value.
+			</constant>
+			<constant name="STENCIL_COMPARE_GREATER_OR_EQUAL" value="6">
+				Passes the stencil test when the reference value is greater than or equal to the existing stencil value.
+			</constant>
+		</enum>
+		<enum name="StencilFlags">
+			<constant name="STENCIL_FLAG_READ" value="1">
+				The material will only be rendered where it passes a stencil comparison with existing stencil buffer values.
+			</constant>
+			<constant name="STENCIL_FLAG_WRITE" value="2">
+				The material will write the reference value to the stencil buffer where it passes the depth test.
+			</constant>
+			<constant name="STENCIL_FLAG_WRITE_DEPTH_FAIL" value="4">
+				The material will write the reference value to the stencil buffer where it fails the depth test.
+			</constant>
+		</enum>
+		<enum name="StencilMode">
+			<constant name="STENCIL_MODE_DISABLED" value="0">
+				Disables stencil operations.
+			</constant>
+			<constant name="STENCIL_MODE_OUTLINE" value="1">
+				Stencil preset which applies an outline to the object.
+				[b]Note:[/b] Requires a [member Material.next_pass] material which will be automatically applied. Any manual changes made to [member Material.next_pass] will be lost when the stencil properties are modified or the scene is reloaded. To safely apply a [member Material.next_pass] material on a material that uses stencil presets, use [member GeometryInstance3D.material_overlay] instead.
+			</constant>
+			<constant name="STENCIL_MODE_XRAY" value="2">
+				Stencil preset which shows a silhouette of the object behind walls.
+				[b]Note:[/b] Requires a [member Material.next_pass] material which will be automatically applied. Any manual changes made to [member Material.next_pass] will be lost when the stencil properties are modified or the scene is reloaded. To safely apply a [member Material.next_pass] material on a material that uses stencil presets, use [member GeometryInstance3D.material_overlay] instead.
+			</constant>
+			<constant name="STENCIL_MODE_CUSTOM" value="3">
+				Enables stencil operations without a preset.
+			</constant>
+		</enum>
+		<enum name="TextureChannel">
+			<constant name="TEXTURE_CHANNEL_RED" value="0">
+				Used to read from the red channel of a texture.
+			</constant>
+			<constant name="TEXTURE_CHANNEL_GREEN" value="1">
+				Used to read from the green channel of a texture.
+			</constant>
+			<constant name="TEXTURE_CHANNEL_BLUE" value="2">
+				Used to read from the blue channel of a texture.
+			</constant>
+			<constant name="TEXTURE_CHANNEL_ALPHA" value="3">
+				Used to read from the alpha channel of a texture.
+			</constant>
+			<constant name="TEXTURE_CHANNEL_GRAYSCALE" value="4">
+				Used to read from the linear (non-perceptual) average of the red, green and blue channels of a texture.
+			</constant>
+		</enum>
+		<enum name="TextureFilter">
+			<constant name="TEXTURE_FILTER_NEAREST" value="0">
+				The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
+			</constant>
+			<constant name="TEXTURE_FILTER_LINEAR" value="1">
+				The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
+			</constant>
+			<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="2">
+				The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
+			</constant>
+			<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="3">
+				The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
+			</constant>
+			<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="4">
+				The texture filter reads from the nearest pixel and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look pixelated from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+			</constant>
+			<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="5">
+				The texture filter blends between the nearest 4 pixels and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look smooth from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+			</constant>
+			<constant name="TEXTURE_FILTER_MAX" value="6">
+				Represents the size of the [enum TextureFilter] enum.
+			</constant>
+		</enum>
+		<enum name="TextureParam">
+			<constant name="TEXTURE_ALBEDO" value="0">
+				Texture specifying per-pixel color.
+			</constant>
+			<constant name="TEXTURE_METALLIC" value="1">
+				Texture specifying per-pixel metallic value.
+			</constant>
+			<constant name="TEXTURE_ROUGHNESS" value="2">
+				Texture specifying per-pixel roughness value.
+			</constant>
+			<constant name="TEXTURE_EMISSION" value="3">
+				Texture specifying per-pixel emission color.
+			</constant>
+			<constant name="TEXTURE_NORMAL" value="4">
+				Texture specifying per-pixel normal vector.
+			</constant>
+			<constant name="TEXTURE_BENT_NORMAL" value="18">
+				Texture specifying per-pixel bent normal vector.
+			</constant>
+			<constant name="TEXTURE_RIM" value="5">
+				Texture specifying per-pixel rim value.
+			</constant>
+			<constant name="TEXTURE_CLEARCOAT" value="6">
+				Texture specifying per-pixel clearcoat value.
+			</constant>
+			<constant name="TEXTURE_FLOWMAP" value="7">
+				Texture specifying per-pixel flowmap direction for use with [member anisotropy].
+			</constant>
+			<constant name="TEXTURE_AMBIENT_OCCLUSION" value="8">
+				Texture specifying per-pixel ambient occlusion value.
+			</constant>
+			<constant name="TEXTURE_HEIGHTMAP" value="9">
+				Texture specifying per-pixel height.
+			</constant>
+			<constant name="TEXTURE_SUBSURFACE_SCATTERING" value="10">
+				Texture specifying per-pixel subsurface scattering.
+			</constant>
+			<constant name="TEXTURE_SUBSURFACE_TRANSMITTANCE" value="11">
+				Texture specifying per-pixel transmittance for subsurface scattering.
+			</constant>
+			<constant name="TEXTURE_BACKLIGHT" value="12">
+				Texture specifying per-pixel backlight color.
+			</constant>
+			<constant name="TEXTURE_REFRACTION" value="13">
+				Texture specifying per-pixel refraction strength.
+			</constant>
+			<constant name="TEXTURE_DETAIL_MASK" value="14">
+				Texture specifying per-pixel detail mask blending value.
+			</constant>
+			<constant name="TEXTURE_DETAIL_ALBEDO" value="15">
+				Texture specifying per-pixel detail color.
+			</constant>
+			<constant name="TEXTURE_DETAIL_NORMAL" value="16">
+				Texture specifying per-pixel detail normal.
+			</constant>
+			<constant name="TEXTURE_ORM" value="17">
+				Texture holding ambient occlusion, roughness, and metallic.
+			</constant>
+			<constant name="TEXTURE_MAX" value="19">
+				Represents the size of the [enum TextureParam] enum.
+			</constant>
+		</enum>
+		<enum name="Transparency">
+			<constant name="TRANSPARENCY_DISABLED" value="0">
+				The material will not use transparency. This is the fastest to render.
+			</constant>
+			<constant name="TRANSPARENCY_ALPHA" value="1">
+				The material will use the texture's alpha values for transparency. This is the slowest to render, and disables shadow casting.
+			</constant>
+			<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" keywords="TRANSPARENCY_ALPHA_TEST">
+				The material will cut off all values below a threshold, the rest will remain opaque. The opaque portions will be rendered in the depth prepass. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows. For textures using this mode see the [code]Preserve Alpha Test Coverage[/code] option in the texture import settings to improve distant rendering and popping.
+			</constant>
+			<constant name="TRANSPARENCY_ALPHA_HASH" value="3">
+				The material will cut off all values below a spatially-deterministic threshold, the rest will remain opaque. This is faster to render than alpha blending, but slower than opaque rendering. This also supports casting shadows. Alpha hashing is suited for hair rendering.
+			</constant>
+			<constant name="TRANSPARENCY_ALPHA_DEPTH_PRE_PASS" value="4">
+				The material will use the texture's alpha value for transparency, but will discard fragments with an alpha of less than 0.99 during the depth prepass and fragments with an alpha less than 0.1 during the shadow pass. This also supports casting shadows.
+			</constant>
+			<constant name="TRANSPARENCY_MAX" value="5">
+				Represents the size of the [enum Transparency] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

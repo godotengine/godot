@@ -191,15 +191,17 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="DEEP_DUPLICATE_NONE" value="0" enum="DeepDuplicateMode">
-			No subresources at all are duplicated. This is useful even in a deep duplication to have all the arrays and dictionaries duplicated but still pointing to the original resources.
-		</constant>
-		<constant name="DEEP_DUPLICATE_INTERNAL" value="1" enum="DeepDuplicateMode">
-			Only subresources without a path or with a scene-local path will be duplicated.
-		</constant>
-		<constant name="DEEP_DUPLICATE_ALL" value="2" enum="DeepDuplicateMode">
-			Every subresource found will be duplicated, even if it has a non-local path. In other words, even potentially big resources stored separately will be duplicated.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DeepDuplicateMode">
+			<constant name="DEEP_DUPLICATE_NONE" value="0">
+				No subresources at all are duplicated. This is useful even in a deep duplication to have all the arrays and dictionaries duplicated but still pointing to the original resources.
+			</constant>
+			<constant name="DEEP_DUPLICATE_INTERNAL" value="1">
+				Only subresources without a path or with a scene-local path will be duplicated.
+			</constant>
+			<constant name="DEEP_DUPLICATE_ALL" value="2">
+				Every subresource found will be duplicated, even if it has a non-local path. In other words, even potentially big resources stored separately will be duplicated.
+			</constant>
+		</enum>
+	</enums>
 </class>

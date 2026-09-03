@@ -208,15 +208,17 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="TANGENT_FREE" value="0" enum="TangentMode">
-			The tangent on this side of the point is user-defined.
-		</constant>
-		<constant name="TANGENT_LINEAR" value="1" enum="TangentMode">
-			The curve calculates the tangent on this side of the point as the slope halfway towards the adjacent point.
-		</constant>
-		<constant name="TANGENT_MODE_COUNT" value="2" enum="TangentMode">
-			The total number of available tangent modes.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="TangentMode">
+			<constant name="TANGENT_FREE" value="0">
+				The tangent on this side of the point is user-defined.
+			</constant>
+			<constant name="TANGENT_LINEAR" value="1">
+				The curve calculates the tangent on this side of the point as the slope halfway towards the adjacent point.
+			</constant>
+			<constant name="TANGENT_MODE_COUNT" value="2">
+				The total number of available tangent modes.
+			</constant>
+		</enum>
+	</enums>
 </class>

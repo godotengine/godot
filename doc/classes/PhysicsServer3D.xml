@@ -1456,491 +1456,529 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="JOINT_TYPE_PIN" value="0" enum="JointType">
-			The [Joint3D] is a [PinJoint3D].
-		</constant>
-		<constant name="JOINT_TYPE_HINGE" value="1" enum="JointType">
-			The [Joint3D] is a [HingeJoint3D].
-		</constant>
-		<constant name="JOINT_TYPE_SLIDER" value="2" enum="JointType">
-			The [Joint3D] is a [SliderJoint3D].
-		</constant>
-		<constant name="JOINT_TYPE_CONE_TWIST" value="3" enum="JointType">
-			The [Joint3D] is a [ConeTwistJoint3D].
-		</constant>
-		<constant name="JOINT_TYPE_6DOF" value="4" enum="JointType">
-			The [Joint3D] is a [Generic6DOFJoint3D].
-		</constant>
-		<constant name="JOINT_TYPE_MAX" value="5" enum="JointType">
-			Represents the size of the [enum JointType] enum.
-		</constant>
-		<constant name="PIN_JOINT_BIAS" value="0" enum="PinJointParam">
-			The strength with which the pinned objects try to stay in positional relation to each other. The higher, the stronger.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="PIN_JOINT_DAMPING" value="1" enum="PinJointParam">
-			The strength with which the pinned objects try to stay in velocity relation to each other. The higher, the stronger.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="PIN_JOINT_IMPULSE_CLAMP" value="2" enum="PinJointParam">
-			If above 0, this value is the maximum value for an impulse that this Joint3D puts on its ends.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="HINGE_JOINT_BIAS" value="0" enum="HingeJointParam">
-			The speed with which the two bodies get pulled together when they move in different directions.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="HINGE_JOINT_LIMIT_UPPER" value="1" enum="HingeJointParam">
-			The maximum rotation across the Hinge.
-		</constant>
-		<constant name="HINGE_JOINT_LIMIT_LOWER" value="2" enum="HingeJointParam">
-			The minimum rotation across the Hinge.
-		</constant>
-		<constant name="HINGE_JOINT_LIMIT_BIAS" value="3" enum="HingeJointParam">
-			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="HINGE_JOINT_LIMIT_SOFTNESS" value="4" enum="HingeJointParam">
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="HINGE_JOINT_LIMIT_RELAXATION" value="5" enum="HingeJointParam">
-			The lower this value, the more the rotation gets slowed down.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="HINGE_JOINT_MOTOR_TARGET_VELOCITY" value="6" enum="HingeJointParam">
-			Target speed for the motor.
-		</constant>
-		<constant name="HINGE_JOINT_MOTOR_MAX_IMPULSE" value="7" enum="HingeJointParam">
-			Maximum acceleration for the motor.
-		</constant>
-		<constant name="HINGE_JOINT_FLAG_USE_LIMIT" value="0" enum="HingeJointFlag">
-			If [code]true[/code], the Hinge has a maximum and a minimum rotation.
-		</constant>
-		<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1" enum="HingeJointFlag">
-			If [code]true[/code], a motor turns the Hinge.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_UPPER" value="0" enum="SliderJointParam">
-			The maximum difference between the pivot points on their X axis before damping happens.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_LOWER" value="1" enum="SliderJointParam">
-			The minimum difference between the pivot points on their X axis before damping happens.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS" value="2" enum="SliderJointParam">
-			A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3" enum="SliderJointParam">
-			The amount of restitution once the limits are surpassed. The lower, the more velocity-energy gets lost.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4" enum="SliderJointParam">
-			The amount of damping once the slider limits are surpassed.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_MOTION_SOFTNESS" value="5" enum="SliderJointParam">
-			A factor applied to the movement across the slider axis as long as the slider is in the limits. The lower, the slower the movement.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_MOTION_RESTITUTION" value="6" enum="SliderJointParam">
-			The amount of restitution inside the slider limits.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_MOTION_DAMPING" value="7" enum="SliderJointParam">
-			The amount of damping inside the slider limits.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS" value="8" enum="SliderJointParam">
-			A factor applied to the movement across axes orthogonal to the slider.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION" value="9" enum="SliderJointParam">
-			The amount of restitution when movement is across axes orthogonal to the slider.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING" value="10" enum="SliderJointParam">
-			The amount of damping when movement is across axes orthogonal to the slider.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_UPPER" value="11" enum="SliderJointParam">
-			The upper limit of rotation in the slider.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_LOWER" value="12" enum="SliderJointParam">
-			The lower limit of rotation in the slider.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS" value="13" enum="SliderJointParam">
-			A factor applied to the all rotation once the limit is surpassed.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION" value="14" enum="SliderJointParam">
-			The amount of restitution of the rotation when the limit is surpassed.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_LIMIT_DAMPING" value="15" enum="SliderJointParam">
-			The amount of damping of the rotation when the limit is surpassed.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS" value="16" enum="SliderJointParam">
-			A factor that gets applied to the all rotation in the limits.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION" value="17" enum="SliderJointParam">
-			The amount of restitution of the rotation in the limits.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_MOTION_DAMPING" value="18" enum="SliderJointParam">
-			The amount of damping of the rotation in the limits.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS" value="19" enum="SliderJointParam">
-			A factor that gets applied to the all rotation across axes orthogonal to the slider.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION" value="20" enum="SliderJointParam">
-			The amount of restitution of the rotation across axes orthogonal to the slider.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING" value="21" enum="SliderJointParam">
-			The amount of damping of the rotation across axes orthogonal to the slider.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SLIDER_JOINT_MAX" value="22" enum="SliderJointParam">
-			Represents the size of the [enum SliderJointParam] enum.
-		</constant>
-		<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0" enum="ConeTwistJointParam">
-			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
-			The swing span defines, how much rotation will not get corrected along the swing axis.
-			Could be defined as looseness in the [ConeTwistJoint3D]. If below 0.05, this behavior is locked.
-		</constant>
-		<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1" enum="ConeTwistJointParam">
-			Twist is the rotation around the twist axis, this value defined how far the joint can twist. Twist is locked if below 0.05.
-		</constant>
-		<constant name="CONE_TWIST_JOINT_BIAS" value="2" enum="ConeTwistJointParam">
-			The speed with which the swing or twist will take place. The higher, the faster.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="CONE_TWIST_JOINT_SOFTNESS" value="3" enum="ConeTwistJointParam">
-			The ease with which the Joint3D twists, if it's too low, it takes more force to twist the joint.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="CONE_TWIST_JOINT_RELAXATION" value="4" enum="ConeTwistJointParam">
-			Defines, how fast the swing- and twist-speed-difference on both sides gets synced.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_LOWER_LIMIT" value="0" enum="G6DOFJointAxisParam">
-			The minimum difference between the pivot points' axes.
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_UPPER_LIMIT" value="1" enum="G6DOFJointAxisParam">
-			The maximum difference between the pivot points' axes.
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS" value="2" enum="G6DOFJointAxisParam">
-			A factor that gets applied to the movement across the axes. The lower, the slower the movement.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_RESTITUTION" value="3" enum="G6DOFJointAxisParam">
-			The amount of restitution on the axes movement. The lower, the more velocity-energy gets lost.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_DAMPING" value="4" enum="G6DOFJointAxisParam">
-			The amount of damping that happens at the linear motion across the axes.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY" value="5" enum="G6DOFJointAxisParam">
-			The velocity that the joint's linear motor will attempt to reach.
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="G6DOFJointAxisParam" deprecated="Use [constant G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT] instead, which applies in both spring and motor modes.">
-			The maximum force that the linear motor can apply while trying to reach the target velocity.
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_SPRING_STIFFNESS" value="7" enum="G6DOFJointAxisParam">
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_SPRING_DAMPING" value="8" enum="G6DOFJointAxisParam">
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT" value="9" enum="G6DOFJointAxisParam">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="10" enum="G6DOFJointAxisParam">
-			The minimum rotation in negative direction to break loose and rotate around the axes.
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="11" enum="G6DOFJointAxisParam">
-			The minimum rotation in positive direction to break loose and rotate around the axes.
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="12" enum="G6DOFJointAxisParam">
-			A factor that gets multiplied onto all rotations across the axes.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="13" enum="G6DOFJointAxisParam">
-			The amount of rotational damping across the axes. The lower, the more damping occurs.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="14" enum="G6DOFJointAxisParam">
-			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="15" enum="G6DOFJointAxisParam">
-			The maximum amount of force that can occur, when rotating around the axes.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="16" enum="G6DOFJointAxisParam">
-			When correcting the crossing of limits in rotation across the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="17" enum="G6DOFJointAxisParam">
-			Target speed for the motor at the axes.
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="18" enum="G6DOFJointAxisParam" deprecated="Use [constant G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT] instead, which applies in both spring and motor modes.">
-			Maximum acceleration for the motor at the axes.
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS" value="19" enum="G6DOFJointAxisParam">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_SPRING_DAMPING" value="20" enum="G6DOFJointAxisParam">
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT" value="21" enum="G6DOFJointAxisParam">
-		</constant>
-		<constant name="G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT" value="22" enum="G6DOFJointAxisParam">
-			The maximum force the joint can apply along this linear axis.
-			Used by both the spring drive and the linear motor; supersedes [constant G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT] when set.
-			[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
-		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT" value="23" enum="G6DOFJointAxisParam">
-			The maximum torque the joint can apply around this angular axis.
-			Used by both the spring drive and the angular motor; supersedes [constant G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT] when set.
-			[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
-		</constant>
-		<constant name="G6DOF_JOINT_MAX" value="24" enum="G6DOFJointAxisParam">
-			Represents the size of the [enum G6DOFJointAxisParam] enum.
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="G6DOFJointAxisFlag">
-			If set, linear motion is possible within the given limits.
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1" enum="G6DOFJointAxisFlag">
-			If set, rotational motion is possible.
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING" value="2" enum="G6DOFJointAxisFlag">
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING" value="3" enum="G6DOFJointAxisFlag">
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_MOTOR" value="4" enum="G6DOFJointAxisFlag">
-			If set, there is a rotational or angular motor across these axes.
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="4" enum="G6DOFJointAxisFlag" deprecated="Use [constant G6DOF_JOINT_FLAG_ENABLE_ANGULAR_MOTOR] instead.">
-			If set, there is a rotational or angular motor across these axes.
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="5" enum="G6DOFJointAxisFlag">
-			If set, there is a linear motor on this axis that targets a specific velocity.
-		</constant>
-		<constant name="G6DOF_JOINT_FLAG_MAX" value="6" enum="G6DOFJointAxisFlag">
-			Represents the size of the [enum G6DOFJointAxisFlag] enum.
-		</constant>
-		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
-			Constant for creating a world boundary shape (used by the [WorldBoundaryShape3D] resource).
-		</constant>
-		<constant name="SHAPE_SEPARATION_RAY" value="1" enum="ShapeType">
-			Constant for creating a separation ray shape (used by the [SeparationRayShape3D] resource).
-		</constant>
-		<constant name="SHAPE_SPHERE" value="2" enum="ShapeType">
-			Constant for creating a sphere shape (used by the [SphereShape3D] resource).
-		</constant>
-		<constant name="SHAPE_BOX" value="3" enum="ShapeType">
-			Constant for creating a box shape (used by the [BoxShape3D] resource).
-		</constant>
-		<constant name="SHAPE_CAPSULE" value="4" enum="ShapeType">
-			Constant for creating a capsule shape (used by the [CapsuleShape3D] resource).
-		</constant>
-		<constant name="SHAPE_CYLINDER" value="5" enum="ShapeType">
-			Constant for creating a cylinder shape (used by the [CylinderShape3D] resource).
-		</constant>
-		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
-			Constant for creating a convex polygon shape (used by the [ConvexPolygonShape3D] resource).
-		</constant>
-		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
-			Constant for creating a concave polygon (trimesh) shape (used by the [ConcavePolygonShape3D] resource).
-		</constant>
-		<constant name="SHAPE_HEIGHTMAP" value="8" enum="ShapeType">
-			Constant for creating a heightmap shape (used by the [HeightMapShape3D] resource).
-		</constant>
-		<constant name="SHAPE_SOFT_BODY" value="9" enum="ShapeType">
-			Constant used internally for a soft body shape. Any attempt to create this kind of shape results in an error.
-		</constant>
-		<constant name="SHAPE_CUSTOM" value="10" enum="ShapeType">
-			Constant used internally for a custom shape. Any attempt to create this kind of shape results in an error when using Godot Physics or Jolt Physics.
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY_OVERRIDE_MODE" value="0" enum="AreaParameter">
-			Constant to set/get gravity override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY" value="1" enum="AreaParameter">
-			Constant to set/get gravity strength in an area.
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="2" enum="AreaParameter">
-			Constant to set/get gravity vector/center in an area.
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="3" enum="AreaParameter">
-			Constant to set/get whether the gravity vector of an area is a direction, or a center point.
-		</constant>
-		<constant name="AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE" value="4" enum="AreaParameter">
-			Constant to set/get the distance at which the gravity strength is equal to the gravity controlled by [constant AREA_PARAM_GRAVITY]. For example, on a planet 100 meters in radius with a surface gravity of 4.0 m/s², set the gravity to 4.0 and the unit distance to 100.0. The gravity will have falloff according to the inverse square law, so in the example, at 200 meters from the center the gravity will be 1.0 m/s² (twice the distance, 1/4th the gravity), at 50 meters it will be 16.0 m/s² (half the distance, 4× the gravity), and so on.
-			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
-		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE" value="5" enum="AreaParameter">
-			Constant to set/get linear damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
-		</constant>
-		<constant name="AREA_PARAM_LINEAR_DAMP" value="6" enum="AreaParameter">
-			Constant to set/get the linear damping factor of an area.
-		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE" value="7" enum="AreaParameter">
-			Constant to set/get angular damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
-		</constant>
-		<constant name="AREA_PARAM_ANGULAR_DAMP" value="8" enum="AreaParameter">
-			Constant to set/get the angular damping factor of an area.
-		</constant>
-		<constant name="AREA_PARAM_PRIORITY" value="9" enum="AreaParameter">
-			Constant to set/get the priority (order of processing) of an area.
-		</constant>
-		<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="10" enum="AreaParameter">
-			Constant to set/get the magnitude of area-specific wind force. This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
-		</constant>
-		<constant name="AREA_PARAM_WIND_SOURCE" value="11" enum="AreaParameter">
-			Constant to set/get the 3D vector that specifies the origin from which an area-specific wind blows.
-		</constant>
-		<constant name="AREA_PARAM_WIND_DIRECTION" value="12" enum="AreaParameter">
-			Constant to set/get the 3D vector that specifies the direction in which an area-specific wind blows.
-		</constant>
-		<constant name="AREA_PARAM_WIND_ATTENUATION_FACTOR" value="13" enum="AreaParameter">
-			Constant to set/get the exponential rate at which wind force decreases with distance from its origin.
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">
-			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1" enum="AreaSpaceOverrideMode">
-			This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="AreaSpaceOverrideMode">
-			This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3" enum="AreaSpaceOverrideMode">
-			This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
-		</constant>
-		<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="AreaSpaceOverrideMode">
-			This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
-		</constant>
-		<constant name="BODY_MODE_STATIC" value="0" enum="BodyMode">
-			Constant for static bodies. In this mode, a body can be only moved by user code and doesn't collide with other bodies along its path when moved.
-		</constant>
-		<constant name="BODY_MODE_KINEMATIC" value="1" enum="BodyMode">
-			Constant for kinematic bodies. In this mode, a body can be only moved by user code and collides with other bodies along its path.
-		</constant>
-		<constant name="BODY_MODE_RIGID" value="2" enum="BodyMode">
-			Constant for rigid bodies. In this mode, a body can be pushed by other bodies and has forces applied.
-		</constant>
-		<constant name="BODY_MODE_RIGID_LINEAR" value="3" enum="BodyMode">
-			Constant for linear rigid bodies. In this mode, a body can not rotate, and only its linear velocity is affected by external forces.
-		</constant>
-		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">
-			Constant to set/get a body's bounce factor.
-		</constant>
-		<constant name="BODY_PARAM_FRICTION" value="1" enum="BodyParameter">
-			Constant to set/get a body's friction.
-		</constant>
-		<constant name="BODY_PARAM_MASS" value="2" enum="BodyParameter">
-			Constant to set/get a body's mass.
-		</constant>
-		<constant name="BODY_PARAM_INERTIA" value="3" enum="BodyParameter">
-			Constant to set/get a body's inertia.
-		</constant>
-		<constant name="BODY_PARAM_CENTER_OF_MASS" value="4" enum="BodyParameter">
-			Constant to set/get a body's center of mass position in the body's local coordinate system.
-		</constant>
-		<constant name="BODY_PARAM_GRAVITY_SCALE" value="5" enum="BodyParameter">
-			Constant to set/get a body's gravity multiplier.
-		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP_MODE" value="6" enum="BodyParameter">
-			Constant to set/get a body's linear damping mode. See [enum BodyDampMode] for possible values.
-		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP_MODE" value="7" enum="BodyParameter">
-			Constant to set/get a body's angular damping mode. See [enum BodyDampMode] for possible values.
-		</constant>
-		<constant name="BODY_PARAM_LINEAR_DAMP" value="8" enum="BodyParameter">
-			Constant to set/get a body's linear damping factor.
-		</constant>
-		<constant name="BODY_PARAM_ANGULAR_DAMP" value="9" enum="BodyParameter">
-			Constant to set/get a body's angular damping factor.
-		</constant>
-		<constant name="BODY_PARAM_MAX" value="10" enum="BodyParameter">
-			Represents the size of the [enum BodyParameter] enum.
-		</constant>
-		<constant name="BODY_DAMP_MODE_COMBINE" value="0" enum="BodyDampMode">
-			The body's damping value is added to any value set in areas or the default value.
-		</constant>
-		<constant name="BODY_DAMP_MODE_REPLACE" value="1" enum="BodyDampMode">
-			The body's damping value replaces any value set in areas or the default value.
-		</constant>
-		<constant name="BODY_STATE_TRANSFORM" value="0" enum="BodyState">
-			Constant to set/get the current transform matrix of the body.
-		</constant>
-		<constant name="BODY_STATE_LINEAR_VELOCITY" value="1" enum="BodyState">
-			Constant to set/get the current linear velocity of the body.
-		</constant>
-		<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2" enum="BodyState">
-			Constant to set/get the current angular velocity of the body.
-		</constant>
-		<constant name="BODY_STATE_SLEEPING" value="3" enum="BodyState">
-			Constant to sleep/wake up a body, or to get whether it is sleeping.
-		</constant>
-		<constant name="BODY_STATE_CAN_SLEEP" value="4" enum="BodyState">
-			Constant to set/get whether the body can sleep.
-		</constant>
-		<constant name="AREA_BODY_ADDED" value="0" enum="AreaBodyStatus">
-			The value of the first parameter and area callback function receives, when an object enters one of its shapes.
-		</constant>
-		<constant name="AREA_BODY_REMOVED" value="1" enum="AreaBodyStatus">
-			The value of the first parameter and area callback function receives, when an object exits one of its shapes.
-		</constant>
-		<constant name="INFO_ACTIVE_OBJECTS" value="0" enum="ProcessInfo">
-			Constant to get the number of objects that are not sleeping.
-		</constant>
-		<constant name="INFO_COLLISION_PAIRS" value="1" enum="ProcessInfo">
-			Constant to get the number of possible collisions.
-		</constant>
-		<constant name="INFO_ISLAND_COUNT" value="2" enum="ProcessInfo">
-			Constant to get the number of space regions where a collision could occur.
-		</constant>
-		<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0" enum="SpaceParameter">
-			Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
-		</constant>
-		<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1" enum="SpaceParameter">
-			Constant to set/get the maximum distance a shape can be from another before they are considered separated and the contact is discarded.
-		</constant>
-		<constant name="SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION" value="2" enum="SpaceParameter">
-			Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
-		</constant>
-		<constant name="SPACE_PARAM_CONTACT_DEFAULT_BIAS" value="3" enum="SpaceParameter">
-			Constant to set/get the default solver bias for all physics contacts. A solver bias is a factor controlling how much two objects "rebound", after overlapping, to avoid leaving them in that state because of numerical imprecision.
-		</constant>
-		<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="4" enum="SpaceParameter">
-			Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="5" enum="SpaceParameter">
-			Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
-			[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
-		</constant>
-		<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="6" enum="SpaceParameter">
-			Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
-		</constant>
-		<constant name="SPACE_PARAM_SOLVER_ITERATIONS" value="7" enum="SpaceParameter">
-			Constant to set/get the number of solver iterations for contacts and constraints. The greater the number of iterations, the more accurate the collisions and constraints will be. However, a greater number of iterations requires more CPU power, which can decrease performance.
-		</constant>
-		<constant name="BODY_AXIS_LINEAR_X" value="1" enum="BodyAxis">
-		</constant>
-		<constant name="BODY_AXIS_LINEAR_Y" value="2" enum="BodyAxis">
-		</constant>
-		<constant name="BODY_AXIS_LINEAR_Z" value="4" enum="BodyAxis">
-		</constant>
-		<constant name="BODY_AXIS_ANGULAR_X" value="8" enum="BodyAxis">
-		</constant>
-		<constant name="BODY_AXIS_ANGULAR_Y" value="16" enum="BodyAxis">
-		</constant>
-		<constant name="BODY_AXIS_ANGULAR_Z" value="32" enum="BodyAxis">
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AreaBodyStatus">
+			<constant name="AREA_BODY_ADDED" value="0">
+				The value of the first parameter and area callback function receives, when an object enters one of its shapes.
+			</constant>
+			<constant name="AREA_BODY_REMOVED" value="1">
+				The value of the first parameter and area callback function receives, when an object exits one of its shapes.
+			</constant>
+		</enum>
+		<enum name="AreaParameter">
+			<constant name="AREA_PARAM_GRAVITY_OVERRIDE_MODE" value="0">
+				Constant to set/get gravity override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
+			</constant>
+			<constant name="AREA_PARAM_GRAVITY" value="1">
+				Constant to set/get gravity strength in an area.
+			</constant>
+			<constant name="AREA_PARAM_GRAVITY_VECTOR" value="2">
+				Constant to set/get gravity vector/center in an area.
+			</constant>
+			<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="3">
+				Constant to set/get whether the gravity vector of an area is a direction, or a center point.
+			</constant>
+			<constant name="AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE" value="4">
+				Constant to set/get the distance at which the gravity strength is equal to the gravity controlled by [constant AREA_PARAM_GRAVITY]. For example, on a planet 100 meters in radius with a surface gravity of 4.0 m/s², set the gravity to 4.0 and the unit distance to 100.0. The gravity will have falloff according to the inverse square law, so in the example, at 200 meters from the center the gravity will be 1.0 m/s² (twice the distance, 1/4th the gravity), at 50 meters it will be 16.0 m/s² (half the distance, 4× the gravity), and so on.
+				The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
+			</constant>
+			<constant name="AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE" value="5">
+				Constant to set/get linear damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
+			</constant>
+			<constant name="AREA_PARAM_LINEAR_DAMP" value="6">
+				Constant to set/get the linear damping factor of an area.
+			</constant>
+			<constant name="AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE" value="7">
+				Constant to set/get angular damping override mode in an area. See [enum AreaSpaceOverrideMode] for possible values.
+			</constant>
+			<constant name="AREA_PARAM_ANGULAR_DAMP" value="8">
+				Constant to set/get the angular damping factor of an area.
+			</constant>
+			<constant name="AREA_PARAM_PRIORITY" value="9">
+				Constant to set/get the priority (order of processing) of an area.
+			</constant>
+			<constant name="AREA_PARAM_WIND_FORCE_MAGNITUDE" value="10">
+				Constant to set/get the magnitude of area-specific wind force. This wind force only applies to [SoftBody3D] nodes. Other physics bodies are currently not affected by wind.
+			</constant>
+			<constant name="AREA_PARAM_WIND_SOURCE" value="11">
+				Constant to set/get the 3D vector that specifies the origin from which an area-specific wind blows.
+			</constant>
+			<constant name="AREA_PARAM_WIND_DIRECTION" value="12">
+				Constant to set/get the 3D vector that specifies the direction in which an area-specific wind blows.
+			</constant>
+			<constant name="AREA_PARAM_WIND_ATTENUATION_FACTOR" value="13">
+				Constant to set/get the exponential rate at which wind force decreases with distance from its origin.
+			</constant>
+		</enum>
+		<enum name="AreaSpaceOverrideMode">
+			<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0">
+				This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
+			</constant>
+			<constant name="AREA_SPACE_OVERRIDE_COMBINE" value="1">
+				This area adds its gravity/damp values to whatever has been calculated so far. This way, many overlapping areas can combine their physics to make interesting effects.
+			</constant>
+			<constant name="AREA_SPACE_OVERRIDE_COMBINE_REPLACE" value="2">
+				This area adds its gravity/damp values to whatever has been calculated so far. Then stops taking into account the rest of the areas, even the default one.
+			</constant>
+			<constant name="AREA_SPACE_OVERRIDE_REPLACE" value="3">
+				This area replaces any gravity/damp, even the default one, and stops taking into account the rest of the areas.
+			</constant>
+			<constant name="AREA_SPACE_OVERRIDE_REPLACE_COMBINE" value="4">
+				This area replaces any gravity/damp calculated so far, but keeps calculating the rest of the areas, down to the default one.
+			</constant>
+		</enum>
+		<enum name="BodyAxis">
+			<constant name="BODY_AXIS_LINEAR_X" value="1">
+			</constant>
+			<constant name="BODY_AXIS_LINEAR_Y" value="2">
+			</constant>
+			<constant name="BODY_AXIS_LINEAR_Z" value="4">
+			</constant>
+			<constant name="BODY_AXIS_ANGULAR_X" value="8">
+			</constant>
+			<constant name="BODY_AXIS_ANGULAR_Y" value="16">
+			</constant>
+			<constant name="BODY_AXIS_ANGULAR_Z" value="32">
+			</constant>
+		</enum>
+		<enum name="BodyDampMode">
+			<constant name="BODY_DAMP_MODE_COMBINE" value="0">
+				The body's damping value is added to any value set in areas or the default value.
+			</constant>
+			<constant name="BODY_DAMP_MODE_REPLACE" value="1">
+				The body's damping value replaces any value set in areas or the default value.
+			</constant>
+		</enum>
+		<enum name="BodyMode">
+			<constant name="BODY_MODE_STATIC" value="0">
+				Constant for static bodies. In this mode, a body can be only moved by user code and doesn't collide with other bodies along its path when moved.
+			</constant>
+			<constant name="BODY_MODE_KINEMATIC" value="1">
+				Constant for kinematic bodies. In this mode, a body can be only moved by user code and collides with other bodies along its path.
+			</constant>
+			<constant name="BODY_MODE_RIGID" value="2">
+				Constant for rigid bodies. In this mode, a body can be pushed by other bodies and has forces applied.
+			</constant>
+			<constant name="BODY_MODE_RIGID_LINEAR" value="3">
+				Constant for linear rigid bodies. In this mode, a body can not rotate, and only its linear velocity is affected by external forces.
+			</constant>
+		</enum>
+		<enum name="BodyParameter">
+			<constant name="BODY_PARAM_BOUNCE" value="0">
+				Constant to set/get a body's bounce factor.
+			</constant>
+			<constant name="BODY_PARAM_FRICTION" value="1">
+				Constant to set/get a body's friction.
+			</constant>
+			<constant name="BODY_PARAM_MASS" value="2">
+				Constant to set/get a body's mass.
+			</constant>
+			<constant name="BODY_PARAM_INERTIA" value="3">
+				Constant to set/get a body's inertia.
+			</constant>
+			<constant name="BODY_PARAM_CENTER_OF_MASS" value="4">
+				Constant to set/get a body's center of mass position in the body's local coordinate system.
+			</constant>
+			<constant name="BODY_PARAM_GRAVITY_SCALE" value="5">
+				Constant to set/get a body's gravity multiplier.
+			</constant>
+			<constant name="BODY_PARAM_LINEAR_DAMP_MODE" value="6">
+				Constant to set/get a body's linear damping mode. See [enum BodyDampMode] for possible values.
+			</constant>
+			<constant name="BODY_PARAM_ANGULAR_DAMP_MODE" value="7">
+				Constant to set/get a body's angular damping mode. See [enum BodyDampMode] for possible values.
+			</constant>
+			<constant name="BODY_PARAM_LINEAR_DAMP" value="8">
+				Constant to set/get a body's linear damping factor.
+			</constant>
+			<constant name="BODY_PARAM_ANGULAR_DAMP" value="9">
+				Constant to set/get a body's angular damping factor.
+			</constant>
+			<constant name="BODY_PARAM_MAX" value="10">
+				Represents the size of the [enum BodyParameter] enum.
+			</constant>
+		</enum>
+		<enum name="BodyState">
+			<constant name="BODY_STATE_TRANSFORM" value="0">
+				Constant to set/get the current transform matrix of the body.
+			</constant>
+			<constant name="BODY_STATE_LINEAR_VELOCITY" value="1">
+				Constant to set/get the current linear velocity of the body.
+			</constant>
+			<constant name="BODY_STATE_ANGULAR_VELOCITY" value="2">
+				Constant to set/get the current angular velocity of the body.
+			</constant>
+			<constant name="BODY_STATE_SLEEPING" value="3">
+				Constant to sleep/wake up a body, or to get whether it is sleeping.
+			</constant>
+			<constant name="BODY_STATE_CAN_SLEEP" value="4">
+				Constant to set/get whether the body can sleep.
+			</constant>
+		</enum>
+		<enum name="ConeTwistJointParam">
+			<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0">
+				Swing is rotation from side to side, around the axis perpendicular to the twist axis.
+				The swing span defines, how much rotation will not get corrected along the swing axis.
+				Could be defined as looseness in the [ConeTwistJoint3D]. If below 0.05, this behavior is locked.
+			</constant>
+			<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1">
+				Twist is the rotation around the twist axis, this value defined how far the joint can twist. Twist is locked if below 0.05.
+			</constant>
+			<constant name="CONE_TWIST_JOINT_BIAS" value="2">
+				The speed with which the swing or twist will take place. The higher, the faster.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="CONE_TWIST_JOINT_SOFTNESS" value="3">
+				The ease with which the Joint3D twists, if it's too low, it takes more force to twist the joint.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="CONE_TWIST_JOINT_RELAXATION" value="4">
+				Defines, how fast the swing- and twist-speed-difference on both sides gets synced.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+		</enum>
+		<enum name="G6DOFJointAxisFlag">
+			<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0">
+				If set, linear motion is possible within the given limits.
+			</constant>
+			<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1">
+				If set, rotational motion is possible.
+			</constant>
+			<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING" value="2">
+			</constant>
+			<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING" value="3">
+			</constant>
+			<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_MOTOR" value="4">
+				If set, there is a rotational or angular motor across these axes.
+			</constant>
+			<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="4" deprecated="Use [constant G6DOF_JOINT_FLAG_ENABLE_ANGULAR_MOTOR] instead.">
+				If set, there is a rotational or angular motor across these axes.
+			</constant>
+			<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="5">
+				If set, there is a linear motor on this axis that targets a specific velocity.
+			</constant>
+			<constant name="G6DOF_JOINT_FLAG_MAX" value="6">
+				Represents the size of the [enum G6DOFJointAxisFlag] enum.
+			</constant>
+		</enum>
+		<enum name="G6DOFJointAxisParam">
+			<constant name="G6DOF_JOINT_LINEAR_LOWER_LIMIT" value="0">
+				The minimum difference between the pivot points' axes.
+			</constant>
+			<constant name="G6DOF_JOINT_LINEAR_UPPER_LIMIT" value="1">
+				The maximum difference between the pivot points' axes.
+			</constant>
+			<constant name="G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS" value="2">
+				A factor that gets applied to the movement across the axes. The lower, the slower the movement.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="G6DOF_JOINT_LINEAR_RESTITUTION" value="3">
+				The amount of restitution on the axes movement. The lower, the more velocity-energy gets lost.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="G6DOF_JOINT_LINEAR_DAMPING" value="4">
+				The amount of damping that happens at the linear motion across the axes.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY" value="5">
+				The velocity that the joint's linear motor will attempt to reach.
+			</constant>
+			<constant name="G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT" value="6" deprecated="Use [constant G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT] instead, which applies in both spring and motor modes.">
+				The maximum force that the linear motor can apply while trying to reach the target velocity.
+			</constant>
+			<constant name="G6DOF_JOINT_LINEAR_SPRING_STIFFNESS" value="7">
+			</constant>
+			<constant name="G6DOF_JOINT_LINEAR_SPRING_DAMPING" value="8">
+			</constant>
+			<constant name="G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT" value="9">
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="10">
+				The minimum rotation in negative direction to break loose and rotate around the axes.
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="11">
+				The minimum rotation in positive direction to break loose and rotate around the axes.
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="12">
+				A factor that gets multiplied onto all rotations across the axes.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="13">
+				The amount of rotational damping across the axes. The lower, the more damping occurs.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="14">
+				The amount of rotational restitution across the axes. The lower, the more restitution occurs.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="15">
+				The maximum amount of force that can occur, when rotating around the axes.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_ERP" value="16">
+				When correcting the crossing of limits in rotation across the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="17">
+				Target speed for the motor at the axes.
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="18" deprecated="Use [constant G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT] instead, which applies in both spring and motor modes.">
+				Maximum acceleration for the motor at the axes.
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS" value="19">
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_SPRING_DAMPING" value="20">
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT" value="21">
+			</constant>
+			<constant name="G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT" value="22">
+				The maximum force the joint can apply along this linear axis.
+				Used by both the spring drive and the linear motor; supersedes [constant G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT] when set.
+				[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
+			</constant>
+			<constant name="G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT" value="23">
+				The maximum torque the joint can apply around this angular axis.
+				Used by both the spring drive and the angular motor; supersedes [constant G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT] when set.
+				[b]Note:[/b] Only for Jolt backend. Other 3D physics backends may ignore this value.
+			</constant>
+			<constant name="G6DOF_JOINT_MAX" value="24">
+				Represents the size of the [enum G6DOFJointAxisParam] enum.
+			</constant>
+		</enum>
+		<enum name="HingeJointFlag">
+			<constant name="HINGE_JOINT_FLAG_USE_LIMIT" value="0">
+				If [code]true[/code], the Hinge has a maximum and a minimum rotation.
+			</constant>
+			<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1">
+				If [code]true[/code], a motor turns the Hinge.
+			</constant>
+		</enum>
+		<enum name="HingeJointParam">
+			<constant name="HINGE_JOINT_BIAS" value="0">
+				The speed with which the two bodies get pulled together when they move in different directions.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="HINGE_JOINT_LIMIT_UPPER" value="1">
+				The maximum rotation across the Hinge.
+			</constant>
+			<constant name="HINGE_JOINT_LIMIT_LOWER" value="2">
+				The minimum rotation across the Hinge.
+			</constant>
+			<constant name="HINGE_JOINT_LIMIT_BIAS" value="3">
+				The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="HINGE_JOINT_LIMIT_SOFTNESS" value="4">
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="HINGE_JOINT_LIMIT_RELAXATION" value="5">
+				The lower this value, the more the rotation gets slowed down.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="HINGE_JOINT_MOTOR_TARGET_VELOCITY" value="6">
+				Target speed for the motor.
+			</constant>
+			<constant name="HINGE_JOINT_MOTOR_MAX_IMPULSE" value="7">
+				Maximum acceleration for the motor.
+			</constant>
+		</enum>
+		<enum name="JointType">
+			<constant name="JOINT_TYPE_PIN" value="0">
+				The [Joint3D] is a [PinJoint3D].
+			</constant>
+			<constant name="JOINT_TYPE_HINGE" value="1">
+				The [Joint3D] is a [HingeJoint3D].
+			</constant>
+			<constant name="JOINT_TYPE_SLIDER" value="2">
+				The [Joint3D] is a [SliderJoint3D].
+			</constant>
+			<constant name="JOINT_TYPE_CONE_TWIST" value="3">
+				The [Joint3D] is a [ConeTwistJoint3D].
+			</constant>
+			<constant name="JOINT_TYPE_6DOF" value="4">
+				The [Joint3D] is a [Generic6DOFJoint3D].
+			</constant>
+			<constant name="JOINT_TYPE_MAX" value="5">
+				Represents the size of the [enum JointType] enum.
+			</constant>
+		</enum>
+		<enum name="PinJointParam">
+			<constant name="PIN_JOINT_BIAS" value="0">
+				The strength with which the pinned objects try to stay in positional relation to each other. The higher, the stronger.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="PIN_JOINT_DAMPING" value="1">
+				The strength with which the pinned objects try to stay in velocity relation to each other. The higher, the stronger.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="PIN_JOINT_IMPULSE_CLAMP" value="2">
+				If above 0, this value is the maximum value for an impulse that this Joint3D puts on its ends.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+		</enum>
+		<enum name="ProcessInfo">
+			<constant name="INFO_ACTIVE_OBJECTS" value="0">
+				Constant to get the number of objects that are not sleeping.
+			</constant>
+			<constant name="INFO_COLLISION_PAIRS" value="1">
+				Constant to get the number of possible collisions.
+			</constant>
+			<constant name="INFO_ISLAND_COUNT" value="2">
+				Constant to get the number of space regions where a collision could occur.
+			</constant>
+		</enum>
+		<enum name="ShapeType">
+			<constant name="SHAPE_WORLD_BOUNDARY" value="0">
+				Constant for creating a world boundary shape (used by the [WorldBoundaryShape3D] resource).
+			</constant>
+			<constant name="SHAPE_SEPARATION_RAY" value="1">
+				Constant for creating a separation ray shape (used by the [SeparationRayShape3D] resource).
+			</constant>
+			<constant name="SHAPE_SPHERE" value="2">
+				Constant for creating a sphere shape (used by the [SphereShape3D] resource).
+			</constant>
+			<constant name="SHAPE_BOX" value="3">
+				Constant for creating a box shape (used by the [BoxShape3D] resource).
+			</constant>
+			<constant name="SHAPE_CAPSULE" value="4">
+				Constant for creating a capsule shape (used by the [CapsuleShape3D] resource).
+			</constant>
+			<constant name="SHAPE_CYLINDER" value="5">
+				Constant for creating a cylinder shape (used by the [CylinderShape3D] resource).
+			</constant>
+			<constant name="SHAPE_CONVEX_POLYGON" value="6">
+				Constant for creating a convex polygon shape (used by the [ConvexPolygonShape3D] resource).
+			</constant>
+			<constant name="SHAPE_CONCAVE_POLYGON" value="7">
+				Constant for creating a concave polygon (trimesh) shape (used by the [ConcavePolygonShape3D] resource).
+			</constant>
+			<constant name="SHAPE_HEIGHTMAP" value="8">
+				Constant for creating a heightmap shape (used by the [HeightMapShape3D] resource).
+			</constant>
+			<constant name="SHAPE_SOFT_BODY" value="9">
+				Constant used internally for a soft body shape. Any attempt to create this kind of shape results in an error.
+			</constant>
+			<constant name="SHAPE_CUSTOM" value="10">
+				Constant used internally for a custom shape. Any attempt to create this kind of shape results in an error when using Godot Physics or Jolt Physics.
+			</constant>
+		</enum>
+		<enum name="SliderJointParam">
+			<constant name="SLIDER_JOINT_LINEAR_LIMIT_UPPER" value="0">
+				The maximum difference between the pivot points on their X axis before damping happens.
+			</constant>
+			<constant name="SLIDER_JOINT_LINEAR_LIMIT_LOWER" value="1">
+				The minimum difference between the pivot points on their X axis before damping happens.
+			</constant>
+			<constant name="SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS" value="2">
+				A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3">
+				The amount of restitution once the limits are surpassed. The lower, the more velocity-energy gets lost.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4">
+				The amount of damping once the slider limits are surpassed.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_LINEAR_MOTION_SOFTNESS" value="5">
+				A factor applied to the movement across the slider axis as long as the slider is in the limits. The lower, the slower the movement.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_LINEAR_MOTION_RESTITUTION" value="6">
+				The amount of restitution inside the slider limits.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_LINEAR_MOTION_DAMPING" value="7">
+				The amount of damping inside the slider limits.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS" value="8">
+				A factor applied to the movement across axes orthogonal to the slider.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION" value="9">
+				The amount of restitution when movement is across axes orthogonal to the slider.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING" value="10">
+				The amount of damping when movement is across axes orthogonal to the slider.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_LIMIT_UPPER" value="11">
+				The upper limit of rotation in the slider.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_LIMIT_LOWER" value="12">
+				The lower limit of rotation in the slider.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS" value="13">
+				A factor applied to the all rotation once the limit is surpassed.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION" value="14">
+				The amount of restitution of the rotation when the limit is surpassed.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_LIMIT_DAMPING" value="15">
+				The amount of damping of the rotation when the limit is surpassed.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS" value="16">
+				A factor that gets applied to the all rotation in the limits.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION" value="17">
+				The amount of restitution of the rotation in the limits.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_MOTION_DAMPING" value="18">
+				The amount of damping of the rotation in the limits.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS" value="19">
+				A factor that gets applied to the all rotation across axes orthogonal to the slider.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION" value="20">
+				The amount of restitution of the rotation across axes orthogonal to the slider.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING" value="21">
+				The amount of damping of the rotation across axes orthogonal to the slider.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SLIDER_JOINT_MAX" value="22">
+				Represents the size of the [enum SliderJointParam] enum.
+			</constant>
+		</enum>
+		<enum name="SpaceParameter">
+			<constant name="SPACE_PARAM_CONTACT_RECYCLE_RADIUS" value="0">
+				Constant to set/get the maximum distance a pair of bodies has to move before their collision status has to be recalculated.
+			</constant>
+			<constant name="SPACE_PARAM_CONTACT_MAX_SEPARATION" value="1">
+				Constant to set/get the maximum distance a shape can be from another before they are considered separated and the contact is discarded.
+			</constant>
+			<constant name="SPACE_PARAM_CONTACT_MAX_ALLOWED_PENETRATION" value="2">
+				Constant to set/get the maximum distance a shape can penetrate another shape before it is considered a collision.
+			</constant>
+			<constant name="SPACE_PARAM_CONTACT_DEFAULT_BIAS" value="3">
+				Constant to set/get the default solver bias for all physics contacts. A solver bias is a factor controlling how much two objects "rebound", after overlapping, to avoid leaving them in that state because of numerical imprecision.
+			</constant>
+			<constant name="SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD" value="4">
+				Constant to set/get the threshold linear velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD" value="5">
+				Constant to set/get the threshold angular velocity of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after the time given.
+				[b]Note:[/b] Only supported when using GodotPhysics3D. This parameter is ignored when using Jolt Physics.
+			</constant>
+			<constant name="SPACE_PARAM_BODY_TIME_TO_SLEEP" value="6">
+				Constant to set/get the maximum time of activity. A body marked as potentially inactive for both linear and angular velocity will be put to sleep after this time.
+			</constant>
+			<constant name="SPACE_PARAM_SOLVER_ITERATIONS" value="7">
+				Constant to set/get the number of solver iterations for contacts and constraints. The greater the number of iterations, the more accurate the collisions and constraints will be. However, a greater number of iterations requires more CPU power, which can decrease performance.
+			</constant>
+		</enum>
+	</enums>
 </class>

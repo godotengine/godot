@@ -104,33 +104,39 @@
 			The polyline's width curve. The width of the polyline over its length will be equivalent to the value of the width curve over its domain. The width curve should be a unit [Curve].
 		</member>
 	</members>
-	<constants>
-		<constant name="LINE_JOINT_SHARP" value="0" enum="LineJointMode">
-			Makes the polyline's joints pointy, connecting the sides of the two segments by extending them until they intersect. If the rotation of a joint is too big (based on [member sharp_limit]), the joint falls back to [constant LINE_JOINT_BEVEL] to prevent very long miters.
-		</constant>
-		<constant name="LINE_JOINT_BEVEL" value="1" enum="LineJointMode">
-			Makes the polyline's joints bevelled/chamfered, connecting the sides of the two segments with a simple line.
-		</constant>
-		<constant name="LINE_JOINT_ROUND" value="2" enum="LineJointMode">
-			Makes the polyline's joints rounded, connecting the sides of the two segments with an arc. The detail of this arc depends on [member round_precision].
-		</constant>
-		<constant name="LINE_CAP_NONE" value="0" enum="LineCapMode">
-			Draws no line cap.
-		</constant>
-		<constant name="LINE_CAP_BOX" value="1" enum="LineCapMode">
-			Draws the line cap as a box, slightly extending the first/last segment.
-		</constant>
-		<constant name="LINE_CAP_ROUND" value="2" enum="LineCapMode">
-			Draws the line cap as a semicircle attached to the first/last segment.
-		</constant>
-		<constant name="LINE_TEXTURE_NONE" value="0" enum="LineTextureMode">
-			Takes the left pixels of the texture and renders them over the whole polyline.
-		</constant>
-		<constant name="LINE_TEXTURE_TILE" value="1" enum="LineTextureMode">
-			Tiles the texture over the polyline. [member CanvasItem.texture_repeat] of the [Line2D] node must be [constant CanvasItem.TEXTURE_REPEAT_ENABLED] or [constant CanvasItem.TEXTURE_REPEAT_MIRROR] for it to work properly.
-		</constant>
-		<constant name="LINE_TEXTURE_STRETCH" value="2" enum="LineTextureMode">
-			Stretches the texture across the polyline. [member CanvasItem.texture_repeat] of the [Line2D] node must be [constant CanvasItem.TEXTURE_REPEAT_DISABLED] for best results.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="LineCapMode">
+			<constant name="LINE_CAP_NONE" value="0">
+				Draws no line cap.
+			</constant>
+			<constant name="LINE_CAP_BOX" value="1">
+				Draws the line cap as a box, slightly extending the first/last segment.
+			</constant>
+			<constant name="LINE_CAP_ROUND" value="2">
+				Draws the line cap as a semicircle attached to the first/last segment.
+			</constant>
+		</enum>
+		<enum name="LineJointMode">
+			<constant name="LINE_JOINT_SHARP" value="0">
+				Makes the polyline's joints pointy, connecting the sides of the two segments by extending them until they intersect. If the rotation of a joint is too big (based on [member sharp_limit]), the joint falls back to [constant LINE_JOINT_BEVEL] to prevent very long miters.
+			</constant>
+			<constant name="LINE_JOINT_BEVEL" value="1">
+				Makes the polyline's joints bevelled/chamfered, connecting the sides of the two segments with a simple line.
+			</constant>
+			<constant name="LINE_JOINT_ROUND" value="2">
+				Makes the polyline's joints rounded, connecting the sides of the two segments with an arc. The detail of this arc depends on [member round_precision].
+			</constant>
+		</enum>
+		<enum name="LineTextureMode">
+			<constant name="LINE_TEXTURE_NONE" value="0">
+				Takes the left pixels of the texture and renders them over the whole polyline.
+			</constant>
+			<constant name="LINE_TEXTURE_TILE" value="1">
+				Tiles the texture over the polyline. [member CanvasItem.texture_repeat] of the [Line2D] node must be [constant CanvasItem.TEXTURE_REPEAT_ENABLED] or [constant CanvasItem.TEXTURE_REPEAT_MIRROR] for it to work properly.
+			</constant>
+			<constant name="LINE_TEXTURE_STRETCH" value="2">
+				Stretches the texture across the polyline. [member CanvasItem.texture_repeat] of the [Line2D] node must be [constant CanvasItem.TEXTURE_REPEAT_DISABLED] for best results.
+			</constant>
+		</enum>
+	</enums>
 </class>

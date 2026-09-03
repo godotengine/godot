@@ -175,24 +175,28 @@
 			The WebSocket sub-protocols allowed during the WebSocket handshake.
 		</member>
 	</members>
-	<constants>
-		<constant name="WRITE_MODE_TEXT" value="0" enum="WriteMode">
-			Specifies that WebSockets messages should be transferred as text payload (only valid UTF-8 is allowed).
-		</constant>
-		<constant name="WRITE_MODE_BINARY" value="1" enum="WriteMode">
-			Specifies that WebSockets messages should be transferred as binary payload (any byte combination is allowed).
-		</constant>
-		<constant name="STATE_CONNECTING" value="0" enum="State">
-			Socket has been created. The connection is not yet open.
-		</constant>
-		<constant name="STATE_OPEN" value="1" enum="State">
-			The connection is open and ready to communicate.
-		</constant>
-		<constant name="STATE_CLOSING" value="2" enum="State">
-			The connection is in the process of closing. This means a close request has been sent to the remote peer but confirmation has not been received.
-		</constant>
-		<constant name="STATE_CLOSED" value="3" enum="State">
-			The connection is closed or couldn't be opened.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="State">
+			<constant name="STATE_CONNECTING" value="0">
+				Socket has been created. The connection is not yet open.
+			</constant>
+			<constant name="STATE_OPEN" value="1">
+				The connection is open and ready to communicate.
+			</constant>
+			<constant name="STATE_CLOSING" value="2">
+				The connection is in the process of closing. This means a close request has been sent to the remote peer but confirmation has not been received.
+			</constant>
+			<constant name="STATE_CLOSED" value="3">
+				The connection is closed or couldn't be opened.
+			</constant>
+		</enum>
+		<enum name="WriteMode">
+			<constant name="WRITE_MODE_TEXT" value="0">
+				Specifies that WebSockets messages should be transferred as text payload (only valid UTF-8 is allowed).
+			</constant>
+			<constant name="WRITE_MODE_BINARY" value="1">
+				Specifies that WebSockets messages should be transferred as binary payload (any byte combination is allowed).
+			</constant>
+		</enum>
+	</enums>
 </class>

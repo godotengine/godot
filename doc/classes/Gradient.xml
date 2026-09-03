@@ -93,24 +93,28 @@
 			[b]Note:[/b] Setting this property updates all offsets at once. To update any offset individually use [method set_offset].
 		</member>
 	</members>
-	<constants>
-		<constant name="GRADIENT_INTERPOLATE_LINEAR" value="0" enum="InterpolationMode">
-			Linear interpolation.
-		</constant>
-		<constant name="GRADIENT_INTERPOLATE_CONSTANT" value="1" enum="InterpolationMode">
-			Constant interpolation, color changes abruptly at each point and stays uniform between. This might cause visible aliasing when used for a gradient texture in some cases.
-		</constant>
-		<constant name="GRADIENT_INTERPOLATE_CUBIC" value="2" enum="InterpolationMode">
-			Cubic interpolation.
-		</constant>
-		<constant name="GRADIENT_COLOR_SPACE_SRGB" value="0" enum="ColorSpace">
-			sRGB color space.
-		</constant>
-		<constant name="GRADIENT_COLOR_SPACE_LINEAR_SRGB" value="1" enum="ColorSpace">
-			Linear sRGB color space.
-		</constant>
-		<constant name="GRADIENT_COLOR_SPACE_OKLAB" value="2" enum="ColorSpace">
-			[url=https://bottosson.github.io/posts/oklab/]Oklab[/url] color space. This color space provides a smooth and uniform-looking transition between colors.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ColorSpace">
+			<constant name="GRADIENT_COLOR_SPACE_SRGB" value="0">
+				sRGB color space.
+			</constant>
+			<constant name="GRADIENT_COLOR_SPACE_LINEAR_SRGB" value="1">
+				Linear sRGB color space.
+			</constant>
+			<constant name="GRADIENT_COLOR_SPACE_OKLAB" value="2">
+				[url=https://bottosson.github.io/posts/oklab/]Oklab[/url] color space. This color space provides a smooth and uniform-looking transition between colors.
+			</constant>
+		</enum>
+		<enum name="InterpolationMode">
+			<constant name="GRADIENT_INTERPOLATE_LINEAR" value="0">
+				Linear interpolation.
+			</constant>
+			<constant name="GRADIENT_INTERPOLATE_CONSTANT" value="1">
+				Constant interpolation, color changes abruptly at each point and stays uniform between. This might cause visible aliasing when used for a gradient texture in some cases.
+			</constant>
+			<constant name="GRADIENT_INTERPOLATE_CUBIC" value="2">
+				Cubic interpolation.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -65,24 +65,26 @@
 			Returns the shader's code as the user has written it, not the full generated code used internally.
 		</member>
 	</members>
-	<constants>
-		<constant name="MODE_SPATIAL" value="0" enum="Mode">
-			Mode used to draw all 3D objects.
-		</constant>
-		<constant name="MODE_CANVAS_ITEM" value="1" enum="Mode">
-			Mode used to draw all 2D objects.
-		</constant>
-		<constant name="MODE_PARTICLES" value="2" enum="Mode">
-			Mode used to calculate particle information on a per-particle basis. Not used for drawing.
-		</constant>
-		<constant name="MODE_SKY" value="3" enum="Mode">
-			Mode used for drawing skies. Only works with shaders attached to [Sky] objects.
-		</constant>
-		<constant name="MODE_FOG" value="4" enum="Mode">
-			Mode used for setting the color and density of volumetric fog effect.
-		</constant>
-		<constant name="MODE_TEXTURE_BLIT" value="5" enum="Mode">
-			Mode used for drawing to DrawableTexture resources via blit calls.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Mode">
+			<constant name="MODE_SPATIAL" value="0">
+				Mode used to draw all 3D objects.
+			</constant>
+			<constant name="MODE_CANVAS_ITEM" value="1">
+				Mode used to draw all 2D objects.
+			</constant>
+			<constant name="MODE_PARTICLES" value="2">
+				Mode used to calculate particle information on a per-particle basis. Not used for drawing.
+			</constant>
+			<constant name="MODE_SKY" value="3">
+				Mode used for drawing skies. Only works with shaders attached to [Sky] objects.
+			</constant>
+			<constant name="MODE_FOG" value="4">
+				Mode used for setting the color and density of volumetric fog effect.
+			</constant>
+			<constant name="MODE_TEXTURE_BLIT" value="5">
+				Mode used for drawing to DrawableTexture resources via blit calls.
+			</constant>
+		</enum>
+	</enums>
 </class>

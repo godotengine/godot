@@ -93,18 +93,20 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="FEED_RGBA_IMAGE" value="0" enum="FeedImage">
-			The RGBA camera image.
-		</constant>
-		<constant name="FEED_YCBCR_IMAGE" value="0" enum="FeedImage">
-			The [url=https://en.wikipedia.org/wiki/YCbCr]YCbCr[/url] camera image.
-		</constant>
-		<constant name="FEED_Y_IMAGE" value="0" enum="FeedImage">
-			The Y component camera image.
-		</constant>
-		<constant name="FEED_CBCR_IMAGE" value="1" enum="FeedImage">
-			The CbCr component camera image.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="FeedImage">
+			<constant name="FEED_RGBA_IMAGE" value="0">
+				The RGBA camera image.
+			</constant>
+			<constant name="FEED_YCBCR_IMAGE" value="0">
+				The [url=https://en.wikipedia.org/wiki/YCbCr]YCbCr[/url] camera image.
+			</constant>
+			<constant name="FEED_Y_IMAGE" value="0">
+				The Y component camera image.
+			</constant>
+			<constant name="FEED_CBCR_IMAGE" value="1">
+				The CbCr component camera image.
+			</constant>
+		</enum>
+	</enums>
 </class>

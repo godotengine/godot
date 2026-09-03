@@ -65,21 +65,25 @@
 			Sets how frequently the [ReflectionProbe] is updated. Can be [constant UPDATE_ONCE] or [constant UPDATE_ALWAYS].
 		</member>
 	</members>
-	<constants>
-		<constant name="UPDATE_ONCE" value="0" enum="UpdateMode">
-			Update the probe once on the next frame (recommended for most objects). The corresponding radiance map will be generated over the following six frames. This takes more time to update than [constant UPDATE_ALWAYS], but it has a lower performance cost and can result in higher-quality reflections. The ReflectionProbe is updated when its transform changes, but not when nearby geometry changes. You can force a [ReflectionProbe] update by moving the [ReflectionProbe] slightly in any direction.
-		</constant>
-		<constant name="UPDATE_ALWAYS" value="1" enum="UpdateMode">
-			Update the probe every frame. This provides better results for fast-moving dynamic objects (such as cars). However, it has a significant performance cost. Due to the cost, it's recommended to only use one ReflectionProbe with [constant UPDATE_ALWAYS] at most per scene. For all other use cases, use [constant UPDATE_ONCE].
-		</constant>
-		<constant name="AMBIENT_DISABLED" value="0" enum="AmbientMode">
-			Do not apply any ambient lighting inside the [ReflectionProbe]'s box defined by its [member size].
-		</constant>
-		<constant name="AMBIENT_ENVIRONMENT" value="1" enum="AmbientMode">
-			Apply automatically-sourced environment lighting inside the [ReflectionProbe]'s box defined by its [member size].
-		</constant>
-		<constant name="AMBIENT_COLOR" value="2" enum="AmbientMode">
-			Apply custom ambient lighting inside the [ReflectionProbe]'s box defined by its [member size]. See [member ambient_color] and [member ambient_color_energy].
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AmbientMode">
+			<constant name="AMBIENT_DISABLED" value="0">
+				Do not apply any ambient lighting inside the [ReflectionProbe]'s box defined by its [member size].
+			</constant>
+			<constant name="AMBIENT_ENVIRONMENT" value="1">
+				Apply automatically-sourced environment lighting inside the [ReflectionProbe]'s box defined by its [member size].
+			</constant>
+			<constant name="AMBIENT_COLOR" value="2">
+				Apply custom ambient lighting inside the [ReflectionProbe]'s box defined by its [member size]. See [member ambient_color] and [member ambient_color_energy].
+			</constant>
+		</enum>
+		<enum name="UpdateMode">
+			<constant name="UPDATE_ONCE" value="0">
+				Update the probe once on the next frame (recommended for most objects). The corresponding radiance map will be generated over the following six frames. This takes more time to update than [constant UPDATE_ALWAYS], but it has a lower performance cost and can result in higher-quality reflections. The ReflectionProbe is updated when its transform changes, but not when nearby geometry changes. You can force a [ReflectionProbe] update by moving the [ReflectionProbe] slightly in any direction.
+			</constant>
+			<constant name="UPDATE_ALWAYS" value="1">
+				Update the probe every frame. This provides better results for fast-moving dynamic objects (such as cars). However, it has a significant performance cost. Due to the cost, it's recommended to only use one ReflectionProbe with [constant UPDATE_ALWAYS] at most per scene. For all other use cases, use [constant UPDATE_ONCE].
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -8,37 +8,43 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<constants>
-		<constant name="MESH_ALIGNMENT_LOCAL" value="0" enum="MeshAlignment">
-			Align the line normal to the local Y axis of the line node.
-		</constant>
-		<constant name="MESH_ALIGNMENT_BILLBOARD" value="1" enum="MeshAlignment">
-			Align the normal of each section of the Line3D to face the camera.
-			See also [member SpriteBase3D.billboard] and [enum BaseMaterial3D.BillboardMode]
-		</constant>
-		<constant name="MESH_ALIGNMENT_MAX" value="2" enum="MeshAlignment">
-			Represents the size of the [enum MeshAlignment] enum.
-		</constant>
-		<constant name="TILING_MODE_UNIT" value="0" enum="TilingMode">
-			Assign UVs from [code]0[/code] to [code]1[/code] across the length of the line.
-		</constant>
-		<constant name="TILING_MODE_LENGTH" value="1" enum="TilingMode">
-			Assign UVs from [code]0[/code] to current length, across the length of the line.
-		</constant>
-		<constant name="TILING_MAX" value="2" enum="TilingMode">
-			Represents the size of the [enum TilingMode] enum.
-		</constant>
-		<constant name="MATERIAL_MODE_MIX" value="0" enum="MaterialMode">
-			Assign a built-in mix material to the line.
-		</constant>
-		<constant name="MATERIAL_MODE_ADD" value="1" enum="MaterialMode">
-			Assign a built-in additive material to the line.
-		</constant>
-		<constant name="MATERIAL_MODE_CUSTOM" value="2" enum="MaterialMode">
-			Assign a custom material to the line.
-		</constant>
-		<constant name="MATERIAL_MODE_MAX" value="3" enum="MaterialMode">
-			Represents the size of the [enum MaterialMode] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="MaterialMode">
+			<constant name="MATERIAL_MODE_MIX" value="0">
+				Assign a built-in mix material to the line.
+			</constant>
+			<constant name="MATERIAL_MODE_ADD" value="1">
+				Assign a built-in additive material to the line.
+			</constant>
+			<constant name="MATERIAL_MODE_CUSTOM" value="2">
+				Assign a custom material to the line.
+			</constant>
+			<constant name="MATERIAL_MODE_MAX" value="3">
+				Represents the size of the [enum MaterialMode] enum.
+			</constant>
+		</enum>
+		<enum name="MeshAlignment">
+			<constant name="MESH_ALIGNMENT_LOCAL" value="0">
+				Align the line normal to the local Y axis of the line node.
+			</constant>
+			<constant name="MESH_ALIGNMENT_BILLBOARD" value="1">
+				Align the normal of each section of the Line3D to face the camera.
+				See also [member SpriteBase3D.billboard] and [enum BaseMaterial3D.BillboardMode]
+			</constant>
+			<constant name="MESH_ALIGNMENT_MAX" value="2">
+				Represents the size of the [enum MeshAlignment] enum.
+			</constant>
+		</enum>
+		<enum name="TilingMode">
+			<constant name="TILING_MODE_UNIT" value="0">
+				Assign UVs from [code]0[/code] to [code]1[/code] across the length of the line.
+			</constant>
+			<constant name="TILING_MODE_LENGTH" value="1">
+				Assign UVs from [code]0[/code] to current length, across the length of the line.
+			</constant>
+			<constant name="TILING_MAX" value="2">
+				Represents the size of the [enum TilingMode] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -247,33 +247,37 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="EXPORT_MESSAGE_NONE" value="0" enum="ExportMessageType">
-			Invalid message type used as the default value when no type is specified.
-		</constant>
-		<constant name="EXPORT_MESSAGE_INFO" value="1" enum="ExportMessageType">
-			Message type for informational messages that have no effect on the export.
-		</constant>
-		<constant name="EXPORT_MESSAGE_WARNING" value="2" enum="ExportMessageType">
-			Message type for warning messages that should be addressed but still allow to complete the export.
-		</constant>
-		<constant name="EXPORT_MESSAGE_ERROR" value="3" enum="ExportMessageType">
-			Message type for error messages that must be addressed and fail the export.
-		</constant>
-		<constant name="DEBUG_FLAG_DUMB_CLIENT" value="1" enum="DebugFlags" is_bitfield="true">
-			Flag is set if the remotely debugged project is expected to use the remote file system. If set, [method gen_export_flags] will append [code]--remote-fs[/code] and [code]--remote-fs-password[/code] (if [member EditorSettings.filesystem/file_server/password] is defined) command line arguments to the returned list.
-		</constant>
-		<constant name="DEBUG_FLAG_REMOTE_DEBUG" value="2" enum="DebugFlags" is_bitfield="true">
-			Flag is set if remote debug is enabled. If set, [method gen_export_flags] will append [code]--remote-debug[/code] and [code]--breakpoints[/code] (if breakpoints are selected in the script editor or added by the plugin) command line arguments to the returned list.
-		</constant>
-		<constant name="DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST" value="4" enum="DebugFlags" is_bitfield="true">
-			Flag is set if remotely debugged project is running on the localhost. If set, [method gen_export_flags] will use [code]localhost[/code] instead of [member EditorSettings.network/debug/remote_host] as remote debugger host.
-		</constant>
-		<constant name="DEBUG_FLAG_VIEW_COLLISIONS" value="8" enum="DebugFlags" is_bitfield="true">
-			Flag is set if the "Visible Collision Shapes" remote debug option is enabled. If set, [method gen_export_flags] will append the [code]--debug-collisions[/code] command line argument to the returned list.
-		</constant>
-		<constant name="DEBUG_FLAG_VIEW_NAVIGATION" value="16" enum="DebugFlags" is_bitfield="true">
-			Flag is set if the "Visible Navigation" remote debug option is enabled. If set, [method gen_export_flags] will append the [code]--debug-navigation[/code] command line argument to the returned list.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DebugFlags" is_bitfield="true">
+			<constant name="DEBUG_FLAG_DUMB_CLIENT" value="1">
+				Flag is set if the remotely debugged project is expected to use the remote file system. If set, [method gen_export_flags] will append [code]--remote-fs[/code] and [code]--remote-fs-password[/code] (if [member EditorSettings.filesystem/file_server/password] is defined) command line arguments to the returned list.
+			</constant>
+			<constant name="DEBUG_FLAG_REMOTE_DEBUG" value="2">
+				Flag is set if remote debug is enabled. If set, [method gen_export_flags] will append [code]--remote-debug[/code] and [code]--breakpoints[/code] (if breakpoints are selected in the script editor or added by the plugin) command line arguments to the returned list.
+			</constant>
+			<constant name="DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST" value="4">
+				Flag is set if remotely debugged project is running on the localhost. If set, [method gen_export_flags] will use [code]localhost[/code] instead of [member EditorSettings.network/debug/remote_host] as remote debugger host.
+			</constant>
+			<constant name="DEBUG_FLAG_VIEW_COLLISIONS" value="8">
+				Flag is set if the "Visible Collision Shapes" remote debug option is enabled. If set, [method gen_export_flags] will append the [code]--debug-collisions[/code] command line argument to the returned list.
+			</constant>
+			<constant name="DEBUG_FLAG_VIEW_NAVIGATION" value="16">
+				Flag is set if the "Visible Navigation" remote debug option is enabled. If set, [method gen_export_flags] will append the [code]--debug-navigation[/code] command line argument to the returned list.
+			</constant>
+		</enum>
+		<enum name="ExportMessageType">
+			<constant name="EXPORT_MESSAGE_NONE" value="0">
+				Invalid message type used as the default value when no type is specified.
+			</constant>
+			<constant name="EXPORT_MESSAGE_INFO" value="1">
+				Message type for informational messages that have no effect on the export.
+			</constant>
+			<constant name="EXPORT_MESSAGE_WARNING" value="2">
+				Message type for warning messages that should be addressed but still allow to complete the export.
+			</constant>
+			<constant name="EXPORT_MESSAGE_ERROR" value="3">
+				Message type for error messages that must be addressed and fail the export.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -13,18 +13,20 @@
 			A vector type that this operation is performed on.
 		</member>
 	</members>
-	<constants>
-		<constant name="OP_TYPE_VECTOR_2D" value="0" enum="OpType">
-			A 2D vector type.
-		</constant>
-		<constant name="OP_TYPE_VECTOR_3D" value="1" enum="OpType">
-			A 3D vector type.
-		</constant>
-		<constant name="OP_TYPE_VECTOR_4D" value="2" enum="OpType">
-			A 4D vector type.
-		</constant>
-		<constant name="OP_TYPE_MAX" value="3" enum="OpType">
-			Represents the size of the [enum OpType] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="OpType">
+			<constant name="OP_TYPE_VECTOR_2D" value="0">
+				A 2D vector type.
+			</constant>
+			<constant name="OP_TYPE_VECTOR_3D" value="1">
+				A 3D vector type.
+			</constant>
+			<constant name="OP_TYPE_VECTOR_4D" value="2">
+				A 4D vector type.
+			</constant>
+			<constant name="OP_TYPE_MAX" value="3">
+				Represents the size of the [enum OpType] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

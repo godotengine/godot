@@ -176,30 +176,36 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="EXPORT_ALL_RESOURCES" value="0" enum="ExportFilter">
-		</constant>
-		<constant name="EXPORT_SELECTED_SCENES" value="1" enum="ExportFilter">
-		</constant>
-		<constant name="EXPORT_SELECTED_RESOURCES" value="2" enum="ExportFilter">
-		</constant>
-		<constant name="EXCLUDE_SELECTED_RESOURCES" value="3" enum="ExportFilter">
-		</constant>
-		<constant name="EXPORT_CUSTOMIZED" value="4" enum="ExportFilter">
-		</constant>
-		<constant name="MODE_FILE_NOT_CUSTOMIZED" value="0" enum="FileExportMode">
-		</constant>
-		<constant name="MODE_FILE_STRIP" value="1" enum="FileExportMode">
-		</constant>
-		<constant name="MODE_FILE_KEEP" value="2" enum="FileExportMode">
-		</constant>
-		<constant name="MODE_FILE_REMOVE" value="3" enum="FileExportMode">
-		</constant>
-		<constant name="MODE_SCRIPT_TEXT" value="0" enum="ScriptExportMode">
-		</constant>
-		<constant name="MODE_SCRIPT_BINARY_TOKENS" value="1" enum="ScriptExportMode">
-		</constant>
-		<constant name="MODE_SCRIPT_BINARY_TOKENS_COMPRESSED" value="2" enum="ScriptExportMode">
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ExportFilter">
+			<constant name="EXPORT_ALL_RESOURCES" value="0">
+			</constant>
+			<constant name="EXPORT_SELECTED_SCENES" value="1">
+			</constant>
+			<constant name="EXPORT_SELECTED_RESOURCES" value="2">
+			</constant>
+			<constant name="EXCLUDE_SELECTED_RESOURCES" value="3">
+			</constant>
+			<constant name="EXPORT_CUSTOMIZED" value="4">
+			</constant>
+		</enum>
+		<enum name="FileExportMode">
+			<constant name="MODE_FILE_NOT_CUSTOMIZED" value="0">
+			</constant>
+			<constant name="MODE_FILE_STRIP" value="1">
+			</constant>
+			<constant name="MODE_FILE_KEEP" value="2">
+			</constant>
+			<constant name="MODE_FILE_REMOVE" value="3">
+			</constant>
+		</enum>
+		<enum name="ScriptExportMode">
+			<constant name="MODE_SCRIPT_TEXT" value="0">
+			</constant>
+			<constant name="MODE_SCRIPT_BINARY_TOKENS" value="1">
+			</constant>
+			<constant name="MODE_SCRIPT_BINARY_TOKENS_COMPRESSED" value="2">
+			</constant>
+		</enum>
+	</enums>
 </class>

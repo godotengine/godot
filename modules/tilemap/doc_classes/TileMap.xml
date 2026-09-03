@@ -530,15 +530,17 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="VISIBILITY_MODE_DEFAULT" value="0" enum="VisibilityMode">
-			Use the debug settings to determine visibility.
-		</constant>
-		<constant name="VISIBILITY_MODE_FORCE_HIDE" value="2" enum="VisibilityMode">
-			Always hide.
-		</constant>
-		<constant name="VISIBILITY_MODE_FORCE_SHOW" value="1" enum="VisibilityMode">
-			Always show.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="VisibilityMode">
+			<constant name="VISIBILITY_MODE_DEFAULT" value="0">
+				Use the debug settings to determine visibility.
+			</constant>
+			<constant name="VISIBILITY_MODE_FORCE_HIDE" value="2">
+				Always hide.
+			</constant>
+			<constant name="VISIBILITY_MODE_FORCE_SHOW" value="1">
+				Always show.
+			</constant>
+		</enum>
+	</enums>
 </class>

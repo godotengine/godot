@@ -87,30 +87,34 @@
 			[b]Note:[/b] Only WAV files using a [code]LIST[/code] chunk with an identifier of [code]INFO[/code] to encode the tags are currently supported.
 		</member>
 	</members>
-	<constants>
-		<constant name="FORMAT_8_BITS" value="0" enum="Format">
-			8-bit PCM audio codec.
-		</constant>
-		<constant name="FORMAT_16_BITS" value="1" enum="Format">
-			16-bit PCM audio codec.
-		</constant>
-		<constant name="FORMAT_IMA_ADPCM" value="2" enum="Format">
-			Audio is lossily compressed as IMA ADPCM.
-		</constant>
-		<constant name="FORMAT_QOA" value="3" enum="Format">
-			Audio is lossily compressed as [url=https://qoaformat.org/]Quite OK Audio[/url].
-		</constant>
-		<constant name="LOOP_DISABLED" value="0" enum="LoopMode">
-			Audio does not loop.
-		</constant>
-		<constant name="LOOP_FORWARD" value="1" enum="LoopMode">
-			Audio loops the data between [member loop_begin] and [member loop_end], playing forward only.
-		</constant>
-		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
-			Audio loops the data between [member loop_begin] and [member loop_end], playing back and forth.
-		</constant>
-		<constant name="LOOP_BACKWARD" value="3" enum="LoopMode">
-			Audio loops the data between [member loop_begin] and [member loop_end], playing backward only.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Format">
+			<constant name="FORMAT_8_BITS" value="0">
+				8-bit PCM audio codec.
+			</constant>
+			<constant name="FORMAT_16_BITS" value="1">
+				16-bit PCM audio codec.
+			</constant>
+			<constant name="FORMAT_IMA_ADPCM" value="2">
+				Audio is lossily compressed as IMA ADPCM.
+			</constant>
+			<constant name="FORMAT_QOA" value="3">
+				Audio is lossily compressed as [url=https://qoaformat.org/]Quite OK Audio[/url].
+			</constant>
+		</enum>
+		<enum name="LoopMode">
+			<constant name="LOOP_DISABLED" value="0">
+				Audio does not loop.
+			</constant>
+			<constant name="LOOP_FORWARD" value="1">
+				Audio loops the data between [member loop_begin] and [member loop_end], playing forward only.
+			</constant>
+			<constant name="LOOP_PINGPONG" value="2">
+				Audio loops the data between [member loop_begin] and [member loop_end], playing back and forth.
+			</constant>
+			<constant name="LOOP_BACKWARD" value="3">
+				Audio loops the data between [member loop_begin] and [member loop_end], playing backward only.
+			</constant>
+		</enum>
+	</enums>
 </class>

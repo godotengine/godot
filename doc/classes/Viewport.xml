@@ -527,331 +527,359 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0" enum="PositionalShadowAtlasQuadrantSubdiv">
-			This quadrant will not be used.
-		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1" value="1" enum="PositionalShadowAtlasQuadrantSubdiv">
-			This quadrant will only be used by one shadow map.
-		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_4" value="2" enum="PositionalShadowAtlasQuadrantSubdiv">
-			This quadrant will be split in 4 and used by up to 4 shadow maps.
-		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_16" value="3" enum="PositionalShadowAtlasQuadrantSubdiv">
-			This quadrant will be split 16 ways and used by up to 16 shadow maps.
-		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_64" value="4" enum="PositionalShadowAtlasQuadrantSubdiv">
-			This quadrant will be split 64 ways and used by up to 64 shadow maps.
-		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_256" value="5" enum="PositionalShadowAtlasQuadrantSubdiv">
-			This quadrant will be split 256 ways and used by up to 256 shadow maps. Unless the [member positional_shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
-		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6" enum="PositionalShadowAtlasQuadrantSubdiv">
-			This quadrant will be split 1024 ways and used by up to 1024 shadow maps. Unless the [member positional_shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
-		</constant>
-		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="PositionalShadowAtlasQuadrantSubdiv">
-			Represents the size of the [enum PositionalShadowAtlasQuadrantSubdiv] enum.
-		</constant>
-		<constant name="SCALING_3D_MODE_BILINEAR" value="0" enum="Scaling3DMode">
-			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
-		</constant>
-		<constant name="SCALING_3D_MODE_FSR" value="1" enum="Scaling3DMode">
-			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
-		</constant>
-		<constant name="SCALING_3D_MODE_FSR2" value="2" enum="Scaling3DMode">
-			Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
-		</constant>
-		<constant name="SCALING_3D_MODE_METALFX_SPATIAL" value="3" enum="Scaling3DMode">
-			Use the [url=https://developer.apple.com/documentation/metalfx/mtlfxspatialscaler#overview]MetalFX spatial upscaler[/url] for the viewport's 3D buffer.
-			The amount of scaling can be set using [member scaling_3d_scale].
-			Values less than [code]1.0[/code] will result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
-			More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
-			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
-		</constant>
-		<constant name="SCALING_3D_MODE_METALFX_TEMPORAL" value="4" enum="Scaling3DMode">
-			Use the [url=https://developer.apple.com/documentation/metalfx/mtlfxtemporalscaler#overview]MetalFX temporal upscaler[/url] for the viewport's 3D buffer.
-			The amount of scaling can be set using [member scaling_3d_scale]. To determine the minimum input scale, use the [method RenderingDevice.limit_get] method with [constant RenderingDevice.LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE].
-			Values less than [code]1.0[/code] will result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use MetalFX at native resolution as a TAA solution.
-			More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
-			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
-		</constant>
-		<constant name="SCALING_3D_MODE_NEAREST" value="5" enum="Scaling3DMode">
-			Use nearest-neighbor filtering for the viewport's 3D buffer. This looks crisper than [constant SCALING_3D_MODE_BILINEAR] and has no additional rendering cost. The amount of scaling can be set using [member scaling_3d_scale]. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
-			[b]Note:[/b] When using the [b]Nearest[/b] scaling mode, to avoid uneven pixel scaling, it's highly recommended to use a value equal to an integer divisor with a dividend of [code]1[/code]. For example, it's best to use a scale of [code]0.5[/code] (1/2), [code]0.3333[/code] (1/3), [code]0.25[/code] (1/4), [code]0.2[/code] (1/5), and so on.
-		</constant>
-		<constant name="SCALING_3D_MODE_MAX" value="6" enum="Scaling3DMode">
-			Represents the size of the [enum Scaling3DMode] enum.
-		</constant>
-		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
-			Multisample antialiasing mode disabled. This is the default value, and is also the fastest setting.
-		</constant>
-		<constant name="MSAA_2X" value="1" enum="MSAA">
-			Use 2× Multisample Antialiasing. This has a moderate performance cost. It helps reduce aliasing noticeably, but 4× MSAA still looks substantially better.
-		</constant>
-		<constant name="MSAA_4X" value="2" enum="MSAA">
-			Use 4× Multisample Antialiasing. This has a significant performance cost, and is generally a good compromise between performance and quality.
-		</constant>
-		<constant name="MSAA_8X" value="3" enum="MSAA">
-			Use 8× Multisample Antialiasing. This has a very high performance cost. The difference between 4× and 8× MSAA may not always be visible in real gameplay conditions. Likely unsupported on low-end and older hardware.
-		</constant>
-		<constant name="MSAA_MAX" value="4" enum="MSAA">
-			Represents the size of the [enum MSAA] enum.
-		</constant>
-		<constant name="ANISOTROPY_DISABLED" value="0" enum="AnisotropicFiltering">
-			Anisotropic filtering is disabled.
-		</constant>
-		<constant name="ANISOTROPY_2X" value="1" enum="AnisotropicFiltering">
-			Use 2× anisotropic filtering.
-		</constant>
-		<constant name="ANISOTROPY_4X" value="2" enum="AnisotropicFiltering">
-			Use 4× anisotropic filtering. This is the default value.
-		</constant>
-		<constant name="ANISOTROPY_8X" value="3" enum="AnisotropicFiltering">
-			Use 8× anisotropic filtering.
-		</constant>
-		<constant name="ANISOTROPY_16X" value="4" enum="AnisotropicFiltering">
-			Use 16× anisotropic filtering.
-		</constant>
-		<constant name="ANISOTROPY_MAX" value="5" enum="AnisotropicFiltering">
-			Represents the size of the [enum AnisotropicFiltering] enum.
-		</constant>
-		<constant name="SCREEN_SPACE_AA_DISABLED" value="0" enum="ScreenSpaceAA">
-			Do not perform any antialiasing in the full screen post-process.
-		</constant>
-		<constant name="SCREEN_SPACE_AA_FXAA" value="1" enum="ScreenSpaceAA">
-			Use fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
-		</constant>
-		<constant name="SCREEN_SPACE_AA_SMAA" value="2" enum="ScreenSpaceAA">
-			Use subpixel morphological antialiasing. SMAA may produce clearer results than FXAA, but at a slightly higher performance cost.
-		</constant>
-		<constant name="SCREEN_SPACE_AA_MAX" value="3" enum="ScreenSpaceAA">
-			Represents the size of the [enum ScreenSpaceAA] enum.
-		</constant>
-		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
-			Amount of objects in frame.
-		</constant>
-		<constant name="RENDER_INFO_PRIMITIVES_IN_FRAME" value="1" enum="RenderInfo">
-			Amount of vertices in frame.
-		</constant>
-		<constant name="RENDER_INFO_DRAW_CALLS_IN_FRAME" value="2" enum="RenderInfo">
-			Amount of draw calls in frame.
-		</constant>
-		<constant name="RENDER_INFO_MAX" value="3" enum="RenderInfo">
-			Represents the size of the [enum RenderInfo] enum.
-		</constant>
-		<constant name="RENDER_INFO_TYPE_VISIBLE" value="0" enum="RenderInfoType">
-			Visible render pass (excluding shadows).
-		</constant>
-		<constant name="RENDER_INFO_TYPE_SHADOW" value="1" enum="RenderInfoType">
-			Shadow render pass. Objects will be rendered several times depending on the number of amounts of lights with shadows and the number of directional shadow splits.
-		</constant>
-		<constant name="RENDER_INFO_TYPE_CANVAS" value="2" enum="RenderInfoType">
-			Canvas item rendering. This includes all 2D rendering.
-		</constant>
-		<constant name="RENDER_INFO_TYPE_MAX" value="3" enum="RenderInfoType">
-			Represents the size of the [enum RenderInfoType] enum.
-		</constant>
-		<constant name="DEBUG_DRAW_DISABLED" value="0" enum="DebugDraw">
-			Objects are displayed normally.
-		</constant>
-		<constant name="DEBUG_DRAW_UNSHADED" value="1" enum="DebugDraw">
-			Objects are displayed without light information.
-		</constant>
-		<constant name="DEBUG_DRAW_LIGHTING" value="2" enum="DebugDraw">
-			Objects are displayed without textures and only with lighting information.
-			[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
-		</constant>
-		<constant name="DEBUG_DRAW_OVERDRAW" value="3" enum="DebugDraw">
-			Objects are displayed semi-transparent with additive blending so you can see where they are drawing over top of one another. A higher overdraw means you are wasting performance on drawing pixels that are being hidden behind others.
-			[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
-		</constant>
-		<constant name="DEBUG_DRAW_WIREFRAME" value="4" enum="DebugDraw">
-			Objects are displayed as wireframe models.
-			[b]Note:[/b] [method RenderingServer.set_debug_generate_wireframes] must be called before loading any meshes for wireframes to be visible when using the Compatibility renderer.
-			[b]Note:[/b] In the Compatibility renderer, backfaces are always visible when using wireframe rendering. In the Forward+ and Mobile renderers, wireframes follow the material's backface culling properties instead.
-		</constant>
-		<constant name="DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="DebugDraw">
-			Objects are displayed without lighting information and their textures replaced by normal mapping.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_VOXEL_GI_ALBEDO" value="6" enum="DebugDraw">
-			Objects are displayed with only the albedo value from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_VOXEL_GI_LIGHTING" value="7" enum="DebugDraw">
-			Objects are displayed with only the lighting value from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_VOXEL_GI_EMISSION" value="8" enum="DebugDraw">
-			Objects are displayed with only the emission color from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="DebugDraw">
-			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
-		</constant>
-		<constant name="DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="DebugDraw">
-			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
-		</constant>
-		<constant name="DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="DebugDraw">
-			Draws the scene luminance buffer (if available) in the upper left quadrant of the [Viewport].
-			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
-		</constant>
-		<constant name="DEBUG_DRAW_SSAO" value="12" enum="DebugDraw">
-			Draws the screen-space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_SSIL" value="13" enum="DebugDraw">
-			Draws the screen-space indirect lighting texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssil_enabled] set in your [WorldEnvironment].
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_PSSM_SPLITS" value="14" enum="DebugDraw">
-			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order (from closest to furthest from the camera), they are colored red, green, blue, and yellow.
-			[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
-			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
-		</constant>
-		<constant name="DEBUG_DRAW_DECAL_ATLAS" value="15" enum="DebugDraw">
-			Draws the decal atlas used by [Decal]s and light projector textures in the upper left quadrant of the [Viewport].
-			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
-		</constant>
-		<constant name="DEBUG_DRAW_SDFGI" value="16" enum="DebugDraw">
-			Draws the cascades used to render signed distance field global illumination (SDFGI).
-			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_SDFGI_PROBES" value="17" enum="DebugDraw">
-			Draws the probes used for signed distance field global illumination (SDFGI).
-			When in the editor, left-clicking a probe will display additional bright dots that show its occlusion information. A white dot means the light is not occluded at all at the dot's position, while a red dot means the light is fully occluded. Intermediate values are possible.
-			Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_GI_BUFFER" value="18" enum="DebugDraw">
-			Draws the buffer used for global illumination from [VoxelGI] or SDFGI. Requires [VoxelGI] (at least one visible baked VoxelGI node) or SDFGI ([member Environment.sdfgi_enabled]) to be enabled to have a visible effect.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_DISABLE_LOD" value="19" enum="DebugDraw">
-			Draws all of the objects at their highest polycount regardless of their distance from the camera. No low level of detail (LOD) is applied.
-		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="20" enum="DebugDraw">
-			Draws the cluster used by [OmniLight3D] nodes to optimize light rendering.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="21" enum="DebugDraw">
-			Draws the cluster used by [SpotLight3D] nodes to optimize light rendering.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="22" enum="DebugDraw">
-			Draws the cluster used by [Decal] nodes to optimize decal rendering.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="DebugDraw">
-			Draws the cluster used by [ReflectionProbe] nodes to optimize reflection probes.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_OCCLUDERS" value="24" enum="DebugDraw">
-			Draws the buffer used for occlusion culling.
-			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
-		</constant>
-		<constant name="DEBUG_DRAW_MOTION_VECTORS" value="25" enum="DebugDraw">
-			Draws vector lines over the viewport to indicate the movement of pixels between frames.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="DebugDraw">
-			Draws the internal resolution buffer of the scene in linear colorspace before tonemapping or post-processing is applied.
-			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
-		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_AREA_LIGHTS" value="27" enum="DebugDraw">
-			Draws the cluster used by [AreaLight3D] nodes to optimize light rendering.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
-		</constant>
-		<constant name="DEBUG_DRAW_AREA_LIGHT_ATLAS" value="28" enum="DebugDraw">
-			Draws the atlas used by [AreaLight3D] nodes in the upper left quadrant of the [Viewport].
-			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering method.
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
-			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="1" enum="DefaultCanvasItemTextureFilter">
-			The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="2" enum="DefaultCanvasItemTextureFilter">
-			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
-			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="DefaultCanvasItemTextureFilter">
-			The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
-			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE" value="4" enum="DefaultCanvasItemTextureFilter">
-			The [Viewport] will inherit the filter from its parent [CanvasItem] or [Viewport].
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX" value="5" enum="DefaultCanvasItemTextureFilter">
-			Represents the size of the [enum DefaultCanvasItemTextureFilter] enum.
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED" value="0" enum="DefaultCanvasItemTextureRepeat">
-			Disables textures repeating. Instead, when reading UVs outside the 0-1 range, the value will be clamped to the edge of the texture, resulting in a stretched out look at the borders of the texture.
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED" value="1" enum="DefaultCanvasItemTextureRepeat">
-			Enables the texture to repeat when UV coordinates are outside the 0-1 range. If using one of the linear filtering modes, this can result in artifacts at the edges of a texture when the sampler filters across the edges of the texture.
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR" value="2" enum="DefaultCanvasItemTextureRepeat">
-			Flip the texture when repeating so that the edge lines up instead of abruptly changing.
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE" value="3" enum="DefaultCanvasItemTextureRepeat">
-			The [Viewport] will inherit the repeat mode from its parent [CanvasItem] or [Viewport].
-		</constant>
-		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="4" enum="DefaultCanvasItemTextureRepeat">
-			Represents the size of the [enum DefaultCanvasItemTextureRepeat] enum.
-		</constant>
-		<constant name="SDF_OVERSIZE_100_PERCENT" value="0" enum="SDFOversize">
-			The signed distance field only covers the viewport's own rectangle.
-		</constant>
-		<constant name="SDF_OVERSIZE_120_PERCENT" value="1" enum="SDFOversize">
-			The signed distance field is expanded to cover 20% of the viewport's size around the borders.
-		</constant>
-		<constant name="SDF_OVERSIZE_150_PERCENT" value="2" enum="SDFOversize">
-			The signed distance field is expanded to cover 50% of the viewport's size around the borders.
-		</constant>
-		<constant name="SDF_OVERSIZE_200_PERCENT" value="3" enum="SDFOversize">
-			The signed distance field is expanded to cover 100% (double) of the viewport's size around the borders.
-		</constant>
-		<constant name="SDF_OVERSIZE_MAX" value="4" enum="SDFOversize">
-			Represents the size of the [enum SDFOversize] enum.
-		</constant>
-		<constant name="SDF_SCALE_100_PERCENT" value="0" enum="SDFScale">
-			The signed distance field is rendered at full resolution.
-		</constant>
-		<constant name="SDF_SCALE_50_PERCENT" value="1" enum="SDFScale">
-			The signed distance field is rendered at half the resolution of this viewport.
-		</constant>
-		<constant name="SDF_SCALE_25_PERCENT" value="2" enum="SDFScale">
-			The signed distance field is rendered at a quarter the resolution of this viewport.
-		</constant>
-		<constant name="SDF_SCALE_MAX" value="3" enum="SDFScale">
-			Represents the size of the [enum SDFScale] enum.
-		</constant>
-		<constant name="VRS_DISABLED" value="0" enum="VRSMode">
-			Variable Rate Shading is disabled.
-		</constant>
-		<constant name="VRS_TEXTURE" value="1" enum="VRSMode">
-			Variable Rate Shading uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
-		</constant>
-		<constant name="VRS_XR" value="2" enum="VRSMode">
-			Variable Rate Shading's texture is supplied by the primary [XRInterface].
-		</constant>
-		<constant name="VRS_MAX" value="3" enum="VRSMode">
-			Represents the size of the [enum VRSMode] enum.
-		</constant>
-		<constant name="VRS_UPDATE_DISABLED" value="0" enum="VRSUpdateMode">
-			The input texture for variable rate shading will not be processed.
-		</constant>
-		<constant name="VRS_UPDATE_ONCE" value="1" enum="VRSUpdateMode">
-			The input texture for variable rate shading will be processed once.
-		</constant>
-		<constant name="VRS_UPDATE_ALWAYS" value="2" enum="VRSUpdateMode">
-			The input texture for variable rate shading will be processed each frame.
-		</constant>
-		<constant name="VRS_UPDATE_MAX" value="3" enum="VRSUpdateMode">
-			Represents the size of the [enum VRSUpdateMode] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AnisotropicFiltering">
+			<constant name="ANISOTROPY_DISABLED" value="0">
+				Anisotropic filtering is disabled.
+			</constant>
+			<constant name="ANISOTROPY_2X" value="1">
+				Use 2× anisotropic filtering.
+			</constant>
+			<constant name="ANISOTROPY_4X" value="2">
+				Use 4× anisotropic filtering. This is the default value.
+			</constant>
+			<constant name="ANISOTROPY_8X" value="3">
+				Use 8× anisotropic filtering.
+			</constant>
+			<constant name="ANISOTROPY_16X" value="4">
+				Use 16× anisotropic filtering.
+			</constant>
+			<constant name="ANISOTROPY_MAX" value="5">
+				Represents the size of the [enum AnisotropicFiltering] enum.
+			</constant>
+		</enum>
+		<enum name="DebugDraw">
+			<constant name="DEBUG_DRAW_DISABLED" value="0">
+				Objects are displayed normally.
+			</constant>
+			<constant name="DEBUG_DRAW_UNSHADED" value="1">
+				Objects are displayed without light information.
+			</constant>
+			<constant name="DEBUG_DRAW_LIGHTING" value="2">
+				Objects are displayed without textures and only with lighting information.
+				[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
+			</constant>
+			<constant name="DEBUG_DRAW_OVERDRAW" value="3">
+				Objects are displayed semi-transparent with additive blending so you can see where they are drawing over top of one another. A higher overdraw means you are wasting performance on drawing pixels that are being hidden behind others.
+				[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
+			</constant>
+			<constant name="DEBUG_DRAW_WIREFRAME" value="4">
+				Objects are displayed as wireframe models.
+				[b]Note:[/b] [method RenderingServer.set_debug_generate_wireframes] must be called before loading any meshes for wireframes to be visible when using the Compatibility renderer.
+				[b]Note:[/b] In the Compatibility renderer, backfaces are always visible when using wireframe rendering. In the Forward+ and Mobile renderers, wireframes follow the material's backface culling properties instead.
+			</constant>
+			<constant name="DEBUG_DRAW_NORMAL_BUFFER" value="5">
+				Objects are displayed without lighting information and their textures replaced by normal mapping.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_VOXEL_GI_ALBEDO" value="6">
+				Objects are displayed with only the albedo value from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_VOXEL_GI_LIGHTING" value="7">
+				Objects are displayed with only the lighting value from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_VOXEL_GI_EMISSION" value="8">
+				Objects are displayed with only the emission color from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_SHADOW_ATLAS" value="9">
+				Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
+			</constant>
+			<constant name="DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10">
+				Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
+			</constant>
+			<constant name="DEBUG_DRAW_SCENE_LUMINANCE" value="11">
+				Draws the scene luminance buffer (if available) in the upper left quadrant of the [Viewport].
+				[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
+			</constant>
+			<constant name="DEBUG_DRAW_SSAO" value="12">
+				Draws the screen-space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_SSIL" value="13">
+				Draws the screen-space indirect lighting texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssil_enabled] set in your [WorldEnvironment].
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_PSSM_SPLITS" value="14">
+				Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order (from closest to furthest from the camera), they are colored red, green, blue, and yellow.
+				[b]Note:[/b] When using this debug draw mode, custom shaders are ignored since all materials in the scene temporarily use a debug material. This means the result from custom shader functions (such as vertex displacement) won't be visible anymore when using this debug draw mode.
+				[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
+			</constant>
+			<constant name="DEBUG_DRAW_DECAL_ATLAS" value="15">
+				Draws the decal atlas used by [Decal]s and light projector textures in the upper left quadrant of the [Viewport].
+				[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
+			</constant>
+			<constant name="DEBUG_DRAW_SDFGI" value="16">
+				Draws the cascades used to render signed distance field global illumination (SDFGI).
+				Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_SDFGI_PROBES" value="17">
+				Draws the probes used for signed distance field global illumination (SDFGI).
+				When in the editor, left-clicking a probe will display additional bright dots that show its occlusion information. A white dot means the light is not occluded at all at the dot's position, while a red dot means the light is fully occluded. Intermediate values are possible.
+				Does nothing if the current environment's [member Environment.sdfgi_enabled] is [code]false[/code].
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_GI_BUFFER" value="18">
+				Draws the buffer used for global illumination from [VoxelGI] or SDFGI. Requires [VoxelGI] (at least one visible baked VoxelGI node) or SDFGI ([member Environment.sdfgi_enabled]) to be enabled to have a visible effect.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_DISABLE_LOD" value="19">
+				Draws all of the objects at their highest polycount regardless of their distance from the camera. No low level of detail (LOD) is applied.
+			</constant>
+			<constant name="DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="20">
+				Draws the cluster used by [OmniLight3D] nodes to optimize light rendering.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="21">
+				Draws the cluster used by [SpotLight3D] nodes to optimize light rendering.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="22">
+				Draws the cluster used by [Decal] nodes to optimize decal rendering.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23">
+				Draws the cluster used by [ReflectionProbe] nodes to optimize reflection probes.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_OCCLUDERS" value="24">
+				Draws the buffer used for occlusion culling.
+				[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
+			</constant>
+			<constant name="DEBUG_DRAW_MOTION_VECTORS" value="25">
+				Draws vector lines over the viewport to indicate the movement of pixels between frames.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_INTERNAL_BUFFER" value="26">
+				Draws the internal resolution buffer of the scene in linear colorspace before tonemapping or post-processing is applied.
+				[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
+			</constant>
+			<constant name="DEBUG_DRAW_CLUSTER_AREA_LIGHTS" value="27">
+				Draws the cluster used by [AreaLight3D] nodes to optimize light rendering.
+				[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			</constant>
+			<constant name="DEBUG_DRAW_AREA_LIGHT_ATLAS" value="28">
+				Draws the atlas used by [AreaLight3D] nodes in the upper left quadrant of the [Viewport].
+				[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering method.
+			</constant>
+		</enum>
+		<enum name="DefaultCanvasItemTextureFilter">
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0">
+				The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
+			</constant>
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="1">
+				The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
+			</constant>
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="2">
+				The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
+				Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
+			</constant>
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3">
+				The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
+				Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
+			</constant>
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE" value="4">
+				The [Viewport] will inherit the filter from its parent [CanvasItem] or [Viewport].
+			</constant>
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX" value="5">
+				Represents the size of the [enum DefaultCanvasItemTextureFilter] enum.
+			</constant>
+		</enum>
+		<enum name="DefaultCanvasItemTextureRepeat">
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED" value="0">
+				Disables textures repeating. Instead, when reading UVs outside the 0-1 range, the value will be clamped to the edge of the texture, resulting in a stretched out look at the borders of the texture.
+			</constant>
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED" value="1">
+				Enables the texture to repeat when UV coordinates are outside the 0-1 range. If using one of the linear filtering modes, this can result in artifacts at the edges of a texture when the sampler filters across the edges of the texture.
+			</constant>
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR" value="2">
+				Flip the texture when repeating so that the edge lines up instead of abruptly changing.
+			</constant>
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_PARENT_NODE" value="3">
+				The [Viewport] will inherit the repeat mode from its parent [CanvasItem] or [Viewport].
+			</constant>
+			<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="4">
+				Represents the size of the [enum DefaultCanvasItemTextureRepeat] enum.
+			</constant>
+		</enum>
+		<enum name="MSAA">
+			<constant name="MSAA_DISABLED" value="0">
+				Multisample antialiasing mode disabled. This is the default value, and is also the fastest setting.
+			</constant>
+			<constant name="MSAA_2X" value="1">
+				Use 2× Multisample Antialiasing. This has a moderate performance cost. It helps reduce aliasing noticeably, but 4× MSAA still looks substantially better.
+			</constant>
+			<constant name="MSAA_4X" value="2">
+				Use 4× Multisample Antialiasing. This has a significant performance cost, and is generally a good compromise between performance and quality.
+			</constant>
+			<constant name="MSAA_8X" value="3">
+				Use 8× Multisample Antialiasing. This has a very high performance cost. The difference between 4× and 8× MSAA may not always be visible in real gameplay conditions. Likely unsupported on low-end and older hardware.
+			</constant>
+			<constant name="MSAA_MAX" value="4">
+				Represents the size of the [enum MSAA] enum.
+			</constant>
+		</enum>
+		<enum name="PositionalShadowAtlasQuadrantSubdiv">
+			<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED" value="0">
+				This quadrant will not be used.
+			</constant>
+			<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1" value="1">
+				This quadrant will only be used by one shadow map.
+			</constant>
+			<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_4" value="2">
+				This quadrant will be split in 4 and used by up to 4 shadow maps.
+			</constant>
+			<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_16" value="3">
+				This quadrant will be split 16 ways and used by up to 16 shadow maps.
+			</constant>
+			<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_64" value="4">
+				This quadrant will be split 64 ways and used by up to 64 shadow maps.
+			</constant>
+			<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_256" value="5">
+				This quadrant will be split 256 ways and used by up to 256 shadow maps. Unless the [member positional_shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
+			</constant>
+			<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_1024" value="6">
+				This quadrant will be split 1024 ways and used by up to 1024 shadow maps. Unless the [member positional_shadow_atlas_size] is very high, the shadows in this quadrant will be very low resolution.
+			</constant>
+			<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7">
+				Represents the size of the [enum PositionalShadowAtlasQuadrantSubdiv] enum.
+			</constant>
+		</enum>
+		<enum name="RenderInfo">
+			<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0">
+				Amount of objects in frame.
+			</constant>
+			<constant name="RENDER_INFO_PRIMITIVES_IN_FRAME" value="1">
+				Amount of vertices in frame.
+			</constant>
+			<constant name="RENDER_INFO_DRAW_CALLS_IN_FRAME" value="2">
+				Amount of draw calls in frame.
+			</constant>
+			<constant name="RENDER_INFO_MAX" value="3">
+				Represents the size of the [enum RenderInfo] enum.
+			</constant>
+		</enum>
+		<enum name="RenderInfoType">
+			<constant name="RENDER_INFO_TYPE_VISIBLE" value="0">
+				Visible render pass (excluding shadows).
+			</constant>
+			<constant name="RENDER_INFO_TYPE_SHADOW" value="1">
+				Shadow render pass. Objects will be rendered several times depending on the number of amounts of lights with shadows and the number of directional shadow splits.
+			</constant>
+			<constant name="RENDER_INFO_TYPE_CANVAS" value="2">
+				Canvas item rendering. This includes all 2D rendering.
+			</constant>
+			<constant name="RENDER_INFO_TYPE_MAX" value="3">
+				Represents the size of the [enum RenderInfoType] enum.
+			</constant>
+		</enum>
+		<enum name="SDFOversize">
+			<constant name="SDF_OVERSIZE_100_PERCENT" value="0">
+				The signed distance field only covers the viewport's own rectangle.
+			</constant>
+			<constant name="SDF_OVERSIZE_120_PERCENT" value="1">
+				The signed distance field is expanded to cover 20% of the viewport's size around the borders.
+			</constant>
+			<constant name="SDF_OVERSIZE_150_PERCENT" value="2">
+				The signed distance field is expanded to cover 50% of the viewport's size around the borders.
+			</constant>
+			<constant name="SDF_OVERSIZE_200_PERCENT" value="3">
+				The signed distance field is expanded to cover 100% (double) of the viewport's size around the borders.
+			</constant>
+			<constant name="SDF_OVERSIZE_MAX" value="4">
+				Represents the size of the [enum SDFOversize] enum.
+			</constant>
+		</enum>
+		<enum name="SDFScale">
+			<constant name="SDF_SCALE_100_PERCENT" value="0">
+				The signed distance field is rendered at full resolution.
+			</constant>
+			<constant name="SDF_SCALE_50_PERCENT" value="1">
+				The signed distance field is rendered at half the resolution of this viewport.
+			</constant>
+			<constant name="SDF_SCALE_25_PERCENT" value="2">
+				The signed distance field is rendered at a quarter the resolution of this viewport.
+			</constant>
+			<constant name="SDF_SCALE_MAX" value="3">
+				Represents the size of the [enum SDFScale] enum.
+			</constant>
+		</enum>
+		<enum name="Scaling3DMode">
+			<constant name="SCALING_3D_MODE_BILINEAR" value="0">
+				Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
+			</constant>
+			<constant name="SCALING_3D_MODE_FSR" value="1">
+				Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			</constant>
+			<constant name="SCALING_3D_MODE_FSR2" value="2">
+				Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
+			</constant>
+			<constant name="SCALING_3D_MODE_METALFX_SPATIAL" value="3">
+				Use the [url=https://developer.apple.com/documentation/metalfx/mtlfxspatialscaler#overview]MetalFX spatial upscaler[/url] for the viewport's 3D buffer.
+				The amount of scaling can be set using [member scaling_3d_scale].
+				Values less than [code]1.0[/code] will result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+				More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
+				[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
+			</constant>
+			<constant name="SCALING_3D_MODE_METALFX_TEMPORAL" value="4">
+				Use the [url=https://developer.apple.com/documentation/metalfx/mtlfxtemporalscaler#overview]MetalFX temporal upscaler[/url] for the viewport's 3D buffer.
+				The amount of scaling can be set using [member scaling_3d_scale]. To determine the minimum input scale, use the [method RenderingDevice.limit_get] method with [constant RenderingDevice.LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE].
+				Values less than [code]1.0[/code] will result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use MetalFX at native resolution as a TAA solution.
+				More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
+				[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
+			</constant>
+			<constant name="SCALING_3D_MODE_NEAREST" value="5">
+				Use nearest-neighbor filtering for the viewport's 3D buffer. This looks crisper than [constant SCALING_3D_MODE_BILINEAR] and has no additional rendering cost. The amount of scaling can be set using [member scaling_3d_scale]. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+				[b]Note:[/b] When using the [b]Nearest[/b] scaling mode, to avoid uneven pixel scaling, it's highly recommended to use a value equal to an integer divisor with a dividend of [code]1[/code]. For example, it's best to use a scale of [code]0.5[/code] (1/2), [code]0.3333[/code] (1/3), [code]0.25[/code] (1/4), [code]0.2[/code] (1/5), and so on.
+			</constant>
+			<constant name="SCALING_3D_MODE_MAX" value="6">
+				Represents the size of the [enum Scaling3DMode] enum.
+			</constant>
+		</enum>
+		<enum name="ScreenSpaceAA">
+			<constant name="SCREEN_SPACE_AA_DISABLED" value="0">
+				Do not perform any antialiasing in the full screen post-process.
+			</constant>
+			<constant name="SCREEN_SPACE_AA_FXAA" value="1">
+				Use fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
+			</constant>
+			<constant name="SCREEN_SPACE_AA_SMAA" value="2">
+				Use subpixel morphological antialiasing. SMAA may produce clearer results than FXAA, but at a slightly higher performance cost.
+			</constant>
+			<constant name="SCREEN_SPACE_AA_MAX" value="3">
+				Represents the size of the [enum ScreenSpaceAA] enum.
+			</constant>
+		</enum>
+		<enum name="VRSMode">
+			<constant name="VRS_DISABLED" value="0">
+				Variable Rate Shading is disabled.
+			</constant>
+			<constant name="VRS_TEXTURE" value="1">
+				Variable Rate Shading uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
+			</constant>
+			<constant name="VRS_XR" value="2">
+				Variable Rate Shading's texture is supplied by the primary [XRInterface].
+			</constant>
+			<constant name="VRS_MAX" value="3">
+				Represents the size of the [enum VRSMode] enum.
+			</constant>
+		</enum>
+		<enum name="VRSUpdateMode">
+			<constant name="VRS_UPDATE_DISABLED" value="0">
+				The input texture for variable rate shading will not be processed.
+			</constant>
+			<constant name="VRS_UPDATE_ONCE" value="1">
+				The input texture for variable rate shading will be processed once.
+			</constant>
+			<constant name="VRS_UPDATE_ALWAYS" value="2">
+				The input texture for variable rate shading will be processed each frame.
+			</constant>
+			<constant name="VRS_UPDATE_MAX" value="3">
+				Represents the size of the [enum VRSUpdateMode] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

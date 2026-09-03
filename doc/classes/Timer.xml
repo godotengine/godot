@@ -74,12 +74,14 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="TIMER_PROCESS_PHYSICS" value="0" enum="TimerProcessCallback">
-			Update the timer every physics process frame (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
-		</constant>
-		<constant name="TIMER_PROCESS_IDLE" value="1" enum="TimerProcessCallback">
-			Update the timer every process (rendered) frame (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="TimerProcessCallback">
+			<constant name="TIMER_PROCESS_PHYSICS" value="0">
+				Update the timer every physics process frame (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
+			</constant>
+			<constant name="TIMER_PROCESS_IDLE" value="1">
+				Update the timer every process (rendered) frame (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+			</constant>
+		</enum>
+	</enums>
 </class>

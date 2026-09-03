@@ -84,21 +84,23 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="LOAD_STATUS_OK" value="0" enum="LoadStatus">
-			The extension has loaded successfully.
-		</constant>
-		<constant name="LOAD_STATUS_FAILED" value="1" enum="LoadStatus">
-			The extension has failed to load, possibly because it does not exist or has missing dependencies.
-		</constant>
-		<constant name="LOAD_STATUS_ALREADY_LOADED" value="2" enum="LoadStatus">
-			The extension has already been loaded.
-		</constant>
-		<constant name="LOAD_STATUS_NOT_LOADED" value="3" enum="LoadStatus">
-			The extension has not been loaded.
-		</constant>
-		<constant name="LOAD_STATUS_NEEDS_RESTART" value="4" enum="LoadStatus">
-			The extension requires the application to restart to fully load.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="LoadStatus">
+			<constant name="LOAD_STATUS_OK" value="0">
+				The extension has loaded successfully.
+			</constant>
+			<constant name="LOAD_STATUS_FAILED" value="1">
+				The extension has failed to load, possibly because it does not exist or has missing dependencies.
+			</constant>
+			<constant name="LOAD_STATUS_ALREADY_LOADED" value="2">
+				The extension has already been loaded.
+			</constant>
+			<constant name="LOAD_STATUS_NOT_LOADED" value="3">
+				The extension has not been loaded.
+			</constant>
+			<constant name="LOAD_STATUS_NEEDS_RESTART" value="4">
+				The extension requires the application to restart to fully load.
+			</constant>
+		</enum>
+	</enums>
 </class>

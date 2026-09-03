@@ -283,39 +283,43 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="CUSTOM_RGBA8_UNORM" value="0" enum="CustomFormat">
-			Limits range of data passed to [method set_custom] to unsigned normalized 0 to 1 stored in 8 bits per channel. See [constant Mesh.ARRAY_CUSTOM_RGBA8_UNORM].
-		</constant>
-		<constant name="CUSTOM_RGBA8_SNORM" value="1" enum="CustomFormat">
-			Limits range of data passed to [method set_custom] to signed normalized -1 to 1 stored in 8 bits per channel. See [constant Mesh.ARRAY_CUSTOM_RGBA8_SNORM].
-		</constant>
-		<constant name="CUSTOM_RG_HALF" value="2" enum="CustomFormat">
-			Stores data passed to [method set_custom] as half precision floats, and uses only red and green color channels. See [constant Mesh.ARRAY_CUSTOM_RG_HALF].
-		</constant>
-		<constant name="CUSTOM_RGBA_HALF" value="3" enum="CustomFormat">
-			Stores data passed to [method set_custom] as half precision floats and uses all color channels. See [constant Mesh.ARRAY_CUSTOM_RGBA_HALF].
-		</constant>
-		<constant name="CUSTOM_R_FLOAT" value="4" enum="CustomFormat">
-			Stores data passed to [method set_custom] as full precision floats, and uses only red color channel. See [constant Mesh.ARRAY_CUSTOM_R_FLOAT].
-		</constant>
-		<constant name="CUSTOM_RG_FLOAT" value="5" enum="CustomFormat">
-			Stores data passed to [method set_custom] as full precision floats, and uses only red and green color channels. See [constant Mesh.ARRAY_CUSTOM_RG_FLOAT].
-		</constant>
-		<constant name="CUSTOM_RGB_FLOAT" value="6" enum="CustomFormat">
-			Stores data passed to [method set_custom] as full precision floats, and uses only red, green and blue color channels. See [constant Mesh.ARRAY_CUSTOM_RGB_FLOAT].
-		</constant>
-		<constant name="CUSTOM_RGBA_FLOAT" value="7" enum="CustomFormat">
-			Stores data passed to [method set_custom] as full precision floats, and uses all color channels. See [constant Mesh.ARRAY_CUSTOM_RGBA_FLOAT].
-		</constant>
-		<constant name="CUSTOM_MAX" value="8" enum="CustomFormat">
-			Used to indicate a disabled custom channel.
-		</constant>
-		<constant name="SKIN_4_WEIGHTS" value="0" enum="SkinWeightCount">
-			Each individual vertex can be influenced by only 4 bone weights.
-		</constant>
-		<constant name="SKIN_8_WEIGHTS" value="1" enum="SkinWeightCount">
-			Each individual vertex can be influenced by up to 8 bone weights.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="CustomFormat">
+			<constant name="CUSTOM_RGBA8_UNORM" value="0">
+				Limits range of data passed to [method set_custom] to unsigned normalized 0 to 1 stored in 8 bits per channel. See [constant Mesh.ARRAY_CUSTOM_RGBA8_UNORM].
+			</constant>
+			<constant name="CUSTOM_RGBA8_SNORM" value="1">
+				Limits range of data passed to [method set_custom] to signed normalized -1 to 1 stored in 8 bits per channel. See [constant Mesh.ARRAY_CUSTOM_RGBA8_SNORM].
+			</constant>
+			<constant name="CUSTOM_RG_HALF" value="2">
+				Stores data passed to [method set_custom] as half precision floats, and uses only red and green color channels. See [constant Mesh.ARRAY_CUSTOM_RG_HALF].
+			</constant>
+			<constant name="CUSTOM_RGBA_HALF" value="3">
+				Stores data passed to [method set_custom] as half precision floats and uses all color channels. See [constant Mesh.ARRAY_CUSTOM_RGBA_HALF].
+			</constant>
+			<constant name="CUSTOM_R_FLOAT" value="4">
+				Stores data passed to [method set_custom] as full precision floats, and uses only red color channel. See [constant Mesh.ARRAY_CUSTOM_R_FLOAT].
+			</constant>
+			<constant name="CUSTOM_RG_FLOAT" value="5">
+				Stores data passed to [method set_custom] as full precision floats, and uses only red and green color channels. See [constant Mesh.ARRAY_CUSTOM_RG_FLOAT].
+			</constant>
+			<constant name="CUSTOM_RGB_FLOAT" value="6">
+				Stores data passed to [method set_custom] as full precision floats, and uses only red, green and blue color channels. See [constant Mesh.ARRAY_CUSTOM_RGB_FLOAT].
+			</constant>
+			<constant name="CUSTOM_RGBA_FLOAT" value="7">
+				Stores data passed to [method set_custom] as full precision floats, and uses all color channels. See [constant Mesh.ARRAY_CUSTOM_RGBA_FLOAT].
+			</constant>
+			<constant name="CUSTOM_MAX" value="8">
+				Used to indicate a disabled custom channel.
+			</constant>
+		</enum>
+		<enum name="SkinWeightCount">
+			<constant name="SKIN_4_WEIGHTS" value="0">
+				Each individual vertex can be influenced by only 4 bone weights.
+			</constant>
+			<constant name="SKIN_8_WEIGHTS" value="1">
+				Each individual vertex can be influenced by up to 8 bone weights.
+			</constant>
+		</enum>
+	</enums>
 </class>

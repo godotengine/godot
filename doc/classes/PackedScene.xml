@@ -103,21 +103,23 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="GEN_EDIT_STATE_DISABLED" value="0" enum="GenEditState">
-			If passed to [method instantiate], blocks edits to the scene state.
-		</constant>
-		<constant name="GEN_EDIT_STATE_INSTANCE" value="1" enum="GenEditState">
-			If passed to [method instantiate], provides local scene resources to the local scene.
-			[b]Note:[/b] Only available in editor builds.
-		</constant>
-		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
-			If passed to [method instantiate], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
-			[b]Note:[/b] Only available in editor builds.
-		</constant>
-		<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3" enum="GenEditState">
-			It's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
-			[b]Note:[/b] Only available in editor builds.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="GenEditState">
+			<constant name="GEN_EDIT_STATE_DISABLED" value="0">
+				If passed to [method instantiate], blocks edits to the scene state.
+			</constant>
+			<constant name="GEN_EDIT_STATE_INSTANCE" value="1">
+				If passed to [method instantiate], provides local scene resources to the local scene.
+				[b]Note:[/b] Only available in editor builds.
+			</constant>
+			<constant name="GEN_EDIT_STATE_MAIN" value="2">
+				If passed to [method instantiate], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+				[b]Note:[/b] Only available in editor builds.
+			</constant>
+			<constant name="GEN_EDIT_STATE_MAIN_INHERITED" value="3">
+				It's similar to [constant GEN_EDIT_STATE_MAIN], but for the case where the scene is being instantiated to be the base of another one.
+				[b]Note:[/b] Only available in editor builds.
+			</constant>
+		</enum>
+	</enums>
 </class>

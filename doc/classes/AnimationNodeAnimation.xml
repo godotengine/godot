@@ -43,12 +43,14 @@
 			If [code]true[/code], [AnimationNode] provides an animation based on the [Animation] resource with some parameters adjusted.
 		</member>
 	</members>
-	<constants>
-		<constant name="PLAY_MODE_FORWARD" value="0" enum="PlayMode">
-			Plays animation in forward direction.
-		</constant>
-		<constant name="PLAY_MODE_BACKWARD" value="1" enum="PlayMode">
-			Plays animation in backward direction.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="PlayMode">
+			<constant name="PLAY_MODE_FORWARD" value="0">
+				Plays animation in forward direction.
+			</constant>
+			<constant name="PLAY_MODE_BACKWARD" value="1">
+				Plays animation in backward direction.
+			</constant>
+		</enum>
+	</enums>
 </class>

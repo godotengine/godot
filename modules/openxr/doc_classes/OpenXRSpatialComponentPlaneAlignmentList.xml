@@ -17,18 +17,20 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="PLANE_ALIGNMENT_HORIZONTAL_UPWARD" value="0" enum="PlaneAlignment">
-			Plane is facing upward.
-		</constant>
-		<constant name="PLANE_ALIGNMENT_HORIZONTAL_DOWNWARD" value="1" enum="PlaneAlignment">
-			Plane is facing downwards.
-		</constant>
-		<constant name="PLANE_ALIGNMENT_VERTICAL" value="2" enum="PlaneAlignment">
-			Plane is vertically aligned.
-		</constant>
-		<constant name="PLANE_ALIGNMENT_ARBITRARY" value="3" enum="PlaneAlignment">
-			Plane has an arbitrary alignment.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="PlaneAlignment">
+			<constant name="PLANE_ALIGNMENT_HORIZONTAL_UPWARD" value="0">
+				Plane is facing upward.
+			</constant>
+			<constant name="PLANE_ALIGNMENT_HORIZONTAL_DOWNWARD" value="1">
+				Plane is facing downwards.
+			</constant>
+			<constant name="PLANE_ALIGNMENT_VERTICAL" value="2">
+				Plane is vertically aligned.
+			</constant>
+			<constant name="PLANE_ALIGNMENT_ARBITRARY" value="3">
+				Plane has an arbitrary alignment.
+			</constant>
+		</enum>
+	</enums>
 </class>

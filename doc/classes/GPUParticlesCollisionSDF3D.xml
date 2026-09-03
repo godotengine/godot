@@ -47,27 +47,29 @@
 			The collision shape's thickness. Unlike other particle colliders, [GPUParticlesCollisionSDF3D] is actually hollow on the inside. [member thickness] can be increased to prevent particles from tunneling through the collision shape at high speeds, or when the [GPUParticlesCollisionSDF3D] is moved.
 		</member>
 	</members>
-	<constants>
-		<constant name="RESOLUTION_16" value="0" enum="Resolution">
-			Bake a 16×16×16 signed distance field. This is the fastest option, but also the least precise.
-		</constant>
-		<constant name="RESOLUTION_32" value="1" enum="Resolution">
-			Bake a 32×32×32 signed distance field.
-		</constant>
-		<constant name="RESOLUTION_64" value="2" enum="Resolution">
-			Bake a 64×64×64 signed distance field.
-		</constant>
-		<constant name="RESOLUTION_128" value="3" enum="Resolution">
-			Bake a 128×128×128 signed distance field.
-		</constant>
-		<constant name="RESOLUTION_256" value="4" enum="Resolution">
-			Bake a 256×256×256 signed distance field.
-		</constant>
-		<constant name="RESOLUTION_512" value="5" enum="Resolution">
-			Bake a 512×512×512 signed distance field. This is the slowest option, but also the most precise.
-		</constant>
-		<constant name="RESOLUTION_MAX" value="6" enum="Resolution">
-			Represents the size of the [enum Resolution] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Resolution">
+			<constant name="RESOLUTION_16" value="0">
+				Bake a 16×16×16 signed distance field. This is the fastest option, but also the least precise.
+			</constant>
+			<constant name="RESOLUTION_32" value="1">
+				Bake a 32×32×32 signed distance field.
+			</constant>
+			<constant name="RESOLUTION_64" value="2">
+				Bake a 64×64×64 signed distance field.
+			</constant>
+			<constant name="RESOLUTION_128" value="3">
+				Bake a 128×128×128 signed distance field.
+			</constant>
+			<constant name="RESOLUTION_256" value="4">
+				Bake a 256×256×256 signed distance field.
+			</constant>
+			<constant name="RESOLUTION_512" value="5">
+				Bake a 512×512×512 signed distance field. This is the slowest option, but also the most precise.
+			</constant>
+			<constant name="RESOLUTION_MAX" value="6">
+				Represents the size of the [enum Resolution] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

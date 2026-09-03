@@ -40,18 +40,20 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="ERROR_TYPE_ERROR" value="0" enum="ErrorType">
-			The message received is an error.
-		</constant>
-		<constant name="ERROR_TYPE_WARNING" value="1" enum="ErrorType">
-			The message received is a warning.
-		</constant>
-		<constant name="ERROR_TYPE_SCRIPT" value="2" enum="ErrorType">
-			The message received is a script error.
-		</constant>
-		<constant name="ERROR_TYPE_SHADER" value="3" enum="ErrorType">
-			The message received is a shader error.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ErrorType">
+			<constant name="ERROR_TYPE_ERROR" value="0">
+				The message received is an error.
+			</constant>
+			<constant name="ERROR_TYPE_WARNING" value="1">
+				The message received is a warning.
+			</constant>
+			<constant name="ERROR_TYPE_SCRIPT" value="2">
+				The message received is a script error.
+			</constant>
+			<constant name="ERROR_TYPE_SHADER" value="3">
+				The message received is a shader error.
+			</constant>
+		</enum>
+	</enums>
 </class>

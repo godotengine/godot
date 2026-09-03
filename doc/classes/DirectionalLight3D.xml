@@ -40,24 +40,28 @@
 			Whether this [DirectionalLight3D] is visible in the sky, in the scene, or both in the sky and in the scene.
 		</member>
 	</members>
-	<constants>
-		<constant name="SHADOW_ORTHOGONAL" value="0" enum="ShadowMode">
-			Renders the entire scene's shadow map from an orthogonal point of view. This is the fastest directional shadow mode. May result in blurrier shadows on close objects.
-		</constant>
-		<constant name="SHADOW_PARALLEL_2_SPLITS" value="1" enum="ShadowMode">
-			Splits the view frustum in 2 areas, each with its own shadow map. This shadow mode is a compromise between [constant SHADOW_ORTHOGONAL] and [constant SHADOW_PARALLEL_4_SPLITS] in terms of performance.
-		</constant>
-		<constant name="SHADOW_PARALLEL_4_SPLITS" value="2" enum="ShadowMode">
-			Splits the view frustum in 4 areas, each with its own shadow map. This is the slowest directional shadow mode.
-		</constant>
-		<constant name="SKY_MODE_LIGHT_AND_SKY" value="0" enum="SkyMode">
-			Makes the light visible in both scene lighting and sky rendering.
-		</constant>
-		<constant name="SKY_MODE_LIGHT_ONLY" value="1" enum="SkyMode">
-			Makes the light visible in scene lighting only (including direct lighting and global illumination). When using this mode, the light will not be visible from sky shaders.
-		</constant>
-		<constant name="SKY_MODE_SKY_ONLY" value="2" enum="SkyMode">
-			Makes the light visible to sky shaders only. When using this mode the light will not cast light into the scene (either through direct lighting or through global illumination), but can be accessed through sky shaders. This can be useful, for example, when you want to control sky effects without illuminating the scene (during a night cycle, for example).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ShadowMode">
+			<constant name="SHADOW_ORTHOGONAL" value="0">
+				Renders the entire scene's shadow map from an orthogonal point of view. This is the fastest directional shadow mode. May result in blurrier shadows on close objects.
+			</constant>
+			<constant name="SHADOW_PARALLEL_2_SPLITS" value="1">
+				Splits the view frustum in 2 areas, each with its own shadow map. This shadow mode is a compromise between [constant SHADOW_ORTHOGONAL] and [constant SHADOW_PARALLEL_4_SPLITS] in terms of performance.
+			</constant>
+			<constant name="SHADOW_PARALLEL_4_SPLITS" value="2">
+				Splits the view frustum in 4 areas, each with its own shadow map. This is the slowest directional shadow mode.
+			</constant>
+		</enum>
+		<enum name="SkyMode">
+			<constant name="SKY_MODE_LIGHT_AND_SKY" value="0">
+				Makes the light visible in both scene lighting and sky rendering.
+			</constant>
+			<constant name="SKY_MODE_LIGHT_ONLY" value="1">
+				Makes the light visible in scene lighting only (including direct lighting and global illumination). When using this mode, the light will not be visible from sky shaders.
+			</constant>
+			<constant name="SKY_MODE_SKY_ONLY" value="2">
+				Makes the light visible to sky shaders only. When using this mode the light will not cast light into the scene (either through direct lighting or through global illumination), but can be accessed through sky shaders. This can be useful, for example, when you want to control sky effects without illuminating the scene (during a night cycle, for example).
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -640,53 +640,57 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="KIND_CLASS" value="0" enum="CodeCompletionKind">
-			Marks the option as a class.
-		</constant>
-		<constant name="KIND_FUNCTION" value="1" enum="CodeCompletionKind">
-			Marks the option as a function.
-		</constant>
-		<constant name="KIND_SIGNAL" value="2" enum="CodeCompletionKind">
-			Marks the option as a Godot signal.
-		</constant>
-		<constant name="KIND_VARIABLE" value="3" enum="CodeCompletionKind">
-			Marks the option as a variable.
-		</constant>
-		<constant name="KIND_MEMBER" value="4" enum="CodeCompletionKind">
-			Marks the option as a member.
-		</constant>
-		<constant name="KIND_ENUM" value="5" enum="CodeCompletionKind">
-			Marks the option as an enum entry.
-		</constant>
-		<constant name="KIND_CONSTANT" value="6" enum="CodeCompletionKind">
-			Marks the option as a constant.
-		</constant>
-		<constant name="KIND_NODE_PATH" value="7" enum="CodeCompletionKind">
-			Marks the option as a Godot node path.
-		</constant>
-		<constant name="KIND_FILE_PATH" value="8" enum="CodeCompletionKind">
-			Marks the option as a file path.
-		</constant>
-		<constant name="KIND_PLAIN_TEXT" value="9" enum="CodeCompletionKind">
-			Marks the option as unclassified or plain text.
-		</constant>
-		<constant name="KIND_KEYWORD" value="10" enum="CodeCompletionKind">
-			Marks the option as a keyword.
-		</constant>
-		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">
-			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
-		</constant>
-		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
-			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.
-		</constant>
-		<constant name="LOCATION_OTHER_USER_CODE" value="512" enum="CodeCompletionLocation">
-			The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).
-		</constant>
-		<constant name="LOCATION_OTHER" value="1024" enum="CodeCompletionLocation">
-			The option is from other engine code, not covered by the other enum constants - e.g. built-in classes.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="CodeCompletionKind">
+			<constant name="KIND_CLASS" value="0">
+				Marks the option as a class.
+			</constant>
+			<constant name="KIND_FUNCTION" value="1">
+				Marks the option as a function.
+			</constant>
+			<constant name="KIND_SIGNAL" value="2">
+				Marks the option as a Godot signal.
+			</constant>
+			<constant name="KIND_VARIABLE" value="3">
+				Marks the option as a variable.
+			</constant>
+			<constant name="KIND_MEMBER" value="4">
+				Marks the option as a member.
+			</constant>
+			<constant name="KIND_ENUM" value="5">
+				Marks the option as an enum entry.
+			</constant>
+			<constant name="KIND_CONSTANT" value="6">
+				Marks the option as a constant.
+			</constant>
+			<constant name="KIND_NODE_PATH" value="7">
+				Marks the option as a Godot node path.
+			</constant>
+			<constant name="KIND_FILE_PATH" value="8">
+				Marks the option as a file path.
+			</constant>
+			<constant name="KIND_PLAIN_TEXT" value="9">
+				Marks the option as unclassified or plain text.
+			</constant>
+			<constant name="KIND_KEYWORD" value="10">
+				Marks the option as a keyword.
+			</constant>
+		</enum>
+		<enum name="CodeCompletionLocation">
+			<constant name="LOCATION_LOCAL" value="0">
+				The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
+			</constant>
+			<constant name="LOCATION_PARENT_MASK" value="256">
+				The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.
+			</constant>
+			<constant name="LOCATION_OTHER_USER_CODE" value="512">
+				The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).
+			</constant>
+			<constant name="LOCATION_OTHER" value="1024">
+				The option is from other engine code, not covered by the other enum constants - e.g. built-in classes.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="bookmark_color" data_type="color" type="Color" default="Color(0.5, 0.64, 1, 0.8)">
 			[Color] of the bookmark icon for bookmarked lines.

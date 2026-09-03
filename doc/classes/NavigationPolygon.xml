@@ -205,40 +205,46 @@
 			The source of the geometry used when baking.
 		</member>
 	</members>
-	<constants>
-		<constant name="SAMPLE_PARTITION_CONVEX_PARTITION" value="0" enum="SamplePartitionType">
-			Convex partitioning that results in a navigation mesh with convex polygons.
-		</constant>
-		<constant name="SAMPLE_PARTITION_TRIANGULATE" value="1" enum="SamplePartitionType">
-			Triangulation partitioning that results in a navigation mesh with triangle polygons.
-		</constant>
-		<constant name="SAMPLE_PARTITION_MAX" value="2" enum="SamplePartitionType">
-			Represents the size of the [enum SamplePartitionType] enum.
-		</constant>
-		<constant name="PARSED_GEOMETRY_MESH_INSTANCES" value="0" enum="ParsedGeometryType">
-			Parses mesh instances as obstruction geometry. This includes [Polygon2D], [MeshInstance2D], [MultiMeshInstance2D], and [TileMap] nodes.
-			Meshes are only parsed when they use a 2D vertices surface format.
-		</constant>
-		<constant name="PARSED_GEOMETRY_STATIC_COLLIDERS" value="1" enum="ParsedGeometryType">
-			Parses [StaticBody2D] and [TileMap] colliders as obstruction geometry. The collider should be in any of the layers specified by [member parsed_collision_mask].
-		</constant>
-		<constant name="PARSED_GEOMETRY_BOTH" value="2" enum="ParsedGeometryType">
-			Both [constant PARSED_GEOMETRY_MESH_INSTANCES] and [constant PARSED_GEOMETRY_STATIC_COLLIDERS].
-		</constant>
-		<constant name="PARSED_GEOMETRY_MAX" value="3" enum="ParsedGeometryType">
-			Represents the size of the [enum ParsedGeometryType] enum.
-		</constant>
-		<constant name="SOURCE_GEOMETRY_ROOT_NODE_CHILDREN" value="0" enum="SourceGeometryMode">
-			Scans the child nodes of the root node recursively for geometry.
-		</constant>
-		<constant name="SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN" value="1" enum="SourceGeometryMode">
-			Scans nodes in a group and their child nodes recursively for geometry. The group is specified by [member source_geometry_group_name].
-		</constant>
-		<constant name="SOURCE_GEOMETRY_GROUPS_EXPLICIT" value="2" enum="SourceGeometryMode">
-			Uses nodes in a group for geometry. The group is specified by [member source_geometry_group_name].
-		</constant>
-		<constant name="SOURCE_GEOMETRY_MAX" value="3" enum="SourceGeometryMode">
-			Represents the size of the [enum SourceGeometryMode] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ParsedGeometryType">
+			<constant name="PARSED_GEOMETRY_MESH_INSTANCES" value="0">
+				Parses mesh instances as obstruction geometry. This includes [Polygon2D], [MeshInstance2D], [MultiMeshInstance2D], and [TileMap] nodes.
+				Meshes are only parsed when they use a 2D vertices surface format.
+			</constant>
+			<constant name="PARSED_GEOMETRY_STATIC_COLLIDERS" value="1">
+				Parses [StaticBody2D] and [TileMap] colliders as obstruction geometry. The collider should be in any of the layers specified by [member parsed_collision_mask].
+			</constant>
+			<constant name="PARSED_GEOMETRY_BOTH" value="2">
+				Both [constant PARSED_GEOMETRY_MESH_INSTANCES] and [constant PARSED_GEOMETRY_STATIC_COLLIDERS].
+			</constant>
+			<constant name="PARSED_GEOMETRY_MAX" value="3">
+				Represents the size of the [enum ParsedGeometryType] enum.
+			</constant>
+		</enum>
+		<enum name="SamplePartitionType">
+			<constant name="SAMPLE_PARTITION_CONVEX_PARTITION" value="0">
+				Convex partitioning that results in a navigation mesh with convex polygons.
+			</constant>
+			<constant name="SAMPLE_PARTITION_TRIANGULATE" value="1">
+				Triangulation partitioning that results in a navigation mesh with triangle polygons.
+			</constant>
+			<constant name="SAMPLE_PARTITION_MAX" value="2">
+				Represents the size of the [enum SamplePartitionType] enum.
+			</constant>
+		</enum>
+		<enum name="SourceGeometryMode">
+			<constant name="SOURCE_GEOMETRY_ROOT_NODE_CHILDREN" value="0">
+				Scans the child nodes of the root node recursively for geometry.
+			</constant>
+			<constant name="SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN" value="1">
+				Scans nodes in a group and their child nodes recursively for geometry. The group is specified by [member source_geometry_group_name].
+			</constant>
+			<constant name="SOURCE_GEOMETRY_GROUPS_EXPLICIT" value="2">
+				Uses nodes in a group for geometry. The group is specified by [member source_geometry_group_name].
+			</constant>
+			<constant name="SOURCE_GEOMETRY_MAX" value="3">
+				Represents the size of the [enum SourceGeometryMode] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

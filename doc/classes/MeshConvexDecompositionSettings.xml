@@ -49,12 +49,14 @@
 			Controls the bias toward clipping along symmetry planes. Ranges from [code]0.0[/code] to [code]1.0[/code].
 		</member>
 	</members>
-	<constants>
-		<constant name="CONVEX_DECOMPOSITION_MODE_VOXEL" value="0" enum="Mode">
-			Constant for voxel-based approximate convex decomposition.
-		</constant>
-		<constant name="CONVEX_DECOMPOSITION_MODE_TETRAHEDRON" value="1" enum="Mode">
-			Constant for tetrahedron-based approximate convex decomposition.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Mode">
+			<constant name="CONVEX_DECOMPOSITION_MODE_VOXEL" value="0">
+				Constant for voxel-based approximate convex decomposition.
+			</constant>
+			<constant name="CONVEX_DECOMPOSITION_MODE_TETRAHEDRON" value="1">
+				Constant for tetrahedron-based approximate convex decomposition.
+			</constant>
+		</enum>
+	</enums>
 </class>

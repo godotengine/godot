@@ -461,138 +461,148 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set initial velocity properties.
-		</constant>
-		<constant name="PARAM_ANGULAR_VELOCITY" value="1" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set angular velocity properties.
-		</constant>
-		<constant name="PARAM_ORBIT_VELOCITY" value="2" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set orbital velocity properties.
-		</constant>
-		<constant name="PARAM_LINEAR_ACCEL" value="3" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set linear acceleration properties.
-		</constant>
-		<constant name="PARAM_RADIAL_ACCEL" value="4" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set radial acceleration properties.
-		</constant>
-		<constant name="PARAM_TANGENTIAL_ACCEL" value="5" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set tangential acceleration properties.
-		</constant>
-		<constant name="PARAM_DAMPING" value="6" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set damping properties.
-		</constant>
-		<constant name="PARAM_ANGLE" value="7" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set angle properties.
-		</constant>
-		<constant name="PARAM_SCALE" value="8" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set scale properties.
-		</constant>
-		<constant name="PARAM_HUE_VARIATION" value="9" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set hue variation properties.
-		</constant>
-		<constant name="PARAM_ANIM_SPEED" value="10" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set animation speed properties.
-		</constant>
-		<constant name="PARAM_ANIM_OFFSET" value="11" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set animation offset properties.
-		</constant>
-		<constant name="PARAM_RADIAL_VELOCITY" value="15" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set radial velocity properties.
-		</constant>
-		<constant name="PARAM_DIRECTIONAL_VELOCITY" value="16" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set directional velocity properties.
-		</constant>
-		<constant name="PARAM_SCALE_OVER_VELOCITY" value="17" enum="Parameter">
-			Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set scale over velocity properties.
-		</constant>
-		<constant name="PARAM_MAX" value="18" enum="Parameter">
-			Represents the size of the [enum Parameter] enum.
-		</constant>
-		<constant name="PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY" value="0" enum="ParticleFlags">
-			Use with [method set_particle_flag] to set [member particle_flag_align_y].
-		</constant>
-		<constant name="PARTICLE_FLAG_ROTATE_Y" value="1" enum="ParticleFlags">
-			Use with [method set_particle_flag] to set [member particle_flag_rotate_y].
-		</constant>
-		<constant name="PARTICLE_FLAG_DISABLE_Z" value="2" enum="ParticleFlags">
-			Use with [method set_particle_flag] to set [member particle_flag_disable_z].
-		</constant>
-		<constant name="PARTICLE_FLAG_DAMPING_AS_FRICTION" value="3" enum="ParticleFlags">
-			Use with [method set_particle_flag] to set [member particle_flag_damping_as_friction].
-		</constant>
-		<constant name="PARTICLE_FLAG_INHERIT_EMITTER_SCALE" value="4" enum="ParticleFlags">
-			Use with [method set_particle_flag] to set [member particle_flag_inherit_emitter_scale].
-		</constant>
-		<constant name="PARTICLE_FLAG_PRESERVE_COLOR" value="5" enum="ParticleFlags">
-			Use with [method set_particle_flag] to set [member particle_flag_preserve_color].
-		</constant>
-		<constant name="PARTICLE_FLAG_MAX" value="6" enum="ParticleFlags">
-			Represents the size of the [enum ParticleFlags] enum.
-		</constant>
-		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">
-			All particles will be emitted from a single point.
-		</constant>
-		<constant name="EMISSION_SHAPE_SPHERE" value="1" enum="EmissionShape">
-			Particles will be emitted in the volume of a sphere.
-		</constant>
-		<constant name="EMISSION_SHAPE_SPHERE_SURFACE" value="2" enum="EmissionShape">
-			Particles will be emitted on the surface of a sphere.
-		</constant>
-		<constant name="EMISSION_SHAPE_BOX" value="3" enum="EmissionShape">
-			Particles will be emitted in the volume of a box.
-		</constant>
-		<constant name="EMISSION_SHAPE_POINTS" value="4" enum="EmissionShape">
-			Particles will be emitted at a position determined by sampling a random point on the [member emission_point_texture]. Particle color will be modulated by [member emission_color_texture].
-		</constant>
-		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="5" enum="EmissionShape">
-			Particles will be emitted at a position determined by sampling a random point on the [member emission_point_texture]. Particle velocity and rotation will be set based on [member emission_normal_texture]. Particle color will be modulated by [member emission_color_texture].
-		</constant>
-		<constant name="EMISSION_SHAPE_RING" value="6" enum="EmissionShape">
-			Particles will be emitted in a ring or cylinder.
-		</constant>
-		<constant name="EMISSION_SHAPE_MAX" value="7" enum="EmissionShape">
-			Represents the size of the [enum EmissionShape] enum.
-		</constant>
-		<constant name="PARAM_TURB_VEL_INFLUENCE" value="13" enum="Parameter">
-			Use with [method set_param_min] and [method set_param_max] to set the turbulence minimum und maximum influence on each particles velocity.
-		</constant>
-		<constant name="PARAM_TURB_INIT_DISPLACEMENT" value="14" enum="Parameter">
-			Use with [method set_param_min] and [method set_param_max] to set the turbulence minimum and maximum displacement of the particles spawn position.
-		</constant>
-		<constant name="PARAM_TURB_INFLUENCE_OVER_LIFE" value="12" enum="Parameter">
-			Use with [method set_param_texture] to set the turbulence influence over the particles life time.
-		</constant>
-		<constant name="SUB_EMITTER_DISABLED" value="0" enum="SubEmitterMode">
-			The subemitter is disabled.
-		</constant>
-		<constant name="SUB_EMITTER_CONSTANT" value="1" enum="SubEmitterMode">
-			The submitter is emitted on the constant interval defined by [member sub_emitter_frequency].
-		</constant>
-		<constant name="SUB_EMITTER_AT_END" value="2" enum="SubEmitterMode">
-			The subemitter is emitted at the end of the particle's lifetime.
-		</constant>
-		<constant name="SUB_EMITTER_AT_COLLISION" value="3" enum="SubEmitterMode">
-			The subemitter is emitted when the particle collides.
-		</constant>
-		<constant name="SUB_EMITTER_AT_START" value="4" enum="SubEmitterMode">
-			The subemitter is emitted when the particle spawns.
-		</constant>
-		<constant name="SUB_EMITTER_MAX" value="5" enum="SubEmitterMode">
-			Represents the size of the [enum SubEmitterMode] enum.
-		</constant>
-		<constant name="COLLISION_DISABLED" value="0" enum="CollisionMode">
-			No collision for particles. Particles will go through [GPUParticlesCollision3D] nodes.
-		</constant>
-		<constant name="COLLISION_RIGID" value="1" enum="CollisionMode">
-			[RigidBody3D]-style collision for particles using [GPUParticlesCollision3D] nodes.
-		</constant>
-		<constant name="COLLISION_HIDE_ON_CONTACT" value="2" enum="CollisionMode">
-			Hide particles instantly when colliding with a [GPUParticlesCollision3D] node. This can be combined with a subemitter that uses the [constant COLLISION_RIGID] collision mode to "replace" the parent particle with the subemitter on impact.
-		</constant>
-		<constant name="COLLISION_MAX" value="3" enum="CollisionMode">
-			Represents the size of the [enum CollisionMode] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="CollisionMode">
+			<constant name="COLLISION_DISABLED" value="0">
+				No collision for particles. Particles will go through [GPUParticlesCollision3D] nodes.
+			</constant>
+			<constant name="COLLISION_RIGID" value="1">
+				[RigidBody3D]-style collision for particles using [GPUParticlesCollision3D] nodes.
+			</constant>
+			<constant name="COLLISION_HIDE_ON_CONTACT" value="2">
+				Hide particles instantly when colliding with a [GPUParticlesCollision3D] node. This can be combined with a subemitter that uses the [constant COLLISION_RIGID] collision mode to "replace" the parent particle with the subemitter on impact.
+			</constant>
+			<constant name="COLLISION_MAX" value="3">
+				Represents the size of the [enum CollisionMode] enum.
+			</constant>
+		</enum>
+		<enum name="EmissionShape">
+			<constant name="EMISSION_SHAPE_POINT" value="0">
+				All particles will be emitted from a single point.
+			</constant>
+			<constant name="EMISSION_SHAPE_SPHERE" value="1">
+				Particles will be emitted in the volume of a sphere.
+			</constant>
+			<constant name="EMISSION_SHAPE_SPHERE_SURFACE" value="2">
+				Particles will be emitted on the surface of a sphere.
+			</constant>
+			<constant name="EMISSION_SHAPE_BOX" value="3">
+				Particles will be emitted in the volume of a box.
+			</constant>
+			<constant name="EMISSION_SHAPE_POINTS" value="4">
+				Particles will be emitted at a position determined by sampling a random point on the [member emission_point_texture]. Particle color will be modulated by [member emission_color_texture].
+			</constant>
+			<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="5">
+				Particles will be emitted at a position determined by sampling a random point on the [member emission_point_texture]. Particle velocity and rotation will be set based on [member emission_normal_texture]. Particle color will be modulated by [member emission_color_texture].
+			</constant>
+			<constant name="EMISSION_SHAPE_RING" value="6">
+				Particles will be emitted in a ring or cylinder.
+			</constant>
+			<constant name="EMISSION_SHAPE_MAX" value="7">
+				Represents the size of the [enum EmissionShape] enum.
+			</constant>
+		</enum>
+		<enum name="Parameter">
+			<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set initial velocity properties.
+			</constant>
+			<constant name="PARAM_ANGULAR_VELOCITY" value="1">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set angular velocity properties.
+			</constant>
+			<constant name="PARAM_ORBIT_VELOCITY" value="2">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set orbital velocity properties.
+			</constant>
+			<constant name="PARAM_LINEAR_ACCEL" value="3">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set linear acceleration properties.
+			</constant>
+			<constant name="PARAM_RADIAL_ACCEL" value="4">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set radial acceleration properties.
+			</constant>
+			<constant name="PARAM_TANGENTIAL_ACCEL" value="5">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set tangential acceleration properties.
+			</constant>
+			<constant name="PARAM_DAMPING" value="6">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set damping properties.
+			</constant>
+			<constant name="PARAM_ANGLE" value="7">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set angle properties.
+			</constant>
+			<constant name="PARAM_SCALE" value="8">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set scale properties.
+			</constant>
+			<constant name="PARAM_HUE_VARIATION" value="9">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set hue variation properties.
+			</constant>
+			<constant name="PARAM_ANIM_SPEED" value="10">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set animation speed properties.
+			</constant>
+			<constant name="PARAM_ANIM_OFFSET" value="11">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set animation offset properties.
+			</constant>
+			<constant name="PARAM_RADIAL_VELOCITY" value="15">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set radial velocity properties.
+			</constant>
+			<constant name="PARAM_DIRECTIONAL_VELOCITY" value="16">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set directional velocity properties.
+			</constant>
+			<constant name="PARAM_SCALE_OVER_VELOCITY" value="17">
+				Use with [method set_param_min], [method set_param_max], and [method set_param_texture] to set scale over velocity properties.
+			</constant>
+			<constant name="PARAM_MAX" value="18">
+				Represents the size of the [enum Parameter] enum.
+			</constant>
+			<constant name="PARAM_TURB_VEL_INFLUENCE" value="13">
+				Use with [method set_param_min] and [method set_param_max] to set the turbulence minimum und maximum influence on each particles velocity.
+			</constant>
+			<constant name="PARAM_TURB_INIT_DISPLACEMENT" value="14">
+				Use with [method set_param_min] and [method set_param_max] to set the turbulence minimum and maximum displacement of the particles spawn position.
+			</constant>
+			<constant name="PARAM_TURB_INFLUENCE_OVER_LIFE" value="12">
+				Use with [method set_param_texture] to set the turbulence influence over the particles life time.
+			</constant>
+		</enum>
+		<enum name="ParticleFlags">
+			<constant name="PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY" value="0">
+				Use with [method set_particle_flag] to set [member particle_flag_align_y].
+			</constant>
+			<constant name="PARTICLE_FLAG_ROTATE_Y" value="1">
+				Use with [method set_particle_flag] to set [member particle_flag_rotate_y].
+			</constant>
+			<constant name="PARTICLE_FLAG_DISABLE_Z" value="2">
+				Use with [method set_particle_flag] to set [member particle_flag_disable_z].
+			</constant>
+			<constant name="PARTICLE_FLAG_DAMPING_AS_FRICTION" value="3">
+				Use with [method set_particle_flag] to set [member particle_flag_damping_as_friction].
+			</constant>
+			<constant name="PARTICLE_FLAG_INHERIT_EMITTER_SCALE" value="4">
+				Use with [method set_particle_flag] to set [member particle_flag_inherit_emitter_scale].
+			</constant>
+			<constant name="PARTICLE_FLAG_PRESERVE_COLOR" value="5">
+				Use with [method set_particle_flag] to set [member particle_flag_preserve_color].
+			</constant>
+			<constant name="PARTICLE_FLAG_MAX" value="6">
+				Represents the size of the [enum ParticleFlags] enum.
+			</constant>
+		</enum>
+		<enum name="SubEmitterMode">
+			<constant name="SUB_EMITTER_DISABLED" value="0">
+				The subemitter is disabled.
+			</constant>
+			<constant name="SUB_EMITTER_CONSTANT" value="1">
+				The submitter is emitted on the constant interval defined by [member sub_emitter_frequency].
+			</constant>
+			<constant name="SUB_EMITTER_AT_END" value="2">
+				The subemitter is emitted at the end of the particle's lifetime.
+			</constant>
+			<constant name="SUB_EMITTER_AT_COLLISION" value="3">
+				The subemitter is emitted when the particle collides.
+			</constant>
+			<constant name="SUB_EMITTER_AT_START" value="4">
+				The subemitter is emitted when the particle spawns.
+			</constant>
+			<constant name="SUB_EMITTER_MAX" value="5">
+				Represents the size of the [enum SubEmitterMode] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -629,299 +629,313 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole">
-			Unknown or custom role.
-		</constant>
-		<constant name="ROLE_DEFAULT_BUTTON" value="1" enum="AccessibilityRole">
-			Default dialog button element.
-		</constant>
-		<constant name="ROLE_AUDIO" value="2" enum="AccessibilityRole">
-			Audio player element.
-		</constant>
-		<constant name="ROLE_VIDEO" value="3" enum="AccessibilityRole">
-			Video player element.
-		</constant>
-		<constant name="ROLE_STATIC_TEXT" value="4" enum="AccessibilityRole">
-			Non-editable text label.
-		</constant>
-		<constant name="ROLE_CONTAINER" value="5" enum="AccessibilityRole">
-			Container element. Elements with this role are used for internal structure and ignored by screen readers.
-		</constant>
-		<constant name="ROLE_PANEL" value="6" enum="AccessibilityRole">
-			Panel container element.
-		</constant>
-		<constant name="ROLE_BUTTON" value="7" enum="AccessibilityRole">
-			Button element.
-		</constant>
-		<constant name="ROLE_LINK" value="8" enum="AccessibilityRole">
-			Link element.
-		</constant>
-		<constant name="ROLE_CHECK_BOX" value="9" enum="AccessibilityRole">
-			Check box element.
-		</constant>
-		<constant name="ROLE_RADIO_BUTTON" value="10" enum="AccessibilityRole">
-			Radio button element.
-		</constant>
-		<constant name="ROLE_CHECK_BUTTON" value="11" enum="AccessibilityRole">
-			Check button element.
-		</constant>
-		<constant name="ROLE_SCROLL_BAR" value="12" enum="AccessibilityRole">
-			Scroll bar element.
-		</constant>
-		<constant name="ROLE_SCROLL_VIEW" value="13" enum="AccessibilityRole">
-			Scroll container element.
-		</constant>
-		<constant name="ROLE_SPLITTER" value="14" enum="AccessibilityRole">
-			Container splitter handle element.
-		</constant>
-		<constant name="ROLE_SLIDER" value="15" enum="AccessibilityRole">
-			Slider element.
-		</constant>
-		<constant name="ROLE_SPIN_BUTTON" value="16" enum="AccessibilityRole">
-			Spin box element.
-		</constant>
-		<constant name="ROLE_PROGRESS_INDICATOR" value="17" enum="AccessibilityRole">
-			Progress indicator element.
-		</constant>
-		<constant name="ROLE_TEXT_FIELD" value="18" enum="AccessibilityRole">
-			Editable text field element.
-		</constant>
-		<constant name="ROLE_MULTILINE_TEXT_FIELD" value="19" enum="AccessibilityRole">
-			Multiline editable text field element.
-		</constant>
-		<constant name="ROLE_COLOR_PICKER" value="20" enum="AccessibilityRole">
-			Color picker element.
-		</constant>
-		<constant name="ROLE_TABLE" value="21" enum="AccessibilityRole">
-			Table element.
-		</constant>
-		<constant name="ROLE_CELL" value="22" enum="AccessibilityRole">
-			Table/tree cell element.
-		</constant>
-		<constant name="ROLE_ROW" value="23" enum="AccessibilityRole">
-			Table/tree row element.
-		</constant>
-		<constant name="ROLE_ROW_GROUP" value="24" enum="AccessibilityRole">
-			Table/tree row group element.
-		</constant>
-		<constant name="ROLE_ROW_HEADER" value="25" enum="AccessibilityRole">
-			Table/tree row header element.
-		</constant>
-		<constant name="ROLE_COLUMN_HEADER" value="26" enum="AccessibilityRole">
-			Table/tree column header element.
-		</constant>
-		<constant name="ROLE_TREE" value="27" enum="AccessibilityRole">
-			Tree view element.
-		</constant>
-		<constant name="ROLE_TREE_ITEM" value="28" enum="AccessibilityRole">
-			Tree view item element.
-		</constant>
-		<constant name="ROLE_LIST" value="29" enum="AccessibilityRole">
-			List element.
-		</constant>
-		<constant name="ROLE_LIST_ITEM" value="30" enum="AccessibilityRole">
-			List item element.
-		</constant>
-		<constant name="ROLE_LIST_BOX" value="31" enum="AccessibilityRole">
-			List view element.
-		</constant>
-		<constant name="ROLE_LIST_BOX_OPTION" value="32" enum="AccessibilityRole">
-			List view item element.
-		</constant>
-		<constant name="ROLE_TAB_BAR" value="33" enum="AccessibilityRole">
-			Tab bar element.
-		</constant>
-		<constant name="ROLE_TAB" value="34" enum="AccessibilityRole">
-			Tab bar item element.
-		</constant>
-		<constant name="ROLE_TAB_PANEL" value="35" enum="AccessibilityRole">
-			Tab panel element.
-		</constant>
-		<constant name="ROLE_MENU_BAR" value="36" enum="AccessibilityRole">
-			Menu bar element.
-		</constant>
-		<constant name="ROLE_MENU" value="37" enum="AccessibilityRole">
-			Popup menu element.
-		</constant>
-		<constant name="ROLE_MENU_ITEM" value="38" enum="AccessibilityRole">
-			Popup menu item element.
-		</constant>
-		<constant name="ROLE_MENU_ITEM_CHECK_BOX" value="39" enum="AccessibilityRole">
-			Popup menu check button item element.
-		</constant>
-		<constant name="ROLE_MENU_ITEM_RADIO" value="40" enum="AccessibilityRole">
-			Popup menu radio button item element.
-		</constant>
-		<constant name="ROLE_IMAGE" value="41" enum="AccessibilityRole">
-			Image element.
-		</constant>
-		<constant name="ROLE_WINDOW" value="42" enum="AccessibilityRole">
-			Window element.
-		</constant>
-		<constant name="ROLE_TITLE_BAR" value="43" enum="AccessibilityRole">
-			Embedded window title bar element.
-		</constant>
-		<constant name="ROLE_DIALOG" value="44" enum="AccessibilityRole">
-			Dialog window element.
-		</constant>
-		<constant name="ROLE_TOOLTIP" value="45" enum="AccessibilityRole">
-			Tooltip element.
-		</constant>
-		<constant name="ROLE_REGION" value="46" enum="AccessibilityRole">
-			Region/landmark element. Screen readers can navigate between regions using landmark navigation.
-		</constant>
-		<constant name="ROLE_TEXT_RUN" value="47" enum="AccessibilityRole">
-			Unifor text run.
-			Note: This role is used for internal text elements, and should not be assigned to nodes.
-		</constant>
-		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType">
-			Popup menu.
-		</constant>
-		<constant name="POPUP_LIST" value="1" enum="AccessibilityPopupType">
-			Popup list.
-		</constant>
-		<constant name="POPUP_TREE" value="2" enum="AccessibilityPopupType">
-			Popup tree view.
-		</constant>
-		<constant name="POPUP_DIALOG" value="3" enum="AccessibilityPopupType">
-			Popup dialog.
-		</constant>
-		<constant name="FLAG_HIDDEN" value="0" enum="AccessibilityFlags">
-			Element is hidden for accessibility tools.
-		</constant>
-		<constant name="FLAG_MULTISELECTABLE" value="1" enum="AccessibilityFlags">
-			Element supports multiple item selection.
-		</constant>
-		<constant name="FLAG_REQUIRED" value="2" enum="AccessibilityFlags">
-			Element require user input.
-		</constant>
-		<constant name="FLAG_VISITED" value="3" enum="AccessibilityFlags">
-			Element is a visited link.
-		</constant>
-		<constant name="FLAG_BUSY" value="4" enum="AccessibilityFlags">
-			Element content is not ready (e.g. loading).
-		</constant>
-		<constant name="FLAG_MODAL" value="5" enum="AccessibilityFlags">
-			Element is modal window.
-		</constant>
-		<constant name="FLAG_TOUCH_PASSTHROUGH" value="6" enum="AccessibilityFlags">
-			Element allows touches to be passed through when a screen reader is in touch exploration mode.
-		</constant>
-		<constant name="FLAG_READONLY" value="7" enum="AccessibilityFlags">
-			Element is text field with selectable but read-only text.
-		</constant>
-		<constant name="FLAG_DISABLED" value="8" enum="AccessibilityFlags">
-			Element is disabled.
-		</constant>
-		<constant name="FLAG_CLIPS_CHILDREN" value="9" enum="AccessibilityFlags">
-			Element clips children.
-		</constant>
-		<constant name="ACTION_CLICK" value="0" enum="AccessibilityAction">
-			Single click action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_FOCUS" value="1" enum="AccessibilityAction">
-			Focus action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_BLUR" value="2" enum="AccessibilityAction">
-			Blur action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_COLLAPSE" value="3" enum="AccessibilityAction">
-			Collapse action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_EXPAND" value="4" enum="AccessibilityAction">
-			Expand action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_DECREMENT" value="5" enum="AccessibilityAction">
-			Decrement action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_INCREMENT" value="6" enum="AccessibilityAction">
-			Increment action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_HIDE_TOOLTIP" value="7" enum="AccessibilityAction">
-			Hide tooltip action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_SHOW_TOOLTIP" value="8" enum="AccessibilityAction">
-			Show tooltip action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_SET_TEXT_SELECTION" value="9" enum="AccessibilityAction">
-			Set text selection action, callback argument is set to [Dictionary] with the following keys:
-			- [code]"start_element"[/code] accessibility element of the selection start.
-			- [code]"start_char"[/code] character offset relative to the accessibility element of the selection start.
-			- [code]"end_element"[/code] accessibility element of the selection end.
-			- [code]"end_char"[/code] character offset relative to the accessibility element of the selection end.
-		</constant>
-		<constant name="ACTION_REPLACE_SELECTED_TEXT" value="10" enum="AccessibilityAction">
-			Replace text action, callback argument is set to [String] with the replacement text.
-		</constant>
-		<constant name="ACTION_SCROLL_BACKWARD" value="11" enum="AccessibilityAction">
-			Scroll backward action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_SCROLL_DOWN" value="12" enum="AccessibilityAction">
-			Scroll down action, callback argument is set to [enum AccessibilityScrollUnit].
-		</constant>
-		<constant name="ACTION_SCROLL_FORWARD" value="13" enum="AccessibilityAction">
-			Scroll forward action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_SCROLL_LEFT" value="14" enum="AccessibilityAction">
-			Scroll left action, callback argument is set to [enum AccessibilityScrollUnit].
-		</constant>
-		<constant name="ACTION_SCROLL_RIGHT" value="15" enum="AccessibilityAction">
-			Scroll right action, callback argument is set to [enum AccessibilityScrollUnit].
-		</constant>
-		<constant name="ACTION_SCROLL_UP" value="16" enum="AccessibilityAction">
-			Scroll up action, callback argument is set to [enum AccessibilityScrollUnit].
-		</constant>
-		<constant name="ACTION_SCROLL_INTO_VIEW" value="17" enum="AccessibilityAction">
-			Scroll into view action, callback argument is set to [enum AccessibilityScrollHint].
-		</constant>
-		<constant name="ACTION_SCROLL_TO_POINT" value="18" enum="AccessibilityAction">
-			Scroll to point action, callback argument is set to [Vector2] with the relative point coordinates.
-		</constant>
-		<constant name="ACTION_SET_SCROLL_OFFSET" value="19" enum="AccessibilityAction">
-			Set scroll offset action, callback argument is set to [Vector2] with the scroll offset.
-		</constant>
-		<constant name="ACTION_SET_VALUE" value="20" enum="AccessibilityAction">
-			Set value action, callback argument is set to [String] or number with the new value.
-		</constant>
-		<constant name="ACTION_SHOW_CONTEXT_MENU" value="21" enum="AccessibilityAction">
-			Show context menu action, callback argument is not set.
-		</constant>
-		<constant name="ACTION_CUSTOM" value="22" enum="AccessibilityAction">
-			Custom action, callback argument is set to the integer action ID.
-		</constant>
-		<constant name="LIVE_OFF" value="0" enum="AccessibilityLiveMode">
-			Indicates that updates to the live region should not be presented.
-		</constant>
-		<constant name="LIVE_POLITE" value="1" enum="AccessibilityLiveMode">
-			Indicates that updates to the live region should be presented at the next opportunity (for example at the end of speaking the current sentence).
-		</constant>
-		<constant name="LIVE_ASSERTIVE" value="2" enum="AccessibilityLiveMode">
-			Indicates that updates to the live region have the highest priority and should be presented immediately.
-		</constant>
-		<constant name="SCROLL_UNIT_ITEM" value="0" enum="AccessibilityScrollUnit">
-			The amount by which to scroll. A single item of a list, line of text.
-		</constant>
-		<constant name="SCROLL_UNIT_PAGE" value="1" enum="AccessibilityScrollUnit">
-			The amount by which to scroll. A single page.
-		</constant>
-		<constant name="SCROLL_HINT_TOP_LEFT" value="0" enum="AccessibilityScrollHint">
-			A preferred position for the node scrolled into view. Top-left edge of the scroll container.
-		</constant>
-		<constant name="SCROLL_HINT_BOTTOM_RIGHT" value="1" enum="AccessibilityScrollHint">
-			A preferred position for the node scrolled into view. Bottom-right edge of the scroll container.
-		</constant>
-		<constant name="SCROLL_HINT_TOP_EDGE" value="2" enum="AccessibilityScrollHint">
-			A preferred position for the node scrolled into view. Top edge of the scroll container.
-		</constant>
-		<constant name="SCROLL_HINT_BOTTOM_EDGE" value="3" enum="AccessibilityScrollHint">
-			A preferred position for the node scrolled into view. Bottom edge of the scroll container.
-		</constant>
-		<constant name="SCROLL_HINT_LEFT_EDGE" value="4" enum="AccessibilityScrollHint">
-			A preferred position for the node scrolled into view. Left edge of the scroll container.
-		</constant>
-		<constant name="SCROLL_HINT_RIGHT_EDGE" value="5" enum="AccessibilityScrollHint">
-			A preferred position for the node scrolled into view. Right edge of the scroll container.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AccessibilityAction">
+			<constant name="ACTION_CLICK" value="0">
+				Single click action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_FOCUS" value="1">
+				Focus action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_BLUR" value="2">
+				Blur action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_COLLAPSE" value="3">
+				Collapse action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_EXPAND" value="4">
+				Expand action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_DECREMENT" value="5">
+				Decrement action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_INCREMENT" value="6">
+				Increment action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_HIDE_TOOLTIP" value="7">
+				Hide tooltip action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_SHOW_TOOLTIP" value="8">
+				Show tooltip action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_SET_TEXT_SELECTION" value="9">
+				Set text selection action, callback argument is set to [Dictionary] with the following keys:
+				- [code]"start_element"[/code] accessibility element of the selection start.
+				- [code]"start_char"[/code] character offset relative to the accessibility element of the selection start.
+				- [code]"end_element"[/code] accessibility element of the selection end.
+				- [code]"end_char"[/code] character offset relative to the accessibility element of the selection end.
+			</constant>
+			<constant name="ACTION_REPLACE_SELECTED_TEXT" value="10">
+				Replace text action, callback argument is set to [String] with the replacement text.
+			</constant>
+			<constant name="ACTION_SCROLL_BACKWARD" value="11">
+				Scroll backward action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_SCROLL_DOWN" value="12">
+				Scroll down action, callback argument is set to [enum AccessibilityScrollUnit].
+			</constant>
+			<constant name="ACTION_SCROLL_FORWARD" value="13">
+				Scroll forward action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_SCROLL_LEFT" value="14">
+				Scroll left action, callback argument is set to [enum AccessibilityScrollUnit].
+			</constant>
+			<constant name="ACTION_SCROLL_RIGHT" value="15">
+				Scroll right action, callback argument is set to [enum AccessibilityScrollUnit].
+			</constant>
+			<constant name="ACTION_SCROLL_UP" value="16">
+				Scroll up action, callback argument is set to [enum AccessibilityScrollUnit].
+			</constant>
+			<constant name="ACTION_SCROLL_INTO_VIEW" value="17">
+				Scroll into view action, callback argument is set to [enum AccessibilityScrollHint].
+			</constant>
+			<constant name="ACTION_SCROLL_TO_POINT" value="18">
+				Scroll to point action, callback argument is set to [Vector2] with the relative point coordinates.
+			</constant>
+			<constant name="ACTION_SET_SCROLL_OFFSET" value="19">
+				Set scroll offset action, callback argument is set to [Vector2] with the scroll offset.
+			</constant>
+			<constant name="ACTION_SET_VALUE" value="20">
+				Set value action, callback argument is set to [String] or number with the new value.
+			</constant>
+			<constant name="ACTION_SHOW_CONTEXT_MENU" value="21">
+				Show context menu action, callback argument is not set.
+			</constant>
+			<constant name="ACTION_CUSTOM" value="22">
+				Custom action, callback argument is set to the integer action ID.
+			</constant>
+		</enum>
+		<enum name="AccessibilityFlags">
+			<constant name="FLAG_HIDDEN" value="0">
+				Element is hidden for accessibility tools.
+			</constant>
+			<constant name="FLAG_MULTISELECTABLE" value="1">
+				Element supports multiple item selection.
+			</constant>
+			<constant name="FLAG_REQUIRED" value="2">
+				Element require user input.
+			</constant>
+			<constant name="FLAG_VISITED" value="3">
+				Element is a visited link.
+			</constant>
+			<constant name="FLAG_BUSY" value="4">
+				Element content is not ready (e.g. loading).
+			</constant>
+			<constant name="FLAG_MODAL" value="5">
+				Element is modal window.
+			</constant>
+			<constant name="FLAG_TOUCH_PASSTHROUGH" value="6">
+				Element allows touches to be passed through when a screen reader is in touch exploration mode.
+			</constant>
+			<constant name="FLAG_READONLY" value="7">
+				Element is text field with selectable but read-only text.
+			</constant>
+			<constant name="FLAG_DISABLED" value="8">
+				Element is disabled.
+			</constant>
+			<constant name="FLAG_CLIPS_CHILDREN" value="9">
+				Element clips children.
+			</constant>
+		</enum>
+		<enum name="AccessibilityLiveMode">
+			<constant name="LIVE_OFF" value="0">
+				Indicates that updates to the live region should not be presented.
+			</constant>
+			<constant name="LIVE_POLITE" value="1">
+				Indicates that updates to the live region should be presented at the next opportunity (for example at the end of speaking the current sentence).
+			</constant>
+			<constant name="LIVE_ASSERTIVE" value="2">
+				Indicates that updates to the live region have the highest priority and should be presented immediately.
+			</constant>
+		</enum>
+		<enum name="AccessibilityPopupType">
+			<constant name="POPUP_MENU" value="0">
+				Popup menu.
+			</constant>
+			<constant name="POPUP_LIST" value="1">
+				Popup list.
+			</constant>
+			<constant name="POPUP_TREE" value="2">
+				Popup tree view.
+			</constant>
+			<constant name="POPUP_DIALOG" value="3">
+				Popup dialog.
+			</constant>
+		</enum>
+		<enum name="AccessibilityRole">
+			<constant name="ROLE_UNKNOWN" value="0">
+				Unknown or custom role.
+			</constant>
+			<constant name="ROLE_DEFAULT_BUTTON" value="1">
+				Default dialog button element.
+			</constant>
+			<constant name="ROLE_AUDIO" value="2">
+				Audio player element.
+			</constant>
+			<constant name="ROLE_VIDEO" value="3">
+				Video player element.
+			</constant>
+			<constant name="ROLE_STATIC_TEXT" value="4">
+				Non-editable text label.
+			</constant>
+			<constant name="ROLE_CONTAINER" value="5">
+				Container element. Elements with this role are used for internal structure and ignored by screen readers.
+			</constant>
+			<constant name="ROLE_PANEL" value="6">
+				Panel container element.
+			</constant>
+			<constant name="ROLE_BUTTON" value="7">
+				Button element.
+			</constant>
+			<constant name="ROLE_LINK" value="8">
+				Link element.
+			</constant>
+			<constant name="ROLE_CHECK_BOX" value="9">
+				Check box element.
+			</constant>
+			<constant name="ROLE_RADIO_BUTTON" value="10">
+				Radio button element.
+			</constant>
+			<constant name="ROLE_CHECK_BUTTON" value="11">
+				Check button element.
+			</constant>
+			<constant name="ROLE_SCROLL_BAR" value="12">
+				Scroll bar element.
+			</constant>
+			<constant name="ROLE_SCROLL_VIEW" value="13">
+				Scroll container element.
+			</constant>
+			<constant name="ROLE_SPLITTER" value="14">
+				Container splitter handle element.
+			</constant>
+			<constant name="ROLE_SLIDER" value="15">
+				Slider element.
+			</constant>
+			<constant name="ROLE_SPIN_BUTTON" value="16">
+				Spin box element.
+			</constant>
+			<constant name="ROLE_PROGRESS_INDICATOR" value="17">
+				Progress indicator element.
+			</constant>
+			<constant name="ROLE_TEXT_FIELD" value="18">
+				Editable text field element.
+			</constant>
+			<constant name="ROLE_MULTILINE_TEXT_FIELD" value="19">
+				Multiline editable text field element.
+			</constant>
+			<constant name="ROLE_COLOR_PICKER" value="20">
+				Color picker element.
+			</constant>
+			<constant name="ROLE_TABLE" value="21">
+				Table element.
+			</constant>
+			<constant name="ROLE_CELL" value="22">
+				Table/tree cell element.
+			</constant>
+			<constant name="ROLE_ROW" value="23">
+				Table/tree row element.
+			</constant>
+			<constant name="ROLE_ROW_GROUP" value="24">
+				Table/tree row group element.
+			</constant>
+			<constant name="ROLE_ROW_HEADER" value="25">
+				Table/tree row header element.
+			</constant>
+			<constant name="ROLE_COLUMN_HEADER" value="26">
+				Table/tree column header element.
+			</constant>
+			<constant name="ROLE_TREE" value="27">
+				Tree view element.
+			</constant>
+			<constant name="ROLE_TREE_ITEM" value="28">
+				Tree view item element.
+			</constant>
+			<constant name="ROLE_LIST" value="29">
+				List element.
+			</constant>
+			<constant name="ROLE_LIST_ITEM" value="30">
+				List item element.
+			</constant>
+			<constant name="ROLE_LIST_BOX" value="31">
+				List view element.
+			</constant>
+			<constant name="ROLE_LIST_BOX_OPTION" value="32">
+				List view item element.
+			</constant>
+			<constant name="ROLE_TAB_BAR" value="33">
+				Tab bar element.
+			</constant>
+			<constant name="ROLE_TAB" value="34">
+				Tab bar item element.
+			</constant>
+			<constant name="ROLE_TAB_PANEL" value="35">
+				Tab panel element.
+			</constant>
+			<constant name="ROLE_MENU_BAR" value="36">
+				Menu bar element.
+			</constant>
+			<constant name="ROLE_MENU" value="37">
+				Popup menu element.
+			</constant>
+			<constant name="ROLE_MENU_ITEM" value="38">
+				Popup menu item element.
+			</constant>
+			<constant name="ROLE_MENU_ITEM_CHECK_BOX" value="39">
+				Popup menu check button item element.
+			</constant>
+			<constant name="ROLE_MENU_ITEM_RADIO" value="40">
+				Popup menu radio button item element.
+			</constant>
+			<constant name="ROLE_IMAGE" value="41">
+				Image element.
+			</constant>
+			<constant name="ROLE_WINDOW" value="42">
+				Window element.
+			</constant>
+			<constant name="ROLE_TITLE_BAR" value="43">
+				Embedded window title bar element.
+			</constant>
+			<constant name="ROLE_DIALOG" value="44">
+				Dialog window element.
+			</constant>
+			<constant name="ROLE_TOOLTIP" value="45">
+				Tooltip element.
+			</constant>
+			<constant name="ROLE_REGION" value="46">
+				Region/landmark element. Screen readers can navigate between regions using landmark navigation.
+			</constant>
+			<constant name="ROLE_TEXT_RUN" value="47">
+				Unifor text run.
+				Note: This role is used for internal text elements, and should not be assigned to nodes.
+			</constant>
+		</enum>
+		<enum name="AccessibilityScrollHint">
+			<constant name="SCROLL_HINT_TOP_LEFT" value="0">
+				A preferred position for the node scrolled into view. Top-left edge of the scroll container.
+			</constant>
+			<constant name="SCROLL_HINT_BOTTOM_RIGHT" value="1">
+				A preferred position for the node scrolled into view. Bottom-right edge of the scroll container.
+			</constant>
+			<constant name="SCROLL_HINT_TOP_EDGE" value="2">
+				A preferred position for the node scrolled into view. Top edge of the scroll container.
+			</constant>
+			<constant name="SCROLL_HINT_BOTTOM_EDGE" value="3">
+				A preferred position for the node scrolled into view. Bottom edge of the scroll container.
+			</constant>
+			<constant name="SCROLL_HINT_LEFT_EDGE" value="4">
+				A preferred position for the node scrolled into view. Left edge of the scroll container.
+			</constant>
+			<constant name="SCROLL_HINT_RIGHT_EDGE" value="5">
+				A preferred position for the node scrolled into view. Right edge of the scroll container.
+			</constant>
+		</enum>
+		<enum name="AccessibilityScrollUnit">
+			<constant name="SCROLL_UNIT_ITEM" value="0">
+				The amount by which to scroll. A single item of a list, line of text.
+			</constant>
+			<constant name="SCROLL_UNIT_PAGE" value="1">
+				The amount by which to scroll. A single page.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -159,93 +159,95 @@
 			Multicast interface to use for discovery. Uses the default multicast interface if empty.
 		</member>
 	</members>
-	<constants>
-		<constant name="UPNP_RESULT_SUCCESS" value="0" enum="UPNPResult">
-			UPNP command or discovery was successful.
-		</constant>
-		<constant name="UPNP_RESULT_NOT_AUTHORIZED" value="1" enum="UPNPResult">
-			Not authorized to use the command on the [UPNPDevice]. May be returned when the user disabled UPNP on their router.
-		</constant>
-		<constant name="UPNP_RESULT_PORT_MAPPING_NOT_FOUND" value="2" enum="UPNPResult">
-			No port mapping was found for the given port, protocol combination on the given [UPNPDevice].
-		</constant>
-		<constant name="UPNP_RESULT_INCONSISTENT_PARAMETERS" value="3" enum="UPNPResult">
-			Inconsistent parameters.
-		</constant>
-		<constant name="UPNP_RESULT_NO_SUCH_ENTRY_IN_ARRAY" value="4" enum="UPNPResult">
-			No such entry in array. May be returned if a given port, protocol combination is not found on a [UPNPDevice].
-		</constant>
-		<constant name="UPNP_RESULT_ACTION_FAILED" value="5" enum="UPNPResult">
-			The action failed.
-		</constant>
-		<constant name="UPNP_RESULT_SRC_IP_WILDCARD_NOT_PERMITTED" value="6" enum="UPNPResult">
-			The [UPNPDevice] does not allow wildcard values for the source IP address.
-		</constant>
-		<constant name="UPNP_RESULT_EXT_PORT_WILDCARD_NOT_PERMITTED" value="7" enum="UPNPResult">
-			The [UPNPDevice] does not allow wildcard values for the external port.
-		</constant>
-		<constant name="UPNP_RESULT_INT_PORT_WILDCARD_NOT_PERMITTED" value="8" enum="UPNPResult">
-			The [UPNPDevice] does not allow wildcard values for the internal port.
-		</constant>
-		<constant name="UPNP_RESULT_REMOTE_HOST_MUST_BE_WILDCARD" value="9" enum="UPNPResult">
-			The remote host value must be a wildcard.
-		</constant>
-		<constant name="UPNP_RESULT_EXT_PORT_MUST_BE_WILDCARD" value="10" enum="UPNPResult">
-			The external port value must be a wildcard.
-		</constant>
-		<constant name="UPNP_RESULT_NO_PORT_MAPS_AVAILABLE" value="11" enum="UPNPResult">
-			No port maps are available. May also be returned if port mapping functionality is not available.
-		</constant>
-		<constant name="UPNP_RESULT_CONFLICT_WITH_OTHER_MECHANISM" value="12" enum="UPNPResult">
-			Conflict with other mechanism. May be returned instead of [constant UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING] if a port mapping conflicts with an existing one.
-		</constant>
-		<constant name="UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING" value="13" enum="UPNPResult">
-			Conflict with an existing port mapping.
-		</constant>
-		<constant name="UPNP_RESULT_SAME_PORT_VALUES_REQUIRED" value="14" enum="UPNPResult">
-			External and internal port values must be the same.
-		</constant>
-		<constant name="UPNP_RESULT_ONLY_PERMANENT_LEASE_SUPPORTED" value="15" enum="UPNPResult">
-			Only permanent leases are supported. Do not use the [code]duration[/code] parameter when adding port mappings.
-		</constant>
-		<constant name="UPNP_RESULT_INVALID_GATEWAY" value="16" enum="UPNPResult">
-			Invalid gateway.
-		</constant>
-		<constant name="UPNP_RESULT_INVALID_PORT" value="17" enum="UPNPResult">
-			Invalid port.
-		</constant>
-		<constant name="UPNP_RESULT_INVALID_PROTOCOL" value="18" enum="UPNPResult">
-			Invalid protocol.
-		</constant>
-		<constant name="UPNP_RESULT_INVALID_DURATION" value="19" enum="UPNPResult">
-			Invalid duration.
-		</constant>
-		<constant name="UPNP_RESULT_INVALID_ARGS" value="20" enum="UPNPResult">
-			Invalid arguments.
-		</constant>
-		<constant name="UPNP_RESULT_INVALID_RESPONSE" value="21" enum="UPNPResult">
-			Invalid response.
-		</constant>
-		<constant name="UPNP_RESULT_INVALID_PARAM" value="22" enum="UPNPResult">
-			Invalid parameter.
-		</constant>
-		<constant name="UPNP_RESULT_HTTP_ERROR" value="23" enum="UPNPResult">
-			HTTP error.
-		</constant>
-		<constant name="UPNP_RESULT_SOCKET_ERROR" value="24" enum="UPNPResult">
-			Socket error.
-		</constant>
-		<constant name="UPNP_RESULT_MEM_ALLOC_ERROR" value="25" enum="UPNPResult">
-			Error allocating memory.
-		</constant>
-		<constant name="UPNP_RESULT_NO_GATEWAY" value="26" enum="UPNPResult">
-			No gateway available. You may need to call [method discover] first, or discovery didn't detect any valid IGDs (InternetGatewayDevices).
-		</constant>
-		<constant name="UPNP_RESULT_NO_DEVICES" value="27" enum="UPNPResult">
-			No devices available. You may need to call [method discover] first, or discovery didn't detect any valid [UPNPDevice]s.
-		</constant>
-		<constant name="UPNP_RESULT_UNKNOWN_ERROR" value="28" enum="UPNPResult">
-			Unknown error.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="UPNPResult">
+			<constant name="UPNP_RESULT_SUCCESS" value="0">
+				UPNP command or discovery was successful.
+			</constant>
+			<constant name="UPNP_RESULT_NOT_AUTHORIZED" value="1">
+				Not authorized to use the command on the [UPNPDevice]. May be returned when the user disabled UPNP on their router.
+			</constant>
+			<constant name="UPNP_RESULT_PORT_MAPPING_NOT_FOUND" value="2">
+				No port mapping was found for the given port, protocol combination on the given [UPNPDevice].
+			</constant>
+			<constant name="UPNP_RESULT_INCONSISTENT_PARAMETERS" value="3">
+				Inconsistent parameters.
+			</constant>
+			<constant name="UPNP_RESULT_NO_SUCH_ENTRY_IN_ARRAY" value="4">
+				No such entry in array. May be returned if a given port, protocol combination is not found on a [UPNPDevice].
+			</constant>
+			<constant name="UPNP_RESULT_ACTION_FAILED" value="5">
+				The action failed.
+			</constant>
+			<constant name="UPNP_RESULT_SRC_IP_WILDCARD_NOT_PERMITTED" value="6">
+				The [UPNPDevice] does not allow wildcard values for the source IP address.
+			</constant>
+			<constant name="UPNP_RESULT_EXT_PORT_WILDCARD_NOT_PERMITTED" value="7">
+				The [UPNPDevice] does not allow wildcard values for the external port.
+			</constant>
+			<constant name="UPNP_RESULT_INT_PORT_WILDCARD_NOT_PERMITTED" value="8">
+				The [UPNPDevice] does not allow wildcard values for the internal port.
+			</constant>
+			<constant name="UPNP_RESULT_REMOTE_HOST_MUST_BE_WILDCARD" value="9">
+				The remote host value must be a wildcard.
+			</constant>
+			<constant name="UPNP_RESULT_EXT_PORT_MUST_BE_WILDCARD" value="10">
+				The external port value must be a wildcard.
+			</constant>
+			<constant name="UPNP_RESULT_NO_PORT_MAPS_AVAILABLE" value="11">
+				No port maps are available. May also be returned if port mapping functionality is not available.
+			</constant>
+			<constant name="UPNP_RESULT_CONFLICT_WITH_OTHER_MECHANISM" value="12">
+				Conflict with other mechanism. May be returned instead of [constant UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING] if a port mapping conflicts with an existing one.
+			</constant>
+			<constant name="UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING" value="13">
+				Conflict with an existing port mapping.
+			</constant>
+			<constant name="UPNP_RESULT_SAME_PORT_VALUES_REQUIRED" value="14">
+				External and internal port values must be the same.
+			</constant>
+			<constant name="UPNP_RESULT_ONLY_PERMANENT_LEASE_SUPPORTED" value="15">
+				Only permanent leases are supported. Do not use the [code]duration[/code] parameter when adding port mappings.
+			</constant>
+			<constant name="UPNP_RESULT_INVALID_GATEWAY" value="16">
+				Invalid gateway.
+			</constant>
+			<constant name="UPNP_RESULT_INVALID_PORT" value="17">
+				Invalid port.
+			</constant>
+			<constant name="UPNP_RESULT_INVALID_PROTOCOL" value="18">
+				Invalid protocol.
+			</constant>
+			<constant name="UPNP_RESULT_INVALID_DURATION" value="19">
+				Invalid duration.
+			</constant>
+			<constant name="UPNP_RESULT_INVALID_ARGS" value="20">
+				Invalid arguments.
+			</constant>
+			<constant name="UPNP_RESULT_INVALID_RESPONSE" value="21">
+				Invalid response.
+			</constant>
+			<constant name="UPNP_RESULT_INVALID_PARAM" value="22">
+				Invalid parameter.
+			</constant>
+			<constant name="UPNP_RESULT_HTTP_ERROR" value="23">
+				HTTP error.
+			</constant>
+			<constant name="UPNP_RESULT_SOCKET_ERROR" value="24">
+				Socket error.
+			</constant>
+			<constant name="UPNP_RESULT_MEM_ALLOC_ERROR" value="25">
+				Error allocating memory.
+			</constant>
+			<constant name="UPNP_RESULT_NO_GATEWAY" value="26">
+				No gateway available. You may need to call [method discover] first, or discovery didn't detect any valid IGDs (InternetGatewayDevices).
+			</constant>
+			<constant name="UPNP_RESULT_NO_DEVICES" value="27">
+				No devices available. You may need to call [method discover] first, or discovery didn't detect any valid [UPNPDevice]s.
+			</constant>
+			<constant name="UPNP_RESULT_UNKNOWN_ERROR" value="28">
+				Unknown error.
+			</constant>
+		</enum>
+	</enums>
 </class>

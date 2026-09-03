@@ -161,48 +161,54 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="COMPRESS_NONE" value="0" enum="CompressionMode">
-			No compression. This uses the most bandwidth, but has the upside of requiring the fewest CPU resources. This option may also be used to make network debugging using tools like Wireshark easier.
-		</constant>
-		<constant name="COMPRESS_RANGE_CODER" value="1" enum="CompressionMode">
-			ENet's built-in range encoding. Works well on small packets, but is not the most efficient algorithm on packets larger than 4 KB.
-		</constant>
-		<constant name="COMPRESS_FASTLZ" value="2" enum="CompressionMode">
-			[url=https://fastlz.org/]FastLZ[/url] compression. This option uses less CPU resources compared to [constant COMPRESS_ZLIB], at the expense of using more bandwidth.
-		</constant>
-		<constant name="COMPRESS_ZLIB" value="3" enum="CompressionMode">
-			[url=https://www.zlib.net/]Zlib[/url] compression. This option uses less bandwidth compared to [constant COMPRESS_FASTLZ], at the expense of using more CPU resources.
-		</constant>
-		<constant name="COMPRESS_ZSTD" value="4" enum="CompressionMode">
-			[url=https://facebook.github.io/zstd/]Zstandard[/url] compression. Note that this algorithm is not very efficient on packets smaller than 4 KB. Therefore, it's recommended to use other compression algorithms in most cases.
-		</constant>
-		<constant name="EVENT_ERROR" value="-1" enum="EventType">
-			An error occurred during [method service]. You will likely need to [method destroy] the host and recreate it.
-		</constant>
-		<constant name="EVENT_NONE" value="0" enum="EventType">
-			No event occurred within the specified time limit.
-		</constant>
-		<constant name="EVENT_CONNECT" value="1" enum="EventType">
-			A connection request initiated by enet_host_connect has completed. The array will contain the peer which successfully connected.
-		</constant>
-		<constant name="EVENT_DISCONNECT" value="2" enum="EventType">
-			A peer has disconnected. This event is generated on a successful completion of a disconnect initiated by [method ENetPacketPeer.peer_disconnect], if a peer has timed out, or if a connection request initialized by [method connect_to_host] has timed out. The array will contain the peer which disconnected. The data field contains user supplied data describing the disconnection, or 0, if none is available.
-		</constant>
-		<constant name="EVENT_RECEIVE" value="3" enum="EventType">
-			A packet has been received from a peer. The array will contain the peer which sent the packet and the channel number upon which the packet was received. The received packet will be queued to the associated [ENetPacketPeer].
-		</constant>
-		<constant name="HOST_TOTAL_SENT_DATA" value="0" enum="HostStatistic">
-			Total data sent.
-		</constant>
-		<constant name="HOST_TOTAL_SENT_PACKETS" value="1" enum="HostStatistic">
-			Total UDP packets sent.
-		</constant>
-		<constant name="HOST_TOTAL_RECEIVED_DATA" value="2" enum="HostStatistic">
-			Total data received.
-		</constant>
-		<constant name="HOST_TOTAL_RECEIVED_PACKETS" value="3" enum="HostStatistic">
-			Total UDP packets received.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="CompressionMode">
+			<constant name="COMPRESS_NONE" value="0">
+				No compression. This uses the most bandwidth, but has the upside of requiring the fewest CPU resources. This option may also be used to make network debugging using tools like Wireshark easier.
+			</constant>
+			<constant name="COMPRESS_RANGE_CODER" value="1">
+				ENet's built-in range encoding. Works well on small packets, but is not the most efficient algorithm on packets larger than 4 KB.
+			</constant>
+			<constant name="COMPRESS_FASTLZ" value="2">
+				[url=https://fastlz.org/]FastLZ[/url] compression. This option uses less CPU resources compared to [constant COMPRESS_ZLIB], at the expense of using more bandwidth.
+			</constant>
+			<constant name="COMPRESS_ZLIB" value="3">
+				[url=https://www.zlib.net/]Zlib[/url] compression. This option uses less bandwidth compared to [constant COMPRESS_FASTLZ], at the expense of using more CPU resources.
+			</constant>
+			<constant name="COMPRESS_ZSTD" value="4">
+				[url=https://facebook.github.io/zstd/]Zstandard[/url] compression. Note that this algorithm is not very efficient on packets smaller than 4 KB. Therefore, it's recommended to use other compression algorithms in most cases.
+			</constant>
+		</enum>
+		<enum name="EventType">
+			<constant name="EVENT_ERROR" value="-1">
+				An error occurred during [method service]. You will likely need to [method destroy] the host and recreate it.
+			</constant>
+			<constant name="EVENT_NONE" value="0">
+				No event occurred within the specified time limit.
+			</constant>
+			<constant name="EVENT_CONNECT" value="1">
+				A connection request initiated by enet_host_connect has completed. The array will contain the peer which successfully connected.
+			</constant>
+			<constant name="EVENT_DISCONNECT" value="2">
+				A peer has disconnected. This event is generated on a successful completion of a disconnect initiated by [method ENetPacketPeer.peer_disconnect], if a peer has timed out, or if a connection request initialized by [method connect_to_host] has timed out. The array will contain the peer which disconnected. The data field contains user supplied data describing the disconnection, or 0, if none is available.
+			</constant>
+			<constant name="EVENT_RECEIVE" value="3">
+				A packet has been received from a peer. The array will contain the peer which sent the packet and the channel number upon which the packet was received. The received packet will be queued to the associated [ENetPacketPeer].
+			</constant>
+		</enum>
+		<enum name="HostStatistic">
+			<constant name="HOST_TOTAL_SENT_DATA" value="0">
+				Total data sent.
+			</constant>
+			<constant name="HOST_TOTAL_SENT_PACKETS" value="1">
+				Total UDP packets sent.
+			</constant>
+			<constant name="HOST_TOTAL_RECEIVED_DATA" value="2">
+				Total data received.
+			</constant>
+			<constant name="HOST_TOTAL_RECEIVED_PACKETS" value="3">
+				Total UDP packets received.
+			</constant>
+		</enum>
+	</enums>
 </class>

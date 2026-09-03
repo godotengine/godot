@@ -322,74 +322,82 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="FILE_MODE_OPEN_FILE" value="0" enum="FileMode">
-			The dialog allows selecting one, and only one file.
-		</constant>
-		<constant name="FILE_MODE_OPEN_FILES" value="1" enum="FileMode">
-			The dialog allows selecting multiple files.
-		</constant>
-		<constant name="FILE_MODE_OPEN_DIR" value="2" enum="FileMode">
-			The dialog only allows selecting a directory, disallowing the selection of any file.
-		</constant>
-		<constant name="FILE_MODE_OPEN_ANY" value="3" enum="FileMode">
-			The dialog allows selecting one file or directory.
-		</constant>
-		<constant name="FILE_MODE_SAVE_FILE" value="4" enum="FileMode">
-			The dialog will warn when a file exists.
-		</constant>
-		<constant name="ACCESS_RESOURCES" value="0" enum="Access">
-			The dialog only allows accessing files under the [Resource] path ([code]res://[/code]).
-		</constant>
-		<constant name="ACCESS_USERDATA" value="1" enum="Access">
-			The dialog only allows accessing files under user data path ([code]user://[/code]).
-		</constant>
-		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
-			The dialog allows accessing files on the whole file system.
-		</constant>
-		<constant name="DISPLAY_THUMBNAILS" value="0" enum="DisplayMode">
-			The dialog displays files as a grid of thumbnails. Use [theme_item thumbnail_size] to adjust their size.
-		</constant>
-		<constant name="DISPLAY_LIST" value="1" enum="DisplayMode">
-			The dialog displays files as a list of filenames.
-		</constant>
-		<constant name="CUSTOMIZATION_HIDDEN_FILES" value="0" enum="Customization">
-			Toggles visibility of the favorite button, and the favorite list on the left side of the dialog.
-			Equivalent to [member hidden_files_toggle_enabled].
-		</constant>
-		<constant name="CUSTOMIZATION_CREATE_FOLDER" value="1" enum="Customization">
-			If enabled, shows the button for creating new directories (when using [constant FILE_MODE_OPEN_DIR], [constant FILE_MODE_OPEN_ANY], or [constant FILE_MODE_SAVE_FILE]).
-			Equivalent to [member folder_creation_enabled].
-		</constant>
-		<constant name="CUSTOMIZATION_FILE_FILTER" value="2" enum="Customization">
-			If enabled, shows the toggle file filter button.
-			Equivalent to [member file_filter_toggle_enabled].
-		</constant>
-		<constant name="CUSTOMIZATION_FILE_SORT" value="3" enum="Customization">
-			If enabled, shows the file sorting options button.
-			Equivalent to [member file_sort_options_enabled].
-		</constant>
-		<constant name="CUSTOMIZATION_FAVORITES" value="4" enum="Customization">
-			If enabled, shows the toggle favorite button and favorite list on the left side of the dialog.
-			Equivalent to [member favorites_enabled].
-		</constant>
-		<constant name="CUSTOMIZATION_RECENT" value="5" enum="Customization">
-			If enabled, shows the recent directories list on the left side of the dialog.
-			Equivalent to [member recent_list_enabled].
-		</constant>
-		<constant name="CUSTOMIZATION_LAYOUT" value="6" enum="Customization">
-			If enabled, shows the layout switch buttons (list/thumbnails).
-			Equivalent to [member layout_toggle_enabled].
-		</constant>
-		<constant name="CUSTOMIZATION_OVERWRITE_WARNING" value="7" enum="Customization">
-			If enabled, the [FileDialog] will warn the user before overwriting files in save mode.
-			Equivalent to [member overwrite_warning_enabled].
-		</constant>
-		<constant name="CUSTOMIZATION_DELETE" value="8" enum="Customization">
-			If enabled, the context menu will show the "Delete" option, which allows moving files and folders to trash.
-			Equivalent to [member deleting_enabled].
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Access">
+			<constant name="ACCESS_RESOURCES" value="0">
+				The dialog only allows accessing files under the [Resource] path ([code]res://[/code]).
+			</constant>
+			<constant name="ACCESS_USERDATA" value="1">
+				The dialog only allows accessing files under user data path ([code]user://[/code]).
+			</constant>
+			<constant name="ACCESS_FILESYSTEM" value="2">
+				The dialog allows accessing files on the whole file system.
+			</constant>
+		</enum>
+		<enum name="Customization">
+			<constant name="CUSTOMIZATION_HIDDEN_FILES" value="0">
+				Toggles visibility of the favorite button, and the favorite list on the left side of the dialog.
+				Equivalent to [member hidden_files_toggle_enabled].
+			</constant>
+			<constant name="CUSTOMIZATION_CREATE_FOLDER" value="1">
+				If enabled, shows the button for creating new directories (when using [constant FILE_MODE_OPEN_DIR], [constant FILE_MODE_OPEN_ANY], or [constant FILE_MODE_SAVE_FILE]).
+				Equivalent to [member folder_creation_enabled].
+			</constant>
+			<constant name="CUSTOMIZATION_FILE_FILTER" value="2">
+				If enabled, shows the toggle file filter button.
+				Equivalent to [member file_filter_toggle_enabled].
+			</constant>
+			<constant name="CUSTOMIZATION_FILE_SORT" value="3">
+				If enabled, shows the file sorting options button.
+				Equivalent to [member file_sort_options_enabled].
+			</constant>
+			<constant name="CUSTOMIZATION_FAVORITES" value="4">
+				If enabled, shows the toggle favorite button and favorite list on the left side of the dialog.
+				Equivalent to [member favorites_enabled].
+			</constant>
+			<constant name="CUSTOMIZATION_RECENT" value="5">
+				If enabled, shows the recent directories list on the left side of the dialog.
+				Equivalent to [member recent_list_enabled].
+			</constant>
+			<constant name="CUSTOMIZATION_LAYOUT" value="6">
+				If enabled, shows the layout switch buttons (list/thumbnails).
+				Equivalent to [member layout_toggle_enabled].
+			</constant>
+			<constant name="CUSTOMIZATION_OVERWRITE_WARNING" value="7">
+				If enabled, the [FileDialog] will warn the user before overwriting files in save mode.
+				Equivalent to [member overwrite_warning_enabled].
+			</constant>
+			<constant name="CUSTOMIZATION_DELETE" value="8">
+				If enabled, the context menu will show the "Delete" option, which allows moving files and folders to trash.
+				Equivalent to [member deleting_enabled].
+			</constant>
+		</enum>
+		<enum name="DisplayMode">
+			<constant name="DISPLAY_THUMBNAILS" value="0">
+				The dialog displays files as a grid of thumbnails. Use [theme_item thumbnail_size] to adjust their size.
+			</constant>
+			<constant name="DISPLAY_LIST" value="1">
+				The dialog displays files as a list of filenames.
+			</constant>
+		</enum>
+		<enum name="FileMode">
+			<constant name="FILE_MODE_OPEN_FILE" value="0">
+				The dialog allows selecting one, and only one file.
+			</constant>
+			<constant name="FILE_MODE_OPEN_FILES" value="1">
+				The dialog allows selecting multiple files.
+			</constant>
+			<constant name="FILE_MODE_OPEN_DIR" value="2">
+				The dialog only allows selecting a directory, disallowing the selection of any file.
+			</constant>
+			<constant name="FILE_MODE_OPEN_ANY" value="3">
+				The dialog allows selecting one file or directory.
+			</constant>
+			<constant name="FILE_MODE_SAVE_FILE" value="4">
+				The dialog will warn when a file exists.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="file_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.25)">
 			The color tint for disabled files (when the [FileDialog] is used in open folder mode).

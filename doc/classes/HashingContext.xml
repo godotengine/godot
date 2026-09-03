@@ -81,15 +81,17 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="HASH_MD5" value="0" enum="HashType">
-			Hashing algorithm: MD5.
-		</constant>
-		<constant name="HASH_SHA1" value="1" enum="HashType">
-			Hashing algorithm: SHA-1.
-		</constant>
-		<constant name="HASH_SHA256" value="2" enum="HashType">
-			Hashing algorithm: SHA-256.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="HashType">
+			<constant name="HASH_MD5" value="0">
+				Hashing algorithm: MD5.
+			</constant>
+			<constant name="HASH_SHA1" value="1">
+				Hashing algorithm: SHA-1.
+			</constant>
+			<constant name="HASH_SHA256" value="2">
+				Hashing algorithm: SHA-256.
+			</constant>
+		</enum>
+	</enums>
 </class>

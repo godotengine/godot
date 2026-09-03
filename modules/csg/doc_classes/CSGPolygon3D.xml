@@ -64,32 +64,38 @@
 			When [member mode] is [constant MODE_SPIN], the number of extrusions made.
 		</member>
 	</members>
-	<constants>
-		<constant name="MODE_DEPTH" value="0" enum="Mode">
-			The [member polygon] shape is extruded along the negative Z axis.
-		</constant>
-		<constant name="MODE_SPIN" value="1" enum="Mode">
-			The [member polygon] shape is extruded by rotating it around the Y axis.
-		</constant>
-		<constant name="MODE_PATH" value="2" enum="Mode">
-			The [member polygon] shape is extruded along the [Path3D] specified in [member path_node].
-		</constant>
-		<constant name="PATH_ROTATION_POLYGON" value="0" enum="PathRotation">
-			The [member polygon] shape is not rotated.
-			[b]Note:[/b] Requires the path Z coordinates to continually decrease to ensure viable shapes.
-		</constant>
-		<constant name="PATH_ROTATION_PATH" value="1" enum="PathRotation">
-			The [member polygon] shape is rotated along the path, but it is not rotated around the path axis.
-			[b]Note:[/b] Requires the path Z coordinates to continually decrease to ensure viable shapes.
-		</constant>
-		<constant name="PATH_ROTATION_PATH_FOLLOW" value="2" enum="PathRotation">
-			The [member polygon] shape follows the path and its rotations around the path axis.
-		</constant>
-		<constant name="PATH_INTERVAL_DISTANCE" value="0" enum="PathIntervalType">
-			When [member mode] is set to [constant MODE_PATH], [member path_interval] will determine the distance, in meters, each interval of the path will extrude.
-		</constant>
-		<constant name="PATH_INTERVAL_SUBDIVIDE" value="1" enum="PathIntervalType">
-			When [member mode] is set to [constant MODE_PATH], [member path_interval] will subdivide the polygons along the path.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Mode">
+			<constant name="MODE_DEPTH" value="0">
+				The [member polygon] shape is extruded along the negative Z axis.
+			</constant>
+			<constant name="MODE_SPIN" value="1">
+				The [member polygon] shape is extruded by rotating it around the Y axis.
+			</constant>
+			<constant name="MODE_PATH" value="2">
+				The [member polygon] shape is extruded along the [Path3D] specified in [member path_node].
+			</constant>
+		</enum>
+		<enum name="PathIntervalType">
+			<constant name="PATH_INTERVAL_DISTANCE" value="0">
+				When [member mode] is set to [constant MODE_PATH], [member path_interval] will determine the distance, in meters, each interval of the path will extrude.
+			</constant>
+			<constant name="PATH_INTERVAL_SUBDIVIDE" value="1">
+				When [member mode] is set to [constant MODE_PATH], [member path_interval] will subdivide the polygons along the path.
+			</constant>
+		</enum>
+		<enum name="PathRotation">
+			<constant name="PATH_ROTATION_POLYGON" value="0">
+				The [member polygon] shape is not rotated.
+				[b]Note:[/b] Requires the path Z coordinates to continually decrease to ensure viable shapes.
+			</constant>
+			<constant name="PATH_ROTATION_PATH" value="1">
+				The [member polygon] shape is rotated along the path, but it is not rotated around the path axis.
+				[b]Note:[/b] Requires the path Z coordinates to continually decrease to ensure viable shapes.
+			</constant>
+			<constant name="PATH_ROTATION_PATH_FOLLOW" value="2">
+				The [member polygon] shape follows the path and its rotations around the path axis.
+			</constant>
+		</enum>
+	</enums>
 </class>

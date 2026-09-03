@@ -40,20 +40,22 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="TICK_POSITION_BOTTOM_RIGHT" value="0" enum="TickPosition">
-			Places the ticks at the bottom of the [HSlider], or right of the [VSlider].
-		</constant>
-		<constant name="TICK_POSITION_TOP_LEFT" value="1" enum="TickPosition">
-			Places the ticks at the top of the [HSlider], or left of the [VSlider].
-		</constant>
-		<constant name="TICK_POSITION_BOTH" value="2" enum="TickPosition">
-			Places the ticks at the both sides of the slider.
-		</constant>
-		<constant name="TICK_POSITION_CENTER" value="3" enum="TickPosition">
-			Places the ticks at the center of the slider.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="TickPosition">
+			<constant name="TICK_POSITION_BOTTOM_RIGHT" value="0">
+				Places the ticks at the bottom of the [HSlider], or right of the [VSlider].
+			</constant>
+			<constant name="TICK_POSITION_TOP_LEFT" value="1">
+				Places the ticks at the top of the [HSlider], or left of the [VSlider].
+			</constant>
+			<constant name="TICK_POSITION_BOTH" value="2">
+				Places the ticks at the both sides of the slider.
+			</constant>
+			<constant name="TICK_POSITION_CENTER" value="3">
+				Places the ticks at the center of the slider.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="center_grabber" data_type="constant" type="int" default="0">
 			Boolean constant. If [code]1[/code], the grabber texture size will be ignored and it will fit within slider's bounds based only on its center position.

@@ -376,66 +376,72 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="LOOKUP_RESULT_SCRIPT_LOCATION" value="0" enum="LookupResultType">
-		</constant>
-		<constant name="LOOKUP_RESULT_CLASS" value="1" enum="LookupResultType">
-		</constant>
-		<constant name="LOOKUP_RESULT_CLASS_CONSTANT" value="2" enum="LookupResultType">
-		</constant>
-		<constant name="LOOKUP_RESULT_CLASS_PROPERTY" value="3" enum="LookupResultType">
-		</constant>
-		<constant name="LOOKUP_RESULT_CLASS_METHOD" value="4" enum="LookupResultType">
-		</constant>
-		<constant name="LOOKUP_RESULT_CLASS_SIGNAL" value="5" enum="LookupResultType">
-		</constant>
-		<constant name="LOOKUP_RESULT_CLASS_ENUM" value="6" enum="LookupResultType">
-		</constant>
-		<constant name="LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE" value="7" enum="LookupResultType" deprecated="">
-		</constant>
-		<constant name="LOOKUP_RESULT_CLASS_ANNOTATION" value="8" enum="LookupResultType">
-		</constant>
-		<constant name="LOOKUP_RESULT_LOCAL_CONSTANT" value="9" enum="LookupResultType">
-		</constant>
-		<constant name="LOOKUP_RESULT_LOCAL_VARIABLE" value="10" enum="LookupResultType">
-		</constant>
-		<constant name="LOOKUP_RESULT_MAX" value="11" enum="LookupResultType">
-		</constant>
-		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">
-			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
-		</constant>
-		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
-			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.
-		</constant>
-		<constant name="LOCATION_OTHER_USER_CODE" value="512" enum="CodeCompletionLocation">
-			The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).
-		</constant>
-		<constant name="LOCATION_OTHER" value="1024" enum="CodeCompletionLocation">
-			The option is from other engine code, not covered by the other enum constants - e.g. built-in classes.
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_CLASS" value="0" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_FUNCTION" value="1" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_SIGNAL" value="2" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_VARIABLE" value="3" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_MEMBER" value="4" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_ENUM" value="5" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_CONSTANT" value="6" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_NODE_PATH" value="7" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_FILE_PATH" value="8" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_PLAIN_TEXT" value="9" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_KEYWORD" value="10" enum="CodeCompletionKind">
-		</constant>
-		<constant name="CODE_COMPLETION_KIND_MAX" value="11" enum="CodeCompletionKind">
-		</constant>
-	</constants>
+	<enums>
+		<enum name="CodeCompletionKind">
+			<constant name="CODE_COMPLETION_KIND_CLASS" value="0">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_FUNCTION" value="1">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_SIGNAL" value="2">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_VARIABLE" value="3">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_MEMBER" value="4">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_ENUM" value="5">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_CONSTANT" value="6">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_NODE_PATH" value="7">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_FILE_PATH" value="8">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_PLAIN_TEXT" value="9">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_KEYWORD" value="10">
+			</constant>
+			<constant name="CODE_COMPLETION_KIND_MAX" value="11">
+			</constant>
+		</enum>
+		<enum name="CodeCompletionLocation">
+			<constant name="LOCATION_LOCAL" value="0">
+				The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
+			</constant>
+			<constant name="LOCATION_PARENT_MASK" value="256">
+				The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. [code]0[/code] for the local class, [code]1[/code] for the parent, [code]2[/code] for the grandparent, etc.) to store the depth of an option in the class or a parent class.
+			</constant>
+			<constant name="LOCATION_OTHER_USER_CODE" value="512">
+				The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).
+			</constant>
+			<constant name="LOCATION_OTHER" value="1024">
+				The option is from other engine code, not covered by the other enum constants - e.g. built-in classes.
+			</constant>
+		</enum>
+		<enum name="LookupResultType">
+			<constant name="LOOKUP_RESULT_SCRIPT_LOCATION" value="0">
+			</constant>
+			<constant name="LOOKUP_RESULT_CLASS" value="1">
+			</constant>
+			<constant name="LOOKUP_RESULT_CLASS_CONSTANT" value="2">
+			</constant>
+			<constant name="LOOKUP_RESULT_CLASS_PROPERTY" value="3">
+			</constant>
+			<constant name="LOOKUP_RESULT_CLASS_METHOD" value="4">
+			</constant>
+			<constant name="LOOKUP_RESULT_CLASS_SIGNAL" value="5">
+			</constant>
+			<constant name="LOOKUP_RESULT_CLASS_ENUM" value="6">
+			</constant>
+			<constant name="LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE" value="7" deprecated="">
+			</constant>
+			<constant name="LOOKUP_RESULT_CLASS_ANNOTATION" value="8">
+			</constant>
+			<constant name="LOOKUP_RESULT_LOCAL_CONSTANT" value="9">
+			</constant>
+			<constant name="LOOKUP_RESULT_LOCAL_VARIABLE" value="10">
+			</constant>
+			<constant name="LOOKUP_RESULT_MAX" value="11">
+			</constant>
+		</enum>
+	</enums>
 </class>

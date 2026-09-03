@@ -33,21 +33,23 @@
 			Gain before the effect, in dB. Value can range from -60 to 60.
 		</member>
 	</members>
-	<constants>
-		<constant name="MODE_CLIP" value="0" enum="Mode">
-			Flattens the waveform at 0 dB in a sharp manner. [member drive] increases amplitude of samples exponentially. This mode functions as a hard clipper if [member drive] is set to 0, and is the only mode that clips audio signals at 0 dB.
-		</constant>
-		<constant name="MODE_ATAN" value="1" enum="Mode">
-			Flattens the waveform in a smooth manner, following an arctangent curve. The audio decreases in volume, before flattening peaks to [code]PI * 4.0[/code] (linear value), if it was normalized beforehand.
-		</constant>
-		<constant name="MODE_LOFI" value="2" enum="Mode">
-			Decreases audio bit depth to achieve a low-resolution audio signal, going from 16-bit to 2-bit. Can be used to emulate the sound of early digital audio devices.
-		</constant>
-		<constant name="MODE_OVERDRIVE" value="3" enum="Mode">
-			Emulates the warm distortion produced by a field effect transistor, which is commonly used in solid-state musical instrument amplifiers. [member drive] has no effect in this mode.
-		</constant>
-		<constant name="MODE_WAVESHAPE" value="4" enum="Mode">
-			Flattens the waveform in a smooth manner, until it reaches a sharp peak at [code]drive = 1[/code], following a generic absolute sigmoid function.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Mode">
+			<constant name="MODE_CLIP" value="0">
+				Flattens the waveform at 0 dB in a sharp manner. [member drive] increases amplitude of samples exponentially. This mode functions as a hard clipper if [member drive] is set to 0, and is the only mode that clips audio signals at 0 dB.
+			</constant>
+			<constant name="MODE_ATAN" value="1">
+				Flattens the waveform in a smooth manner, following an arctangent curve. The audio decreases in volume, before flattening peaks to [code]PI * 4.0[/code] (linear value), if it was normalized beforehand.
+			</constant>
+			<constant name="MODE_LOFI" value="2">
+				Decreases audio bit depth to achieve a low-resolution audio signal, going from 16-bit to 2-bit. Can be used to emulate the sound of early digital audio devices.
+			</constant>
+			<constant name="MODE_OVERDRIVE" value="3">
+				Emulates the warm distortion produced by a field effect transistor, which is commonly used in solid-state musical instrument amplifiers. [member drive] has no effect in this mode.
+			</constant>
+			<constant name="MODE_WAVESHAPE" value="4">
+				Flattens the waveform in a smooth manner, until it reaches a sharp peak at [code]drive = 1[/code], following a generic absolute sigmoid function.
+			</constant>
+		</enum>
+	</enums>
 </class>

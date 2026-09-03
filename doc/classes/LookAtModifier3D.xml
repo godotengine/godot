@@ -137,17 +137,19 @@
 			If [code]true[/code], provides rotation by two axes.
 		</member>
 	</members>
-	<constants>
-		<constant name="ORIGIN_FROM_SELF" value="0" enum="OriginFrom">
-			The bone rest position of the bone specified in [member bone] is used as origin.
-		</constant>
-		<constant name="ORIGIN_FROM_SPECIFIC_BONE" value="1" enum="OriginFrom">
-			The bone global pose position of the bone specified in [member origin_bone] is used as origin.
-			[b]Note:[/b] It is recommended that you select only the parent bone unless you are familiar with the bone processing process. The specified bone pose at the time the [LookAtModifier3D] is processed is used as a reference. In other words, if you specify a child bone and the [LookAtModifier3D] causes the child bone to move, the rendered result and direction will not match.
-		</constant>
-		<constant name="ORIGIN_FROM_EXTERNAL_NODE" value="2" enum="OriginFrom">
-			The global position of the [Node3D] specified in [member origin_external_node] is used as origin.
-			[b]Note:[/b] Same as [constant ORIGIN_FROM_SPECIFIC_BONE], when specifying a [BoneAttachment3D] with a child bone assigned, the rendered result and direction will not match.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="OriginFrom">
+			<constant name="ORIGIN_FROM_SELF" value="0">
+				The bone rest position of the bone specified in [member bone] is used as origin.
+			</constant>
+			<constant name="ORIGIN_FROM_SPECIFIC_BONE" value="1">
+				The bone global pose position of the bone specified in [member origin_bone] is used as origin.
+				[b]Note:[/b] It is recommended that you select only the parent bone unless you are familiar with the bone processing process. The specified bone pose at the time the [LookAtModifier3D] is processed is used as a reference. In other words, if you specify a child bone and the [LookAtModifier3D] causes the child bone to move, the rendered result and direction will not match.
+			</constant>
+			<constant name="ORIGIN_FROM_EXTERNAL_NODE" value="2">
+				The global position of the [Node3D] specified in [member origin_external_node] is used as origin.
+				[b]Note:[/b] Same as [constant ORIGIN_FROM_SPECIFIC_BONE], when specifying a [BoneAttachment3D] with a child bone assigned, the rendered result and direction will not match.
+			</constant>
+		</enum>
+	</enums>
 </class>

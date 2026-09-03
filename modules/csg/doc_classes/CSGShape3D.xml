@@ -106,15 +106,17 @@
 			Adds a collision shape to the physics engine for our CSG shape. This will always act like a static body. Note that the collision shape is still active even if the CSG shape itself is hidden. See also [member collision_mask] and [member collision_priority].
 		</member>
 	</members>
-	<constants>
-		<constant name="OPERATION_UNION" value="0" enum="Operation">
-			Geometry of both primitives is merged, intersecting geometry is removed.
-		</constant>
-		<constant name="OPERATION_INTERSECTION" value="1" enum="Operation">
-			Only intersecting geometry remains, the rest is removed.
-		</constant>
-		<constant name="OPERATION_SUBTRACTION" value="2" enum="Operation">
-			The second shape is subtracted from the first, leaving a dent with its shape.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Operation">
+			<constant name="OPERATION_UNION" value="0">
+				Geometry of both primitives is merged, intersecting geometry is removed.
+			</constant>
+			<constant name="OPERATION_INTERSECTION" value="1">
+				Only intersecting geometry remains, the rest is removed.
+			</constant>
+			<constant name="OPERATION_SUBTRACTION" value="2">
+				The second shape is subtracted from the first, leaving a dent with its shape.
+			</constant>
+		</enum>
+	</enums>
 </class>

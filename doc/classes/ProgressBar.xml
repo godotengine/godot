@@ -22,20 +22,22 @@
 			If [code]true[/code], the fill percentage is displayed on the bar.
 		</member>
 	</members>
-	<constants>
-		<constant name="FILL_BEGIN_TO_END" value="0" enum="FillMode">
-			The progress bar fills from begin to end horizontally, according to the language direction. If [method Control.is_layout_rtl] returns [code]false[/code], it fills from left to right, and if it returns [code]true[/code], it fills from right to left.
-		</constant>
-		<constant name="FILL_END_TO_BEGIN" value="1" enum="FillMode">
-			The progress bar fills from end to begin horizontally, according to the language direction. If [method Control.is_layout_rtl] returns [code]false[/code], it fills from right to left, and if it returns [code]true[/code], it fills from left to right.
-		</constant>
-		<constant name="FILL_TOP_TO_BOTTOM" value="2" enum="FillMode">
-			The progress fills from top to bottom.
-		</constant>
-		<constant name="FILL_BOTTOM_TO_TOP" value="3" enum="FillMode">
-			The progress fills from bottom to top.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="FillMode">
+			<constant name="FILL_BEGIN_TO_END" value="0">
+				The progress bar fills from begin to end horizontally, according to the language direction. If [method Control.is_layout_rtl] returns [code]false[/code], it fills from left to right, and if it returns [code]true[/code], it fills from right to left.
+			</constant>
+			<constant name="FILL_END_TO_BEGIN" value="1">
+				The progress bar fills from end to begin horizontally, according to the language direction. If [method Control.is_layout_rtl] returns [code]false[/code], it fills from right to left, and if it returns [code]true[/code], it fills from left to right.
+			</constant>
+			<constant name="FILL_TOP_TO_BOTTOM" value="2">
+				The progress fills from top to bottom.
+			</constant>
+			<constant name="FILL_BOTTOM_TO_TOP" value="3">
+				The progress fills from bottom to top.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="font_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			The color of the text.

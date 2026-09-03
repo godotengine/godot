@@ -13,15 +13,17 @@
 			The comparison function.
 		</member>
 	</members>
-	<constants>
-		<constant name="FUNC_IS_INF" value="0" enum="Function">
-			Comparison with [code]INF[/code] (Infinity).
-		</constant>
-		<constant name="FUNC_IS_NAN" value="1" enum="Function">
-			Comparison with [code]NaN[/code] (Not a Number; indicates invalid numeric results, such as division by zero).
-		</constant>
-		<constant name="FUNC_MAX" value="2" enum="Function">
-			Represents the size of the [enum Function] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Function">
+			<constant name="FUNC_IS_INF" value="0">
+				Comparison with [code]INF[/code] (Infinity).
+			</constant>
+			<constant name="FUNC_IS_NAN" value="1">
+				Comparison with [code]NaN[/code] (Not a Number; indicates invalid numeric results, such as division by zero).
+			</constant>
+			<constant name="FUNC_MAX" value="2">
+				Represents the size of the [enum Function] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

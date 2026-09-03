@@ -161,30 +161,34 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
-			Particles are drawn in the order emitted.
-		</constant>
-		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
-			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
-		</constant>
-		<constant name="DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="DrawOrder">
-			Particles are drawn in reverse order of remaining lifetime. In other words, the particle with the lowest lifetime is drawn at the front.
-		</constant>
-		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags">
-			Particle starts at the specified position.
-		</constant>
-		<constant name="EMIT_FLAG_ROTATION_SCALE" value="2" enum="EmitFlags">
-			Particle starts with specified rotation and scale.
-		</constant>
-		<constant name="EMIT_FLAG_VELOCITY" value="4" enum="EmitFlags">
-			Particle starts with the specified velocity vector, which defines the emission direction and speed.
-		</constant>
-		<constant name="EMIT_FLAG_COLOR" value="8" enum="EmitFlags">
-			Particle starts with specified color.
-		</constant>
-		<constant name="EMIT_FLAG_CUSTOM" value="16" enum="EmitFlags">
-			Particle starts with specified [code]CUSTOM[/code] data.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DrawOrder">
+			<constant name="DRAW_ORDER_INDEX" value="0">
+				Particles are drawn in the order emitted.
+			</constant>
+			<constant name="DRAW_ORDER_LIFETIME" value="1">
+				Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
+			</constant>
+			<constant name="DRAW_ORDER_REVERSE_LIFETIME" value="2">
+				Particles are drawn in reverse order of remaining lifetime. In other words, the particle with the lowest lifetime is drawn at the front.
+			</constant>
+		</enum>
+		<enum name="EmitFlags">
+			<constant name="EMIT_FLAG_POSITION" value="1">
+				Particle starts at the specified position.
+			</constant>
+			<constant name="EMIT_FLAG_ROTATION_SCALE" value="2">
+				Particle starts with specified rotation and scale.
+			</constant>
+			<constant name="EMIT_FLAG_VELOCITY" value="4">
+				Particle starts with the specified velocity vector, which defines the emission direction and speed.
+			</constant>
+			<constant name="EMIT_FLAG_COLOR" value="8">
+				Particle starts with specified color.
+			</constant>
+			<constant name="EMIT_FLAG_CUSTOM" value="16">
+				Particle starts with specified [code]CUSTOM[/code] data.
+			</constant>
+		</enum>
+	</enums>
 </class>

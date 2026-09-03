@@ -269,15 +269,17 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="MERGE_DISABLE" value="0" enum="MergeMode">
-			Makes "do"/"undo" operations stay in separate actions.
-		</constant>
-		<constant name="MERGE_ENDS" value="1" enum="MergeMode">
-			Merges this action with the previous one if they have the same name. Keeps only the first action's "undo" operations and the last action's "do" operations. Useful for sequential changes to a single value.
-		</constant>
-		<constant name="MERGE_ALL" value="2" enum="MergeMode">
-			Merges this action with the previous one if they have the same name.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="MergeMode">
+			<constant name="MERGE_DISABLE" value="0">
+				Makes "do"/"undo" operations stay in separate actions.
+			</constant>
+			<constant name="MERGE_ENDS" value="1">
+				Merges this action with the previous one if they have the same name. Keeps only the first action's "undo" operations and the last action's "do" operations. Useful for sequential changes to a single value.
+			</constant>
+			<constant name="MERGE_ALL" value="2">
+				Merges this action with the previous one if they have the same name.
+			</constant>
+		</enum>
+	</enums>
 </class>

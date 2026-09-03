@@ -85,51 +85,53 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="CONTEXT_SLOT_SCENE_TREE" value="0" enum="ContextMenuSlot">
-			Context menu of Scene dock. The data [Dictionary] contains:
-			[code]&amp;"selected_nodes": Array[Node][/code] - The list of currently selected nodes (same as [method EditorSelection.get_top_selected_nodes]).
-		</constant>
-		<constant name="CONTEXT_SLOT_FILESYSTEM" value="1" enum="ContextMenuSlot">
-			Context menu of FileSystem dock. The data [Dictionary] contains:
-			[code]&amp;"selected_files": PackedStringArray[/code] - The list of selected files.
-		</constant>
-		<constant name="CONTEXT_SLOT_SCRIPT_EDITOR" value="2" enum="ContextMenuSlot">
-			Context menu of Script editor's script tabs and Shader editor's shader tabs. The data [Dictionary] contains:
-			[code]&amp;"selected_resource": Resource[/code] - The currently selected resource. Can be a [Script], a [Shader], a text file, or [code]null[/code] in case of help pages.
-			[code]&amp;"path": String[/code] - The path of the selected file. If a help page is selected, the path will be the name of the opened class, prefixed with [code]help:[/code].
-		</constant>
-		<constant name="CONTEXT_SLOT_FILESYSTEM_CREATE" value="3" enum="ContextMenuSlot">
-			The "Create..." submenu of FileSystem dock's context menu, or the "New" section of the main context menu when empty space is clicked. The data [Dictionary] contains:
-			[code]&amp;"base_directory": String[/code] - Path to the base directory where a file should be created.
-			[code]&amp;"needs_prefix": bool[/code] - Whether the option needs a "New" prefix (for consistency with native options).
-			[codeblock]
-			func _get_menu_options(data):
-				if data["needs_prefix"]:
-					add_context_menu_item("New Image File...", create_image)
-				else:
-					add_context_menu_item("Image File...", create_image)
-			[/codeblock]
-		</constant>
-		<constant name="CONTEXT_SLOT_SCRIPT_EDITOR_CODE" value="4" enum="ContextMenuSlot">
-			Context menu of Script editor's code editor. The data [Dictionary] contains:
-			[code]&amp;"code_edit": CodeEdit[/code] - The code editor instance.
-			[code]&amp;"file_path": String[/code] - Path to the currently edited file.
-		</constant>
-		<constant name="CONTEXT_SLOT_SCENE_TABS" value="5" enum="ContextMenuSlot">
-			Context menu of scene tabs. The data [Dictionary] contains:
-			[code]&amp;"selected_scene": String[/code] - Scene path of the selected/clicked scene tab. Empty if empty space was clicked.
-		</constant>
-		<constant name="CONTEXT_SLOT_2D_EDITOR" value="6" enum="ContextMenuSlot">
-			Context menu of the 2D editor's viewport. The data [Dictionary] contains:
-			[code]&amp;"hovered_nodes": Array[CanvasItem][/code] - The [CanvasItem] nodes under the cursor.
-			[code]&amp;"mouse_position": Vector2[/code] - The local mouse position in the 2D scene.
-		</constant>
-		<constant name="CONTEXT_SLOT_INSPECTOR_PROPERTY" value="7" enum="ContextMenuSlot">
-			Context menu of an editor property in the inspector. The data [Dictionary] contains:
-			[code]&amp;"property": EditorProperty[/code] - The clicked [EditorProperty] object.
-			[code]&amp;"object": Object[/code] - The object edited by the inspector.
-			[code]&amp;"property_name": StringName[/code] - The name of the object's property that was clicked.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ContextMenuSlot">
+			<constant name="CONTEXT_SLOT_SCENE_TREE" value="0">
+				Context menu of Scene dock. The data [Dictionary] contains:
+				[code]&amp;"selected_nodes": Array[Node][/code] - The list of currently selected nodes (same as [method EditorSelection.get_top_selected_nodes]).
+			</constant>
+			<constant name="CONTEXT_SLOT_FILESYSTEM" value="1">
+				Context menu of FileSystem dock. The data [Dictionary] contains:
+				[code]&amp;"selected_files": PackedStringArray[/code] - The list of selected files.
+			</constant>
+			<constant name="CONTEXT_SLOT_SCRIPT_EDITOR" value="2">
+				Context menu of Script editor's script tabs and Shader editor's shader tabs. The data [Dictionary] contains:
+				[code]&amp;"selected_resource": Resource[/code] - The currently selected resource. Can be a [Script], a [Shader], a text file, or [code]null[/code] in case of help pages.
+				[code]&amp;"path": String[/code] - The path of the selected file. If a help page is selected, the path will be the name of the opened class, prefixed with [code]help:[/code].
+			</constant>
+			<constant name="CONTEXT_SLOT_FILESYSTEM_CREATE" value="3">
+				The "Create..." submenu of FileSystem dock's context menu, or the "New" section of the main context menu when empty space is clicked. The data [Dictionary] contains:
+				[code]&amp;"base_directory": String[/code] - Path to the base directory where a file should be created.
+				[code]&amp;"needs_prefix": bool[/code] - Whether the option needs a "New" prefix (for consistency with native options).
+				[codeblock]
+				func _get_menu_options(data):
+					if data["needs_prefix"]:
+						add_context_menu_item("New Image File...", create_image)
+					else:
+						add_context_menu_item("Image File...", create_image)
+				[/codeblock]
+			</constant>
+			<constant name="CONTEXT_SLOT_SCRIPT_EDITOR_CODE" value="4">
+				Context menu of Script editor's code editor. The data [Dictionary] contains:
+				[code]&amp;"code_edit": CodeEdit[/code] - The code editor instance.
+				[code]&amp;"file_path": String[/code] - Path to the currently edited file.
+			</constant>
+			<constant name="CONTEXT_SLOT_SCENE_TABS" value="5">
+				Context menu of scene tabs. The data [Dictionary] contains:
+				[code]&amp;"selected_scene": String[/code] - Scene path of the selected/clicked scene tab. Empty if empty space was clicked.
+			</constant>
+			<constant name="CONTEXT_SLOT_2D_EDITOR" value="6">
+				Context menu of the 2D editor's viewport. The data [Dictionary] contains:
+				[code]&amp;"hovered_nodes": Array[CanvasItem][/code] - The [CanvasItem] nodes under the cursor.
+				[code]&amp;"mouse_position": Vector2[/code] - The local mouse position in the 2D scene.
+			</constant>
+			<constant name="CONTEXT_SLOT_INSPECTOR_PROPERTY" value="7">
+				Context menu of an editor property in the inspector. The data [Dictionary] contains:
+				[code]&amp;"property": EditorProperty[/code] - The clicked [EditorProperty] object.
+				[code]&amp;"object": Object[/code] - The object edited by the inspector.
+				[code]&amp;"property_name": StringName[/code] - The name of the object's property that was clicked.
+			</constant>
+		</enum>
+	</enums>
 </class>

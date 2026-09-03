@@ -53,21 +53,23 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
-			A status representing a [StreamPeerTLS] that is disconnected.
-		</constant>
-		<constant name="STATUS_HANDSHAKING" value="1" enum="Status">
-			A status representing a [StreamPeerTLS] during handshaking.
-		</constant>
-		<constant name="STATUS_CONNECTED" value="2" enum="Status">
-			A status representing a [StreamPeerTLS] that is connected to a host.
-		</constant>
-		<constant name="STATUS_ERROR" value="3" enum="Status">
-			A status representing a [StreamPeerTLS] in error state.
-		</constant>
-		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="4" enum="Status">
-			An error status that shows a mismatch in the TLS certificate domain presented by the host and the domain requested for validation.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Status">
+			<constant name="STATUS_DISCONNECTED" value="0">
+				A status representing a [StreamPeerTLS] that is disconnected.
+			</constant>
+			<constant name="STATUS_HANDSHAKING" value="1">
+				A status representing a [StreamPeerTLS] during handshaking.
+			</constant>
+			<constant name="STATUS_CONNECTED" value="2">
+				A status representing a [StreamPeerTLS] that is connected to a host.
+			</constant>
+			<constant name="STATUS_ERROR" value="3">
+				A status representing a [StreamPeerTLS] in error state.
+			</constant>
+			<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="4">
+				An error status that shows a mismatch in the TLS certificate domain presented by the host and the domain requested for validation.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -92,15 +92,17 @@
 			The number of streams in the stream pool.
 		</member>
 	</members>
-	<constants>
-		<constant name="PLAYBACK_RANDOM_NO_REPEATS" value="0" enum="PlaybackMode">
-			Pick a stream at random according to the probability weights chosen for each stream, but avoid playing the same stream twice in a row whenever possible. If only 1 sound is present in the pool, the same sound will always play, effectively allowing repeats to occur.
-		</constant>
-		<constant name="PLAYBACK_RANDOM" value="1" enum="PlaybackMode">
-			Pick a stream at random according to the probability weights chosen for each stream. If only 1 sound is present in the pool, the same sound will always play.
-		</constant>
-		<constant name="PLAYBACK_SEQUENTIAL" value="2" enum="PlaybackMode">
-			Play streams in the order they appear in the stream pool. If only 1 sound is present in the pool, the same sound will always play.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="PlaybackMode">
+			<constant name="PLAYBACK_RANDOM_NO_REPEATS" value="0">
+				Pick a stream at random according to the probability weights chosen for each stream, but avoid playing the same stream twice in a row whenever possible. If only 1 sound is present in the pool, the same sound will always play, effectively allowing repeats to occur.
+			</constant>
+			<constant name="PLAYBACK_RANDOM" value="1">
+				Pick a stream at random according to the probability weights chosen for each stream. If only 1 sound is present in the pool, the same sound will always play.
+			</constant>
+			<constant name="PLAYBACK_SEQUENTIAL" value="2">
+				Play streams in the order they appear in the stream pool. If only 1 sound is present in the pool, the same sound will always play.
+			</constant>
+		</enum>
+	</enums>
 </class>

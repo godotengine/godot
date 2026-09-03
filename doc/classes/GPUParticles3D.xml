@@ -194,50 +194,58 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="DRAW_ORDER_INDEX" value="0" enum="DrawOrder">
-			Particles are drawn in the order emitted.
-		</constant>
-		<constant name="DRAW_ORDER_LIFETIME" value="1" enum="DrawOrder">
-			Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
-		</constant>
-		<constant name="DRAW_ORDER_REVERSE_LIFETIME" value="2" enum="DrawOrder">
-			Particles are drawn in reverse order of remaining lifetime. In other words, the particle with the lowest lifetime is drawn at the front.
-		</constant>
-		<constant name="DRAW_ORDER_VIEW_DEPTH" value="3" enum="DrawOrder">
-			Particles are drawn in order of depth.
-		</constant>
-		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags">
-			Particle starts at the specified position.
-		</constant>
-		<constant name="EMIT_FLAG_ROTATION_SCALE" value="2" enum="EmitFlags">
-			Particle starts with specified rotation and scale.
-		</constant>
-		<constant name="EMIT_FLAG_VELOCITY" value="4" enum="EmitFlags">
-			Particle starts with the specified velocity vector, which defines the emission direction and speed.
-		</constant>
-		<constant name="EMIT_FLAG_COLOR" value="8" enum="EmitFlags">
-			Particle starts with specified color.
-		</constant>
-		<constant name="EMIT_FLAG_CUSTOM" value="16" enum="EmitFlags">
-			Particle starts with specified [code]CUSTOM[/code] data.
-		</constant>
 		<constant name="MAX_DRAW_PASSES" value="4">
 			Maximum number of draw passes supported.
 		</constant>
-		<constant name="TRANSFORM_ALIGN_DISABLED" value="0" enum="TransformAlign">
-			Do not align particle transforms relative to the camera or velocity.
-		</constant>
-		<constant name="TRANSFORM_ALIGN_Z_BILLBOARD" value="1" enum="TransformAlign">
-			Align each particle's Z axis to face the camera.
-		</constant>
-		<constant name="TRANSFORM_ALIGN_Y_TO_VELOCITY" value="2" enum="TransformAlign">
-			Align each particle's Y axis to the velocity vector.
-		</constant>
-		<constant name="TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY" value="3" enum="TransformAlign">
-			Align each particle's Z axis to face the camera and Y axis to the velocity vector.
-		</constant>
-		<constant name="TRANSFORM_ALIGN_LOCAL_BILLBOARD" value="4" enum="TransformAlign">
-			Align each particle's Z axis to face the camera, while preserving a given axis (X or Y).
-		</constant>
 	</constants>
+	<enums>
+		<enum name="DrawOrder">
+			<constant name="DRAW_ORDER_INDEX" value="0">
+				Particles are drawn in the order emitted.
+			</constant>
+			<constant name="DRAW_ORDER_LIFETIME" value="1">
+				Particles are drawn in order of remaining lifetime. In other words, the particle with the highest lifetime is drawn at the front.
+			</constant>
+			<constant name="DRAW_ORDER_REVERSE_LIFETIME" value="2">
+				Particles are drawn in reverse order of remaining lifetime. In other words, the particle with the lowest lifetime is drawn at the front.
+			</constant>
+			<constant name="DRAW_ORDER_VIEW_DEPTH" value="3">
+				Particles are drawn in order of depth.
+			</constant>
+		</enum>
+		<enum name="EmitFlags">
+			<constant name="EMIT_FLAG_POSITION" value="1">
+				Particle starts at the specified position.
+			</constant>
+			<constant name="EMIT_FLAG_ROTATION_SCALE" value="2">
+				Particle starts with specified rotation and scale.
+			</constant>
+			<constant name="EMIT_FLAG_VELOCITY" value="4">
+				Particle starts with the specified velocity vector, which defines the emission direction and speed.
+			</constant>
+			<constant name="EMIT_FLAG_COLOR" value="8">
+				Particle starts with specified color.
+			</constant>
+			<constant name="EMIT_FLAG_CUSTOM" value="16">
+				Particle starts with specified [code]CUSTOM[/code] data.
+			</constant>
+		</enum>
+		<enum name="TransformAlign">
+			<constant name="TRANSFORM_ALIGN_DISABLED" value="0">
+				Do not align particle transforms relative to the camera or velocity.
+			</constant>
+			<constant name="TRANSFORM_ALIGN_Z_BILLBOARD" value="1">
+				Align each particle's Z axis to face the camera.
+			</constant>
+			<constant name="TRANSFORM_ALIGN_Y_TO_VELOCITY" value="2">
+				Align each particle's Y axis to the velocity vector.
+			</constant>
+			<constant name="TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY" value="3">
+				Align each particle's Z axis to face the camera and Y axis to the velocity vector.
+			</constant>
+			<constant name="TRANSFORM_ALIGN_LOCAL_BILLBOARD" value="4">
+				Align each particle's Z axis to face the camera, while preserving a given axis (X or Y).
+			</constant>
+		</enum>
+	</enums>
 </class>
