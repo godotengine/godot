@@ -59,6 +59,7 @@ public:
 
 	void set_region(const Rect2 &p_region);
 	Rect2 get_region() const;
+	Ref<Texture2D> get_base_texture_and_region(Rect2 &r_region) const;
 
 	void set_margin(const Rect2 &p_margin);
 	Rect2 get_margin() const;
