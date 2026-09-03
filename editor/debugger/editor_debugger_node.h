@@ -122,6 +122,8 @@ private:
 	void _update_errors(bool p_force = false);
 	void _update_margins();
 
+	void _update_debugger_tabs();
+
 	friend class DebuggerEditorPlugin;
 	friend class DebugAdapterParser;
 	static EditorDebuggerNode *singleton;
