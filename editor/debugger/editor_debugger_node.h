@@ -118,9 +118,14 @@ private:
 
 	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
 
+	Ref<StyleBoxEmpty> single_session_style;
+	Ref<StyleBox> multi_session_style;
+
 	ScriptEditorDebugger *_add_debugger();
 	void _update_errors(bool p_force = false);
 	void _update_margins();
+
+	void _update_debugger_tabs(ScriptEditorDebugger *p_debugger = nullptr);
 
 	friend class DebuggerEditorPlugin;
 	friend class DebugAdapterParser;
