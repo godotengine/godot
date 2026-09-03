@@ -432,35 +432,34 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						}
 					}
 
+					// Try this script's class_name.
+					const GDScriptParser::ClassNode *class_node = codegen.class_node;
+					while (class_node->outer) {
+						class_node = class_node->outer;
+					}
+					if (class_node->identifier && class_node->identifier->name == identifier) {
+						return codegen.add_constant(Ref<GDScript>(main_script));
+					}
+
 					// Try global classes.
 					if (ScriptServer::is_global_class(identifier)) {
-						const GDScriptParser::ClassNode *class_node = codegen.class_node;
-						while (class_node->outer) {
-							class_node = class_node->outer;
-						}
-
 						Ref<Resource> res;
-
-						if (class_node->identifier && class_node->identifier->name == identifier) {
-							res = Ref<GDScript>(main_script);
+						String global_class_path = ScriptServer::get_global_class_path(identifier);
+						if (ResourceLoader::get_resource_type(global_class_path) == "GDScript") {
+							Error err = OK;
+							// Should not need to pass p_owner since analyzer will already have done it.
+							res = GDScriptCache::get_shallow_script(global_class_path, err);
+							if (err != OK) {
+								_set_error("Can't load global class " + String(identifier), p_expression);
+								r_error = ERR_COMPILATION_FAILED;
+								return GDScriptCodeGenerator::Address();
+							}
 						} else {
-							String global_class_path = ScriptServer::get_global_class_path(identifier);
-							if (ResourceLoader::get_resource_type(global_class_path) == "GDScript") {
-								Error err = OK;
-								// Should not need to pass p_owner since analyzer will already have done it.
-								res = GDScriptCache::get_shallow_script(global_class_path, err);
-								if (err != OK) {
-									_set_error("Can't load global class " + String(identifier), p_expression);
-									r_error = ERR_COMPILATION_FAILED;
-									return GDScriptCodeGenerator::Address();
-								}
-							} else {
-								res = ResourceLoader::load(global_class_path);
-								if (res.is_null()) {
-									_set_error("Can't load global class " + String(identifier) + ", cyclic reference?", p_expression);
-									r_error = ERR_COMPILATION_FAILED;
-									return GDScriptCodeGenerator::Address();
-								}
+							res = ResourceLoader::load(global_class_path);
+							if (res.is_null()) {
+								_set_error("Can't load global class " + String(identifier) + ", cyclic reference?", p_expression);
+								r_error = ERR_COMPILATION_FAILED;
+								return GDScriptCodeGenerator::Address();
 							}
 						}
 

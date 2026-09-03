@@ -4105,9 +4105,14 @@ void GDScriptAnalyzer::reduce_identifier_from_base_set_class(GDScriptParser::Ide
 	ERR_FAIL_NULL(p_identifier);
 
 	p_identifier->type_constraint = p_identifier_datatype;
+
 	Error err = OK;
 	Ref<GDScript> scr = get_depended_shallow_script(p_identifier_datatype.script_path, err);
 	if (err) {
+		if (GDScript::is_canonically_equal_paths(p_identifier_datatype.script_path, parser->script_path)) {
+			p_identifier->is_constant = true;
+			return;
+		}
 		push_error(vformat(R"(Error while getting cache for script "%s".)", p_identifier_datatype.script_path), p_identifier);
 		return;
 	}
