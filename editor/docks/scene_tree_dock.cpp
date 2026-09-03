@@ -250,6 +250,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_ERASE, true);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node_path", p_event)) {
 		_tool_selected(TOOL_COPY_NODE_PATH);
+	} else if (ED_IS_SHORTCUT("scene_tree/copy_onready_annotation", p_event)) {
+		_tool_selected(TOOL_COPY_ONREADY_ANNOTATION);
 	} else if (ED_IS_SHORTCUT("scene_tree/show_in_file_system", p_event)) {
 		_tool_selected(TOOL_SHOW_IN_FILE_SYSTEM);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_unique_name", p_event)) {
@@ -1324,6 +1326,28 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					DisplayServer::get_singleton()->clipboard_set(String(path));
 				}
 			}
+		} break;
+		case TOOL_COPY_ONREADY_ANNOTATION: {
+			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+			String text_to_copy = "";
+			for (const Node *node : editor_selection->get_top_selected_node_list()) {
+				bool is_unique = node->is_unique_name_in_owner();
+				String path = is_unique ? String(node->get_name()) : String(scene_root->get_path_to(node));
+				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
+				if (use_type) {
+					StringName custom_class_name;
+					Ref<Script> node_script = node->get_script();
+					while (node_script.is_valid() && custom_class_name.is_empty()) {
+						custom_class_name = node_script->get_global_name();
+						node_script = node_script->get_base_script();
+					}
+					const StringName class_name = custom_class_name.is_empty() ? node->get_class_name() : custom_class_name;
+					text_to_copy += vformat("\n@onready var %s: %s = %c%s", variable_name, class_name, is_unique ? '%' : '$', path);
+				} else {
+					text_to_copy += vformat("\n@onready var %s = %c%s", variable_name, is_unique ? '%' : '$', path);
+				}
+			}
+			DisplayServer::get_singleton()->clipboard_set(text_to_copy);
 		} break;
 		case TOOL_SHOW_IN_FILE_SYSTEM: {
 			const List<Node *> selection = editor_selection->get_top_selected_node_list();
@@ -4186,6 +4210,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		}
 	}
 
+	if (EDITOR_GET("text_editor/external/use_external_editor")) {
+		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("CopyNodePath")), ED_GET_SHORTCUT("scene_tree/copy_onready_annotation"), TOOL_COPY_ONREADY_ANNOTATION);
+	}
+
 	if (profile_allow_editing) {
 		// Allow multi-toggling scene unique names but only if all selected nodes are owned by the edited scene root.
 		bool all_owned = true;
@@ -5110,6 +5138,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/make_root", TTRC("Make Scene Root"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTRC("Save Branch as Scene..."));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTRC("Copy Node Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
+	ED_SHORTCUT("scene_tree/copy_onready_annotation", TTRC("Copy @onready Annotation"), KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("scene_tree/show_in_file_system", TTRC("Show in FileSystem"));
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTRC("Toggle Access as Unique Name"));
 	ED_SHORTCUT("scene_tree/toggle_editable_children", TTRC("Toggle Editable Children"));
