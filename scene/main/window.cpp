@@ -1876,10 +1876,8 @@ void Window::_notification(int p_what) {
 			// Emits NOTIFICATION_THEME_CHANGED internally.
 			set_theme_context(ThemeDB::get_singleton()->get_nearest_theme_context(this));
 
-			// If extend_to_title was set before entering the tree, create the overlay now.
-			if (flags[FLAG_EXTEND_TO_TITLE] && !flags[FLAG_BORDERLESS] && _needs_caption_overlay()) {
-				_create_caption_overlay();
-			}
+			// If extend_to_title was set before entering the tree, update the overlay now.
+			_update_caption_overlay_existence();
 		} break;
 
 		case NOTIFICATION_READY: {
