@@ -33,6 +33,18 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/scroll_container.h"
 
+#ifdef WEB_ENABLED
+#ifndef WASM_EXPORT
+#define WASM_EXPORT __attribute__((visibility("default")))
+#endif
+extern "C" {
+extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
+extern int godot_js_editor_show_open_project_dialog(void (*p_done_callback)(int result, const char *p_root_path));
+extern int godot_js_editor_show_import_project_zip_dialog(void (*p_done_callback)(int result, const char *p_root_path));
+extern void godot_js_editor_delete_dir(const char *p_path);
+}
+#endif // WEB_ENABLED
+
 class CheckBox;
 class EditorAbout;
 class EditorAssetLibrary;
@@ -186,6 +198,16 @@ class ProjectManager : public Control {
 
 	ProjectDialog *project_dialog = nullptr;
 
+#ifdef WEB_ENABLED
+	// Web exclusive nodes
+	Button *download_btn = nullptr;
+	Button *web_docs_btn = nullptr;
+	CheckBox *delete_project_contents = nullptr;
+	CheckBox *download_backup_before_delete = nullptr;
+	ConfirmationDialog *import_method_ask = nullptr;
+	RichTextLabel *import_method_label = nullptr;
+#endif
+
 	void _scan_projects();
 	void _run_project();
 	void _run_project_confirm();
@@ -216,6 +238,17 @@ class ProjectManager : public Control {
 	void _on_open_options_selected(int p_option);
 	void _on_recovery_mode_popup_open_normal();
 	void _on_recovery_mode_popup_open_recovery();
+
+#ifdef WEB_ENABLED
+	// Web editor exclusive methods
+	void _on_web_editor_pick_import_folder();
+	void _on_web_editor_pick_import_zip();
+	WASM_EXPORT static void _on_web_import_project(int p_result, const char *p_install_path_or_error);
+	void _on_web_delete_confirmation_toggled(bool p_button_pressed);
+	void _download_project_backup() const;
+	void _open_web_documentation() const;
+	void _clear_persistent_data();
+#endif
 
 	void _on_order_option_changed(int p_idx);
 	void _on_search_term_changed(const String &p_term);

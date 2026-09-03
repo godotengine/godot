@@ -113,10 +113,53 @@ a:active {
 	box-shadow: 0 0.25rem 0.25rem hsla(0, 0%, 0%, 0.5);
 	line-height: 1.5;
 	max-width: 38rem;
-	margin: 4rem auto 0 auto;
+	margin: -4rem auto 0 auto;
 	color: white;
 	border-radius: 0.5rem;
 	padding: 0.125rem 1.25rem 1.25rem 1.25rem;
+	align-self: center;
+}
+
+.warning-banner {
+  display: flex;
+  align-items: center;
+  background-color: #fff3cd; /* Soft yellow */
+  color: #856404;            /* Dark gold/brown text */
+  border: 1px solid #ffeeba;
+  padding: 15px;
+  border-radius: 4px;
+  font-family: sans-serif;
+  margin: 10px 0;
+}
+
+.warning-icon {
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+svg {
+	color: rgb(128, 128, 128);
+    height: 1.125rem;
+    padding-right: 0.25em;
+    vertical-align: middle;
+}
+
+.container-bottom-right {
+    text-align-last: end;
+    width: auto;
+    height: auto;
+    max-height: calc(100% - 100px);
+}
+.version {
+    flex: 0 1 auto;
+    color: #27ae60;
+    font-size: 1.125em;
+    margin-left: 10px;
+    padding: 0.75em 0em;
+    line-height: 1em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 #tabs-buttons {
@@ -143,6 +186,13 @@ a:active {
 /* Don't show distracting focus outlines for the main tabs' contents. */
 #tab-editor canvas:focus,
 #tab-game canvas:focus,
+#tab-status {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+	height: 100vh;
+}
 #canvas:focus,
 #gameCanvas:focus {
 	outline: none;
@@ -252,7 +302,7 @@ a:active {
 	width: 0;
 	box-sizing: border-box;
 	transition: width 0.5s linear;
-	background-color: #202020;
+	background-color: hsl(206, 58%, 52%);
 	border: 1px solid #222223;
 	box-shadow: 0 0 1px 1px #27282E;
 	border-radius: 3px;
@@ -297,7 +347,6 @@ a:active {
 			role="dialog"
 			aria-labelledby="welcome-modal-title"
 			aria-describedby="welcome-modal-description"
-			onclick="if (event.target === this) closeWelcomeModal(false)"
 		>
 			<div class="welcome-modal-content">
 				<h2 id="welcome-modal-title" class="welcome-modal-title">Important - Please read before continuing</h2>
@@ -322,6 +371,19 @@ a:active {
 							rel="noopener"
 						>Web editor documentation</a> for usage instructions and limitations.
 					</p>
+					<p>
+						In the case editor fails you can
+						<a
+							href="javascript:void(0)"
+							onclick="clearPersistence()"
+						>Clear Persistent Data</a> or use your browser's settings to clear navigation cache.
+					</p>
+					<div class="warning-banner">
+						<span class="warning-icon">&#9888;</span>
+						<div>
+							<strong>Warning:</strong> Clearing Persistent data will delete all cached projects. Make Backups of your work often.
+						</div>
+					</div>
 				</div>
 				<div id="welcome-modal-missing-description" style="display: none">
 					<p>
@@ -338,15 +400,34 @@ a:active {
 						>Exporting for the Web</a> for more information.
 					</p>
 				</div>
+				<div style="text-align: center;">
+					<label>
+						<input id="welcome-modal-dont-show-again-check" type="checkbox">
+						Don't Show Again
+					</label>
+				</div>
 				<div style="text-align: center">
-					<button id="welcome-modal-dismiss" class="btn" type="button" onclick="closeWelcomeModal(true)" style="margin-top: 1rem">
-						OK - Don't Show Again
+					<button id="welcome-modal-dismiss" class="btn" type="button" onclick="closeWelcomeModal()" style="margin-top: 1rem">
+						Start Editor (xxMB Download)
 					</button>
 				</div>
+				<p>
+					<div class="container-bottom-right">
+						<header>
+							<a href="/releases/">
+								<span id="version-span" class="version">
+									<svg data-prefix="fas" data-icon="code-branch" class="svg-inline--fa fa-code-branch icon" role="img" viewBox="0 0 448 512" aria-hidden="true">
+										<path fill="currentColor" d="M80 104a24 24 0 1 0 0-48 24 24 0 1 0 0 48zm80-24c0 32.8-19.7 61-48 73.3l0 70.7 176 0c26.5 0 48-21.5 48-48l0-22.7c-28.3-12.3-48-40.5-48-73.3 0-44.2 35.8-80 80-80s80 35.8 80 80c0 32.8-19.7 61-48 73.3l0 22.7c0 61.9-50.1 112-112 112l-176 0 0 70.7c28.3 12.3 48 40.5 48 73.3 0 44.2-35.8 80-80 80S0 476.2 0 432c0-32.8 19.7-61 48-73.3l0-205.3C19.7 141 0 112.8 0 80 0 35.8 35.8 0 80 0s80 35.8 80 80zm232 0a24 24 0 1 0 -48 0 24 24 0 1 0 48 0zM80 456a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"></path>
+									</svg>
+									___GODOT_VERSION___
+								</span>
+							</a>
+						</header>
+					</div>
+				</p>
 			</div>
 		</div>
 		<div id="tabs-buttons">
-			<button id="btn-tab-loader" class="btn tab-btn" onclick="showTab('loader')">Loader</button>
 			<button id="btn-tab-editor" class="btn tab-btn next-to-close-btn" disabled="disabled" onclick="showTab('editor')">Editor</button>
 			<button id="btn-close-editor" class="btn close-btn" disabled="disabled" onclick="closeEditor()">×</button>
 			<button id="btn-tab-game" class="btn tab-btn next-to-close-btn" disabled="disabled" onclick="showTab('game')">Game</button>
@@ -354,27 +435,7 @@ a:active {
 			<button id="btn-tab-update" class="btn tab-btn" style="display: none;">Update</button>
 		</div>
 		<div id="tabs">
-			<div id="tab-loader">
-				<div style="color: #e0e0e0;" id="persistence">
-					<br>
-					<img src="logo.svg" alt="Godot Engine logo" width="1024" height="414" style="width: auto; height: auto; max-width: min(85%, 50vh); max-height: 200px">
-					<br>
-					___GODOT_VERSION___ - <a href="/releases/">Change version</a>
-					<br>
-					<br>
-					<label for="zip-file" style="margin-right: 1rem">Preload project ZIP:</label>
-					<input id="zip-file" type="file" name="files" style="margin-bottom: 0.5rem">
-					<br>
-					<a href="demo.zip" id="zip-demo">(Try this for example)</a>
-					<br>
-					<button id="startButton" class="btn" style="margin-top: 2rem; margin-bottom: 3rem; font-weight: 700">Start Godot Editor</button>
-					<br>
-					<button class="btn" onclick="clearPersistence()" style="margin-bottom: 1.5rem">Clear Persistent Data</button>
-					<br>
-					<a href="https://docs.godotengine.org/en/stable/tutorials/editor/using_the_web_editor.html">Web editor documentation</a>
-				</div>
-			</div>
-			<div id="tab-editor" style="display: none;">
+			<div id="tab-editor">
 				<canvas id="editor-canvas" tabindex="1">
 					HTML5 canvas appears to be unsupported in the current browser.<br>
 					Please try updating or use a different browser.
@@ -447,7 +508,6 @@ window.addEventListener('load', () => {
 	});
 	if (missing.length) {
 		// Display error dialog as threading support is required for the editor.
-		document.getElementById('startButton').disabled = 'disabled';
 		document.getElementById('welcome-modal-description').style.display = 'none';
 		document.getElementById('welcome-modal-missing-description').style.display = 'block';
 		document.getElementById('welcome-modal-dismiss').style.display = 'none';
@@ -457,18 +517,33 @@ window.addEventListener('load', () => {
 			node.innerText = missing[i];
 			list.appendChild(node);
 		}
+	} else {
+		// eslint-disable-next-line no-undef
+		const fileSizes = ___GODOT_EDITOR_FILESIZES___;
+		let sizeInBytes = 0;
+		for (const value of Object.values(fileSizes)) {
+			sizeInBytes += value;
+		}
+		const sizeInMB = sizeInBytes / (1024 * 1024);
+		document.getElementById('welcome-modal-dismiss').textContent = `Start Editor (${sizeInMB.toFixed(2)} MB Download)`;
 	}
 
 	if (missing.length || localStorage.getItem('welcomeModalDismissed') !== 'true') {
-		document.getElementById('welcome-modal').style.display = 'block';
+		document.getElementById('welcome-modal').style.display = 'flex';
 		document.getElementById('welcome-modal-dismiss').focus();
 	}
 });
 
-function closeWelcomeModal(dontShowAgain) { // eslint-disable-line no-unused-vars
+function closeWelcomeModal() { // eslint-disable-line no-unused-vars
 	document.getElementById('welcome-modal').style.display = 'none';
+	const dontShowAgain = document.getElementById('welcome-modal-dont-show-again-check').checked;
 	if (dontShowAgain) {
 		localStorage.setItem('welcomeModalDismissed', 'true');
+	}
+	if (document.getElementById('welcome-modal-missing-description').style.display == 'block') {
+		window.close();
+	} else if (typeof window.startEditor === 'function') {
+		window.startEditor();
 	}
 }
 		</script>
@@ -500,6 +575,7 @@ function clearPersistence() { // eslint-disable-line no-unused-vars
 	Promise.all([
 		deleteDB('/home/web_user'),
 	]).then(function (results) {
+		localStorage.setItem('welcomeModalDismissed', 'false');
 		alert('Done.');
 	}).catch(function (err) {
 		alert('Error deleting local files. Please retry after reloading the page.');
@@ -507,14 +583,14 @@ function clearPersistence() { // eslint-disable-line no-unused-vars
 }
 
 const tabs = [
-	document.getElementById('tab-loader'),
 	document.getElementById('tab-editor'),
 	document.getElementById('tab-game'),
+	document.getElementById('tab-status'),
 ];
 function showTab(name) {
 	tabs.forEach(function (elem) {
 		if (elem.id === `tab-${name}`) {
-			elem.style.display = 'block';
+			elem.style.display = (name === 'status' ? 'flex' : 'block');
 			if (name === 'editor' || name === 'game') {
 				const canvas = document.getElementById(`${name}-canvas`);
 				canvas.focus();
@@ -531,12 +607,6 @@ function setButtonEnabled(id, enabled) {
 	} else {
 		document.getElementById(id).disabled = 'disabled';
 	}
-}
-
-function setLoaderEnabled(enabled) {
-	setButtonEnabled('btn-tab-loader', enabled);
-	setButtonEnabled('btn-tab-editor', !enabled);
-	setButtonEnabled('btn-close-editor', !enabled);
 }
 
 function setGameTabEnabled(enabled) {
@@ -557,7 +627,8 @@ function closeEditor() { // eslint-disable-line no-unused-vars
 	}
 }
 
-function startEditor(zip) {
+// eslint-disable-next-line no-unused-vars
+function startEditor() {
 	const INDETERMINATE_STATUS_STEP_MS = 100;
 	const persistentPaths = ['/home/web_user'];
 
@@ -675,8 +746,6 @@ function startEditor(zip) {
 	};
 
 	let OnEditorExit = function () {
-		showTab('loader');
-		setLoaderEnabled(true);
 	};
 	function Execute(args) {
 		const is_editor = args.filter(function (v) {
@@ -704,18 +773,11 @@ function startEditor(zip) {
 			});
 		} else { // New editor instances will be run in the same canvas. We want to wait for it to exit.
 			OnEditorExit = function (code) {
-				setLoaderEnabled(true);
 				setTimeout(function () {
 					editor.init().then(function () {
-						setLoaderEnabled(false);
-						OnEditorExit = function () {
-							showTab('loader');
-							setLoaderEnabled(true);
-						};
 						editor.start({ 'args': args, 'persistentDrops': is_project_manager, 'canvas': editorCanvas });
 					});
 				}, 0);
-				OnEditorExit = null;
 			};
 		}
 	}
@@ -752,6 +814,8 @@ function startEditor(zip) {
 		'persistentPaths': persistentPaths,
 		'emscriptenPoolSize': concurrency,
 		'godotPoolSize': Math.floor(concurrency / 3), // Ensures at least 4 threads for the pool (see above).
+		// eslint-disable-next-line no-undef
+		'fileSizes': ___GODOT_EDITOR_FILESIZES___,
 	};
 	editor = new Engine(editorConfig);
 
@@ -771,11 +835,7 @@ function startEditor(zip) {
 	if (!Engine.isWebGLAvailable()) {
 		displayFailureNotice('WebGL not available');
 	} else {
-		setStatusMode('indeterminate');
 		editor.init('godot.editor').then(function () {
-			if (zip) {
-				editor.copyToFS('/tmp/preload.zip', zip);
-			}
 			try {
 				// Avoid user creating project in the persistent root folder.
 				editor.copyToFS('/home/web_user/keep', new Uint8Array());
@@ -783,7 +843,6 @@ function startEditor(zip) {
 				// File exists
 			}
 			showTab('editor');
-			setLoaderEnabled(false);
 			const args = ['--project-manager', '--single-window'];
 			editor.start({ 'args': args, 'persistentDrops': true }).then(function () {
 				setStatusMode('hidden');
@@ -792,42 +851,6 @@ function startEditor(zip) {
 		}).catch(displayFailureNotice);
 	}
 }
-
-function preloadZip(target) {
-	return new Promise(function (resolve, reject) {
-		if (target.files.length > 0) {
-			target.files[0].arrayBuffer().then(function (data) {
-				resolve(data);
-			});
-		} else {
-			resolve();
-		}
-	});
-}
-
-document.getElementById('startButton').onclick = function () {
-	preloadZip(document.getElementById('zip-file')).then(function (zip) {
-		startEditor(zip);
-	});
-};
-
-const zipFile = document.getElementById('zip-file');
-const zipDemo = document.getElementById('zip-demo');
-
-function updateZipDemoDisplay() {
-	console.log(zipFile.files.length);
-	// Hide "Try this for example" link when a file is selected.
-	zipDemo.style.display = zipFile.files.length === 0 ? 'inline' : 'none';
-}
-
-zipFile.addEventListener('change', (_pEvent) => {
-	updateZipDemoDisplay();
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-	// Handle situation when a file is already specified on load (e.g. after a page refresh).
-	updateZipDemoDisplay();
-});
 		</script>
 	</body>
 </html>
