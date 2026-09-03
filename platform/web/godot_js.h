@@ -57,6 +57,7 @@ extern int godot_js_os_thread_pool_size_get();
 extern int godot_js_os_has_feature(const char *p_ftr);
 extern int godot_js_pwa_cb(void (*p_callback)());
 extern int godot_js_pwa_update();
+extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
 
 // Input
 extern void godot_js_input_mouse_button_cb(int (*p_callback)(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers));
