@@ -326,6 +326,9 @@
 		<member name="docks/scene_tree/hide_filtered_out_parents" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will only show nodes that match the filter, without showing parents that don't. This settings can also be changed in the Scene dock's top menu.
 		</member>
+		<member name="docks/scene_tree/show_row_stripes" type="bool" setter="" getter="">
+			If [code]true[/code], the Scene dock will draw striped rows to improve readability. See also [member interface/theme/strip_alpha].
+		</member>
 		<member name="docks/scene_tree/start_create_dialog_fully_expanded" type="bool" setter="" getter="">
 			If [code]true[/code], the Create dialog (Create New Node/Create New Resource) will start with all its sections expanded. Otherwise, sections will be collapsed until the user starts searching (which will automatically expand sections as needed).
 		</member>
@@ -1285,6 +1288,9 @@
 		</member>
 		<member name="interface/theme/spacing_preset" type="String" setter="" getter="">
 			The editor theme spacing preset to use. See also [member interface/theme/base_spacing] and [member interface/theme/additional_spacing].
+		</member>
+		<member name="interface/theme/strip_alpha" type="float" setter="" getter="">
+			The opacity to use when drawing striped rows for any interface based on [Tree] in the editor, such as the Scene dock. If set to [code]0.0[/code], no stripes will be drawn. See also [member docks/scene_tree/show_row_stripes].
 		</member>
 		<member name="interface/theme/style" type="String" setter="" getter="">
 			The editor theme style to use.
