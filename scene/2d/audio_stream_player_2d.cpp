@@ -300,10 +300,6 @@ void AudioStreamPlayer2D::_set_playing(bool p_enable) {
 	internal->set_playing(p_enable);
 }
 
-void AudioStreamPlayer2D::_validate_property(PropertyInfo &p_property) const {
-	internal->validate_property(p_property);
-}
-
 void AudioStreamPlayer2D::set_max_distance(float p_pixels) {
 	ERR_FAIL_COND(p_pixels <= 0.0);
 	max_distance = p_pixels;
@@ -445,7 +441,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_attenuation", "get_attenuation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_AUDIO_BUS), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 

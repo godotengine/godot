@@ -218,10 +218,6 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 	return volume_vector;
 }
 
-void AudioStreamPlayer::_validate_property(PropertyInfo &p_property) const {
-	internal->validate_property(p_property);
-}
-
 bool AudioStreamPlayer::has_stream_playback() {
 	return internal->has_stream_playback();
 }
@@ -290,7 +286,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_AUDIO_BUS), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 
 	ADD_SIGNAL(MethodInfo("finished"));
