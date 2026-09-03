@@ -1412,7 +1412,7 @@ void Object::_reset_gdtype() const {
 	}
 }
 
-void Object::autorelease_gdtype(GDType **r_type) {
+void Object::autorelease_gdtype(ObjectGDType **r_type) {
 	ClassDB::gdtype_autorelease_pool.push_back(r_type);
 }
 
@@ -1858,7 +1858,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	}
 }
 
-void Object::_add_class_to_classdb(GDType &p_type, const GDType *p_inherits) {
+void Object::_add_class_to_classdb(ObjectGDType &p_type, const ObjectGDType *p_inherits) {
 	ClassDB::_add_class(p_type, p_inherits);
 }
 
@@ -2170,7 +2170,7 @@ uint32_t Object::get_edited_version() const {
 }
 #endif
 
-const GDType &Object::get_gdtype() const {
+const ObjectGDType &Object::get_gdtype() const {
 	if (unlikely(!_gdtype_ptr)) {
 		// While class is initializing / deinitializing, constructors and destructors
 		// need access to the proper type at the proper stage.
