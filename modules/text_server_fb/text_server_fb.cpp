@@ -324,6 +324,11 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 
 #ifdef MODULE_MSDFGEN_ENABLED
 
+// FreeType outline coordinates are 26.6 fixed point, so one pixel is 64 units.
+// Godot versions before 4.8 used an incorrect divisor of 60, which can be
+// restored via the `gui/theme/compat_msdf_legacy_scaling` project setting.
+static double ft_units_per_pixel = 64.0;
+
 struct MSContext {
 	msdfgen::Point2 position;
 	msdfgen::Shape *shape = nullptr;
@@ -352,8 +357,7 @@ struct MSDFThreadData {
 };
 
 static msdfgen::Point2 ft_point2(const FT_Vector &vector) {
-	// FreeType outline coordinates are 26.6 fixed point, so one pixel is 64 units.
-	return msdfgen::Point2(vector.x / 64.0, vector.y / 64.0);
+	return msdfgen::Point2(vector.x / ft_units_per_pixel, vector.y / ft_units_per_pixel);
 }
 
 static int ft_move_to(const FT_Vector *to, void *user) {
@@ -5381,6 +5385,11 @@ void TextServerFallback::_update_settings() {
 TextServerFallback::TextServerFallback() {
 	_insert_feature_sets();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerFallback::_update_settings));
+#if defined(MODULE_MSDFGEN_ENABLED) && !defined(DISABLE_DEPRECATED)
+	if (GLOBAL_GET("gui/theme/compat_msdf_legacy_scaling")) {
+		ft_units_per_pixel = 60.0;
+	}
+#endif
 }
 
 void TextServerFallback::_font_clear_system_fallback_cache() {

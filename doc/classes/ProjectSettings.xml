@@ -1269,6 +1269,10 @@
 		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
 			If set to [code]true[/code] and [member display/window/stretch/mode] is set to [code]"canvas_items"[/code], font and [DPITexture] oversampling is enabled in the main window. Use [member Viewport.oversampling] to control oversampling in other viewports and windows.
 		</member>
+		<member name="gui/theme/compat_msdf_legacy_scaling" type="bool" setter="" getter="" default="false">
+			If set to [code]true[/code], multichannel signed distance field (MSDF) glyph shapes are scaled using the divisor used before Godot 4.8, which was incorrect and made MSDF text render about 6.67% larger than intended.
+			This setting is provided for compatibility with existing projects that relied on the incorrect scaling and would otherwise have their layout shifted by the fix. New projects should leave this disabled.
+		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
 		</member>
