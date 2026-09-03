@@ -269,7 +269,7 @@ void DisplayServerAppleEmbedded::_window_callback(const Callable &p_callable, co
 
 // MARK: Touches
 
-void DisplayServerAppleEmbedded::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click) {
+void DisplayServerAppleEmbedded::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click, bool p_long_press) {
 	Ref<InputEventScreenTouch> ev;
 	ev.instantiate();
 
@@ -277,6 +277,7 @@ void DisplayServerAppleEmbedded::touch_press(int p_idx, int p_x, int p_y, bool p
 	ev->set_pressed(p_pressed);
 	ev->set_position(Vector2(p_x, p_y));
 	ev->set_double_tap(p_double_click);
+	ev->set_long_press(p_long_press);
 	perform_event(ev);
 }
 
@@ -302,7 +303,7 @@ void DisplayServerAppleEmbedded::perform_event(const Ref<InputEvent> &p_event) {
 }
 
 void DisplayServerAppleEmbedded::touches_canceled(int p_idx) {
-	touch_press(p_idx, -1, -1, false, false);
+	touch_press(p_idx, -1, -1, false, false, false);
 }
 
 // MARK: Keyboard
