@@ -37,12 +37,9 @@
 #include "editor/editor_node.h"
 #include "editor/export/project_zip_packer.h"
 
-#include <emscripten/emscripten.h>
+#include "platform/web/godot_js.h"
 
-// Web functions defined in library_godot_editor_tools.js
-extern "C" {
-extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
-}
+#include <emscripten/emscripten.h>
 
 static void _web_editor_init_callback() {
 	EditorNode::get_singleton()->add_editor_plugin(memnew(WebToolsEditorPlugin));
