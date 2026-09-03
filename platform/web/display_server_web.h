@@ -34,6 +34,7 @@
 
 #include "core/input/input_enums.h"
 #include "core/os/keyboard.h"
+#include "core/variant/callable.h"
 #include "servers/display/display_server.h"
 
 #include <emscripten.h>
@@ -74,6 +75,7 @@ private:
 	Callable input_event_callback;
 	Callable input_text_callback;
 	Callable drop_files_callback;
+	Callable file_dialog_show_callback;
 
 	String clipboard;
 	Point2 touches[32];
@@ -154,6 +156,8 @@ private:
 	static void _send_window_event_callback(int p_notification);
 	WASM_EXPORT static void drop_files_js_callback(const char **p_filev, int p_filec);
 	static void _drop_files_js_callback(const Vector<String> &p_files);
+	WASM_EXPORT static void file_dialog_show_js_callback(int status, const char *p_filepaths, int index);
+	static void _file_dialog_show_js_callback(bool status, const Vector<String> &p_filepaths, int index);
 
 	void process_joypads();
 	void process_keys();
@@ -294,6 +298,9 @@ public:
 	// others
 	virtual bool get_swap_cancel_ok() override;
 	virtual void swap_buffers() override;
+
+	// dialogs
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
 
 	static void register_web_driver();
 	DisplayServerWeb(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_window_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);

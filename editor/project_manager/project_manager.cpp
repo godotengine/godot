@@ -36,9 +36,12 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/math/vector2.h"
 #include "core/object/callable_mp.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 #include "core/version.h"
 #include "editor/asset_library/asset_library_editor_plugin.h"
 #include "editor/doc/editor_help.h"
@@ -58,6 +61,8 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "main/main.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/control.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -66,6 +71,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
+#include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -81,6 +87,10 @@
 #endif // PHYSICS_3D_DISABLED
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono. (For editor help highlighter).
+
+#if WEB_ENABLED
+#include "platform/web/os_web.h"
+#endif
 
 constexpr int GODOT4_CONFIG_VERSION = 5;
 
@@ -794,8 +804,12 @@ void ProjectManager::_install_project(const String &p_zip_path, const String &p_
 }
 
 void ProjectManager::_import_project() {
+#ifdef WEB_ENABLED
+	import_method_ask->popup_centered();
+#else
 	project_dialog->set_mode(ProjectDialog::MODE_IMPORT);
 	project_dialog->ask_for_path_and_show();
+#endif
 }
 
 void ProjectManager::_new_project() {
@@ -976,6 +990,40 @@ void ProjectManager::_on_recovery_mode_popup_open_recovery() {
 	open_in_recovery_mode = true;
 	_open_selected_projects_check_warnings();
 }
+
+#ifdef WEB_ENABLED
+void ProjectManager::_on_web_editor_pick_import_folder() {
+	import_method_ask->hide();
+	DisplayServer::get_singleton()->file_dialog_show(
+			TTRC("Import Project Folder"),
+			OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS),
+			"", false, DisplayServerEnums::FileDialogMode::FILE_DIALOG_MODE_OPEN_DIR,
+			Vector<String>(), callable_mp(this, &ProjectManager::_on_web_import_project));
+}
+
+void ProjectManager::_on_web_editor_pick_import_zip() {
+	import_method_ask->hide();
+	Vector<String> filters = Vector<String>();
+	filters.append(".zip");
+	DisplayServer::get_singleton()->file_dialog_show(
+			TTRC("Import Project File"),
+			OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS),
+			"", false, DisplayServerEnums::FileDialogMode::FILE_DIALOG_MODE_OPEN_FILE,
+			filters, callable_mp(this, &ProjectManager::_on_web_import_project));
+}
+
+void ProjectManager::_on_web_import_project(bool p_status, const Vector<String> &p_paths, int p_index) {
+	if (!p_status || p_paths.size() == 0) {
+		return;
+	}
+	if (p_paths[0].ends_with(".zip")) {
+		_install_project(p_paths[0], p_paths[0].get_file().get_basename().capitalize());
+		return;
+	}
+	print_line(vformat("TODO: import %s", p_paths[0]));
+}
+
+#endif
 
 void ProjectManager::_on_project_created(const String &dir, bool edit) {
 	project_list->add_project(dir, false);
@@ -1621,6 +1669,11 @@ ProjectManager::ProjectManager() {
 			filter_option->add_item(TTRC("Name"));
 			filter_option->add_item(TTRC("Path"));
 			filter_option->add_item(TTRC("Tags"));
+#ifdef WEB_ENABLED
+			scan_btn->hide();
+			callable_mp(project_list, &ProjectList::find_projects).call_deferred("/home/web_user/");
+			callable_mp(this, &ProjectManager::_erase_missing_projects_confirm).call_deferred();
+#endif
 		}
 
 		// Project list and its sidebar.
@@ -1912,6 +1965,40 @@ ProjectManager::ProjectManager() {
 
 		about_dialog = memnew(EditorAbout);
 		add_child(about_dialog);
+
+#ifdef WEB_ENABLED
+		import_method_ask = memnew(ConfirmationDialog);
+		add_child(import_method_ask);
+		import_method_ask->set_title(TTRC("Import"));
+		VBoxContainer *import_method_vb = memnew(VBoxContainer);
+		import_method_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+		import_method_ask->add_child(import_method_vb);
+
+		RichTextLabel *import_method_label = memnew(RichTextLabel);
+		import_method_label->set_h_size_flags(SIZE_EXPAND_FILL);
+		import_method_vb->add_child(import_method_label);
+		import_method_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+		import_method_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		import_method_label->set_use_bbcode(true);
+		import_method_label->set_fit_content(true);
+		import_method_label->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
+		import_method_label->add_text(TTRC("Web editor requires to copy projects to the Browser's persistent data folder."));
+		import_method_label->add_text("\n\n");
+		const Color warning_color = theme->get_color(SNAME("warning_color"), SNAME("EditorHelp"));
+		const Ref<Texture2D> warning_icon = theme->get_icon(SNAME("NodeWarning"), SNAME("EditorIcons"));
+		const Ref<Font> doc_bold_font = theme->get_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+		import_method_label->push_color(warning_color);
+		import_method_label->add_image(warning_icon, warning_icon->get_width(), warning_icon->get_height());
+		import_method_label->push_font(doc_bold_font);
+		import_method_label->add_text(" " + TTR("Warning:") + " ");
+		import_method_label->pop(); // font
+		import_method_label->add_text(TTRC("Erasing browser's persistent data cache will effectively delete all projects."));
+		import_method_label->pop(); // color
+
+		import_method_ask->set_ok_button_text(TTRC("Select Project Folder"));
+		import_method_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_on_web_editor_pick_import_folder));
+		import_method_ask->add_button("Select Project Zip file")->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_on_web_editor_pick_import_zip));
+#endif
 	}
 
 	// Tag management.
