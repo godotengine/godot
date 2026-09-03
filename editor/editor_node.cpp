@@ -5161,36 +5161,51 @@ void EditorNode::update_node_from_node_modification_entry(Node *p_node, Modifica
 			p_node->set_script(*script_property_table_entry);
 		}
 
-		// Get properties for this node.
-		List<PropertyInfo> pinfo;
-		p_node->get_property_list(&pinfo);
+		// Apply property modifications in multiple passes, because whether a property can be applied may depend on value of another property.
+		// For example: MeshInstance3D will not take "instance_shader_parameters/the_uniform",
+		// unless one of its material (e.g. material_override property) contains an instance uniform named "the_uniform".
+		LocalVector<StringName> pending;
+		for (const KeyValue<StringName, Variant> &E : p_node_modification.property_table) {
+			pending.push_back(E.key);
+		}
+		while (!pending.is_empty()) {
+			// Get current properties for this node.
+			List<PropertyInfo> pinfo;
+			p_node->get_property_list(&pinfo);
 
-		// Get names of all valid property names.
-		HashMap<StringName, bool> property_node_reference_table;
-		for (const PropertyInfo &E : pinfo) {
-			if (E.usage & PROPERTY_USAGE_STORAGE) {
-				if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
-					property_node_reference_table[E.name] = true;
-				} else {
-					property_node_reference_table[E.name] = false;
+			// Get names of all valid property names, recording whether they are node references.
+			HashMap<StringName, bool> property_node_reference_table;
+			for (const PropertyInfo &E : pinfo) {
+				if (E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
+					if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
+						property_node_reference_table[E.name] = true;
+					} else {
+						property_node_reference_table[E.name] = false;
+					}
 				}
 			}
-		}
 
-		// Restore the modified properties for this node.
-		for (const KeyValue<StringName, Variant> &E : p_node_modification.property_table) {
-			bool *property_node_reference_table_entry = property_node_reference_table.getptr(E.key);
-			if (property_node_reference_table_entry) {
-				// If the property is a node reference, attempt to restore from the node path instead.
-				bool is_node_reference = *property_node_reference_table_entry;
-				if (is_node_reference) {
-					if (E.value.get_type() == Variant::NODE_PATH) {
-						p_node->set(E.key, p_node->get_node_or_null(E.value));
+			// Attempt to restore pending modified properties for this node.
+			LocalVector<StringName> still_pending;
+			for (const StringName &key : pending) {
+				if (bool *is_node_ref = property_node_reference_table.getptr(key)) {
+					const Variant &value = p_node_modification.property_table[key];
+					if (*is_node_ref) {
+						if (value.get_type() == Variant::NODE_PATH) {
+							p_node->set(key, p_node->get_node_or_null(value));
+						}
+					} else {
+						p_node->set(key, value);
 					}
 				} else {
-					p_node->set(E.key, E.value);
+					still_pending.push_back(key);
 				}
 			}
+			if (pending.size() == still_pending.size()) {
+				// None applied, so assume none ever will.
+				break;
+			}
+			pending = still_pending;
 		}
 
 		// Restore the connections to other nodes.
