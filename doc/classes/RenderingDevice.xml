@@ -1375,7 +1375,7 @@
 		</constant>
 	</constants>
 	<enums>
-		<enum name="AccelerationStructureFlagBits" is_bitfield="true">
+		<enum name="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
 			<constant name="ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT" value="1" experimental="">
 				Allows the acceleration structure to be updated after it has been built.
 			</constant>
@@ -1392,7 +1392,7 @@
 				Reduces the memory usage of the acceleration structure, potentially at the cost of reduced ray traversal performance.
 			</constant>
 		</enum>
-		<enum name="AccelerationStructureGeometryFlagBits" is_bitfield="true">
+		<enum name="AccelerationStructureGeometryFlagBits" is_bitfield="true" experimental="">
 			<constant name="ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT" value="1" experimental="">
 				An opaque geometry does not invoke the any hit shaders.
 			</constant>
@@ -1400,7 +1400,7 @@
 				This geometry only calls the any hit shader a single time for each primitive.
 			</constant>
 		</enum>
-		<enum name="AccelerationStructureInstanceFlagBits" is_bitfield="true">
+		<enum name="AccelerationStructureInstanceFlagBits" is_bitfield="true" experimental="">
 			<constant name="ACCELERATION_STRUCTURE_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT" value="1" experimental="">
 				Disables triangle face culling for this instance during ray traversal.
 			</constant>
@@ -2524,7 +2524,7 @@
 				Support for rasterization rate maps. The current implementation targets Metal on Apple platforms. This allows for foveated rendering, which is used by the visionOS XR module.
 			</constant>
 		</enum>
-		<enum name="FinalAction">
+		<enum name="FinalAction" deprecated="Final actions are solved automatically by RenderingDevice.">
 			<constant name="FINAL_ACTION_STORE" value="0" deprecated="Final actions are solved automatically by RenderingDevice.">
 				Store the result of the draw list in the framebuffer. This is generally what you want to do.
 			</constant>
@@ -2547,7 +2547,7 @@
 				Index buffer in 32-bit unsigned integer format. This limits the maximum index that can be specified to [code]4294967295[/code].
 			</constant>
 		</enum>
-		<enum name="InitialAction">
+		<enum name="InitialAction" deprecated="Initial actions are solved automatically by RenderingDevice.">
 			<constant name="INITIAL_ACTION_LOAD" value="0" deprecated="Initial actions are solved automatically by RenderingDevice.">
 				Load the previous contents of the framebuffer.
 			</constant>

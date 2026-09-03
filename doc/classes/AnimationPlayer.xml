@@ -353,13 +353,13 @@
 		</signal>
 	</signals>
 	<enums>
-		<enum name="AnimationMethodCallMode">
+		<enum name="AnimationMethodCallMode" deprecated="See [enum AnimationMixer.AnimationCallbackModeMethod].">
 			<constant name="ANIMATION_METHOD_CALL_DEFERRED" value="0" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_DEFERRED].">
 			</constant>
 			<constant name="ANIMATION_METHOD_CALL_IMMEDIATE" value="1" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_METHOD_IMMEDIATE].">
 			</constant>
 		</enum>
-		<enum name="AnimationProcessCallback">
+		<enum name="AnimationProcessCallback" deprecated="See [enum AnimationMixer.AnimationCallbackModeProcess].">
 			<constant name="ANIMATION_PROCESS_PHYSICS" value="0" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
 			</constant>
 			<constant name="ANIMATION_PROCESS_IDLE" value="1" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].">

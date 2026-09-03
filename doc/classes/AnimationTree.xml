@@ -47,7 +47,7 @@
 		</signal>
 	</signals>
 	<enums>
-		<enum name="AnimationProcessCallback">
+		<enum name="AnimationProcessCallback" deprecated="See [enum AnimationMixer.AnimationCallbackModeProcess].">
 			<constant name="ANIMATION_PROCESS_PHYSICS" value="0" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_PHYSICS].">
 			</constant>
 			<constant name="ANIMATION_PROCESS_IDLE" value="1" deprecated="See [constant AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_IDLE].">

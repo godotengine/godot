@@ -406,7 +406,7 @@
 		</signal>
 	</signals>
 	<enums>
-		<enum name="PlaybackType">
+		<enum name="PlaybackType" experimental="">
 			<constant name="PLAYBACK_TYPE_DEFAULT" value="0" experimental="">
 				The playback will be considered of the type declared at [member ProjectSettings.audio/general/default_playback_type].
 			</constant>

@@ -5456,7 +5456,7 @@
 				Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
 			</constant>
 		</enum>
-		<enum name="Features">
+		<enum name="Features" deprecated="This enumeration has not been used since Godot 3.0.">
 			<constant name="FEATURE_SHADERS" value="0" deprecated="This constant has not been used since Godot 3.0.">
 			</constant>
 			<constant name="FEATURE_MULTITHREADED" value="1" deprecated="This constant has not been used since Godot 3.0.">

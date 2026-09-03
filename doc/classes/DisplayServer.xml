@@ -2749,7 +2749,7 @@
 		</constant>
 	</constants>
 	<enums>
-		<enum name="AccessibilityAction">
+		<enum name="AccessibilityAction" deprecated="Use [AccessibilityServer] instead.">
 			<constant name="ACTION_CLICK" value="0" deprecated="Use [AccessibilityServer] instead.">
 				Single click action, callback argument is not set.
 			</constant>
@@ -2824,7 +2824,7 @@
 				Custom action, callback argument is set to the integer action ID.
 			</constant>
 		</enum>
-		<enum name="AccessibilityFlags">
+		<enum name="AccessibilityFlags" deprecated="Use [AccessibilityServer] instead.">
 			<constant name="FLAG_HIDDEN" value="0" deprecated="Use [AccessibilityServer] instead.">
 				Element is hidden for accessibility tools.
 			</constant>
@@ -2856,7 +2856,7 @@
 				Element clips children.
 			</constant>
 		</enum>
-		<enum name="AccessibilityLiveMode">
+		<enum name="AccessibilityLiveMode" deprecated="Use [AccessibilityServer] instead.">
 			<constant name="LIVE_OFF" value="0" deprecated="Use [AccessibilityServer] instead.">
 				Indicates that updates to the live region should not be presented.
 			</constant>
@@ -2867,7 +2867,7 @@
 				Indicates that updates to the live region have the highest priority and should be presented immediately.
 			</constant>
 		</enum>
-		<enum name="AccessibilityPopupType">
+		<enum name="AccessibilityPopupType" deprecated="Use [AccessibilityServer] instead.">
 			<constant name="POPUP_MENU" value="0" deprecated="Use [AccessibilityServer] instead.">
 				Popup menu.
 			</constant>
@@ -2881,7 +2881,7 @@
 				Popup dialog.
 			</constant>
 		</enum>
-		<enum name="AccessibilityRole">
+		<enum name="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			<constant name="ROLE_UNKNOWN" value="0" deprecated="Use [AccessibilityServer] instead.">
 				Unknown or custom role.
 			</constant>
@@ -3028,7 +3028,7 @@
 				Note: This role is used for internal text elements, and should not be assigned to nodes.
 			</constant>
 		</enum>
-		<enum name="AccessibilityScrollHint">
+		<enum name="AccessibilityScrollHint" deprecated="Use [AccessibilityServer] instead.">
 			<constant name="SCROLL_HINT_TOP_LEFT" value="0" deprecated="Use [AccessibilityServer] instead.">
 				A preferred position for the node scrolled into view. Top-left edge of the scroll container.
 			</constant>
@@ -3048,7 +3048,7 @@
 				A preferred position for the node scrolled into view. Right edge of the scroll container.
 			</constant>
 		</enum>
-		<enum name="AccessibilityScrollUnit">
+		<enum name="AccessibilityScrollUnit" deprecated="Use [AccessibilityServer] instead.">
 			<constant name="SCROLL_UNIT_ITEM" value="0" deprecated="Use [AccessibilityServer] instead.">
 				The amount by which to scroll. A single item of a list, line of text.
 			</constant>

@@ -921,7 +921,7 @@
 		</member>
 	</members>
 	<enums>
-		<enum name="RenderingDriver">
+		<enum name="RenderingDriver" deprecated="This enumeration is not used by the engine.">
 			<constant name="RENDERING_DRIVER_VULKAN" value="0" deprecated="This constant is not used by the engine.">
 				The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1, 1.2, and 1.3 if available.
 			</constant>

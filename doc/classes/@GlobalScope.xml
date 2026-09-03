@@ -2877,6 +2877,9 @@
 			</constant>
 		</enum>
 		<enum name="PropertyHint">
+			<description>
+				See [method Object.get_property_list].
+			</description>
 			<constant name="PROPERTY_HINT_NONE" value="0">
 				The property has no hint for the editor. However, the hint string is still read, which can be used to specify a suffix for a property that has no range limit (see [constant PROPERTY_HINT_RANGE]'s description).
 			</constant>
@@ -3086,6 +3089,9 @@
 			</constant>
 		</enum>
 		<enum name="PropertyUsageFlags" is_bitfield="true">
+			<description>
+				See [method Object.get_property_list].
+			</description>
 			<constant name="PROPERTY_USAGE_NONE" value="0">
 				The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 			</constant>

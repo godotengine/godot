@@ -102,7 +102,7 @@
 				Dynamic global illumination mode. Use for dynamic objects that contribute to global illumination. This GI mode is only effective when using [VoxelGI], but it has a higher performance impact than [constant GI_MODE_STATIC]. When using other GI methods, this will act the same as [constant GI_MODE_DISABLED]. When using [LightmapGI], the object will receive indirect lighting using lightmap probes instead of using the baked lightmap texture.
 			</constant>
 		</enum>
-		<enum name="LightmapScale">
+		<enum name="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
 			<constant name="LIGHTMAP_SCALE_1X" value="0" deprecated="Use [member gi_lightmap_texel_scale] instead.">
 				The standard texel density for lightmapping with [LightmapGI].
 			</constant>
