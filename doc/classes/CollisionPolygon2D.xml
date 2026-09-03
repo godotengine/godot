@@ -32,12 +32,14 @@
 			[b]Note:[/b] The returned vertices are in the local coordinate space of the given [CollisionPolygon2D].
 		</member>
 	</members>
-	<constants>
-		<constant name="BUILD_SOLIDS" value="0" enum="BuildMode">
-			Collisions will include the polygon and its contained area. In this mode the node has the same effect as several [ConvexPolygonShape2D] nodes, one for each convex shape in the convex decomposition of the polygon (but without the overhead of multiple nodes).
-		</constant>
-		<constant name="BUILD_SEGMENTS" value="1" enum="BuildMode">
-			Collisions will only include the polygon edges. In this mode the node has the same effect as a single [ConcavePolygonShape2D] made of segments, with the restriction that each segment (after the first one) starts where the previous one ends, and the last one ends where the first one starts (forming a closed but hollow polygon).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="BuildMode">
+			<constant name="BUILD_SOLIDS" value="0">
+				Collisions will include the polygon and its contained area. In this mode the node has the same effect as several [ConvexPolygonShape2D] nodes, one for each convex shape in the convex decomposition of the polygon (but without the overhead of multiple nodes).
+			</constant>
+			<constant name="BUILD_SEGMENTS" value="1">
+				Collisions will only include the polygon edges. In this mode the node has the same effect as a single [ConcavePolygonShape2D] made of segments, with the restriction that each segment (after the first one) starts where the previous one ends, and the last one ends where the first one starts (forming a closed but hollow polygon).
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -21,12 +21,14 @@
 			The width of the texture (in pixels). Higher values make it possible to represent high-frequency data better (such as sudden direction changes), at the cost of increased generation time and memory usage.
 		</member>
 	</members>
-	<constants>
-		<constant name="TEXTURE_MODE_RGB" value="0" enum="TextureMode">
-			Store the curve equally across the red, green and blue channels. This uses more video memory, but is more compatible with shaders that only read the green and blue values.
-		</constant>
-		<constant name="TEXTURE_MODE_RED" value="1" enum="TextureMode">
-			Store the curve only in the red channel. This saves video memory, but some custom shaders may not be able to work with this.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="TextureMode">
+			<constant name="TEXTURE_MODE_RGB" value="0">
+				Store the curve equally across the red, green and blue channels. This uses more video memory, but is more compatible with shaders that only read the green and blue values.
+			</constant>
+			<constant name="TEXTURE_MODE_RED" value="1">
+				Store the curve only in the red channel. This saves video memory, but some custom shaders may not be able to work with this.
+			</constant>
+		</enum>
+	</enums>
 </class>

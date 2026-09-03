@@ -18,15 +18,17 @@
 			The path to the target node, relative to the [VisibleOnScreenEnabler3D]. The target node is cached; it's only assigned when setting this property (if the [VisibleOnScreenEnabler3D] is inside the scene tree) and every time the [VisibleOnScreenEnabler3D] enters the scene tree. If the path is empty, no node will be affected. If the path is invalid, an error is also generated.
 		</member>
 	</members>
-	<constants>
-		<constant name="ENABLE_MODE_INHERIT" value="0" enum="EnableMode">
-			Corresponds to [constant Node.PROCESS_MODE_INHERIT].
-		</constant>
-		<constant name="ENABLE_MODE_ALWAYS" value="1" enum="EnableMode">
-			Corresponds to [constant Node.PROCESS_MODE_ALWAYS].
-		</constant>
-		<constant name="ENABLE_MODE_WHEN_PAUSED" value="2" enum="EnableMode">
-			Corresponds to [constant Node.PROCESS_MODE_WHEN_PAUSED].
-		</constant>
-	</constants>
+	<enums>
+		<enum name="EnableMode">
+			<constant name="ENABLE_MODE_INHERIT" value="0">
+				Corresponds to [constant Node.PROCESS_MODE_INHERIT].
+			</constant>
+			<constant name="ENABLE_MODE_ALWAYS" value="1">
+				Corresponds to [constant Node.PROCESS_MODE_ALWAYS].
+			</constant>
+			<constant name="ENABLE_MODE_WHEN_PAUSED" value="2">
+				Corresponds to [constant Node.PROCESS_MODE_WHEN_PAUSED].
+			</constant>
+		</enum>
+	</enums>
 </class>

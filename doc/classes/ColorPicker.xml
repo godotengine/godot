@@ -112,45 +112,49 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="MODE_RGB" value="0" enum="ColorModeType">
-			Allows editing the color with Red/Green/Blue sliders in sRGB color space.
-		</constant>
-		<constant name="MODE_HSV" value="1" enum="ColorModeType">
-			Allows editing the color with Hue/Saturation/Value sliders.
-		</constant>
-		<constant name="MODE_RAW" value="2" enum="ColorModeType" deprecated="This is replaced by [constant MODE_LINEAR].">
-		</constant>
-		<constant name="MODE_LINEAR" value="2" enum="ColorModeType">
-			Allows editing the color with Red/Green/Blue sliders in linear color space.
-		</constant>
-		<constant name="MODE_OKHSL" value="3" enum="ColorModeType">
-			Allows editing the color with Hue/Saturation/Lightness sliders.
-			OKHSL is a new color space similar to HSL but that better match perception by leveraging the Oklab color space which is designed to be simple to use, while doing a good job at predicting perceived lightness, chroma and hue.
-			[url=https://bottosson.github.io/posts/colorpicker/]Okhsv and Okhsl color spaces[/url]
-		</constant>
-		<constant name="SHAPE_HSV_RECTANGLE" value="0" enum="PickerShapeType">
-			HSV Color Model rectangle color space.
-		</constant>
-		<constant name="SHAPE_HSV_WHEEL" value="1" enum="PickerShapeType">
-			HSV Color Model rectangle color space with a wheel.
-		</constant>
-		<constant name="SHAPE_VHS_CIRCLE" value="2" enum="PickerShapeType">
-			HSV Color Model circle color space. Use Saturation as a radius.
-		</constant>
-		<constant name="SHAPE_OKHSL_CIRCLE" value="3" enum="PickerShapeType">
-			HSL OK Color Model circle color space.
-		</constant>
-		<constant name="SHAPE_NONE" value="4" enum="PickerShapeType">
-			The color space shape and the shape select button are hidden. Can't be selected from the shapes popup.
-		</constant>
-		<constant name="SHAPE_OK_HS_RECTANGLE" value="5" enum="PickerShapeType">
-			OKHSL Color Model rectangle with constant lightness.
-		</constant>
-		<constant name="SHAPE_OK_HL_RECTANGLE" value="6" enum="PickerShapeType">
-			OKHSL Color Model rectangle with constant saturation.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ColorModeType">
+			<constant name="MODE_RGB" value="0">
+				Allows editing the color with Red/Green/Blue sliders in sRGB color space.
+			</constant>
+			<constant name="MODE_HSV" value="1">
+				Allows editing the color with Hue/Saturation/Value sliders.
+			</constant>
+			<constant name="MODE_RAW" value="2" deprecated="This is replaced by [constant MODE_LINEAR].">
+			</constant>
+			<constant name="MODE_LINEAR" value="2">
+				Allows editing the color with Red/Green/Blue sliders in linear color space.
+			</constant>
+			<constant name="MODE_OKHSL" value="3">
+				Allows editing the color with Hue/Saturation/Lightness sliders.
+				OKHSL is a new color space similar to HSL but that better match perception by leveraging the Oklab color space which is designed to be simple to use, while doing a good job at predicting perceived lightness, chroma and hue.
+				[url=https://bottosson.github.io/posts/colorpicker/]Okhsv and Okhsl color spaces[/url]
+			</constant>
+		</enum>
+		<enum name="PickerShapeType">
+			<constant name="SHAPE_HSV_RECTANGLE" value="0">
+				HSV Color Model rectangle color space.
+			</constant>
+			<constant name="SHAPE_HSV_WHEEL" value="1">
+				HSV Color Model rectangle color space with a wheel.
+			</constant>
+			<constant name="SHAPE_VHS_CIRCLE" value="2">
+				HSV Color Model circle color space. Use Saturation as a radius.
+			</constant>
+			<constant name="SHAPE_OKHSL_CIRCLE" value="3">
+				HSL OK Color Model circle color space.
+			</constant>
+			<constant name="SHAPE_NONE" value="4">
+				The color space shape and the shape select button are hidden. Can't be selected from the shapes popup.
+			</constant>
+			<constant name="SHAPE_OK_HS_RECTANGLE" value="5">
+				OKHSL Color Model rectangle with constant lightness.
+			</constant>
+			<constant name="SHAPE_OK_HL_RECTANGLE" value="6">
+				OKHSL Color Model rectangle with constant saturation.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="focused_not_editing_cursor_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.275)">
 			Color of rectangle or circle drawn when a picker shape part is focused but not editable via keyboard or joypad. Displayed [i]over[/i] the picker shape, so a partially transparent color should be used to ensure the picker shape remains visible.

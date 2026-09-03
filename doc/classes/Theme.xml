@@ -563,27 +563,29 @@
 			Values below [code]1[/code] are invalid and can be used to unset the property. Use [method has_default_font_size] to check if this value is valid.
 		</member>
 	</members>
-	<constants>
-		<constant name="DATA_TYPE_COLOR" value="0" enum="DataType">
-			Theme's [Color] item type.
-		</constant>
-		<constant name="DATA_TYPE_CONSTANT" value="1" enum="DataType">
-			Theme's constant item type.
-		</constant>
-		<constant name="DATA_TYPE_FONT" value="2" enum="DataType">
-			Theme's [Font] item type.
-		</constant>
-		<constant name="DATA_TYPE_FONT_SIZE" value="3" enum="DataType">
-			Theme's font size item type.
-		</constant>
-		<constant name="DATA_TYPE_ICON" value="4" enum="DataType">
-			Theme's icon [Texture2D] item type.
-		</constant>
-		<constant name="DATA_TYPE_STYLEBOX" value="5" enum="DataType">
-			Theme's [StyleBox] item type.
-		</constant>
-		<constant name="DATA_TYPE_MAX" value="6" enum="DataType">
-			Maximum value for the DataType enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DataType">
+			<constant name="DATA_TYPE_COLOR" value="0">
+				Theme's [Color] item type.
+			</constant>
+			<constant name="DATA_TYPE_CONSTANT" value="1">
+				Theme's constant item type.
+			</constant>
+			<constant name="DATA_TYPE_FONT" value="2">
+				Theme's [Font] item type.
+			</constant>
+			<constant name="DATA_TYPE_FONT_SIZE" value="3">
+				Theme's font size item type.
+			</constant>
+			<constant name="DATA_TYPE_ICON" value="4">
+				Theme's icon [Texture2D] item type.
+			</constant>
+			<constant name="DATA_TYPE_STYLEBOX" value="5">
+				Theme's [StyleBox] item type.
+			</constant>
+			<constant name="DATA_TYPE_MAX" value="6">
+				Maximum value for the DataType enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

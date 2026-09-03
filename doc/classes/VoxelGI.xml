@@ -47,21 +47,23 @@
 			Number of times to subdivide the grid that the [VoxelGI] operates on. A higher number results in finer detail and thus higher visual quality, while lower numbers result in better performance.
 		</member>
 	</members>
-	<constants>
-		<constant name="SUBDIV_64" value="0" enum="Subdiv">
-			Use 64 subdivisions. This is the lowest quality setting, but the fastest. Use it if you can, but especially use it on lower-end hardware.
-		</constant>
-		<constant name="SUBDIV_128" value="1" enum="Subdiv">
-			Use 128 subdivisions. This is the default quality setting.
-		</constant>
-		<constant name="SUBDIV_256" value="2" enum="Subdiv">
-			Use 256 subdivisions.
-		</constant>
-		<constant name="SUBDIV_512" value="3" enum="Subdiv">
-			Use 512 subdivisions. This is the highest quality setting, but the slowest. On lower-end hardware, this could cause the GPU to stall.
-		</constant>
-		<constant name="SUBDIV_MAX" value="4" enum="Subdiv">
-			Represents the size of the [enum Subdiv] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Subdiv">
+			<constant name="SUBDIV_64" value="0">
+				Use 64 subdivisions. This is the lowest quality setting, but the fastest. Use it if you can, but especially use it on lower-end hardware.
+			</constant>
+			<constant name="SUBDIV_128" value="1">
+				Use 128 subdivisions. This is the default quality setting.
+			</constant>
+			<constant name="SUBDIV_256" value="2">
+				Use 256 subdivisions.
+			</constant>
+			<constant name="SUBDIV_512" value="3">
+				Use 512 subdivisions. This is the highest quality setting, but the slowest. On lower-end hardware, this could cause the GPU to stall.
+			</constant>
+			<constant name="SUBDIV_MAX" value="4">
+				Represents the size of the [enum Subdiv] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

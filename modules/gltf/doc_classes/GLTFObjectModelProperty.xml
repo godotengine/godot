@@ -76,39 +76,41 @@
 			The type of data stored in the Godot property. This is the type of the property that the [member node_paths] point to.
 		</member>
 	</members>
-	<constants>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_UNKNOWN" value="0" enum="GLTFObjectModelType">
-			Unknown or not set object model type. If the object model type is set to this value, the real type still needs to be determined.
-		</constant>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_BOOL" value="1" enum="GLTFObjectModelType">
-			Object model type "bool". Represented in the glTF JSON as a boolean, and encoded in a [GLTFAccessor] as "SCALAR". When encoded in an accessor, a value of [code]0[/code] is [code]false[/code], and any other value is [code]true[/code].
-		</constant>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT" value="2" enum="GLTFObjectModelType">
-			Object model type "float". Represented in the glTF JSON as a number, and encoded in a [GLTFAccessor] as "SCALAR".
-		</constant>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT_ARRAY" value="3" enum="GLTFObjectModelType">
-			Object model type "float[lb][rb]". Represented in the glTF JSON as an array of numbers, and encoded in a [GLTFAccessor] as "SCALAR".
-		</constant>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT2" value="4" enum="GLTFObjectModelType">
-			Object model type "float2". Represented in the glTF JSON as an array of two numbers, and encoded in a [GLTFAccessor] as "VEC2".
-		</constant>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT3" value="5" enum="GLTFObjectModelType">
-			Object model type "float3". Represented in the glTF JSON as an array of three numbers, and encoded in a [GLTFAccessor] as "VEC3".
-		</constant>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT4" value="6" enum="GLTFObjectModelType">
-			Object model type "float4". Represented in the glTF JSON as an array of four numbers, and encoded in a [GLTFAccessor] as "VEC4".
-		</constant>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT2X2" value="7" enum="GLTFObjectModelType">
-			Object model type "float2x2". Represented in the glTF JSON as an array of four numbers, and encoded in a [GLTFAccessor] as "MAT2".
-		</constant>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT3X3" value="8" enum="GLTFObjectModelType">
-			Object model type "float3x3". Represented in the glTF JSON as an array of nine numbers, and encoded in a [GLTFAccessor] as "MAT3".
-		</constant>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT4X4" value="9" enum="GLTFObjectModelType">
-			Object model type "float4x4". Represented in the glTF JSON as an array of sixteen numbers, and encoded in a [GLTFAccessor] as "MAT4".
-		</constant>
-		<constant name="GLTF_OBJECT_MODEL_TYPE_INT" value="10" enum="GLTFObjectModelType">
-			Object model type "int". Represented in the glTF JSON as a number, and encoded in a [GLTFAccessor] as "SCALAR". The range of values is limited to signed integers. For [code]KHR_interactivity[/code], only 32-bit integers are supported.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="GLTFObjectModelType">
+			<constant name="GLTF_OBJECT_MODEL_TYPE_UNKNOWN" value="0">
+				Unknown or not set object model type. If the object model type is set to this value, the real type still needs to be determined.
+			</constant>
+			<constant name="GLTF_OBJECT_MODEL_TYPE_BOOL" value="1">
+				Object model type "bool". Represented in the glTF JSON as a boolean, and encoded in a [GLTFAccessor] as "SCALAR". When encoded in an accessor, a value of [code]0[/code] is [code]false[/code], and any other value is [code]true[/code].
+			</constant>
+			<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT" value="2">
+				Object model type "float". Represented in the glTF JSON as a number, and encoded in a [GLTFAccessor] as "SCALAR".
+			</constant>
+			<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT_ARRAY" value="3">
+				Object model type "float[lb][rb]". Represented in the glTF JSON as an array of numbers, and encoded in a [GLTFAccessor] as "SCALAR".
+			</constant>
+			<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT2" value="4">
+				Object model type "float2". Represented in the glTF JSON as an array of two numbers, and encoded in a [GLTFAccessor] as "VEC2".
+			</constant>
+			<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT3" value="5">
+				Object model type "float3". Represented in the glTF JSON as an array of three numbers, and encoded in a [GLTFAccessor] as "VEC3".
+			</constant>
+			<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT4" value="6">
+				Object model type "float4". Represented in the glTF JSON as an array of four numbers, and encoded in a [GLTFAccessor] as "VEC4".
+			</constant>
+			<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT2X2" value="7">
+				Object model type "float2x2". Represented in the glTF JSON as an array of four numbers, and encoded in a [GLTFAccessor] as "MAT2".
+			</constant>
+			<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT3X3" value="8">
+				Object model type "float3x3". Represented in the glTF JSON as an array of nine numbers, and encoded in a [GLTFAccessor] as "MAT3".
+			</constant>
+			<constant name="GLTF_OBJECT_MODEL_TYPE_FLOAT4X4" value="9">
+				Object model type "float4x4". Represented in the glTF JSON as an array of sixteen numbers, and encoded in a [GLTFAccessor] as "MAT4".
+			</constant>
+			<constant name="GLTF_OBJECT_MODEL_TYPE_INT" value="10">
+				Object model type "int". Represented in the glTF JSON as a number, and encoded in a [GLTFAccessor] as "SCALAR". The range of values is limited to signed integers. For [code]KHR_interactivity[/code], only 32-bit integers are supported.
+			</constant>
+		</enum>
+	</enums>
 </class>

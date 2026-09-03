@@ -110,21 +110,23 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="MODE_ECB_ENCRYPT" value="0" enum="Mode">
-			AES electronic codebook encryption mode.
-		</constant>
-		<constant name="MODE_ECB_DECRYPT" value="1" enum="Mode">
-			AES electronic codebook decryption mode.
-		</constant>
-		<constant name="MODE_CBC_ENCRYPT" value="2" enum="Mode">
-			AES cipher block chaining encryption mode.
-		</constant>
-		<constant name="MODE_CBC_DECRYPT" value="3" enum="Mode">
-			AES cipher block chaining decryption mode.
-		</constant>
-		<constant name="MODE_MAX" value="4" enum="Mode">
-			Maximum value for the mode enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Mode">
+			<constant name="MODE_ECB_ENCRYPT" value="0">
+				AES electronic codebook encryption mode.
+			</constant>
+			<constant name="MODE_ECB_DECRYPT" value="1">
+				AES electronic codebook decryption mode.
+			</constant>
+			<constant name="MODE_CBC_ENCRYPT" value="2">
+				AES cipher block chaining encryption mode.
+			</constant>
+			<constant name="MODE_CBC_DECRYPT" value="3">
+				AES cipher block chaining decryption mode.
+			</constant>
+			<constant name="MODE_MAX" value="4">
+				Maximum value for the mode enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

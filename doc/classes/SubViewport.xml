@@ -40,30 +40,34 @@
 			The number of view layers we are rendering to. Set this to [code]2[/code] to enable stereo rendering.
 		</member>
 	</members>
-	<constants>
-		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
-			Always clear the render target before drawing.
-		</constant>
-		<constant name="CLEAR_MODE_NEVER" value="1" enum="ClearMode">
-			Never clear the render target.
-		</constant>
-		<constant name="CLEAR_MODE_ONCE" value="2" enum="ClearMode">
-			Clear the render target on the next frame, then switch to [constant CLEAR_MODE_NEVER].
-		</constant>
-		<constant name="UPDATE_DISABLED" value="0" enum="UpdateMode">
-			Do not update the render target.
-		</constant>
-		<constant name="UPDATE_ONCE" value="1" enum="UpdateMode">
-			Update the render target once, then switch to [constant UPDATE_DISABLED].
-		</constant>
-		<constant name="UPDATE_WHEN_VISIBLE" value="2" enum="UpdateMode">
-			Update the render target only when it is visible. This is the default value.
-		</constant>
-		<constant name="UPDATE_WHEN_PARENT_VISIBLE" value="3" enum="UpdateMode">
-			Update the render target only when its parent is visible.
-		</constant>
-		<constant name="UPDATE_ALWAYS" value="4" enum="UpdateMode">
-			Always update the render target.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ClearMode">
+			<constant name="CLEAR_MODE_ALWAYS" value="0">
+				Always clear the render target before drawing.
+			</constant>
+			<constant name="CLEAR_MODE_NEVER" value="1">
+				Never clear the render target.
+			</constant>
+			<constant name="CLEAR_MODE_ONCE" value="2">
+				Clear the render target on the next frame, then switch to [constant CLEAR_MODE_NEVER].
+			</constant>
+		</enum>
+		<enum name="UpdateMode">
+			<constant name="UPDATE_DISABLED" value="0">
+				Do not update the render target.
+			</constant>
+			<constant name="UPDATE_ONCE" value="1">
+				Update the render target once, then switch to [constant UPDATE_DISABLED].
+			</constant>
+			<constant name="UPDATE_WHEN_VISIBLE" value="2">
+				Update the render target only when it is visible. This is the default value.
+			</constant>
+			<constant name="UPDATE_WHEN_PARENT_VISIBLE" value="3">
+				Update the render target only when its parent is visible.
+			</constant>
+			<constant name="UPDATE_ALWAYS" value="4">
+				Always update the render target.
+			</constant>
+		</enum>
+	</enums>
 </class>

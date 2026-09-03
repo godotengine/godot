@@ -359,8 +359,8 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 				const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 				const String enum_link = link.trim_prefix("@GlobalScope.");
 
-				for (const DocData::ConstantDoc &constant : cd.constants) {
-					if (constant.enumeration == enum_link) {
+				for (const KeyValue<String, DocData::EnumDoc> &E : cd.enums) {
+					if (E.key == enum_link) {
 						// Found in `@GlobalScope`.
 						emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + enum_link);
 						return;
@@ -369,8 +369,8 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			} else if (topic == "class_constant") {
 				const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 
-				for (const DocData::ConstantDoc &constant : cd.constants) {
-					if (constant.name == link) {
+				for (const DocData::ConstantDoc *constant : cd.get_all_constants()) {
+					if (constant->name == link) {
 						// Found in `@GlobalScope`.
 						emit_signal(SNAME("go_to_help"), topic + ":@GlobalScope:" + link);
 						return;
@@ -826,9 +826,9 @@ void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocD
 	_pop_code_font();
 }
 
-void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods) {
 #define HANDLE_DOC(m_string) ((p_classdoc.is_script_doc ? (m_string) : DTR(m_string)).strip_edges())
 
+void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods) {
 	class_desc->add_newline();
 	class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
 	class_desc->add_newline();
@@ -972,7 +972,9 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
 				class_desc->push_color(theme_cache.comment_color);
+				class_desc->push_font(theme_cache.doc_italic_font);
 				class_desc->append_text(message);
+				class_desc->pop(); // font
 				class_desc->pop(); // color
 			}
 
@@ -981,9 +983,77 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 			class_desc->pop(); // indent
 		}
 	}
+}
+
+void EditorHelp::_update_constant_description(const DocData::ClassDoc &p_classdoc, const DocData::ConstantDoc &p_constant) {
+	// Constant header.
+	_push_code_font();
+
+	if (p_constant.value.begins_with("Color(") && p_constant.value.ends_with(")")) {
+		String stripped = p_constant.value.remove_char(' ').replace("Color(", "").remove_char(')');
+		PackedFloat64Array color = stripped.split_floats(",");
+		if (color.size() >= 3) {
+			class_desc->push_color(Color(color[0], color[1], color[2]));
+			_add_bulletpoint();
+			class_desc->pop(); // color
+		}
+	} else {
+		_add_bulletpoint();
+	}
+
+	class_desc->push_color(theme_cache.headline_color);
+	class_desc->add_text(p_constant.name);
+	class_desc->pop(); // color
+
+	class_desc->push_color(theme_cache.symbol_color);
+	class_desc->add_text(nbsp_equal_nbsp);
+	class_desc->pop(); // color
+
+	class_desc->push_color(theme_cache.value_color);
+	class_desc->add_text(_fix_constant(p_constant.value));
+	class_desc->pop(); // color
+
+	_pop_code_font();
+
+	// Constant description.
+	const String descr = HANDLE_DOC(p_constant.description);
+	if (p_constant.is_deprecated || p_constant.is_experimental || !descr.is_empty()) {
+		class_desc->add_newline();
+
+		class_desc->push_indent(1);
+		_push_normal_font();
+		class_desc->push_color(theme_cache.comment_color);
+
+		bool has_prev_text = false;
+
+		if (p_constant.is_deprecated) {
+			has_prev_text = true;
+			DEPRECATED_DOC_MSG(HANDLE_DOC(p_constant.deprecated_message), TTR("This constant may be changed or removed in future versions."));
+		}
+
+		if (p_constant.is_experimental) {
+			if (has_prev_text) {
+				class_desc->add_newline();
+			}
+			has_prev_text = true;
+			EXPERIMENTAL_DOC_MSG(HANDLE_DOC(p_constant.experimental_message), TTR("This constant may be changed or removed in future versions."));
+		}
+
+		if (!descr.is_empty()) {
+			if (has_prev_text) {
+				class_desc->add_newline();
+			}
+			has_prev_text = true;
+			_add_text(descr);
+		}
+
+		class_desc->pop(); // color
+		_pop_normal_font();
+		class_desc->pop(); // indent
+	}
+}
 
 #undef HANDLE_DOC
-}
 
 void EditorHelp::_update_doc() {
 	if (!doc->class_list.has(edited_class)) {
@@ -1123,11 +1193,13 @@ void EditorHelp::_update_doc() {
 		class_desc->add_text(" ");
 
 		class_desc->push_color(theme_cache.comment_color);
+		class_desc->push_font(theme_cache.doc_italic_font);
 		if (cd.is_script_doc) {
 			class_desc->add_text(TTR("There is currently no description for this class."));
 		} else {
 			class_desc->append_text(TTR("There is currently no description for this class. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 		}
+		class_desc->pop(); // font
 		class_desc->pop(); // color
 
 		_pop_normal_font();
@@ -1202,10 +1274,12 @@ void EditorHelp::_update_doc() {
 	bool has_properties = false;
 	bool has_property_descriptions = false;
 	for (const DocData::PropertyDoc &prop : cd.properties) {
+		// Ignore undocumented private.
 		const bool is_documented = prop.is_deprecated || prop.is_experimental || !prop.description.strip_edges().is_empty();
 		if (!is_documented && prop.name.begins_with("_")) {
 			continue;
 		}
+
 		has_properties = true;
 		if (!prop.overridden) {
 			has_property_descriptions = true;
@@ -1396,11 +1470,13 @@ void EditorHelp::_update_doc() {
 				continue;
 			}
 		}
+
 		// Ignore undocumented non virtual private.
 		const bool is_documented = method.is_deprecated || method.is_experimental || !method.description.strip_edges().is_empty();
 		if (!is_documented && method.name.begins_with("_") && !method.qualifiers.contains("virtual")) {
 			continue;
 		}
+
 		methods.push_back(method);
 	}
 
@@ -1531,11 +1607,13 @@ void EditorHelp::_update_doc() {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
 				class_desc->push_color(theme_cache.comment_color);
+				class_desc->push_font(theme_cache.doc_italic_font);
 				if (cd.is_script_doc) {
 					class_desc->add_text(TTR("There is currently no description for this theme property."));
 				} else {
 					class_desc->append_text(TTR("There is currently no description for this theme property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				}
+				class_desc->pop(); // font
 				class_desc->pop(); // color
 			}
 
@@ -1667,11 +1745,13 @@ void EditorHelp::_update_doc() {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
 				class_desc->push_color(theme_cache.comment_color);
+				class_desc->push_font(theme_cache.doc_italic_font);
 				if (cd.is_script_doc) {
 					class_desc->add_text(TTR("There is currently no description for this signal."));
 				} else {
 					class_desc->append_text(TTR("There is currently no description for this signal. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				}
+				class_desc->pop(); // font
 				class_desc->pop(); // color
 			}
 
@@ -1681,39 +1761,23 @@ void EditorHelp::_update_doc() {
 		}
 	}
 
-	// Constants and enums
-	if (!cd.constants.is_empty()) {
-		HashMap<String, Vector<DocData::ConstantDoc>> enums;
-		Vector<DocData::ConstantDoc> constants;
+	// Enums
+	{
+		bool has_enums = false;
+		for (KeyValue<String, DocData::EnumDoc> &E : cd.enums) {
+			const String &enum_name = E.key;
+			const DocData::EnumDoc &enum_doc = E.value;
 
-		for (const DocData::ConstantDoc &constant : cd.constants) {
 			// Ignore undocumented private.
-			const bool is_documented = constant.is_deprecated || constant.is_experimental || !constant.description.strip_edges().is_empty();
-			if (!is_documented && constant.name.begins_with("_")) {
+			const bool is_documented = enum_doc.is_deprecated || enum_doc.is_experimental || !enum_doc.description.strip_edges().is_empty();
+			if (!is_documented && enum_name.begins_with("_")) {
 				continue;
 			}
-			if (!constant.enumeration.is_empty()) {
-				if (!enums.has(constant.enumeration)) {
-					enums[constant.enumeration] = Vector<DocData::ConstantDoc>();
-				}
-				enums[constant.enumeration].push_back(constant);
-			} else {
-				constants.push_back(constant);
-			}
+
+			has_enums = true;
+			break;
 		}
 
-		// Enums
-		bool has_enums = enums.size() && !cd.is_script_doc;
-		if (enums.size() && !has_enums) {
-			for (KeyValue<String, DocData::EnumDoc> &E : cd.enums) {
-				const bool is_documented = E.value.is_deprecated || E.value.is_experimental || !E.value.description.strip_edges().is_empty();
-				if (!is_documented && E.key.begins_with("_")) {
-					continue;
-				}
-				has_enums = true;
-				break;
-			}
-		}
 		if (has_enums) {
 			class_desc->add_newline();
 			class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
@@ -1725,16 +1789,14 @@ void EditorHelp::_update_doc() {
 			_pop_title_font();
 
 			bool is_first_enum = true;
-			for (KeyValue<String, Vector<DocData::ConstantDoc>> &E : enums) {
-				String key = E.key;
-				if ((key.get_slice_count(".") > 1) && (key.get_slicec('.', 0) == edited_class)) {
-					key = key.get_slicec('.', 1);
-				}
-				if (cd.enums.has(key)) {
-					const bool is_documented = cd.enums[key].is_deprecated || cd.enums[key].is_experimental || !cd.enums[key].description.strip_edges().is_empty();
-					if (!is_documented && cd.is_script_doc && E.key.begins_with("_")) {
-						continue;
-					}
+			for (const KeyValue<String, DocData::EnumDoc> &E : cd.enums) {
+				const String &enum_name = E.key;
+				const DocData::EnumDoc &enum_doc = E.value;
+
+				// Ignore undocumented private.
+				const bool is_documented = enum_doc.is_deprecated || enum_doc.is_experimental || !enum_doc.description.strip_edges().is_empty();
+				if (!is_documented && enum_name.begins_with("_")) {
+					continue;
 				}
 
 				class_desc->add_newline();
@@ -1748,17 +1810,14 @@ void EditorHelp::_update_doc() {
 				// Enum header.
 				_push_code_font();
 
-				enum_line[E.key] = class_desc->get_paragraph_count() - 2;
+				enum_line[enum_name] = class_desc->get_paragraph_count() - 2;
+
 				class_desc->push_color(theme_cache.title_color);
-				if (E.value.size() && E.value[0].is_bitfield) {
-					class_desc->add_text("flags ");
-				} else {
-					class_desc->add_text("enum ");
-				}
+				class_desc->add_text(enum_doc.is_bitfield ? "flags " : "enum ");
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.headline_color);
-				class_desc->add_text(key);
+				class_desc->add_text(enum_name);
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.symbol_color);
@@ -1768,199 +1827,27 @@ void EditorHelp::_update_doc() {
 				_pop_code_font();
 
 				// Enum description.
-				if (key != "@unnamed_enums" && cd.enums.has(key)) {
-					const String descr = HANDLE_DOC(cd.enums[key].description);
-					if (cd.enums[key].is_deprecated || cd.enums[key].is_experimental || !descr.is_empty()) {
-						class_desc->add_newline();
-
-						class_desc->push_indent(1);
-						_push_normal_font();
-						class_desc->push_color(theme_cache.text_color);
-
-						bool has_prev_text = false;
-
-						if (cd.enums[key].is_deprecated) {
-							has_prev_text = true;
-							DEPRECATED_DOC_MSG(HANDLE_DOC(cd.enums[key].deprecated_message), TTR("This enumeration may be changed or removed in future versions."));
-						}
-
-						if (cd.enums[key].is_experimental) {
-							if (has_prev_text) {
-								class_desc->add_newline();
-							}
-							has_prev_text = true;
-							EXPERIMENTAL_DOC_MSG(HANDLE_DOC(cd.enums[key].experimental_message), TTR("This enumeration may be changed or removed in future versions."));
-						}
-
-						if (!descr.is_empty()) {
-							if (has_prev_text) {
-								class_desc->add_newline();
-							}
-							has_prev_text = true;
-							_add_text(descr);
-						}
-
-						class_desc->pop(); // color
-						_pop_normal_font();
-						class_desc->pop(); // indent
-					}
-				}
-
-				HashMap<String, int> enum_values;
-				const int enum_start_line = enum_line[E.key];
-
-				for (const DocData::ConstantDoc &enum_value : E.value) {
-					const String descr = HANDLE_DOC(enum_value.description);
-
-					class_desc->add_newline();
-
-					if (cd.name == "@GlobalScope") {
-						enum_values[enum_value.name] = enum_start_line;
-					}
-
-					// Add the enum constant line to the constant_line map so we can locate it as a constant.
-					constant_line[enum_value.name] = class_desc->get_paragraph_count() - 2;
-
-					class_desc->push_indent(1);
-
-					// Enum value header.
-					_push_code_font();
-					_add_bulletpoint();
-
-					class_desc->push_color(theme_cache.headline_color);
-					class_desc->add_text(enum_value.name);
-					class_desc->pop(); // color
-
-					class_desc->push_color(theme_cache.symbol_color);
-					class_desc->add_text(nbsp_equal_nbsp);
-					class_desc->pop(); // color
-
-					class_desc->push_color(theme_cache.value_color);
-					class_desc->add_text(_fix_constant(enum_value.value));
-					class_desc->pop(); // color
-
-					_pop_code_font();
-
-					// Enum value description.
-					if (enum_value.is_deprecated || enum_value.is_experimental || !descr.is_empty()) {
-						class_desc->add_newline();
-
-						class_desc->push_indent(1);
-						_push_normal_font();
-						class_desc->push_color(theme_cache.comment_color);
-
-						bool has_prev_text = false;
-
-						if (enum_value.is_deprecated) {
-							has_prev_text = true;
-							DEPRECATED_DOC_MSG(HANDLE_DOC(enum_value.deprecated_message), TTR("This constant may be changed or removed in future versions."));
-						}
-
-						if (enum_value.is_experimental) {
-							if (has_prev_text) {
-								class_desc->add_newline();
-							}
-							has_prev_text = true;
-							EXPERIMENTAL_DOC_MSG(HANDLE_DOC(enum_value.experimental_message), TTR("This constant may be changed or removed in future versions."));
-						}
-
-						if (!descr.is_empty()) {
-							if (has_prev_text) {
-								class_desc->add_newline();
-							}
-							has_prev_text = true;
-							_add_text(descr);
-						}
-
-						class_desc->pop(); // color
-						_pop_normal_font();
-						class_desc->pop(); // indent
-					}
-
-					class_desc->pop(); // indent
-				}
-
-				if (cd.name == "@GlobalScope") {
-					enum_values_line[E.key] = enum_values;
-				}
-			}
-		}
-
-		// Constants
-		if (!constants.is_empty()) {
-			class_desc->add_newline();
-			class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
-			class_desc->add_newline();
-
-			section_line.push_back(Pair<String, int>(TTR("Constants"), class_desc->get_paragraph_count() - 2));
-			_push_title_font();
-			class_desc->add_text(TTR("Constants"));
-			_pop_title_font();
-
-			bool is_first_constant = true;
-			for (const DocData::ConstantDoc &constant : constants) {
-				const String descr = HANDLE_DOC(constant.description);
-
-				class_desc->add_newline();
-				if (is_first_constant) {
-					is_first_constant = false;
-				} else {
-					class_desc->add_hr(100, 1, theme_cache.secondary_hr_color);
-					class_desc->add_newline();
-				}
-
-				constant_line[constant.name] = class_desc->get_paragraph_count() - 2;
-
-				// Constant header.
-				_push_code_font();
-
-				if (constant.value.begins_with("Color(") && constant.value.ends_with(")")) {
-					String stripped = constant.value.remove_char(' ').replace("Color(", "").remove_char(')');
-					PackedFloat64Array color = stripped.split_floats(",");
-					if (color.size() >= 3) {
-						class_desc->push_color(Color(color[0], color[1], color[2]));
-						_add_bulletpoint();
-						class_desc->pop(); // color
-					}
-				} else {
-					_add_bulletpoint();
-				}
-
-				class_desc->push_color(theme_cache.headline_color);
-				class_desc->add_text(constant.name);
-				class_desc->pop(); // color
-
-				class_desc->push_color(theme_cache.symbol_color);
-				class_desc->add_text(nbsp_equal_nbsp);
-				class_desc->pop(); // color
-
-				class_desc->push_color(theme_cache.value_color);
-				class_desc->add_text(_fix_constant(constant.value));
-				class_desc->pop(); // color
-
-				_pop_code_font();
-
-				// Constant description.
-				if (constant.is_deprecated || constant.is_experimental || !descr.is_empty()) {
+				const String descr = HANDLE_DOC(enum_doc.description);
+				if (is_documented) {
 					class_desc->add_newline();
 
 					class_desc->push_indent(1);
 					_push_normal_font();
-					class_desc->push_color(theme_cache.comment_color);
+					class_desc->push_color(theme_cache.text_color);
 
 					bool has_prev_text = false;
 
-					if (constant.is_deprecated) {
+					if (enum_doc.is_deprecated) {
 						has_prev_text = true;
-						DEPRECATED_DOC_MSG(HANDLE_DOC(constant.deprecated_message), TTR("This constant may be changed or removed in future versions."));
+						DEPRECATED_DOC_MSG(HANDLE_DOC(enum_doc.deprecated_message), TTR("This enumeration may be changed or removed in future versions."));
 					}
 
-					if (constant.is_experimental) {
+					if (enum_doc.is_experimental) {
 						if (has_prev_text) {
 							class_desc->add_newline();
 						}
 						has_prev_text = true;
-						EXPERIMENTAL_DOC_MSG(HANDLE_DOC(constant.experimental_message), TTR("This constant may be changed or removed in future versions."));
+						EXPERIMENTAL_DOC_MSG(HANDLE_DOC(enum_doc.experimental_message), TTR("This enumeration may be changed or removed in future versions."));
 					}
 
 					if (!descr.is_empty()) {
@@ -1975,6 +1862,74 @@ void EditorHelp::_update_doc() {
 					_pop_normal_font();
 					class_desc->pop(); // indent
 				}
+
+				if (enum_doc.constants.is_empty()) {
+					class_desc->push_indent(1);
+					class_desc->push_color(theme_cache.comment_color);
+					class_desc->push_font(theme_cache.doc_italic_font);
+					class_desc->add_text(TTR("This enumeration has no members."));
+					class_desc->pop(); // font
+					class_desc->pop(); // color
+					class_desc->pop(); // indent
+				} else {
+					for (const DocData::ConstantDoc &enum_value : enum_doc.constants) {
+						class_desc->add_newline();
+
+						// Add the enum constant line to the constant_line map so we can locate it as a constant.
+						constant_line[enum_value.name] = class_desc->get_paragraph_count() - 2;
+
+						class_desc->push_indent(1);
+						_update_constant_description(cd, enum_value);
+						class_desc->pop(); // indent
+					}
+				}
+			}
+		}
+	}
+
+	// Constants
+	{
+		bool has_constants = false;
+		for (const DocData::ConstantDoc &constant : cd.constants) {
+			// Ignore undocumented private.
+			const bool is_documented = constant.is_deprecated || constant.is_experimental || !constant.description.strip_edges().is_empty();
+			if (!is_documented && constant.name.begins_with("_")) {
+				continue;
+			}
+
+			has_constants = true;
+			break;
+		}
+
+		if (has_constants) {
+			class_desc->add_newline();
+			class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
+			class_desc->add_newline();
+
+			section_line.push_back(Pair<String, int>(TTR("Constants"), class_desc->get_paragraph_count() - 2));
+			_push_title_font();
+			class_desc->add_text(TTR("Constants"));
+			_pop_title_font();
+
+			bool is_first_constant = true;
+			for (const DocData::ConstantDoc &constant : cd.constants) {
+				// Ignore undocumented private.
+				const bool is_documented = constant.is_deprecated || constant.is_experimental || !constant.description.strip_edges().is_empty();
+				if (!is_documented && constant.name.begins_with("_")) {
+					continue;
+				}
+
+				class_desc->add_newline();
+				if (is_first_constant) {
+					is_first_constant = false;
+				} else {
+					class_desc->add_hr(100, 1, theme_cache.secondary_hr_color);
+					class_desc->add_newline();
+				}
+
+				constant_line[constant.name] = class_desc->get_paragraph_count() - 2;
+
+				_update_constant_description(cd, constant);
 			}
 		}
 	}
@@ -2104,11 +2059,13 @@ void EditorHelp::_update_doc() {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
 				class_desc->push_color(theme_cache.comment_color);
+				class_desc->push_font(theme_cache.doc_italic_font);
 				if (cd.is_script_doc) {
 					class_desc->add_text(TTR("There is currently no description for this annotation."));
 				} else {
 					class_desc->append_text(TTR("There is currently no description for this annotation. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				}
+				class_desc->pop(); // font
 				class_desc->pop(); // color
 			}
 
@@ -2134,6 +2091,7 @@ void EditorHelp::_update_doc() {
 			if (prop.overridden) {
 				continue;
 			}
+
 			// Ignore undocumented private.
 			const bool is_documented = prop.is_deprecated || prop.is_experimental || !prop.description.strip_edges().is_empty();
 			if (!is_documented && prop.name.begins_with("_")) {
@@ -2306,11 +2264,13 @@ void EditorHelp::_update_doc() {
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
 				class_desc->add_text(" ");
 				class_desc->push_color(theme_cache.comment_color);
+				class_desc->push_font(theme_cache.doc_italic_font);
 				if (cd.is_script_doc) {
 					class_desc->add_text(TTR("There is currently no description for this property."));
 				} else {
 					class_desc->append_text(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 				}
+				class_desc->pop(); // font
 				class_desc->pop(); // color
 			}
 
@@ -3626,9 +3586,9 @@ EditorHelpBit::HelpData EditorHelpBit::_get_enum_help_data(const StringName &p_c
 		// Non-native enums shouldn't be cached, nor translated.
 		const bool is_native = !class_doc->is_script_doc;
 
-		for (const KeyValue<String, DocData::EnumDoc> &kv : class_doc->enums) {
-			const StringName enum_name = kv.key;
-			const DocData::EnumDoc &enum_doc = kv.value;
+		for (const KeyValue<String, DocData::EnumDoc> &E : class_doc->enums) {
+			const StringName enum_name = E.key;
+			const DocData::EnumDoc &enum_doc = E.value;
 
 			HelpData current;
 			current.description = HANDLE_DOC(enum_doc.description);
@@ -3676,7 +3636,9 @@ EditorHelpBit::HelpData EditorHelpBit::_get_constant_help_data(const StringName 
 		// Non-native constants shouldn't be cached, nor translated.
 		const bool is_native = !class_doc->is_script_doc;
 
-		for (const DocData::ConstantDoc &constant : class_doc->constants) {
+		for (const DocData::ConstantDoc *constant_ptr : class_doc->get_all_constants()) {
+			const DocData::ConstantDoc &constant = *constant_ptr;
+
 			HelpData current;
 			current.description = HANDLE_DOC(constant.description);
 			if (constant.is_deprecated) {
@@ -3763,11 +3725,11 @@ EditorHelpBit::HelpData EditorHelpBit::_get_property_help_data(const StringName 
 			if (!enum_class_name.is_empty() && !enum_name.is_empty()) {
 				// Classes can use enums from other classes, so check from which it came.
 				const DocData::ClassDoc *enum_class = EditorHelp::get_doc(enum_class_name);
-				if (enum_class) {
+				if (enum_class && enum_class->enums.has(enum_name)) {
 					const String enum_prefix = EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " ";
-					for (DocData::ConstantDoc constant : enum_class->constants) {
+					for (const DocData::ConstantDoc &constant : enum_class->enums[enum_name].constants) {
 						// Don't display `_MAX` enum value descriptions, as these are never exposed in the inspector.
-						if (constant.enumeration == enum_name && !constant.name.ends_with("_MAX")) {
+						if (!constant.name.ends_with("_MAX")) {
 							// Prettify the enum value display, so that "<ENUM_NAME>_<ITEM>" becomes "Item".
 							const String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(constant.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED).trim_prefix(enum_prefix);
 							String item_descr = HANDLE_DOC(constant.description);

@@ -237,18 +237,20 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="FILTER_IGNORE" value="0" enum="FilterAction">
-			Do not use filtering.
-		</constant>
-		<constant name="FILTER_PASS" value="1" enum="FilterAction">
-			Paths matching the filter will be allowed to pass.
-		</constant>
-		<constant name="FILTER_STOP" value="2" enum="FilterAction">
-			Paths matching the filter will be discarded.
-		</constant>
-		<constant name="FILTER_BLEND" value="3" enum="FilterAction">
-			Paths matching the filter will be blended (by the blend value).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="FilterAction">
+			<constant name="FILTER_IGNORE" value="0">
+				Do not use filtering.
+			</constant>
+			<constant name="FILTER_PASS" value="1">
+				Paths matching the filter will be allowed to pass.
+			</constant>
+			<constant name="FILTER_STOP" value="2">
+				Paths matching the filter will be discarded.
+			</constant>
+			<constant name="FILTER_BLEND" value="3">
+				Paths matching the filter will be blended (by the blend value).
+			</constant>
+		</enum>
+	</enums>
 </class>

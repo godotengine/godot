@@ -544,7 +544,6 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				enum_doc.deprecated_message = m_enum->doc_data.deprecated_message;
 				enum_doc.is_experimental = m_enum->doc_data.is_experimental;
 				enum_doc.experimental_message = m_enum->doc_data.experimental_message;
-				doc.enums[name] = enum_doc;
 
 				for (const GDP::EnumNode::Value &val : m_enum->values) {
 					DocData::ConstantDoc const_doc;
@@ -559,12 +558,16 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					const_doc.is_experimental = val.doc_data.is_experimental;
 					const_doc.experimental_message = val.doc_data.experimental_message;
 
-					doc.constants.push_back(const_doc);
+					enum_doc.constants.push_back(const_doc);
 				}
 
+				doc.enums[name] = enum_doc;
 			} break;
 
 			case GDP::ClassNode::Member::ENUM_VALUE: {
+				// TODO: Split into multiple enums `"@unnamed_enum_%d"` in the parser.
+				const String enum_name = "@unnamed_enums";
+
 				const GDP::EnumNode::Value &m_enum_val = member.enum_value;
 				const StringName &name = m_enum_val.identifier->name;
 
@@ -575,13 +578,17 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				const_doc.value = _docvalue_from_variant(m_enum_val.value);
 				const_doc.is_value_valid = true;
 				const_doc.type = "int";
-				const_doc.enumeration = "@unnamed_enums";
+				const_doc.enumeration = enum_name;
 				const_doc.description = m_enum_val.doc_data.description;
 				const_doc.is_deprecated = m_enum_val.doc_data.is_deprecated;
 				const_doc.deprecated_message = m_enum_val.doc_data.deprecated_message;
 				const_doc.is_experimental = m_enum_val.doc_data.is_experimental;
 				const_doc.experimental_message = m_enum_val.doc_data.experimental_message;
-				doc.constants.push_back(const_doc);
+
+				if (!doc.enums.has(enum_name)) {
+					doc.enums[enum_name] = DocData::EnumDoc();
+				}
+				doc.enums[enum_name].constants.push_back(const_doc);
 			} break;
 
 			default:

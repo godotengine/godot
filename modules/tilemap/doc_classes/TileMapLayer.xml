@@ -346,15 +346,17 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="DEBUG_VISIBILITY_MODE_DEFAULT" value="0" enum="DebugVisibilityMode">
-			Hide the collisions or navigation debug shapes in the editor, and use the debug settings to determine their visibility in game (i.e. [member SceneTree.debug_collisions_hint] or [member SceneTree.debug_navigation_hint]).
-		</constant>
-		<constant name="DEBUG_VISIBILITY_MODE_FORCE_HIDE" value="2" enum="DebugVisibilityMode">
-			Always hide the collisions or navigation debug shapes.
-		</constant>
-		<constant name="DEBUG_VISIBILITY_MODE_FORCE_SHOW" value="1" enum="DebugVisibilityMode">
-			Always show the collisions or navigation debug shapes.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DebugVisibilityMode">
+			<constant name="DEBUG_VISIBILITY_MODE_DEFAULT" value="0">
+				Hide the collisions or navigation debug shapes in the editor, and use the debug settings to determine their visibility in game (i.e. [member SceneTree.debug_collisions_hint] or [member SceneTree.debug_navigation_hint]).
+			</constant>
+			<constant name="DEBUG_VISIBILITY_MODE_FORCE_HIDE" value="2">
+				Always hide the collisions or navigation debug shapes.
+			</constant>
+			<constant name="DEBUG_VISIBILITY_MODE_FORCE_SHOW" value="1">
+				Always show the collisions or navigation debug shapes.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -382,98 +382,112 @@
 			Enables temporal reprojection in the volumetric fog. Temporal reprojection blends the current frame's volumetric fog with the last frame's volumetric fog to smooth out jagged edges. The performance cost is minimal; however, it leads to moving [FogVolume]s and [Light3D]s "ghosting" and leaving a trail behind them. When temporal reprojection is enabled, try to avoid moving [FogVolume]s or [Light3D]s too fast. Short-lived dynamic lighting effects should have [member Light3D.light_volumetric_fog_energy] set to [code]0.0[/code] to avoid ghosting.
 		</member>
 	</members>
-	<constants>
-		<constant name="BG_CLEAR_COLOR" value="0" enum="BGMode">
-			Clears the background using the clear color defined in [member ProjectSettings.rendering/environment/defaults/default_clear_color].
-		</constant>
-		<constant name="BG_COLOR" value="1" enum="BGMode">
-			Clears the background using a custom clear color.
-		</constant>
-		<constant name="BG_SKY" value="2" enum="BGMode">
-			Displays a user-defined sky in the background.
-		</constant>
-		<constant name="BG_CANVAS" value="3" enum="BGMode">
-			Displays a [CanvasLayer] in the background.
-		</constant>
-		<constant name="BG_KEEP" value="4" enum="BGMode">
-			Keeps on screen every pixel drawn in the background. This is the fastest background mode, but it can only be safely used in fully-interior scenes (no visible sky or sky reflections). If enabled in a scene where the background is visible, "ghost trail" artifacts will be visible when moving the camera.
-		</constant>
-		<constant name="BG_CAMERA_FEED" value="5" enum="BGMode">
-			Displays a camera feed in the background.
-		</constant>
-		<constant name="BG_MAX" value="6" enum="BGMode">
-			Represents the size of the [enum BGMode] enum.
-		</constant>
-		<constant name="AMBIENT_SOURCE_BG" value="0" enum="AmbientSource">
-			Gather ambient light from whichever source is specified as the background.
-		</constant>
-		<constant name="AMBIENT_SOURCE_DISABLED" value="1" enum="AmbientSource">
-			Disable ambient light. This provides a slight performance boost over [constant AMBIENT_SOURCE_SKY].
-		</constant>
-		<constant name="AMBIENT_SOURCE_COLOR" value="2" enum="AmbientSource">
-			Specify a specific [Color] for ambient light. This provides a slight performance boost over [constant AMBIENT_SOURCE_SKY].
-		</constant>
-		<constant name="AMBIENT_SOURCE_SKY" value="3" enum="AmbientSource">
-			Gather ambient light from the [Sky] regardless of what the background is.
-		</constant>
-		<constant name="REFLECTION_SOURCE_BG" value="0" enum="ReflectionSource">
-			Use the background for reflections.
-		</constant>
-		<constant name="REFLECTION_SOURCE_DISABLED" value="1" enum="ReflectionSource">
-			Disable reflections. This provides a slight performance boost over other options.
-		</constant>
-		<constant name="REFLECTION_SOURCE_SKY" value="2" enum="ReflectionSource">
-			Use the [Sky] for reflections regardless of what the background is.
-		</constant>
-		<constant name="TONE_MAPPER_LINEAR" value="0" enum="ToneMapper">
-			Does not modify color data, resulting in a linear tonemapping curve which unnaturally clips bright values, causing bright lighting to look blown out. The simplest and fastest tonemapper.
-		</constant>
-		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
-			A simple tonemapping curve that rolls off bright values to prevent clipping. This results in an image that can appear dull and low contrast. Slower than [constant TONE_MAPPER_LINEAR].
-			[b]Note:[/b] When [member tonemap_white] is left at the default value of [code]1.0[/code], [constant TONE_MAPPER_REINHARDT] produces an identical image to [constant TONE_MAPPER_LINEAR].
-		</constant>
-		<constant name="TONE_MAPPER_FILMIC" value="2" enum="ToneMapper">
-			Uses a film-like tonemapping curve to prevent clipping of bright values and provide better contrast than [constant TONE_MAPPER_REINHARDT]. Slightly slower than [constant TONE_MAPPER_REINHARDT].
-			[b]Note:[/b] This tonemapper does not support HDR output because it produces output in the SDR range. It is recommended to use a different tonemapper when rendering to an HDR screen.
-		</constant>
-		<constant name="TONE_MAPPER_ACES" value="3" enum="ToneMapper">
-			Uses a high-contrast film-like tonemapping curve and desaturates bright values for a more realistic appearance. Slightly slower than [constant TONE_MAPPER_FILMIC].
-			[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
-			[b]Note:[/b] This tonemapper does not support HDR output because it produces output in the SDR range. It is recommended to use a different tonemapper when rendering to an HDR screen.
-		</constant>
-		<constant name="TONE_MAPPER_AGX" value="4" enum="ToneMapper">
-			Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
-		</constant>
-		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
-			Adds the glow effect to the scene.
-		</constant>
-		<constant name="GLOW_BLEND_MODE_SCREEN" value="1" enum="GlowBlendMode">
-			Adds the glow effect to the scene after modifying the glow influence based on the scene value; dark values will be highly influenced by glow and bright values will not be influenced by glow. This approach avoids bright values becoming overly bright from the glow effect. [member tonemap_white] is used to determine the maximum scene value where the glow should have no influence. When [member tonemap_mode] is set to [constant TONE_MAPPER_LINEAR] and [member Viewport.use_hdr_2d] is [code]true[/code], the parent window's [method Window.get_output_max_linear_value] will be used as the maximum scene value.
-		</constant>
-		<constant name="GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="GlowBlendMode">
-			Adds the glow effect to the tonemapped image after modifying the glow influence based on the image value; dark values and bright values will not be influenced by glow and mid-range values will be highly influenced by glow. This approach avoids bright values becoming overly bright from the glow effect. The glow will have the largest influence on image values of [code]0.25[/code] and will have no influence when applied to image values greater than [code]1.0[/code].
-			[b]Note:[/b] This blend mode does not support HDR output because expects a maximum output value of [code]1.0[/code]. It is recommended to use a different blend mode when rendering to an HDR screen.
-		</constant>
-		<constant name="GLOW_BLEND_MODE_REPLACE" value="3" enum="GlowBlendMode">
-			Replaces all pixels' color by the glow effect. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness or to preview glow configuration in the editor.
-		</constant>
-		<constant name="GLOW_BLEND_MODE_MIX" value="4" enum="GlowBlendMode">
-			Mixes the glow image with the scene image. Best used with [member glow_bloom] to avoid darkening the scene.
-		</constant>
-		<constant name="FOG_MODE_EXPONENTIAL" value="0" enum="FogMode">
-			Use a physically-based fog model defined primarily by fog density.
-		</constant>
-		<constant name="FOG_MODE_DEPTH" value="1" enum="FogMode">
-			Use a simple fog model defined by start and end positions and a custom curve. While not physically accurate, this model can be useful when you need more artistic control.
-		</constant>
-		<constant name="SDFGI_Y_SCALE_50_PERCENT" value="0" enum="SDFGIYScale">
-			Use 50% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be twice as short as they are wide. This allows providing increased GI detail and reduced light leaking with thin floors and ceilings. This is usually the best choice for scenes that don't feature much verticality.
-		</constant>
-		<constant name="SDFGI_Y_SCALE_75_PERCENT" value="1" enum="SDFGIYScale">
-			Use 75% scale for SDFGI on the Y (vertical) axis. This is a balance between the 50% and 100% SDFGI Y scales.
-		</constant>
-		<constant name="SDFGI_Y_SCALE_100_PERCENT" value="2" enum="SDFGIYScale">
-			Use 100% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be as tall as they are wide. This is usually the best choice for highly vertical scenes. The downside is that light leaking may become more noticeable with thin floors and ceilings.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AmbientSource">
+			<constant name="AMBIENT_SOURCE_BG" value="0">
+				Gather ambient light from whichever source is specified as the background.
+			</constant>
+			<constant name="AMBIENT_SOURCE_DISABLED" value="1">
+				Disable ambient light. This provides a slight performance boost over [constant AMBIENT_SOURCE_SKY].
+			</constant>
+			<constant name="AMBIENT_SOURCE_COLOR" value="2">
+				Specify a specific [Color] for ambient light. This provides a slight performance boost over [constant AMBIENT_SOURCE_SKY].
+			</constant>
+			<constant name="AMBIENT_SOURCE_SKY" value="3">
+				Gather ambient light from the [Sky] regardless of what the background is.
+			</constant>
+		</enum>
+		<enum name="BGMode">
+			<constant name="BG_CLEAR_COLOR" value="0">
+				Clears the background using the clear color defined in [member ProjectSettings.rendering/environment/defaults/default_clear_color].
+			</constant>
+			<constant name="BG_COLOR" value="1">
+				Clears the background using a custom clear color.
+			</constant>
+			<constant name="BG_SKY" value="2">
+				Displays a user-defined sky in the background.
+			</constant>
+			<constant name="BG_CANVAS" value="3">
+				Displays a [CanvasLayer] in the background.
+			</constant>
+			<constant name="BG_KEEP" value="4">
+				Keeps on screen every pixel drawn in the background. This is the fastest background mode, but it can only be safely used in fully-interior scenes (no visible sky or sky reflections). If enabled in a scene where the background is visible, "ghost trail" artifacts will be visible when moving the camera.
+			</constant>
+			<constant name="BG_CAMERA_FEED" value="5">
+				Displays a camera feed in the background.
+			</constant>
+			<constant name="BG_MAX" value="6">
+				Represents the size of the [enum BGMode] enum.
+			</constant>
+		</enum>
+		<enum name="FogMode">
+			<constant name="FOG_MODE_EXPONENTIAL" value="0">
+				Use a physically-based fog model defined primarily by fog density.
+			</constant>
+			<constant name="FOG_MODE_DEPTH" value="1">
+				Use a simple fog model defined by start and end positions and a custom curve. While not physically accurate, this model can be useful when you need more artistic control.
+			</constant>
+		</enum>
+		<enum name="GlowBlendMode">
+			<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0">
+				Adds the glow effect to the scene.
+			</constant>
+			<constant name="GLOW_BLEND_MODE_SCREEN" value="1">
+				Adds the glow effect to the scene after modifying the glow influence based on the scene value; dark values will be highly influenced by glow and bright values will not be influenced by glow. This approach avoids bright values becoming overly bright from the glow effect. [member tonemap_white] is used to determine the maximum scene value where the glow should have no influence. When [member tonemap_mode] is set to [constant TONE_MAPPER_LINEAR] and [member Viewport.use_hdr_2d] is [code]true[/code], the parent window's [method Window.get_output_max_linear_value] will be used as the maximum scene value.
+			</constant>
+			<constant name="GLOW_BLEND_MODE_SOFTLIGHT" value="2">
+				Adds the glow effect to the tonemapped image after modifying the glow influence based on the image value; dark values and bright values will not be influenced by glow and mid-range values will be highly influenced by glow. This approach avoids bright values becoming overly bright from the glow effect. The glow will have the largest influence on image values of [code]0.25[/code] and will have no influence when applied to image values greater than [code]1.0[/code].
+				[b]Note:[/b] This blend mode does not support HDR output because expects a maximum output value of [code]1.0[/code]. It is recommended to use a different blend mode when rendering to an HDR screen.
+			</constant>
+			<constant name="GLOW_BLEND_MODE_REPLACE" value="3">
+				Replaces all pixels' color by the glow effect. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness or to preview glow configuration in the editor.
+			</constant>
+			<constant name="GLOW_BLEND_MODE_MIX" value="4">
+				Mixes the glow image with the scene image. Best used with [member glow_bloom] to avoid darkening the scene.
+			</constant>
+		</enum>
+		<enum name="ReflectionSource">
+			<constant name="REFLECTION_SOURCE_BG" value="0">
+				Use the background for reflections.
+			</constant>
+			<constant name="REFLECTION_SOURCE_DISABLED" value="1">
+				Disable reflections. This provides a slight performance boost over other options.
+			</constant>
+			<constant name="REFLECTION_SOURCE_SKY" value="2">
+				Use the [Sky] for reflections regardless of what the background is.
+			</constant>
+		</enum>
+		<enum name="SDFGIYScale">
+			<constant name="SDFGI_Y_SCALE_50_PERCENT" value="0">
+				Use 50% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be twice as short as they are wide. This allows providing increased GI detail and reduced light leaking with thin floors and ceilings. This is usually the best choice for scenes that don't feature much verticality.
+			</constant>
+			<constant name="SDFGI_Y_SCALE_75_PERCENT" value="1">
+				Use 75% scale for SDFGI on the Y (vertical) axis. This is a balance between the 50% and 100% SDFGI Y scales.
+			</constant>
+			<constant name="SDFGI_Y_SCALE_100_PERCENT" value="2">
+				Use 100% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be as tall as they are wide. This is usually the best choice for highly vertical scenes. The downside is that light leaking may become more noticeable with thin floors and ceilings.
+			</constant>
+		</enum>
+		<enum name="ToneMapper">
+			<constant name="TONE_MAPPER_LINEAR" value="0">
+				Does not modify color data, resulting in a linear tonemapping curve which unnaturally clips bright values, causing bright lighting to look blown out. The simplest and fastest tonemapper.
+			</constant>
+			<constant name="TONE_MAPPER_REINHARDT" value="1">
+				A simple tonemapping curve that rolls off bright values to prevent clipping. This results in an image that can appear dull and low contrast. Slower than [constant TONE_MAPPER_LINEAR].
+				[b]Note:[/b] When [member tonemap_white] is left at the default value of [code]1.0[/code], [constant TONE_MAPPER_REINHARDT] produces an identical image to [constant TONE_MAPPER_LINEAR].
+			</constant>
+			<constant name="TONE_MAPPER_FILMIC" value="2">
+				Uses a film-like tonemapping curve to prevent clipping of bright values and provide better contrast than [constant TONE_MAPPER_REINHARDT]. Slightly slower than [constant TONE_MAPPER_REINHARDT].
+				[b]Note:[/b] This tonemapper does not support HDR output because it produces output in the SDR range. It is recommended to use a different tonemapper when rendering to an HDR screen.
+			</constant>
+			<constant name="TONE_MAPPER_ACES" value="3">
+				Uses a high-contrast film-like tonemapping curve and desaturates bright values for a more realistic appearance. Slightly slower than [constant TONE_MAPPER_FILMIC].
+				[b]Note:[/b] This tonemapping operator is called "ACES Fitted" in Godot 3.x.
+				[b]Note:[/b] This tonemapper does not support HDR output because it produces output in the SDR range. It is recommended to use a different tonemapper when rendering to an HDR screen.
+			</constant>
+			<constant name="TONE_MAPPER_AGX" value="4">
+				Uses an adjustable film-like tonemapping curve and desaturates bright values for a more realistic appearance. Better than other tonemappers at maintaining the hue of colors as they become brighter. The slowest tonemapping option.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -73,19 +73,21 @@
 	<members>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 	</members>
-	<constants>
-		<constant name="DRAWABLE_FORMAT_RGBA8" value="0" enum="DrawableFormat">
-			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
-		</constant>
-		<constant name="DRAWABLE_FORMAT_RGBA8_SRGB" value="1" enum="DrawableFormat">
-			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
-			When drawn to, an sRGB to linear color space conversion is performed.
-		</constant>
-		<constant name="DRAWABLE_FORMAT_RGBAH" value="2" enum="DrawableFormat">
-			OpenGL texture format GL_RGBA16F where there are four components, each a 16-bit "half-precision" floating-point value.
-		</constant>
-		<constant name="DRAWABLE_FORMAT_RGBAF" value="3" enum="DrawableFormat">
-			OpenGL texture format GL_RGBA32F where there are four components, each a 32-bit floating-point value.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DrawableFormat">
+			<constant name="DRAWABLE_FORMAT_RGBA8" value="0">
+				OpenGL texture format RGBA with four components, each with a bitdepth of 8.
+			</constant>
+			<constant name="DRAWABLE_FORMAT_RGBA8_SRGB" value="1">
+				OpenGL texture format RGBA with four components, each with a bitdepth of 8.
+				When drawn to, an sRGB to linear color space conversion is performed.
+			</constant>
+			<constant name="DRAWABLE_FORMAT_RGBAH" value="2">
+				OpenGL texture format GL_RGBA16F where there are four components, each a 16-bit "half-precision" floating-point value.
+			</constant>
+			<constant name="DRAWABLE_FORMAT_RGBAF" value="3">
+				OpenGL texture format GL_RGBA32F where there are four components, each a 32-bit floating-point value.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -60,12 +60,14 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="VISIBILITY_ALWAYS" value="0" enum="VisibilityMode">
-			Always visible.
-		</constant>
-		<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1" enum="VisibilityMode">
-			Visible on touch screens only.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="VisibilityMode">
+			<constant name="VISIBILITY_ALWAYS" value="0">
+				Always visible.
+			</constant>
+			<constant name="VISIBILITY_TOUCHSCREEN_ONLY" value="1">
+				Visible on touch screens only.
+			</constant>
+		</enum>
+	</enums>
 </class>

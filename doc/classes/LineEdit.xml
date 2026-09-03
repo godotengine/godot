@@ -423,139 +423,145 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="MENU_CUT" value="0" enum="MenuItems">
-			Cuts (copies and clears) the selected text.
-		</constant>
-		<constant name="MENU_COPY" value="1" enum="MenuItems">
-			Copies the selected text.
-		</constant>
-		<constant name="MENU_PASTE" value="2" enum="MenuItems">
-			Pastes the clipboard text over the selected text (or at the caret's position).
-			Non-printable escape characters are automatically stripped from the OS clipboard via [method String.strip_escapes].
-		</constant>
-		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
-			Erases the whole [LineEdit] text.
-		</constant>
-		<constant name="MENU_SELECT_ALL" value="4" enum="MenuItems">
-			Selects the whole [LineEdit] text.
-		</constant>
-		<constant name="MENU_UNDO" value="5" enum="MenuItems">
-			Undoes the previous action.
-		</constant>
-		<constant name="MENU_REDO" value="6" enum="MenuItems">
-			Reverse the last undo action.
-		</constant>
-		<constant name="MENU_SUBMENU_TEXT_DIR" value="7" enum="MenuItems">
-			ID of "Text Writing Direction" submenu.
-		</constant>
-		<constant name="MENU_DIR_INHERITED" value="8" enum="MenuItems">
-			Sets text direction to inherited.
-		</constant>
-		<constant name="MENU_DIR_AUTO" value="9" enum="MenuItems">
-			Sets text direction to automatic.
-		</constant>
-		<constant name="MENU_DIR_LTR" value="10" enum="MenuItems">
-			Sets text direction to left-to-right.
-		</constant>
-		<constant name="MENU_DIR_RTL" value="11" enum="MenuItems">
-			Sets text direction to right-to-left.
-		</constant>
-		<constant name="MENU_DISPLAY_UCC" value="12" enum="MenuItems">
-			Toggles control character display.
-		</constant>
-		<constant name="MENU_SUBMENU_INSERT_UCC" value="13" enum="MenuItems">
-			ID of "Insert Control Character" submenu.
-		</constant>
-		<constant name="MENU_INSERT_LRM" value="14" enum="MenuItems">
-			Inserts left-to-right mark (LRM) character.
-		</constant>
-		<constant name="MENU_INSERT_RLM" value="15" enum="MenuItems">
-			Inserts right-to-left mark (RLM) character.
-		</constant>
-		<constant name="MENU_INSERT_LRE" value="16" enum="MenuItems">
-			Inserts start of left-to-right embedding (LRE) character.
-		</constant>
-		<constant name="MENU_INSERT_RLE" value="17" enum="MenuItems">
-			Inserts start of right-to-left embedding (RLE) character.
-		</constant>
-		<constant name="MENU_INSERT_LRO" value="18" enum="MenuItems">
-			Inserts start of left-to-right override (LRO) character.
-		</constant>
-		<constant name="MENU_INSERT_RLO" value="19" enum="MenuItems">
-			Inserts start of right-to-left override (RLO) character.
-		</constant>
-		<constant name="MENU_INSERT_PDF" value="20" enum="MenuItems">
-			Inserts pop direction formatting (PDF) character.
-		</constant>
-		<constant name="MENU_INSERT_ALM" value="21" enum="MenuItems">
-			Inserts Arabic letter mark (ALM) character.
-		</constant>
-		<constant name="MENU_INSERT_LRI" value="22" enum="MenuItems">
-			Inserts left-to-right isolate (LRI) character.
-		</constant>
-		<constant name="MENU_INSERT_RLI" value="23" enum="MenuItems">
-			Inserts right-to-left isolate (RLI) character.
-		</constant>
-		<constant name="MENU_INSERT_FSI" value="24" enum="MenuItems">
-			Inserts first strong isolate (FSI) character.
-		</constant>
-		<constant name="MENU_INSERT_PDI" value="25" enum="MenuItems">
-			Inserts pop direction isolate (PDI) character.
-		</constant>
-		<constant name="MENU_INSERT_ZWJ" value="26" enum="MenuItems">
-			Inserts zero width joiner (ZWJ) character.
-		</constant>
-		<constant name="MENU_INSERT_ZWNJ" value="27" enum="MenuItems">
-			Inserts zero width non-joiner (ZWNJ) character.
-		</constant>
-		<constant name="MENU_INSERT_WJ" value="28" enum="MenuItems">
-			Inserts word joiner (WJ) character.
-		</constant>
-		<constant name="MENU_INSERT_SHY" value="29" enum="MenuItems">
-			Inserts soft hyphen (SHY) character.
-		</constant>
-		<constant name="MENU_EMOJI_AND_SYMBOL" value="30" enum="MenuItems">
-			Opens system emoji and symbol picker.
-		</constant>
-		<constant name="MENU_MAX" value="31" enum="MenuItems">
-			Represents the size of the [enum MenuItems] enum.
-		</constant>
-		<constant name="KEYBOARD_TYPE_DEFAULT" value="0" enum="VirtualKeyboardType">
-			Default text virtual keyboard.
-		</constant>
-		<constant name="KEYBOARD_TYPE_MULTILINE" value="1" enum="VirtualKeyboardType">
-			Multiline virtual keyboard.
-		</constant>
-		<constant name="KEYBOARD_TYPE_NUMBER" value="2" enum="VirtualKeyboardType">
-			Virtual number keypad, useful for PIN entry.
-		</constant>
-		<constant name="KEYBOARD_TYPE_NUMBER_DECIMAL" value="3" enum="VirtualKeyboardType">
-			Virtual number keypad, useful for entering fractional numbers.
-		</constant>
-		<constant name="KEYBOARD_TYPE_PHONE" value="4" enum="VirtualKeyboardType">
-			Virtual phone number keypad.
-		</constant>
-		<constant name="KEYBOARD_TYPE_EMAIL_ADDRESS" value="5" enum="VirtualKeyboardType">
-			Virtual keyboard with additional keys to assist with typing email addresses.
-		</constant>
-		<constant name="KEYBOARD_TYPE_PASSWORD" value="6" enum="VirtualKeyboardType">
-			Virtual keyboard for entering a password. On most platforms, this should disable autocomplete and autocapitalization.
-			[b]Note:[/b] This is not supported on Web. Instead, this behaves identically to [constant KEYBOARD_TYPE_DEFAULT].
-		</constant>
-		<constant name="KEYBOARD_TYPE_URL" value="7" enum="VirtualKeyboardType">
-			Virtual keyboard with additional keys to assist with typing URLs.
-		</constant>
-		<constant name="EXPAND_MODE_ORIGINAL_SIZE" value="0" enum="ExpandMode">
-			Use the original size for the right icon.
-		</constant>
-		<constant name="EXPAND_MODE_FIT_TO_TEXT" value="1" enum="ExpandMode">
-			Scale the right icon's size to match the size of the text.
-		</constant>
-		<constant name="EXPAND_MODE_FIT_TO_LINE_EDIT" value="2" enum="ExpandMode">
-			Scale the right icon to fit the LineEdit.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ExpandMode">
+			<constant name="EXPAND_MODE_ORIGINAL_SIZE" value="0">
+				Use the original size for the right icon.
+			</constant>
+			<constant name="EXPAND_MODE_FIT_TO_TEXT" value="1">
+				Scale the right icon's size to match the size of the text.
+			</constant>
+			<constant name="EXPAND_MODE_FIT_TO_LINE_EDIT" value="2">
+				Scale the right icon to fit the LineEdit.
+			</constant>
+		</enum>
+		<enum name="MenuItems">
+			<constant name="MENU_CUT" value="0">
+				Cuts (copies and clears) the selected text.
+			</constant>
+			<constant name="MENU_COPY" value="1">
+				Copies the selected text.
+			</constant>
+			<constant name="MENU_PASTE" value="2">
+				Pastes the clipboard text over the selected text (or at the caret's position).
+				Non-printable escape characters are automatically stripped from the OS clipboard via [method String.strip_escapes].
+			</constant>
+			<constant name="MENU_CLEAR" value="3">
+				Erases the whole [LineEdit] text.
+			</constant>
+			<constant name="MENU_SELECT_ALL" value="4">
+				Selects the whole [LineEdit] text.
+			</constant>
+			<constant name="MENU_UNDO" value="5">
+				Undoes the previous action.
+			</constant>
+			<constant name="MENU_REDO" value="6">
+				Reverse the last undo action.
+			</constant>
+			<constant name="MENU_SUBMENU_TEXT_DIR" value="7">
+				ID of "Text Writing Direction" submenu.
+			</constant>
+			<constant name="MENU_DIR_INHERITED" value="8">
+				Sets text direction to inherited.
+			</constant>
+			<constant name="MENU_DIR_AUTO" value="9">
+				Sets text direction to automatic.
+			</constant>
+			<constant name="MENU_DIR_LTR" value="10">
+				Sets text direction to left-to-right.
+			</constant>
+			<constant name="MENU_DIR_RTL" value="11">
+				Sets text direction to right-to-left.
+			</constant>
+			<constant name="MENU_DISPLAY_UCC" value="12">
+				Toggles control character display.
+			</constant>
+			<constant name="MENU_SUBMENU_INSERT_UCC" value="13">
+				ID of "Insert Control Character" submenu.
+			</constant>
+			<constant name="MENU_INSERT_LRM" value="14">
+				Inserts left-to-right mark (LRM) character.
+			</constant>
+			<constant name="MENU_INSERT_RLM" value="15">
+				Inserts right-to-left mark (RLM) character.
+			</constant>
+			<constant name="MENU_INSERT_LRE" value="16">
+				Inserts start of left-to-right embedding (LRE) character.
+			</constant>
+			<constant name="MENU_INSERT_RLE" value="17">
+				Inserts start of right-to-left embedding (RLE) character.
+			</constant>
+			<constant name="MENU_INSERT_LRO" value="18">
+				Inserts start of left-to-right override (LRO) character.
+			</constant>
+			<constant name="MENU_INSERT_RLO" value="19">
+				Inserts start of right-to-left override (RLO) character.
+			</constant>
+			<constant name="MENU_INSERT_PDF" value="20">
+				Inserts pop direction formatting (PDF) character.
+			</constant>
+			<constant name="MENU_INSERT_ALM" value="21">
+				Inserts Arabic letter mark (ALM) character.
+			</constant>
+			<constant name="MENU_INSERT_LRI" value="22">
+				Inserts left-to-right isolate (LRI) character.
+			</constant>
+			<constant name="MENU_INSERT_RLI" value="23">
+				Inserts right-to-left isolate (RLI) character.
+			</constant>
+			<constant name="MENU_INSERT_FSI" value="24">
+				Inserts first strong isolate (FSI) character.
+			</constant>
+			<constant name="MENU_INSERT_PDI" value="25">
+				Inserts pop direction isolate (PDI) character.
+			</constant>
+			<constant name="MENU_INSERT_ZWJ" value="26">
+				Inserts zero width joiner (ZWJ) character.
+			</constant>
+			<constant name="MENU_INSERT_ZWNJ" value="27">
+				Inserts zero width non-joiner (ZWNJ) character.
+			</constant>
+			<constant name="MENU_INSERT_WJ" value="28">
+				Inserts word joiner (WJ) character.
+			</constant>
+			<constant name="MENU_INSERT_SHY" value="29">
+				Inserts soft hyphen (SHY) character.
+			</constant>
+			<constant name="MENU_EMOJI_AND_SYMBOL" value="30">
+				Opens system emoji and symbol picker.
+			</constant>
+			<constant name="MENU_MAX" value="31">
+				Represents the size of the [enum MenuItems] enum.
+			</constant>
+		</enum>
+		<enum name="VirtualKeyboardType">
+			<constant name="KEYBOARD_TYPE_DEFAULT" value="0">
+				Default text virtual keyboard.
+			</constant>
+			<constant name="KEYBOARD_TYPE_MULTILINE" value="1">
+				Multiline virtual keyboard.
+			</constant>
+			<constant name="KEYBOARD_TYPE_NUMBER" value="2">
+				Virtual number keypad, useful for PIN entry.
+			</constant>
+			<constant name="KEYBOARD_TYPE_NUMBER_DECIMAL" value="3">
+				Virtual number keypad, useful for entering fractional numbers.
+			</constant>
+			<constant name="KEYBOARD_TYPE_PHONE" value="4">
+				Virtual phone number keypad.
+			</constant>
+			<constant name="KEYBOARD_TYPE_EMAIL_ADDRESS" value="5">
+				Virtual keyboard with additional keys to assist with typing email addresses.
+			</constant>
+			<constant name="KEYBOARD_TYPE_PASSWORD" value="6">
+				Virtual keyboard for entering a password. On most platforms, this should disable autocomplete and autocapitalization.
+				[b]Note:[/b] This is not supported on Web. Instead, this behaves identically to [constant KEYBOARD_TYPE_DEFAULT].
+			</constant>
+			<constant name="KEYBOARD_TYPE_URL" value="7">
+				Virtual keyboard with additional keys to assist with typing URLs.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="caret_color" data_type="color" type="Color" default="Color(0.95, 0.95, 0.95, 1)">
 			Color of the [LineEdit]'s caret (text cursor). This can be set to a fully transparent color to hide the caret entirely.

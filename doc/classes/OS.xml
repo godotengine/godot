@@ -920,57 +920,63 @@
 			[b]Note:[/b] On start-up, this is the same as [member ProjectSettings.application/run/low_processor_mode_sleep_usec].
 		</member>
 	</members>
-	<constants>
-		<constant name="RENDERING_DRIVER_VULKAN" value="0" enum="RenderingDriver" deprecated="This constant is not used by the engine.">
-			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1, 1.2, and 1.3 if available.
-		</constant>
-		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver" deprecated="This constant is not used by the engine.">
-			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
-		</constant>
-		<constant name="RENDERING_DRIVER_D3D12" value="2" enum="RenderingDriver" deprecated="This constant is not used by the engine.">
-			The Direct3D 12 rendering driver. It requires the 12_0 feature level and Shader Model 6.0 support.
-		</constant>
-		<constant name="RENDERING_DRIVER_METAL" value="3" enum="RenderingDriver" deprecated="This constant is not used by the engine.">
-			The Metal rendering driver.
-		</constant>
-		<constant name="SYSTEM_DIR_DESKTOP" value="0" enum="SystemDir">
-			Refers to the Desktop directory path.
-		</constant>
-		<constant name="SYSTEM_DIR_DCIM" value="1" enum="SystemDir">
-			Refers to the DCIM (Digital Camera Images) directory path.
-		</constant>
-		<constant name="SYSTEM_DIR_DOCUMENTS" value="2" enum="SystemDir">
-			Refers to the Documents directory path.
-		</constant>
-		<constant name="SYSTEM_DIR_DOWNLOADS" value="3" enum="SystemDir">
-			Refers to the Downloads directory path.
-		</constant>
-		<constant name="SYSTEM_DIR_MOVIES" value="4" enum="SystemDir">
-			Refers to the Movies (or Videos) directory path.
-		</constant>
-		<constant name="SYSTEM_DIR_MUSIC" value="5" enum="SystemDir">
-			Refers to the Music directory path.
-		</constant>
-		<constant name="SYSTEM_DIR_PICTURES" value="6" enum="SystemDir">
-			Refers to the Pictures directory path.
-		</constant>
-		<constant name="SYSTEM_DIR_RINGTONES" value="7" enum="SystemDir">
-			Refers to the Ringtones directory path.
-		</constant>
-		<constant name="STD_HANDLE_INVALID" value="0" enum="StdHandleType">
-			Standard I/O device is invalid. No data can be received from or sent to these standard I/O devices.
-		</constant>
-		<constant name="STD_HANDLE_CONSOLE" value="1" enum="StdHandleType">
-			Standard I/O device is a console. This typically occurs when Godot is run from a terminal with no redirection. This is also used for all standard I/O devices when running Godot from the editor, at least on desktop platforms.
-		</constant>
-		<constant name="STD_HANDLE_FILE" value="2" enum="StdHandleType">
-			Standard I/O device is a regular file. This typically occurs with redirection from a terminal, e.g. [code]godot &gt; stdout.txt[/code], [code]godot &lt; stdin.txt[/code] or [code]godot &gt; stdout_stderr.txt 2&gt;&amp;1[/code].
-		</constant>
-		<constant name="STD_HANDLE_PIPE" value="3" enum="StdHandleType">
-			Standard I/O device is a FIFO/pipe. This typically occurs with pipe usage from a terminal, e.g. [code]echo "Hello" | godot[/code].
-		</constant>
-		<constant name="STD_HANDLE_UNKNOWN" value="4" enum="StdHandleType">
-			Standard I/O device type is unknown.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="RenderingDriver" deprecated="This enumeration is not used by the engine.">
+			<constant name="RENDERING_DRIVER_VULKAN" value="0" deprecated="This constant is not used by the engine.">
+				The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1, 1.2, and 1.3 if available.
+			</constant>
+			<constant name="RENDERING_DRIVER_OPENGL3" value="1" deprecated="This constant is not used by the engine.">
+				The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
+			</constant>
+			<constant name="RENDERING_DRIVER_D3D12" value="2" deprecated="This constant is not used by the engine.">
+				The Direct3D 12 rendering driver. It requires the 12_0 feature level and Shader Model 6.0 support.
+			</constant>
+			<constant name="RENDERING_DRIVER_METAL" value="3" deprecated="This constant is not used by the engine.">
+				The Metal rendering driver.
+			</constant>
+		</enum>
+		<enum name="StdHandleType">
+			<constant name="STD_HANDLE_INVALID" value="0">
+				Standard I/O device is invalid. No data can be received from or sent to these standard I/O devices.
+			</constant>
+			<constant name="STD_HANDLE_CONSOLE" value="1">
+				Standard I/O device is a console. This typically occurs when Godot is run from a terminal with no redirection. This is also used for all standard I/O devices when running Godot from the editor, at least on desktop platforms.
+			</constant>
+			<constant name="STD_HANDLE_FILE" value="2">
+				Standard I/O device is a regular file. This typically occurs with redirection from a terminal, e.g. [code]godot &gt; stdout.txt[/code], [code]godot &lt; stdin.txt[/code] or [code]godot &gt; stdout_stderr.txt 2&gt;&amp;1[/code].
+			</constant>
+			<constant name="STD_HANDLE_PIPE" value="3">
+				Standard I/O device is a FIFO/pipe. This typically occurs with pipe usage from a terminal, e.g. [code]echo "Hello" | godot[/code].
+			</constant>
+			<constant name="STD_HANDLE_UNKNOWN" value="4">
+				Standard I/O device type is unknown.
+			</constant>
+		</enum>
+		<enum name="SystemDir">
+			<constant name="SYSTEM_DIR_DESKTOP" value="0">
+				Refers to the Desktop directory path.
+			</constant>
+			<constant name="SYSTEM_DIR_DCIM" value="1">
+				Refers to the DCIM (Digital Camera Images) directory path.
+			</constant>
+			<constant name="SYSTEM_DIR_DOCUMENTS" value="2">
+				Refers to the Documents directory path.
+			</constant>
+			<constant name="SYSTEM_DIR_DOWNLOADS" value="3">
+				Refers to the Downloads directory path.
+			</constant>
+			<constant name="SYSTEM_DIR_MOVIES" value="4">
+				Refers to the Movies (or Videos) directory path.
+			</constant>
+			<constant name="SYSTEM_DIR_MUSIC" value="5">
+				Refers to the Music directory path.
+			</constant>
+			<constant name="SYSTEM_DIR_PICTURES" value="6">
+				Refers to the Pictures directory path.
+			</constant>
+			<constant name="SYSTEM_DIR_RINGTONES" value="7">
+				Refers to the Ringtones directory path.
+			</constant>
+		</enum>
+	</enums>
 </class>

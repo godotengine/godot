@@ -51,21 +51,23 @@
 			The node's offset perpendicular to the curve.
 		</member>
 	</members>
-	<constants>
-		<constant name="ROTATION_NONE" value="0" enum="RotationMode">
-			Forbids the PathFollow3D to rotate.
-		</constant>
-		<constant name="ROTATION_Y" value="1" enum="RotationMode">
-			Allows the PathFollow3D to rotate in the Y axis only.
-		</constant>
-		<constant name="ROTATION_XY" value="2" enum="RotationMode">
-			Allows the PathFollow3D to rotate in both the X, and Y axes.
-		</constant>
-		<constant name="ROTATION_XYZ" value="3" enum="RotationMode">
-			Allows the PathFollow3D to rotate in any axis.
-		</constant>
-		<constant name="ROTATION_ORIENTED" value="4" enum="RotationMode">
-			Uses the up vector information in a [Curve3D] to enforce orientation. This rotation mode requires the [Path3D]'s [member Curve3D.up_vector_enabled] property to be set to [code]true[/code].
-		</constant>
-	</constants>
+	<enums>
+		<enum name="RotationMode">
+			<constant name="ROTATION_NONE" value="0">
+				Forbids the PathFollow3D to rotate.
+			</constant>
+			<constant name="ROTATION_Y" value="1">
+				Allows the PathFollow3D to rotate in the Y axis only.
+			</constant>
+			<constant name="ROTATION_XY" value="2">
+				Allows the PathFollow3D to rotate in both the X, and Y axes.
+			</constant>
+			<constant name="ROTATION_XYZ" value="3">
+				Allows the PathFollow3D to rotate in any axis.
+			</constant>
+			<constant name="ROTATION_ORIENTED" value="4">
+				Uses the up vector information in a [Curve3D] to enforce orientation. This rotation mode requires the [Path3D]'s [member Curve3D.up_vector_enabled] property to be set to [code]true[/code].
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -252,33 +252,37 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="CHANGE_TYPE_NEW" value="0" enum="ChangeType">
-			A new file has been added.
-		</constant>
-		<constant name="CHANGE_TYPE_MODIFIED" value="1" enum="ChangeType">
-			An earlier added file has been modified.
-		</constant>
-		<constant name="CHANGE_TYPE_RENAMED" value="2" enum="ChangeType">
-			An earlier added file has been renamed.
-		</constant>
-		<constant name="CHANGE_TYPE_DELETED" value="3" enum="ChangeType">
-			An earlier added file has been deleted.
-		</constant>
-		<constant name="CHANGE_TYPE_TYPECHANGE" value="4" enum="ChangeType">
-			An earlier added file has been typechanged.
-		</constant>
-		<constant name="CHANGE_TYPE_UNMERGED" value="5" enum="ChangeType">
-			A file is left unmerged.
-		</constant>
-		<constant name="TREE_AREA_COMMIT" value="0" enum="TreeArea">
-			A commit is encountered from the commit area.
-		</constant>
-		<constant name="TREE_AREA_STAGED" value="1" enum="TreeArea">
-			A file is encountered from the staged area.
-		</constant>
-		<constant name="TREE_AREA_UNSTAGED" value="2" enum="TreeArea">
-			A file is encountered from the unstaged area.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ChangeType">
+			<constant name="CHANGE_TYPE_NEW" value="0">
+				A new file has been added.
+			</constant>
+			<constant name="CHANGE_TYPE_MODIFIED" value="1">
+				An earlier added file has been modified.
+			</constant>
+			<constant name="CHANGE_TYPE_RENAMED" value="2">
+				An earlier added file has been renamed.
+			</constant>
+			<constant name="CHANGE_TYPE_DELETED" value="3">
+				An earlier added file has been deleted.
+			</constant>
+			<constant name="CHANGE_TYPE_TYPECHANGE" value="4">
+				An earlier added file has been typechanged.
+			</constant>
+			<constant name="CHANGE_TYPE_UNMERGED" value="5">
+				A file is left unmerged.
+			</constant>
+		</enum>
+		<enum name="TreeArea">
+			<constant name="TREE_AREA_COMMIT" value="0">
+				A commit is encountered from the commit area.
+			</constant>
+			<constant name="TREE_AREA_STAGED" value="1">
+				A file is encountered from the staged area.
+			</constant>
+			<constant name="TREE_AREA_UNSTAGED" value="2">
+				A file is encountered from the unstaged area.
+			</constant>
+		</enum>
+	</enums>
 </class>

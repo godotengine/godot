@@ -71,18 +71,20 @@
 			This is useful for using dummy bone with length [code]0[/code] to match postures when retargeting between models with different number of bones.
 		</member>
 	</members>
-	<constants>
-		<constant name="TRANSFORM_FLAG_POSITION" value="1" enum="TransformFlag" is_bitfield="true">
-			If set, allows to retarget the position.
-		</constant>
-		<constant name="TRANSFORM_FLAG_ROTATION" value="2" enum="TransformFlag" is_bitfield="true">
-			If set, allows to retarget the rotation.
-		</constant>
-		<constant name="TRANSFORM_FLAG_SCALE" value="4" enum="TransformFlag" is_bitfield="true">
-			If set, allows to retarget the scale.
-		</constant>
-		<constant name="TRANSFORM_FLAG_ALL" value="7" enum="TransformFlag" is_bitfield="true">
-			If set, allows to retarget the position/rotation/scale.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="TransformFlag" is_bitfield="true">
+			<constant name="TRANSFORM_FLAG_POSITION" value="1">
+				If set, allows to retarget the position.
+			</constant>
+			<constant name="TRANSFORM_FLAG_ROTATION" value="2">
+				If set, allows to retarget the rotation.
+			</constant>
+			<constant name="TRANSFORM_FLAG_SCALE" value="4">
+				If set, allows to retarget the scale.
+			</constant>
+			<constant name="TRANSFORM_FLAG_ALL" value="7">
+				If set, allows to retarget the position/rotation/scale.
+			</constant>
+		</enum>
+	</enums>
 </class>

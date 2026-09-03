@@ -71,41 +71,45 @@
 			The speed with which the two bodies get pulled together when they move in different directions.
 		</member>
 	</members>
-	<constants>
-		<constant name="PARAM_BIAS" value="0" enum="Param">
-			The speed with which the two bodies get pulled together when they move in different directions.
-		</constant>
-		<constant name="PARAM_LIMIT_UPPER" value="1" enum="Param">
-			The maximum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
-		</constant>
-		<constant name="PARAM_LIMIT_LOWER" value="2" enum="Param">
-			The minimum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
-		</constant>
-		<constant name="PARAM_LIMIT_BIAS" value="3" enum="Param">
-			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
-		</constant>
-		<constant name="PARAM_LIMIT_SOFTNESS" value="4" enum="Param" deprecated="This property is never used by the engine and is kept for compatibility purpose.">
-		</constant>
-		<constant name="PARAM_LIMIT_RELAXATION" value="5" enum="Param">
-			The lower this value, the more the rotation gets slowed down.
-		</constant>
-		<constant name="PARAM_MOTOR_TARGET_VELOCITY" value="6" enum="Param">
-			Target speed for the motor.
-		</constant>
-		<constant name="PARAM_MOTOR_MAX_IMPULSE" value="7" enum="Param">
-			Maximum acceleration for the motor.
-		</constant>
-		<constant name="PARAM_MAX" value="8" enum="Param">
-			Represents the size of the [enum Param] enum.
-		</constant>
-		<constant name="FLAG_USE_LIMIT" value="0" enum="Flag">
-			If [code]true[/code], the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
-		</constant>
-		<constant name="FLAG_ENABLE_MOTOR" value="1" enum="Flag">
-			When activated, a motor turns the hinge.
-		</constant>
-		<constant name="FLAG_MAX" value="2" enum="Flag">
-			Represents the size of the [enum Flag] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Flag">
+			<constant name="FLAG_USE_LIMIT" value="0">
+				If [code]true[/code], the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
+			</constant>
+			<constant name="FLAG_ENABLE_MOTOR" value="1">
+				When activated, a motor turns the hinge.
+			</constant>
+			<constant name="FLAG_MAX" value="2">
+				Represents the size of the [enum Flag] enum.
+			</constant>
+		</enum>
+		<enum name="Param">
+			<constant name="PARAM_BIAS" value="0">
+				The speed with which the two bodies get pulled together when they move in different directions.
+			</constant>
+			<constant name="PARAM_LIMIT_UPPER" value="1">
+				The maximum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
+			</constant>
+			<constant name="PARAM_LIMIT_LOWER" value="2">
+				The minimum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
+			</constant>
+			<constant name="PARAM_LIMIT_BIAS" value="3">
+				The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
+			</constant>
+			<constant name="PARAM_LIMIT_SOFTNESS" value="4" deprecated="This property is never used by the engine and is kept for compatibility purpose.">
+			</constant>
+			<constant name="PARAM_LIMIT_RELAXATION" value="5">
+				The lower this value, the more the rotation gets slowed down.
+			</constant>
+			<constant name="PARAM_MOTOR_TARGET_VELOCITY" value="6">
+				Target speed for the motor.
+			</constant>
+			<constant name="PARAM_MOTOR_MAX_IMPULSE" value="7">
+				Maximum acceleration for the motor.
+			</constant>
+			<constant name="PARAM_MAX" value="8">
+				Represents the size of the [enum Param] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

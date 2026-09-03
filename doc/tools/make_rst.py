@@ -70,7 +70,6 @@ BASE_STRINGS = [
     "No return value.",
     "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
     "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
     "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
     "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
     "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
@@ -83,11 +82,13 @@ BASE_STRINGS = [
     "Experimental:",
     "This signal may be changed or removed in future versions.",
     "This constant may be changed or removed in future versions.",
+    "This enumeration may be changed or removed in future versions.",
     "This property may be changed or removed in future versions.",
     "This constructor may be changed or removed in future versions.",
     "This method may be changed or removed in future versions.",
     "This operator may be changed or removed in future versions.",
     "This theme property may be changed or removed in future versions.",
+    "This enumeration has no members.",
     # See also `make_rst_class()` and `editor/doc/editor_help.cpp`.
     "[note]The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.[/note]",
 ]
@@ -316,31 +317,44 @@ class State:
         constants = class_root.find("constants")
         if constants is not None:
             for constant in constants:
-                assert constant.tag == "constant"
+                constant_def = self.parse_constant(constant)
 
-                constant_name = constant.attrib["name"]
-                value = constant.attrib["value"]
-                enum = constant.get("enum")
-                is_bitfield = constant.get("is_bitfield") == "true"
-                constant_def = ConstantDef(constant_name, value, constant.text, is_bitfield)
-                constant_def.deprecated = constant.get("deprecated")
-                constant_def.experimental = constant.get("experimental")
-                if enum is None:
-                    if constant_name in class_def.constants:
-                        print_error(f'{class_name}.xml: Duplicate constant "{constant_name}".', self)
-                        continue
+                if constant_def.name in class_def.constants:
+                    print_error(f'{class_name}.xml: Duplicate constant "{constant_def.name}".', self)
+                    continue
 
-                    class_def.constants[constant_name] = constant_def
+                class_def.constants[constant_def.name] = constant_def
 
-                else:
-                    if enum in class_def.enums:
-                        enum_def = class_def.enums[enum]
+        enums = class_root.find("enums")
+        if enums is not None:
+            for enum in enums:
+                assert enum.tag == "enum"
 
+                enum_name = enum.attrib["name"]
+                is_bitfield = enum.get("is_bitfield") == "true"
+
+                enum_def = EnumDef(enum_name, TypeName("int", enum_name), is_bitfield)
+                enum_def.deprecated = enum.get("deprecated")
+                enum_def.experimental = enum.get("experimental")
+
+                for node in enum:
+                    assert node.tag in ["description", "constant"]
+                    if node.tag == "description":
+                        enum_def.text = node.text
                     else:
-                        enum_def = EnumDef(enum, TypeName("int", enum), is_bitfield)
-                        class_def.enums[enum] = enum_def
+                        constant = node
+                        constant_def = self.parse_constant(constant)
 
-                    enum_def.values[constant_name] = constant_def
+                        if constant_def.name in enum_def.values:
+                            print_error(
+                                f'{class_name}.xml: Duplicate constant "{constant_def.name}" in enum "{enum_name}".',
+                                self,
+                            )
+                            continue
+
+                        enum_def.values[constant_def.name] = constant_def
+
+                class_def.enums[enum_name] = enum_def
 
         annotations = class_root.find("annotations")
         if annotations is not None:
@@ -423,6 +437,18 @@ class State:
                     class_def.tutorials.append((link.text.strip(), link.get("title", "")))
 
         self.current_class = ""
+
+    def parse_constant(self, constant: ET.Element) -> ConstantDef:
+        assert constant.tag == "constant"
+
+        constant_name = constant.attrib["name"]
+        value = constant.attrib["value"]
+
+        constant_def = ConstantDef(constant_name, value, constant.text)
+        constant_def.deprecated = constant.get("deprecated")
+        constant_def.experimental = constant.get("experimental")
+
+        return constant_def
 
     def parse_params(self, root: ET.Element, context: str) -> list[ParameterDef]:
         param_elements = root.findall("param")
@@ -560,21 +586,21 @@ class MethodDef(DefinitionBase):
 
 
 class ConstantDef(DefinitionBase):
-    def __init__(self, name: str, value: str, text: str | None, bitfield: bool) -> None:
+    def __init__(self, name: str, value: str, text: str | None) -> None:
         super().__init__("constant", name)
 
         self.value = value
         self.text = text
-        self.is_bitfield = bitfield
 
 
 class EnumDef(DefinitionBase):
     def __init__(self, name: str, type_name: TypeName, bitfield: bool) -> None:
-        super().__init__("enum", name)
+        super().__init__("enumeration", name)
 
         self.type_name = type_name
-        self.values: OrderedDict[str, ConstantDef] = OrderedDict()
         self.is_bitfield = bitfield
+        self.text: str | None = None
+        self.values: OrderedDict[str, ConstantDef] = OrderedDict()
 
 
 class ThemeItemDef(DefinitionBase):
@@ -1181,30 +1207,38 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 else:
                     f.write(f"enum **{e.name}**: {self_link}\n\n")
 
-                for value in e.values.values():
-                    # Also create signature and anchor point for each enum constant.
+                # Add enum description.
 
-                    f.write(f".. _class_{sanitize_class_name(class_name)}_constant_{value.name}:\n\n")
-                    f.write(".. rst-class:: classref-enumeration-constant\n\n")
+                f.write(make_deprecated_experimental(e, state))
 
-                    f.write(f"{e.type_name.to_rst(state)} **{value.name}** = ``{value.value}``\n\n")
+                if e.text is not None and e.text.strip() != "":
+                    f.write(f"{format_text_block(e.text.strip(), e, state)}\n\n")
 
-                    # Add enum constant description.
+                if len(e.values) == 0:
+                    f.write("*" + translate("This enumeration has no members.").strip() + "*\n\n")
+                else:
+                    for value in e.values.values():
+                        # Also create signature and anchor point for each enum constant.
 
-                    f.write(make_deprecated_experimental(value, state))
+                        f.write(f".. _class_{sanitize_class_name(class_name)}_constant_{value.name}:\n\n")
+                        f.write(".. rst-class:: classref-enumeration-constant\n\n")
 
-                    if value.text is not None and value.text.strip() != "":
-                        f.write(f"{format_text_block(value.text.strip(), value, state)}")
-                    elif value.deprecated is None and value.experimental is None:
-                        f.write(".. container:: contribute\n\n\t")
-                        f.write(
-                            translate(
-                                "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                        f.write(f"{e.type_name.to_rst(state)} **{value.name}** = ``{value.value}``\n\n")
+
+                        # Add enum constant description.
+
+                        f.write(make_deprecated_experimental(value, state))
+
+                        if value.text is not None and value.text.strip() != "":
+                            f.write(f"{format_text_block(value.text.strip(), value, state)}\n\n")
+                        elif value.deprecated is None and value.experimental is None:
+                            f.write(".. container:: contribute\n\n\t")
+                            f.write(
+                                translate(
+                                    "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                )
+                                + "\n\n"
                             )
-                            + "\n\n"
-                        )
-
-                    f.write("\n\n")
 
                 index += 1
 
@@ -1229,7 +1263,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 f.write(make_deprecated_experimental(constant, state))
 
                 if constant.text is not None and constant.text.strip() != "":
-                    f.write(f"{format_text_block(constant.text.strip(), constant, state)}")
+                    f.write(f"{format_text_block(constant.text.strip(), constant, state)}\n\n")
                 elif constant.deprecated is None and constant.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
@@ -1238,8 +1272,6 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         )
                         + "\n\n"
                     )
-
-                f.write("\n\n")
 
         # Annotation descriptions
         if len(class_def.annotations) > 0:

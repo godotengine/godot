@@ -551,20 +551,24 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="SCROLL_ZOOMS" value="0" enum="PanningScheme">
-			[kbd]Mouse Wheel[/kbd] will zoom, [kbd]Ctrl + Mouse Wheel[/kbd] will move the view.
-		</constant>
-		<constant name="SCROLL_PANS" value="1" enum="PanningScheme">
-			[kbd]Mouse Wheel[/kbd] will move the view, [kbd]Ctrl + Mouse Wheel[/kbd] will zoom.
-		</constant>
-		<constant name="GRID_PATTERN_LINES" value="0" enum="GridPattern">
-			Draw the grid using solid lines.
-		</constant>
-		<constant name="GRID_PATTERN_DOTS" value="1" enum="GridPattern">
-			Draw the grid using dots.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="GridPattern">
+			<constant name="GRID_PATTERN_LINES" value="0">
+				Draw the grid using solid lines.
+			</constant>
+			<constant name="GRID_PATTERN_DOTS" value="1">
+				Draw the grid using dots.
+			</constant>
+		</enum>
+		<enum name="PanningScheme">
+			<constant name="SCROLL_ZOOMS" value="0">
+				[kbd]Mouse Wheel[/kbd] will zoom, [kbd]Ctrl + Mouse Wheel[/kbd] will move the view.
+			</constant>
+			<constant name="SCROLL_PANS" value="1">
+				[kbd]Mouse Wheel[/kbd] will move the view, [kbd]Ctrl + Mouse Wheel[/kbd] will zoom.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="activity" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Color the connection line is interpolated to based on the activity value of a connection (see [method set_connection_activity]).

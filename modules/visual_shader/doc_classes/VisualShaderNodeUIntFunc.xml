@@ -13,15 +13,17 @@
 			A function to be applied to the scalar.
 		</member>
 	</members>
-	<constants>
-		<constant name="FUNC_NEGATE" value="0" enum="Function">
-			Negates the [code]x[/code] using [code]-(x)[/code].
-		</constant>
-		<constant name="FUNC_BITWISE_NOT" value="1" enum="Function">
-			Returns the result of bitwise [code]NOT[/code] operation on the integer. Translates to [code]~a[/code] in the Godot Shader Language.
-		</constant>
-		<constant name="FUNC_MAX" value="2" enum="Function">
-			Represents the size of the [enum Function] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Function">
+			<constant name="FUNC_NEGATE" value="0">
+				Negates the [code]x[/code] using [code]-(x)[/code].
+			</constant>
+			<constant name="FUNC_BITWISE_NOT" value="1">
+				Returns the result of bitwise [code]NOT[/code] operation on the integer. Translates to [code]~a[/code] in the Godot Shader Language.
+			</constant>
+			<constant name="FUNC_MAX" value="2">
+				Represents the size of the [enum Function] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

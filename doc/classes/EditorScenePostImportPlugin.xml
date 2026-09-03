@@ -102,22 +102,24 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="INTERNAL_IMPORT_CATEGORY_NODE" value="0" enum="InternalImportCategory">
-		</constant>
-		<constant name="INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE" value="1" enum="InternalImportCategory">
-		</constant>
-		<constant name="INTERNAL_IMPORT_CATEGORY_MESH" value="2" enum="InternalImportCategory">
-		</constant>
-		<constant name="INTERNAL_IMPORT_CATEGORY_MATERIAL" value="3" enum="InternalImportCategory">
-		</constant>
-		<constant name="INTERNAL_IMPORT_CATEGORY_ANIMATION" value="4" enum="InternalImportCategory">
-		</constant>
-		<constant name="INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE" value="5" enum="InternalImportCategory">
-		</constant>
-		<constant name="INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE" value="6" enum="InternalImportCategory">
-		</constant>
-		<constant name="INTERNAL_IMPORT_CATEGORY_MAX" value="7" enum="InternalImportCategory">
-		</constant>
-	</constants>
+	<enums>
+		<enum name="InternalImportCategory">
+			<constant name="INTERNAL_IMPORT_CATEGORY_NODE" value="0">
+			</constant>
+			<constant name="INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE" value="1">
+			</constant>
+			<constant name="INTERNAL_IMPORT_CATEGORY_MESH" value="2">
+			</constant>
+			<constant name="INTERNAL_IMPORT_CATEGORY_MATERIAL" value="3">
+			</constant>
+			<constant name="INTERNAL_IMPORT_CATEGORY_ANIMATION" value="4">
+			</constant>
+			<constant name="INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE" value="5">
+			</constant>
+			<constant name="INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE" value="6">
+			</constant>
+			<constant name="INTERNAL_IMPORT_CATEGORY_MAX" value="7">
+			</constant>
+		</enum>
+	</enums>
 </class>

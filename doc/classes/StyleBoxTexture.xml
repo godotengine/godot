@@ -108,15 +108,17 @@
 			This is also the value used as fallback for [member StyleBox.content_margin_top] if it is negative.
 		</member>
 	</members>
-	<constants>
-		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0" enum="AxisStretchMode">
-			Stretch the stylebox's texture. This results in visible distortion unless the texture size matches the stylebox's size perfectly.
-		</constant>
-		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
-			Repeats the stylebox's texture to match the stylebox's size according to the nine-patch system.
-		</constant>
-		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2" enum="AxisStretchMode">
-			Repeats the stylebox's texture to match the stylebox's size according to the nine-patch system. Unlike [constant AXIS_STRETCH_MODE_TILE], the texture may be slightly stretched to make the nine-patch texture tile seamlessly.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AxisStretchMode">
+			<constant name="AXIS_STRETCH_MODE_STRETCH" value="0">
+				Stretch the stylebox's texture. This results in visible distortion unless the texture size matches the stylebox's size perfectly.
+			</constant>
+			<constant name="AXIS_STRETCH_MODE_TILE" value="1">
+				Repeats the stylebox's texture to match the stylebox's size according to the nine-patch system.
+			</constant>
+			<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2">
+				Repeats the stylebox's texture to match the stylebox's size according to the nine-patch system. Unlike [constant AXIS_STRETCH_MODE_TILE], the texture may be slightly stretched to make the nine-patch texture tile seamlessly.
+			</constant>
+		</enum>
+	</enums>
 </class>

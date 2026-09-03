@@ -267,6 +267,32 @@ Error GDScriptWorkspace::initialize() {
 			class_symbol.children.push_back(symbol);
 		}
 
+		for (const KeyValue<String, DocData::EnumDoc> &F : class_data.enums) {
+			LSP::DocumentSymbol enum_symbol;
+			enum_symbol.name = F.key;
+			enum_symbol.native_class = class_name;
+			enum_symbol.kind = LSP::SymbolKind::Enum;
+			enum_symbol.detail = "enum " + class_name + "." + F.key;
+			enum_symbol.documentation = HANDLE_DOC(F.value.description);
+
+			for (const DocData::ConstantDoc &const_data : F.value.constants) {
+				LSP::DocumentSymbol const_symbol;
+				const_symbol.name = const_data.name;
+				const_symbol.native_class = class_name;
+				const_symbol.kind = LSP::SymbolKind::EnumMember;
+				const_symbol.detail = "const " + class_name + "." + F.key + "." + const_data.name;
+				if (const_data.enumeration.length()) {
+					const_symbol.detail += ": " + const_data.enumeration;
+				}
+				const_symbol.detail += " = " + const_data.value;
+				const_symbol.documentation = HANDLE_DOC(const_data.description);
+
+				enum_symbol.children.push_back(const_symbol);
+			}
+
+			class_symbol.children.push_back(enum_symbol);
+		}
+
 		for (int i = 0; i < class_data.properties.size(); i++) {
 			const DocData::PropertyDoc &data = class_data.properties[i];
 			LSP::DocumentSymbol symbol;

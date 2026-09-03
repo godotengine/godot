@@ -33,6 +33,26 @@
 #include "core/object/method_info.h"
 #include "core/object/property_info.h"
 
+// TODO: In the future, class constants and enum members should be separated (and this method is probably removed),
+// since members from different enums can have the same name.
+Vector<const DocData::ConstantDoc *> DocData::ClassDoc::get_all_constants() const {
+	Vector<const ConstantDoc *> result;
+
+	result.reserve(constants.size());
+	for (const ConstantDoc &constant : constants) {
+		result.push_back(&constant);
+	}
+
+	for (const KeyValue<String, EnumDoc> &E : enums) {
+		result.reserve(result.size() + E.value.constants.size());
+		for (const ConstantDoc &constant : E.value.constants) {
+			result.push_back(&constant);
+		}
+	}
+
+	return result;
+}
+
 String DocData::get_default_value_string(const Variant &p_value) {
 	const Variant::Type type = p_value.get_type();
 	if (type == Variant::ARRAY) {
@@ -57,7 +77,7 @@ String DocData::get_default_value_string(const Variant &p_value) {
 	}
 }
 
-void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo) {
+void DocData::return_doc_from_retinfo(MethodDoc &p_method, const PropertyInfo &p_retinfo) {
 	if (p_retinfo.type == Variant::INT && p_retinfo.hint == PROPERTY_HINT_INT_IS_POINTER) {
 		p_method.return_type = p_retinfo.hint_string;
 		if (p_method.return_type.is_empty()) {
@@ -89,7 +109,7 @@ void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const Proper
 	}
 }
 
-void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo) {
+void DocData::argument_doc_from_arginfo(ArgumentDoc &p_argument, const PropertyInfo &p_arginfo) {
 	p_argument.name = p_arginfo.name;
 
 	if (p_arginfo.type == Variant::INT && p_arginfo.hint == PROPERTY_HINT_INT_IS_POINTER) {
@@ -122,7 +142,7 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 	}
 }
 
-void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc) {
+void DocData::method_doc_from_methodinfo(MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc) {
 	p_method.name = p_methodinfo.name;
 	p_method.description = p_desc;
 
@@ -161,7 +181,7 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 	return_doc_from_retinfo(p_method, p_methodinfo.return_val);
 
 	for (int64_t i = 0; i < p_methodinfo.arguments.size(); ++i) {
-		DocData::ArgumentDoc argument;
+		ArgumentDoc argument;
 		argument_doc_from_arginfo(argument, p_methodinfo.arguments[i]);
 		int64_t default_arg_index = i - (p_methodinfo.arguments.size() - p_methodinfo.default_arguments.size());
 		if (default_arg_index >= 0) {

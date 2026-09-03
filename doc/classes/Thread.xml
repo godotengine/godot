@@ -75,15 +75,17 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="PRIORITY_LOW" value="0" enum="Priority">
-			A thread running with lower priority than normally.
-		</constant>
-		<constant name="PRIORITY_NORMAL" value="1" enum="Priority">
-			A thread with a standard priority.
-		</constant>
-		<constant name="PRIORITY_HIGH" value="2" enum="Priority">
-			A thread running with higher priority than normally.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Priority">
+			<constant name="PRIORITY_LOW" value="0">
+				A thread running with lower priority than normally.
+			</constant>
+			<constant name="PRIORITY_NORMAL" value="1">
+				A thread with a standard priority.
+			</constant>
+			<constant name="PRIORITY_HIGH" value="2">
+				A thread running with higher priority than normally.
+			</constant>
+		</enum>
+	</enums>
 </class>

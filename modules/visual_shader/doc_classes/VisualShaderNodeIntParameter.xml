@@ -31,21 +31,23 @@
 			The step between parameter's values. Forces the parameter to be a multiple of the given value. [member hint] must be [constant HINT_RANGE_STEP] for this to take effect.
 		</member>
 	</members>
-	<constants>
-		<constant name="HINT_NONE" value="0" enum="Hint">
-			The parameter will not constrain its value.
-		</constant>
-		<constant name="HINT_RANGE" value="1" enum="Hint">
-			The parameter's value must be within the specified [member min]/[member max] range.
-		</constant>
-		<constant name="HINT_RANGE_STEP" value="2" enum="Hint">
-			The parameter's value must be within the specified range, with the given [member step] between values.
-		</constant>
-		<constant name="HINT_ENUM" value="3" enum="Hint">
-			The parameter uses an enum to associate preset values to names in the editor.
-		</constant>
-		<constant name="HINT_MAX" value="4" enum="Hint">
-			Represents the size of the [enum Hint] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Hint">
+			<constant name="HINT_NONE" value="0">
+				The parameter will not constrain its value.
+			</constant>
+			<constant name="HINT_RANGE" value="1">
+				The parameter's value must be within the specified [member min]/[member max] range.
+			</constant>
+			<constant name="HINT_RANGE_STEP" value="2">
+				The parameter's value must be within the specified range, with the given [member step] between values.
+			</constant>
+			<constant name="HINT_ENUM" value="3">
+				The parameter uses an enum to associate preset values to names in the editor.
+			</constant>
+			<constant name="HINT_MAX" value="4">
+				Represents the size of the [enum Hint] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

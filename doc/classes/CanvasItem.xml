@@ -765,72 +765,82 @@
 		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
 			Notification received when this [CanvasItem] is registered to a new [World2D] (see [method get_world_2d]).
 		</constant>
-		<constant name="TEXTURE_FILTER_PARENT_NODE" value="0" enum="TextureFilter">
-			The [CanvasItem] will inherit the filter from its parent.
-		</constant>
-		<constant name="TEXTURE_FILTER_NEAREST" value="1" enum="TextureFilter">
-			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
-		</constant>
-		<constant name="TEXTURE_FILTER_LINEAR" value="2" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
-		</constant>
-		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="TextureFilter">
-			The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
-			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
-		</constant>
-		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="4" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
-			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
-		</constant>
-		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="TextureFilter">
-			The texture filter reads from the nearest pixel and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look pixelated from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
-			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_NEAREST_WITH_MIPMAPS] is usually more appropriate in this case.
-		</constant>
-		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6" enum="TextureFilter">
-			The texture filter blends between the nearest 4 pixels and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look smooth from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
-			[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_LINEAR_WITH_MIPMAPS] is usually more appropriate in this case.
-		</constant>
-		<constant name="TEXTURE_FILTER_MAX" value="7" enum="TextureFilter">
-			Represents the size of the [enum TextureFilter] enum.
-		</constant>
-		<constant name="TEXTURE_REPEAT_PARENT_NODE" value="0" enum="TextureRepeat">
-			The [CanvasItem] will inherit the repeat mode from its parent.
-		</constant>
-		<constant name="TEXTURE_REPEAT_DISABLED" value="1" enum="TextureRepeat">
-			The texture does not repeat. Sampling the texture outside its extents will result in "stretching" of the edge pixels. You can avoid this by ensuring a 1-pixel fully transparent border on each side of the texture.
-		</constant>
-		<constant name="TEXTURE_REPEAT_ENABLED" value="2" enum="TextureRepeat">
-			The texture repeats when exceeding the texture's size.
-		</constant>
-		<constant name="TEXTURE_REPEAT_MIRROR" value="3" enum="TextureRepeat">
-			The texture repeats when the exceeding the texture's size in a "2×2 tiled mode". Repeated textures at even positions are mirrored.
-		</constant>
-		<constant name="TEXTURE_REPEAT_MAX" value="4" enum="TextureRepeat">
-			Represents the size of the [enum TextureRepeat] enum.
-		</constant>
-		<constant name="CLIP_CHILDREN_DISABLED" value="0" enum="ClipChildrenMode">
-			Children are drawn over this node and are not clipped.
-		</constant>
-		<constant name="CLIP_CHILDREN_ONLY" value="1" enum="ClipChildrenMode">
-			This node is used as a mask and is [b]not[/b] drawn. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are clipped to this node's drawn area.
-		</constant>
-		<constant name="CLIP_CHILDREN_AND_DRAW" value="2" enum="ClipChildrenMode">
-			This node is used as a mask and is also drawn. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are clipped to the parent's drawn area.
-		</constant>
-		<constant name="CLIP_CHILDREN_MAX" value="3" enum="ClipChildrenMode">
-			Represents the size of the [enum ClipChildrenMode] enum.
-		</constant>
-		<constant name="OVERSAMPLING_WITH_SCALE_PARENT_NODE" value="0" enum="OversamplingWithScale">
-			The [CanvasItem] will inherit the oversampling mode from its parent.
-		</constant>
-		<constant name="OVERSAMPLING_WITH_SCALE_DISABLED" value="1" enum="OversamplingWithScale">
-			The oversampling is not affected by [CanvasItem] scale, and is equal to the [Viewport] oversampling.
-		</constant>
-		<constant name="OVERSAMPLING_WITH_SCALE_ENABLED" value="2" enum="OversamplingWithScale">
-			The oversampling is a product of [CanvasItem] scale and [Viewport] oversampling.
-		</constant>
-		<constant name="OVERSAMPLING_WITH_SCALE_MAX" value="3" enum="OversamplingWithScale">
-			Represents the size of the [enum OversamplingWithScale] enum.
-		</constant>
 	</constants>
+	<enums>
+		<enum name="ClipChildrenMode">
+			<constant name="CLIP_CHILDREN_DISABLED" value="0">
+				Children are drawn over this node and are not clipped.
+			</constant>
+			<constant name="CLIP_CHILDREN_ONLY" value="1">
+				This node is used as a mask and is [b]not[/b] drawn. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are clipped to this node's drawn area.
+			</constant>
+			<constant name="CLIP_CHILDREN_AND_DRAW" value="2">
+				This node is used as a mask and is also drawn. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are clipped to the parent's drawn area.
+			</constant>
+			<constant name="CLIP_CHILDREN_MAX" value="3">
+				Represents the size of the [enum ClipChildrenMode] enum.
+			</constant>
+		</enum>
+		<enum name="OversamplingWithScale">
+			<constant name="OVERSAMPLING_WITH_SCALE_PARENT_NODE" value="0">
+				The [CanvasItem] will inherit the oversampling mode from its parent.
+			</constant>
+			<constant name="OVERSAMPLING_WITH_SCALE_DISABLED" value="1">
+				The oversampling is not affected by [CanvasItem] scale, and is equal to the [Viewport] oversampling.
+			</constant>
+			<constant name="OVERSAMPLING_WITH_SCALE_ENABLED" value="2">
+				The oversampling is a product of [CanvasItem] scale and [Viewport] oversampling.
+			</constant>
+			<constant name="OVERSAMPLING_WITH_SCALE_MAX" value="3">
+				Represents the size of the [enum OversamplingWithScale] enum.
+			</constant>
+		</enum>
+		<enum name="TextureFilter">
+			<constant name="TEXTURE_FILTER_PARENT_NODE" value="0">
+				The [CanvasItem] will inherit the filter from its parent.
+			</constant>
+			<constant name="TEXTURE_FILTER_NEAREST" value="1">
+				The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
+			</constant>
+			<constant name="TEXTURE_FILTER_LINEAR" value="2">
+				The texture filter blends between the nearest 4 pixels. This makes the texture look smooth from up close, and grainy from a distance (due to mipmaps not being sampled).
+			</constant>
+			<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3">
+				The texture filter reads from the nearest pixel and blends between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look pixelated from up close, and smooth from a distance.
+				Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
+			</constant>
+			<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="4">
+				The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]). This makes the texture look smooth from up close, and smooth from a distance.
+				Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
+			</constant>
+			<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="5">
+				The texture filter reads from the nearest pixel and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look pixelated from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+				[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_NEAREST_WITH_MIPMAPS] is usually more appropriate in this case.
+			</constant>
+			<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6">
+				The texture filter blends between the nearest 4 pixels and blends between 2 mipmaps (or uses the nearest mipmap if [member ProjectSettings.rendering/textures/default_filters/use_nearest_mipmap_filter] is [code]true[/code]) based on the angle between the surface and the camera view. This makes the texture look smooth from up close, and smooth from a distance. Anisotropic filtering improves texture quality on surfaces that are almost in line with the camera, but is slightly slower. The anisotropic filtering level can be changed by adjusting [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
+				[b]Note:[/b] This texture filter is rarely useful in 2D projects. [constant TEXTURE_FILTER_LINEAR_WITH_MIPMAPS] is usually more appropriate in this case.
+			</constant>
+			<constant name="TEXTURE_FILTER_MAX" value="7">
+				Represents the size of the [enum TextureFilter] enum.
+			</constant>
+		</enum>
+		<enum name="TextureRepeat">
+			<constant name="TEXTURE_REPEAT_PARENT_NODE" value="0">
+				The [CanvasItem] will inherit the repeat mode from its parent.
+			</constant>
+			<constant name="TEXTURE_REPEAT_DISABLED" value="1">
+				The texture does not repeat. Sampling the texture outside its extents will result in "stretching" of the edge pixels. You can avoid this by ensuring a 1-pixel fully transparent border on each side of the texture.
+			</constant>
+			<constant name="TEXTURE_REPEAT_ENABLED" value="2">
+				The texture repeats when exceeding the texture's size.
+			</constant>
+			<constant name="TEXTURE_REPEAT_MIRROR" value="3">
+				The texture repeats when the exceeding the texture's size in a "2×2 tiled mode". Repeated textures at even positions are mirrored.
+			</constant>
+			<constant name="TEXTURE_REPEAT_MAX" value="4">
+				Represents the size of the [enum TextureRepeat] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -198,15 +198,17 @@
 			The number of settings in the modifier.
 		</member>
 	</members>
-	<constants>
-		<constant name="TRANSFORM_MODE_POSITION" value="0" enum="TransformMode">
-			Convert with position. Transfer the difference.
-		</constant>
-		<constant name="TRANSFORM_MODE_ROTATION" value="1" enum="TransformMode">
-			Convert with rotation. The angle is the roll for the specified axis.
-		</constant>
-		<constant name="TRANSFORM_MODE_SCALE" value="2" enum="TransformMode">
-			Convert with scale. Transfers the ratio, not the difference.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="TransformMode">
+			<constant name="TRANSFORM_MODE_POSITION" value="0">
+				Convert with position. Transfer the difference.
+			</constant>
+			<constant name="TRANSFORM_MODE_ROTATION" value="1">
+				Convert with rotation. The angle is the roll for the specified axis.
+			</constant>
+			<constant name="TRANSFORM_MODE_SCALE" value="2">
+				Convert with scale. Transfers the ratio, not the difference.
+			</constant>
+		</enum>
+	</enums>
 </class>

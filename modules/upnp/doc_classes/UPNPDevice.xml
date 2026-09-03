@@ -61,36 +61,38 @@
 			Service type.
 		</member>
 	</members>
-	<constants>
-		<constant name="IGD_STATUS_OK" value="0" enum="IGDStatus">
-			OK.
-		</constant>
-		<constant name="IGD_STATUS_HTTP_ERROR" value="1" enum="IGDStatus">
-			HTTP error.
-		</constant>
-		<constant name="IGD_STATUS_HTTP_EMPTY" value="2" enum="IGDStatus">
-			Empty HTTP response.
-		</constant>
-		<constant name="IGD_STATUS_NO_URLS" value="3" enum="IGDStatus" deprecated="This value is no longer used.">
-			Returned response contained no URLs.
-		</constant>
-		<constant name="IGD_STATUS_NO_IGD" value="4" enum="IGDStatus">
-			Not a valid IGD.
-		</constant>
-		<constant name="IGD_STATUS_DISCONNECTED" value="5" enum="IGDStatus">
-			Disconnected.
-		</constant>
-		<constant name="IGD_STATUS_UNKNOWN_DEVICE" value="6" enum="IGDStatus">
-			Unknown device.
-		</constant>
-		<constant name="IGD_STATUS_INVALID_CONTROL" value="7" enum="IGDStatus">
-			Invalid control.
-		</constant>
-		<constant name="IGD_STATUS_MALLOC_ERROR" value="8" enum="IGDStatus" deprecated="This value is no longer used.">
-			Memory allocation error.
-		</constant>
-		<constant name="IGD_STATUS_UNKNOWN_ERROR" value="9" enum="IGDStatus">
-			Unknown error.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="IGDStatus">
+			<constant name="IGD_STATUS_OK" value="0">
+				OK.
+			</constant>
+			<constant name="IGD_STATUS_HTTP_ERROR" value="1">
+				HTTP error.
+			</constant>
+			<constant name="IGD_STATUS_HTTP_EMPTY" value="2">
+				Empty HTTP response.
+			</constant>
+			<constant name="IGD_STATUS_NO_URLS" value="3" deprecated="This value is no longer used.">
+				Returned response contained no URLs.
+			</constant>
+			<constant name="IGD_STATUS_NO_IGD" value="4">
+				Not a valid IGD.
+			</constant>
+			<constant name="IGD_STATUS_DISCONNECTED" value="5">
+				Disconnected.
+			</constant>
+			<constant name="IGD_STATUS_UNKNOWN_DEVICE" value="6">
+				Unknown device.
+			</constant>
+			<constant name="IGD_STATUS_INVALID_CONTROL" value="7">
+				Invalid control.
+			</constant>
+			<constant name="IGD_STATUS_MALLOC_ERROR" value="8" deprecated="This value is no longer used.">
+				Memory allocation error.
+			</constant>
+			<constant name="IGD_STATUS_UNKNOWN_ERROR" value="9">
+				Unknown error.
+			</constant>
+		</enum>
+	</enums>
 </class>

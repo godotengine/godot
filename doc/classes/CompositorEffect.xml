@@ -73,24 +73,26 @@
 			If [code]true[/code] this triggers specular data being rendered to a separate buffer and combined after effects have been applied, only applicable for the Forward+ renderer.
 		</member>
 	</members>
-	<constants>
-		<constant name="EFFECT_CALLBACK_TYPE_PRE_OPAQUE" value="0" enum="EffectCallbackType">
-			The callback is called before our opaque rendering pass, but after depth prepass (if applicable).
-		</constant>
-		<constant name="EFFECT_CALLBACK_TYPE_POST_OPAQUE" value="1" enum="EffectCallbackType">
-			The callback is called after our opaque rendering pass, but before our sky is rendered.
-		</constant>
-		<constant name="EFFECT_CALLBACK_TYPE_POST_SKY" value="2" enum="EffectCallbackType">
-			The callback is called after our sky is rendered, but before our back buffers are created (and if enabled, before subsurface scattering and/or screen space reflections).
-		</constant>
-		<constant name="EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT" value="3" enum="EffectCallbackType">
-			The callback is called before our transparent rendering pass, but after our sky is rendered and we've created our back buffers.
-		</constant>
-		<constant name="EFFECT_CALLBACK_TYPE_POST_TRANSPARENT" value="4" enum="EffectCallbackType">
-			The callback is called after our transparent rendering pass, but before any built-in post-processing effects and output to our render target.
-		</constant>
-		<constant name="EFFECT_CALLBACK_TYPE_MAX" value="5" enum="EffectCallbackType">
-			Represents the size of the [enum EffectCallbackType] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="EffectCallbackType">
+			<constant name="EFFECT_CALLBACK_TYPE_PRE_OPAQUE" value="0">
+				The callback is called before our opaque rendering pass, but after depth prepass (if applicable).
+			</constant>
+			<constant name="EFFECT_CALLBACK_TYPE_POST_OPAQUE" value="1">
+				The callback is called after our opaque rendering pass, but before our sky is rendered.
+			</constant>
+			<constant name="EFFECT_CALLBACK_TYPE_POST_SKY" value="2">
+				The callback is called after our sky is rendered, but before our back buffers are created (and if enabled, before subsurface scattering and/or screen space reflections).
+			</constant>
+			<constant name="EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT" value="3">
+				The callback is called before our transparent rendering pass, but after our sky is rendered and we've created our back buffers.
+			</constant>
+			<constant name="EFFECT_CALLBACK_TYPE_POST_TRANSPARENT" value="4">
+				The callback is called after our transparent rendering pass, but before any built-in post-processing effects and output to our render target.
+			</constant>
+			<constant name="EFFECT_CALLBACK_TYPE_MAX" value="5">
+				Represents the size of the [enum EffectCallbackType] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

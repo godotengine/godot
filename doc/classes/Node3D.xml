@@ -390,14 +390,18 @@
 			Notification received when this node's [member transform] changes, if [method is_local_transform_notification_enabled] is [code]true[/code]. This is not received when a parent [Node3D]'s [member transform] changes. See also [method set_notify_local_transform].
 			[b]Note:[/b] Some 3D nodes such as [CSGShape3D] or [CollisionShape3D] automatically enable this to function correctly.
 		</constant>
-		<constant name="ROTATION_EDIT_MODE_EULER" value="0" enum="RotationEditMode">
-			The rotation is edited using a [Vector3] in [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url]. In Godot, Euler angles always use intrinsic order, meaning that rotation happens around the local axes of the object.
-		</constant>
-		<constant name="ROTATION_EDIT_MODE_QUATERNION" value="1" enum="RotationEditMode">
-			The rotation is edited using a [Quaternion]. Quaternions avoid [url=$DOCS_URL/tutorials/3d/using_transforms.html]gimbal lock[/url] and having to choose an order of rotation, but are less intuitive. Quaternion rotation is mostly the same as rotors in 3D geometric algebra, except that the numbers are labeled differently.
-		</constant>
-		<constant name="ROTATION_EDIT_MODE_BASIS" value="2" enum="RotationEditMode">
-			The rotation is edited using a [Basis]. In this mode, the raw [member basis]'s axes can be freely modified, but the [member scale] property is not available.
-		</constant>
 	</constants>
+	<enums>
+		<enum name="RotationEditMode">
+			<constant name="ROTATION_EDIT_MODE_EULER" value="0">
+				The rotation is edited using a [Vector3] in [url=https://en.wikipedia.org/wiki/Euler_angles]Euler angles[/url]. In Godot, Euler angles always use intrinsic order, meaning that rotation happens around the local axes of the object.
+			</constant>
+			<constant name="ROTATION_EDIT_MODE_QUATERNION" value="1">
+				The rotation is edited using a [Quaternion]. Quaternions avoid [url=$DOCS_URL/tutorials/3d/using_transforms.html]gimbal lock[/url] and having to choose an order of rotation, but are less intuitive. Quaternion rotation is mostly the same as rotors in 3D geometric algebra, except that the numbers are labeled differently.
+			</constant>
+			<constant name="ROTATION_EDIT_MODE_BASIS" value="2">
+				The rotation is edited using a [Basis]. In this mode, the raw [member basis]'s axes can be freely modified, but the [member scale] property is not available.
+			</constant>
+		</enum>
+	</enums>
 </class>

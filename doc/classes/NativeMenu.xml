@@ -770,39 +770,43 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature">
-			[NativeMenu] supports native global main menu.
-		</constant>
-		<constant name="FEATURE_POPUP_MENU" value="1" enum="Feature">
-			[NativeMenu] supports native popup menus.
-		</constant>
-		<constant name="FEATURE_OPEN_CLOSE_CALLBACK" value="2" enum="Feature">
-			[NativeMenu] supports menu open and close callbacks.
-		</constant>
-		<constant name="FEATURE_HOVER_CALLBACK" value="3" enum="Feature">
-			[NativeMenu] supports menu item hover callback.
-		</constant>
-		<constant name="FEATURE_KEY_CALLBACK" value="4" enum="Feature">
-			[NativeMenu] supports menu item accelerator/key callback.
-		</constant>
-		<constant name="INVALID_MENU_ID" value="0" enum="SystemMenus">
-			Invalid special system menu ID.
-		</constant>
-		<constant name="MAIN_MENU_ID" value="1" enum="SystemMenus">
-			Global main menu ID.
-		</constant>
-		<constant name="APPLICATION_MENU_ID" value="2" enum="SystemMenus">
-			Application (first menu after "Apple" menu on macOS) menu ID.
-		</constant>
-		<constant name="WINDOW_MENU_ID" value="3" enum="SystemMenus">
-			"Window" menu ID (on macOS this menu includes standard window control items and a list of open windows).
-		</constant>
-		<constant name="HELP_MENU_ID" value="4" enum="SystemMenus">
-			"Help" menu ID (on macOS this menu includes help search bar).
-		</constant>
-		<constant name="DOCK_MENU_ID" value="5" enum="SystemMenus">
-			Dock icon right-click menu ID (on macOS this menu include standard application control items and a list of open windows).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Feature">
+			<constant name="FEATURE_GLOBAL_MENU" value="0">
+				[NativeMenu] supports native global main menu.
+			</constant>
+			<constant name="FEATURE_POPUP_MENU" value="1">
+				[NativeMenu] supports native popup menus.
+			</constant>
+			<constant name="FEATURE_OPEN_CLOSE_CALLBACK" value="2">
+				[NativeMenu] supports menu open and close callbacks.
+			</constant>
+			<constant name="FEATURE_HOVER_CALLBACK" value="3">
+				[NativeMenu] supports menu item hover callback.
+			</constant>
+			<constant name="FEATURE_KEY_CALLBACK" value="4">
+				[NativeMenu] supports menu item accelerator/key callback.
+			</constant>
+		</enum>
+		<enum name="SystemMenus">
+			<constant name="INVALID_MENU_ID" value="0">
+				Invalid special system menu ID.
+			</constant>
+			<constant name="MAIN_MENU_ID" value="1">
+				Global main menu ID.
+			</constant>
+			<constant name="APPLICATION_MENU_ID" value="2">
+				Application (first menu after "Apple" menu on macOS) menu ID.
+			</constant>
+			<constant name="WINDOW_MENU_ID" value="3">
+				"Window" menu ID (on macOS this menu includes standard window control items and a list of open windows).
+			</constant>
+			<constant name="HELP_MENU_ID" value="4">
+				"Help" menu ID (on macOS this menu includes help search bar).
+			</constant>
+			<constant name="DOCK_MENU_ID" value="5">
+				Dock icon right-click menu ID (on macOS this menu include standard application control items and a list of open windows).
+			</constant>
+		</enum>
+	</enums>
 </class>

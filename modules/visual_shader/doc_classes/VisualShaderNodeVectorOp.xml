@@ -13,45 +13,47 @@
 			The operator to be used.
 		</member>
 	</members>
-	<constants>
-		<constant name="OP_ADD" value="0" enum="Operator">
-			Adds two vectors.
-		</constant>
-		<constant name="OP_SUB" value="1" enum="Operator">
-			Subtracts a vector from a vector.
-		</constant>
-		<constant name="OP_MUL" value="2" enum="Operator">
-			Multiplies two vectors.
-		</constant>
-		<constant name="OP_DIV" value="3" enum="Operator">
-			Divides vector by vector.
-		</constant>
-		<constant name="OP_MOD" value="4" enum="Operator">
-			Returns the remainder of the two vectors.
-		</constant>
-		<constant name="OP_POW" value="5" enum="Operator">
-			Returns the value of the first parameter raised to the power of the second, for each component of the vectors.
-		</constant>
-		<constant name="OP_MAX" value="6" enum="Operator">
-			Returns the greater of two values, for each component of the vectors.
-		</constant>
-		<constant name="OP_MIN" value="7" enum="Operator">
-			Returns the lesser of two values, for each component of the vectors.
-		</constant>
-		<constant name="OP_CROSS" value="8" enum="Operator">
-			Calculates the cross product of two vectors.
-		</constant>
-		<constant name="OP_ATAN2" value="9" enum="Operator">
-			Returns the arc-tangent of the parameters.
-		</constant>
-		<constant name="OP_REFLECT" value="10" enum="Operator">
-			Returns the vector that points in the direction of reflection. [code]a[/code] is incident vector and [code]b[/code] is the normal vector.
-		</constant>
-		<constant name="OP_STEP" value="11" enum="Operator">
-			Vector step operator. Returns [code]0.0[/code] if [code]a[/code] is smaller than [code]b[/code] and [code]1.0[/code] otherwise.
-		</constant>
-		<constant name="OP_ENUM_SIZE" value="12" enum="Operator">
-			Represents the size of the [enum Operator] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Operator">
+			<constant name="OP_ADD" value="0">
+				Adds two vectors.
+			</constant>
+			<constant name="OP_SUB" value="1">
+				Subtracts a vector from a vector.
+			</constant>
+			<constant name="OP_MUL" value="2">
+				Multiplies two vectors.
+			</constant>
+			<constant name="OP_DIV" value="3">
+				Divides vector by vector.
+			</constant>
+			<constant name="OP_MOD" value="4">
+				Returns the remainder of the two vectors.
+			</constant>
+			<constant name="OP_POW" value="5">
+				Returns the value of the first parameter raised to the power of the second, for each component of the vectors.
+			</constant>
+			<constant name="OP_MAX" value="6">
+				Returns the greater of two values, for each component of the vectors.
+			</constant>
+			<constant name="OP_MIN" value="7">
+				Returns the lesser of two values, for each component of the vectors.
+			</constant>
+			<constant name="OP_CROSS" value="8">
+				Calculates the cross product of two vectors.
+			</constant>
+			<constant name="OP_ATAN2" value="9">
+				Returns the arc-tangent of the parameters.
+			</constant>
+			<constant name="OP_REFLECT" value="10">
+				Returns the vector that points in the direction of reflection. [code]a[/code] is incident vector and [code]b[/code] is the normal vector.
+			</constant>
+			<constant name="OP_STEP" value="11">
+				Vector step operator. Returns [code]0.0[/code] if [code]a[/code] is smaller than [code]b[/code] and [code]1.0[/code] otherwise.
+			</constant>
+			<constant name="OP_ENUM_SIZE" value="12">
+				Represents the size of the [enum Operator] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

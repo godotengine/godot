@@ -379,15 +379,17 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE" value="0" enum="OpenXRAlphaBlendModeSupport">
-			Means that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] isn't supported at all.
-		</constant>
-		<constant name="OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL" value="1" enum="OpenXRAlphaBlendModeSupport">
-			Means that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is really supported.
-		</constant>
-		<constant name="OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING" value="2" enum="OpenXRAlphaBlendModeSupport">
-			Means that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is emulated.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="OpenXRAlphaBlendModeSupport">
+			<constant name="OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE" value="0">
+				Means that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] isn't supported at all.
+			</constant>
+			<constant name="OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL" value="1">
+				Means that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is really supported.
+			</constant>
+			<constant name="OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING" value="2">
+				Means that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is emulated.
+			</constant>
+		</enum>
+	</enums>
 </class>

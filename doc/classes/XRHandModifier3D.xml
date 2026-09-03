@@ -19,15 +19,17 @@
 			The name of the [XRHandTracker] registered with [XRServer] to obtain the hand tracking data from.
 		</member>
 	</members>
-	<constants>
-		<constant name="BONE_UPDATE_FULL" value="0" enum="BoneUpdate">
-			The skeleton's bones are fully updated (both position and rotation) to match the tracked bones.
-		</constant>
-		<constant name="BONE_UPDATE_ROTATION_ONLY" value="1" enum="BoneUpdate">
-			The skeleton's bones are only rotated to align with the tracked bones, preserving bone length.
-		</constant>
-		<constant name="BONE_UPDATE_MAX" value="2" enum="BoneUpdate">
-			Represents the size of the [enum BoneUpdate] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="BoneUpdate">
+			<constant name="BONE_UPDATE_FULL" value="0">
+				The skeleton's bones are fully updated (both position and rotation) to match the tracked bones.
+			</constant>
+			<constant name="BONE_UPDATE_ROTATION_ONLY" value="1">
+				The skeleton's bones are only rotated to align with the tracked bones, preserving bone length.
+			</constant>
+			<constant name="BONE_UPDATE_MAX" value="2">
+				Represents the size of the [enum BoneUpdate] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

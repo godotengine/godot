@@ -331,20 +331,6 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES" value="0" enum="HandleBinaryImageMode">
-			When importing a glTF file with embedded binary images, discards all images and uses untextured materials in their place. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
-		</constant>
-		<constant name="HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES" value="1" enum="HandleBinaryImageMode">
-			When importing a glTF file with embedded binary images, extracts them and saves them to their own files. This allows the image to be imported by Godot's image importer, which can then have their import options customized by the user, including optionally compressing the image to VRAM texture formats.
-			This will save the images' bytes exactly as-is, without recompression. For image formats supplied by glTF extensions, the file will have a filename ending with the file extension supplied by [method GLTFDocumentExtension._get_image_file_extension] of the extension class.
-			[b]Note:[/b] This option is editor-only. At runtime, this acts the same as [constant HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED].
-		</constant>
-		<constant name="HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU" value="2" enum="HandleBinaryImageMode">
-			When importing a glTF file with embedded binary images, embeds textures VRAM compressed with Basis Universal into the generated scene. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
-		</constant>
-		<constant name="HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED" value="3" enum="HandleBinaryImageMode">
-			When importing a glTF file with embedded binary images, embeds textures compressed losslessly into the generated scene. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
-		</constant>
 		<constant name="HANDLE_BINARY_DISCARD_TEXTURES" value="0" deprecated="Use [constant HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES] instead.">
 			Discards all embedded textures and uses untextured materials.
 		</constant>
@@ -358,4 +344,22 @@
 			Embeds textures compressed losslessly into the generated scene, matching old behavior.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="HandleBinaryImageMode">
+			<constant name="HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES" value="0">
+				When importing a glTF file with embedded binary images, discards all images and uses untextured materials in their place. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
+			</constant>
+			<constant name="HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES" value="1">
+				When importing a glTF file with embedded binary images, extracts them and saves them to their own files. This allows the image to be imported by Godot's image importer, which can then have their import options customized by the user, including optionally compressing the image to VRAM texture formats.
+				This will save the images' bytes exactly as-is, without recompression. For image formats supplied by glTF extensions, the file will have a filename ending with the file extension supplied by [method GLTFDocumentExtension._get_image_file_extension] of the extension class.
+				[b]Note:[/b] This option is editor-only. At runtime, this acts the same as [constant HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED].
+			</constant>
+			<constant name="HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU" value="2">
+				When importing a glTF file with embedded binary images, embeds textures VRAM compressed with Basis Universal into the generated scene. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
+			</constant>
+			<constant name="HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED" value="3">
+				When importing a glTF file with embedded binary images, embeds textures compressed losslessly into the generated scene. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
+			</constant>
+		</enum>
+	</enums>
 </class>

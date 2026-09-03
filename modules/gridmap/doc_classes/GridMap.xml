@@ -298,14 +298,18 @@
 		<constant name="INVALID_CELL_ITEM" value="-1">
 			Invalid cell item that can be used in [method set_cell_item] to clear cells (or represent an empty cell in [method get_cell_item]).
 		</constant>
-		<constant name="DEBUG_VISIBILITY_MODE_DEFAULT" value="0" enum="DebugVisibilityMode">
-			Hide the collisions debug shapes in the editor, and use the debug settings to determine their visibility in game (i.e. [member SceneTree.debug_collisions_hint] or [member SceneTree.debug_navigation_hint]).
-		</constant>
-		<constant name="DEBUG_VISIBILITY_MODE_FORCE_SHOW" value="1" enum="DebugVisibilityMode">
-			Always show the collisions debug shapes.
-		</constant>
-		<constant name="DEBUG_VISIBILITY_MODE_FORCE_HIDE" value="2" enum="DebugVisibilityMode">
-			Always hide the collisions debug shapes.
-		</constant>
 	</constants>
+	<enums>
+		<enum name="DebugVisibilityMode">
+			<constant name="DEBUG_VISIBILITY_MODE_DEFAULT" value="0">
+				Hide the collisions debug shapes in the editor, and use the debug settings to determine their visibility in game (i.e. [member SceneTree.debug_collisions_hint] or [member SceneTree.debug_navigation_hint]).
+			</constant>
+			<constant name="DEBUG_VISIBILITY_MODE_FORCE_SHOW" value="1">
+				Always show the collisions debug shapes.
+			</constant>
+			<constant name="DEBUG_VISIBILITY_MODE_FORCE_HIDE" value="2">
+				Always hide the collisions debug shapes.
+			</constant>
+		</enum>
+	</enums>
 </class>

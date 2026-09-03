@@ -81,18 +81,20 @@
 			Mixing rate mode. If set to [constant MIX_RATE_CUSTOM], [member mix_rate] is used, otherwise current [AudioServer] mixing rate is used.
 		</member>
 	</members>
-	<constants>
-		<constant name="MIX_RATE_OUTPUT" value="0" enum="AudioStreamGeneratorMixRate">
-			Current [AudioServer] output mixing rate.
-		</constant>
-		<constant name="MIX_RATE_INPUT" value="1" enum="AudioStreamGeneratorMixRate">
-			Current [AudioServer] input mixing rate.
-		</constant>
-		<constant name="MIX_RATE_CUSTOM" value="2" enum="AudioStreamGeneratorMixRate">
-			Custom mixing rate, specified by [member mix_rate].
-		</constant>
-		<constant name="MIX_RATE_MAX" value="3" enum="AudioStreamGeneratorMixRate">
-			Maximum value for the mixing rate mode enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AudioStreamGeneratorMixRate">
+			<constant name="MIX_RATE_OUTPUT" value="0">
+				Current [AudioServer] output mixing rate.
+			</constant>
+			<constant name="MIX_RATE_INPUT" value="1">
+				Current [AudioServer] input mixing rate.
+			</constant>
+			<constant name="MIX_RATE_CUSTOM" value="2">
+				Custom mixing rate, specified by [member mix_rate].
+			</constant>
+			<constant name="MIX_RATE_MAX" value="3">
+				Maximum value for the mixing rate mode enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -405,32 +405,36 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="SPEAKER_MODE_STEREO" value="0" enum="SpeakerMode">
-			Two or fewer speakers were detected.
-		</constant>
-		<constant name="SPEAKER_SURROUND_31" value="1" enum="SpeakerMode">
-			A 3.1 channel surround setup was detected.
-		</constant>
-		<constant name="SPEAKER_SURROUND_51" value="2" enum="SpeakerMode">
-			A 5.1 channel surround setup was detected.
-		</constant>
-		<constant name="SPEAKER_SURROUND_71" value="3" enum="SpeakerMode">
-			A 7.1 channel surround setup was detected.
-		</constant>
-		<constant name="PLAYBACK_TYPE_DEFAULT" value="0" enum="PlaybackType" experimental="">
-			The playback will be considered of the type declared at [member ProjectSettings.audio/general/default_playback_type].
-		</constant>
-		<constant name="PLAYBACK_TYPE_STREAM" value="1" enum="PlaybackType" experimental="">
-			Force the playback to be considered as a stream.
-		</constant>
-		<constant name="PLAYBACK_TYPE_SAMPLE" value="2" enum="PlaybackType" experimental="">
-			Force the playback to be considered as a sample. This can provide lower latency and more stable playback (with less risk of audio crackling), at the cost of having less flexibility.
-			[b]Note:[/b] Only currently supported on the web platform.
-			[b]Note:[/b] [AudioEffect]s are not supported when playback is considered as a sample.
-		</constant>
-		<constant name="PLAYBACK_TYPE_MAX" value="3" enum="PlaybackType" experimental="">
-			Represents the size of the [enum PlaybackType] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="PlaybackType" experimental="">
+			<constant name="PLAYBACK_TYPE_DEFAULT" value="0" experimental="">
+				The playback will be considered of the type declared at [member ProjectSettings.audio/general/default_playback_type].
+			</constant>
+			<constant name="PLAYBACK_TYPE_STREAM" value="1" experimental="">
+				Force the playback to be considered as a stream.
+			</constant>
+			<constant name="PLAYBACK_TYPE_SAMPLE" value="2" experimental="">
+				Force the playback to be considered as a sample. This can provide lower latency and more stable playback (with less risk of audio crackling), at the cost of having less flexibility.
+				[b]Note:[/b] Only currently supported on the web platform.
+				[b]Note:[/b] [AudioEffect]s are not supported when playback is considered as a sample.
+			</constant>
+			<constant name="PLAYBACK_TYPE_MAX" value="3" experimental="">
+				Represents the size of the [enum PlaybackType] enum.
+			</constant>
+		</enum>
+		<enum name="SpeakerMode">
+			<constant name="SPEAKER_MODE_STEREO" value="0">
+				Two or fewer speakers were detected.
+			</constant>
+			<constant name="SPEAKER_SURROUND_31" value="1">
+				A 3.1 channel surround setup was detected.
+			</constant>
+			<constant name="SPEAKER_SURROUND_51" value="2">
+				A 5.1 channel surround setup was detected.
+			</constant>
+			<constant name="SPEAKER_SURROUND_71" value="3">
+				A 7.1 channel surround setup was detected.
+			</constant>
+		</enum>
+	</enums>
 </class>

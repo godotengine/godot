@@ -303,24 +303,30 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="FREEZE_MODE_STATIC" value="0" enum="FreezeMode">
-			Static body freeze mode (default). The body is not affected by gravity and forces. It can be only moved by user code and doesn't collide with other bodies along its path.
-		</constant>
-		<constant name="FREEZE_MODE_KINEMATIC" value="1" enum="FreezeMode">
-			Kinematic body freeze mode. Similar to [constant FREEZE_MODE_STATIC], but collides with other bodies along its path when moved. Useful for a frozen body that needs to be animated.
-		</constant>
-		<constant name="CENTER_OF_MASS_MODE_AUTO" value="0" enum="CenterOfMassMode">
-			In this mode, the body's center of mass is calculated automatically based on its shapes. This assumes that the shapes' origins are also their center of mass.
-		</constant>
-		<constant name="CENTER_OF_MASS_MODE_CUSTOM" value="1" enum="CenterOfMassMode">
-			In this mode, the body's center of mass is set through [member center_of_mass]. Defaults to the body's origin position.
-		</constant>
-		<constant name="DAMP_MODE_COMBINE" value="0" enum="DampMode">
-			In this mode, the body's damping value is added to any value set in areas or the default value.
-		</constant>
-		<constant name="DAMP_MODE_REPLACE" value="1" enum="DampMode">
-			In this mode, the body's damping value replaces any value set in areas or the default value.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="CenterOfMassMode">
+			<constant name="CENTER_OF_MASS_MODE_AUTO" value="0">
+				In this mode, the body's center of mass is calculated automatically based on its shapes. This assumes that the shapes' origins are also their center of mass.
+			</constant>
+			<constant name="CENTER_OF_MASS_MODE_CUSTOM" value="1">
+				In this mode, the body's center of mass is set through [member center_of_mass]. Defaults to the body's origin position.
+			</constant>
+		</enum>
+		<enum name="DampMode">
+			<constant name="DAMP_MODE_COMBINE" value="0">
+				In this mode, the body's damping value is added to any value set in areas or the default value.
+			</constant>
+			<constant name="DAMP_MODE_REPLACE" value="1">
+				In this mode, the body's damping value replaces any value set in areas or the default value.
+			</constant>
+		</enum>
+		<enum name="FreezeMode">
+			<constant name="FREEZE_MODE_STATIC" value="0">
+				Static body freeze mode (default). The body is not affected by gravity and forces. It can be only moved by user code and doesn't collide with other bodies along its path.
+			</constant>
+			<constant name="FREEZE_MODE_KINEMATIC" value="1">
+				Kinematic body freeze mode. Similar to [constant FREEZE_MODE_STATIC], but collides with other bodies along its path when moved. Useful for a frozen body that needs to be animated.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -167,16 +167,18 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="LOOP_NONE" value="0" enum="LoopMode">
-			The animation plays once and stops when it reaches the end, or the start if played in reverse.
-		</constant>
-		<constant name="LOOP_LINEAR" value="1" enum="LoopMode">
-			The animation restarts from the beginning when it reaches the end, or from the end if played in reverse, repeating continuously.
-		</constant>
-		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
-			The animation alternates direction each time it reaches the end or start, playing forward and then in reverse repeatedly.
-			[b]Note:[/b] Both [AnimatedSprite2D] and [AnimatedSprite3D] play the first/last frame for its duration only once at each end of the animation loop (instead of twice, once per forward/backward animation direction).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="LoopMode">
+			<constant name="LOOP_NONE" value="0">
+				The animation plays once and stops when it reaches the end, or the start if played in reverse.
+			</constant>
+			<constant name="LOOP_LINEAR" value="1">
+				The animation restarts from the beginning when it reaches the end, or from the end if played in reverse, repeating continuously.
+			</constant>
+			<constant name="LOOP_PINGPONG" value="2">
+				The animation alternates direction each time it reaches the end or start, playing forward and then in reverse repeatedly.
+				[b]Note:[/b] Both [AnimatedSprite2D] and [AnimatedSprite3D] play the first/last frame for its duration only once at each end of the animation loop (instead of twice, once per forward/backward animation direction).
+			</constant>
+		</enum>
+	</enums>
 </class>

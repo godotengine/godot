@@ -509,44 +509,50 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="SELECT_SINGLE" value="0" enum="SelectMode">
-			Allows selection of a single cell at a time. From the perspective of items, only a single item is allowed to be selected. And there is only one column selected in the selected item.
-			The focus cursor is always hidden in this mode, but it is positioned at the current selection, making the currently selected item the currently focused item.
-		</constant>
-		<constant name="SELECT_ROW" value="1" enum="SelectMode">
-			Allows selection of a single row at a time. From the perspective of items, only a single items is allowed to be selected. And all the columns are selected in the selected item.
-			The focus cursor is always hidden in this mode, but it is positioned at the first column of the current selection, making the currently selected item the currently focused item.
-		</constant>
-		<constant name="SELECT_MULTI" value="2" enum="SelectMode">
-			Allows selection of multiple cells at the same time. From the perspective of items, multiple items are allowed to be selected. And there can be multiple columns selected in each selected item.
-			The focus cursor is visible in this mode, the item or column under the cursor is not necessarily selected.
-		</constant>
-		<constant name="DROP_MODE_DISABLED" value="0" enum="DropModeFlags">
-			Disables all drop sections.
-			[b]Note:[/b] This is the default flag, it has no effect when combined with other flags.
-		</constant>
-		<constant name="DROP_MODE_ON_ITEM" value="1" enum="DropModeFlags">
-			Enables the "on item" drop section. This drop section covers the entire item.
-			When combined with [constant DROP_MODE_INBETWEEN], this drop section halves in height and stays centered vertically.
-		</constant>
-		<constant name="DROP_MODE_INBETWEEN" value="2" enum="DropModeFlags">
-			Enables "above item" and "below item" drop sections. The "above item" drop section covers the top half of the item, while the "below item" drop section covers the bottom half, and extends downward to the left of any children.
-			When combined with [constant DROP_MODE_ON_ITEM], these drop sections halve in height and stay at the top and bottom respectively.
-		</constant>
-		<constant name="SCROLL_HINT_MODE_DISABLED" value="0" enum="ScrollHintMode">
-			Scroll hints will never be shown.
-		</constant>
-		<constant name="SCROLL_HINT_MODE_BOTH" value="1" enum="ScrollHintMode">
-			Scroll hints will be shown at the top and bottom.
-		</constant>
-		<constant name="SCROLL_HINT_MODE_TOP" value="2" enum="ScrollHintMode">
-			Only the top scroll hint will be shown.
-		</constant>
-		<constant name="SCROLL_HINT_MODE_BOTTOM" value="3" enum="ScrollHintMode">
-			Only the bottom scroll hint will be shown.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DropModeFlags">
+			<constant name="DROP_MODE_DISABLED" value="0">
+				Disables all drop sections.
+				[b]Note:[/b] This is the default flag, it has no effect when combined with other flags.
+			</constant>
+			<constant name="DROP_MODE_ON_ITEM" value="1">
+				Enables the "on item" drop section. This drop section covers the entire item.
+				When combined with [constant DROP_MODE_INBETWEEN], this drop section halves in height and stays centered vertically.
+			</constant>
+			<constant name="DROP_MODE_INBETWEEN" value="2">
+				Enables "above item" and "below item" drop sections. The "above item" drop section covers the top half of the item, while the "below item" drop section covers the bottom half, and extends downward to the left of any children.
+				When combined with [constant DROP_MODE_ON_ITEM], these drop sections halve in height and stay at the top and bottom respectively.
+			</constant>
+		</enum>
+		<enum name="ScrollHintMode">
+			<constant name="SCROLL_HINT_MODE_DISABLED" value="0">
+				Scroll hints will never be shown.
+			</constant>
+			<constant name="SCROLL_HINT_MODE_BOTH" value="1">
+				Scroll hints will be shown at the top and bottom.
+			</constant>
+			<constant name="SCROLL_HINT_MODE_TOP" value="2">
+				Only the top scroll hint will be shown.
+			</constant>
+			<constant name="SCROLL_HINT_MODE_BOTTOM" value="3">
+				Only the bottom scroll hint will be shown.
+			</constant>
+		</enum>
+		<enum name="SelectMode">
+			<constant name="SELECT_SINGLE" value="0">
+				Allows selection of a single cell at a time. From the perspective of items, only a single item is allowed to be selected. And there is only one column selected in the selected item.
+				The focus cursor is always hidden in this mode, but it is positioned at the current selection, making the currently selected item the currently focused item.
+			</constant>
+			<constant name="SELECT_ROW" value="1">
+				Allows selection of a single row at a time. From the perspective of items, only a single items is allowed to be selected. And all the columns are selected in the selected item.
+				The focus cursor is always hidden in this mode, but it is positioned at the first column of the current selection, making the currently selected item the currently focused item.
+			</constant>
+			<constant name="SELECT_MULTI" value="2">
+				Allows selection of multiple cells at the same time. From the perspective of items, multiple items are allowed to be selected. And there can be multiple columns selected in each selected item.
+				The focus cursor is visible in this mode, the item or column under the cursor is not necessarily selected.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="children_hl_line_color" data_type="color" type="Color" default="Color(0.27, 0.27, 0.27, 1)">
 			The [Color] of the relationship lines between the selected [TreeItem] and its children.

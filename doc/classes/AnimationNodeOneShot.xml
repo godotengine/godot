@@ -101,24 +101,28 @@
 			The blend type.
 		</member>
 	</members>
-	<constants>
-		<constant name="ONE_SHOT_REQUEST_NONE" value="0" enum="OneShotRequest">
-			The default state of the request. Nothing is done.
-		</constant>
-		<constant name="ONE_SHOT_REQUEST_FIRE" value="1" enum="OneShotRequest">
-			The request to play the animation connected to "shot" port.
-		</constant>
-		<constant name="ONE_SHOT_REQUEST_ABORT" value="2" enum="OneShotRequest">
-			The request to stop the animation connected to "shot" port.
-		</constant>
-		<constant name="ONE_SHOT_REQUEST_FADE_OUT" value="3" enum="OneShotRequest">
-			The request to fade out the animation connected to "shot" port.
-		</constant>
-		<constant name="MIX_MODE_BLEND" value="0" enum="MixMode">
-			Blends two animations. See also [AnimationNodeBlend2].
-		</constant>
-		<constant name="MIX_MODE_ADD" value="1" enum="MixMode">
-			Blends two animations additively. See also [AnimationNodeAdd2].
-		</constant>
-	</constants>
+	<enums>
+		<enum name="MixMode">
+			<constant name="MIX_MODE_BLEND" value="0">
+				Blends two animations. See also [AnimationNodeBlend2].
+			</constant>
+			<constant name="MIX_MODE_ADD" value="1">
+				Blends two animations additively. See also [AnimationNodeAdd2].
+			</constant>
+		</enum>
+		<enum name="OneShotRequest">
+			<constant name="ONE_SHOT_REQUEST_NONE" value="0">
+				The default state of the request. Nothing is done.
+			</constant>
+			<constant name="ONE_SHOT_REQUEST_FIRE" value="1">
+				The request to play the animation connected to "shot" port.
+			</constant>
+			<constant name="ONE_SHOT_REQUEST_ABORT" value="2">
+				The request to stop the animation connected to "shot" port.
+			</constant>
+			<constant name="ONE_SHOT_REQUEST_FADE_OUT" value="3">
+				The request to fade out the animation connected to "shot" port.
+			</constant>
+		</enum>
+	</enums>
 </class>

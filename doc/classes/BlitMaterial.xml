@@ -13,24 +13,26 @@
 			The manner in which the newly blitted texture is blended with the original DrawableTexture.
 		</member>
 	</members>
-	<constants>
-		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
-			Mix blending mode. Colors are assumed to be independent of the alpha (opacity) value.
-		</constant>
-		<constant name="BLEND_MODE_ADD" value="1" enum="BlendMode">
-			Additive blending mode.
-		</constant>
-		<constant name="BLEND_MODE_SUB" value="2" enum="BlendMode">
-			Subtractive blending mode.
-		</constant>
-		<constant name="BLEND_MODE_MUL" value="3" enum="BlendMode">
-			Multiplicative blending mode.
-		</constant>
-		<constant name="BLEND_MODE_DISABLED" value="4" enum="BlendMode">
-			No blending mode, direct color copy.
-		</constant>
-		<constant name="BLEND_MODE_PREMULTIPLIED_ALPHA" value="5" enum="BlendMode">
-			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="BlendMode">
+			<constant name="BLEND_MODE_MIX" value="0">
+				Mix blending mode. Colors are assumed to be independent of the alpha (opacity) value.
+			</constant>
+			<constant name="BLEND_MODE_ADD" value="1">
+				Additive blending mode.
+			</constant>
+			<constant name="BLEND_MODE_SUB" value="2">
+				Subtractive blending mode.
+			</constant>
+			<constant name="BLEND_MODE_MUL" value="3">
+				Multiplicative blending mode.
+			</constant>
+			<constant name="BLEND_MODE_DISABLED" value="4">
+				No blending mode, direct color copy.
+			</constant>
+			<constant name="BLEND_MODE_PREMULTIPLIED_ALPHA" value="5">
+				Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
+			</constant>
+		</enum>
+	</enums>
 </class>

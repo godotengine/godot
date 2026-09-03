@@ -22,17 +22,19 @@
 			A collections of toplevel paths to which this action can be bound.
 		</member>
 	</members>
-	<constants>
-		<constant name="OPENXR_ACTION_BOOL" value="0" enum="ActionType">
-			This action provides a boolean value.
-		</constant>
-		<constant name="OPENXR_ACTION_FLOAT" value="1" enum="ActionType">
-			This action provides a float value between [code]0.0[/code] and [code]1.0[/code] for any analog input such as triggers.
-		</constant>
-		<constant name="OPENXR_ACTION_VECTOR2" value="2" enum="ActionType">
-			This action provides a [Vector2] value and can be bound to embedded trackpads and joysticks.
-		</constant>
-		<constant name="OPENXR_ACTION_POSE" value="3" enum="ActionType">
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ActionType">
+			<constant name="OPENXR_ACTION_BOOL" value="0">
+				This action provides a boolean value.
+			</constant>
+			<constant name="OPENXR_ACTION_FLOAT" value="1">
+				This action provides a float value between [code]0.0[/code] and [code]1.0[/code] for any analog input such as triggers.
+			</constant>
+			<constant name="OPENXR_ACTION_VECTOR2" value="2">
+				This action provides a [Vector2] value and can be bound to embedded trackpads and joysticks.
+			</constant>
+			<constant name="OPENXR_ACTION_POSE" value="3">
+			</constant>
+		</enum>
+	</enums>
 </class>

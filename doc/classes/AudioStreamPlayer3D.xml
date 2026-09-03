@@ -132,27 +132,31 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0" enum="AttenuationModel">
-			Attenuation of loudness according to linear distance.
-		</constant>
-		<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1" enum="AttenuationModel">
-			Attenuation of loudness according to squared distance.
-		</constant>
-		<constant name="ATTENUATION_LOGARITHMIC" value="2" enum="AttenuationModel">
-			Attenuation of loudness according to logarithmic distance.
-		</constant>
-		<constant name="ATTENUATION_DISABLED" value="3" enum="AttenuationModel">
-			No attenuation of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer]. [constant ATTENUATION_DISABLED] can be combined with a [member max_distance] value greater than [code]0.0[/code] to achieve linear attenuation clamped to a sphere of a defined size.
-		</constant>
-		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
-			Disables doppler tracking.
-		</constant>
-		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1" enum="DopplerTracking">
-			Executes doppler tracking during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
-		</constant>
-		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2" enum="DopplerTracking">
-			Executes doppler tracking during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AttenuationModel">
+			<constant name="ATTENUATION_INVERSE_DISTANCE" value="0">
+				Attenuation of loudness according to linear distance.
+			</constant>
+			<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1">
+				Attenuation of loudness according to squared distance.
+			</constant>
+			<constant name="ATTENUATION_LOGARITHMIC" value="2">
+				Attenuation of loudness according to logarithmic distance.
+			</constant>
+			<constant name="ATTENUATION_DISABLED" value="3">
+				No attenuation of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer]. [constant ATTENUATION_DISABLED] can be combined with a [member max_distance] value greater than [code]0.0[/code] to achieve linear attenuation clamped to a sphere of a defined size.
+			</constant>
+		</enum>
+		<enum name="DopplerTracking">
+			<constant name="DOPPLER_TRACKING_DISABLED" value="0">
+				Disables doppler tracking.
+			</constant>
+			<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
+				Executes doppler tracking during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+			</constant>
+			<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2">
+				Executes doppler tracking during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
+			</constant>
+		</enum>
+	</enums>
 </class>

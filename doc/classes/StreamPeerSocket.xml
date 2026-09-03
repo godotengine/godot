@@ -28,18 +28,20 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="STATUS_NONE" value="0" enum="Status">
-			The initial status of the [StreamPeerSocket]. This is also the status after disconnecting.
-		</constant>
-		<constant name="STATUS_CONNECTING" value="1" enum="Status">
-			A status representing a [StreamPeerSocket] that is connecting to a host.
-		</constant>
-		<constant name="STATUS_CONNECTED" value="2" enum="Status">
-			A status representing a [StreamPeerSocket] that is connected to a host.
-		</constant>
-		<constant name="STATUS_ERROR" value="3" enum="Status">
-			A status representing a [StreamPeerSocket] in error state.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Status">
+			<constant name="STATUS_NONE" value="0">
+				The initial status of the [StreamPeerSocket]. This is also the status after disconnecting.
+			</constant>
+			<constant name="STATUS_CONNECTING" value="1">
+				A status representing a [StreamPeerSocket] that is connecting to a host.
+			</constant>
+			<constant name="STATUS_CONNECTED" value="2">
+				A status representing a [StreamPeerSocket] that is connected to a host.
+			</constant>
+			<constant name="STATUS_ERROR" value="3">
+				A status representing a [StreamPeerSocket] in error state.
+			</constant>
+		</enum>
+	</enums>
 </class>

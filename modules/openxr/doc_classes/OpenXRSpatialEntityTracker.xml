@@ -66,15 +66,17 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="ENTITY_TRACKING_STATE_STOPPED" value="1" enum="EntityTrackingState">
-			This anchor has stopped tracking.
-		</constant>
-		<constant name="ENTITY_TRACKING_STATE_PAUSED" value="2" enum="EntityTrackingState">
-			Tracking is currently paused.
-		</constant>
-		<constant name="ENTITY_TRACKING_STATE_TRACKING" value="3" enum="EntityTrackingState">
-			This anchor is currently being tracked.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="EntityTrackingState">
+			<constant name="ENTITY_TRACKING_STATE_STOPPED" value="1">
+				This anchor has stopped tracking.
+			</constant>
+			<constant name="ENTITY_TRACKING_STATE_PAUSED" value="2">
+				Tracking is currently paused.
+			</constant>
+			<constant name="ENTITY_TRACKING_STATE_TRACKING" value="3">
+				This anchor is currently being tracked.
+			</constant>
+		</enum>
+	</enums>
 </class>

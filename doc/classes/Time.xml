@@ -185,63 +185,67 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="MONTH_JANUARY" value="1" enum="Month">
-			The month of January, represented numerically as [code]01[/code].
-		</constant>
-		<constant name="MONTH_FEBRUARY" value="2" enum="Month">
-			The month of February, represented numerically as [code]02[/code].
-		</constant>
-		<constant name="MONTH_MARCH" value="3" enum="Month">
-			The month of March, represented numerically as [code]03[/code].
-		</constant>
-		<constant name="MONTH_APRIL" value="4" enum="Month">
-			The month of April, represented numerically as [code]04[/code].
-		</constant>
-		<constant name="MONTH_MAY" value="5" enum="Month">
-			The month of May, represented numerically as [code]05[/code].
-		</constant>
-		<constant name="MONTH_JUNE" value="6" enum="Month">
-			The month of June, represented numerically as [code]06[/code].
-		</constant>
-		<constant name="MONTH_JULY" value="7" enum="Month">
-			The month of July, represented numerically as [code]07[/code].
-		</constant>
-		<constant name="MONTH_AUGUST" value="8" enum="Month">
-			The month of August, represented numerically as [code]08[/code].
-		</constant>
-		<constant name="MONTH_SEPTEMBER" value="9" enum="Month">
-			The month of September, represented numerically as [code]09[/code].
-		</constant>
-		<constant name="MONTH_OCTOBER" value="10" enum="Month">
-			The month of October, represented numerically as [code]10[/code].
-		</constant>
-		<constant name="MONTH_NOVEMBER" value="11" enum="Month">
-			The month of November, represented numerically as [code]11[/code].
-		</constant>
-		<constant name="MONTH_DECEMBER" value="12" enum="Month">
-			The month of December, represented numerically as [code]12[/code].
-		</constant>
-		<constant name="WEEKDAY_SUNDAY" value="0" enum="Weekday">
-			The day of the week Sunday, represented numerically as [code]0[/code].
-		</constant>
-		<constant name="WEEKDAY_MONDAY" value="1" enum="Weekday">
-			The day of the week Monday, represented numerically as [code]1[/code].
-		</constant>
-		<constant name="WEEKDAY_TUESDAY" value="2" enum="Weekday">
-			The day of the week Tuesday, represented numerically as [code]2[/code].
-		</constant>
-		<constant name="WEEKDAY_WEDNESDAY" value="3" enum="Weekday">
-			The day of the week Wednesday, represented numerically as [code]3[/code].
-		</constant>
-		<constant name="WEEKDAY_THURSDAY" value="4" enum="Weekday">
-			The day of the week Thursday, represented numerically as [code]4[/code].
-		</constant>
-		<constant name="WEEKDAY_FRIDAY" value="5" enum="Weekday">
-			The day of the week Friday, represented numerically as [code]5[/code].
-		</constant>
-		<constant name="WEEKDAY_SATURDAY" value="6" enum="Weekday">
-			The day of the week Saturday, represented numerically as [code]6[/code].
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Month">
+			<constant name="MONTH_JANUARY" value="1">
+				The month of January, represented numerically as [code]01[/code].
+			</constant>
+			<constant name="MONTH_FEBRUARY" value="2">
+				The month of February, represented numerically as [code]02[/code].
+			</constant>
+			<constant name="MONTH_MARCH" value="3">
+				The month of March, represented numerically as [code]03[/code].
+			</constant>
+			<constant name="MONTH_APRIL" value="4">
+				The month of April, represented numerically as [code]04[/code].
+			</constant>
+			<constant name="MONTH_MAY" value="5">
+				The month of May, represented numerically as [code]05[/code].
+			</constant>
+			<constant name="MONTH_JUNE" value="6">
+				The month of June, represented numerically as [code]06[/code].
+			</constant>
+			<constant name="MONTH_JULY" value="7">
+				The month of July, represented numerically as [code]07[/code].
+			</constant>
+			<constant name="MONTH_AUGUST" value="8">
+				The month of August, represented numerically as [code]08[/code].
+			</constant>
+			<constant name="MONTH_SEPTEMBER" value="9">
+				The month of September, represented numerically as [code]09[/code].
+			</constant>
+			<constant name="MONTH_OCTOBER" value="10">
+				The month of October, represented numerically as [code]10[/code].
+			</constant>
+			<constant name="MONTH_NOVEMBER" value="11">
+				The month of November, represented numerically as [code]11[/code].
+			</constant>
+			<constant name="MONTH_DECEMBER" value="12">
+				The month of December, represented numerically as [code]12[/code].
+			</constant>
+		</enum>
+		<enum name="Weekday">
+			<constant name="WEEKDAY_SUNDAY" value="0">
+				The day of the week Sunday, represented numerically as [code]0[/code].
+			</constant>
+			<constant name="WEEKDAY_MONDAY" value="1">
+				The day of the week Monday, represented numerically as [code]1[/code].
+			</constant>
+			<constant name="WEEKDAY_TUESDAY" value="2">
+				The day of the week Tuesday, represented numerically as [code]2[/code].
+			</constant>
+			<constant name="WEEKDAY_WEDNESDAY" value="3">
+				The day of the week Wednesday, represented numerically as [code]3[/code].
+			</constant>
+			<constant name="WEEKDAY_THURSDAY" value="4">
+				The day of the week Thursday, represented numerically as [code]4[/code].
+			</constant>
+			<constant name="WEEKDAY_FRIDAY" value="5">
+				The day of the week Friday, represented numerically as [code]5[/code].
+			</constant>
+			<constant name="WEEKDAY_SATURDAY" value="6">
+				The day of the week Saturday, represented numerically as [code]6[/code].
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -28,18 +28,20 @@
 			Step (increment) value for the range hint with step. Used if [member hint] is set to [constant HINT_RANGE_STEP].
 		</member>
 	</members>
-	<constants>
-		<constant name="HINT_NONE" value="0" enum="Hint">
-			No hint used.
-		</constant>
-		<constant name="HINT_RANGE" value="1" enum="Hint">
-			A range hint for scalar value, which limits possible input values between [member min] and [member max]. Translated to [code]hint_range(min, max)[/code] in shader code.
-		</constant>
-		<constant name="HINT_RANGE_STEP" value="2" enum="Hint">
-			A range hint for scalar value with step, which limits possible input values between [member min] and [member max], with a step (increment) of [member step]). Translated to [code]hint_range(min, max, step)[/code] in shader code.
-		</constant>
-		<constant name="HINT_MAX" value="3" enum="Hint">
-			Represents the size of the [enum Hint] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Hint">
+			<constant name="HINT_NONE" value="0">
+				No hint used.
+			</constant>
+			<constant name="HINT_RANGE" value="1">
+				A range hint for scalar value, which limits possible input values between [member min] and [member max]. Translated to [code]hint_range(min, max)[/code] in shader code.
+			</constant>
+			<constant name="HINT_RANGE_STEP" value="2">
+				A range hint for scalar value with step, which limits possible input values between [member min] and [member max], with a step (increment) of [member step]). Translated to [code]hint_range(min, max, step)[/code] in shader code.
+			</constant>
+			<constant name="HINT_MAX" value="3">
+				Represents the size of the [enum Hint] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

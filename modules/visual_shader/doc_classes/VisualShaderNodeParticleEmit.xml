@@ -13,21 +13,23 @@
 			Flags used to override the properties defined in the sub-emitter's process material.
 		</member>
 	</members>
-	<constants>
-		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags">
-			If enabled, the particle starts with the position defined by this node.
-		</constant>
-		<constant name="EMIT_FLAG_ROT_SCALE" value="2" enum="EmitFlags">
-			If enabled, the particle starts with the rotation and scale defined by this node.
-		</constant>
-		<constant name="EMIT_FLAG_VELOCITY" value="4" enum="EmitFlags">
-			If enabled,the particle starts with the velocity defined by this node.
-		</constant>
-		<constant name="EMIT_FLAG_COLOR" value="8" enum="EmitFlags">
-			If enabled, the particle starts with the color defined by this node.
-		</constant>
-		<constant name="EMIT_FLAG_CUSTOM" value="16" enum="EmitFlags">
-			If enabled, the particle starts with the [code]CUSTOM[/code] data defined by this node.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="EmitFlags">
+			<constant name="EMIT_FLAG_POSITION" value="1">
+				If enabled, the particle starts with the position defined by this node.
+			</constant>
+			<constant name="EMIT_FLAG_ROT_SCALE" value="2">
+				If enabled, the particle starts with the rotation and scale defined by this node.
+			</constant>
+			<constant name="EMIT_FLAG_VELOCITY" value="4">
+				If enabled,the particle starts with the velocity defined by this node.
+			</constant>
+			<constant name="EMIT_FLAG_COLOR" value="8">
+				If enabled, the particle starts with the color defined by this node.
+			</constant>
+			<constant name="EMIT_FLAG_CUSTOM" value="16">
+				If enabled, the particle starts with the [code]CUSTOM[/code] data defined by this node.
+			</constant>
+		</enum>
+	</enums>
 </class>

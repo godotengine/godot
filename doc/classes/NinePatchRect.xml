@@ -62,15 +62,17 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="AXIS_STRETCH_MODE_STRETCH" value="0" enum="AxisStretchMode">
-			Stretches the center texture across the NinePatchRect. This may cause the texture to be distorted.
-		</constant>
-		<constant name="AXIS_STRETCH_MODE_TILE" value="1" enum="AxisStretchMode">
-			Repeats the center texture across the NinePatchRect. This won't cause any visible distortion. The texture must be seamless for this to work without displaying artifacts between edges.
-		</constant>
-		<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2" enum="AxisStretchMode">
-			Repeats the center texture across the NinePatchRect, but will also stretch the texture to make sure each tile is visible in full. This may cause the texture to be distorted, but less than [constant AXIS_STRETCH_MODE_STRETCH]. The texture must be seamless for this to work without displaying artifacts between edges.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AxisStretchMode">
+			<constant name="AXIS_STRETCH_MODE_STRETCH" value="0">
+				Stretches the center texture across the NinePatchRect. This may cause the texture to be distorted.
+			</constant>
+			<constant name="AXIS_STRETCH_MODE_TILE" value="1">
+				Repeats the center texture across the NinePatchRect. This won't cause any visible distortion. The texture must be seamless for this to work without displaying artifacts between edges.
+			</constant>
+			<constant name="AXIS_STRETCH_MODE_TILE_FIT" value="2">
+				Repeats the center texture across the NinePatchRect, but will also stretch the texture to make sure each tile is visible in full. This may cause the texture to be distorted, but less than [constant AXIS_STRETCH_MODE_STRETCH]. The texture must be seamless for this to work without displaying artifacts between edges.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -102,15 +102,17 @@
 			Width across the length of the trail.
 		</member>
 	</members>
-	<constants>
-		<constant name="LIMIT_MODE_LIFETIME" value="0" enum="LimitMode">
-			Limit the trail length in time.
-		</constant>
-		<constant name="LIMIT_MODE_MAX_LENGTH" value="1" enum="LimitMode">
-			Limit the trail length in size.
-		</constant>
-		<constant name="LIMIT_MODE_MAX" value="2" enum="LimitMode">
-			Represents the size of the [enum LimitMode] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="LimitMode">
+			<constant name="LIMIT_MODE_LIFETIME" value="0">
+				Limit the trail length in time.
+			</constant>
+			<constant name="LIMIT_MODE_MAX_LENGTH" value="1">
+				Limit the trail length in size.
+			</constant>
+			<constant name="LIMIT_MODE_MAX" value="2">
+				Represents the size of the [enum LimitMode] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

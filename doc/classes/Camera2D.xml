@@ -191,18 +191,22 @@
 			[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [Camera2D] zoom into account. This means that zooming in/out will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated unless the font is part of a [CanvasLayer] that makes it ignore camera zoom. To ensure text remains crisp regardless of zoom, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.
 		</member>
 	</members>
-	<constants>
-		<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0" enum="AnchorMode">
-			The camera's position is fixed so that the top-left corner is always at the origin.
-		</constant>
-		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1" enum="AnchorMode">
-			The camera's position takes into account vertical/horizontal offsets and the screen size.
-		</constant>
-		<constant name="CAMERA2D_PROCESS_PHYSICS" value="0" enum="Camera2DProcessCallback">
-			The camera updates during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
-		</constant>
-		<constant name="CAMERA2D_PROCESS_IDLE" value="1" enum="Camera2DProcessCallback">
-			The camera updates during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="AnchorMode">
+			<constant name="ANCHOR_MODE_FIXED_TOP_LEFT" value="0">
+				The camera's position is fixed so that the top-left corner is always at the origin.
+			</constant>
+			<constant name="ANCHOR_MODE_DRAG_CENTER" value="1">
+				The camera's position takes into account vertical/horizontal offsets and the screen size.
+			</constant>
+		</enum>
+		<enum name="Camera2DProcessCallback">
+			<constant name="CAMERA2D_PROCESS_PHYSICS" value="0">
+				The camera updates during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
+			</constant>
+			<constant name="CAMERA2D_PROCESS_IDLE" value="1">
+				The camera updates during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+			</constant>
+		</enum>
+	</enums>
 </class>

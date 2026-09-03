@@ -180,29 +180,33 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="BLEND_MODE_INTERPOLATED" value="0" enum="BlendMode">
-			The interpolation between animations is linear.
-		</constant>
-		<constant name="BLEND_MODE_DISCRETE" value="1" enum="BlendMode">
-			The blend space plays the animation of the animation node which blending position is closest to. Useful for frame-by-frame 2D animations.
-		</constant>
-		<constant name="BLEND_MODE_DISCRETE_CARRY" value="2" enum="BlendMode">
-			Similar to [constant BLEND_MODE_DISCRETE], but starts the new animation at the last animation's playback position.
-		</constant>
-		<constant name="SYNC_MODE_NONE" value="0" enum="SyncMode">
-			Inactive animations are frozen and do not advance.
-		</constant>
-		<constant name="SYNC_MODE_INDEPENDENT" value="1" enum="SyncMode">
-			Inactive animations advance with a weight of [code]0[/code]. This is equivalent to the previous [code]sync = true[/code] behavior.
-		</constant>
-		<constant name="SYNC_MODE_CYCLIC_MUTABLE" value="2" enum="SyncMode">
-			All animations are time-scaled so they stay in sync, with the cycle length dynamically computed from active blend weights. This is self-normalizing: a solo animation plays at normal speed.
-			[b]Note:[/b] If you apply [AnimationNodeTimeSeek] to the result when handling animations of different lengths, synchronization will be broken. In such cases, it is recommended to use [member AnimationNodeAnimation.use_custom_timeline] to align the animation lengths.
-		</constant>
-		<constant name="SYNC_MODE_CYCLIC_CONSTANT" value="3" enum="SyncMode">
-			All animations are time-scaled so they complete one cycle in [member cyclic_length] seconds, keeping them in sync regardless of their individual lengths.
-			[b]Note:[/b] If you apply [AnimationNodeTimeSeek] to the result when handling animations of different lengths, synchronization will be broken. In such cases, it is recommended to use [member AnimationNodeAnimation.use_custom_timeline] to align the animation lengths.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="BlendMode">
+			<constant name="BLEND_MODE_INTERPOLATED" value="0">
+				The interpolation between animations is linear.
+			</constant>
+			<constant name="BLEND_MODE_DISCRETE" value="1">
+				The blend space plays the animation of the animation node which blending position is closest to. Useful for frame-by-frame 2D animations.
+			</constant>
+			<constant name="BLEND_MODE_DISCRETE_CARRY" value="2">
+				Similar to [constant BLEND_MODE_DISCRETE], but starts the new animation at the last animation's playback position.
+			</constant>
+		</enum>
+		<enum name="SyncMode">
+			<constant name="SYNC_MODE_NONE" value="0">
+				Inactive animations are frozen and do not advance.
+			</constant>
+			<constant name="SYNC_MODE_INDEPENDENT" value="1">
+				Inactive animations advance with a weight of [code]0[/code]. This is equivalent to the previous [code]sync = true[/code] behavior.
+			</constant>
+			<constant name="SYNC_MODE_CYCLIC_MUTABLE" value="2">
+				All animations are time-scaled so they stay in sync, with the cycle length dynamically computed from active blend weights. This is self-normalizing: a solo animation plays at normal speed.
+				[b]Note:[/b] If you apply [AnimationNodeTimeSeek] to the result when handling animations of different lengths, synchronization will be broken. In such cases, it is recommended to use [member AnimationNodeAnimation.use_custom_timeline] to align the animation lengths.
+			</constant>
+			<constant name="SYNC_MODE_CYCLIC_CONSTANT" value="3">
+				All animations are time-scaled so they complete one cycle in [member cyclic_length] seconds, keeping them in sync regardless of their individual lengths.
+				[b]Note:[/b] If you apply [AnimationNodeTimeSeek] to the result when handling animations of different lengths, synchronization will be broken. In such cases, it is recommended to use [member AnimationNodeAnimation.use_custom_timeline] to align the animation lengths.
+			</constant>
+		</enum>
+	</enums>
 </class>

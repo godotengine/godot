@@ -1340,88 +1340,104 @@
 		<constant name="NOTIFICATION_ACCESSIBILITY_INVALIDATE" value="3001">
 			Notification received when accessibility elements are invalidated. All node accessibility elements are automatically deleted after receiving this message, therefore all existing references to such elements should be discarded.
 		</constant>
-		<constant name="PROCESS_MODE_INHERIT" value="0" enum="ProcessMode">
-			Inherits [member process_mode] from the node's parent. This is the default for any newly created node.
-		</constant>
-		<constant name="PROCESS_MODE_PAUSABLE" value="1" enum="ProcessMode">
-			Processes when [member SceneTree.paused] is [code]false[/code]. This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED], and the default for the root node.
-		</constant>
-		<constant name="PROCESS_MODE_WHEN_PAUSED" value="2" enum="ProcessMode">
-			Processes [b]only[/b] when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_PAUSABLE].
-		</constant>
-		<constant name="PROCESS_MODE_ALWAYS" value="3" enum="ProcessMode">
-			Always processes. Keeps processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_DISABLED].
-		</constant>
-		<constant name="PROCESS_MODE_DISABLED" value="4" enum="ProcessMode">
-			Never processes. Completely disables processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_ALWAYS].
-		</constant>
-		<constant name="PROCESS_THREAD_GROUP_INHERIT" value="0" enum="ProcessThreadGroup">
-			Process this node based on the thread group mode of the first parent (or grandparent) node that has a thread group mode that is not inherit. See [member process_thread_group] for more information.
-		</constant>
-		<constant name="PROCESS_THREAD_GROUP_MAIN_THREAD" value="1" enum="ProcessThreadGroup">
-			Process this node (and child nodes set to inherit) on the main thread. See [member process_thread_group] for more information.
-		</constant>
-		<constant name="PROCESS_THREAD_GROUP_SUB_THREAD" value="2" enum="ProcessThreadGroup">
-			Process this node (and child nodes set to inherit) on a sub-thread. See [member process_thread_group] for more information.
-		</constant>
-		<constant name="FLAG_PROCESS_THREAD_MESSAGES" value="1" enum="ProcessThreadMessages" is_bitfield="true">
-			Allows this node to process threaded messages created with [method call_deferred_thread_group] right before [method _process] is called.
-		</constant>
-		<constant name="FLAG_PROCESS_THREAD_MESSAGES_PHYSICS" value="2" enum="ProcessThreadMessages" is_bitfield="true">
-			Allows this node to process threaded messages created with [method call_deferred_thread_group] right before [method _physics_process] is called.
-		</constant>
-		<constant name="FLAG_PROCESS_THREAD_MESSAGES_ALL" value="3" enum="ProcessThreadMessages" is_bitfield="true">
-			Allows this node to process threaded messages created with [method call_deferred_thread_group] right before either [method _process] or [method _physics_process] are called.
-		</constant>
-		<constant name="PHYSICS_INTERPOLATION_MODE_INHERIT" value="0" enum="PhysicsInterpolationMode">
-			Inherits [member physics_interpolation_mode] from the node's parent. This is the default for any newly created node.
-		</constant>
-		<constant name="PHYSICS_INTERPOLATION_MODE_ON" value="1" enum="PhysicsInterpolationMode">
-			Enables physics interpolation for this node and for children set to [constant PHYSICS_INTERPOLATION_MODE_INHERIT]. This is the default for the root node.
-		</constant>
-		<constant name="PHYSICS_INTERPOLATION_MODE_OFF" value="2" enum="PhysicsInterpolationMode">
-			Disables physics interpolation for this node and for children set to [constant PHYSICS_INTERPOLATION_MODE_INHERIT].
-		</constant>
-		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
-			Duplicate the node's signal connections that are connected with the [constant Object.CONNECT_PERSIST] flag.
-		</constant>
-		<constant name="DUPLICATE_GROUPS" value="2" enum="DuplicateFlags">
-			Duplicate the node's groups.
-		</constant>
-		<constant name="DUPLICATE_SCRIPTS" value="4" enum="DuplicateFlags">
-			Duplicate the node's script (also overriding the duplicated children's scripts, if combined with [constant DUPLICATE_USE_INSTANTIATION]).
-		</constant>
-		<constant name="DUPLICATE_USE_INSTANTIATION" value="8" enum="DuplicateFlags">
-			Duplicate using [method PackedScene.instantiate]. If the node comes from a scene saved on disk, reuses [method PackedScene.instantiate] as the base for the duplicated node and its children.
-		</constant>
-		<constant name="DUPLICATE_INTERNAL_STATE" value="16" enum="DuplicateFlags">
-			Duplicate also non-serializable variables (i.e. without [constant @GlobalScope.PROPERTY_USAGE_STORAGE]).
-		</constant>
-		<constant name="DUPLICATE_DEFAULT" value="15" enum="DuplicateFlags">
-			Duplicate using default flags. This constant is useful to add or remove a single flag.
-			[codeblock]
-			# Duplicate non-exported variables.
-			var dupe = duplicate(DUPLICATE_DEFAULT | DUPLICATE_INTERNAL_STATE)
-			[/codeblock]
-		</constant>
-		<constant name="INTERNAL_MODE_DISABLED" value="0" enum="InternalMode">
-			The node will not be internal.
-		</constant>
-		<constant name="INTERNAL_MODE_FRONT" value="1" enum="InternalMode">
-			The node will be placed at the beginning of the parent's children, before any non-internal sibling.
-		</constant>
-		<constant name="INTERNAL_MODE_BACK" value="2" enum="InternalMode">
-			The node will be placed at the end of the parent's children, after any non-internal sibling.
-		</constant>
-		<constant name="AUTO_TRANSLATE_MODE_INHERIT" value="0" enum="AutoTranslateMode">
-			Inherits [member auto_translate_mode] from the node's parent. This is the default for any newly created node.
-		</constant>
-		<constant name="AUTO_TRANSLATE_MODE_ALWAYS" value="1" enum="AutoTranslateMode">
-			Always automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_DISABLED], and the default for the root node.
-		</constant>
-		<constant name="AUTO_TRANSLATE_MODE_DISABLED" value="2" enum="AutoTranslateMode">
-			Never automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_ALWAYS].
-			String parsing for translation template generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
-		</constant>
 	</constants>
+	<enums>
+		<enum name="AutoTranslateMode">
+			<constant name="AUTO_TRANSLATE_MODE_INHERIT" value="0">
+				Inherits [member auto_translate_mode] from the node's parent. This is the default for any newly created node.
+			</constant>
+			<constant name="AUTO_TRANSLATE_MODE_ALWAYS" value="1">
+				Always automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_DISABLED], and the default for the root node.
+			</constant>
+			<constant name="AUTO_TRANSLATE_MODE_DISABLED" value="2">
+				Never automatically translate. This is the inverse of [constant AUTO_TRANSLATE_MODE_ALWAYS].
+				String parsing for translation template generation will be skipped for this node and children that are set to [constant AUTO_TRANSLATE_MODE_INHERIT].
+			</constant>
+		</enum>
+		<enum name="DuplicateFlags">
+			<constant name="DUPLICATE_SIGNALS" value="1">
+				Duplicate the node's signal connections that are connected with the [constant Object.CONNECT_PERSIST] flag.
+			</constant>
+			<constant name="DUPLICATE_GROUPS" value="2">
+				Duplicate the node's groups.
+			</constant>
+			<constant name="DUPLICATE_SCRIPTS" value="4">
+				Duplicate the node's script (also overriding the duplicated children's scripts, if combined with [constant DUPLICATE_USE_INSTANTIATION]).
+			</constant>
+			<constant name="DUPLICATE_USE_INSTANTIATION" value="8">
+				Duplicate using [method PackedScene.instantiate]. If the node comes from a scene saved on disk, reuses [method PackedScene.instantiate] as the base for the duplicated node and its children.
+			</constant>
+			<constant name="DUPLICATE_INTERNAL_STATE" value="16">
+				Duplicate also non-serializable variables (i.e. without [constant @GlobalScope.PROPERTY_USAGE_STORAGE]).
+			</constant>
+			<constant name="DUPLICATE_DEFAULT" value="15">
+				Duplicate using default flags. This constant is useful to add or remove a single flag.
+				[codeblock]
+				# Duplicate non-exported variables.
+				var dupe = duplicate(DUPLICATE_DEFAULT | DUPLICATE_INTERNAL_STATE)
+				[/codeblock]
+			</constant>
+		</enum>
+		<enum name="InternalMode">
+			<constant name="INTERNAL_MODE_DISABLED" value="0">
+				The node will not be internal.
+			</constant>
+			<constant name="INTERNAL_MODE_FRONT" value="1">
+				The node will be placed at the beginning of the parent's children, before any non-internal sibling.
+			</constant>
+			<constant name="INTERNAL_MODE_BACK" value="2">
+				The node will be placed at the end of the parent's children, after any non-internal sibling.
+			</constant>
+		</enum>
+		<enum name="PhysicsInterpolationMode">
+			<constant name="PHYSICS_INTERPOLATION_MODE_INHERIT" value="0">
+				Inherits [member physics_interpolation_mode] from the node's parent. This is the default for any newly created node.
+			</constant>
+			<constant name="PHYSICS_INTERPOLATION_MODE_ON" value="1">
+				Enables physics interpolation for this node and for children set to [constant PHYSICS_INTERPOLATION_MODE_INHERIT]. This is the default for the root node.
+			</constant>
+			<constant name="PHYSICS_INTERPOLATION_MODE_OFF" value="2">
+				Disables physics interpolation for this node and for children set to [constant PHYSICS_INTERPOLATION_MODE_INHERIT].
+			</constant>
+		</enum>
+		<enum name="ProcessMode">
+			<constant name="PROCESS_MODE_INHERIT" value="0">
+				Inherits [member process_mode] from the node's parent. This is the default for any newly created node.
+			</constant>
+			<constant name="PROCESS_MODE_PAUSABLE" value="1">
+				Processes when [member SceneTree.paused] is [code]false[/code]. This is the inverse of [constant PROCESS_MODE_WHEN_PAUSED], and the default for the root node.
+			</constant>
+			<constant name="PROCESS_MODE_WHEN_PAUSED" value="2">
+				Processes [b]only[/b] when [member SceneTree.paused] is [code]true[/code]. This is the inverse of [constant PROCESS_MODE_PAUSABLE].
+			</constant>
+			<constant name="PROCESS_MODE_ALWAYS" value="3">
+				Always processes. Keeps processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_DISABLED].
+			</constant>
+			<constant name="PROCESS_MODE_DISABLED" value="4">
+				Never processes. Completely disables processing, ignoring [member SceneTree.paused]. This is the inverse of [constant PROCESS_MODE_ALWAYS].
+			</constant>
+		</enum>
+		<enum name="ProcessThreadGroup">
+			<constant name="PROCESS_THREAD_GROUP_INHERIT" value="0">
+				Process this node based on the thread group mode of the first parent (or grandparent) node that has a thread group mode that is not inherit. See [member process_thread_group] for more information.
+			</constant>
+			<constant name="PROCESS_THREAD_GROUP_MAIN_THREAD" value="1">
+				Process this node (and child nodes set to inherit) on the main thread. See [member process_thread_group] for more information.
+			</constant>
+			<constant name="PROCESS_THREAD_GROUP_SUB_THREAD" value="2">
+				Process this node (and child nodes set to inherit) on a sub-thread. See [member process_thread_group] for more information.
+			</constant>
+		</enum>
+		<enum name="ProcessThreadMessages" is_bitfield="true">
+			<constant name="FLAG_PROCESS_THREAD_MESSAGES" value="1">
+				Allows this node to process threaded messages created with [method call_deferred_thread_group] right before [method _process] is called.
+			</constant>
+			<constant name="FLAG_PROCESS_THREAD_MESSAGES_PHYSICS" value="2">
+				Allows this node to process threaded messages created with [method call_deferred_thread_group] right before [method _physics_process] is called.
+			</constant>
+			<constant name="FLAG_PROCESS_THREAD_MESSAGES_ALL" value="3">
+				Allows this node to process threaded messages created with [method call_deferred_thread_group] right before either [method _process] or [method _physics_process] are called.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -329,6 +329,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 					id = "class_name:" + symbol->name;
 					break;
 				case LSP::SymbolKind::Constant:
+				case LSP::SymbolKind::EnumMember:
 					id = "class_constant:" + symbol->native_class + ":" + symbol->name;
 					break;
 				case LSP::SymbolKind::Property:

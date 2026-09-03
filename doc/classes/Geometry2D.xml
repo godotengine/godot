@@ -270,42 +270,48 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="OPERATION_UNION" value="0" enum="PolyBooleanOperation">
-			Create regions where either subject or clip polygons (or both) are filled.
-		</constant>
-		<constant name="OPERATION_DIFFERENCE" value="1" enum="PolyBooleanOperation">
-			Create regions where subject polygons are filled except where clip polygons are filled.
-		</constant>
-		<constant name="OPERATION_INTERSECTION" value="2" enum="PolyBooleanOperation">
-			Create regions where both subject and clip polygons are filled.
-		</constant>
-		<constant name="OPERATION_XOR" value="3" enum="PolyBooleanOperation">
-			Create regions where either subject or clip polygons are filled but not where both are filled.
-		</constant>
-		<constant name="JOIN_SQUARE" value="0" enum="PolyJoinType">
-			Squaring is applied uniformally at all convex edge joins at [code]1 * delta[/code].
-		</constant>
-		<constant name="JOIN_ROUND" value="1" enum="PolyJoinType">
-			While flattened paths can never perfectly trace an arc, they are approximated by a series of arc chords.
-		</constant>
-		<constant name="JOIN_MITER" value="2" enum="PolyJoinType">
-			There's a necessary limit to mitered joins since offsetting edges that join at very acute angles will produce excessively long and narrow "spikes". For any given edge join, when miter offsetting would exceed that maximum distance, "square" joining is applied.
-		</constant>
-		<constant name="END_POLYGON" value="0" enum="PolyEndType">
-			Endpoints are joined using the [enum PolyJoinType] value and the path filled as a polygon.
-		</constant>
-		<constant name="END_JOINED" value="1" enum="PolyEndType">
-			Endpoints are joined using the [enum PolyJoinType] value and the path filled as a polyline.
-		</constant>
-		<constant name="END_BUTT" value="2" enum="PolyEndType">
-			Endpoints are squared off with no extension.
-		</constant>
-		<constant name="END_SQUARE" value="3" enum="PolyEndType">
-			Endpoints are squared off and extended by [code]delta[/code] units.
-		</constant>
-		<constant name="END_ROUND" value="4" enum="PolyEndType">
-			Endpoints are rounded off and extended by [code]delta[/code] units.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="PolyBooleanOperation">
+			<constant name="OPERATION_UNION" value="0">
+				Create regions where either subject or clip polygons (or both) are filled.
+			</constant>
+			<constant name="OPERATION_DIFFERENCE" value="1">
+				Create regions where subject polygons are filled except where clip polygons are filled.
+			</constant>
+			<constant name="OPERATION_INTERSECTION" value="2">
+				Create regions where both subject and clip polygons are filled.
+			</constant>
+			<constant name="OPERATION_XOR" value="3">
+				Create regions where either subject or clip polygons are filled but not where both are filled.
+			</constant>
+		</enum>
+		<enum name="PolyEndType">
+			<constant name="END_POLYGON" value="0">
+				Endpoints are joined using the [enum PolyJoinType] value and the path filled as a polygon.
+			</constant>
+			<constant name="END_JOINED" value="1">
+				Endpoints are joined using the [enum PolyJoinType] value and the path filled as a polyline.
+			</constant>
+			<constant name="END_BUTT" value="2">
+				Endpoints are squared off with no extension.
+			</constant>
+			<constant name="END_SQUARE" value="3">
+				Endpoints are squared off and extended by [code]delta[/code] units.
+			</constant>
+			<constant name="END_ROUND" value="4">
+				Endpoints are rounded off and extended by [code]delta[/code] units.
+			</constant>
+		</enum>
+		<enum name="PolyJoinType">
+			<constant name="JOIN_SQUARE" value="0">
+				Squaring is applied uniformally at all convex edge joins at [code]1 * delta[/code].
+			</constant>
+			<constant name="JOIN_ROUND" value="1">
+				While flattened paths can never perfectly trace an arc, they are approximated by a series of arc chords.
+			</constant>
+			<constant name="JOIN_MITER" value="2">
+				There's a necessary limit to mitered joins since offsetting edges that join at very acute angles will produce excessively long and narrow "spikes". For any given edge join, when miter offsetting would exceed that maximum distance, "square" joining is applied.
+			</constant>
+		</enum>
+	</enums>
 </class>

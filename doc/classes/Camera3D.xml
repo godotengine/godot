@@ -214,30 +214,36 @@
 			The vertical (Y) offset of the camera viewport.
 		</member>
 	</members>
-	<constants>
-		<constant name="PROJECTION_PERSPECTIVE" value="0" enum="ProjectionType">
-			Perspective projection. Objects on the screen becomes smaller when they are far away.
-		</constant>
-		<constant name="PROJECTION_ORTHOGONAL" value="1" enum="ProjectionType">
-			Orthogonal projection, also known as orthographic projection. Objects remain the same size on the screen no matter how far away they are.
-		</constant>
-		<constant name="PROJECTION_FRUSTUM" value="2" enum="ProjectionType">
-			Frustum projection. This mode allows adjusting [member frustum_offset] to create "tilted frustum" effects.
-		</constant>
-		<constant name="KEEP_WIDTH" value="0" enum="KeepAspect">
-			Preserves the horizontal aspect ratio; also known as Vert- scaling. This is usually the best option for projects running in portrait mode, as taller aspect ratios will benefit from a wider vertical FOV.
-		</constant>
-		<constant name="KEEP_HEIGHT" value="1" enum="KeepAspect">
-			Preserves the vertical aspect ratio; also known as Hor+ scaling. This is usually the best option for projects running in landscape mode, as wider aspect ratios will automatically benefit from a wider horizontal FOV.
-		</constant>
-		<constant name="DOPPLER_TRACKING_DISABLED" value="0" enum="DopplerTracking">
-			Disables [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] simulation (default).
-		</constant>
-		<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1" enum="DopplerTracking">
-			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how audio is perceived (changing the audio's [member AudioStreamPlayer3D.pitch_scale]).
-		</constant>
-		<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2" enum="DopplerTracking">
-			Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how audio is perceived (changing the audio's [member AudioStreamPlayer3D.pitch_scale]).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="DopplerTracking">
+			<constant name="DOPPLER_TRACKING_DISABLED" value="0">
+				Disables [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] simulation (default).
+			</constant>
+			<constant name="DOPPLER_TRACKING_IDLE_STEP" value="1">
+				Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how audio is perceived (changing the audio's [member AudioStreamPlayer3D.pitch_scale]).
+			</constant>
+			<constant name="DOPPLER_TRACKING_PHYSICS_STEP" value="2">
+				Simulate [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] by tracking positions of objects that are changed in [code]_physics_process[/code]. Changes in the relative velocity of this camera compared to those objects affect how audio is perceived (changing the audio's [member AudioStreamPlayer3D.pitch_scale]).
+			</constant>
+		</enum>
+		<enum name="KeepAspect">
+			<constant name="KEEP_WIDTH" value="0">
+				Preserves the horizontal aspect ratio; also known as Vert- scaling. This is usually the best option for projects running in portrait mode, as taller aspect ratios will benefit from a wider vertical FOV.
+			</constant>
+			<constant name="KEEP_HEIGHT" value="1">
+				Preserves the vertical aspect ratio; also known as Hor+ scaling. This is usually the best option for projects running in landscape mode, as wider aspect ratios will automatically benefit from a wider horizontal FOV.
+			</constant>
+		</enum>
+		<enum name="ProjectionType">
+			<constant name="PROJECTION_PERSPECTIVE" value="0">
+				Perspective projection. Objects on the screen becomes smaller when they are far away.
+			</constant>
+			<constant name="PROJECTION_ORTHOGONAL" value="1">
+				Orthogonal projection, also known as orthographic projection. Objects remain the same size on the screen no matter how far away they are.
+			</constant>
+			<constant name="PROJECTION_FRUSTUM" value="2">
+				Frustum projection. This mode allows adjusting [member frustum_offset] to create "tilted frustum" effects.
+			</constant>
+		</enum>
+	</enums>
 </class>

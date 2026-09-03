@@ -65,17 +65,19 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="CONTROL_STATE_DEFAULT" value="0" enum="ControlState">
-			The type of control used will depend on the value of [member editing_integer]. Up-down arrows if [code]true[/code], a slider if [code]false[/code].
-		</constant>
-		<constant name="CONTROL_STATE_PREFER_SLIDER" value="1" enum="ControlState">
-			A slider will always be used, even if [member editing_integer] is enabled.
-		</constant>
-		<constant name="CONTROL_STATE_HIDE" value="2" enum="ControlState">
-			Neither the up-down arrows nor the slider will be shown.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ControlState">
+			<constant name="CONTROL_STATE_DEFAULT" value="0">
+				The type of control used will depend on the value of [member editing_integer]. Up-down arrows if [code]true[/code], a slider if [code]false[/code].
+			</constant>
+			<constant name="CONTROL_STATE_PREFER_SLIDER" value="1">
+				A slider will always be used, even if [member editing_integer] is enabled.
+			</constant>
+			<constant name="CONTROL_STATE_HIDE" value="2">
+				Neither the up-down arrows nor the slider will be shown.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="label_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			Font color of the left label (see [member label]).

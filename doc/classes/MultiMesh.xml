@@ -158,18 +158,22 @@
 			Limits the number of instances drawn, -1 draws all instances. Changing this does not change the sizes of the buffers.
 		</member>
 	</members>
-	<constants>
-		<constant name="TRANSFORM_2D" value="0" enum="TransformFormat">
-			Use this when using 2D transforms.
-		</constant>
-		<constant name="TRANSFORM_3D" value="1" enum="TransformFormat">
-			Use this when using 3D transforms.
-		</constant>
-		<constant name="INTERP_QUALITY_FAST" value="0" enum="PhysicsInterpolationQuality">
-			Always interpolate using Basis lerping, which can produce warping artifacts in some situations.
-		</constant>
-		<constant name="INTERP_QUALITY_HIGH" value="1" enum="PhysicsInterpolationQuality">
-			Attempt to interpolate using Basis slerping (spherical linear interpolation) where possible, otherwise fall back to lerping.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="PhysicsInterpolationQuality">
+			<constant name="INTERP_QUALITY_FAST" value="0">
+				Always interpolate using Basis lerping, which can produce warping artifacts in some situations.
+			</constant>
+			<constant name="INTERP_QUALITY_HIGH" value="1">
+				Attempt to interpolate using Basis slerping (spherical linear interpolation) where possible, otherwise fall back to lerping.
+			</constant>
+		</enum>
+		<enum name="TransformFormat">
+			<constant name="TRANSFORM_2D" value="0">
+				Use this when using 2D transforms.
+			</constant>
+			<constant name="TRANSFORM_3D" value="1">
+				Use this when using 3D transforms.
+			</constant>
+		</enum>
+	</enums>
 </class>

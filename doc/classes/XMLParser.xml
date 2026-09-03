@@ -154,27 +154,29 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="NODE_NONE" value="0" enum="NodeType">
-			There's no node (no file or buffer opened).
-		</constant>
-		<constant name="NODE_ELEMENT" value="1" enum="NodeType">
-			An element node type, also known as a tag, e.g. [code]&lt;title&gt;[/code].
-		</constant>
-		<constant name="NODE_ELEMENT_END" value="2" enum="NodeType">
-			An end of element node type, e.g. [code]&lt;/title&gt;[/code].
-		</constant>
-		<constant name="NODE_TEXT" value="3" enum="NodeType">
-			A text node type, i.e. text that is not inside an element. This includes whitespace.
-		</constant>
-		<constant name="NODE_COMMENT" value="4" enum="NodeType">
-			A comment node type, e.g. [code]&lt;!--A comment--&gt;[/code].
-		</constant>
-		<constant name="NODE_CDATA" value="5" enum="NodeType">
-			A node type for CDATA (Character Data) sections, e.g. [code]&lt;![CDATA[CDATA section]]&gt;[/code].
-		</constant>
-		<constant name="NODE_UNKNOWN" value="6" enum="NodeType">
-			An unknown node type.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="NodeType">
+			<constant name="NODE_NONE" value="0">
+				There's no node (no file or buffer opened).
+			</constant>
+			<constant name="NODE_ELEMENT" value="1">
+				An element node type, also known as a tag, e.g. [code]&lt;title&gt;[/code].
+			</constant>
+			<constant name="NODE_ELEMENT_END" value="2">
+				An end of element node type, e.g. [code]&lt;/title&gt;[/code].
+			</constant>
+			<constant name="NODE_TEXT" value="3">
+				A text node type, i.e. text that is not inside an element. This includes whitespace.
+			</constant>
+			<constant name="NODE_COMMENT" value="4">
+				A comment node type, e.g. [code]&lt;!--A comment--&gt;[/code].
+			</constant>
+			<constant name="NODE_CDATA" value="5">
+				A node type for CDATA (Character Data) sections, e.g. [code]&lt;![CDATA[CDATA section]]&gt;[/code].
+			</constant>
+			<constant name="NODE_UNKNOWN" value="6">
+				An unknown node type.
+			</constant>
+		</enum>
+	</enums>
 </class>

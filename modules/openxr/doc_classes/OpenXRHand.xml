@@ -28,42 +28,50 @@
 			Set the type of skeleton rig the [member hand_skeleton] is compliant with.
 		</member>
 	</members>
-	<constants>
-		<constant name="HAND_LEFT" value="0" enum="Hands">
-			Tracking the player's left hand.
-		</constant>
-		<constant name="HAND_RIGHT" value="1" enum="Hands">
-			Tracking the player's right hand.
-		</constant>
-		<constant name="HAND_MAX" value="2" enum="Hands">
-			Maximum supported hands.
-		</constant>
-		<constant name="MOTION_RANGE_UNOBSTRUCTED" value="0" enum="MotionRange">
-			When player grips, hand skeleton will form a full fist.
-		</constant>
-		<constant name="MOTION_RANGE_CONFORM_TO_CONTROLLER" value="1" enum="MotionRange">
-			When player grips, hand skeleton conforms to the controller the player is holding.
-		</constant>
-		<constant name="MOTION_RANGE_MAX" value="2" enum="MotionRange">
-			Maximum supported motion ranges.
-		</constant>
-		<constant name="SKELETON_RIG_OPENXR" value="0" enum="SkeletonRig">
-			An OpenXR compliant skeleton.
-		</constant>
-		<constant name="SKELETON_RIG_HUMANOID" value="1" enum="SkeletonRig">
-			A [SkeletonProfileHumanoid] compliant skeleton.
-		</constant>
-		<constant name="SKELETON_RIG_MAX" value="2" enum="SkeletonRig">
-			Maximum supported hands.
-		</constant>
-		<constant name="BONE_UPDATE_FULL" value="0" enum="BoneUpdate">
-			The skeletons bones are fully updated (both position and rotation) to match the tracked bones.
-		</constant>
-		<constant name="BONE_UPDATE_ROTATION_ONLY" value="1" enum="BoneUpdate">
-			The skeletons bones are only rotated to align with the tracked bones, preserving bone length.
-		</constant>
-		<constant name="BONE_UPDATE_MAX" value="2" enum="BoneUpdate">
-			Maximum supported bone update mode.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="BoneUpdate">
+			<constant name="BONE_UPDATE_FULL" value="0">
+				The skeletons bones are fully updated (both position and rotation) to match the tracked bones.
+			</constant>
+			<constant name="BONE_UPDATE_ROTATION_ONLY" value="1">
+				The skeletons bones are only rotated to align with the tracked bones, preserving bone length.
+			</constant>
+			<constant name="BONE_UPDATE_MAX" value="2">
+				Maximum supported bone update mode.
+			</constant>
+		</enum>
+		<enum name="Hands">
+			<constant name="HAND_LEFT" value="0">
+				Tracking the player's left hand.
+			</constant>
+			<constant name="HAND_RIGHT" value="1">
+				Tracking the player's right hand.
+			</constant>
+			<constant name="HAND_MAX" value="2">
+				Maximum supported hands.
+			</constant>
+		</enum>
+		<enum name="MotionRange">
+			<constant name="MOTION_RANGE_UNOBSTRUCTED" value="0">
+				When player grips, hand skeleton will form a full fist.
+			</constant>
+			<constant name="MOTION_RANGE_CONFORM_TO_CONTROLLER" value="1">
+				When player grips, hand skeleton conforms to the controller the player is holding.
+			</constant>
+			<constant name="MOTION_RANGE_MAX" value="2">
+				Maximum supported motion ranges.
+			</constant>
+		</enum>
+		<enum name="SkeletonRig">
+			<constant name="SKELETON_RIG_OPENXR" value="0">
+				An OpenXR compliant skeleton.
+			</constant>
+			<constant name="SKELETON_RIG_HUMANOID" value="1">
+				A [SkeletonProfileHumanoid] compliant skeleton.
+			</constant>
+			<constant name="SKELETON_RIG_MAX" value="2">
+				Maximum supported hands.
+			</constant>
+		</enum>
+	</enums>
 </class>

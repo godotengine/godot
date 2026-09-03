@@ -255,39 +255,49 @@ class ClassStatus:
         return output
 
     @staticmethod
-    def generate_for_class(c: ET.Element):
+    def generate_for_class(class_node: ET.Element):
         status = ClassStatus()
-        status.name = c.attrib["name"]
+        status.name = class_node.attrib["name"]
 
-        for tag in list(c):
-            len_tag_text = 0 if (tag.text is None) else len(tag.text.strip())
+        for node in list(class_node):
+            len_tag_text = 0 if (node.text is None) else len(node.text.strip())
 
-            if tag.tag == "brief_description":
+            if node.tag == "brief_description":
                 status.has_brief_description = len_tag_text > 0
 
-            elif tag.tag == "description":
+            elif node.tag == "description":
                 status.has_description = len_tag_text > 0
 
-            elif tag.tag in ["methods", "signals", "operators", "constructors"]:
-                for sub_tag in list(tag):
-                    is_deprecated = "deprecated" in sub_tag.attrib
-                    is_experimental = "experimental" in sub_tag.attrib
-                    descr = sub_tag.find("description")
+            elif node.tag in ["methods", "signals", "operators", "constructors"]:
+                for sub_node in list(node):
+                    is_deprecated = "deprecated" in sub_node.attrib
+                    is_experimental = "experimental" in sub_node.attrib
+                    descr = sub_node.find("description")
                     has_descr = (descr is not None) and (descr.text is not None) and len(descr.text.strip()) > 0
-                    status.progresses[tag.tag].increment(is_deprecated or is_experimental or has_descr)
-            elif tag.tag in ["constants", "members", "theme_items"]:
-                for sub_tag in list(tag):
-                    if sub_tag.text is not None:
-                        is_deprecated = "deprecated" in sub_tag.attrib
-                        is_experimental = "experimental" in sub_tag.attrib
-                        has_descr = len(sub_tag.text.strip()) > 0
-                        status.progresses[tag.tag].increment(is_deprecated or is_experimental or has_descr)
+                    status.progresses[node.tag].increment(is_deprecated or is_experimental or has_descr)
 
-            elif tag.tag in ["tutorials"]:
+            elif node.tag in ["constants", "members", "theme_items"]:
+                for sub_node in list(node):
+                    if sub_node.text is not None:
+                        is_deprecated = "deprecated" in sub_node.attrib
+                        is_experimental = "experimental" in sub_node.attrib
+                        has_descr = len(sub_node.text.strip()) > 0
+                        status.progresses[node.tag].increment(is_deprecated or is_experimental or has_descr)
+
+            elif node.tag == "enums":
+                for enum_node in list(node):
+                    for sub_node in list(enum_node):
+                        if sub_node.tag == "constant" and sub_node.text is not None:
+                            is_deprecated = "deprecated" in sub_node.attrib
+                            is_experimental = "experimental" in sub_node.attrib
+                            has_descr = len(sub_node.text.strip()) > 0
+                            status.progresses["constants"].increment(is_deprecated or is_experimental or has_descr)
+
+            elif node.tag in ["tutorials"]:
                 pass  # Ignore those tags for now
 
             else:
-                print(tag.tag, tag.attrib)
+                print(node.tag, node.attrib)
 
         return status
 

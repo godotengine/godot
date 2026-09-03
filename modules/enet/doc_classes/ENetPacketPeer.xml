@@ -129,78 +129,6 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="STATE_DISCONNECTED" value="0" enum="PeerState">
-			The peer is disconnected.
-		</constant>
-		<constant name="STATE_CONNECTING" value="1" enum="PeerState">
-			The peer is currently attempting to connect.
-		</constant>
-		<constant name="STATE_ACKNOWLEDGING_CONNECT" value="2" enum="PeerState">
-			The peer has acknowledged the connection request.
-		</constant>
-		<constant name="STATE_CONNECTION_PENDING" value="3" enum="PeerState">
-			The peer is currently connecting.
-		</constant>
-		<constant name="STATE_CONNECTION_SUCCEEDED" value="4" enum="PeerState">
-			The peer has successfully connected, but is not ready to communicate with yet ([constant STATE_CONNECTED]).
-		</constant>
-		<constant name="STATE_CONNECTED" value="5" enum="PeerState">
-			The peer is currently connected and ready to communicate with.
-		</constant>
-		<constant name="STATE_DISCONNECT_LATER" value="6" enum="PeerState">
-			The peer is expected to disconnect after it has no more outgoing packets to send.
-		</constant>
-		<constant name="STATE_DISCONNECTING" value="7" enum="PeerState">
-			The peer is currently disconnecting.
-		</constant>
-		<constant name="STATE_ACKNOWLEDGING_DISCONNECT" value="8" enum="PeerState">
-			The peer has acknowledged the disconnection request.
-		</constant>
-		<constant name="STATE_ZOMBIE" value="9" enum="PeerState">
-			The peer has lost connection, but is not considered truly disconnected (as the peer didn't acknowledge the disconnection request).
-		</constant>
-		<constant name="PEER_PACKET_LOSS" value="0" enum="PeerStatistic">
-			Mean packet loss of reliable packets as a ratio with respect to the [constant PACKET_LOSS_SCALE].
-		</constant>
-		<constant name="PEER_PACKET_LOSS_VARIANCE" value="1" enum="PeerStatistic">
-			Packet loss variance.
-		</constant>
-		<constant name="PEER_PACKET_LOSS_EPOCH" value="2" enum="PeerStatistic">
-			The time at which packet loss statistics were last updated (in milliseconds since the connection started). The interval for packet loss statistics updates is 10 seconds, and at least one packet must have been sent since the last statistics update.
-		</constant>
-		<constant name="PEER_ROUND_TRIP_TIME" value="3" enum="PeerStatistic">
-			Mean packet round trip time for reliable packets.
-		</constant>
-		<constant name="PEER_ROUND_TRIP_TIME_VARIANCE" value="4" enum="PeerStatistic">
-			Variance of the mean round trip time.
-		</constant>
-		<constant name="PEER_LAST_ROUND_TRIP_TIME" value="5" enum="PeerStatistic">
-			Last recorded round trip time for a reliable packet.
-		</constant>
-		<constant name="PEER_LAST_ROUND_TRIP_TIME_VARIANCE" value="6" enum="PeerStatistic">
-			Variance of the last trip time recorded.
-		</constant>
-		<constant name="PEER_PACKET_THROTTLE" value="7" enum="PeerStatistic">
-			The peer's current throttle status.
-		</constant>
-		<constant name="PEER_PACKET_THROTTLE_LIMIT" value="8" enum="PeerStatistic">
-			The maximum number of unreliable packets that should not be dropped. This value is always greater than or equal to [code]1[/code]. The initial value is equal to [constant PACKET_THROTTLE_SCALE].
-		</constant>
-		<constant name="PEER_PACKET_THROTTLE_COUNTER" value="9" enum="PeerStatistic">
-			Internal value used to increment the packet throttle counter. The value is hardcoded to [code]7[/code] and cannot be changed. You probably want to look at [constant PEER_PACKET_THROTTLE_ACCELERATION] instead.
-		</constant>
-		<constant name="PEER_PACKET_THROTTLE_EPOCH" value="10" enum="PeerStatistic">
-			The time at which throttle statistics were last updated (in milliseconds since the connection started). The interval for throttle statistics updates is [constant PEER_PACKET_THROTTLE_INTERVAL].
-		</constant>
-		<constant name="PEER_PACKET_THROTTLE_ACCELERATION" value="11" enum="PeerStatistic">
-			The throttle's acceleration factor. Higher values will make ENet adapt to fluctuating network conditions faster, causing unrelaible packets to be sent [i]more[/i] often. The default value is [code]2[/code].
-		</constant>
-		<constant name="PEER_PACKET_THROTTLE_DECELERATION" value="12" enum="PeerStatistic">
-			The throttle's deceleration factor. Higher values will make ENet adapt to fluctuating network conditions faster, causing unrelaible packets to be sent [i]less[/i] often. The default value is [code]2[/code].
-		</constant>
-		<constant name="PEER_PACKET_THROTTLE_INTERVAL" value="13" enum="PeerStatistic">
-			The interval over which the lowest mean round trip time should be measured for use by the throttle mechanism (in milliseconds). The default value is [code]5000[/code].
-		</constant>
 		<constant name="PACKET_LOSS_SCALE" value="65536">
 			The reference scale for packet loss. See [method get_statistic] and [constant PEER_PACKET_LOSS].
 		</constant>
@@ -217,4 +145,82 @@
 			Mark the packet to be sent unreliable even if the packet is too big and needs fragmentation (increasing the chance of it being dropped).
 		</constant>
 	</constants>
+	<enums>
+		<enum name="PeerState">
+			<constant name="STATE_DISCONNECTED" value="0">
+				The peer is disconnected.
+			</constant>
+			<constant name="STATE_CONNECTING" value="1">
+				The peer is currently attempting to connect.
+			</constant>
+			<constant name="STATE_ACKNOWLEDGING_CONNECT" value="2">
+				The peer has acknowledged the connection request.
+			</constant>
+			<constant name="STATE_CONNECTION_PENDING" value="3">
+				The peer is currently connecting.
+			</constant>
+			<constant name="STATE_CONNECTION_SUCCEEDED" value="4">
+				The peer has successfully connected, but is not ready to communicate with yet ([constant STATE_CONNECTED]).
+			</constant>
+			<constant name="STATE_CONNECTED" value="5">
+				The peer is currently connected and ready to communicate with.
+			</constant>
+			<constant name="STATE_DISCONNECT_LATER" value="6">
+				The peer is expected to disconnect after it has no more outgoing packets to send.
+			</constant>
+			<constant name="STATE_DISCONNECTING" value="7">
+				The peer is currently disconnecting.
+			</constant>
+			<constant name="STATE_ACKNOWLEDGING_DISCONNECT" value="8">
+				The peer has acknowledged the disconnection request.
+			</constant>
+			<constant name="STATE_ZOMBIE" value="9">
+				The peer has lost connection, but is not considered truly disconnected (as the peer didn't acknowledge the disconnection request).
+			</constant>
+		</enum>
+		<enum name="PeerStatistic">
+			<constant name="PEER_PACKET_LOSS" value="0">
+				Mean packet loss of reliable packets as a ratio with respect to the [constant PACKET_LOSS_SCALE].
+			</constant>
+			<constant name="PEER_PACKET_LOSS_VARIANCE" value="1">
+				Packet loss variance.
+			</constant>
+			<constant name="PEER_PACKET_LOSS_EPOCH" value="2">
+				The time at which packet loss statistics were last updated (in milliseconds since the connection started). The interval for packet loss statistics updates is 10 seconds, and at least one packet must have been sent since the last statistics update.
+			</constant>
+			<constant name="PEER_ROUND_TRIP_TIME" value="3">
+				Mean packet round trip time for reliable packets.
+			</constant>
+			<constant name="PEER_ROUND_TRIP_TIME_VARIANCE" value="4">
+				Variance of the mean round trip time.
+			</constant>
+			<constant name="PEER_LAST_ROUND_TRIP_TIME" value="5">
+				Last recorded round trip time for a reliable packet.
+			</constant>
+			<constant name="PEER_LAST_ROUND_TRIP_TIME_VARIANCE" value="6">
+				Variance of the last trip time recorded.
+			</constant>
+			<constant name="PEER_PACKET_THROTTLE" value="7">
+				The peer's current throttle status.
+			</constant>
+			<constant name="PEER_PACKET_THROTTLE_LIMIT" value="8">
+				The maximum number of unreliable packets that should not be dropped. This value is always greater than or equal to [code]1[/code]. The initial value is equal to [constant PACKET_THROTTLE_SCALE].
+			</constant>
+			<constant name="PEER_PACKET_THROTTLE_COUNTER" value="9">
+				Internal value used to increment the packet throttle counter. The value is hardcoded to [code]7[/code] and cannot be changed. You probably want to look at [constant PEER_PACKET_THROTTLE_ACCELERATION] instead.
+			</constant>
+			<constant name="PEER_PACKET_THROTTLE_EPOCH" value="10">
+				The time at which throttle statistics were last updated (in milliseconds since the connection started). The interval for throttle statistics updates is [constant PEER_PACKET_THROTTLE_INTERVAL].
+			</constant>
+			<constant name="PEER_PACKET_THROTTLE_ACCELERATION" value="11">
+				The throttle's acceleration factor. Higher values will make ENet adapt to fluctuating network conditions faster, causing unrelaible packets to be sent [i]more[/i] often. The default value is [code]2[/code].
+			</constant>
+			<constant name="PEER_PACKET_THROTTLE_DECELERATION" value="12">
+				The throttle's deceleration factor. Higher values will make ENet adapt to fluctuating network conditions faster, causing unrelaible packets to be sent [i]less[/i] often. The default value is [code]2[/code].
+			</constant>
+			<constant name="PEER_PACKET_THROTTLE_INTERVAL" value="13">
+				The interval over which the lowest mean round trip time should be measured for use by the throttle mechanism (in milliseconds). The default value is [code]5000[/code].
+			</constant>
+		</enum>
+	</enums>
 </class>

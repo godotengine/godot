@@ -104,38 +104,42 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="SCROLL_MODE_DISABLED" value="0" enum="ScrollMode">
-			Scrolling disabled, scrollbar will be invisible.
-		</constant>
-		<constant name="SCROLL_MODE_AUTO" value="1" enum="ScrollMode">
-			Scrolling enabled, scrollbar will be visible only if necessary, i.e. container's content is bigger than the container.
-		</constant>
-		<constant name="SCROLL_MODE_SHOW_ALWAYS" value="2" enum="ScrollMode">
-			Scrolling enabled, scrollbar will be always visible.
-		</constant>
-		<constant name="SCROLL_MODE_SHOW_NEVER" value="3" enum="ScrollMode">
-			Scrolling enabled, scrollbar will be hidden.
-		</constant>
-		<constant name="SCROLL_MODE_RESERVE" value="4" enum="ScrollMode">
-			Combines [constant SCROLL_MODE_AUTO] and [constant SCROLL_MODE_SHOW_ALWAYS]. The scrollbar is only visible if necessary, but the content size is adjusted as if it was always visible. It's useful for ensuring that content size stays the same regardless if the scrollbar is visible.
-		</constant>
-		<constant name="SCROLL_MODE_MAXIMIZE_FIRST" value="5" enum="ScrollMode">
-			Behaves like [constant SCROLL_MODE_AUTO], but makes the [ScrollContainer] report a minimum size based on its content (limited by [member Control.custom_maximum_size] when set on the corresponding axis). This allows it to grow first and only start scrolling once constrained.
-		</constant>
-		<constant name="SCROLL_HINT_MODE_DISABLED" value="0" enum="ScrollHintMode">
-			Scroll hints will never be shown.
-		</constant>
-		<constant name="SCROLL_HINT_MODE_ALL" value="1" enum="ScrollHintMode">
-			Scroll hints will be shown at the top and bottom (if vertical), or left and right (if horizontal).
-		</constant>
-		<constant name="SCROLL_HINT_MODE_TOP_AND_LEFT" value="2" enum="ScrollHintMode">
-			Scroll hints will be shown at the top (if vertical), or the left (if horizontal).
-		</constant>
-		<constant name="SCROLL_HINT_MODE_BOTTOM_AND_RIGHT" value="3" enum="ScrollHintMode">
-			Scroll hints will be shown at the bottom (if horizontal), or the right (if horizontal).
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ScrollHintMode">
+			<constant name="SCROLL_HINT_MODE_DISABLED" value="0">
+				Scroll hints will never be shown.
+			</constant>
+			<constant name="SCROLL_HINT_MODE_ALL" value="1">
+				Scroll hints will be shown at the top and bottom (if vertical), or left and right (if horizontal).
+			</constant>
+			<constant name="SCROLL_HINT_MODE_TOP_AND_LEFT" value="2">
+				Scroll hints will be shown at the top (if vertical), or the left (if horizontal).
+			</constant>
+			<constant name="SCROLL_HINT_MODE_BOTTOM_AND_RIGHT" value="3">
+				Scroll hints will be shown at the bottom (if horizontal), or the right (if horizontal).
+			</constant>
+		</enum>
+		<enum name="ScrollMode">
+			<constant name="SCROLL_MODE_DISABLED" value="0">
+				Scrolling disabled, scrollbar will be invisible.
+			</constant>
+			<constant name="SCROLL_MODE_AUTO" value="1">
+				Scrolling enabled, scrollbar will be visible only if necessary, i.e. container's content is bigger than the container.
+			</constant>
+			<constant name="SCROLL_MODE_SHOW_ALWAYS" value="2">
+				Scrolling enabled, scrollbar will be always visible.
+			</constant>
+			<constant name="SCROLL_MODE_SHOW_NEVER" value="3">
+				Scrolling enabled, scrollbar will be hidden.
+			</constant>
+			<constant name="SCROLL_MODE_RESERVE" value="4">
+				Combines [constant SCROLL_MODE_AUTO] and [constant SCROLL_MODE_SHOW_ALWAYS]. The scrollbar is only visible if necessary, but the content size is adjusted as if it was always visible. It's useful for ensuring that content size stays the same regardless if the scrollbar is visible.
+			</constant>
+			<constant name="SCROLL_MODE_MAXIMIZE_FIRST" value="5">
+				Behaves like [constant SCROLL_MODE_AUTO], but makes the [ScrollContainer] report a minimum size based on its content (limited by [member Control.custom_maximum_size] when set on the corresponding axis). This allows it to grow first and only start scrolling once constrained.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="scroll_hint_horizontal_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			[Color] used to modulate the [theme_item scroll_hint_horizontal] texture.

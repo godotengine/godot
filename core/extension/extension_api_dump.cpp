@@ -529,28 +529,36 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			Dictionary d1;
 			d1["name"] = E.key;
 			d1["is_bitfield"] = enum_is_bitfield[E.key];
+
+			Array values;
+
+			const DocData::EnumDoc *enum_doc = nullptr;
 			if (p_include_docs) {
-				const DocData::EnumDoc *enum_doc = global_scope_doc->enums.getptr(E.key);
+				enum_doc = global_scope_doc->enums.getptr(E.key);
 				if (enum_doc) {
 					d1["description"] = fix_doc_description(enum_doc->description);
 				}
 			}
-			Array values;
+
 			for (const Pair<String, int64_t> &F : E.value) {
 				Dictionary d2;
 				d2["name"] = F.first;
 				d2["value"] = F.second;
-				if (p_include_docs) {
-					for (const DocData::ConstantDoc &constant_doc : global_scope_doc->constants) {
+
+				if (p_include_docs && enum_doc) {
+					for (const DocData::ConstantDoc &constant_doc : enum_doc->constants) {
 						if (constant_doc.name == F.first) {
 							d2["description"] = fix_doc_description(constant_doc.description);
 							break;
 						}
 					}
 				}
+
 				values.push_back(d2);
 			}
+
 			d1["values"] = values;
+
 			enums.push_back(d1);
 		}
 
@@ -701,40 +709,46 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 
 				List<StringName> enum_names;
 				Variant::get_enums_for_type(type, &enum_names);
+
 				for (const StringName &enum_name : enum_names) {
 					Dictionary enum_dict;
 					enum_dict["name"] = String(enum_name);
+					//enum_dict["is_bitfield"] = false;
+
+					Array values;
 
 					List<StringName> enumeration_names;
 					Variant::get_enumerations_for_enum(type, enum_name, &enumeration_names);
 
-					Array values;
+					const DocData::EnumDoc *enum_doc = nullptr;
+					if (p_include_docs) {
+						enum_doc = builtin_doc->enums.getptr(enum_name);
+						if (enum_doc) {
+							enum_dict["description"] = fix_doc_description(enum_doc->description);
+						}
+					}
 
 					for (const StringName &enumeration : enumeration_names) {
 						Dictionary values_dict;
 						values_dict["name"] = String(enumeration);
 						values_dict["value"] = Variant::get_enum_value(type, enum_name, enumeration);
-						if (p_include_docs) {
-							for (const DocData::ConstantDoc &constant_doc : builtin_doc->constants) {
+
+						if (p_include_docs && enum_doc) {
+							for (const DocData::ConstantDoc &constant_doc : enum_doc->constants) {
 								if (constant_doc.name == enumeration) {
 									values_dict["description"] = fix_doc_description(constant_doc.description);
 									break;
 								}
 							}
 						}
-						values.push_back(values_dict);
-					}
 
-					if (p_include_docs) {
-						const DocData::EnumDoc *enum_doc = builtin_doc->enums.getptr(enum_name);
-						if (enum_doc) {
-							enum_dict["description"] = fix_doc_description(enum_doc->description);
-						}
+						values.push_back(values_dict);
 					}
 
 					if (values.size()) {
 						enum_dict["values"] = values;
 					}
+
 					enums.push_back(enum_dict);
 				}
 
@@ -975,23 +989,35 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			{
 				//enum
 				Array enums;
-				List<StringName> enum_list;
-				ClassDB::get_enum_list(class_name, &enum_list, true);
-				for (const StringName &F : enum_list) {
+
+				List<StringName> enum_names;
+				ClassDB::get_enum_list(class_name, &enum_names, true);
+
+				for (const StringName &enum_name : enum_names) {
 					Dictionary d2;
-					d2["name"] = String(F);
-					d2["is_bitfield"] = ClassDB::is_enum_bitfield(class_name, F);
+					d2["name"] = String(enum_name);
+					d2["is_bitfield"] = ClassDB::is_enum_bitfield(class_name, enum_name);
 
 					Array values;
+
 					List<StringName> enum_constant_list;
-					ClassDB::get_enum_constants(class_name, F, &enum_constant_list, true);
+					ClassDB::get_enum_constants(class_name, enum_name, &enum_constant_list, true);
+
+					const DocData::EnumDoc *enum_doc = nullptr;
+					if (p_include_docs) {
+						enum_doc = class_doc->enums.getptr(enum_name);
+						if (enum_doc) {
+							d2["description"] = fix_doc_description(enum_doc->description);
+						}
+					}
+
 					for (const StringName &enum_constant : enum_constant_list) {
 						Dictionary d3;
 						d3["name"] = String(enum_constant);
 						d3["value"] = ClassDB::get_integer_constant(class_name, enum_constant);
 
-						if (p_include_docs) {
-							for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
+						if (p_include_docs && enum_doc) {
+							for (const DocData::ConstantDoc &constant_doc : enum_doc->constants) {
 								if (constant_doc.name == enum_constant) {
 									d3["description"] = fix_doc_description(constant_doc.description);
 									break;
@@ -1003,13 +1029,6 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					}
 
 					d2["values"] = values;
-
-					if (p_include_docs) {
-						const DocData::EnumDoc *enum_doc = class_doc->enums.getptr(F);
-						if (enum_doc) {
-							d2["description"] = fix_doc_description(enum_doc->description);
-						}
-					}
 
 					enums.push_back(d2);
 				}

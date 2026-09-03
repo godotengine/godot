@@ -32,24 +32,26 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="MARKER_TYPE_UNKNOWN" value="0" enum="MarkerType">
-			Unknown or unset marker type.
-		</constant>
-		<constant name="MARKER_TYPE_QRCODE" value="1" enum="MarkerType">
-			Marker based on a QR code.
-		</constant>
-		<constant name="MARKER_TYPE_MICRO_QRCODE" value="2" enum="MarkerType">
-			Marker based on a micro QR code.
-		</constant>
-		<constant name="MARKER_TYPE_ARUCO" value="3" enum="MarkerType">
-			Marker based on an ArUco code.
-		</constant>
-		<constant name="MARKER_TYPE_APRIL_TAG" value="4" enum="MarkerType">
-			Marker based on an April Tag.
-		</constant>
-		<constant name="MARKER_TYPE_MAX" value="5" enum="MarkerType">
-			Maximum value for this enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="MarkerType">
+			<constant name="MARKER_TYPE_UNKNOWN" value="0">
+				Unknown or unset marker type.
+			</constant>
+			<constant name="MARKER_TYPE_QRCODE" value="1">
+				Marker based on a QR code.
+			</constant>
+			<constant name="MARKER_TYPE_MICRO_QRCODE" value="2">
+				Marker based on a micro QR code.
+			</constant>
+			<constant name="MARKER_TYPE_ARUCO" value="3">
+				Marker based on an ArUco code.
+			</constant>
+			<constant name="MARKER_TYPE_APRIL_TAG" value="4">
+				Marker based on an April Tag.
+			</constant>
+			<constant name="MARKER_TYPE_MAX" value="5">
+				Maximum value for this enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

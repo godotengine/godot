@@ -88,24 +88,28 @@
 			The transfer mode to use when sending outgoing packet. Either text or binary.
 		</member>
 	</members>
-	<constants>
-		<constant name="WRITE_MODE_TEXT" value="0" enum="WriteMode">
-			Tells the channel to send data over this channel as text. An external peer (non-Godot) would receive this as a string.
-		</constant>
-		<constant name="WRITE_MODE_BINARY" value="1" enum="WriteMode">
-			Tells the channel to send data over this channel as binary. An external peer (non-Godot) would receive this as array buffer or blob.
-		</constant>
-		<constant name="STATE_CONNECTING" value="0" enum="ChannelState">
-			The channel was created, but it's still trying to connect.
-		</constant>
-		<constant name="STATE_OPEN" value="1" enum="ChannelState">
-			The channel is currently open, and data can flow over it.
-		</constant>
-		<constant name="STATE_CLOSING" value="2" enum="ChannelState">
-			The channel is being closed, no new messages will be accepted, but those already in queue will be flushed.
-		</constant>
-		<constant name="STATE_CLOSED" value="3" enum="ChannelState">
-			The channel was closed, or connection failed.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ChannelState">
+			<constant name="STATE_CONNECTING" value="0">
+				The channel was created, but it's still trying to connect.
+			</constant>
+			<constant name="STATE_OPEN" value="1">
+				The channel is currently open, and data can flow over it.
+			</constant>
+			<constant name="STATE_CLOSING" value="2">
+				The channel is being closed, no new messages will be accepted, but those already in queue will be flushed.
+			</constant>
+			<constant name="STATE_CLOSED" value="3">
+				The channel was closed, or connection failed.
+			</constant>
+		</enum>
+		<enum name="WriteMode">
+			<constant name="WRITE_MODE_TEXT" value="0">
+				Tells the channel to send data over this channel as text. An external peer (non-Godot) would receive this as a string.
+			</constant>
+			<constant name="WRITE_MODE_BINARY" value="1">
+				Tells the channel to send data over this channel as binary. An external peer (non-Godot) would receive this as array buffer or blob.
+			</constant>
+		</enum>
+	</enums>
 </class>

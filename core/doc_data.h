@@ -642,6 +642,8 @@ public:
 	};
 
 	struct EnumDoc {
+		bool is_bitfield = false;
+		Vector<ConstantDoc> constants;
 		String description;
 		bool is_deprecated = false;
 		String deprecated_message;
@@ -649,6 +651,18 @@ public:
 		String experimental_message;
 		static EnumDoc from_dict(const Dictionary &p_dict) {
 			EnumDoc doc;
+
+			if (p_dict.has("is_bitfield")) {
+				doc.is_bitfield = p_dict["is_bitfield"];
+			}
+
+			Array constants;
+			if (p_dict.has("constants")) {
+				constants = p_dict["constants"];
+			}
+			for (int i = 0; i < constants.size(); i++) {
+				doc.constants.push_back(ConstantDoc::from_dict(constants[i]));
+			}
 
 			if (p_dict.has("description")) {
 				doc.description = p_dict["description"];
@@ -678,6 +692,18 @@ public:
 		}
 		static Dictionary to_dict(const EnumDoc &p_doc) {
 			Dictionary dict;
+
+			if (p_doc.is_bitfield) {
+				dict["is_bitfield"] = p_doc.is_bitfield;
+			}
+
+			if (!p_doc.constants.is_empty()) {
+				Array constants;
+				for (int i = 0; i < p_doc.constants.size(); i++) {
+					constants.push_back(ConstantDoc::to_dict(p_doc.constants[i]));
+				}
+				dict["constants"] = constants;
+			}
 
 			if (!p_doc.description.is_empty()) {
 				dict["description"] = p_doc.description;
@@ -981,11 +1007,12 @@ public:
 
 			return dict;
 		}
+		Vector<const ConstantDoc *> get_all_constants() const;
 	};
 
 	static String get_default_value_string(const Variant &p_value);
 
-	static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo);
-	static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo);
-	static void method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc);
+	static void return_doc_from_retinfo(MethodDoc &p_method, const PropertyInfo &p_retinfo);
+	static void argument_doc_from_arginfo(ArgumentDoc &p_argument, const PropertyInfo &p_arginfo);
+	static void method_doc_from_methodinfo(MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc);
 };

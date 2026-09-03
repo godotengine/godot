@@ -105,15 +105,17 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="REPLICATION_MODE_NEVER" value="0" enum="ReplicationMode">
-			Do not keep the given property synchronized.
-		</constant>
-		<constant name="REPLICATION_MODE_ALWAYS" value="1" enum="ReplicationMode">
-			Replicate the given property on process by constantly sending updates using unreliable transfer mode.
-		</constant>
-		<constant name="REPLICATION_MODE_ON_CHANGE" value="2" enum="ReplicationMode">
-			Replicate the given property on process by sending updates using reliable transfer mode when its value changes.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ReplicationMode">
+			<constant name="REPLICATION_MODE_NEVER" value="0">
+				Do not keep the given property synchronized.
+			</constant>
+			<constant name="REPLICATION_MODE_ALWAYS" value="1">
+				Replicate the given property on process by constantly sending updates using unreliable transfer mode.
+			</constant>
+			<constant name="REPLICATION_MODE_ON_CHANGE" value="2">
+				Replicate the given property on process by sending updates using reliable transfer mode when its value changes.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -442,14 +442,18 @@
 		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
 			Notification received when this skeleton's pose needs to be updated. In that case, this is called only once per frame in a deferred process.
 		</constant>
-		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS" value="0" enum="ModifierCallbackModeProcess">
-			Set a flag to process modification during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
-		</constant>
-		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_IDLE" value="1" enum="ModifierCallbackModeProcess">
-			Set a flag to process modification during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
-		</constant>
-		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_MANUAL" value="2" enum="ModifierCallbackModeProcess">
-			Do not process modification. Use [method advance] to process the modification manually.
-		</constant>
 	</constants>
+	<enums>
+		<enum name="ModifierCallbackModeProcess">
+			<constant name="MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS" value="0">
+				Set a flag to process modification during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
+			</constant>
+			<constant name="MODIFIER_CALLBACK_MODE_PROCESS_IDLE" value="1">
+				Set a flag to process modification during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+			</constant>
+			<constant name="MODIFIER_CALLBACK_MODE_PROCESS_MANUAL" value="2">
+				Do not process modification. Use [method advance] to process the modification manually.
+			</constant>
+		</enum>
+	</enums>
 </class>

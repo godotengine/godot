@@ -25,18 +25,20 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="INITIALIZATION_LEVEL_CORE" value="0" enum="InitializationLevel">
-			The library is initialized at the same time as the core features of the engine.
-		</constant>
-		<constant name="INITIALIZATION_LEVEL_SERVERS" value="1" enum="InitializationLevel">
-			The library is initialized at the same time as the engine's servers (such as [RenderingServer] or [PhysicsServer3D]).
-		</constant>
-		<constant name="INITIALIZATION_LEVEL_SCENE" value="2" enum="InitializationLevel">
-			The library is initialized at the same time as the engine's scene-related classes.
-		</constant>
-		<constant name="INITIALIZATION_LEVEL_EDITOR" value="3" enum="InitializationLevel">
-			The library is initialized at the same time as the engine's editor classes. Only happens when loading the GDExtension in the editor.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="InitializationLevel">
+			<constant name="INITIALIZATION_LEVEL_CORE" value="0">
+				The library is initialized at the same time as the core features of the engine.
+			</constant>
+			<constant name="INITIALIZATION_LEVEL_SERVERS" value="1">
+				The library is initialized at the same time as the engine's servers (such as [RenderingServer] or [PhysicsServer3D]).
+			</constant>
+			<constant name="INITIALIZATION_LEVEL_SCENE" value="2">
+				The library is initialized at the same time as the engine's scene-related classes.
+			</constant>
+			<constant name="INITIALIZATION_LEVEL_EDITOR" value="3">
+				The library is initialized at the same time as the engine's editor classes. Only happens when loading the GDExtension in the editor.
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -866,71 +866,81 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="LIST_NUMBERS" value="0" enum="ListType">
-			Each list item has a number marker.
-		</constant>
-		<constant name="LIST_LETTERS" value="1" enum="ListType">
-			Each list item has a letter marker.
-		</constant>
-		<constant name="LIST_ROMAN" value="2" enum="ListType">
-			Each list item has a roman number marker.
-		</constant>
-		<constant name="LIST_DOTS" value="3" enum="ListType">
-			Each list item has a filled circle marker.
-		</constant>
-		<constant name="MENU_COPY" value="0" enum="MenuItems">
-			Copies the selected text.
-		</constant>
-		<constant name="MENU_SELECT_ALL" value="1" enum="MenuItems">
-			Selects the whole [RichTextLabel] text.
-		</constant>
-		<constant name="MENU_MAX" value="2" enum="MenuItems">
-			Represents the size of the [enum MenuItems] enum.
-		</constant>
-		<constant name="META_UNDERLINE_NEVER" value="0" enum="MetaUnderline">
-			Meta tag does not display an underline, even if [member meta_underlined] is [code]true[/code].
-		</constant>
-		<constant name="META_UNDERLINE_ALWAYS" value="1" enum="MetaUnderline">
-			If [member meta_underlined] is [code]true[/code], meta tag always display an underline.
-		</constant>
-		<constant name="META_UNDERLINE_ON_HOVER" value="2" enum="MetaUnderline">
-			If [member meta_underlined] is [code]true[/code], meta tag display an underline when the mouse cursor is over it.
-		</constant>
-		<constant name="UPDATE_TEXTURE" value="1" enum="ImageUpdateMask" is_bitfield="true">
-			If this bit is set, [method update_image] changes image texture.
-		</constant>
-		<constant name="UPDATE_SIZE" value="2" enum="ImageUpdateMask" is_bitfield="true">
-			If this bit is set, [method update_image] changes image size.
-		</constant>
-		<constant name="UPDATE_COLOR" value="4" enum="ImageUpdateMask" is_bitfield="true">
-			If this bit is set, [method update_image] changes image color.
-		</constant>
-		<constant name="UPDATE_ALIGNMENT" value="8" enum="ImageUpdateMask" is_bitfield="true">
-			If this bit is set, [method update_image] changes image inline alignment.
-		</constant>
-		<constant name="UPDATE_REGION" value="16" enum="ImageUpdateMask" is_bitfield="true">
-			If this bit is set, [method update_image] changes image texture region.
-		</constant>
-		<constant name="UPDATE_PAD" value="32" enum="ImageUpdateMask" is_bitfield="true">
-			If this bit is set, [method update_image] changes image padding.
-		</constant>
-		<constant name="UPDATE_TOOLTIP" value="64" enum="ImageUpdateMask" is_bitfield="true">
-			If this bit is set, [method update_image] changes image tooltip.
-		</constant>
-		<constant name="UPDATE_WIDTH_UNIT" value="128" enum="ImageUpdateMask" is_bitfield="true">
-			If this bit is set, [method update_image] changes the units used to calculate image size.
-		</constant>
-		<constant name="IMAGE_UNIT_PIXEL" value="0" enum="ImageUnit">
-			Images drawn with this unit will be in pixels.
-		</constant>
-		<constant name="IMAGE_UNIT_PERCENT" value="1" enum="ImageUnit">
-			Images drawn with this unit will be in percentages of the control width.
-		</constant>
-		<constant name="IMAGE_UNIT_EM" value="2" enum="ImageUnit">
-			Images drawn with this unit will be in percentages of the surrounding font size.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ImageUnit">
+			<constant name="IMAGE_UNIT_PIXEL" value="0">
+				Images drawn with this unit will be in pixels.
+			</constant>
+			<constant name="IMAGE_UNIT_PERCENT" value="1">
+				Images drawn with this unit will be in percentages of the control width.
+			</constant>
+			<constant name="IMAGE_UNIT_EM" value="2">
+				Images drawn with this unit will be in percentages of the surrounding font size.
+			</constant>
+		</enum>
+		<enum name="ImageUpdateMask" is_bitfield="true">
+			<constant name="UPDATE_TEXTURE" value="1">
+				If this bit is set, [method update_image] changes image texture.
+			</constant>
+			<constant name="UPDATE_SIZE" value="2">
+				If this bit is set, [method update_image] changes image size.
+			</constant>
+			<constant name="UPDATE_COLOR" value="4">
+				If this bit is set, [method update_image] changes image color.
+			</constant>
+			<constant name="UPDATE_ALIGNMENT" value="8">
+				If this bit is set, [method update_image] changes image inline alignment.
+			</constant>
+			<constant name="UPDATE_REGION" value="16">
+				If this bit is set, [method update_image] changes image texture region.
+			</constant>
+			<constant name="UPDATE_PAD" value="32">
+				If this bit is set, [method update_image] changes image padding.
+			</constant>
+			<constant name="UPDATE_TOOLTIP" value="64">
+				If this bit is set, [method update_image] changes image tooltip.
+			</constant>
+			<constant name="UPDATE_WIDTH_UNIT" value="128">
+				If this bit is set, [method update_image] changes the units used to calculate image size.
+			</constant>
+		</enum>
+		<enum name="ListType">
+			<constant name="LIST_NUMBERS" value="0">
+				Each list item has a number marker.
+			</constant>
+			<constant name="LIST_LETTERS" value="1">
+				Each list item has a letter marker.
+			</constant>
+			<constant name="LIST_ROMAN" value="2">
+				Each list item has a roman number marker.
+			</constant>
+			<constant name="LIST_DOTS" value="3">
+				Each list item has a filled circle marker.
+			</constant>
+		</enum>
+		<enum name="MenuItems">
+			<constant name="MENU_COPY" value="0">
+				Copies the selected text.
+			</constant>
+			<constant name="MENU_SELECT_ALL" value="1">
+				Selects the whole [RichTextLabel] text.
+			</constant>
+			<constant name="MENU_MAX" value="2">
+				Represents the size of the [enum MenuItems] enum.
+			</constant>
+		</enum>
+		<enum name="MetaUnderline">
+			<constant name="META_UNDERLINE_NEVER" value="0">
+				Meta tag does not display an underline, even if [member meta_underlined] is [code]true[/code].
+			</constant>
+			<constant name="META_UNDERLINE_ALWAYS" value="1">
+				If [member meta_underlined] is [code]true[/code], meta tag always display an underline.
+			</constant>
+			<constant name="META_UNDERLINE_ON_HOVER" value="2">
+				If [member meta_underlined] is [code]true[/code], meta tag display an underline when the mouse cursor is over it.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="default_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The default text color.

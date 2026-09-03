@@ -72,24 +72,28 @@
 			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching [member CanvasItem.light_mask] will cast shadows. See also [member range_item_cull_mask], which affects which objects can [i]receive[/i] the light.
 		</member>
 	</members>
-	<constants>
-		<constant name="SHADOW_FILTER_NONE" value="0" enum="ShadowFilter">
-			No filter applies to the shadow map. This provides hard shadow edges and is the fastest to render. See [member shadow_filter].
-		</constant>
-		<constant name="SHADOW_FILTER_PCF5" value="1" enum="ShadowFilter">
-			Percentage closer filtering (5 samples) applies to the shadow map. This is slower compared to hard shadow rendering. See [member shadow_filter].
-		</constant>
-		<constant name="SHADOW_FILTER_PCF13" value="2" enum="ShadowFilter">
-			Percentage closer filtering (13 samples) applies to the shadow map. This is the slowest shadow filtering mode, and should be used sparingly. See [member shadow_filter].
-		</constant>
-		<constant name="BLEND_MODE_ADD" value="0" enum="BlendMode">
-			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behavior of a light.
-		</constant>
-		<constant name="BLEND_MODE_SUB" value="1" enum="BlendMode">
-			Subtracts the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
-		</constant>
-		<constant name="BLEND_MODE_MIX" value="2" enum="BlendMode">
-			Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="BlendMode">
+			<constant name="BLEND_MODE_ADD" value="0">
+				Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behavior of a light.
+			</constant>
+			<constant name="BLEND_MODE_SUB" value="1">
+				Subtracts the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
+			</constant>
+			<constant name="BLEND_MODE_MIX" value="2">
+				Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
+			</constant>
+		</enum>
+		<enum name="ShadowFilter">
+			<constant name="SHADOW_FILTER_NONE" value="0">
+				No filter applies to the shadow map. This provides hard shadow edges and is the fastest to render. See [member shadow_filter].
+			</constant>
+			<constant name="SHADOW_FILTER_PCF5" value="1">
+				Percentage closer filtering (5 samples) applies to the shadow map. This is slower compared to hard shadow rendering. See [member shadow_filter].
+			</constant>
+			<constant name="SHADOW_FILTER_PCF13" value="2">
+				Percentage closer filtering (13 samples) applies to the shadow map. This is the slowest shadow filtering mode, and should be used sparingly. See [member shadow_filter].
+			</constant>
+		</enum>
+	</enums>
 </class>

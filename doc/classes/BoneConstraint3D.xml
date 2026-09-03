@@ -141,13 +141,15 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="REFERENCE_TYPE_BONE" value="0" enum="ReferenceType">
-			The reference target is a bone. In this case, the reference target space is local space.
-		</constant>
-		<constant name="REFERENCE_TYPE_NODE" value="1" enum="ReferenceType">
-			The reference target is a [Node3D]. In this case, the reference target space is model space.
-			In other words, the reference target's coordinates are treated as if it was placed directly under the [Skeleton3D] parent of the [BoneConstraint3D].
-		</constant>
-	</constants>
+	<enums>
+		<enum name="ReferenceType">
+			<constant name="REFERENCE_TYPE_BONE" value="0">
+				The reference target is a bone. In this case, the reference target space is local space.
+			</constant>
+			<constant name="REFERENCE_TYPE_NODE" value="1">
+				The reference target is a [Node3D]. In this case, the reference target space is model space.
+				In other words, the reference target's coordinates are treated as if it was placed directly under the [Skeleton3D] parent of the [BoneConstraint3D].
+			</constant>
+		</enum>
+	</enums>
 </class>

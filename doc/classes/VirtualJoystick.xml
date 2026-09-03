@@ -79,23 +79,27 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="JOYSTICK_FIXED" value="0" enum="JoystickMode">
-			The joystick doesn't move.
-		</constant>
-		<constant name="JOYSTICK_DYNAMIC" value="1" enum="JoystickMode">
-			The joystick is moved to the initial touch position as long as it's within the joystick's bounds. It moves back to its original position when released.
-		</constant>
-		<constant name="JOYSTICK_FOLLOWING" value="2" enum="JoystickMode">
-			The joystick is moved to the initial touch position as long as it's within the joystick's bounds. It will follow the touch input if it goes outside the joystick's range. It moves back to its original position when released.
-		</constant>
-		<constant name="VISIBILITY_ALWAYS" value="0" enum="VisibilityMode">
-			The joystick is always visible.
-		</constant>
-		<constant name="VISIBILITY_WHEN_TOUCHED" value="1" enum="VisibilityMode">
-			The joystick is only visible when being touched.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="JoystickMode">
+			<constant name="JOYSTICK_FIXED" value="0">
+				The joystick doesn't move.
+			</constant>
+			<constant name="JOYSTICK_DYNAMIC" value="1">
+				The joystick is moved to the initial touch position as long as it's within the joystick's bounds. It moves back to its original position when released.
+			</constant>
+			<constant name="JOYSTICK_FOLLOWING" value="2">
+				The joystick is moved to the initial touch position as long as it's within the joystick's bounds. It will follow the touch input if it goes outside the joystick's range. It moves back to its original position when released.
+			</constant>
+		</enum>
+		<enum name="VisibilityMode">
+			<constant name="VISIBILITY_ALWAYS" value="0">
+				The joystick is always visible.
+			</constant>
+			<constant name="VISIBILITY_WHEN_TOUCHED" value="1">
+				The joystick is only visible when being touched.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="normal_joystick" data_type="style" type="StyleBox">
 			Base joystick [StyleBox].

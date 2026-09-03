@@ -17,21 +17,23 @@
 			</description>
 		</method>
 	</methods>
-	<constants>
-		<constant name="PLANE_SEMANTIC_LABEL_UNCATEGORIZED" value="1" enum="PlaneSemanticLabel">
-			Uncategorized plane.
-		</constant>
-		<constant name="PLANE_SEMANTIC_LABEL_FLOOR" value="2" enum="PlaneSemanticLabel">
-			Plane represents a floor.
-		</constant>
-		<constant name="PLANE_SEMANTIC_LABEL_WALL" value="3" enum="PlaneSemanticLabel">
-			Plane represents a wall.
-		</constant>
-		<constant name="PLANE_SEMANTIC_LABEL_CEILING" value="4" enum="PlaneSemanticLabel">
-			Plane represents a ceiling.
-		</constant>
-		<constant name="PLANE_SEMANTIC_LABEL_TABLE" value="5" enum="PlaneSemanticLabel">
-			Plane represents the surface of a table.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="PlaneSemanticLabel">
+			<constant name="PLANE_SEMANTIC_LABEL_UNCATEGORIZED" value="1">
+				Uncategorized plane.
+			</constant>
+			<constant name="PLANE_SEMANTIC_LABEL_FLOOR" value="2">
+				Plane represents a floor.
+			</constant>
+			<constant name="PLANE_SEMANTIC_LABEL_WALL" value="3">
+				Plane represents a wall.
+			</constant>
+			<constant name="PLANE_SEMANTIC_LABEL_CEILING" value="4">
+				Plane represents a ceiling.
+			</constant>
+			<constant name="PLANE_SEMANTIC_LABEL_TABLE" value="5">
+				Plane represents the surface of a table.
+			</constant>
+		</enum>
+	</enums>
 </class>

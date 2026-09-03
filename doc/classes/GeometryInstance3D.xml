@@ -90,56 +90,64 @@
 			Controls which instances will be faded when approaching the limits of the visibility range.
 		</member>
 	</members>
-	<constants>
-		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
-			Will not cast any shadows. Use this to improve performance for small geometry that is unlikely to cast noticeable shadows (such as debris).
-		</constant>
-		<constant name="SHADOW_CASTING_SETTING_ON" value="1" enum="ShadowCastingSetting">
-			Will cast shadows from all visible faces in the GeometryInstance3D.
-			Will take culling into account, so faces not being rendered will not be taken into account when shadow casting.
-		</constant>
-		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2" enum="ShadowCastingSetting">
-			Will cast shadows from all visible faces in the GeometryInstance3D.
-			Will not take culling into account, so all faces will be taken into account when shadow casting.
-		</constant>
-		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
-			Will only show the shadows casted from this object.
-			In other words, the actual mesh will not be visible, only the shadows casted from the mesh will be.
-		</constant>
-		<constant name="GI_MODE_DISABLED" value="0" enum="GIMode">
-			Disabled global illumination mode. Use for dynamic objects that do not contribute to global illumination (such as characters). When using [VoxelGI] and SDFGI, the geometry will [i]receive[/i] indirect lighting and reflections but the geometry will not be considered in GI baking.
-		</constant>
-		<constant name="GI_MODE_STATIC" value="1" enum="GIMode">
-			Baked global illumination mode. Use for static objects that contribute to global illumination (such as level geometry). This GI mode is effective when using [VoxelGI], SDFGI and [LightmapGI].
-		</constant>
-		<constant name="GI_MODE_DYNAMIC" value="2" enum="GIMode">
-			Dynamic global illumination mode. Use for dynamic objects that contribute to global illumination. This GI mode is only effective when using [VoxelGI], but it has a higher performance impact than [constant GI_MODE_STATIC]. When using other GI methods, this will act the same as [constant GI_MODE_DISABLED]. When using [LightmapGI], the object will receive indirect lighting using lightmap probes instead of using the baked lightmap texture.
-		</constant>
-		<constant name="LIGHTMAP_SCALE_1X" value="0" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
-			The standard texel density for lightmapping with [LightmapGI].
-		</constant>
-		<constant name="LIGHTMAP_SCALE_2X" value="1" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
-			Multiplies texel density by 2× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor between 1.5 and 3.0.
-		</constant>
-		<constant name="LIGHTMAP_SCALE_4X" value="2" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
-			Multiplies texel density by 4× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor between 3.0 and 6.0.
-		</constant>
-		<constant name="LIGHTMAP_SCALE_8X" value="3" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
-			Multiplies texel density by 8× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor greater than 6.0.
-		</constant>
-		<constant name="LIGHTMAP_SCALE_MAX" value="4" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
-			Represents the size of the [enum LightmapScale] enum.
-		</constant>
-		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode">
-			Will not fade itself nor its visibility dependencies, hysteresis will be used instead. This is the fastest approach to manual LOD, but it can result in noticeable LOD transitions depending on how the LOD meshes are authored. See [member visibility_range_begin] and [member Node3D.visibility_parent] for more information.
-		</constant>
-		<constant name="VISIBILITY_RANGE_FADE_SELF" value="1" enum="VisibilityRangeFadeMode">
-			Will fade-out itself when reaching the limits of its own visibility range. This is slower than [constant VISIBILITY_RANGE_FADE_DISABLED], but it can provide smoother transitions. The fading range is determined by [member visibility_range_begin_margin] and [member visibility_range_end_margin].
-			[b]Note:[/b] Only supported when using the Forward+ rendering method. When using the Mobile or Compatibility rendering method, this mode acts like [constant VISIBILITY_RANGE_FADE_DISABLED] but with hysteresis disabled.
-		</constant>
-		<constant name="VISIBILITY_RANGE_FADE_DEPENDENCIES" value="2" enum="VisibilityRangeFadeMode">
-			Will fade-in its visibility dependencies (see [member Node3D.visibility_parent]) when reaching the limits of its own visibility range. This is slower than [constant VISIBILITY_RANGE_FADE_DISABLED], but it can provide smoother transitions. The fading range is determined by [member visibility_range_begin_margin] and [member visibility_range_end_margin].
-			[b]Note:[/b] Only supported when using the Forward+ rendering method. When using the Mobile or Compatibility rendering method, this mode acts like [constant VISIBILITY_RANGE_FADE_DISABLED] but with hysteresis disabled.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="GIMode">
+			<constant name="GI_MODE_DISABLED" value="0">
+				Disabled global illumination mode. Use for dynamic objects that do not contribute to global illumination (such as characters). When using [VoxelGI] and SDFGI, the geometry will [i]receive[/i] indirect lighting and reflections but the geometry will not be considered in GI baking.
+			</constant>
+			<constant name="GI_MODE_STATIC" value="1">
+				Baked global illumination mode. Use for static objects that contribute to global illumination (such as level geometry). This GI mode is effective when using [VoxelGI], SDFGI and [LightmapGI].
+			</constant>
+			<constant name="GI_MODE_DYNAMIC" value="2">
+				Dynamic global illumination mode. Use for dynamic objects that contribute to global illumination. This GI mode is only effective when using [VoxelGI], but it has a higher performance impact than [constant GI_MODE_STATIC]. When using other GI methods, this will act the same as [constant GI_MODE_DISABLED]. When using [LightmapGI], the object will receive indirect lighting using lightmap probes instead of using the baked lightmap texture.
+			</constant>
+		</enum>
+		<enum name="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
+			<constant name="LIGHTMAP_SCALE_1X" value="0" deprecated="Use [member gi_lightmap_texel_scale] instead.">
+				The standard texel density for lightmapping with [LightmapGI].
+			</constant>
+			<constant name="LIGHTMAP_SCALE_2X" value="1" deprecated="Use [member gi_lightmap_texel_scale] instead.">
+				Multiplies texel density by 2× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor between 1.5 and 3.0.
+			</constant>
+			<constant name="LIGHTMAP_SCALE_4X" value="2" deprecated="Use [member gi_lightmap_texel_scale] instead.">
+				Multiplies texel density by 4× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor between 3.0 and 6.0.
+			</constant>
+			<constant name="LIGHTMAP_SCALE_8X" value="3" deprecated="Use [member gi_lightmap_texel_scale] instead.">
+				Multiplies texel density by 8× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor greater than 6.0.
+			</constant>
+			<constant name="LIGHTMAP_SCALE_MAX" value="4" deprecated="Use [member gi_lightmap_texel_scale] instead.">
+				Represents the size of the [enum LightmapScale] enum.
+			</constant>
+		</enum>
+		<enum name="ShadowCastingSetting">
+			<constant name="SHADOW_CASTING_SETTING_OFF" value="0">
+				Will not cast any shadows. Use this to improve performance for small geometry that is unlikely to cast noticeable shadows (such as debris).
+			</constant>
+			<constant name="SHADOW_CASTING_SETTING_ON" value="1">
+				Will cast shadows from all visible faces in the GeometryInstance3D.
+				Will take culling into account, so faces not being rendered will not be taken into account when shadow casting.
+			</constant>
+			<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2">
+				Will cast shadows from all visible faces in the GeometryInstance3D.
+				Will not take culling into account, so all faces will be taken into account when shadow casting.
+			</constant>
+			<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3">
+				Will only show the shadows casted from this object.
+				In other words, the actual mesh will not be visible, only the shadows casted from the mesh will be.
+			</constant>
+		</enum>
+		<enum name="VisibilityRangeFadeMode">
+			<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0">
+				Will not fade itself nor its visibility dependencies, hysteresis will be used instead. This is the fastest approach to manual LOD, but it can result in noticeable LOD transitions depending on how the LOD meshes are authored. See [member visibility_range_begin] and [member Node3D.visibility_parent] for more information.
+			</constant>
+			<constant name="VISIBILITY_RANGE_FADE_SELF" value="1">
+				Will fade-out itself when reaching the limits of its own visibility range. This is slower than [constant VISIBILITY_RANGE_FADE_DISABLED], but it can provide smoother transitions. The fading range is determined by [member visibility_range_begin_margin] and [member visibility_range_end_margin].
+				[b]Note:[/b] Only supported when using the Forward+ rendering method. When using the Mobile or Compatibility rendering method, this mode acts like [constant VISIBILITY_RANGE_FADE_DISABLED] but with hysteresis disabled.
+			</constant>
+			<constant name="VISIBILITY_RANGE_FADE_DEPENDENCIES" value="2">
+				Will fade-in its visibility dependencies (see [member Node3D.visibility_parent]) when reaching the limits of its own visibility range. This is slower than [constant VISIBILITY_RANGE_FADE_DISABLED], but it can provide smoother transitions. The fading range is determined by [member visibility_range_begin_margin] and [member visibility_range_end_margin].
+				[b]Note:[/b] Only supported when using the Forward+ rendering method. When using the Mobile or Compatibility rendering method, this mode acts like [constant VISIBILITY_RANGE_FADE_DISABLED] but with hysteresis disabled.
+			</constant>
+		</enum>
+	</enums>
 </class>

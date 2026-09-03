@@ -1483,161 +1483,175 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="MENU_CUT" value="0" enum="MenuItems">
-			Cuts (copies and clears) the selected text.
-		</constant>
-		<constant name="MENU_COPY" value="1" enum="MenuItems">
-			Copies the selected text.
-		</constant>
-		<constant name="MENU_PASTE" value="2" enum="MenuItems">
-			Pastes the clipboard text over the selected text (or at the cursor's position).
-		</constant>
-		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
-			Erases the whole [TextEdit] text.
-		</constant>
-		<constant name="MENU_SELECT_ALL" value="4" enum="MenuItems">
-			Selects the whole [TextEdit] text.
-		</constant>
-		<constant name="MENU_UNDO" value="5" enum="MenuItems">
-			Undoes the previous action.
-		</constant>
-		<constant name="MENU_REDO" value="6" enum="MenuItems">
-			Redoes the previous action.
-		</constant>
-		<constant name="MENU_SUBMENU_TEXT_DIR" value="7" enum="MenuItems">
-			ID of "Text Writing Direction" submenu.
-		</constant>
-		<constant name="MENU_DIR_INHERITED" value="8" enum="MenuItems">
-			Sets text direction to inherited.
-		</constant>
-		<constant name="MENU_DIR_AUTO" value="9" enum="MenuItems">
-			Sets text direction to automatic.
-		</constant>
-		<constant name="MENU_DIR_LTR" value="10" enum="MenuItems">
-			Sets text direction to left-to-right.
-		</constant>
-		<constant name="MENU_DIR_RTL" value="11" enum="MenuItems">
-			Sets text direction to right-to-left.
-		</constant>
-		<constant name="MENU_DISPLAY_UCC" value="12" enum="MenuItems">
-			Toggles control character display.
-		</constant>
-		<constant name="MENU_SUBMENU_INSERT_UCC" value="13" enum="MenuItems">
-			ID of "Insert Control Character" submenu.
-		</constant>
-		<constant name="MENU_INSERT_LRM" value="14" enum="MenuItems">
-			Inserts left-to-right mark (LRM) character.
-		</constant>
-		<constant name="MENU_INSERT_RLM" value="15" enum="MenuItems">
-			Inserts right-to-left mark (RLM) character.
-		</constant>
-		<constant name="MENU_INSERT_LRE" value="16" enum="MenuItems">
-			Inserts start of left-to-right embedding (LRE) character.
-		</constant>
-		<constant name="MENU_INSERT_RLE" value="17" enum="MenuItems">
-			Inserts start of right-to-left embedding (RLE) character.
-		</constant>
-		<constant name="MENU_INSERT_LRO" value="18" enum="MenuItems">
-			Inserts start of left-to-right override (LRO) character.
-		</constant>
-		<constant name="MENU_INSERT_RLO" value="19" enum="MenuItems">
-			Inserts start of right-to-left override (RLO) character.
-		</constant>
-		<constant name="MENU_INSERT_PDF" value="20" enum="MenuItems">
-			Inserts pop direction formatting (PDF) character.
-		</constant>
-		<constant name="MENU_INSERT_ALM" value="21" enum="MenuItems">
-			Inserts Arabic letter mark (ALM) character.
-		</constant>
-		<constant name="MENU_INSERT_LRI" value="22" enum="MenuItems">
-			Inserts left-to-right isolate (LRI) character.
-		</constant>
-		<constant name="MENU_INSERT_RLI" value="23" enum="MenuItems">
-			Inserts right-to-left isolate (RLI) character.
-		</constant>
-		<constant name="MENU_INSERT_FSI" value="24" enum="MenuItems">
-			Inserts first strong isolate (FSI) character.
-		</constant>
-		<constant name="MENU_INSERT_PDI" value="25" enum="MenuItems">
-			Inserts pop direction isolate (PDI) character.
-		</constant>
-		<constant name="MENU_INSERT_ZWJ" value="26" enum="MenuItems">
-			Inserts zero width joiner (ZWJ) character.
-		</constant>
-		<constant name="MENU_INSERT_ZWNJ" value="27" enum="MenuItems">
-			Inserts zero width non-joiner (ZWNJ) character.
-		</constant>
-		<constant name="MENU_INSERT_WJ" value="28" enum="MenuItems">
-			Inserts word joiner (WJ) character.
-		</constant>
-		<constant name="MENU_INSERT_SHY" value="29" enum="MenuItems">
-			Inserts soft hyphen (SHY) character.
-		</constant>
-		<constant name="MENU_EMOJI_AND_SYMBOL" value="30" enum="MenuItems">
-			Opens system emoji and symbol picker.
-		</constant>
-		<constant name="MENU_MAX" value="31" enum="MenuItems">
-			Represents the size of the [enum MenuItems] enum.
-		</constant>
-		<constant name="ACTION_NONE" value="0" enum="EditAction">
-			No current action.
-		</constant>
-		<constant name="ACTION_TYPING" value="1" enum="EditAction">
-			A typing action.
-		</constant>
-		<constant name="ACTION_BACKSPACE" value="2" enum="EditAction">
-			A backwards delete action.
-		</constant>
-		<constant name="ACTION_DELETE" value="3" enum="EditAction">
-			A forward delete action.
-		</constant>
-		<constant name="SEARCH_MATCH_CASE" value="1" enum="SearchFlags">
-			Match case when searching.
-		</constant>
-		<constant name="SEARCH_WHOLE_WORDS" value="2" enum="SearchFlags">
-			Match whole words when searching.
-		</constant>
-		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
-			Search from end to beginning.
-		</constant>
-		<constant name="CARET_TYPE_LINE" value="0" enum="CaretType">
-			Vertical line caret.
-		</constant>
-		<constant name="CARET_TYPE_BLOCK" value="1" enum="CaretType">
-			Block caret.
-		</constant>
-		<constant name="SELECTION_MODE_NONE" value="0" enum="SelectionMode">
-			Not selecting.
-		</constant>
-		<constant name="SELECTION_MODE_SHIFT" value="1" enum="SelectionMode">
-			Select as if [code]shift[/code] is pressed.
-		</constant>
-		<constant name="SELECTION_MODE_POINTER" value="2" enum="SelectionMode">
-			Select single characters as if the user single clicked.
-		</constant>
-		<constant name="SELECTION_MODE_WORD" value="3" enum="SelectionMode">
-			Select whole words as if the user double clicked.
-		</constant>
-		<constant name="SELECTION_MODE_LINE" value="4" enum="SelectionMode">
-			Select whole lines as if the user triple clicked.
-		</constant>
-		<constant name="LINE_WRAPPING_NONE" value="0" enum="LineWrappingMode">
-			Line wrapping is disabled.
-		</constant>
-		<constant name="LINE_WRAPPING_BOUNDARY" value="1" enum="LineWrappingMode">
-			Line wrapping occurs at the control boundary, beyond what would normally be visible.
-		</constant>
-		<constant name="GUTTER_TYPE_STRING" value="0" enum="GutterType">
-			When a gutter is set to string using [method set_gutter_type], it is used to contain text set via the [method set_line_gutter_text] method.
-		</constant>
-		<constant name="GUTTER_TYPE_ICON" value="1" enum="GutterType">
-			When a gutter is set to icon using [method set_gutter_type], it is used to contain an icon set via the [method set_line_gutter_icon] method.
-		</constant>
-		<constant name="GUTTER_TYPE_CUSTOM" value="2" enum="GutterType">
-			When a gutter is set to custom using [method set_gutter_type], it is used to contain custom visuals controlled by a callback method set via the [method set_gutter_custom_draw] method.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="CaretType">
+			<constant name="CARET_TYPE_LINE" value="0">
+				Vertical line caret.
+			</constant>
+			<constant name="CARET_TYPE_BLOCK" value="1">
+				Block caret.
+			</constant>
+		</enum>
+		<enum name="EditAction">
+			<constant name="ACTION_NONE" value="0">
+				No current action.
+			</constant>
+			<constant name="ACTION_TYPING" value="1">
+				A typing action.
+			</constant>
+			<constant name="ACTION_BACKSPACE" value="2">
+				A backwards delete action.
+			</constant>
+			<constant name="ACTION_DELETE" value="3">
+				A forward delete action.
+			</constant>
+		</enum>
+		<enum name="GutterType">
+			<constant name="GUTTER_TYPE_STRING" value="0">
+				When a gutter is set to string using [method set_gutter_type], it is used to contain text set via the [method set_line_gutter_text] method.
+			</constant>
+			<constant name="GUTTER_TYPE_ICON" value="1">
+				When a gutter is set to icon using [method set_gutter_type], it is used to contain an icon set via the [method set_line_gutter_icon] method.
+			</constant>
+			<constant name="GUTTER_TYPE_CUSTOM" value="2">
+				When a gutter is set to custom using [method set_gutter_type], it is used to contain custom visuals controlled by a callback method set via the [method set_gutter_custom_draw] method.
+			</constant>
+		</enum>
+		<enum name="LineWrappingMode">
+			<constant name="LINE_WRAPPING_NONE" value="0">
+				Line wrapping is disabled.
+			</constant>
+			<constant name="LINE_WRAPPING_BOUNDARY" value="1">
+				Line wrapping occurs at the control boundary, beyond what would normally be visible.
+			</constant>
+		</enum>
+		<enum name="MenuItems">
+			<constant name="MENU_CUT" value="0">
+				Cuts (copies and clears) the selected text.
+			</constant>
+			<constant name="MENU_COPY" value="1">
+				Copies the selected text.
+			</constant>
+			<constant name="MENU_PASTE" value="2">
+				Pastes the clipboard text over the selected text (or at the cursor's position).
+			</constant>
+			<constant name="MENU_CLEAR" value="3">
+				Erases the whole [TextEdit] text.
+			</constant>
+			<constant name="MENU_SELECT_ALL" value="4">
+				Selects the whole [TextEdit] text.
+			</constant>
+			<constant name="MENU_UNDO" value="5">
+				Undoes the previous action.
+			</constant>
+			<constant name="MENU_REDO" value="6">
+				Redoes the previous action.
+			</constant>
+			<constant name="MENU_SUBMENU_TEXT_DIR" value="7">
+				ID of "Text Writing Direction" submenu.
+			</constant>
+			<constant name="MENU_DIR_INHERITED" value="8">
+				Sets text direction to inherited.
+			</constant>
+			<constant name="MENU_DIR_AUTO" value="9">
+				Sets text direction to automatic.
+			</constant>
+			<constant name="MENU_DIR_LTR" value="10">
+				Sets text direction to left-to-right.
+			</constant>
+			<constant name="MENU_DIR_RTL" value="11">
+				Sets text direction to right-to-left.
+			</constant>
+			<constant name="MENU_DISPLAY_UCC" value="12">
+				Toggles control character display.
+			</constant>
+			<constant name="MENU_SUBMENU_INSERT_UCC" value="13">
+				ID of "Insert Control Character" submenu.
+			</constant>
+			<constant name="MENU_INSERT_LRM" value="14">
+				Inserts left-to-right mark (LRM) character.
+			</constant>
+			<constant name="MENU_INSERT_RLM" value="15">
+				Inserts right-to-left mark (RLM) character.
+			</constant>
+			<constant name="MENU_INSERT_LRE" value="16">
+				Inserts start of left-to-right embedding (LRE) character.
+			</constant>
+			<constant name="MENU_INSERT_RLE" value="17">
+				Inserts start of right-to-left embedding (RLE) character.
+			</constant>
+			<constant name="MENU_INSERT_LRO" value="18">
+				Inserts start of left-to-right override (LRO) character.
+			</constant>
+			<constant name="MENU_INSERT_RLO" value="19">
+				Inserts start of right-to-left override (RLO) character.
+			</constant>
+			<constant name="MENU_INSERT_PDF" value="20">
+				Inserts pop direction formatting (PDF) character.
+			</constant>
+			<constant name="MENU_INSERT_ALM" value="21">
+				Inserts Arabic letter mark (ALM) character.
+			</constant>
+			<constant name="MENU_INSERT_LRI" value="22">
+				Inserts left-to-right isolate (LRI) character.
+			</constant>
+			<constant name="MENU_INSERT_RLI" value="23">
+				Inserts right-to-left isolate (RLI) character.
+			</constant>
+			<constant name="MENU_INSERT_FSI" value="24">
+				Inserts first strong isolate (FSI) character.
+			</constant>
+			<constant name="MENU_INSERT_PDI" value="25">
+				Inserts pop direction isolate (PDI) character.
+			</constant>
+			<constant name="MENU_INSERT_ZWJ" value="26">
+				Inserts zero width joiner (ZWJ) character.
+			</constant>
+			<constant name="MENU_INSERT_ZWNJ" value="27">
+				Inserts zero width non-joiner (ZWNJ) character.
+			</constant>
+			<constant name="MENU_INSERT_WJ" value="28">
+				Inserts word joiner (WJ) character.
+			</constant>
+			<constant name="MENU_INSERT_SHY" value="29">
+				Inserts soft hyphen (SHY) character.
+			</constant>
+			<constant name="MENU_EMOJI_AND_SYMBOL" value="30">
+				Opens system emoji and symbol picker.
+			</constant>
+			<constant name="MENU_MAX" value="31">
+				Represents the size of the [enum MenuItems] enum.
+			</constant>
+		</enum>
+		<enum name="SearchFlags">
+			<constant name="SEARCH_MATCH_CASE" value="1">
+				Match case when searching.
+			</constant>
+			<constant name="SEARCH_WHOLE_WORDS" value="2">
+				Match whole words when searching.
+			</constant>
+			<constant name="SEARCH_BACKWARDS" value="4">
+				Search from end to beginning.
+			</constant>
+		</enum>
+		<enum name="SelectionMode">
+			<constant name="SELECTION_MODE_NONE" value="0">
+				Not selecting.
+			</constant>
+			<constant name="SELECTION_MODE_SHIFT" value="1">
+				Select as if [code]shift[/code] is pressed.
+			</constant>
+			<constant name="SELECTION_MODE_POINTER" value="2">
+				Select single characters as if the user single clicked.
+			</constant>
+			<constant name="SELECTION_MODE_WORD" value="3">
+				Select whole words as if the user double clicked.
+			</constant>
+			<constant name="SELECTION_MODE_LINE" value="4">
+				Select whole lines as if the user triple clicked.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="background_color" data_type="color" type="Color" default="Color(0, 0, 0, 0)" deprecated="Assign a [StyleBoxFlat] to [theme_item normal] instead, and set [member StyleBoxFlat.bg_color] to the desired background color.">
 			Sets the background [Color] of this [TextEdit].

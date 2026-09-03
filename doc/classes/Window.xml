@@ -916,166 +916,182 @@
 			- The node enters the scene tree.
 			[b]Note:[/b] As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.
 		</constant>
-		<constant name="MODE_WINDOWED" value="0" enum="Mode">
-			Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
-		</constant>
-		<constant name="MODE_MINIMIZED" value="1" enum="Mode">
-			Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed.
-		</constant>
-		<constant name="MODE_MAXIMIZED" value="2" enum="Mode">
-			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the maximize button is pressed.
-		</constant>
-		<constant name="MODE_FULLSCREEN" value="3" enum="Mode">
-			Full screen mode with full multi-window support.
-			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
-			[b]On Android:[/b] This enables immersive mode.
-			[b]On macOS:[/b] A new desktop is used to display the running project.
-			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
-		</constant>
-		<constant name="MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="Mode">
-			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
-			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
-			[b]Note:[/b] This mode might not work with screen recording software.
-			[b]On Android:[/b] This enables immersive mode.
-			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
-			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
-			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
-			[b]On Linux (Wayland):[/b] Equivalent to [constant MODE_FULLSCREEN].
-			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
-		</constant>
-		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
-			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
-		</constant>
-		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
-			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].
-			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, Windows, and embedded windows.
-		</constant>
-		<constant name="FLAG_ALWAYS_ON_TOP" value="2" enum="Flags">
-			The window is floating on top of all other windows. This flag is ignored for full-screen windows. Set with [member always_on_top].
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
-		</constant>
-		<constant name="FLAG_TRANSPARENT" value="3" enum="Flags">
-			The window background can be transparent. Set with [member transparent].
-			[b]Note:[/b] This flag has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
-			[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, Windows, and embedded windows.
-		</constant>
-		<constant name="FLAG_NO_FOCUS" value="4" enum="Flags">
-			The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
-		</constant>
-		<constant name="FLAG_POPUP" value="5" enum="Flags">
-			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [member transient]).
-			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, Windows, and embedded [Popup] windows.
-		</constant>
-		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
-			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
-			[b]Note:[/b] This flag has no effect in embedded windows.
-			[b]Note:[/b] This flag is implemented only on macOS.
-		</constant>
-		<constant name="FLAG_MOUSE_PASSTHROUGH" value="7" enum="Flags">
-			All mouse events are passed to the underlying window of the same application.
-			[b]Note:[/b] This flag has no effect in embedded windows.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows.
-		</constant>
-		<constant name="FLAG_SHARP_CORNERS" value="8" enum="Flags">
-			Window style is overridden, forcing sharp corners.
-			[b]Note:[/b] This flag has no effect in embedded windows.
-			[b]Note:[/b] This flag is implemented only on Windows (11).
-		</constant>
-		<constant name="FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="Flags">
-			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
-			[b]Note:[/b] This flag has no effect in embedded windows.
-			[b]Note:[/b] This flag is implemented on macOS and Windows (10, 20H1).
-			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
-		</constant>
-		<constant name="FLAG_POPUP_WM_HINT" value="10" enum="Flags">
-			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
-			[b]Note:[/b] This flag has no effect in embedded windows.
-			[b]Note:[/b] This flag is implemented on Linux (Wayland).
-		</constant>
-		<constant name="FLAG_MINIMIZE_DISABLED" value="11" enum="Flags">
-			Window minimize button is disabled.
-			[b]Note:[/b] This flag has no effect in embedded windows.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
-		</constant>
-		<constant name="FLAG_MAXIMIZE_DISABLED" value="12" enum="Flags">
-			Window maximize button is disabled.
-			[b]Note:[/b] This flag has no effect in embedded windows.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
-		</constant>
-		<constant name="FLAG_MAX" value="13" enum="Flags">
-			Max value of the [enum Flags].
-		</constant>
-		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
-			The content will not be scaled to match the [Window]'s size ([member content_scale_size] is ignored).
-		</constant>
-		<constant name="CONTENT_SCALE_MODE_CANVAS_ITEMS" value="1" enum="ContentScaleMode">
-			The content will be rendered at the target size. This is more performance-expensive than [constant CONTENT_SCALE_MODE_VIEWPORT], but provides better results.
-		</constant>
-		<constant name="CONTENT_SCALE_MODE_VIEWPORT" value="2" enum="ContentScaleMode">
-			The content will be rendered at the base size and then scaled to the target size. More performant than [constant CONTENT_SCALE_MODE_CANVAS_ITEMS], but results in pixelated image.
-		</constant>
-		<constant name="CONTENT_SCALE_ASPECT_IGNORE" value="0" enum="ContentScaleAspect">
-			The aspect will be ignored. Scaling will simply stretch the content to fit the target size.
-		</constant>
-		<constant name="CONTENT_SCALE_ASPECT_KEEP" value="1" enum="ContentScaleAspect">
-			The content's aspect will be preserved. If the target size has different aspect from the base one, the image will be centered and black bars will appear on left and right sides.
-		</constant>
-		<constant name="CONTENT_SCALE_ASPECT_KEEP_WIDTH" value="2" enum="ContentScaleAspect">
-			The content can be expanded vertically. Scaling horizontally will result in keeping the width ratio and then black bars on left and right sides.
-		</constant>
-		<constant name="CONTENT_SCALE_ASPECT_KEEP_HEIGHT" value="3" enum="ContentScaleAspect">
-			The content can be expanded horizontally. Scaling vertically will result in keeping the height ratio and then black bars on top and bottom sides.
-		</constant>
-		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
-			The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the top-left corner and add an extra visible area in the stretched space.
-		</constant>
-		<constant name="CONTENT_SCALE_STRETCH_FRACTIONAL" value="0" enum="ContentScaleStretch">
-			The content will be stretched according to a fractional factor. This fills all the space available in the window, but allows "pixel wobble" to occur due to uneven pixel scaling.
-		</constant>
-		<constant name="CONTENT_SCALE_STRETCH_INTEGER" value="1" enum="ContentScaleStretch">
-			The content will be stretched only according to an integer factor, preserving sharp pixels. This may leave a black background visible on the window's edges depending on the window size.
-		</constant>
-		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
-			Automatic layout direction, determined from the parent window layout direction.
-		</constant>
-		<constant name="LAYOUT_DIRECTION_APPLICATION_LOCALE" value="1" enum="LayoutDirection">
-			Automatic layout direction, determined from the current locale.
-		</constant>
-		<constant name="LAYOUT_DIRECTION_LTR" value="2" enum="LayoutDirection">
-			Left-to-right layout direction.
-		</constant>
-		<constant name="LAYOUT_DIRECTION_RTL" value="3" enum="LayoutDirection">
-			Right-to-left layout direction.
-		</constant>
-		<constant name="LAYOUT_DIRECTION_SYSTEM_LOCALE" value="4" enum="LayoutDirection">
-			Automatic layout direction, determined from the system locale.
-		</constant>
-		<constant name="LAYOUT_DIRECTION_MAX" value="5" enum="LayoutDirection">
-			Represents the size of the [enum LayoutDirection] enum.
-		</constant>
-		<constant name="LAYOUT_DIRECTION_LOCALE" value="1" enum="LayoutDirection" deprecated="Use [constant LAYOUT_DIRECTION_APPLICATION_LOCALE] instead.">
-		</constant>
-		<constant name="WINDOW_INITIAL_POSITION_ABSOLUTE" value="0" enum="WindowInitialPosition">
-			Initial window position is determined by [member position].
-		</constant>
-		<constant name="WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN" value="1" enum="WindowInitialPosition">
-			Initial window position is the center of the primary screen.
-		</constant>
-		<constant name="WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN" value="2" enum="WindowInitialPosition">
-			Initial window position is the center of the main window screen.
-		</constant>
-		<constant name="WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN" value="3" enum="WindowInitialPosition">
-			Initial window position is the center of [member current_screen] screen.
-		</constant>
-		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS" value="4" enum="WindowInitialPosition">
-			Initial window position is the center of the screen containing the mouse pointer.
-		</constant>
-		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS" value="5" enum="WindowInitialPosition">
-			Initial window position is the center of the screen containing the window with the keyboard focus.
-		</constant>
 	</constants>
+	<enums>
+		<enum name="ContentScaleAspect">
+			<constant name="CONTENT_SCALE_ASPECT_IGNORE" value="0">
+				The aspect will be ignored. Scaling will simply stretch the content to fit the target size.
+			</constant>
+			<constant name="CONTENT_SCALE_ASPECT_KEEP" value="1">
+				The content's aspect will be preserved. If the target size has different aspect from the base one, the image will be centered and black bars will appear on left and right sides.
+			</constant>
+			<constant name="CONTENT_SCALE_ASPECT_KEEP_WIDTH" value="2">
+				The content can be expanded vertically. Scaling horizontally will result in keeping the width ratio and then black bars on left and right sides.
+			</constant>
+			<constant name="CONTENT_SCALE_ASPECT_KEEP_HEIGHT" value="3">
+				The content can be expanded horizontally. Scaling vertically will result in keeping the height ratio and then black bars on top and bottom sides.
+			</constant>
+			<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4">
+				The content's aspect will be preserved. If the target size has different aspect from the base one, the content will stay in the top-left corner and add an extra visible area in the stretched space.
+			</constant>
+		</enum>
+		<enum name="ContentScaleMode">
+			<constant name="CONTENT_SCALE_MODE_DISABLED" value="0">
+				The content will not be scaled to match the [Window]'s size ([member content_scale_size] is ignored).
+			</constant>
+			<constant name="CONTENT_SCALE_MODE_CANVAS_ITEMS" value="1">
+				The content will be rendered at the target size. This is more performance-expensive than [constant CONTENT_SCALE_MODE_VIEWPORT], but provides better results.
+			</constant>
+			<constant name="CONTENT_SCALE_MODE_VIEWPORT" value="2">
+				The content will be rendered at the base size and then scaled to the target size. More performant than [constant CONTENT_SCALE_MODE_CANVAS_ITEMS], but results in pixelated image.
+			</constant>
+		</enum>
+		<enum name="ContentScaleStretch">
+			<constant name="CONTENT_SCALE_STRETCH_FRACTIONAL" value="0">
+				The content will be stretched according to a fractional factor. This fills all the space available in the window, but allows "pixel wobble" to occur due to uneven pixel scaling.
+			</constant>
+			<constant name="CONTENT_SCALE_STRETCH_INTEGER" value="1">
+				The content will be stretched only according to an integer factor, preserving sharp pixels. This may leave a black background visible on the window's edges depending on the window size.
+			</constant>
+		</enum>
+		<enum name="Flags">
+			<constant name="FLAG_RESIZE_DISABLED" value="0">
+				The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
+			</constant>
+			<constant name="FLAG_BORDERLESS" value="1">
+				The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].
+				[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, Windows, and embedded windows.
+			</constant>
+			<constant name="FLAG_ALWAYS_ON_TOP" value="2">
+				The window is floating on top of all other windows. This flag is ignored for full-screen windows. Set with [member always_on_top].
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
+			</constant>
+			<constant name="FLAG_TRANSPARENT" value="3">
+				The window background can be transparent. Set with [member transparent].
+				[b]Note:[/b] This flag has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
+				[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, Windows, and embedded windows.
+			</constant>
+			<constant name="FLAG_NO_FOCUS" value="4">
+				The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
+			</constant>
+			<constant name="FLAG_POPUP" value="5">
+				Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [member transient]).
+				[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, Windows, and embedded [Popup] windows.
+			</constant>
+			<constant name="FLAG_EXTEND_TO_TITLE" value="6">
+				Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
+				[b]Note:[/b] This flag has no effect in embedded windows.
+				[b]Note:[/b] This flag is implemented only on macOS.
+			</constant>
+			<constant name="FLAG_MOUSE_PASSTHROUGH" value="7">
+				All mouse events are passed to the underlying window of the same application.
+				[b]Note:[/b] This flag has no effect in embedded windows.
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows.
+			</constant>
+			<constant name="FLAG_SHARP_CORNERS" value="8">
+				Window style is overridden, forcing sharp corners.
+				[b]Note:[/b] This flag has no effect in embedded windows.
+				[b]Note:[/b] This flag is implemented only on Windows (11).
+			</constant>
+			<constant name="FLAG_EXCLUDE_FROM_CAPTURE" value="9">
+				Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
+				[b]Note:[/b] This flag has no effect in embedded windows.
+				[b]Note:[/b] This flag is implemented on macOS and Windows (10, 20H1).
+				[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
+			</constant>
+			<constant name="FLAG_POPUP_WM_HINT" value="10">
+				Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+				[b]Note:[/b] This flag has no effect in embedded windows.
+				[b]Note:[/b] This flag is implemented on Linux (Wayland).
+			</constant>
+			<constant name="FLAG_MINIMIZE_DISABLED" value="11">
+				Window minimize button is disabled.
+				[b]Note:[/b] This flag has no effect in embedded windows.
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
+			</constant>
+			<constant name="FLAG_MAXIMIZE_DISABLED" value="12">
+				Window maximize button is disabled.
+				[b]Note:[/b] This flag has no effect in embedded windows.
+				[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
+			</constant>
+			<constant name="FLAG_MAX" value="13">
+				Max value of the [enum Flags].
+			</constant>
+		</enum>
+		<enum name="LayoutDirection">
+			<constant name="LAYOUT_DIRECTION_INHERITED" value="0">
+				Automatic layout direction, determined from the parent window layout direction.
+			</constant>
+			<constant name="LAYOUT_DIRECTION_APPLICATION_LOCALE" value="1">
+				Automatic layout direction, determined from the current locale.
+			</constant>
+			<constant name="LAYOUT_DIRECTION_LTR" value="2">
+				Left-to-right layout direction.
+			</constant>
+			<constant name="LAYOUT_DIRECTION_RTL" value="3">
+				Right-to-left layout direction.
+			</constant>
+			<constant name="LAYOUT_DIRECTION_SYSTEM_LOCALE" value="4">
+				Automatic layout direction, determined from the system locale.
+			</constant>
+			<constant name="LAYOUT_DIRECTION_MAX" value="5">
+				Represents the size of the [enum LayoutDirection] enum.
+			</constant>
+			<constant name="LAYOUT_DIRECTION_LOCALE" value="1" deprecated="Use [constant LAYOUT_DIRECTION_APPLICATION_LOCALE] instead.">
+			</constant>
+		</enum>
+		<enum name="Mode">
+			<constant name="MODE_WINDOWED" value="0">
+				Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
+			</constant>
+			<constant name="MODE_MINIMIZED" value="1">
+				Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed.
+			</constant>
+			<constant name="MODE_MAXIMIZED" value="2">
+				Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the maximize button is pressed.
+			</constant>
+			<constant name="MODE_FULLSCREEN" value="3">
+				Full screen mode with full multi-window support.
+				Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
+				[b]On Android:[/b] This enables immersive mode.
+				[b]On macOS:[/b] A new desktop is used to display the running project.
+				[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
+			</constant>
+			<constant name="MODE_EXCLUSIVE_FULLSCREEN" value="4">
+				A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
+				Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
+				[b]Note:[/b] This mode might not work with screen recording software.
+				[b]On Android:[/b] This enables immersive mode.
+				[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
+				[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
+				[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
+				[b]On Linux (Wayland):[/b] Equivalent to [constant MODE_FULLSCREEN].
+				[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
+			</constant>
+		</enum>
+		<enum name="WindowInitialPosition">
+			<constant name="WINDOW_INITIAL_POSITION_ABSOLUTE" value="0">
+				Initial window position is determined by [member position].
+			</constant>
+			<constant name="WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN" value="1">
+				Initial window position is the center of the primary screen.
+			</constant>
+			<constant name="WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN" value="2">
+				Initial window position is the center of the main window screen.
+			</constant>
+			<constant name="WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN" value="3">
+				Initial window position is the center of [member current_screen] screen.
+			</constant>
+			<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS" value="4">
+				Initial window position is the center of the screen containing the mouse pointer.
+			</constant>
+			<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS" value="5">
+				Initial window position is the center of the screen containing the window with the keyboard focus.
+			</constant>
+		</enum>
+	</enums>
 	<theme_items>
 		<theme_item name="title_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 1)">
 			The color of the title's text.

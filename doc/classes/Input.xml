@@ -940,77 +940,81 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
-			Makes the mouse cursor visible if it is hidden.
-		</constant>
-		<constant name="MOUSE_MODE_HIDDEN" value="1" enum="MouseMode">
-			Makes the mouse cursor hidden if it is visible.
-		</constant>
-		<constant name="MOUSE_MODE_CAPTURED" value="2" enum="MouseMode">
-			Captures the mouse. The mouse will be hidden and its position locked at the center of the window manager's window.
-			[b]Note:[/b] If you want to process the mouse's movement in this mode, you need to use [member InputEventMouseMotion.relative].
-		</constant>
-		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">
-			Confines the mouse cursor to the game window, and make it visible.
-		</constant>
-		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
-			Confines the mouse cursor to the game window, and make it hidden.
-		</constant>
-		<constant name="MOUSE_MODE_MAX" value="5" enum="MouseMode">
-			Max value of the [enum MouseMode].
-		</constant>
-		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
-			Arrow cursor. Standard, default pointing cursor.
-		</constant>
-		<constant name="CURSOR_IBEAM" value="1" enum="CursorShape">
-			I-beam cursor. Usually used to show where the text cursor will appear when the mouse is clicked.
-		</constant>
-		<constant name="CURSOR_POINTING_HAND" value="2" enum="CursorShape">
-			Pointing hand cursor. Usually used to indicate the pointer is over a link or other interactable item.
-		</constant>
-		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
-			Cross cursor. Typically appears over regions in which a drawing operation can be performed or for selections.
-		</constant>
-		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
-			Wait cursor. Indicates that the application is busy performing an operation, and that it cannot be used during the operation (e.g. something is blocking its main thread).
-		</constant>
-		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
-			Busy cursor. Indicates that the application is busy performing an operation, and that it is still usable during the operation.
-		</constant>
-		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
-			Drag cursor. Usually displayed when dragging something.
-			[b]Note:[/b] Windows lacks a dragging cursor, so [constant CURSOR_DRAG] is the same as [constant CURSOR_MOVE] for this platform.
-		</constant>
-		<constant name="CURSOR_CAN_DROP" value="7" enum="CursorShape">
-			Can drop cursor. Usually displayed when dragging something to indicate that it can be dropped at the current position.
-		</constant>
-		<constant name="CURSOR_FORBIDDEN" value="8" enum="CursorShape">
-			Forbidden cursor. Indicates that the current action is forbidden (for example, when dragging something) or that the control at a position is disabled.
-		</constant>
-		<constant name="CURSOR_VSIZE" value="9" enum="CursorShape">
-			Vertical resize mouse cursor. A double-headed vertical arrow. It tells the user they can resize the window or the panel vertically.
-		</constant>
-		<constant name="CURSOR_HSIZE" value="10" enum="CursorShape">
-			Horizontal resize mouse cursor. A double-headed horizontal arrow. It tells the user they can resize the window or the panel horizontally.
-		</constant>
-		<constant name="CURSOR_BDIAGSIZE" value="11" enum="CursorShape">
-			Window resize mouse cursor. The cursor is a double-headed arrow that goes from the bottom left to the top right. It tells the user they can resize the window or the panel both horizontally and vertically.
-		</constant>
-		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
-			Window resize mouse cursor. The cursor is a double-headed arrow that goes from the top left to the bottom right, the opposite of [constant CURSOR_BDIAGSIZE]. It tells the user they can resize the window or the panel both horizontally and vertically.
-		</constant>
-		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
-			Move cursor. Indicates that something can be moved.
-		</constant>
-		<constant name="CURSOR_VSPLIT" value="14" enum="CursorShape">
-			Vertical split mouse cursor. On Windows, it's the same as [constant CURSOR_VSIZE].
-		</constant>
-		<constant name="CURSOR_HSPLIT" value="15" enum="CursorShape">
-			Horizontal split mouse cursor. On Windows, it's the same as [constant CURSOR_HSIZE].
-		</constant>
-		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
-			Help cursor. Usually a question mark.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="CursorShape">
+			<constant name="CURSOR_ARROW" value="0">
+				Arrow cursor. Standard, default pointing cursor.
+			</constant>
+			<constant name="CURSOR_IBEAM" value="1">
+				I-beam cursor. Usually used to show where the text cursor will appear when the mouse is clicked.
+			</constant>
+			<constant name="CURSOR_POINTING_HAND" value="2">
+				Pointing hand cursor. Usually used to indicate the pointer is over a link or other interactable item.
+			</constant>
+			<constant name="CURSOR_CROSS" value="3">
+				Cross cursor. Typically appears over regions in which a drawing operation can be performed or for selections.
+			</constant>
+			<constant name="CURSOR_WAIT" value="4">
+				Wait cursor. Indicates that the application is busy performing an operation, and that it cannot be used during the operation (e.g. something is blocking its main thread).
+			</constant>
+			<constant name="CURSOR_BUSY" value="5">
+				Busy cursor. Indicates that the application is busy performing an operation, and that it is still usable during the operation.
+			</constant>
+			<constant name="CURSOR_DRAG" value="6">
+				Drag cursor. Usually displayed when dragging something.
+				[b]Note:[/b] Windows lacks a dragging cursor, so [constant CURSOR_DRAG] is the same as [constant CURSOR_MOVE] for this platform.
+			</constant>
+			<constant name="CURSOR_CAN_DROP" value="7">
+				Can drop cursor. Usually displayed when dragging something to indicate that it can be dropped at the current position.
+			</constant>
+			<constant name="CURSOR_FORBIDDEN" value="8">
+				Forbidden cursor. Indicates that the current action is forbidden (for example, when dragging something) or that the control at a position is disabled.
+			</constant>
+			<constant name="CURSOR_VSIZE" value="9">
+				Vertical resize mouse cursor. A double-headed vertical arrow. It tells the user they can resize the window or the panel vertically.
+			</constant>
+			<constant name="CURSOR_HSIZE" value="10">
+				Horizontal resize mouse cursor. A double-headed horizontal arrow. It tells the user they can resize the window or the panel horizontally.
+			</constant>
+			<constant name="CURSOR_BDIAGSIZE" value="11">
+				Window resize mouse cursor. The cursor is a double-headed arrow that goes from the bottom left to the top right. It tells the user they can resize the window or the panel both horizontally and vertically.
+			</constant>
+			<constant name="CURSOR_FDIAGSIZE" value="12">
+				Window resize mouse cursor. The cursor is a double-headed arrow that goes from the top left to the bottom right, the opposite of [constant CURSOR_BDIAGSIZE]. It tells the user they can resize the window or the panel both horizontally and vertically.
+			</constant>
+			<constant name="CURSOR_MOVE" value="13">
+				Move cursor. Indicates that something can be moved.
+			</constant>
+			<constant name="CURSOR_VSPLIT" value="14">
+				Vertical split mouse cursor. On Windows, it's the same as [constant CURSOR_VSIZE].
+			</constant>
+			<constant name="CURSOR_HSPLIT" value="15">
+				Horizontal split mouse cursor. On Windows, it's the same as [constant CURSOR_HSIZE].
+			</constant>
+			<constant name="CURSOR_HELP" value="16">
+				Help cursor. Usually a question mark.
+			</constant>
+		</enum>
+		<enum name="MouseMode">
+			<constant name="MOUSE_MODE_VISIBLE" value="0">
+				Makes the mouse cursor visible if it is hidden.
+			</constant>
+			<constant name="MOUSE_MODE_HIDDEN" value="1">
+				Makes the mouse cursor hidden if it is visible.
+			</constant>
+			<constant name="MOUSE_MODE_CAPTURED" value="2">
+				Captures the mouse. The mouse will be hidden and its position locked at the center of the window manager's window.
+				[b]Note:[/b] If you want to process the mouse's movement in this mode, you need to use [member InputEventMouseMotion.relative].
+			</constant>
+			<constant name="MOUSE_MODE_CONFINED" value="3">
+				Confines the mouse cursor to the game window, and make it visible.
+			</constant>
+			<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4">
+				Confines the mouse cursor to the game window, and make it hidden.
+			</constant>
+			<constant name="MOUSE_MODE_MAX" value="5">
+				Max value of the [enum MouseMode].
+			</constant>
+		</enum>
+	</enums>
 </class>

@@ -658,270 +658,288 @@
 		<constant name="MAX_HEIGHT" value="16777216">
 			The maximal height allowed for [Image] resources.
 		</constant>
-		<constant name="FORMAT_L8" value="0" enum="Format">
-			Texture format with a single 8-bit depth representing luminance.
-		</constant>
-		<constant name="FORMAT_LA8" value="1" enum="Format">
-			OpenGL texture format with two values, luminance and alpha each stored with 8 bits.
-		</constant>
-		<constant name="FORMAT_R8" value="2" enum="Format">
-			OpenGL texture format [code]RED[/code] with a single component and a bitdepth of 8.
-		</constant>
-		<constant name="FORMAT_RG8" value="3" enum="Format">
-			OpenGL texture format [code]RG[/code] with two components and a bitdepth of 8 for each.
-		</constant>
-		<constant name="FORMAT_RGB8" value="4" enum="Format">
-			OpenGL texture format [code]RGB[/code] with three components, each with a bitdepth of 8.
-			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
-		</constant>
-		<constant name="FORMAT_RGBA8" value="5" enum="Format">
-			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 8.
-			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
-		</constant>
-		<constant name="FORMAT_RGBA4444" value="6" enum="Format">
-			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 4.
-		</constant>
-		<constant name="FORMAT_RGB565" value="7" enum="Format">
-			OpenGL texture format [code]RGB[/code] with three components. Red and blue have a bitdepth of 5, and green has a bitdepth of 6.
-		</constant>
-		<constant name="FORMAT_RF" value="8" enum="Format">
-			OpenGL texture format [code]GL_R32F[/code] where there's one component, a 32-bit floating-point value.
-		</constant>
-		<constant name="FORMAT_RGF" value="9" enum="Format">
-			OpenGL texture format [code]GL_RG32F[/code] where there are two components, each a 32-bit floating-point values.
-		</constant>
-		<constant name="FORMAT_RGBF" value="10" enum="Format">
-			OpenGL texture format [code]GL_RGB32F[/code] where there are three components, each a 32-bit floating-point values.
-		</constant>
-		<constant name="FORMAT_RGBAF" value="11" enum="Format">
-			OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 32-bit floating-point values.
-		</constant>
-		<constant name="FORMAT_RH" value="12" enum="Format">
-			OpenGL texture format [code]GL_R16F[/code] where there's one component, a 16-bit "half-precision" floating-point value.
-		</constant>
-		<constant name="FORMAT_RGH" value="13" enum="Format">
-			OpenGL texture format [code]GL_RG16F[/code] where there are two components, each a 16-bit "half-precision" floating-point value.
-		</constant>
-		<constant name="FORMAT_RGBH" value="14" enum="Format">
-			OpenGL texture format [code]GL_RGB16F[/code] where there are three components, each a 16-bit "half-precision" floating-point value.
-		</constant>
-		<constant name="FORMAT_RGBAH" value="15" enum="Format">
-			OpenGL texture format [code]GL_RGBA16F[/code] where there are four components, each a 16-bit "half-precision" floating-point value.
-		</constant>
-		<constant name="FORMAT_RGBE9995" value="16" enum="Format">
-			A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single 5-bit exponent.
-		</constant>
-		<constant name="FORMAT_DXT1" value="17" enum="Format">
-			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha.
-			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
-		</constant>
-		<constant name="FORMAT_DXT3" value="18" enum="Format">
-			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas.
-			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
-		</constant>
-		<constant name="FORMAT_DXT5" value="19" enum="Format">
-			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparent gradients compared to DXT3.
-			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
-		</constant>
-		<constant name="FORMAT_RGTC_R" value="20" enum="Format">
-			Texture format that uses [url=https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression]Red Green Texture Compression[/url], normalizing the red channel data using the same compression algorithm that DXT5 uses for the alpha channel.
-		</constant>
-		<constant name="FORMAT_RGTC_RG" value="21" enum="Format">
-			Texture format that uses [url=https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression]Red Green Texture Compression[/url], normalizing the red and green channel data using the same compression algorithm that DXT5 uses for the alpha channel.
-		</constant>
-		<constant name="FORMAT_BPTC_RGBA" value="22" enum="Format">
-			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned normalized RGBA components.
-			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
-		</constant>
-		<constant name="FORMAT_BPTC_RGBF" value="23" enum="Format">
-			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with signed floating-point RGB components.
-		</constant>
-		<constant name="FORMAT_BPTC_RGBFU" value="24" enum="Format">
-			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned floating-point RGB components.
-		</constant>
-		<constant name="FORMAT_ETC" value="25" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC1]Ericsson Texture Compression format 1[/url], also referred to as "ETC1", and is part of the OpenGL ES graphics standard. This format cannot store an alpha channel.
-		</constant>
-		<constant name="FORMAT_ETC2_R11" value="26" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]R11_EAC[/code] variant), which provides one channel of unsigned data.
-		</constant>
-		<constant name="FORMAT_ETC2_R11S" value="27" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_R11_EAC[/code] variant), which provides one channel of signed data.
-		</constant>
-		<constant name="FORMAT_ETC2_RG11" value="28" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RG11_EAC[/code] variant), which provides two channels of unsigned data.
-		</constant>
-		<constant name="FORMAT_ETC2_RG11S" value="29" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_RG11_EAC[/code] variant), which provides two channels of signed data.
-		</constant>
-		<constant name="FORMAT_ETC2_RGB8" value="30" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8[/code] variant), which is a follow-up of ETC1 and compresses RGB888 data.
-			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
-		</constant>
-		<constant name="FORMAT_ETC2_RGBA8" value="31" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code]variant), which compresses RGBA8888 data with full alpha support.
-			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
-		</constant>
-		<constant name="FORMAT_ETC2_RGB8A1" value="32" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8_PUNCHTHROUGH_ALPHA1[/code] variant), which compresses RGBA data to make alpha either fully transparent or fully opaque.
-			[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
-		</constant>
-		<constant name="FORMAT_ETC2_RA_AS_RG" value="33" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code] variant), which compresses RA data and interprets it as two channels (red and green). See also [constant FORMAT_ETC2_RGBA8].
-		</constant>
-		<constant name="FORMAT_DXT5_RA_AS_RG" value="34" enum="Format">
-			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format also known as Block Compression 3 or BC3, which compresses RA data and interprets it as two channels (red and green). See also [constant FORMAT_DXT5].
-		</constant>
-		<constant name="FORMAT_ASTC_4x4" value="35" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 4×4 (high quality) mode.
-		</constant>
-		<constant name="FORMAT_ASTC_4x4_HDR" value="36" enum="Format">
-			Same format as [constant FORMAT_ASTC_4x4], but with the hint to let the GPU know it is used for HDR.
-		</constant>
-		<constant name="FORMAT_ASTC_8x8" value="37" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 8×8 (low quality) mode.
-		</constant>
-		<constant name="FORMAT_ASTC_8x8_HDR" value="38" enum="Format">
-			Same format as [constant FORMAT_ASTC_8x8], but with the hint to let the GPU know it is used for HDR.
-		</constant>
-		<constant name="FORMAT_R16" value="39" enum="Format">
-			OpenGL texture format [code]GL_R16[/code] where there's one component, a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
-			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RF].
-		</constant>
-		<constant name="FORMAT_RG16" value="40" enum="Format">
-			OpenGL texture format [code]GL_RG16[/code] where there are two components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
-			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGF].
-		</constant>
-		<constant name="FORMAT_RGB16" value="41" enum="Format">
-			OpenGL texture format [code]GL_RGB16[/code] where there are three components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
-			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGBF].
-		</constant>
-		<constant name="FORMAT_RGBA16" value="42" enum="Format">
-			OpenGL texture format [code]GL_RGBA16[/code] where there are four components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
-			[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGBAF].
-		</constant>
-		<constant name="FORMAT_R16I" value="43" enum="Format">
-			OpenGL texture format [code]GL_R16UI[/code] where there's one component, a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
-			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
-			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
-		</constant>
-		<constant name="FORMAT_RG16I" value="44" enum="Format">
-			OpenGL texture format [code]GL_RG16UI[/code] where there are two components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
-			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
-			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
-		</constant>
-		<constant name="FORMAT_RGB16I" value="45" enum="Format">
-			OpenGL texture format [code]GL_RGB16UI[/code] where there are three components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
-			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
-			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
-		</constant>
-		<constant name="FORMAT_RGBA16I" value="46" enum="Format">
-			OpenGL texture format [code]GL_RGBA16UI[/code] where there are four components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
-			[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
-			[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
-		</constant>
-		<constant name="FORMAT_ASTC_6x6" value="47" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 6×6 (medium quality) mode.
-		</constant>
-		<constant name="FORMAT_ASTC_6x6_HDR" value="48" enum="Format">
-			Same format as [constant FORMAT_ASTC_6x6], but with the hint to let the GPU know it is used for HDR.
-		</constant>
-		<constant name="FORMAT_MAX" value="49" enum="Format">
-			Represents the size of the [enum Format] enum.
-		</constant>
-		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
-			Performs nearest-neighbor interpolation. If the image is resized, it will be pixelated.
-		</constant>
-		<constant name="INTERPOLATE_BILINEAR" value="1" enum="Interpolation">
-			Performs bilinear interpolation. If the image is resized, it will be blurry. This mode is faster than [constant INTERPOLATE_CUBIC], but it results in lower quality.
-		</constant>
-		<constant name="INTERPOLATE_CUBIC" value="2" enum="Interpolation">
-			Performs cubic interpolation. If the image is resized, it will be blurry. This mode often gives better results compared to [constant INTERPOLATE_BILINEAR], at the cost of being slower.
-		</constant>
-		<constant name="INTERPOLATE_TRILINEAR" value="3" enum="Interpolation">
-			Performs bilinear separately on the two most-suited mipmap levels, then linearly interpolates between them.
-			It's slower than [constant INTERPOLATE_BILINEAR], but produces higher-quality results with far fewer aliasing artifacts.
-			If the image does not have mipmaps, they will be generated and used internally, but no mipmaps will be generated on the resulting image.
-			[b]Note:[/b] If you intend to scale multiple copies of the original image, it's better to call [method generate_mipmaps] on it in advance, to avoid wasting processing power in generating them again and again.
-			On the other hand, if the image already has mipmaps, they will be used, and a new set will be generated for the resulting image.
-		</constant>
-		<constant name="INTERPOLATE_LANCZOS" value="4" enum="Interpolation">
-			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscaling images.
-		</constant>
-		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
-			Image is fully opaque. It does not store alpha data.
-		</constant>
-		<constant name="ALPHA_BIT" value="1" enum="AlphaMode">
-			Image stores either fully opaque or fully transparent pixels. Also known as punchthrough alpha.
-		</constant>
-		<constant name="ALPHA_BLEND" value="2" enum="AlphaMode">
-			Image stores alpha data with values varying between [code]0.0[/code] and [code]1.0[/code].
-		</constant>
-		<constant name="COMPRESS_S3TC" value="0" enum="CompressMode">
-			Use S3TC compression.
-		</constant>
-		<constant name="COMPRESS_ETC" value="1" enum="CompressMode">
-			Use ETC compression.
-		</constant>
-		<constant name="COMPRESS_ETC2" value="2" enum="CompressMode">
-			Use ETC2 compression.
-		</constant>
-		<constant name="COMPRESS_BPTC" value="3" enum="CompressMode">
-			Use BPTC compression.
-		</constant>
-		<constant name="COMPRESS_ASTC" value="4" enum="CompressMode">
-			Use ASTC compression.
-		</constant>
-		<constant name="COMPRESS_MAX" value="5" enum="CompressMode">
-			Represents the size of the [enum CompressMode] enum.
-		</constant>
-		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">
-			The image only uses one channel for luminance (grayscale).
-		</constant>
-		<constant name="USED_CHANNELS_LA" value="1" enum="UsedChannels">
-			The image uses two channels for luminance and alpha, respectively.
-		</constant>
-		<constant name="USED_CHANNELS_R" value="2" enum="UsedChannels">
-			The image only uses the red channel.
-		</constant>
-		<constant name="USED_CHANNELS_RG" value="3" enum="UsedChannels">
-			The image uses two channels for red and green.
-		</constant>
-		<constant name="USED_CHANNELS_RGB" value="4" enum="UsedChannels">
-			The image uses three channels for red, green, and blue.
-		</constant>
-		<constant name="USED_CHANNELS_RGBA" value="5" enum="UsedChannels">
-			The image uses four channels for red, green, blue, and alpha.
-		</constant>
-		<constant name="COMPRESS_SOURCE_GENERIC" value="0" enum="CompressSource">
-			Source texture (before compression) is a regular texture. Default for all textures.
-		</constant>
-		<constant name="COMPRESS_SOURCE_SRGB" value="1" enum="CompressSource">
-			Source texture (before compression) uses nonlinear sRGB encoding.
-		</constant>
-		<constant name="COMPRESS_SOURCE_NORMAL" value="2" enum="CompressSource">
-			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
-		</constant>
-		<constant name="COMPRESS_PROFILE_AUTOMATIC" value="0" enum="CompressProfile">
-			Automatically adjusts the quality level based on the number of unique color channels present in the image. For ASTC, this corresponds to picking 8×8 when only one channel is detected (R, L), 6×6 when two channels are detected (RG, LA), and 4×4 in all other cases.
-		</constant>
-		<constant name="COMPRESS_PROFILE_MAX_QUALITY" value="1" enum="CompressProfile">
-			Prioritizes highest quality over compression. For ASTC, this corresponds to using a 4×4 block size.
-		</constant>
-		<constant name="COMPRESS_PROFILE_COMPRESSED" value="2" enum="CompressProfile">
-			Prioritizes some compression over quality. For ASTC, this corresponds to using a 6×6 block size.
-		</constant>
-		<constant name="COMPRESS_PROFILE_MAX_COMPRESSION" value="3" enum="CompressProfile">
-			Prioritizes highest compression over quality. For ASTC, this corresponds to using an 8×8 block size.
-		</constant>
-		<constant name="COMPRESS_PROFILE_MAX" value="4" enum="CompressProfile">
-			Represents the size of the [enum CompressProfile] enum.
-		</constant>
-		<constant name="ASTC_FORMAT_4x4" value="0" enum="ASTCFormat">
-			Hint to indicate that the high quality 4×4 ASTC compression format should be used.
-		</constant>
-		<constant name="ASTC_FORMAT_8x8" value="1" enum="ASTCFormat">
-			Hint to indicate that the low quality 8×8 ASTC compression format should be used.
-		</constant>
 	</constants>
+	<enums>
+		<enum name="ASTCFormat">
+			<constant name="ASTC_FORMAT_4x4" value="0">
+				Hint to indicate that the high quality 4×4 ASTC compression format should be used.
+			</constant>
+			<constant name="ASTC_FORMAT_8x8" value="1">
+				Hint to indicate that the low quality 8×8 ASTC compression format should be used.
+			</constant>
+		</enum>
+		<enum name="AlphaMode">
+			<constant name="ALPHA_NONE" value="0">
+				Image is fully opaque. It does not store alpha data.
+			</constant>
+			<constant name="ALPHA_BIT" value="1">
+				Image stores either fully opaque or fully transparent pixels. Also known as punchthrough alpha.
+			</constant>
+			<constant name="ALPHA_BLEND" value="2">
+				Image stores alpha data with values varying between [code]0.0[/code] and [code]1.0[/code].
+			</constant>
+		</enum>
+		<enum name="CompressMode">
+			<constant name="COMPRESS_S3TC" value="0">
+				Use S3TC compression.
+			</constant>
+			<constant name="COMPRESS_ETC" value="1">
+				Use ETC compression.
+			</constant>
+			<constant name="COMPRESS_ETC2" value="2">
+				Use ETC2 compression.
+			</constant>
+			<constant name="COMPRESS_BPTC" value="3">
+				Use BPTC compression.
+			</constant>
+			<constant name="COMPRESS_ASTC" value="4">
+				Use ASTC compression.
+			</constant>
+			<constant name="COMPRESS_MAX" value="5">
+				Represents the size of the [enum CompressMode] enum.
+			</constant>
+		</enum>
+		<enum name="CompressProfile">
+			<constant name="COMPRESS_PROFILE_AUTOMATIC" value="0">
+				Automatically adjusts the quality level based on the number of unique color channels present in the image. For ASTC, this corresponds to picking 8×8 when only one channel is detected (R, L), 6×6 when two channels are detected (RG, LA), and 4×4 in all other cases.
+			</constant>
+			<constant name="COMPRESS_PROFILE_MAX_QUALITY" value="1">
+				Prioritizes highest quality over compression. For ASTC, this corresponds to using a 4×4 block size.
+			</constant>
+			<constant name="COMPRESS_PROFILE_COMPRESSED" value="2">
+				Prioritizes some compression over quality. For ASTC, this corresponds to using a 6×6 block size.
+			</constant>
+			<constant name="COMPRESS_PROFILE_MAX_COMPRESSION" value="3">
+				Prioritizes highest compression over quality. For ASTC, this corresponds to using an 8×8 block size.
+			</constant>
+			<constant name="COMPRESS_PROFILE_MAX" value="4">
+				Represents the size of the [enum CompressProfile] enum.
+			</constant>
+		</enum>
+		<enum name="CompressSource">
+			<constant name="COMPRESS_SOURCE_GENERIC" value="0">
+				Source texture (before compression) is a regular texture. Default for all textures.
+			</constant>
+			<constant name="COMPRESS_SOURCE_SRGB" value="1">
+				Source texture (before compression) uses nonlinear sRGB encoding.
+			</constant>
+			<constant name="COMPRESS_SOURCE_NORMAL" value="2">
+				Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
+			</constant>
+		</enum>
+		<enum name="Format">
+			<constant name="FORMAT_L8" value="0">
+				Texture format with a single 8-bit depth representing luminance.
+			</constant>
+			<constant name="FORMAT_LA8" value="1">
+				OpenGL texture format with two values, luminance and alpha each stored with 8 bits.
+			</constant>
+			<constant name="FORMAT_R8" value="2">
+				OpenGL texture format [code]RED[/code] with a single component and a bitdepth of 8.
+			</constant>
+			<constant name="FORMAT_RG8" value="3">
+				OpenGL texture format [code]RG[/code] with two components and a bitdepth of 8 for each.
+			</constant>
+			<constant name="FORMAT_RGB8" value="4">
+				OpenGL texture format [code]RGB[/code] with three components, each with a bitdepth of 8.
+				[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
+			</constant>
+			<constant name="FORMAT_RGBA8" value="5">
+				OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 8.
+				[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
+			</constant>
+			<constant name="FORMAT_RGBA4444" value="6">
+				OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 4.
+			</constant>
+			<constant name="FORMAT_RGB565" value="7">
+				OpenGL texture format [code]RGB[/code] with three components. Red and blue have a bitdepth of 5, and green has a bitdepth of 6.
+			</constant>
+			<constant name="FORMAT_RF" value="8">
+				OpenGL texture format [code]GL_R32F[/code] where there's one component, a 32-bit floating-point value.
+			</constant>
+			<constant name="FORMAT_RGF" value="9">
+				OpenGL texture format [code]GL_RG32F[/code] where there are two components, each a 32-bit floating-point values.
+			</constant>
+			<constant name="FORMAT_RGBF" value="10">
+				OpenGL texture format [code]GL_RGB32F[/code] where there are three components, each a 32-bit floating-point values.
+			</constant>
+			<constant name="FORMAT_RGBAF" value="11">
+				OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 32-bit floating-point values.
+			</constant>
+			<constant name="FORMAT_RH" value="12">
+				OpenGL texture format [code]GL_R16F[/code] where there's one component, a 16-bit "half-precision" floating-point value.
+			</constant>
+			<constant name="FORMAT_RGH" value="13">
+				OpenGL texture format [code]GL_RG16F[/code] where there are two components, each a 16-bit "half-precision" floating-point value.
+			</constant>
+			<constant name="FORMAT_RGBH" value="14">
+				OpenGL texture format [code]GL_RGB16F[/code] where there are three components, each a 16-bit "half-precision" floating-point value.
+			</constant>
+			<constant name="FORMAT_RGBAH" value="15">
+				OpenGL texture format [code]GL_RGBA16F[/code] where there are four components, each a 16-bit "half-precision" floating-point value.
+			</constant>
+			<constant name="FORMAT_RGBE9995" value="16">
+				A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single 5-bit exponent.
+			</constant>
+			<constant name="FORMAT_DXT1" value="17">
+				The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha.
+				[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
+			</constant>
+			<constant name="FORMAT_DXT3" value="18">
+				The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas.
+				[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
+			</constant>
+			<constant name="FORMAT_DXT5" value="19">
+				The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparent gradients compared to DXT3.
+				[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
+			</constant>
+			<constant name="FORMAT_RGTC_R" value="20">
+				Texture format that uses [url=https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression]Red Green Texture Compression[/url], normalizing the red channel data using the same compression algorithm that DXT5 uses for the alpha channel.
+			</constant>
+			<constant name="FORMAT_RGTC_RG" value="21">
+				Texture format that uses [url=https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression]Red Green Texture Compression[/url], normalizing the red and green channel data using the same compression algorithm that DXT5 uses for the alpha channel.
+			</constant>
+			<constant name="FORMAT_BPTC_RGBA" value="22">
+				Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned normalized RGBA components.
+				[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
+			</constant>
+			<constant name="FORMAT_BPTC_RGBF" value="23">
+				Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with signed floating-point RGB components.
+			</constant>
+			<constant name="FORMAT_BPTC_RGBFU" value="24">
+				Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned floating-point RGB components.
+			</constant>
+			<constant name="FORMAT_ETC" value="25">
+				[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC1]Ericsson Texture Compression format 1[/url], also referred to as "ETC1", and is part of the OpenGL ES graphics standard. This format cannot store an alpha channel.
+			</constant>
+			<constant name="FORMAT_ETC2_R11" value="26">
+				[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]R11_EAC[/code] variant), which provides one channel of unsigned data.
+			</constant>
+			<constant name="FORMAT_ETC2_R11S" value="27">
+				[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_R11_EAC[/code] variant), which provides one channel of signed data.
+			</constant>
+			<constant name="FORMAT_ETC2_RG11" value="28">
+				[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RG11_EAC[/code] variant), which provides two channels of unsigned data.
+			</constant>
+			<constant name="FORMAT_ETC2_RG11S" value="29">
+				[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_RG11_EAC[/code] variant), which provides two channels of signed data.
+			</constant>
+			<constant name="FORMAT_ETC2_RGB8" value="30">
+				[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8[/code] variant), which is a follow-up of ETC1 and compresses RGB888 data.
+				[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
+			</constant>
+			<constant name="FORMAT_ETC2_RGBA8" value="31">
+				[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code]variant), which compresses RGBA8888 data with full alpha support.
+				[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
+			</constant>
+			<constant name="FORMAT_ETC2_RGB8A1" value="32">
+				[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8_PUNCHTHROUGH_ALPHA1[/code] variant), which compresses RGBA data to make alpha either fully transparent or fully opaque.
+				[b]Note:[/b] When creating an [ImageTexture], a nonlinear sRGB to linear encoding conversion is performed.
+			</constant>
+			<constant name="FORMAT_ETC2_RA_AS_RG" value="33">
+				[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code] variant), which compresses RA data and interprets it as two channels (red and green). See also [constant FORMAT_ETC2_RGBA8].
+			</constant>
+			<constant name="FORMAT_DXT5_RA_AS_RG" value="34">
+				The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format also known as Block Compression 3 or BC3, which compresses RA data and interprets it as two channels (red and green). See also [constant FORMAT_DXT5].
+			</constant>
+			<constant name="FORMAT_ASTC_4x4" value="35">
+				[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 4×4 (high quality) mode.
+			</constant>
+			<constant name="FORMAT_ASTC_4x4_HDR" value="36">
+				Same format as [constant FORMAT_ASTC_4x4], but with the hint to let the GPU know it is used for HDR.
+			</constant>
+			<constant name="FORMAT_ASTC_8x8" value="37">
+				[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 8×8 (low quality) mode.
+			</constant>
+			<constant name="FORMAT_ASTC_8x8_HDR" value="38">
+				Same format as [constant FORMAT_ASTC_8x8], but with the hint to let the GPU know it is used for HDR.
+			</constant>
+			<constant name="FORMAT_R16" value="39">
+				OpenGL texture format [code]GL_R16[/code] where there's one component, a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+				[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RF].
+			</constant>
+			<constant name="FORMAT_RG16" value="40">
+				OpenGL texture format [code]GL_RG16[/code] where there are two components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+				[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGF].
+			</constant>
+			<constant name="FORMAT_RGB16" value="41">
+				OpenGL texture format [code]GL_RGB16[/code] where there are three components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+				[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGBF].
+			</constant>
+			<constant name="FORMAT_RGBA16" value="42">
+				OpenGL texture format [code]GL_RGBA16[/code] where there are four components, each a 16-bit unsigned normalized integer value. Since the value is normalized, each component is clamped between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+				[b]Note:[/b] Due to limited hardware support, it is mainly recommended to be used on desktop or console devices. It may be unsupported on mobile or web, and will consequently be converted to [constant FORMAT_RGBAF].
+			</constant>
+			<constant name="FORMAT_R16I" value="43">
+				OpenGL texture format [code]GL_R16UI[/code] where there's one component, a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+				[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+				[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+			</constant>
+			<constant name="FORMAT_RG16I" value="44">
+				OpenGL texture format [code]GL_RG16UI[/code] where there are two components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+				[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+				[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+			</constant>
+			<constant name="FORMAT_RGB16I" value="45">
+				OpenGL texture format [code]GL_RGB16UI[/code] where there are three components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+				[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+				[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+			</constant>
+			<constant name="FORMAT_RGBA16I" value="46">
+				OpenGL texture format [code]GL_RGBA16UI[/code] where there are four components, each a 16-bit unsigned integer value. Each component is clamped between [code]0[/code] and [code]65535[/code] (inclusive).
+				[b]Note:[/b] When used in a shader, the texture requires usage of [code]usampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+				[b]Note:[/b] When sampling using [method Image.get_pixel], returned [Color]s have to be divided by [code]65535[/code] to get the correct color value.
+			</constant>
+			<constant name="FORMAT_ASTC_6x6" value="47">
+				[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 6×6 (medium quality) mode.
+			</constant>
+			<constant name="FORMAT_ASTC_6x6_HDR" value="48">
+				Same format as [constant FORMAT_ASTC_6x6], but with the hint to let the GPU know it is used for HDR.
+			</constant>
+			<constant name="FORMAT_MAX" value="49">
+				Represents the size of the [enum Format] enum.
+			</constant>
+		</enum>
+		<enum name="Interpolation">
+			<constant name="INTERPOLATE_NEAREST" value="0">
+				Performs nearest-neighbor interpolation. If the image is resized, it will be pixelated.
+			</constant>
+			<constant name="INTERPOLATE_BILINEAR" value="1">
+				Performs bilinear interpolation. If the image is resized, it will be blurry. This mode is faster than [constant INTERPOLATE_CUBIC], but it results in lower quality.
+			</constant>
+			<constant name="INTERPOLATE_CUBIC" value="2">
+				Performs cubic interpolation. If the image is resized, it will be blurry. This mode often gives better results compared to [constant INTERPOLATE_BILINEAR], at the cost of being slower.
+			</constant>
+			<constant name="INTERPOLATE_TRILINEAR" value="3">
+				Performs bilinear separately on the two most-suited mipmap levels, then linearly interpolates between them.
+				It's slower than [constant INTERPOLATE_BILINEAR], but produces higher-quality results with far fewer aliasing artifacts.
+				If the image does not have mipmaps, they will be generated and used internally, but no mipmaps will be generated on the resulting image.
+				[b]Note:[/b] If you intend to scale multiple copies of the original image, it's better to call [method generate_mipmaps] on it in advance, to avoid wasting processing power in generating them again and again.
+				On the other hand, if the image already has mipmaps, they will be used, and a new set will be generated for the resulting image.
+			</constant>
+			<constant name="INTERPOLATE_LANCZOS" value="4">
+				Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscaling images.
+			</constant>
+		</enum>
+		<enum name="UsedChannels">
+			<constant name="USED_CHANNELS_L" value="0">
+				The image only uses one channel for luminance (grayscale).
+			</constant>
+			<constant name="USED_CHANNELS_LA" value="1">
+				The image uses two channels for luminance and alpha, respectively.
+			</constant>
+			<constant name="USED_CHANNELS_R" value="2">
+				The image only uses the red channel.
+			</constant>
+			<constant name="USED_CHANNELS_RG" value="3">
+				The image uses two channels for red and green.
+			</constant>
+			<constant name="USED_CHANNELS_RGB" value="4">
+				The image uses three channels for red, green, and blue.
+			</constant>
+			<constant name="USED_CHANNELS_RGBA" value="5">
+				The image uses four channels for red, green, blue, and alpha.
+			</constant>
+		</enum>
+	</enums>
 </class>

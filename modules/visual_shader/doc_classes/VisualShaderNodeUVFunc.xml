@@ -13,15 +13,17 @@
 			A function to be applied to the texture coordinates.
 		</member>
 	</members>
-	<constants>
-		<constant name="FUNC_PANNING" value="0" enum="Function">
-			Translates [code]uv[/code] by using [code]scale[/code] and [code]offset[/code] values using the following formula: [code]uv = uv + offset * scale[/code]. [code]uv[/code] port is connected to [code]UV[/code] built-in by default.
-		</constant>
-		<constant name="FUNC_SCALING" value="1" enum="Function">
-			Scales [code]uv[/code] by using [code]scale[/code] and [code]pivot[/code] values using the following formula: [code]uv = (uv - pivot) * scale + pivot[/code]. [code]uv[/code] port is connected to [code]UV[/code] built-in by default.
-		</constant>
-		<constant name="FUNC_MAX" value="2" enum="Function">
-			Represents the size of the [enum Function] enum.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="Function">
+			<constant name="FUNC_PANNING" value="0">
+				Translates [code]uv[/code] by using [code]scale[/code] and [code]offset[/code] values using the following formula: [code]uv = uv + offset * scale[/code]. [code]uv[/code] port is connected to [code]UV[/code] built-in by default.
+			</constant>
+			<constant name="FUNC_SCALING" value="1">
+				Scales [code]uv[/code] by using [code]scale[/code] and [code]pivot[/code] values using the following formula: [code]uv = (uv - pivot) * scale + pivot[/code]. [code]uv[/code] port is connected to [code]UV[/code] built-in by default.
+			</constant>
+			<constant name="FUNC_MAX" value="2">
+				Represents the size of the [enum Function] enum.
+			</constant>
+		</enum>
+	</enums>
 </class>

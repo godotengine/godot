@@ -111,68 +111,78 @@
 			[b]Note:[/b] This will only work in Android builds.
 		</member>
 	</members>
-	<constants>
-		<constant name="FILTER_NEAREST" value="0" enum="Filter">
-			Perform nearest-neighbor filtering when sampling the texture.
-		</constant>
-		<constant name="FILTER_LINEAR" value="1" enum="Filter">
-			Perform linear filtering when sampling the texture.
-		</constant>
-		<constant name="FILTER_CUBIC" value="2" enum="Filter">
-			Perform cubic filtering when sampling the texture.
-		</constant>
-		<constant name="MIPMAP_MODE_DISABLED" value="0" enum="MipmapMode">
-			Disable mipmapping.
-			[b]Note:[/b] Mipmapping can only be disabled in the Compatibility renderer.
-		</constant>
-		<constant name="MIPMAP_MODE_NEAREST" value="1" enum="MipmapMode">
-			Use the mipmap of the nearest resolution.
-		</constant>
-		<constant name="MIPMAP_MODE_LINEAR" value="2" enum="MipmapMode">
-			Use linear interpolation of the two mipmaps of the nearest resolution.
-		</constant>
-		<constant name="WRAP_CLAMP_TO_BORDER" value="0" enum="Wrap">
-			Clamp the texture to its specified border color.
-		</constant>
-		<constant name="WRAP_CLAMP_TO_EDGE" value="1" enum="Wrap">
-			Clamp the texture to its edge color.
-		</constant>
-		<constant name="WRAP_REPEAT" value="2" enum="Wrap">
-			Repeat the texture infinitely.
-		</constant>
-		<constant name="WRAP_MIRRORED_REPEAT" value="3" enum="Wrap">
-			Repeat the texture infinitely, mirroring it on each repeat.
-		</constant>
-		<constant name="WRAP_MIRROR_CLAMP_TO_EDGE" value="4" enum="Wrap">
-			Mirror the texture once and then clamp the texture to its edge color.
-			[b]Note:[/b] This wrap mode is not available in the Compatibility renderer.
-		</constant>
-		<constant name="SWIZZLE_RED" value="0" enum="Swizzle">
-			Maps a color channel to the value of the red channel.
-		</constant>
-		<constant name="SWIZZLE_GREEN" value="1" enum="Swizzle">
-			Maps a color channel to the value of the green channel.
-		</constant>
-		<constant name="SWIZZLE_BLUE" value="2" enum="Swizzle">
-			Maps a color channel to the value of the blue channel.
-		</constant>
-		<constant name="SWIZZLE_ALPHA" value="3" enum="Swizzle">
-			Maps a color channel to the value of the alpha channel.
-		</constant>
-		<constant name="SWIZZLE_ZERO" value="4" enum="Swizzle">
-			Maps a color channel to the value of zero.
-		</constant>
-		<constant name="SWIZZLE_ONE" value="5" enum="Swizzle">
-			Maps a color channel to the value of one.
-		</constant>
-		<constant name="EYE_VISIBILITY_BOTH" value="0" enum="EyeVisibility">
-			The layer is visible to both the left and right eyes.
-		</constant>
-		<constant name="EYE_VISIBILITY_LEFT" value="1" enum="EyeVisibility">
-			The layer is visible only to the left eye.
-		</constant>
-		<constant name="EYE_VISIBILITY_RIGHT" value="2" enum="EyeVisibility">
-			The layer is visible only to the right eye.
-		</constant>
-	</constants>
+	<enums>
+		<enum name="EyeVisibility">
+			<constant name="EYE_VISIBILITY_BOTH" value="0">
+				The layer is visible to both the left and right eyes.
+			</constant>
+			<constant name="EYE_VISIBILITY_LEFT" value="1">
+				The layer is visible only to the left eye.
+			</constant>
+			<constant name="EYE_VISIBILITY_RIGHT" value="2">
+				The layer is visible only to the right eye.
+			</constant>
+		</enum>
+		<enum name="Filter">
+			<constant name="FILTER_NEAREST" value="0">
+				Perform nearest-neighbor filtering when sampling the texture.
+			</constant>
+			<constant name="FILTER_LINEAR" value="1">
+				Perform linear filtering when sampling the texture.
+			</constant>
+			<constant name="FILTER_CUBIC" value="2">
+				Perform cubic filtering when sampling the texture.
+			</constant>
+		</enum>
+		<enum name="MipmapMode">
+			<constant name="MIPMAP_MODE_DISABLED" value="0">
+				Disable mipmapping.
+				[b]Note:[/b] Mipmapping can only be disabled in the Compatibility renderer.
+			</constant>
+			<constant name="MIPMAP_MODE_NEAREST" value="1">
+				Use the mipmap of the nearest resolution.
+			</constant>
+			<constant name="MIPMAP_MODE_LINEAR" value="2">
+				Use linear interpolation of the two mipmaps of the nearest resolution.
+			</constant>
+		</enum>
+		<enum name="Swizzle">
+			<constant name="SWIZZLE_RED" value="0">
+				Maps a color channel to the value of the red channel.
+			</constant>
+			<constant name="SWIZZLE_GREEN" value="1">
+				Maps a color channel to the value of the green channel.
+			</constant>
+			<constant name="SWIZZLE_BLUE" value="2">
+				Maps a color channel to the value of the blue channel.
+			</constant>
+			<constant name="SWIZZLE_ALPHA" value="3">
+				Maps a color channel to the value of the alpha channel.
+			</constant>
+			<constant name="SWIZZLE_ZERO" value="4">
+				Maps a color channel to the value of zero.
+			</constant>
+			<constant name="SWIZZLE_ONE" value="5">
+				Maps a color channel to the value of one.
+			</constant>
+		</enum>
+		<enum name="Wrap">
+			<constant name="WRAP_CLAMP_TO_BORDER" value="0">
+				Clamp the texture to its specified border color.
+			</constant>
+			<constant name="WRAP_CLAMP_TO_EDGE" value="1">
+				Clamp the texture to its edge color.
+			</constant>
+			<constant name="WRAP_REPEAT" value="2">
+				Repeat the texture infinitely.
+			</constant>
+			<constant name="WRAP_MIRRORED_REPEAT" value="3">
+				Repeat the texture infinitely, mirroring it on each repeat.
+			</constant>
+			<constant name="WRAP_MIRROR_CLAMP_TO_EDGE" value="4">
+				Mirror the texture once and then clamp the texture to its edge color.
+				[b]Note:[/b] This wrap mode is not available in the Compatibility renderer.
+			</constant>
+		</enum>
+	</enums>
 </class>
