@@ -694,7 +694,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("parent_hl_line_color", "Tree", highlight_line_color);
 			p_theme->set_color("children_hl_line_color", "Tree", relationship_line_color);
 			p_theme->set_color("drop_on_item_color", "Tree", p_config.accent_color);
-			p_theme->set_color("drop_position_color", "Tree", p_config.icon_normal_color);
+			p_theme->set_color("drop_position_color", "Tree", p_config.mono_color * Color(1, 1, 1, 0.9));
 			p_theme->set_color("guide_color", "Tree", Color(1, 1, 1, 0));
 			p_theme->set_color("scroll_hint_color", "Tree", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));
 

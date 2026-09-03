@@ -672,7 +672,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_color("parent_hl_line_color", "Tree", parent_line_color);
 			p_theme->set_color("children_hl_line_color", "Tree", children_line_color);
 			p_theme->set_color("drop_on_item_color", "Tree", p_config.accent_color);
-			p_theme->set_color("drop_position_color", "Tree", p_config.icon_normal_color);
+			p_theme->set_color("drop_position_color", "Tree", p_config.mono_color * Color(1, 1, 1, 1));
 
 			Ref<StyleBoxFlat> style_tree_btn = p_config.base_style->duplicate();
 			style_tree_btn->set_bg_color(p_config.highlight_color);
