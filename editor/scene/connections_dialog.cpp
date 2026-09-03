@@ -401,7 +401,7 @@ void ConnectDialog::_update_method_tree() {
 	ScriptInstance *si = target->get_script_instance();
 	if (si) {
 		if (si->get_script()->is_built_in()) {
-			si->get_script()->reload();
+			si->get_script()->reload(true);
 		}
 		List<MethodInfo> methods;
 		si->get_method_list(&methods);
