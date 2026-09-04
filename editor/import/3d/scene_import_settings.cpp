@@ -1214,6 +1214,26 @@ void SceneImportSettingsDialog::_scene_tree_selected() {
 	_select(scene_tree, type, import_id);
 }
 
+void SceneImportSettingsDialog::_tree_gui_input(const Ref<InputEvent> &p_event, Tree *p_tree) {
+	const Ref<InputEventKey> &key = p_event;
+	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
+		if (ED_IS_SHORTCUT("scene_import_settings/copy_name", p_event)) {
+			_copy_selected_tree_item_name(p_tree);
+		}
+	}
+}
+
+void SceneImportSettingsDialog::_copy_selected_tree_item_name(Tree *p_tree) {
+	if (p_tree == nullptr) {
+		return;
+	}
+	TreeItem *item = p_tree->get_selected();
+	if (item == nullptr) {
+		return;
+	}
+	DisplayServer::get_singleton()->clipboard_set(item->get_text(0));
+}
+
 void SceneImportSettingsDialog::_cleanup() {
 	skeletons.clear();
 	if (animation_player != nullptr) {
@@ -1722,11 +1742,14 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	tree_split->add_child(property_split);
 	property_split->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
+	ED_SHORTCUT("scene_import_settings/copy_name", TTRC("Copy Name"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+
 	scene_tree = memnew(Tree);
 	scene_tree->set_name(TTR("Scene"));
 	scene_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(scene_tree);
 	scene_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_scene_tree_selected));
+	scene_tree->connect(SceneStringName(gui_input), callable_mp(this, &SceneImportSettingsDialog::_tree_gui_input).bind(scene_tree));
 
 	mesh_tree = memnew(Tree);
 	mesh_tree->set_name(TTR("Meshes"));
@@ -1734,12 +1757,14 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	data_mode->add_child(mesh_tree);
 	mesh_tree->set_hide_root(true);
 	mesh_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_mesh_tree_selected));
+	mesh_tree->connect(SceneStringName(gui_input), callable_mp(this, &SceneImportSettingsDialog::_tree_gui_input).bind(mesh_tree));
 
 	material_tree = memnew(Tree);
 	material_tree->set_name(TTR("Materials"));
 	material_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	data_mode->add_child(material_tree);
 	material_tree->connect("cell_selected", callable_mp(this, &SceneImportSettingsDialog::_material_tree_selected));
+	material_tree->connect(SceneStringName(gui_input), callable_mp(this, &SceneImportSettingsDialog::_tree_gui_input).bind(material_tree));
 
 	material_tree->set_hide_root(true);
 
