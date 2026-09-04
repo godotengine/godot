@@ -774,27 +774,26 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				light_data.volumetric_fog_energy = light->param[RSE::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY];
 				light_data.mask = light->cull_mask;
 
-				float size = light->param[RSE::LIGHT_PARAM_SIZE];
+				float angular_radius_degrees = light->param[RSE::LIGHT_PARAM_SIZE];
 
-				light_data.size = 1.0 - Math::cos(Math::deg_to_rad(size)); //angle to cosine offset
+				light_data.size = 1.0 - Math::cos(Math::deg_to_rad(angular_radius_degrees)); //angle to cosine offset
 
 				light_data.shadow_opacity = (p_using_shadows && light->shadow)
 						? light->param[RSE::LIGHT_PARAM_SHADOW_OPACITY]
 						: 0.0;
 
-				float angular_diameter = light->param[RSE::LIGHT_PARAM_SIZE];
-				if (angular_diameter > 0.0) {
+				if (angular_radius_degrees > 0.0) {
 					// I know tan(0) is 0, but let's not risk it with numerical precision.
 					// technically this will keep expanding until reaching the sun, but all we care
 					// is expand until we reach the radius of the near plane (there can't be more occluders than that)
-					angular_diameter = Math::tan(Math::deg_to_rad(angular_diameter));
+					angular_radius_degrees = Math::tan(Math::deg_to_rad(angular_radius_degrees));
 					if (light->shadow && light->param[RSE::LIGHT_PARAM_SHADOW_BLUR] > 0.0) {
 						// Only enable PCSS-like soft shadows if blurring is enabled.
 						// Otherwise, performance would decrease with no visual difference.
 						r_directional_light_soft_shadows = true;
 					}
 				} else {
-					angular_diameter = 0.0;
+					angular_radius_degrees = 0.0;
 				}
 
 				light_data.bake_mode = light->bake_mode;
@@ -803,9 +802,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 					RSE::LightDirectionalShadowMode smode = light->directional_shadow_mode;
 
 					light_data.soft_shadow_scale = light->param[RSE::LIGHT_PARAM_SHADOW_BLUR];
-					light_data.softshadow_angle = angular_diameter;
+					light_data.softshadow_angle = angular_radius_degrees;
 
-					if (angular_diameter <= 0.0) {
+					if (angular_radius_degrees <= 0.0) {
 						light_data.soft_shadow_scale *= RendererSceneRenderRD::get_singleton()->directional_shadow_quality_radius_get(); // Only use quality radius for PCF
 					}
 
@@ -1057,8 +1056,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		light_data.volumetric_fog_energy = light->param[RSE::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY];
 		light_data.bake_mode = light->bake_mode;
 
-		float radius = MAX(0.001, light->param[RSE::LIGHT_PARAM_RANGE]);
-		light_data.inv_radius = 1.0 / radius;
+		float range_radius_meters = MAX(0.001, light->param[RSE::LIGHT_PARAM_RANGE]);
+		light_data.inv_radius = 1.0 / range_radius_meters;
 		Vector2 area_size = light->area_size;
 		Vector3 pos = inverse_transform.xform(light_transform.origin);
 		light_data.position[0] = pos.x;
@@ -1071,9 +1070,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		light_data.direction[1] = direction.y;
 		light_data.direction[2] = direction.z;
 
-		float size = light->param[RSE::LIGHT_PARAM_SIZE];
+		float size_radius_meters = light->param[RSE::LIGHT_PARAM_SIZE];
 
-		light_data.size = size;
+		light_data.size = size_radius_meters;
 
 		light_data.inv_spot_attenuation = 1.0f / light->param[RSE::LIGHT_PARAM_SPOT_ATTENUATION];
 		float spot_angle = light->param[RSE::LIGHT_PARAM_SPOT_ANGLE];
@@ -1089,7 +1088,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			light_data.area_height[0] = area_vec_b.x;
 			light_data.area_height[1] = area_vec_b.y;
 			light_data.area_height[2] = area_vec_b.z;
-			light_data.inv_spot_attenuation = 1.0 / (radius + area_size.length() / 2.0); // center range
+			light_data.inv_spot_attenuation = 1.0 / (range_radius_meters + area_size.length() / 2.0); // center range
 
 			if (light->area_normalize_energy) {
 				// normalization to make larger lights output same amount of light as smaller lights with same energy
@@ -1185,10 +1184,10 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 				RendererRD::MaterialStorage::store_transform(proj, light_data.shadow_matrix);
 
-				if (size > 0.0 && light_data.soft_shadow_scale > 0.0) {
+				if (size_radius_meters > 0.0 && light_data.soft_shadow_scale > 0.0) {
 					// Only enable PCSS-like soft shadows if blurring is enabled.
 					// Otherwise, performance would decrease with no visual difference.
-					light_data.soft_shadow_size = size;
+					light_data.soft_shadow_size = size_radius_meters;
 				} else {
 					light_data.soft_shadow_size = 0.0;
 					light_data.soft_shadow_scale *= RendererSceneRenderRD::get_singleton()->shadows_quality_radius_get(); // Only use quality radius for PCF
@@ -1220,11 +1219,11 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				Projection shadow_mtx = bias * cm * modelview;
 				RendererRD::MaterialStorage::store_camera(shadow_mtx, light_data.shadow_matrix);
 
-				if (size > 0.0 && light_data.soft_shadow_scale > 0.0) {
+				if (size_radius_meters > 0.0 && light_data.soft_shadow_scale > 0.0) {
 					// Only enable PCSS-like soft shadows if blurring is enabled.
 					// Otherwise, performance would decrease with no visual difference.
 					float half_np = cm.get_z_near() * Math::tan(Math::deg_to_rad(spot_angle));
-					light_data.soft_shadow_size = (size * 0.5 / radius) / (half_np / cm.get_z_near()) * rect.size.width;
+					light_data.soft_shadow_size = (size_radius_meters * 0.5 / range_radius_meters) / (half_np / cm.get_z_near()) * rect.size.width;
 				} else {
 					light_data.soft_shadow_size = 0.0;
 					light_data.soft_shadow_scale *= RendererSceneRenderRD::get_singleton()->shadows_quality_radius_get(); // Only use quality radius for PCF
@@ -1238,7 +1237,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		light_instance->cull_mask = light->cull_mask;
 
 		// hook for subclass to do further processing.
-		RendererSceneRenderRD::get_singleton()->setup_added_light(type, light_transform, radius, spot_angle, area_size);
+		RendererSceneRenderRD::get_singleton()->setup_added_light(type, light_transform, range_radius_meters, spot_angle, area_size);
 
 		r_positional_light_count++;
 	}

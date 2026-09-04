@@ -1144,8 +1144,8 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 
 				sky_light_data.enabled = true;
 
-				float angular_diameter = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SIZE);
-				sky_light_data.size = Math::deg_to_rad(angular_diameter);
+				float angular_radius_degrees = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SIZE);
+				sky_light_data.size = Math::deg_to_rad(angular_radius_degrees);
 				sky_scene_state.ubo.directional_light_count++;
 				if (sky_scene_state.ubo.directional_light_count >= sky_scene_state.max_directional_lights) {
 					break;
