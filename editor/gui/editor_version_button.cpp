@@ -83,7 +83,7 @@ void EditorVersionButton::pressed() {
 	DisplayServer::get_singleton()->clipboard_set(_get_version_string(FORMAT_WITH_BUILD));
 	EditorToaster *toaster = EditorToaster::get_singleton();
 	if (toaster) {
-		toaster->popup_str(TTR("Copied Godot editor version."));
+		toaster->popup_str(TTR("Copied Goline editor version."));
 	}
 }
 
