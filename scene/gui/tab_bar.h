@@ -227,6 +227,8 @@ protected:
 	void drop_data(const Point2 &p_point, const Variant &p_data) override;
 	void _move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_index);
 
+	virtual Size2 __get_minimum_size() const override;
+
 public:
 	RID get_tab_accessibility_element(int p_tab) const;
 	virtual RID get_focused_accessibility_element() const override;
@@ -345,7 +347,6 @@ public:
 	void set_switch_on_release(bool p_switch) { switch_on_release = p_switch; }
 
 	Rect2 get_tab_rect(int p_tab) const;
-	Size2 get_minimum_size() const override;
 	Size2 get_desired_size() const override;
 
 	TabBar();

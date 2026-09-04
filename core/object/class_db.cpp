@@ -1815,6 +1815,90 @@ void ClassDB::add_extension_class_virtual_method(const StringName &p_class, cons
 #endif // DEBUG_ENABLED
 }
 
+void ClassDB::add_virtual_method_answer(MethodBind *p_answer, const StringName &p_method_name) {
+	ERR_FAIL_NULL(p_answer);
+
+	Locker::Lock lock(Locker::STATE_WRITE);
+
+	p_answer->set_name(p_method_name);
+
+	const StringName instance_type = p_answer->get_instance_class();
+	ClassInfo *answer_type = classes.getptr(instance_type);
+	if (!answer_type) {
+		memdelete(p_answer);
+		ERR_FAIL_MSG(vformat("Couldn't bind virtual method answer '%s' for instance '%s'.", p_method_name, instance_type));
+	}
+
+#ifdef DEBUG_ENABLED
+	ClassInfo *type = answer_type;
+	MethodInfo *virtual_method = nullptr;
+	while (type) {
+		if (type->virtual_methods_map.has(p_method_name)) {
+			virtual_method = type->virtual_methods_map.getptr(p_method_name);
+			break;
+		}
+		type = type->inherits_ptr;
+	}
+
+	if (!virtual_method || !(virtual_method->flags & METHOD_FLAG_VIRTUAL)) {
+		memdelete(p_answer);
+		ERR_FAIL_MSG(vformat("Virtual method answer '%s' for instance '%s' doesn't have a corresponding virtual method.", p_method_name, instance_type));
+	}
+
+	if (virtual_method->arguments.size() != p_answer->get_argument_count()) {
+		memdelete(p_answer);
+		ERR_FAIL_MSG(vformat("Virtual method answer '%s' for instance '%s' has a different argument count than the corresponding virtual method.", p_method_name, instance_type));
+	}
+
+	if (virtual_method->return_val.type != p_answer->get_argument_type(-1)) {
+		memdelete(p_answer);
+		ERR_FAIL_MSG(vformat("Virtual method answer '%s' for instance '%s' has a different return type than the corresponding virtual method.", p_method_name, instance_type));
+	}
+
+	for (int i = 0; i < virtual_method->arguments.size(); i++) {
+		if (virtual_method->arguments[i].type != p_answer->get_argument_type(i)) {
+			memdelete(p_answer);
+			ERR_FAIL_MSG(vformat("Virtual method answer '%s' for instance '%s' has a different argument type for argument %d than the corresponding virtual method.", p_method_name, instance_type, i));
+		}
+	}
+#endif // DEBUG_ENABLED
+
+	if (answer_type->virtual_methods_answers.has(p_method_name)) {
+		memdelete(p_answer);
+		ERR_FAIL_MSG(vformat("Virtual method answer '%s' for instance '%s' already exists.", p_method_name, instance_type));
+	}
+
+	answer_type->virtual_methods_answers[p_method_name] = p_answer;
+}
+
+bool ClassDB::has_virtual_method_answer(const StringName &p_class, const StringName &p_method) {
+	Locker::Lock lock(Locker::STATE_READ);
+
+	ClassInfo *type = classes.getptr(p_class);
+	while (type) {
+		if (type->virtual_methods_answers.has(p_method)) {
+			return true;
+		}
+		type = type->inherits_ptr;
+	}
+
+	return false;
+}
+
+const MethodBind *ClassDB::get_virtual_method_answer(const StringName &p_class, const StringName &p_method) {
+	Locker::Lock lock(Locker::STATE_READ);
+
+	ClassInfo *type = classes.getptr(p_class);
+	while (type) {
+		if (type->virtual_methods_answers.has(p_method)) {
+			return type->virtual_methods_answers[p_method];
+		}
+		type = type->inherits_ptr;
+	}
+
+	return nullptr;
+}
+
 void ClassDB::set_class_enabled(const StringName &p_class, bool p_enable) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
@@ -2042,6 +2126,9 @@ static LocalVector<GDType *> gdtype_leaked_autorelease_pool;
 void ClassDB::unregister_extension_class(const StringName &p_class) {
 	ClassInfo *c = classes.getptr(p_class);
 	ERR_FAIL_NULL_MSG(c, vformat("Class '%s' does not exist.", String(p_class)));
+	for (const KeyValue<StringName, MethodBind *> &E : c->virtual_methods_answers) {
+		memdelete(E.value);
+	}
 	// Leak the GDType until exit so potential consumers don't have dangling pointers.
 	gdtype_leaked_autorelease_pool.push_back(c->gdtype);
 	classes.erase(p_class);
@@ -2090,6 +2177,10 @@ void ClassDB::cleanup() {
 	//OBJTYPE_LOCK; hah not here
 
 	for (KeyValue<StringName, ClassInfo> &E : classes) {
+		for (const KeyValue<StringName, MethodBind *> &F : E.value.virtual_methods_answers) {
+			memdelete(F.value);
+		}
+
 		if (E.value.gdextension) {
 			WARN_PRINT(vformat("Extension class '%s' is still registered at exit; its GDExtension did not unregister it.", E.key));
 			gdtype_leaked_autorelease_pool.push_back(E.value.gdtype); // We created it; we need to clear it.

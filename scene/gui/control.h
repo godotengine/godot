@@ -498,6 +498,8 @@ protected:
 
 	GDVIRTUAL1(_gui_input, RequiredParam<InputEvent>)
 
+	virtual Size2 __get_minimum_size() const { return Size2(); }
+
 public:
 	enum {
 		NOTIFICATION_RESIZED = 40,
