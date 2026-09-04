@@ -737,17 +737,37 @@ void ProjectList::_scan_finished() {
 		scan_progress->hide();
 	}
 
-	for (const String &E : scan_data->found_projects) {
-		add_project(E, false);
+	bool edited = false;
+
+	for (const String &path : scan_data->found_projects) {
+		bool already_exists = false;
+		for (const Item &p : _projects) {
+			if (p.path == path) {
+				already_exists = true;
+				break;
+			}
+		}
+		if (already_exists) {
+			continue;
+		}
+
+		add_project(path, false);
+		_projects.push_back(load_project_data(path, false));
+		_create_project_item_control(_projects.size() - 1);
+		edited = true;
 	}
 	memdelete(scan_data);
 	scan_data = nullptr;
 
-	save_config();
+	set_v_scroll(0);
 
-	if (ProjectManager::get_singleton()->is_initialized()) {
-		update_project_list();
+	if (!edited) {
+		return;
 	}
+
+	save_config();
+	sort_projects();
+	emit_signal(SNAME(SIGNAL_LIST_CHANGED));
 }
 
 // Initialization & loading.
