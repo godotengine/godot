@@ -31,6 +31,20 @@
 				Folds the container and emits [signal folding_changed].
 			</description>
 		</method>
+		<method name="get_title_bar_control" qualifiers="const">
+			<return type="Control" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the title bar [Control] at the given [param index], or [code]null[/code] if the index is out of bounds.
+				Use [method get_title_bar_control_count] to get the total number of title bar controls.
+			</description>
+		</method>
+		<method name="get_title_bar_control_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of controls added to the title bar via [method add_title_bar_control].
+			</description>
+		</method>
 		<method name="remove_title_bar_control">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
