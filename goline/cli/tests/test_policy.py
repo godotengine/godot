@@ -113,6 +113,20 @@ class ClassificationTest(unittest.TestCase):
         p = policy.Policy(deny_all=True)
         self.assertFalse(p.classify("git status").allowed)
 
+    def test_guidance_notice_derived_from_deny_set(self):
+        notice = policy.guidance_notice()
+        self.assertIn("Agent permission policy", notice)
+        self.assertIn("MUST NOT run", notice)
+        # Derived from _DENY_EXECUTABLES
+        self.assertIn("rm", notice)
+        self.assertIn("shred", notice)
+        # Pattern-based rules
+        self.assertIn("force push", notice)
+        self.assertIn("denied by default", notice)
+        # Denied executables are actual policy members
+        for exe in ("rm", "del", "wipefs", "taskkill"):
+            self.assertIn(exe, notice)
+
 
 class AuditLogTest(unittest.TestCase):
     def test_memory_entries(self):

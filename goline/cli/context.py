@@ -148,6 +148,11 @@ def build_engine_context(root: str | None = None, use_git: bool = True) -> str:
         "Do not modify upstream engine internals unless a roadmap stage "
         "authorizes it."
     )
+
+    # Security: the agent must "hold" the Goline permission policy.
+    from goline.cli.policy import guidance_notice
+    lines.append("")
+    lines.append(guidance_notice())
     return "\n".join(lines)
 
 
@@ -228,6 +233,11 @@ def build_game_context(project: str | None = None, depth: int = _MAX_SCAN_DEPTH)
         "GDScript/C# scenes and scripts grounded in the files above. "
         "Main scene is the run entry point unless stated otherwise."
     )
+
+    # Security: the agent must "hold" the Goline permission policy.
+    from goline.cli.policy import guidance_notice
+    lines.append("")
+    lines.append(guidance_notice())
     return "\n".join(lines)
 
 
