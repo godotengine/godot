@@ -225,6 +225,35 @@ public:
 		return ret;
 	}
 
+	GDVIRTUAL2R(Dictionary, _callp, const StringName &, const Array &)
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
+		Array args;
+		for (int i = 0; i < p_argcount; i++) {
+			args.push_back(*p_args[i]);
+		}
+
+		Dictionary ret;
+		if (GDVIRTUAL_CALL(_callp, p_method, args, ret)) {
+			if (ret.has("result")) {
+				Variant result = ret["result"];
+				if (ret.has("error")) {
+					r_error.error = Callable::CallError::Error(ret["error"]);
+					if (ret.has("argument")) {
+						r_error.argument = ret["argument"];
+					}
+					if (ret.has("expected")) {
+						r_error.expected = ret["expected"];
+					}
+				} else {
+					r_error.error = Callable::CallError::CALL_OK;
+				}
+				return result;
+			}
+		}
+
+		return Script::callp(p_method, p_args, p_argcount, r_error);
+	}
+
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL1RC(bool, _instance_has, const Object *)
 #endif // !DISABLE_DEPRECATED
