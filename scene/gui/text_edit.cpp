@@ -1839,76 +1839,15 @@ void TextEdit::_notification(int p_what) {
 							continue;
 						}
 
-						int start_column = u.start_column;
-						int end_column = u.end_column;
-
-						if (line != u.start_line) {
-							start_column = 0;
-						}
-						if (line != u.end_line) {
-							end_column = last_visible_char;
-						}
-
-						const Vector<Vector2> underline = TS->shaped_text_get_selection(rid, start_column, end_column);
-						Rect2 combined_rect;
-						for (int j = 0; j < underline.size(); j++) {
-							Rect2 rect = Rect2(
-									underline[j].x + char_margin,
-									ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size),
-									underline[j].y - underline[j].x,
-									theme_cache.font_size * 0.1);
-
-							combined_rect = j == 0 ? rect : combined_rect.merge(rect);
-						}
-
-						PackedVector2Array points;
-						PackedColorArray colors;
-
-						float squiggle_top_y = combined_rect.position.y;
-						float squiggle_center_y = combined_rect.position.y + (combined_rect.size.y / 2.0);
-						float squiggle_bottom_y = combined_rect.position.y + combined_rect.size.y;
-
-						float distance = combined_rect.position.x;
-						float end_position = combined_rect.position.x + combined_rect.size.x;
-
-						bool use_top_squiggle = false;
-
-						// Add first point.
-						if (distance >= xmargin_beg && distance <= xmargin_end) {
-							points.append(Vector2(distance, squiggle_center_y));
-							distance += char_w * 0.25;
-						}
-
-						while (true) {
-							if (distance >= xmargin_beg && distance <= xmargin_end) {
-								float y_pos = use_top_squiggle ? squiggle_top_y : squiggle_bottom_y;
-								// Ensure the underline ends at the end of the text.
-								if (distance >= end_position) {
-									if (points.is_empty()) {
-										break;
-									}
-									Vector2 prev_point = points.get(points.size() - 1);
-									float prev_distance = prev_point.x;
-									float ratio_across = (end_position - prev_distance) / (distance - prev_distance);
-									float prev_y = prev_point.y;
-									float mid_y = Math::lerp(prev_y, y_pos, ratio_across);
-									points.append(Vector2(end_position, mid_y));
-									break;
-								}
-								points.append(Vector2(distance, y_pos));
-							}
-							if (distance >= end_position) {
+						switch (u.style) {
+							case UNDERLINE_STYLE_STRAIGHT:
+								_do_underline_straight(u, line, last_visible_char, rid, char_margin, ofs_y, xmargin_beg, xmargin_end, char_w);
 								break;
-							}
-							distance += char_w * 0.5;
-							use_top_squiggle = !use_top_squiggle;
-						}
-
-						if (points.size() >= 2) {
-							colors.append(u.color);
-							// theme_cache.base_scale is not necessary here, as font size is already dependent on editor scale.
-							// See https://github.com/godotengine/godot/pull/119588#pullrequestreview-4618459305 for more info.
-							RS::get_singleton()->canvas_item_add_polyline(text_ci, points, colors, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size), 1), true);
+							case UNDERLINE_STYLE_SQUIGGLY:
+								_do_underline_squiggly(u, line, last_visible_char, rid, char_margin, ofs_y, xmargin_beg, xmargin_end, char_w);
+								break;
+							default:
+								break;
 						}
 					}
 
@@ -2219,6 +2158,129 @@ void TextEdit::_notification(int p_what) {
 				queue_redraw();
 			}
 		} break;
+	}
+}
+
+void TextEdit::_do_underline_straight(const Underline &p_ul, int p_line, int p_last_visible_char, RID p_rid, int p_char_margin, int p_ofs_y, int p_xmargin_beg, int p_xmargin_end, float p_char_w) {
+	int start_column = p_ul.start_column;
+	int end_column = p_ul.end_column;
+
+	if (p_line != p_ul.start_line) {
+		start_column = 0;
+	}
+	if (p_line != p_ul.end_line) {
+		end_column = p_last_visible_char;
+	}
+
+	// NOTE: Do we need to iterate over every item in here? Or could we just use
+	// the first and last to define the box with O(1) time instead of O(underline.size()) time?
+	const Vector<Vector2> underline = TS->shaped_text_get_selection(p_rid, start_column, end_column);
+	const float underline_pos = theme_cache.font->get_underline_position(theme_cache.font_size);
+	Rect2 combined_rect;
+	for (int j = 0; j < underline.size(); j++) {
+		Rect2 rect = Rect2(
+				underline[j].x + p_char_margin,
+				p_ofs_y + underline_pos,
+				underline[j].y - underline[j].x,
+				theme_cache.font_size * 0.1);
+
+		combined_rect = j == 0 ? rect : combined_rect.merge(rect);
+	}
+
+	float center_y = combined_rect.position.y + (combined_rect.size.y / 2.0);
+
+	float start_x = combined_rect.position.x;
+	float end_x = combined_rect.position.x + combined_rect.size.x;
+
+	// If the underline starts beyond the right edge or ends before the left edge,
+	// then no need to draw anything.
+	if (start_x >= p_xmargin_end || end_x <= p_xmargin_beg) {
+		return;
+	}
+
+	// Otherwise, start the underline at either the left edge or the beginning of
+	// the text to be underlined.
+	RS::get_singleton()->canvas_item_add_line(
+			text_ci,
+			Vector2(MAX(p_xmargin_beg, start_x), center_y),
+			Vector2(MIN(p_xmargin_end, end_x), center_y),
+			p_ul.color,
+			MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size), 1),
+			true);
+}
+
+void TextEdit::_do_underline_squiggly(const Underline &p_ul, int p_line, int p_last_visible_char, RID p_rid, int p_char_margin, int p_ofs_y, int p_xmargin_beg, int p_xmargin_end, float p_char_w) {
+	int start_column = p_ul.start_column;
+	int end_column = p_ul.end_column;
+
+	if (p_line != p_ul.start_line) {
+		start_column = 0;
+	}
+	if (p_line != p_ul.end_line) {
+		end_column = p_last_visible_char;
+	}
+
+	const Vector<Vector2> underline = TS->shaped_text_get_selection(p_rid, start_column, end_column);
+	const float underline_pos = theme_cache.font->get_underline_position(theme_cache.font_size);
+	Rect2 combined_rect;
+	for (int j = 0; j < underline.size(); j++) {
+		Rect2 rect = Rect2(
+				underline[j].x + p_char_margin,
+				p_ofs_y + underline_pos,
+				underline[j].y - underline[j].x,
+				theme_cache.font_size * 0.1);
+
+		combined_rect = j == 0 ? rect : combined_rect.merge(rect);
+	}
+
+	PackedVector2Array points;
+	PackedColorArray colors;
+
+	float squiggle_top_y = combined_rect.position.y;
+	float squiggle_center_y = combined_rect.position.y + (combined_rect.size.y / 2.0);
+	float squiggle_bottom_y = combined_rect.position.y + combined_rect.size.y;
+
+	float distance = combined_rect.position.x;
+	float end_position = combined_rect.position.x + combined_rect.size.x;
+
+	bool use_top_squiggle = false;
+
+	// Add first point.
+	if (distance >= p_xmargin_beg && distance <= p_xmargin_end) {
+		points.append(Vector2(distance, squiggle_center_y));
+		distance += p_char_w * 0.25;
+	}
+
+	while (true) {
+		if (distance >= p_xmargin_beg && distance <= p_xmargin_end) {
+			float y_pos = use_top_squiggle ? squiggle_top_y : squiggle_bottom_y;
+			// Ensure the underline ends at the end of the text.
+			if (distance >= end_position) {
+				if (points.is_empty()) {
+					break;
+				}
+				Vector2 prev_point = points.get(points.size() - 1);
+				float prev_distance = prev_point.x;
+				float ratio_across = (end_position - prev_distance) / (distance - prev_distance);
+				float prev_y = prev_point.y;
+				float mid_y = Math::lerp(prev_y, y_pos, ratio_across);
+				points.append(Vector2(end_position, mid_y));
+				break;
+			}
+			points.append(Vector2(distance, y_pos));
+		}
+		if (distance >= end_position) {
+			break;
+		}
+		distance += p_char_w * 0.5;
+		use_top_squiggle = !use_top_squiggle;
+	}
+
+	if (points.size() >= 2) {
+		colors.append(p_ul.color);
+		// theme_cache.base_scale is not necessary here, as font size is already dependent on editor scale.
+		// See https://github.com/godotengine/godot/pull/119588#pullrequestreview-4618459305 for more info.
+		RS::get_singleton()->canvas_item_add_polyline(text_ci, points, colors, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size), 1), true);
 	}
 }
 
