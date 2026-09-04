@@ -30,8 +30,101 @@
 
 #include "audio_bus_layout.h"
 
+#include "core/object/class_db.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_effect.h" // IWYU pragma: keep. For Bus::Effect.
+#include "servers/audio/audio_server.h"
+
+void AudioBusLayout::set_server_bus_layout() {
+	// AudioServer::_set_server_bus_layout() exists for compatibility.
+	// AudioServer::set_bus_layout() is deprecated and no longer part of all builds.
+	// More internal untangling in the AudioServer is required
+	// to apply bus layouts without involving Resources
+	// and this function is the stopgap until that is done.
+	AudioServer::get_singleton()->_set_server_bus_layout(this);
+}
+
+void AudioBusLayout::generate_from_server_bus_layout() {
+	AudioServer *audioserver = AudioServer::get_singleton();
+	ERR_FAIL_NULL(audioserver);
+
+	const int server_bus_size = audioserver->get_bus_count();
+
+	buses.resize(server_bus_size);
+
+	Bus *buses_ptrw = buses.ptrw();
+
+	for (int i = 0; i < server_bus_size; i++) {
+		buses_ptrw[i].name = audioserver->get_bus_name(i);
+		buses_ptrw[i].send = audioserver->get_bus_send(i);
+		buses_ptrw[i].mute = audioserver->is_bus_mute(i);
+		buses_ptrw[i].solo = audioserver->is_bus_solo(i);
+		buses_ptrw[i].bypass = audioserver->is_bus_bypassing_effects(i);
+		buses_ptrw[i].volume_db = audioserver->get_bus_volume_db(i);
+
+		const int server_bus_effect_size = audioserver->get_bus_effect_count(i);
+
+		buses_ptrw[i].effects.clear();
+
+		for (int j = 0; j < server_bus_effect_size; j++) {
+			AudioBusLayout::Bus::Effect fx;
+			fx.effect = audioserver->get_bus_effect(i, j);
+			fx.enabled = audioserver->is_bus_effect_enabled(i, j);
+			buses_ptrw[i].effects.push_back(fx);
+		}
+	}
+}
+
+int AudioBusLayout::get_bus_count() const {
+	return buses.size();
+}
+
+int AudioBusLayout::get_bus_effect_count(int p_bus) const {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
+	return buses[p_bus].effects.size();
+}
+
+String AudioBusLayout::get_bus_name(int p_bus) const {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), String());
+	return buses[p_bus].name;
+}
+
+StringName AudioBusLayout::get_bus_send(int p_bus) const {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), StringName());
+	return buses[p_bus].send;
+}
+
+bool AudioBusLayout::is_bus_mute(int p_bus) const {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), false);
+	return buses[p_bus].mute;
+}
+
+bool AudioBusLayout::is_bus_solo(int p_bus) const {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), false);
+	return buses[p_bus].solo;
+}
+
+bool AudioBusLayout::is_bus_bypassing_effects(int p_bus) const {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), false);
+	return buses[p_bus].bypass;
+}
+
+float AudioBusLayout::get_bus_volume_db(int p_bus) const {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
+	return buses[p_bus].volume_db;
+}
+
+Ref<AudioEffect> AudioBusLayout::get_bus_effect(int p_bus, int p_effect) {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), Ref<AudioEffect>());
+	ERR_FAIL_INDEX_V(p_effect, buses[p_bus].effects.size(), Ref<AudioEffect>());
+	return buses[p_bus].effects[p_effect].effect;
+}
+
+bool AudioBusLayout::is_bus_effect_enabled(int p_bus, int p_effect) const {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), false);
+	ERR_FAIL_INDEX_V(p_effect, buses[p_bus].effects.size(), false);
+	return buses[p_bus].effects[p_effect].enabled;
+}
 
 bool AudioBusLayout::_set(const StringName &p_name, const Variant &p_value) {
 	String s = p_name;
@@ -151,6 +244,11 @@ void AudioBusLayout::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/effect/" + itos(j) + "/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
+}
+
+void AudioBusLayout::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("generate_from_server_bus_layout"), &AudioBusLayout::generate_from_server_bus_layout);
+	ClassDB::bind_method(D_METHOD("set_server_bus_layout"), &AudioBusLayout::set_server_bus_layout);
 }
 
 AudioBusLayout::AudioBusLayout() {
