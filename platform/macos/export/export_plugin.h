@@ -97,31 +97,10 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
 	Error _create_pkg(const Ref<EditorExportPreset> &p_preset, const String &p_pkg_path, const String &p_app_path_name);
 	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
+	String _get_app_id(const Ref<EditorExportPreset> &p_preset) const;
 
 	bool use_codesign() const { return true; }
 
-	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
-		String pname = p_package;
-
-		if (pname.length() == 0) {
-			if (r_error) {
-				*r_error = TTR("Identifier is missing.");
-			}
-			return false;
-		}
-
-		for (int i = 0; i < pname.length(); i++) {
-			char32_t c = pname[i];
-			if (!(is_ascii_alphanumeric_char(c) || c == '-' || c == '.')) {
-				if (r_error) {
-					*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
-				}
-				return false;
-			}
-		}
-
-		return true;
-	}
 	bool is_shebang(const String &p_path) const;
 
 protected:

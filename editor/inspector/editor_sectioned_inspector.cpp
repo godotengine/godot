@@ -128,6 +128,18 @@ class SectionedInspectorFilter : public Object {
 		return true;
 	}
 
+	String _get_property_warning(const StringName &p_name) const {
+		if (edited->has_method("_get_property_warning")) {
+			return edited->call("_get_property_warning", section + "/" + p_name);
+		}
+		return String();
+	}
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &SectionedInspectorFilter::_get_property_warning);
+	}
+
 public:
 	void set_section(const String &p_section, bool p_allow_sub) {
 		section = p_section;
