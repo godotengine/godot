@@ -363,18 +363,18 @@ SSEffects::SSEffects() {
 	}
 }
 
-bool SSEffects::allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr, bool p_use_hddagi_specular) {
+bool SSEffects::allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr, bool p_use_hddagi_screen_radiance) {
 	Size2i last_frame_size = p_render_buffers->get_internal_size();
 	uint32_t mipmaps = 1;
 	uint32_t view_count = p_render_buffers->get_view_count();
 
-	if (!p_use_hddagi_specular && !p_use_ssil && p_use_ssr && ssr_half_size) {
+	if (!p_use_hddagi_screen_radiance && !p_use_ssil && p_use_ssr && ssr_half_size) {
 		last_frame_size /= 2;
 	}
 
 	if (p_use_ssil) {
 		mipmaps = 6;
-	} else if (p_use_hddagi_specular && p_use_ssr && ssr_half_size) {
+	} else if (p_use_hddagi_screen_radiance && p_use_ssr && ssr_half_size) {
 		mipmaps = 2;
 	}
 
@@ -382,11 +382,11 @@ bool SSEffects::allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_bu
 	const bool has_color = p_render_buffers->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME);
 	const bool has_depth = p_render_buffers->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH);
 
-	if (has_color && has_depth == p_use_hddagi_specular) {
+	if (has_color && has_depth == p_use_hddagi_screen_radiance) {
 		RID last_frame_texture = p_render_buffers->get_texture(RB_SCOPE_SSLF, RB_LAST_FRAME);
 		RD::TextureFormat texture_format = RD::get_singleton()->texture_get_format(last_frame_texture);
 		should_create = texture_format.format != RD::DATA_FORMAT_R16G16B16A16_SFLOAT || texture_format.width != (uint32_t)last_frame_size.width || texture_format.height != (uint32_t)last_frame_size.height || texture_format.mipmaps != mipmaps || texture_format.array_layers != view_count;
-		if (!should_create && p_use_hddagi_specular) {
+		if (!should_create && p_use_hddagi_screen_radiance) {
 			RID last_frame_depth = p_render_buffers->get_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH);
 			RD::TextureFormat depth_format = RD::get_singleton()->texture_get_format(last_frame_depth);
 			should_create = depth_format.format != RD::DATA_FORMAT_R32_SFLOAT || depth_format.width != (uint32_t)last_frame_size.width || depth_format.height != (uint32_t)last_frame_size.height || depth_format.mipmaps != 1 || depth_format.array_layers != view_count;
@@ -400,7 +400,7 @@ bool SSEffects::allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_bu
 
 		RID last_frame_texture = p_render_buffers->create_texture(RB_SCOPE_SSLF, RB_LAST_FRAME, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT, RD::TEXTURE_SAMPLES_1, last_frame_size, view_count, mipmaps);
 		RD::get_singleton()->texture_clear(last_frame_texture, Color(0, 0, 0, 0), 0, mipmaps, 0, view_count);
-		if (p_use_hddagi_specular) {
+		if (p_use_hddagi_screen_radiance) {
 			RID last_frame_depth = p_render_buffers->create_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH, RD::DATA_FORMAT_R32_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT, RD::TEXTURE_SAMPLES_1, last_frame_size, view_count, 1);
 			RD::get_singleton()->texture_clear(last_frame_depth, Color(0, 0, 0, 0), 0, 1, 0, view_count);
 		}

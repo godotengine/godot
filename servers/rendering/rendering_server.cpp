@@ -3017,6 +3017,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS);
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER);
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_SCREEN_PROBES);
+	BIND_ENUM_CONSTANT(RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_SCREEN_PROBE_REFLECTIONS);
 
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_VRS_DISABLED);
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_VRS_TEXTURE);
@@ -3831,7 +3832,12 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_candidate_count", PROPERTY_HINT_RANGE, "1,8,1"), 1);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_denoiser", PROPERTY_HINT_ENUM, "Disabled:0,SVGF:1"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_denoiser_quality", PROPERTY_HINT_ENUM, "Low (Faster),Medium,High (Slower)"), 2);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_denoiser_temporal_only", false);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_detail_trace", false);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_detail_trace_quality", PROPERTY_HINT_ENUM, "High (Slow),Balanced,Performance (Fast)"), 0);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_directional_adaptive", false);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_directional_screen_radiance", false);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_uniform_placement_jitter", true);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_guided_sampling", false);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_radiance_cache", PROPERTY_HINT_ENUM, "Disabled:0,Irradiance Cache:1"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/global_illumination/hddagi/screen_probe_radiance_cache_minimum_cell_size", PROPERTY_HINT_RANGE, "0.001,1.0,0.001,or_greater,suffix:m"), 0.04);

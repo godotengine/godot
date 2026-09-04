@@ -50,6 +50,17 @@ shared vec4 specular_neighborhood_ycocg[SPECULAR_NEIGHBORHOOD_SHARED_SIZE][SPECU
 
 #endif
 
+#ifdef MODE_SPECULAR_RECONSTRUCT
+
+layout(set = 0, binding = 0) uniform texture2D reconstruction_signal_input;
+layout(set = 0, binding = 1) uniform texture2D reconstruction_normal_roughness_input;
+layout(set = 0, binding = 2) uniform texture2D reconstruction_view_z_input;
+layout(set = 0, binding = 3) uniform texture2D reconstruction_motion_input;
+layout(set = 0, binding = 4) uniform sampler reconstruction_nearest_sampler;
+layout(rgba16f, set = 0, binding = 5) uniform restrict writeonly image2D reconstruction_signal_output;
+
+#endif
+
 #ifdef MODE_HISTORY_FIX
 
 layout(set = 0, binding = 0) uniform texture2D history_fix_signal_input;
@@ -240,6 +251,130 @@ bool svgf_decode_surface_metadata(vec2 packed_metadata, out vec2 r_surface_uv_of
 
 #endif
 
+#ifdef MODE_SPECULAR_RECONSTRUCT
+
+const vec2 SPECULAR_RECONSTRUCTION_DISK[8] = vec2[](
+		vec2(0.3500, 0.0000), vec2(-0.3500, 0.0000),
+		vec2(-0.4424, 0.4054), vec2(0.4424, -0.4054),
+		vec2(0.0697, -0.7970), vec2(-0.0697, 0.7970),
+		vec2(0.6088, 0.7934), vec2(-0.6088, -0.7934));
+
+void svgf_specular_reconstruct_main() {
+	ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 size = imageSize(reconstruction_signal_output);
+	if (any(greaterThanEqual(pixel, size))) {
+		return;
+	}
+
+	vec4 center_encoded_normal = texelFetch(sampler2D(reconstruction_normal_roughness_input, reconstruction_nearest_sampler), pixel, 0);
+	vec2 center_specular_guide = svgf_unpack_specular_roughness_source(center_encoded_normal.a);
+	float center_roughness = center_specular_guide.x;
+	vec4 center_signal = svgf_sanitize_signal(texelFetch(sampler2D(reconstruction_signal_input, reconstruction_nearest_sampler), pixel, 0));
+	if (center_roughness < 0.10 || center_roughness >= 0.40) {
+		imageStore(reconstruction_signal_output, pixel, center_signal);
+		return;
+	}
+
+	float center_view_z = texelFetch(sampler2D(reconstruction_view_z_input, reconstruction_nearest_sampler), pixel, 0).r;
+	vec4 center_motion = texelFetch(sampler2D(reconstruction_motion_input, reconstruction_nearest_sampler), pixel, 0);
+	vec3 center_normal;
+	if (!svgf_valid_view_z(center_view_z) || !svgf_decode_normal(center_encoded_normal, center_normal) || !svgf_finite_vec4(center_motion)) {
+		imageStore(reconstruction_signal_output, pixel, center_signal);
+		return;
+	}
+
+	uint reconstruction_quality = min(params.control.z >> 2u, 2u);
+	float quality_response = float(reconstruction_quality) * 0.5;
+	float signal_resolution_scale = (params.control.x & 4u) != 0u ? 1.0 : 0.5;
+	float maximum_radius = mix(4.0, 6.0, quality_response) * signal_resolution_scale;
+	float filter_radius = maximum_radius * clamp(center_roughness * 8.0, 0.0, 1.0);
+	int sample_count = 2 + int(reconstruction_quality) * 2;
+	float broad_lobe_response = smoothstep(0.10, 0.30, center_roughness);
+	float reconstruction_response = smoothstep(0.10, 0.16, center_roughness) * (1.0 - smoothstep(0.34, 0.40, center_roughness));
+	float normal_power = params.atrous.x * mix(1.0, 0.35, broad_lobe_response);
+	bool center_dynamic = center_motion.w > 1.0;
+	bool center_far_hit = center_signal.a >= 65000.0;
+
+	float depth_left = texelFetch(sampler2D(reconstruction_view_z_input, reconstruction_nearest_sampler), max(pixel - ivec2(1, 0), ivec2(0)), 0).r;
+	float depth_right = texelFetch(sampler2D(reconstruction_view_z_input, reconstruction_nearest_sampler), min(pixel + ivec2(1, 0), size - 1), 0).r;
+	float depth_up = texelFetch(sampler2D(reconstruction_view_z_input, reconstruction_nearest_sampler), max(pixel - ivec2(0, 1), ivec2(0)), 0).r;
+	float depth_down = texelFetch(sampler2D(reconstruction_view_z_input, reconstruction_nearest_sampler), min(pixel + ivec2(0, 1), size - 1), 0).r;
+	float gradient_left = svgf_valid_view_z(depth_left) ? center_view_z - depth_left : 0.0;
+	float gradient_right = svgf_valid_view_z(depth_right) ? depth_right - center_view_z : gradient_left;
+	float gradient_up = svgf_valid_view_z(depth_up) ? center_view_z - depth_up : 0.0;
+	float gradient_down = svgf_valid_view_z(depth_down) ? depth_down - center_view_z : gradient_up;
+	vec2 depth_gradient = vec2(
+			abs(gradient_left) < abs(gradient_right) ? gradient_left : gradient_right,
+			abs(gradient_up) < abs(gradient_down) ? gradient_up : gradient_down);
+	float base_plane_threshold = max(0.001, params.atrous.y * (((params.control.w & 1u) != 0u) ? 1.0 : center_view_z));
+
+	vec3 center_denoiser_signal = svgf_specular_to_denoiser_space(center_signal.rgb);
+	vec3 signal_sum = center_denoiser_signal * 2.0;
+	float weight_sum = 2.0;
+	for (int sample_index = 0; sample_index < 8; sample_index++) {
+		if (sample_index >= sample_count) {
+			break;
+		}
+		vec2 disk_sample = SPECULAR_RECONSTRUCTION_DISK[sample_index];
+		ivec2 offset = ivec2(round(disk_sample * filter_radius));
+		if (all(equal(offset, ivec2(0)))) {
+			continue;
+		}
+		ivec2 sample_pos = pixel + offset;
+		if (any(lessThan(sample_pos, ivec2(0))) || any(greaterThanEqual(sample_pos, size))) {
+			continue;
+		}
+
+		vec4 sample_motion = texelFetch(sampler2D(reconstruction_motion_input, reconstruction_nearest_sampler), sample_pos, 0);
+		if (!svgf_finite_vec4(sample_motion) || (sample_motion.w > 1.0) != center_dynamic) {
+			continue;
+		}
+		float sample_view_z = texelFetch(sampler2D(reconstruction_view_z_input, reconstruction_nearest_sampler), sample_pos, 0).r;
+		vec4 sample_encoded_normal = texelFetch(sampler2D(reconstruction_normal_roughness_input, reconstruction_nearest_sampler), sample_pos, 0);
+		vec3 sample_normal;
+		if (!svgf_valid_view_z(sample_view_z) || !svgf_decode_normal(sample_encoded_normal, sample_normal)) {
+			continue;
+		}
+		float normal_cosine = max(dot(center_normal, sample_normal), 0.0);
+		if (!(normal_cosine > 0.6)) {
+			continue;
+		}
+		float expected_depth_delta = dot(depth_gradient, vec2(offset));
+		float plane_threshold = base_plane_threshold * (1.0 + 0.35 * sqrt(float(dot(offset, offset))));
+		if (abs((sample_view_z - center_view_z) - expected_depth_delta) > plane_threshold) {
+			continue;
+		}
+
+		vec2 sample_specular_guide = svgf_unpack_specular_roughness_source(sample_encoded_normal.a);
+		if (sample_specular_guide.x >= 0.40) {
+			continue;
+		}
+		float roughness_delta = abs(sample_specular_guide.x - center_roughness);
+		float lobe_roughness = min(sample_specular_guide.x, center_roughness);
+		float narrow_lobe = 1.0 - smoothstep(0.05, 0.20, lobe_roughness);
+		float roughness_weight = exp2(-roughness_delta * mix(8.0, 32.0, narrow_lobe));
+		float route_mismatch_weight = 0.35 * smoothstep(0.16, 0.38, center_roughness);
+		float source_weight = sample_specular_guide.y == center_specular_guide.y ? 1.0 : route_mismatch_weight;
+		vec4 sample_signal = svgf_sanitize_signal(texelFetch(sampler2D(reconstruction_signal_input, reconstruction_nearest_sampler), sample_pos, 0));
+		bool sample_far_hit = sample_signal.a >= 65000.0;
+		float hit_class_weight = sample_far_hit == center_far_hit ? 1.0 : route_mismatch_weight;
+		float hit_weight = hit_class_weight * mix(exp2(-abs(svgf_hit_log(sample_signal.a) - svgf_hit_log(center_signal.a)) * 12.0), 1.0, broad_lobe_response * 0.5);
+		float radial_weight = max(1.0 - 0.35 * length(disk_sample), 0.5);
+		float weight = radial_weight * pow(normal_cosine, normal_power) * roughness_weight * source_weight * hit_weight;
+		if (!(weight > 1e-5) || !svgf_finite_float(weight)) {
+			continue;
+		}
+		signal_sum += svgf_specular_to_denoiser_space(sample_signal.rgb) * weight;
+		weight_sum += weight;
+	}
+
+	vec3 reconstructed_denoiser_signal = mix(center_denoiser_signal, signal_sum / max(weight_sum, 1e-5), reconstruction_response);
+	vec3 reconstructed_signal = svgf_specular_from_denoiser_space(reconstructed_denoiser_signal);
+	imageStore(reconstruction_signal_output, pixel, svgf_sanitize_signal(vec4(reconstructed_signal, center_signal.a)));
+}
+
+#endif
+
 #ifdef MODE_TEMPORAL
 
 bool svgf_history_tap_valid(ivec2 tap_pos, ivec2 size, bool current_dynamic, vec3 current_normal, vec3 current_normal_previous_view, vec3 expected_previous_position, out float r_history_length, out vec2 r_moments) {
@@ -376,11 +511,13 @@ void svgf_temporal_main() {
 	float accumulated_history_length = 0.0;
 	float accumulated_history_screen_confidence = 0.0;
 	float history_weight_sum = 0.0;
+	float maximum_history_tap_weight = 0.0;
 	if ((params.control.x & 1u) != 0u && current_surface_valid && motion_valid) {
 		vec2 motion = motion_sample.xy;
 		vec2 current_uv = (vec2(pixel) + 0.5) / vec2(size);
 		vec2 current_surface_uv = current_uv + current_surface_uv_offset;
-		vec2 previous_uv = current_surface_uv + motion + (frame_data.taa_jitter.zw - frame_data.taa_jitter.xy) * 0.5;
+		bool half_resolution_specular = specular_mode && (params.control.x & 4u) == 0u;
+		vec2 previous_uv = half_resolution_specular ? current_uv + motion : current_surface_uv + motion + (frame_data.taa_jitter.zw - frame_data.taa_jitter.xy) * 0.5;
 		vec3 current_view_position;
 		if (svgf_finite_vec4(motion_sample) && svgf_finite_vec2(previous_uv) && svgf_finite_vec2(current_surface_uv) &&
 				svgf_reconstruct_view(frame_data.current_inv_projection, current_surface_uv, current_view_z, (params.control.w & 1u) != 0u, current_view_position)) {
@@ -411,9 +548,19 @@ void svgf_temporal_main() {
 							float history_screen_confidence = 0.0;
 							if (specular_mode) {
 								vec3 history_metadata = svgf_unpack_specular_metadata(history_signal.a);
+								if ((history_metadata.x < 0.40) != (current_roughness < 0.40)) {
+									continue;
+								}
 								float mirror_response = 1.0 - smoothstep(0.03, 0.18, current_roughness);
 								float hit_log_tolerance = mix(1.0, 1.0 / SPECULAR_HIT_METADATA_QUANTIZATION, mirror_response);
-								if (abs(history_metadata.x - current_roughness) > 0.08 || abs(history_metadata.y - current_hit_log) > hit_log_tolerance) {
+								float history_roughness_delta = abs(history_metadata.x - current_roughness);
+								float lobe_roughness = min(history_metadata.x, current_roughness);
+								float narrow_lobe = 1.0 - smoothstep(0.05, 0.20, lobe_roughness);
+								if ((lobe_roughness < 0.10 && history_roughness_delta > 0.10) || abs(history_metadata.y - current_hit_log) > hit_log_tolerance) {
+									continue;
+								}
+								tap_weight *= exp2(-history_roughness_delta * mix(4.0, 24.0, narrow_lobe));
+								if (!(tap_weight > 1e-5)) {
 									continue;
 								}
 								history_screen_confidence = history_metadata.z;
@@ -423,6 +570,7 @@ void svgf_temporal_main() {
 							accumulated_history_length += tap_history_length * tap_weight;
 							accumulated_history_screen_confidence += history_screen_confidence * tap_weight;
 							history_weight_sum += tap_weight;
+							maximum_history_tap_weight = max(maximum_history_tap_weight, tap_weight);
 						}
 					}
 				}
@@ -435,17 +583,24 @@ void svgf_temporal_main() {
 	vec2 output_moments = vec2(current_moment_luminance, current_moment_luminance * current_moment_luminance);
 	float history_length = current_surface_valid ? 1.0 : 0.0;
 	float output_screen_confidence = current_screen_confidence;
-	if (current_surface_valid && history_weight_sum > 1e-5) {
+	bool history_footprint_valid = history_weight_sum > 1e-5 && (!specular_mode || maximum_history_tap_weight > 0.01);
+	if (current_surface_valid && history_footprint_valid) {
 		vec3 history_signal = accumulated_history / history_weight_sum;
 		vec2 previous_moments = accumulated_moments / history_weight_sum;
 		float previous_history_length = accumulated_history_length / history_weight_sum;
 		float previous_screen_confidence = accumulated_history_screen_confidence / history_weight_sum;
-		float reprojection_quality = sqrt(clamp(history_weight_sum, 0.0, 1.0));
+		float reprojection_quality = specular_mode && !current_dynamic ? 1.0 : sqrt(clamp(history_weight_sum, 0.0, 1.0));
 		float maximum_history_length = params.atrous.w;
 		float history_confidence = 1.0;
 		if (specular_mode) {
+			float broad_history_response = smoothstep(0.05, 0.12, current_roughness);
+			float stationary_history_length = mix(12.0, params.atrous.w, broad_history_response);
+			float motion_pixels = length(motion_sample.xy * vec2(size));
+			float motion_history_response = max(current_dynamic ? 1.0 : 0.0, smoothstep(0.25, 2.0, motion_pixels));
+			maximum_history_length = mix(stationary_history_length, 12.0, motion_history_response);
 			if ((params.control.x & 4u) != 0u) {
-				maximum_history_length = mix(2.0, maximum_history_length, clamp(current_roughness / 0.05, 0.0, 1.0));
+				float temporal_roughness = current_roughness < 0.001 ? 0.0 : max(current_roughness, 0.0316227766);
+				maximum_history_length = mix(2.0, maximum_history_length, clamp(temporal_roughness / 0.05, 0.0, 1.0));
 			}
 			vec3 neighborhood_center;
 			vec3 neighborhood_extent;
@@ -528,18 +683,23 @@ void svgf_history_fix_main() {
 
 	vec4 center_signal = svgf_sanitize_signal(texelFetch(sampler2D(history_fix_signal_input, nearest_sampler), pixel, 0));
 	vec4 center_moments = texelFetch(sampler2D(history_fix_moments_input, nearest_sampler), pixel, 0);
+	float history_fix_frame_count = float(params.control.z);
+	if (history_fix_frame_count < 1.0) {
+		svgf_store_history_fix(pixel, center_signal, center_moments);
+		return;
+	}
+
 	vec4 center_encoded_normal = texelFetch(sampler2D(history_fix_normal_input, nearest_sampler), pixel, 0);
 	float center_view_z = texelFetch(sampler2D(history_fix_view_z_input, nearest_sampler), pixel, 0).r;
 	vec3 center_normal_world;
 	vec2 center_surface_uv_offset;
 	bool center_dynamic;
 	float history_length = center_encoded_normal.a * HISTORY_LENGTH_STORAGE_SCALE;
-	float history_fix_frame_count = float(params.control.z);
 	if (!svgf_finite_vec4(center_moments) || !svgf_valid_view_z(center_view_z) ||
 			!svgf_decode_normal(center_encoded_normal, center_normal_world) ||
 			!svgf_decode_surface_metadata(center_moments.zw, center_surface_uv_offset, center_dynamic) ||
 			!svgf_finite_float(history_length) || history_length < 1.0 ||
-			history_fix_frame_count < 1.0 || history_length > history_fix_frame_count) {
+			history_length > history_fix_frame_count) {
 		svgf_store_history_fix(pixel, center_signal, center_moments);
 		return;
 	}
@@ -633,6 +793,21 @@ float svgf_variance_from_moments(vec2 moments, float history_length) {
 	return svgf_finite_float(variance) ? clamp(variance, 0.0, FP16_MAX) : 0.0;
 }
 
+const vec2 SPECULAR_SPATIAL_DISK[8] = vec2[](
+		vec2(0.3500, 0.0000), vec2(-0.3500, 0.0000),
+		vec2(-0.4424, 0.4054), vec2(0.4424, -0.4054),
+		vec2(0.0697, -0.7970), vec2(-0.0697, 0.7970),
+		vec2(0.6088, 0.7934), vec2(-0.6088, -0.7934));
+
+uint svgf_spatial_hash(uvec2 value) {
+	uint hash = value.x * 0x8da6b343u ^ value.y * 0xd8163841u;
+	hash ^= hash >> 16u;
+	hash *= 0x7feb352du;
+	hash ^= hash >> 15u;
+	hash *= 0x846ca68bu;
+	return hash ^ (hash >> 16u);
+}
+
 void svgf_store_atrous(ivec2 pixel, vec3 signal, float variance) {
 	float packed_value = clamp(variance, 0.0, FP16_MAX);
 	if ((params.control.z & 2u) != 0u) {
@@ -719,6 +894,138 @@ void svgf_atrous_main() {
 
 	if (!svgf_finite_vec2(center_moments)) {
 		svgf_store_atrous(pixel, center_signal.rgb, center_variance);
+		return;
+	}
+
+	if (specular_mode) {
+		uint specular_quality = min(params.control.z >> 2u, 2u);
+		float quality_response = float(specular_quality) * 0.5;
+		float signal_resolution_scale = (params.control.x & 4u) != 0u ? 1.0 : 0.5;
+		float maximum_radius = mix(4.0, 8.0, quality_response) * signal_resolution_scale;
+		float filter_radius = maximum_radius * clamp(center_roughness * 8.0, 0.0, 1.0);
+		float young_history = 1.0 - smoothstep(1.0, 3.0, history_length);
+		float standard_deviation = sqrt(max(center_variance, 0.0)) / SPECULAR_MOMENT_LUMINANCE_SCALE;
+		float mean_luminance = max(center_moments.x / SPECULAR_MOMENT_LUMINANCE_SCALE, 0.1);
+		float coefficient_of_variation = standard_deviation / mean_luminance;
+		float noise_threshold = mix(0.55, 0.35, quality_response);
+		bool filter_needed = young_history > 0.0 || coefficient_of_variation > noise_threshold ||
+				(motion_filter_response > 0.1 && coefficient_of_variation > 0.2);
+		vec4 center_motion = texelFetch(sampler2D(current_motion_input, nearest_sampler), pixel, 0);
+		if (!filter_needed || !(filter_radius > 1.0) || !svgf_finite_vec4(center_motion)) {
+			svgf_store_atrous(pixel, center_signal.rgb, center_variance);
+			return;
+		}
+
+		bool center_dynamic = center_motion.w > 1.0;
+		vec3 center_metadata = svgf_unpack_specular_metadata(center_signal.a);
+		bool center_far_hit = center_metadata.y > 0.9285714;
+		int sample_count = min(4 + int(specular_quality) * 2 + (young_history > 0.0 ? 2 : 0), 8);
+		float random_angle = float(svgf_spatial_hash(uvec2(pixel)) & 0xffffu) * (6.28318530718 / 65536.0);
+		vec2 rotation = vec2(cos(random_angle), sin(random_angle));
+		float roughness_response = smoothstep(0.05, 0.30, center_roughness);
+		float normal_power = params.atrous.x * mix(1.0, 0.35, roughness_response) * mix(1.0, 0.6, young_history);
+		float temporal_confidence = smoothstep(4.0, min(16.0, params.atrous.w), history_length);
+		float luminance_scale = (params.tuning.w * sqrt(max(center_variance, params.atrous.z)) +
+										SPECULAR_MOMENT_LUMINANCE_SCALE * 1e-4) *
+				mix(1.75, 1.0, temporal_confidence);
+		luminance_scale *= mix(1.0, 1.6, roughness_response) * mix(1.0, 2.25, motion_filter_response);
+
+		float depth_left = texelFetch(sampler2D(current_view_z_input, nearest_sampler), max(pixel - ivec2(1, 0), ivec2(0)), 0).r;
+		float depth_right = texelFetch(sampler2D(current_view_z_input, nearest_sampler), min(pixel + ivec2(1, 0), size - 1), 0).r;
+		float depth_up = texelFetch(sampler2D(current_view_z_input, nearest_sampler), max(pixel - ivec2(0, 1), ivec2(0)), 0).r;
+		float depth_down = texelFetch(sampler2D(current_view_z_input, nearest_sampler), min(pixel + ivec2(0, 1), size - 1), 0).r;
+		float gradient_left = svgf_valid_view_z(depth_left) ? center_view_z - depth_left : 0.0;
+		float gradient_right = svgf_valid_view_z(depth_right) ? depth_right - center_view_z : gradient_left;
+		float gradient_up = svgf_valid_view_z(depth_up) ? center_view_z - depth_up : 0.0;
+		float gradient_down = svgf_valid_view_z(depth_down) ? depth_down - center_view_z : gradient_up;
+		vec2 depth_gradient = vec2(
+				abs(gradient_left) < abs(gradient_right) ? gradient_left : gradient_right,
+				abs(gradient_up) < abs(gradient_down) ? gradient_up : gradient_down);
+		float base_plane_threshold = max(0.001, params.atrous.y * (((params.control.w & 1u) != 0u) ? 1.0 : center_view_z));
+
+		vec3 signal_sum = center_signal.rgb;
+		float variance_sum = center_variance;
+		float weight_sum = 1.0;
+		for (int sample_index = 0; sample_index < 8; sample_index++) {
+			if (sample_index >= sample_count) {
+				break;
+			}
+			vec2 disk_sample = SPECULAR_SPATIAL_DISK[sample_index];
+			vec2 rotated_sample = vec2(
+					disk_sample.x * rotation.x - disk_sample.y * rotation.y,
+					disk_sample.x * rotation.y + disk_sample.y * rotation.x);
+			ivec2 offset = ivec2(round(rotated_sample * filter_radius));
+			if (all(equal(offset, ivec2(0)))) {
+				continue;
+			}
+			ivec2 sample_pos = pixel + offset;
+			if (any(lessThan(sample_pos, ivec2(0))) || any(greaterThanEqual(sample_pos, size))) {
+				continue;
+			}
+
+			vec4 sample_motion = texelFetch(sampler2D(current_motion_input, nearest_sampler), sample_pos, 0);
+			if (!svgf_finite_vec4(sample_motion) || (sample_motion.w > 1.0) != center_dynamic) {
+				continue;
+			}
+			float sample_view_z = texelFetch(sampler2D(current_view_z_input, nearest_sampler), sample_pos, 0).r;
+			vec4 sample_encoded_normal = texelFetch(sampler2D(current_normal_roughness_input, nearest_sampler), sample_pos, 0);
+			vec3 sample_normal;
+			if (!svgf_valid_view_z(sample_view_z) || !svgf_decode_normal(sample_encoded_normal, sample_normal)) {
+				continue;
+			}
+			float normal_cosine = max(dot(center_normal, sample_normal), 0.0);
+			if (!(normal_cosine > 0.6)) {
+				continue;
+			}
+
+			float sample_packed_roughness_source = texelFetch(sampler2D(current_roughness_input, nearest_sampler), sample_pos, 0).a;
+			vec2 sample_specular_guide = svgf_unpack_specular_roughness_source(sample_packed_roughness_source);
+			if ((sample_specular_guide.x < 0.40) != (center_roughness < 0.40)) {
+				continue;
+			}
+			float roughness_delta = abs(sample_specular_guide.x - center_roughness);
+			float lobe_roughness = min(sample_specular_guide.x, center_roughness);
+			float narrow_lobe = 1.0 - smoothstep(0.05, 0.20, lobe_roughness);
+			float roughness_weight = exp2(-roughness_delta * mix(4.0, 32.0, narrow_lobe));
+			float expected_depth_delta = dot(depth_gradient, vec2(offset));
+			float plane_threshold = base_plane_threshold * (1.0 + 0.35 * sqrt(float(dot(offset, offset))));
+			if (abs((sample_view_z - center_view_z) - expected_depth_delta) > plane_threshold) {
+				continue;
+			}
+
+			vec4 sample_signal = svgf_sanitize_signal(texelFetch(sampler2D(filtered_signal_input, nearest_sampler), sample_pos, 0));
+			vec3 sample_metadata = svgf_unpack_specular_metadata(sample_signal.a);
+			bool sample_far_hit = sample_metadata.y > 0.9285714;
+			float broad_lobe_response = smoothstep(0.08, 0.25, center_roughness);
+			float hit_class_weight = sample_far_hit == center_far_hit ? 1.0 : broad_lobe_response;
+			if (!(hit_class_weight > 1e-5)) {
+				continue;
+			}
+			float hit_weight = hit_class_weight * mix(exp2(-abs(sample_metadata.y - center_metadata.y) * 12.0), 1.0, broad_lobe_response);
+			float source_weight = mix(exp2(-abs(sample_metadata.z - center_metadata.z) * 4.0), 1.0, roughness_response);
+			float sample_luminance = svgf_filter_luminance(sample_signal.rgb, true);
+			float luminance_weight = exp(-abs(center_luminance - sample_luminance) / max(luminance_scale, 1e-5));
+			luminance_weight = mix(luminance_weight, 1.0, young_history * 0.75);
+			float radial_weight = max(1.0 - 0.35 * length(disk_sample), 0.5);
+			float weight = radial_weight * pow(normal_cosine, normal_power) * roughness_weight * hit_weight * source_weight * luminance_weight;
+			if (!(weight > 1e-5) || !svgf_finite_float(weight)) {
+				continue;
+			}
+
+			float sample_history_length = sample_encoded_normal.a * HISTORY_LENGTH_STORAGE_SCALE;
+			vec2 sample_moments = texelFetch(sampler2D(temporal_moments_input, nearest_sampler), sample_pos, 0).xy;
+			if (!svgf_finite_vec2(sample_moments) || sample_history_length < 1.0) {
+				continue;
+			}
+			float sample_variance = svgf_variance_from_moments(sample_moments, sample_history_length);
+			signal_sum += sample_signal.rgb * weight;
+			variance_sum += sample_variance * weight * weight;
+			weight_sum += weight;
+		}
+
+		vec3 output_signal = signal_sum / max(weight_sum, 1e-5);
+		float output_variance = variance_sum / max(weight_sum * weight_sum, 1e-5);
+		svgf_store_atrous(pixel, output_signal, output_variance);
 		return;
 	}
 
@@ -833,6 +1140,8 @@ void main() {
 	svgf_temporal_main();
 #elif defined(MODE_HISTORY_FIX)
 	svgf_history_fix_main();
+#elif defined(MODE_SPECULAR_RECONSTRUCT)
+	svgf_specular_reconstruct_main();
 #elif defined(MODE_ATROUS)
 	svgf_atrous_main();
 #endif

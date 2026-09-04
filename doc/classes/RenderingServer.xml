@@ -5747,6 +5747,10 @@
 			Draws a 3×3 debug view of Dynamic GI screen-probe data.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_HDDAGI_SCREEN_PROBE_REFLECTIONS" value="30" enum="ViewportDebugDraw">
+			Draws Dynamic GI screen-probe reflection debug data.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
+		</constant>
 		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
 			Variable rate shading is disabled.
 		</constant>

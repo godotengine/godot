@@ -32,6 +32,7 @@
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/hddagi_screen_probe_montage.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/hddagi_screen_probe_reflection_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/motion_vectors.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/shadow_frustum.glsl.gen.h"
 
@@ -104,6 +105,24 @@ private:
 		PipelineCacheRD pipelines[HDDAGI_SCREEN_PROBE_MONTAGE_MAX];
 	} hddagi_screen_probe_montage;
 
+	enum HddagiScreenProbeReflectionDebugMode {
+		HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_MONO,
+		HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_MULTIVIEW,
+		HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_MAX,
+	};
+
+	struct HddagiScreenProbeReflectionDebugPushConstant {
+		float resolution[2];
+		uint32_t flags;
+		uint32_t denoised_view_mask;
+	};
+
+	struct {
+		HddagiScreenProbeReflectionDebugShaderRD shader;
+		RID shader_version;
+		PipelineCacheRD pipelines[HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_MAX];
+	} hddagi_screen_probe_reflection_debug;
+
 	void _create_frustum_arrays();
 
 protected:
@@ -117,12 +136,20 @@ public:
 		HDDAGI_SCREEN_PROBE_MONTAGE_HAS_DIRECTIONAL_ADAPTIVE = 1u << 5,
 	};
 
+	enum HddagiScreenProbeReflectionDebugFlags {
+		HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_REFLECTION_VALID = 1u << 0,
+		HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_GUIDES_VALID = 1u << 1,
+		HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_HISTORY_VIEW_0_VALID = 1u << 2,
+		HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_HISTORY_VIEW_1_VALID = 1u << 3,
+	};
+
 	DebugEffects();
 	~DebugEffects();
 
 	void draw_shadow_frustum(RID p_light, const Projection &p_cam_projection, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect);
 	void draw_motion_vectors(RID p_velocity, RID p_depth, RID p_dest_fb, const Projection &p_current_projection, const Transform3D &p_current_transform, const Projection &p_previous_projection, const Transform3D &p_previous_transform, Size2i p_resolution);
 	void draw_hddagi_screen_probe_montage(RID p_dest_fb, const Rect2i &p_rect, RID p_resolved_radiance, RID p_selected_radiance, RID p_probe_surface, RID p_trace_debug, RID p_hiz, RID p_normal_roughness, RID p_velocity, RID p_directional_radiance, RID p_directional_filtered, RID p_directional_irradiance, RID p_directional_adaptive_tile_data, RID p_directional_history_age, RID p_directional_adaptive_counter, float p_selected_radiance_scale, uint32_t p_flags, uint32_t p_surface_layer_stride, uint32_t p_surface_history_slot, uint32_t p_hiz_mip_count, bool p_multiview);
+	void draw_hddagi_screen_probe_reflection_debug(RID p_dest_fb, const Rect2i &p_rect, RID p_raw_signal, RID p_denoised_signal, RID p_current_normal_roughness, RID p_current_motion, RID p_temporal_signal_0, RID p_temporal_signal_1, RID p_moments_0, RID p_moments_1, RID p_history_normal_roughness_0, RID p_history_normal_roughness_1, uint32_t p_flags, uint32_t p_denoised_view_mask, bool p_multiview);
 };
 
 } // namespace RendererRD

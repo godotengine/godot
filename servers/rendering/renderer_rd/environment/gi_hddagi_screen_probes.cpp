@@ -46,6 +46,7 @@ static constexpr float SCREEN_PROBE_SVGF_DENOISING_RANGE = 500000.0f;
 static constexpr float SCREEN_PROBE_SVGF_SCENE_TO_SIGNAL_SCALE = 1.0f / 512.0f;
 static constexpr float SCREEN_PROBE_SVGF_INPUT_RADIANCE_MAX = 128.0f;
 static constexpr float SCREEN_PROBE_SVGF_INPUT_HIT_DISTANCE_MAX = 65504.0f;
+static constexpr int SCREEN_PROBE_DIRECTIONAL_PROBE_SIZE = 16;
 static constexpr int SCREEN_PROBE_DIRECTIONAL_SIZE = 8;
 static constexpr uint32_t SCREEN_PROBE_DIRECTIONAL_FILTER_PASS_COUNT = 3u;
 static constexpr uint32_t SCREEN_PROBE_DIRECTIONAL_HISTORY_MAX_AGE = 8u;
@@ -69,6 +70,7 @@ void GI::disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		rbgi = p_render_buffers->get_custom_data(RB_SCOPE_GI);
 		if (rbgi.is_valid()) {
 			rbgi->hddagi_specular_reflection_valid = false;
+			rbgi->screen_probe_specular_denoised_view_mask = 0;
 			rbgi->screen_probe_debug_montage_valid = false;
 			rbgi->screen_probe_debug_svgf_output_valid = false;
 			rbgi->screen_probe_debug_hiz_valid = false;
@@ -112,7 +114,7 @@ void GI::disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	hddagi->screen_probe_previous_exposure_normalization = 1.0f;
 }
 
-void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, const RID *p_previous_screen_color_slices, const RID *p_previous_screen_depth_slices, bool p_previous_screen_color_valid, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Vector3 *p_eye_offsets, const Vector2 &p_taa_jitter, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias, RSE::EnvironmentHDDAGIScreenProbeMode p_mode, bool p_debug_montage) {
+void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, const RID *p_previous_screen_color_slices, const RID *p_previous_screen_depth_slices, bool p_previous_screen_color_valid, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Vector3 *p_eye_offsets, const Vector2 &p_taa_jitter, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias, RSE::EnvironmentHDDAGIScreenProbeMode p_mode, bool p_debug_montage, bool p_force_specular_reflections) {
 	ERR_FAIL_COND(p_render_buffers.is_null());
 	ERR_FAIL_INDEX(int(p_mode), int(RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_MAX));
 	if (p_view_count == 0 || p_view_count > 2 || p_gi_size.x <= 0 || p_gi_size.y <= 0 || p_normal_roughness_slices == nullptr || p_projections == nullptr || p_eye_offsets == nullptr) {
@@ -153,19 +155,28 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		return;
 	}
 	rbgi->hddagi_specular_reflection_valid = false;
+	rbgi->screen_probe_specular_denoised_view_mask = 0;
 
 	const Size2i internal_size = p_render_buffers->get_internal_size();
-	if (hddagi->screen_probe_requested_mode != p_mode) {
+	const bool directional_adaptive_setting = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_directional_adaptive");
+	const bool directional_screen_radiance_setting = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_directional_screen_radiance");
+	const bool uniform_placement_jitter = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_uniform_placement_jitter");
+	if (hddagi->screen_probe_requested_mode != p_mode || hddagi->screen_probe_directional_adaptive_requested != directional_adaptive_setting) {
 		hddagi->screen_probe_requested_mode = p_mode;
+		hddagi->screen_probe_directional_adaptive_requested = directional_adaptive_setting;
 		hddagi->screen_probe_directional_allocation_failed = false;
 	}
 	const bool directional_requested = p_mode == RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER;
+	const bool directional_adaptive_requested = directional_requested && directional_adaptive_setting;
 	const int stochastic_probe_size = CLAMP(p_probe_size, 1, 32);
-	const float gi_resolution_scale = 0.5f * (float(p_gi_size.x) / float(MAX(internal_size.x, 1)) + float(p_gi_size.y) / float(MAX(internal_size.y, 1)));
-	const int directional_probe_size = CLAMP(int(Math::round(16.0f * gi_resolution_scale)), 1, 32);
+	// Keep directional probe spacing in GI pixels.
+	const int directional_probe_size = SCREEN_PROBE_DIRECTIONAL_PROBE_SIZE;
 	int probe_size = directional_requested ? directional_probe_size : stochastic_probe_size;
 	Size2i probe_atlas_size((p_gi_size.x + probe_size - 1) / probe_size, (p_gi_size.y + probe_size - 1) / probe_size);
-	auto get_directional_probe_atlas_size = [](const Size2i &p_base_size) {
+	auto get_directional_probe_atlas_size = [directional_adaptive_requested](const Size2i &p_base_size) {
+		if (!directional_adaptive_requested) {
+			return p_base_size;
+		}
 		const uint64_t base_probe_count = uint64_t(p_base_size.x) * uint64_t(p_base_size.y);
 		const uint64_t adaptive_capacity = base_probe_count / SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CAPACITY_DIVISOR;
 		const uint64_t adaptive_rows = adaptive_capacity > 0u ? (adaptive_capacity + uint64_t(p_base_size.x) - 1u) / uint64_t(p_base_size.x) : 0u;
@@ -184,8 +195,9 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		auto screen_probe_mode_is_ready = [&](HDDAGIShader::ScreenProbeMode p_shader_mode) {
 			return hddagi_shader.screen_probe_shader_version[p_shader_mode].is_valid() && hddagi_shader.screen_probe_pipeline[p_shader_mode].is_valid();
 		};
-		directional_gather = screen_probe_mode_is_ready(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_MARK) &&
-				screen_probe_mode_is_ready(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_SPAWN) &&
+		directional_gather = (!directional_adaptive_requested ||
+									 (screen_probe_mode_is_ready(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_MARK) &&
+											 screen_probe_mode_is_ready(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_SPAWN))) &&
 				screen_probe_mode_is_ready(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_TRACE) &&
 				screen_probe_mode_is_ready(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_FILTER) &&
 				screen_probe_mode_is_ready(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_IRRADIANCE) &&
@@ -200,14 +212,18 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		directional_probe_atlas_size = get_directional_probe_atlas_size(probe_atlas_size);
 		directional_atlas_size = Size2i(directional_probe_atlas_size.x * SCREEN_PROBE_DIRECTIONAL_SIZE, directional_probe_atlas_size.y * SCREEN_PROBE_DIRECTIONAL_SIZE);
 	}
+	const bool directional_adaptive = directional_gather && directional_adaptive_requested;
 	const Size2i resolve_size = directional_gather ? internal_size : p_gi_size;
 	const float normal_bias = CLAMP(p_normal_bias, -8.0f, 8.0f);
 	const uint32_t candidate_count = directional_gather ? 1u : uint32_t(CLAMP(GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_candidate_count"), 1, 8));
 	const bool guided_sampling = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_guided_sampling");
+	const uint32_t detail_trace_quality = uint32_t(CLAMP(GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_detail_trace_quality"), 0, 2));
+	const uint32_t detail_trace_quality_flags = detail_trace_quality << HDDAGIShader::ScreenProbePushConstant::FLAG_DETAIL_TRACE_QUALITY_SHIFT;
 	const int irradiance_cache_setting = directional_gather ? 0 : GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_radiance_cache");
 	const float irradiance_cache_minimum_cell_size = MAX(GLOBAL_GET_CACHED(float, "rendering/global_illumination/hddagi/screen_probe_radiance_cache_minimum_cell_size"), SCREEN_PROBE_IRRADIANCE_CACHE_MINIMUM_CELL_SIZE);
 	const bool irradiance_cache_multibounce = !directional_gather && hddagi->screen_probe_radiance_cache_multibounce_active;
 	const int denoiser_setting = GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_denoiser");
+	const bool diffuse_temporal_only_setting = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_denoiser_temporal_only");
 	const HDDAGIScreenProbeSVGF::Quality svgf_quality = static_cast<HDDAGIScreenProbeSVGF::Quality>(CLAMP(GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_denoiser_quality"), 0, int(HDDAGIScreenProbeSVGF::QUALITY_MAX) - 1));
 
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
@@ -224,7 +240,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	}
 	const bool detail_trace = p_detail_trace && hiz_available;
 	const uint32_t detail_trace_mip_count = detail_trace ? CLAMP(p_hiz_mip_count, 1u, 16u) : 0u;
-	bool specular_reflections = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections") &&
+	bool specular_reflections = (GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections") || p_force_specular_reflections) &&
 			p_render_buffers->has_texture(RB_SCOPE_GI, RB_TEX_REFLECTION_U32);
 	if (specular_reflections &&
 			(!hddagi_shader.screen_probe_shader_version[HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_TRACE].is_valid() || !hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_SPECULAR_TRACE].is_valid() ||
@@ -233,9 +249,9 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		WARN_PRINT_ONCE("HDDAGI specular reflections are unavailable because required resources could not be created.");
 	}
 	const bool specular_detail_trace = specular_reflections && hiz_available;
-	bool specular_screen_radiance_available = specular_detail_trace && p_previous_screen_color_valid && p_previous_screen_color_slices != nullptr && p_previous_screen_depth_slices != nullptr;
-	for (uint32_t v = 0; v < p_view_count && specular_screen_radiance_available; v++) {
-		specular_screen_radiance_available = p_previous_screen_color_slices[v].is_valid() && p_previous_screen_depth_slices[v].is_valid() &&
+	bool screen_radiance_available = p_previous_screen_color_valid && p_previous_screen_color_slices != nullptr && p_previous_screen_depth_slices != nullptr;
+	for (uint32_t v = 0; v < p_view_count && screen_radiance_available; v++) {
+		screen_radiance_available = p_previous_screen_color_slices[v].is_valid() && p_previous_screen_depth_slices[v].is_valid() &&
 				RD::get_singleton()->texture_size(p_previous_screen_color_slices[v]) == internal_size && RD::get_singleton()->texture_size(p_previous_screen_depth_slices[v]) == internal_size;
 	}
 	if (!specular_reflections) {
@@ -349,7 +365,6 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		WARN_PRINT_ONCE("The HDDAGI screen probe scene buffer could not be allocated.");
 		return;
 	}
-
 	const RID nearest_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	const RID linear_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	const RID linear_mipmap_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -455,6 +470,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 
 	uint32_t configuration = hash_murmur3_one_32(directional_gather ? 0x44475202u : 0u);
 	if (directional_gather) {
+		configuration = hash_murmur3_one_32(directional_adaptive ? 1u : 0u, configuration);
 		configuration = hash_murmur3_one_32(uint32_t(SCREEN_PROBE_DIRECTIONAL_SIZE), configuration);
 		configuration = hash_murmur3_one_32(SCREEN_PROBE_DIRECTIONAL_FILTER_PASS_COUNT, configuration);
 		configuration = hash_murmur3_one_32(SCREEN_PROBE_DIRECTIONAL_HISTORY_MAX_AGE, configuration);
@@ -463,10 +479,13 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		configuration = hash_murmur3_one_32(SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CAPACITY_DIVISOR, configuration);
 		configuration = hash_murmur3_one_32(uint32_t((uint64_t(probe_atlas_size.x) * uint64_t(probe_atlas_size.y)) / SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CAPACITY_DIVISOR), configuration);
 		configuration = hash_murmur3_one_32(uint32_t(directional_probe_atlas_size.y), configuration);
+		configuration = hash_murmur3_one_32(directional_screen_radiance_setting ? 1u : 0u, configuration);
 	}
 	configuration = hash_murmur3_one_32(candidate_count, configuration);
 	configuration = hash_murmur3_one_32(guided_sampling ? 1u : 0u, configuration);
+	configuration = hash_murmur3_one_32(uniform_placement_jitter ? 1u : 0u, configuration);
 	configuration = hash_murmur3_one_32(detail_trace ? 1u : 0u, configuration);
+	configuration = hash_murmur3_one_32(detail_trace_quality, configuration);
 	configuration = hash_murmur3_one_32(transport_configuration, configuration);
 	configuration = hash_murmur3_one_32(irradiance_cache_active ? 1u : 0u, configuration);
 	if (irradiance_cache_active) {
@@ -729,14 +748,17 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	const bool history_valid = directional_gather && common_history_valid;
 	const bool svgf_history_valid = svgf_active && common_history_valid && !svgf_resources_recreated;
 	const bool specular_history_valid = specular_reflections && common_history_valid && !specular_resources_recreated;
-	const bool specular_screen_radiance_valid = specular_reflections && specular_screen_radiance_available && camera_history_valid;
+	const bool directional_screen_radiance_valid = directional_gather && directional_screen_radiance_setting && detail_trace && screen_radiance_available && camera_history_valid;
+	const bool specular_screen_radiance_valid = specular_detail_trace && screen_radiance_available && camera_history_valid;
 	const bool reset_history = resources_recreated || !history_configuration_valid || camera_cut;
 	const uint32_t current_history_slot = reset_history ? 0u : (hddagi->screen_probe_history_slot ^ 1u);
 	const uint32_t previous_history_slot = current_history_slot ^ 1u;
 	const uint32_t history_sequence = reset_history ? 0u : ((hddagi->screen_probe_history_sequence + 1u) & SCREEN_PROBE_HISTORY_SEQUENCE_MASK);
 
 	ScreenProbeSceneData scene_data = {};
-	const Transform3D previous_cam_inv_transform = camera_history_valid ? hddagi->screen_probe_previous_cam_transform.affine_inverse() : p_cam_transform.affine_inverse();
+	const Transform3D cam_inv_transform = p_cam_transform.affine_inverse();
+	const Transform3D previous_cam_transform = camera_history_valid ? hddagi->screen_probe_previous_cam_transform : p_cam_transform;
+	const Transform3D previous_cam_inv_transform = camera_history_valid ? previous_cam_transform.affine_inverse() : cam_inv_transform;
 	for (uint32_t v = 0; v < p_view_count; v++) {
 		const Projection raster_projection = raster_correction * p_projections[v];
 		const Projection previous_raster_projection = camera_history_valid ? hddagi->screen_probe_previous_projection[v] : raster_projection;
@@ -747,9 +769,13 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		RendererRD::MaterialStorage::store_camera(previous_raster_projection.inverse(), scene_data.previous_inv_projection[v]);
 		RendererRD::MaterialStorage::store_camera(temporal_projection, scene_data.temporal_projection[v]);
 		RendererRD::MaterialStorage::store_camera(previous_temporal_projection, scene_data.previous_temporal_projection[v]);
+		RendererRD::MaterialStorage::store_camera(previous_raster_projection, scene_data.previous_projection[v]);
 	}
 	RendererRD::MaterialStorage::store_transform(p_cam_transform, scene_data.cam_transform);
 	RendererRD::MaterialStorage::store_transform(previous_cam_inv_transform, scene_data.previous_cam_inv_transform);
+	RendererRD::MaterialStorage::store_transform(cam_inv_transform, scene_data.cam_inv_transform);
+	RendererRD::MaterialStorage::store_transform(previous_cam_transform, scene_data.previous_cam_transform);
+	scene_data.previous_exposure_scale[0] = camera_history_valid ? p_exposure_normalization / MAX(hddagi->screen_probe_previous_exposure_normalization, 0.001f) : 1.0f;
 	Basis radiance_transform = p_cam_transform.basis;
 	if (p_environment.is_valid()) {
 		radiance_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_environment).inverse() * p_cam_transform.basis;
@@ -768,7 +794,10 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 			(guided_sampling ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_GUIDED_SAMPLING) : 0u) |
 			(directional_gather ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_DIRECTIONAL_SURFACE_FOOTPRINT) : 0u) |
 			((directional_gather && history_valid) ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_DIRECTIONAL_HISTORY_VALID) : 0u) |
-			(directional_gather ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_DIRECTIONAL_ADAPTIVE) : 0u);
+			(directional_adaptive ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_DIRECTIONAL_ADAPTIVE) : 0u) |
+			(directional_screen_radiance_valid ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_DIRECTIONAL_SCREEN_RADIANCE_VALID) : 0u) |
+			(uniform_placement_jitter ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_UNIFORM_PLACEMENT_JITTER) : 0u) |
+			detail_trace_quality_flags;
 	push_constant.normal_bias = normal_bias;
 	push_constant.candidate_count = candidate_count;
 	push_constant.sky_mode = screen_probe_sky_mode;
@@ -787,7 +816,9 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	specular_push_constant.base = push_constant;
 	specular_push_constant.base.flags = (specular_detail_trace ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_DETAIL_TRACE) : 0u) |
 			(specular_motion_valid ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_SPECULAR_MOTION_VALID) : 0u) |
-			(specular_screen_radiance_valid ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_SPECULAR_SCREEN_RADIANCE_VALID) : 0u);
+			(specular_screen_radiance_valid ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_SPECULAR_SCREEN_RADIANCE_VALID) : 0u) |
+			uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_SPECULAR_SPATIAL_STRATIFICATION) |
+			detail_trace_quality_flags;
 	specular_push_constant.base.detail_trace_mip_count = specular_detail_trace ? CLAMP(p_hiz_mip_count, 1u, 16u) : 0u;
 	specular_push_constant.tuning[0] = SCREEN_PROBE_SPECULAR_FULL_AUTHORITY_ROUGHNESS;
 	specular_push_constant.tuning[1] = SCREEN_PROBE_SPECULAR_FALLBACK_ROUGHNESS;
@@ -819,8 +850,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 	RID specular_motion[2];
 	RID specular_denoised[2];
 	uint32_t view_flags[2] = {};
-	const HDDAGIShader::ScreenProbeMode production_trace_mode = irradiance_cache_active ? HDDAGIShader::SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE : HDDAGIShader::SCREEN_PROBE_MODE_TRACE;
-	HDDAGIShader::ScreenProbeMode trace_mode = production_trace_mode;
+	HDDAGIShader::ScreenProbeMode trace_mode = irradiance_cache_active ? HDDAGIShader::SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE : HDDAGIShader::SCREEN_PROBE_MODE_TRACE;
 	if (debug_montage && !directional_gather) {
 		const HDDAGIShader::ScreenProbeMode debug_mode = irradiance_cache_active ? HDDAGIShader::SCREEN_PROBE_MODE_TRACE_IRRADIANCE_CACHE_DEBUG : HDDAGIShader::SCREEN_PROBE_MODE_TRACE_DEBUG;
 		bool debug_mode_valid = hddagi_shader.screen_probe_shader_version[debug_mode].is_valid() && hddagi_shader.screen_probe_pipeline[debug_mode].is_valid();
@@ -848,8 +878,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		pipelines_valid = pipelines_valid && hddagi_shader.screen_probe_pipeline[svgf_resolve_mode].is_valid() && hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_APPLY_SVGF].is_valid();
 	}
 	if (directional_gather) {
-		pipelines_valid = pipelines_valid && hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_MARK].is_valid() &&
-				hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_SPAWN].is_valid() &&
+		pipelines_valid = pipelines_valid && (!directional_adaptive || (hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_MARK].is_valid() && hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_SPAWN].is_valid())) &&
 				hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_TRACE].is_valid() &&
 				hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_FILTER].is_valid() &&
 				hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_IRRADIANCE].is_valid();
@@ -923,24 +952,28 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 			}
 			raw_radiance = directional_irradiance;
 
-			auto get_directional_adaptive_set = [&](HDDAGIShader::ScreenProbeMode p_screen_probe_mode) {
-				return UniformSetCacheRD::get_singleton()->get_cache(
-						hddagi_shader.screen_probe_shader_version[p_screen_probe_mode], 0,
-						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, depth),
-						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, normal_roughness),
-						RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 2, nearest_sampler),
-						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, surface),
-						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, directional_adaptive_mark),
-						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, directional_adaptive_tile_data),
-						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, directional_adaptive_counter),
-						RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, rbgi->screen_probe_scene_data_ubo),
-						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 8, previous_surface),
-						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, previous_directional_adaptive_tile_data));
-			};
-			directional_adaptive_mark_sets[v] = get_directional_adaptive_set(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_MARK);
-			directional_adaptive_spawn_sets[v] = get_directional_adaptive_set(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_SPAWN);
+			if (directional_adaptive) {
+				auto get_directional_adaptive_set = [&](HDDAGIShader::ScreenProbeMode p_screen_probe_mode) {
+					return UniformSetCacheRD::get_singleton()->get_cache(
+							hddagi_shader.screen_probe_shader_version[p_screen_probe_mode], 0,
+							RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, depth),
+							RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, normal_roughness),
+							RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 2, nearest_sampler),
+							RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, surface),
+							RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, directional_adaptive_mark),
+							RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, directional_adaptive_tile_data),
+							RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, directional_adaptive_counter),
+							RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, rbgi->screen_probe_scene_data_ubo),
+							RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 8, previous_surface),
+							RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, previous_directional_adaptive_tile_data));
+				};
+				directional_adaptive_mark_sets[v] = get_directional_adaptive_set(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_MARK);
+				directional_adaptive_spawn_sets[v] = get_directional_adaptive_set(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_SPAWN);
+			}
 
 			const HDDAGIShader::ScreenProbeMode directional_trace_mode = HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_TRACE;
+			const RID directional_screen_radiance = directional_screen_radiance_valid ? p_previous_screen_color_slices[v] : detail_hiz_fallback;
+			const RID directional_previous_depth = directional_screen_radiance_valid ? p_previous_screen_depth_slices[v] : detail_hiz_fallback;
 			directional_trace_sets[v] = UniformSetCacheRD::get_singleton()->get_cache(
 					hddagi_shader.screen_probe_shader_version[directional_trace_mode], 0,
 					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 0, surface),
@@ -963,7 +996,9 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 17, directional_velocity),
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 18, depth),
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 19, directional_filter_scratch[1]),
-					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 20, directional_trace_count));
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 20, directional_trace_count),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 21, directional_screen_radiance),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 22, directional_previous_depth));
 			directional_trace_sky_sets[v] = UniformSetCacheRD::get_singleton()->get_cache(
 					hddagi_shader.screen_probe_shader_version[directional_trace_mode], 1,
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, sky_texture),
@@ -1157,8 +1192,8 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 			svgf_sets_valid = svgf_sets_valid && RD::get_singleton()->uniform_set_is_valid(svgf_resolve_sets[v]) && RD::get_singleton()->uniform_set_is_valid(svgf_apply_sets[v]);
 		}
 		if (directional_gather) {
-			sets_valid = sets_valid && RD::get_singleton()->uniform_set_is_valid(directional_adaptive_mark_sets[v]) &&
-					RD::get_singleton()->uniform_set_is_valid(directional_adaptive_spawn_sets[v]) && RD::get_singleton()->uniform_set_is_valid(directional_trace_sets[v]) &&
+			sets_valid = sets_valid && (!directional_adaptive || (RD::get_singleton()->uniform_set_is_valid(directional_adaptive_mark_sets[v]) && RD::get_singleton()->uniform_set_is_valid(directional_adaptive_spawn_sets[v]))) &&
+					RD::get_singleton()->uniform_set_is_valid(directional_trace_sets[v]) &&
 					RD::get_singleton()->uniform_set_is_valid(directional_trace_sky_sets[v]) && RD::get_singleton()->uniform_set_is_valid(directional_irradiance_sets[v]);
 			for (uint32_t pass = 0; pass < SCREEN_PROBE_DIRECTIONAL_FILTER_PASS_COUNT; pass++) {
 				sets_valid = sets_valid && RD::get_singleton()->uniform_set_is_valid(directional_filter_sets[v][pass]);
@@ -1223,16 +1258,18 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
 		if (directional_gather) {
-			auto dispatch_directional_adaptive = [&](HDDAGIShader::ScreenProbeMode p_screen_probe_mode, RID p_uniform_set, const char *p_timestamp) {
-				RENDER_TIMESTAMP(p_timestamp);
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, hddagi_shader.screen_probe_pipeline[p_screen_probe_mode]);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, p_uniform_set, 0);
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
-				RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_atlas_size.x * SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_WORKGROUP_SIZE, probe_atlas_size.y * SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_WORKGROUP_SIZE, 1);
-				RD::get_singleton()->compute_list_add_barrier(compute_list);
-			};
-			dispatch_directional_adaptive(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_MARK, directional_adaptive_mark_sets[v], "HDDAGI Directional Adaptive Probe Mark");
-			dispatch_directional_adaptive(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_SPAWN, directional_adaptive_spawn_sets[v], "HDDAGI Directional Adaptive Probe Spawn");
+			if (directional_adaptive) {
+				auto dispatch_directional_adaptive = [&](HDDAGIShader::ScreenProbeMode p_screen_probe_mode, RID p_uniform_set, const char *p_timestamp) {
+					RENDER_TIMESTAMP(p_timestamp);
+					RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, hddagi_shader.screen_probe_pipeline[p_screen_probe_mode]);
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, p_uniform_set, 0);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
+					RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_atlas_size.x * SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_WORKGROUP_SIZE, probe_atlas_size.y, 1);
+					RD::get_singleton()->compute_list_add_barrier(compute_list);
+				};
+				dispatch_directional_adaptive(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_MARK, directional_adaptive_mark_sets[v], "HDDAGI Directional Adaptive Probe Mark");
+				dispatch_directional_adaptive(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_ADAPTIVE_SPAWN, directional_adaptive_spawn_sets[v], "HDDAGI Directional Adaptive Probe Spawn");
+			}
 
 			RENDER_TIMESTAMP("HDDAGI Directional Screen Probe Trace");
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, hddagi_shader.screen_probe_pipeline[HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_TRACE]);
@@ -1330,6 +1367,7 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 			svgf_frame.denoising_range = SCREEN_PROBE_SVGF_DENOISING_RANGE;
 			svgf_frame.quality = svgf_quality;
 			svgf_frame.history_valid = svgf_history_valid;
+			svgf_frame.diffuse_temporal_only = directional_gather && diffuse_temporal_only_setting;
 
 			HDDAGIScreenProbeSVGF::Resources svgf_resources;
 			svgf_resources.motion_vectors = svgf_motion[v];
@@ -1407,6 +1445,9 @@ void GI::process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, specular_svgf_succeeded[v] ? specular_denoised_apply_sets[v] : specular_apply_sets[v], 0);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &specular_push_constant, sizeof(specular_push_constant));
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_gi_size.x, p_gi_size.y, 1);
+			if (specular_svgf_succeeded[v]) {
+				rbgi->screen_probe_specular_denoised_view_mask |= 1u << v;
+			}
 		}
 		RD::get_singleton()->compute_list_end();
 		rbgi->hddagi_specular_reflection_valid = true;

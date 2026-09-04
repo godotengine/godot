@@ -54,6 +54,7 @@ public:
 		float denoising_range = 500000.0f;
 		Quality quality = QUALITY_HIGH;
 		bool history_valid = false;
+		bool diffuse_temporal_only = false;
 		bool specular = false;
 		bool specular_full_resolution = false;
 	};
@@ -73,12 +74,23 @@ public:
 		}
 	};
 
+	struct DebugTextures {
+		RID temporal_signal;
+		RID moments;
+		RID history_normal_roughness;
+
+		bool is_valid() const {
+			return temporal_signal.is_valid() && moments.is_valid() && history_normal_roughness.is_valid();
+		}
+	};
+
 	static bool is_supported();
 	static constexpr uint32_t get_atrous_iteration_count(Quality p_quality) {
 		return p_quality == QUALITY_LOW ? 2u : (p_quality == QUALITY_MEDIUM ? 3u : 4u);
 	}
 
 	Error denoise(uint32_t p_view_id, const FrameSettings &p_frame, const Resources &p_resources);
+	DebugTextures get_debug_textures(uint32_t p_view_id) const;
 	void clear();
 
 	HDDAGIScreenProbeSVGF();

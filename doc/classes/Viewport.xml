@@ -772,6 +772,10 @@
 			Requires [member Environment.dynamic_gi_enabled].
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
+		<constant name="DEBUG_DRAW_HDDAGI_SCREEN_PROBE_REFLECTIONS" value="30" enum="DebugDraw">
+			Draws Dynamic GI screen-probe reflection debug data.
+			[b]Note:[/b] Only supported when using the Forward+ rendering method.
+		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).
 		</constant>

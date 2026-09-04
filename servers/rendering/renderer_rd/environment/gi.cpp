@@ -3294,7 +3294,11 @@ void GI::init(SkyRD *p_sky) {
 		static_assert(sizeof(HDDAGIShader::ScreenProbePushConstant) == 80, "Screen probe push constant must match the shader ABI.");
 		static_assert(sizeof(HDDAGIShader::ScreenProbeSVGFPreparePushConstant) == 112, "Screen probe SVGF prepare push constant must match the shader ABI.");
 		static_assert(sizeof(HDDAGIShader::ScreenProbeSpecularPushConstant) == 112, "Screen probe specular push constant must match the shader ABI.");
-		static_assert(sizeof(ScreenProbeSceneData) == 816, "Screen probe scene data must match the shader ABI.");
+		static_assert(sizeof(ScreenProbeSceneData) == 1088, "Screen probe scene data must match the shader ABI.");
+		static_assert(offsetof(ScreenProbeSceneData, previous_projection) == 816, "Screen probe previous projection offset must match the shader ABI.");
+		static_assert(offsetof(ScreenProbeSceneData, cam_inv_transform) == 944, "Screen probe camera inverse transform offset must match the shader ABI.");
+		static_assert(offsetof(ScreenProbeSceneData, previous_cam_transform) == 1008, "Screen probe previous camera transform offset must match the shader ABI.");
+		static_assert(offsetof(ScreenProbeSceneData, previous_exposure_scale) == 1072, "Screen probe previous exposure scale offset must match the shader ABI.");
 
 		Vector<String> screen_probe_modes;
 		screen_probe_modes.push_back("\n#define MODE_SURFACE\n");
@@ -3705,6 +3709,7 @@ RID GI::RenderBuffersGI::get_voxel_gi_buffer() {
 
 void GI::RenderBuffersGI::free_data() {
 	hddagi_specular_reflection_valid = false;
+	screen_probe_specular_denoised_view_mask = 0;
 	screen_probe_debug_montage_valid = false;
 	screen_probe_debug_svgf_output_valid = false;
 	screen_probe_debug_hiz_valid = false;

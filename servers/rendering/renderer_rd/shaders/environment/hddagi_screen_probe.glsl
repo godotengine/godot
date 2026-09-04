@@ -13,6 +13,9 @@
 
 #ifdef MODE_IRRADIANCE_CACHE_UPDATE_MULTIBOUNCE
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+#elif defined(MODE_DIRECTIONAL_ADAPTIVE_MARK) || defined(MODE_DIRECTIONAL_ADAPTIVE_SPAWN)
+// One invocation per adaptive probe candidate.
+layout(local_size_x = 8, local_size_y = 1, local_size_z = 1) in;
 #else
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #endif
@@ -23,8 +26,13 @@ const uint SCREEN_PROBE_FLAG_DIRECTIONAL_SURFACE_FOOTPRINT = 1u << 2u;
 const uint SCREEN_PROBE_FLAG_DIRECTIONAL_HISTORY_VALID = 1u << 3u;
 const uint SCREEN_PROBE_FLAG_DIRECTIONAL_ADAPTIVE = 1u << 4u;
 const uint SCREEN_PROBE_FLAG_DIRECTIONAL_MOTION_VALID = 1u << 5u;
+const uint SCREEN_PROBE_FLAG_DIRECTIONAL_SCREEN_RADIANCE_VALID = 1u << 6u;
 const uint SCREEN_PROBE_FLAG_SPECULAR_MOTION_VALID = 1u << 4u;
 const uint SCREEN_PROBE_FLAG_SPECULAR_SCREEN_RADIANCE_VALID = 1u << 5u;
+const uint SCREEN_PROBE_FLAG_SPECULAR_SPATIAL_STRATIFICATION = 1u << 6u;
+const uint SCREEN_PROBE_DETAIL_TRACE_QUALITY_SHIFT = 7u;
+const uint SCREEN_PROBE_DETAIL_TRACE_QUALITY_MASK = 3u << SCREEN_PROBE_DETAIL_TRACE_QUALITY_SHIFT;
+const uint SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER = 1u << 9u;
 const uint SCREEN_PROBE_SKY_COLOR = 1u;
 const uint SCREEN_PROBE_SKY_TEXTURE = 2u;
 const uint SCREEN_PROBE_DEBUG_VALID = 1u << 0u;
@@ -45,6 +53,7 @@ const float SCREEN_PROBE_SPECULAR_DETAIL_TRACE_MAX_DISTANCE = 50.0;
 
 const int HDDAGI_TRACE_SCREEN_ENDPOINT = -2;
 const int HDDAGI_TRACE_SCREEN_ENDPOINT_SKY_FALLBACK = -3;
+const int HDDAGI_TRACE_SCREEN_RADIANCE = -4;
 
 const int HDDAGI_REGION_SIZE = 8;
 const int HDDAGI_HDDA_FP_BITS = 10;
@@ -57,7 +66,7 @@ const float TAU = 6.283185307179586;
 #error "Directional screen probes require SCREEN_PROBE_DIRECTIONAL_SIZE"
 #endif
 #if SCREEN_PROBE_DIRECTIONAL_SIZE != 8
-#error "Directional screen probes require an 8x8 workgroup"
+#error "Directional screen probes require an 8x8 tile"
 #endif
 const int SCREEN_PROBE_DIRECTIONAL_TILE_SIZE = SCREEN_PROBE_DIRECTIONAL_SIZE;
 const int SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT = SCREEN_PROBE_DIRECTIONAL_TILE_SIZE * SCREEN_PROBE_DIRECTIONAL_TILE_SIZE;
@@ -133,6 +142,10 @@ struct ScreenProbeSceneData {
 	mat4 previous_inv_projection[2];
 	mat4 temporal_projection[2];
 	mat4 previous_temporal_projection[2];
+	mat4 previous_projection[2];
+	mat4 cam_inv_transform;
+	mat4 previous_cam_transform;
+	vec4 previous_exposure_scale;
 };
 
 #if defined(MODE_DEBUG_MONTAGE) && defined(MODE_TRACE)
@@ -220,6 +233,8 @@ layout(set = 0, binding = 17) uniform texture2D directional_velocity_buffer;
 layout(set = 0, binding = 18) uniform texture2D directional_depth_buffer;
 layout(set = 0, binding = 19) uniform texture2D directional_previous_filtered_radiance_input;
 layout(r8ui, set = 0, binding = 20) uniform restrict writeonly uimage2D directional_trace_count_output;
+layout(set = 0, binding = 21) uniform texture2D directional_screen_radiance_buffer;
+layout(set = 0, binding = 22) uniform texture2D directional_previous_depth_buffer;
 #endif
 #ifdef MODE_SPECULAR_TRACE
 layout(set = 0, binding = 12) uniform texture2D specular_depth_buffer;
@@ -322,22 +337,40 @@ uint hash_uvec3(uvec3 value) {
 	return value.x ^ value.y ^ value.z;
 }
 
-float hash_float(uvec3 value) {
-	return float(hash_uvec3(value) & 0x00ffffffu) / float(0x01000000u);
-}
-
 const uvec2 R2_WEYL_INCREMENT = uvec2(3242174889u, 2447445413u);
 
 float uint_to_unit_float(uint value) {
 	return float(value >> 8u) * (1.0 / 16777216.0);
 }
 
-vec2 sample_r2_sequence(uvec2 position, uint sequence_index, uint stream) {
+vec2 sample_temporally_permuted_r2_sequence(uvec2 position, uint sequence_index, uint stream) {
 	uvec2 scramble = uvec2(
 			hash_uvec3(uvec3(position, stream ^ 0xa511e9b3u)),
 			hash_uvec3(uvec3(position, stream ^ 0x63d83595u)));
-	uvec2 sequence = scramble + uvec2(sequence_index) * R2_WEYL_INCREMENT;
+	uint temporal_permutation = hash_uvec3(uvec3(position, stream ^ 0xd1b54a35u));
+	uint permuted_index = sequence_index ^ temporal_permutation;
+	uvec2 sequence = scramble + uvec2(permuted_index) * R2_WEYL_INCREMENT;
 	return vec2(uint_to_unit_float(sequence.x), uint_to_unit_float(sequence.y));
+}
+
+vec2 sample_hammersley_8(uint sequence_index) {
+	const uint phase_order[8] = uint[](0u, 7u, 3u, 4u, 6u, 1u, 5u, 2u);
+	uint index = phase_order[sequence_index & 7u];
+	uint reversed_index = ((index & 1u) << 2u) | (index & 2u) | ((index & 4u) >> 2u);
+	return (vec2(index, reversed_index) + 0.5) * (1.0 / 8.0);
+}
+
+vec2 screen_probe_uniform_placement_offset(uint frame_index, uint flags) {
+	return (flags & SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER) != 0u ? sample_hammersley_8(frame_index) : vec2(0.5);
+}
+
+vec2 sample_spatially_stratified_r2_sequence(uvec2 position, uint frame_index, uint stream) {
+	uvec2 cell = position >> 1u;
+	uint lane = (position.x & 1u) | ((position.y & 1u) << 1u);
+	lane ^= hash_uvec3(uvec3(cell, frame_index ^ stream)) & 3u;
+	vec2 stratum = vec2(lane & 1u, lane >> 1u);
+	vec2 in_stratum = sample_temporally_permuted_r2_sequence(cell, frame_index, stream);
+	return (stratum + in_stratum) * 0.5;
 }
 
 vec2 sample_r2_sequence(uvec2 position, uint sequence_index) {
@@ -439,19 +472,13 @@ vec3 directional_bucket_to_world(ivec2 bucket) {
 	return directional_square_to_sphere(bucket_uv);
 }
 
-vec2 directional_bucket_jitter(ivec2 probe_position) {
-	uvec2 random_seed;
-	random_seed.x = hash_uvec3(uvec3(uvec2(probe_position), 0x68bc21ebu));
-	random_seed.y = hash_uvec3(uvec3(uvec2(probe_position.yx), 0x02e5be93u));
-	random_seed &= uvec2(0xffffu);
-	uint phase = params.frame_index & 7u;
-	float sequence_x = fract(float(phase) * (1.0 / 8.0) + float(random_seed.x) * (1.0 / 65536.0));
-	float sequence_y = float((bitfieldReverse(phase) >> 16u) ^ random_seed.y) * (1.0 / 65536.0);
-	return vec2(sequence_x, sequence_y);
+vec2 directional_bucket_jitter(ivec2 probe_position, uvec2 bucket, uint level) {
+	uvec2 sample_key = uvec2(probe_position) * 32u + bucket;
+	return sample_temporally_permuted_r2_sequence(sample_key, params.frame_index, 0x68bc21ebu ^ (level * 0x9e3779b9u));
 }
 
 vec3 directional_jittered_bucket_to_world(ivec2 probe_position, ivec2 bucket) {
-	vec2 bucket_uv = (vec2(bucket) + directional_bucket_jitter(probe_position)) / float(SCREEN_PROBE_DIRECTIONAL_TILE_SIZE);
+	vec2 bucket_uv = (vec2(bucket) + directional_bucket_jitter(probe_position, uvec2(bucket), SCREEN_PROBE_DIRECTIONAL_IMPORTANCE_UNIFORM_LEVEL)) / float(SCREEN_PROBE_DIRECTIONAL_TILE_SIZE);
 	return directional_square_to_sphere(bucket_uv);
 }
 
@@ -495,33 +522,69 @@ ivec2 directional_wrap_texel(ivec2 texel) {
 	return clamp(texel, ivec2(0), ivec2(size - 1));
 }
 
-#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_DIRECTIONAL_RESOLVE) || defined(MODE_DIRECTIONAL_ADAPTIVE_MARK) || defined(MODE_DIRECTIONAL_ADAPTIVE_SPAWN)
+#endif
 
-float directional_probe_axis_texel(float grid_uv, int gi_extent, int probe_extent) {
+#if defined(MODE_SURFACE) || defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_DIRECTIONAL_RESOLVE) || defined(MODE_DIRECTIONAL_ADAPTIVE_MARK) || defined(MODE_DIRECTIONAL_ADAPTIVE_SPAWN) || defined(MODE_DIRECTIONAL_FILTER)
+
+float screen_probe_uniform_axis_anchor(int probe_index, int gi_extent, int probe_extent, float sample_offset) {
+	int safe_probe_extent = max(probe_extent, 1);
+	int safe_gi_extent = max(gi_extent, 1);
+	int atlas_extent = max((safe_gi_extent + safe_probe_extent - 1) / safe_probe_extent, 1);
+	int clamped_index = clamp(probe_index, 0, atlas_extent - 1);
+	int origin = clamped_index * safe_probe_extent;
+	int end = min(origin + safe_probe_extent, safe_gi_extent);
+	if ((params.flags & SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER) == 0u) {
+		return (float(origin) + float(end)) * 0.5;
+	}
+	float integer_offset = floor(sample_offset * float(safe_probe_extent));
+	return min(float(origin) + integer_offset + 0.5, float(safe_gi_extent) - 0.5);
+}
+
+float directional_probe_axis_texel(float grid_uv, int gi_extent, int probe_extent, float sample_offset) {
 	int safe_probe_extent = max(probe_extent, 1);
 	int atlas_extent = max((gi_extent + safe_probe_extent - 1) / safe_probe_extent, 1);
 	float grid_pixel = grid_uv * float(gi_extent);
-	float last_origin = float((atlas_extent - 1) * safe_probe_extent);
-	float last_center = (last_origin + float(gi_extent)) * 0.5;
+	float first_sample = screen_probe_uniform_axis_anchor(0, gi_extent, safe_probe_extent, sample_offset);
 	if (atlas_extent <= 1) {
-		float tile_extent = float(max(min(safe_probe_extent, gi_extent), 1));
-		return (grid_pixel - last_center) / tile_extent;
+		return (grid_pixel - first_sample) / float(max(gi_extent, 1));
 	}
-	float previous_center = (float(atlas_extent) - 1.5) * float(safe_probe_extent);
-	if (grid_pixel >= previous_center) {
-		float last_spacing = max(last_center - previous_center, 1e-6);
-		return float(atlas_extent - 2) + (grid_pixel - previous_center) / last_spacing;
+	float previous_sample = screen_probe_uniform_axis_anchor(atlas_extent - 2, gi_extent, safe_probe_extent, sample_offset);
+	float last_sample = screen_probe_uniform_axis_anchor(atlas_extent - 1, gi_extent, safe_probe_extent, sample_offset);
+	if (grid_pixel >= previous_sample) {
+		float last_spacing = max(last_sample - previous_sample, 1e-6);
+		return float(atlas_extent - 2) + (grid_pixel - previous_sample) / last_spacing;
 	}
-	return grid_pixel / float(safe_probe_extent) - 0.5;
+	return (grid_pixel - first_sample) / float(safe_probe_extent);
+}
+
+vec2 directional_grid_uv_to_probe_texel(vec2 grid_uv, uint frame_index) {
+	vec2 sample_offset = screen_probe_uniform_placement_offset(frame_index, params.flags);
+	return vec2(
+			directional_probe_axis_texel(grid_uv.x, params.gi_size.x, params.probe_size, sample_offset.x),
+			directional_probe_axis_texel(grid_uv.y, params.gi_size.y, params.probe_size, sample_offset.y));
 }
 
 vec2 directional_grid_uv_to_probe_texel(vec2 grid_uv) {
-	return vec2(
-			directional_probe_axis_texel(grid_uv.x, params.gi_size.x, params.probe_size),
-			directional_probe_axis_texel(grid_uv.y, params.gi_size.y, params.probe_size));
+	return directional_grid_uv_to_probe_texel(grid_uv, params.frame_index);
 }
 
-#endif
+vec2 directional_probe_nominal_grid_uv(ivec2 probe_position, uint frame_index) {
+	vec2 sample_offset = screen_probe_uniform_placement_offset(frame_index, params.flags);
+	return vec2(
+			screen_probe_uniform_axis_anchor(probe_position.x, params.gi_size.x, params.probe_size, sample_offset.x) / float(params.gi_size.x),
+			screen_probe_uniform_axis_anchor(probe_position.y, params.gi_size.y, params.probe_size, sample_offset.y) / float(params.gi_size.y));
+}
+
+ivec2 directional_base_probe_count() {
+	int safe_probe_size = max(params.probe_size, 1);
+	return (params.gi_size + ivec2(safe_probe_size) - ivec2(1)) / safe_probe_size;
+}
+
+ivec2 directional_owner_probe_from_screen_position(ivec2 screen_position) {
+	ivec2 base_count = directional_base_probe_count();
+	ivec2 gi_position = clamp(screen_position * params.gi_size / params.screen_size, ivec2(0), params.gi_size - ivec2(1));
+	return clamp(gi_position / max(params.probe_size, 1), ivec2(0), base_count - ivec2(1));
+}
 
 #endif
 
@@ -588,6 +651,7 @@ bool surface_is_dynamic(uint packed) {
 
 shared uint directional_adaptive_mask;
 shared uint directional_adaptive_spawn_mask;
+shared uint directional_adaptive_marked_candidates;
 shared uint directional_adaptive_allocation_start;
 shared uint directional_adaptive_allocation_count;
 shared uint directional_adaptive_retained_count;
@@ -595,8 +659,17 @@ shared uvec4 directional_adaptive_candidate_surfaces[8];
 shared uvec4 directional_adaptive_retained_surfaces[8];
 
 ivec2 directional_adaptive_base_count() {
+	return directional_base_probe_count();
+}
+
+void directional_adaptive_tile_screen_bounds(ivec2 tile, out ivec2 r_screen_begin, out ivec2 r_screen_end) {
 	int safe_probe_size = max(params.probe_size, 1);
-	return (params.gi_size + ivec2(safe_probe_size) - ivec2(1)) / safe_probe_size;
+	ivec2 gi_begin = tile * safe_probe_size;
+	ivec2 gi_end = min(gi_begin + ivec2(safe_probe_size), params.gi_size);
+	r_screen_begin = (gi_begin * params.screen_size + params.gi_size - ivec2(1)) / params.gi_size;
+	r_screen_end = (gi_end * params.screen_size + params.gi_size - ivec2(1)) / params.gi_size;
+	r_screen_begin = clamp(r_screen_begin, ivec2(0), params.screen_size - ivec2(1));
+	r_screen_end = clamp(r_screen_end, r_screen_begin + ivec2(1), params.screen_size);
 }
 
 bool directional_adaptive_load_screen_surface(ivec2 screen_position, out uvec4 r_packed, out vec3 r_view_position, out vec3 r_normal, out bool r_dynamic) {
@@ -622,15 +695,14 @@ bool directional_adaptive_load_screen_surface(ivec2 screen_position, out uvec4 r
 	return true;
 }
 
-bool directional_adaptive_decode_surface(uvec4 packed, out ivec2 r_screen_position, out vec3 r_view_position, out vec3 r_normal, out bool r_dynamic) {
+bool directional_adaptive_decode_surface_without_normal(uvec4 packed, out ivec2 r_screen_position, out vec3 r_view_position, out bool r_dynamic) {
 	if (all(equal(packed.xy, uvec2(0xffffffffu)))) {
 		return false;
 	}
 	r_screen_position = ivec2(packed.xy);
 	float depth = uintBitsToFloat(packed.z);
-	r_normal = unpack_surface_normal(packed.w);
 	r_dynamic = surface_is_dynamic(packed.w);
-	if (!(depth > 0.0) || any(lessThan(r_screen_position, ivec2(0))) || any(greaterThanEqual(r_screen_position, params.screen_size)) || !directional_finite(r_normal)) {
+	if (!(depth > 0.0) || any(lessThan(r_screen_position, ivec2(0))) || any(greaterThanEqual(r_screen_position, params.screen_size))) {
 		return false;
 	}
 	vec2 uv = (vec2(r_screen_position) + 0.5) / vec2(params.screen_size);
@@ -639,33 +711,23 @@ bool directional_adaptive_decode_surface(uvec4 packed, out ivec2 r_screen_positi
 }
 
 ivec2 directional_adaptive_candidate_position(ivec2 tile, uint candidate_index) {
-	int safe_probe_size = max(params.probe_size, 1);
-	ivec2 gi_begin = tile * safe_probe_size;
-	ivec2 gi_end = min(gi_begin + ivec2(safe_probe_size), params.gi_size);
-	ivec2 screen_begin = (gi_begin * params.screen_size + params.gi_size - ivec2(1)) / params.gi_size;
-	ivec2 screen_end = (gi_end * params.screen_size + params.gi_size - ivec2(1)) / params.gi_size;
-	screen_begin = clamp(screen_begin, ivec2(0), params.screen_size - ivec2(1));
-	screen_end = clamp(screen_end, screen_begin + ivec2(1), params.screen_size);
+	ivec2 screen_begin;
+	ivec2 screen_end;
+	directional_adaptive_tile_screen_bounds(tile, screen_begin, screen_end);
 	ivec2 screen_extent = max(screen_end - screen_begin, ivec2(1));
 
 	uint scramble = hash_uvec3(uvec3(uvec2(tile), 0x91e10da5u));
 	uint permuted = (candidate_index + (scramble & 7u)) & 7u;
 	uvec2 lattice = uvec2(permuted & 3u, permuted >> 2u);
-	uint phase = params.frame_index & 7u;
-	vec2 jitter = vec2(
-			hash_float(uvec3(uvec2(tile), phase ^ 0x68bc21ebu)),
-			hash_float(uvec3(uvec2(tile.yx), phase ^ 0x02e5be93u)));
+	uint candidate_frame_index = (params.flags & SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER) != 0u ? params.frame_index & 7u : params.frame_index;
+	vec2 jitter = sample_temporally_permuted_r2_sequence(uvec2(tile) * 8u + lattice, candidate_frame_index, 0x91e10da5u);
 	vec2 candidate_uv = (vec2(lattice) + vec2(0.2) + jitter * 0.6) / vec2(4.0, 2.0);
 	ivec2 offset = min(ivec2(floor(candidate_uv * vec2(screen_extent))), screen_extent - ivec2(1));
 	return screen_begin + offset;
 }
 
-float directional_adaptive_receiver_weight(vec3 receiver_view, vec3 receiver_normal, bool receiver_dynamic, uvec4 packed_probe, float spatial_weight) {
-	ivec2 probe_screen_position;
-	vec3 probe_view;
-	vec3 probe_normal;
-	bool probe_dynamic;
-	if (!directional_adaptive_decode_surface(packed_probe, probe_screen_position, probe_view, probe_normal, probe_dynamic) || probe_dynamic != receiver_dynamic) {
+float directional_adaptive_receiver_weight_decoded(vec3 receiver_view, vec3 receiver_normal, bool receiver_dynamic, vec3 probe_view, bool probe_dynamic, float spatial_weight) {
+	if (probe_dynamic != receiver_dynamic) {
 		return 0.0;
 	}
 	vec3 receiver_delta = probe_view - receiver_view;
@@ -674,6 +736,16 @@ float directional_adaptive_receiver_weight(vec3 receiver_view, vec3 receiver_nor
 	float receiver_tolerance = max(0.02 + 0.02 * receiver_separation, 1e-4);
 	float plane_weight = 1.0 - smoothstep(receiver_tolerance, receiver_tolerance * 2.0, receiver_plane_distance);
 	return max(spatial_weight, 0.0) * plane_weight;
+}
+
+float directional_adaptive_receiver_weight(vec3 receiver_view, vec3 receiver_normal, bool receiver_dynamic, uvec4 packed_probe, float spatial_weight) {
+	ivec2 probe_screen_position;
+	vec3 probe_view;
+	bool probe_dynamic;
+	if (!directional_adaptive_decode_surface_without_normal(packed_probe, probe_screen_position, probe_view, probe_dynamic)) {
+		return 0.0;
+	}
+	return directional_adaptive_receiver_weight_decoded(receiver_view, receiver_normal, receiver_dynamic, probe_view, probe_dynamic, spatial_weight);
 }
 
 float directional_adaptive_uniform_coverage(ivec2 screen_position, vec3 receiver_view, vec3 receiver_normal, bool receiver_dynamic) {
@@ -704,8 +776,7 @@ bool directional_adaptive_candidate_surface(ivec2 tile, uint candidate_index, ou
 #ifdef MODE_DIRECTIONAL_ADAPTIVE_SPAWN
 
 ivec2 directional_adaptive_owner_tile(ivec2 screen_position) {
-	ivec2 gi_position = clamp(screen_position * params.gi_size / params.screen_size, ivec2(0), params.gi_size - ivec2(1));
-	return clamp(gi_position / max(params.probe_size, 1), ivec2(0), directional_adaptive_base_count() - ivec2(1));
+	return directional_owner_probe_from_screen_position(screen_position);
 }
 
 ivec2 directional_adaptive_history_tile_offset(int index) {
@@ -720,14 +791,13 @@ bool directional_adaptive_previous_owner_from_current_surface(uvec4 current_pack
 	r_previous_owner = ivec2(-1);
 	ivec2 current_screen_position;
 	vec3 current_view;
-	vec3 current_normal;
 	bool current_dynamic;
-	if (!directional_adaptive_decode_surface(current_packed, current_screen_position, current_view, current_normal, current_dynamic) || current_dynamic) {
+	if (!directional_adaptive_decode_surface_without_normal(current_packed, current_screen_position, current_view, current_dynamic) || current_dynamic) {
 		return false;
 	}
 	vec3 current_world = (scene_data.cam_transform * vec4(current_view, 1.0)).xyz;
 	vec3 previous_view = (scene_data.previous_cam_inv_transform * vec4(current_world, 1.0)).xyz;
-	vec4 previous_clip = inverse(scene_data.previous_inv_projection[params.view_index]) * vec4(previous_view, 1.0);
+	vec4 previous_clip = scene_data.previous_projection[params.view_index] * vec4(previous_view, 1.0);
 	if (!(previous_clip.w > 1e-6) || !directional_finite(previous_clip)) {
 		return false;
 	}
@@ -837,14 +907,13 @@ float directional_adaptive_retained_coverage(ivec2 screen_position, vec3 receive
 	for (uint retained_index = 0u; retained_index < directional_adaptive_retained_count; retained_index++) {
 		ivec2 retained_screen_position;
 		vec3 retained_view;
-		vec3 retained_normal;
 		bool retained_dynamic;
-		if (!directional_adaptive_decode_surface(directional_adaptive_retained_surfaces[retained_index], retained_screen_position, retained_view, retained_normal, retained_dynamic)) {
+		if (!directional_adaptive_decode_surface_without_normal(directional_adaptive_retained_surfaces[retained_index], retained_screen_position, retained_view, retained_dynamic)) {
 			continue;
 		}
 		vec2 axis_distance = abs(vec2(retained_screen_position - screen_position)) / probe_screen_extent;
 		float spatial_weight = 1.0 - clamp(max(axis_distance.x, axis_distance.y), 0.0, 1.0);
-		coverage = max(coverage, directional_adaptive_receiver_weight(receiver_view, receiver_normal, receiver_dynamic, directional_adaptive_retained_surfaces[retained_index], spatial_weight));
+		coverage = max(coverage, directional_adaptive_receiver_weight_decoded(receiver_view, receiver_normal, receiver_dynamic, retained_view, retained_dynamic, spatial_weight));
 	}
 	return coverage;
 }
@@ -859,8 +928,8 @@ void directional_adaptive_collect_retained(ivec2 tile) {
 	uint base_probe_total = uint(base_count.x * base_count.y);
 	uint adaptive_capacity = base_probe_total / 2u;
 	ivec2 previous_surface_size = imageSize(adaptive_previous_probe_surface);
-	mat4 previous_cam_transform = inverse(scene_data.previous_cam_inv_transform);
-	mat4 current_cam_inv_transform = inverse(scene_data.cam_transform);
+	mat4 previous_cam_transform = scene_data.previous_cam_transform;
+	mat4 current_cam_inv_transform = scene_data.cam_inv_transform;
 
 	ivec2 previous_owners[9];
 	int previous_owner_count = 0;
@@ -965,7 +1034,7 @@ float directional_adaptive_prior_coverage(ivec2 tile, uint candidate_index, ivec
 				vec2 axis_distance = abs(vec2(prior_screen_position - screen_position)) / probe_screen_extent;
 				float spatial_weight = 1.0 - clamp(min(axis_distance.x, axis_distance.y), 0.0, 1.0);
 				int corner_index = y * 2 + x;
-				corner_coverage[corner_index] = max(corner_coverage[corner_index], directional_adaptive_receiver_weight(receiver_view, receiver_normal, receiver_dynamic, prior_packed, spatial_weight));
+				corner_coverage[corner_index] = max(corner_coverage[corner_index], directional_adaptive_receiver_weight_decoded(receiver_view, receiver_normal, receiver_dynamic, prior_view, prior_dynamic, spatial_weight));
 			}
 		}
 	}
@@ -991,16 +1060,14 @@ void directional_adaptive_mark_main() {
 		}
 	}
 	barrier();
-	if (lane < SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CANDIDATE_COUNT) {
-		uvec4 packed;
-		ivec2 screen_position;
-		vec3 view_position;
-		vec3 normal;
-		bool dynamic_surface;
-		if (directional_adaptive_candidate_surface(tile, lane, packed, screen_position, view_position, normal, dynamic_surface) &&
-				directional_adaptive_uniform_coverage(screen_position, view_position, normal, dynamic_surface) < SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_SPAWN_COVERAGE) {
-			atomicOr(directional_adaptive_mask, 1u << lane);
-		}
+	uvec4 packed;
+	ivec2 screen_position;
+	vec3 view_position;
+	vec3 normal;
+	bool dynamic_surface;
+	if (directional_adaptive_candidate_surface(tile, lane, packed, screen_position, view_position, normal, dynamic_surface) &&
+			directional_adaptive_uniform_coverage(screen_position, view_position, normal, dynamic_surface) < SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_SPAWN_COVERAGE) {
+		atomicOr(directional_adaptive_mask, 1u << lane);
 	}
 	barrier();
 	if (lane == 0u) {
@@ -1021,22 +1088,13 @@ void directional_adaptive_spawn_main() {
 	uint lane = gl_LocalInvocationIndex;
 	if (lane == 0u) {
 		directional_adaptive_spawn_mask = 0u;
-		directional_adaptive_allocation_start = 0u;
-		directional_adaptive_allocation_count = 0u;
-		directional_adaptive_retained_count = 0u;
-	}
-	if (lane < SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CANDIDATE_COUNT) {
-		directional_adaptive_candidate_surfaces[lane] = uvec4(0xffffffffu);
-		directional_adaptive_retained_surfaces[lane] = uvec4(0xffffffffu);
-	}
-	barrier();
-	if (lane == 0u) {
+		directional_adaptive_marked_candidates = imageLoad(adaptive_candidate_mark_input, tile).r;
 		directional_adaptive_collect_retained(tile);
 	}
 	barrier();
 
-	uint marked = imageLoad(adaptive_candidate_mark_input, tile).r;
-	if (lane < SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CANDIDATE_COUNT && (marked & (1u << lane)) != 0u) {
+	uint marked = directional_adaptive_marked_candidates;
+	if ((marked & (1u << lane)) != 0u) {
 		uvec4 packed;
 		ivec2 screen_position;
 		vec3 view_position;
@@ -1052,10 +1110,9 @@ void directional_adaptive_spawn_main() {
 	}
 	barrier();
 
-	uint lower_mask = lane < SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CANDIDATE_COUNT && lane > 0u ? directional_adaptive_spawn_mask & ((1u << lane) - 1u) : 0u;
+	uint lower_mask = lane > 0u ? directional_adaptive_spawn_mask & ((1u << lane) - 1u) : 0u;
 	uint local_rank = bitCount(lower_mask);
-	bool accepted = lane < SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CANDIDATE_COUNT &&
-			(directional_adaptive_spawn_mask & (1u << lane)) != 0u &&
+	bool accepted = (directional_adaptive_spawn_mask & (1u << lane)) != 0u &&
 			directional_adaptive_retained_count + local_rank < SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_MAX_PER_TILE;
 	if (lane == 0u) {
 		uint requested = min(directional_adaptive_retained_count + uint(bitCount(directional_adaptive_spawn_mask)), SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_MAX_PER_TILE);
@@ -1139,7 +1196,11 @@ void screen_probe_surface_main() {
 		ivec2 screen_end = (gi_end * params.screen_size + params.gi_size - ivec2(1)) / params.gi_size;
 		screen_begin = clamp(screen_begin, ivec2(0), params.screen_size - ivec2(1));
 		screen_end = clamp(screen_end, screen_begin + ivec2(1), params.screen_size);
-		ivec2 screen_center_twice = screen_begin + screen_end - ivec2(1);
+		ivec2 screen_target_twice = screen_begin + screen_end - ivec2(1);
+		if ((params.flags & SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER) != 0u) {
+			vec2 target_screen_position = directional_probe_nominal_grid_uv(probe_position, params.frame_index) * vec2(params.screen_size) - 0.5;
+			screen_target_twice = ivec2(round(target_screen_position * 2.0));
+		}
 		for (int y = screen_begin.y; y < screen_end.y; y++) {
 			for (int x = screen_begin.x; x < screen_end.x; x++) {
 				ivec2 screen_position = ivec2(x, y);
@@ -1149,7 +1210,7 @@ void screen_probe_surface_main() {
 				if (!load_surface(screen_position, depth, normal, dynamic_surface)) {
 					continue;
 				}
-				ivec2 center_delta_twice = screen_position * 2 - screen_center_twice;
+				ivec2 center_delta_twice = screen_position * 2 - screen_target_twice;
 				uint distance_squared = uint(dot(center_delta_twice, center_delta_twice));
 				bool wins_tie = distance_squared == best_distance_squared &&
 						(screen_position.y < best_screen_position.y || (screen_position.y == best_screen_position.y && screen_position.x < best_screen_position.x));
@@ -1164,7 +1225,11 @@ void screen_probe_surface_main() {
 			}
 		}
 	} else {
-		ivec2 tile_center_twice = tile_extent - ivec2(1);
+		ivec2 tile_target_twice = tile_extent - ivec2(1);
+		if ((params.flags & SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER) != 0u) {
+			vec2 target_gi_position = directional_probe_nominal_grid_uv(probe_position, params.frame_index) * vec2(params.gi_size) - 0.5;
+			tile_target_twice = ivec2(round((target_gi_position - vec2(gi_begin)) * 2.0));
+		}
 		for (int y = 0; y < tile_extent.y; y++) {
 			for (int x = 0; x < tile_extent.x; x++) {
 				ivec2 gi_position = gi_begin + ivec2(x, y);
@@ -1175,7 +1240,7 @@ void screen_probe_surface_main() {
 				if (!load_surface(screen_position, depth, normal, dynamic_surface)) {
 					continue;
 				}
-				ivec2 center_delta_twice = ivec2(x, y) * 2 - tile_center_twice;
+				ivec2 center_delta_twice = ivec2(x, y) * 2 - tile_target_twice;
 				uint distance_squared = uint(dot(center_delta_twice, center_delta_twice));
 				bool wins_tie = distance_squared == best_distance_squared &&
 						(gi_position.y < best_gi_position.y || (gi_position.y == best_gi_position.y && gi_position.x < best_gi_position.x));
@@ -1386,14 +1451,15 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 	vec2 start_cell_t = (next_cell_uv - screen_start.xy) * inverse_direction_xy;
 	float trace_t = max(min(start_cell_t.x, start_cell_t.y), 0.0);
 	int max_mip = int(params.detail_trace_mip_count) - 1;
+	uint detail_trace_quality = (params.flags & SCREEN_PROBE_DETAIL_TRACE_QUALITY_MASK) >> SCREEN_PROBE_DETAIL_TRACE_QUALITY_SHIFT;
 #ifdef MODE_SPECULAR_TRACE
 	int mip_level = min(2, max_mip);
-	int iterations_remaining = 50;
+	int iterations_remaining = detail_trace_quality == 1u ? 32 : (detail_trace_quality == 2u ? 16 : 50);
 	float receiver_exclusion = max(0.01, abs(origin_view.z) / detail_size.y);
 	const float candidate_normal_threshold = -0.01;
 #else
 	int mip_level = 0;
-	int iterations_remaining = 48;
+	int iterations_remaining = detail_trace_quality == 1u ? 32 : (detail_trace_quality == 2u ? 16 : 48);
 	float receiver_exclusion = max(0.02, abs(origin_view.z) * 2.0 / detail_size.y);
 	const float candidate_normal_threshold = -0.05;
 #endif
@@ -1425,13 +1491,11 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 			vec3 candidate_normal_view = vec3(0.0, 0.0, 1.0);
 			if (candidate_valid) {
 				float candidate_depth = any(notEqual(candidate_pixel, cell_index)) ? texelFetch(sampler2D(detail_hiz_buffer, linear_sampler), candidate_pixel, 0).r : cell_depth;
-				vec3 shading_normal_view;
-				bool shading_normal_valid = decode_normal(texelFetch(sampler2D(detail_normal_roughness_buffer, linear_sampler), candidate_pixel, 0).xyz, shading_normal_view);
 				candidate_valid = candidate_depth > 0.0;
 				if (candidate_valid) {
 					vec2 candidate_uv = (vec2(candidate_pixel) + 0.5) * inverse_detail_size;
 					candidate_view = compute_view_position(vec3(candidate_uv, candidate_depth));
-					candidate_valid = !any(isnan(candidate_view)) && !any(isinf(candidate_view)) && detail_trace_geometric_normal(candidate_pixel, candidate_view, shading_normal_view, shading_normal_valid, candidate_normal_view) && dot(ray_direction_view, candidate_normal_view) < candidate_normal_threshold;
+					candidate_valid = !any(isnan(candidate_view)) && !any(isinf(candidate_view));
 				}
 				if (candidate_valid) {
 					float candidate_distance = dot(candidate_view - origin_view, ray_direction_view);
@@ -1441,10 +1505,18 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 					float thickness = clamp(abs(candidate_view.z) * 0.0015, 0.025, 0.10);
 #endif
 					vec3 ray_closest_view = origin_view + ray_direction_view * candidate_distance;
-					vec3 candidate_ray_view = compute_view_position(candidate_screen);
 					vec3 ray_error = candidate_view - ray_closest_view;
-					float normal_thickness_error = abs(dot(candidate_view - candidate_ray_view, candidate_normal_view));
-					candidate_valid = candidate_distance > receiver_exclusion && candidate_distance <= max_distance && dot(ray_error, ray_error) <= thickness * thickness && normal_thickness_error <= thickness && !any(isnan(candidate_ray_view)) && !any(isinf(candidate_ray_view));
+					candidate_valid = candidate_distance > receiver_exclusion && candidate_distance <= max_distance && dot(ray_error, ray_error) <= thickness * thickness;
+					if (candidate_valid) {
+						vec3 shading_normal_view;
+						bool shading_normal_valid = decode_normal(texelFetch(sampler2D(detail_normal_roughness_buffer, linear_sampler), candidate_pixel, 0).xyz, shading_normal_view);
+						candidate_valid = detail_trace_geometric_normal(candidate_pixel, candidate_view, shading_normal_view, shading_normal_valid, candidate_normal_view) && dot(ray_direction_view, candidate_normal_view) < candidate_normal_threshold;
+					}
+					if (candidate_valid) {
+						vec3 candidate_ray_view = compute_view_position(candidate_screen);
+						float normal_thickness_error = abs(dot(candidate_view - candidate_ray_view, candidate_normal_view));
+						candidate_valid = normal_thickness_error <= thickness && !any(isnan(candidate_ray_view)) && !any(isinf(candidate_ray_view));
+					}
 				}
 			}
 
@@ -1534,7 +1606,9 @@ bool trace_ray_hdda(vec3 ray_position, vec3 ray_direction, int first_cascade, bo
 	const int level_region = 0;
 	const int level_block = 1;
 	const int level_voxel = 2;
+#ifndef MODE_DIRECTIONAL_TRACE
 	const int max_level = 3;
+#endif
 	const int fp_bits = HDDAGI_HDDA_FP_BITS;
 	const int fp_block_bits = fp_bits + 2;
 	const int fp_region_bits = fp_block_bits + 1;
@@ -1546,14 +1620,27 @@ bool trace_ray_hdda(vec3 ray_position, vec3 ray_direction, int first_cascade, bo
 	ivec3 ray_direction_fp = ivec3(ray_direction * float(1 << fp_bits));
 	vec3 reciprocal_divisor = mix(ray_direction, vec3(1.0), ray_zero);
 	ivec3 inverse_ray_direction_fp = ivec3(vec3(float(1 << fp_bits)) / reciprocal_divisor);
+#ifdef MODE_DIRECTIONAL_TRACE
+	const ivec3 level_region_mask = ivec3(1 << fp_region_bits) - ivec3(1);
+	const ivec3 level_block_mask = ivec3(1 << fp_block_bits) - ivec3(1);
+	const ivec3 level_voxel_mask = ivec3(1 << fp_bits) - ivec3(1);
+#else
 	const ivec3 level_masks[max_level] = ivec3[](
 			ivec3(1 << fp_region_bits) - ivec3(1),
 			ivec3(1 << fp_block_bits) - ivec3(1),
 			ivec3(1 << fp_bits) - ivec3(1));
+#endif
 
 	ivec3 region_offset_mask = hddagi.grid_size / HDDAGI_REGION_SIZE - ivec3(1);
+#ifdef MODE_DIRECTIONAL_TRACE
+	ivec3 level_region_limit;
+	ivec3 level_block_limit;
+	ivec3 level_voxel_limit;
+	level_region_limit = ((hddagi.grid_size << fp_bits) - ivec3(1)) * step;
+#else
 	ivec3 limits[max_level];
 	limits[level_region] = ((hddagi.grid_size << fp_bits) - ivec3(1)) * step;
+#endif
 	int level = level_cascade;
 	int cascade = first_cascade - 1;
 	ivec3 cascade_base;
@@ -1566,7 +1653,11 @@ bool trace_ray_hdda(vec3 ray_position, vec3 ray_direction, int first_cascade, bo
 
 	while (true) {
 		if (level == level_voxel) {
+#ifdef MODE_DIRECTIONAL_TRACE
+			ivec3 block_local = (position & level_block_mask) >> fp_bits;
+#else
 			ivec3 block_local = (position & level_masks[level_block]) >> fp_bits;
+#endif
 			uint block_index = uint(block_local.z * 16 + block_local.y * 4 + block_local.x);
 			bool occupied;
 			if (block_index < 32u) {
@@ -1583,11 +1674,19 @@ bool trace_ray_hdda(vec3 ray_position, vec3 ray_direction, int first_cascade, bo
 				}
 			}
 		} else if (level == level_block) {
+#ifdef MODE_DIRECTIONAL_TRACE
+			ivec3 block_local = (position & level_region_mask) >> fp_block_bits;
+#else
 			ivec3 block_local = (position & level_masks[level_region]) >> fp_block_bits;
+#endif
 			block = load_voxel_cascade(region_base + block_local);
 			if (block != uvec2(0)) {
 				level = level_voxel;
+#ifdef MODE_DIRECTIONAL_TRACE
+				level_voxel_limit = position - (position & level_block_mask) + step * (level_block_mask + ivec3(1));
+#else
 				limits[level_voxel] = position - (position & level_masks[level_block]) + step * (level_masks[level_block] + ivec3(1));
+#endif
 				continue;
 			}
 		} else if (level == level_region) {
@@ -1597,7 +1696,11 @@ bool trace_ray_hdda(vec3 ray_position, vec3 ray_direction, int first_cascade, bo
 			if (load_voxel_region(region) > 0u) {
 				region_base = region << 1;
 				level = level_block;
+#ifdef MODE_DIRECTIONAL_TRACE
+				level_block_limit = position - (position & level_region_mask) + step * (level_region_mask + ivec3(1));
+#else
 				limits[level_block] = position - (position & level_masks[level_region]) + step * (level_masks[level_region] + ivec3(1));
+#endif
 				continue;
 			}
 		} else {
@@ -1624,7 +1727,18 @@ bool trace_ray_hdda(vec3 ray_position, vec3 ray_direction, int first_cascade, bo
 			continue;
 		}
 
+#ifdef MODE_DIRECTIONAL_TRACE
+		ivec3 mask;
+		if (level == level_region) {
+			mask = level_region_mask;
+		} else if (level == level_block) {
+			mask = level_block_mask;
+		} else {
+			mask = level_voxel_mask;
+		}
+#else
 		ivec3 mask = level_masks[level];
+#endif
 		ivec3 box = mask * step;
 		ivec3 position_difference = box - (position & mask);
 		ivec3 multiplied = (position_difference * inverse_ray_direction_fp) >> fp_bits;
@@ -1634,7 +1748,19 @@ bool trace_ray_hdda(vec3 ray_position, vec3 ray_direction, int first_cascade, bo
 		ivec3 ray_advance = (ray_direction_fp * advance_time) >> fp_bits;
 		position += mix(ray_advance, box_advance, equal(ivec3(advance_time), axis_time));
 		while (true) {
+#ifdef MODE_DIRECTIONAL_TRACE
+			ivec3 level_limit;
+			if (level == level_region) {
+				level_limit = level_region_limit;
+			} else if (level == level_block) {
+				level_limit = level_block_limit;
+			} else {
+				level_limit = level_voxel_limit;
+			}
+			bvec3 limit = lessThan(position, level_limit);
+#else
 			bvec3 limit = lessThan(position, limits[level]);
+#endif
 			if (all(equal(limit, limit_direction))) {
 				break;
 			}
@@ -1646,7 +1772,11 @@ bool trace_ray_hdda(vec3 ray_position, vec3 ray_direction, int first_cascade, bo
 	}
 
 	if (hit) {
+#ifdef MODE_DIRECTIONAL_TRACE
+		ivec3 mask = level_voxel_mask;
+#else
 		ivec3 mask = level_masks[level_voxel];
+#endif
 		ivec3 box = mask * (step ^ ivec3(1));
 		ivec3 position_difference = box - (position & mask);
 		ivec3 multiplied = position_difference * -inverse_ray_direction_fp;
@@ -2109,6 +2239,97 @@ void irradiance_cache_update_multibounce_main() {
 
 #else
 
+#ifdef MODE_DIRECTIONAL_TRACE
+
+bool directional_screen_radiance_clip_to_uv(vec4 clip_position, out vec2 r_uv) {
+	if (!(clip_position.w > 1e-6) || any(isnan(clip_position)) || any(isinf(clip_position))) {
+		r_uv = vec2(0.0);
+		return false;
+	}
+	r_uv = clip_position.xy / clip_position.w * 0.5 + 0.5;
+	return !any(isnan(r_uv)) && !any(isinf(r_uv));
+}
+
+bool directional_sample_screen_radiance(vec3 endpoint_world, out vec3 r_radiance) {
+	r_radiance = vec3(0.0);
+	if ((params.flags & SCREEN_PROBE_FLAG_DIRECTIONAL_SCREEN_RADIANCE_VALID) == 0u || any(isnan(endpoint_world)) || any(isinf(endpoint_world))) {
+		return false;
+	}
+
+	vec3 current_view = transpose(mat3(scene_data.cam_transform)) * (endpoint_world - scene_data.cam_transform[3].xyz);
+	vec3 previous_view = (scene_data.previous_cam_inv_transform * vec4(endpoint_world, 1.0)).xyz;
+	vec4 previous_clip = scene_data.previous_projection[params.view_index] * vec4(previous_view, 1.0);
+	vec2 current_raster_uv;
+	vec2 current_stable_uv;
+	vec2 previous_raster_uv;
+	vec2 previous_stable_uv;
+	if (!directional_screen_radiance_clip_to_uv(scene_data.projection[params.view_index] * vec4(current_view, 1.0), current_raster_uv) ||
+			!directional_screen_radiance_clip_to_uv(scene_data.temporal_projection[params.view_index] * vec4(current_view, 1.0), current_stable_uv) ||
+			!directional_screen_radiance_clip_to_uv(previous_clip, previous_raster_uv) ||
+			!directional_screen_radiance_clip_to_uv(scene_data.previous_temporal_projection[params.view_index] * vec4(previous_view, 1.0), previous_stable_uv)) {
+		return false;
+	}
+	float expected_previous_depth = previous_clip.z / previous_clip.w;
+	if (isnan(expected_previous_depth) || isinf(expected_previous_depth) || expected_previous_depth < 0.0 || expected_previous_depth > 1.0) {
+		return false;
+	}
+
+	ivec2 history_size = textureSize(sampler2D(directional_screen_radiance_buffer, linear_sampler), 0);
+	if (any(lessThanEqual(history_size, ivec2(0)))) {
+		return false;
+	}
+
+	ivec2 endpoint_pixel = clamp(ivec2(floor(current_raster_uv * vec2(params.screen_size))), ivec2(0), params.screen_size - ivec2(1));
+	float endpoint_roughness_dynamic = texelFetch(sampler2D(detail_normal_roughness_buffer, linear_sampler), endpoint_pixel, 0).a;
+	bool dynamic_endpoint = endpoint_roughness_dynamic > 0.5;
+	// Per-ray motion is unavailable, so moving endpoints cannot reuse history.
+	if (dynamic_endpoint) {
+		return false;
+	}
+	vec2 history_uv = previous_raster_uv;
+	float object_motion_pixels = 0.0;
+	if ((params.flags & SCREEN_PROBE_FLAG_DIRECTIONAL_MOTION_VALID) != 0u) {
+		vec2 endpoint_velocity = texelFetch(sampler2D(directional_velocity_buffer, linear_sampler), endpoint_pixel, 0).xy;
+		if (!any(isnan(endpoint_velocity)) && !any(isinf(endpoint_velocity))) {
+			vec2 current_jitter_uv = current_raster_uv - current_stable_uv;
+			vec2 previous_jitter_uv = previous_raster_uv - previous_stable_uv;
+			history_uv = current_raster_uv + endpoint_velocity + previous_jitter_uv - current_jitter_uv;
+			object_motion_pixels = length((history_uv - previous_raster_uv) * vec2(history_size));
+		}
+	}
+
+	vec2 half_texel = 0.5 / vec2(history_size);
+	if (any(lessThan(history_uv, half_texel)) || any(greaterThan(history_uv, vec2(1.0) - half_texel))) {
+		return false;
+	}
+	ivec2 previous_depth_size = textureSize(sampler2D(directional_previous_depth_buffer, linear_sampler), 0);
+	if (any(notEqual(previous_depth_size, history_size))) {
+		return false;
+	}
+	vec2 edge_texels = min(history_uv, vec2(1.0) - history_uv) * vec2(history_size);
+	float edge_confidence = smoothstep(0.5, 2.0, min(edge_texels.x, edge_texels.y));
+	float motion_confidence = mix(1.0, 0.2, smoothstep(1.0, 24.0, object_motion_pixels));
+	if (!(edge_confidence * motion_confidence >= 0.75)) {
+		return false;
+	}
+
+	ivec2 previous_depth_position = clamp(ivec2(floor(history_uv * vec2(previous_depth_size))), ivec2(0), previous_depth_size - ivec2(1));
+	float actual_previous_depth = texelFetch(sampler2D(directional_previous_depth_buffer, linear_sampler), previous_depth_position, 0).r;
+	if (isnan(actual_previous_depth) || isinf(actual_previous_depth) || actual_previous_depth <= 0.0 || abs(actual_previous_depth - expected_previous_depth) >= 0.005) {
+		return false;
+	}
+
+	vec3 screen_radiance = textureLod(sampler2D(directional_screen_radiance_buffer, linear_sampler), history_uv, 0.0).rgb;
+	if (any(isnan(screen_radiance)) || any(isinf(screen_radiance)) || any(lessThan(screen_radiance, vec3(0.0)))) {
+		return false;
+	}
+	float exposure_scale = clamp(scene_data.previous_exposure_scale.x, 1.0 / 16.0, 16.0);
+	r_radiance = screen_radiance * exposure_scale;
+	return true;
+}
+
+#endif
+
 bool trace_hddagi_sample(ivec2 origin_position, float origin_depth, vec3 origin_normal, vec3 ray_direction_view, float detail_distance_limit, out vec3 r_radiance, out int r_hit_cascade, out vec3 r_endpoint_world, out vec3 r_endpoint_normal_world) {
 	r_radiance = vec3(0.0);
 	r_hit_cascade = -1;
@@ -2127,6 +2348,13 @@ bool trace_hddagi_sample(ivec2 origin_position, float origin_depth, vec3 origin_
 
 	if (trace_screen_detail(origin_view, ray_direction_view, detail_distance_limit, r_endpoint_world, r_endpoint_normal_world)) {
 		r_hit_cascade = HDDAGI_TRACE_SCREEN_ENDPOINT;
+#ifdef MODE_DIRECTIONAL_TRACE
+		if (directional_sample_screen_radiance(r_endpoint_world, r_radiance)) {
+			r_hit_cascade = HDDAGI_TRACE_SCREEN_RADIANCE;
+			screen_probe_debug_set_source(SCREEN_PROBE_DEBUG_SCREEN_HDDAGI);
+			return true;
+		}
+#endif
 		if (!query_endpoint_radiance(r_endpoint_world, r_endpoint_normal_world, trace_origin_world, r_radiance)) {
 			r_radiance = sample_environment(ray_direction_view);
 			r_hit_cascade = HDDAGI_TRACE_SCREEN_ENDPOINT_SKY_FALLBACK;
@@ -2309,7 +2537,7 @@ bool trace_hddagi_sample(ivec2 origin_position, float origin_depth, vec3 origin_
 	return radiance_valid;
 }
 
-bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origin_normal, vec3 ray_direction_view, out vec3 r_radiance, out float r_hit_distance) {
+bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origin_normal, vec3 ray_direction_view, out vec3 r_radiance, out float r_hit_distance, out bool r_screen_radiance_used) {
 	int hit_cascade;
 	vec3 endpoint_world;
 	vec3 endpoint_normal_world;
@@ -2319,6 +2547,7 @@ bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origi
 	const float detail_distance_limit = SCREEN_PROBE_DETAIL_TRACE_MAX_DISTANCE;
 #endif
 	bool hit = trace_hddagi_sample(origin_position, origin_depth, origin_normal, ray_direction_view, detail_distance_limit, r_radiance, hit_cascade, endpoint_world, endpoint_normal_world);
+	r_screen_radiance_used = hit && hit_cascade == HDDAGI_TRACE_SCREEN_RADIANCE;
 	r_hit_distance = 0.0;
 	if (hit && (hit_cascade >= 0 || hit_cascade <= HDDAGI_TRACE_SCREEN_ENDPOINT) && !any(isnan(endpoint_world)) && !any(isinf(endpoint_world))) {
 		vec2 origin_uv = (vec2(origin_position) + 0.5) / vec2(params.screen_size);
@@ -2343,12 +2572,76 @@ struct GuidedSamplingDistribution {
 	vec4 cdf_high;
 };
 
+struct GuidedLightingContext {
+	vec2 atlas_base;
+	vec2 inverse_atlas_size;
+	int cascade;
+};
+
 float guided_sampling_cdf_at(GuidedSamplingDistribution distribution, int bin) {
 	return bin < 4 ? distribution.cdf_low[bin] : distribution.cdf_high[bin - 4];
 }
 
 ivec3 positive_mod(ivec3 value, ivec3 divisor) {
 	return ((value % divisor) + divisor) % divisor;
+}
+
+GuidedLightingContext build_guided_lighting_context(ivec2 origin_position, float origin_depth, vec3 origin_normal) {
+	GuidedLightingContext context;
+	context.atlas_base = vec2(0.0);
+	context.inverse_atlas_size = vec2(0.0);
+	context.cascade = -1;
+
+	vec2 origin_uv = (vec2(origin_position) + 0.5) / vec2(params.screen_size);
+	vec3 receiver_position = mat3(scene_data.cam_transform) * compute_view_position(vec3(origin_uv, origin_depth));
+	receiver_position.y *= hddagi.y_mult;
+	vec3 receiver_normal = mat3(scene_data.cam_transform) * origin_normal;
+	receiver_normal.y *= hddagi.y_mult;
+	float normal_length_squared = dot(receiver_normal, receiver_normal);
+	ivec3 nearest_probe = ivec3(0);
+	if (!any(isnan(receiver_position)) && !any(isinf(receiver_position)) && !any(isnan(receiver_normal)) && !any(isinf(receiver_normal)) && normal_length_squared > 1e-12) {
+		receiver_normal *= inversesqrt(normal_length_squared);
+		for (int candidate_cascade = 0; candidate_cascade < hddagi.max_cascades; candidate_cascade++) {
+			vec3 cascade_position = (receiver_position - hddagi.cascades[candidate_cascade].position) * hddagi.cascades[candidate_cascade].to_cell;
+			if (all(greaterThanEqual(cascade_position, vec3(0.0))) && all(lessThan(cascade_position, vec3(hddagi.grid_size)))) {
+				vec3 absolute_normal = abs(receiver_normal);
+				vec3 ray_bias = receiver_normal / max(max(absolute_normal.x, absolute_normal.y), absolute_normal.z);
+				vec3 biased_position = cascade_position + ray_bias * params.normal_bias;
+				nearest_probe = clamp(ivec3(floor(biased_position / float(HDDAGI_REGION_SIZE) + 0.5)), ivec3(0), hddagi.probe_axis_size - ivec3(1));
+				context.cascade = candidate_cascade;
+				break;
+			}
+		}
+	}
+
+	if (context.cascade >= 0) {
+		ivec3 wrapped_probe = positive_mod(hddagi.cascades[context.cascade].region_world_offset + nearest_probe, hddagi.probe_axis_size);
+		ivec2 probe_tile = wrapped_probe.xy + ivec2(0, wrapped_probe.z * hddagi.probe_axis_size.y);
+		ivec2 atlas_size = textureSize(sampler2DArray(hddagi_lightprobe_specular, sky_sampler), 0).xy;
+		if (all(greaterThan(atlas_size, ivec2(0)))) {
+			context.atlas_base = vec2(probe_tile * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1));
+			context.inverse_atlas_size = 1.0 / vec2(atlas_size);
+		} else {
+			context.cascade = -1;
+		}
+	}
+	return context;
+}
+
+vec3 sample_guided_lighting(GuidedLightingContext context, vec3 direction_view) {
+	if (context.cascade < 0 || any(isnan(direction_view)) || any(isinf(direction_view))) {
+		return vec3(0.0);
+	}
+	vec3 direction_camera = mat3(scene_data.cam_transform) * direction_view;
+	direction_camera.y *= hddagi.y_mult;
+	float direction_length_squared = dot(direction_camera, direction_camera);
+	if (!(direction_length_squared > 1e-12) || isnan(direction_length_squared) || isinf(direction_length_squared)) {
+		return vec3(0.0);
+	}
+	direction_camera *= inversesqrt(direction_length_squared);
+	vec2 atlas_uv = (context.atlas_base + vec3_to_oct(direction_camera) * float(LIGHTPROBE_OCT_SIZE)) * context.inverse_atlas_size;
+	vec3 guide_radiance = textureLod(sampler2DArray(hddagi_lightprobe_specular, sky_sampler), vec3(atlas_uv, float(context.cascade)), 0.0).rgb;
+	return !any(isnan(guide_radiance)) && !any(isinf(guide_radiance)) ? max(guide_radiance, vec3(0.0)) : vec3(0.0);
 }
 
 GuidedSamplingDistribution build_guided_sampling_distribution(ivec2 origin_position, float origin_depth, vec3 origin_normal) {
@@ -2361,44 +2654,14 @@ GuidedSamplingDistribution build_guided_sampling_distribution(ivec2 origin_posit
 		guide_weights[bin] = 0.0;
 	}
 
-	vec2 origin_uv = (vec2(origin_position) + 0.5) / vec2(params.screen_size);
-	vec3 receiver_position = mat3(scene_data.cam_transform) * compute_view_position(vec3(origin_uv, origin_depth));
-	receiver_position.y *= hddagi.y_mult;
-	vec3 receiver_normal = mat3(scene_data.cam_transform) * origin_normal;
-	receiver_normal.y *= hddagi.y_mult;
-	float normal_length_squared = dot(receiver_normal, receiver_normal);
-	int cascade = -1;
-	ivec3 nearest_probe = ivec3(0);
-	if (!any(isnan(receiver_position)) && !any(isinf(receiver_position)) && !any(isnan(receiver_normal)) && !any(isinf(receiver_normal)) && normal_length_squared > 1e-12) {
-		receiver_normal *= inversesqrt(normal_length_squared);
-		for (int candidate_cascade = 0; candidate_cascade < hddagi.max_cascades; candidate_cascade++) {
-			vec3 cascade_position = (receiver_position - hddagi.cascades[candidate_cascade].position) * hddagi.cascades[candidate_cascade].to_cell;
-			if (all(greaterThanEqual(cascade_position, vec3(0.0))) && all(lessThan(cascade_position, vec3(hddagi.grid_size)))) {
-				vec3 absolute_normal = abs(receiver_normal);
-				vec3 ray_bias = receiver_normal / max(max(absolute_normal.x, absolute_normal.y), absolute_normal.z);
-				vec3 biased_position = cascade_position + ray_bias * params.normal_bias;
-				nearest_probe = clamp(ivec3(floor(biased_position / float(HDDAGI_REGION_SIZE) + 0.5)), ivec3(0), hddagi.probe_axis_size - ivec3(1));
-				cascade = candidate_cascade;
-				break;
-			}
-		}
-	}
-
-	if (cascade >= 0) {
-		ivec3 wrapped_probe = positive_mod(hddagi.cascades[cascade].region_world_offset + nearest_probe, hddagi.probe_axis_size);
-		ivec2 probe_tile = wrapped_probe.xy + ivec2(0, wrapped_probe.z * hddagi.probe_axis_size.y);
-		vec2 atlas_size = vec2(textureSize(sampler2DArray(hddagi_lightprobe_specular, sky_sampler), 0).xy);
-		vec2 atlas_base = vec2(probe_tile * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1));
+	GuidedLightingContext lighting_context = build_guided_lighting_context(origin_position, origin_depth, origin_normal);
+	if (lighting_context.cascade >= 0) {
 		for (int bin = 0; bin < GUIDED_SAMPLING_BIN_COUNT; bin++) {
 			int radial_bin = bin / 4;
 			int azimuth_bin = bin - radial_bin * 4;
 			vec2 representative_sample = vec2((float(radial_bin) + 0.5) * 0.5, (float(azimuth_bin) + 0.5) * 0.25);
 			vec3 direction_view = tangent_to_world(cosine_sample_hemisphere(representative_sample), origin_normal);
-			vec3 direction_camera = mat3(scene_data.cam_transform) * direction_view;
-			direction_camera.y *= hddagi.y_mult;
-			direction_camera = normalize(direction_camera);
-			vec2 atlas_uv = (atlas_base + vec3_to_oct(direction_camera) * float(LIGHTPROBE_OCT_SIZE)) / atlas_size;
-			vec3 guide_radiance = textureLod(sampler2DArray(hddagi_lightprobe_specular, sky_sampler), vec3(atlas_uv, float(cascade)), 0.0).rgb;
+			vec3 guide_radiance = sample_guided_lighting(lighting_context, direction_view);
 			float guide_luminance = dot(max(guide_radiance, vec3(0.0)), vec3(0.2126, 0.7152, 0.0722));
 			float guide_weight = !isnan(guide_luminance) && !isinf(guide_luminance) ? sqrt(max(guide_luminance, 0.0)) : 0.0;
 			guide_weights[bin] = guide_weight;
@@ -2406,7 +2669,7 @@ GuidedSamplingDistribution build_guided_sampling_distribution(ivec2 origin_posit
 		}
 	}
 
-	bool uniform_guide = cascade < 0 || isnan(guide_weight_sum) || isinf(guide_weight_sum) || guide_weight_sum <= 1e-8;
+	bool uniform_guide = lighting_context.cascade < 0 || isnan(guide_weight_sum) || isinf(guide_weight_sum) || guide_weight_sum <= 1e-8;
 	float cumulative_probability = 0.0;
 	for (int bin = 0; bin < GUIDED_SAMPLING_BIN_COUNT; bin++) {
 		float guide_probability = uniform_guide ? 1.0 / float(GUIDED_SAMPLING_BIN_COUNT) : guide_weights[bin] / guide_weight_sum;
@@ -2448,6 +2711,7 @@ vec3 sample_guided_direction(GuidedSamplingDistribution distribution, vec2 rando
 shared ivec2 directional_history_probe;
 shared uint directional_history_age;
 shared uint directional_history_valid;
+shared uint directional_history_dynamic;
 shared vec4 directional_importance_footprint_normals[SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT];
 shared float directional_importance_pdf[SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT];
 shared float directional_importance_lighting[SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT];
@@ -2522,9 +2786,9 @@ bool directional_select_history(ivec2 probe_position, ivec2 current_screen_posit
 	ivec2 current_surface_size = imageSize(screen_probe_surface_input);
 	uint physical_index = uint(probe_position.y * current_surface_size.x + probe_position.x);
 	bool adaptive_probe = (params.flags & SCREEN_PROBE_FLAG_DIRECTIONAL_ADAPTIVE) != 0u && physical_index >= base_probe_total;
-	ivec2 gi_origin = min(probe_position, base_probe_count - ivec2(1)) * params.probe_size;
-	ivec2 gi_end = min(gi_origin + ivec2(params.probe_size), params.gi_size);
-	vec2 current_grid_uv = adaptive_probe ? current_uv : (vec2(gi_origin) + vec2(gi_end)) * 0.5 / vec2(params.gi_size);
+	bool uniform_placement_jitter = (params.flags & SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER) != 0u;
+	bool use_surface_uv_for_history = adaptive_probe || uniform_placement_jitter;
+	vec2 current_grid_uv = use_surface_uv_for_history ? current_uv : directional_probe_nominal_grid_uv(min(probe_position, base_probe_count - ivec2(1)), params.frame_index);
 	vec2 previous_grid_uv;
 	vec3 previous_receiver_view = (scene_data.previous_cam_inv_transform * vec4(current_world, 1.0)).xyz;
 	vec2 receiver_motion = vec2(0.0);
@@ -2542,12 +2806,8 @@ bool directional_select_history(ivec2 probe_position, ivec2 current_screen_posit
 	} else if (!directional_temporal_reproject_jitter_neutral(current_grid_uv, current_view, current_world, previous_grid_uv, previous_receiver_view)) {
 		return false;
 	}
-	if (any(lessThan(previous_grid_uv, vec2(0.0))) || any(greaterThanEqual(previous_grid_uv, vec2(1.0)))) {
-		return false;
-	}
-
-	if (adaptive_probe || current_dynamic) {
-		vec4 previous_raster_clip = inverse(scene_data.previous_inv_projection[params.view_index]) * vec4(previous_receiver_view, 1.0);
+	if (adaptive_probe || current_dynamic || uniform_placement_jitter) {
+		vec4 previous_raster_clip = scene_data.previous_projection[params.view_index] * vec4(previous_receiver_view, 1.0);
 		if (previous_raster_clip.w > 1e-6 && directional_finite(previous_raster_clip)) {
 			vec2 previous_raster_uv = previous_raster_clip.xy / previous_raster_clip.w * 0.5 + 0.5;
 			float previous_raster_depth = previous_raster_clip.z / previous_raster_clip.w;
@@ -2567,12 +2827,18 @@ bool directional_select_history(ivec2 probe_position, ivec2 current_screen_posit
 					!isnan(previous_raster_depth) && !isinf(previous_raster_depth) && directional_finite(vec3(previous_receiver_raster_uv, 0.0)) &&
 					all(greaterThanEqual(previous_receiver_raster_uv, vec2(0.0))) && all(lessThan(previous_receiver_raster_uv, vec2(1.0)));
 		}
-		if (current_dynamic && !previous_receiver_raster_valid) {
+		if ((current_dynamic || uniform_placement_jitter) && !previous_receiver_raster_valid) {
 			return false;
 		}
 	}
+	if (uniform_placement_jitter && !current_dynamic) {
+		previous_grid_uv = previous_receiver_raster_uv;
+	}
+	if (any(lessThan(previous_grid_uv, vec2(0.0))) || any(greaterThanEqual(previous_grid_uv, vec2(1.0)))) {
+		return false;
+	}
 
-	vec2 previous_probe_texel = directional_grid_uv_to_probe_texel(previous_grid_uv);
+	vec2 previous_probe_texel = directional_grid_uv_to_probe_texel(previous_grid_uv, params.frame_index - 1u);
 	if (!directional_finite(vec3(previous_probe_texel, 0.0))) {
 		return false;
 	}
@@ -2580,19 +2846,19 @@ bool directional_select_history(ivec2 probe_position, ivec2 current_screen_posit
 	ivec2 previous_age_size = imageSize(directional_previous_history_age_input);
 	ivec2 search_base = ivec2(floor(previous_probe_texel));
 	vec2 search_fraction = fract(previous_probe_texel);
-	mat4 previous_cam_transform = inverse(scene_data.previous_cam_inv_transform);
+	mat4 previous_cam_transform = scene_data.previous_cam_transform;
 	const float relative_plane_tolerance = 0.01823;
 	float current_scene_depth = max(abs(current_view.z), 1e-3);
 	float normal_threshold = max(params.history_normal_threshold, 0.8);
+	vec2 previous_screen_position_expected = previous_receiver_raster_valid ? previous_receiver_raster_uv * vec2(params.screen_size) - 0.5 : vec2(0.0);
+	vec2 probe_screen_extent = max(vec2(params.probe_size) * vec2(params.screen_size) / vec2(params.gi_size), vec2(1.0));
 	float best_score = -1.0;
 
 	if (adaptive_probe && previous_receiver_raster_valid) {
-		vec2 adaptive_previous_probe_texel = directional_grid_uv_to_probe_texel(previous_receiver_raster_uv);
+		vec2 adaptive_previous_probe_texel = directional_grid_uv_to_probe_texel(previous_receiver_raster_uv, params.frame_index - 1u);
 		ivec2 adaptive_search_base = ivec2(floor(adaptive_previous_probe_texel));
 		ivec2 previous_tile_data_size = imageSize(directional_previous_adaptive_tile_data_input);
 		uint adaptive_capacity = base_probe_total / 2u;
-		vec2 previous_screen_position = previous_receiver_raster_uv * vec2(params.screen_size) - 0.5;
-		vec2 probe_screen_extent = max(vec2(params.probe_size) * vec2(params.screen_size) / vec2(params.gi_size), vec2(1.0));
 		const float adaptive_relative_plane_tolerance = 0.01;
 		const float adaptive_relative_view_z_tolerance = 0.015;
 		const float adaptive_screen_footprint_limit = 0.75;
@@ -2631,7 +2897,7 @@ bool directional_select_history(ivec2 probe_position, ivec2 current_screen_posit
 					if (!directional_decode_history_surface(previous_packed, previous_screen_position_packed, previous_depth, previous_normal_view, previous_dynamic) || previous_dynamic != current_dynamic) {
 						continue;
 					}
-					vec2 screen_axis_distance = abs(vec2(previous_screen_position_packed) - previous_screen_position) / probe_screen_extent;
+					vec2 screen_axis_distance = abs(vec2(previous_screen_position_packed) - previous_screen_position_expected) / probe_screen_extent;
 					float screen_distance = max(screen_axis_distance.x, screen_axis_distance.y);
 					if (screen_distance > adaptive_screen_footprint_limit) {
 						continue;
@@ -2720,8 +2986,6 @@ bool directional_select_history(ivec2 probe_position, ivec2 current_screen_posit
 			float normal_similarity = dot(current_normal_world, previous_normal_world);
 			float score = -1.0;
 			if (current_dynamic) {
-				vec2 previous_screen_position_expected = previous_receiver_raster_uv * vec2(params.screen_size) - 0.5;
-				vec2 probe_screen_extent = max(vec2(params.probe_size) * vec2(params.screen_size) / vec2(params.gi_size), vec2(1.0));
 				vec2 screen_axis_distance = abs(vec2(previous_screen_position) - previous_screen_position_expected) / probe_screen_extent;
 				float screen_distance = max(screen_axis_distance.x, screen_axis_distance.y);
 				vec3 candidate_previous_view = (scene_data.previous_cam_inv_transform * vec4(previous_world, 1.0)).xyz;
@@ -2740,10 +3004,15 @@ bool directional_select_history(ivec2 probe_position, ivec2 current_screen_posit
 			} else {
 				vec3 receiver_delta = previous_world - current_world;
 				float relative_plane_distance = abs(dot(receiver_delta, current_normal_world)) / current_scene_depth;
-				if (!isnan(relative_plane_distance) && !isinf(relative_plane_distance) && relative_plane_distance <= relative_plane_tolerance && normal_similarity >= normal_threshold) {
+				vec2 screen_axis_distance = abs(vec2(previous_screen_position) - previous_screen_position_expected) / probe_screen_extent;
+				float screen_distance = max(screen_axis_distance.x, screen_axis_distance.y);
+				const float uniform_screen_footprint_limit = 0.75;
+				bool screen_footprint_valid = !uniform_placement_jitter || (!isnan(screen_distance) && !isinf(screen_distance) && screen_distance <= uniform_screen_footprint_limit);
+				if (screen_footprint_valid && !isnan(relative_plane_distance) && !isinf(relative_plane_distance) && relative_plane_distance <= relative_plane_tolerance && normal_similarity >= normal_threshold) {
 					float plane_score = 1.0 - clamp(relative_plane_distance / relative_plane_tolerance, 0.0, 1.0);
 					float normal_score = clamp((normal_similarity - normal_threshold) / max(1.0 - normal_threshold, 1e-4), 0.0, 1.0);
-					score = footprint_weight * (0.25 + 0.75 * plane_score) * (0.25 + 0.75 * normal_score);
+					float screen_score = uniform_placement_jitter ? 1.0 - clamp(screen_distance / uniform_screen_footprint_limit, 0.0, 1.0) : 1.0;
+					score = footprint_weight * (0.25 + 0.75 * plane_score) * (0.25 + 0.75 * normal_score) * (0.25 + 0.75 * screen_score);
 				}
 			}
 			if (score >= 0.0) {
@@ -2773,7 +3042,7 @@ vec3 directional_importance_ray_to_world(ivec2 jitter_key, uint ray_info) {
 	uint level;
 	directional_unpack_importance_ray_info(ray_info, texel_coordinate, level);
 	uint mip_size = uint(SCREEN_PROBE_DIRECTIONAL_IMPORTANCE_RESOLUTION) >> level;
-	vec2 ray_uv = (vec2(texel_coordinate) + directional_bucket_jitter(jitter_key)) / float(max(mip_size, 1u));
+	vec2 ray_uv = (vec2(texel_coordinate) + directional_bucket_jitter(jitter_key, texel_coordinate, level)) / float(max(mip_size, 1u));
 	return directional_square_to_sphere(ray_uv);
 }
 
@@ -2781,16 +3050,16 @@ vec4 directional_trace_world_direction(ivec2 origin_position, float origin_depth
 	vec3 ray_direction_view = normalize(transpose(mat3(scene_data.cam_transform)) * ray_direction_world);
 	vec3 incident_radiance;
 	float hit_distance;
+	bool screen_radiance_used;
 	r_synthetic_self_hit = false;
-	if (!trace_hddagi_radiance(origin_position, origin_depth, origin_normal, ray_direction_view, incident_radiance, hit_distance)) {
+	if (!trace_hddagi_radiance(origin_position, origin_depth, origin_normal, ray_direction_view, incident_radiance, hit_distance, screen_radiance_used)) {
 		incident_radiance = sample_environment(ray_direction_view);
 		hit_distance = SCREEN_PROBE_DIRECTIONAL_FP16_MAX;
 	} else if (!(hit_distance > 1e-4)) {
-		incident_radiance = vec3(0.0);
-		hit_distance = 0.0;
+		hit_distance = SCREEN_PROBE_DIRECTIONAL_FP16_MAX;
 		r_synthetic_self_hit = true;
 	}
-	vec3 scene_radiance = directional_clamp_radiance(incident_radiance * hddagi.energy);
+	vec3 scene_radiance = directional_clamp_radiance(incident_radiance * (screen_radiance_used ? 1.0 : hddagi.energy));
 	return directional_sanitize_fp16(vec4(scene_radiance, hit_distance));
 }
 
@@ -2802,11 +3071,31 @@ vec4 directional_apply_stable_history(vec4 current_sample, ivec2 direction_texel
 			vec4 previous_sample = texelFetch(sampler2D(directional_previous_radiance_input, linear_sampler), previous_atlas_position, 0);
 			if (directional_finite(previous_sample)) {
 				previous_sample = clamp(previous_sample, vec4(0.0), vec4(SCREEN_PROBE_DIRECTIONAL_FP16_MAX));
-				current_sample.rgb = mix(previous_sample.rgb, current_sample.rgb, 0.5);
+				float current_weight = directional_history_dynamic != 0u ? 0.5 : 1.0 / float(directional_history_age + 1u);
+				current_sample.rgb = mix(previous_sample.rgb, current_sample.rgb, current_weight);
 			}
 		}
 	}
 	return directional_sanitize_fp16(current_sample);
+}
+
+bool directional_load_previous_radiance(ivec2 direction_texel, out vec4 r_previous_sample) {
+	r_previous_sample = vec4(0.0);
+	if (directional_history_valid == 0u) {
+		return false;
+	}
+	ivec2 previous_atlas_position = directional_history_probe * SCREEN_PROBE_DIRECTIONAL_TILE_SIZE + direction_texel;
+	ivec2 previous_atlas_size = textureSize(sampler2D(directional_previous_radiance_input, linear_sampler), 0);
+	if (any(lessThan(previous_atlas_position, ivec2(0))) || any(greaterThanEqual(previous_atlas_position, previous_atlas_size))) {
+		return false;
+	}
+	r_previous_sample = texelFetch(sampler2D(directional_previous_radiance_input, linear_sampler), previous_atlas_position, 0);
+	if (!directional_finite(r_previous_sample)) {
+		r_previous_sample = vec4(0.0);
+		return false;
+	}
+	r_previous_sample = clamp(r_previous_sample, vec4(0.0), vec4(SCREEN_PROBE_DIRECTIONAL_FP16_MAX));
+	return true;
 }
 
 vec4 directional_importance_load_footprint_normal(ivec2 origin_position, float origin_depth, vec3 origin_normal, ivec2 footprint_texel) {
@@ -2846,13 +3135,16 @@ vec4 directional_importance_load_footprint_normal(ivec2 origin_position, float o
 	return directional_finite(sample_normal_world) ? vec4(sample_normal_world, 1.0) : vec4(0.0);
 }
 
-float directional_importance_brdf_pdf(vec3 direction_world) {
+float directional_importance_brdf_pdf(vec3 direction_world, out float r_brdf_max) {
 	float brdf_sum = 0.0;
 	float valid_count = 0.0;
+	r_brdf_max = 0.0;
 	for (uint sample_index = 0u; sample_index < uint(SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT); sample_index++) {
 		vec4 footprint_normal = directional_importance_footprint_normals[sample_index];
 		if (footprint_normal.w > 0.5) {
-			brdf_sum += max(dot(footprint_normal.xyz, direction_world), 0.0);
+			float sample_brdf = max(dot(footprint_normal.xyz, direction_world), 0.0);
+			brdf_sum += sample_brdf;
+			r_brdf_max = max(r_brdf_max, sample_brdf);
 			valid_count += 1.0;
 		}
 	}
@@ -2863,6 +3155,10 @@ bool directional_importance_merge_active(uint merge_index) {
 	uint low_index_2 = merge_index * 3u + 2u;
 	uint high_index = uint(SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT - 1) - merge_index;
 	if (low_index_2 >= high_index) {
+		return false;
+	}
+	uint refresh_phase = hash_uvec3(uvec3(uvec2(gl_WorkGroupID.xy), merge_index ^ 0x7f4a7c15u)) & 3u;
+	if ((params.frame_index & 3u) == refresh_phase) {
 		return false;
 	}
 	float low_pdf = directional_importance_pdf[directional_importance_sorted_indices[low_index_2]];
@@ -2911,7 +3207,6 @@ void directional_trace_main() {
 		if (gl_LocalInvocationIndex == 0u) {
 			imageStore(directional_history_age_output, probe_position, uvec4(0u));
 		}
-		barrier();
 		if ((params.flags & SCREEN_PROBE_FLAG_GUIDED_SAMPLING) != 0u) {
 			imageStore(directional_trace_count_output, atlas_position, uvec4(0u));
 		}
@@ -2924,6 +3219,7 @@ void directional_trace_main() {
 		directional_history_age = 0u;
 		directional_history_valid = 0u;
 		uvec4 current_surface = imageLoad(screen_probe_surface_input, probe_position);
+		directional_history_dynamic = surface_is_dynamic(current_surface.w) ? 1u : 0u;
 		uint previous_age;
 		ivec2 previous_probe;
 		if (directional_select_history(probe_position, origin_position, origin_depth, origin_normal, surface_is_dynamic(current_surface.w), previous_probe, previous_age)) {
@@ -2939,8 +3235,9 @@ void directional_trace_main() {
 	ivec2 base_probe_count = (params.gi_size + ivec2(max(params.probe_size, 1)) - ivec2(1)) / max(params.probe_size, 1);
 	uint base_probe_total = uint(base_probe_count.x * base_probe_count.y);
 	uint physical_index = uint(probe_position.y * surface_size.x + probe_position.x);
-	ivec2 jitter_key = (params.flags & SCREEN_PROBE_FLAG_DIRECTIONAL_ADAPTIVE) != 0u && physical_index >= base_probe_total ? origin_position : probe_position;
-	bool structured_importance = (params.flags & SCREEN_PROBE_FLAG_GUIDED_SAMPLING) != 0u && directional_history_valid != 0u;
+	bool adaptive_probe = (params.flags & SCREEN_PROBE_FLAG_DIRECTIONAL_ADAPTIVE) != 0u && physical_index >= base_probe_total;
+	ivec2 jitter_key = adaptive_probe ? origin_position : probe_position;
+	bool structured_importance = (params.flags & SCREEN_PROBE_FLAG_GUIDED_SAMPLING) != 0u && directional_history_valid != 0u && directional_history_dynamic == 0u;
 	if (!structured_importance) {
 		bool synthetic_self_hit;
 		vec3 ray_direction_world = directional_jittered_bucket_to_world(jitter_key, direction_texel);
@@ -2955,22 +3252,21 @@ void directional_trace_main() {
 
 	uint lane = gl_LocalInvocationIndex;
 	directional_importance_footprint_normals[lane] = directional_importance_load_footprint_normal(origin_position, origin_depth, origin_normal, direction_texel);
-	barrier();
-
-	vec3 coarse_direction_world = directional_bucket_to_world(direction_texel);
-	float brdf_pdf = directional_importance_brdf_pdf(coarse_direction_world);
-	float lighting = 0.0;
+	float previous_lighting = 0.0;
 	ivec2 previous_filtered_position = directional_history_probe * SCREEN_PROBE_DIRECTIONAL_TILE_SIZE + direction_texel;
 	ivec2 previous_filtered_size = textureSize(sampler2D(directional_previous_filtered_radiance_input, linear_sampler), 0);
 	if (all(greaterThanEqual(previous_filtered_position, ivec2(0))) && all(lessThan(previous_filtered_position, previous_filtered_size))) {
 		vec3 previous_filtered = texelFetch(sampler2D(directional_previous_filtered_radiance_input, linear_sampler), previous_filtered_position, 0).rgb;
 		if (directional_finite(previous_filtered)) {
-			lighting = max(dot(max(previous_filtered, vec3(0.0)), vec3(0.2126, 0.7152, 0.0722)), 0.0);
+			previous_lighting = sqrt(max(dot(max(previous_filtered, vec3(0.0)), vec3(0.2126, 0.7152, 0.0722)), 0.0));
 		}
 	}
-	directional_importance_lighting[lane] = lighting;
+	directional_importance_lighting[lane] = previous_lighting;
 	barrier();
 
+	vec3 coarse_direction_world = directional_bucket_to_world(direction_texel);
+	float brdf_max;
+	float brdf_pdf = directional_importance_brdf_pdf(coarse_direction_world, brdf_max);
 	if (lane == 0u) {
 		directional_importance_lighting_sum = 0.0;
 		for (uint lighting_index = 0u; lighting_index < uint(SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT); lighting_index++) {
@@ -2978,16 +3274,19 @@ void directional_trace_main() {
 		}
 	}
 	barrier();
+	float lighting = directional_importance_lighting[lane];
 	float lighting_sum = directional_importance_lighting_sum;
 	float combined_pdf = brdf_pdf;
 	if (lighting_sum > 1e-6 && !isnan(lighting_sum) && !isinf(lighting_sum)) {
-		combined_pdf *= lighting * float(SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT) / lighting_sum;
-		if (brdf_pdf >= SCREEN_PROBE_DIRECTIONAL_IMPORTANCE_MIN_PDF) {
-			combined_pdf = max(combined_pdf, SCREEN_PROBE_DIRECTIONAL_IMPORTANCE_MIN_PDF);
-		}
+		float normalized_lighting = lighting * float(SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT) / lighting_sum;
+		float guide_strength = 0.5 * smoothstep(2.0, 6.0, float(directional_history_age));
+		combined_pdf *= mix(1.0, normalized_lighting, guide_strength);
 	}
 	if (isnan(combined_pdf) || isinf(combined_pdf)) {
 		combined_pdf = 1.0;
+	}
+	if (brdf_max > 1e-3) {
+		combined_pdf = max(combined_pdf, SCREEN_PROBE_DIRECTIONAL_IMPORTANCE_MIN_PDF);
 	}
 	directional_importance_pdf[lane] = max(combined_pdf, 0.0);
 	barrier();
@@ -3017,7 +3316,14 @@ void directional_trace_main() {
 	bool scattered_synthetic_self_hit = false;
 	uint source_sorted_position = directional_importance_sorted_positions[lane];
 	uint low_merge_index = source_sorted_position / 3u;
-	if (!directional_importance_merge_active(low_merge_index)) {
+	if (directional_importance_merge_active(low_merge_index)) {
+		vec4 previous_sample;
+		if (directional_load_previous_radiance(direction_texel, previous_sample)) {
+			scattered_radiance = previous_sample.rgb;
+			scattered_hit_distance = previous_sample.a;
+			scattered_trace_count = 1u;
+		}
+	} else {
 		uint high_merge_index = uint(SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT - 1) - source_sorted_position;
 		if (directional_importance_merge_active(high_merge_index)) {
 			for (uint child_index = 0u; child_index < 4u; child_index++) {
@@ -3064,7 +3370,29 @@ bool specular_load_full_resolution_surface(ivec2 screen_position, out float r_de
 	return decode_normal(normal_roughness.xyz, r_normal);
 }
 
+bool specular_load_compatible_roughness(ivec2 screen_position, vec3 selected_view, vec3 selected_normal, bool selected_dynamic, bool selected_reflection_eligible, out float r_roughness) {
+	float tap_depth;
+	vec3 tap_normal;
+	bool tap_dynamic;
+	if (!specular_load_full_resolution_surface(screen_position, tap_depth, tap_normal, r_roughness, tap_dynamic) || tap_dynamic != selected_dynamic ||
+			r_roughness < 0.001 || (r_roughness < params.specular_tuning.y) != selected_reflection_eligible || dot(tap_normal, selected_normal) <= 0.95) {
+		return false;
+	}
+	vec2 tap_uv = (vec2(screen_position) + 0.5) / vec2(params.screen_size);
+	vec3 tap_view = compute_view_position(vec3(tap_uv, tap_depth));
+	if (any(isnan(tap_view)) || any(isinf(tap_view))) {
+		return false;
+	}
+	float plane_distance = abs(dot(tap_view - selected_view, selected_normal));
+	float plane_tolerance = 0.01 + 0.0025 * abs(selected_view.z);
+	return !isnan(plane_distance) && !isinf(plane_distance) && plane_distance <= plane_tolerance;
+}
+
 bool specular_select_full_resolution_surface(ivec2 output_position, ivec2 output_size, out ivec2 r_screen_position, out float r_depth, out vec3 r_normal, out float r_roughness, out bool r_dynamic) {
+	if (all(equal(output_size, params.screen_size))) {
+		r_screen_position = output_position;
+		return specular_load_full_resolution_surface(output_position, r_depth, r_normal, r_roughness, r_dynamic);
+	}
 	ivec2 footprint_begin = (output_position * params.screen_size + output_size - ivec2(1)) / output_size;
 	ivec2 footprint_end = ((output_position + ivec2(1)) * params.screen_size + output_size - ivec2(1)) / output_size;
 	footprint_begin = clamp(footprint_begin, ivec2(0), params.screen_size - ivec2(1));
@@ -3075,6 +3403,9 @@ bool specular_select_full_resolution_surface(ivec2 output_position, ivec2 output
 	r_roughness = 1.0;
 	r_dynamic = false;
 	bool found_surface = false;
+	float best_stable_distance_squared = 1e30;
+	vec2 best_raster_to_stable_uv = vec2(0.0);
+	vec2 stable_resolve_uv = (vec2(output_position) + 0.5) / vec2(output_size);
 	for (int y = footprint_begin.y; y < footprint_end.y; y++) {
 		for (int x = footprint_begin.x; x < footprint_end.x; x++) {
 			ivec2 candidate_position = ivec2(x, y);
@@ -3085,13 +3416,57 @@ bool specular_select_full_resolution_surface(ivec2 output_position, ivec2 output
 			if (!specular_load_full_resolution_surface(candidate_position, candidate_depth, candidate_normal, candidate_roughness, candidate_dynamic)) {
 				continue;
 			}
-			if (!found_surface || candidate_depth > r_depth) {
+			vec2 candidate_uv = (vec2(candidate_position) + 0.5) / vec2(params.screen_size);
+			vec3 candidate_view = compute_view_position(vec3(candidate_uv, candidate_depth));
+			vec4 stable_clip = scene_data.temporal_projection[params.view_index] * vec4(candidate_view, 1.0);
+			float stable_distance_squared = 1e30;
+			vec2 stable_uv = candidate_uv;
+			if (stable_clip.w > 1e-6 && !any(isnan(stable_clip)) && !any(isinf(stable_clip))) {
+				stable_uv = stable_clip.xy / stable_clip.w * 0.5 + 0.5;
+				vec2 stable_delta = (stable_uv - stable_resolve_uv) * vec2(output_size);
+				stable_distance_squared = dot(stable_delta, stable_delta);
+			}
+			bool closer_to_stable_center = stable_distance_squared < best_stable_distance_squared - 1e-6;
+			bool stable_distance_tie = abs(stable_distance_squared - best_stable_distance_squared) <= 1e-6;
+			if (!found_surface || closer_to_stable_center || (stable_distance_tie && candidate_depth > r_depth)) {
 				found_surface = true;
+				best_stable_distance_squared = stable_distance_squared;
+				best_raster_to_stable_uv = candidate_uv - stable_uv;
 				r_screen_position = candidate_position;
 				r_depth = candidate_depth;
 				r_normal = candidate_normal;
 				r_roughness = candidate_roughness;
 				r_dynamic = candidate_dynamic;
+			}
+		}
+	}
+	if (found_surface && !r_dynamic && r_roughness >= 0.001 && r_roughness < params.specular_tuning.y && any(notEqual(output_size, params.screen_size)) && best_stable_distance_squared < 1e20) {
+		vec2 stable_raster_uv = stable_resolve_uv + best_raster_to_stable_uv;
+		vec2 selected_uv = (vec2(r_screen_position) + 0.5) / vec2(params.screen_size);
+		vec3 selected_view = compute_view_position(vec3(selected_uv, r_depth));
+		if (!any(isnan(selected_view)) && !any(isinf(selected_view)) && !any(isnan(stable_raster_uv)) && !any(isinf(stable_raster_uv))) {
+			vec2 stable_texel = stable_raster_uv * vec2(params.screen_size) - 0.5;
+			ivec2 tap_base = ivec2(floor(stable_texel));
+			vec2 tap_fraction = fract(stable_texel);
+			float roughness_sum = 0.0;
+			float weight_sum = 0.0;
+			bool selected_reflection_eligible = r_roughness < params.specular_tuning.y;
+			for (int y = 0; y < 2; y++) {
+				for (int x = 0; x < 2; x++) {
+					ivec2 tap_position = tap_base + ivec2(x, y);
+					vec2 axis_weight = mix(vec2(1.0) - tap_fraction, tap_fraction, bvec2(x != 0, y != 0));
+					float tap_weight = axis_weight.x * axis_weight.y;
+					float tap_roughness;
+					if (!(tap_weight > 0.0) || any(lessThan(tap_position, ivec2(0))) || any(greaterThanEqual(tap_position, params.screen_size)) ||
+							!specular_load_compatible_roughness(tap_position, selected_view, r_normal, r_dynamic, selected_reflection_eligible, tap_roughness)) {
+						continue;
+					}
+					roughness_sum += tap_roughness * tap_weight;
+					weight_sum += tap_weight;
+				}
+			}
+			if (weight_sum > 1e-5 && !isnan(roughness_sum) && !isinf(roughness_sum)) {
+				r_roughness = clamp(roughness_sum / weight_sum, 0.0, 1.0);
 			}
 		}
 	}
@@ -3107,16 +3482,15 @@ bool specular_clip_to_uv(vec4 clip_position, out vec2 r_uv) {
 	return !any(isnan(r_uv)) && !any(isinf(r_uv));
 }
 
-bool specular_sample_screen_radiance(vec3 endpoint_world, out vec3 r_radiance, out float r_confidence) {
+bool specular_sample_screen_radiance(vec3 endpoint_world, out vec3 r_radiance) {
 	r_radiance = vec3(0.0);
-	r_confidence = 0.0;
 	if ((params.flags & SCREEN_PROBE_FLAG_SPECULAR_SCREEN_RADIANCE_VALID) == 0u || any(isnan(endpoint_world)) || any(isinf(endpoint_world))) {
 		return false;
 	}
 
 	vec3 current_view = transpose(mat3(scene_data.cam_transform)) * (endpoint_world - scene_data.cam_transform[3].xyz);
 	vec3 previous_view = (scene_data.previous_cam_inv_transform * vec4(endpoint_world, 1.0)).xyz;
-	vec4 previous_clip = inverse(scene_data.previous_inv_projection[params.view_index]) * vec4(previous_view, 1.0);
+	vec4 previous_clip = scene_data.previous_projection[params.view_index] * vec4(previous_view, 1.0);
 	vec2 current_raster_uv;
 	vec2 current_stable_uv;
 	vec2 previous_raster_uv;
@@ -3162,6 +3536,16 @@ bool specular_sample_screen_radiance(vec3 endpoint_world, out vec3 r_radiance, o
 	if (any(notEqual(previous_depth_size, history_size))) {
 		return false;
 	}
+	vec2 edge_texels = min(history_uv, vec2(1.0) - history_uv) * vec2(history_size);
+	float edge_confidence = smoothstep(0.5, 2.0, min(edge_texels.x, edge_texels.y));
+	float motion_confidence = mix(1.0, 0.2, smoothstep(1.0, 24.0, object_motion_pixels));
+	if (dynamic_endpoint) {
+		motion_confidence *= 0.9;
+	}
+	float screen_confidence = edge_confidence * motion_confidence;
+	if (!(screen_confidence >= 0.75)) {
+		return false;
+	}
 	ivec2 previous_depth_position = clamp(ivec2(floor(history_uv * vec2(previous_depth_size))), ivec2(0), previous_depth_size - ivec2(1));
 	float actual_previous_depth = texelFetch(sampler2D(specular_previous_depth_buffer, linear_sampler), previous_depth_position, 0).r;
 	if (isnan(actual_previous_depth) || isinf(actual_previous_depth) || actual_previous_depth <= 0.0 || abs(actual_previous_depth - expected_previous_depth) >= 0.005) {
@@ -3174,14 +3558,7 @@ bool specular_sample_screen_radiance(vec3 endpoint_world, out vec3 r_radiance, o
 	}
 	float exposure_scale = clamp(params.specular_eye_offset_exposure.w, 1.0 / 16.0, 16.0);
 	r_radiance = screen_radiance * exposure_scale;
-	vec2 edge_texels = min(history_uv, vec2(1.0) - history_uv) * vec2(history_size);
-	float edge_confidence = smoothstep(0.5, 2.0, min(edge_texels.x, edge_texels.y));
-	float motion_confidence = mix(1.0, 0.2, smoothstep(1.0, 24.0, object_motion_pixels));
-	if (dynamic_endpoint) {
-		motion_confidence *= 0.9;
-	}
-	r_confidence = edge_confidence * motion_confidence;
-	return r_confidence > 0.0;
+	return true;
 }
 
 vec4 specular_pack_normal_roughness(vec3 world_normal, float roughness, bool screen_radiance_used) {
@@ -3258,6 +3635,7 @@ void specular_trace_main() {
 	view_local.z = max(view_local.z, 1e-5);
 	view_local = normalize(view_local);
 	uint specular_stream = 0x53504543u ^ (params.view_index * 0x9e3779b9u);
+	bool spatial_stratification = (params.flags & SCREEN_PROBE_FLAG_SPECULAR_SPATIAL_STRATIFICATION) != 0u && !dynamic_surface && all(equal(output_size, params.screen_size));
 	vec3 ray_local = vec3(0.0);
 	bool valid_ray = false;
 	if (roughness < 0.001) {
@@ -3267,7 +3645,7 @@ void specular_trace_main() {
 		float alpha = max(roughness * roughness, params.specular_tuning.w);
 		for (uint attempt = 0u; attempt < 8u; attempt++) {
 			uint attempt_stream = specular_stream ^ (attempt * 0x85ebca6bu);
-			vec2 random_sample = sample_r2_sequence(uvec2(output_position), params.frame_index, attempt_stream);
+			vec2 random_sample = spatial_stratification ? sample_spatially_stratified_r2_sequence(uvec2(output_position), params.frame_index, attempt_stream) : sample_temporally_permuted_r2_sequence(uvec2(output_position), params.frame_index, attempt_stream);
 			random_sample.y *= 0.9;
 			ray_local = sample_bounded_ggx_vndf_reflection(view_local, alpha, random_sample);
 			valid_ray = ray_local.z > 1e-5 && !any(isnan(ray_local)) && !any(isinf(ray_local));
@@ -3291,8 +3669,7 @@ void specular_trace_main() {
 			(params.flags & SCREEN_PROBE_FLAG_SPECULAR_SCREEN_RADIANCE_VALID) != 0u) {
 		vec3 endpoint_normal_world;
 		if (trace_screen_detail(view_position, ray_direction, SCREEN_PROBE_SPECULAR_DETAIL_TRACE_MAX_DISTANCE, endpoint_world, endpoint_normal_world)) {
-			float screen_confidence;
-			if (specular_sample_screen_radiance(endpoint_world, sample_radiance, screen_confidence) && screen_confidence >= 0.75) {
+			if (specular_sample_screen_radiance(endpoint_world, sample_radiance)) {
 				vec3 receiver_world = (scene_data.cam_transform * vec4(view_position, 1.0)).xyz;
 				hit_distance = clamp(length(endpoint_world - receiver_world), 0.0, 65504.0);
 				screen_radiance_used = true;
@@ -3358,7 +3735,7 @@ void screen_probe_trace_main() {
 	vec3 radiance = vec3(0.0);
 	float hit_distance = 0.0;
 	for (uint candidate = 0u; candidate < candidate_count; candidate++) {
-		vec2 sample_position = sample_r2_sequence(uvec2(probe_position), params.frame_index * candidate_count + candidate, 0x44544330u);
+		vec2 sample_position = sample_temporally_permuted_r2_sequence(uvec2(probe_position), params.frame_index * candidate_count + candidate, 0x44544330u);
 		float proposal_pdf;
 		vec3 ray_direction;
 		if (guided_sampling) {
@@ -3369,15 +3746,16 @@ void screen_probe_trace_main() {
 		}
 		vec3 candidate_radiance;
 		float candidate_hit_distance;
+		bool candidate_screen_radiance_used;
 		screen_probe_debug_begin_source();
-		if (!trace_hddagi_radiance(origin_position, origin_depth, origin_normal, ray_direction, candidate_radiance, candidate_hit_distance)) {
+		if (!trace_hddagi_radiance(origin_position, origin_depth, origin_normal, ray_direction, candidate_radiance, candidate_hit_distance, candidate_screen_radiance_used)) {
 			candidate_radiance = sample_environment(ray_direction);
 			candidate_hit_distance = 65504.0;
 			screen_probe_debug_set_source(SCREEN_PROBE_DEBUG_SKY);
 		}
 		screen_probe_debug_commit_source();
 		float cosine_pdf = max(dot(origin_normal, ray_direction), 0.0) / PI;
-		radiance += candidate_radiance * hddagi.energy * (cosine_pdf / max(proposal_pdf, 1e-8));
+		radiance += candidate_radiance * (candidate_screen_radiance_used ? 1.0 : hddagi.energy) * (cosine_pdf / max(proposal_pdf, 1e-8));
 		hit_distance += candidate_hit_distance;
 	}
 	radiance /= float(candidate_count);
@@ -3453,8 +3831,7 @@ void directional_filter_main() {
 	uint base_probe_total = uint(base_probe_count.x * base_probe_count.y);
 	uint physical_index = uint(probe_position.y * surface_size.x + probe_position.x);
 	bool adaptive_center = (params.flags & SCREEN_PROBE_FLAG_DIRECTIONAL_ADAPTIVE) != 0u && physical_index >= base_probe_total;
-	ivec2 center_gi_position = clamp(center_screen_position * params.gi_size / params.screen_size, ivec2(0), params.gi_size - ivec2(1));
-	ivec2 owner_probe = adaptive_center ? center_gi_position / max(params.probe_size, 1) : probe_position;
+	ivec2 owner_probe = adaptive_center ? directional_owner_probe_from_screen_position(center_screen_position) : probe_position;
 	ivec2 jitter_key = adaptive_center ? center_screen_position : probe_position;
 	vec3 direction_world = directional_jittered_bucket_to_world(jitter_key, direction_texel);
 	vec3 direction_view = normalize(transpose(mat3(scene_data.cam_transform)) * direction_world);
@@ -3569,25 +3946,44 @@ void directional_filter_main() {
 
 #ifdef MODE_DIRECTIONAL_IRRADIANCE
 
+shared vec4 directional_irradiance_directions[SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT];
+shared vec4 directional_irradiance_sources[SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT];
+shared uint directional_irradiance_trace_counts[SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT];
+
 void directional_irradiance_main() {
 	ivec2 atlas_position = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 atlas_size = imageSize(directional_irradiance_output);
-	if (any(greaterThanEqual(atlas_position, atlas_size))) {
-		return;
-	}
-
-	ivec2 probe_position = atlas_position / SCREEN_PROBE_DIRECTIONAL_TILE_SIZE;
-	ivec2 output_direction_texel = atlas_position - probe_position * SCREEN_PROBE_DIRECTIONAL_TILE_SIZE;
+	bool atlas_position_valid = all(lessThan(atlas_position, atlas_size));
+	ivec2 probe_position = ivec2(gl_WorkGroupID.xy);
+	ivec2 output_direction_texel = ivec2(gl_LocalInvocationID.xy);
 	ivec2 source_size = textureSize(sampler2D(directional_irradiance_source_input, directional_irradiance_nearest_sampler), 0);
 	ivec2 probe_count = min(atlas_size, source_size) / SCREEN_PROBE_DIRECTIONAL_TILE_SIZE;
 	ivec2 surface_size = imageSize(directional_irradiance_surface_input);
-	if (any(greaterThanEqual(probe_position, probe_count)) || any(greaterThanEqual(probe_position, surface_size)) ||
-			all(equal(imageLoad(directional_irradiance_surface_input, probe_position).xy, uvec2(0xffffffffu)))) {
-		imageStore(directional_irradiance_output, atlas_position, vec4(0.0));
+	bool probe_valid = all(lessThan(probe_position, probe_count)) && all(lessThan(probe_position, surface_size));
+	if (probe_valid) {
+		probe_valid = any(notEqual(imageLoad(directional_irradiance_surface_input, probe_position).xy, uvec2(0xffffffffu)));
+	}
+	if (!probe_valid) {
+		if (atlas_position_valid) {
+			imageStore(directional_irradiance_output, atlas_position, vec4(0.0));
+		}
 		return;
 	}
 
 	vec3 output_normal = directional_bucket_to_world(output_direction_texel);
+	uint lane = gl_LocalInvocationIndex;
+	bool guided_sampling = (params.flags & SCREEN_PROBE_FLAG_GUIDED_SAMPLING) != 0u;
+	ivec2 lane_source_position = probe_position * SCREEN_PROBE_DIRECTIONAL_TILE_SIZE + output_direction_texel;
+	vec4 lane_source = texelFetch(sampler2D(directional_irradiance_source_input, directional_irradiance_nearest_sampler), lane_source_position, 0);
+	uint lane_trace_count = 0u;
+	if (guided_sampling && directional_finite(lane_source)) {
+		lane_trace_count = imageLoad(directional_irradiance_trace_count_input, lane_source_position).r;
+	}
+	directional_irradiance_directions[lane] = vec4(output_normal, 0.0);
+	directional_irradiance_sources[lane] = lane_source;
+	directional_irradiance_trace_counts[lane] = lane_trace_count;
+	barrier();
+
 	vec3 radiance_sum = vec3(0.0);
 	float radiance_weighted_hit_distance_sum = 0.0;
 	float radiance_hit_distance_weight = 0.0;
@@ -3596,21 +3992,20 @@ void directional_irradiance_main() {
 	bool has_valid_sample = false;
 	for (int direction_y = 0; direction_y < SCREEN_PROBE_DIRECTIONAL_TILE_SIZE; direction_y++) {
 		for (int direction_x = 0; direction_x < SCREEN_PROBE_DIRECTIONAL_TILE_SIZE; direction_x++) {
-			ivec2 input_direction_texel = ivec2(direction_x, direction_y);
-			vec3 input_direction = directional_bucket_to_world(input_direction_texel);
+			uint source_index = uint(direction_y * SCREEN_PROBE_DIRECTIONAL_TILE_SIZE + direction_x);
+			vec3 input_direction = directional_irradiance_directions[source_index].xyz;
 			float cosine_weight = max(dot(output_normal, input_direction), 0.0);
 			if (!(cosine_weight > 0.0)) {
 				continue;
 			}
 
-			ivec2 source_position = probe_position * SCREEN_PROBE_DIRECTIONAL_TILE_SIZE + input_direction_texel;
-			vec4 source_value = texelFetch(sampler2D(directional_irradiance_source_input, directional_irradiance_nearest_sampler), source_position, 0);
+			vec4 source_value = directional_irradiance_sources[source_index];
 			if (!directional_finite(source_value)) {
 				continue;
 			}
 			source_value = clamp(source_value, vec4(0.0), vec4(SCREEN_PROBE_DIRECTIONAL_FP16_MAX));
 			radiance_sum += source_value.rgb * cosine_weight;
-			bool source_has_current_trace = (params.flags & SCREEN_PROBE_FLAG_GUIDED_SAMPLING) == 0u || imageLoad(directional_irradiance_trace_count_input, source_position).r > 0u;
+			bool source_has_current_trace = !guided_sampling || directional_irradiance_trace_counts[source_index] > 0u;
 			if (source_has_current_trace && source_value.a < SCREEN_PROBE_DIRECTIONAL_FP16_MAX) {
 				float radiance_luminance = dot(source_value.rgb, vec3(0.2126, 0.7152, 0.0722));
 				if (radiance_luminance > 1e-6) {

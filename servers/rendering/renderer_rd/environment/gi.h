@@ -553,8 +553,12 @@ private:
 				FLAG_DIRECTIONAL_HISTORY_VALID = 1u << 3u,
 				FLAG_DIRECTIONAL_ADAPTIVE = 1u << 4u,
 				FLAG_DIRECTIONAL_MOTION_VALID = 1u << 5u,
+				FLAG_DIRECTIONAL_SCREEN_RADIANCE_VALID = 1u << 6u,
 				FLAG_SPECULAR_MOTION_VALID = FLAG_DIRECTIONAL_ADAPTIVE,
 				FLAG_SPECULAR_SCREEN_RADIANCE_VALID = FLAG_DIRECTIONAL_MOTION_VALID,
+				FLAG_SPECULAR_SPATIAL_STRATIFICATION = FLAG_DIRECTIONAL_SCREEN_RADIANCE_VALID,
+				FLAG_DETAIL_TRACE_QUALITY_SHIFT = 7u,
+				FLAG_UNIFORM_PLACEMENT_JITTER = 1u << 9u,
 			};
 
 			int32_t gi_size[2];
@@ -642,6 +646,7 @@ public:
 		HDDAGIScreenProbeSVGF screen_probe_specular_svgf;
 		HDDAGIScreenProbeIrradianceCache screen_probe_irradiance_cache;
 		bool hddagi_specular_reflection_valid = false;
+		uint32_t screen_probe_specular_denoised_view_mask = 0;
 		bool screen_probe_debug_montage_valid = false;
 		bool screen_probe_debug_svgf_output_valid = false;
 		bool screen_probe_debug_hiz_valid = false;
@@ -878,6 +883,7 @@ public:
 		uint32_t screen_probe_history_slot = 0;
 		uint32_t screen_probe_history_sequence = 0;
 		RSE::EnvironmentHDDAGIScreenProbeMode screen_probe_requested_mode = RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_STOCHASTIC_INTEGRATED;
+		bool screen_probe_directional_adaptive_requested = false;
 		bool screen_probe_directional_allocation_failed = false;
 		bool screen_probe_previous_camera_valid = false;
 		float screen_probe_previous_exposure_normalization = 1.0f;
@@ -1012,6 +1018,10 @@ public:
 		float previous_inv_projection[2][16];
 		float temporal_projection[2][16];
 		float previous_temporal_projection[2][16];
+		float previous_projection[2][16];
+		float cam_inv_transform[16];
+		float previous_cam_transform[16];
+		float previous_exposure_scale[4];
 	};
 
 	struct PushConstant {
@@ -1095,7 +1105,7 @@ public:
 
 	void setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used);
 	void process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_hddagi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances);
-	void process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, const RID *p_previous_screen_color_slices, const RID *p_previous_screen_depth_slices, bool p_previous_screen_color_valid, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Vector3 *p_eye_offsets, const Vector2 &p_taa_jitter, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias, RSE::EnvironmentHDDAGIScreenProbeMode p_mode, bool p_debug_montage);
+	void process_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_hiz_slices, const RID *p_previous_screen_color_slices, const RID *p_previous_screen_depth_slices, bool p_previous_screen_color_valid, Size2i p_hiz_size, uint32_t p_hiz_mip_count, bool p_detail_trace, RID p_environment, uint32_t p_view_count, Size2i p_gi_size, const Projection *p_projections, const Vector3 *p_eye_offsets, const Vector2 &p_taa_jitter, const Transform3D &p_cam_transform, float p_exposure_normalization, float p_ibl_exposure_normalization, int p_probe_size, float p_normal_bias, RSE::EnvironmentHDDAGIScreenProbeMode p_mode, bool p_debug_montage, bool p_force_specular_reflections);
 	void disable_hddagi_screen_probes(Ref<RenderSceneBuffersRD> p_render_buffers);
 
 	RID voxel_gi_instance_create(RID p_base);

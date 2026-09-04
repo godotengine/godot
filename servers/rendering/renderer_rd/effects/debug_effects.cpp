@@ -40,6 +40,7 @@ using namespace RendererRD;
 
 DebugEffects::DebugEffects() {
 	static_assert(sizeof(HddagiScreenProbeMontagePushConstant) == 32u, "HDDAGI screen-probe montage push constant must match the shader layout.");
+	static_assert(sizeof(HddagiScreenProbeReflectionDebugPushConstant) == 16u, "HDDAGI screen-probe reflection debug push constant must match the shader layout.");
 
 	{
 		// Shadow Frustum debug shader
@@ -81,6 +82,24 @@ DebugEffects::DebugEffects() {
 				hddagi_screen_probe_montage.pipelines[i].setup(hddagi_screen_probe_montage.shader.version_get_shader(hddagi_screen_probe_montage.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 			} else {
 				hddagi_screen_probe_montage.pipelines[i].clear();
+			}
+		}
+	}
+
+	{
+		Vector<String> modes;
+		modes.push_back("");
+		modes.push_back("\n#define USE_MULTIVIEW\n");
+		hddagi_screen_probe_reflection_debug.shader.initialize(modes);
+		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
+			hddagi_screen_probe_reflection_debug.shader.set_variant_enabled(HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_MULTIVIEW, false);
+		}
+		hddagi_screen_probe_reflection_debug.shader_version = hddagi_screen_probe_reflection_debug.shader.version_create();
+		for (int i = 0; i < HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_MAX; i++) {
+			if (hddagi_screen_probe_reflection_debug.shader.is_variant_enabled(i)) {
+				hddagi_screen_probe_reflection_debug.pipelines[i].setup(hddagi_screen_probe_reflection_debug.shader.version_get_shader(hddagi_screen_probe_reflection_debug.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+			} else {
+				hddagi_screen_probe_reflection_debug.pipelines[i].clear();
 			}
 		}
 	}
@@ -199,6 +218,7 @@ DebugEffects::~DebugEffects() {
 
 	motion_vectors.shader.version_free(motion_vectors.shader_version);
 	hddagi_screen_probe_montage.shader.version_free(hddagi_screen_probe_montage.shader_version);
+	hddagi_screen_probe_reflection_debug.shader.version_free(hddagi_screen_probe_reflection_debug.shader_version);
 }
 
 void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_projection, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect) {
@@ -451,6 +471,51 @@ void DebugEffects::draw_hddagi_screen_probe_montage(RID p_dest_fb, const Rect2i 
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, p_rect);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, hddagi_screen_probe_montage.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_fb)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set, 0);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(push_constant));
+	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);
+	RD::get_singleton()->draw_list_end();
+}
+
+void DebugEffects::draw_hddagi_screen_probe_reflection_debug(RID p_dest_fb, const Rect2i &p_rect, RID p_raw_signal, RID p_denoised_signal, RID p_current_normal_roughness, RID p_current_motion, RID p_temporal_signal_0, RID p_temporal_signal_1, RID p_moments_0, RID p_moments_1, RID p_history_normal_roughness_0, RID p_history_normal_roughness_1, uint32_t p_flags, uint32_t p_denoised_view_mask, bool p_multiview) {
+	ERR_FAIL_COND(p_dest_fb.is_null());
+	ERR_FAIL_COND(p_raw_signal.is_null() || p_denoised_signal.is_null() || p_current_normal_roughness.is_null() || p_current_motion.is_null());
+	ERR_FAIL_COND(p_temporal_signal_0.is_null() || p_temporal_signal_1.is_null() || p_moments_0.is_null() || p_moments_1.is_null());
+	ERR_FAIL_COND(p_history_normal_roughness_0.is_null() || p_history_normal_roughness_1.is_null());
+
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+
+	const HddagiScreenProbeReflectionDebugMode mode = p_multiview ? HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_MULTIVIEW : HDDAGI_SCREEN_PROBE_REFLECTION_DEBUG_MONO;
+	RID shader = hddagi_screen_probe_reflection_debug.shader.version_get_shader(hddagi_screen_probe_reflection_debug.shader_version, mode);
+	ERR_FAIL_COND(shader.is_null());
+
+	RID linear_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID nearest_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID uniform_set = uniform_set_cache->get_cache(
+			shader, 0,
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ linear_sampler, p_raw_signal })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>({ linear_sampler, p_denoised_signal })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 2, Vector<RID>({ nearest_sampler, p_current_normal_roughness })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 3, Vector<RID>({ nearest_sampler, p_current_motion })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 4, Vector<RID>({ linear_sampler, p_temporal_signal_0 })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 5, Vector<RID>({ linear_sampler, p_temporal_signal_1 })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 6, Vector<RID>({ nearest_sampler, p_moments_0 })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 7, Vector<RID>({ nearest_sampler, p_moments_1 })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 8, Vector<RID>({ nearest_sampler, p_history_normal_roughness_0 })),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 9, Vector<RID>({ nearest_sampler, p_history_normal_roughness_1 })));
+	ERR_FAIL_COND(uniform_set.is_null());
+
+	HddagiScreenProbeReflectionDebugPushConstant push_constant = {};
+	push_constant.resolution[0] = p_rect.size.x;
+	push_constant.resolution[1] = p_rect.size.y;
+	push_constant.flags = p_flags;
+	push_constant.denoised_view_mask = p_denoised_view_mask;
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, p_rect);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, hddagi_screen_probe_reflection_debug.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_fb)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set, 0);
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(push_constant));
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 3u);

@@ -862,11 +862,14 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 			const RID environment = RSG::scene->camera_get_environment(vp->camera, vp->scenario);
 			const bool hddagi_screen_probes_active = RSG::scene->is_environment(environment) &&
 					RSG::scene->environment_get_hddagi_enabled(environment) &&
-					(RSG::scene->environment_get_hddagi_screen_probes_enabled(environment) || vp->debug_draw == RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_SCREEN_PROBES);
+					(RSG::scene->environment_get_hddagi_screen_probes_enabled(environment) ||
+							vp->debug_draw == RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_SCREEN_PROBES ||
+							vp->debug_draw == RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_SCREEN_PROBE_REFLECTIONS);
 			hddagi_screen_probe_motion_vectors = hddagi_screen_probes_active &&
 					(RSG::scene->environment_get_hddagi_screen_probe_mode(environment) == RSE::ENV_HDDAGI_SCREEN_PROBE_MODE_DIRECTIONAL_GATHER ||
 							GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_denoiser") == 1 ||
-							GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections"));
+							GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections") ||
+							vp->debug_draw == RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_SCREEN_PROBE_REFLECTIONS);
 		}
 #endif // _3D_DISABLED
 		_viewport_set_hddagi_screen_probe_motion_vectors(vp, hddagi_screen_probe_motion_vectors);

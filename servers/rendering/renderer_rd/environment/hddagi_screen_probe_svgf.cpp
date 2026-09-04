@@ -36,6 +36,8 @@
 #include "servers/rendering/renderer_rd/shaders/environment/hddagi_screen_probe_svgf.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/storage/utilities.h"
 
 namespace {
 
@@ -43,6 +45,7 @@ enum SVGFMode {
 	SVGF_MODE_TEMPORAL,
 	SVGF_MODE_HISTORY_FIX,
 	SVGF_MODE_ATROUS,
+	SVGF_MODE_SPECULAR_RECONSTRUCT,
 	SVGF_MODE_MAX,
 };
 
@@ -82,7 +85,9 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		RID filter_scratch;
 		RID frame_data_buffer;
 		uint32_t history_slot = 0;
+		uint32_t frame_sequence = 0;
 		bool history_initialized = false;
+		bool diffuse_temporal_only = false;
 	};
 
 	HddagiScreenProbeSvgfShaderRD shader;
@@ -110,6 +115,7 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		modes.push_back("\n#define MODE_TEMPORAL\n");
 		modes.push_back("\n#define MODE_HISTORY_FIX\n");
 		modes.push_back("\n#define MODE_ATROUS\n");
+		modes.push_back("\n#define MODE_SPECULAR_RECONSTRUCT\n");
 		shader.initialize(modes);
 		shader_version = shader.version_create();
 		shader_initialized = true;
@@ -333,13 +339,17 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		// SubViewports can skip global frames, so advance history after successful local submissions.
 		const uint32_t previous_slot = view->history_slot;
 		const uint32_t current_slot = previous_slot ^ 1u;
-		const bool history_valid = p_frame.history_valid && view->history_initialized;
-		const uint32_t iteration_count = p_frame.specular ? 1u : HDDAGIScreenProbeSVGF::get_atrous_iteration_count(p_frame.quality);
+		const bool diffuse_temporal_only = !p_frame.specular && p_frame.diffuse_temporal_only;
+		const bool history_mode_valid = p_frame.specular || view->diffuse_temporal_only == diffuse_temporal_only;
+		const bool history_valid = p_frame.history_valid && view->history_initialized && history_mode_valid;
+		const uint32_t iteration_count = diffuse_temporal_only ? 0u : (p_frame.specular ? 1u : HDDAGIScreenProbeSVGF::get_atrous_iteration_count(p_frame.quality));
 
 		SVGFPushConstant push_constant = {};
 		push_constant.control[0] = (history_valid ? 1u : 0u) | (p_frame.specular ? 2u : 0u) |
 				(p_frame.specular && p_frame.specular_full_resolution ? 4u : 0u);
-		push_constant.control[3] = (p_frame.projection.is_orthogonal() ? 1u : 0u) | (p_frame.previous_projection.is_orthogonal() ? 2u : 0u);
+		push_constant.control[2] = uint32_t(p_frame.quality) << 2u;
+		push_constant.control[3] = (p_frame.projection.is_orthogonal() ? 1u : 0u) | (p_frame.previous_projection.is_orthogonal() ? 2u : 0u) |
+				((view->frame_sequence & 7u) << 2u);
 		push_constant.tuning[0] = p_frame.denoising_range;
 		push_constant.tuning[1] = p_frame.specular ? 0.95f : 0.9f;
 		push_constant.tuning[2] = p_frame.specular ? 0.0025f : 0.005f;
@@ -348,20 +358,36 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		push_constant.atrous[1] = p_frame.specular ? 0.003f : 0.005f;
 		// Scale luminance moments separately to avoid FP16 underflow in the scene / 512 radiance domain.
 		push_constant.atrous[2] = 4.0e-5f;
-		push_constant.atrous[3] = p_frame.specular ? 12.0f : 30.0f;
+		push_constant.atrous[3] = p_frame.specular ? 64.0f : 30.0f;
 
 		UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 		ERR_FAIL_NULL_V(uniform_set_cache, ERR_UNAVAILABLE);
 		const RID temporal_shader = shader.version_get_shader(shader_version, SVGF_MODE_TEMPORAL);
 		const RID history_fix_shader = shader.version_get_shader(shader_version, SVGF_MODE_HISTORY_FIX);
 		const RID atrous_shader = shader.version_get_shader(shader_version, SVGF_MODE_ATROUS);
-		ERR_FAIL_COND_V(temporal_shader.is_null() || history_fix_shader.is_null() || atrous_shader.is_null(), ERR_CANT_CREATE);
+		const RID specular_reconstruct_shader = shader.version_get_shader(shader_version, SVGF_MODE_SPECULAR_RECONSTRUCT);
+		ERR_FAIL_COND_V(temporal_shader.is_null() || history_fix_shader.is_null() || atrous_shader.is_null() || specular_reconstruct_shader.is_null(), ERR_CANT_CREATE);
 
-		const RID temporal_signal_destination = p_frame.specular ? view->history_signal[current_slot] : view->filter_scratch;
-		const RID temporal_moments_destination = p_frame.specular ? view->history_moments[current_slot] : p_resources.output_diffuse_radiance_hit_distance;
+		const bool specular_reconstruction = p_frame.specular && p_frame.quality != HDDAGIScreenProbeSVGF::QUALITY_LOW;
+		RID specular_reconstruct_set;
+		RID temporal_signal_input = p_resources.diffuse_radiance_hit_distance;
+		if (specular_reconstruction) {
+			specular_reconstruct_set = uniform_set_cache->get_cache(
+					specular_reconstruct_shader, 0,
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_resources.diffuse_radiance_hit_distance),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_resources.normal_roughness),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, p_resources.view_z),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, p_resources.motion_vectors),
+					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, nearest_sampler),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, view->filter_scratch));
+			temporal_signal_input = view->filter_scratch;
+		}
+
+		const RID temporal_signal_destination = p_frame.specular ? view->history_signal[current_slot] : (diffuse_temporal_only ? p_resources.output_diffuse_radiance_hit_distance : view->filter_scratch);
+		const RID temporal_moments_destination = p_frame.specular ? view->history_moments[current_slot] : (diffuse_temporal_only ? view->filter_scratch : p_resources.output_diffuse_radiance_hit_distance);
 		const RID temporal_set = uniform_set_cache->get_cache(
 				temporal_shader, 0,
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_resources.diffuse_radiance_hit_distance),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, temporal_signal_input),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_resources.normal_roughness),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, p_resources.view_z),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, p_resources.motion_vectors),
@@ -382,8 +408,8 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		if (!p_frame.specular) {
 			history_fix_set = uniform_set_cache->get_cache(
 					history_fix_shader, 0,
-					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, view->filter_scratch),
-					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_resources.output_diffuse_radiance_hit_distance),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, temporal_signal_destination),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, temporal_moments_destination),
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, view->history_normal_roughness[current_slot]),
 					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, view->history_view_z[current_slot]),
 					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, nearest_sampler),
@@ -413,9 +439,11 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 			signal_source = signal_destination;
 		}
 
+		const RID final_signal = diffuse_temporal_only ? temporal_signal_destination : signal_source;
 		if (!temporal_set.is_valid() || !temporal_frame_data_set.is_valid() ||
+				(specular_reconstruction && !specular_reconstruct_set.is_valid()) ||
 				(!p_frame.specular && (!history_fix_set.is_valid() || !history_fix_frame_data_set.is_valid())) ||
-				signal_source != p_resources.output_diffuse_radiance_hit_distance) {
+				final_signal != p_resources.output_diffuse_radiance_hit_distance) {
 			return ERR_CANT_CREATE;
 		}
 		for (uint32_t iteration = 0; iteration < iteration_count; iteration++) {
@@ -426,6 +454,17 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 
 		rd->draw_command_begin_label("HDDAGI Screen Probe SVGF");
 		RD::ComputeListID compute_list = rd->compute_list_begin();
+		if (specular_reconstruction) {
+			RENDER_TIMESTAMP("HDDAGI Screen Probe Specular Reconstruction");
+			rd->compute_list_bind_compute_pipeline(compute_list, pipelines[SVGF_MODE_SPECULAR_RECONSTRUCT]);
+			rd->compute_list_bind_uniform_set(compute_list, specular_reconstruct_set, 0);
+			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
+			rd->compute_list_dispatch_threads(compute_list, p_frame.size.x, p_frame.size.y, 1);
+			rd->compute_list_add_barrier(compute_list);
+		}
+		if (p_frame.specular) {
+			RENDER_TIMESTAMP("HDDAGI Screen Probe Specular Temporal");
+		}
 		rd->compute_list_bind_compute_pipeline(compute_list, pipelines[SVGF_MODE_TEMPORAL]);
 		rd->compute_list_bind_uniform_set(compute_list, temporal_set, 0);
 		rd->compute_list_bind_uniform_set(compute_list, temporal_frame_data_set, 1);
@@ -435,7 +474,7 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 
 		if (!p_frame.specular) {
 			push_constant.control[1] = HISTORY_FIX_BASE_PIXEL_STRIDE;
-			push_constant.control[2] = HISTORY_FIX_FRAME_COUNT;
+			push_constant.control[2] = diffuse_temporal_only ? 0u : HISTORY_FIX_FRAME_COUNT;
 			rd->compute_list_bind_compute_pipeline(compute_list, pipelines[SVGF_MODE_HISTORY_FIX]);
 			rd->compute_list_bind_uniform_set(compute_list, history_fix_set, 0);
 			rd->compute_list_bind_uniform_set(compute_list, history_fix_frame_data_set, 1);
@@ -444,9 +483,13 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 			rd->compute_list_add_barrier(compute_list);
 		}
 
+		if (p_frame.specular) {
+			RENDER_TIMESTAMP("HDDAGI Screen Probe Specular Spatial");
+		}
 		for (uint32_t iteration = 0; iteration < iteration_count; iteration++) {
 			push_constant.control[1] = 1u << iteration;
-			push_constant.control[2] = (iteration == 0u ? 1u : 0u) | (iteration + 1u == iteration_count ? 2u : 0u);
+			push_constant.control[2] = (iteration == 0u ? 1u : 0u) | (iteration + 1u == iteration_count ? 2u : 0u) |
+					(p_frame.specular ? (uint32_t(p_frame.quality) << 2u) : 0u);
 			rd->compute_list_bind_compute_pipeline(compute_list, pipelines[SVGF_MODE_ATROUS]);
 			rd->compute_list_bind_uniform_set(compute_list, atrous_sets[iteration], 0);
 			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
@@ -456,11 +499,29 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 			}
 		}
 		rd->compute_list_end();
+		if (p_frame.specular) {
+			RENDER_TIMESTAMP("HDDAGI Screen Probe Specular Denoise End");
+		}
 		rd->draw_command_end_label();
 
 		view->history_initialized = true;
 		view->history_slot = current_slot;
+		view->frame_sequence++;
+		view->diffuse_temporal_only = diffuse_temporal_only;
 		return OK;
+	}
+
+	HDDAGIScreenProbeSVGF::DebugTextures get_debug_textures(uint32_t p_view_id) const {
+		HDDAGIScreenProbeSVGF::DebugTextures textures;
+		ViewContext *const *view_ptr = views.getptr(p_view_id);
+		if (view_ptr == nullptr || *view_ptr == nullptr || !(*view_ptr)->history_initialized) {
+			return textures;
+		}
+		const ViewContext *view = *view_ptr;
+		textures.temporal_signal = view->history_signal[view->history_slot];
+		textures.moments = view->history_moments[view->history_slot];
+		textures.history_normal_roughness = view->history_normal_roughness[view->history_slot];
+		return textures;
 	}
 
 	void shutdown() {
@@ -510,6 +571,13 @@ bool HDDAGIScreenProbeSVGF::is_supported() {
 Error HDDAGIScreenProbeSVGF::denoise(uint32_t p_view_id, const FrameSettings &p_frame, const Resources &p_resources) {
 	ERR_FAIL_NULL_V(implementation, ERR_UNAVAILABLE);
 	return implementation->denoise(p_view_id, p_frame, p_resources);
+}
+
+HDDAGIScreenProbeSVGF::DebugTextures HDDAGIScreenProbeSVGF::get_debug_textures(uint32_t p_view_id) const {
+	if (implementation == nullptr) {
+		return DebugTextures();
+	}
+	return implementation->get_debug_textures(p_view_id);
 }
 
 void HDDAGIScreenProbeSVGF::clear() {
