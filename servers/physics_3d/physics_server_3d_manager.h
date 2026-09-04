@@ -83,6 +83,8 @@ public:
 	PhysicsServer3D *new_default_server();
 	PhysicsServer3D *new_server(const String &p_name);
 
+	int get_default_server_index() const { return default_server_id; }
+
 	static void initialize_server();
 	static void finalize_server();
 
