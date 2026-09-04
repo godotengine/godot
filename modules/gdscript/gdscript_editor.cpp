@@ -1007,16 +1007,13 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 		r_arghint = _make_arguments_hint(p_annotation->info->info, p_argument, true);
 	}
 	if (p_annotation->name == SNAME("@export_range")) {
-		if (p_argument == 3 || p_argument == 4 || p_argument == 5) {
+		if (p_argument >= 3) {
 			// Slider hint.
-			EditorLanguage::CompletionOption slider1 = _calculate_string_insertion(existing_argument, "or_greater");
-			r_result.insert(slider1.display, slider1);
-			EditorLanguage::CompletionOption slider2 = _calculate_string_insertion(existing_argument, "or_less");
-			r_result.insert(slider2.display, slider2);
-			EditorLanguage::CompletionOption slider3 = _calculate_string_insertion(existing_argument, "prefer_slider");
-			r_result.insert(slider3.display, slider3);
-			EditorLanguage::CompletionOption slider4 = _calculate_string_insertion(existing_argument, "hide_control");
-			r_result.insert(slider4.display, slider4);
+			static const char *sliders[] = { "or_greater", "or_less", "prefer_slider", "hide_control", "exp", "radians_as_degrees", "degrees", "suffix:unit" };
+			for (const char *slider : sliders) {
+				EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, slider);
+				r_result.insert(option.display, option);
+			}
 		}
 	} else if (p_annotation->name == SNAME("@export_exp_easing")) {
 		if (p_argument == 0 || p_argument == 1) {
