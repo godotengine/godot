@@ -1671,6 +1671,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 				if (drag_selection.size() > 0) {
 					drag_type = DRAG_ROTATE;
 					drag_from = transform.affine_inverse().xform(b->get_position());
+					drag_to = drag_from;
 					CanvasItem *ci = drag_selection.front()->get();
 					if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
 						drag_rotation_center = temp_pivot;
@@ -1680,6 +1681,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 						drag_rotation_center = ci->get_screen_transform().get_origin();
 					}
 					_save_canvas_item_state(drag_selection);
+					viewport->queue_redraw();
 					return true;
 				} else {
 					if (has_locked_items) {
@@ -2130,6 +2132,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				}
 
 				drag_from = transform.affine_inverse().xform(b->get_position());
+				drag_to = drag_from;
 				drag_selection = selection;
 				_save_canvas_item_state(drag_selection);
 				return true;
