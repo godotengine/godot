@@ -1,0 +1,29 @@
+URL: https://github.com/google/googletest.git
+Version: release-1.12.1
+License: BSD
+License File: LICENSE
+
+Description:
+Google's framework for writing C++ tests on a variety of platforms
+(Linux, Mac OS X, Windows, Windows CE, Symbian, etc).  Based on the
+xUnit architecture.  Supports automatic test discovery, a rich set of
+assertions, user-defined assertions, death tests, fatal and non-fatal
+failures, various options for running the tests, and XML test report
+generation.
+
+Local Modifications:
+- Remove everything but:
+  .clang-format
+  CONTRIBUTORS
+  googletest/
+   include
+   README.md
+   src
+  LICENSE
+- Move .clang-format, CONTRIBUTORS, and LICENSE into googletest/
+- In googletest/include/gtest/internal/custom/gtest-port.h, define
+  GTEST_HAS_NOTIFICATION_ as 1 and use a stub Notification class to fix
+  the mingw32 g++ compilation errors caused by the lack of std::mutex
+  and std::condition_variable in the <mutex> and <condition_variable>
+  headers if mingw32 is configured with the win32 threads option. See
+  https://stackoverflow.com/questions/17242516/mingw-w64-threads-posix-vs-win32

@@ -1,0 +1,9 @@
+text vpx_codec_enc_config_default
+text vpx_codec_enc_config_set
+text vpx_codec_enc_init_multi_ver
+text vpx_codec_enc_init_ver
+text vpx_codec_encode
+text vpx_codec_get_cx_data
+text vpx_codec_get_global_headers
+text vpx_codec_get_preview_frame
+text vpx_codec_set_cx_data_buf

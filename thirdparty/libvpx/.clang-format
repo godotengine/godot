@@ -1,0 +1,9 @@
+---
+Language:        Cpp
+BasedOnStyle:  Google
+AllowShortCaseLabelsOnASingleLine: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+Cpp11BracedListStyle: false
+DerivePointerAlignment: false
+PointerAlignment: Right
+SortIncludes:    false
