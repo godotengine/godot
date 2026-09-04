@@ -201,6 +201,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	Error _initialize_allocator();
 	Error _initialize_frames(uint32_t p_frame_count);
 	Error _initialize_command_signatures();
+	void _check_driver_workarounds();
 
 public:
 	Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override final;

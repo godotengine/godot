@@ -331,7 +331,12 @@ uint32_t RenderingShaderContainerD3D12::_to_bytes_footer_extra_data(uint8_t *p_b
 }
 
 #if NIR_ENABLED
-bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(Span<ReflectShaderStage> p_spirv, const nir_shader_compiler_options *p_compiler_options, HashMap<int, nir_shader *> &r_stages_nir_shaders, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed) {
+bool RenderingShaderContainerD3D12::_convert_spirv_to_nir(
+		Span<ReflectShaderStage> p_spirv,
+		const nir_shader_compiler_options *p_compiler_options,
+		HashMap<int, nir_shader *> &r_stages_nir_shaders,
+		Vector<RenderingDeviceCommons::ShaderStage> &r_stages,
+		BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed) {
 	r_stages_processed.clear();
 
 	dxil_spirv_runtime_conf dxil_runtime_conf = {};
@@ -449,10 +454,14 @@ static dxil_shader_model shader_model_d3d_to_dxil(D3D_SHADER_MODEL p_d3d_shader_
 	return (dxil_shader_model)((p_d3d_shader_model >> 4) * 0x10000 + (p_d3d_shader_model & 0xf));
 }
 
-bool RenderingShaderContainerD3D12::_convert_nir_to_dxil(const HashMap<int, nir_shader *> &p_stages_nir_shaders, BitField<RenderingDeviceCommons::ShaderStage> p_stages_processed, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs) {
+bool RenderingShaderContainerD3D12::_convert_nir_to_dxil(
+		const HashMap<int, nir_shader *> &p_stages_nir_shaders,
+		BitField<RenderingDeviceCommons::ShaderStage> p_stages_processed,
+		HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs) {
 	// Translate NIR to DXIL.
 	for (KeyValue<int, nir_shader *> it : p_stages_nir_shaders) {
-		RenderingDeviceCommons::ShaderStage stage = (RenderingDeviceCommons::ShaderStage)(it.key);
+		auto *nir = it.value;
+		auto stage = (RenderingDeviceCommons::ShaderStage)(it.key);
 		GodotNirCallbackUserData godot_nir_callback_user_data;
 		godot_nir_callback_user_data.container = this;
 		godot_nir_callback_user_data.stage = stage;
@@ -481,8 +490,15 @@ bool RenderingShaderContainerD3D12::_convert_nir_to_dxil(const HashMap<int, nir_
 #endif
 		};
 
+		// Optimizes small if/else statement making shader less divergent.
+		if (use_nir_opt_peephole) {
+			nir_opt_peephole_select_options opts;
+			opts.discard_ok = true;
+			nir_opt_peephole_select(nir, &opts);
+		}
+
 		blob dxil_blob = {};
-		bool ok = nir_to_dxil(it.value, &nir_to_dxil_options, &logger, &dxil_blob);
+		bool ok = nir_to_dxil(nir, &nir_to_dxil_options, &logger, &dxil_blob);
 		ERR_FAIL_COND_V_MSG(!ok, false, "Shader translation at stage " + String(RenderingDeviceCommons::SHADER_STAGE_NAMES[stage]) + " failed.");
 
 		Vector<uint8_t> blob_copy;
@@ -495,7 +511,11 @@ bool RenderingShaderContainerD3D12::_convert_nir_to_dxil(const HashMap<int, nir_
 	return true;
 }
 
-bool RenderingShaderContainerD3D12::_convert_spirv_to_dxil(Span<ReflectShaderStage> p_spirv, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed) {
+bool RenderingShaderContainerD3D12::_convert_spirv_to_dxil(
+		Span<ReflectShaderStage> p_spirv,
+		HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs,
+		Vector<RenderingDeviceCommons::ShaderStage> &r_stages,
+		BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed) {
 	r_dxil_blobs.clear();
 
 	HashMap<int, nir_shader *> stages_nir_shaders;
@@ -1007,7 +1027,9 @@ void RenderingShaderContainerFormatD3D12::set_lib_d3d12(void *p_lib_d3d12) {
 }
 
 Ref<RenderingShaderContainer> RenderingShaderContainerFormatD3D12::create_container() const {
-	return memnew(RenderingShaderContainerD3D12(lib_d3d12));
+	auto container = memnew(RenderingShaderContainerD3D12(lib_d3d12));
+	container->use_nir_opt_peephole = this->driver_workarounds.use_nir_opt_peephole;
+	return container;
 }
 
 RenderingDeviceCommons::ShaderLanguageVersion RenderingShaderContainerFormatD3D12::get_shader_language_version() const {
