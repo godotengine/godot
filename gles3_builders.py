@@ -1,8 +1,14 @@
 """Functions used to generate source files during build time"""
 
+import argparse
 import os.path
+import sys
 
-from methods import generated_wrapper, print_error, to_raw_cstring
+try:
+    sys.path.insert(0, "./")
+    from methods import generated_wrapper, print_error, to_raw_cstring
+except ImportError:
+    raise SystemExit(f'Generator script "{__file__}" must be run from repository root!')
 
 
 class GLES3HeaderStruct:
@@ -569,7 +575,20 @@ protected:
 """)
 
 
-def build_gles3_headers(target, source, env):
-    env.NoCache(target)
-    for src in source:
-        build_gles3_header(f"{src}.gen.h", str(src))
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    gles3_glsl_parser = subparsers.add_parser("gles3_glsl")
+    gles3_glsl_parser.add_argument("target")
+    gles3_glsl_parser.add_argument("shader")
+
+    args = parser.parse_args()
+    if args.command == "gles3_glsl":
+        build_gles3_header(args.target, args.shader)
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
