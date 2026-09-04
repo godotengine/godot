@@ -33,11 +33,13 @@
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
 
 class Gizmo3DHelper;
+class SphereMesh;
 
 class ReflectionProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(ReflectionProbeGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Ref<Gizmo3DHelper> helper;
+	Ref<SphereMesh> preview_sphere;
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
