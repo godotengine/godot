@@ -76,10 +76,14 @@ void SpringArm3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &SpringArm3D::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &SpringArm3D::get_margin);
 
+	ClassDB::bind_method(D_METHOD("set_hit_back_faces", "enabled"), &SpringArm3D::set_hit_back_faces);
+	ClassDB::bind_method(D_METHOD("is_hit_back_faces_enabled"), &SpringArm3D::is_hit_back_faces_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape3D::get_class_static()), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spring_length", PROPERTY_HINT_NONE, "suffix:m"), "set_length", "get_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_NONE, "suffix:m"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_back_faces"), "set_hit_back_faces", "is_hit_back_faces_enabled");
 }
 
 real_t SpringArm3D::get_length() const {
@@ -96,6 +100,7 @@ void SpringArm3D::set_length(real_t p_length) {
 
 void SpringArm3D::set_shape(Ref<Shape3D> p_shape) {
 	shape = p_shape;
+	notify_property_list_changed();
 }
 
 Ref<Shape3D> SpringArm3D::get_shape() const {
@@ -132,6 +137,14 @@ void SpringArm3D::clear_excluded_objects() {
 
 real_t SpringArm3D::get_hit_length() {
 	return current_spring_length;
+}
+
+void SpringArm3D::set_hit_back_faces(bool p_enabled) {
+	hit_back_faces = p_enabled;
+}
+
+bool SpringArm3D::is_hit_back_faces_enabled() const {
+	return hit_back_faces;
 }
 
 void SpringArm3D::process_spring() {
@@ -172,6 +185,7 @@ void SpringArm3D::process_spring() {
 			ray_params.to = get_global_transform().origin + motion;
 			ray_params.exclude = excluded_objects;
 			ray_params.collision_mask = mask;
+			ray_params.hit_back_faces = hit_back_faces;
 
 			PS3DT::RayResult r;
 			bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(ray_params, r);
@@ -202,5 +216,11 @@ void SpringArm3D::process_spring() {
 			child_transform.basis = child->get_global_transform().basis;
 			child->set_global_transform(child_transform);
 		}
+	}
+}
+
+void SpringArm3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "hit_back_faces" && shape.is_valid()) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
