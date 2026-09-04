@@ -33,6 +33,7 @@
 #include "godot_collision_object_2d.h"
 
 #include "core/templates/hash_set.h"
+#include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
 #include "core/variant/callable.h"
 
@@ -89,8 +90,18 @@ class GodotArea2D : public GodotCollisionObject2D {
 		_FORCE_INLINE_ void dec() { state--; }
 	};
 
-	HashMap<BodyKey, BodyState, BodyKey> monitored_bodies;
-	HashMap<BodyKey, BodyState, BodyKey> monitored_areas;
+	// This wraps a global allocator for use by all GodotArea2D objects
+	struct SharedAllocator {
+		static PagedAllocator<HashMapElement<BodyKey, BodyState>, false, 2048> allocator;
+
+		template <typename... Args>
+		HashMapElement<BodyKey, BodyState> *new_allocation(Args &&...p_args) { return allocator.new_allocation(p_args...); }
+		void delete_allocation(HashMapElement<BodyKey, BodyState> *p_mem) { allocator.free(p_mem); }
+	};
+
+	using MonitoredHashMap = HashMap<BodyKey, BodyState, BodyKey, HashMapComparatorDefault<BodyKey>, SharedAllocator>;
+	MonitoredHashMap monitored_bodies;
+	MonitoredHashMap monitored_areas;
 
 	HashSet<GodotConstraint2D *> constraints;
 
