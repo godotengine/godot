@@ -704,7 +704,7 @@ bool Window::is_in_edited_scene_root() const {
 void Window::_make_window() {
 	ERR_FAIL_COND(window_id != DisplayServerEnums::INVALID_WINDOW_ID);
 
-	if (transient && transient_to_focused) {
+	if (transient) {
 		_make_transient();
 	}
 
@@ -1723,9 +1723,6 @@ void Window::_notification(int p_what) {
 				}
 			}
 
-			if (transient && !transient_to_focused) {
-				_make_transient();
-			}
 			if (visible) {
 				if (window_id != DisplayServerEnums::MAIN_WINDOW_ID && get_tree() && get_tree()->is_accessibility_supported()) {
 					get_tree()->_accessibility_force_update();
