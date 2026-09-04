@@ -1022,8 +1022,43 @@ void Window::set_visible(bool p_visible) {
 		return;
 	}
 
-	ERR_FAIL_NULL_MSG(get_parent(), "Can't change visibility of main window.");
+#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
+	if (!get_parent()) {
+		if (Engine::get_singleton()->is_embedded_in_editor()) {
+			return;
+		}
 
+		if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			DisplayServer::get_singleton()->window_set_visible(p_visible, window_id);
+		}
+
+		visible = p_visible;
+
+		if (visible) {
+			if (get_tree() && get_tree()->is_accessibility_supported()) {
+				get_tree()->_accessibility_force_update();
+				_accessibility_notify_enter(this);
+				AccessibilityServer::get_singleton()->window_activation_completed(get_window_id());
+			}
+		} else {
+			if (get_tree() && get_tree()->is_accessibility_supported()) {
+				_accessibility_notify_exit(this);
+				AccessibilityServer::get_singleton()->window_deactivation_completed(get_window_id());
+			}
+			focused = false;
+			if (focused_window == this) {
+				focused_window = nullptr;
+			}
+		}
+
+		notification(NOTIFICATION_VISIBILITY_CHANGED);
+		emit_signal(SceneStringName(visibility_changed));
+		RS::get_singleton()->viewport_set_active(get_viewport_rid(), visible);
+		return;
+	}
+#else
+	ERR_FAIL_NULL_MSG(get_parent(), "Can't change visibility of main window.");
+#endif
 	visible = p_visible;
 
 	// Stop any queued resizing, as the window will be resized right now.
