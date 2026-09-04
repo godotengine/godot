@@ -3271,7 +3271,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			set_physics_process(vp_visible);
 
 			if (vp_visible) {
-				view_3d_controller->set_orthogonal(view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL)));
+				bool orthogonal_checked = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL));
+				if (view_3d_controller->is_orthogonal() != orthogonal_checked) {
+					view_3d_controller->set_orthogonal(orthogonal_checked);
+				}
 				view_3d_controller->update_camera();
 				_update_name();
 			} else {
@@ -7203,6 +7206,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->add_child(ruler_label_z);
 
 	view_3d_controller.instantiate();
+	view_3d_controller->set_auto_orthogonal_allowed(view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_AUTO_ORTHOGONAL)));
 	view_3d_controller->connect("view_state_changed", callable_mp(this, &Node3DEditorViewport::_view_state_changed));
 	view_3d_controller->connect("fov_scaled", callable_mp((CanvasItem *)surface, &CanvasItem::queue_redraw));
 	view_3d_controller->connect("freelook_changed", callable_mp(this, &Node3DEditorViewport::_freelook_changed));
