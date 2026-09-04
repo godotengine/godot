@@ -126,8 +126,8 @@ private:
 
 		uint32_t frame;
 		float amount_ratio;
-		uint32_t pad1;
-		uint32_t pad2;
+		uint32_t skeleton_bone_count;
+		uint32_t skeleton_2d;
 
 		uint32_t random_seed;
 		uint32_t attractor_count;
@@ -135,6 +135,8 @@ private:
 		float particle_size;
 
 		float emission_transform[16];
+
+		Transform3D skeleton_to_particles_transform;
 
 		float emitter_velocity[3];
 		float interp_to_end;
@@ -157,6 +159,13 @@ private:
 		uint32_t pad1;
 		uint32_t pad2;
 		Data data[1]; //its 2020 and empty arrays are still non standard in C++
+	};
+
+	struct ParticleSkeletonBuffer {
+		struct Data {
+			float xform[16];
+		};
+		Data data[1];
 	};
 
 	struct Particles {
@@ -256,6 +265,9 @@ private:
 
 		RID unused_emission_storage_buffer;
 		RID unused_trail_storage_buffer;
+		RID unused_skeleton_storage_buffer;
+
+		RID skeleton;
 
 		HashSet<RID> collisions;
 
@@ -276,6 +288,7 @@ private:
 	void _particles_allocate_emission_buffer(Particles *particles);
 	void _particles_ensure_unused_emission_buffer(Particles *particles);
 	void _particles_ensure_unused_trail_buffer(Particles *particles);
+	void _particles_ensure_unused_skeleton_buffer(Particles *particles);
 	void _particles_free_data(Particles *particles);
 	void _particles_update_buffers(Particles *particles);
 
@@ -483,6 +496,8 @@ public:
 	virtual void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) override;
 
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) override;
+
+	virtual void particles_set_skeleton(RID p_particles, RID p_skeleton) override;
 
 	virtual void particles_set_draw_order(RID p_particles, RSE::ParticlesDrawOrder p_order) override;
 
