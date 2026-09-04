@@ -6113,6 +6113,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			pointer_button[GET_POINTERID_WPARAM(wParam)] = MouseButton::NONE;
 			windows[window_id].block_mm = true;
+			if (mouse_mode != DisplayServerEnums::MOUSE_MODE_CAPTURED) {
+				SetCursorPos(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+			}
 			return 0;
 		} break;
 		case WM_POINTERLEAVE: {
@@ -6176,6 +6179,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			POINT coords; // Client coords.
 			coords.x = GET_X_LPARAM(lParam);
 			coords.y = GET_Y_LPARAM(lParam);
+
+			if (mouse_mode != DisplayServerEnums::MOUSE_MODE_CAPTURED) {
+				SetCursorPos(coords.x, coords.y);
+			}
 
 			// Note: Handle popup closing here, since mouse event is not emulated and hook will not be called.
 			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_since_popup;
@@ -6352,6 +6359,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				POINT pos = { (int)c.x, (int)c.y };
 				ClientToScreen(hWnd, &pos);
 				SetCursorPos(pos.x, pos.y);
+			} else {
+				SetCursorPos(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			}
 
 			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
