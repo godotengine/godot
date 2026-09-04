@@ -96,5 +96,9 @@ public:
 	// This method is not exposed to scripting intentionally. It is only used by TranslationLoaderPO and tests.
 	int get_nplurals() const;
 
+#ifdef TOOLS_ENABLED
+	Error save_mo(const String &p_path) const;
+#endif
+
 	~Translation();
 };
