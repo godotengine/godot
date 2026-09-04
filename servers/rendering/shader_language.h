@@ -1239,6 +1239,8 @@ private:
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info);
 	Node *_parse_array_constructor(BlockNode *p_block, const FunctionInfo &p_function_info, DataType p_type, const StringName &p_struct_name, int p_array_size);
 	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
+	Node *_resolve_struct_member(Node *p_owner, const StringName &p_member);
+	Node *_reduce_constant_vector_swizzle(ConstantNode *p_owner, const StringName &p_swizzle);
 
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const FunctionInfo &p_function_info, const ExpressionInfo *p_previous_expression_info = nullptr);
 	Error _parse_block(BlockNode *p_block, const FunctionInfo &p_function_info, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
