@@ -57,6 +57,10 @@
 #endif
 
 #ifdef TOOLS_ENABLED
+#include "editor/gdscript_code_actions.h"
+#endif // TOOLS_ENABLED
+
+#ifdef TOOLS_ENABLED
 GDScriptEditorLanguage *GDScriptEditorLanguage::singleton = nullptr;
 
 EditorLanguage *GDScriptLanguage::get_editor_language() {
@@ -172,6 +176,10 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 	GDScriptParser parser;
 	GDScriptAnalyzer analyzer(&parser);
 
+#ifdef TOOLS_ENABLED
+	const Vector<String> lines = p_script.split("\n");
+#endif // TOOLS_ENABLED
+
 	Error err = parser.parse(p_script, p_path, false);
 	if (err == OK) {
 		err = analyzer.analyze();
@@ -187,6 +195,10 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 			w.end_column = warn.end_column;
 			w.string_code = GDScriptWarning::get_name_from_code(warn.code);
 			w.message = warn.get_message();
+
+#ifdef TOOLS_ENABLED
+			w.code_actions = GDScriptCodeActions::make_code_action_ranges_zero_based(warn.code_actions, lines);
+#endif // TOOLS_ENABLED
 			r_warnings->push_back(w);
 		}
 	}
@@ -201,6 +213,9 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 				e.end_line = pe.end_line;
 				e.end_column = pe.end_column;
 				e.message = pe.message;
+#ifdef TOOLS_ENABLED
+				e.code_actions = GDScriptCodeActions::make_code_action_ranges_zero_based(pe.code_actions, lines);
+#endif // TOOLS_ENABLED
 				r_errors->push_back(e);
 			}
 
@@ -214,6 +229,9 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 					e.end_line = pe.end_line;
 					e.end_column = pe.end_column;
 					e.message = pe.message;
+#ifdef TOOLS_ENABLED
+					e.code_actions = GDScriptCodeActions::make_code_action_ranges_zero_based(pe.code_actions, lines);
+#endif // TOOLS_ENABLED
 					r_errors->push_back(e);
 				}
 			}
@@ -3904,6 +3922,85 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 #endif // TOOLS_ENABLED
 
 //////// END COMPLETION //////////
+#ifdef TOOLS_ENABLED
+::Error GDScriptEditorLanguage::get_code_actions(const String &p_code, const String &p_path, Vector<EditorLanguage::CodeActionGroupWithDiagnostics> *r_actions) {
+	GDScriptParser parser;
+	GDScriptAnalyzer analyzer(&parser);
+
+	const Vector<String> lines = p_code.split("\n");
+
+	parser.parse(p_code, p_path, true);
+	analyzer.analyze();
+
+	for (const GDScriptWarning &E : parser.get_warnings()) {
+		const GDScriptWarning &warn = E;
+		EditorLanguage::Warning w;
+		w.start_line = warn.start_line;
+		w.start_column = warn.start_column;
+		w.end_line = warn.end_line;
+		w.end_column = warn.end_column;
+		w.string_code = GDScriptWarning::get_name_from_code(warn.code);
+		w.message = warn.get_message();
+
+		EditorLanguage::CodeActionGroup fixed_group = GDScriptCodeActions::make_code_action_ranges_zero_based(warn.code_actions, lines);
+		EditorLanguage::CodeActionGroupWithDiagnostics new_group;
+		new_group.title = fixed_group.title;
+		for (EditorLanguage::CodeActionOperation action : fixed_group.actions) {
+			EditorLanguage::CodeActionAndDiagnostics action_with_diagnostics;
+			action_with_diagnostics.code_action = action;
+			action_with_diagnostics.related_warnings.append(w);
+			new_group.actions.push_back(action_with_diagnostics);
+		}
+		r_actions->push_back(new_group);
+	}
+
+	for (const GDScriptParser::ParserError &pe : parser.get_errors()) {
+		EditorLanguage::ScriptError e;
+		e.path = p_path;
+		e.start_line = pe.start_line;
+		e.start_column = pe.start_column;
+		e.end_line = pe.end_line;
+		e.end_column = pe.end_column;
+		e.message = pe.message;
+
+		EditorLanguage::CodeActionGroup fixed_group = GDScriptCodeActions::make_code_action_ranges_zero_based(pe.code_actions, lines);
+		EditorLanguage::CodeActionGroupWithDiagnostics new_group;
+		new_group.title = fixed_group.title;
+		for (EditorLanguage::CodeActionOperation action : fixed_group.actions) {
+			EditorLanguage::CodeActionAndDiagnostics action_with_diagnostics;
+			action_with_diagnostics.code_action = action;
+			action_with_diagnostics.related_errors.append(e);
+			new_group.actions.push_back(action_with_diagnostics);
+		}
+		r_actions->push_back(new_group);
+	}
+
+	for (KeyValue<String, Ref<GDScriptParserRef>> E : parser.get_depended_parsers()) {
+		GDScriptParser *depended_parser = E.value->get_parser();
+		for (const GDScriptParser::ParserError &pe : depended_parser->get_errors()) {
+			EditorLanguage::ScriptError e;
+			e.path = E.key;
+			e.start_line = pe.start_line;
+			e.start_column = pe.start_column;
+			e.end_line = pe.end_line;
+			e.end_column = pe.end_column;
+			e.message = pe.message;
+
+			EditorLanguage::CodeActionGroup fixed_group = GDScriptCodeActions::make_code_action_ranges_zero_based(pe.code_actions, lines);
+			EditorLanguage::CodeActionGroupWithDiagnostics new_group;
+			new_group.title = fixed_group.title;
+			for (EditorLanguage::CodeActionOperation action : fixed_group.actions) {
+				EditorLanguage::CodeActionAndDiagnostics action_with_diagnostics;
+				action_with_diagnostics.code_action = action;
+				action_with_diagnostics.related_errors.append(e);
+				new_group.actions.push_back(action_with_diagnostics);
+			}
+			r_actions->push_back(new_group);
+		}
+	}
+	return OK;
+}
+#endif // TOOLS_ENABLED
 
 #ifdef TOOLS_ENABLED
 

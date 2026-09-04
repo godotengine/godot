@@ -453,7 +453,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 #ifdef DEBUG_ENABLED
 			if (!parser->_is_tool && ext_parser->get_parser()->_is_tool) {
-				parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
+				parser->push_warning(p_class, p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 			}
 #endif // DEBUG_ENABLED
 
@@ -487,7 +487,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 #ifdef DEBUG_ENABLED
 					if (!parser->_is_tool && base_parser->get_parser()->_is_tool) {
-						parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
+						parser->push_warning(p_class, p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 					}
 #endif // DEBUG_ENABLED
 
@@ -514,7 +514,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 #ifdef DEBUG_ENABLED
 				if (!parser->_is_tool && info_parser->get_parser()->_is_tool) {
-					parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
+					parser->push_warning(p_class, p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 				}
 #endif // DEBUG_ENABLED
 
@@ -1982,7 +1982,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		function_visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
 	}
 	if (p_function->return_type == nullptr) {
-		parser->push_warning(p_function->start_line, p_function->start_column, p_function->header_end_line, p_function->header_end_column, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
+		parser->push_warning(p_function, p_function->start_line, p_function->start_column, p_function->header_end_line, p_function->header_end_column, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
 	}
 #endif // DEBUG_ENABLED
 
@@ -3767,9 +3767,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		}
 
 		if (method_flags.has_flag(METHOD_FLAG_STATIC) && !is_constructor && !base_type.is_meta_type && !is_self) {
-			String caller_type = base_type.to_string();
-
-			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, p_call->function_name, caller_type);
+			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, p_call->function_name, base_type.to_string());
 		}
 
 		// Consider `emit_signal()`, `connect()`, and `disconnect()` as implicit uses of the signal.
