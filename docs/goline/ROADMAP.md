@@ -72,8 +72,15 @@ intentional exclusions are in `docs/goline/IDENTITY.md`.
   surfaces the ALLOW/DENY verdict in the transcript, and records it to the
   JSONL audit log (pure, append-only). Verified live: `--handover --audit`
   runs clean and writes the log.
-- **Still ahead:** richer event surface (session/thread persistence); validate a
-  real gameplayed handover (`--context game`) end-to-end.
+- **Done:** the gate policy is **embedded into grounded context packs** as a
+  MANDATORY "do not run" section (derived from `policy.py`), so agents *hold*
+  the deny rules and self-deny (verified in `--print-context engine|game`).
+- **Done:** a **live `--context game` handover** against
+  `goline/examples/sample_game/` was validated end-to-end — the free-tier
+  model read the actual game files from the context pack and returned the
+  correct answers (`player.gd extends CharacterBody2D`; Player node at
+  `Vector2(576, 324)`), streaming `tool_use` + `content.delta` + `done`.
+- **Still ahead:** richer event surface (session/thread persistence).
 
 ## Stage 5 — AI-assisted coding — NOT IMPLEMENTED
 

@@ -193,6 +193,12 @@ ideas into `goline/cli/providers.py`:
 - **OpenCode CLI `1.18.27`** installed globally (`npm i -g --allow-scripts=opencode-ai opencode-ai`; the npm package's postinstall script must be allowed so the correct Windows `bin/opencode.exe` is fetched — the default blocked-script warning leaves a non-Windows stub otherwise).
 - **Claude Code `2.1.220`** installed globally (npm).
 - `python goline/cli/goline_cli.py --self-test` discovers both as `file-edit` agents.
+- **Live-validated end-to-end**: an engine handover
+  (`--handover --context engine`) correctly answered "Goline" from `version.py`,
+  and a game handover (`--handover --context game --project
+  goline/examples/sample_game`) read the real game files from the context pack
+  and returned the correct answers (`player.gd extends CharacterBody2D`; Player
+  node at `Vector2(576, 324)`). Both streamed normalized events and exited 0.
 
 > The user's ARE you using OpenCode now is the **desktop app** (Electron,
 > `%LOCALAPPDATA%\Programs\@opencode-aidesktop\OpenCode.exe`), which is a GUI
