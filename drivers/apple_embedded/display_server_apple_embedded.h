@@ -146,6 +146,7 @@ public:
 	void update_accelerometer(const Vector3 &p_accelerometer);
 	void update_magnetometer(const Vector3 &p_magnetometer);
 	void update_gyroscope(const Vector3 &p_gyroscope);
+	void update_device_orientation(const Quaternion &p_orientation);
 
 	// MARK: -
 
@@ -164,7 +165,7 @@ public:
 	virtual bool is_dark_mode() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
-	virtual Rect2i get_display_safe_area() const override;
+	virtual Rect2i get_display_safe_area(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;

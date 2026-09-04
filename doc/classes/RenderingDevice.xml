@@ -1170,10 +1170,10 @@
 			<param index="3" name="mipmap" type="int" />
 			<param index="4" name="mipmaps" type="int" default="1" />
 			<param index="5" name="slice_type" type="int" enum="RenderingDevice.TextureSliceType" default="0" />
+			<param index="6" name="layers" type="int" default="0" />
 			<description>
-				Creates a shared texture using the specified [param view] and the texture information from [param with_texture]'s [param layer] and [param mipmap]. The number of included mipmaps from the original texture can be controlled using the [param mipmaps] parameter. Only relevant for textures with multiple layers, such as 3D textures, texture arrays and cubemaps. For single-layer textures, use [method texture_create_shared].
+				Creates a shared texture using the specified [param view] and the texture information from [param with_texture]'s [param layer] and [param mipmap]. The number of included mipmaps from the original texture can be controlled using the [param mipmaps] parameter. The [param layers] parameter controls the number of included layers from the original texture for 2D texture arrays, and must be [code]0[/code] for all other texture types. If [param layers] is [code]0[/code] for a 2D texture array, [param layer] must also be [code]0[/code], and all available layers will be included. Only relevant for textures with multiple layers, such as 3D textures, texture arrays and cubemaps. For single-layer textures, use [method texture_create_shared].
 				For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
-				[b]Note:[/b] Layer slicing is only supported for 2D texture arrays, not 3D textures or cubemaps.
 				This will be freed automatically when the [param with_texture] is freed.
 			</description>
 		</method>
@@ -2290,6 +2290,9 @@
 		<constant name="TEXTURE_SLICE_3D" value="2" enum="TextureSliceType">
 			3-dimensional texture slice.
 		</constant>
+		<constant name="TEXTURE_SLICE_2D_ARRAY" value="3" enum="TextureSliceType">
+			2-dimensional texture array slice.
+		</constant>
 		<constant name="SAMPLER_FILTER_NEAREST" value="0" enum="SamplerFilter">
 			Nearest-neighbor sampler filtering. Sampling at higher resolutions than the source will result in a pixelated look.
 		</constant>
@@ -2371,7 +2374,7 @@
 			rd = RenderingServer.get_rendering_device()
 
 			if rd.has_feature(RenderingDevice.SUPPORTS_RAYTRACING_PIPELINE):
-			    storage_buffer = rd.storage_buffer_create(bytes.size(), bytes, RenderingDevice.BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT)
+				storage_buffer = rd.storage_buffer_create(bytes.size(), bytes, RenderingDevice.BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT)
 			[/gdscript]
 			[/codeblocks]
 		</constant>
@@ -2846,6 +2849,9 @@
 		</constant>
 		<constant name="SUPPORTS_HDR_OUTPUT" value="13" enum="Features">
 			Support for high dynamic range (HDR) output.
+		</constant>
+		<constant name="SUPPORTS_RASTERIZATION_RATE_MAP" value="14" enum="Features">
+			Support for rasterization rate maps. The current implementation targets Metal on Apple platforms. This allows for foveated rendering, which is used by the visionOS XR module.
 		</constant>
 		<constant name="LIMIT_MAX_BOUND_UNIFORM_SETS" value="0" enum="Limit">
 			Maximum number of uniform sets that can be bound at a given time.

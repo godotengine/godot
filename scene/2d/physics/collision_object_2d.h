@@ -34,7 +34,7 @@
 #include "scene/2d/node_2d.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/2d/shape_2d.h"
-#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d_enums.h"
 
 class CollisionObject2D : public Node2D {
 	GDCLASS(CollisionObject2D, Node2D);
@@ -60,7 +60,7 @@ private:
 
 	DisableMode disable_mode = DISABLE_MODE_REMOVE;
 
-	PhysicsServer2D::BodyMode body_mode = PhysicsServer2D::BODY_MODE_STATIC;
+	PS2DE::BodyMode body_mode = PS2DE::BODY_MODE_STATIC;
 
 	struct ShapeData {
 		ObjectID owner_id;
@@ -110,7 +110,7 @@ protected:
 	void set_only_update_transform_changes(bool p_enable);
 	bool is_only_update_transform_changes_enabled() const;
 
-	void set_body_mode(PhysicsServer2D::BodyMode p_mode);
+	void set_body_mode(PS2DE::BodyMode p_mode);
 
 	virtual void _space_changed(const RID &p_new_space);
 
@@ -159,7 +159,7 @@ public:
 	void shape_owner_set_one_way_collision_direction(uint32_t p_owner, const Vector2 &p_direction);
 	Vector2 get_shape_owner_one_way_collision_direction(uint32_t p_owner) const;
 
-	void shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape2D> rp_shape);
+	void shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape2D> p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;
 	Ref<Shape2D> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
 	int shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const;

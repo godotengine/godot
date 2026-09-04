@@ -153,10 +153,10 @@ enum class MouseButtonMask {
 	MB_XBUTTON2 = (1 << (int(MouseButton::MB_XBUTTON2) - 1)),
 };
 
-inline MouseButtonMask mouse_button_to_mask(MouseButton button) {
-	ERR_FAIL_COND_V(button == MouseButton::NONE, MouseButtonMask::NONE);
+inline MouseButtonMask mouse_button_to_mask(MouseButton p_button) {
+	ERR_FAIL_COND_V(p_button == MouseButton::NONE, MouseButtonMask::NONE);
 
-	return MouseButtonMask(1 << ((int)button - 1));
+	return MouseButtonMask(1 << ((int)p_button - 1));
 }
 
 constexpr MouseButtonMask operator|(MouseButtonMask p_a, MouseButtonMask p_b) {

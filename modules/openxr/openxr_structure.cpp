@@ -33,6 +33,7 @@
 #include "core/object/class_db.h"
 
 void OpenXRStructureBase::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_header", "next"), &OpenXRStructureBase::_get_headergd);
 	ClassDB::bind_method(D_METHOD("get_structure_type"), &OpenXRStructureBase::_get_structure_type);
 
 	ClassDB::bind_method(D_METHOD("set_next", "entity"), &OpenXRStructureBase::set_next);
@@ -77,6 +78,11 @@ XrStructureType OpenXRStructureBase::get_structure_type() {
 	} else {
 		return *header;
 	}
+}
+
+// For exposing this to GDExtension
+uint64_t OpenXRStructureBase::_get_headergd(uint64_t p_next) {
+	return (uint64_t)get_header((void *)p_next);
 }
 
 // Return structure type as uint64_t to GDScript

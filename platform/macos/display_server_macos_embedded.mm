@@ -285,7 +285,7 @@ void DisplayServerMacOSEmbedded::warp_mouse(const Point2i &p_position) {
 	Input::get_singleton()->set_mouse_position(p_position);
 	// Convert from game pixels to points for the editor.
 	float inv_scale = 1.0f / screen_get_max_scale();
-	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { Point2i(inv_scale * p_position) });
+	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { Point2i(Vector2(p_position) * inv_scale) });
 }
 
 Point2i DisplayServerMacOSEmbedded::mouse_get_position() const {
@@ -716,13 +716,8 @@ void DisplayServerMacOSEmbedded::window_get_edr_values(DisplayServerEnums::Windo
 		*v = val; \
 	}
 
-	if (@available(macOS 10.15, *)) {
-		SET_VAL(r_max_potential_edr_value, state.screen_max_edr);
-		SET_VAL(r_max_edr_value, state.screen_max_potential_edr);
-	} else {
-		SET_VAL(r_max_potential_edr_value, 1.0);
-		SET_VAL(r_max_edr_value, 1.0);
-	}
+	SET_VAL(r_max_potential_edr_value, state.screen_max_edr);
+	SET_VAL(r_max_edr_value, state.screen_max_potential_edr);
 
 #undef SET_VAL
 }

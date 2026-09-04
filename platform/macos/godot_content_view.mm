@@ -896,12 +896,12 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	ds->update_mouse_pos(wd, [event locationInWindow]);
 
-	double delta_x = [event scrollingDeltaX];
-	double delta_y = [event scrollingDeltaY];
+	double delta_x = [event deltaX];
+	double delta_y = [event deltaY];
 
 	if ([event hasPreciseScrollingDeltas]) {
-		delta_x *= 0.03;
-		delta_y *= 0.03;
+		delta_x = [event scrollingDeltaX];
+		delta_y = [event scrollingDeltaY];
 	}
 
 	if ([event momentumPhase] != NSEventPhaseNone) {
@@ -915,11 +915,14 @@
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
 		[self processPanEvent:event dx:delta_x dy:delta_y];
 	} else {
-		if (std::abs(delta_x)) {
-			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:std::abs(delta_x * 0.3)];
+		double delta_x_abs = Math::abs(delta_x);
+		double delta_y_abs = Math::abs(delta_y);
+
+		if (!Math::is_zero_approx(delta_x_abs)) {
+			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:delta_x_abs];
 		}
-		if (std::abs(delta_y)) {
-			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:std::abs(delta_y * 0.3)];
+		if (!Math::is_zero_approx(delta_y_abs)) {
+			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:delta_y_abs];
 		}
 	}
 }

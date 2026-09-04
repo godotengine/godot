@@ -104,15 +104,13 @@ public:
 	_FORCE_INLINE_ static void free(void *p_ptr) { Memory::free_static(p_ptr, false); }
 };
 
-// Overload of new operator to use the Memory::alloc_static function.
-// The DefaultAllocator parameter is just a tag to select this overload.
-inline void *operator new(size_t p_size, DefaultAllocator p_allocator) {
-	return Memory::alloc_static(p_size);
-}
-// Overload of new operator to use a custom allocation function.
-inline void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)) {
-	return p_allocfunc(p_size);
-}
+// Overload of `new` operator to use the `Memory::alloc_static()` function.
+// The `DefaultAllocator` parameter is just a tag to select this overload.
+// NOTE: do not inline `new` operators due to GCC+LTO compiler bug (see GH-119752).
+void *operator new(size_t p_size, DefaultAllocator p_allocator);
+
+// Overload of `new` operator to use a custom allocation function.
+void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size));
 
 #if defined(_MSC_VER) && !defined(__clang__)
 // When compiling with VC++ 2017, the above declarations of placement new generate many irrelevant warnings (C4291).
@@ -158,6 +156,9 @@ _ALWAYS_INLINE_ bool predelete_handler(void *) {
 
 template <typename T>
 void memdelete(T *p_class) {
+	if (unlikely(p_class == nullptr)) {
+		return;
+	}
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
@@ -170,6 +171,9 @@ void memdelete(T *p_class) {
 
 template <typename T, typename A>
 void memdelete_allocator(T *p_class) {
+	if (unlikely(p_class == nullptr)) {
+		return;
+	}
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
@@ -179,13 +183,6 @@ void memdelete_allocator(T *p_class) {
 
 	A::free(p_class);
 }
-
-#define memdelete_notnull(m_v) \
-	{ \
-		if (m_v) { \
-			memdelete(m_v); \
-		} \
-	}
 
 #define memnew_arr(m_class, m_count) memnew_arr_template<m_class>(m_count)
 

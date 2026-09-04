@@ -35,7 +35,7 @@
 #include "core/io/ip.h"
 
 class IPUnix : public IP {
-	GDCLASS(IPUnix, IP);
+	GDSOFTCLASS(IPUnix, IP);
 
 	virtual void _resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const override;
 

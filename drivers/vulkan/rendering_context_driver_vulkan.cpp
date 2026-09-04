@@ -475,7 +475,7 @@ Error RenderingContextDriverVulkan::_initialize_instance_extensions() {
 
 #ifdef DEV_ENABLED
 	for (uint32_t i = 0; i < instance_extension_count; i++) {
-		print_verbose(String("VULKAN: Found instance extension ") + String::utf8(instance_extensions[i].extensionName) + String("."));
+		print_verbose(String("Vulkan: Found instance extension ") + String::utf8(instance_extensions[i].extensionName) + String("."));
 	}
 #endif
 
@@ -491,9 +491,9 @@ Error RenderingContextDriverVulkan::_initialize_instance_extensions() {
 	for (KeyValue<CharString, bool> &requested_extension : requested_instance_extensions) {
 		if (!enabled_instance_extension_names.has(requested_extension.key)) {
 			if (requested_extension.value) {
-				ERR_FAIL_V_MSG(ERR_BUG, String("Required extension ") + String::utf8(requested_extension.key) + String(" not found."));
+				ERR_FAIL_V_MSG(ERR_BUG, String("Required Vulkan instance extension ") + String::utf8(requested_extension.key) + String(" not found."));
 			} else {
-				print_verbose(String("Optional extension ") + String::utf8(requested_extension.key) + String(" not found."));
+				print_verbose(String("Optional Vulkan instance extension ") + String::utf8(requested_extension.key) + String(" not found."));
 			}
 		}
 	}
@@ -573,6 +573,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderingContextDriverVulkan::_debug_messenger_ca
 		return VK_FALSE;
 	}
 
+	// Suppress warning about incompatible drivers (-9), even though this should arguably be the loader's responsibility.
+	// This was generating noise on Linux when Mesa Dozen is provided.
+	if (strstr(p_callback_data->pMessage, "Received return code -9 from call to vkCreateInstance in ICD") != nullptr && strstr(p_callback_data->pMessage, "Skipping this driver") != nullptr) {
+		return VK_FALSE;
+	}
+
 	if (p_callback_data->pMessageIdName && strstr(p_callback_data->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != nullptr) {
 		return VK_FALSE;
 	}
@@ -635,6 +641,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderingContextDriverVulkan::_debug_messenger_ca
 			objects_string + labels_string);
 
 	// Convert VK severity to our own log macros.
+	// Note: Which severity we receive depends on what's set in VkDebugUtilsMessengerCreateInfoEXT,
+	// we don't enable everything by default.
 	switch (p_message_severity) {
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
 			print_verbose(error_message);
@@ -852,9 +860,6 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 		driver_device.name = String::utf8(props.deviceName);
 		driver_device.vendor = props.vendorID;
 		driver_device.type = DeviceType(props.deviceType);
-		driver_device.workarounds = Workarounds();
-
-		_check_driver_workarounds(props, driver_device);
 
 		uint32_t queue_family_properties_count = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queue_family_properties_count, nullptr);
@@ -866,31 +871,6 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 	}
 
 	return OK;
-}
-
-void RenderingContextDriverVulkan::_check_driver_workarounds(const VkPhysicalDeviceProperties &p_device_properties, Device &r_device) {
-	// Workaround for the Adreno 6XX family of devices.
-	//
-	// There's a known issue with the Vulkan driver in this family of devices where it'll crash if a dynamic state for drawing is
-	// used in a command buffer before a dispatch call is issued. As both dynamic scissor and viewport are basic requirements for
-	// the engine to not bake this state into the PSO, the only known way to fix this issue is to reset the command buffer entirely.
-	//
-	// As the render graph has no built in limitations of whether it'll issue compute work before anything needs to draw on the
-	// frame, and there's no guarantee that compute work will never be dependent on rasterization in the future, this workaround
-	// will end recording on the current command buffer any time a compute list is encountered after a draw list was executed.
-	// A new command buffer will be created afterwards and the appropriate synchronization primitives will be inserted.
-	//
-	// Executing this workaround has the added cost of synchronization between all the command buffers that are created as well as
-	// all the individual submissions. This performance hit is accepted for the sake of being able to support these devices without
-	// limiting the design of the renderer.
-	//
-	// This bug was fixed in driver version 512.503.0, so we only enabled it on devices older than this.
-	//
-	r_device.workarounds.avoid_compute_after_draw =
-			r_device.vendor == Vendor::VENDOR_QUALCOMM &&
-			p_device_properties.deviceID >= 0x6000000 && // Adreno 6xx
-			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
-			r_device.name.find("Turnip") < 0;
 }
 
 bool RenderingContextDriverVulkan::_use_validation_layers() const {

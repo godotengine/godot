@@ -53,8 +53,10 @@ void Curve::set_point_count(int p_count) {
 		_points.resize(p_count);
 		mark_dirty();
 	} else {
+		const real_t default_offset = old_size == 0 ? CLAMP((real_t)0.0, _min_domain, _max_domain) : _max_domain;
+		const real_t default_value = CLAMP((real_t)0.0, _min_value, _max_value);
 		for (int i = p_count - old_size; i > 0; i--) {
-			_add_point(Vector2());
+			_add_point(Vector2(default_offset, default_value));
 		}
 	}
 	notify_property_list_changed();
@@ -2284,10 +2286,10 @@ Vector<RBMap<real_t, Vector3>> Curve3D::_tessellate_even_length(int p_max_stages
 }
 
 bool Curve3D::_filter_property(const String &p_name, int p_index) const {
-	if (p_index == 0) {
+	if (!closed && p_index == 0) {
 		return p_name != "in";
 	}
-	if (p_index == get_point_count() - 1) {
+	if (!closed && p_index == get_point_count() - 1) {
 		return p_name != "out";
 	}
 	return true;

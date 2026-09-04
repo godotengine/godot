@@ -1662,7 +1662,7 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 96);
 
-	//Get physical monitor Dimensions through XRandR and calculate dpi
+	// Get physical monitor Dimensions through XRandR and calculate DPI.
 	Size2i sc = screen_get_size(p_screen);
 	if (xrandr_ext_ok) {
 		int count = 0;
@@ -1693,8 +1693,56 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
 	}
 
-	//could not get dpi
+	// Could not get DPI.
 	return 96;
+}
+
+float DisplayServerX11::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 1.0);
+
+	// KDE on X11 stores fractional scaling in the Xsettings configuration file.
+	// Other desktop environments such as GNOME usually only support fractional scaling on Wayland.
+	// <https://wiki.archlinux.org/title/Xsettingsd>
+	const String xsettings_path = OS::get_singleton()->get_environment("HOME").path_join(".config/xsettingsd/xsettingsd.conf");
+	if (FileAccess::exists(xsettings_path)) {
+		Ref<FileAccess> file = FileAccess::open(xsettings_path, FileAccess::READ);
+		if (file.is_valid()) {
+			// The display scaling value is split into an integer portion, and a fractional part reported as `dpi * 1024`.
+			// The fractional part rolls over to `96 * 1024 = 98304` when reaching a new integer scale factor.
+			//
+			// We do not use the value reported by `screen_get_dpi()` as it reports the actual physical DPI of the monitor,
+			// rather than a pseudo-DPI value meant for scaling (which is always 96 DPI at 100% scaling, like on Windows).
+			int window_scaling_factor = 1;
+			float dpi = 0.0;
+			while (!file->eof_reached()) {
+				const String line = file->get_line().strip_edges();
+
+				if (line.begins_with("Gdk/WindowScalingFactor")) {
+					const Vector<String> parts = line.split(" ");
+					if (parts.size() == 2) {
+						window_scaling_factor = parts[1].to_int();
+					}
+				}
+
+				if (line.begins_with("Gdk/UnscaledDPI")) {
+					const Vector<String> parts = line.split(" ");
+					if (parts.size() == 2) {
+						dpi = parts[1].to_float() / 1024.0;
+					}
+				}
+			}
+
+			if (dpi > 0.0) {
+				return (dpi * MAX(window_scaling_factor, 1)) / 96.0;
+			}
+		}
+	}
+
+	// Could not get scale factor.
+	return 1.0;
 }
 
 int get_image_errorhandler(Display *dpy, XErrorEvent *ev) {
@@ -3241,7 +3289,7 @@ void DisplayServerX11::_update_window_icon(WindowData &p_wd) {
 			const uint8_t *r = w_icon->get_data().ptr();
 
 			long *wr = &pd.write[2];
-			uint8_t const *pr = r;
+			const uint8_t *pr = r;
 
 			for (int i = 0; i < w * h; i++) {
 				long v = 0;
@@ -4915,6 +4963,9 @@ void DisplayServerX11::process_events() {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
 				app_focused = false;
+
+				// Release pressed events here instead of FocusOut because it's a no-op until NOTIFICATION_APPLICATION_FOCUS_OUT is processed.
+				Input::get_singleton()->release_pressed_events();
 			}
 		} else {
 			time_since_no_focus = OS::get_singleton()->get_ticks_msec();
@@ -5274,8 +5325,6 @@ void DisplayServerX11::process_events() {
 					OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 				}
 				wd.focused = false;
-
-				Input::get_singleton()->release_pressed_events();
 
 				AccessibilityServer::get_singleton()->set_window_focused(window_id, false);
 				_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
@@ -6065,6 +6114,9 @@ Window find_window_from_process_id(Display *p_display, pid_t p_process_id) {
 		}
 	}
 
+	// Suppress any pending bad window errors.
+	XSync(p_display, False);
+
 	// Restore default error handler.
 	XSetErrorHandler(oldHandler);
 
@@ -6114,6 +6166,9 @@ Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, Pro
 
 	DEBUG_LOG_X11("Starting embedding %ld to window %lu \n", p_pid, wd.x11_window);
 
+	// Handle bad window errors silently because the embedded window may be closed at any time.
+	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&bad_window_error_handler);
+
 	EmbeddedProcessData *ep = nullptr;
 	if (embedded_processes.has(p_pid)) {
 		ep = embedded_processes.get(p_pid);
@@ -6121,6 +6176,8 @@ Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, Pro
 		// New process, trying to find the window.
 		Window process_window = find_window_from_process_id(x11_display, p_pid);
 		if (!process_window) {
+			XSync(x11_display, False);
+			XSetErrorHandler(oldHandler);
 			return ERR_DOES_NOT_EXIST;
 		}
 		DEBUG_LOG_X11("Process %ld window found: %lu \n", p_pid, process_window);
@@ -6131,9 +6188,6 @@ Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, Pro
 		_set_window_taskbar_pager_enabled(process_window, false);
 		embedded_processes.insert(p_pid, ep);
 	}
-
-	// Handle bad window errors silently because just in case the embedded window was closed.
-	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&bad_window_error_handler);
 
 	if (p_visible) {
 		// Resize and move the window to match the desired rectangle.
@@ -6236,6 +6290,9 @@ Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, Pro
 		}
 	}
 
+	// Suppress any pending bad window errors.
+	XSync(x11_display, False);
+
 	// Restore default error handler.
 	XSetErrorHandler(oldHandler);
 	return OK;
@@ -6267,6 +6324,9 @@ Error DisplayServerX11::request_close_embedded_process(ProcessID p_pid) {
 		ev.xclient.data.l[1] = CurrentTime;
 		XSendEvent(x11_display, ep->process_window, False, NoEventMask, &ev);
 	}
+
+	// Suppress any pending bad window errors.
+	XSync(x11_display, False);
 
 	// Restore default error handler.
 	XSetErrorHandler(oldHandler);
@@ -7567,21 +7627,13 @@ DisplayServerX11::~DisplayServerX11() {
 	}
 
 #ifdef SPEECHD_ENABLED
-	if (tts) {
-		memdelete(tts);
-	}
+	memdelete(tts);
 #endif
 
 #ifdef DBUS_ENABLED
-	if (screensaver) {
-		memdelete(screensaver);
-	}
-	if (portal_desktop) {
-		memdelete(portal_desktop);
-	}
-	if (atspi_monitor) {
-		memdelete(atspi_monitor);
-	}
+	memdelete(screensaver);
+	memdelete(portal_desktop);
+	memdelete(atspi_monitor);
 #endif
 }
 

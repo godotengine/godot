@@ -38,21 +38,12 @@
 class String;
 
 class CryptoCore {
+private:
+	static bool initialized;
+
 public:
-	class RandomGenerator {
-	private:
-		void *entropy = nullptr;
-		void *ctx = nullptr;
-
-		static int _entropy_poll(void *p_data, unsigned char *r_buffer, size_t p_len, size_t *r_len);
-
-	public:
-		RandomGenerator();
-		~RandomGenerator();
-
-		Error init();
-		Error get_random_bytes(uint8_t *r_buffer, size_t p_bytes);
-	};
+	static void initialize();
+	static void finalize();
 
 	class MD5Context {
 	private:
@@ -94,22 +85,36 @@ public:
 	};
 
 	class AESContext {
+	public:
+		enum class Mode {
+			NONE,
+			ENCRYPT,
+			DECRYPT,
+		};
+		enum class Cipher {
+			NONE,
+			CBC,
+			CFB,
+			ECB,
+		};
+
 	private:
+		uint32_t key_id = 0;
+		uint32_t alg = 0;
 		void *ctx = nullptr;
+
+		void reset();
 
 	public:
 		AESContext();
 		~AESContext();
 
-		Error set_encode_key(const uint8_t *p_key, size_t p_bits);
-		Error set_decode_key(const uint8_t *p_key, size_t p_bits);
-		Error encrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
-		Error decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
-		Error encrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst);
-		Error decrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst);
-		Error encrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst);
-		Error decrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst);
+		Error setup(Mode p_mode, Cipher p_cipher, const uint8_t *p_key, size_t p_key_length, const uint8_t *p_iv, size_t p_iv_size);
+		Error update(const uint8_t *p_src, size_t p_src_size, uint8_t *r_dst, size_t p_dst_size);
+		Error finish(uint8_t *r_dst, size_t p_dst_size);
 	};
+
+	static Error generate_random(uint8_t *r_buffer, size_t p_buffer_len);
 
 	static String b64_encode_str(const uint8_t *p_src, size_t p_src_len);
 	static Error b64_encode(uint8_t *r_dst, size_t p_dst_len, size_t *r_len, const uint8_t *p_src, size_t p_src_len);
@@ -118,4 +123,7 @@ public:
 	static Error md5(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[16]);
 	static Error sha1(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[20]);
 	static Error sha256(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[32]);
+
+	static Error encrypt_cfb(const uint8_t *p_src, uint8_t *r_dst, size_t p_length, const uint8_t *p_key, size_t p_key_length, const uint8_t p_iv[16]);
+	static Error decrypt_cfb(const uint8_t *p_src, uint8_t *r_dst, size_t p_length, const uint8_t *p_key, size_t p_key_length, const uint8_t p_iv[16]);
 };

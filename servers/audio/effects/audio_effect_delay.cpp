@@ -239,7 +239,7 @@ float AudioEffectDelay::get_feedback_level_db() const {
 }
 
 void AudioEffectDelay::set_feedback_lowpass(float p_lowpass) {
-	feedback_lowpass = p_lowpass;
+	feedback_lowpass = MAX(p_lowpass, 1.0);
 }
 
 float AudioEffectDelay::get_feedback_lowpass() const {
@@ -304,5 +304,5 @@ void AudioEffectDelay::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feedback_active"), "set_feedback_active", "is_feedback_active");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "feedback_delay_ms", PROPERTY_HINT_RANGE, "0,1500,1,suffix:ms"), "set_feedback_delay_ms", "get_feedback_delay_ms");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "feedback_level_db", PROPERTY_HINT_RANGE, "-60,0,0.01,suffix:dB"), "set_feedback_level_db", "get_feedback_level_db");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "feedback_lowpass", PROPERTY_HINT_RANGE, "1,16000,1"), "set_feedback_lowpass", "get_feedback_lowpass");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "feedback_lowpass", PROPERTY_HINT_RANGE, "20,16000,1,or_less,exp,suffix:Hz"), "set_feedback_lowpass", "get_feedback_lowpass");
 }

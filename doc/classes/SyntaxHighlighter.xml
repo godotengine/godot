@@ -54,6 +54,56 @@
 					}
 				}
 				[/codeblock]
+				[b]Example:[/b] Sample implementation. Colors the word [code]Godot[/code] blue.
+				[codeblocks]
+				[gdscript]
+				func _get_line_syntax_highlighting(line: int) -&gt; Dictionary:
+					var pattern_text = "Godot"
+					var result = Dictionary()
+					var text_edit = get_text_edit()
+					var line_text = text_edit.get_line(line)
+
+					var pos = line_text.find(pattern_text)
+					while pos != -1:
+						result[pos] = { "color": Color(0.0, 0.0, 1.0) }
+						var end_pos = pos + pattern_text.length()
+						pos = line_text.find(pattern_text, end_pos)
+						if pos != end_pos:
+							result[end_pos] = { "color": Color(1.0, 1.0, 1.0) }
+
+					return result
+
+				[/gdscript]
+				[csharp]
+				public override Dictionary _GetLineSyntaxHighlighting(int line)
+				{
+					string patternText = "Godot";
+					Dictionary result = new Dictionary();
+					TextEdit textEdit = GetTextEdit();
+					string lineText = textEdit.GetLine(line);
+
+					var pos = lineText.Find(patternText);
+					while (pos != -1)
+					{
+						result[pos] = new Dictionary()
+						{
+							{ "color", new Color(0.0f, 0.0f, 1.0f) }
+						};
+						var endPos = pos + patternText.Length;
+						pos = lineText.Find(patternText, endPos);
+						if (pos != endPos)
+						{
+							result[endPos] = new Dictionary()
+							{
+								{ "color", new Color(1.0f, 1.0f, 1.0f) }
+							};
+						}
+					}
+
+					return result;
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_text_edit" qualifiers="const">

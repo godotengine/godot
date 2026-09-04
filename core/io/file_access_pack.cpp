@@ -540,12 +540,14 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 			path_to_load = "res://" + (simplified_path + pf.salt).sha256_text();
 		}
 #endif
-		f = FileAccess::open(path_to_load, FileAccess::READ | FileAccess::SKIP_PACK);
-		ERR_FAIL_COND_MSG(f.is_null(), vformat(R"(Can't open pack-referenced file "%s" from sparse pack "%s".)", simplified_path, pf.pack));
+		Error err = OK;
+		f = FileAccess::open(path_to_load, FileAccess::READ | FileAccess::SKIP_PACK, &err);
+		ERR_FAIL_COND_MSG(err != OK, vformat(R"(Can't open pack-referenced file "%s" from sparse pack "%s" due to error "%s".)", simplified_path, pf.pack, error_names[err]));
 		off = 0; // For the sparse pack offset is always zero.
 	} else {
-		f = FileAccess::open(pf.pack, FileAccess::READ);
-		ERR_FAIL_COND_MSG(f.is_null(), vformat(R"(Can't open pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
+		Error err = OK;
+		f = FileAccess::open(pf.pack, FileAccess::READ, &err);
+		ERR_FAIL_COND_MSG(err != OK, vformat(R"(Can't open pack-referenced file "%s" from pack "%s" due to error "%s".)", p_path, pf.pack, error_names[err]));
 		f->seek(pf.offset);
 		off = pf.offset;
 	}
@@ -571,7 +573,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		}
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
-		ERR_FAIL_COND_MSG(err, vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s".)", p_path, pf.pack));
+		ERR_FAIL_COND_MSG(err != OK, vformat(R"(Can't open encrypted pack-referenced file "%s" from pack "%s" due to error "%s".)", p_path, pf.pack, error_names[err]));
 		f = fae;
 		off = 0;
 	}

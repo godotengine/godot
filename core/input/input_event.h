@@ -72,6 +72,7 @@ public:
 	bool is_action(const StringName &p_action, bool p_exact_match = false) const;
 	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false, bool p_exact_match = false) const;
 	bool is_action_released(const StringName &p_action, bool p_exact_match = false) const;
+	bool is_action_just_pressed_or_echo(const StringName &p_action, bool p_exact_match = false) const;
 	float get_action_strength(const StringName &p_action, bool p_exact_match = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
 
@@ -139,7 +140,7 @@ public:
 	void set_meta_pressed(bool p_pressed);
 	bool is_meta_pressed() const;
 
-	void set_modifiers_from_event(const InputEventWithModifiers *event);
+	void set_modifiers_from_event(const InputEventWithModifiers *p_event);
 
 	BitField<KeyModifierMask> get_modifiers_mask() const;
 

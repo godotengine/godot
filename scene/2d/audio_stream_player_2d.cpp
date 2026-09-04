@@ -37,12 +37,14 @@
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/audio/audio_stream.h"
 #include "scene/resources/world_2d.h"
 #include "servers/audio/audio_server.h"
-#include "servers/audio/audio_stream.h"
 
 #ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/area_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
 void AudioStreamPlayer2D::_notification(int p_what) {
@@ -82,6 +84,10 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 // Interacts with PhysicsServer2D, so can only be called during _physics_process.
 StringName AudioStreamPlayer2D::_get_actual_bus() {
 #ifndef PHYSICS_2D_DISABLED
+	if (area_mask == 0) {
+		return internal->bus;
+	}
+
 	Vector2 global_pos = get_global_position();
 
 	//check if any area is diverting sound into a bus
@@ -90,9 +96,9 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
 	ERR_FAIL_NULL_V(space_state, SceneStringName(Master));
-	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
+	PS2DT::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-	PhysicsDirectSpaceState2D::PointParameters point_params;
+	PS2DT::PointParameters point_params;
 	point_params.position = global_pos;
 	point_params.collision_mask = area_mask;
 	point_params.collide_with_bodies = false;
@@ -294,10 +300,6 @@ void AudioStreamPlayer2D::_set_playing(bool p_enable) {
 	internal->set_playing(p_enable);
 }
 
-void AudioStreamPlayer2D::_validate_property(PropertyInfo &p_property) const {
-	internal->validate_property(p_property);
-}
-
 void AudioStreamPlayer2D::set_max_distance(float p_pixels) {
 	ERR_FAIL_COND(p_pixels <= 0.0);
 	max_distance = p_pixels;
@@ -356,11 +358,11 @@ float AudioStreamPlayer2D::get_panning_strength() const {
 	return panning_strength;
 }
 
-AudioServer::PlaybackType AudioStreamPlayer2D::get_playback_type() const {
+AuSE::PlaybackType AudioStreamPlayer2D::get_playback_type() const {
 	return internal->get_playback_type();
 }
 
-void AudioStreamPlayer2D::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+void AudioStreamPlayer2D::set_playback_type(AuSE::PlaybackType p_playback_type) {
 	internal->set_playback_type(p_playback_type);
 }
 
@@ -429,7 +431,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_playback_type"), &AudioStreamPlayer2D::get_playback_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), "set_stream", "get_stream");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,or_greater,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_ONESHOT, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");
@@ -439,7 +441,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_attenuation", "get_attenuation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_AUDIO_BUS), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 

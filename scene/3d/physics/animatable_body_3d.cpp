@@ -108,7 +108,7 @@ void AnimatableBody3D::_notification(int p_what) {
 			// Used by sync to physics, send the new transform to the physics...
 			Transform3D new_transform = get_global_transform();
 
-			PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_TRANSFORM, new_transform);
+			PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PS3DE::BODY_STATE_TRANSFORM, new_transform);
 
 			// ... but then revert changes.
 			set_notify_local_transform(false);
@@ -127,6 +127,6 @@ void AnimatableBody3D::_bind_methods() {
 }
 
 AnimatableBody3D::AnimatableBody3D() :
-		StaticBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
+		StaticBody3D(PS3DE::BODY_MODE_KINEMATIC) {
 	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &AnimatableBody3D::_body_state_changed));
 }

@@ -36,12 +36,14 @@
 #include "scene/gui/texture_rect.h"
 
 class EditorSelectionHistory;
+class MarginContainer;
 
 class EditorObjectSelector : public Button {
 	GDCLASS(EditorObjectSelector, Button);
 
 	EditorSelectionHistory *history = nullptr;
 
+	MarginContainer *main_mc = nullptr;
 	TextureRect *current_object_icon = nullptr;
 	Label *current_object_label = nullptr;
 	TextureRect *sub_objects_icon = nullptr;

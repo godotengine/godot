@@ -195,8 +195,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the hyperbolic arc (also called inverse) sine of <paramref name="s"/> in radians.
-        /// Use it to get the angle from an angle's sine in hyperbolic space if
-        /// <paramref name="s"/> is larger or equal to 1.
+        /// Use it to get the angle from an angle's sine in hyperbolic space.
         /// </summary>
         /// <param name="s">The input hyperbolic sine value.</param>
         /// <returns>
@@ -210,8 +209,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the hyperbolic arc (also called inverse) sine of <paramref name="s"/> in radians.
-        /// Use it to get the angle from an angle's sine in hyperbolic space if
-        /// <paramref name="s"/> is larger or equal to 1.
+        /// Use it to get the angle from an angle's sine in hyperbolic space.
         /// </summary>
         /// <param name="s">The input hyperbolic sine value.</param>
         /// <returns>
@@ -774,14 +772,41 @@ namespace Godot
         }
 
         /// <summary>
-        /// Easing function, based on exponent. The <paramref name="curve"/> values are:
-        /// <c>0</c> is constant, <c>1</c> is linear, <c>0</c> to <c>1</c> is ease-in, <c>1</c> or more is ease-out.
-        /// Negative values are in-out/out-in.
+        /// Returns an eased value of <paramref name="s"/> based on an exponential easing function defined with <paramref name="curve"/>.
+        /// The <paramref name="curve"/> can be any floating-point number, with specific values leading to the following behaviors:
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Lower than <c>-1.0</c> (exclusive)</term>
+        ///         <description>Ease in-out.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>-1.0</c></term>
+        ///         <description>Linear.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <c>-1.0</c> and <c>0.0</c> (exclusive)</term>
+        ///         <description>Ease out-in.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>0.0</c></term>
+        ///         <description>Constant.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <c>0.0</c> and <c>1.0</c> (exclusive)</term>
+        ///         <description>Ease out.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>1.0</c></term>
+        ///         <description>Linear.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than <c>1.0</c> (exclusive)</term>
+        ///         <description>Ease in.</description>
+        ///     </item>
+        /// </list>
         /// </summary>
         /// <param name="s">The value to ease.</param>
-        /// <param name="curve">
-        /// <c>0</c> is constant, <c>1</c> is linear, <c>0</c> to <c>1</c> is ease-in, <c>1</c> or more is ease-out.
-        /// </param>
+        /// <param name="curve">The exponent defining the easing curve.</param>
         /// <returns>The eased value.</returns>
         public static float Ease(float s, float curve)
         {
@@ -818,14 +843,41 @@ namespace Godot
         }
 
         /// <summary>
-        /// Easing function, based on exponent. The <paramref name="curve"/> values are:
-        /// <c>0</c> is constant, <c>1</c> is linear, <c>0</c> to <c>1</c> is ease-in, <c>1</c> or more is ease-out.
-        /// Negative values are in-out/out-in.
+        /// Returns an eased value of <paramref name="s"/> based on an exponential easing function defined with <paramref name="curve"/>.
+        /// The <paramref name="curve"/> can be any floating-point number, with specific values leading to the following behaviors:
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Lower than <c>-1.0</c> (exclusive)</term>
+        ///         <description>Ease in-out.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>-1.0</c></term>
+        ///         <description>Linear.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <c>-1.0</c> and <c>0.0</c> (exclusive)</term>
+        ///         <description>Ease out-in.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>0.0</c></term>
+        ///         <description>Constant.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <c>0.0</c> and <c>1.0</c> (exclusive)</term>
+        ///         <description>Ease out.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>1.0</c></term>
+        ///         <description>Linear.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than <c>1.0</c> (exclusive)</term>
+        ///         <description>Ease in.</description>
+        ///     </item>
+        /// </list>
         /// </summary>
         /// <param name="s">The value to ease.</param>
-        /// <param name="curve">
-        /// <c>0</c> is constant, <c>1</c> is linear, <c>0</c> to <c>1</c> is ease-in, <c>1</c> or more is ease-out.
-        /// </param>
+        /// <param name="curve">The exponent defining the easing curve.</param>
         /// <returns>The eased value.</returns>
         public static double Ease(double s, double curve)
         {

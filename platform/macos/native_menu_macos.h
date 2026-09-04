@@ -64,6 +64,8 @@ class NativeMenuMacOS : public NativeMenu {
 	RID help_menu;
 	RID dock_menu;
 
+	void _update_align(MenuData *p_md);
+
 	int _get_system_menu_start(const NSMenu *p_menu) const;
 	int _get_system_menu_count(const NSMenu *p_menu) const;
 	bool _is_menu_opened(NSMenu *p_menu) const;
@@ -119,6 +121,7 @@ public:
 	virtual int find_item_index_with_tag(const RID &p_rid, const Variant &p_tag) const override;
 
 	virtual bool is_item_checked(const RID &p_rid, int p_idx) const override;
+	virtual bool is_item_indeterminate(const RID &p_rid, int p_idx) const override;
 	virtual bool is_item_checkable(const RID &p_rid, int p_idx) const override;
 	virtual bool is_item_radio_checkable(const RID &p_rid, int p_idx) const override;
 	virtual Callable get_item_callback(const RID &p_rid, int p_idx) const override;
@@ -136,6 +139,7 @@ public:
 	virtual int get_item_indentation_level(const RID &p_rid, int p_idx) const override;
 
 	virtual void set_item_checked(const RID &p_rid, int p_idx, bool p_checked) override;
+	virtual void set_item_indeterminate(const RID &p_rid, int p_idx, bool p_cindeterminate) override;
 	virtual void set_item_checkable(const RID &p_rid, int p_idx, bool p_checkable) override;
 	virtual void set_item_radio_checkable(const RID &p_rid, int p_idx, bool p_checkable) override;
 	virtual void set_item_callback(const RID &p_rid, int p_idx, const Callable &p_callback) override;

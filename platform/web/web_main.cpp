@@ -67,7 +67,7 @@ void exit_callback() {
 		main_started = false;
 	}
 	int exit_code = OS_Web::get_singleton()->get_exit_code();
-	memdelete(os);
+	delete os; // We used a normal new, so it needs a normal delete.
 	os = nullptr;
 	godot_cleanup_profiler();
 	emscripten_force_exit(exit_code); // Exit runtime.

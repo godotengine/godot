@@ -46,7 +46,7 @@ void PopupMenu::_clear_bind_compat_79965() {
 	clear(false);
 }
 
-void PopupMenu::_set_system_menu_root_compat_87452(const String &p_special) {
+void PopupMenu::_set_system_menu_root_bind_compat_87452(const String &p_special) {
 	if (p_special == "_dock") {
 		set_system_menu(NativeMenu::DOCK_MENU_ID);
 	} else if (p_special == "_apple") {
@@ -58,7 +58,7 @@ void PopupMenu::_set_system_menu_root_compat_87452(const String &p_special) {
 	}
 }
 
-String PopupMenu::_get_system_menu_root_compat_87452() const {
+String PopupMenu::_get_system_menu_root_bind_compat_87452() const {
 	switch (get_system_menu()) {
 		case NativeMenu::APPLICATION_MENU_ID:
 			return "_apple";
@@ -78,8 +78,8 @@ void PopupMenu::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("add_icon_shortcut", "texture", "shortcut", "id", "global"), &PopupMenu::_add_icon_shortcut_bind_compat_36493, DEFVAL(-1), DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("clear"), &PopupMenu::_clear_bind_compat_79965);
 
-	ClassDB::bind_compatibility_method(D_METHOD("set_system_menu_root", "special"), &PopupMenu::_set_system_menu_root_compat_87452);
-	ClassDB::bind_compatibility_method(D_METHOD("get_system_menu_root"), &PopupMenu::_get_system_menu_root_compat_87452);
+	ClassDB::bind_compatibility_method(D_METHOD("set_system_menu_root", "special"), &PopupMenu::_set_system_menu_root_bind_compat_87452);
+	ClassDB::bind_compatibility_method(D_METHOD("get_system_menu_root"), &PopupMenu::_get_system_menu_root_bind_compat_87452);
 }
 
 #endif // DISABLE_DEPRECATED

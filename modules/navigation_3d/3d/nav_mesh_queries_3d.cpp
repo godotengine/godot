@@ -401,7 +401,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 		// unreachable.
 		if (traversable_polys.is_empty()) {
 			// Thus use the further reachable polygon
-			ERR_BREAK_MSG(is_reachable == false, "It's not expect to not find the most reachable polygons");
+			ERR_BREAK_MSG(is_reachable == false, "Invalid navigation index or connection pointers. Check preceding navmesh geometry or placement errors.");
 			is_reachable = false;
 			if (reachable_end == nullptr) {
 				// The path is not found and there is not a way out.
@@ -1010,7 +1010,7 @@ ClosestPointQueryResult NavMeshQueries3D::map_iteration_get_closest_point_info(c
 				if (distance_squared < closest_point_distance_squared) {
 					closest_point_distance_squared = distance_squared;
 					result.point = p_point - plane_normalized * distance;
-					result.normal = plane_normal;
+					result.normal = plane_normalized;
 					result.owner = polygon.owner->get_self();
 
 					if (Math::is_zero_approx(distance)) {
@@ -1022,7 +1022,7 @@ ClosestPointQueryResult NavMeshQueries3D::map_iteration_get_closest_point_info(c
 				if (distance < closest_point_distance_squared) {
 					closest_point_distance_squared = distance;
 					result.point = closest_on_polygon;
-					result.normal = plane_normal;
+					result.normal = plane_normal.normalized();
 					result.owner = polygon.owner->get_self();
 				}
 			}

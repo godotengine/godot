@@ -88,7 +88,7 @@ Vector3 GodotPhysicsDirectBodyState3D::get_angular_velocity() const {
 }
 
 void GodotPhysicsDirectBodyState3D::set_transform(const Transform3D &p_transform) {
-	body->set_state(PhysicsServer3D::BODY_STATE_TRANSFORM, p_transform);
+	body->set_state(PS3DE::BODY_STATE_TRANSFORM, p_transform);
 }
 
 Transform3D GodotPhysicsDirectBodyState3D::get_transform() const {

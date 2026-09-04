@@ -242,7 +242,7 @@ inline bool Matrix<2, 2>::SetInversed(const Matrix<2, 2> &inM)
 	float d = inM.mCol[1].mF32[1];
 
 	// Calculate determinant
-	float det = a * d - b * c;
+	float det = DifferenceOfProducts(a, d, b, c);
 	if (det == 0.0f)
 		return false;
 

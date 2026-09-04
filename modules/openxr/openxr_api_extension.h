@@ -62,7 +62,7 @@ public:
 	uint64_t get_session();
 
 	// Helper method to convert an XrPosef to a Transform3D.
-	Transform3D transform_from_pose(GDExtensionConstPtr<const void> p_pose);
+	Transform3D transform_from_pose(GDExtensionPtr<const void> p_pose);
 
 	bool xr_result(uint64_t p_result, const String &p_format, const Array &p_args = Array());
 
@@ -83,7 +83,7 @@ public:
 	bool is_initialized();
 	bool is_running();
 
-	void set_custom_play_space(GDExtensionConstPtr<const void> p_custom_space);
+	void set_custom_play_space(GDExtensionPtr<const void> p_custom_space);
 	uint64_t get_play_space();
 	int64_t get_predicted_display_time();
 	int64_t get_next_frame_time();

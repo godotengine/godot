@@ -137,6 +137,13 @@ public:
 class AudioEffectNotchFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectNotchFilter, AudioEffectFilter);
 
+protected:
+	void _validate_property(PropertyInfo &p_property) const {
+		if (p_property.name == "gain") {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
+
 public:
 	AudioEffectNotchFilter() :
 			AudioEffectFilter(AudioFilterSW::NOTCH) {}
@@ -144,6 +151,13 @@ public:
 
 class AudioEffectBandLimitFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectBandLimitFilter, AudioEffectFilter);
+
+protected:
+	void _validate_property(PropertyInfo &p_property) const {
+		if (p_property.name == "gain") {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
 
 public:
 	AudioEffectBandLimitFilter() :

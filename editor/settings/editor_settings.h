@@ -128,6 +128,7 @@ private:
 	HashMap<String, String> compat_map;
 	void _handle_setting_compatibility();
 	void _rename_setting(const String &p_old_name, const String &p_new_name);
+	void _rename_shortcut(const String &p_old_path, const String &p_new_path);
 #endif
 
 	// Bind helpers.

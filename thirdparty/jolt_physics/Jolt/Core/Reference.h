@@ -61,7 +61,8 @@ public:
 	{
 	#ifndef JPH_TSAN_ENABLED
 		// Releasing a reference must use release semantics...
-		if (mRefCount.fetch_sub(1, memory_order_release) == 1)
+		uint32 old_value = mRefCount.fetch_sub(1, memory_order_release);
+		if (old_value == 1)
 		{
 			// ... so that we can use acquire to ensure that we see any updates from other threads that released a ref before deleting the object
 			atomic_thread_fence(memory_order_acquire);
@@ -69,9 +70,11 @@ public:
 		}
 	#else
 		// But under TSAN, we cannot use atomic_thread_fence, so we use an acq_rel operation unconditionally instead
-		if (mRefCount.fetch_sub(1, memory_order_acq_rel) == 1)
+		uint32 old_value = mRefCount.fetch_sub(1, memory_order_acq_rel);
+		if (old_value == 1)
 			delete static_cast<const T *>(this);
 	#endif
+		JPH_ASSERT(old_value != 0 && old_value != cEmbedded, "Too many calls to Release");
 	}
 
 	/// INTERNAL HELPER FUNCTION USED BY SERIALIZATION

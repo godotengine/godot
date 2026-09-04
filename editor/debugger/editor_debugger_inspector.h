@@ -55,6 +55,7 @@ public:
 	String node_name; // For human-readable name.
 	List<PropertyInfo> prop_list;
 	HashMap<StringName, TypedDictionary<uint64_t, Variant>> prop_values;
+	int debugger_id = 0;
 
 	bool _hide_script_from_inspector() { return true; }
 	bool _hide_metadata_from_inspector() { return true; }
@@ -88,7 +89,7 @@ public:
 	~EditorDebuggerInspector();
 
 	// Remote Object cache
-	EditorDebuggerRemoteObjects *set_objects(const Array &p_array);
+	EditorDebuggerRemoteObjects *set_objects(const Array &p_array, int p_debugger_id);
 	void clear_remote_inspector();
 	void clear_cache();
 	void invalidate_selection_from_cache(const TypedArray<uint64_t> &p_ids);

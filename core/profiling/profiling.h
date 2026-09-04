@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "profiling.gen.h" // IWYU pragma: keep.
+#include "core/profiling/profiling.gen.h" // IWYU pragma: keep.
 
 // This header provides profiling primitives (implemented as macros) for various backends.
 // See the "No profiling" branch at the bottom for a short description of the functions.
@@ -49,7 +49,9 @@
 
 #define TRACY_ENABLE
 
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4366) // The result of the unary operator may be unaligned.
 #include <tracy/Tracy.hpp>
+GODOT_MSVC_WARNING_POP
 
 // Hijacking the tracy namespace so we can use their macros.
 namespace tracy {
@@ -144,7 +146,7 @@ struct PerfettoScriptTracer {
 
 	PerfettoScriptTracer(const StringName &p_file, const StringName &p_function, const StringName &p_name, int p_line, bool p_system_call) : name(p_name), is_system_call(p_system_call) {
 		if (is_system_call || !__tracing_system_call.erase(name)) {
-			TRACE_EVENT_BEGIN("godot_scripting", perfetto::DynamicString(p_name.operator String().utf8().get_data()), "source file", p_file.operator String().utf8().get_data(), "line number", p_line);
+			TRACE_EVENT_BEGIN("godot_scripting", perfetto::DynamicString(p_name.string().utf8().get_data()), "source file", p_file.string().utf8().get_data(), "line number", p_line);
 			tracing = true;
 		}
 

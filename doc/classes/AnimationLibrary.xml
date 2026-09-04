@@ -62,29 +62,29 @@
 	</methods>
 	<signals>
 		<signal name="animation_added">
-			<param index="0" name="name" type="StringName" />
+			<param index="0" name="anim_name" type="StringName" />
 			<description>
-				Emitted when an [Animation] is added, under the key [param name].
+				Emitted when an [Animation] is added, under the key [param anim_name].
 			</description>
 		</signal>
 		<signal name="animation_changed">
-			<param index="0" name="name" type="StringName" />
+			<param index="0" name="anim_name" type="StringName" />
 			<description>
-				Emitted when there's a change in one of the animations, e.g. tracks are added, moved or have changed paths. [param name] is the key of the animation that was changed.
+				Emitted when there's a change in one of the animations, e.g. tracks are added, moved or have changed paths. [param anim_name] is the key of the animation that was changed.
 				See also [signal Resource.changed], which this acts as a relay for.
 			</description>
 		</signal>
 		<signal name="animation_removed">
-			<param index="0" name="name" type="StringName" />
+			<param index="0" name="anim_name" type="StringName" />
 			<description>
-				Emitted when an [Animation] stored with the key [param name] is removed.
+				Emitted when an [Animation] stored with the key [param anim_name] is removed.
 			</description>
 		</signal>
 		<signal name="animation_renamed">
-			<param index="0" name="name" type="StringName" />
-			<param index="1" name="to_name" type="StringName" />
+			<param index="0" name="old_name" type="StringName" />
+			<param index="1" name="new_name" type="StringName" />
 			<description>
-				Emitted when the key for an [Animation] is changed, from [param name] to [param to_name].
+				Emitted when the key for an [Animation] is changed, from [param old_name] to [param new_name].
 			</description>
 		</signal>
 	</signals>

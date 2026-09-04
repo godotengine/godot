@@ -38,7 +38,7 @@
 _FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
 	ERR_FAIL_NULL_V(EditorNode::get_singleton(), nullptr);
 	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
-	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	return Object::cast_to<GameViewPlugin>(EditorNode::get_editor_data().get_editor_by_name("Game"));
 }
 
 #endif
@@ -86,6 +86,24 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_selection_visible(visible);
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSelectionAvoidLocked(JNIEnv *env, jclass clazz, jboolean enabled) {
+#ifdef TOOLS_ENABLED
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
+		game_view_plugin->get_debugger()->set_selection_avoid_locked(enabled);
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSelectionPreferGroup(JNIEnv *env, jclass clazz, jboolean enabled) {
+#ifdef TOOLS_ENABLED
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
+		game_view_plugin->get_debugger()->set_selection_prefer_group(enabled);
 	}
 #endif
 }

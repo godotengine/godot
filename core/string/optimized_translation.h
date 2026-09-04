@@ -71,16 +71,16 @@ class OptimizedTranslation : public Translation {
 		Elem elem[1];
 	};
 
-	_FORCE_INLINE_ uint32_t hash(uint32_t d, const char *p_str) const {
-		if (d == 0) {
-			d = 0x1000193;
+	_FORCE_INLINE_ uint32_t hash(uint32_t p_d, const char *p_str) const {
+		if (p_d == 0) {
+			p_d = 0x1000193;
 		}
 		while (*p_str) {
-			d = (d * 0x1000193) ^ static_cast<uint8_t>(*p_str);
+			p_d = (p_d * 0x1000193) ^ static_cast<uint8_t>(*p_str);
 			p_str++;
 		}
 
-		return d;
+		return p_d;
 	}
 
 	virtual Vector<String> _get_message_list() const override;
@@ -91,11 +91,17 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _generate_bind_compat_119563(const Ref<Translation> &p_from);
+
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	virtual StringName get_message(const StringName &p_src_text, const StringName &p_context = "") const override; //overridable for other implementations
 	virtual StringName get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context = "") const override;
 	virtual Vector<String> get_translated_message_list() const override;
-	void generate(const Ref<Translation> &p_from);
+	bool generate(const Ref<Translation> &p_from);
 
 	virtual void get_message_list(List<StringName> *r_messages) const override;
 	virtual int get_message_count() const override;

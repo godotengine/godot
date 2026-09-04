@@ -33,10 +33,11 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "servers/audio/audio_effect.h"
+#include "servers/audio/audio_frame.h"
 #include "servers/audio/audio_server.h"
-#include "servers/audio/audio_stream.h"
 #include "servers/audio/effects/audio_effect_amplify.h"
 #include "servers/audio/effects/audio_effect_capture.h"
 #include "servers/audio/effects/audio_effect_chorus.h"
@@ -53,7 +54,6 @@
 #include "servers/audio/effects/audio_effect_reverb.h"
 #include "servers/audio/effects/audio_effect_spectrum_analyzer.h"
 #include "servers/audio/effects/audio_effect_stereo_enhance.h"
-#include "servers/audio/effects/audio_stream_generator.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
 #include "servers/debugger/servers_debugger.h"
@@ -62,6 +62,7 @@
 #include "servers/display/native_menu.h"
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/movie_writer/movie_writer_pngwav.h"
+#ifdef RD_ENABLED
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
@@ -69,6 +70,7 @@
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_binds.h"
+#endif // RD_ENABLED
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_include_db.h"
 #include "servers/rendering/shader_types.h"
@@ -86,22 +88,30 @@
 
 // 2D physics and navigation.
 #ifndef NAVIGATION_2D_DISABLED
+#include "servers/navigation_2d/navigation_path_query_parameters_2d.h"
+#include "servers/navigation_2d/navigation_path_query_result_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d_manager.h"
 #endif // NAVIGATION_2D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"
 #include "servers/physics_2d/physics_server_2d_dummy.h"
 #include "servers/physics_2d/physics_server_2d_extension.h"
+#include "servers/physics_2d/physics_server_2d_manager.h"
 #endif // PHYSICS_2D_DISABLED
 
 // 3D physics and navigation.
 #ifndef NAVIGATION_3D_DISABLED
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
+#include "servers/navigation_3d/navigation_path_query_result_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d_manager.h"
 #endif // NAVIGATION_3D_DISABLED
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_3d/physics_server_3d.h"
 #include "servers/physics_3d/physics_server_3d_dummy.h"
 #include "servers/physics_3d/physics_server_3d_extension.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 #endif // PHYSICS_3D_DISABLED
 
 // XR
@@ -163,19 +173,14 @@ void register_server_types() {
 	GDREGISTER_ABSTRACT_CLASS(AccessibilityServer);
 	GDREGISTER_ABSTRACT_CLASS(DisplayServer);
 	GDREGISTER_ABSTRACT_CLASS(RenderingServer);
+
 	GDREGISTER_CLASS(AudioServer);
+	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 
 	GDREGISTER_CLASS(NativeMenu);
 
 	GDREGISTER_CLASS(CameraServer);
 
-	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
-
-	GDREGISTER_CLASS(AudioStream);
-	GDREGISTER_CLASS(AudioStreamPlayback);
-	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlaybackResampled);
-	GDREGISTER_CLASS(AudioStreamMicrophone);
-	GDREGISTER_CLASS(AudioStreamRandomizer);
 	GDREGISTER_CLASS(AudioSample);
 	GDREGISTER_CLASS(AudioSamplePlayback);
 	GDREGISTER_VIRTUAL_CLASS(AudioEffect);
@@ -183,9 +188,6 @@ void register_server_types() {
 	GDREGISTER_CLASS(AudioEffectEQ);
 	GDREGISTER_CLASS(AudioEffectFilter);
 	GDREGISTER_CLASS(AudioBusLayout);
-
-	GDREGISTER_CLASS(AudioStreamGenerator);
-	GDREGISTER_ABSTRACT_CLASS(AudioStreamGeneratorPlayback);
 
 	{
 		//audio effects
@@ -227,8 +229,19 @@ void register_server_types() {
 #endif
 	}
 
-	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
+	GDREGISTER_ABSTRACT_CLASS(RenderData);
+	GDREGISTER_CLASS(RenderDataExtension);
+	GDREGISTER_ABSTRACT_CLASS(RenderSceneData);
+	GDREGISTER_CLASS(RenderSceneDataExtension);
+
+	GDREGISTER_CLASS(RenderSceneBuffersConfiguration);
+	GDREGISTER_ABSTRACT_CLASS(RenderSceneBuffers);
+	GDREGISTER_CLASS(RenderSceneBuffersExtension);
+
 	GDREGISTER_CLASS(ShaderIncludeDB);
+
+#ifdef RD_ENABLED
+	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 	GDREGISTER_CLASS(RDTextureFormat);
 	GDREGISTER_CLASS(RDTextureView);
 	GDREGISTER_CLASS(RDAttachmentFormat);
@@ -250,21 +263,13 @@ void register_server_types() {
 	GDREGISTER_CLASS(RDPipelineShader);
 	GDREGISTER_CLASS(RDHitGroup);
 
-	GDREGISTER_ABSTRACT_CLASS(RenderData);
-	GDREGISTER_CLASS(RenderDataExtension);
 	GDREGISTER_CLASS(RenderDataRD);
-
-	GDREGISTER_ABSTRACT_CLASS(RenderSceneData);
-	GDREGISTER_CLASS(RenderSceneDataExtension);
 	GDREGISTER_CLASS(RenderSceneDataRD);
 
-	GDREGISTER_CLASS(RenderSceneBuffersConfiguration);
-	GDREGISTER_ABSTRACT_CLASS(RenderSceneBuffers);
-	GDREGISTER_CLASS(RenderSceneBuffersExtension);
 	GDREGISTER_CLASS(RenderSceneBuffersRD);
-
 	GDREGISTER_CLASS(FramebufferCacheRD);
 	GDREGISTER_CLASS(UniformSetCacheRD);
+#endif // RD_ENABLED
 
 	GDREGISTER_CLASS(CameraFeed);
 

@@ -36,12 +36,6 @@
 #include "../objects/jolt_body_3d.h"
 #include "../spaces/jolt_space_3d.h"
 
-namespace {
-
-constexpr int JOINT_DEFAULT_SOLVER_PRIORITY = 1;
-
-} // namespace
-
 void JoltJoint3D::_shift_reference_frames(const Vector3 &p_linear_shift, const Vector3 &p_angular_shift, Transform3D &r_shifted_ref_a, Transform3D &r_shifted_ref_b) {
 	Vector3 origin_a = local_ref_a.origin;
 	Vector3 origin_b = local_ref_b.origin;
@@ -87,6 +81,18 @@ void JoltJoint3D::_update_iterations() {
 		jolt_ref->SetNumVelocityStepsOverride((JPH::uint)velocity_iterations);
 		jolt_ref->SetNumPositionStepsOverride((JPH::uint)position_iterations);
 	}
+}
+
+void JoltJoint3D::_update_priority() {
+	if (jolt_ref != nullptr) {
+		jolt_ref->SetConstraintPriority((JPH::uint)solver_priority);
+	}
+}
+
+void JoltJoint3D::_update_joint() {
+	_update_enabled();
+	_update_iterations();
+	_update_priority();
 }
 
 void JoltJoint3D::_enabled_changed() {
@@ -173,14 +179,16 @@ void JoltJoint3D::set_enabled(bool p_enabled) {
 	_enabled_changed();
 }
 
-int JoltJoint3D::get_solver_priority() const {
-	return JOINT_DEFAULT_SOLVER_PRIORITY;
-}
-
 void JoltJoint3D::set_solver_priority(int p_priority) {
-	if (p_priority != JOINT_DEFAULT_SOLVER_PRIORITY) {
-		WARN_PRINT(vformat("Joint solver priority is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
+	p_priority = MAX(0, p_priority);
+
+	if (solver_priority == p_priority) {
+		return;
 	}
+
+	solver_priority = p_priority;
+
+	_update_priority();
 }
 
 void JoltJoint3D::set_solver_velocity_iterations(int p_iterations) {

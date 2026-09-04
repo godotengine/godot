@@ -33,6 +33,8 @@
 #include "core/config/engine.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "servers/physics_2d/direct_states/physics_direct_body_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void AnimatableBody2D::set_sync_to_physics(bool p_enable) {
 	if (sync_to_physics == p_enable) {
@@ -93,7 +95,7 @@ void AnimatableBody2D::_notification(int p_what) {
 			// Used by sync to physics, send the new transform to the physics...
 			Transform2D new_transform = get_global_transform();
 
-			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
+			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PS2DE::BODY_STATE_TRANSFORM, new_transform);
 
 			// ... but then revert changes.
 			set_notify_local_transform(false);
@@ -111,5 +113,5 @@ void AnimatableBody2D::_bind_methods() {
 }
 
 AnimatableBody2D::AnimatableBody2D() :
-		StaticBody2D(PhysicsServer2D::BODY_MODE_KINEMATIC) {
+		StaticBody2D(PS2DE::BODY_MODE_KINEMATIC) {
 }

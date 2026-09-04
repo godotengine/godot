@@ -103,7 +103,6 @@ class GDExtension : public Resource {
 
 #ifdef TOOLS_ENABLED
 	bool is_reloading = false;
-	Vector<GDExtensionMethodBind *> invalid_methods;
 	Vector<ObjectID> instance_bindings;
 	GDExtensionEditorGetClassesUsedCallback get_classes_used_callback = nullptr;
 

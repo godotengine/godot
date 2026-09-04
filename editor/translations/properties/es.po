@@ -116,13 +116,15 @@
 # Alejandro Moctezuma <moctezumaalejandro25@gmail.com>, 2025, 2026.
 # Julián Lacomba <julian_alberto93@yahoo.com.ar>, 2025.
 # Kevin <kevmed39@protonmail.com>, 2025.
+# Eric Lael Vasquez Carreño <clvasquezer@gmail.com>, 2026.
+# Juan José Arcila Valderrama <sedmirnel124@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-20 09:04+0000\n"
-"Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2026-03-30 14:09+0000\n"
+"Last-Translator: Juan José Arcila Valderrama <sedmirnel124@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -130,7 +132,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -166,7 +168,7 @@ msgid "Print Header"
 msgstr "Imprimir Encabezado"
 
 msgid "Enable Alt Space Menu"
-msgstr "Activar Menú Alt Espacio"
+msgstr "Activar el Menú Alt Espacio"
 
 msgid "Use Hidden Project Data Directory"
 msgstr "Usar Directorio de Datos Ocultos del Proyecto"
@@ -807,6 +809,9 @@ msgstr "Big Endian"
 msgid "Blocking Mode Enabled"
 msgstr "Modo de Bloqueo Activado"
 
+msgid "Connection"
+msgstr "Conexión"
+
 msgid "Read Chunk Size"
 msgstr "Leer Tamaño del Fragmento"
 
@@ -996,12 +1001,6 @@ msgstr "Desplazamiento de Fin"
 msgid "Easing"
 msgstr "Suavizar"
 
-msgid "Asset Library"
-msgstr "Librería de Assets"
-
-msgid "Available URLs"
-msgstr "URLs Disponibles"
-
 msgid "Debug Adapter"
 msgstr "Adaptador de Depuración"
 
@@ -1112,6 +1111,9 @@ msgstr "Exportar proyecto solamente"
 
 msgid "Delete Old Export Files Unconditionally"
 msgstr "Eliminar Archivos de Exportación Obsoletos Incondicionalmente"
+
+msgid "Camera"
+msgstr "Cámara"
 
 msgid "Plugins"
 msgstr "Plugins"
@@ -1527,6 +1529,9 @@ msgstr "Nombre de Raíz"
 msgid "Root Script"
 msgstr "Script Raíz"
 
+msgid "Mesh Library"
+msgstr "Librería de Mesh"
+
 msgid "Apply Root Scale"
 msgstr "Aplicar Escala de Raíz"
 
@@ -1576,7 +1581,7 @@ msgid "Remove Immutable Tracks"
 msgstr "Eliminar Pistas Inmutables"
 
 msgid "Import Rest as Reset"
-msgstr "Importar Descanso como RESET"
+msgstr "Importar Rest como Reset"
 
 msgid "Import Script"
 msgstr "Importar Script"
@@ -1755,6 +1760,12 @@ msgstr "Saturación"
 msgid "Color Map"
 msgstr "Mapa de Color"
 
+msgid "Fix Alpha Border"
+msgstr "Corregir Borde Alfa"
+
+msgid "Premult Alpha"
+msgstr "Alfa Premultiplicado"
+
 msgid "Normal Map"
 msgstr "Mapa de Normales"
 
@@ -1781,12 +1792,6 @@ msgstr "Azul"
 
 msgid "Alpha"
 msgstr "Alfa"
-
-msgid "Fix Alpha Border"
-msgstr "Corregir Borde Alfa"
-
-msgid "Premult Alpha"
-msgstr "Alfa Premultiplicado"
 
 msgid "Normal Map Invert Y"
 msgstr "Invertir Y en Mapa Normal"
@@ -1999,8 +2004,35 @@ msgstr "Colores de Gizmo"
 msgid "Particles Emission Shape"
 msgstr "Forma de Emisión de Partículas"
 
+msgid "Mesh"
+msgstr "Mesh"
+
+msgid "Mesh Transform"
+msgstr "Transformación de Mesh"
+
+msgid "Mesh Cast Shadow"
+msgstr "Malla Proyecta Sombra"
+
+msgid "Shapes"
+msgstr "Formas"
+
+msgid "Navigation Mesh"
+msgstr "Mesh de Navegación"
+
+msgid "Navigation Mesh Transform"
+msgstr "Transformación de Mesh de Navegación"
+
+msgid "Navigation Layers"
+msgstr "Capas de Navegación"
+
+msgid "Preview"
+msgstr "Vista Previa"
+
 msgid "Interface"
 msgstr "Interfaz"
+
+msgid "Localization"
+msgstr "Localización"
 
 msgid "Editor Language"
 msgstr "Idioma del Editor"
@@ -2008,8 +2040,14 @@ msgstr "Idioma del Editor"
 msgid "Use Threads"
 msgstr "Usar Hilos"
 
+msgid "Available URLs"
+msgstr "URLs Disponibles"
+
 msgid "Localize Settings"
 msgstr "Ajustes de Localización"
+
+msgid "Docks"
+msgstr "Paneles"
 
 msgid "Dock Tab Style"
 msgstr "Estilo de Pestañas del Dock"
@@ -2020,6 +2058,9 @@ msgstr "Estilo de Pestaña de Panel Inferior"
 msgid "UI Layout Direction"
 msgstr "Orientación del Layout de la UI"
 
+msgid "Appearance"
+msgstr "Apariencia"
+
 msgid "Display Scale"
 msgstr "Escala de Visualización"
 
@@ -2029,14 +2070,14 @@ msgstr "Escala De Visualización Personalizada"
 msgid "Editor Screen"
 msgstr "Pantalla del Editor"
 
+msgid "Input"
+msgstr "Entrada"
+
 msgid "Tablet Driver"
 msgstr "Controlador de Tableta"
 
 msgid "Project Manager Screen"
 msgstr "Pantalla del Administrador de Proyectos"
-
-msgid "Connection"
-msgstr "Conexión"
 
 msgid "Check for Updates"
 msgstr "Comprobar Actualizaciones"
@@ -2095,6 +2136,9 @@ msgstr "Código Fuente"
 msgid "Dragging Hover Wait Seconds"
 msgstr "Segundos de Espera al Arrastrar"
 
+msgid "Behavior"
+msgstr "Comportamiento"
+
 msgid "Separate Distraction Mode"
 msgstr "Modo de Distracción Separado"
 
@@ -2140,14 +2184,8 @@ msgstr "Actualizar Continuamente"
 msgid "Collapse Main Menu"
 msgstr "Minimizar Menú Principal"
 
-msgid "Show Scene Tree Root Selection"
-msgstr "Mostrar Selección de la Raíz del Árbol de Escenas"
-
 msgid "Derive Script Globals by Name"
 msgstr "Derivar Script Globales por Nombre"
-
-msgid "Docks"
-msgstr "Paneles"
 
 msgid "Scene Tree"
 msgstr "Árbol de Escenas"
@@ -2482,9 +2520,6 @@ msgstr "Lista de Advertencias"
 msgid "Notice List"
 msgstr "Lista de avisos"
 
-msgid "Appearance"
-msgstr "Apariencia"
-
 msgid "Enable Inline Color Picker"
 msgstr "Habilitar Selector de Color en Línea"
 
@@ -2562,9 +2597,6 @@ msgstr "Dibujar Espacios"
 
 msgid "Line Spacing"
 msgstr "Espaciado de Línea"
-
-msgid "Behavior"
-msgstr "Comportamiento"
 
 msgid "Empty Selection Clipboard"
 msgstr "Selección de Portapapeles Vacío"
@@ -2775,9 +2807,6 @@ msgstr "AABB"
 
 msgid "Stream Player 3D"
 msgstr "Stream Player 3D"
-
-msgid "Camera"
-msgstr "Cámara"
 
 msgid "Decal"
 msgstr "Decal"
@@ -3211,6 +3240,21 @@ msgstr "Activar TLS Versión 1"
 msgid "Remote Host"
 msgstr "Host Remoto"
 
+msgid "Language Server"
+msgstr "Servidor de Lenguaje"
+
+msgid "Enable Smart Resolve"
+msgstr "Activar Smart Resolve"
+
+msgid "Show Native Symbols in Editor"
+msgstr "Mostrar Símbolos Nativos en el Editor"
+
+msgid "Use Thread"
+msgstr "Usar Hilo"
+
+msgid "Poll Limit (µsec)"
+msgstr "Límite Sondeo (µseg)"
+
 msgid "Debugger"
 msgstr "Depurador"
 
@@ -3249,9 +3293,6 @@ msgstr "Ruta de la clave pública SSH"
 
 msgid "SSH Private Key Path"
 msgstr "Ruta de la Clave Privada SSH"
-
-msgid "Input"
-msgstr "Entrada"
 
 msgid "Buffering"
 msgstr "Búfer"
@@ -3793,9 +3834,6 @@ msgstr "Prioridad de Colisión"
 msgid "Flip Faces"
 msgstr "Voltear Caras"
 
-msgid "Mesh"
-msgstr "Mesh"
-
 msgid "Material"
 msgstr "Material"
 
@@ -4029,21 +4067,6 @@ msgstr "Obtener Nodo Por Defecto Sin Onready"
 
 msgid "Onready With Export"
 msgstr "Onready Con Export"
-
-msgid "Language Server"
-msgstr "Servidor de Lenguaje"
-
-msgid "Enable Smart Resolve"
-msgstr "Activar Smart Resolve"
-
-msgid "Show Native Symbols in Editor"
-msgstr "Mostrar Símbolos Nativos en el Editor"
-
-msgid "Use Thread"
-msgstr "Usar Hilo"
-
-msgid "Poll Limit (µsec)"
-msgstr "Límite Sondeo (µseg)"
 
 msgid "Copyright"
 msgstr "Copyright"
@@ -4313,7 +4336,7 @@ msgid "Object Model Type"
 msgstr "Tipo de Modelo de Objeto"
 
 msgid "Json Pointers"
-msgstr "Punteros JSON"
+msgstr "Punteros Json"
 
 msgid "Variant Type"
 msgstr "Tipo de Variant"
@@ -4356,9 +4379,6 @@ msgstr "Envolver S"
 
 msgid "Wrap T"
 msgstr "Envolver T"
-
-msgid "Mesh Library"
-msgstr "Librería de Mesh"
 
 msgid "Physics Material"
 msgstr "Material de Física"
@@ -4936,6 +4956,129 @@ msgstr "Dirección de IGD"
 msgid "IGD Status"
 msgstr "Estado del IGD"
 
+msgid "Output Port for Preview"
+msgstr "Puerto de Salida para Previsualización"
+
+msgid "Modes"
+msgstr "Modos"
+
+msgid "Flags"
+msgstr "Marcadores"
+
+msgid "Stencil"
+msgstr "Plantilla"
+
+msgid "Reference"
+msgstr "Referencia"
+
+msgid "Stencil Modes"
+msgstr "Modos de Plantilla"
+
+msgid "Stencil Flags"
+msgstr "Indicadores de Plantilla"
+
+msgid "Input Name"
+msgstr "Nombre de Entrada"
+
+msgid "Parameter Name"
+msgstr "Nombre del Parámetro"
+
+msgid "Qualifier"
+msgstr "Calificador"
+
+msgid "Instance Index"
+msgstr "Índice de Instancia"
+
+msgid "Tint Color Enabled"
+msgstr "Color de Tinte Activado"
+
+msgid "Tint Color"
+msgstr "Color de Tinte"
+
+msgid "Autoshrink"
+msgstr "Autoreducir"
+
+msgid "Expression"
+msgstr "Expresión"
+
+msgid "Varying Name"
+msgstr "Nombre de la Varying"
+
+msgid "Varying Type"
+msgstr "Tipo de Varying"
+
+msgid "Op Type"
+msgstr "Tipo de Operación"
+
+msgid "Constant"
+msgstr "Constante"
+
+msgid "Source"
+msgstr "Fuente"
+
+msgid "Texture Type"
+msgstr "Tipo de Textura"
+
+msgid "Texture Array"
+msgstr "Array de Textura"
+
+msgid "Cube Map"
+msgstr "Mapa de Cubo"
+
+msgid "Operator"
+msgstr "Operador"
+
+msgid "Function"
+msgstr "Función"
+
+msgid "Hint"
+msgstr "Indicio"
+
+msgid "Step"
+msgstr "Paso"
+
+msgid "Default Value Enabled"
+msgstr "Valor Predeterminado Activado"
+
+msgid "Default Value"
+msgstr "Valor Predeterminado"
+
+msgid "Enum Names"
+msgstr "Nombres de Enumeración"
+
+msgid "Color Default"
+msgstr "Color Predeterminado"
+
+msgid "Texture Filter"
+msgstr "Filtrado de Textura"
+
+msgid "Texture Repeat"
+msgstr "Repetir Textura"
+
+msgid "Texture Source"
+msgstr "Fuente de Textura"
+
+msgid "Condition"
+msgstr "Condición"
+
+msgid "Billboard Type"
+msgstr "Tipo de Billboard"
+
+msgid "Keep Scale"
+msgstr "Mantener Escala"
+
+msgid "Mode 2D"
+msgstr "Modo 2D"
+
+msgid "Use All Surfaces"
+msgstr "Usar Todas las Superficies"
+
+msgid "Surface Index"
+msgstr "Índice de Superficie"
+
+msgid "Degrees Mode"
+msgstr "Modo de Grados"
+
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -5034,6 +5177,9 @@ msgstr "Usar Wi-Fi para depuración remota"
 
 msgid "Wi-Fi Remote Debug Host"
 msgstr "Host Remoto usando Wi-fi"
+
+msgid "Background Color"
+msgstr "Color de Fondo"
 
 msgid "Launcher Icons"
 msgstr "Ícono del Launcher"
@@ -5158,9 +5304,6 @@ msgstr "Soporte Largo"
 msgid "Support Xlarge"
 msgstr "Soporte Xlarge"
 
-msgid "Background Color"
-msgstr "Color de Fondo"
-
 msgid "User Data Backup"
 msgstr "Backup de Datos del Usuario"
 
@@ -5172,15 +5315,6 @@ msgstr "Línea de Comandos"
 
 msgid "Extra Args"
 msgstr "Argumentos extras"
-
-msgid "APK Expansion"
-msgstr "Expansión del APK"
-
-msgid "Salt"
-msgstr "Sal"
-
-msgid "Public Key"
-msgstr "Clave Pública"
 
 msgid "Permissions"
 msgstr "Permisos"
@@ -6085,9 +6219,6 @@ msgstr "Distancia Deseada del Objetivo"
 msgid "Path Max Distance"
 msgstr "Distancia Máxima de la Ruta"
 
-msgid "Navigation Layers"
-msgstr "Capas de Navegación"
-
 msgid "Pathfinding Algorithm"
 msgstr "Algoritmo de Búsqueda de Caminos"
 
@@ -6819,9 +6950,6 @@ msgstr "Determinista"
 msgid "Pixel Size"
 msgstr "Tamaño de Píxeles"
 
-msgid "Flags"
-msgstr "Marcadores"
-
 msgid "Billboard"
 msgstr "Billboard"
 
@@ -6851,9 +6979,6 @@ msgstr "Modo Antialiasing Alpha"
 
 msgid "Alpha Antialiasing Edge"
 msgstr "Bordes con Antialiasing Alpha"
-
-msgid "Texture Filter"
-msgstr "Filtrado de Textura"
 
 msgid "Render Priority"
 msgstr "Prioridad de Renderización"
@@ -7145,9 +7270,6 @@ msgstr "Mantener Velocidad en Y"
 
 msgid "NavigationMesh"
 msgstr "NavigationMesh"
-
-msgid "Navigation Mesh"
-msgstr "Mesh de Navegación"
 
 msgid "Quaternion"
 msgstr "Cuaternion"
@@ -7773,12 +7895,6 @@ msgstr "Modo de Conmutación"
 msgid "Advance"
 msgstr "Avance"
 
-msgid "Condition"
-msgstr "Condición"
-
-msgid "Expression"
-msgstr "Expresión"
-
 msgid "State Machine Type"
 msgstr "Tipo de Maquina de Estado"
 
@@ -7995,14 +8111,11 @@ msgstr "Tamaños de Fuente"
 msgid "Styles"
 msgstr "Estilos"
 
-msgid "Clip Contents"
-msgstr "Contenidos del Clip"
-
 msgid "Custom Minimum Size"
 msgstr "Tamaño Mínimo Personalizado"
 
-msgid "Layout Direction"
-msgstr "Dirección del Layout"
+msgid "Clip Contents"
+msgstr "Contenidos del Clip"
 
 msgid "Layout Mode"
 msgstr "Modo de Diseño"
@@ -8031,11 +8144,11 @@ msgstr "Dimensionamiento del Contenedor"
 msgid "Stretch Ratio"
 msgstr "Relación de Estiramiento"
 
-msgid "Localization"
-msgstr "Localización"
-
 msgid "Localize Numeral System"
 msgstr "Localizar Sistema Numérico"
+
+msgid "Layout Direction"
+msgstr "Dirección del Layout"
 
 msgid "Tooltip"
 msgstr "Tooltip"
@@ -8264,12 +8377,6 @@ msgstr "Margen de Autoshrink"
 
 msgid "Drag Margin"
 msgstr "Margen de Arrastre"
-
-msgid "Tint Color Enabled"
-msgstr "Color de Tinte Activado"
-
-msgid "Tint Color"
-msgstr "Color de Tinte"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "Ignorar Tipo de Conexión Inválido"
@@ -8511,9 +8618,6 @@ msgstr "Valor Mínimo"
 msgid "Max Value"
 msgstr "Valor Máximo"
 
-msgid "Step"
-msgstr "Paso"
-
 msgid "Page"
 msgstr "Página"
 
@@ -8736,9 +8840,6 @@ msgstr "Posición de las Pestañas"
 msgid "Tabs Visible"
 msgstr "Pestañas Visibles"
 
-msgid "All Tabs in Front"
-msgstr "Todas las Pestañas al Frente"
-
 msgid "Use Hidden Tabs for Min Size"
 msgstr "Usar Pestañas Ocultas Para Tamaño Mínimo"
 
@@ -8933,7 +9034,7 @@ msgid "Download Chunk Size"
 msgstr "Descargar Tamaño del Fragmento"
 
 msgid "Accept Gzip"
-msgstr "Aceptar GZip"
+msgstr "Aceptar Gzip"
 
 msgid "Body Size Limit"
 msgstr "Límite del Tamaño del Cuerpo"
@@ -8991,9 +9092,6 @@ msgstr "Sugerencia de Depuración de Navegación"
 
 msgid "Multiplayer Poll"
 msgstr "Encuesta Multijugador"
-
-msgid "Shapes"
-msgstr "Formas"
 
 msgid "Shape Color"
 msgstr "Color de la Forma"
@@ -9213,6 +9311,9 @@ msgstr "Anulación de Tamaño 2D"
 
 msgid "Size 2D Override Stretch"
 msgstr "Anulación del Tamaño 2D de Estiramiento"
+
+msgid "View Count"
+msgstr "Contador de Vistas"
 
 msgid "Render Target"
 msgstr "Objetivo de Renderizado"
@@ -9532,18 +9633,6 @@ msgstr "Datos del Mapa"
 msgid "Item"
 msgstr "Elemento"
 
-msgid "Mesh Transform"
-msgstr "Transformación de Mesh"
-
-msgid "Mesh Cast Shadow"
-msgstr "Malla Proyecta Sombra"
-
-msgid "Navigation Mesh Transform"
-msgstr "Transformación de Mesh de Navegación"
-
-msgid "Preview"
-msgstr "Vista Previa"
-
 msgid "Add UV2"
 msgstr "Añadir UV2"
 
@@ -9834,9 +9923,6 @@ msgstr "FOV Personalizado"
 
 msgid "Ambient Light"
 msgstr "Luz Ambiental"
-
-msgid "Source"
-msgstr "Fuente"
 
 msgid "Sky Contribution"
 msgstr "Contribución del Cielo"
@@ -10144,9 +10230,6 @@ msgstr "Metálico"
 msgid "Texture Channel"
 msgstr "Canal de Textura"
 
-msgid "Operator"
-msgstr "Operador"
-
 msgid "On UV2"
 msgstr "En UV2"
 
@@ -10231,9 +10314,6 @@ msgstr "Deshabilitar Recibimiento de Sombras"
 msgid "Shadow to Opacity"
 msgstr "Sombra a Opacidad"
 
-msgid "Keep Scale"
-msgstr "Mantener Escala"
-
 msgid "Particles Anim"
 msgstr "Animación de Partículas"
 
@@ -10276,14 +10356,8 @@ msgstr "MSDF"
 msgid "Pixel Range"
 msgstr "Rango de Píxeles"
 
-msgid "Stencil"
-msgstr "Plantilla"
-
 msgid "Compare"
 msgstr "Comparar"
-
-msgid "Reference"
-msgstr "Referencia"
 
 msgid "Outline Thickness"
 msgstr "Grosor del Contorno"
@@ -10602,93 +10676,6 @@ msgstr "Tamaño Fuente Predeterminada"
 
 msgid "File"
 msgstr "Archivo"
-
-msgid "Output Port for Preview"
-msgstr "Puerto de Salida para Previsualización"
-
-msgid "Modes"
-msgstr "Modos"
-
-msgid "Stencil Modes"
-msgstr "Modos de Plantilla"
-
-msgid "Stencil Flags"
-msgstr "Indicadores de Plantilla"
-
-msgid "Input Name"
-msgstr "Nombre de Entrada"
-
-msgid "Parameter Name"
-msgstr "Nombre del Parámetro"
-
-msgid "Qualifier"
-msgstr "Calificador"
-
-msgid "Instance Index"
-msgstr "Índice de Instancia"
-
-msgid "Autoshrink"
-msgstr "Autoreducir"
-
-msgid "Varying Name"
-msgstr "Nombre de la Varying"
-
-msgid "Varying Type"
-msgstr "Tipo de Varying"
-
-msgid "Op Type"
-msgstr "Tipo de Operación"
-
-msgid "Constant"
-msgstr "Constante"
-
-msgid "Texture Type"
-msgstr "Tipo de Textura"
-
-msgid "Texture Array"
-msgstr "Array de Textura"
-
-msgid "Cube Map"
-msgstr "Mapa de Cubo"
-
-msgid "Function"
-msgstr "Función"
-
-msgid "Hint"
-msgstr "Indicio"
-
-msgid "Default Value Enabled"
-msgstr "Valor Predeterminado Activado"
-
-msgid "Default Value"
-msgstr "Valor Predeterminado"
-
-msgid "Enum Names"
-msgstr "Nombres de Enumeración"
-
-msgid "Color Default"
-msgstr "Color Predeterminado"
-
-msgid "Texture Repeat"
-msgstr "Repetir Textura"
-
-msgid "Texture Source"
-msgstr "Fuente de Textura"
-
-msgid "Billboard Type"
-msgstr "Tipo de Billboard"
-
-msgid "Mode 2D"
-msgstr "Modo 2D"
-
-msgid "Use All Surfaces"
-msgstr "Usar Todas las Superficies"
-
-msgid "Surface Index"
-msgstr "Índice de Superficie"
-
-msgid "Degrees Mode"
-msgstr "Modo de Grados"
 
 msgid "Font Pressed Color"
 msgstr "Color de la Fuente al Presionar"
@@ -11914,9 +11901,6 @@ msgstr "Tamaño de Habitación"
 msgid "High-pass"
 msgstr "Paso Alto"
 
-msgid "Tap Back Pos"
-msgstr "Posición de Retroceso al Toque"
-
 msgid "Pan Pullout"
 msgstr "Deslizamiento de Paneo"
 
@@ -12353,7 +12337,7 @@ msgid "Default Filters"
 msgstr "Filtros Predeterminados"
 
 msgid "Use Nearest Mipmap Filter"
-msgstr "Usar Filtro de Mapa MIP más Cercano"
+msgstr "Utilizar el filtro Mipmap más cercano"
 
 msgid "Depth of Field"
 msgstr "Profundidad de Campo"
@@ -12612,9 +12596,6 @@ msgstr "Tamaño Interno"
 
 msgid "Target Size"
 msgstr "Tamaño de Página"
-
-msgid "View Count"
-msgstr "Contador de Vistas"
 
 msgid "Default Font Antialiasing"
 msgstr "Suavizado de Fuentes Predeterminado"

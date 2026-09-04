@@ -38,8 +38,18 @@ void Skeleton3D::_add_bone_bind_compat_88791(const String &p_name) {
 	add_bone(p_name);
 }
 
+void Skeleton3D::_reset_bone_pose_compat_120609(int p_bone) {
+	reset_bone_pose(p_bone, false);
+}
+
+void Skeleton3D::_reset_bone_poses_compat_120609() {
+	reset_bone_poses(false);
+}
+
 void Skeleton3D::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("add_bone", "name"), &Skeleton3D::_add_bone_bind_compat_88791);
+	ClassDB::bind_compatibility_method(D_METHOD("reset_bone_pose", "bone_idx"), &Skeleton3D::_reset_bone_pose_compat_120609);
+	ClassDB::bind_compatibility_method(D_METHOD("reset_bone_poses"), &Skeleton3D::_reset_bone_poses_compat_120609);
 }
 
 #endif // DISABLE_DEPRECATED

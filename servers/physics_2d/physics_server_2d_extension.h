@@ -114,9 +114,9 @@ public:
 	PhysicsDirectBodyState2DExtension();
 };
 
-typedef PhysicsDirectSpaceState2D::RayResult PhysicsServer2DExtensionRayResult;
-typedef PhysicsDirectSpaceState2D::ShapeResult PhysicsServer2DExtensionShapeResult;
-typedef PhysicsDirectSpaceState2D::ShapeRestInfo PhysicsServer2DExtensionShapeRestInfo;
+typedef PS2DT::RayResult PhysicsServer2DExtensionRayResult;
+typedef PS2DT::ShapeResult PhysicsServer2DExtensionShapeResult;
+typedef PS2DT::ShapeRestInfo PhysicsServer2DExtensionShapeRestInfo;
 
 GDVIRTUAL_NATIVE_PTR(PhysicsServer2DExtensionRayResult)
 GDVIRTUAL_NATIVE_PTR(PhysicsServer2DExtensionShapeResult)
@@ -139,42 +139,42 @@ protected:
 	GDVIRTUAL8R_REQUIRED(bool, _rest_info, RID, const Transform2D &, const Vector2 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer2DExtensionShapeRestInfo>)
 
 public:
-	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override {
+	virtual bool intersect_ray(const PS2DT::RayParameters &p_parameters, PS2DT::RayResult &r_result) override {
 		exclude = &p_parameters.exclude;
 		bool ret = false;
 		GDVIRTUAL_CALL(_intersect_ray, p_parameters.from, p_parameters.to, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.hit_from_inside, &r_result, ret);
 		exclude = nullptr;
 		return ret;
 	}
-	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override {
+	virtual int intersect_point(const PS2DT::PointParameters &p_parameters, PS2DT::ShapeResult *r_results, int p_result_max) override {
 		exclude = &p_parameters.exclude;
 		int ret = false;
 		GDVIRTUAL_CALL(_intersect_point, p_parameters.position, p_parameters.canvas_instance_id, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_results, p_result_max, ret);
 		exclude = nullptr;
 		return ret;
 	}
-	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) override {
+	virtual int intersect_shape(const PS2DT::ShapeParameters &p_parameters, PS2DT::ShapeResult *r_results, int p_result_max) override {
 		exclude = &p_parameters.exclude;
 		int ret = 0;
 		GDVIRTUAL_CALL(_intersect_shape, p_parameters.shape_rid, p_parameters.transform, p_parameters.motion, p_parameters.margin, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_results, p_result_max, ret);
 		exclude = nullptr;
 		return ret;
 	}
-	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) override {
+	virtual bool cast_motion(const PS2DT::ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) override {
 		exclude = &p_parameters.exclude;
 		bool ret = false;
 		GDVIRTUAL_CALL(_cast_motion, p_parameters.shape_rid, p_parameters.transform, p_parameters.motion, p_parameters.margin, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, &p_closest_safe, &p_closest_unsafe, ret);
 		exclude = nullptr;
 		return ret;
 	}
-	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) override {
+	virtual bool collide_shape(const PS2DT::ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) override {
 		exclude = &p_parameters.exclude;
 		bool ret = false;
 		GDVIRTUAL_CALL(_collide_shape, p_parameters.shape_rid, p_parameters.transform, p_parameters.motion, p_parameters.margin, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_results, p_result_max, &r_result_count, ret);
 		exclude = nullptr;
 		return ret;
 	}
-	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) override {
+	virtual bool rest_info(const PS2DT::ShapeParameters &p_parameters, PS2DT::ShapeRestInfo *r_info) override {
 		exclude = &p_parameters.exclude;
 		bool ret = false;
 		GDVIRTUAL_CALL(_rest_info, p_parameters.shape_rid, p_parameters.transform, p_parameters.motion, p_parameters.margin, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_info, ret);
@@ -185,7 +185,7 @@ public:
 	PhysicsDirectSpaceState2DExtension();
 };
 
-typedef PhysicsServer2D::MotionResult PhysicsServer2DExtensionMotionResult;
+typedef PS2DT::MotionResult PhysicsServer2DExtensionMotionResult;
 
 GDVIRTUAL_NATIVE_PTR(PhysicsServer2DExtensionMotionResult)
 
@@ -220,7 +220,7 @@ public:
 	EXBIND2(shape_set_data, RID, const Variant &)
 	EXBIND2(shape_set_custom_solver_bias, RID, real_t)
 
-	EXBIND1RC(ShapeType, shape_get_type, RID)
+	EXBIND1RC(PS2DE::ShapeType, shape_get_type, RID)
 	EXBIND1RC(Variant, shape_get_data, RID)
 	EXBIND1RC(real_t, shape_get_custom_solver_bias, RID)
 
@@ -236,8 +236,8 @@ public:
 	EXBIND2(space_set_active, RID, bool)
 	EXBIND1RC(bool, space_is_active, RID)
 
-	EXBIND3(space_set_param, RID, SpaceParameter, real_t)
-	EXBIND2RC(real_t, space_get_param, RID, SpaceParameter)
+	EXBIND3(space_set_param, RID, PS2DE::SpaceParameter, real_t)
+	EXBIND2RC(real_t, space_get_param, RID, PS2DE::SpaceParameter)
 
 	EXBIND1R(PhysicsDirectSpaceState2D *, space_get_direct_state, RID)
 
@@ -271,10 +271,10 @@ public:
 	EXBIND2(area_attach_canvas_instance_id, RID, ObjectID)
 	EXBIND1RC(ObjectID, area_get_canvas_instance_id, RID)
 
-	EXBIND3(area_set_param, RID, AreaParameter, const Variant &)
+	EXBIND3(area_set_param, RID, PS2DE::AreaParameter, const Variant &)
 	EXBIND2(area_set_transform, RID, const Transform2D &)
 
-	EXBIND2RC(Variant, area_get_param, RID, AreaParameter)
+	EXBIND2RC(Variant, area_get_param, RID, PS2DE::AreaParameter)
 	EXBIND1RC(Transform2D, area_get_transform, RID)
 
 	EXBIND2(area_set_collision_layer, RID, uint32_t)
@@ -297,8 +297,8 @@ public:
 	EXBIND2(body_set_space, RID, RID)
 	EXBIND1RC(RID, body_get_space, RID)
 
-	EXBIND2(body_set_mode, RID, BodyMode)
-	EXBIND1RC(BodyMode, body_get_mode, RID)
+	EXBIND2(body_set_mode, RID, PS2DE::BodyMode)
+	EXBIND1RC(PS2DE::BodyMode, body_get_mode, RID)
 
 	EXBIND4(body_add_shape, RID, RID, const Transform2D &, bool)
 	EXBIND3(body_set_shape, RID, int, RID)
@@ -320,8 +320,8 @@ public:
 	EXBIND2(body_attach_canvas_instance_id, RID, ObjectID)
 	EXBIND1RC(ObjectID, body_get_canvas_instance_id, RID)
 
-	EXBIND2(body_set_continuous_collision_detection_mode, RID, CCDMode)
-	EXBIND1RC(CCDMode, body_get_continuous_collision_detection_mode, RID)
+	EXBIND2(body_set_continuous_collision_detection_mode, RID, PS2DE::CCDMode)
+	EXBIND1RC(PS2DE::CCDMode, body_get_continuous_collision_detection_mode, RID)
 
 	EXBIND2(body_set_collision_layer, RID, uint32_t)
 	EXBIND1RC(uint32_t, body_get_collision_layer, RID)
@@ -332,13 +332,13 @@ public:
 	EXBIND2(body_set_collision_priority, RID, real_t)
 	EXBIND1RC(real_t, body_get_collision_priority, RID)
 
-	EXBIND3(body_set_param, RID, BodyParameter, const Variant &)
-	EXBIND2RC(Variant, body_get_param, RID, BodyParameter)
+	EXBIND3(body_set_param, RID, PS2DE::BodyParameter, const Variant &)
+	EXBIND2RC(Variant, body_get_param, RID, PS2DE::BodyParameter)
 
 	EXBIND1(body_reset_mass_properties, RID)
 
-	EXBIND3(body_set_state, RID, BodyState, const Variant &)
-	EXBIND2RC(Variant, body_get_state, RID, BodyState)
+	EXBIND3(body_set_state, RID, PS2DE::BodyState, const Variant &)
+	EXBIND2RC(Variant, body_get_state, RID, PS2DE::BodyState)
 
 	EXBIND2(body_apply_central_impulse, RID, const Vector2 &)
 	EXBIND2(body_apply_torque_impulse, RID, real_t)
@@ -402,7 +402,7 @@ public:
 	bool body_test_motion_is_excluding_body(RID p_body) const;
 	bool body_test_motion_is_excluding_object(ObjectID p_object) const;
 
-	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
+	bool body_test_motion(RID p_body, const PS2DT::MotionParameters &p_parameters, PS2DT::MotionResult *r_result = nullptr) override {
 		bool ret = false;
 		exclude_bodies = &p_parameters.exclude_bodies;
 		exclude_objects = &p_parameters.exclude_objects;
@@ -417,8 +417,8 @@ public:
 	EXBIND0R(RID, joint_create)
 	EXBIND1(joint_clear, RID)
 
-	EXBIND3(joint_set_param, RID, JointParam, real_t)
-	EXBIND2RC(real_t, joint_get_param, RID, JointParam)
+	EXBIND3(joint_set_param, RID, PS2DE::JointParam, real_t)
+	EXBIND2RC(real_t, joint_get_param, RID, PS2DE::JointParam)
 
 	EXBIND2(joint_disable_collisions_between_bodies, RID, bool)
 	EXBIND1RC(bool, joint_is_disabled_collisions_between_bodies, RID)
@@ -427,16 +427,16 @@ public:
 	EXBIND6(joint_make_groove, RID, const Vector2 &, const Vector2 &, const Vector2 &, RID, RID)
 	EXBIND5(joint_make_damped_spring, RID, const Vector2 &, const Vector2 &, RID, RID)
 
-	EXBIND3(pin_joint_set_flag, RID, PinJointFlag, bool)
-	EXBIND2RC(bool, pin_joint_get_flag, RID, PinJointFlag)
+	EXBIND3(pin_joint_set_flag, RID, PS2DE::PinJointFlag, bool)
+	EXBIND2RC(bool, pin_joint_get_flag, RID, PS2DE::PinJointFlag)
 
-	EXBIND3(pin_joint_set_param, RID, PinJointParam, real_t)
-	EXBIND2RC(real_t, pin_joint_get_param, RID, PinJointParam)
+	EXBIND3(pin_joint_set_param, RID, PS2DE::PinJointParam, real_t)
+	EXBIND2RC(real_t, pin_joint_get_param, RID, PS2DE::PinJointParam)
 
-	EXBIND3(damped_spring_joint_set_param, RID, DampedSpringParam, real_t)
-	EXBIND2RC(real_t, damped_spring_joint_get_param, RID, DampedSpringParam)
+	EXBIND3(damped_spring_joint_set_param, RID, PS2DE::DampedSpringParam, real_t)
+	EXBIND2RC(real_t, damped_spring_joint_get_param, RID, PS2DE::DampedSpringParam)
 
-	EXBIND1RC(JointType, joint_get_type, RID)
+	EXBIND1RC(PS2DE::JointType, joint_get_type, RID)
 
 	/* MISC */
 
@@ -455,7 +455,7 @@ public:
 	EXBIND0(finish)
 
 	EXBIND0RC(bool, is_flushing_queries)
-	EXBIND1R(int, get_process_info, ProcessInfo)
+	EXBIND1R(int, get_process_info, PS2DE::ProcessInfo)
 
 	PhysicsServer2DExtension();
 	~PhysicsServer2DExtension();

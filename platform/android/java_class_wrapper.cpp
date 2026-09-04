@@ -116,7 +116,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 					}
 				} break;
 				case ARG_TYPE_CLASS: {
-					String cn = E.param_sigs[i].operator String();
+					String cn = E.param_sigs[i].string();
 					if (cn.begins_with("L") && cn.ends_with(";")) {
 						cn = cn.substr(1, cn.length() - 2);
 					}
@@ -227,7 +227,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 						if (arr.is_typed() && arr.get_typed_builtin() != Variant::OBJECT) {
 							arg_expected = Variant::ARRAY;
 						} else {
-							String cn = E.param_sigs[i].operator String();
+							String cn = E.param_sigs[i].string();
 							if (cn.begins_with("[L") && cn.ends_with(";")) {
 								cn = cn.substr(2, cn.length() - 3);
 							}
@@ -586,7 +586,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				argv[i].l = jarr;
 			} break;
 			case ARG_ARRAY_BIT | ARG_TYPE_CLASS: {
-				String cn = method->param_sigs[i].operator String();
+				String cn = method->param_sigs[i].string();
 				if (cn.begins_with("[L") && cn.ends_with(";")) {
 					cn = cn.substr(2, cn.length() - 3);
 				}
@@ -1497,8 +1497,6 @@ bool JavaClassWrapper::_wrap_class_components(JNIEnv *p_env, const Ref<JavaClass
 			str_method = jstring_to_string(name, p_env);
 			p_env->DeleteLocalRef(name);
 		}
-
-		Vector<String> params;
 
 		jint mods = p_env->CallIntMethod(obj, is_constructor ? Constructor_getModifiers : Method_getModifiers);
 		bool is_public = (mods & 0x0001) != 0; // java.lang.reflect.Modifier.PUBLIC

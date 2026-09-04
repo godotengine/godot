@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/variant/typed_array.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 
 class NavigationServer2DDummy : public NavigationServer2D {

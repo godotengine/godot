@@ -415,6 +415,11 @@ public:
 		render_element_count++;
 	}
 
+	_FORCE_INLINE_ uint32_t get_cluster_count_by_type(ElementType p_element_type) const {
+		DEV_ASSERT(p_element_type < ELEMENT_TYPE_MAX);
+		return cluster_count_by_type[p_element_type];
+	}
+
 	void bake_cluster();
 	void debug(ElementType p_element);
 

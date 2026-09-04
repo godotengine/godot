@@ -99,7 +99,7 @@ Variant PackedDataContainer::_iter_get_ofs(const Variant &p_iter, uint32_t p_off
 	}
 }
 
-Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, bool &err) const {
+Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, bool &r_err) const {
 	ERR_FAIL_COND_V(p_ofs + 4 > (uint32_t)data.size(), Variant());
 	uint32_t type = decode_uint32(p_buf + p_ofs);
 
@@ -115,8 +115,8 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 		Error rerr = decode_variant(v, p_buf + p_ofs, datalen - p_ofs, nullptr, false);
 
 		if (rerr != OK) {
-			err = true;
-			ERR_FAIL_COND_V_MSG(err != OK, Variant(), "Error when trying to decode Variant.");
+			r_err = true;
+			ERR_FAIL_COND_V_MSG(r_err != OK, Variant(), "Error when trying to decode Variant.");
 		}
 		return v;
 	}
@@ -151,11 +151,11 @@ int PackedDataContainer::_size(uint32_t p_ofs) const {
 	return -1;
 }
 
-Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, bool &err) const {
+Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, bool &r_err) const {
 	ERR_FAIL_COND_V(p_ofs + 4 > (uint32_t)data.size(), Variant());
 	const uint8_t *rd = data.ptr();
 	if (!rd) {
-		err = true;
+		r_err = true;
 		ERR_FAIL_NULL_V(rd, Variant());
 	}
 	const uint8_t *r = &rd[p_ofs];
@@ -166,14 +166,14 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 			int idx = p_key;
 			int len = decode_uint32(r + 4);
 			if (idx < 0 || idx >= len) {
-				err = true;
+				r_err = true;
 				return Variant();
 			}
 			uint32_t ofs = decode_uint32(r + 8 + 4 * idx);
-			return _get_at_ofs(ofs, rd, err);
+			return _get_at_ofs(ofs, rd, r_err);
 
 		} else {
-			err = true;
+			r_err = true;
 			return Variant();
 		}
 
@@ -185,13 +185,13 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 		for (uint32_t i = 0; i < len; i++) {
 			uint32_t khash = decode_uint32(r + 8 + i * 12 + 0);
 			if (khash == hash) {
-				Variant key = _get_at_ofs(decode_uint32(r + 8 + i * 12 + 4), rd, err);
-				if (err) {
+				Variant key = _get_at_ofs(decode_uint32(r + 8 + i * 12 + 4), rd, r_err);
+				if (r_err) {
 					return Variant();
 				}
 				if (key == p_key) {
 					//key matches, return value
-					return _get_at_ofs(decode_uint32(r + 8 + i * 12 + 8), rd, err);
+					return _get_at_ofs(decode_uint32(r + 8 + i * 12 + 8), rd, r_err);
 				}
 				found = true;
 			} else {
@@ -201,24 +201,24 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 			}
 		}
 
-		err = true;
+		r_err = true;
 		return Variant();
 
 	} else {
-		err = true;
+		r_err = true;
 		return Variant();
 	}
 }
 
-uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpdata, HashMap<String, uint32_t> &string_cache) {
+uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &r_tmpdata, HashMap<String, uint32_t> &r_string_cache) {
 	switch (p_data.get_type()) {
 		case Variant::STRING: {
 			String s = p_data;
-			if (string_cache.has(s)) {
-				return string_cache[s];
+			if (r_string_cache.has(s)) {
+				return r_string_cache[s];
 			}
 
-			string_cache[s] = tmpdata.size();
+			r_string_cache[s] = r_tmpdata.size();
 
 			[[fallthrough]];
 		}
@@ -247,27 +247,27 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::STRING_NAME:
 		case Variant::NODE_PATH: {
-			uint32_t pos = tmpdata.size();
+			uint32_t pos = r_tmpdata.size();
 			int len;
 			encode_variant(p_data, nullptr, len, false);
-			tmpdata.resize(tmpdata.size() + len);
-			encode_variant(p_data, &tmpdata.write[pos], len, false);
+			r_tmpdata.resize(r_tmpdata.size() + len);
+			encode_variant(p_data, &r_tmpdata.write[pos], len, false);
 			return pos;
 
 		} break;
 		// misc types
 		case Variant::RID:
 		case Variant::OBJECT: {
-			return _pack(Variant(), tmpdata, string_cache);
+			return _pack(Variant(), r_tmpdata, r_string_cache);
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_data;
 			//size is known, use sort
-			uint32_t pos = tmpdata.size();
+			uint32_t pos = r_tmpdata.size();
 			int len = d.size();
-			tmpdata.resize(tmpdata.size() + len * 12 + 8);
-			encode_uint32(TYPE_DICT, &tmpdata.write[pos + 0]);
-			encode_uint32(len, &tmpdata.write[pos + 4]);
+			r_tmpdata.resize(r_tmpdata.size() + len * 12 + 8);
+			encode_uint32(TYPE_DICT, &r_tmpdata.write[pos + 0]);
+			encode_uint32(len, &r_tmpdata.write[pos + 4]);
 
 			List<DictKey> sortk;
 
@@ -282,11 +282,11 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 			int idx = 0;
 			for (const DictKey &E : sortk) {
-				encode_uint32(E.hash, &tmpdata.write[pos + 8 + idx * 12 + 0]);
-				uint32_t ofs = _pack(E.key, tmpdata, string_cache);
-				encode_uint32(ofs, &tmpdata.write[pos + 8 + idx * 12 + 4]);
-				ofs = _pack(d[E.key], tmpdata, string_cache);
-				encode_uint32(ofs, &tmpdata.write[pos + 8 + idx * 12 + 8]);
+				encode_uint32(E.hash, &r_tmpdata.write[pos + 8 + idx * 12 + 0]);
+				uint32_t ofs = _pack(E.key, r_tmpdata, r_string_cache);
+				encode_uint32(ofs, &r_tmpdata.write[pos + 8 + idx * 12 + 4]);
+				ofs = _pack(d[E.key], r_tmpdata, r_string_cache);
+				encode_uint32(ofs, &r_tmpdata.write[pos + 8 + idx * 12 + 8]);
 				idx++;
 			}
 
@@ -296,15 +296,15 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 		case Variant::ARRAY: {
 			Array a = p_data;
 			//size is known, use sort
-			uint32_t pos = tmpdata.size();
+			uint32_t pos = r_tmpdata.size();
 			int len = a.size();
-			tmpdata.resize(tmpdata.size() + len * 4 + 8);
-			encode_uint32(TYPE_ARRAY, &tmpdata.write[pos + 0]);
-			encode_uint32(len, &tmpdata.write[pos + 4]);
+			r_tmpdata.resize(r_tmpdata.size() + len * 4 + 8);
+			encode_uint32(TYPE_ARRAY, &r_tmpdata.write[pos + 0]);
+			encode_uint32(len, &r_tmpdata.write[pos + 4]);
 
 			for (int i = 0; i < len; i++) {
-				uint32_t ofs = _pack(a[i], tmpdata, string_cache);
-				encode_uint32(ofs, &tmpdata.write[pos + 8 + i * 4]);
+				uint32_t ofs = _pack(a[i], r_tmpdata, r_string_cache);
+				encode_uint32(ofs, &r_tmpdata.write[pos + 8 + i * 4]);
 			}
 
 			return pos;

@@ -610,9 +610,7 @@ public:
 
 			RID sdf_store_uniform_set;
 			RID sdf_direct_light_static_uniform_set;
-			RID sdf_direct_light_static_render_uniform_set;
 			RID sdf_direct_light_dynamic_uniform_set;
-			RID sdf_direct_light_dynamic_render_uniform_set;
 			RID scroll_uniform_set;
 			RID scroll_occlusion_uniform_set;
 			RID integrate_uniform_set;

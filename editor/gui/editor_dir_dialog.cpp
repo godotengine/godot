@@ -31,7 +31,6 @@
 #include "editor_dir_dialog.h"
 
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/docks/filesystem_dock.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/directory_create_dialog.h"
@@ -136,13 +135,16 @@ void EditorDirDialog::_notification(int p_what) {
 				}
 
 				tree->deselect_all();
-				const PackedStringArray parts = base_directory_path.trim_prefix("res://").split("/");
+
+				TreeItem *item = tree->get_root();
+				const PackedStringArray parts = base_directory_path.trim_prefix("res://").split("/", false);
 				if (parts.is_empty()) {
+					item->select(0);
+					tree->ensure_cursor_is_visible();
 					break;
 				}
 
 				int i = 0;
-				TreeItem *item = tree->get_root();
 				while (i < parts.size()) {
 					const String &folder = parts[i];
 					for (TreeItem *child = item->get_first_child(); child; child = child->get_next()) {

@@ -36,6 +36,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/math/geometry_2d.h"
 #include "core/math/transform_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -55,6 +56,36 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #ifdef TOOLS_ENABLED
 #include "editor/scene/gui/control_editor_plugin.h"
 #endif // TOOLS_ENABLED
+
+class LayoutRecheckCallable : public CallableCustom {
+private:
+	ObjectID owner_id;
+	Callable callback;
+	uint32_t h;
+
+	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) { return p_a == p_b; }
+	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b) { return p_a < p_b; }
+
+public:
+	virtual bool is_valid() const override { return callback.is_valid(); }
+	virtual uint32_t hash() const override { return h; }
+	virtual String get_as_text() const override { return "LayoutRecheckCallable"; }
+	virtual CompareEqualFunc get_compare_equal_func() const override { return compare_equal; }
+	virtual CompareLessFunc get_compare_less_func() const override { return compare_less; }
+	virtual ObjectID get_object() const override { return ObjectID(); }
+	virtual StringName get_method() const override { return StringName(); }
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+		Control *owner = Object::cast_to<Control>(ObjectDB::get_instance(owner_id));
+		if (owner && !owner->is_queued_for_deletion()) {
+			owner->call_on_all_layout_pending_finished(callback);
+		}
+	}
+
+	LayoutRecheckCallable(ObjectID p_owner_id, const Callable &p_callback) :
+			owner_id(p_owner_id), callback(p_callback) {
+		h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
+	}
+};
 
 // Editor plugin interoperability.
 
@@ -608,6 +639,12 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 				}
 				hint_string += "Shrink End:8";
 			}
+			if (size_flags.has(SIZE_MAXIMIZE)) {
+				if (!hint_string.is_empty()) {
+					hint_string += ",";
+				}
+				hint_string += "Maximize:16";
+			}
 
 			if (hint_string.is_empty()) {
 				p_property.hint_string = "";
@@ -918,32 +955,49 @@ Control::GrowDirection Control::get_v_grow_direction() const {
 	return data.v_grow;
 }
 
-void Control::_compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]) {
+void Control::_compute_layout_rect(Rect2 p_rect, bool p_keep_offsets) {
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
-	ERR_FAIL_COND(parent_rect_size.x == 0.0);
-	ERR_FAIL_COND(parent_rect_size.y == 0.0);
+
+	if (p_keep_offsets) {
+		// If computing anchors, we need to ensure the parent rect size is valid to avoid division by zero.
+		ERR_FAIL_COND(parent_rect_size.x == 0.0);
+		ERR_FAIL_COND(parent_rect_size.y == 0.0);
+	}
 
 	real_t x = p_rect.position.x;
+	real_t y = p_rect.position.y;
+
+	if (_get_layout_mode() != LayoutMode::LAYOUT_MODE_CONTAINER) {
+		float left_grow_factor =
+				(data.h_grow == GROW_DIRECTION_BEGIN) ? 1.0f
+				: (data.h_grow == GROW_DIRECTION_END) ? 0.0f
+													  : 0.5f;
+		float top_grow_factor =
+				(data.v_grow == GROW_DIRECTION_BEGIN) ? 1.0f
+				: (data.v_grow == GROW_DIRECTION_END) ? 0.0f
+													  : 0.5f;
+
+		Size2 size_diff = p_rect.size - data.size_cache;
+
+		x -= size_diff.x * (is_layout_rtl() ? (1.0f - left_grow_factor) : left_grow_factor);
+		y -= size_diff.y * top_grow_factor;
+	}
+
 	if (is_layout_rtl()) {
 		x = parent_rect_size.x - x - p_rect.size.x;
 	}
-	r_anchors[0] = (x - p_offsets[0]) / parent_rect_size.x;
-	r_anchors[1] = (p_rect.position.y - p_offsets[1]) / parent_rect_size.y;
-	r_anchors[2] = (x + p_rect.size.x - p_offsets[2]) / parent_rect_size.x;
-	r_anchors[3] = (p_rect.position.y + p_rect.size.y - p_offsets[3]) / parent_rect_size.y;
-}
 
-void Control::_compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (&r_offsets)[4]) {
-	Size2 parent_rect_size = get_parent_anchorable_rect().size;
-
-	real_t x = p_rect.position.x;
-	if (is_layout_rtl()) {
-		x = parent_rect_size.x - x - p_rect.size.x;
+	if (p_keep_offsets) {
+		data.anchor[0] = (x - data.offset[0]) / parent_rect_size.x;
+		data.anchor[1] = (y - data.offset[1]) / parent_rect_size.y;
+		data.anchor[2] = (x + p_rect.size.x - data.offset[2]) / parent_rect_size.x;
+		data.anchor[3] = (y + p_rect.size.y - data.offset[3]) / parent_rect_size.y;
+	} else {
+		data.offset[0] = x - (data.anchor[0] * parent_rect_size.x);
+		data.offset[1] = y - (data.anchor[1] * parent_rect_size.y);
+		data.offset[2] = x + p_rect.size.x - (data.anchor[2] * parent_rect_size.x);
+		data.offset[3] = y + p_rect.size.y - (data.anchor[3] * parent_rect_size.y);
 	}
-	r_offsets[0] = x - (p_anchors[0] * parent_rect_size.x);
-	r_offsets[1] = p_rect.position.y - (p_anchors[1] * parent_rect_size.y);
-	r_offsets[2] = x + p_rect.size.x - (p_anchors[2] * parent_rect_size.x);
-	r_offsets[3] = p_rect.position.y + p_rect.size.y - (p_anchors[3] * parent_rect_size.y);
 }
 
 /// Presets and layout modes.
@@ -1476,11 +1530,7 @@ void Control::set_position(const Point2 &p_point, bool p_keep_offsets) {
 	}
 #endif // TOOLS_ENABLED
 
-	if (p_keep_offsets) {
-		_compute_anchors(Rect2(p_point, data.size_cache), data.offset, data.anchor);
-	} else {
-		_compute_offsets(Rect2(p_point, data.size_cache), data.anchor, data.offset);
-	}
+	_compute_layout_rect(Rect2(p_point, data.size_cache), p_keep_offsets);
 	_size_changed();
 }
 
@@ -1550,11 +1600,9 @@ void Control::set_size(const Size2 &p_size, bool p_keep_offsets) {
 	}
 #endif // TOOLS_ENABLED
 
-	if (p_keep_offsets) {
-		_compute_anchors(Rect2(data.pos_cache, new_size), data.offset, data.anchor);
-	} else {
-		_compute_offsets(Rect2(data.pos_cache, new_size), data.anchor, data.offset);
-	}
+	data.expanded_by_desired_size = false;
+
+	_compute_layout_rect(Rect2(data.pos_cache, new_size), p_keep_offsets);
 	_size_changed();
 }
 
@@ -1574,7 +1622,7 @@ void Control::set_rect(const Rect2 &p_rect) {
 		data.anchor[i] = ANCHOR_BEGIN;
 	}
 
-	_compute_offsets(p_rect, data.anchor, data.offset);
+	_compute_layout_rect(p_rect);
 	if (is_inside_tree()) {
 		_size_changed();
 	}
@@ -1736,10 +1784,14 @@ void Control::update_maximum_size() {
 	data.maximum_size_valid = false;
 
 	Size2 parent_max = data.propagate_maximum_size ? get_inner_combined_maximum_size().min(get_combined_maximum_size()) : Size2(-1, -1);
+	parent_max = parent_max.maxf(-1.0f);
 
 	for (Node *child : iterate_children()) {
 		Control *child_control = Object::cast_to<Control>(child);
-		if (child_control && !child_control->is_set_as_top_level() && child_control->data.maximum_size_valid) {
+		if (child_control && !child_control->is_set_as_top_level()) {
+			if (child_control->data.parent_maximum_size_cache == parent_max) {
+				continue;
+			}
 			child_control->data.parent_maximum_size_cache = parent_max;
 			child_control->update_maximum_size();
 		}
@@ -1760,6 +1812,11 @@ void Control::update_maximum_size() {
 	if (!data.updating_last_minimum_size) {
 		data.updating_last_minimum_size = true;
 		callable_mp(this, &Control::_update_minimum_size).call_deferred();
+	}
+	// Same with desired size.
+	if (!data.updating_last_desired_size) {
+		data.updating_last_desired_size = true;
+		callable_mp(this, &Control::_update_desired_size).call_deferred();
 	}
 
 	callable_mp(this, &Control::_update_maximum_size).call_deferred();
@@ -1855,10 +1912,11 @@ Size2 Control::get_inner_combined_maximum_size() const {
 }
 
 void Control::set_parent_maximum_size_cache(const Size2 &p_parent_max) {
-	if (data.parent_maximum_size_cache == p_parent_max) {
+	const Size2 normalized = p_parent_max.maxf(-1.0f);
+	if (data.parent_maximum_size_cache == normalized) {
 		return;
 	}
-	data.parent_maximum_size_cache = p_parent_max;
+	data.parent_maximum_size_cache = normalized;
 	update_maximum_size();
 }
 
@@ -1948,6 +2006,112 @@ Size2 Control::get_custom_minimum_size() const {
 	return data.custom_minimum_size;
 }
 
+void Control::_update_desired_size_cache() const {
+	Size2 desired_size = get_desired_size();
+
+	data.desired_size_cache = desired_size;
+	data.desired_size_valid = true;
+}
+
+void Control::_update_desired_size() {
+	if (!is_inside_tree()) {
+		data.updating_last_desired_size = false;
+		return;
+	}
+
+	Size2 desired_size = get_desired_size();
+	data.updating_last_desired_size = false;
+
+	if (desired_size != data.last_desired_size) {
+		data.last_desired_size = desired_size;
+		grow_to_desired_size();
+		emit_signal("_desired_size_changed");
+	}
+}
+
+void Control::update_desired_size() {
+	ERR_MAIN_THREAD_GUARD;
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	// Invalidate cache upwards.
+	Control *invalidate = this;
+	while (invalidate && invalidate->data.desired_size_valid) {
+		invalidate->data.desired_size_valid = false;
+		if (invalidate->is_set_as_top_level()) {
+			break; // Do not go further up.
+		}
+
+		Window *parent_window = invalidate->get_parent_window();
+		if (parent_window && parent_window->is_wrapping_controls()) {
+			parent_window->child_controls_changed();
+			break; // Stop on a window as well.
+		}
+
+		invalidate = invalidate->get_parent_control();
+	}
+
+	if (!is_visible_in_tree()) {
+		// Invalidate the last desired size so it will update when made visible.
+		data.last_desired_size = Size2(-1, -1);
+		return;
+	}
+
+	if (data.updating_last_desired_size) {
+		return;
+	}
+	data.updating_last_desired_size = true;
+
+	callable_mp(this, &Control::_update_desired_size).call_deferred();
+}
+
+Size2 Control::get_bound_desired_size() const {
+	ERR_READ_THREAD_GUARD_V(Size2());
+	if (!data.desired_size_valid) {
+		_update_desired_size_cache();
+	}
+	Size2 desired_size = data.desired_size_cache;
+	desired_size = desired_size.max(get_combined_minimum_size());
+	Size2 max_size = get_combined_maximum_size();
+	if (max_size.x >= 0) {
+		desired_size.x = MIN(desired_size.x, max_size.x);
+	}
+	if (max_size.y >= 0) {
+		desired_size.y = MIN(desired_size.y, max_size.y);
+	}
+	return desired_size;
+}
+
+Size2 Control::get_desired_size() const {
+	return Size2();
+}
+
+void Control::grow_to_desired_size() {
+	ERR_MAIN_THREAD_GUARD;
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	Size2 desired_size = get_bound_desired_size();
+	if (desired_size <= get_combined_minimum_size()) {
+		return;
+	}
+
+	if (data.expanded_by_desired_size) {
+		set_size(desired_size);
+		data.expanded_by_desired_size = true;
+	} else if (desired_size.x > get_size().x || desired_size.y > get_size().y) {
+		set_size(desired_size);
+		data.expanded_by_desired_size = true;
+	}
+}
+
+bool Control::is_expanded_by_desired_size() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return data.expanded_by_desired_size;
+}
+
 void Control::add_child_notify(Node *p_child) {
 	CanvasItem::add_child_notify(p_child);
 
@@ -2008,11 +2172,16 @@ Control *Control::get_layout_pending_control_in_tree() const {
 void Control::call_on_all_layout_pending_finished(const Callable &p_callable) {
 	Control *pending_control = get_layout_pending_control_in_tree();
 	if (pending_control != nullptr) {
-		Callable recheck = callable_mp(this, &Control::call_on_all_layout_pending_finished).bind(p_callable);
-		pending_control->connect(SNAME("_layout_pending_finished"), recheck, CONNECT_ONE_SHOT | CONNECT_REFERENCE_COUNTED);
-	} else {
+		Callable recheck(memnew(LayoutRecheckCallable(get_instance_id(), p_callable)));
+		pending_control->connect(SNAME("_layout_pending_finished"), recheck, CONNECT_ONE_SHOT);
+	} else if (p_callable.is_valid()) {
 		p_callable.call();
 	}
+#ifdef DEBUG_ENABLED
+	else {
+		ERR_PRINT(vformat("Callable \"%s\" is invalid.", p_callable));
+	}
+#endif // DEBUG_ENABLED
 }
 
 void Control::_update_minimum_size_cache() const {
@@ -2021,6 +2190,9 @@ void Control::_update_minimum_size_cache() const {
 
 	data.minimum_size_cache = minsize;
 	data.minimum_size_valid = true;
+
+	// Keep the desired size cache in sync so it will update if needed when the minimum size changes. This is needed for get_bound_desired_size to work correctly.
+	data.desired_size_valid = false;
 }
 
 Size2 Control::get_combined_minimum_size() const {
@@ -3169,7 +3341,8 @@ NodePath Control::get_focus_previous() const {
 	return data.focus_prev;
 }
 
-#define MAX_NEIGHBOR_SEARCH_COUNT 512
+constexpr int MAX_NEIGHBOR_SEARCH_COUNT = 512;
+constexpr real_t NO_SCORE = 1e10;
 
 Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 	ERR_FAIL_INDEX_V((int)p_side, 4, nullptr);
@@ -3190,7 +3363,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		return c;
 	}
 
-	real_t square_of_dist = 1e14;
+	real_t score = NO_SCORE;
 	Control *result = nullptr;
 
 	const Vector2 dir[4] = {
@@ -3240,7 +3413,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 				}
 
 				if (follow_focus || sc_maxd > maxd) {
-					_window_find_focus_neighbor(vdir, base, r, clamp, maxd, square_of_dist, &result);
+					_window_find_focus_neighbor(vdir, base, r, clamp, maxd, score, &result);
 				}
 
 				if (result == nullptr) {
@@ -3286,7 +3459,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		return nullptr;
 	}
 
-	_window_find_focus_neighbor(vdir, base, r, clamp, maxd, square_of_dist, &result);
+	_window_find_focus_neighbor(vdir, base, r, clamp, maxd, score, &result);
 
 	return result;
 }
@@ -3295,7 +3468,7 @@ Control *Control::find_valid_focus_neighbor(Side p_side) const {
 	return const_cast<Control *>(this)->_get_focus_neighbor(p_side);
 }
 
-void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest) {
+void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_score, Control **r_closest) {
 	if (Object::cast_to<Viewport>(p_at)) {
 		return; // Bye.
 	}
@@ -3307,45 +3480,25 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	bool in_container = container ? container->is_ancestor_of(this) : false;
 
 	if (c && c != this && ((c->get_focus_mode_with_override() == FOCUS_ALL) || (ac_enabled && c->get_focus_mode_with_override() == FOCUS_ACCESSIBILITY)) && !in_container && p_clamp.intersects(c->get_global_rect())) {
-		Rect2 r_c = c->get_global_rect();
-		r_c = r_c.intersection(p_clamp);
-		real_t begin_d = p_dir.dot(r_c.get_position());
-		real_t end_d = p_dir.dot(r_c.get_end());
-		real_t max = MAX(begin_d, end_d);
+		real_t score = NO_SCORE;
+		switch (GLOBAL_GET_CACHED(int, "gui/common/auto_focus_strategy")) {
+			case AutoFocusStrategy::STRATEGY_LEGACY:
+				score = _focus_strategy_legacy(p_dir, *c, p_rect, p_clamp, p_min);
+				break;
+			case AutoFocusStrategy::STRATEGY_BALLOON:
+				score = _focus_strategy_balloon(p_dir, *c, p_clamp);
+				break;
+			default:
+				ERR_PRINT_ONCE("Unknown auto focus strategy. Using default strategy.");
+				score = _focus_strategy_balloon(p_dir, *c, p_clamp);
+				break;
+		}
 
-		// Use max to allow navigation to overlapping controls (for ScrollContainer case).
-		if (max > (p_min + CMP_EPSILON)) {
-			// Calculate the shortest distance. (No shear transform)
-			// Flip along axis(es) so that C falls in the first quadrant of c (as origin) for easy calculation.
-			// The same transformation would put the direction vector in the positive direction (+x or +y).
-			//       |           -------------
-			//       |           |     |     |
-			//       |           |-----C-----|
-			//   ----|---a       |     |     |
-			//   |   |   |       b------------
-			//  -|---c---|----------------------->
-			//   |   |   |
-			//   ----|----
-			// cC = ca + ab + bC
-			// The shortest distance is the vector ab's length or its positive projection length.
-
-			Vector2 cC_origin = r_c.get_center() - p_rect.get_center();
-			Vector2 cC = cC_origin.abs(); // Converted to fall in the first quadrant of c.
-
-			Vector2 ab = cC - 0.5 * r_c.get_size() - 0.5 * p_rect.get_size();
-
-			real_t min_d_squared = 0.0;
-			if (ab.x > 0.0) {
-				min_d_squared += ab.x * ab.x;
-			}
-			if (ab.y > 0.0) {
-				min_d_squared += ab.y * ab.y;
-			}
-
-			if (min_d_squared < r_closest_dist_squared || *r_closest == nullptr) {
-				r_closest_dist_squared = min_d_squared;
+		if (score != NO_SCORE) {
+			if (score < r_score || *r_closest == nullptr) {
+				r_score = score;
 				*r_closest = c;
-			} else if (min_d_squared == r_closest_dist_squared) {
+			} else if (score == r_score) {
 				// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
 				// is right next to the currently focused control (e.g. in BoxContainer with
 				// separation overridden to 0). This needs specific handling so that the correct
@@ -3356,7 +3509,7 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 				Point2 closest_center = closest->get_global_rect().get_center();
 
 				// Tie-break in favor of the control most aligned with p_dir.
-				if (Math::abs(p_dir.cross(cC_origin)) < Math::abs(p_dir.cross(closest_center - p_center))) {
+				if (Math::abs(p_dir.cross(c->get_rect().get_center() - p_center)) < Math::abs(p_dir.cross(closest_center - p_center))) {
 					*r_closest = c;
 				}
 			}
@@ -3388,8 +3541,118 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 				continue; // Already searched in it, skip it.
 			}
 		}
-		_window_find_focus_neighbor(p_dir, child, p_rect, intersection, p_min, r_closest_dist_squared, r_closest);
+		_window_find_focus_neighbor(p_dir, child, p_rect, intersection, p_min, r_score, r_closest);
 	}
+}
+
+real_t Control::_focus_strategy_legacy(const Vector2 &p_dir, const Control &p_c, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min) {
+	Rect2 r_c = p_c.get_global_rect();
+	r_c = r_c.intersection(p_clamp);
+	real_t begin_d = p_dir.dot(r_c.get_position());
+	real_t end_d = p_dir.dot(r_c.get_end());
+	real_t max = MAX(begin_d, end_d);
+
+	// Use max to allow navigation to overlapping controls (for ScrollContainer case).
+	if (max > (p_min + CMP_EPSILON)) {
+		// Calculate the shortest distance. (No shear transform)
+		// Flip along axis(es) so that C falls in the first quadrant of c (as origin) for easy calculation.
+		// The same transformation would put the direction vector in the positive direction (+x or +y).
+		//       |           -------------
+		//       |           |     |     |
+		//       |           |-----C-----|
+		//   ----|---a       |     |     |
+		//   |   |   |       b------------
+		//  -|---c---|----------------------->
+		//   |   |   |
+		//   ----|----
+		// cC = ca + ab + bC
+		// The shortest distance is the vector ab's length or its positive projection length.
+
+		Vector2 cC_origin = r_c.get_center() - p_rect.get_center();
+		Vector2 cC = cC_origin.abs(); // Converted to fall in the first quadrant of c.
+
+		Vector2 ab = cC - 0.5 * r_c.get_size() - 0.5 * p_rect.get_size();
+
+		real_t min_d_squared = 0.0;
+		if (ab.x > 0.0) {
+			min_d_squared += ab.x * ab.x;
+		}
+		if (ab.y > 0.0) {
+			min_d_squared += ab.y * ab.y;
+		}
+
+		return min_d_squared;
+	}
+
+	return NO_SCORE;
+}
+
+real_t Control::_focus_strategy_balloon_candidate_score(const Vector2 &p_start, const Vector2 &p_dir, const Pair<Vector2, Vector2> &p_edge) {
+	// Slightly tweaked line intersection algorithm, which clamps out-of-bounds intersections.
+	Vector2 edge_dir = p_edge.second - p_edge.first;
+	Vector2 normal = Vector2(-edge_dir.y, edge_dir.x).normalized();
+	Vector2 intersect_dir = p_dir + normal;
+
+	Vector2 touch(Math::INF, Math::INF);
+	if (!Geometry2D::line_intersects_line(p_start, intersect_dir, p_edge.first, edge_dir, touch)) {
+		return -1;
+	}
+
+	// Clamp resulting intersection to P1-P2 segment.
+	if ((touch - p_edge.second).dot(-edge_dir) < 0) {
+		touch = p_edge.second;
+	}
+	if ((touch - p_edge.first).dot(edge_dir) < 0) {
+		touch = p_edge.first;
+	}
+
+	Vector2 hit = touch - p_start;
+	return p_dir.dot(hit) / hit.length_squared();
+}
+
+real_t Control::_focus_strategy_balloon(const Vector2 &p_dir, const Control &p_candidate, const Rect2 &p_clamp) {
+	// Algorithm proposed and designed by Rune Skovbo Johansen & Adriaan de Jongh.
+
+	// Compute the starting point by intersecting the input direction to a normalized Rect2.
+	Vector2 starting_point;
+	const Rect2 normalized_rect = Rect2(0, 0, 1, 1);
+	if (!normalized_rect.intersects_ray(normalized_rect.get_center(), p_dir, &starting_point)) {
+		// This scenario is theoretically impossible; this should always find an intersection for rays
+		// starting within the `Rect2` (even for `dir == Vector2.ZER0`, as the algorithm applies an epsilon)
+		DEV_ASSERT(false);
+		ERR_PRINT("Internal bug, please report: failed to find input direction intersection in Control's rect during neighbor focus search.");
+		return NO_SCORE;
+	}
+
+	// Convert the normalized intersection by first restoring local size, then multiplying with global transform.
+	starting_point *= get_size();
+	starting_point = get_global_transform_const().xform(starting_point);
+
+	real_t score = -1;
+
+	// Fetch the corners of the Control's rect in global coordinates.
+	const Rect2 candidate_rect = p_candidate.get_global_rect().intersection(p_clamp);
+	const Transform2D candidate_transform = p_candidate.get_global_transform_const();
+	Vector2 point_a = candidate_transform.xform(Vector2());
+	Vector2 point_b = candidate_transform.xform(Vector2(candidate_rect.size.x, 0));
+	Vector2 point_c = candidate_transform.xform(candidate_rect.size);
+	Vector2 point_d = candidate_transform.xform(Vector2(0, candidate_rect.size.y));
+
+	const Pair<Vector2, Vector2> candidates[] = {
+		Pair(point_a, point_b),
+		Pair(point_b, point_c),
+		Pair(point_c, point_d),
+		Pair(point_d, point_a),
+	};
+
+	for (const Pair<Vector2, Vector2> &edge : candidates) {
+		real_t candidate_score = _focus_strategy_balloon_candidate_score(starting_point, p_dir, edge);
+		score = MAX(score, candidate_score);
+	}
+
+	// Valid scores are in the range of (0, 1]. For this algorithm, higher scores are better; however,
+	// Godot is looking for minimal score, so we invert the range.
+	return score > 0 ? (1 - score) : NO_SCORE;
 }
 
 // Rendering.
@@ -3871,41 +4134,41 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 
 /// Local property overrides.
 
-void Control::add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> rp_icon) {
+void Control::add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> p_icon) {
 	ERR_MAIN_THREAD_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_icon, rp_icon);
+	EXTRACT_PARAM_OR_FAIL(icon, p_icon);
 
 	if (data.theme_icon_override.has(p_name)) {
 		data.theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
-	data.theme_icon_override[p_name] = p_icon;
+	data.theme_icon_override[p_name] = icon;
 	data.theme_icon_override[p_name]->connect_changed(callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
-void Control::add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> rp_style) {
+void Control::add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> p_style) {
 	ERR_MAIN_THREAD_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_style, rp_style);
+	EXTRACT_PARAM_OR_FAIL(style, p_style);
 
 	if (data.theme_style_override.has(p_name)) {
 		data.theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
-	data.theme_style_override[p_name] = p_style;
+	data.theme_style_override[p_name] = style;
 	data.theme_style_override[p_name]->connect_changed(callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
-void Control::add_theme_font_override(const StringName &p_name, RequiredParam<Font> rp_font) {
+void Control::add_theme_font_override(const StringName &p_name, RequiredParam<Font> p_font) {
 	ERR_MAIN_THREAD_GUARD;
-	EXTRACT_PARAM_OR_FAIL(p_font, rp_font);
+	EXTRACT_PARAM_OR_FAIL(font, p_font);
 
 	if (data.theme_font_override.has(p_name)) {
 		data.theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
-	data.theme_font_override[p_name] = p_font;
+	data.theme_font_override[p_name] = font;
 	data.theme_font_override[p_name]->connect_changed(callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
@@ -4857,8 +5120,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pivot_offset_ratio"), "set_pivot_offset_ratio", "get_pivot_offset_ratio");
 
 	ADD_SUBGROUP("Container Sizing", "size_flags_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8"), "set_h_size_flags", "get_h_size_flags");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8"), "set_v_size_flags", "get_v_size_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8,Maximize:16"), "set_h_size_flags", "get_h_size_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill:1,Expand:2,Shrink Center:4,Shrink End:8,Maximize:16"), "set_v_size_flags", "get_v_size_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "0,20,0.01,or_greater"), "set_stretch_ratio", "get_stretch_ratio");
 
 	ADD_GROUP("Offset Transform", "offset_transform_");
@@ -4987,6 +5250,7 @@ void Control::_bind_methods() {
 	BIND_BITFIELD_FLAG(SIZE_EXPAND_FILL);
 	BIND_BITFIELD_FLAG(SIZE_SHRINK_CENTER);
 	BIND_BITFIELD_FLAG(SIZE_SHRINK_END);
+	BIND_BITFIELD_FLAG(SIZE_MAXIMIZE);
 
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_STOP);
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_PASS);
@@ -5024,6 +5288,7 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("size_flags_changed"));
 	ADD_SIGNAL(MethodInfo("maximum_size_changed"));
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
+	ADD_SIGNAL(MethodInfo("_desired_size_changed"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 
 	GDVIRTUAL_BIND(_has_point, "point");
@@ -5057,9 +5322,7 @@ Control::Control() {
 Control::~Control() {
 	memdelete(data.theme_owner);
 
-	if (data.offset_transform != nullptr) {
-		memdelete(data.offset_transform);
-	}
+	memdelete(data.offset_transform);
 
 	// Resources need to be disconnected.
 	for (KeyValue<StringName, Ref<Texture2D>> &E : data.theme_icon_override) {

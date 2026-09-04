@@ -340,6 +340,15 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the same value as if the <c>+</c> was not there.
+        /// Unary <c>+</c> does nothing, but sometimes it can make your
+        /// code more readable.
+        /// </summary>
+        /// <param name="plane">The plane to do nothing to.</param>
+        /// <returns>The original plane.</returns>
+        public static Plane operator +(Plane plane) => plane;
+
+        /// <summary>
         /// Returns the negative value of the <see cref="Plane"/>.
         /// This is the same as writing <c>new Plane(-p.Normal, -p.D)</c>.
         /// This operation flips the direction of the normal vector and

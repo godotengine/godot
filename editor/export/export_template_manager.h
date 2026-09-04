@@ -38,10 +38,12 @@ class EditorExportPreset;
 class EditorFileDialog;
 class ItemList;
 class HBoxContainer;
+class Label;
 class OptionButton;
 class Texture2D;
 class Tree;
 class TreeItem;
+class VSplitContainer;
 
 class TemplateDownloader : public HTTPRequest {
 	GDCLASS(TemplateDownloader, HTTPRequest);
@@ -65,16 +67,31 @@ class TemplateDownloader : public HTTPRequest {
 	String url;
 	String filename;
 	String target_directory;
+	String partial_download_path;
 
 	Step current_step = Step::WAITING;
 	int file_size = 0;
 	FileInfo file_info;
+	int64_t fragment_start_byte = 0;
+	int64_t fragment_end_byte = 0;
+	int64_t request_start_partial_size = 0;
+	int retry_count = 0;
+	bool range_restart_attempted = false;
 
 	int _find_sequence_backwards(const PackedByteArray &p_source, const PackedByteArray &p_target) const;
 	String _get_download_error(int p_result, int p_response_code) const;
 
 	void _request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
 	void _download_failed(const String &p_reason);
+	bool _is_retryable_result(int p_result, int p_response_code) const;
+	int64_t _get_fragment_download_size() const;
+	int64_t _get_partial_download_size() const;
+	void _clear_partial_download();
+	Error _request_file_fragment();
+	bool _retry_file_fragment(const String &p_reason);
+	void _download_completed();
+
+	static constexpr int MAX_DOWNLOAD_RETRIES = 3;
 
 protected:
 	void _notification(int p_what);
@@ -117,6 +134,7 @@ class ExportTemplateManager : public AcceptDialog {
 		ANDROID,
 
 		IOS,
+		VISIONOS,
 
 		ICU_DATA,
 	};
@@ -128,6 +146,7 @@ class ExportTemplateManager : public AcceptDialog {
 		WEB,
 		ANDROID,
 		IOS,
+		VISIONOS,
 		COMMON,
 	};
 
@@ -189,6 +208,7 @@ class ExportTemplateManager : public AcceptDialog {
 	HashMap<String, int> checked_cache;
 	HashMap<String, bool> folding_cache;
 
+	VSplitContainer *center_split = nullptr;
 	OptionButton *mirrors_list = nullptr;
 	Button *open_mirror = nullptr;
 	ItemList *version_list = nullptr;
@@ -199,6 +219,7 @@ class ExportTemplateManager : public AcceptDialog {
 	Button *delete_all_button = nullptr;
 	Button *tpz_button = nullptr;
 	HBoxContainer *offline_container = nullptr;
+	Label *offline_mode_label = nullptr;
 	ConfirmationDialog *confirm_delete = nullptr;
 	EditorFileDialog *tpz_selection_dialog = nullptr;
 
@@ -219,7 +240,6 @@ class ExportTemplateManager : public AcceptDialog {
 	void _update_version_list();
 	void _update_template_tree();
 	void _fill_template_tree(Tree *p_tree, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_current_version);
-	void _update_template_tree_with_folding();
 	void _update_install_button();
 	bool _can_download_templates();
 
@@ -282,10 +302,12 @@ public:
 	static String get_android_source_zip(const Ref<EditorExportPreset> &p_preset);
 	static String get_android_template_identifier(const Ref<EditorExportPreset> &p_preset);
 
-	bool is_android_template_installed(const Ref<EditorExportPreset> &p_preset);
-	bool can_install_android_template(const Ref<EditorExportPreset> &p_preset);
-	Error install_android_template(const Ref<EditorExportPreset> &p_preset);
-	Error install_android_template_from_file(const String &p_file, const Ref<EditorExportPreset> &p_preset);
+	static bool is_android_template_installed(const Ref<EditorExportPreset> &p_preset);
+	static bool is_android_build_version_valid(const Ref<EditorExportPreset> &p_preset);
+	static bool can_install_android_template(const Ref<EditorExportPreset> &p_preset);
+	static Error delete_android_build_directory(const Ref<EditorExportPreset> &p_preset);
+	static Error install_android_template(const Ref<EditorExportPreset> &p_preset);
+	static Error install_android_template_from_file(const String &p_file, const Ref<EditorExportPreset> &p_preset);
 
 	void popup_manager();
 	bool is_downloading() const;

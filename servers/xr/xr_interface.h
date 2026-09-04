@@ -33,6 +33,7 @@
 #include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/type_info.h"
+#include "servers/rendering/rendering_server_types.h"
 
 /**
 	The XR interface is a template class on top of which we build interface to different AR, VR and tracking SDKs.
@@ -45,10 +46,6 @@
 */
 
 struct Projection;
-
-namespace RenderingServerTypes {
-struct BlitToScreen;
-}
 
 class XRInterface : public RefCounted {
 	GDCLASS(XRInterface, RefCounted);
@@ -91,6 +88,7 @@ public:
 		XR_VRS_TEXTURE_FORMAT_UNIFIED,
 		XR_VRS_TEXTURE_FORMAT_FRAGMENT_SHADING_RATE,
 		XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP,
+		XR_VRS_TEXTURE_FORMAT_RASTERIZATION_RATE_MAP,
 	};
 
 protected:

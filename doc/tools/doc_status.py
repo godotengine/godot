@@ -157,7 +157,7 @@ class ClassStatusProgress:
 
     def to_colored_string(self, format: str = "{has}/{total}", pad_format: str = "{pad_described}{s}{pad_total}"):
         ratio = float(self.described) / float(self.total) if self.total != 0 else 1
-        percent = int(round(100 * ratio))
+        percent = int(math.floor(100 * ratio))
         s = format.format(has=str(self.described), total=str(self.total), percent=str(percent))
         if self.described >= self.total:
             s = color("part_good", s)

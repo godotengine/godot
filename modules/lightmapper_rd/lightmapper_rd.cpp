@@ -715,7 +715,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		lights_buffer = rd->storage_buffer_create(lb.size(), lb);
 
 		// Even when there are no seams, the buffer must exist.
-		static const Vector2i empty_seams[2];
+		static const Vector2i empty_seams[2] = {};
 		Span<uint8_t> sb = (seam_buffer_vec.is_empty() ? Span(empty_seams) : seam_buffer_vec.span()).reinterpret<uint8_t>();
 		seams_buffer = rd->storage_buffer_create(sb.size(), sb);
 
@@ -1180,7 +1180,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RenderingContextDriver *rcd = nullptr;
 	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
 	if (rd == nullptr) {
-#if defined(RD_ENABLED)
 #if defined(METAL_ENABLED)
 		rcd = memnew(RenderingContextDriverMetal);
 		rd = memnew(RenderingDevice);
@@ -1190,7 +1189,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			rcd = memnew(RenderingContextDriverVulkan);
 			rd = memnew(RenderingDevice);
 		}
-#endif
 #endif
 		if (rcd != nullptr && rd != nullptr) {
 			err = rcd->initialize();
@@ -1438,9 +1436,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			FREE_TEXTURES
 			FREE_BUFFERS
 			memdelete(rd);
-			if (rcd != nullptr) {
-				memdelete(rcd);
-			}
+			memdelete(rcd);
 			return BAKE_ERROR_USER_ABORTED;
 		}
 	}
@@ -1457,9 +1453,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		memdelete(rd);
 
-		if (rcd != nullptr) {
-			memdelete(rcd);
-		}
+		memdelete(rcd);
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
@@ -1657,9 +1651,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_RASTER_RESOURCES
 		memdelete(rd);
 
-		if (rcd != nullptr) {
-			memdelete(rcd);
-		}
+		memdelete(rcd);
 
 		compute_shader->print_errors("compute_shader");
 	}
@@ -1704,9 +1696,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			FREE_RASTER_RESOURCES
 			FREE_COMPUTE_RESOURCES
 			memdelete(rd);
-			if (rcd != nullptr) {
-				memdelete(rcd);
-			}
+			memdelete(rcd);
 			return BAKE_ERROR_USER_ABORTED;
 		}
 	}
@@ -1765,9 +1755,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			FREE_RASTER_RESOURCES
 			FREE_COMPUTE_RESOURCES
 			memdelete(rd);
-			if (rcd != nullptr) {
-				memdelete(rcd);
-			}
+			memdelete(rcd);
 			return BAKE_ERROR_USER_ABORTED;
 		}
 	}
@@ -1890,9 +1878,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 							FREE_RASTER_RESOURCES
 							FREE_COMPUTE_RESOURCES
 							memdelete(rd);
-							if (rcd != nullptr) {
-								memdelete(rcd);
-							}
+							memdelete(rcd);
 							return BAKE_ERROR_USER_ABORTED;
 						}
 					}
@@ -1989,9 +1975,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				FREE_RASTER_RESOURCES
 				FREE_COMPUTE_RESOURCES
 				memdelete(rd);
-				if (rcd != nullptr) {
-					memdelete(rcd);
-				}
+				memdelete(rcd);
 				return BAKE_ERROR_USER_ABORTED;
 			}
 		}
@@ -2038,9 +2022,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 								FREE_RASTER_RESOURCES
 								FREE_COMPUTE_RESOURCES
 								memdelete(rd);
-								if (rcd != nullptr) {
-									memdelete(rcd);
-								}
+								memdelete(rcd);
 								return BAKE_ERROR_USER_ABORTED;
 							}
 						}
@@ -2067,9 +2049,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 					rd->free_rid(light_probe_buffer);
 				}
 				memdelete(rd);
-				if (rcd != nullptr) {
-					memdelete(rcd);
-				}
+				memdelete(rcd);
 				return BAKE_ERROR_USER_ABORTED;
 			}
 		}
@@ -2156,9 +2136,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 						rd->free_rid(light_probe_buffer);
 					}
 					memdelete(rd);
-					if (rcd != nullptr) {
-						memdelete(rcd);
-					}
+					memdelete(rcd);
 					return BAKE_ERROR_USER_ABORTED;
 				}
 			}
@@ -2199,9 +2177,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 					rd->free_rid(light_probe_buffer);
 				}
 				memdelete(rd);
-				if (rcd != nullptr) {
-					memdelete(rcd);
-				}
+				memdelete(rcd);
 				return BAKE_ERROR_USER_ABORTED;
 			}
 		}
@@ -2276,9 +2252,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_COMPUTE_RESOURCES
 		memdelete(rd);
 
-		if (rcd != nullptr) {
-			memdelete(rcd);
-		}
+		memdelete(rcd);
 
 		blendseams_shader->print_errors("blendseams_shader");
 	}
@@ -2464,9 +2438,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	memdelete(rd);
 
-	if (rcd != nullptr) {
-		memdelete(rcd);
-	}
+	memdelete(rcd);
 
 	return BAKE_OK;
 }

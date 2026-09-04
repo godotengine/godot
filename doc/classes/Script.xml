@@ -56,6 +56,7 @@
 			<param index="0" name="property" type="StringName" />
 			<description>
 				Returns the default value of the specified property.
+				[b]Note:[/b] In GDScript and C#, this method returns [code]null[/code] outside of editor builds.
 			</description>
 		</method>
 		<method name="get_rpc_config" qualifiers="const">

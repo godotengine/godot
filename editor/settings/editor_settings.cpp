@@ -45,6 +45,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/regex.h"
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/version.h"
@@ -61,8 +62,6 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/animation.h"
 #include "servers/display/display_server.h"
-
-#include "modules/regex/regex.h"
 
 // PRIVATE METHODS
 
@@ -418,9 +417,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Languages */
 
 	{
-		String lang_hint;
-		const String host_lang = OS::get_singleton()->get_locale();
-
 		// Skip locales which we can't render properly.
 		const LocalVector<String> locales_to_skip = _get_skipped_locales();
 		if (!locales_to_skip.is_empty()) {
@@ -429,37 +425,66 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 		String best = "en";
 		int best_score = 0;
-		for (const String &locale : get_editor_locales()) {
-			// Test against language code without regional variants (e.g. ur_PK).
-			String lang_code = locale.get_slicec('_', 0);
-			if (locales_to_skip.has(lang_code)) {
-				continue;
+		for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
+			if (host_lang.get_slicec('_', 0) == "en") {
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, "en");
+				if (score > 0 && score >= best_score) {
+					best = "en";
+					best_score = score;
+				}
 			}
+			for (const String &locale : get_editor_locales()) {
+				// Test against language code without regional variants (e.g. ur_PK).
+				String lang_code = locale.get_slicec('_', 0);
+				if (locales_to_skip.has(lang_code)) {
+					continue;
+				}
 
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+				if (score > 0 && score >= best_score) {
+					best = locale;
+					best_score = score;
+				}
+			}
+			if (best_score > 0) {
+				break;
+			}
+		}
+
+		String lang_hint;
+		for (const String &locale : get_editor_locales()) {
 			lang_hint += ";";
 			const String lang_name = TranslationServer::get_singleton()->get_locale_name(locale);
 			lang_hint += vformat("%s/[%s] %s", locale, locale, lang_name);
-
-			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
-			if (score > 0 && score >= best_score) {
-				best = locale;
-				best_score = score;
-			}
 		}
 		lang_hint = vformat(";auto/Auto (%s);en/[en] English", TranslationServer::get_singleton()->get_locale_name(best)) + lang_hint;
 
 		EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_ENUM, "interface/editor/localization/editor_language", "auto", lang_hint, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING);
 	}
 
-	// Asset store
-	_initial_set("asset_library/use_threads", true);
+	/* Asset Store */
+
+	_initial_set("asset_store/use_threads", true);
+
+	Dictionary default_urls;
+	default_urls["godotengine.org (Official)"] = "https://store.godotengine.org/api/v1";
+	_initial_set("asset_store/available_urls", default_urls, true);
 
 	/* Interface */
 
+	bool is_android_editor = false;
+#ifdef ANDROID_ENABLED
+	if (!OS::get_singleton()->has_feature("xr_editor")) {
+		is_android_editor = true;
+	}
+#endif
+
 	// Editor
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/localization/localize_settings", true, "")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
+	const String dock_tab_style_hint = "Text Only,Icon Only,Text and Icon";
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", 0, dock_tab_style_hint)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", 0, dock_tab_style_hint)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/main_screen_dock_tab_style", is_android_editor ? 1 : 2, dock_tab_style_hint)
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/localization/ui_layout_direction", 0, "Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// Display what the Auto display scale setting effectively corresponds to.
@@ -501,6 +526,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/use_native_file_dialogs", false, "", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/expand_to_title", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/appearance/max_sticky_tree_items", 6, "0,16")
 
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/fonts/main_font_size", 14, "8,48,1")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/fonts/code_font_size", 14, "8,48,1")
@@ -553,17 +579,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display/vsync_mode", 1, "Disabled,Enabled,Adaptive,Mailbox")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/display/update_continuously", false, "")
 
-	bool is_android_editor = false;
-#ifdef ANDROID_ENABLED
-	if (!OS::get_singleton()->has_feature("xr_editor")) {
-		is_android_editor = true;
-	}
-#endif
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/collapse_main_menu", is_android_editor, "")
 
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/show_renderer_selector", false, "")
 
-	_initial_set("interface/editors/derive_script_globals_by_name", true);
+	_initial_set("docks/scene_tree/derive_script_globals_by_name", true);
 	_initial_set("docks/scene_tree/ask_before_revoking_unique_name", true);
 
 	// Inspector
@@ -592,7 +612,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/accessibility/property_descriptions", true, "")
 
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_mode", (int32_t)ColorPicker::MODE_RGB, "RGB,HSV,RAW,OKHSL")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_OKHSL_CIRCLE, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle,OK HS Rectangle:5,OK HL Rectangle") // `SHAPE_NONE` is 4.
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/inspector/default_color_picker_shape", (int32_t)ColorPicker::SHAPE_VHS_CIRCLE, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle,OK HS Rectangle:5,OK HL Rectangle") // `SHAPE_NONE` is 4.
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/color_picker_show_intensity", true, "");
 
 	// Theme
@@ -707,7 +727,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/scene_tree/accessibility_warnings", false);
 
 	// FileSystem
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "docks/filesystem/thumbnail_size", 64, "32,128,16")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "docks/filesystem/thumbnail_size", 64, "32,224,16")
 	_initial_set("docks/filesystem/always_show_folders", true);
 	_initial_set("docks/filesystem/textfile_extensions", "txt,md,cfg,ini,log,json,yml,yaml,toml,xml");
 	_initial_set("docks/filesystem/other_file_extensions", "ico,icns");
@@ -723,7 +743,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Theme
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_ENUM, "text_editor/theme/color_theme", "Default", "Default,Godot 2,Custom")
 
-	// Theme: Highlighting
+	// Theme: Highlighting and Underlining
 	const LocalVector<StringName> basic_text_editor_settings = {
 		"text_editor/theme/highlighting/symbol_color",
 		"text_editor/theme/highlighting/keyword_color",
@@ -751,6 +771,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		"text_editor/theme/highlighting/function_color",
 		"text_editor/theme/highlighting/member_variable_color",
 		"text_editor/theme/highlighting/mark_color",
+		"text_editor/theme/highlighting/warning_underline_color",
+		"text_editor/theme/highlighting/error_underline_color",
 	};
 	// These values will be overwritten by EditorThemeManager, but can still be seen in some edge cases.
 	const HashMap<StringName, Color> text_colors = get_godot2_text_editor_theme();
@@ -808,6 +830,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Behavior
 	// Behavior: General
 	_initial_set("text_editor/behavior/general/empty_selection_clipboard", true);
+
+	PackedStringArray extensions;
+	if (ClassDB::class_exists("GDScript")) {
+		extensions.push_back("gd");
+	}
+	if (ClassDB::class_exists("CSharpScript")) {
+		extensions.push_back("cs");
+	}
+	extensions.push_back("gdshader");
+	_initial_set("text_editor/behavior/general/find_in_file_extensions", extensions);
 
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true, true);
@@ -970,12 +1002,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/zoom_inertia", 0.05, "0,1,0.001")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/angle_snap_threshold", 10.0, "1,20,0.1,degrees")
 	_initial_set("editors/3d/navigation/show_viewport_rotation_gizmo", true);
-	_initial_set("editors/3d/navigation/show_viewport_navigation_gizmo", DisplayServer::get_singleton()->is_touchscreen_available());
+	bool should_show_viewport_navigation_gizmo = false;
+#ifdef ANDROID_ENABLED
+	should_show_viewport_navigation_gizmo = true;
+#endif
+	_initial_set("editors/3d/navigation/show_viewport_navigation_gizmo", should_show_viewport_navigation_gizmo);
 
 	// 3D: Freelook
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_navigation_scheme", 0, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_sensitivity", 0.25, "0.01,2,0.001")
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_inertia", 0.0, "0,1,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_inertia", 0.05, "0,1,0.001")
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_base_speed", 5.0, "0,10,0.01,or_greater")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_activation_modifier", 0, "None,Shift,Alt,Meta,Ctrl")
 	_initial_set("editors/3d/freelook/freelook_invert_y_axis", false);
@@ -1119,7 +1155,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Network */
 
 	// General
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/network_mode", 0, "Offline,Online");
+	int network_mode = 0;
+#ifdef ANDROID_ENABLED
+	network_mode = 1;
+#endif
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/network_mode", network_mode, "Offline,Online");
 
 	// HTTP Proxy
 	_initial_set("network/http_proxy/host", "");
@@ -1170,11 +1210,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #if defined(WEB_ENABLED)
 	// Web platform only supports `gl_compatibility`.
 	const String default_renderer = "gl_compatibility";
-#elif defined(ANDROID_ENABLED)
-	// Use more suitable rendering method by default.
+#elif defined(FORWARD_RD_ENABLED) && (!defined(ANDROID_ENABLED) || !defined(MOBILE_RD_ENABLED))
+	const String default_renderer = "forward_plus";
+#elif defined(MOBILE_RD_ENABLED)
 	const String default_renderer = "mobile";
 #else
-	const String default_renderer = "forward_plus";
+	// No other options.
+	const String default_renderer = "gl_compatibility";
 #endif
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", default_renderer, "forward_plus,mobile,gl_compatibility")
 
@@ -1269,6 +1311,7 @@ void EditorSettings::_handle_setting_compatibility() {
 	erase("run/output/always_close_output_on_stop");
 	erase("text_editor/theme/line_spacing"); // See GH-106137.
 	erase("interface/editors/show_scene_tree_root_selection");
+	erase("asset_library/available_urls"); // Workaround bugged settings treating the previous default as a modified value (see GH-118755).
 
 	// Handle renamed settings.
 	_rename_setting("interface/editor/editor_language", "interface/editor/localization/editor_language");
@@ -1315,6 +1358,15 @@ void EditorSettings::_handle_setting_compatibility() {
 	_rename_setting("interface/editor/vsync_mode", "interface/editor/display/vsync_mode");
 	_rename_setting("interface/editor/update_continuously", "interface/editor/display/update_continuously");
 	_rename_setting("interface/editor/collapse_main_menu", "interface/editor/appearance/collapse_main_menu");
+	_rename_setting("asset_library/use_threads", "asset_store/use_threads");
+	_rename_setting("interface/editors/derive_script_globals_by_name", "docks/scene_tree/derive_script_globals_by_name");
+
+	// Handle renamed shortcuts.
+	_rename_shortcut("editor/editor_assetlib", "editor/editor_asset_store");
+	_rename_shortcut("script_editor/window_move_up", "script_editor/move_document_up");
+	_rename_shortcut("script_editor/window_move_down", "script_editor/move_document_down");
+	_rename_shortcut("script_editor/window_sort", "script_editor/sort_documents");
+	_rename_shortcut("script_text_editor/replace_in_files", "editor/replace_in_files");
 }
 
 void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {
@@ -1327,6 +1379,16 @@ void EditorSettings::_rename_setting(const String &p_old_name, const String &p_n
 		ProjectSettings::get_singleton()->set_editor_setting_override(p_old_name, Variant());
 	}
 	compat_map[p_old_name] = p_new_name;
+}
+
+void EditorSettings::_rename_shortcut(const String &p_old_path, const String &p_new_path) {
+	if (!shortcuts.has(p_old_path)) {
+		return;
+	}
+	if (!shortcuts.has(p_new_path)) {
+		shortcuts[p_new_path] = shortcuts[p_old_path];
+	}
+	shortcuts.erase(p_old_path);
 }
 #endif
 
@@ -1455,6 +1517,11 @@ void EditorSettings::setup_language(bool p_initial_setup) {
 
 	if (lang == "en") {
 		TranslationServer::get_singleton()->set_locale(lang);
+
+		TranslationServer::get_singleton()->get_editor_domain()->clear();
+		TranslationServer::get_singleton()->get_property_domain()->clear();
+		TranslationServer::get_singleton()->get_doc_domain()->clear();
+
 		emit_signal("_translation_changed");
 		return; // Default, nothing to do.
 	}
@@ -1507,9 +1574,14 @@ void EditorSettings::save() {
 	if (!singleton.ptr()) {
 		return;
 	}
+	// Only save if a setting has been changed or
+	// the setting file for this version does not exist yet.
+	// Fixes issues when multiple editor instances are open.
+	if (singleton->changed_settings.is_empty() && FileAccess::exists(singleton->get_path())) {
+		return;
+	}
 
 	Error err = ResourceSaver::save(singleton);
-
 	if (err != OK) {
 		ERR_PRINT("Error saving editor settings to " + singleton->get_path());
 	} else {
@@ -1906,6 +1978,9 @@ HashMap<StringName, Color> EditorSettings::get_godot2_text_editor_theme() {
 	colors["text_editor/theme/highlighting/comment_markers/critical_color"] = Color(0.77, 0.35, 0.35);
 	colors["text_editor/theme/highlighting/comment_markers/warning_color"] = Color(0.72, 0.61, 0.48);
 	colors["text_editor/theme/highlighting/comment_markers/notice_color"] = Color(0.56, 0.67, 0.51);
+
+	colors["text_editor/theme/highlighting/warning_underline_color"] = Color(0.89, 0.7, 0.2);
+	colors["text_editor/theme/highlighting/error_underline_color"] = Color(1.0, 0.0, 0.0);
 	return colors;
 }
 
@@ -1984,37 +2059,7 @@ float EditorSettings::get_auto_display_scale() {
 	}
 #endif
 
-#if defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
-#else
-	const int screen = DisplayServer::get_singleton()->window_get_current_screen();
-
-	if (DisplayServer::get_singleton()->screen_get_size(screen) == Vector2i()) {
-		// Invalid screen size, skip.
-		return 1.0;
-	}
-
-#if defined(WINDOWS_ENABLED)
-	return DisplayServer::get_singleton()->screen_get_dpi(screen) / 96.0;
-#else
-	// Use the smallest dimension to use a correct display scale on portrait displays.
-	const int smallest_dimension = MIN(DisplayServer::get_singleton()->screen_get_size(screen).x, DisplayServer::get_singleton()->screen_get_size(screen).y);
-	if (DisplayServer::get_singleton()->screen_get_dpi(screen) >= 192 && smallest_dimension >= 1400) {
-		// hiDPI display.
-		return 2.0;
-	} else if (smallest_dimension >= 1700) {
-		// Likely a hiDPI display, but we aren't certain due to the returned DPI.
-		// Use an intermediate scale to handle this situation.
-		return 1.5;
-	} else if (smallest_dimension <= 800) {
-		// Small loDPI display. Use a smaller display scale so that editor elements fit more easily.
-		// Icons won't look great, but this is better than having editor elements overflow from its window.
-		return 0.75;
-	}
-	return 1.0;
-#endif // defined(WINDOWS_ENABLED)
-
-#endif // defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 }
 
 String EditorSettings::get_language() const {
@@ -2026,21 +2071,32 @@ String EditorSettings::get_language() const {
 	if (auto_language.is_empty()) {
 		// Skip locales which we can't render properly.
 		const LocalVector<String> locales_to_skip = _get_skipped_locales();
-		const String host_lang = OS::get_singleton()->get_locale();
 
 		String best = "en";
 		int best_score = 0;
-		for (const String &locale : get_editor_locales()) {
-			// Test against language code without regional variants (e.g. ur_PK).
-			String lang_code = locale.get_slicec('_', 0);
-			if (locales_to_skip.has(lang_code)) {
-				continue;
+		for (const String &host_lang : OS::get_singleton()->get_preferred_locales()) {
+			if (host_lang.get_slicec('_', 0) == "en") {
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, "en");
+				if (score > 0 && score >= best_score) {
+					best = "en";
+					best_score = score;
+				}
 			}
+			for (const String &locale : get_editor_locales()) {
+				// Test against language code without regional variants (e.g. ur_PK).
+				String lang_code = locale.get_slicec('_', 0);
+				if (locales_to_skip.has(lang_code)) {
+					continue;
+				}
 
-			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
-			if (score > 0 && score >= best_score) {
-				best = locale;
-				best_score = score;
+				int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);
+				if (score > 0 && score >= best_score) {
+					best = locale;
+					best_score = score;
+				}
+			}
+			if (best_score > 0) {
+				break;
 			}
 		}
 		auto_language = best;

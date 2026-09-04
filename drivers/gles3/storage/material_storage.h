@@ -337,6 +337,7 @@ struct SceneShaderData : public ShaderData {
 	bool writes_modelview_or_projection;
 	bool uses_world_coordinates;
 	bool uses_tangent;
+	bool writes_tangent;
 	bool uses_color;
 	bool uses_uv;
 	bool uses_uv2;
@@ -434,6 +435,7 @@ struct TexBlitShaderData : public ShaderData {
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
 		BLEND_MODE_DISABLED,
+		BLEND_MODE_PREMULTIPLIED_ALPHA,
 	};
 
 	bool valid;

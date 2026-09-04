@@ -2355,7 +2355,7 @@ void HeightFieldShape::sCastConvexVsHeightField(const ShapeCast &inShapeCast, co
 	visitor.mShape2 = shape;
 	visitor.mInvDirection.Set(inShapeCast.mDirection);
 	visitor.mBoxCenter = inShapeCast.mShapeWorldBounds.GetCenter();
-	visitor.mBoxExtent = inShapeCast.mShapeWorldBounds.GetExtent();
+	visitor.mBoxExtent = inShapeCast.mShapeWorldBounds.GetExtent() + Vec3::sReplicate(inShapeCastSettings.mExtraConvexRadius);
 	visitor.mSubShapeIDCreator2 = inSubShapeIDCreator2;
 	shape->WalkHeightField(visitor);
 }

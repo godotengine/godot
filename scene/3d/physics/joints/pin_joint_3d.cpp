@@ -49,7 +49,7 @@ void PinJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, 3);
 	params[p_param] = p_value;
 	if (is_configured()) {
-		PhysicsServer3D::get_singleton()->pin_joint_set_param(get_rid(), PhysicsServer3D::PinJointParam(p_param), p_value);
+		PhysicsServer3D::get_singleton()->pin_joint_set_param(get_rid(), PS3DE::PinJointParam(p_param), p_value);
 	}
 }
 
@@ -71,7 +71,7 @@ void PinJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBod
 
 	PhysicsServer3D::get_singleton()->joint_make_pin(p_joint, body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < 3; i++) {
-		PhysicsServer3D::get_singleton()->pin_joint_set_param(p_joint, PhysicsServer3D::PinJointParam(i), params[i]);
+		PhysicsServer3D::get_singleton()->pin_joint_set_param(p_joint, PS3DE::PinJointParam(i), params[i]);
 	}
 }
 

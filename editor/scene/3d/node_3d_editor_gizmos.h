@@ -175,6 +175,7 @@ protected:
 	GDVIRTUAL0RC(int, _get_priority)
 	GDVIRTUAL0RC(bool, _can_be_hidden)
 	GDVIRTUAL0RC(bool, _is_selectable_when_hidden)
+	GDVIRTUAL0RC(bool, _can_commit_handle_on_click)
 
 	GDVIRTUAL1(_redraw, Ref<EditorNode3DGizmo>)
 	GDVIRTUAL3RC(String, _get_handle_name, Ref<EditorNode3DGizmo>, int, bool)

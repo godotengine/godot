@@ -96,14 +96,6 @@ Vector<StringName> VisualShaderNodeVectorBase::get_editable_properties() const {
 	return props;
 }
 
-VisualShaderNodeVectorBase::VisualShaderNodeVectorBase() {
-}
-
-////////////// Constants Base
-
-VisualShaderNodeConstant::VisualShaderNodeConstant() {
-}
-
 ////////////// Scalar(Float)
 
 String VisualShaderNodeFloatConstant::get_caption() const {
@@ -161,9 +153,6 @@ void VisualShaderNodeFloatConstant::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant"), &VisualShaderNodeFloatConstant::get_constant);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "constant"), "set_constant", "get_constant");
-}
-
-VisualShaderNodeFloatConstant::VisualShaderNodeFloatConstant() {
 }
 
 ////////////// Scalar(Int)
@@ -225,9 +214,6 @@ void VisualShaderNodeIntConstant::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "constant"), "set_constant", "get_constant");
 }
 
-VisualShaderNodeIntConstant::VisualShaderNodeIntConstant() {
-}
-
 ////////////// Scalar(UInt)
 
 String VisualShaderNodeUIntConstant::get_caption() const {
@@ -285,9 +271,6 @@ void VisualShaderNodeUIntConstant::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant"), &VisualShaderNodeUIntConstant::get_constant);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "constant"), "set_constant", "get_constant");
-}
-
-VisualShaderNodeUIntConstant::VisualShaderNodeUIntConstant() {
 }
 
 ////////////// Boolean
@@ -349,9 +332,6 @@ void VisualShaderNodeBooleanConstant::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "constant"), "set_constant", "get_constant");
 }
 
-VisualShaderNodeBooleanConstant::VisualShaderNodeBooleanConstant() {
-}
-
 ////////////// Color
 
 String VisualShaderNodeColorConstant::get_caption() const {
@@ -409,9 +389,6 @@ void VisualShaderNodeColorConstant::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant"), &VisualShaderNodeColorConstant::get_constant);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "constant"), "set_constant", "get_constant");
-}
-
-VisualShaderNodeColorConstant::VisualShaderNodeColorConstant() {
 }
 
 ////////////// Vector2
@@ -473,9 +450,6 @@ void VisualShaderNodeVec2Constant::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "constant"), "set_constant", "get_constant");
 }
 
-VisualShaderNodeVec2Constant::VisualShaderNodeVec2Constant() {
-}
-
 ////////////// Vector3
 
 String VisualShaderNodeVec3Constant::get_caption() const {
@@ -533,9 +507,6 @@ void VisualShaderNodeVec3Constant::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant"), &VisualShaderNodeVec3Constant::get_constant);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "constant"), "set_constant", "get_constant");
-}
-
-VisualShaderNodeVec3Constant::VisualShaderNodeVec3Constant() {
 }
 
 ////////////// Vector4
@@ -609,9 +580,6 @@ void VisualShaderNodeVec4Constant::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR4, "constant_v4", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL), "_set_constant_v4", "_get_constant_v4");
 }
 
-VisualShaderNodeVec4Constant::VisualShaderNodeVec4Constant() {
-}
-
 ////////////// Transform3D
 
 String VisualShaderNodeTransformConstant::get_caption() const {
@@ -679,9 +647,6 @@ void VisualShaderNodeTransformConstant::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "constant"), "set_constant", "get_constant");
 }
 
-VisualShaderNodeTransformConstant::VisualShaderNodeTransformConstant() {
-}
-
 ////////////// Texture
 
 String VisualShaderNodeTexture::get_caption() const {
@@ -744,11 +709,11 @@ bool VisualShaderNodeTexture::is_input_port_default(int p_port, Shader::Mode p_m
 	return false;
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "tex");
 	dtp.params.push_back(texture);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -1052,9 +1017,6 @@ void VisualShaderNodeTexture::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_MAX);
 }
 
-VisualShaderNodeTexture::VisualShaderNodeTexture() {
-}
-
 ////////////// CurveTexture
 
 String VisualShaderNodeCurveTexture::get_caption() const {
@@ -1114,11 +1076,11 @@ String VisualShaderNodeCurveTexture::generate_code(Shader::Mode p_mode, VisualSh
 	return code;
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCurveTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeCurveTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "curve");
 	dtp.params.push_back(texture);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -1199,11 +1161,11 @@ String VisualShaderNodeCurveXYZTexture::generate_code(Shader::Mode p_mode, Visua
 	return code;
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCurveXYZTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeCurveXYZTexture::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "curve3d");
 	dtp.params.push_back(texture);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -1352,11 +1314,11 @@ String VisualShaderNodeTexture2DArray::get_input_port_name(int p_port) const {
 	return VisualShaderNodeSample3D::get_input_port_name(p_port);
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture2DArray::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeTexture2DArray::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "tex3d");
 	dtp.params.push_back(texture_array);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -1393,9 +1355,6 @@ void VisualShaderNodeTexture2DArray::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_array", PROPERTY_HINT_RESOURCE_TYPE, "Texture2DArray,CompressedTexture2DArray,PlaceholderTexture2DArray,Texture2DArrayRD"), "set_texture_array", "get_texture_array");
 }
 
-VisualShaderNodeTexture2DArray::VisualShaderNodeTexture2DArray() {
-}
-
 ////////////// Texture3D
 
 String VisualShaderNodeTexture3D::get_caption() const {
@@ -1409,11 +1368,11 @@ String VisualShaderNodeTexture3D::get_input_port_name(int p_port) const {
 	return VisualShaderNodeSample3D::get_input_port_name(p_port);
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeTexture3D::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeTexture3D::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "tex3d");
 	dtp.params.push_back(texture);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -1448,9 +1407,6 @@ void VisualShaderNodeTexture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture"), &VisualShaderNodeTexture3D::get_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture3D::get_class_static()), "set_texture", "get_texture");
-}
-
-VisualShaderNodeTexture3D::VisualShaderNodeTexture3D() {
 }
 
 ////////////// Cubemap
@@ -1501,11 +1457,11 @@ String VisualShaderNodeCubemap::get_output_port_name(int p_port) const {
 	return "color";
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCubemap::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	VisualShader::DefaultTextureParam dtp;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeCubemap::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	ShaderGraph::DefaultTextureParam dtp;
 	dtp.name = make_unique_id(p_type, p_id, "cube");
 	dtp.params.push_back(cube_map);
-	Vector<VisualShader::DefaultTextureParam> ret;
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 	ret.push_back(dtp);
 	return ret;
 }
@@ -5407,9 +5363,6 @@ Vector<StringName> VisualShaderNodeFloatParameter::get_editable_properties() con
 	return props;
 }
 
-VisualShaderNodeFloatParameter::VisualShaderNodeFloatParameter() {
-}
-
 ////////////// Integer Parameter
 
 String VisualShaderNodeIntParameter::get_caption() const {
@@ -5642,9 +5595,6 @@ Vector<StringName> VisualShaderNodeIntParameter::get_editable_properties() const
 	return props;
 }
 
-VisualShaderNodeIntParameter::VisualShaderNodeIntParameter() {
-}
-
 ////////////// Unsigned Integer Parameter
 
 String VisualShaderNodeUIntParameter::get_caption() const {
@@ -5749,9 +5699,6 @@ Vector<StringName> VisualShaderNodeUIntParameter::get_editable_properties() cons
 		props.push_back("default_value");
 	}
 	return props;
-}
-
-VisualShaderNodeUIntParameter::VisualShaderNodeUIntParameter() {
 }
 
 ////////////// Boolean Parameter
@@ -5864,9 +5811,6 @@ Vector<StringName> VisualShaderNodeBooleanParameter::get_editable_properties() c
 	return props;
 }
 
-VisualShaderNodeBooleanParameter::VisualShaderNodeBooleanParameter() {
-}
-
 ////////////// Color Parameter
 
 String VisualShaderNodeColorParameter::get_caption() const {
@@ -5969,9 +5913,6 @@ Vector<StringName> VisualShaderNodeColorParameter::get_editable_properties() con
 	return props;
 }
 
-VisualShaderNodeColorParameter::VisualShaderNodeColorParameter() {
-}
-
 ////////////// Vector2 Parameter
 
 String VisualShaderNodeVec2Parameter::get_caption() const {
@@ -6070,9 +6011,6 @@ Vector<StringName> VisualShaderNodeVec2Parameter::get_editable_properties() cons
 		props.push_back("default_value");
 	}
 	return props;
-}
-
-VisualShaderNodeVec2Parameter::VisualShaderNodeVec2Parameter() {
 }
 
 ////////////// Vector3 Parameter
@@ -6175,9 +6113,6 @@ Vector<StringName> VisualShaderNodeVec3Parameter::get_editable_properties() cons
 	return props;
 }
 
-VisualShaderNodeVec3Parameter::VisualShaderNodeVec3Parameter() {
-}
-
 ////////////// Vector4 Parameter
 
 String VisualShaderNodeVec4Parameter::get_caption() const {
@@ -6276,9 +6211,6 @@ Vector<StringName> VisualShaderNodeVec4Parameter::get_editable_properties() cons
 		props.push_back("default_value");
 	}
 	return props;
-}
-
-VisualShaderNodeVec4Parameter::VisualShaderNodeVec4Parameter() {
 }
 
 ////////////// Transform Parameter
@@ -6383,9 +6315,6 @@ Vector<StringName> VisualShaderNodeTransformParameter::get_editable_properties()
 		props.push_back("default_value");
 	}
 	return props;
-}
-
-VisualShaderNodeTransformParameter::VisualShaderNodeTransformParameter() {
 }
 
 //////////////
@@ -6781,9 +6710,6 @@ bool VisualShaderNodeTextureParameter::is_convertible_to_constant() const {
 	return false; // conversion is not allowed
 }
 
-VisualShaderNodeTextureParameter::VisualShaderNodeTextureParameter() {
-}
-
 ////////////// Texture2D Parameter
 
 String VisualShaderNodeTexture2DParameter::get_caption() const {
@@ -6804,9 +6730,6 @@ String VisualShaderNodeTexture2DParameter::generate_global(Shader::Mode p_mode, 
 	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat, texture_source);
 	code += ";\n";
 	return code;
-}
-
-VisualShaderNodeTexture2DParameter::VisualShaderNodeTexture2DParameter() {
 }
 
 ////////////// Texture Parameter (Triplanar)
@@ -6932,9 +6855,6 @@ bool VisualShaderNodeTextureParameterTriplanar::is_input_port_default(int p_port
 	return false;
 }
 
-VisualShaderNodeTextureParameterTriplanar::VisualShaderNodeTextureParameterTriplanar() {
-}
-
 ////////////// Texture2DArray Parameter
 
 String VisualShaderNodeTexture2DArrayParameter::get_caption() const {
@@ -6950,9 +6870,6 @@ String VisualShaderNodeTexture2DArrayParameter::generate_global(Shader::Mode p_m
 	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat, texture_source);
 	code += ";\n";
 	return code;
-}
-
-VisualShaderNodeTexture2DArrayParameter::VisualShaderNodeTexture2DArrayParameter() {
 }
 
 ////////////// Texture3D Parameter
@@ -6972,9 +6889,6 @@ String VisualShaderNodeTexture3DParameter::generate_global(Shader::Mode p_mode, 
 	return code;
 }
 
-VisualShaderNodeTexture3DParameter::VisualShaderNodeTexture3DParameter() {
-}
-
 ////////////// Cubemap Parameter
 
 String VisualShaderNodeCubemapParameter::get_caption() const {
@@ -6990,9 +6904,6 @@ String VisualShaderNodeCubemapParameter::generate_global(Shader::Mode p_mode, Vi
 	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat, texture_source);
 	code += ";\n";
 	return code;
-}
-
-VisualShaderNodeCubemapParameter::VisualShaderNodeCubemapParameter() {
 }
 
 ////////////// If

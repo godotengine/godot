@@ -37,6 +37,7 @@
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
+class Button;
 class ColorChannelSelector;
 
 class TextureLayeredEditor : public Control {
@@ -48,6 +49,7 @@ class TextureLayeredEditor : public Control {
 
 	SpinBox *layer = nullptr;
 	Label *info = nullptr;
+	Button *info_toggle = nullptr;
 	Ref<TextureLayered> texture;
 
 	static inline Ref<Shader> shaders[3];
@@ -64,6 +66,7 @@ class TextureLayeredEditor : public Control {
 	ColorChannelSelector *channel_selector = nullptr;
 
 	void _draw_outline();
+	void _toggle_info();
 
 	void _make_materials();
 	void _update_material(bool p_texture_changed);

@@ -68,7 +68,7 @@
 		<method name="_write_frame" qualifiers="virtual required">
 			<return type="int" enum="Error" />
 			<param index="0" name="frame_image" type="Image" />
-			<param index="1" name="audio_frame_block" type="const void*" />
+			<param index="1" name="audio_frame_block" type="const int32_t*" />
 			<description>
 				Called at the end of every rendered frame. The [param frame_image] and [param audio_frame_block] function arguments should be written to.
 			</description>

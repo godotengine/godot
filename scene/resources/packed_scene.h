@@ -107,6 +107,8 @@ class SceneState : public RefCounted {
 
 	Node *_recover_node_path_index(Node *p_base, int p_idx) const;
 
+	static Variant _duplicate_recursive(const Variant &p_variant, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_remap_cache, const Variant &p_fallback, Node *p_for_scene);
+
 #ifdef TOOLS_ENABLED
 public:
 	typedef void (*InstantiationWarningNotify)(const String &p_warning);

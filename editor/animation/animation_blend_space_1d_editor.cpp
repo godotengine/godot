@@ -42,6 +42,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
@@ -99,9 +100,15 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
-			for (const StringName &E : tree->get_sorted_animation_list()) {
-				animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
-				animations_to_add.push_back(E);
+			const LocalVector<StringName> &animation_list = tree->get_sorted_animation_list();
+			if (animation_list.is_empty()) {
+				animations_menu->add_item(TTR("No available animations"));
+				animations_menu->set_item_disabled(-1, true);
+			} else {
+				for (const StringName &E : animation_list) {
+					animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
+					animations_to_add.push_back(E);
+				}
 			}
 
 			for (const StringName &E : classes) {
@@ -331,7 +338,6 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		}
 	}
 
-	bool does_include_invalid_key = false;
 	points.clear();
 	for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
 		float point = blend_space->get_blend_point_position(i);
@@ -356,7 +362,6 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 			Ref<AnimationNodeAnimation> anim_node = node;
 			if (anim_node.is_null()) {
 				is_key_valid = false;
-				does_include_invalid_key = true;
 			}
 		}
 		Vector2 gui_point = (ofs + Vector2(point, s.height / 2.0) - icon->get_size() / 2.0).floor();
@@ -377,9 +382,6 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 			text_rects.write[i] = Rect2(Vector2(text_pos.x, text_pos.y - font->get_ascent(font_size)), text_size);
 		}
 	}
-	AnimationTreeEditor::get_singleton()->current_playback_error = does_include_invalid_key
-			? TTR("Cyclic sync modes require that all blend points in BlendSpace use non-nested Animation nodes with a finite, immutable length.")
-			: String();
 
 	// blend position
 	{
@@ -408,7 +410,8 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 }
 
 void AnimationNodeBlendSpace1DEditor::_update_space() {
-	if (updating) {
+	// edge case when undoing action after editor has changed
+	if (updating || blend_space.is_null()) {
 		return;
 	}
 
@@ -418,10 +421,12 @@ void AnimationNodeBlendSpace1DEditor::_update_space() {
 	min_value->set_value(blend_space->get_min_space());
 
 	sync->select(blend_space->get_sync_mode());
+	sync->set_fit_to_longest_item(false);
 	cyclic_length_value->set_value(blend_space->get_cyclic_length());
 	cyclic_length_value->set_visible(blend_space->get_sync_mode() == AnimationNodeBlendSpace1D::SYNC_MODE_CYCLIC_CONSTANT);
 
 	interpolation->select(blend_space->get_blend_mode());
+	interpolation->set_fit_to_longest_item(false);
 
 	label_value->set_text(blend_space->get_value_label());
 
@@ -587,7 +592,7 @@ void AnimationNodeBlendSpace1DEditor::_tool_switch(int p_tool) {
 }
 
 void AnimationNodeBlendSpace1DEditor::_update_edited_point_pos() {
-	if (updating) {
+	if (updating || blend_space.is_null()) {
 		return;
 	}
 
@@ -716,6 +721,9 @@ void AnimationNodeBlendSpace1DEditor::_edit_point_index(double p_index) {
 
 void AnimationNodeBlendSpace1DEditor::_set_selected_point(int p_index) {
 	selected_point = p_index;
+	if (blend_space.is_null()) {
+		return;
+	}
 	_update_tool_erase();
 	if (p_index != -1) {
 		_update_edited_point_pos();
@@ -775,11 +783,6 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), TTR("Capture"), 2);
-		} break;
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible_in_tree()) {
-				AnimationTreeEditor::get_singleton()->current_playback_error = String();
-			}
 		} break;
 	}
 }
@@ -907,8 +910,8 @@ void AnimationNodeBlendSpace1DEditor::_inline_editor_text_changed(const String &
 		return;
 	}
 
-	Vector2 editor_size = inline_editor->get_size();
-	inline_editor->set_size(Vector2(0, editor_size.y));
+	inline_editor->set_size(Vector2(0, inline_editor->get_size().y));
+	Vector2 editor_size = inline_editor->get_minimum_size();
 
 	const float pm = POINT_MARGIN * EDSCALE;
 	const Size2 s = blend_space_draw->get_size() - Vector2(pm * 2, pm * 2);
@@ -954,8 +957,9 @@ AnimationNodeBlendSpace1DEditor *AnimationNodeBlendSpace1DEditor::singleton = nu
 AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	singleton = this;
 
-	HBoxContainer *top_hb = memnew(HBoxContainer);
-	add_child(top_hb);
+	HFlowContainer *top_hf = memnew(HFlowContainer);
+	top_hf->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(top_hf);
 
 	Ref<ButtonGroup> bg;
 	bg.instantiate();
@@ -964,7 +968,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_select->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
-	top_hb->add_child(tool_select);
+	top_hf->add_child(tool_select);
 	tool_select->set_pressed(true);
 	tool_select->set_tooltip_text(TTR("Select and move points.\nRMB: Create point at position clicked.\nShift+LMB+Drag: Set the blending position within the space.\nScroll: Increment or decrement index."));
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(0));
@@ -973,7 +977,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_create->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
-	top_hb->add_child(tool_create);
+	top_hf->add_child(tool_create);
 	tool_create->set_tooltip_text(TTR("Create points."));
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(1));
 
@@ -981,43 +985,45 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_blend->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_blend->set_toggle_mode(true);
 	tool_blend->set_button_group(bg);
-	top_hb->add_child(tool_blend);
+	top_hf->add_child(tool_blend);
 	tool_blend->set_tooltip_text(TTR("Set the blending position within the space."));
 	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(2));
 
 	tool_erase_sep = memnew(VSeparator);
-	top_hb->add_child(tool_erase_sep);
+	top_hf->add_child(tool_erase_sep);
 	tool_erase = memnew(Button);
 	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(tool_erase);
+	top_hf->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points."));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_erase_selected));
 
-	top_hb->add_child(memnew(VSeparator));
+	top_hf->add_child(memnew(VSeparator));
 
 	snap = memnew(Button);
 	snap->set_theme_type_variation(SceneStringName(FlatButton));
 	snap->set_toggle_mode(true);
-	top_hb->add_child(snap);
+	top_hf->add_child(snap);
 	snap->set_pressed(true);
 	snap->set_tooltip_text(TTR("Enable snap and show grid."));
 	snap->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_snap_toggled));
 
 	snap_value = memnew(SpinBox);
-	top_hb->add_child(snap_value);
+	top_hf->add_child(snap_value);
 	snap_value->set_min(0.01);
 	snap_value->set_step(0.01);
 	snap_value->set_max(1000);
 	snap_value->set_accessibility_name(TTRC("Grid Step"));
+	snap_value->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
+	snap_value->get_line_edit()->set_expand_to_text_length_enabled(true);
 
-	top_hb->add_child(memnew(VSeparator));
-	top_hb->add_child(memnew(Label(TTR("Sync"))));
+	top_hf->add_child(memnew(VSeparator));
+	top_hf->add_child(memnew(Label(TTR("Sync"))));
 	sync = memnew(OptionButton);
 	sync->add_item(TTR("None"));
 	sync->add_item(TTR("Independent"));
 	sync->add_item(TTR("Cyclic Mutable"));
 	sync->add_item(TTR("Cyclic Constant"));
-	top_hb->add_child(sync);
+	top_hf->add_child(sync);
 	sync->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
 	cyclic_length_value = memnew(SpinBox);
@@ -1025,27 +1031,31 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	cyclic_length_value->set_max(99.0);
 	cyclic_length_value->set_step(0.001);
 	cyclic_length_value->set_allow_greater(true);
-	cyclic_length_value->set_suffix("s");
+	cyclic_length_value->set_format("%s s");
 	cyclic_length_value->set_accessibility_name(TTRC("Cyclic Length"));
 	cyclic_length_value->set_tooltip_text(TTR("Cycle length in seconds for cyclic sync. All animations are time-scaled to complete one cycle in this duration."));
-	top_hb->add_child(cyclic_length_value);
+	top_hf->add_child(cyclic_length_value);
 	cyclic_length_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
-	top_hb->add_child(memnew(VSeparator));
+	top_hf->add_child(memnew(VSeparator));
 
-	top_hb->add_child(memnew(Label(TTR("Blend"))));
+	top_hf->add_child(memnew(Label(TTR("Blend"))));
 	interpolation = memnew(OptionButton);
-	top_hb->add_child(interpolation);
+	top_hf->add_child(interpolation);
 	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
-	top_hb->add_spacer();
-
 	edit_hb = memnew(HBoxContainer);
-	top_hb->add_child(edit_hb);
+	edit_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	top_hf->add_child(edit_hb);
+
+	Control *top_spacer = memnew(Control);
+	top_spacer->set_h_size_flags(SIZE_EXPAND_FILL);
+	edit_hb->add_child(top_spacer);
 
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
-	open_editor->set_text(TTR("Open Editor"));
+	open_editor->set_text(TTR("Open"));
+	open_editor->set_tooltip_text(TTR("Open in editor."));
 	open_editor->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_open_editor), CONNECT_DEFERRED);
 	open_editor_sep = memnew(VSeparator);
 	edit_hb->add_child(open_editor_sep);
@@ -1058,6 +1068,8 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	index_edit->set_allow_greater(false);
 	index_edit->set_allow_lesser(false);
 	index_edit->set_accessibility_name(TTRC("Blend Point Index"));
+	index_edit->get_line_edit()->add_theme_constant_override("minimum_character_width", 1);
+	index_edit->get_line_edit()->set_expand_to_text_length_enabled(true);
 	index_edit->set_tooltip_text(TTR("Index of the blend point.\nValues outside of the valid range will be clamped to the nearest index."));
 	index_edit->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_index));
 	index_edit->get_line_edit()->connect(SceneStringName(focus_entered), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_index_edit_focus_entered));
@@ -1071,7 +1083,9 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	edit_value->set_min(-ABS_MAX);
 	edit_value->set_max(ABS_MAX);
 	edit_value->set_step(STEP_UNIT);
-	edit_value->set_accessibility_name(TTRC("Blend Value"));
+	edit_value->set_accessibility_name(TTRC("Blend Point Position"));
+	edit_value->get_line_edit()->add_theme_constant_override("minimum_character_width", 3);
+	edit_value->get_line_edit()->set_expand_to_text_length_enabled(true);
 	edit_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_pos));
 
 	edit_hb->hide();

@@ -139,7 +139,13 @@ public:
 
 	String get_text_for_completion(const LSP::Position &p_cursor) const;
 	String get_text_for_lookup_symbol(const LSP::Position &p_cursor, const String &p_symbol = "", bool p_func_required = false) const;
-	String get_identifier_under_position(const LSP::Position &p_position, LSP::Range &r_range) const;
+	/**
+	 * Parses the symbol name at the given position. Returns that name and its full range.
+	 *
+	 * The returned name might be a false positive and not translate to an actual symbol e.g. it might be a language keyword.
+	 * The results of this method are not equivalent to identifier AST nodes. Instead it returns results that are compatible with `LSP::DocumentSymbol::name` i.e. includes `@` for annotations.
+	 */
+	String get_symbol_name_under_position(const LSP::Position &p_position, LSP::Range &r_range) const;
 	String get_uri() const;
 
 	/**

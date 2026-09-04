@@ -623,10 +623,8 @@ bool FreeDesktopPortalDesktop::is_inhibit_supported() {
 }
 
 Error FreeDesktopPortalDesktop::make_request_token(String &r_token) {
-	CryptoCore::RandomGenerator rng;
-	ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
 	uint8_t uuid[64];
-	Error rng_err = rng.get_random_bytes(uuid, 64);
+	Error rng_err = CryptoCore::generate_random(uuid, 64);
 	ERR_FAIL_COND_V_MSG(rng_err, rng_err, "Failed to generate unique token.");
 
 	r_token = String::hex_encode_buffer(uuid, 64);
@@ -698,6 +696,9 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServerEnums::WindowID p_
 		if (tokens.size() >= 1) {
 			String flt = tokens[0].strip_edges();
 			String mime = (tokens.size() >= 3) ? tokens[2].strip_edges() : String();
+			if (flt == "*.*" && mime == "application/octet-stream") {
+				mime = String();
+			}
 			if (!flt.is_empty() || !mime.is_empty()) {
 				if (tokens.size() >= 2) {
 					if (flt == "*.*") {
@@ -734,10 +735,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServerEnums::WindowID p_
 	fd.opt_in_cb = p_options_in_cb;
 
 	String token;
-	Error err = make_request_token(token);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(make_request_token(token));
 
 	// Generate FileChooser message.
 	const char *method = nullptr;

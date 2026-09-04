@@ -621,6 +621,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	HScrollBar *hscroll = nullptr;
 	ScrollContainer *scroll = nullptr;
 	VBoxContainer *track_vbox = nullptr;
+	MarginContainer *bezier_mc = nullptr;
 	AnimationBezierTrackEdit *bezier_edit = nullptr;
 	VBoxContainer *timeline_vbox = nullptr;
 
@@ -777,7 +778,9 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	AnimationTrackKeyEdit *key_edit = nullptr;
 	AnimationMultiTrackKeyEdit *multi_key_edit = nullptr;
+	bool update_key_edit_pending = false;
 	void _update_key_edit();
+	void _update_key_edit_callback();
 	void _clear_key_edit();
 
 	Control *box_selection_container = nullptr;
@@ -890,6 +893,7 @@ class AnimationTrackEditor : public VBoxContainer {
 			float time = 0;
 			float transition = 0;
 			Variant value;
+			Animation::HandleMode handle_mode = Animation::HANDLE_MODE_FREE;
 		};
 		Vector<Key> keys;
 	};
@@ -972,8 +976,8 @@ public:
 	void set_anim_pos(float p_pos);
 	void insert_node_value_key(Node *p_node, const String &p_property, bool p_only_if_exists = false, bool p_advance = false);
 	void insert_value_key(const String &p_property, bool p_advance);
-	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value);
-	bool has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
+	void insert_transform_3d_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value);
+	bool has_transform_3d_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
 	void make_insert_queue();
 	void commit_insert_queue();
 

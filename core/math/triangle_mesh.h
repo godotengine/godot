@@ -75,7 +75,7 @@ private:
 		}
 	};
 
-	int _create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &max_depth, int &max_alloc);
+	int _create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc);
 
 	Vector<BVH> bvh;
 	int max_depth = 0;
@@ -87,6 +87,7 @@ public:
 	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr, int32_t *r_face_index = nullptr) const;
 	bool inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale = Vector3(1, 1, 1)) const;
 	Vector<Face3> get_faces() const;
+	AABB get_aabb() const;
 
 	const Vector<Triangle> &get_triangles() const { return triangles; }
 	const Vector<Vector3> &get_vertices() const { return vertices; }

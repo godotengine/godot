@@ -89,6 +89,10 @@ String TextServerFallback::_get_name() const {
 	return "Fallback (Built-in)";
 }
 
+String TextServerFallback::_get_short_name() const {
+	return "fallback";
+}
+
 int64_t TextServerFallback::_get_features() const {
 	int64_t interface_features = FEATURE_SIMPLE_LAYOUT | FEATURE_FONT_BITMAP;
 #ifdef MODULE_FREETYPE_ENABLED
@@ -435,8 +439,9 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 	chr.advance = p_advance;
 
 	if (shape.validate() && shape.contours.size() > 0) {
-		int w = (bounds.r - bounds.l);
-		int h = (bounds.t - bounds.b);
+		// Round the glyph size up to whole pixels so the bitmap fully covers the shape.
+		int w = Math::ceil(bounds.r - bounds.l);
+		int h = Math::ceil(bounds.t - bounds.b);
 
 		if (w == 0 || h == 0) {
 			chr.texture_idx = -1;
@@ -492,7 +497,9 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 		chr.texture_idx = tex_pos.index;
 
 		chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w + p_rect_margin * 2, h + p_rect_margin * 2);
-		chr.rect.position = Vector2(bounds.l - p_rect_margin, -bounds.t - p_rect_margin);
+		// Derive the glyph position from the same bottom-left anchor the rasterizer uses,
+		// rather than top-left, so the two agree about glyph placement.
+		chr.rect.position = Vector2(bounds.l - p_rect_margin, -(bounds.b + h) - p_rect_margin);
 		chr.rect.size = chr.uv_rect.size;
 	}
 	return chr;
@@ -2697,6 +2704,8 @@ Vector2 TextServerFallback::_font_get_kerning(const RID &p_font_rid, int64_t p_s
 			int32_t glyph_a = FT_Get_Char_Index(fd->face, p_glyph_pair.x);
 			int32_t glyph_b = FT_Get_Char_Index(fd->face, p_glyph_pair.y);
 			FT_Get_Kerning(fd->face, glyph_a, glyph_b, FT_KERNING_DEFAULT, &delta);
+			delta.x /= 64;
+			delta.y /= 64;
 			if (fd->msdf) {
 				return Vector2(delta.x, delta.y) * (double)p_size / (double)fd->msdf_source_size;
 			} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
@@ -4937,7 +4946,8 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				for (int j = span.end - 1; j >= span.start; j--) {
 					last_non_zero_w = j;
 					uint32_t idx = (int32_t)sd->text[j - sd->start];
-					if (!is_control(idx) && !(idx >= 0x200B && idx <= 0x200D)) {
+					bool zero_w_idx = (sd->preserve_control) ? (idx == 0x200B || idx == 0xFEFF) : ((idx >= 0x200B && idx <= 0x200D) || idx == 0x2060 || idx == 0xFEFF);
+					if (!is_control(idx) && !zero_w_idx) {
 						break;
 					}
 				}
@@ -4952,7 +4962,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				gl.count = 1;
 				gl.font_size = span.font_size;
 				gl.index = (int32_t)sd->text[j - sd->start]; // Use codepoint.
-				bool zw = (gl.index >= 0x200b && gl.index <= 0x200d);
+				bool zw = (sd->preserve_control) ? (gl.index == 0x200B || gl.index == 0xFEFF) : ((gl.index >= 0x200B && gl.index <= 0x200D) || gl.index == 0x2060 || gl.index == 0xFEFF);
 				if (gl.index == 0x0009 || gl.index == 0x000b || zw) {
 					gl.index = 0x0020;
 				}
@@ -5038,6 +5048,10 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 						sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 						sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 					}
+				}
+				if (zw) {
+					gl.index = 0;
+					gl.advance = 0.0;
 				}
 				sd->width += gl.advance;
 				sd->glyphs.push_back(gl);

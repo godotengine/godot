@@ -52,6 +52,7 @@ class GodotAppInstrumentedTestPlugin(godot: Godot) : GodotPlugin(godot) {
 
 		private const val JAVACLASSWRAPPER_TESTS = "javaclasswrapper_tests"
 		private const val FILE_ACCESS_TESTS = "file_access_tests"
+		private const val PLUGIN_SIGNAL_TESTS = "android_plugin_signal_tests"
 
 		private val LAUNCH_TESTS_SIGNAL = SignalInfo("launch_tests", String::class.java)
 		private val UPDATE_QUIT_ON_GO_BACK_SIGNAL = SignalInfo("update_quit_on_go_back", java.lang.Boolean::class.java)
@@ -124,6 +125,10 @@ class GodotAppInstrumentedTestPlugin(godot: Godot) : GodotPlugin(godot) {
 	 */
 	internal fun runFileAccessTests(): Result<Any>? {
 		return launchTests(FILE_ACCESS_TESTS)
+	}
+
+	internal fun runPluginSignalTests(): Result<Any>? {
+		return launchTests(PLUGIN_SIGNAL_TESTS)
 	}
 
 	private fun launchTests(testLabel: String): Result<Any>? {

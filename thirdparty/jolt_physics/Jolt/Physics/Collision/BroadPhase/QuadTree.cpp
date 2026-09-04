@@ -1000,8 +1000,6 @@ JPH_INLINE void QuadTree::WalkTree(const ObjectLayerFilter &inObjectLayerFilter,
 			ObjectLayer object_layer = inTracking[body_id.GetIndex()].mObjectLayer; // We're not taking a lock on the body, so it may be in the process of being removed so check if the object layer is invalid
 			if (object_layer != cObjectLayerInvalid && inObjectLayerFilter.ShouldCollide(object_layer))
 			{
-				JPH_PROFILE("VisitBody");
-
 				// Track amount of hits
 				JPH_IF_TRACK_BROADPHASE_STATS(++hits_collected;)
 

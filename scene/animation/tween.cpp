@@ -97,17 +97,17 @@ void Tween::_stop_internal(bool p_reset) {
 	}
 }
 
-RequiredResult<PropertyTweener> Tween::tween_property(RequiredParam<const Object> rp_target, const NodePath &p_property, Variant p_to, double p_duration) {
-	EXTRACT_PARAM_OR_FAIL_V(p_target, rp_target, nullptr);
+RequiredResult<PropertyTweener> Tween::tween_property(RequiredParam<const Object> p_target, const NodePath &p_property, Variant p_to, double p_duration) {
+	EXTRACT_PARAM_OR_FAIL_V(target, p_target, nullptr);
 	CHECK_VALID();
 
 	Vector<StringName> property_subnames = p_property.get_as_property_path().get_subnames();
 #ifdef DEBUG_ENABLED
 	bool prop_valid;
-	const Variant &prop_value = p_target->get_indexed(property_subnames, &prop_valid);
-	ERR_FAIL_COND_V_MSG(!prop_valid, nullptr, vformat("The tweened property \"%s\" does not exist in object \"%s\".", p_property, p_target));
+	const Variant &prop_value = target->get_indexed(property_subnames, &prop_valid);
+	ERR_FAIL_COND_V_MSG(!prop_valid, nullptr, vformat("The tweened property \"%s\" does not exist in object \"%s\".", p_property, target));
 #else
-	const Variant &prop_value = p_target->get_indexed(property_subnames);
+	const Variant &prop_value = target->get_indexed(property_subnames);
 #endif
 
 	if (!Animation::validate_type_match(prop_value, p_to)) {
@@ -115,7 +115,7 @@ RequiredResult<PropertyTweener> Tween::tween_property(RequiredParam<const Object
 	}
 
 	Ref<PropertyTweener> tweener;
-	tweener.instantiate(p_target, property_subnames, p_to, p_duration);
+	tweener.instantiate(target, property_subnames, p_to, p_duration);
 	append(tweener);
 	return tweener;
 }
@@ -151,14 +151,14 @@ RequiredResult<MethodTweener> Tween::tween_method(const Callable &p_callback, co
 	return tweener;
 }
 
-RequiredResult<SubtweenTweener> Tween::tween_subtween(RequiredParam<Tween> rp_subtween) {
+RequiredResult<SubtweenTweener> Tween::tween_subtween(RequiredParam<Tween> p_subtween) {
 	CHECK_VALID();
 
 	// Ensure that the subtween being added is not null.
-	EXTRACT_PARAM_OR_FAIL_V(p_subtween, rp_subtween, nullptr);
+	EXTRACT_PARAM_OR_FAIL_V(subtween, p_subtween, nullptr);
 
 	Ref<SubtweenTweener> tweener;
-	tweener.instantiate(p_subtween);
+	tweener.instantiate(subtween);
 
 	// Remove the tween from its parent tree, if it has one.
 	// If the user created this tween without a parent tree attached,
@@ -166,7 +166,7 @@ RequiredResult<SubtweenTweener> Tween::tween_subtween(RequiredParam<Tween> rp_su
 	if (tweener->subtween->parent_tree != nullptr) {
 		tweener->subtween->parent_tree->remove_tween(tweener->subtween);
 	}
-	subtweens.push_back(p_subtween);
+	subtweens.push_back(subtween);
 	append(tweener);
 	return tweener;
 }
@@ -235,10 +235,10 @@ void Tween::clear() {
 	tweeners.clear();
 }
 
-RequiredResult<Tween> Tween::bind_node(RequiredParam<const Node> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, this);
+RequiredResult<Tween> Tween::bind_node(RequiredParam<const Node> p_node) {
+	EXTRACT_PARAM_OR_FAIL_V(node, p_node, this);
 
-	bound_node = p_node->get_instance_id();
+	bound_node = node->get_instance_id();
 	is_bound = true;
 	return this;
 }

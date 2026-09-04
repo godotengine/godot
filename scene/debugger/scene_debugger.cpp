@@ -49,7 +49,7 @@
 #include "scene/debugger/scene_debugger_object.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h" // SceneTree:get_root()
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
@@ -102,9 +102,7 @@ void SceneDebugger::initialize() {
 }
 
 void SceneDebugger::deinitialize() {
-	if (singleton) {
-		memdelete(singleton);
-	}
+	memdelete(singleton);
 }
 
 #ifdef DEBUG_ENABLED
@@ -272,11 +270,20 @@ Error SceneDebugger::_msg_hdr_output_toggle_requested(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_set_debug_collisions(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	bool enabled = p_args[0];
+	SceneTree::get_singleton()->set_debug_collisions_hint(enabled);
+	return OK;
+}
+
 Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enable = p_args[0];
 	bool from_editor = p_args[1];
+#ifndef _2D_DISABLED
 	SceneTree::get_singleton()->get_root()->enable_camera_2d_override(enable);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	SceneTree::get_singleton()->get_root()->enable_camera_3d_override(enable);
 #endif // _3D_DISABLED
@@ -479,6 +486,7 @@ Error SceneDebugger::_msg_runtime_node_select_set_prefer_group(const Array &p_ar
 	return OK;
 }
 
+#ifndef _2D_DISABLED
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_reset_camera_2d();
 	return OK;
@@ -494,6 +502,7 @@ Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_3d(const Array &p_args) {
@@ -550,6 +559,13 @@ Error SceneDebugger::_msg_rq_screenshot(const Array &p_args) {
 		}
 		suffix_i += 1;
 	}
+	img->convert(Image::FORMAT_RGBA8);
+#ifdef RD_ENABLED
+	RenderingDevice *rendering_device = RD::get_singleton();
+	if (rendering_device && RenderingServer::get_singleton()->viewport_is_using_hdr_2d(viewport->get_viewport_rid())) {
+		img->linear_to_srgb();
+	}
+#endif
 	img->save_png(path);
 
 	Array arr;
@@ -567,9 +583,7 @@ Error SceneDebugger::_msg_report_window_focused(const Array &p_args) {
 
 	bool focused = p_args[0];
 	Input::get_singleton()->embedder_focused = focused;
-	if (Input::get_singleton()->_should_ignore_joypad_events()) {
-		Input::get_singleton()->release_pressed_events();
-	}
+	Input::get_singleton()->release_pressed_events();
 	return OK;
 }
 
@@ -618,8 +632,11 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["window_request_size"] = _msg_window_request_size;
 	message_handlers["hdr_output_request_state"] = _msg_hdr_output_request_state;
 	message_handlers["hdr_output_toggle_requested"] = _msg_hdr_output_toggle_requested;
+	message_handlers["set_debug_collisions"] = _msg_set_debug_collisions;
 	message_handlers["override_cameras"] = _msg_override_cameras;
+#ifndef _2D_DISABLED
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	message_handlers["transform_camera_3d"] = _msg_transform_camera_3d;
 #endif // _3D_DISABLED
@@ -648,10 +665,12 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["runtime_node_select_set_visible"] = _msg_runtime_node_select_set_visible;
 	message_handlers["runtime_node_select_set_avoid_locked"] = _msg_runtime_node_select_set_avoid_locked;
 	message_handlers["runtime_node_select_set_prefer_group"] = _msg_runtime_node_select_set_prefer_group;
+#ifndef _2D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_2d"] = _msg_runtime_node_select_reset_camera_2d;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_3d"] = _msg_runtime_node_select_reset_camera_3d;
-#endif
+#endif // _3D_DISABLED
 	message_handlers["rq_screenshot"] = _msg_rq_screenshot;
 	message_handlers["report_window_focused"] = _msg_report_window_focused;
 }

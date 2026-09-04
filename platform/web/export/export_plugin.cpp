@@ -470,6 +470,9 @@ bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorEx
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
+			if (EditorNode::is_cmdline_mode()) {
+				err += TTR("ETC2/ASTC texture compression is required for Web export. In the Project Settings, search for 'ETC2' in the search field, or enable 'Advanced Settings', and go to Rendering > Textures > VRAM Compression to enable 'Import ETC2 ASTC'.") + "\n";
+			}
 			valid = false;
 		}
 	}
@@ -487,8 +490,8 @@ List<String> EditorExportPlatformWeb::get_binary_extensions(const Ref<EditorExpo
 	return list;
 }
 
-Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
 	const String custom_debug = p_preset->get("custom_template/debug");
 	const String custom_release = p_preset->get("custom_template/release");
@@ -624,11 +627,14 @@ bool EditorExportPlatformWeb::poll_export() {
 
 	if (preset.is_valid()) {
 		const bool debug = true;
-		// Throwaway variables to pass to `can_export`.
+		// Throwaway variables to pass to validation functions.
 		String err;
 		bool missing_templates;
 
-		if (can_export(preset, err, missing_templates, debug)) {
+		bool valid = has_valid_export_configuration(preset, err, missing_templates, debug) &&
+				has_valid_project_configuration(preset, err);
+
+		if (valid) {
 			if (server->is_listening()) {
 				remote_debug_state = REMOTE_DEBUG_STATE_SERVING;
 			} else {
@@ -788,23 +794,14 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 			switch (p_option) {
 				// Run in Browser.
 				case 0: {
-					Error err = _export_project(p_preset, p_debug_flags);
-					if (err != OK) {
-						return err;
-					}
-					err = _start_server(bind_host, bind_port, use_tls);
-					if (err != OK) {
-						return err;
-					}
+					RETURN_IF_ERROR(_export_project(p_preset, p_debug_flags));
+					RETURN_IF_ERROR(_start_server(bind_host, bind_port, use_tls));
 					return _launch_browser(bind_host, bind_port, use_tls);
 				} break;
 
 				// Start HTTP Server.
 				case 1: {
-					Error err = _export_project(p_preset, p_debug_flags);
-					if (err != OK) {
-						return err;
-					}
+					RETURN_IF_ERROR(_export_project(p_preset, p_debug_flags));
 					return _start_server(bind_host, bind_port, use_tls);
 				} break;
 
@@ -818,10 +815,7 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 			switch (p_option) {
 				// Run in Browser.
 				case 0: {
-					Error err = _export_project(p_preset, p_debug_flags);
-					if (err != OK) {
-						return err;
-					}
+					RETURN_IF_ERROR(_export_project(p_preset, p_debug_flags));
 					return _launch_browser(bind_host, bind_port, use_tls);
 				} break;
 

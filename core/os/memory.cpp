@@ -44,6 +44,14 @@ static SafeNumeric<uint64_t> _current_mem_usage;
 static SafeNumeric<uint64_t> _max_mem_usage;
 #endif
 
+void *operator new(size_t p_size, DefaultAllocator p_allocator) {
+	return Memory::alloc_static(p_size);
+}
+
+void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)) {
+	return p_allocfunc(p_size);
+}
+
 void *Memory::alloc_aligned_static(size_t p_bytes, size_t p_alignment) {
 	DEV_ASSERT(Math::is_power_of_2(p_alignment));
 

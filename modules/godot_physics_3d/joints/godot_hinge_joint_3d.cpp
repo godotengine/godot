@@ -107,8 +107,8 @@ GodotHingeJoint3D::GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const V
 }
 
 bool GodotHingeJoint3D::setup(real_t p_step) {
-	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
-	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
+	dynamic_A = (A->get_mode() > PS3DE::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PS3DE::BODY_MODE_KINEMATIC);
 
 	if (!dynamic_A && !dynamic_B) {
 		return false;
@@ -358,82 +358,82 @@ real_t GodotHingeJoint3D::get_hinge_angle() {
 	return atan2fast(swingAxis.dot(refAxis0), swingAxis.dot(refAxis1));
 }
 
-void GodotHingeJoint3D::set_param(PhysicsServer3D::HingeJointParam p_param, real_t p_value) {
+void GodotHingeJoint3D::set_param(PS3DE::HingeJointParam p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::HINGE_JOINT_BIAS:
+		case PS3DE::HINGE_JOINT_BIAS:
 			tau = p_value;
 			break;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER:
+		case PS3DE::HINGE_JOINT_LIMIT_UPPER:
 			m_upperLimit = p_value;
 			break;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_LOWER:
+		case PS3DE::HINGE_JOINT_LIMIT_LOWER:
 			m_lowerLimit = p_value;
 			break;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_BIAS:
+		case PS3DE::HINGE_JOINT_LIMIT_BIAS:
 			m_biasFactor = p_value;
 			break;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_SOFTNESS:
+		case PS3DE::HINGE_JOINT_LIMIT_SOFTNESS:
 			m_limitSoftness = p_value;
 			break;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_RELAXATION:
+		case PS3DE::HINGE_JOINT_LIMIT_RELAXATION:
 			m_relaxationFactor = p_value;
 			break;
-		case PhysicsServer3D::HINGE_JOINT_MOTOR_TARGET_VELOCITY:
+		case PS3DE::HINGE_JOINT_MOTOR_TARGET_VELOCITY:
 			m_motorTargetVelocity = p_value;
 			break;
-		case PhysicsServer3D::HINGE_JOINT_MOTOR_MAX_IMPULSE:
+		case PS3DE::HINGE_JOINT_MOTOR_MAX_IMPULSE:
 			m_maxMotorImpulse = p_value;
 			break;
-		case PhysicsServer3D::HINGE_JOINT_MAX:
+		case PS3DE::HINGE_JOINT_MAX:
 			break; // Can't happen, but silences warning
 	}
 }
 
-real_t GodotHingeJoint3D::get_param(PhysicsServer3D::HingeJointParam p_param) const {
+real_t GodotHingeJoint3D::get_param(PS3DE::HingeJointParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::HINGE_JOINT_BIAS:
+		case PS3DE::HINGE_JOINT_BIAS:
 			return tau;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER:
+		case PS3DE::HINGE_JOINT_LIMIT_UPPER:
 			return m_upperLimit;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_LOWER:
+		case PS3DE::HINGE_JOINT_LIMIT_LOWER:
 			return m_lowerLimit;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_BIAS:
+		case PS3DE::HINGE_JOINT_LIMIT_BIAS:
 			return m_biasFactor;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_SOFTNESS:
+		case PS3DE::HINGE_JOINT_LIMIT_SOFTNESS:
 			return m_limitSoftness;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_RELAXATION:
+		case PS3DE::HINGE_JOINT_LIMIT_RELAXATION:
 			return m_relaxationFactor;
-		case PhysicsServer3D::HINGE_JOINT_MOTOR_TARGET_VELOCITY:
+		case PS3DE::HINGE_JOINT_MOTOR_TARGET_VELOCITY:
 			return m_motorTargetVelocity;
-		case PhysicsServer3D::HINGE_JOINT_MOTOR_MAX_IMPULSE:
+		case PS3DE::HINGE_JOINT_MOTOR_MAX_IMPULSE:
 			return m_maxMotorImpulse;
-		case PhysicsServer3D::HINGE_JOINT_MAX:
+		case PS3DE::HINGE_JOINT_MAX:
 			break; // Can't happen, but silences warning
 	}
 
 	return 0;
 }
 
-void GodotHingeJoint3D::set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_value) {
+void GodotHingeJoint3D::set_flag(PS3DE::HingeJointFlag p_flag, bool p_value) {
 	switch (p_flag) {
-		case PhysicsServer3D::HINGE_JOINT_FLAG_USE_LIMIT:
+		case PS3DE::HINGE_JOINT_FLAG_USE_LIMIT:
 			m_useLimit = p_value;
 			break;
-		case PhysicsServer3D::HINGE_JOINT_FLAG_ENABLE_MOTOR:
+		case PS3DE::HINGE_JOINT_FLAG_ENABLE_MOTOR:
 			m_enableAngularMotor = p_value;
 			break;
-		case PhysicsServer3D::HINGE_JOINT_FLAG_MAX:
+		case PS3DE::HINGE_JOINT_FLAG_MAX:
 			break; // Can't happen, but silences warning
 	}
 }
 
-bool GodotHingeJoint3D::get_flag(PhysicsServer3D::HingeJointFlag p_flag) const {
+bool GodotHingeJoint3D::get_flag(PS3DE::HingeJointFlag p_flag) const {
 	switch (p_flag) {
-		case PhysicsServer3D::HINGE_JOINT_FLAG_USE_LIMIT:
+		case PS3DE::HINGE_JOINT_FLAG_USE_LIMIT:
 			return m_useLimit;
-		case PhysicsServer3D::HINGE_JOINT_FLAG_ENABLE_MOTOR:
+		case PS3DE::HINGE_JOINT_FLAG_ENABLE_MOTOR:
 			return m_enableAngularMotor;
-		case PhysicsServer3D::HINGE_JOINT_FLAG_MAX:
+		case PS3DE::HINGE_JOINT_FLAG_MAX:
 			break; // Can't happen, but silences warning
 	}
 

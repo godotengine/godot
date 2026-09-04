@@ -61,7 +61,7 @@ public:
 	Vector3 get_constant_linear_velocity() const;
 	Vector3 get_constant_angular_velocity() const;
 
-	StaticBody3D(PhysicsServer3D::BodyMode p_mode = PhysicsServer3D::BODY_MODE_STATIC);
+	StaticBody3D(PS3DE::BodyMode p_mode = PS3DE::BODY_MODE_STATIC);
 
 private:
 	void _reload_physics_characteristics();

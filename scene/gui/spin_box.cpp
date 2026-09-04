@@ -97,6 +97,18 @@ Size2 SpinBox::get_minimum_size() const {
 }
 
 void SpinBox::_update_text(bool p_only_update_if_value_changed) {
+	if (!line_edit->is_editing() && !format.is_empty() && !use_default_format) {
+		const Variant current_value = get_value();
+		bool error = false;
+		const String text = _get_xl_format().sprintf(Span(&current_value, 1), &error);
+		if (error) {
+			line_edit->set_text_with_selection(RTR("<Invalid>"));
+			return;
+		}
+		line_edit->set_text_with_selection(text);
+		return;
+	}
+
 	double step = get_step();
 	String value = String::num(get_value(), Math::range_step_decimals(step));
 	if (is_localizing_numeral_system()) {
@@ -109,11 +121,23 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	last_text_value = value;
 
 	if (!line_edit->is_editing()) {
-		if (!prefix.is_empty()) {
-			value = prefix + " " + value;
-		}
-		if (!suffix.is_empty()) {
-			value += " " + suffix;
+		if (!format.is_empty()) {
+			const Variant current_value = value;
+			bool error = false;
+			value = _get_xl_format().sprintf(Span(&current_value, 1), &error);
+			if (error) {
+				line_edit->set_text_with_selection(RTR("<Invalid>"));
+				return;
+			}
+#ifndef DISABLE_DEPRECATED
+		} else {
+			if (!prefix.is_empty()) {
+				value = prefix + " " + value;
+			}
+			if (!suffix.is_empty()) {
+				value += " " + suffix;
+			}
+#endif
 		}
 	}
 
@@ -152,8 +176,6 @@ void SpinBox::_text_submitted(const String &p_string) {
 	const String &lang = _get_locale();
 	text = text.replace_char(';', ',');
 	text = TranslationServer::get_singleton()->parse_number(text, lang);
-	// Ignore the prefix and suffix in the expression.
-	text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
 
 	Error err = expr->parse(text);
 
@@ -161,7 +183,6 @@ void SpinBox::_text_submitted(const String &p_string) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = p_string;
 		text = TranslationServer::get_singleton()->parse_number(text, lang);
-		text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
 
 		err = expr->parse(text);
 		if (err != OK) {
@@ -189,6 +210,21 @@ void SpinBox::_text_changed(const String &p_string) {
 	if (update_on_text_changed && !text.begins_with(".")) {
 		line_edit->set_caret_column(cursor_pos);
 	}
+}
+
+String SpinBox::_get_xl_format() const {
+	bool translated = false;
+	if (format_auto_translate_mode == AUTO_TRANSLATE_MODE_ALWAYS) {
+		translated = true;
+	} else if (format_auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT) {
+		translated = can_auto_translate();
+	}
+	if (!translated) {
+		return format;
+	} else if (plural_format.is_empty()) {
+		return tr(format);
+	}
+	return tr_n(format, plural_format, get_value());
 }
 
 LineEdit *SpinBox::get_line_edit() {
@@ -383,7 +419,6 @@ void SpinBox::_line_edit_editing_toggled(bool p_toggled_on) {
 		if (Input::get_singleton()->is_action_pressed("ui_cancel") || line_edit->get_text().is_empty()) {
 			_update_text(); // Revert text if editing was canceled.
 		} else {
-			line_edit->set_text(line_edit->get_text().trim_suffix(".").trim_suffix(","));
 			_update_text(true); // Update text in case value was changed this frame (e.g. on `focus_exited`).
 			_text_submitted(line_edit->get_text());
 		}
@@ -533,6 +568,9 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (format_auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+				_update_text();
+			}
 			queue_redraw();
 		} break;
 
@@ -558,6 +596,52 @@ HorizontalAlignment SpinBox::get_horizontal_alignment() const {
 	return line_edit->get_horizontal_alignment();
 }
 
+void SpinBox::set_format(const String &p_format) {
+	if (format == p_format) {
+		return;
+	}
+	format = p_format;
+	use_default_format = p_format.contains("%s");
+
+	_update_text();
+	update_configuration_warnings();
+}
+
+String SpinBox::get_format() const {
+	return format;
+}
+
+void SpinBox::set_plural_format(const String &p_format) {
+	if (plural_format == p_format) {
+		return;
+	}
+	plural_format = p_format;
+
+	_update_text();
+	update_configuration_warnings();
+}
+
+void SpinBox::set_format_with_plural(const String &p_format, const String &p_plural) {
+	if (format == p_format && plural_format == p_format) {
+		return;
+	}
+	format = p_format;
+	plural_format = p_plural;
+
+	_update_text();
+	update_configuration_warnings();
+}
+
+void SpinBox::set_format_auto_translate_mode(AutoTranslateMode p_mode) {
+	if (format_auto_translate_mode == p_mode) {
+		return;
+	}
+	format_auto_translate_mode = p_mode;
+	_update_text();
+	notify_property_list_changed();
+}
+
+#ifndef DISABLE_DEPRECATED
 void SpinBox::set_suffix(const String &p_suffix) {
 	if (suffix == p_suffix) {
 		return;
@@ -583,6 +667,7 @@ void SpinBox::set_prefix(const String &p_prefix) {
 String SpinBox::get_prefix() const {
 	return prefix;
 }
+#endif
 
 void SpinBox::set_update_on_text_changed(bool p_enabled) {
 	if (update_on_text_changed == p_enabled) {
@@ -641,6 +726,32 @@ bool SpinBox::is_custom_arrow_rounding() const {
 
 void SpinBox::_value_changed(double p_value) {
 	_update_buttons_state_for_current_value();
+	Range::_value_changed(p_value);
+}
+
+PackedStringArray SpinBox::get_configuration_warnings() const {
+	PackedStringArray warnings = Range::get_configuration_warnings();
+
+	if (!format.is_empty()) {
+		bool error = false;
+		const Variant test_value = 0.0;
+		const String error_str = format.sprintf(Span(&test_value, 1), &error);
+		if (error) {
+			warnings.push_back(vformat(RTR("The format property is not valid: %s."), error_str));
+		}
+	}
+	if (!plural_format.is_empty()) {
+		bool error = false;
+		const Variant test_value = 0.0;
+		const String error_str = plural_format.sprintf(Span(&test_value, 1), &error);
+		if (error) {
+			warnings.push_back(vformat(RTR("The plural_format property is not valid: %s."), error_str));
+		}
+		if (format.is_empty()) {
+			warnings.push_back(RTR("The format property is empty, while plural_format was specified. It will have no effect."));
+		}
+	}
+	return warnings;
 }
 
 void SpinBox::_update_buttons_state_for_current_value() {
@@ -658,16 +769,26 @@ void SpinBox::_update_buttons_state_for_current_value() {
 void SpinBox::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "exp_edit") {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (format_auto_translate_mode == AUTO_TRANSLATE_MODE_DISABLED && p_property.name == "plural_format") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
 void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &SpinBox::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &SpinBox::get_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("set_format", "format"), &SpinBox::set_format);
+	ClassDB::bind_method(D_METHOD("get_format"), &SpinBox::get_format);
+	ClassDB::bind_method(D_METHOD("set_plural_format", "format"), &SpinBox::set_plural_format);
+	ClassDB::bind_method(D_METHOD("get_plural_format"), &SpinBox::get_plural_format);
+	ClassDB::bind_method(D_METHOD("set_format_auto_translate_mode", "mode"), &SpinBox::set_format_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_format_auto_translate_mode"), &SpinBox::get_format_auto_translate_mode);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
 	ClassDB::bind_method(D_METHOD("set_prefix", "prefix"), &SpinBox::set_prefix);
 	ClassDB::bind_method(D_METHOD("get_prefix"), &SpinBox::get_prefix);
+#endif
 	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("set_custom_arrow_step", "arrow_step"), &SpinBox::set_custom_arrow_step);
 	ClassDB::bind_method(D_METHOD("get_custom_arrow_step"), &SpinBox::get_custom_arrow_step);
@@ -684,11 +805,18 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_arrow_round"), "set_custom_arrow_round", "is_custom_arrow_rounding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
+
+	ADD_GROUP("Format", "");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "format", PROPERTY_HINT_PLACEHOLDER_TEXT, "%s"), "set_format", "get_format");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "plural_format", PROPERTY_HINT_PLACEHOLDER_TEXT, "%s"), "set_plural_format", "get_plural_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "format_auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_format_auto_translate_mode", "get_format_auto_translate_mode");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
+#endif
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_vertical_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, field_and_buttons_separation);
@@ -734,6 +862,7 @@ void SpinBox::_bind_methods() {
 SpinBox::SpinBox() {
 	line_edit = memnew(SpinBoxLineEdit);
 	line_edit->set_emoji_menu_enabled(false);
+	line_edit->set_use_parent_material(true);
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
 	line_edit->set_theme_type_variation("SpinBoxInnerLineEdit");

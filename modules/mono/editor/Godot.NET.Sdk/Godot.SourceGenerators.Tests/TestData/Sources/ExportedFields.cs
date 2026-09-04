@@ -104,4 +104,9 @@ public partial class ExportedFields : GodotObject
 
     [Export]
     private Godot.Collections.Array<int> _fieldGodotGenericArray = new() { 0, 1, 2, 3, 4, 5, 6 };
+
+    private int _notIgnoredField;
+
+    [IgnoreMember]
+    private int _ignoredField;
 }

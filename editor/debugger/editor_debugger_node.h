@@ -106,7 +106,6 @@ private:
 	EditorDebuggerTree *remote_scene_tree = nullptr;
 	bool remote_scene_tree_wait = false;
 	float remote_scene_tree_timeout = 0.0;
-	bool remote_scene_tree_clear_msg = true;
 	bool auto_switch_remote_scene_tree = false;
 	bool debug_with_external_editor = false;
 	bool keep_open = false;
@@ -120,7 +119,7 @@ private:
 	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
 
 	ScriptEditorDebugger *_add_debugger();
-	void _update_errors();
+	void _update_errors(bool p_force = false);
 	void _update_margins();
 
 	friend class DebuggerEditorPlugin;
@@ -137,7 +136,7 @@ protected:
 	void _remote_tree_clear_selection_requested(int p_debugger);
 	void _remote_tree_updated(int p_debugger);
 	void _remote_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
-	void _remote_objects_updated(EditorDebuggerRemoteObjects *p_objs, int p_debugger);
+	void _remote_objects_updated(EditorDebuggerRemoteObjects *p_remote_objects);
 	void _remote_object_property_updated(ObjectID p_id, const String &p_property, int p_debugger);
 	void _remote_objects_requested(const TypedArray<uint64_t> &p_ids, int p_debugger);
 	void _remote_selection_cleared(int p_debugger);
@@ -164,14 +163,18 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
+
 public:
 	static EditorDebuggerNode *get_singleton() { return singleton; }
 	void register_undo_redo(UndoRedo *p_undo_redo);
 
+	void set_current_debugger(int p_debugger);
 	ScriptEditorDebugger *get_previous_debugger() const;
 	ScriptEditorDebugger *get_current_debugger() const;
 	ScriptEditorDebugger *get_default_debugger() const;
 	ScriptEditorDebugger *get_debugger(int p_debugger) const;
+	int get_debugger_id(const ScriptEditorDebugger *p_debugger);
 
 	void debug_next();
 	void debug_step();
@@ -194,7 +197,7 @@ public:
 
 	// Remote inspector/edit.
 	void request_remote_tree();
-	void set_remote_selection(const TypedArray<int64_t> &p_ids);
+	void set_remote_selection(const TypedArray<int64_t> &p_ids, int p_debugger);
 	void clear_remote_tree_selection();
 	void stop_waiting_inspection();
 	bool match_remote_selection(const TypedArray<uint64_t> &p_ids) const;
@@ -214,6 +217,8 @@ public:
 
 	void set_debug_mute_audio(bool p_mute);
 	bool get_debug_mute_audio() const;
+
+	void set_debug_collisions(bool p_enabled);
 
 	void set_camera_override(CameraOverride p_override);
 	CameraOverride get_camera_override();

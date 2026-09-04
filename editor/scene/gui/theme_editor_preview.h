@@ -31,14 +31,26 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
+#include "scene/gui/margin_container.h"
 #include "scene/resources/theme.h"
 
 class Button;
 class ColorPickerButton;
 class ColorRect;
-class MarginContainer;
 class PackedScene;
 class ScrollContainer;
+
+class ScalableContainer : public MarginContainer {
+	GDCLASS(ScalableContainer, MarginContainer);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	virtual Size2 get_minimum_size() const override;
+
+	ScalableContainer();
+};
 
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);
@@ -69,7 +81,7 @@ class ThemeEditorPreview : public VBoxContainer {
 
 protected:
 	HBoxContainer *preview_toolbar = nullptr;
-	MarginContainer *preview_content = nullptr;
+	ScalableContainer *preview_content = nullptr;
 	Button *picker_button = nullptr;
 
 	void add_preview_overlay(Control *p_overlay);

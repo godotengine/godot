@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="blit_rect" experimental="This function and its parameters are likely to change in the 4.7 Dev Cycle">
+		<method name="blit_rect" experimental="">
 			<return type="void" />
 			<param index="0" name="rect" type="Rect2i" />
 			<param index="1" name="source" type="Texture2D" />
@@ -20,7 +20,7 @@
 				Draws to given [param rect] on this texture by copying from the given [param source]. A [param modulate] color can be passed in for the shader to use, but defaults to White. The [param mipmap] value can specify a draw to a lower mipmap level. The [param material] parameter can take a ShaderMaterial with a TextureBlit Shader for custom drawing behavior.
 			</description>
 		</method>
-		<method name="blit_rect_multi" experimental="This function and its parameters are likely to change in the 4.7 Dev Cycle">
+		<method name="blit_rect_multi" experimental="">
 			<return type="void" />
 			<param index="0" name="rect" type="Rect2i" />
 			<param index="1" name="sources" type="Texture2D[]" />
@@ -58,7 +58,7 @@
 				Sets if mipmaps should be used on this DrawableTexture.
 			</description>
 		</method>
-		<method name="setup" experimental="This function and its parameters are likely to change in the 4.7 Dev Cycle">
+		<method name="setup" experimental="">
 			<return type="void" />
 			<param index="0" name="width" type="int" />
 			<param index="1" name="height" type="int" />

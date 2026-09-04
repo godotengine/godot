@@ -70,9 +70,7 @@
 		int default_idx = item["default"];
 
 		NSTextField *label = [NSTextField labelWithString:[NSString stringWithUTF8String:name.utf8().get_data()]];
-		if (@available(macOS 10.14, *)) {
-			label.textColor = NSColor.secondaryLabelColor;
-		}
+		label.textColor = NSColor.secondaryLabelColor;
 		if (@available(macOS 11.10, *)) {
 			label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 		}
@@ -107,9 +105,7 @@
 	bool has_type_popup = false;
 	{
 		NSTextField *label = [NSTextField labelWithString:[NSString stringWithUTF8String:RTR("Format").utf8().get_data()]];
-		if (@available(macOS 10.14, *)) {
-			label.textColor = NSColor.secondaryLabelColor;
-		}
+		label.textColor = NSColor.secondaryLabelColor;
 		if (@available(macOS 11.10, *)) {
 			label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 		}
@@ -128,33 +124,26 @@
 					for (int j = 0; j < filter_slice_count; j++) {
 						String str = (flt.get_slicec(',', j).strip_edges());
 						if (!str.is_empty()) {
-							if (@available(macOS 11, *)) {
-								UTType *ut = nullptr;
-								if (str == "*.*") {
-									ut = UTTypeData;
-								} else {
-									ut = [UTType typeWithFilenameExtension:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
-								}
-								if (ut) {
-									[type_filters addObject:ut];
-									pref_type.push_back(str.replace("*.", "").strip_edges());
-								}
+							UTType *ut = nullptr;
+							if (str == "*.*") {
+								ut = UTTypeData;
 							} else {
-								[type_filters addObject:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
+								ut = [UTType typeWithFilenameExtension:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
+							}
+							if (ut) {
+								[type_filters addObject:ut];
 								pref_type.push_back(str.replace("*.", "").strip_edges());
 							}
 						}
 					}
 
-					if (@available(macOS 11, *)) {
-						filter_slice_count = mime.get_slice_count(",");
-						for (int j = 0; j < filter_slice_count; j++) {
-							String str = mime.get_slicec(',', j).strip_edges();
-							if (!str.is_empty()) {
-								UTType *ut = [UTType typeWithMIMEType:[NSString stringWithUTF8String:str.strip_edges().utf8().get_data()]];
-								if (ut) {
-									[type_filters addObject:ut];
-								}
+					filter_slice_count = mime.get_slice_count(",");
+					for (int j = 0; j < filter_slice_count; j++) {
+						String str = mime.get_slicec(',', j).strip_edges();
+						if (!str.is_empty()) {
+							UTType *ut = [UTType typeWithMIMEType:[NSString stringWithUTF8String:str.strip_edges().utf8().get_data()]];
+							if (ut) {
+								[type_filters addObject:ut];
 							}
 						}
 					}
@@ -186,32 +175,25 @@
 				for (int j = 0; j < filter_slice_count; j++) {
 					String str = (flt.get_slicec(',', j).strip_edges());
 					if (!str.is_empty()) {
-						if (@available(macOS 11, *)) {
-							UTType *ut = nullptr;
-							if (str == "*.*") {
-								ut = UTTypeData;
-							} else {
-								ut = [UTType typeWithFilenameExtension:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
-							}
-							if (ut) {
-								[type_filters addObject:ut];
-								pref_type.push_back(str.replace("*.", "").strip_edges());
-							}
+						UTType *ut = nullptr;
+						if (str == "*.*") {
+							ut = UTTypeData;
 						} else {
-							[type_filters addObject:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
+							ut = [UTType typeWithFilenameExtension:[NSString stringWithUTF8String:str.replace("*.", "").strip_edges().utf8().get_data()]];
+						}
+						if (ut) {
+							[type_filters addObject:ut];
 							pref_type.push_back(str.replace("*.", "").strip_edges());
 						}
 					}
 				}
-				if (@available(macOS 11, *)) {
-					filter_slice_count = mime.get_slice_count(",");
-					for (int j = 0; j < filter_slice_count; j++) {
-						String str = mime.get_slicec(',', j).strip_edges();
-						if (!str.is_empty()) {
-							UTType *ut = [UTType typeWithMIMEType:[NSString stringWithUTF8String:str.strip_edges().utf8().get_data()]];
-							if (ut) {
-								[type_filters addObject:ut];
-							}
+				filter_slice_count = mime.get_slice_count(",");
+				for (int j = 0; j < filter_slice_count; j++) {
+					String str = mime.get_slicec(',', j).strip_edges();
+					if (!str.is_empty()) {
+						UTType *ut = [UTType typeWithMIMEType:[NSString stringWithUTF8String:str.strip_edges().utf8().get_data()]];
+						if (ut) {
+							[type_filters addObject:ut];
 						}
 					}
 				}
@@ -236,29 +218,15 @@
 	}
 	if ([new_allowed_types count] > 0) {
 		NSMutableArray *type_filters = [new_allowed_types objectAtIndex:0];
-		if (@available(macOS 11, *)) {
-			if (type_filters && [type_filters count] == 1 && [type_filters objectAtIndex:0] == UTTypeData) {
-				[p_panel setAllowedContentTypes:@[ UTTypeData ]];
-				[p_panel setAllowsOtherFileTypes:true];
-			} else {
-				[p_panel setAllowsOtherFileTypes:false];
-				[p_panel setAllowedContentTypes:type_filters];
-			}
+		if (type_filters && [type_filters count] == 1 && [type_filters objectAtIndex:0] == UTTypeData) {
+			[p_panel setAllowedContentTypes:@[ UTTypeData ]];
+			[p_panel setAllowsOtherFileTypes:true];
 		} else {
-			if (type_filters && [type_filters count] == 1 && [[type_filters objectAtIndex:0] isEqualToString:@"*"]) {
-				[p_panel setAllowedFileTypes:nil];
-				[p_panel setAllowsOtherFileTypes:true];
-			} else {
-				[p_panel setAllowsOtherFileTypes:false];
-				[p_panel setAllowedFileTypes:type_filters];
-			}
+			[p_panel setAllowsOtherFileTypes:false];
+			[p_panel setAllowedContentTypes:type_filters];
 		}
 	} else {
-		if (@available(macOS 11, *)) {
-			[p_panel setAllowedContentTypes:@[ UTTypeData ]];
-		} else {
-			[p_panel setAllowedFileTypes:nil];
-		}
+		[p_panel setAllowedContentTypes:@[ UTTypeData ]];
 		[p_panel setAllowsOtherFileTypes:true];
 	}
 }
@@ -322,30 +290,16 @@
 		NSUInteger index = [btn indexOfSelectedItem];
 		if (allowed_types && index < [allowed_types count]) {
 			NSMutableArray *type_filters = [allowed_types objectAtIndex:index];
-			if (@available(macOS 11, *)) {
-				if (type_filters && [type_filters count] == 1 && [type_filters objectAtIndex:0] == UTTypeData) {
-					[dialog setAllowedContentTypes:@[ UTTypeData ]];
-					[dialog setAllowsOtherFileTypes:true];
-				} else {
-					[dialog setAllowsOtherFileTypes:false];
-					[dialog setAllowedContentTypes:type_filters];
-				}
+			if (type_filters && [type_filters count] == 1 && [type_filters objectAtIndex:0] == UTTypeData) {
+				[dialog setAllowedContentTypes:@[ UTTypeData ]];
+				[dialog setAllowsOtherFileTypes:true];
 			} else {
-				if (type_filters && [type_filters count] == 1 && [[type_filters objectAtIndex:0] isEqualToString:@"*"]) {
-					[dialog setAllowedFileTypes:nil];
-					[dialog setAllowsOtherFileTypes:true];
-				} else {
-					[dialog setAllowsOtherFileTypes:false];
-					[dialog setAllowedFileTypes:type_filters];
-				}
+				[dialog setAllowsOtherFileTypes:false];
+				[dialog setAllowedContentTypes:type_filters];
 			}
 			cur_index = index;
 		} else {
-			if (@available(macOS 11, *)) {
-				[dialog setAllowedContentTypes:@[ UTTypeData ]];
-			} else {
-				[dialog setAllowedFileTypes:nil];
-			}
+			[dialog setAllowedContentTypes:@[ UTTypeData ]];
 			[dialog setAllowsOtherFileTypes:true];
 			cur_index = -1;
 		}
@@ -357,15 +311,13 @@
 }
 
 - (String)validateFilename:(const String &)p_path {
-	if (@available(macOS 11, *)) {
-		if (allowed_types) {
-			NSMutableArray *type_filters = [allowed_types objectAtIndex:cur_index];
-			UTType *ut = [type_filters objectAtIndex:0];
-			String ext = String::utf8([[ut preferredFilenameExtension] UTF8String]);
-			Vector<String> pref_ext = preferred_types[cur_index];
-			if (!pref_ext.is_empty() && !pref_ext.has(ext) && p_path.has_extension(ext) && pref_ext[0] != "*") {
-				return p_path.get_basename() + "." + pref_ext[0];
-			}
+	if (allowed_types) {
+		NSMutableArray *type_filters = [allowed_types objectAtIndex:cur_index];
+		UTType *ut = [type_filters objectAtIndex:0];
+		String ext = String::utf8([[ut preferredFilenameExtension] UTF8String]);
+		Vector<String> pref_ext = preferred_types[cur_index];
+		if (!pref_ext.is_empty() && !pref_ext.has(ext) && p_path.has_extension(ext) && pref_ext[0] != "*") {
+			return p_path.get_basename() + "." + pref_ext[0];
 		}
 	}
 	return p_path;

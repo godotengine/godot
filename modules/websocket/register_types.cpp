@@ -85,7 +85,4 @@ void uninitialize_websocket_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_CORE) {
 		return;
 	}
-#ifndef WEB_ENABLED
-	WSLPeer::deinitialize();
-#endif
 }

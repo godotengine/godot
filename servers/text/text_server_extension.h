@@ -47,9 +47,11 @@ protected:
 public:
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
+	virtual String get_short_name() const override;
 	virtual int64_t get_features() const override;
 	GDVIRTUAL1RC_REQUIRED(bool, _has_feature, Feature);
 	GDVIRTUAL0RC_REQUIRED(String, _get_name);
+	GDVIRTUAL0RC(String, _get_short_name);
 	GDVIRTUAL0RC_REQUIRED(int64_t, _get_features);
 
 	virtual void free_rid(const RID &p_rid) override;
@@ -89,7 +91,7 @@ public:
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) override;
 	GDVIRTUAL2(_font_set_data, RID, const PackedByteArray &);
-	GDVIRTUAL3(_font_set_data_ptr, RID, GDExtensionConstPtr<const uint8_t>, int64_t);
+	GDVIRTUAL3(_font_set_data_ptr, RID, GDExtensionPtr<const uint8_t>, int64_t);
 
 	virtual void font_set_face_index(const RID &p_font_rid, int64_t p_index) override;
 	virtual int64_t font_get_face_index(const RID &p_font_rid) const override;
@@ -540,8 +542,8 @@ public:
 	virtual const Glyph *shaped_text_get_glyphs(const RID &p_shaped) const override;
 	virtual const Glyph *shaped_text_sort_logical(const RID &p_shaped) override;
 	virtual int64_t shaped_text_get_glyph_count(const RID &p_shaped) const override;
-	GDVIRTUAL1RC_REQUIRED(GDExtensionConstPtr<const Glyph>, _shaped_text_get_glyphs, RID);
-	GDVIRTUAL1R_REQUIRED(GDExtensionConstPtr<const Glyph>, _shaped_text_sort_logical, RID);
+	GDVIRTUAL1RC_REQUIRED(GDExtensionPtr<const Glyph>, _shaped_text_get_glyphs, RID);
+	GDVIRTUAL1R_REQUIRED(GDExtensionPtr<const Glyph>, _shaped_text_sort_logical, RID);
 	GDVIRTUAL1RC_REQUIRED(int64_t, _shaped_text_get_glyph_count, RID);
 
 	virtual Vector2i shaped_text_get_range(const RID &p_shaped) const override;
@@ -560,7 +562,7 @@ public:
 	virtual int64_t shaped_text_get_ellipsis_glyph_count(const RID &p_shaped) const override;
 	GDVIRTUAL1RC_REQUIRED(int64_t, _shaped_text_get_trim_pos, RID);
 	GDVIRTUAL1RC_REQUIRED(int64_t, _shaped_text_get_ellipsis_pos, RID);
-	GDVIRTUAL1RC_REQUIRED(GDExtensionConstPtr<const Glyph>, _shaped_text_get_ellipsis_glyphs, RID);
+	GDVIRTUAL1RC_REQUIRED(GDExtensionPtr<const Glyph>, _shaped_text_get_ellipsis_glyphs, RID);
 	GDVIRTUAL1RC_REQUIRED(int64_t, _shaped_text_get_ellipsis_glyph_count, RID);
 
 	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) override;

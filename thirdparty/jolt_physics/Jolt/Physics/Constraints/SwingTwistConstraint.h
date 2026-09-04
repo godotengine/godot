@@ -133,6 +133,9 @@ public:
 	void						SetTargetAngularVelocityCS(Vec3Arg inAngularVelocity)		{ mTargetAngularVelocity = inAngularVelocity; }
 	Vec3						GetTargetAngularVelocityCS() const							{ return mTargetAngularVelocity; }
 
+	/// Set the target angular velocity of body 2 in body 2 space
+	void						SetTargetAngularVelocityBS(Vec3Arg inAngularVelocity)		{ mTargetAngularVelocity = mConstraintToBody2.InverseRotate(inAngularVelocity); }
+
 	/// Set the target orientation in constraint space (drives constraint to: GetRotationInConstraintSpace() == inOrientation)
 	void						SetTargetOrientationCS(QuatArg inOrientation);
 	Quat						GetTargetOrientationCS() const								{ return mTargetOrientation; }

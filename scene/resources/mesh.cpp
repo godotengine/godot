@@ -828,6 +828,16 @@ void Mesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_get_material", "surf_idx"), &Mesh::surface_get_material);
 	ClassDB::bind_method(D_METHOD("create_placeholder"), &Mesh::create_placeholder);
 
+	// TODO Note: These used to be bound in ArrayMesh::_bind_methods, indicating they
+	//            were originally meant to be exposed to ArrayMesh instead of Mesh.
+	//            This should be investigated, to either move the bindings or remove this comment.
+	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &Mesh::create_outline);
+	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &Mesh::generate_triangle_mesh);
+#ifndef PHYSICS_3D_DISABLED
+	ClassDB::bind_method(D_METHOD("create_trimesh_shape"), &Mesh::create_trimesh_shape);
+	ClassDB::bind_method(D_METHOD("create_convex_shape", "clean", "simplify"), &Mesh::create_convex_shape, DEFVAL(true), DEFVAL(false));
+#endif
+
 	BIND_ENUM_CONSTANT(PRIMITIVE_POINTS);
 	BIND_ENUM_CONSTANT(PRIMITIVE_LINES);
 	BIND_ENUM_CONSTANT(PRIMITIVE_LINE_STRIP);
@@ -891,6 +901,7 @@ void Mesh::_bind_methods() {
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
 
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_COMPRESS_ATTRIBUTES);
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_STORAGE_BUFFER);
 
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
@@ -1106,19 +1117,20 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 					if ((p_old_format & OLD_ARRAY_COMPRESS_NORMAL) && (p_old_format & OLD_ARRAY_FORMAT_TANGENT) && (p_old_format & OLD_ARRAY_COMPRESS_TANGENT)) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 
-							dst[0] = (int16_t)CLAMP(src[0] / 127.0f * 32767, -32768, 32767);
-							dst[1] = (int16_t)CLAMP(src[1] / 127.0f * 32767, -32768, 32767);
+							// 4.x requires biasing the octahedron components to a 0.0 <-> 1.0 range, whereas in 3.x they were stored in the -1.0 <-> 1.0 range
+							dst[0] = (uint16_t)CLAMP((src[0] / 127.0f * .5f + .5f) * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP((src[1] / 127.0f * .5f + .5f) * 65535, 0, 65535);
 						}
 						src_offset += sizeof(int8_t) * 2;
 					} else {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 
-							dst[0] = src[0];
-							dst[1] = src[1];
+							dst[0] = (uint16_t)CLAMP((src[0] / 32767.0f * .5f + .5f) * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP((src[1] / 32767.0f * .5f + .5f) * 65535, 0, 65535);
 						}
 						src_offset += sizeof(int16_t) * 2;
 					}
@@ -1126,7 +1138,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 					if (p_old_format & OLD_ARRAY_COMPRESS_NORMAL) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							const Vector3 original_normal(src[0], src[1], src[2]);
+							const Vector3 original_normal(src[0] / 127.0f, src[1] / 127.0f, src[2] / 127.0f);
 							Vector2 res = original_normal.octahedron_encode();
 
 							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
@@ -1174,10 +1186,10 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 					if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							const Vector3 original_tangent(src[0], src[1], src[2]);
-							Vector2 res = original_tangent.octahedron_tangent_encode(src[3]);
+							const Vector3 original_tangent(src[0] / 127.0f, src[1] / 127.0f, src[2] / 127.0f);
+							Vector2 res = original_tangent.octahedron_tangent_encode(src[3] / 127.0f);
 
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 							if (dst[0] == 0 && dst[1] == 65535) {
@@ -1193,7 +1205,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 							const Vector3 original_tangent(src[0], src[1], src[2]);
 							Vector2 res = original_tangent.octahedron_tangent_encode(src[3]);
 
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 							if (dst[0] == 0 && dst[1] == 65535) {
@@ -1357,8 +1369,6 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			get_path()));
 
 	int idx = sname.get_slicec('/', 1).to_int();
-	String what = sname.get_slicec('/', 2);
-
 	if (idx == surfaces.size()) {
 		//create
 		Dictionary d = p_value;
@@ -1419,7 +1429,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 				new_format |= ARRAY_FORMAT_INDEX;
 			}
 			if (old_format & OLD_ARRAY_FLAG_USE_2D_VERTICES) {
-				new_format |= OLD_ARRAY_FLAG_USE_2D_VERTICES;
+				new_format |= ARRAY_FLAG_USE_2D_VERTICES;
 			}
 
 			Vector<uint8_t> vertex_array;
@@ -2090,7 +2100,6 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 	LocalVector<float> vertices;
 	LocalVector<float> normals;
 	LocalVector<int> indices;
-	LocalVector<float> uv;
 	LocalVector<Pair<int, int>> uv_indices;
 
 	Vector<ArrayMeshLightmapSurface> lightmap_surfaces;
@@ -2235,10 +2244,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 				surfaces_tools[surface]->set_normal(v.normal);
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_TANGENT) {
-				Plane t;
-				t.normal = v.tangent;
-				t.d = v.binormal.dot(v.normal.cross(v.tangent)) < 0 ? -1 : 1;
-				surfaces_tools[surface]->set_tangent(t);
+				surfaces_tools[surface]->set_tangent(Plane(v.tangent.x, v.tangent.y, v.tangent.z, v.tangent.w));
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_BONES) {
 				surfaces_tools[surface]->set_bones(v.bones);
@@ -2314,16 +2320,10 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_find_by_name", "name"), &ArrayMesh::surface_find_by_name);
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &ArrayMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &ArrayMesh::surface_get_name);
-#ifndef PHYSICS_3D_DISABLED
-	ClassDB::bind_method(D_METHOD("create_trimesh_shape"), &ArrayMesh::create_trimesh_shape);
-	ClassDB::bind_method(D_METHOD("create_convex_shape", "clean", "simplify"), &ArrayMesh::create_convex_shape, DEFVAL(true), DEFVAL(false));
-#endif // PHYSICS_3D_DISABLED
-	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &ArrayMesh::create_outline);
 	ClassDB::bind_method(D_METHOD("regen_normal_maps"), &ArrayMesh::regen_normal_maps);
 	ClassDB::set_method_flags(get_class_static(), StringName("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("lightmap_unwrap", "transform", "texel_size"), &ArrayMesh::lightmap_unwrap);
 	ClassDB::set_method_flags(get_class_static(), StringName("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
-	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &ArrayMesh::generate_triangle_mesh);
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &ArrayMesh::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &ArrayMesh::get_custom_aabb);

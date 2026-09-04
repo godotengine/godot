@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -179,6 +180,25 @@ void ResourcePreloaderEditor::_paste_pressed() {
 	undo_redo->commit_action();
 }
 
+void ResourcePreloaderEditor::_search_text_changed(const String &p_new_text) const {
+	TreeItem *root = tree->get_root();
+
+	if (root == nullptr) {
+		return;
+	}
+
+	if (p_new_text.is_empty()) {
+		for (TreeItem *child = root->get_first_child(); child; child = child->get_next()) {
+			child->set_visible(true);
+		}
+		return;
+	}
+
+	for (TreeItem *child = root->get_first_child(); child; child = child->get_next()) {
+		child->set_visible(child->get_text(0).containsn(p_new_text));
+	}
+}
+
 void ResourcePreloaderEditor::_update_library() {
 	tree->clear();
 	if (!preloader) {
@@ -248,7 +268,14 @@ void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column,
 }
 
 void ResourcePreloaderEditor::edit(ResourcePreloader *p_preloader) {
+	const Callable update_lib = callable_mp(this, &ResourcePreloaderEditor::_update_library);
+	if (preloader) {
+		preloader->disconnect("_resource_changed", update_lib);
+	}
 	preloader = p_preloader;
+	if (preloader) {
+		preloader->connect("_resource_changed", update_lib);
+	}
 	_update_library();
 }
 
@@ -341,14 +368,8 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 	}
 }
 
-void ResourcePreloaderEditor::update_layout(EditorDock::DockLayout p_layout) {
-	bool new_horizontal = (p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL);
-	if (horizontal == new_horizontal) {
-		return;
-	}
-	horizontal = new_horizontal;
-
-	if (horizontal) {
+void ResourcePreloaderEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	if (p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL && p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
 		mc->set_theme_type_variation("NoBorderHorizontal");
 		tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	} else {
@@ -387,6 +408,16 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	paste->set_text(TTRC("Paste"));
 	hbc->add_child(paste);
 
+	search = memnew(FilterLineEdit);
+	search->set_placeholder(TTRC("Search"));
+	search->set_h_size_flags(SIZE_EXPAND_FILL);
+	search->set_stretch_ratio(0.4);
+	hbc->add_child(search);
+
+	Control *dummy = memnew(Control);
+	dummy->set_h_size_flags(SIZE_EXPAND_FILL);
+	hbc->add_child(dummy);
+
 	file = memnew(EditorFileDialog);
 	add_child(file);
 
@@ -406,14 +437,17 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 
 	SET_DRAG_FORWARDING_GCD(tree, ResourcePreloaderEditor);
 	mc->add_child(tree);
+	search->set_forward_control(tree);
 
 	dialog = memnew(AcceptDialog);
+	dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	dialog->set_title(TTRC("Error!"));
 	dialog->set_ok_button_text(TTRC("Close"));
 	add_child(dialog);
 
 	load->connect(SceneStringName(pressed), callable_mp(this, &ResourcePreloaderEditor::_load_pressed));
 	paste->connect(SceneStringName(pressed), callable_mp(this, &ResourcePreloaderEditor::_paste_pressed));
+	search->connect(SceneStringName(text_changed), callable_mp(this, &ResourcePreloaderEditor::_search_text_changed));
 	file->connect("files_selected", callable_mp(this, &ResourcePreloaderEditor::_files_load_request));
 	tree->connect("item_edited", callable_mp(this, &ResourcePreloaderEditor::_item_edited));
 	loading_scene = false;

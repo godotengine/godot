@@ -59,7 +59,9 @@ jobs:
               use_ubsan=yes
               linker=mold
             bin: ./bin/godot.linuxbsd.editor.dev.double.x86_64.san
+            install-mold: true
             proj-test: true
+            free-space: true
 
           - name: Editor with clang sanitizers (target=editor, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-llvm-sanitizers
@@ -73,6 +75,7 @@ jobs:
             bin: ./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san
             # Test our oldest supported SCons/Python versions on one arbitrary editor build.
             legacy-scons: true
+            free-space: true
 
           - name: Editor with ThreadSanitizer (target=editor, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-thread-sanitizer
@@ -83,6 +86,7 @@ jobs:
               use_llvm=yes
               linker=lld
             bin: ./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san
+            free-space: true
 
           - name: Template w/ Mono, release (target=template_release)
             cache-name: linux-template-mono
@@ -116,7 +120,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -129,6 +133,7 @@ jobs:
           fi
 
       - name: Free disk space on runner
+        if: matrix.free-space
         run: |
           echo "Disk usage before:" && df -h
           sudo rm -rf /usr/local/lib/android
@@ -150,7 +155,7 @@ jobs:
         with:
           # Sync with Ensure*Version in SConstruct.
           python-version: 3.9
-          scons-version: 4.0
+          scons-version: 4.4
 
       - name: Force remove preinstalled .NET SDKs
         if: matrix.build-mono
@@ -176,8 +181,10 @@ jobs:
           fi
 
       - name: Install mold linker
-        if: matrix.proj-test
+        if: matrix.install-mold
         uses: rui314/setup-mold@v1
+        with:
+          make-default: false
 
       - name: Compilation
         uses: ./.github/actions/godot-build

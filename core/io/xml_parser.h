@@ -81,7 +81,7 @@ private:
 
 	Vector<Attribute> attributes;
 
-	bool _set_text(const char *start, const char *end);
+	bool _set_text(const char *p_start, const char *p_end);
 	void _parse_closing_xml_element();
 	void _ignore_definition();
 	bool _parse_cdata();

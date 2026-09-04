@@ -184,8 +184,8 @@
 			The distance to the far culling boundary for this camera relative to its local Z axis. Higher values allow the camera to see further away, while decreasing [member far] can improve performance if it results in objects being partially or fully culled.
 		</member>
 		<member name="fov" type="float" setter="set_fov" getter="get_fov" default="75.0">
-			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [member fov] sets the other axis' field of view angle.
-			For reference, the default vertical field of view value ([code]75.0[/code]) is equivalent to a horizontal FOV of:
+			The camera's field of view (also known as FOV), as an angle in degrees. Only applicable in perspective mode. Since [member keep_aspect] locks one axis, this property sets the field of view on the other axis.
+			For reference, the default angle for the vertical FOV ([code]75.0[/code]) is equivalent to a horizontal FOV of:
 			- ~91.31 degrees in a 4:3 viewport
 			- ~101.67 degrees in a 16:10 viewport
 			- ~107.51 degrees in a 16:9 viewport

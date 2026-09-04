@@ -70,26 +70,26 @@
 	</members>
 	<signals>
 		<signal name="button_pressed">
-			<param index="0" name="name" type="String" />
+			<param index="0" name="action_name" type="String" />
 			<description>
 				Emitted when a button on this tracker is pressed. Note that many XR runtimes allow other inputs to be mapped to buttons.
 			</description>
 		</signal>
 		<signal name="button_released">
-			<param index="0" name="name" type="String" />
+			<param index="0" name="action_name" type="String" />
 			<description>
 				Emitted when a button on this tracker is released.
 			</description>
 		</signal>
 		<signal name="input_float_changed">
-			<param index="0" name="name" type="String" />
+			<param index="0" name="action_name" type="String" />
 			<param index="1" name="value" type="float" />
 			<description>
 				Emitted when a trigger or similar input on this tracker changes value.
 			</description>
 		</signal>
 		<signal name="input_vector2_changed">
-			<param index="0" name="name" type="String" />
+			<param index="0" name="action_name" type="String" />
 			<param index="1" name="vector" type="Vector2" />
 			<description>
 				Emitted when a thumbstick or thumbpad on this tracker moves.

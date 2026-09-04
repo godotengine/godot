@@ -205,6 +205,20 @@ PluginConfigAppleEmbedded PluginConfigAppleEmbedded::load_plugin_config(Ref<Conf
 		plugin_config.capabilities = config_file->get_value(PluginConfigAppleEmbedded::DEPENDENCIES_SECTION, PluginConfigAppleEmbedded::DEPENDENCIES_CAPABILITIES_KEY, Vector<String>());
 
 		plugin_config.linker_flags = config_file->get_value(PluginConfigAppleEmbedded::DEPENDENCIES_SECTION, PluginConfigAppleEmbedded::DEPENDENCIES_LINKER_FLAGS, Vector<String>());
+
+		Array spm_packages = config_file->get_value(PluginConfigAppleEmbedded::DEPENDENCIES_SECTION, PluginConfigAppleEmbedded::DEPENDENCIES_SPM_PACKAGES_KEY, Array());
+		for (int i = 0; i < spm_packages.size(); i++) {
+			Dictionary package_config = spm_packages[i];
+			PluginConfigAppleEmbedded::SPMPackage package;
+			package.url = package_config.get("url", String());
+			package.version = package_config.get("version", String());
+
+			Array products = package_config.get("products", Array());
+			for (int j = 0; j < products.size(); j++) {
+				package.products.push_back(products[j]);
+			}
+			plugin_config.spm_packages.push_back(package);
+		}
 	}
 
 	if (config_file->has_section(PluginConfigAppleEmbedded::PLIST_SECTION)) {

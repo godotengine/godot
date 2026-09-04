@@ -865,7 +865,7 @@
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
 				The following BBCode tags are supported: [code]b[/code], [code]i[/code], [code]u[/code], [code]s[/code], [code]indent[/code], [code]code[/code], [code]url[/code], [code]center[/code], [code]right[/code], [code]color[/code], [code]bgcolor[/code], [code]fgcolor[/code].
-				URL tags only support URLs wrapped by a URL tag, not URLs with a different title.
+				URL tags support both URLs wrapped by a URL tag and URLs with a different title ([code skip-lint][url=address]text[/url][/code]). Support for URLs with a different title varies across terminal emulators. Most modern terminal emulators support them, but Terminal.app and conhost (the legacy Windows console) do not.
 				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Support for ANSI escape codes varies across terminal emulators, especially for italic and strikethrough. In standard output, [code]code[/code] is represented with faint text but without any font change. Unsupported tags are left as-is in standard output.
 				[codeblocks]
 				[gdscript skip-lint]
@@ -1660,6 +1660,9 @@
 		<member name="TextServerManager" type="TextServerManager" setter="" getter="">
 			The [TextServerManager] singleton.
 		</member>
+		<member name="TextureStreaming" type="TextureStreaming" setter="" getter="">
+			The [TextureStreaming] singleton.
+		</member>
 		<member name="ThemeDB" type="ThemeDB" setter="" getter="">
 			The [ThemeDB] singleton.
 		</member>
@@ -2338,13 +2341,13 @@
 			Z key.
 		</constant>
 		<constant name="KEY_BRACKETLEFT" value="91" enum="Key" keywords="open square bracket">
-			Left bracket ([code][lb][/code]) key.
+			Left bracket ([code skip-lint][[/code]) key.
 		</constant>
 		<constant name="KEY_BACKSLASH" value="92" enum="Key">
 			Backslash ([code]\[/code]) key.
 		</constant>
 		<constant name="KEY_BRACKETRIGHT" value="93" enum="Key" keywords="close square bracket">
-			Right bracket ([code][rb][/code]) key.
+			Right bracket ([code]][/code]) key.
 		</constant>
 		<constant name="KEY_ASCIICIRCUM" value="94" enum="Key" keywords="caret">
 			Caret ([code]^[/code]) key.
@@ -2903,7 +2906,7 @@
 			[csharp]
 			// Array of elemType.
 			hintString = $"{elemType:D}:";
-			hintString = $"{elemType:}/{elemHint:D}:{elemHintString}";
+			hintString = $"{elemType:D}/{elemHint:D}:{elemHintString}";
 			// Two-dimensional array of elemType (array of arrays of elemType).
 			hintString = $"{Variant.Type.Array:D}:{elemType:D}:";
 			hintString = $"{Variant.Type.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";
@@ -3007,7 +3010,10 @@
 		<constant name="PROPERTY_HINT_FILE_PATH" value="44" enum="PropertyHint">
 			Like [constant PROPERTY_HINT_FILE], but the property is stored as a raw path, not UID. That means the reference will be broken if you move the file. Consider using [constant PROPERTY_HINT_FILE] when possible.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_AUDIO_BUS" value="45" enum="PropertyHint">
+			Hints that a [String] or [StringName] property is the name of an audio bus. This allows the selection of predefined bus names registered with the audio server.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="46" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

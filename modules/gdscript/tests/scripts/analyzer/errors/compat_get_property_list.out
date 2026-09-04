@@ -1,0 +1,6 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 4: The function signature doesn't match the parent. Parent signature is "_get_property_list() -> Array[Dictionary]".
+>> ERROR at line 8: The function signature doesn't match the parent. Parent signature is "_get_property_list() -> Array[Dictionary]".
+>> ERROR at line 12: The function signature doesn't match the parent. Parent signature is "_get_property_list() -> Array[Dictionary]".
+>> ERROR at line 17: Cannot return a value of type "int" as "Array".
+>> ERROR at line 17: Cannot return value of type "int" because the function return type is "Array".

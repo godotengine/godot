@@ -191,7 +191,9 @@ void KeyMappingMacOS::initialize() {
 	keysym_map[0x7e] = Key::UP;
 
 	for (const KeyValue<unsigned int, Key> &E : keysym_map) {
-		keysym_map_inv[E.value] = E.key;
+		if (!keysym_map_inv.has(E.value)) {
+			keysym_map_inv[E.value] = E.key;
+		}
 	}
 
 	keycode_map[Key::ESCAPE] = 0x001B;

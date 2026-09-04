@@ -244,6 +244,7 @@ public:
 	FUNC0RC(RID, texture_drawable_get_default_material)
 
 	FUNC2(texture_replace, RID, RID)
+	FUNC2(texture_replace_compatible, RID, RID)
 
 	FUNC3(texture_set_size_override, RID, int, int)
 // FIXME: Disabled during Vulkan refactoring, should be ported.
@@ -266,6 +267,8 @@ public:
 	FUNCRIDTEX2(texture_rd, const RID &, const RSE::TextureLayeredType)
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
+
+	FUNC2(texture_2d_attach_streaming_state, RID, RID);
 
 	/* SHADER API */
 
@@ -420,6 +423,11 @@ public:
 	FUNC2(mesh_surface_remove, RID, int)
 	FUNC1(mesh_clear, RID)
 
+	FUNC2RC(RID, mesh_surface_get_vertex_buffer_rd_rid, RID, int)
+	FUNC2RC(RID, mesh_surface_get_attribute_buffer_rd_rid, RID, int)
+	FUNC2RC(RID, mesh_surface_get_skin_buffer_rd_rid, RID, int)
+	FUNC2RC(RID, mesh_surface_get_index_buffer_rd_rid, RID, int)
+
 	FUNC1(mesh_debug_usage, List<RenderingServerTypes::MeshInfo> *)
 
 	/* MULTIMESH API */
@@ -544,6 +552,8 @@ public:
 	FUNC2(lightmap_set_shadowmask_textures, RID, RID)
 	FUNC1R(RSE::ShadowmaskMode, lightmap_get_shadowmask_mode, RID)
 	FUNC2(lightmap_set_shadowmask_mode, RID, RSE::ShadowmaskMode)
+	FUNC1R(float, lightmap_get_specular_intensity, RID)
+	FUNC2(lightmap_set_specular_intensity, RID, float)
 
 	/* Shadow Atlas */
 	FUNC0R(RID, shadow_atlas_create)
@@ -972,7 +982,7 @@ public:
 	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter_default_value, RID, const StringName &)
-	FUNC2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
+	FUNC2SC(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	FUNC3R(TypedArray<Image>, bake_render_uv2, RID, const TypedArray<RID> &, const Size2i &)
 	FUNC4R(PackedByteArray, bake_render_area_light_atlas, const TypedArray<RID> &, const TypedArray<Rect2> &, const Size2i &, int)
@@ -1059,7 +1069,7 @@ public:
 	FUNC3(canvas_item_set_instance_shader_parameter, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, canvas_item_get_instance_shader_parameter, RID, const StringName &)
 	FUNC2RC(Variant, canvas_item_get_instance_shader_parameter_default_value, RID, const StringName &)
-	FUNC2C(canvas_item_get_instance_shader_parameter_list, RID, List<PropertyInfo> *)
+	FUNC2SC(canvas_item_get_instance_shader_parameter_list, RID, List<PropertyInfo> *)
 
 	FUNC2(canvas_item_set_use_parent_material, RID, bool)
 
@@ -1174,7 +1184,9 @@ public:
 #endif
 
 	virtual uint64_t get_rendering_info(RSE::RenderingInfo p_info) override;
+#ifdef RD_ENABLED
 	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const override;
+#endif
 
 	virtual void set_frame_profiling_enabled(bool p_enable) override;
 	virtual Vector<RenderingServerTypes::FrameProfileArea> get_frame_profile() override;

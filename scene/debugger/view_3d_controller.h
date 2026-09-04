@@ -33,6 +33,7 @@
 #ifndef _3D_DISABLED
 
 #include "core/object/ref_counted.h"
+#include "core/os/keyboard.h"
 
 namespace View3DControllerConsts {
 constexpr float DISTANCE_DEFAULT = 4;
@@ -139,14 +140,25 @@ public:
 	};
 
 	struct Cursor {
-		Vector3 pos;
+		// Store the X/Y/Z position individually as doubles, as Vector3 is 32-bit in single-precision builds.
+		// We want to always use doubles, so that freelook and panning behavior stays correct
+		// when far away from the origin.
+		double pos_x;
+		double pos_y;
+		double pos_z;
+
 		real_t x_rot;
 		real_t y_rot;
 		real_t distance;
 		real_t fov_scale;
 		real_t unsnapped_x_rot;
 		real_t unsnapped_y_rot;
-		Vector3 eye_pos; // Used for freelook.
+
+		// Used for freelook.
+		double eye_pos_x;
+		double eye_pos_y;
+		double eye_pos_z;
+
 		// TODO: These variables are not related to cursor manipulation, and specific
 		// to Node3DEditorPlugin. So remove them in the future.
 		bool region_select;
@@ -247,7 +259,7 @@ private:
 		}
 	};
 
-	bool _is_shortcut_pressed(const ShortcutName p_name, const bool p_true_if_null = false);
+	bool _is_shortcut_pressed(const ShortcutName p_name, const bool p_true_if_empty = false);
 	bool _is_shortcut_empty(const ShortcutName p_name);
 	NavigationMode _get_nav_mode_from_shortcuts(NavigationMouseButton p_mouse_button, const Vector<ShortcutCheck> &p_shortcut_checks, bool p_not_empty);
 
@@ -269,6 +281,8 @@ public:
 
 	inline Transform3D to_camera_transform() const { return _to_camera_transform(cursor); }
 	inline Transform3D interp_to_camera_transform() const { return _to_camera_transform(cursor_interp); }
+
+	Key emulate_numpad_key(const Key p_code) const;
 
 	void set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut);
 

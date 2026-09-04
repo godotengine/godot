@@ -92,7 +92,7 @@ inline double Dist2(vec3 v) { return manifold::la::dot(v, v); }
 inline Givens ApproximateGivensQuaternion(Symmetric3x3& A) {
   Givens g{2.0 * (A.m_00 - A.m_11), A.m_10};
   bool b = _gamma * g.sh * g.sh < g.ch * g.ch;
-  double w = 1.0 / hypot(g.ch, g.sh);
+  double w = 1.0 / std::sqrt(g.ch * g.ch + g.sh * g.sh);
   if (!std::isfinite(w)) b = 0;
   return Givens{b ? w * g.ch : _cStar, b ? w * g.sh : _sStar};
 }
@@ -190,11 +190,11 @@ inline Givens QRGivensQuaternion(double a1, double a2) {
   // a1 = pivot point on diagonal
   // a2 = lower triangular entry we want to annihilate
   double epsilon = _SVD_EPSILON;
-  double rho = hypot(a1, a2);
+  double rho = std::sqrt(a1 * a1 + a2 * a2);
   Givens g{fabs(a1) + fmax(rho, epsilon), rho > epsilon ? a2 : 0};
   bool b = a1 < 0.0;
   CondSwap(b, g.sh, g.ch);
-  double w = 1.0 / hypot(g.ch, g.sh);
+  double w = 1.0 / std::sqrt(g.ch * g.ch + g.sh * g.sh);
   g.ch *= w;
   g.sh *= w;
   return g;

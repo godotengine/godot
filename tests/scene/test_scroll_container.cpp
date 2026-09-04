@@ -355,89 +355,123 @@ TEST_CASE("[SceneTree][ScrollContainer] Scroll values and property setters") {
 }
 
 TEST_CASE("[SceneTree][ScrollContainer] ensure_control_visible and follow_focus") {
+	const Size2 container_size = Size2(100, 100);
 	ScrollContainer *test_container = memnew(ScrollContainer);
+	test_container->set_size(container_size);
 	Window *root = SceneTree::get_singleton()->get_root();
 	root->add_child(test_container);
 
 	Control *content_control = memnew(Control);
-	content_control->set_custom_minimum_size(Size2(300, 300));
+	content_control->set_custom_minimum_size(Size2(1000, 1000));
 	test_container->add_child(content_control);
 
 	Control *target_control = memnew(Control);
 	target_control->set_focus_mode(Control::FOCUS_ALL);
-	target_control->set_custom_minimum_size(Size2(20, 20));
-	target_control->set_position(Point2(260, 250));
-	target_control->set_size(Size2(20, 20));
+
 	content_control->add_child(target_control);
 
-	test_container->set_size(Size2(100, 100));
-	test_container->set_h_scroll(0);
-	test_container->set_v_scroll(0);
+	REQUIRE_EQ(test_container->get_h_scroll(), 0);
+	REQUIRE_EQ(test_container->get_v_scroll(), 0);
+
 	SceneTree::get_singleton()->process(0);
 
-	CHECK_MESSAGE(
-			test_container->get_h_scroll() == 0,
-			"Horizontal scroll starts at 0 for this setup.");
+	const Point2 initial_scroll = Point2(450, 450);
+	test_container->set_h_scroll(initial_scroll.x);
+	test_container->set_v_scroll(initial_scroll.y);
 
-	CHECK_MESSAGE(
-			test_container->get_v_scroll() == 0,
-			"Vertical scroll starts at 0 for this setup.");
-
-	test_container->ensure_control_visible(target_control);
 	SceneTree::get_singleton()->process(0);
+	REQUIRE_EQ(test_container->get_h_scroll(), initial_scroll.x);
+	REQUIRE_EQ(test_container->get_v_scroll(), initial_scroll.y);
+	REQUIRE_UNARY(test_container->get_h_scroll_bar()->is_visible_in_tree());
+	REQUIRE_UNARY(test_container->get_v_scroll_bar()->is_visible_in_tree());
+	REQUIRE_UNARY_FALSE(test_container->is_following_focus());
+	REQUIRE_UNARY_FALSE(target_control->has_focus());
 
-	CHECK_MESSAGE(
-			test_container->get_h_scroll() > 0,
-			"ensure_control_visible() scrolls horizontally when target control is outside the visible area.");
+	SUBCASE("No scrolling when focused by default") {
+		target_control->grab_focus();
+		REQUIRE_UNARY(target_control->has_focus());
+		CHECK_EQ(test_container->get_h_scroll(), initial_scroll.x);
+		CHECK_EQ(test_container->get_v_scroll(), initial_scroll.y);
+	}
 
-	CHECK_MESSAGE(
-			test_container->get_v_scroll() > 0,
-			"ensure_control_visible() scrolls vertically when target control is outside the visible area.");
+	SUBCASE("Scrolling when ensure control visible by default") {
+		test_container->ensure_control_visible(target_control);
+		CHECK_EQ(test_container->get_h_scroll(), 0);
+		CHECK_EQ(test_container->get_v_scroll(), 0);
+	}
 
-	Rect2 target_rect(target_control->get_position(), target_control->get_size());
-	real_t side_margin = test_container->get_v_scroll_bar()->is_visible() ? test_container->get_v_scroll_bar()->get_size().x : 0.0f;
-	real_t bottom_margin = test_container->get_h_scroll_bar()->is_visible() ? test_container->get_h_scroll_bar()->get_size().y : 0.0f;
-	real_t visible_left = test_container->get_h_scroll();
-	real_t visible_top = test_container->get_v_scroll();
-	real_t visible_right = visible_left + test_container->get_size().x - side_margin;
-	real_t visible_bottom = visible_top + test_container->get_size().y - bottom_margin;
-
-	CHECK_MESSAGE(
-			(target_rect.position.x >= visible_left && (target_rect.position.x + target_rect.size.x) <= visible_right),
-			"ensure_control_visible() fully reveals target control horizontally.");
-
-	CHECK_MESSAGE(
-			(target_rect.position.y >= visible_top && (target_rect.position.y + target_rect.size.y) <= visible_bottom),
-			"ensure_control_visible() fully reveals target control vertically.");
-
-	test_container->set_h_scroll(0);
-	test_container->set_v_scroll(0);
 	test_container->set_follow_focus(true);
-	SceneTree::get_singleton()->process(0);
+	REQUIRE_UNARY(test_container->is_following_focus());
 
-	target_control->grab_focus();
-	SceneTree::get_singleton()->process(0);
+	const char *size_cases[2] = {
+		"The target control size is 50% of the container size",
+		"The target control size is 150% of the container size",
+	};
 
-	CHECK_MESSAGE(
-			test_container->get_h_scroll() > 0,
-			"follow_focus scrolls horizontally to focused descendants.");
+	const char *location_cases[9] = {
+		"Target control is in the upper left corner",
+		"Target control is directly above",
+		"Target control is in the upper right corner",
+		"Target control is on the left",
+		"Target control is in the center",
+		"Target control is on the right",
+		"Target control is in the lower left corner",
+		"Target control is directly below",
+		"Target control is in the lower right corner",
+	};
+	const Size2 scroll_bar_space = Size2(test_container->get_v_scroll_bar()->get_size().x, test_container->get_h_scroll_bar()->get_size().y);
 
-	CHECK_MESSAGE(
-			test_container->get_v_scroll() > 0,
-			"follow_focus scrolls vertically to focused descendants.");
+	for (int size_case_idx = 0; size_case_idx < 2; size_case_idx++) {
+		SUBCASE(size_cases[size_case_idx]) {
+			Size2 control_size = container_size / 2 + size_case_idx * container_size;
+			target_control->set_size(control_size);
+			REQUIRE_EQ(target_control->get_size(), control_size);
+			int size_flag = 2 * size_case_idx - 1; // Map 0~1 to -1~1.
 
-	visible_left = test_container->get_h_scroll();
-	visible_top = test_container->get_v_scroll();
-	visible_right = visible_left + test_container->get_size().x - side_margin;
-	visible_bottom = visible_top + test_container->get_size().y - bottom_margin;
+			for (int location_case_idx = 0; location_case_idx < 9; location_case_idx++) {
+				Point2i location_flag = Point2i(location_case_idx % 3 - 1, location_case_idx / 3 - 1);
+				// Ensure that the numeric type and the get_*_scroll value are of the same type.
+				Point2i control_position;
+				Point2i expected_scroll;
 
-	CHECK_MESSAGE(
-			(target_rect.position.x >= visible_left && (target_rect.position.x + target_rect.size.x) <= visible_right),
-			"follow_focus fully reveals focused target control horizontally.");
+				for (int axis = 0; axis < 2; axis++) {
+					real_t size_offset = (size_flag == -1) ? control_size[axis] / 2 : -control_size[axis] / 4; // The effect of size on offset.
+					control_position[axis] = initial_scroll[axis] + size_offset + location_flag[axis] * container_size[axis] * 3;
+					// The situation is reversed when the size is large versus when it is small.
+					const int com_flag = size_flag * location_flag[axis];
+					if (com_flag == 1) {
+						expected_scroll[axis] = control_position[axis];
+					} else if (com_flag == 0) {
+						expected_scroll[axis] = initial_scroll[axis];
+					} else if (com_flag == -1) {
+						expected_scroll[axis] = control_position[axis] + control_size[axis] - container_size[axis] + scroll_bar_space[axis];
+					}
+				}
+				SUBCASE(location_cases[location_case_idx]) {
+					target_control->set_position(control_position);
+					REQUIRE_EQ(target_control->get_position(), control_position);
 
-	CHECK_MESSAGE(
-			(target_rect.position.y >= visible_top && (target_rect.position.y + target_rect.size.y) <= visible_bottom),
-			"follow_focus fully reveals focused target control vertically.");
+					SUBCASE("Scrolling when grab focus") {
+						REQUIRE_EQ(test_container->get_h_scroll(), initial_scroll.x);
+						REQUIRE_EQ(test_container->get_v_scroll(), initial_scroll.y);
+						REQUIRE_UNARY_FALSE(target_control->has_focus());
+						target_control->grab_focus();
+						REQUIRE_UNARY(target_control->has_focus());
+						CHECK_EQ(test_container->get_h_scroll(), expected_scroll.x);
+						CHECK_EQ(test_container->get_v_scroll(), expected_scroll.y);
+					}
+
+					SUBCASE("Scrolling when ensure control visible") {
+						REQUIRE_EQ(test_container->get_h_scroll(), initial_scroll.x);
+						REQUIRE_EQ(test_container->get_v_scroll(), initial_scroll.y);
+						test_container->ensure_control_visible(target_control);
+						CHECK_EQ(test_container->get_h_scroll(), expected_scroll.x);
+						CHECK_EQ(test_container->get_v_scroll(), expected_scroll.y);
+					}
+				}
+			}
+		}
+	}
 
 	memdelete(target_control);
 	memdelete(content_control);

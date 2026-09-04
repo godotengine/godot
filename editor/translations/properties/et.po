@@ -617,12 +617,6 @@ msgstr "Lõpunihe"
 msgid "Easing"
 msgstr "Lõdvendamine"
 
-msgid "Asset Library"
-msgstr "Vadade kogum"
-
-msgid "Available URLs"
-msgstr "Saadaolevad URL'id"
-
 msgid "Debug Adapter"
 msgstr "Silumisadapter"
 
@@ -658,6 +652,9 @@ msgstr "Lühiversioon"
 
 msgid "Icon Interpolation"
 msgstr "Ikooni Interpolatsioon"
+
+msgid "Camera"
+msgstr "Kaamera"
 
 msgid "Plugins"
 msgstr "Pistikprogrammid"
@@ -1166,8 +1163,17 @@ msgstr "Redaktorid"
 msgid "Gizmo Colors"
 msgstr "Telgede Värvid"
 
+msgid "Mesh"
+msgstr "Mesh"
+
+msgid "Preview"
+msgstr "Eelvaade"
+
 msgid "Interface"
 msgstr "Liides"
+
+msgid "Localization"
+msgstr "Lokaliseerimine"
 
 msgid "Editor Language"
 msgstr "Redaktori Keel"
@@ -1175,8 +1181,17 @@ msgstr "Redaktori Keel"
 msgid "Use Threads"
 msgstr "Kasuta Lõime"
 
+msgid "Available URLs"
+msgstr "Saadaolevad URL'id"
+
 msgid "Localize Settings"
 msgstr "Lokaliseerimis Seaded"
+
+msgid "Docks"
+msgstr "Dokid"
+
+msgid "Appearance"
+msgstr "Välimus"
 
 msgid "Display Scale"
 msgstr "Ekraani Skaala"
@@ -1186,6 +1201,9 @@ msgstr "Kohandatud Ekraani Skaala"
 
 msgid "Editor Screen"
 msgstr "Redaktori Ekraan"
+
+msgid "Input"
+msgstr "Sisend"
 
 msgid "Project Manager Screen"
 msgstr "Projekti Halduri Ekraan"
@@ -1226,14 +1244,8 @@ msgstr "V-Sync Režiim"
 msgid "Update Continuously"
 msgstr "Värskenda Pidevalt"
 
-msgid "Show Scene Tree Root Selection"
-msgstr "Kuva Stseeni Puu Juure Valik"
-
 msgid "Derive Script Globals by Name"
 msgstr "Tuleta Skripti Globaalid Nime Järgi"
-
-msgid "Docks"
-msgstr "Dokid"
 
 msgid "Scene Tree"
 msgstr "Stseenipuu"
@@ -1396,9 +1408,6 @@ msgstr "Värviskeem"
 
 msgid "Highlighting"
 msgstr "Esiletõstmine"
-
-msgid "Appearance"
-msgstr "Välimus"
 
 msgid "Caret"
 msgstr "Kursor"
@@ -1570,9 +1579,6 @@ msgstr "Loodud"
 
 msgid "Joint"
 msgstr "Liigend"
-
-msgid "Camera"
-msgstr "Kaamera"
 
 msgid "Decal"
 msgstr "Kleebis"
@@ -1787,6 +1793,12 @@ msgstr "Redaktori TLS-Sertifikaadid"
 msgid "Remote Host"
 msgstr "Kaugserver"
 
+msgid "Language Server"
+msgstr "Keeleserver"
+
+msgid "Use Thread"
+msgstr "Kasuta Lõimu"
+
 msgid "Debugger"
 msgstr "Siluja"
 
@@ -1807,9 +1819,6 @@ msgstr "SSH Avaliku Võtme Asukoht"
 
 msgid "SSH Private Key Path"
 msgstr "SSH Privaatse Võtme Asukoht"
-
-msgid "Input"
-msgstr "Sisend"
 
 msgid "Buffering"
 msgstr "Puhverdamine"
@@ -1967,9 +1976,6 @@ msgstr "Kokkupõrke Mask"
 msgid "Collision Priority"
 msgstr "Kokkupõrke Prioriteet"
 
-msgid "Mesh"
-msgstr "Mesh"
-
 msgid "Material"
 msgstr "Materjal"
 
@@ -2014,12 +2020,6 @@ msgstr "GDScript"
 
 msgid "Max Call Stack"
 msgstr "Maksimaalne Kutsepinu"
-
-msgid "Language Server"
-msgstr "Keeleserver"
-
-msgid "Use Thread"
-msgstr "Kasuta Lõimu"
 
 msgid "Copyright"
 msgstr "Autoriõigus"
@@ -2354,6 +2354,15 @@ msgstr "IGD Teenuse Tüüp"
 msgid "IGD Status"
 msgstr "IGD Olek"
 
+msgid "Constant"
+msgstr "Konstant"
+
+msgid "Source"
+msgstr "Allikas"
+
+msgid "Function"
+msgstr "Funktsioon"
+
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -2395,6 +2404,9 @@ msgstr "Sunni Süsteemi Kasutaja"
 
 msgid "Shutdown ADB on Exit"
 msgstr "Sulge ADB Väljumisel"
+
+msgid "Background Color"
+msgstr "Tausta Värv"
 
 msgid "Launcher Icons"
 msgstr "Käivitusikoonid"
@@ -2462,9 +2474,6 @@ msgstr "Toeta Normaalset"
 msgid "Support Large"
 msgstr "Toeta Suurt"
 
-msgid "Background Color"
-msgstr "Tausta Värv"
-
 msgid "User Data Backup"
 msgstr "Kasutaja Andmete Varundus"
 
@@ -2476,15 +2485,6 @@ msgstr "Käsurida"
 
 msgid "Extra Args"
 msgstr "Ekstra Argumendid"
-
-msgid "APK Expansion"
-msgstr "APK Laiendamine"
-
-msgid "Salt"
-msgstr "Sool"
-
-msgid "Public Key"
-msgstr "Avalik Võti"
 
 msgid "Permissions"
 msgstr "Õigused"
@@ -2810,9 +2810,6 @@ msgstr "Kirja Suurus"
 msgid "Styles"
 msgstr "Stiilid"
 
-msgid "Localization"
-msgstr "Lokaliseerimine"
-
 msgid "File Mode"
 msgstr "Faili Režiim"
 
@@ -2879,9 +2876,6 @@ msgstr "Võimalus"
 msgid "Item"
 msgstr "Üksus"
 
-msgid "Preview"
-msgstr "Eelvaade"
-
 msgid "Sky"
 msgstr "Taevas"
 
@@ -2899,9 +2893,6 @@ msgstr "Formaat"
 
 msgid "Camera Is Active"
 msgstr "Kaamera On Aktiivne"
-
-msgid "Source"
-msgstr "Allikas"
 
 msgid "Tonemap"
 msgstr "Toonipilt"
@@ -2947,12 +2938,6 @@ msgstr "Liikme Muutuja Värv"
 
 msgid "File"
 msgstr "Fail"
-
-msgid "Constant"
-msgstr "Konstant"
-
-msgid "Function"
-msgstr "Funktsioon"
 
 msgid "Caret Color"
 msgstr "Kursori Värv"

@@ -37,6 +37,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/string/translation_server.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -66,6 +67,7 @@
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/sky.h"
+#include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
 
 #include "modules/modules_enabled.gen.h"
@@ -152,6 +154,9 @@ void EditorPropertyVariant::update_property() {
 			sub_property = EditorInspector::instantiate_property_editor(nullptr, current_type, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 		}
 		ERR_FAIL_NULL(sub_property);
+
+		// Doesn't affect foldable property types, since they don't start with a bottom editor.
+		set_bottom_editor(sub_property->get_bottom_editor() ? content : nullptr);
 
 		sub_property->set_object_and_property(get_edited_object(), get_edited_property());
 		sub_property->set_name_split_ratio(0);
@@ -585,8 +590,10 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_accessibility_name(TTRC("Enum Options"));
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	option_button->set_clip_text(true);
+	option_button->set_fit_to_longest_item(false);
 	option_button->set_flat(true);
-	option_button->set_search_bar_enabled_on_item_count(10);
+	option_button->set_search_bar_enabled(true);
+	option_button->set_search_bar_min_item_count(10);
 	option_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	default_layout->add_child(option_button);
@@ -996,10 +1003,12 @@ OptionButton *EditorPropertyEnum::get_option_button() {
 EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	options->set_flat(true);
 	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	options->set_search_bar_enabled_on_item_count(10);
+	options->set_search_bar_enabled(true);
+	options->set_search_bar_min_item_count(10);
 	add_child(options);
 	add_focusable(options);
 	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyEnum::_option_selected));
@@ -1704,8 +1713,6 @@ void EditorPropertySignal::_edit_pressed() {
 }
 
 void EditorPropertySignal::update_property() {
-	String type = base_type;
-
 	Signal signal = get_edited_property_value();
 
 	edit->set_text("Signal: " + signal.get_name());
@@ -1725,8 +1732,6 @@ EditorPropertySignal::EditorPropertySignal() {
 ///////////////////// CALLABLE /////////////////////////
 
 void EditorPropertyCallable::update_property() {
-	String type = base_type;
-
 	Callable callable = get_edited_property_value();
 
 	edit->set_text("Callable");
@@ -2468,6 +2473,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	warning->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	warning->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyQuaternion::_warning_pressed));
 	warning_dialog = memnew(AcceptDialog);
+	warning_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(warning_dialog);
 	warning_dialog->set_text(TTR("Temporary Euler will not be stored in the object with the original value. Instead, it will be stored as Quaternion with irreversible conversion.\nThis is due to the fact that the result of Euler->Quaternion can be determined uniquely, but the result of Quaternion->Euler can be multi-existent."));
 
@@ -3016,7 +3022,6 @@ EditorPropertyColor::EditorPropertyColor() {
 
 void EditorPropertyNodePath::_set_read_only(bool p_read_only) {
 	assign->set_disabled(p_read_only);
-	menu->set_disabled(p_read_only);
 }
 
 Variant EditorPropertyNodePath::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
@@ -3037,8 +3042,14 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path, bool p_absol
 		path = get_tree()->get_edited_scene_root()->get_path_to(to_node);
 	}
 
-	if (p_absolute && base_node) { // for AnimationTrackKeyEdit
-		path = base_node->get_path().rel_path_to(p_path);
+	if (base_node) {
+		if (p_absolute) { // For AnimationTrackKeyEdit.
+			path = base_node->get_path().rel_path_to(p_path);
+		} else {
+			path = p_path;
+		}
+		Node *to_node = base_node->get_node_or_null(path);
+		ERR_FAIL_NULL_EDMSG(to_node, vformat(TTR("Invalid node path \"%s\" (relative to %s)."), path, base_node->get_name()));
 	}
 
 	if (editing_node) {
@@ -3080,14 +3091,37 @@ void EditorPropertyNodePath::_assign_draw() {
 	}
 }
 
-void EditorPropertyNodePath::_update_menu() {
+void EditorPropertyNodePath::_popup_menu(const Vector2i &p_pos) {
+	if (!menu) {
+		menu = memnew(PopupMenu);
+		menu->add_item(TTRC("Clear"), ACTION_CLEAR);
+		menu->add_item(TTRC("Copy as Text"), ACTION_COPY);
+		menu->add_item(TTRC("Edit"), ACTION_EDIT);
+		menu->add_item(TTRC("Show Node in Tree"), ACTION_SELECT);
+		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyNodePath::_menu_option));
+		add_child(menu);
+		notification(NOTIFICATION_THEME_CHANGED); // Update menu icons.
+	}
+
 	const NodePath &np = _get_node_path();
 
-	menu->get_popup()->set_item_disabled(ACTION_CLEAR, np.is_empty());
-	menu->get_popup()->set_item_disabled(ACTION_COPY, np.is_empty());
+	menu->set_item_disabled(ACTION_CLEAR, np.is_empty() || is_read_only());
+	menu->set_item_disabled(ACTION_COPY, np.is_empty());
+	menu->set_item_disabled(ACTION_EDIT, is_read_only());
 
 	Node *edited_node = Object::cast_to<Node>(get_edited_object());
-	menu->get_popup()->set_item_disabled(ACTION_SELECT, !edited_node || !edited_node->has_node(np));
+	menu->set_item_disabled(ACTION_SELECT, !edited_node || !edited_node->has_node(np));
+
+	menu->reset_size();
+
+	if (p_pos.x >= 0) {
+		menu->set_position(p_pos);
+	} else {
+		int ms = menu->get_contents_minimum_size().width;
+		Vector2 popup_pos = menu_button->get_screen_rect().get_end() - Vector2(ms, 0);
+		menu->set_position(popup_pos);
+	}
+	menu->popup();
 }
 
 void EditorPropertyNodePath::_menu_option(int p_idx) {
@@ -3123,7 +3157,8 @@ void EditorPropertyNodePath::_menu_option(int p_idx) {
 			Node *target_node = edited_node->get_node_or_null(np);
 			ERR_FAIL_NULL(target_node);
 
-			SceneTreeDock::get_singleton()->set_selected(target_node);
+			SceneTreeDock::get_singleton()->make_visible();
+			callable_mp(SceneTreeDock::get_singleton(), &SceneTreeDock::highlight_node).call_deferred(target_node);
 		} break;
 	}
 }
@@ -3156,6 +3191,14 @@ const NodePath EditorPropertyNodePath::_get_node_path() const {
 		}
 	} else {
 		return val;
+	}
+}
+
+void EditorPropertyNodePath::_button_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		_popup_menu(assign->get_screen_position() + mb->get_position());
 	}
 }
 
@@ -3259,11 +3302,13 @@ void EditorPropertyNodePath::setup(const Vector<StringName> &p_valid_types, bool
 void EditorPropertyNodePath::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-			menu->get_popup()->set_item_icon(ACTION_CLEAR, get_editor_theme_icon(SNAME("Clear")));
-			menu->get_popup()->set_item_icon(ACTION_COPY, get_editor_theme_icon(SNAME("ActionCopy")));
-			menu->get_popup()->set_item_icon(ACTION_EDIT, get_editor_theme_icon(SNAME("Edit")));
-			menu->get_popup()->set_item_icon(ACTION_SELECT, get_editor_theme_icon(SNAME("ExternalLink")));
+			menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			if (menu) {
+				menu->set_item_icon(ACTION_CLEAR, get_editor_theme_icon(SNAME("Clear")));
+				menu->set_item_icon(ACTION_COPY, get_editor_theme_icon(SNAME("ActionCopy")));
+				menu->set_item_icon(ACTION_EDIT, get_editor_theme_icon(SNAME("Edit")));
+				menu->set_item_icon(ACTION_SELECT, get_editor_theme_icon(SNAME("ExternalLink")));
+			}
 
 			// Use a constant width for the icon to avoid sizing issues or blurry icons.
 			assign->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
@@ -3310,8 +3355,12 @@ Node *EditorPropertyNodePath::get_base_node() {
 		return base_node;
 	}
 
-	if (get_edited_object()->has_method("get_root_path")) {
-		return Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
+	{
+		Callable::CallError err;
+		Object *root_node = get_edited_object()->callp(SNAME("get_root_path"), nullptr, 0, err);
+		if (err.error == Callable::CallError::CALL_OK) {
+			return Object::cast_to<Node>(root_node);
+		}
 	}
 
 	if (!base_node) {
@@ -3344,19 +3393,14 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_expand_icon(true);
 	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_node_assign));
 	assign->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyNodePath::_assign_draw));
+	assign->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyNodePath::_button_input));
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);
 	hbc->add_child(assign);
 
-	menu = memnew(MenuButton);
-	menu->set_flat(true);
-	menu->connect(SNAME("about_to_popup"), callable_mp(this, &EditorPropertyNodePath::_update_menu));
-	hbc->add_child(menu);
-
-	menu->get_popup()->add_item(TTR("Clear"), ACTION_CLEAR);
-	menu->get_popup()->add_item(TTR("Copy as Text"), ACTION_COPY);
-	menu->get_popup()->add_item(TTR("Edit"), ACTION_EDIT);
-	menu->get_popup()->add_item(TTR("Show Node in Tree"), ACTION_SELECT);
-	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyNodePath::_menu_option));
+	menu_button = memnew(Button);
+	menu_button->set_button_mask(MouseButtonMask::LEFT | MouseButtonMask::RIGHT);
+	menu_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_popup_menu).bind(Vector2i(-1, -1)));
+	hbc->add_child(menu_button);
 
 	edit = memnew(LineEdit);
 	edit->set_accessibility_name(TTRC("Node Path"));
@@ -3391,6 +3435,14 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 }
 
 void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_inspect) {
+	_select_resource(p_resource, p_inspect, false);
+}
+
+void EditorPropertyResource::_resource_expand_requested(const Ref<Resource> &p_resource, bool p_inspect) {
+	_select_resource(p_resource, p_inspect, true);
+}
+
+void EditorPropertyResource::_select_resource(const Ref<Resource> &p_resource, bool p_inspect, bool p_force_open) {
 	if (p_resource->is_built_in() && !p_resource->get_path().is_empty()) {
 		String parent = p_resource->get_path().get_slice("::", 0);
 		List<String> extensions;
@@ -3408,8 +3460,12 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 	}
 
 	if (!p_inspect && use_sub_inspector) {
-		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
+		bool unfold = p_force_open;
+		if (!unfold) {
+			unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
+		}
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
+		user_opened_editor = unfold;
 		update_property();
 	} else if (!is_checkable() || is_checked()) {
 		emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
@@ -3524,7 +3580,7 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 void EditorPropertyResource::_open_editor_pressed() {
 	Ref<Resource> res = get_edited_property_value();
 	if (res.is_valid()) {
-		EditorNode::get_singleton()->edit_item(res.ptr(), this);
+		EditorNode::get_singleton()->edit_item(res.ptr(), this, user_opened_editor);
 	}
 }
 
@@ -3545,10 +3601,10 @@ void EditorPropertyResource::_update_preferred_shader() {
 		// Set preferred shader based on edited parent type.
 		if ((Object::cast_to<GPUParticles2D>(ed_object) || Object::cast_to<GPUParticles3D>(ed_object)) && ed_property == SNAME("process_material")) {
 			shader_picker->set_preferred_mode(Shader::MODE_PARTICLES);
-		} else if (Object::cast_to<FogVolume>(ed_object)) {
-			shader_picker->set_preferred_mode(Shader::MODE_FOG);
 		} else if (Object::cast_to<CanvasItem>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_CANVAS_ITEM);
+		} else if (Object::cast_to<FogVolume>(ed_object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_FOG);
 		} else if (Object::cast_to<Node3D>(ed_object) || Object::cast_to<Mesh>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SPATIAL);
 		} else if (Object::cast_to<Sky>(ed_object)) {
@@ -3643,6 +3699,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 
 	resource_picker->connect("resource_selected", callable_mp(this, &EditorPropertyResource::_resource_selected));
 	resource_picker->connect("resource_changed", callable_mp(this, &EditorPropertyResource::_resource_changed));
+	resource_picker->connect("_resource_expand_requested", callable_mp(this, &EditorPropertyResource::_resource_expand_requested));
 
 	for (int i = 0; i < resource_picker->get_child_count(); i++) {
 		Button *b = Object::cast_to<Button>(resource_picker->get_child(i));
@@ -3650,6 +3707,10 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 			add_focusable(b);
 		}
 	}
+}
+
+void EditorPropertyResource::make_passthrough(bool p_passthrough) {
+	resource_picker->make_passthrough(p_passthrough);
 }
 
 void EditorPropertyResource::update_property() {
@@ -3664,6 +3725,7 @@ void EditorPropertyResource::update_property() {
 			if (!sub_inspector) {
 				sub_inspector = memnew(EditorInspector);
 				sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+				sub_inspector->set_show_categories(true, true);
 				sub_inspector->set_use_doc_hints(true);
 
 				EditorInspector *parent_inspector = get_parent_inspector();
@@ -3712,6 +3774,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->edit(res.ptr());
 				_update_property_bg();
 			}
+			sub_inspector->set_category_color_level(get_sub_inspector_color_level());
 
 		} else if (sub_inspector) {
 			set_bottom_editor(nullptr);
@@ -3728,6 +3791,8 @@ void EditorPropertyResource::update_property() {
 	resource_picker->set_edited_resource_no_check(res);
 	const Ref<Resource> &real_res = get_edited_property_value();
 	resource_picker->set_force_allow_unique(real_res.is_null() && res.is_valid());
+
+	user_opened_editor = false;
 }
 
 void EditorPropertyResource::collapse_all_folding() {
@@ -3756,6 +3821,13 @@ void EditorPropertyResource::set_use_filter(bool p_use) {
 	use_filter = p_use;
 	if (sub_inspector) {
 		update_property();
+	}
+}
+
+void EditorPropertyResource::update_properties_recursive() {
+	update_property();
+	if (sub_inspector) {
+		sub_inspector->update_properties_recursive();
 	}
 }
 
@@ -3893,7 +3965,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 	return hint;
 }
 
-static EditorProperty *get_input_action_editor(const String &p_hint_text, bool is_string_name) {
+static EditorProperty *_get_input_action_editor(const String &p_hint_text, bool is_string_name) {
 	// TODO: Should probably use a better editor GUI with a search bar.
 	// Said GUI could also handle showing builtin options, requiring 1 less hint.
 	EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
@@ -3922,6 +3994,16 @@ static EditorProperty *get_input_action_editor(const String &p_hint_text, bool i
 	}
 	options.append_array(builtin_options);
 	editor->setup(options, Vector<String>(), is_string_name, hints.has("loose_mode"));
+	return editor;
+}
+
+static EditorProperty *_get_audio_bus_editor(bool is_string_name) {
+	EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
+	Vector<String> options;
+	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+		options.append(AudioServer::get_singleton()->get_bus_name(i));
+	}
+	editor->setup(options, Vector<String>(), is_string_name, false);
 	return editor;
 }
 
@@ -4043,7 +4125,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				editor->setup(options, option_names, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
-				return get_input_action_editor(p_hint_text, false);
+				return _get_input_action_editor(p_hint_text, false);
+			} else if (p_hint == PROPERTY_HINT_AUDIO_BUS) {
+				return _get_audio_bus_editor(false);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				Vector<String> options = p_hint_text.split(",", false);
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(false));
@@ -4207,7 +4291,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				editor->setup(options, Vector<String>(), true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
-				return get_input_action_editor(p_hint_text, true);
+				return _get_input_action_editor(p_hint_text, true);
+			} else if (p_hint == PROPERTY_HINT_AUDIO_BUS) {
+				return _get_audio_bus_editor(true);
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
 				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {

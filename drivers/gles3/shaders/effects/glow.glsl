@@ -78,8 +78,8 @@ void main() {
 #endif // USE_MULTIVIEW
 	color /= luminance_multiplier * 8.0;
 
-	float feedback_factor = max(color.r, max(color.g, color.b));
-	float feedback = max(smoothstep(glow_hdr_threshold, glow_hdr_threshold + glow_hdr_scale, feedback_factor), glow_bloom);
+	float max_value = max(color.r, max(color.g, color.b));
+	float feedback = max(smoothstep(glow_hdr_threshold, glow_hdr_threshold + glow_hdr_scale, max_value), glow_bloom);
 
 	color = min(color * feedback, vec3(glow_luminance_cap));
 

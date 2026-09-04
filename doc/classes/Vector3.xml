@@ -148,14 +148,15 @@
 			<return type="Vector3" />
 			<param index="0" name="to" type="Vector3" />
 			<description>
-				Returns the normalized vector pointing from this vector to [param to]. This is equivalent to using [code](b - a).normalized()[/code].
+				Returns the normalized vector pointing from this vector to [param to].
+				[code]a.direction_to(b)[/code] is equivalent to [code](b - a).normalized()[/code]. See also [method normalized].
 			</description>
 		</method>
 		<method name="distance_squared_to" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="to" type="Vector3" />
 			<description>
-				Returns the squared distance between this vector and [param to].
+				Returns the squared [url=https://en.wikipedia.org/wiki/Euclidean_distance]Euclidean distance[/url] between this vector and [param to].
 				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
@@ -163,7 +164,7 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector3" />
 			<description>
-				Returns the distance between this vector and [param to].
+				Returns the [url=https://en.wikipedia.org/wiki/Euclidean_distance]Euclidean distance[/url] between this vector and [param to].
 			</description>
 		</method>
 		<method name="dot" qualifiers="const">
