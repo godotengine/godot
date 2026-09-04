@@ -2030,6 +2030,10 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 					bool is_compat = true;
 					for (int j = 0; j < compat_version.size(); j++) {
+						if (j == 2 && compat_version[j] == "x") {
+							continue; // Any patch release is compatible.
+						}
+
 						const int number = compat_version[j].to_int();
 						if (number != engine_version[j]) {
 							if (number < engine_version[j]) {
