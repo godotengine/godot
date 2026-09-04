@@ -43,6 +43,8 @@ public:
 		DOPPLER_TRACKING_PHYSICS_STEP,
 	};
 
+	float doppler_scale = 1.0;
+
 	void make_current();
 	void clear_current();
 	bool is_current() const;
@@ -51,6 +53,9 @@ public:
 
 	void set_doppler_tracking(DopplerTracking p_tracking);
 	DopplerTracking get_doppler_tracking() const;
+
+	void set_doppler_scale(float p_scale);
+	float get_doppler_scale() const;
 
 	Vector3 get_doppler_tracked_velocity() const;
 
