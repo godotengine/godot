@@ -1,280 +1,233 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTL4RenderPass.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
-#include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
-#include "MTLRenderPass.hpp"
+#include "MTL4Defines.hpp"
+#include "MTL4Blocks.hpp"
+#include "MTL4Structs.hpp"
+#include "MTL4Bridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
+#include "MTLStructs.hpp"
 
-namespace MTL4
-{
-class RenderPassDescriptor;
-}
-
-namespace MTL
-{
-class Buffer;
-class RasterizationRateMap;
-class RenderPassColorAttachmentDescriptorArray;
-class RenderPassDepthAttachmentDescriptor;
-class RenderPassStencilAttachmentDescriptor;
-struct SamplePosition;
+namespace MTL {
+    class Buffer;
+    class RasterizationRateMap;
+    class RenderPassColorAttachmentDescriptorArray;
+    class RenderPassDepthAttachmentDescriptor;
+    class RenderPassStencilAttachmentDescriptor;
+    enum VisibilityResultType : NS::Integer;
 }
 
 namespace MTL4
 {
+
 class RenderPassDescriptor : public NS::Copying<RenderPassDescriptor>
 {
 public:
-    static RenderPassDescriptor*                   alloc();
+    static RenderPassDescriptor* alloc();
+    RenderPassDescriptor*        init() const;
 
     MTL::RenderPassColorAttachmentDescriptorArray* colorAttachments() const;
-
     NS::UInteger                                   defaultRasterSampleCount() const;
-
     MTL::RenderPassDepthAttachmentDescriptor*      depthAttachment() const;
-
     NS::UInteger                                   getSamplePositions(MTL::SamplePosition* positions, NS::UInteger count);
-
     NS::UInteger                                   imageblockSampleLength() const;
-
-    RenderPassDescriptor*                          init();
-
     MTL::RasterizationRateMap*                     rasterizationRateMap() const;
-
     NS::UInteger                                   renderTargetArrayLength() const;
-
     NS::UInteger                                   renderTargetHeight() const;
-
     NS::UInteger                                   renderTargetWidth() const;
-
     void                                           setDefaultRasterSampleCount(NS::UInteger defaultRasterSampleCount);
-
-    void                                           setDepthAttachment(const MTL::RenderPassDepthAttachmentDescriptor* depthAttachment);
-
+    void                                           setDepthAttachment(MTL::RenderPassDepthAttachmentDescriptor* depthAttachment);
     void                                           setImageblockSampleLength(NS::UInteger imageblockSampleLength);
-
-    void                                           setRasterizationRateMap(const MTL::RasterizationRateMap* rasterizationRateMap);
-
+    void                                           setRasterizationRateMap(MTL::RasterizationRateMap* rasterizationRateMap);
     void                                           setRenderTargetArrayLength(NS::UInteger renderTargetArrayLength);
-
     void                                           setRenderTargetHeight(NS::UInteger renderTargetHeight);
-
     void                                           setRenderTargetWidth(NS::UInteger renderTargetWidth);
-
-    void                                           setSamplePositions(const MTL::SamplePosition* positions, NS::UInteger count);
-
-    void                                           setStencilAttachment(const MTL::RenderPassStencilAttachmentDescriptor* stencilAttachment);
-
+    void                                           setSamplePositions(const MTL::SamplePosition * positions, NS::UInteger count);
+    void                                           setStencilAttachment(MTL::RenderPassStencilAttachmentDescriptor* stencilAttachment);
     void                                           setSupportColorAttachmentMapping(bool supportColorAttachmentMapping);
-
     void                                           setThreadgroupMemoryLength(NS::UInteger threadgroupMemoryLength);
-
     void                                           setTileHeight(NS::UInteger tileHeight);
-
     void                                           setTileWidth(NS::UInteger tileWidth);
-
-    void                                           setVisibilityResultBuffer(const MTL::Buffer* visibilityResultBuffer);
-
+    void                                           setVisibilityResultBuffer(MTL::Buffer* visibilityResultBuffer);
     void                                           setVisibilityResultType(MTL::VisibilityResultType visibilityResultType);
-
     MTL::RenderPassStencilAttachmentDescriptor*    stencilAttachment() const;
-
     bool                                           supportColorAttachmentMapping() const;
-
     NS::UInteger                                   threadgroupMemoryLength() const;
-
     NS::UInteger                                   tileHeight() const;
-
     NS::UInteger                                   tileWidth() const;
-
     MTL::Buffer*                                   visibilityResultBuffer() const;
-
     MTL::VisibilityResultType                      visibilityResultType() const;
+
 };
 
-}
-_MTL_INLINE MTL4::RenderPassDescriptor* MTL4::RenderPassDescriptor::alloc()
+} // namespace MTL4
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTL4RenderPassDescriptor;
+
+_MTL4_INLINE MTL4::RenderPassDescriptor* MTL4::RenderPassDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::RenderPassDescriptor>(_MTL_PRIVATE_CLS(MTL4RenderPassDescriptor));
+    return _MTL4_msg_MTL4__RenderPassDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4RenderPassDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL::RenderPassColorAttachmentDescriptorArray* MTL4::RenderPassDescriptor::colorAttachments() const
+_MTL4_INLINE MTL4::RenderPassDescriptor* MTL4::RenderPassDescriptor::init() const
 {
-    return Object::sendMessage<MTL::RenderPassColorAttachmentDescriptorArray*>(this, _MTL_PRIVATE_SEL(colorAttachments));
+    return _MTL4_msg_MTL4__RenderPassDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPassDescriptor::defaultRasterSampleCount() const
+_MTL4_INLINE MTL::RenderPassColorAttachmentDescriptorArray* MTL4::RenderPassDescriptor::colorAttachments() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(defaultRasterSampleCount));
+    return _MTL4_msg_MTL__RenderPassColorAttachmentDescriptorArrayp_colorAttachments((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::RenderPassDepthAttachmentDescriptor* MTL4::RenderPassDescriptor::depthAttachment() const
+_MTL4_INLINE MTL::RenderPassDepthAttachmentDescriptor* MTL4::RenderPassDescriptor::depthAttachment() const
 {
-    return Object::sendMessage<MTL::RenderPassDepthAttachmentDescriptor*>(this, _MTL_PRIVATE_SEL(depthAttachment));
+    return _MTL4_msg_MTL__RenderPassDepthAttachmentDescriptorp_depthAttachment((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPassDescriptor::getSamplePositions(MTL::SamplePosition* positions, NS::UInteger count)
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setDepthAttachment(MTL::RenderPassDepthAttachmentDescriptor* depthAttachment)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(getSamplePositions_count_), positions, count);
+    _MTL4_msg_v_setDepthAttachment__MTL__RenderPassDepthAttachmentDescriptorp((const void*)this, nullptr, depthAttachment);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPassDescriptor::imageblockSampleLength() const
+_MTL4_INLINE MTL::RenderPassStencilAttachmentDescriptor* MTL4::RenderPassDescriptor::stencilAttachment() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(imageblockSampleLength));
+    return _MTL4_msg_MTL__RenderPassStencilAttachmentDescriptorp_stencilAttachment((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderPassDescriptor* MTL4::RenderPassDescriptor::init()
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setStencilAttachment(MTL::RenderPassStencilAttachmentDescriptor* stencilAttachment)
 {
-    return NS::Object::init<MTL4::RenderPassDescriptor>();
+    _MTL4_msg_v_setStencilAttachment__MTL__RenderPassStencilAttachmentDescriptorp((const void*)this, nullptr, stencilAttachment);
 }
 
-_MTL_INLINE MTL::RasterizationRateMap* MTL4::RenderPassDescriptor::rasterizationRateMap() const
+_MTL4_INLINE NS::UInteger MTL4::RenderPassDescriptor::renderTargetArrayLength() const
 {
-    return Object::sendMessage<MTL::RasterizationRateMap*>(this, _MTL_PRIVATE_SEL(rasterizationRateMap));
+    return _MTL4_msg_NS__UInteger_renderTargetArrayLength((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPassDescriptor::renderTargetArrayLength() const
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setRenderTargetArrayLength(NS::UInteger renderTargetArrayLength)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(renderTargetArrayLength));
+    _MTL4_msg_v_setRenderTargetArrayLength__NS__UInteger((const void*)this, nullptr, renderTargetArrayLength);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPassDescriptor::renderTargetHeight() const
+_MTL4_INLINE NS::UInteger MTL4::RenderPassDescriptor::imageblockSampleLength() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(renderTargetHeight));
+    return _MTL4_msg_NS__UInteger_imageblockSampleLength((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPassDescriptor::renderTargetWidth() const
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setImageblockSampleLength(NS::UInteger imageblockSampleLength)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(renderTargetWidth));
+    _MTL4_msg_v_setImageblockSampleLength__NS__UInteger((const void*)this, nullptr, imageblockSampleLength);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setDefaultRasterSampleCount(NS::UInteger defaultRasterSampleCount)
+_MTL4_INLINE NS::UInteger MTL4::RenderPassDescriptor::threadgroupMemoryLength() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setDefaultRasterSampleCount_), defaultRasterSampleCount);
+    return _MTL4_msg_NS__UInteger_threadgroupMemoryLength((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setDepthAttachment(const MTL::RenderPassDepthAttachmentDescriptor* depthAttachment)
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setThreadgroupMemoryLength(NS::UInteger threadgroupMemoryLength)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setDepthAttachment_), depthAttachment);
+    _MTL4_msg_v_setThreadgroupMemoryLength__NS__UInteger((const void*)this, nullptr, threadgroupMemoryLength);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setImageblockSampleLength(NS::UInteger imageblockSampleLength)
+_MTL4_INLINE NS::UInteger MTL4::RenderPassDescriptor::tileWidth() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setImageblockSampleLength_), imageblockSampleLength);
+    return _MTL4_msg_NS__UInteger_tileWidth((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setRasterizationRateMap(const MTL::RasterizationRateMap* rasterizationRateMap)
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setTileWidth(NS::UInteger tileWidth)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRasterizationRateMap_), rasterizationRateMap);
+    _MTL4_msg_v_setTileWidth__NS__UInteger((const void*)this, nullptr, tileWidth);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setRenderTargetArrayLength(NS::UInteger renderTargetArrayLength)
+_MTL4_INLINE NS::UInteger MTL4::RenderPassDescriptor::tileHeight() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRenderTargetArrayLength_), renderTargetArrayLength);
+    return _MTL4_msg_NS__UInteger_tileHeight((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setRenderTargetHeight(NS::UInteger renderTargetHeight)
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setTileHeight(NS::UInteger tileHeight)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRenderTargetHeight_), renderTargetHeight);
+    _MTL4_msg_v_setTileHeight__NS__UInteger((const void*)this, nullptr, tileHeight);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setRenderTargetWidth(NS::UInteger renderTargetWidth)
+_MTL4_INLINE NS::UInteger MTL4::RenderPassDescriptor::defaultRasterSampleCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRenderTargetWidth_), renderTargetWidth);
+    return _MTL4_msg_NS__UInteger_defaultRasterSampleCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setSamplePositions(const MTL::SamplePosition* positions, NS::UInteger count)
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setDefaultRasterSampleCount(NS::UInteger defaultRasterSampleCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSamplePositions_count_), positions, count);
+    _MTL4_msg_v_setDefaultRasterSampleCount__NS__UInteger((const void*)this, nullptr, defaultRasterSampleCount);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setStencilAttachment(const MTL::RenderPassStencilAttachmentDescriptor* stencilAttachment)
+_MTL4_INLINE NS::UInteger MTL4::RenderPassDescriptor::renderTargetWidth() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setStencilAttachment_), stencilAttachment);
+    return _MTL4_msg_NS__UInteger_renderTargetWidth((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setSupportColorAttachmentMapping(bool supportColorAttachmentMapping)
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setRenderTargetWidth(NS::UInteger renderTargetWidth)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSupportColorAttachmentMapping_), supportColorAttachmentMapping);
+    _MTL4_msg_v_setRenderTargetWidth__NS__UInteger((const void*)this, nullptr, renderTargetWidth);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setThreadgroupMemoryLength(NS::UInteger threadgroupMemoryLength)
+_MTL4_INLINE NS::UInteger MTL4::RenderPassDescriptor::renderTargetHeight() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setThreadgroupMemoryLength_), threadgroupMemoryLength);
+    return _MTL4_msg_NS__UInteger_renderTargetHeight((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setTileHeight(NS::UInteger tileHeight)
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setRenderTargetHeight(NS::UInteger renderTargetHeight)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setTileHeight_), tileHeight);
+    _MTL4_msg_v_setRenderTargetHeight__NS__UInteger((const void*)this, nullptr, renderTargetHeight);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setTileWidth(NS::UInteger tileWidth)
+_MTL4_INLINE MTL::RasterizationRateMap* MTL4::RenderPassDescriptor::rasterizationRateMap() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setTileWidth_), tileWidth);
+    return _MTL4_msg_MTL__RasterizationRateMapp_rasterizationRateMap((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setVisibilityResultBuffer(const MTL::Buffer* visibilityResultBuffer)
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setRasterizationRateMap(MTL::RasterizationRateMap* rasterizationRateMap)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVisibilityResultBuffer_), visibilityResultBuffer);
+    _MTL4_msg_v_setRasterizationRateMap__MTL__RasterizationRateMapp((const void*)this, nullptr, rasterizationRateMap);
 }
 
-_MTL_INLINE void MTL4::RenderPassDescriptor::setVisibilityResultType(MTL::VisibilityResultType visibilityResultType)
+_MTL4_INLINE MTL::Buffer* MTL4::RenderPassDescriptor::visibilityResultBuffer() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVisibilityResultType_), visibilityResultType);
+    return _MTL4_msg_MTL__Bufferp_visibilityResultBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::RenderPassStencilAttachmentDescriptor* MTL4::RenderPassDescriptor::stencilAttachment() const
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setVisibilityResultBuffer(MTL::Buffer* visibilityResultBuffer)
 {
-    return Object::sendMessage<MTL::RenderPassStencilAttachmentDescriptor*>(this, _MTL_PRIVATE_SEL(stencilAttachment));
+    _MTL4_msg_v_setVisibilityResultBuffer__MTL__Bufferp((const void*)this, nullptr, visibilityResultBuffer);
 }
 
-_MTL_INLINE bool MTL4::RenderPassDescriptor::supportColorAttachmentMapping() const
+_MTL4_INLINE MTL::VisibilityResultType MTL4::RenderPassDescriptor::visibilityResultType() const
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportColorAttachmentMapping));
+    return _MTL4_msg_MTL__VisibilityResultType_visibilityResultType((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPassDescriptor::threadgroupMemoryLength() const
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setVisibilityResultType(MTL::VisibilityResultType visibilityResultType)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(threadgroupMemoryLength));
+    _MTL4_msg_v_setVisibilityResultType__MTL__VisibilityResultType((const void*)this, nullptr, visibilityResultType);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPassDescriptor::tileHeight() const
+_MTL4_INLINE bool MTL4::RenderPassDescriptor::supportColorAttachmentMapping() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(tileHeight));
+    return _MTL4_msg_bool_supportColorAttachmentMapping((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPassDescriptor::tileWidth() const
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setSupportColorAttachmentMapping(bool supportColorAttachmentMapping)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(tileWidth));
+    _MTL4_msg_v_setSupportColorAttachmentMapping__bool((const void*)this, nullptr, supportColorAttachmentMapping);
 }
 
-_MTL_INLINE MTL::Buffer* MTL4::RenderPassDescriptor::visibilityResultBuffer() const
+_MTL4_INLINE void MTL4::RenderPassDescriptor::setSamplePositions(const MTL::SamplePosition * positions, NS::UInteger count)
 {
-    return Object::sendMessage<MTL::Buffer*>(this, _MTL_PRIVATE_SEL(visibilityResultBuffer));
+    _MTL4_msg_v_setSamplePositions_count__constMTL__SamplePositionp_NS__UInteger((const void*)this, nullptr, positions, count);
 }
 
-_MTL_INLINE MTL::VisibilityResultType MTL4::RenderPassDescriptor::visibilityResultType() const
+_MTL4_INLINE NS::UInteger MTL4::RenderPassDescriptor::getSamplePositions(MTL::SamplePosition* positions, NS::UInteger count)
 {
-    return Object::sendMessage<MTL::VisibilityResultType>(this, _MTL_PRIVATE_SEL(visibilityResultType));
+    return _MTL4_msg_NS__UInteger_getSamplePositions_count__MTL__SamplePositionp_NS__UInteger((const void*)this, nullptr, positions, count);
 }

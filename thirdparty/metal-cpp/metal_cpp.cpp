@@ -28,12 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+// Only NS_PRIVATE_IMPLEMENTATION is still meaningful — it flips
+// Foundation/NSPrivate.hpp from `extern SEL s_k…` declarations to definitions
+// so the SEL globals consumed by upstream NSObject.hpp's base ops (retain /
+// release / autorelease / description / hash / isEqual:) get instantiated
+// here. The Metal / MetalFX / QuartzCore framework wrappers dispatch through
+// linker-synthesized `_objc_msgSend$<sel>` stubs and require no per-TU
+// definitions, so their private-implementation macros are gone.
 #define NS_PRIVATE_IMPLEMENTATION
-#define CA_PRIVATE_IMPLEMENTATION
-#define MTL_PRIVATE_IMPLEMENTATION
-#define MTLFX_PRIVATE_IMPLEMENTATION
 
 #include "Foundation/Foundation.hpp"
 #include "Metal/Metal.hpp"
 #include "MetalFX/MetalFX.hpp"
 #include "QuartzCore/QuartzCore.hpp"
+
+// Definition of MTL::CreateSystemDefaultDevice — kept here so the system
+// `MTLCreateSystemDefaultDevice` extern (which carries an ARC-relevant
+// `NS_RETURNS_RETAINED` attribute in Apple's MTLDevice.h) is never visible
+// in headers that .mm translation units transitively include.
+extern "C" MTL::Device* MTLCreateSystemDefaultDevice();
+
+MTL::Device* MTL::CreateSystemDefaultDevice()
+{
+    return ::MTLCreateSystemDefaultDevice();
+}

@@ -1,158 +1,135 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTL4ComputePipeline.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
+#include "MTL4Defines.hpp"
+#include "MTL4Blocks.hpp"
+#include "MTL4Structs.hpp"
+#include "MTL4Bridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 #include "MTL4PipelineState.hpp"
-#include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
-#include "MTLTypes.hpp"
+#include "MTLStructs.hpp"
+
+namespace MTL4 {
+    class FunctionDescriptor;
+    class StaticLinkingDescriptor;
+    enum IndirectCommandBufferSupportState : NS::Integer;
+}
 
 namespace MTL4
 {
-class ComputePipelineDescriptor;
-class FunctionDescriptor;
-class StaticLinkingDescriptor;
 
-class ComputePipelineDescriptor : public NS::Copying<ComputePipelineDescriptor, PipelineDescriptor>
+class ComputePipelineDescriptor : public NS::Referencing<ComputePipelineDescriptor, MTL4::PipelineDescriptor>
 {
 public:
     static ComputePipelineDescriptor* alloc();
+    ComputePipelineDescriptor*        init() const;
 
-    FunctionDescriptor*               computeFunctionDescriptor() const;
+    MTL4::FunctionDescriptor*               computeFunctionDescriptor() const;
+    NS::UInteger                            maxTotalThreadsPerThreadgroup() const;
+    MTL::Size                               requiredThreadsPerThreadgroup() const;
+    void                                    reset();
+    void                                    setComputeFunctionDescriptor(MTL4::FunctionDescriptor* computeFunctionDescriptor);
+    void                                    setMaxTotalThreadsPerThreadgroup(NS::UInteger maxTotalThreadsPerThreadgroup);
+    void                                    setRequiredThreadsPerThreadgroup(MTL::Size requiredThreadsPerThreadgroup);
+    void                                    setStaticLinkingDescriptor(MTL4::StaticLinkingDescriptor* staticLinkingDescriptor);
+    void                                    setSupportBinaryLinking(bool supportBinaryLinking);
+    void                                    setSupportIndirectCommandBuffers(MTL4::IndirectCommandBufferSupportState supportIndirectCommandBuffers);
+    void                                    setThreadGroupSizeIsMultipleOfThreadExecutionWidth(bool threadGroupSizeIsMultipleOfThreadExecutionWidth);
+    MTL4::StaticLinkingDescriptor*          staticLinkingDescriptor() const;
+    bool                                    supportBinaryLinking() const;
+    MTL4::IndirectCommandBufferSupportState supportIndirectCommandBuffers() const;
+    bool                                    threadGroupSizeIsMultipleOfThreadExecutionWidth() const;
 
-    ComputePipelineDescriptor*        init();
-
-    NS::UInteger                      maxTotalThreadsPerThreadgroup() const;
-
-    MTL::Size                         requiredThreadsPerThreadgroup() const;
-
-    void                              reset();
-
-    void                              setComputeFunctionDescriptor(const MTL4::FunctionDescriptor* computeFunctionDescriptor);
-
-    void                              setMaxTotalThreadsPerThreadgroup(NS::UInteger maxTotalThreadsPerThreadgroup);
-
-    void                              setRequiredThreadsPerThreadgroup(MTL::Size requiredThreadsPerThreadgroup);
-
-    void                              setStaticLinkingDescriptor(const MTL4::StaticLinkingDescriptor* staticLinkingDescriptor);
-
-    void                              setSupportBinaryLinking(bool supportBinaryLinking);
-
-    void                              setSupportIndirectCommandBuffers(MTL4::IndirectCommandBufferSupportState supportIndirectCommandBuffers);
-
-    void                              setThreadGroupSizeIsMultipleOfThreadExecutionWidth(bool threadGroupSizeIsMultipleOfThreadExecutionWidth);
-
-    StaticLinkingDescriptor*          staticLinkingDescriptor() const;
-
-    bool                              supportBinaryLinking() const;
-
-    IndirectCommandBufferSupportState supportIndirectCommandBuffers() const;
-
-    bool                              threadGroupSizeIsMultipleOfThreadExecutionWidth() const;
 };
 
-}
-_MTL_INLINE MTL4::ComputePipelineDescriptor* MTL4::ComputePipelineDescriptor::alloc()
+} // namespace MTL4
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTL4ComputePipelineDescriptor;
+
+_MTL4_INLINE MTL4::ComputePipelineDescriptor* MTL4::ComputePipelineDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::ComputePipelineDescriptor>(_MTL_PRIVATE_CLS(MTL4ComputePipelineDescriptor));
+    return _MTL4_msg_MTL4__ComputePipelineDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4ComputePipelineDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::FunctionDescriptor* MTL4::ComputePipelineDescriptor::computeFunctionDescriptor() const
+_MTL4_INLINE MTL4::ComputePipelineDescriptor* MTL4::ComputePipelineDescriptor::init() const
 {
-    return Object::sendMessage<MTL4::FunctionDescriptor*>(this, _MTL_PRIVATE_SEL(computeFunctionDescriptor));
+    return _MTL4_msg_MTL4__ComputePipelineDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::ComputePipelineDescriptor* MTL4::ComputePipelineDescriptor::init()
+_MTL4_INLINE MTL4::FunctionDescriptor* MTL4::ComputePipelineDescriptor::computeFunctionDescriptor() const
 {
-    return NS::Object::init<MTL4::ComputePipelineDescriptor>();
+    return _MTL4_msg_MTL4__FunctionDescriptorp_computeFunctionDescriptor((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::ComputePipelineDescriptor::maxTotalThreadsPerThreadgroup() const
+_MTL4_INLINE void MTL4::ComputePipelineDescriptor::setComputeFunctionDescriptor(MTL4::FunctionDescriptor* computeFunctionDescriptor)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(maxTotalThreadsPerThreadgroup));
+    _MTL4_msg_v_setComputeFunctionDescriptor__MTL4__FunctionDescriptorp((const void*)this, nullptr, computeFunctionDescriptor);
 }
 
-_MTL_INLINE MTL::Size MTL4::ComputePipelineDescriptor::requiredThreadsPerThreadgroup() const
+_MTL4_INLINE bool MTL4::ComputePipelineDescriptor::threadGroupSizeIsMultipleOfThreadExecutionWidth() const
 {
-    return Object::sendMessage<MTL::Size>(this, _MTL_PRIVATE_SEL(requiredThreadsPerThreadgroup));
+    return _MTL4_msg_bool_threadGroupSizeIsMultipleOfThreadExecutionWidth((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::ComputePipelineDescriptor::reset()
+_MTL4_INLINE void MTL4::ComputePipelineDescriptor::setThreadGroupSizeIsMultipleOfThreadExecutionWidth(bool threadGroupSizeIsMultipleOfThreadExecutionWidth)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(reset));
+    _MTL4_msg_v_setThreadGroupSizeIsMultipleOfThreadExecutionWidth__bool((const void*)this, nullptr, threadGroupSizeIsMultipleOfThreadExecutionWidth);
 }
 
-_MTL_INLINE void MTL4::ComputePipelineDescriptor::setComputeFunctionDescriptor(const MTL4::FunctionDescriptor* computeFunctionDescriptor)
+_MTL4_INLINE NS::UInteger MTL4::ComputePipelineDescriptor::maxTotalThreadsPerThreadgroup() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setComputeFunctionDescriptor_), computeFunctionDescriptor);
+    return _MTL4_msg_NS__UInteger_maxTotalThreadsPerThreadgroup((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::ComputePipelineDescriptor::setMaxTotalThreadsPerThreadgroup(NS::UInteger maxTotalThreadsPerThreadgroup)
+_MTL4_INLINE void MTL4::ComputePipelineDescriptor::setMaxTotalThreadsPerThreadgroup(NS::UInteger maxTotalThreadsPerThreadgroup)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMaxTotalThreadsPerThreadgroup_), maxTotalThreadsPerThreadgroup);
+    _MTL4_msg_v_setMaxTotalThreadsPerThreadgroup__NS__UInteger((const void*)this, nullptr, maxTotalThreadsPerThreadgroup);
 }
 
-_MTL_INLINE void MTL4::ComputePipelineDescriptor::setRequiredThreadsPerThreadgroup(MTL::Size requiredThreadsPerThreadgroup)
+_MTL4_INLINE MTL::Size MTL4::ComputePipelineDescriptor::requiredThreadsPerThreadgroup() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRequiredThreadsPerThreadgroup_), requiredThreadsPerThreadgroup);
+    return _MTL4_msg_MTL__Size_requiredThreadsPerThreadgroup((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::ComputePipelineDescriptor::setStaticLinkingDescriptor(const MTL4::StaticLinkingDescriptor* staticLinkingDescriptor)
+_MTL4_INLINE void MTL4::ComputePipelineDescriptor::setRequiredThreadsPerThreadgroup(MTL::Size requiredThreadsPerThreadgroup)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setStaticLinkingDescriptor_), staticLinkingDescriptor);
+    _MTL4_msg_v_setRequiredThreadsPerThreadgroup__MTL__Size((const void*)this, nullptr, requiredThreadsPerThreadgroup);
 }
 
-_MTL_INLINE void MTL4::ComputePipelineDescriptor::setSupportBinaryLinking(bool supportBinaryLinking)
+_MTL4_INLINE bool MTL4::ComputePipelineDescriptor::supportBinaryLinking() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSupportBinaryLinking_), supportBinaryLinking);
+    return _MTL4_msg_bool_supportBinaryLinking((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::ComputePipelineDescriptor::setSupportIndirectCommandBuffers(MTL4::IndirectCommandBufferSupportState supportIndirectCommandBuffers)
+_MTL4_INLINE void MTL4::ComputePipelineDescriptor::setSupportBinaryLinking(bool supportBinaryLinking)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSupportIndirectCommandBuffers_), supportIndirectCommandBuffers);
+    _MTL4_msg_v_setSupportBinaryLinking__bool((const void*)this, nullptr, supportBinaryLinking);
 }
 
-_MTL_INLINE void MTL4::ComputePipelineDescriptor::setThreadGroupSizeIsMultipleOfThreadExecutionWidth(bool threadGroupSizeIsMultipleOfThreadExecutionWidth)
+_MTL4_INLINE MTL4::StaticLinkingDescriptor* MTL4::ComputePipelineDescriptor::staticLinkingDescriptor() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setThreadGroupSizeIsMultipleOfThreadExecutionWidth_), threadGroupSizeIsMultipleOfThreadExecutionWidth);
+    return _MTL4_msg_MTL4__StaticLinkingDescriptorp_staticLinkingDescriptor((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::StaticLinkingDescriptor* MTL4::ComputePipelineDescriptor::staticLinkingDescriptor() const
+_MTL4_INLINE void MTL4::ComputePipelineDescriptor::setStaticLinkingDescriptor(MTL4::StaticLinkingDescriptor* staticLinkingDescriptor)
 {
-    return Object::sendMessage<MTL4::StaticLinkingDescriptor*>(this, _MTL_PRIVATE_SEL(staticLinkingDescriptor));
+    _MTL4_msg_v_setStaticLinkingDescriptor__MTL4__StaticLinkingDescriptorp((const void*)this, nullptr, staticLinkingDescriptor);
 }
 
-_MTL_INLINE bool MTL4::ComputePipelineDescriptor::supportBinaryLinking() const
+_MTL4_INLINE MTL4::IndirectCommandBufferSupportState MTL4::ComputePipelineDescriptor::supportIndirectCommandBuffers() const
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportBinaryLinking));
+    return _MTL4_msg_MTL4__IndirectCommandBufferSupportState_supportIndirectCommandBuffers((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::IndirectCommandBufferSupportState MTL4::ComputePipelineDescriptor::supportIndirectCommandBuffers() const
+_MTL4_INLINE void MTL4::ComputePipelineDescriptor::setSupportIndirectCommandBuffers(MTL4::IndirectCommandBufferSupportState supportIndirectCommandBuffers)
 {
-    return Object::sendMessage<MTL4::IndirectCommandBufferSupportState>(this, _MTL_PRIVATE_SEL(supportIndirectCommandBuffers));
+    _MTL4_msg_v_setSupportIndirectCommandBuffers__MTL4__IndirectCommandBufferSupportState((const void*)this, nullptr, supportIndirectCommandBuffers);
 }
 
-_MTL_INLINE bool MTL4::ComputePipelineDescriptor::threadGroupSizeIsMultipleOfThreadExecutionWidth() const
+_MTL4_INLINE void MTL4::ComputePipelineDescriptor::reset()
 {
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(threadGroupSizeIsMultipleOfThreadExecutionWidth));
+    _MTL4_msg_v_reset((const void*)this, nullptr);
 }
