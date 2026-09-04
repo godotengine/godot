@@ -46,11 +46,15 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
+import android.view.Surface;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.Keep;
@@ -79,16 +83,18 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	private final Godot godot;
 	private final GodotInputHandler inputHandler;
 	private final GodotRenderer godotRenderer;
+	private final int mRefreshRate;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent) {
+	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent, int refreshRate) {
 		super(godot.getContext());
 
 		this.godot = godot;
 		this.inputHandler = inputHandler;
 		this.godotRenderer = new GodotRenderer();
+		mRefreshRate = refreshRate;
 		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
-		init(xrMode, shouldBeTranslucent, useDebugOpengl);
+		init(xrMode, shouldBeTranslucent, useDebugOpengl, refreshRate);
 	}
 
 	@Override
@@ -240,9 +246,10 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 		return getPointerIcon();
 	}
 
-	private void init(XRMode xrMode, boolean translucent, boolean useDebugOpengl) {
+	private void init(XRMode xrMode, boolean translucent, boolean useDebugOpengl, int refreshRate) {
 		setPreserveEGLContextOnPause(true);
 		setFocusableInTouchMode(true);
+
 		switch (xrMode) {
 			case OPENXR:
 				// Replace the default egl config chooser.
@@ -281,6 +288,19 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 						new RegularFallbackConfigChooser(8, 8, 8, 8, 24, 0,
 								new RegularConfigChooser(8, 8, 8, 8, 16, 0)));
 				break;
+		}
+	}
+
+	@Override
+	public void surfaceCreated(SurfaceHolder holder) {
+		super.surfaceCreated(holder);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			Log.i("Godot", "OpenGL: Setting frame rate to " + mRefreshRate);
+			holder.getSurface().setFrameRate(
+					mRefreshRate,
+					Surface.FRAME_RATE_COMPATIBILITY_DEFAULT,
+					Surface.CHANGE_FRAME_RATE_ALWAYS);
 		}
 	}
 
