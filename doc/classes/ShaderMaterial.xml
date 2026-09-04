@@ -6,7 +6,7 @@
 	<description>
 		A material that uses a custom [Shader] program to render visual items (canvas items, meshes, skies, fog), or to process particles. Compared to other materials, [ShaderMaterial] gives deeper control over the generated shader code. For more information, see the shaders documentation index below.
 		Multiple [ShaderMaterial]s can use the same shader and configure different values for the shader uniforms.
-		[b]Note:[/b] For performance reasons, the [signal Resource.changed] signal is only emitted when the [member Resource.resource_name] changes. Only in editor, it is also emitted for [member shader] changes.
+		[b]Note:[/b] For performance reasons, the [signal Resource.changed] signal is only emitted when the [member Resource.resource_name] changes. Only in editor, it is also emitted when changing shader parameters and when [member shader] changes.
 	</description>
 	<tutorials>
 		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
