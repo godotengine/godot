@@ -270,7 +270,7 @@ class SceneTreeDock : public EditorDock {
 	void _cancel_highlight();
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, HashMap<Node *, NodePath> *p_renames);
-	bool _has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const;
+	bool _has_tracks_to_delete(Node *p_node, const List<Node *> &p_to_delete) const;
 
 	void _normalize_drop(Node *&to_node, int &to_pos, int p_type);
 
