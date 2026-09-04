@@ -263,6 +263,33 @@ void GDScriptCache::remove_parser(const String &p_path) {
 	}
 }
 
+void GDScriptCache::get_script_dependents(const String &p_path, HashSet<String> *r_dependents) {
+	ERR_FAIL_NULL(r_dependents);
+
+	MutexLock lock(singleton->mutex);
+
+	HashSet<String> pending;
+	pending.insert(p_path);
+
+	while (!pending.is_empty()) {
+		const String path = *pending.begin();
+		pending.erase(path);
+
+		if (!singleton->parser_inverse_dependencies.has(path)) {
+			continue;
+		}
+
+		for (const String &dependent : singleton->parser_inverse_dependencies[path]) {
+			if (r_dependents->has(dependent)) {
+				continue;
+			}
+
+			r_dependents->insert(dependent);
+			pending.insert(dependent);
+		}
+	}
+}
+
 String GDScriptCache::get_source_code(const String &p_path) {
 	Vector<uint8_t> source_file;
 	Error err;
