@@ -178,7 +178,7 @@ void SpringArm3D::process_spring() {
 			if (intersected) {
 				real_t dist = get_global_transform().origin.distance_to(r.position);
 				dist -= margin;
-				motion_delta = dist / (spring_length);
+				motion_delta = dist / Math::abs(spring_length);
 			}
 		}
 	} else {
