@@ -79,6 +79,10 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 		mode_string = "rb+";
 	} else if (p_mode_flags == WRITE_READ) {
 		mode_string = "wb+";
+	} else if (p_mode_flags == WRITE_EXCLUSIVE) {
+		mode_string = "wbx";
+	} else if (p_mode_flags == WRITE_READ_EXCLUSIVE) {
+		mode_string = "wbx+";
 	} else {
 		return ERR_INVALID_PARAMETER;
 	}

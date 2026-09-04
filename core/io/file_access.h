@@ -59,6 +59,8 @@ public:
 		WRITE = 2,
 		READ_WRITE = 3,
 		WRITE_READ = 7,
+		WRITE_EXCLUSIVE = 10,
+		WRITE_READ_EXCLUSIVE = 15,
 		SKIP_PACK = 16,
 	};
 
