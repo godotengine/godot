@@ -73,6 +73,7 @@ public:
 		bool draw_extra_borders = false;
 		int draw_relationship_lines;
 		float relationship_line_opacity = 1.0;
+		float strip_alpha = 0.05;
 		int thumb_size = 16;
 		int class_icon_size = 16;
 		bool enable_touch_optimizations = false;

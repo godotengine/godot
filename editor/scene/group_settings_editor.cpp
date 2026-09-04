@@ -533,6 +533,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	add_child(mc);
 
 	tree = memnew(Tree);
+	tree->add_theme_constant_override("row_stripes_visible", 1);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_SINGLE);
