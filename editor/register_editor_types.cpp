@@ -109,9 +109,9 @@
 #include "editor/scene/3d/voxel_gi_editor_plugin.h"
 #include "editor/scene/curve_editor_plugin.h"
 #include "editor/scene/gradient_editor_plugin.h"
+#include "editor/scene/gui/container_editor_plugin.h"
 #include "editor/scene/gui/control_editor_plugin.h"
 #include "editor/scene/gui/font_config_plugin.h"
-#include "editor/scene/gui/margin_container_editor_plugin.h"
 #include "editor/scene/gui/style_box_editor_plugin.h"
 #include "editor/scene/gui/theme_editor_plugin.h"
 #include "editor/scene/gui/virtual_joystick_editor_plugin.h"
@@ -238,7 +238,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<GradientEditorPlugin>();
 	EditorPlugins::add_by_type<GradientTexture2DEditorPlugin>();
 	EditorPlugins::add_by_type<InputEventEditorPlugin>();
-	EditorPlugins::add_by_type<MarginContainerEditorPlugin>();
+	EditorPlugins::add_by_type<ContainerEditorPlugin>();
 	EditorPlugins::add_by_type<MaterialEditorPlugin>();
 	EditorPlugins::add_by_type<PackedSceneEditorPlugin>();
 	EditorPlugins::add_by_type<ResourcePreloaderEditorPlugin>();

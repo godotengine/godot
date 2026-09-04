@@ -322,6 +322,11 @@ void GridContainer::_resort() {
 	int accumulated_width = 0;
 	int accumulated_height = 0;
 	valid_controls_index = 0;
+
+#ifdef TOOLS_ENABLED
+	cell_sizes.clear();
+#endif
+
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
@@ -372,15 +377,25 @@ void GridContainer::_resort() {
 			c->set_parent_maximum_size_cache(ms);
 		}
 
+		Point2 p;
 		if (rtl) {
-			Point2 p(col_ofs - s.width, row_ofs);
-			fit_child_in_rect(c, Rect2(p, s));
+			p = Point2(col_ofs - s.width, row_ofs);
 			col_ofs -= s.width + theme_cache.h_separation;
 		} else {
-			Point2 p(col_ofs, row_ofs);
-			fit_child_in_rect(c, Rect2(p, s));
+			p = Point2(col_ofs, row_ofs);
 			col_ofs += s.width + theme_cache.h_separation;
 		}
+		fit_child_in_rect(c, Rect2(p, s));
+
+#ifdef TOOLS_ENABLED
+		if (row == 0 && col > 0) {
+			cell_sizes.append(p.x);
+		}
+
+		if (row > 0 && col == 0) {
+			cell_sizes.append(p.y);
+		}
+#endif
 
 		if (col == columns - 1) {
 			accumulated_height += s.height + theme_cache.v_separation;
