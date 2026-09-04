@@ -342,6 +342,11 @@ String EditorExportPlatformIOS::_process_config_file_line(const Ref<EditorExport
 	} else if (p_line.contains("$accessory_tracking_usage_description")) {
 		strnew += p_line.replace("$accessory_tracking_usage_description", "") + "\n";
 
+		// Info.plist LSSupportsGameMode
+	} else if (p_line.contains("$gamemode")) {
+		bool use_gamemode = get_project_setting(p_preset, "application/run/use_game_mode");
+		strnew += p_line.replace("$gamemode", String("<key>LSSupportsGameMode</key>\n\t") + (use_gamemode ? "<true/>" : "<false/>")) + "\n";
+
 		// Apple Embedded common
 	} else {
 		strnew += EditorExportPlatformAppleEmbedded::_process_config_file_line(p_preset, p_line, p_config, p_debug, p_code_signing);
