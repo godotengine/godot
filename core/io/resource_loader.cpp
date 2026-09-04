@@ -587,10 +587,15 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 					// Either case, we want to keep the resource that was already there.
 					ResourceCache::lock.unlock();
 					pending_unlock = false;
-					if (replacing) {
-						old_res->copy_from(load_task.resource);
+					if (replacing && old_res->get_class() != load_task.resource->get_class()) {
+						WARN_PRINT(vformat("'%s': Cache mode is replace, but resource type changed from previous '%s' to '%s'. Existing references could not be updated.", load_task.local_path, old_res->get_class(), load_task.resource->get_class()));
+						load_task.resource->set_path(load_task.local_path, true);
+					} else {
+						if (replacing) {
+							old_res->copy_from(load_task.resource);
+						}
+						load_task.resource = old_res;
 					}
-					load_task.resource = old_res;
 				}
 			} else {
 				load_task.resource->set_path(load_task.local_path);
