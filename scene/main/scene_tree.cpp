@@ -710,7 +710,10 @@ bool SceneTree::process(double p_time) {
 		}
 	}
 
-	emit_signal(SNAME("process_frame"));
+	emit_signal(SNAME("_internal_process_frame"));
+	if (!suspended) {
+		emit_signal(SNAME("process_frame"));
+	}
 
 	MessageQueue::get_singleton()->flush(); //small little hack
 
@@ -1989,6 +1992,9 @@ void SceneTree::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("process_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
+	// Internal signal used by debugger-side features such as RuntimeNodeSelect. Emitted every frame, including while the scene tree is suspended,
+	// so the editor can continue updating debugger UI. This is not intended for user code and is subject to change without notice.
+	ADD_SIGNAL(MethodInfo("_internal_process_frame"));
 
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
