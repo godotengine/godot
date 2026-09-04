@@ -269,7 +269,6 @@ const HashMap<EditorBuildProfile::BuildOption, LocalVector<EditorBuildProfile::B
 // Should also contain classes not derived from either `Resource` or `Node`.
 const HashMap<EditorBuildProfile::BuildOption, LocalVector<String>> EditorBuildProfile::build_option_classes = {
 	{ BUILD_OPTION_2D, {
-			"Curve2D",
 			"Node2D",
 			"OccluderPolygon2D",
 			"SkeletonModificationStack2D",
