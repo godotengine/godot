@@ -52,6 +52,7 @@
 
 #include "core/math/bvh_tree.h"
 #include "core/math/geometry_3d.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/mutex.h"
 
 #include <climits> // INT_MAX
@@ -59,8 +60,11 @@
 #define BVHTREE_CLASS BVH_Tree<T, NUM_TREES, 2, MAX_ITEMS, USER_PAIR_TEST_FUNCTION, USER_CULL_TEST_FUNCTION, USE_PAIRS, BOUNDS, POINT>
 #define BVH_LOCKED_FUNCTION BVHLockedFunction _lock_guard(&_mutex, BVH_THREAD_SAFE &&_thread_safe);
 
-template <typename T, int NUM_TREES = 1, bool USE_PAIRS = false, int MAX_ITEMS = 32, typename USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, typename USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, typename BOUNDS = AABB, typename POINT = Vector3, bool BVH_THREAD_SAFE = true>
+template <typename T, int NUM_TREES = 1, bool USE_PAIRS = false, int MAX_ITEMS = 32, typename USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, typename USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, typename BOUNDS = AABB, typename POINT = Vector3, bool BVH_THREAD_SAFE = true, bool BVH_USE_THREADS = false>
 class BVH_Manager {
+	static_assert(!BVH_USE_THREADS || std::is_same_v<USER_CULL_TEST_FUNCTION, std::nullptr_t>,
+			"Cannot use a cull function for BVH_Manager when `BVH_USE_THREADS` is true. Use std::nullptr_t for `USER_CULL_TEST_FUNCTION`.");
+
 public:
 	// note we are using uint32_t instead of BVHHandle, losing type safety, but this
 	// is for compatibility with octree
@@ -433,13 +437,9 @@ public:
 	}
 
 private:
-	// do this after moving etc.
-	void _check_for_collisions(bool p_full_check = false) {
-		if (!changed_items.size()) {
-			// noop
-			return;
-		}
+	mutable LocalVector<LocalVector<Pair<uint32_t, uint32_t>>> _cull_hits_mt;
 
+	void _cull_mt(uint32_t p_changed_index, void *p_userdata) const {
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -447,40 +447,117 @@ private:
 		params.result_array = nullptr;
 		params.subindex_array = nullptr;
 
+		//for (const BVHHandle &h : changed_items) {
+		// use the expanded aabb for pairing
+		const BVHHandle &h = changed_items[p_changed_index];
+		const BOUNDS &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
+		BVHABB_CLASS abb;
+		abb.from(expanded_aabb);
+
+		tree.item_fill_cullparams(h, params);
+
+		params.abb = abb;
+		params.result_count_overall = 0; // might not be needed
+		tree._cull_aabb_mt(_cull_hits_mt[WorkerThreadPool::get_singleton()->get_thread_index()], params, h.id());
+	}
+
+	void _check_for_collisions_mt(bool p_full_check = false) {
+		if (!changed_items.size()) {
+			// noop
+			return;
+		}
+
 		for (const BVHHandle &h : changed_items) {
-			// use the expanded aabb for pairing
 			const BOUNDS &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
 			BVHABB_CLASS abb;
 			abb.from(expanded_aabb);
 
-			tree.item_fill_cullparams(h, params);
-
 			// find all the existing paired aabbs that are no longer
 			// paired, and send callbacks
 			_find_leavers(h, abb, p_full_check);
+		}
 
-			uint32_t changed_item_ref_id = h.id();
+		WorkerThreadPool *pool = WorkerThreadPool::get_singleton();
+		_cull_hits_mt.resize(pool->get_thread_count());
+		for (LocalVector<Pair<uint32_t, uint32_t>> &c : _cull_hits_mt) {
+			c.clear();
+		}
 
-			params.abb = abb;
+		WorkerThreadPool::GroupID group_task = pool->add_template_group_task(this, &BVH_Manager::_cull_mt, nullptr, changed_items.size(), -1, true, SNAME("BVH Collision Tests"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
-			params.result_count_overall = 0; // might not be needed
-			tree.cull_aabb(params, false);
-
-			for (const uint32_t ref_id : tree._cull_hits) {
+		for (const LocalVector<Pair<uint32_t, uint32_t>> &c : _cull_hits_mt) {
+			for (const Pair<uint32_t, uint32_t> &p : c) {
 				// don't collide against ourself
-				if (ref_id == changed_item_ref_id) {
+				if (p.first == p.second) {
 					continue;
 				}
 
 				// checkmasks is already done in the cull routine.
 				BVHHandle h_collidee;
-				h_collidee.set_id(ref_id);
+				h_collidee.set_id(p.second);
+				BVHHandle h;
+				h.set_id(p.first);
 
 				// find NEW enterers, and send callbacks for them only
 				_collide(h, h_collidee);
 			}
 		}
 		_reset();
+	}
+
+	// do this after moving etc.
+	void _check_for_collisions(bool p_full_check = false) {
+		if constexpr (BVH_USE_THREADS) {
+			_check_for_collisions_mt(p_full_check);
+		} else {
+			if (!changed_items.size()) {
+				// noop
+				return;
+			}
+
+			typename BVHTREE_CLASS::CullParams params;
+
+			params.result_count_overall = 0;
+			params.result_max = INT_MAX;
+			params.result_array = nullptr;
+			params.subindex_array = nullptr;
+
+			for (const BVHHandle &h : changed_items) {
+				// use the expanded aabb for pairing
+				const BOUNDS &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
+				BVHABB_CLASS abb;
+				abb.from(expanded_aabb);
+
+				tree.item_fill_cullparams(h, params);
+
+				// find all the existing paired aabbs that are no longer
+				// paired, and send callbacks
+				_find_leavers(h, abb, p_full_check);
+
+				uint32_t changed_item_ref_id = h.id();
+
+				params.abb = abb;
+
+				params.result_count_overall = 0; // might not be needed
+				tree.cull_aabb(params, false);
+
+				for (const uint32_t ref_id : tree._cull_hits) {
+					// don't collide against ourself
+					if (ref_id == changed_item_ref_id) {
+						continue;
+					}
+
+					// checkmasks is already done in the cull routine.
+					BVHHandle h_collidee;
+					h_collidee.set_id(ref_id);
+
+					// find NEW enterers, and send callbacks for them only
+					_collide(h, h_collidee);
+				}
+			}
+			_reset();
+		}
 	}
 
 public:
