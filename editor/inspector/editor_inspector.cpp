@@ -4230,7 +4230,7 @@ void EditorInspector::_populate_property_map(EditorProperty *p_ep, const Propert
 	}
 }
 
-void EditorInspector::_apply_property_editor_flags(EditorProperty *p_ep, bool p_sub_inspector_use_filter, bool p_disable_favorite, bool p_property_read_only, bool p_all_read_only, bool p_checkable, bool p_checked, bool p_draw_warning) {
+void EditorInspector::_apply_property_editor_flags(EditorProperty *p_ep, bool p_sub_inspector_use_filter, bool p_disable_favorite, bool p_property_read_only, bool p_all_read_only, bool p_checkable, bool p_checked, bool p_draw_warning, bool p_deletable) {
 	if (p_sub_inspector_use_filter) {
 		EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(p_ep);
 		if (epr) {
@@ -4238,7 +4238,7 @@ void EditorInspector::_apply_property_editor_flags(EditorProperty *p_ep, bool p_
 		}
 	}
 
-	p_ep->set_deletable(deletable_properties);
+	p_ep->set_deletable(p_deletable);
 	p_ep->set_draw_warning(p_draw_warning);
 	p_ep->set_use_folding(use_folding);
 	p_ep->set_favoritable(can_favorite && !p_disable_favorite && !p_ep->is_deletable());
@@ -5137,21 +5137,23 @@ void EditorInspector::update_tree() {
 
 				_populate_property_map(ep, p, editors[i], properties, property_label_string);
 
+				bool ep_disable_favorite = disable_favorite;
+				bool ep_deletable = deletable_properties;
+
 				if (p.name.begins_with("metadata/")) {
+					ep_disable_favorite = true;
 					if (property_read_only || all_read_only) {
-						ep->set_deletable(false);
+						ep_deletable = false;
 					} else {
 						Variant _default = Variant();
 						if (node != nullptr) {
 							_default = PropertyUtils::get_property_default_value(node, p.name, nullptr, &sstack, false, nullptr, nullptr);
 						}
-						ep->set_deletable(_default == Variant());
+						ep_deletable = _default == Variant();
 					}
-				} else {
-					ep->set_deletable(deletable_properties);
 				}
 
-				_apply_property_editor_flags(ep, sub_inspector_use_filter, disable_favorite, property_read_only, all_read_only, checkable, checked, draw_warning);
+				_apply_property_editor_flags(ep, sub_inspector_use_filter, ep_disable_favorite, property_read_only, all_read_only, checkable, checked, draw_warning, ep_deletable);
 			}
 
 			if (ep && ep->is_favoritable() && current_favorites.has(p.name)) {
@@ -5171,7 +5173,7 @@ void EditorInspector::update_tree() {
 					ep_copy->object = object;
 
 					_populate_property_map(ep_copy, p, editors[i], properties, property_label_string);
-					_apply_property_editor_flags(ep_copy, sub_inspector_use_filter, disable_favorite, property_read_only, all_read_only, checkable, checked, draw_warning);
+					_apply_property_editor_flags(ep_copy, sub_inspector_use_filter, disable_favorite, property_read_only, all_read_only, checkable, checked, draw_warning, deletable_properties);
 					ep_copy->favorited = true;
 
 					current_vbox->add_child(ep_copy);
