@@ -78,6 +78,7 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	int current_type = -1;
 	int current_mode = 0;
 	int current_template = 0;
+	bool missing_base_dir = false;
 
 	virtual void _update_language_info();
 
