@@ -24,7 +24,7 @@
 		<method name="bake">
 			<return type="void" />
 			<description>
-				Recomputes the baked cache of points for the curve.
+				Recomputes the baked cache of points for the curve. See also [member bake_resolution].
 			</description>
 		</method>
 		<method name="clean_dupes">
@@ -97,14 +97,14 @@
 			<return type="float" />
 			<param index="0" name="offset" type="float" />
 			<description>
-				Returns the Y value for the point that would exist at the X position [param offset] along the curve.
+				Returns the Y value for the point that would exist at the X position [param offset] along the curve. [param offset] is typically between [member min_domain] and [member max_domain], but it can be outside the range to perform extrapolation. See also [method sample_baked], which can be faster.
 			</description>
 		</method>
 		<method name="sample_baked" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="offset" type="float" />
 			<description>
-				Returns the Y value for the point that would exist at the X position [param offset] along the curve using the baked cache. Bakes the curve's points if not already baked.
+				Returns the Y value for the point that would exist at the X position [param offset] along the curve using the baked cache. [param offset] is typically between [member min_domain] and [member max_domain], but it can be outside the range to perform extrapolation. This is faster than [method sample] if the curve's points are already baked. Bakes the curve's points on the first use if not already baked. See also [member bake_resolution].
 			</description>
 		</method>
 		<method name="set_point_left_mode">
@@ -158,7 +158,7 @@
 	</methods>
 	<members>
 		<member name="bake_resolution" type="int" setter="set_bake_resolution" getter="get_bake_resolution" default="100">
-			The number of points to include in the baked (i.e. cached) curve data.
+			The number of points to include in the baked (i.e. cached) curve data. This affects the results of [method sample_baked]. Higher values are more precise, but make baking slower and use more memory. Changing this property will force the curve data to be baked again, similar to calling [method bake].
 		</member>
 		<member name="max_domain" type="float" setter="set_max_domain" getter="get_max_domain" default="1.0">
 			The maximum domain (x-coordinate) that points can have.
