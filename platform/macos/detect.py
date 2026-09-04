@@ -70,6 +70,7 @@ def get_opts():
             "-",
         ),
         BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
+        BoolVariable("generate_bundle_universal", "Generate an APP bundle with universal binaries (editor only)", True),
     ]
 
 
