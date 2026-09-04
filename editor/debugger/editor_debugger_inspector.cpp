@@ -444,10 +444,11 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 		h = PROPERTY_HINT_OBJECT_ID;
 		hs = var.type_hint;
 
-		// Makes the call stack select the node in the remote tree. See https://github.com/godotengine/godot/issues/79477
-		if (n == "self") {
-			_object_selected(v);
-		}
+		// Makes the call stack select the node in the remote tree.
+		// FIXME: Disabled until the feedback loop with breakpoints inside getters is fixed. See GH-122339.
+		//if (n == "self") {
+		//	_object_selected(v);
+		//}
 	}
 
 	String type;
