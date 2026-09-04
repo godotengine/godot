@@ -56,7 +56,11 @@ Vector<Vector3> ConvexPolygonShape3D::get_debug_mesh_lines() const {
 	return Vector<Vector3>();
 }
 
-Ref<ArrayMesh> ConvexPolygonShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+Ref<ArrayMesh> ConvexPolygonShape3D::get_debug_arraymesh_faces(const Color &p_modulate) {
+	if (debug_mesh_faces_cache.is_valid()) {
+		return debug_mesh_faces_cache;
+	}
+	print_line("ConvexPolygonShape3D Cache Miss");
 	const Vector<Vector3> hull_points = get_points();
 
 	Vector<Vector3> verts;
@@ -90,6 +94,8 @@ Ref<ArrayMesh> ConvexPolygonShape3D::get_debug_arraymesh_faces(const Color &p_mo
 	a[RSE::ARRAY_COLOR] = colors;
 	a[RSE::ARRAY_INDEX] = indices;
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
+
+	debug_mesh_faces_cache = mesh;
 
 	return mesh;
 }

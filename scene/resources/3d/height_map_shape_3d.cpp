@@ -86,7 +86,11 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 	return points;
 }
 
-Ref<ArrayMesh> HeightMapShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+Ref<ArrayMesh> HeightMapShape3D::get_debug_arraymesh_faces(const Color &p_modulate) {
+	if (debug_mesh_faces_cache.is_valid()) {
+		return debug_mesh_faces_cache;
+	}
+	print_line("HeightMapShape3D Cache Miss");
 	Vector<Vector3> verts;
 	Vector<Color> colors;
 	Vector<int> indices;
@@ -137,6 +141,7 @@ Ref<ArrayMesh> HeightMapShape3D::get_debug_arraymesh_faces(const Color &p_modula
 	a[RSE::ARRAY_INDEX] = indices;
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
 
+	debug_mesh_faces_cache = mesh;
 	return mesh;
 }
 
