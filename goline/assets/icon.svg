@@ -1,0 +1,22 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="400" rx="48" fill="#111214"/>
+
+  <!-- Circle frame -->
+  <circle cx="200" cy="200" r="140" fill="none" stroke="#e6e6e6" stroke-width="6"/>
+
+  <!-- G: open ring with bar to center -->
+  <path d="
+    M 205 140
+    A 62 62 0 1 0 205 264
+    L 205 214
+    L 175 214"
+    fill="none" stroke="#e6e6e6" stroke-width="14" stroke-linecap="square" stroke-linejoin="round"/>
+
+  <!-- L: simple vertical + horizontal stroke, positioned to sit alongside/inside the G -->
+  <path d="M 240 148 L 240 252 L 285 252"
+    fill="none" stroke="#e6e6e6" stroke-width="14" stroke-linecap="square" stroke-linejoin="round"/>
+
+  <!-- Line motif: a single straight line cutting through the whole mark -->
+  <line x1="70" y1="200" x2="330" y2="200" stroke="#e6e6e6" stroke-width="4" stroke-opacity="0.5"/>
+</svg>
