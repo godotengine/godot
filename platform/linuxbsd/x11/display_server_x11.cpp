@@ -33,6 +33,7 @@
 #ifdef X11_ENABLED
 
 #include "x11/key_mapping_x11.h"
+#include "xkb_convert_dead_keys.h"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -3873,6 +3874,7 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
 	unsigned int xkeycode = KeyMappingX11::get_xlibcode(keycode_no_mod);
 	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, keyboard_get_current_layout(), 0);
+	xkeysym = xkb_convert_if_dead_key(xkeysym);
 	if (is_ascii_lower_case(xkeysym)) {
 		xkeysym -= ('a' - 'A');
 	}
