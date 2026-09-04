@@ -144,6 +144,13 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		godotPoolSize: 4,
 		/**
+		 * A MessagePort used to send debug messages when using protocol messageport://
+		 * @memberof EngineConfig
+		 * @default
+		 * @type {?MessagePort}
+		 */
+		debugPort: null,
+		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *
 		 * This is for example used in the Web Editor template to switch between project manager and editor, and for running the game.
@@ -272,6 +279,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.emscriptenPoolSize = parse('emscriptenPoolSize', this.emscriptenPoolSize);
 		this.godotPoolSize = parse('godotPoolSize', this.godotPoolSize);
 		this.args = parse('args', this.args);
+		this.debugPort = parse('debugPort', this.debugPort);
 		this.onExecute = parse('onExecute', this.onExecute);
 		this.onExit = parse('onExit', this.onExit);
 	};
@@ -365,6 +373,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'virtualKeyboard': this.experimentalVK,
 			'godotPoolSize': this.godotPoolSize,
 			'focusCanvas': this.focusCanvas,
+			'debugPort': this.debugPort,
 			'onExecute': this.onExecute,
 			'onExit': function (p_code) {
 				cleanup(); // We always need to call the cleanup callback to free memory.
