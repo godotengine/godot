@@ -1576,11 +1576,18 @@ void ConnectionsDock::update_tree() {
 			if (class_name.is_empty()) {
 				class_name = script_base->get_path().get_file();
 			}
-
-			doc_class_name = script_base->get_global_name();
-			if (doc_class_name.is_empty()) {
-				doc_class_name = script_base->get_path().trim_prefix("res://").quote();
+			if (class_name.is_empty()) {
+				class_name = script_base->get_doc_class_name();
 			}
+
+			doc_class_name = script_base->get_doc_class_name();
+			if (doc_class_name.is_empty()) {
+				doc_class_name = script_base->get_path().trim_prefix("res://");
+				if (!doc_class_name.is_empty()) {
+					doc_class_name = doc_class_name.quote();
+				}
+			}
+
 			if (!doc_class_name.is_empty() && !doc_data->class_list.find(doc_class_name)) {
 				doc_class_name = String();
 			}
