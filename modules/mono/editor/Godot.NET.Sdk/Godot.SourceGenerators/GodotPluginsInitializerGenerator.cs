@@ -52,6 +52,9 @@ namespace GodotPlugins.Game
                 return false.ToGodotBool();
             }
         }
+
+        [UnmanagedCallersOnly(EntryPoint = ""godotsharp_marshaling_init"")]
+        public static void InitializeMarshalingData(uint refCountOffset, uint capacityOffset, uint sizeOffset, uint dataOffset) => Godot.NativeInterop.Marshaling.Initialize(refCountOffset, capacityOffset, sizeOffset, dataOffset);
     }
 }
 ";

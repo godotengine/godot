@@ -16,6 +16,19 @@ namespace Godot.NativeInterop
 {
     public static class Marshaling
     {
+        public static uint RefCountOffset { get; set; }
+        public static uint CapacityOffset { get; set; } = RefCountOffset + (uint)IntPtr.Size;
+        public static uint SizeOffset { get; set; } = CapacityOffset + (uint)IntPtr.Size;
+        public static uint DataOffset { get; set; } = SizeOffset + (uint)IntPtr.Size;
+
+        public static void Initialize(uint refCountOffset, uint capacityOffset, uint sizeOffset, uint dataOffset)
+        {
+            RefCountOffset = refCountOffset;
+            CapacityOffset = capacityOffset;
+            SizeOffset = sizeOffset;
+            DataOffset = dataOffset;
+        }
+
         internal static Variant.Type ConvertManagedTypeToVariantType(Type type, out bool r_nil_is_variant)
         {
             r_nil_is_variant = false;
