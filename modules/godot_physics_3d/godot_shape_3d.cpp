@@ -1273,11 +1273,11 @@ Vector<Vector3> GodotConcavePolygonShape3D::get_faces() const {
 	Vector<Vector3> rfaces;
 	rfaces.resize(faces.size() * 3);
 
-	for (int i = 0; i < faces.size(); i++) {
-		Face f = faces.get(i);
+	for (uint32_t i = 0; i < faces.size(); i++) {
+		Face f = faces[i];
 
 		for (int j = 0; j < 3; j++) {
-			rfaces.set(i * 3 + j, vertices.get(f.indices[j]));
+			rfaces.set(i * 3 + j, vertices[f.indices[j]]);
 		}
 	}
 
@@ -1285,7 +1285,7 @@ Vector<Vector3> GodotConcavePolygonShape3D::get_faces() const {
 }
 
 void GodotConcavePolygonShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
-	int count = vertices.size();
+	uint32_t count = vertices.size();
 	if (count == 0) {
 		r_min = 0;
 		r_max = 0;
@@ -1293,7 +1293,7 @@ void GodotConcavePolygonShape3D::project_range(const Vector3 &p_normal, const Tr
 	}
 	const Vector3 *vptr = vertices.ptr();
 
-	for (int i = 0; i < count; i++) {
+	for (uint32_t i = 0; i < count; i++) {
 		real_t d = p_normal.dot(p_transform.xform(vptr[i]));
 
 		if (i == 0 || d > r_max) {
@@ -1306,7 +1306,7 @@ void GodotConcavePolygonShape3D::project_range(const Vector3 &p_normal, const Tr
 }
 
 Vector3 GodotConcavePolygonShape3D::get_support(const Vector3 &p_normal) const {
-	int count = vertices.size();
+	uint32_t count = vertices.size();
 	if (count == 0) {
 		return Vector3();
 	}
@@ -1318,7 +1318,7 @@ Vector3 GodotConcavePolygonShape3D::get_support(const Vector3 &p_normal) const {
 	int vert_support_idx = -1;
 	real_t support_max = 0;
 
-	for (int i = 0; i < count; i++) {
+	for (uint32_t i = 0; i < count; i++) {
 		real_t d = n.dot(vptr[i]);
 
 		if (i == 0 || d > support_max) {
@@ -1611,11 +1611,11 @@ void GodotConcavePolygonShape3D::_setup(const Vector<Vector3> &p_faces, bool p_b
 	_Volume_BVH_Element *bvh_arrayw = bvh_array.ptrw();
 
 	faces.resize(src_face_count);
-	Face *facesw = faces.ptrw();
+	Face *facesw = faces.ptr();
 
 	vertices.resize(src_face_count * 3);
 
-	Vector3 *verticesw = vertices.ptrw();
+	Vector3 *verticesw = vertices.ptr();
 
 	AABB _aabb;
 
@@ -1644,10 +1644,8 @@ void GodotConcavePolygonShape3D::_setup(const Vector<Vector3> &p_faces, bool p_b
 
 	bvh.resize(count + 1);
 
-	BVH *bvh_arrayw2 = bvh.ptrw();
-
 	int idx = 0;
-	_fill_bvh(bvh_tree, bvh_arrayw2, idx);
+	_fill_bvh(bvh_tree, bvh.ptr(), idx);
 
 	backface_collision = p_backface_collision;
 
