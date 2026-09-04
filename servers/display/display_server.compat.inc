@@ -34,6 +34,14 @@
 
 #include "core/object/class_db.h"
 
+Error DisplayServer::_file_dialog_show_bind_compat_123178(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+	return file_dialog_show(p_title, p_current_directory, p_filename, p_show_hidden, p_mode, p_filters, p_callback, p_window_id, -1);
+}
+
+Error DisplayServer::_file_dialog_with_options_show_compat_123178(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+	return file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, p_window_id, -1);
+}
+
 Error DisplayServer::_file_dialog_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	return file_dialog_show(p_title, p_current_directory, p_filename, p_show_hidden, p_mode, p_filters, p_callback, DisplayServerEnums::MAIN_WINDOW_ID);
 }
@@ -55,6 +63,8 @@ Rect2i DisplayServer::_get_display_safe_area_bind_compat_119196() const {
 }
 
 void DisplayServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback", "parent_window_id"), &DisplayServer::_file_dialog_show_bind_compat_123178, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+	ClassDB::bind_compatibility_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback", "parent_window_id"), &DisplayServer::_file_dialog_with_options_show_compat_123178, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 	ClassDB::bind_compatibility_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback"), &DisplayServer::_file_dialog_show_bind_compat_98194);
 	ClassDB::bind_compatibility_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback"), &DisplayServer::_file_dialog_with_options_show_bind_compat_98194);
 	ClassDB::bind_compatibility_method(D_METHOD("accessibility_create_sub_text_edit_elements", "parent_rid", "shaped_text", "min_height", "insert_pos"), &DisplayServer::_accessibility_create_sub_text_edit_elements_bind_compat_113459, DEFVAL(-1));

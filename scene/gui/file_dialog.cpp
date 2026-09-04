@@ -52,6 +52,8 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"
 
+int64_t FileDialog::next_native_dialog_id = 0;
+
 void FileDialog::popup_file_dialog() {
 	popup_centered_clamped(Vector2(1050, 700) * get_theme_default_base_scale(), 0.8f);
 	_focus_file_text();
@@ -68,6 +70,10 @@ void FileDialog::_focus_file_text() {
 }
 
 void FileDialog::_native_popup() {
+	if (native_dialog_id != -1) {
+		return;
+	}
+
 	// Show native dialog directly.
 	String root;
 	if (!root_prefix.is_empty()) {
@@ -84,11 +90,12 @@ void FileDialog::_native_popup() {
 		w = w->get_parent_visible_window();
 	}
 	DisplayServerEnums::WindowID wid = w ? w->get_window_id() : DisplayServerEnums::INVALID_WINDOW_ID;
+	native_dialog_id = next_native_dialog_id++;
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
-		DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid);
+		DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid, native_dialog_id);
 	} else {
-		DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid);
+		DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid, native_dialog_id);
 	}
 }
 
@@ -138,6 +145,10 @@ void FileDialog::set_visible(bool p_visible) {
 	if (_should_use_native_popup()) {
 		if (p_visible) {
 			_native_popup();
+		} else {
+			if (native_dialog_id != -1) {
+				DisplayServer::get_singleton()->file_dialog_hide(native_dialog_id);
+			}
 		}
 	} else {
 		ConfirmationDialog::set_visible(p_visible);
@@ -149,6 +160,8 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int
 }
 
 void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options) {
+	native_dialog_id = -1;
+
 	if (!p_ok) {
 		filename_edit->set_text("");
 		emit_signal(SNAME("canceled"));

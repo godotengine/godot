@@ -680,13 +680,66 @@ bool FreeDesktopPortalDesktop::send_request(DBusMessage *p_message, const String
 	return true;
 }
 
-Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServerEnums::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
+Error FreeDesktopPortalDesktop::file_dialog_hide(int64_t p_id) {
+	ERR_FAIL_COND_V(p_id < 0, FAILED);
+
+	MutexLock lock(file_dialog_mutex);
+	for (int i = 0; i < file_dialogs.size(); i++) {
+		const FileDialogData &fd = file_dialogs[i];
+		if (fd.id == p_id) {
+			DBusError error;
+			dbus_error_init(&error);
+
+			DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, fd.path.utf8().get_data(), BUS_INTERFACE_REQUEST, "Close");
+			DBusMessage *reply = dbus_connection_send_with_reply_and_block(monitor_connection, message, DBUS_TIMEOUT_USE_DEFAULT, &error);
+			dbus_message_unref(message);
+			if (dbus_error_is_set(&error)) {
+				ERR_PRINT(vformat("Failed to close: %s.", String::utf8(error.message)));
+				dbus_error_free(&error);
+			} else if (reply) {
+				dbus_message_unref(reply);
+
+				// Note: `Close` doesn't trigger `Response` event, call callback directly.
+				if (fd.callback.is_valid()) {
+					FileDialogCallback cb;
+					cb.callback = fd.callback;
+					cb.files = Vector<String>();
+					cb.index = 0;
+					cb.options = Dictionary();
+					cb.status = false;
+					cb.opt_in_cb = fd.opt_in_cb;
+					pending_file_cbs.push_back(cb);
+				}
+				if (fd.prev_focus != DisplayServerEnums::INVALID_WINDOW_ID) {
+					callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd.prev_focus);
+				}
+
+				dbus_bus_remove_match(monitor_connection, fd.filter.utf8().get_data(), &error);
+				dbus_error_free(&error);
+
+				file_dialogs.remove_at(i);
+				return OK;
+			}
+			return FAILED;
+		}
+	}
+	return FAILED;
+}
+
+Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServerEnums::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, int64_t p_id) {
 	if (unsupported) {
 		return FAILED;
 	}
 
 	ERR_FAIL_INDEX_V(int(p_mode), DisplayServerEnums::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
 	ERR_FAIL_NULL_V(monitor_connection, FAILED);
+
+	MutexLock lock(file_dialog_mutex);
+	if (p_id >= 0) {
+		for (const FileDialogData &fd : file_dialogs) {
+			ERR_FAIL_COND_V_MSG(fd.id == p_id, FAILED, "ID already in use");
+		}
+	}
 
 	Vector<String> filter_names;
 	Vector<String> filter_exts;
@@ -729,6 +782,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServerEnums::WindowID p_
 
 	// Open connection and add signal handler.
 	FileDialogData fd;
+	fd.id = p_id;
 	fd.callback = p_callback;
 	fd.prev_focus = p_window_id;
 	fd.filter_names = filter_names;
@@ -750,7 +804,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServerEnums::WindowID p_
 		DBusMessageIter iter;
 		dbus_message_iter_init_append(message, &iter);
 
-		append_dbus_string(&iter, p_xid);
+		append_dbus_string(&iter, ""); //p_xid);
 		append_dbus_string(&iter, p_title);
 
 		DBusMessageIter arr_iter;
@@ -774,7 +828,6 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServerEnums::WindowID p_
 		return FAILED;
 	}
 
-	MutexLock lock(file_dialog_mutex);
 	file_dialogs.push_back(fd);
 
 	return OK;

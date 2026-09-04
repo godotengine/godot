@@ -922,18 +922,81 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	return OK;
 }
 
-Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
-	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false, p_window_id);
+Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id, int64_t p_id) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false, p_window_id, p_id);
 }
 
-Error DisplayServerMacOS::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
-	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true, p_window_id);
+Error DisplayServerMacOS::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id, int64_t p_id) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true, p_window_id, p_id);
 }
 
-Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, DisplayServerEnums::WindowID p_window_id) {
+Error DisplayServerMacOS::file_dialog_hide(int64_t p_id) {
+	ERR_FAIL_COND_V(p_id < 0, FAILED);
+
+	MutexLock lock(file_dialog_mutex);
+	for (int i = 0; i < file_dialogs.size(); i++) {
+		const FileDialogData &fd = file_dialogs[i];
+		if (fd.id == p_id) {
+			if (fd.panel) {
+				if (fd.window) {
+					[fd.window endSheet:fd.panel];
+				} else {
+					[fd.panel close];
+					// Note: `close` doesn't trigger completion handler, call callback directly.
+					if (fd.callback.is_valid()) {
+						if (fd.options_in_cb) {
+							Variant v_result = false;
+							Variant v_files = Vector<String>();
+							Variant v_index = [fd.panel_delegate getIndex];
+							Variant v_opt = [fd.panel_delegate getSelection];
+							Variant ret;
+							Callable::CallError ce;
+							const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
+
+							fd.callback.callp(args, 4, ret, ce);
+							if (ce.error != Callable::CallError::CALL_OK) {
+								ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(fd.callback, args, 4, ce)));
+							}
+						} else {
+							Variant v_result = false;
+							Variant v_files = Vector<String>();
+							Variant v_index = [fd.panel_delegate getIndex];
+							Variant ret;
+							Callable::CallError ce;
+							const Variant *args[3] = { &v_result, &v_files, &v_index };
+
+							fd.callback.callp(args, 3, ret, ce);
+							if (ce.error != Callable::CallError::CALL_OK) {
+								ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(fd.callback, args, 3, ce)));
+							}
+						}
+					}
+					if (fd.wid != DisplayServerEnums::INVALID_WINDOW_ID) {
+						callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(fd.wid);
+					}
+					file_dialogs.remove_at(i);
+				}
+
+				return OK;
+			} else {
+				return FAILED;
+			}
+		}
+	}
+	return FAILED;
+}
+
+Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, DisplayServerEnums::WindowID p_window_id, int64_t p_id) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), DisplayServerEnums::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
+
+	MutexLock lock(file_dialog_mutex);
+	if (p_id >= 0) {
+		for (const FileDialogData &fd : file_dialogs) {
+			ERR_FAIL_COND_V_MSG(fd.id == p_id, FAILED, "ID already in use");
+		}
+	}
 
 	NSString *url = [NSString stringWithUTF8String:p_current_directory.utf8().get_data()];
 
@@ -1049,10 +1112,30 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 					}
 				}
 			}
+			{
+				MutexLock lock(file_dialog_mutex);
+				for (int i = 0; i < file_dialogs.size(); i++) {
+					if (file_dialogs[i].panel == (NSPanel *)panel) {
+						file_dialogs.remove_at(i);
+						break;
+					}
+				}
+			}
 			if (p_window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 				callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(p_window_id);
 			}
 		};
+		{
+			FileDialogData fd;
+			fd.id = p_id;
+			fd.panel = panel;
+			fd.panel_delegate = panel_delegate;
+			fd.window = nswindow;
+			fd.options_in_cb = p_options_in_cb;
+			fd.callback = p_callback;
+			fd.wid = p_window_id;
+			file_dialogs.push_back(fd);
+		}
 		if (nswindow) {
 			[panel beginSheetModalForWindow:nswindow completionHandler:completion_handler];
 		} else {
@@ -1170,10 +1253,30 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 					}
 				}
 			}
+			{
+				MutexLock lock(file_dialog_mutex);
+				for (int i = 0; i < file_dialogs.size(); i++) {
+					if (file_dialogs[i].panel == (NSPanel *)panel) {
+						file_dialogs.remove_at(i);
+						break;
+					}
+				}
+			}
 			if (p_window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 				callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(p_window_id);
 			}
 		};
+		{
+			FileDialogData fd;
+			fd.id = p_id;
+			fd.panel = panel;
+			fd.panel_delegate = panel_delegate;
+			fd.window = nswindow;
+			fd.options_in_cb = p_options_in_cb;
+			fd.callback = p_callback;
+			fd.wid = p_window_id;
+			file_dialogs.push_back(fd);
+		}
 		if (nswindow) {
 			[panel beginSheetModalForWindow:nswindow completionHandler:completion_handler];
 		} else {
@@ -4012,6 +4115,8 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 		memdelete(native_menu);
 		native_menu = nullptr;
 	}
+
+	file_dialogs.clear();
 
 	// Destroy all windows.
 	for (HashMap<DisplayServerEnums::WindowID, WindowData>::Iterator E = windows.begin(); E;) {
