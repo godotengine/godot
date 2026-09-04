@@ -1022,8 +1022,9 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 	chr.advance = p_advance;
 
 	if (shape.validate() && shape.contours.size() > 0) {
-		int w = (bounds.r - bounds.l);
-		int h = (bounds.t - bounds.b);
+		// Round the glyph size up to whole pixels so the bitmap fully covers the shape.
+		int w = Math::ceil(bounds.r - bounds.l);
+		int h = Math::ceil(bounds.t - bounds.b);
 
 		if (w == 0 || h == 0) {
 			chr.texture_idx = -1;
@@ -1080,8 +1081,9 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		chr.texture_idx = tex_pos.index;
 
 		chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w + p_rect_margin * 2, h + p_rect_margin * 2);
-		chr.rect.position = Vector2(bounds.l - p_rect_margin, -bounds.t - p_rect_margin);
-
+		// Derive the glyph position from the same bottom-left anchor the rasterizer uses,
+		// rather than top-left, so the two agree about glyph placement.
+		chr.rect.position = Vector2(bounds.l - p_rect_margin, -(bounds.b + h) - p_rect_margin);
 		chr.rect.size = chr.uv_rect.size;
 	}
 	return chr;
