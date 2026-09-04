@@ -2511,6 +2511,13 @@ void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 		update_configuration_warning();
 	}
 
+	if (stencil_mode == STENCIL_MODE_OUTLINE || stencil_mode == STENCIL_MODE_XRAY) {
+		Ref<BaseMaterial3D> stencil_next_pass = _get_stencil_next_pass();
+		if (stencil_next_pass.is_valid()) {
+			stencil_next_pass->set_flag(p_flag, p_enabled);
+		}
+	}
+
 	_queue_shader_change();
 }
 
@@ -3019,6 +3026,13 @@ float BaseMaterial3D::get_z_clip_scale() const {
 void BaseMaterial3D::set_fov_override(float p_fov_override) {
 	fov_override = p_fov_override;
 	_material_set_param(shader_names->fov_override, p_fov_override);
+
+	if (stencil_mode == STENCIL_MODE_OUTLINE || stencil_mode == STENCIL_MODE_XRAY) {
+		Ref<BaseMaterial3D> stencil_next_pass = _get_stencil_next_pass();
+		if (stencil_next_pass.is_valid()) {
+			stencil_next_pass->set_fov_override(p_fov_override);
+		}
+	}
 }
 
 float BaseMaterial3D::get_fov_override() const {
@@ -3197,6 +3211,8 @@ void BaseMaterial3D::_prepare_stencil_effect() {
 			stencil_next_pass->set_grow_enabled(true);
 			stencil_next_pass->set_grow(stencil_effect_outline_thickness);
 			stencil_next_pass->set_albedo(stencil_effect_color);
+			stencil_next_pass->set_flag(FLAG_USE_FOV_OVERRIDE, flags[FLAG_USE_FOV_OVERRIDE]);
+			stencil_next_pass->set_fov_override(fov_override);
 			stencil_next_pass->set_stencil_mode(STENCIL_MODE_CUSTOM);
 			stencil_next_pass->set_stencil_flags(STENCIL_FLAG_READ);
 			stencil_next_pass->set_stencil_compare(STENCIL_COMPARE_NOT_EQUAL);
@@ -3212,6 +3228,8 @@ void BaseMaterial3D::_prepare_stencil_effect() {
 			stencil_next_pass->set_grow_enabled(false);
 			stencil_next_pass->set_grow(0);
 			stencil_next_pass->set_albedo(stencil_effect_color);
+			stencil_next_pass->set_flag(FLAG_USE_FOV_OVERRIDE, flags[FLAG_USE_FOV_OVERRIDE]);
+			stencil_next_pass->set_fov_override(fov_override);
 			stencil_next_pass->set_stencil_mode(STENCIL_MODE_CUSTOM);
 			stencil_next_pass->set_stencil_flags(STENCIL_FLAG_READ);
 			stencil_next_pass->set_stencil_compare(STENCIL_COMPARE_NOT_EQUAL);
