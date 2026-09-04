@@ -44,8 +44,10 @@
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -789,31 +791,46 @@ void MeshInstance3DEditor::_create_outline_mesh() {
 void MeshInstance3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_button_icon(get_editor_theme_icon(SNAME("MeshInstance3D")));
+			icon_rect->set_texture(get_editor_theme_icon(SNAME("MeshInstance3D")));
+			menu->set_button_icon(get_editor_theme_icon(SNAME("GuiDropdown")));
 		} break;
 	}
 }
 
 MeshInstance3DEditor::MeshInstance3DEditor() {
-	options = memnew(MenuButton);
-	options->set_text(TTR("Mesh"));
-	options->set_switch_on_hover(true);
-	options->set_flat(false);
-	options->set_theme_type_variation("FlatMenuButtonNoIconTint");
+	options = memnew(HBoxContainer);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
-	options->get_popup()->add_item(TTR("Create Collision Shape..."), MENU_OPTION_CREATE_COLLISION_SHAPE);
-	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Create Outline Mesh..."), MENU_OPTION_CREATE_OUTLINE_MESH);
-	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the StandardMaterial Grow property when using that property isn't possible."));
-	options->get_popup()->add_item(TTR("Create Debug Tangents"), MENU_OPTION_CREATE_DEBUG_TANGENTS);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("View UV1"), MENU_OPTION_DEBUG_UV1);
-	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);
-	options->get_popup()->add_item(TTR("Unwrap UV2 for Lightmap/AO"), MENU_OPTION_CREATE_UV2);
+	icon_rect = memnew(TextureRect);
+	icon_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+	icon_rect->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 
-	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MeshInstance3DEditor::_menu_option));
+	MarginContainer *icon_margin = memnew(MarginContainer);
+	icon_margin->add_theme_constant_override("margin_left", 4 * EDSCALE);
+	icon_margin->add_child(icon_rect);
+	options->add_child(icon_margin);
+
+	menu = memnew(MenuButton);
+	menu->set_text(TTR("Mesh"));
+	menu->set_switch_on_hover(true);
+	menu->set_flat(false);
+	menu->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	menu->set_theme_type_variation("FlatMenuButtonNoIconTint");
+	options->add_child(menu);
+
+	PopupMenu *popup = menu->get_popup();
+	popup->add_item(TTR("Create Collision Shape..."), MENU_OPTION_CREATE_COLLISION_SHAPE);
+	popup->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
+	popup->add_separator();
+	popup->add_item(TTR("Create Outline Mesh..."), MENU_OPTION_CREATE_OUTLINE_MESH);
+	popup->set_item_tooltip(popup->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the StandardMaterial Grow property when using that property isn't possible."));
+	popup->add_item(TTR("Create Debug Tangents"), MENU_OPTION_CREATE_DEBUG_TANGENTS);
+	popup->add_separator();
+	popup->add_item(TTR("View UV1"), MENU_OPTION_DEBUG_UV1);
+	popup->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);
+	popup->add_item(TTR("Unwrap UV2 for Lightmap/AO"), MENU_OPTION_CREATE_UV2);
+
+	popup->connect(SceneStringName(id_pressed), callable_mp(this, &MeshInstance3DEditor::_menu_option));
 
 	outline_dialog = memnew(ConfirmationDialog);
 	outline_dialog->set_title(TTR("Create Outline Mesh"));
