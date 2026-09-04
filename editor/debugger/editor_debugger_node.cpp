@@ -131,6 +131,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("remote_objects_requested", callable_mp(this, &EditorDebuggerNode::_remote_objects_requested).bind(id));
 	node->connect("set_breakpoint", callable_mp(this, &EditorDebuggerNode::_breakpoint_set_in_tree).bind(id));
 	node->connect("clear_breakpoints", callable_mp(this, &EditorDebuggerNode::_breakpoints_cleared_in_tree).bind(id));
+	node->connect("skip_breakpoints", callable_mp(this, &EditorDebuggerNode::is_skip_breakpoints).bind(id));
 	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors).bind(false));
 
 	if (tabs->get_tab_count() > 0) {
@@ -577,6 +578,7 @@ void EditorDebuggerNode::set_script_debug_button(MenuButton *p_button) {
 	p->add_separator();
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/break"), DEBUG_BREAK);
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/continue"), DEBUG_CONTINUE);
+	p->add_shortcut(ED_GET_SHORTCUT("debugger/skip_breakpoints"), DEBUG_SKIP_BREAKPOINTS);
 	p->add_separator();
 	p->add_check_shortcut(ED_GET_SHORTCUT("debugger/debug_with_external_editor"), DEBUG_WITH_EXTERNAL_EDITOR);
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDebuggerNode::_menu_option));
@@ -616,6 +618,9 @@ void EditorDebuggerNode::_menu_option(int p_id) {
 		} break;
 		case DEBUG_CONTINUE: {
 			debug_continue();
+		} break;
+		case DEBUG_SKIP_BREAKPOINTS: {
+			debug_skip_breakpoints();
 		} break;
 		case DEBUG_WITH_EXTERNAL_EDITOR: {
 			bool ischecked = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR));
@@ -713,6 +718,10 @@ void EditorDebuggerNode::debug_break() {
 
 void EditorDebuggerNode::debug_continue() {
 	get_current_debugger()->debug_continue();
+}
+
+void EditorDebuggerNode::debug_skip_breakpoints() {
+	get_current_debugger()->debug_skip_breakpoints();
 }
 
 String EditorDebuggerNode::get_var_value(const String &p_var) const {
