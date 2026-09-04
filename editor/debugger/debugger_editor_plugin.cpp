@@ -157,10 +157,11 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 		} break;
 		case RUN_DEBUG_PATHS: {
-			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS));
-			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS), !ischecked);
+			bool enable = !debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS));
+			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS), enable);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_paths", !ischecked);
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_paths", enable);
+				EditorDebuggerNode::get_singleton()->set_debug_paths(enable);
 			}
 
 		} break;

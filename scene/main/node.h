@@ -509,6 +509,7 @@ public:
 
 		// Debug-related notifications.
 		NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED = 4000,
+		NOTIFICATION_DEBUG_PATHS_HINT_CHANGED = 4001,
 
 		// Editor specific node notifications.
 		NOTIFICATION_EDITOR_PRE_SAVE = 9001,
