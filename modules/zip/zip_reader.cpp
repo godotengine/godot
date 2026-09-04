@@ -31,6 +31,8 @@
 #include "zip_reader.h"
 
 #include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/zip_io.h"
 #include "core/object/class_db.h"
 
@@ -160,6 +162,104 @@ int ZIPReader::get_compression_level(const String &p_path, bool p_case_sensitive
 	return level;
 }
 
+Error ZIPReader::decompress(const String &p_input_path, const String &p_output_path) {
+	int err = UNZ_OK;
+	Error gdErr = OK;
+
+	// Open the zip file.
+	ZIPReader zip_reader = ZIPReader();
+	gdErr = zip_reader.open(p_input_path);
+	if (gdErr != OK) {
+		return gdErr;
+	}
+
+	// Create an output directory.
+	DirAccess::make_dir_recursive_absolute(p_output_path);
+	Ref<DirAccess> output_directory = DirAccess::open(p_output_path, &gdErr);
+	if (output_directory.is_null()) {
+		return gdErr;
+	}
+
+	// Go to the first file in the zip file.
+	err = unzGoToFirstFile(zip_reader.uzf);
+	ERR_FAIL_COND_V(err != UNZ_OK, ERR_FILE_CORRUPT);
+
+	// Read each file in the zip file.
+	while (true) {
+		// Open the current file in the zip file.
+		err = unzOpenCurrentFile(zip_reader.uzf);
+		ERR_FAIL_COND_V_MSG(err != UNZ_OK, ERR_FILE_CORRUPT, "Could not open file within zip archive.");
+
+		// Read the file info for the current file in the zip file.
+		unz_file_info64 file_info;
+		String file_path;
+		err = godot_unzip_get_current_file_info(zip_reader.uzf, file_info, file_path);
+		ERR_FAIL_COND_V_MSG(err != UNZ_OK, ERR_FILE_CORRUPT, "Unable to read file information from zip archive.");
+
+		// Replace back-slashes with forward-slashes.
+		file_path = file_path.replace_char('\\', '/');
+
+		// Ensure the file path doesn't escape the output directory.
+		String simplified_file_path = file_path.simplify_path();
+		bool is_malicious_path = simplified_file_path.is_absolute_path() || simplified_file_path == ".." || simplified_file_path.begins_with("../");
+		ERR_FAIL_COND_V_MSG(is_malicious_path, ERR_FILE_CORRUPT, "Extracting a ZIP entry would create a file/directory outside the output directory.");
+
+		// The current file is a directory.
+		if (file_path.ends_with("/")) {
+			// Create the output sub directory.
+			gdErr = output_directory->make_dir_recursive(file_path.trim_suffix("/"));
+			if (gdErr != OK) {
+				return gdErr;
+			}
+		}
+		// The current file is a file.
+		else {
+			// Create a sub directory for the output file.
+			gdErr = output_directory->make_dir_recursive(file_path.get_base_dir());
+			if (gdErr != OK) {
+				return gdErr;
+			}
+			// Create an output file.
+			Ref<FileAccess> output_file = FileAccess::open(p_output_path.path_join(file_path), FileAccess::WRITE, &gdErr);
+			if (output_file.is_null()) {
+				return gdErr;
+			}
+
+			// Read each chunk of the current file in the zip file.
+			uint8_t buffer[64 * 1024]; // 64KiB buffer
+			while (true) {
+				// Read a chunk of the current file in the zip file.
+				int bytes_read = unzReadCurrentFile(zip_reader.uzf, buffer, sizeof(buffer));
+				ERR_FAIL_COND_V_MSG(bytes_read < 0, ERR_FILE_CORRUPT, "IO/zlib error reading file from zip archive.");
+
+				// Reached the end of the current file in the zip file.
+				if (bytes_read == 0) {
+					break;
+				}
+
+				// Write the current chunk to the output file.
+				bool write_err = output_file->store_buffer(buffer, bytes_read);
+				ERR_FAIL_COND_V(!write_err, ERR_FILE_CANT_WRITE);
+			}
+		}
+
+		// Close the current file in the zip file.
+		err = unzCloseCurrentFile(zip_reader.uzf);
+		ERR_FAIL_COND_V_MSG(err != UNZ_OK, ERR_FILE_CORRUPT, "CRC error reading file from zip archive.");
+
+		// Go to the next file in the zip file.
+		err = unzGoToNextFile(zip_reader.uzf);
+
+		// Reached the end of the list of files in the zip file.
+		if (err != UNZ_OK) {
+			break;
+		}
+	}
+
+	// The zip file was successfully extracted.
+	return OK;
+}
+
 ZIPReader::ZIPReader() {}
 
 ZIPReader::~ZIPReader() {
@@ -175,4 +275,6 @@ void ZIPReader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("read_file", "path", "case_sensitive"), &ZIPReader::read_file, DEFVAL(Variant(true)));
 	ClassDB::bind_method(D_METHOD("file_exists", "path", "case_sensitive"), &ZIPReader::file_exists, DEFVAL(Variant(true)));
 	ClassDB::bind_method(D_METHOD("get_compression_level", "path", "case_sensitive"), &ZIPReader::get_compression_level, DEFVAL(Variant(true)));
+
+	ClassDB::bind_static_method("ZIPReader", D_METHOD("decompress", "input_path", "output_path"), &ZIPReader::decompress);
 }
