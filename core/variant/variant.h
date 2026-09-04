@@ -671,6 +671,7 @@ public:
 	static String get_call_error_text(const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &p_ce);
 	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &p_ce);
 	static String get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &p_ce);
+	static String get_callable_error_text(const Callable &p_callable, const Vector<Variant> &p_arguments, const Callable::CallError &p_ce);
 
 	//dynamic (includes Object)
 	void get_method_list(List<MethodInfo> *p_list) const;

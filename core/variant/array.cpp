@@ -394,16 +394,12 @@ int Array::find_custom(const Callable &p_callable, int p_from) const {
 		return ret;
 	}
 
-	const Variant *argptrs[1];
-
 	for (int i = p_from; i < size(); i++) {
-		const Variant &val = _p->array[i];
-		argptrs[0] = &val;
-		Variant res;
+		const Vector<Variant> args = { _p->array[i] };
 		Callable::CallError ce;
-		p_callable.callp(argptrs, 1, res, ce);
+		const Variant res = p_callable.callv_err(args, ce);
 		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
-			ERR_FAIL_V_MSG(ret, vformat("Error calling method from 'find_custom': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
+			ERR_FAIL_V_MSG(ret, vformat("Error calling method from 'find_custom': %s.", Variant::get_callable_error_text(p_callable, args, ce)));
 		}
 
 		ERR_FAIL_COND_V_MSG(res.get_type() != Variant::Type::BOOL, ret, "Error calling method from 'find_custom': Return type of callable must be boolean.");
@@ -454,16 +450,12 @@ int Array::rfind_custom(const Callable &p_callable, int p_from) const {
 		p_from = _p->array.size() - 1;
 	}
 
-	const Variant *argptrs[1];
-
 	for (int i = p_from; i >= 0; i--) {
-		const Variant &val = _p->array[i];
-		argptrs[0] = &val;
-		Variant res;
+		const Vector<Variant> args = { _p->array[i] };
 		Callable::CallError ce;
-		p_callable.callp(argptrs, 1, res, ce);
+		const Variant res = p_callable.callv_err(args, ce);
 		if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
-			ERR_FAIL_V_MSG(-1, vformat("Error calling method from 'rfind_custom': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
+			ERR_FAIL_V_MSG(-1, vformat("Error calling method from 'rfind_custom': %s.", Variant::get_callable_error_text(p_callable, args, ce)));
 		}
 
 		ERR_FAIL_COND_V_MSG(res.get_type() != Variant::Type::BOOL, -1, "Error calling method from 'rfind_custom': Return type of callable must be boolean.");
@@ -605,16 +597,13 @@ Array Array::filter(const Callable &p_callable) const {
 	new_arr._p->typed = _p->typed;
 	int accepted_count = 0;
 
-	const Variant *argptrs[1];
 	Variant *write = new_arr._p->array.ptrw();
 	for (int i = 0; i < size(); i++) {
-		argptrs[0] = &get(i);
-
-		Variant result;
+		const Vector<Variant> args = { _p->array[i] };
 		Callable::CallError ce;
-		p_callable.callp(argptrs, 1, result, ce);
+		const Variant result = p_callable.callv_err(args, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(Array(), vformat("Error calling method from 'filter': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
+			ERR_FAIL_V_MSG(Array(), vformat("Error calling method from 'filter': %s.", Variant::get_callable_error_text(p_callable, args, ce)));
 		}
 
 		if (result.operator bool()) {
@@ -632,15 +621,13 @@ Array Array::map(const Callable &p_callable) const {
 	Array new_arr;
 	new_arr.resize(size());
 
-	const Variant *argptrs[1];
 	Variant *write = new_arr._p->array.ptrw();
 	for (int i = 0; i < size(); i++) {
-		argptrs[0] = &get(i);
-
+		const Vector<Variant> args = { _p->array[i] };
 		Callable::CallError ce;
-		p_callable.callp(argptrs, 1, write[i], ce);
+		write[i] = p_callable.callv_err(args, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(Array(), vformat("Error calling method from 'map': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
+			ERR_FAIL_V_MSG(Array(), vformat("Error calling method from 'map': %s.", Variant::get_callable_error_text(p_callable, args, ce)));
 		}
 	}
 
@@ -655,16 +642,12 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 		start = 1;
 	}
 
-	const Variant *argptrs[2];
 	for (int i = start; i < size(); i++) {
-		argptrs[0] = &ret;
-		argptrs[1] = &get(i);
-
-		Variant result;
+		const Vector<Variant> args = { ret, _p->array[i] };
 		Callable::CallError ce;
-		p_callable.callp(argptrs, 2, result, ce);
+		const Variant result = p_callable.callv_err(args, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(Variant(), vformat("Error calling method from 'reduce': %s.", Variant::get_callable_error_text(p_callable, argptrs, 2, ce)));
+			ERR_FAIL_V_MSG(Variant(), vformat("Error calling method from 'reduce': %s.", Variant::get_callable_error_text(p_callable, args, ce)));
 		}
 		ret = result;
 	}
@@ -673,15 +656,12 @@ Variant Array::reduce(const Callable &p_callable, const Variant &p_accum) const 
 }
 
 bool Array::any(const Callable &p_callable) const {
-	const Variant *argptrs[1];
 	for (int i = 0; i < size(); i++) {
-		argptrs[0] = &get(i);
-
-		Variant result;
+		const Vector<Variant> args = { _p->array[i] };
 		Callable::CallError ce;
-		p_callable.callp(argptrs, 1, result, ce);
+		const Variant result = p_callable.callv_err(args, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, vformat("Error calling method from 'any': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
+			ERR_FAIL_V_MSG(false, vformat("Error calling method from 'any': %s.", Variant::get_callable_error_text(p_callable, args, ce)));
 		}
 
 		if (result.operator bool()) {
@@ -695,15 +675,12 @@ bool Array::any(const Callable &p_callable) const {
 }
 
 bool Array::all(const Callable &p_callable) const {
-	const Variant *argptrs[1];
 	for (int i = 0; i < size(); i++) {
-		argptrs[0] = &get(i);
-
-		Variant result;
+		const Vector<Variant> args = { _p->array[i] };
 		Callable::CallError ce;
-		p_callable.callp(argptrs, 1, result, ce);
+		const Variant result = p_callable.callv_err(args, ce);
 		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_FAIL_V_MSG(false, vformat("Error calling method from 'all': %s.", Variant::get_callable_error_text(p_callable, argptrs, 1, ce)));
+			ERR_FAIL_V_MSG(false, vformat("Error calling method from 'all': %s.", Variant::get_callable_error_text(p_callable, args, ce)));
 		}
 
 		if (!(result.operator bool())) {
