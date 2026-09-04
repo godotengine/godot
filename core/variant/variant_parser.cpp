@@ -1829,6 +1829,9 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &r_line, String 
 				return err;
 			}
 		} else if (c == '\n') {
+			if (what.length()) {
+				return ERR_FILE_CORRUPT;
+			}
 			r_line++;
 		}
 	}
