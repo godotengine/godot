@@ -116,6 +116,11 @@ private:
 	void _update_ok_button();
 	void _validate_path();
 
+	// Project Directory
+
+	bool multi_dir = false;
+	String current_dir;
+
 	// Project path for MODE_NEW and MODE_INSTALL. Install path for MODE_IMPORT.
 	// Install path is only visible when importing a ZIP.
 	String _get_target_path();
@@ -159,6 +164,7 @@ public:
 	void set_zip_title(const String &p_title);
 	void set_original_project_path(const String &p_path);
 	void set_duplicate_can_edit(bool p_duplicate_can_edit);
+	void set_current_directory(const String &p_dir);
 
 	void ask_for_path_and_show();
 	void show_dialog(bool p_reset_name = true, bool p_is_confirmed = true);
