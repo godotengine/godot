@@ -113,6 +113,8 @@
 /modules/gltf/tests/                          @godotengine/asset-pipeline @godotengine/tests
 /modules/hdr/                                 @godotengine/asset-pipeline
 /modules/jpg/                                 @godotengine/asset-pipeline
+/modules/jxl/                                 @godotengine/asset-pipeline
+/modules/jxl/tests/                           @godotengine/asset-pipeline @godotengine/tests
 /modules/ktx/                                 @godotengine/asset-pipeline
 /modules/svg/                                 @godotengine/asset-pipeline
 /modules/tga/                                 @godotengine/asset-pipeline
