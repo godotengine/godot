@@ -30,10 +30,15 @@
 
 #include "lightmap_gi_gizmo_plugin.h"
 
+#include "core/variant/typed_array.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/scene/3d/node_3d_editor_gizmos.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/lightmap_gi.h"
+#include "scene/3d/visual_instance_3d.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 
 LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 	// NOTE: This gizmo only renders solid spheres for previewing indirect lighting on dynamic objects.
@@ -59,8 +64,62 @@ LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 	create_icon_material("baked_indirect_light_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoLightmapGI"), EditorStringName(EditorIcons)));
 }
 
+LightmapGI *LightmapGIGizmoPlugin::_find_lightmap_node_for(Node3D *p_node) {
+	LightmapGI *lightmap_node = Object::cast_to<LightmapGI>(p_node);
+
+	if (lightmap_node == nullptr) {
+		// Find the first LightmapGI node which capture bounds contains the selected node.
+		Node *root = EditorNode::get_singleton()->get_edited_scene();
+		TypedArray<Node> candidates = root->find_children("*", "LightmapGI");
+		if (candidates.is_empty()) {
+			return nullptr;
+		}
+		for (int i = 0; i < candidates.size(); ++i) {
+			LightmapGI *candidate = Object::cast_to<LightmapGI>(candidates[i]);
+			Ref<LightmapGIData> lm_data = candidate->get_light_data();
+			if (lm_data.is_null()) {
+				continue;
+			}
+
+			if (!candidate->get_global_transform().xform(lm_data->get_capture_bounds()).has_point(p_node->get_global_position())) {
+				continue;
+			}
+
+			lightmap_node = candidate;
+			break;
+		}
+	}
+
+	return lightmap_node;
+}
+
+Ref<EditorNode3DGizmo> LightmapGIGizmoPlugin::create_gizmo(Node3D *p_spatial) {
+	Ref<LightmapGIGizmo> ret;
+
+	if (!has_gizmo(p_spatial)) {
+		return ret;
+	}
+
+	LightmapGI *lightmap_node = _find_lightmap_node_for(p_spatial);
+
+	if (lightmap_node != nullptr) {
+		ret.instantiate(lightmap_node);
+	}
+
+	return ret;
+}
+
 bool LightmapGIGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<LightmapGI>(p_spatial) != nullptr;
+	bool success = Object::cast_to<LightmapGI>(p_spatial) != nullptr;
+	if (!success) {
+		GeometryInstance3D *obj = Object::cast_to<GeometryInstance3D>(p_spatial);
+		if (obj != nullptr) {
+			if (obj->get_gi_mode() == GeometryInstance3D::GI_MODE_DYNAMIC) {
+				success = true;
+			}
+		}
+	}
+	return success;
 }
 
 String LightmapGIGizmoPlugin::get_gizmo_name() const {
@@ -72,17 +131,66 @@ int LightmapGIGizmoPlugin::get_priority() const {
 }
 
 void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Ref<Material> icon = get_material("baked_indirect_light_icon", p_gizmo);
-	LightmapGI *baker = Object::cast_to<LightmapGI>(p_gizmo->get_node_3d());
-	Ref<LightmapGIData> data = baker->get_light_data();
-
 	p_gizmo->clear();
 
-	p_gizmo->add_unscaled_billboard(icon, 0.05);
-
-	if (data.is_null() || !p_gizmo->is_selected()) {
+	if (!p_gizmo->is_selected()) {
 		return;
 	}
+	LightmapGIGizmo *lightmap_gi_gizmo = Object::cast_to<LightmapGIGizmo>(p_gizmo);
+
+	if (lightmap_gi_gizmo == nullptr) {
+		return;
+	}
+
+	Node3D *node_3d = p_gizmo->get_node_3d();
+
+	LightmapGI *baker = lightmap_gi_gizmo->get_lightmap_node();
+
+	if (baker == nullptr) {
+		// The LightmapGI node may have changed. Let's search again.
+		baker = _find_lightmap_node_for(node_3d);
+		lightmap_gi_gizmo->set_lightmap_node(baker);
+		if (baker == nullptr) {
+			return;
+		}
+	}
+
+	if (!baker->is_visible_in_tree()) {
+		// baker is not visible so don't show the probes either.
+		return;
+	}
+
+	bool show_all = false;
+
+	if (baker == node_3d) {
+		// Add the LightmapGI icon only if the selected node is a LightmapGI
+		Ref<Material> icon = get_material("baked_indirect_light_icon", p_gizmo);
+		p_gizmo->add_unscaled_billboard(icon, 0.05);
+
+		show_all = true;
+	}
+
+	Ref<LightmapGIData> data = baker->get_light_data();
+
+	if (data.is_null()) {
+		return;
+	}
+
+	if (!show_all && !baker->get_global_transform().xform(data->get_capture_bounds()).has_point(node_3d->get_global_position())) {
+		// The selected node isn't a LightmapGI and it's outside of the current LightmapGI bounds. Search if it's in another LightmapGI bounds.
+		baker = _find_lightmap_node_for(node_3d);
+		lightmap_gi_gizmo->set_lightmap_node(baker);
+		if (baker == nullptr) {
+			return;
+		}
+		data = baker->get_light_data();
+		if (data.is_null()) {
+			return;
+		}
+	}
+
+	// Gizmos add_*() are relative to the selected Node3D which is the LightmapGI node we found before.
+	p_gizmo->set_node_3d(baker);
 
 	Ref<Material> material_lines = get_material("lightmap_lines", p_gizmo);
 	Ref<Material> material_probes = get_material("lightmap_probe_material", p_gizmo);
@@ -90,16 +198,24 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Vector<Vector3> lines;
 	HashSet<Vector2i> lines_found;
 
-	Vector<Vector3> points = data->get_capture_points();
+	Vector<Vector3> points;
+	Vector<Color> sh;
+	Vector<int> tetrahedrons;
+
+	points = data->get_capture_points();
 	if (points.is_empty()) {
 		return;
 	}
-	Vector<Color> sh = data->get_capture_sh();
+	sh = data->get_capture_sh();
 	if (sh.size() != points.size() * 9) {
 		return;
 	}
 
-	Vector<int> tetrahedrons = data->get_capture_tetrahedra();
+	if (show_all) {
+		tetrahedrons = data->get_capture_tetrahedra();
+	} else {
+		tetrahedrons = data->get_tetrahedron_at_position(baker->get_global_transform().affine_inverse().xform(node_3d->get_global_position()));
+	}
 
 	for (int i = 0; i < tetrahedrons.size(); i += 4) {
 		for (int j = 0; j < 4; j++) {
@@ -122,6 +238,10 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_lines(lines, material_lines);
+
+	if (!show_all) {
+		points = { points[tetrahedrons[0]], points[tetrahedrons[1]], points[tetrahedrons[2]], points[tetrahedrons[3]] };
+	}
 
 	int stack_count = 8;
 	int sector_count = 16;
@@ -146,11 +266,15 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		for (int p = 0; p < points.size(); p++) {
 			int vertex_base = vertices.size();
+			int sh_idx = p;
+			if (!show_all) {
+				sh_idx = tetrahedrons[p];
+			}
 			Vector3 sh_col[9];
 			for (int i = 0; i < 9; i++) {
-				sh_col[i].x = sh[p * 9 + i].r;
-				sh_col[i].y = sh[p * 9 + i].g;
-				sh_col[i].z = sh[p * 9 + i].b;
+				sh_col[i].x = sh[sh_idx * 9 + i].r;
+				sh_col[i].y = sh[sh_idx * 9 + i].g;
+				sh_col[i].z = sh[sh_idx * 9 + i].b;
 			}
 
 			for (int i = 0; i <= stack_count; ++i) {
@@ -220,5 +344,30 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		mesh->surface_set_material(0, material_probes);
 
 		p_gizmo->add_mesh(mesh);
+
+		// Revert back to the original gizmo's Node3D.
+		p_gizmo->set_node_3d(node_3d);
 	}
+}
+
+LightmapGI *LightmapGIGizmo::get_lightmap_node() const {
+	return lightmap_node;
+}
+
+void LightmapGIGizmo::set_lightmap_node(LightmapGI *p_lightmap) {
+	lightmap_node = p_lightmap;
+}
+
+void LightmapGIGizmo::transform() {
+	if (Object::cast_to<LightmapGI>(get_node_3d()) == nullptr) {
+		// not a LightmapGI node so just redraw
+		redraw();
+	} else {
+		// It's a LightmapGI node so transform it as usual
+		EditorNode3DGizmo::transform();
+	}
+}
+
+LightmapGIGizmo::LightmapGIGizmo(LightmapGI *p_lightmap) {
+	lightmap_node = p_lightmap;
 }

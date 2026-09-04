@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/io/config_file.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -39,6 +40,7 @@
 #include "core/math/geometry_3d.h"
 #include "core/object/class_db.h"
 #include "core/object/object.h"
+#include "core/variant/variant.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -289,6 +291,92 @@ bool LightmapGIData::is_interior() const {
 
 float LightmapGIData::get_baked_exposure() const {
 	return baked_exposure;
+}
+
+PackedInt32Array LightmapGIData::get_tetrahedron_at_position(const Vector3 &p_position) {
+	static_assert(sizeof(LightmapGIData::BSP) == 24);
+
+	PackedInt32Array tetrahedra = get_capture_tetrahedra();
+	PackedInt32Array bsp_tree = get_capture_bsp_tree();
+
+	ERR_FAIL_COND_V_MSG(tetrahedra.is_empty() || bsp_tree.is_empty(), PackedInt32Array(), "LightmapGIData does not contain baked data.");
+
+	const LightmapGIData::BSP *bsp = (const LightmapGIData::BSP *)bsp_tree.ptr();
+	int32_t node = 0;
+	while (node >= 0) {
+		if (Plane(bsp[node].plane[0], bsp[node].plane[1], bsp[node].plane[2], bsp[node].plane[3]).is_point_over(p_position)) {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_COND_V(bsp[node].over >= 0 && bsp[node].over < node, PackedInt32Array());
+#endif
+
+			node = bsp[node].over;
+		} else {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_COND_V(bsp[node].under >= 0 && bsp[node].under < node, PackedInt32Array());
+#endif
+			node = bsp[node].under;
+		}
+	}
+
+	if (node == LightmapGIData::BSP::EMPTY_LEAF) {
+		return PackedInt32Array(); // Nothing could be done.
+	}
+
+	node = Math::abs(node) - 1;
+
+	PackedInt32Array ret;
+
+	for (int i = 0; i < 4; i++) {
+		ret.push_back(tetrahedra[node * 4 + i]);
+	}
+
+	return ret;
+}
+
+PackedVector3Array LightmapGIData::get_capture_probes_at_position(const Vector3 &p_position) {
+	PackedVector3Array points = get_capture_points();
+
+	ERR_FAIL_COND_V_MSG(points.is_empty(), PackedVector3Array(), "LightmapGIData does not contain baked data.");
+
+	PackedInt32Array tetrahedron = get_tetrahedron_at_position(p_position);
+
+	if (tetrahedron.size() != 4) {
+		return PackedVector3Array();
+	}
+
+	return { points[tetrahedron[0]], points[tetrahedron[1]], points[tetrahedron[2]], points[tetrahedron[3]] };
+}
+
+PackedColorArray LightmapGIData::get_capture_spherical_harmonics_at_position(const Vector3 &p_position) {
+	PackedColorArray ret;
+	for (int i = 0; i < 9; ++i) {
+		ret.push_back(Color(0, 0, 0, 0));
+	}
+
+	PackedVector3Array points = get_capture_points();
+	PackedColorArray point_sh = get_capture_sh();
+
+	ERR_FAIL_COND_V_MSG(points.is_empty() || point_sh.is_empty(), ret, "LightmapGIData does not contain baked data.");
+
+	PackedInt32Array tetrahedron = get_tetrahedron_at_position(p_position);
+
+	if (tetrahedron.size() != 4) {
+		return ret;
+	}
+
+	const Color *sh_colors[4]{ &point_sh[tetrahedron[0] * 9], &point_sh[tetrahedron[1] * 9], &point_sh[tetrahedron[2] * 9], &point_sh[tetrahedron[3] * 9] };
+	Color barycentric = Geometry3D::tetrahedron_get_barycentric_coords(points[0], points[1], points[2], points[3], p_position);
+
+	Color *ret_ptrw = ret.ptrw();
+
+	for (int i = 0; i < 4; i++) {
+		float c = CLAMP(barycentric[i], 0.0, 1.0);
+		for (int j = 0; j < 9; j++) {
+			ret_ptrw[j] += sh_colors[i][j] * c;
+		}
+	}
+
+	return ret;
 }
 
 void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
