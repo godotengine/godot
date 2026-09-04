@@ -64,7 +64,7 @@ public:
 	};
 
 private:
-	char *data_copy = nullptr;
+	Vector<uint8_t> data_copy;
 	const char *data = nullptr;
 	const char *P = nullptr;
 	uint64_t length = 0;
