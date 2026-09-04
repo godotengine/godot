@@ -43,6 +43,7 @@
 #include "core/os/os.h"
 #include "core/string/alt_codes.h"
 #include "core/string/string_builder.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/label.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -2998,7 +2999,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		} else {
 			_scroll_down(delta, false);
 		}
-		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 100);
+		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x);
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 			accept_event(); // Accept event if scroll changed.
 		}
