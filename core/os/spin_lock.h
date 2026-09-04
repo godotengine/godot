@@ -43,6 +43,28 @@
 #include <intrin.h>
 #endif
 
+_ALWAYS_INLINE_ static void _cpu_pause() {
+#if defined(_MSC_VER)
+// ----- MSVC.
+#if defined(_M_ARM) || defined(_M_ARM64) // ARM.
+	__yield();
+#elif defined(_M_IX86) || defined(_M_X64) // x86.
+	_mm_pause();
+#endif
+#elif defined(__GNUC__) || defined(__clang__)
+// ----- GCC/Clang.
+#if defined(__i386__) || defined(__x86_64__) // x86.
+	__builtin_ia32_pause();
+#elif defined(__arm__) || defined(__aarch64__) // ARM.
+	asm volatile("yield");
+#elif defined(__powerpc__) // PowerPC.
+	asm volatile("or 27,27,27");
+#elif defined(__riscv) // RISC-V.
+	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");
+#endif
+#endif
+}
+
 #if defined(__APPLE__)
 
 #include <os/lock.h>
@@ -66,28 +88,6 @@ public:
 #else // __APPLE__
 
 #include <atomic>
-
-_ALWAYS_INLINE_ static void _cpu_pause() {
-#if defined(_MSC_VER)
-// ----- MSVC.
-#if defined(_M_ARM) || defined(_M_ARM64) // ARM.
-	__yield();
-#elif defined(_M_IX86) || defined(_M_X64) // x86.
-	_mm_pause();
-#endif
-#elif defined(__GNUC__) || defined(__clang__)
-// ----- GCC/Clang.
-#if defined(__i386__) || defined(__x86_64__) // x86.
-	__builtin_ia32_pause();
-#elif defined(__arm__) || defined(__aarch64__) // ARM.
-	asm volatile("yield");
-#elif defined(__powerpc__) // PowerPC.
-	asm volatile("or 27,27,27");
-#elif defined(__riscv) // RISC-V.
-	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");
-#endif
-#endif
-}
 
 static_assert(std::atomic_bool::is_always_lock_free);
 
@@ -122,6 +122,8 @@ public:
 #endif // __APPLE__
 
 #else // THREADS_ENABLED
+
+_ALWAYS_INLINE_ static void _cpu_pause() {}
 
 class SpinLock {
 public:
