@@ -103,13 +103,18 @@ class SpinLock {
 
 public:
 	_ALWAYS_INLINE_ void lock() const {
+		int pauses = 1;
 		while (true) {
 			bool expected = false;
 			if (locked.compare_exchange_weak(expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
 				break;
 			}
 			do {
-				_cpu_pause();
+				for (int i = 0; i < pauses; i++) {
+					_cpu_pause();
+				}
+				static constexpr int MAX_PAUSES = 64;
+				pauses = pauses < MAX_PAUSES ? pauses << 1 : MAX_PAUSES;
 			} while (locked.load(std::memory_order_relaxed));
 		}
 	}
