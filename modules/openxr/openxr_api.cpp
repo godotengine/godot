@@ -1389,6 +1389,8 @@ void OpenXRAPI::destroy_session() {
 	free_main_swapchains();
 	OpenXRSwapChainInfo::free_queued();
 
+	main_swapchain_size = Size2i();
+
 	supported_swapchain_formats.clear();
 
 	// destroy our spaces
@@ -1902,6 +1904,21 @@ Size2 OpenXRAPI::get_recommended_target_size() {
 	return target_size;
 }
 
+Size2 OpenXRAPI::get_render_target_size() {
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+
+	if (rendering_server && rendering_server->is_on_render_thread()) {
+		if (render_state.main_swapchain_size != Size2i()) {
+			return render_state.main_swapchain_size;
+		}
+	} else if (main_swapchain_size != Size2i()) {
+		return main_swapchain_size;
+	}
+
+	// Swapchains haven't been created yet.
+	return get_recommended_target_size();
+}
+
 XRPose::TrackingConfidence OpenXRAPI::get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity) {
 	XrResult result;
 
@@ -2347,6 +2364,13 @@ bool OpenXRAPI::process() {
 		return false;
 	}
 
+	// Store the swapchain size for the main thread.
+	// Needs to match the logic in pre_draw_viewport().
+	Size2i recommended_size = get_recommended_target_size();
+	if (recommended_size.width > main_swapchain_size.width || recommended_size.height > main_swapchain_size.height) {
+		main_swapchain_size = recommended_size;
+	}
+
 	GodotProfileZone("OpenXRAPI::process");
 	GodotProfileZoneGroupedFirst(_profile_zone, "xrWaitFrame");
 
@@ -2418,6 +2442,8 @@ void OpenXRAPI::free_main_swapchains() {
 	for (int i = 0; i < OPENXR_SWAPCHAIN_MAX; i++) {
 		render_state.main_swapchains[i].queue_free();
 	}
+	render_state.main_swapchain_size = Size2i();
+	render_state.render_region_maximum = Size2i();
 }
 
 void OpenXRAPI::pre_render() {
@@ -2520,8 +2546,11 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 		return false;
 	}
 
-	Size2i swapchain_size = get_recommended_target_size();
-	bool should_recreate_swapchain = (swapchain_size != render_state.main_swapchain_size);
+	Size2i recommended_size = get_recommended_target_size();
+
+	// If the recommended size shrinks, we keep the swapchain and render to a smaller
+	// region of it, so we only need to recreate it when it needs to grow.
+	bool should_recreate_swapchain = recommended_size.width > render_state.main_swapchain_size.width || recommended_size.height > render_state.main_swapchain_size.height;
 
 	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
 	if (fov_ext) {
@@ -2550,8 +2579,14 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 		free_main_swapchains();
 
 		// In with the new.
-		create_main_swapchains(swapchain_size);
+		create_main_swapchains(recommended_size);
 	}
+
+	if (!should_recreate_swapchain && render_state.render_region_maximum != recommended_size && render_state.main_swapchain_size != recommended_size) {
+		print_verbose(vformat("OpenXR: Restricting rendering resolution to %sx%s (swapchain size is %sx%s)",
+				recommended_size.x, recommended_size.y, render_state.main_swapchain_size.x, render_state.main_swapchain_size.y));
+	}
+	render_state.render_region_maximum = recommended_size;
 
 	// Acquire our images
 	for (int i = 0; i < OPENXR_SWAPCHAIN_MAX; i++) {
@@ -2594,6 +2629,12 @@ RID OpenXRAPI::get_depth_texture() {
 
 RID OpenXRAPI::get_density_map_texture() {
 	ERR_NOT_ON_RENDER_THREAD_V(RID());
+
+	// If we're rendering to a smaller region of the swapchain, then we can't use
+	// the FDM from the OpenXR runtime.
+	if (get_combined_render_region() != Rect2i(Point2i(), render_state.main_swapchain_size)) {
+		return RID();
+	}
 
 	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
 	if (fov_ext && fov_ext->is_enabled()) {
@@ -2666,7 +2707,7 @@ void OpenXRAPI::end_frame() {
 		}
 	}
 
-	Rect2i new_render_region = (render_state.render_region != Rect2i()) ? render_state.render_region : Rect2i(Point2i(0, 0), render_state.main_swapchain_size);
+	Rect2i new_render_region = get_combined_render_region();
 
 	for (XrCompositionLayerProjectionView &projection_view : render_state.projection_views) {
 		projection_view.subImage.imageRect.offset.x = new_render_region.position.x;
@@ -2855,6 +2896,26 @@ Rect2i OpenXRAPI::get_render_region() const {
 void OpenXRAPI::set_render_region(const Rect2i &p_render_region) {
 	render_region = p_render_region;
 	set_render_state_render_region(p_render_region);
+}
+
+Rect2i OpenXRAPI::get_combined_render_region() {
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+
+	Rect2i region;
+	Size2i maximum;
+	if (rendering_server && rendering_server->is_on_render_thread()) {
+		region = render_state.render_region;
+		maximum = render_state.render_region_maximum;
+	} else {
+		region = render_region;
+		maximum = get_recommended_target_size();
+	}
+
+	Rect2i maximum_region(Point2i(), maximum);
+	if (region == Rect2i()) {
+		return maximum_region;
+	}
+	return region.intersection(maximum_region);
 }
 
 bool OpenXRAPI::is_foveation_supported() const {

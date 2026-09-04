@@ -74,6 +74,8 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_display_refresh_rate", "refresh_rate"), &OpenXRInterface::set_display_refresh_rate);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "display_refresh_rate"), "set_display_refresh_rate", "get_display_refresh_rate");
 
+	ClassDB::bind_method(D_METHOD("get_recommended_target_size"), &OpenXRInterface::get_recommended_target_size);
+
 	// Render Target size multiplier
 	ClassDB::bind_method(D_METHOD("get_render_target_size_multiplier"), &OpenXRInterface::get_render_target_size_multiplier);
 	ClassDB::bind_method(D_METHOD("set_render_target_size_multiplier", "multiplier"), &OpenXRInterface::set_render_target_size_multiplier);
@@ -982,6 +984,14 @@ double OpenXRInterface::get_render_target_size_multiplier() const {
 	}
 }
 
+Size2 OpenXRInterface::get_recommended_target_size() const {
+	if (openxr_api == nullptr) {
+		return Size2();
+	} else {
+		return openxr_api->get_recommended_target_size();
+	}
+}
+
 void OpenXRInterface::set_render_target_size_multiplier(double multiplier) {
 	if (openxr_api == nullptr) {
 		return;
@@ -1050,7 +1060,7 @@ Size2 OpenXRInterface::get_render_target_size() {
 	if (openxr_api == nullptr) {
 		return Size2();
 	} else {
-		return openxr_api->get_recommended_target_size();
+		return openxr_api->get_render_target_size();
 	}
 }
 
@@ -1127,7 +1137,7 @@ Projection OpenXRInterface::get_projection_for_view(uint32_t p_view, double p_as
 
 Rect2i OpenXRInterface::get_render_region() {
 	if (openxr_api) {
-		return openxr_api->get_render_region();
+		return openxr_api->get_combined_render_region();
 	} else {
 		return Rect2i();
 	}
