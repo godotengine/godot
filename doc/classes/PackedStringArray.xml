@@ -16,7 +16,7 @@
 		[b]Note:[/b] In a boolean context, a packed array will evaluate to [code]false[/code] if it's empty. Otherwise, a packed array will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
-		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
+		<link title="Operating System Testing Demo">https://store.godotengine.org/asset/godot-foundation/operating-system-testing-demo/</link>
 	</tutorials>
 	<constructors>
 		<constructor name="PackedStringArray">

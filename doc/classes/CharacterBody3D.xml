@@ -11,10 +11,10 @@
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
 		<link title="Troubleshooting physics issues">$DOCS_URL/tutorials/physics/troubleshooting_physics_issues.html</link>
 		<link title="Kinematic character (2D)">$DOCS_URL/tutorials/physics/kinematic_character_2d.html</link>
-		<link title="3D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2739</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="3D Kinematic Character Demo">https://store.godotengine.org/asset/godot-foundation/kinematic-character-3d-demo/</link>
+		<link title="3D Platformer Demo">https://store.godotengine.org/asset/godot-foundation/platformer-3d-demo/</link>
+		<link title="Voxel Game Demo">https://store.godotengine.org/asset/godot-foundation/voxel-game-demo/</link>
+		<link title="Third Person Shooter (TPS) Demo">https://store.godotengine.org/asset/godot-foundation/third-person-shooter-demo/</link>
 	</tutorials>
 	<methods>
 		<method name="apply_floor_snap">

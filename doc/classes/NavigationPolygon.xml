@@ -44,7 +44,7 @@
 	</description>
 	<tutorials>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
-		<link title="Navigation Polygon 2D Demo">https://godotengine.org/asset-library/asset/2722</link>
+		<link title="Navigation Polygon 2D Demo">https://store.godotengine.org/asset/godot-foundation/navigation-polygon-2d-demo/</link>
 	</tutorials>
 	<methods>
 		<method name="add_outline">
