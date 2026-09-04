@@ -30,7 +30,6 @@
 
 #include "editor_log.h"
 
-#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/message_queue.h"
 #include "core/object/undo_redo.h"
@@ -211,19 +210,10 @@ void EditorLog::_meta_clicked(const String &p_meta) {
 	}
 	const PackedStringArray parts = p_meta.rsplit(":", true, 1);
 	String path = parts[0];
-	const int line = parts[1].to_int() - 1;
+	const int line = parts[1].to_int();
 
 	if (path.begins_with("res://")) {
-		if (ResourceLoader::exists(path)) {
-			const Ref<Resource> res = ResourceLoader::load(path);
-			ScriptEditor::get_singleton()->edit(res, line, 0);
-			EditorNode *editor_node = EditorNode::get_singleton();
-			if (res.is_valid() && editor_node->get_editor_selection_history()->get_current() != res->get_instance_id()) {
-				// Avoid re-editing the current script without the clicked line number.
-				editor_node->push_item(res.ptr(), "", true);
-			}
-			ScriptEditor::get_singleton()->focus_script_editor(res);
-		}
+		EditorNode::get_singleton()->edit_file(path, line);
 	} else if (path.has_extension("cpp") || path.has_extension("h") || path.has_extension("mm") || path.has_extension("hpp")) {
 		// Godot source file. Try to open it in external editor.
 		if (path.begins_with("./") || path.begins_with(".\\")) {
@@ -246,7 +236,7 @@ void EditorLog::_meta_clicked(const String &p_meta) {
 			return;
 		}
 
-		if (!ScriptEditorPlugin::open_in_external_editor(path, line, -1, true)) {
+		if (!ScriptEditorPlugin::open_in_external_editor(path, line - 1, -1, true)) {
 			OS::get_singleton()->shell_open(path);
 		}
 	} else {
