@@ -296,7 +296,10 @@ Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const S
 	minimap->queue_redraw();
 	queue_redraw();
 	connections_layer->queue_redraw();
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		awaiting_top_layer_update = true;
+	}
 
 	return OK;
 }
@@ -331,7 +334,10 @@ void GraphEdit::disconnect_node(const StringName &p_from, int p_from_port, const
 		minimap->queue_redraw();
 		queue_redraw();
 		connections_layer->queue_redraw();
-		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		if (!awaiting_top_layer_update) {
+			callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+			awaiting_top_layer_update = true;
+		}
 	}
 }
 
@@ -415,7 +421,10 @@ void GraphEdit::set_scroll_offset(const Vector2 &p_offset) {
 	minimap->queue_redraw();
 	queue_redraw();
 	_update_scrollbars();
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		awaiting_top_layer_update = true;
+	}
 	setting_scroll_offset = false;
 }
 
@@ -432,7 +441,10 @@ void GraphEdit::_scrollbar_moved(double) {
 	}
 	minimap->queue_redraw();
 	queue_redraw();
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		awaiting_top_layer_update = true;
+	}
 }
 
 void GraphEdit::_update_scroll_offset() {
@@ -626,7 +638,10 @@ void GraphEdit::_graph_frame_autoshrink_changed(const Vector2 &p_new_minsize, Gr
 	minimap->queue_redraw();
 	queue_redraw();
 	connections_layer->queue_redraw();
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		awaiting_top_layer_update = true;
+	}
 }
 
 void GraphEdit::_graph_element_moved(Node *p_node) {
@@ -637,7 +652,10 @@ void GraphEdit::_graph_element_moved(Node *p_node) {
 	minimap->queue_redraw();
 	queue_redraw();
 	connections_layer->queue_redraw();
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		awaiting_top_layer_update = true;
+	}
 }
 
 void GraphEdit::_graph_node_slot_updated(int p_index, Node *p_node) {
@@ -653,7 +671,10 @@ void GraphEdit::_graph_node_slot_updated(int p_index, Node *p_node) {
 	minimap->queue_redraw();
 	queue_redraw();
 	connections_layer->queue_redraw();
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		awaiting_top_layer_update = true;
+	}
 }
 
 void GraphEdit::_graph_node_rect_changed(GraphNode *p_node) {
@@ -668,7 +689,10 @@ void GraphEdit::_graph_node_rect_changed(GraphNode *p_node) {
 		conn->_cache.dirty = true;
 	}
 	connections_layer->queue_redraw();
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		awaiting_top_layer_update = true;
+	}
 
 	// Update all parent frames recursively bottom-up.
 	if (linked_parent_map.has(p_node->get_name())) {
@@ -870,7 +894,10 @@ void GraphEdit::_notification(int p_what) {
 		case NOTIFICATION_RESIZED: {
 			_update_scrollbars();
 			minimap->queue_redraw();
-			callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+			if (!awaiting_top_layer_update) {
+				callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+				awaiting_top_layer_update = true;
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -994,9 +1021,19 @@ void GraphEdit::_set_position_of_frame_attached_nodes(GraphFrame *p_frame, const
 }
 
 bool GraphEdit::_filter_input(const Point2 &p_point) {
+	Rect2 viewport_rect = get_viewport_rect();
+	viewport_rect.position += get_scroll_offset();
+
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
 		if (!graph_node || !graph_node->is_visible_in_tree()) {
+			continue;
+		}
+
+		Rect2 graph_rect = graph_node->get_rect();
+		graph_rect.position += get_scroll_offset();
+		graph_rect.grow_by(theme_cache.port_hotzone_outer_extent);
+		if (!graph_rect.intersects(viewport_rect)) {
 			continue;
 		}
 
@@ -1333,7 +1370,10 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 	if (mm.is_valid() && connecting && !keyboard_connecting) {
 		connecting_to_point = mm->get_position();
 		minimap->queue_redraw();
-		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		if (!awaiting_top_layer_update) {
+			callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+			awaiting_top_layer_update = true;
+		}
 
 		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to_point / zoom) > MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION;
 
@@ -1618,6 +1658,9 @@ void GraphEdit::_update_connections() {
 	// Collect all dead connections and remove them.
 	LocalVector<Ref<Connection>> dead_connections;
 
+	Rect2 viewport_rect = get_viewport_rect();
+	viewport_rect.position += get_scroll_offset();
+
 	for (const Ref<Connection> &conn : connections) {
 		if (conn->_cache.dirty) {
 			Node *from = get_node_or_null(NodePath(conn->from_node));
@@ -1678,8 +1721,6 @@ void GraphEdit::_update_connections() {
 		}
 
 		// Skip updating/drawing connections that are not visible.
-		Rect2 viewport_rect = get_viewport_rect();
-		viewport_rect.position += get_scroll_offset();
 		if (!conn->_cache.aabb.intersects(viewport_rect)) {
 			continue;
 		}
@@ -1733,6 +1774,7 @@ void GraphEdit::_top_layer_draw() {
 }
 
 void GraphEdit::_update_top_connection_layer() {
+	awaiting_top_layer_update = false;
 	_update_scrollbars();
 
 	if (!connecting) {
@@ -2170,7 +2212,10 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			minimap->queue_redraw();
 			queue_redraw();
 			connections_layer->queue_redraw();
-			callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+			if (!awaiting_top_layer_update) {
+				callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+				awaiting_top_layer_update = true;
+			}
 		}
 
 		// Node selection logic.
@@ -2340,7 +2385,10 @@ void GraphEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	}
 	minimap->queue_redraw();
 	queue_redraw();
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		awaiting_top_layer_update = true;
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	}
 	connections_layer->queue_redraw();
 }
 
@@ -2362,7 +2410,10 @@ void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_por
 				minimap->queue_redraw();
 				conn->_cache.dirty = true;
 				connections_layer->queue_redraw();
-				callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+				if (!awaiting_top_layer_update) {
+					awaiting_top_layer_update = true;
+					callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+				}
 			}
 			conn->activity = p_activity;
 			return;
@@ -2411,7 +2462,10 @@ void GraphEdit::force_connection_drag_end() {
 	minimap->queue_redraw();
 	queue_redraw();
 	connections_layer->queue_redraw();
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		awaiting_top_layer_update = true;
+	}
 	emit_signal(SNAME("connection_drag_ended"));
 }
 
@@ -2446,7 +2500,10 @@ void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 
 	zoom = p_zoom;
 
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		awaiting_top_layer_update = true;
+	}
 
 	zoom_minus_button->set_disabled(zoom == zoom_min);
 	zoom_plus_button->set_disabled(zoom == zoom_max);
@@ -2892,7 +2949,10 @@ void GraphEdit::override_connections_shader(const Ref<Shader> &p_shader) {
 	_invalidate_connection_line_cache();
 	connections_layer->queue_redraw();
 	minimap->queue_redraw();
-	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+	if (!awaiting_top_layer_update) {
+		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+		awaiting_top_layer_update = true;
+	}
 }
 
 void GraphEdit::_minimap_toggled() {
