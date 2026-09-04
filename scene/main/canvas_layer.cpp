@@ -226,7 +226,6 @@ RID CanvasLayer::get_viewport() const {
 }
 
 void CanvasLayer::set_custom_viewport(Node *p_viewport) {
-	ERR_FAIL_NULL_MSG(p_viewport, "Cannot set viewport to nullptr.");
 	if (is_inside_tree()) {
 		vp->_canvas_layer_remove(this);
 		RenderingServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
