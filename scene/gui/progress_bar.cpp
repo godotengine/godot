@@ -150,23 +150,9 @@ void ProgressBar::_notification(int p_what) {
 			}
 
 			if (show_percentage) {
-				double ratio = 0;
+				double percentage = _get_as_ratio_unclamped();
 
-				// Avoid division by zero.
-				if (Math::is_equal_approx(get_max(), get_min())) {
-					ratio = 1;
-				} else if (is_ratio_exp() && get_min() >= 0 && get_value() >= 0) {
-					double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
-					double exp_max = Math::log(get_max()) / Math::log((double)2);
-					double exp_value = get_value() == 0 ? 0.0 : Math::log(get_value()) / Math::log((double)2);
-					double percentage = (exp_value - exp_min) / (exp_max - exp_min);
-
-					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
-				} else {
-					double percentage = (get_value() - get_min()) / (get_max() - get_min());
-
-					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
-				}
+				double ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
 
 				String txt = itos(int(Math::round(ratio * 100)));
 
