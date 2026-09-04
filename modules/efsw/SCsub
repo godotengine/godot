@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+if env["builtin_efsw"]:
+    env.Append(CPPDEFINES=["EFSW_ENABLED"])
+else:
+    print("`builtin_efsw` was explicitly disabled.")
+
+env_efsw = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+if env["builtin_efsw"]:
+    thirdparty_dir = "#thirdparty/efsw/"
+    thirdparty_sources = [
+        "src/efsw/Debug.cpp",
+        "src/efsw/DirWatcherGeneric.cpp",
+        "src/efsw/DirectorySnapshot.cpp",
+        "src/efsw/DirectorySnapshotDiff.cpp",
+        "src/efsw/FileInfo.cpp",
+        "src/efsw/FileSystem.cpp",
+        "src/efsw/FileWatcher.cpp",
+        "src/efsw/FileWatcherCWrapper.cpp",
+        "src/efsw/FileWatcherFSEvents.cpp",
+        "src/efsw/FileWatcherGeneric.cpp",
+        "src/efsw/FileWatcherImpl.cpp",
+        "src/efsw/FileWatcherInotify.cpp",
+        "src/efsw/FileWatcherKqueue.cpp",
+        "src/efsw/FileWatcherWin32.cpp",
+        "src/efsw/Log.cpp",
+        "src/efsw/String.cpp",
+        "src/efsw/System.cpp",
+        "src/efsw/Watcher.cpp",
+        "src/efsw/WatcherFSEvents.cpp",
+        "src/efsw/WatcherGeneric.cpp",
+        "src/efsw/WatcherInotify.cpp",
+        "src/efsw/WatcherKqueue.cpp",
+        "src/efsw/WatcherWin32.cpp",
+        "src/efsw/platform/posix/FileSystemImpl.cpp",
+        "src/efsw/platform/posix/SystemImpl.cpp",
+        "src/efsw/platform/win/FileSystemImpl.cpp",
+        "src/efsw/platform/win/SystemImpl.cpp",
+    ]
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_efsw.Prepend(CPPPATH=[thirdparty_dir + "include", thirdparty_dir + "src"])
+    # Also needed in main env for editor/
+    env.Prepend(CPPPATH=[thirdparty_dir + "include"])
+
+    env_thirdparty = env_efsw.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_efsw.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)
