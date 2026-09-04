@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  bone_spreader_3d.cpp                                                  */
+/*  bone_space_adjuster_3d.cpp                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "bone_spreader_3d.h"
+#include "bone_space_adjuster_3d.h"
 
 #include "core/object/class_db.h"
 
-bool BoneSpreader3D::_set(const StringName &p_path, const Variant &p_value) {
+bool BoneSpaceAdjuster3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
 	if (path.begins_with("settings/")) {
@@ -55,7 +55,7 @@ bool BoneSpreader3D::_set(const StringName &p_path, const Variant &p_value) {
 	return true;
 }
 
-bool BoneSpreader3D::_get(const StringName &p_path, Variant &r_ret) const {
+bool BoneSpaceAdjuster3D::_get(const StringName &p_path, Variant &r_ret) const {
 	String path = p_path;
 
 	if (path.begins_with("settings/")) {
@@ -78,7 +78,7 @@ bool BoneSpreader3D::_get(const StringName &p_path, Variant &r_ret) const {
 	return true;
 }
 
-void BoneSpreader3D::_get_property_list(List<PropertyInfo> *p_list) const {
+void BoneSpaceAdjuster3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (use_bone_skin_scale_for_all_bones) {
 		return;
 	}
@@ -105,13 +105,13 @@ void BoneSpreader3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void BoneSpreader3D::_validate_property(PropertyInfo &p_property) const {
+void BoneSpaceAdjuster3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "setting_size" && use_bone_skin_scale_for_all_bones) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
-void BoneSpreader3D::_validate_dynamic_prop(PropertyInfo &p_property) const {
+void BoneSpaceAdjuster3D::_validate_dynamic_prop(PropertyInfo &p_property) const {
 	PackedStringArray split = p_property.name.split("/");
 	if (split.size() > 2 && split[0] == "settings") {
 		int which = split[1].to_int();
@@ -121,30 +121,30 @@ void BoneSpreader3D::_validate_dynamic_prop(PropertyInfo &p_property) const {
 	}
 }
 
-void BoneSpreader3D::set_use_bone_skin_scale_for_all_bones(bool p_enabled) {
+void BoneSpaceAdjuster3D::set_use_bone_skin_scale_for_all_bones(bool p_enabled) {
 	use_bone_skin_scale_for_all_bones = p_enabled;
 	notify_property_list_changed();
 }
 
-bool BoneSpreader3D::are_all_bones_using_bone_skin_scale() const {
+bool BoneSpaceAdjuster3D::are_all_bones_using_bone_skin_scale() const {
 	return use_bone_skin_scale_for_all_bones;
 }
 
-int BoneSpreader3D::get_setting_size() {
+int BoneSpaceAdjuster3D::get_setting_size() {
 	return settings.size();
 }
 
-void BoneSpreader3D::set_setting_size(int p_size) {
+void BoneSpaceAdjuster3D::set_setting_size(int p_size) {
 	ERR_FAIL_COND(p_size < 0);
 	settings.resize(p_size);
 	notify_property_list_changed();
 }
 
-void BoneSpreader3D::clear_settings() {
+void BoneSpaceAdjuster3D::clear_settings() {
 	settings.clear();
 }
 
-void BoneSpreader3D::set_bone_name(int p_index, const StringName &p_bone_name) {
+void BoneSpaceAdjuster3D::set_bone_name(int p_index, const StringName &p_bone_name) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	settings[p_index].bone_name = p_bone_name;
 	Skeleton3D *sk = get_skeleton();
@@ -153,12 +153,12 @@ void BoneSpreader3D::set_bone_name(int p_index, const StringName &p_bone_name) {
 	}
 }
 
-StringName BoneSpreader3D::get_bone_name(int p_index) const {
+StringName BoneSpaceAdjuster3D::get_bone_name(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), StringName());
 	return settings[p_index].bone_name;
 }
 
-void BoneSpreader3D::set_bone(int p_index, int p_bone) {
+void BoneSpaceAdjuster3D::set_bone(int p_index, int p_bone) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	settings[p_index].bone = p_bone;
 	Skeleton3D *sk = get_skeleton();
@@ -172,55 +172,55 @@ void BoneSpreader3D::set_bone(int p_index, int p_bone) {
 	}
 }
 
-int BoneSpreader3D::get_bone(int p_index) const {
+int BoneSpaceAdjuster3D::get_bone(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), -1);
 	return settings[p_index].bone;
 }
 
-void BoneSpreader3D::set_use_bone_skin_scale(int p_index, bool p_enabled) {
+void BoneSpaceAdjuster3D::set_use_bone_skin_scale(int p_index, bool p_enabled) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	settings[p_index].use_bone_skin_scale = p_enabled;
 	notify_property_list_changed();
 }
 
-bool BoneSpreader3D::is_using_bone_skin_scale(int p_index) const {
+bool BoneSpaceAdjuster3D::is_using_bone_skin_scale(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
 	return settings[p_index].use_bone_skin_scale;
 }
 
-void BoneSpreader3D::set_bone_scale(int p_index, const Vector3 &p_scale) {
+void BoneSpaceAdjuster3D::set_bone_scale(int p_index, const Vector3 &p_scale) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_scale.x * p_scale.y * p_scale.z), "Scale must not be zero.");
 	settings[p_index].scale = p_scale;
 }
 
-Vector3 BoneSpreader3D::get_bone_scale(int p_index) const {
+Vector3 BoneSpaceAdjuster3D::get_bone_scale(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), Vector3(1, 1, 1));
 	return settings[p_index].scale;
 }
 
-void BoneSpreader3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_use_bone_skin_scale_for_all_bones", "enabled"), &BoneSpreader3D::set_use_bone_skin_scale_for_all_bones);
-	ClassDB::bind_method(D_METHOD("are_all_bones_using_bone_skin_scale"), &BoneSpreader3D::are_all_bones_using_bone_skin_scale);
+void BoneSpaceAdjuster3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_use_bone_skin_scale_for_all_bones", "enabled"), &BoneSpaceAdjuster3D::set_use_bone_skin_scale_for_all_bones);
+	ClassDB::bind_method(D_METHOD("are_all_bones_using_bone_skin_scale"), &BoneSpaceAdjuster3D::are_all_bones_using_bone_skin_scale);
 
-	ClassDB::bind_method(D_METHOD("set_bone_name", "index", "bone_name"), &BoneSpreader3D::set_bone_name);
-	ClassDB::bind_method(D_METHOD("get_bone_name", "index"), &BoneSpreader3D::get_bone_name);
-	ClassDB::bind_method(D_METHOD("set_bone", "index", "bone"), &BoneSpreader3D::set_bone);
-	ClassDB::bind_method(D_METHOD("get_bone", "index"), &BoneSpreader3D::get_bone);
-	ClassDB::bind_method(D_METHOD("set_use_bone_skin_scale", "index", "enabled"), &BoneSpreader3D::set_use_bone_skin_scale);
-	ClassDB::bind_method(D_METHOD("is_using_bone_skin_scale", "index"), &BoneSpreader3D::is_using_bone_skin_scale);
-	ClassDB::bind_method(D_METHOD("set_bone_scale", "index", "scale"), &BoneSpreader3D::set_bone_scale);
-	ClassDB::bind_method(D_METHOD("get_bone_scale", "index"), &BoneSpreader3D::get_bone_scale);
+	ClassDB::bind_method(D_METHOD("set_bone_name", "index", "bone_name"), &BoneSpaceAdjuster3D::set_bone_name);
+	ClassDB::bind_method(D_METHOD("get_bone_name", "index"), &BoneSpaceAdjuster3D::get_bone_name);
+	ClassDB::bind_method(D_METHOD("set_bone", "index", "bone"), &BoneSpaceAdjuster3D::set_bone);
+	ClassDB::bind_method(D_METHOD("get_bone", "index"), &BoneSpaceAdjuster3D::get_bone);
+	ClassDB::bind_method(D_METHOD("set_use_bone_skin_scale", "index", "enabled"), &BoneSpaceAdjuster3D::set_use_bone_skin_scale);
+	ClassDB::bind_method(D_METHOD("is_using_bone_skin_scale", "index"), &BoneSpaceAdjuster3D::is_using_bone_skin_scale);
+	ClassDB::bind_method(D_METHOD("set_bone_scale", "index", "scale"), &BoneSpaceAdjuster3D::set_bone_scale);
+	ClassDB::bind_method(D_METHOD("get_bone_scale", "index"), &BoneSpaceAdjuster3D::get_bone_scale);
 
-	ClassDB::bind_method(D_METHOD("set_setting_size", "size"), &BoneSpreader3D::set_setting_size);
-	ClassDB::bind_method(D_METHOD("get_setting_size"), &BoneSpreader3D::get_setting_size);
-	ClassDB::bind_method(D_METHOD("clear_setting"), &BoneSpreader3D::clear_settings);
+	ClassDB::bind_method(D_METHOD("set_setting_size", "size"), &BoneSpaceAdjuster3D::set_setting_size);
+	ClassDB::bind_method(D_METHOD("get_setting_size"), &BoneSpaceAdjuster3D::get_setting_size);
+	ClassDB::bind_method(D_METHOD("clear_setting"), &BoneSpaceAdjuster3D::clear_settings);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_bone_skin_scale_for_all_bones"), "set_use_bone_skin_scale_for_all_bones", "are_all_bones_using_bone_skin_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "setting_size", PROPERTY_HINT_RANGE, "0,1000,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Settings,settings/"), "set_setting_size", "get_setting_size");
 }
 
-void BoneSpreader3D::_process_modification(double p_delta) {
+void BoneSpaceAdjuster3D::_process_modification(double p_delta) {
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton) {
 		return;
@@ -238,7 +238,7 @@ void BoneSpreader3D::_process_modification(double p_delta) {
 			}
 		}
 	} else {
-		for (const BoneSpreader3DSetting &setting : settings) {
+		for (const BoneSpaceAdjuster3DSetting &setting : settings) {
 			int bone = setting.bone;
 			if (bone < 0) {
 				continue;
