@@ -556,6 +556,24 @@ DirectionalLight3D::SkyMode DirectionalLight3D::get_sky_mode() const {
 	return sky_mode;
 }
 
+void DirectionalLight3D::set_min_shadow_fov(real_t p_fov) {
+	min_shadow_fov = p_fov;
+	RS::get_singleton()->light_directional_set_min_shadow_fov(light, p_fov);
+}
+
+real_t DirectionalLight3D::get_min_shadow_fov() const {
+	return min_shadow_fov;
+}
+
+void DirectionalLight3D::set_min_shadow_size(real_t p_size) {
+	min_shadow_size = p_size;
+	RS::get_singleton()->light_directional_set_min_shadow_size(light, p_size);
+}
+
+real_t DirectionalLight3D::get_min_shadow_size() const {
+	return min_shadow_size;
+}
+
 void DirectionalLight3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (shadow_mode == SHADOW_ORTHOGONAL && (p_property.name == "directional_shadow_split_1" || p_property.name == "directional_shadow_blend_splits")) {
@@ -588,6 +606,12 @@ void DirectionalLight3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sky_mode", "mode"), &DirectionalLight3D::set_sky_mode);
 	ClassDB::bind_method(D_METHOD("get_sky_mode"), &DirectionalLight3D::get_sky_mode);
 
+	ClassDB::bind_method(D_METHOD("set_min_shadow_fov", "fov"), &DirectionalLight3D::set_min_shadow_fov);
+	ClassDB::bind_method(D_METHOD("get_min_shadow_fov"), &DirectionalLight3D::get_min_shadow_fov);
+
+	ClassDB::bind_method(D_METHOD("set_min_shadow_size", "size"), &DirectionalLight3D::set_min_shadow_size);
+	ClassDB::bind_method(D_METHOD("get_min_shadow_size"), &DirectionalLight3D::get_min_shadow_size);
+
 	ADD_GROUP("Directional Shadow", "directional_shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_mode", PROPERTY_HINT_ENUM, "Orthogonal (Fast),PSSM 2 Splits (Average),PSSM 4 Splits (Slow)"), "set_shadow_mode", "get_shadow_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_1", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_1_OFFSET);
@@ -597,6 +621,8 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_fade_start", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_FADE_START);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_RANGE, "0,8192,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_pancake_size", PROPERTY_HINT_RANGE, "0,1024,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_PANCAKE_SIZE);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "directional_shadow_min_fov", PROPERTY_HINT_RANGE, "0,179,0.1,degrees"), "set_min_shadow_fov", "get_min_shadow_fov");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "directional_shadow_min_size", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_min_shadow_size", "get_min_shadow_size");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sky_mode", PROPERTY_HINT_ENUM, "Light and Sky,Light Only,Sky Only"), "set_sky_mode", "get_sky_mode");
 
@@ -620,6 +646,8 @@ DirectionalLight3D::DirectionalLight3D() :
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	blend_splits = false;
 	set_sky_mode(SKY_MODE_LIGHT_AND_SKY);
+	set_min_shadow_fov(0.0);
+	set_min_shadow_size(0.0);
 }
 
 void OmniLight3D::set_shadow_mode(ShadowMode p_mode) {
