@@ -573,14 +573,14 @@ void TextEditorBase::_saved_update() {
 }
 
 void TextEditorBase::_emit_request_save_new_history() {
-	Dictionary state = get_edit_state();
+	Dictionary state = get_navigation_state();
 	state["ensure_caret_visible"] = true;
 	previous_history_line = state["row"];
 	emit_signal(SNAME("_request_save_new_history"), state);
 }
 
 void TextEditorBase::_emit_request_save_previous_state() {
-	Dictionary state = get_edit_state();
+	Dictionary state = get_navigation_state();
 	state["ensure_caret_visible"] = true;
 	previous_history_line = state["row"];
 	emit_signal(SNAME("_request_save_previous_state"), state);
