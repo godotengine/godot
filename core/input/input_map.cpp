@@ -856,6 +856,10 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_filedialog_show_hidden", inputs);
 
 	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::N | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT));
+	default_builtin_cache.insert("ui_filedialog_new_folder", inputs);
+
+	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::F | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_filedialog_find", inputs);
 
