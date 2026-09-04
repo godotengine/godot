@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
@@ -229,6 +230,7 @@ class ControlEditorToolbar : public HBoxContainer {
 
 	SizeFlagPresetPicker *container_h_picker = nullptr;
 	SizeFlagPresetPicker *container_v_picker = nullptr;
+	EditorSpinSlider *container_stretch_ratio_slider = nullptr;
 
 	bool anchors_mode = false;
 
@@ -238,6 +240,7 @@ class ControlEditorToolbar : public HBoxContainer {
 	void _container_flags_selected(int p_flags, bool p_vertical);
 	void _expand_flag_toggled(bool p_expand, bool p_vertical);
 	void _maximize_flag_toggled(bool p_maximize, bool p_vertical);
+	void _stretch_ratio_changed(double p_stretch_ratio);
 	void _update_anchor_selection_ui(bool p_pressed);
 	void _update_container_sizing_selection_ui(bool p_pressed);
 
