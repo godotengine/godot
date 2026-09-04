@@ -186,6 +186,11 @@ class ProjectManager : public Control {
 
 	ProjectDialog *project_dialog = nullptr;
 
+#ifdef WEB_ENABLED
+	// Web exclusive dialogs
+	ConfirmationDialog *import_method_ask = nullptr;
+#endif
+
 	void _scan_projects();
 	void _run_project();
 	void _run_project_confirm();
@@ -216,6 +221,13 @@ class ProjectManager : public Control {
 	void _on_open_options_selected(int p_option);
 	void _on_recovery_mode_popup_open_normal();
 	void _on_recovery_mode_popup_open_recovery();
+
+#ifdef WEB_ENABLED
+	// Web editor exclusive methods
+	void _on_web_editor_pick_import_folder();
+	void _on_web_editor_pick_import_zip();
+	void _on_web_import_project(bool p_status, const Vector<String> &p_paths, int p_index);
+#endif
 
 	void _on_order_option_changed(int p_idx);
 	void _on_search_term_changed(const String &p_term);

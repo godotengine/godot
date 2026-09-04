@@ -534,6 +534,96 @@ const GodotDisplay = {
 	},
 
 	/*
+	 * Dialogs
+	 */
+	godot_js_display_file_dialog_show__proxy: 'sync',
+	godot_js_display_file_dialog_show__sig: 'iiiiiiii',
+	godot_js_display_file_dialog_show: function (p_cb, p_title, p_current_directory, p_filename, p_show_hidden, p_mode, filters_list) {
+		const cb = GodotRuntime.get_func(p_cb);
+		// const FILE_DIALOG_MODE_OPEN_FILE = 0;
+		const FILE_DIALOG_MODE_OPEN_FILES = 1;
+		const FILE_DIALOG_MODE_OPEN_DIR = 2;
+		const FILE_DIALOG_MODE_OPEN_ANY = 3;
+		const FILE_DIALOG_MODE_SAVE_FILE = 4;
+		const ERR_INVALID_PARAMETER = 31;
+		const cwd = GodotRuntime.parseString(p_current_directory);
+		const accept = GodotRuntime.parseString(filters_list);
+		const file_selector = document.createElement('input');
+		file_selector.type = 'file';
+		file_selector.accept = accept;
+		file_selector.setAttribute('directory', cwd);
+		file_selector.setAttribute('multiple', '');
+		switch (p_mode) {
+		case FILE_DIALOG_MODE_OPEN_FILES:
+			file_selector.multiple = true;
+			break;
+		case FILE_DIALOG_MODE_OPEN_DIR:
+			file_selector.webkitdirectory = true;
+			break;
+		case FILE_DIALOG_MODE_OPEN_ANY:
+			GodotRuntime.error('File dialog mode FILE_DIALOG_MODE_OPEN_ANY is unsupported in Web platform.');
+			return ERR_INVALID_PARAMETER;
+		case FILE_DIALOG_MODE_SAVE_FILE:
+			GodotRuntime.error('File dialog mode FILE_DIALOG_MODE_SAVE_FILE is unsupported in Web platform.');
+			return ERR_INVALID_PARAMETER;
+		default:
+			break;
+		}
+
+		file_selector.onchange = function (event) {
+			const temp_paths = [];
+			Array.from(event.target.files).forEach(function (file) {
+				// Generates a local, temporary URL valid only for the current browser session
+				temp_paths.push(URL.createObjectURL(file));
+			});
+			const get_matching_filter = function () {
+				if (p_mode === FILE_DIALOG_MODE_OPEN_DIR) {
+					return 0;
+				}
+				const file = event.target.files[0];
+				const fileExtension = `.${file.name.split('.').pop().toLowerCase()}`;
+				const mimeType = file.type.toLowerCase();
+
+				// Split accept tokens (e.g., '.png, image/jpeg')
+				const tokens = accept.split(',').map((t) => t.trim().toLowerCase());
+				for (let i = 0; i < tokens.length; i++) {
+					const token = tokens[i];
+					if (token.startsWith('.')) {
+						if (fileExtension === token) {
+							return i;
+						}
+					} else if (token.endsWith('/*')) {
+						const baseType = token.split('/')[0];
+						if (mimeType.startsWith(baseType)) {
+							return i;
+						}
+					} else if (mimeType === token) {
+						return i;
+					}
+				};
+				GodotRuntime.console.warn('Failed to identify used file filter.');
+				return 0;
+			};
+
+			const status_success = 1;
+			const filepaths = GodotRuntime.allocString(temp_paths.join('\n'));
+			const filter_index = get_matching_filter();
+			cb(status_success, filepaths, filter_index);
+			GodotRuntime.free(filepaths);
+		};
+		file_selector.oncancel = function (event) {
+			const status_cancel = 0;
+			const empty_path = GodotRuntime.allocString('');
+			const ignored_index = 0;
+			cb(status_cancel, empty_path, ignored_index);
+			GodotRuntime.free(empty_path);
+		};
+		file_selector.click();
+		const OK = 0;
+		return OK;
+	},
+
+	/*
 	 * Canvas
 	 */
 	godot_js_display_canvas_focus__proxy: 'sync',

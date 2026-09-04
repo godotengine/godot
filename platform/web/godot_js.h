@@ -111,6 +111,9 @@ extern void godot_js_display_window_title_set(const char *p_text);
 extern void godot_js_display_window_icon_set(const uint8_t *p_ptr, int p_len);
 extern int godot_js_display_has_webgl(int p_version);
 
+// Display dialogs
+extern int godot_js_display_file_dialog_show(void (*p_callback)(int status, const char *p_filepath, int index), const char *p_title, const char *p_current_directory, const char *p_filename, int p_show_hidden, int p_mode, const char *filters_list);
+
 // Display clipboard
 extern int godot_js_display_clipboard_set(const char *p_text);
 extern int godot_js_display_clipboard_get(void (*p_callback)(const char *p_text));

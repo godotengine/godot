@@ -35,10 +35,14 @@
 #include "os_web.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/input/input.h"
 #include "core/input/input_event.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "servers/display/display_server_enums.h"
 #include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
@@ -127,6 +131,41 @@ void DisplayServerWeb::_drop_files_js_callback(const Vector<String> &p_files) {
 	ds->drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(ds->drop_files_callback, v_args, 1, ce)));
+	}
+}
+
+void DisplayServerWeb::file_dialog_show_js_callback(int status, const char *p_filepaths, int index) {
+	String filepath = String::utf8(p_filepaths);
+	Vector<String> files;
+	files.append_array(filepath.split("\n"));
+
+#ifdef PROXY_TO_PTHREAD_ENABLED
+	if (!Thread::is_main_thread()) {
+		callable_mp_static(DisplayServerWeb::_file_dialog_show_js_callback).call_deferred(filepath);
+		return;
+	}
+#endif
+
+	_file_dialog_show_js_callback(status, files, index);
+}
+
+void DisplayServerWeb::_file_dialog_show_js_callback(bool p_status, const Vector<String> &p_filepaths, int p_index) {
+	DisplayServerWeb *ds = get_singleton();
+	if (!ds) {
+		ERR_FAIL_MSG("Unable to drop files because the DisplayServer is not active");
+	}
+	if (!ds->file_dialog_show_callback.is_valid()) {
+		return;
+	}
+	Variant v_status = p_status;
+	Variant v_filepath = p_filepaths;
+	Variant v_index = p_index;
+	const Variant *v_args[3] = { &v_status, &v_filepath, &v_index };
+	Variant ret;
+	Callable::CallError ce;
+	ds->file_dialog_show_callback.callp((const Variant **)&v_args, 3, ret, ce);
+	if (ce.error != Callable::CallError::CALL_OK) {
+		ERR_PRINT(vformat("Failed to execute file dialog show callback: %s.", Variant::get_callable_error_text(ds->file_dialog_show_callback, v_args, 1, ce)));
 	}
 }
 
@@ -1213,12 +1252,13 @@ bool DisplayServerWeb::has_feature(DisplayServerEnums::Feature p_feature) const 
 		case DisplayServerEnums::FEATURE_MOUSE:
 		case DisplayServerEnums::FEATURE_TOUCHSCREEN:
 			return true;
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE:
+		case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_MIME:
+			return true;
 		//case DisplayServerEnums::FEATURE_MOUSE_WARP:
 		//case DisplayServerEnums::FEATURE_NATIVE_DIALOG:
 		//case DisplayServerEnums::FEATURE_NATIVE_DIALOG_INPUT:
-		//case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE:
 		//case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA:
-		//case DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_MIME:
 		//case DisplayServerEnums::FEATURE_NATIVE_ICON:
 		//case DisplayServerEnums::FEATURE_WINDOW_TRANSPARENCY:
 		//case DisplayServerEnums::FEATURE_KEEP_SCREEN_ON:
@@ -1513,4 +1553,13 @@ void DisplayServerWeb::swap_buffers() {
 		emscripten_webgl_commit_frame();
 	}
 #endif
+}
+
+Error DisplayServerWeb::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_INDEX_V(int(p_mode), DisplayServerEnums::FILE_DIALOG_MODE_SAVE_MAX, Error::ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(!p_callback.is_valid(), Error::ERR_INVALID_PARAMETER, "Argument p_callback is invalid.");
+	file_dialog_show_callback = p_callback;
+	String filters_list = String(", ").join(p_filters);
+	int err = godot_js_display_file_dialog_show(&DisplayServerWeb::file_dialog_show_js_callback, p_title.utf8().get_data(), p_current_directory.utf8().get_data(), p_filename.utf8().get_data(), p_show_hidden, p_mode, filters_list.utf8().get_data());
+	return static_cast<Error>(err);
 }
