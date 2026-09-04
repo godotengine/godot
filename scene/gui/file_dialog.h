@@ -207,6 +207,9 @@ private:
 	bool is_invalidating = false;
 	bool ensure_visible_after_invalidating = false;
 
+	bool focus_file_text_pending = false;
+	int target_id = -1;
+
 	VBoxContainer *main_vbox = nullptr;
 
 	Button *dir_prev = nullptr;
@@ -312,6 +315,7 @@ private:
 	void _popup_menu(const Vector2 &p_pos, int p_for_item);
 
 	void _focus_file_text();
+	void _request_focus_file_text();
 
 	int _get_selected_file_idx();
 	String _get_item_path(int p_idx) const;
@@ -322,6 +326,9 @@ private:
 	void _select_drive(int p_idx);
 	void _dir_submitted(String p_dir);
 	void _action_pressed();
+	int _find_item_with_text(const String &p_text);
+	void _filename_edit_set_item(int p_idx);
+	void _filename_edit_text_changed();
 	void _save_confirm_pressed();
 	void _cancel_pressed();
 	void _filter_selected(int);
