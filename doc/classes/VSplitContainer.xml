@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A container that accepts only two child controls, then arranges them vertically and creates a divisor between them. The divisor can be dragged around to change the size relation between the child controls.
+		This class inherits its properties, methods, and signals from [SplitContainer].
 	</description>
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
