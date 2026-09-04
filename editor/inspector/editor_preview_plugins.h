@@ -34,6 +34,10 @@
 #include "editor/inspector/editor_resource_preview.h"
 
 class ScriptLanguage;
+class Node3D;
+class Viewport;
+class SubViewport;
+class PackedScene;
 
 void post_process_preview(Ref<Image> p_image);
 
@@ -67,10 +71,53 @@ public:
 class EditorPackedScenePreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorPackedScenePreviewPlugin, EditorResourcePreviewGenerator);
 
+	mutable SafeFlag aborted;
+	mutable SafeFlag scene_construct_done;
+	mutable DrawRequester draw_requester;
+	mutable HashMap<String, HashMap<String, int>> node_lookup_tables;
+	mutable RID vp_3d_rid;
+	mutable RID vp_2d_rid;
+	mutable RID vp_gui_rid;
+	mutable SubViewport *vp_3d_ptr = nullptr;
+	mutable SubViewport *vp_2d_ptr = nullptr;
+	mutable SubViewport *vp_gui_ptr = nullptr;
+	Mutex editor_settings_mutex;
+	mutable uint64_t thumbnail_file_size_threshold; // In bytes
+	mutable uint64_t thumbnail_resource_count_threshold;
+
+protected:
+	// --- 3D preview ---
+	void _setup_scene_3d(Node *p_node) const;
+	void _construct_scene_3d(Ref<PackedScene> p_pack, const Size2 &p_size, int p_light_count) const;
+
+	void _calculate_scene_aabb(Node *p_node, AABB &r_aabb) const;
+	Transform3D _get_global_transform_3d(Node3D *p_n3d) const;
+
+	// --- 2D preview ---
+	void _setup_scene_2d(Node *p_node, const bool &p_as_gui) const;
+	void _construct_scene_2d(Ref<PackedScene> p_pack, const Size2 &p_size) const;
+
+	void _calculate_scene_rect(Node *p_node, Rect2 &r_rect) const;
+	void _hide_node_2d_in_scene(Node *p_node) const;
+	void _hide_gui_in_scene(Node *p_node) const;
+
+	// Utils
+	void _wait_frame() const;
+	void _count_node_types(Ref<PackedScene> p_pack, int &r_c2d, int &r_c3d, int &r_clight) const;
+	Variant _scene_get_property_value(Ref<SceneState> p_state, int &r_node_idx, const StringName &p_property_name, const Variant &p_default_value = Variant()) const;
+	Ref<ImageTexture> _create_dummy_thumbnail() const;
+	Ref<ImageTexture> _get_fallback_thumbnail(const String &p_path) const;
+	void _get_scene_dependencies(const String &p_path, HashSet<String> &r_deps) const;
+	bool _setup_packed_scene(Ref<PackedScene> p_pack) const;
+	void _fetch_editor_settings() const;
+
 public:
+	virtual void abort() override;
 	virtual bool handles(const String &p_type) const override;
 	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const override;
 	virtual Ref<Texture2D> generate_from_path(const String &p_path, const Size2 &p_size, Dictionary &p_metadata) const override;
+
+	EditorPackedScenePreviewPlugin();
 };
 
 class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
