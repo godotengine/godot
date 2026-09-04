@@ -181,7 +181,7 @@ bool Theme::is_valid_type_name(const String &p_name) {
 	int len = p_name.length();
 	const char32_t *str = p_name.ptr();
 	for (int i = 0; i < len; i++) {
-		if (!is_ascii_identifier_char(str[i])) {
+		if (!is_unicode_identifier_continue(str[i])) {
 			return false;
 		}
 	}
@@ -195,7 +195,7 @@ bool Theme::is_valid_item_name(const String &p_name) {
 	int len = p_name.length();
 	const char32_t *str = p_name.ptr();
 	for (int i = 0; i < len; i++) {
-		if (!is_ascii_identifier_char(str[i])) {
+		if (!is_unicode_identifier_continue(str[i])) {
 			return false;
 		}
 	}
@@ -207,7 +207,7 @@ String Theme::validate_type_name(const String &p_name) {
 	int len = type_name.length();
 	char32_t *buffer = type_name.ptrw();
 	for (int i = 0; i < len; i++) {
-		if (!is_ascii_identifier_char(buffer[i])) {
+		if (!is_unicode_identifier_continue(buffer[i])) {
 			buffer[i] = '_';
 		}
 	}
