@@ -1645,9 +1645,50 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a number smoothly interpolated between <paramref name="from"/> and <paramref name="to"/>,
-        /// based on the <paramref name="weight"/>. Similar to <see cref="Lerp(float, float, float)"/>,
-        /// but interpolates faster at the beginning and slower at the end.
+        /// Returns a smooth cubic Hermite interpolation factor between 0.0 and 1.0 based on
+        /// <paramref name="weight"/> within the range from <paramref name="from"/> to <paramref name="to"/>.
+        /// The interpolation is slowest at the beginning and end of the range, and fastest halfway through.
+        /// <para>For positive ranges (when <paramref name="from"/> is less than <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <paramref name="from"/> and <paramref name="to"/> (exclusive)</term>
+        ///         <description>Returns an S-shaped curve that smoothly transitions from <c>0</c> to <c>1</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than or equal to <paramref name="to"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        /// </list>
+        /// <para>For negative ranges (when <paramref name="from"/> is greater than <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="to"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <paramref name="to"/> and <paramref name="from"/> (exclusive)</term>
+        ///         <description>Returns a mirrored S-shaped curve that smoothly transitions from <c>1</c> to <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        /// </list>
+        /// <para>For empty ranges (when <paramref name="from"/> equals <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than <paramref name="from"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        /// </list>
         /// </summary>
         /// <param name="from">The start value for interpolation.</param>
         /// <param name="to">The destination value for interpolation.</param>
@@ -1657,16 +1698,61 @@ namespace Godot
         {
             if (IsEqualApprox(from, to))
             {
-                return from;
+                if (from <= to)
+                {
+                    return weight <= from ? 0.0f : 1.0f;
+                }
+                return weight <= to ? 1.0f : 0.0f;
             }
             float x = Math.Clamp((weight - from) / (to - from), 0.0f, 1.0f);
             return x * x * (3 - (2 * x));
         }
 
         /// <summary>
-        /// Returns a number smoothly interpolated between <paramref name="from"/> and <paramref name="to"/>,
-        /// based on the <paramref name="weight"/>. Similar to <see cref="Lerp(double, double, double)"/>,
-        /// but interpolates faster at the beginning and slower at the end.
+        /// Returns a smooth cubic Hermite interpolation factor between 0.0 and 1.0 based on
+        /// <paramref name="weight"/> within the range from <paramref name="from"/> to <paramref name="to"/>.
+        /// The interpolation is slowest at the beginning and end of the range, and fastest halfway through.
+        /// <para>For positive ranges (when <paramref name="from"/> is less than <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <paramref name="from"/> and <paramref name="to"/> (exclusive)</term>
+        ///         <description>Returns an S-shaped curve that smoothly transitions from <c>0</c> to <c>1</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than or equal to <paramref name="to"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        /// </list>
+        /// <para>For negative ranges (when <paramref name="from"/> is greater than <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="to"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <paramref name="to"/> and <paramref name="from"/> (exclusive)</term>
+        ///         <description>Returns a mirrored S-shaped curve that smoothly transitions from <c>1</c> to <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        /// </list>
+        /// <para>For empty ranges (when <paramref name="from"/> equals <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than <paramref name="from"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        /// </list>
         /// </summary>
         /// <param name="from">The start value for interpolation.</param>
         /// <param name="to">The destination value for interpolation.</param>
@@ -1676,7 +1762,11 @@ namespace Godot
         {
             if (IsEqualApprox(from, to))
             {
-                return from;
+                if (from <= to)
+                {
+                    return weight <= from ? 0.0 : 1.0;
+                }
+                return weight <= to ? 1.0 : 0.0;
             }
             double x = Math.Clamp((weight - from) / (to - from), 0.0, 1.0);
             return x * x * (3 - (2 * x));
