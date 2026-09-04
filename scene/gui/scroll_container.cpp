@@ -326,12 +326,11 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
-			// TODO: CHECK FOR OTHER USES OF P_GUI_INPUT HERE, LIKE ANIMATION_STATE_MACHINE_EDITOR.CPP
 		if (h_scroll_enabled) {
-			h_scroll->scroll(pan_gesture->get_delta().x / EDSCALE);
+			h_scroll->scroll(pan_gesture->get_delta().x);
 		}
 		if (v_scroll_enabled) {
-			v_scroll->scroll(pan_gesture->get_delta().y / EDSCALE);
+			v_scroll->scroll(pan_gesture->get_delta().y);
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {

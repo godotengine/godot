@@ -561,7 +561,6 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 	// Pan window
 	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::MIDDLE)) {
-		// Vector2 relative = mm->get_relative() / EDSCALE;
 		Vector2 relative = mm->get_relative();
 		h_scroll->set_value(h_scroll->get_value() - relative.x);
 		v_scroll->set_value(v_scroll->get_value() - relative.y);
@@ -770,7 +769,6 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		// Vector2 delta = pan_gesture->get_delta() / EDSCALE;
 		Vector2 delta = pan_gesture->get_delta();
 		h_scroll->set_value(h_scroll->get_value() + delta.x);
 		v_scroll->set_value(v_scroll->get_value() + delta.y);

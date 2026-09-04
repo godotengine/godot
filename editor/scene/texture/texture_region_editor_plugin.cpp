@@ -699,8 +699,7 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 
 	Ref<InputEventPanGesture> pan_gesture = p_input;
 	if (pan_gesture.is_valid()) {
-		// TODO: CHECK FOR OTHER USES OF P_INPUT HERE, LIKE ANIMATION_STATE_MACHINE_EDITOR.CPP
-		Vector2 delta = pan_gesture->get_delta() / EDSCALE;
+		Vector2 delta = pan_gesture->get_delta();
 		hscroll->set_value(hscroll->get_value() + delta.x);
 		vscroll->set_value(vscroll->get_value() + delta.y);
 	}

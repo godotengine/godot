@@ -2993,14 +2993,13 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		// to detect that the interaction was part of a pan gesture and avoid showing the virtual keyboard.
 		touch_dragging_in_progress = true;
 		pan_gesture_performed = true;
-		const real_t delta = pan_gesture->get_delta().y / EDSCALE;
+		const real_t delta = pan_gesture->get_delta().y;
 		if (delta < 0) {
 			_scroll_up(-delta, false);
 		} else {
 			_scroll_down(delta, false);
 		}
-		// TODO: CHECK FOR OTHER USES OF P_GUI_INPUT HERE, LIKE ANIMATION_STATE_MACHINE_EDITOR.CPP
-		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x / EDSCALE);
+		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x);
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 			accept_event(); // Accept event if scroll changed.
 		}

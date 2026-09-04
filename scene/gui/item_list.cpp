@@ -1171,8 +1171,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		// TODO: CHECK FOR OTHER USES OF P_EVENT HERE, LIKE ANIMATION_STATE_MACHINE_EDITOR.CPP
-		Vector2 delta = pan_gesture->get_delta() / EDSCALE;
+		Vector2 delta = pan_gesture->get_delta();
 		scroll_bar_v->set_value(scroll_bar_v->get_value() + delta.y);
 		scroll_bar_h->set_value(scroll_bar_h->get_value() + delta.x);
 	}

@@ -532,8 +532,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		// TODO: CHECK FOR OTHER USES OF P_EVENT HERE, LIKE ANIMATION_STATE_MACHINE_EDITOR.CPP
-		panning += pan_gesture->get_delta() / EDSCALE;
+		panning += pan_gesture->get_delta();
 		drag_last_pos = Vector2();
 		button_center_view->set_disabled(panning.is_zero_approx());
 		accept_event();
