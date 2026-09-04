@@ -346,7 +346,7 @@ int MainTimerSync::get_average_physics_steps(double &p_min, double &p_max) {
 }
 
 // advance physics clock by p_process_step, return appropriate number of steps to simulate
-MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_ticks_per_second, double p_process_step) {
+MainFrameTime MainTimerSync::advance_core(double p_physics_step, double p_physics_ticks_per_second, double p_process_step) {
 	MainFrameTime ret;
 
 	ret.process_step = p_process_step;
@@ -429,7 +429,7 @@ MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_t
 }
 
 // calls advance_core, keeps track of deficit it adds to animaption_step, make sure the deficit sum stays close to zero
-MainFrameTime MainTimerSync::advance_checked(double p_physics_step, int p_physics_ticks_per_second, double p_process_step) {
+MainFrameTime MainTimerSync::advance_checked(double p_physics_step, double p_physics_ticks_per_second, double p_process_step) {
 	if (fixed_fps != -1) {
 		p_process_step = 1.0 / fixed_fps;
 	}
@@ -536,7 +536,7 @@ void MainTimerSync::set_fixed_fps(int p_fixed_fps) {
 }
 
 // advance one physics frame, return timesteps to take
-MainFrameTime MainTimerSync::advance(double p_physics_step, int p_physics_ticks_per_second) {
+MainFrameTime MainTimerSync::advance(double p_physics_step, double p_physics_ticks_per_second) {
 	double cpu_process_step = get_cpu_process_step();
 
 	return advance_checked(p_physics_step, p_physics_ticks_per_second, cpu_process_step);
