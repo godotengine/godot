@@ -3174,7 +3174,8 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		if (scroll_active) {
-			vscroll->scroll(vscroll->get_page() * pan_gesture->get_delta().y * 0.5 / 8);
+			// TODO: CHECK FOR OTHER USES OF P_EVENT HERE, LIKE ANIMATION_STATE_MACHINE_EDITOR.CPP
+			vscroll->scroll(pan_gesture->get_delta().y / EDSCALE);
 			queue_accessibility_update();
 		}
 

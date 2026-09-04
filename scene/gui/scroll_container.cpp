@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
@@ -325,11 +326,12 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
+			// TODO: CHECK FOR OTHER USES OF P_GUI_INPUT HERE, LIKE ANIMATION_STATE_MACHINE_EDITOR.CPP
 		if (h_scroll_enabled) {
-			h_scroll->scroll(h_scroll->get_page() * pan_gesture->get_delta().x / ScrollBar::PAGE_DIVISOR);
+			h_scroll->scroll(pan_gesture->get_delta().x / EDSCALE);
 		}
 		if (v_scroll_enabled) {
-			v_scroll->scroll(v_scroll->get_page() * pan_gesture->get_delta().y / ScrollBar::PAGE_DIVISOR);
+			v_scroll->scroll(pan_gesture->get_delta().y / EDSCALE);
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
