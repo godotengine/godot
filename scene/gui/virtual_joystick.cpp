@@ -212,6 +212,9 @@ void VirtualJoystick::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_initial_offset_ratio", "ratio"), &VirtualJoystick::set_initial_offset_ratio);
 	ClassDB::bind_method(D_METHOD("get_initial_offset_ratio"), &VirtualJoystick::get_initial_offset_ratio);
 
+	ClassDB::bind_method(D_METHOD("set_raw_input", "input"), &VirtualJoystick::set_raw_input);
+	ClassDB::bind_method(D_METHOD("get_raw_input"), &VirtualJoystick::get_raw_input);
+
 	ClassDB::bind_method(D_METHOD("set_action_left", "action"), &VirtualJoystick::set_action_left);
 	ClassDB::bind_method(D_METHOD("get_action_left"), &VirtualJoystick::get_action_left);
 
@@ -234,6 +237,8 @@ void VirtualJoystick::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "deadzone_ratio", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_deadzone_ratio", "get_deadzone_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "clampzone_ratio", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_clampzone_ratio", "get_clampzone_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "initial_offset_ratio", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_initial_offset_ratio", "get_initial_offset_ratio");
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "raw_input", PROPERTY_HINT_NONE), "set_raw_input", "get_raw_input");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_left", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action_left", "get_action_left");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action_right", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action_right", "get_action_right");
@@ -316,6 +321,14 @@ void VirtualJoystick::set_initial_offset_ratio(const Vector2 &p_ratio) {
 	}
 	initial_offset_ratio = p_ratio;
 	_reset();
+}
+
+void VirtualJoystick::set_raw_input(const Vector2 &p_input) {
+	_update_joystick(joystick_pos + p_input * joystick_size * 0.5f * clampzone_ratio);
+}
+
+Vector2 VirtualJoystick::get_raw_input() const {
+	return raw_input_vector;
 }
 
 Vector2 VirtualJoystick::get_initial_offset_ratio() const {
