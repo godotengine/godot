@@ -35,6 +35,9 @@
 #include "core/object/class_db.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_2d/navigation_server_2d_debug.h"
+#endif // DEBUG_ENABLED
 
 void NavigationLink2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationLink2D::get_rid);
@@ -374,15 +377,15 @@ void NavigationLink2D::_update_debug_mesh() {
 		return;
 	}
 
-	if (!Engine::get_singleton()->is_editor_hint() && !NavigationServer2D::get_singleton()->get_debug_enabled()) {
+	if (!Engine::get_singleton()->is_editor_hint() && !NavigationServer2DDebug::get_singleton()->get_debug_enabled()) {
 		return;
 	}
 
 	Color color;
 	if (enabled) {
-		color = NavigationServer2D::get_singleton()->get_debug_navigation_link_connection_color();
+		color = NavigationServer2DDebug::get_singleton()->get_debug_navigation_link_connection_color();
 	} else {
-		color = NavigationServer2D::get_singleton()->get_debug_navigation_link_connection_disabled_color();
+		color = NavigationServer2DDebug::get_singleton()->get_debug_navigation_link_connection_disabled_color();
 	}
 
 	real_t radius = NavigationServer2D::get_singleton()->map_get_link_connection_radius(get_world_2d()->get_navigation_map());

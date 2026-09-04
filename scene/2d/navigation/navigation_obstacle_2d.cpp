@@ -40,6 +40,9 @@
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/rendering/rendering_server.h"
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_2d/navigation_server_2d_debug.h"
+#endif // DEBUG_ENABLED
 
 Callable NavigationObstacle2D::_navmesh_source_geometry_parsing_callback;
 RID NavigationObstacle2D::_navmesh_source_geometry_parser;
@@ -170,7 +173,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 				bool is_debug_enabled = false;
 				if (Engine::get_singleton()->is_editor_hint()) {
 					is_debug_enabled = true;
-				} else if (NavigationServer2D::get_singleton()->get_debug_enabled() && NavigationServer2D::get_singleton()->get_debug_avoidance_enabled()) {
+				} else if (NavigationServer2DDebug::get_singleton()->get_debug_enabled() && NavigationServer2DDebug::get_singleton()->get_debug_avoidance_enabled()) {
 					is_debug_enabled = true;
 				}
 
@@ -444,8 +447,8 @@ void NavigationObstacle2D::_update_transform() {
 
 #ifdef DEBUG_ENABLED
 void NavigationObstacle2D::_update_fake_agent_radius_debug() {
-	if (radius > 0.0 && NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_radius()) {
-		Color debug_radius_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_obstacles_radius_color();
+	if (radius > 0.0 && NavigationServer2DDebug::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_radius()) {
+		Color debug_radius_color = NavigationServer2DDebug::get_singleton()->get_debug_navigation_avoidance_obstacles_radius_color();
 		// Prevent non-positive scaling.
 		const Vector2 safe_scale = get_global_scale().abs().maxf(0.001);
 		// Agent radius is a scalar value and does not support non-uniform scaling, choose the largest axis.
@@ -461,7 +464,7 @@ void NavigationObstacle2D::_update_static_obstacle_debug() {
 		return;
 	}
 
-	if (!NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_static()) {
+	if (!NavigationServer2DDebug::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_static()) {
 		return;
 	}
 
@@ -496,9 +499,9 @@ void NavigationObstacle2D::_update_static_obstacle_debug() {
 	Color debug_static_obstacle_edge_color;
 
 	if (are_vertices_valid()) {
-		debug_static_obstacle_edge_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_edge_color();
+		debug_static_obstacle_edge_color = NavigationServer2DDebug::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_edge_color();
 	} else {
-		debug_static_obstacle_edge_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_edge_color();
+		debug_static_obstacle_edge_color = NavigationServer2DDebug::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_edge_color();
 	}
 
 	Vector<Color> line_color_array;
