@@ -1278,6 +1278,10 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 
 				RenderingServerDefault::redraw_request(); // animation visible means redraw request
 			} break;
+
+			case Item::Command::TYPE_CALLBACK: {
+				// Not supported
+			} break;
 		}
 
 		c = c->next;
@@ -1538,7 +1542,8 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index, Ren
 		} break;
 		case Item::Command::TYPE_TRANSFORM:
 		case Item::Command::TYPE_CLIP_IGNORE:
-		case Item::Command::TYPE_ANIMATION_SLICE: {
+		case Item::Command::TYPE_ANIMATION_SLICE:
+		case Item::Command::TYPE_CALLBACK: {
 			// Can ignore these as they only impact batch creation.
 		} break;
 	}
