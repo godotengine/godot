@@ -225,7 +225,8 @@ hb_coretext_get_glyph_h_advances (hb_font_t* font,
     CTFontGetAdvancesForGlyphs (ct_font, kCTFontOrientationHorizontal, cg_glyph, advances, c);
     for (unsigned j = 0; j < c; j++)
     {
-      *first_advance = round (advances[j].width * x_mult) - tracking;
+      *first_advance = hb_clamp_to<hb_position_t> (
+	  round (advances[j].width * x_mult) - (double) tracking);
       first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
     }
   }
@@ -245,7 +246,7 @@ hb_coretext_get_glyph_v_advances (hb_font_t* font,
   CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
   CGFloat ct_font_size = CTFontGetSize (ct_font);
-  CGFloat y_mult = (CGFloat) -font->y_scale / ct_font_size;
+  CGFloat y_mult = -(CGFloat) font->y_scale / ct_font_size;
   hb_position_t tracking = font->face->table.trak->get_tracking (font, HB_DIRECTION_TTB, 0.f);
 
   CGGlyph cg_glyph[MAX_GLYPHS];
@@ -261,7 +262,8 @@ hb_coretext_get_glyph_v_advances (hb_font_t* font,
     CTFontGetAdvancesForGlyphs (ct_font, kCTFontOrientationVertical, cg_glyph, advances, c);
     for (unsigned j = 0; j < c; j++)
     {
-      *first_advance = round (advances[j].width * y_mult) - tracking;
+      *first_advance = hb_clamp_to<hb_position_t> (
+	  round (advances[j].width * y_mult) - (double) tracking);
       first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
     }
   }
@@ -278,15 +280,15 @@ hb_coretext_get_glyph_v_origin (hb_font_t *font,
   CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
   CGFloat ct_font_size = CTFontGetSize (ct_font);
-  CGFloat x_mult = (CGFloat) -font->x_scale / ct_font_size;
-  CGFloat y_mult = (CGFloat) -font->y_scale / ct_font_size;
+  CGFloat x_mult = -(CGFloat) font->x_scale / ct_font_size;
+  CGFloat y_mult = -(CGFloat) font->y_scale / ct_font_size;
 
   const CGGlyph glyphs = glyph;
   CGSize origin;
   CTFontGetVerticalTranslationsForGlyphs (ct_font, &glyphs, &origin, 1);
 
-  *x = round (x_mult * origin.width);
-  *y = round (y_mult * origin.height);
+  *x = hb_clamp_to<hb_position_t> (round (x_mult * origin.width));
+  *y = hb_clamp_to<hb_position_t> (round (y_mult * origin.height));
 
   return true;
 }
@@ -309,10 +311,12 @@ hb_coretext_get_glyph_extents (hb_font_t *font,
   CGRect bounds = ::CTFontGetBoundingRectsForGlyphs(ct_font,
 						    kCTFontOrientationDefault, glyphs, NULL, 1);
 
-  extents->x_bearing = round (bounds.origin.x * x_mult);
-  extents->y_bearing = round ((bounds.origin.y + bounds.size.height) * y_mult);
-  extents->width = round (bounds.size.width * x_mult);
-  extents->height = round (bounds.origin.y * y_mult) - extents->y_bearing;
+  double y_bearing = round ((bounds.origin.y + bounds.size.height) * y_mult);
+
+  extents->x_bearing = hb_clamp_to<hb_position_t> (round (bounds.origin.x * x_mult));
+  extents->y_bearing = hb_clamp_to<hb_position_t> (y_bearing);
+  extents->width = hb_clamp_to<hb_position_t> (round (bounds.size.width * x_mult));
+  extents->height = hb_clamp_to<hb_position_t> (round (bounds.origin.y * y_mult) - y_bearing);
 
   return true;
 }
@@ -328,9 +332,9 @@ hb_coretext_get_font_h_extents (hb_font_t *font,
   CGFloat ct_font_size = CTFontGetSize (ct_font);
   CGFloat y_mult = (CGFloat) font->y_scale / ct_font_size;
 
-  metrics->ascender = round (CTFontGetAscent (ct_font) * y_mult);
-  metrics->descender = -round (CTFontGetDescent (ct_font) * y_mult);
-  metrics->line_gap = round (CTFontGetLeading (ct_font) * y_mult);
+  metrics->ascender = hb_clamp_to<hb_position_t> (round (CTFontGetAscent (ct_font) * y_mult));
+  metrics->descender = hb_clamp_to<hb_position_t> (-round (CTFontGetDescent (ct_font) * y_mult));
+  metrics->line_gap = hb_clamp_to<hb_position_t> (round (CTFontGetLeading (ct_font) * y_mult));
 
   return true;
 }

@@ -42,7 +42,7 @@ HB_INTERNAL void PaintColrLayers::closurev1 (hb_colrv1_closure_context_t* c) con
   const LayerList &paint_offset_lists = c->get_colr_table ()->get_layerList ();
   for (unsigned i = firstLayerIndex; i < firstLayerIndex + numLayers; i++)
   {
-    const Paint &paint = std::addressof (paint_offset_lists) + paint_offset_lists[i];
+    const Paint &paint = paint_offset_lists.get_paint (i);
     paint.dispatch (c);
   }
 }

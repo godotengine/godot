@@ -101,14 +101,16 @@ propagate_attachment_offsets (hb_glyph_position_t *pos,
   if (type & GPOS_impl::ATTACH_TYPE_CURSIVE)
   {
     if (HB_DIRECTION_IS_HORIZONTAL (direction))
-      pos[i].y_offset += pos[j].y_offset;
+      pos[i].y_offset = hb_saturate_add (pos[i].y_offset, pos[j].y_offset);
     else
-      pos[i].x_offset += pos[j].x_offset;
+      pos[i].x_offset = hb_saturate_add (pos[i].x_offset, pos[j].x_offset);
   }
   else /*if (type & GPOS_impl::ATTACH_TYPE_MARK)*/
   {
-    pos[i].x_offset += pos[j].x_offset;
-    pos[i].y_offset += pos[j].y_offset;
+    if (HB_DIRECTION_IS_HORIZONTAL (direction))
+      pos[i].x_offset = hb_saturate_add (pos[i].x_offset, pos[j].x_offset);
+    else
+      pos[i].y_offset = hb_saturate_add (pos[i].y_offset, pos[j].y_offset);
 
     // i is the position of the mark; j is the base.
     if (j < i)
@@ -117,13 +119,13 @@ propagate_attachment_offsets (hb_glyph_position_t *pos,
        * And currently the only way in OpenType. */
       if (HB_DIRECTION_IS_FORWARD (direction))
 	for (unsigned int k = j; k < i; k++) {
-	  pos[i].x_offset -= pos[k].x_advance;
-	  pos[i].y_offset -= pos[k].y_advance;
+	  pos[i].x_offset = hb_saturate_sub (pos[i].x_offset, pos[k].x_advance);
+	  pos[i].y_offset = hb_saturate_sub (pos[i].y_offset, pos[k].y_advance);
 	}
       else
 	for (unsigned int k = j + 1; k < i + 1; k++) {
-	  pos[i].x_offset += pos[k].x_advance;
-	  pos[i].y_offset += pos[k].y_advance;
+	  pos[i].x_offset = hb_saturate_add (pos[i].x_offset, pos[k].x_advance);
+	  pos[i].y_offset = hb_saturate_add (pos[i].y_offset, pos[k].y_advance);
 	}
     }
     else // j > i
@@ -132,13 +134,13 @@ propagate_attachment_offsets (hb_glyph_position_t *pos,
        * to a base after it in the logical order. */
       if (HB_DIRECTION_IS_FORWARD (direction))
 	for (unsigned int k = i; k < j; k++) {
-	  pos[i].x_offset += pos[k].x_advance;
-	  pos[i].y_offset += pos[k].y_advance;
+	  pos[i].x_offset = hb_saturate_add (pos[i].x_offset, pos[k].x_advance);
+	  pos[i].y_offset = hb_saturate_add (pos[i].y_offset, pos[k].y_advance);
 	}
       else
 	for (unsigned int k = i + 1; k < j + 1; k++) {
-	  pos[i].x_offset -= pos[k].x_advance;
-	  pos[i].y_offset -= pos[k].y_advance;
+	  pos[i].x_offset = hb_saturate_sub (pos[i].x_offset, pos[k].x_advance);
+	  pos[i].y_offset = hb_saturate_sub (pos[i].y_offset, pos[k].y_advance);
 	}
     }
   }
@@ -191,7 +193,8 @@ GPOS::position_finish_offsets (hb_font_t *font, hb_buffer_t *buffer)
      * as it gets weird otherwise. */
     for (unsigned i = 0; i < len; i++)
       if (unlikely (pos[i].y_offset))
-        pos[i].x_offset += roundf (font->slant_xy * pos[i].y_offset);
+        pos[i].x_offset = hb_clamp_to<hb_position_t> ((double) pos[i].x_offset +
+						      (double) roundf (font->slant_xy * pos[i].y_offset));
   }
 }
 

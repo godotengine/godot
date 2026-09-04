@@ -877,23 +877,26 @@ struct cs_interpreter_t : interpreter_t<ENV>
 {
   cs_interpreter_t (ENV& env_) : interpreter_t<ENV> (env_) {}
 
-  bool interpret (PARAM& param)
+  bool interpret (PARAM& param, int64_t *budget = nullptr)
   {
     SUPER::env.set_endchar (false);
 
+    bool ret = true;
     unsigned max_ops = HB_CFF_MAX_OPS;
     for (;;) {
       OPSET::process_op (SUPER::env.fetch_op (), SUPER::env, param);
       if (unlikely (SUPER::env.in_error () || !--max_ops))
       {
 	SUPER::env.set_error ();
-	return false;
+	ret = false;
+	break;
       }
       if (SUPER::env.is_endchar ())
 	break;
     }
 
-    return true;
+    if (budget) *budget -= (int64_t) (HB_CFF_MAX_OPS - max_ops);
+    return ret;
   }
 
   private:

@@ -484,6 +484,13 @@ hb_buffer_t::move_to (unsigned int i)
     unsigned int count = i - out_len;
     if (unlikely (!make_room_for (count, count))) return false;
 
+    max_ops -= count;
+    if (unlikely (max_ops < 0))
+    {
+      successful = false;
+      return false;
+    }
+
     memmove (out_info + out_len, info + idx, count * sizeof (out_info[0]));
     idx += count;
     out_len += count;
@@ -503,6 +510,13 @@ hb_buffer_t::move_to (unsigned int i)
     if (unlikely (idx < count && !shift_forward (count - idx))) return false;
 
     assert (idx >= count);
+
+    max_ops -= count;
+    if (unlikely (max_ops < 0))
+    {
+      successful = false;
+      return false;
+    }
 
     idx -= count;
     out_len -= count;
@@ -2103,18 +2117,18 @@ normalize_glyphs_cluster (hb_buffer_t *buffer,
   hb_position_t total_x_advance = 0, total_y_advance = 0;
   for (unsigned int i = start; i < end; i++)
   {
-    total_x_advance += pos[i].x_advance;
-    total_y_advance += pos[i].y_advance;
+    total_x_advance = hb_saturate_add (total_x_advance, pos[i].x_advance);
+    total_y_advance = hb_saturate_add (total_y_advance, pos[i].y_advance);
   }
 
   hb_position_t x_advance = 0, y_advance = 0;
   for (unsigned int i = start; i < end; i++)
   {
-    pos[i].x_offset += x_advance;
-    pos[i].y_offset += y_advance;
+    pos[i].x_offset = hb_saturate_add (pos[i].x_offset, x_advance);
+    pos[i].y_offset = hb_saturate_add (pos[i].y_offset, y_advance);
 
-    x_advance += pos[i].x_advance;
-    y_advance += pos[i].y_advance;
+    x_advance = hb_saturate_add (x_advance, pos[i].x_advance);
+    y_advance = hb_saturate_add (y_advance, pos[i].y_advance);
 
     pos[i].x_advance = 0;
     pos[i].y_advance = 0;
@@ -2129,11 +2143,11 @@ normalize_glyphs_cluster (hb_buffer_t *buffer,
     hb_stable_sort (buffer->info + start, end - start - 1, compare_info_codepoint, buffer->pos + start);
   } else {
     /* Transfer all cluster advance to the first glyph. */
-    pos[start].x_advance += total_x_advance;
-    pos[start].y_advance += total_y_advance;
+    pos[start].x_advance = hb_saturate_add (pos[start].x_advance, total_x_advance);
+    pos[start].y_advance = hb_saturate_add (pos[start].y_advance, total_y_advance);
     for (unsigned int i = start + 1; i < end; i++) {
-      pos[i].x_offset -= total_x_advance;
-      pos[i].y_offset -= total_y_advance;
+      pos[i].x_offset = hb_saturate_sub (pos[i].x_offset, total_x_advance);
+      pos[i].y_offset = hb_saturate_sub (pos[i].y_offset, total_y_advance);
     }
     hb_stable_sort (buffer->info + start + 1, end - start - 1, compare_info_codepoint, buffer->pos + start + 1);
   }
@@ -2258,15 +2272,20 @@ hb_buffer_diff (hb_buffer_t *buffer,
 
   if (buffer->content_type == HB_BUFFER_CONTENT_TYPE_GLYPHS)
   {
+    auto position_diff = [] (hb_position_t a, hb_position_t b) -> uint64_t
+    {
+      int64_t diff = (int64_t) a - b;
+      return diff < 0 ? -diff : diff;
+    };
     assert (buffer->have_positions);
     const hb_glyph_position_t *buf_pos = buffer->pos;
     const hb_glyph_position_t *ref_pos = reference->pos;
     for (unsigned int i = 0; i < count; i++)
     {
-      if ((unsigned int) abs (buf_pos->x_advance - ref_pos->x_advance) > position_fuzz ||
-	  (unsigned int) abs (buf_pos->y_advance - ref_pos->y_advance) > position_fuzz ||
-	  (unsigned int) abs (buf_pos->x_offset - ref_pos->x_offset) > position_fuzz ||
-	  (unsigned int) abs (buf_pos->y_offset - ref_pos->y_offset) > position_fuzz)
+      if (position_diff (buf_pos->x_advance, ref_pos->x_advance) > position_fuzz ||
+	  position_diff (buf_pos->y_advance, ref_pos->y_advance) > position_fuzz ||
+	  position_diff (buf_pos->x_offset, ref_pos->x_offset) > position_fuzz ||
+	  position_diff (buf_pos->y_offset, ref_pos->y_offset) > position_fuzz)
       {
 	result |= HB_BUFFER_DIFF_FLAG_POSITION_MISMATCH;
 	break;
