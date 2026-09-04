@@ -32,6 +32,7 @@
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/version.h"
 #include "scene/resources/material.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -63,13 +64,14 @@
 
 void Trail3D::init_shaders() {
 	billboard_additive_shader.instantiate();
-	billboard_additive_shader->set_code(R"(
+	billboard_additive_shader->set_code(R"(// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s Trail3D.
+
 shader_type spatial;
 render_mode blend_add, depth_draw_never, unshaded, cull_disabled;
 
 void vertex() {
-	// Billboarding code for trails
-	// CUSTOM0 contains the tangent of the trail and the width.
+	// Billboarding code for trails.
+	// `CUSTOM0` contains the tangent and width of the trail.
 	if (dot(CUSTOM0.xyz, CUSTOM0.xyz) > 0.0) {
 		vec3 p = (inverse(MODELVIEW_MATRIX) * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 		p = VERTEX - p;
@@ -90,13 +92,14 @@ void fragment() {
 }
 )");
 	billboard_shader.instantiate();
-	billboard_shader->set_code(R"(
+	billboard_shader->set_code(R"(// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s Trail3D.
+
 shader_type spatial;
 render_mode blend_mix, depth_draw_never, unshaded, cull_disabled;
 
 void vertex() {
-	// Billboarding code for trails
-	// CUSTOM0 contains the tangent of the trail and the width
+	// Billboarding code for trails.
+	// `CUSTOM0` contains the tangent and width of the trail.
 	if (dot(CUSTOM0.xyz, CUSTOM0.xyz) > 0.0) {
 		vec3 p = (inverse(MODELVIEW_MATRIX) * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 		p = VERTEX - p;
@@ -117,7 +120,8 @@ void fragment() {
 }
 )");
 	local_additive_shader.instantiate();
-	local_additive_shader->set_code(R"(
+	local_additive_shader->set_code(R"(// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s Trail3D.
+
 shader_type spatial;
 render_mode blend_add, depth_draw_never, unshaded, cull_disabled;
 
@@ -127,7 +131,8 @@ void fragment() {
 }
 )");
 	local_shader.instantiate();
-	local_shader->set_code(R"(
+	local_shader->set_code(R"(// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s Trail3D.
+
 shader_type spatial;
 render_mode blend_mix, depth_draw_never, unshaded, cull_disabled;
 
