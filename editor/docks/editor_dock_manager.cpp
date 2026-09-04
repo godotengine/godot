@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/window_wrapper.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -1032,6 +1033,9 @@ void DockShortcutHandler::shortcut_input(const Ref<InputEvent> &p_event) {
 			DockTabContainer *dock_container = dock->get_parent_container();
 			if (dock_container) {
 				dock_container->dock_focused(dock, was_visible);
+			}
+			if (Object::cast_to<ScriptEditor>(dock)) {
+				ScriptEditor::get_singleton()->focus_editor();
 			}
 			get_viewport()->set_input_as_handled();
 			break;
