@@ -721,6 +721,13 @@ void EditorData::set_scene_root(int p_idx, Node *p_root) {
 	}
 }
 
+void EditorData::set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene) {
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+	EditedScene &scene_info = edited_scene.write[p_idx];
+
+	scene_info.scene = p_scene;
+}
+
 bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths) {
 	Ref<SceneState> ss;
 

@@ -5032,6 +5032,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		idx = editor_data.add_edited_scene(-1);
 	}
 	editor_data.set_scene_root(idx, new_scene);
+	editor_data.set_scene_resource(idx, sdata);
 
 	const Ref<ConfigFile> editor_state_cf = _load_scene_config(lpath);
 	if (editor_state_cf->has_section("editor_states")) {
