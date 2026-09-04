@@ -691,8 +691,8 @@ private:
 		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR, //DisplayServerEnums::CURSOR_CROSS
 		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_WAIT, //DisplayServerEnums::CURSOR_WAIT
 		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_PROGRESS, //DisplayServerEnums::CURSOR_BUSY
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB, //DisplayServerEnums::CURSOR_DRAG
-		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING, //DisplayServerEnums::CURSOR_CAN_DROP
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING, //DisplayServerEnums::CURSOR_DRAG
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB, //DisplayServerEnums::CURSOR_CAN_DROP
 		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NO_DROP, //DisplayServerEnums::CURSOR_FORBIDDEN
 		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE, //DisplayServerEnums::CURSOR_VSIZE
 		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_EW_RESIZE, //DisplayServerEnums::CURSOR_HSIZE
