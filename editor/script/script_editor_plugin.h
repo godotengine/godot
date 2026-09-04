@@ -393,6 +393,7 @@ class ScriptEditor : public EditorDock {
 	void _update_online_doc();
 
 	void _split_dragged(float);
+	void _script_classes_updated();
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
