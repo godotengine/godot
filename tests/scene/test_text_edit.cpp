@@ -132,14 +132,12 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			// Can clear even if not editable.
 			text_edit->set_editable(false);
 
-			Array lines_edited_clear_args = { { 0, 0 } };
-
 			text_edit->clear();
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "");
 			CHECK(text_edit->get_caret_column() == 0);
 			SIGNAL_CHECK("text_set", empty_signal_args);
-			SIGNAL_CHECK("lines_edited_from", lines_edited_clear_args);
+			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			SIGNAL_CHECK_FALSE("caret_changed");
 			SIGNAL_CHECK_FALSE("text_changed");
 
@@ -147,12 +145,21 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->undo();
 			MessageQueue::get_singleton()->flush();
+			CHECK(text_edit->get_text() == "test text");
+			CHECK(text_edit->get_caret_column() == 0);
+			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
+			SIGNAL_CHECK_FALSE("caret_changed");
+			SIGNAL_CHECK_FALSE("text_set");
+
+			text_edit->redo();
+			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_text() == "");
 			CHECK(text_edit->get_caret_column() == 0);
-			SIGNAL_CHECK_FALSE("text_set");
-			SIGNAL_CHECK_FALSE("lines_edited_from");
-			SIGNAL_CHECK_FALSE("text_changed");
+			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("caret_changed");
+			SIGNAL_CHECK_FALSE("text_set");
 
 			// Can still undo set_text.
 			text_edit->set_editable(false);
