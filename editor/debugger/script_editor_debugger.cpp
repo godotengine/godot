@@ -94,6 +94,34 @@ void ScriptEditorDebugger::debug_copy() {
 	DisplayServer::get_singleton()->clipboard_set(msg);
 }
 
+void ScriptEditorDebugger::debug_move_up_in_call_stack() {
+	if (stack_dump->get_selected() && stack_dump->get_selected()->get_prev_visible()) {
+		stack_dump->set_selected(stack_dump->get_selected()->get_prev_visible());
+		stack_dump->queue_redraw();
+	}
+}
+
+void ScriptEditorDebugger::debug_move_down_in_call_stack() {
+	if (stack_dump->get_selected() && stack_dump->get_selected()->get_next_visible()) {
+		stack_dump->set_selected(stack_dump->get_selected()->get_next_visible());
+		stack_dump->queue_redraw();
+	}
+}
+
+void ScriptEditorDebugger::debug_top_of_call_stack() {
+	if (stack_dump->get_root()) {
+		stack_dump->set_selected(stack_dump->get_root()->get_first_child());
+		stack_dump->queue_redraw();
+	}
+}
+
+void ScriptEditorDebugger::debug_bottom_of_call_stack() {
+	if (stack_dump->get_root()) {
+		stack_dump->set_selected(stack_dump->get_root()->get_prev_visible(true));
+		stack_dump->queue_redraw();
+	}
+}
+
 void ScriptEditorDebugger::debug_skip_breakpoints() {
 	skip_breakpoints_value = !skip_breakpoints_value;
 	if (skip_breakpoints_value) {
@@ -1119,6 +1147,10 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			step->set_button_icon(get_editor_theme_icon(SNAME("DebugStep")));
 			next->set_button_icon(get_editor_theme_icon(SNAME("DebugNext")));
 			out->set_button_icon(get_editor_theme_icon(SNAME("DebugOut")));
+			move_up_in_call_stack->set_button_icon(get_editor_theme_icon(SNAME("ArrowUp")));
+			move_down_in_call_stack->set_button_icon(get_editor_theme_icon(SNAME("ArrowDown")));
+			top_of_call_stack->set_button_icon(get_editor_theme_icon(SNAME("GuiResizerTopLeft")));
+			bottom_of_call_stack->set_button_icon(get_editor_theme_icon(SNAME("GuiResizer")));
 			dobreak->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			docontinue->set_button_icon(get_editor_theme_icon(SNAME("DebugContinue")));
 			vmem_notice_icon->set_texture(get_editor_theme_icon(SNAME("NodeInfo")));
@@ -2159,6 +2191,34 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(buttons);
 
 		buttons->add_child(memnew(VSeparator));
+
+		move_up_in_call_stack = memnew(Button);
+		move_up_in_call_stack->set_theme_type_variation(SceneStringName(FlatButton));
+		buttons->add_child(move_up_in_call_stack);
+		move_up_in_call_stack->set_tooltip_text(TTRC("Move Up In Call Stack"));
+		move_up_in_call_stack->set_shortcut(ED_GET_SHORTCUT("debugger/move_up_in_call_stack"));
+		move_up_in_call_stack->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_move_up_in_call_stack));
+
+		move_down_in_call_stack = memnew(Button);
+		move_down_in_call_stack->set_theme_type_variation(SceneStringName(FlatButton));
+		buttons->add_child(move_down_in_call_stack);
+		move_down_in_call_stack->set_tooltip_text(TTRC("Move Down In Call Stack"));
+		move_down_in_call_stack->set_shortcut(ED_GET_SHORTCUT("debugger/move_down_in_call_stack"));
+		move_down_in_call_stack->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_move_down_in_call_stack));
+
+		top_of_call_stack = memnew(Button);
+		top_of_call_stack->set_theme_type_variation(SceneStringName(FlatButton));
+		buttons->add_child(top_of_call_stack);
+		top_of_call_stack->set_tooltip_text(TTRC("Top Of Call Stack"));
+		top_of_call_stack->set_shortcut(ED_GET_SHORTCUT("debugger/top_of_call_stack"));
+		top_of_call_stack->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_top_of_call_stack));
+
+		bottom_of_call_stack = memnew(Button);
+		bottom_of_call_stack->set_theme_type_variation(SceneStringName(FlatButton));
+		buttons->add_child(bottom_of_call_stack);
+		bottom_of_call_stack->set_tooltip_text(TTRC("Bottom Of Call Stack"));
+		bottom_of_call_stack->set_shortcut(ED_GET_SHORTCUT("debugger/bottom_of_call_stack"));
+		bottom_of_call_stack->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_bottom_of_call_stack));
 
 		skip_breakpoints = memnew(Button);
 		skip_breakpoints->set_theme_type_variation(SceneStringName(FlatButton));

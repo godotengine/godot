@@ -578,6 +578,11 @@ void EditorDebuggerNode::set_script_debug_button(MenuButton *p_button) {
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/break"), DEBUG_BREAK);
 	p->add_shortcut(ED_GET_SHORTCUT("debugger/continue"), DEBUG_CONTINUE);
 	p->add_separator();
+	p->add_shortcut(ED_GET_SHORTCUT("debugger/move_up_in_call_stack"), DEBUG_MOVE_UP_IN_CALL_STACK);
+	p->add_shortcut(ED_GET_SHORTCUT("debugger/move_down_in_call_stack"), DEBUG_MOVE_DOWN_CALL_STACK);
+	p->add_shortcut(ED_GET_SHORTCUT("debugger/top_of_call_stack"), DEBUG_TOP_OF_CALL_STACK);
+	p->add_shortcut(ED_GET_SHORTCUT("debugger/bottom_of_call_stack"), DEBUG_BOTTOM_OF_CALL_STACK);
+	p->add_separator();
 	p->add_check_shortcut(ED_GET_SHORTCUT("debugger/debug_with_external_editor"), DEBUG_WITH_EXTERNAL_EDITOR);
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &EditorDebuggerNode::_menu_option));
 
@@ -601,6 +606,10 @@ void EditorDebuggerNode::_break_state_changed() {
 	p->set_item_disabled(p->get_item_index(DEBUG_STEP), !(breaked && can_debug));
 	p->set_item_disabled(p->get_item_index(DEBUG_BREAK), breaked);
 	p->set_item_disabled(p->get_item_index(DEBUG_CONTINUE), !breaked);
+	p->set_item_disabled(p->get_item_index(DEBUG_MOVE_UP_IN_CALL_STACK), !breaked);
+	p->set_item_disabled(p->get_item_index(DEBUG_MOVE_DOWN_CALL_STACK), !breaked);
+	p->set_item_disabled(p->get_item_index(DEBUG_TOP_OF_CALL_STACK), !breaked);
+	p->set_item_disabled(p->get_item_index(DEBUG_BOTTOM_OF_CALL_STACK), !breaked);
 }
 
 void EditorDebuggerNode::_menu_option(int p_id) {
@@ -616,6 +625,18 @@ void EditorDebuggerNode::_menu_option(int p_id) {
 		} break;
 		case DEBUG_CONTINUE: {
 			debug_continue();
+		} break;
+		case DEBUG_MOVE_UP_IN_CALL_STACK: {
+			debug_move_up_in_call_stack();
+		} break;
+		case DEBUG_MOVE_DOWN_CALL_STACK: {
+			debug_move_down_in_call_stack();
+		} break;
+		case DEBUG_TOP_OF_CALL_STACK: {
+			debug_top_of_call_stack();
+		} break;
+		case DEBUG_BOTTOM_OF_CALL_STACK: {
+			debug_bottom_of_call_stack();
 		} break;
 		case DEBUG_WITH_EXTERNAL_EDITOR: {
 			bool ischecked = script_menu->get_popup()->is_item_checked(script_menu->get_popup()->get_item_index(DEBUG_WITH_EXTERNAL_EDITOR));
@@ -713,6 +734,22 @@ void EditorDebuggerNode::debug_break() {
 
 void EditorDebuggerNode::debug_continue() {
 	get_current_debugger()->debug_continue();
+}
+
+void EditorDebuggerNode::debug_move_up_in_call_stack() {
+	get_current_debugger()->debug_move_up_in_call_stack();
+}
+
+void EditorDebuggerNode::debug_move_down_in_call_stack() {
+	get_current_debugger()->debug_move_down_in_call_stack();
+}
+
+void EditorDebuggerNode::debug_top_of_call_stack() {
+	get_current_debugger()->debug_top_of_call_stack();
+}
+
+void EditorDebuggerNode::debug_bottom_of_call_stack() {
+	get_current_debugger()->debug_bottom_of_call_stack();
 }
 
 String EditorDebuggerNode::get_var_value(const String &p_var) const {

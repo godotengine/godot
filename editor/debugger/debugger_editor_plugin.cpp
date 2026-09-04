@@ -46,6 +46,10 @@
 DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	EditorDebuggerServer::initialize();
 
+	ED_SHORTCUT("debugger/move_up_in_call_stack", TTRC("Move Up In Call Stack"));
+	ED_SHORTCUT("debugger/move_down_in_call_stack", TTRC("Move Down In Call Stack"));
+	ED_SHORTCUT("debugger/top_of_call_stack", TTRC("Top Of Call Stack"));
+	ED_SHORTCUT("debugger/bottom_of_call_stack", TTRC("Bottom Of Call Stack"));
 	ED_SHORTCUT("debugger/step_into", TTRC("Step Into"), Key::F11);
 	ED_SHORTCUT("debugger/step_over", TTRC("Step Over"), Key::F10);
 	ED_SHORTCUT("debugger/step_out", TTRC("Step Out"), KeyModifierMask::ALT | Key::F11);
