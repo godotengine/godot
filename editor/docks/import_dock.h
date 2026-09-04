@@ -40,12 +40,13 @@
 #include "scene/gui/popup_menu.h"
 
 class ImportDockParameters;
+class RichTextLabel;
 class VBoxContainer;
 
 class ImportDock : public EditorDock {
 	GDCLASS(ImportDock, EditorDock);
 
-	Label *imported = nullptr;
+	RichTextLabel *imported = nullptr;
 	OptionButton *import_as = nullptr;
 	MenuButton *preset = nullptr;
 	EditorInspector *import_opts = nullptr;
@@ -69,6 +70,7 @@ class ImportDock : public EditorDock {
 	void _update_options(const String &p_path, const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
 	void _update_preset_menu();
 	void _add_keep_import_option(const String &p_importer_name);
+	void _update_imported(const String &p_text, const String &p_path);
 
 	void _property_edited(const StringName &p_prop);
 	void _property_toggled(const StringName &p_prop, bool p_checked);
