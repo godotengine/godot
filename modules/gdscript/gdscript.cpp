@@ -1280,6 +1280,55 @@ GDScript *GDScript::get_root_script() {
 	return result;
 }
 
+#ifdef TOOLS_ENABLED
+static void _collect_function_executable_lines(const GDScriptFunction *p_func, HashSet<int> &r_lines) {
+	if (!p_func) {
+		return;
+	}
+	for (const int line : p_func->get_executable_lines()) {
+		r_lines.insert(line);
+	}
+	for (const GDScriptFunction *lambda : p_func->get_lambdas()) {
+		_collect_function_executable_lines(lambda, r_lines);
+	}
+}
+
+void GDScript::_collect_executable_lines(HashSet<int> &r_lines) const {
+	for (const KeyValue<StringName, GDScriptFunction *> &kv : member_functions) {
+		_collect_function_executable_lines(kv.value, r_lines);
+	}
+	_collect_function_executable_lines(implicit_initializer, r_lines);
+	_collect_function_executable_lines(implicit_ready, r_lines);
+	_collect_function_executable_lines(static_initializer, r_lines);
+	for (const KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
+		if (kv.value.is_valid()) {
+			kv.value->_collect_executable_lines(r_lines);
+		}
+	}
+}
+
+int GDScript::_get_previous_executable_line(int p_line) const {
+	const GDScript *root = this;
+	while (root->_owner) {
+		root = root->_owner;
+	}
+
+	HashSet<int> lines;
+	root->_collect_executable_lines(lines);
+	if (lines.is_empty()) {
+		return -1;
+	}
+
+	int prev = 0;
+	for (const int line : lines) {
+		if (line < p_line && line > prev) {
+			prev = line;
+		}
+	}
+	return prev;
+}
+#endif // TOOLS_ENABLED
+
 bool GDScript::has_script_signal(const StringName &p_signal) const {
 	if (_signals.has(p_signal)) {
 		return true;

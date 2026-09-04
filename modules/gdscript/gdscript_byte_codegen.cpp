@@ -1840,6 +1840,10 @@ void GDScriptByteCodeGenerator::write_newline(int p_line) {
 		append_opcode(GDScriptFunction::OPCODE_LINE);
 		append(p_line);
 		current_line = p_line;
+#ifdef TOOLS_ENABLED
+		// Record lines that emit `OPCODE_LINE` so breakpoints can snap into them.
+		function->executable_lines.insert(p_line);
+#endif
 	}
 }
 
