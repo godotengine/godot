@@ -35,6 +35,7 @@ TEST_FORCE_LINK(test_text_edit)
 #ifndef ADVANCED_GUI_DISABLED
 
 #include "core/input/input_map.h"
+#include "scene/gui/rich_text_edit.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/scene_tree.h"
 #include "tests/display_server_mock.h"
@@ -49,6 +50,53 @@ static inline Array reverse_nested(Array array) {
 		((Array)reversed_array[i]).reverse();
 	}
 	return reversed_array;
+}
+
+TEST_CASE("[SceneTree][RichTextEdit] visible characters") {
+	RichTextEdit *rich_text_edit = memnew(RichTextEdit);
+	SceneTree::get_singleton()->get_root()->add_child(rich_text_edit);
+	rich_text_edit->set_use_bbcode(true);
+	rich_text_edit->set_bbcode_text("[font_size=48]Wide[/font_size] text");
+	MessageQueue::get_singleton()->flush();
+
+	CHECK(rich_text_edit->get_visible_characters() == -1);
+	CHECK(rich_text_edit->get_visible_ratio() == doctest::Approx(1.0));
+	CHECK(rich_text_edit->get_visible_characters_behavior() == TextServer::VC_CHARS_BEFORE_SHAPING);
+
+	rich_text_edit->set_visible_characters(4);
+	CHECK(rich_text_edit->get_visible_characters() == 4);
+	CHECK(rich_text_edit->get_visible_ratio() == doctest::Approx(4.0 / 9.0));
+	CHECK(rich_text_edit->get_bbcode_text() == "[font_size=48]Wide[/font_size] text");
+
+	rich_text_edit->set_visible_ratio(0.5);
+	CHECK(rich_text_edit->get_visible_characters() == 4);
+	CHECK(rich_text_edit->get_visible_ratio() == doctest::Approx(0.5));
+
+	rich_text_edit->set_visible_ratio(-0.25);
+	CHECK(rich_text_edit->get_visible_characters() == 0);
+	CHECK(rich_text_edit->get_visible_ratio() == doctest::Approx(0.0));
+
+	rich_text_edit->set_visible_ratio(1.0);
+	CHECK(rich_text_edit->get_visible_characters() == -1);
+	CHECK(rich_text_edit->get_visible_ratio() == doctest::Approx(1.0));
+
+	const int full_width = rich_text_edit->get_line_width(0);
+	rich_text_edit->set_visible_characters(1);
+	const int prefix_width = rich_text_edit->get_line_width(0);
+	CHECK(prefix_width < full_width);
+
+	rich_text_edit->set_visible_characters_behavior(TextServer::VC_CHARS_AFTER_SHAPING);
+	CHECK(rich_text_edit->get_visible_characters_behavior() == TextServer::VC_CHARS_AFTER_SHAPING);
+	CHECK(rich_text_edit->get_line_width(0) == full_width);
+
+	rich_text_edit->set_visible_characters_behavior(TextServer::VC_GLYPHS_AUTO);
+	CHECK(rich_text_edit->get_visible_characters_behavior() == TextServer::VC_GLYPHS_AUTO);
+	rich_text_edit->set_visible_characters_behavior(TextServer::VC_GLYPHS_LTR);
+	CHECK(rich_text_edit->get_visible_characters_behavior() == TextServer::VC_GLYPHS_LTR);
+	rich_text_edit->set_visible_characters_behavior(TextServer::VC_GLYPHS_RTL);
+	CHECK(rich_text_edit->get_visible_characters_behavior() == TextServer::VC_GLYPHS_RTL);
+
+	memdelete(rich_text_edit);
 }
 
 TEST_CASE("[SceneTree][TextEdit] text entry") {
