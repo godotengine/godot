@@ -202,8 +202,9 @@ float CameraAttributesPractical::get_motion_blur_rotation_velocity_multiplier() 
 }
 
 void CameraAttributesPractical::set_motion_blur_velocity_lower_threshold(float p_threshold) {
-	p_threshold = MAX(0.0f, p_threshold);
+	p_threshold = CLAMP(p_threshold, 0.0f, 100.0f);
 	motion_blur_velocity_lower_threshold = p_threshold;
+	motion_blur_velocity_upper_threshold = MAX(motion_blur_velocity_upper_threshold, motion_blur_velocity_lower_threshold);
 	_update_motion_blur();
 }
 
@@ -212,8 +213,9 @@ float CameraAttributesPractical::get_motion_blur_velocity_lower_threshold() cons
 }
 
 void CameraAttributesPractical::set_motion_blur_velocity_upper_threshold(float p_threshold) {
-	p_threshold = MAX(0.0f, p_threshold);
+	p_threshold = CLAMP(p_threshold, 0.0f, 100.0f);
 	motion_blur_velocity_upper_threshold = p_threshold;
+	motion_blur_velocity_lower_threshold = MIN(motion_blur_velocity_lower_threshold, motion_blur_velocity_upper_threshold);
 	_update_motion_blur();
 }
 

@@ -267,17 +267,17 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 		int sample_count;
 		switch (RSG::camera_attributes->camera_attributes_get_motion_blur_quality()) {
 			case RSE::MOTION_BLUR_QUALITY_LOW:
-				sample_count = 4;
+				sample_count = 1;
 				break;
 			case RSE::MOTION_BLUR_QUALITY_MEDIUM:
-				sample_count = 8;
+				sample_count = 2;
 				break;
 			case RSE::MOTION_BLUR_QUALITY_HIGH:
-				sample_count = 16;
+				sample_count = 4;
 				break;
 			default:
 				WARN_PRINT_ONCE("Unknown motion blur quality setting, defaulting to medium.");
-				sample_count = 8;
+				sample_count = 2;
 				break;
 		}
 
@@ -291,9 +291,7 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 		motion_blur.preprocess_push_constant.velocity_lower_threshold = velocity_lower_threshold;
 		motion_blur.preprocess_push_constant.velocity_upper_threshold = velocity_upper_threshold;
 		motion_blur.preprocess_push_constant.motion_blur_intensity = intensity;
-		// TODO @sphynx-owner: enabling FSR2 support by default is not desired because the support is not perfect and
-		// will cause artifacts at high enough speed. It should be turned on either manually or automatically.
-		motion_blur.preprocess_push_constant.support_fsr2 = 1.0f;
+		motion_blur.preprocess_push_constant.support_fsr2 = p_render_buffers->get_scaling_3d_mode() == RSE::ViewportScaling3DMode::VIEWPORT_SCALING_3D_MODE_FSR2;
 		motion_blur.preprocess_push_constant.tile_size = tile_size;
 
 		motion_blur.blur_push_constant.tile_size = tile_size;

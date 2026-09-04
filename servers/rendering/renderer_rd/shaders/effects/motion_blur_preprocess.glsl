@@ -34,8 +34,13 @@
 #define FLT_MIN 1.175494351e-38
 #define PIXEL_RADIUS_SQUARED 0.25
 
-// Arrived at via experimentation
-#define OBJECT_UV_CHANGE_EPSILON 0.00001
+// Arrived at via experimentation. Using dot-product operation
+// on sub-1-length velocities squares their length, and it ends
+// up very small. Since this value is also used to distinguish
+// static from dynamic elements, we don't want it to be too permissive
+// as it may allow static geometry whose extracted object velocity is
+// the result of precision errors.
+#define UV_CHANGE_EPSILON 0.00001
 
 #define MAX_VIEWS 2
 
@@ -174,7 +179,7 @@ void main() {
 	// ---------------------------------------------------
 	vec3 base_velocity = camera_uv_change;
 
-	if (dot(sampled_velocity * render_size, sampled_velocity * render_size) > PIXEL_RADIUS_SQUARED || depth > 0) {
+	if (depth > 0 || dot(sampled_velocity * render_size, sampled_velocity * render_size) > PIXEL_RADIUS_SQUARED) {
 		base_velocity.xy = sampled_velocity;
 	}
 	// ---------------------------------------------------
@@ -193,7 +198,7 @@ void main() {
 	// In the case of background pixels, it does not make much sense for them to have "depth velocity". In addition, the depth velocity
 	// of the background is very saturated since it's a point at infinity that covers large distances easily, and I worry
 	// about noise it might introduce.
-	if (depth == 0 || dot(object_uv_change.xy, object_uv_change.xy) > OBJECT_UV_CHANGE_EPSILON) {
+	if (depth == 0 || dot(object_uv_change.xy, object_uv_change.xy) > UV_CHANGE_EPSILON) {
 		total_velocity.z = 0;
 		base_velocity.z = 0;
 	}
@@ -216,39 +221,27 @@ void main() {
 
 	vec3 fallback_velocity = base_velocity * max_component_multiplier;
 
-	if (length(total_velocity.xy) > length(fallback_velocity.xy)) {
+	if (dot(total_velocity.xy, total_velocity.xy) > dot(fallback_velocity.xy, fallback_velocity.xy)) {
 		total_velocity = fallback_velocity;
 	}
 	// ---------------------------------------------------
 
-	// Here is where we apply the velocity thresholds, customized by the user.
-	total_velocity *= sharp_step(
-			params.velocity_lower_threshold,
-			params.velocity_upper_threshold,
-			length(total_velocity.xy));
-
+	// Here is where we apply the velocity thresholds and the intensity, customized by the user.
 	// If the previous position is happening behind the camera's near clip plane, which can happen when the camera moves backwards at high speed,
 	// the w component of the projected vector would be negative, and the velocity vector would be flipped.
 	// This happens with Godot's native motion vectors as well. We can detect this and flip them back, avoiding
 	// crazy artifacts.
-	total_velocity.xy = total_velocity.xy * render_size * (view_past_ndc_cache.w < 0 ? -1 : 1);
+	total_velocity.xy *= sharp_step(params.velocity_lower_threshold, params.velocity_upper_threshold, length(total_velocity.xy)) * render_size * (view_past_ndc_cache.w < 0 ? -1 : 1) * params.motion_blur_intensity;
 
-	// Now we clamp the velocity magnitudes to the tile size. This is a pretty important step that greatly
-	// improves stability and robustness. We multiply the tile size by 2 here, because we blur the velocity
-	// symmetrically forwards and backwards, so it's radius is half its magnitude.
-	// NOTE @sphynx-owner: this clamp also handles the asymptotical behavior of near-clip-plane previous positions' velocities.
+	// Now we clamp the velocity magnitudes to the tile size.
+	// We multiply the tile size by 2 because we blur the velocity
+	// symmetrically forwards and backwards so its radius is half its magnitude.
+	// NOTE @sphynx-owner: this clamp also handles the asymptotical behavior of near-clip-plane velocities.
 	// ---------------------------------------------------
-	float clamp_size = params.tile_size * 2;
-
-	clamp_length(total_velocity, total_velocity.xy, clamp_size);
+	clamp_length(total_velocity, total_velocity.xy, params.tile_size * 2);
 	// ---------------------------------------------------
-
-	// Here is where the intensity parameter is applied, customized by the user.
-	total_velocity *= params.motion_blur_intensity;
 
 	// total_velocity up to this point was backwards, because it was derived using UV differences, which were vectors
 	// pointing to the previous UV, meaning the velocity of the pixel is in the other direction.
-	vec4 final_output = vec4(-total_velocity, depth);
-
-	imageStore(vector_output, uvi, final_output);
+	imageStore(vector_output, uvi, vec4(-total_velocity, depth));
 }
