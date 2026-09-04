@@ -241,6 +241,32 @@ void Polygon2D::_notification(int p_what) {
 						uvs.write[i] = texmat.xform(points[i]) / tex_size;
 					}
 				}
+			} else {
+				// Even without a texture, shaders will still need UVs to be usable.
+				const Vector<Vector2> *uv_source = (uv.size() == len) ? &uv : &points;
+
+				uvs.resize(len);
+				if (len > 0) {
+					const Vector2 *src = uv_source->ptr();
+					Vector2 *uvs_ptrw = uvs.ptrw();
+					Vector2 min_uv = src[0];
+					Vector2 max_uv = src[0];
+
+					for (int i = 1; i < len; i++) {
+						min_uv = min_uv.min(src[i]);
+						max_uv = max_uv.max(src[i]);
+					}
+
+					Vector2 size = max_uv - min_uv;
+
+					for (int i = 0; i < len; i++) {
+						Vector2 v = src[i];
+						Vector2 normalized;
+						normalized.x = Math::is_zero_approx(size.x) ? 0.5 : (v.x - min_uv.x) / size.x;
+						normalized.y = Math::is_zero_approx(size.y) ? 0.5 : (v.y - min_uv.y) / size.y;
+						uvs_ptrw[i] = normalized;
+					}
+				}
 			}
 
 			if (skeleton_node && !invert && bone_weights.size()) {
