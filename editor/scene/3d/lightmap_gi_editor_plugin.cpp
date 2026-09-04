@@ -34,6 +34,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -83,6 +84,11 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 			}
 		} else {
 			err = LightmapGI::BAKE_ERROR_NO_SCENE_ROOT;
+		}
+
+		if (err == LightmapGI::BAKE_ERROR_OK) {
+			EditorInterface::get_singleton()->mark_scene_as_unsaved();
+			EditorNode::get_singleton()->try_autosave();
 		}
 
 		bake_func_end(time_started);

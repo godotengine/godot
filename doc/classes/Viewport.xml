@@ -689,6 +689,9 @@
 		<constant name="DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="DebugDraw">
 			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
+		<constant name="DEBUG_DRAW_UV2_TEXEL_DENSITY" value="29" enum="DebugDraw">
+			Objects are displayed with a checkerboard pattern indicative of their UV2 texel density. Each square of the checkerboard pattern is 10 texels by 10 texels in size.
+		</constant>
 		<constant name="DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="DebugDraw">
 			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>

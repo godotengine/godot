@@ -25,6 +25,12 @@
 				Clear all objects that are considered baked within this [LightmapGIData].
 			</description>
 		</method>
+		<method name="get_baked_texel_scale" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the global texel scale used to bake this lightmap data.
+			</description>
+		</method>
 		<method name="get_user_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -42,6 +48,20 @@
 			<return type="bool" />
 			<description>
 				If [code]true[/code], lightmaps were baked with directional information. See also [member LightmapGI.directional].
+			</description>
+		</method>
+		<method name="set_baked_texel_scale">
+			<return type="void" />
+			<param index="0" name="baked_texel_scale" type="float" />
+			<description>
+				Sets the global texel scale used to bake this lightmap data.
+			</description>
+		</method>
+		<method name="set_texel_scale">
+			<return type="void" />
+			<param index="0" name="baked_texel_scale" type="float" />
+			<description>
+				Sets the current global texel scale used when displaying the UV2 texel density debug view.
 			</description>
 		</method>
 		<method name="set_uses_spherical_harmonics">

@@ -1917,6 +1917,22 @@
 				Sets the lightmap GI instance to use for the specified 3D geometry instance. The lightmap UV scale for the specified instance (equivalent to [member GeometryInstance3D.gi_lightmap_scale]) and lightmap atlas slice must also be specified.
 			</description>
 		</method>
+		<method name="instance_geometry_set_lightmap_baked_texel_scale">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="lightmap_baked_texel_scale" type="float" />
+			<description>
+				Sets the texel scale used when the specified geometry instance's lightmap was baked.
+			</description>
+		</method>
+		<method name="instance_geometry_set_lightmap_texel_scale">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="lightmap_texel_scale" type="float" />
+			<description>
+				Sets the current lightmap texel scale for the specified geometry instance.
+			</description>
+		</method>
 		<method name="instance_geometry_set_lod_bias">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
@@ -2268,6 +2284,13 @@
 				[b]Note:[/b] The equivalent node is [LightmapGI].
 			</description>
 		</method>
+		<method name="lightmap_get_baked_texel_scale">
+			<return type="float" />
+			<param index="0" name="lightmap" type="RID" />
+			<description>
+				Returns the global texel scale used when the specified lightmap was baked.
+			</description>
+		</method>
 		<method name="lightmap_get_probe_capture_bsp_tree" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="lightmap" type="RID" />
@@ -2296,12 +2319,27 @@
 				Returns the tetrahedralization data used for interpolating between lightmap probe capture points. Each tetrahedron is specified as a series of 4 numbers, each being an index into the probe capture points array returned by [method lightmap_get_probe_capture_points]. See also [method lightmap_set_probe_capture_data].
 			</description>
 		</method>
+		<method name="lightmap_get_texel_scale">
+			<return type="float" />
+			<param index="0" name="lightmap" type="RID" />
+			<description>
+				Returns the current global texel scale for the specified lightmap.
+			</description>
+		</method>
 		<method name="lightmap_set_baked_exposure_normalization">
 			<return type="void" />
 			<param index="0" name="lightmap" type="RID" />
 			<param index="1" name="baked_exposure" type="float" />
 			<description>
 				Used to inform the renderer what exposure normalization value was used while baking the lightmap. This value will be used and modulated at run time to ensure that the lightmap maintains a consistent level of exposure even if the scene-wide exposure normalization is changed at run time. For more information see [method camera_attributes_set_exposure].
+			</description>
+		</method>
+		<method name="lightmap_set_baked_texel_scale">
+			<return type="void" />
+			<param index="0" name="lightmap" type="RID" />
+			<param index="1" name="scale" type="float" />
+			<description>
+				Sets the global texel scale used when the specified lightmap was baked.
 			</description>
 		</method>
 		<method name="lightmap_set_probe_bounds">
@@ -2336,6 +2374,14 @@
 			<param index="1" name="interior" type="bool" />
 			<description>
 				Sets whether the lightmap instance should be considered as interior (when [param interior] is [code]true[/code]). If the lightmap is marked as interior, environment lighting is ignored when baking lightmaps.
+			</description>
+		</method>
+		<method name="lightmap_set_texel_scale">
+			<return type="void" />
+			<param index="0" name="lightmap" type="RID" />
+			<param index="1" name="scale" type="float" />
+			<description>
+				Sets the current global texel scale for the specified lightmap.
 			</description>
 		</method>
 		<method name="lightmap_set_textures">
@@ -5665,6 +5711,9 @@
 		<constant name="VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="ViewportDebugDraw">
 			Internal buffer is drawn instead of regular scene so you can see the per-pixel output that will be used by post-processing effects.
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY" value="29" enum="ViewportDebugDraw">
+			Objects are displayed with a checkerboard pattern indicative of their UV2 texel density. Each square of the checkerboard pattern is 10 texels by 10 texels in size.
 		</constant>
 		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
 			Variable rate shading is disabled.

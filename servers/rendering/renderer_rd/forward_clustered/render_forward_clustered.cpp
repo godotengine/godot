@@ -380,6 +380,9 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 			} else if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS)) {
 				material_uniform_set = scene_shader.debug_shadow_splits_material_uniform_set;
 				shader = scene_shader.debug_shadow_splits_material_shader_ptr;
+			} else if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY && surf->owner->data->lightmap_size_global_uniform_pos >= 0)) {
+				material_uniform_set = scene_shader.uv2_texel_density_material_uniform_set;
+				shader = scene_shader.uv2_texel_density_material_shader_ptr;
 			} else {
 #endif
 				material_uniform_set = surf->material_uniform_set;
@@ -889,6 +892,12 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 		instance_data.material_feedback_index = material_feedback_index;
 		instance_data.set_uv_scale(uv_scale);
 
+#ifdef DEBUG_ENABLED
+		if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY && inst->data->lightmap_size_global_uniform_pos >= 0)) {
+			instance_data.instance_uniforms_ofs = uint32_t(inst->data->lightmap_size_global_uniform_pos);
+		}
+#endif
+
 		scene_state.curr_gpu_ptr[p_render_list][i + p_offset] = instance_data;
 
 		const bool cant_repeat = instance_data.flags & INSTANCE_DATA_FLAG_MULTIMESH || inst->mesh_instance.is_valid();
@@ -1096,6 +1105,43 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				}
 			}
 		}
+#ifdef DEBUG_ENABLED
+		if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY)) {
+			if (inst->data->base_type == RSE::INSTANCE_MESH) {
+				Size2 lightmap_size;
+				if (inst->lightmap_instance.is_valid()) {
+					RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
+					RID lightmap = light_storage->lightmap_instance_get_lightmap(inst->lightmap_instance);
+					lightmap_size = inst->lightmap_uv_scale.size * Size2(light_storage->lightmap_get_light_texture_size(lightmap)) * light_storage->lightmap_get_texel_scale(lightmap) * inst->lightmap_texel_scale / (light_storage->lightmap_get_baked_texel_scale(lightmap) * inst->lightmap_baked_texel_scale);
+				} else {
+					lightmap_size = Size2(inst->data->lightmap_size_hint) * inst->lightmap_texel_scale;
+				}
+
+				if (lightmap_size.x > 0.0 && lightmap_size.y > 0.0 && inst->data->lightmap_size_global_uniform_pos == -2) {
+					inst->data->lightmap_size_global_uniform_pos = RSG::material_storage->global_shader_parameters_unit_variable_allocate();
+				}
+				if (lightmap_size.x > 0.0 && lightmap_size.y > 0.0 && inst->data->lightmap_size_global_uniform_pos >= 0) {
+					RSG::material_storage->global_shader_parameters_unit_variable_update(inst->data->lightmap_size_global_uniform_pos, lightmap_size);
+				} else if ((lightmap_size.x <= 0.0 || lightmap_size.y <= 0.0) && inst->data->lightmap_size_global_uniform_pos != -2) {
+					if (inst->data->lightmap_size_global_uniform_pos >= 0) {
+						RSG::material_storage->global_shader_parameters_unit_variable_free(inst->data->lightmap_size_global_uniform_pos);
+					}
+					inst->data->lightmap_size_global_uniform_pos = -2;
+				}
+			} else if (inst->data->lightmap_size_global_uniform_pos != -2) {
+				if (inst->data->lightmap_size_global_uniform_pos >= 0) {
+					RSG::material_storage->global_shader_parameters_unit_variable_free(inst->data->lightmap_size_global_uniform_pos);
+				}
+				inst->data->lightmap_size_global_uniform_pos = -2;
+			}
+		} else if (unlikely(inst->data->lightmap_size_global_uniform_pos != -2)) {
+			if (inst->data->lightmap_size_global_uniform_pos >= 0) {
+				RSG::material_storage->global_shader_parameters_unit_variable_free(inst->data->lightmap_size_global_uniform_pos);
+			}
+			inst->data->lightmap_size_global_uniform_pos = -2;
+		}
+#endif
+
 		inst->flags_cache = flags;
 
 		GeometryInstanceSurfaceDataCache *surf = inst->surface_caches;
