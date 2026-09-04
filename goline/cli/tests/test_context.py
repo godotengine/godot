@@ -40,6 +40,16 @@ class EngineContextTest(unittest.TestCase):
         self.assertIn("goline", pack)
         self.assertIn("GOLINE.md", pack)
 
+    def test_engine_context_embeds_permission_policy(self):
+        with mock.patch.object(ctx, "_git", return_value=None), mock.patch.object(
+            ctx, "_which", return_value=None
+        ):
+            pack = ctx.build_engine_context(root=self.root)
+        self.assertIn("Agent permission policy", pack)
+        self.assertIn("MUST NOT run", pack)
+        self.assertIn("rm", pack)
+        self.assertIn("STOP and ask", pack)
+
     def test_engine_context_reports_tools_and_git(self):
         def fake_git(cwd, *args):
             if args[0] == "rev-parse" and args[1] == "--abbrev-ref":
@@ -98,6 +108,7 @@ class GameContextTest(unittest.TestCase):
         self.assertIn("main_scene: res://scenes/Main.tscn", pack)
         self.assertIn("scripts/player.gd", pack)
         self.assertIn("scripts/enemy.cs", pack)
+        self.assertIn("Agent permission policy", pack)
 
     def test_non_project_dir_returns_message(self):
         empty = tempfile.TemporaryDirectory()

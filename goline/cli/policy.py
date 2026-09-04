@@ -261,3 +261,31 @@ DEFAULT_DENY_NOTICE = (
 
 def default_kickoff_notice() -> str:
     return DEFAULT_DENY_NOTICE
+
+
+# Human-readable summary of the DENY *patterns* (regex-based rules that are
+# not expressed as a single denied executable). Derived from _DENY_PATTERNS so
+# an agent can "hold" the policy as an instruction.
+_DENY_PATTERN_NOTICE = (
+    "git history/destruction: reset, clean, rebase, merge, prune, gc, "
+    "checkout --, rm, stash drop/clear, branch/tag -d, and ANY force push "
+    "(--force, -f, or +refspec)",
+    "privilege escalation: sudo; shell redirection to a file",
+    "remote code install: curl | wget | iwr piped to sh | bash | python | node | iex",
+    "registry deletion and Windows/system mutation (reg delete, init 0, ...)",
+    "any executable NOT in the allow list (unknown tools are denied by default)",
+)
+
+
+def guidance_notice() -> str:
+    """Render the gate policy as a MANDATORY instruction block for an agent."""
+    exes = ", ".join(sorted(_DENY_EXECUTABLES))
+    patterns = "".join(f"- {line}\n" for line in _DENY_PATTERN_NOTICE)
+    return (
+        "## Agent permission policy (MANDATORY)\n"
+        "You MUST NOT run any command matching these rules without first "
+        "asking the human for explicit approval:\n"
+        + f"- Denied executables: {exes}\n"
+        + patterns
+        + "If your next action would run such a command, STOP and ask first."
+    )
