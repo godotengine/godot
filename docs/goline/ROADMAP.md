@@ -79,7 +79,10 @@ intentional exclusions are in `docs/goline/IDENTITY.md`.
   `goline/examples/sample_game/` was validated end-to-end — the free-tier
   model read the actual game files from the context pack and returned the
   correct answers (`player.gd extends CharacterBody2D`; Player node at
-  `Vector2(576, 324)`), streaming `tool_use` + `content.delta` + `done`.
+  `Vector2(576, 324)`),   streaming `tool_use` + `content.delta` + `done`.
+- **Done: `--guard` fail-fast on handover** — if the agent ever emits a command
+  the policy denies, the run **aborts with exit code 2** (distinct from the
+  provider's exit 1) instead of just auditing/annotating it. Offline-tested.
 - **Still ahead:** richer event surface (session/thread persistence).
 
 ## Stage 5 — AI-assisted coding — NOT IMPLEMENTED

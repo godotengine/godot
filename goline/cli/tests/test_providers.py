@@ -133,6 +133,63 @@ class HandoverCLITest(unittest.TestCase):
         self.assertEqual(call.args[1], "/tmp/ctx.txt")
         self.assertEqual(call.kwargs["model"], "opencode/gpt-4o")
 
+    def test_guard_aborts_with_exit_2_on_denied_command(self):
+        denied = providers.DispatchResult(
+            provider="opencode", model="m",
+            events=[
+                providers.ProviderEvent("tool", {"command": "git reset --hard HEAD"}),
+                providers.ProviderEvent("content.delta", {"text": "done"}),
+            ],
+            exit_code=0,
+        )
+        fake_driver = mock.Mock(driver_kind="opencode")
+        fake_driver.dispatch.return_value = denied
+        with mock.patch.object(providers, "get_driver", return_value=fake_driver), \
+             mock.patch.object(providers, "write_context_file", return_value="/tmp/ctx.txt"), \
+             mock.patch.object(goline_cli.goline_context, "build_context", return_value="PACK"):
+            code = goline_cli.main([
+                "--handover", "--provider", "opencode", "--context", "engine",
+                "--guard", "--", "hello"
+            ])
+        self.assertEqual(code, 2)
+
+    def test_no_guard_lets_denied_command_pass_through(self):
+        denied = providers.DispatchResult(
+            provider="opencode", model="m",
+            events=[
+                providers.ProviderEvent("tool", {"command": "git reset --hard HEAD"}),
+                providers.ProviderEvent("content.delta", {"text": "done"}),
+            ],
+            exit_code=0,
+        )
+        fake_driver = mock.Mock(driver_kind="opencode")
+        fake_driver.dispatch.return_value = denied
+        with mock.patch.object(providers, "get_driver", return_value=fake_driver), \
+             mock.patch.object(providers, "write_context_file", return_value="/tmp/ctx.txt"), \
+             mock.patch.object(goline_cli.goline_context, "build_context", return_value="PACK"):
+            code = goline_cli.main([
+                "--handover", "--provider", "opencode", "--context", "engine",
+                "--", "hello"
+            ])
+        self.assertEqual(code, 0)
+
+    def test_find_denied_event_none_when_all_allowed(self):
+        events = [
+            providers.ProviderEvent("tool", {"command": "git status"}),
+            providers.ProviderEvent("content.delta", {"text": "ok"}),
+        ]
+        self.assertIsNone(goline_cli._find_denied_event(events))
+
+    def test_find_denied_event_returns_first_denied(self):
+        events = [
+            providers.ProviderEvent("tool", {"command": "git status"}),
+            providers.ProviderEvent("tool", {"command": "rm -rf /tmp/x"}),
+            providers.ProviderEvent("tool", {"command": "git reset --hard"}),
+        ]
+        ev, decision = goline_cli._find_denied_event(events)
+        self.assertEqual(ev.data["command"], "rm -rf /tmp/x")
+        self.assertFalse(decision.allowed)
+
 
 class GitRootTest(unittest.TestCase):
     def test_resolve_git_root(self):

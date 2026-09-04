@@ -15,6 +15,8 @@ Usage:
         --context engine --model opencode/gpt-4o -- "your prompt"
     python goline/cli/goline_cli.py --handover --provider opencode \
         --model opencode/gpt-4o --audit handover.jsonl -- "your prompt"
+    python goline/cli/goline_cli.py --handover --provider opencode \
+        --model opencode/gpt-4o --guard -- "your prompt"  # abort (exit 2) on denied cmd
 """
 
 from __future__ import annotations
@@ -190,6 +192,18 @@ def _audit_agent_events(events, audit) -> None:
             audit.record(decision)
 
 
+def _find_denied_event(events) -> "tuple[object, goline_policy.Decision] | None":
+    """Return (event, decision) for the first command the agent emits that the
+    policy would DENY; None if nothing is denied. Used by --guard fail-fast."""
+    for ev in events:
+        if ev.kind not in ("permission", "tool", "command"):
+            continue
+        decision = _classify_event_command(ev)
+        if decision is not None and not decision.allowed:
+            return ev, decision
+    return None
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Goline CLI agent orchestrator")
     parser.add_argument("--list", action="store_true", help="list discovered agents")
@@ -220,6 +234,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--audit",
         help="append audit entries (JSONL) for gate decisions to this file",
+    )
+    parser.add_argument(
+        "--guard",
+        action="store_true",
+        help="on --handover: abort (exit 2) if the agent emits a denied command "
+             "instead of just auditing it",
     )
     parser.add_argument(
         "--handover",
@@ -298,6 +318,17 @@ def main(argv: list[str] | None = None) -> int:
         # the agent emitted (headless dispatch has no live permission prompt,
         # so this surfaces the verdict in the transcript and records it).
         _audit_agent_events(result.events, audit)
+
+        # --guard fail-fast: if the agent emitted a command our policy denies,
+        # abort with a distinct exit code (2) rather than proceeding as if OK.
+        if args.guard:
+            denied = _find_denied_event(result.events)
+            if denied is not None:
+                _ev, decision = denied
+                print(f"[GUARD] DENY aborted: {decision.command}", file=sys.stderr)
+                print(f"  reason: {decision.reason}", file=sys.stderr)
+                return 2
+
         for ev in result.events:
             if ev.kind in ("content.delta", "reasoning", "error"):
                 print(f"[{ev.kind}] {ev.data.get('text') or ev.data.get('message') or ''}")

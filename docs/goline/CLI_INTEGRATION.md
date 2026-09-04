@@ -221,6 +221,8 @@ python goline/cli/goline_cli.py --handover --provider opencode \
     --context engine --model opencode/<model> -- "prompt"          # t3-style handover
 python goline/cli/goline_cli.py --handover --provider opencode \
     --model opencode/<model> --audit handover.jsonl -- "prompt"    # + audit gate
+python goline/cli/goline_cli.py --handover --provider opencode \
+    --model opencode/<model> --guard -- "prompt"                 # abort (exit 2) on denied cmd
 ```
 
 ## Tests
