@@ -1687,6 +1687,10 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 }
 
 void FileSystemDock::_update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const {
+	if (ProjectSettings::get_singleton()->handle_renamed_files(p_renames)) {
+		ProjectSettings::get_singleton()->save();
+	}
+
 	// The following code assumes that the following holds:
 	// 1) EditorFileSystem contains the old paths/folder structure from before the rename/move.
 	// 2) ResourceLoader can use the new paths without needing to call rescan.
