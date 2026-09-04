@@ -831,6 +831,12 @@ String VisualShaderNodeCustom::_get_name() const {
 	return ret;
 }
 
+String VisualShaderNodeCustom::_get_shortcut_notation() const {
+	String ret;
+	GDVIRTUAL_CALL(_get_shortcut_notation, ret);
+	return ret;
+}
+
 String VisualShaderNodeCustom::_get_description() const {
 	String ret;
 	GDVIRTUAL_CALL(_get_description, ret);
@@ -872,6 +878,7 @@ int VisualShaderNodeCustom::get_option_index(int p_option) const {
 
 void VisualShaderNodeCustom::_bind_methods() {
 	GDVIRTUAL_BIND(_get_name);
+	GDVIRTUAL_BIND(_get_shortcut_notation);
 	GDVIRTUAL_BIND(_get_description);
 	GDVIRTUAL_BIND(_get_category);
 	GDVIRTUAL_BIND(_get_return_icon_type);
