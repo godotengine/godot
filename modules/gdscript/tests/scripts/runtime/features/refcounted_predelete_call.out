@@ -1,0 +1,13 @@
+GDTEST_OK
+===
+Did drop itself?: true
+===
+Entered NOTIFICATION_PREDELETE
+call_1: ok. Count: 0
+call_2: <Object#null> <Object#null>
+self == null: false
+self_copy == null: true
+self_copy == self: false
+Some state: 1 1
+call_3 self arg: <Object#null>
+===

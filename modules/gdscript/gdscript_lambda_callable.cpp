@@ -197,7 +197,7 @@ CallableCustom::CompareLessFunc GDScriptLambdaSelfCallable::get_compare_less_fun
 }
 
 ObjectID GDScriptLambdaSelfCallable::get_object() const {
-	return object->get_instance_id();
+	return object ? object->get_instance_id() : ObjectID();
 }
 
 StringName GDScriptLambdaSelfCallable::get_method() const {
@@ -215,7 +215,7 @@ int GDScriptLambdaSelfCallable::get_argument_count(bool &r_is_valid) const {
 
 void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 #ifdef DEBUG_ENABLED
-	if (object->get_script_instance() == nullptr || object->get_script_instance()->get_language() != GDScriptLanguage::get_singleton()) {
+	if (object == nullptr || object->get_script_instance() == nullptr || object->get_script_instance()->get_language() != GDScriptLanguage::get_singleton()) {
 		ERR_PRINT("Trying to call a lambda with an invalid instance.");
 		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return;
