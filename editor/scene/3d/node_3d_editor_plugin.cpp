@@ -2336,7 +2336,8 @@ void Node3DEditor::_textures_button_pressed() {
 
 void Node3DEditor::_textures_button_update_state() {
 	const bool texture_streaming_enabled = GLOBAL_GET("rendering/textures/streaming/enabled");
-	textures_button->set_disabled(!texture_streaming_enabled);
+	textures_button->set_visible(texture_streaming_enabled);
+	textures_separator->set_visible(texture_streaming_enabled);
 
 	if (!texture_streaming_enabled) {
 		textures_popup->hide();
@@ -3707,7 +3708,9 @@ Node3DEditor::Node3DEditor() {
 	textures_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_button_pressed));
 
 	main_flow->add_child(textures_button);
-	main_flow->add_child(memnew(VSeparator));
+
+	textures_separator = memnew(VSeparator);
+	main_flow->add_child(textures_separator);
 #endif
 
 	context_toolbar_panel = memnew(PanelContainer);
