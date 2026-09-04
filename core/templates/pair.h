@@ -63,7 +63,13 @@ struct is_zero_constructible<Pair<F, S>> : std::conjunction<is_zero_constructibl
 template <typename K, typename V>
 struct KeyValue {
 	const K key{};
-	V value{};
+
+	// For whatever reason, MSVC does not support normal `no_unique_address` but supports `msvc::no_unique_address`.
+#if defined(_MSC_VER)
+	[[msvc::no_unique_address]] V value{};
+#else
+	[[no_unique_address]] V value{};
+#endif
 
 	KeyValue &operator=(const KeyValue &p_kv) = delete;
 	KeyValue &operator=(KeyValue &&p_kv) = delete;
@@ -93,3 +99,6 @@ struct KeyValueSort {
 // KeyValue is zero-constructible if and only if both constrained types are zero-constructible.
 template <typename K, typename V>
 struct is_zero_constructible<KeyValue<K, V>> : std::conjunction<is_zero_constructible<K>, is_zero_constructible<V>> {};
+
+// Used for the TValue part of the Set type containers.
+struct EmptyValue {};
