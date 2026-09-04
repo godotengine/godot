@@ -358,6 +358,12 @@ private:
 
 	Button *sun_environ_settings = nullptr;
 
+	Button *bake_lightmaps_button = nullptr;
+	Button *bake_geometry_button = nullptr;
+
+	void _bake_lightmaps_button_pressed();
+	void _bake_geometry_button_pressed();
+
 #ifdef MODULE_TEXTURE_STREAMING_ENABLED
 	Button *textures_button = nullptr;
 	PopupPanel *textures_popup = nullptr;
