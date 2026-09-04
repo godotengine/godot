@@ -46,6 +46,8 @@ public:
 private:
 	float expand_margin[4] = {};
 	float texture_margin[4] = {};
+	bool hflip = false;
+	bool vflip = false;
 	Rect2 region_rect;
 	Ref<Texture2D> texture;
 	bool draw_center = true;
@@ -70,6 +72,12 @@ public:
 	void set_expand_margin_all(float p_expand_margin_size);
 	void set_expand_margin_individual(float p_left, float p_top, float p_right, float p_bottom);
 	float get_expand_margin(Side p_expand_side) const;
+
+	void set_flip_h(bool p_flip);
+	bool is_flipped_h() const;
+
+	void set_flip_v(bool p_flip);
+	bool is_flipped_v() const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
