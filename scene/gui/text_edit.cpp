@@ -2482,7 +2482,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		if (mb->is_pressed()) {
 			if (mb->get_button_index() == MouseButton::WHEEL_UP && !mb->is_command_or_control_pressed()) {
-				if (mb->is_shift_pressed()) {
+				bool swap_axis = !DisplayServer::get_singleton()->shift_swaps_scroll_axis() && mb->is_shift_pressed();
+				if (swap_axis) {
 					h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
 					queue_accessibility_update();
 				} else if (mb->is_alt_pressed()) {
@@ -2495,7 +2496,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				_selection_mode_update();
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_or_control_pressed()) {
-				if (mb->is_shift_pressed()) {
+				bool swap_axis = !DisplayServer::get_singleton()->shift_swaps_scroll_axis() && mb->is_shift_pressed();
+				if (swap_axis) {
 					h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
 					queue_accessibility_update();
 				} else if (mb->is_alt_pressed()) {
