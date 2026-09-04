@@ -4454,6 +4454,7 @@ bool DisplayServerWindows::process_raw_input() {
 	Vector2 coalesced_raw_mouse_motion;
 	bool coalesced_raw_mouse_left_button_down = false;
 	bool has_touch_events = false;
+	bool has_cb = native_cb[DisplayServerEnums::NATIVE_CB_RAW_INPUT].is_valid();
 	const bool coalesce_all_raw_mouse_motion = Input::get_singleton()->is_using_accumulated_input();
 	auto flush_coalesced_raw_mouse_motion = [&]() {
 		_process_raw_mouse_motion(coalesced_raw_mouse_motion, coalesced_raw_mouse_left_button_down, window_id);
@@ -4487,6 +4488,14 @@ bool DisplayServerWindows::process_raw_input() {
 
 		PRAWINPUT raw = (PRAWINPUT)lpb;
 		for (UINT i = 0; i < n_read; ++i) {
+			if (has_cb) {
+				Variant v_id = window_id;
+				Variant v_data = (uint64_t)(void *)lpb;
+				const Variant *v_args[2] = { &v_id, &v_data };
+				Variant ret;
+				Callable::CallError ce;
+				native_cb[DisplayServerEnums::NATIVE_CB_RAW_INPUT].callp((const Variant **)&v_args, 2, ret, ce);
+			}
 			if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED &&
 					raw->header.dwType == RIM_TYPEMOUSE &&
 					(coalesce_all_raw_mouse_motion || raw_mouse_events >= MAX_RAW_MOUSE_EVENTS_PER_FRAME)) {
@@ -5700,6 +5709,15 @@ LRESULT DisplayServerWindows::_handle_early_window_message(HWND hWnd, UINT uMsg,
 			// Fix this up so we can recognize the remaining messages.
 			pWindowData->hWnd = hWnd;
 
+			if (native_cb[DisplayServerEnums::NATIVE_CB_WINDOW_CREATE].is_valid()) {
+				Variant v_id = pWindowData->id;
+				Variant v_handle = (uint64_t)hWnd;
+				const Variant *v_args[2] = { &v_id, &v_handle };
+				Variant ret;
+				Callable::CallError ce;
+				native_cb[DisplayServerEnums::NATIVE_CB_WINDOW_CREATE].callp((const Variant **)&v_args, 2, ret, ce);
+			}
+
 			if (!AccessibilityServer::get_singleton()->window_create(pWindowData->id, (void *)hWnd)) {
 				if (OS::get_singleton()->is_stdout_verbose()) {
 					ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
@@ -5986,6 +6004,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			LPBYTE lpb = new BYTE[dwSize];
 			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize) {
+				if (native_cb[DisplayServerEnums::NATIVE_CB_RAW_INPUT].is_valid()) {
+					Variant v_id = window_id;
+					Variant v_data = (uint64_t)(void *)lpb;
+					const Variant *v_args[2] = { &v_id, &v_data };
+					Variant ret;
+					Callable::CallError ce;
+					native_cb[DisplayServerEnums::NATIVE_CB_RAW_INPUT].callp((const Variant **)&v_args, 2, ret, ce);
+				}
 				_process_raw_input_event(*(RAWINPUT *)lpb, window_id);
 			}
 			delete[] lpb;
@@ -6987,6 +7013,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		} break;
 		case WM_DESTROY: {
+			if (native_cb[DisplayServerEnums::NATIVE_CB_WINDOW_DESTROY].is_valid()) {
+				Variant v_id = window_id;
+				Variant v_handle = (uint64_t)hWnd;
+				const Variant *v_args[2] = { &v_id, &v_handle };
+				Variant ret;
+				Callable::CallError ce;
+				native_cb[DisplayServerEnums::NATIVE_CB_WINDOW_DESTROY].callp((const Variant **)&v_args, 2, ret, ce);
+			}
+
 			AccessibilityServer::get_singleton()->window_destroy(window_id);
 
 			Input::get_singleton()->flush_buffered_events();
@@ -7867,6 +7902,11 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 	} else {
 		ERR_PRINT("Unknown tablet driver " + p_driver + ".");
 	}
+}
+
+void DisplayServerWindows::set_native_callback(DisplayServerEnums::NativeCallbackType p_type, const Callable &p_callback) {
+	ERR_FAIL_INDEX(p_type, DisplayServerEnums::NATIVE_CB_MAX);
+	native_cb[p_type] = p_callback;
 }
 
 DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error) {
