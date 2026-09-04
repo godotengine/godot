@@ -1,0 +1,8 @@
+GH-123178
+----------
+
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/file_dialog_show/arguments': size changed value in new API, from 8 to 9.
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/file_dialog_with_options_show/arguments': size changed value in new API, from 10 to 11.
+
+Added optional "id" argument.
+Compatibility methods registered.

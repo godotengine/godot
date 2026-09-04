@@ -439,8 +439,11 @@ class DisplayServerWindows : public DisplayServer {
 	DisplayServerEnums::IndicatorID indicator_id_counter = 0;
 	HashMap<DisplayServerEnums::IndicatorID, IndicatorData> indicators;
 
+public:
 	struct FileDialogData {
+		int64_t id = -1;
 		HWND hwnd_owner = nullptr;
+		HWND hwnd = nullptr;
 		Rect2i wrect;
 		String appid;
 		String title;
@@ -458,6 +461,8 @@ class DisplayServerWindows : public DisplayServer {
 		SafeFlag close_requested;
 		SafeFlag finished;
 	};
+
+private:
 	Mutex file_dialog_mutex;
 	List<FileDialogData *> file_dialogs;
 	HashMap<HWND, FileDialogData *> file_dialog_wnd;
@@ -538,7 +543,7 @@ class DisplayServerWindows : public DisplayServer {
 	};
 	BitField<WinKeyModifierMask> _get_mods() const;
 
-	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, DisplayServerEnums::WindowID p_window_id);
+	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, DisplayServerEnums::WindowID p_window_id, int64_t p_id);
 
 	String _get_keyboard_layout_display_name(const String &p_klid) const;
 	String _get_klid(HKL p_hkl) const;
@@ -602,8 +607,9 @@ public:
 	virtual Color get_base_color() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
-	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
-	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) override;
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id, int64_t p_id) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id, int64_t p_id) override;
+	virtual Error file_dialog_hide(int64_t p_id) override;
 
 	virtual void beep() const override;
 
