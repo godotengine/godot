@@ -2058,6 +2058,8 @@ void TileMapLayer::_deferred_internal_update() {
 }
 
 void TileMapLayer::_internal_update(bool p_force_cleanup) {
+	const bool tile_map_data_changed = dirty.flags[DIRTY_FLAGS_TILE_MAP_DATA];
+
 	// Find TileData that need a runtime modification.
 	// This may add cells to the dirty list if a runtime modification has been notified.
 	_build_runtime_update_tile_data(p_force_cleanup);
@@ -2105,6 +2107,10 @@ void TileMapLayer::_internal_update(bool p_force_cleanup) {
 	dirty.cell_list.clear();
 
 	pending_update = false;
+
+	if (tile_map_data_changed) {
+		emit_signal(CoreStringName(changed));
+	}
 }
 
 void TileMapLayer::_physics_interpolated_changed() {
@@ -2823,6 +2829,7 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 	if (!E->value.dirty_list_element.in_list()) {
 		dirty.cell_list.add(&(E->value.dirty_list_element));
 	}
+	dirty.flags[DIRTY_FLAGS_TILE_MAP_DATA] = true;
 	_queue_internal_update();
 
 	used_rect_cache_dirty = true;
