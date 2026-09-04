@@ -68,6 +68,10 @@ void FileDialog::_focus_file_text() {
 }
 
 void FileDialog::_native_popup() {
+	if (native_dialog_visible) {
+		return;
+	}
+
 	// Show native dialog directly.
 	String root;
 	if (!root_prefix.is_empty()) {
@@ -86,9 +90,9 @@ void FileDialog::_native_popup() {
 	DisplayServerEnums::WindowID wid = w ? w->get_window_id() : DisplayServerEnums::INVALID_WINDOW_ID;
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
-		DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid);
+		native_dialog_visible = DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid) == OK;
 	} else {
-		DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid);
+		native_dialog_visible = DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid) == OK;
 	}
 }
 
@@ -149,6 +153,8 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files, int
 }
 
 void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options) {
+	native_dialog_visible = false;
+
 	if (!p_ok) {
 		filename_edit->set_text("");
 		emit_signal(SNAME("canceled"));
