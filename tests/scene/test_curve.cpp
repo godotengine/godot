@@ -396,6 +396,40 @@ TEST_CASE("[Curve] Straight line offset test") {
 			"Straight line curve should return different baked values at offset 1 vs offset (1 - 0.5 / bake resolution) .");
 }
 
+TEST_CASE("[Curve] Expanding point count should preserve existing indexed point properties") {
+	Ref<Curve> curve = memnew(Curve);
+	const Vector2 first_position(0.25, 0.25);
+	const Vector2 second_position(0.75, 0.75);
+
+	curve->add_point(first_position);
+	curve->add_point(second_position);
+
+	const Variant first_property = curve->get("point_0/position");
+	const Variant second_property = curve->get("point_1/position");
+
+	curve->set_point_count(3);
+
+	CHECK_MESSAGE(
+			curve->get_point_position(0) == first_position,
+			"Existing first point should keep its indexed position immediately after expanding.");
+	CHECK_MESSAGE(
+			curve->get_point_position(1) == second_position,
+			"Existing second point should keep its indexed position immediately after expanding.");
+
+	curve->set("point_0/position", first_property);
+	curve->set("point_1/position", second_property);
+
+	CHECK_MESSAGE(
+			curve->get_point_count() == 3,
+			"Curve should contain the expected number of points after expanding.");
+	CHECK_MESSAGE(
+			curve->get_point_position(0) == first_position,
+			"Existing first point should keep its indexed position after expanding.");
+	CHECK_MESSAGE(
+			curve->get_point_position(1) == second_position,
+			"Existing second point should keep its indexed position after expanding.");
+}
+
 TEST_CASE("[Curve2D] Linear sampling should return exact value") {
 	Ref<Curve2D> curve = memnew(Curve2D);
 	real_t len = 2048.0;
