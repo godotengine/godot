@@ -38,6 +38,12 @@
 
 #ifdef _MSC_VER
 extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep);
+#else
+
+#include <csignal>
+#ifndef _GNU_SOURCE
+typedef typeof(void(int)) *sighandler_t;
+#endif
 #endif
 
 #endif
@@ -45,6 +51,11 @@ extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep);
 class CrashHandler {
 	bool disabled;
 
+#if !defined(_MSC_VER) && defined(CRASH_HANDLER_EXCEPTION)
+	sighandler_t old_sig_segf = nullptr;
+	sighandler_t old_sig_fpe = nullptr;
+	sighandler_t old_sig_ill = nullptr;
+#endif
 public:
 	void initialize();
 
