@@ -3496,6 +3496,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	switch (completion_context.type) {
 		case GDScriptParser::COMPLETION_NONE:
+		case GDScriptParser::COMPLETION_NAMED_ENUM_ITEM_DECLARATION:
 		case GDScriptParser::COMPLETION_DECLARATION:
 			break;
 		case GDScriptParser::COMPLETION_ANNOTATION: {
@@ -4649,6 +4650,19 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				r_result.type = LookupResult::Type::CLASS_ANNOTATION;
 				r_result.class_name = "@GDScript";
 				r_result.class_member = annotation_symbol;
+				return OK;
+			}
+		} break;
+		case GDScriptParser::COMPLETION_NAMED_ENUM_ITEM_DECLARATION: {
+			if (context.node->type != GDScriptParser::Node::ENUM) {
+				break;
+			}
+			const GDScriptParser::EnumNode *enum_node = static_cast<const GDScriptParser::EnumNode *>(context.node);
+			if (!enum_node->identifier) {
+				break;
+			}
+
+			if (_lookup_symbol_from_base(enum_node->enum_type, p_symbol, r_result) == OK) {
 				return OK;
 			}
 		} break;
