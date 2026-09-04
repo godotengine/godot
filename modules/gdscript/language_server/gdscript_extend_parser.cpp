@@ -132,7 +132,7 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 			if (const_val.get_type() == Variant::STRING) {
 				String scr_path = const_val;
 				if (scr_path.is_relative_path()) {
-					scr_path = get_path().get_base_dir().path_join(scr_path).simplify_path();
+					scr_path = script_path.get_base_dir().path_join(scr_path).simplify_path();
 				}
 				bool exists = fs->file_exists(scr_path);
 
@@ -157,11 +157,11 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	const String uri = get_uri();
 
 	r_symbol.uri = uri;
-	r_symbol.script_path = path;
+	r_symbol.script_path = script_path;
 	r_symbol.children.clear();
 	r_symbol.name = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
 	if (r_symbol.name.is_empty()) {
-		r_symbol.name = path.get_file();
+		r_symbol.name = script_path.get_file();
 	}
 	r_symbol.kind = LSP::SymbolKind::Class;
 	r_symbol.deprecated = false;
@@ -215,7 +215,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 
 				symbol.documentation = m.variable->doc_data.description;
 				symbol.uri = uri;
-				symbol.script_path = path;
+				symbol.script_path = script_path;
 
 				if (m.variable->initializer && m.variable->initializer->type == GDScriptParser::Node::LAMBDA) {
 					GDScriptParser::LambdaNode *lambda_node = (GDScriptParser::LambdaNode *)m.variable->initializer;
@@ -250,7 +250,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.selectionRange = range_of_node(m.constant->identifier);
 				symbol.documentation = m.constant->doc_data.description;
 				symbol.uri = uri;
-				symbol.script_path = path;
+				symbol.script_path = script_path;
 
 				symbol.detail = "const " + symbol.name;
 				if (m.constant->type_constraint.is_hard_type()) {
@@ -290,7 +290,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.selectionRange = range_of_node(m.signal->identifier);
 				symbol.documentation = m.signal->doc_data.description;
 				symbol.uri = uri;
-				symbol.script_path = path;
+				symbol.script_path = script_path;
 				symbol.detail = "signal " + String(m.signal->identifier->name) + "(";
 				for (uint32_t j = 0; j < m.signal->parameters.size(); j++) {
 					if (j > 0) {
@@ -309,7 +309,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					param_symbol.range = range_of_node(param);
 					param_symbol.selectionRange = range_of_node(param->identifier);
 					param_symbol.uri = uri;
-					param_symbol.script_path = path;
+					param_symbol.script_path = script_path;
 					param_symbol.detail = "var " + param_symbol.name;
 					if (param->type_constraint.is_hard_type()) {
 						param_symbol.detail += ": " + param->type_constraint.to_string();
@@ -329,7 +329,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.selectionRange = range_of_node(m.enum_value.identifier);
 				symbol.documentation = m.enum_value.doc_data.description;
 				symbol.uri = uri;
-				symbol.script_path = path;
+				symbol.script_path = script_path;
 
 				symbol.detail = symbol.name + " = " + itos(m.enum_value.value);
 
@@ -343,7 +343,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.selectionRange = range_of_node(m.m_enum->identifier);
 				symbol.documentation = m.m_enum->doc_data.description;
 				symbol.uri = uri;
-				symbol.script_path = path;
+				symbol.script_path = script_path;
 
 				symbol.detail = "enum " + String(m.m_enum->identifier->name) + "{";
 				for (uint32_t j = 0; j < m.m_enum->values.size(); j++) {
@@ -365,7 +365,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					child.selectionRange = range_of_node(value.identifier);
 					child.documentation = value.doc_data.description;
 					child.uri = uri;
-					child.script_path = path;
+					child.script_path = script_path;
 
 					child.detail = child.name + " = " + itos(value.value);
 
@@ -413,7 +413,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	}
 	r_symbol.documentation = p_func->doc_data.description;
 	r_symbol.uri = uri;
-	r_symbol.script_path = path;
+	r_symbol.script_path = script_path;
 
 	String parameters;
 	for (uint32_t i = 0; i < p_func->parameters.size(); i++) {
@@ -541,7 +541,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			}
 			symbol.local = true;
 			symbol.uri = uri;
-			symbol.script_path = path;
+			symbol.script_path = script_path;
 			symbol.detail = local.type == SuiteNode::Local::CONSTANT ? "const " : "var ";
 			symbol.detail += symbol.name;
 			if (local.get_datatype().is_hard_type()) {
@@ -714,7 +714,7 @@ String ExtendGDScriptParser::get_symbol_name_under_position(const LSP::Position 
 }
 
 String ExtendGDScriptParser::get_uri() const {
-	return GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(path);
+	return GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(script_path);
 }
 
 const LSP::DocumentSymbol *ExtendGDScriptParser::search_symbol_defined_at_line(int p_line, const LSP::DocumentSymbol &p_parent, const String &p_symbol_name) const {
@@ -836,7 +836,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 	Dictionary class_api;
 
 	class_api["name"] = p_class->identifier != nullptr ? String(p_class->identifier->name) : String();
-	class_api["path"] = path;
+	class_api["path"] = script_path;
 	Array extends_class;
 	for (int i = 0; i < p_class->extends.size(); i++) {
 		extends_class.append(String(p_class->extends[i]->name));
@@ -961,7 +961,6 @@ Dictionary ExtendGDScriptParser::generate_api() const {
 }
 
 void ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
-	path = p_path;
 	lines = p_code.split("\n");
 
 	parse_result = GDScriptParser::parse(p_code, p_path, false);
