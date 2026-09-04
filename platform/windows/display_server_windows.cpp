@@ -871,7 +871,7 @@ String DisplayServerWindows::_get_app_id() const {
 	static String appname;
 	if (appname.is_empty()) {
 		if (Engine::get_singleton()->is_editor_hint()) {
-			appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
+			appname = "Goline.GolineEditor." + String(GODOT_VERSION_FULL_CONFIG);
 		} else {
 			String name = GLOBAL_GET("application/config/name");
 			String version = GLOBAL_GET("application/config/version");
@@ -885,7 +885,7 @@ String DisplayServerWindows::_get_app_id() const {
 				}
 			}
 			clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
-			appname = "Godot." + clean_app_name + "." + version;
+			appname = "Goline." + clean_app_name + "." + version;
 		}
 	}
 	return appname;
@@ -895,7 +895,7 @@ String DisplayServerWindows::_get_app_name() const {
 	static String appname;
 	if (appname.is_empty()) {
 		if (Engine::get_singleton()->is_editor_hint()) {
-			appname = "Godot";
+			appname = "Goline";
 		} else {
 			appname = GLOBAL_GET("application/config/name");
 		}
@@ -8059,7 +8059,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 
 	String appname;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		appname = "Godot.GodotEditor." + String(GODOT_VERSION_FULL_CONFIG);
+		appname = "Goline.GolineEditor." + String(GODOT_VERSION_FULL_CONFIG);
 	} else {
 		String name = GLOBAL_GET("application/config/name");
 		String version = GLOBAL_GET("application/config/version");
@@ -8073,7 +8073,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 			}
 		}
 		clean_app_name = clean_app_name.substr(0, 120 - version.length()).trim_suffix(".");
-		appname = "Godot." + clean_app_name + "." + version;
+		appname = "Goline." + clean_app_name + "." + version;
 
 #ifndef TOOLS_ENABLED
 		// Set for exported projects only.
