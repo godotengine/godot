@@ -81,24 +81,23 @@ char32_t ShaderPreprocessor::Tokenizer::peek() {
 	return 0;
 }
 
-int ShaderPreprocessor::Tokenizer::consume_line_continuations(int p_offset) {
+int ShaderPreprocessor::Tokenizer::consume_line_continuations() {
 	int skips = 0;
 
-	for (int i = index + p_offset; i < size; i++) {
-		char32_t c = code[i];
-		if (c == '\\') {
-			if (i + 1 < size && code[i + 1] == '\n') {
-				// This line ends with "\" and "\n" continuation.
-				add_generated(Token('\n', line));
-				line++;
-				skips++;
-
-				i = i + 2;
-				index = i;
-			} else {
-				break;
+	for (; index < size; index++) {
+		char32_t c = code[index];
+		if (c != '\\') {
+			if (is_whitespace(c)) {
+				continue;
 			}
-		} else if (!is_whitespace(c)) {
+			break;
+		}
+		if (index + 1 < size && code[index + 1] == '\n') {
+			add_generated(Token('\n', line));
+			line++;
+			skips++;
+			index++;
+		} else {
 			break;
 		}
 	}
@@ -109,11 +108,11 @@ LocalVector<ShaderPreprocessor::Token> ShaderPreprocessor::Tokenizer::advance(ch
 	LocalVector<ShaderPreprocessor::Token> tokens;
 
 	while (index < size) {
-		char32_t c = code[index++];
-		if (c == '\\' && consume_line_continuations(-1) > 0) {
+		char32_t c = code[index];
+		if (c == '\\' && consume_line_continuations() > 0) {
 			continue;
 		}
-
+		index++;
 		if (c == '\n') {
 			add_generated(ShaderPreprocessor::Token('\n', line));
 			line++;
@@ -148,7 +147,7 @@ String ShaderPreprocessor::Tokenizer::get_identifier(bool *r_is_cursor, bool p_s
 
 	while (true) {
 		char32_t c = peek();
-		if (c == '\\' && consume_line_continuations(0) > 0) {
+		if (c == '\\' && consume_line_continuations() > 0) {
 			continue;
 		}
 
