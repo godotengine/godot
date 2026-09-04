@@ -205,6 +205,12 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 			}
 
 			for (KeyValue<String, Ref<GDScriptParserRef>> E : parser.get_depended_parsers()) {
+				if (GDScript::is_canonically_equal_paths(E.key, p_path)) {
+					// HACK: A bug in the analyzer can lead to it depending on itself, which pulls an outdated parser from the cache.
+					// The errors from this parser are irrelevant and the wrong positions could lead to crashes down the line.
+					continue;
+				}
+
 				GDScriptParser *depended_parser = E.value->get_parser();
 				for (const GDScriptParser::ParserError &pe : depended_parser->get_errors()) {
 					ScriptError e;
