@@ -83,30 +83,28 @@ void GodotArea2D::set_space(GodotSpace2D *p_space) {
 }
 
 void GodotArea2D::set_monitor_callback(const Callable &p_callback) {
-	_unregister_shapes();
-
+	if (monitor_callback.is_valid() == p_callback.is_valid()) {
+		monitor_callback = p_callback;
+		return;
+	}
 	monitor_callback = p_callback;
-
 	monitored_bodies.clear();
-	monitored_areas.clear();
 
-	_shape_changed();
-
+	_set_static(!(area_monitor_callback.is_valid() || monitor_callback.is_valid()));
 	if (!moved_list.in_list() && get_space()) {
 		get_space()->area_add_to_moved_list(&moved_list);
 	}
 }
 
 void GodotArea2D::set_area_monitor_callback(const Callable &p_callback) {
-	_unregister_shapes();
-
+	if (area_monitor_callback.is_valid() == p_callback.is_valid()) {
+		area_monitor_callback = p_callback;
+		return;
+	}
 	area_monitor_callback = p_callback;
-
-	monitored_bodies.clear();
 	monitored_areas.clear();
 
-	_shape_changed();
-
+	_set_static(!(area_monitor_callback.is_valid() || monitor_callback.is_valid()));
 	if (!moved_list.in_list() && get_space()) {
 		get_space()->area_add_to_moved_list(&moved_list);
 	}
@@ -117,9 +115,10 @@ void GodotArea2D::_set_space_override_mode(PS2DE::AreaSpaceOverrideMode &r_mode,
 	if (do_override == (r_mode != PS2DE::AREA_SPACE_OVERRIDE_DISABLED)) {
 		return;
 	}
-	_unregister_shapes();
 	r_mode = p_new_mode;
-	_shape_changed();
+	if (!moved_list.in_list() && get_space()) {
+		get_space()->area_add_to_moved_list(&moved_list);
+	}
 }
 
 void GodotArea2D::set_param(PS2DE::AreaParameter p_param, const Variant &p_value) {
@@ -198,8 +197,9 @@ void GodotArea2D::set_monitorable(bool p_monitorable) {
 	}
 
 	monitorable = p_monitorable;
-	_set_static(!monitorable);
-	_shapes_changed();
+	if (!moved_list.in_list() && get_space()) {
+		get_space()->area_add_to_moved_list(&moved_list);
+	}
 }
 
 void GodotArea2D::call_queries() {
