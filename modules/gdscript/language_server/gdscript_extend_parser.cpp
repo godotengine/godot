@@ -35,6 +35,8 @@
 #include "gdscript_language_protocol.h"
 #include "gdscript_workspace.h"
 
+#include "core/math/color_names.inc"
+
 LSP::Position GodotPosition::to_lsp() const {
 	LSP::Position res;
 	res.line = line - 1;
@@ -143,6 +145,253 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 					document_links.push_back(link);
 				}
 			}
+		}
+	}
+}
+
+void ExtendGDScriptParser::update_colors() {
+	colors.clear();
+
+	const GDScriptParser::ClassNode *gdclass = get_tree();
+	parse_class_for_colors(gdclass);
+}
+
+void ExtendGDScriptParser::parse_expression_for_colors(const GDScriptParser::ExpressionNode *p_node) {
+	if (!p_node) {
+		return;
+	}
+	if (p_node->type == GDScriptParser::Node::SUBSCRIPT) {
+		// Case of Color constant, such as `Color.RED`.
+		const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(p_node);
+		if (subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
+			const GDScriptParser::IdentifierNode *base_id = static_cast<GDScriptParser::IdentifierNode *>(subscript->base);
+			if (base_id->reduced && base_id->reduced_value.get_type() == Variant::COLOR) {
+				LSP::ColorInformation color_info;
+				color_info.range = range_of_node(subscript);
+				color_info.color = Color(base_id->reduced_value);
+				colors.append(color_info);
+			}
+			if (base_id->name == "Color" && subscript->is_attribute && Color::find_named_color(subscript->attribute->name) != -1) {
+				LSP::ColorInformation color_info;
+				color_info.range = range_of_node(subscript);
+				color_info.color = Color::named(subscript->attribute->name);
+				colors.append(color_info);
+			}
+		}
+	} else if (p_node->type == GDScriptParser::Node::CALL) {
+		// Case of Color constructor, such as `Color(1.0, 0.5, 0.25)`.
+		const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(p_node);
+		if (call->function_name == "Color") {
+			LSP::ColorInformation color_info;
+			color_info.range = range_of_node(call);
+
+			int num_args = call->arguments.size();
+
+			if (num_args == 0) {
+				// Color()
+				color_info.color = Color();
+				colors.append(color_info);
+			} else if (num_args == 1) {
+				// Color(Color)
+				// Color(String)
+				if (call->arguments[0]->reduced) {
+					color_info.color = Color(call->arguments[0]->reduced_value);
+					colors.append(color_info);
+				}
+			} else if (num_args == 2) {
+				// Color(Color, float)
+				// Color(String, float)
+				GDScriptParser::ExpressionNode *arg0 = call->arguments[0];
+				GDScriptParser::ExpressionNode *arg1 = call->arguments[1];
+
+				if (arg0->reduced && arg1->reduced) {
+					if (arg0->reduced_value.get_type() == Variant::COLOR) {
+						color_info.color = Color(Color(arg0->reduced_value), arg1->reduced_value);
+					} else {
+						color_info.color = Color(String(arg0->reduced_value), arg1->reduced_value);
+					}
+					colors.append(color_info);
+				}
+			} else if (num_args == 3 || num_args == 4) {
+				// Color(float, float, float)
+				// Color(float, float, float, float)
+				GDScriptParser::ExpressionNode *arg0 = call->arguments[0];
+				GDScriptParser::ExpressionNode *arg1 = call->arguments[1];
+				GDScriptParser::ExpressionNode *arg2 = call->arguments[2];
+				GDScriptParser::ExpressionNode *arg3 = num_args == 4 ? call->arguments[3] : nullptr;
+
+				if (arg0->reduced && arg1->reduced && arg2->reduced && (!arg3 || arg3->reduced)) {
+					Variant r = arg0->reduced_value;
+					Variant g = arg1->reduced_value;
+					Variant b = arg2->reduced_value;
+					Variant a = arg3 ? arg3->reduced_value : Variant(1.0);
+					color_info.color = Color(r, g, b, a);
+					colors.append(color_info);
+				}
+			}
+		}
+	} else if (p_node->type == GDScriptParser::Node::ARRAY) {
+		const GDScriptParser::ArrayNode *arr = static_cast<const GDScriptParser::ArrayNode *>(p_node);
+		for (const GDScriptParser::ExpressionNode *element : arr->elements) {
+			parse_expression_for_colors(element);
+		}
+	} else if (p_node->type == GDScriptParser::Node::DICTIONARY) {
+		const GDScriptParser::DictionaryNode *dict = static_cast<const GDScriptParser::DictionaryNode *>(p_node);
+		for (GDScriptParser::DictionaryNode::Pair pair : dict->elements) {
+			parse_expression_for_colors(pair.key);
+			parse_expression_for_colors(pair.value);
+		}
+	} else if (p_node->type == GDScriptParser::Node::BINARY_OPERATOR) {
+		const GDScriptParser::BinaryOpNode *bin_op = static_cast<const GDScriptParser::BinaryOpNode *>(p_node);
+		parse_expression_for_colors(bin_op->left_operand);
+		parse_expression_for_colors(bin_op->right_operand);
+	} else if (p_node->type == GDScriptParser::Node::LAMBDA) {
+		const GDScriptParser::LambdaNode *lambda = static_cast<const GDScriptParser::LambdaNode *>(p_node);
+		if (!lambda->function) {
+			return;
+		}
+		for (const GDScriptParser::ParameterNode *parameter : lambda->function->parameters) {
+			if (parameter->initializer) {
+				parse_expression_for_colors(parameter->initializer);
+			}
+		}
+		parse_suite_for_colors(lambda->function->body);
+	} else if (p_node->type == GDScriptParser::Node::TERNARY_OPERATOR) {
+		const GDScriptParser::TernaryOpNode *ter_op = static_cast<const GDScriptParser::TernaryOpNode *>(p_node);
+		parse_expression_for_colors(ter_op->condition);
+		parse_expression_for_colors(ter_op->true_expr);
+		parse_expression_for_colors(ter_op->false_expr);
+	}
+}
+
+void ExtendGDScriptParser::parse_class_for_colors(const GDScriptParser::ClassNode *p_class) {
+	for (const GDScriptParser::ClassNode::Member &m : p_class->members) {
+		if (m.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+			if (m.variable->initializer) {
+				parse_expression_for_colors(m.variable->initializer);
+			}
+			if (m.variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
+				if (m.variable->setter != nullptr) {
+					parse_suite_for_colors(m.variable->setter->body);
+				}
+
+				if (m.variable->getter != nullptr) {
+					parse_suite_for_colors(m.variable->getter->body);
+				}
+			}
+		} else if (m.type == GDScriptParser::ClassNode::Member::CONSTANT) {
+			if (m.constant->initializer) {
+				parse_expression_for_colors(m.constant->initializer);
+			}
+		} else if (m.type == GDScriptParser::ClassNode::Member::FUNCTION) {
+			// Look for colors in parameters.
+			for (const GDScriptParser::ParameterNode *parameter : m.function->parameters) {
+				if (parameter->initializer) {
+					parse_expression_for_colors(parameter->initializer);
+				}
+			}
+
+			// Look for colors in suite.
+			parse_suite_for_colors(m.function->body);
+		} else if (m.type == GDScriptParser::ClassNode::Member::CLASS) {
+			parse_class_for_colors(m.m_class);
+		}
+	}
+}
+
+void ExtendGDScriptParser::parse_suite_for_colors(const GDScriptParser::SuiteNode *p_suite) {
+	for (const Node *statement : p_suite->statements) {
+		switch (statement->type) {
+			case GDScriptParser::Node::ASSERT: {
+				const GDScriptParser::AssertNode *assert = static_cast<const GDScriptParser::AssertNode *>(statement);
+				parse_expression_for_colors(assert->condition);
+				break;
+			}
+			case GDScriptParser::Node::VARIABLE: {
+				const GDScriptParser::VariableNode *variable = static_cast<const GDScriptParser::VariableNode *>(statement);
+				parse_expression_for_colors(variable->initializer);
+				break;
+			}
+			case GDScriptParser::Node::CONSTANT: {
+				const GDScriptParser::ConstantNode *constant = static_cast<const GDScriptParser::ConstantNode *>(statement);
+				parse_expression_for_colors(constant->initializer);
+				break;
+			}
+			case GDScriptParser::Node::IF: {
+				const GDScriptParser::IfNode *if_node = static_cast<const GDScriptParser::IfNode *>(statement);
+				parse_expression_for_colors(if_node->condition);
+				parse_suite_for_colors(if_node->true_block);
+				break;
+			}
+			case GDScriptParser::Node::FOR: {
+				const GDScriptParser::ForNode *for_node = static_cast<const GDScriptParser::ForNode *>(statement);
+				if (for_node->list) {
+					parse_expression_for_colors(for_node->list);
+				}
+				parse_suite_for_colors(for_node->loop);
+				break;
+			}
+			case GDScriptParser::Node::WHILE: {
+				const GDScriptParser::WhileNode *while_node = static_cast<const GDScriptParser::WhileNode *>(statement);
+				parse_expression_for_colors(while_node->condition);
+				parse_suite_for_colors(while_node->loop);
+				break;
+			}
+			case GDScriptParser::Node::MATCH: {
+				const GDScriptParser::MatchNode *match = static_cast<const GDScriptParser::MatchNode *>(statement);
+				parse_expression_for_colors(match->test);
+				for (const GDScriptParser::MatchBranchNode *branch : match->branches) {
+					for (const GDScriptParser::PatternNode *pattern : branch->patterns) {
+						parse_pattern_for_colors(pattern);
+					}
+
+					if (branch->block) {
+						parse_suite_for_colors(branch->block);
+					}
+
+					if (branch->guard_body) {
+						parse_suite_for_colors(branch->guard_body);
+					}
+				}
+				break;
+			}
+			case GDScriptParser::Node::RETURN: {
+				const GDScriptParser::ReturnNode *ret = static_cast<const GDScriptParser::ReturnNode *>(statement);
+				parse_expression_for_colors(ret->return_value);
+				break;
+			}
+			case GDScriptParser::Node::BREAK:
+			case GDScriptParser::Node::CONTINUE:
+			case GDScriptParser::Node::PASS:
+			case GDScriptParser::Node::BREAKPOINT:
+				break;
+			case GDScriptParser::Node::ASSIGNMENT: {
+				const GDScriptParser::AssignmentNode *assignment = static_cast<const GDScriptParser::AssignmentNode *>(statement);
+				parse_expression_for_colors(assignment->assigned_value);
+				break;
+			}
+			default: {
+				if (statement->is_expression()) {
+					const GDScriptParser::ExpressionNode *expression = static_cast<const GDScriptParser::ExpressionNode *>(statement);
+					parse_expression_for_colors(expression);
+				}
+				break;
+			}
+		}
+	}
+}
+
+void ExtendGDScriptParser::parse_pattern_for_colors(const GDScriptParser::PatternNode *p_pattern) {
+	if (p_pattern->pattern_type == GDScriptParser::PatternNode::PT_EXPRESSION) {
+		parse_expression_for_colors(p_pattern->expression);
+	} else if (p_pattern->pattern_type == GDScriptParser::PatternNode::PT_ARRAY) {
+		for (const GDScriptParser::PatternNode *nested_pattern : p_pattern->array) {
+			parse_pattern_for_colors(nested_pattern);
+		}
+	} else if (p_pattern->pattern_type == GDScriptParser::PatternNode::PT_DICTIONARY) {
+		for (const GDScriptParser::PatternNode::Pair pair : p_pattern->dictionary) {
+			parse_expression_for_colors(pair.key);
+			parse_pattern_for_colors(pair.value_pattern);
 		}
 	}
 }
@@ -973,4 +1222,5 @@ void ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
 	update_diagnostics();
 	update_symbols();
 	update_document_links(p_code);
+	update_colors();
 }

@@ -111,6 +111,7 @@ class ExtendGDScriptParser : public GDScriptParser {
 	List<LSP::DocumentLink> document_links;
 	ClassMembers members;
 	HashMap<String, ClassMembers> inner_classes;
+	Vector<LSP::ColorInformation> colors;
 
 	LSP::Range range_of_node(const GDScriptParser::Node *p_node) const;
 
@@ -118,6 +119,11 @@ class ExtendGDScriptParser : public GDScriptParser {
 
 	void update_symbols();
 	void update_document_links(const String &p_code);
+	void update_colors();
+	void parse_expression_for_colors(const GDScriptParser::ExpressionNode *p_node);
+	void parse_class_for_colors(const GDScriptParser::ClassNode *p_class);
+	void parse_suite_for_colors(const GDScriptParser::SuiteNode *p_suite);
+	void parse_pattern_for_colors(const GDScriptParser::PatternNode *p_pattern);
 	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, LSP::DocumentSymbol &r_symbol);
 	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, LSP::DocumentSymbol &r_symbol);
 
@@ -133,6 +139,7 @@ public:
 	_FORCE_INLINE_ const Vector<LSP::Diagnostic> &get_diagnostics() const { return diagnostics; }
 	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
 	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
+	_FORCE_INLINE_ const Vector<LSP::ColorInformation> &get_colors() const { return colors; }
 	Error parse_result;
 
 	Error get_left_function_call(const LSP::Position &p_position, LSP::Position &r_func_pos, int &r_arg_index) const;
