@@ -52,22 +52,26 @@ struct RayParameters {
 	bool pick_ray = false;
 };
 
+GODOT_PUSH_IGNORE_DEPRECATION() // For implicit constructors etc.
 struct RayResult {
 	Vector3 position;
 	Vector3 normal;
 	RID rid;
 	ObjectID collider_id;
-	Object *collider = nullptr;
+	[[deprecated("Use `collider_id` instead.")]] Object *collider = nullptr;
 	int shape = 0;
 	int face_index = -1;
 };
+GODOT_POP_IGNORE_DEPRECATION()
 
+GODOT_PUSH_IGNORE_DEPRECATION() // For implicit constructors etc.
 struct ShapeResult {
 	RID rid;
 	ObjectID collider_id;
-	Object *collider = nullptr;
+	[[deprecated("Use `collider_id` instead.")]] Object *collider = nullptr;
 	int shape = 0;
 };
+GODOT_POP_IGNORE_DEPRECATION()
 
 struct PointParameters {
 	Vector3 position;

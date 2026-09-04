@@ -331,11 +331,10 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	int areas = space_state->intersect_point(point_params, sr, MAX_INTERSECT_AREAS);
 
 	for (int i = 0; i < areas; i++) {
-		if (!sr[i].collider) {
+		if (!sr[i].collider_id.is_valid()) {
 			continue;
 		}
-
-		Area3D *tarea = Object::cast_to<Area3D>(sr[i].collider);
+		Area3D *tarea = ObjectDB::get_instance<Area3D>(sr[i].collider_id);
 		if (!tarea) {
 			continue;
 		}

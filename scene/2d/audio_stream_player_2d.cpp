@@ -106,7 +106,10 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 	int areas = space_state->intersect_point(point_params, sr, MAX_INTERSECT_AREAS);
 	for (int i = 0; i < areas; i++) {
-		Area2D *area2d = Object::cast_to<Area2D>(sr[i].collider);
+		if (!sr[i].collider_id.is_valid()) {
+			continue;
+		}
+		Area2D *area2d = ObjectDB::get_instance<Area2D>(sr[i].collider_id);
 		if (!area2d) {
 			continue;
 		}
