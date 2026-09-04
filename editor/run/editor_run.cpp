@@ -71,6 +71,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 	args.push_back(itos(OS::get_singleton()->get_process_id()));
 
 	bool debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisions", false);
+	bool debug_audio_visualization = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_audio_visualization", false);
 	bool debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	bool debug_avoidance = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_avoidance", false);
@@ -79,6 +80,10 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 
 	if (debug_collisions) {
 		args.push_back("--debug-collisions");
+	}
+
+	if (debug_audio_visualization) {
+		args.push_back("--debug-audio-visualization");
 	}
 
 	if (debug_paths) {
