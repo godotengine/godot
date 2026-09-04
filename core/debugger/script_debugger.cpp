@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #include "script_debugger.h"
 
 #include "core/debugger/engine_debugger.h"
@@ -105,3 +107,5 @@ Vector<ScriptLanguage::StackInfo> ScriptDebugger::get_error_stack_info() const {
 ScriptLanguage *ScriptDebugger::get_break_language() const {
 	return break_lang;
 }
+
+#endif // DEBUG_ENABLED
