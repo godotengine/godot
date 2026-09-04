@@ -147,7 +147,9 @@ public:
 	virtual void write_jump_if_shared(const Address &p_value) = 0;
 	virtual void write_end_jump_if_shared() = 0;
 	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type, bool p_is_range) = 0;
-	virtual void write_for_list_assignment(const Address &p_list) = 0;
+	virtual void write_for_container_list_assignment(const Address &p_list) = 0;
+	virtual void write_for_dictionary_type_check(const Address &p_second_variable) = 0;
+	virtual void write_for_second_variable_assignment(const Address &p_second_variable, const bool p_use_conversion) = 0;
 	virtual void write_for_range_assignment(const Address &p_from, const Address &p_to, const Address &p_step) = 0;
 	virtual void write_for(const Address &p_variable, bool p_use_conversion, bool p_is_range) = 0;
 	virtual void write_endfor(bool p_is_range) = 0;
