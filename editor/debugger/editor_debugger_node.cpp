@@ -155,6 +155,20 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	return node;
 }
 
+void EditorDebuggerNode::_update_debugger_tabs() {
+	int active_session = 0;
+	for (int i = 0; i < tabs->get_child_count(); i++) {
+		ScriptEditorDebugger *idle_dbg = Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(i));
+		if (idle_dbg) {
+			tabs->set_tab_hidden(i, !idle_dbg->is_session_active());
+			if (idle_dbg->is_session_active()) {
+				active_session++;
+			}
+		}
+	}
+	tabs->set_tabs_visible(active_session > 1);
+}
+
 void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 	const ScriptEditorDebugger *dbg = get_debugger(p_debugger);
 	ERR_FAIL_NULL(dbg);
@@ -456,6 +470,8 @@ void EditorDebuggerNode::_notification(int p_what) {
 				} // Will arrive too late, how does the regular run work?
 
 				debugger->update_live_edit_root();
+
+				_update_debugger_tabs();
 			}
 		} break;
 	}
