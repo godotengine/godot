@@ -31,7 +31,7 @@
 #pragma once
 
 #include "tts_driver.h"
-#include "winrt_utils.h"
+#include "winrt_defines.h"
 
 struct TTSUtterance;
 

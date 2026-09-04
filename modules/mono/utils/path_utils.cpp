@@ -34,8 +34,6 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 
-#include <cstdlib>
-
 #ifdef WINDOWS_ENABLED
 #include <windows.h>
 
