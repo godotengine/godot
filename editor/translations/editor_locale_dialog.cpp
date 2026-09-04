@@ -34,13 +34,25 @@
 #include "core/object/callable_mp.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/filter_line_edit.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/style_box.h"
+
+static bool _locale_matches_search(const String &p_search_term, const String &p_name, const String &p_code) {
+	return p_search_term.is_empty() || p_name.containsn(p_search_term) || p_code.containsn(p_search_term);
+}
 
 void EditorLocaleDialog::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		_update_search_margins();
+	}
+
 	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
 		// TRANSLATORS: This is the label for a list of writing systems.
 		script_label1->set_text(TTR("Script:", "Locale"));
@@ -124,7 +136,36 @@ void EditorLocaleDialog::_post_popup() {
 		variant_code->set_text("");
 	}
 	edit_filters->set_pressed(false);
+	lang_search->set_text("");
+	script_search->set_text("");
+	cnt_search->set_text("");
 	_update_tree();
+	lang_search->grab_focus();
+}
+
+void EditorLocaleDialog::_update_search_margins() {
+	const Ref<StyleBox> label_style = get_theme_stylebox(CoreStringName(normal), SNAME("Label"));
+	ERR_FAIL_COND(label_style.is_null());
+
+	const int margin_left = label_style->get_margin(SIDE_LEFT);
+	const int margin_right = label_style->get_margin(SIDE_RIGHT);
+
+	for (MarginContainer *mc : { lang_search_margin, script_search_margin, cnt_search_margin }) {
+		mc->add_theme_constant_override("margin_left", margin_left);
+		mc->add_theme_constant_override("margin_right", margin_right);
+	}
+}
+
+FilterLineEdit *EditorLocaleDialog::_add_column_search(VBoxContainer *p_parent, MarginContainer *&r_margin, const String &p_accessibility_name) {
+	FilterLineEdit *search = memnew(FilterLineEdit);
+	search->set_placeholder(TTRC("Search"));
+	search->set_accessibility_name(p_accessibility_name);
+	search->connect(SceneStringName(text_changed), callable_mp(this, &EditorLocaleDialog::_update_tree).unbind(1));
+
+	r_margin = memnew(MarginContainer);
+	r_margin->add_child(search);
+	p_parent->add_child(r_margin);
+	return search;
 }
 
 void EditorLocaleDialog::_filter_lang_option_changed() {
@@ -270,6 +311,9 @@ void EditorLocaleDialog::_update_tree() {
 		f_script_all = GLOBAL_GET("internationalization/locale/script_filter");
 	}
 	bool is_edit_mode = edit_filters->is_pressed();
+	const String lang_search_term = lang_search->get_text();
+	const String script_search_term = script_search->get_text();
+	const String cnt_search_term = cnt_search->get_text();
 
 	filter_mode->select(filter);
 
@@ -288,6 +332,9 @@ void EditorLocaleDialog::_update_tree() {
 	for (const String &E : languages) {
 		if (is_edit_mode || (filter == SHOW_ALL_LOCALES) || f_lang_all.has(E) || f_lang_all.is_empty()) {
 			const String &lang = TranslationServer::get_singleton()->get_language_name(E);
+			if (!_locale_matches_search(lang_search_term, lang, E)) {
+				continue;
+			}
 			TreeItem *t = lang_list->create_item(l_root);
 			if (is_edit_mode) {
 				t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
@@ -306,7 +353,7 @@ void EditorLocaleDialog::_update_tree() {
 	TreeItem *s_root = script_list->create_item(nullptr);
 	script_list->set_hide_root(true);
 
-	if (!is_edit_mode) {
+	if (!is_edit_mode && script_search_term.is_empty()) {
 		TreeItem *t = script_list->create_item(s_root);
 		t->set_text(0, TTRC("[Default]"));
 		t->set_metadata(0, "");
@@ -316,6 +363,9 @@ void EditorLocaleDialog::_update_tree() {
 	for (const String &E : scripts) {
 		if (is_edit_mode || (filter == SHOW_ALL_LOCALES) || f_script_all.has(E) || f_script_all.is_empty()) {
 			const String &scr_code = TranslationServer::get_singleton()->get_script_name(E);
+			if (!_locale_matches_search(script_search_term, scr_code, E)) {
+				continue;
+			}
 			TreeItem *t = script_list->create_item(s_root);
 			if (is_edit_mode) {
 				t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
@@ -334,7 +384,7 @@ void EditorLocaleDialog::_update_tree() {
 	TreeItem *c_root = cnt_list->create_item(nullptr);
 	cnt_list->set_hide_root(true);
 
-	if (!is_edit_mode) {
+	if (!is_edit_mode && cnt_search_term.is_empty()) {
 		TreeItem *t = cnt_list->create_item(c_root);
 		t->set_text(0, TTRC("[Default]"));
 		t->set_metadata(0, "");
@@ -344,6 +394,9 @@ void EditorLocaleDialog::_update_tree() {
 	for (const String &E : countries) {
 		if (is_edit_mode || (filter == SHOW_ALL_LOCALES) || f_cnt_all.has(E) || f_cnt_all.is_empty()) {
 			const String &cnt = TranslationServer::get_singleton()->get_country_name(E);
+			if (!_locale_matches_search(cnt_search_term, cnt, E)) {
+				continue;
+			}
 			TreeItem *t = cnt_list->create_item(c_root);
 			if (is_edit_mode) {
 				t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
@@ -447,6 +500,9 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				vb_lang_list->add_child(lang_lbl);
 			}
 			{
+				lang_search = _add_column_search(vb_lang_list, lang_search_margin, TTRC("Search Language"));
+			}
+			{
 				lang_list = memnew(Tree);
 				lang_list->set_accessibility_name(TTRC("Language:"));
 				lang_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -455,6 +511,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				lang_list->set_columns(1);
 				lang_list->connect("item_edited", callable_mp(this, &EditorLocaleDialog::_filter_lang_option_changed));
 				vb_lang_list->add_child(lang_list);
+				lang_search->set_forward_control(lang_list);
 			}
 			hb_lists->add_child(vb_lang_list);
 		}
@@ -467,6 +524,9 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				vb_script_list->add_child(script_label1);
 			}
 			{
+				script_search = _add_column_search(vb_script_list, script_search_margin, TTRC("Search Script"));
+			}
+			{
 				script_list = memnew(Tree);
 				script_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				script_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -474,6 +534,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				script_list->set_columns(1);
 				script_list->connect("item_edited", callable_mp(this, &EditorLocaleDialog::_filter_script_option_changed));
 				vb_script_list->add_child(script_list);
+				script_search->set_forward_control(script_list);
 			}
 			hb_lists->add_child(vb_script_list);
 		}
@@ -486,6 +547,9 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				vb_cnt_list->add_child(cnt_lbl);
 			}
 			{
+				cnt_search = _add_column_search(vb_cnt_list, cnt_search_margin, TTRC("Search Country"));
+			}
+			{
 				cnt_list = memnew(Tree);
 				cnt_list->set_accessibility_name(TTRC("Country:"));
 				cnt_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -494,6 +558,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				cnt_list->set_columns(1);
 				cnt_list->connect("item_edited", callable_mp(this, &EditorLocaleDialog::_filter_cnt_option_changed));
 				vb_cnt_list->add_child(cnt_list);
+				cnt_search->set_forward_control(cnt_list);
 			}
 			hb_lists->add_child(vb_cnt_list);
 		}
