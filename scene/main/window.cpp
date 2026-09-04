@@ -375,6 +375,10 @@ int Window::get_current_screen() const {
 void Window::set_position(const Point2i &p_position) {
 	ERR_MAIN_THREAD_GUARD;
 
+	if (window_id == DisplayServerEnums::INVALID_WINDOW_ID && position != p_position) {
+		self_fitting_restore_position_valid = false;
+	}
+
 	position = p_position;
 
 	if (embedder) {
@@ -418,6 +422,10 @@ void Window::set_size(const Size2i &p_size) {
 		return;
 	}
 #endif
+
+	if (window_id == DisplayServerEnums::INVALID_WINDOW_ID && size != p_size) {
+		self_fitting_restore_size_valid = false;
+	}
 
 	size = p_size;
 	_update_window_size();
@@ -716,6 +724,23 @@ void Window::_make_window() {
 	}
 
 	DisplayServerEnums::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID);
+
+	// If the display server has self fitting feature, restore the window physical size and position.
+	if ((self_fitting_restore_size_valid || self_fitting_restore_position_valid) && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
+		DisplayServerEnums::WindowID parent_id = DisplayServerEnums::MAIN_WINDOW_ID;
+		if (transient_parent && transient_parent->window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			parent_id = transient_parent->window_id;
+		}
+
+		float win_scale = DisplayServer::get_singleton()->window_get_scale(parent_id);
+		if (self_fitting_restore_size_valid) {
+			size = Size2i(Math::round(self_fitting_restore_size.x * win_scale), Math::round(self_fitting_restore_size.y * win_scale)).maxi(1);
+		}
+		if (self_fitting_restore_position_valid) {
+			position = Point2i(Math::round(self_fitting_restore_position.x * win_scale), Math::round(self_fitting_restore_position.y * win_scale));
+		}
+	}
+
 	Rect2i window_rect;
 	if (initial_position == WINDOW_INITIAL_POSITION_ABSOLUTE) {
 		window_rect = Rect2i(position, size);
@@ -770,13 +795,15 @@ void Window::_clear_window() {
 
 	bool had_focus = has_focus();
 
+	// If the display server has self fitting feature, store the window logical size and position.
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_SELF_FITTING_WINDOWS)) {
 		float win_scale = DisplayServer::get_singleton()->window_get_scale(window_id);
 
-		Size2i adjusted_size = Size2i(size.width / win_scale, size.height / win_scale);
-		Size2i adjusted_pos = Size2i(position.x / win_scale, position.y / win_scale);
+		self_fitting_restore_size = Size2i(Math::round(size.x / win_scale), Math::round(size.y / win_scale)).maxi(1);
+		self_fitting_restore_position = Point2i(Math::round(position.x / win_scale), Math::round(position.y / win_scale));
 
-		_rect_changed_callback(Rect2i(adjusted_pos, adjusted_size));
+		self_fitting_restore_size_valid = true;
+		self_fitting_restore_position_valid = true;
 	}
 
 	if (transient_parent && transient_parent->window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
