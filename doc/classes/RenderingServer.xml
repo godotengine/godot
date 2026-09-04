@@ -2168,6 +2168,14 @@
 				Sets the texture filter mode to use when rendering light projectors. This parameter is global and cannot be set on a per-light basis.
 			</description>
 		</method>
+		<method name="light_set_allow_contact_shadows">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], allows screen-space contact shadows for this light. Only used when [member ProjectSettings.rendering/lights_and_shadows/contact_shadow/enabled] is enabled. Equivalent to [member Light3D.shadow_contact_shadows_allow].
+			</description>
+		</method>
 		<method name="light_set_bake_mode">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
@@ -5153,7 +5161,13 @@
 		<constant name="LIGHT_PARAM_INTENSITY" value="20" enum="LightParam">
 			Constant representing the intensity of the light, measured in Lumens when dealing with a [SpotLight3D] or [OmniLight3D], or measured in Lux with a [DirectionalLight3D]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="21" enum="LightParam">
+		<constant name="LIGHT_PARAM_CONTACT_SHADOW_OPACITY" value="21" enum="LightParam">
+			Changes the opacity of the lights screen-space contact shadows. A value of [code]1.0[/code] uses the same opacity as [constant LIGHT_PARAM_SHADOW_OPACITY], a value of [code]0.5[/code] would be 50% of the opacity of [constant LIGHT_PARAM_SHADOW_OPACITY].
+		</constant>
+		<constant name="LIGHT_PARAM_CONTACT_SHADOW_BLUR" value="22" enum="LightParam">
+			Blurs the edges of the contact shadow. [code]0.0[/code] produces sharp shadows; higher values increase the noise magnitude.
+		</constant>
+		<constant name="LIGHT_PARAM_MAX" value="23" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
