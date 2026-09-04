@@ -22,6 +22,13 @@
 				Allows to manually apply a snap to the floor regardless of the body's velocity. This function does nothing when [method is_on_floor] returns [code]true[/code].
 			</description>
 		</method>
+		<method name="get_ceiling_normal" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the collision normal of the ceiling at the last collision point. Only valid after calling [method move_and_slide] and when [method is_on_ceiling] returns [code]true[/code].
+				[b]Warning:[/b] The collision normal is not always the same as the surface normal.
+			</description>
+		</method>
 		<method name="get_floor_angle" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="up_direction" type="Vector2" default="Vector2(0, -1)" />
