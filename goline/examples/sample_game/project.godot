@@ -1,0 +1,13 @@
+; Engine configuration file.
+; Edit this file to modify all sorts of project settings.
+config_version=5
+
+[application]
+
+config/name="Goline Sample Game"
+run/main_scene="res://scenes/Main.tscn"
+
+[display]
+
+window/size/viewport_width=1152
+window/size/viewport_height=648
