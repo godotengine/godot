@@ -1202,6 +1202,7 @@ public:
 		FunctionNode *parent_function = nullptr;
 		IfNode *parent_if = nullptr;
 
+		Node *unreachable_code_start = nullptr;
 		bool has_return = false;
 		bool has_continue = false;
 		bool has_unreachable_code = false; // Just so warnings aren't given more than once per block.

@@ -2024,6 +2024,19 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 
 	} while ((multiline || previous.type == GDScriptTokenizer::Token::SEMICOLON) && !check(GDScriptTokenizer::Token::DEDENT) && !lambda_ended && !is_at_end());
 
+#ifdef DEBUG_ENABLED
+	if (current_suite->unreachable_code_start) {
+		Node *unreachable_start = current_suite->unreachable_code_start;
+		Node *unreachable_end = suite->statements[suite->statements.size() - 1];
+		push_warning(
+				unreachable_start->start_line,
+				unreachable_start->start_column,
+				unreachable_end->end_line,
+				unreachable_end->end_column,
+				GDScriptWarning::UNREACHABLE_CODE,
+				current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
+	}
+#endif // DEBUG_ENABLED
 	complete_extents(suite);
 
 	if (multiline) {
@@ -2244,7 +2257,12 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	if (unreachable && result != nullptr) {
 		current_suite->has_unreachable_code = true;
 		if (current_function) {
-			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
+			// Store where the unreachable code begins for this suite,
+			// but hold off on emitting the warning until we also know where
+			// the unreachable code ends.
+			if (current_suite->unreachable_code_start == nullptr) {
+				current_suite->unreachable_code_start = result;
+			}
 		}
 	}
 #endif
