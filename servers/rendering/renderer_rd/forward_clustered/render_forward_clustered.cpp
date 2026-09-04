@@ -40,6 +40,7 @@
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/storage/ltc_lut.gen.h"
 
 #include "modules/modules_enabled.gen.h"
@@ -2666,7 +2667,9 @@ void RenderForwardClustered::_render_shadow_pass(RID p_light, RID p_shadow_atlas
 			light_storage->light_instance_set_shadow_pass(p_light, get_scene_pass());
 		}
 
-		use_pancake = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE) > 0;
+		// Disable pancake when DirectionalLight3D.angular_distance is bigger than 0.
+		// Pancake flattens the depth buffer and PCSS need the full depth buffer untouched to work correctly.
+		use_pancake = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE) > 0 && light_storage->light_get_param(base, RSE::LIGHT_PARAM_SIZE) <= 0;
 		light_projection = light_storage->light_instance_get_shadow_camera(p_light, p_pass);
 		light_transform = light_storage->light_instance_get_shadow_transform(p_light, p_pass);
 
