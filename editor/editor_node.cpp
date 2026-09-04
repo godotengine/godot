@@ -1703,7 +1703,7 @@ void EditorNode::_titlebar_resized() {
 		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
 	if (title_bar) {
-		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
+		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y * 2));
 	}
 }
 
@@ -8270,6 +8270,17 @@ void EditorNode::_build_help_menu(bool p_dark_mode) {
 void EditorNode::_add_to_main_menu(const String &p_name, PopupMenu *p_menu) {
 	p_menu->set_name(p_name);
 	main_menu_items.push_back(p_menu);
+}
+
+void EditorNode::add_control_to_toolbar(Control *p_control) {
+	title_bar->add_child(p_control);
+	if (right_menu_spacer) {
+		title_bar->move_child(p_control, right_menu_spacer->get_index());
+	}
+}
+
+void EditorNode::remove_control_from_toolbar(Control *p_control) {
+	title_bar->remove_child(p_control);
 }
 
 void EditorNode::_update_main_menu_type() {

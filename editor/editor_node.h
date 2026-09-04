@@ -773,6 +773,9 @@ public:
 	static EditorBottomPanel *get_bottom_panel() { return singleton->bottom_panel; }
 	static EditorMainScreen *get_editor_main_screen() { return singleton->editor_main_screen; }
 
+	void add_control_to_toolbar(Control *p_control);
+	void remove_control_from_toolbar(Control *p_control);
+
 	static Button *get_distraction_free_button() { return singleton->distraction_free; }
 
 	static String adjust_scene_name_casing(const String &p_root_name);
