@@ -118,6 +118,7 @@ public:
 	virtual void material_free(RID p_rid) override;
 
 	virtual void material_set_render_priority(RID p_material, int priority) override {}
+	virtual void material_set_layer_mask(RID p_material, uint32_t p_layer_mask) override {}
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) override;
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) override {}
