@@ -111,6 +111,30 @@ public:
 		}
 	}
 
+	T &back() {
+		CRASH_COND(is_empty());
+		return data[count - 1];
+	}
+
+	const T &back() const {
+		CRASH_COND(is_empty());
+		return data[count - 1];
+	}
+
+	[[nodiscard]] T pop_back() {
+		CRASH_COND(is_empty());
+		T value = std::move(data[count - 1]);
+		count--;
+		data[count].~T();
+		return value;
+	}
+
+	void remove_back() {
+		ERR_FAIL_COND(is_empty());
+		count--;
+		data[count].~T();
+	}
+
 	void remove_at(U p_index) {
 		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
 		count--;
