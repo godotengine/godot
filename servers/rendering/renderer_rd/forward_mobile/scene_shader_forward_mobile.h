@@ -107,9 +107,14 @@ public:
 				uint32_t multimesh_has_custom_data : 1;
 
 				uint32_t scene_use_ambient_cubemap : 1;
+				uint32_t scene_use_reflection_color : 1;
 				uint32_t scene_use_reflection_cubemap : 1;
 				uint32_t scene_roughness_limiter_enabled : 1;
+
 				uint32_t material_feedback : 1;
+				uint32_t padding_0 : 1;
+				uint32_t padding_1 : 1;
+				uint32_t padding_2 : 1;
 
 				uint32_t soft_shadow_samples : 6;
 				uint32_t penumbra_shadow_samples : 6;
