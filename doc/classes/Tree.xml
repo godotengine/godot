@@ -663,16 +663,16 @@
 		<theme_item name="scrollbar_h_separation" data_type="constant" type="int" default="4">
 			The horizontal separation of tree content and scrollbar.
 		</theme_item>
-		<theme_item name="scrollbar_margin_bottom" data_type="constant" type="int" default="-1">
+		<theme_item name="scrollbar_margin_bottom" data_type="constant" type="int" default="0">
 			The bottom margin of the scrollbars. When negative, uses [theme_item panel] bottom margin.
 		</theme_item>
-		<theme_item name="scrollbar_margin_left" data_type="constant" type="int" default="-1">
+		<theme_item name="scrollbar_margin_left" data_type="constant" type="int" default="0">
 			The left margin of the horizontal scrollbar. When negative, uses [theme_item panel] left margin.
 		</theme_item>
-		<theme_item name="scrollbar_margin_right" data_type="constant" type="int" default="-1">
+		<theme_item name="scrollbar_margin_right" data_type="constant" type="int" default="0">
 			The right margin of the scrollbars. When negative, uses [theme_item panel] right margin.
 		</theme_item>
-		<theme_item name="scrollbar_margin_top" data_type="constant" type="int" default="-1">
+		<theme_item name="scrollbar_margin_top" data_type="constant" type="int" default="0">
 			The top margin of the vertical scrollbar. When negative, uses [theme_item panel] top margin.
 		</theme_item>
 		<theme_item name="scrollbar_v_separation" data_type="constant" type="int" default="4">
