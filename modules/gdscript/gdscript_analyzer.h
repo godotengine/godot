@@ -149,6 +149,7 @@ class GDScriptAnalyzer {
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
 	bool is_type_compatible_strict_collections(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source);
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin = nullptr) const;
+	void push_error(const String &p_message, const GDScriptParser::Node *p_origin, int p_start_line, int p_start_column, int p_end_line, int p_end_column) const;
 	void mark_node_unsafe(const GDScriptParser::Node *p_node) const;
 	void downgrade_node_type_source(GDScriptParser::ExpressionNode *p_node);
 	void mark_lambda_use_self();
