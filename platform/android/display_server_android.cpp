@@ -229,7 +229,7 @@ void DisplayServerAndroid::emit_input_dialog_callback(String p_text) {
 	}
 }
 
-Error DisplayServerAndroid::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+Error DisplayServerAndroid::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id, int64_t p_id) {
 	ERR_FAIL_COND_V(p_window_id != DisplayServerEnums::MAIN_WINDOW_ID, ERR_UNAVAILABLE);
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL_V(godot_java, FAILED);

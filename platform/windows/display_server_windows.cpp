@@ -442,12 +442,12 @@ void DisplayServerWindows::tts_stop() {
 	tts->stop();
 }
 
-Error DisplayServerWindows::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
-	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false, p_window_id);
+Error DisplayServerWindows::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id, int64_t p_id) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false, p_window_id, p_id);
 }
 
-Error DisplayServerWindows::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
-	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true, p_window_id);
+Error DisplayServerWindows::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id, int64_t p_id) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true, p_window_id, p_id);
 }
 
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor") // Silence warning due to a COM API weirdness.
@@ -459,6 +459,7 @@ class FileDialogEventHandler : public IFileDialogEvents, public IFileDialogContr
 	HashMap<int, String> ctls;
 	Dictionary selected;
 	String root;
+	DisplayServerWindows::FileDialogData *fd = nullptr;
 
 public:
 	// IUnknown methods
@@ -493,6 +494,16 @@ public:
 	HRESULT STDMETHODCALLTYPE OnFolderChange(IFileDialog *) { return S_OK; }
 
 	HRESULT STDMETHODCALLTYPE OnFolderChanging(IFileDialog *p_pfd, IShellItem *p_item) {
+		IOleWindow *ole_window = nullptr;
+		HRESULT hr = p_pfd->QueryInterface(IID_PPV_ARGS(&ole_window));
+		if (SUCCEEDED(hr)) {
+			HWND dialog_hwnd;
+			hr = ole_window->GetWindow(&dialog_hwnd);
+			if (SUCCEEDED(hr) && fd) {
+				fd->hwnd = dialog_hwnd;
+			}
+		}
+
 		if (root.is_empty()) {
 			return S_OK;
 		}
@@ -534,6 +545,10 @@ public:
 
 	Dictionary get_selected() {
 		return selected;
+	}
+
+	void set_fd(DisplayServerWindows::FileDialogData *p_fd) {
+		fd = p_fd;
 	}
 
 	void set_root(const String &p_root) {
@@ -708,6 +723,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			event_handler->add_option(pfdc, item["name"], item["values"], item["default"]);
 		}
 		event_handler->set_root(fd->root);
+		event_handler->set_fd(fd);
 
 		pfdc->Release();
 
@@ -755,6 +771,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 		pfd->SetFileTypeIndex(0);
 
 		hr = pfd->Show(hwnd_dialog);
+		fd->hwnd = 0;
 		pfd->Unadvise(cookie);
 
 		Dictionary options = event_handler->get_selected();
@@ -967,10 +984,37 @@ void DisplayServerWindows::hide_toast_notification(DisplayServerEnums::Notificat
 	}
 }
 
-Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, DisplayServerEnums::WindowID p_window_id) {
+Error DisplayServerWindows::file_dialog_hide(int64_t p_id) {
+	ERR_FAIL_COND_V(p_id < 0, FAILED);
+
+	MutexLock lock(file_dialog_mutex);
+	for (List<FileDialogData *>::Element *E = file_dialogs.front(); E; E = E->next()) {
+		FileDialogData *fd = E->get();
+		if (fd->id == p_id) {
+			if (fd->hwnd) {
+				SendMessage(fd->hwnd, WM_CLOSE, 0, 0);
+				return OK;
+			} else {
+				return FAILED;
+			}
+		}
+	}
+	return FAILED;
+}
+
+Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, DisplayServerEnums::WindowID p_window_id, int64_t p_id) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), DisplayServerEnums::FILE_DIALOG_MODE_SAVE_MAX, FAILED);
+
+	MutexLock lock(file_dialog_mutex);
+	if (p_id >= 0) {
+		for (List<FileDialogData *>::Element *E = file_dialogs.front(); E; E = E->next()) {
+			const FileDialogData *fd = E->get();
+			ERR_FAIL_COND_V_MSG(fd->id == p_id, FAILED, "ID already in use");
+		}
+	}
+
 	FileDialogData *fd = memnew(FileDialogData);
 	if (windows.has(p_window_id) && !windows[p_window_id].is_popup) {
 		fd->hwnd_owner = windows[p_window_id].hWnd;
@@ -981,6 +1025,7 @@ Error DisplayServerWindows::_file_dialog_with_options_show(const String &p_title
 		fd->hwnd_owner = nullptr;
 		fd->wrect = Rect2i(CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT);
 	}
+	fd->id = p_id;
 	fd->appid = _get_app_id();
 	fd->title = p_title;
 	fd->current_directory = p_current_directory;

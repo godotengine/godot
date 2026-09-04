@@ -771,6 +771,13 @@
 				[b]Note:[/b] This method is implemented only on Windows.
 			</description>
 		</method>
+		<method name="file_dialog_hide">
+			<return type="int" enum="Error" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Closes file dialog opened with [method file_dialog_show] or [method file_dialog_with_options_show].
+			</description>
+		</method>
 		<method name="file_dialog_show">
 			<return type="int" enum="Error" />
 			<param index="0" name="title" type="String" />
@@ -781,6 +788,7 @@
 			<param index="5" name="filters" type="PackedStringArray" />
 			<param index="6" name="callback" type="Callable" />
 			<param index="7" name="parent_window_id" type="int" default="0" />
+			<param index="8" name="id" type="int" default="-1" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system.
 				Each filter string in the [param filters] array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. It is recommended to set both file extension and MIME type. See also [member FileDialog.filters].
@@ -818,6 +826,7 @@
 			<param index="7" name="options" type="Dictionary[]" />
 			<param index="8" name="callback" type="Callable" />
 			<param index="9" name="parent_window_id" type="int" default="0" />
+			<param index="10" name="id" type="int" default="-1" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system with additional user selectable options.
 				Each filter string in the [param filters] array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. It is recommended to set both file extension and MIME type. See also [member FileDialog.filters].
