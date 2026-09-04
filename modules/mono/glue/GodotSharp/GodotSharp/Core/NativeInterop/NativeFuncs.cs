@@ -422,6 +422,8 @@ namespace Godot.NativeInterop
 
         public static partial Error godotsharp_array_resize(ref godot_array p_self, int p_new_size);
 
+        public static partial Error godotsharp_array_reserve(ref godot_array p_self, int p_new_size);
+
         public static partial void godotsharp_array_reverse(ref godot_array p_self);
 
         public static partial void godotsharp_array_shuffle(ref godot_array p_self);
