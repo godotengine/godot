@@ -15,6 +15,12 @@
 				Returns the number of audio channels.
 			</description>
 		</method>
+		<method name="_get_frame_duration" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+				Override to return the duration of a single video frame for the current video, in seconds.
+			</description>
+		</method>
 		<method name="_get_length" qualifiers="virtual const">
 			<return type="float" />
 			<description>
