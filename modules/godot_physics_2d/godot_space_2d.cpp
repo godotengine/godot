@@ -410,7 +410,7 @@ static void _rest_cbk_result(const Vector2 &p_point_A, const Vector2 &p_point_B,
 	Vector2 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
 
-	if (len < rd->min_allowed_depth) {
+	if (len < rd->min_allowed_depth - CMP_EPSILON) {
 		return;
 	}
 
