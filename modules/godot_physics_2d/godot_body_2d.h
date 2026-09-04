@@ -204,8 +204,14 @@ public:
 	_FORCE_INLINE_ uint64_t get_island_step() const { return island_step; }
 	_FORCE_INLINE_ void set_island_step(uint64_t p_step) { island_step = p_step; }
 
-	_FORCE_INLINE_ void add_constraint(GodotConstraint2D *p_constraint, int p_pos) { constraint_list.push_back({ p_constraint, p_pos }); }
-	_FORCE_INLINE_ void remove_constraint(GodotConstraint2D *p_constraint, int p_pos) { constraint_list.erase({ p_constraint, p_pos }); }
+	_FORCE_INLINE_ void add_constraint(GodotConstraint2D *p_constraint, int p_pos) {
+		constraint_list.push_back({ p_constraint, p_pos });
+		wakeup();
+	}
+	_FORCE_INLINE_ void remove_constraint(GodotConstraint2D *p_constraint, int p_pos) {
+		constraint_list.erase({ p_constraint, p_pos });
+		wakeup();
+	}
 	const List<Pair<GodotConstraint2D *, int>> &get_constraint_list() const { return constraint_list; }
 	_FORCE_INLINE_ void clear_constraint_list() { constraint_list.clear(); }
 
