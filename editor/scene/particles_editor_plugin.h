@@ -37,8 +37,10 @@ class ConfirmationDialog;
 class HBoxContainer;
 class MenuButton;
 class OptionButton;
+class ParticleProcessMaterial;
 class SceneTreeDialog;
 class SpinBox;
+class Texture2D;
 
 class ParticlesEditorPlugin : public EditorPlugin {
 	GDCLASS(ParticlesEditorPlugin, EditorPlugin);
@@ -60,6 +62,8 @@ protected:
 
 	void _notification(int p_what);
 
+	Ref<ParticleProcessMaterial> get_material_for_object_created_in_editor() const;
+	Ref<Texture2D> get_texture_for_object_created_in_editor() const;
 	bool need_show_lifetime_dialog(SpinBox *p_seconds);
 	virtual void _menu_callback(int p_idx);
 

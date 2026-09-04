@@ -37,6 +37,8 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/spin_box.h"
+#include "scene/resources/gradient_texture.h"
+#include "scene/resources/particle_process_material.h"
 
 void ParticlesEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
@@ -58,6 +60,61 @@ void ParticlesEditorPlugin::_notification(int p_what) {
 			popup->add_item(conversion_option_name, MENU_OPTION_CONVERT);
 		} break;
 	}
+}
+
+Ref<ParticleProcessMaterial> ParticlesEditorPlugin::get_material_for_object_created_in_editor() const {
+	Ref<ParticleProcessMaterial> particle_process_material;
+	particle_process_material.instantiate();
+
+	// Reduce particle spread to make the particle node's rotation easier to notice.
+	particle_process_material->set_spread(5.0);
+
+	// Randomize initial particle rotation.
+	particle_process_material->set_param_min(ParticleProcessMaterial::PARAM_ANGLE, 0.0);
+	particle_process_material->set_param_max(ParticleProcessMaterial::PARAM_ANGLE, 360.0);
+
+	// Scale particles up and down as the lifetime progresses.
+	Ref<CurveTexture> curve_texture = memnew(CurveTexture);
+	Ref<Curve> curve = memnew(Curve);
+	// The wind-up occurs significantly faster than the fade-out.
+	curve->add_point(Vector2(0.0, 0.0));
+	curve->add_point(Vector2(0.1, 1.0));
+	curve->add_point(Vector2(1.0, 0.0));
+	curve_texture->set_curve(curve);
+	particle_process_material->set_param_texture(ParticleProcessMaterial::PARAM_SCALE, curve_texture);
+
+	// Fade particles with transparency as the lifetime progresses.
+	Ref<GradientTexture1D> gradient_texture = memnew(GradientTexture1D);
+	Ref<Gradient> gradient = memnew(Gradient);
+	// The fade-in occurs significantly faster than the fade-out.
+	gradient->set_color(0, Color(1, 1, 1, 0));
+	gradient->set_color(1, Color(1, 1, 1, 0));
+	gradient->add_point(0.1, Color(1, 1, 1, 1));
+	gradient_texture->set_gradient(gradient);
+	particle_process_material->set_color_ramp(gradient_texture);
+
+	return particle_process_material;
+}
+
+Ref<Texture2D> ParticlesEditorPlugin::get_texture_for_object_created_in_editor() const {
+	// Create a solid square texture.
+	// We use a square instead of a circle, so that billboarded particle rotation is visible.
+	Ref<GradientTexture2D> texture = memnew(GradientTexture2D);
+	// Use a low resolution, so that it displays at a comparable size between 2D and 3D.
+	// Texture size defines each particle's size in 2D, but not in 3D.
+	texture->set_width(12);
+	texture->set_height(12);
+	texture->set_fill(GradientTexture2D::FILL_SQUARE);
+	texture->set_fill_from(Vector2(0.5, 0.5));
+	texture->set_fill_to(Vector2(0.5, 0.01));
+	Ref<Gradient> gradient = memnew(Gradient);
+	gradient->set_color(0, Color(1, 1, 1));
+	gradient->set_color(1, Color(1, 1, 1, 0));
+	// Harden the gradient so the texture has a sharper (but still somewhat soft) falloff.
+	gradient->set_offset(0, 0.75);
+	texture->set_gradient(gradient);
+
+	return texture;
 }
 
 bool ParticlesEditorPlugin::need_show_lifetime_dialog(SpinBox *p_seconds) {

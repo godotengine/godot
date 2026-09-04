@@ -37,6 +37,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/time.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
@@ -644,8 +645,10 @@ void EditorData::instantiate_object_properties(Object *p_object) {
 			// This is a situation where listing a subclass before a parent class makes sense (e.g. "NoiseTexture2D,Texture2D").
 			Object *prop = ClassDB::instantiate(String(pi.class_name).get_slicec(',', 0));
 			p_object->set(pi.name, prop);
+			instantiate_object_properties(prop);
 		}
 	}
+	EditorInterface::get_singleton()->emit_signal(SNAME("object_created_in_editor"), p_object);
 }
 
 int EditorData::add_edited_scene(int p_at_pos) {
