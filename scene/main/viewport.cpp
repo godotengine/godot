@@ -4877,6 +4877,10 @@ Ref<World3D> Viewport::find_world_3d() const {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+void (*Viewport::world_3d_changed_callback)() = nullptr;
+#endif
+
 void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 	ERR_MAIN_THREAD_GUARD;
 	if (world_3d == p_world_3d) {
@@ -4916,6 +4920,12 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 	}
 
 	_update_audio_listener_3d();
+
+#ifdef TOOLS_ENABLED
+	if (world_3d_changed_callback) {
+		world_3d_changed_callback();
+	}
+#endif
 }
 
 void Viewport::_own_world_3d_changed() {
@@ -4942,6 +4952,12 @@ void Viewport::_own_world_3d_changed() {
 	}
 
 	_update_audio_listener_3d();
+
+#ifdef TOOLS_ENABLED
+	if (world_3d_changed_callback) {
+		world_3d_changed_callback();
+	}
+#endif
 }
 
 void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
@@ -4982,6 +4998,12 @@ void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
 	}
 
 	_update_audio_listener_3d();
+
+#ifdef TOOLS_ENABLED
+	if (world_3d_changed_callback) {
+		world_3d_changed_callback();
+	}
+#endif
 }
 
 bool Viewport::is_using_own_world_3d() const {
