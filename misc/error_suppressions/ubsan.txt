@@ -69,7 +69,7 @@ implicit-integer-sign-change:thirdparty/thorvg/src/renderer/sw_engine/tvgSwRaste
 implicit-integer-sign-change:thirdparty/tinyexr/tinyexr.h
 implicit-integer-sign-change:thirdparty/vulkan/vk_mem_alloc.h
 implicit-integer-sign-change:thirdparty/xatlas/xatlas.cpp
-implicit-integer-sign-change:thirdparty/zlib/trees.c
+implicit-integer-sign-change:thirdparty/zlib-ng/trees.c
 implicit-integer-sign-change:thirdparty/zstd/compress/zstd_cwksp.h
 nonnull-attribute:thirdparty/spirv-reflect/spirv_reflect.c
 pointer-overflow:thirdparty/libogg/framing.c
