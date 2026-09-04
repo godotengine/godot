@@ -10,7 +10,7 @@ from methods import print_error
 base_folder_path = str(Path(__file__).parent) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
 _verbose = False  # Set manually for debug prints
-_scu_folders = set()
+_scu_folders = set[str]()
 _max_includes_per_scu = 1024
 
 
