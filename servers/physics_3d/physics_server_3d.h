@@ -397,6 +397,7 @@ public:
 
 VARIANT_ENUM_CAST_EXT(PS3DE::ShapeType, PhysicsServer3D::ShapeType);
 VARIANT_ENUM_CAST_EXT(PS3DE::SpaceParameter, PhysicsServer3D::SpaceParameter);
+VARIANT_ENUM_CAST_EXT(PS3DE::AreaGravityType, PhysicsServer3D::AreaGravityType);
 VARIANT_ENUM_CAST_EXT(PS3DE::AreaParameter, PhysicsServer3D::AreaParameter);
 VARIANT_ENUM_CAST_EXT(PS3DE::AreaSpaceOverrideMode, PhysicsServer3D::AreaSpaceOverrideMode);
 VARIANT_ENUM_CAST_EXT(PS3DE::BodyMode, PhysicsServer3D::BodyMode);
