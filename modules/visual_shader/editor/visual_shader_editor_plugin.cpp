@@ -8070,7 +8070,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// INPUT
 
-	const String translation_gdsl = "\n\n" + TTR("Translated to '%s' in Godot Shading Language.");
+	const String translation_gdsl = "\n\n" + TTR("Translated to '%s' in GDShader.");
 	const String input_param_shader_modes = TTR("'%s' input parameter for all shader modes.") + translation_gdsl;
 
 	// NODE3D-FOR-ALL
@@ -8698,9 +8698,9 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// SPECIAL
 	add_options.push_back(AddOption("Frame", "Special", "VisualShaderNodeFrame", TTR("A rectangular area with a description string for better graph organization.")));
-	add_options.push_back(AddOption("Expression", "Special", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
+	add_options.push_back(AddOption("Expression", "Special", "VisualShaderNodeExpression", TTR("Custom GDShader expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
 	add_options.push_back(AddOption("Group", "Special", "VisualShaderNodeGroup", TTR("A node group/subgraph. Analogous to a function in textual shader languages.")));
-	add_options.push_back(AddOption("GlobalExpression", "Special", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, parameters and constants.")));
+	add_options.push_back(AddOption("GlobalExpression", "Special", "VisualShaderNodeGlobalExpression", TTR("Custom GDShader expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, parameters and constants.")));
 	add_options.push_back(AddOption("GroupInput", "Special", "VisualShaderNodeGroupInput", TTR("Input node for the group. Represents the input ports of the group.")));
 	add_options.push_back(AddOption("GroupOutput", "Special", "VisualShaderNodeGroupOutput", TTR("Output node for the group. Represents the output ports of the group.")));
 	add_options.push_back(AddOption("ParameterRef", "Special", "VisualShaderNodeParameterRef", TTR("A reference to an existing parameter.")));
