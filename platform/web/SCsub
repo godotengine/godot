@@ -26,9 +26,13 @@ web_files = [
     "display_server_web.cpp",
     "http_client_web.cpp",
     "javascript_bridge_singleton.cpp",
-    "web_main.cpp",
     "os_web.cpp",
 ]
+
+if env["library_type"] == "executable":
+    web_files += ["web_main.cpp"]
+else:
+    web_files += ["web_libgodot.cpp"]
 
 if env["target"] == "editor":
     env.add_source_files(web_files, "editor/*.cpp")
@@ -74,9 +78,25 @@ if len(env["EXPORTED_FUNCTIONS"]):
 if len(env["EXPORTED_RUNTIME_METHODS"]):
     sys_env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=" + repr(sorted(list(set(env["EXPORTED_RUNTIME_METHODS"]))))])
 
-build = []
+main_js = None
+main_wasm = None
+side_wasm = None
 build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
-if env["dlink_enabled"]:
+side_target = "#bin/godot.side${PROGSUFFIX}.wasm"
+
+if env["library_type"] == "static_library":
+    # Create dummy js file.
+    main_js = env.NoCache(env.Textfile(build_targets[0], ""))[0]
+    # Godot static library, currently only includes web_files.
+    web_lib = sys_env.add_library("#bin/godot", web_files)
+elif env["library_type"] == "shared_library":
+    # Create dummy js file.
+    main_js = env.NoCache(env.Textfile(build_targets[0], ""))[0]
+    # Export LibGodot related functions from the side library.
+    env.Append(LINKFLAGS=["-sEXPORTED_FUNCTIONS=_libgodot_create_godot_instance,_libgodot_destroy_godot_instance"])
+    # The side library, containing all Godot code.
+    side_wasm = env.add_program(side_target, web_files)
+elif env["dlink_enabled"]:
     # Reset libraries. The main runtime will only link emscripten libraries, not godot ones.
     sys_env["LIBS"] = []
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
@@ -92,20 +112,19 @@ if env["dlink_enabled"]:
     sys_env["LINKFLAGS"].remove("-fvisibility=hidden")
 
     # The main emscripten runtime, with exported standard libraries.
-    sys = sys_env.add_program(build_targets, ["web_runtime.cpp"])
+    main_js, main_wasm = sys_env.add_program(build_targets, ["web_runtime.cpp"])
 
     # The side library, containing all Godot code.
-    wasm = env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", web_files)
-    build = sys + [wasm[0]]
+    side_wasm = env.add_program(side_target, web_files)
 else:
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
     sys_env.Append(LIBS=["idbfs.js"])
-    build = sys_env.add_program(build_targets, web_files + ["web_runtime.cpp"])
+    main_js, main_wasm = sys_env.add_program(build_targets, web_files + ["web_runtime.cpp"])
 
-sys_env.Depends(build[0], sys_env["JS_LIBS"])
-sys_env.Depends(build[0], sys_env["JS_PRE"])
-sys_env.Depends(build[0], sys_env["JS_POST"])
-sys_env.Depends(build[0], sys_env["JS_EXTERNS"])
+sys_env.Depends(main_js, sys_env["JS_LIBS"])
+sys_env.Depends(main_js, sys_env["JS_PRE"])
+sys_env.Depends(main_js, sys_env["JS_POST"])
+sys_env.Depends(main_js, sys_env["JS_EXTERNS"])
 
 engine = [
     "js/engine/features.js",
@@ -118,7 +137,7 @@ js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, ex
 env.Depends(js_engine, externs)
 
 wrap_list = [
-    build[0],
+    main_js,
     js_engine,
 ]
 js_wrapped = env.NoCache(
@@ -126,6 +145,6 @@ js_wrapped = env.NoCache(
 )
 
 # 0 - unwrapped js file (use wrapped one instead)
-# 1 - wasm file
-# 2 - wasm side (when dlink is enabled).
-env.CreateTemplateZip(js_wrapped, build[1], build[2] if len(build) > 2 else None)
+# 1 - wasm file (when libgodot is disabled).
+# 2 - wasm side (when dlink is enabled or shared libgodot is used).
+env.CreateTemplateZip(js_wrapped, main_wasm, side_wasm)
