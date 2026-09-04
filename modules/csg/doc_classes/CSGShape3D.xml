@@ -96,8 +96,8 @@
 			The operation that is performed on this shape. This is ignored for the first CSG child node as the operation is between this node and the previous child of this nodes parent.
 		</member>
 		<member name="smoothing_angle" type="float" setter="set_smoothing_angle" getter="get_smoothing_angle" default="50.0">
-			When autosmooth is enabled, faces with an angle between them greater than this will be smoothed, while faces with a smaller angle will remain sharp.
-			Note: An angle lower than 0.1 will cause all smoothing to be disabled, this can be used to increase performance.
+			When autosmooth is enabled, faces with an angle between them greater than this value will be smoothed, while faces with a smaller angle will remain sharp.
+			[b]Note:[/b] An angle smaller than [code]0.1[/code] will cause all smoothing to be disabled, which can increase performance.
 		</member>
 		<member name="snap" type="float" setter="set_snap" getter="get_snap" deprecated="The CSG library no longer uses snapping.">
 			This property does nothing.

@@ -3542,7 +3542,7 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="resolution" type="int" />
 			<description>
-				Deprecated. This method does nothing.
+				This method does nothing.
 			</description>
 		</method>
 		<method name="reflection_probe_set_size">
@@ -3634,7 +3634,7 @@
 			<param index="2" name="stretch_mode" type="int" enum="RenderingServer.SplashStretchMode" />
 			<param index="3" name="use_filter" type="bool" default="true" />
 			<description>
-				Sets a boot image. The [param color] defines the background color. The value of [param stretch_mode] indicates how the image will be stretched (see [enum SplashStretchMode] for possible values). If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
+				Sets a boot image. [param color] defines the background color. [param stretch_mode] indicates how the image will be stretched. If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>
 		</method>
 		<method name="set_debug_generate_wireframes">
