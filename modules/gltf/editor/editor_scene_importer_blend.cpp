@@ -105,7 +105,7 @@ void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) 
 
 Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
-		List<String> *r_missing_deps, Error *r_err) {
+		List<String> *r_missing_deps, ImportMeta *r_meta, Error *r_err) {
 	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
 
 	ERR_FAIL_COND_V_MSG(blender_path.is_empty(), nullptr, "Blender path is empty, check your Editor Settings.");
@@ -351,6 +351,26 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		return nullptr;
 	}
 	ERR_FAIL_COND_V(!p_options.has("animation/fps"), nullptr);
+
+	// Record meta
+	if (r_meta != nullptr) {
+		// Texture sizes
+		Vector<Ref<Texture2D>> images = state->get_images();
+		r_meta->texture_sizes.resize(images.size());
+		for (int i = 0; i < images.size(); i++) {
+			Size2 img_size = images[i]->get_size();
+			r_meta->texture_sizes.set(i, img_size.x * img_size.y);
+		}
+
+		// Tris count
+		Vector<Ref<GLTFMesh>> meshes = state->get_meshes();
+		for (const Ref<GLTFMesh> &mesh : meshes) {
+			Ref<ArrayMesh> arr_mesh = mesh->get_mesh()->get_mesh();
+			for (int i = 0; i < arr_mesh->get_surface_count(); i++) {
+				r_meta->tris_count += arr_mesh->surface_get_array_index_len(i) / 3;
+			}
+		}
+	}
 
 #ifndef DISABLE_DEPRECATED
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
