@@ -58,6 +58,7 @@ public:
 	virtual Image::Format get_format() const override;
 
 	void update(const Ref<Image> &p_image);
+	void update_partial(const Ref<Image> &p_image, const Vector2i &p_offset);
 	Ref<Image> get_image() const override;
 
 	int get_width() const override;

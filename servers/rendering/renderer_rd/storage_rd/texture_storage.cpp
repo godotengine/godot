@@ -1641,6 +1641,27 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 	RD::get_singleton()->texture_update(tex->rd_texture, p_layer, validated->get_data());
 }
 
+void TextureStorage::_texture_2d_update_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer, bool p_immediate) {
+	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
+
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(tex);
+	ERR_FAIL_COND(tex->is_render_target);
+	ERR_FAIL_COND(p_image->get_format() != tex->format);
+
+	if (tex->type == TextureStorage::TYPE_LAYERED) {
+		ERR_FAIL_INDEX(p_layer, tex->layers);
+	}
+
+#ifdef TOOLS_ENABLED
+	tex->image_cache_2d.unref();
+#endif
+	TextureToRDFormat f;
+	Ref<Image> validated = _validate_texture_format(p_image, f);
+
+	RD::get_singleton()->texture_update_partial(tex->rd_texture, p_layer, p_offset, validated->get_size(), validated->get_data());
+}
+
 void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	_texture_2d_update(p_texture, p_image, p_layer, false);
 }
@@ -1681,6 +1702,10 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 	}
 
 	RD::get_singleton()->texture_update(tex->rd_texture, 0, all_data);
+}
+
+void TextureStorage::texture_2d_update_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer) {
+	_texture_2d_update_partial(p_texture, p_offset, p_image, p_layer);
 }
 
 void TextureStorage::texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {

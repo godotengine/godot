@@ -113,6 +113,25 @@ void ImageTexture::update(const Ref<Image> &p_image) {
 	image_stored = true;
 }
 
+void ImageTexture::update_partial(const Ref<Image> &p_image, const Vector2i &p_offset) {
+	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image");
+	ERR_FAIL_COND_MSG(texture.is_null(), "Texture is not initialized.");
+	ERR_FAIL_COND_MSG(p_image->get_width() + p_offset.x > w || p_image->get_height() + p_offset.y > h,
+			"The new image dimensions must match or be smaller than the texture size.");
+	ERR_FAIL_COND_MSG(p_image->get_format() != format,
+			"The new image format must match the texture's image format.");
+	ERR_FAIL_COND_MSG(mipmaps != p_image->has_mipmaps(),
+			"The new image mipmaps configuration must match the texture's image mipmaps configuration");
+
+	RS::get_singleton()->texture_2d_update_partial(texture, p_offset, p_image);
+
+	notify_property_list_changed();
+	emit_changed();
+
+	alpha_cache.unref();
+	image_stored = true;
+}
+
 Ref<Image> ImageTexture::get_image() const {
 	if (image_stored) {
 		return RenderingServer::get_singleton()->texture_2d_get(texture);

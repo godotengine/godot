@@ -176,12 +176,10 @@ class TextServerAdvanced : public TextServerExtension {
 	};
 
 	struct ShelfPackTexture {
-		int32_t texture_w = 1024;
-		int32_t texture_h = 1024;
+		int32_t texture_w = 4096;
+		int32_t texture_h = 4096;
 
-		Ref<Image> image;
 		Ref<ImageTexture> texture;
-		bool dirty = true;
 
 		List<Shelf> shelves;
 
@@ -231,7 +229,6 @@ class TextServerAdvanced : public TextServerExtension {
 		Rect2 rect;
 		Rect2 uv_rect;
 		Vector2 advance;
-		bool fix_edge = false;
 	};
 
 	struct FontAdvanced;
@@ -370,14 +367,14 @@ class TextServerAdvanced : public TextServerExtension {
 		}
 	};
 
-	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
+	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontForSizeAdvanced *p_data, Image::Format p_image_format, int p_width, int p_height, bool p_mipmaps) const;
 #ifdef MODULE_MSDFGEN_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *p_outline, const Vector2 &p_advance) const;
 #endif
 #ifdef MODULE_FREETYPE_ENABLED
-	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const;
+	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra, bool p_fix_edge) const;
 #if HB_VERSION_ATLEAST(13, 0, 0)
-	_FORCE_INLINE_ FontGlyph rasterize_hb_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, hb_raster_image_t *p_image, const hb_raster_extents_t &p_ext, const Vector2 &p_advance, bool p_bgra) const;
+	_FORCE_INLINE_ FontGlyph rasterize_hb_bitmap(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_rect_margin, hb_raster_image_t *p_image, const hb_raster_extents_t &p_ext, const Vector2 &p_advance, bool p_bgra) const;
 #endif
 #endif
 	bool _ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling = 0) const;

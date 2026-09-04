@@ -595,6 +595,7 @@ private:
 
 	void _texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer, bool p_initialize);
 	void _texture_set_3d_data(RID p_texture, const Vector<Ref<Image>> &p_data, bool p_initialize);
+	void _texture_set_data_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer);
 	void _texture_set_swizzle(Texture *p_texture, Image::Format p_real_format);
 	Vector<Ref<Image>> _texture_3d_read_framebuffer(Texture *p_texture) const;
 
@@ -673,6 +674,7 @@ public:
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
+	virtual void texture_2d_update_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
 	void texture_remap_proxies(RID p_from_texture, RID p_to_texture);
