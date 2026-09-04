@@ -96,6 +96,7 @@ void MultiMeshInstance2D::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
 		_refresh_interpolated();
 	}
 	queue_redraw();
+	update_configuration_warnings();
 }
 
 Ref<MultiMesh> MultiMeshInstance2D::get_multimesh() const {
@@ -232,8 +233,13 @@ void MultiMeshInstance2D::navmesh_parse_source_geometry(const Ref<NavigationPoly
 }
 #endif // NAVIGATION_2D_DISABLED
 
-MultiMeshInstance2D::MultiMeshInstance2D() {
+PackedStringArray MultiMeshInstance2D::get_configuration_warnings() const{
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+	if (multimesh.is_null()) {
+		warnings.push_back(RTR("MultiMeshInstance2D requires a MultiMesh to render anything. Please add a MultiMesh resource for it!"));
+	}
+	return warnings;
 }
 
-MultiMeshInstance2D::~MultiMeshInstance2D() {
+MultiMeshInstance2D::MultiMeshInstance2D() {
 }
