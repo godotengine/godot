@@ -62,6 +62,7 @@ const GodotConfig = {
 		virtual_keyboard: false,
 		persistent_drops: false,
 		godot_pool_size: 4,
+		debug_port: null,
 		on_execute: null,
 		on_exit: null,
 
@@ -72,6 +73,7 @@ const GodotConfig = {
 			GodotConfig.virtual_keyboard = p_opts['virtualKeyboard'];
 			GodotConfig.persistent_drops = !!p_opts['persistentDrops'];
 			GodotConfig.godot_pool_size = p_opts['godotPoolSize'];
+			GodotConfig.debug_port = p_opts['debugPort'];
 			GodotConfig.on_execute = p_opts['onExecute'];
 			GodotConfig.on_exit = p_opts['onExit'];
 			if (p_opts['focusCanvas']) {
@@ -82,12 +84,14 @@ const GodotConfig = {
 		locate_file: function (file) {
 			return Module['locateFile'](file);
 		},
+
 		clear: function () {
 			GodotConfig.canvas = null;
 			GodotConfig.locale = 'en';
 			GodotConfig.canvas_resize_policy = 2;
 			GodotConfig.virtual_keyboard = false;
 			GodotConfig.persistent_drops = false;
+			GodotConfig.debug_port = null;
 			GodotConfig.on_execute = null;
 			GodotConfig.on_exit = null;
 		},
