@@ -167,6 +167,8 @@ class DisplayServerX11 : public DisplayServer {
 
 		Vector<Vector2> mpath;
 
+		Vector2i offset;
+
 		DisplayServerEnums::WindowID transient_parent = DisplayServerEnums::INVALID_WINDOW_ID;
 		HashSet<DisplayServerEnums::WindowID> transient_children;
 
@@ -183,6 +185,7 @@ class DisplayServerX11 : public DisplayServer {
 		bool resize_disabled = false;
 		bool no_min_btn = false;
 		bool no_max_btn = false;
+		bool follow_parent = false;
 		bool focused = true;
 		bool minimized = false;
 		bool maximized = false;

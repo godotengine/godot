@@ -3604,6 +3604,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_wm_hint"), "set_flag", "get_flag", FLAG_POPUP_WM_HINT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "minimize_disabled"), "set_flag", "get_flag", FLAG_MINIMIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "maximize_disabled"), "set_flag", "get_flag", FLAG_MAXIMIZE_DISABLED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "follow_parent"), "set_flag", "get_flag", FLAG_FOLLOW_PARENT);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fullscreen_shortcut_enabled"), "set_fullscreen_shortcut_enabled", "is_fullscreen_shortcut_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_native"), "set_force_native", "get_force_native");
 

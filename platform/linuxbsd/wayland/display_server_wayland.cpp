@@ -1146,18 +1146,25 @@ void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer
 
 Point2i DisplayServerWayland::window_get_position(DisplayServerEnums::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
+	ERR_FAIL_COND_V(!windows.has(p_window_id), Point2i());
 
 	return windows[p_window_id].rect.position;
 }
 
 Point2i DisplayServerWayland::window_get_position_with_decorations(DisplayServerEnums::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
+	ERR_FAIL_COND_V(!windows.has(p_window_id), Point2i());
 
 	return windows[p_window_id].rect.position;
 }
 
 void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServerEnums::WindowID p_window_id) {
 	// Unsupported with toplevels.
+	ERR_FAIL_COND(!windows.has(p_window_id));
+
+	if (window_get_flag(DisplayServerEnums::WINDOW_FLAG_POPUP_WM_HINT, p_window_id)) {
+		wayland_thread.window_popup_set_position(p_window_id, p_position);
+	}
 }
 
 void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServerEnums::WindowID p_window_id) {
