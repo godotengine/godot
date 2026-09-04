@@ -340,6 +340,15 @@ void AcceptDialog::_button_visibility_changed(Button *button) {
 	}
 }
 
+Button *ConfirmationDialog::get_negative_action_button() {
+	return negative_action_button;
+}
+
+void ConfirmationDialog::set_negative_action_button(Button *p_new_negative_action_button) {
+	negative_action_button = p_new_negative_action_button;
+	negative_action_button->set_shortcut(Shortcut::make_from_action("ui_dialog_negative_option"));
+}
+
 Button *AcceptDialog::add_button(const String &p_text, bool p_right, const String &p_action) {
 	Button *button = memnew(Button);
 	button->set_text(p_text);
@@ -492,6 +501,7 @@ AcceptDialog::AcceptDialog() {
 	buttons_hbox->add_spacer();
 	ok_button = memnew(Button);
 	set_default_ok_text(ETR("OK"));
+	ok_button->set_shortcut(Shortcut::make_from_action("ui_dialog_positive_option"));
 	buttons_hbox->add_child(ok_button);
 	// Ensure hiding OK button will hide one of the initial spacers.
 	Control *bound_spacer = buttons_hbox->add_spacer();
