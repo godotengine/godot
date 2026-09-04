@@ -1718,6 +1718,12 @@ void SpringBoneSimulator3D::_process_modification(double p_delta) {
 	if (!skeleton) {
 		return;
 	}
+
+	// Immediately flush joint updates if dirty to prevent 1 frame deferred latency
+	if (joints_dirty) {
+		_update_joints(false);
+	}
+
 	_find_collisions();
 	_process_collisions();
 
