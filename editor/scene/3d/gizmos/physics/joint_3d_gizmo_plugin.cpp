@@ -295,14 +295,51 @@ Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
 void Joint3DGizmoPlugin::incremental_update_gizmos() {
 	if (!current_gizmos.is_empty()) {
 		HashSet<EditorNode3DGizmo *>::Iterator E = current_gizmos.find(last_drawn);
+		bool perform_redraw = false;
 		if (E) {
 			++E;
 		}
 		if (!E) {
 			E = current_gizmos.begin();
 		}
-		redraw(*E);
+
+		HashMap<EditorNode3DGizmo *, JointStateHistory>::Iterator it = gizmo_histories.find(*E);
+
+		if (it) {
+			Joint3D *joint = Object::cast_to<Joint3D>((*E)->get_node_3d());
+
+			Node3D *node_body_a = nullptr;
+			if (!joint->get_node_a().is_empty()) {
+				node_body_a = Object::cast_to<Node3D>(joint->get_node(joint->get_node_a()));
+				Vector3 pos = node_body_a->get_global_position();
+				Vector3 &prev_pos = it->value.node_a_last_global_pos;
+
+				if (!pos.is_equal_approx(prev_pos)) {
+					prev_pos = pos;
+					perform_redraw = true;
+				}
+			}
+
+			Node3D *node_body_b = nullptr;
+			if (!joint->get_node_b().is_empty()) {
+				node_body_b = Object::cast_to<Node3D>(joint->get_node(joint->get_node_b()));
+				Vector3 pos = node_body_b->get_global_position();
+				Vector3 &prev_pos = it->value.node_b_last_global_pos;
+
+				if (!pos.is_equal_approx(prev_pos)) {
+					prev_pos = pos;
+					perform_redraw = true;
+				}
+			}
+		}
+
 		last_drawn = *E;
+
+		if (!perform_redraw) {
+			return;
+		}
+
+		redraw(*E);
 	}
 }
 
@@ -458,6 +495,16 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(body_a_points, body_a_material);
 		p_gizmo->add_lines(body_b_points, body_b_material);
 	}
+}
+
+void Joint3DGizmoPlugin::register_gizmo(EditorNode3DGizmo *p_gizmo) {
+	EditorNode3DGizmoPlugin::register_gizmo(p_gizmo);
+	gizmo_histories.insert(p_gizmo, {});
+}
+
+void Joint3DGizmoPlugin::unregister_gizmo(EditorNode3DGizmo *p_gizmo) {
+	EditorNode3DGizmoPlugin::unregister_gizmo(p_gizmo);
+	gizmo_histories.erase(p_gizmo);
 }
 
 void Joint3DGizmoPlugin::CreatePinJointGizmo(const Transform3D &p_offset, Vector<Vector3> &r_cursor_points) {
