@@ -731,8 +731,10 @@ void Window::_make_window() {
 		window_rect = Rect2i(DisplayServer::get_singleton()->screen_get_position(DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS) + (DisplayServer::get_singleton()->screen_get_size(DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS) - size) / 2, size);
 	}
 
+	position = window_rect.position;
 	window_id = DisplayServer::get_singleton()->create_sub_window(DisplayServerEnums::WindowMode(mode), vsync_mode, f, window_rect, is_in_edited_scene_root() ? false : exclusive, transient_parent ? transient_parent->window_id : DisplayServerEnums::INVALID_WINDOW_ID);
 	ERR_FAIL_COND(window_id == DisplayServerEnums::INVALID_WINDOW_ID);
+
 	DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
