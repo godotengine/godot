@@ -2257,7 +2257,24 @@ void FileSystemDock::_file_list_rmb_option(int p_option) {
 		_file_option(p_option, {});
 		return;
 	}
-	_file_option(p_option, _file_list_get_selected());
+
+	Vector<String> selected_strings = _file_list_get_selected();
+
+	switch (p_option) {
+		case FILE_MENU_EXPAND_ALL:
+		case FILE_MENU_COLLAPSE_ALL: {
+			// Expand or collapse the folder.
+			if (selected_strings.size() == 1) {
+				TreeItem **folder_item = folder_map.getptr(selected_strings[0]);
+				if (folder_item) {
+					(*folder_item)->set_collapsed_recursive(p_option == FILE_MENU_COLLAPSE_ALL);
+				}
+			}
+		} break;
+		default: {
+			_file_option(p_option, selected_strings);
+		} break;
+	}
 }
 
 void FileSystemDock::_generic_rmb_option_selected(int p_option) {
