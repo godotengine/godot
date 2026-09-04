@@ -35,6 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/variant/container_type_validate.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -241,14 +242,13 @@ String EditorPropertyDictionaryObject::get_label_for_index(int p_index) {
 void EditorPropertyArray::initialize_array(Variant &p_array) {
 	if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
 		Array array;
-		StringName subtype_class;
-		Ref<Script> subtype_script;
+		ContainerType element_type_subtype = ContainerType::from_type(subtype);
 		if (subtype == Variant::OBJECT && !subtype_hint_string.is_empty()) {
 			if (ClassDB::class_exists(subtype_hint_string)) {
-				subtype_class = subtype_hint_string;
+				element_type_subtype.class_name = subtype_hint_string;
 			}
 		}
-		array.set_typed(subtype, subtype_class, subtype_script);
+		array.set_typed(std::move(element_type_subtype));
 		p_array = array;
 	} else {
 		VariantInternal::initialize(&p_array, array_type);
@@ -1046,17 +1046,15 @@ EditorPropertyArray::EditorPropertyArray() {
 void EditorPropertyDictionary::initialize_dictionary(Variant &p_dictionary) {
 	if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
 		Dictionary dict;
-		StringName key_subtype_class;
-		Ref<Script> key_subtype_script;
+		ContainerType key_type_subtype = ContainerType::from_type(key_subtype);
 		if (key_subtype == Variant::OBJECT && !key_subtype_hint_string.is_empty() && ClassDB::class_exists(key_subtype_hint_string)) {
-			key_subtype_class = key_subtype_hint_string;
+			key_type_subtype.class_name = key_subtype_hint_string;
 		}
-		StringName value_subtype_class;
-		Ref<Script> value_subtype_script;
+		ContainerType value_type_subtype = ContainerType::from_type(value_subtype);
 		if (value_subtype == Variant::OBJECT && !value_subtype_hint_string.is_empty() && ClassDB::class_exists(value_subtype_hint_string)) {
-			value_subtype_class = value_subtype_hint_string;
+			value_type_subtype.class_name = value_subtype_hint_string;
 		}
-		dict.set_typed(key_subtype, key_subtype_class, key_subtype_script, value_subtype, value_subtype_class, value_subtype_script);
+		dict.set_typed(std::move(key_type_subtype), std::move(value_type_subtype));
 		p_dictionary = dict;
 	} else {
 		VariantInternal::initialize(&p_dictionary, Variant::DICTIONARY);

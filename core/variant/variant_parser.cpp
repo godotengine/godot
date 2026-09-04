@@ -36,6 +36,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/string/string_buffer.h"
+#include "core/variant/container_type_validate.h"
 
 char32_t VariantParser::Stream::get_char() {
 	// is within buffer?
@@ -1135,12 +1136,10 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 			}
 
 			Dictionary dict;
-			Variant::Type key_type = Variant::NIL;
-			StringName key_class_name;
-			Variant key_script;
+			ContainerType key_type;
 			bool got_comma_token = false;
 			if (builtin_types.has(r_token.value)) {
-				key_type = builtin_types.get(r_token.value);
+				key_type.builtin_type = builtin_types.get(r_token.value);
 			} else if (r_token.value == "Resource" || r_token.value == "SubResource" || r_token.value == "ExtResource") {
 				Variant resource;
 				err = parse_value(r_token, resource, p_stream, r_line, r_err_str, p_res_parser);
@@ -1148,8 +1147,8 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 					if (r_token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && r_token.type == TK_COMMA) {
 						err = OK;
 						r_err_str = String();
-						key_type = Variant::OBJECT;
-						key_class_name = r_token.value;
+						key_type.builtin_type = Variant::OBJECT;
+						key_type.class_name = r_token.value;
 						got_comma_token = true;
 					} else {
 						return err;
@@ -1157,14 +1156,14 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 				} else {
 					Ref<Script> script = resource;
 					if (script.is_valid() && script->is_script_valid()) {
-						key_type = Variant::OBJECT;
-						key_class_name = script->get_instance_base_type();
-						key_script = script;
+						key_type.builtin_type = Variant::OBJECT;
+						key_type.class_name = script->get_instance_base_type();
+						key_type.script = script;
 					}
 				}
 			} else if (ClassDB::class_exists(r_token.value)) {
-				key_type = Variant::OBJECT;
-				key_class_name = r_token.value;
+				key_type.builtin_type = Variant::OBJECT;
+				key_type.class_name = r_token.value;
 			}
 
 			if (!got_comma_token) {
@@ -1181,12 +1180,10 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 				return ERR_PARSE_ERROR;
 			}
 
-			Variant::Type value_type = Variant::NIL;
-			StringName value_class_name;
-			Variant value_script;
+			ContainerType value_type;
 			bool got_bracket_token = false;
 			if (builtin_types.has(r_token.value)) {
-				value_type = builtin_types.get(r_token.value);
+				value_type.builtin_type = builtin_types.get(r_token.value);
 			} else if (r_token.value == "Resource" || r_token.value == "SubResource" || r_token.value == "ExtResource") {
 				Variant resource;
 				err = parse_value(r_token, resource, p_stream, r_line, r_err_str, p_res_parser);
@@ -1194,8 +1191,8 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 					if (r_token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && r_token.type == TK_BRACKET_CLOSE) {
 						err = OK;
 						r_err_str = String();
-						value_type = Variant::OBJECT;
-						value_class_name = r_token.value;
+						value_type.builtin_type = Variant::OBJECT;
+						value_type.class_name = r_token.value;
 						got_bracket_token = true;
 					} else {
 						return err;
@@ -1203,18 +1200,18 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 				} else {
 					Ref<Script> script = resource;
 					if (script.is_valid() && script->is_script_valid()) {
-						value_type = Variant::OBJECT;
-						value_class_name = script->get_instance_base_type();
-						value_script = script;
+						value_type.builtin_type = Variant::OBJECT;
+						value_type.class_name = script->get_instance_base_type();
+						value_type.script = script;
 					}
 				}
 			} else if (ClassDB::class_exists(r_token.value)) {
-				value_type = Variant::OBJECT;
-				value_class_name = r_token.value;
+				value_type.builtin_type = Variant::OBJECT;
+				value_type.class_name = r_token.value;
 			}
 
-			if (key_type != Variant::NIL || value_type != Variant::NIL) {
-				dict.set_typed(key_type, key_class_name, key_script, value_type, value_class_name, value_script);
+			if (key_type.builtin_type != Variant::NIL || value_type.builtin_type != Variant::NIL) {
+				dict.set_typed(std::move(key_type), std::move(value_type));
 			}
 
 			if (!got_bracket_token) {
@@ -1275,9 +1272,10 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 			}
 
 			Array array = Array();
+			ContainerType element_type;
 			bool got_bracket_token = false;
 			if (builtin_types.has(r_token.value)) {
-				array.set_typed(builtin_types.get(r_token.value), StringName(), Variant());
+				element_type.builtin_type = builtin_types.get(r_token.value);
 			} else if (r_token.value == "Resource" || r_token.value == "SubResource" || r_token.value == "ExtResource") {
 				Variant resource;
 				err = parse_value(r_token, resource, p_stream, r_line, r_err_str, p_res_parser);
@@ -1285,7 +1283,8 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 					if (r_token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && r_token.type == TK_BRACKET_CLOSE) {
 						err = OK;
 						r_err_str = String();
-						array.set_typed(Variant::OBJECT, r_token.value, Variant());
+						element_type.builtin_type = Variant::OBJECT;
+						element_type.class_name = r_token.value;
 						got_bracket_token = true;
 					} else {
 						return err;
@@ -1293,11 +1292,18 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 				} else {
 					Ref<Script> script = resource;
 					if (script.is_valid() && script->is_script_valid()) {
-						array.set_typed(Variant::OBJECT, script->get_instance_base_type(), script);
+						element_type.builtin_type = Variant::OBJECT;
+						element_type.class_name = script->get_instance_base_type();
+						element_type.script = script;
 					}
 				}
 			} else if (ClassDB::class_exists(r_token.value)) {
-				array.set_typed(Variant::OBJECT, r_token.value, Variant());
+				element_type.builtin_type = Variant::OBJECT;
+				element_type.class_name = r_token.value;
+			}
+
+			if (element_type.builtin_type != Variant::NIL) {
+				array.set_typed(std::move(element_type));
 			}
 
 			if (!got_bracket_token) {
@@ -2115,8 +2121,8 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				p_store_string_func(p_store_string_ud, "Dictionary[");
 
 				Variant::Type key_builtin_type = (Variant::Type)dict.get_typed_key_builtin();
-				StringName key_class_name = dict.get_typed_key_class_name();
-				Ref<Script> key_script = dict.get_typed_key_script();
+				const StringName &key_class_name = dict.get_typed_key_class_name();
+				const Ref<Script> &key_script = dict.get_typed_key_script();
 
 				if (key_script.is_valid()) {
 					String resource_text;
@@ -2144,8 +2150,8 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				p_store_string_func(p_store_string_ud, ", ");
 
 				Variant::Type value_builtin_type = (Variant::Type)dict.get_typed_value_builtin();
-				StringName value_class_name = dict.get_typed_value_class_name();
-				Ref<Script> value_script = dict.get_typed_value_script();
+				const StringName &value_class_name = dict.get_typed_value_class_name();
+				const Ref<Script> &value_script = dict.get_typed_value_script();
 
 				if (value_script.is_valid()) {
 					String resource_text;
@@ -2214,8 +2220,8 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 				p_store_string_func(p_store_string_ud, "Array[");
 
 				Variant::Type builtin_type = (Variant::Type)array.get_typed_builtin();
-				StringName class_name = array.get_typed_class_name();
-				Ref<Script> script = array.get_typed_script();
+				const StringName &class_name = array.get_typed_class_name();
+				const Ref<Script> &script = array.get_typed_script();
 
 				if (script.is_valid()) {
 					String resource_text = String();

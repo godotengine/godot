@@ -40,6 +40,7 @@
 #include "core/object/script_language_extension.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/memory.h"
+#include "core/variant/container_type_validate.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
 
@@ -1306,7 +1307,15 @@ void gdextension_array_set_typed(GDExtensionTypePtr p_self, GDExtensionVariantTy
 	Array *self = reinterpret_cast<Array *>(p_self);
 	const StringName *class_name = reinterpret_cast<const StringName *>(p_class_name);
 	const Variant *script = reinterpret_cast<const Variant *>(p_script);
-	self->set_typed((uint32_t)p_type, *class_name, *script);
+
+	ContainerType element_type = ContainerType::from_type((uint32_t)p_type);
+	element_type.class_name = *class_name;
+#ifdef DEBUG_ENABLED
+	element_type.script = *script;
+#else
+	element_type.script = Object::cast_to<Script>(script->operator Object *());
+#endif
+	self->set_typed(std::move(element_type));
 }
 
 /* Dictionary functions */
@@ -1327,7 +1336,22 @@ void gdextension_dictionary_set_typed(GDExtensionTypePtr p_self, GDExtensionVari
 	const Variant *key_script = reinterpret_cast<const Variant *>(p_key_script);
 	const StringName *value_class_name = reinterpret_cast<const StringName *>(p_value_class_name);
 	const Variant *value_script = reinterpret_cast<const Variant *>(p_value_script);
-	self->set_typed((uint32_t)p_key_type, *key_class_name, *key_script, (uint32_t)p_value_type, *value_class_name, *value_script);
+
+	ContainerType key_type = ContainerType::from_type((uint32_t)p_key_type);
+	key_type.class_name = *key_class_name;
+#ifdef DEBUG_ENABLED
+	key_type.script = *key_script;
+#else
+	key_type.script = Object::cast_to<Script>(key_script->operator Object *());
+#endif
+	ContainerType value_type = ContainerType::from_type((uint32_t)p_value_type);
+	value_type.class_name = *value_class_name;
+#ifdef DEBUG_ENABLED
+	value_type.script = *value_script;
+#else
+	value_type.script = Object::cast_to<Script>(value_script->operator Object *());
+#endif
+	self->set_typed(std::move(key_type), std::move(value_type));
 }
 
 /* OBJECT API */

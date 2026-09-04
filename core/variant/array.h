@@ -40,7 +40,9 @@
 class Callable;
 class StringName;
 class Variant;
-
+class Script;
+template <typename T>
+class Ref;
 struct ArrayPrivate;
 struct ContainerType;
 
@@ -54,6 +56,10 @@ class _WARN_UNUSED_ Array {
 	mutable ArrayPrivate *_p;
 	void _ref(const Array &p_from) const;
 	void _unref() const;
+	_FORCE_INLINE_ void _set_typed(uint32_t p_type, StringName p_class_name, Ref<Script> p_script);
+
+protected:
+	Array(uint32_t p_type, const StringName &p_class_name);
 
 public:
 	struct ConstIterator {
@@ -181,16 +187,20 @@ public:
 	const void *id() const;
 
 	void set_typed(const ContainerType &p_element_type);
+	void set_typed(ContainerType &&p_element_type);
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 
 	bool is_typed() const;
 	bool is_same_typed(const Array &p_other) const;
 	bool is_same_instance(const Array &p_other) const;
 
-	ContainerType get_element_type() const;
+	const ContainerType &get_element_type() const _LIFETIME_BOUND_;
 	uint32_t get_typed_builtin() const;
-	StringName get_typed_class_name() const;
-	Variant get_typed_script() const;
+	const StringName &get_typed_class_name() const _LIFETIME_BOUND_;
+	const Ref<Script> &get_typed_script() const _LIFETIME_BOUND_;
+
+	StringName _get_typed_class_name_bind() const;
+	Variant _get_typed_script_bind() const;
 
 	void make_read_only();
 	bool is_read_only() const;
@@ -201,6 +211,8 @@ public:
 		return this->span();
 	}
 
+	Array(const Array &p_base, const ContainerType &p_element_type);
+	Array(const Array &p_base, ContainerType &&p_element_type);
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array(std::initializer_list<Variant> p_init);
