@@ -155,8 +155,8 @@ struct InlineTestData {
 		String line = p_lines[p_line_number];
 
 		RegEx regex = RegEx("^\\t*#[ |]*(?<range>(?<left><)?\\^+)(\\s+(?<name>(?!->)\\S+))?(\\s+->\\s+(?<ref>\\S+))?");
-		Ref<RegExMatch> match = regex.search(line);
-		if (match.is_null()) {
+		RegExMatch match = regex.search(line);
+		if (!match.is_valid()) {
 			return false;
 		}
 
@@ -174,11 +174,11 @@ struct InlineTestData {
 		}
 		r_data.range.start.line = r_data.range.end.line = target_line;
 
-		String marker = match->get_string("range");
+		String marker = match.get_string("range");
 		int i = line.find(marker);
 		REQUIRE(i >= 0);
 		r_data.range.start.character = i;
-		if (!match->get_string("left").is_empty()) {
+		if (!match.get_string("left").is_empty()) {
 			// Include `#` (comment char) in range.
 			r_data.range.start.character--;
 		}
@@ -187,8 +187,8 @@ struct InlineTestData {
 		String target = p_lines[target_line];
 		r_data.text = target.substr(r_data.range.start.character, r_data.range.end.character - r_data.range.start.character);
 
-		r_data.name = match->get_string("name");
-		r_data.ref = match->get_string("ref");
+		r_data.name = match.get_string("name");
+		r_data.ref = match.get_string("ref");
 
 		return true;
 	}
