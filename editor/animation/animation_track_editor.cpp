@@ -5435,6 +5435,9 @@ void AnimationTrackEditor::_update_tracks() {
 	if (selected_track_edit != nullptr) {
 		selected_track_edit->grab_focus();
 	}
+	if (bezier_edit) {
+		bezier_edit->queue_redraw();
+	}
 }
 
 void AnimationTrackEditor::_redraw_tracks() {
