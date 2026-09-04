@@ -30,6 +30,8 @@
 
 #include "gdscript_byte_codegen.h"
 
+#include "inline_cache.h"
+
 #include "core/object/class_db.h"
 
 uint32_t GDScriptByteCodeGenerator::add_parameter(const StringName &p_name, bool p_is_optional, const GDScriptDataType &p_type) {
@@ -394,6 +396,11 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		function->_lambdas_ptr = nullptr;
 		function->_lambdas_count = 0;
 	}
+
+	for (int i : function_inline_cache_locations) {
+		FunctionInlineCache::get_ptr(reinterpret_cast<uintptr_t>(&function->_code_ptr[i]))->reset();
+	}
+	function->function_inline_cache_locations = function_inline_cache_locations;
 
 	if (GDScriptLanguage::get_singleton()->should_track_locals()) {
 		function->stack_debug = stack_debug;
@@ -1093,6 +1100,10 @@ void GDScriptByteCodeGenerator::write_call(const Address &p_target, const Addres
 		append(Address());
 		append(p_arguments.size());
 		append(p_function_name);
+		function_inline_cache_locations.push_back(opcodes.size());
+		for (size_t i = 0; i < FunctionInlineCacheIntSize; i++) {
+			append(0);
+		}
 	} else {
 		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
@@ -1103,6 +1114,10 @@ void GDScriptByteCodeGenerator::write_call(const Address &p_target, const Addres
 		append(ct.target);
 		append(p_arguments.size());
 		append(p_function_name);
+		function_inline_cache_locations.push_back(opcodes.size());
+		for (size_t i = 0; i < FunctionInlineCacheIntSize; i++) {
+			append(0);
+		}
 		ct.cleanup();
 	}
 }
@@ -1129,6 +1144,10 @@ void GDScriptByteCodeGenerator::write_call_async(const Address &p_target, const 
 	append(ct.target);
 	append(p_arguments.size());
 	append(p_function_name);
+	function_inline_cache_locations.push_back(opcodes.size());
+	for (size_t i = 0; i < FunctionInlineCacheIntSize; i++) {
+		append(0);
+	}
 	ct.cleanup();
 }
 
@@ -1363,6 +1382,10 @@ void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const S
 		append(Address());
 		append(p_arguments.size());
 		append(p_function_name);
+		function_inline_cache_locations.push_back(opcodes.size());
+		for (size_t i = 0; i < FunctionInlineCacheIntSize; i++) {
+			append(0);
+		}
 	} else {
 		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
@@ -1373,6 +1396,10 @@ void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const S
 		append(ct.target);
 		append(p_arguments.size());
 		append(p_function_name);
+		function_inline_cache_locations.push_back(opcodes.size());
+		for (size_t i = 0; i < FunctionInlineCacheIntSize; i++) {
+			append(0);
+		}
 		ct.cleanup();
 	}
 }
@@ -1387,6 +1414,10 @@ void GDScriptByteCodeGenerator::write_call_self_async(const Address &p_target, c
 	append(ct.target);
 	append(p_arguments.size());
 	append(p_function_name);
+	function_inline_cache_locations.push_back(opcodes.size());
+	for (size_t i = 0; i < FunctionInlineCacheIntSize; i++) {
+		append(0);
+	}
 	ct.cleanup();
 }
 

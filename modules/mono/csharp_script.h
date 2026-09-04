@@ -376,6 +376,7 @@ public:
 	String to_string(bool *r_valid) override;
 
 	Ref<Script> get_script() const override;
+	bool script_eq(const Ref<Script> &p_script) const override;
 
 	ScriptLanguage *get_language() override;
 

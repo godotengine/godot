@@ -61,6 +61,7 @@
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/variant_cache.h"
 #include "core/variant/variant_deep_duplicate.h"
 
 class GDType;
@@ -819,6 +820,9 @@ public:
 
 	static void get_utility_function_list(List<StringName> *r_functions);
 	static int get_utility_function_count();
+
+	// For caching function calls
+	VariantCallCache lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error);
 
 	[[nodiscard]] bool operator==(const Variant &p_variant) const;
 	[[nodiscard]] bool operator<(const Variant &p_variant) const;
