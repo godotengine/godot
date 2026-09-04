@@ -31,7 +31,10 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/rich_text_label.h"
 
+class EditorToast;
 class Button;
 class PanelContainer;
 class StyleBoxFlat;
@@ -49,63 +52,48 @@ public:
 private:
 	ErrorHandlerList eh;
 
-	const int stylebox_radius = 3;
-
-	Ref<StyleBoxFlat> info_panel_style_background;
-	Ref<StyleBoxFlat> warning_panel_style_background;
-	Ref<StyleBoxFlat> error_panel_style_background;
-
-	Ref<StyleBoxFlat> info_panel_style_progress;
-	Ref<StyleBoxFlat> warning_panel_style_progress;
-	Ref<StyleBoxFlat> error_panel_style_progress;
+	const double default_message_duration = 5.0;
+	const int max_temporary_count = 5;
 
 	Button *main_button = nullptr;
 	PanelContainer *disable_notifications_panel = nullptr;
+	Button *clear_notifications_button = nullptr;
 	Button *disable_notifications_button = nullptr;
 
 	VBoxContainer *vbox_container = nullptr;
-	const int max_temporary_count = 5;
-	struct Toast {
-		Severity severity = SEVERITY_INFO;
+	HashSet<EditorToast *> toasts;
 
-		// Timing.
-		real_t duration = -1.0;
-		real_t remaining_time = 0.0;
-		bool popped = false;
+	struct ThemeCache {
+		Ref<StyleBoxFlat> info;
+		Ref<StyleBoxFlat> warning;
+		Ref<StyleBoxFlat> error;
 
-		// Buttons
-		Button *copy_button = nullptr;
-		Button *close_button = nullptr;
-
-		// Messages
-		String message;
-		String tooltip;
-		int count = 0;
-		Label *message_label = nullptr;
-		Label *message_count_label = nullptr;
-	};
-	HashMap<Control *, Toast> toasts;
-
-	bool is_processing_error = false; // Makes sure that we don't handle errors that are triggered within the EditorToaster error processing.
-
-	const double default_message_duration = 5.0;
+		Ref<StyleBoxFlat> info_progress;
+		Ref<StyleBoxFlat> warning_progress;
+		Ref<StyleBoxFlat> error_progress;
+	} theme_cache;
 
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
 	static void _error_handler_impl(const String &p_file, int p_line, const String &p_error, const String &p_errorexp, bool p_editor_notify, int p_type);
-	void _update_vbox_position();
+	void _update_vbox_position() const;
 	void _update_disable_notifications_button();
-	void _auto_hide_or_free_toasts();
+	void _auto_hide_or_free_toasts(bool p_clear = false);
 
-	void _draw_button();
-	void _draw_progress(Control *panel);
+	void _draw_button() const;
+	void _draw_progress(EditorToast *p_toast) const;
 
 	void _set_notifications_enabled(bool p_enabled);
 	void _repop_old();
-	void _popup_str(const String &p_message, Severity p_severity, const String &p_tooltip);
-	void _toast_theme_changed(Control *p_control);
+	EditorToast *_popup_str(const String &p_message, Severity p_severity, const String &p_tooltip);
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	void _push_toast_bind_compat_117700(const String &p_message, Severity p_severity, const String &p_tooltip);
+	static void _bind_compatibility_methods();
+#endif
+
 	static EditorToaster *singleton;
 
 	void _notification(int p_what);
@@ -113,14 +101,53 @@ protected:
 public:
 	static EditorToaster *get_singleton();
 
-	Control *popup(Control *p_control, Severity p_severity = SEVERITY_INFO, double p_time = 0.0, const String &p_tooltip = String());
-	void popup_str(const String &p_message, Severity p_severity = SEVERITY_INFO, const String &p_tooltip = String());
-	void close(Control *p_control);
-	void instant_close(Control *p_control);
-	void copy(Control *p_control);
+	EditorToast *popup(Control *p_control, Severity p_severity = SEVERITY_INFO, double p_time = 0.0, const String &p_tooltip = String());
+	EditorToast *popup_str(const String &p_message, Severity p_severity = SEVERITY_INFO, const String &p_tooltip = String());
 
 	EditorToaster();
 	~EditorToaster();
 };
 
 VARIANT_ENUM_CAST(EditorToaster::Severity);
+
+class EditorToast : public PanelContainer {
+	GDCLASS(EditorToast, PanelContainer);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	EditorToaster::Severity severity = EditorToaster::SEVERITY_INFO;
+
+	// Timing.
+	real_t duration = -1.0;
+	real_t remaining_time = 0.0;
+	bool popped = false;
+	bool requires_action = false;
+
+	// Buttons
+	Button *copy_button = nullptr;
+	Button *close_button = nullptr;
+
+	// Actions
+	HBoxContainer *action_container = nullptr;
+	HashSet<String> actions;
+
+	// Messages
+	String message;
+	String tooltip;
+	int count = 0;
+	RichTextLabel *message_label = nullptr;
+	Label *message_count_label = nullptr;
+
+	String get_message() const;
+	EditorToaster::Severity get_severity() const;
+
+	void close(bool instant = false);
+	void copy() const;
+
+	void _update_line_separation();
+
+	Button *add_action(const String &p_label, const Callable &p_callback, const StringName &p_icon_name = StringName());
+};
