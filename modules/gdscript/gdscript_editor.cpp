@@ -78,6 +78,13 @@ static String _get_indentation() {
 	return "\t";
 }
 
+static bool _will_open_brace() {
+#ifdef TOOLS_ENABLED
+	return EDITOR_GET("text_editor/completion/auto_brace_open");
+#endif
+	return true;
+}
+
 Vector<String> GDScriptLanguage::get_comment_delimiters() const {
 	static const Vector<String> delimiters = { "#" };
 	return delimiters;
@@ -1288,10 +1295,14 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 						option = EditorLanguage::CompletionOption(member.function->identifier->name, EditorLanguage::CompletionKind::FUNCTION, location);
 						if (p_add_braces) {
 							if (member.function->parameters.size() > 0 || (member.function->info.flags & METHOD_FLAG_VARARG)) {
-								option.insert_text += "(";
+								if (_will_open_brace()) {
+									option.insert_text += "(";
+								}
 								option.display += U"(\u2026)";
 							} else {
-								option.insert_text += "()";
+								if (_will_open_brace()) {
+									option.insert_text += "()";
+								}
 								option.display += "()";
 							}
 						}
@@ -1335,7 +1346,9 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 	if (!p_types_only && base_type.is_meta_type && base_type.kind != GDScriptParser::DataType::BUILTIN && base_type.kind != GDScriptParser::DataType::ENUM) {
 		EditorLanguage::CompletionOption option("new", EditorLanguage::CompletionKind::FUNCTION, EditorLanguage::CompletionLocation::LOCAL);
 		if (p_add_braces) {
-			option.insert_text += "(";
+			if (_will_open_brace()) {
+				option.insert_text += "(";
+			}
 			option.display += U"(\u2026)";
 		}
 		r_result.insert(option.display, option);
@@ -1400,10 +1413,14 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 							EditorLanguage::CompletionOption option(E.name, EditorLanguage::CompletionKind::FUNCTION, location);
 							if (p_add_braces) {
 								if (E.arguments.size() || (E.flags & METHOD_FLAG_VARARG)) {
-									option.insert_text += "(";
+									if (_will_open_brace()) {
+										option.insert_text += "(";
+									}
 									option.display += U"(\u2026)";
 								} else {
-									option.insert_text += "()";
+									if (_will_open_brace()) {
+										option.insert_text += "()";
+									}
 									option.display += "()";
 								}
 							}
@@ -1514,10 +1531,14 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					EditorLanguage::CompletionOption option(E.name, EditorLanguage::CompletionKind::FUNCTION, location);
 					if (p_add_braces) {
 						if (E.arguments.size() || (E.flags & METHOD_FLAG_VARARG)) {
-							option.insert_text += "(";
+							if (_will_open_brace()) {
+								option.insert_text += "(";
+							}
 							option.display += U"(\u2026)";
 						} else {
-							option.insert_text += "()";
+							if (_will_open_brace()) {
+								option.insert_text += "()";
+							}
 							option.display += "()";
 						}
 					}
@@ -1610,10 +1631,14 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 					EditorLanguage::CompletionOption option(E.name, EditorLanguage::CompletionKind::FUNCTION, location);
 					if (p_add_braces) {
 						if (E.arguments.size() || (E.flags & METHOD_FLAG_VARARG)) {
-							option.insert_text += "(";
+							if (_will_open_brace()) {
+								option.insert_text += "(";
+							}
 							option.display += U"(\u2026)";
 						} else {
-							option.insert_text += "()";
+							if (_will_open_brace()) {
+								option.insert_text += "()";
+							}
 							option.display += "()";
 						}
 					}
@@ -1647,10 +1672,14 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 		EditorLanguage::CompletionOption option(String(E), EditorLanguage::CompletionKind::FUNCTION);
 		if (p_add_braces) {
 			if (function.arguments.size() || (function.flags & METHOD_FLAG_VARARG)) {
-				option.insert_text += "(";
+				if (_will_open_brace()) {
+					option.insert_text += "(";
+				}
 				option.display += U"(\u2026)";
 			} else {
-				option.insert_text += "()";
+				if (_will_open_brace()) {
+					option.insert_text += "()";
+				}
 				option.display += "()";
 			}
 		}
@@ -1699,7 +1728,9 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	while (*kwa) {
 		EditorLanguage::CompletionOption option(*kwa, EditorLanguage::CompletionKind::FUNCTION);
 		if (p_add_braces) {
-			option.insert_text += "(";
+			if (_will_open_brace()) {
+				option.insert_text += "(";
+			}
 			option.display += U"(\u2026)";
 		}
 		r_result.insert(option.display, option);
@@ -1712,7 +1743,9 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	for (const StringName &util_func_name : utility_func_names) {
 		EditorLanguage::CompletionOption option(util_func_name, EditorLanguage::CompletionKind::FUNCTION);
 		if (p_add_braces) {
-			option.insert_text += "(";
+			if (_will_open_brace()) {
+				option.insert_text += "(";
+			}
 			option.display += U"(\u2026)"; // As all utility functions contain an argument or more, this is hardcoded here.
 		}
 		r_result.insert(option.display, option);
@@ -3504,7 +3537,9 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			for (const MethodInfo &E : annotations) {
 				EditorLanguage::CompletionOption option(E.name.substr(1), EditorLanguage::CompletionKind::PLAIN_TEXT);
 				if (E.arguments.size() > 0) {
-					option.insert_text += "(";
+					if (_will_open_brace()) {
+						option.insert_text += "(";
+					}
 				}
 				options.insert(option.display, option);
 			}
@@ -3542,9 +3577,13 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						EditorLanguage::CompletionOption option(E, EditorLanguage::CompletionKind::FUNCTION);
 						if (!_guess_expecting_callable(completion_context)) {
 							if (Variant::get_builtin_method_argument_count(completion_context.builtin_type, E) > 0 || Variant::is_builtin_method_vararg(completion_context.builtin_type, E)) {
-								option.insert_text += "(";
+								if (_will_open_brace()) {
+									option.insert_text += "(";
+								}
 							} else {
-								option.insert_text += "()";
+								if (_will_open_brace()) {
+									option.insert_text += "()";
+								}
 							}
 						}
 						options.insert(option.display, option);
