@@ -51,13 +51,6 @@
 @implementation GDTMetalLayer
 
 - (void)initializeDisplayLayer {
-#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
-	if (@available(iOS 13, *)) {
-		// Simulator supports Metal since iOS 13
-	} else {
-		NSLog(@"iOS Simulator prior to iOS 13 does not support Metal rendering.");
-	}
-#endif
 }
 
 - (void)layoutDisplayLayer {

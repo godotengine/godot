@@ -524,9 +524,6 @@ static const _ModelInfo _models[] = {
 };
 
 String OS_AppleEmbedded::get_processor_name() const {
-#if defined(IOS_SIMULATOR) || defined(VISIONOS_SIMULATOR)
-	return "Simulator";
-#else
 	if (apple_embedded) {
 		String model = apple_embedded->get_model();
 		for (unsigned int i = 0; i < std::size(_models); i++) {
@@ -537,7 +534,6 @@ String OS_AppleEmbedded::get_processor_name() const {
 			}
 		}
 	}
-#endif
 	return OS::get_processor_name();
 }
 

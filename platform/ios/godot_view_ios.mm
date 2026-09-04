@@ -53,15 +53,7 @@ GODOT_CLANG_WARNING_POP
 	CALayer<GDTDisplayLayer> *layer;
 
 	if ([driverName isEqualToString:@"vulkan"] || [driverName isEqualToString:@"metal"]) {
-#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
-		if (@available(iOS 13, *)) {
-			layer = [GDTMetalLayer layer];
-		} else {
-			return nil;
-		}
-#else
 		layer = [GDTMetalLayer layer];
-#endif
 #if defined(GLES3_ENABLED)
 	} else if ([driverName isEqualToString:@"opengl3"]) {
 		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in iOS 12.0.
