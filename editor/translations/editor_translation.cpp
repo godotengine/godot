@@ -251,3 +251,27 @@ Vector<Vector<String>> get_extractable_message_list() {
 
 	return list;
 }
+
+Ref<Translation> get_extractable_translation(const String &p_locale) {
+	String full_locale = p_locale;
+	String base_locale = p_locale.get_slicec('@', 0).split("_")[0];
+	for (const EditorTranslationList *etl = _extractable_translations; etl->data; etl++) {
+		if (etl->lang == full_locale || etl->lang == base_locale) {
+			LocalVector<uint8_t> data;
+			data.resize_uninitialized(etl->uncomp_size);
+			const int64_t ret = Compression::decompress(data.ptr(), etl->uncomp_size, etl->data, etl->comp_size, Compression::MODE_DEFLATE);
+			ERR_FAIL_COND_V_MSG(ret == -1, Ref<Translation>(), "Compressed file is corrupt.");
+
+			Ref<FileAccessMemory> fa;
+			fa.instantiate();
+			fa->open_custom(data.ptr(), data.size());
+
+			Ref<Translation> tr = TranslationLoaderPO::load_translation(fa);
+			if (tr.is_valid()) {
+				tr->set_locale(etl->lang);
+				return tr;
+			}
+		}
+	}
+	return Ref<Translation>();
+}
