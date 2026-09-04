@@ -120,7 +120,7 @@ def configure(env: "SConsEnvironment"):
             print_error("Building for iOS with 'arch=x86_64' requires 'simulator=yes'.")
             sys.exit(255)
 
-        env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
+        env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "12.0"
         env.Append(
             CCFLAGS=(
                 "-fobjc-arc -arch x86_64"
