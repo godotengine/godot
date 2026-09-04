@@ -183,6 +183,9 @@ void Trail3D::_notification(int p_what) {
 void Trail3D::set_width(float p_width) {
 	width = p_width;
 	_needs_rebuilding = true;
+	if (limit_mode == LIMIT_MODE_MAX_LENGTH) {
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+	}
 }
 
 float Trail3D::get_width() const {
@@ -384,6 +387,9 @@ real_t Trail3D::get_lifetime() const {
 
 void Trail3D::set_max_length(real_t p_max_length) {
 	max_length = p_max_length;
+	if (limit_mode == LIMIT_MODE_MAX_LENGTH) {
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+	}
 }
 
 real_t Trail3D::get_max_length() const {
@@ -657,7 +663,7 @@ void Trail3D::_process_trail() {
 	Transform3D tf = get_global_transform_interpolated();
 	Vector3 pos = tf.origin;
 
-	if (!_transform_changed && points.size() == 2 && pos.distance_squared_to(points[1]) < CMP_EPSILON) {
+	if (!_transform_changed && !_needs_rebuilding && points.size() == 2 && pos.distance_squared_to(points[1]) < CMP_EPSILON) {
 		return;
 	}
 
