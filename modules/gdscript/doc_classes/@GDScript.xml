@@ -759,7 +759,7 @@
 				[codeblock]
 				var undo_redo = Engine.get_singleton(&amp;"EditorInterface").get_editor_undo_redo()
 				[/codeblock]
-				[b]Note:[/b] Avoid storing lambda callables in member variables of [RefCounted]-based classes (e.g. resources), as this can lead to memory leaks. Use only method callables and optionally [method Callable.bind] or [method Callable.unbind].
+				[b]Note:[/b] Avoid storing lambda callables in member variables of classes inheriting from [RefCounted] (such as resources), as this can lead to memory leaks. Use only method callables and optionally [method Callable.bind] or [method Callable.unbind].
 			</description>
 		</annotation>
 		<annotation name="@icon">
