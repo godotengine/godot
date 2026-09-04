@@ -363,36 +363,49 @@ SSEffects::SSEffects() {
 	}
 }
 
-void SSEffects::allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr) {
+bool SSEffects::allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr, bool p_use_hddagi_screen_radiance) {
 	Size2i last_frame_size = p_render_buffers->get_internal_size();
 	uint32_t mipmaps = 1;
 	uint32_t view_count = p_render_buffers->get_view_count();
 
-	if (!p_use_ssil && p_use_ssr && ssr_half_size) {
+	if (!p_use_hddagi_screen_radiance && !p_use_ssil && p_use_ssr && ssr_half_size) {
 		last_frame_size /= 2;
 	}
 
 	if (p_use_ssil) {
 		mipmaps = 6;
+	} else if (p_use_hddagi_screen_radiance && p_use_ssr && ssr_half_size) {
+		mipmaps = 2;
 	}
 
 	bool should_create = true;
-	bool has_texture = p_render_buffers->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME);
+	const bool has_color = p_render_buffers->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME);
+	const bool has_depth = p_render_buffers->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH);
 
-	if (has_texture) {
+	if (has_color && has_depth == p_use_hddagi_screen_radiance) {
 		RID last_frame_texture = p_render_buffers->get_texture(RB_SCOPE_SSLF, RB_LAST_FRAME);
 		RD::TextureFormat texture_format = RD::get_singleton()->texture_get_format(last_frame_texture);
-		should_create = texture_format.width != (uint32_t)last_frame_size.width || texture_format.height != (uint32_t)last_frame_size.height || texture_format.mipmaps != mipmaps || texture_format.array_layers != view_count;
+		should_create = texture_format.format != RD::DATA_FORMAT_R16G16B16A16_SFLOAT || texture_format.width != (uint32_t)last_frame_size.width || texture_format.height != (uint32_t)last_frame_size.height || texture_format.mipmaps != mipmaps || texture_format.array_layers != view_count;
+		if (!should_create && p_use_hddagi_screen_radiance) {
+			RID last_frame_depth = p_render_buffers->get_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH);
+			RD::TextureFormat depth_format = RD::get_singleton()->texture_get_format(last_frame_depth);
+			should_create = depth_format.format != RD::DATA_FORMAT_R32_SFLOAT || depth_format.width != (uint32_t)last_frame_size.width || depth_format.height != (uint32_t)last_frame_size.height || depth_format.mipmaps != 1 || depth_format.array_layers != view_count;
+		}
 	}
 
 	if (should_create) {
-		if (has_texture) {
+		if (has_color || has_depth) {
 			p_render_buffers->clear_context(RB_SCOPE_SSLF);
 		}
 
 		RID last_frame_texture = p_render_buffers->create_texture(RB_SCOPE_SSLF, RB_LAST_FRAME, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT, RD::TEXTURE_SAMPLES_1, last_frame_size, view_count, mipmaps);
 		RD::get_singleton()->texture_clear(last_frame_texture, Color(0, 0, 0, 0), 0, mipmaps, 0, view_count);
+		if (p_use_hddagi_screen_radiance) {
+			RID last_frame_depth = p_render_buffers->create_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH, RD::DATA_FORMAT_R32_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT, RD::TEXTURE_SAMPLES_1, last_frame_size, view_count, 1);
+			RD::get_singleton()->texture_clear(last_frame_depth, Color(0, 0, 0, 0), 0, 1, 0, view_count);
+		}
 	}
+	return !should_create;
 }
 
 void SSEffects::copy_internal_texture_to_last_frame(Ref<RenderSceneBuffersRD> p_render_buffers, CopyEffects &p_copy_effects) {
@@ -416,6 +429,13 @@ void SSEffects::copy_internal_texture_to_last_frame(Ref<RenderSceneBuffersRD> p_
 			} else {
 				p_copy_effects.make_mipmap(source, dest, dest_size);
 			}
+		}
+	}
+	if (p_render_buffers->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH)) {
+		for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
+			RID source = p_render_buffers->get_depth_texture(v);
+			RID dest = p_render_buffers->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH, v, 0);
+			p_copy_effects.copy_depth_to_rect(source, dest, Rect2i(Vector2i(), RD::get_singleton()->texture_size(dest)));
 		}
 	}
 }
@@ -1425,7 +1445,39 @@ void SSEffects::ssr_set_half_size(bool p_half_size) {
 	ssr_half_size = p_half_size;
 }
 
-void SSEffects::ssr_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RD::DataFormat p_color_format) {
+bool SSEffects::screen_space_depth_pyramid_allocate(Ref<RenderSceneBuffersRD> p_render_buffers, ScreenSpaceDepthPyramidRenderBuffers &p_depth_pyramid_buffers) {
+	ERR_FAIL_COND_V(p_render_buffers.is_null(), false);
+
+	p_depth_pyramid_buffers.size = p_render_buffers->get_internal_size();
+	ERR_FAIL_COND_V(p_depth_pyramid_buffers.size.x <= 0 || p_depth_pyramid_buffers.size.y <= 0, false);
+
+	uint32_t cur_width = p_depth_pyramid_buffers.size.width;
+	uint32_t cur_height = p_depth_pyramid_buffers.size.height;
+	p_depth_pyramid_buffers.mipmaps = 1;
+
+	while (cur_width > 1 || cur_height > 1) {
+		if (cur_width > 1) {
+			cur_width /= 2;
+		}
+		if (cur_height > 1) {
+			cur_height /= 2;
+		}
+		++p_depth_pyramid_buffers.mipmaps;
+	}
+
+	RID hiz = p_render_buffers->create_texture(RB_SCOPE_SS_HIZ, RB_HIZ, RD::DATA_FORMAT_R32_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, p_depth_pyramid_buffers.size, p_render_buffers->get_view_count(), p_depth_pyramid_buffers.mipmaps);
+	return hiz.is_valid();
+}
+
+RID SSEffects::screen_space_depth_pyramid_get_view(Ref<RenderSceneBuffersRD> p_render_buffers, const ScreenSpaceDepthPyramidRenderBuffers &p_depth_pyramid_buffers, uint32_t p_view) {
+	ERR_FAIL_COND_V(p_render_buffers.is_null(), RID());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_view, p_render_buffers->get_view_count(), RID());
+	ERR_FAIL_COND_V(!p_render_buffers->has_texture(RB_SCOPE_SS_HIZ, RB_HIZ), RID());
+
+	return p_render_buffers->get_texture_slice(RB_SCOPE_SS_HIZ, RB_HIZ, p_view, 0, 1, p_depth_pyramid_buffers.mipmaps);
+}
+
+void SSEffects::ssr_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, ScreenSpaceDepthPyramidRenderBuffers &p_depth_pyramid_buffers, const RD::DataFormat p_color_format) {
 	if (p_ssr_buffers.half_size != ssr_half_size) {
 		p_render_buffers->clear_context(RB_SCOPE_SSR);
 	}
@@ -1453,9 +1505,13 @@ void SSEffects::ssr_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers,
 
 	if (ssr_half_size) {
 		p_render_buffers->create_texture(RB_SCOPE_SSR, RB_NORMAL_ROUGHNESS, RD::DATA_FORMAT_R8G8B8A8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, p_ssr_buffers.size, view_count);
+		p_render_buffers->create_texture(RB_SCOPE_SSR, RB_HIZ, RD::DATA_FORMAT_R32_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, p_ssr_buffers.size, view_count, p_ssr_buffers.mipmaps);
+	} else {
+		ERR_FAIL_COND(!screen_space_depth_pyramid_allocate(p_render_buffers, p_depth_pyramid_buffers));
+		p_ssr_buffers.size = p_depth_pyramid_buffers.size;
+		p_ssr_buffers.mipmaps = p_depth_pyramid_buffers.mipmaps;
 	}
 
-	p_render_buffers->create_texture(RB_SCOPE_SSR, RB_HIZ, RD::DATA_FORMAT_R32_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, p_ssr_buffers.size, view_count, p_ssr_buffers.mipmaps);
 	p_render_buffers->create_texture(RB_SCOPE_SSR, RB_SSR, p_color_format, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, p_ssr_buffers.size, view_count, p_ssr_buffers.mipmaps);
 	p_render_buffers->create_texture(RB_SCOPE_SSR, RB_MIP_LEVEL, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, p_ssr_buffers.size, view_count);
 
@@ -1464,7 +1520,103 @@ void SSEffects::ssr_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers,
 	}
 }
 
-void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RID *p_normal_roughness_slices, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const Projection *p_projections, const Projection *p_reprojections, const Vector3 *p_eye_offsets, RendererRD::CopyEffects &p_copy_effects) {
+bool SSEffects::_screen_space_depth_pyramid_build_mips(Ref<RenderSceneBuffersRD> p_render_buffers, const StringName &p_context, const Size2i &p_size, uint32_t p_mipmaps, bool p_first_mip_from_scene_depth) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL_V(uniform_set_cache, false);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL_V(material_storage, false);
+
+	RID nearest_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	uint32_t view_count = p_render_buffers->get_view_count();
+	for (uint32_t v = 0; v < view_count; v++) {
+		for (uint32_t m = 1; m < p_mipmaps; m++) {
+			RID source = p_first_mip_from_scene_depth && m == 1 ? p_render_buffers->get_depth_texture(v) : p_render_buffers->get_texture_slice(p_context, RB_HIZ, v, m - 1);
+			RID dest = p_render_buffers->get_texture_slice(p_context, RB_HIZ, v, m);
+			ERR_FAIL_COND_V(source.is_null() || dest.is_null(), false);
+		}
+	}
+
+	RD::get_singleton()->draw_command_begin_label("Screen-Space Depth Pyramid Mips");
+
+	for (uint32_t v = 0; v < view_count; v++) {
+		for (uint32_t m = 1; m < p_mipmaps; m++) {
+			ScreenSpaceReflectionHizPushConstant push_constant;
+			push_constant.screen_size[0] = MAX(1, p_size.width >> m);
+			push_constant.screen_size[1] = MAX(1, p_size.height >> m);
+
+			RID source;
+			if (p_first_mip_from_scene_depth && m == 1) {
+				source = p_render_buffers->get_depth_texture(v);
+			} else {
+				source = p_render_buffers->get_texture_slice(p_context, RB_HIZ, v, m - 1);
+			}
+
+			RID dest = p_render_buffers->get_texture_slice(p_context, RB_HIZ, v, m);
+
+			Size2i parent_size = RD::get_singleton()->texture_size(source);
+			bool is_width_odd = (parent_size.width % 2) != 0;
+			bool is_height_odd = (parent_size.height % 2) != 0;
+
+			int32_t hiz_mode;
+			if (is_width_odd && is_height_odd) {
+				hiz_mode = SCREEN_SPACE_REFLECTION_HIZ_ODD_WIDTH_AND_HEIGHT;
+			} else if (is_width_odd) {
+				hiz_mode = SCREEN_SPACE_REFLECTION_HIZ_ODD_WIDTH;
+			} else if (is_height_odd) {
+				hiz_mode = SCREEN_SPACE_REFLECTION_HIZ_ODD_HEIGHT;
+			} else {
+				hiz_mode = SCREEN_SPACE_REFLECTION_HIZ_DEFAULT;
+			}
+
+			RID hiz_shader = ssr.hiz_shader.version_get_shader(ssr.hiz_shader_version, hiz_mode);
+
+			RD::Uniform u_source(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>{ nearest_sampler, source });
+			RD::Uniform u_dest(RD::UNIFORM_TYPE_IMAGE, 1, dest);
+
+			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr.hiz_pipelines[hiz_mode].get_rid());
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(hiz_shader, 0, u_source, u_dest), 0);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.screen_size[0], push_constant.screen_size[1], 1);
+
+			RD::get_singleton()->compute_list_end();
+		}
+	}
+
+	RD::get_singleton()->draw_command_end_label();
+	return true;
+}
+
+bool SSEffects::screen_space_depth_pyramid_build(Ref<RenderSceneBuffersRD> p_render_buffers, ScreenSpaceDepthPyramidRenderBuffers &p_depth_pyramid_buffers, RendererRD::CopyEffects &p_copy_effects) {
+	ERR_FAIL_COND_V(p_render_buffers.is_null(), false);
+	ERR_FAIL_COND_V(!p_render_buffers->has_texture(RB_SCOPE_SS_HIZ, RB_HIZ), false);
+
+	for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
+		ERR_FAIL_COND_V(p_render_buffers->get_depth_texture(v).is_null(), false);
+		ERR_FAIL_COND_V(p_render_buffers->get_texture_slice(RB_SCOPE_SS_HIZ, RB_HIZ, v, 0).is_null(), false);
+	}
+
+	RD::get_singleton()->draw_command_begin_label("Screen-Space Depth Pyramid Copy");
+
+	for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
+		RID src_texture = p_render_buffers->get_depth_texture(v);
+		RID dest_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SS_HIZ, RB_HIZ, v, 0);
+		p_copy_effects.copy_depth_to_rect(src_texture, dest_texture, Rect2i(Vector2i(), p_depth_pyramid_buffers.size));
+	}
+
+	RD::get_singleton()->draw_command_end_label();
+
+	if (!_screen_space_depth_pyramid_build_mips(p_render_buffers, RB_SCOPE_SS_HIZ, p_depth_pyramid_buffers.size, p_depth_pyramid_buffers.mipmaps, true)) {
+		return false;
+	}
+	for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
+		ERR_FAIL_COND_V(screen_space_depth_pyramid_get_view(p_render_buffers, p_depth_pyramid_buffers, v).is_null(), false);
+	}
+	return true;
+}
+
+void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, ScreenSpaceDepthPyramidRenderBuffers &p_depth_pyramid_buffers, bool p_depth_pyramid_is_built, const RID *p_normal_roughness_slices, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const Projection *p_projections, const Projection *p_reprojections, const Vector3 *p_eye_offsets, RendererRD::CopyEffects &p_copy_effects) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -1545,68 +1697,17 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 		}
 
 		RD::get_singleton()->draw_command_end_label();
-	} else {
-		RD::get_singleton()->draw_command_begin_label("SSR Copy Depth");
-
-		for (uint32_t v = 0; v < view_count; v++) {
-			RID src_texture = p_render_buffers->get_depth_texture(v);
-			RID dest_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SSR, RB_HIZ, v, 0);
-			p_copy_effects.copy_depth_to_rect(src_texture, dest_texture, Rect2i(Vector2i(), p_ssr_buffers.size));
-		}
-
-		RD::get_singleton()->draw_command_end_label();
+		ERR_FAIL_COND(!_screen_space_depth_pyramid_build_mips(p_render_buffers, RB_SCOPE_SSR, p_ssr_buffers.size, p_ssr_buffers.mipmaps, false));
+	} else if (!p_depth_pyramid_is_built) {
+		ERR_FAIL_COND(!screen_space_depth_pyramid_build(p_render_buffers, p_depth_pyramid_buffers, p_copy_effects));
 	}
 
-	RD::get_singleton()->draw_command_begin_label("SSR HI-Z");
-
+	Vector<RID> hiz_textures;
+	hiz_textures.resize(view_count);
 	for (uint32_t v = 0; v < view_count; v++) {
-		for (uint32_t m = 1; m < p_ssr_buffers.mipmaps; m++) {
-			ScreenSpaceReflectionHizPushConstant push_constant;
-			push_constant.screen_size[0] = MAX(1, p_ssr_buffers.size.width >> m);
-			push_constant.screen_size[1] = MAX(1, p_ssr_buffers.size.height >> m);
-
-			RID source;
-
-			if (!ssr_half_size && m == 1) { // Reuse the depth texture to not create a dependency on the previous depth copy pass.
-				source = p_render_buffers->get_depth_texture(v);
-			} else {
-				source = p_render_buffers->get_texture_slice(RB_SCOPE_SSR, RB_HIZ, v, m - 1);
-			}
-
-			RID dest = p_render_buffers->get_texture_slice(RB_SCOPE_SSR, RB_HIZ, v, m);
-
-			Size2i parent_size = RD::get_singleton()->texture_size(source);
-			bool is_width_odd = (parent_size.width % 2) != 0;
-			bool is_height_odd = (parent_size.height % 2) != 0;
-
-			int32_t hiz_mode;
-			if (is_width_odd && is_height_odd) {
-				hiz_mode = SCREEN_SPACE_REFLECTION_HIZ_ODD_WIDTH_AND_HEIGHT;
-			} else if (is_width_odd) {
-				hiz_mode = SCREEN_SPACE_REFLECTION_HIZ_ODD_WIDTH;
-			} else if (is_height_odd) {
-				hiz_mode = SCREEN_SPACE_REFLECTION_HIZ_ODD_HEIGHT;
-			} else {
-				hiz_mode = SCREEN_SPACE_REFLECTION_HIZ_DEFAULT;
-			}
-
-			RID hiz_shader = ssr.hiz_shader.version_get_shader(ssr.hiz_shader_version, hiz_mode);
-
-			RD::Uniform u_source(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>{ nearest_sampler, source });
-			RD::Uniform u_dest(RD::UNIFORM_TYPE_IMAGE, 1, dest);
-
-			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssr.hiz_pipelines[hiz_mode].get_rid());
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(hiz_shader, 0, u_source, u_dest), 0);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, push_constant.screen_size[0], push_constant.screen_size[1], 1);
-
-			RD::get_singleton()->compute_list_end();
-		}
+		hiz_textures.write[v] = ssr_half_size ? p_render_buffers->get_texture_slice(RB_SCOPE_SSR, RB_HIZ, v, 0, 1, p_ssr_buffers.mipmaps) : screen_space_depth_pyramid_get_view(p_render_buffers, p_depth_pyramid_buffers, v);
+		ERR_FAIL_COND(hiz_textures[v].is_null());
 	}
-
-	RD::get_singleton()->draw_command_end_label();
 
 	RD::get_singleton()->draw_command_begin_label("SSR Main");
 
@@ -1630,17 +1731,16 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 
 		RID last_frame_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME, v, 0);
 		if (ssr_half_size && RD::get_singleton()->texture_size(last_frame_texture) != p_ssr_buffers.size) {
-			// SSIL is likely also enabled. The texture we need is in the second mipmap in this case.
+			// Full-resolution history uses the second mipmap for half-resolution SSR.
 			last_frame_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME, v, 1);
 		}
 
-		RID hiz_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SSR, RB_HIZ, v, 0, 1, p_ssr_buffers.mipmaps);
 		RID normal_roughness_texture = ssr_half_size ? p_render_buffers->get_texture_slice(RB_SCOPE_SSR, RB_NORMAL_ROUGHNESS, v, 0) : p_normal_roughness_slices[v];
 		RID ssr_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SSR, RB_SSR, v, 0);
 		RID mip_level_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SSR, RB_MIP_LEVEL, v, 0);
 
 		RD::Uniform u_last_frame(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>{ linear_sampler, last_frame_texture });
-		RD::Uniform u_hiz(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>{ nearest_sampler, hiz_texture });
+		RD::Uniform u_hiz(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>{ nearest_sampler, hiz_textures[v] });
 		RD::Uniform u_normal_roughness(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 2, Vector<RID>{ nearest_sampler, normal_roughness_texture });
 		RD::Uniform u_ssr(RD::UNIFORM_TYPE_IMAGE, 3, ssr_texture);
 		RD::Uniform u_mip_level(RD::UNIFORM_TYPE_IMAGE, 4, mip_level_texture);

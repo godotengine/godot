@@ -23,6 +23,11 @@ layout(set = 2, binding = 0) uniform usampler2DMS source_voxel_gi;
 layout(rg8ui, set = 3, binding = 0) uniform restrict writeonly uimage2D dest_voxel_gi;
 #endif
 
+#ifdef MOTION_VECTORS_RESOLVE
+layout(set = 0, binding = 2) uniform sampler2DMS source_motion_vectors;
+layout(rg16f, set = 1, binding = 2) uniform restrict writeonly image2D dest_motion_vectors;
+#endif
+
 #endif
 
 layout(push_constant, std430) uniform Params {
@@ -56,6 +61,9 @@ void main() {
 	vec4 best_normal_roughness = vec4(0.0);
 #ifdef VOXEL_GI_RESOLVE
 	uvec2 best_voxel_gi;
+#endif
+#ifdef MOTION_VECTORS_RESOLVE
+	vec2 best_motion_vectors;
 #endif
 
 #if 0
@@ -223,6 +231,9 @@ void main() {
 #ifdef VOXEL_GI_RESOLVE
 	best_voxel_gi = texelFetch(source_voxel_gi, pos, best_index).rg;
 #endif
+#ifdef MOTION_VECTORS_RESOLVE
+	best_motion_vectors = texelFetch(source_motion_vectors, pos, best_index).rg;
+#endif
 
 #endif
 
@@ -230,6 +241,9 @@ void main() {
 	imageStore(dest_normal_roughness, pos, vec4(best_normal_roughness));
 #ifdef VOXEL_GI_RESOLVE
 	imageStore(dest_voxel_gi, pos, uvec4(best_voxel_gi, 0, 0));
+#endif
+#ifdef MOTION_VECTORS_RESOLVE
+	imageStore(dest_motion_vectors, pos, vec4(best_motion_vectors, 0.0, 0.0));
 #endif
 
 #endif
