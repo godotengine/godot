@@ -545,6 +545,7 @@ public:
 	bool class_has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
 	int class_get_method_argument_count(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_method_arguments(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false) const;
 
 	TypedArray<Dictionary> class_get_method_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	Variant class_call_static(const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error);

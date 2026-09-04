@@ -1596,6 +1596,33 @@ int ClassDB::get_method_argument_count(const StringName &p_class, const StringNa
 	return 0;
 }
 
+Vector<Variant> ClassDB::get_method_arguments(const StringName &p_class, const StringName &p_method, bool *r_is_valid, bool p_no_inheritance) {
+	Locker::Lock lock(Locker::STATE_READ);
+	Vector<Variant> ret;
+
+	ClassInfo *type = classes.getptr(p_class);
+	if (type) {
+		const GDType::Member *member = type->gdtype->members(p_no_inheritance).getptr(p_method);
+		if (member && member->type == GDType::Member::Type::METHOD) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+
+			const MethodBind *const method = member->payload.method;
+			for (int i = 0; i < method->get_argument_count(); ++i) {
+				ret.push_back(method->get_argument_info(i).operator Dictionary());
+			}
+			return ret;
+		}
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+
+	return ret;
+}
+
 void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_take_ownership) {
 	_bind_method_custom(p_class, p_method, false, p_take_ownership);
 }

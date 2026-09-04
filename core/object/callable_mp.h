@@ -30,10 +30,12 @@
 
 #pragma once
 
+#include "core/error/error_macros.h"
 #include "core/object/object.h"
 #include "core/variant/binder_common.h"
 #include "core/variant/callable.h"
 
+#include <cstdint>
 #include <type_traits>
 
 class CallableCustomMethodPointerBase : public CallableCustom {
@@ -95,6 +97,39 @@ public:
 	virtual int get_argument_count(bool &r_is_valid) const {
 		r_is_valid = true;
 		return sizeof...(P);
+	}
+
+	virtual void get_arguments(Vector<Variant> &r_arguments) const {
+		print_line("CallableCustomMethodPointer::get_arguments is called!");
+		r_arguments.clear();
+
+#ifndef DEBUG_ENABLED
+		for (uint32_t i = 0; i < sizeof...(P); ++i) {
+			PropertyInfo arg;
+			call_get_argument_type_info<P...>(i, arg);
+			r_arguments.push_back(arg.operator Dictionary());
+		}
+#else
+		StringName method_name = get_method();
+		ERR_FAIL_COND(method_name.is_empty());
+		method_name = StringName(method_name.string().split("::")[1]); // Hack.
+
+		ObjectID obj_id = get_object();
+		ERR_FAIL_COND_MSG(!obj_id.is_valid(),
+				vformat("Failed to get the ObjectID of '" + uitos(data.object_id) + "' in CallableCustomMethodPointer, method name: \"%s\"", method_name));
+
+		List<MethodInfo> method_info_list;
+		ObjectDB::get_instance(obj_id)->get_method_list(&method_info_list);
+
+		for (const MethodInfo &E : method_info_list) {
+			if (E.name == method_name) {
+				print_line("Found our method!!");
+				for (const PropertyInfo &F : E.arguments) {
+					r_arguments.push_back(F.operator Dictionary());
+				}
+			}
+		}
+#endif
 	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
@@ -164,6 +199,17 @@ public:
 	virtual int get_argument_count(bool &r_is_valid) const override {
 		r_is_valid = true;
 		return sizeof...(P);
+	}
+
+	virtual void get_arguments(Vector<Variant> &r_arguments) const override {
+		print_line("CallableCustomMethodPointerC::get_arguments is called!");
+		r_arguments.clear();
+
+		for (uint32_t i = 0; i < sizeof...(P); ++i) {
+			PropertyInfo arg;
+			call_get_argument_type_info<P...>(i, arg);
+			r_arguments.push_back(arg.operator Dictionary());
+		}
 	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
@@ -238,6 +284,17 @@ public:
 	virtual int get_argument_count(bool &r_is_valid) const override {
 		r_is_valid = true;
 		return sizeof...(P);
+	}
+
+	virtual void get_arguments(Vector<Variant> &r_arguments) const override {
+		print_line("CallableCustomStaticMethodPointer::get_arguments is called!");
+		r_arguments.clear();
+
+		for (uint32_t i = 0; i < sizeof...(P); ++i) {
+			PropertyInfo arg;
+			call_get_argument_type_info<P...>(i, arg);
+			r_arguments.push_back(arg.operator Dictionary());
+		}
 	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {

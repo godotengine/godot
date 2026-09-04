@@ -40,6 +40,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/property_info.h"
 #include "core/templates/rb_set.h"
 
 #ifdef TOOLS_ENABLED
@@ -380,6 +381,28 @@ int GDScript::get_script_method_argument_count(const StringName &p_method, bool 
 		*r_is_valid = true;
 	}
 	return E->value->get_argument_count();
+}
+
+Vector<Variant> GDScript::get_script_method_arguments(const StringName &p_method, bool *r_is_valid) const {
+	HashMap<StringName, GDScriptFunction *>::ConstIterator E = member_functions.find(p_method);
+	Vector<Variant> ret;
+
+	if (!E) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return ret;
+	}
+
+	for (const PropertyInfo &F : E->value->get_method_info().arguments) {
+		ret.push_back(F.operator Dictionary());
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = true;
+	}
+
+	return ret;
 }
 
 MethodInfo GDScript::get_method_info(const StringName &p_method) const {
@@ -1933,6 +1956,30 @@ int GDScriptInstance::get_method_argument_count(const StringName &p_method, bool
 		*r_is_valid = false;
 	}
 	return 0;
+}
+Vector<Variant> GDScriptInstance::get_method_arguments(const StringName &p_method, bool *r_is_valid) const {
+	const GDScript *sptr = script.ptr();
+	Vector<Variant> ret;
+
+	while (sptr) {
+		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(p_method);
+		if (E) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			for (const PropertyInfo &F : E->value->get_method_info().arguments) {
+				ret.push_back(F.operator Dictionary());
+			}
+			return ret;
+		}
+		sptr = sptr->base.ptr();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+
+	return ret;
 }
 
 void GDScriptInstance::_call_implicit_ready_recursively(GDScript *p_script) {
