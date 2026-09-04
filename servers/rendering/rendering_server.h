@@ -978,7 +978,7 @@ public:
 
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
-	virtual bool has_changed() const = 0;
+	virtual bool has_changed(RSE::ChangedPriority p_priority = RSE::CHANGED_PRIORITY_ANY) const = 0;
 	virtual void init();
 	virtual void finish() = 0;
 	virtual void tick() = 0;
@@ -1179,6 +1179,7 @@ VARIANT_ENUM_CAST_EXT(RSE::CanvasLightBlendMode, RenderingServer::CanvasLightBle
 VARIANT_ENUM_CAST_EXT(RSE::CanvasLightShadowFilter, RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST_EXT(RSE::CanvasOccluderPolygonCullMode, RenderingServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST_EXT(RSE::GlobalShaderParameterType, RenderingServer::GlobalShaderParameterType);
+VARIANT_ENUM_CAST_EXT(RSE::ChangedPriority, RenderingServer::ChangedPriority);
 VARIANT_ENUM_CAST_EXT(RSE::RenderingInfo, RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST_EXT(RSE::SplashStretchMode, RenderingServer::SplashStretchMode);
 VARIANT_ENUM_CAST_EXT(RSE::CanvasTextureChannel, RenderingServer::CanvasTextureChannel);

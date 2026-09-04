@@ -3518,7 +3518,7 @@ void RenderingServer::_bind_methods() {
 	/* Misc */
 
 	ClassDB::bind_method(D_METHOD("request_frame_drawn_callback", "callable"), &RenderingServer::request_frame_drawn_callback);
-	ClassDB::bind_method(D_METHOD("has_changed"), &RenderingServer::has_changed);
+	ClassDB::bind_method(D_METHOD("has_changed", "queried_priority"), &RenderingServer::has_changed, DEFVAL(RSE::CHANGED_PRIORITY_ANY));
 	ClassDB::bind_method(D_METHOD("get_rendering_info", "info"), &RenderingServer::get_rendering_info);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_name"), &RenderingServer::get_video_adapter_name);
 	ClassDB::bind_method(D_METHOD("get_video_adapter_vendor"), &RenderingServer::get_video_adapter_vendor);
