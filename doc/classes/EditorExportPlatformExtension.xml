@@ -102,7 +102,7 @@
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns device architecture for one-click deploy.
+				Returns device architecture for remote deploy.
 			</description>
 		</method>
 		<method name="_get_export_option_visibility" qualifiers="virtual const">
@@ -152,33 +152,33 @@
 			<return type="Texture2D" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns the item icon for the specified [param device] in the one-click deploy menu. The icon should be 16×16 pixels, adjusted for the current editor scale (see [method EditorInterface.get_editor_scale]).
+				Returns the item icon for the specified [param device] in the remote deploy menu. The icon should be 16×16 pixels, adjusted for the current editor scale (see [method EditorInterface.get_editor_scale]).
 			</description>
 		</method>
 		<method name="_get_option_label" qualifiers="virtual const">
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns one-click deploy menu item label for the specified [param device].
+				Returns remote deploy menu item label for the specified [param device].
 			</description>
 		</method>
 		<method name="_get_option_tooltip" qualifiers="virtual const">
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns one-click deploy menu item tooltip for the specified [param device].
+				Returns remote deploy menu item tooltip for the specified [param device].
 			</description>
 		</method>
 		<method name="_get_options_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Returns the number of devices (or other options) available in the one-click deploy menu.
+				Returns the number of devices (or other options) available in the remote deploy menu.
 			</description>
 		</method>
 		<method name="_get_options_tooltip" qualifiers="virtual const">
 			<return type="String" />
 			<description>
-				Returns tooltip of the one-click deploy menu button.
+				Returns tooltip of the remote deploy menu button.
 			</description>
 		</method>
 		<method name="_get_os_name" qualifiers="virtual required const">
@@ -203,7 +203,7 @@
 		<method name="_get_run_icon" qualifiers="virtual const">
 			<return type="Texture2D" />
 			<description>
-				Returns the icon of the one-click deploy menu button. The icon should be 16×16 pixels, adjusted for the current editor scale (see [method EditorInterface.get_editor_scale]).
+				Returns the icon of the remote deploy menu button. The icon should be 16×16 pixels, adjusted for the current editor scale (see [method EditorInterface.get_editor_scale]).
 			</description>
 		</method>
 		<method name="_has_valid_export_configuration" qualifiers="virtual required const">
@@ -237,7 +237,7 @@
 		<method name="_poll_export" qualifiers="virtual">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if one-click deploy options are changed and editor interface should be updated.
+				Returns [code]true[/code] if remote deploy options are changed and editor interface should be updated.
 			</description>
 		</method>
 		<method name="_run" qualifiers="virtual">
@@ -246,7 +246,7 @@
 			<param index="1" name="device" type="int" />
 			<param index="2" name="debug_flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
 			<description>
-				This method is called when [param device] one-click deploy menu option is selected.
+				This method is called when [param device] remote deploy menu option is selected.
 				Implementation should export project to a temporary location, upload and run it on the specific [param device], or perform another action associated with the menu item.
 			</description>
 		</method>
