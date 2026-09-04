@@ -4,8 +4,8 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|--------------------
-GD0001  |  Usage   |  Error   | ScriptPathAttributeGenerator, [Documentation](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/diagnostics/GD0001.html)
-GD0002  |  Usage   |  Error   | ScriptPathAttributeGenerator, [Documentation](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/diagnostics/GD0002.html)
+GD0001  |  Usage   |  Error   | ClassPartialModifierAnalyzer, [Documentation](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/diagnostics/GD0001.html)
+GD0002  |  Usage   |  Error   | ClassPartialModifierAnalyzer, [Documentation](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/diagnostics/GD0002.html)
 GD0101  |  Usage   |  Error   | ScriptPropertyDefValGenerator, [Documentation](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/diagnostics/GD0101.html)
 GD0102  |  Usage   |  Error   | ScriptPropertyDefValGenerator, [Documentation](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/diagnostics/GD0102.html)
 GD0103  |  Usage   |  Error   | ScriptPropertiesGenerator, [Documentation](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/diagnostics/GD0103.html)
@@ -35,7 +35,7 @@ GD0402  |  Usage   |  Error   | GlobalClassAnalyzer, [Documentation](https://doc
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|--------------------
-GD0003  |  Usage   |  Error   | ScriptPathAttributeGenerator, [Documentation](https://docs.godotengine.org/en/latest/tutorials/scripting/c_sharp/diagnostics/GD0003.html)
+GD0003  |  Usage   |  Error   | MultipleClassesInGodotScriptAnalyzer, [Documentation](https://docs.godotengine.org/en/latest/tutorials/scripting/c_sharp/diagnostics/GD0003.html)
 
 ## Release 4.4
 

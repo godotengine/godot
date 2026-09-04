@@ -37,7 +37,7 @@ namespace Godot.SourceGenerators
                 ));
             }
 
-            if (!typeSymbol.InheritsFrom("GodotSharp", GodotClasses.GodotObject))
+            if (!typeSymbol.IsOrInheritsFrom("GodotSharp", GodotClasses.GodotObject))
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     Common.GlobalClassMustDeriveFromGodotObjectRule,
