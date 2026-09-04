@@ -37,6 +37,7 @@
 #include "core/typedefs.h"
 
 class String;
+class StringName;
 template <typename T>
 class CharStringT;
 
@@ -757,8 +758,8 @@ struct FileNoCaseComparator {
 // and doc translate for the class reference (DTR).
 #ifdef TOOLS_ENABLED
 // Gets parsed.
-String TTR(const String &p_text, const String &p_context = "");
-String TTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
+String TTR(const StringName &p_text, const String &p_context = "");
+String TTRN(const StringName &p_text, const StringName &p_text_plural, int p_n, const String &p_context = "");
 String DTR(const String &p_text, const String &p_context = "");
 String DTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
 // Use for C strings.
@@ -782,8 +783,8 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 #define GNAME(m_value, m_prefix) (m_value)
 
 // Runtime translate for the public node API.
-String RTR(const String &p_text, const String &p_context = "");
-String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context = "");
+String RTR(const StringName &p_text, const String &p_context = "");
+String RTRN(const StringName &p_text, const StringName &p_text_plural, int p_n, const String &p_context = "");
 
 /**
  * "Extractable TRanslate". Used for strings that can appear inside an exported
