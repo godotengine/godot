@@ -11,32 +11,32 @@ from typing import Any, Callable
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
-from gles3_builders import build_gles3_header
-from glsl_builders import build_raw_header, build_rd_header
+from gles3_builders import gles3_glsl
+from glsl_builders import glsl_header, rd_glsl
 
 FUNC_PATH_KWARGS: list[tuple[Callable[..., None], str, dict[str, Any]]] = [
     (
-        build_gles3_header,
+        gles3_glsl,
         "tests/python_build/fixtures/gles3/vertex_fragment.out",
         {"shader": "tests/python_build/fixtures/gles3/vertex_fragment.glsl"},
     ),
     (
-        build_raw_header,
+        glsl_header,
         "tests/python_build/fixtures/glsl/compute.out",
         {"shader": "tests/python_build/fixtures/glsl/compute.glsl"},
     ),
     (
-        build_raw_header,
+        glsl_header,
         "tests/python_build/fixtures/glsl/vertex_fragment.out",
         {"shader": "tests/python_build/fixtures/glsl/vertex_fragment.glsl"},
     ),
     (
-        build_rd_header,
+        rd_glsl,
         "tests/python_build/fixtures/rd_glsl/compute.out",
         {"shader": "tests/python_build/fixtures/rd_glsl/compute.glsl"},
     ),
     (
-        build_rd_header,
+        rd_glsl,
         "tests/python_build/fixtures/rd_glsl/vertex_fragment.out",
         {"shader": "tests/python_build/fixtures/rd_glsl/vertex_fragment.glsl"},
     ),
