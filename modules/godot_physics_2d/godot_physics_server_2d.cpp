@@ -909,6 +909,12 @@ void GodotPhysicsServer2D::body_add_collision_exception(RID p_body, RID p_body_b
 
 	body->add_exception(p_body_b);
 	body->wakeup();
+
+	GodotBody2D *body_b = body_owner.get_or_null(p_body_b);
+	if (!body_b) {
+		return;
+	}
+	body_b->wakeup();
 }
 
 void GodotPhysicsServer2D::body_remove_collision_exception(RID p_body, RID p_body_b) {
@@ -917,6 +923,12 @@ void GodotPhysicsServer2D::body_remove_collision_exception(RID p_body, RID p_bod
 
 	body->remove_exception(p_body_b);
 	body->wakeup();
+
+	GodotBody2D *body_b = body_owner.get_or_null(p_body_b);
+	if (!body_b) {
+		return;
+	}
+	body_b->wakeup();
 }
 
 void GodotPhysicsServer2D::body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {
