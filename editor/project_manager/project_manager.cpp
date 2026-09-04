@@ -51,6 +51,7 @@
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/project_manager/project_dialog.h"
 #include "editor/project_manager/project_list.h"
+#include "editor/project_manager/project_manager_news.h"
 #include "editor/project_manager/project_tag.h"
 #include "editor/project_manager/quick_settings_dialog.h"
 #include "editor/settings/editor_settings.h"
@@ -268,6 +269,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 
 		_set_main_view_icon(MAIN_VIEW_PROJECTS, get_editor_theme_icon("ProjectList"));
 		_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon("AssetStore"));
+		_set_main_view_icon(MAIN_VIEW_NEWS, get_editor_theme_icon("Notification"));
 
 		// Project list.
 		{
@@ -395,6 +397,10 @@ void ProjectManager::_select_main_view(int p_id) {
 		main_view_toggle_map[current_main_view]->set_pressed_no_signal(false);
 		main_view_map[current_main_view]->set_visible(false);
 		current_main_view = view_id;
+
+		if (current_main_view == MAIN_VIEW_NEWS) {
+			news->load_news();
+		}
 	}
 	main_view_toggle_map[current_main_view]->set_pressed_no_signal(true);
 	main_view_map[current_main_view]->set_visible(true);
@@ -1786,6 +1792,12 @@ ProjectManager::ProjectManager() {
 		Button *asset_library_toggle = _add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Store"), Ref<Texture2D>(), asset_library_filler);
 		asset_library_toggle->set_disabled(true);
 		asset_library_toggle->set_tooltip_text(TTRC("Asset Store not available (due to using Web editor, or because SSL support disabled)."));
+	}
+
+	// News view.
+	{
+		news = memnew(ProjectManagerNews);
+		_add_main_view(MAIN_VIEW_NEWS, TTRC("News"), Ref<Texture2D>(), news);
 	}
 
 	// Footer bar.
