@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" ExcludeAssets="runtime" />
+    <!-- We can't update this package without updating to .NET 10.0 -->
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.9.30" ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>
