@@ -54,7 +54,9 @@ class SceneCreateDialog : public ConfirmationDialog {
 public:
 	enum RootType {
 		ROOT_2D_SCENE,
+#ifndef _3D_DISABLED
 		ROOT_3D_SCENE,
+#endif // _3D_DISABLED
 		ROOT_USER_INTERFACE,
 		ROOT_OTHER,
 	};
@@ -66,7 +68,9 @@ private:
 
 	Ref<ButtonGroup> node_type_group;
 	CheckBox *node_type_2d = nullptr;
+#ifndef _3D_DISABLED
 	CheckBox *node_type_3d = nullptr;
+#endif // _3D_DISABLED
 	CheckBox *node_type_gui = nullptr;
 	CheckBox *node_type_other = nullptr;
 

@@ -2745,7 +2745,11 @@ void VisualShaderEditor::_clear_preview_param() {
 }
 
 void VisualShaderEditor::_update_preview_parameter_list() {
-	material_editor->edit(preview_material.ptr(), preview_environment);
+#ifndef _3D_DISABLED
+	material_editor->edit(preview_material.ptr(), env);
+#else
+	material_editor->edit(preview_material.ptr());
+#endif // _3D_DISABLED
 
 	List<PropertyInfo> properties;
 	RenderingServer::get_singleton()->get_shader_parameter_list(visual_shader->get_rid(), &properties);
@@ -7763,12 +7767,14 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// Initialize material editor.
 	{
-		preview_environment.instantiate();
+#ifndef _3D_DISABLED
+		env.instantiate();
 		Ref<Sky> sky = memnew(Sky());
-		preview_environment->set_sky(sky);
-		preview_environment->set_background(Environment::BG_COLOR);
-		preview_environment->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
-		preview_environment->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
+		env->set_sky(sky);
+		env->set_background(Environment::BG_COLOR);
+		env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
+		env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
+#endif // _3D_DISABLED
 
 		preview_material.instantiate();
 		preview_material->connect(CoreStringName(property_list_changed), callable_mp(this, &VisualShaderEditor::_update_preview_parameter_list));
