@@ -1007,7 +1007,7 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 		r_arghint = _make_arguments_hint(p_annotation->info->info, p_argument, true);
 	}
 	if (p_annotation->name == SNAME("@export_range")) {
-		if (p_argument == 3 || p_argument == 4 || p_argument == 5) {
+		if (p_argument >= 3 && p_argument <= 10) {
 			// Slider hint.
 			EditorLanguage::CompletionOption slider1 = _calculate_string_insertion(existing_argument, "or_greater");
 			r_result.insert(slider1.display, slider1);
