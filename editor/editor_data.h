@@ -38,6 +38,7 @@ class ConfigFile;
 class EditorPlugin;
 class EditorUndoRedoManager;
 class PopupMenu;
+class PackedScene;
 
 /**
  * Stores the history of objects which have been selected for editing in the Editor & the Inspector.
@@ -112,6 +113,7 @@ public:
 
 	struct EditedScene {
 		Node *root = nullptr;
+		Ref<PackedScene> scene;
 		String path;
 		uint64_t file_modified_time = 0;
 		Dictionary editor_states;
@@ -201,6 +203,7 @@ public:
 	int add_edited_scene(int p_at_pos);
 	void remove_scene(int p_idx);
 	void set_scene_root(int p_idx, Node *p_root);
+	void set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene);
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node *p_root);
 	int get_edited_scene() const;
