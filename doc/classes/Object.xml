@@ -575,8 +575,9 @@
 		<method name="get" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="property" type="StringName" />
+			<param index="1" name="default" type="Variant" default="null" />
 			<description>
-				Returns the [Variant] value of the given [param property]. If the [param property] does not exist, this method returns [code]null[/code].
+				Returns the [Variant] value of the given [param property]. If the [param property] does not exist, this method returns [param default].
 				[codeblocks]
 				[gdscript]
 				var node = Node2D.new()
@@ -590,6 +591,19 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
+				Specifying a [param default] eliminates the need to check whether a property exists before using its value. This is particularly useful when handling objects of unknown type, or when a property is only defined on some objects in a collection.
+				[codeblocks]
+				[gdscript]
+				func double_rotation(object: Object) -&gt; float:
+					return 2 * object.get("rotation", 0.0)
+				[/gdscript]
+				[csharp]
+				private static float DoubleRotation(GodotObject obj)
+				{
+					return 2.0 * (float)obj.Get(Node2D.PropertyName.Rotation, 0.0f);
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_class" qualifiers="const">
