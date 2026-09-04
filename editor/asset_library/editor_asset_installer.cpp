@@ -46,6 +46,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 
@@ -172,6 +173,7 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 	_update_file_mappings();
 	_rebuild_source_tree();
 	_rebuild_destination_tree();
+	_update_asset_scope();
 
 	popup_centered_clamped(Size2(620, 640) * EDSCALE);
 }
@@ -305,7 +307,7 @@ void EditorAssetInstaller::_rebuild_destination_tree() {
 
 	TreeItem *root = destination_tree->create_item();
 	root->set_icon(0, get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
-	root->set_text(0, target_dir_path + (target_dir_path == "res://" ? "" : "/"));
+	root->set_text(0, target_dir_path + ((target_dir_path == "res://" || target_dir_path == "editor://") ? "" : "/"));
 
 	HashMap<String, TreeItem *> directory_item_map;
 
@@ -401,6 +403,87 @@ TreeItem *EditorAssetInstaller::_create_file_item(Tree *p_tree, TreeItem *p_pare
 	return ti;
 }
 
+void EditorAssetInstaller::_update_asset_scope() {
+	asset_scope = EditorPlugin::SCOPE_UNKNOWN;
+
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
+	if (!pkg) {
+		EditorToaster::get_singleton()->popup_str(vformat(TTR("Error opening asset file for \"%s\" (not in ZIP format)."), asset_name), EditorToaster::SEVERITY_ERROR);
+		return;
+	}
+
+	int ret = unzGoToFirstFile(pkg);
+
+	while (ret == UNZ_OK) {
+		// Get file name.
+		unz_file_info info;
+		char fname[16384];
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+
+		String source_name = String::utf8(fname);
+		if (!toplevel_prefix.begins_with("addons/")) {
+			source_name = source_name.substr(source_name.find_char('/', 1) + 1);
+		}
+
+		if (source_name.begins_with("addons/") && source_name.ends_with("/plugin.cfg")) {
+			// Found a plugin.cfg file, read it to determine the asset scope.
+			Vector<uint8_t> uncomp_data;
+			uncomp_data.resize(info.uncompressed_size);
+
+			ret = unzOpenCurrentFile(pkg);
+			if (ret != UNZ_OK) {
+				break;
+			}
+
+			int bytes_read = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
+			int close_err = unzCloseCurrentFile(pkg);
+			if (bytes_read < 0 || bytes_read != uncomp_data.size() || close_err != UNZ_OK) {
+				break;
+			}
+
+			ConfigFile plugin_config;
+			const Error error = plugin_config.parse(String::utf8((const char *)uncomp_data.ptr(), uncomp_data.size()));
+			if (error != OK) {
+				break;
+			}
+
+			String scope_name = plugin_config.get_value("plugin", "scope", "");
+			if (scope_name == "project") {
+				asset_scope = EditorPlugin::SCOPE_PROJECT;
+			} else if (scope_name == "editor") {
+				asset_scope = EditorPlugin::SCOPE_EDITOR;
+			} else {
+				asset_scope = EditorPlugin::SCOPE_UNKNOWN;
+			}
+			break;
+		}
+
+		ret = unzGoToNextFile(pkg);
+	}
+
+	unzClose(pkg);
+
+	scope_option_button->set_item_icon(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_EDITOR), nullptr);
+	scope_option_button->set_item_tooltip(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_EDITOR), String());
+	if (asset_scope == EditorPlugin::SCOPE_UNKNOWN) {
+		scope_option_button->set_item_disabled(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_PROJECT), false);
+		scope_option_button->set_item_disabled(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_EDITOR), false);
+		scope_option_button->set_item_icon(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_EDITOR), get_editor_theme_icon(SNAME("NodeWarning")));
+		scope_option_button->set_item_tooltip(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_EDITOR), TTRC("This asset's scope is unknown. There is a high chance that this asset will break when installed with this option."));
+	} else if (asset_scope == EditorPlugin::SCOPE_PROJECT) {
+		scope_option_button->set_item_disabled(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_PROJECT), false);
+		scope_option_button->set_item_disabled(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_EDITOR), true);
+		scope_option_button->select(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_PROJECT));
+	} else if (asset_scope == EditorPlugin::SCOPE_EDITOR) {
+		scope_option_button->set_item_disabled(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_PROJECT), true);
+		scope_option_button->set_item_disabled(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_EDITOR), false);
+		scope_option_button->select(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_EDITOR));
+	}
+}
+
 void EditorAssetInstaller::_update_conflict_status(int p_conflicts) {
 	if (p_conflicts >= 1) {
 		asset_conflicts_link->set_text(vformat(TTRN("%d file conflicts with your project and won't be installed", "%d files conflict with your project and won't be installed", p_conflicts), p_conflicts));
@@ -489,11 +572,15 @@ void EditorAssetInstaller::_open_target_dir_dialog() {
 		target_dir_dialog = memnew(EditorFileDialog);
 		target_dir_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 		target_dir_dialog->set_title(TTRC("Select Install Folder"));
-		target_dir_dialog->set_current_dir(target_dir_path);
 		target_dir_dialog->connect("dir_selected", callable_mp(this, &EditorAssetInstaller::_target_dir_selected));
 		add_child(target_dir_dialog);
 	}
-
+	if (target_dir_path.begins_with("res://")) {
+		target_dir_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
+	} else if (target_dir_path.begins_with("editor://")) {
+		target_dir_dialog->set_access(EditorFileDialog::ACCESS_EDITOR_RESOURCES);
+	}
+	target_dir_dialog->set_current_dir(target_dir_path);
 	target_dir_dialog->popup_file_dialog();
 }
 
@@ -506,6 +593,20 @@ void EditorAssetInstaller::_target_dir_selected(const String &p_target_path) {
 	_update_file_mappings();
 	_update_source_tree();
 	_rebuild_destination_tree();
+
+	if (target_dir_path.begins_with("res://") && scope_option_button->get_selected_id() != SCOPE_OPTION_BUTTON_SCOPE_PROJECT) {
+		scope_option_button->select(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_PROJECT));
+	} else if (target_dir_path.begins_with("editor://") && scope_option_button->get_selected_id() != SCOPE_OPTION_BUTTON_SCOPE_EDITOR) {
+		scope_option_button->select(scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_EDITOR));
+	}
+}
+
+void EditorAssetInstaller::_on_asset_scope_changed(int index) {
+	if (index == scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_PROJECT) && !target_dir_path.begins_with("res://")) {
+		_target_dir_selected("res://");
+	} else if (index == scope_option_button->get_item_index(SCOPE_OPTION_BUTTON_SCOPE_EDITOR) && !target_dir_path.begins_with("editor://")) {
+		_target_dir_selected("editor://");
+	}
 }
 
 void EditorAssetInstaller::ok_pressed() {
@@ -527,7 +628,7 @@ void EditorAssetInstaller::_install_asset() {
 
 	ProgressDialog::get_singleton()->add_task("uncompress", TTR("Uncompressing Assets"), file_item_map.size());
 
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(target_dir_path);
 	for (int idx = 0; ret == UNZ_OK; ret = unzGoToNextFile(pkg), idx++) {
 		unz_file_info info;
 		char fname[16384];
@@ -634,6 +735,9 @@ void EditorAssetInstaller::_notification(int p_what) {
 			} else {
 				show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			}
+
+			target_dir_button->set_button_icon(get_editor_theme_icon(SNAME("FileDialog")));
+
 			asset_conflicts_link->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
 			generic_extension_icon = get_editor_theme_icon(SNAME("Object"));
@@ -721,8 +825,15 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	remapping_tools->add_child(show_source_files_button);
 	show_source_files_button->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
 
-	Button *target_dir_button = memnew(Button);
-	target_dir_button->set_text(TTRC("Change Install Folder"));
+	scope_option_button = memnew(OptionButton);
+	scope_option_button->add_item(TTRC("Install for this Project"), SCOPE_OPTION_BUTTON_SCOPE_PROJECT);
+	scope_option_button->add_item(TTRC("Install for all Projects"), SCOPE_OPTION_BUTTON_SCOPE_EDITOR);
+	scope_option_button->set_tooltip_text(TTRC("Install the asset locally on res:// or globally on editor://."));
+	scope_option_button->set_accessibility_name(TTRC("Addon's scope"));
+	remapping_tools->add_child(scope_option_button);
+	scope_option_button->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetInstaller::_on_asset_scope_changed));
+
+	target_dir_button = memnew(Button);
 	target_dir_button->set_tooltip_text(TTRC("Change the folder where the contents of the asset are going to be installed."));
 	remapping_tools->add_child(target_dir_button);
 	target_dir_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetInstaller::_open_target_dir_dialog));
