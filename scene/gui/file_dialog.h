@@ -175,6 +175,7 @@ private:
 	bool use_native_dialog = false;
 	bool can_create_folders = true;
 	bool customization_flags[CUSTOMIZATION_MAX]; // Initialized to true in the constructor.
+	bool native_dialog_visible = false;
 
 	HashMap<ItemMenu, Ref<Shortcut>> action_shortcuts;
 
