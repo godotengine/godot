@@ -4064,9 +4064,11 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 		if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 			thumbnail_size_slider->set_value(thumbnail_size_setting + 16);
 			_update_file_list(true);
+			accept_event();
 		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
 			thumbnail_size_slider->set_value(thumbnail_size_setting - 16);
 			_update_file_list(true);
+			accept_event();
 		}
 	}
 }
