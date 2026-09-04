@@ -144,6 +144,9 @@ private:
 	int tabs_rearrange_group = -1;
 	bool switch_on_drag_hover = true;
 
+	bool continuous_scroll_enabled = false;
+	double scroll_offset = 0.0;
+
 	static const int CURRENT_TAB_UNINITIALIZED = -2;
 	bool initialized = false;
 	int queued_current = CURRENT_TAB_UNINITIALIZED;
@@ -319,6 +322,9 @@ public:
 
 	void set_scrolling_enabled(bool p_enabled);
 	bool get_scrolling_enabled() const;
+
+	void set_continuous_scroll_enabled(bool p_enabled);
+	bool get_continuous_scroll_enabled();
 
 	void set_drag_to_rearrange_enabled(bool p_enabled);
 	bool get_drag_to_rearrange_enabled() const;
