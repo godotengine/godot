@@ -865,7 +865,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	shape_type->add_item(TTR("Trimesh"), SHAPE_TYPE_TRIMESH);
 	shape_type->set_item_tooltip(-1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));
 	shape_type->add_item(TTR("Single Convex"), SHAPE_TYPE_SINGLE_CONVEX);
-	shape_type->set_item_tooltip(-1, TTR("Creates a single convex collision shape.\nThis is the faster than the trimesh or multiple convex option, but is less accurate for collision detection."));
+	shape_type->set_item_tooltip(-1, TTR("Creates a single convex collision shape.\nThis is faster than the trimesh or multiple convex option, but is less accurate for collision detection."));
 	shape_type->add_item(TTR("Simplified Convex"), SHAPE_TYPE_SIMPLIFIED_CONVEX);
 	shape_type->set_item_tooltip(-1, TTR("Creates a simplified convex collision shape.\nThis is similar to single collision shape, but can result in a simpler geometry in some cases, at the cost of accuracy."));
 	shape_type->add_item(TTR("Multiple Convex"), SHAPE_TYPE_MULTIPLE_CONVEX);
