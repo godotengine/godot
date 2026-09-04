@@ -1276,6 +1276,10 @@
 		<member name="translation_context" type="StringName" setter="set_translation_context" getter="get_translation_context" default="&amp;&quot;&quot;">
 			The translation context used when translating this control's displayed text, if it has any. Also used when generating translation templates.
 		</member>
+		<member name="vibrate_on_long_press" type="bool" setter="set_vibrate_on_long_press" getter="is_vibrate_on_long_press" default="true">
+			If [code]true[/code], the device will vibrate when a touch input triggers a long-press.
+			[b]Node:[/b] This is only supported on Android.
+		</member>
 	</members>
 	<signals>
 		<signal name="focus_entered">
