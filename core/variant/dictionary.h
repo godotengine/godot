@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/pair.h"
 #include "core/variant/variant_deep_duplicate.h"
@@ -58,7 +57,30 @@ class _WARN_UNUSED_ Dictionary {
 	void _unref() const;
 
 public:
-	using ConstIterator = HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator;
+	struct ConstIteratorPrivate;
+	struct ConstIterator {
+		friend Dictionary;
+
+		const KeyValue<Variant, Variant> &operator*() const;
+		const KeyValue<Variant, Variant> *operator->() const;
+		ConstIterator &operator++();
+		ConstIterator &operator--();
+
+		bool operator==(const ConstIterator &p_other) const;
+		bool operator!=(const ConstIterator &p_other) const;
+
+		explicit operator bool() const;
+
+		ConstIterator(const ConstIterator &p_other);
+		ConstIterator(ConstIterator &&p_other);
+		ConstIterator &operator=(const ConstIterator &p_other);
+		ConstIterator &operator=(ConstIterator &&p_other);
+		~ConstIterator();
+
+	private:
+		ConstIterator(ConstIteratorPrivate *p_p);
+		ConstIteratorPrivate *_p = nullptr;
+	};
 
 	ConstIterator begin() const;
 	ConstIterator end() const;
