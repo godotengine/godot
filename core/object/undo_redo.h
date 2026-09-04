@@ -53,8 +53,9 @@ private:
 	struct Operation {
 		enum Type {
 			TYPE_METHOD,
+			TYPE_CUSTOM_CALLABLE,
 			TYPE_PROPERTY,
-			TYPE_REFERENCE
+			TYPE_REFERENCE,
 		} type;
 
 		bool force_keep_in_merge_ends = false;
@@ -90,6 +91,9 @@ private:
 	void _discard_redo();
 	bool _redo(bool p_execute);
 
+	void _add_callable_do_operation(const Callable &p_callable, Operation::Type p_type);
+	void _add_callable_undo_operation(const Callable &p_callable, Operation::Type p_type);
+
 	CommitNotifyCallback callback = nullptr;
 	void *callback_ud = nullptr;
 	void *method_callback_ud = nullptr;
@@ -112,6 +116,11 @@ public:
 	void add_undo_property(Object *p_object, const StringName &p_property, const Variant &p_value);
 	void add_do_reference(Object *p_object);
 	void add_undo_reference(Object *p_object);
+#ifdef TOOLS_ENABLED
+	// For EditorUndoRedoManager.
+	void add_do_custom_callable(const Callable &p_callable);
+	void add_undo_custom_callable(const Callable &p_callable);
+#endif
 
 	void start_force_keep_in_merge_ends();
 	void end_force_keep_in_merge_ends();
