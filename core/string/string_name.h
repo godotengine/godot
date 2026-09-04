@@ -85,6 +85,8 @@ class [[nodiscard]] _WARN_UNUSED_ StringName {
 	StringName(_Data *p_data) { _data = p_data; }
 
 public:
+	static const StringName &EMPTY;
+
 	_FORCE_INLINE_ explicit operator bool() const { return _data; }
 
 	bool operator==(const String &p_name) const;
@@ -92,7 +94,7 @@ public:
 	bool operator!=(const String &p_name) const;
 	bool operator!=(const char *p_name) const;
 
-	const char32_t *get_data() const { return _data ? _data->name.ptr() : U""; }
+	const char32_t *get_data() const { return _data ? _data->name.ptr() : String::EMPTY.ptr(); }
 	char32_t operator[](int p_index) const;
 	int length() const;
 	_FORCE_INLINE_ bool is_empty() const { return !_data; }
@@ -135,8 +137,7 @@ public:
 	}
 
 	_FORCE_INLINE_ const String &string() const _LIFETIME_BOUND_ {
-		static const String EMPTY;
-		return _data ? _data->name : EMPTY;
+		return _data ? _data->name : String::EMPTY;
 	}
 
 	_FORCE_INLINE_ operator const String &() const _LIFETIME_BOUND_ {
@@ -197,6 +198,8 @@ public:
 	static void set_debug_stringnames(bool p_enable) { debug_stringname = p_enable; }
 #endif
 };
+
+inline const StringName &StringName::EMPTY = StringName();
 
 // Zero-constructing StringName initializes _data to nullptr (and thus empty).
 template <>

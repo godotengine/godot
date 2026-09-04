@@ -323,8 +323,7 @@ const StringName &get_object_class_name_or_empty() {
 	if constexpr (std::is_base_of_v<Object, T>) {
 		return T::get_class_static();
 	} else {
-		static const StringName EMPTY = "";
-		return EMPTY;
+		return StringName::EMPTY;
 	}
 }
 
