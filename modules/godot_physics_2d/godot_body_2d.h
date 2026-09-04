@@ -121,7 +121,7 @@ class GodotBody2D : public GodotCollisionObject2D {
 		}
 	};
 
-	Vector<AreaCMP> areas;
+	LocalVector<AreaCMP> areas;
 
 	struct Contact {
 		Vector2 local_pos;
@@ -137,7 +137,7 @@ class GodotBody2D : public GodotCollisionObject2D {
 		Vector2 impulse;
 	};
 
-	Vector<Contact> contacts; //no contacts by default
+	LocalVector<Contact> contacts; // No contacts by default.
 	int contact_count = 0;
 
 	Callable body_state_callback;
@@ -166,7 +166,7 @@ public:
 	_FORCE_INLINE_ void add_area(GodotArea2D *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas.write[index].refCount += 1;
+			areas[index].refCount += 1;
 		} else {
 			areas.ordered_insert(AreaCMP(p_area));
 		}
@@ -175,7 +175,7 @@ public:
 	_FORCE_INLINE_ void remove_area(GodotArea2D *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas.write[index].refCount -= 1;
+			areas[index].refCount -= 1;
 			if (areas[index].refCount < 1) {
 				areas.remove_at(index);
 			}
@@ -351,7 +351,7 @@ void GodotBody2D::add_contact(const Vector2 &p_local_pos, const Vector2 &p_local
 		return;
 	}
 
-	Contact *c = contacts.ptrw();
+	Contact *c = contacts.ptr();
 
 	int idx = -1;
 
