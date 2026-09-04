@@ -411,16 +411,29 @@ Quaternion Basis::get_rotation_quaternion() const {
 	return m.get_quaternion();
 }
 
+
 void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) {
 	// Takes two vectors and rotates the basis from the first vector to the second vector.
-	// Adopted from: https://gist.github.com/kevinmoran/b45980723e53edeb8a5a43c49f134724
-	const Vector3 axis = p_start_direction.cross(p_end_direction).normalized();
-	if (axis.length_squared() != 0) {
-		real_t dot = p_start_direction.dot(p_end_direction);
-		dot = CLAMP(dot, -1.0f, 1.0f);
-		const real_t angle_rads = Math::acos(dot);
-		*this = Basis(axis, angle_rads) * (*this);
+	// Adopted from: https://iquilezles.org/articles/noacos/
+	if (p_start_direction.length_squared()==0 || p_end_direction.length_squared()==0) { // check for zero vectors
+		return; // perhaps log a warning here
 	}
+
+	p_start_direction = p_start_direction.normalized(); // must be normalized
+	p_end_direction = p_end_direction.normalized(); // must be normalized
+
+	if (p_start_direction == -p_end_direction) { // special case, ambiguous 180 rotation
+		*this = (*this)*Basis(-1, 0, 0,  0, 1, 0,  0, 0, -1); // flip x&z for a local 180 flip
+		return;
+	}
+
+	const Vector3 axis = p_start_direction.cross(p_end_direction);
+	const real_t c = p_start_direction.dot(p_end_direction); // cosine
+	const real_t k = 1.0/(1.0+c);
+	*this = Basis(
+			axis.x*axis.x*k+c,      axis.y*axis.x*k-axis.z, axis.z*axis.x*k+axis.y,
+			axis.x*axis.y*k+axis.z, axis.y*axis.y*k+c,      axis.z*axis.y*k-axis.x,
+			axis.x*axis.z*k-axis.y, axis.y*axis.z*k+axis.x, axis.z*axis.z*k+c) * (*this);
 }
 
 void Basis::get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const {
