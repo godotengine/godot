@@ -2502,9 +2502,44 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	EditorSettings::get_singleton()->connect("_translation_changed", callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_translation));
 }
 
+void TileMapLayerEditorTerrainsPlugin::_prune_last_selected_terrain_cache() {
+	LocalVector<ObjectID> stale_ids;
+	for (const KeyValue<ObjectID, Vector2i> &E : last_selected_terrain_by_layer) {
+		if (ObjectDB::get_instance(E.key) == nullptr) {
+			stale_ids.push_back(E.key);
+		}
+	}
+	for (const ObjectID &id : stale_ids) {
+		last_selected_terrain_by_layer.erase(id);
+	}
+}
+
+void TileMapLayerEditorTerrainsPlugin::_restore_terrain_selection() {
+	const Vector2i *cached = last_selected_terrain_by_layer.getptr(edited_tile_map_layer_id);
+	if (!cached) {
+		return;
+	}
+
+	// Attempt to select a cached terrain.
+	for (TreeItem *item = terrains_tree->get_root()->get_first_child(); item; item = item->get_next_in_tree()) {
+		Dictionary metadata_dict = item->get_metadata(0);
+		if (metadata_dict.has("terrain_set") && metadata_dict.has("terrain_id")) {
+			int terrain_set = metadata_dict["terrain_set"];
+			int terrain_id = metadata_dict["terrain_id"];
+			if (terrain_set == cached->x && terrain_id == cached->y) {
+				// Terrain matches the cached value, select it.
+				item->select(0);
+				break;
+			}
+		}
+	}
+}
+
 void TileMapLayerEditorTerrainsPlugin::tile_set_changed() {
 	_update_terrains_cache();
 	_update_terrains_tree();
+	_prune_last_selected_terrain_cache();
+	_restore_terrain_selection();
 	_update_tiles_list();
 }
 
@@ -3392,6 +3427,7 @@ void TileMapLayerEditorTerrainsPlugin::_update_tiles_list() {
 		Dictionary metadata_dict = selected_tree_item->get_metadata(0);
 		int sel_terrain_set = metadata_dict["terrain_set"];
 		int sel_terrain_id = metadata_dict["terrain_id"];
+		last_selected_terrain_by_layer[edited_tile_map_layer_id] = Vector2i(sel_terrain_set, sel_terrain_id);
 		ERR_FAIL_INDEX(sel_terrain_set, tile_set->get_terrain_sets_count());
 		ERR_FAIL_INDEX(sel_terrain_id, tile_set->get_terrains_count(sel_terrain_set));
 
