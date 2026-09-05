@@ -1055,7 +1055,7 @@ Size2 OpenXRInterface::get_render_target_size() {
 }
 
 uint32_t OpenXRInterface::get_view_count() {
-	// TODO set this based on our configuration
+	// TODO: set this based on our configuration and the active spatial containers.
 	return 2;
 }
 

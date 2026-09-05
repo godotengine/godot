@@ -117,13 +117,42 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		// Info for the various classes used by the editor.
 		internal val EDITOR_MAIN_INFO = EditorWindowInfo(GodotEditor::class.java, 777, "")
 		internal val EMBEDDED_RUN_GAME_INFO = EditorWindowInfo(EmbeddedGodotGame::class.java, 2667, ":EmbeddedGodotGame")
-		internal val XR_RUN_GAME_INFO = EditorWindowInfo(GodotXRGame::class.java, 1667, ":GodotXRGame")
+		internal val XR_RUN_GAME_INFO = EditorWindowInfo(GodotXRGame::class.java, 1667, ":GodotXRGame", LaunchPolicy.ADJACENT)
+
+		internal val SPATIAL_CONTAINER_RUN_GAME_INFO_0 = EditorWindowInfo(GodotSpatialContainerGame0::class.java,
+			3667, ":GodotSpatialContainerGame0", LaunchPolicy.ADJACENT)
+		internal val SPATIAL_CONTAINER_RUN_GAME_INFO_1 = EditorWindowInfo(GodotSpatialContainerGame1::class.java,
+			3668, ":GodotSpatialContainerGame1", LaunchPolicy.ADJACENT)
 
 		internal val RUN_GAME_INFO_0 = EditorWindowInfo(GodotGame0::class.java, 667, ":GodotGame0", LaunchPolicy.AUTO)
 		internal val RUN_GAME_INFO_1 = EditorWindowInfo(GodotGame1::class.java, 668, ":GodotGame1", LaunchPolicy.AUTO)
 
 		private fun isRunGameInfo(editorWindowInfo: EditorWindowInfo): Boolean {
 			return editorWindowInfo == RUN_GAME_INFO_0 || editorWindowInfo == RUN_GAME_INFO_1
+		}
+
+		private fun getRunGameInfoForInstance(runInstance: Int): EditorWindowInfo {
+			return when (runInstance) {
+				1 -> RUN_GAME_INFO_1
+				else -> RUN_GAME_INFO_0
+			}
+		}
+
+		internal fun isSpatialContainerRunGameInfo(editorWindowInfo: EditorWindowInfo): Boolean {
+			return editorWindowInfo == SPATIAL_CONTAINER_RUN_GAME_INFO_0 ||
+				editorWindowInfo == SPATIAL_CONTAINER_RUN_GAME_INFO_1
+		}
+
+		internal fun isSpatialContainerRunGameInfoWindowId(windowId: Int): Boolean {
+			return windowId == SPATIAL_CONTAINER_RUN_GAME_INFO_0.windowId ||
+				windowId == SPATIAL_CONTAINER_RUN_GAME_INFO_1.windowId
+		}
+
+		private fun getSpatialContainerRunGameInfoForInstance(runInstance: Int): EditorWindowInfo {
+			return when (runInstance) {
+				1 -> SPATIAL_CONTAINER_RUN_GAME_INFO_1
+				else -> SPATIAL_CONTAINER_RUN_GAME_INFO_0
+			}
 		}
 
 		/** Default behavior, means we check project settings **/
@@ -633,24 +662,23 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Launching a game.
 		if (isNativeXRDevice(applicationContext)) {
-			if (xrMode == XR_MODE_ON) {
-				return XR_RUN_GAME_INFO
-			}
-
-			if ((xrMode == XR_MODE_DEFAULT && GodotLib.getGlobal("xr/openxr/enabled").toBoolean())) {
-				val hybridLaunchMode = getHybridAppLaunchMode()
-
-				if (hybridLaunchMode != HybridMode.PANEL) {
-					return XR_RUN_GAME_INFO
+			val gameInfo = if (xrMode == XR_MODE_ON) {
+				XR_RUN_GAME_INFO
+			} else if ((xrMode == XR_MODE_DEFAULT && GodotLib.getGlobal("xr/openxr/enabled").toBoolean())) {
+				if (getHybridAppLaunchMode() == HybridMode.PANEL) {
+					getRunGameInfoForInstance(runInstance)
 				} else {
-					// Hybrid launch mode is PANEL, fall-through and return RUN_GAME_INFO.
+					XR_RUN_GAME_INFO
 				}
+			} else {
+				// Native XR devices don't support embed mode yet.
+				getRunGameInfoForInstance(runInstance)
 			}
 
-			// XR devices support doing multiple runs; check which run we are performing.
-			return when (runInstance) {
-				1 -> RUN_GAME_INFO_1
-				else -> RUN_GAME_INFO_0
+			return if (gameInfo == XR_RUN_GAME_INFO && GodotSpatialContainerGame.isSpatialContainerEnabled()) {
+				getSpatialContainerRunGameInfoForInstance(runInstance)
+			} else {
+				gameInfo
 			}
 		}
 
@@ -670,11 +698,16 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	private fun getEditorWindowInfoForInstanceId(instanceId: Int): EditorWindowInfo? {
 		return when (instanceId) {
-			RUN_GAME_INFO_0.windowId -> RUN_GAME_INFO_0
-			RUN_GAME_INFO_1.windowId -> RUN_GAME_INFO_1
 			EDITOR_MAIN_INFO.windowId -> EDITOR_MAIN_INFO
 			XR_RUN_GAME_INFO.windowId -> XR_RUN_GAME_INFO
 			EMBEDDED_RUN_GAME_INFO.windowId -> EMBEDDED_RUN_GAME_INFO
+
+			RUN_GAME_INFO_0.windowId -> RUN_GAME_INFO_0
+			RUN_GAME_INFO_1.windowId -> RUN_GAME_INFO_1
+
+			SPATIAL_CONTAINER_RUN_GAME_INFO_0.windowId -> SPATIAL_CONTAINER_RUN_GAME_INFO_0
+			SPATIAL_CONTAINER_RUN_GAME_INFO_1.windowId -> SPATIAL_CONTAINER_RUN_GAME_INFO_1
+
 			else -> null
 		}
 	}
@@ -743,9 +776,13 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			Log.d(TAG, "Starting ${editorWindowInfo.windowClassName} with parameters ${args.contentToString()}")
 			newInstance.putExtra(EXTRA_NEW_LAUNCH, true)
 				.putExtra(EditorMessageDispatcher.EXTRA_MSG_DISPATCHER_PAYLOAD, editorMessageDispatcher.getMessageDispatcherPayload())
-			startActivity(newInstance, activityOptions?.toBundle())
+			dispatchNewInstance(editorWindowInfo, newInstance, activityOptions)
 		}
 		return editorWindowInfo.windowId
+	}
+
+	protected open fun dispatchNewInstance(editorWindowInfo: EditorWindowInfo, newInstance: Intent, activityOptions: ActivityOptions?) {
+		startActivity(newInstance, activityOptions?.toBundle())
 	}
 
 	override fun onGodotForceQuit(instance: Godot) {
@@ -972,7 +1009,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
         return super.supportsFeature(featureTag)
     }
 
-	internal fun onEditorConnected(editorId: Int) {
+	@CallSuper
+	internal open fun onEditorConnected(editorId: Int) {
 		Log.d(TAG, "Editor $editorId connected!")
 		when (editorId) {
 			EMBEDDED_RUN_GAME_INFO.windowId,
@@ -991,7 +1029,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		}
 	}
 
-	internal fun onEditorDisconnected(editorId: Int) {
+	@CallSuper
+	internal open fun onEditorDisconnected(editorId: Int) {
 		Log.d(TAG, "Editor $editorId disconnected!")
 	}
 
@@ -1025,10 +1064,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				return
 			}
 
+			val spatialContainerRunning =
+				editorMessageDispatcher.hasEditorConnection(SPATIAL_CONTAINER_RUN_GAME_INFO_0) ||
+					editorMessageDispatcher.hasEditorConnection(SPATIAL_CONTAINER_RUN_GAME_INFO_1)
 			val xrGameRunning = editorMessageDispatcher.hasEditorConnection(XR_RUN_GAME_INFO)
+			val gameRunning = spatialContainerRunning || xrGameRunning
 			val gameEmbedMode = resolveGameEmbedModeIfNeeded(fetchGameEmbedMode())
 			runOnUiThread {
-				updateEmbeddedGameView(xrGameRunning, gameEmbedMode != GameEmbedMode.DISABLED)
+				updateEmbeddedGameView(gameRunning, gameEmbedMode != GameEmbedMode.DISABLED)
 				embeddedGameViewContainerWindow?.isVisible = true
 			}
 		}
@@ -1061,7 +1104,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			val relaunchIntent = Intent(intent)
 			// Don't restart.
 			relaunchIntent.putExtra(EXTRA_NEW_LAUNCH, false)
-			startActivity(relaunchIntent)
+			dispatchNewInstance(getEditorWindowInfo(), relaunchIntent, null)
 		}
 	}
 

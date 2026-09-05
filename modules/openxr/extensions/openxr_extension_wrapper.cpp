@@ -48,6 +48,7 @@ void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_set_projection_layer_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_view_locate_info_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_reference_space_create_info_and_get_next_pointer, "reference_space_type", "next_pointer");
+	GDVIRTUAL_BIND(_set_spatial_container_create_info_and_get_next_pointer, "spatial_container", "next_pointer");
 	GDVIRTUAL_BIND(_prepare_view_configuration, "view_count");
 	GDVIRTUAL_BIND(_set_view_configuration_and_get_next_pointer, "view", "next_pointer");
 	GDVIRTUAL_BIND(_print_view_configuration_info, "view");
@@ -218,6 +219,16 @@ void *OpenXRExtensionWrapper::set_projection_layer_and_get_next_pointer(void *p_
 	uint64_t pointer = 0;
 
 	if (GDVIRTUAL_CALL(_set_projection_layer_and_get_next_pointer, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
+void *OpenXRExtensionWrapper::set_spatial_container_create_info_and_get_next_pointer(RID p_spatial_container, void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_spatial_container_create_info_and_get_next_pointer, p_spatial_container, GDExtensionPtr<void>(p_next_pointer), pointer)) {
 		return reinterpret_cast<void *>(pointer);
 	}
 
