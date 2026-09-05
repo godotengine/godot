@@ -9575,6 +9575,10 @@ EditorNode::EditorNode() {
 		Ref<FogMaterialConversionPlugin> fog_mat_convert;
 		fog_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(fog_mat_convert);
+
+		Ref<ShaderConversionPlugin> shader_convert;
+		shader_convert.instantiate();
+		resource_conversion_plugins.push_back(shader_convert);
 	}
 
 	update_spinner_step_msec = OS::get_singleton()->get_ticks_msec();
