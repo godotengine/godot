@@ -543,9 +543,9 @@ void SoftBody3D::set_collision_layer_value(int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t collision_layer_new = get_collision_layer();
 	if (p_value) {
-		collision_layer_new |= 1 << (p_layer_number - 1);
+		collision_layer_new |= 1u << (p_layer_number - 1);
 	} else {
-		collision_layer_new &= ~(1 << (p_layer_number - 1));
+		collision_layer_new &= ~(1u << (p_layer_number - 1));
 	}
 	set_collision_layer(collision_layer_new);
 }
@@ -553,7 +553,7 @@ void SoftBody3D::set_collision_layer_value(int p_layer_number, bool p_value) {
 bool SoftBody3D::get_collision_layer_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
-	return get_collision_layer() & (1 << (p_layer_number - 1));
+	return get_collision_layer() & (1u << (p_layer_number - 1));
 }
 
 void SoftBody3D::set_collision_mask_value(int p_layer_number, bool p_value) {
@@ -561,9 +561,9 @@ void SoftBody3D::set_collision_mask_value(int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_collision_mask();
 	if (p_value) {
-		mask |= 1 << (p_layer_number - 1);
+		mask |= 1u << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << (p_layer_number - 1));
+		mask &= ~(1u << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
 }
@@ -571,7 +571,7 @@ void SoftBody3D::set_collision_mask_value(int p_layer_number, bool p_value) {
 bool SoftBody3D::get_collision_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
-	return get_collision_mask() & (1 << (p_layer_number - 1));
+	return get_collision_mask() & (1u << (p_layer_number - 1));
 }
 
 void SoftBody3D::set_disable_mode(DisableMode p_mode) {
