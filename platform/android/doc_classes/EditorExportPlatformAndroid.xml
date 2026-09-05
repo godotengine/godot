@@ -59,6 +59,11 @@
 		<member name="gradle_build/gradle_build_directory" type="String" setter="" getter="">
 			Path to the Gradle build directory. If left empty, then [code]res://android[/code] will be used.
 		</member>
+		<member name="gradle_build/minification" type="bool" setter="" getter="">
+			If [code]true[/code], enables R8 code minification and obfuscation for release Gradle builds.
+			This reduces application size, removes unused bytecode, and complies with Google Play Console optimization guidelines.
+			[b]Note:[/b] Only applies to release builds ([b]Export With Debug[/b] unchecked) and requires [member gradle_build/use_gradle_build].
+		</member>
 		<member name="gradle_build/min_sdk" type="String" setter="" getter="">
 			Minimum Android API level required for the application to run (used during Gradle build). See [url=https://developer.android.com/guide/topics/manifest/uses-sdk-element#uses]android:minSdkVersion[/url].
 		</member>
