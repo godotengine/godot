@@ -202,12 +202,21 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 
 	int success = drmp3_init_memory(&mp3s->mp3d, data.ptr(), data.size(), (drmp3_allocation_callbacks *)&dr_alloc_calls);
 
+	if (success) { // Initialize seek table.
+		drmp3_uint32 seek_count = drmp3_get_mp3_frame_count(&mp3s->mp3d) / 20;
+		mp3s->seek_table.resize(seek_count);
+		if (drmp3_calculate_seek_points(&mp3s->mp3d, &seek_count, mp3s->seek_table.ptr())) {
+			drmp3_bind_seek_table(&mp3s->mp3d, seek_count, mp3s->seek_table.ptr());
+		} else {
+			mp3s->seek_table.reset(); // No point to keep it in memory.
+		}
+	}
+
 	mp3s->frames_mixed = 0;
 	mp3s->active = false;
 	mp3s->loops = 0;
 
 	ERR_FAIL_COND_V(!success, Ref<AudioStreamPlaybackMP3>());
-
 	return mp3s;
 }
 
