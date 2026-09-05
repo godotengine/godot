@@ -89,7 +89,6 @@ void PhysicalBone3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					pb->get_global_transform(),
 					pbp->get_global_transform(),
 					cjd->swing_span,
-					cjd->twist_span,
 					&points,
 					&points);
 		} break;

@@ -43,31 +43,6 @@
 #define BODY_A_RADIUS 0.25
 #define BODY_B_RADIUS 0.27
 
-Basis JointGizmosDrawer::look_body(const Transform3D &p_joint_transform, const Transform3D &p_body_transform) {
-	const Vector3 &p_eye(p_joint_transform.origin);
-	const Vector3 &p_target(p_body_transform.origin);
-
-	Vector3 v_x, v_y, v_z;
-
-	// Look the body with X
-	v_x = p_target - p_eye;
-	v_x.normalize();
-
-	v_z = v_x.cross(Vector3(0, 1, 0));
-	v_z.normalize();
-
-	v_y = v_z.cross(v_x);
-	v_y.normalize();
-
-	Basis base;
-	base.set_columns(v_x, v_y, v_z);
-
-	// Absorb current joint transform
-	base = p_joint_transform.basis.inverse() * base;
-
-	return base;
-}
-
 Basis JointGizmosDrawer::look_body_toward(Vector3::Axis p_axis, const Transform3D &joint_transform, const Transform3D &body_transform) {
 	switch (p_axis) {
 		case Vector3::AXIS_X:
@@ -236,7 +211,7 @@ void JointGizmosDrawer::draw_circle(Vector3::Axis p_axis, real_t p_radius, const
 	}
 }
 
-void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_base, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points) {
+void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_base, real_t p_swing, Vector<Vector3> &r_points) {
 	float r = 1.0;
 	float w = r * Math::sin(p_swing);
 	float d = r * Math::cos(p_swing);
@@ -259,22 +234,6 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 
 	r_points.push_back(p_offset.translated_local(p_base.xform(Vector3())).origin);
 	r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(1, 0, 0))).origin);
-
-	/// Twist
-	float ts = Math::rad_to_deg(p_twist);
-	ts = MIN(ts, 720);
-
-	for (int i = 0; i < int(ts); i += 5) {
-		float ra = Math::deg_to_rad((float)i);
-		float rb = Math::deg_to_rad((float)i + 5);
-		float c = i / 720.0;
-		float cn = (i + 5) / 720.0;
-		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w * c;
-		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w * cn;
-
-		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(c, a.x, a.y))).origin);
-		r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(cn, b.x, b.y))).origin);
-	}
 }
 
 ////
@@ -406,7 +365,6 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				node_body_a ? node_body_a->get_global_transform() : Transform3D(),
 				node_body_b ? node_body_b->get_global_transform() : Transform3D(),
 				cone->get_param(ConeTwistJoint3D::PARAM_SWING_SPAN),
-				cone->get_param(ConeTwistJoint3D::PARAM_TWIST_SPAN),
 				node_body_a ? &body_a_points : nullptr,
 				node_body_b ? &body_b_points : nullptr);
 
@@ -560,23 +518,13 @@ void Joint3DGizmoPlugin::CreateSliderJointGizmo(const Transform3D &p_offset, con
 	}
 }
 
-void Joint3DGizmoPlugin::CreateConeTwistJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_swing, real_t p_twist, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
+void Joint3DGizmoPlugin::CreateConeTwistJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_swing, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
 	if (r_body_a_points) {
 		JointGizmosDrawer::draw_cone(
 				p_offset,
-				JointGizmosDrawer::look_body(p_trs_joint, p_trs_body_a),
+				Basis(),
 				p_swing,
-				p_twist,
 				*r_body_a_points);
-	}
-
-	if (r_body_b_points) {
-		JointGizmosDrawer::draw_cone(
-				p_offset,
-				JointGizmosDrawer::look_body(p_trs_joint, p_trs_body_b),
-				p_swing,
-				p_twist,
-				*r_body_b_points);
 	}
 }
 
