@@ -8292,6 +8292,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 
 	HFlowContainer *bottom_hf = memnew(HFlowContainer);
+	bottom_hf->set_alignment(FlowContainer::ALIGNMENT_END);
 	add_child(bottom_hf);
 
 	imported_anim_warning = memnew(Button);
@@ -8330,7 +8331,11 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bezier_key_mode->set_accessibility_name(TTRC("Bezier Default Mode"));
 
 	bottom_hf->add_child(bezier_key_mode);
-	bottom_hf->add_child(memnew(VSeparator));
+
+	HBoxContainer *tools_hf = memnew(HBoxContainer);
+	bottom_hf->add_child(tools_hf);
+
+	tools_hf->add_child(memnew(VSeparator));
 
 	bezier_edit_icon = memnew(Button);
 	bezier_edit_icon->set_flat(true);
@@ -8339,7 +8344,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bezier_edit_icon->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_toggle_bezier_edit));
 	bezier_edit_icon->set_tooltip_text(TTRC("Toggle between the bezier curve editor and track editor."));
 
-	bottom_hf->add_child(bezier_edit_icon);
+	tools_hf->add_child(bezier_edit_icon);
 
 	function_name_toggler = memnew(Button);
 	function_name_toggler->set_flat(true);
@@ -8349,7 +8354,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	function_name_toggler->set_shortcut_in_tooltip(false);
 	function_name_toggler->set_tooltip_text(TTRC("Toggle function names in the track editor."));
 
-	bottom_hf->add_child(function_name_toggler);
+	tools_hf->add_child(function_name_toggler);
 
 	selected_filter = memnew(Button);
 	selected_filter->set_flat(true);
@@ -8357,7 +8362,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	selected_filter->set_toggle_mode(true);
 	selected_filter->set_tooltip_text(TTRC("Only show tracks from nodes selected in tree."));
 
-	bottom_hf->add_child(selected_filter);
+	tools_hf->add_child(selected_filter);
 
 	alphabetic_sorting = memnew(Button);
 	alphabetic_sorting->set_flat(true);
@@ -8365,7 +8370,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	alphabetic_sorting->set_toggle_mode(true);
 	alphabetic_sorting->set_tooltip_text(TTRC("Sort tracks/groups alphabetically.\nIf disabled, tracks are shown in the order they are added and can be reordered using drag-and-drop."));
 
-	bottom_hf->add_child(alphabetic_sorting);
+	tools_hf->add_child(alphabetic_sorting);
 
 	view_group = memnew(Button);
 	view_group->set_flat(true);
@@ -8373,17 +8378,20 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	view_group->set_toggle_mode(true);
 	view_group->set_tooltip_text(TTRC("Group tracks by node or display them as plain list."));
 
-	bottom_hf->add_child(view_group);
+	tools_hf->add_child(view_group);
 
 	insert_at_current_time = memnew(Button);
 	insert_at_current_time->set_flat(true);
-	bottom_hf->add_child(insert_at_current_time);
+	tools_hf->add_child(insert_at_current_time);
 	insert_at_current_time->set_disabled(true);
 	insert_at_current_time->set_toggle_mode(true);
 	insert_at_current_time->set_pressed(EDITOR_GET("editors/animation/insert_at_current_time"));
 	insert_at_current_time->set_tooltip_text(TTRC("Insert at current time."));
 
-	bottom_hf->add_child(memnew(VSeparator));
+	HBoxContainer *snap_hb = memnew(HBoxContainer);
+	bottom_hf->add_child(snap_hb);
+
+	snap_hb->add_child(memnew(VSeparator));
 
 	snap_timeline = memnew(Button);
 	snap_timeline->set_flat(true);
@@ -8391,7 +8399,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_timeline->set_toggle_mode(true);
 	snap_timeline->set_tooltip_text(TTRC("Apply snapping to timeline cursor."));
 	snap_timeline->set_pressed(EditorSettings::get_singleton()->get_project_metadata("animation_track_editor", "snap_timeline", false));
-	bottom_hf->add_child(snap_timeline);
+	snap_hb->add_child(snap_timeline);
 	snap_timeline->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_store_snap_states).unbind(1));
 
 	snap_keys = memnew(Button);
@@ -8400,22 +8408,25 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_keys->set_toggle_mode(true);
 	snap_keys->set_tooltip_text(TTRC("Apply snapping to selected key(s)."));
 	snap_keys->set_pressed(EditorSettings::get_singleton()->get_project_metadata("animation_track_editor", "snap_keys", true));
-	bottom_hf->add_child(snap_keys);
+	snap_hb->add_child(snap_keys);
 	snap_keys->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_store_snap_states).unbind(1));
 
 	fps_compat = memnew(Button);
 	fps_compat->set_flat(true);
-	bottom_hf->add_child(fps_compat);
+	snap_hb->add_child(fps_compat);
 	fps_compat->set_disabled(true);
 	fps_compat->set_toggle_mode(true);
 	fps_compat->set_pressed(true);
 	fps_compat->set_tooltip_text(TTRC("Apply snapping to the nearest integer FPS."));
 	fps_compat->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_update_fps_compat_mode));
 
+	HBoxContainer *time_hb = memnew(HBoxContainer);
+	bottom_hf->add_child(time_hb);
+
 	nearest_fps_label = memnew(Label);
 	nearest_fps_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	nearest_fps_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	bottom_hf->add_child(nearest_fps_label);
+	time_hb->add_child(nearest_fps_label);
 
 	step = memnew(EditorSpinSlider);
 	step->set_min(0);
@@ -8425,7 +8436,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip_text(TTRC("Animation step value."));
 	step->set_accessibility_name(TTRC("Animation step value."));
-	bottom_hf->add_child(step);
+	time_hb->add_child(step);
 	step->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_update_step));
 	step->set_read_only(true);
 
@@ -8434,12 +8445,14 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_mode->add_item(TTRC("FPS"));
 	snap_mode->set_accessibility_name(TTRC("Snap Mode"));
 	snap_mode->set_disabled(true);
-	bottom_hf->add_child(snap_mode);
+	time_hb->add_child(snap_mode);
 	snap_mode->connect(SceneStringName(item_selected), callable_mp(this, &AnimationTrackEditor::_snap_mode_changed));
 
-	bottom_hf->add_child(memnew(VSeparator));
-
 	HBoxContainer *zoom_hb = memnew(HBoxContainer);
+	bottom_hf->add_child(zoom_hb);
+
+	zoom_hb->add_child(memnew(VSeparator));
+
 	zoom_icon = memnew(TextureRect);
 	zoom_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	zoom_hb->add_child(zoom_icon);
@@ -8452,7 +8465,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	zoom->set_v_size_flags(SIZE_SHRINK_CENTER);
 	zoom->set_accessibility_name(TTRC("Zoom"));
 	zoom_hb->add_child(zoom);
-	bottom_hf->add_child(zoom_hb);
 	timeline->set_zoom(zoom);
 
 	ED_SHORTCUT("animation_editor/auto_fit", TTRC("Fit to panel"), KeyModifierMask::ALT | Key::F);
@@ -8462,7 +8474,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	auto_fit->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit));
 	auto_fit->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
 	auto_fit->set_accessibility_name(TTRC("Auto Fit"));
-	bottom_hf->add_child(auto_fit);
+	zoom_hb->add_child(auto_fit);
 
 	auto_fit_bezier = memnew(Button);
 	auto_fit_bezier->set_flat(true);
