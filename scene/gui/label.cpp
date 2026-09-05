@@ -1086,7 +1086,14 @@ Size2 Label::get_minimum_size() const {
 }
 
 Size2 Label::get_desired_size() const {
-	Size2 combined_max = get_combined_maximum_size();
+	Size2 combined_max = get_maximum_size();
+	Size2 custom_max = get_custom_maximum_size();
+	if (custom_max.x >= 0) {
+		combined_max.x = combined_max.x >= 0 ? MIN(combined_max.x, custom_max.x) : custom_max.x;
+	}
+	if (custom_max.y >= 0) {
+		combined_max.y = combined_max.y >= 0 ? MIN(combined_max.y, custom_max.y) : custom_max.y;
+	}
 	if (combined_max.width < 0) {
 		return Size2();
 	}

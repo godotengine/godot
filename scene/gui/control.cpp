@@ -2073,7 +2073,14 @@ Size2 Control::get_bound_desired_size() const {
 	}
 	Size2 desired_size = data.desired_size_cache;
 	desired_size = desired_size.max(get_combined_minimum_size());
-	Size2 max_size = get_combined_maximum_size();
+	Size2 max_size = get_maximum_size();
+	Size2 custom_max_size = get_custom_maximum_size();
+	if (custom_max_size.x >= 0) {
+		max_size.x = max_size.x >= 0 ? MIN(max_size.x, custom_max_size.x) : custom_max_size.x;
+	}
+	if (custom_max_size.y >= 0) {
+		max_size.y = max_size.y >= 0 ? MIN(max_size.y, custom_max_size.y) : custom_max_size.y;
+	}
 	if (max_size.x >= 0) {
 		desired_size.x = MIN(desired_size.x, max_size.x);
 	}
@@ -2090,6 +2097,10 @@ Size2 Control::get_desired_size() const {
 void Control::grow_to_desired_size() {
 	ERR_MAIN_THREAD_GUARD;
 	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (_get_layout_mode() == LayoutMode::LAYOUT_MODE_CONTAINER) {
 		return;
 	}
 
