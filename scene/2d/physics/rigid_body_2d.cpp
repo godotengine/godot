@@ -152,8 +152,15 @@ struct _RigidBody2DInOut {
 void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 	Transform2D new_transform = p_state->get_transform();
 	if (likely(new_transform != get_global_transform())) {
+		// The physics engine only simulates rotation and position; it has no concept of the
+		// node's own visual scale/skew. Preserve whatever the user set instead of letting it
+		// snap to (1, 1) every physics frame (see GH-5734).
+		Size2 cached_scale = get_scale();
+		real_t cached_skew = get_skew();
 		set_block_transform_notify(true);
 		set_global_transform(new_transform);
+		set_scale(cached_scale);
+		set_skew(cached_skew);
 		set_block_transform_notify(false);
 	}
 
@@ -653,7 +660,7 @@ PackedStringArray RigidBody2D::get_configuration_warnings() const {
 	PackedStringArray warnings = PhysicsBody2D::get_configuration_warnings();
 
 	if (Math::abs(t.columns[0].length() - 1.0) > 0.05 || Math::abs(t.columns[1].length() - 1.0) > 0.05) {
-		warnings.push_back(RTR("Size changes to RigidBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
+		warnings.push_back(RTR("Scale on RigidBody2D is only visual; it is not taken into account by the physics engine.\nChange the size in children collision shapes instead to affect collision response."));
 	}
 
 	return warnings;
