@@ -1292,16 +1292,20 @@ HashSet<String> FileSystemDock::_get_valid_conversions_for_file_paths(const Vect
 
 		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_type_name(EditorFileSystem::get_singleton()->get_file_type(fpath));
 
-		if (conversions.is_empty()) {
-			// This resource can't convert to anything, so return an empty list.
-			return HashSet<String>();
-		}
-
 		// Get a list of all potential conversion-to targets.
 		HashSet<String> current_valid_conversion_to_targets;
 		for (const Ref<EditorResourceConversionPlugin> &E : conversions) {
+			if (!E->replaces_source()) {
+				// Conversions that create a new resource are offered in the "Create New" submenu instead.
+				continue;
+			}
 			const String what = E->converts_to();
 			current_valid_conversion_to_targets.insert(what);
+		}
+
+		if (current_valid_conversion_to_targets.is_empty()) {
+			// This resource can't convert to anything, so return an empty list.
+			return HashSet<String>();
 		}
 
 		if (all_valid_conversion_to_targets.is_empty()) {
@@ -1322,6 +1326,17 @@ HashSet<String> FileSystemDock::_get_valid_conversions_for_file_paths(const Vect
 	}
 
 	return all_valid_conversion_to_targets;
+}
+
+Vector<Ref<EditorResourceConversionPlugin>> FileSystemDock::_get_new_resource_conversions_for_file_path(const String &p_path) {
+	Vector<Ref<EditorResourceConversionPlugin>> new_resource_conversions;
+	Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_type_name(EditorFileSystem::get_singleton()->get_file_type(p_path));
+	for (const Ref<EditorResourceConversionPlugin> &E : conversions) {
+		if (!E->replaces_source()) {
+			new_resource_conversions.push_back(E);
+		}
+	}
+	return new_resource_conversions;
 }
 
 void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorites, bool p_navigate) {
@@ -2756,6 +2771,20 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option)) {
 					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option);
 				}
+			} else if (p_option >= CONVERT_NEW_BASE_ID) {
+				ERR_FAIL_COND(p_selected.size() != 1);
+				const String &fpath = p_selected[0];
+				Vector<Ref<EditorResourceConversionPlugin>> conversions = _get_new_resource_conversions_for_file_path(fpath);
+				const int conversion_id = p_option - CONVERT_NEW_BASE_ID;
+				ERR_FAIL_INDEX(conversion_id, conversions.size());
+
+				Ref<Resource> res = ResourceLoader::load(fpath);
+				ERR_FAIL_COND(res.is_null());
+				Ref<Resource> converted_res = conversions[conversion_id]->convert(res);
+				ERR_FAIL_COND(converted_res.is_null());
+
+				EditorNode::get_singleton()->push_item(converted_res.ptr());
+				EditorNode::get_singleton()->save_resource_as(converted_res, fpath.get_base_dir());
 			} else if (p_option >= CONVERT_BASE_ID) {
 				selected_conversion_id = p_option - CONVERT_BASE_ID;
 				ERR_FAIL_INDEX(selected_conversion_id, (int)cached_valid_conversion_targets.size());
@@ -3497,6 +3526,23 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		_add_create_options(p_popup, String());
 	} else if (single_path && p_display_path_dependent_options) {
 		PopupMenu *new_menu = memnew(PopupMenu);
+
+		Vector<Ref<EditorResourceConversionPlugin>> new_resource_conversions = _get_new_resource_conversions_for_file_path(p_paths[0]);
+		if (!new_resource_conversions.is_empty()) {
+			const String type = EditorFileSystem::get_singleton()->get_file_type(p_paths[0]);
+			for (int i = 0; i < new_resource_conversions.size(); i++) {
+				const String what = new_resource_conversions[i]->converts_to();
+				Ref<Texture2D> icon;
+				if (has_theme_icon(what, SNAME("EditorIcons"))) {
+					icon = get_editor_theme_icon(what);
+				} else {
+					icon = get_editor_theme_icon(SNAME("Object"));
+				}
+				new_menu->add_icon_item(icon, vformat(TTR("%s from %s..."), what, type), CONVERT_NEW_BASE_ID + i);
+			}
+			new_menu->add_separator();
+		}
+
 		_add_create_options(new_menu, p_paths[0].get_base_dir());
 		new_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileSystemDock::_generic_rmb_option_selected));
 
