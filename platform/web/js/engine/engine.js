@@ -238,7 +238,7 @@ const Engine = (function () {
 			/**
 			 * Forcibly exit the current instance.
 			 *
-			 * This is akin terminating the process on a regular OS, and *may* be able to terminate
+			 * This is akin to terminating the process on a regular OS, and *may* be able to terminate
 			 * the engine and free resources even if the engine has crashed, or is stuck in a loop.
 			 *
 			 */
