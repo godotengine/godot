@@ -150,8 +150,13 @@ struct _RigidBodyInOut {
 void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
 	Transform3D new_transform = p_state->get_transform();
 	if (likely(new_transform != get_global_transform())) {
+		// The physics engine only simulates rotation and position; it has no concept of the
+		// node's own visual scale. Preserve whatever scale the user set instead of letting it
+		// snap to (1, 1, 1) every physics frame (see GH-5734).
+		Vector3 cached_scale = get_scale();
 		set_ignore_transform_notification(true);
 		set_global_transform(new_transform);
+		set_scale(cached_scale);
 		set_ignore_transform_notification(false);
 	}
 
@@ -673,7 +678,7 @@ PackedStringArray RigidBody3D::get_configuration_warnings() const {
 
 	Vector3 scale = get_transform().get_basis().get_scale();
 	if (Math::abs(scale.x - 1.0) > 0.05 || Math::abs(scale.y - 1.0) > 0.05 || Math::abs(scale.z - 1.0) > 0.05) {
-		warnings.push_back(RTR("Scale changes to RigidBody3D will be overridden by the physics engine when running.\nPlease change the size in children collision shapes instead."));
+		warnings.push_back(RTR("Scale on RigidBody3D is only visual; it is not taken into account by the physics engine.\nPlease change the size in children collision shapes instead to affect collision response."));
 	}
 
 	return warnings;
