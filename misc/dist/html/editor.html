@@ -26,7 +26,7 @@
 		<link rel="preload" href="inter-regular.woff2" as="font" crossorigin="anonymous">
 		<link rel="preload" href="inter-bold.woff2" as="font" crossorigin="anonymous">
 		<title>Godot Engine Web Editor (___GODOT_VERSION___)</title>
-		<style>
+		<style id="web-editor-style">
 /* Use Inter in the same configuration as used in the editor (e.g. alternate lowercase `l`). */
 @font-face {
 	font-family: "Inter";
@@ -69,6 +69,14 @@ body {
 	padding: 0;
 	font-size: 14px;
 	text-align: center;
+	background-color: #262626;
+	overflow: hidden;
+}
+
+iframe {
+	margin: 0;
+	border: none;
+	padding: 0;
 	background-color: #262626;
 	overflow: hidden;
 }
@@ -134,26 +142,34 @@ a:active {
 	min-height: 100vh;
 }
 
-#canvas, #gameCanvas {
-	display: block;
-	margin: 0;
-	color: white;
-}
-
 /* Don't show distracting focus outlines for the main tabs' contents. */
-#tab-editor canvas:focus,
-#tab-game canvas:focus,
-#canvas:focus,
-#gameCanvas:focus {
-	outline: none;
-}
-
 .godot {
+	outline: none;
 	color: #d0d0d0;
 	background-color: #1b1b1b;
 	background-image: linear-gradient(to bottom, #403e48, #35333c);
 	border: 1px solid #484848;
 	box-shadow: 0 0 1px 1px #141414;
+}
+
+#tab-status {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+#tab-editor iframe:focus-visible,
+#tab-game iframe:focus-visible,
+#godot-canvas:focus-visible {
+	outline: none;
+	border: none;
+	box-shadow: none;
 }
 
 .btn {
@@ -217,19 +233,6 @@ a:active {
 
 /* Status display */
 
-#status {
-	position: absolute;
-	left: 0;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	/* don't consume click events - make children visible explicitly */
-	visibility: hidden;
-}
-
 #status-progress {
 	width: 366px;
 	height: 7px;
@@ -252,7 +255,7 @@ a:active {
 	width: 0;
 	box-sizing: border-box;
 	transition: width 0.5s linear;
-	background-color: #202020;
+	background-color: #478cbf;
 	border: 1px solid #222223;
 	box-shadow: 0 0 1px 1px #27282E;
 	border-radius: 3px;
@@ -297,7 +300,7 @@ a:active {
 			role="dialog"
 			aria-labelledby="welcome-modal-title"
 			aria-describedby="welcome-modal-description"
-			onclick="if (event.target === this) closeWelcomeModal(false)"
+			onclick="if (event.target === this) closeWelcomeModal()"
 		>
 			<div class="welcome-modal-content">
 				<h2 id="welcome-modal-title" class="welcome-modal-title">Important - Please read before continuing</h2>
@@ -338,19 +341,24 @@ a:active {
 						>Exporting for the Web</a> for more information.
 					</p>
 				</div>
+				<div style="text-align: center;">
+					<label>
+						<input id="welcome-modal-dont-show-again-check" type="checkbox">
+						Don't Show Again
+					</label>
+				</div>
 				<div style="text-align: center">
-					<button id="welcome-modal-dismiss" class="btn" type="button" onclick="closeWelcomeModal(true)" style="margin-top: 1rem">
-						OK - Don't Show Again
+					<button id="welcome-modal-dismiss" class="btn" type="button" onclick="closeWelcomeModal()" style="margin-top: 1rem">
+						OK
 					</button>
 				</div>
 			</div>
 		</div>
 		<div id="tabs-buttons">
-			<button id="btn-tab-loader" class="btn tab-btn" onclick="showTab('loader')">Loader</button>
-			<button id="btn-tab-editor" class="btn tab-btn next-to-close-btn" disabled="disabled" onclick="showTab('editor')">Editor</button>
-			<button id="btn-close-editor" class="btn close-btn" disabled="disabled" onclick="closeEditor()">×</button>
-			<button id="btn-tab-game" class="btn tab-btn next-to-close-btn" disabled="disabled" onclick="showTab('game')">Game</button>
-			<button id="btn-close-game" class="btn close-btn" disabled="disabled" onclick="closeGame()">×</button>
+			<button id="btn-tab-editor" class="btn tab-btn next-to-close-btn" disabled="disabled">Editor</button>
+			<button id="btn-close-editor" class="btn close-btn" disabled="disabled">×</button>
+			<button id="btn-tab-game" class="btn tab-btn next-to-close-btn" disabled="disabled">Game</button>
+			<button id="btn-close-game" class="btn close-btn" disabled="disabled">×</button>
 			<button id="btn-tab-update" class="btn tab-btn" style="display: none;">Update</button>
 		</div>
 		<div id="tabs">
@@ -362,12 +370,7 @@ a:active {
 					___GODOT_VERSION___ - <a href="/releases/">Change version</a>
 					<br>
 					<br>
-					<label for="zip-file" style="margin-right: 1rem">Preload project ZIP:</label>
-					<input id="zip-file" type="file" name="files" style="margin-bottom: 0.5rem">
-					<br>
-					<a href="demo.zip" id="zip-demo">(Try this for example)</a>
-					<br>
-					<button id="startButton" class="btn" style="margin-top: 2rem; margin-bottom: 3rem; font-weight: 700">Start Godot Editor</button>
+					<button id="btn-start-editor" class="btn" style="margin-top: 2rem; margin-bottom: 3rem; font-weight: 700">Start Godot Editor</button>
 					<br>
 					<button class="btn" onclick="clearPersistence()" style="margin-bottom: 1.5rem">Clear Persistent Data</button>
 					<br>
@@ -375,16 +378,10 @@ a:active {
 				</div>
 			</div>
 			<div id="tab-editor" style="display: none;">
-				<canvas id="editor-canvas" tabindex="1">
-					HTML5 canvas appears to be unsupported in the current browser.<br>
-					Please try updating or use a different browser.
-				</canvas>
+				<iframe id="editor-iframe" tabindex="1"></iframe>
 			</div>
 			<div id="tab-game" style="display: none;">
-				<canvas id="game-canvas" tabindex="2">
-					HTML5 canvas appears to be unsupported in the current browser.<br>
-					Please try updating or use a different browser.
-				</canvas>
+				<iframe id="game-iframe" tabindex="2"></iframe>
 			</div>
 			<div id="tab-status" style="display: none;">
 				<div id="status-progress" style="display: none;" oncontextmenu="event.preventDefault();">
@@ -447,7 +444,7 @@ window.addEventListener('load', () => {
 	});
 	if (missing.length) {
 		// Display error dialog as threading support is required for the editor.
-		document.getElementById('startButton').disabled = 'disabled';
+		document.getElementById('btn-start-editor').disabled = 'disabled';
 		document.getElementById('welcome-modal-description').style.display = 'none';
 		document.getElementById('welcome-modal-missing-description').style.display = 'block';
 		document.getElementById('welcome-modal-dismiss').style.display = 'none';
@@ -465,8 +462,9 @@ window.addEventListener('load', () => {
 	}
 });
 
-function closeWelcomeModal(dontShowAgain) { // eslint-disable-line no-unused-vars
+function closeWelcomeModal() { // eslint-disable-line no-unused-vars
 	document.getElementById('welcome-modal').style.display = 'none';
+	const dontShowAgain = document.getElementById('welcome-modal-dont-show-again-check').checked;
 	if (dontShowAgain) {
 		localStorage.setItem('welcomeModalDismissed', 'true');
 	}
@@ -474,10 +472,7 @@ function closeWelcomeModal(dontShowAgain) { // eslint-disable-line no-unused-var
 		</script>
 		<script src="godot.editor.js"></script>
 		<script>
-let editor = null;
-let game = null;
-let setStatusMode;
-let setStatusNotice;
+const fileSizes = ___GODOT_EDITOR_FILESIZES___;
 
 function clearPersistence() { // eslint-disable-line no-unused-vars
 	function deleteDB(path) {
@@ -500,116 +495,24 @@ function clearPersistence() { // eslint-disable-line no-unused-vars
 	Promise.all([
 		deleteDB('/home/web_user'),
 	]).then(function (results) {
+		localStorage.setItem('welcomeModalDismissed', 'false');
 		alert('Done.');
 	}).catch(function (err) {
 		alert('Error deleting local files. Please retry after reloading the page.');
 	});
 }
 
-const tabs = [
-	document.getElementById('tab-loader'),
-	document.getElementById('tab-editor'),
-	document.getElementById('tab-game'),
-];
-function showTab(name) {
-	tabs.forEach(function (elem) {
-		if (elem.id === `tab-${name}`) {
-			elem.style.display = 'block';
-			if (name === 'editor' || name === 'game') {
-				const canvas = document.getElementById(`${name}-canvas`);
-				canvas.focus();
-			}
-		} else {
-			elem.style.display = 'none';
-		}
-	});
-}
-
-function setButtonEnabled(id, enabled) {
-	if (enabled) {
-		document.getElementById(id).disabled = '';
-	} else {
-		document.getElementById(id).disabled = 'disabled';
-	}
-}
-
-function setLoaderEnabled(enabled) {
-	setButtonEnabled('btn-tab-loader', enabled);
-	setButtonEnabled('btn-tab-editor', !enabled);
-	setButtonEnabled('btn-close-editor', !enabled);
-}
-
-function setGameTabEnabled(enabled) {
-	setButtonEnabled('btn-tab-game', enabled);
-	setButtonEnabled('btn-close-game', enabled);
-}
-
-function closeGame() {
-	if (game) {
-		game.requestQuit();
-	}
-}
-
-function closeEditor() { // eslint-disable-line no-unused-vars
-	closeGame();
-	if (editor) {
-		editor.requestQuit();
-	}
-}
-
-function startEditor(zip) {
+function LoadStatus(document) {
 	const INDETERMINATE_STATUS_STEP_MS = 100;
-	const persistentPaths = ['/home/web_user'];
-
-	let editorCanvas = document.getElementById('editor-canvas');
-	let gameCanvas = document.getElementById('game-canvas');
+	const statusTab = document.getElementById('tab-status');
 	const statusProgress = document.getElementById('status-progress');
 	const statusProgressInner = document.getElementById('status-progress-inner');
 	const statusIndeterminate = document.getElementById('status-indeterminate');
 	const statusNotice = document.getElementById('status-notice');
-	const headerDiv = document.getElementById('tabs-buttons');
 
-	let initializing = true;
 	let statusMode = 'hidden';
 
-	showTab('status');
-
 	let animationCallbacks = [];
-	function animate(time) {
-		animationCallbacks.forEach((callback) => callback(time));
-		requestAnimationFrame(animate);
-	}
-	requestAnimationFrame(animate);
-
-	let lastScale = 0;
-	let lastWidth = 0;
-	let lastHeight = 0;
-	function adjustCanvasDimensions() {
-		const scale = window.devicePixelRatio || 1;
-		const headerHeight = headerDiv.offsetHeight + 1;
-		const width = window.innerWidth;
-		const height = window.innerHeight - headerHeight;
-		if (lastScale !== scale || lastWidth !== width || lastHeight !== height) {
-			editorCanvas.width = width * scale;
-			editorCanvas.height = height * scale;
-			editorCanvas.style.width = `${width}px`;
-			editorCanvas.style.height = `${height}px`;
-			lastScale = scale;
-			lastWidth = width;
-			lastHeight = height;
-		}
-	}
-	animationCallbacks.push(adjustCanvasDimensions);
-	adjustCanvasDimensions();
-
-	function replaceCanvas(from) {
-		const out = document.createElement('canvas');
-		out.id = from.id;
-		out.tabIndex = from.tabIndex;
-		from.parentNode.replaceChild(out, from);
-		lastScale = 0;
-		return out;
-	}
 
 	function animateStatusIndeterminate(ms) {
 		const i = Math.floor((ms / INDETERMINATE_STATUS_STEP_MS) % 8);
@@ -621,8 +524,8 @@ function startEditor(zip) {
 		}
 	}
 
-	setStatusMode = function (mode) {
-		if (statusMode === mode || !initializing) {
+	function setStatusMode(mode) {
+		if (statusMode === mode) {
 			return;
 		}
 		[statusProgress, statusIndeterminate, statusNotice].forEach((elem) => {
@@ -631,6 +534,7 @@ function startEditor(zip) {
 		animationCallbacks = animationCallbacks.filter(function (value) {
 			return (value !== animateStatusIndeterminate);
 		});
+		let display = '';
 		switch (mode) {
 		case 'progress':
 			statusProgress.style.display = 'block';
@@ -643,14 +547,16 @@ function startEditor(zip) {
 			statusNotice.style.display = 'block';
 			break;
 		case 'hidden':
+			display = 'none';
 			break;
 		default:
 			throw new Error('Invalid status mode');
 		}
+		statusTab.style.display = display;
 		statusMode = mode;
 	};
 
-	setStatusNotice = function (text) {
+	function setStatusNotice(text) {
 		while (statusNotice.lastChild) {
 			statusNotice.removeChild(statusNotice.lastChild);
 		}
@@ -661,103 +567,19 @@ function startEditor(zip) {
 		});
 	};
 
-	const gameConfig = {
-		'persistentPaths': persistentPaths,
-		'unloadAfterInit': false,
-		'canvas': gameCanvas,
-		'canvasResizePolicy': 1,
-		'debugPort': null,
-		'onExit': function () {
-			gameCanvas = replaceCanvas(gameCanvas);
-			setGameTabEnabled(false);
-			showTab('editor');
-			game = null;
-		},
-	};
-
-	let OnEditorExit = function () {
-		showTab('loader');
-		setLoaderEnabled(true);
-	};
-	function Execute(args) {
-		const is_editor = args.filter(function (v) {
-			return v === '--editor' || v === '-e';
-		}).length !== 0;
-		const is_project_manager = args.filter(function (v) {
-			return v === '--project-manager';
-		}).length !== 0;
-		const is_game = !is_editor && !is_project_manager;
-
-		if (is_game) {
-			if (game) {
-				console.error('A game is already running. Close it first');
-				return;
-			}
-			setGameTabEnabled(true);
-			const channel = new MessageChannel();
-			gameConfig['debugPort'] = channel.port1;
-			game = new Engine(gameConfig);
-			showTab('game');
-			game.init().then(function () {
-				requestAnimationFrame(function () {
-					game.start({ 'args': args, 'canvas': gameCanvas }).then(function () {
-						editor.addDebuggerSession(channel.port2);
-						gameCanvas.focus();
-					});
-				});
-			});
-		} else { // New editor instances will be run in the same canvas. We want to wait for it to exit.
-			OnEditorExit = function (code) {
-				setLoaderEnabled(true);
-				setTimeout(function () {
-					editor.init().then(function () {
-						setLoaderEnabled(false);
-						OnEditorExit = function () {
-							showTab('loader');
-							setLoaderEnabled(true);
-						};
-						editor.start({ 'args': args, 'persistentDrops': is_project_manager, 'canvas': editorCanvas });
-					});
-				}, 0);
-				OnEditorExit = null;
-			};
+	function updateProgress(active, progress) {
+		if (active) {
+			setStatusMode('hidden');
+			return;
+		}
+		const [current, total] = progress;
+		if (total > 0 && current < total) {
+			statusProgressInner.style.width = `${(current / total) * 100}%`;
+			setStatusMode('progress');
+		} else {
+			setStatusMode('indeterminate');
 		}
 	}
-
-	const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-	// We need at least 6 free threads from the pool to start the editor.
-	// At least 4 more will be reserved for the godot thread pool (3 is the bare minimum with the multithreaded variant of the servers).
-	const concurrency = clamp(navigator.hardwareConcurrency ?? 1, 12, 24);
-	const editorConfig = {
-		'unloadAfterInit': false,
-		'onProgress': function progressFunction(current, total) {
-			if (total > 0) {
-				statusProgressInner.style.width = `${(current / total) * 100}%`;
-				setStatusMode('progress');
-				if (current === total) {
-					// wait for progress bar animation
-					setTimeout(() => {
-						setStatusMode('indeterminate');
-					}, 100);
-				}
-			} else {
-				setStatusMode('indeterminate');
-			}
-		},
-		'canvas': editorCanvas,
-		'canvasResizePolicy': 0,
-		'onExit': function () {
-			editorCanvas = replaceCanvas(editorCanvas);
-			if (OnEditorExit) {
-				OnEditorExit();
-			}
-		},
-		'onExecute': Execute,
-		'persistentPaths': persistentPaths,
-		'emscriptenPoolSize': concurrency,
-		'godotPoolSize': Math.floor(concurrency / 3), // Ensures at least 4 threads for the pool (see above).
-	};
-	editor = new Engine(editorConfig);
 
 	function displayFailureNotice(err) {
 		console.error(err);
@@ -769,69 +591,304 @@ function startEditor(zip) {
 			setStatusNotice('An unknown error occurred.');
 		}
 		setStatusMode('notice');
-		initializing = false;
 	}
 
-	if (!Engine.isWebGLAvailable()) {
-		displayFailureNotice('WebGL not available');
-	} else {
-		setStatusMode('indeterminate');
-		editor.init('godot.editor').then(function () {
-			if (zip) {
-				editor.copyToFS('/tmp/preload.zip', zip);
+	setStatusMode('indeterminate');
+	let updating = false;
+	return {
+		update: (instance) => {
+			if (updating) {
+				return;
 			}
-			try {
-				// Avoid user creating project in the persistent root folder.
-				editor.copyToFS('/home/web_user/keep', new Uint8Array());
-			} catch (e) {
-				// File exists
-			}
-			showTab('editor');
-			setLoaderEnabled(false);
-			const args = ['--project-manager', '--single-window'];
-			editor.start({ 'args': args, 'persistentDrops': true }).then(function () {
-				setStatusMode('hidden');
-				initializing = false;
+			updating = true;
+			requestAnimationFrame(() => {
+				updating = false;
+				updateProgress(instance.active, instance.progress);
 			});
-		}).catch(displayFailureNotice);
-	}
-}
-
-function preloadZip(target) {
-	return new Promise(function (resolve, reject) {
-		if (target.files.length > 0) {
-			target.files[0].arrayBuffer().then(function (data) {
-				resolve(data);
-			});
-		} else {
-			resolve();
-		}
-	});
-}
-
-document.getElementById('startButton').onclick = function () {
-	preloadZip(document.getElementById('zip-file')).then(function (zip) {
-		startEditor(zip);
-	});
+		},
+		animate: (time) => {
+			animationCallbacks.forEach((callback) => callback(time));
+		},
+		setNotice: setStatusNotice,
+		setError: displayFailureNotice,
+	};
 };
 
-const zipFile = document.getElementById('zip-file');
-const zipDemo = document.getElementById('zip-demo');
+(function () {
+	// EngineIFrame initialization (+ custom state).
+	const iframeStyle = document.getElementById('web-editor-style');
+	const tabStatus = document.getElementById('tab-status');
+	const WrappedIFrame = (name) => {
+		let loadStatus = null;
+		const tab = document.getElementById(`tab-${name}`);
+		const iframeOnload = (iframe) => {
+			const title = iframe.contentDocument.getElementsByTagName('title')[0];
+			const observer = new MutationObserver(function () {
+				if (tab.style.display === 'none') {
+					return;
+				}
+				document.title = iframe.contentDocument.title;
+			});
+			observer.observe(title, { childList: true });
+			iframe.contentDocument.body.appendChild(iframe.contentDocument.importNode(iframeStyle, true));
+			iframe.contentDocument.body.appendChild(iframe.contentDocument.importNode(tabStatus, true));
+			loadStatus = new LoadStatus(iframe.contentDocument);
+		};
+		const state = new EngineIFrame('godot.editor', document.getElementById(`${name}-iframe`), iframeOnload);
+		state.progress = [0, 0];
+		state.active = false;
+		state.updateStatus = function () {
+			loadStatus.update(state);
+		};
+		state.setError = function (error) {
+			loadStatus.setError(error);
+		};
+		const reset = state.reset;
+		state.reset = function () {
+			state.progress = [0, 0];
+			state.active = false;
+			return reset.apply(state);
+		};
+		state.animate = function (time) {
+			if (loadStatus) {
+				loadStatus.animate(time);
+			}
+		};
+		return state;
+	};
+	const editorState = WrappedIFrame('editor');
+	const gameState = WrappedIFrame('game');
 
-function updateZipDemoDisplay() {
-	console.log(zipFile.files.length);
-	// Hide "Try this for example" link when a file is selected.
-	zipDemo.style.display = zipFile.files.length === 0 ? 'inline' : 'none';
-}
+	// IFrame size adjuster.
+	const headerDiv = document.getElementById('tabs-buttons');
+	let lastWidth = 0;
+	let lastHeight = 0;
+	const instances = [editorState, gameState];
+	function adjustIframeDimensions(time) {
+		const headerHeight = headerDiv.offsetHeight + 1;
+		const width = window.innerWidth;
+		const height = window.innerHeight - headerHeight;
+		if (lastWidth !== width || lastHeight !== height) {
+			instances.forEach((e) => {
+				e.iframe.style.width = `${width}px`;
+				e.iframe.style.height = `${height}px`;
+			});
+			lastWidth = width;
+			lastHeight = height;
+		}
+		editorState.animate(time);
+		gameState.animate(time);
+		requestAnimationFrame(adjustIframeDimensions);
+	}
+	requestAnimationFrame(adjustIframeDimensions);
 
-zipFile.addEventListener('change', (_pEvent) => {
-	updateZipDemoDisplay();
-});
+	// Tabs
+	const tabs = [
+		document.getElementById('tab-loader'),
+		document.getElementById('tab-editor'),
+		document.getElementById('tab-game'),
+	];
+	const loaderTitle = document.title;
+	function showTab(name) {
+		tabs.forEach(function (elem) {
+			elem.style.display = elem.id === `tab-${name}` ? 'block' : 'none';
+		});
+		if (name === 'editor' || name === 'game') {
+			const instance = name === 'game' ? gameState : editorState;
+			const title = instance.iframe.contentDocument.title;
+			if (title) {
+				document.title = title;
+			}
+			instance.focus();
+		} else {
+			document.title = loaderTitle;
+		}
+	}
+	function setButtonEnabled(id, enabled) {
+		document.getElementById(id).disabled = enabled ? '' : 'disabled';
+	}
+	function setEditorTabEnabled(enabled) {
+		setButtonEnabled('btn-tab-editor', enabled);
+		setButtonEnabled('btn-close-editor', enabled);
+	}
+	function setGameTabEnabled(enabled) {
+		setButtonEnabled('btn-tab-game', enabled);
+		setButtonEnabled('btn-close-game', enabled);
+	}
 
-document.addEventListener('DOMContentLoaded', () => {
-	// Handle situation when a file is already specified on load (e.g. after a page refresh).
-	updateZipDemoDisplay();
-});
+	// EngineIFrame Controllers.
+	const persistentPaths = ['/home/web_user'];
+
+	function runGame(gameConfig) {
+		let session = null;
+		const onmessage = (event) => {
+			const cmd = event.data.cmd || '';
+			if (event.data.pid !== gameState.pid) {
+				console.error('Invalid event', event);
+				return;
+			}
+			if (cmd == 'started') {
+				gameState.active = true;
+				gameState.updateStatus();
+				editorState.addSession(session);
+				showTab('game');
+			} else if (cmd == 'progress') {
+				const [current, total] = event.data.msg;
+				gameState.progress = [current, total];
+				gameState.updateStatus();
+			} else if (cmd == 'stopped') {
+				gameState.reset();
+				setGameTabEnabled(false);
+				showTab('editor');
+			} else if (cmd == 'execute' || cmd == 'terminate') {
+				// Not implemented.
+			} else {
+				console.error('Invalid event', event);
+			}
+		};
+		gameState.reset().then(() => {
+			session = gameState.start(gameConfig, onmessage, true);
+		});
+		setGameTabEnabled(true);
+		showTab('game');
+	}
+
+	function runEditor(editorArgs) {
+		let OnEditorExit = function () {
+			gameState.reset();
+			setGameTabEnabled(false);
+			editorState.reset();
+			setEditorTabEnabled(false);
+			showTab('loader');
+		};
+		const onmessage = (event) => {
+			const cmd = event.data.cmd || '';
+			if (editorState.pid !== event.data.pid) {
+				console.error('Invalid event', event);
+				return;
+			}
+			if (cmd == 'started') {
+				editorState.active = true;
+				editorState.updateStatus();
+				showTab('editor');
+			} else if (cmd == 'stopped') {
+				OnEditorExit();
+			} else if (cmd == 'progress') {
+				const [current, total] = event.data.msg;
+				editorState.progress = [current, total];
+				editorState.updateStatus();
+			} else if (cmd == 'execute') {
+				const [newPid, path, args] = event.data.msg; // eslint-disable-line no-unused-vars
+				if (!Array.isArray(args)) {
+					console.error('Invalid event', event);
+					return;
+				}
+				const is_editor = args.findIndex((v) => (v === '--editor' || v === '-e')) !== -1;
+				const is_project_manager = args.findIndex((v) => v === '--project-manager') !== -1;
+				const is_game = !is_editor && !is_project_manager;
+				if (is_game) {
+					const gameConfig = {
+						'pid': newPid,
+						'persistentPaths': persistentPaths,
+						'unloadAfterInit': true,
+						'canvasResizePolicy': 2,
+						'fileSizes': fileSizes,
+						'args': args,
+					};
+					runGame(gameConfig);
+				} else {
+					OnEditorExit = function () {
+						runEditor(args);
+					};
+				}
+			} else if (cmd == 'terminate') {
+				if (gameState.pid !== event.data.msg) {
+					return;
+				}
+				gameState.reset();
+				setGameTabEnabled(false);
+				showTab('editor');
+			} else {
+				console.error('Invalid event', event);
+			}
+		};
+		const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+		// We need at least 6 free threads from the pool to start the editor.
+		// At least 4 more will be reserved for the godot thread pool (3 is the bare minimum with the multithreaded variant of the servers).
+		const concurrency = clamp(navigator.hardwareConcurrency ?? 1, 12, 24);
+		const pid = Math.round(Math.random() * (1 << 30));
+		const editorConfig = {
+			'pid': pid,
+			'persistentPaths': persistentPaths,
+			'unloadAfterInit': true,
+			'canvasResizePolicy': 2,
+			'args': editorArgs,
+			'emscriptenPoolSize': concurrency,
+			'persistentDrops': editorArgs.findIndex((v) => v == '--project-manager') !== -1,
+			'godotPoolSize': Math.floor(concurrency / 3), // Ensures at least 4 threads for the pool (see above).
+			'fileSizes': fileSizes,
+		};
+		gameState.reset();
+		setGameTabEnabled(false);
+		editorState.reset().then(() => editorState.start(editorConfig, onmessage));
+		setEditorTabEnabled(true);
+		showTab('editor');
+	}
+
+	// Button handlers
+	const buttons = {
+		start: document.getElementById('btn-start-editor'),
+		editorShow: document.getElementById('btn-tab-editor'),
+		editorClose: document.getElementById('btn-close-editor'),
+		gameShow: document.getElementById('btn-tab-game'),
+		gameClose: document.getElementById('btn-close-game'),
+	};
+	buttons.start.onclick = function () {
+		if (!Engine.isWebGLAvailable()) {
+			setEditorTabEnabled(true);
+			showTab('editor');
+			editorState.setError('WebGL not available');
+		} else {
+			runEditor(['--project-manager', '--single-window']);
+		}
+	};
+	function closeGame(force) {
+		if (force && !window.confirm('Are you sure you want to forcibly close the game?')) {
+			return;
+		}
+		if (gameState.active && !force) {
+			showTab('game');
+			gameState.stop();
+		} else {
+			gameState.reset();
+			setGameTabEnabled(false);
+			if (editorState.active) {
+				showTab('editor');
+			}
+		}
+	}
+	function closeEditor(force) {
+		if (force && !window.confirm('Are you sure you want to forcibly close the editor?\nClicking "OK" may result in data loss!')) {
+			return;
+		}
+		if (editorState.active && !force) {
+			showTab('editor');
+			editorState.stop();
+		} else {
+			gameState.reset();
+			setGameTabEnabled(false);
+			editorState.reset();
+			setEditorTabEnabled(false);
+			showTab('loader');
+		}
+	}
+	buttons.editorShow.onclick = () => showTab('editor');
+	buttons.editorClose.onclick = () => closeEditor(false);
+	buttons.editorClose.ondblclick = () => closeEditor(true);
+	buttons.gameShow.onclick = () => showTab('game');
+	buttons.gameClose.onclick = () => closeGame(false);
+	buttons.gameClose.ondblclick = () => closeGame(true);
+})();
 		</script>
 	</body>
 </html>
