@@ -1227,9 +1227,9 @@ void FindInFilesResultsPanel::_update_matches_text() {
 }
 
 void FindInFilesResultsPanel::_update_replace_preview() {
+	ERR_FAIL_COND(!with_replace);
 	for (const KeyValue<TreeItem *, Result> &KV : result_items) {
 		_update_replace_item(KV.key, KV.value);
-		ERR_FAIL_COND(!with_replace);
 	}
 }
 
