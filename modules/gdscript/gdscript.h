@@ -62,7 +62,7 @@ class GDScript : public Script {
 	bool _is_abstract = false;
 
 	struct MemberInfo {
-		int index = 0;
+		uint32_t index = 0;
 		StringName setter;
 		StringName getter;
 		GDScriptDataType data_type;
@@ -92,7 +92,7 @@ class GDScript : public Script {
 
 	// Only static variables of the current class.
 	HashMap<StringName, MemberInfo> static_variables_indices;
-	Vector<Variant> static_variables; // Static variable values.
+	TightLocalVector<Variant> static_variables; // Static variable values.
 
 	HashMap<StringName, Variant> constants;
 	HashMap<StringName, GDScriptFunction *> member_functions;
@@ -135,7 +135,7 @@ private:
 #ifdef TOOLS_ENABLED
 	// For static data storage during hot-reloading.
 	HashMap<StringName, MemberInfo> old_static_variables_indices;
-	Vector<Variant> old_static_variables;
+	TightLocalVector<Variant> old_static_variables;
 	void _save_old_static_data();
 	void _restore_old_static_data();
 
@@ -265,8 +265,8 @@ public:
 
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
 	const HashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
-	StringName debug_get_member_by_index(int p_idx) const;
-	StringName debug_get_static_var_by_index(int p_idx) const;
+	StringName debug_get_member_by_index(uint32_t p_idx) const;
+	StringName debug_get_static_var_by_index(uint32_t p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	virtual bool can_instantiate() const override;
@@ -376,7 +376,7 @@ public:
 
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
+	Variant debug_get_member_by_index(uint32_t p_idx) const { return members[p_idx]; }
 
 	virtual void notification(int p_notification, bool p_reversed = false);
 	String to_string(bool *r_valid);
@@ -403,8 +403,7 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	bool finishing = false;
 
-	Variant *_global_array = nullptr;
-	Vector<Variant> global_array;
+	LocalVector<Variant> global_array;
 	HashMap<StringName, int> globals;
 	HashMap<StringName, Variant> named_globals;
 	Vector<int> global_array_empty_indexes;
@@ -565,7 +564,7 @@ public:
 	_FORCE_INLINE_ bool should_track_call_stack() const { return track_call_stack; }
 	_FORCE_INLINE_ bool should_track_locals() const { return track_locals; }
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
-	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
+	_FORCE_INLINE_ Variant *get_global_array() { return global_array.ptr(); }
 	_FORCE_INLINE_ const HashMap<StringName, int> &get_global_map() const { return globals; }
 	_FORCE_INLINE_ const HashMap<StringName, Variant> &get_named_globals_map() const { return named_globals; }
 	// These two functions should be used when behavior needs to be consistent between in-editor and running the scene
