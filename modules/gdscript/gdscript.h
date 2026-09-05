@@ -378,6 +378,12 @@ public:
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
+	// Used by the cyclic reference collector (see core/object/cycle_collector.h) to walk and,
+	// once an unreachable cycle has been proven, sever this instance's held references.
+	virtual int get_gc_member_count() const { return members.size(); }
+	virtual Variant get_gc_member(int p_index) const { return members[p_index]; }
+	virtual void clear_gc_member(int p_index) { members[p_index] = Variant(); }
+
 	virtual void notification(int p_notification, bool p_reversed = false);
 	String to_string(bool *r_valid);
 

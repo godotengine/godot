@@ -19,6 +19,14 @@
 				[b]Warning:[/b] When [param include_variables] is [code]true[/code], any captured variables can potentially (e.g. with GDScript backtraces) be their actual values, including any object references. This means that storing such a [ScriptBacktrace] will prevent those objects from being deallocated, so it's generally recommended not to do so.
 			</description>
 		</method>
+		<method name="collect_cycles">
+			<return type="int" />
+			<description>
+				Detects and frees [RefCounted] objects that are only being kept alive by a reference cycle (for example, two objects that each hold a reference to the other, with nothing else referencing either), which would otherwise never be freed. Returns the number of objects freed.
+				This only detects cycles formed through GDScript member variables, [Array]s, and [Dictionary]s. It must be called explicitly (it does not run automatically), and only from the main thread.
+				[b]Note:[/b] In the vast majority of cases you should not need to call this manually. Prefer breaking the cycle yourself with [method @GlobalScope.weakref] where possible.
+			</description>
+		</method>
 		<method name="get_architecture_name" qualifiers="const">
 			<return type="String" />
 			<description>

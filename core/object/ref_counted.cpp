@@ -31,6 +31,7 @@
 #include "ref_counted.h"
 
 #include "core/object/class_db.h"
+#include "core/object/cycle_collector.h"
 #include "core/object/script_instance.h"
 
 bool RefCounted::init_ref() {
@@ -107,6 +108,14 @@ bool RefCounted::unreference() {
 		die = die && binding_ret;
 	}
 
+	// This decrement didn't bring the object down, but it might now only be kept alive by a
+	// reference cycle (see GH-7038) -- buffer it so a later CycleCollector::collect_cycles()
+	// call can check. Only scripted objects are traversable, so anything else can't be the
+	// source of a detected cycle and isn't worth buffering.
+	if (!die && get_script_instance()) {
+		CycleCollector::possible_root(this);
+	}
+
 	dereference_count.decrement();
 
 	// If we are going to be destroyed we need to ensure that no other thread
@@ -132,4 +141,14 @@ RefCounted::RefCounted() :
 	refcount.init();
 	refcount_init.init();
 	dereference_count.set(0);
+}
+
+RefCounted::~RefCounted() {
+	// If this object is being destroyed while still buffered as a possible cycle root (e.g.
+	// it was buffered by an earlier unreference() call, then later freed for real through the
+	// ordinary path before collect_cycles() ever ran), it must be taken out of the candidate
+	// set now -- otherwise the collector would later dereference a dangling pointer.
+	if (_gc_buffered) {
+		CycleCollector::remove_candidate(this);
+	}
 }

@@ -41,6 +41,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/object/class_db.h"
+#include "core/object/cycle_collector.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -1942,6 +1943,10 @@ double Engine::get_frames_per_second() const {
 	return ::Engine::get_singleton()->get_frames_per_second();
 }
 
+int Engine::collect_cycles() const {
+	return CycleCollector::collect_cycles();
+}
+
 uint64_t Engine::get_physics_frames() const {
 	return ::Engine::get_singleton()->get_physics_frames();
 }
@@ -2125,6 +2130,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frames_per_second"), &Engine::get_frames_per_second);
 	ClassDB::bind_method(D_METHOD("get_physics_frames"), &Engine::get_physics_frames);
 	ClassDB::bind_method(D_METHOD("get_process_frames"), &Engine::get_process_frames);
+	ClassDB::bind_method(D_METHOD("collect_cycles"), &Engine::collect_cycles);
 
 	ClassDB::bind_method(D_METHOD("get_main_loop"), &Engine::get_main_loop);
 

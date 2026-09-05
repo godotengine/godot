@@ -39,6 +39,12 @@ class RefCounted : public Object {
 	SafeRefCount refcount_init;
 	SafeNumeric<uint32_t> dereference_count;
 
+	// Set while this object is buffered as a possible cycle root by the cycle collector
+	// (see core/object/cycle_collector.h). Only ever touched from unreference() and the
+	// destructor, both on the object's own lifecycle, plus the collector itself.
+	bool _gc_buffered = false;
+	friend class CycleCollector;
+
 protected:
 	static void _bind_methods();
 
@@ -53,6 +59,7 @@ public:
 	int get_reference_count() const;
 
 	RefCounted();
+	~RefCounted();
 };
 
 template <typename T>

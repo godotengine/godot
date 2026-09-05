@@ -595,6 +595,11 @@ public:
 	uint64_t get_physics_frames() const;
 	uint64_t get_process_frames() const;
 
+	// Detects and frees GDScript reference cycles that would otherwise leak forever (see
+	// core/object/cycle_collector.h). Must be called from the main thread. Returns the
+	// number of objects freed.
+	int collect_cycles() const;
+
 	int get_frames_drawn();
 
 	void set_time_scale(double p_scale);

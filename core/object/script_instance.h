@@ -83,6 +83,20 @@ public:
 	virtual void refcount_incremented() {}
 	virtual bool refcount_decremented() { return true; } //return true if it can die
 
+	// Used by the cyclic reference collector (see core/object/cycle_collector.h) to walk
+	// script-held references without invoking user-defined property getters, which would be
+	// unsafe to re-enter while a collection pass is in progress. Languages that don't need
+	// (or can't safely support) cycle collection can leave these at their default, which
+	// makes their instances simply untraversable (and thus never a source of a detected cycle).
+	virtual int get_gc_member_count() const { return 0; }
+	virtual Variant get_gc_member(int p_index) const { return Variant(); }
+
+	// Releases whatever the member at p_index currently holds (setting it to an empty
+	// Variant), through the same safe path an ordinary assignment would use. Used by the
+	// cycle collector to sever every edge out of an object it has already proven to be
+	// garbage, before actually deleting it -- never called for any other reason.
+	virtual void clear_gc_member(int p_index) {}
+
 	virtual Ref<Script> get_script() const = 0;
 
 	virtual bool is_placeholder() const { return false; }
