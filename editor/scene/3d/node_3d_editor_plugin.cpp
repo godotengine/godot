@@ -3687,10 +3687,20 @@ void Node3DEditorViewport::_notification(int p_what) {
 					t_offset.basis = t_offset.basis * aabb_s;
 				}
 
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_offset, t_offset);
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray, t);
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray_offset, t_offset);
+				if (se->sbox_instance.is_valid()) {
+					RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
+				}
+				if (se->sbox_instance_offset.is_valid()) {
+					RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_offset, t_offset);
+				}
+				if (se->sbox_instance_xray.is_valid()) {
+					RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray, t);
+				}
+				if (se->sbox_instance_xray_offset.is_valid()) {
+					RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray_offset, t_offset);
+				}
+
+				}
 			}
 
 			if (changed || (spatial_editor->is_gizmo_visible() && !exist)) {
@@ -7517,11 +7527,13 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 	Node3DEditorSelectedItem *si = memnew(Node3DEditorSelectedItem);
 
 	si->sp = sp;
+	bool is_collision_shape = Object::cast_to<CollisionShape3D>(sp) != nullptr || Object::cast_to<CollisionPolygon3D>(sp) != nullptr;
+	if (!is_collision_shape) {
 	si->sbox_instance = RenderingServer::get_singleton()->instance_create2(
 			selection_box->get_rid(),
 			sp->get_world_3d()->get_scenario());
 	si->sbox_instance_offset = RenderingServer::get_singleton()->instance_create2(
-			selection_box->get_rid(),
+			->get_rid(),
 			sp->get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(
 			si->sbox_instance,
@@ -7557,7 +7569,7 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-
+	}
 	return si;
 }
 
