@@ -767,7 +767,9 @@ void FindInFilesResultsPanel::set_with_replace(bool p_with_replace) {
 
 void FindInFilesResultsPanel::set_replace_text(const String &p_text) {
 	replace_text = p_text;
-	_update_replace_preview();
+	if (with_replace) {
+		_update_replace_preview();
+	}
 }
 
 void FindInFilesResultsPanel::set_search_labels_visibility(bool p_visible) {
