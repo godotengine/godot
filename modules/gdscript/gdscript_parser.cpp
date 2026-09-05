@@ -4541,9 +4541,8 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 }
 
 static String _get_annotation_error_string(const StringName &p_annotation_name, const Vector<Variant::Type> &p_expected_types, const GDScriptParser::DataType &p_provided_type) {
-	Vector<String> types;
-	for (int i = 0; i < p_expected_types.size(); i++) {
-		const Variant::Type &type = p_expected_types[i];
+	LocalVector<String> types;
+	for (const Variant::Type &type : p_expected_types) {
 		types.push_back(Variant::get_type_name(type));
 		types.push_back("Array[" + Variant::get_type_name(type) + "]");
 		switch (type) {
@@ -4583,7 +4582,7 @@ static String _get_annotation_error_string(const StringName &p_annotation_name, 
 		string = types[0].quote() + " or " + types[1].quote();
 	} else if (types.size() >= 3) {
 		string = types[0].quote();
-		for (int i = 1; i < types.size() - 1; i++) {
+		for (uint32_t i = 1; i < types.size() - 1; i++) {
 			string += ", " + types[i].quote();
 		}
 		string += ", or " + types[types.size() - 1].quote();
