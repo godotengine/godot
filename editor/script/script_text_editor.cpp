@@ -1754,7 +1754,6 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_EVALUATE:
 		case EDIT_CREATE_CODE_REGION:
 		case SHOW_TOOLTIP_AT_CARET:
-		case LOOKUP_SYMBOL:
 		case EDIT_COMPLETE:
 		case EDIT_TOGGLE_COMMENT: {
 			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
