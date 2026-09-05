@@ -2367,7 +2367,7 @@ ShaderLanguage::Scalar ShaderLanguage::_eval_scalar(const Scalar &p_a, const Sca
 
 Vector<ShaderLanguage::Scalar> ShaderLanguage::_eval_unary_vector(const Vector<Scalar> &p_va, DataType p_ret_type, Operator p_op) {
 	uint32_t size = get_datatype_component_count(p_ret_type);
-	if (p_va.size() != p_ret_type) {
+	if (p_va.size() != size) {
 		return Vector<Scalar>(); // Non-evaluable values should not be parsed further.
 	}
 	Vector<Scalar> value;
@@ -6910,13 +6910,27 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					arrname->is_local = is_local;
 					expr = arrname;
 				} else {
-					VariableNode *varname = alloc_node<VariableNode>();
-					varname->name = identifier;
-					varname->datatype_cache = data_type;
-					varname->is_const = is_const;
-					varname->struct_name = struct_name;
-					varname->is_local = is_local;
-					expr = varname;
+					bool constant_folded = false;
+					if (is_const && ident_type == IDENTIFIER_BUILTIN_VAR) {
+						Vector<Scalar> builtin_values;
+						_find_identifier(p_block, false, p_function_info, identifier, nullptr, nullptr, nullptr, nullptr, nullptr, &builtin_values);
+						if (!builtin_values.is_empty()) {
+							ConstantNode *cnode = alloc_node<ConstantNode>();
+							cnode->datatype = data_type;
+							cnode->values = builtin_values;
+							expr = cnode;
+							constant_folded = true;
+						}
+					}
+					if (!constant_folded) {
+						VariableNode *varname = alloc_node<VariableNode>();
+						varname->name = identifier;
+						varname->datatype_cache = data_type;
+						varname->is_const = is_const;
+						varname->struct_name = struct_name;
+						varname->is_local = is_local;
+						expr = varname;
+					}
 				}
 			}
 		} else if (tk.type == TK_OP_ADD) {
@@ -8024,109 +8038,289 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 	return expression[0].node;
 }
 
-ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node) {
-	if (p_node->type != Node::NODE_TYPE_OPERATOR) {
-		return p_node;
+ShaderLanguage::Node *ShaderLanguage::_resolve_struct_member(Node *p_owner, const StringName &p_member) {
+	if (!p_owner || p_owner->get_datatype() != TYPE_STRUCT) {
+		return nullptr;
 	}
 
-	//for now only reduce simple constructors
-	OperatorNode *op = static_cast<OperatorNode *>(p_node);
+	OperatorNode *fields = nullptr;
+	StringName struct_name;
 
-	if (op->op == OP_CONSTRUCT) {
-		ERR_FAIL_COND_V(op->arguments[0]->type != Node::NODE_TYPE_VARIABLE, p_node);
+	if (p_owner->type == Node::NODE_TYPE_VARIABLE) {
+		// Named struct variable: check if it's constant.
+		VariableNode *vn = static_cast<VariableNode *>(p_owner);
+		if (shader->constants.has(vn->name)) {
+			const ShaderNode::Constant &c = shader->constants[vn->name];
+			if (c.type == TYPE_STRUCT && c.initializer &&
+					c.initializer->type == Node::NODE_TYPE_OPERATOR) {
+				OperatorNode *op = static_cast<OperatorNode *>(c.initializer);
+				if (op->op == OP_STRUCT) {
+					fields = op;
+					struct_name = op->struct_name;
+				}
+			}
+		}
+	} else if (p_owner->type == Node::NODE_TYPE_OPERATOR) {
+		// Unnamed struct variable constructed inline.
+		OperatorNode *op = static_cast<OperatorNode *>(p_owner);
+		if (op->op == OP_STRUCT) {
+			fields = op;
+			struct_name = op->struct_name;
+		}
+	}
 
-		DataType type = op->get_datatype();
-		DataType base = get_scalar_type(type);
-		int cardinality = get_cardinality(type);
+	if (!fields || struct_name == StringName() || !shader->structs.has(struct_name)) {
+		return nullptr;
+	}
 
-		Vector<Scalar> values;
+	// Find the requested field by its position within the struct declaration.
+	StructNode *snode = shader->structs[struct_name].shader_struct;
+	int field_index = 1; // Start from 1 to skipping the struct name.
+	for (MemberNode *E : snode->members) {
+		if (E->name == p_member) {
+			if (field_index < fields->arguments.size()) {
+				return fields->arguments[field_index];
+			}
+			return nullptr;
+		}
+		field_index++;
+	}
+	return nullptr;
+}
 
-		for (int i = 1; i < op->arguments.size(); i++) {
-			op->arguments.write[i] = _reduce_expression(p_block, op->arguments[i]);
-			if (op->arguments[i]->type == Node::NODE_TYPE_CONSTANT) {
-				ConstantNode *cn = static_cast<ConstantNode *>(op->arguments[i]);
+ShaderLanguage::Node *ShaderLanguage::_reduce_constant_vector_swizzle(ConstantNode *p_owner, const StringName &p_member) {
+	ERR_FAIL_COND_V(!p_owner || p_owner->values.is_empty(), nullptr);
+	ERR_FAIL_COND_V(p_member.length() < 1 || p_member.length() > 4, nullptr);
 
-				if (get_scalar_type(cn->datatype) == base) {
-					for (int j = 0; j < cn->values.size(); j++) {
-						values.push_back(cn->values[j]);
-					}
-				} else if (get_scalar_type(cn->datatype) == cn->datatype) {
-					Scalar v;
-					if (!convert_constant(cn, base, &v)) {
+	const int swizzle_len = p_member.length();
+	DataType base_type = get_scalar_type(p_owner->get_datatype());
+	DataType result_type = DataType(base_type + (swizzle_len - 1));
+
+	const char32_t *letters = p_member.get_data();
+	Vector<Scalar> values;
+	values.resize(swizzle_len);
+	for (int i = 0; i < swizzle_len; i++) {
+		int component = -1;
+		switch (letters[i]) {
+			case 'x':
+			case 'r':
+			case 's':
+				component = 0;
+				break;
+			case 'y':
+			case 'g':
+			case 't':
+				component = 1;
+				break;
+			case 'z':
+			case 'b':
+			case 'p':
+				component = 2;
+				break;
+			case 'w':
+			case 'a':
+			case 'q':
+				component = 3;
+				break;
+			default:
+				break;
+		}
+		ERR_FAIL_COND_V(component < 0 || component >= p_owner->values.size(), nullptr);
+		values.write[i] = p_owner->values[component];
+	}
+
+	ConstantNode *cn = alloc_node<ConstantNode>();
+	cn->datatype = result_type;
+	cn->values = values;
+	return cn;
+}
+
+ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node) {
+	if (p_node->type == Node::NODE_TYPE_OPERATOR) {
+		// Reduce operators supporting constant evaluation.
+		OperatorNode *op = static_cast<OperatorNode *>(p_node);
+		switch (op->op) {
+			case OP_CONSTRUCT: {
+				// Reduce simple constructors.
+				ERR_FAIL_COND_V(op->arguments[0]->type != Node::NODE_TYPE_VARIABLE, p_node);
+
+				DataType type = op->get_datatype();
+				DataType base = get_scalar_type(type);
+				int cardinality = get_cardinality(type);
+
+				Vector<Scalar> values;
+
+				for (int i = 1; i < op->arguments.size(); i++) {
+					op->arguments.write[i] = _reduce_expression(p_block, op->arguments[i]);
+					if (op->arguments[i]->type == Node::NODE_TYPE_CONSTANT) {
+						ConstantNode *cn = static_cast<ConstantNode *>(op->arguments[i]);
+
+						if (get_scalar_type(cn->datatype) == base) {
+							for (int j = 0; j < cn->values.size(); j++) {
+								values.push_back(cn->values[j]);
+							}
+						} else if (get_scalar_type(cn->datatype) == cn->datatype) {
+							Scalar v;
+							if (!convert_constant(cn, base, &v)) {
+								return p_node;
+							}
+							values.push_back(v);
+						} else {
+							return p_node;
+						}
+
+					} else {
 						return p_node;
 					}
-					values.push_back(v);
+				}
+
+				if (values.size() == 1) {
+					if (type >= TYPE_MAT2 && type <= TYPE_MAT4) {
+						Scalar value = values[0];
+						Scalar zero;
+						zero.real = 0.0f;
+						int size = 2 + (type - TYPE_MAT2);
+
+						values.clear();
+						for (int i = 0; i < size; i++) {
+							for (int j = 0; j < size; j++) {
+								values.push_back(i == j ? value : zero);
+							}
+						}
+					} else {
+						Scalar value = values[0];
+						for (int i = 1; i < cardinality; i++) {
+							values.push_back(value);
+						}
+					}
+				} else if (values.size() != cardinality) {
+					ERR_PRINT("Failed to reduce expression, values and cardinality mismatch.");
+					return p_node;
+				}
+
+				ConstantNode *cn = alloc_node<ConstantNode>();
+				cn->datatype = op->get_datatype();
+				cn->values = values;
+				return cn;
+			} break;
+
+			case OP_EQUAL:
+			case OP_NOT_EQUAL:
+			case OP_LESS:
+			case OP_LESS_EQUAL:
+			case OP_GREATER:
+			case OP_GREATER_EQUAL:
+			case OP_AND:
+			case OP_OR:
+			case OP_NOT:
+			case OP_NEGATE:
+			case OP_ADD:
+			case OP_SUB:
+			case OP_MUL:
+			case OP_DIV:
+			case OP_MOD:
+			case OP_SHIFT_LEFT:
+			case OP_SHIFT_RIGHT:
+			case OP_BIT_AND:
+			case OP_BIT_OR:
+			case OP_BIT_XOR:
+			case OP_BIT_INVERT: {
+				for (int i = 0; i < op->arguments.size(); i++) {
+					op->arguments.write[i] = _reduce_expression(p_block, op->arguments[i]);
+					if (op->arguments[i]->type != Node::NODE_TYPE_CONSTANT) {
+						return p_node;
+					}
+				}
+
+				_eval_operator(p_block, FunctionInfo(), op);
+
+				if (!op->values.is_empty() && op->values.size() == get_datatype_component_count(op->get_datatype())) {
+					ConstantNode *cn = alloc_node<ConstantNode>();
+					cn->datatype = op->get_datatype();
+					cn->struct_name = op->struct_name;
+					cn->values = op->values;
+					return cn;
+				}
+			} break;
+
+			case OP_SELECT_IF: {
+				// _eval_operator() does not support ternary operator.
+				Node *cond = _reduce_expression(p_block, op->arguments[0]);
+				if (cond->type == Node::NODE_TYPE_CONSTANT) {
+					ConstantNode *condcn = static_cast<ConstantNode *>(cond);
+					if (condcn->get_datatype() == TYPE_BOOL && !condcn->values.is_empty()) {
+						Node *branch = _reduce_expression(p_block, op->arguments[condcn->values[0].boolean ? 1 : 2]);
+						if (branch->type == Node::NODE_TYPE_CONSTANT) {
+							ConstantNode *bcn = static_cast<ConstantNode *>(branch);
+							ConstantNode *cn = alloc_node<ConstantNode>();
+							cn->datatype = bcn->datatype;
+							cn->struct_name = bcn->struct_name;
+							cn->values = bcn->values;
+							return cn;
+						}
+					}
+				}
+			} break;
+
+			default:
+				break;
+		}
+	} else if (p_node->type == Node::NODE_TYPE_VARIABLE) {
+		// Reduce constant variables.
+		VariableNode *vn = static_cast<VariableNode *>(p_node);
+		if (shader->constants.has(vn->name)) {
+			const ShaderNode::Constant &c = shader->constants[vn->name];
+			if (c.initializer) {
+				Node *value = _reduce_expression(p_block, c.initializer);
+				if (value && value->type == Node::NODE_TYPE_CONSTANT) {
+					return value;
+				}
+			}
+		}
+		return p_node;
+	} else if (p_node->type == Node::NODE_TYPE_MEMBER) {
+		// Reduce member access of constant struct value, or component of constant vector.
+		MemberNode *mn = static_cast<MemberNode *>(p_node);
+		Node *owner = _reduce_expression(p_block, mn->owner);
+		if (mn->basetype == TYPE_STRUCT) {
+			if (Node *field = _resolve_struct_member(owner, mn->name)) {
+				return _reduce_expression(p_block, field);
+			}
+		} else if (owner->type == Node::NODE_TYPE_CONSTANT) {
+			ConstantNode *ocn = static_cast<ConstantNode *>(owner);
+			if (Node *swizzled = _reduce_constant_vector_swizzle(ocn, mn->name)) {
+				return swizzled;
+			}
+		}
+		return p_node;
+	} else if (p_node->type == Node::NODE_TYPE_ARRAY) {
+		// Reduce indexing into a constant array.
+		ArrayNode *an = static_cast<ArrayNode *>(p_node);
+		if (an->is_const && an->index_expression) {
+			Node *idx = _reduce_expression(p_block, an->index_expression);
+			if (idx->type == Node::NODE_TYPE_CONSTANT) {
+				ConstantNode *icn = static_cast<ConstantNode *>(idx);
+				int64_t idxv = -1;
+				if (icn->get_datatype() == TYPE_INT && !icn->values.is_empty()) {
+					idxv = icn->values[0].sint;
+				} else if (icn->get_datatype() == TYPE_UINT && !icn->values.is_empty()) {
+					idxv = icn->values[0].uint;
 				} else {
 					return p_node;
 				}
 
-			} else {
-				return p_node;
-			}
-		}
-
-		if (values.size() == 1) {
-			if (type >= TYPE_MAT2 && type <= TYPE_MAT4) {
-				Scalar value = values[0];
-				Scalar zero;
-				zero.real = 0.0f;
-				int size = 2 + (type - TYPE_MAT2);
-
-				values.clear();
-				for (int i = 0; i < size; i++) {
-					for (int j = 0; j < size; j++) {
-						values.push_back(i == j ? value : zero);
+				if (idxv >= 0 && shader->constants.has(an->name)) {
+					const ShaderNode::Constant &c = shader->constants[an->name];
+					if (c.initializer && c.initializer->type == Node::NODE_TYPE_CONSTANT) {
+						ConstantNode *arr = static_cast<ConstantNode *>(c.initializer);
+						ERR_FAIL_COND_V(arr->array_declarations.size() != 1, p_node);
+						const VariableDeclarationNode::Declaration &decl = arr->array_declarations[0];
+						if (idxv < decl.initializer.size()) {
+							return _reduce_expression(p_block, decl.initializer[(int)idxv]);
+						}
 					}
 				}
-			} else {
-				Scalar value = values[0];
-				for (int i = 1; i < cardinality; i++) {
-					values.push_back(value);
-				}
 			}
-		} else if (values.size() != cardinality) {
-			ERR_PRINT("Failed to reduce expression, values and cardinality mismatch.");
-			return p_node;
-		}
-
-		ConstantNode *cn = alloc_node<ConstantNode>();
-		cn->datatype = op->get_datatype();
-		cn->values = values;
-		return cn;
-	} else if (op->op == OP_NEGATE) {
-		op->arguments.write[0] = _reduce_expression(p_block, op->arguments[0]);
-		if (op->arguments[0]->type == Node::NODE_TYPE_CONSTANT) {
-			ConstantNode *cn = static_cast<ConstantNode *>(op->arguments[0]);
-
-			DataType base = get_scalar_type(cn->datatype);
-
-			Vector<Scalar> values;
-
-			for (int i = 0; i < cn->values.size(); i++) {
-				Scalar nv;
-				switch (base) {
-					case TYPE_BOOL: {
-						nv.boolean = !cn->values[i].boolean;
-					} break;
-					case TYPE_INT: {
-						nv.sint = -cn->values[i].sint;
-					} break;
-					case TYPE_UINT: {
-						// Intentionally wrap the unsigned int value, because GLSL does.
-						nv.uint = 0 - cn->values[i].uint;
-					} break;
-					case TYPE_FLOAT: {
-						nv.real = -cn->values[i].real;
-					} break;
-					default: {
-					}
-				}
-
-				values.push_back(nv);
-			}
-
-			cn->values = values;
-			return cn;
 		}
 	}
 
