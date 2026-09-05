@@ -404,6 +404,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
+	// IDs that weren't found will be excluded in the next update (either removed or not nodes).
 	inspected_object_ids = p_ids;
 	scrolling_to_item = true;
 
