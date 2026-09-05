@@ -1385,10 +1385,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a canonical Modulus operation, where the output is on the range [0, <paramref name="b"/>).
+        /// Returns the integer modulus of <paramref name="a"/> divided by <paramref name="b"/> that wraps equally in positive and negative.
         /// </summary>
         /// <param name="a">The dividend, the primary input.</param>
-        /// <param name="b">The divisor. The output is on the range [0, <paramref name="b"/>).</param>
+        /// <param name="b">The divisor.</param>
         /// <returns>The resulting output.</returns>
         public static int PosMod(int a, int b)
         {
@@ -1401,10 +1401,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a canonical Modulus operation, where the output is on the range [0, <paramref name="b"/>).
+        /// Returns the floating-point modulus of <paramref name="a"/> divided by <paramref name="b"/> that wraps equally in positive and negative.
         /// </summary>
         /// <param name="a">The dividend, the primary input.</param>
-        /// <param name="b">The divisor. The output is on the range [0, <paramref name="b"/>).</param>
+        /// <param name="b">The divisor.</param>
         /// <returns>The resulting output.</returns>
         public static float PosMod(float a, float b)
         {
@@ -1417,10 +1417,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a canonical Modulus operation, where the output is on the range [0, <paramref name="b"/>).
+        /// Returns the floating-point modulus of <paramref name="a"/> divided by <paramref name="b"/> that wraps equally in positive and negative.
         /// </summary>
         /// <param name="a">The dividend, the primary input.</param>
-        /// <param name="b">The divisor. The output is on the range [0, <paramref name="b"/>).</param>
+        /// <param name="b">The divisor.</param>
         /// <returns>The resulting output.</returns>
         public static double PosMod(double a, double b)
         {
