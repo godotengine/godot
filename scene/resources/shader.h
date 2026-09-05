@@ -61,6 +61,8 @@ private:
 	HashSet<Ref<ShaderInclude>> include_dependencies;
 	String code;
 	String include_path;
+	Error preprocessor_result;
+	String preprocessor_error_string;
 
 	HashMap<StringName, HashMap<int, Ref<Texture>>> default_textures;
 
