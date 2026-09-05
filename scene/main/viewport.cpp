@@ -4442,16 +4442,16 @@ void Viewport::set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_UNSIGNED_INDEX(p_layer, 32);
 	if (p_enable) {
-		set_canvas_cull_mask(canvas_cull_mask | (1 << p_layer));
+		set_canvas_cull_mask(canvas_cull_mask | (1u << p_layer));
 	} else {
-		set_canvas_cull_mask(canvas_cull_mask & (~(1 << p_layer)));
+		set_canvas_cull_mask(canvas_cull_mask & (~(1u << p_layer)));
 	}
 }
 
 bool Viewport::get_canvas_cull_mask_bit(uint32_t p_layer) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, 32, false);
-	return (canvas_cull_mask & (1 << p_layer));
+	return (canvas_cull_mask & (1u << p_layer));
 }
 
 #ifdef TOOLS_ENABLED

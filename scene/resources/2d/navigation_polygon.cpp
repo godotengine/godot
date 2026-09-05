@@ -466,9 +466,9 @@ void NavigationPolygon::set_parsed_collision_mask_value(int p_layer_number, bool
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_parsed_collision_mask();
 	if (p_value) {
-		mask |= 1 << (p_layer_number - 1);
+		mask |= 1u << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << (p_layer_number - 1));
+		mask &= ~(1u << (p_layer_number - 1));
 	}
 	set_parsed_collision_mask(mask);
 }
@@ -476,7 +476,7 @@ void NavigationPolygon::set_parsed_collision_mask_value(int p_layer_number, bool
 bool NavigationPolygon::get_parsed_collision_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
-	return get_parsed_collision_mask() & (1 << (p_layer_number - 1));
+	return get_parsed_collision_mask() & (1u << (p_layer_number - 1));
 }
 
 void NavigationPolygon::set_source_geometry_mode(SourceGeometryMode p_geometry_mode) {

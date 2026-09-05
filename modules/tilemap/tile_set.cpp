@@ -1037,9 +1037,9 @@ void TileSet::set_navigation_layer_layer_value(int p_layer_index, int p_layer_nu
 	uint32_t _navigation_layers = get_navigation_layer_layers(p_layer_index);
 
 	if (p_value) {
-		_navigation_layers |= 1 << (p_layer_number - 1);
+		_navigation_layers |= 1u << (p_layer_number - 1);
 	} else {
-		_navigation_layers &= ~(1 << (p_layer_number - 1));
+		_navigation_layers &= ~(1u << (p_layer_number - 1));
 	}
 
 	set_navigation_layer_layers(p_layer_index, _navigation_layers);
@@ -1049,7 +1049,7 @@ bool TileSet::get_navigation_layer_layer_value(int p_layer_index, int p_layer_nu
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
 
-	return get_navigation_layer_layers(p_layer_index) & (1 << (p_layer_number - 1));
+	return get_navigation_layer_layers(p_layer_index) & (1u << (p_layer_number - 1));
 }
 #endif // NAVIGATION_2D_DISABLED
 
