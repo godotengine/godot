@@ -192,6 +192,11 @@ Copyright: 2013, Jorge Jimenez
  2013, Diego Gutierrez
 License: Expat
 
+Files: tests/data/fonts/InterVariable-ASCII.woff2
+Comment: Inter font, variable version subsetted to ASCII for use in unit tests
+Copyright: 2016, The Inter Project Authors
+License: OFL-1.1
+
 Files: thirdparty/accesskit/*
 Comment: AccessKit
 Copyright: 2023, The AccessKit Authors.
