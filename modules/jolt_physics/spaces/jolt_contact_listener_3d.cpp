@@ -412,8 +412,8 @@ void JoltContactListener3D::_evaluate_area_overlap(const JoltArea3D &p_area, con
 void JoltContactListener3D::_flush_contacts() {
 	thread_local AHashMap<JPH::SubShapeIDPair, Manifold *, ShapePairHasher> deepest_manifolds;
 
-	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
-		for (Manifold &manifold : tl->self()->manifolds) {
+	for (ThreadLocals &tl : ThreadLocals::instances) {
+		for (Manifold &manifold : tl.manifolds) {
 			Manifold *&deepest_manifold = deepest_manifolds[manifold.shape_pair];
 			if (deepest_manifold == nullptr || manifold.depth > deepest_manifold->depth) {
 				deepest_manifold = &manifold;
@@ -442,38 +442,38 @@ void JoltContactListener3D::_flush_contacts() {
 
 	deepest_manifolds.clear();
 
-	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
-		tl->self()->manifolds.clear();
+	for (ThreadLocals &tl : ThreadLocals::instances) {
+		tl.manifolds.clear();
 	}
 }
 
 void JoltContactListener3D::_flush_area_body_events() {
 	uint32_t new_overlap_count = area_overlaps.size();
-	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
-		new_overlap_count -= tl->self()->area_exits.size();
-		new_overlap_count += tl->self()->area_enters.size();
+	for (const ThreadLocals &tl : ThreadLocals::instances) {
+		new_overlap_count -= tl.area_exits.size();
+		new_overlap_count += tl.area_enters.size();
 	}
 
 	// Exits must be dispatched before enters, as shape-shifting relies on it.
 
-	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
-		for (const JPH::SubShapeIDPair &shape_pair : tl->self()->area_exits) {
+	for (ThreadLocals &tl : ThreadLocals::instances) {
+		for (const JPH::SubShapeIDPair &shape_pair : tl.area_exits) {
 			area_overlaps.erase(shape_pair);
 			_dispatch_area_exit(shape_pair);
 		}
 
-		tl->self()->area_exits.clear();
+		tl.area_exits.clear();
 	}
 
 	area_overlaps.reserve(new_overlap_count);
 
-	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
-		for (const JPH::SubShapeIDPair &shape_pair : tl->self()->area_enters) {
+	for (ThreadLocals &tl : ThreadLocals::instances) {
+		for (const JPH::SubShapeIDPair &shape_pair : tl.area_enters) {
 			area_overlaps.insert(shape_pair);
 			_dispatch_area_enter(shape_pair);
 		}
 
-		tl->self()->area_enters.clear();
+		tl.area_enters.clear();
 	}
 }
 
@@ -481,8 +481,8 @@ void JoltContactListener3D::_flush_area_soft_body_events() {
 	int current_count = area_soft_body_overlaps.size();
 	int persisting_count = 0;
 	int entered_count = 0;
-	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
-		for (const JPH::SubShapeIDPair &shape_pair : tl->self()->area_soft_body_overlaps) {
+	for (const ThreadLocals &tl : ThreadLocals::instances) {
+		for (const JPH::SubShapeIDPair &shape_pair : tl.area_soft_body_overlaps) {
 			if (area_soft_body_overlaps.has(shape_pair)) {
 				persisting_count += 1;
 			} else {
@@ -498,8 +498,8 @@ void JoltContactListener3D::_flush_area_soft_body_events() {
 		HashSet<JPH::SubShapeIDPair, ShapePairHasher> new_overlaps;
 		new_overlaps.reserve(persisting_count + entered_count);
 
-		for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
-			for (const JPH::SubShapeIDPair &shape_pair : tl->self()->area_soft_body_overlaps) {
+		for (const ThreadLocals &tl : ThreadLocals::instances) {
+			for (const JPH::SubShapeIDPair &shape_pair : tl.area_soft_body_overlaps) {
 				new_overlaps.insert(shape_pair);
 			}
 		}
@@ -515,8 +515,8 @@ void JoltContactListener3D::_flush_area_soft_body_events() {
 		ERR_PRINT_ONCE("Duplicate area soft body overlaps found. This should not happen. Please report this.");
 	}
 
-	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
-		tl->self()->area_soft_body_overlaps.clear();
+	for (ThreadLocals &tl : ThreadLocals::instances) {
+		tl.area_soft_body_overlaps.clear();
 	}
 }
 
