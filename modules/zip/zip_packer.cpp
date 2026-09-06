@@ -296,10 +296,11 @@ Error ZIPPacker::compress(const PackedStringArray &p_input_paths, const String &
 			}
 
 			// Write each chunk of the current file to the zip file.
-			uint8_t buffer[64 * 1024]; // 64KiB buffer
+			LocalVector<uint8_t> buffer;
+			buffer.resize(64 * 1024); // 64KiB buffer
 			while (!current_file->eof_reached()) {
 				// Read a chunk of the current file.
-				uint64_t bytes_read = current_file->get_buffer(buffer, sizeof(buffer));
+				uint64_t bytes_read = current_file->get_buffer(buffer.ptr(), buffer.size());
 
 				// Reached the end of the current file.
 				if (bytes_read == 0) {
@@ -307,7 +308,7 @@ Error ZIPPacker::compress(const PackedStringArray &p_input_paths, const String &
 				}
 
 				// Write the current chunk to the output file in the zip file.
-				err = zipWriteInFileInZip(zip_packer.zf, buffer, bytes_read);
+				err = zipWriteInFileInZip(zip_packer.zf, buffer.ptr(), bytes_read);
 				ERR_FAIL_COND_V(err != ZIP_OK, ERR_FILE_CANT_WRITE);
 			}
 
