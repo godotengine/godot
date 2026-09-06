@@ -219,7 +219,10 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 Error DirAccessJAndroid::make_dir_recursive(String p_dir) {
 	// Check if the directory exists already
 	if (dir_exists(p_dir)) {
-		return ERR_ALREADY_EXISTS;
+		// Not an error: make_dir_recursive must be idempotent, like the generic
+		// DirAccess::make_dir_recursive (which tolerates ERR_ALREADY_EXISTS for
+		// each component and returns OK).
+		return OK;
 	}
 
 	if (_make_dir) {
