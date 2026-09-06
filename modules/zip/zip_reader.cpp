@@ -226,10 +226,11 @@ Error ZIPReader::decompress(const String &p_input_path, const String &p_output_p
 			}
 
 			// Read each chunk of the current file in the zip file.
-			uint8_t buffer[64 * 1024]; // 64KiB buffer
+			LocalVector<uint8_t> buffer;
+			buffer.resize(64 * 1024); // 64KiB buffer
 			while (true) {
 				// Read a chunk of the current file in the zip file.
-				int bytes_read = unzReadCurrentFile(zip_reader.uzf, buffer, sizeof(buffer));
+				int bytes_read = unzReadCurrentFile(zip_reader.uzf, buffer.ptr(), buffer.size());
 				ERR_FAIL_COND_V_MSG(bytes_read < 0, ERR_FILE_CORRUPT, "IO/zlib error reading file from zip archive.");
 
 				// Reached the end of the current file in the zip file.
@@ -238,7 +239,7 @@ Error ZIPReader::decompress(const String &p_input_path, const String &p_output_p
 				}
 
 				// Write the current chunk to the output file.
-				bool write_err = output_file->store_buffer(buffer, bytes_read);
+				bool write_err = output_file->store_buffer(buffer.ptr(), bytes_read);
 				ERR_FAIL_COND_V(!write_err, ERR_FILE_CANT_WRITE);
 			}
 		}
