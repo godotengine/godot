@@ -673,8 +673,15 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 #else
 	// On Desktop and mobile we map the memory without synchronizing for maximum speed.
 	void *buffer = glMapBufferRange(GL_ARRAY_BUFFER, state.last_item_index * sizeof(InstanceData), index * sizeof(InstanceData), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-	memcpy(buffer, state.instance_data_array, index * sizeof(InstanceData));
-	glUnmapBuffer(GL_ARRAY_BUFFER);
+	if (buffer) {
+		memcpy(buffer, state.instance_data_array, index * sizeof(InstanceData));
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+	} else {
+		// Some embedded GLES drivers can fail unsynchronized buffer mapping.
+		// Falling back to glBufferSubData is slower but avoids a startup/render
+		// crash, which matters for tvOS compatibility fallback devices.
+		glBufferSubData(GL_ARRAY_BUFFER, state.last_item_index * sizeof(InstanceData), index * sizeof(InstanceData), state.instance_data_array);
+	}
 #endif
 
 	glDisable(GL_SCISSOR_TEST);

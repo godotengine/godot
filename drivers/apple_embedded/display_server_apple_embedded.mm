@@ -45,8 +45,28 @@
 #include "servers/display/native_menu.h"
 
 #import <GameController/GameController.h>
+#if defined(TVOS_ENABLED) && defined(METAL_ENABLED) && defined(GLES3_ENABLED)
+#import <Metal/Metal.h>
+#endif
 
 static const float kDisplayServerIOSAcceleration = 1.f;
+
+#if defined(TVOS_ENABLED) && defined(METAL_ENABLED) && defined(GLES3_ENABLED)
+static bool _tvos_supports_godot_metal_renderer() {
+	id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+	if (!device) {
+		return false;
+	}
+
+	if (@available(tvOS 13.0, *)) {
+		// Godot's Metal renderer requires Apple GPU family 4 or newer. Older
+		// Apple TV hardware can still run the GLES3 compatibility renderer.
+		return [device supportsFamily:MTLGPUFamilyApple4];
+	}
+
+	return false;
+}
+#endif
 
 DisplayServerAppleEmbedded *DisplayServerAppleEmbedded::get_singleton() {
 	return (DisplayServerAppleEmbedded *)DisplayServer::get_singleton();
@@ -65,6 +85,15 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 	native_menu = memnew(NativeMenu);
 
 	bool has_made_render_compositor_current = false;
+
+#if defined(TVOS_ENABLED) && defined(METAL_ENABLED) && defined(GLES3_ENABLED)
+	if (rendering_driver == "metal" && !_tvos_supports_godot_metal_renderer()) {
+		WARN_PRINT("This Apple TV does not support the Metal features required by Godot, switching to OpenGL 3.");
+		rendering_driver = "opengl3";
+		OS::get_singleton()->set_current_rendering_method("gl_compatibility", OS::RENDERING_SOURCE_FALLBACK);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
+	}
+#endif
 
 #if !defined(GLES3_ENABLED) && defined(METAL_ENABLED)
 	if (rendering_driver == "opengl3") {

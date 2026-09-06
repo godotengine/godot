@@ -99,7 +99,16 @@ public:
 	}
 
 	_FORCE_INLINE_ void buffer_free_data(GLuint p_id) {
-		ERR_FAIL_COND(!buffer_allocs_cache.has(p_id));
+		if (!buffer_allocs_cache.has(p_id)) {
+#if defined(TVOS_ENABLED)
+			// The tvOS GLES compatibility path can receive buffer IDs that were
+			// already deleted or were created outside this accounting cache.
+			// Treat them as a no-op to avoid per-frame log spam.
+			return;
+#else
+			ERR_FAIL();
+#endif
+		}
 		glDeleteBuffers(1, &p_id);
 		buffer_mem_cache -= buffer_allocs_cache[p_id].size;
 		buffer_allocs_cache.erase(p_id);

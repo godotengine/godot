@@ -333,6 +333,12 @@ RasterizerGLES3::RasterizerGLES3() {
 	{
 		// Setup shader cache.
 
+#if defined(TVOS_ENABLED)
+		// tvOS can run the GLES3 renderer as a compatibility fallback on older
+		// Apple TV hardware. Some devices fail to open/create user:// during
+		// renderer startup, so avoid shader-cache filesystem work entirely.
+		ShaderGLES3::set_shader_cache_dir(String());
+#else
 		String shader_cache_dir = Engine::get_singleton()->get_shader_cache_path();
 		if (shader_cache_dir.is_empty()) {
 			shader_cache_dir = "user://";
@@ -360,6 +366,7 @@ RasterizerGLES3::RasterizerGLES3() {
 				}
 			}
 		}
+#endif
 	}
 
 	// OpenGL needs to be initialized before initializing the Rasterizers

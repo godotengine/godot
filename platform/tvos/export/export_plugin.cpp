@@ -57,14 +57,16 @@ void EditorExportPlatformTVOS::get_export_options(List<ExportOption> *r_options)
 	EditorExportPlatformAppleEmbedded::get_export_options(r_options);
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_tvos_version"), get_minimum_deployment_target()));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "rendering/renderer", PROPERTY_HINT_ENUM, "Compatibility (OpenGL 3),Metal (Mobile renderer)"), 0));
 }
 
 bool EditorExportPlatformTVOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	bool valid = EditorExportPlatformAppleEmbedded::has_valid_export_configuration(p_preset, r_error, r_missing_templates, p_debug);
 
 	String err;
-	String rendering_method = get_project_setting(p_preset, "rendering/renderer/rendering_method.mobile");
-	String rendering_driver = get_project_setting(p_preset, "rendering/rendering_device/driver." + get_platform_name());
+	int renderer = int(p_preset->get("rendering/renderer"));
+	String rendering_method = renderer == 1 ? "mobile" : "gl_compatibility";
+	String rendering_driver = renderer == 1 ? "metal" : "opengl3";
 	if ((rendering_method == "forward_plus" || rendering_method == "mobile") && rendering_driver == "metal") {
 		float version = p_preset->get("application/min_tvos_version").operator String().to_float();
 		if (version < 14.0) {
@@ -84,7 +86,18 @@ bool EditorExportPlatformTVOS::has_valid_export_configuration(const Ref<EditorEx
 }
 
 HashMap<String, Variant> EditorExportPlatformTVOS::get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const {
-	return HashMap<String, Variant>();
+	HashMap<String, Variant> settings;
+
+	int renderer = int(p_preset->get("rendering/renderer"));
+	if (renderer == 1) {
+		settings["rendering/renderer/rendering_method.tvos"] = "mobile";
+		settings["rendering/rendering_device/driver.tvos"] = "metal";
+	} else {
+		settings["rendering/renderer/rendering_method.tvos"] = "gl_compatibility";
+		settings["rendering/gl_compatibility/driver.tvos"] = "opengl3";
+	}
+
+	return settings;
 }
 
 Error EditorExportPlatformTVOS::_export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) {
@@ -280,6 +293,26 @@ String EditorExportPlatformTVOS::_process_config_file_line(const Ref<EditorExpor
 		// Valid Archs
 	} else if (p_line.contains("$valid_archs")) {
 		strnew += p_line.replace("$valid_archs", "arm64 x86_64") + "\n";
+
+		// Required Device Capabilities. The shared Apple Embedded exporter
+		// derives this from the generic mobile renderer and can add iPhone/iPad
+		// A12 capability flags to tvOS projects. tvOS uses its own renderer
+		// export option, so build this list here instead.
+	} else if (p_line.contains("$required_device_capabilities")) {
+		String capabilities;
+		Vector<String> capabilities_list = p_config.capabilities;
+
+		if ((bool)p_preset->get("capabilities/access_wifi") && !capabilities_list.has("wifi")) {
+			capabilities_list.push_back("wifi");
+		}
+		for (const String &capability : capabilities_list) {
+			capabilities += "<string>" + capability + "</string>\n";
+		}
+		for (const String &cap : p_preset->get("capabilities/additional").operator PackedStringArray()) {
+			capabilities += "<string>" + cap + "</string>\n";
+		}
+
+		strnew += p_line.replace("$required_device_capabilities", capabilities);
 
 		// Application Scene Manifest - Default Session Role
 	} else if (p_line.contains("$application_scene_manifest_default_session_role")) {

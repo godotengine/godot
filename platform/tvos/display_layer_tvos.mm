@@ -75,13 +75,11 @@
 			kEAGLDrawablePropertyColorFormat,
 			nil];
 
-	if (GLOBAL_GET("rendering/renderer/rendering_method") == "gl_compatibility") {
-		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
-		NSLog(@"Setting up a tvOS OpenGL ES 3.0 context.");
-		if (!context) {
-			NSLog(@"Failed to create tvOS OpenGL ES 3.0 context.");
-			return;
-		}
+	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
+	NSLog(@"Setting up a tvOS OpenGL ES 3.0 context.");
+	if (!context) {
+		NSLog(@"Failed to create tvOS OpenGL ES 3.0 context.");
+		return;
 	}
 
 	if (![EAGLContext setCurrentContext:context]) {

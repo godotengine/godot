@@ -52,6 +52,41 @@
 
 @end
 
+#if defined(TVOS_ENABLED)
+static bool _send_tvos_remote_press_as_key(UIPress *press, bool pressed) {
+	Key key = Key::NONE;
+	switch (press.type) {
+		case UIPressTypeUpArrow:
+			key = Key::UP;
+			break;
+		case UIPressTypeDownArrow:
+			key = Key::DOWN;
+			break;
+		case UIPressTypeLeftArrow:
+			key = Key::LEFT;
+			break;
+		case UIPressTypeRightArrow:
+			key = Key::RIGHT;
+			break;
+		case UIPressTypeSelect:
+			key = Key::ENTER;
+			break;
+		case UIPressTypeMenu:
+			key = Key::BACK;
+			break;
+		case UIPressTypePlayPause:
+			key = Key::SPACE;
+			break;
+		default:
+			return false;
+	}
+
+	DisplayServerAppleEmbedded::get_singleton()->key(
+			key, 0, key, key, UIKeyModifierFlags(0), pressed, KeyLocation::UNSPECIFIED);
+	return true;
+}
+#endif
+
 @implementation GDTViewController
 
 - (GDTView *)godotView {
@@ -66,6 +101,11 @@
 	}
 	if (@available(iOS 13.4, *)) {
 		for (UIPress *press in presses) {
+#if defined(TVOS_ENABLED)
+			if (press.key == nil && _send_tvos_remote_press_as_key(press, true)) {
+				continue;
+			}
+#endif
 			String u32lbl = String::utf8([press.key.charactersIgnoringModifiers UTF8String]);
 			String u32text = String::utf8([press.key.characters UTF8String]);
 			Key key = KeyMappingAppleEmbedded::remap_key(press.key.keyCode);
@@ -101,6 +141,11 @@
 	}
 	if (@available(iOS 13.4, *)) {
 		for (UIPress *press in presses) {
+#if defined(TVOS_ENABLED)
+			if (press.key == nil && _send_tvos_remote_press_as_key(press, false)) {
+				continue;
+			}
+#endif
 			String u32lbl = String::utf8([press.key.charactersIgnoringModifiers UTF8String]);
 			Key key = KeyMappingAppleEmbedded::remap_key(press.key.keyCode);
 

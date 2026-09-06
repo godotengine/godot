@@ -53,7 +53,10 @@ def get_flags():
         "supported": ["metal", "opengl3", "mono"],
         "builtin_pcre2_with_jit": False,
         "vulkan": False,
-        "opengl3": False,
+        # Keep GLES3 available by default so tvOS templates can fall back to
+        # the compatibility renderer on Apple TV hardware that does not support
+        # Godot's Metal renderer requirements.
+        "opengl3": True,
     }
 
 
