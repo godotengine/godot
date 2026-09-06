@@ -121,17 +121,22 @@ Error OS_Web::create_process(const String &p_path, const List<String> &p_argumen
 		args.push_back(E);
 	}
 	String json_args = Variant(args).to_json_string();
-	int failed = godot_js_os_execute(json_args.utf8().get_data());
-	ERR_FAIL_COND_V_MSG(failed, ERR_UNAVAILABLE, "OS::execute() or create_process() must be implemented in Web via 'engine.setOnExecute' if required.");
+	int64_t id = godot_js_os_execute(p_path.utf8().get_data(), json_args.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(id < 0, ERR_UNAVAILABLE, "OS::execute() or create_process() must be implemented in JavaScript via 'EngineConfig.onExecute' if required.");
+	if (r_child_id) {
+		*r_child_id = id;
+	}
 	return OK;
 }
 
 Error OS_Web::kill(const ProcessID &p_pid) {
-	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "OS::kill() is not available on the Web platform.");
+	int ret = godot_js_os_kill(p_pid);
+	ERR_FAIL_COND_V_MSG(ret, ERR_UNAVAILABLE, "OS::kill() must be implemented in JavaScript via 'EngineConfig.onTerminatePID' if required.");
+	return OK;
 }
 
 int OS_Web::get_process_id() const {
-	return 0;
+	return web_pid;
 }
 
 bool OS_Web::is_process_running(const ProcessID &p_pid) const {
@@ -307,6 +312,8 @@ void OS_Web::initialize_joypads() {
 }
 
 OS_Web::OS_Web() {
+	web_pid = godot_js_config_pid_get();
+
 	char locale_ptr[16];
 	godot_js_config_locale_get(locale_ptr, 16);
 	setenv("LANG", locale_ptr, true);

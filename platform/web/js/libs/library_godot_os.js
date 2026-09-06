@@ -64,7 +64,9 @@ const GodotConfig = {
 		godot_pool_size: 4,
 		debug_port: null,
 		on_execute: null,
+		on_terminate_pid: null,
 		on_exit: null,
+		pid: 0,
 
 		init_config: function (p_opts) {
 			GodotConfig.canvas_resize_policy = p_opts['canvasResizePolicy'];
@@ -74,7 +76,9 @@ const GodotConfig = {
 			GodotConfig.persistent_drops = !!p_opts['persistentDrops'];
 			GodotConfig.godot_pool_size = p_opts['godotPoolSize'];
 			GodotConfig.debug_port = p_opts['debugPort'];
+			GodotConfig.pid = p_opts['pid'];
 			GodotConfig.on_execute = p_opts['onExecute'];
+			GodotConfig.on_terminate_pid = p_opts['onTerminatePID'];
 			GodotConfig.on_exit = p_opts['onExit'];
 			if (p_opts['focusCanvas']) {
 				GodotConfig.canvas.focus();
@@ -95,6 +99,12 @@ const GodotConfig = {
 			GodotConfig.on_execute = null;
 			GodotConfig.on_exit = null;
 		},
+	},
+
+	godot_js_config_pid_get__proxy: 'sync',
+	godot_js_config_pid_get__sig: 'i',
+	godot_js_config_pid_get: function () {
+		return GodotConfig.pid;
 	},
 
 	godot_js_config_canvas_id_get__proxy: 'sync',
@@ -327,15 +337,25 @@ const GodotOS = {
 	},
 
 	godot_js_os_execute__proxy: 'sync',
-	godot_js_os_execute__sig: 'ii',
-	godot_js_os_execute: function (p_json) {
-		const json_args = GodotRuntime.parseString(p_json);
+	godot_js_os_execute__sig: 'ipp',
+	godot_js_os_execute: function (p_path, p_args) {
+		const path = GodotRuntime.parseString(p_path);
+		const json_args = GodotRuntime.parseString(p_args);
 		const args = JSON.parse(json_args);
 		if (GodotConfig.on_execute) {
-			GodotConfig.on_execute(args);
-			return 0;
+			return GodotConfig.on_execute(path, args) ?? 0;
 		}
-		return 1;
+		return -1;
+	},
+
+	godot_js_os_kill__proxy: 'sync',
+	godot_js_os_kill__sig: 'ii',
+	godot_js_os_kill: function (p_pid) {
+		if (!GodotConfig.on_terminate_pid) {
+			return -1;
+		}
+		GodotConfig.on_terminate_pid(p_pid);
+		return 0;
 	},
 
 	godot_js_os_shell_open__proxy: 'sync',
