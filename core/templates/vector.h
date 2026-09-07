@@ -165,6 +165,7 @@ public:
 
 	void append_array(const Vector<T> &p_other) { _cowdata.append(p_other._cowdata); }
 	void append_array(Span<T> p_other) { _cowdata.append(p_other); }
+	void append_buffer(const T *p_data, Size p_size);
 
 	_FORCE_INLINE_ bool has(const T &p_val) const { return find(p_val) != -1; }
 
@@ -327,6 +328,19 @@ void Vector<T>::reverse() {
 	T *p = ptrw();
 	for (Size i = 0; i < size() / 2; i++) {
 		SWAP(p[i], p[size() - i - 1]);
+	}
+}
+
+template <typename T>
+void Vector<T>::append_buffer(const T *p_data, Size p_size) {
+	if (p_size == 0) {
+		return;
+	}
+	const Size bs = size();
+	resize(bs + p_size);
+	T *p = ptrw();
+	for (Size i = 0; i < p_size; ++i) {
+		p[bs + i] = p_data[i];
 	}
 }
 
