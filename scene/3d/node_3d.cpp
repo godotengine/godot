@@ -1259,6 +1259,16 @@ void Node3D::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target
 	set_scale(original_scale);
 }
 
+void Node3D::align_with(const Vector3 &p_destination, bool p_use_model_front) {
+	ERR_THREAD_GUARD;
+	ERR_FAIL_COND_MSG(p_destination.is_zero_approx(), "Destination vector can't be zero, align_with() failed.");
+
+	Basis updated_basis = get_global_basis();
+	const Vector3 forward = updated_basis.xform( (p_use_model_front? Vector3::BACK : Vector3::FORWARD ));
+	updated_basis.rotate_to_align(forward, p_destination);
+	set_global_basis(updated_basis);
+}
+
 Vector3 Node3D::to_local(Vector3 p_global) const {
 	ERR_READ_THREAD_GUARD_V(Vector3());
 	return get_global_transform().affine_inverse().xform(p_global);
@@ -1501,6 +1511,8 @@ void Node3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("look_at", "target", "up", "use_model_front"), &Node3D::look_at, DEFVAL(Vector3::UP), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("look_at_from_position", "position", "target", "up", "use_model_front"), &Node3D::look_at_from_position, DEFVAL(Vector3::UP), DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("align_with", "destination", "use_model_front"), &Node3D::align_with, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node3D::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node3D::to_global);

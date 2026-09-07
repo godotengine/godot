@@ -415,7 +415,7 @@ Quaternion Basis::get_rotation_quaternion() const {
 void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) {
 	// Takes two vectors and rotates the basis from the first vector to the second vector.
 	// Adopted from: https://iquilezles.org/articles/noacos/
-	if (p_start_direction.length_squared()==0 || p_end_direction.length_squared()==0) { // check for zero vectors
+	if (p_start_direction.is_zero_approx() || p_end_direction.is_zero_approx()) { // check for zero vectors
 		return; // perhaps log a warning here
 	}
 
