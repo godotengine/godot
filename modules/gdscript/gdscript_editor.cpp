@@ -1099,12 +1099,28 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			r_result.insert(warning.display, warning);
 		}
 	} else if (p_annotation->name == SNAME("@rpc")) {
-		if (p_argument == 0 || p_argument == 1 || p_argument == 2) {
-			static const char *options[7] = { "call_local", "call_remote", "any_peer", "authority", "reliable", "unreliable", "unreliable_ordered" };
-			for (int i = 0; i < 7; i++) {
-				EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, options[i]);
-				r_result.insert(option.display, option);
-			}
+		switch (p_argument) {
+			case 0: {
+				static const char *options[2] = { "any_peer", "authority" };
+				for (int i = 0; i < 2; i++) {
+					EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, options[i]);
+					r_result.insert(option.display, option);
+				}
+			} break;
+			case 1: {
+				static const char *options[2] = { "call_remote", "call_local" };
+				for (int i = 0; i < 2; i++) {
+					EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, options[i]);
+					r_result.insert(option.display, option);
+				}
+			} break;
+			case 2: {
+				static const char *options[3] = { "unreliable", "unreliable_ordered", "reliable" };
+				for (int i = 0; i < 3; i++) {
+					EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, options[i]);
+					r_result.insert(option.display, option);
+				}
+			} break;
 		}
 	}
 }
