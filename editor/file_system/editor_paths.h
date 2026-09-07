@@ -48,6 +48,7 @@ class EditorPaths : public Object {
 	String text_editor_themes_folder = "text_editor_themes";
 	String script_templates_folder = "script_templates";
 	String feature_profiles_folder = "feature_profiles";
+	String global_resources_folder = "global_resources";
 
 	static EditorPaths *singleton;
 
