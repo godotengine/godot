@@ -41,6 +41,101 @@
 
 #define HAS_WARNING(flag) (warning_flags & flag)
 
+static bool _reduce_scalar_constructor(ShaderLanguage::DataType p_from, const ShaderLanguage::Scalar &p_in, ShaderLanguage::DataType p_to, ShaderLanguage::Scalar &r_out) {
+	switch (p_to) {
+		case ShaderLanguage::TYPE_FLOAT: {
+			switch (p_from) {
+				case ShaderLanguage::TYPE_BOOL:
+					r_out.real = p_in.boolean ? 1.0f : 0.0f;
+					return true;
+				case ShaderLanguage::TYPE_INT:
+					r_out.real = (float)p_in.sint;
+					return true;
+				case ShaderLanguage::TYPE_UINT:
+					r_out.real = (float)p_in.uint;
+					return true;
+				case ShaderLanguage::TYPE_FLOAT:
+					r_out.real = p_in.real;
+					return true;
+				default:
+					return false;
+			}
+		}
+		case ShaderLanguage::TYPE_INT: {
+			switch (p_from) {
+				case ShaderLanguage::TYPE_BOOL:
+					r_out.sint = p_in.boolean ? 1 : 0;
+					return true;
+				case ShaderLanguage::TYPE_INT:
+					r_out.sint = p_in.sint;
+					return true;
+				case ShaderLanguage::TYPE_UINT:
+					// int(uint) preserves the bit pattern
+					r_out.sint = (int32_t)p_in.uint;
+					return true;
+				case ShaderLanguage::TYPE_FLOAT: {
+					const double d = (double)p_in.real;
+					if (d >= (double)INT32_MIN && d <= (double)INT32_MAX) {
+						r_out.sint = (int32_t)d;
+					} else {
+						// Undefined according to spec. Saturate.
+						r_out.sint = d < (double)INT32_MIN ? INT32_MIN : INT32_MAX;
+					}
+					return true;
+				}
+				default:
+					return false;
+			}
+		}
+		case ShaderLanguage::TYPE_UINT: {
+			switch (p_from) {
+				case ShaderLanguage::TYPE_BOOL:
+					r_out.uint = p_in.boolean ? 1U : 0U;
+					return true;
+				case ShaderLanguage::TYPE_INT:
+					// uint(int) preserves the bit pattern
+					r_out.uint = (uint32_t)p_in.sint;
+					return true;
+				case ShaderLanguage::TYPE_UINT:
+					r_out.uint = p_in.uint;
+					return true;
+				case ShaderLanguage::TYPE_FLOAT: {
+					const double d = (double)p_in.real;
+					if (d >= 0.0 && d <= (double)UINT32_MAX) {
+						r_out.uint = (uint32_t)d;
+					} else {
+						// Undefined according to spec. Saturate.
+						r_out.uint = d < 0.0 ? 0U : UINT32_MAX;
+					}
+					return true;
+				}
+				default:
+					return false;
+			}
+		}
+		case ShaderLanguage::TYPE_BOOL: {
+			switch (p_from) {
+				case ShaderLanguage::TYPE_BOOL:
+					r_out.boolean = p_in.boolean;
+					return true;
+				case ShaderLanguage::TYPE_INT:
+					r_out.boolean = p_in.sint != 0;
+					return true;
+				case ShaderLanguage::TYPE_UINT:
+					r_out.boolean = p_in.uint != 0U;
+					return true;
+				case ShaderLanguage::TYPE_FLOAT:
+					r_out.boolean = p_in.real != 0.0f;
+					return true;
+				default:
+					return false;
+			}
+		}
+		default:
+			return false;
+	}
+}
+
 SafeNumeric<int> ShaderLanguage::instance_counter;
 
 String ShaderLanguage::get_operator_text(Operator p_op) {
@@ -2191,7 +2286,7 @@ ShaderLanguage::Scalar ShaderLanguage::_eval_unary_scalar(const Scalar &p_a, Ope
 				// Intentionally wrap the unsigned int value, because GLSL does.
 				scalar.uint = 0 - p_a.uint;
 			} else { // float types
-				scalar.real = -scalar.real;
+				scalar.real = -p_a.real;
 			}
 		} break;
 		case OP_BIT_INVERT: {
@@ -2213,10 +2308,26 @@ ShaderLanguage::Scalar ShaderLanguage::_eval_scalar(const Scalar &p_a, const Sca
 
 	switch (p_op) {
 		case OP_EQUAL: {
-			scalar.boolean = p_a.boolean == p_b.boolean;
+			if (p_ret_type == TYPE_BOOL) {
+				scalar.boolean = p_a.boolean == p_b.boolean;
+			} else if (p_ret_type == TYPE_INT) {
+				scalar.boolean = p_a.sint == p_b.sint;
+			} else if (p_ret_type == TYPE_UINT) {
+				scalar.boolean = p_a.uint == p_b.uint;
+			} else { // float type
+				scalar.boolean = p_a.real == p_b.real;
+			}
 		} break;
 		case OP_NOT_EQUAL: {
-			scalar.boolean = p_a.boolean != p_b.boolean;
+			if (p_ret_type == TYPE_BOOL) {
+				scalar.boolean = p_a.boolean != p_b.boolean;
+			} else if (p_ret_type == TYPE_INT) {
+				scalar.boolean = p_a.sint != p_b.sint;
+			} else if (p_ret_type == TYPE_UINT) {
+				scalar.boolean = p_a.uint != p_b.uint;
+			} else { // float type
+				scalar.boolean = p_a.real != p_b.real;
+			}
 		} break;
 		case OP_LESS: {
 			if (p_ret_type == TYPE_INT) {
@@ -2295,7 +2406,7 @@ ShaderLanguage::Scalar ShaderLanguage::_eval_scalar(const Scalar &p_a, const Sca
 					break;
 				}
 				scalar.sint = p_a.sint / p_b.sint;
-			} else if (p_ret_type == TYPE_UINT && p_ret_type <= TYPE_UVEC4) {
+			} else if (p_ret_type >= TYPE_UINT && p_ret_type <= TYPE_UVEC4) {
 				if (p_b.uint == 0U) {
 					_set_error(RTR("Division by zero error."));
 					r_is_valid = false;
@@ -2392,9 +2503,11 @@ Vector<ShaderLanguage::Scalar> ShaderLanguage::_eval_vector(const Vector<Scalar>
 	Vector<Scalar> value;
 	value.resize(ret_size);
 
+	const DataType operand_type = (p_ret_type == TYPE_BOOL) ? get_scalar_type(p_left_type) : p_ret_type;
+
 	Scalar *w = value.ptrw();
 	for (uint32_t i = 0U; i < ret_size; i++) {
-		w[i] = _eval_scalar(p_va[MIN(i, left_size - 1)], p_vb[MIN(i, right_size - 1)], p_op, p_ret_type, r_is_valid);
+		w[i] = _eval_scalar(p_va[MIN(i, left_size - 1)], p_vb[MIN(i, right_size - 1)], p_op, operand_type, r_is_valid);
 		if (!r_is_valid) {
 			return value;
 		}
@@ -8225,7 +8338,7 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 							}
 						} else if (get_scalar_type(cn->datatype) == cn->datatype) {
 							Scalar v;
-							if (!convert_constant(cn, base, &v)) {
+							if (!_reduce_scalar_constructor(cn->datatype, cn->values[0], base, v)) {
 								return p_node;
 							}
 							values.push_back(v);
