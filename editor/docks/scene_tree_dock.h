@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/docks/editor_dock.h"
+#include "editor/gui/batch_rename_dialog.h"
 #include "editor/scene/scene_tree_editor.h"
 #include "editor/script/script_create_dialog.h"
 #include "scene/resources/animation.h"
@@ -40,7 +41,6 @@ class EditorData;
 class EditorSelection;
 class MenuButton;
 class PanelContainer;
-class RenameDialog;
 class ReparentDialog;
 class Shader;
 class ShaderCreateDialog;
@@ -112,7 +112,7 @@ class SceneTreeDock : public EditorDock {
 	MarginContainer *main_mc = nullptr;
 
 	CreateDialog *create_dialog = nullptr;
-	RenameDialog *rename_dialog = nullptr;
+	BatchRenameDialog *rename_dialog = nullptr;
 
 	Button *button_add = nullptr;
 	Button *button_instance = nullptr;
@@ -138,6 +138,10 @@ class SceneTreeDock : public EditorDock {
 
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
 	void _property_selected(int p_idx);
+
+	void _collect_batch_rename_items(Node *p_node, const Array &p_selection, Vector<BatchRenameDialog::Item> &r_items);
+	void _batch_rename_confirmed(const PackedStringArray &p_new_names);
+	Vector<Node *> batch_rename_nodes;
 
 	Node *property_drop_node = nullptr;
 	String resource_drop_path;

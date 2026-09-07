@@ -1956,6 +1956,110 @@ void FileSystemDock::_rename_operation_confirm() {
 	_rescan();
 }
 
+void FileSystemDock::_batch_rename_confirmed(const PackedStringArray &p_new_names) {
+	ERR_FAIL_COND(p_new_names.size() != batch_rename_items.size());
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+
+	HashSet<String> old_paths_set;
+	for (const FileOrFolder &item : batch_rename_items) {
+		old_paths_set.insert(item.path.trim_suffix("/"));
+	}
+
+	PackedStringArray old_paths;
+	PackedStringArray new_paths;
+	HashSet<String> seen_new_paths;
+
+	for (int i = 0; i < batch_rename_items.size(); i++) {
+		const FileOrFolder &item = batch_rename_items[i];
+		String old_path = item.path.trim_suffix("/");
+		String new_name = p_new_names[i].strip_edges();
+
+		if (new_name.is_empty()) {
+			EditorNode::get_singleton()->show_warning(TTRC("No name provided."));
+			return;
+		} else if (new_name.contains_char('/') || new_name.contains_char('\\') || new_name.contains_char(':')) {
+			EditorNode::get_singleton()->show_warning(TTRC("Name contains invalid characters."));
+			return;
+		} else if (new_name[0] == '.') {
+			EditorNode::get_singleton()->show_warning(TTRC("This filename begins with a dot rendering the file invisible to the editor.\nIf you want to rename it anyway, use your operating system's file manager."));
+			return;
+		}
+
+		String new_path = old_path.get_base_dir().path_join(new_name);
+		if (new_path == old_path) {
+			continue;
+		}
+
+		bool case_sensitive = da->is_case_sensitive(new_path.get_base_dir());
+		String compare_key = case_sensitive ? new_path : new_path.to_lower();
+		if (seen_new_paths.has(compare_key)) {
+			EditorNode::get_singleton()->show_warning(vformat(TTR("Duplicate result name: \"%s\"."), new_path));
+			return;
+		}
+		seen_new_paths.insert(compare_key);
+
+		bool new_exists = item.is_file ? da->file_exists(new_path) : da->dir_exists(new_path);
+		if (new_exists && !old_paths_set.has(new_path)) {
+			bool same_case_insensitive = !case_sensitive && new_path.to_lower() == old_path.to_lower();
+			if (!same_case_insensitive) {
+				EditorNode::get_singleton()->show_warning(vformat(TTR("A file or folder with the name \"%s\" already exists."), new_path));
+				return;
+			}
+		}
+
+		old_paths.push_back(item.is_file ? old_path : old_path + "/");
+		new_paths.push_back(item.is_file ? new_path : new_path + "/");
+	}
+
+	if (old_paths.is_empty()) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Batch Rename"));
+	undo_redo->add_do_method(this, "_batch_move_and_update", old_paths, new_paths);
+	undo_redo->add_undo_method(this, "_batch_move_and_update", new_paths, old_paths);
+	undo_redo->commit_action();
+}
+
+void FileSystemDock::_batch_move_and_update(const PackedStringArray &p_from, const PackedStringArray &p_to) {
+	ERR_FAIL_COND(p_from.size() != p_to.size());
+
+	Vector<FileOrFolder> saved_to_move = to_move;
+	to_move.clear();
+	for (int i = 0; i < p_from.size(); i++) {
+		to_move.push_back(FileOrFolder(p_from[i], !p_from[i].ends_with("/")));
+	}
+
+	for (int i = 0; i < to_move.size(); i++) {
+		if (to_move[i].is_file && EditorFileSystem::get_singleton()->is_group_file(to_move[i].path)) {
+			EditorFileSystem::get_singleton()->move_group_file(to_move[i].path, p_to[i]);
+		}
+	}
+
+	HashSet<String> file_owners; // The files that use these moved/renamed resource files.
+	_before_move(file_owners);
+
+	HashMap<String, String> file_renames;
+	HashMap<String, String> folder_renames;
+	for (int i = 0; i < to_move.size(); i++) {
+		_try_move_item(to_move[i], p_to[i], file_renames, folder_renames);
+	}
+
+	int current_tab = EditorSceneTabs::get_singleton()->get_current_tab();
+	_update_resource_paths_after_move(file_renames);
+	_update_dependencies_after_move(file_renames, file_owners);
+	_update_project_settings_after_move(file_renames, folder_renames);
+	_update_favorites_after_move(file_renames, folder_renames);
+	EditorSceneTabs::get_singleton()->set_current_tab(current_tab);
+
+	to_move = saved_to_move;
+
+	print_verbose("FileSystem: calling rescan.");
+	_rescan();
+}
+
 void FileSystemDock::_duplicate_operation_confirm(const String &p_path) {
 	const String base_dir = p_path.trim_suffix("/").get_base_dir();
 	if (!DirAccess::dir_exists_absolute(base_dir)) {
@@ -2242,6 +2346,9 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 			}
 		} break;
 		case FILE_MENU_RENAME: {
+			[[fallthrough]];
+		}
+		case FILE_MENU_BATCH_RENAME: {
 			selected_strings = _tree_get_selected(false, true);
 			[[fallthrough]];
 		}
@@ -2620,6 +2727,59 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_BATCH_RENAME: {
+			if (p_selected.size() < 2) {
+				break;
+			}
+
+			// Folders are not supported by batch rename yet.
+			bool has_folder = false;
+			for (const String &path : p_selected) {
+				if (path != "res://" && path.ends_with("/")) {
+					has_folder = true;
+					break;
+				}
+			}
+			if (has_folder) {
+				EditorNode::get_singleton()->show_warning(TTRC("Batch rename does not support folders yet.\nPlease select only files."));
+				break;
+			}
+
+			Vector<BatchRenameDialog::Item> items;
+			batch_rename_items.clear();
+
+			for (const String &path : p_selected) {
+				if (path == "res://") {
+					continue;
+				}
+
+				bool is_file = !path.ends_with("/");
+				String trimmed_path = path.trim_suffix("/");
+				String dir_path = trimmed_path.get_base_dir();
+				String file_name = trimmed_path.get_file();
+				String stem = is_file ? file_name.get_basename() : file_name;
+				String ext = is_file ? file_name.get_extension() : String();
+
+				BatchRenameDialog::Item item;
+				item.name = stem;
+				item.group_id = dir_path;
+				item.fixed_suffix = ext.is_empty() ? String() : "." + ext;
+				item.tokens["${NAME}"] = stem;
+				item.tokens["${EXT}"] = ext;
+				item.tokens["${DIR}"] = dir_path.get_file();
+
+				items.push_back(item);
+				batch_rename_items.push_back(FileOrFolder(path, is_file));
+			}
+
+			if (items.is_empty()) {
+				break;
+			}
+
+			batch_rename_dialog->set_items(items);
+			batch_rename_dialog->popup_centered();
+		} break;
+
 		case FILE_MENU_REMOVE: {
 			// Remove the selected files.
 			Vector<String> remove_files;
@@ -2803,6 +2963,8 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return FILE_MENU_NEW_TEXTFILE;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_key)) {
 		return FILE_MENU_RENAME;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/batch_rename", p_key)) {
+		return FILE_MENU_BATCH_RENAME;
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_key)) {
 		return FILE_MENU_SHOW_IN_EXPLORER;
@@ -3551,6 +3713,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("filesystem_dock/rename"), FILE_MENU_RENAME);
 			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Duplicate")), ED_GET_SHORTCUT("filesystem_dock/duplicate"), FILE_MENU_DUPLICATE);
 		}
+	} else if (all_files) {
+		// Batch rename doesn't support folders yet, so show for all-file, multi-item selections.
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("filesystem_dock/batch_rename"), FILE_MENU_BATCH_RENAME);
 	}
 
 	// Add the options that are only available when the root path is not selected.
@@ -4472,6 +4637,8 @@ void FileSystemDock::_on_open_editor_settings_file_exts() {
 void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("navigate_to_path", "path"), &FileSystemDock::navigate_to_path);
 
+	ClassDB::bind_method(D_METHOD("_batch_move_and_update", "from_paths", "to_paths"), &FileSystemDock::_batch_move_and_update);
+
 	ClassDB::bind_method(D_METHOD("add_resource_tooltip_plugin", "plugin"), &FileSystemDock::add_resource_tooltip_plugin);
 	ClassDB::bind_method(D_METHOD("remove_resource_tooltip_plugin", "plugin"), &FileSystemDock::remove_resource_tooltip_plugin);
 
@@ -4512,6 +4679,7 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/new_textfile", TTRC("New TextFile..."), Key::NONE);
 	ED_SHORTCUT("filesystem_dock/rename", TTRC("Rename..."), Key::F2);
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
+	ED_SHORTCUT("filesystem_dock/batch_rename", TTRC("Batch Rename..."), KeyModifierMask::SHIFT | Key::F2);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	// Opening the system file manager or opening in an external program is not supported on the Android and web editors.
 	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTRC("Open in File Manager"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::R);
@@ -4800,6 +4968,15 @@ FileSystemDock::FileSystemDock() {
 	unrecognized_ext_dialog->set_text(TTRC("This file extension is not recognized by the editor.\nIf you want to rename it anyway, use your operating system's file manager.\nAfter renaming to an unknown extension, the file won't be shown in the editor anymore.\nTo make the editor recognize this file extension, add it to one of the lists of extensions in Editor Settings > Docks > FileSystem."));
 	Button *settings_button = unrecognized_ext_dialog->add_button(TTRC("Open Editor Settings"), false, "open_editor_settings_docks_filesystem");
 	settings_button->connect("pressed", callable_mp(this, &FileSystemDock::_on_open_editor_settings_file_exts));
+
+	batch_rename_dialog = memnew(BatchRenameDialog);
+	add_child(batch_rename_dialog);
+	batch_rename_dialog->set_tokens({
+			{ "NAME", "${NAME}", TTR("File or folder name, without the extension.") },
+			{ "EXT", "${EXT}", TTR("File extension, without the leading dot. Empty for folders.") },
+			{ "DIR", "${DIR}", TTR("Name of the containing folder.") },
+	});
+	batch_rename_dialog->connect("renamed", callable_mp(this, &FileSystemDock::_batch_rename_confirmed));
 
 	uncollapsed_paths_before_search = Vector<String>();
 

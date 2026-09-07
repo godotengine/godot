@@ -45,6 +45,7 @@
 #include "scene/gui/tree.h"
 
 class AcceptDialog;
+class BatchRenameDialog;
 class CreateDialog;
 class DependencyEditor;
 class DependencyEditorOwners;
@@ -120,6 +121,7 @@ private:
 		FILE_MENU_OWNERS,
 		FILE_MENU_MOVE,
 		FILE_MENU_RENAME,
+		FILE_MENU_BATCH_RENAME,
 		FILE_MENU_REMOVE,
 		FILE_MENU_DUPLICATE,
 		FILE_MENU_REIMPORT,
@@ -221,6 +223,7 @@ private:
 	CreateDialog *new_resource_dialog = nullptr;
 
 	AcceptDialog *unrecognized_ext_dialog = nullptr;
+	BatchRenameDialog *batch_rename_dialog = nullptr;
 
 	String confirm_move_to_dir;
 	bool confirm_to_copy = false;
@@ -246,6 +249,8 @@ private:
 	Vector<FileOrFolder> to_move;
 	String to_move_path;
 	bool to_move_or_copy = false;
+
+	Vector<FileOrFolder> batch_rename_items;
 
 	Vector<String> to_convert;
 	int selected_conversion_id = 0;
@@ -330,6 +335,8 @@ private:
 	void _script_or_shader_created(const Ref<Resource> &p_resource);
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
+	void _batch_rename_confirmed(const PackedStringArray &p_new_names);
+	void _batch_move_and_update(const PackedStringArray &p_from, const PackedStringArray &p_to);
 	void _duplicate_operation_confirm(const String &p_path);
 	void _move_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rename_dialog.h                                                       */
+/*  batch_rename_dialog.h                                                 */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,39 +30,52 @@
 
 #pragma once
 
-#include "editor/scene/scene_tree_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 
 class Button;
 class CheckBox;
 class CheckButton;
+class GridContainer;
 class Label;
 class OptionButton;
 class SpinBox;
 class TabContainer;
 
-class RenameDialog : public ConfirmationDialog {
-	GDCLASS(RenameDialog, ConfirmationDialog);
+class BatchRenameDialog : public ConfirmationDialog {
+	GDCLASS(BatchRenameDialog, ConfirmationDialog);
 
-	virtual void ok_pressed() override { rename(); }
-	void _cancel_pressed() {}
+public:
+	struct Token {
+		String button_text;
+		String token;
+		String tooltip;
+	};
+
+	struct Item {
+		String name;
+		HashMap<String, String> tokens;
+		String group_id;
+		// Optional. Use for non-editable parts of name (eg. extension)
+		String fixed_suffix;
+	};
+
+private:
+	virtual void ok_pressed() override { _emit_rename(); }
+
 	void _features_toggled(bool pressed);
 	void _insert_text(const String &text);
 	void _update_substitute();
 	bool _is_main_field(LineEdit *line_edit);
 
-	void _iterate_scene(const Node *node, const Array &selection, int *count);
-	String _apply_rename(const Node *node, int count);
-	String _substitute(const String &subject, const Node *node, int count);
+	String _apply_rename(const Item &item, int count);
+	String _substitute(const String &subject, const Item &item, int count);
 	String _regex(const String &pattern, const String &subject, const String &replacement);
 	String _postprocess(const String &subject);
 	void _update_preview(const String &new_text = "");
 	void _update_preview_int(int new_value = 0);
 	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type);
-
-	SceneTreeEditor *scene_tree_editor = nullptr;
-	int global_count = 0;
+	void _emit_rename();
 
 	LineEdit *lne_search = nullptr;
 	LineEdit *lne_replace = nullptr;
@@ -76,11 +89,8 @@ class RenameDialog : public ConfirmationDialog {
 	CheckBox *cbut_process = nullptr;
 	CheckBox *chk_per_level_counter = nullptr;
 
-	Button *but_insert_name = nullptr;
-	Button *but_insert_parent = nullptr;
-	Button *but_insert_type = nullptr;
-	Button *but_insert_scene = nullptr;
-	Button *but_insert_root = nullptr;
+	GridContainer *grd_substitute = nullptr;
+	Vector<Button *> substitute_buttons;
 	Button *but_insert_count = nullptr;
 
 	SpinBox *spn_count_start = nullptr;
@@ -93,8 +103,7 @@ class RenameDialog : public ConfirmationDialog {
 	Label *lbl_preview_title = nullptr;
 	Label *lbl_preview = nullptr;
 
-	List<Pair<NodePath, String>> to_rename;
-	Node *preview_node = nullptr;
+	Vector<Item> items;
 	bool lock_preview_update = false;
 	ErrorHandlerList eh;
 	bool has_errors = false;
@@ -105,7 +114,8 @@ protected:
 
 public:
 	void reset();
-	void rename();
+	void set_tokens(const Vector<Token> &p_tokens);
+	void set_items(const Vector<Item> &p_items);
 
-	RenameDialog(SceneTreeEditor *p_scene_tree_editor);
+	BatchRenameDialog();
 };

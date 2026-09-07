@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rename_dialog.cpp                                                     */
+/*  batch_rename_dialog.cpp                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "rename_dialog.h"
+#include "batch_rename_dialog.h"
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/string/regex.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_undo_redo_manager.h"
-#include "editor/script/script_editor_plugin.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/control.h"
@@ -46,12 +44,8 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
-#include "scene/main/scene_tree.h"
 
-RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
-	scene_tree_editor = p_scene_tree_editor;
-	preview_node = nullptr;
-
+BatchRenameDialog::BatchRenameDialog() {
 	set_title(TTR("Batch Rename"));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -137,59 +131,11 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	cbut_substitute->set_text(TTR("Substitute"));
 	vbc_substitute->add_child(cbut_substitute);
 
-	GridContainer *grd_substitute = memnew(GridContainer);
+	// Grid for Substittue Buttons which are added dynamically
+
+	grd_substitute = memnew(GridContainer);
 	grd_substitute->set_columns(3);
 	vbc_substitute->add_child(grd_substitute);
-
-	// Name
-
-	but_insert_name = memnew(Button);
-	but_insert_name->set_text("NAME");
-	but_insert_name->set_tooltip_text(String("${NAME}\n") + TTR("Node name."));
-	but_insert_name->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	but_insert_name->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${NAME}"));
-	but_insert_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	grd_substitute->add_child(but_insert_name);
-
-	// Parent
-
-	but_insert_parent = memnew(Button);
-	but_insert_parent->set_text("PARENT");
-	but_insert_parent->set_tooltip_text(String("${PARENT}\n") + TTR("Node's parent name, if available."));
-	but_insert_parent->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	but_insert_parent->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${PARENT}"));
-	but_insert_parent->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	grd_substitute->add_child(but_insert_parent);
-
-	// Type
-
-	but_insert_type = memnew(Button);
-	but_insert_type->set_text("TYPE");
-	but_insert_type->set_tooltip_text(String("${TYPE}\n") + TTR("Node type."));
-	but_insert_type->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	but_insert_type->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${TYPE}"));
-	but_insert_type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	grd_substitute->add_child(but_insert_type);
-
-	// Scene
-
-	but_insert_scene = memnew(Button);
-	but_insert_scene->set_text("SCENE");
-	but_insert_scene->set_tooltip_text(String("${SCENE}\n") + TTR("Current scene name."));
-	but_insert_scene->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	but_insert_scene->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${SCENE}"));
-	but_insert_scene->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	grd_substitute->add_child(but_insert_scene);
-
-	// Root
-
-	but_insert_root = memnew(Button);
-	but_insert_root->set_text("ROOT");
-	but_insert_root->set_tooltip_text(String("${ROOT}\n") + TTR("Root node name."));
-	but_insert_root->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	but_insert_root->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${ROOT}"));
-	but_insert_root->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	grd_substitute->add_child(but_insert_root);
 
 	// Count
 
@@ -197,7 +143,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 	but_insert_count->set_text("COUNTER");
 	but_insert_count->set_tooltip_text(String("${COUNTER}\n") + TTR("Sequential integer counter.\nCompare counter options."));
 	but_insert_count->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	but_insert_count->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_insert_text).bind("${COUNTER}"));
+	but_insert_count->connect(SceneStringName(pressed), callable_mp(this, &BatchRenameDialog::_insert_text).bind("${COUNTER}"));
 	but_insert_count->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grd_substitute->add_child(but_insert_count);
 
@@ -312,98 +258,87 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
 
 	// ---- Connections
 
-	cbut_collapse_features->connect(SceneStringName(toggled), callable_mp(this, &RenameDialog::_features_toggled));
+	cbut_collapse_features->connect(SceneStringName(toggled), callable_mp(this, &BatchRenameDialog::_features_toggled));
 
 	// Substitute Buttons
 
-	lne_search->connect(SceneStringName(focus_entered), callable_mp(this, &RenameDialog::_update_substitute));
-	lne_search->connect(SceneStringName(focus_exited), callable_mp(this, &RenameDialog::_update_substitute));
-	lne_replace->connect(SceneStringName(focus_entered), callable_mp(this, &RenameDialog::_update_substitute));
-	lne_replace->connect(SceneStringName(focus_exited), callable_mp(this, &RenameDialog::_update_substitute));
-	lne_prefix->connect(SceneStringName(focus_entered), callable_mp(this, &RenameDialog::_update_substitute));
-	lne_prefix->connect(SceneStringName(focus_exited), callable_mp(this, &RenameDialog::_update_substitute));
-	lne_suffix->connect(SceneStringName(focus_entered), callable_mp(this, &RenameDialog::_update_substitute));
-	lne_suffix->connect(SceneStringName(focus_exited), callable_mp(this, &RenameDialog::_update_substitute));
+	lne_search->connect(SceneStringName(focus_entered), callable_mp(this, &BatchRenameDialog::_update_substitute));
+	lne_search->connect(SceneStringName(focus_exited), callable_mp(this, &BatchRenameDialog::_update_substitute));
+	lne_replace->connect(SceneStringName(focus_entered), callable_mp(this, &BatchRenameDialog::_update_substitute));
+	lne_replace->connect(SceneStringName(focus_exited), callable_mp(this, &BatchRenameDialog::_update_substitute));
+	lne_prefix->connect(SceneStringName(focus_entered), callable_mp(this, &BatchRenameDialog::_update_substitute));
+	lne_prefix->connect(SceneStringName(focus_exited), callable_mp(this, &BatchRenameDialog::_update_substitute));
+	lne_suffix->connect(SceneStringName(focus_entered), callable_mp(this, &BatchRenameDialog::_update_substitute));
+	lne_suffix->connect(SceneStringName(focus_exited), callable_mp(this, &BatchRenameDialog::_update_substitute));
 
 	// Preview
 
-	lne_prefix->connect(SceneStringName(text_changed), callable_mp(this, &RenameDialog::_update_preview));
-	lne_suffix->connect(SceneStringName(text_changed), callable_mp(this, &RenameDialog::_update_preview));
-	lne_search->connect(SceneStringName(text_changed), callable_mp(this, &RenameDialog::_update_preview));
-	lne_replace->connect(SceneStringName(text_changed), callable_mp(this, &RenameDialog::_update_preview));
-	spn_count_start->connect(SceneStringName(value_changed), callable_mp(this, &RenameDialog::_update_preview_int));
-	spn_count_step->connect(SceneStringName(value_changed), callable_mp(this, &RenameDialog::_update_preview_int));
-	spn_count_padding->connect(SceneStringName(value_changed), callable_mp(this, &RenameDialog::_update_preview_int));
-	opt_style->connect(SceneStringName(item_selected), callable_mp(this, &RenameDialog::_update_preview_int));
-	opt_case->connect(SceneStringName(item_selected), callable_mp(this, &RenameDialog::_update_preview_int));
-	cbut_substitute->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_update_preview).bind(""));
-	cbut_regex->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_update_preview).bind(""));
-	cbut_process->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::_update_preview).bind(""));
+	lne_prefix->connect(SceneStringName(text_changed), callable_mp(this, &BatchRenameDialog::_update_preview));
+	lne_suffix->connect(SceneStringName(text_changed), callable_mp(this, &BatchRenameDialog::_update_preview));
+	lne_search->connect(SceneStringName(text_changed), callable_mp(this, &BatchRenameDialog::_update_preview));
+	lne_replace->connect(SceneStringName(text_changed), callable_mp(this, &BatchRenameDialog::_update_preview));
+	spn_count_start->connect(SceneStringName(value_changed), callable_mp(this, &BatchRenameDialog::_update_preview_int));
+	spn_count_step->connect(SceneStringName(value_changed), callable_mp(this, &BatchRenameDialog::_update_preview_int));
+	spn_count_padding->connect(SceneStringName(value_changed), callable_mp(this, &BatchRenameDialog::_update_preview_int));
+	opt_style->connect(SceneStringName(item_selected), callable_mp(this, &BatchRenameDialog::_update_preview_int));
+	opt_case->connect(SceneStringName(item_selected), callable_mp(this, &BatchRenameDialog::_update_preview_int));
+	cbut_substitute->connect(SceneStringName(pressed), callable_mp(this, &BatchRenameDialog::_update_preview).bind(""));
+	cbut_regex->connect(SceneStringName(pressed), callable_mp(this, &BatchRenameDialog::_update_preview).bind(""));
+	cbut_process->connect(SceneStringName(pressed), callable_mp(this, &BatchRenameDialog::_update_preview).bind(""));
 
-	but_reset->connect(SceneStringName(pressed), callable_mp(this, &RenameDialog::reset));
+	but_reset->connect(SceneStringName(pressed), callable_mp(this, &BatchRenameDialog::reset));
 
 	reset();
 	_features_toggled(false);
 }
 
-void RenameDialog::_bind_methods() {
-	ClassDB::bind_method("rename", &RenameDialog::rename);
+void BatchRenameDialog::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("renamed", PropertyInfo(Variant::PACKED_STRING_ARRAY, "new_names")));
 }
 
-void RenameDialog::_update_substitute() {
+void BatchRenameDialog::_update_substitute() {
 	LineEdit *focus_owner_line_edit = Object::cast_to<LineEdit>(get_viewport()->gui_get_focus_owner());
 	bool is_main_field = _is_main_field(focus_owner_line_edit);
 
-	but_insert_name->set_disabled(!is_main_field);
-	but_insert_parent->set_disabled(!is_main_field);
-	but_insert_type->set_disabled(!is_main_field);
-	but_insert_scene->set_disabled(!is_main_field);
-	but_insert_root->set_disabled(!is_main_field);
-	but_insert_count->set_disabled(!is_main_field);
+	for (Button *but : substitute_buttons) {
+		but->set_disabled(!is_main_field);
 
-	// The focus mode seems to be reset when disabling/re-enabling
-	but_insert_name->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	but_insert_parent->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	but_insert_type->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	but_insert_scene->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	but_insert_root->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+		// The focus mode seems to be reset when disabling/re-enabling.
+		but->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	}
+
+	but_insert_count->set_disabled(!is_main_field);
 	but_insert_count->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 }
 
-void RenameDialog::_post_popup() {
+void BatchRenameDialog::_post_popup() {
 	ConfirmationDialog::_post_popup();
 
-	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	preview_node = nullptr;
-
-	Array selected_node_list = editor_selection->get_selected_nodes();
-	ERR_FAIL_COND(selected_node_list.is_empty());
-
-	preview_node = Object::cast_to<Node>(selected_node_list[0]);
+	ERR_FAIL_COND(items.is_empty());
 
 	_update_preview();
 	_update_substitute();
 }
 
-void RenameDialog::_update_preview_int(int new_value) {
+void BatchRenameDialog::_update_preview_int(int new_value) {
 	_update_preview();
 }
 
-void RenameDialog::_update_preview(const String &new_text) {
-	if (lock_preview_update || preview_node == nullptr) {
+void BatchRenameDialog::_update_preview(const String &new_text) {
+	if (lock_preview_update || items.is_empty()) {
 		return;
 	}
 
 	has_errors = false;
 	add_error_handler(&eh);
 
-	String new_name = _apply_rename(preview_node, spn_count_start->get_value());
+	String new_name = _apply_rename(items[0], spn_count_start->get_value());
 
 	if (!has_errors) {
 		lbl_preview_title->set_text(TTR("Preview:"));
 		lbl_preview->set_text(new_name);
 
-		if (new_name == preview_node->get_name()) {
+		if (new_name == items[0].name + items[0].fixed_suffix) {
 			// New name is identical to the old one. Don't color it as much to avoid distracting the user.
 			const Color accent_color = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("accent_color"), EditorStringName(Editor));
 			const Color text_color = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("default_color"), SNAME("RichTextLabel"));
@@ -416,18 +351,18 @@ void RenameDialog::_update_preview(const String &new_text) {
 	remove_error_handler(&eh);
 }
 
-String RenameDialog::_apply_rename(const Node *node, int count) {
+String BatchRenameDialog::_apply_rename(const Item &item, int count) {
 	String search = lne_search->get_text();
 	String replace = lne_replace->get_text();
 	String prefix = lne_prefix->get_text();
 	String suffix = lne_suffix->get_text();
-	String new_name = node->get_name();
+	String new_name = item.name;
 
 	if (cbut_substitute->is_pressed()) {
-		search = _substitute(search, node, count);
-		replace = _substitute(replace, node, count);
-		prefix = _substitute(prefix, node, count);
-		suffix = _substitute(suffix, node, count);
+		search = _substitute(search, item, count);
+		replace = _substitute(replace, item, count);
+		prefix = _substitute(prefix, item, count);
+		suffix = _substitute(suffix, item, count);
 	}
 
 	if (cbut_regex->is_pressed()) {
@@ -442,43 +377,25 @@ String RenameDialog::_apply_rename(const Node *node, int count) {
 		new_name = _postprocess(new_name);
 	}
 
+	if (!item.fixed_suffix.is_empty()) {
+		new_name += item.fixed_suffix;
+	}
+
 	return new_name;
 }
 
-String RenameDialog::_substitute(const String &subject, const Node *node, int count) {
+String BatchRenameDialog::_substitute(const String &subject, const Item &item, int count) {
 	String result = subject.replace("${COUNTER}", vformat("%0" + itos(spn_count_padding->get_value()) + "d", count));
 
-	if (node) {
-		result = result.replace("${NAME}", node->get_name());
-		result = result.replace("${TYPE}", node->get_class());
+	for (const KeyValue<String, String> &token : item.tokens) {
+		result = result.replace(token.key, token.value);
 	}
 
-	int current = EditorNode::get_editor_data().get_edited_scene();
-	// Always request the scene title with the extension stripped.
-	// Otherwise, the result could vary depending on whether a scene with the same name
-	// (but different extension) is currently open.
-	result = result.replace("${SCENE}", EditorNode::get_editor_data().get_scene_title(current, true));
-
-	Node *root_node = SceneTree::get_singleton()->get_edited_scene_root();
-	if (root_node) {
-		result = result.replace("${ROOT}", root_node->get_name());
-	}
-	if (node) {
-		Node *parent_node = node->get_parent();
-		if (parent_node) {
-			if (node == root_node) {
-				// Can not substitute parent of root.
-				result = result.replace("${PARENT}", "");
-			} else {
-				result = result.replace("${PARENT}", parent_node->get_name());
-			}
-		}
-	}
 	return result;
 }
 
-void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
-	RenameDialog *self = (RenameDialog *)p_self;
+void BatchRenameDialog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
+	BatchRenameDialog *self = (BatchRenameDialog *)p_self;
 	String source_file = String::utf8(p_file);
 
 	// Only show first error that is related to "regex"
@@ -499,13 +416,13 @@ void RenameDialog::_error_handler(void *p_self, const char *p_func, const char *
 	self->lbl_preview->set_text(vformat(TTR("At character %s"), err_str));
 }
 
-String RenameDialog::_regex(const String &pattern, const String &subject, const String &replacement) {
+String BatchRenameDialog::_regex(const String &pattern, const String &subject, const String &replacement) {
 	RegEx regex(pattern);
 
 	return regex.sub(subject, replacement, true);
 }
 
-String RenameDialog::_postprocess(const String &subject) {
+String BatchRenameDialog::_postprocess(const String &subject) {
 	int style_id = opt_style->get_selected();
 
 	String result = subject;
@@ -551,71 +468,35 @@ String RenameDialog::_postprocess(const String &subject) {
 	return result;
 }
 
-void RenameDialog::_iterate_scene(const Node *node, const Array &selection, int *counter) {
-	if (!node) {
-		return;
-	}
+void BatchRenameDialog::_emit_rename() {
+	PackedStringArray new_names;
+	new_names.resize(items.size());
 
-	if (selection.has(node)) {
-		String new_name = _apply_rename(node, *counter);
+	int global_counter = spn_count_start->get_value();
+	bool per_level = chk_per_level_counter->is_pressed();
+	HashMap<String, int> level_counters;
 
-		if (node->get_name() != new_name) {
-			Pair<NodePath, String> rename_item;
-			rename_item.first = node->get_path();
-			rename_item.second = new_name;
-			to_rename.push_back(rename_item);
-		}
-
-		*counter += spn_count_step->get_value();
-	}
-
-	int *cur_counter = counter;
-	int level_counter = spn_count_start->get_value();
-
-	if (chk_per_level_counter->is_pressed()) {
-		cur_counter = &level_counter;
-	}
-
-	for (int i = 0; i < node->get_child_count(); ++i) {
-		_iterate_scene(node->get_child(i), selection, cur_counter);
-	}
-}
-
-void RenameDialog::rename() {
-	// Editor selection is not ordered via scene tree. Instead iterate
-	// over scene tree until all selected nodes are found in order.
-
-	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	Array selected_node_list = editor_selection->get_selected_nodes();
-	Node *root_node = SceneTree::get_singleton()->get_edited_scene_root();
-
-	global_count = spn_count_start->get_value();
-	to_rename.clear();
-
-	// Forward recursive as opposed to the actual renaming.
-	_iterate_scene(root_node, selected_node_list, &global_count);
-
-	if (!to_rename.is_empty()) {
-		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Batch Rename"), UndoRedo::MERGE_DISABLE, root_node, true);
-
-		// Make sure to iterate reversed so that child nodes will find parents.
-		for (List<Pair<NodePath, String>>::Element *E = to_rename.back(); E; E = E->prev()) {
-			Node *n = root_node->get_node(E->get().first);
-			const String &new_name = E->get().second;
-
-			if (!n) {
-				ERR_PRINT("Skipping missing node: " + E->get().first.get_concatenated_subnames());
-				continue;
+	for (int i = 0; i < items.size(); i++) {
+		int count;
+		if (per_level) {
+			HashMap<String, int>::Iterator E = level_counters.find(items[i].group_id);
+			if (!E) {
+				E = level_counters.insert(items[i].group_id, spn_count_start->get_value());
 			}
-			scene_tree_editor->rename_node(n, new_name);
+			count = E->value;
+			E->value += spn_count_step->get_value();
+		} else {
+			count = global_counter;
+			global_counter += spn_count_step->get_value();
 		}
 
-		undo_redo->commit_action();
+		new_names.write[i] = _apply_rename(items[i], count);
 	}
+
+	emit_signal(SNAME("renamed"), new_names);
 }
 
-void RenameDialog::reset() {
+void BatchRenameDialog::reset() {
 	lock_preview_update = true;
 
 	lne_prefix->clear();
@@ -640,12 +521,41 @@ void RenameDialog::reset() {
 	_update_preview();
 }
 
-bool RenameDialog::_is_main_field(LineEdit *line_edit) {
+void BatchRenameDialog::set_tokens(const Vector<Token> &p_tokens) {
+	for (Button *but : substitute_buttons) {
+		but->queue_free();
+	}
+	substitute_buttons.clear();
+
+	if (but_insert_count->get_parent()) {
+		grd_substitute->remove_child(but_insert_count);
+	}
+
+	for (const Token &token : p_tokens) {
+		Button *but = memnew(Button);
+		but->set_text(token.button_text);
+		but->set_tooltip_text(token.token + "\n" + token.tooltip);
+		but->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+		but->connect(SceneStringName(pressed), callable_mp(this, &BatchRenameDialog::_insert_text).bind(token.token));
+		but->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		grd_substitute->add_child(but);
+		substitute_buttons.push_back(but);
+	}
+
+	// Keep the counter button last, regardless of how many custom tokens are set.
+	grd_substitute->add_child(but_insert_count);
+}
+
+void BatchRenameDialog::set_items(const Vector<Item> &p_items) {
+	items = p_items;
+}
+
+bool BatchRenameDialog::_is_main_field(LineEdit *line_edit) {
 	return line_edit &&
 			(line_edit == lne_search || line_edit == lne_replace || line_edit == lne_prefix || line_edit == lne_suffix);
 }
 
-void RenameDialog::_insert_text(const String &text) {
+void BatchRenameDialog::_insert_text(const String &text) {
 	LineEdit *focus_owner = Object::cast_to<LineEdit>(get_viewport()->gui_get_focus_owner());
 
 	if (_is_main_field(focus_owner)) {
@@ -655,7 +565,7 @@ void RenameDialog::_insert_text(const String &text) {
 	}
 }
 
-void RenameDialog::_features_toggled(bool pressed) {
+void BatchRenameDialog::_features_toggled(bool pressed) {
 	if (pressed) {
 		tabc_features->show();
 	} else {

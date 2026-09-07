@@ -37,6 +37,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/templates/pair.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/filesystem_dock.h"
@@ -56,7 +57,6 @@
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
-#include "editor/scene/rename_dialog.h"
 #include "editor/scene/reparent_dialog.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -657,6 +657,21 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				if (!_validate_no_foreign_selected(editor_selection->get_full_selected_node_list())) {
 					break;
 				}
+
+				Array selected_node_list = editor_selection->get_selected_nodes();
+				Node *root_node = SceneTree::get_singleton()->get_edited_scene_root();
+
+				Vector<BatchRenameDialog::Item> items;
+				batch_rename_nodes.clear();
+				// Forward recursive traversal so that the resulting item order matches
+				// the depth-first order the scene tree is rendered in.
+				_collect_batch_rename_items(root_node, selected_node_list, items);
+
+				if (items.is_empty()) {
+					break;
+				}
+
+				rename_dialog->set_items(items);
 				rename_dialog->popup_centered();
 			}
 		} break;
@@ -1684,6 +1699,69 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 		}
 	}
+}
+
+void SceneTreeDock::_collect_batch_rename_items(Node *p_node, const Array &p_selection, Vector<BatchRenameDialog::Item> &r_items) {
+	if (!p_node) {
+		return;
+	}
+
+	if (p_selection.has(p_node)) {
+		Node *root_node = SceneTree::get_singleton()->get_edited_scene_root();
+		Node *parent_node = p_node->get_parent();
+
+		BatchRenameDialog::Item item;
+		item.name = p_node->get_name();
+		item.group_id = parent_node ? itos(parent_node->get_instance_id()) : String();
+		item.tokens["${NAME}"] = p_node->get_name();
+		item.tokens["${TYPE}"] = p_node->get_class();
+		if (root_node) {
+			item.tokens["${ROOT}"] = root_node->get_name();
+		}
+		if (parent_node) {
+			// Can not substitute parent of root.
+			item.tokens["${PARENT}"] = (p_node == root_node) ? String() : String(parent_node->get_name());
+		}
+		int current_scene = EditorNode::get_editor_data().get_edited_scene();
+		// Always request the scene title with the extension stripped.
+		// Otherwise, the result could vary depending on whether a scene with the same name
+		// (but different extension) is currently open.
+		item.tokens["${SCENE}"] = EditorNode::get_editor_data().get_scene_title(current_scene, true);
+
+		r_items.push_back(item);
+		batch_rename_nodes.push_back(p_node);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_collect_batch_rename_items(p_node->get_child(i), p_selection, r_items);
+	}
+}
+
+void SceneTreeDock::_batch_rename_confirmed(const PackedStringArray &p_new_names) {
+	ERR_FAIL_COND(p_new_names.size() != batch_rename_nodes.size());
+
+	// Make sure to iterate reversed so that child nodes will find parents
+	// still under their original name when their own rename is applied.
+	List<Pair<Node *, String>> to_rename;
+	for (int i = 0; i < p_new_names.size(); i++) {
+		if (batch_rename_nodes[i]->get_name() != p_new_names[i]) {
+			to_rename.push_back(Pair<Node *, String>(batch_rename_nodes[i], p_new_names[i]));
+		}
+	}
+
+	if (to_rename.is_empty()) {
+		return;
+	}
+
+	Node *root_node = SceneTree::get_singleton()->get_edited_scene_root();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Batch Rename"), UndoRedo::MERGE_DISABLE, root_node, true);
+
+	for (List<Pair<Node *, String>>::Element *E = to_rename.back(); E; E = E->prev()) {
+		scene_tree->rename_node(E->get().first, E->get().second);
+	}
+
+	undo_redo->commit_action();
 }
 
 void SceneTreeDock::_property_selected(int p_idx) {
@@ -5256,8 +5334,16 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	create_dialog->connect("create", callable_mp(this, &SceneTreeDock::_create));
 	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
 
-	rename_dialog = memnew(RenameDialog(scene_tree));
+	rename_dialog = memnew(BatchRenameDialog);
 	add_child(rename_dialog);
+	rename_dialog->set_tokens({
+			{ "NAME", "${NAME}", TTR("Node name.") },
+			{ "PARENT", "${PARENT}", TTR("Node's parent name, if available.") },
+			{ "TYPE", "${TYPE}", TTR("Node type.") },
+			{ "SCENE", "${SCENE}", TTR("Current scene name.") },
+			{ "ROOT", "${ROOT}", TTR("Root node name.") },
+	});
+	rename_dialog->connect("renamed", callable_mp(this, &SceneTreeDock::_batch_rename_confirmed));
 
 	script_create_dialog = memnew(ScriptCreateDialog);
 	script_create_dialog->set_inheritance_base_type("Node");
