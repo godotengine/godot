@@ -38,6 +38,8 @@ GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Warray-bounds")
 /**
  * Array-like storage that's local (no allocations).
  *
+ * Elements are relocated by naive memory moves; they must not store their own address (see GH-100509).
+ *
  * Core container guidance:
  * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  *
@@ -111,6 +113,7 @@ public:
 		}
 
 		// Relocate elements (and size) into our buffer.
+		// Assumes trivial relocatability (see GH-100509).
 		memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
 		p_from._size = 0;
 
