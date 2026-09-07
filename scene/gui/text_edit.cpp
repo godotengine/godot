@@ -9719,6 +9719,8 @@ Vector2i TextEdit::_get_hovered_gutter(const Point2 &p_mouse_pos) const {
 }
 
 /* Syntax highlighting. */
+static constexpr int MAX_SYNTAX_HIGHLIGHTING_LINE_LENGTH = 10000;
+
 Vector<Pair<int64_t, Color>> TextEdit::_get_line_syntax_highlighting(int p_line) {
 	if (syntax_highlighter.is_null() || setting_text) {
 		return Vector<Pair<int64_t, Color>>();
@@ -9727,6 +9729,12 @@ Vector<Pair<int64_t, Color>> TextEdit::_get_line_syntax_highlighting(int p_line)
 	HashMap<int, Vector<Pair<int64_t, Color>>>::Iterator E = syntax_highlighting_cache.find(p_line);
 	if (E) {
 		return E->value;
+	}
+
+	if (text[p_line].length() > MAX_SYNTAX_HIGHLIGHTING_LINE_LENGTH) {
+		Vector<Pair<int64_t, Color>> result;
+		syntax_highlighting_cache.insert(p_line, result);
+		return result;
 	}
 
 	Dictionary color_map = syntax_highlighter->get_line_syntax_highlighting(p_line);

@@ -699,6 +699,25 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->remove_secondary_carets();
 		}
 
+		SUBCASE("[TextEdit] long line undo and redo") {
+			const String long_line = String("a").repeat(10000);
+			text_edit->set_line(0, long_line);
+			MessageQueue::get_singleton()->flush();
+			CHECK(text_edit->get_line(0) == long_line);
+
+			text_edit->insert_text_at_caret("b");
+			MessageQueue::get_singleton()->flush();
+			CHECK(text_edit->get_line(0) == "b" + long_line);
+
+			text_edit->undo();
+			MessageQueue::get_singleton()->flush();
+			CHECK(text_edit->get_line(0) == long_line);
+
+			text_edit->redo();
+			MessageQueue::get_singleton()->flush();
+			CHECK(text_edit->get_line(0) == "b" + long_line);
+		}
+
 		SUBCASE("[TextEdit] swap lines") {
 			lines_edited_args = { { 0, 0 }, { 0, 1 } };
 
