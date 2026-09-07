@@ -1619,7 +1619,8 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RSE
 
 	if (p_use_indirect) {
 		Mesh *mesh = mesh_owner.get_or_null(multimesh->mesh);
-		if (mesh != nullptr && mesh->surface_count > 0) {
+		ERR_FAIL_NULL(mesh);
+		if (mesh->surface_count > 0) {
 			Vector<uint8_t> newVector;
 			newVector.resize_initialized(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count);
 
