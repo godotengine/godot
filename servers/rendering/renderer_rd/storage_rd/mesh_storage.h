@@ -791,11 +791,11 @@ public:
 	virtual Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const override;
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) override;
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const override;
-	virtual RID skeleton_get_bones_buffer(RID p_skeleton) const override;
 
 	virtual void skeleton_update_dependency(RID p_skeleton, DependencyTracker *p_instance) override;
 
 	void _update_dirty_skeletons();
+	RID skeleton_get_bones_buffer(RID p_skeleton) const;
 
 	_FORCE_INLINE_ bool skeleton_is_valid(RID p_skeleton) {
 		return skeleton_owner.get_or_null(p_skeleton) != nullptr;

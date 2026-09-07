@@ -639,7 +639,6 @@ public:
 	virtual void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) override;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) override;
 	virtual int skeleton_get_bone_count(RID p_skeleton) const override;
-	virtual RID skeleton_get_bones_buffer(RID p_skeleton) const override;
 	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) override;
 	virtual Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const override;
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) override;
@@ -648,6 +647,7 @@ public:
 	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override;
 
 	void _update_dirty_skeletons();
+	GLuint skeleton_get_bones_buffer(RID p_skeleton) const;
 
 	_FORCE_INLINE_ bool skeleton_is_valid(RID p_skeleton) {
 		return skeleton_owner.get_or_null(p_skeleton) != nullptr;

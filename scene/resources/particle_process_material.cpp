@@ -984,8 +984,8 @@ void ParticleProcessMaterial::_update_shader() {
 )";
 	}
 
+	code += "	mat4 bone_transform;\n";
 	code += "	if (RESTART_POSITION) {\n";
-	code += "		mat4 bone_transform;\n";
 	code += "		TRANSFORM[3].xyz = calculate_initial_position(params, alt_seed, bone_transform);\n";
 	if (emission_skin_texture.is_valid()) {
 		code += "	TRANSFORM[3].xyz = (bone_transform * vec4(TRANSFORM[3].xyz, 1.0)).xyz;\n";
@@ -1019,7 +1019,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "			vec3 tangent = normalize(cross(v0, normal));\n";
 			code += "			vec3 bitangent = normalize(cross(tangent, normal));\n";
 			if (emission_skin_texture.is_valid()) {
-				code += "			USERDATA1.xyz = bone_transform * mat3(tangent, bitangent, normal) * USERDATA1.xyz;\n";
+				code += "			USERDATA1.xyz = mat3(bone_transform) * mat3(tangent, bitangent, normal) * USERDATA1.xyz;\n";
 			} else {
 				code += "			USERDATA1.xyz = mat3(tangent, bitangent, normal) * USERDATA1.xyz;\n";
 			}

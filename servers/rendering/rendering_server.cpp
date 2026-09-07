@@ -2748,6 +2748,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_restart", "particles"), &RenderingServer::particles_restart);
 
 	ClassDB::bind_method(D_METHOD("particles_set_skeleton", "particles", "skeleton"), &RenderingServer::particles_set_skeleton);
+	ClassDB::bind_method(D_METHOD("particles_set_baked_emission_texture", "particles", "texture"), &RenderingServer::particles_set_baked_emission_texture);
 
 	ClassDB::bind_method(D_METHOD("particles_set_subemitter", "particles", "subemitter_particles"), &RenderingServer::particles_set_subemitter);
 	ClassDB::bind_method(D_METHOD("particles_emit", "particles", "transform", "velocity", "color", "custom", "emit_flags"), &RenderingServer::particles_emit);

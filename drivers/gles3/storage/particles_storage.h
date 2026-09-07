@@ -173,6 +173,9 @@ private:
 		RID process_material;
 		uint32_t frame_counter = 0;
 
+		RID skeleton;
+		GLuint bones_texture = 0;
+
 		RSE::ParticlesTransformAlign transform_align = RSE::PARTICLES_TRANSFORM_ALIGN_DISABLED;
 		RSE::ParticlesTransformAlignAxis transform_align_axis = RSE::PARTICLES_ALIGN_AXIS_Y;
 		RSE::ParticlesTransformAlignCustomSrc transform_align_channel_filter = RSE::PARTICLES_ALIGN_CHANNEL_FILTER_X;
@@ -359,6 +362,7 @@ public:
 	virtual void particles_restart(RID p_particles) override;
 
 	virtual void particles_set_skeleton(RID p_particles, RID p_skeleton) override;
+	virtual void particles_set_baked_emission_texture(RID p_particles, RID p_emission_texture) override;
 
 	virtual void particles_set_draw_order(RID p_particles, RSE::ParticlesDrawOrder p_order) override;
 

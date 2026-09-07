@@ -54,7 +54,7 @@ ParticlesStorage::ParticlesStorage() {
 	{
 		String global_defines;
 		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
-		material_storage->shaders.particles_process_shader.initialize(global_defines, 1);
+		material_storage->shaders.particles_process_shader.initialize(global_defines, 2);
 	}
 	{
 		// default material and shader for particles shader
@@ -384,9 +384,31 @@ void ParticlesStorage::particles_restart(RID p_particles) {
 
 void ParticlesStorage::particles_set_skeleton(RID p_particles, RID p_skeleton) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
-	particles = nullptr;
 	ERR_FAIL_NULL(particles);
 	// FIXME actually implement this method
+	if (p_skeleton.is_valid()) {
+		particles->skeleton = p_skeleton;
+	} else if (particles->skeleton.is_valid()) {
+		particles->skeleton = RID(); // Clear skeleton
+	}
+}
+
+void ParticlesStorage::particles_set_baked_emission_texture(RID p_particles, RID p_emission_texture) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+	//FIXME actually implement this method
+	/*
+	if (p_skeleton.is_valid()) {
+		particles->skeleton = p_skeleton;
+	} else if (particles->skeleton.is_valid()) {
+		particles->skeleton = RID(); // Clear skeleton
+	}
+	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
+		//will need to be re-created
+		RD::get_singleton()->free_rid(particles->particles_material_uniform_set);
+	}
+	particles->particles_material_uniform_set = RID();
+	*/
 }
 
 void ParticlesStorage::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
@@ -741,6 +763,20 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 		}
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, heightmap);
+	}
+
+	if (p_particles->skeleton.is_valid()) {
+		GLuint bones = p_particles->bones_texture;
+		Skeleton *skel = MeshStorage::get_singleton()->get_skeleton(p_particles->skeleton);
+		p_particles->bones_texture = skel->transforms_texture;
+		if (p_particles->bones_texture == 0) {
+			GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_BLACK));
+			bones = tex->tex_id;
+		} else {
+			bones = p_particles->bones_texture;
+		}
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, bones);
 	}
 
 	if (p_particles->frame_params_ubo == 0) {

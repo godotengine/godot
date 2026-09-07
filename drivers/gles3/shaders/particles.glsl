@@ -158,6 +158,7 @@ out highp vec4 out_userdata6; //tfb:USERDATA6_USED
 #endif
 
 uniform sampler2D height_field_texture; //texunit:0
+uniform sampler2D bones_texture; //texunit:1
 
 uniform float lifetime;
 uniform bool clear;
@@ -182,6 +183,25 @@ vec3 safe_normalize(vec3 direction) {
 // Needed whenever 2D sdf texture is read from as it is packed in RGBA8.
 float vec4_to_float(vec4 p_vec) {
 	return dot(p_vec, vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0)) * 2.0 - 1.0;
+}
+
+#define TEX(m) texelFetch(bones_texture, ivec2(m % 256u, m / 256u), 0)
+#define GET_BONE_MATRIX(a, b, c) mat4(TEX(a), TEX(b), TEX(c), vec4(0.0, 0.0, 0.0, 1.0))
+
+mat4 get_bone_transform(uint idx) {
+	mat4 t = mat4(
+			vec4(1.0, 0.0, 0.0, 0.0),
+			vec4(0.0, 1.0, 0.0, 0.0),
+			vec4(0.0, 0.0, 1.0, 0.0),
+			vec4(0.0, 0.0, 0.0, 1.0));
+
+	uint bones = idx * 3u;
+	uint bones_a = bones + 1u;
+	uint bones_b = bones + 2u;
+
+	t = GET_BONE_MATRIX(bones, bones_a, bones_b);
+
+	return t;
 }
 
 #GLOBALS
