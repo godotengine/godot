@@ -633,41 +633,44 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	item_clickable_area.size *= win_scale;
 
 	Ref<InputEventMouseButton> b = p_event;
+	Ref<InputEventScreenTouch> t = p_event;
 
-	if (b.is_valid()) {
-		MouseButton button_idx = b->get_button_index();
+	if (b.is_valid() || t.is_valid()) {
+		MouseButton button_idx = b.is_valid() ? b->get_button_index() : MouseButton::LEFT;
+		bool pressed = b.is_valid() ? b->is_pressed() : t->is_pressed();
+		Point2 position = b.is_valid() ? b->get_position() : t->get_position();
 		// Activate the item on release of either the left mouse button or
 		// any mouse button held down when the popup was opened.
 		// This allows for opening the popup and triggering an action in a single mouse click.
 		if (button_idx == MouseButton::LEFT || initial_button_mask.has_flag(mouse_button_to_mask(button_idx))) {
-			if (b->is_pressed()) {
+			if (pressed) {
 				during_grabbed_click = false;
-				is_scrolling = is_layout_rtl() ? b->get_position().x < item_clickable_area.position.x - item_clickable_area.size.width : b->get_position().x > item_clickable_area.size.width + item_clickable_area.position.x;
+				is_scrolling = is_layout_rtl() ? position.x < item_clickable_area.position.x - item_clickable_area.size.width : position.x > item_clickable_area.size.width + item_clickable_area.position.x;
 
 				// Hide it if the shadows have been clicked.
 				if (get_flag(FLAG_POPUP)) {
 					Rect2 panel_area = panel->get_global_rect();
 					panel_area.position *= win_scale;
 					panel_area.size *= win_scale;
-					if (!panel_area.has_point(b->get_position())) {
+					if (!panel_area.has_point(position)) {
 						_close_pressed();
 						return;
 					}
 				}
 
-				if (!item_clickable_area.has_point(b->get_position())) {
+				if (!item_clickable_area.has_point(position)) {
 					if (mouse_over >= 0) {
-						_mouse_over_update(b->get_position());
+						_mouse_over_update(position);
 					}
 					return;
 				}
 
-				int over = _get_mouse_over(b->get_position());
+				int over = _get_mouse_over(position);
 				if (over < 0 || items[over].separator || items[over].disabled || (items[over].submenu && items[over].submenu->is_visible())) {
 					return;
 				}
 
-				_mouse_over_update(b->get_position());
+				_mouse_over_update(position);
 			} else {
 				if (is_scrolling) {
 					is_scrolling = false;
@@ -677,7 +680,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 				during_grabbed_click = false;
 				initial_button_mask.clear();
 
-				if (!item_clickable_area.has_point(b->get_position())) {
+				if (!item_clickable_area.has_point(position)) {
 					return;
 				}
 
@@ -686,9 +689,9 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				int over = _get_mouse_over(b->get_position());
+				int over = _get_mouse_over(position);
 				if (over < 0) {
-					if (panel->get_global_rect().has_point(b->get_position() / win_scale)) {
+					if (panel->get_global_rect().has_point(position / win_scale)) {
 						return;
 					}
 					if (!was_during_grabbed_click) {
