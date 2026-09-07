@@ -6,7 +6,7 @@ if __name__ != "__main__":
 import argparse
 import sys
 
-import xmlschema  # Third-party module. Automatically installed in associated pre-commit hook.
+import xmlschema  # ty:ignore[unresolved-import]
 
 sys.path.insert(0, "./")
 

@@ -78,9 +78,7 @@ def find_msbuild_mono_unix():
 def find_msbuild_tools_path_reg():
     import subprocess
 
-    program_files = os.getenv("PROGRAMFILES(X86)")
-    if not program_files:
-        program_files = os.getenv("PROGRAMFILES")
+    program_files = os.getenv("PROGRAMFILES(X86)", os.getenv("PROGRAMFILES", ""))
     vswhere = os.path.join(program_files, "Microsoft Visual Studio", "Installer", "vswhere.exe")
 
     vswhere_args = ["-latest", "-products", "*", "-requires", "Microsoft.Component.MSBuild"]

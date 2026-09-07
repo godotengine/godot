@@ -2,7 +2,6 @@
 from misc.utility.scons_hints import *
 
 from platform_visionos_builders import generate_bundle
-from SCons.Script import Glob
 
 from platform_methods import combine_libs_apple_embedded, setup_swift_builder
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 from misc.utility.scons_hints import *
 
 import pathlib
+import sys
 
 import profiling_builders
 
@@ -27,7 +28,7 @@ def find_perfetto_path(path: pathlib.Path) -> pathlib.Path:
         return path
 
     print("Invalid perfetto profiler path. Unable to find perfetto.cc.")
-    Exit(255)
+    sys.exit(255)
 
 
 def find_tracy_path(path: pathlib.Path) -> pathlib.Path:
@@ -43,7 +44,7 @@ def find_tracy_path(path: pathlib.Path) -> pathlib.Path:
         return path
 
     print("Invalid profiler_path. Unable to find TracyClient.cpp.")
-    Exit(255)
+    sys.exit(255)
 
 
 if env["profiler"]:

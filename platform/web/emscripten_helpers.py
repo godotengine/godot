@@ -8,12 +8,12 @@ from platform_methods import get_build_version
 
 def run_closure_compiler(target, source, env, for_signature):
     closure_bin = os.path.join(
-        os.path.dirname(WhereIs("emcc")),
+        os.path.dirname(WhereIs("emcc") or ""),
         "node_modules",
         ".bin",
         "google-closure-compiler",
     )
-    cmd = [WhereIs("node"), closure_bin]
+    cmd = [WhereIs("node") or "", closure_bin]
     cmd.extend(["--compilation_level", "ADVANCED_OPTIMIZATIONS"])
     for f in env["JSEXTERNS"]:
         cmd.extend(["--externs", f.get_abspath()])
