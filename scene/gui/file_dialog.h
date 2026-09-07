@@ -207,6 +207,10 @@ private:
 	bool is_invalidating = false;
 	bool ensure_visible_after_invalidating = false;
 
+	static int64_t next_native_dialog_id;
+
+	int64_t native_dialog_id = -1;
+
 	VBoxContainer *main_vbox = nullptr;
 
 	Button *dir_prev = nullptr;

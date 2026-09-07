@@ -440,7 +440,7 @@ void DisplayServerWayland::set_system_theme_change_callback(const Callable &p_ca
 	portal_desktop->set_system_theme_change_callback(p_callable);
 }
 
-Error DisplayServerWayland::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+Error DisplayServerWayland::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id, int64_t p_id) {
 	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -452,10 +452,10 @@ Error DisplayServerWayland::file_dialog_show(const String &p_title, const String
 	WaylandThread::WindowState *ws = wayland_thread.window_get_state(window_id);
 	ERR_FAIL_NULL_V(ws, ERR_BUG);
 
-	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false, p_id);
 }
 
-Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id, int64_t p_id) {
 	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -467,7 +467,12 @@ Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title,
 	WaylandThread::WindowState *ws = wayland_thread.window_get_state(window_id);
 	ERR_FAIL_NULL_V(ws, ERR_BUG);
 
-	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
+	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true, p_id);
+}
+
+Error DisplayServerWayland::file_dialog_hide(int64_t p_id) {
+	ERR_FAIL_COND_V(!portal_desktop, ERR_UNAVAILABLE);
+	return portal_desktop->file_dialog_hide(p_id);
 }
 
 #endif
