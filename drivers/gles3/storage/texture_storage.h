@@ -396,12 +396,12 @@ struct RenderTarget {
 		RID velocity_depth;
 
 		struct FBOCacheEntry {
-			GLuint fbo;
-			GLuint color;
-			GLuint depth;
+			GLuint fbo = 0;
+			GLuint color = 0;
+			GLuint depth = 0;
 			Size2i size;
 			Vector<GLuint> allocated_textures;
-			bool depth_has_stencil;
+			bool depth_has_stencil = false;
 		};
 		RBMap<uint32_t, FBOCacheEntry> fbo_cache;
 
