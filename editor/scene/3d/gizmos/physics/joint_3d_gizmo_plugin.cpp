@@ -362,17 +362,11 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		CreateConeTwistJointGizmo(
 				Transform3D(),
 				cone->get_global_transform(),
-				node_body_a ? node_body_a->get_global_transform() : Transform3D(),
-				node_body_b ? node_body_b->get_global_transform() : Transform3D(),
 				cone->get_param(ConeTwistJoint3D::PARAM_SWING_SPAN),
-				node_body_a ? &body_a_points : nullptr,
-				node_body_b ? &body_b_points : nullptr);
+				points);
 
-		p_gizmo->add_collision_segments(body_a_points);
-		p_gizmo->add_collision_segments(body_b_points);
-
-		p_gizmo->add_lines(body_a_points, body_a_material);
-		p_gizmo->add_lines(body_b_points, body_b_material);
+		p_gizmo->add_collision_segments(points);
+		p_gizmo->add_lines(points, common_material);
 	}
 
 	Generic6DOFJoint3D *gen = Object::cast_to<Generic6DOFJoint3D>(joint);
@@ -518,14 +512,12 @@ void Joint3DGizmoPlugin::CreateSliderJointGizmo(const Transform3D &p_offset, con
 	}
 }
 
-void Joint3DGizmoPlugin::CreateConeTwistJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_swing, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
-	if (r_body_a_points) {
-		JointGizmosDrawer::draw_cone(
-				p_offset,
-				Basis(),
-				p_swing,
-				*r_body_a_points);
-	}
+void Joint3DGizmoPlugin::CreateConeTwistJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, real_t p_swing, Vector<Vector3> &r_points) {
+	JointGizmosDrawer::draw_cone(
+			p_offset,
+			Basis(),
+			p_swing,
+			r_points);
 }
 
 void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(

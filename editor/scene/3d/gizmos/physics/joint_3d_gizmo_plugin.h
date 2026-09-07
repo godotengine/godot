@@ -51,7 +51,7 @@ public:
 	static void CreatePinJointGizmo(const Transform3D &p_offset, Vector<Vector3> &r_cursor_points);
 	static void CreateHingeJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_limit_lower, real_t p_limit_upper, bool p_use_limit, Vector<Vector3> &r_common_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points);
 	static void CreateSliderJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_angular_limit_lower, real_t p_angular_limit_upper, real_t p_linear_limit_lower, real_t p_linear_limit_upper, Vector<Vector3> &r_points, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points);
-	static void CreateConeTwistJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, const Transform3D &p_trs_body_a, const Transform3D &p_trs_body_b, real_t p_swing, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points);
+	static void CreateConeTwistJointGizmo(const Transform3D &p_offset, const Transform3D &p_trs_joint, real_t p_swing, Vector<Vector3> &r_points);
 	static void CreateGeneric6DOFJointGizmo(
 			const Transform3D &p_offset,
 			const Transform3D &p_trs_joint,
@@ -84,7 +84,6 @@ public:
 
 class JointGizmosDrawer {
 public:
-	static Basis look_body(const Transform3D &p_joint_transform, const Transform3D &p_body_transform);
 	static Basis look_body_toward(Vector3::Axis p_axis, const Transform3D &joint_transform, const Transform3D &body_transform);
 	static Basis look_body_toward_x(const Transform3D &p_joint_transform, const Transform3D &p_body_transform);
 	static Basis look_body_toward_y(const Transform3D &p_joint_transform, const Transform3D &p_body_transform);
