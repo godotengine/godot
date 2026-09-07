@@ -76,6 +76,10 @@ def get_doc_classes():
         "OpenXRSpatialMarkerTrackingCapability",
         "OpenXRAndroidThreadSettingsExtension",
         "OpenXRUserPresenceExtension",
+        "OpenXRSpatialCapabilityConfigurationImageTracking",
+        "OpenXRSpatialComponentImage2DList",
+        "OpenXRImageTracker",
+        "OpenXRSpatialImageTrackingCapability",
     ]
 
 

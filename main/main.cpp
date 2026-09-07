@@ -2900,6 +2900,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/marker_tracking/enable_builtin_for_types", PROPERTY_HINT_FLAGS, "QR codes,Micro QR codes,ArUco markers,April tags"), 0);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/marker_tracking/aruco_dict", PROPERTY_HINT_ENUM, "4x4 50 IDs,4x4 100 IDs,4x4 250 IDs,4x4 1000 IDs,5x5 50 IDs,5x5 100 IDs,5x5 250 IDs,5x5 1000 IDs,6x6 50 IDs,6x6 100 IDs,6x6 250 IDs,6x6 1000 IDs,7x7 50 IDs,7x7 100 IDs,7x7 250 IDs,7x7 1000 IDs"), "15");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/marker_tracking/april_tag_dict", PROPERTY_HINT_ENUM, "4x4H5,5x5H9,6x6H10,6x6H11"), "3");
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/spatial_image_tracking/enable", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/spatial_image_tracking/enable_builtin_detection", false);
+	// TODO add a
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/render_model", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/user_presence", false);

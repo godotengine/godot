@@ -3683,6 +3683,14 @@
 			Enables the built-in logic for handling marker tracking for each selected marker type. Godot will query markers and manage [OpenXRMarkerTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
 			[b]Note:[/b] This functionality requires that marker tracking is supported and enabled.
 		</member>
+		<member name="xr/openxr/extensions/spatial_entity/spatial_image_tracking/enable" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the image tracking extension is requested. If supported, you will be able to query information about images detected by the XR runtime.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and image tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/spatial_image_tracking/enable_builtin_detection" type="bool" setter="" getter="" default="false">
+			Enables the built-in logic for handling image tracking using the default images specified below. Godot will query images and manage [OpenXRImageTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that image tracking is supported and enabled.
+		</member>
 		<member name="xr/openxr/extensions/user_presence" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the user presence extension is enabled if available.
 		</member>
