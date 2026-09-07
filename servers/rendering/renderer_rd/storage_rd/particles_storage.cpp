@@ -758,6 +758,24 @@ void ParticlesStorage::particles_set_skeleton(RID p_particles, RID p_skeleton) {
 	particles->particles_material_uniform_set = RID();
 }
 
+void ParticlesStorage::particles_set_baked_emission_texture(RID p_particles, RID p_emission_texture) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	/*
+	if (p_skeleton.is_valid()) {
+		particles->skeleton = p_skeleton;
+	} else if (particles->skeleton.is_valid()) {
+		particles->skeleton = RID(); // Clear skeleton
+	}
+	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
+		//will need to be re-created
+		RD::get_singleton()->free_rid(particles->particles_material_uniform_set);
+	}
+	particles->particles_material_uniform_set = RID();
+	*/
+}
+
 int ParticlesStorage::particles_get_draw_passes(RID p_particles) const {
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, 0);
@@ -918,13 +936,6 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	frame_params.emitter_velocity[1] = p_particles->emitter_velocity.y;
 	frame_params.emitter_velocity[2] = p_particles->emitter_velocity.z;
 	frame_params.interp_to_end = p_particles->interp_to_end;
-
-	/*TODO
-	get the transform from particles to skeleton
-	if (p_particles->skeleton.is_valid){
-		if (frame_params.skele)
-		frame_params.skeleton_to_particles_transform = MeshStorage::skeleton_g();
-	}*/
 
 	{ //collision and attractors
 

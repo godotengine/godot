@@ -78,6 +78,7 @@ public:
 	virtual void particles_restart(RID p_particles) override {}
 
 	virtual void particles_set_skeleton(RID p_particles, RID p_skeleton) override {}
+	virtual void particles_set_baked_emission_texture(RID p_particles, RID p_emission_texture) override {}
 
 	virtual void particles_set_draw_order(RID p_particles, RSE::ParticlesDrawOrder p_order) override {}
 

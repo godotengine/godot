@@ -170,6 +170,7 @@ bone_transforms;
 
 layout(set = 2, binding = 0) uniform texture3D sdf_vec_textures[MAX_3D_TEXTURES];
 layout(set = 2, binding = 1) uniform texture2D height_field_texture;
+//layout(set = 2, binding = 3) uniform texture2D skinned_emission_texture;
 
 /* SET 3: MATERIAL */
 
