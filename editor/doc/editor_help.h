@@ -34,6 +34,7 @@
 #include "editor/doc/doc_tools.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/text_edit.h"
@@ -372,9 +373,21 @@ public:
 class EditorHelpBitTooltip : public PopupPanel {
 	GDCLASS(EditorHelpBitTooltip, PopupPanel);
 
+public:
+	struct DiagnosticEntry {
+		enum Severity {
+			SEVERITY_ERROR,
+			SEVERITY_WARNING,
+		};
+
+		Severity severity = SEVERITY_ERROR;
+		String code;
+		String text;
+	};
+
+private:
 	static bool _is_tooltip_visible;
 
-	RichTextLabel *diagnostics_label;
 	VBoxContainer *vbox;
 
 	Timer *timer = nullptr;
@@ -383,6 +396,7 @@ class EditorHelpBitTooltip : public PopupPanel {
 	bool _is_shortcut_pressed = false;
 
 	static Control *_make_invisible_control();
+	static Control *_build_diagnostics_list(const Vector<DiagnosticEntry> &p_diagnostics);
 
 	void _start_timer();
 	void _target_gui_input(const Ref<InputEvent> &p_event);
@@ -392,20 +406,39 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static bool can_show_new_tooltip(bool p_shortcut);
+
 	// The returned control is an orphan node, which is to make the standard tooltip invisible.
-	[[nodiscard]] static Control *make_tooltip(
-			Control *p_target,
-			const String &p_symbol,
-			const String &p_prologue = String(),
-			bool p_use_class_prefix = false,
-			bool p_shortcut = false,
-			const String &p_diagnostics = String());
+	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_shortcut = false, const Vector<DiagnosticEntry> &p_diagnostics = Vector<DiagnosticEntry>());
 
 	void popup_under_position(const Point2 &p_point);
 
 	bool is_shortcut_pressed() const { return _is_shortcut_pressed; }
 
 	EditorHelpBitTooltip(Control *p_target, bool p_shortcut = false);
+};
+
+class DiagnosticItemRow : public MarginContainer {
+	GDCLASS(DiagnosticItemRow, MarginContainer);
+
+	EditorHelpBitTooltip::DiagnosticEntry entry;
+	RichTextLabel *msg_label = nullptr;
+	Button *copy_btn = nullptr;
+
+	String _get_diagnostic_title() const;
+	void _copy_pressed();
+	void _update_content();
+
+protected:
+	static void _bind_methods() {}
+	void _notification(int p_what);
+
+public:
+	void set_entry(const EditorHelpBitTooltip::DiagnosticEntry &p_entry);
+	void set_copy_button_visible(bool p_visible);
+	void _on_mouse_exited();
+
+	DiagnosticItemRow();
 };
 
 class EditorSyntaxHighlighter;
