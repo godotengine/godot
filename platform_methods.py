@@ -161,6 +161,64 @@ def detect_mvk(env, osname):
     return ""
 
 
+def get_libs_as_nodes(env):
+    """
+    Returns `$LIBS` as a list of scons Nodes.
+    Tries to transform string entries into File nodes.
+    """
+    from itertools import product
+
+    from SCons.Node import Node
+
+    def get_list(key, default=""):
+        try:
+            list_val = env[key]
+            if not isinstance(list_val, list):
+                list_val = [list_val]
+        except KeyError:
+            list_val = [default]
+        return list_val
+
+    nodes = []
+    for lib in env.Flatten(get_list("LIBS", None)):
+        if isinstance(lib, str) and lib:
+            for prefix, suffix in product(get_list("LIBPREFIXES"), get_list("LIBSUFFIXES")):
+                file = env.FindFile(prefix + lib + suffix, get_list("LIBPATH", "."))
+                if file is not None:
+                    lib = file  # Replace string with a scons File node.
+                    break
+        if isinstance(lib, Node):
+            nodes.append(lib)
+    return nodes
+
+
+def combine_libs_ar(target, source, env):
+    import tempfile
+
+    lib_path = target[0].srcnode().abspath
+
+    paths = [lib.srcnode().abspath for lib in env.Flatten(source)]
+    paths = [path for path in paths if os.path.isfile(path) and (path.endswith(".a") or path.endswith(".lib"))]
+
+    file = None
+    try:
+        file = tempfile.NamedTemporaryFile(mode="w+t", suffix=".mri", delete=False)
+        file.write(f"create {lib_path}\n")
+        for path in paths:
+            file.write(f"addlib {path}\n")
+        file.write("save\n")
+        file.write("end")
+        file.flush()
+        file.close()
+
+        env.Execute(f'$AR -M < "{file.name}"')
+    finally:
+        if file is not None:
+            os.unlink(file.name)
+
+    env.Execute(f'$RANLIB "{lib_path}"')
+
+
 def combine_libs_apple_embedded(target, source, env):
     lib_path = target[0].srcnode().abspath
     if "osxcross" in env:
