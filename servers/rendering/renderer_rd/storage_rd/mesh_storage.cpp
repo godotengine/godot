@@ -1713,6 +1713,10 @@ void MeshStorage::_multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 
 	if (multimesh->indirect) {
 		ERR_FAIL_COND(p_mesh.is_null());
+		if (multimesh->command_buffer.is_valid()) {
+			RD::get_singleton()->free_rid(multimesh->command_buffer);
+			multimesh->command_buffer = RID();
+		}
 		_multimesh_create_indirect_command_buffer(multimesh);
 	}
 
@@ -1900,6 +1904,7 @@ void MeshStorage::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p
 
 void MeshStorage::_multimesh_create_indirect_command_buffer(MultiMesh *multimesh) {
 	ERR_FAIL_COND(!multimesh->indirect);
+	ERR_FAIL_COND(multimesh->command_buffer.is_valid());
 	Mesh *mesh = mesh_owner.get_or_null(multimesh->mesh);
 	ERR_FAIL_NULL(mesh);
 	if (mesh->surface_count == 0) {
@@ -1917,10 +1922,6 @@ void MeshStorage::_multimesh_create_indirect_command_buffer(MultiMesh *multimesh
 	}
 
 	RID new_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count, new_vector, RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
-
-	if (multimesh->command_buffer.is_valid()) {
-		RD::get_singleton()->free_rid(multimesh->command_buffer);
-	}
 	multimesh->command_buffer = new_buffer;
 }
 
