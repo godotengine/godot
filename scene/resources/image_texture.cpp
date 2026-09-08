@@ -84,10 +84,34 @@ void ImageTexture::set_image(const Ref<Image> &p_image) {
 		RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_image);
 		RenderingServer::get_singleton()->texture_replace(texture, new_texture);
 	}
+
+	alpha_cache.unref();
+	image_stored = true;
+
 	notify_property_list_changed();
 	emit_changed();
+}
 
-	image_stored = true;
+void ImageTexture::clear_image() {
+	if (!image_stored) {
+		return;
+	}
+
+	w = 0;
+	h = 0;
+	format = Image::FORMAT_L8;
+	mipmaps = false;
+
+	if (texture.is_valid()) {
+		RenderingServer::get_singleton()->free_rid(texture);
+		texture = RID();
+	}
+
+	alpha_cache.unref();
+	image_stored = false;
+
+	notify_property_list_changed();
+	emit_changed();
 }
 
 Image::Format ImageTexture::get_format() const {
@@ -106,11 +130,11 @@ void ImageTexture::update(const Ref<Image> &p_image) {
 
 	RS::get_singleton()->texture_2d_update(texture, p_image);
 
-	notify_property_list_changed();
-	emit_changed();
-
 	alpha_cache.unref();
 	image_stored = true;
+
+	notify_property_list_changed();
+	emit_changed();
 }
 
 Ref<Image> ImageTexture::get_image() const {
@@ -232,6 +256,7 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_static_method("ImageTexture", D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
 
 	ClassDB::bind_method(D_METHOD("set_image", "image"), &ImageTexture::set_image);
+	ClassDB::bind_method(D_METHOD("clear_image"), &ImageTexture::clear_image);
 	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 
