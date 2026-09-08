@@ -1099,28 +1099,53 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			r_result.insert(warning.display, warning);
 		}
 	} else if (p_annotation->name == SNAME("@rpc")) {
-		switch (p_argument) {
-			case 0: {
-				static const char *options[2] = { "any_peer", "authority" };
-				for (int i = 0; i < 2; i++) {
-					EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, options[i]);
+		if (p_argument <= 2) {
+			// @rpc arguments can be specified in any order, but only once per category.
+			static const char *mode_options[] = { "any_peer", "authority" };
+			static const char *sync_options[] = { "call_remote", "call_local" };
+			static const char *transfer_mode_options[] = { "unreliable", "unreliable_ordered", "reliable" };
+
+			bool mode_used = false;
+			bool sync_used = false;
+			bool transfer_mode_used = false;
+
+			for (uint32_t i = 0; i < p_argument && i < p_annotation->arguments.size(); i++) {
+				const GDScriptParser::Node *arg = p_annotation->arguments[i];
+				if (arg == nullptr || arg->type != GDScriptParser::Node::LITERAL) {
+					continue;
+				}
+				const Variant &value = static_cast<const GDScriptParser::LiteralNode *>(arg)->value;
+				if (value.get_type() != Variant::STRING && value.get_type() != Variant::STRING_NAME) {
+					continue;
+				}
+				String s = value;
+				if (s == "any_peer" || s == "authority") {
+					mode_used = true;
+				} else if (s == "call_remote" || s == "call_local") {
+					sync_used = true;
+				} else if (s == "unreliable" || s == "unreliable_ordered" || s == "reliable") {
+					transfer_mode_used = true;
+				}
+			}
+
+			if (!mode_used) {
+				for (const char *option_name : mode_options) {
+					EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, option_name);
 					r_result.insert(option.display, option);
 				}
-			} break;
-			case 1: {
-				static const char *options[2] = { "call_remote", "call_local" };
-				for (int i = 0; i < 2; i++) {
-					EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, options[i]);
+			}
+			if (!sync_used) {
+				for (const char *option_name : sync_options) {
+					EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, option_name);
 					r_result.insert(option.display, option);
 				}
-			} break;
-			case 2: {
-				static const char *options[3] = { "unreliable", "unreliable_ordered", "reliable" };
-				for (int i = 0; i < 3; i++) {
-					EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, options[i]);
+			}
+			if (!transfer_mode_used) {
+				for (const char *option_name : transfer_mode_options) {
+					EditorLanguage::CompletionOption option = _calculate_string_insertion(existing_argument, option_name);
 					r_result.insert(option.display, option);
 				}
-			} break;
+			}
 		}
 	}
 }
