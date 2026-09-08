@@ -559,7 +559,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	override fun onGodotSetupCompleted() {
 		super.onGodotSetupCompleted()
-		val longPressEnabled = enableLongPressGestures()
+		val rightClickEmulationEnabled = enableRightClickEmulation()
 		val panScaleEnabled = enablePanAndScaleGestures()
 		val overrideVolumeButtonsEnabled = overrideVolumeButtons()
 		val hapticEnabled = enableHapticOnLongPress()
@@ -567,7 +567,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
 			godotFragment?.godot?.renderView?.inputHandler?.apply {
-				enableLongPress(longPressEnabled)
+				enableRightClickEmulation(rightClickEmulationEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
 				setOverrideVolumeButtons(overrideVolumeButtonsEnabled)
 				enableHapticFeedback(hapticEnabled)
@@ -854,7 +854,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	/**
 	 * Enable long press gestures for the Godot Android editor.
 	 */
-	protected open fun enableLongPressGestures() =
+	protected open fun enableRightClickEmulation() =
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_long_press_as_right_click"))
 
 	/**

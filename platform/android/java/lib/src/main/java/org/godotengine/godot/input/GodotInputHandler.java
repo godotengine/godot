@@ -113,7 +113,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 		this.godotGestureHandler = new GodotGestureHandler(this);
 		this.gestureDetector = new GestureDetector(context, godotGestureHandler);
-		enableLongPress(false);
+		this.gestureDetector.setIsLongpressEnabled(true);
 
 		this.scaleGestureDetector = new ScaleGestureDetector(context, godotGestureHandler);
 		this.scaleGestureDetector.setStylusScaleEnabled(true);
@@ -127,9 +127,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	/**
 	 * Enable long press events. This is false by default.
 	 */
-	public void enableLongPress(boolean enable) {
-		this.gestureDetector.setIsLongpressEnabled(enable);
-		this.godotGestureHandler.setLongPressEnabled(enable);
+	public void enableRightClickEmulation(boolean enable) {
+		this.godotGestureHandler.setRightClickEmulation(enable);
 	}
 
 	/**
@@ -612,10 +611,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	boolean handleMouseEvent(final MotionEvent event, int eventActionOverride, boolean doubleTap) {
-		return handleMouseEvent(event, eventActionOverride, event.getButtonState(), doubleTap);
+		return handleMouseEvent(event, eventActionOverride, event.getButtonState(), doubleTap, false);
 	}
 
-	boolean handleMouseEvent(final MotionEvent event, int eventActionOverride, int buttonMaskOverride, boolean doubleTap) {
+	boolean handleMouseEvent(final MotionEvent event, int eventActionOverride, int buttonMaskOverride, boolean doubleTap, boolean emulatedRightClick) {
 		final float x = event.getX();
 		final float y = event.getY();
 
@@ -641,14 +640,14 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 			sourceMouseRelative = event.isFromSource(InputDevice.SOURCE_MOUSE_RELATIVE);
 		}
-		return handleMouseEvent(eventActionOverride, buttonMaskOverride, x, y, horizontalFactor, verticalFactor, doubleTap, sourceMouseRelative, pressure, getEventTiltX(event), getEventTiltY(event));
+		return handleMouseEvent(eventActionOverride, buttonMaskOverride, x, y, horizontalFactor, verticalFactor, doubleTap, sourceMouseRelative, pressure, getEventTiltX(event), getEventTiltY(event), emulatedRightClick);
 	}
 
 	boolean handleMouseEvent(int eventAction, boolean sourceMouseRelative) {
-		return handleMouseEvent(eventAction, 0, 0f, 0f, 0f, 0f, false, sourceMouseRelative, 1f, 0f, 0f);
+		return handleMouseEvent(eventAction, 0, 0f, 0f, 0f, 0f, false, sourceMouseRelative, 1f, 0f, 0f, false);
 	}
 
-	boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY) {
+	boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY, boolean emulated) {
 		InputEventRunnable runnable = InputEventRunnable.obtain();
 		if (runnable == null) {
 			return false;
@@ -681,7 +680,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			case MotionEvent.ACTION_HOVER_MOVE:
 			case MotionEvent.ACTION_MOVE:
 			case MotionEvent.ACTION_SCROLL: {
-				runnable.setMouseEvent(eventAction, buttonsMask, x, y, deltaX, deltaY, doubleClick, sourceMouseRelative, pressure, tiltX, tiltY);
+				runnable.setMouseEvent(eventAction, buttonsMask, x, y, deltaX, deltaY, doubleClick, sourceMouseRelative, pressure, tiltX, tiltY, emulated);
 				dispatchInputEventRunnable(runnable);
 				return true;
 			}
@@ -694,10 +693,14 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	boolean handleTouchEvent(final MotionEvent event, int eventActionOverride) {
-		return handleTouchEvent(event, eventActionOverride, false);
+		return handleTouchEvent(event, eventActionOverride, false, false);
 	}
 
 	boolean handleTouchEvent(final MotionEvent event, int eventActionOverride, boolean doubleTap) {
+		return handleTouchEvent(event, eventActionOverride, doubleTap, false);
+	}
+
+	boolean handleTouchEvent(final MotionEvent event, int eventActionOverride, boolean doubleTap, boolean longPress) {
 		if (event.getPointerCount() == 0) {
 			return true;
 		}
@@ -714,7 +717,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			case MotionEvent.ACTION_MOVE:
 			case MotionEvent.ACTION_POINTER_UP:
 			case MotionEvent.ACTION_POINTER_DOWN: {
-				runnable.setTouchEvent(event, eventActionOverride, doubleTap);
+				runnable.setTouchEvent(event, eventActionOverride, doubleTap, longPress);
 				dispatchInputEventRunnable(runnable);
 				return true;
 			}
