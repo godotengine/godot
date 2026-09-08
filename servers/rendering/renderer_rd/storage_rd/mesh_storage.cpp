@@ -1917,7 +1917,7 @@ void MeshStorage::_multimesh_create_indirect_command_buffer(MultiMesh *multimesh
 	}
 
 	RID new_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count, new_vector, RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
-	
+
 	if (multimesh->command_buffer.is_valid()) {
 		RD::get_singleton()->free_rid(multimesh->command_buffer);
 	}
