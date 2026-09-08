@@ -54,7 +54,7 @@ private:
 		bool is_string = false; // `TYPE_STRING` or `TYPE_MULTILINE_STRING`.
 		bool is_comment = false; // `TYPE_COMMENT` or `TYPE_CODE_REGION`.
 	};
-	Vector<ColorRegion> color_regions;
+	LocalVector<ColorRegion> color_regions;
 	HashMap<int, int> color_region_cache;
 
 	HashMap<StringName, Color> class_names;
