@@ -1365,6 +1365,54 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 	}
 }
 
+static void check_set_get_warnings(const GDScriptParser::VariableNode &p_var, const GDScriptParser::FunctionNode *p_setter, const GDScriptParser::FunctionNode *p_getter, GDScriptParser &p_sink) {
+#ifdef DEBUG_ENABLED
+
+	// SET_GET_COROUTINE
+
+	if (p_setter && p_setter->is_coroutine) {
+		ERR_FAIL_COND(p_var.property == GDScriptParser::VariableNode::PROP_NONE);
+		const GDScriptParser::Node *source = p_var.property == GDScriptParser::VariableNode::PROP_SETGET ? static_cast<const GDScriptParser::Node *>(p_var.setter_pointer) : static_cast<GDScriptParser::Node *>(p_var.setter);
+		p_sink.push_warning(source, GDScriptWarning::SET_GET_COROUTINE, "setter", p_var.identifier->name, "setter");
+	}
+	if (p_getter && p_getter->is_coroutine) {
+		ERR_FAIL_COND(p_var.property == GDScriptParser::VariableNode::PROP_NONE);
+		const GDScriptParser::Node *source = p_var.property == GDScriptParser::VariableNode::PROP_SETGET ? static_cast<const GDScriptParser::Node *>(p_var.getter_pointer) : static_cast<GDScriptParser::Node *>(p_var.getter);
+		p_sink.push_warning(source, GDScriptWarning::SET_GET_COROUTINE, "getter", p_var.identifier->name, "getter");
+	}
+
+	// SET_GET_GRADUALLY_TYPED
+
+	if (p_var.property == GDScriptParser::VariableNode::PROP_SETGET) {
+		const bool setter_is_typed = p_setter && !p_setter->parameters.is_empty() && p_setter->parameters[0]->type_constraint.is_set() && p_setter->parameters[0]->type_constraint.is_hard_type() && !p_setter->parameters[0]->type_constraint.is_variant();
+		const bool getter_is_typed = p_getter && p_getter->return_type_constraint.is_set() && p_getter->return_type_constraint.is_hard_type() && !p_getter->return_type_constraint.is_variant();
+		const bool var_is_typed = p_var.type_constraint.is_set() && p_var.type_constraint.is_hard_type() && !p_var.type_constraint.is_variant();
+
+		if (p_setter && var_is_typed != setter_is_typed) {
+			p_sink.push_warning(
+					p_var.setter_pointer,
+					GDScriptWarning::SET_GET_GRADUALLY_TYPED,
+					var_is_typed ? "typed variable" : "untyped variable",
+					p_var.identifier->name,
+					setter_is_typed ? "typed setter" : "untyped setter",
+					p_setter->identifier->name,
+					var_is_typed ? p_setter->identifier->name : p_var.identifier->name);
+		}
+		if (p_getter && var_is_typed != getter_is_typed) {
+			p_sink.push_warning(
+					p_var.getter_pointer,
+					GDScriptWarning::SET_GET_GRADUALLY_TYPED,
+					var_is_typed ? "typed variable" : "untyped variable",
+					p_var.identifier->name,
+					getter_is_typed ? "typed getter" : "untyped getter",
+					p_getter->identifier->name,
+					var_is_typed ? p_getter->identifier->name : p_var.identifier->name);
+		}
+	}
+
+#endif // DEBUG_ENABLED
+}
+
 void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source) {
 	if (p_source == nullptr && parser->has_class(p_class)) {
 		p_source = p_class;
@@ -1455,10 +1503,9 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 			}
 #endif // DEBUG_ENABLED
 
+			GDScriptParser::FunctionNode *getter_function = nullptr;
+			GDScriptParser::FunctionNode *setter_function = nullptr;
 			if (member.variable->property == GDScriptParser::VariableNode::PROP_SETGET) {
-				GDScriptParser::FunctionNode *getter_function = nullptr;
-				GDScriptParser::FunctionNode *setter_function = nullptr;
-
 				bool has_valid_getter = false;
 				bool has_valid_setter = false;
 
@@ -1523,7 +1570,13 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						push_error(vformat(R"(Getter with type "%s" cannot be used along with setter of type "%s".)", getter_function->return_type_constraint.to_string_strict(), setter_function->parameters[0]->type_constraint.to_string()), member.variable);
 					}
 				}
+			} else if (member.variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
+				setter_function = member.variable->setter;
+				getter_function = member.variable->getter;
 			}
+
+			check_set_get_warnings(*member.variable, setter_function, getter_function, *parser);
+
 		} else if (member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
 #ifdef DEBUG_ENABLED
 			if (member.signal->usages == 0) {
