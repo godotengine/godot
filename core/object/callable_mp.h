@@ -99,16 +99,21 @@ public:
 		return sizeof...(P);
 	}
 
-	virtual void get_arguments(Vector<Variant> &r_arguments) const {
+	virtual void get_method_info(MethodInfo &r_method_info) const {
 		print_line("CallableCustomMethodPointer::get_arguments is called!");
-		r_arguments.clear();
-
 #ifndef DEBUG_ENABLED
+		MethodInfo mi;
+		PropertyInfo arg;
+
 		for (uint32_t i = 0; i < sizeof...(P); ++i) {
-			PropertyInfo arg;
 			call_get_argument_type_info<P...>(i, arg);
-			r_arguments.push_back(arg.operator Dictionary());
+			mi.arguments.push_back(arg);
 		}
+
+		call_get_argument_type_info<P...>(-1, arg);
+		mi.return_val = arg;
+
+		r_method_info = mi;
 #else
 		StringName method_name = get_method();
 		ERR_FAIL_COND(method_name.is_empty());
@@ -123,10 +128,7 @@ public:
 
 		for (const MethodInfo &E : method_info_list) {
 			if (E.name == method_name) {
-				print_line("Found our method!!");
-				for (const PropertyInfo &F : E.arguments) {
-					r_arguments.push_back(F.operator Dictionary());
-				}
+				r_method_info = E;
 			}
 		}
 #endif
@@ -201,15 +203,20 @@ public:
 		return sizeof...(P);
 	}
 
-	virtual void get_arguments(Vector<Variant> &r_arguments) const override {
+	virtual void get_method_info(MethodInfo &r_method_info) const override {
 		print_line("CallableCustomMethodPointerC::get_arguments is called!");
-		r_arguments.clear();
+		MethodInfo mi;
+		PropertyInfo arg;
 
 		for (uint32_t i = 0; i < sizeof...(P); ++i) {
-			PropertyInfo arg;
 			call_get_argument_type_info<P...>(i, arg);
-			r_arguments.push_back(arg.operator Dictionary());
+			mi.arguments.push_back(arg);
 		}
+
+		call_get_argument_type_info<P...>(-1, arg);
+		mi.return_val = arg;
+
+		r_method_info = mi;
 	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
@@ -286,15 +293,20 @@ public:
 		return sizeof...(P);
 	}
 
-	virtual void get_arguments(Vector<Variant> &r_arguments) const override {
+	virtual void get_method_info(MethodInfo &r_method_info) const override {
 		print_line("CallableCustomStaticMethodPointer::get_arguments is called!");
-		r_arguments.clear();
+		MethodInfo mi;
+		PropertyInfo arg;
 
 		for (uint32_t i = 0; i < sizeof...(P); ++i) {
-			PropertyInfo arg;
 			call_get_argument_type_info<P...>(i, arg);
-			r_arguments.push_back(arg.operator Dictionary());
+			mi.arguments.push_back(arg);
 		}
+
+		call_get_argument_type_info<P...>(-1, arg);
+		mi.return_val = arg;
+
+		r_method_info = mi;
 	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {

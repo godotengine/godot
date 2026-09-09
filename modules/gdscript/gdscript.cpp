@@ -384,28 +384,6 @@ int GDScript::get_script_method_argument_count(const StringName &p_method, bool 
 	return E->value->get_argument_count();
 }
 
-Vector<Variant> GDScript::get_script_method_arguments(const StringName &p_method, bool *r_is_valid) const {
-	HashMap<StringName, GDScriptFunction *>::ConstIterator E = member_functions.find(p_method);
-	Vector<Variant> ret;
-
-	if (!E) {
-		if (r_is_valid) {
-			*r_is_valid = false;
-		}
-		return ret;
-	}
-
-	for (const PropertyInfo &F : E->value->get_method_info().arguments) {
-		ret.push_back(F.operator Dictionary());
-	}
-
-	if (r_is_valid) {
-		*r_is_valid = true;
-	}
-
-	return ret;
-}
-
 MethodInfo GDScript::get_method_info(const StringName &p_method) const {
 	HashMap<StringName, GDScriptFunction *>::ConstIterator E = member_functions.find(p_method);
 	if (!E) {

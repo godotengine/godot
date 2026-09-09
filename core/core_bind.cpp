@@ -1719,15 +1719,13 @@ int ClassDB::class_get_method_argument_count(const StringName &p_class, const St
 	return ::ClassDB::get_method_argument_count(p_class, p_method, nullptr, p_no_inheritance);
 }
 
-TypedArray<Dictionary> ClassDB::class_get_method_arguments(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) const {
-	// TODO: This code will change when going from get_arguments -> get_method_info,
-	//       but for now... this's fine
-	TypedArray<Dictionary> ret;
-	Vector<Variant> arguments_as_variant = ::ClassDB::get_method_arguments(p_class, p_method, nullptr, p_no_inheritance);
-	for (const Variant &E : arguments_as_variant) {
-		ret.push_back(E.operator Dictionary());
+Dictionary ClassDB::class_get_method_info(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) const {
+	MethodInfo mi;
+	bool is_method_found = ::ClassDB::get_method_info(p_class, p_method, &mi, p_no_inheritance);
+	if (is_method_found) {
+		return mi.operator Dictionary();
 	}
-	return ret;
+	return Dictionary();
 }
 
 TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class, bool p_no_inheritance) const {
@@ -1884,7 +1882,7 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &ClassDB::class_has_method, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("class_get_method_argument_count", "class", "method", "no_inheritance"), &ClassDB::class_get_method_argument_count, DEFVAL(false));
-	::ClassDB::bind_method(D_METHOD("class_get_method_arguments", "class", "method", "no_inheritance"), &ClassDB::class_get_method_arguments, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_method_info", "class", "method", "no_inheritance"), &ClassDB::class_get_method_info, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &ClassDB::class_get_method_list, DEFVAL(false));
 
