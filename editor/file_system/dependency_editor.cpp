@@ -537,6 +537,24 @@ void DependencyEditorOwners::show(const String &p_path) {
 	owners->clear();
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
 
+	const String resolved_path = ResourceUID::ensure_path(p_path);
+
+	String custom_theme = ResourceUID::ensure_path(GLOBAL_GET("gui/theme/custom"));
+	if (!custom_theme.is_empty() && custom_theme == resolved_path) {
+		owners->add_item(vformat(TTR("Project Settings (%s)"), "gui/theme/custom"));
+		owners->set_item_icon(
+				owners->get_item_count() - 1,
+				owners->get_editor_theme_icon(SNAME("ProjectSettings")));
+	}
+
+	String main_scene = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
+	if (!main_scene.is_empty() && main_scene == resolved_path) {
+		owners->add_item(vformat(TTR("Project Settings (%s)"), "application/run/main_scene"));
+		owners->set_item_icon(
+				owners->get_item_count() - 1,
+				owners->get_editor_theme_icon(SNAME("ProjectSettings")));
+	}
+
 	int count = owners->get_item_count();
 	if (count > 0) {
 		empty->hide();
