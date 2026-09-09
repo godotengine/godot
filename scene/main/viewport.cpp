@@ -1030,7 +1030,7 @@ void Viewport::_process_picking() {
 					last_object = nullptr;
 				}
 			}
-		} else {
+		} else if (!gui.mouse_over || gui.mouse_over->get_mouse_filter() != Control::MOUSE_FILTER_STOP) {
 			if (camera_3d) {
 				Vector3 from = camera_3d->project_ray_origin(pos);
 				Vector3 dir = camera_3d->project_ray_normal(pos);
@@ -3348,6 +3348,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 	if (over_id != gui.mouse_over || (!over && !gui.mouse_over_hierarchy.is_empty())) {
 		// Find the common ancestor of `gui.mouse_over` and `over`.
 		Control *common_ancestor = nullptr;
+		bool ancestor_is_stop_filter = false;
 		LocalVector<ObjectID> over_ancestors;
 
 		if (over) {
@@ -3366,6 +3367,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 					}
 					if (ancestor_control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
 						// MOUSE_FILTER_STOP breaks the propagation chain.
+						ancestor_is_stop_filter = true;
 						break;
 					}
 				}
@@ -3380,7 +3382,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 		if (gui.mouse_over.is_valid() || !gui.mouse_over_hierarchy.is_empty()) {
 			// Send Mouse Exit Self and Mouse Exit notifications.
 			_drop_mouse_over(common_ancestor);
-		} else {
+		} else if (ancestor_is_stop_filter) {
 			_drop_physics_mouseover();
 		}
 
