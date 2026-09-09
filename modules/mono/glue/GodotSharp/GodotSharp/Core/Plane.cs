@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 #nullable enable
@@ -339,6 +340,15 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the same value as if the <c>+</c> was not there.
+        /// Unary <c>+</c> does nothing, but sometimes it can make your
+        /// code more readable.
+        /// </summary>
+        /// <param name="plane">The plane to do nothing to.</param>
+        /// <returns>The original plane.</returns>
+        public static Plane operator +(Plane plane) => plane;
+
+        /// <summary>
         /// Returns the negative value of the <see cref="Plane"/>.
         /// This is the same as writing <c>new Plane(-p.Normal, -p.D)</c>.
         /// This operation flips the direction of the normal vector and
@@ -424,10 +434,7 @@ namespace Godot
         /// Converts this <see cref="Plane"/> to a string.
         /// </summary>
         /// <returns>A string representation of this plane.</returns>
-        public override readonly string ToString()
-        {
-            return $"{_normal}, {_d}";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Plane"/> to a string with the given <paramref name="format"/>.
@@ -435,7 +442,7 @@ namespace Godot
         /// <returns>A string representation of this plane.</returns>
         public readonly string ToString(string? format)
         {
-            return $"{_normal.ToString(format)}, {_d.ToString(format)}";
+            return $"{_normal.ToString(format)}, {_d.ToString(format, CultureInfo.InvariantCulture)}";
         }
     }
 }

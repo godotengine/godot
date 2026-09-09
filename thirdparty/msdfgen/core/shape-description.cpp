@@ -1,6 +1,11 @@
 
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include "shape-description.h"
+
+#include <cstdlib>
 
 namespace msdfgen {
 
@@ -25,14 +30,36 @@ int readCharS(const char **input) {
 }
 
 int readCoordF(FILE *input, Point2 &coord) {
-    return fscanf(input, "%lf,%lf", &coord.x, &coord.y);
+    return fscanf(input, "%lf , %lf", &coord.x, &coord.y);
 }
 
 int readCoordS(const char **input, Point2 &coord) {
-    int read = 0;
-    int result = sscanf(*input, "%lf,%lf%n", &coord.x, &coord.y, &read);
-    *input += read;
-    return result;
+    char *end = NULL;
+    coord.x = strtod(*input, &end);
+    if (end <= *input)
+        return 0;
+    *input = end;
+    while (**input == ' ' || **input == '\t' || **input == '\n' || **input == '\r')
+        ++*input;
+    if (**input != ',')
+        return 1;
+    ++*input;
+    coord.y = strtod(*input, &end);
+    if (end <= *input)
+        return 1;
+    *input = end;
+    return 2;
+}
+
+bool matchStringS(const char **input, const char *str) {
+    const char *cur = *input;
+    while (*cur && *str && *cur == *str)
+        ++cur, ++str;
+    if (!*str) {
+        *input = cur;
+        return true;
+    }
+    return false;
 }
 
 static bool writeCoord(FILE *output, Point2 coord) {
@@ -160,7 +187,7 @@ static bool readContour(T *input, Contour &output, const Point2 *first, int term
 bool readShapeDescription(FILE *input, Shape &output, bool *colorsSpecified) {
     bool locColorsSpec = false;
     output.contours.clear();
-    output.inverseYAxis = false;
+    output.setYAxisOrientation(MSDFGEN_Y_AXIS_DEFAULT_ORIENTATION);
     Point2 p;
     int result = readCoordF(input, p);
     if (result == 2) {
@@ -171,9 +198,21 @@ bool readShapeDescription(FILE *input, Shape &output, bool *colorsSpecified) {
         int c = readCharF(input);
         if (c == '@') {
             char after = '\0';
-            if (fscanf(input, "invert-y%c", &after) != 1)
+            if (fscanf(input, "y-%c", &after) == 1 && (after == 'u' || after == 'd')) {
+                switch (after) {
+                    case 'u':
+                        output.setYAxisOrientation(Y_UPWARD);
+                        break;
+                    case 'd':
+                        output.setYAxisOrientation(Y_DOWNWARD);
+                        break;
+                }
+                if (fscanf(input, after == 'u' ? "p%c" : "own%c", &after) != 1)
+                    return feof(input) != 0;
+            } else if (fscanf(input, "invert-y%c", &after) == 1)
+                output.inverseYAxis = true;
+            else
                 return feof(input) != 0;
-            output.inverseYAxis = true;
             c = after;
             if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
                 c = readCharF(input);
@@ -190,7 +229,7 @@ bool readShapeDescription(FILE *input, Shape &output, bool *colorsSpecified) {
 bool readShapeDescription(const char *input, Shape &output, bool *colorsSpecified) {
     bool locColorsSpec = false;
     output.contours.clear();
-    output.inverseYAxis = false;
+    output.setYAxisOrientation(MSDFGEN_Y_AXIS_DEFAULT_ORIENTATION);
     Point2 p;
     int result = readCoordS(&input, p);
     if (result == 2) {
@@ -200,11 +239,14 @@ bool readShapeDescription(const char *input, Shape &output, bool *colorsSpecifie
     else {
         int c = readCharS(&input);
         if (c == '@') {
-            for (int i = 0; i < (int) sizeof("invert-y")-1; ++i)
-                if (input[i] != "invert-y"[i])
-                    return false;
-            output.inverseYAxis = true;
-            input += sizeof("invert-y")-1;
+            if (matchStringS(&input, "y-down"))
+                output.setYAxisOrientation(Y_DOWNWARD);
+            else if (matchStringS(&input, "y-up"))
+                output.setYAxisOrientation(Y_UPWARD);
+            else if (matchStringS(&input, "invert-y"))
+                output.inverseYAxis = true;
+            else
+                return false;
             c = readCharS(&input);
         }
         for (; c == '{'; c = readCharS(&input))
@@ -228,8 +270,14 @@ bool writeShapeDescription(FILE *output, const Shape &shape) {
     if (!shape.validate())
         return false;
     bool writeColors = isColored(shape);
-    if (shape.inverseYAxis)
-        fprintf(output, "@invert-y\n");
+    switch (shape.getYAxisOrientation()) {
+        case Y_UPWARD:
+            fprintf(output, "@y-up\n");
+            break;
+        case Y_DOWNWARD:
+            fprintf(output, "@y-down\n");
+            break;
+    }
     for (std::vector<Contour>::const_iterator contour = shape.contours.begin(); contour != shape.contours.end(); ++contour) {
         fprintf(output, "{\n");
         if (!contour->edges.empty()) {
@@ -244,34 +292,37 @@ bool writeShapeDescription(FILE *output, const Shape &shape) {
                         default:;
                     }
                 }
-                if (const LinearSegment *e = dynamic_cast<const LinearSegment *>(&**edge)) {
-                    fprintf(output, "\t");
-                    writeCoord(output, e->p[0]);
-                    fprintf(output, ";\n");
-                    if (colorCode)
-                        fprintf(output, "\t\t%c;\n", colorCode);
-                }
-                if (const QuadraticSegment *e = dynamic_cast<const QuadraticSegment *>(&**edge)) {
-                    fprintf(output, "\t");
-                    writeCoord(output, e->p[0]);
-                    fprintf(output, ";\n\t\t");
-                    if (colorCode)
-                        fprintf(output, "%c", colorCode);
-                    fprintf(output, "(");
-                    writeCoord(output, e->p[1]);
-                    fprintf(output, ");\n");
-                }
-                if (const CubicSegment *e = dynamic_cast<const CubicSegment *>(&**edge)) {
-                    fprintf(output, "\t");
-                    writeCoord(output, e->p[0]);
-                    fprintf(output, ";\n\t\t");
-                    if (colorCode)
-                        fprintf(output, "%c", colorCode);
-                    fprintf(output, "(");
-                    writeCoord(output, e->p[1]);
-                    fprintf(output, "; ");
-                    writeCoord(output, e->p[2]);
-                    fprintf(output, ");\n");
+                const Point2 *p = (*edge)->controlPoints();
+                switch ((*edge)->type()) {
+                    case (int) LinearSegment::EDGE_TYPE:
+                        fprintf(output, "\t");
+                        writeCoord(output, p[0]);
+                        fprintf(output, ";\n");
+                        if (colorCode)
+                            fprintf(output, "\t\t%c;\n", colorCode);
+                        break;
+                    case (int) QuadraticSegment::EDGE_TYPE:
+                        fprintf(output, "\t");
+                        writeCoord(output, p[0]);
+                        fprintf(output, ";\n\t\t");
+                        if (colorCode)
+                            fprintf(output, "%c", colorCode);
+                        fprintf(output, "(");
+                        writeCoord(output, p[1]);
+                        fprintf(output, ");\n");
+                        break;
+                    case (int) CubicSegment::EDGE_TYPE:
+                        fprintf(output, "\t");
+                        writeCoord(output, p[0]);
+                        fprintf(output, ";\n\t\t");
+                        if (colorCode)
+                            fprintf(output, "%c", colorCode);
+                        fprintf(output, "(");
+                        writeCoord(output, p[1]);
+                        fprintf(output, "; ");
+                        writeCoord(output, p[2]);
+                        fprintf(output, ");\n");
+                        break;
                 }
             }
             fprintf(output, "\t#\n");

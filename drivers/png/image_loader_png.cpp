@@ -30,19 +30,12 @@
 
 #include "image_loader_png.h"
 
-#include "core/os/os.h"
-#include "core/string/print_string.h"
 #include "drivers/png/png_driver_common.h"
-
-#include <string.h>
 
 Error ImageLoaderPNG::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	const uint64_t buffer_size = f->get_length();
 	Vector<uint8_t> file_buffer;
-	Error err = file_buffer.resize(buffer_size);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERROR(file_buffer.resize(buffer_size));
 	{
 		uint8_t *writer = file_buffer.ptrw();
 		f->get_buffer(writer, buffer_size);

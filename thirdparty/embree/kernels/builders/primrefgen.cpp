@@ -55,6 +55,29 @@ namespace embree
       return pinfo;
     }
 
+    PrimInfo createPrimRefArray(Scene* scene, Geometry::GTypeMask types, bool mblur, const size_t numPrimRefs, mvector<PrimRef>& prims, mvector<SubGridBuildData>& sgrids, BuildProgressMonitor& progressMonitor)
+    {
+      ParallelForForPrefixSumState<PrimInfo> pstate;
+      Scene::Iterator2 iter(scene,types,mblur);
+      
+      /* first try */
+      progressMonitor(0);
+      pstate.init(iter,size_t(1024));
+      PrimInfo pinfo = parallel_for_for_prefix_sum0( pstate, iter, PrimInfo(empty), [&](Geometry* mesh, const range<size_t>& r, size_t k, size_t geomID) -> PrimInfo {
+         return mesh->createPrimRefArray(prims,sgrids,r,k,(unsigned)geomID);
+       }, [](const PrimInfo& a, const PrimInfo& b) -> PrimInfo { return PrimInfo::merge(a,b); });
+      
+      /* if we need to filter out geometry, run again */
+      if (pinfo.size() != numPrimRefs)
+      {
+        progressMonitor(0);
+        pinfo = parallel_for_for_prefix_sum1( pstate, iter, PrimInfo(empty), [&](Geometry* mesh, const range<size_t>& r, size_t k, size_t geomID, const PrimInfo& base) -> PrimInfo {
+          return mesh->createPrimRefArray(prims,sgrids,r,base.size(),(unsigned)geomID);
+        }, [](const PrimInfo& a, const PrimInfo& b) -> PrimInfo { return PrimInfo::merge(a,b); });
+      }
+      return pinfo;
+    }
+
     PrimInfo createPrimRefArrayMBlur(Scene* scene, Geometry::GTypeMask types, const size_t numPrimRefs, mvector<PrimRef>& prims, BuildProgressMonitor& progressMonitor, size_t itime)
     {
       ParallelForForPrefixSumState<PrimInfo> pstate;
@@ -96,6 +119,32 @@ namespace embree
         progressMonitor(0);
         pinfo = parallel_for_for_prefix_sum1( pstate, iter, PrimInfoMB(empty), [&](Geometry* mesh, const range<size_t>& r, size_t k, size_t geomID, const PrimInfoMB& base) -> PrimInfoMB {
             return mesh->createPrimRefMBArray(prims,t0t1,r,base.size(),(unsigned)geomID);
+        }, [](const PrimInfoMB& a, const PrimInfoMB& b) -> PrimInfoMB { return PrimInfoMB::merge2(a,b); });
+      }
+
+      /* the BVH starts with that time range, even though primitives might have smaller/larger time range */
+      pinfo.time_range = t0t1;
+      return pinfo;
+    }
+
+    PrimInfoMB createPrimRefArrayMSMBlur(Scene* scene, Geometry::GTypeMask types, const size_t numPrimRefs, mvector<PrimRefMB>& prims, mvector<SubGridBuildData>& sgrids, BuildProgressMonitor& progressMonitor, BBox1f t0t1)
+    {
+      ParallelForForPrefixSumState<PrimInfoMB> pstate;
+      Scene::Iterator2 iter(scene,types,true);
+      
+      /* first try */
+      progressMonitor(0);
+      pstate.init(iter,size_t(1024));
+      PrimInfoMB pinfo = parallel_for_for_prefix_sum0( pstate, iter, PrimInfoMB(empty), [&](Geometry* mesh, const range<size_t>& r, size_t k, size_t geomID) -> PrimInfoMB {
+         return mesh->createPrimRefMBArray(prims,sgrids,t0t1,r,k,(unsigned)geomID);
+      }, [](const PrimInfoMB& a, const PrimInfoMB& b) -> PrimInfoMB { return PrimInfoMB::merge2(a,b); });
+      
+      /* if we need to filter out geometry, run again */
+      if (pinfo.size() != numPrimRefs)
+      {
+        progressMonitor(0);
+        pinfo = parallel_for_for_prefix_sum1( pstate, iter, PrimInfoMB(empty), [&](Geometry* mesh, const range<size_t>& r, size_t k, size_t geomID, const PrimInfoMB& base) -> PrimInfoMB {
+          return mesh->createPrimRefMBArray(prims,sgrids,t0t1,r,base.size(),(unsigned)geomID);
         }, [](const PrimInfoMB& a, const PrimInfoMB& b) -> PrimInfoMB { return PrimInfoMB::merge2(a,b); });
       }
 
@@ -218,26 +267,8 @@ namespace embree
 
       /* second run to fill primrefs and SubGridBuildData arrays */
       pinfo = parallel_for_for_prefix_sum1( pstate, iter, PrimInfo(empty), [&](GridMesh* mesh, const range<size_t>& r, size_t k, size_t geomID, const PrimInfo& base) -> PrimInfo {
-          k = base.size();
-          size_t p_index = k;
-          PrimInfo pinfo(empty);
-          for (size_t j=r.begin(); j<r.end(); j++)
-          {
-            if (!mesh->valid(j)) continue;
-            const GridMesh::Grid &g = mesh->grid(j);
-            for (unsigned int y=0; y<g.resY-1u; y+=2)
-              for (unsigned int x=0; x<g.resX-1u; x+=2)
-              {
-                BBox3fa bounds = empty;
-                if (!mesh->buildBounds(g,x,y,bounds)) continue; // get bounds of subgrid
-                const PrimRef prim(bounds,(unsigned)geomID,(unsigned)p_index);
-                pinfo.add_center2(prim);
-                sgrids[p_index] = SubGridBuildData(x | g.get3x3FlagsX(x), y | g.get3x3FlagsY(y), unsigned(j));
-                prims[p_index++] = prim;                
-              }
-          }
-          return pinfo;
-        }, [](const PrimInfo& a, const PrimInfo& b) -> PrimInfo { return PrimInfo::merge(a,b); });
+        return mesh->createPrimRefArray(prims,sgrids,r,base.size(),geomID);
+      }, [](const PrimInfo& a, const PrimInfo& b) -> PrimInfo { return PrimInfo::merge(a,b); });
       assert(pinfo.size() == numPrimitives);
       return pinfo;
     }
@@ -269,40 +300,60 @@ namespace embree
       prims.resize(numPrimitives); 
 
       /* second run to fill primrefs and SubGridBuildData arrays */
-      pinfo = parallel_prefix_sum( pstate, size_t(0), mesh->size(), size_t(1024), PrimInfo(empty), [&](const range<size_t>& r, const PrimInfo& base) -> PrimInfo
-                                   {
-
-                                     size_t p_index = base.size();
-                                     PrimInfo pinfo(empty);
-                                     for (size_t j=r.begin(); j<r.end(); j++)
-                                     {
-                                       if (!mesh->valid(j)) continue;
-                                       const GridMesh::Grid &g = mesh->grid(j);
-                                       for (unsigned int y=0; y<g.resY-1u; y+=2)
-                                         for (unsigned int x=0; x<g.resX-1u; x+=2)
-                                         {
-                                           BBox3fa bounds = empty;
-                                           if (!mesh->buildBounds(g,x,y,bounds)) continue; // get bounds of subgrid
-                                           const PrimRef prim(bounds,geomID_,unsigned(p_index));
-                                           pinfo.add_center2(prim);
-                                           sgrids[p_index] = SubGridBuildData(x | g.get3x3FlagsX(x), y | g.get3x3FlagsY(y), unsigned(j));
-                                           prims[p_index++] = prim;                
-                                         }
-                                     }
-                                     return pinfo;
-                                   }, [](const PrimInfo& a, const PrimInfo& b) -> PrimInfo { return PrimInfo::merge(a,b); });
+      pinfo = parallel_prefix_sum( pstate, size_t(0), mesh->size(), size_t(1024), PrimInfo(empty), [&](const range<size_t>& r, const PrimInfo& base) -> PrimInfo {
+        return mesh->createPrimRefArray(prims,sgrids,r,base.size(),geomID_);
+      }, [](const PrimInfo& a, const PrimInfo& b) -> PrimInfo { return PrimInfo::merge(a,b); });
 
       return pinfo;
     }
+
+    PrimInfoMB createPrimRefArrayMSMBlurGrid(Scene* scene, mvector<PrimRefMB>& prims, mvector<SubGridBuildData>& sgrids, BuildProgressMonitor& progressMonitor, BBox1f t0t1)
+    {
+      /* first run to get #primitives */
+      ParallelForForPrefixSumState<PrimInfoMB> pstate;
+      Scene::Iterator<GridMesh,true> iter(scene);
+      
+      pstate.init(iter,size_t(1024));
+      /* iterate over all meshes in the scene */
+      PrimInfoMB pinfoMB = parallel_for_for_prefix_sum0( pstate, iter, PrimInfoMB(empty), [&](GridMesh* mesh, const range<size_t>& r, size_t k, size_t /*geomID*/) -> PrimInfoMB {
+                                                                                            
+         PrimInfoMB pinfoMB(empty);
+         for (size_t j=r.begin(); j<r.end(); j++)
+         {
+           if (!mesh->valid(j, mesh->timeSegmentRange(t0t1))) continue;
+           LBBox3fa bounds(empty);
+           PrimInfoMB gridMB(0,mesh->getNumSubGrids(j));
+           pinfoMB.merge(gridMB);
+         }
+         return pinfoMB;
+      }, [](const PrimInfoMB& a, const PrimInfoMB& b) -> PrimInfoMB { return PrimInfoMB::merge2(a,b); });
+      
+      size_t numPrimitives = pinfoMB.size();
+      if (numPrimitives == 0) return pinfoMB;
+      
+      /* resize arrays */
+      sgrids.resize(numPrimitives); 
+      prims.resize(numPrimitives); 
+      /* second run to fill primrefs and SubGridBuildData arrays */
+      pinfoMB = parallel_for_for_prefix_sum1( pstate, iter, PrimInfoMB(empty), [&](GridMesh* mesh, const range<size_t>& r, size_t k, size_t geomID, const PrimInfoMB& base) -> PrimInfoMB {
+        return mesh->createPrimRefMBArray(prims,sgrids,t0t1,r,base.size(),(unsigned)geomID);                                                                                 
+      }, [](const PrimInfoMB& a, const PrimInfoMB& b) -> PrimInfoMB { return PrimInfoMB::merge2(a,b); });
+      
+      assert(pinfoMB.size() == numPrimitives);
+      pinfoMB.time_range = t0t1;
+      return pinfoMB;
+    }
+    
 #endif
     
     // ====================================================================================================
     // ====================================================================================================
     // ====================================================================================================
-
+    
     IF_ENABLED_TRIS (template size_t createMortonCodeArray<TriangleMesh>(TriangleMesh* mesh COMMA mvector<BVHBuilderMorton::BuildPrim>& morton COMMA BuildProgressMonitor& progressMonitor));
     IF_ENABLED_QUADS(template size_t createMortonCodeArray<QuadMesh>(QuadMesh* mesh COMMA mvector<BVHBuilderMorton::BuildPrim>& morton COMMA BuildProgressMonitor& progressMonitor));
     IF_ENABLED_USER (template size_t createMortonCodeArray<UserGeometry>(UserGeometry* mesh COMMA mvector<BVHBuilderMorton::BuildPrim>& morton COMMA BuildProgressMonitor& progressMonitor));
     IF_ENABLED_INSTANCE (template size_t createMortonCodeArray<Instance>(Instance* mesh COMMA mvector<BVHBuilderMorton::BuildPrim>& morton COMMA BuildProgressMonitor& progressMonitor));
+    IF_ENABLED_INSTANCE_ARRAY (template size_t createMortonCodeArray<InstanceArray>(InstanceArray* mesh COMMA mvector<BVHBuilderMorton::BuildPrim>& morton COMMA BuildProgressMonitor& progressMonitor));
   }
 }

@@ -30,6 +30,9 @@
 
 #include "marker_2d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+
 void Marker2D::_draw_cross() {
 	const real_t extents = get_gizmo_extents();
 
@@ -48,7 +51,7 @@ void Marker2D::_draw_cross() {
 	// Use a darkened axis color for the negative axis.
 	// This makes it possible to see in which direction the Marker3D node is rotated
 	// (which can be important depending on how it's used).
-	// Axis colors are taken from `axis_x_color` and `axis_y_color` (defined in `editor/editor_themes.cpp`).
+	// Axis colors are taken from `axis_x_color` and `axis_y_color` (defined in `editor/themes/editor_theme_manager.cpp`).
 	const Color color_x = Color(0.96, 0.20, 0.32);
 	const Color color_y = Color(0.53, 0.84, 0.01);
 	PackedColorArray colors = {
@@ -61,7 +64,7 @@ void Marker2D::_draw_cross() {
 	draw_multiline_colors(points, colors);
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 Marker2D::_edit_get_rect() const {
 	real_t extents = get_gizmo_extents();
 	return Rect2(Point2(-extents, -extents), Size2(extents * 2, extents * 2));
@@ -70,7 +73,7 @@ Rect2 Marker2D::_edit_get_rect() const {
 bool Marker2D::_edit_use_rect() const {
 	return false;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void Marker2D::_notification(int p_what) {
 	switch (p_what) {

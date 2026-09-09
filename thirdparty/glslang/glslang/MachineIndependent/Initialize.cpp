@@ -2,7 +2,7 @@
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 // Copyright (C) 2012-2016 LunarG, Inc.
 // Copyright (C) 2015-2020 Google, Inc.
-// Copyright (C) 2017 ARM Limited.
+// Copyright (C) 2017, 2022-2024 Arm Limited.
 // Modifications Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights reserved.
 //
 // All rights reserved.
@@ -51,7 +51,10 @@
 //                                                including identifying what extensions are needed if a version does not allow a symbol
 //
 
+#include <array>
+#include <sstream>
 #include "Initialize.h"
+#include "span.h"
 
 namespace glslang {
 
@@ -115,12 +118,12 @@ enum ArgClass {
     ClassFIO    = 1 << 9,  // first argument is inout
     ClassRS     = 1 << 10, // the return is held scalar as the arguments cycle
     ClassNS     = 1 << 11, // no scalar prototype
-    ClassCV     = 1 << 12, // first argument is 'coherent volatile'
+    ClassCVN    = 1 << 12, // first argument is 'coherent volatile nontemporal'
     ClassFO     = 1 << 13, // first argument is output
     ClassV3     = 1 << 14, // vec3 only
 };
 // Mixtures of the above, to help the function tables
-const ArgClass ClassV1FIOCV = (ArgClass)(ClassV1 | ClassFIO | ClassCV);
+const ArgClass ClassV1FIOCVN = (ArgClass)(ClassV1 | ClassFIO | ClassCVN);
 const ArgClass ClassBNS     = (ArgClass)(ClassB  | ClassNS);
 const ArgClass ClassRSNS    = (ArgClass)(ClassRS | ClassNS);
 
@@ -139,20 +142,17 @@ struct Versioning {
 EProfile EDesktopProfile = static_cast<EProfile>(ENoProfile | ECoreProfile | ECompatibilityProfile);
 
 // Declare pointers to put into the table for versioning.
-    const Versioning Es300Desktop130Version[] = { { EEsProfile,      0, 300, 0, nullptr },
-                                                  { EDesktopProfile, 0, 130, 0, nullptr },
-                                                  { EBadProfile } };
-    const Versioning* Es300Desktop130 = &Es300Desktop130Version[0];
+    const std::array Es300Desktop130Version = { Versioning{ EEsProfile,      0, 300, 0, nullptr },
+                                                Versioning{ EDesktopProfile, 0, 130, 0, nullptr },
+                                              };
 
-    const Versioning Es310Desktop420Version[] = { { EEsProfile,      0, 310, 0, nullptr },
-                                                  { EDesktopProfile, 0, 420, 0, nullptr },
-                                                  { EBadProfile } };
-    const Versioning* Es310Desktop420 = &Es310Desktop420Version[0];
+    const std::array Es310Desktop400Version = { Versioning{ EEsProfile,      0, 310, 0, nullptr },
+                                                Versioning{ EDesktopProfile, 0, 400, 0, nullptr },
+                                              };
 
-    const Versioning Es310Desktop450Version[] = { { EEsProfile,      0, 310, 0, nullptr },
-                                                  { EDesktopProfile, 0, 450, 0, nullptr },
-                                                  { EBadProfile } };
-    const Versioning* Es310Desktop450 = &Es310Desktop450Version[0];
+    const std::array Es310Desktop450Version = { Versioning{ EEsProfile,      0, 310, 0, nullptr },
+                                                Versioning{ EDesktopProfile, 0, 450, 0, nullptr },
+                                              };
 
 // The main descriptor of what a set of function prototypes can look like, and
 // a pointer to extra versioning information, when needed.
@@ -162,7 +162,7 @@ struct BuiltInFunction {
     int numArguments;             // number of arguments (overloads with varying arguments need different entries)
     ArgType types;                // ArgType mask
     ArgClass classes;             // the ways this particular function entry manifests
-    const Versioning* versioning; // nullptr means always a valid version
+    const span<const Versioning> versioning; // An empty span means always a valid version
 };
 
 // The tables can have the same built-in function name more than one time,
@@ -174,151 +174,146 @@ struct BuiltInFunction {
 //
 // Table is terminated by an OpNull TOperator.
 
-const BuiltInFunction BaseFunctions[] = {
+const std::array BaseFunctions = {
 //    TOperator,           name,       arg-count,   ArgType,   ArgClass,     versioning
 //    ---------            ----        ---------    -------    --------      ----------
-    { EOpRadians,          "radians",          1,   TypeF,     ClassRegular, nullptr },
-    { EOpDegrees,          "degrees",          1,   TypeF,     ClassRegular, nullptr },
-    { EOpSin,              "sin",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpCos,              "cos",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpTan,              "tan",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpAsin,             "asin",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpAcos,             "acos",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpAtan,             "atan",             2,   TypeF,     ClassRegular, nullptr },
-    { EOpAtan,             "atan",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpPow,              "pow",              2,   TypeF,     ClassRegular, nullptr },
-    { EOpExp,              "exp",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpLog,              "log",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpExp2,             "exp2",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpLog2,             "log2",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpSqrt,             "sqrt",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpInverseSqrt,      "inversesqrt",      1,   TypeF,     ClassRegular, nullptr },
-    { EOpAbs,              "abs",              1,   TypeF,     ClassRegular, nullptr },
-    { EOpSign,             "sign",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpFloor,            "floor",            1,   TypeF,     ClassRegular, nullptr },
-    { EOpCeil,             "ceil",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpFract,            "fract",            1,   TypeF,     ClassRegular, nullptr },
-    { EOpMod,              "mod",              2,   TypeF,     ClassLS,      nullptr },
-    { EOpMin,              "min",              2,   TypeF,     ClassLS,      nullptr },
-    { EOpMax,              "max",              2,   TypeF,     ClassLS,      nullptr },
-    { EOpClamp,            "clamp",            3,   TypeF,     ClassLS2,     nullptr },
-    { EOpMix,              "mix",              3,   TypeF,     ClassLS,      nullptr },
-    { EOpStep,             "step",             2,   TypeF,     ClassFS,      nullptr },
-    { EOpSmoothStep,       "smoothstep",       3,   TypeF,     ClassFS2,     nullptr },
-    { EOpNormalize,        "normalize",        1,   TypeF,     ClassRegular, nullptr },
-    { EOpFaceForward,      "faceforward",      3,   TypeF,     ClassRegular, nullptr },
-    { EOpReflect,          "reflect",          2,   TypeF,     ClassRegular, nullptr },
-    { EOpRefract,          "refract",          3,   TypeF,     ClassXLS,     nullptr },
-    { EOpLength,           "length",           1,   TypeF,     ClassRS,      nullptr },
-    { EOpDistance,         "distance",         2,   TypeF,     ClassRS,      nullptr },
-    { EOpDot,              "dot",              2,   TypeF,     ClassRS,      nullptr },
-    { EOpCross,            "cross",            2,   TypeF,     ClassV3,      nullptr },
-    { EOpLessThan,         "lessThan",         2,   TypeFI,    ClassBNS,     nullptr },
-    { EOpLessThanEqual,    "lessThanEqual",    2,   TypeFI,    ClassBNS,     nullptr },
-    { EOpGreaterThan,      "greaterThan",      2,   TypeFI,    ClassBNS,     nullptr },
-    { EOpGreaterThanEqual, "greaterThanEqual", 2,   TypeFI,    ClassBNS,     nullptr },
-    { EOpVectorEqual,      "equal",            2,   TypeFIB,   ClassBNS,     nullptr },
-    { EOpVectorNotEqual,   "notEqual",         2,   TypeFIB,   ClassBNS,     nullptr },
-    { EOpAny,              "any",              1,   TypeB,     ClassRSNS,    nullptr },
-    { EOpAll,              "all",              1,   TypeB,     ClassRSNS,    nullptr },
-    { EOpVectorLogicalNot, "not",              1,   TypeB,     ClassNS,      nullptr },
-    { EOpSinh,             "sinh",             1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpCosh,             "cosh",             1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpTanh,             "tanh",             1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpAsinh,            "asinh",            1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpAcosh,            "acosh",            1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpAtanh,            "atanh",            1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpAbs,              "abs",              1,   TypeI,     ClassRegular, Es300Desktop130 },
-    { EOpSign,             "sign",             1,   TypeI,     ClassRegular, Es300Desktop130 },
-    { EOpTrunc,            "trunc",            1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpRound,            "round",            1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpRoundEven,        "roundEven",        1,   TypeF,     ClassRegular, Es300Desktop130 },
-    { EOpModf,             "modf",             2,   TypeF,     ClassLO,      Es300Desktop130 },
-    { EOpMin,              "min",              2,   TypeIU,    ClassLS,      Es300Desktop130 },
-    { EOpMax,              "max",              2,   TypeIU,    ClassLS,      Es300Desktop130 },
-    { EOpClamp,            "clamp",            3,   TypeIU,    ClassLS2,     Es300Desktop130 },
-    { EOpMix,              "mix",              3,   TypeF,     ClassLB,      Es300Desktop130 },
-    { EOpIsInf,            "isinf",            1,   TypeF,     ClassB,       Es300Desktop130 },
-    { EOpIsNan,            "isnan",            1,   TypeF,     ClassB,       Es300Desktop130 },
-    { EOpLessThan,         "lessThan",         2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpLessThanEqual,    "lessThanEqual",    2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpGreaterThan,      "greaterThan",      2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpGreaterThanEqual, "greaterThanEqual", 2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpVectorEqual,      "equal",            2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpVectorNotEqual,   "notEqual",         2,   TypeU,     ClassBNS,     Es300Desktop130 },
-    { EOpAtomicAdd,        "atomicAdd",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicMin,        "atomicMin",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicMax,        "atomicMax",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicAnd,        "atomicAnd",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicOr,         "atomicOr",         2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicXor,        "atomicXor",        2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicExchange,   "atomicExchange",   2,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpAtomicCompSwap,   "atomicCompSwap",   3,   TypeIU,    ClassV1FIOCV, Es310Desktop420 },
-    { EOpMix,              "mix",              3,   TypeB,     ClassRegular, Es310Desktop450 },
-    { EOpMix,              "mix",              3,   TypeIU,    ClassLB,      Es310Desktop450 },
-
-    { EOpNull }
+    BuiltInFunction{ EOpRadians,          "radians",          1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpDegrees,          "degrees",          1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpSin,              "sin",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpCos,              "cos",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpTan,              "tan",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpAsin,             "asin",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpAcos,             "acos",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpAtan,             "atan",             2,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpAtan,             "atan",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpPow,              "pow",              2,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpExp,              "exp",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpLog,              "log",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpExp2,             "exp2",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpLog2,             "log2",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpSqrt,             "sqrt",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpInverseSqrt,      "inversesqrt",      1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpAbs,              "abs",              1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpSign,             "sign",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpFloor,            "floor",            1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpCeil,             "ceil",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpFract,            "fract",            1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpMod,              "mod",              2,   TypeF,     ClassLS,      {} },
+    BuiltInFunction{ EOpMin,              "min",              2,   TypeF,     ClassLS,      {} },
+    BuiltInFunction{ EOpMax,              "max",              2,   TypeF,     ClassLS,      {} },
+    BuiltInFunction{ EOpClamp,            "clamp",            3,   TypeF,     ClassLS2,     {} },
+    BuiltInFunction{ EOpMix,              "mix",              3,   TypeF,     ClassLS,      {} },
+    BuiltInFunction{ EOpStep,             "step",             2,   TypeF,     ClassFS,      {} },
+    BuiltInFunction{ EOpSmoothStep,       "smoothstep",       3,   TypeF,     ClassFS2,     {} },
+    BuiltInFunction{ EOpNormalize,        "normalize",        1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpFaceForward,      "faceforward",      3,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpReflect,          "reflect",          2,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpRefract,          "refract",          3,   TypeF,     ClassXLS,     {} },
+    BuiltInFunction{ EOpLength,           "length",           1,   TypeF,     ClassRS,      {} },
+    BuiltInFunction{ EOpDistance,         "distance",         2,   TypeF,     ClassRS,      {} },
+    BuiltInFunction{ EOpDot,              "dot",              2,   TypeF,     ClassRS,      {} },
+    BuiltInFunction{ EOpCross,            "cross",            2,   TypeF,     ClassV3,      {} },
+    BuiltInFunction{ EOpLessThan,         "lessThan",         2,   TypeFI,    ClassBNS,     {} },
+    BuiltInFunction{ EOpLessThanEqual,    "lessThanEqual",    2,   TypeFI,    ClassBNS,     {} },
+    BuiltInFunction{ EOpGreaterThan,      "greaterThan",      2,   TypeFI,    ClassBNS,     {} },
+    BuiltInFunction{ EOpGreaterThanEqual, "greaterThanEqual", 2,   TypeFI,    ClassBNS,     {} },
+    BuiltInFunction{ EOpVectorEqual,      "equal",            2,   TypeFIB,   ClassBNS,     {} },
+    BuiltInFunction{ EOpVectorNotEqual,   "notEqual",         2,   TypeFIB,   ClassBNS,     {} },
+    BuiltInFunction{ EOpAny,              "any",              1,   TypeB,     ClassRSNS,    {} },
+    BuiltInFunction{ EOpAll,              "all",              1,   TypeB,     ClassRSNS,    {} },
+    BuiltInFunction{ EOpVectorLogicalNot, "not",              1,   TypeB,     ClassNS,      {} },
+    BuiltInFunction{ EOpSinh,             "sinh",             1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpCosh,             "cosh",             1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpTanh,             "tanh",             1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpAsinh,            "asinh",            1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpAcosh,            "acosh",            1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpAtanh,            "atanh",            1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpAbs,              "abs",              1,   TypeI,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpSign,             "sign",             1,   TypeI,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpTrunc,            "trunc",            1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpRound,            "round",            1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpRoundEven,        "roundEven",        1,   TypeF,     ClassRegular, {Es300Desktop130Version} },
+    BuiltInFunction{ EOpModf,             "modf",             2,   TypeF,     ClassLO,      {Es300Desktop130Version} },
+    BuiltInFunction{ EOpMin,              "min",              2,   TypeIU,    ClassLS,      {Es300Desktop130Version} },
+    BuiltInFunction{ EOpMax,              "max",              2,   TypeIU,    ClassLS,      {Es300Desktop130Version} },
+    BuiltInFunction{ EOpClamp,            "clamp",            3,   TypeIU,    ClassLS2,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpMix,              "mix",              3,   TypeF,     ClassLB,      {Es300Desktop130Version} },
+    BuiltInFunction{ EOpIsInf,            "isinf",            1,   TypeF,     ClassB,       {Es300Desktop130Version} },
+    BuiltInFunction{ EOpIsNan,            "isnan",            1,   TypeF,     ClassB,       {Es300Desktop130Version} },
+    BuiltInFunction{ EOpLessThan,         "lessThan",         2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpLessThanEqual,    "lessThanEqual",    2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpGreaterThan,      "greaterThan",      2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpGreaterThanEqual, "greaterThanEqual", 2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpVectorEqual,      "equal",            2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpVectorNotEqual,   "notEqual",         2,   TypeU,     ClassBNS,     {Es300Desktop130Version} },
+    BuiltInFunction{ EOpAtomicAdd,        "atomicAdd",        2,   TypeIU,    ClassV1FIOCVN, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicMin,        "atomicMin",        2,   TypeIU,    ClassV1FIOCVN, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicMax,        "atomicMax",        2,   TypeIU,    ClassV1FIOCVN, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicAnd,        "atomicAnd",        2,   TypeIU,    ClassV1FIOCVN, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicOr,         "atomicOr",         2,   TypeIU,    ClassV1FIOCVN, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicXor,        "atomicXor",        2,   TypeIU,    ClassV1FIOCVN, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicExchange,   "atomicExchange",   2,   TypeIU,    ClassV1FIOCVN, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpAtomicCompSwap,   "atomicCompSwap",   3,   TypeIU,    ClassV1FIOCVN, {Es310Desktop400Version} },
+    BuiltInFunction{ EOpMix,              "mix",              3,   TypeB,     ClassRegular, {Es310Desktop450Version} },
+    BuiltInFunction{ EOpMix,              "mix",              3,   TypeIU,    ClassLB,      {Es310Desktop450Version} },
 };
 
-const BuiltInFunction DerivativeFunctions[] = {
-    { EOpDPdx,             "dFdx",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpDPdy,             "dFdy",             1,   TypeF,     ClassRegular, nullptr },
-    { EOpFwidth,           "fwidth",           1,   TypeF,     ClassRegular, nullptr },
-    { EOpNull }
+const std::array DerivativeFunctions = {
+    BuiltInFunction{ EOpDPdx,             "dFdx",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpDPdy,             "dFdy",             1,   TypeF,     ClassRegular, {} },
+    BuiltInFunction{ EOpFwidth,           "fwidth",           1,   TypeF,     ClassRegular, {} },
 };
 
 // For functions declared some other way, but still use the table to relate to operator.
 struct CustomFunction {
     TOperator op;                 // operator to map the name to
     const char* name;             // function name
-    const Versioning* versioning; // nullptr means always a valid version
+    const span<const Versioning> versioning; // An empty span means always a valid version
 };
 
 const CustomFunction CustomFunctions[] = {
-    { EOpBarrier,             "barrier",             nullptr },
-    { EOpMemoryBarrierShared, "memoryBarrierShared", nullptr },
-    { EOpGroupMemoryBarrier,  "groupMemoryBarrier",  nullptr },
-    { EOpMemoryBarrier,       "memoryBarrier",       nullptr },
-    { EOpMemoryBarrierBuffer, "memoryBarrierBuffer", nullptr },
+    { EOpBarrier,             "barrier",             {} },
+    { EOpMemoryBarrierShared, "memoryBarrierShared", {} },
+    { EOpGroupMemoryBarrier,  "groupMemoryBarrier",  {} },
+    { EOpMemoryBarrier,       "memoryBarrier",       {} },
+    { EOpMemoryBarrierBuffer, "memoryBarrierBuffer", {} },
 
-    { EOpPackSnorm2x16,       "packSnorm2x16",       nullptr },
-    { EOpUnpackSnorm2x16,     "unpackSnorm2x16",     nullptr },
-    { EOpPackUnorm2x16,       "packUnorm2x16",       nullptr },
-    { EOpUnpackUnorm2x16,     "unpackUnorm2x16",     nullptr },
-    { EOpPackHalf2x16,        "packHalf2x16",        nullptr },
-    { EOpUnpackHalf2x16,      "unpackHalf2x16",      nullptr },
+    { EOpPackSnorm2x16,       "packSnorm2x16",       {} },
+    { EOpUnpackSnorm2x16,     "unpackSnorm2x16",     {} },
+    { EOpPackUnorm2x16,       "packUnorm2x16",       {} },
+    { EOpUnpackUnorm2x16,     "unpackUnorm2x16",     {} },
+    { EOpPackHalf2x16,        "packHalf2x16",        {} },
+    { EOpUnpackHalf2x16,      "unpackHalf2x16",      {} },
 
-    { EOpMul,                 "matrixCompMult",      nullptr },
-    { EOpOuterProduct,        "outerProduct",        nullptr },
-    { EOpTranspose,           "transpose",           nullptr },
-    { EOpDeterminant,         "determinant",         nullptr },
-    { EOpMatrixInverse,       "inverse",             nullptr },
-    { EOpFloatBitsToInt,      "floatBitsToInt",      nullptr },
-    { EOpFloatBitsToUint,     "floatBitsToUint",     nullptr },
-    { EOpIntBitsToFloat,      "intBitsToFloat",      nullptr },
-    { EOpUintBitsToFloat,     "uintBitsToFloat",     nullptr },
+    { EOpMul,                 "matrixCompMult",      {} },
+    { EOpOuterProduct,        "outerProduct",        {} },
+    { EOpTranspose,           "transpose",           {} },
+    { EOpDeterminant,         "determinant",         {} },
+    { EOpMatrixInverse,       "inverse",             {} },
+    { EOpFloatBitsToInt,      "floatBitsToInt",      {} },
+    { EOpFloatBitsToUint,     "floatBitsToUint",     {} },
+    { EOpIntBitsToFloat,      "intBitsToFloat",      {} },
+    { EOpUintBitsToFloat,     "uintBitsToFloat",     {} },
 
-    { EOpTextureQuerySize,      "textureSize",           nullptr },
-    { EOpTextureQueryLod,       "textureQueryLod",       nullptr },
-    { EOpTextureQueryLod,       "textureQueryLOD",       nullptr }, // extension GL_ARB_texture_query_lod
-    { EOpTextureQueryLevels,    "textureQueryLevels",    nullptr },
-    { EOpTextureQuerySamples,   "textureSamples",        nullptr },
-    { EOpTexture,               "texture",               nullptr },
-    { EOpTextureProj,           "textureProj",           nullptr },
-    { EOpTextureLod,            "textureLod",            nullptr },
-    { EOpTextureOffset,         "textureOffset",         nullptr },
-    { EOpTextureFetch,          "texelFetch",            nullptr },
-    { EOpTextureFetchOffset,    "texelFetchOffset",      nullptr },
-    { EOpTextureProjOffset,     "textureProjOffset",     nullptr },
-    { EOpTextureLodOffset,      "textureLodOffset",      nullptr },
-    { EOpTextureProjLod,        "textureProjLod",        nullptr },
-    { EOpTextureProjLodOffset,  "textureProjLodOffset",  nullptr },
-    { EOpTextureGrad,           "textureGrad",           nullptr },
-    { EOpTextureGradOffset,     "textureGradOffset",     nullptr },
-    { EOpTextureProjGrad,       "textureProjGrad",       nullptr },
-    { EOpTextureProjGradOffset, "textureProjGradOffset", nullptr },
-
-    { EOpNull }
+    { EOpTextureQuerySize,      "textureSize",           {} },
+    { EOpTextureQueryLod,       "textureQueryLod",       {} },
+    { EOpTextureQueryLod,       "textureQueryLOD",       {} }, // extension GL_ARB_texture_query_lod
+    { EOpTextureQueryLevels,    "textureQueryLevels",    {} },
+    { EOpTextureQuerySamples,   "textureSamples",        {} },
+    { EOpTexture,               "texture",               {} },
+    { EOpTextureProj,           "textureProj",           {} },
+    { EOpTextureLod,            "textureLod",            {} },
+    { EOpTextureOffset,         "textureOffset",         {} },
+    { EOpTextureFetch,          "texelFetch",            {} },
+    { EOpTextureFetchOffset,    "texelFetchOffset",      {} },
+    { EOpTextureProjOffset,     "textureProjOffset",     {} },
+    { EOpTextureLodOffset,      "textureLodOffset",      {} },
+    { EOpTextureProjLod,        "textureProjLod",        {} },
+    { EOpTextureProjLodOffset,  "textureProjLodOffset",  {} },
+    { EOpTextureGrad,           "textureGrad",           {} },
+    { EOpTextureGradOffset,     "textureGradOffset",     {} },
+    { EOpTextureProjGrad,       "textureProjGrad",       {} },
+    { EOpTextureProjGradOffset, "textureProjGradOffset", {} },
 };
 
 // For the given table of functions, add all the indicated prototypes for each
@@ -374,8 +369,8 @@ void AddTabledBuiltin(TString& decls, const BuiltInFunction& function)
                 if (arg == function.numArguments - 1 && (function.classes & ClassLO))
                     decls.append("out ");
                 if (arg == 0) {
-                    if (function.classes & ClassCV)
-                        decls.append("coherent volatile ");
+                    if (function.classes & ClassCVN)
+                        decls.append("coherent volatile nontemporal ");
                     if (function.classes & ClassFIO)
                         decls.append("inout ");
                     if (function.classes & ClassFO)
@@ -403,13 +398,13 @@ void AddTabledBuiltin(TString& decls, const BuiltInFunction& function)
 bool ValidVersion(const BuiltInFunction& function, int version, EProfile profile, const SpvVersion& /* spVersion */)
 {
     // nullptr means always valid
-    if (function.versioning == nullptr)
+    if (function.versioning.empty())
         return true;
 
     // check for what is said about our current profile
-    for (const Versioning* v = function.versioning; v->profiles != EBadProfile; ++v) {
-        if ((v->profiles & profile) != 0) {
-            if (v->minCoreVersion <= version || (v->numExtensions > 0 && v->minExtendedVersion <= version))
+    for (const auto& v : function.versioning) {
+        if ((v.profiles & profile) != 0) {
+            if (v.minCoreVersion <= version || (v.numExtensions > 0 && v.minExtendedVersion <= version))
                 return true;
         }
     }
@@ -422,12 +417,11 @@ bool ValidVersion(const BuiltInFunction& function, int version, EProfile profile
 // called once per stage). This is a performance issue only, not a correctness
 // concern.  It is done for quality arising from simplicity, as there are subtleties
 // to get correct if instead trying to do it surgically.
-template<class FunctionT>
-void RelateTabledBuiltins(const FunctionT* functions, TSymbolTable& symbolTable)
+template<class FunctionContainer>
+void RelateTabledBuiltins(const FunctionContainer& functions, TSymbolTable& symbolTable)
 {
-    while (functions->op != EOpNull) {
-        symbolTable.relateToOperator(functions->name, functions->op);
-        ++functions;
+    for (const auto& fn : functions) {
+        symbolTable.relateToOperator(fn.name, fn.op);
     }
 }
 
@@ -436,11 +430,10 @@ void RelateTabledBuiltins(const FunctionT* functions, TSymbolTable& symbolTable)
 // Add declarations for all tables of built-in functions.
 void TBuiltIns::addTabledBuiltins(int version, EProfile profile, const SpvVersion& spvVersion)
 {
-    const auto forEachFunction = [&](TString& decls, const BuiltInFunction* function) {
-        while (function->op != EOpNull) {
-            if (ValidVersion(*function, version, profile, spvVersion))
-                AddTabledBuiltin(decls, *function);
-            ++function;
+    const auto forEachFunction = [&](TString& decls, const span<const BuiltInFunction>& functions) {
+        for (const auto& fn : functions) {
+            if (ValidVersion(fn, version, profile, spvVersion))
+                AddTabledBuiltin(decls, fn);
         }
     };
 
@@ -1360,116 +1353,130 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
     if ((profile == EEsProfile && version >= 310) ||
         (profile != EEsProfile && version >= 430)) {
         commonBuiltins.append(
-            "uint atomicAdd(coherent volatile inout uint, uint, int, int, int);"
-            " int atomicAdd(coherent volatile inout  int,  int, int, int, int);"
+            "uint atomicAdd(coherent volatile nontemporal inout uint, uint, int, int, int);"
+            " int atomicAdd(coherent volatile nontemporal inout  int,  int, int, int, int);"
 
-            "uint atomicMin(coherent volatile inout uint, uint, int, int, int);"
-            " int atomicMin(coherent volatile inout  int,  int, int, int, int);"
+            "uint atomicMin(coherent volatile nontemporal inout uint, uint, int, int, int);"
+            " int atomicMin(coherent volatile nontemporal inout  int,  int, int, int, int);"
 
-            "uint atomicMax(coherent volatile inout uint, uint, int, int, int);"
-            " int atomicMax(coherent volatile inout  int,  int, int, int, int);"
+            "uint atomicMax(coherent volatile nontemporal inout uint, uint, int, int, int);"
+            " int atomicMax(coherent volatile nontemporal inout  int,  int, int, int, int);"
 
-            "uint atomicAnd(coherent volatile inout uint, uint, int, int, int);"
-            " int atomicAnd(coherent volatile inout  int,  int, int, int, int);"
+            "uint atomicAnd(coherent volatile nontemporal inout uint, uint, int, int, int);"
+            " int atomicAnd(coherent volatile nontemporal inout  int,  int, int, int, int);"
 
-            "uint atomicOr (coherent volatile inout uint, uint, int, int, int);"
-            " int atomicOr (coherent volatile inout  int,  int, int, int, int);"
+            "uint atomicOr (coherent volatile nontemporal inout uint, uint, int, int, int);"
+            " int atomicOr (coherent volatile nontemporal inout  int,  int, int, int, int);"
 
-            "uint atomicXor(coherent volatile inout uint, uint, int, int, int);"
-            " int atomicXor(coherent volatile inout  int,  int, int, int, int);"
+            "uint atomicXor(coherent volatile nontemporal inout uint, uint, int, int, int);"
+            " int atomicXor(coherent volatile nontemporal inout  int,  int, int, int, int);"
 
-            "uint atomicExchange(coherent volatile inout uint, uint, int, int, int);"
-            " int atomicExchange(coherent volatile inout  int,  int, int, int, int);"
+            "uint atomicExchange(coherent volatile nontemporal inout uint, uint, int, int, int);"
+            " int atomicExchange(coherent volatile nontemporal inout  int,  int, int, int, int);"
 
-            "uint atomicCompSwap(coherent volatile inout uint, uint, uint, int, int, int, int, int);"
-            " int atomicCompSwap(coherent volatile inout  int,  int,  int, int, int, int, int, int);"
+            "uint atomicCompSwap(coherent volatile nontemporal inout uint, uint, uint, int, int, int, int, int);"
+            " int atomicCompSwap(coherent volatile nontemporal inout  int,  int,  int, int, int, int, int, int);"
 
-            "uint atomicLoad(coherent volatile in uint, int, int, int);"
-            " int atomicLoad(coherent volatile in  int, int, int, int);"
+            "uint atomicLoad(coherent volatile nontemporal in uint, int, int, int);"
+            " int atomicLoad(coherent volatile nontemporal in  int, int, int, int);"
 
-            "void atomicStore(coherent volatile out uint, uint, int, int, int);"
-            "void atomicStore(coherent volatile out  int,  int, int, int, int);"
+            "void atomicStore(coherent volatile nontemporal out uint, uint, int, int, int);"
+            "void atomicStore(coherent volatile nontemporal out  int,  int, int, int, int);"
 
             "\n");
     }
 
     if (profile != EEsProfile && version >= 440) {
         commonBuiltins.append(
-            "uint64_t atomicMin(coherent volatile inout uint64_t, uint64_t);"
-            " int64_t atomicMin(coherent volatile inout  int64_t,  int64_t);"
-            "uint64_t atomicMin(coherent volatile inout uint64_t, uint64_t, int, int, int);"
-            " int64_t atomicMin(coherent volatile inout  int64_t,  int64_t, int, int, int);"
-            "float16_t atomicMin(coherent volatile inout float16_t, float16_t);"
-            "float16_t atomicMin(coherent volatile inout float16_t, float16_t, int, int, int);"
-            "   float atomicMin(coherent volatile inout float, float);"
-            "   float atomicMin(coherent volatile inout float, float, int, int, int);"
-            "  double atomicMin(coherent volatile inout double, double);"
-            "  double atomicMin(coherent volatile inout double, double, int, int, int);"
+            "uint64_t atomicMin(coherent volatile nontemporal inout uint64_t, uint64_t);"
+            " int64_t atomicMin(coherent volatile nontemporal inout  int64_t,  int64_t);"
+            "uint64_t atomicMin(coherent volatile nontemporal inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicMin(coherent volatile nontemporal inout  int64_t,  int64_t, int, int, int);"
+            "float16_t atomicMin(coherent volatile nontemporal inout float16_t, float16_t);"
+            "float16_t atomicMin(coherent volatile nontemporal inout float16_t, float16_t, int, int, int);"
+            "   float atomicMin(coherent volatile nontemporal inout float, float);"
+            "   float atomicMin(coherent volatile nontemporal inout float, float, int, int, int);"
+            "  double atomicMin(coherent volatile nontemporal inout double, double);"
+            "  double atomicMin(coherent volatile nontemporal inout double, double, int, int, int);"
 
-            "uint64_t atomicMax(coherent volatile inout uint64_t, uint64_t);"
-            " int64_t atomicMax(coherent volatile inout  int64_t,  int64_t);"
-            "uint64_t atomicMax(coherent volatile inout uint64_t, uint64_t, int, int, int);"
-            " int64_t atomicMax(coherent volatile inout  int64_t,  int64_t, int, int, int);"
-            "float16_t atomicMax(coherent volatile inout float16_t, float16_t);"
-            "float16_t atomicMax(coherent volatile inout float16_t, float16_t, int, int, int);"
-            "   float atomicMax(coherent volatile inout float, float);"
-            "   float atomicMax(coherent volatile inout float, float, int, int, int);"
-            "  double atomicMax(coherent volatile inout double, double);"
-            "  double atomicMax(coherent volatile inout double, double, int, int, int);"
+            "uint64_t atomicMax(coherent volatile nontemporal inout uint64_t, uint64_t);"
+            " int64_t atomicMax(coherent volatile nontemporal inout  int64_t,  int64_t);"
+            "uint64_t atomicMax(coherent volatile nontemporal inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicMax(coherent volatile nontemporal inout  int64_t,  int64_t, int, int, int);"
+            "float16_t atomicMax(coherent volatile nontemporal inout float16_t, float16_t);"
+            "float16_t atomicMax(coherent volatile nontemporal inout float16_t, float16_t, int, int, int);"
+            "   float atomicMax(coherent volatile nontemporal inout float, float);"
+            "   float atomicMax(coherent volatile nontemporal inout float, float, int, int, int);"
+            "  double atomicMax(coherent volatile nontemporal inout double, double);"
+            "  double atomicMax(coherent volatile nontemporal inout double, double, int, int, int);"
 
-            "uint64_t atomicAnd(coherent volatile inout uint64_t, uint64_t);"
-            " int64_t atomicAnd(coherent volatile inout  int64_t,  int64_t);"
-            "uint64_t atomicAnd(coherent volatile inout uint64_t, uint64_t, int, int, int);"
-            " int64_t atomicAnd(coherent volatile inout  int64_t,  int64_t, int, int, int);"
+            "uint64_t atomicAnd(coherent volatile nontemporal inout uint64_t, uint64_t);"
+            " int64_t atomicAnd(coherent volatile nontemporal inout  int64_t,  int64_t);"
+            "uint64_t atomicAnd(coherent volatile nontemporal inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicAnd(coherent volatile nontemporal inout  int64_t,  int64_t, int, int, int);"
 
-            "uint64_t atomicOr (coherent volatile inout uint64_t, uint64_t);"
-            " int64_t atomicOr (coherent volatile inout  int64_t,  int64_t);"
-            "uint64_t atomicOr (coherent volatile inout uint64_t, uint64_t, int, int, int);"
-            " int64_t atomicOr (coherent volatile inout  int64_t,  int64_t, int, int, int);"
+            "uint64_t atomicOr (coherent volatile nontemporal inout uint64_t, uint64_t);"
+            " int64_t atomicOr (coherent volatile nontemporal inout  int64_t,  int64_t);"
+            "uint64_t atomicOr (coherent volatile nontemporal inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicOr (coherent volatile nontemporal inout  int64_t,  int64_t, int, int, int);"
 
-            "uint64_t atomicXor(coherent volatile inout uint64_t, uint64_t);"
-            " int64_t atomicXor(coherent volatile inout  int64_t,  int64_t);"
-            "uint64_t atomicXor(coherent volatile inout uint64_t, uint64_t, int, int, int);"
-            " int64_t atomicXor(coherent volatile inout  int64_t,  int64_t, int, int, int);"
+            "uint64_t atomicXor(coherent volatile nontemporal inout uint64_t, uint64_t);"
+            " int64_t atomicXor(coherent volatile nontemporal inout  int64_t,  int64_t);"
+            "uint64_t atomicXor(coherent volatile nontemporal inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicXor(coherent volatile nontemporal inout  int64_t,  int64_t, int, int, int);"
 
-            "uint64_t atomicAdd(coherent volatile inout uint64_t, uint64_t);"
-            " int64_t atomicAdd(coherent volatile inout  int64_t,  int64_t);"
-            "uint64_t atomicAdd(coherent volatile inout uint64_t, uint64_t, int, int, int);"
-            " int64_t atomicAdd(coherent volatile inout  int64_t,  int64_t, int, int, int);"
-            "float16_t atomicAdd(coherent volatile inout float16_t, float16_t);"
-            "float16_t atomicAdd(coherent volatile inout float16_t, float16_t, int, int, int);"
-            "   float atomicAdd(coherent volatile inout float, float);"
-            "   float atomicAdd(coherent volatile inout float, float, int, int, int);"
-            "  double atomicAdd(coherent volatile inout double, double);"
-            "  double atomicAdd(coherent volatile inout double, double, int, int, int);"
+            "uint64_t atomicAdd(coherent volatile nontemporal inout uint64_t, uint64_t);"
+            " int64_t atomicAdd(coherent volatile nontemporal inout  int64_t,  int64_t);"
+            "uint64_t atomicAdd(coherent volatile nontemporal inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicAdd(coherent volatile nontemporal inout  int64_t,  int64_t, int, int, int);"
+            "float16_t atomicAdd(coherent volatile nontemporal inout float16_t, float16_t);"
+            "float16_t atomicAdd(coherent volatile nontemporal inout float16_t, float16_t, int, int, int);"
+            "   float atomicAdd(coherent volatile nontemporal inout float, float);"
+            "   float atomicAdd(coherent volatile nontemporal inout float, float, int, int, int);"
+            "  double atomicAdd(coherent volatile nontemporal inout double, double);"
+            "  double atomicAdd(coherent volatile nontemporal inout double, double, int, int, int);"
 
-            "uint64_t atomicExchange(coherent volatile inout uint64_t, uint64_t);"
-            " int64_t atomicExchange(coherent volatile inout  int64_t,  int64_t);"
-            "uint64_t atomicExchange(coherent volatile inout uint64_t, uint64_t, int, int, int);"
-            " int64_t atomicExchange(coherent volatile inout  int64_t,  int64_t, int, int, int);"
-            "float16_t atomicExchange(coherent volatile inout float16_t, float16_t);"
-            "float16_t atomicExchange(coherent volatile inout float16_t, float16_t, int, int, int);"
-            "   float atomicExchange(coherent volatile inout float, float);"
-            "   float atomicExchange(coherent volatile inout float, float, int, int, int);"
-            "  double atomicExchange(coherent volatile inout double, double);"
-            "  double atomicExchange(coherent volatile inout double, double, int, int, int);"
+            "uint64_t atomicExchange(coherent volatile nontemporal inout uint64_t, uint64_t);"
+            " int64_t atomicExchange(coherent volatile nontemporal inout  int64_t,  int64_t);"
+            "uint64_t atomicExchange(coherent volatile nontemporal inout uint64_t, uint64_t, int, int, int);"
+            " int64_t atomicExchange(coherent volatile nontemporal inout  int64_t,  int64_t, int, int, int);"
+            "float16_t atomicExchange(coherent volatile nontemporal inout float16_t, float16_t);"
+            "float16_t atomicExchange(coherent volatile nontemporal inout float16_t, float16_t, int, int, int);"
+            "   float atomicExchange(coherent volatile nontemporal inout float, float);"
+            "   float atomicExchange(coherent volatile nontemporal inout float, float, int, int, int);"
+            "  double atomicExchange(coherent volatile nontemporal inout double, double);"
+            "  double atomicExchange(coherent volatile nontemporal inout double, double, int, int, int);"
 
-            "uint64_t atomicCompSwap(coherent volatile inout uint64_t, uint64_t, uint64_t);"
-            " int64_t atomicCompSwap(coherent volatile inout  int64_t,  int64_t,  int64_t);"
-            "uint64_t atomicCompSwap(coherent volatile inout uint64_t, uint64_t, uint64_t, int, int, int, int, int);"
-            " int64_t atomicCompSwap(coherent volatile inout  int64_t,  int64_t,  int64_t, int, int, int, int, int);"
+            "uint64_t atomicCompSwap(coherent volatile nontemporal inout uint64_t, uint64_t, uint64_t);"
+            " int64_t atomicCompSwap(coherent volatile nontemporal inout  int64_t,  int64_t,  int64_t);"
+            "uint64_t atomicCompSwap(coherent volatile nontemporal inout uint64_t, uint64_t, uint64_t, int, int, int, int, int);"
+            " int64_t atomicCompSwap(coherent volatile nontemporal inout  int64_t,  int64_t,  int64_t, int, int, int, int, int);"
 
-            "uint64_t atomicLoad(coherent volatile in uint64_t, int, int, int);"
-            " int64_t atomicLoad(coherent volatile in  int64_t, int, int, int);"
-            "float16_t atomicLoad(coherent volatile in float16_t, int, int, int);"
-            "   float atomicLoad(coherent volatile in float, int, int, int);"
-            "  double atomicLoad(coherent volatile in double, int, int, int);"
+            "uint64_t atomicLoad(coherent volatile nontemporal in uint64_t, int, int, int);"
+            " int64_t atomicLoad(coherent volatile nontemporal in  int64_t, int, int, int);"
+            "float16_t atomicLoad(coherent volatile nontemporal in float16_t, int, int, int);"
+            "   float atomicLoad(coherent volatile nontemporal in float, int, int, int);"
+            "  double atomicLoad(coherent volatile nontemporal in double, int, int, int);"
 
-            "void atomicStore(coherent volatile out uint64_t, uint64_t, int, int, int);"
-            "void atomicStore(coherent volatile out  int64_t,  int64_t, int, int, int);"
-            "void atomicStore(coherent volatile out float16_t, float16_t, int, int, int);"
-            "void atomicStore(coherent volatile out float, float, int, int, int);"
-            "void atomicStore(coherent volatile out double, double, int, int, int);"
+            "void atomicStore(coherent volatile nontemporal out uint64_t, uint64_t, int, int, int);"
+            "void atomicStore(coherent volatile nontemporal out  int64_t,  int64_t, int, int, int);"
+            "void atomicStore(coherent volatile nontemporal out float16_t, float16_t, int, int, int);"
+            "void atomicStore(coherent volatile nontemporal out float, float, int, int, int);"
+            "void atomicStore(coherent volatile nontemporal out double, double, int, int, int);"
+            "\n");
+    }
+
+    // NV_shader_atomic_fp16_vector
+    if (profile != EEsProfile && version >= 430) {
+        commonBuiltins.append(
+            "f16vec2 atomicAdd(coherent volatile nontemporal inout f16vec2, f16vec2);"
+            "f16vec4 atomicAdd(coherent volatile nontemporal inout f16vec4, f16vec4);"
+            "f16vec2 atomicMin(coherent volatile nontemporal inout f16vec2, f16vec2);"
+            "f16vec4 atomicMin(coherent volatile nontemporal inout f16vec4, f16vec4);"
+            "f16vec2 atomicMax(coherent volatile nontemporal inout f16vec2, f16vec2);"
+            "f16vec4 atomicMax(coherent volatile nontemporal inout f16vec4, f16vec4);"
+            "f16vec2 atomicExchange(coherent volatile nontemporal inout f16vec2, f16vec2);"
+            "f16vec4 atomicExchange(coherent volatile nontemporal inout f16vec4, f16vec4);"
             "\n");
     }
 
@@ -1499,7 +1506,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
-    if ((profile != EEsProfile && version >= 400) ||
+    if ((profile != EEsProfile && version >= 150) || // GL_NV_gpu_shader5
         (profile == EEsProfile && version >= 310)) {    // GL_OES_gpu_shader5
 
         commonBuiltins.append(
@@ -1529,7 +1536,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
     }
 
     if ((profile == EEsProfile && version >= 310) ||
-        (profile != EEsProfile && version >= 400)) {
+        (profile != EEsProfile && version >= 150)) { // GL_NV_gpu_shader5
         commonBuiltins.append(
             "float frexp(highp float, out highp int);"
             "vec2  frexp(highp vec2,  out highp ivec2);"
@@ -1726,6 +1733,16 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "vec4 shadow2DRect(sampler2DRectShadow, vec3);"     // GL_ARB_texture_rectangle, caught by keyword check
                 "vec4 shadow2DRectProj(sampler2DRectShadow, vec4);" // GL_ARB_texture_rectangle, caught by keyword check
 
+                "vec4 texture1DArray(sampler1DArray, vec2);"      // GL_EXT_texture_array
+                "vec4 texture2DArray(sampler2DArray, vec3);"      // GL_EXT_texture_array
+                "vec4 shadow1DArray(sampler1DArrayShadow, vec3);" // GL_EXT_texture_array
+                "vec4 shadow2DArray(sampler2DArrayShadow, vec4);" // GL_EXT_texture_array
+                "vec4 texture1DArray(sampler1DArray, vec2, float);"                // GL_EXT_texture_array
+                "vec4 texture2DArray(sampler2DArray, vec3, float);"                // GL_EXT_texture_array
+                "vec4 shadow1DArray(sampler1DArrayShadow, vec3, float);"           // GL_EXT_texture_array
+                "vec4 texture1DArrayLod(sampler1DArray, vec2, float);"      // GL_EXT_texture_array
+                "vec4 texture2DArrayLod(sampler2DArray, vec3, float);"      // GL_EXT_texture_array
+                "vec4 shadow1DArrayLod(sampler1DArrayShadow, vec3, float);" // GL_EXT_texture_array
                 "\n");
         }
     }
@@ -1848,29 +1865,29 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
     else if (spvVersion.vulkanRelaxed) {
         //
         // Atomic counter functions act as aliases to normal atomic functions.
-        // replace definitions to take 'volatile coherent uint' instead of 'atomic_uint'
+        // replace definitions to take 'volatile coherent nontemporal uint' instead of 'atomic_uint'
         // and map to equivalent non-counter atomic op
         //
         if ((profile != EEsProfile && version >= 300) ||
             (profile == EEsProfile && version >= 310)) {
             commonBuiltins.append(
-                "uint atomicCounterIncrement(volatile coherent uint);"
-                "uint atomicCounterDecrement(volatile coherent uint);"
-                "uint atomicCounter(volatile coherent uint);"
+                "uint atomicCounterIncrement(volatile coherent nontemporal uint);"
+                "uint atomicCounterDecrement(volatile coherent nontemporal uint);"
+                "uint atomicCounter(volatile coherent nontemporal uint);"
 
                 "\n");
         }
         if (profile != EEsProfile && version >= 460) {
             commonBuiltins.append(
-                "uint atomicCounterAdd(volatile coherent uint, uint);"
-                "uint atomicCounterSubtract(volatile coherent uint, uint);"
-                "uint atomicCounterMin(volatile coherent uint, uint);"
-                "uint atomicCounterMax(volatile coherent uint, uint);"
-                "uint atomicCounterAnd(volatile coherent uint, uint);"
-                "uint atomicCounterOr(volatile coherent uint, uint);"
-                "uint atomicCounterXor(volatile coherent uint, uint);"
-                "uint atomicCounterExchange(volatile coherent uint, uint);"
-                "uint atomicCounterCompSwap(volatile coherent uint, uint, uint);"
+                "uint atomicCounterAdd(volatile coherent nontemporal uint, uint);"
+                "uint atomicCounterSubtract(volatile coherent nontemporal uint, uint);"
+                "uint atomicCounterMin(volatile coherent nontemporal uint, uint);"
+                "uint atomicCounterMax(volatile coherent nontemporal uint, uint);"
+                "uint atomicCounterAnd(volatile coherent nontemporal uint, uint);"
+                "uint atomicCounterOr(volatile coherent nontemporal uint, uint);"
+                "uint atomicCounterXor(volatile coherent nontemporal uint, uint);"
+                "uint atomicCounterExchange(volatile coherent nontemporal uint, uint);"
+                "uint atomicCounterCompSwap(volatile coherent nontemporal uint, uint, uint);"
 
                 "\n");
         }
@@ -1878,7 +1895,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
     // Bitfield
     if ((profile == EEsProfile && version >= 310) ||
-        (profile != EEsProfile && version >= 400)) {
+        (profile != EEsProfile && version >= 150)) { // ARB_gpu_shader5/NV_gpu_shader5
         commonBuiltins.append(
             "  int bitfieldExtract(  int, int, int);"
             "ivec2 bitfieldExtract(ivec2, int, int);"
@@ -1903,7 +1920,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
-    if (profile != EEsProfile && version >= 400) {
+    if (profile != EEsProfile && version >= 150) { //GL_ARB_gpu_shader5/GL_NV_gpu_shader5
         commonBuiltins.append(
             "  int findLSB(  int);"
             "ivec2 findLSB(ivec2);"
@@ -1931,7 +1948,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
-    if (profile != EEsProfile && version >= 400) {
+    if (profile != EEsProfile && version >= 150) { //GL_ARB_gpu_shader5/GL_NV_gpu_shader5
         commonBuiltins.append(
             "  int bitCount(  int);"
             "ivec2 bitCount(ivec2);"
@@ -1952,12 +1969,146 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "ivec2 findMSB(highp uvec2);"
             "ivec3 findMSB(highp uvec3);"
             "ivec4 findMSB(highp uvec4);"
+            "\n");
+    }
+
+    if (profile != EEsProfile && version >= 150 && version < 450) { //GL_NV_gpu_shader5
+        commonBuiltins.append(
+            "int64_t  packInt2x32(ivec2);"
+            "uint64_t packUint2x32(uvec2);"
+            "ivec2    unpackInt2x32(int64_t);"
+            "uvec2    unpackUint2x32(uint64_t);"
+
+            "uint     packFloat2x16(f16vec2);"
+            "f16vec2  unpackFloat2x16(uint);"
+
+            "int64_t doubleBitsToInt64(double);"
+            "i64vec2 doubleBitsToInt64(dvec2);"
+            "i64vec3 doubleBitsToInt64(dvec3);"
+            "i64vec4 doubleBitsToInt64(dvec4);"
+
+            "uint64_t doubleBitsToUint64(double);"
+            "u64vec2  doubleBitsToUint64(dvec2);"
+            "u64vec3  doubleBitsToUint64(dvec3);"
+            "u64vec4  doubleBitsToUint64(dvec4);"
+
+            "double int64BitsToDouble(int64_t);"
+            "dvec2  int64BitsToDouble(i64vec2);"
+            "dvec3  int64BitsToDouble(i64vec3);"
+            "dvec4  int64BitsToDouble(i64vec4);"
+
+            "double uint64BitsToDouble(uint64_t);"
+            "dvec2  uint64BitsToDouble(u64vec2);"
+            "dvec3  uint64BitsToDouble(u64vec3);"
+            "dvec4  uint64BitsToDouble(u64vec4);"
+            // Modifications to Vector Relational Functions
+            // Introduction of explicitly sized types
+            "bvec2 lessThan(i64vec2, i64vec2);"
+            "bvec3 lessThan(i64vec3, i64vec3);"
+            "bvec4 lessThan(i64vec4, i64vec4);"
+            "bvec2 lessThan(u64vec2, u64vec2);"
+            "bvec3 lessThan(u64vec3, u64vec3);"
+            "bvec4 lessThan(u64vec4, u64vec4);"
+
+            "bvec2 lessThanEqual(i64vec2, i64vec2);"
+            "bvec3 lessThanEqual(i64vec3, i64vec3);"
+            "bvec4 lessThanEqual(i64vec4, i64vec4);"
+            "bvec2 lessThanEqual(u64vec2, u64vec2);"
+            "bvec3 lessThanEqual(u64vec3, u64vec3);"
+            "bvec4 lessThanEqual(u64vec4, u64vec4);"
+
+            "bvec2 greaterThan(i64vec2, i64vec2);"
+            "bvec3 greaterThan(i64vec3, i64vec3);"
+            "bvec4 greaterThan(i64vec4, i64vec4);"
+            "bvec2 greaterThan(u64vec2, u64vec2);"
+            "bvec3 greaterThan(u64vec3, u64vec3);"
+            "bvec4 greaterThan(u64vec4, u64vec4);"
+
+            "bvec2 greaterThanEqual(i64vec2, i64vec2);"
+            "bvec3 greaterThanEqual(i64vec3, i64vec3);"
+            "bvec4 greaterThanEqual(i64vec4, i64vec4);"
+            "bvec2 greaterThanEqual(u64vec2, u64vec2);"
+            "bvec3 greaterThanEqual(u64vec3, u64vec3);"
+            "bvec4 greaterThanEqual(u64vec4, u64vec4);"
+
+            "bvec2 equal(i64vec2, i64vec2);"
+            "bvec3 equal(i64vec3, i64vec3);"
+            "bvec4 equal(i64vec4, i64vec4);"
+            "bvec2 equal(u64vec2, u64vec2);"
+            "bvec3 equal(u64vec3, u64vec3);"
+            "bvec4 equal(u64vec4, u64vec4);"
+
+            "bvec2 notEqual(i64vec2, i64vec2);"
+            "bvec3 notEqual(i64vec3, i64vec3);"
+            "bvec4 notEqual(i64vec4, i64vec4);"
+            "bvec2 notEqual(u64vec2, u64vec2);"
+            "bvec3 notEqual(u64vec3, u64vec3);"
+            "bvec4 notEqual(u64vec4, u64vec4);"
+
+            "bvec2 lessThan(f16vec2, f16vec2);"
+            "bvec3 lessThan(f16vec3, f16vec3);"
+            "bvec4 lessThan(f16vec4, f16vec4);"
+
+            "bvec2 lessThanEqual(f16vec2, f16vec2);"
+            "bvec3 lessThanEqual(f16vec3, f16vec3);"
+            "bvec4 lessThanEqual(f16vec4, f16vec4);"
+
+            "bvec2 greaterThan(f16vec2, f16vec2);"
+            "bvec3 greaterThan(f16vec3, f16vec3);"
+            "bvec4 greaterThan(f16vec4, f16vec4);"
+
+            "bvec2 greaterThanEqual(f16vec2, f16vec2);"
+            "bvec3 greaterThanEqual(f16vec3, f16vec3);"
+            "bvec4 greaterThanEqual(f16vec4, f16vec4);"
+
+            "bvec2 equal(f16vec2, f16vec2);"
+            "bvec3 equal(f16vec3, f16vec3);"
+            "bvec4 equal(f16vec4, f16vec4);"
+
+            "bvec2 notEqual(f16vec2, f16vec2);"
+            "bvec3 notEqual(f16vec3, f16vec3);"
+            "bvec4 notEqual(f16vec4, f16vec4);"
+
+            // Dependency on GL_ARB_gpu_shader_fp64
+            "bvec2 lessThan(dvec2, dvec2);"
+            "bvec3 lessThan(dvec3, dvec3);"
+            "bvec4 lessThan(dvec4, dvec4);"
+
+            "bvec2 lessThanEqual(dvec2, dvec2);"
+            "bvec3 lessThanEqual(dvec3, dvec3);"
+            "bvec4 lessThanEqual(dvec4, dvec4);"
+
+            "bvec2 greaterThan(dvec2, dvec2);"
+            "bvec3 greaterThan(dvec3, dvec3);"
+            "bvec4 greaterThan(dvec4, dvec4);"
+
+            "bvec2 greaterThanEqual(dvec2, dvec2);"
+            "bvec3 greaterThanEqual(dvec3, dvec3);"
+            "bvec4 greaterThanEqual(dvec4, dvec4);"
+
+            "bvec2 equal(dvec2, dvec2);"
+            "bvec3 equal(dvec3, dvec3);"
+            "bvec4 equal(dvec4, dvec4);"
+
+            "bvec2 notEqual(dvec2, dvec2);"
+            "bvec3 notEqual(dvec3, dvec3);"
+            "bvec4 notEqual(dvec4, dvec4);"
+
+            "\n");
+    }
+
+
+    if (profile != EEsProfile && version >= 150) {
+        commonBuiltins.append(
+            "bool anyThreadNV(bool);"
+            "bool allThreadsNV(bool);"
+            "bool allThreadsEqualNV(bool);"
 
             "\n");
     }
 
     if ((profile == EEsProfile && version >= 310) ||
-        (profile != EEsProfile && version >= 400)) {
+        (profile != EEsProfile && version >= 150)) { // NV_gpu_shader5
         commonBuiltins.append(
             " uint uaddCarry(highp  uint, highp  uint, out lowp  uint carry);"
             "uvec2 uaddCarry(highp uvec2, highp uvec2, out lowp uvec2 carry);"
@@ -2065,6 +2216,143 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
+    // GL_EXT_integer_dot_product
+    if ((profile == EEsProfile && version >= 300) ||
+        (profile != EEsProfile && version >= 450)) {
+        commonBuiltins.append(
+
+            "uint dotEXT(uvec2 a, uvec2 b);"
+            "int dotEXT(ivec2 a, ivec2 b);"
+            "int dotEXT(ivec2 a, uvec2 b);"
+            "int dotEXT(uvec2 a, ivec2 b);"
+
+            "uint dotEXT(uvec3 a, uvec3 b);"
+            "int dotEXT(ivec3 a, ivec3 b);"
+            "int dotEXT(ivec3 a, uvec3 b);"
+            "int dotEXT(uvec3 a, ivec3 b);"
+
+            "uint dotEXT(uvec4 a, uvec4 b);"
+            "int dotEXT(ivec4 a, ivec4 b);"
+            "int dotEXT(ivec4 a, uvec4 b);"
+            "int dotEXT(uvec4 a, ivec4 b);"
+
+            "uint dotPacked4x8EXT(uint a, uint b);"
+            "int dotPacked4x8EXT(int a, uint b);"
+            "int dotPacked4x8EXT(uint a, int b);"
+            "int dotPacked4x8EXT(int a, int b);"
+
+            "uint dotEXT(u8vec2 a, u8vec2 b);"
+            "int dotEXT(i8vec2 a, u8vec2 b);"
+            "int dotEXT(u8vec2 a, i8vec2 b);"
+            "int dotEXT(i8vec2 a, i8vec2 b);"
+
+            "uint dotEXT(u8vec3 a, u8vec3 b);"
+            "int dotEXT(i8vec3 a, u8vec3 b);"
+            "int dotEXT(u8vec3 a, i8vec3 b);"
+            "int dotEXT(i8vec3 a, i8vec3 b);"
+
+            "uint dotEXT(u8vec4 a, u8vec4 b);"
+            "int dotEXT(i8vec4 a, u8vec4 b);"
+            "int dotEXT(u8vec4 a, i8vec4 b);"
+            "int dotEXT(i8vec4 a, i8vec4 b);"
+
+            "uint dotEXT(u16vec2 a, u16vec2 b);"
+            "int dotEXT(i16vec2 a, u16vec2 b);"
+            "int dotEXT(u16vec2 a, i16vec2 b);"
+            "int dotEXT(i16vec2 a, i16vec2 b);"
+
+            "uint dotEXT(u16vec3 a, u16vec3 b);"
+            "int dotEXT(i16vec3 a, u16vec3 b);"
+            "int dotEXT(u16vec3 a, i16vec3 b);"
+            "int dotEXT(i16vec3 a, i16vec3 b);"
+
+            "uint dotEXT(u16vec4 a, u16vec4 b);"
+            "int dotEXT(i16vec4 a, u16vec4 b);"
+            "int dotEXT(u16vec4 a, i16vec4 b);"
+            "int dotEXT(i16vec4 a, i16vec4 b);"
+
+            "uint64_t dotEXT(u64vec2 a, u64vec2 b);"
+            "int64_t dotEXT(i64vec2 a, u64vec2 b);"
+            "int64_t dotEXT(u64vec2 a, i64vec2 b);"
+            "int64_t dotEXT(i64vec2 a, i64vec2 b);"
+
+            "uint64_t dotEXT(u64vec3 a, u64vec3 b);"
+            "int64_t dotEXT(i64vec3 a, u64vec3 b);"
+            "int64_t dotEXT(u64vec3 a, i64vec3 b);"
+            "int64_t dotEXT(i64vec3 a, i64vec3 b);"
+
+            "uint64_t dotEXT(u64vec4 a, u64vec4 b);"
+            "int64_t dotEXT(i64vec4 a, u64vec4 b);"
+            "int64_t dotEXT(u64vec4 a, i64vec4 b);"
+            "int64_t dotEXT(i64vec4 a, i64vec4 b);"
+
+            "uint dotAccSatEXT(uvec2 a, uvec2 b, uint c);"
+            "int dotAccSatEXT(ivec2 a, uvec2 b, int c);"
+            "int dotAccSatEXT(uvec2 a, ivec2 b, int c);"
+            "int dotAccSatEXT(ivec2 a, ivec2 b, int c);"
+
+            "uint dotAccSatEXT(uvec3 a, uvec3 b, uint c);"
+            "int dotAccSatEXT(ivec3 a, uvec3 b, int c);"
+            "int dotAccSatEXT(uvec3 a, ivec3 b, int c);"
+            "int dotAccSatEXT(ivec3 a, ivec3 b, int c);"
+
+            "uint dotAccSatEXT(uvec4 a, uvec4 b, uint c);"
+            "int dotAccSatEXT(ivec4 a, uvec4 b, int c);"
+            "int dotAccSatEXT(uvec4 a, ivec4 b, int c);"
+            "int dotAccSatEXT(ivec4 a, ivec4 b, int c);"
+
+            "uint dotPacked4x8AccSatEXT(uint a, uint b, uint c);"
+            "int dotPacked4x8AccSatEXT(int a, uint b, int c);"
+            "int dotPacked4x8AccSatEXT(uint a, int b, int c);"
+            "int dotPacked4x8AccSatEXT(int a, int b, int c);"
+
+            "uint dotAccSatEXT(u8vec2 a, u8vec2 b, uint c);"
+            "int dotAccSatEXT(i8vec2 a, u8vec2 b, int c);"
+            "int dotAccSatEXT(u8vec2 a, i8vec2 b, int c);"
+            "int dotAccSatEXT(i8vec2 a, i8vec2 b, int c);"
+
+            "uint dotAccSatEXT(u8vec3 a, u8vec3 b, uint c);"
+            "int dotAccSatEXT(i8vec3 a, u8vec3 b, int c);"
+            "int dotAccSatEXT(u8vec3 a, i8vec3 b, int c);"
+            "int dotAccSatEXT(i8vec3 a, i8vec3 b, int c);"
+
+            "uint dotAccSatEXT(u8vec4 a, u8vec4 b, uint c);"
+            "int dotAccSatEXT(i8vec4 a, u8vec4 b, int c);"
+            "int dotAccSatEXT(u8vec4 a, i8vec4 b, int c);"
+            "int dotAccSatEXT(i8vec4 a, i8vec4 b, int c);"
+
+            "uint dotAccSatEXT(u16vec2 a, u16vec2 b, uint c);"
+            "int dotAccSatEXT(i16vec2 a, u16vec2 b, int c);"
+            "int dotAccSatEXT(u16vec2 a, i16vec2 b, int c);"
+            "int dotAccSatEXT(i16vec2 a, i16vec2 b, int c);"
+
+            "uint dotAccSatEXT(u16vec3 a, u16vec3 b, uint c);"
+            "int dotAccSatEXT(i16vec3 a, u16vec3 b, int c);"
+            "int dotAccSatEXT(u16vec3 a, i16vec3 b, int c);"
+            "int dotAccSatEXT(i16vec3 a, i16vec3 b, int c);"
+
+            "uint dotAccSatEXT(u16vec4 a, u16vec4 b, uint c);"
+            "int dotAccSatEXT(i16vec4 a, u16vec4 b, int c);"
+            "int dotAccSatEXT(u16vec4 a, i16vec4 b, int c);"
+            "int dotAccSatEXT(i16vec4 a, i16vec4 b, int c);"
+
+            "uint64_t dotAccSatEXT(u64vec2 a, u64vec2 b, uint64_t c);"
+            "int64_t dotAccSatEXT(i64vec2 a, u64vec2 b, int64_t c);"
+            "int64_t dotAccSatEXT(u64vec2 a, i64vec2 b, int64_t c);"
+            "int64_t dotAccSatEXT(i64vec2 a, i64vec2 b, int64_t c);"
+
+            "uint64_t dotAccSatEXT(u64vec3 a, u64vec3 b, uint64_t c);"
+            "int64_t dotAccSatEXT(i64vec3 a, u64vec3 b, int64_t c);"
+            "int64_t dotAccSatEXT(u64vec3 a, i64vec3 b, int64_t c);"
+            "int64_t dotAccSatEXT(i64vec3 a, i64vec3 b, int64_t c);"
+
+            "uint64_t dotAccSatEXT(u64vec4 a, u64vec4 b, uint64_t c);"
+            "int64_t dotAccSatEXT(i64vec4 a, u64vec4 b, int64_t c);"
+            "int64_t dotAccSatEXT(u64vec4 a, i64vec4 b, int64_t c);"
+            "int64_t dotAccSatEXT(i64vec4 a, i64vec4 b, int64_t c);"
+            "\n");
+    }
+
     // GL_KHR_shader_subgroup
     if ((profile == EEsProfile && version >= 310) ||
         (profile != EEsProfile && version >= 140)) {
@@ -2097,6 +2385,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "%s     subgroupShuffleXor(%s, uint);\n",
             "%s     subgroupShuffleUp(%s, uint delta);\n",
             "%s     subgroupShuffleDown(%s, uint delta);\n",
+            "%s     subgroupRotate(%s, uint);\n",
+            "%s     subgroupClusteredRotate(%s, uint, uint);\n",
             "%s     subgroupAdd(%s);\n",
             "%s     subgroupMul(%s);\n",
             "%s     subgroupMin(%s);\n",
@@ -2222,6 +2512,15 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         stageBuiltins[EShLangTask].append(
             "void subgroupMemoryBarrierShared();"
             "\n"
+            );
+    }
+
+    // GL_EXT_shader_quad_control
+    if ((profile == EEsProfile && version >= 310) ||
+        (profile != EEsProfile && version >= 140)) {
+        commonBuiltins.append(
+            "bool subgroupQuadAll(bool);\n"
+            "bool subgroupQuadAny(bool);\n"
             );
     }
 
@@ -3701,6 +4000,72 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "bvec3 notEqual(f16vec3, f16vec3);"
             "bvec4 notEqual(f16vec4, f16vec4);"
 
+            "bfloat16_t dot(bfloat16_t, bfloat16_t);"
+            "bfloat16_t dot(bf16vec2,   bf16vec2);"
+            "bfloat16_t dot(bf16vec3,   bf16vec3);"
+            "bfloat16_t dot(bf16vec4,   bf16vec4);"
+
+            "int16_t  bfloat16BitsToIntEXT(bfloat16_t value);"
+            "i16vec2  bfloat16BitsToIntEXT(bf16vec2 value);"
+            "i16vec3  bfloat16BitsToIntEXT(bf16vec3 value);"
+            "i16vec4  bfloat16BitsToIntEXT(bf16vec4 value);"
+
+            "uint16_t bfloat16BitsToUintEXT(bfloat16_t value);"
+            "u16vec2  bfloat16BitsToUintEXT(bf16vec2 value);"
+            "u16vec3  bfloat16BitsToUintEXT(bf16vec3 value);"
+            "u16vec4  bfloat16BitsToUintEXT(bf16vec4 value);"
+
+            "bfloat16_t intBitsToBFloat16EXT(int16_t value);"
+            "bf16vec2   intBitsToBFloat16EXT(i16vec2 value);"
+            "bf16vec3   intBitsToBFloat16EXT(i16vec3 value);"
+            "bf16vec4   intBitsToBFloat16EXT(i16vec4 value);"
+
+            "bfloat16_t uintBitsToBFloat16EXT(uint16_t value);"
+            "bf16vec2   uintBitsToBFloat16EXT(u16vec2 value);"
+            "bf16vec3   uintBitsToBFloat16EXT(u16vec3 value);"
+            "bf16vec4   uintBitsToBFloat16EXT(u16vec4 value);"
+
+            "int8_t  floate5m2BitsToIntEXT(floate5m2_t value);"
+            "i8vec2  floate5m2BitsToIntEXT(fe5m2vec2 value);"
+            "i8vec3  floate5m2BitsToIntEXT(fe5m2vec3 value);"
+            "i8vec4  floate5m2BitsToIntEXT(fe5m2vec4 value);"
+
+            "uint8_t floate5m2BitsToUintEXT(floate5m2_t value);"
+            "u8vec2  floate5m2BitsToUintEXT(fe5m2vec2 value);"
+            "u8vec3  floate5m2BitsToUintEXT(fe5m2vec3 value);"
+            "u8vec4  floate5m2BitsToUintEXT(fe5m2vec4 value);"
+
+            "floate5m2_t intBitsToFloate5m2EXT(int8_t value);"
+            "fe5m2vec2   intBitsToFloate5m2EXT(i8vec2 value);"
+            "fe5m2vec3   intBitsToFloate5m2EXT(i8vec3 value);"
+            "fe5m2vec4   intBitsToFloate5m2EXT(i8vec4 value);"
+
+            "floate5m2_t uintBitsToFloate5m2EXT(uint8_t value);"
+            "fe5m2vec2   uintBitsToFloate5m2EXT(u8vec2 value);"
+            "fe5m2vec3   uintBitsToFloate5m2EXT(u8vec3 value);"
+            "fe5m2vec4   uintBitsToFloate5m2EXT(u8vec4 value);"
+
+            "int8_t  floate4m3BitsToIntEXT(floate4m3_t value);"
+            "i8vec2  floate4m3BitsToIntEXT(fe4m3vec2 value);"
+            "i8vec3  floate4m3BitsToIntEXT(fe4m3vec3 value);"
+            "i8vec4  floate4m3BitsToIntEXT(fe4m3vec4 value);"
+
+            "uint8_t floate4m3BitsToUintEXT(floate4m3_t value);"
+            "u8vec2  floate4m3BitsToUintEXT(fe4m3vec2 value);"
+            "u8vec3  floate4m3BitsToUintEXT(fe4m3vec3 value);"
+            "u8vec4  floate4m3BitsToUintEXT(fe4m3vec4 value);"
+
+            "floate4m3_t intBitsToFloate4m3EXT(int8_t value);"
+            "fe4m3vec2   intBitsToFloate4m3EXT(i8vec2 value);"
+            "fe4m3vec3   intBitsToFloate4m3EXT(i8vec3 value);"
+            "fe4m3vec4   intBitsToFloate4m3EXT(i8vec4 value);"
+
+            "floate4m3_t uintBitsToFloate4m3EXT(uint8_t value);"
+            "fe4m3vec2   uintBitsToFloate4m3EXT(u8vec2 value);"
+            "fe4m3vec3   uintBitsToFloate4m3EXT(u8vec3 value);"
+            "fe4m3vec4   uintBitsToFloate4m3EXT(u8vec4 value);"
+
+            "void saturatedConvertEXT();"
             "\n");
     }
 
@@ -4105,6 +4470,37 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "u16vec4  unpack16(uint64_t);"
             "i32vec2  unpack32(int64_t);"
             "u32vec2  unpack32(uint64_t);"
+
+            // GL_EXT_expect_assume
+            "int8_t expectEXT(int8_t, int8_t);"
+            "i8vec2 expectEXT(i8vec2, i8vec2);"
+            "i8vec3 expectEXT(i8vec3, i8vec3);"
+            "i8vec4 expectEXT(i8vec4, i8vec4);"
+
+            "uint8_t expectEXT(uint8_t, uint8_t);"
+            "u8vec2 expectEXT(u8vec2, u8vec2);"
+            "u8vec3 expectEXT(u8vec3, u8vec3);"
+            "u8vec4 expectEXT(u8vec4, u8vec4);"
+
+            "int16_t expectEXT(int16_t, int16_t);"
+            "i16vec2 expectEXT(i16vec2, i16vec2);"
+            "i16vec3 expectEXT(i16vec3, i16vec3);"
+            "i16vec4 expectEXT(i16vec4, i16vec4);"
+
+            "uint16_t expectEXT(uint16_t, uint16_t);"
+            "u16vec2 expectEXT(u16vec2, u16vec2);"
+            "u16vec3 expectEXT(u16vec3, u16vec3);"
+            "u16vec4 expectEXT(u16vec4, u16vec4);"
+
+            "int64_t expectEXT(int64_t, int64_t);"
+            "i64vec2 expectEXT(i64vec2, i64vec2);"
+            "i64vec3 expectEXT(i64vec3, i64vec3);"
+            "i64vec4 expectEXT(i64vec4, i64vec4);"
+
+            "uint64_t expectEXT(uint64_t, uint64_t);"
+            "u64vec2 expectEXT(u64vec2, u64vec2);"
+            "u64vec3 expectEXT(u64vec3, u64vec3);"
+            "u64vec4 expectEXT(u64vec4, u64vec4);"
             "\n");
     }
 
@@ -4143,6 +4539,29 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
     }
 
+    // GL_EXT_expect_assume
+    if ((profile == EEsProfile && version >= 310) ||
+         ((profile != EEsProfile && version >= 140))) {
+        commonBuiltins.append(
+            "void assumeEXT(bool);"
+
+            "bool expectEXT(bool, bool);"
+            "bvec2 expectEXT(bvec2, bvec2);"
+            "bvec3 expectEXT(bvec3, bvec3);"
+            "bvec4 expectEXT(bvec4, bvec4);"
+
+            "int expectEXT(int, int);"
+            "ivec2 expectEXT(ivec2, ivec2);"
+            "ivec3 expectEXT(ivec3, ivec3);"
+            "ivec4 expectEXT(ivec4, ivec4);"
+
+            "uint expectEXT(uint, uint);"
+            "uvec2 expectEXT(uvec2, uvec2);"
+            "uvec3 expectEXT(uvec3, uvec3);"
+            "uvec4 expectEXT(uvec4, uvec4);"
+            "\n");
+    }
+
     // QCOM_image_processing
     if ((profile == EEsProfile && version >= 310) ||
          (profile != EEsProfile && version >= 140)) {
@@ -4152,6 +4571,11 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
            "vec4 textureBoxFilterQCOM(sampler2D, vec2, vec2);"
            "vec4 textureBlockMatchSADQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
            "vec4 textureBlockMatchSSDQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+
+           "vec4 textureBlockMatchWindowSSDQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+           "vec4 textureBlockMatchWindowSADQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+           "vec4 textureBlockMatchGatherSSDQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
+           "vec4 textureBlockMatchGatherSADQCOM(sampler2D, uvec2, sampler2D, uvec2, uvec2);"
            "\n");
     }
 
@@ -4236,8 +4660,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         // Prototypes for built-in functions seen by geometry shaders only.
         //
         //============================================================================
-
-        if (profile != EEsProfile && (version >= 400 || version == 150)) {
+        if (profile != EEsProfile && version >= 150) {
             stageBuiltins[EShLangGeometry].append(
                 "void EmitStreamVertex(int);"
                 "void EndStreamPrimitive(int);"
@@ -4311,159 +4734,122 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
         // adding it introduces undesirable tempArgs on the stack. What we want
         // is more like "buf" thought of as a pointer value being an in parameter.
         stageBuiltins[EShLangCompute].append(
-            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent float16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent float[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent uint[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent uvec2[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent uvec4[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent nontemporal float16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent nontemporal float[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent nontemporal uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent nontemporal uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent nontemporal uint[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent nontemporal uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent nontemporal uvec2[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out fcoopmatNV m, volatile coherent nontemporal uvec4[] buf, uint element, uint stride, bool colMajor);\n"
 
-            "void coopMatStoreNV(fcoopmatNV m, volatile coherent float16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(fcoopmatNV m, volatile coherent float[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(fcoopmatNV m, volatile coherent float64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(fcoopmatNV m, volatile coherent uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(fcoopmatNV m, volatile coherent uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(fcoopmatNV m, volatile coherent uint[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(fcoopmatNV m, volatile coherent uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(fcoopmatNV m, volatile coherent uvec2[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(fcoopmatNV m, volatile coherent uvec4[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(fcoopmatNV m, volatile coherent nontemporal float16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(fcoopmatNV m, volatile coherent nontemporal float[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(fcoopmatNV m, volatile coherent nontemporal float64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(fcoopmatNV m, volatile coherent nontemporal uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(fcoopmatNV m, volatile coherent nontemporal uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(fcoopmatNV m, volatile coherent nontemporal uint[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(fcoopmatNV m, volatile coherent nontemporal uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(fcoopmatNV m, volatile coherent nontemporal uvec2[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(fcoopmatNV m, volatile coherent nontemporal uvec4[] buf, uint element, uint stride, bool colMajor);\n"
 
             "fcoopmatNV coopMatMulAddNV(fcoopmatNV A, fcoopmatNV B, fcoopmatNV C);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent int8_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent int16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent int[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent int64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent ivec2[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent ivec4[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent uint[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent uvec2[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out icoopmatNV m, volatile coherent uvec4[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal int8_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal int16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal int[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal int64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal ivec2[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal ivec4[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal uint[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal uvec2[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out icoopmatNV m, volatile coherent nontemporal uvec4[] buf, uint element, uint stride, bool colMajor);\n"
 
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent int8_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent int16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent int[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent int64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent ivec2[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent ivec4[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent uint[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent uvec2[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent uvec4[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal int8_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal int16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal int[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal int64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal ivec2[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal ivec4[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal uint[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal uvec2[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatLoadNV(out ucoopmatNV m, volatile coherent nontemporal uvec4[] buf, uint element, uint stride, bool colMajor);\n"
 
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent int8_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent int16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent int[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent int64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent ivec2[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent ivec4[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent uint[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent uvec2[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(icoopmatNV m, volatile coherent uvec4[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal int8_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal int16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal int[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal int64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal ivec2[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal ivec4[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal uint[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal uvec2[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(icoopmatNV m, volatile coherent nontemporal uvec4[] buf, uint element, uint stride, bool colMajor);\n"
 
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent int8_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent int16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent int[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent int64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent ivec2[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent ivec4[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent uint[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent uvec2[] buf, uint element, uint stride, bool colMajor);\n"
-            "void coopMatStoreNV(ucoopmatNV m, volatile coherent uvec4[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal int8_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal int16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal int[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal int64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal ivec2[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal ivec4[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal uint8_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal uint16_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal uint[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal uint64_t[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal uvec2[] buf, uint element, uint stride, bool colMajor);\n"
+            "void coopMatStoreNV(ucoopmatNV m, volatile coherent nontemporal uvec4[] buf, uint element, uint stride, bool colMajor);\n"
 
             "icoopmatNV coopMatMulAddNV(icoopmatNV A, icoopmatNV B, icoopmatNV C);\n"
             "ucoopmatNV coopMatMulAddNV(ucoopmatNV A, ucoopmatNV B, ucoopmatNV C);\n"
             );
 
-        std::string cooperativeMatrixFuncs =
-            "void coopMatLoad(out coopmat m, volatile coherent int8_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent int16_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent int32_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent int64_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent uint8_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent uint16_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent uint32_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent uint64_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent float16_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent float[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent float64_t[] buf, uint element, uint stride, int matrixLayout);\n"
+        std::stringstream cooperativeMatrixFuncs;
 
-            "void coopMatLoad(out coopmat m, volatile coherent i8vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent i16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent i32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent i64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent u8vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent u16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent u32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent u64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent f16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent f32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent f64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
+        {
+            static const char *allTypes[] =
+            {
+                "float", "vec2", "vec4",
+                "float16_t", "f16vec2", "f16vec4",
+                "bfloat16_t", "bf16vec2", "bf16vec4",
+                "floate5m2_t", "fe5m2vec2", "fe5m2vec4",
+                "floate4m3_t", "fe4m3vec2", "fe4m3vec4",
+                "double", "dvec2", "dvec4",
+                "int8_t", "i8vec2", "i8vec4",
+                "int16_t", "i16vec2", "i16vec4",
+                "int", "ivec2", "ivec4",
+                "int64_t", "i64vec2", "i64vec4",
+                "uint8_t", "u8vec2", "u8vec4",
+                "uint16_t", "u16vec2", "u16vec4",
+                "uint", "uvec2", "uvec4",
+                "uint64_t", "u64vec2", "u64vec4",
+            };
+            for (auto elemTy : {"uint", "uint64_t"}) {
+                for (auto t : allTypes) {
+                    cooperativeMatrixFuncs << "void coopMatLoad(out coopmat m, volatile coherent nontemporal " << t << "[] buf, " << elemTy << " element, uint stride, int matrixLayout);\n";
+                    cooperativeMatrixFuncs << "void coopMatStore(coopmat m, volatile coherent nontemporal " << t << "[] buf, " << elemTy << " element, uint stride, int matrixLayout);\n";
+                }
+                // Just use uint8_t for buffer type, we have special matching rules to allow any conversion
+                cooperativeMatrixFuncs << "void coopMatLoadTensorNV(inout coopmat m, volatile coherent nontemporal uint8_t[] buf, " << elemTy << " element, tensorLayoutNV t);\n";
+                cooperativeMatrixFuncs << "void coopMatLoadTensorNV(inout coopmat m, volatile coherent nontemporal uint8_t[] buf, " << elemTy << " element, tensorLayoutNV t, tensorViewNV v);\n";
+                cooperativeMatrixFuncs << "void coopMatLoadTensorNV(inout coopmat m, volatile coherent nontemporal uint8_t[] buf, " << elemTy << " element, tensorLayoutNV t, __function f);\n";
+                cooperativeMatrixFuncs << "void coopMatLoadTensorNV(inout coopmat m, volatile coherent nontemporal uint8_t[] buf, " << elemTy << " element, tensorLayoutNV t, tensorViewNV v, __function f);\n";
+                cooperativeMatrixFuncs << "void coopMatStoreTensorNV(coopmat m, volatile coherent nontemporal uint8_t[] buf, " << elemTy << " element, tensorLayoutNV t);\n";
+                cooperativeMatrixFuncs << "void coopMatStoreTensorNV(coopmat m, volatile coherent nontemporal uint8_t[] buf, " << elemTy << " element, tensorLayoutNV t, tensorViewNV v);\n";
+            }
+        }
 
-            "void coopMatLoad(out coopmat m, volatile coherent i8vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent i16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent i32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent i64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent u8vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent u16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent u32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent u64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent f16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent f32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatLoad(out coopmat m, volatile coherent f64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-
-            "void coopMatStore(coopmat m, volatile coherent int8_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent int16_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent int32_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent int64_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent uint8_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent uint16_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent uint32_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent uint64_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent float16_t[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent float[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent float64_t[] buf, uint element, uint stride, int matrixLayout);\n"
-
-            "void coopMatStore(coopmat m, volatile coherent i8vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent i16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent i32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent i64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent u8vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent u16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent u32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent u64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent f16vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent f32vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent f64vec2[] buf, uint element, uint stride, int matrixLayout);\n"
-
-            "void coopMatStore(coopmat m, volatile coherent i8vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent i16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent i32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent i64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent u8vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent u16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent u32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent u64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent f16vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent f32vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-            "void coopMatStore(coopmat m, volatile coherent f64vec4[] buf, uint element, uint stride, int matrixLayout);\n"
-
+        cooperativeMatrixFuncs <<
             "coopmat coopMatMulAdd(coopmat A, coopmat B, coopmat C);\n"
             "coopmat coopMatMulAdd(coopmat A, coopmat B, coopmat C, int matrixOperands);\n";
 
-        commonBuiltins.append(cooperativeMatrixFuncs.c_str());
+        commonBuiltins.append(cooperativeMatrixFuncs.str().c_str());
 
         commonBuiltins.append(
             "const int gl_MatrixUseA = 0;\n"
@@ -4472,6 +4858,296 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "const int gl_MatrixOperandsSaturatingAccumulation = 0x10;\n"
             "const int gl_CooperativeMatrixLayoutRowMajor = 0;\n"
             "const int gl_CooperativeMatrixLayoutColumnMajor = 1;\n"
+            "const int gl_CooperativeMatrixLayoutRowBlockedInterleavedARM = 4202;\n"
+            "const int gl_CooperativeMatrixLayoutColumnBlockedInterleavedARM = 4203;\n"
+            "\n"
+            );
+
+        commonBuiltins.append(
+            "void coopMatTransposeNV(out coopmat, coopmat);"
+            "void coopMatReduceNV(out coopmat, coopmat, int, __function);"
+            "void coopMatPerElementNV();"
+        );
+
+        commonBuiltins.append(
+            "const int gl_CooperativeMatrixReduceRowNV = 0x1;\n"
+            "const int gl_CooperativeMatrixReduceColumnNV = 0x2;\n"
+            "const int gl_CooperativeMatrixReduceRowAndColumnNV = 0x3;\n"
+            "const int gl_CooperativeMatrixReduce2x2NV = 0x4;\n"
+            "\n"
+            );
+
+        commonBuiltins.append(
+            "const int gl_CooperativeMatrixClampModeUndefinedNV = 0x0;\n"
+            "const int gl_CooperativeMatrixClampModeConstantNV = 0x1;\n"
+            "const int gl_CooperativeMatrixClampModeClampToEdgeNV = 0x2;\n"
+            "const int gl_CooperativeMatrixClampModeRepeatNV = 0x3;\n"
+            "const int gl_CooperativeMatrixClampModeMirrorRepeatNV = 0x4;\n"
+            "\n"
+            );
+
+        {
+          std::stringstream coopMatConvFuncs;
+
+          const std::string eltTypes[] = {"uint32_t", "uint", "int32_t", "int", "float32_t", "float", "float16_t"};
+
+          for (auto srcEltTy : eltTypes) {
+            for (auto dstEltTy : eltTypes) {
+              coopMatConvFuncs << "void bitcastQCOM(" << srcEltTy.c_str() << " SrcArr[], " << dstEltTy.c_str()
+                << " DstArr[]);\n";
+            }
+          }
+          coopMatConvFuncs << "\n";
+
+          for (auto eltTy : {"float32_t", "float16_t", "int8_t", "uint8_t", "uint32_t", "uint", "int32_t", "int"}) {
+            coopMatConvFuncs << "void vectorToCoopmatQCOM(" << eltTy << " SrcVec[], coopmat CM);\n";
+            coopMatConvFuncs << "void coopmatToVectorQCOM(coopmat CM, " << eltTy << " Dstvec[]);\n";
+          }
+
+          for (auto eltTy : {"uint32_t", "uint", "int32_t", "int", "float32_t", "float", "float16_t"}) {
+            coopMatConvFuncs << "void extractSubArrayQCOM(" << eltTy << " arr[], uint index, " << eltTy << " subarr[]);\n";
+          }
+
+          commonBuiltins.append(coopMatConvFuncs.str().c_str());
+        }
+
+        commonBuiltins.append(
+            "tensorLayoutNV createTensorLayoutNV(uint Dim);\n"
+            "tensorLayoutNV createTensorLayoutNV(uint Dim, uint Mode);\n"
+
+            "tensorLayoutNV setTensorLayoutBlockSizeNV(tensorLayoutNV t, uint blockSize0);\n"
+            "tensorLayoutNV setTensorLayoutBlockSizeNV(tensorLayoutNV t, uint blockSize0, uint blockSize1);\n"
+            "tensorLayoutNV setTensorLayoutBlockSizeNV(tensorLayoutNV t, uint blockSize0, uint blockSize1, uint blockSize2);\n"
+            "tensorLayoutNV setTensorLayoutBlockSizeNV(tensorLayoutNV t, uint blockSize0, uint blockSize1, uint blockSize2, uint blockSize3);\n"
+            "tensorLayoutNV setTensorLayoutBlockSizeNV(tensorLayoutNV t, uint blockSize0, uint blockSize1, uint blockSize2, uint blockSize3, uint blockSize4);\n"
+
+            "tensorLayoutNV setTensorLayoutDimensionNV(tensorLayoutNV t, uint dim0);\n"
+            "tensorLayoutNV setTensorLayoutDimensionNV(tensorLayoutNV t, uint dim0, uint dim1);\n"
+            "tensorLayoutNV setTensorLayoutDimensionNV(tensorLayoutNV t, uint dim0, uint dim1, uint dim2);\n"
+            "tensorLayoutNV setTensorLayoutDimensionNV(tensorLayoutNV t, uint dim0, uint dim1, uint dim2, uint dim3);\n"
+            "tensorLayoutNV setTensorLayoutDimensionNV(tensorLayoutNV t, uint dim0, uint dim1, uint dim2, uint dim3, uint dim4);\n"
+
+            "tensorLayoutNV setTensorLayoutStrideNV(tensorLayoutNV t, uint stride0);\n"
+            "tensorLayoutNV setTensorLayoutStrideNV(tensorLayoutNV t, uint stride0, uint stride1);\n"
+            "tensorLayoutNV setTensorLayoutStrideNV(tensorLayoutNV t, uint stride0, uint stride1, uint stride2);\n"
+            "tensorLayoutNV setTensorLayoutStrideNV(tensorLayoutNV t, uint stride0, uint stride1, uint stride2, uint stride3);\n"
+            "tensorLayoutNV setTensorLayoutStrideNV(tensorLayoutNV t, uint stride0, uint stride1, uint stride2, uint stride3, uint stride4);\n"
+
+            "tensorLayoutNV sliceTensorLayoutNV(tensorLayoutNV t, uint offset0, uint span0);\n"
+            "tensorLayoutNV sliceTensorLayoutNV(tensorLayoutNV t, uint offset0, uint span0, uint offset1, uint span1);\n"
+            "tensorLayoutNV sliceTensorLayoutNV(tensorLayoutNV t, uint offset0, uint span0, uint offset1, uint span1, uint offset2, uint span2);\n"
+            "tensorLayoutNV sliceTensorLayoutNV(tensorLayoutNV t, uint offset0, uint span0, uint offset1, uint span1, uint offset2, uint span2, uint offset3, uint span3);\n"
+            "tensorLayoutNV sliceTensorLayoutNV(tensorLayoutNV t, uint offset0, uint span0, uint offset1, uint span1, uint offset2, uint span2, uint offset3, uint span3, uint offset4, uint span4);\n"
+
+            "tensorLayoutNV setTensorLayoutClampValueNV(tensorLayoutNV t, uint value);\n"
+
+            "tensorViewNV createTensorViewNV(uint Dim);\n"
+            "tensorViewNV createTensorViewNV(uint Dim, bool HasDimensions);\n"
+            "tensorViewNV createTensorViewNV(uint Dim, bool HasDimensions, uint p0);\n"
+            "tensorViewNV createTensorViewNV(uint Dim, bool HasDimensions, uint p0, uint p1);\n"
+            "tensorViewNV createTensorViewNV(uint Dim, bool HasDimensions, uint p0, uint p1, uint p2);\n"
+            "tensorViewNV createTensorViewNV(uint Dim, bool HasDimensions, uint p0, uint p1, uint p2, uint p3);\n"
+            "tensorViewNV createTensorViewNV(uint Dim, bool HasDimensions, uint p0, uint p1, uint p2, uint p3, uint p4);\n"
+
+            "tensorViewNV setTensorViewDimensionsNV(tensorViewNV v, uint dim0);\n"
+            "tensorViewNV setTensorViewDimensionsNV(tensorViewNV v, uint dim0, uint dim1);\n"
+            "tensorViewNV setTensorViewDimensionsNV(tensorViewNV v, uint dim0, uint dim1, uint dim2);\n"
+            "tensorViewNV setTensorViewDimensionsNV(tensorViewNV v, uint dim0, uint dim1, uint dim2, uint dim3);\n"
+            "tensorViewNV setTensorViewDimensionsNV(tensorViewNV v, uint dim0, uint dim1, uint dim2, uint dim3, uint dim4);\n"
+
+            "tensorViewNV setTensorViewStrideNV(tensorViewNV v, uint stride0);\n"
+            "tensorViewNV setTensorViewStrideNV(tensorViewNV v, uint stride0, uint stride1);\n"
+            "tensorViewNV setTensorViewStrideNV(tensorViewNV v, uint stride0, uint stride1, uint stride2);\n"
+            "tensorViewNV setTensorViewStrideNV(tensorViewNV v, uint stride0, uint stride1, uint stride2, uint stride3);\n"
+            "tensorViewNV setTensorViewStrideNV(tensorViewNV v, uint stride0, uint stride1, uint stride2, uint stride3, uint stride4);\n"
+
+            "tensorViewNV setTensorViewClipNV(tensorViewNV v, uint clipRowOffset, uint clipRowSpan, uint clipColOffset, uint clipColSpan);\n"
+            "\n"
+        );
+
+        // GL_ARM_tensors builtins.
+        static const char *tensorDataTypesARM[] = {
+            "bool",
+            "int8_t", "int16_t", "int32_t", "int64_t",
+            "uint8_t", "uint16_t", "uint32_t", "uint64_t",
+            "float16_t", "float32_t", "float64_t",
+        };
+        std::ostringstream ostream;
+        for (auto t : tensorDataTypesARM) {
+            // Scalar
+            ostream << "void tensorReadARM(readonly tensorARM t, uint coords[], out "
+                    << t << " data, uint tensorOperands = 0U, ...);\n";
+            ostream << "void tensorWriteARM(writeonly tensorARM t, uint coords[], "
+                    << t << " data, uint tensorOperands = 0U, ...);\n";
+            // Array
+            ostream << "void tensorReadARM(readonly tensorARM t, uint coords[], "
+                    << t << " data[], uint tensorOperands = 0U, ...);\n";
+            ostream << "void tensorWriteARM(writeonly tensorARM t, uint coords[], "
+                    << t << " data[], uint tensorOperands = 0U, ...);\n";
+        }
+        ostream << "uint tensorSizeARM(readonly writeonly tensorARM t, uint dim);\n";
+        commonBuiltins.append(ostream.str());
+    }
+
+    if (profile != EEsProfile && version >= 450) {
+        const char *basicTypes[] = {
+            "int8_t",
+            "int16_t",
+            "int32_t",
+            "int64_t",
+            "uint8_t",
+            "uint16_t",
+            "uint32_t",
+            "uint64_t",
+            "float16_t",
+            "float32_t",
+            "float64_t",
+        };
+        std::string coopVecOffsetTypes[] = {
+            "uint",
+            "uint64_t",
+        };
+        for (auto offsetTy : coopVecOffsetTypes) {
+            for (uint32_t i = 0; i < sizeof(basicTypes)/sizeof(basicTypes[0]); ++i) {
+                std::string func = std::string("void coopVecMatMulNV(out coopvecNV result, ") +
+                                   std::string("coopvecNV v, ") +
+                                   std::string("int inputInterpretation, ") +
+                                   std::string(basicTypes[i]) + std::string("[] matrix, ") +
+                                   offsetTy + std::string(" matrixOffset, ") +
+                                   std::string("int matrixInterpretation, ") +
+                                   std::string("uint M, ") +
+                                   std::string("uint K, ") +
+                                   std::string("int matrixLayout, ") +
+                                   std::string("bool transpose, ") +
+                                   std::string("uint matrixStride);\n");
+                commonBuiltins.append(func.c_str());
+
+                for (uint32_t j = 0; j < sizeof(basicTypes)/sizeof(basicTypes[0]); ++j) {
+                    func = std::string("void coopVecMatMulAddNV(out coopvecNV result, ") +
+                           std::string("coopvecNV v, ") +
+                           std::string("int inputInterpretation, ") +
+                           std::string(basicTypes[i]) + std::string("[] matrix, ") +
+                           offsetTy + std::string(" matrixOffset, ") +
+                           std::string("int matrixInterpretation, ") +
+                           std::string(basicTypes[j]) + std::string("[] bias, ") +
+                           offsetTy + std::string(" biasOffset, ") +
+                           std::string("int biasInterpretation, ") +
+                           std::string("uint M, ") +
+                           std::string("uint K, ") +
+                           std::string("int matrixLayout, ") +
+                           std::string("bool transpose, ") +
+                           std::string("uint matrixStride);\n");
+                    commonBuiltins.append(func.c_str());
+                }
+
+                func = std::string("void coopVecOuterProductAccumulateNV(coopvecNV v1, coopvecNV v2, ") +
+                       std::string(basicTypes[i]) +
+                       std::string("[] buf, ") + offsetTy + std::string(" offset, uint stride, int matrixLayout, int matrixInterpretation);\n");
+                commonBuiltins.append(func.c_str());
+            
+                func = std::string("void coopVecReduceSumAccumulateNV(coopvecNV v, ") +
+                       std::string(basicTypes[i]) +
+                       std::string("[] buf, ") + offsetTy + std::string(" offset);\n");
+                commonBuiltins.append(func.c_str());
+            }
+        }
+        std::string cooperativeVectorFuncs =
+            "coopvecNV fma(coopvecNV, coopvecNV, coopvecNV);\n"
+            "coopvecNV min(coopvecNV, coopvecNV);\n"
+            "coopvecNV max(coopvecNV, coopvecNV);\n"
+            "coopvecNV step(coopvecNV, coopvecNV);\n"
+            "coopvecNV exp(coopvecNV);\n"            
+            "coopvecNV log(coopvecNV);\n"            
+            "coopvecNV tanh(coopvecNV);\n"            
+            "coopvecNV atan(coopvecNV);\n"            
+            "coopvecNV clamp(coopvecNV, coopvecNV, coopvecNV);\n"
+            "\n"
+            ;
+
+        commonBuiltins.append(cooperativeVectorFuncs.c_str());
+
+        const char *scalarAndVectorTypes[] = {
+            "int8_t",
+            "int16_t",
+            "int32_t",
+            "int64_t",
+            "uint8_t",
+            "uint16_t",
+            "uint32_t",
+            "uint64_t",
+            "float16_t",
+            "float32_t",
+            "float64_t",
+            "i8vec2",
+            "i16vec2",
+            "i32vec2",
+            "i64vec2",
+            "u8vec2",
+            "u16vec2",
+            "u32vec2",
+            "u64vec2",
+            "f16vec2",
+            "f32vec2",
+            "f64vec2",
+            "i8vec3",
+            "i16vec3",
+            "i32vec3",
+            "i64vec3",
+            "u8vec3",
+            "u16vec3",
+            "u32vec3",
+            "u64vec3",
+            "f16vec3",
+            "f32vec3",
+            "f64vec3",
+            "i8vec4",
+            "i16vec4",
+            "i32vec4",
+            "i64vec4",
+            "u8vec4",
+            "u16vec4",
+            "u32vec4",
+            "u64vec4",
+            "f16vec4",
+            "f32vec4",
+            "f64vec4",
+        };
+
+        for (auto offsetTy : coopVecOffsetTypes) {
+            for (uint32_t i = 0; i < sizeof(scalarAndVectorTypes)/sizeof(scalarAndVectorTypes[0]); ++i) {
+                std::string load = std::string("void coopVecLoadNV(out coopvecNV v, volatile coherent ") +
+                                   std::string(scalarAndVectorTypes[i]) + std::string("[] buf, ") + offsetTy + std::string(" offset);");
+                std::string store = std::string("void coopVecStoreNV(coopvecNV v, volatile coherent ") +
+                                   std::string(scalarAndVectorTypes[i]) + std::string("[] buf, ") + offsetTy + std::string(" offset);");
+                commonBuiltins.append(load.c_str());
+                commonBuiltins.append(store.c_str());
+            }
+        }
+
+        commonBuiltins.append(
+            "const int gl_CooperativeVectorMatrixLayoutRowMajorNV = 0;\n"
+            "const int gl_CooperativeVectorMatrixLayoutColumnMajorNV = 1;\n"
+            "const int gl_CooperativeVectorMatrixLayoutInferencingOptimalNV = 2;\n"
+            "const int gl_CooperativeVectorMatrixLayoutTrainingOptimalNV = 3;\n"
+            "\n"
+            );
+
+        commonBuiltins.append(
+            "const int gl_ComponentTypeFloat16NV                = 0;\n"
+            "const int gl_ComponentTypeFloat32NV                = 1;\n"
+            "const int gl_ComponentTypeFloat64NV                = 2;\n"
+            "const int gl_ComponentTypeSignedInt8NV             = 3;\n"
+            "const int gl_ComponentTypeSignedInt16NV            = 4;\n"
+            "const int gl_ComponentTypeSignedInt32NV            = 5;\n"
+            "const int gl_ComponentTypeSignedInt64NV            = 6;\n"
+            "const int gl_ComponentTypeUnsignedInt8NV           = 7;\n"
+            "const int gl_ComponentTypeUnsignedInt16NV          = 8;\n"
+            "const int gl_ComponentTypeUnsignedInt32NV          = 9;\n"
+            "const int gl_ComponentTypeUnsignedInt64NV          = 10;\n"
+            "const int gl_ComponentTypeSignedInt8PackedNV       = 1000491000;\n"
+            "const int gl_ComponentTypeUnsignedInt8PackedNV     = 1000491001;\n"
+            "const int gl_ComponentTypeFloatE4M3NV              = 1000491002;\n"
+            "const int gl_ComponentTypeFloatE5M2NV              = 1000491003;\n"
             "\n"
             );
     }
@@ -4544,7 +5220,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
     // GL_OES_shader_multisample_interpolation
     if ((profile == EEsProfile && version >= 310) ||
-        (profile != EEsProfile && version >= 400)) {
+        (profile != EEsProfile && version >= 150)) { // NV_gpu_shader5
         stageBuiltins[EShLangFragment].append(
             "float interpolateAtCentroid(float);"
             "vec2  interpolateAtCentroid(vec2);"
@@ -4673,6 +5349,14 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "mat4x3 rayQueryGetIntersectionObjectToWorldEXT(rayQueryEXT, bool);"
             "mat4x3 rayQueryGetIntersectionWorldToObjectEXT(rayQueryEXT, bool);"
             "void rayQueryGetIntersectionTriangleVertexPositionsEXT(rayQueryEXT, bool, out vec3[3]);"
+            "int rayQueryGetIntersectionClusterIdNV(rayQueryEXT, bool);"
+            "vec3 rayQueryGetIntersectionSpherePositionNV(rayQueryEXT, bool);"
+            "float rayQueryGetIntersectionSphereRadiusNV(rayQueryEXT, bool);"
+            "float rayQueryGetIntersectionLSSHitValueNV(rayQueryEXT, bool);"
+            "void rayQueryGetIntersectionLSSPositionsNV(rayQueryEXT, bool, out vec3[2]);"
+            "void rayQueryGetIntersectionLSSRadiiNV(rayQueryEXT, bool, out float[2]);"
+            "bool rayQueryIsSphereHitNV(rayQueryEXT, bool);"
+            "bool rayQueryIsLSSHitNV(rayQueryEXT, bool);"
             "\n");
 
         stageBuiltins[EShLangRayGen].append(
@@ -4711,11 +5395,57 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "float hitObjectGetCurrentTimeNV(hitObjectNV);"
             "uint hitObjectGetShaderBindingTableRecordIndexNV(hitObjectNV);"
             "uvec2 hitObjectGetShaderRecordBufferHandleNV(hitObjectNV);"
+            "int hitObjectGetClusterIdNV(hitObjectNV);"
             "void reorderThreadNV(uint, uint);"
             "void reorderThreadNV(hitObjectNV);"
             "void reorderThreadNV(hitObjectNV, uint, uint);"
             "vec3 fetchMicroTriangleVertexPositionNV(accelerationStructureEXT, int, int, int, ivec2);"
             "vec2 fetchMicroTriangleVertexBarycentricNV(accelerationStructureEXT, int, int, int, ivec2);"
+            "vec3 hitObjectGetSpherePositionNV(hitObjectNV);"
+            "float hitObjectGetSphereRadiusNV(hitObjectNV);"
+            "void hitObjectGetLSSPositionsNV(hitObjectNV, out vec3[2]);"
+            "void hitObjectGetLSSRadiiNV(hitObjectNV, out float[2]);"
+            "bool hitObjectIsSphereHitNV(hitObjectNV);"
+            "bool hitObjectIsLSSHitNV(hitObjectNV);"
+            "void hitObjectTraceRayEXT(hitObjectEXT,accelerationStructureEXT,uint,uint,uint,uint,uint,vec3,float,vec3,float,int);"
+            "void hitObjectTraceRayMotionEXT(hitObjectEXT,accelerationStructureEXT,uint,uint,uint,uint,uint,vec3,float,vec3,float,float,int);"
+            "void hitObjectRecordMissEXT(hitObjectEXT,uint,uint,vec3,float,vec3,float);"
+            "void hitObjectRecordMissMotionEXT(hitObjectEXT,uint,uint,vec3,float,vec3,float,float);"
+            "void hitObjectRecordEmptyEXT(hitObjectEXT);"
+            "void hitObjectExecuteShaderEXT(hitObjectEXT,int);"
+            "bool hitObjectIsEmptyEXT(hitObjectEXT);"
+            "bool hitObjectIsMissEXT(hitObjectEXT);"
+            "bool hitObjectIsHitEXT(hitObjectEXT);"
+            "float hitObjectGetRayTMinEXT(hitObjectEXT);"
+            "float hitObjectGetRayTMaxEXT(hitObjectEXT);"
+            "uint hitObjectGetRayFlagsEXT(hitObjectEXT);"
+            "vec3 hitObjectGetWorldRayOriginEXT(hitObjectEXT);"
+            "vec3 hitObjectGetWorldRayDirectionEXT(hitObjectEXT);"
+            "vec3 hitObjectGetObjectRayOriginEXT(hitObjectEXT);"
+            "vec3 hitObjectGetObjectRayDirectionEXT(hitObjectEXT);"
+            "mat4x3 hitObjectGetWorldToObjectEXT(hitObjectEXT);"
+            "mat4x3 hitObjectGetObjectToWorldEXT(hitObjectEXT);"
+            "int hitObjectGetInstanceCustomIndexEXT(hitObjectEXT);"
+            "int hitObjectGetInstanceIdEXT(hitObjectEXT);"
+            "int hitObjectGetGeometryIndexEXT(hitObjectEXT);"
+            "int hitObjectGetPrimitiveIndexEXT(hitObjectEXT);"
+            "uint hitObjectGetHitKindEXT(hitObjectEXT);"
+            "void hitObjectGetAttributesEXT(hitObjectEXT,int);"
+            "float hitObjectGetCurrentTimeEXT(hitObjectEXT);"
+            "uint hitObjectGetShaderBindingTableRecordIndexEXT(hitObjectEXT);"
+            "uvec2 hitObjectGetShaderRecordBufferHandleEXT(hitObjectEXT);"
+            "void hitObjectSetShaderBindingTableRecordIndexEXT(hitObjectEXT, uint);"
+            "void hitObjectReorderExecuteEXT(hitObjectEXT,int);"
+            "void hitObjectReorderExecuteEXT(hitObjectEXT,uint,uint,int);"
+            "void hitObjectTraceReorderExecuteEXT(hitObjectEXT,accelerationStructureEXT,uint,uint,uint,uint,uint,vec3,float,vec3,float,int);"
+            "void hitObjectTraceReorderExecuteEXT(hitObjectEXT,accelerationStructureEXT,uint,uint,uint,uint,uint,vec3,float,vec3,float,uint,uint,int);"
+            "void hitObjectTraceMotionReorderExecuteEXT(hitObjectEXT,accelerationStructureEXT,uint,uint,uint,uint,uint,vec3,float,vec3,float,float,int);"
+            "void hitObjectTraceMotionReorderExecuteEXT(hitObjectEXT,accelerationStructureEXT,uint,uint,uint,uint,uint,vec3,float,vec3,float,float,uint,uint,int);"
+            "void hitObjectRecordFromQueryEXT(hitObjectEXT, rayQueryEXT, uint, int);"
+            "void hitObjectGetIntersectionTriangleVertexPositionsEXT(hitObjectEXT, out vec3[3]);"
+            "void reorderThreadEXT(uint, uint);"
+            "void reorderThreadEXT(hitObjectEXT);"
+            "void reorderThreadEXT(hitObjectEXT, uint, uint);"
             "\n");
         stageBuiltins[EShLangIntersect].append(
             "bool reportIntersectionNV(float, uint);"
@@ -4761,6 +5491,43 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "float hitObjectGetCurrentTimeNV(hitObjectNV);"
             "uint hitObjectGetShaderBindingTableRecordIndexNV(hitObjectNV);"
             "uvec2 hitObjectGetShaderRecordBufferHandleNV(hitObjectNV);"
+            "int hitObjectGetClusterIdNV(hitObjectNV);"
+            "vec3 hitObjectGetSpherePositionNV(hitObjectNV);"
+            "float hitObjectGetSphereRadiusNV(hitObjectNV);"
+            "void hitObjectGetLSSPositionsNV(hitObjectNV, out vec3[2]);"
+            "void hitObjectGetLSSRadiiNV(hitObjectNV, out float[2]);"
+            "bool hitObjectIsSphereHitNV(hitObjectNV);"
+            "bool hitObjectIsLSSHitNV(hitObjectNV);"
+            "void hitObjectTraceRayEXT(hitObjectEXT,accelerationStructureEXT,uint,uint,uint,uint,uint,vec3,float,vec3,float,int);"
+            "void hitObjectTraceRayMotionEXT(hitObjectEXT,accelerationStructureEXT,uint,uint,uint,uint,uint,vec3,float,vec3,float,float,int);"
+            "void hitObjectRecordMissEXT(hitObjectEXT,uint,uint,vec3,float,vec3,float);"
+            "void hitObjectRecordMissMotionEXT(hitObjectEXT,uint,uint,vec3,float,vec3,float,float);"
+            "void hitObjectRecordEmptyEXT(hitObjectEXT);"
+            "void hitObjectExecuteShaderEXT(hitObjectEXT,int);"
+            "bool hitObjectIsEmptyEXT(hitObjectEXT);"
+            "bool hitObjectIsMissEXT(hitObjectEXT);"
+            "bool hitObjectIsHitEXT(hitObjectEXT);"
+            "float hitObjectGetRayTMinEXT(hitObjectEXT);"
+            "float hitObjectGetRayTMaxEXT(hitObjectEXT);"
+            "uint hitObjectGetRayFlagsEXT(hitObjectEXT);"
+            "vec3 hitObjectGetWorldRayOriginEXT(hitObjectEXT);"
+            "vec3 hitObjectGetWorldRayDirectionEXT(hitObjectEXT);"
+            "vec3 hitObjectGetObjectRayOriginEXT(hitObjectEXT);"
+            "vec3 hitObjectGetObjectRayDirectionEXT(hitObjectEXT);"
+            "mat4x3 hitObjectGetWorldToObjectEXT(hitObjectEXT);"
+            "mat4x3 hitObjectGetObjectToWorldEXT(hitObjectEXT);"
+            "int hitObjectGetInstanceCustomIndexEXT(hitObjectEXT);"
+            "int hitObjectGetInstanceIdEXT(hitObjectEXT);"
+            "int hitObjectGetGeometryIndexEXT(hitObjectEXT);"
+            "int hitObjectGetPrimitiveIndexEXT(hitObjectEXT);"
+            "uint hitObjectGetHitKindEXT(hitObjectEXT);"
+            "void hitObjectGetAttributesEXT(hitObjectEXT,int);"
+            "float hitObjectGetCurrentTimeEXT(hitObjectEXT);"
+            "uint hitObjectGetShaderBindingTableRecordIndexEXT(hitObjectEXT);"
+            "uvec2 hitObjectGetShaderRecordBufferHandleEXT(hitObjectEXT);"
+            "void hitObjectSetShaderBindingTableRecordIndexEXT(hitObjectEXT, uint);"
+            "void hitObjectRecordFromQueryEXT(hitObjectEXT, rayQueryEXT,uint, int);"
+            "void hitObjectGetIntersectionTriangleVertexPositionsEXT(hitObjectEXT, out vec3[3]);"
             "\n");
         stageBuiltins[EShLangMiss].append(
             "void traceNV(accelerationStructureNV,uint,uint,uint,uint,uint,vec3,float,vec3,float,int);"
@@ -4798,6 +5565,43 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "float hitObjectGetCurrentTimeNV(hitObjectNV);"
             "uint hitObjectGetShaderBindingTableRecordIndexNV(hitObjectNV);"
             "uvec2 hitObjectGetShaderRecordBufferHandleNV(hitObjectNV);"
+            "int hitObjectGetClusterIdNV(hitObjectNV);"
+            "vec3 hitObjectGetSpherePositionNV(hitObjectNV);"
+            "float hitObjectGetSphereRadiusNV(hitObjectNV);"
+            "void hitObjectGetLSSPositionsNV(hitObjectNV, out vec3[2]);"
+            "void hitObjectGetLSSRadiiNV(hitObjectNV, out float[2]);"
+            "bool hitObjectIsSphereHitNV(hitObjectNV);"
+            "bool hitObjectIsLSSHitNV(hitObjectNV);"
+            "void hitObjectTraceRayEXT(hitObjectEXT,accelerationStructureEXT,uint,uint,uint,uint,uint,vec3,float,vec3,float,int);"
+            "void hitObjectTraceRayMotionEXT(hitObjectEXT,accelerationStructureEXT,uint,uint,uint,uint,uint,vec3,float,vec3,float,float,int);"
+            "void hitObjectRecordMissEXT(hitObjectEXT,uint,uint,vec3,float,vec3,float);"
+            "void hitObjectRecordMissMotionEXT(hitObjectEXT,uint,uint,vec3,float,vec3,float,float);"
+            "void hitObjectRecordEmptyEXT(hitObjectEXT);"
+            "void hitObjectExecuteShaderEXT(hitObjectEXT,int);"
+            "bool hitObjectIsEmptyEXT(hitObjectEXT);"
+            "bool hitObjectIsMissEXT(hitObjectEXT);"
+            "bool hitObjectIsHitEXT(hitObjectEXT);"
+            "float hitObjectGetRayTMinEXT(hitObjectEXT);"
+            "float hitObjectGetRayTMaxEXT(hitObjectEXT);"
+            "uint hitObjectGetRayFlagsEXT(hitObjectEXT);"
+            "vec3 hitObjectGetWorldRayOriginEXT(hitObjectEXT);"
+            "vec3 hitObjectGetWorldRayDirectionEXT(hitObjectEXT);"
+            "vec3 hitObjectGetObjectRayOriginEXT(hitObjectEXT);"
+            "vec3 hitObjectGetObjectRayDirectionEXT(hitObjectEXT);"
+            "mat4x3 hitObjectGetWorldToObjectEXT(hitObjectEXT);"
+            "mat4x3 hitObjectGetObjectToWorldEXT(hitObjectEXT);"
+            "int hitObjectGetInstanceCustomIndexEXT(hitObjectEXT);"
+            "int hitObjectGetInstanceIdEXT(hitObjectEXT);"
+            "int hitObjectGetGeometryIndexEXT(hitObjectEXT);"
+            "int hitObjectGetPrimitiveIndexEXT(hitObjectEXT);"
+            "uint hitObjectGetHitKindEXT(hitObjectEXT);"
+            "void hitObjectGetAttributesEXT(hitObjectEXT,int);"
+            "float hitObjectGetCurrentTimeEXT(hitObjectEXT);"
+            "uint hitObjectGetShaderBindingTableRecordIndexEXT(hitObjectEXT);"
+            "uvec2 hitObjectGetShaderRecordBufferHandleEXT(hitObjectEXT);"
+            "void hitObjectSetShaderBindingTableRecordIndexEXT(hitObjectEXT, uint);"
+            "void hitObjectRecordFromQueryEXT(hitObjectEXT, rayQueryEXT, uint, int);"
+            "void hitObjectGetIntersectionTriangleVertexPositionsEXT(hitObjectEXT, out vec3[3]);"
             "\n");
         stageBuiltins[EShLangCallable].append(
             "void executeCallableNV(uint, int);"
@@ -5027,6 +5831,16 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "\n");
     }
 
+    // GL_QCOM_tile_shading
+    if ((profile == EEsProfile && version >= 310) ||
+        (profile != EEsProfile && version >= 460)) {
+        stageBuiltins[EShLangCompute].append(
+            "in highp uvec2 gl_TileOffsetQCOM;"     // GL_QCOM_tile_shading
+            "in highp uvec3 gl_TileDimensionQCOM;"  // GL_QCOM_tile_shading
+            "in highp uvec2 gl_TileApronSizeQCOM;"  // GL_QCOM_tile_shading
+            "\n");
+    }
+
     //============================================================================
     //
     // Define the interface to the mesh/task shader.
@@ -5246,7 +6060,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             stageBuiltins[EShLangVertex].append(
                 "int gl_VertexID;"            // needs qualifier fixed later
                 );
-        if (version >= 140 && spvVersion.vulkan == 0)
+        if (spvVersion.vulkan == 0)
             stageBuiltins[EShLangVertex].append(
                 "int gl_InstanceID;"          // needs qualifier fixed later
                 );
@@ -5301,6 +6115,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             stageBuiltins[EShLangVertex].append(
                 "highp   vec4  gl_Position;"  // needs qualifier fixed later
                 "mediump float gl_PointSize;" // needs qualifier fixed later
+                "highp int gl_InstanceID;" // needs qualifier fixed later
                 );
         } else {
             if (spvVersion.vulkan == 0 || spvVersion.vulkanRelaxed)
@@ -5416,7 +6231,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "out vec4 gl_ClipVertex;"
             );
 
-        if (version >= 400)
+        if (version >= 150)
             stageBuiltins[EShLangGeometry].append(
             "in int gl_InvocationID;"
             );
@@ -5731,7 +6546,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             }
         }
 
-        if (version >= 400)
+        if (version >= 150)
             stageBuiltins[EShLangFragment].append(
                 "flat in  int  gl_SampleMaskIn[];"
             );
@@ -5864,6 +6679,16 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
     if (version >= 300 /* both ES and non-ES */) {
         stageBuiltins[EShLangFragment].append(
             "flat in highp uint gl_ViewID_OVR;"     // GL_OVR_multiview, GL_OVR_multiview2
+            "\n");
+    }
+    
+    // GL_QCOM_tile_shading
+    if ((profile == EEsProfile && version >= 310) ||
+        (profile != EEsProfile && version >= 460)) {
+        stageBuiltins[EShLangFragment].append(
+            "flat in highp uvec2 gl_TileOffsetQCOM;"     // GL_QCOM_tile_shading
+            "flat in highp uvec3 gl_TileDimensionQCOM;"  // GL_QCOM_tile_shading
+            "flat in highp uvec2 gl_TileApronSizeQCOM;"  // GL_QCOM_tile_shading
             "\n");
     }
 
@@ -6025,12 +6850,14 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "const uint gl_RayFlagsCullNoOpaqueNV = 128U;"
             "const uint gl_RayFlagsCullNoOpaqueEXT = 128U;"
             "const uint gl_RayFlagsSkipTrianglesEXT = 256U;"
+            "const uint gl_RayFlagsSkipBuiltinPrimitivesNV = 256U;"
             "const uint gl_RayFlagsSkipAABBEXT = 512U;"
             "const uint gl_RayFlagsForceOpacityMicromap2StateEXT = 1024U;"
             "const uint gl_HitKindFrontFacingTriangleEXT = 254U;"
             "const uint gl_HitKindBackFacingTriangleEXT = 255U;"
             "in    uint gl_HitKindFrontFacingMicroTriangleNV;"
             "in    uint gl_HitKindBackFacingMicroTriangleNV;"
+            "const int  gl_ClusterIDNoneNV = -1;"
             "\n";
 
         const char *constRayQueryIntersection =
@@ -6121,6 +6948,13 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "in    vec3   gl_HitTriangleVertexPositionsEXT[3];"
             "in    vec3   gl_HitMicroTriangleVertexPositionsNV[3];"
             "in    vec2   gl_HitMicroTriangleVertexBarycentricsNV[3];"
+            "in    int    gl_ClusterIDNV;"
+            "in    bool   gl_HitIsSphereNV;"
+            "in    bool   gl_HitIsLSSNV;"
+            "in    vec3   gl_HitSpherePositionNV;"
+            "in    float  gl_HitSphereRadiusNV;"
+            "in    vec3   gl_HitLSSPositionsNV[2];"
+            "in    float  gl_HitLSSRadiiNV[2];"
             "\n";
 
         const char *missDecls =
@@ -6240,7 +7074,7 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                                                                           false,
                                                                           ms      ? true : false);
 
-                        TString typeName = sampler.getString();
+                        TString typeName = TString{sampler.getString()};
 
                         addQueryFunctions(sampler, typeName, version, profile);
                         addImageFunctions(sampler, typeName, version, profile);
@@ -6278,7 +7112,7 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
             {
                 if ((ms || image) && shadow)
                     continue;
-                if (ms && profile != EEsProfile && version < 150)
+                if (ms && profile != EEsProfile && version < 140)
                     continue;
                 if (ms && image && profile == EEsProfile)
                     continue;
@@ -6343,7 +7177,7 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
                                                                              ms      ? true : false);
                             }
 
-                            TString typeName = sampler.getString();
+                            TString typeName = TString{sampler.getString()};
 
                             if (dim == EsdSubpass) {
                                 addSubpassSampling(sampler, typeName, version, profile);
@@ -6367,7 +7201,7 @@ void TBuiltIns::add2ndGenerationSamplingImaging(int version, EProfile profile, c
                                     // texture types.
                                     sampler.setTexture(sampler.type, sampler.dim, sampler.arrayed, sampler.shadow,
                                                        sampler.ms);
-                                    TString textureTypeName = sampler.getString();
+                                    TString textureTypeName = TString{sampler.getString()};
                                     addSamplingFunctions(sampler, textureTypeName, version, profile);
                                     addQueryFunctions(sampler, textureTypeName, version, profile);
                                 }
@@ -6413,7 +7247,7 @@ void TBuiltIns::addQueryFunctions(TSampler sampler, const TString& typeName, int
         commonBuiltins.append(postfixes[sizeDims]);
     }
     if (sampler.isImage())
-        commonBuiltins.append(" imageSize(readonly writeonly volatile coherent ");
+        commonBuiltins.append(" imageSize(readonly writeonly volatile coherent nontemporal ");
     else
         commonBuiltins.append(" textureSize(");
     commonBuiltins.append(typeName);
@@ -6431,7 +7265,7 @@ void TBuiltIns::addQueryFunctions(TSampler sampler, const TString& typeName, int
     if (profile != EEsProfile && version >= 430 && sampler.isMultiSample()) {
         commonBuiltins.append("int ");
         if (sampler.isImage())
-            commonBuiltins.append("imageSamples(readonly writeonly volatile coherent ");
+            commonBuiltins.append("imageSamples(readonly writeonly volatile coherent nontemporal ");
         else
             commonBuiltins.append("textureSamples(");
         commonBuiltins.append(typeName);
@@ -6519,18 +7353,18 @@ void TBuiltIns::addImageFunctions(TSampler sampler, const TString& typeName, int
     if (profile == EEsProfile)
         commonBuiltins.append("highp ");
     commonBuiltins.append(prefixes[sampler.type]);
-    commonBuiltins.append("vec4 imageLoad(readonly volatile coherent ");
+    commonBuiltins.append("vec4 imageLoad(readonly volatile coherent nontemporal ");
     commonBuiltins.append(imageParams);
     commonBuiltins.append(");\n");
 
-    commonBuiltins.append("void imageStore(writeonly volatile coherent ");
+    commonBuiltins.append("void imageStore(writeonly volatile coherent nontemporal ");
     commonBuiltins.append(imageParams);
     commonBuiltins.append(", ");
     commonBuiltins.append(prefixes[sampler.type]);
     commonBuiltins.append("vec4);\n");
 
     if (! sampler.is1D() && ! sampler.isBuffer() && profile != EEsProfile && version >= 450) {
-        commonBuiltins.append("int sparseImageLoadARB(readonly volatile coherent ");
+        commonBuiltins.append("int sparseImageLoadARB(readonly volatile coherent nontemporal ");
         commonBuiltins.append(imageParams);
         commonBuiltins.append(", out ");
         commonBuiltins.append(prefixes[sampler.type]);
@@ -6554,13 +7388,13 @@ void TBuiltIns::addImageFunctions(TSampler sampler, const TString& typeName, int
             const int numBuiltins = 7;
 
             static const char* atomicFunc[numBuiltins] = {
-                " imageAtomicAdd(volatile coherent ",
-                " imageAtomicMin(volatile coherent ",
-                " imageAtomicMax(volatile coherent ",
-                " imageAtomicAnd(volatile coherent ",
-                " imageAtomicOr(volatile coherent ",
-                " imageAtomicXor(volatile coherent ",
-                " imageAtomicExchange(volatile coherent "
+                " imageAtomicAdd(volatile coherent nontemporal ",
+                " imageAtomicMin(volatile coherent nontemporal ",
+                " imageAtomicMax(volatile coherent nontemporal ",
+                " imageAtomicAnd(volatile coherent nontemporal ",
+                " imageAtomicOr(volatile coherent nontemporal ",
+                " imageAtomicXor(volatile coherent nontemporal ",
+                " imageAtomicExchange(volatile coherent nontemporal "
             };
 
             // Loop twice to add prototypes with/without scope/semantics
@@ -6578,7 +7412,7 @@ void TBuiltIns::addImageFunctions(TSampler sampler, const TString& typeName, int
                 }
 
                 commonBuiltins.append(dataType);
-                commonBuiltins.append(" imageAtomicCompSwap(volatile coherent ");
+                commonBuiltins.append(" imageAtomicCompSwap(volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", ");
                 commonBuiltins.append(dataType);
@@ -6591,11 +7425,11 @@ void TBuiltIns::addImageFunctions(TSampler sampler, const TString& typeName, int
             }
 
             commonBuiltins.append(dataType);
-            commonBuiltins.append(" imageAtomicLoad(volatile coherent ");
+            commonBuiltins.append(" imageAtomicLoad(volatile coherent nontemporal ");
             commonBuiltins.append(imageParams);
             commonBuiltins.append(", int, int, int);\n");
 
-            commonBuiltins.append("void imageAtomicStore(volatile coherent ");
+            commonBuiltins.append("void imageAtomicStore(volatile coherent nontemporal ");
             commonBuiltins.append(imageParams);
             commonBuiltins.append(", ");
             commonBuiltins.append(dataType);
@@ -6606,52 +7440,80 @@ void TBuiltIns::addImageFunctions(TSampler sampler, const TString& typeName, int
             // GL_ARB_ES3_1_compatibility
             // TODO: spec issue: are there restrictions on the kind of layout() that can be used?  what about dropping memory qualifiers?
             if (profile == EEsProfile && version >= 310) {
-                commonBuiltins.append("float imageAtomicExchange(volatile coherent ");
+                commonBuiltins.append("float imageAtomicExchange(volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float);\n");
             }
+
+            // GL_NV_shader_atomic_fp16_vector
+            if (profile != EEsProfile && version >= 430) {
+                const int numFp16Builtins = 4;
+                const char* atomicFp16Func[numFp16Builtins] = {
+                    " imageAtomicAdd(volatile coherent nontemporal ",
+                    " imageAtomicMin(volatile coherent nontemporal ",
+                    " imageAtomicMax(volatile coherent nontemporal ",
+                    " imageAtomicExchange(volatile coherent nontemporal "
+                };
+                const int numFp16DataTypes = 2;
+                const char* atomicFp16DataTypes[numFp16DataTypes] = {
+                    "f16vec2",
+                    "f16vec4"
+                };
+                // Loop twice to add prototypes with/without scope/semantics
+                for (int j = 0; j < numFp16DataTypes; ++j) {
+                    for (int i = 0; i < numFp16Builtins; ++i) {
+                        commonBuiltins.append(atomicFp16DataTypes[j]);
+                        commonBuiltins.append(atomicFp16Func[i]);
+                        commonBuiltins.append(imageParams);
+                        commonBuiltins.append(", ");
+                        commonBuiltins.append(atomicFp16DataTypes[j]);
+                        commonBuiltins.append(");\n");
+                    }
+                }
+            }
+
             if (profile != EEsProfile && version >= 450) {
-                commonBuiltins.append("float imageAtomicAdd(volatile coherent ");
+                commonBuiltins.append("float imageAtomicAdd(volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float);\n");
 
-                commonBuiltins.append("float imageAtomicAdd(volatile coherent ");
+                commonBuiltins.append("float imageAtomicAdd(volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float");
                 commonBuiltins.append(", int, int, int);\n");
 
-                commonBuiltins.append("float imageAtomicExchange(volatile coherent ");
+                commonBuiltins.append("float imageAtomicExchange(volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float);\n");
 
-                commonBuiltins.append("float imageAtomicExchange(volatile coherent ");
+                commonBuiltins.append("float imageAtomicExchange(volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float");
                 commonBuiltins.append(", int, int, int);\n");
 
-                commonBuiltins.append("float imageAtomicLoad(readonly volatile coherent ");
+                commonBuiltins.append("float imageAtomicLoad(readonly volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", int, int, int);\n");
 
-                commonBuiltins.append("void imageAtomicStore(writeonly volatile coherent ");
+                commonBuiltins.append("void imageAtomicStore(writeonly volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float");
                 commonBuiltins.append(", int, int, int);\n");
 
-                commonBuiltins.append("float imageAtomicMin(volatile coherent ");
+                commonBuiltins.append("float imageAtomicMin(volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float);\n");
 
-                commonBuiltins.append("float imageAtomicMin(volatile coherent ");
+                commonBuiltins.append("float imageAtomicMin(volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float");
                 commonBuiltins.append(", int, int, int);\n");
 
-                commonBuiltins.append("float imageAtomicMax(volatile coherent ");
+                commonBuiltins.append("float imageAtomicMax(volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float);\n");
 
-                commonBuiltins.append("float imageAtomicMax(volatile coherent ");
+                commonBuiltins.append("float imageAtomicMax(volatile coherent nontemporal ");
                 commonBuiltins.append(imageParams);
                 commonBuiltins.append(", float");
                 commonBuiltins.append(", int, int, int);\n");
@@ -6675,18 +7537,18 @@ void TBuiltIns::addImageFunctions(TSampler sampler, const TString& typeName, int
     imageLodParams.append(", int");
 
     commonBuiltins.append(prefixes[sampler.type]);
-    commonBuiltins.append("vec4 imageLoadLodAMD(readonly volatile coherent ");
+    commonBuiltins.append("vec4 imageLoadLodAMD(readonly volatile coherent nontemporal ");
     commonBuiltins.append(imageLodParams);
     commonBuiltins.append(");\n");
 
-    commonBuiltins.append("void imageStoreLodAMD(writeonly volatile coherent ");
+    commonBuiltins.append("void imageStoreLodAMD(writeonly volatile coherent nontemporal ");
     commonBuiltins.append(imageLodParams);
     commonBuiltins.append(", ");
     commonBuiltins.append(prefixes[sampler.type]);
     commonBuiltins.append("vec4);\n");
 
     if (! sampler.is1D()) {
-        commonBuiltins.append("int sparseImageLoadLodAMD(readonly volatile coherent ");
+        commonBuiltins.append("int sparseImageLoadLodAMD(readonly volatile coherent nontemporal ");
         commonBuiltins.append(imageLodParams);
         commonBuiltins.append(", out ");
         commonBuiltins.append(prefixes[sampler.type]);
@@ -7623,6 +8485,12 @@ void TBuiltIns::initialize(const TBuiltInResource &resources, int version, EProf
         snprintf(builtInConstant, maxSize, "const int gl_MaxComputeTextureImageUnits = %d;", resources.maxComputeTextureImageUnits);
         s.append(builtInConstant);
 
+        // GL_ARM_tensors operands.
+        snprintf(builtInConstant, maxSize, "const uint gl_TensorOperandsNonTemporalARM = 0x1U;");
+        s.append(builtInConstant);
+        snprintf(builtInConstant, maxSize, "const uint gl_TensorOperandsOutOfBoundsValueARM = 0x2U;");
+        s.append(builtInConstant);
+
         s.append("\n");
     }
 
@@ -7851,6 +8719,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         if (spvVersion.vulkan == 0) {
             SpecialQualifier("gl_VertexID",   EvqVertexId,   EbvVertexId,   symbolTable);
             SpecialQualifier("gl_InstanceID", EvqInstanceId, EbvInstanceId, symbolTable);
+            if (version < 140)
+                symbolTable.setVariableExtensions("gl_InstanceID", 1, &E_GL_EXT_draw_instanced);
         }
 
         if (spvVersion.vulkan > 0 && spvVersion.vulkanRelaxed) {
@@ -7889,6 +8759,11 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
                 symbolTable.setFunctionExtensions("anyInvocationARB",       1, &E_GL_ARB_shader_group_vote);
                 symbolTable.setFunctionExtensions("allInvocationsARB",      1, &E_GL_ARB_shader_group_vote);
                 symbolTable.setFunctionExtensions("allInvocationsEqualARB", 1, &E_GL_ARB_shader_group_vote);
+            }
+            if (version >= 150) {
+                symbolTable.setFunctionExtensions("anyThreadNV",       1, &E_GL_NV_gpu_shader5);
+                symbolTable.setFunctionExtensions("allThreadsNV",      1, &E_GL_NV_gpu_shader5);
+                symbolTable.setFunctionExtensions("allThreadsEqualNV", 1, &E_GL_NV_gpu_shader5);
             }
         }
 
@@ -7978,8 +8853,11 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
                 if (version == 310)
                     symbolTable.setFunctionExtensions("textureGatherOffsets", Num_AEP_gpu_shader5, AEP_gpu_shader5);
             }
-            if (version == 310)
+            if (version == 310) {
                 symbolTable.setFunctionExtensions("fma", Num_AEP_gpu_shader5, AEP_gpu_shader5);
+            } else if (profile != EEsProfile && version >= 150) {
+                symbolTable.setFunctionExtensions("fma", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            }
         }
 
         if (profile == EEsProfile && version < 320) {
@@ -8002,7 +8880,19 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("shadow2DEXT",        1, &E_GL_EXT_shadow_samplers);
             symbolTable.setFunctionExtensions("shadow2DProjEXT",    1, &E_GL_EXT_shadow_samplers);
         }
-        // Fall through
+
+        // E_GL_EXT_texture_array
+        if (profile != EEsProfile && spvVersion.spv == 0) {
+            symbolTable.setFunctionExtensions("texture1DArray", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("texture2DArray", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow1DArray", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow2DArray", 1, &E_GL_EXT_texture_array);
+
+            symbolTable.setFunctionExtensions("texture1DArrayLod", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("texture2DArrayLod", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("shadow1DArrayLod", 1, &E_GL_EXT_texture_array);
+        }
+        [[fallthrough]];
 
     case EShLangTessControl:
         if (profile == EEsProfile && version >= 310) {
@@ -8017,7 +8907,7 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
                 BuiltInVariable("gl_BoundingBox", EbvBoundingBox, symbolTable);
             }
         }
-        // Fall through
+        [[fallthrough]];
 
     case EShLangTessEvaluation:
     case EShLangGeometry:
@@ -8056,6 +8946,9 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         symbolTable.setVariableExtensions("gl_PositionPerViewNV",       1, &E_GL_NVX_multiview_per_view_attributes);
         symbolTable.setVariableExtensions("gl_ViewportMaskPerViewNV",   1, &E_GL_NVX_multiview_per_view_attributes);
 
+        if (profile != EEsProfile && language == EShLangGeometry && version < 400) {
+            symbolTable.setVariableExtensions("gl_InvocationID", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+        }
         BuiltInVariable("gl_ViewportMask",              EbvViewportMaskNV,          symbolTable);
         BuiltInVariable("gl_SecondaryPositionNV",       EbvSecondaryPositionNV,     symbolTable);
         BuiltInVariable("gl_SecondaryViewportMaskNV",   EbvSecondaryViewportMaskNV, symbolTable);
@@ -8154,6 +9047,11 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
                 BuiltInVariable("gl_SubGroupSizeARB", EbvSubGroupSize, symbolTable);
         }
 
+        // GL_ARB_gpu_shader5/GL_NV_gpu_shader5
+        if (profile != EEsProfile && version < 400 && language == EShLangGeometry) {
+            symbolTable.setFunctionExtensions("EmitStreamVertex", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("EndStreamPrimitive", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+        }
         // GL_KHR_shader_subgroup
         if ((profile == EEsProfile && version >= 310) ||
             (profile != EEsProfile && version >= 140)) {
@@ -8197,18 +9095,18 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_WarpMaxIDARM", EbvWarpMaxIDARM, symbolTable);
         }
 
-		if (language == EShLangGeometry || language == EShLangVertex) {
-			if ((profile == EEsProfile && version >= 310) ||
-				(profile != EEsProfile && version >= 450)) {
-				symbolTable.setVariableExtensions("gl_PrimitiveShadingRateEXT", 1, &E_GL_EXT_fragment_shading_rate);
-				BuiltInVariable("gl_PrimitiveShadingRateEXT", EbvPrimitiveShadingRateKHR, symbolTable);
+        if (language == EShLangGeometry || language == EShLangVertex) {
+            if ((profile == EEsProfile && version >= 310) ||
+                (profile != EEsProfile && version >= 450)) {
+                symbolTable.setVariableExtensions("gl_PrimitiveShadingRateEXT", 1, &E_GL_EXT_fragment_shading_rate);
+                BuiltInVariable("gl_PrimitiveShadingRateEXT", EbvPrimitiveShadingRateKHR, symbolTable);
 
-				symbolTable.setVariableExtensions("gl_ShadingRateFlag2VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
-				symbolTable.setVariableExtensions("gl_ShadingRateFlag4VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
-				symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
-				symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
-			}
-		}
+                symbolTable.setVariableExtensions("gl_ShadingRateFlag2VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+                symbolTable.setVariableExtensions("gl_ShadingRateFlag4VerticalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+                symbolTable.setVariableExtensions("gl_ShadingRateFlag2HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+                symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
+            }
+        }
         break;
 
     case EShLangFragment:
@@ -8267,6 +9165,14 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("rayQueryGetWorldRayOriginEXT",                                     1, &E_GL_EXT_ray_query);
             symbolTable.setFunctionExtensions("rayQueryGetWorldRayDirectionEXT",                                  1, &E_GL_EXT_ray_query);
             symbolTable.setFunctionExtensions("rayQueryGetIntersectionTriangleVertexPositionsEXT",                1, &E_GL_EXT_ray_tracing_position_fetch);
+            symbolTable.setFunctionExtensions("rayQueryGetIntersectionClusterIdNV",                               1, &E_GL_NV_cluster_acceleration_structure);
+            symbolTable.setFunctionExtensions("rayQueryGetIntersectionSpherePositionNV",                          1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("rayQueryGetIntersectionSphereRadiusNV",                            1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("rayQueryGetIntersectionLSSHitValueNV",                             1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("rayQueryGetIntersectionLSSPositionsNV",                            1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("rayQueryGetIntersectionLSSRadiiNV",                                1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("rayQueryIsSphereHitNV",                                            1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("rayQueryIsLSSHitNV",                                               1, &E_GL_NV_linear_swept_spheres);
             symbolTable.setVariableExtensions("gl_RayFlagsSkipAABBEXT",                         1, &E_GL_EXT_ray_flags_primitive_culling);
             symbolTable.setVariableExtensions("gl_RayFlagsSkipTrianglesEXT",                    1, &E_GL_EXT_ray_flags_primitive_culling);
             symbolTable.setVariableExtensions("gl_RayFlagsForceOpacityMicromap2StateEXT",                  1, &E_GL_EXT_opacity_micromap);
@@ -8279,6 +9185,9 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_SampleMask",         EbvSampleMask,     symbolTable);
 
             if (profile != EEsProfile && version < 400) {
+                BuiltInVariable("gl_SampleMaskIn",    EbvSampleMask,     symbolTable);
+                symbolTable.setVariableExtensions("gl_SampleMaskIn", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+
                 BuiltInVariable("gl_NumSamples",     EbvSampleMask,     symbolTable);
 
                 symbolTable.setVariableExtensions("gl_SampleMask",     1, &E_GL_ARB_sample_shading);
@@ -8382,6 +9291,37 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("atomicCounterIncrement", 1, &E_GL_ARB_shader_atomic_counters);
             symbolTable.setFunctionExtensions("atomicCounterDecrement", 1, &E_GL_ARB_shader_atomic_counters);
             symbolTable.setFunctionExtensions("atomicCounter"         , 1, &E_GL_ARB_shader_atomic_counters);
+        }
+
+        // E_GL_ARB_gpu_shader5/E_GL_NV_gpu_shader5 
+        if (profile != EEsProfile && version < 400) {
+            symbolTable.setFunctionExtensions("bitfieldExtract", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("bitfieldInsert", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("bitfieldReverse", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("bitCount", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("findLSB", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("findMSB", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("uaddCarry", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("usubBorrow", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("umulExtended", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("imulExtended", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("interpolateAtCentroid", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("interpolateAtSample", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+            symbolTable.setFunctionExtensions("interpolateAtOffset", Num_AEP_core_gpu_shader5, AEP_core_gpu_shader5);
+        }
+
+        // E_GL_NV_gpu_shader5
+        if (profile != EEsProfile && version < 450) {
+            symbolTable.setFunctionExtensions("packInt2x32",     1, &E_GL_NV_gpu_shader5);
+            symbolTable.setFunctionExtensions("packUint2x32",     1, &E_GL_NV_gpu_shader5);
+            symbolTable.setFunctionExtensions("unpackInt2x32",     1, &E_GL_NV_gpu_shader5);
+            symbolTable.setFunctionExtensions("unpackUint2x32",     1, &E_GL_NV_gpu_shader5);
+            symbolTable.setFunctionExtensions("packFloat2x16",     1, &E_GL_NV_gpu_shader5);
+            symbolTable.setFunctionExtensions("unpackFloat2x16",     1, &E_GL_NV_gpu_shader5);
+            symbolTable.setFunctionExtensions("doubleBitsToInt64",     1, &E_GL_NV_gpu_shader5);
+            symbolTable.setFunctionExtensions("doubleBitsToUint64",     1, &E_GL_NV_gpu_shader5);
+            symbolTable.setFunctionExtensions("int64BitsToDouble",     1, &E_GL_NV_gpu_shader5);
+            symbolTable.setFunctionExtensions("uint64BitsToDouble",     1, &E_GL_NV_gpu_shader5);
         }
 
         // E_GL_ARB_shader_atomic_counter_ops
@@ -8528,11 +9468,15 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         }
 
         if (profile != EEsProfile && version < 330 ) {
-            const char* bitsConvertExt[2] = {E_GL_ARB_shader_bit_encoding, E_GL_ARB_gpu_shader5};
-            symbolTable.setFunctionExtensions("floatBitsToInt", 2, bitsConvertExt);
-            symbolTable.setFunctionExtensions("floatBitsToUint", 2, bitsConvertExt);
-            symbolTable.setFunctionExtensions("intBitsToFloat", 2, bitsConvertExt);
-            symbolTable.setFunctionExtensions("uintBitsToFloat", 2, bitsConvertExt);
+            const int numBitEncodingExts = 3;
+            const char* bitEncodingExts[numBitEncodingExts] = { E_GL_ARB_shader_bit_encoding,
+                                                                E_GL_ARB_gpu_shader5,
+                                                                E_GL_NV_gpu_shader5};
+            symbolTable.setFunctionExtensions("floatBitsToInt", numBitEncodingExts, bitEncodingExts);
+            symbolTable.setFunctionExtensions("floatBitsToUint", numBitEncodingExts, bitEncodingExts);
+            symbolTable.setFunctionExtensions("intBitsToFloat", numBitEncodingExts, bitEncodingExts);
+            symbolTable.setFunctionExtensions("uintBitsToFloat", numBitEncodingExts, bitEncodingExts);
+
         }
 
         if (profile != EEsProfile && version < 430 ) {
@@ -8553,12 +9497,16 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
 
         // GL_ARB_shading_language_packing
         if (profile != EEsProfile && version < 400 ) {
-            symbolTable.setFunctionExtensions("packUnorm2x16", 1, &E_GL_ARB_shading_language_packing);
-            symbolTable.setFunctionExtensions("unpackUnorm2x16", 1, &E_GL_ARB_shading_language_packing);
-            symbolTable.setFunctionExtensions("packSnorm4x8", 1, &E_GL_ARB_shading_language_packing);
-            symbolTable.setFunctionExtensions("packUnorm4x8", 1, &E_GL_ARB_shading_language_packing);
-            symbolTable.setFunctionExtensions("unpackSnorm4x8", 1, &E_GL_ARB_shading_language_packing);
-            symbolTable.setFunctionExtensions("unpackUnorm4x8", 1, &E_GL_ARB_shading_language_packing);
+            const int numPackingExts = 3;
+            const char* packingExts[numPackingExts] = { E_GL_ARB_shading_language_packing,
+                                                                E_GL_ARB_gpu_shader5,
+                                                                E_GL_NV_gpu_shader5};
+            symbolTable.setFunctionExtensions("packUnorm2x16", numPackingExts, packingExts);
+            symbolTable.setFunctionExtensions("unpackUnorm2x16", numPackingExts, packingExts);
+            symbolTable.setFunctionExtensions("packSnorm4x8", numPackingExts, packingExts);
+            symbolTable.setFunctionExtensions("packUnorm4x8", numPackingExts, packingExts);
+            symbolTable.setFunctionExtensions("unpackSnorm4x8", numPackingExts, packingExts);
+            symbolTable.setFunctionExtensions("unpackUnorm4x8", numPackingExts, packingExts);
         }
         if (profile != EEsProfile && version < 420 ) {
             symbolTable.setFunctionExtensions("packSnorm2x16", 1, &E_GL_ARB_shading_language_packing);
@@ -8603,6 +9551,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
                 BuiltInVariable("gl_SubGroupSizeARB", EbvSubGroupSize, symbolTable);
         }
 
+        // GL_EXT_expect_assume
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 140)) {
+            symbolTable.setFunctionExtensions("assumeEXT", 1, &E_GL_EXT_expect_assume);
+            symbolTable.setFunctionExtensions("expectEXT", 1, &E_GL_EXT_expect_assume);
+        }
+
         // GL_KHR_shader_subgroup
         if ((profile == EEsProfile && version >= 310) ||
             (profile != EEsProfile && version >= 140)) {
@@ -8644,6 +9599,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("subgroupShuffleXor",              1, &E_GL_KHR_shader_subgroup_shuffle);
             symbolTable.setFunctionExtensions("subgroupShuffleUp",               1, &E_GL_KHR_shader_subgroup_shuffle_relative);
             symbolTable.setFunctionExtensions("subgroupShuffleDown",             1, &E_GL_KHR_shader_subgroup_shuffle_relative);
+            symbolTable.setFunctionExtensions("subgroupRotate",                  1, &E_GL_KHR_shader_subgroup_rotate);
+            symbolTable.setFunctionExtensions("subgroupClusteredRotate",         1, &E_GL_KHR_shader_subgroup_rotate);
             symbolTable.setFunctionExtensions("subgroupAdd",                     1, &E_GL_KHR_shader_subgroup_arithmetic);
             symbolTable.setFunctionExtensions("subgroupMul",                     1, &E_GL_KHR_shader_subgroup_arithmetic);
             symbolTable.setFunctionExtensions("subgroupMin",                     1, &E_GL_KHR_shader_subgroup_arithmetic);
@@ -8762,6 +9719,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_ShadingRateFlag4HorizontalPixelsEXT", 1, &E_GL_EXT_fragment_shading_rate);
         }
 
+        // GL_EXT_shader_quad_control
+        if ((profile != EEsProfile && version >= 140) ||
+            (profile == EEsProfile && version >= 310)) {
+            symbolTable.setFunctionExtensions("subgroupQuadAll",                     1,  &E_GL_KHR_shader_subgroup_vote);
+            symbolTable.setFunctionExtensions("subgroupQuadAny",                     1,  &E_GL_KHR_shader_subgroup_vote);
+        }
+
         // GL_EXT_shader_tile_image
         symbolTable.setFunctionExtensions("stencilAttachmentReadEXT", 1, &E_GL_EXT_shader_tile_image);
         symbolTable.setFunctionExtensions("depthAttachmentReadEXT", 1, &E_GL_EXT_shader_tile_image);
@@ -8769,10 +9733,27 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
 
         if ((profile == EEsProfile && version >= 310) ||
             (profile != EEsProfile && version >= 140)) {
+
             symbolTable.setFunctionExtensions("textureWeightedQCOM",      1, &E_GL_QCOM_image_processing);
             symbolTable.setFunctionExtensions("textureBoxFilterQCOM",     1, &E_GL_QCOM_image_processing);
             symbolTable.setFunctionExtensions("textureBlockMatchSADQCOM", 1, &E_GL_QCOM_image_processing);
             symbolTable.setFunctionExtensions("textureBlockMatchSSDQCOM", 1, &E_GL_QCOM_image_processing);
+
+            symbolTable.setFunctionExtensions("textureBlockMatchWindowSSDQCOM", 1, &E_GL_QCOM_image_processing2);
+            symbolTable.setFunctionExtensions("textureBlockMatchWindowSADQCOM", 1, &E_GL_QCOM_image_processing2);
+            symbolTable.setFunctionExtensions("textureBlockMatchGatherSSDQCOM", 1, &E_GL_QCOM_image_processing2);
+            symbolTable.setFunctionExtensions("textureBlockMatchGatherSADQCOM", 1, &E_GL_QCOM_image_processing2);
+        }
+
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 460)) {
+            BuiltInVariable("gl_TileOffsetQCOM",    EbvTileOffsetQCOM,      symbolTable);
+            BuiltInVariable("gl_TileDimensionQCOM", EbvTileDimensionQCOM,   symbolTable);
+            BuiltInVariable("gl_TileApronSizeQCOM", EbvTileApronSizeQCOM,   symbolTable);
+
+            symbolTable.setVariableExtensions("gl_TileOffsetQCOM",        1, &E_GL_QCOM_tile_shading);
+            symbolTable.setVariableExtensions("gl_TileDimensionQCOM",     1, &E_GL_QCOM_tile_shading);
+            symbolTable.setVariableExtensions("gl_TileApronSizeQCOM",     1, &E_GL_QCOM_tile_shading);
         }
         break;
 
@@ -8910,9 +9891,78 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         }
 
         {
-            symbolTable.setFunctionExtensions("coopMatLoad",   1, &E_GL_KHR_cooperative_matrix);
-            symbolTable.setFunctionExtensions("coopMatStore",  1, &E_GL_KHR_cooperative_matrix);
+            auto coopMatKHRCallback = [](const char *name) -> std::vector<const char *> {
+                std::vector<const char *> ret;
+                if (strstr(name, "u64") != nullptr) {
+                    ret.push_back(E_GL_EXT_shader_64bit_indexing);
+                } else {
+                    ret.push_back(E_GL_KHR_cooperative_matrix);
+                }
+                return ret;
+            };
+            auto coopMat2NVCallback = [](const char *name) -> std::vector<const char *> {
+                std::vector<const char *> ret;
+                if (strstr(name, "u64") != nullptr) {
+                    ret.push_back(E_GL_EXT_shader_64bit_indexing);
+                } else {
+                    ret.push_back(E_GL_NV_cooperative_matrix2);
+                }
+                return ret;
+            };
+
+            symbolTable.setFunctionExtensionsCallback("coopMatLoad",   coopMatKHRCallback);
+            symbolTable.setFunctionExtensionsCallback("coopMatStore",  coopMatKHRCallback);
             symbolTable.setFunctionExtensions("coopMatMulAdd", 1, &E_GL_KHR_cooperative_matrix);
+
+            symbolTable.setFunctionExtensionsCallback("coopMatLoadTensorNV",   coopMat2NVCallback);
+            symbolTable.setFunctionExtensionsCallback("coopMatStoreTensorNV",   coopMat2NVCallback);
+
+            symbolTable.setFunctionExtensions("coopMatReduceNV",   1, &E_GL_NV_cooperative_matrix2);
+            symbolTable.setFunctionExtensions("coopMatPerElementNV",  1, &E_GL_NV_cooperative_matrix2);
+            symbolTable.setFunctionExtensions("coopMatTransposeNV",   1, &E_GL_NV_cooperative_matrix2);
+            
+            symbolTable.setFunctionExtensions("createTensorLayoutNV",           1, &E_GL_NV_cooperative_matrix2);
+            symbolTable.setFunctionExtensions("setTensorLayoutBlockSizeNV",     1, &E_GL_NV_cooperative_matrix2);
+            symbolTable.setFunctionExtensions("setTensorLayoutDimensionNV",     1, &E_GL_NV_cooperative_matrix2);
+            symbolTable.setFunctionExtensions("setTensorLayoutStrideNV",        1, &E_GL_NV_cooperative_matrix2);
+            symbolTable.setFunctionExtensions("sliceTensorLayoutNV",            1, &E_GL_NV_cooperative_matrix2);
+            symbolTable.setFunctionExtensions("setTensorLayoutClampValueNV",    1, &E_GL_NV_cooperative_matrix2);
+
+            symbolTable.setFunctionExtensions("createTensorViewNV",             1, &E_GL_NV_cooperative_matrix2);
+            symbolTable.setFunctionExtensions("setTensorViewDimensionsNV",      1, &E_GL_NV_cooperative_matrix2);
+            symbolTable.setFunctionExtensions("setTensorViewStrideNV",          1, &E_GL_NV_cooperative_matrix2);
+            symbolTable.setFunctionExtensions("setTensorViewClipNV",            1, &E_GL_NV_cooperative_matrix2);
+        }
+
+        {
+            symbolTable.setFunctionExtensions("tensorReadARM",   1, &E_GL_ARM_tensors);
+            symbolTable.setFunctionExtensions("tensorWriteARM",  1, &E_GL_ARM_tensors);
+            symbolTable.setFunctionExtensions("tensorSizeARM",   1, &E_GL_ARM_tensors);
+        }
+        {
+            auto coopVecCallback = [](const char *name) -> std::vector<const char *> {
+                std::vector<const char *> ret;
+                // This looks for u64 as the last parameter (the offset)
+                if (strstr(name, "u641;") != nullptr) {
+                    ret.push_back(E_GL_EXT_shader_64bit_indexing);
+                } else {
+                    ret.push_back(E_GL_NV_cooperative_vector);
+                }
+                return ret;
+            };
+            symbolTable.setFunctionExtensionsCallback("coopVecMatMulNV", coopVecCallback);
+            symbolTable.setFunctionExtensionsCallback("coopVecMatMulAddNV", coopVecCallback);
+            symbolTable.setFunctionExtensionsCallback("coopVecLoadNV", coopVecCallback);
+            symbolTable.setFunctionExtensionsCallback("coopVecStoreNV", coopVecCallback);
+            symbolTable.setFunctionExtensionsCallback("coopVecOuterProductAccumulateNV", coopVecCallback);
+            symbolTable.setFunctionExtensionsCallback("coopVecReduceSumAccumulateNV", coopVecCallback);
+        }
+
+        {
+          symbolTable.setFunctionExtensions("bitcastQCOM", 1, &E_GL_QCOM_cooperative_matrix_conversion);
+          symbolTable.setFunctionExtensions("extractSubArrayQCOM", 1, &E_GL_QCOM_cooperative_matrix_conversion);
+          symbolTable.setFunctionExtensions("vectorToCoopmatQCOM", 1, &E_GL_QCOM_cooperative_matrix_conversion);
+          symbolTable.setFunctionExtensions("coopmatToVectorQCOM", 1, &E_GL_QCOM_cooperative_matrix_conversion);
         }
 
         if ((profile != EEsProfile && version >= 450) || (profile == EEsProfile && version >= 320)) {
@@ -8938,6 +9988,47 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         if ((profile != EEsProfile && version >= 460)) {
             symbolTable.setFunctionExtensions("fetchMicroTriangleVertexPositionNV", 1, &E_GL_NV_displacement_micromap);
             symbolTable.setFunctionExtensions("fetchMicroTriangleVertexBarycentricNV", 1, &E_GL_NV_displacement_micromap);
+        }
+
+        // GL_EXT_integer_dot_product
+        if ((profile == EEsProfile && version >= 300) ||
+            (profile != EEsProfile && version >= 450)) {
+            symbolTable.setFunctionExtensions("dotEXT", 1, &E_GL_EXT_integer_dot_product);
+            symbolTable.setFunctionExtensions("dotPacked4x8EXT", 1, &E_GL_EXT_integer_dot_product);
+            symbolTable.setFunctionExtensions("dotAccSatEXT", 1, &E_GL_EXT_integer_dot_product);
+            symbolTable.setFunctionExtensions("dotPacked4x8AccSatEXT", 1, &E_GL_EXT_integer_dot_product);
+        }
+
+        {
+            symbolTable.setFunctionExtensions("bfloat16BitsToIntEXT", 1, &E_GL_EXT_bfloat16);
+            symbolTable.setFunctionExtensions("bfloat16BitsToUintEXT", 1, &E_GL_EXT_bfloat16);
+            symbolTable.setFunctionExtensions("intBitsToBFloat16EXT", 1, &E_GL_EXT_bfloat16);
+            symbolTable.setFunctionExtensions("uintBitsToBFloat16EXT", 1, &E_GL_EXT_bfloat16);
+
+            symbolTable.setFunctionExtensions("floate5m2BitsToIntEXT", 1, &E_GL_EXT_float_e5m2);
+            symbolTable.setFunctionExtensions("floate5m2BitsToUintEXT", 1, &E_GL_EXT_float_e5m2);
+            symbolTable.setFunctionExtensions("intBitsToFloate5m2EXT", 1, &E_GL_EXT_float_e5m2);
+            symbolTable.setFunctionExtensions("uintBitsToFloate5m2EXT", 1, &E_GL_EXT_float_e5m2);
+
+            symbolTable.setFunctionExtensions("floate4m3BitsToIntEXT", 1, &E_GL_EXT_float_e4m3);
+            symbolTable.setFunctionExtensions("floate4m3BitsToUintEXT", 1, &E_GL_EXT_float_e4m3);
+            symbolTable.setFunctionExtensions("intBitsToFloate4m3EXT", 1, &E_GL_EXT_float_e4m3);
+            symbolTable.setFunctionExtensions("uintBitsToFloate4m3EXT", 1, &E_GL_EXT_float_e4m3);
+
+            const char *float8exts[] = {E_GL_EXT_float_e5m2, E_GL_EXT_float_e4m3};
+            symbolTable.setFunctionExtensions("saturatedConvertEXT", 2, float8exts);
+        }
+
+        // E_SPV_QCOM_tile_shading
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 460)) {
+            BuiltInVariable("gl_TileOffsetQCOM",        EbvTileOffsetQCOM,      symbolTable);
+            BuiltInVariable("gl_TileDimensionQCOM",     EbvTileDimensionQCOM,   symbolTable);
+            BuiltInVariable("gl_TileApronSizeQCOM",     EbvTileApronSizeQCOM,   symbolTable);
+
+            symbolTable.setVariableExtensions("gl_TileOffsetQCOM",        1, &E_GL_QCOM_tile_shading);
+            symbolTable.setVariableExtensions("gl_TileDimensionQCOM",     1, &E_GL_QCOM_tile_shading);
+            symbolTable.setVariableExtensions("gl_TileApronSizeQCOM",     1, &E_GL_QCOM_tile_shading);
         }
         break;
 
@@ -8987,6 +10078,13 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setVariableExtensions("gl_HitTriangleVertexPositionsEXT", 1, &E_GL_EXT_ray_tracing_position_fetch);
             symbolTable.setVariableExtensions("gl_HitMicroTriangleVertexPositionsNV", 1, &E_GL_NV_displacement_micromap);
             symbolTable.setVariableExtensions("gl_HitMicroTriangleVertexBarycentricsNV", 1, &E_GL_NV_displacement_micromap);
+            symbolTable.setVariableExtensions("gl_ClusterIDNV", 1, &E_GL_NV_cluster_acceleration_structure);
+            symbolTable.setVariableExtensions("gl_HitKindSphereNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setVariableExtensions("gl_HitKindLSSNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setVariableExtensions("gl_HitSpherePositionNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setVariableExtensions("gl_HitSphereRadiusNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setVariableExtensions("gl_HitLSSPositionNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setVariableExtensions("gl_HitLSSRadiiNV", 1, &E_GL_NV_linear_swept_spheres);
 
             symbolTable.setVariableExtensions("gl_DeviceIndex", 1, &E_GL_EXT_device_group);
 
@@ -9031,9 +10129,50 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.setFunctionExtensions("hitObjectGetCurrentTimeNV", 1, &E_GL_NV_shader_invocation_reorder);
             symbolTable.setFunctionExtensions("hitObjectGetShaderBindingTableRecordIndexNV", 1, &E_GL_NV_shader_invocation_reorder);
             symbolTable.setFunctionExtensions("hitObjectGetShaderRecordBufferHandleNV", 1, &E_GL_NV_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetClusterIdNV", 1, &E_GL_NV_cluster_acceleration_structure);
             symbolTable.setFunctionExtensions("reorderThreadNV", 1, &E_GL_NV_shader_invocation_reorder);
             symbolTable.setFunctionExtensions("fetchMicroTriangleVertexPositionNV", 1, &E_GL_NV_displacement_micromap);
             symbolTable.setFunctionExtensions("fetchMicroTriangleVertexBarycentricNV", 1, &E_GL_NV_displacement_micromap);
+            symbolTable.setFunctionExtensions("hitObjectGetSpherePositionNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("hitObjectGetSphereRadiusNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("hitObjectGetLSSPositionsNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("hitObjectGetLSSRadiiNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("hitObjectIsSphereHitNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("hitObjectIsLSSHitNV", 1, &E_GL_NV_linear_swept_spheres);
+            symbolTable.setFunctionExtensions("hitObjectTraceRayEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectTraceRayMotionEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectRecordMissEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectRecordMissMotionEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectRecordEmptyEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectExecuteShaderEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectIsEmptyEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectIsMissEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectIsHitEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetRayTMinEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetRayTMaxEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetRayFlagsEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetObjectRayOriginEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetObjectRayDirectionEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetWorldRayOriginEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetWorldRayDirectionEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetWorldToObjectEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetObjectToWorldEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetInstanceCustomIndexEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetInstanceIdEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetGeometryIndexEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetPrimitiveIndexEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetHitKindEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetAttributesEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetCurrentTimeEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetShaderBindingTableRecordIndexEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetShaderRecordBufferHandleEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectSetShaderBindingTableRecordIndexEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("reorderThreadEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectReorderExecuteEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectTraceReorderExecuteEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectTraceMotionReorderExecuteEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectRecordFromQueryEXT", 1, &E_GL_EXT_shader_invocation_reorder);
+            symbolTable.setFunctionExtensions("hitObjectGetIntersectionTriangleVertexPositionsEXT", 1, &E_GL_EXT_shader_invocation_reorder);
 
 
             BuiltInVariable("gl_LaunchIDNV",             EbvLaunchId,           symbolTable);
@@ -9058,8 +10197,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_RayTmaxNV",              EbvRayTmax,            symbolTable);
             BuiltInVariable("gl_RayTmaxEXT",             EbvRayTmax,            symbolTable);
             BuiltInVariable("gl_CullMaskEXT",            EbvCullMask,           symbolTable);
-            BuiltInVariable("gl_HitTNV",                 EbvHitT,               symbolTable);
-            BuiltInVariable("gl_HitTEXT",                EbvHitT,               symbolTable);
             BuiltInVariable("gl_HitKindNV",              EbvHitKind,            symbolTable);
             BuiltInVariable("gl_HitKindEXT",             EbvHitKind,            symbolTable);
             BuiltInVariable("gl_ObjectToWorldNV",        EbvObjectToWorld,      symbolTable);
@@ -9077,6 +10214,17 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_HitMicroTriangleVertexBarycentricsNV", EbvMicroTriangleBaryNV, symbolTable);
             BuiltInVariable("gl_HitKindFrontFacingMicroTriangleNV", EbvHitKindFrontFacingMicroTriangleNV, symbolTable);
             BuiltInVariable("gl_HitKindBackFacingMicroTriangleNV", EbvHitKindBackFacingMicroTriangleNV, symbolTable);
+            BuiltInVariable("gl_ClusterIDNV",            EbvClusterIDNV,         symbolTable);
+            BuiltInVariable("gl_HitIsSphereNV", EbvHitIsSphereNV, symbolTable);
+            BuiltInVariable("gl_HitIsLSSNV", EbvHitIsLSSNV, symbolTable);
+            BuiltInVariable("gl_HitSpherePositionNV", EbvHitSpherePositionNV, symbolTable);
+            BuiltInVariable("gl_HitSphereRadiusNV", EbvHitSphereRadiusNV, symbolTable);
+            BuiltInVariable("gl_HitLSSPositionsNV", EbvHitLSSPositionsNV, symbolTable);
+            BuiltInVariable("gl_HitLSSRadiiNV", EbvHitLSSRadiiNV, symbolTable);
+
+            // gl_HitT variables are aliases of their gl_RayTmax counterparts.
+            RetargetVariable("gl_HitTNV",                "gl_RayTmaxNV",        symbolTable);
+            RetargetVariable("gl_HitTEXT",               "gl_RayTmaxEXT",       symbolTable);
 
             // GL_ARB_shader_ballot
             symbolTable.setVariableExtensions("gl_SubGroupSizeARB",       1, &E_GL_ARB_shader_ballot);
@@ -9695,6 +10843,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
     symbolTable.relateToOperator("averageRounded",     EOpAverageRounded);
     symbolTable.relateToOperator("multiply32x16",      EOpMul32x16);
     symbolTable.relateToOperator("debugPrintfEXT",     EOpDebugPrintf);
+    symbolTable.relateToOperator("assumeEXT",          EOpAssumeEXT);
+    symbolTable.relateToOperator("expectEXT",          EOpExpectEXT);
 
 
     if (PureOperatorBuiltins) {
@@ -9827,6 +10977,16 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
                 symbolTable.relateToOperator("allInvocations",              EOpAllInvocations);
                 symbolTable.relateToOperator("allInvocationsEqual",         EOpAllInvocationsEqual);
             }
+            // As per dependency between NV_gpu_shader5 and ARB_shader_group_vote
+            // anyInvocationARB = anyThreadNV
+            // allInvocationsARB = allThreadsNV
+            // allInvocationsEqualARB = allThreadsEqualNV
+            // Thus we reuse the Op's
+            if (version >= 150) {
+                symbolTable.relateToOperator("anyThreadNV",            EOpAnyInvocation);
+                symbolTable.relateToOperator("allThreadsNV",           EOpAllInvocations);
+                symbolTable.relateToOperator("allThreadsEqualNV",      EOpAllInvocationsEqual);
+            }
             symbolTable.relateToOperator("minInvocationsAMD",                           EOpMinInvocations);
             symbolTable.relateToOperator("maxInvocationsAMD",                           EOpMaxInvocations);
             symbolTable.relateToOperator("addInvocationsAMD",                           EOpAddInvocations);
@@ -9873,6 +11033,36 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.relateToOperator("fragmentFetchAMD",                    EOpFragmentFetch);
         }
 
+        // GL_EXT_integer_dot_product
+        if ((profile == EEsProfile && version >= 300) ||
+            (profile != EEsProfile && version >= 450)) {
+            symbolTable.relateToOperator("dotEXT", EOpDot);
+            symbolTable.relateToOperator("dotPacked4x8EXT", EOpDotPackedEXT);
+            symbolTable.relateToOperator("dotAccSatEXT", EOpDotAccSatEXT);
+            symbolTable.relateToOperator("dotPacked4x8AccSatEXT", EOpDotPackedAccSatEXT);
+        }
+
+        // GL_EXT_bfloat16
+        if ((profile == EEsProfile && version >= 320) ||
+            (profile != EEsProfile && version >= 450)) {
+            symbolTable.relateToOperator("bfloat16BitsToIntEXT",  EOpFloatBitsToInt);
+            symbolTable.relateToOperator("bfloat16BitsToUintEXT", EOpFloatBitsToUint);
+            symbolTable.relateToOperator("intBitsToBFloat16EXT",  EOpIntBitsToFloat);
+            symbolTable.relateToOperator("uintBitsToBFloat16EXT", EOpUintBitsToFloat);
+
+            symbolTable.relateToOperator("floate5m2BitsToIntEXT",  EOpFloatBitsToInt);
+            symbolTable.relateToOperator("floate5m2BitsToUintEXT", EOpFloatBitsToUint);
+            symbolTable.relateToOperator("intBitsToFloate5m2EXT",  EOpIntBitsToFloat);
+            symbolTable.relateToOperator("uintBitsToFloate5m2EXT", EOpUintBitsToFloat);
+
+            symbolTable.relateToOperator("floate4m3BitsToIntEXT",  EOpFloatBitsToInt);
+            symbolTable.relateToOperator("floate4m3BitsToUintEXT", EOpFloatBitsToUint);
+            symbolTable.relateToOperator("intBitsToFloate4m3EXT",  EOpIntBitsToFloat);
+            symbolTable.relateToOperator("uintBitsToFloate4m3EXT", EOpUintBitsToFloat);
+
+            symbolTable.relateToOperator("saturatedConvertEXT", EOpConstructSaturated);
+        }
+
         // GL_KHR_shader_subgroup
         if ((profile == EEsProfile && version >= 310) ||
             (profile != EEsProfile && version >= 140)) {
@@ -9898,6 +11088,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.relateToOperator("subgroupShuffleXor",              EOpSubgroupShuffleXor);
             symbolTable.relateToOperator("subgroupShuffleUp",               EOpSubgroupShuffleUp);
             symbolTable.relateToOperator("subgroupShuffleDown",             EOpSubgroupShuffleDown);
+            symbolTable.relateToOperator("subgroupRotate",                  EOpSubgroupRotate);
+            symbolTable.relateToOperator("subgroupClusteredRotate",         EOpSubgroupClusteredRotate);
             symbolTable.relateToOperator("subgroupAdd",                     EOpSubgroupAdd);
             symbolTable.relateToOperator("subgroupMul",                     EOpSubgroupMul);
             symbolTable.relateToOperator("subgroupMin",                     EOpSubgroupMin);
@@ -9960,13 +11152,43 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.relateToOperator("shadow2DProjEXT",          EOpTextureProj);
         }
 
+        // GL_EXT_shader_quad_control
+        if ((profile == EEsProfile && version >= 310) ||
+            (profile != EEsProfile && version >= 140)) {
+            symbolTable.relateToOperator("subgroupQuadAll",                     EOpSubgroupQuadAll);
+            symbolTable.relateToOperator("subgroupQuadAny",                     EOpSubgroupQuadAny);
+        }
+
         if ((profile == EEsProfile && version >= 310) ||
             (profile != EEsProfile && version >= 140)) {
             symbolTable.relateToOperator("textureWeightedQCOM",      EOpImageSampleWeightedQCOM);
             symbolTable.relateToOperator("textureBoxFilterQCOM",     EOpImageBoxFilterQCOM);
             symbolTable.relateToOperator("textureBlockMatchSADQCOM", EOpImageBlockMatchSADQCOM);
             symbolTable.relateToOperator("textureBlockMatchSSDQCOM", EOpImageBlockMatchSSDQCOM);
+
+            symbolTable.relateToOperator("textureBlockMatchWindowSSDQCOM", EOpImageBlockMatchWindowSSDQCOM);
+            symbolTable.relateToOperator("textureBlockMatchWindowSADQCOM", EOpImageBlockMatchWindowSADQCOM);
+            symbolTable.relateToOperator("textureBlockMatchGatherSSDQCOM", EOpImageBlockMatchGatherSSDQCOM);
+            symbolTable.relateToOperator("textureBlockMatchGatherSADQCOM", EOpImageBlockMatchGatherSADQCOM);
         }
+
+        if (profile != EEsProfile && spvVersion.spv == 0) {
+            symbolTable.relateToOperator("texture1DArray", EOpTexture);
+            symbolTable.relateToOperator("texture2DArray", EOpTexture);
+            symbolTable.relateToOperator("shadow1DArray", EOpTexture);
+            symbolTable.relateToOperator("shadow2DArray", EOpTexture);
+
+            symbolTable.relateToOperator("texture1DArrayLod", EOpTextureLod);
+            symbolTable.relateToOperator("texture2DArrayLod", EOpTextureLod);
+            symbolTable.relateToOperator("shadow1DArrayLod", EOpTextureLod);
+        }
+
+        symbolTable.relateToOperator("coopVecMatMulNV",              EOpCooperativeVectorMatMulNV);
+        symbolTable.relateToOperator("coopVecMatMulAddNV",           EOpCooperativeVectorMatMulAddNV);
+        symbolTable.relateToOperator("coopVecLoadNV",                EOpCooperativeVectorLoadNV);
+        symbolTable.relateToOperator("coopVecStoreNV",               EOpCooperativeVectorStoreNV);
+        symbolTable.relateToOperator("coopVecOuterProductAccumulateNV", EOpCooperativeVectorOuterProductAccumulateNV);
+        symbolTable.relateToOperator("coopVecReduceSumAccumulateNV",    EOpCooperativeVectorReduceSumAccumulateNV);
     }
 
     switch(language) {
@@ -10019,6 +11241,14 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.relateToOperator("rayQueryGetIntersectionObjectToWorldEXT",                           EOpRayQueryGetIntersectionObjectToWorld);
             symbolTable.relateToOperator("rayQueryGetIntersectionWorldToObjectEXT",                           EOpRayQueryGetIntersectionWorldToObject);
             symbolTable.relateToOperator("rayQueryGetIntersectionTriangleVertexPositionsEXT",                 EOpRayQueryGetIntersectionTriangleVertexPositionsEXT);
+            symbolTable.relateToOperator("rayQueryGetIntersectionClusterIdNV",                                EOpRayQueryGetIntersectionClusterIdNV);
+            symbolTable.relateToOperator("rayQueryGetIntersectionSpherePositionNV",                           EOpRayQueryGetIntersectionSpherePositionNV);
+            symbolTable.relateToOperator("rayQueryGetIntersectionSphereRadiusNV",                             EOpRayQueryGetIntersectionSphereRadiusNV);
+            symbolTable.relateToOperator("rayQueryGetIntersectionLSSHitValueNV",                              EOpRayQueryGetIntersectionLSSHitValueNV);
+            symbolTable.relateToOperator("rayQueryGetIntersectionLSSPositionsNV",                             EOpRayQueryGetIntersectionLSSPositionsNV);
+            symbolTable.relateToOperator("rayQueryGetIntersectionLSSRadiiNV",                                 EOpRayQueryGetIntersectionLSSRadiiNV);
+            symbolTable.relateToOperator("rayQueryIsSphereHitNV",                                             EOpRayQueryIsSphereHitNV);
+            symbolTable.relateToOperator("rayQueryIsLSSHitNV",                                                EOpRayQueryIsLSSHitNV);
         }
 
         symbolTable.relateToOperator("interpolateAtCentroid", EOpInterpolateAtCentroid);
@@ -10059,6 +11289,34 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         symbolTable.relateToOperator("coopMatStore",               EOpCooperativeMatrixStore);
         symbolTable.relateToOperator("coopMatMulAdd",              EOpCooperativeMatrixMulAdd);
 
+        symbolTable.relateToOperator("coopMatLoadTensorNV",        EOpCooperativeMatrixLoadTensorNV);
+        symbolTable.relateToOperator("coopMatStoreTensorNV",       EOpCooperativeMatrixStoreTensorNV);
+
+        symbolTable.relateToOperator("coopMatReduceNV",            EOpCooperativeMatrixReduceNV);
+        symbolTable.relateToOperator("coopMatPerElementNV",        EOpCooperativeMatrixPerElementOpNV);
+        symbolTable.relateToOperator("coopMatTransposeNV",         EOpCooperativeMatrixTransposeNV);
+
+        symbolTable.relateToOperator("createTensorLayoutNV",         EOpCreateTensorLayoutNV);
+        symbolTable.relateToOperator("setTensorLayoutBlockSizeNV",   EOpTensorLayoutSetBlockSizeNV);
+        symbolTable.relateToOperator("setTensorLayoutDimensionNV",   EOpTensorLayoutSetDimensionNV);
+        symbolTable.relateToOperator("setTensorLayoutStrideNV",      EOpTensorLayoutSetStrideNV);
+        symbolTable.relateToOperator("sliceTensorLayoutNV",          EOpTensorLayoutSliceNV);
+        symbolTable.relateToOperator("setTensorLayoutClampValueNV",  EOpTensorLayoutSetClampValueNV);
+
+        symbolTable.relateToOperator("createTensorViewNV",           EOpCreateTensorViewNV);
+        symbolTable.relateToOperator("setTensorViewDimensionsNV",    EOpTensorViewSetDimensionNV);
+        symbolTable.relateToOperator("setTensorViewStrideNV",        EOpTensorViewSetStrideNV);
+        symbolTable.relateToOperator("setTensorViewClipNV",          EOpTensorViewSetClipNV);
+
+        symbolTable.relateToOperator("tensorReadARM",                EOpTensorReadARM);
+        symbolTable.relateToOperator("tensorWriteARM",               EOpTensorWriteARM);
+        symbolTable.relateToOperator("tensorSizeARM",                EOpTensorSizeARM);
+
+        symbolTable.relateToOperator("bitcastQCOM", EOpBitCastArrayQCOM);
+        symbolTable.relateToOperator("extractSubArrayQCOM", EOpExtractSubArrayQCOM);
+        symbolTable.relateToOperator("vectorToCoopmatQCOM", EOpCompositeConstructCoopMatQCOM);
+        symbolTable.relateToOperator("coopmatToVectorQCOM", EOpCompositeExtractCoopMatQCOM);
+
         if (profile != EEsProfile && version >= 460) {
             symbolTable.relateToOperator("fetchMicroTriangleVertexPositionNV", EOpFetchMicroTriangleVertexPositionNV);
             symbolTable.relateToOperator("fetchMicroTriangleVertexBarycentricNV", EOpFetchMicroTriangleVertexBarycentricNV);
@@ -10069,7 +11327,8 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         if (profile != EEsProfile && version >= 460) {
             symbolTable.relateToOperator("fetchMicroTriangleVertexPositionNV", EOpFetchMicroTriangleVertexPositionNV);
             symbolTable.relateToOperator("fetchMicroTriangleVertexBarycentricNV", EOpFetchMicroTriangleVertexBarycentricNV);
-        } // fallthrough
+        }
+        [[fallthrough]];
     case EShLangClosestHit:
     case EShLangMiss:
         if (profile != EEsProfile && version >= 460) {
@@ -10109,7 +11368,48 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.relateToOperator("hitObjectGetCurrentTimeNV", EOpHitObjectGetCurrentTimeNV);
             symbolTable.relateToOperator("hitObjectGetShaderBindingTableRecordIndexNV", EOpHitObjectGetShaderBindingTableRecordIndexNV);
             symbolTable.relateToOperator("hitObjectGetShaderRecordBufferHandleNV", EOpHitObjectGetShaderRecordBufferHandleNV);
+            symbolTable.relateToOperator("hitObjectGetClusterIdNV", EOpHitObjectGetClusterIdNV);
             symbolTable.relateToOperator("reorderThreadNV", EOpReorderThreadNV);
+            symbolTable.relateToOperator("hitObjectGetSpherePositionNV", EOpHitObjectGetSpherePositionNV);
+            symbolTable.relateToOperator("hitObjectGetSphereRadiusNV", EOpHitObjectGetSphereRadiusNV);
+            symbolTable.relateToOperator("hitObjectGetLSSPositionsNV", EOpHitObjectGetLSSPositionsNV);
+            symbolTable.relateToOperator("hitObjectGetLSSRadiiNV", EOpHitObjectGetLSSRadiiNV);
+            symbolTable.relateToOperator("hitObjectIsSphereHitNV", EOpHitObjectIsSphereHitNV);
+            symbolTable.relateToOperator("hitObjectIsLSSHitNV", EOpHitObjectIsLSSHitNV);
+            symbolTable.relateToOperator("hitObjectTraceRayEXT", EOpHitObjectTraceRayEXT);
+            symbolTable.relateToOperator("hitObjectTraceRayMotionEXT", EOpHitObjectTraceRayMotionEXT);
+            symbolTable.relateToOperator("hitObjectRecordMissEXT", EOpHitObjectRecordMissEXT);
+            symbolTable.relateToOperator("hitObjectRecordMissMotionEXT", EOpHitObjectRecordMissMotionEXT);
+            symbolTable.relateToOperator("hitObjectRecordEmptyEXT", EOpHitObjectRecordEmptyEXT);
+            symbolTable.relateToOperator("hitObjectExecuteShaderEXT", EOpHitObjectExecuteShaderEXT);
+            symbolTable.relateToOperator("hitObjectIsEmptyEXT", EOpHitObjectIsEmptyEXT);
+            symbolTable.relateToOperator("hitObjectIsMissEXT", EOpHitObjectIsMissEXT);
+            symbolTable.relateToOperator("hitObjectIsHitEXT", EOpHitObjectIsHitEXT);
+            symbolTable.relateToOperator("hitObjectGetRayTMinEXT", EOpHitObjectGetRayTMinEXT);
+            symbolTable.relateToOperator("hitObjectGetRayTMaxEXT", EOpHitObjectGetRayTMaxEXT);
+            symbolTable.relateToOperator("hitObjectGetRayFlagsEXT", EOpHitObjectGetRayFlagsEXT);
+            symbolTable.relateToOperator("hitObjectGetObjectRayOriginEXT", EOpHitObjectGetObjectRayOriginEXT);
+            symbolTable.relateToOperator("hitObjectGetObjectRayDirectionEXT", EOpHitObjectGetObjectRayDirectionEXT);
+            symbolTable.relateToOperator("hitObjectGetWorldRayOriginEXT", EOpHitObjectGetWorldRayOriginEXT);
+            symbolTable.relateToOperator("hitObjectGetWorldRayDirectionEXT", EOpHitObjectGetWorldRayDirectionEXT);
+            symbolTable.relateToOperator("hitObjectGetWorldToObjectEXT", EOpHitObjectGetWorldToObjectEXT);
+            symbolTable.relateToOperator("hitObjectGetObjectToWorldEXT", EOpHitObjectGetObjectToWorldEXT);
+            symbolTable.relateToOperator("hitObjectGetInstanceCustomIndexEXT", EOpHitObjectGetInstanceCustomIndexEXT);
+            symbolTable.relateToOperator("hitObjectGetInstanceIdEXT", EOpHitObjectGetInstanceIdEXT);
+            symbolTable.relateToOperator("hitObjectGetGeometryIndexEXT", EOpHitObjectGetGeometryIndexEXT);
+            symbolTable.relateToOperator("hitObjectGetPrimitiveIndexEXT", EOpHitObjectGetPrimitiveIndexEXT);
+            symbolTable.relateToOperator("hitObjectGetHitKindEXT", EOpHitObjectGetHitKindEXT);
+            symbolTable.relateToOperator("hitObjectGetAttributesEXT", EOpHitObjectGetAttributesEXT);
+            symbolTable.relateToOperator("hitObjectGetCurrentTimeEXT", EOpHitObjectGetCurrentTimeEXT);
+            symbolTable.relateToOperator("hitObjectGetShaderBindingTableRecordIndexEXT", EOpHitObjectGetShaderBindingTableRecordIndexEXT);
+            symbolTable.relateToOperator("hitObjectGetShaderRecordBufferHandleEXT", EOpHitObjectGetShaderRecordBufferHandleEXT);
+            symbolTable.relateToOperator("hitObjectSetShaderBindingTableRecordIndexEXT", EOpHitObjectSetShaderBindingTableRecordIndexEXT);
+            symbolTable.relateToOperator("reorderThreadEXT", EOpReorderThreadEXT);
+            symbolTable.relateToOperator("hitObjectReorderExecuteEXT", EOpHitObjectReorderExecuteEXT);
+            symbolTable.relateToOperator("hitObjectTraceReorderExecuteEXT", EOpHitObjectTraceReorderExecuteEXT);
+            symbolTable.relateToOperator("hitObjectTraceMotionReorderExecuteEXT", EOpHitObjectTraceMotionReorderExecuteEXT);
+            symbolTable.relateToOperator("hitObjectRecordFromQueryEXT", EOpHitObjectRecordFromQueryEXT);
+            symbolTable.relateToOperator("hitObjectGetIntersectionTriangleVertexPositionsEXT", EOpHitObjectGetIntersectionTriangleVertexPositionsEXT);
         }
         break;
     case EShLangIntersect:

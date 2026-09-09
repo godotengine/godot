@@ -1,0 +1,1604 @@
+/**************************************************************************/
+/*  find_in_files.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#include "find_in_files.h"
+
+#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
+#include "editor/docks/editor_dock_manager.h"
+#include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/shader/shader_editor_plugin.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/flow_container.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/progress_bar.h"
+#include "scene/gui/scroll_container.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/tab_container.h"
+#include "scene/gui/tree.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/timer.h"
+#include "servers/rendering/rendering_server.h"
+
+// TODO: Would be nice in Vector and Vectors.
+template <typename T>
+inline void pop_back(T &r_container) {
+	r_container.resize(r_container.size() - 1);
+}
+
+static bool find_next(const String &p_line, const String &p_pattern, int p_from, bool p_match_case, bool p_whole_words, int &r_out_begin, int &r_out_end) {
+	int end = p_from;
+
+	while (true) {
+		int begin = p_match_case ? p_line.find(p_pattern, end) : p_line.findn(p_pattern, end);
+
+		if (begin == -1) {
+			return false;
+		}
+
+		end = begin + p_pattern.length();
+		r_out_begin = begin;
+		r_out_end = end;
+
+		if (p_whole_words) {
+			if (begin > 0 && !is_symbol(p_line[begin - 1])) {
+				continue;
+			}
+			if (end < p_line.length() && !is_symbol(p_line[end])) {
+				continue;
+			}
+		}
+
+		return true;
+	}
+}
+
+//--------------------------------------------------------------------------------
+
+void FindInFilesSearch::copy_from(const FindInFilesSearch *p_other) {
+	if (!p_other) {
+		return;
+	}
+
+	pattern = p_other->pattern;
+	whole_words = p_other->whole_words;
+	match_case = p_other->match_case;
+	root_dir = p_other->root_dir;
+
+	include_string = p_other->include_string;
+	exclude_string = p_other->exclude_string;
+	extension_filter = p_other->extension_filter;
+}
+
+void FindInFilesSearch::set_search_text(const String &p_pattern) {
+	pattern = p_pattern;
+}
+
+void FindInFilesSearch::set_whole_words(bool p_whole_word) {
+	whole_words = p_whole_word;
+}
+
+void FindInFilesSearch::set_match_case(bool p_match_case) {
+	match_case = p_match_case;
+}
+
+void FindInFilesSearch::set_folder(const String &p_folder) {
+	root_dir = p_folder;
+}
+
+void FindInFilesSearch::set_filter(const HashSet<String> &p_exts) {
+	extension_filter = p_exts;
+}
+
+void FindInFilesSearch::set_includes(const String &p_include_wildcards) {
+	include_string = p_include_wildcards;
+}
+
+void FindInFilesSearch::set_excludes(const String &p_exclude_wildcards) {
+	exclude_string = p_exclude_wildcards;
+}
+
+void FindInFilesSearch::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			_process();
+		} break;
+	}
+}
+
+void FindInFilesSearch::start() {
+	if (pattern.is_empty()) {
+		print_verbose("Nothing to search, pattern is empty");
+		emit_signal(SceneStringName(finished));
+		return;
+	}
+	_calculate_wildcard(include_string, &include_wildcards);
+	_calculate_wildcard(exclude_string, &exclude_wildcards);
+	if (extension_filter.is_empty()) {
+		print_verbose("Nothing to search, filter matches no files");
+		emit_signal(SceneStringName(finished));
+		return;
+	}
+
+	// Init search.
+	current_dir = "";
+	PackedStringArray init_folder;
+	init_folder.push_back(root_dir);
+	folders_stack.clear();
+	folders_stack.push_back(init_folder);
+
+	files_to_scan.clear();
+	initial_files_count = 0;
+
+	searching = true;
+	set_process(true);
+}
+
+void FindInFilesSearch::stop() {
+	searching = false;
+	current_dir = "";
+	set_process(false);
+}
+
+void FindInFilesSearch::_process() {
+	// This part can be moved to a thread if needed.
+
+	OS &os = *OS::get_singleton();
+	uint64_t time_before = os.get_ticks_msec();
+	while (is_processing()) {
+		_iterate();
+		uint64_t elapsed = (os.get_ticks_msec() - time_before);
+		if (elapsed > 8) { // Process again after waiting 8 ticks.
+			break;
+		}
+	}
+}
+
+void FindInFilesSearch::_iterate() {
+	if (folders_stack.size() != 0) {
+		// Scan folders first so we can build a list of files and have progress info later.
+
+		PackedStringArray &folders_to_scan = folders_stack.write[folders_stack.size() - 1];
+
+		if (folders_to_scan.size() != 0) {
+			// Scan one folder below.
+
+			String folder_name = folders_to_scan[folders_to_scan.size() - 1];
+			pop_back(folders_to_scan);
+
+			current_dir = current_dir.path_join(folder_name);
+
+			PackedStringArray sub_dirs;
+			PackedStringArray new_files_to_scan;
+			_scan_dir("res://" + current_dir, sub_dirs, new_files_to_scan);
+
+			folders_stack.push_back(sub_dirs);
+			files_to_scan.append_array(new_files_to_scan);
+
+		} else {
+			// Go back one level.
+
+			pop_back(folders_stack);
+			current_dir = current_dir.get_base_dir();
+
+			if (folders_stack.is_empty()) {
+				// All folders scanned.
+				initial_files_count = files_to_scan.size();
+			}
+		}
+
+	} else if (files_to_scan.size() != 0) {
+		// Then scan files.
+
+		String fpath = files_to_scan[files_to_scan.size() - 1];
+		pop_back(files_to_scan);
+		_scan_file(fpath);
+
+	} else {
+		print_verbose("Search complete");
+		set_process(false);
+		current_dir = "";
+		searching = false;
+		emit_signal(SceneStringName(finished));
+	}
+}
+
+float FindInFilesSearch::get_progress() const {
+	if (initial_files_count != 0) {
+		return static_cast<float>(initial_files_count - files_to_scan.size()) / static_cast<float>(initial_files_count);
+	}
+	return 0;
+}
+
+void FindInFilesSearch::_scan_dir(const String &p_path, PackedStringArray &r_out_folders, PackedStringArray &r_out_files_to_scan) {
+	Ref<DirAccess> dir = DirAccess::open(p_path);
+	if (dir.is_null()) {
+		print_verbose("Cannot open directory! " + p_path);
+		return;
+	}
+
+	dir->list_dir_begin();
+
+	// Limit to 100,000 iterations to avoid an infinite loop just in case
+	// (this technically limits results to 100,000 files per folder).
+	for (int i = 0; i < 100'000; ++i) {
+		String file = dir->get_next();
+
+		if (file.is_empty()) {
+			break;
+		}
+
+		// If there is a .gdignore file in the directory, clear all the files/folders
+		// to be searched on this path and skip searching the directory.
+		if (file == ".gdignore") {
+			r_out_folders.clear();
+			r_out_files_to_scan.clear();
+			break;
+		}
+
+		// Ignore special directories (such as those beginning with . and the project data directory).
+		String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
+		if (file.begins_with(".") || file == project_data_dir_name) {
+			continue;
+		}
+		if (dir->current_is_hidden()) {
+			continue;
+		}
+
+		if (dir->current_is_dir()) {
+			r_out_folders.push_back(file);
+
+		} else {
+			String file_ext = file.get_extension();
+			if (extension_filter.has(file_ext)) {
+				String file_path = p_path.path_join(file);
+				bool case_sensitive = dir->is_case_sensitive(p_path);
+
+				if (!exclude_wildcards.is_empty() && _is_file_matched(exclude_wildcards, file_path, case_sensitive)) {
+					continue;
+				}
+
+				if (include_wildcards.is_empty() || _is_file_matched(include_wildcards, file_path, case_sensitive)) {
+					r_out_files_to_scan.push_back(file_path);
+				}
+			}
+		}
+	}
+}
+
+CodeTextEditor *get_code_edit(const String &p_fpath) {
+	Ref<Resource> res = ResourceCache::get_ref(p_fpath);
+	if (res.is_null()) {
+		return nullptr;
+	}
+
+	ShaderEditorPlugin *shader_editor_plugin = ShaderEditorPlugin::get_singleton();
+	ScriptEditorPlugin *script_editor_plugin = ScriptEditorPlugin::get_singleton();
+
+	ScriptEditor *script_editor = nullptr;
+	if (shader_editor_plugin && shader_editor_plugin->handles(res.ptr())) {
+		script_editor = ScriptEditor::get_bottom_script_editor();
+	} else if (script_editor_plugin && script_editor_plugin->handles(res.ptr())) {
+		script_editor = ScriptEditor::get_singleton();
+	}
+	if (script_editor) {
+		TextEditorBase *teb = Object::cast_to<TextEditorBase>(script_editor->get_resource_editor(res));
+		if (teb) {
+			return teb->get_code_editor();
+		}
+	}
+
+	return nullptr;
+}
+
+void FindInFilesSearch::_scan_file(const String &p_fpath) {
+	Vector<String> lines;
+
+	CodeTextEditor *code_text_editor = get_code_edit(p_fpath);
+	if (code_text_editor) {
+		lines = code_text_editor->get_text_editor()->get_text().split("\n");
+	} else {
+		Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
+		lines = f->get_as_text().split("\n");
+	}
+
+	int line_number = 0;
+
+	for (const String &line : lines) {
+		// Line number starts at 1.
+		++line_number;
+		int begin = 0;
+		int end = 0;
+
+		while (find_next(line, pattern, end, match_case, whole_words, begin, end)) {
+			emit_signal(SNAME("result_found"), p_fpath, line_number, begin, end, line);
+		}
+	}
+}
+
+bool FindInFilesSearch::_is_file_matched(const HashSet<String> &p_wildcards, const String &p_file_path, bool p_case_sensitive) const {
+	const String file_path = "/" + p_file_path.replace_char('\\', '/') + "/";
+
+	for (const String &wildcard : p_wildcards) {
+		if (p_case_sensitive && file_path.match(wildcard)) {
+			return true;
+		} else if (!p_case_sensitive && file_path.matchn(wildcard)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void FindInFilesSearch::_calculate_wildcard(const String &p_text, HashSet<String> *r_hash_set) {
+	r_hash_set->clear();
+	if (p_text.is_empty()) {
+		return;
+	}
+
+	PackedStringArray wildcards = p_text.split(",", false);
+	for (const String &wildcard : wildcards) {
+		r_hash_set->insert(_validate_filter_wildcard(wildcard));
+	}
+}
+
+String FindInFilesSearch::_validate_filter_wildcard(const String &p_expression) const {
+	String ret = p_expression.replace_char('\\', '/');
+	if (ret.begins_with("./")) {
+		// Relative to the project root.
+		ret = "res://" + ret.substr(2);
+	}
+
+	if (ret.begins_with(".")) {
+		// To match extension.
+		ret = "*" + ret;
+	}
+
+	if (!ret.begins_with("*")) {
+		ret = "*/" + ret.trim_prefix("/");
+	}
+
+	if (!ret.ends_with("*")) {
+		ret = ret.trim_suffix("/") + "/*";
+	}
+
+	return ret;
+}
+
+void FindInFilesSearch::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("result_found",
+			PropertyInfo(Variant::STRING, "path"),
+			PropertyInfo(Variant::INT, "line_number"),
+			PropertyInfo(Variant::INT, "begin"),
+			PropertyInfo(Variant::INT, "end"),
+			PropertyInfo(Variant::STRING, "text")));
+
+	ADD_SIGNAL(MethodInfo("finished"));
+}
+
+//-----------------------------------------------------------------------------
+
+void FindInFilesSearchPanel::set_finder(FindInFilesSearch *p_finder, bool p_init) {
+	finder = p_finder;
+	search_text_line_edit->set_text(finder->get_search_text());
+	match_case_checkbox->set_pressed_no_signal(finder->get_match_case());
+	whole_words_checkbox->set_pressed_no_signal(finder->get_whole_words());
+	folder_line_edit->set_text(finder->get_folder());
+	includes_line_edit->set_text(finder->get_includes());
+	excludes_line_edit->set_text(finder->get_excludes());
+	for (Node *child : filters_container->iterate_children()) {
+		CheckBox *cb = Object::cast_to<CheckBox>(child);
+		if (!p_init && finder->get_filter()->has(cb->get_text())) {
+			cb->set_pressed_no_signal(true);
+		} else {
+			cb->set_pressed_no_signal(p_init);
+		}
+	}
+	// Update the finder in case we don't start a search before switching tabs to save initialization settings.
+	_update_finder();
+	// Don't search when setting finder to not overwrite old results in case they are desired.
+	debounce_timer->stop();
+}
+
+void FindInFilesSearchPanel::set_search_text(const String &p_text) {
+	if (!p_text.is_empty()) {
+		search_text_line_edit->set_text(p_text);
+		_on_search_submitted();
+	}
+	callable_mp(this, &FindInFilesSearchPanel::_highlight_search_text).call_deferred();
+}
+
+void FindInFilesSearchPanel::set_replace_text(const String &p_text) {
+	replace_line_edit->set_text(p_text);
+	replace_line_edit->emit_signal(SceneStringName(text_changed), p_text);
+}
+
+void FindInFilesSearchPanel::set_replace(bool p_replace_mode) {
+	toggle_replace_button->set_pressed(p_replace_mode);
+}
+
+String FindInFilesSearchPanel::get_search_text() const {
+	return search_text_line_edit->get_text();
+}
+
+bool FindInFilesSearchPanel::is_replace_pressed() const {
+	return toggle_replace_button->is_pressed();
+}
+
+HashSet<String> FindInFilesSearchPanel::get_filter() const {
+	// Could check the filters_preferences but it might not have been generated yet.
+	HashSet<String> filters;
+	for (Node *child : filters_container->iterate_children()) {
+		CheckBox *cb = Object::cast_to<CheckBox>(child);
+		if (cb->is_pressed()) {
+			filters.insert(cb->get_text());
+		}
+	}
+	return filters;
+}
+
+void FindInFilesSearchPanel::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			filters_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
+			match_case_checkbox->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
+			whole_words_checkbox->set_button_icon(get_editor_theme_icon(SNAME("MatchWord")));
+			replace_all_button->set_button_icon(get_editor_theme_icon(SNAME("ReplaceText")));
+		} break;
+	}
+}
+
+void FindInFilesSearchPanel::_highlight_search_text() {
+	search_text_line_edit->grab_focus(false);
+	search_text_line_edit->select_all();
+	search_text_line_edit->set_caret_column(search_text_line_edit->get_text().length());
+}
+
+void FindInFilesSearchPanel::_update_file_extensions(bool p_init) {
+	if (!p_init && !EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/behavior/general/find_in_file_extensions")) {
+		return;
+	}
+	// Refresh extension checkboxes when the settings changed.
+	for (Node *child : filters_container->iterate_children()) {
+		child->queue_free();
+	}
+	const PackedStringArray extensions = EDITOR_GET("text_editor/behavior/general/find_in_file_extensions");
+	for (const String &ext : extensions) {
+		CheckBox *cb = memnew(CheckBox);
+		cb->set_text(ext);
+		if (!filters_preferences.has(ext)) {
+			filters_preferences[ext] = true;
+		}
+		cb->set_pressed(filters_preferences[ext]);
+		cb->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesSearchPanel::_on_filter_toggled).bind(ext));
+		cb->set_tooltip_text(TTRC("Include the files with the following extensions. Add or remove them in EditorSettings:\n\"text_editor/behavior/general/find_in_file_extensions\"."));
+		filters_container->add_child(cb);
+	}
+}
+
+void FindInFilesSearchPanel::_on_filter_toggled(bool p_pressed, const String &p_ext) {
+	filters_preferences[p_ext] = p_pressed;
+	_on_search_modified();
+}
+
+void FindInFilesSearchPanel::_on_folder_button_pressed() {
+	folder_dialog->popup_file_dialog();
+}
+
+void FindInFilesSearchPanel::_on_search_submitted() {
+	debounce_timer->stop();
+	_emit_find_requested();
+}
+
+void FindInFilesSearchPanel::_on_search_modified() {
+	finder->stop();
+	_update_finder();
+	debounce_timer->start(0.5);
+}
+
+void FindInFilesSearchPanel::_update_finder() {
+	finder->set_search_text(search_text_line_edit->get_text());
+	finder->set_match_case(match_case_checkbox->is_pressed());
+	finder->set_whole_words(whole_words_checkbox->is_pressed());
+	finder->set_folder(folder_line_edit->get_text().strip_edges());
+	finder->set_filter(get_filter());
+	finder->set_includes(includes_line_edit->get_text());
+	finder->set_excludes(excludes_line_edit->get_text());
+}
+
+void FindInFilesSearchPanel::_emit_find_requested() {
+	_update_finder();
+	emit_signal("find_requested");
+}
+
+void FindInFilesSearchPanel::_toggle_replace_pressed(bool p_toggle) {
+	replace_hbox->set_visible(p_toggle);
+	_emit_find_requested();
+}
+
+void FindInFilesSearchPanel::_on_replace_all_clicked(bool p_dialog) {
+	if (p_dialog && !dont_show_checkbox->is_pressed()) {
+		replace_all_confirm->popup_centered();
+	} else {
+		emit_signal("replace_all_requested");
+	}
+}
+
+void FindInFilesSearchPanel::_on_folder_selected(String p_path) {
+	int i = p_path.find("://");
+	if (i != -1) {
+		p_path = p_path.substr(i + 3);
+	}
+	folder_line_edit->set_text(p_path);
+	_on_search_modified();
+}
+
+void FindInFilesSearchPanel::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("find_requested"));
+	ADD_SIGNAL(MethodInfo("replace_all_requested"));
+}
+
+FindInFilesSearchPanel::FindInFilesSearchPanel() {
+	set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
+	set_name(TTRC("Find in Files"));
+	set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
+	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
+
+	Ref<StyleBoxEmpty> sb = memnew(StyleBoxEmpty);
+	sb->set_content_margin_all(6 * EDSCALE);
+	add_theme_style_override("panel", sb);
+
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	add_child(vbc);
+
+	{
+		Label *find_label = memnew(Label);
+		find_label->set_text(TTRC("Find"));
+		vbc->add_child(find_label);
+
+		HBoxContainer *search_hbc = memnew(HBoxContainer);
+		search_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		vbc->add_child(search_hbc);
+
+		search_text_line_edit = memnew(LineEdit);
+		search_text_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		search_text_line_edit->set_accessibility_name(TTRC("Find"));
+		search_text_line_edit->set_placeholder(TTRC("Find"));
+		search_text_line_edit->set_keep_editing_on_text_submit(true);
+		search_text_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesSearchPanel::_on_search_modified).unbind(1));
+		search_text_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesSearchPanel::_on_search_submitted).unbind(1));
+		search_hbc->add_child(search_text_line_edit);
+
+		whole_words_checkbox = memnew(Button);
+		whole_words_checkbox->set_theme_type_variation(SceneStringName(FlatButton));
+		whole_words_checkbox->set_toggle_mode(true);
+		whole_words_checkbox->set_tooltip_text(TTRC("Whole Words"));
+		whole_words_checkbox->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesSearchPanel::_on_search_modified).unbind(1));
+		search_hbc->add_child(whole_words_checkbox);
+
+		match_case_checkbox = memnew(Button);
+		match_case_checkbox->set_theme_type_variation(SceneStringName(FlatButton));
+		match_case_checkbox->set_toggle_mode(true);
+		match_case_checkbox->set_tooltip_text(TTRC("Match Case"));
+		match_case_checkbox->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesSearchPanel::_on_search_modified).unbind(1));
+		search_hbc->add_child(match_case_checkbox);
+
+		toggle_replace_button = memnew(CheckBox);
+		toggle_replace_button->set_pressed(false);
+		toggle_replace_button->set_text(TTRC("Replace"));
+		toggle_replace_button->set_tooltip_text(TTRC("Toggle Replace Mode"));
+		toggle_replace_button->connect(SceneStringName(toggled), callable_mp(this, &FindInFilesSearchPanel::_toggle_replace_pressed));
+		vbc->add_child(toggle_replace_button);
+
+		replace_hbox = memnew(HBoxContainer);
+		replace_hbox->set_visible(toggle_replace_button->is_pressed());
+		vbc->add_child(replace_hbox);
+
+		replace_line_edit = memnew(LineEdit);
+		replace_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		replace_line_edit->set_accessibility_name(TTRC("Replace"));
+		replace_line_edit->set_placeholder(TTRC("Replace"));
+		replace_line_edit->set_keep_editing_on_text_submit(true);
+		replace_hbox->add_child(replace_line_edit);
+
+		VBoxContainer *confirm_vbox = memnew(VBoxContainer);
+		Label *replace_all_warning = memnew(Label);
+		replace_all_warning->set_text(TTRC("\"Replace all\" can't be undone."));
+		replace_all_warning->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+		confirm_vbox->add_child(replace_all_warning);
+		dont_show_checkbox = memnew(CheckBox);
+		dont_show_checkbox->set_text(TTRC("Don't show again"));
+		dont_show_checkbox->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+		confirm_vbox->add_child(dont_show_checkbox);
+
+		replace_all_confirm = memnew(ConfirmationDialog);
+		replace_all_confirm->add_child(confirm_vbox);
+		replace_all_confirm->set_flag(Window::FLAG_RESIZE_DISABLED, true);
+		replace_all_confirm->set_ok_button_text(TTRC("Replace all"));
+		replace_all_confirm->connect(SceneStringName(confirmed), callable_mp(this, &FindInFilesSearchPanel::_on_replace_all_clicked).bind(false));
+		add_child(replace_all_confirm);
+
+		replace_all_button = memnew(Button);
+		replace_all_button->set_theme_type_variation(SceneStringName(FlatButton));
+		replace_all_button->set_tooltip_text(TTRC("Replace all"));
+		replace_all_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesSearchPanel::_on_replace_all_clicked).bind(true));
+		replace_hbox->add_child(replace_all_button);
+	}
+
+	filters_label = memnew(Label);
+	filters_label->set_text(TTRC("Filters"));
+	vbc->add_child(filters_label);
+
+	additional_options_vbc = memnew(VBoxContainer);
+	additional_options_vbc->add_theme_constant_override("separation", 0);
+	vbc->add_child(additional_options_vbc);
+	{
+		HBoxContainer *hbc = memnew(HBoxContainer);
+		additional_options_vbc->add_child(hbc);
+
+		folder_hbc = memnew(HBoxContainer);
+		folder_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		hbc->add_child(folder_hbc);
+
+		Label *prefix_label = memnew(Label);
+		prefix_label->set_text("res://");
+		prefix_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		folder_hbc->add_child(prefix_label);
+
+		folder_line_edit = memnew(LineEdit);
+		folder_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		folder_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesSearchPanel::_on_search_modified).unbind(1));
+		folder_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesSearchPanel::_on_search_submitted).unbind(1));
+		folder_line_edit->set_accessibility_name(TTRC("Folder"));
+		folder_line_edit->set_placeholder(TTRC("Folder"));
+		folder_line_edit->set_keep_editing_on_text_submit(true);
+		folder_hbc->add_child(folder_line_edit);
+
+		Button *folder_button = memnew(Button);
+		folder_button->set_accessibility_name(TTRC("Select Folder"));
+		folder_button->set_text("...");
+		folder_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesSearchPanel::_on_folder_button_pressed));
+		folder_hbc->add_child(folder_button);
+
+		folder_dialog = memnew(EditorFileDialog);
+		folder_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
+		folder_dialog->connect("dir_selected", callable_mp(this, &FindInFilesSearchPanel::_on_folder_selected));
+		add_child(folder_dialog);
+	}
+
+	Label *excludes_label = memnew(Label);
+	excludes_label->set_text(TTRC("Excludes"));
+	excludes_label->set_tooltip_text(TTRC("Exclude the files with the following expressions. Use \",\" to separate."));
+	excludes_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	additional_options_vbc->add_child(excludes_label);
+
+	excludes_line_edit = memnew(LineEdit);
+	excludes_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	excludes_line_edit->set_placeholder(TTRC("Example: res://addons,scenes/test/*.gd"));
+	excludes_line_edit->set_accessibility_name(TTRC("Excludes"));
+	excludes_line_edit->set_keep_editing_on_text_submit(true);
+	excludes_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesSearchPanel::_on_search_modified).unbind(1));
+	excludes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesSearchPanel::_on_search_submitted).unbind(1));
+	additional_options_vbc->add_child(excludes_line_edit);
+
+	Label *includes_label = memnew(Label);
+	includes_label->set_text(TTRC("Includes"));
+	includes_label->set_tooltip_text(TTRC("Include the files with the following expressions. Use \",\" to separate."));
+	includes_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	additional_options_vbc->add_child(includes_label);
+
+	includes_line_edit = memnew(LineEdit);
+	includes_line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	includes_line_edit->set_placeholder(TTRC("Example: scripts,scenes/*/test.gd"));
+	includes_line_edit->set_accessibility_name(TTRC("Includes"));
+	includes_line_edit->set_keep_editing_on_text_submit(true);
+	includes_line_edit->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesSearchPanel::_on_search_modified).unbind(1));
+	includes_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FindInFilesSearchPanel::_on_search_submitted).unbind(1));
+	additional_options_vbc->add_child(includes_line_edit);
+
+	filters_container = memnew(HFlowContainer);
+	additional_options_vbc->add_child(filters_container);
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FindInFilesSearchPanel::_update_file_extensions).bind(false));
+	_update_file_extensions(true);
+
+	debounce_timer = memnew(Timer);
+	debounce_timer->set_one_shot(true);
+	debounce_timer->connect("timeout", callable_mp(this, &FindInFilesSearchPanel::_emit_find_requested));
+	add_child(debounce_timer);
+}
+
+//-----------------------------------------------------------------------------
+
+void FindInFilesResultsPanel::set_with_replace(bool p_with_replace) {
+	with_replace = p_with_replace;
+
+	if (with_replace) {
+		// Results show checkboxes on their left so they can be opted out.
+		results_display->set_columns(2);
+		results_display->set_column_expand(0, false);
+		results_display->set_column_custom_minimum_width(0, 48 * EDSCALE);
+	} else {
+		// Results are single-cell items.
+		results_display->set_column_expand(0, true);
+		results_display->set_columns(1);
+	}
+}
+
+void FindInFilesResultsPanel::set_replace_text(const String &p_text) {
+	replace_text = p_text;
+	if (with_replace) {
+		_update_replace_preview();
+	}
+}
+
+void FindInFilesResultsPanel::set_search_labels_visibility(bool p_visible) {
+	find_label->set_visible(p_visible);
+	search_text_label->set_visible(p_visible);
+	progress_bar_placeholder->set_visible(!p_visible);
+}
+
+void FindInFilesResultsPanel::_clear() {
+	file_items.clear();
+	file_items_results_count.clear();
+	result_items.clear();
+	results_display->clear();
+	results_display->create_item(); // Root
+}
+
+void FindInFilesResultsPanel::start_search() {
+	_clear();
+
+	status_label->set_text(TTRC("Searching..."));
+	search_text_label->set_text(finder->get_search_text());
+	search_text_label->set_tooltip_text(finder->get_search_text());
+
+	int label_min_width = search_text_label->get_minimum_size().x + search_text_label->get_character_bounds(0).size.x;
+	search_text_label->set_custom_minimum_size(Size2(label_min_width, 0));
+
+	set_process(true);
+	progress_bar->set_visible(true);
+
+	finder->start();
+
+	refresh_button->hide();
+	cancel_button->show();
+}
+
+void FindInFilesResultsPanel::stop_search() {
+	finder->stop();
+
+	status_label->set_text("");
+	progress_bar->set_visible(false);
+	refresh_button->show();
+	cancel_button->hide();
+}
+
+void FindInFilesResultsPanel::_remove_result(TreeItem *p_item) {
+	const String file_path = p_item->get_metadata(0);
+	result_items.erase(p_item);
+	if (file_items_results_count.has(p_item)) {
+		int match_count = p_item->get_child_count();
+
+		for (int i = 0; i < match_count; i++) {
+			TreeItem *child_item = p_item->get_child(i);
+			result_items.erase(child_item);
+		}
+
+		p_item->clear_children();
+		file_items.erase(file_path);
+		file_items_results_count.erase(p_item);
+	}
+
+	if (TreeItem *item_parent = p_item->get_parent()) {
+		if (file_items_results_count.has(item_parent)) {
+			file_items_results_count[item_parent]--;
+		}
+		if (file_items_results_count[item_parent] == 0 && item_parent != results_display->get_root()) {
+			file_items.erase(item_parent->get_metadata(0));
+			get_tree()->queue_delete(item_parent);
+		}
+	}
+	get_tree()->queue_delete(p_item);
+	_update_matches_text();
+}
+
+void FindInFilesResultsPanel::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	results_display->set_scroll_hint_mode(p_slot == EditorDock::DOCK_SLOT_BOTTOM ? Tree::SCROLL_HINT_MODE_BOTH : Tree::SCROLL_HINT_MODE_TOP);
+}
+
+void FindInFilesResultsPanel::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			_on_theme_changed();
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_matches_text();
+
+			TreeItem *file_item = results_display->get_root()->get_first_child();
+			while (file_item) {
+				if (with_replace) {
+					file_item->set_button_tooltip_text(0, file_item->get_button_by_id(0, FIND_BUTTON_REPLACE), TTR("Replace all matches in file"));
+				}
+				file_item->set_button_tooltip_text(0, file_item->get_button_by_id(0, FIND_BUTTON_REMOVE), TTR("Remove result"));
+
+				TreeItem *result_item = file_item->get_first_child();
+				while (result_item) {
+					if (with_replace) {
+						result_item->set_button_tooltip_text(1, file_item->get_button_by_id(0, FIND_BUTTON_REPLACE), TTR("Replace"));
+						result_item->set_button_tooltip_text(1, file_item->get_button_by_id(0, FIND_BUTTON_REMOVE), TTR("Remove result"));
+					} else {
+						result_item->set_button_tooltip_text(0, file_item->get_button_by_id(0, FIND_BUTTON_REMOVE), TTR("Remove result"));
+					}
+					result_item = result_item->get_next();
+				}
+
+				file_item = file_item->get_next();
+			}
+		} break;
+		case NOTIFICATION_PROCESS: {
+			progress_bar->set_as_ratio(finder->get_progress());
+		} break;
+	}
+}
+
+void FindInFilesResultsPanel::_on_result_found(const String &p_fpath, int p_line_number, int p_begin, int p_end, const String &p_text) {
+	TreeItem *file_item;
+	Ref<Texture2D> remove_texture = get_editor_theme_icon(SNAME("Close"));
+	Ref<Texture2D> replace_texture = get_editor_theme_icon(SNAME("ReplaceText"));
+
+	HashMap<String, TreeItem *>::Iterator E = file_items.find(p_fpath);
+	if (!E) {
+		file_item = results_display->create_item();
+		file_item->set_text(0, p_fpath);
+		file_item->set_metadata(0, p_fpath);
+
+		if (with_replace) {
+			file_item->add_button(0, replace_texture, FIND_BUTTON_REPLACE, false, TTR("Replace all matches in file"));
+		}
+		file_item->add_button(0, remove_texture, FIND_BUTTON_REMOVE, false, TTR("Remove result"));
+
+		// The width of this column is restrained to checkboxes,
+		// but that doesn't make sense for the parent items,
+		// so we override their width so they can expand to full width.
+		file_item->set_expand_right(0, true);
+
+		file_items[p_fpath] = file_item;
+		file_items_results_count[file_item] = 1;
+	} else {
+		file_item = E->value;
+		file_items_results_count[file_item]++;
+	}
+
+	Color file_item_color = results_display->get_theme_color(SceneStringName(font_color)) * Color(1, 1, 1, 0.67);
+	file_item->set_custom_color(0, file_item_color);
+	file_item->set_selectable(0, false);
+
+	int text_index = with_replace ? 1 : 0;
+
+	TreeItem *item = results_display->create_item(file_item);
+
+	// Do this first because it resets properties of the cell...
+	item->set_cell_mode(text_index, TreeItem::CELL_MODE_CUSTOM);
+
+	// Trim result item line.
+	String trimmed_text = p_text.strip_edges(true, false);
+	int chars_removed = p_text.size() - trimmed_text.size();
+	String start = vformat("%3s: ", p_line_number);
+
+	if (!with_replace) {
+		item->set_text(text_index, start + trimmed_text);
+	}
+	item->set_custom_draw_callback(text_index, callable_mp(this, &FindInFilesResultsPanel::_draw_result_text));
+
+	Result r;
+	r.base_text = start + trimmed_text;
+	r.line_number = p_line_number;
+	r.begin = p_begin;
+	r.end = p_end;
+	r.begin_trimmed = p_begin - chars_removed + start.size() - 1;
+	result_items[item] = r;
+
+	if (with_replace) {
+		_update_replace_item(item, r);
+
+		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		item->set_checked(0, true);
+		item->set_editable(0, true);
+		item->add_button(1, replace_texture, FIND_BUTTON_REPLACE, false, TTR("Replace"));
+		item->add_button(1, remove_texture, FIND_BUTTON_REMOVE, false, TTR("Remove result"));
+	} else {
+		item->add_button(0, remove_texture, FIND_BUTTON_REMOVE, false, TTR("Remove result"));
+	}
+}
+
+void FindInFilesResultsPanel::_on_theme_changed() {
+	new_tab_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+	results_display->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("source"), EditorStringName(EditorFonts)));
+	results_display->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts)));
+
+	Color file_item_color = results_display->get_theme_color(SceneStringName(font_color)) * Color(1, 1, 1, 0.67);
+	Ref<Texture2D> remove_texture = get_editor_theme_icon(SNAME("Close"));
+	Ref<Texture2D> replace_texture = get_editor_theme_icon(SNAME("ReplaceText"));
+
+	TreeItem *file_item = results_display->get_root()->get_first_child();
+	while (file_item) {
+		file_item->set_custom_color(0, file_item_color);
+		if (with_replace) {
+			file_item->set_button(0, file_item->get_button_by_id(0, FIND_BUTTON_REPLACE), replace_texture);
+		}
+		file_item->set_button(0, file_item->get_button_by_id(0, FIND_BUTTON_REMOVE), remove_texture);
+
+		TreeItem *result_item = file_item->get_first_child();
+		while (result_item) {
+			if (with_replace) {
+				result_item->set_button(1, result_item->get_button_by_id(1, FIND_BUTTON_REPLACE), replace_texture);
+				result_item->set_button(1, result_item->get_button_by_id(1, FIND_BUTTON_REMOVE), remove_texture);
+			} else {
+				result_item->set_button(0, result_item->get_button_by_id(0, FIND_BUTTON_REMOVE), remove_texture);
+			}
+
+			result_item = result_item->get_next();
+		}
+
+		file_item = file_item->get_next();
+	}
+	theme_cache.accent_color = get_theme_color("accent_color", EditorStringName(Editor));
+	theme_cache.removed_color = get_theme_color("error_color", EditorStringName(Editor));
+	theme_cache.added_color = get_theme_color("success_color", EditorStringName(Editor));
+	theme_cache.font_color = get_theme_color(SceneStringName(font_color), Tree::get_class_static());
+}
+
+void FindInFilesResultsPanel::_draw_result_text(Object *p_item_obj, const Rect2 &p_rect) {
+	TreeItem *item = Object::cast_to<TreeItem>(p_item_obj);
+	if (!item) {
+		return;
+	}
+
+	HashMap<TreeItem *, Result>::Iterator E = result_items.find(item);
+	if (!E) {
+		return;
+	}
+	Result r = E->value;
+
+	Ref<TextParagraph> item_text = item->_get_text_buf(with_replace ? 1 : 0);
+
+	RID ci = item->get_tree()->get_custom_drawing_canvas_item();
+	constexpr float fill_alpha = 0.17;
+	constexpr float outline_alpha = 0.17;
+
+	int search_start = r.begin_trimmed;
+	int search_end = search_start + finder->get_search_text().length();
+	Vector<Vector2> match_sel = TS->shaped_text_get_selection(item_text->get_rid(), search_start, search_end);
+	for (const Vector2 &match_range : match_sel) {
+		Rect2 match_rect = Rect2(p_rect.position.x + match_range.x - 1, p_rect.position.y + 1 * EDSCALE, match_range.y - match_range.x + 2, p_rect.size.y - 2 * EDSCALE);
+		if (!with_replace) {
+			_draw_outlined_rect(ci, match_rect, Color(theme_cache.accent_color, fill_alpha), Color(theme_cache.accent_color, outline_alpha));
+			return;
+		} else {
+			_draw_outlined_rect(ci, match_rect, Color(theme_cache.removed_color, fill_alpha), Color(theme_cache.removed_color, outline_alpha));
+		}
+		RenderingServer::get_singleton()->canvas_item_add_line(ci, Vector2(match_rect.position.x, match_rect.get_center().y), Vector2(match_rect.get_end().x, match_rect.get_center().y), theme_cache.font_color);
+	}
+	if (replace_text.is_empty()) {
+		return;
+	}
+
+	int repl_start = search_end;
+	int repl_end = repl_start + replace_text.length();
+	match_sel = TS->shaped_text_get_selection(item_text->get_rid(), repl_start, repl_end);
+	for (const Vector2 &match_range : match_sel) {
+		Rect2 match_rect = Rect2(p_rect.position.x + match_range.x - 1, p_rect.position.y + 1 * EDSCALE, match_range.y - match_range.x + 2, p_rect.size.y - 2 * EDSCALE);
+		_draw_outlined_rect(ci, match_rect, Color(theme_cache.added_color, fill_alpha), Color(theme_cache.added_color, outline_alpha));
+	}
+}
+
+void FindInFilesResultsPanel::_draw_outlined_rect(RID p_canvas_item, const Rect2 &p_rect, const Color &p_fill_color, const Color &p_outline_color) {
+	RenderingServer::get_singleton()->canvas_item_add_polyline(p_canvas_item,
+			PackedVector2Array{
+					p_rect.position,
+					p_rect.position + Vector2(p_rect.size.x, 0),
+					p_rect.position + p_rect.size,
+					p_rect.position + Vector2(0, p_rect.size.y),
+					p_rect.position,
+			},
+			PackedColorArray{ p_outline_color }, 2.0);
+	RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas_item, p_rect, p_fill_color);
+}
+
+void FindInFilesResultsPanel::_on_item_edited() {
+	TreeItem *item = results_display->get_selected();
+
+	// Change opacity to half if checkbox is checked, otherwise full.
+	Color use_color = results_display->get_theme_color(SceneStringName(font_color));
+	if (!item->is_checked(0)) {
+		use_color.a *= 0.5;
+	}
+	item->set_custom_color(1, use_color);
+}
+
+void FindInFilesResultsPanel::_on_finished() {
+	_update_matches_text();
+	progress_bar->set_visible(false);
+	refresh_button->show();
+	cancel_button->hide();
+}
+
+void FindInFilesResultsPanel::_on_refresh_button_clicked() {
+	start_search();
+}
+
+void FindInFilesResultsPanel::_on_cancel_button_clicked() {
+	stop_search();
+}
+
+void FindInFilesResultsPanel::_on_result_selected() {
+	TreeItem *item = results_display->get_selected();
+	HashMap<TreeItem *, Result>::Iterator E = result_items.find(item);
+
+	if (!E || (results_display->get_selected_column() == 0 && with_replace)) {
+		return;
+	}
+	Result r = E->value;
+
+	TreeItem *file_item = item->get_parent();
+	String fpath = file_item->get_metadata(0);
+
+	emit_signal(SNAME("result_selected"), fpath, r.line_number, r.begin, r.end);
+}
+
+void FindInFilesResultsPanel::replace_all() {
+	Vector<TreeItem *> replaced_items;
+	for (KeyValue<String, TreeItem *> &E : file_items) {
+		TreeItem *file_item = E.value;
+		String fpath = file_item->get_metadata(0);
+
+		Vector<Result> locations;
+		for (TreeItem *item = file_item->get_first_child(); item; item = item->get_next()) {
+			if (!item->is_checked(0)) {
+				continue;
+			}
+
+			HashMap<TreeItem *, Result>::Iterator F = result_items.find(item);
+			ERR_FAIL_COND(!F);
+			locations.push_back(F->value);
+			replaced_items.push_back(item);
+		}
+
+		if (locations.size() != 0) {
+			// Results are sorted by file, so we can batch replaces.
+			_apply_replaces_in_file(fpath, locations, replace_text);
+		}
+	}
+
+	for (TreeItem *item : replaced_items) {
+		_remove_result(item);
+	}
+
+	emit_signal(SNAME("files_modified"));
+}
+
+void FindInFilesResultsPanel::_on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index) {
+	const String file_path = p_item->get_metadata(0);
+
+	if (p_id == FIND_BUTTON_REPLACE) {
+		const String rt = replace_text;
+		Vector<Result> locations;
+		if (file_items.has(file_path)) {
+			for (TreeItem *item = p_item->get_first_child(); item; item = item->get_next()) {
+				HashMap<TreeItem *, Result>::Iterator F = result_items.find(item);
+				ERR_FAIL_COND(!F);
+				locations.push_back(F->value);
+			}
+			_apply_replaces_in_file(file_path, locations, rt);
+		} else {
+			locations.push_back(result_items.find(p_item)->value);
+			const String path = p_item->get_parent()->get_metadata(0);
+			_apply_replaces_in_file(path, locations, rt);
+		}
+		emit_signal(SNAME("files_modified"));
+	}
+
+	_remove_result(p_item);
+}
+
+void FindInFilesResultsPanel::_apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text) {
+	CodeTextEditor *code_text_editor = get_code_edit(p_fpath);
+	CodeEdit *code_edit = nullptr;
+	if (code_text_editor) {
+		code_edit = code_text_editor->get_text_editor();
+	}
+	Ref<FileAccess> f;
+	Vector<String> lines;
+
+	if (code_edit) {
+		lines = code_edit->get_text().split("\n");
+	} else {
+		f = FileAccess::open(p_fpath, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
+		lines = f->get_as_text().split("\n");
+	}
+
+	String search_text = finder->get_search_text();
+	int placeholder;
+	int repl_line_number = 0;
+
+	// Iterate backwards so changes don't affect the location of the next change in the same line.
+	for (int i = p_locations.size() - 1; i >= 0; i--) {
+		const Result &location = p_locations[i];
+		repl_line_number = location.line_number - 1;
+
+		if (repl_line_number >= 0 && repl_line_number < lines.size()) {
+			String &line = lines.write[repl_line_number];
+			if (find_next(line, search_text, location.begin, finder->is_match_case(), finder->is_whole_words(), placeholder, placeholder)) {
+				line = line.left(location.begin) + p_new_text + line.substr(location.end);
+			} else {
+				print_verbose(vformat(R"(Occurrence no longer matches, replace will be ignored in "%s": line %d, col %d.)", p_fpath, repl_line_number, location.begin));
+			}
+		}
+	}
+
+	String final_text = String("\n").join(lines);
+
+	if (code_edit) {
+		code_edit->begin_complex_operation();
+		Variant nav_state = code_text_editor->get_navigation_state();
+		code_edit->set_text(final_text);
+		code_edit->emit_signal(SceneStringName(text_changed));
+		code_text_editor->set_edit_state(nav_state);
+		code_edit->end_complex_operation();
+	} else {
+		// Now the modified contents are in the buffer, rewrite the file with our changes.
+		Error err = f->reopen(p_fpath, FileAccess::WRITE);
+		ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + p_fpath + "'.");
+		f->store_string(final_text);
+		f->close();
+
+		Ref<Resource> res = ResourceCache::get_ref(p_fpath);
+		if (res.is_valid()) {
+			res->reload_from_file();
+		}
+
+		EditorFileSystem::get_singleton()->update_file(p_fpath);
+	}
+}
+
+void FindInFilesResultsPanel::_update_matches_text() {
+	String results_text;
+	int result_count = result_items.size();
+	int file_count = file_items.size();
+
+	if (result_count == 1 && file_count == 1) {
+		results_text = vformat(TTR("%d match in %d file"), result_count, file_count);
+	} else if (result_count != 1 && file_count == 1) {
+		results_text = vformat(TTR("%d matches in %d file"), result_count, file_count);
+	} else {
+		results_text = vformat(TTR("%d matches in %d files"), result_count, file_count);
+	}
+
+	status_label->set_text(results_text);
+
+	TreeItem *file_item = results_display->get_root()->get_first_child();
+	while (file_item) {
+		int file_matches_count = file_items_results_count[file_item];
+		file_item->set_text(0, (String)file_item->get_metadata(0) + " (" + vformat(TTRN("%d match", "%d matches", file_matches_count), file_matches_count) + ")");
+		file_item = file_item->get_next();
+	}
+}
+
+void FindInFilesResultsPanel::_update_replace_preview() {
+	ERR_FAIL_COND(!with_replace);
+	for (const KeyValue<TreeItem *, Result> &KV : result_items) {
+		_update_replace_item(KV.key, KV.value);
+	}
+}
+
+void FindInFilesResultsPanel::_update_replace_item(TreeItem *p_item, const Result &p_result) {
+	const int end = p_result.begin_trimmed + (p_result.end - p_result.begin);
+	p_item->set_text(1, p_result.base_text.substr(0, p_result.begin_trimmed) + p_result.base_text.substr(p_result.begin_trimmed, p_result.end - p_result.begin) + get_replace_text() + p_result.base_text.substr(end));
+}
+
+void FindInFilesResultsPanel::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("result_selected",
+			PropertyInfo(Variant::STRING, "path"),
+			PropertyInfo(Variant::INT, "line_number"),
+			PropertyInfo(Variant::INT, "begin"),
+			PropertyInfo(Variant::INT, "end")));
+
+	ADD_SIGNAL(MethodInfo("files_modified"));
+}
+
+FindInFilesResultsPanel::FindInFilesResultsPanel() {
+	finder = memnew(FindInFilesSearch);
+	finder->connect("result_found", callable_mp(this, &FindInFilesResultsPanel::_on_result_found));
+	finder->connect(SceneStringName(finished), callable_mp(this, &FindInFilesResultsPanel::_on_finished));
+	add_child(finder);
+
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	add_child(vbc);
+
+	{
+		HBoxContainer *hbc = memnew(HBoxContainer);
+		hbc->set_alignment(BoxContainer::ALIGNMENT_END);
+
+		new_tab_button = memnew(Button);
+		new_tab_button->set_tooltip_text(TTRC("Create a new Search Tab"));
+		hbc->add_child(new_tab_button);
+
+		find_label = memnew(Label);
+		find_label->set_text(TTRC("Find:"));
+		hbc->add_child(find_label);
+
+		search_text_label = memnew(Label);
+		search_text_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+		search_text_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		search_text_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+		search_text_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		search_text_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		hbc->add_child(search_text_label);
+
+		progress_bar = memnew(ProgressBar);
+		progress_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+		progress_bar->set_v_size_flags(SIZE_SHRINK_CENTER);
+		progress_bar->set_stretch_ratio(2.0);
+		progress_bar->set_visible(false);
+		hbc->add_child(progress_bar);
+
+		progress_bar_placeholder = memnew(Control);
+		progress_bar_placeholder->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		hbc->add_child(progress_bar_placeholder);
+
+		status_label = memnew(Label);
+		status_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+		hbc->add_child(status_label);
+
+		refresh_button = memnew(Button);
+		refresh_button->set_text(TTRC("Refresh"));
+		refresh_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesResultsPanel::_on_refresh_button_clicked));
+		refresh_button->hide();
+		hbc->add_child(refresh_button);
+
+		cancel_button = memnew(Button);
+		cancel_button->set_text(TTRC("Cancel"));
+		cancel_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesResultsPanel::_on_cancel_button_clicked));
+		cancel_button->hide();
+		hbc->add_child(cancel_button);
+
+		vbc->add_child(hbc);
+	}
+
+	results_mc = memnew(MarginContainer);
+	results_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	results_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	vbc->add_child(results_mc);
+
+	results_display = memnew(Tree);
+	results_display->set_accessibility_name(TTRC("Find in Files"));
+	results_display->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	results_display->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	results_display->connect(SceneStringName(item_selected), callable_mp(this, &FindInFilesResultsPanel::_on_result_selected));
+	results_display->connect("item_edited", callable_mp(this, &FindInFilesResultsPanel::_on_item_edited));
+	results_display->connect("button_clicked", callable_mp(this, &FindInFilesResultsPanel::_on_button_clicked));
+	results_display->set_hide_root(true);
+	results_display->set_select_mode(Tree::SELECT_ROW);
+	results_display->set_allow_rmb_select(true);
+	results_display->set_allow_reselect(true);
+	results_display->add_theme_constant_override("inner_item_margin_left", 0);
+	results_display->add_theme_constant_override("inner_item_margin_right", 0);
+	results_display->create_item(); // Root
+	results_mc->add_child(results_display);
+}
+
+//-----------------------------------------------------------------------------
+
+FindInFilesResultsPanel *FindInFilesContainer::_create_new_panel() {
+	int index = tabs->get_current_tab();
+	FindInFilesResultsPanel *old_panel = Object::cast_to<FindInFilesResultsPanel>(tabs->get_current_tab_control());
+
+	FindInFilesResultsPanel *new_panel = memnew(FindInFilesResultsPanel);
+	tabs->add_child(new_panel);
+	tabs->move_child(new_panel, index + 1); // New panel is added after the current activated panel.
+	tabs->set_current_tab(index + 1);
+	_update_bar_visibility();
+	_update_current_title();
+
+	new_panel->connect("result_selected", callable_mp(this, &FindInFilesContainer::_result_selected));
+	new_panel->connect("files_modified", callable_mp(this, &FindInFilesContainer::_files_modified));
+	new_panel->get_new_tab_button()->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesContainer::_create_new_panel));
+
+	FindInFilesSearch *new_finder = new_panel->get_finder();
+	if (old_panel) {
+		if (FindInFilesSearch *old_finder = old_panel->get_finder()) {
+			new_finder->copy_from(old_finder);
+		}
+		search_control->set_replace_text(old_panel->get_replace_text());
+	}
+	search_control->set_finder(new_finder, !old_panel);
+	search_control->set_search_text(new_finder->get_search_text());
+	return new_panel;
+}
+
+void FindInFilesContainer::_update_current_title() {
+	tabs->set_tab_title(tabs->get_current_tab(), vformat(TTR("Find: %s"), search_control->get_search_text()));
+}
+
+void FindInFilesContainer::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible() && tabs->get_tab_count() == 0) {
+				_create_new_panel();
+			}
+		} break;
+		case NOTIFICATION_POSTINITIALIZE: {
+			connect("closed", callable_mp(this, &FindInFilesContainer::_on_dock_closed));
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			new_tab_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+		} break;
+	}
+}
+
+void FindInFilesContainer::_on_theme_changed() {
+	const Ref<StyleBox> bottom_panel_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
+	if (bottom_panel_style.is_valid()) {
+		begin_bulk_theme_override();
+		add_theme_constant_override("margin_top", -bottom_panel_style->get_margin(SIDE_TOP));
+		add_theme_constant_override("margin_left", -bottom_panel_style->get_margin(SIDE_LEFT));
+		add_theme_constant_override("margin_right", -bottom_panel_style->get_margin(SIDE_RIGHT));
+		add_theme_constant_override("margin_bottom", get_current_slot() == DOCK_SLOT_BOTTOM ? 0 : -bottom_panel_style->get_margin(SIDE_BOTTOM));
+		end_bulk_theme_override();
+	}
+	hsplit->add_theme_style_override("split_bar_background", get_theme_stylebox(SceneStringName(panel), "ItemListSecondary"));
+}
+
+void FindInFilesContainer::_on_tab_changed() {
+	if (FindInFilesResultsPanel *panel = Object::cast_to<FindInFilesResultsPanel>(tabs->get_current_tab_control())) {
+		search_control->set_replace_text(panel->get_replace_text());
+		search_control->set_finder(panel->get_finder(), false);
+	}
+}
+
+void FindInFilesContainer::_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end) {
+	emit_signal(SNAME("result_selected"), p_fpath, p_line_number, p_begin, p_end);
+}
+
+void FindInFilesContainer::_files_modified() {
+	emit_signal(SNAME("files_modified"));
+}
+
+void FindInFilesContainer::_close_panel(FindInFilesResultsPanel *p_panel) {
+	ERR_FAIL_COND_MSG(p_panel->get_parent() != tabs, "This panel is not a child!");
+	tabs->remove_child(p_panel);
+	p_panel->queue_free();
+	_update_bar_visibility();
+	if (tabs->get_tab_count() == 0) {
+		close();
+	}
+}
+
+void FindInFilesContainer::_on_dock_closed() {
+	while (tabs->get_tab_count() > 0) {
+		Control *tab = tabs->get_tab_control(0);
+		tabs->remove_child(tab);
+		tab->queue_free();
+	}
+	_update_bar_visibility();
+}
+
+void FindInFilesContainer::_on_tab_close_pressed(int p_tab) {
+	if (FindInFilesResultsPanel *panel = Object::cast_to<FindInFilesResultsPanel>(tabs->get_tab_control(p_tab))) {
+		_close_panel(panel);
+	}
+}
+
+void FindInFilesContainer::_set_replace_text(String p_text) {
+	FindInFilesResultsPanel *panel = Object::cast_to<FindInFilesResultsPanel>(tabs->get_current_tab_control());
+	panel->set_replace_text(p_text);
+}
+
+void FindInFilesContainer::_replace_all() {
+	FindInFilesResultsPanel *panel = Object::cast_to<FindInFilesResultsPanel>(tabs->get_current_tab_control());
+	panel->replace_all();
+}
+
+void FindInFilesContainer::_start_find_in_files() {
+	if (search_control->get_search_text().is_empty()) {
+		return;
+	}
+	FindInFilesResultsPanel *panel = Object::cast_to<FindInFilesResultsPanel>(tabs->get_current_tab_control());
+	panel->set_with_replace(search_control->is_replace_pressed());
+	_update_current_title();
+	panel->start_search();
+}
+
+void FindInFilesContainer::_update_bar_visibility() {
+	if (!update_bar) {
+		return;
+	}
+
+	// If tab count <= 1, behaves like this is not a TabContainer and the bar is hidden.
+	bool bar_visible = tabs->get_tab_count() > 1;
+	tabs->set_tabs_visible(bar_visible);
+
+	// Hide or show the search labels based on the visibility of the bar, as the search terms are displayed in the title of each tab.
+	for (int i = 0; i < tabs->get_tab_count(); i++) {
+		FindInFilesResultsPanel *panel = Object::cast_to<FindInFilesResultsPanel>(tabs->get_tab_control(i));
+		if (panel) {
+			panel->set_search_labels_visibility(!bar_visible);
+			panel->get_new_tab_button()->set_visible(!bar_visible);
+		}
+	}
+}
+
+void FindInFilesContainer::_bar_menu_option(int p_option) {
+	int tab_index = tabs->get_current_tab();
+	switch (p_option) {
+		case PANEL_CLOSE: {
+			_on_tab_close_pressed(tab_index);
+		} break;
+		case PANEL_CLOSE_OTHERS: {
+			update_bar = false;
+			FindInFilesResultsPanel *panel = Object::cast_to<FindInFilesResultsPanel>(tabs->get_tab_control(tab_index));
+			for (int i = tabs->get_tab_count() - 1; i >= 0; i--) {
+				FindInFilesResultsPanel *p = Object::cast_to<FindInFilesResultsPanel>(tabs->get_tab_control(i));
+				if (p != panel) {
+					_close_panel(p);
+				}
+			}
+			update_bar = true;
+			_update_bar_visibility();
+		} break;
+		case PANEL_CLOSE_RIGHT: {
+			update_bar = false;
+			for (int i = tabs->get_tab_count() - 1; i > tab_index; i--) {
+				_on_tab_close_pressed(i);
+			}
+			update_bar = true;
+			_update_bar_visibility();
+		} break;
+		case PANEL_CLOSE_ALL: {
+			update_bar = false;
+			for (int i = tabs->get_tab_count() - 1; i >= 0; i--) {
+				_on_tab_close_pressed(i);
+			}
+			update_bar = true;
+		} break;
+	}
+}
+
+void FindInFilesContainer::_bar_input(const Ref<InputEvent> &p_input) {
+	int tab_id = tabs->get_tab_bar()->get_hovered_tab();
+	Ref<InputEventMouseButton> mb = p_input;
+
+	if (tab_id >= 0 && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		tabs_context_menu->set_item_disabled(tabs_context_menu->get_item_index(PANEL_CLOSE_RIGHT), tab_id == tabs->get_tab_count() - 1);
+		tabs_context_menu->set_position(tabs->get_tab_bar()->get_screen_position() + mb->get_position());
+		tabs_context_menu->reset_size();
+		tabs_context_menu->popup();
+	}
+}
+
+void FindInFilesContainer::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	for (Node *node : tabs->iterate_children()) {
+		FindInFilesResultsPanel *panel = Object::cast_to<FindInFilesResultsPanel>(node);
+		if (panel) {
+			panel->update_layout(p_layout, p_slot);
+		}
+	}
+
+	search_control->set_scroll_hint_mode(p_slot == DOCK_SLOT_BOTTOM ? ScrollContainer::SCROLL_HINT_MODE_BOTTOM_AND_RIGHT : ScrollContainer::SCROLL_HINT_MODE_DISABLED);
+	// Deferring is necessary, or the splitter style won't be correct.
+	callable_mp(this, &FindInFilesContainer::_on_theme_changed).call_deferred();
+}
+
+void FindInFilesContainer::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("result_selected",
+			PropertyInfo(Variant::STRING, "path"),
+			PropertyInfo(Variant::INT, "line_number"),
+			PropertyInfo(Variant::INT, "begin"),
+			PropertyInfo(Variant::INT, "end")));
+
+	ADD_SIGNAL(MethodInfo("files_modified"));
+}
+
+FindInFilesContainer::FindInFilesContainer() {
+	set_name(TTRC("Find in Files"));
+	set_icon_name("Search");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_search_results_bottom_panel", TTRC("Toggle Find in Files Bottom Panel")));
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
+	set_available_layouts(DOCK_LAYOUT_HORIZONTAL | DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
+	set_closable(true);
+	set_custom_minimum_size(Size2(0, 200 * EDSCALE));
+
+	hsplit = memnew(HSplitContainer);
+	add_child(hsplit);
+
+	search_control = memnew(FindInFilesSearchPanel);
+	search_control->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_BOTTOM_AND_RIGHT);
+	search_control->connect("find_requested", callable_mp(this, &FindInFilesContainer::_start_find_in_files));
+	search_control->connect("replace_all_requested", callable_mp(this, &FindInFilesContainer::_replace_all));
+	search_control->get_replace_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &FindInFilesContainer::_set_replace_text));
+	hsplit->add_child(search_control);
+
+	tabs = memnew(TabContainer);
+	tabs->set_tabs_visible(false);
+	hsplit->add_child(tabs);
+
+	tabs->set_drag_to_rearrange_enabled(true);
+	tabs->connect("tab_changed", callable_mp(this, &FindInFilesContainer::_on_tab_changed).unbind(1));
+	tabs->get_tab_bar()->set_select_with_rmb(true);
+	tabs->get_tab_bar()->set_tab_close_display_policy(TabBar::CLOSE_BUTTON_SHOW_ACTIVE_ONLY);
+	tabs->get_tab_bar()->connect("tab_close_pressed", callable_mp(this, &FindInFilesContainer::_on_tab_close_pressed));
+	tabs->get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(this, &FindInFilesContainer::_bar_input));
+
+	new_tab_button = memnew(Button);
+	new_tab_button->set_flat(true);
+	new_tab_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesContainer::_create_new_panel));
+	tabs->get_internal_container()->add_child(new_tab_button);
+
+	tabs_context_menu = memnew(PopupMenu);
+	add_child(tabs_context_menu);
+	tabs_context_menu->add_item(TTRC("Close Tab"), PANEL_CLOSE);
+	tabs_context_menu->add_item(TTRC("Close Other Tabs"), PANEL_CLOSE_OTHERS);
+	tabs_context_menu->add_item(TTRC("Close Tabs to the Right"), PANEL_CLOSE_RIGHT);
+	tabs_context_menu->add_item(TTRC("Close All Tabs"), PANEL_CLOSE_ALL);
+	tabs_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FindInFilesContainer::_bar_menu_option));
+
+	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &FindInFilesContainer::_on_theme_changed));
+}
+
+void FindInFiles::open_dock(const String &p_initial_text, bool p_replace) {
+	FindInFilesSearchPanel *search_control = container->get_search_control();
+	EditorDockManager::get_singleton()->focus_dock(container);
+	search_control->set_search_text(p_initial_text);
+	search_control->set_replace(p_replace);
+}
+
+FindInFiles::FindInFiles() {
+	find_in_files = this;
+	container = memnew(FindInFilesContainer);
+	EditorDockManager::get_singleton()->add_dock(container);
+	container->close();
+}

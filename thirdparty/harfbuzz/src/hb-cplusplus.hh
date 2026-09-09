@@ -27,9 +27,6 @@
 
 #include "hb.h"
 
-HB_BEGIN_DECLS
-HB_END_DECLS
-
 #ifdef __cplusplus
 
 #include <functional>
@@ -56,15 +53,15 @@ struct shared_ptr
 
   explicit shared_ptr (T *p = nullptr) : p (p) {}
   shared_ptr (const shared_ptr &o) : p (v::reference (o.p)) {}
-  shared_ptr (shared_ptr &&o) : p (o.p) { o.p = nullptr; }
+  shared_ptr (shared_ptr &&o)  noexcept : p (o.p) { o.p = nullptr; }
   shared_ptr& operator = (const shared_ptr &o) { if (p != o.p) { destroy (); p = o.p; reference (); } return *this; }
-  shared_ptr& operator = (shared_ptr &&o) { v::destroy (p); p = o.p; o.p = nullptr; return *this; }
+  shared_ptr& operator = (shared_ptr &&o)  noexcept { v::destroy (p); p = o.p; o.p = nullptr; return *this; }
   ~shared_ptr () { v::destroy (p); p = nullptr; }
 
   T* get() const { return p; }
 
-  void swap (shared_ptr &o) { std::swap (p, o.p); }
-  friend void swap (shared_ptr &a, shared_ptr &b) { std::swap (a.p, b.p); }
+  void swap (shared_ptr &o)  noexcept { std::swap (p, o.p); }
+  friend void swap (shared_ptr &a, shared_ptr &b)  noexcept { std::swap (a.p, b.p); }
 
   operator T * () const { return p; }
   T& operator * () const { return *get (); }
@@ -98,16 +95,16 @@ struct unique_ptr
 
   explicit unique_ptr (T *p = nullptr) : p (p) {}
   unique_ptr (const unique_ptr &o) = delete;
-  unique_ptr (unique_ptr &&o) : p (o.p) { o.p = nullptr; }
+  unique_ptr (unique_ptr &&o)  noexcept : p (o.p) { o.p = nullptr; }
   unique_ptr& operator = (const unique_ptr &o) = delete;
-  unique_ptr& operator = (unique_ptr &&o) { v::destroy (p); p = o.p; o.p = nullptr; return *this; }
+  unique_ptr& operator = (unique_ptr &&o)  noexcept { v::destroy (p); p = o.p; o.p = nullptr; return *this; }
   ~unique_ptr () { v::destroy (p); p = nullptr; }
 
   T* get() const { return p; }
   T* release () { T* v = p; p = nullptr; return v; }
 
-  void swap (unique_ptr &o) { std::swap (p, o.p); }
-  friend void swap (unique_ptr &a, unique_ptr &b) { std::swap (a.p, b.p); }
+  void swap (unique_ptr &o)  noexcept { std::swap (p, o.p); }
+  friend void swap (unique_ptr &a, unique_ptr &b)  noexcept { std::swap (a.p, b.p); }
 
   operator T * () const { return p; }
   T& operator * () const { return *get (); }
@@ -141,50 +138,62 @@ struct vtable_t
   static constexpr auto get_user_data = _get_user_data;
 };
 
-#define HB_DEFINE_VTABLE(name) \
+#define HB_DEFINE_VTABLE(name, empty) \
 	template<> \
 	struct vtable<hb_##name##_t> \
 	     : vtable_t<hb_##name##_t, \
-			&hb_##name##_get_empty, \
+			empty, \
 			&hb_##name##_reference, \
 			&hb_##name##_destroy, \
 			&hb_##name##_set_user_data, \
 			&hb_##name##_get_user_data> {}
 
-HB_DEFINE_VTABLE (buffer);
-HB_DEFINE_VTABLE (blob);
-HB_DEFINE_VTABLE (face);
-HB_DEFINE_VTABLE (font);
-HB_DEFINE_VTABLE (font_funcs);
-HB_DEFINE_VTABLE (map);
-HB_DEFINE_VTABLE (set);
-HB_DEFINE_VTABLE (shape_plan);
-HB_DEFINE_VTABLE (unicode_funcs);
-HB_DEFINE_VTABLE (draw_funcs);
-HB_DEFINE_VTABLE (paint_funcs);
-
-#undef HB_DEFINE_VTABLE
+HB_DEFINE_VTABLE (buffer, &hb_buffer_get_empty);
+HB_DEFINE_VTABLE (blob, &hb_blob_get_empty);
+HB_DEFINE_VTABLE (face, &hb_face_get_empty);
+HB_DEFINE_VTABLE (font, &hb_font_get_empty);
+HB_DEFINE_VTABLE (font_funcs, &hb_font_funcs_get_empty);
+HB_DEFINE_VTABLE (map, &hb_map_get_empty);
+HB_DEFINE_VTABLE (set, &hb_set_get_empty);
+HB_DEFINE_VTABLE (shape_plan, &hb_shape_plan_get_empty);
+HB_DEFINE_VTABLE (unicode_funcs, &hb_unicode_funcs_get_empty);
+HB_DEFINE_VTABLE (draw_funcs, &hb_draw_funcs_get_empty);
+HB_DEFINE_VTABLE (paint_funcs, &hb_paint_funcs_get_empty);
 
 
 #ifdef HB_SUBSET_H
 
-#define HB_DEFINE_VTABLE(name) \
-	template<> \
-	struct vtable<hb_##name##_t> \
-	     : vtable_t<hb_##name##_t, \
-			nullptr, \
-			&hb_##name##_reference, \
-			&hb_##name##_destroy, \
-			&hb_##name##_set_user_data, \
-			&hb_##name##_get_user_data> {}
-
-
-HB_DEFINE_VTABLE (subset_input);
-HB_DEFINE_VTABLE (subset_plan);
-
-#undef HB_DEFINE_VTABLE
+HB_DEFINE_VTABLE (subset_input, nullptr);
+HB_DEFINE_VTABLE (subset_plan, nullptr);
 
 #endif
+
+
+#ifdef HB_RASTER_H
+
+HB_DEFINE_VTABLE (raster_image, nullptr);
+HB_DEFINE_VTABLE (raster_draw, nullptr);
+HB_DEFINE_VTABLE (raster_paint, nullptr);
+
+#endif
+
+
+#ifdef HB_VECTOR_H
+
+HB_DEFINE_VTABLE (vector_draw, nullptr);
+HB_DEFINE_VTABLE (vector_paint, nullptr);
+
+#endif
+
+
+#ifdef HB_GPU_H
+
+HB_DEFINE_VTABLE (gpu_draw, nullptr);
+
+#endif
+
+/* HB_DEFINE_VTABLE stays available for subsystem headers' paired tail
+ * blocks (see hb-raster.h, hb-vector.h, hb-gpu.h, hb-subset.h). */
 
 
 } // namespace hb

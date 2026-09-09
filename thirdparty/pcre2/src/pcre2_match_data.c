@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -38,10 +38,6 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include "pcre2_internal.h"
 
@@ -77,14 +73,17 @@ return yield;
 *  Create a match data block using pattern data  *
 *************************************************/
 
-/* If no context is supplied, use the memory allocator from the code. */
+/* If no context is supplied, use the memory allocator from the code. This code
+assumes that a general context contains nothing other than a memory allocator.
+If that ever changes, this code will need fixing. */
 
 PCRE2_EXP_DEFN pcre2_match_data * PCRE2_CALL_CONVENTION
 pcre2_match_data_create_from_pattern(const pcre2_code *code,
   pcre2_general_context *gcontext)
 {
+if (code == NULL) return NULL;
 if (gcontext == NULL) gcontext = (pcre2_general_context *)code;
-return pcre2_match_data_create(((pcre2_real_code *)code)->top_bracket + 1,
+return pcre2_match_data_create(((const pcre2_real_code *)code)->top_bracket + 1,
   gcontext);
 }
 
@@ -168,6 +167,18 @@ pcre2_get_match_data_size(pcre2_match_data *match_data)
 {
 return offsetof(pcre2_match_data, ovector) +
   2 * (match_data->oveccount) * sizeof(PCRE2_SIZE);
+}
+
+
+
+/*************************************************
+*             Get heapframes size                *
+*************************************************/
+
+PCRE2_EXP_DEFN PCRE2_SIZE PCRE2_CALL_CONVENTION
+pcre2_get_match_data_heapframes_size(pcre2_match_data *match_data)
+{
+return match_data->heapframes_size;
 }
 
 /* End of pcre2_match_data.c */

@@ -28,14 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef REMOTE_DEBUGGER_H
-#define REMOTE_DEBUGGER_H
+#pragma once
 
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
-#include "core/object/class_db.h"
-#include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/variant/array.h"
 
@@ -87,6 +84,7 @@ private:
 	};
 
 	HashMap<Thread::ID, List<Message>> messages;
+	HashSet<Thread::ID> threads_in_break;
 
 	void _poll_messages();
 	bool _has_messages();
@@ -98,7 +96,7 @@ private:
 	static void _err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, bool p_editor_notify, ErrorHandlerType p_type);
 
 	ErrorMessage _create_overflow_error(const String &p_what, const String &p_descr);
-	Error _put_msg(String p_message, Array p_data);
+	Error _put_msg(const String &p_message, const Array &p_data);
 
 	bool is_peer_connected() { return peer->is_peer_connected(); }
 	void flush_output();
@@ -107,9 +105,6 @@ private:
 
 	Error _profiler_capture(const String &p_cmd, const Array &p_data, bool &r_captured);
 	Error _core_capture(const String &p_cmd, const Array &p_data, bool &r_captured);
-
-	template <typename T>
-	void _bind_profiler(const String &p_name, T *p_prof);
 	Error _try_capture(const String &p_name, const Array &p_data, bool &r_captured);
 
 public:
@@ -122,5 +117,3 @@ public:
 	explicit RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer);
 	~RemoteDebugger();
 };
-
-#endif // REMOTE_DEBUGGER_H

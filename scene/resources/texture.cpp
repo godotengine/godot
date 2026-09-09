@@ -30,17 +30,43 @@
 
 #include "texture.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/placeholder_textures.h"
+#include "servers/rendering/rendering_server.h"
+
+Ref<Image> Texture2D::get_image() const {
+	Ref<Image> ret;
+	GDVIRTUAL_CALL(_get_image, ret);
+	return ret;
+}
+
+Image::Format Texture2D::get_format() const {
+	Image::Format ret = Image::FORMAT_MAX;
+	GDVIRTUAL_CALL(_get_format, ret);
+	return ret;
+}
+
+int Texture2D::get_mipmap_count() const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_mipmap_count, ret);
+	return ret;
+}
+
+bool Texture2D::has_mipmaps() const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_has_mipmaps, ret);
+	return ret;
+}
 
 int Texture2D::get_width() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_width, ret);
+	GDVIRTUAL_CALL(_get_width, ret);
 	return ret;
 }
 
 int Texture2D::get_height() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_height, ret);
+	GDVIRTUAL_CALL(_get_height, ret);
 	return ret;
 }
 
@@ -95,10 +121,13 @@ Ref<Resource> Texture2D::create_placeholder() const {
 }
 
 void Texture2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_format"), &Texture2D::get_format);
+	ClassDB::bind_method(D_METHOD("get_mipmap_count"), &Texture2D::get_mipmap_count);
 	ClassDB::bind_method(D_METHOD("get_width"), &Texture2D::get_width);
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture2D::get_height);
 	ClassDB::bind_method(D_METHOD("get_size"), &Texture2D::get_size);
 	ClassDB::bind_method(D_METHOD("has_alpha"), &Texture2D::has_alpha);
+	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Texture2D::has_mipmaps);
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "modulate", "transpose"), &Texture2D::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose"), &Texture2D::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &Texture2D::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(true));
@@ -107,10 +136,14 @@ void Texture2D::_bind_methods() {
 
 	ADD_GROUP("", "");
 
+	GDVIRTUAL_BIND(_get_image);
+	GDVIRTUAL_BIND(_get_format);
+	GDVIRTUAL_BIND(_get_mipmap_count);
 	GDVIRTUAL_BIND(_get_width);
 	GDVIRTUAL_BIND(_get_height);
 	GDVIRTUAL_BIND(_is_pixel_opaque, "x", "y");
 	GDVIRTUAL_BIND(_has_alpha);
+	GDVIRTUAL_BIND(_has_mipmaps);
 
 	GDVIRTUAL_BIND(_draw, "to_canvas_item", "pos", "modulate", "transpose")
 	GDVIRTUAL_BIND(_draw_rect, "to_canvas_item", "rect", "tile", "modulate", "transpose")
@@ -133,37 +166,37 @@ TypedArray<Image> Texture3D::_get_datai() const {
 
 Image::Format Texture3D::get_format() const {
 	Image::Format ret = Image::FORMAT_MAX;
-	GDVIRTUAL_REQUIRED_CALL(_get_format, ret);
+	GDVIRTUAL_CALL(_get_format, ret);
 	return ret;
 }
 
 int Texture3D::get_width() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_width, ret);
+	GDVIRTUAL_CALL(_get_width, ret);
 	return ret;
 }
 
 int Texture3D::get_height() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_height, ret);
+	GDVIRTUAL_CALL(_get_height, ret);
 	return ret;
 }
 
 int Texture3D::get_depth() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_depth, ret);
+	GDVIRTUAL_CALL(_get_depth, ret);
 	return ret;
 }
 
 bool Texture3D::has_mipmaps() const {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret);
+	GDVIRTUAL_CALL(_has_mipmaps, ret);
 	return ret;
 }
 
 Vector<Ref<Image>> Texture3D::get_data() const {
 	TypedArray<Image> ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_data, ret);
+	GDVIRTUAL_CALL(_get_data, ret);
 	Vector<Ref<Image>> data;
 	data.resize(ret.size());
 	for (int i = 0; i < data.size(); i++) {
@@ -198,43 +231,43 @@ Ref<Resource> Texture3D::create_placeholder() const {
 
 Image::Format TextureLayered::get_format() const {
 	Image::Format ret = Image::FORMAT_MAX;
-	GDVIRTUAL_REQUIRED_CALL(_get_format, ret);
+	GDVIRTUAL_CALL(_get_format, ret);
 	return ret;
 }
 
 TextureLayered::LayeredType TextureLayered::get_layered_type() const {
 	uint32_t ret = LAYERED_TYPE_2D_ARRAY;
-	GDVIRTUAL_REQUIRED_CALL(_get_layered_type, ret);
+	GDVIRTUAL_CALL(_get_layered_type, ret);
 	return (LayeredType)ret;
 }
 
 int TextureLayered::get_width() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_width, ret);
+	GDVIRTUAL_CALL(_get_width, ret);
 	return ret;
 }
 
 int TextureLayered::get_height() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_height, ret);
+	GDVIRTUAL_CALL(_get_height, ret);
 	return ret;
 }
 
 int TextureLayered::get_layers() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_layers, ret);
+	GDVIRTUAL_CALL(_get_layers, ret);
 	return ret;
 }
 
 bool TextureLayered::has_mipmaps() const {
 	bool ret = false;
-	GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret);
+	GDVIRTUAL_CALL(_has_mipmaps, ret);
 	return ret;
 }
 
 Ref<Image> TextureLayered::get_layer_data(int p_layer) const {
 	Ref<Image> ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_layer_data, p_layer, ret);
+	GDVIRTUAL_CALL(_get_layer_data, p_layer, ret);
 	return ret;
 }
 

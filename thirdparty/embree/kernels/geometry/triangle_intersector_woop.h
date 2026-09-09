@@ -64,7 +64,7 @@ namespace embree
         kx = (kz+1) % 3;
         ky = (kx+1) % 3;
         const float inv_dir_kz = rcp(ray.dir[kz]);
-        if (ray.dir[kz]) std::swap(kx,ky);
+        if (ray.dir[kz] < 0.0f) std::swap(kx,ky);
         S.x = ray.dir[kx] * inv_dir_kz;
         S.y = ray.dir[ky] * inv_dir_kz;
         S.z = inv_dir_kz;

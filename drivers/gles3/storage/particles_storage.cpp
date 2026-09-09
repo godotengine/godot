@@ -28,15 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "particles_storage.h"
+
 #ifdef GLES3_ENABLED
 
-#include "particles_storage.h"
-#include "material_storage.h"
-#include "mesh_storage.h"
-#include "texture_storage.h"
-#include "utilities.h"
-
-#include "servers/rendering/rendering_server_default.h"
+#include "drivers/gles3/storage/config.h"
+#include "drivers/gles3/storage/material_storage.h"
+#include "drivers/gles3/storage/mesh_storage.h"
+#include "drivers/gles3/storage/texture_storage.h"
+#include "drivers/gles3/storage/utilities.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 using namespace GLES3;
 
@@ -107,7 +108,7 @@ void ParticlesStorage::particles_free(RID p_rid) {
 	particles_owner.free(p_rid);
 }
 
-void ParticlesStorage::particles_set_mode(RID p_particles, RS::ParticlesMode p_mode) {
+void ParticlesStorage::particles_set_mode(RID p_particles, RSE::ParticlesMode p_mode) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 	if (particles->mode == p_mode) {
@@ -120,6 +121,8 @@ void ParticlesStorage::particles_set_mode(RID p_particles, RS::ParticlesMode p_m
 }
 
 void ParticlesStorage::particles_set_emitting(RID p_particles, bool p_emitting) {
+	ERR_FAIL_COND_MSG(GLES3::Config::get_singleton()->disable_particles_workaround, "Due to driver bugs, GPUParticles are not supported on Adreno 3XX devices. Please use CPUParticles instead.");
+
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
@@ -127,7 +130,10 @@ void ParticlesStorage::particles_set_emitting(RID p_particles, bool p_emitting) 
 }
 
 bool ParticlesStorage::particles_get_emitting(RID p_particles) {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
+	if (GLES3::Config::get_singleton()->disable_particles_workaround) {
+		return false;
+	}
+
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 
@@ -216,6 +222,20 @@ void ParticlesStorage::particles_set_pre_process_time(RID p_particles, double p_
 	ERR_FAIL_NULL(particles);
 	particles->pre_process_time = p_time;
 }
+
+void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time, real_t p_request_process_time_residual) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+	particles->request_process_time = p_request_process_time;
+	particles->request_process_time_residual = p_request_process_time_residual;
+}
+
+void ParticlesStorage::particles_set_seed(RID p_particles, uint32_t p_seed) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+	particles->random_seed = p_seed;
+}
+
 void ParticlesStorage::particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
@@ -280,13 +300,13 @@ void ParticlesStorage::particles_set_fractional_delta(RID p_particles, bool p_en
 
 void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
 	if (p_enable) {
-		WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support particle trails.");
+		WARN_PRINT_ONCE_ED("The Compatibility renderer does not support particle trails.");
 	}
 }
 
 void ParticlesStorage::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) {
 	if (p_bind_poses.size() != 0) {
-		WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support particle trails.");
+		WARN_PRINT_ONCE_ED("The Compatibility renderer does not support particle trails.");
 	}
 }
 
@@ -297,11 +317,25 @@ void ParticlesStorage::particles_set_collision_base_size(RID p_particles, real_t
 	particles->collision_base_size = p_size;
 }
 
-void ParticlesStorage::particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) {
+void ParticlesStorage::particles_set_transform_align(RID p_particles, RSE::ParticlesTransformAlign p_transform_align) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
 	particles->transform_align = p_transform_align;
+}
+
+void ParticlesStorage::particles_set_transform_align_channel_filter(RID p_particles, RSE::ParticlesTransformAlignCustomSrc p_channel_filter) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_channel_filter = p_channel_filter;
+}
+
+void ParticlesStorage::particles_set_transform_align_axis(RID p_particles, RSE::ParticlesTransformAlignAxis p_rotation_axis) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+
+	particles->transform_align_axis = p_rotation_axis;
 }
 
 void ParticlesStorage::particles_set_process_material(RID p_particles, RID p_material) {
@@ -319,7 +353,7 @@ RID ParticlesStorage::particles_get_process_material(RID p_particles) const {
 	return particles->process_material;
 }
 
-void ParticlesStorage::particles_set_draw_order(RID p_particles, RS::ParticlesDrawOrder p_order) {
+void ParticlesStorage::particles_set_draw_order(RID p_particles, RSE::ParticlesDrawOrder p_order) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
@@ -350,12 +384,12 @@ void ParticlesStorage::particles_restart(RID p_particles) {
 
 void ParticlesStorage::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
 	if (p_subemitter_particles.is_valid()) {
-		WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support particle sub-emitters.");
+		WARN_PRINT_ONCE_ED("The Compatibility renderer does not support particle sub-emitters.");
 	}
 }
 
 void ParticlesStorage::particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
-	WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support manually emitting particles.");
+	WARN_PRINT_ONCE_ED("The Compatibility renderer does not support manually emitting particles.");
 }
 
 void ParticlesStorage::particles_request_process(RID p_particles) {
@@ -372,10 +406,6 @@ void ParticlesStorage::particles_request_process(RID p_particles) {
 }
 
 AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
-	if (RSG::threaded) {
-		WARN_PRINT_ONCE("Calling this function with threaded rendering enabled stalls the renderer, use with care.");
-	}
-
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, AABB());
 
@@ -395,7 +425,7 @@ AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 		bool first = true;
 
 		const uint8_t *data_ptr = (const uint8_t *)buffer.ptr();
-		uint32_t particle_data_size = sizeof(ParticleInstanceData3D) + sizeof(float) * particles->userdata_count;
+		uint32_t particle_data_size = sizeof(ParticleInstanceData3D);
 
 		for (int i = 0; i < total_amount; i++) {
 			const ParticleInstanceData3D &particle_data = *(const ParticleInstanceData3D *)&data_ptr[particle_data_size * i];
@@ -497,14 +527,13 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
-	double new_phase = Math::fmod(p_particles->phase + (p_delta / p_particles->lifetime) * p_particles->speed_scale, 1.0);
+	double new_phase = Math::fmod(p_particles->phase + (p_delta / p_particles->lifetime), 1.0);
 
 	//update current frame
 	ParticlesFrameParams frame_params;
 
 	if (p_particles->clear) {
 		p_particles->cycle_number = 0;
-		p_particles->random_seed = Math::rand();
 	} else if (new_phase < p_particles->phase) {
 		if (p_particles->one_shot) {
 			p_particles->emitting = false;
@@ -519,7 +548,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	p_particles->phase = new_phase;
 
 	frame_params.time = RSG::rasterizer->get_total_time();
-	frame_params.delta = p_delta * p_particles->speed_scale;
+	frame_params.delta = p_delta;
 	frame_params.random_seed = p_particles->random_seed;
 	frame_params.explosiveness = p_particles->explosiveness;
 	frame_params.randomness = p_particles->randomness;
@@ -612,7 +641,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			Vector3 scale = to_collider.basis.get_scale();
 			to_collider.basis.orthonormalize();
 
-			if (pc->type <= RS::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT) {
+			if (pc->type <= RSE::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT) {
 				//attractor
 				if (frame_params.attractor_count >= ParticlesFrameParams::MAX_ATTRACTORS) {
 					continue;
@@ -626,7 +655,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 				attr.directionality = pc->attractor_directionality;
 
 				switch (pc->type) {
-					case RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT: {
+					case RSE::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT: {
 						attr.type = ParticlesFrameParams::ATTRACTOR_TYPE_SPHERE;
 						float radius = pc->radius;
 						radius *= (scale.x + scale.y + scale.z) / 3.0;
@@ -634,15 +663,15 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 						attr.extents[1] = radius;
 						attr.extents[2] = radius;
 					} break;
-					case RS::PARTICLES_COLLISION_TYPE_BOX_ATTRACT: {
+					case RSE::PARTICLES_COLLISION_TYPE_BOX_ATTRACT: {
 						attr.type = ParticlesFrameParams::ATTRACTOR_TYPE_BOX;
 						Vector3 extents = pc->extents * scale;
 						attr.extents[0] = extents.x;
 						attr.extents[1] = extents.y;
 						attr.extents[2] = extents.z;
 					} break;
-					case RS::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT: {
-						WARN_PRINT_ONCE_ED("Vector field particle attractors are not available in the GL Compatibility rendering backend.");
+					case RSE::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT: {
+						WARN_PRINT_ONCE_ED("Vector field particle attractors are not available in the Compatibility renderer.");
 					} break;
 					default: {
 					}
@@ -659,7 +688,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 				GLES3::MaterialStorage::store_transform(to_collider, col.transform);
 				switch (pc->type) {
-					case RS::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE: {
+					case RSE::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE: {
 						col.type = ParticlesFrameParams::COLLISION_TYPE_SPHERE;
 						float radius = pc->radius;
 						radius *= (scale.x + scale.y + scale.z) / 3.0;
@@ -667,17 +696,17 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 						col.extents[1] = radius;
 						col.extents[2] = radius;
 					} break;
-					case RS::PARTICLES_COLLISION_TYPE_BOX_COLLIDE: {
+					case RSE::PARTICLES_COLLISION_TYPE_BOX_COLLIDE: {
 						col.type = ParticlesFrameParams::COLLISION_TYPE_BOX;
 						Vector3 extents = pc->extents * scale;
 						col.extents[0] = extents.x;
 						col.extents[1] = extents.y;
 						col.extents[2] = extents.z;
 					} break;
-					case RS::PARTICLES_COLLISION_TYPE_SDF_COLLIDE: {
-						WARN_PRINT_ONCE_ED("SDF Particle Colliders are not available in the GL Compatibility rendering backend.");
+					case RSE::PARTICLES_COLLISION_TYPE_SDF_COLLIDE: {
+						WARN_PRINT_ONCE_ED("SDF Particle Colliders are not available in the Compatibility renderer.");
 					} break;
-					case RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE: {
+					case RSE::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE: {
 						if (collision_heightmap_texture != 0) { //already taken
 							continue;
 						}
@@ -718,9 +747,9 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	}
 
 	// Get shader and set shader uniforms;
-	ParticleProcessMaterialData *m = static_cast<ParticleProcessMaterialData *>(material_storage->material_get_data(p_particles->process_material, RS::SHADER_PARTICLES));
+	ParticleProcessMaterialData *m = static_cast<ParticleProcessMaterialData *>(material_storage->material_get_data(p_particles->process_material, RSE::SHADER_PARTICLES));
 	if (!m) {
-		m = static_cast<ParticleProcessMaterialData *>(material_storage->material_get_data(particles_shader.default_material, RS::SHADER_PARTICLES));
+		m = static_cast<ParticleProcessMaterialData *>(material_storage->material_get_data(particles_shader.default_material, RSE::SHADER_PARTICLES));
 	}
 
 	ERR_FAIL_NULL(m);
@@ -728,11 +757,13 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	ParticlesShaderGLES3::ShaderVariant variant = ParticlesShaderGLES3::MODE_DEFAULT;
 
 	uint32_t specialization = 0;
-	for (uint32_t i = 0; i < p_particles->userdata_count; i++) {
-		specialization |= (1 << i);
+	for (uint32_t i = 0; i < PARTICLES_MAX_USERDATAS; i++) {
+		if (m->shader_data->userdatas_used[i]) {
+			specialization |= ParticlesShaderGLES3::USERDATA1_USED << i;
+		}
 	}
 
-	if (p_particles->mode == RS::ParticlesMode::PARTICLES_MODE_3D) {
+	if (p_particles->mode == RSE::ParticlesMode::PARTICLES_MODE_3D) {
 		specialization |= ParticlesShaderGLES3::MODE_3D;
 	}
 
@@ -776,7 +807,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
-	if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+	if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD) {
 		return;
 	}
 
@@ -793,7 +824,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	// Sort will be done on CPU since we don't have compute shaders.
 	// If the sort_buffer has valid data
 	// Use a buffer that is 2 frames out of date to avoid stalls.
-	if (particles->draw_order == RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->sort_buffer_filled) {
+	if (particles->draw_order == RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->sort_buffer_filled) {
 		glBindBuffer(GL_ARRAY_BUFFER, particles->sort_buffer);
 
 		ParticleInstanceData3D *particle_array;
@@ -818,7 +849,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 	}
 
 	glEnable(GL_RASTERIZER_DISCARD);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	_particles_update_instance_buffer(particles, axis, p_up_axis);
 	glDisable(GL_RASTERIZER_DISCARD);
 }
@@ -828,7 +859,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	uint32_t userdata_count = 0;
 
 	if (particles->process_material.is_valid()) {
-		GLES3::ParticleProcessMaterialData *material_data = static_cast<GLES3::ParticleProcessMaterialData *>(material_storage->material_get_data(particles->process_material, RS::SHADER_PARTICLES));
+		GLES3::ParticleProcessMaterialData *material_data = static_cast<GLES3::ParticleProcessMaterialData *>(material_storage->material_get_data(particles->process_material, RSE::SHADER_PARTICLES));
 		if (material_data && material_data->shader_data->version.is_valid() && material_data->shader_data->valid) {
 			userdata_count = material_data->shader_data->userdata_count;
 		}
@@ -837,6 +868,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	if (userdata_count != particles->userdata_count) {
 		// Mismatch userdata, re-create buffers.
 		_particles_free_data(particles);
+		particles->restart_request = true;
 	}
 
 	if (particles->amount > 0 && particles->front_process_buffer == 0) {
@@ -844,17 +876,17 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 
 		particles->userdata_count = userdata_count;
 
-		uint32_t xform_size = particles->mode == RS::PARTICLES_MODE_2D ? 2 : 3;
+		uint32_t xform_size = particles->mode == RSE::PARTICLES_MODE_2D ? 2 : 3;
 		particles->instance_buffer_stride_cache = sizeof(float) * 4 * (xform_size + 1);
 		particles->instance_buffer_size_cache = particles->instance_buffer_stride_cache * total_amount;
 		particles->num_attrib_arrays_cache = 5 + userdata_count + (xform_size - 2);
 		particles->process_buffer_stride_cache = sizeof(float) * 4 * particles->num_attrib_arrays_cache;
 
 		PackedByteArray data;
-		data.resize_zeroed(particles->process_buffer_stride_cache * total_amount);
+		data.resize_initialized(particles->process_buffer_stride_cache * total_amount);
 
 		PackedByteArray instance_data;
-		instance_data.resize_zeroed(particles->instance_buffer_size_cache);
+		instance_data.resize_initialized(particles->instance_buffer_size_cache);
 
 		{
 			glGenVertexArrays(1, &particles->front_vertex_array);
@@ -916,7 +948,7 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 	ParticlesCopyShaderGLES3::ShaderVariant variant = ParticlesCopyShaderGLES3::MODE_DEFAULT;
 
 	uint64_t specialization = 0;
-	if (particles->mode == RS::ParticlesMode::PARTICLES_MODE_3D) {
+	if (particles->mode == RSE::ParticlesMode::PARTICLES_MODE_3D) {
 		specialization |= ParticlesCopyShaderGLES3::MODE_3D;
 	}
 
@@ -944,12 +976,14 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_MODE, uint32_t(particles->transform_align), particles_shader.copy_shader_version, variant, specialization);
 	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_UP, p_up_axis, particles_shader.copy_shader_version, variant, specialization);
 	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::SORT_DIRECTION, p_axis, particles_shader.copy_shader_version, variant, specialization);
+	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_AXIS, uint32_t(particles->transform_align_axis), particles_shader.copy_shader_version, variant, specialization);
+	particles_shader.copy_shader.version_set_uniform(ParticlesCopyShaderGLES3::ALIGN_CHANNEL_FILTER, uint32_t(particles->transform_align_channel_filter), particles_shader.copy_shader_version, variant, specialization);
 
 	glBindVertexArray(particles->back_vertex_array);
 	glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, 0, particles->front_instance_buffer, 0, particles->instance_buffer_size_cache);
 	glBeginTransformFeedback(GL_POINTS);
 
-	if (particles->draw_order == RS::PARTICLES_DRAW_ORDER_LIFETIME) {
+	if (particles->draw_order == RSE::PARTICLES_DRAW_ORDER_LIFETIME) {
 		uint32_t lifetime_split = (MIN(int(particles->amount * particles->phase), particles->amount - 1) + 1) % particles->amount;
 		uint32_t stride = particles->process_buffer_stride_cache;
 
@@ -967,7 +1001,7 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 			glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(stride * lifetime_split + sizeof(float) * 4 * 3));
 			glEnableVertexAttribArray(4); // Xform2.
 			glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(stride * lifetime_split + sizeof(float) * 4 * 4));
-			if (particles->mode == RS::PARTICLES_MODE_3D) {
+			if (particles->mode == RSE::PARTICLES_MODE_3D) {
 				glEnableVertexAttribArray(5); // Xform3.
 				glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(stride * lifetime_split + sizeof(float) * 4 * 5));
 			}
@@ -1001,8 +1035,14 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 }
 
 void ParticlesStorage::update_particles() {
+	if (!particle_update_list.first()) {
+		// Return early to avoid unnecessary state changes.
+		return;
+	}
+
+	RENDER_TIMESTAMP("Update GPUParticles");
 	glEnable(GL_RASTERIZER_DISCARD);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
 	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
 
@@ -1025,6 +1065,7 @@ void ParticlesStorage::update_particles() {
 			particles->prev_phase = 0;
 			particles->clear = true;
 			particles->restart_request = false;
+			particles->frame_remainder = 0.0;
 		}
 
 		if (particles->inactive && !particles->emitting) {
@@ -1052,7 +1093,7 @@ void ParticlesStorage::update_particles() {
 
 		// Copy the instance buffer that was last used into the last_frame buffer.
 		// sort_buffer should now be 2 frames out of date.
-		if (particles->draw_order == RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH || particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME) {
+		if (particles->draw_order == RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH || particles->draw_order == RSE::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME) {
 			_particles_allocate_history_buffers(particles);
 			SWAP(particles->last_frame_buffer, particles->sort_buffer);
 
@@ -1074,64 +1115,101 @@ void ParticlesStorage::update_particles() {
 			fixed_fps = particles->fixed_fps;
 		}
 
-		bool zero_time_scale = Engine::get_singleton()->get_time_scale() <= 0.0;
+		// Request process and pre-process block
+		{
+			float todo = particles->clear ? particles->pre_process_time : 0;
+			todo = todo > particles->request_process_time ? todo : particles->request_process_time;
+			todo = todo > particles->request_process_time_residual ? todo : particles->request_process_time_residual;
 
-		if (particles->clear && particles->pre_process_time > 0.0) {
+			if (todo > 0.0) {
+				real_t frame_time;
+				if (fixed_fps > 0) {
+					frame_time = 1.0 / fixed_fps;
+				} else {
+					frame_time = 1.0 / 30.0;
+				}
+
+				float tmp_scale = particles->speed_scale;
+				// We need this otherwise the speed scale of the particle system influences the `todo`.
+				particles->speed_scale = 1.0;
+				if (particles->clear) {
+					todo = particles->pre_process_time;
+					while (todo > 0.00001) {
+						_particles_process(particles, frame_time > todo ? todo : frame_time);
+						todo -= frame_time;
+					}
+				}
+				if (particles->request_process_time > 0.0) {
+					todo = particles->request_process_time;
+					while (todo > 0.0) {
+						_particles_process(particles, frame_time > todo ? todo : frame_time);
+						todo -= frame_time;
+					}
+				}
+				if (particles->request_process_time_residual > 0.0) {
+					particles->emitting = false;
+					todo = particles->request_process_time_residual;
+					while (todo > 0.0) {
+						_particles_process(particles, frame_time > todo ? todo : frame_time);
+						todo -= frame_time;
+					}
+				}
+				particles->speed_scale = tmp_scale;
+			}
+
+			particles->request_process_time = 0.0;
+			particles->request_process_time_residual = 0.0;
+		}
+
+		double time_scale = MAX(particles->speed_scale, 0.0);
+
+		if (fixed_fps > 0) {
+			double frame_time = 1.0 / fixed_fps;
+			double delta = RSG::rasterizer->get_frame_delta_time();
+			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
+				delta = 0.1;
+			} else if (delta < 0.0) {
+				delta = 0.0;
+			}
+			double todo = particles->frame_remainder + delta * time_scale;
+
+			while (todo >= frame_time) {
+				_particles_process(particles, frame_time);
+				todo -= frame_time;
+			}
+
+			particles->frame_remainder = todo;
+
+		} else {
+			_particles_process(particles, RSG::rasterizer->get_frame_delta_time() * time_scale);
+		}
+
+		if (particles->request_process_time > 0.0) {
 			double frame_time;
 			if (fixed_fps > 0) {
 				frame_time = 1.0 / fixed_fps;
 			} else {
 				frame_time = 1.0 / 30.0;
 			}
-
-			double todo = particles->pre_process_time;
-
+			float tmp_scale = particles->speed_scale;
+			particles->speed_scale = 1.0;
+			double todo = particles->request_process_time;
 			while (todo >= 0) {
 				_particles_process(particles, frame_time);
 				todo -= frame_time;
 			}
-		}
-
-		if (fixed_fps > 0) {
-			double frame_time;
-			double decr;
-			if (zero_time_scale) {
-				frame_time = 0.0;
-				decr = 1.0 / fixed_fps;
-			} else {
-				frame_time = 1.0 / fixed_fps;
-				decr = frame_time;
-			}
-			double delta = RSG::rasterizer->get_frame_delta_time();
-			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
-				delta = 0.1;
-			} else if (delta <= 0.0) { //unlikely but..
-				delta = 0.001;
-			}
-			double todo = particles->frame_remainder + delta;
-
-			while (todo >= frame_time) {
-				_particles_process(particles, frame_time);
-				todo -= decr;
-			}
-
-			particles->frame_remainder = todo;
-
-		} else {
-			if (zero_time_scale) {
-				_particles_process(particles, 0.0);
-			} else {
-				_particles_process(particles, RSG::rasterizer->get_frame_delta_time());
-			}
+			particles->speed_scale = tmp_scale;
+			particles->request_process_time = 0.0;
 		}
 
 		// Copy particles to instance buffer and pack Color/Custom.
 		// We don't have camera information here, so don't copy here if we need camera information for view depth or align mode.
-		if (particles->draw_order != RS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RS::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY) {
+
+		if (particles->draw_order != RSE::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY && particles->transform_align != RSE::PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD) {
 			_particles_update_instance_buffer(particles, Vector3(0.0, 0.0, 0.0), Vector3(0.0, 0.0, 0.0));
 
-			if (particles->draw_order == RS::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME && particles->sort_buffer_filled) {
-				if (particles->mode == RS::ParticlesMode::PARTICLES_MODE_2D) {
+			if (particles->draw_order == RSE::PARTICLES_DRAW_ORDER_REVERSE_LIFETIME && particles->sort_buffer_filled) {
+				if (particles->mode == RSE::ParticlesMode::PARTICLES_MODE_2D) {
 					_particles_reverse_lifetime_sort<ParticleInstanceData2D>(particles);
 				} else {
 					_particles_reverse_lifetime_sort<ParticleInstanceData3D>(particles);
@@ -1140,6 +1218,7 @@ void ParticlesStorage::update_particles() {
 		}
 
 		SWAP(particles->front_instance_buffer, particles->back_instance_buffer);
+		particles->last_change = RSG::rasterizer->get_frame_number();
 
 		// At the end of update, the back_buffer contains the most up-to-date-information to read from.
 
@@ -1191,7 +1270,6 @@ Dependency *ParticlesStorage::particles_get_dependency(RID p_particles) const {
 }
 
 bool ParticlesStorage::particles_is_inactive(RID p_particles) const {
-	ERR_FAIL_COND_V_MSG(RSG::threaded, false, "This function should never be used with threaded rendering, as it stalls the renderer.");
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, false);
 	return !particles->emitting && particles->inactive;
@@ -1222,11 +1300,11 @@ void ParticlesStorage::particles_collision_free(RID p_rid) {
 GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const {
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL_V(particles_collision, 0);
-	ERR_FAIL_COND_V(particles_collision->type != RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE, 0);
+	ERR_FAIL_COND_V(particles_collision->type != RSE::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE, 0);
 
 	if (particles_collision->heightfield_texture == 0) {
 		//create
-		const int resolutions[RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX] = { 256, 512, 1024, 2048, 4096, 8192 };
+		const int resolutions[RSE::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX] = { 256, 512, 1024, 2048, 4096, 8192 };
 		Size2i size;
 		if (particles_collision->extents.x > particles_collision->extents.z) {
 			size.x = resolutions[particles_collision->heightfield_resolution];
@@ -1254,7 +1332,7 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 #ifdef DEBUG_ENABLED
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			WARN_PRINT("Could create heightmap texture status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
+			WARN_PRINT("Could not create heightmap texture, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
 		}
 #endif
 		GLES3::Utilities::get_singleton()->texture_allocated_data(particles_collision->heightfield_texture, size.x * size.y * 4, "Particles collision heightfield texture");
@@ -1262,13 +1340,13 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 		particles_collision->heightfield_fb_size = size;
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
 	return particles_collision->heightfield_fb;
 }
 
-void ParticlesStorage::particles_collision_set_collision_type(RID p_particles_collision, RS::ParticlesCollisionType p_type) {
+void ParticlesStorage::particles_collision_set_collision_type(RID p_particles_collision, RSE::ParticlesCollisionType p_type) {
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
 
@@ -1291,6 +1369,13 @@ void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collisi
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
 	particles_collision->cull_mask = p_cull_mask;
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
+}
+
+uint32_t ParticlesStorage::particles_collision_get_cull_mask(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, 0);
+	return particles_collision->cull_mask;
 }
 
 void ParticlesStorage::particles_collision_set_sphere_radius(RID p_particles_collision, real_t p_radius) {
@@ -1331,7 +1416,7 @@ void ParticlesStorage::particles_collision_set_attractor_attenuation(RID p_parti
 }
 
 void ParticlesStorage::particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) {
-	WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support SDF collisions in 3D particle shaders");
+	WARN_PRINT_ONCE_ED("The Compatibility renderer does not support SDF collisions in 3D particle shaders");
 }
 
 void ParticlesStorage::particles_collision_height_field_update(RID p_particles_collision) {
@@ -1340,10 +1425,10 @@ void ParticlesStorage::particles_collision_height_field_update(RID p_particles_c
 	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
-void ParticlesStorage::particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) {
+void ParticlesStorage::particles_collision_set_height_field_resolution(RID p_particles_collision, RSE::ParticlesCollisionHeightfieldResolution p_resolution) {
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
-	ERR_FAIL_INDEX(p_resolution, RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX);
+	ERR_FAIL_INDEX(p_resolution, RSE::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX);
 
 	if (particles_collision->heightfield_resolution == p_resolution) {
 		return;
@@ -1364,8 +1449,8 @@ AABB ParticlesStorage::particles_collision_get_aabb(RID p_particles_collision) c
 	ERR_FAIL_NULL_V(particles_collision, AABB());
 
 	switch (particles_collision->type) {
-		case RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT:
-		case RS::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE: {
+		case RSE::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT:
+		case RSE::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE: {
 			AABB aabb;
 			aabb.position = -Vector3(1, 1, 1) * particles_collision->radius;
 			aabb.size = Vector3(2, 2, 2) * particles_collision->radius;
@@ -1389,7 +1474,19 @@ Vector3 ParticlesStorage::particles_collision_get_extents(RID p_particles_collis
 bool ParticlesStorage::particles_collision_is_heightfield(RID p_particles_collision) const {
 	const ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL_V(particles_collision, false);
-	return particles_collision->type == RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
+	return particles_collision->type == RSE::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE;
+}
+
+uint32_t ParticlesStorage::particles_collision_get_height_field_mask(RID p_particles_collision) const {
+	const ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, false);
+	return particles_collision->heightfield_mask;
+}
+
+void ParticlesStorage::particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL(particles_collision);
+	particles_collision->heightfield_mask = p_heightfield_mask;
 }
 
 Dependency *ParticlesStorage::particles_collision_get_dependency(RID p_particles_collision) const {

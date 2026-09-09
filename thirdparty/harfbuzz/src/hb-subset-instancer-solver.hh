@@ -30,24 +30,23 @@
 /* pre-normalized distances */
 struct TripleDistances
 {
-  TripleDistances (): negative (1.f), positive (1.f) {}
-  TripleDistances (float neg_, float pos_): negative (neg_), positive (pos_) {}
-  TripleDistances (float min, float default_, float max)
+  TripleDistances (): negative (1.0), positive (1.0) {}
+  TripleDistances (double neg_, double pos_): negative (neg_), positive (pos_) {}
+  TripleDistances (double min, double default_, double max)
   {
     negative = default_ - min;
     positive = max - default_;
   }
 
-  float negative;
-  float positive;
+  double negative;
+  double positive;
 };
 
-struct Triple {
+struct Triple
+{
+  Triple () = default;
 
-  Triple () :
-    minimum (0.f), middle (0.f), maximum (0.f) {}
-
-  Triple (float minimum_, float middle_, float maximum_) :
+  Triple (double minimum_, double middle_, double maximum_) :
     minimum (minimum_), middle (middle_), maximum (maximum_) {}
 
   bool operator == (const Triple &o) const
@@ -63,7 +62,7 @@ struct Triple {
   bool is_point () const
   { return minimum == middle && middle == maximum; }
 
-  bool contains (float point) const
+  bool contains (double point) const
   { return minimum <= point && point <= maximum; }
 
   /* from hb_array_t hash ()*/
@@ -81,19 +80,18 @@ struct Triple {
     return current;
   }
 
-
-  float minimum;
-  float middle;
-  float maximum;
+  double minimum = 0;
+  double middle = 0;
+  double maximum = 0;
 };
 
-using result_item_t = hb_pair_t<float, Triple>;
-using result_t = hb_vector_t<result_item_t>;
+using rebase_tent_result_item_t = hb_pair_t<double, Triple>;
+using rebase_tent_result_t = hb_vector_t<rebase_tent_result_item_t>;
 
 /* renormalize a normalized value v to the range of an axis,
  * considering the prenormalized distances as well as the new axis limits.
  * Ported from fonttools */
-HB_INTERNAL float renormalizeValue (float v, const Triple &triple,
+HB_INTERNAL double renormalizeValue (double v, const Triple &triple,
                                     const TripleDistances &triple_distances,
                                     bool extrapolate = true);
 /* Given a tuple (lower,peak,upper) "tent" and new axis limits
@@ -107,6 +105,10 @@ HB_INTERNAL float renormalizeValue (float v, const Triple &triple,
  * If tent value is Triple{}, that is a special deltaset that should
  * be always-enabled (called "gain").
  */
-HB_INTERNAL result_t rebase_tent (Triple tent, Triple axisLimit, TripleDistances axis_triple_distances);
+HB_INTERNAL void rebase_tent (Triple tent,
+			      Triple axisLimit,
+			      TripleDistances axis_triple_distances,
+			      rebase_tent_result_t &out,
+			      rebase_tent_result_t &scratch);
 
 #endif /* HB_SUBSET_INSTANCER_SOLVER_HH */

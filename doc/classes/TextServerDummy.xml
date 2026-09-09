@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextServerDummy" inherits="TextServerExtension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TextServerDummy" inherits="TextServerExtension" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A dummy text server that can't render text or manage fonts.
 	</brief_description>
@@ -9,12 +9,12 @@
 		[codeblock]
 		var dummy_text_server = TextServerManager.find_interface("Dummy")
 		if dummy_text_server != null:
-		    TextServerManager.set_primary_interface(dummy_text_server)
-		    # If the other text servers are unneeded, they can be removed:
-		    for i in TextServerManager.get_interface_count():
-		        var text_server = TextServerManager.get_interface(i)
-		        if text_server != dummy_text_server:
-		            TextServerManager.remove_interface(text_server)
+			TextServerManager.set_primary_interface(dummy_text_server)
+			# If the other text servers are unneeded, they can be removed:
+			for i in TextServerManager.get_interface_count():
+				var text_server = TextServerManager.get_interface(i)
+				if text_server != dummy_text_server:
+					TextServerManager.remove_interface(text_server)
 		[/codeblock]
 		The command line argument [code]--text-driver Dummy[/code] (case-sensitive) can be used to force the "Dummy" [TextServer] on any project.
 	</description>

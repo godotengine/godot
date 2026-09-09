@@ -30,6 +30,20 @@
 
 #include "script_language_extension.h"
 
+#include "core/object/class_db.h"
+
+ScriptLanguageExtension::ScriptLanguageExtension() {
+#ifdef TOOLS_ENABLED
+	editor_adapter = memnew(EditorAdapter(this));
+#endif // TOOLS_ENABLED
+}
+
+ScriptLanguageExtension::~ScriptLanguageExtension() {
+#ifdef TOOLS_ENABLED
+	memdelete(editor_adapter);
+#endif // TOOLS_ENABLED
+}
+
 void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_editor_can_reload_from_file);
 	GDVIRTUAL_BIND(_placeholder_erased, "placeholder");
@@ -43,19 +57,21 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_instance_create, "for_object");
 	GDVIRTUAL_BIND(_placeholder_instance_create, "for_object");
 
-	GDVIRTUAL_BIND(_instance_has, "object");
-
 	GDVIRTUAL_BIND(_has_source_code);
 	GDVIRTUAL_BIND(_get_source_code);
 
 	GDVIRTUAL_BIND(_set_source_code, "code");
 	GDVIRTUAL_BIND(_reload, "keep_state");
 
+	GDVIRTUAL_BIND(_get_doc_class_name);
 	GDVIRTUAL_BIND(_get_documentation);
 	GDVIRTUAL_BIND(_get_class_icon_path);
 
 	GDVIRTUAL_BIND(_has_method, "method");
 	GDVIRTUAL_BIND(_has_static_method, "method");
+
+	GDVIRTUAL_BIND(_get_script_method_argument_count, "method");
+
 	GDVIRTUAL_BIND(_get_method_info, "method");
 
 	GDVIRTUAL_BIND(_is_tool);
@@ -80,6 +96,10 @@ void ScriptExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_is_placeholder_fallback_enabled);
 
 	GDVIRTUAL_BIND(_get_rpc_config);
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND(_instance_has, "object");
+#endif // !DISABLE_DEPRECATED
 }
 
 void ScriptLanguageExtension::_bind_methods() {
@@ -100,17 +120,20 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_validate, "script", "path", "validate_functions", "validate_errors", "validate_warnings", "validate_safe_lines");
 
 	GDVIRTUAL_BIND(_validate_path, "path");
-	GDVIRTUAL_BIND(_create_script);
 #ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND(_create_script);
 	GDVIRTUAL_BIND(_has_named_classes);
+	GDVIRTUAL_BIND(_get_recognized_extensions);
 #endif
 	GDVIRTUAL_BIND(_supports_builtin_mode);
 	GDVIRTUAL_BIND(_supports_documentation);
 	GDVIRTUAL_BIND(_can_inherit_from_file);
 	GDVIRTUAL_BIND(_find_function, "function", "code");
 	GDVIRTUAL_BIND(_make_function, "class_name", "function_name", "function_args");
+	GDVIRTUAL_BIND(_can_make_function);
 	GDVIRTUAL_BIND(_open_in_external_editor, "script", "line", "column");
 	GDVIRTUAL_BIND(_overrides_external_editor);
+	GDVIRTUAL_BIND(_preferred_file_name_casing);
 
 	GDVIRTUAL_BIND(_complete_code, "code", "path", "owner");
 	GDVIRTUAL_BIND(_lookup_code, "code", "symbol", "path", "owner");
@@ -127,6 +150,7 @@ void ScriptLanguageExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_debug_get_stack_level_line, "level");
 	GDVIRTUAL_BIND(_debug_get_stack_level_function, "level");
+	GDVIRTUAL_BIND(_debug_get_stack_level_source, "level");
 	GDVIRTUAL_BIND(_debug_get_stack_level_locals, "level", "max_subitems", "max_depth");
 	GDVIRTUAL_BIND(_debug_get_stack_level_members, "level", "max_subitems", "max_depth");
 	GDVIRTUAL_BIND(_debug_get_stack_level_instance, "level");
@@ -136,9 +160,9 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_debug_get_current_stack_info);
 
 	GDVIRTUAL_BIND(_reload_all_scripts);
+	GDVIRTUAL_BIND(_reload_scripts, "scripts", "soft_reload");
 	GDVIRTUAL_BIND(_reload_tool_script, "script", "soft_reload");
 
-	GDVIRTUAL_BIND(_get_recognized_extensions);
 	GDVIRTUAL_BIND(_get_public_functions);
 	GDVIRTUAL_BIND(_get_public_constants);
 	GDVIRTUAL_BIND(_get_public_annotations);
@@ -162,8 +186,10 @@ void ScriptLanguageExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_METHOD);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_SIGNAL);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_ENUM);
-	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE);
+	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE); // Deprecated.
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_CLASS_ANNOTATION);
+	BIND_ENUM_CONSTANT(LOOKUP_RESULT_LOCAL_CONSTANT);
+	BIND_ENUM_CONSTANT(LOOKUP_RESULT_LOCAL_VARIABLE);
 	BIND_ENUM_CONSTANT(LOOKUP_RESULT_MAX);
 
 	BIND_ENUM_CONSTANT(LOCATION_LOCAL);
@@ -181,5 +207,6 @@ void ScriptLanguageExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_NODE_PATH);
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_FILE_PATH);
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_PLAIN_TEXT);
+	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_KEYWORD);
 	BIND_ENUM_CONSTANT(CODE_COMPLETION_KIND_MAX);
 }

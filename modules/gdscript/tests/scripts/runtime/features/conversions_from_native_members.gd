@@ -2,8 +2,8 @@ class Foo extends Node:
 	func _init():
 		name = 'f'
 		var string: String = name
-		assert(typeof(string) == TYPE_STRING)
-		assert(string == 'f')
+		Utils.check(typeof(string) == TYPE_STRING)
+		Utils.check(string == 'f')
 		print('ok')
 
 func test():

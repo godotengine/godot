@@ -1,2 +1,0 @@
-GDTEST_ANALYZER_ERROR
-Cannot use shorthand "get_node()" notation ("$") on a class that isn't a node.

@@ -1,0 +1,121 @@
+# Greek translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2023-10-01 21:58+0000\n"
+"Last-Translator: Marios1Gr <Marios1Gr@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
+"el/>\n"
+"Language: el\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.1-dev\n"
+
+msgid "Save"
+msgstr "Αποθήκευση"
+
+msgid "Clear"
+msgstr "Εκκαθάριση"
+
+msgid "Add current color as a preset."
+msgstr "Προσθήκη τρέχοντος χρώματος στα προκαθορισμένα."
+
+msgid "Network"
+msgstr "Δίκτυο"
+
+msgid "Open"
+msgstr "Άνοιγμα"
+
+msgid "Select Current Folder"
+msgstr "Επιλογή τρέχοντα φακέλου"
+
+msgid "Select This Folder"
+msgstr "Επιλογή αυτού του φακέλου"
+
+msgid "All Recognized"
+msgstr "Όλα τα αναγνωρισμένα"
+
+msgid "Open a File"
+msgstr "Άνοιγμα αρχείου"
+
+msgid "Open File(s)"
+msgstr "Άνοιγμα αρχείου/-ων"
+
+msgid "Open a Directory"
+msgstr "Άνοιγμα φακέλου"
+
+msgid "Open a File or Directory"
+msgstr "Άνοιγμα αρχείου ή φακέλου"
+
+msgid "Save a File"
+msgstr "Αποθήκευση αρχείου"
+
+msgid "Go to previous folder."
+msgstr "Πήγαινε στον προηγούμενο φάκελο."
+
+msgid "Go to next folder."
+msgstr "Πήγαινε στον επόμενο φάκελο."
+
+msgid "Go to parent folder."
+msgstr "Πήγαινε στον γονικό φάκελο."
+
+msgid "Path:"
+msgstr "Διαδρομή:"
+
+msgid "Refresh files."
+msgstr "Ανανέωση αρχείων."
+
+msgid "Directories & Files:"
+msgstr "Φάκελοι & Αρχεία:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Εναλλαγή ορατότητας κρυφών αρχείων."
+
+msgid "File:"
+msgstr "Αρχείο:"
+
+msgid "Create Folder"
+msgstr "Δημιουργία φακέλου"
+
+msgid "Name:"
+msgstr "Όνομα:"
+
+msgid "Could not create folder."
+msgstr "Αδύνατη η δημιουργία φακέλου."
+
+msgid "Zoom Out"
+msgstr "Σμίκρυνση"
+
+msgid "Zoom Reset"
+msgstr "Επαναφορά Μεγέθυνσης"
+
+msgid "Zoom In"
+msgstr "Μεγέθυνση"
+
+msgid "Cut"
+msgstr "Αποκοπή"
+
+msgid "Copy"
+msgstr "Αντιγραφή"
+
+msgid "Paste"
+msgstr "Επικόλληση"
+
+msgid "Select All"
+msgstr "Επιλογή όλων"
+
+msgid "Undo"
+msgstr "Αναίρεση"
+
+msgid "Redo"
+msgstr "Ακύρωση αναίρεσης"
+
+msgid "(Other)"
+msgstr "(Άλλο)"

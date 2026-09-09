@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,117 +25,123 @@
 
 #include "tvgPaint.h"
 
+enum Status : uint8_t {Synced = 0, Painting, Updating, Drawing, Damaged};
 
 struct Canvas::Impl
 {
-    list<Paint*> paints;
+    Scene* scene;
     RenderMethod* renderer;
-    bool refresh = false;   //if all paints should be updated by force.
-    bool drawing = false;   //on drawing condition?
+    RenderRegion vport = {{0, 0}, {INT32_MAX, INT32_MAX}};
+    Status status = Status::Synced;
 
-    Impl(RenderMethod* pRenderer):renderer(pRenderer)
+    Impl() : scene(Scene::gen())
     {
+        scene->ref();
     }
 
     ~Impl()
     {
-        clear(true);
-        delete(renderer);
+        //make it sure any deferred jobs
+        renderer->sync();
+        scene->unref();
+        if (renderer->unref() == 0) delete(renderer);
     }
 
-    Result push(unique_ptr<Paint> paint)
+    Result add(Paint* target, Paint* at)
     {
-        //You can not push paints during rendering.
-        if (drawing) return Result::InsufficientCondition;
-
-        auto p = paint.release();
-        if (!p) return Result::MemoryCorruption;
-        PP(p)->ref();
-        paints.push_back(p);
-
-        return update(p, true);
-    }
-
-    Result clear(bool free)
-    {
-        //Clear render target before drawing
-        if (!renderer || !renderer->clear()) return Result::InsufficientCondition;
-
-        //Free paints
-        if (free) {
-            for (auto paint : paints) {
-                P(paint)->unref();
-                if (paint->pImpl->dispose(*renderer) && P(paint)->refCnt == 0) {
-                    delete(paint);
-                }
-            }
-            paints.clear();
+        if (PAINT(target)->renderer && PAINT(target)->renderer != renderer) {
+            TVGERR("RENDERER", "Target paint(%p) is already owned by a different renderer.", target);
+            return Result::InsufficientCondition;
         }
-        drawing = false;
 
-        return Result::Success;
+        //You cannot add paints during rendering.
+        if (status == Status::Drawing) {
+            TVGLOG("RENDERER", "add() was called during drawing.");
+            return Result::InsufficientCondition;
+        }
+        status = Status::Painting;
+        return scene->add(target, at);
     }
 
-    void needRefresh()
+    Result remove(Paint* paint)
     {
-        refresh = true;
+        if (status == Status::Drawing) {
+            TVGLOG("RENDERER", "remove() was called during drawing.");
+            return Result::InsufficientCondition;
+        }
+        status = Status::Painting;
+        return scene->remove(paint);
     }
 
-    Result update(Paint* paint, bool force)
+    Result update()
     {
-        if (paints.empty() || drawing || !renderer) return Result::InsufficientCondition;
+        if (status == Status::Updating) return Result::Success;
+
+        if (status == Status::Drawing) {
+            TVGLOG("RENDERER", "update() was called during drawing.");
+            return Result::InsufficientCondition;
+        }
 
         Array<RenderData> clips;
         auto flag = RenderUpdateFlag::None;
-        if (refresh || force) flag = RenderUpdateFlag::All;
 
-        //Update single paint node
-        if (paint) {
-            //Optimize Me: Can we skip the searching?
-            for (auto paint2 : paints) {
-                if (paint2 == paint) {
-                    paint->pImpl->update(*renderer, nullptr, clips, 255, flag);
-                    return Result::Success;
-                }
-            }
-            return Result::InvalidArguments;
-        //Update all retained paint nodes
-        } else {
-            for (auto paint : paints) {
-                paint->pImpl->update(*renderer, nullptr, clips, 255, flag);
-            }
-        }
+        //TODO: All is too harsh, can be optimized.
+        if (status == Status::Damaged) flag = RenderUpdateFlag::All;
 
-        refresh = false;
+        if (!renderer->preUpdate()) return Result::InsufficientCondition;
 
+        auto m = tvg::identity();
+        PAINT(scene)->update(renderer, m, clips, 255, flag);
+
+        if (!renderer->postUpdate()) return Result::InsufficientCondition;
+
+        status = Status::Updating;
         return Result::Success;
     }
 
-    Result draw()
+    Result draw(bool clear)
     {
-        if (drawing || paints.empty() || !renderer || !renderer->preRender()) return Result::InsufficientCondition;
-
-        bool rendered = false;
-        for (auto paint : paints) {
-            if (paint->pImpl->render(*renderer)) rendered = true;
+        if (status == Status::Drawing) {
+            TVGLOG("RENDERER", "draw() was called multiple times.");
+            return Result::InsufficientCondition;
         }
+        if (status == Status::Painting || status == Status::Damaged) update();
+        if (status != Status::Updating) return Result::InsufficientCondition;
+        if (clear && !renderer->clear()) return Result::InsufficientCondition;
+        if (!renderer->preRender()) return Result::InsufficientCondition;
+        if (!PAINT(scene)->render(renderer) || !renderer->postRender()) return Result::InsufficientCondition;
 
-        if (!rendered || !renderer->postRender()) return Result::InsufficientCondition;
-
-        drawing = true;
+        status = Status::Drawing;
 
         return Result::Success;
     }
 
     Result sync()
     {
-        if (!drawing) return Result::InsufficientCondition;
-
+        if (status == Status::Synced) return Result::Success;
         if (renderer->sync()) {
-            drawing = false;
+            status = Status::Synced;
             return Result::Success;
         }
+        return Result::Unknown;
+    }
 
+    Result viewport(int32_t x, int32_t y, int32_t w, int32_t h)
+    {
+        if (status == Status::Synced || status == Status::Damaged) {
+            RenderRegion val = {{x, y}, {x + w, y + h}};
+            //intersect if the target buffer is already set.
+            auto surface = renderer->mainSurface();
+            if (surface && surface->w > 0 && surface->h > 0) {
+                val.intersect({{0, 0}, {(int32_t)surface->w, (int32_t)surface->h}});
+            }
+            if (vport == val) return Result::Success;
+            renderer->viewport(val);
+            vport = val;
+            status = Status::Damaged;
+            return Result::Success;
+        }
+        TVGLOG("RENDERER", "viewport() is only allowed after sync.");
         return Result::InsufficientCondition;
     }
 };

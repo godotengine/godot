@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WEBXR_INTERFACE_JS_H
-#define WEBXR_INTERFACE_JS_H
+#pragma once
 
 #ifdef WEB_ENABLED
 
 #include "webxr_interface.h"
+
+#include "core/templates/rb_map.h"
 
 /**
 	The WebXR interface is a VR/AR interface that can be used on the web.
@@ -42,6 +43,8 @@
 namespace GLES3 {
 class TextureStorage;
 }
+
+class XRHandTracker;
 
 class WebXRInterfaceJS : public WebXRInterface {
 	GDCLASS(WebXRInterfaceJS, WebXRInterface);
@@ -56,6 +59,9 @@ private:
 	String optional_features;
 	String requested_reference_space_types;
 	String reference_space_type;
+	String enabled_features;
+
+	XRInterface::EnvironmentBlendMode environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
 
 	Size2 render_targetsize;
 	RBMap<unsigned int, RID> texture_cache;
@@ -67,11 +73,15 @@ private:
 	static constexpr uint8_t input_source_count = 16;
 
 	struct InputSource {
-		Ref<XRPositionalTracker> tracker;
+		Ref<XRControllerTracker> tracker;
 		bool active = false;
 		TargetRayMode target_ray_mode;
 		int touch_index = -1;
 	} input_sources[input_source_count];
+
+	static const int WEBXR_HAND_JOINT_MAX = 25;
+	static const int HAND_MAX = 2;
+	Ref<XRHandTracker> hand_trackers[HAND_MAX];
 
 	RID color_texture;
 	RID depth_texture;
@@ -86,18 +96,18 @@ private:
 
 public:
 	virtual void is_session_supported(const String &p_session_mode) override;
-	virtual void set_session_mode(String p_session_mode) override;
+	virtual void set_session_mode(const String &p_session_mode) override;
 	virtual String get_session_mode() const override;
-	virtual void set_required_features(String p_required_features) override;
+	virtual void set_required_features(const String &p_required_features) override;
 	virtual String get_required_features() const override;
-	virtual void set_optional_features(String p_optional_features) override;
+	virtual void set_optional_features(const String &p_optional_features) override;
 	virtual String get_optional_features() const override;
-	virtual void set_requested_reference_space_types(String p_requested_reference_space_types) override;
+	virtual void set_requested_reference_space_types(const String &p_requested_reference_space_types) override;
 	virtual String get_requested_reference_space_types() const override;
-	void _set_reference_space_type(String p_reference_space_type);
 	virtual String get_reference_space_type() const override;
+	virtual String get_enabled_features() const override;
 	virtual bool is_input_source_active(int p_input_source_id) const override;
-	virtual Ref<XRPositionalTracker> get_input_source_tracker(int p_input_source_id) const override;
+	virtual Ref<XRControllerTracker> get_input_source_tracker(int p_input_source_id) const override;
 	virtual TargetRayMode get_input_source_target_ray_mode(int p_input_source_id) const override;
 	virtual String get_visibility_state() const override;
 	virtual PackedVector3Array get_play_area() const override;
@@ -105,6 +115,10 @@ public:
 	virtual float get_display_refresh_rate() const override;
 	virtual void set_display_refresh_rate(float p_refresh_rate) override;
 	virtual Array get_available_display_refresh_rates() const override;
+
+	virtual Array get_supported_environment_blend_modes() override;
+	virtual XRInterface::EnvironmentBlendMode get_environment_blend_mode() const override;
+	virtual bool set_environment_blend_mode(EnvironmentBlendMode p_new_environment_blend_mode) override;
 
 	virtual StringName get_name() const override;
 	virtual uint32_t get_capabilities() const override;
@@ -120,7 +134,7 @@ public:
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
 	virtual bool pre_draw_viewport(RID p_render_target) override;
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual RID get_color_texture() override;
 	virtual RID get_depth_texture() override;
 	virtual RID get_velocity_texture() override;
@@ -128,6 +142,11 @@ public:
 	virtual void process() override;
 
 	void _on_input_event(int p_event_type, int p_input_source_id);
+
+	// Internal setters used by callbacks from Emscripten.
+	inline void _set_reference_space_type(const String &p_reference_space_type) { reference_space_type = p_reference_space_type; }
+	inline void _set_enabled_features(const String &p_enabled_features) { enabled_features = p_enabled_features; }
+	void _set_environment_blend_mode(const String &p_blend_mode_string);
 
 	WebXRInterfaceJS();
 	~WebXRInterfaceJS();
@@ -245,5 +264,3 @@ private:
 };
 
 #endif // WEB_ENABLED
-
-#endif // WEBXR_INTERFACE_JS_H

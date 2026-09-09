@@ -28,15 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gl_manager_macos_legacy.h"
+#import "gl_manager_macos_legacy.h"
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "core/os/os.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
+#include <dlfcn.h>
+
+#include <cstdio>
+#include <cstdlib>
+
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in macOS 10.14.
 
 Error GLManagerLegacy_MacOS::create_context(GLWindow &win) {
 	NSOpenGLPixelFormatAttribute attributes[] = {
@@ -64,7 +67,7 @@ Error GLManagerLegacy_MacOS::create_context(GLWindow &win) {
 	return OK;
 }
 
-Error GLManagerLegacy_MacOS::window_create(DisplayServer::WindowID p_window_id, id p_view, int p_width, int p_height) {
+Error GLManagerLegacy_MacOS::window_create(DisplayServerEnums::WindowID p_window_id, id p_view, int p_width, int p_height) {
 	GLWindow win;
 	win.window_view = p_view;
 
@@ -78,7 +81,7 @@ Error GLManagerLegacy_MacOS::window_create(DisplayServer::WindowID p_window_id, 
 	return OK;
 }
 
-void GLManagerLegacy_MacOS::window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
+void GLManagerLegacy_MacOS::window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height) {
 	if (!windows.has(p_window_id)) {
 		return;
 	}
@@ -99,27 +102,28 @@ void GLManagerLegacy_MacOS::window_resize(DisplayServer::WindowID p_window_id, i
 	[win.context update];
 }
 
-void GLManagerLegacy_MacOS::window_destroy(DisplayServer::WindowID p_window_id) {
+void GLManagerLegacy_MacOS::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	if (!windows.has(p_window_id)) {
 		return;
 	}
 
 	if (current_window == p_window_id) {
-		current_window = DisplayServer::INVALID_WINDOW_ID;
+		current_window = DisplayServerEnums::INVALID_WINDOW_ID;
 	}
 
 	windows.erase(p_window_id);
 }
 
 void GLManagerLegacy_MacOS::release_current() {
-	if (current_window == DisplayServer::INVALID_WINDOW_ID) {
+	if (current_window == DisplayServerEnums::INVALID_WINDOW_ID) {
 		return;
 	}
 
 	[NSOpenGLContext clearCurrentContext];
+	current_window = DisplayServerEnums::INVALID_WINDOW_ID;
 }
 
-void GLManagerLegacy_MacOS::window_make_current(DisplayServer::WindowID p_window_id) {
+void GLManagerLegacy_MacOS::window_make_current(DisplayServerEnums::WindowID p_window_id) {
 	if (current_window == p_window_id) {
 		return;
 	}
@@ -133,24 +137,12 @@ void GLManagerLegacy_MacOS::window_make_current(DisplayServer::WindowID p_window
 	current_window = p_window_id;
 }
 
-void GLManagerLegacy_MacOS::make_current() {
-	if (current_window == DisplayServer::INVALID_WINDOW_ID) {
-		return;
-	}
-	if (!windows.has(current_window)) {
-		return;
-	}
-
-	GLWindow &win = windows[current_window];
-	[win.context makeCurrentContext];
-}
-
 void GLManagerLegacy_MacOS::swap_buffers() {
 	GLWindow &win = windows[current_window];
 	[win.context flushBuffer];
 }
 
-void GLManagerLegacy_MacOS::window_set_per_pixel_transparency_enabled(DisplayServer::WindowID p_window_id, bool p_enabled) {
+void GLManagerLegacy_MacOS::window_set_per_pixel_transparency_enabled(DisplayServerEnums::WindowID p_window_id, bool p_enabled) {
 	if (!windows.has(p_window_id)) {
 		return;
 	}
@@ -167,7 +159,7 @@ void GLManagerLegacy_MacOS::window_set_per_pixel_transparency_enabled(DisplaySer
 }
 
 Error GLManagerLegacy_MacOS::initialize() {
-	return OK;
+	return framework_loaded ? OK : ERR_CANT_CREATE;
 }
 
 void GLManagerLegacy_MacOS::set_use_vsync(bool p_use) {
@@ -187,7 +179,7 @@ bool GLManagerLegacy_MacOS::is_using_vsync() const {
 	return use_vsync;
 }
 
-NSOpenGLContext *GLManagerLegacy_MacOS::get_context(DisplayServer::WindowID p_window_id) {
+NSOpenGLContext *GLManagerLegacy_MacOS::get_context(DisplayServerEnums::WindowID p_window_id) {
 	if (!windows.has(p_window_id)) {
 		return nullptr;
 	}
@@ -197,18 +189,23 @@ NSOpenGLContext *GLManagerLegacy_MacOS::get_context(DisplayServer::WindowID p_wi
 }
 
 GLManagerLegacy_MacOS::GLManagerLegacy_MacOS() {
-	CFBundleRef framework = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.opengl"));
-	CFBundleLoadExecutable(framework);
+	NSBundle *framework = [NSBundle bundleWithPath:@"/System/Library/Frameworks/OpenGL.framework"];
+	if (framework) {
+		void *library_handle = dlopen([framework.executablePath UTF8String], RTLD_NOW);
+		if (library_handle) {
+			CGLEnable = (CGLEnablePtr)dlsym(library_handle, "CGLEnable");
+			CGLSetParameter = (CGLSetParameterPtr)dlsym(library_handle, "CGLSetParameter");
+			CGLGetCurrentContext = (CGLGetCurrentContextPtr)dlsym(library_handle, "CGLGetCurrentContext");
 
-	CGLEnable = (CGLEnablePtr)CFBundleGetFunctionPointerForName(framework, CFSTR("CGLEnable"));
-	CGLSetParameter = (CGLSetParameterPtr)CFBundleGetFunctionPointerForName(framework, CFSTR("CGLSetParameter"));
-	CGLGetCurrentContext = (CGLGetCurrentContextPtr)CFBundleGetFunctionPointerForName(framework, CFSTR("CGLGetCurrentContext"));
+			framework_loaded = CGLEnable && CGLSetParameter && CGLGetCurrentContext;
+		}
+	}
 }
 
 GLManagerLegacy_MacOS::~GLManagerLegacy_MacOS() {
 	release_current();
 }
 
-#pragma clang diagnostic pop
+GODOT_CLANG_WARNING_POP
 
 #endif // MACOS_ENABLED && GLES3_ENABLED

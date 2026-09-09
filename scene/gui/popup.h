@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef POPUP_H
-#define POPUP_H
-
-#include "scene/main/window.h"
+#pragma once
 
 #include "core/templates/local_vector.h"
+#include "scene/main/window.h"
 
 class Panel;
 
@@ -43,9 +41,15 @@ class Popup : public Window {
 	LocalVector<Window *> visible_parents;
 	bool popped_up = false;
 
-	struct ThemeCache {
-		Ref<StyleBox> panel_style;
-	} theme_cache;
+public:
+	enum HideReason {
+		HIDE_REASON_NONE,
+		HIDE_REASON_CANCELED, // E.g., because of rupture of UI flow (app unfocused). Includes closed programmatically.
+		HIDE_REASON_UNFOCUSED, // E.g., user clicked outside.
+	};
+
+private:
+	HideReason hide_reason = HIDE_REASON_NONE;
 
 	void _initialize_visible_parents();
 	void _deinitialize_visible_parents();
@@ -64,6 +68,8 @@ protected:
 	virtual void _post_popup() override;
 
 public:
+	HideReason get_hide_reason() const { return hide_reason; }
+
 	Popup();
 	~Popup();
 };
@@ -77,8 +83,15 @@ class PopupPanel : public Popup {
 		Ref<StyleBox> panel_style;
 	} theme_cache;
 
+	mutable Rect2i pre_popup_rect;
+
 protected:
-	void _update_child_rects();
+	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
+
+	virtual Rect2i _popup_adjust_rect() const override;
+
+	void _update_shadow_offsets() const;
+	void _update_child_rects() const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -86,7 +99,9 @@ protected:
 	virtual Size2 _get_contents_minimum_size() const override;
 
 public:
+#ifdef TOOLS_ENABLED
+	PackedStringArray get_configuration_warnings() const override;
+#endif
+
 	PopupPanel();
 };
-
-#endif // POPUP_H

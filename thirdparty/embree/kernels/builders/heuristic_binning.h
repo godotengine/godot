@@ -4,6 +4,7 @@
 #pragma once
 
 #include "priminfo.h"
+#include "priminfo_mb.h"
 #include "../../common/algorithms/parallel_reduce.h"
 #include "../../common/algorithms/parallel_partition.h"
 
@@ -366,6 +367,63 @@ namespace embree
           const vuint4 rCount = (rCounts[i]+blocks_add) >> (unsigned int)(blocks_shift);
           const vfloat4 sah = madd(lArea,vfloat4(lCount),rArea*vfloat4(rCount));
           //const vfloat4 sah = madd(lArea,vfloat4(vint4(lCount)),rArea*vfloat4(vint4(rCount)));
+
+          vbestPos = select(sah < vbestSAH,ii ,vbestPos);
+          vbestSAH = select(sah < vbestSAH,sah,vbestSAH);
+        }
+	
+	/* find best dimension */
+	float bestSAH = inf;
+	int   bestDim = -1;
+	int   bestPos = 0;
+	for (int dim=0; dim<3; dim++) 
+        {
+          /* ignore zero sized dimensions */
+          if (unlikely(mapping.invalid(dim)))
+            continue;
+          
+          /* test if this is a better dimension */
+          if (vbestSAH[dim] < bestSAH && vbestPos[dim] != 0) {
+            bestDim = dim;
+            bestPos = vbestPos[dim];
+            bestSAH = vbestSAH[dim];
+          }
+        }
+	return Split(bestSAH,bestDim,bestPos,mapping);
+      }
+
+      /*! finds the best split by scanning binning information */
+      __forceinline Split best_block_size(const BinMapping<BINS>& mapping, const size_t blockSize) const
+      {
+	/* sweep from right to left and compute parallel prefix of merged bounds */
+	vfloat4 rAreas[BINS];
+	vuint4 rCounts[BINS];
+	vuint4 count = 0; BBox bx = empty; BBox by = empty; BBox bz = empty;
+	for (size_t i=mapping.size()-1; i>0; i--)
+        {
+          count += counts(i);
+          rCounts[i] = count;
+          bx.extend(bounds(i,0)); rAreas[i][0] = expectedApproxHalfArea(bx);
+          by.extend(bounds(i,1)); rAreas[i][1] = expectedApproxHalfArea(by);
+          bz.extend(bounds(i,2)); rAreas[i][2] = expectedApproxHalfArea(bz);
+          rAreas[i][3] = 0.0f;
+        }
+	/* sweep from left to right and compute SAH */
+	vuint4 blocks_add = blockSize-1;
+        vfloat4 blocks_factor = 1.0f/float(blockSize);
+	vuint4 ii = 1; vfloat4 vbestSAH = pos_inf; vuint4 vbestPos = 0; 
+	count = 0; bx = empty; by = empty; bz = empty;
+	for (size_t i=1; i<mapping.size(); i++, ii+=1)
+        {
+          count += counts(i-1);
+          bx.extend(bounds(i-1,0)); float Ax = expectedApproxHalfArea(bx);
+          by.extend(bounds(i-1,1)); float Ay = expectedApproxHalfArea(by);
+          bz.extend(bounds(i-1,2)); float Az = expectedApproxHalfArea(bz);
+          const vfloat4 lArea = vfloat4(Ax,Ay,Az,Az);
+          const vfloat4 rArea = rAreas[i];
+          const vfloat4 lCount = floor(vfloat4(count     +blocks_add)*blocks_factor);
+          const vfloat4 rCount = floor(vfloat4(rCounts[i]+blocks_add)*blocks_factor);
+          const vfloat4 sah = madd(lArea,lCount,rArea*rCount);
 
           vbestPos = select(sah < vbestSAH,ii ,vbestPos);
           vbestSAH = select(sah < vbestSAH,sah,vbestSAH);

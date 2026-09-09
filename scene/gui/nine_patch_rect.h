@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NINE_PATCH_RECT_H
-#define NINE_PATCH_RECT_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -55,10 +54,11 @@ public:
 
 protected:
 	void _notification(int p_what);
-	virtual Size2 get_minimum_size() const override;
 	static void _bind_methods();
 
 public:
+	virtual Size2 get_minimum_size() const override;
+
 	void set_texture(const Ref<Texture2D> &p_tex);
 	Ref<Texture2D> get_texture() const;
 
@@ -82,5 +82,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(NinePatchRect::AxisStretchMode)
-
-#endif // NINE_PATCH_RECT_H

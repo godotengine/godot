@@ -33,12 +33,10 @@ extern "C" {
 #include <stdlib.h>
 #include <sys/types.h>
 
-/* GODOT ADDITTION */
 #if defined(_MSC_VER)
 #include <BaseTsd.h>
 typedef SSIZE_T ssize_t;
 #endif
-/* GODOT END */
 
 /*
  * wslay/wslayver.h is generated from wslay/wslayver.h.in by

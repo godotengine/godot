@@ -6,7 +6,7 @@
   <project_license>MIT</project_license>
   <name>Godot Engine</name>
   <summary>Multi-platform 2D and 3D game engine with a feature-rich editor</summary>
-  ​<launchable type="desktop-id">org.godotengine.Godot.desktop</launchable>
+  <launchable type="desktop-id">org.godotengine.Godot.desktop</launchable>
   <description>
     <p>
       Godot is an advanced, feature-packed, multi-platform 2D and 3D game
@@ -20,16 +20,16 @@
     </p>
   </description>
   <screenshots>
-    <screenshot type="default" width="1330" height="720">
+    <screenshot type="default" width="1279" height="758">
       <caption>3D project loaded in the Godot Engine editor</caption>
-      <image>https://download.tuxfamily.org/godotengine/media/screenshots/editor_3d_fracteed-720p.jpg</image>
+      <image>https://docs.godotengine.org/en/stable/_images/introduction_editor.webp</image>
     </screenshot>
   </screenshots>
   <url type="homepage">https://godotengine.org</url>
   <url type="bugtracker">https://github.com/godotengine/godot/issues</url>
   <url type="faq">https://docs.godotengine.org/en/latest/about/faq.html</url>
   <url type="help">https://docs.godotengine.org</url>
-  <url type="donation">https://godotengine.org/donate</url>
+  <url type="donation">https://fund.godotengine.org</url>
   <url type="translate">https://hosted.weblate.org/projects/godot-engine/godot</url>
   <developer_name>The Godot Engine Community</developer_name>
   <update_contact>akien_at_godotengine_dot_org</update_contact>

@@ -88,7 +88,7 @@ typedef struct OpenTypeOffsetTable
 			       unsigned int *table_count, /* IN/OUT */
 			       hb_tag_t     *table_tags /* OUT */) const
   {
-    if (table_count)
+    if (table_count && table_tags)
     {
       + tables.as_array ().sub_array (start_offset, table_count)
       | hb_map (&TableRecord::tag)
@@ -250,7 +250,7 @@ struct TTCHeader
   {
     switch (u.header.version.major) {
     case 2: /* version 2 is compatible with version 1 */
-    case 1: return u.version1.get_face_count ();
+    case 1: hb_barrier (); return u.version1.get_face_count ();
     default:return 0;
     }
   }
@@ -258,7 +258,7 @@ struct TTCHeader
   {
     switch (u.header.version.major) {
     case 2: /* version 2 is compatible with version 1 */
-    case 1: return u.version1.get_face (i);
+    case 1: hb_barrier (); return u.version1.get_face (i);
     default:return Null (OpenTypeFontFace);
     }
   }
@@ -267,9 +267,10 @@ struct TTCHeader
   {
     TRACE_SANITIZE (this);
     if (unlikely (!u.header.version.sanitize (c))) return_trace (false);
+    hb_barrier ();
     switch (u.header.version.major) {
     case 2: /* version 2 is compatible with version 1 */
-    case 1: return_trace (u.version1.sanitize (c));
+    case 1: hb_barrier (); return_trace (u.version1.sanitize (c));
     default:return_trace (true);
     }
   }
@@ -302,6 +303,7 @@ struct ResourceRecord
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
 		  offset.sanitize (c, data_base) &&
+		  hb_barrier () &&
 		  get_face (data_base).sanitize (c));
   }
 
@@ -337,6 +339,7 @@ struct ResourceTypeRecord
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  resourcesZ.sanitize (c, type_base,
 				       get_resource_count (),
 				       data_base));
@@ -385,6 +388,7 @@ struct ResourceMap
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  typeList.sanitize (c, this,
 				     &(this+typeList),
 				     data_base));
@@ -428,6 +432,7 @@ struct ResourceForkHeader
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  data.sanitize (c, this, dataLen) &&
 		  map.sanitize (c, this, &(this+data)));
   }
@@ -460,17 +465,17 @@ struct OpenTypeFontFile
     Typ1Tag		= HB_TAG ('t','y','p','1')  /* Obsolete Apple Type1 font in SFNT container */
   };
 
-  hb_tag_t get_tag () const { return u.tag; }
+  hb_tag_t get_tag () const { return u.tag.v; }
 
   unsigned int get_face_count () const
   {
-    switch (u.tag) {
+    switch (u.tag.v) {
     case CFFTag:	/* All the non-collection tags */
     case TrueTag:
     case Typ1Tag:
     case TrueTypeTag:	return 1;
-    case TTCTag:	return u.ttcHeader.get_face_count ();
-    case DFontTag:	return u.rfHeader.get_face_count ();
+    case TTCTag:	hb_barrier (); return u.ttcHeader.get_face_count ();
+    case DFontTag:	hb_barrier (); return u.rfHeader.get_face_count ();
     default:		return 0;
     }
   }
@@ -478,16 +483,16 @@ struct OpenTypeFontFile
   {
     if (base_offset)
       *base_offset = 0;
-    switch (u.tag) {
+    switch (u.tag.v) {
     /* Note: for non-collection SFNT data we ignore index.  This is because
      * Apple dfont container is a container of SFNT's.  So each SFNT is a
      * non-TTC, but the index is more than zero. */
     case CFFTag:	/* All the non-collection tags */
     case TrueTag:
     case Typ1Tag:
-    case TrueTypeTag:	return u.fontFace;
-    case TTCTag:	return u.ttcHeader.get_face (i);
-    case DFontTag:	return u.rfHeader.get_face (i, base_offset);
+    case TrueTypeTag:	hb_barrier (); return u.fontFace;
+    case TTCTag:	hb_barrier (); return u.ttcHeader.get_face (i);
+    case DFontTag:	hb_barrier (); return u.rfHeader.get_face (i, base_offset);
     default:		return Null (OpenTypeFontFace);
     }
   }
@@ -507,27 +512,28 @@ struct OpenTypeFontFile
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (unlikely (!u.tag.sanitize (c))) return_trace (false);
-    switch (u.tag) {
+    if (unlikely (!u.tag.v.sanitize (c))) return_trace (false);
+    hb_barrier ();
+    switch (u.tag.v) {
     case CFFTag:	/* All the non-collection tags */
     case TrueTag:
     case Typ1Tag:
-    case TrueTypeTag:	return_trace (u.fontFace.sanitize (c));
-    case TTCTag:	return_trace (u.ttcHeader.sanitize (c));
-    case DFontTag:	return_trace (u.rfHeader.sanitize (c));
+    case TrueTypeTag:	hb_barrier (); return_trace (u.fontFace.sanitize (c));
+    case TTCTag:	hb_barrier (); return_trace (u.ttcHeader.sanitize (c));
+    case DFontTag:	hb_barrier (); return_trace (u.rfHeader.sanitize (c));
     default:		return_trace (true);
     }
   }
 
   protected:
   union {
-  Tag			tag;		/* 4-byte identifier. */
+  struct { Tag v; }	tag;		/* 4-byte identifier. */
   OpenTypeFontFace	fontFace;
   TTCHeader		ttcHeader;
   ResourceForkHeader	rfHeader;
   } u;
   public:
-  DEFINE_SIZE_UNION (4, tag);
+  DEFINE_SIZE_UNION (4, tag.v);
 };
 
 

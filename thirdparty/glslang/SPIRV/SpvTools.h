@@ -44,67 +44,63 @@
 #if ENABLE_OPT
 #include <vector>
 #include <ostream>
+#include <unordered_set>
 #include "spirv-tools/libspirv.h"
 #endif
 
-#include "glslang/MachineIndependent/localintermediate.h"
+#include "glslang/MachineIndependent/Versions.h"
+#include "glslang/Include/visibility.h"
+#include "GlslangToSpv.h"
 #include "Logger.h"
 
 namespace glslang {
 
-struct SpvOptions {
-    bool generateDebugInfo {false};
-    bool stripDebugInfo {false};
-    bool disableOptimizer {true};
-    bool optimizeSize {false};
-    bool disassemble {false};
-    bool validate {false};
-    bool emitNonSemanticShaderDebugInfo {false};
-    bool emitNonSemanticShaderDebugSource{ false };
-    bool compileOnly{false};
-};
-
 #if ENABLE_OPT
 
+class TIntermediate;
+
 // Translate glslang's view of target versioning to what SPIRV-Tools uses.
-spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLogger* logger);
+GLSLANG_EXPORT spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLogger* logger);
+GLSLANG_EXPORT spv_target_env MapToSpirvToolsEnv(const glslang::TIntermediate& intermediate, spv::SpvBuildLogger* logger);
 
 // Use the SPIRV-Tools disassembler to print SPIR-V using a SPV_ENV_UNIVERSAL_1_3 environment.
-void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& spirv);
+GLSLANG_EXPORT void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& spirv);
 
 // Use the SPIRV-Tools disassembler to print SPIR-V with a provided SPIR-V environment.
-void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& spirv,
-                           spv_target_env requested_context);
+GLSLANG_EXPORT void SpirvToolsDisassemble(std::ostream& out, const std::vector<unsigned int>& spirv,
+                                          spv_target_env requested_context);
 
 // Apply the SPIRV-Tools validator to generated SPIR-V.
-void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
-                        spv::SpvBuildLogger*, bool prelegalization);
+GLSLANG_EXPORT void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
+                                       spv::SpvBuildLogger*, bool prelegalization);
 
 // Apply the SPIRV-Tools optimizer to generated SPIR-V.  HLSL SPIR-V is legalized in the process.
-void SpirvToolsTransform(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
-                         spv::SpvBuildLogger*, const SpvOptions*);
+GLSLANG_EXPORT void SpirvToolsTransform(const glslang::TIntermediate& intermediate, std::vector<unsigned int>& spirv,
+                                        spv::SpvBuildLogger*, const SpvOptions*);
 
 // Apply the SPIRV-Tools EliminateDeadInputComponents pass to generated SPIR-V. Put result in |spirv|.
-void SpirvToolsEliminateDeadInputComponents(spv_target_env target_env, std::vector<unsigned int>& spirv,
-                                            spv::SpvBuildLogger*);
+GLSLANG_EXPORT void SpirvToolsEliminateDeadInputComponents(spv_target_env target_env, std::vector<unsigned int>& spirv,
+                                                           spv::SpvBuildLogger*);
 
 // Apply the SPIRV-Tools AnalyzeDeadOutputStores pass to generated SPIR-V. Put result in |live_locs|.
 // Return true if the result is valid.
-bool SpirvToolsAnalyzeDeadOutputStores(spv_target_env target_env, std::vector<unsigned int>& spirv,
-                                       std::unordered_set<uint32_t>* live_locs,
-                                       std::unordered_set<uint32_t>* live_builtins, spv::SpvBuildLogger*);
+GLSLANG_EXPORT bool SpirvToolsAnalyzeDeadOutputStores(spv_target_env target_env, std::vector<unsigned int>& spirv,
+                                                      std::unordered_set<uint32_t>* live_locs,
+                                                      std::unordered_set<uint32_t>* live_builtins,
+                                                      spv::SpvBuildLogger*);
 
 // Apply the SPIRV-Tools EliminateDeadOutputStores and AggressiveDeadCodeElimination passes to generated SPIR-V using
 // |live_locs|. Put result in |spirv|.
-void SpirvToolsEliminateDeadOutputStores(spv_target_env target_env, std::vector<unsigned int>& spirv,
-                                         std::unordered_set<uint32_t>* live_locs,
-                                         std::unordered_set<uint32_t>* live_builtins, spv::SpvBuildLogger*);
+GLSLANG_EXPORT void SpirvToolsEliminateDeadOutputStores(spv_target_env target_env, std::vector<unsigned int>& spirv,
+                                                        std::unordered_set<uint32_t>* live_locs,
+                                                        std::unordered_set<uint32_t>* live_builtins,
+                                                        spv::SpvBuildLogger*);
 
 // Apply the SPIRV-Tools optimizer to strip debug info from SPIR-V.  This is implicitly done by
 // SpirvToolsTransform if spvOptions->stripDebugInfo is set, but can be called separately if
 // optimization is disabled.
-void SpirvToolsStripDebugInfo(const glslang::TIntermediate& intermediate,
-        std::vector<unsigned int>& spirv, spv::SpvBuildLogger*);
+GLSLANG_EXPORT void SpirvToolsStripDebugInfo(const glslang::TIntermediate& intermediate,
+                                             std::vector<unsigned int>& spirv, spv::SpvBuildLogger*);
 
 #endif
 

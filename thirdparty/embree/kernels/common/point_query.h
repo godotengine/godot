@@ -120,6 +120,7 @@ namespace embree
   typedef PointQueryK<4>  PointQuery4;
   typedef PointQueryK<8>  PointQuery8;
   typedef PointQueryK<16> PointQuery16;
+  typedef PointQueryK<VSIZEX> PointQueryx;
   struct PointQueryN;
 
   /* Outputs point query to stream */

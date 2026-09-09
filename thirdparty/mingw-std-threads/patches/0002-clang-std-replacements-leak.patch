@@ -1,0 +1,65 @@
+diff --git a/thirdparty/mingw-std-threads/mingw.condition_variable.h b/thirdparty/mingw-std-threads/mingw.condition_variable.h
+index f9e248c154..d099fad2ec 100644
+--- a/thirdparty/mingw-std-threads/mingw.condition_variable.h
++++ b/thirdparty/mingw-std-threads/mingw.condition_variable.h
+@@ -58,7 +58,7 @@
+ 
+ namespace mingw_stdthread
+ {
+-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
++#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
+ enum class cv_status { no_timeout, timeout };
+ #else
+ using std::cv_status;
+@@ -547,7 +547,7 @@ namespace std
+ //  was none. Direct specification (std::), however, would be unaffected.
+ //    Take the safe option, and include only in the presence of MinGW's win32
+ //  implementation.
+-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
++#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
+ using mingw_stdthread::cv_status;
+ using mingw_stdthread::condition_variable;
+ using mingw_stdthread::condition_variable_any;
+diff --git a/thirdparty/mingw-std-threads/mingw.mutex.h b/thirdparty/mingw-std-threads/mingw.mutex.h
+index 73698d13cb..1e881e6c7d 100644
+--- a/thirdparty/mingw-std-threads/mingw.mutex.h
++++ b/thirdparty/mingw-std-threads/mingw.mutex.h
+@@ -480,7 +480,7 @@ namespace std
+ //  was none. Direct specification (std::), however, would be unaffected.
+ //    Take the safe option, and include only in the presence of MinGW's win32
+ //  implementation.
+-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
++#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
+ using mingw_stdthread::recursive_mutex;
+ using mingw_stdthread::mutex;
+ using mingw_stdthread::recursive_timed_mutex;
+diff --git a/thirdparty/mingw-std-threads/mingw.shared_mutex.h b/thirdparty/mingw-std-threads/mingw.shared_mutex.h
+index 5375b0fbd1..ddc46bb826 100644
+--- a/thirdparty/mingw-std-threads/mingw.shared_mutex.h
++++ b/thirdparty/mingw-std-threads/mingw.shared_mutex.h
+@@ -484,10 +484,10 @@ namespace std
+ //  was none. Direct specification (std::), however, would be unaffected.
+ //    Take the safe option, and include only in the presence of MinGW's win32
+ //  implementation.
+-#if (__cplusplus < 201703L) || (defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS))
++#if (__cplusplus < 201703L) || (defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__))
+ using mingw_stdthread::shared_mutex;
+ #endif
+-#if (__cplusplus < 201402L) || (defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS))
++#if (__cplusplus < 201402L) || (defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__))
+ using mingw_stdthread::shared_timed_mutex;
+ using mingw_stdthread::shared_lock;
+ #elif !defined(MINGW_STDTHREAD_REDUNDANCY_WARNING)  //  Skip repetition
+diff --git a/thirdparty/mingw-std-threads/mingw.thread.h b/thirdparty/mingw-std-threads/mingw.thread.h
+index 4bcc63e1b1..60d2200db2 100644
+--- a/thirdparty/mingw-std-threads/mingw.thread.h
++++ b/thirdparty/mingw-std-threads/mingw.thread.h
+@@ -325,7 +325,7 @@ namespace std
+ //  was none. Direct specification (std::), however, would be unaffected.
+ //    Take the safe option, and include only in the presence of MinGW's win32
+ //  implementation.
+-#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS)
++#if defined(__MINGW32__ ) && !defined(_GLIBCXX_HAS_GTHREADS) && !defined(__clang__)
+ using mingw_stdthread::thread;
+ //    Remove ambiguity immediately, to avoid problems arising from the above.
+ //using std::thread;

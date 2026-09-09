@@ -24,6 +24,7 @@
  * Google Author(s): Garret Rieger, Rod Sheeter, Behdad Esfahbod
  */
 
+#include "hb-subset-instancer-solver.hh"
 #include "hb-subset.hh"
 #include "hb-set.hh"
 #include "hb-utf.hh"
@@ -50,7 +51,6 @@ hb_subset_input_t::hb_subset_input_t ()
     HB_TAG ('k', 'e', 'r', 'n'),
 
     // Copied from fontTools:
-    HB_TAG ('B', 'A', 'S', 'E'),
     HB_TAG ('J', 'S', 'T', 'F'),
     HB_TAG ('D', 'S', 'I', 'G'),
     HB_TAG ('E', 'B', 'D', 'T'),
@@ -122,6 +122,13 @@ hb_subset_input_t::hb_subset_input_t ()
 
     //justify
     HB_TAG ('j', 'a', 'l', 't'), // HarfBuzz doesn't use; others might
+
+    //East Asian spacing
+    HB_TAG ('c', 'h', 'w', 's'),
+    HB_TAG ('v', 'c', 'h', 'w'),
+    HB_TAG ('h', 'a', 'l', 't'),
+    HB_TAG ('v', 'h', 'a', 'l'),
+    HB_TAG ('p', 'a', 'l', 't'),
 
     //private
     HB_TAG ('H', 'a', 'r', 'f'),
@@ -406,11 +413,51 @@ hb_subset_input_keep_everything (hb_subset_input_t *input)
   hb_subset_input_set_flags (input,
 			     HB_SUBSET_FLAGS_NOTDEF_OUTLINE |
 			     HB_SUBSET_FLAGS_GLYPH_NAMES |
+			     HB_SUBSET_FLAGS_NAME_LEGACY |
 			     HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES |
                              HB_SUBSET_FLAGS_PASSTHROUGH_UNRECOGNIZED);
 }
 
 #ifndef HB_NO_VAR
+/**
+ * hb_subset_input_pin_all_axes_to_default: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
+ *
+ * Pin all axes to default locations in the given subset input object.
+ *
+ * The `CFF2` table, if present, will be de-subroutinized.
+ *
+ * Return value: `true` if success, `false` otherwise
+ *
+ * Since: 8.3.1
+ **/
+HB_EXTERN hb_bool_t
+hb_subset_input_pin_all_axes_to_default (hb_subset_input_t  *input,
+                                         hb_face_t          *face)
+{
+  unsigned axis_count = hb_ot_var_get_axis_count (face);
+  if (!axis_count) return false;
+
+  hb_ot_var_axis_info_t *axis_infos = (hb_ot_var_axis_info_t *) hb_calloc (axis_count, sizeof (hb_ot_var_axis_info_t));
+  if (unlikely (!axis_infos)) return false;
+
+  (void) hb_ot_var_get_axis_infos (face, 0, &axis_count, axis_infos);
+
+  for (unsigned i = 0; i < axis_count; i++)
+  {
+    hb_tag_t axis_tag = axis_infos[i].tag;
+    double default_val = (double) axis_infos[i].default_value;
+    if (!input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val)))
+    {
+      hb_free (axis_infos);
+      return false;
+    }
+  }
+  hb_free (axis_infos);
+  return true;
+}
+
 /**
  * hb_subset_input_pin_axis_to_default: (skip)
  * @input: a #hb_subset_input_t object.
@@ -419,8 +466,7 @@ hb_subset_input_keep_everything (hb_subset_input_t *input)
  *
  * Pin an axis to its default location in the given subset input object.
  *
- * All axes in a font must be pinned. Additionally, `CFF2` table, if present,
- * will be de-subroutinized.
+ * The `CFF2` table, if present, will be de-subroutinized.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -435,7 +481,7 @@ hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  float default_val = axis_info.default_value;
+  double default_val = (double) axis_info.default_value;
   return input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val));
 }
 
@@ -448,8 +494,7 @@ hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
  *
  * Pin an axis to a fixed location in the given subset input object.
  *
- * All axes in a font must be pinned. Additionally, `CFF2` table, if present,
- * will be de-subroutinized.
+ * The `CFF2` table, if present, will be de-subroutinized.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -465,37 +510,32 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  float val = hb_clamp(axis_value, axis_info.min_value, axis_info.max_value);
+  double val = hb_clamp((double) axis_value, (double) axis_info.min_value, (double) axis_info.max_value);
   return input->axes_location.set (axis_tag, Triple (val, val, val));
 }
 
-#ifdef HB_EXPERIMENTAL_API
 /**
  * hb_subset_input_set_axis_range: (skip)
  * @input: a #hb_subset_input_t object.
  * @face: a #hb_face_t object.
  * @axis_tag: Tag of the axis
- * @axis_min_value: Minimum value of the axis variation range to set
- * @axis_max_value: Maximum value of the axis variation range to set
- * @axis_def_value: Default value of the axis variation range to set, in case of
- * null, it'll be determined automatically
+ * @axis_min_value: Minimum value of the axis variation range to set, if NaN the existing min will be used.
+ * @axis_max_value: Maximum value of the axis variation range to set  if NaN the existing max will be used.
+ * @axis_def_value: Default value of the axis variation range to set, if NaN the existing default will be used.
  *
  * Restricting the range of variation on an axis in the given subset input object.
  * New min/default/max values will be clamped if they're not within the fvar axis range.
- * If the new default value is null:
- * If the fvar axis default value is within the new range, then new default
- * value is the same as original default value.
+ *
  * If the fvar axis default value is not within the new range, the new default
  * value will be changed to the new min or max value, whichever is closer to the fvar
  * axis default.
  *
  * Note: input min value can not be bigger than input max value. If the input
  * default value is not within the new min/max range, it'll be clamped.
- * Note: currently it supports gvar and cvar tables only.
  *
  * Return value: `true` if success, `false` otherwise
  *
- * XSince: EXPERIMENTAL
+ * Since: 8.5.0
  **/
 HB_EXTERN hb_bool_t
 hb_subset_input_set_axis_range (hb_subset_input_t  *input,
@@ -503,22 +543,563 @@ hb_subset_input_set_axis_range (hb_subset_input_t  *input,
                                 hb_tag_t            axis_tag,
                                 float               axis_min_value,
                                 float               axis_max_value,
-                                float              *axis_def_value /* IN, maybe NULL */)
+                                float               axis_def_value)
 {
-  if (axis_min_value > axis_max_value)
-    return false;
-
   hb_ot_var_axis_info_t axis_info;
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  float new_min_val = hb_clamp(axis_min_value, axis_info.min_value, axis_info.max_value);
-  float new_max_val = hb_clamp(axis_max_value, axis_info.min_value, axis_info.max_value);
-  float new_default_val = axis_def_value ? *axis_def_value : axis_info.default_value;
-  new_default_val = hb_clamp(new_default_val, new_min_val, new_max_val);
-  return input->axes_location.set (axis_tag, Triple (new_min_val, new_default_val, new_max_val));
+  float min = !std::isnan(axis_min_value) ? axis_min_value : axis_info.min_value;
+  float max = !std::isnan(axis_max_value) ? axis_max_value : axis_info.max_value;
+  float def = !std::isnan(axis_def_value) ? axis_def_value : axis_info.default_value;
+
+  if (min > max)
+    return false;
+
+  float new_min_val = hb_clamp(min, axis_info.min_value, axis_info.max_value);
+  float new_max_val = hb_clamp(max, axis_info.min_value, axis_info.max_value);
+  float new_default_val = hb_clamp(def, new_min_val, new_max_val);
+  return input->axes_location.set (axis_tag, Triple ((double) new_min_val, (double) new_default_val, (double) new_max_val));
+}
+
+/**
+ * hb_subset_input_get_axis_range: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @axis_tag: Tag of the axis
+ * @axis_min_value: Set to the previously configured minimum value of the axis variation range.
+ * @axis_max_value: Set to the previously configured maximum value of the axis variation range.
+ * @axis_def_value: Set to the previously configured default value of the axis variation range.
+ *
+ * Gets the axis range assigned by previous calls to hb_subset_input_set_axis_range.
+ *
+ * Return value: `true` if a range has been set for this axis tag, `false` otherwise.
+ *
+ * Since: 8.5.0
+ **/
+HB_EXTERN hb_bool_t
+hb_subset_input_get_axis_range (hb_subset_input_t  *input,
+				hb_tag_t            axis_tag,
+				float              *axis_min_value,
+				float              *axis_max_value,
+				float              *axis_def_value)
+
+{
+  Triple* triple;
+  if (!input->axes_location.has(axis_tag, &triple)) {
+    return false;
+  }
+
+  *axis_min_value = triple->minimum;
+  *axis_def_value = triple->middle;
+  *axis_max_value = triple->maximum;
+  return true;
+}
+
+/**
+ * hb_subset_axis_range_from_string:
+ * @str: a string to parse
+ * @len: length of @str, or -1 if str is NULL terminated
+ * @axis_min_value: (out): the axis min value to initialize with the parsed value
+ * @axis_max_value: (out): the axis max value to initialize with the parsed value
+ * @axis_def_value: (out): the axis default value to initialize with the parse
+ * value
+ *
+ * Parses a string into a subset axis range(min, def, max).
+ * Axis positions string is in the format of min:def:max or min:max
+ * When parsing axis positions, empty values as meaning the existing value for that part
+ * E.g: :300:500
+ * Specifies min = existing, def = 300, max = 500
+ * In the output axis_range, if a value should be set to it's default value,
+ * then it will be set to NaN
+ *
+ * Return value:
+ * `true` if @str is successfully parsed, `false` otherwise
+ *
+ * Since: 10.2.0
+ */
+HB_EXTERN hb_bool_t
+hb_subset_axis_range_from_string (const char *str, int len,
+                                  float *axis_min_value,
+                                  float *axis_max_value,
+                                  float *axis_def_value)
+{
+  if (len < 0)
+    len = strlen (str);
+
+  const char *end = str + len;
+  const char* part = strpbrk (str, ":");
+  if (!part)
+  {
+    // Single value.
+    if (strcmp (str, "drop") == 0)
+    {
+      *axis_min_value = NAN;
+      *axis_def_value = NAN;
+      *axis_max_value = NAN;
+      return true;
+    }
+
+    double v;
+    if (!hb_parse_double (&str, end, &v)) return false;
+
+    *axis_min_value = v;
+    *axis_def_value = v;
+    *axis_max_value = v;
+    return true;
+  }
+
+  float values[3];
+  int count = 0;
+  for (int i = 0; i < 3; i++) {
+    count++;
+    if (!*str || part == str)
+    {
+      values[i] = NAN;
+
+      if (part == NULL) break;
+      str = part + 1;
+      part = strpbrk (str, ":");
+      continue;
+    }
+
+    double v;
+    if (!hb_parse_double (&str, part, &v)) return false;
+    values[i] = v;
+
+    if (part == NULL) break;
+    str = part + 1;
+    part = strpbrk (str, ":");
+  }
+
+  if (count == 2)
+  {
+    *axis_min_value = values[0];
+    *axis_def_value = NAN;
+    *axis_max_value = values[1];
+    return true;
+  }
+  else if (count == 3)
+  {
+    *axis_min_value = values[0];
+    *axis_def_value = values[1];
+    *axis_max_value = values[2];
+    return true;
+  }
+  return false;
+}
+
+/**
+ * hb_subset_axis_range_to_string:
+ * @input: a #hb_subset_input_t object.
+ * @axis_tag: an axis to convert
+ * @buf: (array length=size) (out caller-allocates): output string
+ * @size: the allocated size of @buf
+ *
+ * Converts an axis range into a `NULL`-terminated string in the format
+ * understood by hb_subset_axis_range_from_string(). The client in responsible for
+ * allocating big enough size for @buf, 128 bytes is more than enough.
+ *
+ * Since: 10.2.0
+ */
+HB_EXTERN void
+hb_subset_axis_range_to_string (hb_subset_input_t *input,
+                                hb_tag_t axis_tag,
+                                char *buf, unsigned size)
+{
+  if (unlikely (!size)) return;
+  Triple* triple;
+  if (!input->axes_location.has(axis_tag, &triple)) {
+    return;
+  }
+
+  char s[128];
+  unsigned len = 0;
+
+  hb_locale_t clocale HB_UNUSED;
+  hb_locale_t oldlocale HB_UNUSED;
+  oldlocale = hb_uselocale (clocale = newlocale (LC_ALL_MASK, "C", NULL));
+  len += hb_max (0, snprintf (s, ARRAY_LENGTH (s) - len, "%g", (double) triple->minimum));
+  s[len++] = ':';
+
+  len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%g", (double) triple->middle));
+  s[len++] = ':';
+
+  len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%g", (double) triple->maximum));
+  (void) hb_uselocale (((void) freelocale (clocale), oldlocale));
+
+  assert (len < ARRAY_LENGTH (s));
+  len = hb_min (len, size - 1);
+  hb_memcpy (buf, s, len);
+  buf[len] = '\0';
 }
 #endif
+
+#ifdef HB_EXPERIMENTAL_API
+static void
+_append_arg (hb_vector_t<char> &sb, const char *arg)
+{
+  if (sb.in_error ()) return;
+  if (sb.length)
+    sb.push (' ');
+  unsigned len = strlen (arg);
+  sb.extend (hb_bytes_t (arg, len));
+}
+static void
+_format_number_set (const hb_set_t *set, hb_vector_t<char> &out, unsigned base = 10)
+{
+  assert (base == 10 || base == 16);
+  if (unlikely (base != 10 && base != 16)) return;
+
+  hb_codepoint_t first = HB_SET_VALUE_INVALID, last = HB_SET_VALUE_INVALID;
+  bool first_range = true;
+  while (hb_set_next_range (set, &first, &last))
+  {
+    if (!first_range)
+      out.push (',');
+    first_range = false;
+
+    char buf[64];
+    int len;
+    if (first == last)
+    {
+      if (base == 16)
+        len = snprintf (buf, sizeof (buf), "%X", first);
+      else
+        len = snprintf (buf, sizeof (buf), "%u", first);
+    }
+    else
+    {
+      if (base == 16)
+        len = snprintf (buf, sizeof (buf), "%X-%X", first, last);
+      else
+        len = snprintf (buf, sizeof (buf), "%u-%u", first, last);
+    }
+    if (unlikely (len < 0 || (size_t) len >= sizeof (buf))) return;
+    out.extend (hb_bytes_t (buf, len));
+  }
+}
+
+static void
+_format_tag (hb_tag_t tag, hb_vector_t<char> &out)
+{
+  char buf[4];
+  hb_tag_to_string (tag, buf);
+
+  unsigned len = 4;
+  while (len > 0 && buf[len - 1] == ' ')
+    len--;
+
+  for (unsigned i = 0; i < len; i++)
+  {
+    char c = buf[i];
+    if (!((c >= 'a' && c <= 'z') ||
+          (c >= 'A' && c <= 'Z') ||
+          (c >= '0' && c <= '9') ||
+          c == '-' || c == '_'))
+    {
+      c = '_';
+    }
+    out.push (c);
+  }
+}
+
+static void
+_format_tag_set (const hb_set_t *set, hb_vector_t<char> &out)
+{
+  bool first_tag = true;
+  for (hb_codepoint_t tag : *set)
+  {
+    if (!first_tag)
+      out.push (',');
+    first_tag = false;
+
+    _format_tag (tag, out);
+  }
+}
+
+static bool
+_is_set_default (const hb_set_t *set, const hb_set_t *default_set)
+{
+  return hb_set_is_inverted (set) == hb_set_is_inverted (default_set) &&
+         hb_set_is_equal (set, default_set);
+}
+
+template <typename Formatter>
+static void
+_format_set_arg (const hb_set_t *set,
+                 const char *opt_name,
+                 Formatter &&formatter,
+                 hb_vector_t<char> &sb)
+{
+  if (hb_set_is_inverted (set))
+  {
+    hb_set_t *excluded = hb_set_copy (set);
+    hb_set_invert (excluded);
+
+    hb_vector_t<char> opt;
+    opt.extend (hb_bytes_t ("--", 2));
+    opt.extend (hb_bytes_t (opt_name, strlen (opt_name)));
+    opt.extend (hb_bytes_t ("=*", 2));
+    opt.push ('\0');
+    if (opt.arrayZ) _append_arg (sb, opt.arrayZ);
+
+    if (!hb_set_is_empty (excluded))
+    {
+      hb_vector_t<char> formatted;
+      formatter (excluded, formatted);
+      if (formatted.length)
+      {
+        hb_vector_t<char> opt2;
+        opt2.extend (hb_bytes_t ("--", 2));
+        opt2.extend (hb_bytes_t (opt_name, strlen (opt_name)));
+        opt2.extend (hb_bytes_t ("-=", 2));
+        opt2.extend (formatted.as_array ());
+        opt2.push ('\0');
+        if (opt2.arrayZ) _append_arg (sb, opt2.arrayZ);
+      }
+    }
+    hb_set_destroy (excluded);
+  }
+  else if (hb_set_is_empty (set))
+  {
+    hb_vector_t<char> opt;
+    opt.extend (hb_bytes_t ("--", 2));
+    opt.extend (hb_bytes_t (opt_name, strlen (opt_name)));
+    opt.extend (hb_bytes_t ("-=*", 3));
+    opt.push ('\0');
+    if (opt.arrayZ) _append_arg (sb, opt.arrayZ);
+  }
+  else
+  {
+    hb_vector_t<char> formatted;
+    formatter (set, formatted);
+    if (formatted.length)
+    {
+      hb_vector_t<char> opt;
+      opt.extend (hb_bytes_t ("--", 2));
+      opt.extend (hb_bytes_t (opt_name, strlen (opt_name)));
+      opt.extend (hb_bytes_t ("=", 1));
+      opt.extend (formatted.as_array ());
+      opt.push ('\0');
+      if (opt.arrayZ) _append_arg (sb, opt.arrayZ);
+    }
+  }
+}
+
+static void
+_format_number_set_arg (const hb_set_t *set,
+                        const char *opt_name,
+                        hb_vector_t<char> &sb,
+                        unsigned base = 10)
+{
+  _format_set_arg (set, opt_name, [base] (const hb_set_t *s, hb_vector_t<char> &out) {
+    _format_number_set (s, out, base);
+  }, sb);
+}
+
+static void
+_format_tag_set_arg (const hb_set_t *set,
+                     const char *opt_name,
+                     hb_vector_t<char> &sb)
+{
+  _format_set_arg (set, opt_name, _format_tag_set, sb);
+}
+
+static bool
+_format_glyph_map_arg (const hb_map_t &glyph_map,
+                       hb_vector_t<char> &sb)
+{
+  if (glyph_map.is_empty ())
+    return true;
+
+  hb_set_t keys;
+  hb_map_keys (&glyph_map, &keys);
+  hb_vector_t<char> pairs;
+  bool first = true;
+  for (hb_codepoint_t key : keys)
+  {
+    if (!first)
+      pairs.push (',');
+    first = false;
+    hb_codepoint_t val = hb_map_get (&glyph_map, key);
+    char buf[64];
+    int len = snprintf (buf, sizeof (buf), "%u:%u", key, val);
+    if (unlikely (len < 0 || (size_t) len >= sizeof (buf))) return false;
+    pairs.extend (hb_bytes_t (buf, len));
+  }
+  if (pairs.length)
+  {
+    hb_vector_t<char> opt;
+    opt.extend (hb_bytes_t ("--gid-map=", 10));
+    opt.extend (pairs.as_array ());
+    opt.push ('\0');
+    if (opt.arrayZ) _append_arg (sb, opt.arrayZ);
+  }
+  return true;
+}
+
+static bool
+_format_axes_location_arg (const hb_hashmap_t<hb_tag_t, Triple> &axes_location,
+                           hb_vector_t<char> &sb)
+{
+  if (axes_location.is_empty ())
+    return true;
+
+  hb_vector_t<hb_tag_t> axis_tags;
+  for (auto tag : axes_location.keys ())
+    axis_tags.push (tag);
+  axis_tags.qsort ([] (const hb_tag_t &a, const hb_tag_t &b) { return a < b ? -1 : a > b ? 1 : 0; });
+
+  hb_vector_t<char> specs;
+  bool first = true;
+  for (hb_tag_t tag : axis_tags)
+  {
+    Triple triple = axes_location.get (tag);
+    if (!first)
+      specs.push (',');
+    first = false;
+
+    hb_vector_t<char> tag_buf;
+    _format_tag (tag, tag_buf);
+
+    char buf[128];
+    int len;
+    if (triple.minimum == triple.middle && triple.middle == triple.maximum)
+    {
+      len = snprintf (buf, sizeof (buf), "%.*s=%g", (int) tag_buf.length, tag_buf.arrayZ, (double) triple.middle);
+    }
+    else if (std::isnan (triple.minimum) && std::isnan (triple.middle) && std::isnan (triple.maximum))
+    {
+      len = snprintf (buf, sizeof (buf), "%.*s=drop", (int) tag_buf.length, tag_buf.arrayZ);
+    }
+    else
+    {
+      len = snprintf (buf, sizeof (buf), "%.*s=%g:%g:%g", (int) tag_buf.length, tag_buf.arrayZ,
+                      (double) triple.minimum, (double) triple.middle, (double) triple.maximum);
+    }
+    if (unlikely (len < 0 || (size_t) len >= sizeof (buf))) return false;
+    specs.extend (hb_bytes_t (buf, len));
+  }
+  if (specs.length)
+  {
+    hb_vector_t<char> opt;
+    opt.extend (hb_bytes_t ("--variations=", 13));
+    opt.extend (specs.as_array ());
+    opt.push ('\0');
+    if (opt.arrayZ) _append_arg (sb, opt.arrayZ);
+  }
+  return true;
+}
+
+/**
+ * hb_subset_input_to_string_or_fail:
+ * @input: a #hb_subset_input_t object.
+ *
+ * Produces a command line string representation of the given subset input
+ * suitable for use with the `hb-subset` command line tool.
+ *
+ * Return value: (transfer full): A new #hb_blob_t containing the command line
+ * string, or `NULL` if failed. Destroy with hb_blob_destroy().
+ *
+ * XSince: EXPERIMENTAL
+ **/
+hb_blob_t *
+hb_subset_input_to_string_or_fail (hb_subset_input_t *input)
+{
+  if (unlikely (!input || input->in_error ()))
+    return nullptr;
+
+  hb_vector_t<char> sb;
+
+  struct flag_option_t {
+    hb_subset_flags_t flag;
+    char option[32];
+  };
+  static const flag_option_t flag_options[] = {
+    { HB_SUBSET_FLAGS_NO_HINTING, "no-hinting" },
+    { HB_SUBSET_FLAGS_RETAIN_GIDS, "retain-gids" },
+    { HB_SUBSET_FLAGS_DESUBROUTINIZE, "desubroutinize" },
+    { HB_SUBSET_FLAGS_NAME_LEGACY, "name-legacy" },
+    { HB_SUBSET_FLAGS_SET_OVERLAPS_FLAG, "set-overlaps-flag" },
+    { HB_SUBSET_FLAGS_PASSTHROUGH_UNRECOGNIZED, "passthrough-tables" },
+    { HB_SUBSET_FLAGS_NOTDEF_OUTLINE, "notdef-outline" },
+    { HB_SUBSET_FLAGS_GLYPH_NAMES, "glyph-names" },
+    { HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES, "no-prune-unicode-ranges" },
+    { HB_SUBSET_FLAGS_NO_LAYOUT_CLOSURE, "no-layout-closure" },
+    { HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS, "optimize" },
+    { HB_SUBSET_FLAGS_NO_BIDI_CLOSURE, "no-bidi-closure" },
+#ifdef HB_EXPERIMENTAL_API
+    { HB_SUBSET_FLAGS_IFTB_REQUIREMENTS, "iftb-requirements" },
+    { HB_SUBSET_FLAGS_RETAIN_NUM_GLYPHS, "retain-num-glyphs" },
+#endif
+    { HB_SUBSET_FLAGS_DOWNGRADE_CFF2, "downgrade-cff2" },
+  };
+
+#ifdef HB_EXPERIMENTAL_API
+  static_assert (sizeof (flag_options) / sizeof (flag_options[0]) == 15,
+                 "Check all flags in hb_subset_flags_t are handled here.");
+#else
+  static_assert (sizeof (flag_options) / sizeof (flag_options[0]) == 13,
+                 "Check all flags in hb_subset_flags_t are handled here.");
+#endif
+
+  for (const auto &fo : flag_options)
+  {
+    if (input->flags & fo.flag)
+    {
+      char buf[36];
+      snprintf (buf, sizeof (buf), "--%s", fo.option);
+      _append_arg (sb, buf);
+    }
+  }
+
+  hb_subset_input_t *default_input = hb_subset_input_create_or_fail ();
+  if (unlikely (!default_input))
+    return nullptr;
+
+  // Serialize all sets if they are not equal to their default setting:
+#define PROCESS_NUMBER_SET(field, opt_name, ...) \
+  if (!_is_set_default (input->sets.field, default_input->sets.field)) \
+    _format_number_set_arg (input->sets.field, opt_name, sb, ##__VA_ARGS__)
+
+#define PROCESS_TAG_SET(field, opt_name) \
+  if (!_is_set_default (input->sets.field, default_input->sets.field)) \
+    _format_tag_set_arg (input->sets.field, opt_name, sb)
+
+  PROCESS_NUMBER_SET (unicodes, "unicodes", 16);
+  PROCESS_NUMBER_SET (glyphs, "gids");
+  PROCESS_NUMBER_SET (name_ids, "name-IDs");
+  PROCESS_NUMBER_SET (name_languages, "name-languages");
+  PROCESS_TAG_SET (layout_features, "layout-features");
+  PROCESS_TAG_SET (layout_scripts, "layout-scripts");
+  PROCESS_TAG_SET (drop_tables, "drop-tables");
+  PROCESS_TAG_SET (no_subset_tables, "passthrough-tables");
+
+#undef PROCESS_NUMBER_SET
+#undef PROCESS_TAG_SET
+
+  hb_subset_input_destroy (default_input);
+
+  static_assert (sizeof (input->sets) / sizeof (hb_set_t*) == 8,
+                 "Check all sets in hb_subset_input_t::sets_t are handled here.");
+
+  if (unlikely (!_format_glyph_map_arg (input->glyph_map, sb)))
+    return nullptr;
+
+  if (unlikely (!_format_axes_location_arg (input->axes_location, sb)))
+    return nullptr;
+
+  sb.push ('\0');
+  if (unlikely (sb.in_error ()))
+    return nullptr;
+
+  unsigned len = 0;
+  char *buf = sb.steal (&len);
+  if (unlikely (!buf))
+    return nullptr;
+
+  return hb_blob_create_or_fail (buf, len, HB_MEMORY_MODE_WRITABLE, buf, hb_free);
+}
 #endif
 
 /**
@@ -653,7 +1234,7 @@ hb_subset_input_override_name_table (hb_subset_input_t  *input,
         src = hb_utf8_t::next (src, src_end, &unicode, replacement);
         if (unicode >= 0x0080u)
         {
-          printf ("Non-ascii character detected, ignored...This API supports acsii characters only for mac platform\n");
+          // Non-ascii character detected, ignored...
           return false;
         }
       }
@@ -667,5 +1248,4 @@ hb_subset_input_override_name_table (hb_subset_input_t  *input,
   input->name_table_overrides.set (hb_ot_name_record_ids_t (platform_id, encoding_id, language_id, name_id), name_bytes);
   return true;
 }
-
 #endif

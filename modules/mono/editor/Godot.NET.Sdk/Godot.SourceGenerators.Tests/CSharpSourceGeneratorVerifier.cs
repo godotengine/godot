@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators.Tests;
@@ -14,11 +13,11 @@ namespace Godot.SourceGenerators.Tests;
 public static class CSharpSourceGeneratorVerifier<TSourceGenerator>
 where TSourceGenerator : ISourceGenerator, new()
 {
-    public class Test : CSharpSourceGeneratorTest<TSourceGenerator, XUnitVerifier>
+    public class Test : CSharpSourceGeneratorTest<TSourceGenerator, DefaultVerifier>
     {
         public Test()
         {
-            ReferenceAssemblies = ReferenceAssemblies.Net.Net60;
+            ReferenceAssemblies = Constants.Net80;
 
             SolutionTransforms.Add((Solution solution, ProjectId projectId) =>
             {
@@ -61,15 +60,15 @@ where TSourceGenerator : ISourceGenerator, new()
         build_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}
         """));
 
-        verifier.TestState.Sources.AddRange(sources.Select(source =>
-        {
-            return (source, SourceText.From(File.ReadAllText(Path.Combine(Constants.SourceFolderPath, source))));
-        }));
+        verifier.TestState.Sources.AddRange(sources.Select(source => (
+            source,
+            SourceText.From(File.ReadAllText(Path.Combine(Constants.SourceFolderPath, source)))
+        )));
 
-        verifier.TestState.GeneratedSources.AddRange(generatedSources.Select(generatedSource =>
-        {
-            return (FullGeneratedSourceName(generatedSource), SourceText.From(File.ReadAllText(Path.Combine(Constants.GeneratedSourceFolderPath, generatedSource)), Encoding.UTF8));
-        }));
+        verifier.TestState.GeneratedSources.AddRange(generatedSources.Select(generatedSource => (
+                FullGeneratedSourceName(generatedSource),
+                SourceText.From(File.ReadAllText(Path.Combine(Constants.GeneratedSourceFolderPath, generatedSource)), Encoding.UTF8)
+        )));
 
         return verifier;
     }

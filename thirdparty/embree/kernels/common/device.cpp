@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "device.h"
+
+#include "../../common/tasking/taskscheduler.h"
+
 #include "../hash.h"
 #include "scene_triangle_mesh.h"
 #include "scene_user_geometry.h"
@@ -19,8 +22,11 @@
 #include "../bvh/bvh4_factory.h"
 #include "../bvh/bvh8_factory.h"
 
-#include "../../common/tasking/taskscheduler.h"
 #include "../../common/sys/alloc.h"
+
+#if defined(EMBREE_SYCL_SUPPORT)
+#  include "../level_zero/ze_wrapper.h"
+#endif
 
 namespace embree
 {
@@ -30,13 +36,18 @@ namespace embree
   ssize_t Device::debug_int2 = 0;
   ssize_t Device::debug_int3 = 0;
 
-  DECLARE_SYMBOL2(RayStreamFilterFuncs,rayStreamFilterFuncs);
-
   static MutexSys g_mutex;
   static std::map<Device*,size_t> g_cache_size_map;
   static std::map<Device*,size_t> g_num_threads_map;
+  
+  struct TaskArena
+  {
+#if USE_TASK_ARENA
+    std::unique_ptr<tbb::task_arena> arena;
+#endif
+  };
 
-  Device::Device (const char* cfg)
+  Device::Device (const char* cfg) : arena(new TaskArena())
   {
     /* check that CPU supports lowest ISA */
     if (!hasISA(ISA)) {
@@ -48,12 +59,12 @@ namespace embree
     case CPU::UNKNOWN:         frequency_level = FREQUENCY_SIMD256; break;
     case CPU::XEON_ICE_LAKE:   frequency_level = FREQUENCY_SIMD256; break;
     case CPU::CORE_ICE_LAKE:   frequency_level = FREQUENCY_SIMD256; break;
-    case CPU::CORE_TIGER_LAKE: frequency_level = FREQUENCY_SIMD128; break;
-    case CPU::CORE_COMET_LAKE: frequency_level = FREQUENCY_SIMD128; break;
-    case CPU::CORE_CANNON_LAKE:frequency_level = FREQUENCY_SIMD128; break;
-    case CPU::CORE_KABY_LAKE:  frequency_level = FREQUENCY_SIMD128; break;
+    case CPU::CORE_TIGER_LAKE: frequency_level = FREQUENCY_SIMD256; break;
+    case CPU::CORE_COMET_LAKE: frequency_level = FREQUENCY_SIMD256; break;
+    case CPU::CORE_CANNON_LAKE:frequency_level = FREQUENCY_SIMD256; break;
+    case CPU::CORE_KABY_LAKE:  frequency_level = FREQUENCY_SIMD256; break;
     case CPU::XEON_SKY_LAKE:   frequency_level = FREQUENCY_SIMD128; break;
-    case CPU::CORE_SKY_LAKE:   frequency_level = FREQUENCY_SIMD128; break;
+    case CPU::CORE_SKY_LAKE:   frequency_level = FREQUENCY_SIMD256; break;
     case CPU::XEON_BROADWELL:  frequency_level = FREQUENCY_SIMD256; break;
     case CPU::CORE_BROADWELL:  frequency_level = FREQUENCY_SIMD256; break;
     case CPU::XEON_HASWELL:    frequency_level = FREQUENCY_SIMD256; break;
@@ -66,11 +77,7 @@ namespace embree
     case CPU::CORE1:           frequency_level = FREQUENCY_SIMD128; break;
     case CPU::XEON_PHI_KNIGHTS_MILL   : frequency_level = FREQUENCY_SIMD512; break;
     case CPU::XEON_PHI_KNIGHTS_LANDING: frequency_level = FREQUENCY_SIMD512; break;
-#if defined(__APPLE__)
-    case CPU::ARM:             frequency_level = FREQUENCY_SIMD256; break; // Apple M1 supports high throughput for SIMD4
-#else
-    case CPU::ARM:             frequency_level = FREQUENCY_SIMD128; break;
-#endif
+    case CPU::ARM:             frequency_level = FREQUENCY_SIMD256; break;
     }
 
     /* initialize global state */
@@ -126,13 +133,6 @@ namespace embree
 
     /* setup tasking system */
     initTaskingSystem(numThreads);
-
-    /* ray stream SOA to AOS conversion */
-#if defined(EMBREE_RAY_PACKETS)
-    RayStreamFilterFuncsType rayStreamFilterFuncs;
-    SELECT_SYMBOL_DEFAULT_SSE42_AVX_AVX2_AVX512(enabled_cpu_features,rayStreamFilterFuncs);
-    rayStreamFilters = rayStreamFilterFuncs();
-#endif
   }
 
   Device::~Device ()
@@ -173,6 +173,9 @@ namespace embree
 #endif
 #if defined (EMBREE_BACKFACE_CULLING_CURVES)
     v += "backfacecullingcurves ";
+#endif
+#if defined (EMBREE_BACKFACE_CULLING_SPHERES)
+    v += "backfacecullingspheres ";
 #endif
 #if defined(EMBREE_FILTER_FUNCTION)
     v += "intersection_filter ";
@@ -226,6 +229,7 @@ namespace embree
 #endif
     std::cout << std::endl;
 
+#if defined(__X86_64__)
     /* check of FTZ and DAZ flags are set in CSR */
     if (!hasFTZ || !hasDAZ) 
     {
@@ -249,57 +253,68 @@ namespace embree
         std::cout << std::endl;
       }
     }
+#endif
     std::cout << std::endl;
   }
 
-  void Device::setDeviceErrorCode(RTCError error)
+  void Device::setDeviceErrorCode(RTCError error, std::string const& msg)
   {
-    RTCError* stored_error = errorHandler.error();
-    if (*stored_error == RTC_ERROR_NONE)
-      *stored_error = error;
+    RTCErrorMessage* stored_error = errorHandler.error();
+    if (stored_error->error == RTC_ERROR_NONE) {
+      stored_error->error = error;
+      if (msg != "")
+        stored_error->msg = msg;
+    }
   }
 
   RTCError Device::getDeviceErrorCode()
   {
-    RTCError* stored_error = errorHandler.error();
-    RTCError error = *stored_error;
-    *stored_error = RTC_ERROR_NONE;
-    return error;
+    RTCErrorMessage* stored_error = errorHandler.error();
+    RTCErrorMessage error = *stored_error;
+    stored_error->error = RTC_ERROR_NONE;
+    return error.error;
   }
 
-  void Device::setThreadErrorCode(RTCError error)
+  const char* Device::getDeviceLastErrorMessage()
   {
-    RTCError* stored_error = g_errorHandler.error();
-    if (*stored_error == RTC_ERROR_NONE)
-      *stored_error = error;
+    RTCErrorMessage* stored_error = errorHandler.error();
+    return stored_error->msg.c_str();
+  }
+
+  void Device::setThreadErrorCode(RTCError error, std::string const& msg)
+  {
+    RTCErrorMessage* stored_error = g_errorHandler.error();
+    if (stored_error->error == RTC_ERROR_NONE) {
+      stored_error->error = error;
+      if (msg != "")
+        stored_error->msg = msg;
+    }
   }
 
   RTCError Device::getThreadErrorCode()
   {
-    RTCError* stored_error = g_errorHandler.error();
-    RTCError error = *stored_error;
-    *stored_error = RTC_ERROR_NONE;
-    return error;
+    RTCErrorMessage* stored_error = g_errorHandler.error();
+    RTCErrorMessage error = *stored_error;
+    stored_error->error = RTC_ERROR_NONE;
+    return error.error;
+  }
+
+  const char* Device::getThreadLastErrorMessage()
+  {
+    RTCErrorMessage* stored_error = g_errorHandler.error();
+    return stored_error->msg.c_str();
   }
 
   void Device::process_error(Device* device, RTCError error, const char* str)
-  { 
+  {
     /* store global error code when device construction failed */
     if (!device)
-      return setThreadErrorCode(error);
+      return setThreadErrorCode(error, str ? std::string(str) : std::string());
 
     /* print error when in verbose mode */
-    if (device->verbosity(1)) 
+    if (device->verbosity(1))
     {
-      switch (error) {
-      case RTC_ERROR_NONE         : std::cerr << "Embree: No error"; break;
-      case RTC_ERROR_UNKNOWN    : std::cerr << "Embree: Unknown error"; break;
-      case RTC_ERROR_INVALID_ARGUMENT : std::cerr << "Embree: Invalid argument"; break;
-      case RTC_ERROR_INVALID_OPERATION: std::cerr << "Embree: Invalid operation"; break;
-      case RTC_ERROR_OUT_OF_MEMORY    : std::cerr << "Embree: Out of memory"; break;
-      case RTC_ERROR_UNSUPPORTED_CPU  : std::cerr << "Embree: Unsupported CPU"; break;
-      default                   : std::cerr << "Embree: Invalid error code"; break;                   
-      };
+      std::cerr << "Embree: " << getErrorString(error);
       if (str) std::cerr << ", (" << str << ")";
       std::cerr << std::endl;
     }
@@ -309,7 +324,7 @@ namespace embree
       device->error_function(device->error_function_userptr,error,str); 
 
     /* record error code */
-    device->setDeviceErrorCode(error);
+    device->setDeviceErrorCode(error, str ? std::string(str) : std::string());
   }
 
   void Device::memoryMonitor(ssize_t bytes, bool post)
@@ -367,7 +382,7 @@ namespace embree
 #if USE_TASK_ARENA
     const size_t nThreads = min(maxNumThreads,TaskScheduler::threadCount());
     const size_t uThreads = min(max(numUserThreads,(size_t)1),nThreads);
-    arena = make_unique(new tbb::task_arena((int)nThreads,(unsigned int)uThreads));
+    arena->arena = make_unique(new tbb::task_arena((int)nThreads,(unsigned int)uThreads));
 #endif
   }
 
@@ -386,8 +401,21 @@ namespace embree
       TaskScheduler::create(maxNumThreads,State::set_affinity,State::start_threads);
     }
 #if USE_TASK_ARENA
-    arena.reset();
+    arena->arena.reset();
 #endif
+  }
+
+  void Device::execute(bool join, const std::function<void()>& func)
+  {
+#if USE_TASK_ARENA
+    if (join) {
+      arena->arena->execute(func);
+    }
+    else
+#endif
+    {
+      func();
+    }
   }
 
   void Device::setProperty(const RTCDeviceProperty prop, ssize_t val)
@@ -450,12 +478,6 @@ namespace embree
     case RTC_DEVICE_PROPERTY_NATIVE_RAY16_SUPPORTED: return 0;
 #endif
 
-#if defined(EMBREE_RAY_PACKETS)
-    case RTC_DEVICE_PROPERTY_RAY_STREAM_SUPPORTED:  return 1;
-#else
-    case RTC_DEVICE_PROPERTY_RAY_STREAM_SUPPORTED:  return 0;
-#endif
-    
 #if defined(EMBREE_RAY_MASK)
     case RTC_DEVICE_PROPERTY_RAY_MASK_SUPPORTED: return 1;
 #else
@@ -472,6 +494,12 @@ namespace embree
     case RTC_DEVICE_PROPERTY_BACKFACE_CULLING_CURVES_ENABLED: return 1;
 #else
     case RTC_DEVICE_PROPERTY_BACKFACE_CULLING_CURVES_ENABLED: return 0;
+#endif
+
+#if defined(EMBREE_BACKFACE_CULLING_SPHERES)
+    case RTC_DEVICE_PROPERTY_BACKFACE_CULLING_SPHERES_ENABLED: return 1;
+#else
+    case RTC_DEVICE_PROPERTY_BACKFACE_CULLING_SPHERES_ENABLED: return 0;
 #endif
 
 #if defined(EMBREE_COMPACT_POLYS)
@@ -554,7 +582,203 @@ namespace embree
     case RTC_DEVICE_PROPERTY_PARALLEL_COMMIT_SUPPORTED: return 0;
 #endif
 
+#if defined(EMBREE_SYCL_SUPPORT)
+    case RTC_DEVICE_PROPERTY_CPU_DEVICE:  {
+      if (!dynamic_cast<DeviceGPU*>(this))
+        return 1;
+      return 0;
+    };
+    case RTC_DEVICE_PROPERTY_SYCL_DEVICE: {
+      if (!dynamic_cast<DeviceGPU*>(this))
+        return 0;
+      return 1;
+    };
+#else
+    case RTC_DEVICE_PROPERTY_CPU_DEVICE:  return 1;
+    case RTC_DEVICE_PROPERTY_SYCL_DEVICE: return 0;
+#endif
+
     default: throw_RTCError(RTC_ERROR_INVALID_ARGUMENT, "unknown readable property"); break;
     };
+  }
+
+  void* Device::malloc(size_t size, size_t align) {
+    return alignedMalloc(size,align);
+  }
+
+  void* Device::malloc(size_t size, size_t align, EmbreeMemoryType type) {
+    return alignedMalloc(size,align);
+  }
+
+  void Device::free(void* ptr) {
+    alignedFree(ptr);
+  }
+
+  const std::vector<std::string> Device::error_strings = {
+    "No Error",
+    "Unknown error",
+    "Invalid argument",
+    "Invalid operation",
+    "Out of Memory",
+    "Unsupported CPU",
+    "Build cancelled",
+    "Level Zero raytracing support missing"
+  };
+
+  const char* Device::getErrorString(RTCError error) {
+    if (error >= 0 && error < error_strings.size()) {
+      return error_strings.at(error).c_str();
+    }
+    return "Invalid error code";
+  }
+
+#if defined(EMBREE_SYCL_SUPPORT)
+
+  DeviceGPU::DeviceGPU(sycl::context sycl_context, const char* cfg)
+    : Device(cfg), gpu_context(sycl_context)
+  {
+    /* initialize ZeWrapper */
+    if (ZeWrapper::init() != ZE_RESULT_SUCCESS)
+       throw_RTCError(RTC_ERROR_UNKNOWN, "cannot initialize ZeWrapper");
+     
+    /* take first device as default device */
+    auto devices = gpu_context.get_devices();
+    if (devices.size() == 0)
+      throw_RTCError(RTC_ERROR_UNKNOWN, "SYCL context contains no device");
+    gpu_device = devices[0];
+
+    /* check if RTAS build extension is available */
+    sycl::platform platform = gpu_device.get_platform();
+    ze_driver_handle_t hDriver = sycl::get_native<sycl::backend::ext_oneapi_level_zero>(platform);
+    
+    uint32_t count = 0;
+    std::vector<ze_driver_extension_properties_t> extensions;
+    ze_result_t result = ZeWrapper::zeDriverGetExtensionProperties(hDriver,&count,extensions.data());
+    if (result != ZE_RESULT_SUCCESS)
+      throw_RTCError(RTC_ERROR_UNKNOWN, "zeDriverGetExtensionProperties failed");
+    
+    extensions.resize(count);
+    result = ZeWrapper::zeDriverGetExtensionProperties(hDriver,&count,extensions.data());
+    if (result != ZE_RESULT_SUCCESS)
+      throw_RTCError(RTC_ERROR_UNKNOWN, "zeDriverGetExtensionProperties failed");
+
+    bool ze_rtas_builder = false;
+    for (uint32_t i=0; i<extensions.size(); i++)
+    {
+      if (strncmp("ZE_experimental_rtas_builder",extensions[i].name,sizeof(extensions[i].name)) == 0)
+        ze_rtas_builder = true;
+    }
+    if (!ze_rtas_builder)
+      throw_RTCError(RTC_ERROR_LEVEL_ZERO_RAYTRACING_SUPPORT_MISSING, "ZE_experimental_rtas_builder extension not found. Please install a recent driver. On Linux, make sure that the package intel-level-zero-gpu-raytracing is installed");
+
+    result = ZeWrapper::initRTASBuilder(hDriver);
+    if (result == ZE_RESULT_ERROR_DEPENDENCY_UNAVAILABLE) {
+      throw_RTCError(RTC_ERROR_LEVEL_ZERO_RAYTRACING_SUPPORT_MISSING, "cannot load ZE_experimental_rtas_builder extension. Please install a recent driver. On Linux, make sure that the package intel-level-zero-gpu-raytracing is installed");
+    }
+    if (result != ZE_RESULT_SUCCESS)
+      throw_RTCError(RTC_ERROR_UNKNOWN, "cannot initialize ZE_experimental_rtas_builder extension");
+
+    if (State::verbosity(1))
+    {
+      std::cout << "  Level Zero RTAS Builder" << std::endl;
+    }
+
+    /* check if extension library can get loaded */
+    ze_rtas_parallel_operation_exp_handle_t hParallelOperation;
+    result = ZeWrapper::zeRTASParallelOperationCreateExp(hDriver, &hParallelOperation);
+    if (result == ZE_RESULT_ERROR_DEPENDENCY_UNAVAILABLE)
+      throw_RTCError(RTC_ERROR_UNKNOWN, "Level Zero RTAS Build Extension cannot get loaded");
+    if (result == ZE_RESULT_SUCCESS)
+      ZeWrapper::zeRTASParallelOperationDestroyExp(hParallelOperation);
+
+    gpu_maxWorkGroupSize = getGPUDevice().get_info<sycl::info::device::max_work_group_size>();
+    gpu_maxComputeUnits  = getGPUDevice().get_info<sycl::info::device::max_compute_units>();    
+
+    if (State::verbosity(1))
+    {
+      sycl::platform platform = gpu_context.get_platform();
+      std::cout << "  Platform              : " << platform.get_info<sycl::info::platform::name>() << std::endl;
+      std::cout << "    Device              : " << getGPUDevice().get_info<sycl::info::device::name>() << std::endl;
+      std::cout << "    Max Work Group Size : " << gpu_maxWorkGroupSize << std::endl;
+      std::cout << "    Max Compute Units   : " << gpu_maxComputeUnits  << std::endl;
+      std::cout << std::endl;
+    }
+    
+    dispatchGlobalsPtr = zeRTASInitExp(gpu_device, gpu_context);
+  }
+
+  DeviceGPU::~DeviceGPU()
+  {
+    rthwifCleanup(this,dispatchGlobalsPtr,gpu_context);
+  }
+
+  void DeviceGPU::enter() {
+  }
+
+  void DeviceGPU::leave() {
+  }
+
+  void* DeviceGPU::malloc(size_t size, size_t align) {
+    return alignedSYCLMalloc(&gpu_context,&gpu_device,size,align,EmbreeUSMMode::DEVICE_READ_ONLY);
+  }
+
+  void* DeviceGPU::malloc(size_t size, size_t align, EmbreeMemoryType type) {
+    return alignedSYCLMalloc(&gpu_context,&gpu_device,size,align,EmbreeUSMMode::DEVICE_READ_ONLY,type);
+  }
+
+  void DeviceGPU::free(void* ptr) {
+    alignedSYCLFree(&gpu_context,ptr);
+  }
+
+  void DeviceGPU::setSYCLDevice(const sycl::device sycl_device_in) {
+    gpu_device = sycl_device_in;
+  }
+
+  // turn off deprecation warning for host_unified_memory property usage.
+  // there is currently no equivalent SYCL aspect that replaces this property.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  bool DeviceGPU::has_unified_memory() const {
+    return gpu_device.get_info<sycl::info::device::host_unified_memory>();
+  }
+#pragma GCC diagnostic pop
+
+#endif
+
+  DeviceEnterLeave::DeviceEnterLeave (RTCDevice hdevice)
+    : device((Device*)hdevice)
+  {
+    assert(device);
+    device->refInc();
+    device->enter();
+  }
+  
+  DeviceEnterLeave::DeviceEnterLeave (RTCScene hscene)
+    : device(((Scene*)hscene)->device)
+  {
+    assert(device);
+    device->refInc();
+    device->enter();
+  }
+  
+  DeviceEnterLeave::DeviceEnterLeave (RTCGeometry hgeometry)
+    : device(((Geometry*)hgeometry)->device)
+  {
+    assert(device);
+    device->refInc();
+    device->enter();
+  }
+  
+  DeviceEnterLeave::DeviceEnterLeave (RTCBuffer hbuffer)
+    : device(((Buffer*)hbuffer)->device)
+  {
+    assert(device);
+    device->refInc();
+    device->enter();
+  }
+  
+  DeviceEnterLeave::~DeviceEnterLeave() {
+    device->leave();
+    device->refDec();
   }
 }

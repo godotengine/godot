@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_2D_H
-#define AUDIO_STREAM_PLAYER_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
+#include "servers/audio/audio_server_enums.h"
 
 struct AudioFrame;
 class AudioStream;
@@ -48,12 +48,6 @@ private:
 
 	};
 
-	struct Output {
-		AudioFrame vol;
-		int bus_index = 0;
-		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
-	};
-
 	AudioStreamPlayerInternal *internal = nullptr;
 
 	SafeNumeric<float> setplay{ -1.0 };
@@ -64,6 +58,8 @@ private:
 	uint64_t last_mix_count = -1;
 	bool force_update_panning = false;
 
+	AuSE::PlaybackType playback_type = AuSE::PlaybackType::PLAYBACK_TYPE_DEFAULT;
+
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
 
@@ -72,7 +68,7 @@ private:
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
 
-	uint32_t area_mask = 1;
+	uint32_t area_mask = 0;
 
 	float max_distance = 2000.0;
 	float attenuation = 1.0;
@@ -81,7 +77,6 @@ private:
 	float cached_global_panning_strength = 0.5f;
 
 protected:
-	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -89,12 +84,20 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+#ifndef DISABLE_DEPRECATED
+	bool _is_autoplay_enabled_bind_compat_86907();
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
 	void set_stream(Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_stream() const;
 
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
+
+	void set_volume_linear(float p_volume);
+	float get_volume_linear() const;
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
@@ -109,7 +112,7 @@ public:
 	StringName get_bus() const;
 
 	void set_autoplay(bool p_enable);
-	bool is_autoplay_enabled();
+	bool is_autoplay_enabled() const;
 
 	void set_max_distance(float p_pixels);
 	float get_max_distance() const;
@@ -132,8 +135,9 @@ public:
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
+	AuSE::PlaybackType get_playback_type() const;
+	void set_playback_type(AuSE::PlaybackType p_playback_type);
+
 	AudioStreamPlayer2D();
 	~AudioStreamPlayer2D();
 };
-
-#endif // AUDIO_STREAM_PLAYER_2D_H

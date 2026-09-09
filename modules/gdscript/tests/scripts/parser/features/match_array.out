@@ -1,0 +1,6 @@
+GDTEST_OK
+["value1"]
+["value1", "value2"]
+multiline ["value1"]
+multiline ["value1", "value2",]
+multiline ["value1", ["value2", ..,],]

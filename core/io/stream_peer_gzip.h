@@ -28,13 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STREAM_PEER_GZIP_H
-#define STREAM_PEER_GZIP_H
+#pragma once
 
 #include "core/io/stream_peer.h"
-
-#include "core/core_bind.h"
-#include "core/io/compression.h"
 #include "core/templates/ring_buffer.h"
 
 class StreamPeerGZIP : public StreamPeer {
@@ -49,14 +45,14 @@ private:
 
 	Error _process(uint8_t *p_dst, int p_dst_size, const uint8_t *p_src, int p_src_size, int &r_consumed, int &r_out, bool p_close = false);
 	void _close();
-	Error _start(bool p_compress, bool p_is_deflate, int buffer_size = 65535);
+	Error _start(bool p_compress, bool p_is_deflate, int p_buffer_size = 65535);
 
 protected:
 	static void _bind_methods();
 
 public:
-	Error start_compression(bool p_is_deflate, int buffer_size = 65535);
-	Error start_decompression(bool p_is_deflate, int buffer_size = 65535);
+	Error start_compression(bool p_is_deflate, int p_buffer_size = 65535);
+	Error start_decompression(bool p_is_deflate, int p_buffer_size = 65535);
 
 	Error finish();
 	void clear();
@@ -69,8 +65,5 @@ public:
 
 	virtual int get_available_bytes() const override;
 
-	StreamPeerGZIP();
 	~StreamPeerGZIP();
 };
-
-#endif // STREAM_PEER_GZIP_H

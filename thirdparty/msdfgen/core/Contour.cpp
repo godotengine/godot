@@ -19,24 +19,24 @@ void Contour::addEdge(EdgeHolder &&edge) {
 }
 #endif
 
-EdgeHolder & Contour::addEdge() {
+EdgeHolder &Contour::addEdge() {
     edges.resize(edges.size()+1);
     return edges.back();
 }
 
-static void boundPoint(double &l, double &b, double &r, double &t, Point2 p) {
-    if (p.x < l) l = p.x;
-    if (p.y < b) b = p.y;
-    if (p.x > r) r = p.x;
-    if (p.y > t) t = p.y;
+static void boundPoint(double &xMin, double &yMin, double &xMax, double &yMax, Point2 p) {
+    if (p.x < xMin) xMin = p.x;
+    if (p.y < yMin) yMin = p.y;
+    if (p.x > xMax) xMax = p.x;
+    if (p.y > yMax) yMax = p.y;
 }
 
-void Contour::bound(double &l, double &b, double &r, double &t) const {
+void Contour::bound(double &xMin, double &yMin, double &xMax, double &yMax) const {
     for (std::vector<EdgeHolder>::const_iterator edge = edges.begin(); edge != edges.end(); ++edge)
-        (*edge)->bound(l, b, r, t);
+        (*edge)->bound(xMin, yMin, xMax, yMax);
 }
 
-void Contour::boundMiters(double &l, double &b, double &r, double &t, double border, double miterLimit, int polarity) const {
+void Contour::boundMiters(double &xMin, double &yMin, double &xMax, double &yMax, double border, double miterLimit, int polarity) const {
     if (edges.empty())
         return;
     Vector2 prevDir = edges.back()->direction(1).normalize(true);
@@ -48,7 +48,7 @@ void Contour::boundMiters(double &l, double &b, double &r, double &t, double bor
             if (q > 0)
                 miterLength = min(1/sqrt(q), miterLimit);
             Point2 miter = (*edge)->point(0)+border*miterLength*(prevDir+dir).normalize(true);
-            boundPoint(l, b, r, t, miter);
+            boundPoint(xMin, yMin, xMax, yMax, miter);
         }
         prevDir = (*edge)->direction(1).normalize(true);
     }

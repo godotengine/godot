@@ -2,7 +2,7 @@
 #define OPENXR_LOADER_NEGOTIATION_H_ 1
 
 /*
-** Copyright 2017-2024, The Khronos Group Inc.
+** Copyright 2017-2026 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
@@ -20,6 +20,7 @@ extern "C" {
 
 
 
+// XR_LOADER_VERSION_1_0 is a preprocessor guard. Do not pass it to API calls.
 #define XR_LOADER_VERSION_1_0 1
 
 #define XR_CURRENT_LOADER_API_LAYER_VERSION 1
@@ -82,6 +83,16 @@ typedef struct XrApiLayerCreateInfo {
     XrApiLayerNextInfo*         nextInfo;
 } XrApiLayerCreateInfo;
 
+typedef struct XrNegotiateApiLayerRequest {
+    XrLoaderInterfaceStructs        structType;
+    uint32_t                        structVersion;
+    size_t                          structSize;
+    uint32_t                        layerInterfaceVersion;
+    XrVersion                       layerApiVersion;
+    PFN_xrGetInstanceProcAddr       getInstanceProcAddr;
+    PFN_xrCreateApiLayerInstance    createApiLayerInstance;
+} XrNegotiateApiLayerRequest;
+
 typedef struct XrNegotiateLoaderInfo {
     XrLoaderInterfaceStructs    structType;
     uint32_t                    structVersion;
@@ -100,16 +111,6 @@ typedef struct XrNegotiateRuntimeRequest {
     XrVersion                    runtimeApiVersion;
     PFN_xrGetInstanceProcAddr    getInstanceProcAddr;
 } XrNegotiateRuntimeRequest;
-
-typedef struct XrNegotiateApiLayerRequest {
-    XrLoaderInterfaceStructs        structType;
-    uint32_t                        structVersion;
-    size_t                          structSize;
-    uint32_t                        layerInterfaceVersion;
-    XrVersion                       layerApiVersion;
-    PFN_xrGetInstanceProcAddr       getInstanceProcAddr;
-    PFN_xrCreateApiLayerInstance    createApiLayerInstance;
-} XrNegotiateApiLayerRequest;
 
 typedef XrResult (XRAPI_PTR *PFN_xrCreateApiLayerInstance)(const XrInstanceCreateInfo* info, const XrApiLayerCreateInfo* layerInfo, XrInstance* instance);
 typedef XrResult (XRAPI_PTR *PFN_xrNegotiateLoaderRuntimeInterface)(const XrNegotiateLoaderInfo* loaderInfo, XrNegotiateRuntimeRequest* runtimeRequest);

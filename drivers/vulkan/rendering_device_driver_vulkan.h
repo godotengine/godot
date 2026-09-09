@@ -28,11 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_DRIVER_VULKAN_H
-#define RENDERING_DEVICE_DRIVER_VULKAN_H
+#pragma once
 
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
+#include "core/templates/rb_map.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#include "drivers/vulkan/rendering_shader_container_vulkan.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #ifdef DEBUG_ENABLED
@@ -40,15 +42,12 @@
 #define _DEBUG
 #endif
 #endif
-#include "thirdparty/vulkan/vk_mem_alloc.h"
+#include <thirdparty/re-spirv/re-spirv.h>
+#include <thirdparty/vulkan/vk_mem_alloc.h>
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include <drivers/vulkan/godot_vulkan.h>
 
-class VulkanContext;
+class FileAccess;
 
 // Design principles:
 // - Vulkan structs are zero-initialized and fields not requiring a non-zero value are omitted (except in cases where expresivity reasons apply).
@@ -57,9 +56,165 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	/**** GENERIC ****/
 	/*****************/
 
-	VulkanContext *context = nullptr;
-	VkDevice vk_device = VK_NULL_HANDLE; // Owned by the context.
+	struct CommandQueue;
+	struct SwapChain;
+	struct CommandBufferInfo;
+	struct RenderPassInfo;
+	struct Framebuffer;
 
+	struct Queue {
+		VkQueue queue = VK_NULL_HANDLE;
+		uint32_t virtual_count = 0;
+		BinaryMutex submit_mutex;
+	};
+
+	struct SubgroupCapabilities {
+		uint32_t size = 0;
+		uint32_t min_size = 0;
+		uint32_t max_size = 0;
+		VkShaderStageFlags supported_stages = 0;
+		VkSubgroupFeatureFlags supported_operations = 0;
+		VkBool32 quad_operations_in_all_stages = false;
+		bool size_control_is_supported = false;
+
+		uint32_t supported_stages_flags_rd() const;
+		String supported_stages_desc() const;
+		uint32_t supported_operations_flags_rd() const;
+		String supported_operations_desc() const;
+	};
+
+	struct ShaderCapabilities {
+		bool shader_float16_is_supported = false;
+		bool shader_int8_is_supported = false;
+	};
+
+	struct StorageBufferCapabilities {
+		bool storage_buffer_16_bit_access_is_supported = false;
+		bool uniform_and_storage_buffer_16_bit_access_is_supported = false;
+		bool storage_push_constant_16_is_supported = false;
+		bool storage_input_output_16 = false;
+	};
+
+	struct AccelerationStructureCapabilities {
+		bool acceleration_structure_support = false;
+		uint32_t min_acceleration_structure_scratch_offset_alignment = 0;
+	};
+
+	struct RaytracingCapabilities {
+		bool raytracing_pipeline_support = false;
+		uint32_t shader_group_handle_size = 0;
+		uint32_t shader_group_handle_alignment = 0;
+		uint32_t shader_group_handle_size_aligned = 0;
+		uint32_t shader_group_base_alignment = 0;
+		bool validation = false;
+	};
+
+	struct DeviceFunctions {
+		PFN_vkCreateSwapchainKHR CreateSwapchainKHR = nullptr;
+		PFN_vkDestroySwapchainKHR DestroySwapchainKHR = nullptr;
+		PFN_vkGetSwapchainImagesKHR GetSwapchainImagesKHR = nullptr;
+		PFN_vkAcquireNextImageKHR AcquireNextImageKHR = nullptr;
+		PFN_vkQueuePresentKHR QueuePresentKHR = nullptr;
+		PFN_vkCreateRenderPass2KHR CreateRenderPass2KHR = nullptr;
+		PFN_vkCmdEndRenderPass2KHR EndRenderPass2KHR = nullptr;
+
+		// Debug marker extensions.
+		PFN_vkCmdDebugMarkerBeginEXT CmdDebugMarkerBeginEXT = nullptr;
+		PFN_vkCmdDebugMarkerEndEXT CmdDebugMarkerEndEXT = nullptr;
+		PFN_vkCmdDebugMarkerInsertEXT CmdDebugMarkerInsertEXT = nullptr;
+		PFN_vkDebugMarkerSetObjectNameEXT DebugMarkerSetObjectNameEXT = nullptr;
+
+		// Debug device fault.
+		PFN_vkGetDeviceFaultInfoEXT GetDeviceFaultInfoEXT = nullptr;
+
+		// Raytracing extensions.
+		PFN_vkCreateAccelerationStructureKHR CreateAccelerationStructureKHR = nullptr;
+		PFN_vkDestroyAccelerationStructureKHR DestroyAccelerationStructureKHR = nullptr;
+		PFN_vkGetAccelerationStructureBuildSizesKHR GetAccelerationStructureBuildSizesKHR = nullptr;
+		PFN_vkCmdBuildAccelerationStructuresKHR CmdBuildAccelerationStructuresKHR = nullptr;
+		PFN_vkCreateRayTracingPipelinesKHR CreateRaytracingPipelinesKHR = nullptr;
+		PFN_vkGetRayTracingShaderGroupHandlesKHR GetRayTracingShaderGroupHandlesKHR = nullptr;
+		PFN_vkCmdTraceRaysKHR CmdTraceRaysKHR = nullptr;
+	};
+	// Debug marker extensions.
+	VkDebugReportObjectTypeEXT _convert_to_debug_report_objectType(VkObjectType p_object_type);
+
+	VkDevice vk_device = VK_NULL_HANDLE;
+	RenderingContextDriverVulkan *context_driver = nullptr;
+	RenderingContextDriver::Device context_device = {};
+	uint32_t frame_count = 1;
+	VkPhysicalDevice physical_device = VK_NULL_HANDLE;
+	VkPhysicalDeviceProperties physical_device_properties = {};
+	VkPhysicalDeviceFeatures physical_device_features = {};
+	VkPhysicalDeviceFeatures requested_device_features = {};
+	HashMap<CharString, bool> requested_device_extensions;
+	HashSet<CharString> enabled_device_extension_names;
+	TightLocalVector<TightLocalVector<Queue>> queue_families;
+	TightLocalVector<VkQueueFamilyProperties> queue_family_properties;
+	RDD::Capabilities device_capabilities;
+	SubgroupCapabilities subgroup_capabilities;
+	MultiviewCapabilities multiview_capabilities;
+	FragmentShadingRateCapabilities fsr_capabilities;
+	FragmentDensityMapCapabilities fdm_capabilities;
+	ShaderCapabilities shader_capabilities;
+	StorageBufferCapabilities storage_buffer_capabilities;
+	RenderingShaderContainerFormatVulkan shader_container_format;
+	bool buffer_device_address_support = false;
+	bool vulkan_memory_model_support = false;
+	bool vulkan_memory_model_device_scope_support = false;
+	AccelerationStructureCapabilities acceleration_structure_capabilities;
+	bool ray_query_support = false;
+	RaytracingCapabilities raytracing_capabilities;
+	bool pipeline_cache_control_support = false;
+	bool device_fault_support = false;
+	bool framebuffer_depth_resolve = false;
+#if defined(VK_TRACK_DEVICE_MEMORY)
+	bool device_memory_report_support = false;
+#endif
+	bool device_local_host_visible_host_coherent_memory_support = false;
+#if defined(SWAPPY_FRAME_PACING_ENABLED)
+	// Swappy frame pacer for Android.
+	bool swappy_frame_pacer_enable = false;
+	uint8_t swappy_mode = 2; // See default value for display/window/frame_pacing/android/swappy_mode.
+#endif
+	DeviceFunctions device_functions;
+
+	struct PendingFlushes {
+		LocalVector<VmaAllocation> allocations;
+		LocalVector<VkDeviceSize> offsets;
+		LocalVector<VkDeviceSize> sizes;
+	};
+
+	PendingFlushes pending_flushes;
+
+	struct PipelineStatistics {
+		Ref<FileAccess> file_access;
+		Mutex file_access_mutex;
+	};
+
+	PipelineStatistics pipeline_statistics;
+	DriverWorkarounds driver_workarounds;
+
+	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
+	Error _initialize_device_extensions();
+	void _check_driver_workarounds(const VkPhysicalDeviceProperties &p_device_properties, const VkPhysicalDeviceDriverPropertiesKHR *p_driver_properties);
+	void _get_device_properties();
+	Error _check_device_features();
+	Error _check_device_capabilities();
+	void _choose_vrs_capabilities();
+	Error _add_queue_create_info(LocalVector<VkDeviceQueueCreateInfo> &r_queue_create_info);
+	Error _initialize_device(const LocalVector<VkDeviceQueueCreateInfo> &p_queue_create_info);
+	Error _initialize_allocator();
+	Error _initialize_pipeline_cache();
+	VkResult _create_render_pass(VkDevice p_device, const VkRenderPassCreateInfo2 *p_create_info, const VkAllocationCallbacks *p_allocator, VkRenderPass *p_render_pass);
+	bool _release_image_semaphore(CommandQueue *p_command_queue, uint32_t p_semaphore_index, bool p_release_on_swap_chain);
+	bool _recreate_image_semaphore(CommandQueue *p_command_queue, uint32_t p_semaphore_index, bool p_release_on_swap_chain);
+	void _set_object_name(VkObjectType p_object_type, uint64_t p_object_handle, String p_object_name);
+
+public:
+	Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override final;
+
+private:
 	/****************/
 	/**** MEMORY ****/
 	/****************/
@@ -69,10 +224,18 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 
 	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
 
+private:
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	// It's a circular buffer.
+	BufferID breadcrumb_buffer;
+	uint32_t breadcrumb_offset = 0u;
+	uint32_t breadcrumb_id = 0u;
+#endif
+
+public:
 	/*****************/
 	/**** BUFFERS ****/
 	/*****************/
-private:
 	struct BufferInfo {
 		VkBuffer vk_buffer = VK_NULL_HANDLE;
 		struct {
@@ -81,21 +244,38 @@ private:
 		} allocation;
 		uint64_t size = 0;
 		VkBufferView vk_view = VK_NULL_HANDLE; // For texel buffers.
+		// If dynamic buffer, then its range is [0; RenderingDeviceDriverVulkan::frame_count)
+		// else it's UINT32_MAX.
+		uint32_t frame_idx = UINT32_MAX;
+
+		bool is_dynamic() const { return frame_idx != UINT32_MAX; }
 	};
 
-public:
-	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
+	struct BufferDynamicInfo : BufferInfo {
+		uint8_t *persistent_ptr = nullptr;
+#ifdef DEBUG_ENABLED
+		// For tracking that a persistent buffer isn't mapped twice in the same frame.
+		uint64_t last_frame_mapped = 0;
+#endif
+	};
+
+	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
+	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) override final;
+	virtual uint64_t buffer_get_dynamic_offsets(Span<BufferID> p_buffers) override final;
+	virtual void buffer_flush(BufferID p_buffer) override final;
+	virtual uint64_t buffer_get_device_address(BufferID p_buffer) override final;
 
 	/*****************/
 	/**** TEXTURE ****/
 	/*****************/
 
 	struct TextureInfo {
+		VkImage vk_image = VK_NULL_HANDLE;
 		VkImageView vk_view = VK_NULL_HANDLE;
 		DataFormat rd_format = DATA_FORMAT_MAX;
 		VkImageCreateInfo vk_create_info = {};
@@ -104,21 +284,26 @@ public:
 			VmaAllocation handle = nullptr;
 			VmaAllocationInfo info = {};
 		} allocation; // All 0/null if just a view.
+		bool is_subsampled = false;
+#ifdef DEBUG_ENABLED
+		bool created_from_extension = false;
+		bool transient = false;
+#endif
 	};
 
 	VkSampleCountFlagBits _ensure_supported_sample_count(TextureSamples p_requested_sample_count);
 
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
-	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) override final;
+	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) override final;
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) override final;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) override final;
 	virtual void texture_free(TextureID p_texture) override final;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) override final;
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) override final;
-	virtual uint8_t *texture_map(TextureID p_texture, const TextureSubresource &p_subresource) override final;
-	virtual void texture_unmap(TextureID p_texture) override final;
+	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) override final;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) override final;
+	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) override final;
 
 	/*****************/
 	/**** SAMPLER ****/
@@ -139,7 +324,7 @@ private:
 	};
 
 public:
-	virtual VertexFormatID vertex_format_create(VectorView<VertexAttribute> p_vertex_attribs) override final;
+	virtual VertexFormatID vertex_format_create(Span<VertexAttribute> p_vertex_attribs, const VertexAttributeBindingsMap &p_vertex_bindings) override final;
 	virtual void vertex_format_free(VertexFormatID p_vertex_format) override final;
 
 	/******************/
@@ -150,40 +335,147 @@ public:
 			CommandBufferID p_cmd_buffer,
 			BitField<PipelineStageBits> p_src_stages,
 			BitField<PipelineStageBits> p_dst_stages,
-			VectorView<MemoryBarrier> p_memory_barriers,
+			VectorView<MemoryAccessBarrier> p_memory_barriers,
 			VectorView<BufferBarrier> p_buffer_barriers,
-			VectorView<TextureBarrier> p_texture_barriers) override final;
+			VectorView<TextureBarrier> p_texture_barriers,
+			VectorView<AccelerationStructureBarrier> p_acceleration_structure_barriers) override final;
 
-	/*************************/
-	/**** COMMAND BUFFERS ****/
-	/*************************/
+	/****************/
+	/**** FENCES ****/
+	/****************/
+
 private:
-#ifdef DEBUG_ENABLED
-	// Vulkan doesn't need to know if the command buffers created in a pool
-	// will be primary or secondary, but RDD works like that, so we will enforce.
-
-	HashSet<CommandPoolID> secondary_cmd_pools;
-	HashSet<CommandBufferID> secondary_cmd_buffers;
-#endif
+	struct Fence {
+		VkFence vk_fence = VK_NULL_HANDLE;
+		CommandQueue *queue_signaled_from = nullptr;
+	};
 
 public:
+	virtual FenceID fence_create() override final;
+	virtual Error fence_wait(FenceID p_fence) override final;
+	virtual void fence_free(FenceID p_fence) override final;
+
+	/********************/
+	/**** SEMAPHORES ****/
+	/********************/
+
+	virtual SemaphoreID semaphore_create() override final;
+	virtual void semaphore_free(SemaphoreID p_semaphore) override final;
+
+	/******************/
+	/**** COMMANDS ****/
+	/******************/
+
+	// ----- QUEUE FAMILY -----
+
+	virtual CommandQueueFamilyID command_queue_family_get(BitField<CommandQueueFamilyBits> p_cmd_queue_family_bits, RenderingContextDriver::SurfaceID p_surface = 0) override final;
+
+	// ----- QUEUE -----
+private:
+	struct CommandQueue {
+		LocalVector<VkSemaphore> image_semaphores;
+		LocalVector<SwapChain *> image_semaphores_swap_chains;
+		LocalVector<uint32_t> pending_semaphores_for_execute;
+		LocalVector<uint32_t> pending_semaphores_for_fence;
+		LocalVector<uint32_t> free_image_semaphores;
+		LocalVector<Pair<Fence *, uint32_t>> image_semaphores_for_fences;
+		uint32_t queue_family = 0;
+		uint32_t queue_index = 0;
+	};
+
+public:
+	virtual CommandQueueID command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue = false) override final;
+	virtual Error command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) override final;
+	virtual void command_queue_free(CommandQueueID p_cmd_queue) override final;
+
+private:
 	// ----- POOL -----
 
-	virtual CommandPoolID command_pool_create(CommandBufferType p_cmd_buffer_type) override final;
+	struct CommandPool {
+		VkCommandPool vk_command_pool = VK_NULL_HANDLE;
+		CommandBufferType buffer_type = COMMAND_BUFFER_TYPE_PRIMARY;
+		LocalVector<CommandBufferInfo *> command_buffers_created;
+	};
+
+public:
+	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) override final;
+	virtual bool command_pool_reset(CommandPoolID p_cmd_pool) override final;
 	virtual void command_pool_free(CommandPoolID p_cmd_pool) override final;
 
+private:
 	// ----- BUFFER -----
 
-	virtual CommandBufferID command_buffer_create(CommandBufferType p_cmd_buffer_type, CommandPoolID p_cmd_pool) override final;
+	struct CommandBufferInfo {
+		VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
+		Framebuffer *active_framebuffer = nullptr;
+		RenderPassInfo *active_render_pass = nullptr;
+	};
+
+public:
+	virtual CommandBufferID command_buffer_create(CommandPoolID p_cmd_pool) override final;
 	virtual bool command_buffer_begin(CommandBufferID p_cmd_buffer) override final;
 	virtual bool command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) override final;
 	virtual void command_buffer_end(CommandBufferID p_cmd_buffer) override final;
 	virtual void command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, VectorView<CommandBufferID> p_secondary_cmd_buffers) override final;
 
+	/********************/
+	/**** SWAP CHAIN ****/
+	/********************/
+
+private:
+	struct SwapChain {
+		VkSwapchainKHR vk_swapchain = VK_NULL_HANDLE;
+		RenderingContextDriver::SurfaceID surface = RenderingContextDriver::SurfaceID();
+		VkFormat format = VK_FORMAT_UNDEFINED;
+		VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+		RDD::ColorSpace rdd_color_space = RDD::COLOR_SPACE_REC709_NONLINEAR_SRGB;
+		TightLocalVector<VkImage> images;
+		TightLocalVector<VkImageView> image_views;
+		TightLocalVector<VkSemaphore> present_semaphores;
+		TightLocalVector<FramebufferID> framebuffers;
+		LocalVector<CommandQueue *> command_queues_acquired;
+		LocalVector<uint32_t> command_queues_acquired_semaphores;
+		RenderPassID render_pass;
+		int pre_transform_rotation_degrees = 0;
+		uint32_t image_index = 0;
+#ifdef ANDROID_ENABLED
+		uint64_t refresh_duration = 0;
+#endif
+	};
+
+	bool _determine_swap_chain_format(RenderingContextDriver::SurfaceID p_surface, VkFormat &r_format, VkColorSpaceKHR &r_color_space, RDD::ColorSpace &r_rdd_color_space);
+	void _swap_chain_release(SwapChain *p_swap_chain);
+
+public:
+	virtual SwapChainID swap_chain_create(RenderingContextDriver::SurfaceID p_surface) override final;
+	virtual Error swap_chain_resize(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, uint32_t p_desired_framebuffer_count) override final;
+	virtual FramebufferID swap_chain_acquire_framebuffer(CommandQueueID p_cmd_queue, SwapChainID p_swap_chain, bool &r_resize_required) override final;
+	virtual RenderPassID swap_chain_get_render_pass(SwapChainID p_swap_chain) override final;
+	virtual int swap_chain_get_pre_rotation_degrees(SwapChainID p_swap_chain) override final;
+	virtual DataFormat swap_chain_get_format(SwapChainID p_swap_chain) override final;
+	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) override final;
+	virtual bool swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) override final;
+	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) override final;
+	virtual void swap_chain_free(SwapChainID p_swap_chain) override final;
+
+private:
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
 
+	struct Framebuffer {
+		VkFramebuffer vk_framebuffer = VK_NULL_HANDLE;
+
+		// Only filled in if the framebuffer uses a fragment density map with offsets. Unused otherwise.
+		uint32_t fragment_density_map_offsets_layers = 0;
+
+		// Only filled in by a framebuffer created by a swap chain. Unused otherwise.
+		VkImage swap_chain_image = VK_NULL_HANDLE;
+		VkImageSubresourceRange swap_chain_image_subresource_range = {};
+		bool swap_chain_acquired = false;
+	};
+
+public:
 	virtual FramebufferID framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) override final;
 	virtual void framebuffer_free(FramebufferID p_framebuffer) override final;
 
@@ -191,55 +483,22 @@ public:
 	/**** SHADER ****/
 	/****************/
 private:
-	struct ShaderBinary {
-		// Version 1: initial.
-		// Version 2: Added shader name.
-		// Version 3: Added writable.
-		// Version 4: 64-bit vertex input mask.
-		static const uint32_t VERSION = 4;
-
-		struct DataBinding {
-			uint32_t type = 0;
-			uint32_t binding = 0;
-			uint32_t stages = 0;
-			uint32_t length = 0; // Size of arrays (in total elements), or UBOs (in bytes * total elements).
-			uint32_t writable = 0;
-		};
-
-		struct SpecializationConstant {
-			uint32_t type = 0;
-			uint32_t constant_id = 0;
-			uint32_t int_value = 0;
-			uint32_t stage_flags = 0;
-		};
-
-		struct Data {
-			uint64_t vertex_input_mask = 0;
-			uint32_t fragment_output_mask = 0;
-			uint32_t specialization_constants_count = 0;
-			uint32_t is_compute = 0;
-			uint32_t compute_local_size[3] = {};
-			uint32_t set_count = 0;
-			uint32_t push_constant_size = 0;
-			uint32_t vk_push_constant_stages_mask = 0;
-			uint32_t stage_count = 0;
-			uint32_t shader_name_len = 0;
-		};
-	};
-
 	struct ShaderInfo {
+		String name;
 		VkShaderStageFlags vk_push_constant_stages = 0;
 		TightLocalVector<VkPipelineShaderStageCreateInfo> vk_stages_create_info;
 		TightLocalVector<VkDescriptorSetLayout> vk_descriptor_set_layouts;
+		TightLocalVector<respv::Shader> respv_stage_shaders;
+		TightLocalVector<Vector<uint8_t>> spirv_stage_bytes;
+		TightLocalVector<uint64_t> original_stage_size;
 		VkPipelineLayout vk_pipeline_layout = VK_NULL_HANDLE;
 	};
 
 public:
-	virtual String shader_get_binary_cache_key() override final;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) override final;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) override final;
+	virtual ShaderID shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 
+	virtual void shader_destroy_modules(ShaderID p_shader) override final;
 	/*********************/
 	/**** UNIFORM SET ****/
 	/*********************/
@@ -274,18 +533,31 @@ private:
 	DescriptorSetPools descriptor_set_pools;
 	uint32_t max_descriptor_sets_per_pool = 0;
 
-	VkDescriptorPool _descriptor_set_pool_find_or_create(const DescriptorSetPoolKey &p_key, DescriptorSetPools::Iterator *r_pool_sets_it);
-	void _descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool);
+	HashMap<int, DescriptorSetPools> linear_descriptor_set_pools;
+	bool linear_descriptor_pools_enabled = true;
+	VkDescriptorPool _descriptor_set_pool_create(const DescriptorSetPoolKey &p_key, bool p_linear_pool);
+	void _descriptor_set_pool_unreference(DescriptorSetPools::Iterator p_pool_sets_it, VkDescriptorPool p_vk_descriptor_pool, int p_linear_pool_index);
+
+	// Global flag to toggle usage of immutable sampler when creating pipeline layouts.
+	// It cannot change after creating the PSOs, since we need to skipping samplers when creating uniform sets.
+	bool immutable_samplers_enabled = true;
 
 	struct UniformSetInfo {
 		VkDescriptorSet vk_descriptor_set = VK_NULL_HANDLE;
 		VkDescriptorPool vk_descriptor_pool = VK_NULL_HANDLE;
-		DescriptorSetPools::Iterator pool_sets_it = {};
+		VkDescriptorPool vk_linear_descriptor_pool = VK_NULL_HANDLE;
+		DescriptorSetPools::Iterator pool_sets_it;
+		TightLocalVector<const BufferInfo *, uint32_t> dynamic_buffers;
 	};
 
+	bool adreno_5xx_empty_descriptor_set_layout_workaround = false;
+
 public:
-	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) override final;
+	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) override final;
+	virtual void linear_uniform_set_pools_reset(int p_linear_pool_index) override final;
 	virtual void uniform_set_free(UniformSetID p_uniform_set) override final;
+	virtual bool uniform_sets_have_linear_pools() const override final;
+	virtual uint32_t uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) const override final;
 
 	// ----- COMMANDS -----
 
@@ -301,6 +573,7 @@ public:
 	virtual void command_copy_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<TextureCopyRegion> p_regions) override final;
 	virtual void command_resolve_texture(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) override final;
 	virtual void command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) override final;
+	virtual void command_clear_depth_stencil_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const TextureSubresourceRange &p_subresources) override final;
 
 	virtual void command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) override final;
 	virtual void command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) override final;
@@ -329,6 +602,8 @@ private:
 
 	static int caching_instance_count;
 	PipelineCache pipelines_cache;
+	String pipeline_cache_id;
+	HashMap<uint64_t, bool> has_comp_alpha;
 
 public:
 	virtual void pipeline_free(PipelineID p_pipeline) override final;
@@ -348,9 +623,16 @@ public:
 	/**** RENDERING ****/
 	/*******************/
 
+private:
 	// ----- SUBPASS -----
 
-	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) override final;
+	struct RenderPassInfo {
+		VkRenderPass vk_render_pass = VK_NULL_HANDLE;
+		bool uses_fragment_density_map = false;
+	};
+
+public:
+	virtual RenderPassID render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) override final;
 	virtual void render_pass_free(RenderPassID p_render_pass) override final;
 
 	// ----- COMMANDS -----
@@ -364,7 +646,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) override final;
-	virtual void command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
+	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override final;
 
 	// Drawing.
 	virtual void command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) override final;
@@ -375,7 +657,7 @@ public:
 	virtual void command_render_draw_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) override final;
 
 	// Buffer binding.
-	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) override final;
+	virtual void command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) override final;
 	virtual void command_render_bind_index_buffer(CommandBufferID p_cmd_buffer, BufferID p_buffer, IndexBufferFormat p_format, uint64_t p_offset) override final;
 
 	// Dynamic state.
@@ -406,7 +688,7 @@ public:
 
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) override final;
-	virtual void command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
+	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override final;
 
 	// Dispatching.
 	virtual void command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) override final;
@@ -415,6 +697,55 @@ public:
 	// ----- PIPELINE -----
 
 	virtual PipelineID compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) override final;
+
+	/********************/
+	/**** RAYTRACING ****/
+	/********************/
+
+	// ----- ACCELERATION STRUCTURE -----
+
+	struct AccelerationStructureInfo {
+		VkAccelerationStructureKHR vk_acceleration_structure = VK_NULL_HANDLE;
+		// Buffer used for the structure
+		RDD::BufferID buffer;
+
+		// Alignment of the scratch buffer for building the structure
+		uint32_t scratch_alignment;
+		// Size of the scratch buffer for building the structure
+		uint32_t scratch_size;
+
+		// Required for building
+		TightLocalVector<VkAccelerationStructureGeometryKHR> geometries;
+		VkAccelerationStructureBuildGeometryInfoKHR build_info;
+		TightLocalVector<VkAccelerationStructureBuildRangeInfoKHR> range_infos;
+	};
+
+	virtual AccelerationStructureID blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) override final;
+	virtual AccelerationStructureID tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) override final;
+	virtual void acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) override final;
+	virtual void acceleration_structure_free(AccelerationStructureID p_acceleration_structure) override final;
+	virtual uint32_t acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) override final;
+
+private:
+	void _acceleration_structure_create(VkAccelerationStructureTypeKHR p_type, VkAccelerationStructureBuildSizesInfoKHR p_size_info, AccelerationStructureInfo *r_accel_info);
+
+private:
+	VkStridedDeviceAddressRegionKHR _sbt_to_vk_strided_device_address_region(const ShaderBindingTable &p_sbt);
+
+public:
+	// ----- COMMANDS -----
+	virtual void command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) override final;
+	virtual void command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) override final;
+	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) override final;
+	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
+	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, const ShaderBindingTable &p_raygen_sbt, const ShaderBindingTable &p_miss_sbt, const ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) override final;
+
+public:
+	// ----- PIPELINE -----
+	virtual RaytracingPipelineID raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) override final;
+	virtual void raytracing_pipeline_free(RaytracingPipelineID p_pipeline) override final;
+
+	virtual bool raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data, uint32_t p_data_stride_bytes) override final;
 
 	/*****************/
 	/**** QUERIES ****/
@@ -440,31 +771,43 @@ public:
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) override final;
 
 	/****************/
-	/**** SCREEN ****/
+	/**** DEBUG *****/
 	/****************/
-
-	virtual DataFormat screen_get_format() override final;
+	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) override final;
+	void print_lost_device_info();
+	void on_device_lost() const;
+	static String get_vulkan_result(VkResult err);
 
 	/********************/
 	/**** SUBMISSION ****/
 	/********************/
 
-	virtual void begin_segment(CommandBufferID p_cmd_buffer, uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
+	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
 	virtual void end_segment() override final;
 
 	/**************/
 	/**** MISC ****/
 	/**************/
 
-	VkPhysicalDeviceLimits limits = {};
-
 	virtual void set_object_name(ObjectType p_type, ID p_driver_id, const String &p_name) override final;
 	virtual uint64_t get_resource_native_handle(DriverResource p_type, ID p_driver_id) override final;
 	virtual uint64_t get_total_memory_used() override final;
+	virtual uint64_t get_lazily_memory_used() override final;
 	virtual uint64_t limit_get(Limit p_limit) override final;
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
 	virtual bool has_feature(Features p_feature) override final;
 	virtual const MultiviewCapabilities &get_multiview_capabilities() override final;
+	virtual const FragmentShadingRateCapabilities &get_fragment_shading_rate_capabilities() override final;
+	virtual const FragmentDensityMapCapabilities &get_fragment_density_map_capabilities() override final;
+	virtual String get_api_name() const override final;
+	virtual String get_api_version() const override final;
+	virtual String get_pipeline_cache_uuid() const override final;
+	virtual const Capabilities &get_capabilities() const override final;
+	virtual const RenderingShaderContainerFormat &get_shader_container_format() const override final;
+
+	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
+
+	virtual DriverWorkarounds get_driver_workarounds() const override final;
 
 private:
 	/*********************/
@@ -476,14 +819,16 @@ private:
 			TextureInfo,
 			VertexFormatInfo,
 			ShaderInfo,
-			UniformSetInfo>;
-	PagedAllocator<VersatileResource> resources_allocator;
+			UniformSetInfo,
+			RenderPassInfo,
+			CommandBufferInfo>;
+	PagedAllocator<VersatileResource, true> resources_allocator;
 
 	/******************/
 
 public:
-	RenderingDeviceDriverVulkan(VulkanContext *p_context, VkDevice p_vk_device);
+	RenderingDeviceDriverVulkan(RenderingContextDriverVulkan *p_context_driver);
 	virtual ~RenderingDeviceDriverVulkan();
 };
 
-#endif // RENDERING_DEVICE_DRIVER_VULKAN_H
+using VKC = RenderingContextDriverVulkan;

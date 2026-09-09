@@ -1,0 +1,23 @@
+diff --git a/thirdparty/basis_universal/encoder/basisu_enc.cpp b/thirdparty/basis_universal/encoder/basisu_enc.cpp
+index 2c314740cd..cee9c77ca0 100644
+--- a/thirdparty/basis_universal/encoder/basisu_enc.cpp
++++ b/thirdparty/basis_universal/encoder/basisu_enc.cpp
+@@ -29,7 +29,7 @@
+ #ifndef TINYEXR_USE_ZFP
+ #define TINYEXR_USE_ZFP (1)
+ #endif
+-#include "3rdparty/tinyexr.h"
++#include <tinyexr.h>
+ 
+ #ifndef MINIZ_HEADER_FILE_ONLY
+ #define MINIZ_HEADER_FILE_ONLY
+@@ -3433,7 +3433,8 @@ namespace basisu
+ 		float* out_rgba = nullptr;
+ 		const char* err = nullptr;
+ 		
+-		int status = LoadEXRWithLayer(&out_rgba, &width, &height, pFilename, nullptr, &err, &n_chans);
++		int status = LoadEXRWithLayer(&out_rgba, &width, &height, pFilename, nullptr, &err);
++		n_chans = 4;
+ 		if (status != 0)
+ 		{
+ 			error_printf("Failed loading .EXR image \"%s\"! (TinyEXR error: %s)\n", pFilename, err ? err : "?");

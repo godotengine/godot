@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -72,15 +72,13 @@ Overall, I concluded that the gains in some cases did not outweigh the losses
 in others, so I abandoned this code. */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "pcre2_internal.h"
+
+
 
 #define NLBLOCK mb             /* Block containing newline information */
 #define PSSTART start_subject  /* Field containing processed string start */
 #define PSEND   end_subject    /* Field containing processed string end */
-
-#include "pcre2_internal.h"
 
 #define PUBLIC_DFA_MATCH_OPTIONS \
   (PCRE2_ANCHORED|PCRE2_ENDANCHORED|PCRE2_NOTBOL|PCRE2_NOTEOL|PCRE2_NOTEMPTY| \
@@ -156,6 +154,7 @@ static const uint8_t coptable[] = {
   0,                             /* CLASS                                  */
   0,                             /* NCLASS                                 */
   0,                             /* XCLASS - variable length               */
+  0,                             /* ECLASS - variable length               */
   0,                             /* REF                                    */
   0,                             /* REFI                                   */
   0,                             /* DNREF                                  */
@@ -168,13 +167,14 @@ static const uint8_t coptable[] = {
   0,                             /* KetRmax                                */
   0,                             /* KetRmin                                */
   0,                             /* KetRpos                                */
-  0,                             /* Reverse                                */
+  0, 0,                          /* Reverse, Vreverse                      */
   0,                             /* Assert                                 */
   0,                             /* Assert not                             */
   0,                             /* Assert behind                          */
   0,                             /* Assert behind not                      */
   0,                             /* NA assert                              */
   0,                             /* NA assert behind                       */
+  0,                             /* Assert scan substring                  */
   0,                             /* ONCE                                   */
   0,                             /* SCRIPT_RUN                             */
   0, 0, 0, 0, 0,                 /* BRA, BRAPOS, CBRA, CBRAPOS, COND       */
@@ -187,7 +187,8 @@ static const uint8_t coptable[] = {
   0, 0, 0, 0,                    /* SKIP, SKIP_ARG, THEN, THEN_ARG         */
   0, 0,                          /* COMMIT, COMMIT_ARG                     */
   0, 0, 0,                       /* FAIL, ACCEPT, ASSERT_ACCEPT            */
-  0, 0, 0                        /* CLOSE, SKIPZERO, DEFINE                */
+  0, 0, 0,                       /* CLOSE, SKIPZERO, DEFINE                */
+  0, 0,                          /* \B and \b in UCP mode                  */
 };
 
 /* This table identifies those opcodes that inspect a character. It is used to
@@ -233,6 +234,7 @@ static const uint8_t poptable[] = {
   1,                             /* CLASS                                  */
   1,                             /* NCLASS                                 */
   1,                             /* XCLASS - variable length               */
+  1,                             /* ECLASS - variable length               */
   0,                             /* REF                                    */
   0,                             /* REFI                                   */
   0,                             /* DNREF                                  */
@@ -245,13 +247,14 @@ static const uint8_t poptable[] = {
   0,                             /* KetRmax                                */
   0,                             /* KetRmin                                */
   0,                             /* KetRpos                                */
-  0,                             /* Reverse                                */
+  0, 0,                          /* Reverse, Vreverse                      */
   0,                             /* Assert                                 */
   0,                             /* Assert not                             */
   0,                             /* Assert behind                          */
   0,                             /* Assert behind not                      */
   0,                             /* NA assert                              */
   0,                             /* NA assert behind                       */
+  0,                             /* Assert scan substring                  */
   0,                             /* ONCE                                   */
   0,                             /* SCRIPT_RUN                             */
   0, 0, 0, 0, 0,                 /* BRA, BRAPOS, CBRA, CBRAPOS, COND       */
@@ -264,8 +267,13 @@ static const uint8_t poptable[] = {
   0, 0, 0, 0,                    /* SKIP, SKIP_ARG, THEN, THEN_ARG         */
   0, 0,                          /* COMMIT, COMMIT_ARG                     */
   0, 0, 0,                       /* FAIL, ACCEPT, ASSERT_ACCEPT            */
-  0, 0, 0                        /* CLOSE, SKIPZERO, DEFINE                */
+  0, 0, 0,                       /* CLOSE, SKIPZERO, DEFINE                */
+  1, 1,                          /* \B and \b in UCP mode                  */
 };
+
+/* Compile-time check that these tables have the correct size. */
+STATIC_ASSERT(sizeof(coptable) == OP_TABLE_LENGTH, coptable);
+STATIC_ASSERT(sizeof(poptable) == OP_TABLE_LENGTH, poptable);
 
 /* These 2 tables allow for compact code for testing for \D, \d, \S, \s, \W,
 and \w */
@@ -426,7 +434,7 @@ overflow. */
 
 else
   {
-  uint32_t newsize = (rws->size >= UINT32_MAX/2)? UINT32_MAX/2 : rws->size * 2;
+  uint32_t newsize = (rws->size >= UINT32_MAX/(sizeof(int)*2))? UINT32_MAX/sizeof(int) : rws->size * 2;
   uint32_t newsizeK = newsize/(1024/sizeof(int));
 
   if (newsizeK + mb->heap_used > mb->heap_limit)
@@ -589,7 +597,7 @@ if (*this_start_code == OP_ASSERTBACK || *this_start_code == OP_ASSERTBACK_NOT)
   end_code = this_start_code;
   do
     {
-    size_t back = (size_t)GET(end_code, 2+LINK_SIZE);
+    size_t back = (size_t)GET2(end_code, 2+LINK_SIZE);
     if (back > max_back) max_back = back;
     end_code += GET(end_code, 1);
     }
@@ -633,8 +641,8 @@ if (*this_start_code == OP_ASSERTBACK || *this_start_code == OP_ASSERTBACK_NOT)
   end_code = this_start_code;
   do
     {
-    uint32_t revlen = (end_code[1+LINK_SIZE] == OP_REVERSE)? 1 + LINK_SIZE : 0;
-    size_t back = (revlen == 0)? 0 : (size_t)GET(end_code, 2+LINK_SIZE);
+    uint32_t revlen = (end_code[1+LINK_SIZE] == OP_REVERSE)? 1 + IMM2_SIZE : 0;
+    size_t back = (revlen == 0)? 0 : (size_t)GET2(end_code, 2+LINK_SIZE);
     if (back <= gone_back)
       {
       int bstate = (int)(end_code - start_code + 1 + LINK_SIZE + revlen);
@@ -693,7 +701,6 @@ for (;;)
   int i, j;
   int clen, dlen;
   uint32_t c, d;
-  int forced_fail = 0;
   BOOL partial_newline = FALSE;
   BOOL could_continue = reset_could_continue;
   reset_could_continue = FALSE;
@@ -839,19 +846,6 @@ for (;;)
 
     switch (codevalue)
       {
-/* ========================================================================== */
-      /* These cases are never obeyed. This is a fudge that causes a compile-
-      time error if the vectors coptable or poptable, which are indexed by
-      opcode, are not the correct length. It seems to be the only way to do
-      such a check at compile time, as the sizeof() operator does not work
-      in the C preprocessor. */
-
-      case OP_TABLE_LENGTH:
-      case OP_TABLE_LENGTH +
-        ((sizeof(coptable) == OP_TABLE_LENGTH) &&
-         (sizeof(poptable) == OP_TABLE_LENGTH)):
-      return 0;
-
 /* ========================================================================== */
       /* Reached a closing bracket. If not at the end of the pattern, carry
       on with the next opcode. For repeating opcodes, also add the repeat
@@ -1100,6 +1094,8 @@ for (;;)
       /*-----------------------------------------------------------------*/
       case OP_WORD_BOUNDARY:
       case OP_NOT_WORD_BOUNDARY:
+      case OP_NOT_UCP_WORD_BOUNDARY:
+      case OP_UCP_WORD_BOUNDARY:
         {
         int left_word, right_word;
 
@@ -1112,13 +1108,13 @@ for (;;)
 #endif
           GETCHARTEST(d, temp);
 #ifdef SUPPORT_UNICODE
-          if ((mb->poptions & PCRE2_UCP) != 0)
+          if (codevalue == OP_UCP_WORD_BOUNDARY ||
+              codevalue == OP_NOT_UCP_WORD_BOUNDARY)
             {
-            if (d == '_') left_word = TRUE; else
-              {
-              uint32_t cat = UCD_CATEGORY(d);
-              left_word = (cat == ucp_L || cat == ucp_N);
-              }
+            int chartype = UCD_CHARTYPE(d);
+            int category = PRIV(ucp_gentype)[chartype];
+            left_word = (category == ucp_L || category == ucp_N ||
+              chartype == ucp_Mn || chartype == ucp_Pc);
             }
           else
 #endif
@@ -1137,13 +1133,13 @@ for (;;)
             mb->last_used_ptr = temp;
             }
 #ifdef SUPPORT_UNICODE
-          if ((mb->poptions & PCRE2_UCP) != 0)
+          if (codevalue == OP_UCP_WORD_BOUNDARY ||
+              codevalue == OP_NOT_UCP_WORD_BOUNDARY)
             {
-            if (c == '_') right_word = TRUE; else
-              {
-              uint32_t cat = UCD_CATEGORY(c);
-              right_word = (cat == ucp_L || cat == ucp_N);
-              }
+            int chartype = UCD_CHARTYPE(c);
+            int category = PRIV(ucp_gentype)[chartype];
+            right_word = (category == ucp_L || category == ucp_N ||
+              chartype == ucp_Mn || chartype == ucp_Pc);
             }
           else
 #endif
@@ -1151,7 +1147,9 @@ for (;;)
           }
         else right_word = FALSE;
 
-        if ((left_word == right_word) == (codevalue == OP_NOT_WORD_BOUNDARY))
+        if ((left_word == right_word) ==
+            (codevalue == OP_NOT_WORD_BOUNDARY ||
+             codevalue == OP_NOT_UCP_WORD_BOUNDARY))
           { ADD_ACTIVE(state_offset + 1, 0); }
         }
       break;
@@ -1168,17 +1166,15 @@ for (;;)
       if (clen > 0)
         {
         BOOL OK;
+        int chartype;
         const uint32_t *cp;
         const ucd_record * prop = GET_UCD(c);
         switch(code[1])
           {
-          case PT_ANY:
-          OK = TRUE;
-          break;
-
           case PT_LAMP:
-          OK = prop->chartype == ucp_Lu || prop->chartype == ucp_Ll ||
-               prop->chartype == ucp_Lt;
+          chartype = prop->chartype;
+          OK = chartype == ucp_Lu || chartype == ucp_Ll ||
+               chartype == ucp_Lt;
           break;
 
           case PT_GC:
@@ -1201,8 +1197,9 @@ for (;;)
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
-          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
-               PRIV(ucp_gentype)[prop->chartype] == ucp_N;
+          chartype = prop->chartype;
+          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
+               PRIV(ucp_gentype)[chartype] == ucp_N;
           break;
 
           /* Perl space used to exclude VT, but from Perl 5.18 it is included,
@@ -1225,12 +1222,20 @@ for (;;)
           break;
 
           case PT_WORD:
-          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
-               PRIV(ucp_gentype)[prop->chartype] == ucp_N ||
-               c == CHAR_UNDERSCORE;
+          chartype = prop->chartype;
+          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
+               PRIV(ucp_gentype)[chartype] == ucp_N ||
+               chartype == ucp_Mn || chartype == ucp_Pc;
           break;
 
           case PT_CLIST:
+#if PCRE2_CODE_UNIT_WIDTH == 32
+          if (c > MAX_UTF_CODE_POINT)
+            {
+            OK = FALSE;
+            break;
+            }
+#endif
           cp = PRIV(ucd_caseless_sets) + code[2];
           for (;;)
             {
@@ -1440,17 +1445,14 @@ for (;;)
       if (clen > 0)
         {
         BOOL OK;
+        int chartype;
         const uint32_t *cp;
         const ucd_record * prop = GET_UCD(c);
         switch(code[2])
           {
-          case PT_ANY:
-          OK = TRUE;
-          break;
-
           case PT_LAMP:
-          OK = prop->chartype == ucp_Lu || prop->chartype == ucp_Ll ||
-            prop->chartype == ucp_Lt;
+          chartype = prop->chartype;
+          OK = chartype == ucp_Lu || chartype == ucp_Ll || chartype == ucp_Lt;
           break;
 
           case PT_GC:
@@ -1473,8 +1475,9 @@ for (;;)
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
-          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
-               PRIV(ucp_gentype)[prop->chartype] == ucp_N;
+          chartype = prop->chartype;
+          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
+               PRIV(ucp_gentype)[chartype] == ucp_N;
           break;
 
           /* Perl space used to exclude VT, but from Perl 5.18 it is included,
@@ -1497,12 +1500,20 @@ for (;;)
           break;
 
           case PT_WORD:
-          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
-               PRIV(ucp_gentype)[prop->chartype] == ucp_N ||
-               c == CHAR_UNDERSCORE;
+          chartype = prop->chartype;
+          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
+               PRIV(ucp_gentype)[chartype] == ucp_N ||
+               chartype == ucp_Mn || chartype == ucp_Pc;
           break;
 
           case PT_CLIST:
+#if PCRE2_CODE_UNIT_WIDTH == 32
+          if (c > MAX_UTF_CODE_POINT)
+            {
+            OK = FALSE;
+            break;
+            }
+#endif
           cp = PRIV(ucd_caseless_sets) + code[3];
           for (;;)
             {
@@ -1695,17 +1706,14 @@ for (;;)
       if (clen > 0)
         {
         BOOL OK;
+        int chartype;
         const uint32_t *cp;
         const ucd_record * prop = GET_UCD(c);
         switch(code[2])
           {
-          case PT_ANY:
-          OK = TRUE;
-          break;
-
           case PT_LAMP:
-          OK = prop->chartype == ucp_Lu || prop->chartype == ucp_Ll ||
-            prop->chartype == ucp_Lt;
+          chartype = prop->chartype;
+          OK = chartype == ucp_Lu || chartype == ucp_Ll || chartype == ucp_Lt;
           break;
 
           case PT_GC:
@@ -1728,8 +1736,9 @@ for (;;)
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
-          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
-               PRIV(ucp_gentype)[prop->chartype] == ucp_N;
+          chartype = prop->chartype;
+          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
+               PRIV(ucp_gentype)[chartype] == ucp_N;
           break;
 
           /* Perl space used to exclude VT, but from Perl 5.18 it is included,
@@ -1752,12 +1761,20 @@ for (;;)
           break;
 
           case PT_WORD:
-          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
-               PRIV(ucp_gentype)[prop->chartype] == ucp_N ||
-               c == CHAR_UNDERSCORE;
+          chartype = prop->chartype;
+          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
+               PRIV(ucp_gentype)[chartype] == ucp_N ||
+               chartype == ucp_Mn || chartype == ucp_Pc;
           break;
 
           case PT_CLIST:
+#if PCRE2_CODE_UNIT_WIDTH == 32
+          if (c > MAX_UTF_CODE_POINT)
+            {
+            OK = FALSE;
+            break;
+            }
+#endif
           cp = PRIV(ucd_caseless_sets) + code[3];
           for (;;)
             {
@@ -1975,17 +1992,14 @@ for (;;)
       if (clen > 0)
         {
         BOOL OK;
+        int chartype;
         const uint32_t *cp;
         const ucd_record * prop = GET_UCD(c);
         switch(code[1 + IMM2_SIZE + 1])
           {
-          case PT_ANY:
-          OK = TRUE;
-          break;
-
           case PT_LAMP:
-          OK = prop->chartype == ucp_Lu || prop->chartype == ucp_Ll ||
-            prop->chartype == ucp_Lt;
+          chartype = prop->chartype;
+          OK = chartype == ucp_Lu || chartype == ucp_Ll || chartype == ucp_Lt;
           break;
 
           case PT_GC:
@@ -2009,8 +2023,9 @@ for (;;)
           /* These are specials for combination cases. */
 
           case PT_ALNUM:
-          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
-               PRIV(ucp_gentype)[prop->chartype] == ucp_N;
+          chartype = prop->chartype;
+          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
+               PRIV(ucp_gentype)[chartype] == ucp_N;
           break;
 
           /* Perl space used to exclude VT, but from Perl 5.18 it is included,
@@ -2033,12 +2048,20 @@ for (;;)
           break;
 
           case PT_WORD:
-          OK = PRIV(ucp_gentype)[prop->chartype] == ucp_L ||
-               PRIV(ucp_gentype)[prop->chartype] == ucp_N ||
-               c == CHAR_UNDERSCORE;
+          chartype = prop->chartype;
+          OK = PRIV(ucp_gentype)[chartype] == ucp_L ||
+               PRIV(ucp_gentype)[chartype] == ucp_N ||
+               chartype == ucp_Mn || chartype == ucp_Pc;
           break;
 
           case PT_CLIST:
+#if PCRE2_CODE_UNIT_WIDTH == 32
+          if (c > MAX_UTF_CODE_POINT)
+            {
+            OK = FALSE;
+            break;
+            }
+#endif
           cp = PRIV(ucd_caseless_sets) + code[1 + IMM2_SIZE + 2];
           for (;;)
             {
@@ -2305,7 +2328,7 @@ for (;;)
         case 0x2029:
 #endif  /* Not EBCDIC */
         if (mb->bsr_convention == PCRE2_BSR_ANYCRLF) break;
-        /* Fall through */
+        PCRE2_FALLTHROUGH /* Fall through */
 
         case CHAR_LF:
         ADD_NEW(state_offset + 1, 0);
@@ -2417,7 +2440,7 @@ for (;;)
       caseless = TRUE;
       codevalue -= OP_STARI - OP_STAR;
 
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_PLUS:
       case OP_MINPLUS:
       case OP_POSPLUS:
@@ -2461,7 +2484,7 @@ for (;;)
       case OP_NOTPOSQUERYI:
       caseless = TRUE;
       codevalue -= OP_STARI - OP_STAR;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_QUERY:
       case OP_MINQUERY:
       case OP_POSQUERY:
@@ -2502,7 +2525,7 @@ for (;;)
       case OP_NOTPOSSTARI:
       caseless = TRUE;
       codevalue -= OP_STARI - OP_STAR;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_STAR:
       case OP_MINSTAR:
       case OP_POSSTAR:
@@ -2539,7 +2562,7 @@ for (;;)
       case OP_NOTEXACTI:
       caseless = TRUE;
       codevalue -= OP_STARI - OP_STAR;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_EXACT:
       case OP_NOTEXACT:
       count = current_state->count;  /* Number already matched */
@@ -2574,7 +2597,7 @@ for (;;)
       case OP_NOTPOSUPTOI:
       caseless = TRUE;
       codevalue -= OP_STARI - OP_STAR;
-      /* Fall through */
+      PCRE2_FALLTHROUGH /* Fall through */
       case OP_UPTO:
       case OP_MINUPTO:
       case OP_POSUPTO:
@@ -2616,34 +2639,53 @@ for (;;)
 
       case OP_CLASS:
       case OP_NCLASS:
+#ifdef SUPPORT_WIDE_CHARS
       case OP_XCLASS:
+      case OP_ECLASS:
+#endif
         {
         BOOL isinclass = FALSE;
         int next_state_offset;
         PCRE2_SPTR ecode;
 
+#ifdef SUPPORT_WIDE_CHARS
+        /* An extended class may have a table or a list of single characters,
+        ranges, or both, and it may be positive or negative. There's a
+        function that sorts all this out. */
+
+        if (codevalue == OP_XCLASS)
+         {
+         ecode = code + GET(code, 1);
+         if (clen > 0)
+           isinclass = PRIV(xclass)(c, code + 1 + LINK_SIZE,
+             (const uint8_t*)mb->start_code, utf);
+         }
+
+        /* A nested set-based class has internal opcodes for performing
+        set operations. */
+
+        else if (codevalue == OP_ECLASS)
+         {
+         ecode = code + GET(code, 1);
+         if (clen > 0)
+           isinclass = PRIV(eclass)(c, code + 1 + LINK_SIZE, ecode,
+             (const uint8_t*)mb->start_code, utf);
+         }
+
+        else
+#endif /* SUPPORT_WIDE_CHARS */
+
         /* For a simple class, there is always just a 32-byte table, and we
         can set isinclass from it. */
 
-        if (codevalue != OP_XCLASS)
           {
           ecode = code + 1 + (32 / sizeof(PCRE2_UCHAR));
           if (clen > 0)
             {
             isinclass = (c > 255)? (codevalue == OP_NCLASS) :
-              ((((uint8_t *)(code + 1))[c/8] & (1u << (c&7))) != 0);
+              ((((const uint8_t *)(code + 1))[c/8] & (1u << (c&7))) != 0);
             }
           }
-
-        /* An extended class may have a table or a list of single characters,
-        ranges, or both, and it may be positive or negative. There's a
-        function that sorts all this out. */
-
-        else
-         {
-         ecode = code + GET(code, 1);
-         if (clen > 0) isinclass = PRIV(xclass)(c, code + 1 + LINK_SIZE, utf);
-         }
 
         /* At this point, isinclass is set for all kinds of class, and ecode
         points to the byte after the end of the class. If there is a
@@ -2737,7 +2779,6 @@ for (;;)
       though the other "backtracking verbs" are not supported. */
 
       case OP_FAIL:
-      forced_fail++;    /* Count FAILs for multiple states */
       break;
 
       case OP_ASSERT:
@@ -2894,10 +2935,12 @@ for (;;)
         int *local_workspace;
         PCRE2_SIZE *local_offsets;
         RWS_anchor *rws = (RWS_anchor *)RWS;
-        dfa_recursion_info *ri;
         PCRE2_SPTR callpat = start_code + GET(code, 1);
         uint32_t recno = (callpat == mb->start_code)? 0 :
           GET2(callpat, 1 + LINK_SIZE);
+
+        /* Argument list has not been supported yet. */
+        if (code[1 + LINK_SIZE] == OP_CREF) return PCRE2_ERROR_DFA_UITEM;
 
         if (rws->free < RWS_RSIZE + RWS_OVEC_RSIZE)
           {
@@ -2911,18 +2954,24 @@ for (;;)
         rws->free -= RWS_RSIZE + RWS_OVEC_RSIZE;
 
         /* Check for repeating a recursion without advancing the subject
-        pointer. This should catch convoluted mutual recursions. (Some simple
-        cases are caught at compile time.) */
+        pointer or last used character. This should catch convoluted mutual
+        recursions. (Some simple cases are caught at compile time.) */
 
-        for (ri = mb->recursive; ri != NULL; ri = ri->prevrec)
-          if (recno == ri->group_num && ptr == ri->subject_position)
+        for (dfa_recursion_info *ri = mb->recursive;
+             ri != NULL;
+             ri = ri->prevrec)
+          {
+          if (recno == ri->group_num && ptr == ri->subject_position &&
+              mb->last_used_ptr == ri->last_used_ptr)
             return PCRE2_ERROR_RECURSELOOP;
+          }
 
         /* Remember this recursion and where we started it so as to
         catch infinite loops. */
 
         new_recursive.group_num = recno;
         new_recursive.subject_position = ptr;
+        new_recursive.last_used_ptr = mb->last_used_ptr;
         new_recursive.prevrec = mb->recursive;
         mb->recursive = &new_recursive;
 
@@ -3006,7 +3055,7 @@ for (;;)
         if (codevalue == OP_BRAPOSZERO)
           {
           allow_zero = TRUE;
-          codevalue = *(++code);  /* Codevalue will be one of above BRAs */
+          ++code;  /* The following opcode will be one of the above BRAs */
           }
         else allow_zero = FALSE;
 
@@ -3219,18 +3268,12 @@ for (;;)
   matches that we are going to find. If partial matching has been requested,
   check for appropriate conditions.
 
-  The "forced_ fail" variable counts the number of (*F) encountered for the
-  character. If it is equal to the original active_count (saved in
-  workspace[1]) it means that (*F) was found on every active state. In this
-  case we don't want to give a partial match.
-
   The "could_continue" variable is true if a state could have continued but
   for the fact that the end of the subject was reached. */
 
   if (new_count <= 0)
     {
     if (could_continue &&                            /* Some could go on, and */
-        forced_fail != workspace[1] &&               /* Not all forced fail & */
         (                                            /* either... */
         (mb->moptions & PCRE2_PARTIAL_HARD) != 0      /* Hard partial */
         ||                                           /* or... */
@@ -3299,10 +3342,12 @@ pcre2_dfa_match(const pcre2_code *code, PCRE2_SPTR subject, PCRE2_SIZE length,
   pcre2_match_context *mcontext, int *workspace, PCRE2_SIZE wscount)
 {
 int rc;
-int was_zero_terminated = 0;
 
 const pcre2_real_code *re = (const pcre2_real_code *)code;
+uint32_t original_options = options;
 
+PCRE2_UCHAR null_str[1] = { 0xcd };
+PCRE2_SPTR original_subject = subject;
 PCRE2_SPTR start_match;
 PCRE2_SPTR end_subject;
 PCRE2_SPTR bumpalong_limit;
@@ -3344,49 +3389,51 @@ rws->free = RWS_BASE_SIZE - RWS_ANCHOR_SIZE;
 
 /* Recognize NULL, length 0 as an empty string. */
 
-if (subject == NULL && length == 0) subject = (PCRE2_SPTR)"";
+if (subject == NULL && length == 0) subject = null_str;
 
 /* Plausibility checks */
 
-if ((options & ~PUBLIC_DFA_MATCH_OPTIONS) != 0) return PCRE2_ERROR_BADOPTION;
-if (re == NULL || subject == NULL || workspace == NULL || match_data == NULL)
-  return PCRE2_ERROR_NULL;
+if (match_data == NULL) return PCRE2_ERROR_NULL;
+if (re == NULL || subject == NULL || workspace == NULL)
+  { rc = PCRE2_ERROR_NULL; goto EXIT; }
+if ((options & ~PUBLIC_DFA_MATCH_OPTIONS) != 0)
+  { rc = PCRE2_ERROR_BADOPTION; goto EXIT; }
 
 if (length == PCRE2_ZERO_TERMINATED)
   {
   length = PRIV(strlen)(subject);
-  was_zero_terminated = 1;
   }
 
-if (wscount < 20) return PCRE2_ERROR_DFA_WSSIZE;
-if (start_offset > length) return PCRE2_ERROR_BADOFFSET;
+if (wscount < 20) { rc = PCRE2_ERROR_DFA_WSSIZE; goto EXIT; }
+if (start_offset > length) { rc = PCRE2_ERROR_BADOFFSET; goto EXIT; }
 
 /* Partial matching and PCRE2_ENDANCHORED are currently not allowed at the same
 time. */
 
 if ((options & (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT)) != 0 &&
    ((re->overall_options | options) & PCRE2_ENDANCHORED) != 0)
-  return PCRE2_ERROR_BADOPTION;
+  { rc = PCRE2_ERROR_BADOPTION; goto EXIT; }
 
 /* Invalid UTF support is not available for DFA matching. */
 
 if ((re->overall_options & PCRE2_MATCH_INVALID_UTF) != 0)
-  return PCRE2_ERROR_DFA_UINVALID_UTF;
+  { rc = PCRE2_ERROR_DFA_UINVALID_UTF; goto EXIT; }
 
 /* Check that the first field in the block is the magic number. If it is not,
 return with PCRE2_ERROR_BADMAGIC. */
 
-if (re->magic_number != MAGIC_NUMBER) return PCRE2_ERROR_BADMAGIC;
+if (re->magic_number != MAGIC_NUMBER)
+  { rc = PCRE2_ERROR_BADMAGIC; goto EXIT; }
 
 /* Check the code unit width. */
 
 if ((re->flags & PCRE2_MODE_MASK) != PCRE2_CODE_UNIT_WIDTH/8)
-  return PCRE2_ERROR_BADMODE;
+  { rc = PCRE2_ERROR_BADMODE; goto EXIT; }
 
 /* PCRE2_NOTEMPTY and PCRE2_NOTEMPTY_ATSTART are match-time flags in the
 options variable for this function. Users of PCRE2 who are not calling the
 function directly would like to have a way of setting these flags, in the same
-way that they can set pcre2_compile() flags like PCRE2_NO_AUTOPOSSESS with
+way that they can set pcre2_compile() flags like PCRE2_NO_AUTO_POSSESS with
 constructions like (*NO_AUTOPOSSESS). To enable this, (*NOTEMPTY) and
 (*NOTEMPTY_ATSTART) set bits in the pattern's "flag" function which can now be
 transferred to the options for this function. The bits are guaranteed to be
@@ -3407,8 +3454,8 @@ of the workspace. */
 if ((options & PCRE2_DFA_RESTART) != 0)
   {
   if ((workspace[0] & (-2)) != 0 || workspace[1] < 1 ||
-    workspace[1] > (int)((wscount - 2)/INTS_PER_STATEBLOCK))
-      return PCRE2_ERROR_DFA_BADRESTART;
+      workspace[1] > (int)((wscount - 2)/INTS_PER_STATEBLOCK))
+    { rc = PCRE2_ERROR_DFA_BADRESTART; goto EXIT; }
   }
 
 /* Set some local values */
@@ -3424,7 +3471,7 @@ anchored = (options & (PCRE2_ANCHORED|PCRE2_DFA_RESTART)) != 0 ||
 where to start. */
 
 startline = (re->flags & PCRE2_STARTLINE) != 0;
-firstline = (re->overall_options & PCRE2_FIRSTLINE) != 0;
+firstline = !anchored && (re->overall_options & PCRE2_FIRSTLINE) != 0;
 bumpalong_limit = end_subject;
 
 /* Initialize and set up the fixed fields in the callout block, with a pointer
@@ -3456,7 +3503,7 @@ else
   if (mcontext->offset_limit != PCRE2_UNSET)
     {
     if ((re->overall_options & PCRE2_USE_OFFSET_LIMIT) == 0)
-      return PCRE2_ERROR_BADOFFSETLIMIT;
+      { rc = PCRE2_ERROR_BADOFFSETLIMIT; goto EXIT; }
     bumpalong_limit = subject + mcontext->offset_limit;
     }
   mb->callout = mcontext->callout;
@@ -3476,8 +3523,7 @@ if (mb->match_limit_depth > re->limit_depth)
 if (mb->heap_limit > re->limit_heap)
   mb->heap_limit = re->limit_heap;
 
-mb->start_code = (PCRE2_UCHAR *)((uint8_t *)re + sizeof(pcre2_real_code)) +
-  re->name_count * re->name_entry_size;
+mb->start_code = (PCRE2_SPTR)((const uint8_t *)re + re->code_start);
 mb->tables = re->tables;
 mb->start_subject = subject;
 mb->end_subject = end_subject;
@@ -3524,7 +3570,12 @@ switch(re->newline_convention)
   mb->nltype = NLTYPE_ANYCRLF;
   break;
 
-  default: return PCRE2_ERROR_INTERNAL;
+  /* LCOV_EXCL_START */
+  default:
+  PCRE2_DEBUG_UNREACHABLE();
+  rc = PCRE2_ERROR_INTERNAL;
+  goto EXIT;
+  /* LCOV_EXCL_STOP */
   }
 
 /* Check a UTF string for validity if required. For 8-bit and 16-bit strings,
@@ -3545,7 +3596,7 @@ if (utf && (options & PCRE2_NO_UTF_CHECK) == 0)
 #if PCRE2_CODE_UNIT_WIDTH != 32
     unsigned int i;
     if (start_match < end_subject && NOT_FIRSTCU(*start_match))
-      return PCRE2_ERROR_BADUTFOFFSET;
+      { rc = PCRE2_ERROR_BADUTFOFFSET; goto EXIT; }
     for (i = re->max_lookbehind; i > 0 && check_subject > subject; i--)
       {
       check_subject--;
@@ -3566,12 +3617,12 @@ if (utf && (options & PCRE2_NO_UTF_CHECK) == 0)
   /* Validate the relevant portion of the subject. After an error, adjust the
   offset to be an absolute offset in the whole string. */
 
-  match_data->rc = PRIV(valid_utf)(check_subject,
+  rc = PRIV(valid_utf)(check_subject,
     length - (PCRE2_SIZE)(check_subject - subject), &(match_data->startchar));
-  if (match_data->rc != 0)
+  if (rc != 0)
     {
     match_data->startchar += (PCRE2_SIZE)(check_subject - subject);
-    return match_data->rc;
+    goto EXIT;
     }
   }
 #endif  /* SUPPORT_UNICODE */
@@ -3635,9 +3686,10 @@ if ((match_data->flags & PCRE2_MD_COPIED_SUBJECT) != 0)
 /* Fill in fields that are always returned in the match data. */
 
 match_data->code = re;
-match_data->subject = NULL;  /* Default for no match */
+match_data->subject = NULL;  /* Default for match error */
 match_data->mark = NULL;
 match_data->matchedby = PCRE2_MATCHEDBY_DFA_INTERPRETER;
+match_data->options = original_options;
 
 /* Call the main matching function, looping for a non-anchored regex after a
 failed match. If not restarting, perform certain optimizations at the start of
@@ -3653,7 +3705,7 @@ for (;;)
   these, for testing and for ensuring that all callouts do actually occur.
   The optimizations must also be avoided when restarting a DFA match. */
 
-  if ((re->overall_options & PCRE2_NO_START_OPTIMIZE) == 0 &&
+  if ((re->optimization_flags & PCRE2_OPTIM_START_OPTIMIZE) != 0 &&
       (options & PCRE2_DFA_RESTART) == 0)
     {
     /* If firstline is TRUE, the start of the match is constrained to the first
@@ -3989,28 +4041,40 @@ for (;;)
 
   if (rc != PCRE2_ERROR_NOMATCH || anchored)
     {
+    if (rc == PCRE2_ERROR_NOMATCH) goto NOMATCH_EXIT;
+
     if (rc == PCRE2_ERROR_PARTIAL && match_data->oveccount > 0)
       {
       match_data->ovector[0] = (PCRE2_SIZE)(start_match - subject);
       match_data->ovector[1] = (PCRE2_SIZE)(end_subject - subject);
       }
-    match_data->leftchar = (PCRE2_SIZE)(mb->start_used_ptr - subject);
-    match_data->rightchar = (PCRE2_SIZE)( mb->last_used_ptr - subject);
-    match_data->startchar = (PCRE2_SIZE)(start_match - subject);
-    match_data->rc = rc;
 
-    if (rc >= 0 &&(options & PCRE2_COPY_MATCHED_SUBJECT) != 0)
+    if (rc >= 0 || rc == PCRE2_ERROR_PARTIAL)
       {
-      length = CU2BYTES(length + was_zero_terminated);
-      match_data->subject = match_data->memctl.malloc(length,
-        match_data->memctl.memory_data);
-      if (match_data->subject == NULL) return PCRE2_ERROR_NOMEMORY;
-      memcpy((void *)match_data->subject, subject, length);
+      match_data->subject_length = length;
+      match_data->start_offset = start_offset;
+      match_data->leftchar = (PCRE2_SIZE)(mb->start_used_ptr - subject);
+      match_data->rightchar = (PCRE2_SIZE)(mb->last_used_ptr - subject);
+      match_data->startchar = (PCRE2_SIZE)(start_match - subject);
+      }
+
+    if (rc >= 0 && (options & PCRE2_COPY_MATCHED_SUBJECT) != 0)
+      {
+      if (length != 0)
+        {
+        match_data->subject = match_data->memctl.malloc(CU2BYTES(length),
+          match_data->memctl.memory_data);
+        if (match_data->subject == NULL)
+          { rc = PCRE2_ERROR_NOMEMORY; goto EXIT; }
+        memcpy((void *)match_data->subject, subject, CU2BYTES(length));
+        }
+      else
+        match_data->subject = NULL;
       match_data->flags |= PCRE2_MD_COPIED_SUBJECT;
       }
-    else
+    else if (rc >= 0 || rc == PCRE2_ERROR_PARTIAL)
       {
-      if (rc >= 0 || rc == PCRE2_ERROR_PARTIAL) match_data->subject = subject;
+      match_data->subject = original_subject;
       }
     goto EXIT;
     }
@@ -4044,6 +4108,9 @@ for (;;)
   }   /* "Bumpalong" loop */
 
 NOMATCH_EXIT:
+match_data->subject = original_subject;
+match_data->subject_length = length;
+match_data->start_offset = start_offset;
 rc = PCRE2_ERROR_NOMATCH;
 
 EXIT:
@@ -4054,6 +4121,7 @@ while (rws->next != NULL)
   mb->memctl.free(next, mb->memctl.memory_data);
   }
 
+match_data->rc = rc;
 return rc;
 }
 

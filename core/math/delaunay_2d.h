@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DELAUNAY_2D_H
-#define DELAUNAY_2D_H
+#pragma once
 
 #include "core/math/rect2.h"
 #include "core/templates/vector.h"
@@ -64,7 +63,7 @@ public:
 		}
 	};
 
-	static Triangle create_triangle(const Vector<Vector2> &p_vertices, const int &p_a, const int &p_b, const int &p_c) {
+	static Triangle create_triangle(const Vector<Vector2> &p_vertices, int p_a, int p_b, int p_c) {
 		Triangle triangle = Triangle(p_a, p_b, p_c);
 
 		// Get the values of the circumcircle and store them inside the triangle object.
@@ -156,5 +155,3 @@ public:
 		return triangles;
 	}
 };
-
-#endif // DELAUNAY_2D_H

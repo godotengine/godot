@@ -28,15 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TAA_RD_H
-#define TAA_RD_H
+#pragma once
 
-#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/taa_resolve.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
-#include "servers/rendering/renderer_scene_render.h"
-
-#include "servers/rendering_server.h"
 
 namespace RendererRD {
 
@@ -52,7 +47,7 @@ private:
 		float resolution_width;
 		float resolution_height;
 		float disocclusion_threshold;
-		float disocclusion_scale;
+		float variance_dynamic;
 	};
 
 	TaaResolveShaderRD taa_shader;
@@ -63,5 +58,3 @@ private:
 };
 
 } // namespace RendererRD
-
-#endif // TAA_RD_H

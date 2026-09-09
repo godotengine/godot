@@ -49,8 +49,9 @@ const int num_taps[5] = { 3, 5, 12, 0, 0 };
 #define SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET (2)
 #define SSIL_DEPTH_MIPS_GLOBAL_OFFSET (-4.3) // best noise/quality/performance tradeoff, found empirically
 //
-// !!warning!! the edge handling is hard-coded to 'disabled' on quality level 0, and enabled above, on the C++ side; while toggling it here will work for
-// testing purposes, it will not yield performance gains (or correct results)
+// WARNING: The edge handling is hard-coded to 'disabled' on quality level 0, and enabled above,
+// on the C++ side; while toggling it here will work for testing purposes, it will not yield
+// performance gains (or correct results).
 #define SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET (1)
 //
 #define SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET (1)
@@ -70,7 +71,7 @@ layout(set = 0, binding = 2) uniform Constants { //get into a lower set
 constants;
 
 #ifdef ADAPTIVE
-layout(rgba16, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;
+layout(rgba16f, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;
 layout(set = 1, binding = 1) uniform sampler2D source_importance;
 layout(set = 1, binding = 2, std430) buffer Counter {
 	uint sum;
@@ -78,7 +79,7 @@ layout(set = 1, binding = 2, std430) buffer Counter {
 counter;
 #endif
 
-layout(rgba16, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
+layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
 layout(r8, set = 2, binding = 1) uniform image2D edges_weights_image;
 
 layout(set = 3, binding = 0) uniform sampler2D last_frame;
@@ -194,9 +195,9 @@ void SSIL_tap_inner(const int p_quality_level, inout vec3 r_color_sum, inout flo
 	float weight = 1.0;
 
 	if (p_quality_level >= SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {
-		float reduct = max(0, -hit_delta.z);
-		reduct = clamp(reduct * params.neg_inv_radius + 2.0, 0.0, 1.0);
-		weight = SSIL_HALOING_REDUCTION_AMOUNT * reduct + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);
+		float reduce = max(0, -hit_delta.z);
+		reduce = clamp(reduce * params.neg_inv_radius + 2.0, 0.0, 1.0);
+		weight = SSIL_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);
 	}
 
 	// Translate sampling_uv to last screen's coordinates

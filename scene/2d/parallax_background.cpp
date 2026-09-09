@@ -30,7 +30,8 @@
 
 #include "parallax_background.h"
 
-#include "parallax_layer.h"
+#include "core/object/class_db.h"
+#include "scene/2d/parallax_layer.h"
 
 void ParallaxBackground::_notification(int p_what) {
 	switch (p_what) {
@@ -45,7 +46,7 @@ void ParallaxBackground::_notification(int p_what) {
 	}
 }
 
-void ParallaxBackground::_camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset) {
+void ParallaxBackground::_camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset, const Point2 &p_adj_screen_offset) {
 	screen_offset = p_screen_offset;
 
 	set_scroll_scale(p_transform.get_scale().dot(Vector2(0.5, 0.5)));

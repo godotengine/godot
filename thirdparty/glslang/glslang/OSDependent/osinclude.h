@@ -35,9 +35,10 @@
 #ifndef __OSINCLUDE_H
 #define __OSINCLUDE_H
 
+#include "../Include/visibility.h"
 namespace glslang {
 
-void OS_DumpMemoryCounters();
+GLSLANG_EXPORT void OS_DumpMemoryCounters();
 
 } // end namespace glslang
 

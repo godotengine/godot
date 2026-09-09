@@ -31,25 +31,14 @@
 #include "subviewport_container.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 
 Size2 SubViewportContainer::get_minimum_size() const {
 	if (stretch) {
 		return Size2();
 	}
-	Size2 ms;
-	for (int i = 0; i < get_child_count(); i++) {
-		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-		if (!c) {
-			continue;
-		}
-
-		Size2 minsize = c->get_size();
-		ms.width = MAX(ms.width, minsize.width);
-		ms.height = MAX(ms.height, minsize.height);
-	}
-
-	return ms;
+	return Container::get_minimum_size();
 }
 
 void SubViewportContainer::set_stretch(bool p_enable) {
@@ -101,11 +90,15 @@ int SubViewportContainer::get_stretch_shrink() const {
 }
 
 Vector<int> SubViewportContainer::get_allowed_size_flags_horizontal() const {
-	return Vector<int>();
+	Vector<int> flags;
+	flags.append(SIZE_MAXIMIZE);
+	return flags;
 }
 
 Vector<int> SubViewportContainer::get_allowed_size_flags_vertical() const {
-	return Vector<int>();
+	Vector<int> flags;
+	flags.append(SIZE_MAXIMIZE);
+	return flags;
 }
 
 void SubViewportContainer::_notification(int p_what) {
@@ -247,6 +240,14 @@ bool SubViewportContainer::_is_propagated_in_gui_input(const Ref<InputEvent> &p_
 	return false;
 }
 
+void SubViewportContainer::set_mouse_target(bool p_enable) {
+	mouse_target = p_enable;
+}
+
+bool SubViewportContainer::is_mouse_target_enabled() {
+	return mouse_target;
+}
+
 void SubViewportContainer::add_child_notify(Node *p_child) {
 	if (Object::cast_to<SubViewport>(p_child)) {
 		queue_redraw();
@@ -260,7 +261,7 @@ void SubViewportContainer::remove_child_notify(Node *p_child) {
 }
 
 PackedStringArray SubViewportContainer::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Container::get_configuration_warnings();
 
 	bool has_viewport = false;
 	for (int i = 0; i < get_child_count(); i++) {
@@ -287,8 +288,12 @@ void SubViewportContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stretch_shrink", "amount"), &SubViewportContainer::set_stretch_shrink);
 	ClassDB::bind_method(D_METHOD("get_stretch_shrink"), &SubViewportContainer::get_stretch_shrink);
 
+	ClassDB::bind_method(D_METHOD("set_mouse_target", "amount"), &SubViewportContainer::set_mouse_target);
+	ClassDB::bind_method(D_METHOD("is_mouse_target_enabled"), &SubViewportContainer::is_mouse_target_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stretch"), "set_stretch", "is_stretch_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink"), "set_stretch_shrink", "get_stretch_shrink");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_shrink", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), "set_stretch_shrink", "get_stretch_shrink");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_target"), "set_mouse_target", "is_mouse_target_enabled");
 
 	GDVIRTUAL_BIND(_propagate_input_event, "event");
 }

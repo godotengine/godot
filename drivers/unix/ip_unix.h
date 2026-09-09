@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IP_UNIX_H
-#define IP_UNIX_H
+#pragma once
+
+#if defined(UNIX_ENABLED) && !defined(UNIX_SOCKET_UNAVAILABLE)
 
 #include "core/io/ip.h"
 
-#if defined(UNIX_ENABLED) || defined(WINDOWS_ENABLED)
-
 class IPUnix : public IP {
-	GDCLASS(IPUnix, IP);
+	GDSOFTCLASS(IPUnix, IP);
 
 	virtual void _resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const override;
 
@@ -49,6 +48,4 @@ public:
 	IPUnix();
 };
 
-#endif
-
-#endif // IP_UNIX_H
+#endif // UNIX_ENABLED

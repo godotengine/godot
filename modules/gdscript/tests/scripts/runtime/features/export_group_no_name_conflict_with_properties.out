@@ -1,5 +1,8 @@
 GDTEST_OK
 Not shadowed: Resource
-{ "name": "prop_1", "class_name": &"", "type": 2, "hint": 0, "hint_string": "int", "usage": 4102 }
-{ "name": "prop_1", "class_name": &"", "type": 0, "hint": 0, "hint_string": "", "usage": 128 }
-{ "name": "prop_2", "class_name": &"", "type": 2, "hint": 0, "hint_string": "int", "usage": 4102 }
+var test_1: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+@export_category("test_1")
+  hint=NONE hint_string="" usage=CATEGORY class_name=&""
+var test_2: int = 0
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""

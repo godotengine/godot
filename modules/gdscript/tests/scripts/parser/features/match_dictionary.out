@@ -13,3 +13,6 @@ wildcard
 1
 2
 wildcard
+multiline {"key1": "value1"}
+multiline {"key2": "value2",}
+multiline {"key3": {"key1", ..,},}

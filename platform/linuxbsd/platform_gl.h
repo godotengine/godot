@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLATFORM_GL_H
-#define PLATFORM_GL_H
+#pragma once
 
 #ifndef GL_API_ENABLED
 #define GL_API_ENABLED // Allow using desktop GL.
@@ -39,7 +38,8 @@
 #define GLES_API_ENABLED // Allow using GLES.
 #endif
 
-#include "thirdparty/glad/glad/egl.h"
-#include "thirdparty/glad/glad/gl.h"
+#ifndef GLAD_GLES2
+#define GLAD_GLES2
+#endif
 
-#endif // PLATFORM_GL_H
+#include <thirdparty/glad/glad/gl.h> // IWYU pragma: export.

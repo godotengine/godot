@@ -468,8 +468,8 @@ namespace Godot
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    real_t e = transform.Basis[i][j] * min[j];
-                    real_t f = transform.Basis[i][j] * max[j];
+                    real_t e = transform.Basis[j][i] * min[j];
+                    real_t f = transform.Basis[j][i] * max[j];
                     if (e < f)
                     {
                         tmin[i] += e;
@@ -674,10 +674,7 @@ namespace Godot
         /// Converts this <see cref="Transform3D"/> to a string.
         /// </summary>
         /// <returns>A string representation of this transform.</returns>
-        public override readonly string ToString()
-        {
-            return $"[X: {Basis.X}, Y: {Basis.Y}, Z: {Basis.Z}, O: {Origin}]";
-        }
+        public override readonly string ToString() => ToString(null);
 
         /// <summary>
         /// Converts this <see cref="Transform3D"/> to a string with the given <paramref name="format"/>.

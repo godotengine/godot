@@ -45,12 +45,13 @@ namespace embree
   Geometry::Geometry (Device* device, GType gtype, unsigned int numPrimitives, unsigned int numTimeSteps) 
     : device(device), userPtr(nullptr),
       numPrimitives(numPrimitives), numTimeSteps(unsigned(numTimeSteps)), fnumTimeSegments(float(numTimeSteps-1)), time_range(0.0f,1.0f),
-      mask(-1),
+      mask(1),
       gtype(gtype),
       gsubtype(GTY_SUBTYPE_DEFAULT),
       quality(RTC_BUILD_QUALITY_MEDIUM),
       state((unsigned)State::MODIFIED),
       enabled(true),
+      argumentFilterEnabled(false),
       intersectionFilterN(nullptr), occlusionFilterN(nullptr), pointQueryFunc(nullptr)
   {
     device->refInc();
@@ -88,6 +89,11 @@ namespace embree
     Geometry::update();
   }
   
+  BBox1f Geometry::getTimeRange () const
+  {
+    return time_range;
+  }
+
   void Geometry::update()
   {
     ++modCounter_; // FIXME: required?
@@ -110,7 +116,7 @@ namespace embree
   {
   }
 
-  void Geometry::enable () 
+  void Geometry::enable ()
   {
     if (isEnabled()) 
       return;
@@ -227,11 +233,11 @@ namespace embree
       }
     }
   }
-    
+
   bool Geometry::pointQuery(PointQuery* query, PointQueryContext* context)
   {
     assert(context->primID < size());
-   
+
     RTCPointQueryFunctionArguments args;
     args.query           = (RTCPointQuery*)context->query_ws;
     args.userPtr         = context->userPtr;
@@ -239,7 +245,7 @@ namespace embree
     args.geomID          = context->geomID;
     args.context         = context->userContext;
     args.similarityScale = context->similarityScale;
-    
+
     bool update = false;
     if(context->func)  update |= context->func(&args);
     if(pointQueryFunc) update |= pointQueryFunc(&args);

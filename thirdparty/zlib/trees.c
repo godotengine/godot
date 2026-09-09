@@ -1,5 +1,5 @@
 /* trees.c -- output deflated data using Huffman coding
- * Copyright (C) 1995-2021 Jean-loup Gailly
+ * Copyright (C) 1995-2026 Jean-loup Gailly
  * detect_data_type() function provided freely by Cosmin Truta, 2006
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -112,7 +112,7 @@ local int base_dist[D_CODES];
 
 #else
 #  include "trees.h"
-#endif /* GEN_TREES_H */
+#endif /* defined(GEN_TREES_H) || !defined(STDC) */
 
 struct static_tree_desc_s {
     const ct_data *static_tree;  /* static tree or NULL */
@@ -152,7 +152,7 @@ local TCONST static_tree_desc static_bl_desc =
  * IN assertion: 1 <= len <= 15
  */
 local unsigned bi_reverse(unsigned code, int len) {
-    register unsigned res = 0;
+    unsigned res = 0;
     do {
         res |= code & 1;
         code >>= 1, res <<= 1;
@@ -184,10 +184,11 @@ local void bi_windup(deflate_state *s) {
     } else if (s->bi_valid > 0) {
         put_byte(s, (Byte)s->bi_buf);
     }
+    s->bi_used = ((s->bi_valid - 1) & 7) + 1;
     s->bi_buf = 0;
     s->bi_valid = 0;
 #ifdef ZLIB_DEBUG
-    s->bits_sent = (s->bits_sent + 7) & ~7;
+    s->bits_sent = (s->bits_sent + 7) & ~(ulg)7;
 #endif
 }
 
@@ -466,6 +467,7 @@ void ZLIB_INTERNAL _tr_init(deflate_state *s) {
 
     s->bi_buf = 0;
     s->bi_valid = 0;
+    s->bi_used = 0;
 #ifdef ZLIB_DEBUG
     s->compressed_len = 0L;
     s->bits_sent = 0L;
@@ -724,7 +726,7 @@ local void scan_tree(deflate_state *s, ct_data *tree, int max_code) {
         if (++count < max_count && curlen == nextlen) {
             continue;
         } else if (count < min_count) {
-            s->bl_tree[curlen].Freq += count;
+            s->bl_tree[curlen].Freq += (ush)count;
         } else if (curlen != 0) {
             if (curlen != prevlen) s->bl_tree[curlen].Freq++;
             s->bl_tree[REP_3_6].Freq++;
@@ -817,7 +819,7 @@ local int build_bl_tree(deflate_state *s) {
     }
     /* Update opt_len to include the bit length tree and counts */
     s->opt_len += 3*((ulg)max_blindex + 1) + 5 + 5 + 4;
-    Tracev((stderr, "\ndyn trees: dyn %ld, stat %ld",
+    Tracev((stderr, "\ndyn trees: dyn %lu, stat %lu",
             s->opt_len, s->static_len));
 
     return max_blindex;
@@ -843,13 +845,13 @@ local void send_all_trees(deflate_state *s, int lcodes, int dcodes,
         Tracev((stderr, "\nbl code %2d ", bl_order[rank]));
         send_bits(s, s->bl_tree[bl_order[rank]].Len, 3);
     }
-    Tracev((stderr, "\nbl tree: sent %ld", s->bits_sent));
+    Tracev((stderr, "\nbl tree: sent %lu", s->bits_sent));
 
     send_tree(s, (ct_data *)s->dyn_ltree, lcodes - 1);  /* literal tree */
-    Tracev((stderr, "\nlit tree: sent %ld", s->bits_sent));
+    Tracev((stderr, "\nlit tree: sent %lu", s->bits_sent));
 
     send_tree(s, (ct_data *)s->dyn_dtree, dcodes - 1);  /* distance tree */
-    Tracev((stderr, "\ndist tree: sent %ld", s->bits_sent));
+    Tracev((stderr, "\ndist tree: sent %lu", s->bits_sent));
 }
 
 /* ===========================================================================
@@ -899,14 +901,19 @@ local void compress_block(deflate_state *s, const ct_data *ltree,
                           const ct_data *dtree) {
     unsigned dist;      /* distance of matched string */
     int lc;             /* match length or unmatched char (if dist == 0) */
-    unsigned sx = 0;    /* running index in sym_buf */
+    unsigned sx = 0;    /* running index in symbol buffers */
     unsigned code;      /* the code to send */
     int extra;          /* number of extra bits to send */
 
     if (s->sym_next != 0) do {
+#ifdef LIT_MEM
+        dist = s->d_buf[sx];
+        lc = s->l_buf[sx++];
+#else
         dist = s->sym_buf[sx++] & 0xff;
         dist += (unsigned)(s->sym_buf[sx++] & 0xff) << 8;
         lc = s->sym_buf[sx++];
+#endif
         if (dist == 0) {
             send_code(s, lc, ltree); /* send a literal byte */
             Tracecv(isgraph(lc), (stderr," '%c' ", lc));
@@ -927,12 +934,16 @@ local void compress_block(deflate_state *s, const ct_data *ltree,
             extra = extra_dbits[code];
             if (extra != 0) {
                 dist -= (unsigned)base_dist[code];
-                send_bits(s, dist, extra);   /* send the extra distance bits */
+                send_bits(s, (int)dist, extra); /* send the extra bits */
             }
         } /* literal or match pair ? */
 
-        /* Check that the overlay between pending_buf and sym_buf is ok: */
+        /* Check for no overlay of pending_buf on needed symbols */
+#ifdef LIT_MEM
+        Assert(s->pending < 2 * (s->lit_bufsize + sx), "pendingBuf overflow");
+#else
         Assert(s->pending < s->lit_bufsize + sx, "pendingBuf overflow");
+#endif
 
     } while (sx < s->sym_next);
 
@@ -997,11 +1008,11 @@ void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, charf *buf,
 
         /* Construct the literal and distance trees */
         build_tree(s, (tree_desc *)(&(s->l_desc)));
-        Tracev((stderr, "\nlit data: dyn %ld, stat %ld", s->opt_len,
+        Tracev((stderr, "\nlit data: dyn %lu, stat %lu", s->opt_len,
                 s->static_len));
 
         build_tree(s, (tree_desc *)(&(s->d_desc)));
-        Tracev((stderr, "\ndist data: dyn %ld, stat %ld", s->opt_len,
+        Tracev((stderr, "\ndist data: dyn %lu, stat %lu", s->opt_len,
                 s->static_len));
         /* At this point, opt_len and static_len are the total bit lengths of
          * the compressed block data, excluding the tree representations.
@@ -1074,7 +1085,7 @@ void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, charf *buf,
 #endif
     }
     Tracev((stderr,"\ncomprlen %lu(%lu) ", s->compressed_len >> 3,
-           s->compressed_len - 7*last));
+           s->compressed_len - 7*(ulg)last));
 }
 
 /* ===========================================================================
@@ -1082,9 +1093,14 @@ void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, charf *buf,
  * the current block must be flushed.
  */
 int ZLIB_INTERNAL _tr_tally(deflate_state *s, unsigned dist, unsigned lc) {
+#ifdef LIT_MEM
+    s->d_buf[s->sym_next] = (ush)dist;
+    s->l_buf[s->sym_next++] = (uch)lc;
+#else
     s->sym_buf[s->sym_next++] = (uch)dist;
     s->sym_buf[s->sym_next++] = (uch)(dist >> 8);
     s->sym_buf[s->sym_next++] = (uch)lc;
+#endif
     if (dist == 0) {
         /* lc is the unmatched char */
         s->dyn_ltree[lc].Freq++;

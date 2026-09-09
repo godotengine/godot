@@ -3,26 +3,27 @@
 
 #include <vector>
 #include "Contour.h"
+#include "YAxisOrientation.h"
 #include "Scanline.h"
 
 namespace msdfgen {
 
 // Threshold of the dot product of adjacent edge directions to be considered convergent.
 #define MSDFGEN_CORNER_DOT_EPSILON .000001
-// The proportional amount by which a curve's control point will be adjusted to eliminate convergent corners.
-#define MSDFGEN_DECONVERGENCE_FACTOR .000001
 
 /// Vector shape representation.
 class Shape {
 
 public:
     struct Bounds {
+        // NOTE: b is actually the lower Y-coordinate and t the higher Y-coordinate. For Y_DOWNWARD orientation, b is actually the top and t the bottom. May be renamed in a future version.
         double l, b, r, t;
     };
 
     /// The list of contours the shape consists of.
     std::vector<Contour> contours;
     /// Specifies whether the shape uses bottom-to-top (false) or top-to-bottom (true) Y coordinates.
+    /// DEPRECATED - use getYAxisOrientation / setYAxisOrientation instead.
     bool inverseYAxis;
 
     Shape();
@@ -32,15 +33,15 @@ public:
     void addContour(Contour &&contour);
 #endif
     /// Adds a blank contour and returns its reference.
-    Contour & addContour();
+    Contour &addContour();
     /// Normalizes the shape geometry for distance field generation.
     void normalize();
     /// Performs basic checks to determine if the object represents a valid shape.
     bool validate() const;
     /// Adjusts the bounding box to fit the shape.
-    void bound(double &l, double &b, double &r, double &t) const;
+    void bound(double &xMin, double &yMin, double &xMax, double &yMax) const;
     /// Adjusts the bounding box to fit the shape border's mitered corners.
-    void boundMiters(double &l, double &b, double &r, double &t, double border, double miterLimit, int polarity) const;
+    void boundMiters(double &xMin, double &yMin, double &xMax, double &yMax, double border, double miterLimit, int polarity) const;
     /// Computes the minimum bounding box that fits the shape, optionally with a (mitered) border.
     Bounds getBounds(double border = 0, double miterLimit = 0, int polarity = 0) const;
     /// Outputs the scanline that intersects the shape at y.
@@ -49,6 +50,10 @@ public:
     int edgeCount() const;
     /// Assumes its contours are unoriented (even-odd fill rule). Attempts to orient them to conform to the non-zero winding rule.
     void orientContours();
+    /// Returns the orientation of the axis of the shape's Y coordinates.
+    YAxisOrientation getYAxisOrientation() const;
+    /// Sets the orientation of the axis of the shape's Y coordinates.
+    void setYAxisOrientation(YAxisOrientation yAxisOrientation);
 
 };
 

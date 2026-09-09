@@ -4,6 +4,6 @@ namespace GodotTools.IdeMessaging
 {
     public interface IMessageHandler
     {
-        Task<MessageContent> HandleRequest(Peer peer, string id, MessageContent content, ILogger logger);
+        public Task<MessageContent> HandleRequest(Peer peer, string id, MessageContent content, ILogger logger);
     }
 }

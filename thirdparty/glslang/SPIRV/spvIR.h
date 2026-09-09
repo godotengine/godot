@@ -47,7 +47,7 @@
 #ifndef spvIR_H
 #define spvIR_H
 
-#include "spirv.hpp"
+#include "spirv.hpp11"
 
 #include <algorithm>
 #include <cassert>
@@ -56,6 +56,7 @@
 #include <memory>
 #include <vector>
 #include <set>
+#include <optional>
 
 namespace spv {
 
@@ -66,7 +67,7 @@ class Module;
 const Id NoResult = 0;
 const Id NoType = 0;
 
-const Decoration NoPrecision = DecorationMax;
+const Decoration NoPrecision = Decoration::Max;
 
 #ifdef __GNUC__
 #   define POTENTIALLY_UNUSED __attribute__((unused))
@@ -76,15 +77,19 @@ const Decoration NoPrecision = DecorationMax;
 
 POTENTIALLY_UNUSED
 const MemorySemanticsMask MemorySemanticsAllMemory =
-                (MemorySemanticsMask)(MemorySemanticsUniformMemoryMask |
-                                      MemorySemanticsWorkgroupMemoryMask |
-                                      MemorySemanticsAtomicCounterMemoryMask |
-                                      MemorySemanticsImageMemoryMask);
+                (MemorySemanticsMask)(MemorySemanticsMask::UniformMemory |
+                                      MemorySemanticsMask::WorkgroupMemory |
+                                      MemorySemanticsMask::AtomicCounterMemory | 
+                                      MemorySemanticsMask::ImageMemory);
 
 struct IdImmediate {
     bool isId;      // true if word is an Id, false if word is an immediate
     unsigned word;
     IdImmediate(bool i, unsigned w) : isId(i), word(w) {}
+    IdImmediate(bool i, spv::MemoryAccessMask w) : isId(i), word((unsigned)w) {}
+    IdImmediate(bool i, spv::TensorAddressingOperandsMask w) : isId(i), word((unsigned)w) {}
+    IdImmediate(bool i, spv::ImageOperandsMask w) : isId(i), word((unsigned)w) {}
+    IdImmediate(bool i, spv::CooperativeMatrixOperandsMask w) : isId(i), word((unsigned)w) {}
 };
 
 //
@@ -96,16 +101,89 @@ public:
     Instruction(Id resultId, Id typeId, Op opCode) : resultId(resultId), typeId(typeId), opCode(opCode), block(nullptr) { }
     explicit Instruction(Op opCode) : resultId(NoResult), typeId(NoType), opCode(opCode), block(nullptr) { }
     virtual ~Instruction() {}
+    void reserveOperands(size_t count) {
+        operands.reserve(count);
+        idOperand.reserve(count);
+    }
     void addIdOperand(Id id) {
         // ids can't be 0
         assert(id);
         operands.push_back(id);
         idOperand.push_back(true);
     }
+    // This method is potentially dangerous as it can break assumptions
+    // about SSA and lack of forward references.
+    void setIdOperand(unsigned idx, Id id) {
+        assert(id);
+        assert(idOperand[idx]);
+        operands[idx] = id;
+    }
+
     void addImmediateOperand(unsigned int immediate) {
         operands.push_back(immediate);
         idOperand.push_back(false);
     }
+
+    void addImmediateOperand(spv::StorageClass immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::ExecutionMode immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::ExecutionModel immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::Decoration immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::LinkageType immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::MemoryAccessMask immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::Capability immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::AddressingModel immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::MemoryModel immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::FPEncoding immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::SourceLanguage immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::Dim immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::FunctionControlMask immediate){
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::SelectionControlMask immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
+    void addImmediateOperand(spv::LoopControlMask immediate) {
+        addImmediateOperand((unsigned)immediate);
+    }
+
     void setImmediateOperand(unsigned idx, unsigned int immediate) {
         assert(!idOperand[idx]);
         operands[idx] = immediate;
@@ -115,7 +193,7 @@ public:
     {
         unsigned int word = 0;
         unsigned int shiftAmount = 0;
-        char c;
+        unsigned char c;
 
         do {
             c = *(str++);
@@ -165,7 +243,7 @@ public:
         wordCount += (unsigned int)operands.size();
 
         // Write out the beginning of the instruction
-        out.push_back(((wordCount) << WordCountShift) | opCode);
+        out.push_back(((wordCount) << WordCountShift) | (unsigned)opCode);
         if (typeId)
             out.push_back(typeId);
         if (resultId)
@@ -174,6 +252,15 @@ public:
         // Write out the operands
         for (int op = 0; op < (int)operands.size(); ++op)
             out.push_back(operands[op]);
+    }
+
+    const char *getNameString() const {
+        if (opCode == Op::OpString) {
+            return (const char *)&operands[0];
+        } else {
+            assert(opCode == Op::OpName);
+            return (const char *)&operands[1];
+        }
     }
 
 protected:
@@ -190,6 +277,12 @@ protected:
 // SPIR-V IR block.
 //
 
+struct DebugSourceLocation {
+    int line;
+    int column;
+    spv::Id fileId;
+};
+
 class Block {
 public:
     Block(Id id, Function& parent);
@@ -200,12 +293,34 @@ public:
     Id getId() { return instructions.front()->getResultId(); }
 
     Function& getParent() const { return parent; }
+    // Returns true if the source location is actually updated.
+    // Note we still need the builder to insert the line marker instruction. This is just a tracker.
+    bool updateDebugSourceLocation(int line, int column, spv::Id fileId) {
+        if (currentSourceLoc && currentSourceLoc->line == line && currentSourceLoc->column == column &&
+            currentSourceLoc->fileId == fileId) {
+            return false;
+        }
+
+        currentSourceLoc = DebugSourceLocation{line, column, fileId};
+        return true;
+    }
+    // Returns true if the scope is actually updated.
+    // Note we still need the builder to insert the debug scope instruction. This is just a tracker.
+    bool updateDebugScope(spv::Id scopeId) {
+        assert(scopeId);
+        if (currentDebugScope && *currentDebugScope == scopeId) {
+            return false;
+        }
+
+        currentDebugScope = scopeId;
+        return true;
+    }
     void addInstruction(std::unique_ptr<Instruction> inst);
     void addPredecessor(Block* pred) { predecessors.push_back(pred); pred->successors.push_back(this);}
     void addLocalVariable(std::unique_ptr<Instruction> inst) { localVariables.push_back(std::move(inst)); }
     const std::vector<Block*>& getPredecessors() const { return predecessors; }
     const std::vector<Block*>& getSuccessors() const { return successors; }
-    const std::vector<std::unique_ptr<Instruction> >& getInstructions() const {
+    std::vector<std::unique_ptr<Instruction> >& getInstructions() {
         return instructions;
     }
     const std::vector<std::unique_ptr<Instruction> >& getLocalVariables() const { return localVariables; }
@@ -216,8 +331,8 @@ public:
         if (instructions.size() < 2) return nullptr;
         const Instruction* nextToLast = (instructions.cend() - 2)->get();
         switch (nextToLast->getOpCode()) {
-            case OpSelectionMerge:
-            case OpLoopMerge:
+            case Op::OpSelectionMerge:
+            case Op::OpLoopMerge:
                 return nextToLast;
             default:
                 return nullptr;
@@ -234,7 +349,7 @@ public:
         assert(instructions.size() > 0);
         instructions.resize(1);
         successors.clear();
-        addInstruction(std::unique_ptr<Instruction>(new Instruction(OpUnreachable)));
+        addInstruction(std::unique_ptr<Instruction>(new Instruction(Op::OpUnreachable)));
     }
     // Change this block into a canonical dead continue target branching to the
     // given header ID.  Delete instructions as necessary.  A canonical dead continue
@@ -248,7 +363,7 @@ public:
         successors.clear();
         // Add OpBranch back to the header.
         assert(header != nullptr);
-        Instruction* branch = new Instruction(OpBranch);
+        Instruction* branch = new Instruction(Op::OpBranch);
         branch->addIdOperand(header->getId());
         addInstruction(std::unique_ptr<Instruction>(branch));
         successors.push_back(header);
@@ -257,14 +372,14 @@ public:
     bool isTerminated() const
     {
         switch (instructions.back()->getOpCode()) {
-        case OpBranch:
-        case OpBranchConditional:
-        case OpSwitch:
-        case OpKill:
-        case OpTerminateInvocation:
-        case OpReturn:
-        case OpReturnValue:
-        case OpUnreachable:
+        case Op::OpBranch:
+        case Op::OpBranchConditional:
+        case Op::OpSwitch:
+        case Op::OpKill:
+        case Op::OpTerminateInvocation:
+        case Op::OpReturn:
+        case Op::OpReturnValue:
+        case Op::OpUnreachable:
             return true;
         default:
             return false;
@@ -291,6 +406,12 @@ protected:
     std::vector<Block*> predecessors, successors;
     std::vector<std::unique_ptr<Instruction> > localVariables;
     Function& parent;
+
+    // Track source location of the last source location marker instruction.
+    std::optional<DebugSourceLocation> currentSourceLoc;
+
+    // Track scope of the last debug scope instruction.
+    std::optional<spv::Id> currentDebugScope;
 
     // track whether this block is known to be uncreachable (not necessarily
     // true for all unreachable blocks, but should be set at least
@@ -352,16 +473,18 @@ public:
     void addLocalVariable(std::unique_ptr<Instruction> inst);
     Id getReturnType() const { return functionInstruction.getTypeId(); }
     Id getFuncId() const { return functionInstruction.getResultId(); }
+    Id getFuncTypeId() const { return functionInstruction.getIdOperand(1); }
     void setReturnPrecision(Decoration precision)
     {
-        if (precision == DecorationRelaxedPrecision)
+        if (precision == Decoration::RelaxedPrecision)
             reducedPrecisionReturn = true;
     }
     Decoration getReturnPrecision() const
-        { return reducedPrecisionReturn ? DecorationRelaxedPrecision : NoPrecision; }
+        { return reducedPrecisionReturn ? Decoration::RelaxedPrecision : NoPrecision; }
 
     void setDebugLineInfo(Id fileName, int line, int column) {
-        lineInstruction = std::unique_ptr<Instruction>{new Instruction(OpLine)};
+        lineInstruction = std::unique_ptr<Instruction>{new Instruction(Op::OpLine)};
+        lineInstruction->reserveOperands(3);
         lineInstruction->addIdOperand(fileName);
         lineInstruction->addImmediateOperand(line);
         lineInstruction->addImmediateOperand(column);
@@ -373,13 +496,13 @@ public:
 
     void addParamPrecision(unsigned param, Decoration precision)
     {
-        if (precision == DecorationRelaxedPrecision)
+        if (precision == Decoration::RelaxedPrecision)
             reducedPrecisionParams.insert(param);
     }
     Decoration getParamPrecision(unsigned param) const
     {
         return reducedPrecisionParams.find(param) != reducedPrecisionParams.end() ?
-            DecorationRelaxedPrecision : NoPrecision;
+            Decoration::RelaxedPrecision : NoPrecision;
     }
 
     void dump(std::vector<unsigned int>& out) const
@@ -398,7 +521,7 @@ public:
 
         // Blocks
         inReadableOrder(blocks[0], [&out](const Block* b, ReachReason, Block*) { b->dump(out); });
-        Instruction end(0, 0, OpFunctionEnd);
+        Instruction end(0, 0, Op::OpFunctionEnd);
         end.dump(out);
     }
 
@@ -451,7 +574,7 @@ public:
     }
     StorageClass getStorageClass(Id typeId) const
     {
-        assert(idToInstruction[typeId]->getOpCode() == spv::OpTypePointer);
+        assert(idToInstruction[typeId]->getOpCode() == spv::Op::OpTypePointer);
         return (StorageClass)idToInstruction[typeId]->getImmediateOperand(0);
     }
 
@@ -480,12 +603,13 @@ protected:
 // - all the OpFunctionParameter instructions
 __inline Function::Function(Id id, Id resultType, Id functionType, Id firstParamId, LinkageType linkage, const std::string& name, Module& parent)
     : parent(parent), lineInstruction(nullptr),
-      functionInstruction(id, resultType, OpFunction), implicitThis(false),
+      functionInstruction(id, resultType, Op::OpFunction), implicitThis(false),
       reducedPrecisionReturn(false),
       linkType(linkage)
 {
     // OpFunction
-    functionInstruction.addImmediateOperand(FunctionControlMaskNone);
+    functionInstruction.reserveOperands(2);
+    functionInstruction.addImmediateOperand(FunctionControlMask::MaskNone);
     functionInstruction.addIdOperand(functionType);
     parent.mapInstruction(&functionInstruction);
     parent.addFunction(this);
@@ -494,13 +618,13 @@ __inline Function::Function(Id id, Id resultType, Id functionType, Id firstParam
     Instruction* typeInst = parent.getInstruction(functionType);
     int numParams = typeInst->getNumOperands() - 1;
     for (int p = 0; p < numParams; ++p) {
-        Instruction* param = new Instruction(firstParamId + p, typeInst->getIdOperand(p + 1), OpFunctionParameter);
+        Instruction* param = new Instruction(firstParamId + p, typeInst->getIdOperand(p + 1), Op::OpFunctionParameter);
         parent.mapInstruction(param);
         parameterInstructions.push_back(param);
     }
 
     // If importing/exporting, save the function name (without the mangled parameters) for the linkage decoration
-    if (linkType != LinkageTypeMax) {
+    if (linkType != LinkageType::Max) {
         exportName = name.substr(0, name.find_first_of('('));
     }
 }
@@ -514,7 +638,7 @@ __inline void Function::addLocalVariable(std::unique_ptr<Instruction> inst)
 
 __inline Block::Block(Id id, Function& parent) : parent(parent), unreachable(false)
 {
-    instructions.push_back(std::unique_ptr<Instruction>(new Instruction(id, NoType, OpLabel)));
+    instructions.push_back(std::unique_ptr<Instruction>(new Instruction(id, NoType, Op::OpLabel)));
     instructions.back()->setBlock(this);
     parent.getParent().mapInstruction(instructions.back().get());
 }

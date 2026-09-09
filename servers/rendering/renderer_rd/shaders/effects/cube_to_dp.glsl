@@ -8,7 +8,6 @@ layout(push_constant, std430) uniform Params {
 	float z_far;
 	float z_near;
 	vec2 texel_size;
-	vec4 screen_rect;
 }
 params;
 
@@ -17,8 +16,7 @@ layout(location = 0) out vec2 uv_interp;
 void main() {
 	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	uv_interp = base_arr[gl_VertexIndex];
-	vec2 screen_pos = uv_interp * params.screen_rect.zw + params.screen_rect.xy;
-	gl_Position = vec4(screen_pos * 2.0 - 1.0, 0.0, 1.0);
+	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
 }
 
 #[fragment]
@@ -35,7 +33,6 @@ layout(push_constant, std430) uniform Params {
 	float z_far;
 	float z_near;
 	vec2 texel_size;
-	vec4 screen_rect;
 }
 params;
 
@@ -77,8 +74,8 @@ void main() {
 	float depth_fix = 1.0 / dot(normal, unorm);
 
 	depth = 2.0 * depth - 1.0;
-	float linear_depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - depth * (params.z_far - params.z_near));
-	depth = (linear_depth * depth_fix) / params.z_far;
-
+	float linear_depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near + depth * (params.z_far - params.z_near));
+	// linear_depth equal to view space depth
+	depth = (params.z_far - linear_depth * depth_fix) / params.z_far;
 	gl_FragDepth = depth;
 }

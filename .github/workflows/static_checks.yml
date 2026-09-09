@@ -1,116 +1,50 @@
 name: 📊 Static Checks
 on:
   workflow_call:
-
-concurrency:
-  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-static
-  cancel-in-progress: true
+    outputs:
+      changed-files:
+        description: A list of changed files, pre-filtered for parsing by clangd-tidy.
+        value: ${{ jobs.static-checks.outputs.changed-files }}
+      sources-changed:
+        description: Determines if any source files were changed.
+        value: ${{ jobs.static-checks.outputs.sources-changed }}
+  workflow_dispatch:
 
 jobs:
   static-checks:
     name: Code style, file formatting, and docs
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      changed-files: '"${{ steps.changed-files.outputs.clangd_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
+      sources-changed: ${{ steps.changed-files.outputs.sources_any_changed }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
-          fetch-depth: 2
-
-      - name: Install APT dependencies
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: dos2unix libxml2-utils moreutils
-
-      - name: Install Python dependencies and general setup
-        run: |
-          pip3 install black==23.3.0 pytest==7.1.2 mypy==0.971
-          git config diff.wsErrorHighlight all
-
-      - name: Get changed files
-        id: changed-files
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            files=$(gh pr diff ${{ github.event.pull_request.number }} --name-only)
-          elif [ "${{ github.event_name }}" == "push" -a "${{ github.event.forced }}" == "false" -a "${{ github.event.created }}" == "false" ]; then
-            files=$(git diff-tree --no-commit-id --name-only -r ${{ github.event.before }}..${{ github.event.after }} 2> /dev/null || true)
-          fi
-          echo "$files" >> changed.txt
-          cat changed.txt
-          files=$(echo "$files" | grep -v 'thirdparty' | xargs -I {} sh -c 'echo "./{}"' | tr '\n' ' ')
-          echo "CHANGED_FILES=$files" >> $GITHUB_ENV
+          fetch-depth: 0 # Treeless clone. Slightly less performant than a shallow clone, but makes finding diffs instantaneous.
+          filter: tree:0 # See: https://github.blog/open-source/git/get-up-to-speed-with-partial-clone-and-shallow-clone/
 
       # This needs to happen before Python and npm execution; it must happen before any extra files are written.
       - name: .gitignore checks (gitignore_check.sh)
         run: |
           bash ./misc/scripts/gitignore_check.sh
 
-      - name: File formatting checks (file_format.sh)
-        run: |
-          bash ./misc/scripts/file_format.sh changed.txt
-
-      - name: Header guards formatting checks (header_guards.sh)
-        run: |
-          bash ./misc/scripts/header_guards.sh changed.txt
-
-      - name: Python style checks via black (black_format.sh)
-        run: |
-          if grep -qE '\.py$|SConstruct|SCsub' changed.txt || [ -z "$(cat changed.txt)" ]; then
-            bash ./misc/scripts/black_format.sh
-          else
-            echo "Skipping Python formatting as no Python files were changed."
-          fi
-
-      - name: Python scripts static analysis (mypy_check.sh)
-        run: |
-          if grep -qE '\.py$|SConstruct|SCsub' changed.txt || [ -z "$(cat changed.txt)" ]; then
-            bash ./misc/scripts/mypy_check.sh
-          else
-            echo "Skipping Python static analysis as no Python files were changed."
-          fi
-
-      - name: Python builders checks via pytest (pytest_builders.sh)
-        run: |
-          bash ./misc/scripts/pytest_builders.sh
-
-      - name: JavaScript style and documentation checks via ESLint and JSDoc
-        run: |
-          if grep -q "platform/web" changed.txt || [ -z "$(cat changed.txt)" ]; then
-            cd platform/web
-            npm ci
-            npm run lint
-            npm run docs -- -d dry-run
-          else
-            echo "Skipping JavaScript formatting as no Web/JS files were changed."
-          fi
-
-      - name: Class reference schema checks
-        run: |
-          xmllint --noout --schema doc/class.xsd doc/classes/*.xml modules/*/doc_classes/*.xml platform/*/doc_classes/*.xml
-
-      - name: Documentation checks
-        run: |
-          doc/tools/doc_status.py doc/classes modules/*/doc_classes platform/*/doc_classes
-          doc/tools/make_rst.py --dry-run --color doc/classes modules platform
-
-      - name: Style checks via clang-format (clang_format.sh)
-        run: |
-          clang-format --version
-          bash ./misc/scripts/clang_format.sh changed.txt
-
-      - name: Style checks via dotnet format (dotnet_format.sh)
-        run: |
-          if grep -q "modules/mono" changed.txt || [ -z "$(cat changed.txt)" ]; then
-            bash ./misc/scripts/dotnet_format.sh
-          else
-            echo "Skipping dotnet format as no C# files were changed."
-          fi
-
-      - name: Spell checks via codespell
-        if: github.event_name == 'pull_request' && env.CHANGED_FILES != ''
-        uses: codespell-project/actions-codespell@v2
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v47
         with:
-          skip: "./bin,./thirdparty,*.desktop,*.gen.*,*.po,*.pot,*.rc,./AUTHORS.md,./COPYRIGHT.txt,./DONORS.md,./core/input/gamecontrollerdb.txt,./core/string/locales.h,./editor/project_converter_3_to_4.cpp,./misc/scripts/codespell.sh,./platform/android/java/lib/src/com,./platform/web/node_modules,./platform/web/package-lock.json"
-          ignore_words_list: "breaked,curvelinear,doubleclick,expct,findn,gird,hel,inout,lod,mis,nd,numer,ot,requestor,te,vai"
-          path: ${{ env.CHANGED_FILES }}
+          safe_output: false # Output passed to environment variable to avoid command injection.
+          separator: '" "' # To account for paths with spaces, ensure our items are split by quotes internally.
+          skip_initial_fetch: true
+          files_yaml_from_source_file: .github/changed_files.yml
+
+      - name: Style checks via prek
+        uses: j178/prek-action@v3.0.0
+        env:
+          FROM_REF: >-
+            ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha
+            || github.event.before != '0000000000000000000000000000000000000000' && github.event.before
+            || 'HEAD~1' }}
+        with:
+          extra-args: --from-ref ${{ env.FROM_REF }}

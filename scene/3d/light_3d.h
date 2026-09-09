@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHT_3D_H
-#define LIGHT_3D_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 
@@ -38,28 +37,28 @@ class Light3D : public VisualInstance3D {
 
 public:
 	enum Param {
-		PARAM_ENERGY = RS::LIGHT_PARAM_ENERGY,
-		PARAM_INDIRECT_ENERGY = RS::LIGHT_PARAM_INDIRECT_ENERGY,
-		PARAM_VOLUMETRIC_FOG_ENERGY = RS::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY,
-		PARAM_SPECULAR = RS::LIGHT_PARAM_SPECULAR,
-		PARAM_RANGE = RS::LIGHT_PARAM_RANGE,
-		PARAM_SIZE = RS::LIGHT_PARAM_SIZE,
-		PARAM_ATTENUATION = RS::LIGHT_PARAM_ATTENUATION,
-		PARAM_SPOT_ANGLE = RS::LIGHT_PARAM_SPOT_ANGLE,
-		PARAM_SPOT_ATTENUATION = RS::LIGHT_PARAM_SPOT_ATTENUATION,
-		PARAM_SHADOW_MAX_DISTANCE = RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE,
-		PARAM_SHADOW_SPLIT_1_OFFSET = RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
-		PARAM_SHADOW_SPLIT_2_OFFSET = RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET,
-		PARAM_SHADOW_SPLIT_3_OFFSET = RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET,
-		PARAM_SHADOW_FADE_START = RS::LIGHT_PARAM_SHADOW_FADE_START,
-		PARAM_SHADOW_NORMAL_BIAS = RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS,
-		PARAM_SHADOW_BIAS = RS::LIGHT_PARAM_SHADOW_BIAS,
-		PARAM_SHADOW_PANCAKE_SIZE = RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
-		PARAM_SHADOW_OPACITY = RS::LIGHT_PARAM_SHADOW_OPACITY,
-		PARAM_SHADOW_BLUR = RS::LIGHT_PARAM_SHADOW_BLUR,
-		PARAM_TRANSMITTANCE_BIAS = RS::LIGHT_PARAM_TRANSMITTANCE_BIAS,
-		PARAM_INTENSITY = RS::LIGHT_PARAM_INTENSITY,
-		PARAM_MAX = RS::LIGHT_PARAM_MAX
+		PARAM_ENERGY = RSE::LIGHT_PARAM_ENERGY,
+		PARAM_INDIRECT_ENERGY = RSE::LIGHT_PARAM_INDIRECT_ENERGY,
+		PARAM_VOLUMETRIC_FOG_ENERGY = RSE::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY,
+		PARAM_SPECULAR = RSE::LIGHT_PARAM_SPECULAR,
+		PARAM_RANGE = RSE::LIGHT_PARAM_RANGE,
+		PARAM_SIZE = RSE::LIGHT_PARAM_SIZE,
+		PARAM_ATTENUATION = RSE::LIGHT_PARAM_ATTENUATION,
+		PARAM_SPOT_ANGLE = RSE::LIGHT_PARAM_SPOT_ANGLE,
+		PARAM_SPOT_ATTENUATION = RSE::LIGHT_PARAM_SPOT_ATTENUATION,
+		PARAM_SHADOW_MAX_DISTANCE = RSE::LIGHT_PARAM_SHADOW_MAX_DISTANCE,
+		PARAM_SHADOW_SPLIT_1_OFFSET = RSE::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
+		PARAM_SHADOW_SPLIT_2_OFFSET = RSE::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET,
+		PARAM_SHADOW_SPLIT_3_OFFSET = RSE::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET,
+		PARAM_SHADOW_FADE_START = RSE::LIGHT_PARAM_SHADOW_FADE_START,
+		PARAM_SHADOW_NORMAL_BIAS = RSE::LIGHT_PARAM_SHADOW_NORMAL_BIAS,
+		PARAM_SHADOW_BIAS = RSE::LIGHT_PARAM_SHADOW_BIAS,
+		PARAM_SHADOW_PANCAKE_SIZE = RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
+		PARAM_SHADOW_OPACITY = RSE::LIGHT_PARAM_SHADOW_OPACITY,
+		PARAM_SHADOW_BLUR = RSE::LIGHT_PARAM_SHADOW_BLUR,
+		PARAM_TRANSMITTANCE_BIAS = RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS,
+		PARAM_INTENSITY = RSE::LIGHT_PARAM_INTENSITY,
+		PARAM_MAX = RSE::LIGHT_PARAM_MAX
 	};
 
 	enum BakeMode {
@@ -75,18 +74,18 @@ private:
 	bool negative = false;
 	bool reverse_cull = false;
 	uint32_t cull_mask = 0;
+	uint32_t shadow_caster_mask = 0xFFFFFFFF;
 	bool distance_fade_enabled = false;
 	real_t distance_fade_begin = 40.0;
 	real_t distance_fade_shadow = 50.0;
 	real_t distance_fade_length = 10.0;
-	RS::LightType type = RenderingServer::LIGHT_DIRECTIONAL;
+	RSE::LightType type = RSE::LIGHT_DIRECTIONAL;
 	bool editor_only = false;
 	void _update_visibility();
 	BakeMode bake_mode = BAKE_DYNAMIC;
 	Ref<Texture2D> projector;
 	Color correlated_color = Color(1.0, 1.0, 1.0);
 	float temperature = 6500.0;
-
 	// bind helpers
 
 	virtual void owner_changed_notify() override;
@@ -98,10 +97,10 @@ protected:
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
 
-	Light3D(RenderingServer::LightType p_type);
+	Light3D(RSE::LightType p_type);
 
 public:
-	RS::LightType get_light_type() const { return type; }
+	RSE::LightType get_light_type() const { return type; }
 
 	void set_editor_only(bool p_editor_only);
 	bool is_editor_only() const;
@@ -135,6 +134,9 @@ public:
 
 	void set_shadow_reverse_cull_face(bool p_enable);
 	bool get_shadow_reverse_cull_face() const;
+
+	void set_shadow_caster_mask(uint32_t p_caster_mask);
+	uint32_t get_shadow_caster_mask() const;
 
 	void set_bake_mode(BakeMode p_mode);
 	BakeMode get_bake_mode() const;
@@ -236,4 +238,29 @@ public:
 	SpotLight3D();
 };
 
-#endif // LIGHT_3D_H
+class AreaLight3D : public Light3D {
+	GDCLASS(AreaLight3D, Light3D);
+
+private:
+	Vector2 area_size;
+	Ref<Texture2D> area_texture;
+	bool area_normalize_energy = true;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_area_size(const Vector2 &p_size);
+	Vector2 get_area_size() const;
+
+	void set_area_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_area_texture() const;
+
+	void set_area_normalize_energy(bool p_enable);
+	bool is_area_normalizing_energy() const;
+
+	PackedStringArray get_configuration_warnings() const override;
+
+	AreaLight3D();
+	~AreaLight3D();
+};

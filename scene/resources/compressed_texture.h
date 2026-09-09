@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COMPRESSED_TEXTURE_H
-#define COMPRESSED_TEXTURE_H
+#pragma once
 
 #include "scene/resources/texture.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class BitMap;
 
@@ -51,7 +51,6 @@ public:
 	};
 
 	enum FormatBits {
-		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 		FORMAT_BIT_DETECT_3D = 1 << 24,
 		//FORMAT_BIT_DETECT_SRGB = 1 << 25,
@@ -67,28 +66,27 @@ private:
 	int h = 0;
 	mutable Ref<BitMap> alpha_cache;
 
-	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
+	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit);
 	virtual void reload_from_file() override;
 
 	static void _requested_3d(void *p_ud);
-	static void _requested_roughness(void *p_ud, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);
+	static void _requested_roughness(void *p_ud, const String &p_normal_path, RSE::TextureDetectRoughnessChannel p_roughness_channel);
 	static void _requested_normal(void *p_ud);
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-	static Ref<Image> load_image_from_file(Ref<FileAccess> p_file, int p_size_limit);
+	static Ref<Image> load_image_from_file(Ref<FileAccess> p_file);
 
 	typedef void (*TextureFormatRequestCallback)(const Ref<CompressedTexture2D> &);
-	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<CompressedTexture2D> &, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);
+	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<CompressedTexture2D> &, const String &p_normal_path, RSE::TextureDetectRoughnessChannel p_roughness_channel);
 
 	static TextureFormatRequestCallback request_3d_callback;
 	static TextureFormatRoughnessRequestCallback request_roughness_callback;
 	static TextureFormatRequestCallback request_normal_callback;
 
-	Image::Format get_format() const;
+	virtual Image::Format get_format() const override;
 	Error load(const String &p_path);
 	String get_load_path() const;
 
@@ -107,16 +105,7 @@ public:
 
 	virtual Ref<Image> get_image() const override;
 
-	CompressedTexture2D();
 	~CompressedTexture2D();
-};
-
-class ResourceFormatLoaderCompressedTexture2D : public ResourceFormatLoader {
-public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
 };
 
 class CompressedTextureLayered : public TextureLayered {
@@ -135,12 +124,11 @@ public:
 	};
 
 	enum FormatBits {
-		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 	};
 
 private:
-	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit = 0);
+	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit);
 	String path_to_file;
 	mutable RID texture;
 	Image::Format format = Image::FORMAT_L8;
@@ -154,7 +142,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Image::Format get_format() const override;
@@ -174,14 +161,6 @@ public:
 
 	CompressedTextureLayered(LayeredType p_layered_type);
 	~CompressedTextureLayered();
-};
-
-class ResourceFormatLoaderCompressedTextureLayered : public ResourceFormatLoader {
-public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
 };
 
 class CompressedTexture2DArray : public CompressedTextureLayered {
@@ -223,7 +202,6 @@ public:
 	};
 
 	enum FormatBits {
-		FORMAT_BIT_STREAM = 1 << 22,
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
 	};
 
@@ -241,7 +219,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Image::Format get_format() const override;
@@ -258,16 +235,5 @@ public:
 
 	virtual Vector<Ref<Image>> get_data() const override;
 
-	CompressedTexture3D();
 	~CompressedTexture3D();
 };
-
-class ResourceFormatLoaderCompressedTexture3D : public ResourceFormatLoader {
-public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
-};
-
-#endif // COMPRESSED_TEXTURE_H

@@ -28,22 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DYNAMIC_FONT_IMPORT_SETTINGS_H
-#define DYNAMIC_FONT_IMPORT_SETTINGS_H
+#pragma once
 
-#include "editor/import/resource_importer_dynamic_font.h"
-
-#include "core/templates/rb_set.h"
+#include "core/io/resource_importer.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/font.h"
-#include "servers/text_server.h"
 
 class DynamicFontImportSettingsDialog;
 
@@ -89,6 +81,8 @@ class DynamicFontImportSettingsDialog : public ConfirmationDialog {
 	Ref<DynamicFontImportSettingsData> import_settings_data;
 	List<ResourceImporter::ImportOption> options_variations;
 	List<ResourceImporter::ImportOption> options_general;
+
+	bool is_pixel = false;
 
 	// Root layout
 	Label *label_warn = nullptr;
@@ -176,5 +170,3 @@ public:
 
 	DynamicFontImportSettingsDialog();
 };
-
-#endif // DYNAMIC_FONT_IMPORT_SETTINGS_H

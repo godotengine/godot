@@ -15,7 +15,7 @@ namespace GodotTools.IdeMessaging
         public override void SetResult(MessageContent content)
         {
             if (content.Status == MessageStatus.Ok)
-                SetResult(JsonConvert.DeserializeObject<T>(content.Body));
+                SetResult(JsonConvert.DeserializeObject<T>(content.Body)!);
             else
                 SetResult(new T { Status = content.Status });
         }

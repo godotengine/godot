@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SEMVER_H
-#define SEMVER_H
+#pragma once
 
+#include "core/string/regex.h"
 #include "core/string/ustring.h"
-#include "modules/regex/regex.h"
 
 // <sys/sysmacros.h> is included somewhere, which defines major(dev) to gnu_dev_major(dev)
 #if defined(major)
@@ -102,5 +101,3 @@ public:
 };
 
 } //namespace godotsharp
-
-#endif // SEMVER_H

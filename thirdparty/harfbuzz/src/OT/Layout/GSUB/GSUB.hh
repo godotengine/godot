@@ -53,6 +53,7 @@ struct GSUB : GSUBGPOS
 
 struct GSUB_accelerator_t : Layout::GSUB::accelerator_t {
   GSUB_accelerator_t (hb_face_t *face) : Layout::GSUB::accelerator_t (face) {}
+  HB_INTERNAL void depend (hb_depend_data_builder_t *builder, hb_face_t *face) const;
 };
 
 

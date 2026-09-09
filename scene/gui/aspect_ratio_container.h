@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ASPECT_RATIO_CONTAINER_H
-#define ASPECT_RATIO_CONTAINER_H
+#pragma once
 
 #include "scene/gui/container.h"
 
@@ -39,7 +38,6 @@ class AspectRatioContainer : public Container {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual Size2 get_minimum_size() const override;
 
 public:
 	enum StretchMode {
@@ -79,5 +77,3 @@ public:
 
 VARIANT_ENUM_CAST(AspectRatioContainer::StretchMode);
 VARIANT_ENUM_CAST(AspectRatioContainer::AlignmentMode);
-
-#endif // ASPECT_RATIO_CONTAINER_H

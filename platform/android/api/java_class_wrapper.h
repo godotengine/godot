@@ -28,12 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JAVA_CLASS_WRAPPER_H
-#define JAVA_CLASS_WRAPPER_H
+#pragma once
 
 #include "core/object/ref_counted.h"
+#include "core/variant/typed_array.h"
 
 #ifdef ANDROID_ENABLED
+#include "core/templates/rb_map.h"
+
 #include <android/log.h>
 #include <jni.h>
 #endif
@@ -46,7 +48,7 @@ class JavaClass : public RefCounted {
 	GDCLASS(JavaClass, RefCounted);
 
 #ifdef ANDROID_ENABLED
-	enum ArgumentType{
+	enum ArgumentType {
 		ARG_TYPE_VOID,
 		ARG_TYPE_BOOLEAN,
 		ARG_TYPE_BYTE,
@@ -57,20 +59,31 @@ class JavaClass : public RefCounted {
 		ARG_TYPE_FLOAT,
 		ARG_TYPE_DOUBLE,
 		ARG_TYPE_STRING, //special case
+		ARG_TYPE_CHARSEQUENCE,
+		ARG_TYPE_CALLABLE,
 		ARG_TYPE_CLASS,
 		ARG_ARRAY_BIT = 1 << 16,
 		ARG_NUMBER_CLASS_BIT = 1 << 17,
 		ARG_TYPE_MASK = (1 << 16) - 1
 	};
 
-	RBMap<StringName, Variant> constant_map;
-
 	struct MethodInfo {
+		bool _public = false;
 		bool _static = false;
+		bool _constructor = false;
 		Vector<uint32_t> param_types;
 		Vector<StringName> param_sigs;
 		uint32_t return_type = 0;
-		jmethodID method;
+		jmethodID method = nullptr;
+	};
+
+	struct FieldInfo {
+		bool _static = false;
+		bool _final = false;
+		uint32_t field_type = 0;
+		StringName field_sig;
+		jfieldID field = nullptr;
+		Variant constant_value;
 	};
 
 	_FORCE_INLINE_ static void _convert_to_variant_type(int p_sig, Variant::Type &r_type, float &likelihood) {
@@ -121,7 +134,11 @@ class JavaClass : public RefCounted {
 				likelihood = 0.5;
 				break;
 			case ARG_TYPE_STRING:
+			case ARG_TYPE_CHARSEQUENCE:
 				r_type = Variant::STRING;
+				break;
+			case ARG_TYPE_CALLABLE:
+				r_type = Variant::CALLABLE;
 				break;
 			case ARG_TYPE_CLASS:
 				r_type = Variant::OBJECT;
@@ -161,27 +178,55 @@ class JavaClass : public RefCounted {
 				likelihood = 0.5;
 				break;
 			case ARG_ARRAY_BIT | ARG_TYPE_STRING:
+			case ARG_ARRAY_BIT | ARG_TYPE_CHARSEQUENCE:
 				r_type = Variant::PACKED_STRING_ARRAY;
 				break;
 			case ARG_ARRAY_BIT | ARG_TYPE_CLASS:
+			case ARG_ARRAY_BIT | ARG_TYPE_CALLABLE:
 				r_type = Variant::ARRAY;
 				break;
 		}
 	}
 
 	_FORCE_INLINE_ static bool _convert_object_to_variant(JNIEnv *env, jobject obj, Variant &var, uint32_t p_sig);
+	_FORCE_INLINE_ static bool _convert_variant_to_jvalue(JNIEnv *p_env, const Variant &p_variant, uint32_t p_sig, const StringName &p_strsig, jvalue &r_ret);
+	_FORCE_INLINE_ static bool _get_field_value(JNIEnv *p_env, jobject p_instance, jclass p_clazz, const JavaClass::FieldInfo &p_field_info, Variant &r_ret);
+	_FORCE_INLINE_ static bool _set_field_value(JNIEnv *p_env, jobject p_instance, jclass p_clazz, const JavaClass::FieldInfo &p_field_info, const Variant &p_property);
 
 	bool _call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret);
 
+	bool _get_field(jobject p_instance, const StringName &p_name, Variant &r_ret) const;
+	bool _set_field(jobject p_instance, const StringName &p_name, const Variant &p_property);
+
 	friend class JavaClassWrapper;
+	friend class JavaObject;
+	String java_class_name;
+	String java_constructor_name;
 	HashMap<StringName, List<MethodInfo>> methods;
+	HashMap<StringName, FieldInfo> fields;
 	jclass _class;
+	bool is_interface;
 #endif
+
+protected:
+	static void _bind_methods();
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_property);
 
 public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
+	String get_java_class_name() const;
+	TypedArray<Dictionary> get_java_method_list() const;
+	Ref<JavaClass> get_java_parent_class() const;
+	bool has_java_method(const StringName &p_method) const;
+
+#ifdef ANDROID_ENABLED
+	virtual String _to_string() override;
+#endif
+
 	JavaClass();
+	~JavaClass();
 };
 
 class JavaObject : public RefCounted {
@@ -191,14 +236,27 @@ class JavaObject : public RefCounted {
 	Ref<JavaClass> base_class;
 	friend class JavaClass;
 
-	jobject instance;
+	jobject instance = nullptr;
 #endif
+
+protected:
+	static void _bind_methods();
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_property);
 
 public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
+	Ref<JavaClass> get_java_class() const;
+	bool has_java_method(const StringName &p_method) const;
+
 #ifdef ANDROID_ENABLED
-	JavaObject(const Ref<JavaClass> &p_base, jobject *p_instance);
+	virtual String _to_string() override;
+
+	jobject get_instance() { return instance; }
+
+	JavaObject();
+	JavaObject(const Ref<JavaClass> &p_base, jobject p_instance);
 	~JavaObject();
 #endif
 };
@@ -209,18 +267,23 @@ class JavaClassWrapper : public Object {
 #ifdef ANDROID_ENABLED
 	RBMap<String, Ref<JavaClass>> class_cache;
 	friend class JavaClass;
-	jclass activityClass;
-	jmethodID findClass;
-	jmethodID getDeclaredMethods;
-	jmethodID getFields;
-	jmethodID getParameterTypes;
-	jmethodID getReturnType;
-	jmethodID getModifiers;
-	jmethodID getName;
+	jmethodID Class_getConstructors;
+	jmethodID Class_getDeclaredMethods;
+	jmethodID Class_getFields;
+	jmethodID Class_getInterfaces;
 	jmethodID Class_getName;
+	jmethodID Class_getSuperclass;
+	jmethodID Class_isInterface;
+	jmethodID Constructor_getParameterTypes;
+	jmethodID Constructor_getModifiers;
+	jmethodID Method_getParameterTypes;
+	jmethodID Method_getReturnType;
+	jmethodID Method_getModifiers;
+	jmethodID Method_getName;
 	jmethodID Field_getName;
 	jmethodID Field_getModifiers;
 	jmethodID Field_get;
+	jmethodID Field_getType;
 	jmethodID Boolean_booleanValue;
 	jmethodID Byte_byteValue;
 	jmethodID Character_characterValue;
@@ -229,10 +292,22 @@ class JavaClassWrapper : public Object {
 	jmethodID Long_longValue;
 	jmethodID Float_floatValue;
 	jmethodID Double_doubleValue;
-	jobject classLoader;
 
+	jclass proxy_class;
+	jmethodID Proxy_isProxyClass;
+
+	jclass android_runtime_class;
+	jmethodID ARP_create_proxy_from_godot_callable;
+	jmethodID ARP_create_proxy_from_godot_object_id;
+
+	bool _is_proxy_class(JNIEnv *env, jclass p_class);
 	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
+	bool _wrap_class_components(JNIEnv *p_env, const Ref<JavaClass> &p_java_class, jclass p_class, bool p_allow_non_public_methods_access);
 #endif
+
+	Ref<JavaObject> exception;
+
+	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_non_public_methods_access = false);
 
 	static JavaClassWrapper *singleton;
 
@@ -242,13 +317,19 @@ protected:
 public:
 	static JavaClassWrapper *get_singleton() { return singleton; }
 
-	Ref<JavaClass> wrap(const String &p_class);
+	Ref<JavaClass> wrap(const String &p_class) {
+		return _wrap(p_class, false);
+	}
+
+	Ref<JavaObject> create_sam_callback(const String &p_sam_interface, const Callable &p_callable);
+	Ref<JavaObject> create_proxy(const Object *p_object, const PackedStringArray &p_interfaces);
+
+	Ref<JavaObject> get_exception() {
+		return exception;
+	}
 
 #ifdef ANDROID_ENABLED
-	JavaClassWrapper(jobject p_activity = nullptr);
-#else
-	JavaClassWrapper();
+	Ref<JavaClass> wrap_jclass(jclass p_class, bool p_allow_non_public_methods_access = false);
 #endif
+	JavaClassWrapper();
 };
-
-#endif // JAVA_CLASS_WRAPPER_H

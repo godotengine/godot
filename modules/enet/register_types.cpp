@@ -35,6 +35,7 @@
 #include "enet_packet_peer.h"
 
 #include "core/error/error_macros.h"
+#include "core/object/class_db.h"
 
 static bool enet_ok = false;
 

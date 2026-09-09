@@ -1,2 +1,0 @@
-GDTEST_ANALYZER_ERROR
-Cannot return a value of type "enum_function_return_wrong_type.gd.MyOtherEnum" as "enum_function_return_wrong_type.gd.MyEnum".

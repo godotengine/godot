@@ -37,10 +37,16 @@ struct AnchorFormat3
     *x = font->em_fscale_x (xCoordinate);
     *y = font->em_fscale_y (yCoordinate);
 
-    if ((font->x_ppem || font->num_coords) && xDeviceTable.sanitize (&c->sanitizer, this))
+    if ((font->x_ppem || font->has_nonzero_coords) && xDeviceTable.sanitize (&c->sanitizer, this))
+    {
+      hb_barrier ();
       *x += (this+xDeviceTable).get_x_delta (font, c->var_store, c->var_store_cache);
-    if ((font->y_ppem || font->num_coords) && yDeviceTable.sanitize (&c->sanitizer, this))
+    }
+    if ((font->y_ppem || font->has_nonzero_coords) && yDeviceTable.sanitize (&c->sanitizer, this))
+    {
+      hb_barrier ();
       *y += (this+yDeviceTable).get_y_delta (font, c->var_store, c->var_store_cache);
+    }
   }
 
   bool subset (hb_subset_context_t *c) const
@@ -57,7 +63,7 @@ struct AnchorFormat3
       hb_pair_t<unsigned, int> *new_varidx_delta;
       if (!c->plan->layout_variation_idx_delta_map.has (x_varidx, &new_varidx_delta))
         return_trace (false);
-     
+
       x_varidx = hb_first (*new_varidx_delta);
       int delta = hb_second (*new_varidx_delta);
       if (delta != 0)
@@ -85,10 +91,13 @@ struct AnchorFormat3
       }
     }
 
-    /* in case that all axes are pinned or no variations after instantiation,
-     * both var_idxes will be mapped to HB_OT_LAYOUT_NO_VARIATIONS_INDEX */
-    if (x_varidx == HB_OT_LAYOUT_NO_VARIATIONS_INDEX &&
-        y_varidx == HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
+
+    bool no_downgrade = (!xDeviceTable.is_null () && !(this+xDeviceTable).is_variation_device ()) ||
+                        x_varidx != HB_OT_LAYOUT_NO_VARIATIONS_INDEX ||
+                        y_varidx != HB_OT_LAYOUT_NO_VARIATIONS_INDEX ||
+                        (!yDeviceTable.is_null () && !(this+yDeviceTable).is_variation_device ());
+
+    if (!no_downgrade)
       return_trace (c->serializer->check_assign (out->format, 1, HB_SERIALIZE_ERROR_INT_OVERFLOW));
 
     if (!c->serializer->embed (xDeviceTable)) return_trace (false);

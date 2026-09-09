@@ -56,6 +56,11 @@ namespace embree
       return BBox(min(a.lower, b.lower), max(a.upper, b.upper));
     }
 
+    /*! intersects two boxes */
+    __forceinline static const BBox intersect (const BBox& a, const BBox& b) {
+      return BBox(max(a.lower, b.lower), min(a.upper, b.upper));
+    }
+
      /*! enlarge box by some scaling factor */
     __forceinline BBox enlarge_by(const float a) const {
       return BBox(lower - T(a)*abs(lower), upper + T(a)*abs(upper));

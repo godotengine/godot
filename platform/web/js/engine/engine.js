@@ -163,27 +163,19 @@ const Engine = (function () {
 					me.rtenv['initConfig'](config);
 
 					// Preload GDExtension libraries.
-					const libs = [];
 					if (me.config.gdextensionLibs.length > 0 && !me.rtenv['loadDynamicLibrary']) {
 						return Promise.reject(new Error('GDExtension libraries are not supported by this engine version. '
 							+ 'Enable "Extensions Support" for your export preset and/or build your custom template with "dlink_enabled=yes".'));
 					}
-					me.config.gdextensionLibs.forEach(function (lib) {
-						libs.push(me.rtenv['loadDynamicLibrary'](lib, { 'loadAsync': true }));
-					});
-					return Promise.all(libs).then(function () {
-						return new Promise(function (resolve, reject) {
-							preloader.preloadedFiles.forEach(function (file) {
-								me.rtenv['copyToFS'](file.path, file.buffer);
-							});
-							preloader.preloadedFiles.length = 0; // Clear memory
-							me.rtenv['callMain'](me.config.args);
-							initPromise = null;
-							if (me.config.serviceWorker && 'serviceWorker' in navigator) {
-								navigator.serviceWorker.register(me.config.serviceWorker);
-							}
-							resolve();
-						});
+					return new Promise(function (resolve, reject) {
+						for (const file of preloader.preloadedFiles) {
+							me.rtenv['copyToFS'](file.path, file.buffer);
+						}
+						preloader.preloadedFiles.length = 0; // Clear memory
+						me.rtenv['callMain'](me.config.args);
+						initPromise = null;
+						me.installServiceWorker();
+						resolve();
 					});
 				});
 			},
@@ -242,6 +234,21 @@ const Engine = (function () {
 					this.rtenv['request_quit']();
 				}
 			},
+
+			/**
+			 * Install the progressive-web app service worker.
+			 * @returns {Promise} The service worker registration promise.
+			 */
+			installServiceWorker: function () {
+				if (this.config.serviceWorker && 'serviceWorker' in navigator) {
+					try {
+						return navigator.serviceWorker.register(this.config.serviceWorker);
+					} catch (e) {
+						return Promise.reject(e);
+					}
+				}
+				return Promise.resolve();
+			},
 		};
 
 		Engine.prototype = proto;
@@ -252,6 +259,7 @@ const Engine = (function () {
 		Engine.prototype['startGame'] = Engine.prototype.startGame;
 		Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
 		Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
+		Engine.prototype['installServiceWorker'] = Engine.prototype.installServiceWorker;
 		// Also expose static methods as instance methods
 		Engine.prototype['load'] = Engine.load;
 		Engine.prototype['unload'] = Engine.unload;

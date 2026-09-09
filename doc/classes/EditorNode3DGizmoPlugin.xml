@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorNode3DGizmoPlugin" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorNode3DGizmoPlugin" inherits="Resource" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A class used by the editor to define Node3D gizmo types.
 	</brief_description>
@@ -23,6 +23,12 @@
 			<return type="bool" />
 			<description>
 				Override this method to define whether the gizmos handled by this plugin can be hidden or not. Returns [code]true[/code] if not overridden.
+			</description>
+		</method>
+		<method name="_can_commit_handle_on_click" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Override this method to define whether the gizmos should commit when the final handle position is the same as the initial one. Returns [code]false[/code] if not overridden.
 			</description>
 		</method>
 		<method name="_commit_handle" qualifiers="virtual">
@@ -54,7 +60,7 @@
 			<return type="EditorNode3DGizmo" />
 			<param index="0" name="for_node_3d" type="Node3D" />
 			<description>
-				Override this method to return a custom [EditorNode3DGizmo] for the spatial nodes of your choice, return [code]null[/code] for the rest of nodes. See also [method _has_gizmo].
+				Override this method to return a custom [EditorNode3DGizmo] for the 3D nodes of your choice, return [code]null[/code] for the rest of nodes. See also [method _has_gizmo].
 			</description>
 		</method>
 		<method name="_get_gizmo_name" qualifiers="virtual const">

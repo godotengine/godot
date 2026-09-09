@@ -32,8 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/file_access_memory.h"
-#include "core/os/os.h"
-#include "core/string/print_string.h"
+#include "core/io/image.h"
 
 Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t p_pixel_size, uint8_t *p_uncompressed_buffer, size_t p_output_size, size_t p_input_size) {
 	Error error;
@@ -90,8 +89,8 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 }
 
 Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buffer, const tga_header_s &p_header, const uint8_t *p_palette, const bool p_is_monochrome, size_t p_input_size) {
-#define TGA_PUT_PIXEL(r, g, b, a)             \
-	int image_data_ofs = ((y * width) + x);   \
+#define TGA_PUT_PIXEL(r, g, b, a) \
+	int image_data_ofs = ((y * width) + x); \
 	image_data_w[image_data_ofs * 4 + 0] = r; \
 	image_data_w[image_data_ofs * 4 + 1] = g; \
 	image_data_w[image_data_ofs * 4 + 2] = b; \

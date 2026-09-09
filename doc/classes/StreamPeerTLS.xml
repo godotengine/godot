@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeerTLS" inherits="StreamPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="StreamPeerTLS" inherits="StreamPeer" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A stream peer that handles TLS connections.
 	</brief_description>
@@ -37,7 +37,7 @@
 		<method name="get_status" qualifiers="const">
 			<return type="int" enum="StreamPeerTLS.Status" />
 			<description>
-				Returns the status of the connection. See [enum Status] for values.
+				Returns the status of the connection.
 			</description>
 		</method>
 		<method name="get_stream" qualifiers="const">

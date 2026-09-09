@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, The Khronos Group Inc.
+// Copyright (c) 2020-2026 The Khronos Group Inc.
 // Copyright (c) 2020-2021, Collabora, Ltd.
 //
 // SPDX-License-Identifier:  Apache-2.0 OR MIT
@@ -15,18 +15,14 @@
 
 #include <openxr/openxr.h>
 
-#include <sstream>
+#include <dlfcn.h>
 #include <vector>
 #include <android/log.h>
 
-#define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, "OpenXR-Loader", __VA_ARGS__)
-#define ALOGW(...) __android_log_print(ANDROID_LOG_WARN, "OpenXR-Loader", __VA_ARGS__)
-#define ALOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, "OpenXR-Loader", __VA_ARGS__)
-#define ALOGI(...) __android_log_print(ANDROID_LOG_INFO, "OpenXR-Loader", __VA_ARGS__)
+#define LOG_TAG "OpenXR-Loader"
+#include "android_logging.h"
 
 namespace openxr_android {
-using wrap::android::content::ContentUris;
-using wrap::android::content::Context;
 using wrap::android::database::Cursor;
 using wrap::android::net::Uri;
 using wrap::android::net::Uri_Builder;
@@ -82,7 +78,6 @@ static Uri makeContentUri(bool systemBroker, int majorVersion, const char *abi) 
         .appendPath(abi)
         .appendPath(RUNTIMES_PATH)
         .appendPath(TABLE_PATH);
-    ContentUris::appendId(builder, 0);
     return builder.build();
 }
 
@@ -128,7 +123,7 @@ namespace functions {
 static constexpr auto TABLE_PATH = "functions";
 
 /**
- * Create a content URI for querying all rows of the function remapping data for a given
+ * Create a content URI for querying all rows of the runtime function remapping data for a given
  * runtime package and major version of OpenXR.
  *
  * @param systemBroker If the system runtime broker (instead of the installable one) should be queried.
@@ -137,7 +132,7 @@ static constexpr auto TABLE_PATH = "functions";
  * @param abi The Android ABI name in use.
  * @return A content URI for the entire table: the function remapping for that runtime.
  */
-static Uri makeContentUri(bool systemBroker, int majorVersion, std::string const &packageName, const char *abi) {
+static Uri makeRuntimeContentUri(bool systemBroker, int majorVersion, std::string const &packageName, const char *abi) {
     auto builder = Uri_Builder::construct();
     builder.scheme("content")
         .authority(getBrokerAuthority(systemBroker))
@@ -175,7 +170,6 @@ static inline jni::Array<std::string> makeArray(std::initializer_list<const char
     }
     return ret;
 }
-static constexpr auto TAG = "OpenXR-Loader";
 
 #if defined(__arm__)
 static constexpr auto ABI = "armeabi-v7l";
@@ -189,61 +183,18 @@ static constexpr auto ABI = "x86_64";
 #error "Unknown ABI!"
 #endif
 
-/// Helper class to generate the jsoncpp object corresponding to a synthetic runtime manifest.
-class JsonManifestBuilder {
-   public:
-    JsonManifestBuilder(const std::string &libraryPathParent, const std::string &libraryPath);
-    JsonManifestBuilder &function(const std::string &functionName, const std::string &symbolName);
+static inline Json::Value makeMinimumVirtualRuntimeManifest(const std::string &libraryPath) {
+    Json::Value root_node(Json::objectValue);
 
-    Json::Value build() const { return root_node; }
-
-   private:
-    Json::Value root_node;
-};
-
-inline JsonManifestBuilder::JsonManifestBuilder(const std::string &libraryPathParent, const std::string &libraryPath)
-    : root_node(Json::objectValue) {
     root_node["file_format_version"] = "1.0.0";
     root_node["instance_extensions"] = Json::Value(Json::arrayValue);
     root_node["functions"] = Json::Value(Json::objectValue);
-    root_node[libraryPathParent] = Json::objectValue;
-    root_node[libraryPathParent]["library_path"] = libraryPath;
-}
-
-inline JsonManifestBuilder &JsonManifestBuilder::function(const std::string &functionName, const std::string &symbolName) {
-    root_node["functions"][functionName] = symbolName;
-    return *this;
+    root_node["runtime"] = Json::objectValue;
+    root_node["runtime"]["library_path"] = libraryPath;
+    return root_node;
 }
 
 static constexpr const char *getBrokerTypeName(bool systemBroker) { return systemBroker ? "system" : "installable"; }
-
-static int populateFunctions(wrap::android::content::Context const &context, bool systemBroker, const std::string &packageName,
-                             JsonManifestBuilder &builder) {
-    jni::Array<std::string> projection = makeArray({functions::Columns::FUNCTION_NAME, functions::Columns::SYMBOL_NAME});
-
-    auto uri = functions::makeContentUri(systemBroker, XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), packageName, ABI);
-    ALOGI("populateFunctions: Querying URI: %s", uri.toString().c_str());
-
-    Cursor cursor = context.getContentResolver().query(uri, projection);
-
-    if (cursor.isNull()) {
-        ALOGE("Null cursor when querying content resolver for functions.");
-        return -1;
-    }
-    if (cursor.getCount() < 1) {
-        ALOGE("Non-null but empty cursor when querying content resolver for functions.");
-        cursor.close();
-        return -1;
-    }
-    auto functionIndex = cursor.getColumnIndex(functions::Columns::FUNCTION_NAME);
-    auto symbolIndex = cursor.getColumnIndex(functions::Columns::SYMBOL_NAME);
-    while (cursor.moveToNext()) {
-        builder.function(cursor.getString(functionIndex), cursor.getString(symbolIndex));
-    }
-
-    cursor.close();
-    return 0;
-}
 
 // The current file relies on android-jni-wrappers and jnipp, which may throw on failure.
 // This is problematic when the loader is compiled with exception handling disabled - the consumers can reasonably
@@ -265,31 +216,59 @@ static int populateFunctions(wrap::android::content::Context const &context, boo
 
 #endif  // XRLOADER_DISABLE_EXCEPTION_HANDLING
 
+/// Generic content resolver query function
+static bool getCursor(wrap::android::content::Context const &context, jni::Array<std::string> const &projection, Uri const &uri,
+                      bool systemBroker, const char *contentDesc, Cursor &out_cursor) {
+    ALOGI("getCursor: Querying URI: %s", uri.toString().c_str());
+
+    ANDROID_UTILITIES_TRY { out_cursor = context.getContentResolver().query(uri, projection); }
+    ANDROID_UTILITIES_CATCH_FALLBACK({
+        ALOGI("Exception when querying %s content resolver for %s: %s", getBrokerTypeName(systemBroker), contentDesc, e.what());
+        out_cursor = {};
+        return false;
+    })
+
+    if (out_cursor.isNull()) {
+        ALOGI("Null cursor when querying %s content resolver for %s.", getBrokerTypeName(systemBroker), contentDesc);
+        out_cursor = {};
+        return false;
+    }
+    if (out_cursor.getCount() < 1) {
+        ALOGI("Non-null but empty cursor when querying %s content resolver for %s.", getBrokerTypeName(systemBroker), contentDesc);
+        out_cursor.close();
+        out_cursor = {};
+        return false;
+    }
+    return true;
+}
+
+static int populateRuntimeFunctions(wrap::android::content::Context const &context, bool systemBroker,
+                                    const std::string &packageName, Json::Value &manifest) {
+    const jni::Array<std::string> projection = makeArray({functions::Columns::FUNCTION_NAME, functions::Columns::SYMBOL_NAME});
+
+    auto uri = functions::makeRuntimeContentUri(systemBroker, XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), packageName, ABI);
+    ALOGI("populateFunctions: Querying URI: %s", uri.toString().c_str());
+    Cursor cursor;
+    if (!getCursor(context, projection, uri, systemBroker, "functions", cursor)) {
+        return -1;
+    }
+
+    auto functionIndex = cursor.getColumnIndex(functions::Columns::FUNCTION_NAME);
+    auto symbolIndex = cursor.getColumnIndex(functions::Columns::SYMBOL_NAME);
+    while (cursor.moveToNext()) {
+        manifest["functions"][cursor.getString(functionIndex)] = cursor.getString(symbolIndex);
+    }
+
+    cursor.close();
+    return 0;
+}
+
 /// Get cursor for active runtime, parameterized by whether or not we use the system broker
 static bool getActiveRuntimeCursor(wrap::android::content::Context const &context, jni::Array<std::string> const &projection,
                                    bool systemBroker, Cursor &cursor) {
     auto uri = active_runtime::makeContentUri(systemBroker, XR_VERSION_MAJOR(XR_CURRENT_API_VERSION), ABI);
     ALOGI("getActiveRuntimeCursor: Querying URI: %s", uri.toString().c_str());
-
-    ANDROID_UTILITIES_TRY { cursor = context.getContentResolver().query(uri, projection); }
-    ANDROID_UTILITIES_CATCH_FALLBACK({
-        ALOGW("Exception when querying %s content resolver: %s", getBrokerTypeName(systemBroker), e.what());
-        cursor = {};
-        return false;
-    })
-
-    if (cursor.isNull()) {
-        ALOGW("Null cursor when querying %s content resolver.", getBrokerTypeName(systemBroker));
-        cursor = {};
-        return false;
-    }
-    if (cursor.getCount() < 1) {
-        ALOGW("Non-null but empty cursor when querying %s content resolver.", getBrokerTypeName(systemBroker));
-        cursor.close();
-        cursor = {};
-        return false;
-    }
-    return true;
+    return getCursor(context, projection, uri, systemBroker, "active runtime", cursor);
 }
 
 int getActiveRuntimeVirtualManifest(wrap::android::content::Context const &context, Json::Value &virtualManifest) {
@@ -307,32 +286,47 @@ int getActiveRuntimeVirtualManifest(wrap::android::content::Context const &conte
 
     if (cursor.isNull()) {
         // Couldn't find either broker
-        ALOGE("Could access neither the installable nor system runtime broker.");
+        ALOGI("Could access neither the installable nor system runtime broker.");
         return -1;
     }
 
     cursor.moveToFirst();
 
-    auto filename = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::SO_FILENAME));
-    auto libDir = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::NATIVE_LIB_DIR));
-    auto packageName = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::PACKAGE_NAME));
+    do {
+        auto filename = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::SO_FILENAME));
+        auto libDir = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::NATIVE_LIB_DIR));
+        auto packageName = cursor.getString(cursor.getColumnIndex(active_runtime::Columns::PACKAGE_NAME));
 
-    auto hasFunctions = cursor.getInt(cursor.getColumnIndex(active_runtime::Columns::HAS_FUNCTIONS)) == 1;
-    __android_log_print(ANDROID_LOG_INFO, TAG, "Got runtime: package: %s, so filename: %s, native lib dir: %s, has functions: %s",
-                        packageName.c_str(), filename.c_str(), libDir.c_str(), (hasFunctions ? "yes" : "no"));
+        auto hasFunctions = cursor.getInt(cursor.getColumnIndex(active_runtime::Columns::HAS_FUNCTIONS)) == 1;
+        ALOGI("Got runtime: package: %s, so filename: %s, native lib dir: %s, has functions: %s", packageName.c_str(),
+              filename.c_str(), libDir.c_str(), (hasFunctions ? "yes" : "no"));
 
-    auto lib_path = libDir + "/" + filename;
-    cursor.close();
+        auto lib_path = libDir + "/" + filename;
+        auto *lib = dlopen(lib_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+        if (lib) {
+            // we found a runtime that we can dlopen, use it.
+            dlclose(lib);
 
-    JsonManifestBuilder builder{"runtime", lib_path};
-    if (hasFunctions) {
-        int result = populateFunctions(context, systemBroker, packageName, builder);
-        if (result != 0) {
-            return result;
+            Json::Value manifest = makeMinimumVirtualRuntimeManifest(lib_path);
+            if (hasFunctions) {
+                int result = populateRuntimeFunctions(context, systemBroker, packageName, manifest);
+                if (result != 0) {
+                    ALOGW("Unable to populate functions from runtime: %s, checking for more records...", lib_path.c_str());
+                    continue;
+                }
+            }
+            virtualManifest = manifest;
+            cursor.close();
+            return 0;
         }
-    }
-    virtualManifest = builder.build();
-    return 0;
+        // this runtime was not accessible, see if the broker has more runtimes on
+        // offer.
+        ALOGV("Unable to open broker provided runtime at %s, checking for more records...", lib_path.c_str());
+    } while (cursor.moveToNext());
+
+    ALOGW("Unable to open any of the broker provided runtimes.");
+    cursor.close();
+    return -1;
 }
 }  // namespace openxr_android
 

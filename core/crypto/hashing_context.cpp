@@ -31,6 +31,7 @@
 #include "hashing_context.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/object/class_db.h"
 
 Error HashingContext::start(HashType p_type) {
 	ERR_FAIL_COND_V(ctx != nullptr, ERR_ALREADY_IN_USE);
@@ -47,7 +48,7 @@ Error HashingContext::start(HashType p_type) {
 	return ERR_UNAVAILABLE;
 }
 
-Error HashingContext::update(PackedByteArray p_chunk) {
+Error HashingContext::update(const PackedByteArray &p_chunk) {
 	ERR_FAIL_NULL_V(ctx, ERR_UNCONFIGURED);
 	size_t len = p_chunk.size();
 	ERR_FAIL_COND_V(len == 0, FAILED);

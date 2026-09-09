@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_FUNCTION_H
-#define GDSCRIPT_FUNCTION_H
+#pragma once
 
 #include "gdscript_utility_functions.h"
 
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
-#include "core/os/thread.h"
 #include "core/string/string_name.h"
 #include "core/templates/pair.h"
 #include "core/templates/self_list.h"
@@ -49,102 +47,45 @@ public:
 	Vector<GDScriptDataType> container_element_types;
 
 	enum Kind {
-		UNINITIALIZED,
+		VARIANT, // Can be any type.
 		BUILTIN,
 		NATIVE,
 		SCRIPT,
 		GDSCRIPT,
 	};
 
-	Kind kind = UNINITIALIZED;
+	Kind kind = VARIANT;
 
-	bool has_type = false;
 	Variant::Type builtin_type = Variant::NIL;
 	StringName native_type;
 	Script *script_type = nullptr;
 	Ref<Script> script_type_ref;
 
-	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
-		if (!has_type) {
-			return true; // Can't type check
-		}
+	_FORCE_INLINE_ bool has_type() const { return kind != VARIANT; }
 
-		switch (kind) {
-			case UNINITIALIZED:
-				break;
-			case BUILTIN: {
-				Variant::Type var_type = p_variant.get_type();
-				bool valid = builtin_type == var_type;
-				if (valid && builtin_type == Variant::ARRAY && has_container_element_type(0)) {
-					Array array = p_variant;
-					if (array.is_typed()) {
-						GDScriptDataType array_container_type = get_container_element_type(0);
-						Variant::Type array_builtin_type = (Variant::Type)array.get_typed_builtin();
-						StringName array_native_type = array.get_typed_class_name();
-						Ref<Script> array_script_type_ref = array.get_typed_script();
+	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const;
 
-						if (array_script_type_ref.is_valid()) {
-							valid = (array_container_type.kind == SCRIPT || array_container_type.kind == GDSCRIPT) && array_container_type.script_type == array_script_type_ref.ptr();
-						} else if (array_native_type != StringName()) {
-							valid = array_container_type.kind == NATIVE && array_container_type.native_type == array_native_type;
-						} else {
-							valid = array_container_type.kind == BUILTIN && array_container_type.builtin_type == array_builtin_type;
-						}
-					} else {
-						valid = false;
+	bool can_contain_object() const {
+		if (kind == BUILTIN) {
+			switch (builtin_type) {
+				case Variant::ARRAY:
+					if (has_container_element_type(0)) {
+						return container_element_types[0].can_contain_object();
 					}
-				} else if (!valid && p_allow_implicit_conversion) {
-					valid = Variant::can_convert_strict(var_type, builtin_type);
-				}
-				return valid;
-			} break;
-			case NATIVE: {
-				if (p_variant.get_type() == Variant::NIL) {
 					return true;
-				}
-				if (p_variant.get_type() != Variant::OBJECT) {
-					return false;
-				}
-
-				bool was_freed = false;
-				Object *obj = p_variant.get_validated_object_with_check(was_freed);
-				if (!obj) {
-					return !was_freed;
-				}
-
-				if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
-					return false;
-				}
-				return true;
-			} break;
-			case SCRIPT:
-			case GDSCRIPT: {
-				if (p_variant.get_type() == Variant::NIL) {
-					return true;
-				}
-				if (p_variant.get_type() != Variant::OBJECT) {
-					return false;
-				}
-
-				bool was_freed = false;
-				Object *obj = p_variant.get_validated_object_with_check(was_freed);
-				if (!obj) {
-					return !was_freed;
-				}
-
-				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
-				bool valid = false;
-				while (base.is_valid()) {
-					if (base == script_type) {
-						valid = true;
-						break;
+				case Variant::DICTIONARY:
+					if (has_container_element_types()) {
+						return get_container_element_type_or_variant(0).can_contain_object() || get_container_element_type_or_variant(1).can_contain_object();
 					}
-					base = base->get_base_script();
-				}
-				return valid;
-			} break;
+					return true;
+				case Variant::NIL:
+				case Variant::OBJECT:
+					return true;
+				default:
+					return false;
+			}
 		}
-		return false;
+		return true;
 	}
 
 	void set_container_element_type(int p_index, const GDScriptDataType &p_element_type) {
@@ -177,9 +118,20 @@ public:
 
 	GDScriptDataType() = default;
 
+	bool operator==(const GDScriptDataType &p_other) const {
+		return kind == p_other.kind &&
+				builtin_type == p_other.builtin_type &&
+				native_type == p_other.native_type &&
+				(script_type == p_other.script_type || script_type_ref == p_other.script_type_ref) &&
+				container_element_types == p_other.container_element_types;
+	}
+
+	bool operator!=(const GDScriptDataType &p_other) const {
+		return !(*this == p_other);
+	}
+
 	void operator=(const GDScriptDataType &p_other) {
 		kind = p_other.kind;
-		has_type = p_other.has_type;
 		builtin_type = p_other.builtin_type;
 		native_type = p_other.native_type;
 		script_type = p_other.script_type;
@@ -201,6 +153,7 @@ public:
 		OPCODE_OPERATOR_VALIDATED,
 		OPCODE_TYPE_TEST_BUILTIN,
 		OPCODE_TYPE_TEST_ARRAY,
+		OPCODE_TYPE_TEST_DICTIONARY,
 		OPCODE_TYPE_TEST_NATIVE,
 		OPCODE_TYPE_TEST_SCRIPT,
 		OPCODE_SET_KEYED,
@@ -218,10 +171,12 @@ public:
 		OPCODE_SET_STATIC_VARIABLE, // Only for GDScript.
 		OPCODE_GET_STATIC_VARIABLE, // Only for GDScript.
 		OPCODE_ASSIGN,
+		OPCODE_ASSIGN_NULL,
 		OPCODE_ASSIGN_TRUE,
 		OPCODE_ASSIGN_FALSE,
 		OPCODE_ASSIGN_TYPED_BUILTIN,
 		OPCODE_ASSIGN_TYPED_ARRAY,
+		OPCODE_ASSIGN_TYPED_DICTIONARY,
 		OPCODE_ASSIGN_TYPED_NATIVE,
 		OPCODE_ASSIGN_TYPED_SCRIPT,
 		OPCODE_CAST_TO_BUILTIN,
@@ -232,6 +187,7 @@ public:
 		OPCODE_CONSTRUCT_ARRAY,
 		OPCODE_CONSTRUCT_TYPED_ARRAY,
 		OPCODE_CONSTRUCT_DICTIONARY,
+		OPCODE_CONSTRUCT_TYPED_DICTIONARY,
 		OPCODE_CALL,
 		OPCODE_CALL_RETURN,
 		OPCODE_CALL_ASYNC,
@@ -244,6 +200,8 @@ public:
 		OPCODE_CALL_METHOD_BIND_RET,
 		OPCODE_CALL_BUILTIN_STATIC,
 		OPCODE_CALL_NATIVE_STATIC,
+		OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN,
+		OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN,
 		OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN,
 		OPCODE_CALL_METHOD_BIND_VALIDATED_NO_RETURN,
 		OPCODE_AWAIT,
@@ -258,6 +216,7 @@ public:
 		OPCODE_RETURN,
 		OPCODE_RETURN_TYPED_BUILTIN,
 		OPCODE_RETURN_TYPED_ARRAY,
+		OPCODE_RETURN_TYPED_DICTIONARY,
 		OPCODE_RETURN_TYPED_NATIVE,
 		OPCODE_RETURN_TYPED_SCRIPT,
 		OPCODE_ITERATE_BEGIN,
@@ -279,7 +238,9 @@ public:
 		OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY,
 		OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY,
 		OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY,
+		OPCODE_ITERATE_BEGIN_PACKED_VECTOR4_ARRAY,
 		OPCODE_ITERATE_BEGIN_OBJECT,
+		OPCODE_ITERATE_BEGIN_RANGE,
 		OPCODE_ITERATE,
 		OPCODE_ITERATE_INT,
 		OPCODE_ITERATE_FLOAT,
@@ -299,7 +260,9 @@ public:
 		OPCODE_ITERATE_PACKED_VECTOR2_ARRAY,
 		OPCODE_ITERATE_PACKED_VECTOR3_ARRAY,
 		OPCODE_ITERATE_PACKED_COLOR_ARRAY,
+		OPCODE_ITERATE_PACKED_VECTOR4_ARRAY,
 		OPCODE_ITERATE_OBJECT,
+		OPCODE_ITERATE_RANGE,
 		OPCODE_STORE_GLOBAL,
 		OPCODE_STORE_NAMED_GLOBAL,
 		OPCODE_TYPE_ADJUST_BOOL,
@@ -339,6 +302,7 @@ public:
 		OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY,
 		OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY,
 		OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY,
+		OPCODE_TYPE_ADJUST_PACKED_VECTOR4_ARRAY,
 		OPCODE_ASSERT,
 		OPCODE_BREAKPOINT,
 		OPCODE_LINE,
@@ -382,6 +346,8 @@ private:
 	StringName source;
 	bool _static = false;
 	Vector<GDScriptDataType> argument_types;
+	// NOTE: This is the expected return type, but coroutines can actually return a `GDScriptFunctionState` object.
+	// In VM it is currently only used to return a default value on error (as a fallback).
 	GDScriptDataType return_type;
 	MethodInfo method_info;
 	Variant rpc_config;
@@ -389,17 +355,19 @@ private:
 	GDScript *_script = nullptr;
 	int _initial_line = 0;
 	int _argument_count = 0;
+	int _vararg_index = -1;
 	int _stack_size = 0;
 	int _instruction_args_size = 0;
 
 	SelfList<GDScriptFunction> function_list{ this };
 	mutable Variant nil;
-	HashMap<int, Variant::Type> temporary_slots;
+	TightLocalVector<Pair<int, Variant::Type>> temporary_slots;
 	List<StackDebug> stack_debug;
 
 	Vector<int> code;
 	Vector<int> default_arguments;
 	Vector<Variant> constants;
+	HashMap<StringName, Variant> constant_map;
 	Vector<StringName> global_names;
 	Vector<Variant::ValidatedOperatorEvaluator> operator_funcs;
 	Vector<Variant::ValidatedSetter> setters;
@@ -412,7 +380,7 @@ private:
 	Vector<Variant::ValidatedConstructor> constructors;
 	Vector<Variant::ValidatedUtilityFunction> utilities;
 	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
-	Vector<MethodBind *> methods;
+	Vector<const MethodBind *> methods;
 	Vector<GDScriptFunction *> lambdas;
 
 	int _code_size = 0;
@@ -448,7 +416,7 @@ private:
 	const Variant::ValidatedConstructor *_constructors_ptr = nullptr;
 	const Variant::ValidatedUtilityFunction *_utilities_ptr = nullptr;
 	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
-	MethodBind **_methods_ptr = nullptr;
+	const MethodBind *const *_methods_ptr = nullptr;
 	GDScriptFunction **_lambdas_ptr = nullptr;
 
 #ifdef DEBUG_ENABLED
@@ -482,15 +450,18 @@ private:
 		HashMap<String, NativeProfile> native_calls;
 		HashMap<String, NativeProfile> last_native_calls;
 	} profile;
+
+	String _get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
+	String _get_callable_call_error(const String &p_where, const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 #endif
 
-	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
 public:
 	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.
 
 	struct CallState {
+		Signal completed;
 		GDScript *script = nullptr;
 		GDScriptInstance *instance = nullptr;
 #ifdef DEBUG_ENABLED
@@ -499,7 +470,6 @@ public:
 #endif
 		Vector<uint8_t> stack;
 		int stack_size = 0;
-		uint32_t alloca_size = 0;
 		int ip = 0;
 		int line = 0;
 		int defarg = 0;
@@ -510,7 +480,9 @@ public:
 	_FORCE_INLINE_ StringName get_source() const { return source; }
 	_FORCE_INLINE_ GDScript *get_script() const { return _script; }
 	_FORCE_INLINE_ bool is_static() const { return _static; }
+	_FORCE_INLINE_ bool is_vararg() const { return _vararg_index >= 0; }
 	_FORCE_INLINE_ MethodInfo get_method_info() const { return method_info; }
+	_FORCE_INLINE_ int get_argument_count() const { return _argument_count; }
 	_FORCE_INLINE_ Variant get_rpc_config() const { return rpc_config; }
 	_FORCE_INLINE_ int get_max_stack_size() const { return _stack_size; }
 
@@ -531,21 +503,38 @@ public:
 
 class GDScriptFunctionState : public RefCounted {
 	GDCLASS(GDScriptFunctionState, RefCounted);
+
 	friend class GDScriptFunction;
+
 	GDScriptFunction *function = nullptr;
 	GDScriptFunction::CallState state;
-	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Ref<GDScriptFunctionState> first_state;
 
 	SelfList<GDScriptFunctionState> scripts_list;
 	SelfList<GDScriptFunctionState> instances_list;
 
+	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant resume(const Variant &p_arg);
+
 protected:
 	static void _bind_methods();
 
+private:
+	bool cleared = false;
+
 public:
-	bool is_valid(bool p_extended_check = false) const;
-	Variant resume(const Variant &p_arg = Variant());
+	/**
+	 * Transfers the object into a zombie state, in which it has no functionality anymore and can outlive `GDScriptLanguage`.
+	 * A cleared function state does not hold any references and thus can not be locked up in a ref cycle.
+	 * Callers SHOULD hold a reference to the object while calling `clear`.
+	 */
+	void clear();
+
+#ifdef DEBUG_ENABLED
+	// Returns a human-readable representation of the function.
+	String get_readable_function() {
+		return state.function_name;
+	}
+#endif
 
 	void _clear_stack();
 	void _clear_connections();
@@ -553,5 +542,3 @@ public:
 	GDScriptFunctionState();
 	~GDScriptFunctionState();
 };
-
-#endif // GDSCRIPT_FUNCTION_H

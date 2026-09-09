@@ -17,12 +17,18 @@ namespace embree
     /*! triangle indices */
     struct Quad
     {
-      uint32_t v[4];
+      Quad() {}
+
+      Quad (uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3) {
+        v[0] = v0; v[1] = v1; v[2] = v2; v[3] = v3;
+      }
 
       /*! outputs triangle indices */
       __forceinline friend embree_ostream operator<<(embree_ostream cout, const Quad& q) {
         return cout << "Quad {" << q.v[0] << ", " << q.v[1] << ", " << q.v[2] << ", " << q.v[3] << " }";
       }
+
+      uint32_t v[4];
     };
 
   public:
@@ -36,12 +42,14 @@ namespace embree
     void setNumTimeSteps (unsigned int numTimeSteps);
     void setVertexAttributeCount (unsigned int N);
     void setBuffer(RTCBufferType type, unsigned int slot, RTCFormat format, const Ref<Buffer>& buffer, size_t offset, size_t stride, unsigned int num);
-    void* getBuffer(RTCBufferType type, unsigned int slot);
+    void* getBufferData(RTCBufferType type, unsigned int slot, BufferDataPointerType pointerType);
     void updateBuffer(RTCBufferType type, unsigned int slot);
     void commit();
     bool verify();
     void interpolate(const RTCInterpolateArguments* const args);
     void addElementsToCount (GeometryCounts & counts) const;
+    size_t getGeometryDataDeviceByteSize() const;
+    void convertToDeviceRepresentation(size_t offset, char* data_host, char* data_device) const;
 
     template<int N>
       void interpolate_impl(const RTCInterpolateArguments* const args)
@@ -135,6 +143,18 @@ namespace embree
       return vertices[itime].getPtr(i);
     }
 
+    /*! returns i'th vertex of for specified time */
+    __forceinline Vec3fa vertex(size_t i, float time) const
+    {
+      float ftime;
+      const size_t itime = timeSegment(time, ftime);
+      const float t0 = 1.0f - ftime;
+      const float t1 = ftime;
+      Vec3fa v0 = vertex(i, itime+0);
+      Vec3fa v1 = vertex(i, itime+1);
+      return madd(Vec3fa(t0),v0,t1*v1);
+    }
+
     /*! calculates the bounds of the i'th quad */
     __forceinline BBox3fa bounds(size_t i) const 
     {
@@ -196,7 +216,7 @@ namespace embree
       if (q.v[2] >= numVertices()) return false;
       if (q.v[3] >= numVertices()) return false;
 
-      for (unsigned int t=0; t<numTimeSteps; t++)
+      for (size_t t=0; t<numTimeSteps; t++)
       {
         const Vec3fa v0 = vertex(q.v[0],t);
         const Vec3fa v1 = vertex(q.v[1],t);
@@ -279,8 +299,8 @@ namespace embree
   public:
     BufferView<Quad> quads;                 //!< array of quads
     BufferView<Vec3fa> vertices0;           //!< fast access to first vertex buffer
-    vector<BufferView<Vec3fa>> vertices;    //!< vertex array for each timestep
-    vector<BufferView<char>> vertexAttribs; //!< vertex attribute buffers
+    Device::vector<BufferView<Vec3fa>> vertices = device; //!< vertex array for each timestep
+    Device::vector<RawBufferView> vertexAttribs = device; //!< vertex attribute buffers
   };
 
   namespace isa
@@ -290,7 +310,11 @@ namespace embree
       QuadMeshISA (Device* device)
         : QuadMesh(device) {}
 
-      PrimInfo createPrimRefArray(mvector<PrimRef>& prims, const range<size_t>& r, size_t k, unsigned int geomID) const
+      LBBox3fa vlinearBounds(size_t primID, const BBox1f& time_range) const {
+        return linearBounds(primID,time_range);
+      }
+
+      PrimInfo createPrimRefArray(PrimRef* prims, const range<size_t>& r, size_t k, unsigned int geomID) const
       {
         PrimInfo pinfo(empty);
         for (size_t j=r.begin(); j<r.end(); j++)
@@ -317,7 +341,24 @@ namespace embree
         }
         return pinfo;
       }
-      
+
+      PrimInfo createPrimRefArrayMB(PrimRef* prims, const BBox1f& time_range, const range<size_t>& r, size_t k, unsigned int geomID) const
+      {
+        PrimInfo pinfo(empty);
+        const BBox1f t0t1 = BBox1f::intersect(getTimeRange(), time_range);
+        if (t0t1.empty()) return pinfo;
+                
+        for (size_t j = r.begin(); j < r.end(); j++) {
+          LBBox3fa lbounds = empty;
+          if (!linearBounds(j, t0t1, lbounds))
+            continue;
+          const PrimRef prim(lbounds.bounds(), geomID, unsigned(j));
+          pinfo.add_center2(prim);
+          prims[k++] = prim;
+        }
+        return pinfo;
+      }
+
       PrimInfoMB createPrimRefMBArray(mvector<PrimRefMB>& prims, const BBox1f& t0t1, const range<size_t>& r, size_t k, unsigned int geomID) const
       {
         PrimInfoMB pinfo(empty);

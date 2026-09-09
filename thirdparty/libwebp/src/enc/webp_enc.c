@@ -12,14 +12,18 @@
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
+#include "src/dec/common_dec.h"
+#include "src/webp/types.h"
+#include "src/dsp/dsp.h"
 #include "src/enc/cost_enc.h"
 #include "src/enc/vp8i_enc.h"
 #include "src/enc/vp8li_enc.h"
 #include "src/utils/utils.h"
+#include "src/webp/encode.h"
 
 // #define PRINT_MEMORY_INFO
 
@@ -38,36 +42,36 @@ int WebPGetEncoderVersion(void) {
 //------------------------------------------------------------------------------
 
 static void ResetSegmentHeader(VP8Encoder* const enc) {
-  VP8EncSegmentHeader* const hdr = &enc->segment_hdr_;
-  hdr->num_segments_ = enc->config_->segments;
-  hdr->update_map_  = (hdr->num_segments_ > 1);
-  hdr->size_ = 0;
+  VP8EncSegmentHeader* const hdr = &enc->segment_hdr;
+  hdr->num_segments = enc->config->segments;
+  hdr->update_map  = (hdr->num_segments > 1);
+  hdr->size = 0;
 }
 
 static void ResetFilterHeader(VP8Encoder* const enc) {
-  VP8EncFilterHeader* const hdr = &enc->filter_hdr_;
-  hdr->simple_ = 1;
-  hdr->level_ = 0;
-  hdr->sharpness_ = 0;
-  hdr->i4x4_lf_delta_ = 0;
+  VP8EncFilterHeader* const hdr = &enc->filter_hdr;
+  hdr->simple = 1;
+  hdr->level = 0;
+  hdr->sharpness = 0;
+  hdr->i4x4_lf_delta = 0;
 }
 
 static void ResetBoundaryPredictions(VP8Encoder* const enc) {
   // init boundary values once for all
-  // Note: actually, initializing the preds_[] is only needed for intra4.
+  // Note: actually, initializing the 'preds[]' is only needed for intra4.
   int i;
-  uint8_t* const top = enc->preds_ - enc->preds_w_;
-  uint8_t* const left = enc->preds_ - 1;
-  for (i = -1; i < 4 * enc->mb_w_; ++i) {
+  uint8_t* const top = enc->preds - enc->preds_w;
+  uint8_t* const left = enc->preds - 1;
+  for (i = -1; i < 4 * enc->mb_w; ++i) {
     top[i] = B_DC_PRED;
   }
-  for (i = 0; i < 4 * enc->mb_h_; ++i) {
-    left[i * enc->preds_w_] = B_DC_PRED;
+  for (i = 0; i < 4 * enc->mb_h; ++i) {
+    left[i * enc->preds_w] = B_DC_PRED;
   }
-  enc->nz_[-1] = 0;   // constant
+  enc->nz[-1] = 0;   // constant
 }
 
-// Mapping from config->method_ to coding tools used.
+// Mapping from config->method to coding tools used.
 //-------------------+---+---+---+---+---+---+---+
 //   Method          | 0 | 1 | 2 | 3 |(4)| 5 | 6 |
 //-------------------+---+---+---+---+---+---+---+
@@ -93,31 +97,31 @@ static void ResetBoundaryPredictions(VP8Encoder* const enc) {
 //-------------------+---+---+---+---+---+---+---+
 
 static void MapConfigToTools(VP8Encoder* const enc) {
-  const WebPConfig* const config = enc->config_;
+  const WebPConfig* const config = enc->config;
   const int method = config->method;
   const int limit = 100 - config->partition_limit;
-  enc->method_ = method;
-  enc->rd_opt_level_ = (method >= 6) ? RD_OPT_TRELLIS_ALL
-                     : (method >= 5) ? RD_OPT_TRELLIS
-                     : (method >= 3) ? RD_OPT_BASIC
-                     : RD_OPT_NONE;
-  enc->max_i4_header_bits_ =
+  enc->method = method;
+  enc->rd_opt_level = (method >= 6) ? RD_OPT_TRELLIS_ALL
+                    : (method >= 5) ? RD_OPT_TRELLIS
+                    : (method >= 3) ? RD_OPT_BASIC
+                    : RD_OPT_NONE;
+  enc->max_i4_header_bits =
       256 * 16 * 16 *                 // upper bound: up to 16bit per 4x4 block
       (limit * limit) / (100 * 100);  // ... modulated with a quadratic curve.
 
   // partition0 = 512k max.
-  enc->mb_header_limit_ =
-      (score_t)256 * 510 * 8 * 1024 / (enc->mb_w_ * enc->mb_h_);
+  enc->mb_header_limit =
+      (score_t)256 * 510 * 8 * 1024 / (enc->mb_w * enc->mb_h);
 
-  enc->thread_level_ = config->thread_level;
+  enc->thread_level = config->thread_level;
 
-  enc->do_search_ = (config->target_size > 0 || config->target_PSNR > 0);
+  enc->do_search = (config->target_size > 0 || config->target_PSNR > 0);
   if (!config->low_memory) {
 #if !defined(DISABLE_TOKEN_BUFFER)
-    enc->use_tokens_ = (enc->rd_opt_level_ >= RD_OPT_BASIC);  // need rd stats
+    enc->use_tokens = (enc->rd_opt_level >= RD_OPT_BASIC);  // need rd stats
 #endif
-    if (enc->use_tokens_) {
-      enc->num_parts_ = 1;   // doesn't work with multi-partition
+    if (enc->use_tokens) {
+      enc->num_parts = 1;   // doesn't work with multi-partition
     }
   }
 }
@@ -150,18 +154,18 @@ static VP8Encoder* InitVP8Encoder(const WebPConfig* const config,
   const int mb_h = (picture->height + 15) >> 4;
   const int preds_w = 4 * mb_w + 1;
   const int preds_h = 4 * mb_h + 1;
-  const size_t preds_size = preds_w * preds_h * sizeof(*enc->preds_);
+  const size_t preds_size = preds_w * preds_h * sizeof(*enc->preds);
   const int top_stride = mb_w * 16;
-  const size_t nz_size = (mb_w + 1) * sizeof(*enc->nz_) + WEBP_ALIGN_CST;
-  const size_t info_size = mb_w * mb_h * sizeof(*enc->mb_info_);
+  const size_t nz_size = (mb_w + 1) * sizeof(*enc->nz) + WEBP_ALIGN_CST;
+  const size_t info_size = mb_w * mb_h * sizeof(*enc->mb_info);
   const size_t samples_size =
-      2 * top_stride * sizeof(*enc->y_top_)  // top-luma/u/v
+      2 * top_stride * sizeof(*enc->y_top)   // top-luma/u/v
       + WEBP_ALIGN_CST;                      // align all
   const size_t lf_stats_size =
-      config->autofilter ? sizeof(*enc->lf_stats_) + WEBP_ALIGN_CST : 0;
+      config->autofilter ? sizeof(*enc->lf_stats) + WEBP_ALIGN_CST : 0;
   const size_t top_derr_size =
       (config->quality <= ERROR_DIFFUSION_QUALITY || config->pass > 1) ?
-          mb_w * sizeof(*enc->top_derr_) : 0;
+          mb_w * sizeof(*enc->top_derr) : 0;
   uint8_t* mem;
   const uint64_t size = (uint64_t)sizeof(*enc)   // main struct
                       + WEBP_ALIGN_CST           // cache alignment
@@ -206,32 +210,32 @@ static VP8Encoder* InitVP8Encoder(const WebPConfig* const config,
   enc = (VP8Encoder*)mem;
   mem = (uint8_t*)WEBP_ALIGN(mem + sizeof(*enc));
   memset(enc, 0, sizeof(*enc));
-  enc->num_parts_ = 1 << config->partitions;
-  enc->mb_w_ = mb_w;
-  enc->mb_h_ = mb_h;
-  enc->preds_w_ = preds_w;
-  enc->mb_info_ = (VP8MBInfo*)mem;
+  enc->num_parts = 1 << config->partitions;
+  enc->mb_w = mb_w;
+  enc->mb_h = mb_h;
+  enc->preds_w = preds_w;
+  enc->mb_info = (VP8MBInfo*)mem;
   mem += info_size;
-  enc->preds_ = mem + 1 + enc->preds_w_;
+  enc->preds = mem + 1 + enc->preds_w;
   mem += preds_size;
-  enc->nz_ = 1 + (uint32_t*)WEBP_ALIGN(mem);
+  enc->nz = 1 + (uint32_t*)WEBP_ALIGN(mem);
   mem += nz_size;
-  enc->lf_stats_ = lf_stats_size ? (LFStats*)WEBP_ALIGN(mem) : NULL;
+  enc->lf_stats = lf_stats_size ? (LFStats*)WEBP_ALIGN(mem) : NULL;
   mem += lf_stats_size;
 
   // top samples (all 16-aligned)
   mem = (uint8_t*)WEBP_ALIGN(mem);
-  enc->y_top_ = mem;
-  enc->uv_top_ = enc->y_top_ + top_stride;
+  enc->y_top = mem;
+  enc->uv_top = enc->y_top + top_stride;
   mem += 2 * top_stride;
-  enc->top_derr_ = top_derr_size ? (DError*)mem : NULL;
+  enc->top_derr = top_derr_size ? (DError*)mem : NULL;
   mem += top_derr_size;
   assert(mem <= (uint8_t*)enc + size);
 
-  enc->config_ = config;
-  enc->profile_ = use_filter ? ((config->filter_type == 1) ? 0 : 1) : 2;
-  enc->pic_ = picture;
-  enc->percent_ = 0;
+  enc->config = config;
+  enc->profile = use_filter ? ((config->filter_type == 1) ? 0 : 1) : 2;
+  enc->pic = picture;
+  enc->percent = 0;
 
   MapConfigToTools(enc);
   VP8EncDspInit();
@@ -246,7 +250,7 @@ static VP8Encoder* InitVP8Encoder(const WebPConfig* const config,
   // size based on quality. This is just a crude 1rst-order prediction.
   {
     const float scale = 1.f + config->quality * 5.f / 100.f;  // in [1,6]
-    VP8TBufferInit(&enc->tokens_, (int)(mb_w * mb_h * 4 * scale));
+    VP8TBufferInit(&enc->tokens, (int)(mb_w * mb_h * 4 * scale));
   }
   return enc;
 }
@@ -255,7 +259,7 @@ static int DeleteVP8Encoder(VP8Encoder* enc) {
   int ok = 1;
   if (enc != NULL) {
     ok = VP8EncDeleteAlpha(enc);
-    VP8TBufferClear(&enc->tokens_);
+    VP8TBufferClear(&enc->tokens);
     WebPSafeFree(enc);
   }
   return ok;
@@ -269,9 +273,9 @@ static double GetPSNR(uint64_t err, uint64_t size) {
 }
 
 static void FinalizePSNR(const VP8Encoder* const enc) {
-  WebPAuxStats* stats = enc->pic_->stats;
-  const uint64_t size = enc->sse_count_;
-  const uint64_t* const sse = enc->sse_;
+  WebPAuxStats* stats = enc->pic->stats;
+  const uint64_t size = enc->sse_count;
+  const uint64_t* const sse = enc->sse;
   stats->PSNR[0] = (float)GetPSNR(sse[0], size);
   stats->PSNR[1] = (float)GetPSNR(sse[1], size / 4);
   stats->PSNR[2] = (float)GetPSNR(sse[2], size / 4);
@@ -282,24 +286,24 @@ static void FinalizePSNR(const VP8Encoder* const enc) {
 
 static void StoreStats(VP8Encoder* const enc) {
 #if !defined(WEBP_DISABLE_STATS)
-  WebPAuxStats* const stats = enc->pic_->stats;
+  WebPAuxStats* const stats = enc->pic->stats;
   if (stats != NULL) {
     int i, s;
     for (i = 0; i < NUM_MB_SEGMENTS; ++i) {
-      stats->segment_level[i] = enc->dqm_[i].fstrength_;
-      stats->segment_quant[i] = enc->dqm_[i].quant_;
+      stats->segment_level[i] = enc->dqm[i].fstrength;
+      stats->segment_quant[i] = enc->dqm[i].quant;
       for (s = 0; s <= 2; ++s) {
-        stats->residual_bytes[s][i] = enc->residual_bytes_[s][i];
+        stats->residual_bytes[s][i] = enc->residual_bytes[s][i];
       }
     }
     FinalizePSNR(enc);
-    stats->coded_size = enc->coded_size_;
+    stats->coded_size = enc->coded_size;
     for (i = 0; i < 3; ++i) {
-      stats->block_count[i] = enc->block_count_[i];
+      stats->block_count[i] = enc->block_count[i];
     }
   }
 #else  // defined(WEBP_DISABLE_STATS)
-  WebPReportProgress(enc->pic_, 100, &enc->percent_);  // done!
+  WebPReportProgress(enc->pic, 100, &enc->percent);  // done!
 #endif  // !defined(WEBP_DISABLE_STATS)
 }
 
@@ -380,7 +384,7 @@ int WebPEncode(const WebPConfig* config, WebPPicture* pic) {
 
     // Analysis is done, proceed to actual coding.
     ok = ok && VP8EncStartAlpha(enc);   // possibly done in parallel
-    if (!enc->use_tokens_) {
+    if (!enc->use_tokens) {
       ok = ok && VP8EncLoop(enc);
     } else {
       ok = ok && VP8EncTokenLoop(enc);

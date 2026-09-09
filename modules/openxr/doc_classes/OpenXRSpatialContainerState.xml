@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialContainerState" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		An object representing the state of an OpenXR spatial container.
+	</brief_description>
+	<description>
+		The [OpenXRSpatialContainerState] object holds information about the current state of a spatial container, including its visibility, interactability, and bounds mode.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_bounds_mode" qualifiers="const">
+			<return type="int" enum="OpenXRSpatialContainerState.BoundsMode" />
+			<description>
+				Returns the current bounds mode of the spatial container.
+			</description>
+		</method>
+		<method name="is_interactable" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns the current interactability of the spatial container.
+			</description>
+		</method>
+		<method name="is_visible" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns the current visibility state of the spatial container.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="BOUNDS_MODE_BOUNDED" value="0" enum="BoundsMode">
+			The spatial container is in bounded mode.
+		</constant>
+		<constant name="BOUNDS_MODE_IMMERSIVE" value="1" enum="BoundsMode">
+			The spatial container is in immersive mode.
+		</constant>
+	</constants>
+</class>

@@ -50,14 +50,14 @@ struct SubstLookupSubTable
   {
     TRACE_DISPATCH (this, lookup_type);
     switch (lookup_type) {
-    case Single:                return_trace (u.single.dispatch (c, std::forward<Ts> (ds)...));
-    case Multiple:              return_trace (u.multiple.dispatch (c, std::forward<Ts> (ds)...));
-    case Alternate:             return_trace (u.alternate.dispatch (c, std::forward<Ts> (ds)...));
-    case Ligature:              return_trace (u.ligature.dispatch (c, std::forward<Ts> (ds)...));
-    case Context:               return_trace (u.context.dispatch (c, std::forward<Ts> (ds)...));
-    case ChainContext:          return_trace (u.chainContext.dispatch (c, std::forward<Ts> (ds)...));
-    case Extension:             return_trace (u.extension.dispatch (c, std::forward<Ts> (ds)...));
-    case ReverseChainSingle:    return_trace (u.reverseChainContextSingle.dispatch (c, std::forward<Ts> (ds)...));
+    case Single:                hb_barrier (); return_trace (u.single.dispatch (c, std::forward<Ts> (ds)...));
+    case Multiple:              hb_barrier (); return_trace (u.multiple.dispatch (c, std::forward<Ts> (ds)...));
+    case Alternate:             hb_barrier (); return_trace (u.alternate.dispatch (c, std::forward<Ts> (ds)...));
+    case Ligature:              hb_barrier (); return_trace (u.ligature.dispatch (c, std::forward<Ts> (ds)...));
+    case Context:               hb_barrier (); return_trace (u.context.dispatch (c, std::forward<Ts> (ds)...));
+    case ChainContext:          hb_barrier (); return_trace (u.chainContext.dispatch (c, std::forward<Ts> (ds)...));
+    case Extension:             hb_barrier (); return_trace (u.extension.dispatch (c, std::forward<Ts> (ds)...));
+    case ReverseChainSingle:    hb_barrier (); return_trace (u.reverseChainContextSingle.dispatch (c, std::forward<Ts> (ds)...));
     default:                    return_trace (c->default_return_value ());
     }
   }

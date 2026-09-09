@@ -11,14 +11,25 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "src/dec/alphai_dec.h"
+#include "src/dec/common_dec.h"
+#include "src/dec/vp8_dec.h"
 #include "src/dec/vp8i_dec.h"
 #include "src/dec/vp8li_dec.h"
 #include "src/dec/webpi_dec.h"
+#include "src/dsp/cpu.h"
+#include "src/dsp/dsp.h"
 #include "src/utils/bit_reader_inl_utils.h"
+#include "src/utils/bit_reader_utils.h"
+#include "src/utils/thread_utils.h"
 #include "src/utils/utils.h"
+#include "src/webp/decode.h"
+#include "src/webp/format_constants.h"
+#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 
@@ -40,8 +51,8 @@ static void InitGetCoeffs(void);
 // VP8Decoder
 
 static void SetOk(VP8Decoder* const dec) {
-  dec->status_ = VP8_STATUS_OK;
-  dec->error_msg_ = "OK";
+  dec->status = VP8_STATUS_OK;
+  dec->error_msg = "OK";
 }
 
 int VP8InitIoInternal(VP8Io* const io, int version) {
@@ -58,9 +69,9 @@ VP8Decoder* VP8New(void) {
   VP8Decoder* const dec = (VP8Decoder*)WebPSafeCalloc(1ULL, sizeof(*dec));
   if (dec != NULL) {
     SetOk(dec);
-    WebPGetWorkerInterface()->Init(&dec->worker_);
-    dec->ready_ = 0;
-    dec->num_parts_minus_one_ = 0;
+    WebPGetWorkerInterface()->Init(&dec->worker);
+    dec->ready = 0;
+    dec->num_parts_minus_one = 0;
     InitGetCoeffs();
   }
   return dec;
@@ -68,13 +79,13 @@ VP8Decoder* VP8New(void) {
 
 VP8StatusCode VP8Status(VP8Decoder* const dec) {
   if (!dec) return VP8_STATUS_INVALID_PARAM;
-  return dec->status_;
+  return dec->status;
 }
 
 const char* VP8StatusMessage(VP8Decoder* const dec) {
   if (dec == NULL) return "no object";
-  if (!dec->error_msg_) return "OK";
-  return dec->error_msg_;
+  if (!dec->error_msg) return "OK";
+  return dec->error_msg;
 }
 
 void VP8Delete(VP8Decoder* const dec) {
@@ -86,11 +97,13 @@ void VP8Delete(VP8Decoder* const dec) {
 
 int VP8SetError(VP8Decoder* const dec,
                 VP8StatusCode error, const char* const msg) {
+  // VP8_STATUS_SUSPENDED is only meaningful in incremental decoding.
+  assert(dec->incremental || error != VP8_STATUS_SUSPENDED);
   // The oldest error reported takes precedence over the new one.
-  if (dec->status_ == VP8_STATUS_OK) {
-    dec->status_ = error;
-    dec->error_msg_ = msg;
-    dec->ready_ = 0;
+  if (dec->status == VP8_STATUS_OK) {
+    dec->status = error;
+    dec->error_msg = msg;
+    dec->ready = 0;
   }
   return 0;
 }
@@ -149,11 +162,11 @@ int VP8GetInfo(const uint8_t* data, size_t data_size, size_t chunk_size,
 
 static void ResetSegmentHeader(VP8SegmentHeader* const hdr) {
   assert(hdr != NULL);
-  hdr->use_segment_ = 0;
-  hdr->update_map_ = 0;
-  hdr->absolute_delta_ = 1;
-  memset(hdr->quantizer_, 0, sizeof(hdr->quantizer_));
-  memset(hdr->filter_strength_, 0, sizeof(hdr->filter_strength_));
+  hdr->use_segment = 0;
+  hdr->update_map = 0;
+  hdr->absolute_delta = 1;
+  memset(hdr->quantizer, 0, sizeof(hdr->quantizer));
+  memset(hdr->filter_strength, 0, sizeof(hdr->filter_strength));
 }
 
 // Paragraph 9.3
@@ -161,46 +174,46 @@ static int ParseSegmentHeader(VP8BitReader* br,
                               VP8SegmentHeader* hdr, VP8Proba* proba) {
   assert(br != NULL);
   assert(hdr != NULL);
-  hdr->use_segment_ = VP8Get(br, "global-header");
-  if (hdr->use_segment_) {
-    hdr->update_map_ = VP8Get(br, "global-header");
+  hdr->use_segment = VP8Get(br, "global-header");
+  if (hdr->use_segment) {
+    hdr->update_map = VP8Get(br, "global-header");
     if (VP8Get(br, "global-header")) {   // update data
       int s;
-      hdr->absolute_delta_ = VP8Get(br, "global-header");
+      hdr->absolute_delta = VP8Get(br, "global-header");
       for (s = 0; s < NUM_MB_SEGMENTS; ++s) {
-        hdr->quantizer_[s] = VP8Get(br, "global-header") ?
+        hdr->quantizer[s] = VP8Get(br, "global-header") ?
             VP8GetSignedValue(br, 7, "global-header") : 0;
       }
       for (s = 0; s < NUM_MB_SEGMENTS; ++s) {
-        hdr->filter_strength_[s] = VP8Get(br, "global-header") ?
+        hdr->filter_strength[s] = VP8Get(br, "global-header") ?
             VP8GetSignedValue(br, 6, "global-header") : 0;
       }
     }
-    if (hdr->update_map_) {
+    if (hdr->update_map) {
       int s;
       for (s = 0; s < MB_FEATURE_TREE_PROBS; ++s) {
-        proba->segments_[s] = VP8Get(br, "global-header") ?
+        proba->segments[s] = VP8Get(br, "global-header") ?
             VP8GetValue(br, 8, "global-header") : 255u;
       }
     }
   } else {
-    hdr->update_map_ = 0;
+    hdr->update_map = 0;
   }
-  return !br->eof_;
+  return !br->eof;
 }
 
 // Paragraph 9.5
-// This function returns VP8_STATUS_SUSPENDED if we don't have all the
-// necessary data in 'buf'.
-// This case is not necessarily an error (for incremental decoding).
-// Still, no bitreader is ever initialized to make it possible to read
-// unavailable memory.
-// If we don't even have the partitions' sizes, than VP8_STATUS_NOT_ENOUGH_DATA
+// If we don't have all the necessary data in 'buf', this function returns
+// VP8_STATUS_SUSPENDED in incremental decoding, VP8_STATUS_NOT_ENOUGH_DATA
+// otherwise.
+// In incremental decoding, this case is not necessarily an error. Still, no
+// bitreader is ever initialized to make it possible to read unavailable memory.
+// If we don't even have the partitions' sizes, then VP8_STATUS_NOT_ENOUGH_DATA
 // is returned, and this is an unrecoverable error.
 // If the partitions were positioned ok, VP8_STATUS_OK is returned.
 static VP8StatusCode ParsePartitions(VP8Decoder* const dec,
                                      const uint8_t* buf, size_t size) {
-  VP8BitReader* const br = &dec->br_;
+  VP8BitReader* const br = &dec->br;
   const uint8_t* sz = buf;
   const uint8_t* buf_end = buf + size;
   const uint8_t* part_start;
@@ -208,8 +221,8 @@ static VP8StatusCode ParsePartitions(VP8Decoder* const dec,
   size_t last_part;
   size_t p;
 
-  dec->num_parts_minus_one_ = (1 << VP8GetValue(br, 2, "global-header")) - 1;
-  last_part = dec->num_parts_minus_one_;
+  dec->num_parts_minus_one = (1 << VP8GetValue(br, 2, "global-header")) - 1;
+  last_part = dec->num_parts_minus_one;
   if (size < 3 * last_part) {
     // we can't even read the sizes with sz[]! That's a failure.
     return VP8_STATUS_NOT_ENOUGH_DATA;
@@ -219,40 +232,42 @@ static VP8StatusCode ParsePartitions(VP8Decoder* const dec,
   for (p = 0; p < last_part; ++p) {
     size_t psize = sz[0] | (sz[1] << 8) | (sz[2] << 16);
     if (psize > size_left) psize = size_left;
-    VP8InitBitReader(dec->parts_ + p, part_start, psize);
+    VP8InitBitReader(dec->parts + p, part_start, psize);
     part_start += psize;
     size_left -= psize;
     sz += 3;
   }
-  VP8InitBitReader(dec->parts_ + last_part, part_start, size_left);
-  return (part_start < buf_end) ? VP8_STATUS_OK :
-           VP8_STATUS_SUSPENDED;   // Init is ok, but there's not enough data
+  VP8InitBitReader(dec->parts + last_part, part_start, size_left);
+  if (part_start < buf_end) return VP8_STATUS_OK;
+  return dec->incremental
+             ? VP8_STATUS_SUSPENDED  // Init is ok, but there's not enough data
+             : VP8_STATUS_NOT_ENOUGH_DATA;
 }
 
 // Paragraph 9.4
 static int ParseFilterHeader(VP8BitReader* br, VP8Decoder* const dec) {
-  VP8FilterHeader* const hdr = &dec->filter_hdr_;
-  hdr->simple_    = VP8Get(br, "global-header");
-  hdr->level_     = VP8GetValue(br, 6, "global-header");
-  hdr->sharpness_ = VP8GetValue(br, 3, "global-header");
-  hdr->use_lf_delta_ = VP8Get(br, "global-header");
-  if (hdr->use_lf_delta_) {
+  VP8FilterHeader* const hdr = &dec->filter_hdr;
+  hdr->simple    = VP8Get(br, "global-header");
+  hdr->level     = VP8GetValue(br, 6, "global-header");
+  hdr->sharpness = VP8GetValue(br, 3, "global-header");
+  hdr->use_lf_delta = VP8Get(br, "global-header");
+  if (hdr->use_lf_delta) {
     if (VP8Get(br, "global-header")) {   // update lf-delta?
       int i;
       for (i = 0; i < NUM_REF_LF_DELTAS; ++i) {
         if (VP8Get(br, "global-header")) {
-          hdr->ref_lf_delta_[i] = VP8GetSignedValue(br, 6, "global-header");
+          hdr->ref_lf_delta[i] = VP8GetSignedValue(br, 6, "global-header");
         }
       }
       for (i = 0; i < NUM_MODE_LF_DELTAS; ++i) {
         if (VP8Get(br, "global-header")) {
-          hdr->mode_lf_delta_[i] = VP8GetSignedValue(br, 6, "global-header");
+          hdr->mode_lf_delta[i] = VP8GetSignedValue(br, 6, "global-header");
         }
       }
     }
   }
-  dec->filter_type_ = (hdr->level_ == 0) ? 0 : hdr->simple_ ? 1 : 2;
-  return !br->eof_;
+  dec->filter_type = (hdr->level == 0) ? 0 : hdr->simple ? 1 : 2;
+  return !br->eof;
 }
 
 // Topmost call
@@ -282,16 +297,16 @@ int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io) {
   // Paragraph 9.1
   {
     const uint32_t bits = buf[0] | (buf[1] << 8) | (buf[2] << 16);
-    frm_hdr = &dec->frm_hdr_;
-    frm_hdr->key_frame_ = !(bits & 1);
-    frm_hdr->profile_ = (bits >> 1) & 7;
-    frm_hdr->show_ = (bits >> 4) & 1;
-    frm_hdr->partition_length_ = (bits >> 5);
-    if (frm_hdr->profile_ > 3) {
+    frm_hdr = &dec->frm_hdr;
+    frm_hdr->key_frame = !(bits & 1);
+    frm_hdr->profile = (bits >> 1) & 7;
+    frm_hdr->show = (bits >> 4) & 1;
+    frm_hdr->partition_length = (bits >> 5);
+    if (frm_hdr->profile > 3) {
       return VP8SetError(dec, VP8_STATUS_BITSTREAM_ERROR,
                          "Incorrect keyframe parameters.");
     }
-    if (!frm_hdr->show_) {
+    if (!frm_hdr->show) {
       return VP8SetError(dec, VP8_STATUS_UNSUPPORTED_FEATURE,
                          "Frame not displayable.");
     }
@@ -299,8 +314,8 @@ int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io) {
     buf_size -= 3;
   }
 
-  pic_hdr = &dec->pic_hdr_;
-  if (frm_hdr->key_frame_) {
+  pic_hdr = &dec->pic_hdr;
+  if (frm_hdr->key_frame) {
     // Paragraph 9.2
     if (buf_size < 7) {
       return VP8SetError(dec, VP8_STATUS_NOT_ENOUGH_DATA,
@@ -310,20 +325,20 @@ int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io) {
       return VP8SetError(dec, VP8_STATUS_BITSTREAM_ERROR,
                          "Bad code word");
     }
-    pic_hdr->width_ = ((buf[4] << 8) | buf[3]) & 0x3fff;
-    pic_hdr->xscale_ = buf[4] >> 6;   // ratio: 1, 5/4 5/3 or 2
-    pic_hdr->height_ = ((buf[6] << 8) | buf[5]) & 0x3fff;
-    pic_hdr->yscale_ = buf[6] >> 6;
+    pic_hdr->width = ((buf[4] << 8) | buf[3]) & 0x3fff;
+    pic_hdr->xscale = buf[4] >> 6;   // ratio: 1, 5/4 5/3 or 2
+    pic_hdr->height = ((buf[6] << 8) | buf[5]) & 0x3fff;
+    pic_hdr->yscale = buf[6] >> 6;
     buf += 7;
     buf_size -= 7;
 
-    dec->mb_w_ = (pic_hdr->width_ + 15) >> 4;
-    dec->mb_h_ = (pic_hdr->height_ + 15) >> 4;
+    dec->mb_w = (pic_hdr->width + 15) >> 4;
+    dec->mb_h = (pic_hdr->height + 15) >> 4;
 
     // Setup default output area (can be later modified during io->setup())
-    io->width = pic_hdr->width_;
-    io->height = pic_hdr->height_;
-    // IMPORTANT! use some sane dimensions in crop_* and scaled_* fields.
+    io->width = pic_hdr->width;
+    io->height = pic_hdr->height;
+    // IMPORTANT! use some sane dimensions in crop* and scaled* fields.
     // So they can be used interchangeably without always testing for
     // 'use_cropping'.
     io->use_cropping = 0;
@@ -338,27 +353,27 @@ int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io) {
     io->mb_w = io->width;   // for soundness
     io->mb_h = io->height;  // ditto
 
-    VP8ResetProba(&dec->proba_);
-    ResetSegmentHeader(&dec->segment_hdr_);
+    VP8ResetProba(&dec->proba);
+    ResetSegmentHeader(&dec->segment_hdr);
   }
 
-  // Check if we have all the partition #0 available, and initialize dec->br_
+  // Check if we have all the partition #0 available, and initialize dec->br
   // to read this partition (and this partition only).
-  if (frm_hdr->partition_length_ > buf_size) {
+  if (frm_hdr->partition_length > buf_size) {
     return VP8SetError(dec, VP8_STATUS_NOT_ENOUGH_DATA,
                        "bad partition length");
   }
 
-  br = &dec->br_;
-  VP8InitBitReader(br, buf, frm_hdr->partition_length_);
-  buf += frm_hdr->partition_length_;
-  buf_size -= frm_hdr->partition_length_;
+  br = &dec->br;
+  VP8InitBitReader(br, buf, frm_hdr->partition_length);
+  buf += frm_hdr->partition_length;
+  buf_size -= frm_hdr->partition_length;
 
-  if (frm_hdr->key_frame_) {
-    pic_hdr->colorspace_ = VP8Get(br, "global-header");
-    pic_hdr->clamp_type_ = VP8Get(br, "global-header");
+  if (frm_hdr->key_frame) {
+    pic_hdr->colorspace = VP8Get(br, "global-header");
+    pic_hdr->clamp_type = VP8Get(br, "global-header");
   }
-  if (!ParseSegmentHeader(br, &dec->segment_hdr_, &dec->proba_)) {
+  if (!ParseSegmentHeader(br, &dec->segment_hdr, &dec->proba)) {
     return VP8SetError(dec, VP8_STATUS_BITSTREAM_ERROR,
                        "cannot parse segment header");
   }
@@ -376,17 +391,17 @@ int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io) {
   VP8ParseQuant(dec);
 
   // Frame buffer marking
-  if (!frm_hdr->key_frame_) {
+  if (!frm_hdr->key_frame) {
     return VP8SetError(dec, VP8_STATUS_UNSUPPORTED_FEATURE,
                        "Not a key frame.");
   }
 
-  VP8Get(br, "global-header");   // ignore the value of update_proba_
+  VP8Get(br, "global-header");   // ignore the value of 'update_proba'
 
   VP8ParseProba(br, dec);
 
   // sanitized state
-  dec->ready_ = 1;
+  dec->ready = 1;
   return 1;
 }
 
@@ -439,17 +454,17 @@ static int GetLargeValue(VP8BitReader* const br, const uint8_t* const p) {
 static int GetCoeffsFast(VP8BitReader* const br,
                          const VP8BandProbas* const prob[],
                          int ctx, const quant_t dq, int n, int16_t* out) {
-  const uint8_t* p = prob[n]->probas_[ctx];
+  const uint8_t* p = prob[n]->probas[ctx];
   for (; n < 16; ++n) {
     if (!VP8GetBit(br, p[0], "coeffs")) {
       return n;  // previous coeff was last non-zero coeff
     }
     while (!VP8GetBit(br, p[1], "coeffs")) {       // sequence of zero coeffs
-      p = prob[++n]->probas_[0];
+      p = prob[++n]->probas[0];
       if (n == 16) return 16;
     }
     {        // non zero coeff
-      const VP8ProbaArray* const p_ctx = &prob[n + 1]->probas_[0];
+      const VP8ProbaArray* const p_ctx = &prob[n + 1]->probas[0];
       int v;
       if (!VP8GetBit(br, p[2], "coeffs")) {
         v = 1;
@@ -469,17 +484,17 @@ static int GetCoeffsFast(VP8BitReader* const br,
 static int GetCoeffsAlt(VP8BitReader* const br,
                         const VP8BandProbas* const prob[],
                         int ctx, const quant_t dq, int n, int16_t* out) {
-  const uint8_t* p = prob[n]->probas_[ctx];
+  const uint8_t* p = prob[n]->probas[ctx];
   for (; n < 16; ++n) {
     if (!VP8GetBitAlt(br, p[0], "coeffs")) {
       return n;  // previous coeff was last non-zero coeff
     }
     while (!VP8GetBitAlt(br, p[1], "coeffs")) {       // sequence of zero coeffs
-      p = prob[++n]->probas_[0];
+      p = prob[++n]->probas[0];
       if (n == 16) return 16;
     }
     {        // non zero coeff
-      const VP8ProbaArray* const p_ctx = &prob[n + 1]->probas_[0];
+      const VP8ProbaArray* const p_ctx = &prob[n + 1]->probas[0];
       int v;
       if (!VP8GetBitAlt(br, p[2], "coeffs")) {
         v = 1;
@@ -512,12 +527,12 @@ static WEBP_INLINE uint32_t NzCodeBits(uint32_t nz_coeffs, int nz, int dc_nz) {
 
 static int ParseResiduals(VP8Decoder* const dec,
                           VP8MB* const mb, VP8BitReader* const token_br) {
-  const VP8BandProbas* (* const bands)[16 + 1] = dec->proba_.bands_ptr_;
+  const VP8BandProbas* (* const bands)[16 + 1] = dec->proba.bands_ptr;
   const VP8BandProbas* const * ac_proba;
-  VP8MBData* const block = dec->mb_data_ + dec->mb_x_;
-  const VP8QuantMatrix* const q = &dec->dqm_[block->segment_];
-  int16_t* dst = block->coeffs_;
-  VP8MB* const left_mb = dec->mb_info_ - 1;
+  VP8MBData* const block = dec->mb_data + dec->mb_x;
+  const VP8QuantMatrix* const q = &dec->dqm[block->segment];
+  int16_t* dst = block->coeffs;
+  VP8MB* const left_mb = dec->mb_info - 1;
   uint8_t tnz, lnz;
   uint32_t non_zero_y = 0;
   uint32_t non_zero_uv = 0;
@@ -526,11 +541,11 @@ static int ParseResiduals(VP8Decoder* const dec,
   int first;
 
   memset(dst, 0, 384 * sizeof(*dst));
-  if (!block->is_i4x4_) {    // parse DC
+  if (!block->is_i4x4) {    // parse DC
     int16_t dc[16] = { 0 };
-    const int ctx = mb->nz_dc_ + left_mb->nz_dc_;
-    const int nz = GetCoeffs(token_br, bands[1], ctx, q->y2_mat_, 0, dc);
-    mb->nz_dc_ = left_mb->nz_dc_ = (nz > 0);
+    const int ctx = mb->nz_dc + left_mb->nz_dc;
+    const int nz = GetCoeffs(token_br, bands[1], ctx, q->y2_mat, 0, dc);
+    mb->nz_dc = left_mb->nz_dc = (nz > 0);
     if (nz > 1) {   // more than just the DC -> perform the full transform
       VP8TransformWHT(dc, dst);
     } else {        // only DC is non-zero -> inlined simplified transform
@@ -545,14 +560,14 @@ static int ParseResiduals(VP8Decoder* const dec,
     ac_proba = bands[3];
   }
 
-  tnz = mb->nz_ & 0x0f;
-  lnz = left_mb->nz_ & 0x0f;
+  tnz = mb->nz & 0x0f;
+  lnz = left_mb->nz & 0x0f;
   for (y = 0; y < 4; ++y) {
     int l = lnz & 1;
     uint32_t nz_coeffs = 0;
     for (x = 0; x < 4; ++x) {
       const int ctx = l + (tnz & 1);
-      const int nz = GetCoeffs(token_br, ac_proba, ctx, q->y1_mat_, first, dst);
+      const int nz = GetCoeffs(token_br, ac_proba, ctx, q->y1_mat, first, dst);
       l = (nz > first);
       tnz = (tnz >> 1) | (l << 7);
       nz_coeffs = NzCodeBits(nz_coeffs, nz, dst[0] != 0);
@@ -567,13 +582,13 @@ static int ParseResiduals(VP8Decoder* const dec,
 
   for (ch = 0; ch < 4; ch += 2) {
     uint32_t nz_coeffs = 0;
-    tnz = mb->nz_ >> (4 + ch);
-    lnz = left_mb->nz_ >> (4 + ch);
+    tnz = mb->nz >> (4 + ch);
+    lnz = left_mb->nz >> (4 + ch);
     for (y = 0; y < 2; ++y) {
       int l = lnz & 1;
       for (x = 0; x < 2; ++x) {
         const int ctx = l + (tnz & 1);
-        const int nz = GetCoeffs(token_br, bands[2], ctx, q->uv_mat_, 0, dst);
+        const int nz = GetCoeffs(token_br, bands[2], ctx, q->uv_mat, 0, dst);
         l = (nz > 0);
         tnz = (tnz >> 1) | (l << 3);
         nz_coeffs = NzCodeBits(nz_coeffs, nz, dst[0] != 0);
@@ -587,16 +602,16 @@ static int ParseResiduals(VP8Decoder* const dec,
     out_t_nz |= (tnz << 4) << ch;
     out_l_nz |= (lnz & 0xf0) << ch;
   }
-  mb->nz_ = out_t_nz;
-  left_mb->nz_ = out_l_nz;
+  mb->nz = out_t_nz;
+  left_mb->nz = out_l_nz;
 
-  block->non_zero_y_ = non_zero_y;
-  block->non_zero_uv_ = non_zero_uv;
+  block->non_zero_y = non_zero_y;
+  block->non_zero_uv = non_zero_uv;
 
   // We look at the mode-code of each block and check if some blocks have less
   // than three non-zero coeffs (code < 2). This is to avoid dithering flat and
   // empty blocks.
-  block->dither_ = (non_zero_uv & 0xaaaa) ? 0 : q->dither_;
+  block->dither = (non_zero_uv & 0xaaaa) ? 0 : q->dither;
 
   return !(non_zero_y | non_zero_uv);  // will be used for further optimization
 }
@@ -605,50 +620,50 @@ static int ParseResiduals(VP8Decoder* const dec,
 // Main loop
 
 int VP8DecodeMB(VP8Decoder* const dec, VP8BitReader* const token_br) {
-  VP8MB* const left = dec->mb_info_ - 1;
-  VP8MB* const mb = dec->mb_info_ + dec->mb_x_;
-  VP8MBData* const block = dec->mb_data_ + dec->mb_x_;
-  int skip = dec->use_skip_proba_ ? block->skip_ : 0;
+  VP8MB* const left = dec->mb_info - 1;
+  VP8MB* const mb = dec->mb_info + dec->mb_x;
+  VP8MBData* const block = dec->mb_data + dec->mb_x;
+  int skip = dec->use_skip_proba ? block->skip : 0;
 
   if (!skip) {
     skip = ParseResiduals(dec, mb, token_br);
   } else {
-    left->nz_ = mb->nz_ = 0;
-    if (!block->is_i4x4_) {
-      left->nz_dc_ = mb->nz_dc_ = 0;
+    left->nz = mb->nz = 0;
+    if (!block->is_i4x4) {
+      left->nz_dc = mb->nz_dc = 0;
     }
-    block->non_zero_y_ = 0;
-    block->non_zero_uv_ = 0;
-    block->dither_ = 0;
+    block->non_zero_y = 0;
+    block->non_zero_uv = 0;
+    block->dither = 0;
   }
 
-  if (dec->filter_type_ > 0) {  // store filter info
-    VP8FInfo* const finfo = dec->f_info_ + dec->mb_x_;
-    *finfo = dec->fstrengths_[block->segment_][block->is_i4x4_];
-    finfo->f_inner_ |= !skip;
+  if (dec->filter_type > 0) {  // store filter info
+    VP8FInfo* const finfo = dec->f_info + dec->mb_x;
+    *finfo = dec->fstrengths[block->segment][block->is_i4x4];
+    finfo->f_inner |= !skip;
   }
 
-  return !token_br->eof_;
+  return !token_br->eof;
 }
 
 void VP8InitScanline(VP8Decoder* const dec) {
-  VP8MB* const left = dec->mb_info_ - 1;
-  left->nz_ = 0;
-  left->nz_dc_ = 0;
-  memset(dec->intra_l_, B_DC_PRED, sizeof(dec->intra_l_));
-  dec->mb_x_ = 0;
+  VP8MB* const left = dec->mb_info - 1;
+  left->nz = 0;
+  left->nz_dc = 0;
+  memset(dec->intra_l, B_DC_PRED, sizeof(dec->intra_l));
+  dec->mb_x = 0;
 }
 
 static int ParseFrame(VP8Decoder* const dec, VP8Io* io) {
-  for (dec->mb_y_ = 0; dec->mb_y_ < dec->br_mb_y_; ++dec->mb_y_) {
+  for (dec->mb_y = 0; dec->mb_y < dec->br_mb_y; ++dec->mb_y) {
     // Parse bitstream for this row.
     VP8BitReader* const token_br =
-        &dec->parts_[dec->mb_y_ & dec->num_parts_minus_one_];
-    if (!VP8ParseIntraModeRow(&dec->br_, dec)) {
+        &dec->parts[dec->mb_y & dec->num_parts_minus_one];
+    if (!VP8ParseIntraModeRow(&dec->br, dec)) {
       return VP8SetError(dec, VP8_STATUS_NOT_ENOUGH_DATA,
                          "Premature end-of-partition0 encountered.");
     }
-    for (; dec->mb_x_ < dec->mb_w_; ++dec->mb_x_) {
+    for (; dec->mb_x < dec->mb_w; ++dec->mb_x) {
       if (!VP8DecodeMB(dec, token_br)) {
         return VP8SetError(dec, VP8_STATUS_NOT_ENOUGH_DATA,
                            "Premature end-of-file encountered.");
@@ -661,8 +676,8 @@ static int ParseFrame(VP8Decoder* const dec, VP8Io* io) {
       return VP8SetError(dec, VP8_STATUS_USER_ABORT, "Output aborted.");
     }
   }
-  if (dec->mt_method_ > 0) {
-    if (!WebPGetWorkerInterface()->Sync(&dec->worker_)) return 0;
+  if (dec->mt_method > 0) {
+    if (!WebPGetWorkerInterface()->Sync(&dec->worker)) return 0;
   }
 
   return 1;
@@ -679,12 +694,12 @@ int VP8Decode(VP8Decoder* const dec, VP8Io* const io) {
                        "NULL VP8Io parameter in VP8Decode().");
   }
 
-  if (!dec->ready_) {
+  if (!dec->ready) {
     if (!VP8GetHeaders(dec, io)) {
       return 0;
     }
   }
-  assert(dec->ready_);
+  assert(dec->ready);
 
   // Finish setting up the decoding parameter. Will call io->setup().
   ok = (VP8EnterCritical(dec, io) == VP8_STATUS_OK);
@@ -704,7 +719,7 @@ int VP8Decode(VP8Decoder* const dec, VP8Io* const io) {
     return 0;
   }
 
-  dec->ready_ = 0;
+  dec->ready = 0;
   return ok;
 }
 
@@ -712,13 +727,13 @@ void VP8Clear(VP8Decoder* const dec) {
   if (dec == NULL) {
     return;
   }
-  WebPGetWorkerInterface()->End(&dec->worker_);
+  WebPGetWorkerInterface()->End(&dec->worker);
   WebPDeallocateAlphaMemory(dec);
-  WebPSafeFree(dec->mem_);
-  dec->mem_ = NULL;
-  dec->mem_size_ = 0;
-  memset(&dec->br_, 0, sizeof(dec->br_));
-  dec->ready_ = 0;
+  WebPSafeFree(dec->mem);
+  dec->mem = NULL;
+  dec->mem_size = 0;
+  memset(&dec->br, 0, sizeof(dec->br));
+  dec->ready = 0;
 }
 
 //------------------------------------------------------------------------------

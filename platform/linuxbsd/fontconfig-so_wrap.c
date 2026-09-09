@@ -210,7 +210,7 @@
 #define FcStrListDone FcStrListDone_dylibloader_orig_fontconfig
 #define FcConfigParseAndLoad FcConfigParseAndLoad_dylibloader_orig_fontconfig
 #define FcConfigParseAndLoadFromMemory FcConfigParseAndLoadFromMemory_dylibloader_orig_fontconfig
-#include "thirdparty/linuxbsd_headers/fontconfig/fontconfig.h"
+#include <thirdparty/linuxbsd_headers/fontconfig/fontconfig.h>
 #undef FcBlanksCreate
 #undef FcBlanksDestroy
 #undef FcBlanksAdd

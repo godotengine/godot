@@ -19,7 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
+//#version 450
 
 #extension GL_GOOGLE_include_directive : require
 #extension GL_EXT_samplerless_texture_functions : require
@@ -35,6 +35,7 @@
 #endif
 #define FSR2_BIND_SRV_INTERNAL_UPSCALED                      3
 #define FSR2_BIND_SRV_LOCK_STATUS                            4
+//#define FSR2_BIND_SRV_INPUT_DEPTH_CLIP                       5
 #define FSR2_BIND_SRV_PREPARED_INPUT_COLOR                   6
 #define FSR2_BIND_SRV_LUMA_INSTABILITY                       7
 #define FSR2_BIND_SRV_LANCZOS_LUT                            8
@@ -51,11 +52,9 @@
 
 #define FSR2_BIND_CB_FSR2                                    18
 
-// -- GODOT start --
 #if FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS
 #define FSR2_BIND_SRV_INPUT_DEPTH                            5
 #endif
-// -- GODOT end --
 
 #include "ffx_fsr2_callbacks_glsl.h"
 #include "ffx_fsr2_common.h"

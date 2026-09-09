@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeBlendTree" inherits="AnimationRootNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationNodeBlendTree" inherits="AnimationRootNode" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A sub-tree of many type [AnimationNode]s used for complex animations. Used by [AnimationTree].
 	</brief_description>
@@ -42,6 +42,12 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns the sub animation node with the specified [param name].
+			</description>
+		</method>
+		<method name="get_node_list" qualifiers="const">
+			<return type="StringName[]" />
+			<description>
+				Returns a list containing the names of all sub animation nodes in this blend tree.
 			</description>
 		</method>
 		<method name="get_node_position" qualifiers="const">

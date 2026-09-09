@@ -5,6 +5,12 @@ public partial class ScriptBoilerplate : Node
     private NodePath _nodePath;
     private int _velocity;
 
+    [IgnoreMember]
+    private int _ignoredField;
+
+    [IgnoreMember]
+    private int IgnoredProperty { get; set; }
+
     public override void _Process(double delta)
     {
         _ = delta;
@@ -24,7 +30,7 @@ public partial class ScriptBoilerplate : Node
     }
 }
 
-partial struct OuterClass
+public partial struct OuterClass
 {
     public partial class NestedClass : RefCounted
     {

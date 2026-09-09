@@ -13,7 +13,7 @@
  *
  * @brief Struct for returning size information about an image format.
  *
- * @author Mark Callow, www.edgewise-consulting.com
+ * @author Mark Callow, github.com/MarkCallow
  */
 
 #ifndef _FORMATSIZE_H_
@@ -27,6 +27,7 @@ typedef enum ktxFormatSizeFlagBits {
     KTX_FORMAT_SIZE_PALETTIZED_BIT            = 0x00000004,
     KTX_FORMAT_SIZE_DEPTH_BIT                 = 0x00000008,
     KTX_FORMAT_SIZE_STENCIL_BIT               = 0x00000010,
+    KTX_FORMAT_SIZE_YUVSDA_BIT                = 0x00000020,
 } ktxFormatSizeFlagBits;
 
 typedef ktx_uint32_t ktxFormatSizeFlags;

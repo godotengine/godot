@@ -38,10 +38,10 @@ struct hb_bit_set_t
   ~hb_bit_set_t () = default;
 
   hb_bit_set_t (const hb_bit_set_t& other) : hb_bit_set_t () { set (other, true); }
-  hb_bit_set_t ( hb_bit_set_t&& other) : hb_bit_set_t () { hb_swap (*this, other); }
+  hb_bit_set_t ( hb_bit_set_t&& other)  noexcept : hb_bit_set_t () { hb_swap (*this, other); }
   hb_bit_set_t& operator= (const hb_bit_set_t& other) { set (other); return *this; }
-  hb_bit_set_t& operator= (hb_bit_set_t&& other) { hb_swap (*this, other); return *this; }
-  friend void swap (hb_bit_set_t &a, hb_bit_set_t &b)
+  hb_bit_set_t& operator= (hb_bit_set_t&& other)  noexcept { hb_swap (*this, other); return *this; }
+  friend void swap (hb_bit_set_t &a, hb_bit_set_t &b) noexcept
   {
     if (likely (!a.successful || !b.successful))
       return;
@@ -77,7 +77,7 @@ struct hb_bit_set_t
 
   bool successful = true; /* Allocations successful */
   mutable unsigned int population = 0;
-  mutable hb_atomic_int_t last_page_lookup = 0;
+  mutable hb_atomic_t<unsigned> last_page_lookup = 0;
   hb_sorted_vector_t<page_map_t> page_map;
   hb_vector_t<page_t> pages;
 
@@ -88,12 +88,13 @@ struct hb_bit_set_t
   {
     if (unlikely (!successful)) return false;
 
-    if (pages.length == 0 && count == 1)
+    if (pages.length < count && (unsigned) pages.allocated < count && count <= 2)
       exact_size = true; // Most sets are small and local
 
-    if (unlikely (!pages.resize (count, clear, exact_size) || !page_map.resize (count, clear, exact_size)))
+    if (unlikely (!pages.resize_full (count, clear, exact_size) ||
+	!page_map.resize_full (count, clear, false)))
     {
-      pages.resize (page_map.length, clear, exact_size);
+      pages.resize_full (page_map.length, clear, exact_size);
       successful = false;
       return false;
     }
@@ -107,17 +108,24 @@ struct hb_bit_set_t
     page_map.alloc (sz);
   }
 
-  void reset ()
+  hb_bit_set_t& reset ()
   {
     successful = true;
     clear ();
+    return *this;
   }
 
   void clear ()
   {
-    resize (0);
-    if (likely (successful))
-      population = 0;
+    /* Early-out on already-empty.  Protects the Null singleton
+     * (which is zero-initialized) from any writes.  Any non-empty
+     * instance is a real heap object with writable storage, so
+     * clearing through the vector's always-safe clear() is fine
+     * even if we entered error state. */
+    if (!pages.length && !population) return;
+    pages.clear ();
+    page_map.clear ();
+    population = 0;
   }
   bool is_empty () const
   {
@@ -152,6 +160,14 @@ struct hb_bit_set_t
     dirty ();
     page_t *page = page_for (g, true); if (unlikely (!page)) return;
     page->add (g);
+  }
+  void add_bits (hb_codepoint_t g, uint64_t bits)
+  {
+    if (unlikely (!successful) || unlikely (!bits)) return;
+    assert (!(g & (page_t::ELT_BITS - 1)));
+    dirty ();
+    page_t *page = page_for (g, true); if (unlikely (!page)) return;
+    page->add_bits (g, bits);
   }
   bool add_range (hb_codepoint_t a, hb_codepoint_t b)
   {
@@ -283,6 +299,16 @@ struct hb_bit_set_t
     dirty ();
     page->del (g);
   }
+  void del_bits (hb_codepoint_t g, uint64_t bits)
+  {
+    if (unlikely (!successful) || unlikely (!bits)) return;
+    assert (!(g & (page_t::ELT_BITS - 1)));
+    page_t *page = page_for (g);
+    if (!page)
+      return;
+    dirty ();
+    page->del_bits (g, bits);
+  }
 
   private:
   void del_pages (int ds, int de)
@@ -297,9 +323,9 @@ struct hb_bit_set_t
       unsigned int write_index = 0;
       for (unsigned int i = 0; i < page_map.length; i++)
       {
-	int m = (int) page_map[i].major;
+	int m = (int) page_map.arrayZ[i].major;
 	if (m < ds || de < m)
-	  page_map[write_index++] = page_map[i];
+	  page_map.arrayZ[write_index++] = page_map.arrayZ[i];
       }
       compact (compact_workspace, write_index);
       resize (write_index);
@@ -345,6 +371,7 @@ struct hb_bit_set_t
       return false;
     return page->get (g);
   }
+  bool may_have (hb_codepoint_t g) const { return get (g); }
 
   /* Has interface. */
   bool operator [] (hb_codepoint_t k) const { return get (k); }
@@ -358,6 +385,31 @@ struct hb_bit_set_t
   hb_bit_set_t& operator << (const hb_codepoint_pair_t& range)
   { add_range (range.first, range.second); return *this; }
 
+  bool intersects (const hb_bit_set_t &other) const
+  {
+    unsigned int na = pages.length;
+    unsigned int nb = other.pages.length;
+
+    unsigned int a = 0, b = 0;
+    for (; a < na && b < nb; )
+    {
+      if (page_map.arrayZ[a].major == other.page_map.arrayZ[b].major)
+      {
+	if (page_at (a).intersects (other.page_at (b)))
+	  return true;
+	a++;
+	b++;
+      }
+      else if (page_map.arrayZ[a].major < other.page_map.arrayZ[b].major)
+	a++;
+      else
+	b++;
+    }
+    return false;
+  }
+  bool may_intersect (const hb_bit_set_t &other) const
+  { return intersects (other); }
+
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
   {
     hb_codepoint_t c = first - 1;
@@ -367,7 +419,7 @@ struct hb_bit_set_t
   {
     if (unlikely (!successful)) return;
     unsigned int count = other.pages.length;
-    if (unlikely (!resize (count, false, exact_size)))
+    if (unlikely (!resize  (count, false, exact_size)))
       return;
     population = other.population;
 
@@ -389,7 +441,7 @@ struct hb_bit_set_t
     {
       if (page_at (a).is_empty ()) { a++; continue; }
       if (other.page_at (b).is_empty ()) { b++; continue; }
-      if (page_map[a].major != other.page_map[b].major ||
+      if (page_map.arrayZ[a].major != other.page_map.arrayZ[b].major ||
 	  !page_at (a).is_equal (other.page_at (b)))
 	return false;
       a++;
@@ -410,23 +462,31 @@ struct hb_bit_set_t
       return false;
 
     uint32_t spi = 0;
-    for (uint32_t lpi = 0; spi < page_map.length && lpi < larger_set.page_map.length; lpi++)
+    uint32_t lpi = 0;
+    while (spi < page_map.length && lpi < larger_set.page_map.length)
     {
-      uint32_t spm = page_map[spi].major;
-      uint32_t lpm = larger_set.page_map[lpi].major;
+      uint32_t spm = page_map.arrayZ[spi].major;
+      uint32_t lpm = larger_set.page_map.arrayZ[lpi].major;
       auto sp = page_at (spi);
 
-      if (spm < lpm && !sp.is_empty ())
-        return false;
-
-      if (lpm < spm)
+      if (spm < lpm) {
+        if (!sp.is_empty ())
+          return false;
+        spi++;
         continue;
+      }
+
+      if (lpm < spm) {
+        lpi++;
+        continue;
+      }
 
       auto lp = larger_set.page_at (lpi);
       if (!sp.is_subset (lp))
         return false;
 
       spi++;
+      lpi++;
     }
 
     while (spi < page_map.length)
@@ -482,7 +542,8 @@ struct hb_bit_set_t
 
   void process_ (hb_bit_page_t::vector_t (*op) (const hb_bit_page_t::vector_t &, const hb_bit_page_t::vector_t &),
 		 bool passthru_left, bool passthru_right,
-		 const hb_bit_set_t &other)
+		 const hb_bit_set_t &other,
+		 hb_vector_t<unsigned> *workspace = nullptr)
   {
     if (unlikely (!successful)) return;
 
@@ -498,12 +559,22 @@ struct hb_bit_set_t
 
     // Pre-allocate the workspace that compact() will need so we can bail on allocation failure
     // before attempting to rewrite the page map.
-    hb_vector_t<unsigned> compact_workspace;
-    if (!passthru_left && unlikely (!allocate_compact_workspace (compact_workspace))) return;
+    hb_vector_t<unsigned> local_workspace;
+    hb_vector_t<unsigned> &compact_workspace = workspace ? *workspace : local_workspace;
+    if (!passthru_left)
+    {
+      bool allocated = workspace ? compact_workspace.resize (pages.length)
+				 : allocate_compact_workspace (compact_workspace);
+      if (unlikely (!allocated))
+      {
+	successful = false;
+	return;
+      }
+    }
 
     for (; a < na && b < nb; )
     {
-      if (page_map[a].major == other.page_map[b].major)
+      if (page_map.arrayZ[a].major == other.page_map.arrayZ[b].major)
       {
 	if (!passthru_left)
 	{
@@ -512,7 +583,7 @@ struct hb_bit_set_t
 	  // passthru_left is set since no left side pages will be removed
 	  // in that case.
 	  if (write_index < a)
-	    page_map[write_index] = page_map[a];
+	    page_map.arrayZ[write_index] = page_map.arrayZ[a];
 	  write_index++;
 	}
 
@@ -520,7 +591,7 @@ struct hb_bit_set_t
 	a++;
 	b++;
       }
-      else if (page_map[a].major < other.page_map[b].major)
+      else if (page_map.arrayZ[a].major < other.page_map.arrayZ[b].major)
       {
 	if (passthru_left)
 	  count++;
@@ -609,13 +680,17 @@ struct hb_bit_set_t
   op_ (const hb_bit_page_t::vector_t &a, const hb_bit_page_t::vector_t &b)
   { return Op{} (a, b); }
   template <typename Op>
-  void process (const Op& op, const hb_bit_set_t &other)
+  void process (const Op& op,
+		const hb_bit_set_t &other,
+		hb_vector_t<unsigned> *workspace = nullptr)
   {
-    process_ (op_<Op>, op (1, 0), op (0, 1), other);
+    process_ (op_<Op>, op (1, 0), op (0, 1), other, workspace);
   }
 
   void union_ (const hb_bit_set_t &other) { process (hb_bitwise_or, other); }
-  void intersect (const hb_bit_set_t &other) { process (hb_bitwise_and, other); }
+  void intersect (const hb_bit_set_t &other,
+		  hb_vector_t<unsigned> *workspace = nullptr)
+  { process (hb_bitwise_and, other, workspace); }
   void subtract (const hb_bit_set_t &other) { process (hb_bitwise_gt, other); }
   void symmetric_difference (const hb_bit_set_t &other) { process (hb_bitwise_xor, other); }
 
@@ -664,6 +739,50 @@ struct hb_bit_set_t
       }
     }
     *codepoint = INVALID;
+    return false;
+  }
+  bool next_bits (hb_codepoint_t *codepoint, uint64_t *bits) const
+  {
+    static_assert (page_t::ELT_BITS == 64, "");
+
+    unsigned int i = 0;
+    unsigned int elt = 0;
+    if (likely (*codepoint != INVALID))
+    {
+      hb_codepoint_t base = *codepoint & -page_t::ELT_BITS;
+      if (unlikely (base >= INVALID - page_t::ELT_BITS + 1))
+        goto done;
+      base += page_t::ELT_BITS;
+
+      unsigned int major = get_major (base);
+      i = last_page_lookup;
+      if (unlikely (i >= page_map.length || page_map.arrayZ[i].major != major))
+      {
+	page_map.bfind (major, &i, HB_NOT_FOUND_STORE_CLOSEST);
+	if (i >= page_map.length)
+	  goto done;
+      }
+      if (page_map.arrayZ[i].major == major)
+	elt = page_remainder (base) / page_t::ELT_BITS;
+    }
+
+    for (; i < page_map.length; i++, elt = 0)
+    {
+      const page_map_t &map = page_map.arrayZ[i];
+      const page_t &page = pages.arrayZ[map.index];
+      for (; elt < page_t::len (); elt++)
+	if (page.v[elt])
+	{
+	  *codepoint = major_start (map.major) + elt * page_t::ELT_BITS;
+	  *bits = page.v[elt];
+	  last_page_lookup = i;
+	  return true;
+	}
+    }
+
+  done:
+    *codepoint = INVALID;
+    *bits = 0;
     return false;
   }
   bool previous (hb_codepoint_t *codepoint) const
@@ -765,8 +884,8 @@ struct hb_bit_set_t
     unsigned int initial_size = size;
     for (unsigned int i = start_page; i < page_map.length && size; i++)
     {
-      uint32_t base = major_start (page_map[i].major);
-      unsigned int n = pages[page_map[i].index].write (base, start_page_value, out, size);
+      uint32_t base = major_start (page_map.arrayZ[i].major);
+      unsigned int n = pages[page_map.arrayZ[i].index].write (base, start_page_value, out, size);
       out += n;
       size -= n;
       start_page_value = 0;
@@ -814,8 +933,8 @@ struct hb_bit_set_t
     hb_codepoint_t next_value = codepoint + 1;
     for (unsigned int i=start_page; i<page_map.length && size; i++)
     {
-      uint32_t base = major_start (page_map[i].major);
-      unsigned int n = pages[page_map[i].index].write_inverted (base, start_page_value, out, size, &next_value);
+      uint32_t base = major_start (page_map.arrayZ[i].major);
+      unsigned int n = pages[page_map.arrayZ[i].index].write_inverted (base, start_page_value, out, size, &next_value);
       out += n;
       size -= n;
       start_page_value = 0;
@@ -841,13 +960,46 @@ struct hb_bit_set_t
     population = pop;
     return pop;
   }
+  bool get_singleton (hb_codepoint_t *codepoint) const
+  {
+    if (has_population ())
+    {
+      if (population != 1) return false;
+      *codepoint = get_min ();
+      return true;
+    }
+
+    hb_codepoint_t singleton = INVALID;
+    for (const auto &map : page_map)
+    {
+      const auto &page = pages.arrayZ[map.index];
+      for (unsigned i = 0; i < page_t::len (); i++)
+      {
+	page_t::elt_t bits = page.v[i];
+	if (!bits) continue;
+	if (singleton != INVALID || (bits & (bits - 1)))
+	  return false;
+	singleton = map.major * page_t::PAGE_BITS +
+		    i * page_t::ELT_BITS + hb_ctz (bits);
+      }
+    }
+
+    if (singleton == INVALID)
+    {
+      population = 0;
+      return false;
+    }
+    population = 1;
+    *codepoint = singleton;
+    return true;
+  }
   hb_codepoint_t get_min () const
   {
     unsigned count = pages.length;
     for (unsigned i = 0; i < count; i++)
     {
-      const auto& map = page_map[i];
-      const auto& page = pages[map.index];
+      const auto& map = page_map.arrayZ[i];
+      const auto& page = pages.arrayZ[map.index];
 
       if (!page.is_empty ())
 	return map.major * page_t::PAGE_BITS + page.get_min ();
@@ -859,8 +1011,8 @@ struct hb_bit_set_t
     unsigned count = pages.length;
     for (signed i = count - 1; i >= 0; i--)
     {
-      const auto& map = page_map[(unsigned) i];
-      const auto& page = pages[map.index];
+      const auto& map = page_map.arrayZ[(unsigned) i];
+      const auto& page = pages.arrayZ[map.index];
 
       if (!page.is_empty ())
 	return map.major * page_t::PAGE_BITS + page.get_max ();
@@ -895,7 +1047,7 @@ struct hb_bit_set_t
     unsigned __len__ () const { return l; }
     iter_t end () const { return iter_t (*s, false); }
     bool operator != (const iter_t& o) const
-    { return s != o.s || v != o.v; }
+    { return v != o.v; }
 
     protected:
     const hb_bit_set_t *s;
@@ -961,7 +1113,7 @@ struct hb_bit_set_t
       return nullptr;
 
     last_page_lookup = i;
-    return &pages.arrayZ[page_map[i].index];
+    return &pages.arrayZ[page_map.arrayZ[i].index];
   }
   page_t &page_at (unsigned int i)
   {

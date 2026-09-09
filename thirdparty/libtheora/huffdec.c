@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
+ * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009,2025           *
+ * by the Xiph.Org Foundation and contributors                      *
+ * https://www.xiph.org/                                            *
  *                                                                  *
  ********************************************************************
 
   function:
-    last mod: $Id$
 
  ********************************************************************/
 
@@ -225,6 +225,7 @@ int oc_huff_tree_unpack(oc_pack_buf *_opb,unsigned char _tokens[256][2]){
         _tokens[ntokens][1]=(unsigned char)(len+neb);
         ntokens++;
       }
+      if(len<=0)break;
       code_bit=0x80000000U>>len-1;
       while(len>0&&(code&code_bit)){
         code^=code_bit;
@@ -436,13 +437,10 @@ static size_t oc_huff_tree_size(const ogg_int16_t *_tree,int _node){
   _src: The array of trees to copy.*/
 int oc_huff_trees_copy(ogg_int16_t *_dst[TH_NHUFFMAN_TABLES],
  const ogg_int16_t *const _src[TH_NHUFFMAN_TABLES]){
-  int total;
   int i;
-  total=0;
   for(i=0;i<TH_NHUFFMAN_TABLES;i++){
     size_t size;
     size=oc_huff_tree_size(_src[i],0);
-    total+=size;
     _dst[i]=(ogg_int16_t *)_ogg_malloc(size*sizeof(*_dst[i]));
     if(_dst[i]==NULL){
       while(i-->0)_ogg_free(_dst[i]);

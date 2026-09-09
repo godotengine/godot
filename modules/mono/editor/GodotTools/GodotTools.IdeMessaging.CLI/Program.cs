@@ -64,14 +64,14 @@ namespace GodotTools.IdeMessaging.CLI
 
                     while (!fwdClient.IsDisposed)
                     {
-                        string firstLine = await inputReader.ReadLineAsync();
+                        string? firstLine = await inputReader.ReadLineAsync();
 
                         if (firstLine == null || firstLine == "QUIT")
                             goto ExitMainLoop;
 
                         string messageId = firstLine;
 
-                        string messageArgcLine = await inputReader.ReadLineAsync();
+                        string? messageArgcLine = await inputReader.ReadLineAsync();
 
                         if (messageArgcLine == null)
                         {
@@ -89,7 +89,7 @@ namespace GodotTools.IdeMessaging.CLI
 
                         for (int i = 0; i < messageArgc; i++)
                         {
-                            string bodyLine = await inputReader.ReadLineAsync();
+                            string? bodyLine = await inputReader.ReadLineAsync();
 
                             if (bodyLine == null)
                             {
@@ -126,29 +126,29 @@ namespace GodotTools.IdeMessaging.CLI
             }
         }
 
-        private static async Task<Response> SendRequest(Client client, string id, MessageContent content)
+        private static async Task<Response?> SendRequest(Client client, string id, MessageContent content)
         {
-            var handlers = new Dictionary<string, Func<Task<Response>>>
+            var handlers = new Dictionary<string, Func<Task<Response?>>>
             {
                 [PlayRequest.Id] = async () =>
                 {
                     var request = JsonConvert.DeserializeObject<PlayRequest>(content.Body);
-                    return await client.SendRequest<PlayResponse>(request);
+                    return await client.SendRequest<PlayResponse>(request!);
                 },
                 [DebugPlayRequest.Id] = async () =>
                 {
                     var request = JsonConvert.DeserializeObject<DebugPlayRequest>(content.Body);
-                    return await client.SendRequest<DebugPlayResponse>(request);
+                    return await client.SendRequest<DebugPlayResponse>(request!);
                 },
                 [ReloadScriptsRequest.Id] = async () =>
                 {
                     var request = JsonConvert.DeserializeObject<ReloadScriptsRequest>(content.Body);
-                    return await client.SendRequest<ReloadScriptsResponse>(request);
+                    return await client.SendRequest<ReloadScriptsResponse>(request!);
                 },
                 [CodeCompletionRequest.Id] = async () =>
                 {
                     var request = JsonConvert.DeserializeObject<CodeCompletionRequest>(content.Body);
-                    return await client.SendRequest<CodeCompletionResponse>(request);
+                    return await client.SendRequest<CodeCompletionResponse>(request!);
                 }
             };
 

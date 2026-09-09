@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamPlaybackPlaylist" inherits="AudioStreamPlayback" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Playback class used for [AudioStreamPlaylist].
+	</brief_description>
+	<description>
+		Playback component of [AudioStreamPlaylist]. Handles the playback of multiple [AudioStream]s in sequence.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

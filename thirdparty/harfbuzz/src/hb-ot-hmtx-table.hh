@@ -30,6 +30,7 @@
 #include "hb-open-type.hh"
 #include "hb-ot-maxp-table.hh"
 #include "hb-ot-hhea-table.hh"
+#include "hb-ot-os2-table.hh"
 #include "hb-ot-var-hvar-table.hh"
 #include "hb-ot-var-mvar-table.hh"
 #include "hb-ot-metrics.hh"
@@ -42,16 +43,6 @@
  */
 #define HB_OT_TAG_hmtx HB_TAG('h','m','t','x')
 #define HB_OT_TAG_vmtx HB_TAG('v','m','t','x')
-
-
-HB_INTERNAL bool
-_glyf_get_leading_bearing_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical, int *lsb);
-
-HB_INTERNAL unsigned
-_glyf_get_advance_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical);
-
-HB_INTERNAL bool
-_glyf_get_leading_bearing_without_var_unscaled (hb_face_t *face, hb_codepoint_t gid, bool is_vertical, int *lsb);
 
 
 namespace OT {
@@ -145,6 +136,29 @@ struct hmtxvmtx
         table->minTrailingBearing = min_rsb;
         table->maxExtent = max_extent;
       }
+
+      if (T::is_horizontal)
+      {
+        const auto &OS2 = *c->plan->source->table.OS2;
+        if (OS2.has_data () &&
+            table->ascender == OS2.sTypoAscender &&
+            table->descender == OS2.sTypoDescender &&
+            table->lineGap == OS2.sTypoLineGap)
+        {
+          table->ascender = static_cast<int> (roundf (OS2.sTypoAscender +
+                                                      MVAR.get_var (HB_OT_METRICS_TAG_HORIZONTAL_ASCENDER,
+                                                                    c->plan->normalized_coords.arrayZ,
+                                                                    c->plan->normalized_coords.length)));
+          table->descender = static_cast<int> (roundf (OS2.sTypoDescender +
+                                                       MVAR.get_var (HB_OT_METRICS_TAG_HORIZONTAL_DESCENDER,
+                                                                     c->plan->normalized_coords.arrayZ,
+                                                                     c->plan->normalized_coords.length)));
+          table->lineGap = static_cast<int> (roundf (OS2.sTypoLineGap +
+                                                     MVAR.get_var (HB_OT_METRICS_TAG_HORIZONTAL_LINE_GAP,
+                                                                   c->plan->normalized_coords.arrayZ,
+                                                                   c->plan->normalized_coords.length)));
+        }
+      }
     }
 #endif
 
@@ -158,7 +172,7 @@ struct hmtxvmtx
 	   hb_requires (hb_is_iterator (Iterator))>
   void serialize (hb_serialize_context_t *c,
 		  Iterator it,
-		  const hb_vector_t<hb_codepoint_pair_t> new_to_old_gid_list,
+		  hb_array_t<const hb_codepoint_pair_t> new_to_old_gid_list,
 		  unsigned num_long_metrics,
                   unsigned total_num_metrics)
   {
@@ -213,7 +227,7 @@ struct hmtxvmtx
 
     auto it =
     + hb_iter (c->plan->new_to_old_gid_list)
-    | hb_map ([c, &_mtx, mtx_map] (hb_codepoint_pair_t _)
+    | hb_map ([&_mtx, mtx_map] (hb_codepoint_pair_t _)
 	      {
 		hb_codepoint_t new_gid = _.first;
 		hb_codepoint_t old_gid = _.second;
@@ -222,8 +236,7 @@ struct hmtxvmtx
 		if (!mtx_map->has (new_gid, &v))
 		{
 		  int lsb = 0;
-		  if (!_mtx.get_leading_bearing_without_var_unscaled (old_gid, &lsb))
-		    (void) _glyf_get_leading_bearing_without_var_unscaled (c->plan->source, old_gid, !T::is_horizontal, &lsb);
+		  _mtx.get_leading_bearing_without_var_unscaled (old_gid, &lsb);
 		  return hb_pair (_mtx.get_advance_without_var_unscaled (old_gid), +lsb);
 		}
 		return *v;
@@ -302,43 +315,23 @@ struct hmtxvmtx
 
     bool has_data () const { return (bool) num_bearings; }
 
-    bool get_leading_bearing_without_var_unscaled (hb_codepoint_t glyph,
+    void get_leading_bearing_without_var_unscaled (hb_codepoint_t glyph,
 						   int *lsb) const
     {
       if (glyph < num_long_metrics)
       {
 	*lsb = table->longMetricZ[glyph].sb;
-	return true;
+	return;
       }
 
       if (unlikely (glyph >= num_bearings))
-	return false;
+      {
+        *lsb = 0;
+	return;
+      }
 
       const FWORD *bearings = (const FWORD *) &table->longMetricZ[num_long_metrics];
       *lsb = bearings[glyph - num_long_metrics];
-      return true;
-    }
-
-    bool get_leading_bearing_with_var_unscaled (hb_font_t *font,
-						hb_codepoint_t glyph,
-						int *lsb) const
-    {
-      if (!font->num_coords)
-	return get_leading_bearing_without_var_unscaled (glyph, lsb);
-
-#ifndef HB_NO_VAR
-      float delta;
-      if (var_table->get_lsb_delta_unscaled (glyph, font->coords, font->num_coords, &delta) &&
-	  get_leading_bearing_without_var_unscaled (glyph, lsb))
-      {
-	*lsb += roundf (delta);
-	return true;
-      }
-
-      return _glyf_get_leading_bearing_with_var_unscaled (font, glyph, T::tableTag == HB_OT_TAG_vmtx, lsb);
-#else
-      return false;
-#endif
     }
 
     unsigned int get_advance_without_var_unscaled (hb_codepoint_t glyph) const
@@ -372,26 +365,17 @@ struct hmtxvmtx
       return advances[hb_min (glyph - num_bearings, num_advances - num_bearings - 1)];
     }
 
-    unsigned get_advance_with_var_unscaled (hb_codepoint_t  glyph,
-					    hb_font_t      *font,
-					    VariationStore::cache_t *store_cache = nullptr) const
+#ifndef HB_NO_VAR
+    unsigned get_advance_with_var_unscaled (hb_codepoint_t     glyph,
+					    hb_font_t         *font,
+					    hb_scalar_cache_t *store_cache = nullptr) const
     {
       unsigned int advance = get_advance_without_var_unscaled (glyph);
-
-#ifndef HB_NO_VAR
-      if (unlikely (glyph >= num_bearings) || !font->num_coords)
-	return advance;
-
-      if (var_table.get_length ())
-	return advance + roundf (var_table->get_advance_delta_unscaled (glyph,
-									font->coords, font->num_coords,
-									store_cache));
-
-      return _glyf_get_advance_with_var_unscaled (font, glyph, T::tableTag == HB_OT_TAG_vmtx);
-#else
-      return advance;
-#endif
+      return hb_max(0.0f, advance + roundf (var_table->get_advance_delta_unscaled (glyph,
+								      font->coords, font->num_coords,
+								      store_cache)));
     }
+#endif
 
     protected:
     // 0 <= num_long_metrics <= num_bearings <= num_advances <= num_glyphs

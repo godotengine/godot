@@ -31,7 +31,12 @@
 #include "register_types.h"
 
 #include "webxr_interface.h"
+
+#ifdef WEB_ENABLED
 #include "webxr_interface_js.h"
+#endif
+
+#include "core/object/class_db.h"
 
 #ifdef WEB_ENABLED
 Ref<WebXRInterfaceJS> webxr;
@@ -45,8 +50,10 @@ void initialize_webxr_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_ABSTRACT_CLASS(WebXRInterface);
 
 #ifdef WEB_ENABLED
-	webxr.instantiate();
-	XRServer::get_singleton()->add_interface(webxr);
+	if (XRServer::get_singleton()) {
+		webxr.instantiate();
+		XRServer::get_singleton()->add_interface(webxr);
+	}
 #endif
 }
 

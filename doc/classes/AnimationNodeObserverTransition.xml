@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeObserverTransition" inherits="AnimationNodeObserver" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Observer for events from [AnimationNodeTransition] instances.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<signals>
+		<signal name="state_finished">
+			<param index="0" name="state" type="String" />
+			<description>
+				Emitted when transitioning out of a state. If crossfade time is greater than zero, emits when the crossfade finishes. Otherwise, emits immediately before [signal state_started] emits for the new state.
+			</description>
+		</signal>
+		<signal name="state_started">
+			<param index="0" name="state" type="String" />
+			<description>
+				Emitted when a transition to a new state starts.
+			</description>
+		</signal>
+	</signals>
+</class>

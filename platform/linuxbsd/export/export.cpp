@@ -32,6 +32,7 @@
 
 #include "export_plugin.h"
 
+#include "core/object/class_db.h"
 #include "editor/export/editor_export.h"
 
 void register_linuxbsd_exporter_types() {
@@ -41,7 +42,7 @@ void register_linuxbsd_exporter_types() {
 void register_linuxbsd_exporter() {
 	Ref<EditorExportPlatformLinuxBSD> platform;
 	platform.instantiate();
-	platform->set_name("Linux/X11");
+	platform->set_name("Linux");
 	platform->set_os_name("Linux");
 	platform->set_chmod_flags(0755);
 

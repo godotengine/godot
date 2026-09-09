@@ -17,9 +17,7 @@ subject to the following restrictions:
 
 #include "btScalar.h"
 
-// -- GODOT start --
 namespace VHACD {
-// -- GODOT end --
 
 template <class T>
 SIMD_FORCE_INLINE const T& btMin(const T& a, const T& b)
@@ -66,8 +64,6 @@ SIMD_FORCE_INLINE void btClamp(T& a, const T& lb, const T& ub)
     }
 }
 
-// -- GODOT start --
 }; // namespace VHACD
-// -- GODOT end --
 
 #endif //BT_GEN_MINMAX_H

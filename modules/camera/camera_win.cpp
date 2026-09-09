@@ -30,6 +30,8 @@
 
 #include "camera_win.h"
 
+#include "servers/camera/camera_feed.h"
+
 ///@TODO sorry guys, I got about 80% through implementing this using DirectShow only
 // to find out Microsoft deprecated half the API and its replacement is as confusing
 // as they could make it. Joey suggested looking into libuvc which offers a more direct
@@ -64,13 +66,13 @@ CameraFeedWindows::~CameraFeedWindows() {
 	};
 
 	///@TODO free up anything used by this
-};
+}
 
 bool CameraFeedWindows::activate_feed() {
 	///@TODO this should activate our camera and start the process of capturing frames
 
 	return true;
-};
+}
 
 ///@TODO we should probably have a callback method here that is being called by the
 // camera API which provides frames and call back into the CameraServer to update our texture
@@ -91,4 +93,4 @@ CameraWindows::CameraWindows() {
 	add_active_cameras();
 
 	// need to add something that will react to devices being connected/removed...
-};
+}

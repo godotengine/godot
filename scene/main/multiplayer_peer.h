@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MULTIPLAYER_PEER_H
-#define MULTIPLAYER_PEER_H
+#pragma once
 
+#include "core/extension/ext_wrappers.gen.h"
 #include "core/io/packet_peer.h"
-
-#include "core/extension/ext_wrappers.gen.inc"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/variant/native_ptr.h"
 
 class MultiplayerPeer : public PacketPeer {
@@ -93,8 +91,6 @@ public:
 	virtual ConnectionStatus get_connection_status() const = 0;
 
 	uint32_t generate_unique_id() const;
-
-	MultiplayerPeer() {}
 };
 
 VARIANT_ENUM_CAST(MultiplayerPeer::ConnectionStatus);
@@ -111,11 +107,11 @@ protected:
 public:
 	/* PacketPeer extension */
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
-	GDVIRTUAL2R(Error, _get_packet, GDExtensionConstPtr<const uint8_t *>, GDExtensionPtr<int>);
+	GDVIRTUAL2R(Error, _get_packet, GDExtensionPtr<const uint8_t *>, GDExtensionPtr<int>);
 	GDVIRTUAL0R(PackedByteArray, _get_packet_script); // For GDScript.
 
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-	GDVIRTUAL2R(Error, _put_packet, GDExtensionConstPtr<const uint8_t>, int);
+	GDVIRTUAL2R(Error, _put_packet, GDExtensionPtr<const uint8_t>, int);
 	GDVIRTUAL1R(Error, _put_packet_script, PackedByteArray); // For GDScript.
 
 	EXBIND0RC(int, get_available_packet_count);
@@ -146,5 +142,3 @@ public:
 	EXBIND0RC(int, get_unique_id);
 	EXBIND0RC(ConnectionStatus, get_connection_status);
 };
-
-#endif // MULTIPLAYER_PEER_H

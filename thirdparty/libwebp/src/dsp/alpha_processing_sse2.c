@@ -16,6 +16,9 @@
 #if defined(WEBP_USE_SSE2)
 #include <emmintrin.h>
 
+#include "src/webp/types.h"
+#include "src/dsp/cpu.h"
+
 //------------------------------------------------------------------------------
 
 static int DispatchAlpha_SSE2(const uint8_t* WEBP_RESTRICT alpha,
@@ -26,38 +29,44 @@ static int DispatchAlpha_SSE2(const uint8_t* WEBP_RESTRICT alpha,
   uint32_t alpha_and = 0xff;
   int i, j;
   const __m128i zero = _mm_setzero_si128();
-  const __m128i rgb_mask = _mm_set1_epi32((int)0xffffff00);  // to preserve RGB
-  const __m128i all_0xff = _mm_set_epi32(0, 0, ~0, ~0);
-  __m128i all_alphas = all_0xff;
+  const __m128i alpha_mask = _mm_set1_epi32((int)0xff);  // to preserve A
+  const __m128i all_0xff = _mm_set1_epi8((char)0xff);
+  __m128i all_alphas16 = all_0xff;
+  __m128i all_alphas8 = all_0xff;
 
   // We must be able to access 3 extra bytes after the last written byte
   // 'dst[4 * width - 4]', because we don't know if alpha is the first or the
   // last byte of the quadruplet.
-  const int limit = (width - 1) & ~7;
-
   for (j = 0; j < height; ++j) {
-    __m128i* out = (__m128i*)dst;
-    for (i = 0; i < limit; i += 8) {
+    char* ptr = (char*)dst;
+    for (i = 0; i + 16 <= width - 1; i += 16) {
+      // load 16 alpha bytes
+      const __m128i a0 = _mm_loadu_si128((const __m128i*)&alpha[i]);
+      const __m128i a1_lo = _mm_unpacklo_epi8(a0, zero);
+      const __m128i a1_hi = _mm_unpackhi_epi8(a0, zero);
+      const __m128i a2_lo_lo = _mm_unpacklo_epi16(a1_lo, zero);
+      const __m128i a2_lo_hi = _mm_unpackhi_epi16(a1_lo, zero);
+      const __m128i a2_hi_lo = _mm_unpacklo_epi16(a1_hi, zero);
+      const __m128i a2_hi_hi = _mm_unpackhi_epi16(a1_hi, zero);
+      _mm_maskmoveu_si128(a2_lo_lo, alpha_mask, ptr + 0);
+      _mm_maskmoveu_si128(a2_lo_hi, alpha_mask, ptr + 16);
+      _mm_maskmoveu_si128(a2_hi_lo, alpha_mask, ptr + 32);
+      _mm_maskmoveu_si128(a2_hi_hi, alpha_mask, ptr + 48);
+      // accumulate 16 alpha 'and' in parallel
+      all_alphas16 = _mm_and_si128(all_alphas16, a0);
+      ptr += 64;
+    }
+    if (i + 8 <= width - 1) {
       // load 8 alpha bytes
       const __m128i a0 = _mm_loadl_epi64((const __m128i*)&alpha[i]);
       const __m128i a1 = _mm_unpacklo_epi8(a0, zero);
       const __m128i a2_lo = _mm_unpacklo_epi16(a1, zero);
       const __m128i a2_hi = _mm_unpackhi_epi16(a1, zero);
-      // load 8 dst pixels (32 bytes)
-      const __m128i b0_lo = _mm_loadu_si128(out + 0);
-      const __m128i b0_hi = _mm_loadu_si128(out + 1);
-      // mask dst alpha values
-      const __m128i b1_lo = _mm_and_si128(b0_lo, rgb_mask);
-      const __m128i b1_hi = _mm_and_si128(b0_hi, rgb_mask);
-      // combine
-      const __m128i b2_lo = _mm_or_si128(b1_lo, a2_lo);
-      const __m128i b2_hi = _mm_or_si128(b1_hi, a2_hi);
-      // store
-      _mm_storeu_si128(out + 0, b2_lo);
-      _mm_storeu_si128(out + 1, b2_hi);
-      // accumulate eight alpha 'and' in parallel
-      all_alphas = _mm_and_si128(all_alphas, a0);
-      out += 2;
+      _mm_maskmoveu_si128(a2_lo, alpha_mask, ptr);
+      _mm_maskmoveu_si128(a2_hi, alpha_mask, ptr + 16);
+      // accumulate 8 alpha 'and' in parallel
+      all_alphas8 = _mm_and_si128(all_alphas8, a0);
+      i += 8;
     }
     for (; i < width; ++i) {
       const uint32_t alpha_value = alpha[i];
@@ -68,8 +77,9 @@ static int DispatchAlpha_SSE2(const uint8_t* WEBP_RESTRICT alpha,
     dst += dst_stride;
   }
   // Combine the eight alpha 'and' into a 8-bit mask.
-  alpha_and &= _mm_movemask_epi8(_mm_cmpeq_epi8(all_alphas, all_0xff));
-  return (alpha_and != 0xff);
+  alpha_and &= _mm_movemask_epi8(_mm_cmpeq_epi8(all_alphas8, all_0xff)) & 0xff;
+  return (alpha_and != 0xff ||
+          _mm_movemask_epi8(_mm_cmpeq_epi8(all_alphas16, all_0xff)) != 0xffff);
 }
 
 static void DispatchAlphaToGreen_SSE2(const uint8_t* WEBP_RESTRICT alpha,
@@ -142,6 +152,46 @@ static int ExtractAlpha_SSE2(const uint8_t* WEBP_RESTRICT argb, int argb_stride,
   // Combine the eight alpha 'and' into a 8-bit mask.
   alpha_and &= _mm_movemask_epi8(_mm_cmpeq_epi8(all_alphas, all_0xff));
   return (alpha_and == 0xff);
+}
+
+static void ExtractGreen_SSE2(const uint32_t* WEBP_RESTRICT argb,
+                              uint8_t* WEBP_RESTRICT alpha, int size) {
+  int i;
+  const __m128i mask = _mm_set1_epi32(0xff);
+  const __m128i* src = (const __m128i*)argb;
+
+  for (i = 0; i + 16 <= size; i += 16, src += 4) {
+    const __m128i a0 = _mm_loadu_si128(src + 0);
+    const __m128i a1 = _mm_loadu_si128(src + 1);
+    const __m128i a2 = _mm_loadu_si128(src + 2);
+    const __m128i a3 = _mm_loadu_si128(src + 3);
+    const __m128i b0 = _mm_srli_epi32(a0, 8);
+    const __m128i b1 = _mm_srli_epi32(a1, 8);
+    const __m128i b2 = _mm_srli_epi32(a2, 8);
+    const __m128i b3 = _mm_srli_epi32(a3, 8);
+    const __m128i c0 = _mm_and_si128(b0, mask);
+    const __m128i c1 = _mm_and_si128(b1, mask);
+    const __m128i c2 = _mm_and_si128(b2, mask);
+    const __m128i c3 = _mm_and_si128(b3, mask);
+    const __m128i d0 = _mm_packs_epi32(c0, c1);
+    const __m128i d1 = _mm_packs_epi32(c2, c3);
+    const __m128i e = _mm_packus_epi16(d0, d1);
+    // store
+    _mm_storeu_si128((__m128i*)&alpha[i], e);
+  }
+  if (i + 8 <= size) {
+    const __m128i a0 = _mm_loadu_si128(src + 0);
+    const __m128i a1 = _mm_loadu_si128(src + 1);
+    const __m128i b0 = _mm_srli_epi32(a0, 8);
+    const __m128i b1 = _mm_srli_epi32(a1, 8);
+    const __m128i c0 = _mm_and_si128(b0, mask);
+    const __m128i c1 = _mm_and_si128(b1, mask);
+    const __m128i d = _mm_packs_epi32(c0, c1);
+    const __m128i e = _mm_packus_epi16(d, d);
+    _mm_storel_epi64((__m128i*)&alpha[i], e);
+    i += 8;
+  }
+  for (; i < size; ++i) alpha[i] = argb[i] >> 8;
 }
 
 //------------------------------------------------------------------------------
@@ -354,6 +404,7 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPInitAlphaProcessingSSE2(void) {
   WebPDispatchAlpha = DispatchAlpha_SSE2;
   WebPDispatchAlphaToGreen = DispatchAlphaToGreen_SSE2;
   WebPExtractAlpha = ExtractAlpha_SSE2;
+  WebPExtractGreen = ExtractGreen_SSE2;
 
   WebPHasAlpha8b = HasAlpha8b_SSE2;
   WebPHasAlpha32b = HasAlpha32b_SSE2;

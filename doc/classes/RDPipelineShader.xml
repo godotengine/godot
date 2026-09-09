@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineShader" inherits="RefCounted" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Pipeline shader (used by [RenderingDevice]).
+	</brief_description>
+	<description>
+		Wraps a shader resource and allows specialization constants to be applied at pipeline creation time.
+		Used by [method RenderingDevice.raytracing_pipeline_create] for ray generation, miss, and hit shaders. The pipeline selects the required shader stage automatically.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="shader" type="RID" setter="set_shader" getter="get_shader" default="RID()">
+			Shader resource. The required stage is selected by the pipeline.
+		</member>
+		<member name="specialization_constants" type="RDPipelineSpecializationConstant[]" setter="set_specialization_constants" getter="get_specialization_constants" default="[]">
+			Specialization constants applied to the selected shader stage at pipeline creation time.
+		</member>
+	</members>
+</class>

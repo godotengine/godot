@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -39,11 +39,8 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "pcre2_internal.h"
+
 
 
 /*************************************************
@@ -64,7 +61,7 @@ Returns:        0 when data returned
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_pattern_info(const pcre2_code *code, uint32_t what, void *where)
 {
-const pcre2_real_code *re = (pcre2_real_code *)code;
+const pcre2_real_code *re = (const pcre2_real_code *)code;
 
 if (where == NULL)   /* Requests field length */
   {
@@ -230,7 +227,8 @@ switch(what)
   break;
 
   case PCRE2_INFO_NAMETABLE:
-  *((PCRE2_SPTR *)where) = (PCRE2_SPTR)((char *)re + sizeof(pcre2_real_code));
+  *((PCRE2_SPTR *)where) = (PCRE2_SPTR)((const char *)re +
+    sizeof(pcre2_real_code));
   break;
 
   case PCRE2_INFO_NEWLINE:
@@ -268,7 +266,7 @@ PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_callout_enumerate(const pcre2_code *code,
   int (*callback)(pcre2_callout_enumerate_block *, void *), void *callout_data)
 {
-pcre2_real_code *re = (pcre2_real_code *)code;
+const pcre2_real_code *re = (const pcre2_real_code *)code;
 pcre2_callout_enumerate_block cb;
 PCRE2_SPTR cc;
 #ifdef SUPPORT_UNICODE
@@ -291,8 +289,7 @@ if (re->magic_number != MAGIC_NUMBER) return PCRE2_ERROR_BADMAGIC;
 if ((re->flags & (PCRE2_CODE_UNIT_WIDTH/8)) == 0) return PCRE2_ERROR_BADMODE;
 
 cb.version = 0;
-cc = (PCRE2_SPTR)((uint8_t *)re + sizeof(pcre2_real_code))
-     + re->name_count * re->name_entry_size;
+cc = (PCRE2_SPTR)((uint8_t *)re + re->code_start);
 
 while (TRUE)
   {
@@ -383,8 +380,9 @@ while (TRUE)
 #endif
     break;
 
-#if defined SUPPORT_UNICODE || PCRE2_CODE_UNIT_WIDTH != 8
+#ifdef SUPPORT_WIDE_CHARS
     case OP_XCLASS:
+    case OP_ECLASS:
     cc += GET(cc, 1);
     break;
 #endif

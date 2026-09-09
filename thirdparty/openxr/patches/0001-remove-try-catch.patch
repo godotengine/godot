@@ -1,0 +1,48 @@
+diff --git a/thirdparty/openxr/src/loader/api_layer_interface.cpp b/thirdparty/openxr/src/loader/api_layer_interface.cpp
+index b8f0881d15..f9f5c6d1ba 100644
+--- a/thirdparty/openxr/src/loader/api_layer_interface.cpp
++++ b/thirdparty/openxr/src/loader/api_layer_interface.cpp
+@@ -453,17 +453,9 @@ ApiLayerInterface::ApiLayerInterface(const std::string& layer_name, LoaderPlatfo
+       _supported_extensions(supported_extensions) {}
+ 
+ ApiLayerInterface::~ApiLayerInterface() {
+-    try {
+-        std::string info_message = "ApiLayerInterface being destroyed for layer ";
+-        info_message += _layer_name;
+-        LoaderLogger::LogInfoMessage("", info_message);
+-    }
+-    // NOLINTNEXTLINE(bugprone-empty-catch)
+-    catch (...) {
+-        // Need a try catch here to avoid concerns about exceptions in a destructor
+-        // If logging fails here there isn't much we can do so left intentionally empty
+-    }
+-
++    std::string info_message = "ApiLayerInterface being destroyed for layer ";
++    info_message += _layer_name;
++    LoaderLogger::LogInfoMessage("", info_message);
+     LoaderPlatformLibraryClose(_layer_library);
+ }
+ 
+diff --git a/thirdparty/openxr/src/loader/runtime_interface.cpp b/thirdparty/openxr/src/loader/runtime_interface.cpp
+index 820a0d91c2..18b5660696 100644
+--- a/thirdparty/openxr/src/loader/runtime_interface.cpp
++++ b/thirdparty/openxr/src/loader/runtime_interface.cpp
+@@ -299,16 +299,8 @@ RuntimeInterface::RuntimeInterface(LoaderPlatformLibraryHandle runtime_library,
+     : _runtime_library(runtime_library), _get_instance_proc_addr(get_instance_proc_addr) {}
+ 
+ RuntimeInterface::~RuntimeInterface() {
+-    try {
+-        std::string info_message = "RuntimeInterface being destroyed.";
+-        LoaderLogger::LogInfoMessage("", info_message);
+-    }
+-    // NOLINTNEXTLINE(bugprone-empty-catch)
+-    catch (...) {
+-        // Need a try catch here to avoid concerns about exceptions in a destructor
+-        // If logging fails here there isn't much we can do so left intentionally empty
+-    }
+-
++    std::string info_message = "RuntimeInterface being destroyed.";
++    LoaderLogger::LogInfoMessage("", info_message);
+     {
+         std::scoped_lock<std::mutex> mlock(_dispatch_table_mutex);
+         _dispatch_table_map.clear();

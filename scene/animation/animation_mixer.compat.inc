@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "animation_mixer.h"
+
+#include "core/object/class_db.h"
+
 Variant AnimationMixer::_post_process_key_value_bind_compat_86687(const Ref<Animation> &p_anim, int p_track, Variant p_value, Object *p_object, int p_object_idx) {
 	if (!p_object) {
 		return Variant();
@@ -38,7 +42,7 @@ Variant AnimationMixer::_post_process_key_value_bind_compat_86687(const Ref<Anim
 }
 
 void AnimationMixer::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("_post_process_key_value_bind_compat", "animation", "track", "value", "object", "object_idx"), &AnimationMixer::_post_process_key_value_bind_compat_86687);
+	ClassDB::bind_compatibility_method(D_METHOD("_post_process_key_value", "animation", "track", "value", "object", "object_idx"), &AnimationMixer::_post_process_key_value_bind_compat_86687);
 }
 
 #endif // DISABLE_DEPRECATED

@@ -31,6 +31,7 @@
 #include "multiplayer_synchronizer.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/main/multiplayer_api.h"
 
 Object *MultiplayerSynchronizer::_get_prop_target(Object *p_obj, const NodePath &p_path) {
@@ -49,11 +50,11 @@ void MultiplayerSynchronizer::_stop() {
 	}
 #endif
 	root_node_cache = ObjectID();
-	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
 		get_multiplayer()->object_configuration_remove(node, this);
 	}
+	reset();
 }
 
 void MultiplayerSynchronizer::_start() {
@@ -100,7 +101,7 @@ void MultiplayerSynchronizer::_update_process() {
 }
 
 Node *MultiplayerSynchronizer::get_root_node() {
-	return root_node_cache.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(root_node_cache)) : nullptr;
+	return root_node_cache.is_valid() ? ObjectDB::get_instance<Node>(root_node_cache) : nullptr;
 }
 
 void MultiplayerSynchronizer::reset() {
@@ -270,7 +271,7 @@ void MultiplayerSynchronizer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "replication_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_replication_interval", "get_replication_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "delta_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_delta_interval", "get_delta_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, "SceneReplicationConfig", PROPERTY_USAGE_NO_EDITOR), "set_replication_config", "get_replication_config");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, SceneReplicationConfig::get_class_static(), PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_replication_config", "get_replication_config");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,None"), "set_visibility_update_mode", "get_visibility_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "public_visibility"), "set_visibility_public", "is_visibility_public");
 
@@ -343,7 +344,7 @@ void MultiplayerSynchronizer::update_visibility(int p_for_peer) {
 #endif
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node && get_multiplayer()->has_multiplayer_peer() && is_multiplayer_authority()) {
-		emit_signal(SNAME("visibility_changed"), p_for_peer);
+		emit_signal(SceneStringName(visibility_changed), p_for_peer);
 	}
 }
 
@@ -354,6 +355,7 @@ void MultiplayerSynchronizer::set_root_path(const NodePath &p_path) {
 	_stop();
 	root_path = p_path;
 	_start();
+	update_configuration_warnings();
 }
 
 NodePath MultiplayerSynchronizer::get_root_path() const {
@@ -371,11 +373,11 @@ void MultiplayerSynchronizer::set_multiplayer_authority(int p_peer_id, bool p_re
 
 Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 	ERR_FAIL_COND_V(replication_config.is_null(), FAILED);
-	const List<NodePath> props = replication_config->get_watch_properties();
+	const List<NodePath> props(replication_config->get_watch_properties());
 	if (props.size() != watchers.size()) {
 		watchers.resize(props.size());
 	}
-	if (props.size() == 0) {
+	if (props.is_empty()) {
 		return OK;
 	}
 	Node *node = get_root_node();
@@ -435,7 +437,7 @@ List<Variant> MultiplayerSynchronizer::get_delta_state(uint64_t p_cur_usec, uint
 List<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes) {
 	List<NodePath> out;
 	ERR_FAIL_COND_V(replication_config.is_null(), out);
-	const List<NodePath> watch_props = replication_config->get_watch_properties();
+	const List<NodePath> watch_props(replication_config->get_watch_properties());
 	int idx = 0;
 	for (const NodePath &prop : watch_props) {
 		if ((p_indexes & (1ULL << idx++)) == 0) {

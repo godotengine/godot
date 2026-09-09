@@ -27,10 +27,10 @@
 #ifndef GLSLextNV_H
 #define GLSLextNV_H
 
-enum BuiltIn;
-enum Decoration;
-enum Op;
-enum Capability;
+enum class BuiltIn : unsigned;
+enum class Decoration : unsigned;
+enum class Op : unsigned;
+enum class Capability : unsigned;
 
 static const int GLSLextNVVersion = 100;
 static const int GLSLextNVRevision = 11;
@@ -87,4 +87,18 @@ const char* const E_SPV_NV_shader_invocation_reorder = "SPV_NV_shader_invocation
 //SPV_NV_displacement_micromap
 const char* const E_SPV_NV_displacement_micromap = "SPV_NV_displacement_micromap";
 
+//SPV_NV_shader_atomic_fp16_vector
+const char* const E_SPV_NV_shader_atomic_fp16_vector = "SPV_NV_shader_atomic_fp16_vector";
+
+//SPV_NV_tensor_addressing
+const char* const E_SPV_NV_tensor_addressing = "SPV_NV_tensor_addressing";
+
+//SPV_NV_cooperative_matrix2
+const char* const E_SPV_NV_cooperative_matrix2 = "SPV_NV_cooperative_matrix2";
+
+//SPV_NV_cluster_acceleration_structure
+const char* const E_SPV_NV_cluster_acceleration_structure = "SPV_NV_cluster_acceleration_structure";
+
+//SPV_NV_linear_swept_spheres
+const char* const E_SPV_NV_linear_swept_spheres = "SPV_NV_linear_swept_spheres";
 #endif  // #ifndef GLSLextNV_H

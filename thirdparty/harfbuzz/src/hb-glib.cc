@@ -127,11 +127,7 @@ hb_glib_unicode_compose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
 			 hb_codepoint_t     *ab,
 			 void               *user_data HB_UNUSED)
 {
-#if GLIB_CHECK_VERSION(2,29,12)
   return g_unichar_compose (a, b, ab);
-#else
-  return false;
-#endif
 }
 
 static hb_bool_t
@@ -141,11 +137,7 @@ hb_glib_unicode_decompose (hb_unicode_funcs_t *ufuncs HB_UNUSED,
 			   hb_codepoint_t     *b,
 			   void               *user_data HB_UNUSED)
 {
-#if GLIB_CHECK_VERSION(2,29,12)
   return g_unichar_decompose (ab, a, b);
-#else
-  return false;
-#endif
 }
 
 

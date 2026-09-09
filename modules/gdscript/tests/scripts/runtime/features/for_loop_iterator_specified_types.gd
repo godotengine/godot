@@ -28,13 +28,18 @@ func test():
 		prints(var_to_str(e), var_to_str(elem))
 
 	print("Test String-keys dictionary.")
-	var d1 := {a = 1, b = 2, c = 3}
+	var d1 := { a = 1, b = 2, c = 3 }
 	for k: StringName in d1:
 		var key := k
 		prints(var_to_str(k), var_to_str(key))
 
 	print("Test RefCounted-keys dictionary.")
-	var d2 := {RefCounted.new(): 1, Resource.new(): 2, ConfigFile.new(): 3}
+	var d2 := { RefCounted.new(): 1, Resource.new(): 2, ConfigFile.new(): 3 }
 	for k: RefCounted in d2:
 		var key := k
 		prints(k.get_class(), key.get_class())
+
+	print("Test implicitly typed dictionary literal.")
+	for k: StringName in { x = 123, y = 456, z = 789 }:
+		var key := k
+		prints(var_to_str(k), var_to_str(key))

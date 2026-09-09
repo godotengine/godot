@@ -55,7 +55,7 @@ struct blend_arg_t : number_t
   void reset_blends ()
   {
     numValues = valueIndex = 0;
-    deltas.shrink (0);
+    deltas.clear ();
   }
 
   unsigned int numValues;
@@ -71,22 +71,50 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
   template <typename ACC>
   cff2_cs_interp_env_t (const hb_ubytes_t &str, ACC &acc, unsigned int fd,
 			const int *coords_=nullptr, unsigned int num_coords_=0)
-    : SUPER (str, acc.globalSubrs, acc.privateDicts[fd].localSubrs)
+    : SUPER (str, acc.globalSubrs, acc.privateDicts[fd].localSubrs),
+      region_count (0), cached_scalars_vector (&acc.cached_scalars_vector)
   {
     coords = coords_;
     num_coords = num_coords_;
     varStore = acc.varStore;
-    seen_blend = false;
-    seen_vsindex_ = false;
-    scalars.init ();
-    do_blend = num_coords && coords && varStore->size;
-    set_ivs (acc.privateDicts[fd].ivs);
+    do_blend = num_coords && varStore->size;
+    orig_ivs = acc.privateDicts[fd].ivs;
+    set_ivs (orig_ivs);
   }
 
-  void fini ()
+  ~cff2_cs_interp_env_t ()
   {
-    scalars.fini ();
-    SUPER::fini ();
+    release_scalars_vector (scalars);
+  }
+
+  hb_vector_t<float> *acquire_scalars_vector () const
+  {
+    hb_vector_t<float> *scalars = cached_scalars_vector->get_acquire ();
+
+    if (!scalars || !cached_scalars_vector->cmpexch (scalars, nullptr))
+    {
+      scalars = (hb_vector_t<float> *) hb_calloc (1, sizeof (hb_vector_t<float>));
+      if (unlikely (!scalars))
+	return nullptr;
+      scalars->init ();
+    }
+
+    return scalars;
+  }
+
+  void release_scalars_vector (hb_vector_t<float> *scalars) const
+  {
+    if (!scalars)
+      return;
+
+    scalars->clear ();
+
+    if (!cached_scalars_vector->cmpexch (nullptr, scalars))
+    {
+      scalars->fini ();
+      hb_free (scalars);
+    }
+    scalars = nullptr;
   }
 
   op_code_t fetch_op ()
@@ -115,14 +143,20 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
   {
     if (!seen_blend)
     {
-      region_count = varStore->varStore.get_region_index_count (get_ivs ());
-      if (do_blend)
+      scalars = acquire_scalars_vector ();
+      if (unlikely (!scalars))
+	SUPER::set_error ();
+      else
       {
-	if (unlikely (!scalars.resize_exact (region_count)))
-	  SUPER::set_error ();
-	else
-	  varStore->varStore.get_region_scalars (get_ivs (), coords, num_coords,
-						 &scalars[0], region_count);
+	region_count = varStore->varStore.get_region_index_count (get_ivs ());
+	if (do_blend)
+	{
+	  if (unlikely (!scalars->resize_exact (region_count)))
+	    SUPER::set_error ();
+	  else
+	    varStore->varStore.get_region_scalars (get_ivs (), coords, num_coords,
+						   &(*scalars)[0], region_count);
+	}
       }
       seen_blend = true;
     }
@@ -146,6 +180,8 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
   void	 set_region_count (unsigned int region_count_) { region_count = region_count_; }
   unsigned int get_ivs () const { return ivs; }
   void	 set_ivs (unsigned int ivs_) { ivs = ivs_; }
+  /* The FD's private-dict ivs, before any vsindex op in the charstring. */
+  unsigned int get_orig_ivs () const { return orig_ivs; }
   bool	 seen_vsindex () const { return seen_vsindex_; }
 
   double blend_deltas (hb_array_t<const ELEM> deltas) const
@@ -153,11 +189,11 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
     double v = 0;
     if (do_blend)
     {
-      if (likely (scalars.length == deltas.length))
+      if (likely (scalars && scalars->length == deltas.length))
       {
-        unsigned count = scalars.length;
+        unsigned count = scalars->length;
 	for (unsigned i = 0; i < count; i++)
-	  v += (double) scalars.arrayZ[i] * deltas.arrayZ[i].to_real ();
+	  v += (double) scalars->arrayZ[i] * deltas.arrayZ[i].to_real ();
       }
     }
     return v;
@@ -168,13 +204,15 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
   protected:
   const int     *coords;
   unsigned int  num_coords;
-  const	 CFF2VariationStore *varStore;
+  const	 CFF2ItemVariationStore *varStore;
   unsigned int  region_count;
   unsigned int  ivs;
-  hb_vector_t<float>  scalars;
+  unsigned int  orig_ivs;
+  hb_vector_t<float>  *scalars = nullptr;
+  hb_atomic_t<hb_vector_t<float> *> *cached_scalars_vector = nullptr;
   bool	  do_blend;
-  bool	  seen_vsindex_;
-  bool	  seen_blend;
+  bool	  seen_vsindex_ = false;
+  bool	  seen_blend = false;
 
   typedef cs_interp_env_t<ELEM, CFF2Subrs> SUPER;
 };
@@ -226,6 +264,19 @@ struct cff2_cs_opset_t : cs_opset_t<ELEM, OPSET, cff2_cs_interp_env_t<ELEM>, PAR
   {
     if (env.have_coords ())
       arg.set_int (round (arg.to_real () + env.blend_deltas (blends)));
+    else if (unlikely (arg.blending ()))
+    {
+      /* A blend result used as an operand of a later blend: the value is
+       * default + inner deltas + outer deltas, so accumulate the deltas. */
+      hb_vector_t<number_t> inner = std::move (arg.deltas);
+      arg.set_blends (n, i, blends);
+      if (likely (inner.length == arg.deltas.length))
+	for (unsigned j = 0; j < inner.length; j++)
+	  arg.deltas.arrayZ[j].set_real (arg.deltas.arrayZ[j].to_real () +
+					 inner.arrayZ[j].to_real ());
+      else
+	env.set_error ();
+    }
     else
       arg.set_blends (n, i, blends);
   }
@@ -247,17 +298,18 @@ struct cff2_cs_opset_t : cs_opset_t<ELEM, OPSET, cff2_cs_interp_env_t<ELEM>, PAR
     k = env.get_region_count ();
     n = env.argStack.pop_uint ();
     /* copy the blend values into blend array of the default values */
-    unsigned int start = env.argStack.get_count () - ((k+1) * n);
-    /* let an obvious error case fail, but note CFF2 spec doesn't forbid n==0 */
-    if (unlikely (start > env.argStack.get_count ()))
+    unsigned int count = env.argStack.get_count ();
+    unsigned int total;
+    if (unlikely (hb_unsigned_mul_overflows (k + 1, n, &total) || total > count))
     {
       env.set_error ();
       return;
     }
+    unsigned int start = count - total;
     for (unsigned int i = 0; i < n; i++)
     {
       const hb_array_t<const ELEM> blends = env.argStack.sub_array (start + n + (i * k), k);
-      process_arg_blend (env, env.argStack[start + i], blends, n, i);
+      process_arg_blend (env, env.argStack.arrayZ[start + i], blends, n, i);
     }
 
     /* pop off blend values leaving default values now adorned with blend values */

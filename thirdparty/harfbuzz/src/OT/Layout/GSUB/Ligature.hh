@@ -38,10 +38,56 @@ struct Ligature
     c->output->add (ligGlyph);
   }
 
+  void depend (hb_depend_context_t *c, hb_codepoint_t first) const
+  {
+    // Build the complete ligature set upfront before adding any edges
+    hb_set_t complete_ligset;
+    complete_ligset.add (first);
+    + hb_iter (component) | hb_sink (complete_ligset);
+    if (unlikely (complete_ligset.in_error ()))
+    {
+      c->depend_data->fail ();
+      return;
+    }
+
+    bool ligset_created;
+    hb_codepoint_t ligset_idx = c->depend_data->find_or_create_set (complete_ligset,
+                                                                    &ligset_created);
+    if (unlikely (ligset_idx == HB_CODEPOINT_INVALID))
+      return;
+
+    // Track whether any edge using this ligset_idx was actually added
+    bool any_added = false;
+
+    // Now add one edge for each glyph in the complete, immutable set
+    + hb_iter (complete_ligset)
+    | hb_apply ([&] (hb_codepoint_t gid) {
+        if (c->depend_data->add_gsub_lookup (gid, c->lookup_index, ligGlyph, ligset_idx))
+          any_added = true;
+      })
+    ;
+
+    // If no edges were added, a newly allocated set is unused - free it for reuse
+    if (!any_added && ligset_created)
+      c->depend_data->discard_set (ligset_idx);
+  }
+
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
   {
     c->input->add_array (component.arrayZ, component.get_length ());
     c->output->add (ligGlyph);
+  }
+
+  template <typename set_t>
+  void collect_second (set_t &s) const
+  {
+    if (unlikely (!component.get_length ()))
+    {
+      // A ligature without any components. Anything matches.
+      s = set_t::full ();
+      return;
+    }
+    s.add (component.arrayZ[0]);
   }
 
   bool would_apply (hb_would_apply_context_t *c) const
@@ -90,15 +136,14 @@ struct Ligature
 
     unsigned int total_component_count = 0;
 
+    if (unlikely (count > HB_MAX_CONTEXT_LENGTH)) return false;
     unsigned int match_end = 0;
-    unsigned int match_positions[HB_MAX_CONTEXT_LENGTH];
 
     if (likely (!match_input (c, count,
                               &component[1],
                               match_glyph,
                               nullptr,
                               &match_end,
-                              match_positions,
                               &total_component_count)))
     {
       c->buffer->unsafe_to_concat (c->buffer->idx, match_end);
@@ -118,10 +163,10 @@ struct Ligature
       match_end += delta;
       for (unsigned i = 0; i < count; i++)
       {
-	match_positions[i] += delta;
+	c->match_positions[i] += delta;
 	if (i)
 	  *p++ = ',';
-	snprintf (p, sizeof(buf) - (p - buf), "%u", match_positions[i]);
+	snprintf (p, sizeof(buf) - (p - buf), "%u", c->match_positions[i]);
 	p += strlen(p);
       }
 
@@ -132,7 +177,6 @@ struct Ligature
 
     ligate_input (c,
                   count,
-                  match_positions,
                   match_end,
                   ligGlyph,
                   total_component_count);

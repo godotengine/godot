@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BIT_MAP_H
-#define BIT_MAP_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/io/resource.h"
-#include "core/io/resource_loader.h"
 
 template <typename T>
 class TypedArray;
@@ -78,8 +76,4 @@ public:
 	Ref<Image> convert_to_image() const;
 
 	Vector<Vector<Vector2>> clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon = 2.0) const;
-
-	BitMap();
 };
-
-#endif // BIT_MAP_H

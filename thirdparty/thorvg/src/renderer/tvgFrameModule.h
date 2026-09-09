@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,9 @@ namespace tvg
 class FrameModule: public ImageLoader
 {
 public:
+    float segmentBegin = 0.0f;
+    float segmentEnd;             //Initialize the value with the total frame number
+
     FrameModule(FileType type) : ImageLoader(type) {}
     virtual ~FrameModule() {}
 
@@ -38,6 +41,13 @@ public:
     virtual float totalFrame() = 0;         //return the total frame count
     virtual float curFrame() = 0;           //return the current frame number
     virtual float duration() = 0;           //return the animation duration in seconds
+    virtual Result segment(float begin, float end) = 0;
+
+    void segment(float* begin, float* end)
+    {
+        if (begin) *begin = segmentBegin;
+        if (end) *end = segmentEnd;
+    }
 
     virtual bool animatable() override { return true; }
 };

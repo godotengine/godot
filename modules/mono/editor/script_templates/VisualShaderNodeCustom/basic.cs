@@ -3,6 +3,8 @@
 using _BINDINGS_NAMESPACE_;
 using System;
 
+[Tool]
+[GlobalClass]
 public partial class VisualShaderNode_CLASS_ : _BASE_
 {
     public override string _GetName()
@@ -20,37 +22,37 @@ public partial class VisualShaderNode_CLASS_ : _BASE_
         return "";
     }
 
-    public override long _GetReturnIconType()
+    public override VisualShaderNode.PortType _GetReturnIconType()
     {
         return 0;
     }
 
-    public override long _GetInputPortCount()
+    public override int _GetInputPortCount()
     {
         return 0;
     }
 
-    public override string _GetInputPortName(long port)
+    public override string _GetInputPortName(int port)
     {
         return "";
     }
 
-    public override long _GetInputPortType(long port)
+    public override VisualShaderNode.PortType _GetInputPortType(int port)
     {
         return 0;
     }
 
-    public override long _GetOutputPortCount()
+    public override int _GetOutputPortCount()
     {
         return 1;
     }
 
-    public override string _GetOutputPortName(long port)
+    public override string _GetOutputPortName(int port)
     {
         return "result";
     }
 
-    public override long _GetOutputPortType(long port)
+    public override VisualShaderNode.PortType _GetOutputPortType(int port)
     {
         return 0;
     }

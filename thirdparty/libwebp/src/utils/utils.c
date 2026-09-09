@@ -11,13 +11,15 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include "src/utils/utils.h"
+
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>  // for memcpy()
-#include "src/webp/decode.h"
+
+#include "src/webp/types.h"
+#include "src/utils/palette.h"
 #include "src/webp/encode.h"
-#include "src/webp/format_constants.h"  // for MAX_PALETTE_SIZE
-#include "src/utils/color_cache_utils.h"
-#include "src/utils/utils.h"
 
 // If PRINT_MEM_INFO is defined, extra info (like total memory used, number of
 // alloc/free etc) is printed. For debugging/tuning purpose only (it's slow,
@@ -60,9 +62,9 @@ static int countdown_to_fail = 0;     // 0 = off
 
 typedef struct MemBlock MemBlock;
 struct MemBlock {
-  void* ptr_;
-  size_t size_;
-  MemBlock* next_;
+  void* ptr;
+  size_t size;
+  MemBlock* next;
 };
 
 static MemBlock* all_blocks = NULL;
@@ -83,7 +85,7 @@ static void PrintMemInfo(void) {
   fprintf(stderr, "high-water mark: %u\n", (uint32_t)high_water_mark);
   while (all_blocks != NULL) {
     MemBlock* b = all_blocks;
-    all_blocks = b->next_;
+    all_blocks = b->next;
     free(b);
   }
 }
@@ -121,10 +123,10 @@ static void AddMem(void* ptr, size_t size) {
   if (ptr != NULL) {
     MemBlock* const b = (MemBlock*)malloc(sizeof(*b));
     if (b == NULL) abort();
-    b->next_ = all_blocks;
+    b->next = all_blocks;
     all_blocks = b;
-    b->ptr_ = ptr;
-    b->size_ = size;
+    b->ptr = ptr;
+    b->size = size;
     total_mem += size;
     total_mem_allocated += size;
 #if defined(PRINT_MEM_TRAFFIC)
@@ -143,18 +145,18 @@ static void SubMem(void* ptr) {
   if (ptr != NULL) {
     MemBlock** b = &all_blocks;
     // Inefficient search, but that's just for debugging.
-    while (*b != NULL && (*b)->ptr_ != ptr) b = &(*b)->next_;
+    while (*b != NULL && (*b)->ptr != ptr) b = &(*b)->next;
     if (*b == NULL) {
       fprintf(stderr, "Invalid pointer free! (%p)\n", ptr);
       abort();
     }
     {
       MemBlock* const block = *b;
-      *b = block->next_;
-      total_mem -= block->size_;
+      *b = block->next;
+      total_mem -= block->size;
 #if defined(PRINT_MEM_TRAFFIC)
       fprintf(stderr, "Mem: %u (-%u)\n",
-              (uint32_t)total_mem, (uint32_t)block->size_);
+              (uint32_t)total_mem, (uint32_t)block->size);
 #endif
       free(block);
     }
@@ -252,65 +254,9 @@ void WebPCopyPixels(const WebPPicture* const src, WebPPicture* const dst) {
 
 //------------------------------------------------------------------------------
 
-#define COLOR_HASH_SIZE         (MAX_PALETTE_SIZE * 4)
-#define COLOR_HASH_RIGHT_SHIFT  22  // 32 - log2(COLOR_HASH_SIZE).
-
 int WebPGetColorPalette(const WebPPicture* const pic, uint32_t* const palette) {
-  int i;
-  int x, y;
-  int num_colors = 0;
-  uint8_t in_use[COLOR_HASH_SIZE] = { 0 };
-  uint32_t colors[COLOR_HASH_SIZE];
-  const uint32_t* argb = pic->argb;
-  const int width = pic->width;
-  const int height = pic->height;
-  uint32_t last_pix = ~argb[0];   // so we're sure that last_pix != argb[0]
-  assert(pic != NULL);
-  assert(pic->use_argb);
-
-  for (y = 0; y < height; ++y) {
-    for (x = 0; x < width; ++x) {
-      int key;
-      if (argb[x] == last_pix) {
-        continue;
-      }
-      last_pix = argb[x];
-      key = VP8LHashPix(last_pix, COLOR_HASH_RIGHT_SHIFT);
-      while (1) {
-        if (!in_use[key]) {
-          colors[key] = last_pix;
-          in_use[key] = 1;
-          ++num_colors;
-          if (num_colors > MAX_PALETTE_SIZE) {
-            return MAX_PALETTE_SIZE + 1;  // Exact count not needed.
-          }
-          break;
-        } else if (colors[key] == last_pix) {
-          break;  // The color is already there.
-        } else {
-          // Some other color sits here, so do linear conflict resolution.
-          ++key;
-          key &= (COLOR_HASH_SIZE - 1);  // Key mask.
-        }
-      }
-    }
-    argb += pic->argb_stride;
-  }
-
-  if (palette != NULL) {  // Fill the colors into palette.
-    num_colors = 0;
-    for (i = 0; i < COLOR_HASH_SIZE; ++i) {
-      if (in_use[i]) {
-        palette[num_colors] = colors[i];
-        ++num_colors;
-      }
-    }
-  }
-  return num_colors;
+  return GetColorPalette(pic, palette);
 }
-
-#undef COLOR_HASH_SIZE
-#undef COLOR_HASH_RIGHT_SHIFT
 
 //------------------------------------------------------------------------------
 

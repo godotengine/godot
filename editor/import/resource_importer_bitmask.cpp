@@ -72,15 +72,12 @@ void ResourceImporterBitMap::get_import_options(const String &p_path, List<Impor
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.5));
 }
 
-Error ResourceImporterBitMap::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterBitMap::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	int create_from = p_options["create_from"];
 	float threshold = p_options["threshold"];
 	Ref<Image> image;
 	image.instantiate();
-	Error err = ImageLoader::load_image(p_source_file, image);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(ImageLoader::load_image(p_source_file, image));
 
 	int w = image->get_width();
 	int h = image->get_height();
@@ -104,10 +101,4 @@ Error ResourceImporterBitMap::import(const String &p_source_file, const String &
 	}
 
 	return ResourceSaver::save(bitmap, p_save_path + ".res");
-}
-
-ResourceImporterBitMap::ResourceImporterBitMap() {
-}
-
-ResourceImporterBitMap::~ResourceImporterBitMap() {
 }

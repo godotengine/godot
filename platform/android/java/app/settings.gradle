@@ -7,9 +7,12 @@ pluginManagement {
         id 'org.jetbrains.kotlin.android' version versions.kotlinVersion
     }
     repositories {
-        gradlePluginPortal()
         google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
     }
 }
 
-include ':assetPacks:installTime'
+include ':assetPackInstallTime'

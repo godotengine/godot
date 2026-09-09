@@ -3,28 +3,30 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Godot.SourceGenerators.Tests;
 
 public static class CSharpAnalyzerVerifier<TAnalyzer>
-where TAnalyzer : DiagnosticAnalyzer, new()
+    where TAnalyzer : DiagnosticAnalyzer, new()
 {
-    public class Test : CSharpAnalyzerTest<TAnalyzer, XUnitVerifier>
+    public const LanguageVersion LangVersion = LanguageVersion.CSharp11;
+
+    public class Test : CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
     {
         public Test()
         {
-            ReferenceAssemblies = ReferenceAssemblies.Net.Net60;
+            ReferenceAssemblies = Constants.Net80;
 
             SolutionTransforms.Add((Solution solution, ProjectId projectId) =>
             {
                 Project project =
                     solution.GetProject(projectId)!.AddMetadataReference(Constants.GodotSharpAssembly
-                        .CreateMetadataReference());
+                        .CreateMetadataReference()).WithParseOptions(new CSharpParseOptions(LangVersion));
 
                 return project.Solution;
             });

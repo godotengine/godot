@@ -41,8 +41,8 @@ namespace OT {
 
 struct DeviceRecord
 {
-  static unsigned int get_size (unsigned count)
-  { return hb_ceil_to_4 (min_size + count * HBUINT8::static_size); }
+  static size_t get_size (unsigned count)
+  { return hb_ceil_to_4 (hb_unsigned_mul_add_saturate (count, HBUINT8::static_size, min_size)); }
 
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator))>
@@ -71,6 +71,7 @@ struct DeviceRecord
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  c->check_range (this, sizeDeviceRecord)));
   }
 
@@ -86,15 +87,15 @@ struct hdmx
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_hdmx;
 
-  unsigned int get_size () const
-  { return min_size + numRecords * sizeDeviceRecord; }
+  size_t get_size () const
+  { return hb_unsigned_mul_add_saturate (numRecords, sizeDeviceRecord, min_size); }
 
   template<typename Iterator,
 	   hb_requires (hb_is_iterator (Iterator))>
   bool serialize (hb_serialize_context_t *c,
 		  unsigned version,
 		  Iterator it,
-		  const hb_vector_t<hb_codepoint_pair_t> &new_to_old_gid_list,
+		  hb_array_t<const hb_codepoint_pair_t> new_to_old_gid_list,
 		  unsigned num_glyphs)
   {
     TRACE_SERIALIZE (this);
@@ -152,6 +153,7 @@ struct hdmx
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  !hb_unsigned_mul_overflows (numRecords, sizeDeviceRecord) &&
                   min_size + numRecords * sizeDeviceRecord > numRecords * sizeDeviceRecord &&
 		  sizeDeviceRecord >= DeviceRecord::min_size &&

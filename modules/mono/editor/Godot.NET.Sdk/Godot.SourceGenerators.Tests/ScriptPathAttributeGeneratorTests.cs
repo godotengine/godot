@@ -1,8 +1,10 @@
+using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.CodeAnalysis.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Godot.SourceGenerators.Tests;
@@ -21,7 +23,7 @@ public class ScriptPathAttributeGeneratorTests
     }
 
     [Fact]
-    public async void ScriptBoilerplate()
+    public async Task ScriptBoilerplate()
     {
         var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
             new string[] { "ScriptBoilerplate.cs" },
@@ -32,7 +34,7 @@ public class ScriptPathAttributeGeneratorTests
     }
 
     [Fact]
-    public async void FooBar()
+    public async Task FooBar()
     {
         var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
             new string[] { "Foo.cs", "Bar.cs" },
@@ -43,13 +45,37 @@ public class ScriptPathAttributeGeneratorTests
     }
 
     [Fact]
-    public async void Generic()
+    public async Task Generic()
     {
         var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
             new string[] { "Generic.cs" },
-            new string[] { "Generic_ScriptPath.generated.cs" }
+            new string[] { "Generic(Of T)_ScriptPath.generated.cs" }
         );
-        verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::Generic" }));
+        verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::Generic<>" }));
+        await verifier.RunAsync();
+    }
+
+    [Fact]
+    public async Task GenericMultipleClassesSameName()
+    {
+        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
+            Array.Empty<string>(),
+            new string[] { "Generic(Of T)_ScriptPath.generated.cs" }
+        );
+        verifier.TestState.Sources.Add(("Generic.cs", File.ReadAllText(Path.Combine(Constants.SourceFolderPath, "Generic.GD0003.cs"))));
+        verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::Generic<>", "global::Generic<,>", "global::Generic" }));
+        await verifier.RunAsync();
+    }
+
+    [Fact]
+    public async Task NamespaceMultipleClassesSameName()
+    {
+        var verifier = CSharpSourceGeneratorVerifier<ScriptPathAttributeGenerator>.MakeVerifier(
+            Array.Empty<string>(),
+            new string[] { "NamespaceA.SameName_ScriptPath.generated.cs" }
+        );
+        verifier.TestState.Sources.Add(("SameName.cs", File.ReadAllText(Path.Combine(Constants.SourceFolderPath, "SameName.GD0003.cs"))));
+        verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::NamespaceA.SameName", "global::NamespaceB.SameName" }));
         await verifier.RunAsync();
     }
 }

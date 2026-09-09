@@ -1,53 +1,21 @@
 /**
- * \file version.h
+ * \file mbedtls/version.h
  *
  * \brief Run-time version information
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 /*
- * This set of compile-time defines and run-time variables can be used to
- * determine the version number of the Mbed TLS library used.
+ * This set of run-time variables can be used to determine the version number of
+ * the Mbed TLS library used. Compile-time version defines for the same can be
+ * found in build_info.h
  */
 #ifndef MBEDTLS_VERSION_H
 #define MBEDTLS_VERSION_H
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
-
-/**
- * The version number x.y.z is split into three parts.
- * Major, Minor, Patchlevel
- */
-#define MBEDTLS_VERSION_MAJOR  2
-#define MBEDTLS_VERSION_MINOR  28
-#define MBEDTLS_VERSION_PATCH  5
-
-/**
- * The single version number has the following structure:
- *    MMNNPP00
- *    Major version | Minor version | Patch version
- */
-#define MBEDTLS_VERSION_NUMBER         0x021C0500
-#define MBEDTLS_VERSION_STRING         "2.28.5"
-#define MBEDTLS_VERSION_STRING_FULL    "Mbed TLS 2.28.5"
+#include "mbedtls/build_info.h"
 
 #if defined(MBEDTLS_VERSION_C)
 
@@ -64,23 +32,14 @@ extern "C" {
 unsigned int mbedtls_version_get_number(void);
 
 /**
- * Get the version string ("x.y.z").
- *
- * \param string    The string that will receive the value.
- *                  (Should be at least 9 bytes in size)
+ * Get a pointer to the version string ("x.y.z").
  */
-void mbedtls_version_get_string(char *string);
+const char *mbedtls_version_get_string(void);
 
 /**
- * Get the full version string ("Mbed TLS x.y.z").
- *
- * \param string    The string that will receive the value. The Mbed TLS version
- *                  string will use 18 bytes AT MOST including a terminating
- *                  null byte.
- *                  (So the buffer should be at least 18 bytes to receive this
- *                  version string).
+ * Get a pointer to the full version string ("Mbed TLS x.y.z").
  */
-void mbedtls_version_get_string_full(char *string);
+const char *mbedtls_version_get_string_full(void);
 
 /**
  * \brief           Check if support for a feature was compiled into this
@@ -90,9 +49,9 @@ void mbedtls_version_get_string_full(char *string);
  *
  * \note            only checks against defines in the sections "System
  *                  support", "Mbed TLS modules" and "Mbed TLS feature
- *                  support" in config.h
+ *                  support" in mbedtls_config.h
  *
- * \param feature   The string for the define to check (e.g. "MBEDTLS_AES_C")
+ * \param feature   The string for the define to check (e.g. "MBEDTLS_SSL_SRV_C")
  *
  * \return          0 if the feature is present,
  *                  -1 if the feature is not present and

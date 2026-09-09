@@ -373,15 +373,15 @@ void main() {
 		}
 	}
 
+	//sync
+	groupMemoryBarrier();
+	barrier();
+
 	ivec3 global_pos = group_pos + ivec3(gl_LocalInvocationID.xyz) * params.step_size;
 
 	if (any(lessThan(global_pos, ivec3(0))) || any(greaterThanEqual(global_pos, ivec3(params.grid_size)))) {
 		return; //do nothing else, end here because outside range
 	}
-
-	//sync
-	groupMemoryBarrier();
-	barrier();
 
 	ivec3 local_pos = ivec3(gl_LocalInvocationID.xyz) + ivec3(1);
 
@@ -490,6 +490,8 @@ void main() {
 	region_offset += region * OCCLUSION_SIZE * 2;
 	region_offset += params.probe_offset * OCCLUSION_SIZE;
 
+	bool region_out_of_bounds = false;
+
 	if (params.scroll != ivec3(0)) {
 		//validate scroll region
 		ivec3 region_offset_to = region_offset + ivec3(OCCLUSION_SIZE * 2);
@@ -498,7 +500,7 @@ void main() {
 		ivec3 scroll_to = mix(ivec3(params.grid_size), params.scroll, greaterThan(params.scroll, ivec3(0)));
 
 		if ((uvec3(lessThanEqual(region_offset_to, scroll_from)) | uvec3(greaterThanEqual(region_offset, scroll_to))) * scroll_mask == scroll_mask) { //all axes that scroll are out, exit
-			return; //region outside scroll bounds, quit
+			region_out_of_bounds = true; //region outside scroll bounds, quit
 		}
 	}
 
@@ -506,25 +508,22 @@ void main() {
 
 	ivec3 local_ofs = ivec3(uvec3(invocation_idx % OCC_HALF_SIZE, (invocation_idx % (OCC_HALF_SIZE * OCC_HALF_SIZE)) / OCC_HALF_SIZE, invocation_idx / (OCC_HALF_SIZE * OCC_HALF_SIZE))) * 4;
 
-	/*	for(int i=0;i<64;i++) {
-		ivec3 offset = region_offset + local_ofs + ((ivec3(i) >> ivec3(0,2,4)) & ivec3(3,3,3));
-		uint facig =
-		if (all(greaterThanEqual(offset,ivec3(0))) && all(lessThan(offset,ivec3(params.grid_size)))) {*/
+	if (!region_out_of_bounds) {
+		for (int i = 0; i < 16; i++) { //skip x, so it can be packed
 
-	for (int i = 0; i < 16; i++) { //skip x, so it can be packed
+			ivec3 offset = local_ofs + ((ivec3(i * 4) >> ivec3(0, 2, 4)) & ivec3(3, 3, 3));
 
-		ivec3 offset = local_ofs + ((ivec3(i * 4) >> ivec3(0, 2, 4)) & ivec3(3, 3, 3));
-
-		uint facing_pack = 0;
-		for (int j = 0; j < 4; j++) {
-			ivec3 foffset = region_offset + offset + ivec3(j, 0, 0);
-			if (all(greaterThanEqual(foffset, ivec3(0))) && all(lessThan(foffset, ivec3(params.grid_size)))) {
-				uint f = imageLoad(src_facing, foffset).r;
-				facing_pack |= f << (j * 8);
+			uint facing_pack = 0;
+			for (int j = 0; j < 4; j++) {
+				ivec3 foffset = region_offset + offset + ivec3(j, 0, 0);
+				if (all(greaterThanEqual(foffset, ivec3(0))) && all(lessThan(foffset, ivec3(params.grid_size)))) {
+					uint f = imageLoad(src_facing, foffset).r;
+					facing_pack |= f << (j * 8);
+				}
 			}
-		}
 
-		occlusion_facing[(offset.z * (OCCLUSION_SIZE * 2 * OCCLUSION_SIZE * 2) + offset.y * (OCCLUSION_SIZE * 2) + offset.x) / 4] = facing_pack;
+			occlusion_facing[(offset.z * (OCCLUSION_SIZE * 2 * OCCLUSION_SIZE * 2) + offset.y * (OCCLUSION_SIZE * 2) + offset.x) / 4] = facing_pack;
+		}
 	}
 
 	//sync occlusion saved
@@ -537,30 +536,31 @@ void main() {
 #define OCC_HALF_STEPS (OCC_STEPS / 2)
 
 	for (int step = 0; step < OCC_STEPS; step++) {
-		bool shrink = step >= OCC_HALF_STEPS;
-		int occ_step = shrink ? OCC_HALF_STEPS - (step - OCC_HALF_STEPS) - 1 : step;
+		if (!region_out_of_bounds) {
+			bool shrink = step >= OCC_HALF_STEPS;
+			int occ_step = shrink ? OCC_HALF_STEPS - (step - OCC_HALF_STEPS) - 1 : step;
 
-		if (invocation_idx < group_size_offset[occ_step].x) {
-			uint pv = group_pos[group_size_offset[occ_step].y + invocation_idx];
-			ivec3 proc_abs = (ivec3(int(pv)) >> ivec3(0, 8, 16)) & ivec3(0xFF);
+			if (invocation_idx < group_size_offset[occ_step].x) {
+				uint pv = group_pos[group_size_offset[occ_step].y + invocation_idx];
+				ivec3 proc_abs = (ivec3(int(pv)) >> ivec3(0, 8, 16)) & ivec3(0xFF);
 
-			if (shrink) {
-				proc_abs = ivec3(OCCLUSION_SIZE) - proc_abs - ivec3(1);
-			}
+				if (shrink) {
+					proc_abs = ivec3(OCCLUSION_SIZE) - proc_abs - ivec3(1);
+				}
 
-			for (int i = 0; i < 8; i++) {
-				ivec3 bits = ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1));
-				ivec3 proc_sign = bits * 2 - 1;
-				ivec3 local_offset = ivec3(OCCLUSION_SIZE) + proc_abs * proc_sign - (ivec3(1) - bits);
-				ivec3 offset = local_offset + region_offset;
-				if (all(greaterThanEqual(offset, ivec3(0))) && all(lessThan(offset, ivec3(params.grid_size)))) {
-					float occ;
+				for (int i = 0; i < 8; i++) {
+					ivec3 bits = ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1));
+					ivec3 proc_sign = bits * 2 - 1;
+					ivec3 local_offset = ivec3(OCCLUSION_SIZE) + proc_abs * proc_sign - (ivec3(1) - bits);
+					ivec3 offset = local_offset + region_offset;
+					if (all(greaterThanEqual(offset, ivec3(0))) && all(lessThan(offset, ivec3(params.grid_size)))) {
+						float occ;
 
-					uint facing = get_facing(local_offset);
+						uint facing = get_facing(local_offset);
 
-					if (facing != 0) { //solid
-						occ = 0.0;
-					} else if (step == 0) {
+						if (facing != 0) { //solid
+							occ = 0.0;
+						} else if (step == 0) {
 #if 0
 						occ = 0.0;
 						if (get_facing(local_offset - ivec3(proc_sign.x,0,0))==0) {
@@ -579,75 +579,76 @@ void main() {
 
 						occ/=3.0;
 #endif
-						occ = 1.0;
+							occ = 1.0;
 
-					} else {
-						ivec3 read_dir = -proc_sign;
+						} else {
+							ivec3 read_dir = -proc_sign;
 
-						ivec3 major_axis;
-						if (proc_abs.x < proc_abs.y) {
-							if (proc_abs.z < proc_abs.y) {
-								major_axis = ivec3(0, 1, 0);
+							ivec3 major_axis;
+							if (proc_abs.x < proc_abs.y) {
+								if (proc_abs.z < proc_abs.y) {
+									major_axis = ivec3(0, 1, 0);
+								} else {
+									major_axis = ivec3(0, 0, 1);
+								}
 							} else {
-								major_axis = ivec3(0, 0, 1);
+								if (proc_abs.z < proc_abs.x) {
+									major_axis = ivec3(1, 0, 0);
+								} else {
+									major_axis = ivec3(0, 0, 1);
+								}
 							}
-						} else {
-							if (proc_abs.z < proc_abs.x) {
-								major_axis = ivec3(1, 0, 0);
+
+							float avg = 0.0;
+							occ = 0.0;
+
+							ivec3 read_x = offset + ivec3(read_dir.x, 0, 0) + (proc_abs.x == 0 ? major_axis * read_dir : ivec3(0));
+							ivec3 read_y = offset + ivec3(0, read_dir.y, 0) + (proc_abs.y == 0 ? major_axis * read_dir : ivec3(0));
+							ivec3 read_z = offset + ivec3(0, 0, read_dir.z) + (proc_abs.z == 0 ? major_axis * read_dir : ivec3(0));
+
+							uint facing_x = get_facing(read_x - region_offset);
+							if (facing_x == 0) {
+								if (all(greaterThanEqual(read_x, ivec3(0))) && all(lessThan(read_x, ivec3(params.grid_size)))) {
+									occ += imageLoad(dst_occlusion[params.occlusion_index], read_x).r;
+									avg += 1.0;
+								}
 							} else {
-								major_axis = ivec3(0, 0, 1);
+								if (proc_abs.x != 0) { //do not occlude from voxels in the opposite octant
+									avg += 1.0;
+								}
+							}
+
+							uint facing_y = get_facing(read_y - region_offset);
+							if (facing_y == 0) {
+								if (all(greaterThanEqual(read_y, ivec3(0))) && all(lessThan(read_y, ivec3(params.grid_size)))) {
+									occ += imageLoad(dst_occlusion[params.occlusion_index], read_y).r;
+									avg += 1.0;
+								}
+							} else {
+								if (proc_abs.y != 0) {
+									avg += 1.0;
+								}
+							}
+
+							uint facing_z = get_facing(read_z - region_offset);
+							if (facing_z == 0) {
+								if (all(greaterThanEqual(read_z, ivec3(0))) && all(lessThan(read_z, ivec3(params.grid_size)))) {
+									occ += imageLoad(dst_occlusion[params.occlusion_index], read_z).r;
+									avg += 1.0;
+								}
+							} else {
+								if (proc_abs.z != 0) {
+									avg += 1.0;
+								}
+							}
+
+							if (avg > 0.0) {
+								occ /= avg;
 							}
 						}
 
-						float avg = 0.0;
-						occ = 0.0;
-
-						ivec3 read_x = offset + ivec3(read_dir.x, 0, 0) + (proc_abs.x == 0 ? major_axis * read_dir : ivec3(0));
-						ivec3 read_y = offset + ivec3(0, read_dir.y, 0) + (proc_abs.y == 0 ? major_axis * read_dir : ivec3(0));
-						ivec3 read_z = offset + ivec3(0, 0, read_dir.z) + (proc_abs.z == 0 ? major_axis * read_dir : ivec3(0));
-
-						uint facing_x = get_facing(read_x - region_offset);
-						if (facing_x == 0) {
-							if (all(greaterThanEqual(read_x, ivec3(0))) && all(lessThan(read_x, ivec3(params.grid_size)))) {
-								occ += imageLoad(dst_occlusion[params.occlusion_index], read_x).r;
-								avg += 1.0;
-							}
-						} else {
-							if (proc_abs.x != 0) { //do not occlude from voxels in the opposite octant
-								avg += 1.0;
-							}
-						}
-
-						uint facing_y = get_facing(read_y - region_offset);
-						if (facing_y == 0) {
-							if (all(greaterThanEqual(read_y, ivec3(0))) && all(lessThan(read_y, ivec3(params.grid_size)))) {
-								occ += imageLoad(dst_occlusion[params.occlusion_index], read_y).r;
-								avg += 1.0;
-							}
-						} else {
-							if (proc_abs.y != 0) {
-								avg += 1.0;
-							}
-						}
-
-						uint facing_z = get_facing(read_z - region_offset);
-						if (facing_z == 0) {
-							if (all(greaterThanEqual(read_z, ivec3(0))) && all(lessThan(read_z, ivec3(params.grid_size)))) {
-								occ += imageLoad(dst_occlusion[params.occlusion_index], read_z).r;
-								avg += 1.0;
-							}
-						} else {
-							if (proc_abs.z != 0) {
-								avg += 1.0;
-							}
-						}
-
-						if (avg > 0.0) {
-							occ /= avg;
-						}
+						imageStore(dst_occlusion[params.occlusion_index], offset, vec4(occ));
 					}
-
-					imageStore(dst_occlusion[params.occlusion_index], offset, vec4(occ));
 				}
 			}
 		}
@@ -658,27 +659,28 @@ void main() {
 #if 1
 	//bias solid voxels away
 
-	for (int i = 0; i < 64; i++) {
-		ivec3 local_offset = local_ofs + ((ivec3(i) >> ivec3(0, 2, 4)) & ivec3(3, 3, 3));
-		ivec3 offset = region_offset + local_offset;
+	if (!region_out_of_bounds) {
+		for (int i = 0; i < 64; i++) {
+			ivec3 local_offset = local_ofs + ((ivec3(i) >> ivec3(0, 2, 4)) & ivec3(3, 3, 3));
+			ivec3 offset = region_offset + local_offset;
 
-		if (all(greaterThanEqual(offset, ivec3(0))) && all(lessThan(offset, ivec3(params.grid_size)))) {
-			uint facing = get_facing(local_offset);
+			if (all(greaterThanEqual(offset, ivec3(0))) && all(lessThan(offset, ivec3(params.grid_size)))) {
+				uint facing = get_facing(local_offset);
 
-			if (facing != 0) {
-				//only work on solids
+				if (facing != 0) {
+					//only work on solids
 
-				ivec3 proc_pos = local_offset - ivec3(OCCLUSION_SIZE);
-				proc_pos += mix(ivec3(0), ivec3(1), greaterThanEqual(proc_pos, ivec3(0)));
+					ivec3 proc_pos = local_offset - ivec3(OCCLUSION_SIZE);
+					proc_pos += mix(ivec3(0), ivec3(1), greaterThanEqual(proc_pos, ivec3(0)));
 
-				float avg = 0.0;
-				float occ = 0.0;
+					float avg = 0.0;
+					float occ = 0.0;
 
-				ivec3 read_dir = -sign(proc_pos);
-				ivec3 read_dir_x = ivec3(read_dir.x, 0, 0);
-				ivec3 read_dir_y = ivec3(0, read_dir.y, 0);
-				ivec3 read_dir_z = ivec3(0, 0, read_dir.z);
-				//solid
+					ivec3 read_dir = -sign(proc_pos);
+					ivec3 read_dir_x = ivec3(read_dir.x, 0, 0);
+					ivec3 read_dir_y = ivec3(0, read_dir.y, 0);
+					ivec3 read_dir_z = ivec3(0, 0, read_dir.z);
+					//solid
 #if 0
 
 				uvec3 facing_pos_base = (uvec3(facing) >> uvec3(0,1,2)) & uvec3(1,1,1);
@@ -686,105 +688,106 @@ void main() {
 				uvec3 facing_pos=  facing_pos_base &((~facing_neg_base)&uvec3(1,1,1));
 				uvec3 facing_neg=  facing_neg_base &((~facing_pos_base)&uvec3(1,1,1));
 #else
-				uvec3 facing_pos = (uvec3(facing) >> uvec3(0, 1, 2)) & uvec3(1, 1, 1);
-				uvec3 facing_neg = (uvec3(facing) >> uvec3(3, 4, 5)) & uvec3(1, 1, 1);
+					uvec3 facing_pos = (uvec3(facing) >> uvec3(0, 1, 2)) & uvec3(1, 1, 1);
+					uvec3 facing_neg = (uvec3(facing) >> uvec3(3, 4, 5)) & uvec3(1, 1, 1);
 #endif
-				bvec3 read_valid = bvec3(mix(facing_neg, facing_pos, greaterThan(read_dir, ivec3(0))));
+					bvec3 read_valid = bvec3(mix(facing_neg, facing_pos, greaterThan(read_dir, ivec3(0))));
 
-				//sides
-				if (read_valid.x) {
-					ivec3 read_offset = local_offset + read_dir_x;
-					uint f = get_facing(read_offset);
-					if (f == 0) {
-						read_offset += region_offset;
-						if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
-							occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
-							avg += 1.0;
+					//sides
+					if (read_valid.x) {
+						ivec3 read_offset = local_offset + read_dir_x;
+						uint f = get_facing(read_offset);
+						if (f == 0) {
+							read_offset += region_offset;
+							if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
+								occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
+								avg += 1.0;
+							}
 						}
 					}
-				}
 
-				if (read_valid.y) {
-					ivec3 read_offset = local_offset + read_dir_y;
-					uint f = get_facing(read_offset);
-					if (f == 0) {
-						read_offset += region_offset;
-						if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
-							occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
-							avg += 1.0;
+					if (read_valid.y) {
+						ivec3 read_offset = local_offset + read_dir_y;
+						uint f = get_facing(read_offset);
+						if (f == 0) {
+							read_offset += region_offset;
+							if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
+								occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
+								avg += 1.0;
+							}
 						}
 					}
-				}
 
-				if (read_valid.z) {
-					ivec3 read_offset = local_offset + read_dir_z;
-					uint f = get_facing(read_offset);
-					if (f == 0) {
-						read_offset += region_offset;
-						if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
-							occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
-							avg += 1.0;
+					if (read_valid.z) {
+						ivec3 read_offset = local_offset + read_dir_z;
+						uint f = get_facing(read_offset);
+						if (f == 0) {
+							read_offset += region_offset;
+							if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
+								occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
+								avg += 1.0;
+							}
 						}
 					}
-				}
 
-				//adjacents
+					//adjacents
 
-				if (all(read_valid.yz)) {
-					ivec3 read_offset = local_offset + read_dir_y + read_dir_z;
-					uint f = get_facing(read_offset);
-					if (f == 0) {
-						read_offset += region_offset;
-						if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
-							occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
-							avg += 1.0;
+					if (all(read_valid.yz)) {
+						ivec3 read_offset = local_offset + read_dir_y + read_dir_z;
+						uint f = get_facing(read_offset);
+						if (f == 0) {
+							read_offset += region_offset;
+							if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
+								occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
+								avg += 1.0;
+							}
 						}
 					}
-				}
 
-				if (all(read_valid.xz)) {
-					ivec3 read_offset = local_offset + read_dir_x + read_dir_z;
-					uint f = get_facing(read_offset);
-					if (f == 0) {
-						read_offset += region_offset;
-						if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
-							occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
-							avg += 1.0;
+					if (all(read_valid.xz)) {
+						ivec3 read_offset = local_offset + read_dir_x + read_dir_z;
+						uint f = get_facing(read_offset);
+						if (f == 0) {
+							read_offset += region_offset;
+							if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
+								occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
+								avg += 1.0;
+							}
 						}
 					}
-				}
 
-				if (all(read_valid.xy)) {
-					ivec3 read_offset = local_offset + read_dir_x + read_dir_y;
-					uint f = get_facing(read_offset);
-					if (f == 0) {
-						read_offset += region_offset;
-						if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
-							occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
-							avg += 1.0;
+					if (all(read_valid.xy)) {
+						ivec3 read_offset = local_offset + read_dir_x + read_dir_y;
+						uint f = get_facing(read_offset);
+						if (f == 0) {
+							read_offset += region_offset;
+							if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
+								occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
+								avg += 1.0;
+							}
 						}
 					}
-				}
 
-				//diagonal
+					//diagonal
 
-				if (all(read_valid)) {
-					ivec3 read_offset = local_offset + read_dir;
-					uint f = get_facing(read_offset);
-					if (f == 0) {
-						read_offset += region_offset;
-						if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
-							occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
-							avg += 1.0;
+					if (all(read_valid)) {
+						ivec3 read_offset = local_offset + read_dir;
+						uint f = get_facing(read_offset);
+						if (f == 0) {
+							read_offset += region_offset;
+							if (all(greaterThanEqual(read_offset, ivec3(0))) && all(lessThan(read_offset, ivec3(params.grid_size)))) {
+								occ += imageLoad(dst_occlusion[params.occlusion_index], read_offset).r;
+								avg += 1.0;
+							}
 						}
 					}
-				}
 
-				if (avg > 0.0) {
-					occ /= avg;
-				}
+					if (avg > 0.0) {
+						occ /= avg;
+					}
 
-				imageStore(dst_occlusion[params.occlusion_index], offset, vec4(occ));
+					imageStore(dst_occlusion[params.occlusion_index], offset, vec4(occ));
+				}
 			}
 		}
 	}
@@ -794,6 +797,11 @@ void main() {
 #if 1
 	groupMemoryBarrier();
 	barrier();
+
+	// There are no more barriers after this, so we can early return.
+	if (region_out_of_bounds) {
+		return;
+	}
 
 	for (int i = 0; i < 64; i++) {
 		ivec3 local_offset = local_ofs + ((ivec3(i) >> ivec3(0, 2, 4)) & ivec3(3, 3, 3));

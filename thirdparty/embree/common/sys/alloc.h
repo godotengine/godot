@@ -9,20 +9,43 @@
 
 namespace embree
 {
-#define ALIGNED_STRUCT_(align)                                           \
-  void* operator new(size_t size) { return alignedMalloc(size,align); } \
-  void operator delete(void* ptr) { alignedFree(ptr); }                 \
+#define ALIGNED_STRUCT_(align)                                            \
+  void* operator new(size_t size) { return alignedMalloc(size,align); }   \
+  void operator delete(void* ptr) { alignedFree(ptr); }                   \
   void* operator new[](size_t size) { return alignedMalloc(size,align); } \
   void operator delete[](void* ptr) { alignedFree(ptr); }
-
-#define ALIGNED_CLASS_(align)                                           \
- public:                                                               \
-    ALIGNED_STRUCT_(align)                                              \
- private:
   
+#define ALIGNED_CLASS_(align)                                          \
+ public:                                                               \
+    ALIGNED_STRUCT_(align)                                             \
+ private:
+
   /*! aligned allocation */
   void* alignedMalloc(size_t size, size_t align);
   void alignedFree(void* ptr);
+
+
+  enum class EmbreeUSMMode {
+    DEFAULT = 0,
+    DEVICE_READ_WRITE = 0,
+    DEVICE_READ_ONLY = 1
+  };
+
+  enum class EmbreeMemoryType {
+    USM_HOST = 0,
+    USM_DEVICE = 1,
+    USM_SHARED = 2,
+    MALLOC = 3
+  };
+
+#if defined(EMBREE_SYCL_SUPPORT)
+
+  /*! aligned allocation using SYCL USM */
+  void* alignedSYCLMalloc(sycl::context* context, sycl::device* device, size_t size, size_t align, EmbreeUSMMode mode);
+  void* alignedSYCLMalloc(sycl::context* context, sycl::device* device, size_t size, size_t align, EmbreeUSMMode mode, EmbreeMemoryType type);
+  void alignedSYCLFree(sycl::context* context, void* ptr);
+
+#endif
   
   /*! allocator that performs aligned allocations */
   template<typename T, size_t alignment>
@@ -93,6 +116,34 @@ namespace embree
       }
 
       bool hugepages;
+    };
+
+  /*! allocator that newer performs allocations */
+  template<typename T>
+    struct no_allocator
+    {
+      typedef T value_type;
+      typedef T* pointer;
+      typedef const T* const_pointer;
+      typedef T& reference;
+      typedef const T& const_reference;
+      typedef std::size_t size_type;
+      typedef std::ptrdiff_t difference_type;
+
+      __forceinline pointer allocate( size_type n ) {
+        abort(); //throw std::runtime_error("no allocation supported");
+      }
+
+      __forceinline void deallocate( pointer p, size_type n ) {
+      }
+
+      __forceinline void construct( pointer p, const_reference val ) {
+        new (p) T(val);
+      }
+
+      __forceinline void destroy( pointer p ) {
+        p->~T();
+      }
     };
 
   /*! allocator for IDs */

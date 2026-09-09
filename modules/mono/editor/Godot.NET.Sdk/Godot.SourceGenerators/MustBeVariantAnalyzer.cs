@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -9,7 +8,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Godot.SourceGenerators
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class MustBeVariantAnalyzer : DiagnosticAnalyzer
+    public sealed class MustBeVariantAnalyzer : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
             => ImmutableArray.Create(
@@ -34,7 +33,7 @@ namespace Godot.SourceGenerators
 
             // Method invocation or variable declaration that contained the type arguments
             var parentSyntax = context.Node.Parent;
-            Debug.Assert(parentSyntax != null);
+            Helper.ThrowIfNull(parentSyntax);
 
             var sm = context.SemanticModel;
 
@@ -49,9 +48,20 @@ namespace Godot.SourceGenerators
                     continue;
 
                 var typeSymbol = sm.GetSymbolInfo(typeSyntax).Symbol as ITypeSymbol;
-                Debug.Assert(typeSymbol != null);
+                Helper.ThrowIfNull(typeSymbol);
 
-                var parentSymbol = sm.GetSymbolInfo(parentSyntax).Symbol;
+                var parentSymbolInfo = sm.GetSymbolInfo(parentSyntax);
+                var parentSymbol = parentSymbolInfo.Symbol;
+                if (parentSymbol == null)
+                {
+                    if (parentSymbolInfo.CandidateReason == CandidateReason.LateBound)
+                    {
+                        // Invocations on dynamic are late bound so we can't retrieve the symbol.
+                        continue;
+                    }
+
+                    Helper.ThrowIfNull(parentSymbol);
+                }
 
                 if (!ShouldCheckTypeArgument(context, parentSyntax, parentSymbol, typeSyntax, typeSymbol, i))
                 {
@@ -62,17 +72,24 @@ namespace Godot.SourceGenerators
                 {
                     if (!typeParamSymbol.GetAttributes().Any(a => a.AttributeClass?.IsGodotMustBeVariantAttribute() ?? false))
                     {
-                        Common.ReportGenericTypeParameterMustBeVariantAnnotated(context, typeSyntax, typeSymbol);
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            Common.GenericTypeParameterMustBeVariantAnnotatedRule,
+                            typeSyntax.GetLocation(),
+                            typeSymbol.ToDisplayString()
+                        ));
                     }
                     continue;
                 }
 
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(typeSymbol, typeCache);
 
-                if (marshalType == null)
+                if (marshalType is null)
                 {
-                    Common.ReportGenericTypeArgumentMustBeVariant(context, typeSyntax, typeSymbol);
-                    continue;
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.GenericTypeArgumentMustBeVariantRule,
+                        typeSyntax.GetLocation(),
+                        typeSymbol.ToDisplayString()
+                    ));
                 }
             }
         }
@@ -106,24 +123,45 @@ namespace Godot.SourceGenerators
         /// <param name="parentSymbol">The symbol retrieved for the parent node syntax.</param>
         /// <param name="typeArgumentSyntax">The type node syntax of the argument type to check.</param>
         /// <param name="typeArgumentSymbol">The symbol retrieved for the type node syntax.</param>
+        /// <param name="typeArgumentIndex"></param>
         /// <returns><see langword="true"/> if the type must be variant and must be analyzed.</returns>
-        private bool ShouldCheckTypeArgument(SyntaxNodeAnalysisContext context, SyntaxNode parentSyntax, ISymbol parentSymbol, TypeSyntax typeArgumentSyntax, ITypeSymbol typeArgumentSymbol, int typeArgumentIndex)
+        private bool ShouldCheckTypeArgument(
+            SyntaxNodeAnalysisContext context,
+            SyntaxNode parentSyntax,
+            ISymbol parentSymbol,
+            TypeSyntax typeArgumentSyntax,
+            ITypeSymbol typeArgumentSymbol,
+            int typeArgumentIndex)
         {
-            var typeParamSymbol = parentSymbol switch
+            ITypeParameterSymbol? typeParamSymbol = parentSymbol switch
             {
-                IMethodSymbol methodSymbol => methodSymbol.TypeParameters[typeArgumentIndex],
-                INamedTypeSymbol typeSymbol => typeSymbol.TypeParameters[typeArgumentIndex],
-                _ => null,
+                IMethodSymbol methodSymbol when parentSyntax.Ancestors().Any(s => s is AttributeSyntax) &&
+                                                methodSymbol.ContainingType.TypeParameters.Length > 0
+                    => methodSymbol.ContainingType.TypeParameters[typeArgumentIndex],
+
+                IMethodSymbol { TypeParameters.Length: > 0 } methodSymbol
+                    => methodSymbol.TypeParameters[typeArgumentIndex],
+
+                INamedTypeSymbol { TypeParameters.Length: > 0 } typeSymbol
+                    => typeSymbol.TypeParameters[typeArgumentIndex],
+
+                _
+                    => null
             };
 
-            if (typeParamSymbol == null)
+            if (typeParamSymbol != null)
             {
-                Common.ReportTypeArgumentParentSymbolUnhandled(context, typeArgumentSyntax, parentSymbol);
-                return false;
+                return typeParamSymbol.GetAttributes()
+                    .Any(a => a.AttributeClass?.IsGodotMustBeVariantAttribute() ?? false);
             }
 
-            return typeParamSymbol.GetAttributes()
-                .Any(a => a.AttributeClass?.IsGodotMustBeVariantAttribute() ?? false);
+            context.ReportDiagnostic(Diagnostic.Create(
+                Common.TypeArgumentParentSymbolUnhandledRule,
+                typeArgumentSyntax.GetLocation(),
+                parentSymbol.ToDisplayString()
+            ));
+
+            return false;
         }
     }
 }

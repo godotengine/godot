@@ -11,9 +11,20 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include <assert.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include "src/dec/common_dec.h"
+#include "src/dec/vp8_dec.h"
 #include "src/dec/vp8i_dec.h"
+#include "src/dec/webpi_dec.h"
+#include "src/dsp/dsp.h"
+#include "src/utils/random_utils.h"
+#include "src/utils/thread_utils.h"
 #include "src/utils/utils.h"
+#include "src/webp/decode.h"
+#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 // Main reconstruction function.
@@ -72,11 +83,11 @@ static void ReconstructRow(const VP8Decoder* const dec,
                            const VP8ThreadContext* ctx) {
   int j;
   int mb_x;
-  const int mb_y = ctx->mb_y_;
-  const int cache_id = ctx->id_;
-  uint8_t* const y_dst = dec->yuv_b_ + Y_OFF;
-  uint8_t* const u_dst = dec->yuv_b_ + U_OFF;
-  uint8_t* const v_dst = dec->yuv_b_ + V_OFF;
+  const int mb_y = ctx->mb_y;
+  const int cache_id = ctx->id;
+  uint8_t* const y_dst = dec->yuv_b + Y_OFF;
+  uint8_t* const u_dst = dec->yuv_b + U_OFF;
+  uint8_t* const v_dst = dec->yuv_b + V_OFF;
 
   // Initialize left-most block.
   for (j = 0; j < 16; ++j) {
@@ -99,8 +110,8 @@ static void ReconstructRow(const VP8Decoder* const dec,
   }
 
   // Reconstruct one row.
-  for (mb_x = 0; mb_x < dec->mb_w_; ++mb_x) {
-    const VP8MBData* const block = ctx->mb_data_ + mb_x;
+  for (mb_x = 0; mb_x < dec->mb_w; ++mb_x) {
+    const VP8MBData* const block = ctx->mb_data + mb_x;
 
     // Rotate in the left samples from previously decoded block. We move four
     // pixels at a time for alignment reason, and because of in-loop filter.
@@ -115,9 +126,9 @@ static void ReconstructRow(const VP8Decoder* const dec,
     }
     {
       // bring top samples into the cache
-      VP8TopSamples* const top_yuv = dec->yuv_t_ + mb_x;
-      const int16_t* const coeffs = block->coeffs_;
-      uint32_t bits = block->non_zero_y_;
+      VP8TopSamples* const top_yuv = dec->yuv_t + mb_x;
+      const int16_t* const coeffs = block->coeffs;
+      uint32_t bits = block->non_zero_y;
       int n;
 
       if (mb_y > 0) {
@@ -127,11 +138,11 @@ static void ReconstructRow(const VP8Decoder* const dec,
       }
 
       // predict and add residuals
-      if (block->is_i4x4_) {   // 4x4
+      if (block->is_i4x4) {   // 4x4
         uint32_t* const top_right = (uint32_t*)(y_dst - BPS + 16);
 
         if (mb_y > 0) {
-          if (mb_x >= dec->mb_w_ - 1) {    // on rightmost border
+          if (mb_x >= dec->mb_w - 1) {    // on rightmost border
             memset(top_right, top_yuv[0].y[15], sizeof(*top_right));
           } else {
             memcpy(top_right, top_yuv[1].y, sizeof(*top_right));
@@ -143,11 +154,11 @@ static void ReconstructRow(const VP8Decoder* const dec,
         // predict and add residuals for all 4x4 blocks in turn.
         for (n = 0; n < 16; ++n, bits <<= 2) {
           uint8_t* const dst = y_dst + kScan[n];
-          VP8PredLuma4[block->imodes_[n]](dst);
+          VP8PredLuma4[block->imodes[n]](dst);
           DoTransform(bits, coeffs + n * 16, dst);
         }
       } else {    // 16x16
-        const int pred_func = CheckMode(mb_x, mb_y, block->imodes_[0]);
+        const int pred_func = CheckMode(mb_x, mb_y, block->imodes[0]);
         VP8PredLuma16[pred_func](y_dst);
         if (bits != 0) {
           for (n = 0; n < 16; ++n, bits <<= 2) {
@@ -157,8 +168,8 @@ static void ReconstructRow(const VP8Decoder* const dec,
       }
       {
         // Chroma
-        const uint32_t bits_uv = block->non_zero_uv_;
-        const int pred_func = CheckMode(mb_x, mb_y, block->uvmode_);
+        const uint32_t bits_uv = block->non_zero_uv;
+        const int pred_func = CheckMode(mb_x, mb_y, block->uvmode);
         VP8PredChroma8[pred_func](u_dst);
         VP8PredChroma8[pred_func](v_dst);
         DoUVTransform(bits_uv >> 0, coeffs + 16 * 16, u_dst);
@@ -166,25 +177,25 @@ static void ReconstructRow(const VP8Decoder* const dec,
       }
 
       // stash away top samples for next block
-      if (mb_y < dec->mb_h_ - 1) {
+      if (mb_y < dec->mb_h - 1) {
         memcpy(top_yuv[0].y, y_dst + 15 * BPS, 16);
         memcpy(top_yuv[0].u, u_dst +  7 * BPS,  8);
         memcpy(top_yuv[0].v, v_dst +  7 * BPS,  8);
       }
     }
-    // Transfer reconstructed samples from yuv_b_ cache to final destination.
+    // Transfer reconstructed samples from yuv_b cache to final destination.
     {
-      const int y_offset = cache_id * 16 * dec->cache_y_stride_;
-      const int uv_offset = cache_id * 8 * dec->cache_uv_stride_;
-      uint8_t* const y_out = dec->cache_y_ + mb_x * 16 + y_offset;
-      uint8_t* const u_out = dec->cache_u_ + mb_x * 8 + uv_offset;
-      uint8_t* const v_out = dec->cache_v_ + mb_x * 8 + uv_offset;
+      const int y_offset = cache_id * 16 * dec->cache_y_stride;
+      const int uv_offset = cache_id * 8 * dec->cache_uv_stride;
+      uint8_t* const y_out = dec->cache_y + mb_x * 16 + y_offset;
+      uint8_t* const u_out = dec->cache_u + mb_x * 8 + uv_offset;
+      uint8_t* const v_out = dec->cache_v + mb_x * 8 + uv_offset;
       for (j = 0; j < 16; ++j) {
-        memcpy(y_out + j * dec->cache_y_stride_, y_dst + j * BPS, 16);
+        memcpy(y_out + j * dec->cache_y_stride, y_dst + j * BPS, 16);
       }
       for (j = 0; j < 8; ++j) {
-        memcpy(u_out + j * dec->cache_uv_stride_, u_dst + j * BPS, 8);
-        memcpy(v_out + j * dec->cache_uv_stride_, v_dst + j * BPS, 8);
+        memcpy(u_out + j * dec->cache_uv_stride, u_dst + j * BPS, 8);
+        memcpy(v_out + j * dec->cache_uv_stride, v_dst + j * BPS, 8);
       }
     }
   }
@@ -201,40 +212,40 @@ static void ReconstructRow(const VP8Decoder* const dec,
 static const uint8_t kFilterExtraRows[3] = { 0, 2, 8 };
 
 static void DoFilter(const VP8Decoder* const dec, int mb_x, int mb_y) {
-  const VP8ThreadContext* const ctx = &dec->thread_ctx_;
-  const int cache_id = ctx->id_;
-  const int y_bps = dec->cache_y_stride_;
-  const VP8FInfo* const f_info = ctx->f_info_ + mb_x;
-  uint8_t* const y_dst = dec->cache_y_ + cache_id * 16 * y_bps + mb_x * 16;
-  const int ilevel = f_info->f_ilevel_;
-  const int limit = f_info->f_limit_;
+  const VP8ThreadContext* const ctx = &dec->thread_ctx;
+  const int cache_id = ctx->id;
+  const int y_bps = dec->cache_y_stride;
+  const VP8FInfo* const f_info = ctx->f_info + mb_x;
+  uint8_t* const y_dst = dec->cache_y + cache_id * 16 * y_bps + mb_x * 16;
+  const int ilevel = f_info->f_ilevel;
+  const int limit = f_info->f_limit;
   if (limit == 0) {
     return;
   }
   assert(limit >= 3);
-  if (dec->filter_type_ == 1) {   // simple
+  if (dec->filter_type == 1) {   // simple
     if (mb_x > 0) {
       VP8SimpleHFilter16(y_dst, y_bps, limit + 4);
     }
-    if (f_info->f_inner_) {
+    if (f_info->f_inner) {
       VP8SimpleHFilter16i(y_dst, y_bps, limit);
     }
     if (mb_y > 0) {
       VP8SimpleVFilter16(y_dst, y_bps, limit + 4);
     }
-    if (f_info->f_inner_) {
+    if (f_info->f_inner) {
       VP8SimpleVFilter16i(y_dst, y_bps, limit);
     }
   } else {    // complex
-    const int uv_bps = dec->cache_uv_stride_;
-    uint8_t* const u_dst = dec->cache_u_ + cache_id * 8 * uv_bps + mb_x * 8;
-    uint8_t* const v_dst = dec->cache_v_ + cache_id * 8 * uv_bps + mb_x * 8;
-    const int hev_thresh = f_info->hev_thresh_;
+    const int uv_bps = dec->cache_uv_stride;
+    uint8_t* const u_dst = dec->cache_u + cache_id * 8 * uv_bps + mb_x * 8;
+    uint8_t* const v_dst = dec->cache_v + cache_id * 8 * uv_bps + mb_x * 8;
+    const int hev_thresh = f_info->hev_thresh;
     if (mb_x > 0) {
       VP8HFilter16(y_dst, y_bps, limit + 4, ilevel, hev_thresh);
       VP8HFilter8(u_dst, v_dst, uv_bps, limit + 4, ilevel, hev_thresh);
     }
-    if (f_info->f_inner_) {
+    if (f_info->f_inner) {
       VP8HFilter16i(y_dst, y_bps, limit, ilevel, hev_thresh);
       VP8HFilter8i(u_dst, v_dst, uv_bps, limit, ilevel, hev_thresh);
     }
@@ -242,7 +253,7 @@ static void DoFilter(const VP8Decoder* const dec, int mb_x, int mb_y) {
       VP8VFilter16(y_dst, y_bps, limit + 4, ilevel, hev_thresh);
       VP8VFilter8(u_dst, v_dst, uv_bps, limit + 4, ilevel, hev_thresh);
     }
-    if (f_info->f_inner_) {
+    if (f_info->f_inner) {
       VP8VFilter16i(y_dst, y_bps, limit, ilevel, hev_thresh);
       VP8VFilter8i(u_dst, v_dst, uv_bps, limit, ilevel, hev_thresh);
     }
@@ -252,9 +263,9 @@ static void DoFilter(const VP8Decoder* const dec, int mb_x, int mb_y) {
 // Filter the decoded macroblock row (if needed)
 static void FilterRow(const VP8Decoder* const dec) {
   int mb_x;
-  const int mb_y = dec->thread_ctx_.mb_y_;
-  assert(dec->thread_ctx_.filter_row_);
-  for (mb_x = dec->tl_mb_x_; mb_x < dec->br_mb_x_; ++mb_x) {
+  const int mb_y = dec->thread_ctx.mb_y;
+  assert(dec->thread_ctx.filter_row);
+  for (mb_x = dec->tl_mb_x; mb_x < dec->br_mb_x; ++mb_x) {
     DoFilter(dec, mb_x, mb_y);
   }
 }
@@ -263,51 +274,51 @@ static void FilterRow(const VP8Decoder* const dec) {
 // Precompute the filtering strength for each segment and each i4x4/i16x16 mode.
 
 static void PrecomputeFilterStrengths(VP8Decoder* const dec) {
-  if (dec->filter_type_ > 0) {
+  if (dec->filter_type > 0) {
     int s;
-    const VP8FilterHeader* const hdr = &dec->filter_hdr_;
+    const VP8FilterHeader* const hdr = &dec->filter_hdr;
     for (s = 0; s < NUM_MB_SEGMENTS; ++s) {
       int i4x4;
       // First, compute the initial level
       int base_level;
-      if (dec->segment_hdr_.use_segment_) {
-        base_level = dec->segment_hdr_.filter_strength_[s];
-        if (!dec->segment_hdr_.absolute_delta_) {
-          base_level += hdr->level_;
+      if (dec->segment_hdr.use_segment) {
+        base_level = dec->segment_hdr.filter_strength[s];
+        if (!dec->segment_hdr.absolute_delta) {
+          base_level += hdr->level;
         }
       } else {
-        base_level = hdr->level_;
+        base_level = hdr->level;
       }
       for (i4x4 = 0; i4x4 <= 1; ++i4x4) {
-        VP8FInfo* const info = &dec->fstrengths_[s][i4x4];
+        VP8FInfo* const info = &dec->fstrengths[s][i4x4];
         int level = base_level;
-        if (hdr->use_lf_delta_) {
-          level += hdr->ref_lf_delta_[0];
+        if (hdr->use_lf_delta) {
+          level += hdr->ref_lf_delta[0];
           if (i4x4) {
-            level += hdr->mode_lf_delta_[0];
+            level += hdr->mode_lf_delta[0];
           }
         }
         level = (level < 0) ? 0 : (level > 63) ? 63 : level;
         if (level > 0) {
           int ilevel = level;
-          if (hdr->sharpness_ > 0) {
-            if (hdr->sharpness_ > 4) {
+          if (hdr->sharpness > 0) {
+            if (hdr->sharpness > 4) {
               ilevel >>= 2;
             } else {
               ilevel >>= 1;
             }
-            if (ilevel > 9 - hdr->sharpness_) {
-              ilevel = 9 - hdr->sharpness_;
+            if (ilevel > 9 - hdr->sharpness) {
+              ilevel = 9 - hdr->sharpness;
             }
           }
           if (ilevel < 1) ilevel = 1;
-          info->f_ilevel_ = ilevel;
-          info->f_limit_ = 2 * level + ilevel;
-          info->hev_thresh_ = (level >= 40) ? 2 : (level >= 15) ? 1 : 0;
+          info->f_ilevel = ilevel;
+          info->f_limit = 2 * level + ilevel;
+          info->hev_thresh = (level >= 40) ? 2 : (level >= 15) ? 1 : 0;
         } else {
-          info->f_limit_ = 0;  // no filtering
+          info->f_limit = 0;  // no filtering
         }
-        info->f_inner_ = i4x4;
+        info->f_inner = i4x4;
       }
     }
   }
@@ -321,7 +332,7 @@ static void PrecomputeFilterStrengths(VP8Decoder* const dec) {
 
 #define DITHER_AMP_TAB_SIZE 12
 static const uint8_t kQuantToDitherAmp[DITHER_AMP_TAB_SIZE] = {
-  // roughly, it's dqm->uv_mat_[1]
+  // roughly, it's dqm->uv_mat[1]
   8, 7, 6, 4, 4, 2, 2, 2, 1, 1, 1, 1
 };
 
@@ -336,24 +347,24 @@ void VP8InitDithering(const WebPDecoderOptions* const options,
       int s;
       int all_amp = 0;
       for (s = 0; s < NUM_MB_SEGMENTS; ++s) {
-        VP8QuantMatrix* const dqm = &dec->dqm_[s];
-        if (dqm->uv_quant_ < DITHER_AMP_TAB_SIZE) {
-          const int idx = (dqm->uv_quant_ < 0) ? 0 : dqm->uv_quant_;
-          dqm->dither_ = (f * kQuantToDitherAmp[idx]) >> 3;
+        VP8QuantMatrix* const dqm = &dec->dqm[s];
+        if (dqm->uv_quant < DITHER_AMP_TAB_SIZE) {
+          const int idx = (dqm->uv_quant < 0) ? 0 : dqm->uv_quant;
+          dqm->dither = (f * kQuantToDitherAmp[idx]) >> 3;
         }
-        all_amp |= dqm->dither_;
+        all_amp |= dqm->dither;
       }
       if (all_amp != 0) {
-        VP8InitRandom(&dec->dithering_rg_, 1.0f);
-        dec->dither_ = 1;
+        VP8InitRandom(&dec->dithering_rg, 1.0f);
+        dec->dither = 1;
       }
     }
     // potentially allow alpha dithering
-    dec->alpha_dithering_ = options->alpha_dithering_strength;
-    if (dec->alpha_dithering_ > 100) {
-      dec->alpha_dithering_ = 100;
-    } else if (dec->alpha_dithering_ < 0) {
-      dec->alpha_dithering_ = 0;
+    dec->alpha_dithering = options->alpha_dithering_strength;
+    if (dec->alpha_dithering > 100) {
+      dec->alpha_dithering = 100;
+    } else if (dec->alpha_dithering < 0) {
+      dec->alpha_dithering = 0;
     }
   }
 }
@@ -370,17 +381,17 @@ static void Dither8x8(VP8Random* const rg, uint8_t* dst, int bps, int amp) {
 
 static void DitherRow(VP8Decoder* const dec) {
   int mb_x;
-  assert(dec->dither_);
-  for (mb_x = dec->tl_mb_x_; mb_x < dec->br_mb_x_; ++mb_x) {
-    const VP8ThreadContext* const ctx = &dec->thread_ctx_;
-    const VP8MBData* const data = ctx->mb_data_ + mb_x;
-    const int cache_id = ctx->id_;
-    const int uv_bps = dec->cache_uv_stride_;
-    if (data->dither_ >= MIN_DITHER_AMP) {
-      uint8_t* const u_dst = dec->cache_u_ + cache_id * 8 * uv_bps + mb_x * 8;
-      uint8_t* const v_dst = dec->cache_v_ + cache_id * 8 * uv_bps + mb_x * 8;
-      Dither8x8(&dec->dithering_rg_, u_dst, uv_bps, data->dither_);
-      Dither8x8(&dec->dithering_rg_, v_dst, uv_bps, data->dither_);
+  assert(dec->dither);
+  for (mb_x = dec->tl_mb_x; mb_x < dec->br_mb_x; ++mb_x) {
+    const VP8ThreadContext* const ctx = &dec->thread_ctx;
+    const VP8MBData* const data = ctx->mb_data + mb_x;
+    const int cache_id = ctx->id;
+    const int uv_bps = dec->cache_uv_stride;
+    if (data->dither >= MIN_DITHER_AMP) {
+      uint8_t* const u_dst = dec->cache_u + cache_id * 8 * uv_bps + mb_x * 8;
+      uint8_t* const v_dst = dec->cache_v + cache_id * 8 * uv_bps + mb_x * 8;
+      Dither8x8(&dec->dithering_rg, u_dst, uv_bps, data->dither);
+      Dither8x8(&dec->dithering_rg, v_dst, uv_bps, data->dither);
     }
   }
 }
@@ -403,29 +414,29 @@ static int FinishRow(void* arg1, void* arg2) {
   VP8Decoder* const dec = (VP8Decoder*)arg1;
   VP8Io* const io = (VP8Io*)arg2;
   int ok = 1;
-  const VP8ThreadContext* const ctx = &dec->thread_ctx_;
-  const int cache_id = ctx->id_;
-  const int extra_y_rows = kFilterExtraRows[dec->filter_type_];
-  const int ysize = extra_y_rows * dec->cache_y_stride_;
-  const int uvsize = (extra_y_rows / 2) * dec->cache_uv_stride_;
-  const int y_offset = cache_id * 16 * dec->cache_y_stride_;
-  const int uv_offset = cache_id * 8 * dec->cache_uv_stride_;
-  uint8_t* const ydst = dec->cache_y_ - ysize + y_offset;
-  uint8_t* const udst = dec->cache_u_ - uvsize + uv_offset;
-  uint8_t* const vdst = dec->cache_v_ - uvsize + uv_offset;
-  const int mb_y = ctx->mb_y_;
+  const VP8ThreadContext* const ctx = &dec->thread_ctx;
+  const int cache_id = ctx->id;
+  const int extra_y_rows = kFilterExtraRows[dec->filter_type];
+  const int ysize = extra_y_rows * dec->cache_y_stride;
+  const int uvsize = (extra_y_rows / 2) * dec->cache_uv_stride;
+  const int y_offset = cache_id * 16 * dec->cache_y_stride;
+  const int uv_offset = cache_id * 8 * dec->cache_uv_stride;
+  uint8_t* const ydst = dec->cache_y - ysize + y_offset;
+  uint8_t* const udst = dec->cache_u - uvsize + uv_offset;
+  uint8_t* const vdst = dec->cache_v - uvsize + uv_offset;
+  const int mb_y = ctx->mb_y;
   const int is_first_row = (mb_y == 0);
-  const int is_last_row = (mb_y >= dec->br_mb_y_ - 1);
+  const int is_last_row = (mb_y >= dec->br_mb_y - 1);
 
-  if (dec->mt_method_ == 2) {
+  if (dec->mt_method == 2) {
     ReconstructRow(dec, ctx);
   }
 
-  if (ctx->filter_row_) {
+  if (ctx->filter_row) {
     FilterRow(dec);
   }
 
-  if (dec->dither_) {
+  if (dec->dither) {
     DitherRow(dec);
   }
 
@@ -438,9 +449,9 @@ static int FinishRow(void* arg1, void* arg2) {
       io->u = udst;
       io->v = vdst;
     } else {
-      io->y = dec->cache_y_ + y_offset;
-      io->u = dec->cache_u_ + uv_offset;
-      io->v = dec->cache_v_ + uv_offset;
+      io->y = dec->cache_y + y_offset;
+      io->u = dec->cache_u + uv_offset;
+      io->v = dec->cache_v + uv_offset;
     }
 
     if (!is_last_row) {
@@ -449,9 +460,9 @@ static int FinishRow(void* arg1, void* arg2) {
     if (y_end > io->crop_bottom) {
       y_end = io->crop_bottom;    // make sure we don't overflow on last row.
     }
-    // If dec->alpha_data_ is not NULL, we have some alpha plane present.
+    // If dec->alpha_data is not NULL, we have some alpha plane present.
     io->a = NULL;
-    if (dec->alpha_data_ != NULL && y_start < y_end) {
+    if (dec->alpha_data != NULL && y_start < y_end) {
       io->a = VP8DecompressAlphaRows(dec, io, y_start, y_end - y_start);
       if (io->a == NULL) {
         return VP8SetError(dec, VP8_STATUS_BITSTREAM_ERROR,
@@ -462,9 +473,9 @@ static int FinishRow(void* arg1, void* arg2) {
       const int delta_y = io->crop_top - y_start;
       y_start = io->crop_top;
       assert(!(delta_y & 1));
-      io->y += dec->cache_y_stride_ * delta_y;
-      io->u += dec->cache_uv_stride_ * (delta_y >> 1);
-      io->v += dec->cache_uv_stride_ * (delta_y >> 1);
+      io->y += dec->cache_y_stride * delta_y;
+      io->u += dec->cache_uv_stride * (delta_y >> 1);
+      io->v += dec->cache_uv_stride * (delta_y >> 1);
       if (io->a != NULL) {
         io->a += io->width * delta_y;
       }
@@ -483,11 +494,11 @@ static int FinishRow(void* arg1, void* arg2) {
     }
   }
   // rotate top samples if needed
-  if (cache_id + 1 == dec->num_caches_) {
+  if (cache_id + 1 == dec->num_caches) {
     if (!is_last_row) {
-      memcpy(dec->cache_y_ - ysize, ydst + 16 * dec->cache_y_stride_, ysize);
-      memcpy(dec->cache_u_ - uvsize, udst + 8 * dec->cache_uv_stride_, uvsize);
-      memcpy(dec->cache_v_ - uvsize, vdst + 8 * dec->cache_uv_stride_, uvsize);
+      memcpy(dec->cache_y - ysize, ydst + 16 * dec->cache_y_stride, ysize);
+      memcpy(dec->cache_u - uvsize, udst + 8 * dec->cache_uv_stride, uvsize);
+      memcpy(dec->cache_v - uvsize, vdst + 8 * dec->cache_uv_stride, uvsize);
     }
   }
 
@@ -500,43 +511,43 @@ static int FinishRow(void* arg1, void* arg2) {
 
 int VP8ProcessRow(VP8Decoder* const dec, VP8Io* const io) {
   int ok = 1;
-  VP8ThreadContext* const ctx = &dec->thread_ctx_;
+  VP8ThreadContext* const ctx = &dec->thread_ctx;
   const int filter_row =
-      (dec->filter_type_ > 0) &&
-      (dec->mb_y_ >= dec->tl_mb_y_) && (dec->mb_y_ <= dec->br_mb_y_);
-  if (dec->mt_method_ == 0) {
-    // ctx->id_ and ctx->f_info_ are already set
-    ctx->mb_y_ = dec->mb_y_;
-    ctx->filter_row_ = filter_row;
+      (dec->filter_type > 0) &&
+      (dec->mb_y >= dec->tl_mb_y) && (dec->mb_y <= dec->br_mb_y);
+  if (dec->mt_method == 0) {
+    // ctx->id and ctx->f_info are already set
+    ctx->mb_y = dec->mb_y;
+    ctx->filter_row = filter_row;
     ReconstructRow(dec, ctx);
     ok = FinishRow(dec, io);
   } else {
-    WebPWorker* const worker = &dec->worker_;
+    WebPWorker* const worker = &dec->worker;
     // Finish previous job *before* updating context
     ok &= WebPGetWorkerInterface()->Sync(worker);
-    assert(worker->status_ == OK);
+    assert(worker->status == OK);
     if (ok) {   // spawn a new deblocking/output job
-      ctx->io_ = *io;
-      ctx->id_ = dec->cache_id_;
-      ctx->mb_y_ = dec->mb_y_;
-      ctx->filter_row_ = filter_row;
-      if (dec->mt_method_ == 2) {  // swap macroblock data
-        VP8MBData* const tmp = ctx->mb_data_;
-        ctx->mb_data_ = dec->mb_data_;
-        dec->mb_data_ = tmp;
+      ctx->io = *io;
+      ctx->id = dec->cache_id;
+      ctx->mb_y = dec->mb_y;
+      ctx->filter_row = filter_row;
+      if (dec->mt_method == 2) {  // swap macroblock data
+        VP8MBData* const tmp = ctx->mb_data;
+        ctx->mb_data = dec->mb_data;
+        dec->mb_data = tmp;
       } else {
         // perform reconstruction directly in main thread
         ReconstructRow(dec, ctx);
       }
       if (filter_row) {            // swap filter info
-        VP8FInfo* const tmp = ctx->f_info_;
-        ctx->f_info_ = dec->f_info_;
-        dec->f_info_ = tmp;
+        VP8FInfo* const tmp = ctx->f_info;
+        ctx->f_info = dec->f_info;
+        dec->f_info = tmp;
       }
       // (reconstruct)+filter in parallel
       WebPGetWorkerInterface()->Launch(worker);
-      if (++dec->cache_id_ == dec->num_caches_) {
-        dec->cache_id_ = 0;
+      if (++dec->cache_id == dec->num_caches) {
+        dec->cache_id = 0;
       }
     }
   }
@@ -551,12 +562,12 @@ VP8StatusCode VP8EnterCritical(VP8Decoder* const dec, VP8Io* const io) {
   // Note: Afterward, we must call teardown() no matter what.
   if (io->setup != NULL && !io->setup(io)) {
     VP8SetError(dec, VP8_STATUS_USER_ABORT, "Frame setup failed");
-    return dec->status_;
+    return dec->status;
   }
 
   // Disable filtering per user request
   if (io->bypass_filtering) {
-    dec->filter_type_ = 0;
+    dec->filter_type = 0;
   }
 
   // Define the area where we can skip in-loop filtering, in case of cropping.
@@ -569,29 +580,29 @@ VP8StatusCode VP8EnterCritical(VP8Decoder* const dec, VP8Io* const io) {
   // top-left corner of the picture (MB #0). We must filter all the previous
   // macroblocks.
   {
-    const int extra_pixels = kFilterExtraRows[dec->filter_type_];
-    if (dec->filter_type_ == 2) {
+    const int extra_pixels = kFilterExtraRows[dec->filter_type];
+    if (dec->filter_type == 2) {
       // For complex filter, we need to preserve the dependency chain.
-      dec->tl_mb_x_ = 0;
-      dec->tl_mb_y_ = 0;
+      dec->tl_mb_x = 0;
+      dec->tl_mb_y = 0;
     } else {
       // For simple filter, we can filter only the cropped region.
       // We include 'extra_pixels' on the other side of the boundary, since
       // vertical or horizontal filtering of the previous macroblock can
       // modify some abutting pixels.
-      dec->tl_mb_x_ = (io->crop_left - extra_pixels) >> 4;
-      dec->tl_mb_y_ = (io->crop_top - extra_pixels) >> 4;
-      if (dec->tl_mb_x_ < 0) dec->tl_mb_x_ = 0;
-      if (dec->tl_mb_y_ < 0) dec->tl_mb_y_ = 0;
+      dec->tl_mb_x = (io->crop_left - extra_pixels) >> 4;
+      dec->tl_mb_y = (io->crop_top - extra_pixels) >> 4;
+      if (dec->tl_mb_x < 0) dec->tl_mb_x = 0;
+      if (dec->tl_mb_y < 0) dec->tl_mb_y = 0;
     }
     // We need some 'extra' pixels on the right/bottom.
-    dec->br_mb_y_ = (io->crop_bottom + 15 + extra_pixels) >> 4;
-    dec->br_mb_x_ = (io->crop_right + 15 + extra_pixels) >> 4;
-    if (dec->br_mb_x_ > dec->mb_w_) {
-      dec->br_mb_x_ = dec->mb_w_;
+    dec->br_mb_y = (io->crop_bottom + 15 + extra_pixels) >> 4;
+    dec->br_mb_x = (io->crop_right + 15 + extra_pixels) >> 4;
+    if (dec->br_mb_x > dec->mb_w) {
+      dec->br_mb_x = dec->mb_w;
     }
-    if (dec->br_mb_y_ > dec->mb_h_) {
-      dec->br_mb_y_ = dec->mb_h_;
+    if (dec->br_mb_y > dec->mb_h) {
+      dec->br_mb_y = dec->mb_h;
     }
   }
   PrecomputeFilterStrengths(dec);
@@ -600,8 +611,8 @@ VP8StatusCode VP8EnterCritical(VP8Decoder* const dec, VP8Io* const io) {
 
 int VP8ExitCritical(VP8Decoder* const dec, VP8Io* const io) {
   int ok = 1;
-  if (dec->mt_method_ > 0) {
-    ok = WebPGetWorkerInterface()->Sync(&dec->worker_);
+  if (dec->mt_method > 0) {
+    ok = WebPGetWorkerInterface()->Sync(&dec->worker);
   }
 
   if (io->teardown != NULL) {
@@ -639,20 +650,20 @@ int VP8ExitCritical(VP8Decoder* const dec, VP8Io* const io) {
 
 // Initialize multi/single-thread worker
 static int InitThreadContext(VP8Decoder* const dec) {
-  dec->cache_id_ = 0;
-  if (dec->mt_method_ > 0) {
-    WebPWorker* const worker = &dec->worker_;
+  dec->cache_id = 0;
+  if (dec->mt_method > 0) {
+    WebPWorker* const worker = &dec->worker;
     if (!WebPGetWorkerInterface()->Reset(worker)) {
       return VP8SetError(dec, VP8_STATUS_OUT_OF_MEMORY,
                          "thread initialization failed.");
     }
     worker->data1 = dec;
-    worker->data2 = (void*)&dec->thread_ctx_.io_;
+    worker->data2 = (void*)&dec->thread_ctx.io;
     worker->hook = FinishRow;
-    dec->num_caches_ =
-      (dec->filter_type_ > 0) ? MT_CACHE_LINES : MT_CACHE_LINES - 1;
+    dec->num_caches =
+        (dec->filter_type > 0) ? MT_CACHE_LINES : MT_CACHE_LINES - 1;
   } else {
-    dec->num_caches_ = ST_CACHE_LINES;
+    dec->num_caches = ST_CACHE_LINES;
   }
   return 1;
 }
@@ -680,25 +691,25 @@ int VP8GetThreadMethod(const WebPDecoderOptions* const options,
 // Memory setup
 
 static int AllocateMemory(VP8Decoder* const dec) {
-  const int num_caches = dec->num_caches_;
-  const int mb_w = dec->mb_w_;
+  const int num_caches = dec->num_caches;
+  const int mb_w = dec->mb_w;
   // Note: we use 'size_t' when there's no overflow risk, uint64_t otherwise.
   const size_t intra_pred_mode_size = 4 * mb_w * sizeof(uint8_t);
   const size_t top_size = sizeof(VP8TopSamples) * mb_w;
   const size_t mb_info_size = (mb_w + 1) * sizeof(VP8MB);
   const size_t f_info_size =
-      (dec->filter_type_ > 0) ?
-          mb_w * (dec->mt_method_ > 0 ? 2 : 1) * sizeof(VP8FInfo)
+      (dec->filter_type > 0) ?
+          mb_w * (dec->mt_method > 0 ? 2 : 1) * sizeof(VP8FInfo)
         : 0;
-  const size_t yuv_size = YUV_SIZE * sizeof(*dec->yuv_b_);
+  const size_t yuv_size = YUV_SIZE * sizeof(*dec->yuv_b);
   const size_t mb_data_size =
-      (dec->mt_method_ == 2 ? 2 : 1) * mb_w * sizeof(*dec->mb_data_);
+      (dec->mt_method == 2 ? 2 : 1) * mb_w * sizeof(*dec->mb_data);
   const size_t cache_height = (16 * num_caches
-                            + kFilterExtraRows[dec->filter_type_]) * 3 / 2;
+                            + kFilterExtraRows[dec->filter_type]) * 3 / 2;
   const size_t cache_size = top_size * cache_height;
   // alpha_size is the only one that scales as width x height.
-  const uint64_t alpha_size = (dec->alpha_data_ != NULL) ?
-      (uint64_t)dec->pic_hdr_.width_ * dec->pic_hdr_.height_ : 0ULL;
+  const uint64_t alpha_size = (dec->alpha_data != NULL) ?
+      (uint64_t)dec->pic_hdr.width * dec->pic_hdr.height : 0ULL;
   const uint64_t needed = (uint64_t)intra_pred_mode_size
                         + top_size + mb_info_size + f_info_size
                         + yuv_size + mb_data_size
@@ -706,77 +717,77 @@ static int AllocateMemory(VP8Decoder* const dec) {
   uint8_t* mem;
 
   if (!CheckSizeOverflow(needed)) return 0;  // check for overflow
-  if (needed > dec->mem_size_) {
-    WebPSafeFree(dec->mem_);
-    dec->mem_size_ = 0;
-    dec->mem_ = WebPSafeMalloc(needed, sizeof(uint8_t));
-    if (dec->mem_ == NULL) {
+  if (needed > dec->mem_size) {
+    WebPSafeFree(dec->mem);
+    dec->mem_size = 0;
+    dec->mem = WebPSafeMalloc(needed, sizeof(uint8_t));
+    if (dec->mem == NULL) {
       return VP8SetError(dec, VP8_STATUS_OUT_OF_MEMORY,
                          "no memory during frame initialization.");
     }
     // down-cast is ok, thanks to WebPSafeMalloc() above.
-    dec->mem_size_ = (size_t)needed;
+    dec->mem_size = (size_t)needed;
   }
 
-  mem = (uint8_t*)dec->mem_;
-  dec->intra_t_ = mem;
+  mem = (uint8_t*)dec->mem;
+  dec->intra_t = mem;
   mem += intra_pred_mode_size;
 
-  dec->yuv_t_ = (VP8TopSamples*)mem;
+  dec->yuv_t = (VP8TopSamples*)mem;
   mem += top_size;
 
-  dec->mb_info_ = ((VP8MB*)mem) + 1;
+  dec->mb_info = ((VP8MB*)mem) + 1;
   mem += mb_info_size;
 
-  dec->f_info_ = f_info_size ? (VP8FInfo*)mem : NULL;
+  dec->f_info = f_info_size ? (VP8FInfo*)mem : NULL;
   mem += f_info_size;
-  dec->thread_ctx_.id_ = 0;
-  dec->thread_ctx_.f_info_ = dec->f_info_;
-  if (dec->filter_type_ > 0 && dec->mt_method_ > 0) {
+  dec->thread_ctx.id = 0;
+  dec->thread_ctx.f_info = dec->f_info;
+  if (dec->filter_type > 0 && dec->mt_method > 0) {
     // secondary cache line. The deblocking process need to make use of the
     // filtering strength from previous macroblock row, while the new ones
     // are being decoded in parallel. We'll just swap the pointers.
-    dec->thread_ctx_.f_info_ += mb_w;
+    dec->thread_ctx.f_info += mb_w;
   }
 
   mem = (uint8_t*)WEBP_ALIGN(mem);
   assert((yuv_size & WEBP_ALIGN_CST) == 0);
-  dec->yuv_b_ = mem;
+  dec->yuv_b = mem;
   mem += yuv_size;
 
-  dec->mb_data_ = (VP8MBData*)mem;
-  dec->thread_ctx_.mb_data_ = (VP8MBData*)mem;
-  if (dec->mt_method_ == 2) {
-    dec->thread_ctx_.mb_data_ += mb_w;
+  dec->mb_data = (VP8MBData*)mem;
+  dec->thread_ctx.mb_data = (VP8MBData*)mem;
+  if (dec->mt_method == 2) {
+    dec->thread_ctx.mb_data += mb_w;
   }
   mem += mb_data_size;
 
-  dec->cache_y_stride_ = 16 * mb_w;
-  dec->cache_uv_stride_ = 8 * mb_w;
+  dec->cache_y_stride = 16 * mb_w;
+  dec->cache_uv_stride = 8 * mb_w;
   {
-    const int extra_rows = kFilterExtraRows[dec->filter_type_];
-    const int extra_y = extra_rows * dec->cache_y_stride_;
-    const int extra_uv = (extra_rows / 2) * dec->cache_uv_stride_;
-    dec->cache_y_ = mem + extra_y;
-    dec->cache_u_ = dec->cache_y_
-                  + 16 * num_caches * dec->cache_y_stride_ + extra_uv;
-    dec->cache_v_ = dec->cache_u_
-                  + 8 * num_caches * dec->cache_uv_stride_ + extra_uv;
-    dec->cache_id_ = 0;
+    const int extra_rows = kFilterExtraRows[dec->filter_type];
+    const int extra_y = extra_rows * dec->cache_y_stride;
+    const int extra_uv = (extra_rows / 2) * dec->cache_uv_stride;
+    dec->cache_y = mem + extra_y;
+    dec->cache_u = dec->cache_y
+                  + 16 * num_caches * dec->cache_y_stride + extra_uv;
+    dec->cache_v = dec->cache_u
+                  + 8 * num_caches * dec->cache_uv_stride + extra_uv;
+    dec->cache_id = 0;
   }
   mem += cache_size;
 
   // alpha plane
-  dec->alpha_plane_ = alpha_size ? mem : NULL;
+  dec->alpha_plane = alpha_size ? mem : NULL;
   mem += alpha_size;
-  assert(mem <= (uint8_t*)dec->mem_ + dec->mem_size_);
+  assert(mem <= (uint8_t*)dec->mem + dec->mem_size);
 
   // note: left/top-info is initialized once for all.
-  memset(dec->mb_info_ - 1, 0, mb_info_size);
+  memset(dec->mb_info - 1, 0, mb_info_size);
   VP8InitScanline(dec);   // initialize left too.
 
   // initialize top
-  memset(dec->intra_t_, B_DC_PRED, intra_pred_mode_size);
+  memset(dec->intra_t, B_DC_PRED, intra_pred_mode_size);
 
   return 1;
 }
@@ -784,16 +795,16 @@ static int AllocateMemory(VP8Decoder* const dec) {
 static void InitIo(VP8Decoder* const dec, VP8Io* io) {
   // prepare 'io'
   io->mb_y = 0;
-  io->y = dec->cache_y_;
-  io->u = dec->cache_u_;
-  io->v = dec->cache_v_;
-  io->y_stride = dec->cache_y_stride_;
-  io->uv_stride = dec->cache_uv_stride_;
+  io->y = dec->cache_y;
+  io->u = dec->cache_u;
+  io->v = dec->cache_v;
+  io->y_stride = dec->cache_y_stride;
+  io->uv_stride = dec->cache_uv_stride;
   io->a = NULL;
 }
 
 int VP8InitFrame(VP8Decoder* const dec, VP8Io* const io) {
-  if (!InitThreadContext(dec)) return 0;  // call first. Sets dec->num_caches_.
+  if (!InitThreadContext(dec)) return 0;  // call first. Sets dec->num_caches.
   if (!AllocateMemory(dec)) return 0;
   InitIo(dec, io);
   VP8DspInit();  // Init critical function pointers and look-up tables.

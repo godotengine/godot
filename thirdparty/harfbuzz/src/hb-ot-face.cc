@@ -36,11 +36,15 @@
 #include "hb-ot-name-table.hh"
 #include "hb-ot-post-table.hh"
 #include "OT/Color/CBDT/CBDT.hh"
+#include "OT/Color/COLR/COLR.hh"
 #include "OT/Color/sbix/sbix.hh"
 #include "OT/Color/svg/svg.hh"
 #include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
+#include "hb-ot-var-varc-table.hh"
+#include "hb-aat-layout-kerx-table.hh"
+#include "hb-aat-layout-morx-table.hh"
 
 
 void hb_ot_face_t::init0 (hb_face_t *face)

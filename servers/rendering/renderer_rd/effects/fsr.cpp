@@ -29,37 +29,35 @@
 /**************************************************************************/
 
 #include "fsr.h"
-#include "../storage_rd/material_storage.h"
-#include "../uniform_set_cache_rd.h"
+
+#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 using namespace RendererRD;
 
 FSR::FSR() {
-	Vector<String> FSR_upscale_modes;
+	Vector<String> fsr_upscale_modes;
+	fsr_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_NORMAL\n");
+	fsr_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
+	fsr_shader.initialize(fsr_upscale_modes);
 
-#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
-	// MoltenVK does not support some of the operations used by the normal mode of FSR. Fallback works just fine though.
-	FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
-#else
-	// Everyone else can use normal mode when available.
-	if (RD::get_singleton()->has_feature(RD::SUPPORTS_FSR_HALF_FLOAT)) {
-		FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_NORMAL\n");
+	FSRShaderVariant variant;
+	if (RD::get_singleton()->has_feature(RD::SUPPORTS_HALF_FLOAT)) {
+		variant = FSR_SHADER_VARIANT_NORMAL;
 	} else {
-		FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
+		variant = FSR_SHADER_VARIANT_FALLBACK;
 	}
-#endif
-
-	fsr_shader.initialize(FSR_upscale_modes);
 
 	shader_version = fsr_shader.version_create();
-	pipeline = RD::get_singleton()->compute_pipeline_create(fsr_shader.version_get_shader(shader_version, 0));
+	pipeline.create_compute_pipeline(fsr_shader.version_get_shader(shader_version, variant));
 }
 
 FSR::~FSR() {
+	pipeline.free();
 	fsr_shader.version_free(shader_version);
 }
 
-void FSR::fsr_upscale(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_texture, RID p_destination_texture) {
+void FSR::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_texture, RID p_destination_texture) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -86,7 +84,7 @@ void FSR::fsr_upscale(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_r
 	int dispatch_y = (target_size.y + 15) / 16;
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipeline);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, pipeline.get_rid());
 
 	push_constant.resolution_width = internal_size.width;
 	push_constant.resolution_height = internal_size.height;
@@ -97,7 +95,7 @@ void FSR::fsr_upscale(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_r
 	RID shader = fsr_shader.version_get_shader(shader_version, 0);
 	ERR_FAIL_COND(shader.is_null());
 
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	//FSR Easc
 	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, { default_sampler, p_source_rd_texture });

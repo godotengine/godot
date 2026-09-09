@@ -38,7 +38,7 @@
 Error ResourceSaverPNG::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<ImageTexture> texture = p_resource;
 
-	ERR_FAIL_COND_V_MSG(!texture.is_valid(), ERR_INVALID_PARAMETER, "Can't save invalid texture as PNG.");
+	ERR_FAIL_COND_V_MSG(texture.is_null(), ERR_INVALID_PARAMETER, "Can't save invalid texture as PNG.");
 	ERR_FAIL_COND_V_MSG(!texture->get_width(), ERR_INVALID_PARAMETER, "Can't save empty texture as PNG.");
 
 	Ref<Image> img = texture->get_image();
@@ -65,9 +65,9 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	return OK;
 }
 
-Vector<uint8_t> ResourceSaverPNG::save_image_to_buffer(const Ref<Image> &p_img) {
+Vector<uint8_t> ResourceSaverPNG::save_image_to_buffer(const Ref<Image> &p_img, bool p_fast) {
 	Vector<uint8_t> buffer;
-	Error err = PNGDriverCommon::image_to_png(p_img, buffer);
+	Error err = PNGDriverCommon::image_to_png(p_img, buffer, p_fast);
 	ERR_FAIL_COND_V_MSG(err, Vector<uint8_t>(), "Can't convert image to PNG.");
 	return buffer;
 }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "taskschedulerinternal.h"
-#include "../math/math.h"
+#include "../math/emath.h"
 #include "../sys/sysinfo.h"
 #include <algorithm>
 
@@ -48,15 +48,13 @@ namespace embree
     {
       Task* prevTask = thread.task;
       thread.task = this;
-      // -- GODOT start --
-      // try {
-      // if (thread.scheduler->cancellingException == nullptr)
+      //try {
+      //  if (context->cancellingException == nullptr)
           closure->execute();
-      // } catch (...) {
-      //   if (thread.scheduler->cancellingException == nullptr)
-      //     thread.scheduler->cancellingException = std::current_exception();
-      // }
-      // -- GODOT end --
+      //} catch (...) {
+      //  if (context->cancellingException == nullptr)
+      //    context->cancellingException = std::current_exception();
+      //}
       thread.task = prevTask;
       add_dependencies(-1);
     }
@@ -152,7 +150,8 @@ namespace embree
   {
     Lock<MutexSys> lock(g_mutex);
     assert(newNumThreads);
-    newNumThreads = min(newNumThreads, (size_t) getNumberOfLogicalThreads());
+    if (newNumThreads == std::numeric_limits<size_t>::max())
+      newNumThreads = (size_t) getNumberOfLogicalThreads();
 
     numThreads = newNumThreads;
     if (!startThreads && !running) return;
@@ -232,7 +231,8 @@ namespace embree
   TaskScheduler::TaskScheduler()
     : threadCounter(0), anyTasksRunning(0), hasRootTask(false)
   {
-    threadLocal.resize(2*getNumberOfLogicalThreads()); // FIXME: this has to be 2x as in the compatibility join mode with rtcCommitScene the worker threads also join. When disallowing rtcCommitScene to join a build we can remove the 2x.
+    assert(threadPool);
+    threadLocal.resize(2 * TaskScheduler::threadCount()); // FIXME: this has to be 2x as in the compatibility join mode with rtcCommitScene the worker threads also join. When disallowing rtcCommitScene to join a build we can remove the 2x.
     for (size_t i=0; i<threadLocal.size(); i++)
       threadLocal[i].store(nullptr);
   }
@@ -293,11 +293,7 @@ namespace embree
     size_t threadIndex = allocThreadIndex();
     condition.wait(mutex, [&] () { return hasRootTask.load(); });
     mutex.unlock();
-    // -- GODOT start --
-    // std::exception_ptr except = thread_loop(threadIndex);
-    // if (except != nullptr) std::rethrow_exception(except);
     thread_loop(threadIndex);
-    // -- GODOT end --
   }
 
   void TaskScheduler::reset() {
@@ -321,18 +317,15 @@ namespace embree
     return old;
   }
 
-  dll_export bool TaskScheduler::wait()
+  dll_export void TaskScheduler::wait()
   {
     Thread* thread = TaskScheduler::thread();
-    if (thread == nullptr) return true;
+    if (thread == nullptr)
+      return;
     while (thread->tasks.execute_local_internal(*thread,thread->task)) {};
-    return thread->scheduler->cancellingException == nullptr;
   }
 
-// -- GODOT start --
-//   std::exception_ptr TaskScheduler::thread_loop(size_t threadIndex)
   void TaskScheduler::thread_loop(size_t threadIndex)
-// -- GODOT end --
   {
     /* allocate thread structure */
     std::unique_ptr<Thread> mthread(new Thread(threadIndex,this)); // too large for stack allocation
@@ -354,11 +347,6 @@ namespace embree
     threadLocal[threadIndex].store(nullptr);
     swapThread(oldThread);
 
-    /* remember exception to throw */
-    // -- GODOT start --
-    // std::exception_ptr except = nullptr;
-    // if (cancellingException != nullptr) except = cancellingException;
-    // -- GODOT end --
     /* wait for all threads to terminate */
     threadCounter--;
 #if defined(__WIN32__)
@@ -376,10 +364,6 @@ namespace embree
           yield();
 #endif
 	}
-     // -- GODOT start --
-     // return except;
-     return;
-     // -- GODOT end --
   }
 
   bool TaskScheduler::steal_from_other_threads(Thread& thread)

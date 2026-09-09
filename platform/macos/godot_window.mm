@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_window.h"
+#import "godot_window.h"
 
-#include "display_server_macos.h"
+#import "display_server_macos.h"
 
 @implementation GodotWindow
 
 - (id)init {
 	self = [super init];
-	window_id = DisplayServer::INVALID_WINDOW_ID;
+	window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 	anim_duration = -1.0f;
 	return self;
 }
@@ -53,7 +53,7 @@
 	}
 }
 
-- (void)setWindowID:(DisplayServerMacOS::WindowID)wid {
+- (void)setWindowID:(DisplayServerEnums::WindowID)wid {
 	window_id = wid;
 }
 

@@ -38,16 +38,16 @@ namespace embree
 
     private:
       static void intersect1(Accel::Intersectors* This, const BVH* bvh, NodeRef root, size_t k, Precalculations& pre,
-                             RayHitK<K>& ray, const TravRayK<K, robust>& tray, IntersectContext* context);
+                             RayHitK<K>& ray, const TravRayK<K, robust>& tray, RayQueryContext* context);
       static bool occluded1(Accel::Intersectors* This, const BVH* bvh, NodeRef root, size_t k, Precalculations& pre,
-                            RayK<K>& ray, const TravRayK<K, robust>& tray, IntersectContext* context);
+                            RayK<K>& ray, const TravRayK<K, robust>& tray, RayQueryContext* context);
 
     public:
-      static void intersect(vint<K>* valid, Accel::Intersectors* This, RayHitK<K>& ray, IntersectContext* context);
-      static void occluded (vint<K>* valid, Accel::Intersectors* This, RayK<K>& ray, IntersectContext* context);
+      static void intersect(vint<K>* valid, Accel::Intersectors* This, RayHitK<K>& ray, RayQueryContext* context);
+      static void occluded (vint<K>* valid, Accel::Intersectors* This, RayK<K>& ray, RayQueryContext* context);
 
-      static void intersectCoherent(vint<K>* valid, Accel::Intersectors* This, RayHitK<K>& ray, IntersectContext* context);
-      static void occludedCoherent (vint<K>* valid, Accel::Intersectors* This, RayK<K>& ray, IntersectContext* context);
+      static void intersectCoherent(vint<K>* valid, Accel::Intersectors* This, RayHitK<K>& ray, RayQueryContext* context);
+      static void occludedCoherent (vint<K>* valid, Accel::Intersectors* This, RayK<K>& ray, RayQueryContext* context);
 
     };
 

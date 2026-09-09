@@ -37,6 +37,8 @@ typedef enum D3D12_SHADER_VERSION_TYPE
     D3D12_SHVER_MESH_SHADER           = 13,
     D3D12_SHVER_AMPLIFICATION_SHADER  = 14,
 
+    D3D12_SHVER_NODE_SHADER           = 15,
+
     D3D12_SHVER_RESERVED0             = 0xFFF0,
 } D3D12_SHADER_VERSION_TYPE;
 
@@ -201,8 +203,10 @@ typedef struct _D3D12_SHADER_INPUT_BIND_DESC
 #define D3D_SHADER_REQUIRES_SAMPLER_DESCRIPTOR_HEAP_INDEXING                                0x04000000
 #define D3D_SHADER_REQUIRES_WAVE_MMA                                                        0x08000000
 #define D3D_SHADER_REQUIRES_ATOMIC_INT64_ON_DESCRIPTOR_HEAP_RESOURCE                        0x10000000
-#define D3D_SHADER_FEATURE_ADVANCED_TEXTURE_OPS                                             0x20000000
-#define D3D_SHADER_FEATURE_WRITEABLE_MSAA_TEXTURES                                          0x40000000
+#define D3D_SHADER_REQUIRES_ADVANCED_TEXTURE_OPS                                            0x20000000
+#define D3D_SHADER_REQUIRES_WRITEABLE_MSAA_TEXTURES                                         0x40000000
+#define D3D_SHADER_REQUIRES_SAMPLE_CMP_GRADIENT_OR_BIAS                                     0x80000000
+#define D3D_SHADER_REQUIRES_EXTENDED_COMMAND_INFO                                           0x100000000ull
 
 
 typedef struct _D3D12_LIBRARY_DESC
@@ -487,4 +491,5 @@ extern "C" {
 #endif //__cplusplus
     
 #endif //__D3D12SHADER_H__
+
 

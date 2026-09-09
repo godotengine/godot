@@ -10,10 +10,10 @@ namespace GodotTools.Ides
 {
     public sealed partial class GodotIdeManager : Node, ISerializationListener
     {
-        private MessagingServer _messagingServer;
+        private MessagingServer? _messagingServer;
 
-        private MonoDevelop.Instance _monoDevelInstance;
-        private MonoDevelop.Instance _vsForMacInstance;
+        private MonoDevelop.Instance? _monoDevelInstance;
+        private MonoDevelop.Instance? _vsForMacInstance;
 
         private MessagingServer GetRunningOrNewServer()
         {
@@ -59,13 +59,15 @@ namespace GodotTools.Ides
             switch (editorId)
             {
                 case ExternalEditorId.None:
-                    return null;
+                    return string.Empty;
                 case ExternalEditorId.VisualStudio:
                     return "VisualStudio";
                 case ExternalEditorId.VsCode:
                     return "VisualStudioCode";
                 case ExternalEditorId.Rider:
                     return "Rider";
+                case ExternalEditorId.Fleet:
+                    return "Fleet";
                 case ExternalEditorId.VisualStudioForMac:
                     return "VisualStudioForMac";
                 case ExternalEditorId.MonoDevelop:
@@ -107,6 +109,7 @@ namespace GodotTools.Ides
                 case ExternalEditorId.VisualStudio:
                 case ExternalEditorId.VsCode:
                 case ExternalEditorId.Rider:
+                case ExternalEditorId.Fleet:
                 case ExternalEditorId.CustomEditor:
                     throw new NotSupportedException();
                 case ExternalEditorId.VisualStudioForMac:

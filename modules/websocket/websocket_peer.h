@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WEBSOCKET_PEER_H
-#define WEBSOCKET_PEER_H
+#pragma once
 
 #include "core/crypto/crypto.h"
-#include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
 
 class WebSocketPeer : public PacketPeer {
@@ -59,7 +57,7 @@ private:
 	virtual Error _send_bind(const PackedByteArray &p_data, WriteMode p_mode = WRITE_MODE_BINARY);
 
 protected:
-	static WebSocketPeer *(*_create)();
+	static WebSocketPeer *(*_create)(bool p_notify_postinitialize);
 
 	static void _bind_methods();
 
@@ -71,21 +69,22 @@ protected:
 
 	int outbound_buffer_size = DEFAULT_BUFFER_SIZE;
 	int inbound_buffer_size = DEFAULT_BUFFER_SIZE;
-	int max_queued_packets = 2048;
+	int max_queued_packets = 4096;
+	uint64_t heartbeat_interval_msec = 0;
 
 public:
-	static WebSocketPeer *create() {
+	static WebSocketPeer *create(bool p_notify_postinitialize = true) {
 		if (!_create) {
 			return nullptr;
 		}
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 
-	virtual Error connect_to_url(const String &p_url, Ref<TLSOptions> p_options = Ref<TLSOptions>()) = 0;
-	virtual Error accept_stream(Ref<StreamPeer> p_stream) = 0;
+	virtual Error connect_to_url(const String &p_url, const Ref<TLSOptions> &p_options = Ref<TLSOptions>()) = 0;
+	virtual Error accept_stream(const Ref<StreamPeer> &p_stream) = 0;
 
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) = 0;
-	virtual void close(int p_code = 1000, String p_reason = "") = 0;
+	virtual void close(int p_code = 1000, const String &p_reason = "") = 0;
 
 	virtual IPAddress get_connected_host() const = 0;
 	virtual uint16_t get_connected_port() const = 0;
@@ -117,11 +116,12 @@ public:
 	void set_max_queued_packets(int p_max_queued_packets);
 	int get_max_queued_packets() const;
 
+	double get_heartbeat_interval() const;
+	void set_heartbeat_interval(double p_interval);
+
 	WebSocketPeer();
 	~WebSocketPeer();
 };
 
 VARIANT_ENUM_CAST(WebSocketPeer::WriteMode);
 VARIANT_ENUM_CAST(WebSocketPeer::State);
-
-#endif // WEBSOCKET_PEER_H

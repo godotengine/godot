@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PAGED_ARRAY_H
-#define PAGED_ARRAY_H
+#pragma once
 
+#include "core/math/math_funcs_binary.h"
 #include "core/os/memory.h"
 #include "core/os/spin_lock.h"
 #include "core/typedefs.h"
@@ -41,7 +41,7 @@
 
 // PageArrayPool manages central page allocation in a thread safe matter
 
-template <class T>
+template <typename T>
 class PagedArrayPool {
 	T **page_pool = nullptr;
 	uint32_t pages_allocated = 0;
@@ -89,7 +89,7 @@ public:
 	}
 
 	uint32_t get_page_size_shift() const {
-		return get_shift_from_power_of_2(page_size);
+		return Math::get_shift_from_power_of_2(page_size);
 	}
 
 	uint32_t get_page_size_mask() const {
@@ -117,7 +117,7 @@ public:
 	void configure(uint32_t p_page_size) {
 		ERR_FAIL_COND(page_pool != nullptr); // Safety check.
 		ERR_FAIL_COND(p_page_size == 0);
-		page_size = nearest_power_of_2_templated(p_page_size);
+		page_size = Math::nearest_power_of_2_templated(p_page_size);
 	}
 
 	PagedArrayPool(uint32_t p_page_size = 4096) { // power of 2 recommended because of alignment with OS page sizes. Even if element is bigger, its still a multiple and get rounded amount of pages
@@ -134,8 +134,8 @@ public:
 // It does so by allocating pages from a PagedArrayPool.
 // It is safe to use multiple PagedArrays from different threads, sharing a single PagedArrayPool
 
-template <class T>
-class PagedArray {
+template <typename T>
+class _WARN_UNUSED_ PagedArray {
 	PagedArrayPool<T> *page_pool = nullptr;
 
 	T **page_data = nullptr;
@@ -202,7 +202,7 @@ public:
 		uint32_t page = count >> page_size_shift;
 		uint32_t offset = count & page_size_mask;
 
-		if (!std::is_trivially_constructible<T>::value) {
+		if constexpr (!std::is_trivially_constructible_v<T>) {
 			memnew_placement(&page_data[page][offset], T(p_value));
 		} else {
 			page_data[page][offset] = p_value;
@@ -214,7 +214,7 @@ public:
 	_FORCE_INLINE_ void pop_back() {
 		ERR_FAIL_COND(count == 0);
 
-		if (!std::is_trivially_destructible<T>::value) {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
 			uint32_t page = (count - 1) >> page_size_shift;
 			uint32_t offset = (count - 1) & page_size_mask;
 			page_data[page][offset].~T();
@@ -229,9 +229,15 @@ public:
 		count--;
 	}
 
+	void remove_at_unordered(uint64_t p_index) {
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
+		(*this)[p_index] = (*this)[count - 1];
+		pop_back();
+	}
+
 	void clear() {
 		//destruct if needed
-		if (!std::is_trivially_destructible<T>::value) {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
 			for (uint64_t i = 0; i < count; i++) {
 				uint32_t page = i >> page_size_shift;
 				uint32_t offset = i & page_size_mask;
@@ -312,13 +318,13 @@ public:
 				uint32_t to_copy = MIN(page_size - new_remainder, remainder);
 
 				for (uint32_t i = 0; i < to_copy; i++) {
-					if (!std::is_trivially_constructible<T>::value) {
+					if constexpr (!std::is_trivially_constructible_v<T>) {
 						memnew_placement(&dst_page[i + new_remainder], T(remainder_page[i + remainder - to_copy]));
 					} else {
 						dst_page[i + new_remainder] = remainder_page[i + remainder - to_copy];
 					}
 
-					if (!std::is_trivially_destructible<T>::value) {
+					if constexpr (!std::is_trivially_destructible_v<T>) {
 						remainder_page[i + remainder - to_copy].~T();
 					}
 				}
@@ -366,5 +372,3 @@ public:
 		reset();
 	}
 };
-
-#endif // PAGED_ARRAY_H

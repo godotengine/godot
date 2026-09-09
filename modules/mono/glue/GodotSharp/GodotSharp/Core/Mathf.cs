@@ -36,11 +36,11 @@ namespace Godot
         public const real_t NaN = real_t.NaN;
 
         // 0.0174532924f and 0.0174532925199433
-        private const float _degToRadConstF = (float)0.0174532925199432957692369077M;
-        private const double _degToRadConstD = (double)0.0174532925199432957692369077M;
+        private const float DegToRadConstF = (float)0.0174532925199432957692369077M;
+        private const double DegToRadConstD = (double)0.0174532925199432957692369077M;
         // 57.29578f and 57.2957795130823
-        private const float _radToDegConstF = (float)57.295779513082320876798154814M;
-        private const double _radToDegConstD = (double)57.295779513082320876798154814M;
+        private const float RadToDegConstF = (float)57.295779513082320876798154814M;
+        private const double RadToDegConstD = (double)57.295779513082320876798154814M;
 
         /// <summary>
         /// Returns the absolute value of <paramref name="s"/> (i.e. positive value).
@@ -195,8 +195,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the hyperbolic arc (also called inverse) sine of <paramref name="s"/> in radians.
-        /// Use it to get the angle from an angle's sine in hyperbolic space if
-        /// <paramref name="s"/> is larger or equal to 1.
+        /// Use it to get the angle from an angle's sine in hyperbolic space.
         /// </summary>
         /// <param name="s">The input hyperbolic sine value.</param>
         /// <returns>
@@ -210,8 +209,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the hyperbolic arc (also called inverse) sine of <paramref name="s"/> in radians.
-        /// Use it to get the angle from an angle's sine in hyperbolic space if
-        /// <paramref name="s"/> is larger or equal to 1.
+        /// Use it to get the angle from an angle's sine in hyperbolic space.
         /// </summary>
         /// <param name="s">The input hyperbolic sine value.</param>
         /// <returns>
@@ -760,7 +758,7 @@ namespace Godot
         /// <returns>The same angle expressed in radians.</returns>
         public static float DegToRad(float deg)
         {
-            return deg * _degToRadConstF;
+            return deg * DegToRadConstF;
         }
 
         /// <summary>
@@ -770,18 +768,45 @@ namespace Godot
         /// <returns>The same angle expressed in radians.</returns>
         public static double DegToRad(double deg)
         {
-            return deg * _degToRadConstD;
+            return deg * DegToRadConstD;
         }
 
         /// <summary>
-        /// Easing function, based on exponent. The <paramref name="curve"/> values are:
-        /// <c>0</c> is constant, <c>1</c> is linear, <c>0</c> to <c>1</c> is ease-in, <c>1</c> or more is ease-out.
-        /// Negative values are in-out/out-in.
+        /// Returns an eased value of <paramref name="s"/> based on an exponential easing function defined with <paramref name="curve"/>.
+        /// The <paramref name="curve"/> can be any floating-point number, with specific values leading to the following behaviors:
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Lower than <c>-1.0</c> (exclusive)</term>
+        ///         <description>Ease in-out.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>-1.0</c></term>
+        ///         <description>Linear.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <c>-1.0</c> and <c>0.0</c> (exclusive)</term>
+        ///         <description>Ease out-in.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>0.0</c></term>
+        ///         <description>Constant.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <c>0.0</c> and <c>1.0</c> (exclusive)</term>
+        ///         <description>Ease out.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>1.0</c></term>
+        ///         <description>Linear.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than <c>1.0</c> (exclusive)</term>
+        ///         <description>Ease in.</description>
+        ///     </item>
+        /// </list>
         /// </summary>
         /// <param name="s">The value to ease.</param>
-        /// <param name="curve">
-        /// <c>0</c> is constant, <c>1</c> is linear, <c>0</c> to <c>1</c> is ease-in, <c>1</c> or more is ease-out.
-        /// </param>
+        /// <param name="curve">The exponent defining the easing curve.</param>
         /// <returns>The eased value.</returns>
         public static float Ease(float s, float curve)
         {
@@ -818,14 +843,41 @@ namespace Godot
         }
 
         /// <summary>
-        /// Easing function, based on exponent. The <paramref name="curve"/> values are:
-        /// <c>0</c> is constant, <c>1</c> is linear, <c>0</c> to <c>1</c> is ease-in, <c>1</c> or more is ease-out.
-        /// Negative values are in-out/out-in.
+        /// Returns an eased value of <paramref name="s"/> based on an exponential easing function defined with <paramref name="curve"/>.
+        /// The <paramref name="curve"/> can be any floating-point number, with specific values leading to the following behaviors:
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Lower than <c>-1.0</c> (exclusive)</term>
+        ///         <description>Ease in-out.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>-1.0</c></term>
+        ///         <description>Linear.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <c>-1.0</c> and <c>0.0</c> (exclusive)</term>
+        ///         <description>Ease out-in.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>0.0</c></term>
+        ///         <description>Constant.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <c>0.0</c> and <c>1.0</c> (exclusive)</term>
+        ///         <description>Ease out.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Exactly <c>1.0</c></term>
+        ///         <description>Linear.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than <c>1.0</c> (exclusive)</term>
+        ///         <description>Ease in.</description>
+        ///     </item>
+        /// </list>
         /// </summary>
         /// <param name="s">The value to ease.</param>
-        /// <param name="curve">
-        /// <c>0</c> is constant, <c>1</c> is linear, <c>0</c> to <c>1</c> is ease-in, <c>1</c> or more is ease-out.
-        /// </param>
+        /// <param name="curve">The exponent defining the easing curve.</param>
         /// <returns>The eased value.</returns>
         public static double Ease(double s, double curve)
         {
@@ -957,10 +1009,10 @@ namespace Godot
                 return true;
             }
             // Then check for approximate equality.
-            float tolerance = _epsilonF * Math.Abs(a);
-            if (tolerance < _epsilonF)
+            float tolerance = EpsilonF * Math.Abs(a);
+            if (tolerance < EpsilonF)
             {
-                tolerance = _epsilonF;
+                tolerance = EpsilonF;
             }
             return Math.Abs(a - b) < tolerance;
         }
@@ -981,10 +1033,10 @@ namespace Godot
                 return true;
             }
             // Then check for approximate equality.
-            double tolerance = _epsilonD * Math.Abs(a);
-            if (tolerance < _epsilonD)
+            double tolerance = EpsilonD * Math.Abs(a);
+            if (tolerance < EpsilonD)
             {
-                tolerance = _epsilonD;
+                tolerance = EpsilonD;
             }
             return Math.Abs(a - b) < tolerance;
         }
@@ -1069,7 +1121,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsZeroApprox(float s)
         {
-            return Math.Abs(s) < _epsilonF;
+            return Math.Abs(s) < EpsilonF;
         }
 
         /// <summary>
@@ -1084,7 +1136,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsZeroApprox(double s)
         {
-            return Math.Abs(s) < _epsilonD;
+            return Math.Abs(s) < EpsilonD;
         }
 
         /// <summary>
@@ -1333,10 +1385,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a canonical Modulus operation, where the output is on the range [0, <paramref name="b"/>).
+        /// Returns the integer modulus of <paramref name="a"/> divided by <paramref name="b"/> that wraps equally in positive and negative.
         /// </summary>
         /// <param name="a">The dividend, the primary input.</param>
-        /// <param name="b">The divisor. The output is on the range [0, <paramref name="b"/>).</param>
+        /// <param name="b">The divisor.</param>
         /// <returns>The resulting output.</returns>
         public static int PosMod(int a, int b)
         {
@@ -1349,10 +1401,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a canonical Modulus operation, where the output is on the range [0, <paramref name="b"/>).
+        /// Returns the floating-point modulus of <paramref name="a"/> divided by <paramref name="b"/> that wraps equally in positive and negative.
         /// </summary>
         /// <param name="a">The dividend, the primary input.</param>
-        /// <param name="b">The divisor. The output is on the range [0, <paramref name="b"/>).</param>
+        /// <param name="b">The divisor.</param>
         /// <returns>The resulting output.</returns>
         public static float PosMod(float a, float b)
         {
@@ -1365,10 +1417,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a canonical Modulus operation, where the output is on the range [0, <paramref name="b"/>).
+        /// Returns the floating-point modulus of <paramref name="a"/> divided by <paramref name="b"/> that wraps equally in positive and negative.
         /// </summary>
         /// <param name="a">The dividend, the primary input.</param>
-        /// <param name="b">The divisor. The output is on the range [0, <paramref name="b"/>).</param>
+        /// <param name="b">The divisor.</param>
         /// <returns>The resulting output.</returns>
         public static double PosMod(double a, double b)
         {
@@ -1412,7 +1464,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float RadToDeg(float rad)
         {
-            return rad * _radToDegConstF;
+            return rad * RadToDegConstF;
         }
 
         /// <summary>
@@ -1423,7 +1475,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double RadToDeg(double rad)
         {
-            return rad * _radToDegConstD;
+            return rad * RadToDegConstD;
         }
 
         /// <summary>
@@ -1593,9 +1645,50 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a number smoothly interpolated between <paramref name="from"/> and <paramref name="to"/>,
-        /// based on the <paramref name="weight"/>. Similar to <see cref="Lerp(float, float, float)"/>,
-        /// but interpolates faster at the beginning and slower at the end.
+        /// Returns a smooth cubic Hermite interpolation factor between 0.0 and 1.0 based on
+        /// <paramref name="weight"/> within the range from <paramref name="from"/> to <paramref name="to"/>.
+        /// The interpolation is slowest at the beginning and end of the range, and fastest halfway through.
+        /// <para>For positive ranges (when <paramref name="from"/> is less than <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <paramref name="from"/> and <paramref name="to"/> (exclusive)</term>
+        ///         <description>Returns an S-shaped curve that smoothly transitions from <c>0</c> to <c>1</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than or equal to <paramref name="to"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        /// </list>
+        /// <para>For negative ranges (when <paramref name="from"/> is greater than <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="to"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <paramref name="to"/> and <paramref name="from"/> (exclusive)</term>
+        ///         <description>Returns a mirrored S-shaped curve that smoothly transitions from <c>1</c> to <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        /// </list>
+        /// <para>For empty ranges (when <paramref name="from"/> equals <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than <paramref name="from"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        /// </list>
         /// </summary>
         /// <param name="from">The start value for interpolation.</param>
         /// <param name="to">The destination value for interpolation.</param>
@@ -1605,16 +1698,61 @@ namespace Godot
         {
             if (IsEqualApprox(from, to))
             {
-                return from;
+                if (from <= to)
+                {
+                    return weight <= from ? 0.0f : 1.0f;
+                }
+                return weight <= to ? 1.0f : 0.0f;
             }
             float x = Math.Clamp((weight - from) / (to - from), 0.0f, 1.0f);
             return x * x * (3 - (2 * x));
         }
 
         /// <summary>
-        /// Returns a number smoothly interpolated between <paramref name="from"/> and <paramref name="to"/>,
-        /// based on the <paramref name="weight"/>. Similar to <see cref="Lerp(double, double, double)"/>,
-        /// but interpolates faster at the beginning and slower at the end.
+        /// Returns a smooth cubic Hermite interpolation factor between 0.0 and 1.0 based on
+        /// <paramref name="weight"/> within the range from <paramref name="from"/> to <paramref name="to"/>.
+        /// The interpolation is slowest at the beginning and end of the range, and fastest halfway through.
+        /// <para>For positive ranges (when <paramref name="from"/> is less than <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <paramref name="from"/> and <paramref name="to"/> (exclusive)</term>
+        ///         <description>Returns an S-shaped curve that smoothly transitions from <c>0</c> to <c>1</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than or equal to <paramref name="to"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        /// </list>
+        /// <para>For negative ranges (when <paramref name="from"/> is greater than <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="to"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Between <paramref name="to"/> and <paramref name="from"/> (exclusive)</term>
+        ///         <description>Returns a mirrored S-shaped curve that smoothly transitions from <c>1</c> to <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        /// </list>
+        /// <para>For empty ranges (when <paramref name="from"/> equals <paramref name="to"/>):</para>
+        /// <list type="bullet">
+        ///     <item>
+        ///         <term>Less than or equal to <paramref name="from"/></term>
+        ///         <description>Returns <c>0</c>.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>Greater than <paramref name="from"/></term>
+        ///         <description>Returns <c>1</c>.</description>
+        ///     </item>
+        /// </list>
         /// </summary>
         /// <param name="from">The start value for interpolation.</param>
         /// <param name="to">The destination value for interpolation.</param>
@@ -1624,7 +1762,11 @@ namespace Godot
         {
             if (IsEqualApprox(from, to))
             {
-                return from;
+                if (from <= to)
+                {
+                    return weight <= from ? 0.0 : 1.0;
+                }
+                return weight <= to ? 1.0 : 0.0;
             }
             double x = Math.Clamp((weight - from) / (to - from), 0.0, 1.0);
             return x * x * (3 - (2 * x));
@@ -1665,8 +1807,8 @@ namespace Godot
         /// <returns>The position of the first non-zero digit.</returns>
         public static int StepDecimals(double step)
         {
-            double[] sd = new double[]
-            {
+            ReadOnlySpan<double> sd =
+            [
                 0.9999,
                 0.09999,
                 0.009999,
@@ -1676,7 +1818,7 @@ namespace Godot
                 0.0000009999,
                 0.00000009999,
                 0.000000009999,
-            };
+            ];
             double abs = Math.Abs(step);
             double decs = abs - (int)abs; // Strip away integer part
             for (int i = 0; i < sd.Length; i++)
