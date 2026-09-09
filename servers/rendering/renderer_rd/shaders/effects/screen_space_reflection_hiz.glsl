@@ -15,6 +15,11 @@ layout(push_constant, std430) uniform Params {
 }
 params;
 
+float load_depth(ivec2 p_position) {
+	ivec2 source_size = textureSize(source, 0);
+	return texelFetch(source, clamp(p_position, ivec2(0), source_size - ivec2(1)), 0).x;
+}
+
 void main() {
 	ivec2 pixel_pos = ivec2(gl_GlobalInvocationID.xy);
 
@@ -22,23 +27,23 @@ void main() {
 		return;
 	}
 
-	float depth = texelFetch(source, pixel_pos * 2 + ivec2(0, 0), 0).x;
-	depth = max(depth, texelFetch(source, pixel_pos * 2 + ivec2(1, 0), 0).x);
-	depth = max(depth, texelFetch(source, pixel_pos * 2 + ivec2(0, 1), 0).x);
-	depth = max(depth, texelFetch(source, pixel_pos * 2 + ivec2(1, 1), 0).x);
+	float depth = load_depth(pixel_pos * 2 + ivec2(0, 0));
+	depth = max(depth, load_depth(pixel_pos * 2 + ivec2(1, 0)));
+	depth = max(depth, load_depth(pixel_pos * 2 + ivec2(0, 1)));
+	depth = max(depth, load_depth(pixel_pos * 2 + ivec2(1, 1)));
 
 #ifdef MODE_ODD_WIDTH
-	depth = max(depth, texelFetch(source, pixel_pos * 2 + ivec2(2, 0), 0).x);
-	depth = max(depth, texelFetch(source, pixel_pos * 2 + ivec2(2, 1), 0).x);
+	depth = max(depth, load_depth(pixel_pos * 2 + ivec2(2, 0)));
+	depth = max(depth, load_depth(pixel_pos * 2 + ivec2(2, 1)));
 #endif
 
 #ifdef MODE_ODD_HEIGHT
-	depth = max(depth, texelFetch(source, pixel_pos * 2 + ivec2(0, 2), 0).x);
-	depth = max(depth, texelFetch(source, pixel_pos * 2 + ivec2(1, 2), 0).x);
+	depth = max(depth, load_depth(pixel_pos * 2 + ivec2(0, 2)));
+	depth = max(depth, load_depth(pixel_pos * 2 + ivec2(1, 2)));
 #endif
 
 #if defined(MODE_ODD_WIDTH) && defined(MODE_ODD_HEIGHT)
-	depth = max(depth, texelFetch(source, pixel_pos * 2 + ivec2(2, 2), 0).x);
+	depth = max(depth, load_depth(pixel_pos * 2 + ivec2(2, 2)));
 #endif
 
 	imageStore(dest, pixel_pos, vec4(depth, 0.0, 0.0, 0.0));
