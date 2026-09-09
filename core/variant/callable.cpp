@@ -227,26 +227,24 @@ Array Callable::get_bound_arguments() const {
 	return ret;
 }
 
-void Callable::get_arguments_ref(Vector<Variant> &r_arguments) const {
+void Callable::get_method_info_ref(MethodInfo &r_method_info) const {
 	if (is_custom()) {
-		custom->get_arguments(r_arguments);
+		custom->get_method_info(r_method_info);
 	} else if (is_valid()) {
-		r_arguments = get_object()->get_method_arguments(method);
+		r_method_info = get_object()->get_method_info(method);
 	} else {
-		r_arguments.clear();
+		r_method_info = MethodInfo();
 	}
 }
 
-Array Callable::get_arguments() const {
+Dictionary Callable::get_method_info() const {
 	print_line("Callable::get_arguments called!");
-	Vector<Variant> arr;
-	get_arguments_ref(arr);
-	Array ret;
-	ret.resize(arr.size());
-	for (int i = 0; i < arr.size(); i++) {
-		ret[i] = arr[i];
+	MethodInfo mi;
+	get_method_info_ref(mi);
+	if (mi == MethodInfo()) {
+		return Dictionary();
 	}
-	return ret;
+	return mi.operator Dictionary();
 }
 
 int Callable::get_unbound_arguments_count() const {
@@ -494,9 +492,9 @@ int CallableCustom::get_argument_count(bool &r_is_valid) const {
 	return 0;
 }
 
-void CallableCustom::get_arguments(Vector<Variant> &r_arguments) const {
+void CallableCustom::get_method_info(MethodInfo &r_method_info) const {
 	print_line("CallableCustom::get_arguments is called!");
-	r_arguments.clear();
+	r_method_info = MethodInfo();
 }
 
 int CallableCustom::get_bound_arguments_count() const {

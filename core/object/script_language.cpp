@@ -137,28 +137,6 @@ int Script::get_script_method_argument_count(const StringName &p_method, bool *r
 	return mi.arguments.size();
 }
 
-Vector<Variant> Script::get_script_method_arguments(const StringName &p_method, bool *r_is_valid) const {
-	MethodInfo mi = get_method_info(p_method);
-	Vector<Variant> ret;
-
-	if (mi == MethodInfo()) {
-		if (r_is_valid) {
-			*r_is_valid = false;
-		}
-		return ret;
-	}
-
-	for (const PropertyInfo &E : mi.arguments) {
-		ret.push_back(E.operator Dictionary());
-	}
-
-	if (r_is_valid) {
-		*r_is_valid = true;
-	}
-
-	return ret;
-}
-
 #ifdef TOOLS_ENABLED
 
 PropertyInfo Script::get_class_category() const {
@@ -730,31 +708,19 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 	}
 	return false;
 }
-
-Vector<Variant> PlaceHolderScriptInstance::get_method_arguments(const StringName &p_method, bool *r_is_valid) const {
-	Vector<Variant> ret;
+MethodInfo PlaceHolderScriptInstance::get_method_info(const StringName &p_method) const {
+	MethodInfo ret;
 	if (script->is_placeholder_fallback_enabled()) {
-		if (r_is_valid) {
-			*r_is_valid = false;
-		}
 		return ret;
 	}
 
 	Ref<Script> scr = script;
 	while (scr.is_valid()) {
-		bool valid = false;
-		ret = scr->get_script_method_arguments(p_method, &valid);
-		if (valid) {
-			if (r_is_valid) {
-				*r_is_valid = true;
-			}
+		ret = scr->get_method_info(p_method);
+		if (!(ret == MethodInfo())) {
 			return ret;
 		}
 		scr = scr->get_base_script();
-	}
-
-	if (r_is_valid) {
-		*r_is_valid = false;
 	}
 	return ret;
 }

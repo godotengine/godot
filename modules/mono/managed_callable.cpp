@@ -91,9 +91,11 @@ int ManagedCallable::get_argument_count(bool &r_is_valid) const {
 	return GDMonoCache::managed_callbacks.DelegateUtils_GetArgumentCount(delegate_handle, &r_is_valid);
 }
 
-void ManagedCallable::get_arguments(Vector<Variant> &r_arguments) const {
+void ManagedCallable::get_method_info(MethodInfo &r_method_info) const {
 	print_line("ManagedCallable::get_arguments is called!");
-	GDMonoCache::managed_callbacks.DelegateUtils_GetArguments(delegate_handle, &r_arguments);
+	Dictionary mi_dict;
+	GDMonoCache::managed_callbacks.DelegateUtils_GetMethodInfo(delegate_handle, &mi_dict);
+	r_method_info = MethodInfo::from_dict(mi_dict);
 }
 
 void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

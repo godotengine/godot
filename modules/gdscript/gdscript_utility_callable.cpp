@@ -99,25 +99,18 @@ int GDScriptUtilityCallable::get_argument_count(bool &r_is_valid) const {
 	ERR_FAIL_V_MSG(0, "Invalid type.");
 }
 
-void GDScriptUtilityCallable::get_arguments(Vector<Variant> &r_arguments) const {
+void GDScriptUtilityCallable::get_method_info(MethodInfo &r_method_info) const {
 	print_line("GDScriptUtilityCallable::get_arguments is called!");
-	r_arguments.clear();
-	MethodInfo method_info = MethodInfo();
 	switch (type) {
 		case TYPE_INVALID:
+			r_method_info = MethodInfo();
 			break;
 		case TYPE_GLOBAL:
-			method_info = Variant::get_utility_function_info(function_name);
+			r_method_info = Variant::get_utility_function_info(function_name);
 			break;
 		case TYPE_GDSCRIPT:
-			method_info = GDScriptUtilityFunctions::get_function_info(function_name);
+			r_method_info = GDScriptUtilityFunctions::get_function_info(function_name);
 			break;
-	}
-
-	ERR_FAIL_COND_MSG(method_info == MethodInfo(), vformat("Failed to get method info of \"%s\"", get_method()));
-	Vector<PropertyInfo> arguments = method_info.arguments;
-	for (PropertyInfo E : arguments) {
-		r_arguments.push_back(E.operator Dictionary());
 	}
 }
 
