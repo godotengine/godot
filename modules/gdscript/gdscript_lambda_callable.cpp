@@ -94,18 +94,12 @@ int GDScriptLambdaCallable::get_argument_count(bool &r_is_valid) const {
 	return function->get_argument_count() - captures.size();
 }
 
-void GDScriptLambdaCallable::get_arguments(Vector<Variant> &r_arguments) const {
+void GDScriptLambdaCallable::get_method_info(MethodInfo &r_method_info) const {
 	print_line("GDScriptLambdaCallable::get_arguments was called!");
-	r_arguments.clear();
 	if (function == nullptr) {
 		return;
 	}
-	MethodInfo method_info = function->get_method_info();
-	ERR_FAIL_COND_MSG(method_info == MethodInfo(), vformat("Failed to get method info of \"%s\"", get_method()));
-	Vector<PropertyInfo> arguments = method_info.arguments;
-	for (const PropertyInfo &E : arguments) {
-		r_arguments.push_back(E.operator Dictionary());
-	}
+	r_method_info = function->get_method_info();
 }
 
 void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
@@ -232,18 +226,12 @@ int GDScriptLambdaSelfCallable::get_argument_count(bool &r_is_valid) const {
 	return function->get_argument_count() - captures.size();
 }
 
-void GDScriptLambdaSelfCallable::get_arguments(Vector<Variant> &r_arguments) const {
+void GDScriptLambdaSelfCallable::get_method_info(MethodInfo &r_method_info) const {
 	print_line("GDScriptLambdaSelfCallable::get_arguments was called!");
-	r_arguments.clear();
 	if (function == nullptr) {
 		return;
 	}
-	MethodInfo method_info = function->get_method_info();
-	ERR_FAIL_COND_MSG(method_info == MethodInfo(), vformat("Failed to get method info of \"%s\"", get_method()));
-	Vector<PropertyInfo> arguments = method_info.arguments;
-	for (const PropertyInfo &E : arguments) {
-		r_arguments.push_back(E.operator Dictionary());
-	}
+	r_method_info = function->get_method_info();
 }
 
 void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

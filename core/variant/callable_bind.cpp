@@ -98,10 +98,9 @@ int CallableCustomBind::get_argument_count(bool &r_is_valid) const {
 	}
 	return 0;
 }
-
-void CallableCustomBind::get_arguments(Vector<Variant> &r_arguments) const {
+void CallableCustomBind::get_method_info(MethodInfo &r_method_info) const {
 	print_line("CallableCustomBind::get_arguments is called!");
-	callable.get_arguments_ref(r_arguments);
+	callable.get_method_info_ref(r_method_info);
 }
 
 int CallableCustomBind::get_bound_arguments_count() const {
@@ -241,9 +240,9 @@ int CallableCustomUnbind::get_argument_count(bool &r_is_valid) const {
 	return 0;
 }
 
-void CallableCustomUnbind::get_arguments(Vector<Variant> &r_arguments) const {
+void CallableCustomUnbind::get_method_info(MethodInfo &r_method_info) const {
 	print_line("CallableCustomUnbind::get_arguments is called!");
-	callable.get_arguments_ref(r_arguments);
+	callable.get_method_info_ref(r_method_info);
 }
 
 int CallableCustomUnbind::get_bound_arguments_count() const {

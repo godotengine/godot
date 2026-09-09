@@ -82,18 +82,12 @@ int VariantCallable::get_argument_count(bool &r_is_valid) const {
 	return Variant::get_builtin_method_argument_count(variant.get_type(), method);
 }
 
-void VariantCallable::get_arguments(Vector<Variant> &r_arguments) const {
+void VariantCallable::get_method_info(MethodInfo &r_method_info) const {
 	print_line("VariantCallable::get_arguments called!");
-	r_arguments.clear();
 	if (!is_valid()) {
 		return;
 	}
-	MethodInfo method_info = Variant::get_builtin_method_info(variant.get_type(), method);
-	ERR_FAIL_COND_MSG(method_info == MethodInfo(), vformat("Couldn't get method info of \"%s\"", method));
-	Vector<PropertyInfo> arguments = method_info.arguments;
-	for (PropertyInfo E : arguments) {
-		r_arguments.push_back(E.operator Dictionary());
-	}
+	r_method_info = Variant::get_builtin_method_info(variant.get_type(), method);
 }
 
 void VariantCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
