@@ -86,6 +86,8 @@ private:
 	Ref<Texture2D> projector;
 	Color correlated_color = Color(1.0, 1.0, 1.0);
 	float temperature = 6500.0;
+	float extra_cull_margin = 0.0;
+
 	// bind helpers
 
 	virtual void owner_changed_notify() override;
@@ -150,6 +152,9 @@ public:
 
 	virtual AABB get_aabb() const override;
 	virtual PackedStringArray get_configuration_warnings() const override;
+
+	void set_extra_cull_margin(float p_margin);
+	float get_extra_cull_margin() const;
 
 	Light3D();
 	~Light3D();
