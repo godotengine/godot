@@ -1612,6 +1612,11 @@ void EditorNode::_scan_external_changes() {
 			continue;
 		}
 
+		// Imported scenes get automatically reimported, we don't need to prompt for a reload
+		if (FileAccess::exists(scene_path + ".import")) {
+			continue;
+		}
+
 		uint64_t last_date = editor_data.get_scene_modified_time(i);
 		uint64_t date = FileAccess::get_modified_time(scene_path);
 
