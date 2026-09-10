@@ -3941,6 +3941,8 @@ static void _process_doc_line(const String &p_line, String &r_text, const String
 				// We want to replace `[br][br]` with `\n` (paragraph), so we move the trailing `[br]` here.
 				r_text = r_text.left(-4); // `-len("[br]")`.
 				line = "[br]" + line;
+			} else if (!r_text.ends_with("\n") && line.is_empty()) {
+				line_join = "\n";
 			} else if (!r_text.ends_with("\n")) {
 				line_join = " ";
 			}
