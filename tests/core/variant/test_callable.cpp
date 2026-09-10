@@ -241,7 +241,7 @@ public:
 	int test_func_5(String p_foo, StringName p_bar, NodePath p_baz) const { return 0; }
 
 	static void test_func_6(Callable p_foo, String p_bar, NodePath p_baz) {}
-	static void test_func_7(Callable p_foo, String p_bar, int p_baz) {}
+	static NodePath test_func_7(Callable p_foo, String p_bar, int p_baz) { return NodePath(); }
 
 	void test_func_8(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {}
 	void test_func_9(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {}
@@ -275,6 +275,7 @@ public:
 		mi.arguments.push_back(PropertyInfo(Variant::Type::INT, "foo"));
 		mi.arguments.push_back(PropertyInfo(Variant::Type::INT, "bar"));
 		mi.return_val = PropertyInfo(Variant::Type::INT, "");
+		mi.flags = METHOD_FLAGS_DEFAULT | METHOD_FLAG_CONST;
 		methods.insert(mi.name, mi);
 		mi = MethodInfo();
 
@@ -282,7 +283,9 @@ public:
 		mi.name = "test_func_5";
 		mi.arguments.push_back(PropertyInfo(Variant::Type::STRING, "foo"));
 		mi.arguments.push_back(PropertyInfo(Variant::Type::STRING_NAME, "bar"));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::NODE_PATH, "baz"));
 		mi.return_val = PropertyInfo(Variant::Type::INT, "");
+		mi.flags = METHOD_FLAGS_DEFAULT | METHOD_FLAG_CONST;
 		methods.insert(mi.name, mi);
 		mi = MethodInfo();
 
@@ -295,11 +298,12 @@ public:
 		methods.insert(mi.name, mi);
 		mi = MethodInfo();
 
-		//static void test_func_7(Callable p_foo, String p_bar, int p_baz) {}
+		//static NodePath test_func_7(Callable p_foo, String p_bar, int p_baz) { return NodePath(); }
 		mi.name = "test_func_7";
 		mi.arguments.push_back(PropertyInfo(Variant::Type::CALLABLE, "foo"));
 		mi.arguments.push_back(PropertyInfo(Variant::Type::STRING, "bar"));
 		mi.arguments.push_back(PropertyInfo(Variant::Type::INT, "baz"));
+		mi.return_val = PropertyInfo(Variant::Type::NODE_PATH, "");
 		mi.flags = METHOD_FLAGS_DEFAULT | METHOD_FLAG_STATIC;
 		methods.insert(mi.name, mi);
 		mi = MethodInfo();
@@ -331,7 +335,7 @@ public:
 				vformat("Method Name \"%s\" not found in methods hashmap.", p_method_name));
 
 		MethodInfo method = MethodInfo::from_dict(p_callable_method_info_dict);
-		MethodInfo expect_method = methods[method.name];
+		MethodInfo expect_method = methods[p_method_name];
 
 		bool is_arguments_euqal = expect_method.arguments.size() == method.arguments.size();
 		if (is_arguments_euqal) {
@@ -339,9 +343,7 @@ public:
 				PropertyInfo expected_arg = expect_method.arguments[i];
 				PropertyInfo arg = method.arguments[i];
 				if (!((expected_arg.type == arg.type) &&
-#ifdef DEBUG_ENABLED
-							(expected_arg.name == arg.name) &&
-#endif // DEBUG_ENABLED
+							(!arg.name.is_empty() ? (expected_arg.name == arg.name) : true) &&
 							(expected_arg.class_name == arg.class_name) &&
 							(expected_arg.hint == arg.hint) &&
 							(expected_arg.hint_string == arg.hint_string) &&
@@ -382,17 +384,14 @@ public:
 		bool is_valid = is_arguments_euqal &&
 				is_arguments_metadata_equal &&
 				is_default_args_euqal &&
-#ifdef DEBUG_ENABLED
-				expect_method.name == method.name &&
-#endif // DEBUG_ENABLED
+				(!method.name.is_empty() ? (expect_method.name == method.name) : true) &&
 				expect_method.return_val == method.return_val &&
 				expect_method.return_val_metadata == method.return_val_metadata &&
 				expect_method.flags == method.flags;
 
 		if (!is_valid) {
-			String msg = vformat("Invalid method info for \"%s\".\nGot: %s,\nExpected: %s",
-					p_method_name, method.operator Dictionary(), expect_method.operator Dictionary());
-			ERR_PRINT(msg);
+			ERR_PRINT(vformat("Invalid method info for \"%s\".\nGot: %s\nExpected: %s",
+					p_method_name, method.operator Dictionary(), expect_method.operator Dictionary()));
 		}
 
 		return is_valid;
