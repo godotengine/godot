@@ -1839,6 +1839,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			}
 		}
 
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 7;
+			u.append_id(unocclude_tex);
+			uniforms.push_back(u);
+		}
+
 		RID light_uniform_set = rd->uniform_set_create(uniforms, compute_shader_primary, 1);
 
 		int count = 0;
@@ -1960,6 +1968,14 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				u.append_id(area_light_atlas_tex);
 				uniforms.push_back(u);
 			}
+		}
+
+		{
+			RD::Uniform u;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 7;
+			u.append_id(unocclude_tex);
+			uniforms.push_back(u);
 		}
 
 		RID secondary_uniform_set;
