@@ -96,6 +96,7 @@ class AudioStreamMP3 : public AudioStream {
 
 	TightLocalVector<uint8_t> data;
 	uint32_t data_len = 0;
+	LocalVector<drmp3_seek_point> seek_table;
 
 	float sample_rate = 1.0;
 	int channels = 1;
