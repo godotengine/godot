@@ -266,6 +266,7 @@ private:
 		RID unused_skeleton_storage_buffer;
 
 		RID skeleton;
+		RID emission_texture;
 
 		HashSet<RID> collisions;
 
