@@ -223,21 +223,34 @@ bool EditorRun::has_child_process(ProcessID p_pid) const {
 
 void EditorRun::stop_child_process(ProcessID p_pid) {
 	if (has_child_process(p_pid)) {
-		OS::get_singleton()->kill(p_pid);
+		List<ProcessID> pids_to_kill;
+		pids_to_kill.push_back(p_pid);
+		OS::get_singleton()->kill_multiple(pids_to_kill, _get_paused_pids(pids_to_kill));
 		pids.erase(p_pid);
 	}
 }
 
 void EditorRun::stop() {
 	if (status != STATUS_STOP && pids.size() > 0) {
-		for (const ProcessID &E : pids) {
-			OS::get_singleton()->kill(E);
-		}
+		OS::get_singleton()->kill_multiple(pids, _get_paused_pids(pids));
 		pids.clear();
 	}
 
 	status = STATUS_STOP;
 	running_scene = "";
+}
+
+List<ProcessID> EditorRun::_get_paused_pids(const List<ProcessID> &p_pids) {
+	// A process paused at a debugger breakpoint can't respond to a graceful shutdown request
+	// (its main loop isn't running to receive it), so don't waste any part of the shared
+	// shutdown timeout waiting on one -- go straight to killing it outright.
+	List<ProcessID> paused_pids;
+	for (const ProcessID &pid : p_pids) {
+		if (EditorDebuggerNode::get_singleton()->is_process_paused(pid)) {
+			paused_pids.push_back(pid);
+		}
+	}
+	return paused_pids;
 }
 
 ProcessID EditorRun::get_current_process() const {

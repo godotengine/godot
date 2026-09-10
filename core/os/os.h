@@ -218,6 +218,16 @@ public:
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); }
 	virtual Error open_with_program(const String &p_program_path, const List<String> &p_paths) { return create_process(p_program_path, p_paths); }
 	virtual Error kill(const ProcessID &p_pid) = 0;
+	// Kills multiple processes at once. On platforms that support it, this may attempt a
+	// graceful shutdown first (asking each process to quit on its own), sharing a single
+	// timeout budget across all of them, before falling back to killing any stragglers
+	// outright -- which is different from, and can be cheaper than, calling kill() on each
+	// PID in a loop with its own separate timeout. p_skip_graceful lists PIDs that should be
+	// killed immediately without attempting a graceful shutdown at all (e.g. a process the
+	// caller knows can't respond right now, such as one paused at a debugger breakpoint).
+	// The default implementation has no batching/grace support and simply calls kill() on
+	// each PID in turn, which preserves prior behavior on any platform that doesn't override it.
+	virtual void kill_multiple(const List<ProcessID> &p_pids, const List<ProcessID> &p_skip_graceful = List<ProcessID>());
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
 	virtual int get_process_exit_code(const ProcessID &p_pid) const = 0;

@@ -180,6 +180,12 @@ String OS::get_executable_path() const {
 	return _execpath;
 }
 
+void OS::kill_multiple(const List<ProcessID> &p_pids, const List<ProcessID> &p_skip_graceful) {
+	for (const ProcessID &pid : p_pids) {
+		kill(pid);
+	}
+}
+
 int OS::get_process_id() const {
 	return -1;
 }

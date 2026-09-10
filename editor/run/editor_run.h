@@ -63,6 +63,8 @@ private:
 	Status status;
 	String running_scene;
 
+	static List<ProcessID> _get_paused_pids(const List<ProcessID> &p_pids);
+
 public:
 	inline static EditorRunInstanceStarting instance_starting_callback = nullptr;
 	inline static EditorRunInstanceRequestScreenshot instance_rq_screenshot_callback = nullptr;

@@ -204,6 +204,7 @@ public:
 	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error kill(const ProcessID &p_pid) override;
+	virtual void kill_multiple(const List<ProcessID> &p_pids, const List<ProcessID> &p_skip_graceful = List<ProcessID>()) override;
 	virtual int get_process_id() const override;
 	virtual bool is_process_running(const ProcessID &p_pid) const override;
 	virtual int get_process_exit_code(const ProcessID &p_pid) const override;

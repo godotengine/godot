@@ -1620,6 +1620,158 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 	return ret != 0 ? OK : FAILED;
 }
 
+namespace {
+struct GracefulCloseData {
+	DWORD pid = 0;
+	bool found_window = false;
+};
+
+BOOL CALLBACK _graceful_close_enum_proc(HWND hwnd, LPARAM lParam) {
+	GracefulCloseData *data = (GracefulCloseData *)lParam;
+	DWORD window_pid = 0;
+	GetWindowThreadProcessId(hwnd, &window_pid);
+	if (window_pid == data->pid && IsWindowVisible(hwnd)) {
+		data->found_window = true;
+		PostMessageW(hwnd, WM_CLOSE, 0, 0);
+	}
+	return TRUE; // Keep enumerating; a process may own more than one top-level window.
+}
+
+// Finds the target process's visible top-level window(s), if any, and posts WM_CLOSE to
+// each. Returns whether any such window was found (i.e. whether it's worth waiting for this
+// process to exit on its own at all). Does not wait for anything itself -- see kill_multiple().
+bool _post_close_to_windows(DWORD p_pid) {
+	GracefulCloseData data;
+	data.pid = p_pid;
+	EnumWindows(_graceful_close_enum_proc, (LPARAM)&data);
+	return data.found_window;
+}
+
+struct PendingKill {
+	ProcessID pid = 0;
+	HANDLE handle = nullptr;
+	PROCESS_INFORMATION pi = {};
+	bool from_process_map = false;
+	bool graceful_requested = false; // We posted WM_CLOSE and are waiting to see if it exits on its own.
+	bool exited = false; // Confirmed exited on its own; must NOT be hard-killed in phase 3.
+};
+} // namespace
+
+// TerminateProcess() gives a process's cleanup code zero chance to run: no destructors, no
+// RenderingDevice teardown, no swap chain release. For a process holding a D3D12 fullscreen
+// flip-model swap chain, an abrupt kill can leave the GPU driver with teardown work to reclaim
+// asynchronously; doing this repeatedly in quick succession -- which is exactly what the
+// editor's Play/Stop/Reload workflow does every time -- has been observed to race with that
+// reclaim on some AMD drivers, producing multi-second Present()/fence stalls or a device-removed
+// crash on a later relaunch. Asking each process to close itself first (WM_CLOSE, which runs
+// Godot's normal SceneTree::quit() -> RenderingDevice destruction -> swap chain release path)
+// avoids the race, at the cost of a bounded wait for processes that don't cooperate.
+//
+// This is batched (rather than being folded into kill() and called once per PID) so that
+// closing N processes at once -- e.g. the editor's multi-instance play/test feature -- shares
+// one timeout budget instead of paying it N times over serially.
+void OS_Windows::kill_multiple(const List<ProcessID> &p_pids, const List<ProcessID> &p_skip_graceful) {
+	if (p_pids.is_empty()) {
+		return;
+	}
+
+	// Note: process_map entries are intentionally NOT erased here yet, only looked up. Erasing
+	// early would make is_process_running()/get_process_exit_code() report "not running" for a
+	// pid the instant this function is called, even though the process may still legitimately
+	// be alive and running for most of the shared wait below -- they're only erased once each
+	// pid's actual fate (exited on its own, or hard-killed) is known, at the end of phase 3.
+	Vector<PendingKill> pending;
+	pending.resize(p_pids.size());
+	{
+		MutexLock lock(process_map_mutex);
+		int i = 0;
+		for (const ProcessID &pid : p_pids) {
+			PendingKill &pk = pending.write[i++];
+			pk.pid = pid;
+			if (process_map->has(pid)) {
+				pk.pi = (*process_map)[pid].pi;
+				pk.handle = pk.pi.hProcess;
+				pk.from_process_map = true;
+			} else {
+				pk.handle = OpenProcess(PROCESS_TERMINATE | SYNCHRONIZE, false, (DWORD)pid);
+			}
+		}
+	}
+
+	// Phase 1: ask everyone eligible to close, without waiting for any of them yet. Everyone
+	// else (skip-listed, or no window found to close) is simply left to be hard-killed in
+	// phase 3 below -- graceful_requested only ever narrows who phase 2 waits on, it must
+	// never be read as "does this still need killing" (that's what `exited` is for).
+	for (PendingKill &pk : pending) {
+		if (pk.handle == nullptr || p_skip_graceful.find(pk.pid) != nullptr) {
+			continue;
+		}
+		pk.graceful_requested = _post_close_to_windows((DWORD)pk.pid);
+	}
+
+	// Phase 2: wait once, against a single shared deadline, for everyone we just asked nicely.
+	// 400ms is a ceiling for the worst case (a target that doesn't cooperate), not a typical
+	// wait -- a normal clean quit finishes in tens of milliseconds, and WaitForMultipleObjects
+	// below returns as soon as each one actually exits rather than sitting out the full budget.
+	const uint64_t timeout_usec = 400 * 1000;
+	Vector<HANDLE> wait_handles;
+	Vector<int> wait_pending_indices;
+	for (int i = 0; i < pending.size(); i++) {
+		if (pending[i].graceful_requested) {
+			wait_handles.push_back(pending[i].handle);
+			wait_pending_indices.push_back(i);
+		}
+	}
+
+	if (!wait_handles.is_empty()) {
+		const uint64_t deadline_usec = OS::get_singleton()->get_ticks_usec() + timeout_usec;
+		while (!wait_handles.is_empty()) {
+			const uint64_t now_usec = OS::get_singleton()->get_ticks_usec();
+			if (now_usec >= deadline_usec) {
+				break;
+			}
+			const DWORD remaining_ms = (DWORD)MAX((uint64_t)1, (deadline_usec - now_usec) / 1000);
+			const DWORD result = WaitForMultipleObjects((DWORD)wait_handles.size(), wait_handles.ptr(), FALSE, remaining_ms);
+			const DWORD signaled_index = result - WAIT_OBJECT_0;
+			if (result == WAIT_TIMEOUT || result == WAIT_FAILED || signaled_index >= (DWORD)wait_handles.size()) {
+				break;
+			}
+			// This one exited on its own -- and ONLY this marks it as not needing phase 3.
+			pending.write[wait_pending_indices[signaled_index]].exited = true;
+			wait_handles.remove_at(signaled_index);
+			wait_pending_indices.remove_at(signaled_index);
+		}
+	}
+
+	// Phase 3: hard-kill anything not already confirmed exited above -- this covers targets
+	// that never got a graceful request at all (skip-listed or windowless) just as much as
+	// ones that were asked and didn't make the deadline. Each pid's fate is settled by the
+	// time its map entry is erased below, so is_process_running()/get_process_exit_code()
+	// never report a pid as gone before it actually is.
+	{
+		MutexLock lock(process_map_mutex);
+		for (const PendingKill &pk : pending) {
+			if (pk.from_process_map) {
+				process_map->erase(pk.pid);
+			}
+		}
+	}
+	for (PendingKill &pk : pending) {
+		if (pk.handle == nullptr) {
+			continue;
+		}
+		if (!pk.exited) {
+			TerminateProcess(pk.handle, 0);
+		}
+		if (pk.from_process_map) {
+			CloseHandle(pk.pi.hProcess);
+			CloseHandle(pk.pi.hThread);
+		} else {
+			CloseHandle(pk.handle);
+		}
+	}
+}
+
 int OS_Windows::get_process_id() const {
 	return _getpid();
 }

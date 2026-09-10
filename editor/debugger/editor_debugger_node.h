@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/os/process_id.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "editor/docks/editor_dock.h"
 
@@ -175,6 +176,7 @@ public:
 	ScriptEditorDebugger *get_default_debugger() const;
 	ScriptEditorDebugger *get_debugger(int p_debugger) const;
 	int get_debugger_id(const ScriptEditorDebugger *p_debugger);
+	bool is_process_paused(ProcessID p_pid) const;
 
 	void debug_next();
 	void debug_step();
