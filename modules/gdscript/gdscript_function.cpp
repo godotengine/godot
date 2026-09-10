@@ -31,6 +31,7 @@
 #include "gdscript_function.h"
 
 #include "gdscript.h"
+#include "inline_cache.h"
 
 #include "core/object/class_db.h"
 
@@ -245,6 +246,10 @@ GDScriptFunction::~GDScriptFunction() {
 	}
 
 	return_type.script_type_ref = Ref<Script>();
+
+	for (int i : function_inline_cache_locations) {
+		FunctionInlineCache::get_ptr(reinterpret_cast<uintptr_t>(&_code_ptr[i]))->reset();
+	}
 
 #ifdef DEBUG_ENABLED
 	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);

@@ -721,6 +721,8 @@ public:
 		return (cerr.error == Callable::CallError::CALL_OK) ? ret : Variant();
 	}
 
+	virtual VariantCallCache lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error);
+
 	// Depending on the boolean, we call either the virtual function _notification_backward or _notification_forward.
 	// - Forward calls subclasses in descending order (e.g. Object -> Node -> Node3D -> extension -> script).
 	//   Backward calls subclasses in descending order (e.g. script -> extension -> Node3D -> Node -> Object).

@@ -1473,6 +1473,32 @@ void Variant::call_static(Variant::Type p_type, const StringName &p_method, cons
 	imf->call(nullptr, p_args, p_argcount, r_ret, imf->default_arguments, r_error);
 }
 
+VariantCallCache Variant::lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error) {
+	if (type == OBJECT) {
+		Object *obj = _get_obj().obj;
+		if (!obj) {
+			p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			return VariantCallCache();
+		}
+#ifdef DEBUG_ENABLED
+		if (EngineDebugger::is_active() && !_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+			p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			return VariantCallCache();
+		}
+#endif // DEBUG ENABLED
+		return _get_obj().obj->lookup_function_call(p_method_name, p_error);
+	}
+	// Else
+	const VariantBuiltInMethodInfo *imf = builtin_method_info[type].getptr(p_method_name);
+
+	if (imf != nullptr) {
+		p_error = Callable::CallError::CALL_OK;
+		return VariantCallCache(imf->call, &imf->default_arguments);
+	}
+	p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+	return VariantCallCache();
+}
+
 bool Variant::has_method(const StringName &p_method) const {
 	if (type == OBJECT) {
 		Object *obj = get_validated_object();

@@ -1977,6 +1977,10 @@ Ref<Script> CSharpInstance::get_script() const {
 	return script;
 }
 
+bool CSharpInstance::script_eq(const Ref<Script> &p_script) const {
+	return *script == *p_script;
+}
+
 ScriptLanguage *CSharpInstance::get_language() {
 	return CSharpLanguage::get_singleton();
 }
