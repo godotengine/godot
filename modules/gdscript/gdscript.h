@@ -373,7 +373,6 @@ public:
 	virtual bool has_method(const StringName &p_method) const;
 
 	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
-	virtual Vector<Variant> get_method_arguments(const StringName &p_method, bool *r_is_valid = nullptr) const;
 
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
