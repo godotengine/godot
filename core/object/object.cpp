@@ -828,8 +828,8 @@ MethodInfo Object::get_method_info(const StringName &p_method) const {
 	}
 
 	{
-		ClassDB::get_method_info(get_class_name(), p_method, &mi);
-		if (!(mi == MethodInfo())) {
+		bool valid = ClassDB::get_method_info(get_class_name(), p_method, &mi);
+		if (valid) {
 			return mi;
 		}
 	}

@@ -103,15 +103,16 @@ public:
 		print_line("CallableCustomMethodPointer::get_arguments is called!");
 #ifndef DEBUG_ENABLED
 		MethodInfo mi;
-		PropertyInfo arg;
 
 		for (uint32_t i = 0; i < sizeof...(P); ++i) {
+			PropertyInfo arg;
 			call_get_argument_type_info<P...>(i, arg);
 			mi.arguments.push_back(arg);
 		}
 
-		call_get_argument_type_info<P...>(-1, arg);
-		mi.return_val = arg;
+		if constexpr (!std::is_same<R, void>::value) {
+			mi.return_val = GetTypeInfo<R>::get_class_info();
+		}
 
 		r_method_info = mi;
 #else
@@ -123,14 +124,9 @@ public:
 		ERR_FAIL_COND_MSG(!obj_id.is_valid(),
 				vformat("Failed to get the ObjectID of '" + uitos(data.object_id) + "' in CallableCustomMethodPointer, method name: \"%s\"", method_name));
 
-		List<MethodInfo> method_info_list;
-		ObjectDB::get_instance(obj_id)->get_method_list(&method_info_list);
-
-		for (const MethodInfo &E : method_info_list) {
-			if (E.name == method_name) {
-				r_method_info = E;
-			}
-		}
+		Object *obj = ObjectDB::get_instance(obj_id);
+		ERR_FAIL_NULL(obj);
+		r_method_info = obj->get_method_info(method_name);
 #endif
 	}
 
@@ -206,15 +202,18 @@ public:
 	virtual void get_method_info(MethodInfo &r_method_info) const override {
 		print_line("CallableCustomMethodPointerC::get_arguments is called!");
 		MethodInfo mi;
-		PropertyInfo arg;
 
 		for (uint32_t i = 0; i < sizeof...(P); ++i) {
+			PropertyInfo arg;
 			call_get_argument_type_info<P...>(i, arg);
 			mi.arguments.push_back(arg);
 		}
 
-		call_get_argument_type_info<P...>(-1, arg);
-		mi.return_val = arg;
+		if constexpr (!std::is_same<R, void>::value) {
+			mi.return_val = GetTypeInfo<R>::get_class_info();
+		}
+
+		mi.flags |= METHOD_FLAGS_DEFAULT | METHOD_FLAG_CONST;
 
 		r_method_info = mi;
 	}
@@ -296,15 +295,18 @@ public:
 	virtual void get_method_info(MethodInfo &r_method_info) const override {
 		print_line("CallableCustomStaticMethodPointer::get_arguments is called!");
 		MethodInfo mi;
-		PropertyInfo arg;
 
 		for (uint32_t i = 0; i < sizeof...(P); ++i) {
+			PropertyInfo arg;
 			call_get_argument_type_info<P...>(i, arg);
 			mi.arguments.push_back(arg);
 		}
 
-		call_get_argument_type_info<P...>(-1, arg);
-		mi.return_val = arg;
+		if constexpr (!std::is_same<R, void>::value) {
+			mi.return_val = GetTypeInfo<R>::get_class_info();
+		}
+
+		mi.flags |= METHOD_FLAGS_DEFAULT | METHOD_FLAG_STATIC;
 
 		r_method_info = mi;
 	}
