@@ -744,7 +744,7 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			vec3 norm0 = vec3(vert0.normal_xy, vert0.normal_z);
 			vec3 norm1 = vec3(vert1.normal_xy, vert1.normal_z);
 			vec3 norm2 = vec3(vert2.normal_xy, vert2.normal_z);
-			vec3 normal = barycentric.x * norm0 + barycentric.y * norm1 + barycentric.z * norm2;
+			vec3 normal = normalize(barycentric.x * norm0 + barycentric.y * norm1 + barycentric.z * norm2);
 
 			vec3 direct_light = vec3(0.0f);
 #ifdef USE_LIGHT_TEXTURE_FOR_BOUNCES
@@ -825,7 +825,7 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			vec3 norm0 = vec3(vert0.normal_xy, vert0.normal_z);
 			vec3 norm1 = vec3(vert1.normal_xy, vert1.normal_z);
 			vec3 norm2 = vec3(vert2.normal_xy, vert2.normal_z);
-			vec3 normal = barycentric.x * norm0 + barycentric.y * norm1 + barycentric.z * norm2;
+			vec3 normal = normalize(barycentric.x * norm0 + barycentric.y * norm1 + barycentric.z * norm2);
 
 			vec3 direct_light = vec3(0.0f);
 #ifdef USE_LIGHT_TEXTURE_FOR_BOUNCES
