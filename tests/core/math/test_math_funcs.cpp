@@ -291,6 +291,22 @@ TEST_CASE_TEMPLATE("[Math] pow/log/log2/exp/sqrt", T, float, double) {
 	CHECK(Math::sqrt((T)1.5) == doctest::Approx((T)1.224745));
 }
 
+TEST_CASE("[Math] hypot") {
+	CHECK(Math::hypot(0.0, 0.0) == doctest::Approx(0.0));
+	CHECK(Math::hypot(3.0, 4.0) == doctest::Approx(5.0));
+	CHECK(Math::hypot(-3.0, -4.0) == doctest::Approx(5.0));
+	CHECK(Math::hypot(1.0, 1.0) == doctest::Approx(1.4142135624));
+
+	CHECK(Math::is_finite(Math::hypot(3e300, 4e300)));
+	CHECK(Math::hypot(3e300, 4e300) == doctest::Approx(5e300));
+	CHECK(Math::hypot(3e-300, 4e-300) / 5e-300 == doctest::Approx(1.0));
+
+	CHECK(Math::hypot(Math::INF, 1.0) == Math::INF);
+	CHECK(Math::hypot(1.0, -Math::INF) == Math::INF);
+	CHECK(Math::hypot(Math::INF, Math::NaN) == Math::INF);
+	CHECK(Math::is_nan(Math::hypot(Math::NaN, 1.0)));
+}
+
 TEST_CASE_TEMPLATE("[Math] is_nan/is_inf/is_finite", T, float, double) {
 	static_assert(!Math::is_nan((T)0.0));
 	static_assert(!Math::is_nan((T)CMP_EPSILON));

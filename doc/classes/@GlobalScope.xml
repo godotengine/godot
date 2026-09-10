@@ -488,6 +488,22 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="hypotf">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="y" type="float" />
+			<description>
+				Returns the square root of the sum of the squares of [param x] and [param y], without undue overflow or underflow at intermediate stages of the computation.
+				[codeblocks]
+				[gdscript]
+				print(hypotf(3.0, 4.0)) # Prints 5.0
+				[/gdscript]
+				[csharp]
+				GD.Print(Mathf.Hypot(3.0, 4.0)); // Prints 5.0
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="instance_from_id">
 			<return type="Object" />
 			<param index="0" name="instance_id" type="int" />

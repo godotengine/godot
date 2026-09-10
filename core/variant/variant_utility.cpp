@@ -97,6 +97,10 @@ double VariantUtilityFunctions::sqrt(double p_x) {
 	return Math::sqrt(p_x);
 }
 
+double VariantUtilityFunctions::hypotf(double p_x, double p_y) {
+	return Math::hypot(p_x, p_y);
+}
+
 double VariantUtilityFunctions::fmod(double p_b, double p_r) {
 	return Math::fmod(p_b, p_r);
 }
@@ -1649,6 +1653,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(atanh, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(sqrt, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(hypotf, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(fmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(fposmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(posmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);

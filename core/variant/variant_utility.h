@@ -67,6 +67,7 @@ struct VariantUtilityFunctions {
 	static double signf(double p_x);
 	static int64_t signi(int64_t p_x);
 	static double pow(double p_x, double p_y);
+	static double hypotf(double p_x, double p_y);
 	static double log(double p_x);
 	static double exp(double p_x);
 	static bool is_nan(double p_x);

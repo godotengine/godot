@@ -960,6 +960,36 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the square root of the sum of the squares of <paramref name="x"/> and
+        /// <paramref name="y"/>, i.e. the length of the hypotenuse of a right triangle with
+        /// the given side lengths. Unlike <c>Sqrt(x * x + y * y)</c>, this avoids overflow
+        /// and underflow at intermediate stages of the computation.
+        /// </summary>
+        /// <param name="x">The length of the first side.</param>
+        /// <param name="y">The length of the second side.</param>
+        /// <returns>The length of the hypotenuse.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Hypot(double x, double y)
+        {
+            return double.Hypot(x, y);
+        }
+
+        /// <summary>
+        /// Returns the square root of the sum of the squares of <paramref name="x"/> and
+        /// <paramref name="y"/>, i.e. the length of the hypotenuse of a right triangle with
+        /// the given side lengths. Unlike <c>Sqrt(x * x + y * y)</c>, this avoids overflow
+        /// and underflow at intermediate stages of the computation.
+        /// </summary>
+        /// <param name="x">The length of the first side.</param>
+        /// <param name="y">The length of the second side.</param>
+        /// <returns>The length of the hypotenuse.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float Hypot(float x, float y)
+        {
+            return float.Hypot(x, y);
+        }
+
+        /// <summary>
         /// Returns a normalized value considering the given range.
         /// This is the opposite of <see cref="Lerp(float, float, float)"/>.
         /// </summary>

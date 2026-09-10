@@ -128,4 +128,39 @@ TEST_CASE("[VariantUtility] Type conversion") {
 	}
 }
 
+TEST_CASE("[VariantUtility] hypotf") {
+	CHECK(VariantUtilityFunctions::hypotf(0.0, 0.0) == doctest::Approx(0.0));
+	CHECK(VariantUtilityFunctions::hypotf(3.0, 4.0) == doctest::Approx(5.0));
+	CHECK(VariantUtilityFunctions::hypotf(-3.0, -4.0) == doctest::Approx(5.0));
+
+	CHECK(Variant::has_utility_function("hypotf"));
+	CHECK(Variant::get_utility_function_argument_count("hypotf") == 2);
+	CHECK(Variant::get_utility_function_argument_type("hypotf", 0) == Variant::FLOAT);
+	CHECK(Variant::get_utility_function_argument_type("hypotf", 1) == Variant::FLOAT);
+	CHECK(Variant::get_utility_function_return_type("hypotf") == Variant::FLOAT);
+	CHECK_FALSE(Variant::is_utility_function_vararg("hypotf"));
+
+	{
+		// Check that using Variant::call_utility_function also works.
+		Vector<const Variant *> args;
+		Variant x_arg = 3.0;
+		args.push_back(&x_arg);
+		Variant y_arg = 4.0;
+		args.push_back(&y_arg);
+		Callable::CallError call_error;
+		Variant result;
+		Variant::call_utility_function("hypotf", &result, (const Variant **)args.ptr(), 2, call_error);
+		CHECK(call_error.error == Callable::CallError::CALL_OK);
+		CHECK(result.get_type() == Variant::Type::FLOAT);
+		CHECK(double(result) == doctest::Approx(5.0));
+
+		x_arg = 5;
+		y_arg = 12;
+		Variant::call_utility_function("hypotf", &result, (const Variant **)args.ptr(), 2, call_error);
+		CHECK(call_error.error == Callable::CallError::CALL_OK);
+		CHECK(result.get_type() == Variant::Type::FLOAT);
+		CHECK(double(result) == doctest::Approx(13.0));
+	}
+}
+
 } // namespace TestVariantUtility

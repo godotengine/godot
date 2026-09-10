@@ -250,6 +250,13 @@ constexpr bool is_inf(float p_val) {
 	return abs(p_val) == (float)INF;
 }
 
+_ALWAYS_INLINE_ double hypot(double p_x, double p_y) {
+	return std::hypot(p_x, p_y);
+}
+_ALWAYS_INLINE_ float hypot(float p_x, float p_y) {
+	return std::hypot(p_x, p_y);
+}
+
 // These methods assume (p_num + p_den) doesn't overflow.
 constexpr int32_t division_round_up(int32_t p_num, int32_t p_den) {
 	int32_t offset = (p_num < 0 && p_den < 0) ? 1 : -1;
