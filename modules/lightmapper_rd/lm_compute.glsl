@@ -539,9 +539,9 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, vec3 p_geometry_normal, 
 		const float shadowing_ray_count_sqrt = sqrt(float(total_ray_count));
 
 		// Setup tangent pass to calculate AA samples over the current texel.
-		vec3 aux = p_normal.y < 0.777 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
-		vec3 tangent = normalize(cross(p_normal, aux));
-		vec3 bitan = normalize(cross(p_normal, tangent));
+		vec3 aux = abs(p_geometry_normal.y) < 0.777 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+		vec3 tangent = normalize(cross(p_geometry_normal, aux));
+		vec3 bitan = normalize(cross(p_geometry_normal, tangent));
 
 		// Setup light tangent pass to calculate samples over disk aligned towards the light
 		vec3 light_to_point = -shadow_dir;
@@ -557,6 +557,11 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, vec3 p_geometry_normal, 
 			vec3 disk_aligned = (disk_sample.x * tangent + disk_sample.y * bitan);
 			vec3 origin = p_position - disk_aligned;
 			vec3 light_dir = normalize(light_pos - origin);
+			// Keep the jitter and both ray bias offsets on the same side of nearby surfaces.
+			if (trace_ray_any_hit(p_position, origin + light_dir * bake_params.bias * 2.0) != RAY_MISS) {
+				origin = p_position;
+				light_dir = normalize(light_pos - origin);
+			}
 
 			float power = 0.0;
 			vec3 light_color = vec3(0.0);
@@ -593,7 +598,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, vec3 p_geometry_normal, 
 						vec4 hit_albedo = vec4(1.0);
 						vec3 hit_position;
 						// Offset the ray origin for AA, offset the light position for soft shadows.
-						uint ret = trace_ray_closest_hit_triangle_albedo_alpha(origin - light_disk_to_point * (bake_params.bias + length(disk_sample)), p_position - light_disk_to_point * dist, hit_albedo, hit_position);
+						uint ret = trace_ray_closest_hit_triangle_albedo_alpha(origin - light_disk_to_point * bake_params.bias, p_position - light_disk_to_point * dist, hit_albedo, hit_position);
 						if (ret == RAY_MISS) {
 							if (!sample_did_hit) {
 								sample_penumbra = 1.0;
@@ -634,7 +639,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, vec3 p_geometry_normal, 
 					vec4 hit_albedo = vec4(1.0);
 					vec3 hit_position;
 					// Offset the ray origin for AA, offset the light position for soft shadows.
-					uint ret = trace_ray_closest_hit_triangle_albedo_alpha(origin + light_dir * (bake_params.bias + length(disk_sample)), light_pos, hit_albedo, hit_position);
+					uint ret = trace_ray_closest_hit_triangle_albedo_alpha(origin + light_dir * bake_params.bias, light_pos, hit_albedo, hit_position);
 					if (ret == RAY_MISS) {
 						if (!sample_did_hit) {
 							sample_penumbra = 1.0;
