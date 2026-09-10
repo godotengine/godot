@@ -728,6 +728,17 @@ Error Main::test_setup() {
 	NavigationServer3DManager::initialize_server_manager();
 #endif // NAVIGATION_3D_DISABLED
 
+	bool tests_exist = DirAccess::dir_exists_absolute(OS::get_singleton()->get_cwd().path_join("tests").path_join("data"));
+	if (!tests_exist) {
+		if (OS::get_singleton()->get_cwd().ends_with("bin")) {
+			// Likely running from `bin`, try changing cwd:
+			OS::get_singleton()->set_cwd(OS::get_singleton()->get_cwd().get_base_dir());
+			tests_exist = DirAccess::dir_exists_absolute(OS::get_singleton()->get_cwd().path_join("tests").path_join("data"));
+		}
+		ERR_FAIL_COND_V_MSG(!tests_exist, FAILED, "Test data not found, tests should be run from the Godot source repository root.");
+		WARN_PRINT("Tests should be run from the Godot source repository root, working directory was changed to " + OS::get_singleton()->get_cwd());
+	}
+
 	// From `Main::setup2()`.
 	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
