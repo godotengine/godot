@@ -821,7 +821,10 @@ MethodInfo Object::get_method_info(const StringName &p_method) const {
 	}
 
 	if (script_instance) {
-		return script_instance->get_method_info(p_method);
+		mi = script_instance->get_method_info(p_method);
+		if (!(mi == MethodInfo())) {
+			return mi;
+		}
 	}
 
 	{
