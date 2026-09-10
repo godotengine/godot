@@ -398,65 +398,67 @@ public:
 	}
 };
 
-TEST_CASE("[Callable] Arguments") {
+#define CALLABLE_TEST(class_instance, method_name) \
+	CHECK(class_instance->is_valid_mi(#method_name, \
+			Callable(class_instance, #method_name).get_method_info()));
+
+#define CALLABLE_MP_TEST(class_name, class_instance, method_name) \
+	CHECK(class_instance->is_valid_mi(#method_name, \
+			callable_mp(class_instance, &class_name::method_name).get_method_info()));
+
+#define CALLABLE_MP_BIND_TEST(class_name, class_instance, method_name, ...) \
+	CHECK(class_instance->is_valid_mi(#method_name, \
+			callable_mp(class_instance, &class_name::method_name).bind(__VA_ARGS__).get_method_info()));
+
+#define CALLABLE_MP_UNBIND_TEST(class_name, class_instance, method_name, unbind_amount) \
+	CHECK(class_instance->is_valid_mi(#method_name, \
+			callable_mp(class_instance, &class_name::method_name).unbind(unbind_amount).get_method_info()));
+
+#define CALLABLE_MP_STATIC_TEST(class_name, class_instance, method_name) \
+	CHECK(class_instance->is_valid_mi(#method_name, \
+			callable_mp_static(&class_name::method_name).get_method_info()));
+
+TEST_CASE("[Callable] Method Info") {
 	TestGetMethodInfo *my_test = memnew(TestGetMethodInfo);
 
-	// Test simple methods.
-	Callable callable_1 = Callable(my_test, "test_func_1");
-	CHECK(my_test->is_valid_mi("test_func_1", callable_1.get_method_info()));
-
-	Callable callable_2 = Callable(my_test, "test_func_2");
-	CHECK(my_test->is_valid_mi("test_func_2", callable_2.get_method_info()));
-	Callable callable_3 = Callable(my_test, "test_func_3");
-	CHECK(my_test->is_valid_mi("test_func_3", callable_3.get_method_info()));
-	Callable callable_4 = Callable(my_test, "test_func_6");
-	CHECK(my_test->is_valid_mi("test_func_6", callable_4.get_method_info()));
-	Callable callable_5 = Callable(my_test, "test_func_7");
-	CHECK(my_test->is_valid_mi("test_func_7", callable_5.get_method_info()));
+	CALLABLE_TEST(my_test, test_func_1);
+	CALLABLE_TEST(my_test, test_func_2);
+	CALLABLE_TEST(my_test, test_func_3);
+	CALLABLE_TEST(my_test, test_func_6);
+	CALLABLE_TEST(my_test, test_func_7);
 
 	// Test vararg methods.
-	Callable callable_vararg_1 = Callable(my_test, "test_func_8");
-	CHECK(my_test->is_valid_mi("test_func_8", callable_vararg_1.get_method_info()));
-	Callable callable_vararg_2 = Callable(my_test, "test_func_9");
-	CHECK(my_test->is_valid_mi("test_func_9", callable_vararg_2.get_method_info()));
+	CALLABLE_TEST(my_test, test_func_8);
+	CALLABLE_TEST(my_test, test_func_9);
 
 	// Callable MP tests.
-
-	// Test simple methods.
-
-	Callable callable_mp_1 = callable_mp(my_test, &TestGetMethodInfo::test_func_1);
-	CHECK(my_test->is_valid_mi("test_func_1", callable_1.get_method_info()));
-
-	Callable callable_mp_2 = callable_mp(my_test, &TestGetMethodInfo::test_func_2);
-	CHECK(my_test->is_valid_mi("test_func_2", callable_mp_2.get_method_info()));
-	Callable callable_mp_3 = callable_mp(my_test, &TestGetMethodInfo::test_func_3);
-	CHECK(my_test->is_valid_mi("test_func_3", callable_mp_3.get_method_info()));
+	CALLABLE_MP_TEST(TestGetMethodInfo, my_test, test_func_1);
+	CALLABLE_MP_TEST(TestGetMethodInfo, my_test, test_func_2);
+	CALLABLE_MP_TEST(TestGetMethodInfo, my_test, test_func_3);
 
 	// Const methods
-	Callable callable_mp_4 = callable_mp(my_test, &TestGetMethodInfo::test_func_4);
-	CHECK(my_test->is_valid_mi("test_func_4", callable_mp_4.get_method_info()));
-	Callable callable_mp_5 = callable_mp(my_test, &TestGetMethodInfo::test_func_5);
-	CHECK(my_test->is_valid_mi("test_func_5", callable_mp_5.get_method_info()));
+	CALLABLE_MP_TEST(TestGetMethodInfo, my_test, test_func_4);
+	CALLABLE_MP_TEST(TestGetMethodInfo, my_test, test_func_5);
 
 	// Test static methods.
-	Callable callable_mp_static_1 = callable_mp_static(&TestGetMethodInfo::test_func_6);
-	CHECK(my_test->is_valid_mi("test_func_6", callable_mp_static_1.get_method_info()));
-	Callable callable_mp_static_2 = callable_mp_static(&TestGetMethodInfo::test_func_7);
-	CHECK(my_test->is_valid_mi("test_func_7", callable_mp_static_2.get_method_info()));
+	CALLABLE_MP_STATIC_TEST(TestGetMethodInfo, my_test, test_func_6);
+	CALLABLE_MP_STATIC_TEST(TestGetMethodInfo, my_test, test_func_7);
 
 	// Test bind.
-	Callable callable_mp_bind_1 = callable_mp_3.bind(1);
-	CHECK(my_test->is_valid_mi("test_func_3", callable_mp_bind_1.get_method_info()));
-	Callable callable_mp_bind_2 = callable_mp_3.bind(1, 2);
-	CHECK(my_test->is_valid_mi("test_func_3", callable_mp_bind_2.get_method_info()));
+	CALLABLE_MP_BIND_TEST(TestGetMethodInfo, my_test, test_func_3, 1);
+	CALLABLE_MP_BIND_TEST(TestGetMethodInfo, my_test, test_func_3, 1, 2);
 
 	// Test unbind.
-	Callable callable_mp_unbind_1 = callable_mp_3.unbind(1);
-	CHECK(my_test->is_valid_mi("test_func_3", callable_mp_unbind_1.get_method_info()));
-	Callable callable_mp_unbind_2 = callable_mp_3.unbind(2);
-	CHECK(my_test->is_valid_mi("test_func_3", callable_mp_unbind_2.get_method_info()));
+	CALLABLE_MP_UNBIND_TEST(TestGetMethodInfo, my_test, test_func_3, 1);
+	CALLABLE_MP_UNBIND_TEST(TestGetMethodInfo, my_test, test_func_3, 2);
 
 	memdelete(my_test);
 }
+
+#undef CALLABLE_TEST
+#undef CALLABLE_MP_TEST
+#undef CALLABLE_MP_BIND_TEST
+#undef CALLABLE_MP_UNBIND_TEST
+#undef CALLABLE_MP_STATIC_TEST
 
 } // namespace TestCallable
