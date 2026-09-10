@@ -3172,7 +3172,6 @@ void EditorPropertyNodePath::_text_submitted(const String &p_text) {
 	_node_selected(np, false);
 	edit->hide();
 	assign->show();
-	menu->show();
 }
 
 const NodePath EditorPropertyNodePath::_get_node_path() const {
