@@ -200,6 +200,7 @@ mat4 get_bone_transform(uint idx) {
 	uint bones_b = bones + 2u;
 
 	t = GET_BONE_MATRIX(bones, bones_a, bones_b);
+	t = transpose(t);
 
 	return t;
 }

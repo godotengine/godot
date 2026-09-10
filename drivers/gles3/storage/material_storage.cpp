@@ -3374,7 +3374,7 @@ void ParticleProcessMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
 	glBindBufferBase(GL_UNIFORM_BUFFER, GLES3::PARTICLES_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
-	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 1); // Start at GL_TEXTURE1 because texture slot 0 is reserved for the heightmap texture.
+	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 2); // Start at GL_TEXTURE1 because texture slot 0 is reserved for the heightmap texture.
 }
 
 /* TextureBlit SHADER */

@@ -762,18 +762,7 @@ void ParticlesStorage::particles_set_baked_emission_texture(RID p_particles, RID
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
-	/*
-	if (p_skeleton.is_valid()) {
-		particles->skeleton = p_skeleton;
-	} else if (particles->skeleton.is_valid()) {
-		particles->skeleton = RID(); // Clear skeleton
-	}
-	if (RD::get_singleton()->uniform_set_is_valid(particles->particles_material_uniform_set)) {
-		//will need to be re-created
-		RD::get_singleton()->free_rid(particles->particles_material_uniform_set);
-	}
-	particles->particles_material_uniform_set = RID();
-	*/
+	particles->emission_texture = p_emission_texture;
 }
 
 int ParticlesStorage::particles_get_draw_passes(RID p_particles) const {

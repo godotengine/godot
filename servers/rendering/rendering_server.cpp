@@ -1227,7 +1227,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(RenderingServerTypes
 					}
 				} break;
 				default: {
-					print_line(p_arrays[i].get_type());
 					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Bones array must be a PackedInt32Array.");
 				} break;
 			}

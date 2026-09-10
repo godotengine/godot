@@ -492,25 +492,49 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 		undo_redo->add_undo_property(matptr, "emission_shape", matptr->get_emission_shape());
 	}
 	Vector<uint8_t> point_img3;
-	h = (point_count * 2) / 2048 + 1;
+	// account for points, normals and skinning.
+	// we do all 3 because the overhead of doing it is marginal compared to the complexity of
+	// handling 2 separate cases, especially since this is passed via the rendering server and not
+	// via a shader uniform
+	h = (point_count * 2) / 2048 + 1 + (point_count / 2048) * 2 + 2;
 	int bw_texture_size = w * h * 4 * sizeof(float);
 	point_img3.resize(bw_texture_size);
 	{
 		uint8_t *iw = point_img3.ptrw();
 		memset(iw, 0, bw_texture_size);
+		float *wf = reinterpret_cast<float *>(iw);
+		int offset = 0;
+
+		const Vector3 *r = points.ptr();
+		for (int i = 0; i < point_count; i++) {
+			wf[i * 4 + 0 + offset] = r[i].x;
+			wf[i * 4 + 1 + offset] = r[i].y;
+			wf[i * 4 + 2 + offset] = r[i].z;
+		}
+
+		if (!normals.is_empty()) {
+			offset = (point_count / 2048 + 1) * 2048 * 4;
+			const Vector3 *n = normals.ptr();
+			for (int i = 0; i < point_count; i++) {
+				wf[i * 4 + 0 + offset] = n[i].x;
+				wf[i * 4 + 1 + offset] = n[i].y;
+				wf[i * 4 + 2 + offset] = n[i].z;
+			}
+		}
+
+		offset = (point_count / 2048 + 1) * 2 * 2048 * 4;
 		const int *b = bones.ptr();
 		const real_t *we = weights.ptr();
-		float *wf = reinterpret_cast<float *>(iw);
 		for (int i = 0; i < point_count; i++) {
 			//make good use of memory and pack 2 bones per RGBA
-			wf[i * 8 + 0] = float(b[i * 4]);
-			wf[i * 8 + 1] = float(we[i * 4]);
-			wf[i * 8 + 2] = float(b[i * 4 + 1]);
-			wf[i * 8 + 3] = float(we[i * 4 + 1]);
-			wf[i * 8 + 4] = float(b[i * 4 + 2]);
-			wf[i * 8 + 5] = float(we[i * 4 + 2]);
-			wf[i * 8 + 6] = float(b[i * 4 + 3]);
-			wf[i * 8 + 7] = float(we[i * 4 + 3]);
+			wf[i * 8 + 0 + offset] = float(b[i * 4]);
+			wf[i * 8 + 1 + offset] = float(we[i * 4]);
+			wf[i * 8 + 2 + offset] = float(b[i * 4 + 1]);
+			wf[i * 8 + 3 + offset] = float(we[i * 4 + 1]);
+			wf[i * 8 + 4 + offset] = float(b[i * 4 + 2]);
+			wf[i * 8 + 5 + offset] = float(we[i * 4 + 2]);
+			wf[i * 8 + 6 + offset] = float(b[i * 4 + 3]);
+			wf[i * 8 + 7 + offset] = float(we[i * 4 + 3]);
 		}
 	}
 	Ref<Image> image3 = memnew(Image(w, h, false, Image::FORMAT_RGBAF, point_img3));
