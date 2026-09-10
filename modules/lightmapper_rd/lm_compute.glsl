@@ -210,6 +210,17 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 						uint triangle_hits = 0;
 						for (uint i = 0; i < triangle_test_count; i++) {
 							uint triangle_index = triangle_indices.data[triangle_start_index + i];
+#if defined(MODE_DIRECT_LIGHT) && defined(USE_BAKE_SHADOW_CAST_FLAGS)
+							if ((triangles.data[triangle_index].flags & 1u) == 0u) {
+								continue;
+							}
+#endif
+#if (defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)) && defined(USE_BAKE_CONTRIBUTION_FLAGS)
+							// A surface that neither contributes diffuse bounce nor emits is completely transparent to indirect-light rays.
+							if ((triangles.data[triangle_index].flags & 12u) == 0u) {
+								continue;
+							}
+#endif
 							if (ray_box_test(p_from, inv_dir, triangles.data[triangle_index].min_bounds, triangles.data[triangle_index].max_bounds)) {
 								triangle_hits |= (1 << i);
 							}
@@ -233,8 +244,30 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 							vec3 barycentric;
 							if (ray_hits_triangle(p_from, dir, rel_len, vtx0, vtx1, vtx2, distance, barycentric)) {
 								if (p_any_hit) {
-									// Return early if any hit was requested.
-									return RAY_ANY;
+									// Fast shadow rays must respect front/back-face semantics.
+#if defined(MODE_DIRECT_LIGHT) && defined(USE_BAKE_SHADOW_CAST_FLAGS)
+									if ((triangle.flags & 1u) == 0u) {
+										continue;
+									}
+									if ((triangle.flags & 2u) != 0u) {
+										return RAY_ANY;
+									}
+#endif
+									bool any_hit_backface = backface;
+									switch (triangle.cull_mode) {
+										case CULL_DISABLED:
+											any_hit_backface = false;
+											break;
+										case CULL_FRONT:
+											any_hit_backface = !any_hit_backface;
+											break;
+										case CULL_BACK:
+											break;
+									}
+									if (any_hit_backface) {
+										return RAY_ANY;
+									}
+									continue;
 								}
 								vec3 position = p_from + dir * distance;
 								vec3 hit_cell = (position - bake_params.to_cell_offset) * bake_params.to_cell_size;
@@ -252,15 +285,24 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 								}
 
 								if (distance < best_distance) {
-									switch (triangle.cull_mode) {
-										case CULL_DISABLED:
-											backface = false;
-											break;
-										case CULL_FRONT:
-											backface = !backface;
-											break;
-										case CULL_BACK: // Default behavior.
-											break;
+#if defined(MODE_DIRECT_LIGHT) && defined(USE_BAKE_SHADOW_CAST_FLAGS)
+									if ((triangle.flags & 2u) != 0u) {
+										// In the direct-light shadow convention used below, RAY_BACK is the accepted casting side.
+										// A double-sided caster must therefore normalize either orientation to that accepted side.
+										backface = true;
+									} else
+#endif
+									{
+										switch (triangle.cull_mode) {
+											case CULL_DISABLED:
+												backface = false;
+												break;
+											case CULL_FRONT:
+												backface = !backface;
+												break;
+											case CULL_BACK: // Default behavior.
+												break;
+										}
 									}
 
 									hit = backface ? RAY_BACK : RAY_FRONT;
@@ -526,6 +568,12 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		return;
 	}
 
+	if (light_data.shadow_enabled == 0u) {
+		r_shadow = 1.0;
+		r_light = light_data.energy * attenuation * light_data.color.rgb * light_texture_color;
+		return;
+	}
+
 	float penumbra = 0.0;
 	vec3 penumbra_color = vec3(0.0);
 	if (p_soft_shadowing) {
@@ -598,24 +646,23 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 							}
 							soft_shadow_hits += 1;
 							break;
-						} else if (ret == RAY_FRONT || ret == RAY_BACK) {
-							bool contribute = ret == RAY_FRONT || !sample_did_hit;
+						} else if (ret == RAY_BACK) {
 							if (!sample_did_hit) {
 								sample_penumbra = 1.0;
 								sample_did_hit = true;
 							}
 
 							soft_shadow_hits += 1;
-
-							if (contribute) {
-								sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
-								sample_penumbra *= 1.0 - hit_albedo.a;
-							}
+							sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
+							sample_penumbra *= 1.0 - hit_albedo.a;
 							origin = hit_position + shadow_dir * bake_params.bias;
 
 							if (sample_penumbra - EPSILON <= 0) {
 								break;
 							}
+						} else if (ret == RAY_FRONT) {
+							// For the lightmapper's shadow-ray convention, the front-side hit is the non-casting side of a one-sided triangle.
+							origin = hit_position + shadow_dir * bake_params.bias;
 						}
 					}
 
@@ -638,22 +685,22 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 							sample_penumbra = 1.0;
 						}
 						break;
-					} else if (ret == RAY_FRONT || ret == RAY_BACK) {
-						bool contribute = ret == RAY_FRONT || !sample_did_hit;
+					} else if (ret == RAY_BACK) {
 						if (!sample_did_hit) {
 							sample_penumbra = 1.0;
 							sample_did_hit = true;
 						}
 
-						if (contribute) {
-							sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
-							sample_penumbra *= 1.0 - hit_albedo.a;
-						}
+						sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
+						sample_penumbra *= 1.0 - hit_albedo.a;
 						origin = hit_position + shadow_dir * bake_params.bias;
 
 						if (sample_penumbra - EPSILON <= 0) {
 							break;
 						}
+					} else if (ret == RAY_FRONT) {
+						// Ignore this side for one-sided baked shadows.
+						origin = hit_position + shadow_dir * bake_params.bias;
 					}
 				}
 				power = sample_penumbra;
@@ -678,23 +725,22 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					penumbra = 1.0;
 				}
 				break;
-			} else if (ret == RAY_FRONT || ret == RAY_BACK) {
-				bool contribute = (ret == RAY_FRONT || !did_hit);
+			} else if (ret == RAY_BACK) {
 				if (!did_hit) {
 					penumbra = 1.0;
 					did_hit = true;
 				}
 
-				if (contribute) {
-					penumbra_color = mix(penumbra_color, penumbra_color * hit_albedo.rgb, hit_albedo.a);
-					penumbra *= 1.0 - hit_albedo.a;
-				}
-
+				penumbra_color = mix(penumbra_color, penumbra_color * hit_albedo.rgb, hit_albedo.a);
+				penumbra *= 1.0 - hit_albedo.a;
 				p_position = hit_position + shadow_dir * bake_params.bias;
 
 				if (penumbra - EPSILON <= 0) {
 					break;
 				}
+			} else if (ret == RAY_FRONT) {
+				// Ignore this side for one-sided baked shadows.
+				p_position = hit_position + shadow_dir * bake_params.bias;
 			}
 		}
 
@@ -744,6 +790,27 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			vec3 norm1 = vec3(vert1.normal_xy, vert1.normal_z);
 			vec3 norm2 = vec3(vert2.normal_xy, vert2.normal_z);
 			vec3 normal = barycentric.x * norm0 + barycentric.y * norm1 + barycentric.z * norm2;
+
+#ifdef USE_BAKE_CONTRIBUTION_FLAGS
+			const uint triangle_flags = triangles.data[tidx].flags;
+			if ((triangle_flags & 4u) == 0u) {
+				// Contribution is disabled. Emission remains independent: collect it, then continue the ray straight through without consuming a bounce.
+				if ((triangle_flags & 8u) != 0u) {
+					vec4 emission_albedo_alpha = textureLod(sampler2DArray(albedo_tex, linear_sampler), uvw, 0).rgba;
+					vec3 emission_only = textureLod(sampler2DArray(emission_tex, linear_sampler), uvw, 0).rgb;
+					emission_only *= bake_params.exposure_normalization;
+					light += throughput * emission_only * emission_albedo_alpha.a;
+				}
+
+				transparency_rays_left -= 1;
+				depth -= 1;
+				if (transparency_rays_left <= 0) {
+					break;
+				}
+				position += ray_dir * bake_params.bias;
+				continue;
+			}
+#endif
 
 			vec3 direct_light = vec3(0.0f);
 #ifdef USE_LIGHT_TEXTURE_FOR_BOUNCES
@@ -808,6 +875,26 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			Vertex vert2 = vertices.data[triangles.data[tidx].indices.z];
 			vec3 uvw = vec3(barycentric.x * vert0.uv + barycentric.y * vert1.uv + barycentric.z * vert2.uv, float(triangles.data[tidx].slice));
 			position = barycentric.x * vert0.position + barycentric.y * vert1.position + barycentric.z * vert2.position;
+
+#ifdef USE_BAKE_CONTRIBUTION_FLAGS
+			const uint triangle_flags = triangles.data[tidx].flags;
+			if ((triangle_flags & 4u) == 0u) {
+				if ((triangle_flags & 8u) != 0u) {
+					vec4 emission_albedo_alpha = textureLod(sampler2DArray(albedo_tex, linear_sampler), uvw, 0).rgba;
+					vec3 emission_only = textureLod(sampler2DArray(emission_tex, linear_sampler), uvw, 0).rgb;
+					emission_only *= bake_params.exposure_normalization;
+					light += throughput * emission_only * emission_albedo_alpha.a;
+				}
+
+				transparency_rays_left -= 1;
+				depth -= 1;
+				if (transparency_rays_left <= 0) {
+					break;
+				}
+				position += ray_dir * bake_params.bias;
+				continue;
+			}
+#endif
 
 			vec4 albedo_alpha = textureLod(sampler2DArray(albedo_tex, linear_sampler), uvw, 0).rgba;
 
