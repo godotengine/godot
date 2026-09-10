@@ -241,9 +241,6 @@ Dictionary Callable::get_method_info() const {
 	print_line("Callable::get_arguments called!");
 	MethodInfo mi;
 	get_method_info_ref(mi);
-	if (mi == MethodInfo()) {
-		return Dictionary();
-	}
 	return mi.operator Dictionary();
 }
 
