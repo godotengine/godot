@@ -1354,10 +1354,10 @@ void TabContainer::_bind_methods() {
 
 	base_property_helper.set_prefix("tab_");
 	base_property_helper.set_array_length_getter(&TabContainer::get_tab_count);
-	base_property_helper.register_property(PropertyInfo(Variant::STRING, "title"), defaults.title, &TabContainer::set_tab_title, &TabContainer::get_tab_title);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &TabContainer::set_tab_icon, &TabContainer::get_tab_icon);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &TabContainer::set_tab_disabled, &TabContainer::is_tab_disabled);
-	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "hidden"), defaults.hidden, &TabContainer::set_tab_hidden, &TabContainer::is_tab_hidden);
+	base_property_helper.register_property(PropertyInfo(Variant::STRING, PNAME("title")), defaults.title, &TabContainer::set_tab_title, &TabContainer::get_tab_title);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, PNAME("icon"), PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &TabContainer::set_tab_icon, &TabContainer::get_tab_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, PNAME("disabled")), defaults.disabled, &TabContainer::set_tab_disabled, &TabContainer::is_tab_disabled);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, PNAME("hidden")), defaults.hidden, &TabContainer::set_tab_hidden, &TabContainer::is_tab_hidden);
 	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
