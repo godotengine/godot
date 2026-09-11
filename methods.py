@@ -393,7 +393,8 @@ def use_windows_spawn_fix(self, platform=None):
             "shell": False,
             "env": env,
         }
-        popen_args["text"] = True
+        popen_args["encoding"] = sys.stdout.encoding
+        popen_args["errors"] = "replace"
         proc = subprocess.Popen(cmdline, **popen_args)
         _, err = proc.communicate()
         rv = proc.wait()
@@ -744,7 +745,10 @@ def get_compiler_version(env):
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
     try:
         version = subprocess.check_output(
-            shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
+            shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"],
+            shell=(os.name == "nt"),
+            encoding="utf-8",
+            errors="replace",
         ).strip()
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
@@ -1665,7 +1669,7 @@ def get_default_include_paths(env):
     compiler = env.subst("$CXX")
     target = os.path.join(env.Dir("#main").abspath, "main.cpp")
     args = [compiler, target, "-x", "c++", "-v"]
-    ret = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    ret = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace")
     output = ret.stdout
     match = re.search(r"#include <\.\.\.> search starts here:([\S\s]*)End of search list.", output)
     if not match:
