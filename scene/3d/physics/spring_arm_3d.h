@@ -43,7 +43,16 @@ class SpringArm3D : public Node3D {
 	uint32_t mask = 1;
 	real_t margin = 0.01;
 
+public:
+	enum SpringArm3DProcessCallback {
+		SPRINGARM3D_PROCESS_PHYSICS,
+		SPRINGARM3D_PROCESS_IDLE,
+		SPRINGARM3D_PROCESS_NONE
+	};
+
 protected:
+	SpringArm3DProcessCallback process_callback = SPRINGARM3D_PROCESS_PHYSICS;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -60,7 +69,12 @@ public:
 	real_t get_hit_length();
 	void set_margin(real_t p_margin);
 	real_t get_margin();
+	void set_process_callback(SpringArm3DProcessCallback p_mode);
+	SpringArm3DProcessCallback get_process_callback() const;
+	void process_spring();
 
 private:
-	void process_spring();
+	void _update_process_callback();
 };
+
+VARIANT_ENUM_CAST(SpringArm3D::SpringArm3DProcessCallback);
