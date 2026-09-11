@@ -3590,7 +3590,7 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 					(tile_set->get_physics_layer_collision_layer(physics_layer) & parsed_collision_mask)) {
 				for (int collision_polygon_index = 0; collision_polygon_index < tile_data->get_collision_polygons_count(physics_layer); collision_polygon_index++) {
 					PackedVector2Array collision_polygon_points = tile_data->get_collision_polygon_points(physics_layer, collision_polygon_index);
-					if (collision_polygon_points.is_empty()) {
+					if (collision_polygon_points.size() < 3) {
 						continue;
 					}
 
