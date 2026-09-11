@@ -1163,30 +1163,38 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 			}
 		}
 		// Check current class for potential types.
-		// TODO: Also check classes the current class inherits from.
 		const GDScriptParser::ClassNode *current = p_context.current_class;
 		int location_offset = 0;
 		while (current) {
-			for (const GDScriptParser::ClassNode::Member &member : current->members) {
-				switch (member.type) {
-					case GDScriptParser::ClassNode::Member::CLASS: {
-						EditorLanguage::CompletionOption option(member.m_class->identifier->name, EditorLanguage::CompletionKind::CLASS, EditorLanguage::CompletionLocation::LOCAL + location_offset);
-						r_result.insert(option.display, option);
-					} break;
-					case GDScriptParser::ClassNode::Member::ENUM: {
-						if (!p_inherit_only) {
-							EditorLanguage::CompletionOption option(member.m_enum->identifier->name, EditorLanguage::CompletionKind::ENUM, EditorLanguage::CompletionLocation::LOCAL + location_offset);
+			const GDScriptParser::ClassNode *base = current;
+			while (base) {
+				for (uint32_t i = 0; i < base->members.size(); i++) {
+					const GDScriptParser::ClassNode::Member &member = base->members[i];
+					switch (member.type) {
+						case GDScriptParser::ClassNode::Member::CLASS: {
+							EditorLanguage::CompletionOption option(member.m_class->identifier->name, EditorLanguage::CompletionKind::CLASS, EditorLanguage::CompletionLocation::LOCAL + location_offset);
 							r_result.insert(option.display, option);
-						}
-					} break;
-					case GDScriptParser::ClassNode::Member::CONSTANT: {
-						if (member.constant->type_constraint.is_meta_type) {
-							EditorLanguage::CompletionOption option(member.constant->identifier->name, EditorLanguage::CompletionKind::CLASS, EditorLanguage::CompletionLocation::LOCAL + location_offset);
-							r_result.insert(option.display, option);
-						}
-					} break;
-					default:
-						break;
+						} break;
+						case GDScriptParser::ClassNode::Member::ENUM: {
+							if (!p_inherit_only) {
+								EditorLanguage::CompletionOption option(member.m_enum->identifier->name, EditorLanguage::CompletionKind::ENUM, EditorLanguage::CompletionLocation::LOCAL + location_offset);
+								r_result.insert(option.display, option);
+							}
+						} break;
+						case GDScriptParser::ClassNode::Member::CONSTANT: {
+							if (member.constant->type_constraint.is_meta_type) {
+								EditorLanguage::CompletionOption option(member.constant->identifier->name, EditorLanguage::CompletionKind::CLASS, EditorLanguage::CompletionLocation::LOCAL + location_offset);
+								r_result.insert(option.display, option);
+							}
+						} break;
+						default:
+							break;
+					}
+				}
+				if (base->base_type.kind == GDScriptParser::DataType::CLASS) {
+					base = base->base_type.class_type;
+				} else {
+					base = nullptr;
 				}
 			}
 			location_offset += 1;
