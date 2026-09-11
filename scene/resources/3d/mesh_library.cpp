@@ -56,6 +56,11 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 	}
 	init_property = false;
 
+	if (p_name == "source_scene") {
+		set_source_scene(p_value);
+		return true;
+	}
+
 #ifndef DISABLE_DEPRECATED
 	const String sname = p_name;
 	if (!sname.begins_with("item/")) {
@@ -84,6 +89,11 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 
 bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 	if (property_helper.property_get_value(p_name, r_ret)) {
+		return true;
+	}
+
+	if (p_name == "source_scene") {
+		r_ret = get_source_scene();
 		return true;
 	}
 
@@ -117,6 +127,8 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<int, Item> &E : item_map) {
 		property_helper.add_properties_for_index(E.key, p_list);
 	}
+
+	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("source_scene"), PROPERTY_HINT_RESOURCE_TYPE, PackedScene::get_class_static(), PROPERTY_USAGE_NO_EDITOR));
 }
 
 void MeshLibrary::create_item(int p_item) {
@@ -400,6 +412,9 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_list"), &MeshLibrary::get_item_list);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &MeshLibrary::get_item_count);
 	ClassDB::bind_method(D_METHOD("get_last_unused_item_id"), &MeshLibrary::get_last_unused_item_id);
+
+	ClassDB::bind_method(D_METHOD("set_source_scene", "scene"), &MeshLibrary::set_source_scene);
+	ClassDB::bind_method(D_METHOD("get_source_scene"), &MeshLibrary::get_source_scene);
 
 	Item defaults;
 
