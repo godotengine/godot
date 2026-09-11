@@ -53,6 +53,7 @@
 #include "editor/gui/create_dialog.h"
 #include "editor/gui/directory_create_dialog.h"
 #include "editor/gui/editor_dir_dialog.h"
+#include "editor/gui/editor_icon_manager.h"
 #include "editor/import/3d/scene_import_settings.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_resource_preview.h"
@@ -261,6 +262,16 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				subdirectory_item->set_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
 			}
 		}
+	}
+
+	if (EditorFileSystem::get_singleton()->is_folder_hidden(lpath)) {
+		const float alpha = 0.5f;
+		Color icon_modulate = subdirectory_item->get_icon_modulate(0);
+		Color text_color = tree->get_theme_color(SNAME("font_color"));
+		icon_modulate.a *= alpha;
+		text_color.a *= alpha;
+		subdirectory_item->set_icon_modulate(0, icon_modulate);
+		subdirectory_item->set_custom_color(0, text_color);
 	}
 
 	subdirectory_item->set_text(0, dname);
@@ -698,6 +709,11 @@ void FileSystemDock::_notification(int p_what) {
 				thumbnail_size_setting = new_thumbnail_size_setting;
 				thumbnail_size_slider->set_value(thumbnail_size_setting);
 				do_redraw = true;
+			}
+
+			bool new_show_hidden_files = bool(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+			if (new_show_hidden_files != EditorFileSystem::get_singleton()->is_showing_hidden_folders()) {
+				_toggle_folders_visibility(new_show_hidden_files);
 			}
 
 			if (do_redraw) {
@@ -1185,6 +1201,16 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 						this_folder_color *= ITEM_COLOR_SCALE;
 					}
 					files->set_item_icon_modulate(-1, this_folder_color);
+
+					if (EditorFileSystem::get_singleton()->is_folder_hidden(dpath)) {
+						const float alpha = 0.5f;
+						Color icon_modulate = files->get_item_icon_modulate(-1);
+						Color text_color = files->get_theme_color(SNAME("font_color"));
+						icon_modulate.a *= alpha;
+						text_color.a *= alpha;
+						files->set_item_icon_modulate(-1, icon_modulate);
+						files->set_item_custom_fg_color(-1, text_color);
+					}
 
 					if (previous_selection.has(dpath)) {
 						files->select(files->get_item_count() - 1, false);
@@ -2499,6 +2525,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_TOGGLE_FOLDER: {
+			String path = p_selected[0];
+			bool is_hidden = EditorFileSystem::get_singleton()->is_folder_hidden(path);
+			EditorFileSystem::get_singleton()->mark_folder_hidden(path, !is_hidden, true);
+		} break;
+
 		case FILE_MENU_INHERIT: {
 			// Create a new scene inherited from the selected one.
 			if (p_selected.size() == 1) {
@@ -3513,6 +3545,14 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
 
 		if (foldernames.size() == 1) {
+			if (root_path_not_selected) {
+				bool is_hidden = EditorFileSystem::get_singleton()->is_folder_hidden(foldernames[0]);
+				bool is_read_only = foldernames[0].begins_with(".");
+				p_popup->add_check_item(TTRC("Hidden Folder"), FILE_MENU_TOGGLE_FOLDER);
+				p_popup->set_item_checked(-1, is_hidden);
+				p_popup->set_item_disabled(-1, is_read_only);
+			}
+
 			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
 			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
 		}
@@ -4469,6 +4509,16 @@ void FileSystemDock::_on_open_editor_settings_file_exts() {
 	ed_settings->set_current_section("docks/filesystem");
 }
 
+void FileSystemDock::_toggle_folders_visibility(bool p_toggled) {
+	tree_button_toggle_folders->set_disabled(true);
+	file_list_button_toggle_folders->set_disabled(true);
+	tree_button_toggle_folders->set_pressed_no_signal(p_toggled);
+	file_list_button_toggle_folders->set_pressed_no_signal(p_toggled);
+	EditorFileSystem::get_singleton()->set_show_hidden_folders(p_toggled);
+	tree_button_toggle_folders->set_disabled(false);
+	file_list_button_toggle_folders->set_disabled(false);
+}
+
 void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("navigate_to_path", "path"), &FileSystemDock::navigate_to_path);
 
@@ -4590,6 +4640,15 @@ FileSystemDock::FileSystemDock() {
 	tree_search_box->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(tree_search_box));
 	toolbar2_hbc->add_child(tree_search_box);
 
+	tree_button_toggle_folders = memnew(Button);
+	tree_button_toggle_folders->set_flat(true);
+	tree_button_toggle_folders->set_toggle_mode(true);
+	tree_button_toggle_folders->set_button_icon(EditorIconManager::get_icon(SNAME("GuiVisibilityVisible")));
+	tree_button_toggle_folders->set_pressed_no_signal(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+	tree_button_toggle_folders->set_tooltip_text(TTRC("Toggle the visibility of hidden folders."));
+	tree_button_toggle_folders->connect(SceneStringName(toggled), callable_mp(this, &FileSystemDock::_toggle_folders_visibility));
+	toolbar2_hbc->add_child(tree_button_toggle_folders);
+
 	tree_button_sort = _create_file_menu_button();
 	toolbar2_hbc->add_child(tree_button_sort);
 
@@ -4649,6 +4708,15 @@ FileSystemDock::FileSystemDock() {
 	file_list_search_box->set_clear_button_enabled(true);
 	file_list_search_box->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(file_list_search_box));
 	path_hb->add_child(file_list_search_box);
+
+	file_list_button_toggle_folders = memnew(Button);
+	file_list_button_toggle_folders->set_flat(true);
+	file_list_button_toggle_folders->set_toggle_mode(true);
+	file_list_button_toggle_folders->set_button_icon(EditorIconManager::get_icon(SNAME("GuiVisibilityVisible")));
+	file_list_button_toggle_folders->set_pressed_no_signal(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+	file_list_button_toggle_folders->set_tooltip_text(TTRC("Toggle the visibility of hidden folders."));
+	file_list_button_toggle_folders->connect(SceneStringName(toggled), callable_mp(this, &FileSystemDock::_toggle_folders_visibility));
+	path_hb->add_child(file_list_button_toggle_folders);
 
 	file_list_button_sort = _create_file_menu_button();
 	path_hb->add_child(file_list_button_sort);
