@@ -38,12 +38,19 @@ GODOT_MSVC_WARNING_PUSH
 GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
 GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
 
+// Mesa unconditionally defines CLAMP, colliding with ours.
+#undef CLAMP
+
 #include <nir_spirv.h>
 #include <nir_to_dxil.h>
 #include <spirv_to_dxil.h>
 extern "C" {
 #include <dxil_spirv_nir.h>
 }
+
+// Restore our CLAMP.
+#undef CLAMP
+#define CLAMP(m_v, m_min, m_max) gd_clamp((m_v), (m_min), (m_max))
 
 GODOT_GCC_WARNING_POP
 GODOT_CLANG_WARNING_POP
