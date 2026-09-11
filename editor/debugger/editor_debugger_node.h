@@ -60,6 +60,7 @@ private:
 		DEBUG_STEP,
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
+		DEBUG_SKIP_BREAKPOINTS,
 		DEBUG_WITH_EXTERNAL_EDITOR,
 	};
 
@@ -180,6 +181,7 @@ public:
 	void debug_step();
 	void debug_break();
 	void debug_continue();
+	void debug_skip_breakpoints();
 
 	void set_script_debug_button(MenuButton *p_button);
 

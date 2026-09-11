@@ -104,6 +104,8 @@ void ScriptEditorDebugger::debug_skip_breakpoints() {
 
 	Array msg = { skip_breakpoints_value };
 	_put_msg("set_skip_breakpoints", msg, debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);
+	// Redraw the breakpoints to show that they are now active/inactive.
+	ScriptEditor::get_singleton()->get_current_editor()->get_base_editor()->queue_redraw();
 }
 
 void ScriptEditorDebugger::debug_ignore_error_breaks() {
@@ -1249,6 +1251,10 @@ void ScriptEditorDebugger::_clear_breakpoints() {
 	emit_signal(SNAME("clear_breakpoints"));
 }
 
+void ScriptEditorDebugger::_skip_breakpoints() {
+	emit_signal(SNAME("skip_breakpoints"));
+}
+
 void ScriptEditorDebugger::_breakpoint_tree_clicked() {
 	TreeItem *selected = breakpoints_tree->get_selected();
 	if (selected->has_meta("line")) {
@@ -1930,6 +1936,7 @@ void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos, 
 	breakpoints_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTR("Delete All Breakpoints in:") + " " + file, ACTION_DELETE_BREAKPOINTS_IN_FILE);
 	breakpoints_menu->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_DISABLED);
 	breakpoints_menu->add_icon_item(get_editor_theme_icon(SNAME("Remove")), TTRC("Delete All Breakpoints"), ACTION_DELETE_ALL_BREAKPOINTS);
+	breakpoints_menu->add_icon_item(get_editor_theme_icon(SNAME("Breakpoint")), TTRC("Skip Breakpoints"), ACTION_SKIP_BREAKPOINTS);
 
 	breakpoints_menu->set_position(get_screen_position() + get_local_mouse_position());
 	breakpoints_menu->popup();
@@ -2041,6 +2048,9 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 		case ACTION_DELETE_ALL_BREAKPOINTS: {
 			_clear_breakpoints();
 		} break;
+		case ACTION_SKIP_BREAKPOINTS: {
+			_skip_breakpoints();
+		} break;
 	}
 }
 
@@ -2084,6 +2094,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("debug_data", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::ARRAY, "data")));
 	ADD_SIGNAL(MethodInfo("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
+	ADD_SIGNAL(MethodInfo("skip_breakpoints"));
 	ADD_SIGNAL(MethodInfo("errors_cleared"));
 	ADD_SIGNAL(MethodInfo("embed_shortcut_requested", PropertyInfo(Variant::INT, "embed_shortcut_action")));
 }
@@ -2164,6 +2175,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		skip_breakpoints->set_theme_type_variation(SceneStringName(FlatButton));
 		buttons->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTRC("Skip Breakpoints"));
+		skip_breakpoints->set_shortcut(ED_GET_SHORTCUT("debugger/skip_breakpoints"));
 		skip_breakpoints->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		ignore_error_breaks = memnew(Button);
