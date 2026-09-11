@@ -58,6 +58,10 @@ double Math::randfn(double p_mean, double p_deviation) {
 	return default_rand.randfn(p_mean, p_deviation);
 }
 
+float Math::randfn(float p_mean, float p_deviation) {
+	return default_rand.randfn(p_mean, p_deviation);
+}
+
 int Math::step_decimals(double p_step) {
 	static const int maxn = 10;
 	static const double sd[maxn] = {
