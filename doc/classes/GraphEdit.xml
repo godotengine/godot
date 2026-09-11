@@ -471,13 +471,17 @@
 			</description>
 		</signal>
 		<signal name="copy_nodes_request">
+			<param index="0" name="nodes" type="StringName[]" />
 			<description>
 				Emitted when this [GraphEdit] captures a [code]ui_copy[/code] action ([kbd]Ctrl + C[/kbd] by default). In general, this signal indicates that the selected [GraphElement]s should be copied.
+				[param nodes] is an array of node names that should be copied. These usually include all selected nodes.
 			</description>
 		</signal>
 		<signal name="cut_nodes_request">
+			<param index="0" name="nodes" type="StringName[]" />
 			<description>
 				Emitted when this [GraphEdit] captures a [code]ui_cut[/code] action ([kbd]Ctrl + X[/kbd] by default). In general, this signal indicates that the selected [GraphElement]s should be cut.
+				[param nodes] is an array of node names that should be cut. These usually include all selected nodes.
 			</description>
 		</signal>
 		<signal name="delete_nodes_request">
@@ -497,8 +501,10 @@
 			</description>
 		</signal>
 		<signal name="duplicate_nodes_request">
+			<param index="0" name="nodes" type="StringName[]" />
 			<description>
 				Emitted when this [GraphEdit] captures a [code]ui_graph_duplicate[/code] action ([kbd]Ctrl + D[/kbd] by default). In general, this signal indicates that the selected [GraphElement]s should be duplicated.
+				[param nodes] is an array of node names that should be duplicated. These usually include all selected nodes.
 			</description>
 		</signal>
 		<signal name="end_node_move">
