@@ -307,6 +307,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("h_separation", "CheckBox", Math::round(4 * scale));
 	theme->set_constant("check_v_offset", "CheckBox", 0);
+	theme->set_constant("icon_size", "CheckBox", 0);
 	theme->set_constant("outline_size", "CheckBox", 0);
 
 	theme->set_color("checkbox_checked_color", "CheckBox", Color(1, 1, 1));
