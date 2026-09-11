@@ -82,7 +82,9 @@ _complete_godot_options() {
 --script
 --check-only
 --export-release
+--export-release-all
 --export-debug
+--export-debug-all
 --export-pack
 --convert-3to4
 --validate-conversion-3to4
