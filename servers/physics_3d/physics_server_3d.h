@@ -144,6 +144,7 @@ public:
 
 	virtual void area_set_monitor_callback(RID p_area, const Callable &p_callback) = 0;
 	virtual void area_set_area_monitor_callback(RID p_area, const Callable &p_callback) = 0;
+	virtual void area_set_gravity_target_callback(RID p_area, const Callable &p_callback) = 0;
 
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable) = 0;
 
@@ -397,6 +398,7 @@ public:
 
 VARIANT_ENUM_CAST_EXT(PS3DE::ShapeType, PhysicsServer3D::ShapeType);
 VARIANT_ENUM_CAST_EXT(PS3DE::SpaceParameter, PhysicsServer3D::SpaceParameter);
+VARIANT_ENUM_CAST_EXT(PS3DE::AreaGravityType, PhysicsServer3D::AreaGravityType);
 VARIANT_ENUM_CAST_EXT(PS3DE::AreaParameter, PhysicsServer3D::AreaParameter);
 VARIANT_ENUM_CAST_EXT(PS3DE::AreaSpaceOverrideMode, PhysicsServer3D::AreaSpaceOverrideMode);
 VARIANT_ENUM_CAST_EXT(PS3DE::BodyMode, PhysicsServer3D::BodyMode);

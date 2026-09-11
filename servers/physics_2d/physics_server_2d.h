@@ -139,6 +139,7 @@ public:
 
 	virtual void area_set_monitor_callback(RID p_area, const Callable &p_callback) = 0;
 	virtual void area_set_area_monitor_callback(RID p_area, const Callable &p_callback) = 0;
+	virtual void area_set_gravity_target_callback(RID p_area, const Callable &p_callback) = 0;
 
 	/* BODY API */
 
@@ -295,6 +296,7 @@ public:
 
 VARIANT_ENUM_CAST_EXT(PS2DE::ShapeType, PhysicsServer2D::ShapeType);
 VARIANT_ENUM_CAST_EXT(PS2DE::SpaceParameter, PhysicsServer2D::SpaceParameter);
+VARIANT_ENUM_CAST_EXT(PS2DE::AreaGravityType, PhysicsServer2D::AreaGravityType);
 VARIANT_ENUM_CAST_EXT(PS2DE::AreaParameter, PhysicsServer2D::AreaParameter);
 VARIANT_ENUM_CAST_EXT(PS2DE::AreaSpaceOverrideMode, PhysicsServer2D::AreaSpaceOverrideMode);
 VARIANT_ENUM_CAST_EXT(PS2DE::BodyMode, PhysicsServer2D::BodyMode);
