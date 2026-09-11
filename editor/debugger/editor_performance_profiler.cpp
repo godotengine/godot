@@ -349,7 +349,6 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 		}
 	}
 
-	int index = 0;
 	for (const KeyValue<StringName, int> &E : names) {
 		String name = String(E.key).replace_first("custom:", "");
 		String base = "Custom";
@@ -357,9 +356,8 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 			base = name.get_slicec('/', 0);
 			name = name.get_slicec('/', 1);
 		}
-		Performance::MonitorType type = Performance::MonitorType(p_types[index]);
+		Performance::MonitorType type = Performance::MonitorType(p_types[E.value - Performance::MONITOR_MAX]);
 		monitors.insert(E.key, Monitor(name, base, E.value, type, nullptr));
-		index++;
 	}
 
 	_build_monitor_tree();
