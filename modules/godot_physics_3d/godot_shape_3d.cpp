@@ -1738,17 +1738,21 @@ _FORCE_INLINE_ bool _heightmap_cell_cull_segment(_HeightmapSegmentCullParams &p_
 	p_params.heightmap->_get_point(p_state.x, p_state.z, p_params.face->vertex[0]);
 	p_params.heightmap->_get_point(p_state.x + 1, p_state.z, p_params.face->vertex[1]);
 	p_params.heightmap->_get_point(p_state.x, p_state.z + 1, p_params.face->vertex[2]);
-	p_params.face->normal = Plane(p_params.face->vertex[0], p_params.face->vertex[1], p_params.face->vertex[2]).normal;
-	if (_heightmap_face_cull_segment(p_params)) {
-		return true;
+	if (p_params.face->vertex[0].is_finite() && p_params.face->vertex[1].is_finite() && p_params.face->vertex[2].is_finite()) {
+		p_params.face->normal = Plane(p_params.face->vertex[0], p_params.face->vertex[1], p_params.face->vertex[2]).normal;
+		if (_heightmap_face_cull_segment(p_params)) {
+			return true;
+		}
 	}
 
 	// Second triangle.
 	p_params.face->vertex[0] = p_params.face->vertex[1];
 	p_params.heightmap->_get_point(p_state.x + 1, p_state.z + 1, p_params.face->vertex[1]);
-	p_params.face->normal = Plane(p_params.face->vertex[0], p_params.face->vertex[1], p_params.face->vertex[2]).normal;
-	if (_heightmap_face_cull_segment(p_params)) {
-		return true;
+	if (p_params.face->vertex[0].is_finite() && p_params.face->vertex[1].is_finite() && p_params.face->vertex[2].is_finite()) {
+		p_params.face->normal = Plane(p_params.face->vertex[0], p_params.face->vertex[1], p_params.face->vertex[2]).normal;
+		if (_heightmap_face_cull_segment(p_params)) {
+			return true;
+		}
 	}
 
 	return false;
@@ -2048,17 +2052,21 @@ void GodotHeightMapShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callb
 			_get_point(x, z, face.vertex[0]);
 			_get_point(x + 1, z, face.vertex[1]);
 			_get_point(x, z + 1, face.vertex[2]);
-			face.normal = Plane(face.vertex[0], face.vertex[1], face.vertex[2]).normal;
-			if (p_callback(p_userdata, &face)) {
-				return;
+			if (face.vertex[0].is_finite() && face.vertex[1].is_finite() && face.vertex[2].is_finite()) {
+				face.normal = Plane(face.vertex[0], face.vertex[1], face.vertex[2]).normal;
+				if (p_callback(p_userdata, &face)) {
+					return;
+				}
 			}
 
 			// Second triangle.
 			face.vertex[0] = face.vertex[1];
 			_get_point(x + 1, z + 1, face.vertex[1]);
-			face.normal = Plane(face.vertex[0], face.vertex[1], face.vertex[2]).normal;
-			if (p_callback(p_userdata, &face)) {
-				return;
+			if (face.vertex[0].is_finite() && face.vertex[1].is_finite() && face.vertex[2].is_finite()) {
+				face.normal = Plane(face.vertex[0], face.vertex[1], face.vertex[2]).normal;
+				if (p_callback(p_userdata, &face)) {
+					return;
+				}
 			}
 		}
 	}
