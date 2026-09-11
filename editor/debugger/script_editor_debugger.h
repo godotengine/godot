@@ -124,6 +124,10 @@ private:
 
 	RichTextLabel *reason = nullptr;
 
+	Button *move_up_in_call_stack = nullptr;
+	Button *move_down_in_call_stack = nullptr;
+	Button *top_of_call_stack = nullptr;
+	Button *bottom_of_call_stack = nullptr;
 	Button *skip_breakpoints = nullptr;
 	Button *ignore_error_breaks = nullptr;
 	Button *copy = nullptr;
@@ -331,6 +335,10 @@ public:
 	void debug_ignore_error_breaks();
 	void debug_copy();
 
+	void debug_move_up_in_call_stack();
+	void debug_move_down_in_call_stack();
+	void debug_top_of_call_stack();
+	void debug_bottom_of_call_stack();
 	void debug_out();
 	void debug_next();
 	void debug_step();
