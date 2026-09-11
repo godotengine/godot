@@ -2542,6 +2542,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (*methodname != GDScriptLanguage::get_singleton()->strings._init) {
 						const MethodBind *mb = ClassDB::get_method(gds->native->get_name(), *methodname);
 						if (!mb) {
+							mb = ClassDB::get_virtual_method_answer(gds->native->get_name(), *methodname);
+						}
+						if (!mb) {
 							err.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 						} else {
 							*dst = mb->call(p_instance->owner, (const Variant **)argptrs, argc, err);

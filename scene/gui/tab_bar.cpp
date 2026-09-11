@@ -47,7 +47,7 @@ static inline Color _select_color(const Color &p_override_color, const Color &p_
 	return p_override_color.a > 0 ? p_override_color : p_default_color;
 }
 
-Size2 TabBar::get_minimum_size() const {
+Size2 TabBar::__get_minimum_size() const {
 	Size2 ms;
 	Size2 combined_max = get_combined_maximum_size();
 

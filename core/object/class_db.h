@@ -127,6 +127,7 @@ public:
 		List<StringName> dependency_list;
 #endif
 
+		HashMap<StringName, MethodBind *> virtual_methods_answers;
 		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
 		bool disabled = false;
@@ -477,6 +478,17 @@ public:
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
 	static void add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info);
 	static Vector<uint32_t> get_virtual_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
+
+	template <typename M>
+	static void bind_virtual_method_answer(const StringName &p_method_name, M p_method) {
+		MethodBind *bind = create_method_bind(p_method);
+		ERR_FAIL_NULL(bind);
+		add_virtual_method_answer(bind, p_method_name);
+	}
+
+	static void add_virtual_method_answer(MethodBind *p_answer, const StringName &p_method_name);
+	static bool has_virtual_method_answer(const StringName &p_class, const StringName &p_method);
+	static const MethodBind *get_virtual_method_answer(const StringName &p_class, const StringName &p_method);
 
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
