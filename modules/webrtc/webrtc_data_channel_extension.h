@@ -44,6 +44,7 @@ protected:
 
 public:
 	EXBIND0R(Error, poll);
+	EXBIND0(clear_buffer);
 	EXBIND0(close);
 
 	EXBIND1(set_write_mode, WriteMode);
