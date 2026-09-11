@@ -37,8 +37,10 @@
 class AcceptDialog;
 class AspectRatioContainer;
 class ConfirmationDialog;
+class HBoxContainer;
 class MenuButton;
 class SpinBox;
+class TextureRect;
 
 class MeshInstance3DEditor : public Control {
 	GDCLASS(MeshInstance3DEditor, Control);
@@ -79,7 +81,9 @@ class MeshInstance3DEditor : public Control {
 
 	MeshInstance3D *node = nullptr;
 
-	MenuButton *options = nullptr;
+	HBoxContainer *options = nullptr;
+	TextureRect *icon_rect = nullptr;
+	MenuButton *menu = nullptr;
 
 	ConfirmationDialog *outline_dialog = nullptr;
 	SpinBox *outline_size = nullptr;
