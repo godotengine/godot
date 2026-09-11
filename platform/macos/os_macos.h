@@ -86,6 +86,7 @@ public:
 		"--help",
 		"/?",
 		"--version",
+		"--embedded",
 		"--dump-gdextension-interface",
 		"--dump-extension-api",
 		"--dump-gdextension-interface-json",
