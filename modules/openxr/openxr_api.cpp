@@ -2025,7 +2025,7 @@ void OpenXRAPI::update_head_tracking() {
 			view_locate_info_next_pointer, // next
 			view_configuration, // viewConfigurationType
 			display_time, // displayTime
-			view_space // space
+			play_space // space
 		};
 
 		XrViewState view_state = {
@@ -2044,26 +2044,31 @@ void OpenXRAPI::update_head_tracking() {
 		view_pose_valid = (view_state.viewStateFlags != 0);
 	}
 
+	// Our rendering engine wants our offset local to the head.
+	XrPosef inv_head_pose;
+	XrPosef_Invert(&inv_head_pose, &head_pose);
+
 	Vector4 *o = orientations.ptrw();
 	Vector3 *p = positions.ptrw();
 	Vector4 *f = fovs.ptrw();
 	for (uint32_t v = 0; v < view_count; v++) {
-		view_offsets[v] = transform_from_pose(views[v].pose);
+		const XrPosef *view_pose = &views[v].pose;
+
+		XrPosef local_view_pose;
+		XrPosef_Multiply(&local_view_pose, &inv_head_pose, view_pose);
+		view_offsets[v] = transform_from_pose(local_view_pose);
+
 		view_fovs[v] = views[v].fov;
 
-		// For submitting our layer, we need to combine head and view pose
-		XrPosef combined_pose;
-		XrPosef_Multiply(&combined_pose, &head_pose, &views[v].pose);
-
 		// We use Vector3 and Vector4 as a go between as we can't use XrPosef and XrFovf directly.
-		o[v].x = combined_pose.orientation.x;
-		o[v].y = combined_pose.orientation.y;
-		o[v].z = combined_pose.orientation.z;
-		o[v].w = combined_pose.orientation.w;
+		o[v].x = view_pose->orientation.x;
+		o[v].y = view_pose->orientation.y;
+		o[v].z = view_pose->orientation.z;
+		o[v].w = view_pose->orientation.w;
 
-		p[v].x = combined_pose.position.x;
-		p[v].y = combined_pose.position.y;
-		p[v].z = combined_pose.position.z;
+		p[v].x = view_pose->position.x;
+		p[v].y = view_pose->position.y;
+		p[v].z = view_pose->position.z;
 
 		f[v].x = view_fovs[v].angleLeft;
 		f[v].y = view_fovs[v].angleRight;
