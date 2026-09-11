@@ -41,6 +41,18 @@
 		<theme_item name="increment_pressed" data_type="icon" type="Texture2D">
 			Displayed when the increment button is being pressed.
 		</theme_item>
+		<theme_item name="drag_ended_sound" data_type="sound" type="AudioStream">
+			Played when mouse or touch drag ends.
+		</theme_item>
+		<theme_item name="drag_started_sound" data_type="sound" type="AudioStream">
+			Played when mouse or touch drag begins.
+		</theme_item>
+		<theme_item name="value_change_rejected_sound" data_type="sound" type="AudioStream">
+			Played when the value is attempted to be changed through keyboard or gamepad input, but the value is already at the minimum (or maximum).
+		</theme_item>
+		<theme_item name="value_changed_sound" data_type="sound" type="AudioStream">
+			Played when the value is changed through keyboard or gamepad input. If the value is already at the minimum (or maximum), [theme_item value_change_rejected_sound] is played instead.
+		</theme_item>
 		<theme_item name="grabber" data_type="style" type="StyleBox">
 			Used as texture for the grabber, the draggable element representing current scroll.
 		</theme_item>

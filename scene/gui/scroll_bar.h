@@ -107,6 +107,11 @@ protected:
 		int padding_top = 0;
 		int padding_right = 0;
 		int padding_bottom = 0;
+
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
+		Ref<AudioStream> value_changed_sound;
+		Ref<AudioStream> value_change_rejected_sound;
 	} theme_cache;
 
 	void _notification(int p_what);

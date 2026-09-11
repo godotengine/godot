@@ -86,13 +86,21 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (b->get_button_index() == MouseButton::WHEEL_DOWN && b->is_pressed()) {
 			double change = ((get_page() != 0.0) ? get_page() / PAGE_DIVISOR : (get_max() - get_min()) / 16.0) * b->get_factor();
+			const double previous_value = get_value();
 			scroll(MAX(change, get_step()));
+			// If the value didn't change as a result of the scroll operation,
+			// assume we were at the end of the scrollbar already.
+			play_theme_sound(Math::is_equal_approx(get_value(), previous_value) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			accept_event();
 		}
 
 		if (b->get_button_index() == MouseButton::WHEEL_UP && b->is_pressed()) {
 			double change = ((get_page() != 0.0) ? get_page() / PAGE_DIVISOR : (get_max() - get_min()) / 16.0) * b->get_factor();
+			const double previous_value = get_value();
 			scroll(-MAX(change, get_step()));
+			// If the value didn't change as a result of the scroll operation,
+			// assume we were at the beginning of the scrollbar already.
+			play_theme_sound(Math::is_equal_approx(get_value(), previous_value) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			accept_event();
 		}
 
@@ -113,6 +121,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (ofs < decr_size) {
 				decr_active = true;
+				play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 				scroll(-(custom_step >= 0 ? custom_step : get_step()));
 				queue_redraw();
 				return;
@@ -120,6 +129,7 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (ofs > total - incr_size) {
 				incr_active = true;
+				play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 				scroll(custom_step >= 0 ? custom_step : get_step());
 				queue_redraw();
 				return;
@@ -135,6 +145,8 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 					target_scroll = CLAMP(get_value() - change, get_min(), get_max() - get_page());
 				}
 
+				play_theme_sound(theme_cache.value_changed_sound);
+
 				if (smooth_scroll_enabled) {
 					scrolling = true;
 					set_process_internal(true);
@@ -147,6 +159,9 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			ofs -= grabber_ofs;
 
 			if (ofs < grabber_size) {
+				if (!drag.active) {
+					play_theme_sound(theme_cache.drag_started_sound);
+				}
 				drag.active = true;
 				drag.pos_at_click = grabber_ofs + ofs;
 				drag.value_at_click = get_as_ratio();
@@ -159,6 +174,8 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 					target_scroll = CLAMP(get_value() + change, get_min(), get_max() - get_page());
 				}
 
+				play_theme_sound(theme_cache.value_changed_sound);
+
 				if (smooth_scroll_enabled) {
 					scrolling = true;
 					set_process_internal(true);
@@ -170,6 +187,10 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			incr_active = false;
 			decr_active = false;
+
+			if (drag.active) {
+				play_theme_sound(theme_cache.drag_ended_sound);
+			}
 			drag.active = false;
 			queue_redraw();
 		}
@@ -227,12 +248,14 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
+			play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			scroll(-(custom_step >= 0 ? custom_step : get_step()));
 
 		} else if (p_event->is_action("ui_right", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
+			play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			scroll(custom_step >= 0 ? custom_step : get_step());
 
 		} else if (p_event->is_action("ui_up", true)) {
@@ -240,18 +263,22 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 
+			play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			scroll(-(custom_step >= 0 ? custom_step : get_step()));
 
 		} else if (p_event->is_action("ui_down", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
+			play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			scroll(custom_step >= 0 ? custom_step : get_step());
 
 		} else if (p_event->is_action("ui_home", true)) {
+			play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			scroll_to(get_min());
 
 		} else if (p_event->is_action("ui_end", true)) {
+			play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			scroll_to(get_max());
 		}
 	}
@@ -699,6 +726,11 @@ void ScrollBar::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_icon, "decrement");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_hl_icon, "decrement_highlight");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_pressed_icon, "decrement_pressed");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, drag_started_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, drag_ended_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, value_changed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, value_change_rejected_sound);
 }
 
 ScrollBar::ScrollBar(Orientation p_orientation) {
