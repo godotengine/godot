@@ -5025,7 +5025,7 @@ void Tree::_accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_ro
 		AccessibilityServer::get_singleton()->update_set_table_row_index(p_item->accessibility_row_element, r_row);
 		AccessibilityServer::get_singleton()->update_set_list_item_level(p_item->accessibility_row_element, p_level);
 		AccessibilityServer::get_singleton()->update_set_list_item_expanded(p_item->accessibility_row_element, !p_item->collapsed);
-		AccessibilityServer::get_singleton()->update_set_flag(p_item->accessibility_row_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !(p_item->visible && !p_item->parent_visible_in_tree));
+		AccessibilityServer::get_singleton()->update_set_flag(p_item->accessibility_row_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !p_item->is_visible_in_tree());
 		AccessibilityServer::get_singleton()->update_add_action(p_item->accessibility_row_element, AccessibilityServerEnums::AccessibilityAction::ACTION_COLLAPSE, callable_mp(this, &Tree::_accessibility_action_collapse).bind(p_item));
 		AccessibilityServer::get_singleton()->update_add_action(p_item->accessibility_row_element, AccessibilityServerEnums::AccessibilityAction::ACTION_EXPAND, callable_mp(this, &Tree::_accessibility_action_expand).bind(p_item));
 
@@ -5067,7 +5067,7 @@ void Tree::_accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_ro
 				}
 
 				AccessibilityServer::get_singleton()->update_set_text_align(cell.accessibility_cell_element, cell.text_alignment);
-				AccessibilityServer::get_singleton()->update_set_flag(cell.accessibility_cell_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !(p_item->visible && !p_item->parent_visible_in_tree));
+				AccessibilityServer::get_singleton()->update_set_flag(cell.accessibility_cell_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !p_item->is_visible_in_tree());
 				AccessibilityServer::get_singleton()->update_set_flag(cell.accessibility_cell_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, !cell.editable);
 				AccessibilityServer::get_singleton()->update_set_tooltip(cell.accessibility_cell_element, cell.tooltip);
 				switch (cell.mode) {
@@ -5106,7 +5106,8 @@ void Tree::_accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_ro
 				Vector2 ofst = Vector2(col_offset + cw, 0);
 				for (int j = cell.buttons.size() - 1; j >= 0; j--) {
 					if (cell.buttons[j].accessibility_button_element.is_null()) {
-						cell.buttons[j].accessibility_button_element = AccessibilityServer::get_singleton()->create_sub_element(cell.accessibility_cell_element, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+						// Buttons are siblings of the cells so screen readers announce the cell by its name instead of by its buttons.
+						cell.buttons[j].accessibility_button_element = AccessibilityServer::get_singleton()->create_sub_element(p_item->accessibility_row_element, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
 					}
 
 					AccessibilityServer::get_singleton()->update_add_action(cell.buttons[j].accessibility_button_element, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &Tree::_accessibility_action_button_press).bind(p_item, i, j));
