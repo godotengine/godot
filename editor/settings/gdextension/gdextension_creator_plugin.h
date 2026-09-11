@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  project_settings_gdextension.h                                        */
+/*  gdextension_creator_plugin.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,34 +30,22 @@
 
 #pragma once
 
-#include "scene/gui/box_container.h"
+#include "core/object/ref_counted.h"
 
-class GDExtensionCreateDialog;
-class Tree;
-
-class ProjectSettingsGDExtension : public VBoxContainer {
-	GDCLASS(ProjectSettingsGDExtension, VBoxContainer);
-
-	enum {
-		COLUMN_PATH,
-		COLUMN_MIN_VERSION,
-		COLUMN_MAX_VERSION,
-		COLUMN_RELOAD,
-		COLUMN_MAX,
-	};
-
-	GDExtensionCreateDialog *create_dialog = nullptr;
-	Tree *extension_list = nullptr;
-
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
-	void _on_create_gdextension_pressed();
-	void _on_gdextension_created();
-	void _on_item_activated();
-	void _update_extension_tree();
+class GDExtensionCreatorPlugin : public RefCounted {
+	GDCLASS(GDExtensionCreatorPlugin, RefCounted);
 
 protected:
-	void _notification(int p_what);
+	enum MessageType {
+		MSG_OK,
+		MSG_WARNING,
+		MSG_ERROR,
+		MSG_INFO,
+	};
 
 public:
-	ProjectSettingsGDExtension();
+	virtual void create_gdextension(const String &p_path, const String &p_base_name, const String &p_library_name, int p_variation_index, bool p_compile) = 0;
+	virtual void setup_creator() = 0;
+	virtual PackedStringArray get_language_variations() const = 0;
+	virtual Dictionary get_validation_messages(const String &p_path, const String &p_base_name, const String &p_library_name, int p_variation_index, bool p_compile) = 0;
 };

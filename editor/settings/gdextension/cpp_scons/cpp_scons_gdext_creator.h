@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  project_settings_gdextension.h                                        */
+/*  cpp_scons_gdext_creator.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,34 +30,37 @@
 
 #pragma once
 
-#include "scene/gui/box_container.h"
+#include "editor/settings/gdextension/gdextension_creator_plugin.h"
 
-class GDExtensionCreateDialog;
-class Tree;
-
-class ProjectSettingsGDExtension : public VBoxContainer {
-	GDCLASS(ProjectSettingsGDExtension, VBoxContainer);
-
-	enum {
-		COLUMN_PATH,
-		COLUMN_MIN_VERSION,
-		COLUMN_MAX_VERSION,
-		COLUMN_RELOAD,
-		COLUMN_MAX,
+class CppSconsGDExtensionCreator : public GDExtensionCreatorPlugin {
+	// Keep this in sync with get_language_variations().
+	enum LanguageVariation {
+		LANG_VAR_GDEXT_ONLY,
+		LANG_VAR_GDEXT_MODULE,
 	};
 
-	GDExtensionCreateDialog *create_dialog = nullptr;
-	Tree *extension_list = nullptr;
+	// Used by _process_template.
+	String base_name;
+	String library_name;
+	String example_node_name = "ExampleNode";
+	String res_path;
+	String updir_dots;
+	bool strip_module_defines = false;
 
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
-	void _on_create_gdextension_pressed();
-	void _on_gdextension_created();
-	void _on_item_activated();
-	void _update_extension_tree();
+	bool does_git_exist = false;
+	bool does_scons_exist = false;
 
-protected:
-	void _notification(int p_what);
+	void _git_clone_godot_cpp(const String &p_parent_path, bool p_compile);
+	String _process_template(const String &p_contents);
+	void _write_common_files_and_dirs();
+	void _write_gdext_only_files();
+	void _write_gdext_module_files();
+	void _write_file(const String &p_file_path, const String &p_contents);
+	void _ensure_file_contains(const String &p_file_path, const String &p_new_contents);
 
 public:
-	ProjectSettingsGDExtension();
+	void create_gdextension(const String &p_path, const String &p_base_name, const String &p_library_name, int p_variation_index, bool p_compile) override;
+	void setup_creator() override;
+	PackedStringArray get_language_variations() const override;
+	Dictionary get_validation_messages(const String &p_path, const String &p_base_name, const String &p_library_name, int p_variation_index, bool p_compile) override;
 };
