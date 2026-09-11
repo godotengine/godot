@@ -202,3 +202,7 @@ void MIDIDriver::Parser::parse_fragment(uint8_t p_fragment) {
 PackedStringArray MIDIDriver::get_connected_inputs() const {
 	return connected_input_names;
 }
+
+PackedStringArray MIDIDriver::get_connected_outputs() const {
+	return connected_output_names;
+}
