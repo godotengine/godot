@@ -31,7 +31,8 @@
 #pragma once
 
 #include "scene/gui/base_button.h"
-#include "scene/resources/text_paragraph.h"
+
+class Label;
 
 class Button : public BaseButton {
 	GDCLASS(Button, BaseButton);
@@ -39,19 +40,10 @@ class Button : public BaseButton {
 private:
 	bool flat = false;
 	String text;
-	String xl_text;
-	Ref<TextParagraph> text_buf;
-
-	String language;
-	TextDirection text_direction = TEXT_DIRECTION_AUTO;
-	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
-	BitField<TextServer::LineBreakFlag> autowrap_flags_trim = TextServer::BREAK_TRIM_END_EDGE_SPACES;
-	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
+	Label *text_label = nullptr;
 
 	Ref<Texture2D> icon;
 	bool expand_icon = false;
-	bool clip_text = false;
-	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	HorizontalAlignment horizontal_icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	VerticalAlignment vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER;
 	float _internal_margin[4] = {};
@@ -103,9 +95,12 @@ private:
 		int line_spacing = 0;
 	} theme_cache;
 
-	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "") const;
 	void _texture_changed();
 	void _update_style_margins(const Ref<StyleBox> &p_stylebox);
+
+	void _maximum_size_changed();
+
+	Size2 _get_minimum_size(bool p_desired = false) const;
 
 protected:
 	virtual void _update_theme_item_cache() override;
@@ -117,6 +112,7 @@ protected:
 	Size2 _fit_icon_size(const Size2 &p_size) const;
 	Ref<StyleBox> _get_current_stylebox() const;
 	Size2 _get_largest_stylebox_size() const;
+	Label *_get_text_label() const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -124,8 +120,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
-
-	Size2 get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const;
+	virtual Size2 get_desired_size() const override;
 
 	void set_text(const String &p_text);
 	String get_text() const;
