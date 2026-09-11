@@ -799,7 +799,7 @@ RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_shader_re
 }
 
 bool RenderingShaderContainer::from_bytes(const PackedByteArray &p_bytes) {
-	const uint64_t alignment = sizeof(uint32_t);
+	constexpr uint64_t alignment = sizeof(uint32_t);
 	const uint8_t *bytes_ptr = p_bytes.ptr();
 	uint64_t bytes_offset = 0;
 
@@ -819,7 +819,7 @@ bool RenderingShaderContainer::from_bytes(const PackedByteArray &p_bytes) {
 
 	// Read reflection data.
 	ERR_FAIL_COND_V_MSG(int64_t(bytes_offset + sizeof(ReflectionData)) > p_bytes.size(), false, "Not enough bytes for reflection data in shader container.");
-	reflection_data = *(const ReflectionData *)(&bytes_ptr[bytes_offset]);
+	memcpy(&reflection_data, &bytes_ptr[bytes_offset], sizeof(ReflectionData));
 	bytes_offset += sizeof(ReflectionData);
 	bytes_offset += _from_bytes_reflection_extra_data(&bytes_ptr[bytes_offset]);
 
