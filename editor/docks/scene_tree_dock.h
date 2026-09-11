@@ -155,7 +155,6 @@ class SceneTreeDock : public EditorDock {
 
 	ScriptCreateDialog *script_create_dialog = nullptr;
 	ShaderCreateDialog *shader_create_dialog = nullptr;
-	AcceptDialog *accept = nullptr;
 	ConfirmationDialog *delete_dialog = nullptr;
 	Label *delete_dialog_label = nullptr;
 	CheckBox *delete_tracks_checkbox = nullptr;
