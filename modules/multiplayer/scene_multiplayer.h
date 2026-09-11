@@ -162,13 +162,13 @@ public:
 	virtual Error object_configuration_add(Object *p_obj, Variant p_config) override;
 	virtual Error object_configuration_remove(Object *p_obj, Variant p_config) override;
 
+	void disconnect_peer(int p_id) override;
+
 	void clear();
 
 	// Usually from object_configuration_add/remove
 	void set_root_path(const NodePath &p_path);
 	NodePath get_root_path() const;
-
-	void disconnect_peer(int p_id);
 
 	Error send_auth(int p_to, Vector<uint8_t> p_bytes);
 	Error complete_auth(int p_peer);
