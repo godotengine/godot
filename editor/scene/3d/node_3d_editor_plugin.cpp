@@ -3645,6 +3645,7 @@ Node3DEditor::Node3DEditor() {
 	ED_SHORTCUT("spatial_editor/insert_anim_key", TTRC("Insert Animation Key"), Key::K);
 	ED_SHORTCUT("spatial_editor/focus_origin", TTRC("Focus Origin"), Key::O);
 	ED_SHORTCUT("spatial_editor/focus_selection", TTRC("Focus Selection"), Key::F);
+	ED_SHORTCUT("spatial_editor/focus_aabb", TTRC("Focus Center AABB"), KeyModifierMask::CMD_OR_CTRL + Key::F);
 	ED_SHORTCUT_ARRAY("spatial_editor/align_transform_with_view", TTRC("Align Transform with View"),
 			{ int32_t(KeyModifierMask::ALT | KeyModifierMask::CTRL | Key::KP_0),
 					int32_t(KeyModifierMask::ALT | KeyModifierMask::CTRL | Key::M),
