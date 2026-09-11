@@ -31,18 +31,39 @@
 #define SW_STROKE_TAG_BEGIN 4
 #define SW_STROKE_TAG_END 8
 
-static inline int64_t SIDE_TO_ROTATE(const int32_t s)
+static inline float _sideToRotate(int32_t s)
 {
-    return (SW_ANGLE_PI2 - static_cast<int64_t>(s) * SW_ANGLE_PI);
+    return (MATH_PI2 - float(s) * MATH_PI);
 }
 
-
-static inline void SCALE(const SwStroke& stroke, SwPoint& pt)
+static inline bool _tiny(const Point& pt)
 {
-    pt.x = static_cast<int32_t>(pt.x * stroke.sx);
-    pt.y = static_cast<int32_t>(pt.y * stroke.sy);
+    constexpr float EPSILON = 2.0f / 64.0f;
+    return fabsf(pt.x) < EPSILON && fabsf(pt.y) < EPSILON;
 }
 
+static float _diff(float angle1, float angle2)
+{
+    auto delta = fmodf((angle2 - angle1), MATH_2PI);
+    if (delta < 0.0f) delta += MATH_2PI;
+    if (delta > MATH_PI) delta -= MATH_2PI;
+    return delta;
+}
+
+static inline float _mean(float angle1, float angle2)
+{
+    return angle1 + _diff(angle1, angle2) * 0.5f;
+}
+
+static void _rotate(Point& pt, float radian)
+{
+    if (tvg::zero(radian)) return;
+    auto cosv = cosf(radian);
+    auto sinv = sinf(radian);
+    auto x = pt.x * cosv - pt.y * sinv;
+    auto y = pt.x * sinv + pt.y * cosv;
+    pt = {x, y};
+}
 
 static void _growBorder(SwStrokeBorder* border, uint32_t newPts)
 {
@@ -96,8 +117,7 @@ static void _borderClose(SwStrokeBorder* border, bool reverse)
     border->movable = false;
 }
 
-
-static void _borderCubicTo(SwStrokeBorder* border, const SwPoint& ctrl1, const SwPoint& ctrl2, const SwPoint& to)
+static void _borderCubicTo(SwStrokeBorder* border, const Point& ctrl1, const Point& ctrl2, const Point& to)
 {
     _growBorder(border, 3);
 
@@ -114,47 +134,72 @@ static void _borderCubicTo(SwStrokeBorder* border, const SwPoint& ctrl1, const S
     border->movable = false;
 }
 
-
-static void _borderArcTo(SwStrokeBorder* border, const SwPoint& center, int64_t radius, int64_t angleStart, int64_t angleDiff, SwStroke& stroke)
+static void _borderLineTo(SwStrokeBorder* border, const Point& to, bool movable)
 {
-    constexpr int64_t ARC_CUBIC_ANGLE = SW_ANGLE_PI / 2;
-    SwPoint a = {static_cast<int32_t>(radius), 0};
-    mathRotate(a, angleStart);
-    SCALE(stroke, a);
-    a += center;
+    if (border->movable) {
+        // move last point
+        border->pts.last() = to;
+    } else {
+        // don't add zero-length line_to
+        if (!border->pts.empty() && _tiny(border->pts.last() - to)) return;
+        _growBorder(border, 1);
+        border->tags[border->pts.count] = SW_STROKE_TAG_POINT;
+        border->pts.push(to);
+    }
+    border->movable = movable;
+}
+
+static void _borderMoveTo(SwStrokeBorder* border, const Point& to)
+{
+    // close current open path if any?
+    if (border->start >= 0) _borderClose(border, false);
+
+    border->start = border->pts.count;
+    border->movable = false;
+
+    _borderLineTo(border, to, false);
+}
+
+static void _borderArcTo(SwStroke& stroke, int32_t side)
+{
+    auto border = stroke.borders[side];
+    auto rotate = _sideToRotate(side);
+    auto angleStart = stroke.angleIn + rotate;
+    auto angleDiff = _diff(stroke.angleIn, stroke.angleOut);
+    if (tvg::equal(angleDiff, MATH_PI)) angleDiff = -rotate * 2.0f;
+
+    auto a = Point{stroke.width, 0.0f};
+    _rotate(a, angleStart);
+    a += stroke.center;
 
     auto total = angleDiff;
     auto angle = angleStart;
-    auto rotate = (angleDiff >= 0) ? SW_ANGLE_PI2 : -SW_ANGLE_PI2;
+    rotate = (angleDiff >= 0) ? MATH_PI2 : -MATH_PI2;
 
-    while (total != 0) {
+    while (!tvg::zero(total)) {
         auto step = total;
-        if (step > ARC_CUBIC_ANGLE) step = ARC_CUBIC_ANGLE;
-        else if (step < -ARC_CUBIC_ANGLE) step = -ARC_CUBIC_ANGLE;
+        if (step > MATH_PI2) step = MATH_PI2;
+        else if (step < -MATH_PI2) step = -MATH_PI2;
 
         auto next = angle + step;
         auto theta = step;
         if (theta < 0) theta = -theta;
-
-        theta >>= 1;
+        theta *= 0.5f;
 
         //compute end point
-        SwPoint b = {static_cast<int32_t>(radius), 0};
-        mathRotate(b, next);
-        SCALE(stroke, b);
-        b += center;
+        auto b = Point{stroke.width, 0.0f};
+        _rotate(b, next);
+        b += stroke.center;
 
         //compute first and second control points
-        auto length = mathMulDiv(radius, mathSin(theta) * 4, (0x10000L + mathCos(theta)) * 3);
+        auto length = stroke.width * (4.0f / 3.0f) * std::tan(theta * 0.5f);
 
-        SwPoint a2 = {static_cast<int32_t>(length), 0};
-        mathRotate(a2, angle + rotate);
-        SCALE(stroke, a2);
+        auto a2 = Point{length, 0.0f};
+        _rotate(a2, angle + rotate);
         a2 += a;
 
-        SwPoint b2 = {static_cast<int32_t>(length), 0};
-        mathRotate(b2, next - rotate);
-        SCALE(stroke, b2);
+        auto b2 = Point{length, 0.0f};
+        _rotate(b2, next - rotate);
         b2 += b;
 
         //add cubic arc
@@ -165,103 +210,57 @@ static void _borderArcTo(SwStrokeBorder* border, const SwPoint& center, int64_t 
         total -= step;
         angle = next;
     }
-}
 
-
-static void _borderLineTo(SwStrokeBorder* border, const SwPoint& to, bool movable)
-{
-    if (border->movable) {
-        //move last point
-        border->pts.last() = to;
-    } else {
-        //don't add zero-length line_to
-        if (!border->pts.empty() && (border->pts.last() - to).tiny()) return;
-        _growBorder(border, 1);
-        border->tags[border->pts.count] = SW_STROKE_TAG_POINT;
-        border->pts.push(to);
-    }
-
-    border->movable = movable;
-}
-
-
-static void _borderMoveTo(SwStrokeBorder* border, SwPoint& to)
-{
-    //close current open path if any?
-    if (border->start >= 0) _borderClose(border, false);
-
-    border->start = border->pts.count;
-    border->movable = false;
-
-    _borderLineTo(border, to, false);
-}
-
-
-static void _arcTo(SwStroke& stroke, int32_t side)
-{
-    auto border = stroke.borders[side];
-    auto rotate = SIDE_TO_ROTATE(side);
-    auto total = mathDiff(stroke.angleIn, stroke.angleOut);
-    if (total == SW_ANGLE_PI) total = -rotate * 2;
-
-    _borderArcTo(border, stroke.center, stroke.width, stroke.angleIn + rotate, total, stroke);
     border->movable = false;
 }
 
-
-static void _outside(SwStroke& stroke, int32_t side, int64_t lineLength)
+static void _outside(SwStroke& stroke, int32_t side, float length)
 {
     auto border = stroke.borders[side];
 
     if (stroke.join == StrokeJoin::Round) {
-        _arcTo(stroke, side);
+        _borderArcTo(stroke, side);
     } else {
         //this is a mitered (pointed) or beveled (truncated) corner
-        auto rotate = SIDE_TO_ROTATE(side);
+        auto rotate = _sideToRotate(side);
         auto bevel = stroke.join == StrokeJoin::Bevel;
-        int64_t phi = 0;
-        int64_t thcos = 0;
+        auto phi = 0.0f;
+        auto thcos = 0.0f;
 
         if (!bevel) {
-            auto theta = mathDiff(stroke.angleIn, stroke.angleOut);
-            if (theta == SW_ANGLE_PI) {
+            auto theta = _diff(stroke.angleIn, stroke.angleOut);
+            if (tvg::equal(theta, MATH_PI)) {
                 theta = rotate;
                 phi = stroke.angleIn;
             } else {
-                theta /= 2;
+                theta *= 0.5f;
                 phi = stroke.angleIn + theta + rotate;
             }
-
-            thcos = mathCos(theta);
-            auto sigma = mathMultiply(stroke.miterlimit, thcos);
+            thcos = std::cos(theta);
 
             //is miter limit exceeded?
-            if (sigma < 0x10000L) bevel = true;
+            if (stroke.miterlimit * thcos < 1.0f) bevel = true;
         }
 
         //this is a bevel (broken angle)
         if (bevel) {
-            SwPoint delta = {static_cast<int32_t>(stroke.width), 0};
-            mathRotate(delta, stroke.angleOut + rotate);
-            SCALE(stroke, delta);
+            auto delta = Point{stroke.width, 0.0f};
+            _rotate(delta, stroke.angleOut + rotate);
             delta += stroke.center;
             border->movable = false;
             _borderLineTo(border, delta, false);
         //this is a miter (intersection)
         } else {
-            auto length = mathDivide(stroke.width, thcos);
-            SwPoint delta = {static_cast<int32_t>(length), 0};
-            mathRotate(delta, phi);
-            SCALE(stroke, delta);
+            auto delta = Point{stroke.width / thcos, 0.0f};
+            _rotate(delta, phi);
             delta += stroke.center;
             _borderLineTo(border, delta, false);
 
             /* Now add and end point
                Only needed if not lineto (lineLength is zero for curves) */
-            if (lineLength == 0) {
-                delta = {static_cast<int32_t>(stroke.width), 0};
-                mathRotate(delta, stroke.angleOut + rotate);
-                SCALE(stroke, delta);
+            if (tvg::zero(length)) {
+                delta = {stroke.width, 0.0f};
+                _rotate(delta, stroke.angleOut + rotate);
                 delta += stroke.center;
                 _borderLineTo(border, delta, false);
             }
@@ -269,118 +268,94 @@ static void _outside(SwStroke& stroke, int32_t side, int64_t lineLength)
     }
 }
 
-
-static void _inside(SwStroke& stroke, int32_t side, int64_t lineLength)
+static void _inside(SwStroke& stroke, int32_t side, float length)
 {
     auto border = stroke.borders[side];
-    auto theta = mathDiff(stroke.angleIn, stroke.angleOut) / 2;
-    SwPoint delta;
-    bool intersect = false;
+    auto theta = _diff(stroke.angleIn, stroke.angleOut) * 0.5f;
+    auto intersect = false;
 
     /* Only intersect borders if between two line_to's and both
        lines are long enough (line length is zero for curves). */
-    if (border->movable && lineLength > 0) {
+    if (border->movable && length > 0.0f) {
         //compute minimum required length of lines
-        int64_t minLength = abs(mathMultiply(stroke.width, mathTan(theta)));
-        if (stroke.lineLength >= minLength && lineLength >= minLength) intersect = true;
+        auto minLength = fabsf(stroke.width * std::tan(theta));
+        if (stroke.length >= minLength && length >= minLength) intersect = true;
     }
 
-    auto rotate = SIDE_TO_ROTATE(side);
+    auto rotate = _sideToRotate(side);
+    Point delta;
 
     if (!intersect) {
-        delta = {static_cast<int32_t>(stroke.width), 0};
-        mathRotate(delta, stroke.angleOut + rotate);
-        SCALE(stroke, delta);
+        delta = {stroke.width, 0.0f};
+        _rotate(delta, stroke.angleOut + rotate);
         delta += stroke.center;
         border->movable = false;
     } else {
         //compute median angle
         auto phi = stroke.angleIn + theta;
-        auto thcos = mathCos(theta);
-        delta = {static_cast<int32_t>(mathDivide(stroke.width, thcos)), 0};
-        mathRotate(delta, phi + rotate);
-        SCALE(stroke, delta);
+        auto thcos = std::cos(theta);
+        delta = {stroke.width / thcos, 0.0f};
+        _rotate(delta, phi + rotate);
         delta += stroke.center;
     }
-
     _borderLineTo(border, delta, false);
 }
 
-
-void _processCorner(SwStroke& stroke, int64_t lineLength)
+static void _processCorner(SwStroke& stroke, float length)
 {
-    auto turn = mathDiff(stroke.angleIn, stroke.angleOut);
+    auto turn = _diff(stroke.angleIn, stroke.angleOut);
 
     //no specific corner processing is required if the turn is 0
-    if (turn == 0) return;
+    if (tvg::zero(turn)) return;
 
-    //when we turn to the right, the inside side is 0
-    int32_t inside = 0;
+    // when we turn to the right, the inside side is 0 otherwise, the inside is 1
+    auto inside = (turn < 0.0f) ? 1 : 0;
 
-    //otherwise, the inside is 1
-    if (turn < 0) inside = 1;
-
-    //process the inside
-    _inside(stroke, inside, lineLength);
-
-    //process the outside
-    _outside(stroke, 1 - inside, lineLength);
+    _inside(stroke, inside, length);
+    _outside(stroke, 1 - inside, length);
 }
 
-
-void _firstSubPath(SwStroke& stroke, int64_t startAngle, int64_t lineLength)
+static void _firstSubPath(SwStroke& stroke, float startAngle, float length)
 {
-    SwPoint delta = {static_cast<int32_t>(stroke.width), 0};
-    mathRotate(delta, startAngle + SW_ANGLE_PI2);
-    SCALE(stroke, delta);
+    auto delta = Point{stroke.width, 0.0f};
+    _rotate(delta, startAngle + MATH_PI2);
 
-    auto pt = stroke.center + delta;
-    _borderMoveTo(stroke.borders[0], pt);
-
-    pt = stroke.center - delta;
-    _borderMoveTo(stroke.borders[1], pt);
+    _borderMoveTo(stroke.borders[0], stroke.center + delta);
+    _borderMoveTo(stroke.borders[1], stroke.center - delta);
 
     /* Save angle, position and line length for last join
        lineLength is zero for curves */
     stroke.subPathAngle = startAngle;
     stroke.firstPt = false;
-    stroke.subPathLineLength = lineLength;
+    stroke.subPathLength = length;
 }
 
-
-static void _lineTo(SwStroke& stroke, const SwPoint& to)
+static void _lineTo(SwStroke& stroke, const Point& to)
 {
     auto delta = to - stroke.center;
 
     //a zero-length lineto is a no-op
-    if (delta.zero()) {
+    if (tvg::zero(delta)) {
         //round and square caps are expected to be drawn as a dot even for zero-length lines
-        if (stroke.firstPt && stroke.cap != StrokeCap::Butt) _firstSubPath(stroke, 0, 0); 
-        return; 
+        if (stroke.firstPt && stroke.cap != StrokeCap::Butt) _firstSubPath(stroke, 0.0f, 0.0f);
+        return;
     }
 
-    /* The lineLength is used to determine the intersection of strokes outlines.
-       The scale needs to be reverted since the stroke width has not been scaled.
-       An alternative option is to scale the width of the stroke properly by
-       calculating the mixture of the sx/sy rating on the stroke direction. */
-    delta.x = static_cast<int32_t>(delta.x / stroke.sx);
-    delta.y = static_cast<int32_t>(delta.y / stroke.sy);
-    auto lineLength = mathLength(delta);
-    auto angle = mathAtan(delta);
+    auto length = tvg::length(delta);
+    auto angle = tvg::atan(delta);
 
-    delta = {static_cast<int32_t>(stroke.width), 0};
-    mathRotate(delta, angle + SW_ANGLE_PI2);
-    SCALE(stroke, delta);
+    delta = {stroke.width, 0.0f};
+    _rotate(delta, angle + MATH_PI2);
 
     //process corner if necessary
     if (stroke.firstPt) {
         /* This is the first segment of a subpath. We need to add a point to each border
         at their respective starting point locations. */
-        _firstSubPath(stroke, angle, lineLength);
+        _firstSubPath(stroke, angle, length);
     } else {
         //process the current corner
         stroke.angleOut = angle;
-        _processCorner(stroke, lineLength);
+        _processCorner(stroke, length);
     }
 
     //now add a line segment to both the inside and outside paths
@@ -393,13 +368,79 @@ static void _lineTo(SwStroke& stroke, const SwPoint& to)
 
     stroke.angleIn = angle;
     stroke.center = to;
-    stroke.lineLength = lineLength;
+    stroke.length = length;
 }
 
-
-static void _cubicTo(SwStroke& stroke, const SwPoint& ctrl1, const SwPoint& ctrl2, const SwPoint& to)
+static int _cubicAngle(const Point* base, float& angleIn, float& angleMid, float& angleOut)
 {
-    SwPoint bezStack[37];   //TODO: static?
+    auto d1 = base[2] - base[3];
+    auto d2 = base[1] - base[2];
+    auto d3 = base[0] - base[1];
+
+    if (_tiny(d1)) {
+        if (_tiny(d2)) {
+            if (_tiny(d3)) {
+                angleIn = angleMid = angleOut = 0;
+                return -1;  // ignoreable
+            } else {
+                angleIn = angleMid = angleOut = tvg::atan(d3);
+            }
+        } else {
+            if (_tiny(d3)) {
+                angleIn = angleMid = angleOut = tvg::atan(d2);
+            } else {
+                angleIn = angleMid = tvg::atan(d2);
+                angleOut = tvg::atan(d3);
+            }
+        }
+    } else {
+        if (_tiny(d2)) {
+            if (_tiny(d3)) {
+                angleIn = angleMid = angleOut = tvg::atan(d1);
+            } else {
+                angleIn = tvg::atan(d1);
+                angleOut = tvg::atan(d3);
+                angleMid = _mean(angleIn, angleOut);
+            }
+        } else {
+            if (_tiny(d3)) {
+                angleIn = tvg::atan(d1);
+                angleMid = angleOut = tvg::atan(d2);
+            } else {
+                angleIn = tvg::atan(d1);
+                angleMid = tvg::atan(d2);
+                angleOut = tvg::atan(d3);
+            }
+        }
+    }
+
+    auto theta1 = fabsf(_diff(angleIn, angleMid));
+    auto theta2 = fabsf(_diff(angleMid, angleOut));
+
+    if ((theta1 < (MATH_PI / 8)) && (theta2 < (MATH_PI / 8))) return 0;  // small size
+    return 1;
+}
+
+static void _splitCubic(Point* base)
+{
+    auto p01 = (base[0] + base[1]) * 0.5f;
+    auto p12 = (base[1] + base[2]) * 0.5f;
+    auto p23 = (base[2] + base[3]) * 0.5f;
+    auto p012 = (p01 + p12) * 0.5f;
+    auto p123 = (p12 + p23) * 0.5f;
+    auto mid = (p012 + p123) * 0.5f;
+
+    base[6] = base[3];
+    base[1] = p01;
+    base[2] = p012;
+    base[3] = mid;
+    base[4] = p123;
+    base[5] = p23;
+}
+
+static void _cubicTo(SwStroke& stroke, const Point& ctrl1, const Point& ctrl2, const Point& to)
+{
+    Point bezStack[37];
     auto limit = bezStack + 32;
     auto arc = bezStack;
     auto firstArc = true;
@@ -408,18 +449,19 @@ static void _cubicTo(SwStroke& stroke, const SwPoint& ctrl1, const SwPoint& ctrl
     arc[2] = ctrl1;
     arc[3] = stroke.center;
 
+    auto join = stroke.join; // backup
+
     while (arc >= bezStack) {
-        int64_t angleIn, angleOut, angleMid;
+        float angleIn, angleOut, angleMid;
 
         //initialize with current direction
         angleIn = angleOut = angleMid = stroke.angleIn;
-
-        auto valid = mathCubicAngle(arc, angleIn, angleMid, angleOut);
+        auto valid = _cubicAngle(arc, angleIn, angleMid, angleOut);
 
         //valid size
         if (valid > 0 && arc < limit) {
             if (stroke.firstPt) stroke.angleIn = angleIn;
-            mathSplitCubic(arc);
+            _splitCubic(arc);
             arc += 3;
             continue;
         }
@@ -427,9 +469,8 @@ static void _cubicTo(SwStroke& stroke, const SwPoint& ctrl1, const SwPoint& ctrl
         //ignoreable size
         if (valid < 0 && arc == bezStack) {
             stroke.center = to;
-
             //round and square caps are expected to be drawn as a dot even for zero-length lines
-            if (stroke.firstPt && stroke.cap != StrokeCap::Butt) _firstSubPath(stroke, 0, 0);
+            if (stroke.firstPt && stroke.cap != StrokeCap::Butt) _firstSubPath(stroke, 0.0f, 0.0f);
             return;
         }
 
@@ -438,92 +479,85 @@ static void _cubicTo(SwStroke& stroke, const SwPoint& ctrl1, const SwPoint& ctrl
             firstArc = false;
             //process corner if necessary
             if (stroke.firstPt) {
-                _firstSubPath(stroke, angleIn, 0);
+                _firstSubPath(stroke, angleIn, 0.0f);
             } else {
                 stroke.angleOut = angleIn;
-                _processCorner(stroke, 0);
+                _processCorner(stroke, 0.0f);
             }
-        } else if (abs(mathDiff(stroke.angleIn, angleIn)) > (SW_ANGLE_PI / 8) / 4) {
+        } else if (fabsf(_diff(stroke.angleIn, angleIn)) > (MATH_PI / 8) / 4) {
             //if the deviation from one arc to the next is too great add a round corner
             stroke.center = arc[3];
             stroke.angleOut = angleIn;
             stroke.join = StrokeJoin::Round;
 
-            _processCorner(stroke, 0);
+            _processCorner(stroke, 0.0f);
 
-            //reinstate line join style
-            stroke.join = stroke.joinSaved;
+            stroke.join = join;  // reinstate line join style
         }
 
         //the arc's angle is small enough; we can add it directly to each border
-        auto theta1 = mathDiff(angleIn, angleMid) / 2;
-        auto theta2 = mathDiff(angleMid, angleOut) / 2;
-        auto phi1 = mathMean(angleIn, angleMid);
-        auto phi2 = mathMean(angleMid, angleOut);
-        auto length1 = mathDivide(stroke.width, mathCos(theta1));
-        auto length2 = mathDivide(stroke.width, mathCos(theta2));
-        int64_t alpha0 = 0;
+        auto theta1 = _diff(angleIn, angleMid) * 0.5f;
+        auto theta2 = _diff(angleMid, angleOut) * 0.5f;
+        auto phi1 = _mean(angleIn, angleMid);
+        auto phi2 = _mean(angleMid, angleOut);
+        auto length1 = stroke.width / std::cos(theta1);
+        auto length2 = stroke.width / std::cos(theta2);
+        auto alpha0 = 0.0f;
 
         //compute direction of original arc
         if (stroke.handleWideStrokes) {
-            alpha0 = mathAtan(arc[0] - arc[3]);
+            alpha0 = tvg::atan(arc[0] - arc[3]);
         }
 
         for (int side = 0; side < 2; ++side) {
             auto border = stroke.borders[side];
-            auto rotate = SIDE_TO_ROTATE(side);
+            auto rotate = _sideToRotate(side);
 
-            //compute control points
-            SwPoint _ctrl1 = {static_cast<int32_t>(length1), 0};
-            mathRotate(_ctrl1, phi1 + rotate);
-            SCALE(stroke, _ctrl1);
-            _ctrl1 += arc[2];
+            // compute bezier points
+            auto c1 = Point{length1, 0.0f};
+            _rotate(c1, phi1 + rotate);
+            c1 += arc[2];
 
-            SwPoint _ctrl2 = {static_cast<int32_t>(length2), 0};
-            mathRotate(_ctrl2, phi2 + rotate);
-            SCALE(stroke, _ctrl2);
-            _ctrl2 += arc[1];
+            auto c2 = Point{length2, 0.0f};
+            _rotate(c2, phi2 + rotate);
+            c2 += arc[1];
 
-            //compute end point
-            SwPoint end = {static_cast<int32_t>(stroke.width), 0};
-            mathRotate(end, angleOut + rotate);
-            SCALE(stroke, end);
+            auto end = Point{stroke.width, 0.0f};
+            _rotate(end, angleOut + rotate);
             end += arc[0];
 
             if (stroke.handleWideStrokes) {
-                /* determine whether the border radius is greater than the radius of
-                   curvature of the original arc */
+                // determine whether the border radius is greater than the radius of curvature of the original arc
                 auto start = border->pts.last();
-                auto alpha1 = mathAtan(end - start);
+                auto alpha1 = tvg::atan(end - start);
 
                 //is the direction of the border arc opposite to that of the original arc?
-                if (abs(mathDiff(alpha0, alpha1)) > SW_ANGLE_PI / 2) {
-
+                if (fabsf(_diff(alpha0, alpha1)) > MATH_PI2) {
                     //use the sine rule to find the intersection point
-                    auto beta = mathAtan(arc[3] - start);
-                    auto gamma = mathAtan(arc[0] - end);
+                    auto beta = tvg::atan(arc[3] - start);
+                    auto gamma = tvg::atan(arc[0] - end);
                     auto bvec = end - start;
-                    auto blen = mathLength(bvec);
-                    auto sinA = abs(mathSin(alpha1 - gamma));
-                    auto sinB = abs(mathSin(beta - gamma));
-                    auto alen = mathMulDiv(blen, sinA, sinB);
+                    auto blen = tvg::length(bvec);
+                    auto sinA = fabsf(std::sin(alpha1 - gamma));
+                    auto sinB = fabsf(std::sin(beta - gamma));
+                    auto alen = (blen * sinA) / sinB;
 
-                    SwPoint delta = {static_cast<int32_t>(alen), 0};
-                    mathRotate(delta, beta);
+                    auto delta = Point{alen, 0.0f};
+                    _rotate(delta, beta);
                     delta += start;
 
                     //circumnavigate the negative sector backwards
                     border->movable = false;
                     _borderLineTo(border, delta, false);
                     _borderLineTo(border, end, false);
-                    _borderCubicTo(border, _ctrl2, _ctrl1, start);
+                    _borderCubicTo(border, c2, c1, start);
 
                     //and then move to the endpoint
                     _borderLineTo(border, end, false);
                     continue;
                 }
             }
-            _borderCubicTo(border, _ctrl1, _ctrl2, end);
+            _borderCubicTo(border, c1, c2, end);
         }
         arc -= 3;
         stroke.angleIn = angleOut;
@@ -531,54 +565,39 @@ static void _cubicTo(SwStroke& stroke, const SwPoint& ctrl1, const SwPoint& ctrl
     stroke.center = to;
 }
 
-
-static void _addCap(SwStroke& stroke, int64_t angle, int32_t side)
+static void _addCap(SwStroke& stroke, float angle, int32_t side)
 {
+    auto rotate = _sideToRotate(side);
+    auto border = stroke.borders[side];
+    auto delta = Point{stroke.width, 0.0f};
+
     if (stroke.cap == StrokeCap::Square) {
-        auto rotate = SIDE_TO_ROTATE(side);
-        auto border = stroke.borders[side];
+        _rotate(delta, angle);
 
-        SwPoint delta = {static_cast<int32_t>(stroke.width), 0};
-        mathRotate(delta, angle);
-        SCALE(stroke, delta);
-
-        SwPoint delta2 = {static_cast<int32_t>(stroke.width), 0};
-        mathRotate(delta2, angle + rotate);
-        SCALE(stroke, delta2);
+        auto delta2 = Point{stroke.width, 0.0f};
+        _rotate(delta2, angle + rotate);
         delta += stroke.center + delta2;
-
         _borderLineTo(border, delta, false);
 
-        delta = {static_cast<int32_t>(stroke.width), 0};
-        mathRotate(delta, angle);
-        SCALE(stroke, delta);
+        delta = {stroke.width, 0.0f};
+        _rotate(delta, angle);
 
-        delta2 = {static_cast<int32_t>(stroke.width), 0};
-        mathRotate(delta2, angle - rotate);
-        SCALE(stroke, delta2);
+        delta2 = {stroke.width, 0.0f};
+        _rotate(delta2, angle - rotate);
         delta += delta2 + stroke.center;
-
         _borderLineTo(border, delta, false);
     } else if (stroke.cap == StrokeCap::Round) {
         stroke.angleIn = angle;
-        stroke.angleOut = angle + SW_ANGLE_PI;
-        _arcTo(stroke, side);
-    } else {  //Butt
-        auto rotate = SIDE_TO_ROTATE(side);
-        auto border = stroke.borders[side];
-
-        SwPoint delta = {static_cast<int32_t>(stroke.width), 0};
-        mathRotate(delta, angle + rotate);
-        SCALE(stroke, delta);
+        stroke.angleOut = angle + MATH_PI;
+        _borderArcTo(stroke, side);
+    } else {  // Butt
+        _rotate(delta, angle + rotate);
         delta += stroke.center;
-
         _borderLineTo(border, delta, false);
 
-        delta = {static_cast<int32_t>(stroke.width), 0};
-        mathRotate(delta, angle - rotate);
-        SCALE(stroke, delta);
+        delta = {stroke.width, 0.0f};
+        _rotate(delta, angle - rotate);
         delta += stroke.center;
-
         _borderLineTo(border, delta, false);
     }
 }
@@ -620,8 +639,7 @@ static void _addReverseLeft(SwStroke& stroke, bool opened)
     left->movable = false;
 }
 
-
-static void _beginSubPath(SwStroke& stroke, const SwPoint& to, bool closed)
+static void _beginSubPath(SwStroke& stroke, const Point& to, bool closed)
 {
     /* We cannot process the first point because there is not enough
        information regarding its corner/cap. Later, it will be processed
@@ -641,8 +659,8 @@ static void _beginSubPath(SwStroke& stroke, const SwPoint& to, bool closed)
     else
         stroke.handleWideStrokes = false;
 
-    stroke.ptStartSubPath = to;
-    stroke.angleIn = 0;
+    stroke.subPathStart = to;
+    stroke.angleIn = 0.0f;
 }
 
 
@@ -650,25 +668,19 @@ static void _endSubPath(SwStroke& stroke)
 {
     if (stroke.closedSubPath) {
         //close the path if needed
-        if (stroke.center != stroke.ptStartSubPath)
-            _lineTo(stroke, stroke.ptStartSubPath);
+        if (stroke.center != stroke.subPathStart) _lineTo(stroke, stroke.subPathStart);
 
         //process the corner
         stroke.angleOut = stroke.subPathAngle;
-        auto turn = mathDiff(stroke.angleIn, stroke.angleOut);
+        auto turn = _diff(stroke.angleIn, stroke.angleOut);
 
         //No specific corner processing is required if the turn is 0
-        if (turn != 0) {
-            //when we turn to the right, the inside is 0
-            int32_t inside = 0;
-
-            //otherwise, the inside is 1
-            if (turn < 0) inside = 1;
-
-            _inside(stroke, inside, stroke.subPathLineLength);        //inside
-            _outside(stroke, 1 - inside, stroke.subPathLineLength);   //outside
+        if (!tvg::zero(turn)) {
+            int32_t inside = 0;                                  // when we turn to the right, the inside is 0
+            if (turn < 0) inside = 1;                            // otherwise, the inside is 1
+            _inside(stroke, inside, stroke.subPathLength);       // inside
+            _outside(stroke, 1 - inside, stroke.subPathLength);  // outside
         }
-
         _borderClose(stroke.borders[0], false);
         _borderClose(stroke.borders[1], true);
     } else {
@@ -683,8 +695,8 @@ static void _endSubPath(SwStroke& stroke)
         _addReverseLeft(stroke, true);
 
         //now add the final cap
-        stroke.center = stroke.ptStartSubPath;
-        _addCap(stroke, stroke.subPathAngle + SW_ANGLE_PI, 0);
+        stroke.center = stroke.subPathStart;
+        _addCap(stroke, stroke.subPathAngle + MATH_PI, 0);
 
         /* now end the right subpath accordingly. The left one is rewind
            and doesn't need further processing */
@@ -699,7 +711,7 @@ static void _exportBorderOutline(const SwStroke& stroke, SwOutline* outline, uin
     if (border->pts.empty()) return;
 
     auto src = border->tags;
-    auto idx = outline->pts.count;
+    auto idx = outline->in.count;
 
     ARRAY_FOREACH(pts, border->pts) {
         if (*src & SW_STROKE_TAG_POINT) outline->types.push(SW_CURVE_TYPE_POINT);
@@ -708,7 +720,7 @@ static void _exportBorderOutline(const SwStroke& stroke, SwOutline* outline, uin
         ++src;
         ++idx;
     }
-    outline->pts.push(border->pts);
+    outline->in.push(border->pts);
 }
 
 
@@ -729,14 +741,10 @@ void strokeFree(SwStroke* stroke)
 
 void strokeReset(SwStroke* stroke, const RenderShape* rshape, const Matrix& transform, SwMpool* mpool, unsigned tid)
 {
-    stroke->sx = sqrtf(powf(transform.e11, 2.0f) + powf(transform.e21, 2.0f));
-    stroke->sy = sqrtf(powf(transform.e12, 2.0f) + powf(transform.e22, 2.0f));
-    stroke->width = HALF_STROKE(rshape->strokeWidth());
+    stroke->width = rshape->strokeWidth() * 0.5f;
     stroke->cap = rshape->strokeCap();
-    stroke->miterlimit = static_cast<int64_t>(rshape->strokeMiterlimit() * 65536.0f);
-
-    //Save line join: it can be temporarily changed when stroking curves...
-    stroke->joinSaved = stroke->join = rshape->strokeJoin();
+    stroke->miterlimit = rshape->strokeMiterlimit();
+    stroke->join = rshape->strokeJoin();
 
     stroke->borders[0] = mpool->strokeLBorder(tid);
     stroke->borders[1] = mpool->strokeRBorder(tid);
@@ -750,7 +758,7 @@ bool strokeParseOutline(SwStroke* stroke, const SwOutline& outline, SwMpool* mpo
 
     ARRAY_FOREACH(p, outline.cntrs) {
         auto last = *p;           //index of last point in contour
-        auto limit = outline.pts.data + last;
+        auto limit = outline.in.data + last;
         ++i;
 
         //Skip empty points
@@ -759,8 +767,8 @@ bool strokeParseOutline(SwStroke* stroke, const SwOutline& outline, SwMpool* mpo
             continue;
         }
 
-        auto start = outline.pts[first];
-        auto pt = outline.pts.data + first;
+        auto start = outline.in[first];
+        auto pt = outline.in.data + first;
         auto types = outline.types.data + first;
         auto type = types[0];
 
@@ -799,7 +807,7 @@ SwOutline* strokeExportOutline(SwStroke* stroke, SwMpool* mpool, unsigned tid)
 {
     auto reserve = stroke->borders[0]->pts.count + stroke->borders[1]->pts.count;
     auto outline = mpool->outline(tid);
-    outline->pts.reserve(reserve);
+    outline->in.reserve(reserve);
     outline->types.reserve(reserve);
     outline->fillRule = FillRule::NonZero;
 

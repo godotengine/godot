@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,38 +20,38 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_FRAME_MODULE_H_
-#define _TVG_FRAME_MODULE_H_
+#ifndef _TVG_ACCESSOR_H_
+#define _TVG_ACCESSOR_H_
 
-#include "tvgLoadModule.h"
+#include "tvgPaint.h"
 
 namespace tvg
 {
 
-class FrameModule: public ImageLoader
+struct AccessorEntity
 {
-public:
-    float segmentBegin = 0.0f;
-    float segmentEnd;             //Initialize the value with the total frame number
+    uint32_t id;  // for fast access (equal to paint->id)
+    Paint* paint;
+    char* name;
+};
 
-    FrameModule(FileType type) : ImageLoader(type) {}
-    virtual ~FrameModule() {}
+struct AccessorCallback
+{
+    function<bool(const Paint* paint, void* data)> func;
+    void* data;
+};
 
-    virtual bool frame(float no) = 0;       //set the current frame number
-    virtual float totalFrame() = 0;         //return the total frame count
-    virtual float curFrame() = 0;           //return the current frame number
-    virtual float duration() = 0;           //return the animation duration in seconds
-    virtual Result segment(float begin, float end) = 0;
+struct AccessorIterator
+{
+    virtual ~AccessorIterator() {}
+    virtual const Paint* next() = 0;
 
-    void segment(float* begin, float* end)
+    static AccessorIterator* iterator(const Paint* paint)
     {
-        if (begin) *begin = segmentBegin;
-        if (end) *end = segmentEnd;
+        return PAINT(paint)->iterator();
     }
-
-    virtual bool animatable() override { return true; }
 };
 
 }
 
-#endif //_TVG_FRAME_MODULE_H_
+#endif //_TVG_ACCESSOR_H_
