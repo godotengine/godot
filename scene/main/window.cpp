@@ -573,7 +573,9 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 		embedder->_sub_window_update(this);
 	} else if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		if (!is_in_edited_scene_root()) {
-			DisplayServer::get_singleton()->window_set_flag(DisplayServerEnums::WindowFlags(p_flag), p_enabled, window_id);
+			if (DisplayServer::get_singleton()->window_get_flag(DisplayServerEnums::WindowFlags(p_flag), window_id) != p_enabled) {
+				DisplayServer::get_singleton()->window_set_flag(DisplayServerEnums::WindowFlags(p_flag), p_enabled, window_id);
+			}
 		}
 	}
 }
