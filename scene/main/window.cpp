@@ -3248,6 +3248,21 @@ bool Window::is_auto_translating() const {
 }
 #endif
 
+void Window::set_title_auto_translate_mode(TitleAutoTranslateMode p_mode) {
+	ERR_MAIN_THREAD_GUARD;
+	if (title_auto_translate_mode == p_mode) {
+		return;
+	}
+
+	title_auto_translate_mode = p_mode;
+
+	propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
+}
+
+Window::TitleAutoTranslateMode Window::get_title_auto_translate_mode() const {
+	return title_auto_translate_mode;
+}
+
 Transform2D Window::get_final_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	return window_transform * stretch_transform * global_canvas_transform;
@@ -3342,7 +3357,13 @@ void Window::_mouse_leave_viewport() {
 }
 
 void Window::_update_displayed_title() {
-	displayed_title = atr(title);
+	if (get_title_auto_translate_mode() == TITLE_AUTO_TRANSLATE_MODE_INHERIT) {
+		displayed_title = atr(title);
+	} else if (get_title_auto_translate_mode() == TITLE_AUTO_TRANSLATE_MODE_ALWAYS) {
+		displayed_title = tr(title);
+	} else {
+		displayed_title = title;
+	}
 
 #ifdef DEBUG_ENABLED
 	if (window_id == DisplayServerEnums::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
@@ -3558,6 +3579,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &Window::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &Window::is_using_font_oversampling);
 #endif
+	ClassDB::bind_method(D_METHOD("set_title_auto_translate_mode", "mode"), &Window::set_title_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_title_auto_translate_mode"), &Window::get_title_auto_translate_mode);
 
 	ClassDB::bind_method(D_METHOD("popup", "rect"), &Window::popup, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_on_parent", "parent_rect"), &Window::popup_on_parent);
@@ -3584,6 +3607,8 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2I, "nonclient_area", PROPERTY_HINT_NONE, ""), "set_nonclient_area", "get_nonclient_area");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "mouse_passthrough_polygon"), "set_mouse_passthrough_polygon", "get_mouse_passthrough_polygon");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_title_auto_translate_mode", "get_title_auto_translate_mode");
 
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
@@ -3705,6 +3730,10 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS);
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS);
 
+	BIND_ENUM_CONSTANT(TITLE_AUTO_TRANSLATE_MODE_INHERIT);
+	BIND_ENUM_CONSTANT(TITLE_AUTO_TRANSLATE_MODE_ALWAYS);
+	BIND_ENUM_CONSTANT(TITLE_AUTO_TRANSLATE_MODE_DISABLED);
+
 	GDVIRTUAL_BIND(_get_contents_minimum_size);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Window, embedded_border);
@@ -3731,6 +3760,8 @@ Window::Window() {
 		max_size = rendering_server->get_maximum_viewport_size();
 		max_size_used = max_size; // Update max_size_used.
 	}
+
+	title_auto_translate_mode = TITLE_AUTO_TRANSLATE_MODE_INHERIT;
 
 	theme_owner = memnew(ThemeOwner(this));
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
