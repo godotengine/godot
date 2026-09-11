@@ -315,7 +315,9 @@ void AnimationPlayerEditor::go_to_nearest_keyframe(bool p_backward) {
 	}
 
 	player->seek_internal(nearest_key_time, true, true, true);
+	updating = true;
 	frame->set_value(nearest_key_time);
+	updating = false;
 	track_editor->set_anim_pos(nearest_key_time);
 }
 
