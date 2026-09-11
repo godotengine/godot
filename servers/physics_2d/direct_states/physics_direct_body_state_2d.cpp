@@ -89,9 +89,11 @@ void PhysicsDirectBodyState2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &PhysicsDirectBodyState2D::apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "impulse"), &PhysicsDirectBodyState2D::apply_torque_impulse);
 	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &PhysicsDirectBodyState2D::apply_impulse, Vector2());
+	ClassDB::bind_method(D_METHOD("apply_impulse_at_position", "impulse", "global_position"), &PhysicsDirectBodyState2D::apply_impulse_at_position, Vector2());
 
 	ClassDB::bind_method(D_METHOD("apply_central_force", "force"), &PhysicsDirectBodyState2D::apply_central_force, Vector2());
 	ClassDB::bind_method(D_METHOD("apply_force", "force", "position"), &PhysicsDirectBodyState2D::apply_force, Vector2());
+	ClassDB::bind_method(D_METHOD("apply_force_at_position", "force", "global_position"), &PhysicsDirectBodyState2D::apply_force_at_position, Vector2());
 	ClassDB::bind_method(D_METHOD("apply_torque", "torque"), &PhysicsDirectBodyState2D::apply_torque);
 
 	ClassDB::bind_method(D_METHOD("add_constant_central_force", "force"), &PhysicsDirectBodyState2D::add_constant_central_force, Vector2());

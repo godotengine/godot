@@ -54,12 +54,26 @@
 				Overridable version of [method PhysicsDirectBodyState2D.apply_force].
 			</description>
 		</method>
+		<method name="_apply_force_at_position" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="force" type="Vector2" />
+			<param index="1" name="global_position" type="Vector2" />
+			<description>
+			</description>
+		</method>
 		<method name="_apply_impulse" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="impulse" type="Vector2" />
 			<param index="1" name="position" type="Vector2" />
 			<description>
 				Overridable version of [method PhysicsDirectBodyState2D.apply_impulse].
+			</description>
+		</method>
+		<method name="_apply_impulse_at_position" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="impulse" type="Vector2" />
+			<param index="1" name="position" type="Vector2" />
+			<description>
 			</description>
 		</method>
 		<method name="_apply_torque" qualifiers="virtual required">
