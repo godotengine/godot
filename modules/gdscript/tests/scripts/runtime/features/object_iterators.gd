@@ -19,25 +19,6 @@ class MyIterator:
 		return arg
 
 func test():
-	var container := PackedDataContainer.new()
-	var _err := container.pack([{
-		id = 123,
-		node_path = ^"/some/path",
-		data = PackedByteArray(),
-	}])
-
-	for ref: PackedDataContainerRef in container:
-		for key: String in ref:
-			print(key)
-
-	print("===")
-
-	for ref: Variant in container:
-		for key: String in ref:
-			print(key)
-
-	print("===")
-
 	var hard_custom := MyIterator.new(3)
 	for x in hard_custom:
 		print(x)
