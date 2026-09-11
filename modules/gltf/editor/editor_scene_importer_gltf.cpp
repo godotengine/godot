@@ -42,7 +42,7 @@ void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) c
 
 Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
-		List<String> *r_missing_deps, Error *r_err) {
+		List<String> *r_missing_deps, ImportMeta *r_meta, Error *r_err) {
 	Ref<GLTFDocument> gltf_doc;
 	gltf_doc.instantiate();
 	Ref<GLTFState> gltf_state;
@@ -75,6 +75,34 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	}
 	if (p_options.has("animation/import")) {
 		gltf_state->set_create_animations(bool(p_options["animation/import"]));
+	}
+
+	// Record meta
+	if (r_meta != nullptr) {
+		// Texture sizes
+		if (p_options.has("gltf/embedded_image_handling")) {
+			int32_t image_handle_mode = p_options["gltf/embedded_image_handling"];
+			bool uses_embed_image = image_handle_mode == GLTFState::HandleBinaryImageMode::HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU ||
+					image_handle_mode == GLTFState::HandleBinaryImageMode::HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED;
+
+			if (uses_embed_image) {
+				Vector<Ref<Texture2D>> images = gltf_state->get_images();
+				r_meta->texture_sizes.resize(images.size());
+				for (int i = 0; i < images.size(); i++) {
+					Size2 img_size = images[i]->get_size();
+					r_meta->texture_sizes.set(i, img_size.x * img_size.y);
+				}
+			}
+		}
+
+		// Tris count
+		Vector<Ref<GLTFMesh>> meshes = gltf_state->get_meshes();
+		for (const Ref<GLTFMesh> &mesh : meshes) {
+			Ref<ArrayMesh> arr_mesh = mesh->get_mesh()->get_mesh();
+			for (int i = 0; i < arr_mesh->get_surface_count(); i++) {
+				r_meta->tris_count += arr_mesh->surface_get_array_index_len(i) / 3;
+			}
+		}
 	}
 
 #ifndef DISABLE_DEPRECATED
