@@ -1327,6 +1327,7 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	text_editor->begin_multicaret_edit();
 
 	Vector<Point2i> line_ranges = text_editor->get_line_ranges_from_carets();
+	Vector<Point2i> selection_ranges = text_editor->get_line_ranges_from_carets(true);
 	int folded_to = 0;
 	for (Point2i line_range : line_ranges) {
 		int from_line = line_range.x;
@@ -1355,6 +1356,21 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		// Special case for commenting empty lines, treat it/them as uncommented lines.
 		is_commented = is_commented && !is_all_empty;
 
+		bool is_multiline_selection = from_line != to_line && selection_ranges.has(line_range);
+
+		int min_indent = INT_MAX;
+		if (!is_commented && is_multiline_selection) {
+			for (int line = from_line; line <= to_line; line++) {
+				if (text_editor->get_line(line).strip_edges().is_empty()) {
+					continue;
+				}
+				min_indent = MIN(min_indent, text_editor->get_first_non_whitespace_column(line));
+			}
+			if (min_indent == INT_MAX) {
+				min_indent = 0;
+			}
+		}
+
 		// Comment/uncomment.
 		for (int line = from_line; line <= to_line; line++) {
 			if (is_all_empty) {
@@ -1368,7 +1384,8 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 					text_editor->remove_text(line, delimiter_column, line, delimiter_column + delimiter.length());
 				}
 			} else {
-				text_editor->insert_text(delimiter, line, text_editor->get_first_non_whitespace_column(line));
+				int col = is_multiline_selection ? min_indent : text_editor->get_first_non_whitespace_column(line);
+				text_editor->insert_text(delimiter, line, col);
 			}
 		}
 	}
