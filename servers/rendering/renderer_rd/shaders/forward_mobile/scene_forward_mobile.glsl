@@ -517,7 +517,12 @@ void vertex_shader(in vec3 vertex,
 	// Normalize TBN vectors to account for model/normal transforms that may have scale
 #ifdef NORMAL_USED
 	normal_interp = hvec3(normalize(normal_highp));
+#ifdef DO_SIDE_CHECK
+	if ((instances.data[instance_index].flags & INSTANCE_FLAGS_POSITIVE_DET) == 0) {
+		normal_interp = -normal_interp;
+	}
 #endif
+#endif // #ifdef NORMAL_USED
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) || defined(BENT_NORMAL_MAP_USED)
 	tangent_interp = hvec3(normalize(tangent_highp));
