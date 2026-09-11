@@ -15,7 +15,7 @@
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
 		<link title="Troubleshooting physics issues">$DOCS_URL/tutorials/physics/troubleshooting_physics_issues.html</link>
 		<link title="3D Truck Town Demo">https://store.godotengine.org/asset/godot-foundation/truck-town-demo/</link>
-		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
+		<link title="3D Physics Tests Demo">https://store.godotengine.org/asset/godot-foundation/physics-tests-3d-demo/</link>
 	</tutorials>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">

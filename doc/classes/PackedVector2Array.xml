@@ -10,7 +10,7 @@
 		[b]Note:[/b] In a boolean context, a packed array will evaluate to [code]false[/code] if it's empty. Otherwise, a packed array will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
-		<link title="Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
+		<link title="Grid-based Navigation with AStarGrid2D Demo">https://store.godotengine.org/asset/godot-foundation/grid-based-navigation-with-astargrid2d-demo/</link>
 	</tutorials>
 	<constructors>
 		<constructor name="PackedVector2Array">

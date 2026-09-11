@@ -64,7 +64,7 @@
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
-		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
+		<link title="Audio Generator Demo">https://store.godotengine.org/asset/godot-foundation/audio-generator-demo/</link>
 	</tutorials>
 	<members>
 		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.5">
