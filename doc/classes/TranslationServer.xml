@@ -98,7 +98,7 @@
 			<return type="String" />
 			<param index="0" name="locale" type="String" />
 			<description>
-				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
+				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English, United States of America"[/code]).
 			</description>
 		</method>
 		<method name="get_or_add_domain">
