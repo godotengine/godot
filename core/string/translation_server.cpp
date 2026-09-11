@@ -268,8 +268,8 @@ String TranslationServer::format_number(const String &p_string, const String &p_
 	res = res.replace("E", nsd.exp_u);
 	char32_t *data = res.ptrw();
 	for (int j = 0; j < res.length(); j++) {
-		if (data[j] >= 0x30 && data[j] <= 0x39) {
-			data[j] = nsd.digits[data[j] - 0x30];
+		if (data[j] >= '0' && data[j] <= '9') {
+			data[j] = nsd.digits[data[j] - '0'];
 		} else if (data[j] == '.' || data[j] == ',') {
 			data[j] = nsd.digits[10];
 		}
@@ -296,7 +296,7 @@ String TranslationServer::parse_number(const String &p_string, const String &p_l
 		} else {
 			for (int k = 0; k < 10; k++) {
 				if (data[j] == nsd.digits[k]) {
-					data[j] = 0x30 + k;
+					data[j] = '0' + k;
 				}
 			}
 		}
