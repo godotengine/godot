@@ -1052,6 +1052,15 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					} else {
 						src_rect = Rect2(0, 0, 1, 1);
 					}
+
+					if (np->flags & RendererCanvasRender::CANVAS_RECT_FLIP_H) {
+						src_rect.position.x += src_rect.size.x;
+						src_rect.size.x *= -1;
+					}
+					if (np->flags & RendererCanvasRender::CANVAS_RECT_FLIP_V) {
+						src_rect.position.y += src_rect.size.y;
+						src_rect.size.y *= -1;
+					}
 				}
 
 				state.instance_data_array[r_index].modulation[0] = np->color.r * base_color.r;
