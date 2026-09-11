@@ -60,7 +60,7 @@ class Camera3DPreview : public MarginContainer {
 
 	static bool camera_preview_folded;
 
-	void _update_sub_viewport_size();
+	void _update_sub_viewport_settings();
 	void _project_settings_changed();
 	void _toggle_folding(bool p_folded);
 
