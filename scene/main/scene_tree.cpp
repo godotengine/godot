@@ -1004,6 +1004,14 @@ Color SceneTree::get_debug_collisions_color() const {
 	return debug_collisions_color;
 }
 
+void SceneTree::set_debug_collisions_color_3d_modulate_alpha(real_t p_modulate_alpha) {
+	debug_collisions_color_3d_modulate_alpha = p_modulate_alpha;
+}
+
+real_t SceneTree::get_debug_collisions_color_3d_modulate_alpha() const {
+	return debug_collisions_color_3d_modulate_alpha;
+}
+
 void SceneTree::set_debug_collision_contact_color(const Color &p_color) {
 	debug_collision_contact_color = p_color;
 }
@@ -2054,6 +2062,13 @@ SceneTree::SceneTree() {
 		singleton = this;
 	}
 	debug_collisions_color = GLOBAL_DEF("debug/shapes/collision/shape_color", Color(0.0, 0.6, 0.7, 0.42));
+	debug_collisions_color_3d_modulate_alpha = GLOBAL_DEF(
+			PropertyInfo(
+					Variant::FLOAT,
+					"debug/shapes/collision/shape_color_3d_modulate_alpha",
+					PROPERTY_HINT_RANGE,
+					"0.0,1.0,0.001,prefer_slider"),
+			0.0625);
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
 	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
 	debug_paths_width = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/paths/geometry_width", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 2.0);

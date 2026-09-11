@@ -52,6 +52,9 @@ class Shape3D : public Resource {
 	bool debug_properties_edited = false;
 #endif // DEBUG_ENABLED
 
+public:
+	inline static const real_t DEBUG_ALPHA_FACTOR = 32.0;
+
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
