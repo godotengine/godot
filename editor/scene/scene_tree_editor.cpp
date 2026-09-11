@@ -1899,7 +1899,7 @@ void SceneTreeEditor::_update_selection(TreeItem *item) {
 
 	NodePath np = item->get_metadata(0);
 
-	if (!get_scene_node()->has_node(np)) {
+	if (!is_inside_tree() || !get_scene_node() || !get_scene_node()->has_node(np)) {
 		return;
 	}
 
