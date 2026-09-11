@@ -34,6 +34,7 @@ namespace GodotTools
             public const string NoConsoleLogging = "dotnet/build/no_console_logging";
             public const string CreateBinaryLog = "dotnet/build/create_binary_log";
             public const string ProblemsLayout = "dotnet/build/problems_layout";
+            public const string DisableAutoBuildOnPlay = "dotnet/build/disable_auto_build_on_play";
         }
 
 #nullable disable
@@ -427,6 +428,13 @@ namespace GodotTools
 
         public override bool _Build()
         {
+            if (_editorSettings != null && _editorSettings.HasSetting(Settings.DisableAutoBuildOnPlay))
+            {
+                if (_editorSettings.GetSetting(Settings.DisableAutoBuildOnPlay).As<bool>())
+                {
+                    return true;
+                }
+            }
             return BuildManager.EditorBuildCallback();
         }
 
@@ -556,6 +564,7 @@ namespace GodotTools
             EditorDef(Settings.NoConsoleLogging, false);
             EditorDef(Settings.CreateBinaryLog, false);
             EditorDef(Settings.ProblemsLayout, Variant.From(BuildProblemsView.ProblemsLayout.Tree));
+            EditorDef(Settings.DisableAutoBuildOnPlay, false);
 
             string settingsHintStr = "Disabled";
 
@@ -623,6 +632,12 @@ namespace GodotTools
                 ["name"] = Settings.ProblemsLayout,
                 ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = "View as List,View as Tree",
+            });
+
+            _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
+            {
+                ["type"] = (int)Variant.Type.Bool,
+                ["name"] = Settings.DisableAutoBuildOnPlay,
             });
 
             OnSettingsChanged();
