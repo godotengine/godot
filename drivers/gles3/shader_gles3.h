@@ -136,9 +136,6 @@ private:
 
 	static String shader_cache_dir;
 	static bool shader_cache_cleanup_on_start;
-	static bool shader_cache_save_compressed;
-	static bool shader_cache_save_compressed_zstd;
-	static bool shader_cache_save_debug;
 	bool shader_cache_dir_valid = false;
 
 	GLint max_image_units = 0;
@@ -244,9 +241,6 @@ public:
 	bool version_free(RID p_version);
 
 	static void set_shader_cache_dir(const String &p_dir);
-	static void set_shader_cache_save_compressed(bool p_enable);
-	static void set_shader_cache_save_compressed_zstd(bool p_enable);
-	static void set_shader_cache_save_debug(bool p_enable);
 
 	RenderingServerTypes::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
