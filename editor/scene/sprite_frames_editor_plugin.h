@@ -118,6 +118,10 @@ class SpriteFramesEditor : public EditorDock {
 	Button *play_bw = nullptr;
 	Button *play_bw_from = nullptr;
 
+	HBoxContainer *stepping_container = nullptr;
+	Button *step_forward = nullptr;
+	Button *step_backward = nullptr;
+
 	Button *load = nullptr;
 	Button *load_sheet = nullptr;
 	Button *delete_frame = nullptr;
@@ -228,6 +232,7 @@ class SpriteFramesEditor : public EditorDock {
 	void _play_bw_from_pressed();
 	void _autoplay_pressed();
 	void _stop_pressed();
+	void _step_frame_pressed(int p_step);
 
 	void _animation_selected();
 	void _animation_name_edited();
