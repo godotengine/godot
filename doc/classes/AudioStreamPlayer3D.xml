@@ -1,76 +1,86 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlayer3D" inherits="Node3D" api_type="core" keywords="sound, sfx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Plays positional sound in 3D space.
+		Plays positional audio in 3D space.
 	</brief_description>
 	<description>
-		Plays audio with positional sound effects, based on the relative position of the audio listener. Positional effects include distance attenuation, directionality, and the Doppler effect. For greater realism, a low-pass filter is applied to distant sounds. This can be disabled by setting [member attenuation_filter_cutoff_hz] to [code]20500[/code].
-		By default, audio is heard from the camera position. This can be changed by adding an [AudioListener3D] node to the scene and enabling it by calling [method AudioListener3D.make_current] on it.
-		See also [AudioStreamPlayer] to play a sound non-positionally.
-		[b]Note:[/b] Hiding an [AudioStreamPlayer3D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer3D]'s audio output, set [member volume_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
+		[AudioStreamPlayer3D] plays an audio stream. The player's volume and panning are dependent on its position in the 3D space, and the position of an [AudioListener3D]. The further the player is from the listener, the quieter the audio gets, and it will also be panned to follow which side of the listener the player is. By default, an AudioListener3D is set to the camera position. This can be changed by adding an AudioListener3D node to the scene and enabling it by calling [method AudioListener3D.make_current] on it. This node is ideal for objects and entities in the game world.
+		Additionally, this player comes with a high-shelf filter (see [AudioEffectHighShelfFilter]) for greater realism. The further the player is from the listener, the more the audio is muffled.
+		The audio to be played must be set in [member stream]. The stream must contain valid stored or fed audio data, for example, an [AudioStreamWAV] containing data from a [code].wav[/code] file, or an [AudioStreamMicrophone] receiving data from an input device.
+		To play audio independent of the position of the node, use [AudioStreamPlayer] instead.
+		To handle playback of an audio stream resource at a low level, use the [AudioStreamPlayback] class. To understand how audio files are imported, see [ResourceImporterWAV], [ResourceImporterOggVorbis], and [ResourceImporterMP3].
+		[b]Note:[/b] Hiding an [AudioStreamPlayer3D] node does not mute it. To mute the player, set [member volume_linear] to [code]0.0[/code].
+		[b]Note:[/b] While [AudioStreamPlayer3D] can only hold one [AudioStream], some streams can hold and play multiple sub-streams, like [AudioStreamInteractive]. See [method AudioStream.is_meta_stream].
+		[b]Note:[/b] Loading [AudioStreamOggVorbis], [AudioStreamMP3], or [AudioStreamInteractive] as a stream adds an additional player parameter in the inspector. For OggVorbis and MP3 streams, that parameter is the loop override. If you enable [code]Looping[/code], then its associated boolean will be checked for loops, instead of the [code]Loop[/code] parameter from import. For [AudioStreamInteractive], the parameter is used to switch clips from the editor, and behaves like [method AudioStreamPlaybackInteractive.switch_to_clip_by_name].
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
+		<link title="Truck Town Demo">https://godotengine.org/asset-library/asset/2752</link>
+		<link title="Platformer 3D Demo">https://godotengine.org/asset-library/asset/2748</link>
 	</tutorials>
 	<methods>
 		<method name="get_playback_position">
 			<return type="float" />
 			<description>
-				Returns the position in the [AudioStream].
+				Returns the current progress along the latest [AudioStream] played, in seconds. Returns [code]0.0[/code] if the stream is not playing.
+				[b]Note:[/b] The playback position is not always accurate, as the [AudioServer] does not mix audio every processed frame. To get more accurate results, add [method AudioServer.get_time_since_last_mix] to the returned playback position.
+				[b]Note:[/b] This method always returns [code]0.0[/code] if the [member stream] is [AudioStreamInteractive], [AudioStreamMicrophone], or [AudioStreamPolyphonic].
 			</description>
 		</method>
 		<method name="get_stream_playback">
 			<return type="AudioStreamPlayback" />
 			<description>
-				Returns the [AudioStreamPlayback] object associated with this [AudioStreamPlayer3D].
+				Returns the latest [AudioStreamPlayback] of this node, usually the most recently created by [method play]. If the stream is not playing, this method fails and returns an empty playback.
 			</description>
 		</method>
 		<method name="has_stream_playback">
 			<return type="bool" />
 			<description>
-				Returns whether the [AudioStreamPlayer] can return the [AudioStreamPlayback] object or not.
+				Returns [code]true[/code] if the stream is active, even if [member stream_paused] is set to [code]true[/code]. See also [member playing] and [method get_stream_playback].
 			</description>
 		</method>
 		<method name="play">
 			<return type="void" />
 			<param index="0" name="from_position" type="float" default="0.0" />
 			<description>
-				Queues the audio to play on the next physics frame, from the given position [param from_position], in seconds.
+				Queues the stream to play on the next physics frame from the beginning, or the given playback position, in seconds. Negative values and values greater than the total length of the stream are not accepted.
+				[b]Note:[/b] [AudioStreamGenerator], [AudioStreamInteractive], [AudioStreamMicrophone], [AudioStreamPolyphonic], and [AudioStreamWAV] using [constant AudioStreamWAV.FORMAT_IMA_ADPCM] ignore [param from_position].
 			</description>
 		</method>
 		<method name="seek">
 			<return type="void" />
 			<param index="0" name="to_position" type="float" />
 			<description>
-				Sets the position from which audio will be played, in seconds.
+				Sets the playback position of the stream [param to_position], in seconds. Does nothing if the stream is not playing. Negative values and values greater than the total length of the stream are not accepted.
+				[b]Note:[/b] [AudioStreamGenerator], [AudioStreamInteractive], [AudioStreamMicrophone], [AudioStreamPolyphonic], and [AudioStreamWAV] using [constant AudioStreamWAV.FORMAT_IMA_ADPCM] do not support seeking.
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void" />
 			<description>
-				Stops the audio.
+				Stops the stream.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="area_mask" type="int" setter="set_area_mask" getter="get_area_mask" default="0">
-			Determines which [Area3D] layers affect the sound for reverb and audio bus effects. Areas can be used to redirect [AudioStream]s so that they play in a certain audio bus. An example of how you might use this is making a "water" area so that sounds played in the water are redirected through an audio bus to make them sound like they are being played underwater.
+			Determines which [Area3D] layers affect the audio for reverb and other audio bus effects. Areas can be used to re-route [AudioStream]s so that they play in a certain audio bus. An example of how you might use this is making a "water" area so that sounds played in the water are re-routed to an audio bus to make them sound like they are being played underwater.
 		</member>
 		<member name="attenuation_filter_cutoff_hz" type="float" setter="set_attenuation_filter_cutoff_hz" getter="get_attenuation_filter_cutoff_hz" default="5000.0">
-			The cutoff frequency of the attenuation low-pass filter, in Hz. A sound above this frequency is attenuated more than a sound below this frequency. To disable this effect, set this to [code]20500[/code] as this frequency is above the human hearing limit.
+			The cutoff frequency threshold of the attenuation high-shelf filter, in hertz (see [AudioEffectHighShelfFilter]). Frequencies higher than this threshold are attenuated more than the ones lower than it. To disable this effect, set this to [code]20500[/code] as this frequency is above the human hearing limit.
 		</member>
 		<member name="attenuation_filter_db" type="float" setter="set_attenuation_filter_db" getter="get_attenuation_filter_db" default="-24.0">
-			Amount how much the filter affects the loudness, in decibels.
+			The maximum amount of attenuation, in decibels, that the filter will apply to frequencies higher than [member attenuation_filter_cutoff_hz], based on distance. See also [AudioEffectHighShelfFilter].
 		</member>
 		<member name="attenuation_model" type="int" setter="set_attenuation_model" getter="get_attenuation_model" enum="AudioStreamPlayer3D.AttenuationModel" default="0">
 			Decides if audio should get quieter with distance linearly, quadratically, logarithmically, or not be affected by distance, effectively disabling attenuation.
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" default="false">
-			If [code]true[/code], audio plays when the AudioStreamPlayer3D node is added to scene tree.
+			If [code]true[/code], this node calls [method play] when entering the tree.
 		</member>
 		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="&amp;&quot;Master&quot;">
-			The bus on which this audio is playing.
-			[b]Note:[/b] When setting this property, keep in mind that no validation is performed to see if the given name matches an existing bus. This is because audio bus layouts might be loaded after this property is set. If this given name can't be resolved at runtime, it will fall back to [code]"Master"[/code].
+			The target bus name. The stream from this node will be routed to this bus.
+			[b]Note:[/b] At runtime, if no bus with the given name exists, the stream will fall back to [code]"Master"[/code]. See also [method AudioServer.get_bus_name].
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="AudioStreamPlayer3D.DopplerTracking" default="0">
 			Decides in which step the Doppler effect should be calculated.
@@ -86,61 +96,63 @@
 			Attenuation factor used if listener is outside of [member emission_angle_degrees] and [member emission_angle_enabled] is set, in decibels.
 		</member>
 		<member name="max_db" type="float" setter="set_max_db" getter="get_max_db" default="3.0">
-			Sets the absolute maximum of the sound level, in decibels.
+			The absolute maximum volume after attenuation, in decibels.
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="0.0">
-			The distance past which the sound can no longer be heard at all. Only has an effect if set to a value greater than [code]0.0[/code]. [member max_distance] works in tandem with [member unit_size]. However, unlike [member unit_size] whose behavior depends on the [member attenuation_model], [member max_distance] always works in a linear fashion. This can be used to prevent the [AudioStreamPlayer3D] from requiring audio mixing when the listener is far away, which saves CPU resources.
+			The maximum distance from which audio can still be heard. Only has an effect if set to a value greater than [code]0.0[/code]. [member max_distance] works in tandem with [member unit_size]. However, unlike [member unit_size] whose behavior depends on the [member attenuation_model], [member max_distance] always works in a linear fashion. This can be used to prevent the [AudioStreamPlayer3D] from requiring audio mixing when the listener is far away, which saves CPU resources.
 		</member>
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
-			The maximum number of sounds this node can play at the same time. Playing additional sounds after this value is reached will cut off the oldest sounds.
+			The maximum number of playbacks this node can hold at the same time. Calling [method play] after this value is reached will cut off the oldest playbacks.
 		</member>
 		<member name="panning_strength" type="float" setter="set_panning_strength" getter="get_panning_strength" default="1.0">
-			Scales the panning strength for this node by multiplying the base [member ProjectSettings.audio/general/3d_panning_strength] by this factor. If the product is [code]0.0[/code] then stereo panning is disabled and the volume is the same for all channels. If the product is [code]1.0[/code] then one of the channels will be muted when the sound is located exactly to the left (or right) of the listener.
+			Scales the panning strength for this node by multiplying the base [member ProjectSettings.audio/general/3d_panning_strength] by this factor. If the product is [code]0.0[/code] then stereo panning is disabled and the volume is the same for all channels. If the product is [code]1.0[/code] then one of the channels will be muted when the audio source is located exactly to the left or right of the listener.
 			Two speaker stereo arrangements implement the [url=https://webaudio.github.io/web-audio-api/#stereopanner-algorithm]WebAudio standard for StereoPannerNode Panning[/url] where the volume is cosine of half the azimuth angle to the ear.
 			For other speaker arrangements such as the 5.1 and 7.1 the SPCAP (Speaker-Placement Correction Amplitude) algorithm is implemented.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
-			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
+			The audio's pitch and tempo, as a multiplier of the [member stream]'s sample rate. A value of [code]2.0[/code] doubles the audio's pitch, while a value of [code]0.5[/code] halves the pitch.
 		</member>
 		<member name="playback_type" type="int" setter="set_playback_type" getter="get_playback_type" enum="AudioServer.PlaybackType" default="0" experimental="">
 			The playback type of the stream player. If set other than to the default value, it will force that playback type.
 		</member>
 		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
-			If [code]true[/code], audio is playing or is queued to be played (see [method play]).
+			If [code]true[/code], this node is playing the stream, or queued to play on the next physics frame. Setting this property has the same effect as [method play] and [method stop].
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
-			The [AudioStream] resource to be played.
+			The [AudioStream] resource to be played. Setting this property stops the currently playing stream. If left empty, the [AudioStreamPlayer3D] does not work.
 		</member>
 		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
-			If [code]true[/code], the playback is paused. You can resume it by setting [member stream_paused] to [code]false[/code].
+			If [code]true[/code], the stream is paused. Setting [member stream_paused] to [code]false[/code] resumes the stream.
+			[b]Note:[/b] This property is automatically changed when exiting or entering the tree, or when this node is paused (see [member Node.process_mode]).
 		</member>
 		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size" default="10.0">
-			The factor for the attenuation effect. Higher values make the sound audible over a larger distance.
+			The modifier for the distance between the listener and the audio source, related to attenuation amount. The higher the value, the less attenuation with distance is applied to the audio.
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
-			The base sound level before attenuation, in decibels.
+			Base volume of the stream before attenuation, in decibels. This is an offset of the [member stream]'s volume.
+			[b]Tip:[/b] To convert between decibel and linear energy (like most volume sliders do), use [method @GlobalScope.db_to_linear] and [method @GlobalScope.linear_to_db]. Alternatively, use [member volume_linear].
 		</member>
 		<member name="volume_linear" type="float" setter="set_volume_linear" getter="get_volume_linear">
-			The base sound level before attenuation, as a linear value.
+			Base volume of the stream before attenuation, as a linear value.
 			[b]Note:[/b] This member modifies [member volume_db] for convenience. The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on [member volume_db]. Setting this member is equivalent to setting [member volume_db] to the result of [method @GlobalScope.linear_to_db] on a value.
 		</member>
 	</members>
 	<signals>
 		<signal name="finished">
 			<description>
-				Emitted when the audio stops playing.
+				Emitted when the stream finishes playing without interruptions, meaning this signal is [i]not[/i] emitted when calling [method stop], or when exiting the tree while the stream is playing. This signal is also not emitted if the [AudioStream] resource has looping enabled.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0" enum="AttenuationModel">
-			Attenuation of loudness according to linear distance.
+			Attenuation of loudness according to inverse distance. When using this model, sounds are barely audible at a significant distance, but also significantly increase in volume as it gets closer to the listener.
 		</constant>
 		<constant name="ATTENUATION_INVERSE_SQUARE_DISTANCE" value="1" enum="AttenuationModel">
-			Attenuation of loudness according to squared distance.
+			Attenuation of loudness according to inverse squared distance. This model is similar to [constant ATTENUATION_INVERSE_DISTANCE], but with a sharper drop-off curve. It is an approximation of how sound behaves in real life.
 		</constant>
 		<constant name="ATTENUATION_LOGARITHMIC" value="2" enum="AttenuationModel">
-			Attenuation of loudness according to logarithmic distance.
+			Attenuation of loudness according to logarithmic distance. When using this model, sounds at a significant distance are still reasonably audible.
 		</constant>
 		<constant name="ATTENUATION_DISABLED" value="3" enum="AttenuationModel">
 			No attenuation of loudness according to distance. The sound will still be heard positionally, unlike an [AudioStreamPlayer]. [constant ATTENUATION_DISABLED] can be combined with a [member max_distance] value greater than [code]0.0[/code] to achieve linear attenuation clamped to a sphere of a defined size.
