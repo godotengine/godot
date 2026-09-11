@@ -8482,7 +8482,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	auto_fit_bezier->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit_bezier));
 	auto_fit_bezier->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
 	auto_fit_bezier->set_accessibility_name(TTRC("Auto Fit Bezier"));
-	bottom_hf->add_child(auto_fit_bezier);
+	zoom_hb->add_child(auto_fit_bezier);
+	bottom_hf->add_child(zoom_hb);
 
 	edit = memnew(MenuButton);
 	edit->set_shortcut_context(this);
