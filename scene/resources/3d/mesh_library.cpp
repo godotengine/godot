@@ -30,6 +30,7 @@
 
 #include "mesh_library.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server.h" // IWYU pragma: keep // Needed to bind RSE enums.
@@ -46,6 +47,13 @@ bool MeshLibrary::_validate_index(int p_idx) {
 		create_item(p_idx);
 	}
 
+	return true;
+}
+
+bool MeshLibrary::_filter_property(const String &p_name, int p_index) const {
+	if (p_name == "preview") {
+		return get_item_use_custom_preview(p_index);
+	}
 	return true;
 }
 
@@ -142,10 +150,17 @@ void MeshLibrary::set_item_category(int p_item, const StringName &p_category) {
 }
 
 void MeshLibrary::set_item_mesh(int p_item, const Ref<Mesh> &p_mesh) {
-	if (_validate_index(p_item)) {
-		item_map[p_item].mesh = p_mesh;
-		emit_changed();
+	if (!_validate_index(p_item)) {
+		return;
 	}
+	if (item_map[p_item].mesh.is_valid()) {
+		item_map[p_item].mesh->disconnect_changed(callable_mp(this, &MeshLibrary::_mesh_changed));
+	}
+	item_map[p_item].mesh = p_mesh;
+	if (p_mesh.is_valid()) {
+		p_mesh->connect_changed(callable_mp(this, &MeshLibrary::_mesh_changed).bind(p_item));
+	}
+	emit_changed();
 }
 
 void MeshLibrary::set_item_mesh_transform(int p_item, const Transform3D &p_transform) {
@@ -202,6 +217,19 @@ void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) 
 	}
 }
 
+void MeshLibrary::set_item_custom_preview(int p_item, const Ref<Texture2D> &p_preview) {
+	if (_validate_index(p_item)) {
+		set_item_preview(p_item, p_preview);
+		item_map[p_item].use_custom_preview = p_preview.is_valid();
+	}
+}
+
+void MeshLibrary::set_item_use_custom_preview(int p_item, bool p_use_custom_preview) {
+	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	print_line(p_use_custom_preview);
+	item_map[p_item].use_custom_preview = p_use_custom_preview;
+}
+
 String MeshLibrary::get_item_name(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), "", "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].name;
@@ -254,6 +282,11 @@ uint32_t MeshLibrary::get_item_navigation_layers(int p_item) const {
 Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture2D>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].preview;
+}
+
+bool MeshLibrary::get_item_use_custom_preview(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), false, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	return item_map[p_item].use_custom_preview;
 }
 
 bool MeshLibrary::has_item(int p_item) const {
@@ -353,6 +386,14 @@ Array MeshLibrary::_get_item_shapes(int p_item) const {
 }
 #endif // PHYSICS_3D_DISABLED
 
+void MeshLibrary::_mesh_changed(int p_idx) {
+	ERR_FAIL_COND(!item_map.has(p_idx));
+	if (!item_map[p_idx].use_custom_preview) {
+		item_map[p_idx].preview = Ref<Texture2D>();
+		callable_mp((Resource *)this, &Resource::emit_changed).call_deferred();
+	}
+}
+
 void MeshLibrary::reset_state() {
 	clear();
 }
@@ -375,7 +416,8 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_shapes", "id", "shapes"), &MeshLibrary::_set_item_shapes);
 #endif // PHYSICS_3D_DISABLED
 
-	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
+	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_custom_preview);
+	ClassDB::bind_method(D_METHOD("set_item_use_custom_preview", "id", "use_custom_preview"), &MeshLibrary::set_item_use_custom_preview);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
 	ClassDB::bind_method(D_METHOD("get_item_category", "id"), &MeshLibrary::get_item_category);
 	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
@@ -393,6 +435,7 @@ void MeshLibrary::_bind_methods() {
 #endif // PHYSICS_3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("get_item_preview", "id"), &MeshLibrary::get_item_preview);
+	ClassDB::bind_method(D_METHOD("get_item_use_custom_preview", "id"), &MeshLibrary::get_item_use_custom_preview);
 	ClassDB::bind_method(D_METHOD("remove_item", "id"), &MeshLibrary::remove_item);
 	ClassDB::bind_method(D_METHOD("find_item_by_name", "name"), &MeshLibrary::find_item_by_name);
 
@@ -405,6 +448,7 @@ void MeshLibrary::_bind_methods() {
 
 	base_property_helper.set_prefix("item/");
 	base_property_helper.set_array_length_getter(&MeshLibrary::get_item_count);
+	base_property_helper.set_property_filter(&MeshLibrary::_filter_property);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, PNAME("name"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), defaults.name, &MeshLibrary::set_item_name, &MeshLibrary::get_item_name);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, PNAME("category"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), defaults.category, &MeshLibrary::set_item_category, &MeshLibrary::get_item_category);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static(), PROPERTY_USAGE_NO_EDITOR), defaults.mesh, &MeshLibrary::set_item_mesh, &MeshLibrary::get_item_mesh);
@@ -422,6 +466,7 @@ void MeshLibrary::_bind_methods() {
 #endif // NAVIGATION_3D_DISABLED
 
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_NO_EDITOR), defaults.preview, &MeshLibrary::set_item_preview, &MeshLibrary::get_item_preview);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, PNAME("use_custom_preview"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), defaults.use_custom_preview, &MeshLibrary::set_item_use_custom_preview, &MeshLibrary::get_item_use_custom_preview);
 	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
