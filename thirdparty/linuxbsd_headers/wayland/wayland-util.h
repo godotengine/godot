@@ -48,7 +48,9 @@ extern "C" {
 #endif
 
 /** Deprecated attribute */
-#if defined(__GNUC__) && __GNUC__ >= 4
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L) || (defined(__cplusplus) && __cplusplus >= 201402L)
+#define WL_DEPRECATED [[deprecated]]
+#elif defined(__GNUC__) && __GNUC__ >= 4
 #define WL_DEPRECATED __attribute__ ((deprecated))
 #else
 #define WL_DEPRECATED
@@ -68,6 +70,12 @@ extern "C" {
 #define WL_PRINTF(x, y)
 #endif
 
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#define WL_TYPEOF(expr) typeof(expr)
+#else
+#define WL_TYPEOF(expr) __typeof__(expr)
+#endif
+
 /** \class wl_object
  *
  * \brief A protocol object.
@@ -81,6 +89,14 @@ extern "C" {
  *
  */
 struct wl_object;
+
+/**
+ * The maximum size of a protocol message.
+ *
+ * If a message size exceeds this value, the connection will be dropped.
+ * Servers will send an invalid_method error before disconnecting.
+ */
+#define WL_MAX_MESSAGE_SIZE 4096
 
 /**
  * Protocol message signature
@@ -118,7 +134,7 @@ struct wl_object;
  * * `n`: new_id
  * * `a`: array
  * * `h`: fd
- * * `?`: following argument is nullable
+ * * `?`: following argument (`o` or `s`) is nullable
  *
  * While demarshaling primitive arguments is straightforward, when demarshaling
  * messages containing `object` or `new_id` arguments, the protocol
@@ -406,8 +422,8 @@ wl_list_insert_list(struct wl_list *list, struct wl_list *other);
  * \return The container for the specified pointer
  */
 #define wl_container_of(ptr, sample, member)				\
-	(__typeof__(sample))((char *)(ptr) -				\
-			     offsetof(__typeof__(*sample), member))
+	(WL_TYPEOF(sample))((char *)(ptr) -				\
+			     offsetof(WL_TYPEOF(*sample), member))
 
 /**
  * Iterates over a list.
@@ -590,6 +606,7 @@ wl_array_copy(struct wl_array *array, struct wl_array *source);
  */
 #define wl_array_for_each(pos, array)					\
 	for (pos = (array)->data;					\
+	     (array)->size != 0 &&					\
 	     (const char *) pos < ((const char *) (array)->data + (array)->size); \
 	     (pos)++)
 
@@ -613,14 +630,7 @@ typedef int32_t wl_fixed_t;
 static inline double
 wl_fixed_to_double(wl_fixed_t f)
 {
-	union {
-		double d;
-		int64_t i;
-	} u;
-
-	u.i = ((1023LL + 44LL) << 52) + (1LL << 51) + f;
-
-	return u.d - (3LL << 43);
+	return f / 256.0;
 }
 
 /**
@@ -633,14 +643,7 @@ wl_fixed_to_double(wl_fixed_t f)
 static inline wl_fixed_t
 wl_fixed_from_double(double d)
 {
-	union {
-		double d;
-		int64_t i;
-	} u;
-
-	u.d = d + (3LL << (51 - 8));
-
-	return (wl_fixed_t)u.i;
+	return (wl_fixed_t) (round(d * 256.0));
 }
 
 /**
@@ -707,17 +710,17 @@ union wl_argument {
  * corresponding to the callback. The final argument is an array of arguments
  * received from the other process via the wire protocol.
  *
- * \param "const void *" Dispatcher-specific implementation data
- * \param "void *" Callback invocation target (wl_proxy or `wl_resource`)
- * \param uint32_t Callback opcode
- * \param "const struct wl_message *" Callback message signature
- * \param "union wl_argument *" Array of received arguments
+ * \param user_data Dispatcher-specific implementation data
+ * \param target Callback invocation target (wl_proxy or `wl_resource`)
+ * \param opcode Callback opcode
+ * \param msg Callback message signature
+ * \param args Array of received arguments
  *
  * \return 0 on success, or -1 on failure
  */
-typedef int (*wl_dispatcher_func_t)(const void *, void *, uint32_t,
-				    const struct wl_message *,
-				    union wl_argument *);
+typedef int (*wl_dispatcher_func_t)(const void *user_data, void *target,
+				    uint32_t opcode, const struct wl_message *msg,
+				    union wl_argument *args);
 
 /**
  * Log function type alias
@@ -736,14 +739,14 @@ typedef int (*wl_dispatcher_func_t)(const void *, void *, uint32_t,
  * \note Take care to not confuse this with `wl_protocol_logger_func_t`, which
  *       is a specific server-side logger for requests and events.
  *
- * \param "const char *" String to write to the log, containing optional format
- *                       specifiers
- * \param "va_list" Variable argument list
+ * \param fmt String to write to the log, containing optional format
+ *            specifiers
+ * \param args Variable argument list
  *
  * \sa wl_log_set_handler_client
  * \sa wl_log_set_handler_server
  */
-typedef void (*wl_log_func_t)(const char *, va_list) WL_PRINTF(1, 0);
+typedef void (*wl_log_func_t)(const char *fmt, va_list args) WL_PRINTF(1, 0);
 
 /**
  * Return value of an iterator function
