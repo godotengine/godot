@@ -1477,6 +1477,7 @@ ShaderTextEditor::ShaderTextEditor() {
 
 	editor_box->add_child(main_box);
 	editor_box->add_child(warnings_panel);
+	editor_box->add_child(warnings_panel_tree); // TODO: Rest of the warnings panel implementation, once it's working well in the script editor!
 
 	preview_timer = memnew(Timer);
 	add_child(preview_timer);
