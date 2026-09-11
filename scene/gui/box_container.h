@@ -46,6 +46,11 @@ private:
 	bool vertical = false;
 	AlignmentMode alignment = ALIGNMENT_BEGIN;
 
+#ifdef TOOLS_ENABLED
+	LocalVector<int> cell_positions;
+	friend class ContainerEditorPlugin;
+#endif
+
 	struct ThemeCache {
 		int separation = 0;
 	} theme_cache;
