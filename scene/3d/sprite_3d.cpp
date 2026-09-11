@@ -30,6 +30,9 @@
 
 #include "sprite_3d.h"
 
+#if TOOLS_ENABLED
+#include "editor/editor_node.h"
+#endif
 #include "core/config/engine.h"
 #include "core/math/triangle_mesh.h"
 #include "core/object/callable_mp.h"
@@ -69,6 +72,12 @@ void SpriteBase3D::_propagate_color_changed() {
 	}
 }
 
+void SpriteBase3D::_custom_material_changed() {
+	_queue_redraw();
+	notify_property_list_changed();
+	update_configuration_warnings();
+}
+
 void SpriteBase3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -93,6 +102,14 @@ void SpriteBase3D::_notification(int p_what) {
 				_propagate_color_changed();
 			}
 		} break;
+	}
+}
+
+void SpriteBase3D::_validate_property(PropertyInfo &p_property) const {
+	if (custom_material.is_valid()) {
+		if (p_property.name == "billboard" || p_property.name == "transparent" || p_property.name == "shaded" || p_property.name == "double_sided" || p_property.name == "no_depth_test" || p_property.name == "fixed_size" || p_property.name == "alpha_cut" || p_property.name == "alpha_scissor_threshold" || p_property.name == "alpha_hash_scale" || p_property.name == "alpha_antialiasing_mode" || p_property.name == "alpha_antialiasing_edge" || p_property.name == "texture_filter" || p_property.name == "render_priority") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 }
 
@@ -254,6 +271,24 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RSE::ARRAY_COLOR]], v_color, 4);
 	}
 
+	RID mesh_new = get_mesh();
+	RS::get_singleton()->mesh_surface_update_vertex_region(mesh_new, 0, 0, vertex_buffer);
+	RS::get_singleton()->mesh_surface_update_attribute_region(mesh_new, 0, 0, attribute_buffer);
+
+	if (custom_material.is_valid()) {
+		// For custom materials, don't calculate billboard AABB.
+		set_aabb(aabb_new);
+
+		RS::get_singleton()->mesh_surface_set_material(mesh, 0, custom_material->get_rid());
+
+		if (custom_material->get_shader_parameter("texture_albedo") != p_texture->get_rid()) {
+			custom_material->set_shader_parameter("texture_albedo", p_texture);
+			custom_material->set_shader_parameter("albedo_texture_size", Vector2i(p_texture->get_width(), p_texture->get_height()));
+		}
+
+		return;
+	}
+
 	switch (get_billboard_mode()) {
 		case StandardMaterial3D::BILLBOARD_ENABLED: {
 			real_t size_new = MAX(Math::abs(final_rect.position.x) * px_size, (final_rect.position.x + final_rect.size.x) * px_size);
@@ -274,10 +309,6 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		default:
 			break;
 	}
-
-	RID mesh_new = get_mesh();
-	RS::get_singleton()->mesh_surface_update_vertex_region(mesh_new, 0, 0, vertex_buffer);
-	RS::get_singleton()->mesh_surface_update_attribute_region(mesh_new, 0, 0, attribute_buffer);
 
 	RS::get_singleton()->mesh_set_custom_aabb(mesh_new, aabb_new);
 	set_aabb(aabb_new);
@@ -515,6 +546,42 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 	return triangle_mesh;
 }
 
+PackedStringArray SpriteBase3D::get_configuration_warnings() const {
+	PackedStringArray warnings = GeometryInstance3D::get_configuration_warnings();
+	if (custom_material.is_valid()) {
+#if TOOLS_ENABLED
+		if (EditorNode::get_singleton()->get_resource_count(custom_material) > 1) {
+			warnings.push_back(RTR("The custom material is not unique. Texture may not display correctly if other sprites using the same material are active."));
+		}
+#endif
+
+		RID shader = custom_material->get_shader_rid();
+		if (shader.is_null()) {
+			warnings.push_back(RTR("The custom material's shader is invalid."));
+		} else {
+			List<PropertyInfo> parameters;
+			RS::get_singleton()->get_shader_parameter_list(shader, &parameters);
+			bool found_texture_albedo = false;
+			bool found_albedo_texture_size = false;
+			for (const PropertyInfo &parameter : parameters) {
+				if (!found_texture_albedo && parameter.name == "texture_albedo" && parameter.type == Variant::OBJECT && parameter.hint_string == "Texture2D") {
+					found_texture_albedo = true;
+				} else if (!found_albedo_texture_size && parameter.name == "albedo_texture_size" && parameter.type == Variant::VECTOR2I) {
+					found_albedo_texture_size = true;
+				}
+			}
+
+			if (!found_texture_albedo) {
+				warnings.push_back(RTR("Custom sprite shaders must contain uniform \"texture_albedo\" of type: sampler2D."));
+			}
+			if (!found_albedo_texture_size) {
+				warnings.push_back(RTR("Custom sprite shaders must contain uniform \"albedo_texture_size\" of type: ivec2."));
+			}
+		}
+	}
+	return warnings;
+}
+
 void SpriteBase3D::set_draw_flag(DrawFlags p_flag, bool p_enable) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 
@@ -626,6 +693,33 @@ StandardMaterial3D::TextureFilter SpriteBase3D::get_texture_filter() const {
 	return texture_filter;
 }
 
+void SpriteBase3D::set_custom_material(const Ref<ShaderMaterial> &p_material) {
+	if (custom_material != p_material) {
+		if (custom_material.is_valid()) {
+			custom_material->disconnect_changed(callable_mp(this, &SpriteBase3D::_custom_material_changed));
+			custom_material->disconnect(CoreStringName(property_list_changed), callable_mp((Node *)this, &Node::update_configuration_warnings));
+		}
+		custom_material = p_material;
+#if TOOLS_ENABLED
+		// Automatically make assigned materials unique in the editor.
+		if (EditorNode::get_singleton()->get_resource_count(custom_material) > 0) {
+			// UndoRedo still thinks the original has been assigned, so we have to remove the reference from EditorNode again with a deferred call.
+			callable_mp(EditorNode::get_singleton(), &EditorNode::update_node_reference).call_deferred(custom_material, this, true);
+			custom_material = custom_material->duplicate();
+		}
+#endif
+		if (custom_material.is_valid()) {
+			custom_material->connect_changed(callable_mp(this, &SpriteBase3D::_custom_material_changed));
+			custom_material->connect(CoreStringName(property_list_changed), callable_mp((Node *)this, &Node::update_configuration_warnings));
+		}
+		_custom_material_changed();
+	}
+}
+
+Ref<ShaderMaterial> SpriteBase3D::get_custom_material() const {
+	return custom_material;
+}
+
 void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &SpriteBase3D::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &SpriteBase3D::is_centered);
@@ -675,6 +769,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_filter", "mode"), &SpriteBase3D::set_texture_filter);
 	ClassDB::bind_method(D_METHOD("get_texture_filter"), &SpriteBase3D::get_texture_filter);
 
+	ClassDB::bind_method(D_METHOD("set_custom_material", "material"), &SpriteBase3D::set_custom_material);
+	ClassDB::bind_method(D_METHOD("get_custom_material"), &SpriteBase3D::get_custom_material);
+
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
 
@@ -685,6 +782,7 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0000001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_material", PROPERTY_HINT_RESOURCE_TYPE, ShaderMaterial::get_class_static()), "set_custom_material", "get_custom_material");
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_draw_flag", "get_draw_flag", FLAG_TRANSPARENT);
