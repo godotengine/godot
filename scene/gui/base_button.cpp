@@ -74,7 +74,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 			if (touch->is_pressed()) {
 				status.touch_index = touch->get_index();
 				status.press_attempt = true;
-				status.pressing_inside = has_point(touch->get_position());
+				status.pressing_inside = has_point(touch->get_position()) && get_viewport_transform().xform(get_viewport_rect()).has_point(touch->get_position());
 				on_action_event(p_event);
 			}
 		} else if (touch->get_index() == status.touch_index) {
@@ -88,7 +88,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventScreenDrag> drag = p_event;
 	if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
 		bool last_press_inside = status.pressing_inside;
-		status.pressing_inside = has_point(drag->get_position());
+		status.pressing_inside = has_point(drag->get_position()) && get_viewport_transform().xform(get_viewport_rect()).has_point(drag->get_position());
 
 		if (last_press_inside != status.pressing_inside) {
 			queue_redraw();
