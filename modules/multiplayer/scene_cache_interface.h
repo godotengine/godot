@@ -36,7 +36,7 @@ class Node;
 class SceneMultiplayer;
 
 class SceneCacheInterface : public RefCounted {
-	GDCLASS(SceneCacheInterface, RefCounted);
+	GDSOFTCLASS(SceneCacheInterface, RefCounted);
 
 private:
 	SceneMultiplayer *multiplayer = nullptr;
