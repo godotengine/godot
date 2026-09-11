@@ -1,0 +1,6 @@
+GH-122377
+--------------
+Validate extension JSON: Error: Field 'classes/OpenXRSpatialEntityExtension/methods/create_spatial_context/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/TextEdit/methods/clear': arguments
+
+Added new optional `p_clear_undo_history` parameter to `TextEdit::clear()`.
