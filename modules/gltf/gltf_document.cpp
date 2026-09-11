@@ -2243,7 +2243,11 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 				must_write = !FileAccess::exists(file_path);
 			} else {
 				// Texture data has to be written to the res:// folder and imported.
-				file_path = p_state->get_extract_path().path_join(p_state->get_extract_prefix() + "_" + p_image->get_name());
+				if (p_state->get_extract_prefix().is_empty()) {
+					file_path = p_state->get_extract_path().path_join(p_image->get_name());
+				} else {
+					file_path = p_state->get_extract_path().path_join(p_state->get_extract_prefix() + "_" + p_image->get_name());
+				}
 				file_path += p_file_extension.is_empty() ? ".png" : p_file_extension;
 				if (FileAccess::exists(file_path + ".import")) {
 					Ref<ConfigFile> config;
