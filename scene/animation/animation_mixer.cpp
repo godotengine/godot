@@ -83,13 +83,29 @@ bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 		emit_signal(SNAME("animation_libraries_updated"));
 	} else if (name.begins_with("libraries/")) {
 		String which = name.get_slicec('/', 1);
+		Ref<AnimationLibrary> lib = p_value;
+
+		if (lib.is_null()) {
+			return false;
+		}
+
+		for (const AnimationLibraryData &existing : animation_libraries) {
+			if (existing.library == lib) {
+				if (existing.name == which) {
+					return true;
+				}
+
+				remove_animation_library(existing.name);
+				break;
+			}
+		}
+
 		if (has_animation_library(which)) {
 			remove_animation_library(which);
 		}
-		add_animation_library(which, p_value);
+
+		add_animation_library(which, lib);
 		emit_signal(SNAME("animation_libraries_updated"));
-	} else {
-		return false;
 	}
 #else
 	if (name.begins_with("libraries/")) {
@@ -302,7 +318,7 @@ Error AnimationMixer::add_animation_library(const StringName &p_name, const Ref<
 
 	for (const AnimationLibraryData &lib : animation_libraries) {
 		ERR_FAIL_COND_V_MSG(lib.name == p_name, ERR_ALREADY_EXISTS, "Can't add animation library twice with name: " + String(p_name));
-		ERR_FAIL_COND_V_MSG(lib.library == p_animation_library, ERR_ALREADY_EXISTS, "Can't add animation library twice (adding as '" + p_name.string() + "', exists as '" + lib.name.string() + "'.");
+		ERR_FAIL_COND_V_MSG(lib.library == p_animation_library, ERR_ALREADY_EXISTS, "Can't add animation library twice (adding as '" + p_name.string() + "', exists as '" + lib.name.string() + "').");
 
 		if (lib.name.string() >= p_name.string()) {
 			break;
