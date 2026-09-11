@@ -38,12 +38,7 @@
 LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
 	// NOTE: This gizmo only renders solid spheres for previewing indirect lighting on dynamic objects.
 	// The wireframe representation for LightmapProbe nodes is handled in LightmapProbeGizmoPlugin.
-	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/lightmap_lines");
-	probe_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/lightmap_gi_probe_size");
-
-	gizmo_color.a = 0.1;
-	create_material("lightmap_lines", gizmo_color);
-
+	LightmapGIGizmoPlugin::update_materials();
 	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	// Fade out probes when camera gets too close to them.
@@ -221,4 +216,12 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		p_gizmo->add_mesh(mesh);
 	}
+}
+
+void LightmapGIGizmoPlugin::update_materials() {
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/lightmap_lines");
+	probe_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/lightmap_gi_probe_size");
+
+	gizmo_color.a = 0.1;
+	create_material("lightmap_lines", gizmo_color);
 }
