@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorToast" inherits="PanelContainer" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Alert notification that is displayed in the Editor.
+	</brief_description>
+	<description>
+		Used in conjunction with [EditorToaster], this class represents an individual toast notification that can be displayed within the editor. To obtain an instance, see [method EditorToaster.push_toast].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_action">
+			<return type="Button" />
+			<param index="0" name="action" type="String" />
+			<param index="1" name="callback" type="Callable" />
+			<param index="2" name="icon" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Sets an action button on the toast notification with the specified label, callback function, and optional icon. When the action button is clicked, the provided callback function will be executed.
+				[codeblock]
+				func _ready():
+					var toast = EditorInterface.get_editor_toaster().push_toast("Click on each button to open their documentation page!")
+					toast.add_action("Open 2D Documentation", _2d_docs.bind(toast), "Node2D")
+					toast.add_action("Open 3D Documentation", _3d_docs.bind(toast), "Node3D")
+
+				func _2d_docs(toast):
+					EditorInterface.get_script_editor().goto_help("class_name:Node2D")
+					toast.close()
+
+				func _3d_docs(toast):
+					EditorInterface.get_script_editor().goto_help("class_name:Node3D")
+					toast.close()
+				[/codeblock]
+				This will add two action buttons to the toast notification. Clicking on each button will open the corresponding documentation page for 2D and 3D nodes, respectively, and then close the toast.
+				[b]Note:[/b] The method returns the [Button] instance, allowing for further customization of the action button.
+			</description>
+		</method>
+		<method name="close">
+			<return type="void" />
+			<param index="0" name="instant" type="bool" default="false" />
+			<description>
+				Closes the toast notification. If [param instant] is [code]false[/code], the toast disappears with a fade-out effect.
+			</description>
+		</method>
+		<method name="copy" qualifiers="const">
+			<return type="void" />
+			<description>
+				Copies the toast's message to the clipboard.
+			</description>
+		</method>
+		<method name="get_message" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the message displayed in the toast notification.
+			</description>
+		</method>
+		<method name="get_severity" qualifiers="const">
+			<return type="int" enum="EditorToaster.Severity" />
+			<description>
+				Returns the severity level of the toast notification.
+			</description>
+		</method>
+	</methods>
+</class>
