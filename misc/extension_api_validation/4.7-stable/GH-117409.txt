@@ -1,0 +1,5 @@
+GH-116839
+---------
+Validate extension JSON: Error: Field 'classes/SpringArm3D/properties/shape': type changed value in new API, from "Shape3D" to "Shape3D,-SeparationRayShape3D,-HeightMapShape3D,-WorldBoundaryShape3D,-ConvexPolygonShape3D,-ConcavePolygonShape3D".
+
+Property hints modified to disallow resource types that don't work or are unnecessary. The types allowed are now more restricted, but this change only impacts the editor and not the actual exposed API. No adjustments should be necessary.
