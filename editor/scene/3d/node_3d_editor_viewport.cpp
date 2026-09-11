@@ -2915,6 +2915,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			_menu_option(VIEW_CENTER_TO_SELECTION);
 			times_focused_consecutively += 1;
 		}
+		if (ED_IS_SHORTCUT("spatial_editor/focus_aabb", event_mod)) {
+			_menu_option(VIEW_FOCUS_AABB);
+		}
 		if (ED_IS_SHORTCUT("spatial_editor/align_transform_with_view", event_mod)) {
 			_menu_option(VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 		}
@@ -4401,6 +4404,10 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			focus_selection();
 
 		} break;
+		case VIEW_FOCUS_AABB: {
+			focus_aabb();
+
+		} break;
 		case VIEW_ALIGN_TRANSFORM_WITH_VIEW: {
 			if (!get_selected_count()) {
 				break;
@@ -5419,6 +5426,66 @@ void Node3DEditorViewport::focus_selection() {
 	view_3d_controller->cursor.pos_x = center.x;
 	view_3d_controller->cursor.pos_y = center.y;
 	view_3d_controller->cursor.pos_z = center.z;
+}
+
+void Node3DEditorViewport::focus_aabb() {
+	Vector3 center;
+	int count = 0;
+	AABB combined_aabb;
+	bool aabb_valid = false;
+	float required_distance = 0.0f;
+
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	if (selection.is_empty()) {
+		return;
+	}
+
+	LocalVector<Node *> stack;
+	for (Node *node : selection) {
+		stack.push_back(node);
+	}
+
+	while (!stack.is_empty()) {
+		Node *node = stack[stack.size() - 1];
+		stack.resize(stack.size() - 1);
+
+		VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(node);
+		if (vi) {
+			AABB local_aabb = vi->get_aabb();
+			if (local_aabb.has_volume()) {
+				AABB global_aabb = vi->get_global_transform().xform(local_aabb);
+				if (!aabb_valid) {
+					combined_aabb = global_aabb;
+					aabb_valid = true;
+				} else {
+					combined_aabb = combined_aabb.merge(global_aabb);
+				}
+			}
+		}
+
+		for (int i = 0; i < node->get_child_count(); i++) {
+			stack.push_back(node->get_child(i));
+		}
+	}
+
+	if (aabb_valid) {
+		center = combined_aabb.get_center();
+		count = 1;
+
+		float aabb_radius = combined_aabb.get_size().length() * 0.5f;
+
+		float fov_rad = Math::deg_to_rad(get_fov());
+		required_distance = aabb_radius / Math::tan(fov_rad * 0.5f);
+		required_distance *= 1.2f;
+		required_distance = CLAMP(required_distance, get_znear() * 2.0f, get_zfar() * 0.8f);
+	}
+
+	if (count > 0) {
+		view_3d_controller->cursor.pos_x = center.x;
+		view_3d_controller->cursor.pos_y = center.y;
+		view_3d_controller->cursor.pos_z = center.z;
+		view_3d_controller->cursor.distance = required_distance;
+	}
 }
 
 void Node3DEditorViewport::assign_pending_data_pointers(Node3D *p_preview_node, AABB *p_preview_bounds, AcceptDialog *p_accept) {
@@ -6920,6 +6987,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->get_popup()->add_separator();
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_aabb"), VIEW_FOCUS_AABB);
 	view_display_menu->get_popup()->set_item_tooltip(-1, TTR("Press Focus Selection twice to start following the selection as it moves. Press it yet another time to stop following the selection."));
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
