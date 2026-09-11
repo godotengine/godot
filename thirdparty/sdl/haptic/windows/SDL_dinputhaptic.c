@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -599,7 +599,7 @@ static bool SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
     DWORD *axes;
 
     // Set global stuff.
-    SDL_memset(dest, 0, sizeof(DIEFFECT));
+    SDL_zerop(dest);
     dest->dwSize = sizeof(DIEFFECT);     // Set the structure size.
     dest->dwSamplePeriod = 0;            // Not used by us.
     dest->dwGain = 10000;                // Gain is set globally, not locally.
@@ -946,6 +946,103 @@ err_effectdone:
     return false;
 }
 
+BOOL DIGetDirectionUpdateFlag(DIEFFECT *before, DIEFFECT *after)
+{
+    if (before->cAxes != after->cAxes) {
+        return true;
+    }
+    // rglDirection must be non-null for DIEP_DIRECTION to be a valid flag
+    if (after->rglDirection == NULL) {
+        return false;
+    }
+    if (before->rglDirection == NULL) {
+        return true;
+    }
+    return SDL_memcmp(before->rglDirection, after->rglDirection, sizeof(LONG) * before->cAxes) != 0;
+}
+
+BOOL DIGetEnvelopeUpdateFlag(DIEFFECT* before, DIEFFECT* after)
+{
+    if (before->lpEnvelope == NULL && after->lpEnvelope == NULL) {
+        return false;
+    }
+    // A null lpEnvelope is valid for DIEP_ENVELOPE (clears the envelope from the effect)
+    if (before->lpEnvelope == NULL || after->lpEnvelope == NULL) {
+        return true;
+    }
+    return SDL_memcmp(before->lpEnvelope, after->lpEnvelope, sizeof(DIENVELOPE)) != 0;
+}
+
+BOOL DIGetTypeSpecificParamsUpdateFlag(DIEFFECT *before, DIEFFECT *after)
+{
+    // Shouldn't happen since this implies an effect's type somehow changed, but need to check to avoid an out-of-bounds memcmp
+    if (before->cbTypeSpecificParams != after->cbTypeSpecificParams) {
+        return true;
+    }
+    // lpvTypeSpecificParams must be non-null for the DIEP_TYPESPECIFICPARAMS flag.
+    if (after->lpvTypeSpecificParams == NULL) {
+        return false;
+    }
+    if (before->lpvTypeSpecificParams == NULL) {
+        return true;
+    }
+    return SDL_memcmp(before->lpvTypeSpecificParams, after->lpvTypeSpecificParams, before->cbTypeSpecificParams) != 0;
+}
+
+/*
+    Calculate the exact flags needed when updating an existing DirectInput haptic effect.
+*/
+DWORD DICalculateUpdateFlags(DIEFFECT *before, DIEFFECT *after)
+{
+    DWORD flags = 0;
+
+    if (DIGetDirectionUpdateFlag(before, after)) {
+        flags |= DIEP_DIRECTION;
+    }
+
+    if (before->dwDuration != after->dwDuration) {
+        flags |= DIEP_DURATION;
+    }
+
+    if (DIGetEnvelopeUpdateFlag(before, after)) {
+        flags |= DIEP_ENVELOPE;
+    }
+
+    if (before->dwStartDelay != after->dwStartDelay) {
+        flags |= DIEP_STARTDELAY;
+    }
+
+    if (before->dwTriggerButton != after->dwTriggerButton) {
+        flags |= DIEP_TRIGGERBUTTON;
+    }
+
+    if (before->dwTriggerRepeatInterval != after->dwTriggerRepeatInterval) {
+        flags |= DIEP_TRIGGERREPEATINTERVAL;
+    }
+
+    if (DIGetTypeSpecificParamsUpdateFlag(before, after)) {
+        flags |= DIEP_TYPESPECIFICPARAMS;
+    }
+
+    if (flags == 0) {
+        /* Awkward: SDL_UpdateHapticEffect was called, but nothing was changed.
+         * Calling IDirectInputEffect_SetParameters with no flags is nonsense,
+         * so our options are to either send all the flags, or exit early.
+         * Sending all the flags seems like the safer option: The programmer may be trying
+         * to force an update for some reason (e.g. driver bug workaround?). Conversely,
+         * if the programmer doesn't want IDirectInputEffect_SetParameters to be called, they
+         * can just avoid calling SDL_UpdateHapticEffect when there's no changes. */
+        flags = DIEP_DIRECTION |
+                DIEP_DURATION |
+                DIEP_ENVELOPE |
+                DIEP_STARTDELAY |
+                DIEP_TRIGGERBUTTON |
+                DIEP_TRIGGERREPEATINTERVAL | DIEP_TYPESPECIFICPARAMS;
+    }
+
+    return flags;
+}
+
 bool SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *effect, const SDL_HapticEffect *data)
 {
     HRESULT ret;
@@ -953,19 +1050,12 @@ bool SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *eff
     DIEFFECT temp;
 
     // Get the effect.
-    SDL_memset(&temp, 0, sizeof(DIEFFECT));
+    SDL_zero(temp);
     if (!SDL_SYS_ToDIEFFECT(haptic, &temp, data)) {
         goto err_update;
     }
 
-    /* Set the flags.  Might be worthwhile to diff temp with loaded effect and
-     *  only change those parameters. */
-    flags = DIEP_DIRECTION |
-            DIEP_DURATION |
-            DIEP_ENVELOPE |
-            DIEP_STARTDELAY |
-            DIEP_TRIGGERBUTTON |
-            DIEP_TRIGGERREPEATINTERVAL | DIEP_TYPESPECIFICPARAMS;
+    flags = DICalculateUpdateFlags(&effect->hweffect->effect, &temp);
 
     // Create the actual effect.
     ret =

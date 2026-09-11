@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -156,6 +156,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockSpinlock(SDL_SpinLock *lock);
  */
 #define SDL_CompilerBarrier() DoCompilerSpecificReadWriteBarrier()
 
+#elif SDL_HAS_BUILTIN(__atomic_signal_fence) || (defined(__GNUC__) && (__GNUC__ >= 5))
+#define SDL_CompilerBarrier()   __atomic_signal_fence(__ATOMIC_SEQ_CST)
 #elif defined(_MSC_VER) && (_MSC_VER > 1200) && !defined(__clang__)
 void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
@@ -167,8 +169,9 @@ void _ReadWriteBarrier(void);
 extern __inline void SDL_CompilerBarrier(void);
 #pragma aux SDL_CompilerBarrier = "" parm [] modify exact [];
 #else
+/* We don't unlock here to avoid possible infinite recursion */
 #define SDL_CompilerBarrier()   \
-{ SDL_SpinLock _tmp = 0; SDL_LockSpinlock(&_tmp); SDL_UnlockSpinlock(&_tmp); }
+{ SDL_SpinLock _tmp = 0; SDL_LockSpinlock(&_tmp); }
 #endif
 
 /**
@@ -275,12 +278,19 @@ extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
  */
 #define SDL_MemoryBarrierAcquire() SDL_MemoryBarrierAcquireFunction()
 
+#elif SDL_HAS_BUILTIN(__atomic_thread_fence) || (defined(__GNUC__) && (__GNUC__ >= 5))
+#define SDL_MemoryBarrierRelease()   __atomic_thread_fence(__ATOMIC_RELEASE)
+#define SDL_MemoryBarrierAcquire()   __atomic_thread_fence(__ATOMIC_ACQUIRE)
 #elif defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("lwsync" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("lwsync" : : : "memory")
 #elif defined(__GNUC__) && defined(__aarch64__)
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("dmb ish" : : : "memory")
-#define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("dmb ish" : : : "memory")
+#define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("dmb ishld" : : : "memory")
+#elif defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+#include <arm64intr.h>
+#define SDL_MemoryBarrierRelease() __dmb(_ARM64_BARRIER_ISH)
+#define SDL_MemoryBarrierAcquire() __dmb(_ARM64_BARRIER_ISHLD)
 #elif defined(__GNUC__) && defined(__arm__)
 #if 0 /* defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID) */
 /* Information from:
@@ -595,6 +605,24 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v);
  * \sa SDL_SetAtomicU32
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
+
+/**
+ * Add to an atomic variable.
+ *
+ * This function also acts as a full memory barrier.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param v the desired value to add or subtract.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_AddAtomicU32(SDL_AtomicU32 *a, int v);
 
 /**
  * Set a pointer to a new value if it is currently an old value.

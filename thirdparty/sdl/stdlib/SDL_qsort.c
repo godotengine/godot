@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -333,7 +333,7 @@ typedef struct { char * first; char * last; } stack_entry;
     char *test;					\
     /* Find the right place for |first|.	\
      * My apologies for var reuse. */		\
-    for (test=first-size;compare(userdata,test,first)>0;test-=size) ;	\
+    for (test=first-size;test>=(char*)base&&compare(userdata,test,first)>0;test-=size) ;	\
     test+=size;					\
     if (test!=first) {				\
       /* Shift everything in [test,first)	\
@@ -418,6 +418,7 @@ static void qsort_r_nonaligned(void *base, size_t nmemb, size_t size,
     while (1) {
       /* Select pivot */
       { char * mid=first+size*((last-first)/size >> 1);
+        if (mid>=last) break;
         Pivot(SWAP_nonaligned,size);
         memcpy(pivot,mid,size);
       }
@@ -449,6 +450,7 @@ static void qsort_r_aligned(void *base, size_t nmemb, size_t size,
     while (1) {
       /* Select pivot */
       { char * mid=first+size*((last-first)/size >> 1);
+        if (mid>=last) break;
         Pivot(SWAP_aligned,size);
         memcpy(pivot,mid,size);
       }
@@ -484,6 +486,7 @@ fprintf(stderr,"Doing %d:%d: ",
 #endif
       /* Select pivot */
       { char * mid=first+WORD_BYTES*((last-first) / (2*WORD_BYTES));
+        if (mid>=last) break;
         Pivot(SWAP_words,WORD_BYTES);
         *(int*)pivot=*(int*)mid;
 #ifdef DEBUG_QSORT
@@ -506,7 +509,7 @@ fprintf(stderr, "after partitioning first=#%lu last=#%lu\n", (first-(char*)base)
     /* Find the right place for |first|. My apologies for var reuse */
     int *pl=(int*)(first-WORD_BYTES),*pr=(int*)first;
     *(int*)pivot=*(int*)first;
-    for (;compare(userdata,pl,pivot)>0;pr=pl,--pl) {
+    for (;pl>=(int*)base&&compare(userdata,pl,pivot)>0;pr=pl,--pl) {
       *pr=*pl; }
     if (pr!=(int*)first) *pr=*(int*)pivot;
   }
@@ -571,4 +574,3 @@ void *SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, 
     // qsort_non_r_bridge just happens to match calling conventions, so reuse it.
     return SDL_bsearch_r(key, base, nmemb, size, qsort_non_r_bridge, compare);
 }
-

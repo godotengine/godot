@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -110,6 +110,12 @@ Sint32 SDL_rand_r(Uint64 *state, Sint32 n)
 float SDL_randf_r(Uint64 *state)
 {
     // Note: its using 24 bits because float has 23 bits significand + 1 implicit bit
+#if (defined(_MSC_VER) && (_MSC_VER < 1913)) || (!defined(_MSC_VER) && (!defined(__STDC_VERSION__) || (__STDC_VERSION__ < 199901L)))
+    // no hexidecimal float notation, do it the hard way. MSVC before 15.6 (2017), etc, needs this.
+    const union { Uint32 u32; float f; } float_union = { 0x33800000U };
+    return (SDL_rand_bits_r(state) >> (32 - 24)) * float_union.f;
+#else
     return (SDL_rand_bits_r(state) >> (32 - 24)) * 0x1p-24f;
+#endif
 }
 
