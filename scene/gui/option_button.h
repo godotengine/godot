@@ -59,7 +59,17 @@ class OptionButton : public Button {
 
 		int h_separation = 0;
 
-		Ref<Texture2D> arrow_icon;
+		Ref<Texture2D> arrow;
+		Ref<Texture2D> arrow_focus;
+		Ref<Texture2D> arrow_hover;
+		Ref<Texture2D> arrow_hover_focus;
+		Ref<Texture2D> arrow_pressed;
+		Ref<Texture2D> arrow_pressed_focus;
+		Ref<Texture2D> arrow_hover_pressed;
+		Ref<Texture2D> arrow_hover_pressed_focus;
+		Ref<Texture2D> arrow_disabled;
+		Ref<Texture2D> arrow_disabled_focus;
+
 		int arrow_margin = 0;
 		int modulate_arrow = 0;
 	} theme_cache;
@@ -88,6 +98,9 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	void _validate_property(PropertyInfo &p_property) const;
+	Size2 _get_arrow_minimum_size() const;
+	std::tuple<Ref<Texture2D>, Ref<Texture2D>> _get_current_arrow() const;
+	Color _get_current_arrow_color() const;
 	static void _bind_methods();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
