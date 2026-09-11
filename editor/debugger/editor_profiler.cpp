@@ -794,6 +794,7 @@ EditorProfiler::EditorProfiler() {
 	variables->set_column_clip_content(2, true);
 	variables->set_column_custom_minimum_width(2, 50 * EDSCALE);
 	variables->set_theme_type_variation("TreeSecondary");
+	variables->add_theme_constant_override("row_stripes_visible", 1);
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
 	variables->connect("item_collapsed", callable_mp(this, &EditorProfiler::_item_collapsed));
 

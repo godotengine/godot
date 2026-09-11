@@ -915,6 +915,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	add_child(mc);
 
 	tree = memnew(Tree);
+	tree->add_theme_constant_override("row_stripes_visible", 1);
 	tree->set_accessibility_name(TTRC("Autoloads"));
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);

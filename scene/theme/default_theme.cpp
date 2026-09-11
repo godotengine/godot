@@ -898,6 +898,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("custom_button", "Tree", button_normal);
 	theme->set_stylebox("custom_button_pressed", "Tree", button_pressed);
 	theme->set_stylebox("custom_button_hover", "Tree", button_hover);
+	theme->set_stylebox("row_stripes", "Tree", make_flat_stylebox(Color(0.7, 0.7, 0.7, 0.25), 0, 0, 0, 0, 0));
 
 	theme->set_icon("checked", "Tree", icons["checked"]);
 	theme->set_icon("checked_disabled", "Tree", icons["checked_disabled"]);
@@ -950,6 +951,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("children_hl_line_width", "Tree", 1);
 	theme->set_constant("parent_hl_line_margin", "Tree", 0);
 	theme->set_constant("draw_guides", "Tree", 1);
+	theme->set_constant("row_stripes_visible", "Tree", 0);
 	theme->set_constant("dragging_unfold_wait_msec", "Tree", 500);
 	theme->set_constant("scroll_border", "Tree", Math::round(4 * scale));
 	theme->set_constant("scroll_speed", "Tree", 12);

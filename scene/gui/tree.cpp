@@ -2321,7 +2321,7 @@ void Tree::update_item_cache(TreeItem *p_item) const {
 	}
 }
 
-int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height, const RID &p_ci) {
+int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height, const RID &p_ci, int &r_row_idx) {
 	const real_t bottom_margin = theme_cache.panel_style->get_margin(SIDE_BOTTOM); // Extra stylebox space below the content
 	const real_t draw_height = p_draw_size.height + bottom_margin; // Visible height including bottom margin
 
@@ -2350,6 +2350,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		// Draw separation.
 
 		ERR_FAIL_COND_V(theme_cache.font.is_null(), -1);
+
+		r_row_idx++;
+
+		if (p_ci == content_ci) {
+			p_item->cached_strip_index = r_row_idx;
+		}
 
 		int ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
 		int skip2 = 0;
@@ -2440,34 +2446,41 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				cell_rect.size.x += theme_cache.h_separation;
 			}
 
-			if (should_draw_row_rect) {
-				if (p_item->cells[0].selected || is_row_hovered) {
-					const Rect2 content_rect = _get_content_rect();
-					Rect2i row_rect = Rect2i(Point2i(content_rect.position.x, item_rect.position.y), Size2i(content_rect.size.x, item_rect.size.y));
-					row_rect = convert_rtl_rect(row_rect);
+			if (i == 0) {
+				const Rect2 content_rect = _get_content_rect();
+				Rect2i row_rect = Rect2i(Point2i(content_rect.position.x, item_rect.position.y), Size2i(content_rect.size.x, item_rect.size.y));
+				row_rect = convert_rtl_rect(row_rect);
 
-					if (p_item->cells[0].selected) {
-						if (is_row_hovered) {
-							if (has_focus(true)) {
-								theme_cache.hovered_selected_focus->draw(sb_ci, row_rect);
+				if (should_draw_row_rect) {
+					if (p_item->cells[0].selected || is_row_hovered) {
+						if (p_item->cells[0].selected) {
+							if (is_row_hovered) {
+								if (has_focus(true)) {
+									theme_cache.hovered_selected_focus->draw(sb_ci, row_rect);
+								} else {
+									theme_cache.hovered_selected->draw(sb_ci, row_rect);
+								}
 							} else {
-								theme_cache.hovered_selected->draw(sb_ci, row_rect);
+								if (has_focus(true)) {
+									theme_cache.selected_focus->draw(sb_ci, row_rect);
+								} else {
+									theme_cache.selected->draw(sb_ci, row_rect);
+								}
 							}
-						} else {
-							if (has_focus(true)) {
-								theme_cache.selected_focus->draw(sb_ci, row_rect);
+						} else if (!drop_mode_flags) {
+							if (is_cell_button_hovered) {
+								theme_cache.hovered_dimmed->draw(sb_ci, row_rect);
 							} else {
-								theme_cache.selected->draw(sb_ci, row_rect);
+								theme_cache.hovered->draw(sb_ci, row_rect);
 							}
-						}
-					} else if (!drop_mode_flags) {
-						if (is_cell_button_hovered) {
-							theme_cache.hovered_dimmed->draw(sb_ci, row_rect);
-						} else {
-							theme_cache.hovered->draw(sb_ci, row_rect);
 						}
 					}
 				}
+
+				if (theme_cache.row_stripes_visible && (r_row_idx % 2 != 0)) {
+					theme_cache.row_stripes->draw(ci, row_rect);
+				}
+
 				should_draw_row_rect = false;
 			}
 
@@ -2830,7 +2843,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			int child_h = -1;
 			int child_self_height = 0;
 			if (htotal >= 0) {
-				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c, child_self_height, ci);
+				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c, child_self_height, ci, r_row_idx);
 				child_self_height += theme_cache.v_separation;
 			}
 
@@ -5399,7 +5412,8 @@ void Tree::_notification(int p_what) {
 			sticky_candidates.clear();
 			if (root && get_size().x > 0 && get_size().y > 0) {
 				int self_height = 0; // Just to pass a reference, we don't need the root's `self_height`.
-				draw_item(Point2(), draw_ofs, draw_size, root, self_height, content_ci);
+				int row_idx = -1;
+				draw_item(Point2(), draw_ofs, draw_size, root, self_height, content_ci, row_idx);
 
 				// Draw drop indicator.
 				if (drop_mode_flags && drop_mode_over) {
@@ -5691,7 +5705,8 @@ void Tree::_notification(int p_what) {
 					Point2 old_offset = theme_cache.offset;
 					theme_cache.offset.y = 0;
 					int self_height = 0;
-					draw_item(item->sticky_offset, draw_ofs, draw_size, item, self_height, is_last ? last_sticky_ci : header_ci);
+					int row_idx = item->cached_strip_index > 0 ? item->cached_strip_index - 1 : -1;
+					draw_item(item->sticky_offset, draw_ofs, draw_size, item, self_height, is_last ? last_sticky_ci : header_ci, row_idx);
 					theme_cache.offset = old_offset;
 				}
 
@@ -7582,6 +7597,7 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Tree, cursor_unfocus, "cursor_unfocused");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, button_hover);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, button_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, row_stripes);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, checked);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, unchecked);
@@ -7626,6 +7642,7 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Tree, font_outline_size, "outline_size");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, draw_guides);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, row_stripes_visible);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, guide_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, draw_relationship_lines);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Tree, relationship_line_width);

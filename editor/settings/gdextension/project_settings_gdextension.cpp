@@ -113,6 +113,7 @@ ProjectSettingsGDExtension::ProjectSettingsGDExtension() {
 	add_child(title_hb);
 	// Create the tree.
 	extension_list = memnew(Tree);
+	extension_list->add_theme_constant_override("row_stripes_visible", 1);
 	extension_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	extension_list->set_hide_root(true);
 	extension_list->set_theme_type_variation("TreeTable");
