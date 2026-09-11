@@ -617,7 +617,6 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	MenuButton *edit = nullptr;
 
-	PanelContainer *main_panel = nullptr;
 	HScrollBar *hscroll = nullptr;
 	ScrollContainer *scroll = nullptr;
 	VBoxContainer *track_vbox = nullptr;
