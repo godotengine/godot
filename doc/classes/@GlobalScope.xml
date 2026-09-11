@@ -1274,7 +1274,7 @@
 			<param index="0" name="x" type="Variant" />
 			<param index="1" name="step" type="Variant" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating-point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x], with halfway cases rounded up for a positive [param step] and down for a negative [param step]. This can also be used to round a floating-point number to an arbitrary number of decimals.
 				The returned value is the same type of [Variant] as [param step]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				snapped(100, 32)  # Returns 96
@@ -1291,7 +1291,7 @@
 			<param index="0" name="x" type="float" />
 			<param index="1" name="step" type="float" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x]. This can also be used to round a floating-point number to an arbitrary number of decimals.
+				Returns the multiple of [param step] that is the closest to [param x], with halfway cases rounded up for a positive [param step] and down for a negative [param step]. This can also be used to round a floating-point number to an arbitrary number of decimals.
 				A type-safe version of [method snapped], returning a [float].
 				[codeblock]
 				snappedf(32.0, 2.5)  # Returns 32.5
@@ -1304,7 +1304,7 @@
 			<param index="0" name="x" type="float" />
 			<param index="1" name="step" type="int" />
 			<description>
-				Returns the multiple of [param step] that is the closest to [param x].
+				Returns the multiple of [param step] that is the closest to [param x], with halfway cases rounded up for a positive [param step] and down for a negative [param step].
 				A type-safe version of [method snapped], returning an [int].
 				[codeblock]
 				snappedi(53, 16)  # Returns 48
