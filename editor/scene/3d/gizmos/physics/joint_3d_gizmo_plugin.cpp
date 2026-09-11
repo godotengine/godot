@@ -293,17 +293,25 @@ Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
 }
 
 void Joint3DGizmoPlugin::incremental_update_gizmos() {
-	if (!current_gizmos.is_empty()) {
-		HashSet<EditorNode3DGizmo *>::Iterator E = current_gizmos.find(last_drawn);
-		if (E) {
-			++E;
-		}
-		if (!E) {
-			E = current_gizmos.begin();
-		}
-		redraw(*E);
-		last_drawn = *E;
+	if (current_gizmos.is_empty()) {
+		return;
 	}
+
+	HashSet<EditorNode3DGizmo *>::Iterator E = current_gizmos.find(last_drawn);
+	if (E) {
+		++E;
+	}
+	if (!E) {
+		E = current_gizmos.begin();
+	}
+
+	EditorNode3DGizmo *next_gizmo = *E;
+	Node3D *node = next_gizmo->get_node_3d();
+	if (node->is_visible_in_tree()) {
+		redraw(next_gizmo);
+	}
+
+	last_drawn = next_gizmo;
 }
 
 bool Joint3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
