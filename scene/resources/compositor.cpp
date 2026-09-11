@@ -246,6 +246,8 @@ void Compositor::set_compositor_effects(const TypedArray<CompositorEffect> &p_co
 		}
 	}
 
+	emit_changed();
+
 	RenderingServer::get_singleton()->compositor_set_compositor_effects(compositor, effect_rids);
 }
 
