@@ -5224,13 +5224,44 @@ DisplayServerEnums::WindowMode WaylandThread::window_get_mode(DisplayServerEnums
 	return ws.mode;
 }
 
-void WaylandThread::window_request_attention(DisplayServerEnums::WindowID p_window_id) {
+/**
+ * Request attention for the given window from wayland.
+ * Since wayland does not offer an explicit way to specify whether or not the window should be pinged or brought
+ * to the top we can only hint it to. Wayland compositors generally make the decision based on the completeness and
+ * validity of the activation token that was passed. So when we want weak focus we pass a token with minimal information
+ * and when we want strong focus we pass a token with additional information
+ */
+void WaylandThread::window_request_attention(DisplayServerEnums::WindowID p_window_id, bool p_hint_strong_focus) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	uint32_t last_serial = MAX(MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial), ss->pointer_enter_serial);
+
+	// Try to find a reasonable requesting surface
+	WindowState *focused_window = nullptr;
+	if (ss) {
+		if (ss->focused_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			focused_window = window_get_state(ss->focused_id);
+		}
+		if (!focused_window && ss->pointer_data.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			focused_window = window_get_state(ss->pointer_data.pointed_id);
+		}
+		if (!focused_window && ss->dnd_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			focused_window = window_get_state(ss->dnd_id);
+		}
+	}
 
 	if (registry.xdg_activation) {
 		// Window attention requests are done through the XDG activation protocol.
 		xdg_activation_token_v1 *xdg_activation_token = xdg_activation_v1_get_activation_token(registry.xdg_activation);
+		// Set additional data on activation token when we want strong attention
+		if (p_hint_strong_focus) {
+			xdg_activation_token_v1_set_serial(xdg_activation_token, last_serial, wl_seat_current);
+			if (focused_window) {
+				xdg_activation_token_v1_set_surface(xdg_activation_token, focused_window->wl_surface);
+			}
+		}
 		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &ws);
 		xdg_activation_token_v1_commit(xdg_activation_token);
 	}
