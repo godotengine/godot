@@ -42,6 +42,15 @@ public:
 	virtual Transform3D get_cam_transform() const = 0;
 	virtual Projection get_cam_projection() const = 0;
 
+	virtual PackedFloat32Array get_transformed_projection_data() const = 0;
+
+	virtual float get_z_far() const = 0;
+	virtual float get_z_near() const = 0;
+	virtual float get_aspect() const = 0;
+	virtual Vector2 get_viewport_half_extents() const = 0;
+	virtual Vector2 get_far_plane_half_extents() const = 0;
+	virtual int get_pixels_per_meter(int p_for_pixel_width) const = 0;
+
 	virtual uint32_t get_view_count() const = 0;
 	virtual Vector3 get_view_eye_offset(uint32_t p_view) const = 0;
 	virtual Projection get_view_projection(uint32_t p_view) const = 0;

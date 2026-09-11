@@ -90,6 +90,15 @@ public:
 	virtual Transform3D get_cam_transform() const override;
 	virtual Projection get_cam_projection() const override;
 
+	virtual PackedFloat32Array get_transformed_projection_data() const override;
+
+	virtual float get_z_far() const override;
+	virtual float get_z_near() const override;
+	virtual float get_aspect() const override;
+	virtual Vector2 get_viewport_half_extents() const override;
+	virtual Vector2 get_far_plane_half_extents() const override;
+	virtual int get_pixels_per_meter(int p_for_pixel_width) const override;
+
 	virtual uint32_t get_view_count() const override;
 	virtual Vector3 get_view_eye_offset(uint32_t p_view) const override;
 	virtual Projection get_view_projection(uint32_t p_view) const override;
