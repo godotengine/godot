@@ -33,6 +33,8 @@
 #include "scene/gui/control.h"
 
 class Range : public Control {
+	static constexpr double EXP_RATIO_ZERO_SHIFT = 1e-3;
+
 	GDCLASS(Range, Control);
 
 	struct Shared {
@@ -64,6 +66,8 @@ class Range : public Control {
 protected:
 	static double _snapped_r128(double p_value, double p_step);
 	double _calc_value(double p_val, double p_step) const;
+	double _get_as_ratio_unclamped() const;
+
 	virtual void _value_changed(double p_value);
 	void _notify_shared_value_changed() { shared->emit_value_changed(); }
 	void _notification(int p_what);
