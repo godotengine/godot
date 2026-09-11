@@ -46,9 +46,9 @@
 			<param index="0" name="arguments" type="PackedStringArray" />
 			<description>
 				Creates a new instance of Godot that runs independently. The [param arguments] are used in the given order and separated by a space.
-				If the process is successfully created, this method returns the new process' ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
+				If the process is successfully created, this method returns the new process's ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
 				See [method create_process] if you wish to run a different process.
-				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="create_process">
@@ -472,7 +472,7 @@
 			<return type="String" />
 			<description>
 				Returns the full name of the CPU model on the host machine (e.g. [code]"Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz"[/code]).
-				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android and Web, [method get_processor_name] returns an empty string.
+				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux, Android (API level 31+), and iOS. On Web, [method get_processor_name] returns an empty string.
 			</description>
 		</method>
 		<method name="get_restart_on_exit_arguments" qualifiers="const">
@@ -921,16 +921,16 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="RENDERING_DRIVER_VULKAN" value="0" enum="RenderingDriver">
+		<constant name="RENDERING_DRIVER_VULKAN" value="0" enum="RenderingDriver" deprecated="This constant is not used by the engine.">
 			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1, 1.2, and 1.3 if available.
 		</constant>
-		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver">
+		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver" deprecated="This constant is not used by the engine.">
 			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
-		<constant name="RENDERING_DRIVER_D3D12" value="2" enum="RenderingDriver">
+		<constant name="RENDERING_DRIVER_D3D12" value="2" enum="RenderingDriver" deprecated="This constant is not used by the engine.">
 			The Direct3D 12 rendering driver. It requires the 12_0 feature level and Shader Model 6.0 support.
 		</constant>
-		<constant name="RENDERING_DRIVER_METAL" value="3" enum="RenderingDriver">
+		<constant name="RENDERING_DRIVER_METAL" value="3" enum="RenderingDriver" deprecated="This constant is not used by the engine.">
 			The Metal rendering driver.
 		</constant>
 		<constant name="SYSTEM_DIR_DESKTOP" value="0" enum="SystemDir">

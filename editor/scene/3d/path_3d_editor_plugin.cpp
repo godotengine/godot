@@ -47,6 +47,10 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/curve.h"
 
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
+#endif // PHYSICS_3D_DISABLED
+
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
@@ -131,10 +135,10 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		if (Path3DEditorPlugin::singleton->snap_to_collider) {
 			PhysicsDirectSpaceState3D *ss = p_camera->get_world_3d()->get_direct_space_state();
 
-			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			PS3DT::RayParameters ray_params;
 			ray_params.from = ray_from;
 			ray_params.to = ray_from + ray_dir * p_camera->get_far();
-			PhysicsDirectSpaceState3D::RayResult result;
+			PS3DT::RayResult result;
 			if (ss->intersect_ray(ray_params, result)) {
 				Vector3 local = gi.xform(result.position);
 				c->set_point_position(idx, local);
@@ -903,6 +907,7 @@ void Path3DEditorPlugin::_clear_curve_points() {
 		return;
 	}
 	Ref<Curve3D> curve = path->get_curve();
+	Node3DEditor::get_singleton()->clear_subgizmo_selection(path);
 	curve->set_closed(false);
 	curve->clear_points();
 }
@@ -964,8 +969,8 @@ void Path3DEditorPlugin::_notification(int p_what) {
 				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 				PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
 				if (ss) {
-					PhysicsDirectSpaceState3D::RayParameters ray_params;
-					PhysicsDirectSpaceState3D::RayResult result;
+					PS3DT::RayParameters ray_params;
+					PS3DT::RayResult result;
 					ray_params.from = _edit.click_ray_pos;
 					ray_params.to = ray_params.from + _edit.click_ray_dir;
 					bool hit_something = false;

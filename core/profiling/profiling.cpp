@@ -99,7 +99,7 @@ const StringInternData *_intern_name(const StringName &p_name) {
 
 	_data = TracyInternTable::string_allocator.alloc();
 	_data->name = p_name;
-	_data->name_utf8 = p_name.operator String().utf8();
+	_data->name_utf8 = p_name.string().utf8();
 
 	_data->next = TracyInternTable::string_table[idx];
 	_data->prev = nullptr;

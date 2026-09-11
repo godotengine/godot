@@ -34,11 +34,13 @@
 
 namespace Node3DEditorConstants {
 
+constexpr real_t GIZMO_ARROW_RADIUS = 0.065;
 constexpr real_t GIZMO_ARROW_SIZE = 0.35;
 constexpr real_t GIZMO_RING_HALF_WIDTH = 0.1;
-constexpr real_t GIZMO_PLANE_SIZE = 0.2;
-constexpr real_t GIZMO_PLANE_DST = 0.3;
+constexpr real_t GIZMO_PLANE_SIZE = 0.25;
+constexpr real_t GIZMO_PLANE_DST = 0.2;
 constexpr real_t GIZMO_CIRCLE_SIZE = 1.1;
+constexpr real_t GIZMO_SCALE_SIZE = 0.15;
 
 constexpr real_t GIZMO_SCALE_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;
 constexpr real_t GIZMO_ARROW_OFFSET = GIZMO_CIRCLE_SIZE + 0.3;

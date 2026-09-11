@@ -2,7 +2,7 @@
 #define OPENXR_LOADER_NEGOTIATION_H_ 1
 
 /*
-** Copyright 2017-2025 The Khronos Group Inc.
+** Copyright 2017-2026 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
@@ -83,6 +83,16 @@ typedef struct XrApiLayerCreateInfo {
     XrApiLayerNextInfo*         nextInfo;
 } XrApiLayerCreateInfo;
 
+typedef struct XrNegotiateApiLayerRequest {
+    XrLoaderInterfaceStructs        structType;
+    uint32_t                        structVersion;
+    size_t                          structSize;
+    uint32_t                        layerInterfaceVersion;
+    XrVersion                       layerApiVersion;
+    PFN_xrGetInstanceProcAddr       getInstanceProcAddr;
+    PFN_xrCreateApiLayerInstance    createApiLayerInstance;
+} XrNegotiateApiLayerRequest;
+
 typedef struct XrNegotiateLoaderInfo {
     XrLoaderInterfaceStructs    structType;
     uint32_t                    structVersion;
@@ -101,16 +111,6 @@ typedef struct XrNegotiateRuntimeRequest {
     XrVersion                    runtimeApiVersion;
     PFN_xrGetInstanceProcAddr    getInstanceProcAddr;
 } XrNegotiateRuntimeRequest;
-
-typedef struct XrNegotiateApiLayerRequest {
-    XrLoaderInterfaceStructs        structType;
-    uint32_t                        structVersion;
-    size_t                          structSize;
-    uint32_t                        layerInterfaceVersion;
-    XrVersion                       layerApiVersion;
-    PFN_xrGetInstanceProcAddr       getInstanceProcAddr;
-    PFN_xrCreateApiLayerInstance    createApiLayerInstance;
-} XrNegotiateApiLayerRequest;
 
 typedef XrResult (XRAPI_PTR *PFN_xrCreateApiLayerInstance)(const XrInstanceCreateInfo* info, const XrApiLayerCreateInfo* layerInfo, XrInstance* instance);
 typedef XrResult (XRAPI_PTR *PFN_xrNegotiateLoaderRuntimeInterface)(const XrNegotiateLoaderInfo* loaderInfo, XrNegotiateRuntimeRequest* runtimeRequest);

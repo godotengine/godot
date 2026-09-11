@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2025 The Khronos Group Inc.
+// Copyright (c) 2018-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
@@ -52,13 +52,13 @@
 #include <xcb/xcb.h>
 #endif  // XR_USE_PLATFORM_XCB
 
-#if defined(XR_USE_GRAPHICS_API_OPENGL_ES) || defined(XR_USE_PLATFORM_EGL) || defined(XR_USE_PLATFORM_ANDROID)
+#if defined(XR_USE_GRAPHICS_API_OPENGL_ES) || defined(XR_USE_PLATFORM_EGL)
 #ifdef XRDEPENDENCIES_USE_GLAD
 #include <glad/egl.h>
 #else
 #include <EGL/egl.h>
 #endif
-#endif  // XR_USE_GRAPHICS_API_OPENGL_ES || XR_USE_PLATFORM_EGL || XR_USE_PLATFORM_ANDROID
+#endif  // XR_USE_GRAPHICS_API_OPENGL_ES || XR_USE_PLATFORM_EGL
 
 #if defined(XR_USE_GRAPHICS_API_OPENGL) && (defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB))
 #ifdef XRDEPENDENCIES_USE_GLAD
@@ -84,7 +84,7 @@
 #include <wayland-client.h>
 #endif  // XR_USE_PLATFORM_WAYLAND
 
-#if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
+#if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB) || defined(XR_USE_PLATFORM_EGL)
 #ifdef Success
 #undef Success
 #endif  // Success

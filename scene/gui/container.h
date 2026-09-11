@@ -55,6 +55,8 @@ protected:
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
+	virtual Size2 get_minimum_size() const override;
+
 	GDVIRTUAL0RC(Vector<int>, _get_allowed_size_flags_horizontal)
 	GDVIRTUAL0RC(Vector<int>, _get_allowed_size_flags_vertical)
 
@@ -67,7 +69,10 @@ public:
 		NOTIFICATION_SORT_CHILDREN = 51,
 	};
 
-	void fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &p_rect);
+	// Multiplication factor to be used by Containers when a child has the SIZE_MAXIMIZE flag. Effectively infinite to ensure it gets as much space as possible.
+	constexpr static float MAXIMIZE_STRETCH_FACTOR = 1e10;
+
+	void fit_child_in_rect(RequiredParam<Control> p_child, const Rect2 &p_rect);
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const;
 	virtual Vector<int> get_allowed_size_flags_vertical() const;

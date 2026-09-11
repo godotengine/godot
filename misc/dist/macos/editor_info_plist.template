@@ -40,12 +40,12 @@
 	<string>NSApplication</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
-	<key>LSMinimumSystemVersion</key>
-	<string>10.12</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
+		<key>arm64</key>
+		<string>13.0</string>
 		<key>x86_64</key>
-		<string>10.12</string>
+		<string>11.0</string>
 	</dict>
 	<key>NSHighResolutionCapable</key>
 	<true/>

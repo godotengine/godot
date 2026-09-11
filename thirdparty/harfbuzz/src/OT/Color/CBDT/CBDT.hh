@@ -207,8 +207,8 @@ struct IndexSubtable
     hb_barrier ();
     switch (u.header.indexFormat)
     {
-    case 1: return_trace (u.format1.sanitize (c, glyph_count));
-    case 3: return_trace (u.format3.sanitize (c, glyph_count));
+    case 1: hb_barrier (); return_trace (u.format1.sanitize (c, glyph_count));
+    case 3: hb_barrier (); return_trace (u.format3.sanitize (c, glyph_count));
     default:return_trace (true);
     }
   }
@@ -224,8 +224,9 @@ struct IndexSubtable
     unsigned int local_offset = cbdt_prime_len - u.header.imageDataOffset;
     switch (u.header.indexFormat)
     {
-    case 1: return_trace (u.format1.add_offset (c, local_offset, size));
+    case 1: hb_barrier (); return_trace (u.format1.add_offset (c, local_offset, size));
     case 3: {
+      hb_barrier ();
       if (!u.format3.add_offset (c, local_offset, size))
 	return_trace (false);
       if (!(num_glyphs & 0x01))  // Pad to 32-bit alignment if needed.
@@ -252,6 +253,7 @@ struct IndexSubtable
     switch (u.header.indexFormat)
     {
     case 1: {
+      hb_barrier ();
       for (unsigned int i = 0; i < num_missing; i++)
       {
 	if (unlikely (!u.format1.add_offset (c, local_offset, size)))
@@ -261,6 +263,7 @@ struct IndexSubtable
       return_trace (true);
     }
     case 3: {
+      hb_barrier ();
       for (unsigned int i = 0; i < num_missing; i++)
       {
 	if (unlikely (!u.format3.add_offset (c, local_offset, size)))
@@ -303,8 +306,8 @@ struct IndexSubtable
     TRACE_SERIALIZE (this);
     switch (u.header.indexFormat)
     {
-    case 1: return_trace (u.format1.add_offset (c, local_offset, size));
-    case 3: return_trace (u.format3.add_offset (c, local_offset, size));
+    case 1: hb_barrier (); return_trace (u.format1.add_offset (c, local_offset, size));
+    case 3: hb_barrier (); return_trace (u.format3.add_offset (c, local_offset, size));
     // TODO: Implement tables 2, 4, 5
     case 2:  // Should be a no-op.
     case 4: case 5:  // Handle sparse cases.
@@ -329,8 +332,8 @@ struct IndexSubtable
     *format = u.header.imageFormat;
     switch (u.header.indexFormat)
     {
-    case 1: return u.format1.get_image_data (idx, offset, length);
-    case 3: return u.format3.get_image_data (idx, offset, length);
+    case 1: hb_barrier (); return u.format1.get_image_data (idx, offset, length);
+    case 3: hb_barrier (); return u.format3.get_image_data (idx, offset, length);
     default: return false;
     }
   }
@@ -882,10 +885,10 @@ struct CBDT
       {
 	float x_scale = upem / (float) strike.ppemX;
 	float y_scale = upem / (float) strike.ppemY;
-	extents->x_bearing = roundf (extents->x_bearing * x_scale);
-	extents->y_bearing = roundf (extents->y_bearing * y_scale);
-	extents->width = roundf (extents->width * x_scale);
-	extents->height = roundf (extents->height * y_scale);
+	extents->x_bearing = hb_clamp_to<hb_position_t> (roundf (extents->x_bearing * x_scale));
+	extents->y_bearing = hb_clamp_to<hb_position_t> (roundf (extents->y_bearing * y_scale));
+	extents->width = hb_clamp_to<hb_position_t> (roundf (extents->width * x_scale));
+	extents->height = hb_clamp_to<hb_position_t> (roundf (extents->height * y_scale));
       }
 
       return true;

@@ -238,10 +238,10 @@
 			<param index="3" name="platform_variants" type="String[]" />
 			<param index="4" name="gen_files" type="String[]" />
 			<description>
-				Imports [param source_file] with the import [param options] specified. Should return [constant @GlobalScope.OK] if the import is successful, other values indicate failure.
+				Imports [param source_file] with the specified import [param options]. Should return [constant @GlobalScope.OK] if the import is successful.
 				The imported resource is expected to be saved to [code]save_path + "." + _get_save_extension()[/code]. If a different variant is preferred for a [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tag[/url], save the variant to [code]save_path + "." + tag + "." + _get_save_extension()[/code] and add the feature tag to [param platform_variants].
 				If additional resource files are generated in the resource filesystem ([code]res://[/code]), add their full path to [param gen_files] so that the editor knows they depend on [param source_file].
-				This method must be overridden to do the actual importing work. See this class' description for an example of overriding this method.
+				This method must be overridden to do the actual importing work. See this class's description for an example of overriding this method.
 			</description>
 		</method>
 		<method name="append_import_external_resource">

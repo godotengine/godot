@@ -52,6 +52,8 @@
 
 // forward declarations, we don't want to include these fully
 class OpenXRInterface;
+class OpenXRSpatialContainerExtension;
+class OpenXRSpatialContainerSelfRenderingExtension;
 
 class OpenXRAPI {
 public:
@@ -334,6 +336,9 @@ private:
 		}
 	};
 
+	friend class OpenXRSpatialContainerExtension;
+	friend class OpenXRSpatialContainerSelfRenderingExtension;
+
 	// state changes
 	bool poll_events();
 	bool on_state_idle();
@@ -351,6 +356,7 @@ private:
 	// Render state, Only accessible in rendering thread
 	struct RenderState {
 		bool running = false;
+		bool should_submit_spatial_container_layers = false;
 		bool should_render = false;
 		bool has_xr_viewport = false;
 		XrTime predicted_display_time = 0;
@@ -515,6 +521,9 @@ public:
 
 	Rect2i get_render_region() const;
 	void set_render_region(const Rect2i &p_render_region);
+
+	// Spatial container settings.
+	bool is_spatial_container_enabled() const;
 
 	// Foveation settings
 	bool is_foveation_supported() const;

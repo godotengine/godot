@@ -122,7 +122,7 @@ float AudioEffectDistortion::get_pre_gain() const {
 }
 
 void AudioEffectDistortion::set_keep_hf_hz(float p_keep_hf_hz) {
-	keep_hf_hz = p_keep_hf_hz;
+	keep_hf_hz = MAX(p_keep_hf_hz, 1.0);
 }
 
 float AudioEffectDistortion::get_keep_hf_hz() const {
@@ -163,7 +163,7 @@ void AudioEffectDistortion::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Clip,ATan,LoFi,Overdrive,Wave Shape"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pre_gain", PROPERTY_HINT_RANGE, "-60,60,0.01,suffix:dB"), "set_pre_gain", "get_pre_gain");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_keep_hf_hz", "get_keep_hf_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "keep_hf_hz", PROPERTY_HINT_RANGE, "20,20500,1,or_less,exp,suffix:Hz"), "set_keep_hf_hz", "get_keep_hf_hz");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drive", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drive", "get_drive");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01,suffix:dB"), "set_post_gain", "get_post_gain");
 

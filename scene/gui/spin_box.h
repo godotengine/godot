@@ -72,11 +72,20 @@ class SpinBox : public Range {
 	void _arrow_clicked(bool p_up);
 
 	void _update_text(bool p_only_update_if_value_changed = false);
+	void _set_error(const String &p_error);
 	void _text_submitted(const String &p_string);
 	void _text_changed(const String &p_string);
 
+	String format;
+	String plural_format;
+	AutoTranslateMode format_auto_translate_mode = AUTO_TRANSLATE_MODE_DISABLED;
+	String _get_xl_format() const;
+
+	bool use_default_format = false;
+#ifndef DISABLE_DEPRECATED
 	String prefix;
 	String suffix;
+#endif
 	String last_text_value;
 	double custom_arrow_step = 0.0;
 	bool custom_arrow_round = false;
@@ -152,8 +161,9 @@ class SpinBox : public Range {
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _value_changed(double p_value) override;
-	void _validate_property(PropertyInfo &p_property) const;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -168,11 +178,24 @@ public:
 	void set_editable(bool p_enabled);
 	bool is_editable() const;
 
+	void set_format(const String &p_format);
+	String get_format() const;
+
+	void set_plural_format(const String &p_format);
+	String get_plural_format() const { return plural_format; }
+
+	void set_format_with_plural(const String &p_format, const String &p_plural);
+
+	void set_format_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_format_auto_translate_mode() const { return format_auto_translate_mode; }
+
+#ifndef DISABLE_DEPRECATED
 	void set_suffix(const String &p_suffix);
 	String get_suffix() const;
 
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
+#endif
 
 	void set_update_on_text_changed(bool p_enabled);
 	bool get_update_on_text_changed() const;

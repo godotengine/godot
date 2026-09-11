@@ -81,6 +81,7 @@ public:
 	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we interrogate OpenXR's system abilities.
 	virtual void *set_instance_create_info_and_get_next_pointer(XrVersion p_xr_version, void *p_next_pointer); // Add additional data structures when we create our OpenXR instance.
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we create our OpenXR session.
+	virtual void *set_spatial_container_create_info_and_get_next_pointer(RID p_spatial_container, void *p_next_pointer); // Add additional data structures when we create a spatial container.
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when creating OpenXR swap chains.
 	virtual void *set_hand_joint_locations_and_get_next_pointer(int p_hand_index, void *p_next_pointer);
 	virtual void *set_projection_views_and_get_next_pointer(int p_view_index, void *p_next_pointer);
@@ -88,6 +89,7 @@ public:
 	// These will only be called for extensions registered via OpenXRApi::register_frame_info_extension().
 	virtual void *set_frame_wait_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrWaitFrame
 	virtual void *set_view_locate_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrLocateViews
+	virtual void *set_spatial_container_views_locate_info_and_get_next_pointer(RID p_spatial_container, void *p_next_pointer); // Add additional data structures when calling xrLocateSpatialContainerViewsEXT
 	virtual void *set_frame_end_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrEndFrame
 	// This will only be called for extensions registered via OpenXRAPI::register_projection_layer_extension().
 	virtual void *set_projection_layer_and_get_next_pointer(void *p_next_pointer); // Add additional data structures to XrCompositionLayerProjection
@@ -108,6 +110,8 @@ public:
 	GDVIRTUAL1R(uint64_t, _set_projection_layer_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL1R(uint64_t, _set_view_locate_info_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL2R(uint64_t, _set_reference_space_create_info_and_get_next_pointer, int, GDExtensionPtr<void>);
+	GDVIRTUAL2R(uint64_t, _set_spatial_container_create_info_and_get_next_pointer, RID, GDExtensionPtr<void>);
+	GDVIRTUAL2R(uint64_t, _set_spatial_container_views_locate_info_and_get_next_pointer, RID, GDExtensionPtr<void>);
 	GDVIRTUAL0R(int, _get_composition_layer_count);
 	GDVIRTUAL1R(uint64_t, _get_composition_layer, int);
 	GDVIRTUAL1R(int, _get_composition_layer_order, int);
@@ -191,8 +195,8 @@ public:
 	virtual Dictionary get_viewport_composition_layer_extension_property_defaults(); // Get the default values for the additional property definitions for OpenXRCompositionLayer.
 	virtual void *set_android_surface_swapchain_create_info_and_get_next_pointer(const Dictionary &p_property_values, void *p_next_pointer);
 
-	GDVIRTUAL3R(uint64_t, _set_viewport_composition_layer_and_get_next_pointer, GDExtensionConstPtr<void>, Dictionary, GDExtensionPtr<void>);
-	GDVIRTUAL1(_on_viewport_composition_layer_destroyed, GDExtensionConstPtr<void>);
+	GDVIRTUAL3R(uint64_t, _set_viewport_composition_layer_and_get_next_pointer, GDExtensionPtr<const void>, Dictionary, GDExtensionPtr<void>);
+	GDVIRTUAL1(_on_viewport_composition_layer_destroyed, GDExtensionPtr<const void>);
 	GDVIRTUAL0R(TypedArray<Dictionary>, _get_viewport_composition_layer_extension_properties);
 	GDVIRTUAL0R(Dictionary, _get_viewport_composition_layer_extension_property_defaults);
 	GDVIRTUAL2R(uint64_t, _set_android_surface_swapchain_create_info_and_get_next_pointer, Dictionary, GDExtensionPtr<void>);
@@ -201,7 +205,7 @@ public:
 	// Should return true if the event was handled, false otherwise.
 	virtual bool on_event_polled(const XrEventDataBuffer &event);
 
-	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionConstPtr<void>);
+	GDVIRTUAL1R(bool, _on_event_polled, GDExtensionPtr<const void>);
 
 	OpenXRExtensionWrapper();
 	virtual ~OpenXRExtensionWrapper() override;

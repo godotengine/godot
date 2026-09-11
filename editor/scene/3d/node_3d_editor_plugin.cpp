@@ -40,6 +40,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -92,11 +93,15 @@
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
@@ -105,7 +110,12 @@
 #include "scene/resources/3d/sky_material.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/physics_3d/physics_server_3d_types.h"
 #include "servers/rendering/rendering_server.h"
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+#include "modules/texture_streaming/texture_streaming.h"
+#endif
 
 using namespace Node3DEditorConstants;
 
@@ -1324,7 +1334,7 @@ void fragment() {
 						nivec * 0.0 + ivec * 0.0,
 						nivec * 0.01 + ivec * 0.0,
 						nivec * 0.01 + ivec * GIZMO_ARROW_OFFSET,
-						nivec * 0.065 + ivec * GIZMO_ARROW_OFFSET,
+						nivec * GIZMO_ARROW_RADIUS + ivec * GIZMO_ARROW_OFFSET,
 						nivec * 0.0 + ivec * (GIZMO_ARROW_OFFSET + GIZMO_ARROW_SIZE),
 					};
 
@@ -1544,10 +1554,10 @@ void fragment() {
 					Vector3 arrow[6] = {
 						nivec * 0.0 + ivec * 0.0,
 						nivec * 0.01 + ivec * 0.0,
-						nivec * 0.01 + ivec * 1.0 * GIZMO_SCALE_OFFSET,
-						nivec * 0.07 + ivec * 1.0 * GIZMO_SCALE_OFFSET,
-						nivec * 0.07 + ivec * 1.11 * GIZMO_SCALE_OFFSET,
-						nivec * 0.0 + ivec * 1.11 * GIZMO_SCALE_OFFSET,
+						nivec * 0.01 + ivec * GIZMO_SCALE_OFFSET,
+						nivec * 0.5 * GIZMO_SCALE_SIZE + ivec * GIZMO_SCALE_OFFSET,
+						nivec * 0.5 * GIZMO_SCALE_SIZE + ivec * (GIZMO_SCALE_OFFSET + GIZMO_SCALE_SIZE),
+						nivec * 0.0 + ivec * (GIZMO_SCALE_OFFSET + GIZMO_SCALE_SIZE),
 					};
 
 					int arrow_sides = 4;
@@ -2223,7 +2233,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 	}
 
 	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::RayResult result;
+	PS3DT::RayResult result;
 
 	// The maximum height an object can travel to be snapped
 	const float max_snap_height = 500.0;
@@ -2242,7 +2252,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 			Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
 			HashSet<RID> excluded = _get_physics_bodies_rid(sp);
 
-			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			PS3DT::RayParameters ray_params;
 			ray_params.from = from;
 			ray_params.to = to;
 			ray_params.exclude = excluded;
@@ -2265,7 +2275,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 				Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
 				HashSet<RID> excluded = _get_physics_bodies_rid(sp);
 
-				PhysicsDirectSpaceState3D::RayParameters ray_params;
+				PS3DT::RayParameters ray_params;
 				ray_params.from = from;
 				ray_params.to = to;
 				ray_params.exclude = excluded;
@@ -2310,6 +2320,164 @@ void Node3DEditor::_sun_environ_settings_pressed() {
 	// (when the Add sun/environment buttons are pressed).
 	sun_environ_popup->grab_focus();
 }
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+void Node3DEditor::_textures_button_pressed() {
+	if (textures_button->is_disabled()) {
+		return;
+	}
+
+	Vector2 pos = textures_button->get_screen_position();
+	pos.y += +textures_button->get_size().y;
+	textures_popup->set_position(pos);
+	textures_popup->reset_size();
+	textures_popup->popup();
+}
+
+void Node3DEditor::_textures_button_update_state() {
+	const bool texture_streaming_enabled = GLOBAL_GET("rendering/textures/streaming/enabled");
+	textures_button->set_disabled(!texture_streaming_enabled);
+
+	if (!texture_streaming_enabled) {
+		textures_popup->hide();
+	}
+}
+
+void Node3DEditor::_textures_preset_pressed(int p_preset) {
+	textures_very_low->set_pressed(false);
+	textures_low->set_pressed(false);
+	textures_medium->set_pressed(false);
+	textures_high->set_pressed(false);
+	textures_very_high->set_pressed(false);
+	textures_max->set_pressed(false);
+
+	switch (p_preset) {
+		case TEXTURE_QUALITY_VERY_LOW:
+			textures_very_low->set_pressed(true);
+			textures_min_lod_slider->set_value(4);
+			textures_max_lod_slider->set_value(8);
+			break;
+		case TEXTURE_QUALITY_LOW:
+			textures_low->set_pressed(true);
+			textures_min_lod_slider->set_value(3);
+			textures_max_lod_slider->set_value(7);
+			break;
+		case TEXTURE_QUALITY_MEDIUM:
+			textures_medium->set_pressed(true);
+			textures_min_lod_slider->set_value(2);
+			textures_max_lod_slider->set_value(6);
+			break;
+		case TEXTURE_QUALITY_HIGH:
+			textures_high->set_pressed(true);
+			textures_min_lod_slider->set_value(1);
+			textures_max_lod_slider->set_value(5);
+			break;
+		case TEXTURE_QUALITY_VERY_HIGH:
+			textures_very_high->set_pressed(true);
+			textures_min_lod_slider->set_value(0);
+			textures_max_lod_slider->set_value(4);
+			break;
+		case TEXTURE_QUALITY_MAX:
+			textures_max->set_pressed(true);
+			textures_min_lod_slider->set_value(0);
+			textures_max_lod_slider->set_value(0);
+			break;
+	}
+}
+
+void Node3DEditor::_textures_max_lod_changed(float p_value) {
+	float max_value = textures_min_lod_slider->get_value();
+	if (p_value < max_value) {
+		textures_min_lod_slider->set_value(p_value);
+	}
+	_textures_apply_settings();
+}
+void Node3DEditor::_textures_min_lod_changed(float p_value) {
+	float min_value = textures_max_lod_slider->get_value();
+	if (p_value > min_value) {
+		textures_max_lod_slider->set_value(p_value);
+	}
+	_textures_apply_settings();
+}
+
+void Node3DEditor::_textures_budget_toggled(bool p_enabled) {
+	if (p_enabled) {
+		// textures_budget_enable->set_pressed(true);
+		textures_budget_slider->set_read_only(false);
+	} else {
+		// textures_budget_enable->set_pressed(false);
+		textures_budget_slider->set_read_only(true);
+	}
+
+	_textures_apply_settings();
+}
+
+void Node3DEditor::_textures_budget_changed(float p_value) {
+	_textures_apply_settings();
+}
+
+void Node3DEditor::_textures_save_pressed() {
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/min_lod", int(textures_min_lod_slider->get_value()));
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/max_lod", int(textures_max_lod_slider->get_value()));
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/memory_budget_mb", int(textures_budget_slider->get_value()));
+	const bool budget_enabled = textures_budget_enable->is_pressed();
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/memory_budget_enabled", budget_enabled);
+	ProjectSettings::get_singleton()->save();
+	textures_popup->hide();
+}
+
+void Node3DEditor::_textures_load_settings() {
+	int min_lod = GLOBAL_GET("rendering/textures/streaming/min_lod");
+	int max_lod = GLOBAL_GET("rendering/textures/streaming/max_lod");
+	int budget_size = GLOBAL_GET("rendering/textures/streaming/memory_budget_mb");
+	bool budget_enabled = GLOBAL_GET("rendering/textures/streaming/memory_budget_enabled");
+
+	textures_max_lod_slider->set_value(max_lod);
+	textures_min_lod_slider->set_value(min_lod);
+	textures_budget_slider->set_value(budget_size);
+	textures_budget_enable->set_pressed(budget_enabled);
+
+	_textures_max_lod_changed(textures_max_lod_slider->get_value());
+	_textures_min_lod_changed(textures_min_lod_slider->get_value());
+	_textures_budget_changed(textures_budget_slider->get_value());
+
+	textures_very_low->set_pressed(false);
+	textures_low->set_pressed(false);
+	textures_medium->set_pressed(false);
+	textures_high->set_pressed(false);
+	textures_very_high->set_pressed(false);
+	textures_max->set_pressed(false);
+
+	if (min_lod == 0 && max_lod == 0) {
+		textures_max->set_pressed(true);
+	} else if (min_lod == 0 && max_lod == 4) {
+		textures_very_high->set_pressed(true);
+	} else if (min_lod == 1 && max_lod == 5) {
+		textures_high->set_pressed(true);
+	} else if (min_lod == 2 && max_lod == 6) {
+		textures_medium->set_pressed(true);
+	} else if (min_lod == 3 && max_lod == 7) {
+		textures_low->set_pressed(true);
+	} else if (min_lod == 4 && max_lod == 8) {
+		textures_very_low->set_pressed(true);
+	}
+}
+
+void Node3DEditor::_textures_apply_settings() {
+	int min_lod = textures_min_lod_slider->get_value();
+	int max_lod = textures_max_lod_slider->get_value();
+
+	TextureStreaming::get_singleton()->set_min_lod_override(min_lod);
+	TextureStreaming::get_singleton()->set_max_lod_override(max_lod);
+	const int budget_size = textures_budget_slider->get_value();
+	const bool budget_enabled = textures_budget_enable->is_pressed();
+	if (budget_enabled) {
+		TextureStreaming::get_singleton()->set_memory_budget_mb_override(budget_size);
+	} else {
+		TextureStreaming::get_singleton()->set_memory_budget_mb_override(0);
+	}
+}
+#endif
 
 void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	sun_environ_popup->hide();
@@ -2416,14 +2584,14 @@ void Node3DEditor::_update_theme() {
 void Node3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			const String show_list_tooltip = TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.");
+			const String show_list_tooltip = vformat(TTR("%s+RMB: Show list of all nodes at position clicked, including locked."), keycode_get_string((Key)KeyModifierMask::ALT));
 			tool_button[TOOL_MODE_TRANSFORM]->set_tooltip_text(vformat(TTR("%s+Drag: Rotate selected node around pivot."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + show_list_tooltip);
 			tool_button[TOOL_MODE_MOVE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + show_list_tooltip);
 			tool_button[TOOL_MODE_ROTATE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + show_list_tooltip);
 			tool_button[TOOL_MODE_SCALE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + show_list_tooltip);
 			tool_button[TOOL_MODE_SELECT]->set_tooltip_text(show_list_tooltip);
 			tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked.") + "\n" + show_list_tooltip);
-			tool_button[TOOL_RULER]->set_tooltip_text(TTR("LMB+Drag: Measure the distance between two points in 3D space.") + "\n" + show_list_tooltip);
+			tool_button[TOOL_RULER]->set_tooltip_text(TTR("LMB+Drag: Measure the distance between two points in 3D space.") + "\n" + TTR("Shift+LMB+Drag: Show component measurements.") + "\n" + show_list_tooltip);
 			_update_gizmos_menu();
 			_update_vertex_snap_tooltips();
 		} break;
@@ -2440,6 +2608,10 @@ void Node3DEditor::_notification(int p_what) {
 
 			_update_preview_environment();
 
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+			_textures_button_update_state();
+#endif
+
 			sun_state->set_custom_minimum_size(sun_vb->get_combined_minimum_size());
 			environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
 
@@ -2448,13 +2620,19 @@ void Node3DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			_update_theme();
-			_register_all_gizmos();
-			_init_indicators();
-			update_all_gizmos();
+			if (move_gizmo[0].is_null()) {
+				_register_all_gizmos();
+				_init_indicators();
+				update_all_gizmos();
+			}
 		} break;
 
-		case NOTIFICATION_EXIT_TREE: {
-			_finish_indicators();
+		case NOTIFICATION_PROCESS: {
+			if (gizmo_bvh_needs_optimization) {
+				// Only call this once per frame and only call when dirty. This is very expensive.
+				gizmo_bvh.optimize_incremental(1);
+				gizmo_bvh_needs_optimization = false;
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -2462,6 +2640,17 @@ void Node3DEditor::_notification(int p_what) {
 			_update_gizmos_menu_theme();
 			sun_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
 			environ_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				set_process(true);
+				set_physics_process(true);
+				refresh_dirty_gizmos();
+			} else {
+				set_process(false);
+				set_physics_process(false);
+			}
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -2842,17 +3031,12 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<AudioListener3DGizmoPlugin>(memnew(AudioListener3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<MeshInstance3DGizmoPlugin>(memnew(MeshInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<OccluderInstance3DGizmoPlugin>(memnew(OccluderInstance3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpriteBase3DGizmoPlugin>(memnew(SpriteBase3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Label3DGizmoPlugin>(memnew(Label3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GeometryInstance3DGizmoPlugin>(memnew(GeometryInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Marker3DGizmoPlugin>(memnew(Marker3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<ShapeCast3DGizmoPlugin>(memnew(ShapeCast3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpringBoneCollision3DGizmoPlugin>(memnew(SpringBoneCollision3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpringBoneSimulator3DGizmoPlugin>(memnew(SpringBoneSimulator3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<VehicleWheel3DGizmoPlugin>(memnew(VehicleWheel3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<VisibleOnScreenNotifier3DGizmoPlugin>(memnew(VisibleOnScreenNotifier3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticles3DGizmoPlugin>(memnew(GPUParticles3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<GPUParticlesCollision3DGizmoPlugin>(memnew(GPUParticlesCollision3DGizmoPlugin)));
@@ -2863,14 +3047,20 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<VoxelGIGizmoPlugin>(memnew(VoxelGIGizmoPlugin)));
 	add_gizmo_plugin(Ref<LightmapGIGizmoPlugin>(memnew(LightmapGIGizmoPlugin)));
 	add_gizmo_plugin(Ref<LightmapProbeGizmoPlugin>(memnew(LightmapProbeGizmoPlugin)));
+	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
+	add_gizmo_plugin(Ref<TwoBoneIK3DGizmoPlugin>(memnew(TwoBoneIK3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<ChainIK3DGizmoPlugin>(memnew(ChainIK3DGizmoPlugin)));
+	// Physics gizmo plugins.
 	add_gizmo_plugin(Ref<CollisionObject3DGizmoPlugin>(memnew(CollisionObject3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionShape3DGizmoPlugin>(memnew(CollisionShape3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionPolygon3DGizmoPlugin>(memnew(CollisionPolygon3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SoftBody3DGizmoPlugin>(memnew(SoftBody3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<ShapeCast3DGizmoPlugin>(memnew(ShapeCast3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<SpringArm3DGizmoPlugin>(memnew(SpringArm3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
-	add_gizmo_plugin(Ref<TwoBoneIK3DGizmoPlugin>(memnew(TwoBoneIK3DGizmoPlugin)));
-	add_gizmo_plugin(Ref<ChainIK3DGizmoPlugin>(memnew(ChainIK3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<VehicleWheel3DGizmoPlugin>(memnew(VehicleWheel3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<RayCast3DGizmoPlugin>(memnew(RayCast3DGizmoPlugin)));
 }
 
 void Node3DEditor::_bind_methods() {
@@ -2885,7 +3075,7 @@ void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("update_all_gizmos", &Node3DEditor::update_all_gizmos);
 	ClassDB::bind_method("update_transform_gizmo", &Node3DEditor::update_transform_gizmo);
 
-	ADD_SIGNAL(MethodInfo("transform_key_request"));
+	ADD_SIGNAL(MethodInfo("transform_3d_key_request"));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
 }
@@ -3218,12 +3408,20 @@ void Node3DEditor::PreviewSunEnvPopup::shortcut_input(const Ref<InputEvent> &p_e
 }
 
 Node3DEditor::Node3DEditor() {
+	set_name(TTRC("3D"));
+	set_icon_name("3D");
+	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
+	set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_3d"));
+	set_allow_switch_screen(true);
+
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
 	gizmo_view_rotation_scale = GIZMO_CIRCLE_SIZE * (float)EDITOR_GET("editors/3d/view_plane_rotation_gizmo_scale");
 
 	viewport_environment.instantiate();
-	VBoxContainer *vbc = this;
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	add_child(vbc);
 
 	ERR_FAIL_COND_MSG(singleton != nullptr, "A Node3DEditor singleton already exists.");
 	singleton = this;
@@ -3239,13 +3437,13 @@ Node3DEditor::Node3DEditor() {
 	toolbar_margin->add_child(main_flow);
 
 	// Main toolbars.
-	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
-	main_flow->add_child(main_menu_hbox);
-
-	String sct;
+	// Split into separate `HBoxContainer` so they can wrap onto multiple lines as the window width decreases (the parent is a `FlowContainer`).
+	// These are not grouped by any particular criteria. Only some of the end children are grouped separately, based on their separators.
+	HBoxContainer *tool_button_hbox = memnew(HBoxContainer);
+	main_flow->add_child(tool_button_hbox);
 
 	tool_button[TOOL_MODE_TRANSFORM] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_TRANSFORM]);
+	tool_button_hbox->add_child(tool_button[TOOL_MODE_TRANSFORM]);
 	tool_button[TOOL_MODE_TRANSFORM]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_TRANSFORM]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_TRANSFORM]->set_pressed(true);
@@ -3255,7 +3453,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_TRANSFORM]->set_accessibility_name(TTRC("Transform Mode"));
 
 	tool_button[TOOL_MODE_MOVE] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_MOVE]);
+	tool_button_hbox->add_child(tool_button[TOOL_MODE_MOVE]);
 	tool_button[TOOL_MODE_MOVE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_MOVE]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tool_button[TOOL_MODE_MOVE]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -3266,7 +3464,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_MOVE]->set_accessibility_name(TTRC("Move Mode"));
 
 	tool_button[TOOL_MODE_ROTATE] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_ROTATE]);
+	tool_button_hbox->add_child(tool_button[TOOL_MODE_ROTATE]);
 	tool_button[TOOL_MODE_ROTATE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_ROTATE]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tool_button[TOOL_MODE_ROTATE]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -3276,7 +3474,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_ROTATE]->set_accessibility_name(TTRC("Rotate Mode"));
 
 	tool_button[TOOL_MODE_SCALE] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_SCALE]);
+	tool_button_hbox->add_child(tool_button[TOOL_MODE_SCALE]);
 	tool_button[TOOL_MODE_SCALE]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SCALE]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tool_button[TOOL_MODE_SCALE]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -3286,7 +3484,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SCALE]->set_accessibility_name(TTRC("Scale Mode"));
 
 	tool_button[TOOL_MODE_SELECT] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
+	tool_button_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
 	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_SELECT]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tool_button[TOOL_MODE_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -3295,18 +3493,18 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
 	tool_button[TOOL_MODE_SELECT]->set_accessibility_name(TTRC("Select Mode"));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	tool_button_hbox->add_child(memnew(VSeparator));
 
 	tool_button[TOOL_MODE_LIST_SELECT] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_LIST_SELECT]);
+	tool_button_hbox->add_child(tool_button[TOOL_MODE_LIST_SELECT]);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_toggle_mode(true);
 	tool_button[TOOL_MODE_LIST_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_MODE_LIST_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_LIST_SELECT));
-	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
+	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked.") + "\n" + vformat(TTR("%s+RMB: Show list of all nodes at position clicked, including locked."), keycode_get_string((Key)KeyModifierMask::ALT)));
 	tool_button[TOOL_MODE_LIST_SELECT]->set_accessibility_name(TTRC("Show List of Selectable Nodes"));
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_LOCK_SELECTED]);
+	tool_button_hbox->add_child(tool_button[TOOL_LOCK_SELECTED]);
 	tool_button[TOOL_LOCK_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_LOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_LOCK_SELECTED));
 	tool_button[TOOL_LOCK_SELECTED]->set_tooltip_text(TTRC("Lock selected node, preventing selection and movement."));
@@ -3315,7 +3513,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_LOCK_SELECTED]->set_accessibility_name(TTRC("Lock"));
 
 	tool_button[TOOL_UNLOCK_SELECTED] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
+	tool_button_hbox->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_UNLOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNLOCK_SELECTED));
 	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip_text(TTRC("Unlock selected node, allowing selection and movement."));
@@ -3324,7 +3522,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_UNLOCK_SELECTED]->set_accessibility_name(TTRC("Unlock"));
 
 	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
+	tool_button_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
 	tool_button[TOOL_GROUP_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_GROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_GROUP_SELECTED));
 	tool_button[TOOL_GROUP_SELECTED]->set_tooltip_text(TTRC("Groups the selected node with its children. This selects the parent when any child node is clicked in 2D and 3D view."));
@@ -3333,7 +3531,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_GROUP_SELECTED]->set_accessibility_name(TTRC("Group"));
 
 	tool_button[TOOL_UNGROUP_SELECTED] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
+	tool_button_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
 	tool_button[TOOL_UNGROUP_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_UNGROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNGROUP_SELECTED));
 	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip_text(TTRC("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
@@ -3342,19 +3540,18 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_UNGROUP_SELECTED]->set_accessibility_name(TTRC("Ungroup"));
 
 	tool_button[TOOL_RULER] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_RULER]);
+	tool_button_hbox->add_child(tool_button[TOOL_RULER]);
 	tool_button[TOOL_RULER]->set_toggle_mode(true);
 	tool_button[TOOL_RULER]->set_theme_type_variation("FlatButton");
 	tool_button[TOOL_RULER]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_RULER));
-	tool_button[TOOL_RULER]->set_tooltip_text(TTRC("LMB+Drag: Measure distance between two points.\nShift+LMB+Drag: Show component measurements."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_RULER]->set_shortcut(ED_SHORTCUT("spatial_editor/measure", TTRC("Ruler Mode"), Key::M));
 	tool_button[TOOL_RULER]->set_accessibility_name(TTRC("Ruler Mode"));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	tool_button_hbox->add_child(memnew(VSeparator));
 
 	tool_option_button[TOOL_OPT_LOCAL_COORDS] = memnew(Button);
-	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_LOCAL_COORDS]);
+	tool_button_hbox->add_child(tool_option_button[TOOL_OPT_LOCAL_COORDS]);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_LOCAL_COORDS));
@@ -3363,7 +3560,7 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_accessibility_name(TTRC("Use Local Space"));
 
 	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(Button);
-	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
+	tool_button_hbox->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_option_button[TOOL_OPT_USE_SNAP]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_USE_SNAP));
@@ -3372,7 +3569,7 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_accessibility_name(TTRC("Use Snap"));
 
 	tool_option_button[TOOL_OPT_USE_TRACKBALL] = memnew(Button);
-	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_USE_TRACKBALL]);
+	tool_button_hbox->add_child(tool_option_button[TOOL_OPT_USE_TRACKBALL]);
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_USE_TRACKBALL));
@@ -3381,7 +3578,7 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_accessibility_name(TTRC("Use Trackball"));
 
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM] = memnew(Button);
-	main_menu_hbox->add_child(tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]);
+	tool_button_hbox->add_child(tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]);
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_PRESERVE_CHILDREN_TRANSFORM));
@@ -3390,7 +3587,11 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_accessibility_name(TTRC("Preserve Children Transform"));
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_tooltip_text(TTRC("When enabled, transforming a node will preserve the global transform of its children.\nThis also applies when editing transform properties in the Inspector."));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	tool_button_hbox->add_child(memnew(VSeparator));
+
+	HBoxContainer *environment_hbox = memnew(HBoxContainer);
+	main_flow->add_child(environment_hbox);
+
 	sun_button = memnew(Button);
 	sun_button->set_tooltip_text(TTRC("Toggle preview sunlight.\nIf a DirectionalLight3D node is added to the scene, preview sunlight is disabled."));
 	sun_button->set_toggle_mode(true);
@@ -3400,7 +3601,7 @@ Node3DEditor::Node3DEditor() {
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
 	sun_button->set_pressed(true);
 
-	main_menu_hbox->add_child(sun_button);
+	environment_hbox->add_child(sun_button);
 
 	environ_button = memnew(Button);
 	environ_button->set_tooltip_text(TTRC("Toggle preview environment.\nIf a WorldEnvironment node is added to the scene, preview environment is disabled."));
@@ -3411,16 +3612,19 @@ Node3DEditor::Node3DEditor() {
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
 	environ_button->set_pressed(true);
 
-	main_menu_hbox->add_child(environ_button);
+	environment_hbox->add_child(environ_button);
 
 	sun_environ_settings = memnew(Button);
 	sun_environ_settings->set_tooltip_text(TTRC("Edit Sun and Environment settings."));
 	sun_environ_settings->set_theme_type_variation(SceneStringName(FlatButton));
 	sun_environ_settings->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_sun_environ_settings_pressed));
 
-	main_menu_hbox->add_child(sun_environ_settings);
+	environment_hbox->add_child(sun_environ_settings);
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	environment_hbox->add_child(memnew(VSeparator));
+
+	HBoxContainer *transform_view_hbox = memnew(HBoxContainer);
+	main_flow->add_child(transform_view_hbox);
 
 	// Drag and drop support;
 	preview_node = memnew(Node3D);
@@ -3462,7 +3666,7 @@ Node3DEditor::Node3DEditor() {
 	transform_menu->set_text(TTRC("Transform"));
 	transform_menu->set_switch_on_hover(true);
 	transform_menu->set_shortcut_context(this);
-	main_menu_hbox->add_child(transform_menu);
+	transform_view_hbox->add_child(transform_menu);
 
 	p = transform_menu->get_popup();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTRC("Snap Object to Floor"), Key::PAGEDOWN), MENU_SNAP_TO_FLOOR);
@@ -3492,9 +3696,19 @@ Node3DEditor::Node3DEditor() {
 	view_layout_menu->set_text(TTRC("View"));
 	view_layout_menu->set_switch_on_hover(true);
 	view_layout_menu->set_shortcut_context(this);
-	main_menu_hbox->add_child(view_layout_menu);
+	transform_view_hbox->add_child(view_layout_menu);
+	transform_view_hbox->add_child(memnew(VSeparator));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	textures_button = memnew(Button);
+	textures_button->set_text(TTRC("Textures"));
+	textures_button->set_tooltip_text(TTRC("Edit texture streaming quality settings."));
+	textures_button->set_theme_type_variation(SceneStringName(FlatButton));
+	textures_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_button_pressed));
+
+	main_flow->add_child(textures_button);
+	main_flow->add_child(memnew(VSeparator));
+#endif
 
 	context_toolbar_panel = memnew(PanelContainer);
 	context_toolbar_hbox = memnew(HBoxContainer);
@@ -3905,10 +4119,125 @@ void fragment() {
 		_load_default_preview_settings();
 		_preview_settings_changed();
 	}
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	{
+		textures_popup = memnew(PopupPanel);
+		add_child(textures_popup);
+
+		VBoxContainer *textures_vb = memnew(VBoxContainer);
+		textures_vb->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+		textures_vb->add_theme_constant_override("separation", 10);
+		textures_popup->add_child(textures_vb);
+
+		// Presets
+		HBoxContainer *presets_hb = memnew(HBoxContainer);
+		presets_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_very_low = memnew(Button);
+		textures_very_low->set_text(TTRC("Very Low"));
+		textures_very_low->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_very_low->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_very_low->set_toggle_mode(true);
+		textures_very_low->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_VERY_LOW), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_very_low);
+
+		textures_low = memnew(Button);
+		textures_low->set_text(TTRC("Low"));
+		textures_low->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_low->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_low->set_toggle_mode(true);
+		textures_low->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_LOW), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_low);
+
+		textures_medium = memnew(Button);
+		textures_medium->set_text(TTRC("Medium"));
+		textures_medium->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_medium->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_medium->set_toggle_mode(true);
+		textures_medium->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_MEDIUM), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_medium);
+
+		textures_high = memnew(Button);
+		textures_high->set_text(TTRC("High"));
+		textures_high->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_high->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_high->set_toggle_mode(true);
+		textures_high->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_HIGH), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_high);
+
+		textures_very_high = memnew(Button);
+		textures_very_high->set_text(TTRC("Very High"));
+		textures_very_high->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_very_high->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_very_high->set_toggle_mode(true);
+		textures_very_high->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_VERY_HIGH), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_very_high);
+
+		textures_max = memnew(Button);
+		textures_max->set_text(TTRC("Max"));
+		textures_max->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_max->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_max->set_toggle_mode(true);
+		textures_max->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_MAX), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_max);
+
+		textures_vb->add_margin_child(TTRC("Quality Presets"), presets_hb);
+
+		textures_max_lod_slider = memnew(EditorSpinSlider);
+		textures_max_lod_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_max_lod_slider->set_min(0);
+		textures_max_lod_slider->set_max(13);
+		textures_max_lod_slider->set_step(1);
+		textures_max_lod_slider->set_label(TTRC("Max LOD"));
+		textures_max_lod_slider->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_textures_max_lod_changed), CONNECT_DEFERRED);
+		textures_vb->add_child(textures_max_lod_slider);
+
+		textures_min_lod_slider = memnew(EditorSpinSlider);
+		textures_min_lod_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_min_lod_slider->set_min(0);
+		textures_min_lod_slider->set_max(13);
+		textures_min_lod_slider->set_step(1);
+		textures_min_lod_slider->set_label(TTRC("Min LOD"));
+		textures_min_lod_slider->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_textures_min_lod_changed), CONNECT_DEFERRED);
+		textures_vb->add_child(textures_min_lod_slider);
+
+		VBoxContainer *textures_budget_vb = memnew(VBoxContainer);
+		textures_budget_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		textures_budget_enable = memnew(CheckBox);
+		textures_budget_enable->set_text(TTRC("Limit Maximum Texture Memory Budget"));
+		textures_budget_enable->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_budget_enable->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_textures_budget_toggled), CONNECT_DEFERRED);
+		textures_budget_vb->add_child(textures_budget_enable);
+
+		textures_budget_slider = memnew(EditorSpinSlider);
+		textures_budget_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_budget_slider->set_min(1);
+		textures_budget_slider->set_max(8192); // 8 GB
+		textures_budget_slider->set_suffix(" MiB");
+		textures_budget_slider->set_step(1);
+		textures_budget_slider->set_label(TTRC("Memory Budget:"));
+		textures_budget_slider->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_textures_budget_changed), CONNECT_DEFERRED);
+		textures_budget_vb->add_child(textures_budget_slider);
+
+		textures_vb->add_margin_child(TTRC("Memory Budget:"), textures_budget_vb);
+
+		Button *textures_save = memnew(Button);
+		textures_save->set_text(TTRC("Save to Project Settings"));
+		textures_save->set_anchors_preset(LayoutPreset::PRESET_CENTER_RIGHT);
+		textures_save->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_save_pressed), CONNECT_DEFERRED);
+		textures_vb->add_child(textures_save);
+
+		_textures_button_update_state();
+		_textures_load_settings();
+		_textures_apply_settings();
+	}
+#endif
 	clear(); // Make sure values are initialized. Will call _snap_update() for us.
 }
 Node3DEditor::~Node3DEditor() {
 	singleton = nullptr;
+	_finish_indicators();
 	memdelete(preview_node);
 	if (preview_sun_dangling && preview_sun) {
 		memdelete(preview_sun);
@@ -3929,14 +4258,7 @@ void Node3DEditorPlugin::edited_scene_changed() {
 
 void Node3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		spatial_editor->show();
-		spatial_editor->set_process(true);
-		spatial_editor->set_physics_process(true);
-		spatial_editor->refresh_dirty_gizmos();
-	} else {
-		spatial_editor->hide();
-		spatial_editor->set_process(false);
-		spatial_editor->set_physics_process(false);
+		spatial_editor->make_visible();
 	}
 }
 
@@ -3945,7 +4267,7 @@ void Node3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Node3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Node3D");
+	return Object::cast_to<Node3D>(p_object);
 }
 
 Dictionary Node3DEditorPlugin::get_state() const {
@@ -4080,7 +4402,7 @@ DynamicBVH::ID Node3DEditor::insert_gizmo_bvh_node(Node3D *p_node, const AABB &p
 
 void Node3DEditor::update_gizmo_bvh_node(DynamicBVH::ID p_id, const AABB &p_aabb) {
 	gizmo_bvh.update(p_id, p_aabb);
-	gizmo_bvh.optimize_incremental(1);
+	gizmo_bvh_needs_optimization = true;
 }
 
 void Node3DEditor::remove_gizmo_bvh_node(DynamicBVH::ID p_id) {
@@ -4120,7 +4442,7 @@ Vector<Node3D *> Node3DEditor::gizmo_bvh_frustum_query(const Vector<Plane> &p_fr
 Node3DEditorPlugin::Node3DEditorPlugin() {
 	spatial_editor = memnew(Node3DEditor);
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(spatial_editor);
+	EditorDockManager::get_singleton()->add_dock(spatial_editor);
 
 	spatial_editor->hide();
 }

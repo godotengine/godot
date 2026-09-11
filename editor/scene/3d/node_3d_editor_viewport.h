@@ -541,6 +541,8 @@ private:
 	void _set_lock_view_rotation(bool p_lock_rotation);
 	void _add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods = SupportedRenderingMethods::ALL, const String &p_tooltip = "");
 
+	real_t _screen_space_selection_cost(const Vector3 &p_center, const float p_radius, const Vector3 &p_pos);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -570,6 +572,7 @@ public:
 	SubViewport *get_viewport_node() { return viewport; }
 	Camera3D *get_camera_3d() { return camera; } // return the default camera object.
 	Control *get_surface() { return surface; }
+	Ref<View3DController> get_controller() { return view_3d_controller; }
 
 	Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index);
 	~Node3DEditorViewport();

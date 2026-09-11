@@ -34,8 +34,8 @@
 #include "core/input/input.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
-#import "drivers/apple_embedded/app_delegate_service.h"
 #import "drivers/apple_embedded/apple_embedded.h"
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
 #import "drivers/apple_embedded/godot_keyboard_input_view.h"
 #import "drivers/apple_embedded/godot_view_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_controller.h"
@@ -352,6 +352,10 @@ void DisplayServerAppleEmbedded::update_gyroscope(const Vector3 &p_gyroscope) {
 	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
+void DisplayServerAppleEmbedded::update_device_orientation(const Quaternion &p_orientation) {
+	Input::get_singleton()->set_device_orientation(p_orientation);
+}
+
 // MARK: -
 
 bool DisplayServerAppleEmbedded::has_feature(DisplayServerEnums::Feature p_feature) const {
@@ -479,7 +483,11 @@ void DisplayServerAppleEmbedded::emit_system_theme_changed() {
 	}
 }
 
-Rect2i DisplayServerAppleEmbedded::get_display_safe_area() const {
+Rect2i DisplayServerAppleEmbedded::get_display_safe_area(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	UIEdgeInsets insets = UIEdgeInsetsZero;
 	UIView *view = GDTAppDelegateService.viewController.godotView;
 	if ([view respondsToSelector:@selector(safeAreaInsets)]) {

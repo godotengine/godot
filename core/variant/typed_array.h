@@ -33,7 +33,7 @@
 #include "core/variant/type_info.h"
 
 template <typename T>
-class TypedArray : public Array {
+class _WARN_UNUSED_ TypedArray : public Array {
 public:
 	_FORCE_INLINE_ void operator=(const Array &p_array) {
 		ERR_FAIL_COND_MSG(!is_same_typed(p_array), "Cannot assign an array with a different element type.");

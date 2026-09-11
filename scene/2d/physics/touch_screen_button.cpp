@@ -217,6 +217,10 @@ void TouchScreenButton::_notification(int p_what) {
 				_release();
 			}
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			queue_redraw();
+		} break;
 	}
 }
 

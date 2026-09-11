@@ -34,7 +34,7 @@
 #include "scene/resources/environment.h"
 
 #ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_3d/physics_server_3d.h"
+class PhysicsDirectSpaceState3D;
 #endif // PHYSICS_3D_DISABLED
 
 class CameraAttributes;

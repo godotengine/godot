@@ -441,12 +441,12 @@ private:
 
 #ifndef DISABLE_DEPRECATED
 
-	RID _get_color_texture_compat_80214();
-	RID _get_color_layer_compat_80214(const uint32_t p_layer);
-	RID _get_depth_texture_compat_80214();
-	RID _get_depth_layer_compat_80214(const uint32_t p_layer);
-	RID _get_velocity_texture_compat_80214();
-	RID _get_velocity_layer_compat_80214(const uint32_t p_layer);
+	RID _get_color_texture_bind_compat_80214();
+	RID _get_color_layer_bind_compat_80214(const uint32_t p_layer);
+	RID _get_depth_texture_bind_compat_80214();
+	RID _get_depth_layer_bind_compat_80214(const uint32_t p_layer);
+	RID _get_velocity_texture_bind_compat_80214();
+	RID _get_velocity_layer_bind_compat_80214(const uint32_t p_layer);
 
 	RID _create_texture_bind_compat_98670(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples, const Size2i p_size, const uint32_t p_layers, const uint32_t p_mipmaps, bool p_unique);
 

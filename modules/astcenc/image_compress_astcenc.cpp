@@ -36,7 +36,22 @@
 #include <astcenc.h>
 
 #ifdef TOOLS_ENABLED
-void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
+Image::CompressProfile _pick_profile_from_channels(Image::UsedChannels p_channels) {
+	switch (p_channels) {
+		case Image::USED_CHANNELS_L:
+		case Image::USED_CHANNELS_R:
+			return Image::COMPRESS_PROFILE_MAX_COMPRESSION;
+		case Image::USED_CHANNELS_LA:
+		case Image::USED_CHANNELS_RG:
+			return Image::COMPRESS_PROFILE_COMPRESSED;
+		case Image::USED_CHANNELS_RGB:
+		case Image::USED_CHANNELS_RGBA:
+		default:
+			return Image::COMPRESS_PROFILE_MAX_QUALITY;
+	}
+}
+
+void _compress_astc(Image *r_img, Image::UsedChannels p_channels, Image::CompressProfile p_profile) {
 	const uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	if (r_img->is_compressed()) {
@@ -58,37 +73,40 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 	const astcenc_profile profile = is_hdr ? ASTCENC_PRF_HDR : ASTCENC_PRF_LDR;
 
 	Image::Format target_format = Image::FORMAT_MAX;
-	unsigned int block_x = 4;
-	unsigned int block_y = 4;
+	unsigned int block_x = 1, block_y = 1;
+	if (p_profile == Image::COMPRESS_PROFILE_AUTOMATIC) {
+		// Automatic profile will automatically pick one of the other profiles based on the amount of channels currently in use.
+		p_profile = _pick_profile_from_channels(p_channels);
+	}
 
-	if (p_format == Image::ASTCFormat::ASTC_FORMAT_4x4) {
-		if (is_hdr) {
-			target_format = Image::FORMAT_ASTC_4x4_HDR;
-		} else {
-			target_format = Image::FORMAT_ASTC_4x4;
-		}
-	} else if (p_format == Image::ASTCFormat::ASTC_FORMAT_8x8) {
-		if (is_hdr) {
-			target_format = Image::FORMAT_ASTC_8x8_HDR;
-		} else {
-			target_format = Image::FORMAT_ASTC_8x8;
-		}
-		block_x = 8;
-		block_y = 8;
+	switch (p_profile) {
+		case Image::COMPRESS_PROFILE_MAX_QUALITY:
+			target_format = is_hdr ? Image::FORMAT_ASTC_4x4_HDR : Image::FORMAT_ASTC_4x4;
+			block_x = block_y = 4;
+			break;
+		case Image::COMPRESS_PROFILE_COMPRESSED:
+			target_format = is_hdr ? Image::FORMAT_ASTC_6x6_HDR : Image::FORMAT_ASTC_6x6;
+			block_x = block_y = 6;
+			break;
+		case Image::COMPRESS_PROFILE_MAX_COMPRESSION:
+			target_format = is_hdr ? Image::FORMAT_ASTC_8x8_HDR : Image::FORMAT_ASTC_8x8;
+			block_x = block_y = 8;
+			break;
+		default:
+			break;
 	}
 
 	// Compress image data and (if required) mipmaps.
 	const bool has_mipmaps = r_img->has_mipmaps();
+
 	int width = r_img->get_width();
 	int height = r_img->get_height();
-	int required_width = (width % block_x) != 0 ? width + (block_x - (width % block_x)) : width;
-	int required_height = (height % block_y) != 0 ? height + (block_y - (height % block_y)) : height;
+	width = (width % block_x) != 0 ? width + (block_x - (width % block_x)) : width;
+	height = (height % block_y) != 0 ? height + (block_y - (height % block_y)) : height;
 
-	if (width != required_width || height != required_height) {
-		// Resize texture to fit block size.
-		r_img->resize(required_width, required_height);
-		width = required_width;
-		height = required_height;
+	if (r_img->get_width() != width || r_img->get_height() != height) {
+		// Align the image to the block size.
+		r_img->resize(width, height, Image::INTERPOLATE_NEAREST);
 	}
 
 	print_verbose(vformat("astcenc: Encoding image size %dx%d to format %s%s.", width, height, Image::get_format_name(target_format), has_mipmaps ? ", with mipmaps" : ""));
@@ -195,6 +213,16 @@ void _decompress_astc(Image *r_img) {
 			block_y = 4;
 			is_hdr = true;
 		} break;
+		case Image::FORMAT_ASTC_6x6: {
+			block_x = 6;
+			block_y = 6;
+			is_hdr = false;
+		} break;
+		case Image::FORMAT_ASTC_6x6_HDR: {
+			block_x = 6;
+			block_y = 6;
+			is_hdr = true;
+		} break;
 		case Image::FORMAT_ASTC_8x8: {
 			block_x = 8;
 			block_y = 8;
@@ -257,9 +285,6 @@ void _decompress_astc(Image *r_img) {
 
 		int dst_mip_w, dst_mip_h;
 		const int64_t dst_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, dst_mip_w, dst_mip_h);
-
-		// Ensure that mip offset is a multiple of 8 (etcpak expects uint64_t pointer).
-		ERR_FAIL_COND(dst_ofs % 8 != 0);
 		uint8_t *dest_mip_write = &dest_write[dst_ofs];
 
 		astcenc_image image;
@@ -267,7 +292,6 @@ void _decompress_astc(Image *r_img) {
 		image.dim_y = dst_mip_h;
 		image.dim_z = 1;
 		image.data_type = is_hdr ? ASTCENC_TYPE_F16 : ASTCENC_TYPE_U8;
-
 		image.data = (void **)(&dest_mip_write);
 
 		const astcenc_swizzle swizzle = {

@@ -293,6 +293,10 @@ partial class ExportedProperties
         /// </summary>
         public new static readonly global::Godot.StringName @PropertyGodotGenericArray = "PropertyGodotGenericArray";
         /// <summary>
+        /// Cached name for the 'NotIgnoredProperty' property.
+        /// </summary>
+        public new static readonly global::Godot.StringName @NotIgnoredProperty = "NotIgnoredProperty";
+        /// <summary>
         /// Cached name for the '_notGeneratePropertyString' field.
         /// </summary>
         public new static readonly global::Godot.StringName @_notGeneratePropertyString = "_notGeneratePropertyString";
@@ -607,6 +611,10 @@ partial class ExportedProperties
         }
         if (name == PropertyName.@PropertyGodotGenericArray) {
             this.@PropertyGodotGenericArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<int>(value);
+            return true;
+        }
+        if (name == PropertyName.@NotIgnoredProperty) {
+            this.@NotIgnoredProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
             return true;
         }
         if (name == PropertyName.@_notGeneratePropertyString) {
@@ -927,6 +935,10 @@ partial class ExportedProperties
             value = global::Godot.NativeInterop.VariantUtils.CreateFromArray(this.@PropertyGodotGenericArray);
             return true;
         }
+        if (name == PropertyName.@NotIgnoredProperty) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@NotIgnoredProperty);
+            return true;
+        }
         if (name == PropertyName.@_notGeneratePropertyString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@_notGeneratePropertyString);
             return true;
@@ -1044,6 +1056,7 @@ partial class ExportedProperties
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.@PropertyGodotArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)27, name: PropertyName.@PropertyGodotGenericDictionary, hint: (global::Godot.PropertyHint)23, hintString: "4/0:;1/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.@PropertyGodotGenericArray, hint: (global::Godot.PropertyHint)23, hintString: "2/0:", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.@NotIgnoredProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         return properties;
     }
 #pragma warning restore CS0109

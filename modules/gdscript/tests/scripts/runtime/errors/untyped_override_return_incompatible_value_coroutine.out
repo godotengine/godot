@@ -1,0 +1,5 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR at runtime/errors/untyped_override_return_incompatible_value_coroutine.gd:20 on B.bool_coroutine(): Trying to return a value of type "String" from a function whose return type is "bool".
+false
+>> SCRIPT ERROR at runtime/errors/untyped_override_return_incompatible_value_coroutine.gd:24 on B.resource_coroutine(): Trying to return a value of type "String" from a function whose return type is "Resource".
+null

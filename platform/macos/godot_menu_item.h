@@ -58,8 +58,10 @@ enum GlobalMenuCheckType {
 	GlobalMenuCheckType checkable_type;
 	bool checked;
 	bool enabled;
+	bool indeterminate;
 	int max_states;
 	int state;
+	int indent;
 	Ref<Image> img;
 }
 

@@ -133,7 +133,7 @@ uint64_t OpenXRAPIExtension::get_session() {
 	return (uint64_t)OpenXRAPI::get_singleton()->get_session();
 }
 
-Transform3D OpenXRAPIExtension::transform_from_pose(GDExtensionConstPtr<const void> p_pose) {
+Transform3D OpenXRAPIExtension::transform_from_pose(GDExtensionPtr<const void> p_pose) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), Transform3D());
 	return OpenXRAPI::get_singleton()->transform_from_pose(*(XrPosef *)p_pose.data);
 }
@@ -213,7 +213,7 @@ bool OpenXRAPIExtension::is_running() {
 	return OpenXRAPI::get_singleton()->is_running();
 }
 
-void OpenXRAPIExtension::set_custom_play_space(GDExtensionConstPtr<const void> p_custom_space) {
+void OpenXRAPIExtension::set_custom_play_space(GDExtensionPtr<const void> p_custom_space) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->set_custom_play_space(*(XrSpace *)p_custom_space.data);
 }

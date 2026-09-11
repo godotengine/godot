@@ -45,12 +45,12 @@ enum class Status {
 
 VARIANT_ENUM_CAST(compat::StreamPeerTCP::Status);
 
-compat::StreamPeerTCP::Status StreamPeerSocket::_get_status_compat_107954() const {
+compat::StreamPeerTCP::Status StreamPeerSocket::_get_status_bind_compat_107954() const {
 	return (compat::StreamPeerTCP::Status)get_status();
 }
 
 void StreamPeerSocket::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_status"), &StreamPeerSocket::_get_status_compat_107954);
+	ClassDB::bind_compatibility_method(D_METHOD("get_status"), &StreamPeerSocket::_get_status_bind_compat_107954);
 }
 
 #endif // DISABLE_DEPRECATED

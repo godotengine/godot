@@ -45,7 +45,8 @@ void TouchActionsPanel::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			DisplayServer::get_singleton()->set_hardware_keyboard_connection_change_callback(callable_mp(this, &TouchActionsPanel::_hardware_keyboard_connected));
 			_hardware_keyboard_connected(DisplayServer::get_singleton()->has_hardware_keyboard());
-			if (!is_floating) {
+			DisplayServer::get_singleton()->connect("orientation_changed", callable_mp(this, &TouchActionsPanel::_screen_orientation_changed));
+			if (!is_floating && !portrait_mode) {
 				get_parent()->move_child(this, embedded_panel_index);
 			}
 		} break;
@@ -71,6 +72,7 @@ void TouchActionsPanel::_notification(int p_what) {
 			cut_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCut")));
 			copy_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
 			paste_button->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
+			tab_button->set_button_icon(get_editor_theme_icon(SNAME("KeyboardTab")));
 		} break;
 	}
 }
@@ -91,6 +93,22 @@ void TouchActionsPanel::input(const Ref<InputEvent> &event) {
 
 void TouchActionsPanel::_hardware_keyboard_connected(bool p_connected) {
 	set_visible(!p_connected);
+}
+
+void TouchActionsPanel::_screen_orientation_changed(int p_new_orientation) {
+	portrait_mode = p_new_orientation == 1;
+
+	if (is_floating) {
+		set_position(EDITOR_DEF(portrait_mode ? "_touch_actions_panel_portrait_pos" : "_touch_actions_panel_position", Point2(100, 480)));
+		return;
+	}
+
+	box->set_vertical(!portrait_mode);
+	box->set_alignment(portrait_mode ? BoxContainer::ALIGNMENT_CENTER : BoxContainer::ALIGNMENT_BEGIN);
+	panel_pos_button->set_visible(!portrait_mode);
+	separator->set_color(portrait_mode ? Color(0, 0, 0, 0) : Color(0.5, 0.5, 0.5));
+	get_parent()->move_child(this, portrait_mode ? 1 : embedded_panel_index);
+	get_parent()->call("set_vertical", portrait_mode);
 }
 
 void TouchActionsPanel::_simulate_editor_shortcut(const String &p_shortcut_name) {
@@ -129,7 +147,7 @@ void TouchActionsPanel::_on_modifier_button_toggled(bool p_pressed, int p_modifi
 
 Button *TouchActionsPanel::_add_new_action_button(const String &p_shortcut, const String &p_name, Key p_keycode) {
 	Button *action_button = memnew(Button);
-	action_button->set_theme_type_variation("FlatMenuButton");
+	action_button->set_theme_type_variation("TouchActionsPanelButton");
 	action_button->set_accessibility_name(p_name);
 	action_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	action_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -158,7 +176,7 @@ void TouchActionsPanel::_add_new_modifier_button(Modifier p_modifier) {
 	Button *toggle_button = memnew(Button);
 	toggle_button->set_text(text);
 	toggle_button->set_toggle_mode(true);
-	toggle_button->set_theme_type_variation("FlatMenuButton");
+	toggle_button->set_theme_type_variation("TouchActionsPanelButton");
 	toggle_button->set_accessibility_name(text);
 	toggle_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	toggle_button->connect(SceneStringName(toggled), callable_mp(this, &TouchActionsPanel::_on_modifier_button_toggled).bind((int)p_modifier));
@@ -177,7 +195,7 @@ void TouchActionsPanel::_on_drag_handle_gui_input(const Ref<InputEvent> &p_event
 		} else {
 			if (dragging) {
 				dragging = false;
-				EditorSettings::get_singleton()->set("_touch_actions_panel_position", get_position());
+				EditorSettings::get_singleton()->set(portrait_mode ? "_touch_actions_panel_portrait_pos" : "_touch_actions_panel_position", get_position());
 				EditorSettings::get_singleton()->save();
 			}
 		}
@@ -186,7 +204,7 @@ void TouchActionsPanel::_on_drag_handle_gui_input(const Ref<InputEvent> &p_event
 	Ref<InputEventMouseMotion> mouse_motion_event = p_event;
 	if (dragging && mouse_motion_event.is_valid()) {
 		Vector2 new_position = get_position() + mouse_motion_event->get_relative();
-		const float margin = 25.0;
+		const float margin = 15.0;
 		Vector2 parent_size = get_parent_area_size();
 		Vector2 panel_size = get_size();
 		new_position = new_position.clamp(Vector2(margin, margin), parent_size - panel_size - Vector2(margin, margin));
@@ -223,9 +241,11 @@ void TouchActionsPanel::_switch_embedded_panel_side() {
 	EditorSettings::get_singleton()->save();
 }
 
-TouchActionsPanel::TouchActionsPanel() {
-	int panel_mode = EDITOR_GET("interface/touchscreen/touch_actions_panel");
-	is_floating = panel_mode == 2;
+TouchActionsPanel::TouchActionsPanel(bool p_floating) {
+	is_floating = p_floating;
+
+	Vector2 parent_area = get_parent_area_size();
+	portrait_mode = parent_area.height > parent_area.width;
 
 	if (is_floating) {
 		Ref<StyleBoxFlat> panel_style;
@@ -237,10 +257,11 @@ TouchActionsPanel::TouchActionsPanel() {
 		panel_style->set_content_margin_all(12);
 		add_theme_style_override(SceneStringName(panel), panel_style);
 
-		set_position(EDITOR_DEF("_touch_actions_panel_position", Point2(480, 480))); // Dropped it here for no good reason — users can move it anyway.
+		set_position(EDITOR_DEF(portrait_mode ? "_touch_actions_panel_portrait_pos" : "_touch_actions_panel_position", Point2(100, 480)));
 	}
 
 	box = memnew(BoxContainer);
+	box->set_alignment(portrait_mode ? BoxContainer::ALIGNMENT_CENTER : BoxContainer::ALIGNMENT_BEGIN);
 	box->add_theme_constant_override("separation", 20);
 	if (is_floating) {
 		box->set_vertical(EDITOR_DEF("_touch_actions_panel_vertical_layout", false));
@@ -257,7 +278,7 @@ TouchActionsPanel::TouchActionsPanel() {
 		box->add_child(drag_handle);
 
 		layout_toggle_button = memnew(Button);
-		layout_toggle_button->set_theme_type_variation("FlatMenuButton");
+		layout_toggle_button->set_theme_type_variation("TouchActionsPanelButton");
 		layout_toggle_button->set_accessibility_name(TTRC("Switch Layout"));
 		layout_toggle_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 		layout_toggle_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -266,7 +287,7 @@ TouchActionsPanel::TouchActionsPanel() {
 
 		lock_panel_button = memnew(Button);
 		lock_panel_button->set_toggle_mode(true);
-		lock_panel_button->set_theme_type_variation("FlatMenuButton");
+		lock_panel_button->set_theme_type_variation("TouchActionsPanelButton");
 		lock_panel_button->set_accessibility_name(TTRC("Lock Panel"));
 		lock_panel_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 		lock_panel_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -274,18 +295,24 @@ TouchActionsPanel::TouchActionsPanel() {
 		box->add_child(lock_panel_button);
 	} else {
 		panel_pos_button = memnew(Button);
-		panel_pos_button->set_theme_type_variation("FlatMenuButton");
+		panel_pos_button->set_theme_type_variation("TouchActionsPanelButton");
 		panel_pos_button->set_accessibility_name(TTRC("Switch Embedded Panel Position"));
 		panel_pos_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 		panel_pos_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+		panel_pos_button->set_visible(!portrait_mode);
 		panel_pos_button->connect(SceneStringName(pressed), callable_mp(this, &TouchActionsPanel::_switch_embedded_panel_side));
 		box->add_child(panel_pos_button);
 
 		embedded_panel_index = EDITOR_DEF("_touch_actions_panel_embed_index", 0);
 	}
 
-	ColorRect *separator = memnew(ColorRect);
-	separator->set_color(Color(0.5, 0.5, 0.5));
+	separator = memnew(ColorRect);
+	if (is_floating || !portrait_mode) {
+		separator->set_color(Color(0.5, 0.5, 0.5));
+	} else {
+		// Using it as a margin for corner radius.
+		separator->set_color(Color(0, 0, 0, 0));
+	}
 	separator->set_custom_minimum_size(Size2(2, 2));
 	box->add_child(separator);
 
@@ -297,6 +324,7 @@ TouchActionsPanel::TouchActionsPanel() {
 	cut_button = _add_new_action_button("ui_cut", TTRC("Cut"));
 	copy_button = _add_new_action_button("ui_copy", TTRC("Copy"));
 	paste_button = _add_new_action_button("ui_paste", TTRC("Paste"));
+	tab_button = _add_new_action_button("", TTRC("Tab"), Key::TAB);
 
 	_add_new_modifier_button(MODIFIER_CTRL);
 	_add_new_modifier_button(MODIFIER_SHIFT);

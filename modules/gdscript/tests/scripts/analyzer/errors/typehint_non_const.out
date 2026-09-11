@@ -1,0 +1,7 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 7: Member "ItemStatic" under base "UserDef" is not a valid type.
+>> ERROR at line 8: "Item" is a variable, so it can't be used as a type.
+>> ERROR at line 9: "ItemStatic" is a variable, so it can't be used as a type.
+>> ERROR at line 12: Member "ItemStatic" under base "UserDef" is not a valid type.
+>> ERROR at line 13: "Item" is a variable, so it can't be used as a type.
+>> ERROR at line 14: "ItemStatic" is a variable, so it can't be used as a type.

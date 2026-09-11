@@ -16,7 +16,13 @@
     <uses-feature android:name="android.hardware.xr.input.hand_tracking" android:required="false" />
     <uses-permission android:name="android.permission.HAND_TRACKING" />
 
+    <!-- Head tracking -->
+    <uses-permission android:name="android.permission.HEAD_TRACKING" />
+
     <application>
+        <!-- Required for spatial container support on AndroidXR. -->
+        <meta-data android:name="com.android.extensions.xr.uses_experimental_openxr_feature" android:value="true" />
+
         <uses-native-library android:name="libopenxr.google.so" android:required="false" />
 
         <property
@@ -36,6 +42,31 @@
             <property
                 android:name="android.window.PROPERTY_XR_ACTIVITY_START_MODE"
                 android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_UNMANAGED" />
+        </activity>
+
+        <activity
+            android:name=".GodotSpatialContainerGame0"
+            android:exported="false"
+            tools:node="merge">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <property
+                android:name="android.window.PROPERTY_XR_ACTIVITY_START_MODE"
+                android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_MANAGED" />
+        </activity>
+        <activity
+            android:name=".GodotSpatialContainerGame1"
+            android:exported="false"
+            tools:node="merge">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <property
+                android:name="android.window.PROPERTY_XR_ACTIVITY_START_MODE"
+                android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_MANAGED" />
         </activity>
     </application>
 

@@ -109,12 +109,12 @@ uint64_t Color::to_rgba64() const {
 	return c;
 }
 
-void _append_hex(float p_val, char32_t *string) {
+void _append_hex(float p_val, char32_t *r_string) {
 	int v = Math::round(p_val * 255.0f);
 	v = CLAMP(v, 0, 255);
 
-	string[0] = hex_char_table_lower[(v >> 4) & 0xF];
-	string[1] = hex_char_table_lower[v & 0xF];
+	r_string[0] = hex_char_table_lower[(v >> 4) & 0xF];
+	r_string[1] = hex_char_table_lower[v & 0xF];
 }
 
 String Color::to_html(bool p_alpha) const {

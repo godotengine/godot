@@ -607,12 +607,8 @@ public:
 		}
 
 		~Instance() {
-			if (base_data) {
-				memdelete(base_data);
-			}
-			if (custom_aabb) {
-				memdelete(custom_aabb);
-			}
+			memdelete(base_data);
+			memdelete(custom_aabb);
 		}
 	};
 

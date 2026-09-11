@@ -40,34 +40,34 @@
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
-RID GodotPhysicsServer2D::_shape_create(ShapeType p_shape) {
+RID GodotPhysicsServer2D::_shape_create(PS2DE::ShapeType p_shape) {
 	GodotShape2D *shape = nullptr;
 	switch (p_shape) {
-		case SHAPE_WORLD_BOUNDARY: {
+		case PS2DE::SHAPE_WORLD_BOUNDARY: {
 			shape = memnew(GodotWorldBoundaryShape2D);
 		} break;
-		case SHAPE_SEPARATION_RAY: {
+		case PS2DE::SHAPE_SEPARATION_RAY: {
 			shape = memnew(GodotSeparationRayShape2D);
 		} break;
-		case SHAPE_SEGMENT: {
+		case PS2DE::SHAPE_SEGMENT: {
 			shape = memnew(GodotSegmentShape2D);
 		} break;
-		case SHAPE_CIRCLE: {
+		case PS2DE::SHAPE_CIRCLE: {
 			shape = memnew(GodotCircleShape2D);
 		} break;
-		case SHAPE_RECTANGLE: {
+		case PS2DE::SHAPE_RECTANGLE: {
 			shape = memnew(GodotRectangleShape2D);
 		} break;
-		case SHAPE_CAPSULE: {
+		case PS2DE::SHAPE_CAPSULE: {
 			shape = memnew(GodotCapsuleShape2D);
 		} break;
-		case SHAPE_CONVEX_POLYGON: {
+		case PS2DE::SHAPE_CONVEX_POLYGON: {
 			shape = memnew(GodotConvexPolygonShape2D);
 		} break;
-		case SHAPE_CONCAVE_POLYGON: {
+		case PS2DE::SHAPE_CONCAVE_POLYGON: {
 			shape = memnew(GodotConcavePolygonShape2D);
 		} break;
-		case SHAPE_CUSTOM: {
+		case PS2DE::SHAPE_CUSTOM: {
 			ERR_FAIL_V(RID());
 
 		} break;
@@ -80,35 +80,35 @@ RID GodotPhysicsServer2D::_shape_create(ShapeType p_shape) {
 }
 
 RID GodotPhysicsServer2D::world_boundary_shape_create() {
-	return _shape_create(SHAPE_WORLD_BOUNDARY);
+	return _shape_create(PS2DE::SHAPE_WORLD_BOUNDARY);
 }
 
 RID GodotPhysicsServer2D::separation_ray_shape_create() {
-	return _shape_create(SHAPE_SEPARATION_RAY);
+	return _shape_create(PS2DE::SHAPE_SEPARATION_RAY);
 }
 
 RID GodotPhysicsServer2D::segment_shape_create() {
-	return _shape_create(SHAPE_SEGMENT);
+	return _shape_create(PS2DE::SHAPE_SEGMENT);
 }
 
 RID GodotPhysicsServer2D::circle_shape_create() {
-	return _shape_create(SHAPE_CIRCLE);
+	return _shape_create(PS2DE::SHAPE_CIRCLE);
 }
 
 RID GodotPhysicsServer2D::rectangle_shape_create() {
-	return _shape_create(SHAPE_RECTANGLE);
+	return _shape_create(PS2DE::SHAPE_RECTANGLE);
 }
 
 RID GodotPhysicsServer2D::capsule_shape_create() {
-	return _shape_create(SHAPE_CAPSULE);
+	return _shape_create(PS2DE::SHAPE_CAPSULE);
 }
 
 RID GodotPhysicsServer2D::convex_polygon_shape_create() {
-	return _shape_create(SHAPE_CONVEX_POLYGON);
+	return _shape_create(PS2DE::SHAPE_CONVEX_POLYGON);
 }
 
 RID GodotPhysicsServer2D::concave_polygon_shape_create() {
-	return _shape_create(SHAPE_CONCAVE_POLYGON);
+	return _shape_create(PS2DE::SHAPE_CONCAVE_POLYGON);
 }
 
 void GodotPhysicsServer2D::shape_set_data(RID p_shape, const Variant &p_data) {
@@ -123,9 +123,9 @@ void GodotPhysicsServer2D::shape_set_custom_solver_bias(RID p_shape, real_t p_bi
 	shape->set_custom_bias(p_bias);
 }
 
-PhysicsServer2D::ShapeType GodotPhysicsServer2D::shape_get_type(RID p_shape) const {
+PS2DE::ShapeType GodotPhysicsServer2D::shape_get_type(RID p_shape) const {
 	const GodotShape2D *shape = shape_owner.get_or_null(p_shape);
-	ERR_FAIL_NULL_V(shape, SHAPE_CUSTOM);
+	ERR_FAIL_NULL_V(shape, PS2DE::SHAPE_CUSTOM);
 	return shape->get_type();
 }
 
@@ -244,14 +244,14 @@ bool GodotPhysicsServer2D::space_is_active(RID p_space) const {
 	return active_spaces.has(space);
 }
 
-void GodotPhysicsServer2D::space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) {
+void GodotPhysicsServer2D::space_set_param(RID p_space, PS2DE::SpaceParameter p_param, real_t p_value) {
 	GodotSpace2D *space = space_owner.get_or_null(p_space);
 	ERR_FAIL_NULL(space);
 
 	space->set_param(p_param, p_value);
 }
 
-real_t GodotPhysicsServer2D::space_get_param(RID p_space, SpaceParameter p_param) const {
+real_t GodotPhysicsServer2D::space_get_param(RID p_space, PS2DE::SpaceParameter p_param) const {
 	const GodotSpace2D *space = space_owner.get_or_null(p_space);
 	ERR_FAIL_NULL_V(space, 0);
 	return space->get_param(p_param);
@@ -436,7 +436,7 @@ ObjectID GodotPhysicsServer2D::area_get_canvas_instance_id(RID p_area) const {
 	return area->get_canvas_instance_id();
 }
 
-void GodotPhysicsServer2D::area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) {
+void GodotPhysicsServer2D::area_set_param(RID p_area, PS2DE::AreaParameter p_param, const Variant &p_value) {
 	if (space_owner.owns(p_area)) {
 		GodotSpace2D *space = space_owner.get_or_null(p_area);
 		p_area = space->get_default_area()->get_self();
@@ -452,7 +452,7 @@ void GodotPhysicsServer2D::area_set_transform(RID p_area, const Transform2D &p_t
 	area->set_transform(p_transform);
 }
 
-Variant GodotPhysicsServer2D::area_get_param(RID p_area, AreaParameter p_param) const {
+Variant GodotPhysicsServer2D::area_get_param(RID p_area, PS2DE::AreaParameter p_param) const {
 	if (space_owner.owns(p_area)) {
 		GodotSpace2D *space = space_owner.get_or_null(p_area);
 		p_area = space->get_default_area()->get_self();
@@ -563,7 +563,7 @@ RID GodotPhysicsServer2D::body_get_space(RID p_body) const {
 	return space->get_self();
 }
 
-void GodotPhysicsServer2D::body_set_mode(RID p_body, BodyMode p_mode) {
+void GodotPhysicsServer2D::body_set_mode(RID p_body, PS2DE::BodyMode p_mode) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 	FLUSH_QUERY_CHECK(body);
@@ -571,9 +571,9 @@ void GodotPhysicsServer2D::body_set_mode(RID p_body, BodyMode p_mode) {
 	body->set_mode(p_mode);
 }
 
-PhysicsServer2D::BodyMode GodotPhysicsServer2D::body_get_mode(RID p_body) const {
+PS2DE::BodyMode GodotPhysicsServer2D::body_get_mode(RID p_body) const {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_NULL_V(body, BODY_MODE_STATIC);
+	ERR_FAIL_NULL_V(body, PS2DE::BODY_MODE_STATIC);
 
 	return body->get_mode();
 }
@@ -664,15 +664,15 @@ void GodotPhysicsServer2D::body_set_shape_as_one_way_collision(RID p_body, int p
 	body->set_shape_as_one_way_collision(p_shape_idx, p_enable, p_margin, p_direction);
 }
 
-void GodotPhysicsServer2D::body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode) {
+void GodotPhysicsServer2D::body_set_continuous_collision_detection_mode(RID p_body, PS2DE::CCDMode p_mode) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 	body->set_continuous_collision_detection_mode(p_mode);
 }
 
-GodotPhysicsServer2D::CCDMode GodotPhysicsServer2D::body_get_continuous_collision_detection_mode(RID p_body) const {
+PS2DE::CCDMode GodotPhysicsServer2D::body_get_continuous_collision_detection_mode(RID p_body) const {
 	const GodotBody2D *body = body_owner.get_or_null(p_body);
-	ERR_FAIL_NULL_V(body, CCD_MODE_DISABLED);
+	ERR_FAIL_NULL_V(body, PS2DE::CCD_MODE_DISABLED);
 
 	return body->get_continuous_collision_detection_mode();
 }
@@ -745,14 +745,14 @@ real_t GodotPhysicsServer2D::body_get_collision_priority(RID p_body) const {
 	return body->get_collision_priority();
 }
 
-void GodotPhysicsServer2D::body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) {
+void GodotPhysicsServer2D::body_set_param(RID p_body, PS2DE::BodyParameter p_param, const Variant &p_value) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 
 	body->set_param(p_param, p_value);
 }
 
-Variant GodotPhysicsServer2D::body_get_param(RID p_body, BodyParameter p_param) const {
+Variant GodotPhysicsServer2D::body_get_param(RID p_body, PS2DE::BodyParameter p_param) const {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, 0);
 
@@ -766,14 +766,14 @@ void GodotPhysicsServer2D::body_reset_mass_properties(RID p_body) {
 	return body->reset_mass_properties();
 }
 
-void GodotPhysicsServer2D::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
+void GodotPhysicsServer2D::body_set_state(RID p_body, PS2DE::BodyState p_state, const Variant &p_variant) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 
 	body->set_state(p_state, p_variant);
 }
 
-Variant GodotPhysicsServer2D::body_get_state(RID p_body, BodyState p_state) const {
+Variant GodotPhysicsServer2D::body_get_state(RID p_body, PS2DE::BodyState p_state) const {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, Variant());
 
@@ -990,7 +990,7 @@ void GodotPhysicsServer2D::body_set_pickable(RID p_body, bool p_pickable) {
 	body->set_pickable(p_pickable);
 }
 
-bool GodotPhysicsServer2D::body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result) {
+bool GodotPhysicsServer2D::body_test_motion(RID p_body, const PS2DT::MotionParameters &p_parameters, PS2DT::MotionResult *r_result) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL_V(body, false);
 	ERR_FAIL_NULL_V(body->get_space(), false);
@@ -1032,7 +1032,7 @@ RID GodotPhysicsServer2D::joint_create() {
 void GodotPhysicsServer2D::joint_clear(RID p_joint) {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);
-	if (joint->get_type() != JOINT_TYPE_MAX) {
+	if (joint->get_type() != PS2DE::JOINT_TYPE_MAX) {
 		GodotJoint2D *empty_joint = memnew(GodotJoint2D);
 		empty_joint->copy_settings_from(joint);
 
@@ -1041,35 +1041,35 @@ void GodotPhysicsServer2D::joint_clear(RID p_joint) {
 	}
 }
 
-void GodotPhysicsServer2D::joint_set_param(RID p_joint, JointParam p_param, real_t p_value) {
+void GodotPhysicsServer2D::joint_set_param(RID p_joint, PS2DE::JointParam p_param, real_t p_value) {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);
 
 	switch (p_param) {
-		case JOINT_PARAM_BIAS:
+		case PS2DE::JOINT_PARAM_BIAS:
 			joint->set_bias(p_value);
 			break;
-		case JOINT_PARAM_MAX_BIAS:
+		case PS2DE::JOINT_PARAM_MAX_BIAS:
 			joint->set_max_bias(p_value);
 			break;
-		case JOINT_PARAM_MAX_FORCE:
+		case PS2DE::JOINT_PARAM_MAX_FORCE:
 			joint->set_max_force(p_value);
 			break;
 	}
 }
 
-real_t GodotPhysicsServer2D::joint_get_param(RID p_joint, JointParam p_param) const {
+real_t GodotPhysicsServer2D::joint_get_param(RID p_joint, PS2DE::JointParam p_param) const {
 	const GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, -1);
 
 	switch (p_param) {
-		case JOINT_PARAM_BIAS:
+		case PS2DE::JOINT_PARAM_BIAS:
 			return joint->get_bias();
 			break;
-		case JOINT_PARAM_MAX_BIAS:
+		case PS2DE::JOINT_PARAM_MAX_BIAS:
 			return joint->get_max_bias();
 			break;
-		case JOINT_PARAM_MAX_FORCE:
+		case PS2DE::JOINT_PARAM_MAX_FORCE:
 			return joint->get_max_force();
 			break;
 	}
@@ -1157,63 +1157,63 @@ void GodotPhysicsServer2D::joint_make_damped_spring(RID p_joint, const Vector2 &
 	memdelete(prev_joint);
 }
 
-void GodotPhysicsServer2D::pin_joint_set_flag(RID p_joint, PinJointFlag p_flag, bool p_enabled) {
+void GodotPhysicsServer2D::pin_joint_set_flag(RID p_joint, PS2DE::PinJointFlag p_flag, bool p_enabled) {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_PIN);
+	ERR_FAIL_COND(joint->get_type() != PS2DE::JOINT_TYPE_PIN);
 
 	GodotPinJoint2D *pin_joint = static_cast<GodotPinJoint2D *>(joint);
 	pin_joint->set_flag(p_flag, p_enabled);
 }
 
-bool GodotPhysicsServer2D::pin_joint_get_flag(RID p_joint, PinJointFlag p_flag) const {
+bool GodotPhysicsServer2D::pin_joint_get_flag(RID p_joint, PS2DE::PinJointFlag p_flag) const {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, false);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_PIN, false);
+	ERR_FAIL_COND_V(joint->get_type() != PS2DE::JOINT_TYPE_PIN, false);
 
 	GodotPinJoint2D *pin_joint = static_cast<GodotPinJoint2D *>(joint);
 	return pin_joint->get_flag(p_flag);
 }
 
-void GodotPhysicsServer2D::pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) {
+void GodotPhysicsServer2D::pin_joint_set_param(RID p_joint, PS2DE::PinJointParam p_param, real_t p_value) {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_PIN);
+	ERR_FAIL_COND(joint->get_type() != PS2DE::JOINT_TYPE_PIN);
 
 	GodotPinJoint2D *pin_joint = static_cast<GodotPinJoint2D *>(joint);
 	pin_joint->set_param(p_param, p_value);
 }
 
-real_t GodotPhysicsServer2D::pin_joint_get_param(RID p_joint, PinJointParam p_param) const {
+real_t GodotPhysicsServer2D::pin_joint_get_param(RID p_joint, PS2DE::PinJointParam p_param) const {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_PIN, 0);
+	ERR_FAIL_COND_V(joint->get_type() != PS2DE::JOINT_TYPE_PIN, 0);
 
 	GodotPinJoint2D *pin_joint = static_cast<GodotPinJoint2D *>(joint);
 	return pin_joint->get_param(p_param);
 }
 
-void GodotPhysicsServer2D::damped_spring_joint_set_param(RID p_joint, DampedSpringParam p_param, real_t p_value) {
+void GodotPhysicsServer2D::damped_spring_joint_set_param(RID p_joint, PS2DE::DampedSpringParam p_param, real_t p_value) {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_DAMPED_SPRING);
+	ERR_FAIL_COND(joint->get_type() != PS2DE::JOINT_TYPE_DAMPED_SPRING);
 
 	GodotDampedSpringJoint2D *dsj = static_cast<GodotDampedSpringJoint2D *>(joint);
 	dsj->set_param(p_param, p_value);
 }
 
-real_t GodotPhysicsServer2D::damped_spring_joint_get_param(RID p_joint, DampedSpringParam p_param) const {
+real_t GodotPhysicsServer2D::damped_spring_joint_get_param(RID p_joint, PS2DE::DampedSpringParam p_param) const {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != JOINT_TYPE_DAMPED_SPRING, 0);
+	ERR_FAIL_COND_V(joint->get_type() != PS2DE::JOINT_TYPE_DAMPED_SPRING, 0);
 
 	GodotDampedSpringJoint2D *dsj = static_cast<GodotDampedSpringJoint2D *>(joint);
 	return dsj->get_param(p_param);
 }
 
-PhysicsServer2D::JointType GodotPhysicsServer2D::joint_get_type(RID p_joint) const {
+PS2DE::JointType GodotPhysicsServer2D::joint_get_type(RID p_joint) const {
 	GodotJoint2D *joint = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_NULL_V(joint, JOINT_TYPE_PIN);
+	ERR_FAIL_NULL_V(joint, PS2DE::JOINT_TYPE_PIN);
 
 	return joint->get_type();
 }
@@ -1372,15 +1372,15 @@ void GodotPhysicsServer2D::_update_shapes() {
 	}
 }
 
-int GodotPhysicsServer2D::get_process_info(ProcessInfo p_info) {
+int GodotPhysicsServer2D::get_process_info(PS2DE::ProcessInfo p_info) {
 	switch (p_info) {
-		case INFO_ACTIVE_OBJECTS: {
+		case PS2DE::INFO_ACTIVE_OBJECTS: {
 			return active_objects;
 		} break;
-		case INFO_COLLISION_PAIRS: {
+		case PS2DE::INFO_COLLISION_PAIRS: {
 			return collision_pairs;
 		} break;
-		case INFO_ISLAND_COUNT: {
+		case PS2DE::INFO_ISLAND_COUNT: {
 			return island_count;
 		} break;
 	}

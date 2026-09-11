@@ -4,7 +4,7 @@
 		Generic 3D position hint for editing.
 	</brief_description>
 	<description>
-		Generic 3D position hint for editing. It's just like a plain [Node3D], but it displays as a cross in the 3D editor at all times.
+		Generic 3D position hint for editing. This is like a plain [Node3D], but it displays as a cross in the 3D editor.
 	</description>
 	<tutorials>
 	</tutorials>

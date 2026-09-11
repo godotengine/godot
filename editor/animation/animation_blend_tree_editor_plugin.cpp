@@ -255,7 +255,8 @@ void AnimationNodeBlendTreeEditor::update_graph_immediately() {
 		if (AnimationTreeEditor::get_singleton()->can_edit(agnode)) {
 			node->add_child(memnew(HSeparator));
 			Button *open_in_editor = memnew(Button);
-			open_in_editor->set_text(TTR("Open Editor"));
+			open_in_editor->set_text(TTR("Open"));
+			open_in_editor->set_tooltip_text(TTR("Open in editor."));
 			open_in_editor->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			node->add_child(open_in_editor);
 			open_in_editor->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_open_in_editor).bind(E), CONNECT_DEFERRED);
@@ -1181,7 +1182,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 
 	//change editors accordingly
 	for (int i = 0; i < visible_properties.size(); i++) {
-		String pname = visible_properties[i]->get_edited_property().operator String();
+		String pname = visible_properties[i]->get_edited_property().string();
 		if (pname.begins_with(base_path + prev_name)) {
 			String new_name2 = pname.replace_first(base_path + prev_name, base_path + name);
 			visible_properties[i]->set_object_and_property(visible_properties[i]->get_edited_object(), new_name2);

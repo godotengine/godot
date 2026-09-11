@@ -74,16 +74,16 @@ struct MethodInfo {
 
 	MethodInfo() {}
 
-	explicit MethodInfo(const GDExtensionMethodInfo &pinfo) :
-			name(*reinterpret_cast<StringName *>(pinfo.name)),
-			return_val(PropertyInfo(pinfo.return_value)),
-			flags(pinfo.flags),
-			id(pinfo.id) {
-		for (uint32_t i = 0; i < pinfo.argument_count; i++) {
-			arguments.push_back(PropertyInfo(pinfo.arguments[i]));
+	explicit MethodInfo(const GDExtensionMethodInfo &p_info) :
+			name(*reinterpret_cast<StringName *>(p_info.name)),
+			return_val(PropertyInfo(p_info.return_value)),
+			flags(p_info.flags),
+			id(p_info.id) {
+		for (uint32_t i = 0; i < p_info.argument_count; i++) {
+			arguments.push_back(PropertyInfo(p_info.arguments[i]));
 		}
-		const Variant *def_values = (const Variant *)pinfo.default_arguments;
-		for (uint32_t j = 0; j < pinfo.default_argument_count; j++) {
+		const Variant *def_values = (const Variant *)p_info.default_arguments;
+		for (uint32_t j = 0; j < p_info.default_argument_count; j++) {
 			default_arguments.push_back(def_values[j]);
 		}
 	}
@@ -96,16 +96,16 @@ struct MethodInfo {
 		arguments = Vector<PropertyInfo>{ p_params... };
 	}
 
-	MethodInfo(Variant::Type ret) { return_val.type = ret; }
-	MethodInfo(Variant::Type ret, const String &p_name) {
-		return_val.type = ret;
+	MethodInfo(Variant::Type p_ret) { return_val.type = p_ret; }
+	MethodInfo(Variant::Type p_ret, const String &p_name) {
+		return_val.type = p_ret;
 		name = p_name;
 	}
 
 	template <typename... VarArgs>
-	MethodInfo(Variant::Type ret, const String &p_name, VarArgs... p_params) {
+	MethodInfo(Variant::Type p_ret, const String &p_name, VarArgs... p_params) {
 		name = p_name;
-		return_val.type = ret;
+		return_val.type = p_ret;
 		arguments = Vector<PropertyInfo>{ p_params... };
 	}
 

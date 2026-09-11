@@ -35,9 +35,11 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
 #include "servers/display/display_server_enums.h"
-#include "servers/rendering/rendering_device_enums.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_types.h"
+#ifdef RD_ENABLED
+#include "servers/rendering/rendering_device_enums.h"
+#endif
 
 namespace Geometry3D {
 struct MeshData;
@@ -95,7 +97,7 @@ protected:
 	void _canvas_item_add_circle_bind_compat_84523(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color);
 	void _instance_set_interpolated_bind_compat_104269(RID p_instance, bool p_interpolated);
 	void _instance_reset_physics_interpolation_bind_compat_104269(RID p_instance);
-	void _viewport_set_size_compat_115799(RID p_viewport, int p_width, int p_height);
+	void _viewport_set_size_bind_compat_115799(RID p_viewport, int p_width, int p_height);
 	void _particles_request_process_time_bind_compat_109142(RID p_particles, real_t p_request_process_time);
 
 	static void _bind_compatibility_methods();
@@ -133,6 +135,7 @@ public:
 	virtual Vector<Ref<Image>> texture_3d_get(RID p_texture) const = 0;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
+	virtual void texture_replace_compatible(RID p_texture, RID p_by_texture) = 0;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
@@ -148,6 +151,9 @@ public:
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
 
 	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) = 0;
+
+	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) = 0;
+
 	Array _texture_debug_usage_bind();
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
@@ -434,6 +440,8 @@ public:
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) = 0;
 	virtual RSE::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) = 0;
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RSE::ShadowmaskMode p_mode) = 0;
+	virtual float lightmap_get_specular_intensity(RID p_lightmap) = 0;
+	virtual void lightmap_set_specular_intensity(RID p_lightmap, float p_intensity) = 0;
 
 	/* PARTICLES API */
 
@@ -981,7 +989,9 @@ public:
 	virtual uint64_t get_rendering_info(RSE::RenderingInfo p_info) = 0;
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
+#ifdef RD_ENABLED
 	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const = 0;
+#endif // RD_ENABLED
 	virtual String get_video_adapter_api_version() const = 0;
 
 	virtual void set_frame_profiling_enabled(bool p_enable) = 0;
@@ -1034,8 +1044,10 @@ public:
 
 	virtual Size2i get_maximum_viewport_size() const = 0;
 
+#ifdef RD_ENABLED
 	RenderingDevice *get_rendering_device() const;
 	RenderingDevice *create_local_rendering_device() const;
+#endif // RD_ENABLED
 
 	bool is_render_loop_enabled() const;
 	void set_render_loop_enabled(bool p_enabled);

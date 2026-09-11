@@ -148,7 +148,7 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	validation->add_line(0);
 	validation->set_update_callback(callable_mp(this, &EditorLayoutsDialog::_validate_name));
 	validation->set_accept_button(get_ok_button());
-	validation->set_v_size_flags(0);
+	validation->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
 
 	layout_names = memnew(ItemList);
 	layout_names->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

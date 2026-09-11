@@ -130,6 +130,7 @@ void AnimationTreeEditor::_update_error_message() {
 		last_error_key = String();
 		error_button->hide();
 		error_scroll->hide();
+		status_bar->hide(); // Since status bar is currently only used for errors.
 		current_scope_error_label->clear();
 		return;
 	}
@@ -272,6 +273,7 @@ void AnimationTreeEditor::_update_error_message() {
 
 	error_button->set_text(itos(count));
 	error_button->show();
+	status_bar->show();
 }
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
@@ -547,8 +549,9 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	editor_base->set_v_size_flags(SIZE_EXPAND_FILL);
 	editor_vbox->add_child(editor_base);
 
-	HBoxContainer *status_bar = memnew(HBoxContainer);
+	status_bar = memnew(HBoxContainer);
 	editor_vbox->add_child(status_bar);
+	status_bar->hide();
 
 	current_scope_error_label = memnew(RichTextLabel);
 	current_scope_error_label->set_fit_content(true);

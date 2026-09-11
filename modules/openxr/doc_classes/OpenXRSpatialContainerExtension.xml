@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialContainerExtension" inherits="OpenXRExtensionWrapper" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		OpenXR extension that handles spatial containers.
+	</brief_description>
+	<description>
+		OpenXR extension that handles spatial containers. Enabling this extension will automatically create a main spatial container, and update the lifecycle of the XR application.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_spatial_container_bounds">
+			<return type="Vector3" />
+			<description>
+				Retrieves the bounds of the main spatial container.
+			</description>
+		</method>
+		<method name="get_spatial_container_state">
+			<return type="OpenXRSpatialContainerState" />
+			<description>
+				Retrieves the [OpenXRSpatialContainerState] of the main spatial container.
+			</description>
+		</method>
+		<method name="get_supported_bounds_modes">
+			<return type="Array" />
+			<description>
+				Returns an array of supported spatial container bounds mode, see [enum OpenXRSpatialContainerState.BoundsMode].
+			</description>
+		</method>
+		<method name="is_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if spatial containers are enabled in the project settings and available on the current runtime.
+			</description>
+		</method>
+		<method name="is_spatial_container_active" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the main spatial container is active.
+			</description>
+		</method>
+		<method name="request_spatial_container_bounds_mode">
+			<return type="bool" />
+			<param index="0" name="bounds_mode" type="int" enum="OpenXRSpatialContainerState.BoundsMode" />
+			<description>
+				Sends a request to the runtime to update the bounds mode of the main spatial container.
+				If the request is accepted, [signal spatial_container_bounds_changed] will be emitted with the updated bounds mode.
+				Otherwise, [signal spatial_container_bounds_mode_request_denied] will be emitted.
+			</description>
+		</method>
+		<method name="request_spatial_container_visible">
+			<return type="bool" />
+			<param index="0" name="visible" type="bool" />
+			<description>
+				Sends a request to the runtime to update the visibility of the spatial container.
+				If the request is accepted, [signal spatial_container_visible_changed] will be emitted with the updated visibility.
+				Otherwise, [signal spatial_container_visible_request_denied] will be emitted.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="spatial_container_bounds_changed">
+			<param index="0" name="spatial_container_rid" type="RID" />
+			<param index="1" name="spatial_container_infinite_bounds" type="bool" />
+			<param index="2" name="spatial_container_bounds_mode" type="int" />
+			<param index="3" name="spatial_container_bounds" type="Vector3" />
+			<description>
+				Emitted when the bounds of the spatial container specified by [param spatial_container_rid] are updated.
+			</description>
+		</signal>
+		<signal name="spatial_container_bounds_mode_request_denied">
+			<param index="0" name="spatial_container_rid" type="RID" />
+			<description>
+				Emitted when a request to update the bounds mode of the spatial container specified by [param spatial_container_rid] is denied by the runtime.
+			</description>
+		</signal>
+		<signal name="spatial_container_closed">
+			<param index="0" name="spatial_container_rid" type="RID" />
+			<description>
+				Emitted when the spatial container specified by [param spatial_container_rid] is closed.
+			</description>
+		</signal>
+		<signal name="spatial_container_interactable_changed">
+			<param index="0" name="spatial_container_rid" type="RID" />
+			<param index="1" name="spatial_container_interactable" type="bool" />
+			<description>
+				Emitted when the interactability of the spatial container specified by [param spatial_container_rid] is updated.
+			</description>
+		</signal>
+		<signal name="spatial_container_visible_changed">
+			<param index="0" name="spatial_container_rid" type="RID" />
+			<param index="1" name="spatial_container_visible" type="bool" />
+			<description>
+				Emitted when the visibility of the spatial container specified by [param spatial_container_rid] is updated.
+			</description>
+		</signal>
+		<signal name="spatial_container_visible_request_denied">
+			<param index="0" name="spatial_container_rid" type="RID" />
+			<description>
+				Emitted when the runtime denies the visibility request of the spatial container specified by [param spatial_container_rid].
+			</description>
+		</signal>
+	</signals>
+</class>

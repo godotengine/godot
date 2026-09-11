@@ -35,6 +35,8 @@
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/world_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void RayCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
@@ -178,6 +180,10 @@ void RayCast2D::_notification(int p_what) {
 			}
 			_update_raycast_state();
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			queue_redraw();
+		} break;
 	}
 }
 
@@ -195,10 +201,10 @@ void RayCast2D::_update_raycast_state() {
 		to = Vector2(0, 0.01);
 	}
 
-	PhysicsDirectSpaceState2D::RayResult rr;
+	PS2DT::RayResult rr;
 	bool prev_collision_state = collided;
 
-	PhysicsDirectSpaceState2D::RayParameters ray_params;
+	PS2DT::RayParameters ray_params;
 	ray_params.from = gt.get_origin();
 	ray_params.to = gt.xform(to);
 	ray_params.exclude = exclude;
@@ -270,18 +276,18 @@ void RayCast2D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void RayCast2D::add_exception(RequiredParam<const CollisionObject2D> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject2D.");
-	add_exception_rid(p_node->get_rid());
+void RayCast2D::add_exception(RequiredParam<const CollisionObject2D> p_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(node, p_node, "The passed Node must be an instance of CollisionObject2D.");
+	add_exception_rid(node->get_rid());
 }
 
 void RayCast2D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void RayCast2D::remove_exception(RequiredParam<const CollisionObject2D> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject2D.");
-	remove_exception_rid(p_node->get_rid());
+void RayCast2D::remove_exception(RequiredParam<const CollisionObject2D> p_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(node, p_node, "The passed Node must be an instance of CollisionObject2D.");
+	remove_exception_rid(node->get_rid());
 }
 
 void RayCast2D::clear_exceptions() {

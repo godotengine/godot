@@ -2,9 +2,6 @@
 # Only lines that start with "Validate extension JSON:" matter, everything else is considered a comment and ignored.
 # They should instead be used to justify these changes and describe how users should work around these changes.
 
-GH-{PR_NUMBER}
---------------
-
 Validate extension ....
 Validate extension ....
 

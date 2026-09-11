@@ -45,14 +45,14 @@ String ColorModeRGB::get_slider_label(int idx) const {
 
 float ColorModeRGB::get_slider_value(int idx) const {
 	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider value.");
-	return color_picker->color_normalized.components[idx] * 255;
+	return color_picker->color_normalized[idx] * 255;
 }
 
 Color ColorModeRGB::get_color() const {
 	Vector<float> values = color_picker->get_active_slider_values();
 	Color color;
 	for (int i = 0; i < 4; i++) {
-		color.components[i] = values[i] / 255.0;
+		color[i] = values[i] / 255.0;
 	}
 	return color;
 }
@@ -62,7 +62,7 @@ void ColorModeRGB::_greater_value_inputted() {
 	Color color_prev = color_picker->color;
 	for (int i = 0; i < 3; i++) {
 		if (sliders[i]->get_value() > 255) {
-			color_prev.components[i] = sliders[i]->get_value() / 255.0;
+			color_prev[i] = sliders[i]->get_value() / 255.0;
 		}
 	}
 	Color linear_color = color_prev.srgb_to_linear();
@@ -234,7 +234,7 @@ float ColorModeLinear::get_slider_max(int idx) const {
 float ColorModeLinear::get_slider_value(int idx) const {
 	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider value.");
 	Color color = color_picker->color_normalized.srgb_to_linear();
-	return color.components[idx];
+	return color[idx];
 }
 
 float ColorModeLinear::get_alpha_slider_max() const {
@@ -249,7 +249,7 @@ Color ColorModeLinear::get_color() const {
 	Vector<float> values = color_picker->get_active_slider_values();
 	Color color;
 	for (int i = 0; i < 4; i++) {
-		color.components[i] = values[i];
+		color[i] = values[i];
 	}
 	return color.linear_to_srgb();
 }
@@ -260,7 +260,7 @@ void ColorModeLinear::_greater_value_inputted() {
 	Color linear_color = color_prev.srgb_to_linear();
 	for (int i = 0; i < 3; i++) {
 		if (sliders[i]->get_value() > 1 + CMP_EPSILON) {
-			linear_color.components[i] = sliders[i]->get_value();
+			linear_color[i] = sliders[i]->get_value();
 		}
 	}
 

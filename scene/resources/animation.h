@@ -259,6 +259,7 @@ private:
 	LocalVector<Track *> tracks;
 #ifdef TOOLS_ENABLED
 	HashSet<StringName> folded_groups;
+	bool folded_groups_dirty = false; // Set when changing folding state to access .cfg to store the state.
 #endif // TOOLS_ENABLED
 
 	template <typename T, typename V>
@@ -554,12 +555,18 @@ public:
 	void editor_remove_folded_group(const StringName &p_group_name) { folded_groups.erase(p_group_name); }
 	bool editor_is_group_folded(const StringName &p_group_name) const { return folded_groups.has(p_group_name); }
 	void editor_set_group_folded(const StringName &p_group_name, bool p_folded) {
+		if (editor_is_group_folded(p_group_name) == p_folded) {
+			return; // Do nothing.
+		}
 		if (p_folded) {
 			editor_add_folded_group(p_group_name);
 		} else {
 			editor_remove_folded_group(p_group_name);
 		}
+		folded_groups_dirty = true;
 	}
+	bool editor_is_folding_dirty() const { return folded_groups_dirty; }
+	void editor_set_folding_dirty(bool p_dirty) { folded_groups_dirty = p_dirty; }
 #endif // TOOLS_ENABLED
 
 	// Helper functions for Rotation.

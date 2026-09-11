@@ -159,6 +159,104 @@ TEST_CASE("[Rect2] Intersection") {
 			"intersection() with non-enclosed Rect2 should return the expected result.");
 }
 
+TEST_CASE("[Rect2] Intersection with the transformed rect") {
+	Rect2 rect = Rect2(0, 100, 400, 300);
+	SUBCASE("Translated") {
+		Transform2D xform = Transform2D(0.0f, Point2(100, 100));
+
+		SUBCASE("intersection_transformed() with fully enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(0, 100, 100, 100)).is_equal_approx(Rect2(100, 200, 100, 100)));
+		}
+		SUBCASE("intersection_transformed() with partially enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(250, 150, 100, 100)).is_equal_approx(Rect2(350, 250, 50, 100)));
+		}
+		SUBCASE("intersection_transformed() with non-enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(350, 350, 100, 100)).is_equal_approx(Rect2()));
+		}
+		SUBCASE("intersection_transformed when fully enclosed") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-150, -50, 500, 400)).is_equal_approx(rect));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-150, -50, 500, 400)).is_equal_approx(rect.intersection(xform.xform(Rect2(-150, -50, 500, 400)))));
+		}
+		SUBCASE("intersection_transformed with no enclosed point") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(0, -150, 100, 500)).is_equal_approx(Rect2(100, 100, 100, 300)));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(0, -150, 100, 500)).is_equal_approx(rect.intersection(xform.xform(Rect2(0, -150, 100, 500)))));
+		}
+	}
+	SUBCASE("Scaled") {
+		Transform2D xform = Transform2D(0.0f, Size2(2.0f, 2.0f), 0.0f, Point2(0, 0));
+
+		SUBCASE("intersection_transformed() with fully enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(50, 75, 100, 100)).is_equal_approx(Rect2(100, 150, 200, 200)));
+		}
+		SUBCASE("intersection_transformed() with partially enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(175, 150, 100, 100)).is_equal_approx(Rect2(350, 300, 50, 100)));
+		}
+		SUBCASE("intersection_transformed() with non-enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(250, 220, 100, 100)).is_equal_approx(Rect2()));
+		}
+		SUBCASE("intersection_transformed when fully enclosed") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-100, -50, 500, 400)).is_equal_approx(rect));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-100, -50, 500, 400)).is_equal_approx(rect.intersection(xform.xform(Rect2(-100, -50, 500, 400)))));
+		}
+	}
+	SUBCASE("Rotated") {
+		Transform2D xform = Transform2D(Math::PI / 4, Point2());
+
+		SUBCASE("intersection_transformed() with fully enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(100, 50, 20, 20)).is_equal_approx(Rect2(15 * Math::SQRT2, 75 * Math::SQRT2, 20 * Math::SQRT2, 20 * Math::SQRT2)));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(100, 50, 20, 20)).is_equal_approx(rect.intersection(xform.xform(Rect2(100, 50, 20, 20)))));
+		}
+		SUBCASE("intersection_transformed() with partially enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(80, 90, 20, 20)).is_equal_approx(Rect2(0, 90 * Math::SQRT2, 5 * Math::SQRT2, 10 * Math::SQRT2)));
+			CHECK_UNARY_FALSE(rect.intersection_transformed(xform, Rect2(80, 90, 20, 20)).is_equal_approx(rect.intersection(xform.xform(Rect2(80, 90, 20, 20)))));
+		}
+		SUBCASE("intersection_transformed() with non-enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(575, -50, 100, 100)).is_equal_approx(Rect2()));
+			CHECK_UNARY_FALSE(rect.intersection_transformed(xform, Rect2(575, -50, 100, 100)).is_equal_approx(rect.intersection(xform.xform(Rect2(575, -50, 100, 100)))));
+		}
+		SUBCASE("intersection_transformed when fully enclosed") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(0, -250, 600, 600)).is_equal_approx(rect));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(0, -250, 600, 600)).is_equal_approx(rect.intersection(xform.xform(Rect2(0, -250, 600, 600)))));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(0, -250, 1000, 1000)).is_equal_approx(rect));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(0, -250, 1000, 1000)).is_equal_approx(rect.intersection(xform.xform(Rect2(0, -250, 1000, 1000)))));
+		}
+		SUBCASE("intersection_transformed with no enclosed point") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(75, 25, 500, 10)).is_equal_approx(Rect2(100 - 35 * Math::SQRT2, 100, 300 + 10 * Math::SQRT2, 300)));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-50, -100, 600, 10)).is_equal_approx(Rect2(100 + 90 * Math::SQRT2, 100, 300 - 90 * Math::SQRT2, 300 - 90 * Math::SQRT2)));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-50, -100, 1000, 10)).is_equal_approx(Rect2(100 + 90 * Math::SQRT2, 100, 300 - 90 * Math::SQRT2, 300 - 90 * Math::SQRT2)));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-95, -100, 600, 10)).is_equal_approx(Rect2(100 + 90 * Math::SQRT2, 100, 300 - 90 * Math::SQRT2, 300 - 90 * Math::SQRT2)));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-95, -100, 1000, 10)).is_equal_approx(Rect2(100 + 90 * Math::SQRT2, 100, 300 - 90 * Math::SQRT2, 300 - 90 * Math::SQRT2)));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-200, -100, 1000, 10)).is_equal_approx(Rect2(100 + 90 * Math::SQRT2, 100, 300 - 90 * Math::SQRT2, 300 - 90 * Math::SQRT2)));
+		}
+	}
+	SUBCASE("Skewed") {
+		Transform2D xform = Transform2D(0, Size2(1, 1), Math::PI / 4, Vector2(0, 0));
+
+		SUBCASE("intersection_transformed() with fully enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(300, 200, 100, 50)).is_equal_approx(Rect2(300 - 125 * Math::SQRT2, 100 * Math::SQRT2, 100 + 25 * Math::SQRT2, 25 * Math::SQRT2)));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(300, 200, 100, 50)).is_equal_approx(rect.intersection(xform.xform(Rect2(300, 200, 100, 50)))));
+		}
+		SUBCASE("intersection_transformed() with partially enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(550, 200, 100, 50)).is_equal_approx(Rect2(550 - 125 * Math::SQRT2, 150, -150 + 125 * Math::SQRT2, -150 + 125 * Math::SQRT2)));
+			CHECK_UNARY_FALSE(rect.intersection_transformed(xform, Rect2(550, 200, 100, 50)).is_equal_approx(rect.intersection(xform.xform(Rect2(550, 200, 100, 50)))));
+		}
+		SUBCASE("intersection_transformed() with non-enclosed Rect2") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(810, 550, 100, 50)).is_equal_approx(Rect2()));
+			CHECK_UNARY_FALSE(rect.intersection_transformed(xform, Rect2(810, 550, 100, 50)).is_equal_approx(rect.intersection(xform.xform(Rect2(810, 550, 100, 50)))));
+		}
+		SUBCASE("intersection_transformed when fully enclosed") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(0, 0, 2000, 1000)).is_equal_approx(rect));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(0, 0, 2000, 1000)).is_equal_approx(rect.intersection(xform.xform(Rect2(0, 0, 2000, 1000)))));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-3000, 0, 4000, 3000)).is_equal_approx(rect));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-3000, 0, 4000, 3000)).is_equal_approx(rect.intersection(xform.xform(Rect2(-3000, 0, 4000, 3000)))));
+		}
+		SUBCASE("intersection_transformed with no enclosed point") {
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(-150, 130, 600, 450)).is_equal_approx(Rect2(0, 100, 350, 300)));
+			CHECK_UNARY(rect.intersection_transformed(xform, Rect2(450, 130, 600, 450)).is_equal_approx(Rect2(50, 100, 350, 300)));
+		}
+	}
+}
+
 TEST_CASE("[Rect2] Enclosing") {
 	CHECK_MESSAGE(
 			Rect2(0, 100, 1280, 720).encloses(Rect2(0, 300, 100, 100)),
