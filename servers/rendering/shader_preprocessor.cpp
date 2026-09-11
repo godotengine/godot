@@ -1362,6 +1362,19 @@ void ShaderPreprocessor::_prepare_state(ShaderPreprocessor::State &rp_state, con
 		insert_builtin_define("RENDERER_COMPATIBILITY", _MKSTR(0), rp_state);
 		insert_builtin_define("RENDERER_MOBILE", _MKSTR(1), rp_state);
 		insert_builtin_define("RENDERER_FORWARD_PLUS", _MKSTR(2), rp_state);
+
+		CommentRemover remover(p_code);
+		String stripped = remover.strip();
+		String error = remover.get_error();
+		if (!error.is_empty()) {
+			set_error(error, remover.get_error_line());
+			return FAILED;
+		}
+		if (stripped.contains("shader_type spatial") || stripped.contains("shader_type canvas_item")) {
+			if (stripped.contains("world_vertex_coords")) {
+				insert_builtin_define("WORLD_VERTEX_COORDS", _MKSTR(0), rp_state);
+			}
+		}
 	}
 }
 

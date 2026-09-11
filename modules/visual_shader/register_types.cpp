@@ -97,6 +97,7 @@ void initialize_visual_shader_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(VisualShaderNodeColorOp);
 		GDREGISTER_CLASS(VisualShaderNodeTransformOp);
 		GDREGISTER_CLASS(VisualShaderNodeTransformVecMult);
+		GDREGISTER_CLASS(VisualShaderNodeVectorCoordinateTransform);
 		GDREGISTER_CLASS(VisualShaderNodeFloatFunc);
 		GDREGISTER_CLASS(VisualShaderNodeIntFunc);
 		GDREGISTER_CLASS(VisualShaderNodeUIntFunc);
