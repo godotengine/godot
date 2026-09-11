@@ -3631,6 +3631,9 @@ void GI::init(SkyRD *p_sky) {
 
 	/* SDGFI */
 
+	const String oct_size_str = itos(SDFGI::LIGHTPROBE_OCT_SIZE);
+	const String sh_size_str = itos(SDFGI::SH_SIZE);
+
 	{
 		Vector<String> preprocess_modes;
 		preprocess_modes.push_back("\n#define MODE_SCROLL\n");
@@ -3651,8 +3654,7 @@ void GI::init(SkyRD *p_sky) {
 	}
 
 	{
-		//calculate tables
-		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+		String defines = "\n#define OCT_SIZE " + oct_size_str + "\n";
 
 		Vector<String> direct_light_modes;
 		direct_light_modes.push_back("\n#define MODE_PROCESS_STATIC\n");
@@ -3665,9 +3667,8 @@ void GI::init(SkyRD *p_sky) {
 	}
 
 	{
-		//calculate tables
-		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
-		defines += "\n#define SH_SIZE " + itos(SDFGI::SH_SIZE) + "\n";
+		String defines = "\n#define OCT_SIZE " + oct_size_str + "\n";
+		defines += "\n#define SH_SIZE " + sh_size_str + "\n";
 		if (p_sky->sky_use_octmap_array) {
 			defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY\n";
 		}
@@ -3712,8 +3713,7 @@ void GI::init(SkyRD *p_sky) {
 
 	//GK
 	{
-		//calculate tables
-		String defines = "\n#define SDFGI_OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
+		String defines = "\n#define SDFGI_OCT_SIZE " + oct_size_str + "\n";
 
 		Vector<ShaderRD::VariantDefine> variants;
 		for (uint32_t vrs = 0; vrs < 2; vrs++) {
