@@ -381,6 +381,8 @@ Error GDScriptWorkspace::initialize() {
 	return OK;
 }
 
+#undef HANDLE_DOC
+
 static bool is_valid_rename_target(const LSP::DocumentSymbol *p_symbol) {
 	// Must be valid symbol.
 	if (!p_symbol) {
