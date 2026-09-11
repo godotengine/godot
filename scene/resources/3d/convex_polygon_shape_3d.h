@@ -48,7 +48,7 @@ public:
 	Vector<Vector3> get_points() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
-	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
+	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) override;
 	virtual real_t get_enclosing_radius() const override;
 
 	ConvexPolygonShape3D();
