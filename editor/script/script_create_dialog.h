@@ -62,7 +62,6 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	EditorFileDialog *file_browse = nullptr;
 	CheckBox *built_in = nullptr;
 	CheckBox *use_templates = nullptr;
-	AcceptDialog *alert = nullptr;
 	CreateDialog *select_class = nullptr;
 
 	bool is_browsing_parent = false;
