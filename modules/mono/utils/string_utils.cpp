@@ -32,8 +32,6 @@
 
 #include "core/io/file_access.h"
 
-#include <cstdio>
-
 namespace {
 
 int sfind(const String &p_text, int p_from) {

@@ -39,7 +39,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/shader/editor_shader_language_plugin.h"
 #include "editor/shader/text_shader_language_plugin.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/resources/shader.h"
 
 void ShaderEditorPlugin::shortcut_input(const Ref<InputEvent> &p_event) {
