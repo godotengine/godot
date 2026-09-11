@@ -882,7 +882,7 @@ bool AnimationBezierTrackEdit::_is_track_displayed(int p_track_index) {
 			if (!node) {
 				return false; // No node, no filter.
 			}
-			if (!EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
+			if (!editor->filtered_nodes.has(node)) {
 				return false; // Skip track due to not selected.
 			}
 		}
@@ -1012,36 +1012,6 @@ void AnimationBezierTrackEdit::set_root(Node *p_root) {
 
 void AnimationBezierTrackEdit::set_filtered(bool p_filtered) {
 	is_filtered = p_filtered;
-	if (animation.is_null()) {
-		return;
-	}
-	String base_path = String(animation->track_get_path(selected_track));
-	if (is_filtered) {
-		if (root && root->has_node(base_path)) {
-			Node *node = root->get_node(base_path);
-			if (!node || !EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
-				for (int i = 0; i < animation->get_track_count(); ++i) {
-					if (animation->track_get_type(i) != Animation::TrackType::TYPE_BEZIER) {
-						continue;
-					}
-
-					base_path = String(animation->track_get_path(i));
-					if (root && root->has_node(base_path)) {
-						node = root->get_node(base_path);
-						if (!node) {
-							continue; // No node, no filter.
-						}
-						if (!EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
-							continue; // Skip track due to not selected.
-						}
-
-						set_animation_and_track(animation, i, read_only);
-						break;
-					}
-				}
-			}
-		}
-	}
 	queue_redraw();
 }
 
