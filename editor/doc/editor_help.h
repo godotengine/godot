@@ -379,9 +379,25 @@ public:
 class EditorHelpBitTooltip : public PopupPanel {
 	GDCLASS(EditorHelpBitTooltip, PopupPanel);
 
+public:
+	struct DiagnosticEntry {
+		enum Severity {
+			SEVERITY_ERROR,
+			SEVERITY_WARNING,
+		};
+
+		Severity severity = SEVERITY_ERROR;
+		String code;
+		String text;
+		int start_line = -1;
+		int start_column = -1;
+		int end_line = -1;
+		int end_column = -1;
+	};
+
+private:
 	static bool _is_tooltip_visible;
 
-	RichTextLabel *diagnostics_label;
 	VBoxContainer *vbox;
 
 	Timer *timer = nullptr;
@@ -390,6 +406,7 @@ class EditorHelpBitTooltip : public PopupPanel {
 	bool _is_shortcut_pressed = false;
 
 	static Control *_make_invisible_control();
+	static Control *_build_diagnostics_list(const Vector<DiagnosticEntry> &p_diagnostics);
 
 	void _start_timer();
 	void _target_gui_input(const Ref<InputEvent> &p_event);
@@ -399,20 +416,53 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static bool can_show_new_tooltip(bool p_shortcut);
+
 	// The returned control is an orphan node, which is to make the standard tooltip invisible.
-	[[nodiscard]] static Control *make_tooltip(
-			Control *p_target,
-			const String &p_symbol,
-			const String &p_prologue = String(),
-			bool p_use_class_prefix = false,
-			bool p_shortcut = false,
-			const String &p_diagnostics = String());
+	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_shortcut = false, const Vector<DiagnosticEntry> &p_diagnostics = Vector<DiagnosticEntry>());
 
 	void popup_under_position(const Point2 &p_point);
 
 	bool is_shortcut_pressed() const { return _is_shortcut_pressed; }
 
 	EditorHelpBitTooltip(Control *p_target, bool p_shortcut = false);
+};
+
+class DiagnosticItemRow : public HBoxContainer {
+	GDCLASS(DiagnosticItemRow, HBoxContainer);
+
+	EditorHelpBitTooltip::DiagnosticEntry entry;
+	RichTextLabel *msg_label = nullptr;
+	Button *copy_btn = nullptr;
+
+	String _get_diagnostic_title() const;
+	void _copy_pressed();
+	void _update_content();
+
+protected:
+	static void _bind_methods() {}
+	void _notification(int p_what);
+
+public:
+	void set_entry(const EditorHelpBitTooltip::DiagnosticEntry &p_entry);
+	void set_copy_button_visible(bool p_visible);
+	bool is_copy_button_hovered(const Point2 &p_global) const;
+
+	DiagnosticItemRow();
+};
+
+class DiagnosticListContainer : public VBoxContainer {
+	GDCLASS(DiagnosticListContainer, VBoxContainer);
+
+	int hovered_row = -1;
+
+	void _update_hovered_row();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	DiagnosticListContainer();
 };
 
 class EditorSyntaxHighlighter;

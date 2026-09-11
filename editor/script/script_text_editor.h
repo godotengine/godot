@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/editor_language.h"
+#include "editor/doc/editor_help.h"
 #include "editor/gui/code_editor.h"
 #include "editor/script/script_editor_base.h"
 #include "editor/script/script_editor_plugin.h"
@@ -185,6 +186,7 @@ protected:
 	void _validate_symbol(const String &p_symbol);
 
 	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column, bool p_shortcut = false);
+	Vector<EditorHelpBitTooltip::DiagnosticEntry> _get_diagnostics_for_tooltip(int p_row, int p_column) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
