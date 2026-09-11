@@ -19,3 +19,16 @@ extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {{
 {methods.format_buffer(buffer, 1)}
 }};
 """)
+
+
+def make_icu_data_min(target, source, env):
+    buffer = methods.get_buffer(str(source[0]))
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(f"""\
+/* (C) 2016 and later: Unicode, Inc. and others. */
+/* License & terms of use: https://www.unicode.org/copyright.html */
+
+const unsigned char icu_min_data[] = {{
+{methods.format_buffer(buffer, 1)}
+}};
+""")
