@@ -207,8 +207,8 @@
 			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Translates a [param message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation. Note that most [Control] nodes automatically translate their strings, so this method is mostly useful for formatted strings or custom drawn text.
-				This method works the same as [method Object.tr], with the addition of respecting the [member auto_translate_mode] state.
-				If [method Object.can_translate_messages] is [code]false[/code], or no translation is available, this method returns the [param message] without changes. See [method Object.set_message_translation].
+				This method uses [method Object.tr] under the hood, with the addition of respecting the [member auto_translate_mode] state.
+				If no translation is available, this method returns the [param message] without changes.
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url].
 			</description>
 		</method>
@@ -220,8 +220,8 @@
 			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Translates a [param message] or [param plural_message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.
-				This method works the same as [method Object.tr_n], with the addition of respecting the [member auto_translate_mode] state.
-				If [method Object.can_translate_messages] is [code]false[/code], or no translation is available, this method returns [param message] or [param plural_message], without changes. See [method Object.set_message_translation].
+				This method uses [method Object.tr_n] under the hood, with the addition of respecting the [member auto_translate_mode] state.
+				If no translation is available, this method returns [param message] or [param plural_message], without changes.
 				The [param n] is the number, or amount, of the message's subject. It is used by the translation system to fetch the correct plural form for the current language.
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url].
 				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended to handle these cases with [method atr].
