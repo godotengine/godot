@@ -79,6 +79,13 @@
 				Closes the dock, making its tab hidden.
 			</description>
 		</method>
+		<method name="make_floating">
+			<return type="void" />
+			<param index="0" name="screen" type="int" default="-1" />
+			<description>
+				Opens the dock in a floating window on the specified [param screen].
+			</description>
+		</method>
 		<method name="make_visible">
 			<return type="void" />
 			<description>

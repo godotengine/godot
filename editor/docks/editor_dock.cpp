@@ -70,6 +70,7 @@ void EditorDock::_notification(int p_what) {
 void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open"), &EditorDock::open);
 	ClassDB::bind_method(D_METHOD("make_visible"), &EditorDock::make_visible);
+	ClassDB::bind_method(D_METHOD("make_floating", "screen"), &EditorDock::make_floating, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("close"), &EditorDock::close);
 
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &EditorDock::set_title);
