@@ -442,7 +442,10 @@ namespace Godot.NativeInterop
             if (p_array.IsEmpty)
                 return new godot_packed_byte_array();
             fixed (byte* src = p_array)
-                return NativeFuncs.godotsharp_packed_byte_array_new_mem_copy(src, p_array.Length);
+            {
+                NativeFuncs.godotsharp_packed_byte_array_new_mem_copy(src, p_array.Length, out var array);
+                return array;
+            }
         }
 
         // PackedInt32Array
@@ -470,7 +473,10 @@ namespace Godot.NativeInterop
             if (p_array.IsEmpty)
                 return new godot_packed_int32_array();
             fixed (int* src = p_array)
-                return NativeFuncs.godotsharp_packed_int32_array_new_mem_copy(src, p_array.Length);
+            {
+                NativeFuncs.godotsharp_packed_int32_array_new_mem_copy(src, p_array.Length, out var array);
+                return array;
+            }
         }
 
         // PackedInt64Array
@@ -498,7 +504,10 @@ namespace Godot.NativeInterop
             if (p_array.IsEmpty)
                 return new godot_packed_int64_array();
             fixed (long* src = p_array)
-                return NativeFuncs.godotsharp_packed_int64_array_new_mem_copy(src, p_array.Length);
+            {
+                NativeFuncs.godotsharp_packed_int64_array_new_mem_copy(src, p_array.Length, out var array);
+                return array;
+            }
         }
 
         // PackedFloat32Array
@@ -526,7 +535,10 @@ namespace Godot.NativeInterop
             if (p_array.IsEmpty)
                 return new godot_packed_float32_array();
             fixed (float* src = p_array)
-                return NativeFuncs.godotsharp_packed_float32_array_new_mem_copy(src, p_array.Length);
+            {
+                NativeFuncs.godotsharp_packed_float32_array_new_mem_copy(src, p_array.Length, out var array);
+                return array;
+            }
         }
 
         // PackedFloat64Array
@@ -554,7 +566,10 @@ namespace Godot.NativeInterop
             if (p_array.IsEmpty)
                 return new godot_packed_float64_array();
             fixed (double* src = p_array)
-                return NativeFuncs.godotsharp_packed_float64_array_new_mem_copy(src, p_array.Length);
+            {
+                NativeFuncs.godotsharp_packed_float64_array_new_mem_copy(src, p_array.Length, out var array);
+                return array;
+            }
         }
 
         // PackedStringArray
@@ -620,7 +635,10 @@ namespace Godot.NativeInterop
             if (p_array.IsEmpty)
                 return new godot_packed_vector2_array();
             fixed (Vector2* src = p_array)
-                return NativeFuncs.godotsharp_packed_vector2_array_new_mem_copy(src, p_array.Length);
+            {
+                NativeFuncs.godotsharp_packed_vector2_array_new_mem_copy(src, p_array.Length, out var array);
+                return array;
+            }
         }
 
         // PackedVector3Array
@@ -648,7 +666,10 @@ namespace Godot.NativeInterop
             if (p_array.IsEmpty)
                 return new godot_packed_vector3_array();
             fixed (Vector3* src = p_array)
-                return NativeFuncs.godotsharp_packed_vector3_array_new_mem_copy(src, p_array.Length);
+            {
+                NativeFuncs.godotsharp_packed_vector3_array_new_mem_copy(src, p_array.Length, out var array);
+                return array;
+            }
         }
 
         // PackedVector4Array
@@ -676,7 +697,10 @@ namespace Godot.NativeInterop
             if (p_array.IsEmpty)
                 return new godot_packed_vector4_array();
             fixed (Vector4* src = p_array)
-                return NativeFuncs.godotsharp_packed_vector4_array_new_mem_copy(src, p_array.Length);
+            {
+                NativeFuncs.godotsharp_packed_vector4_array_new_mem_copy(src, p_array.Length, out var array);
+                return array;
+            }
         }
 
         // PackedColorArray
@@ -704,7 +728,10 @@ namespace Godot.NativeInterop
             if (p_array.IsEmpty)
                 return new godot_packed_color_array();
             fixed (Color* src = p_array)
-                return NativeFuncs.godotsharp_packed_color_array_new_mem_copy(src, p_array.Length);
+            {
+                NativeFuncs.godotsharp_packed_color_array_new_mem_copy(src, p_array.Length, out var array);
+                return array;
+            }
         }
     }
 }

@@ -114,8 +114,8 @@ namespace Godot
                     argsPtr[i] = new IntPtr(&varargs[i]);
                 }
 
-                godot_variant ret = NativeFuncs.godotsharp_callable_call(callable,
-                    (godot_variant**)argsPtr, argc, out godot_variant_call_error vcall_error);
+                NativeFuncs.godotsharp_callable_call(callable, (godot_variant**)argsPtr, argc,
+                    out godot_variant_call_error vcall_error, out godot_variant ret);
                 ExceptionUtils.DebugCheckCallError(callable, (godot_variant**)argsPtr, argc, vcall_error);
                 return Variant.CreateTakingOwnershipOfDisposableValue(ret);
             }

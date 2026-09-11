@@ -31,7 +31,6 @@
 #include "runtime_interop.h"
 
 #include "../csharp_script.h"
-#include "../interop_types.h"
 #include "../managed_callable.h"
 #include "../mono_gd/gd_mono_cache.h"
 #include "../signal_awaiter_utils.h"
@@ -399,94 +398,67 @@ void godotsharp_node_path_as_string(String *r_dest, const NodePath *p_np) {
 	memnew_placement(r_dest, String(p_np->operator String()));
 }
 
-godot_packed_array godotsharp_packed_byte_array_new_mem_copy(const uint8_t *p_src, int32_t p_length) {
-	godot_packed_array ret;
-	memnew_placement(&ret, PackedByteArray);
-	PackedByteArray *array = reinterpret_cast<PackedByteArray *>(&ret);
-	array->resize(p_length);
-	uint8_t *dst = array->ptrw();
+void godotsharp_packed_byte_array_new_mem_copy(const uint8_t *p_src, int32_t p_length, PackedByteArray *r_pba) {
+	memnew_placement(r_pba, PackedByteArray);
+	r_pba->resize(p_length);
+	uint8_t *dst = r_pba->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(uint8_t));
-	return ret;
 }
 
-godot_packed_array godotsharp_packed_int32_array_new_mem_copy(const int32_t *p_src, int32_t p_length) {
-	godot_packed_array ret;
-	memnew_placement(&ret, PackedInt32Array);
-	PackedInt32Array *array = reinterpret_cast<PackedInt32Array *>(&ret);
-	array->resize(p_length);
-	int32_t *dst = array->ptrw();
+void godotsharp_packed_int32_array_new_mem_copy(const int32_t *p_src, int32_t p_length, PackedInt32Array *r_pia) {
+	memnew_placement(&r_pia, PackedInt32Array);
+	r_pia->resize(p_length);
+	int32_t *dst = r_pia->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(int32_t));
-	return ret;
 }
 
-godot_packed_array godotsharp_packed_int64_array_new_mem_copy(const int64_t *p_src, int32_t p_length) {
-	godot_packed_array ret;
-	memnew_placement(&ret, PackedInt64Array);
-	PackedInt64Array *array = reinterpret_cast<PackedInt64Array *>(&ret);
-	array->resize(p_length);
-	int64_t *dst = array->ptrw();
+void godotsharp_packed_int64_array_new_mem_copy(const int64_t *p_src, int32_t p_length, PackedInt64Array *r_pia) {
+	memnew_placement(r_pia, PackedInt64Array);
+	r_pia->resize(p_length);
+	int64_t *dst = r_pia->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(int64_t));
-	return ret;
 }
 
-godot_packed_array godotsharp_packed_float32_array_new_mem_copy(const float *p_src, int32_t p_length) {
-	godot_packed_array ret;
-	memnew_placement(&ret, PackedFloat32Array);
-	PackedFloat32Array *array = reinterpret_cast<PackedFloat32Array *>(&ret);
-	array->resize(p_length);
-	float *dst = array->ptrw();
+void godotsharp_packed_float32_array_new_mem_copy(const float *p_src, int32_t p_length, PackedFloat32Array *r_pfa) {
+	memnew_placement(&r_pfa, PackedFloat32Array);
+	r_pfa->resize(p_length);
+	float *dst = r_pfa->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(float));
-	return ret;
 }
 
-godot_packed_array godotsharp_packed_float64_array_new_mem_copy(const double *p_src, int32_t p_length) {
-	godot_packed_array ret;
-	memnew_placement(&ret, PackedFloat64Array);
-	PackedFloat64Array *array = reinterpret_cast<PackedFloat64Array *>(&ret);
-	array->resize(p_length);
-	double *dst = array->ptrw();
+void godotsharp_packed_float64_array_new_mem_copy(const double *p_src, int32_t p_length, PackedFloat64Array *r_pfa) {
+	memnew_placement(r_pfa, PackedFloat64Array);
+	r_pfa->resize(p_length);
+	double *dst = r_pfa->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(double));
-	return ret;
 }
 
-godot_packed_array godotsharp_packed_vector2_array_new_mem_copy(const Vector2 *p_src, int32_t p_length) {
-	godot_packed_array ret;
-	memnew_placement(&ret, PackedVector2Array);
-	PackedVector2Array *array = reinterpret_cast<PackedVector2Array *>(&ret);
-	array->resize(p_length);
-	Vector2 *dst = array->ptrw();
+void godotsharp_packed_vector2_array_new_mem_copy(const Vector2 *p_src, int32_t p_length, PackedVector2Array *r_pva) {
+	memnew_placement(r_pva, PackedVector2Array);
+	r_pva->resize(p_length);
+	Vector2 *dst = r_pva->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(Vector2));
-	return ret;
 }
 
-godot_packed_array godotsharp_packed_vector3_array_new_mem_copy(const Vector3 *p_src, int32_t p_length) {
-	godot_packed_array ret;
-	memnew_placement(&ret, PackedVector3Array);
-	PackedVector3Array *array = reinterpret_cast<PackedVector3Array *>(&ret);
-	array->resize(p_length);
-	Vector3 *dst = array->ptrw();
+void godotsharp_packed_vector3_array_new_mem_copy(const Vector3 *p_src, int32_t p_length, PackedVector3Array *r_pva) {
+	memnew_placement(r_pva, PackedVector3Array);
+	r_pva->resize(p_length);
+	Vector3 *dst = r_pva->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(Vector3));
-	return ret;
 }
 
-godot_packed_array godotsharp_packed_vector4_array_new_mem_copy(const Vector4 *p_src, int32_t p_length) {
-	godot_packed_array ret;
-	memnew_placement(&ret, PackedVector4Array);
-	PackedVector4Array *array = reinterpret_cast<PackedVector4Array *>(&ret);
-	array->resize(p_length);
-	Vector4 *dst = array->ptrw();
+void godotsharp_packed_vector4_array_new_mem_copy(const Vector4 *p_src, int32_t p_length, PackedVector4Array *r_pva) {
+	memnew_placement(r_pva, PackedVector4Array);
+	r_pva->resize(p_length);
+	Vector4 *dst = r_pva->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(Vector4));
-	return ret;
 }
 
-godot_packed_array godotsharp_packed_color_array_new_mem_copy(const Color *p_src, int32_t p_length) {
-	godot_packed_array ret;
-	memnew_placement(&ret, PackedColorArray);
-	PackedColorArray *array = reinterpret_cast<PackedColorArray *>(&ret);
-	array->resize(p_length);
-	Color *dst = array->ptrw();
+void godotsharp_packed_color_array_new_mem_copy(const Color *p_src, int32_t p_length, PackedColorArray *r_pca) {
+	memnew_placement(r_pca, PackedColorArray);
+	r_pca->resize(p_length);
+	Color *dst = r_pca->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(Color));
-	return ret;
 }
 
 void godotsharp_packed_string_array_add(PackedStringArray *r_dest, const String *p_element) {
@@ -545,26 +517,17 @@ bool godotsharp_callable_get_data_for_marshalling(const Callable *p_callable,
 	}
 }
 
-godot_variant godotsharp_callable_call(Callable *p_callable, const Variant **p_args, const int32_t p_arg_count, Callable::CallError *p_call_error) {
-	godot_variant ret;
-	memnew_placement(&ret, Variant);
-
-	Variant *ret_val = (Variant *)&ret;
-
-	p_callable->callp(p_args, p_arg_count, *ret_val, *p_call_error);
-
-	return ret;
+void godotsharp_callable_call(Callable *p_callable, const Variant **p_args, const int32_t p_arg_count, Callable::CallError *p_call_error, Variant *r_variant) {
+	memnew_placement(r_variant, Variant);
+	p_callable->callp(p_args, p_arg_count, *r_variant, *p_call_error);
 }
 
 void godotsharp_callable_call_deferred(Callable *p_callable, const Variant **p_args, const int32_t p_arg_count) {
 	p_callable->call_deferredp(p_args, p_arg_count);
 }
 
-godot_color godotsharp_color_from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
-	godot_color ret;
-	Color *dest = (Color *)&ret;
-	memnew_placement(dest, Color(Color::from_ok_hsl(p_h, p_s, p_l, p_alpha)));
-	return ret;
+void godotsharp_color_from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha, Color *r_color) {
+	memnew_placement(r_color, Color(Color::from_ok_hsl(p_h, p_s, p_l, p_alpha)));
 }
 
 float godotsharp_color_get_ok_hsl_h(const Color *p_self) {
@@ -587,100 +550,94 @@ void godotsharp_method_bind_ptrcall(MethodBind *p_method_bind, Object *p_instanc
 	p_method_bind->ptrcall(p_instance, p_args, p_ret);
 }
 
-godot_variant godotsharp_method_bind_call(MethodBind *p_method_bind, Object *p_instance, const godot_variant **p_args, const int32_t p_arg_count, Callable::CallError *p_call_error) {
-	godot_variant ret;
-	memnew_placement(&ret, Variant());
-
-	Variant *ret_val = (Variant *)&ret;
-
-	*ret_val = p_method_bind->call(p_instance, (const Variant **)p_args, p_arg_count, *p_call_error);
-
-	return ret;
+void godotsharp_method_bind_call(MethodBind *p_method_bind, Object *p_instance, const Variant **p_args, const int32_t p_arg_count, Callable::CallError *p_call_error, Variant *r_variant) {
+	memnew_placement(r_variant, Variant());
+	*r_variant = p_method_bind->call(p_instance, p_args, p_arg_count, *p_call_error);
 }
 
 // variant.h
 
-void godotsharp_variant_new_copy(godot_variant *r_dest, const Variant *p_src) {
+void godotsharp_variant_new_copy(Variant *r_dest, const Variant *p_src) {
 	memnew_placement(r_dest, Variant(*p_src));
 }
 
-void godotsharp_variant_new_string_name(godot_variant *r_dest, const StringName *p_s) {
+void godotsharp_variant_new_string_name(Variant *r_dest, const StringName *p_s) {
 	memnew_placement(r_dest, Variant(*p_s));
 }
 
-void godotsharp_variant_new_node_path(godot_variant *r_dest, const NodePath *p_np) {
+void godotsharp_variant_new_node_path(Variant *r_dest, const NodePath *p_np) {
 	memnew_placement(r_dest, Variant(*p_np));
 }
 
-void godotsharp_variant_new_object(godot_variant *r_dest, const Object *p_obj) {
+void godotsharp_variant_new_object(Variant *r_dest, const Object *p_obj) {
 	memnew_placement(r_dest, Variant(p_obj));
 }
 
-void godotsharp_variant_new_transform2d(godot_variant *r_dest, const Transform2D *p_t2d) {
+void godotsharp_variant_new_transform2d(Variant *r_dest, const Transform2D *p_t2d) {
 	memnew_placement(r_dest, Variant(*p_t2d));
 }
 
-void godotsharp_variant_new_basis(godot_variant *r_dest, const Basis *p_basis) {
+void godotsharp_variant_new_basis(Variant *r_dest, const Basis *p_basis) {
 	memnew_placement(r_dest, Variant(*p_basis));
 }
 
-void godotsharp_variant_new_transform3d(godot_variant *r_dest, const Transform3D *p_trans) {
+void godotsharp_variant_new_transform3d(Variant *r_dest, const Transform3D *p_trans) {
 	memnew_placement(r_dest, Variant(*p_trans));
 }
 
-void godotsharp_variant_new_projection(godot_variant *r_dest, const Projection *p_proj) {
+void godotsharp_variant_new_projection(Variant *r_dest, const Projection *p_proj) {
 	memnew_placement(r_dest, Variant(*p_proj));
 }
 
-void godotsharp_variant_new_aabb(godot_variant *r_dest, const AABB *p_aabb) {
+void godotsharp_variant_new_aabb(Variant *r_dest, const AABB *p_aabb) {
 	memnew_placement(r_dest, Variant(*p_aabb));
 }
 
-void godotsharp_variant_new_dictionary(godot_variant *r_dest, const Dictionary *p_dict) {
+void godotsharp_variant_new_dictionary(Variant *r_dest, const Dictionary *p_dict) {
 	memnew_placement(r_dest, Variant(*p_dict));
 }
 
-void godotsharp_variant_new_array(godot_variant *r_dest, const Array *p_arr) {
+void godotsharp_variant_new_array(Variant *r_dest, const Array *p_arr) {
 	memnew_placement(r_dest, Variant(*p_arr));
 }
 
-void godotsharp_variant_new_packed_byte_array(godot_variant *r_dest, const PackedByteArray *p_pba) {
+void godotsharp_variant_new_packed_byte_array(Variant *r_dest, const PackedByteArray *p_pba) {
 	memnew_placement(r_dest, Variant(*p_pba));
 }
 
-void godotsharp_variant_new_packed_int32_array(godot_variant *r_dest, const PackedInt32Array *p_pia) {
+void godotsharp_variant_new_packed_int32_array(Variant *r_dest, const PackedInt32Array *p_pia) {
 	memnew_placement(r_dest, Variant(*p_pia));
 }
 
-void godotsharp_variant_new_packed_int64_array(godot_variant *r_dest, const PackedInt64Array *p_pia) {
+void godotsharp_variant_new_packed_int64_array(Variant *r_dest, const PackedInt64Array *p_pia) {
 	memnew_placement(r_dest, Variant(*p_pia));
 }
 
-void godotsharp_variant_new_packed_float32_array(godot_variant *r_dest, const PackedFloat32Array *p_pra) {
+void godotsharp_variant_new_packed_float32_array(Variant *r_dest, const PackedFloat32Array *p_pra) {
 	memnew_placement(r_dest, Variant(*p_pra));
 }
 
-void godotsharp_variant_new_packed_float64_array(godot_variant *r_dest, const PackedFloat64Array *p_pra) {
+void godotsharp_variant_new_packed_float64_array(Variant *r_dest, const PackedFloat64Array *p_pra) {
 	memnew_placement(r_dest, Variant(*p_pra));
 }
 
-void godotsharp_variant_new_packed_string_array(godot_variant *r_dest, const PackedStringArray *p_psa) {
+void godotsharp_variant_new_packed_string_array(Variant *r_dest, const PackedStringArray *p_psa) {
 	memnew_placement(r_dest, Variant(*p_psa));
 }
 
-void godotsharp_variant_new_packed_vector2_array(godot_variant *r_dest, const PackedVector2Array *p_pv2a) {
+void godotsharp_variant_new_packed_vector2_array(Variant *r_dest, const PackedVector2Array *p_pv2a) {
 	memnew_placement(r_dest, Variant(*p_pv2a));
 }
 
-void godotsharp_variant_new_packed_vector3_array(godot_variant *r_dest, const PackedVector3Array *p_pv3a) {
+void godotsharp_variant_new_packed_vector3_array(Variant *r_dest, const PackedVector3Array *p_pv3a) {
 	memnew_placement(r_dest, Variant(*p_pv3a));
 }
 
-void godotsharp_variant_new_packed_vector4_array(godot_variant *r_dest, const PackedVector4Array *p_pv4a) {
+void godotsharp_variant_new_packed_vector4_array(Variant *r_dest, const PackedVector4Array *p_pv4a) {
 	memnew_placement(r_dest, Variant(*p_pv4a));
 }
 
-void godotsharp_variant_new_packed_color_array(godot_variant *r_dest, const PackedColorArray *p_pca) {
+void godotsharp_variant_new_packed_color_array(Variant *r_dest, const PackedColorArray *p_pca) {
 	memnew_placement(r_dest, Variant(*p_pca));
 }
 
@@ -696,246 +653,144 @@ double godotsharp_variant_as_float(const Variant *p_self) {
 	return p_self->operator double();
 }
 
-godot_string godotsharp_variant_as_string(const Variant *p_self) {
-	godot_string raw_dest;
-	String *dest = (String *)&raw_dest;
-	memnew_placement(dest, String(p_self->operator String()));
-	return raw_dest;
+void godotsharp_variant_as_string(const Variant *p_self, String *p_string) {
+	memnew_placement(p_string, String(p_self->operator String()));
 }
 
-godot_vector2 godotsharp_variant_as_vector2(const Variant *p_self) {
-	godot_vector2 raw_dest;
-	Vector2 *dest = (Vector2 *)&raw_dest;
-	memnew_placement(dest, Vector2(p_self->operator Vector2()));
-	return raw_dest;
+void godotsharp_variant_as_vector2(const Variant *p_self, void *r_vector2) {
+	memnew_placement(r_vector2, Vector2(p_self->operator Vector2()));
 }
 
-godot_vector2i godotsharp_variant_as_vector2i(const Variant *p_self) {
-	godot_vector2i raw_dest;
-	Vector2i *dest = (Vector2i *)&raw_dest;
-	memnew_placement(dest, Vector2i(p_self->operator Vector2i()));
-	return raw_dest;
+void godotsharp_variant_as_vector2i(const Variant *p_self, void *r_vector2i) {
+	memnew_placement(r_vector2i, Vector2i(p_self->operator Vector2i()));
 }
 
-godot_rect2 godotsharp_variant_as_rect2(const Variant *p_self) {
-	godot_rect2 raw_dest;
-	Rect2 *dest = (Rect2 *)&raw_dest;
-	memnew_placement(dest, Rect2(p_self->operator Rect2()));
-	return raw_dest;
+void godotsharp_variant_as_rect2(const Variant *p_self, void *r_rect2) {
+	memnew_placement(r_rect2, Rect2(p_self->operator Rect2()));
 }
 
-godot_rect2i godotsharp_variant_as_rect2i(const Variant *p_self) {
-	godot_rect2i raw_dest;
-	Rect2i *dest = (Rect2i *)&raw_dest;
-	memnew_placement(dest, Rect2i(p_self->operator Rect2i()));
-	return raw_dest;
+void godotsharp_variant_as_rect2i(const Variant *p_self, void *r_rect2i) {
+	memnew_placement(r_rect2i, Rect2i(p_self->operator Rect2i()));
 }
 
-godot_vector3 godotsharp_variant_as_vector3(const Variant *p_self) {
-	godot_vector3 raw_dest;
-	Vector3 *dest = (Vector3 *)&raw_dest;
-	memnew_placement(dest, Vector3(p_self->operator Vector3()));
-	return raw_dest;
+void godotsharp_variant_as_vector3(const Variant *p_self, void *r_vector3i) {
+	memnew_placement(r_vector3i, Vector3(p_self->operator Vector3()));
 }
 
-godot_vector3i godotsharp_variant_as_vector3i(const Variant *p_self) {
-	godot_vector3i raw_dest;
-	Vector3i *dest = (Vector3i *)&raw_dest;
-	memnew_placement(dest, Vector3i(p_self->operator Vector3i()));
-	return raw_dest;
+void godotsharp_variant_as_vector3i(const Variant *p_self, void *r_vector3i) {
+	memnew_placement(r_vector3i, Vector3i(p_self->operator Vector3i()));
 }
 
-godot_transform2d godotsharp_variant_as_transform2d(const Variant *p_self) {
-	godot_transform2d raw_dest;
-	Transform2D *dest = (Transform2D *)&raw_dest;
-	memnew_placement(dest, Transform2D(p_self->operator Transform2D()));
-	return raw_dest;
+void godotsharp_variant_as_transform2d(const Variant *p_self, void *r_transform2d) {
+	memnew_placement(r_transform2d, Transform2D(p_self->operator Transform2D()));
 }
 
-godot_vector4 godotsharp_variant_as_vector4(const Variant *p_self) {
-	godot_vector4 raw_dest;
-	Vector4 *dest = (Vector4 *)&raw_dest;
-	memnew_placement(dest, Vector4(p_self->operator Vector4()));
-	return raw_dest;
+void godotsharp_variant_as_vector4(const Variant *p_self, void *r_vector4) {
+	memnew_placement(r_vector4, Vector4(p_self->operator Vector4()));
 }
 
-godot_vector4i godotsharp_variant_as_vector4i(const Variant *p_self) {
-	godot_vector4i raw_dest;
-	Vector4i *dest = (Vector4i *)&raw_dest;
-	memnew_placement(dest, Vector4i(p_self->operator Vector4i()));
-	return raw_dest;
+void godotsharp_variant_as_vector4i(const Variant *p_self, void *r_vector4i) {
+	memnew_placement(r_vector4i, Vector4i(p_self->operator Vector4i()));
 }
 
-godot_plane godotsharp_variant_as_plane(const Variant *p_self) {
-	godot_plane raw_dest;
-	Plane *dest = (Plane *)&raw_dest;
-	memnew_placement(dest, Plane(p_self->operator Plane()));
-	return raw_dest;
+void godotsharp_variant_as_plane(const Variant *p_self, void *r_plane) {
+	memnew_placement(r_plane, Plane(p_self->operator Plane()));
 }
 
-godot_quaternion godotsharp_variant_as_quaternion(const Variant *p_self) {
-	godot_quaternion raw_dest;
-	Quaternion *dest = (Quaternion *)&raw_dest;
-	memnew_placement(dest, Quaternion(p_self->operator Quaternion()));
-	return raw_dest;
+void godotsharp_variant_as_quaternion(const Variant *p_self, void *r_quarternion) {
+	memnew_placement(r_quarternion, Quaternion(p_self->operator Quaternion()));
 }
 
-godot_aabb godotsharp_variant_as_aabb(const Variant *p_self) {
-	godot_aabb raw_dest;
-	AABB *dest = (AABB *)&raw_dest;
-	memnew_placement(dest, AABB(p_self->operator ::AABB()));
-	return raw_dest;
+void godotsharp_variant_as_aabb(const Variant *p_self, void *r_aabb) {
+	memnew_placement(r_aabb, AABB(p_self->operator ::AABB()));
 }
 
-godot_basis godotsharp_variant_as_basis(const Variant *p_self) {
-	godot_basis raw_dest;
-	Basis *dest = (Basis *)&raw_dest;
-	memnew_placement(dest, Basis(p_self->operator Basis()));
-	return raw_dest;
+void godotsharp_variant_as_basis(const Variant *p_self, void *r_basis) {
+	memnew_placement(r_basis, Basis(p_self->operator Basis()));
 }
 
-godot_transform3d godotsharp_variant_as_transform3d(const Variant *p_self) {
-	godot_transform3d raw_dest;
-	Transform3D *dest = (Transform3D *)&raw_dest;
-	memnew_placement(dest, Transform3D(p_self->operator Transform3D()));
-	return raw_dest;
+void godotsharp_variant_as_transform3d(const Variant *p_self, void *r_transform3d) {
+	memnew_placement(r_transform3d, Transform3D(p_self->operator Transform3D()));
 }
 
-godot_projection godotsharp_variant_as_projection(const Variant *p_self) {
-	godot_projection raw_dest;
-	Projection *dest = (Projection *)&raw_dest;
-	memnew_placement(dest, Projection(p_self->operator Projection()));
-	return raw_dest;
+void godotsharp_variant_as_projection(const Variant *p_self, void *r_projection) {
+	memnew_placement(r_projection, Projection(p_self->operator Projection()));
 }
 
-godot_color godotsharp_variant_as_color(const Variant *p_self) {
-	godot_color raw_dest;
-	Color *dest = (Color *)&raw_dest;
-	memnew_placement(dest, Color(p_self->operator Color()));
-	return raw_dest;
+void godotsharp_variant_as_color(const Variant *p_self, void *r_color) {
+	memnew_placement(r_color, Color(p_self->operator Color()));
 }
 
-godot_string_name godotsharp_variant_as_string_name(const Variant *p_self) {
-	godot_string_name raw_dest;
-	StringName *dest = (StringName *)&raw_dest;
-	memnew_placement(dest, StringName(p_self->operator StringName()));
-	return raw_dest;
+void godotsharp_variant_as_string_name(const Variant *p_self, void *r_string_name) {
+	memnew_placement(r_string_name, StringName(p_self->operator StringName()));
 }
 
-godot_node_path godotsharp_variant_as_node_path(const Variant *p_self) {
-	godot_node_path raw_dest;
-	NodePath *dest = (NodePath *)&raw_dest;
-	memnew_placement(dest, NodePath(p_self->operator NodePath()));
-	return raw_dest;
+void godotsharp_variant_as_node_path(const Variant *p_self, void *r_node_path) {
+	memnew_placement(r_node_path, NodePath(p_self->operator NodePath()));
 }
 
-godot_rid godotsharp_variant_as_rid(const Variant *p_self) {
-	godot_rid raw_dest;
-	RID *dest = (RID *)&raw_dest;
-	memnew_placement(dest, RID(p_self->operator ::RID()));
-	return raw_dest;
+void godotsharp_variant_as_rid(const Variant *p_self, void *r_rid) {
+	memnew_placement(r_rid, RID(p_self->operator ::RID()));
 }
 
-godot_callable godotsharp_variant_as_callable(const Variant *p_self) {
-	godot_callable raw_dest;
-	Callable *dest = (Callable *)&raw_dest;
-	memnew_placement(dest, Callable(p_self->operator Callable()));
-	return raw_dest;
+void godotsharp_variant_as_callable(const Variant *p_self, void *r_callable) {
+	memnew_placement(r_callable, Callable(p_self->operator Callable()));
 }
 
-godot_signal godotsharp_variant_as_signal(const Variant *p_self) {
-	godot_signal raw_dest;
-	Signal *dest = (Signal *)&raw_dest;
-	memnew_placement(dest, Signal(p_self->operator Signal()));
-	return raw_dest;
+void godotsharp_variant_as_signal(const Variant *p_self, void *r_signal) {
+	memnew_placement(r_signal, Signal(p_self->operator Signal()));
 }
 
-godot_dictionary godotsharp_variant_as_dictionary(const Variant *p_self) {
-	godot_dictionary raw_dest;
-	Dictionary *dest = (Dictionary *)&raw_dest;
-	memnew_placement(dest, Dictionary(p_self->operator Dictionary()));
-	return raw_dest;
+void godotsharp_variant_as_dictionary(const Variant *p_self, void *r_dictionary) {
+	memnew_placement(r_dictionary, Dictionary(p_self->operator Dictionary()));
 }
 
-godot_array godotsharp_variant_as_array(const Variant *p_self) {
-	godot_array raw_dest;
-	Array *dest = (Array *)&raw_dest;
-	memnew_placement(dest, Array(p_self->operator Array()));
-	return raw_dest;
+void godotsharp_variant_as_array(const Variant *p_self, void *r_array) {
+	memnew_placement(r_array, Array(p_self->operator Array()));
 }
 
-godot_packed_array godotsharp_variant_as_packed_byte_array(const Variant *p_self) {
-	godot_packed_array raw_dest;
-	PackedByteArray *dest = (PackedByteArray *)&raw_dest;
-	memnew_placement(dest, PackedByteArray(p_self->operator PackedByteArray()));
-	return raw_dest;
+void godotsharp_variant_as_packed_byte_array(const Variant *p_self, PackedByteArray *r_pba) {
+	memnew_placement(r_pba, PackedByteArray(p_self->operator PackedByteArray()));
 }
 
-godot_packed_array godotsharp_variant_as_packed_int32_array(const Variant *p_self) {
-	godot_packed_array raw_dest;
-	PackedInt32Array *dest = (PackedInt32Array *)&raw_dest;
-	memnew_placement(dest, PackedInt32Array(p_self->operator PackedInt32Array()));
-	return raw_dest;
+void godotsharp_variant_as_packed_int32_array(const Variant *p_self, PackedInt32Array *r_pia) {
+	memnew_placement(r_pia, PackedInt32Array(p_self->operator PackedInt32Array()));
 }
 
-godot_packed_array godotsharp_variant_as_packed_int64_array(const Variant *p_self) {
-	godot_packed_array raw_dest;
-	PackedInt64Array *dest = (PackedInt64Array *)&raw_dest;
-	memnew_placement(dest, PackedInt64Array(p_self->operator PackedInt64Array()));
-	return raw_dest;
+void godotsharp_variant_as_packed_int64_array(const Variant *p_self, PackedInt64Array *r_pia) {
+	memnew_placement(r_pia, PackedInt64Array(p_self->operator PackedInt64Array()));
 }
 
-godot_packed_array godotsharp_variant_as_packed_float32_array(const Variant *p_self) {
-	godot_packed_array raw_dest;
-	PackedFloat32Array *dest = (PackedFloat32Array *)&raw_dest;
-	memnew_placement(dest, PackedFloat32Array(p_self->operator PackedFloat32Array()));
-	return raw_dest;
+void godotsharp_variant_as_packed_float32_array(const Variant *p_self, PackedFloat32Array *r_pfa) {
+	memnew_placement(r_pfa, PackedFloat32Array(p_self->operator PackedFloat32Array()));
 }
 
-godot_packed_array godotsharp_variant_as_packed_float64_array(const Variant *p_self) {
-	godot_packed_array raw_dest;
-	PackedFloat64Array *dest = (PackedFloat64Array *)&raw_dest;
-	memnew_placement(dest, PackedFloat64Array(p_self->operator PackedFloat64Array()));
-	return raw_dest;
+void godotsharp_variant_as_packed_float64_array(const Variant *p_self, PackedFloat64Array *r_pfa) {
+	memnew_placement(r_pfa, PackedFloat64Array(p_self->operator PackedFloat64Array()));
 }
 
-godot_packed_array godotsharp_variant_as_packed_string_array(const Variant *p_self) {
-	godot_packed_array raw_dest;
-	PackedStringArray *dest = (PackedStringArray *)&raw_dest;
-	memnew_placement(dest, PackedStringArray(p_self->operator PackedStringArray()));
-	return raw_dest;
+void godotsharp_variant_as_packed_string_array(const Variant *p_self, PackedStringArray *r_psa) {
+	memnew_placement(r_psa, PackedStringArray(p_self->operator PackedStringArray()));
 }
 
-godot_packed_array godotsharp_variant_as_packed_vector2_array(const Variant *p_self) {
-	godot_packed_array raw_dest;
-	PackedVector2Array *dest = (PackedVector2Array *)&raw_dest;
-	memnew_placement(dest, PackedVector2Array(p_self->operator PackedVector2Array()));
-	return raw_dest;
+void godotsharp_variant_as_packed_vector2_array(const Variant *p_self, PackedVector2Array *r_pva) {
+	memnew_placement(r_pva, PackedVector2Array(p_self->operator PackedVector2Array()));
 }
 
-godot_packed_array godotsharp_variant_as_packed_vector3_array(const Variant *p_self) {
-	godot_packed_array raw_dest;
-	PackedVector3Array *dest = (PackedVector3Array *)&raw_dest;
-	memnew_placement(dest, PackedVector3Array(p_self->operator PackedVector3Array()));
-	return raw_dest;
+void godotsharp_variant_as_packed_vector3_array(const Variant *p_self, PackedVector3Array *r_pva) {
+	memnew_placement(r_pva, PackedVector3Array(p_self->operator PackedVector3Array()));
 }
 
-godot_packed_array godotsharp_variant_as_packed_vector4_array(const Variant *p_self) {
-	godot_packed_array raw_dest;
-	PackedVector4Array *dest = (PackedVector4Array *)&raw_dest;
-	memnew_placement(dest, PackedVector4Array(p_self->operator PackedVector4Array()));
-	return raw_dest;
+void godotsharp_variant_as_packed_vector4_array(const Variant *p_self, PackedVector4Array *r_pva) {
+	memnew_placement(r_pva, PackedVector4Array(p_self->operator PackedVector4Array()));
 }
 
-godot_packed_array godotsharp_variant_as_packed_color_array(const Variant *p_self) {
-	godot_packed_array raw_dest;
-	PackedColorArray *dest = (PackedColorArray *)&raw_dest;
-	memnew_placement(dest, PackedColorArray(p_self->operator PackedColorArray()));
-	return raw_dest;
+void godotsharp_variant_as_packed_color_array(const Variant *p_self, PackedColorArray *r_pca) {
+	memnew_placement(r_pca, PackedColorArray(p_self->operator PackedColorArray()));
 }
 
-bool godotsharp_variant_equals(const godot_variant *p_a, const godot_variant *p_b) {
-	return *reinterpret_cast<const Variant *>(p_a) == *reinterpret_cast<const Variant *>(p_b);
+bool godotsharp_variant_equals(const Variant *p_a, const Variant *p_b) {
+	return *p_a == *p_b;
 }
 
 // string.h
@@ -967,8 +822,8 @@ void godotsharp_array_new_copy(Array *r_dest, const Array *p_src) {
 	memnew_placement(r_dest, Array(*p_src));
 }
 
-godot_variant *godotsharp_array_ptrw(godot_array *p_self) {
-	return reinterpret_cast<godot_variant *>(&reinterpret_cast<Array *>(p_self)->operator[](0));
+Variant *godotsharp_array_ptrw(Array *p_self) {
+	return (&p_self->operator[](0));
 }
 
 // dictionary.h
@@ -1450,51 +1305,50 @@ void godotsharp_weakref(Object *p_ptr, Ref<RefCounted> *r_weak_ref) {
 	memnew_placement(r_weak_ref, Ref<RefCounted>(wref));
 }
 
-void godotsharp_print(const godot_string *p_what) {
-	print_line(*reinterpret_cast<const String *>(p_what));
+void godotsharp_print(const String *p_what) {
+	print_line(*p_what);
 }
 
-void godotsharp_print_rich(const godot_string *p_what) {
-	print_line_rich(*reinterpret_cast<const String *>(p_what));
+void godotsharp_print_rich(const String *p_what) {
+	print_line_rich(*p_what);
 }
 
-void godotsharp_printerr(const godot_string *p_what) {
-	print_error(*reinterpret_cast<const String *>(p_what));
+void godotsharp_printerr(const String *p_what) {
+	print_error(*p_what);
 }
 
-void godotsharp_printt(const godot_string *p_what) {
-	print_line(*reinterpret_cast<const String *>(p_what));
+void godotsharp_printt(const String *p_what) {
+	print_line(*p_what);
 }
 
-void godotsharp_prints(const godot_string *p_what) {
-	print_line(*reinterpret_cast<const String *>(p_what));
+void godotsharp_prints(const String *p_what) {
+	print_line(*p_what);
 }
 
-void godotsharp_printraw(const godot_string *p_what) {
-	OS::get_singleton()->print("%s", reinterpret_cast<const String *>(p_what)->utf8().get_data());
+void godotsharp_printraw(const String *p_what) {
+	OS::get_singleton()->print("%s", p_what->utf8().get_data());
 }
 
-void godotsharp_err_print_error(const godot_string *p_function, const godot_string *p_file, int32_t p_line, const godot_string *p_error, const godot_string *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
+void godotsharp_err_print_error(const String *p_function, const String *p_file, int32_t p_line, const String *p_error, const String *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
 	_err_print_error(
-			reinterpret_cast<const String *>(p_function)->utf8().get_data(),
-			reinterpret_cast<const String *>(p_file)->utf8().get_data(),
+			p_function->utf8().get_data(),
+			p_file->utf8().get_data(),
 			p_line,
-			reinterpret_cast<const String *>(p_error)->utf8().get_data(),
-			reinterpret_cast<const String *>(p_message)->utf8().get_data(),
+			p_error->utf8().get_data(),
+			p_message->utf8().get_data(),
 			p_editor_notify, p_type);
 }
 
-void godotsharp_var_to_str(const godot_variant *p_var, godot_string *r_ret) {
-	const Variant &var = *reinterpret_cast<const Variant *>(p_var);
+void godotsharp_var_to_str(const Variant *p_var, String *r_ret) {
 	String &vars = *memnew_placement(r_ret, String);
-	VariantWriter::write_to_string(var, vars);
+	VariantWriter::write_to_string(*p_var, vars);
 }
 
-void godotsharp_str_to_var(const godot_string *p_str, godot_variant *r_ret) {
+void godotsharp_str_to_var(const String *p_str, String *r_ret) {
 	Variant ret;
 
 	VariantParser::StreamString ss;
-	ss.s = *reinterpret_cast<const String *>(p_str);
+	ss.s = *p_str;
 
 	String errs;
 	int line;
@@ -1507,41 +1361,39 @@ void godotsharp_str_to_var(const godot_string *p_str, godot_variant *r_ret) {
 	memnew_placement(r_ret, Variant(ret));
 }
 
-void godotsharp_var_to_bytes(const godot_variant *p_var, bool p_full_objects, godot_packed_array *r_bytes) {
-	const Variant &var = *reinterpret_cast<const Variant *>(p_var);
+void godotsharp_var_to_bytes(const Variant *p_var, bool p_full_objects, PackedByteArray *r_bytes) {
 	PackedByteArray &bytes = *memnew_placement(r_bytes, PackedByteArray);
 
 	int len;
-	Error err = encode_variant(var, nullptr, len, p_full_objects);
+	Error err = encode_variant(*p_var, nullptr, len, p_full_objects);
 	ERR_FAIL_COND_MSG(err != OK, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
 
 	bytes.resize(len);
-	encode_variant(var, bytes.ptrw(), len, p_full_objects);
+	encode_variant(*p_var, bytes.ptrw(), len, p_full_objects);
 }
 
-void godotsharp_bytes_to_var(const godot_packed_array *p_bytes, bool p_allow_objects, godot_variant *r_ret) {
-	const PackedByteArray *bytes = reinterpret_cast<const PackedByteArray *>(p_bytes);
+void godotsharp_bytes_to_var(const PackedByteArray *p_bytes, bool p_allow_objects, Variant *r_ret) {
 	Variant ret;
-	Error err = decode_variant(ret, bytes->ptr(), bytes->size(), nullptr, p_allow_objects);
+	Error err = decode_variant(ret, p_bytes->ptr(), p_bytes->size(), nullptr, p_allow_objects);
 	if (err != OK) {
 		ret = RTR("Not enough bytes for decoding bytes, or invalid format.");
 	}
 	memnew_placement(r_ret, Variant(ret));
 }
 
-int godotsharp_hash(const godot_variant *p_var) {
-	return reinterpret_cast<const Variant *>(p_var)->hash();
+int godotsharp_hash(const Variant *p_var) {
+	return p_var->hash();
 }
 
-void godotsharp_convert(const godot_variant *p_what, int32_t p_type, godot_variant *r_ret) {
-	const Variant *args[1] = { reinterpret_cast<const Variant *>(p_what) };
+void godotsharp_convert(const Variant *p_what, int32_t p_type, Variant *r_ret) {
+	const Variant *args[1] = { p_what };
 	Callable::CallError ce;
 	Variant ret;
 	Variant::construct(Variant::Type(p_type), ret, args, 1, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		memnew_placement(r_ret, Variant);
 		ERR_FAIL_MSG("Unable to convert parameter from '" +
-				Variant::get_type_name(reinterpret_cast<const Variant *>(p_what)->get_type()) +
+				Variant::get_type_name(p_what->get_type()) +
 				"' to '" + Variant::get_type_name(Variant::Type(p_type)) + "'.");
 	}
 	memnew_placement(r_ret, Variant(ret));
@@ -1551,7 +1403,7 @@ Object *godotsharp_instance_from_id(uint64_t p_instance_id) {
 	return ObjectDB::get_instance(ObjectID(p_instance_id));
 }
 
-void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
+void godotsharp_object_to_string(Object *p_ptr, String *r_str) {
 #ifdef DEBUG_ENABLED
 	// Cannot happen in C#; would get an ObjectDisposedException instead.
 	CRASH_COND(p_ptr == nullptr);

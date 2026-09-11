@@ -400,89 +400,157 @@ namespace Godot.NativeInterop
                 NativeFuncs.godotsharp_variant_as_float(p_var);
 
         public static Vector2 ConvertToVector2(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Vector2 ?
-                p_var.Vector2 :
-                NativeFuncs.godotsharp_variant_as_vector2(p_var);
+        {
+            if (p_var.Type == Variant.Type.Vector2)
+                return p_var.Vector2;
+
+            NativeFuncs.godotsharp_variant_as_vector2(p_var, out Vector2 ret);
+            return ret;
+        }
 
         public static Vector2I ConvertToVector2I(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Vector2I ?
-                p_var.Vector2I :
-                NativeFuncs.godotsharp_variant_as_vector2i(p_var);
+        {
+            if (p_var.Type == Variant.Type.Vector2I)
+                return p_var.Vector2I;
+
+            NativeFuncs.godotsharp_variant_as_vector2i(p_var, out Vector2I ret);
+            return ret;
+        }
 
         public static Rect2 ConvertToRect2(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Rect2 ?
-                p_var.Rect2 :
-                NativeFuncs.godotsharp_variant_as_rect2(p_var);
+        {
+            if (p_var.Type == Variant.Type.Rect2)
+                return p_var.Rect2;
+
+            NativeFuncs.godotsharp_variant_as_rect2(p_var, out Rect2 ret);
+            return ret;
+        }
 
         public static Rect2I ConvertToRect2I(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Rect2I ?
-                p_var.Rect2I :
-                NativeFuncs.godotsharp_variant_as_rect2i(p_var);
+        {
+            if (p_var.Type == Variant.Type.Rect2I)
+                return p_var.Rect2I;
+
+            NativeFuncs.godotsharp_variant_as_rect2i(p_var, out Rect2I ret);
+            return ret;
+        }
 
         public static unsafe Transform2D ConvertToTransform2D(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Transform2D ?
-                *p_var.Transform2D :
-                NativeFuncs.godotsharp_variant_as_transform2d(p_var);
+        {
+            if (p_var.Type == Variant.Type.Transform2D)
+                return *p_var.Transform2D;
+
+            NativeFuncs.godotsharp_variant_as_transform2d(p_var, out Transform2D ret);
+            return ret;
+        }
 
         public static Vector3 ConvertToVector3(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Vector3 ?
-                p_var.Vector3 :
-                NativeFuncs.godotsharp_variant_as_vector3(p_var);
+        {
+            if (p_var.Type == Variant.Type.Vector3)
+                return p_var.Vector3;
+
+            NativeFuncs.godotsharp_variant_as_vector3(p_var, out Vector3 ret);
+            return ret;
+        }
 
         public static Vector3I ConvertToVector3I(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Vector3I ?
-                p_var.Vector3I :
-                NativeFuncs.godotsharp_variant_as_vector3i(p_var);
+        {
+            if (p_var.Type == Variant.Type.Vector3I)
+                return p_var.Vector3I;
+
+            NativeFuncs.godotsharp_variant_as_vector3i(p_var, out Vector3I ret);
+            return ret;
+        }
 
         public static unsafe Vector4 ConvertToVector4(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Vector4 ?
-                p_var.Vector4 :
-                NativeFuncs.godotsharp_variant_as_vector4(p_var);
+        {
+            if (p_var.Type == Variant.Type.Vector4)
+                return p_var.Vector4;
+
+            NativeFuncs.godotsharp_variant_as_vector4(p_var, out Vector4 ret);
+            return ret;
+        }
 
         public static unsafe Vector4I ConvertToVector4I(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Vector4I ?
-                p_var.Vector4I :
-                NativeFuncs.godotsharp_variant_as_vector4i(p_var);
+        {
+            if (p_var.Type == Variant.Type.Vector4I)
+                return p_var.Vector4I;
+
+            NativeFuncs.godotsharp_variant_as_vector4i(p_var, out Vector4I ret);
+            return ret;
+        }
 
         public static unsafe Basis ConvertToBasis(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Basis ?
-                *p_var.Basis :
-                NativeFuncs.godotsharp_variant_as_basis(p_var);
+        {
+            if (p_var.Type == Variant.Type.Basis)
+                return *p_var.Basis;
+
+            NativeFuncs.godotsharp_variant_as_basis(p_var, out Basis ret);
+            return ret;
+        }
 
         public static Quaternion ConvertToQuaternion(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Quaternion ?
-                p_var.Quaternion :
-                NativeFuncs.godotsharp_variant_as_quaternion(p_var);
+        {
+            if (p_var.Type == Variant.Type.Quaternion)
+                return p_var.Quaternion;
+
+            NativeFuncs.godotsharp_variant_as_quaternion(p_var, out Quaternion ret);
+            return ret;
+        }
 
         public static unsafe Transform3D ConvertToTransform3D(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Transform3D ?
-                *p_var.Transform3D :
-                NativeFuncs.godotsharp_variant_as_transform3d(p_var);
+        {
+            if (p_var.Type == Variant.Type.Transform3D)
+                return *p_var.Transform3D;
+
+            NativeFuncs.godotsharp_variant_as_transform3d(p_var, out Transform3D ret);
+            return ret;
+        }
 
         public static unsafe Projection ConvertToProjection(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Projection ?
-                *p_var.Projection :
-                NativeFuncs.godotsharp_variant_as_projection(p_var);
+        {
+            if (p_var.Type == Variant.Type.Projection)
+                return *p_var.Projection;
+
+            NativeFuncs.godotsharp_variant_as_projection(p_var, out Projection ret);
+            return ret;
+        }
 
         public static unsafe Aabb ConvertToAabb(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Aabb ?
-                *p_var.Aabb :
-                NativeFuncs.godotsharp_variant_as_aabb(p_var);
+        {
+            if (p_var.Type == Variant.Type.Aabb)
+                return *p_var.Aabb;
 
+            NativeFuncs.godotsharp_variant_as_aabb(p_var, out Aabb ret);
+            return ret;
+        }
+        
         public static Color ConvertToColor(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Color ?
-                p_var.Color :
-                NativeFuncs.godotsharp_variant_as_color(p_var);
+        {
+            if (p_var.Type == Variant.Type.Color)
+                return p_var.Color;
+
+            NativeFuncs.godotsharp_variant_as_color(p_var, out Color ret);
+            return ret;
+        }
 
         public static Plane ConvertToPlane(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Plane ?
-                p_var.Plane :
-                NativeFuncs.godotsharp_variant_as_plane(p_var);
+        {
+            if (p_var.Type == Variant.Type.Plane)
+                return p_var.Plane;
+
+            NativeFuncs.godotsharp_variant_as_plane(p_var, out Plane ret);
+            return ret;
+        }
 
         public static Rid ConvertToRid(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Rid ?
-                p_var.Rid :
-                NativeFuncs.godotsharp_variant_as_rid(p_var);
+        {
+            if (p_var.Type == Variant.Type.Rid)
+                return p_var.Rid;
+
+            NativeFuncs.godotsharp_variant_as_rid(p_var, out Rid ret);
+            return ret;
+        }
 
         public static IntPtr ConvertToGodotObjectPtr(in godot_variant p_var)
         {
@@ -511,25 +579,34 @@ namespace Godot.NativeInterop
                 }
                 default:
                 {
-                    using godot_string godotString = NativeFuncs.godotsharp_variant_as_string(p_var);
-                    return Marshaling.ConvertStringToManaged(godotString);
+                    NativeFuncs.godotsharp_variant_as_string(p_var, out var godotString);
+                    using (godotString)
+                        return Marshaling.ConvertStringToManaged(godotString);
                 }
             }
         }
 
         public static godot_string_name ConvertToNativeStringName(scoped in godot_variant p_var)
-            => p_var.Type == Variant.Type.StringName ?
-                NativeFuncs.godotsharp_string_name_new_copy(p_var.StringName) :
-                NativeFuncs.godotsharp_variant_as_string_name(p_var);
+        {
+            if (p_var.Type == Variant.Type.StringName)
+                return NativeFuncs.godotsharp_string_name_new_copy(p_var.StringName);
+
+            NativeFuncs.godotsharp_variant_as_string_name(p_var, out godot_string_name ret);
+            return ret;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static StringName ConvertToStringName(in godot_variant p_var)
             => StringName.CreateTakingOwnershipOfDisposableValue(ConvertToNativeStringName(p_var));
 
         public static godot_node_path ConvertToNativeNodePath(scoped in godot_variant p_var)
-            => p_var.Type == Variant.Type.NodePath ?
-                NativeFuncs.godotsharp_node_path_new_copy(p_var.NodePath) :
-                NativeFuncs.godotsharp_variant_as_node_path(p_var);
+        {
+            if (p_var.Type == Variant.Type.NodePath)
+                return NativeFuncs.godotsharp_node_path_new_copy(p_var.NodePath);
+
+            NativeFuncs.godotsharp_variant_as_node_path(p_var, out godot_node_path ret);
+            return ret;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NodePath ConvertToNodePath(in godot_variant p_var)
@@ -537,7 +614,10 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_callable ConvertToNativeCallable(scoped in godot_variant p_var)
-            => NativeFuncs.godotsharp_variant_as_callable(p_var);
+        {
+            NativeFuncs.godotsharp_variant_as_callable(p_var, out godot_callable ret);
+            return ret;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Callable ConvertToCallable(in godot_variant p_var)
@@ -548,7 +628,10 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_signal ConvertToNativeSignal(scoped in godot_variant p_var)
-            => NativeFuncs.godotsharp_variant_as_signal(p_var);
+        {
+            NativeFuncs.godotsharp_variant_as_signal(p_var, out godot_signal ret);
+            return ret;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Signal ConvertToSignal(in godot_variant p_var)
@@ -571,9 +654,13 @@ namespace Godot.NativeInterop
             => Array<T>.CreateTakingOwnershipOfDisposableValue(ConvertToNativeArray(p_var));
 
         public static godot_dictionary ConvertToNativeDictionary(scoped in godot_variant p_var)
-            => p_var.Type == Variant.Type.Dictionary ?
-                NativeFuncs.godotsharp_dictionary_new_copy(p_var.Dictionary) :
-                NativeFuncs.godotsharp_variant_as_dictionary(p_var);
+        {
+            if (p_var.Type == Variant.Type.Dictionary)
+                return NativeFuncs.godotsharp_dictionary_new_copy(p_var.Dictionary);
+
+            NativeFuncs.godotsharp_variant_as_dictionary(p_var, out godot_dictionary ret);
+            return ret;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Dictionary ConvertToDictionary(in godot_variant p_var)
@@ -585,62 +672,72 @@ namespace Godot.NativeInterop
 
         public static byte[] ConvertAsPackedByteArrayToSystemArray(in godot_variant p_var)
         {
-            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_byte_array(p_var);
-            return Marshaling.ConvertNativePackedByteArrayToSystemArray(packedArray);
+            NativeFuncs.godotsharp_variant_as_packed_byte_array(p_var, out var packedArray);
+            using (packedArray)
+                return Marshaling.ConvertNativePackedByteArrayToSystemArray(packedArray);
         }
 
         public static int[] ConvertAsPackedInt32ArrayToSystemArray(in godot_variant p_var)
         {
-            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_int32_array(p_var);
-            return Marshaling.ConvertNativePackedInt32ArrayToSystemArray(packedArray);
+            NativeFuncs.godotsharp_variant_as_packed_int32_array(p_var, out var packedArray);
+            using (packedArray)
+                return Marshaling.ConvertNativePackedInt32ArrayToSystemArray(packedArray);
         }
 
         public static long[] ConvertAsPackedInt64ArrayToSystemArray(in godot_variant p_var)
         {
-            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_int64_array(p_var);
-            return Marshaling.ConvertNativePackedInt64ArrayToSystemArray(packedArray);
+            NativeFuncs.godotsharp_variant_as_packed_int64_array(p_var, out var packedArray);
+            using (packedArray)
+                return Marshaling.ConvertNativePackedInt64ArrayToSystemArray(packedArray);
         }
 
         public static float[] ConvertAsPackedFloat32ArrayToSystemArray(in godot_variant p_var)
         {
-            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_float32_array(p_var);
-            return Marshaling.ConvertNativePackedFloat32ArrayToSystemArray(packedArray);
+            NativeFuncs.godotsharp_variant_as_packed_float32_array(p_var, out var packedArray);
+            using (packedArray)
+                return Marshaling.ConvertNativePackedFloat32ArrayToSystemArray(packedArray);
         }
 
         public static double[] ConvertAsPackedFloat64ArrayToSystemArray(in godot_variant p_var)
         {
-            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_float64_array(p_var);
-            return Marshaling.ConvertNativePackedFloat64ArrayToSystemArray(packedArray);
+            NativeFuncs.godotsharp_variant_as_packed_float64_array(p_var, out var packedArray);
+            using (packedArray)
+                return Marshaling.ConvertNativePackedFloat64ArrayToSystemArray(packedArray);
         }
 
         public static string[] ConvertAsPackedStringArrayToSystemArray(in godot_variant p_var)
         {
-            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_string_array(p_var);
-            return Marshaling.ConvertNativePackedStringArrayToSystemArray(packedArray);
+            NativeFuncs.godotsharp_variant_as_packed_string_array(p_var, out var packedArray);
+            using (packedArray)
+                return Marshaling.ConvertNativePackedStringArrayToSystemArray(packedArray);
         }
 
         public static Vector2[] ConvertAsPackedVector2ArrayToSystemArray(in godot_variant p_var)
         {
-            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector2_array(p_var);
-            return Marshaling.ConvertNativePackedVector2ArrayToSystemArray(packedArray);
+            NativeFuncs.godotsharp_variant_as_packed_vector2_array(p_var, out var packedArray);
+            using (packedArray)
+                return Marshaling.ConvertNativePackedVector2ArrayToSystemArray(packedArray);
         }
 
         public static Vector3[] ConvertAsPackedVector3ArrayToSystemArray(in godot_variant p_var)
         {
-            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector3_array(p_var);
-            return Marshaling.ConvertNativePackedVector3ArrayToSystemArray(packedArray);
+            NativeFuncs.godotsharp_variant_as_packed_vector3_array(p_var, out var packedArray);
+            using (packedArray)
+                return Marshaling.ConvertNativePackedVector3ArrayToSystemArray(packedArray);
         }
 
         public static Vector4[] ConvertAsPackedVector4ArrayToSystemArray(in godot_variant p_var)
         {
-            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector4_array(p_var);
-            return Marshaling.ConvertNativePackedVector4ArrayToSystemArray(packedArray);
+            NativeFuncs.godotsharp_variant_as_packed_vector4_array(p_var, out var packedArray);
+            using (packedArray)
+                return Marshaling.ConvertNativePackedVector4ArrayToSystemArray(packedArray);
         }
 
         public static Color[] ConvertAsPackedColorArrayToSystemArray(in godot_variant p_var)
         {
-            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_color_array(p_var);
-            return Marshaling.ConvertNativePackedColorArrayToSystemArray(packedArray);
+            NativeFuncs.godotsharp_variant_as_packed_color_array(p_var, out var packedArray);
+            using (packedArray)
+                return Marshaling.ConvertNativePackedColorArrayToSystemArray(packedArray);
         }
 
         public static StringName[] ConvertToSystemArrayOfStringName(in godot_variant p_var)

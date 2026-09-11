@@ -31,7 +31,6 @@
 #pragma once
 
 #include "../csharp_script.h"
-#include "../interop_types.h"
 #include "../mono_gc_handle.h"
 
 #include "core/object/object.h"
@@ -54,8 +53,8 @@ namespace GDMonoCache {
 #endif
 
 struct godotsharp_property_info {
-	godot_string_name name; // Not owned
-	godot_string hint_string;
+	StringName name;
+	String hint_string;
 	Variant::Type type;
 	PropertyHint hint;
 	PropertyUsageFlags usage;
@@ -63,8 +62,8 @@ struct godotsharp_property_info {
 };
 
 struct godotsharp_property_def_val_pair {
-	godot_string_name name; // Not owned
-	godot_variant value;
+	StringName name;
+	Variant value;
 };
 
 struct ManagedCallbacks {
