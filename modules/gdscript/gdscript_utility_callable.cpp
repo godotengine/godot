@@ -30,6 +30,12 @@
 
 #include "gdscript_utility_callable.h"
 
+#include "core/object/method_info.h"
+
+#include <core/error/error_macros.h>
+#include <core/string/print_string.h>
+#include <core/variant/variant.h>
+
 bool GDScriptUtilityCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	return p_a->hash() == p_b->hash();
 }
@@ -91,6 +97,21 @@ int GDScriptUtilityCallable::get_argument_count(bool &r_is_valid) const {
 			return GDScriptUtilityFunctions::get_function_argument_count(function_name);
 	}
 	ERR_FAIL_V_MSG(0, "Invalid type.");
+}
+
+void GDScriptUtilityCallable::get_method_info(MethodInfo &r_method_info) const {
+	print_line("GDScriptUtilityCallable::get_arguments is called!");
+	switch (type) {
+		case TYPE_INVALID:
+			r_method_info = MethodInfo();
+			break;
+		case TYPE_GLOBAL:
+			r_method_info = Variant::get_utility_function_info(function_name);
+			break;
+		case TYPE_GDSCRIPT:
+			r_method_info = GDScriptUtilityFunctions::get_function_info(function_name);
+			break;
+	}
 }
 
 void GDScriptUtilityCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

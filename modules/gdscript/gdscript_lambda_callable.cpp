@@ -34,6 +34,11 @@
 
 #include "core/templates/hashfuncs.h"
 
+#include <core/error/error_macros.h>
+#include <core/object/property_info.h>
+#include <core/string/print_string.h>
+#include <core/variant/dictionary.h>
+
 bool GDScriptLambdaCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	// Lambda callables are only compared by reference.
 	return p_a == p_b;
@@ -87,6 +92,14 @@ int GDScriptLambdaCallable::get_argument_count(bool &r_is_valid) const {
 	}
 	r_is_valid = true;
 	return function->get_argument_count() - captures.size();
+}
+
+void GDScriptLambdaCallable::get_method_info(MethodInfo &r_method_info) const {
+	print_line("GDScriptLambdaCallable::get_arguments was called!");
+	if (function == nullptr) {
+		return;
+	}
+	r_method_info = function->get_method_info();
 }
 
 void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
@@ -211,6 +224,14 @@ int GDScriptLambdaSelfCallable::get_argument_count(bool &r_is_valid) const {
 	}
 	r_is_valid = true;
 	return function->get_argument_count() - captures.size();
+}
+
+void GDScriptLambdaSelfCallable::get_method_info(MethodInfo &r_method_info) const {
+	print_line("GDScriptLambdaSelfCallable::get_arguments was called!");
+	if (function == nullptr) {
+		return;
+	}
+	r_method_info = function->get_method_info();
 }
 
 void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

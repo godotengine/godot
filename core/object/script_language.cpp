@@ -37,7 +37,9 @@
 #include "core/debugger/script_debugger.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/property_info.h"
 #include "core/templates/sort_array.h"
+#include "core/templates/vector.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
@@ -705,6 +707,22 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 		}
 	}
 	return false;
+}
+MethodInfo PlaceHolderScriptInstance::get_method_info(const StringName &p_method) const {
+	MethodInfo ret;
+	if (script->is_placeholder_fallback_enabled()) {
+		return ret;
+	}
+
+	Ref<Script> scr = script;
+	while (scr.is_valid()) {
+		ret = scr->get_method_info(p_method);
+		if (!(ret == MethodInfo())) {
+			return ret;
+		}
+		scr = scr->get_base_script();
+	}
+	return ret;
 }
 
 Variant PlaceHolderScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {

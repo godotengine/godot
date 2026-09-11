@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "core/object/method_info.h"
+#include "core/object/property_info.h"
+#include "core/variant/dictionary.h"
 #include "tests/test_macros.h"
 
 TEST_FORCE_LINK(test_callable)
@@ -194,5 +197,268 @@ TEST_CASE("[Callable] Bound and unbound argument count") {
 
 	memdelete(test_instance);
 }
+
+class TestGetMethodInfo : public Object {
+	GDCLASS(TestGetMethodInfo, Object);
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("test_func_1"), &TestGetMethodInfo::test_func_1);
+		ClassDB::bind_method(D_METHOD("test_func_2", "foo", "bar"), &TestGetMethodInfo::test_func_2, DEFVAL("bar default str"));
+		ClassDB::bind_method(D_METHOD("test_func_3", "foo", "bar", "baz"), &TestGetMethodInfo::test_func_3);
+		ClassDB::bind_static_method("TestGetMethodInfo", D_METHOD("test_func_6", "foo", "bar", "baz"), &TestGetMethodInfo::test_func_6);
+		ClassDB::bind_static_method("TestGetMethodInfo", D_METHOD("test_func_7", "foo", "bar", "baz"), &TestGetMethodInfo::test_func_7);
+
+		{
+			MethodInfo mi;
+			mi.name = "test_func_8";
+			mi.arguments.push_back(PropertyInfo(Variant::INT, "foo"));
+			mi.arguments.push_back(PropertyInfo(Variant::INT, "bar"));
+
+			ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "test_func_8", &TestGetMethodInfo::test_func_8, mi, varray(), false);
+		}
+
+		{
+			MethodInfo mi;
+			mi.name = "test_func_9";
+			mi.arguments.push_back(PropertyInfo(Variant::INT, "foo"));
+			mi.arguments.push_back(PropertyInfo(Variant::INT, "bar"));
+			mi.arguments.push_back(PropertyInfo(Variant::INT, "baz"));
+
+			ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "test_func_9", &TestGetMethodInfo::test_func_9, mi, varray(), false);
+		}
+	}
+
+private:
+	HashMap<String, MethodInfo> methods;
+
+public:
+	void test_func_1() {}
+	void test_func_2(int p_foo, String p_bar = "bar default str") {}
+	void test_func_3(Signal p_foo, Variant p_bar, StringName p_baz) {}
+
+	int test_func_4(int p_foo, int p_bar) const { return 0; }
+	int test_func_5(String p_foo, StringName p_bar, NodePath p_baz) const { return 0; }
+
+	static void test_func_6(Callable p_foo, String p_bar, NodePath p_baz) {}
+	static NodePath test_func_7(Callable p_foo, String p_bar, int p_baz) { return NodePath(); }
+
+	void test_func_8(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {}
+	void test_func_9(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {}
+
+	TestGetMethodInfo() {
+		MethodInfo mi;
+
+		//void test_func_1() {}
+		mi.name = "test_func_1";
+		methods.insert("test_func_1", mi);
+		mi = MethodInfo();
+
+		//void test_func_2(int p_foo, String p_bar = "bar default str") {}
+		mi.name = "test_func_2";
+		mi.arguments.push_back(PropertyInfo(Variant::Type::INT, "foo"));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::STRING, "bar"));
+		mi.default_arguments.push_back("bar default str");
+		methods.insert(mi.name, mi);
+		mi = MethodInfo();
+
+		//void test_func_3(Signal p_foo, Variant p_bar, StringName p_baz) {}
+		mi.name = "test_func_3";
+		mi.arguments.push_back(PropertyInfo(Variant::Type::SIGNAL, "foo"));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::NIL, "bar", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::STRING_NAME, "baz"));
+		methods.insert(mi.name, mi);
+		mi = MethodInfo();
+
+		//int test_func_4(int p_foo, int p_bar) const { return 0; }
+		mi.name = "test_func_4";
+		mi.arguments.push_back(PropertyInfo(Variant::Type::INT, "foo"));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::INT, "bar"));
+		mi.return_val = PropertyInfo(Variant::Type::INT, "");
+		mi.flags = METHOD_FLAGS_DEFAULT | METHOD_FLAG_CONST;
+		methods.insert(mi.name, mi);
+		mi = MethodInfo();
+
+		//int test_func_5(String p_foo, StringName p_bar, NodePath p_baz) const { return 0; }
+		mi.name = "test_func_5";
+		mi.arguments.push_back(PropertyInfo(Variant::Type::STRING, "foo"));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::STRING_NAME, "bar"));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::NODE_PATH, "baz"));
+		mi.return_val = PropertyInfo(Variant::Type::INT, "");
+		mi.flags = METHOD_FLAGS_DEFAULT | METHOD_FLAG_CONST;
+		methods.insert(mi.name, mi);
+		mi = MethodInfo();
+
+		//static void test_func_6(Callable p_foo, String p_bar, NodePath p_baz) {}
+		mi.name = "test_func_6";
+		mi.arguments.push_back(PropertyInfo(Variant::Type::CALLABLE, "foo"));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::STRING, "bar"));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::NODE_PATH, "baz"));
+		mi.flags = METHOD_FLAGS_DEFAULT | METHOD_FLAG_STATIC;
+		methods.insert(mi.name, mi);
+		mi = MethodInfo();
+
+		//static NodePath test_func_7(Callable p_foo, String p_bar, int p_baz) { return NodePath(); }
+		mi.name = "test_func_7";
+		mi.arguments.push_back(PropertyInfo(Variant::Type::CALLABLE, "foo"));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::STRING, "bar"));
+		mi.arguments.push_back(PropertyInfo(Variant::Type::INT, "baz"));
+		mi.return_val = PropertyInfo(Variant::Type::NODE_PATH, "");
+		mi.flags = METHOD_FLAGS_DEFAULT | METHOD_FLAG_STATIC;
+		methods.insert(mi.name, mi);
+		mi = MethodInfo();
+
+		//void test_func_8(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {}
+		mi.name = "test_func_8";
+		// arguments for vararg functions are defined with ClassDB::bind_vararg_method (see _bind_methods above)
+		mi.arguments.push_back(PropertyInfo(Variant::INT, "foo"));
+		mi.arguments.push_back(PropertyInfo(Variant::INT, "bar"));
+		mi.flags = METHOD_FLAGS_DEFAULT | METHOD_FLAG_VARARG;
+		methods.insert(mi.name, mi);
+		mi = MethodInfo();
+
+		//void test_func_9(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {}
+		mi.name = "test_func_9";
+		// arguments for vararg functions are defined with ClassDB::bind_vararg_method (see _bind_methods above)
+		mi.arguments.push_back(PropertyInfo(Variant::INT, "foo"));
+		mi.arguments.push_back(PropertyInfo(Variant::INT, "bar"));
+		mi.arguments.push_back(PropertyInfo(Variant::INT, "baz"));
+		mi.flags = METHOD_FLAGS_DEFAULT | METHOD_FLAG_VARARG;
+		methods.insert(mi.name, mi);
+		mi = MethodInfo();
+	}
+
+	bool is_valid_mi(const String &p_method_name, const Dictionary &p_callable_method_info_dict) {
+		ERR_FAIL_COND_V_MSG(p_method_name.is_empty(), false,
+				"Method Name cannot be empty.");
+		ERR_FAIL_COND_V_MSG(!methods.has(p_method_name), false,
+				vformat("Method Name \"%s\" not found in methods hashmap.", p_method_name));
+
+		MethodInfo method = MethodInfo::from_dict(p_callable_method_info_dict);
+		MethodInfo expect_method = methods[p_method_name];
+
+		bool is_arguments_euqal = expect_method.arguments.size() == method.arguments.size();
+		if (is_arguments_euqal) {
+			for (uint32_t i = 0; i < method.arguments.size(); ++i) {
+				PropertyInfo expected_arg = expect_method.arguments[i];
+				PropertyInfo arg = method.arguments[i];
+				if (!((expected_arg.type == arg.type) &&
+							(!arg.name.is_empty() ? (expected_arg.name == arg.name) : true) &&
+							(expected_arg.class_name == arg.class_name) &&
+							(expected_arg.hint == arg.hint) &&
+							(expected_arg.hint_string == arg.hint_string) &&
+							(expected_arg.usage == arg.usage))) {
+					is_arguments_euqal = false;
+					ERR_PRINT(vformat(
+							"arguments[%d] not as expected.\nGot: %s\n, Expected: %s",
+							i, method.arguments[i].operator Dictionary(), expect_method.arguments[i].operator Dictionary()));
+					break;
+				}
+			}
+		}
+
+		bool is_arguments_metadata_equal = expect_method.arguments_metadata.size() == method.arguments_metadata.size();
+		if (is_arguments_metadata_equal) {
+			for (uint32_t i = 0; i < method.arguments_metadata.size(); ++i) {
+				if (!(expect_method.arguments_metadata[i] == method.arguments_metadata[i])) {
+					is_arguments_metadata_equal = false;
+					ERR_PRINT(vformat("arguments_metadata[%d] not as expected.\nGot: %d,\nExpected: %d",
+							i, method.arguments_metadata[i], expect_method.arguments_metadata[i]));
+					break;
+				}
+			}
+		}
+
+		bool is_default_args_euqal = expect_method.default_arguments.size() == method.default_arguments.size();
+		if (is_default_args_euqal) {
+			for (uint32_t i = 0; i < method.default_arguments.size(); ++i) {
+				if (!(expect_method.default_arguments[i] == method.default_arguments[i])) {
+					is_default_args_euqal = false;
+					ERR_PRINT(vformat("default_arguments[%d] not as expected.\nGot: %s,\nExpected: %s",
+							i, method.default_arguments[i], expect_method.default_arguments[i]));
+					break;
+				}
+			}
+		}
+
+		bool is_valid = is_arguments_euqal &&
+				is_arguments_metadata_equal &&
+				is_default_args_euqal &&
+				(!method.name.is_empty() ? (expect_method.name == method.name) : true) &&
+				expect_method.return_val == method.return_val &&
+				expect_method.return_val_metadata == method.return_val_metadata &&
+				expect_method.flags == method.flags;
+
+		if (!is_valid) {
+			ERR_PRINT(vformat("Invalid method info for \"%s\".\nGot: %s\nExpected: %s",
+					p_method_name, method.operator Dictionary(), expect_method.operator Dictionary()));
+		}
+
+		return is_valid;
+	}
+};
+
+#define CALLABLE_TEST(class_instance, method_name) \
+	CHECK(class_instance->is_valid_mi(#method_name, \
+			Callable(class_instance, #method_name).get_method_info()));
+
+#define CALLABLE_MP_TEST(class_name, class_instance, method_name) \
+	CHECK(class_instance->is_valid_mi(#method_name, \
+			callable_mp(class_instance, &class_name::method_name).get_method_info()));
+
+#define CALLABLE_MP_BIND_TEST(class_name, class_instance, method_name, ...) \
+	CHECK(class_instance->is_valid_mi(#method_name, \
+			callable_mp(class_instance, &class_name::method_name).bind(__VA_ARGS__).get_method_info()));
+
+#define CALLABLE_MP_UNBIND_TEST(class_name, class_instance, method_name, unbind_amount) \
+	CHECK(class_instance->is_valid_mi(#method_name, \
+			callable_mp(class_instance, &class_name::method_name).unbind(unbind_amount).get_method_info()));
+
+#define CALLABLE_MP_STATIC_TEST(class_name, class_instance, method_name) \
+	CHECK(class_instance->is_valid_mi(#method_name, \
+			callable_mp_static(&class_name::method_name).get_method_info()));
+
+TEST_CASE("[Callable] Method Info") {
+	TestGetMethodInfo *my_test = memnew(TestGetMethodInfo);
+
+	CALLABLE_TEST(my_test, test_func_1);
+	CALLABLE_TEST(my_test, test_func_2);
+	CALLABLE_TEST(my_test, test_func_3);
+	CALLABLE_TEST(my_test, test_func_6);
+	CALLABLE_TEST(my_test, test_func_7);
+
+	// Test vararg methods.
+	CALLABLE_TEST(my_test, test_func_8);
+	CALLABLE_TEST(my_test, test_func_9);
+
+	// Callable MP tests.
+	CALLABLE_MP_TEST(TestGetMethodInfo, my_test, test_func_1);
+	CALLABLE_MP_TEST(TestGetMethodInfo, my_test, test_func_2);
+	CALLABLE_MP_TEST(TestGetMethodInfo, my_test, test_func_3);
+
+	// Const methods
+	CALLABLE_MP_TEST(TestGetMethodInfo, my_test, test_func_4);
+	CALLABLE_MP_TEST(TestGetMethodInfo, my_test, test_func_5);
+
+	// Test static methods.
+	CALLABLE_MP_STATIC_TEST(TestGetMethodInfo, my_test, test_func_6);
+	CALLABLE_MP_STATIC_TEST(TestGetMethodInfo, my_test, test_func_7);
+
+	// Test bind.
+	CALLABLE_MP_BIND_TEST(TestGetMethodInfo, my_test, test_func_3, 1);
+	CALLABLE_MP_BIND_TEST(TestGetMethodInfo, my_test, test_func_3, 1, 2);
+
+	// Test unbind.
+	CALLABLE_MP_UNBIND_TEST(TestGetMethodInfo, my_test, test_func_3, 1);
+	CALLABLE_MP_UNBIND_TEST(TestGetMethodInfo, my_test, test_func_3, 2);
+
+	memdelete(my_test);
+}
+
+#undef CALLABLE_TEST
+#undef CALLABLE_MP_TEST
+#undef CALLABLE_MP_BIND_TEST
+#undef CALLABLE_MP_UNBIND_TEST
+#undef CALLABLE_MP_STATIC_TEST
 
 } // namespace TestCallable
