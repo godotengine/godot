@@ -180,9 +180,29 @@ namespace GodotTools
             "code", "code-oss", "vscode", "vscode-oss", "visual-studio-code", "visual-studio-code-oss", "codium"
         };
 
-        [UsedImplicitly]
+        private static string? ResolveScriptFilePath(Script script)
+        {
+            string resourcePath = script.ResourcePath;
+            if (resourcePath.StartsWith("csharp://", StringComparison.Ordinal))
+            {
+                string? sourceFile = Godot.Bridge.ScriptManagerBridge.GetSourceFilePath(resourcePath);
+                if (sourceFile != null && File.Exists(sourceFile))
+                    return sourceFile;
+                return null;
+            }
+            return ProjectSettings.GlobalizePath(resourcePath);
+        }
+
         public Error OpenInExternalEditor(Script script, int line, int col)
         {
+            string? resolvedFilePath = ResolveScriptFilePath(script);
+            if (resolvedFilePath == null)
+            {
+                GD.PushWarning($"Cannot open script: source file not available for '{script.ResourcePath}'. " +
+                               "This script is from a compiled assembly (e.g. NuGet package) with no source on disk.");
+                return Error.Ok;
+            }
+
             var editorId = _editorSettings.GetSetting(Settings.ExternalEditor).As<ExternalEditorId>();
 
             switch (editorId)
@@ -192,7 +212,7 @@ namespace GodotTools
                     return Error.Unavailable;
                 case ExternalEditorId.CustomEditor:
                 {
-                    string file = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    string file = resolvedFilePath;
                     string project = ProjectSettings.GlobalizePath("res://");
                     // Since ProjectSettings.GlobalizePath replaces only "res:/", leaving a trailing slash, it is removed here.
                     project = project[..^1];
@@ -256,7 +276,7 @@ namespace GodotTools
                 }
                 case ExternalEditorId.VisualStudio:
                 {
-                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    string scriptPath = resolvedFilePath;
 
                     var args = new List<string>
                     {
@@ -288,13 +308,13 @@ namespace GodotTools
                 case ExternalEditorId.Rider:
                 case ExternalEditorId.Fleet:
                 {
-                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    string scriptPath = resolvedFilePath;
                     RiderPathManager.OpenFile(editorId, GodotSharpDirs.ProjectSlnPath, scriptPath, line + 1, col);
                     return Error.Ok;
                 }
                 case ExternalEditorId.MonoDevelop:
                 {
-                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    string scriptPath = resolvedFilePath;
 
                     GodotIdeManager.LaunchIdeAsync().ContinueWith(launchTask =>
                     {
@@ -366,7 +386,7 @@ namespace GodotTools
 
                     args.Add(Path.GetDirectoryName(GodotSharpDirs.ProjectSlnPath)!);
 
-                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+                    string scriptPath = resolvedFilePath;
 
                     if (line >= 0)
                     {

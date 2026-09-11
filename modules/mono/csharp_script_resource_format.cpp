@@ -49,10 +49,22 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 	// TODO ignore anything inside bin/ and obj/ in tools builds?
 
 	String real_path = p_path;
+	[[maybe_unused]] bool is_assembly_backed = false;
 	if (p_path.begins_with("csharp://")) {
-		// This is a virtual path used by generic types, extract the real path.
-		real_path = "res://" + p_path.trim_prefix("csharp://");
-		real_path = real_path.substr(0, real_path.rfind_char(':'));
+		String virtual_suffix = p_path.trim_prefix("csharp://");
+		int colon_idx = virtual_suffix.find_char(':');
+		if (colon_idx >= 0) {
+			// Generic type virtual path (csharp://path:GenericType).
+			String base_path = "res://" + virtual_suffix.substr(0, colon_idx);
+			if (FileAccess::exists(base_path)) {
+				real_path = base_path;
+			} else {
+				is_assembly_backed = true;
+			}
+		} else {
+			// Assembly-backed script (csharp://AssemblyName/Namespace.ClassName.cs).
+			is_assembly_backed = true;
+		}
 	}
 
 	Ref<CSharpScript> scr;
@@ -65,8 +77,10 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 	}
 
 #ifdef DEBUG_ENABLED
-	Error err = scr->load_source_code(real_path);
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load C# script file '" + real_path + "'.");
+	if (!is_assembly_backed) {
+		Error err = scr->load_source_code(real_path);
+		ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load C# script file '" + real_path + "'.");
+	}
 #endif // DEBUG_ENABLED
 
 	// Only one instance of a C# script is allowed to exist.
@@ -93,6 +107,26 @@ Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const
 
 	scr->reload();
 
+#ifdef TOOLS_ENABLED
+	// Assembly-backed scripts need explicit registration since reload() is a no-op for them.
+	if (is_assembly_backed && scr->is_valid()) {
+		CSharpScript::TypeInfo ti;
+		String base_type;
+		bool is_abstract = false;
+		bool is_tool = false;
+		String class_name = CSharpLanguage::get_singleton()->get_global_class_name(
+				p_path, &base_type, &ti.icon_path, &is_abstract, &is_tool);
+		if (!class_name.is_empty()) {
+			ti.class_name = class_name;
+			ti.native_base_name = StringName(base_type);
+			ti.is_global_class = true;
+			ti.is_abstract = is_abstract;
+			ti.is_tool = is_tool;
+			CSharpScript::_register_csharp_global_class(p_path, ti);
+		}
+	}
+#endif
+
 	if (r_error) {
 		*r_error = OK;
 	}
@@ -109,7 +143,10 @@ bool ResourceFormatLoaderCSharpScript::handles_type(const String &p_type) const 
 }
 
 String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path) const {
-	return p_path.has_extension("cs") ? CSharpLanguage::get_singleton()->get_type() : "";
+	if (p_path.has_extension("cs") || p_path.begins_with("csharp://")) {
+		return CSharpLanguage::get_singleton()->get_type();
+	}
+	return "";
 }
 
 Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
@@ -156,5 +193,10 @@ void ResourceFormatSaverCSharpScript::get_recognized_extensions(const Ref<Resour
 }
 
 bool ResourceFormatSaverCSharpScript::recognize(const Ref<Resource> &p_resource) const {
-	return Object::cast_to<CSharpScript>(p_resource.ptr()) != nullptr;
+	const CSharpScript *scr = Object::cast_to<CSharpScript>(p_resource.ptr());
+	if (!scr) {
+		return false;
+	}
+	// Assembly-backed scripts (csharp://) have no source file to save.
+	return !scr->get_path().begins_with("csharp://");
 }

@@ -42,7 +42,9 @@ namespace GodotPlugins.Game
 
                 ManagedCallbacks.Create(outManagedCallbacks);
 
-                ScriptManagerBridge.LookupScriptsInAssembly(typeof(global::GodotPlugins.Game.Main).Assembly);
+                var mainAssembly = typeof(global::GodotPlugins.Game.Main).Assembly;
+                ScriptManagerBridge.LookupScriptsInAssembly(mainAssembly);
+                ScriptManagerBridge.LookupScriptsInReferencedAssemblies(mainAssembly, mainAssembly.Location);
 
                 return godot_bool.True;
             }
