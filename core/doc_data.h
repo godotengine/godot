@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/hash_map.h"
 #include "core/variant/variant.h"
 
 class DocData {
