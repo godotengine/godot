@@ -75,6 +75,7 @@ static Node *gltf_import(const String &p_file) {
 	options["nodes/root_type"] = "";
 	options["nodes/root_name"] = "";
 	options["nodes/root_script"] = Variant();
+	options["nodes/remove_empty_root"] = false;
 	options["nodes/apply_root_scale"] = true;
 	options["nodes/root_scale"] = 1.0;
 	options["meshes/ensure_tangents"] = true;
