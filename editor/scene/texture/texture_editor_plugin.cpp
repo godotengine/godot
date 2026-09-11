@@ -52,6 +52,12 @@
 #include "scene/resources/texture_rd.h"
 #include "servers/rendering/rendering_device.h"
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_NOISE_ENABLED
+#include "modules/noise/noise_texture_2d.h"
+#endif
+
 constexpr const char *texture_2d_shader_code = R"(
 shader_type canvas_item;
 render_mode blend_mix;
@@ -388,6 +394,12 @@ bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 
 #ifdef RD_ENABLED
 	if (Object::cast_to<Texture2DRD>(p_object) != nullptr) {
+		return true;
+	}
+#endif
+
+#ifdef MODULE_NOISE_ENABLED
+	if (Object::cast_to<NoiseTexture2D>(p_object) != nullptr) {
 		return true;
 	}
 #endif
