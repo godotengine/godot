@@ -578,6 +578,14 @@
 				This is only used by Vulkan in debug builds and can return 0 when this information is not tracked or unknown.
 			</description>
 		</method>
+		<method name="get_device_enabled_extensions" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of Vulkan device extensions that are currently enabled. This is useful for GDExtensions that need to verify whether specific Vulkan extensions (such as external memory extensions) were successfully enabled.
+				Additional extensions can be requested via the [member ProjectSettings.rendering/rendering_device/vulkan/additional_device_extensions] project setting.
+				[b]Note:[/b] This method only returns meaningful results when using the Vulkan rendering backend. For other backends (D3D12, Metal), an empty array is returned.
+			</description>
+		</method>
 		<method name="get_device_memory_by_object_type" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="type" type="int" />
