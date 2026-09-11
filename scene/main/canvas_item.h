@@ -119,6 +119,7 @@ private:
 	bool pending_update = false;
 	bool draw_commands_dirty = false;
 	bool top_level = false;
+	bool auto_redraw = true;
 	bool drawing = false;
 	bool block_transform_notify = false;
 	bool behind = false;
@@ -377,6 +378,9 @@ public:
 
 	void set_draw_behind_parent(bool p_enable);
 	bool is_draw_behind_parent_enabled() const;
+
+	void set_auto_redraw(bool p_auto) { auto_redraw = p_auto; }
+	bool is_auto_redraw() const { return auto_redraw; }
 
 	CanvasItem *get_parent_item() const;
 

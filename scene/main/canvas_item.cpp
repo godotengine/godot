@@ -105,7 +105,7 @@ void CanvasItem::_handle_visibility_change(bool p_visible) {
 	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
-	if (p_visible) {
+	if (p_visible && auto_redraw) {
 		queue_redraw();
 	} else {
 		emit_signal(SceneStringName(hidden));
@@ -305,7 +305,9 @@ void CanvasItem::_enter_canvas() {
 		}
 	}
 
-	queue_redraw();
+	if (auto_redraw) {
+		queue_redraw();
+	}
 
 	notification(NOTIFICATION_ENTER_CANVAS);
 }
@@ -749,7 +751,7 @@ bool CanvasItem::_property_get_revert(const StringName &p_name, Variant &r_prope
 
 void CanvasItem::item_rect_changed(bool p_size_changed) {
 	ERR_MAIN_THREAD_GUARD;
-	if (p_size_changed) {
+	if (p_size_changed && auto_redraw) {
 		queue_redraw();
 	}
 	emit_signal(SceneStringName(item_rect_changed));
@@ -1462,6 +1464,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_as_top_level", "enable"), &CanvasItem::set_as_top_level);
 	ClassDB::bind_method(D_METHOD("is_set_as_top_level"), &CanvasItem::is_set_as_top_level);
 
+	ClassDB::bind_method(D_METHOD("set_auto_redraw", "enable"), &CanvasItem::set_auto_redraw);
+	ClassDB::bind_method(D_METHOD("is_auto_redraw"), &CanvasItem::is_auto_redraw);
+
 	ClassDB::bind_method(D_METHOD("set_light_mask", "light_mask"), &CanvasItem::set_light_mask);
 	ClassDB::bind_method(D_METHOD("get_light_mask"), &CanvasItem::get_light_mask);
 
@@ -1574,6 +1579,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "self_modulate"), "set_self_modulate", "get_self_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "top_level"), "set_as_top_level", "is_set_as_top_level");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_redraw"), "set_auto_redraw", "is_auto_redraw");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_children", PROPERTY_HINT_ENUM, "Disabled,Clip Only,Clip + Draw"), "set_clip_children_mode", "get_clip_children_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "oversampling_with_scale", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled"), "set_oversampling_with_scale", "get_oversampling_with_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
@@ -1748,7 +1754,10 @@ void CanvasItem::_refresh_texture_filter_cache() const {
 
 void CanvasItem::_update_self_texture_filter(RSE::CanvasItemTextureFilter p_texture_filter) {
 	RS::get_singleton()->canvas_item_set_default_texture_filter(get_canvas_item(), p_texture_filter);
-	queue_redraw();
+
+	if (auto_redraw) {
+		queue_redraw();
+	}
 }
 
 void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
@@ -1810,7 +1819,10 @@ void CanvasItem::_refresh_texture_repeat_cache() const {
 
 void CanvasItem::_update_self_texture_repeat(RSE::CanvasItemTextureRepeat p_texture_repeat) {
 	RS::get_singleton()->canvas_item_set_default_texture_repeat(get_canvas_item(), p_texture_repeat);
-	queue_redraw();
+
+	if (auto_redraw) {
+		queue_redraw();
+	}
 }
 
 void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
