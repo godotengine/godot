@@ -66,9 +66,6 @@ public:
 	virtual String get_doc_url_path() { return "/"; }
 	virtual Ref<Texture2D> get_theme_icon();
 
-	virtual void set_toggle_list_control(Control *p_toggle_list_control) = 0;
-	virtual void update_toggle_files_button() = 0;
-
 	virtual bool show_members_overview() { return false; }
 
 	virtual void ensure_focus() = 0;
@@ -242,11 +239,6 @@ public:
 
 	virtual void validate_script() override { code_editor->validate_script(); }
 	bool get_validation_success() { return validation_success; }
-
-	virtual void set_toggle_list_control(Control *p_toggle_list_control) override {
-		code_editor->set_toggle_list_control(p_toggle_list_control);
-	}
-	virtual void update_toggle_files_button() override { code_editor->update_toggle_files_button(); }
 
 	TextEditorBase();
 	~TextEditorBase();
