@@ -50,6 +50,19 @@ void PluginConfigDialog::_clear_fields() {
 	author_edit->set_text("");
 	version_edit->set_text("");
 	script_edit->set_text("");
+	_update_placeholders();
+}
+
+void PluginConfigDialog::_update_placeholders() {
+	const String subfolder = _get_subfolder();
+	if (subfolder.is_empty()) {
+		subfolder_edit->set_placeholder(U"\"my_plugin\" → res://addons/my_plugin");
+		script_edit->set_placeholder(U"\"plugin.gd\" → res://addons/my_plugin/plugin.gd");
+	} else {
+		const String extension = ScriptServer::get_language(script_option_edit->get_selected())->get_extension();
+		subfolder_edit->set_placeholder(vformat("res://addons/%s", subfolder));
+		script_edit->set_placeholder(vformat("res://addons/%s/plugin.%s", subfolder, extension));
+	}
 }
 
 void PluginConfigDialog::_on_confirmed() {
@@ -139,7 +152,7 @@ void PluginConfigDialog::_on_required_text_changed() {
 }
 
 String PluginConfigDialog::_get_subfolder() {
-	return subfolder_edit->get_text().is_empty() ? name_edit->get_text().replace_char(' ', '_').to_lower() : subfolder_edit->get_text();
+	return subfolder_edit->get_text().is_empty() ? name_edit->get_text().to_snake_case() : subfolder_edit->get_text();
 }
 
 String PluginConfigDialog::_to_absolute_plugin_path(const String &p_plugin_name) {
@@ -222,6 +235,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	name_edit->set_accessibility_name(TTRC("Plugin Name:"));
 	name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(name_edit);
+	register_text_enter(name_edit);
 
 	// Subfolder
 	Label *subfolder_lb = memnew(Label);
@@ -231,9 +245,9 @@ PluginConfigDialog::PluginConfigDialog() {
 	plugin_edit_hidden_controls.push_back(subfolder_lb);
 
 	subfolder_edit = memnew(LineEdit);
-	subfolder_edit->set_placeholder(U"\"my_plugin\" → res://addons/my_plugin");
 	subfolder_edit->set_tooltip_text(TTR("Optional. The folder name should generally use `snake_case` naming (avoid spaces and special characters).\nIf left empty, the folder will be named after the plugin name converted to `snake_case`."));
 	subfolder_edit->set_accessibility_name(TTRC("Subfolder:"));
+	subfolder_edit->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	subfolder_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(subfolder_edit);
 	plugin_edit_hidden_controls.push_back(subfolder_edit);
@@ -307,8 +321,8 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	script_edit = memnew(LineEdit);
 	script_edit->set_tooltip_text(TTR("Optional. The name of the script file. If left empty, will default to the subfolder name."));
-	script_edit->set_placeholder(U"\"plugin.gd\" → res://addons/my_plugin/plugin.gd");
 	script_edit->set_accessibility_name(TTRC("Script Name:"));
+	script_edit->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(script_edit);
 
@@ -327,6 +341,8 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	script_option_edit->connect(SceneStringName(item_selected), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 	name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	name_edit->connect(SceneStringName(text_changed), callable_mp(this, &PluginConfigDialog::_update_placeholders).unbind(1));
 	subfolder_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	subfolder_edit->connect(SceneStringName(text_changed), callable_mp(this, &PluginConfigDialog::_update_placeholders).unbind(1));
 	script_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 }

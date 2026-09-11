@@ -63,6 +63,7 @@ class PluginConfigDialog : public ConfirmationDialog {
 	bool _edit_mode = false;
 
 	void _clear_fields();
+	void _update_placeholders();
 	void _on_confirmed();
 	void _on_canceled();
 	void _on_required_text_changed();
