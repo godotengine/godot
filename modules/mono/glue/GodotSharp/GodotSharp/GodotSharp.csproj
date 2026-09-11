@@ -44,8 +44,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ReflectionAnalyzers" Version="0.1.22-dev" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
-    <!--PackageReference Include="IDisposableAnalyzers" Version="3.4.13" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" /-->
+    <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
