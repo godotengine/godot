@@ -135,6 +135,48 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 		EngineDebugger::get_singleton()->send_message("request_embed_suspend_toggle", Array());
 		return;
 	}
+
+	p_shortcut = p_settings.get("editor/game_view_input_override", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("game_view_input_override", Array());
+		return;
+	}
+
+	p_shortcut = p_settings.get("editor/game_view_2d_selection_override", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("game_view_2d_selection_override", Array());
+		return;
+	}
+
+	p_shortcut = p_settings.get("editor/game_view_3d_selection_override", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("game_view_3d_selection_override", Array());
+		return;
+	}
+
+	p_shortcut = p_settings.get("editor/game_view_toggle_camera_override", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("game_view_toggle_camera_override", Array());
+		return;
+	}
+
+	p_shortcut = p_settings.get("editor/game_view_increase_speed", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("game_view_increase_speed", Array());
+		return;
+	}
+
+	p_shortcut = p_settings.get("editor/game_view_decrease_speed", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("game_view_decrease_speed", Array());
+		return;
+	}
+
+	p_shortcut = p_settings.get("editor/game_view_reset_speed", Ref<Shortcut>());
+	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("game_view_reset_speed", Array());
+		return;
+	}
 }
 
 void SceneDebugger::_on_window_size_changed() {
