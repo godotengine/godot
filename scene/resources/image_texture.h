@@ -47,6 +47,10 @@ class ImageTexture : public Texture2D {
 	mutable Ref<BitMap> alpha_cache;
 	bool image_stored = false;
 
+#ifdef TOOLS_ENABLED
+	String image_path;
+#endif
+
 protected:
 	virtual void reload_from_file() override;
 	static void _bind_methods();
