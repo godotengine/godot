@@ -3068,8 +3068,8 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 	//validate instances if keeping state
 
 	if (p_keep_state) {
-		for (SelfList<GDScriptInstance> *E = p_script->instances.first(); E; E = E->next()) {
-			E->self()->reload_members();
+		for (GDScriptInstance &instance : p_script->instances) {
+			instance.reload_members();
 		}
 	}
 #endif //DEBUG_ENABLED
