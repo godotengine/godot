@@ -107,7 +107,7 @@ Variant SceneState::_duplicate_recursive(const Variant &p_variant, HashMap<Node 
 				if (fallback.is_typed()) {
 					const ContainerType &fallback_type = fallback.get_element_type();
 					has_fallback =
-							scr_type.builtin_type == fallback_type.builtin_type &&
+							scr_type.variant_type == fallback_type.variant_type &&
 							scr_type.class_name == fallback_type.class_name &&
 							scr_type.script == fallback_type.script;
 				}
