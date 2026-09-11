@@ -268,6 +268,29 @@ Error OS_Web::pwa_update() {
 	return godot_js_pwa_update() ? FAILED : OK;
 }
 
+Error OS_Web::move_to_trash(const String &p_path) {
+	Ref<DirAccess> da_ref = DirAccess::create_for_path(p_path);
+	if (da_ref.is_null()) {
+		return FAILED;
+	}
+
+	if (da_ref->dir_exists(p_path)) {
+		Error err = da_ref->change_dir(p_path);
+		if (err) {
+			return err;
+		}
+		err = da_ref->erase_contents_recursive();
+		if (err) {
+			return err;
+		}
+		return da_ref->remove(p_path);
+	} else if (da_ref->file_exists(p_path)) {
+		return da_ref->remove(p_path);
+	} else {
+		return FAILED;
+	}
+}
+
 bool OS_Web::is_userfs_persistent() const {
 	return idb_available;
 }
