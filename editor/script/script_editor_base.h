@@ -32,11 +32,40 @@
 
 #include "editor/gui/code_editor.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/tree.h"
 
 class EditorSyntaxHighlighter;
 class MenuButton;
 class VSplitContainer;
 class ScriptEditor;
+
+class ScriptEditorDiagnosticPanel : public Tree {
+	GDCLASS(ScriptEditorDiagnosticPanel, Tree);
+
+	static void _bind_methods();
+
+	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);
+	void _on_item_activated();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	enum DiagnosticAction {
+		ACTION_IGNORE_WARNING,
+		ACTION_COPY
+	};
+
+	TreeItem *add_warning(const String &p_message);
+	TreeItem *add_warning(const EditorLanguage::Warning &p_warning);
+
+	TreeItem *add_error(const String &p_message);
+	TreeItem *add_error(const EditorLanguage::ScriptError &p_error);
+
+	TreeItem *add_suberror(TreeItem *p_parent_item, const EditorLanguage::ScriptError &p_error);
+
+	ScriptEditorDiagnosticPanel();
+};
 
 class ScriptEditorBase : public VBoxContainer {
 	GDCLASS(ScriptEditorBase, VBoxContainer);
@@ -285,6 +314,7 @@ protected:
 
 	VSplitContainer *editor_box = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
+	ScriptEditorDiagnosticPanel *warnings_panel_tree = nullptr;
 
 	static void _code_complete_scripts(void *p_ud, const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force);
 	virtual void _code_complete_script(const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) = 0;

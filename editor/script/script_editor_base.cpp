@@ -826,12 +826,19 @@ void CodeEditorBase::set_breakpoint(int p_line, bool p_enabled) {
 
 void CodeEditorBase::_show_warnings_panel(bool p_show) {
 	warnings_panel->set_visible(p_show);
+	warnings_panel_tree->set_visible(p_show);
 }
 
 bool CodeEditorBase::_warning_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		goto_line_centered(p_line.operator int64_t());
 		return true;
+	} else if (p_line.get_type() == Variant::DICTIONARY) {
+		Dictionary as_dict = p_line;
+		if (as_dict.get("operation", "goto") == "goto") {
+			goto_line_centered(as_dict.get("line", 0), as_dict.get("column", 0));
+			return true;
+		}
 	}
 	return false;
 }
@@ -962,6 +969,13 @@ CodeEditorBase::CodeEditorBase() {
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 	warnings_panel->connect("meta_clicked", callable_mp(this, &CodeEditorBase::_warning_clicked));
+
+	warnings_panel_tree = memnew(ScriptEditorDiagnosticPanel);
+	warnings_panel_tree->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
+	warnings_panel_tree->set_h_size_flags(SIZE_EXPAND_FILL);
+	warnings_panel_tree->set_focus_mode(FOCUS_CLICK);
+	warnings_panel_tree->hide();
+	warnings_panel_tree->connect("action_requested", callable_mp(this, &CodeEditorBase::_warning_clicked));
 
 	editor_box = memnew(VSplitContainer);
 	add_child(editor_box);
