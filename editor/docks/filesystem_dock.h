@@ -50,6 +50,7 @@ class DependencyEditor;
 class DependencyEditorOwners;
 class DependencyRemoveDialog;
 class EditorDirDialog;
+class EditorResourceConversionPlugin;
 class HBoxContainer;
 class LineEdit;
 class ProgressBar;
@@ -145,6 +146,7 @@ private:
 		EXTRA_FOCUS_FILTER,
 
 		CONVERT_BASE_ID = 1000,
+		CONVERT_NEW_BASE_ID = 1500,
 	};
 
 	HashMap<String, TreeItem *> folder_map;
@@ -294,6 +296,7 @@ private:
 	bool _handle_custom_context_callback(Ref<InputEvent> p_event, const PackedStringArray &p_selected);
 
 	HashSet<String> _get_valid_conversions_for_file_paths(const Vector<String> &p_paths);
+	Vector<Ref<EditorResourceConversionPlugin>> _get_new_resource_conversions_for_file_path(const String &p_path);
 
 	void _update_file_list(bool p_keep_selection, const Vector<String> &p_override_selection = Vector<String>());
 	void _toggle_file_display();
