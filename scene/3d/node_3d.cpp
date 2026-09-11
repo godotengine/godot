@@ -243,14 +243,6 @@ void Node3D::_notification(int p_what) {
 			ERR_MAIN_THREAD_GUARD;
 
 			data.inside_world = true;
-			data.viewport = nullptr;
-			Node *parent = get_parent();
-			while (parent && !data.viewport) {
-				data.viewport = Object::cast_to<Viewport>(parent);
-				parent = parent->get_parent();
-			}
-
-			ERR_FAIL_NULL(data.viewport);
 
 #ifdef TOOLS_ENABLED
 			if (is_part_of_edited_scene() && !data.gizmos_requested) {
@@ -267,7 +259,6 @@ void Node3D::_notification(int p_what) {
 			clear_gizmos();
 #endif
 
-			data.viewport = nullptr;
 			data.inside_world = false;
 		} break;
 
@@ -1074,9 +1065,9 @@ bool Node3D::is_set_as_top_level() const {
 Ref<World3D> Node3D::get_world_3d() const {
 	ERR_READ_THREAD_GUARD_V(Ref<World3D>()); // World3D can only be set from main thread, so it's safe to obtain on threads.
 	ERR_FAIL_COND_V(!is_inside_world(), Ref<World3D>());
-	ERR_FAIL_NULL_V(data.viewport, Ref<World3D>());
+	ERR_FAIL_NULL_V(get_viewport(), Ref<World3D>());
 
-	return data.viewport->find_world_3d();
+	return get_viewport()->find_world_3d();
 }
 
 void Node3D::_propagate_visibility_changed() {
