@@ -47,15 +47,11 @@
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/center_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/margin_container.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 
 void HighlightedLabel::draw_substr_rects(const Vector2i &p_substr, Vector2 p_offset, int p_line_limit, int line_spacing) {
 	for (int i = get_lines_skipped(); i < p_line_limit; i++) {
@@ -368,37 +364,33 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 
 	{
 		// Results section
-		panel_container = memnew(PanelContainer);
-		panel_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		add_child(panel_container);
+		MarginContainer *mc = memnew(MarginContainer);
+		mc->set_theme_type_variation("NoBorderHorizontalWindow");
+		mc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		add_child(mc);
 
 		{
 			// No search results
-			no_results_container = memnew(CenterContainer);
-			no_results_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			no_results_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			panel_container->add_child(no_results_container);
+			no_results_container = memnew(PanelContainer);
+			mc->add_child(no_results_container);
 
 			no_results_label = memnew(Label);
 			no_results_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 			no_results_label->add_theme_font_size_override(SceneStringName(font_size), 24 * EDSCALE);
+			no_results_label->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+			no_results_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 			no_results_container->add_child(no_results_label);
 			no_results_container->hide();
 		}
 
 		{
-			MarginContainer *mc = memnew(MarginContainer);
-			mc->set_theme_type_variation("NoBorderHorizontalWindow");
-			mc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			panel_container->add_child(mc);
-
 			// Search results
 			scroll_container = memnew(ScrollContainer);
 			scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 			scroll_container->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 			scroll_container->hide();
-			panel_container->add_child(scroll_container);
+			mc->add_child(scroll_container);
 
 			list = memnew(VBoxContainer);
 			list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1196,7 +1188,9 @@ void QuickOpenResultContainer::_notification(int p_what) {
 			file_context_menu->set_item_icon(FILE_SHOW_IN_FILESYSTEM, get_editor_theme_icon(SNAME("ShowInFileSystem")));
 			file_context_menu->set_item_icon(FILE_SHOW_IN_FILE_MANAGER, get_editor_theme_icon(SNAME("Filesystem")));
 
-			panel_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			Ref<StyleBox> tree_style = get_theme_stylebox(SceneStringName(panel), SNAME("Tree"));
+			no_results_container->add_theme_style_override(SceneStringName(panel), tree_style);
+			scroll_container->add_theme_style_override(SceneStringName(panel), tree_style);
 
 			if (content_display_mode == QuickOpenDisplayMode::LIST) {
 				display_mode_toggle->set_button_icon(get_editor_theme_icon(SNAME("FileThumbnail")));
