@@ -655,9 +655,8 @@ bool Camera2D::is_zoom_limit_enabled() const {
 
 void Camera2D::set_zoom_min(const Vector2 &p_zoom_min) {
 	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom_min.x) || Math::is_zero_approx(p_zoom_min.y), "Zoom min must not be 0.");
-	ERR_FAIL_COND_MSG(p_zoom_min.x > zoom_max.x, "Zoom min.x cannot be greater than zoom max.x.");
-	ERR_FAIL_COND_MSG(p_zoom_min.y > zoom_max.y, "Zoom min.y cannot be greater than zoom max.y.");
 	zoom_min = p_zoom_min;
+	zoom_max = zoom_max.max(zoom_min);
 	if (zoom_limit_enabled) {
 		set_zoom(zoom);
 	}
@@ -668,10 +667,9 @@ Vector2 Camera2D::get_zoom_min() const {
 }
 
 void Camera2D::set_zoom_max(const Vector2 &p_zoom_max) {
-	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom_max.x) || Math::is_zero_approx(p_zoom_max.y), "Zoom max must be different from 0.");
-	ERR_FAIL_COND_MSG(p_zoom_max.x < zoom_min.x, "Zoom max.x cannot be less than zoom min.x.");
-	ERR_FAIL_COND_MSG(p_zoom_max.y < zoom_min.y, "Zoom max.y cannot be less than zoom min.y.");
+	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom_max.x) || Math::is_zero_approx(p_zoom_max.y), "Zoom max must not be 0.");
 	zoom_max = p_zoom_max;
+	zoom_min = zoom_min.min(zoom_max);
 	if (zoom_limit_enabled) {
 		set_zoom(zoom);
 	}
