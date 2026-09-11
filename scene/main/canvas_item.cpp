@@ -1717,16 +1717,16 @@ void CanvasItem::set_visibility_layer_bit(uint32_t p_visibility_layer, bool p_en
 	ERR_THREAD_GUARD;
 	ERR_FAIL_UNSIGNED_INDEX(p_visibility_layer, 32);
 	if (p_enable) {
-		set_visibility_layer(visibility_layer | (1 << p_visibility_layer));
+		set_visibility_layer(visibility_layer | (1u << p_visibility_layer));
 	} else {
-		set_visibility_layer(visibility_layer & (~(1 << p_visibility_layer)));
+		set_visibility_layer(visibility_layer & (~(1u << p_visibility_layer)));
 	}
 }
 
 bool CanvasItem::get_visibility_layer_bit(uint32_t p_visibility_layer) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	ERR_FAIL_UNSIGNED_INDEX_V(p_visibility_layer, 32, false);
-	return (visibility_layer & (1 << p_visibility_layer));
+	return (visibility_layer & (1u << p_visibility_layer));
 }
 
 void CanvasItem::_refresh_texture_filter_cache() const {
