@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
@@ -47,6 +48,7 @@
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/variant_parser.h"
+#include "main/main.h"
 #include "servers/rendering/rendering_server.h"
 
 #ifdef DEBUG_LOAD_THREADED
@@ -929,6 +931,28 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 	return status;
 }
 
+bool ResourceLoader::_task_is_blocked_by_main_flush(ThreadLoadTask *p_load_task_ptr, HashSet<String> *p_visited_tasks) {
+	HashSet<String> _visited_tasks;
+	if (!p_visited_tasks) {
+		p_visited_tasks = &_visited_tasks;
+	}
+	if (p_load_task_ptr->blocked_by_main_flush) {
+		return true;
+	}
+	for (const String &task_name : p_load_task_ptr->sub_tasks) {
+		if (p_visited_tasks->has(task_name)) {
+			continue;
+		}
+		if (thread_load_tasks.has(task_name)) {
+			p_visited_tasks->insert(task_name);
+			if (_task_is_blocked_by_main_flush(&thread_load_tasks[task_name], p_visited_tasks)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 	if (r_error) {
 		*r_error = OK;
@@ -968,7 +992,19 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 			}
 
 			while (load_task_ptr->status == THREAD_LOAD_IN_PROGRESS) {
-				thread_load_lock.temp_unlock();
+				if (tasks_waiting_on_main_flush > 0) {
+					// If there are task threads waiting on the main message queue to be flushed and the message queue is flushing,
+					// and we're waiting for those tasks to finish, it will never be flushed and we're deadlocked. It will also deadlock
+					// if _load_complete_inner runs and waits for the task to finish, so just fail the load.
+					if (MessageQueue::get_main_singleton()->is_flushing() && _task_is_blocked_by_main_flush(load_task_ptr)) {
+						ERR_FAIL_V_MSG(Ref<Resource>(), "Message queue is flushing while load tasks are waiting for message queue flush, failing to prevent deadlock...");
+					}
+					thread_load_lock.temp_unlock();
+					WARN_PRINT_ONCE("Waiting for resource load on main thread while tasks are waiting on main thread message queue flush, flushing to prevent deadlock...");
+					MessageQueue::get_main_singleton()->flush();
+				} else {
+					thread_load_lock.temp_unlock();
+				}
 				bool exit = !_ensure_load_progress();
 				OS::get_singleton()->delay_usec(1000);
 				if (MessageQueue::get_singleton()) {
@@ -1139,9 +1175,13 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 						}
 					}
 					if (!import_thread) { // Main thread is blocked by initial resource reimport, do not wait.
+						load_task_ptr->blocked_by_main_flush = true;
+						tasks_waiting_on_main_flush++;
 						CoreBind::Semaphore done;
 						MessageQueue::get_main_singleton()->push_callable(callable_mp(&done, &CoreBind::Semaphore::post).bind(1));
 						done.wait();
+						load_task_ptr->blocked_by_main_flush = false;
+						tasks_waiting_on_main_flush--;
 					}
 				}
 			}
@@ -1804,5 +1844,7 @@ HashMap<String, ResourceLoader::LoadToken *> ResourceLoader::user_load_tokens;
 
 SelfList<Resource>::List ResourceLoader::remapped_list;
 HashMap<String, Vector<String>> ResourceLoader::translation_remaps;
+
+std::atomic<int64_t> ResourceLoader::tasks_waiting_on_main_flush;
 
 ResourceLoaderImport ResourceLoader::import = nullptr;
