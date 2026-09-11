@@ -366,7 +366,7 @@ void Path3DGizmo::redraw() {
 		debug_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	}
 
-	real_t interval = 0.1;
+	real_t interval = c->get_bake_interval();
 	const real_t length = c->get_baked_length();
 
 	// 1. Draw curve and bones if it is visible (alpha > 0.0).
