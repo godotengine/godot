@@ -531,7 +531,7 @@ bool EditorInspectorPluginControl::parse_property(Object *p_object, const Varian
 
 // Toolbars controls.
 
-Size2 ControlEditorPopupButton::get_minimum_size() const {
+Size2 ControlEditorPopupButton::_get_minimum_size() const {
 	Vector2 base_size = Vector2(26, 26) * EDSCALE;
 
 	if (arrow_icon.is_null()) {

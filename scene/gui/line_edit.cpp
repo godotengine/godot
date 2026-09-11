@@ -2461,7 +2461,7 @@ void LineEdit::clear_internal() {
 	queue_redraw();
 }
 
-Size2 LineEdit::get_minimum_size() const {
+Size2 LineEdit::_get_minimum_size() const {
 	Ref<Font> font = theme_cache.font;
 	int font_size = theme_cache.font_size;
 

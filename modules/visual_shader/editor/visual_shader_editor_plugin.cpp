@@ -9336,7 +9336,7 @@ void VisualShaderNodePortPreview::setup(const Ref<ShaderGraph> &p_shader_graph, 
 	_shader_changed();
 }
 
-Size2 VisualShaderNodePortPreview::get_minimum_size() const {
+Size2 VisualShaderNodePortPreview::_get_minimum_size() const {
 	int port_preview_size = EDITOR_GET("editors/visual_editors/visual_shader/port_preview_size");
 	return Size2(port_preview_size, port_preview_size) * EDSCALE;
 }

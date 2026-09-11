@@ -357,7 +357,7 @@ Size2 BoxContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	return minimum;
 }
 
-Size2 BoxContainer::get_minimum_size() const {
+Size2 BoxContainer::_get_minimum_size() const {
 	return _get_minimum_size(false);
 }
 

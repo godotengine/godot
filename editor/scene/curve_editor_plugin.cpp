@@ -109,7 +109,7 @@ void CurveEdit::set_snap_count(int p_snap_count) {
 	}
 }
 
-Size2 CurveEdit::get_minimum_size() const {
+Size2 CurveEdit::_get_minimum_size() const {
 	return Vector2(64, MAX(135, get_size().x * ASPECT_RATIO)) * EDSCALE;
 }
 

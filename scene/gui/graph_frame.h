@@ -73,6 +73,8 @@ protected:
 
 	virtual void _resort() override;
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	void set_title(const String &p_title);
 	String get_title() const;
@@ -96,7 +98,6 @@ public:
 	Color get_tint_color() const;
 
 	virtual bool has_point(const Point2 &p_point) const override;
-	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_desired_size() const override;
 
 	GraphFrame();

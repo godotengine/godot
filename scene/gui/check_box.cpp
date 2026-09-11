@@ -62,8 +62,8 @@ Size2 CheckBox::get_icon_size() const {
 	return _fit_icon_size(tex_size);
 }
 
-Size2 CheckBox::get_minimum_size() const {
-	Size2 minsize = Button::get_minimum_size();
+Size2 CheckBox::_get_minimum_size() const {
+	Size2 minsize = Button::_get_minimum_size();
 	const Size2 tex_size = get_icon_size();
 	if (tex_size.width > 0 || tex_size.height > 0) {
 		const Size2 padding = _get_largest_stylebox_size();

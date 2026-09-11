@@ -204,6 +204,8 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 	void _accessibility_action_scroll_set(const Variant &p_data);
 	void _accessibility_action_scroll_up(const Variant &p_data);
 	void _accessibility_action_scroll_down(const Variant &p_data);
@@ -345,8 +347,6 @@ public:
 
 	void set_wraparound_items(bool p_enable);
 	bool has_wraparound_items() const;
-
-	Size2 get_minimum_size() const override;
 
 	void set_autoscroll_to_bottom(const bool p_enable);
 

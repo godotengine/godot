@@ -70,10 +70,9 @@ protected:
 	virtual bool has_point(const Point2 &p_point) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual Size2 _get_minimum_size() const override;
 
 public:
-	virtual Size2 get_minimum_size() const override;
-
 	void set_texture_normal(const Ref<Texture2D> &p_normal);
 	void set_texture_pressed(const Ref<Texture2D> &p_pressed);
 	void set_texture_hover(const Ref<Texture2D> &p_hover);

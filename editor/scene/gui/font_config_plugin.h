@@ -205,13 +205,13 @@ class FontPreview : public Control {
 protected:
 	void _notification(int p_what);
 
+	virtual Size2 _get_minimum_size() const override;
+
 	Ref<Font> prev_font;
 
 	void _preview_changed();
 
 public:
-	virtual Size2 get_minimum_size() const override;
-
 	void set_data(const Ref<Font> &p_f);
 };
 

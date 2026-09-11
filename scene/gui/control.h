@@ -444,6 +444,11 @@ protected:
 
 	virtual StringName _get_translation_context_with_override(const StringName &p_context) const override;
 
+	// Sizing.
+
+	virtual Size2 _get_minimum_size() const { return Size2(); }
+	virtual Size2 _get_maximum_size() const { return Size2(-1, -1); }
+
 	// Theming.
 
 	virtual void _update_theme_item_cache();
@@ -634,7 +639,7 @@ public:
 	void set_block_maximum_size_adjust(bool p_block);
 	void set_block_minimum_size_adjust(bool p_block);
 
-	virtual Size2 get_maximum_size() const;
+	Size2 get_maximum_size() const;
 	virtual Size2 get_combined_maximum_size() const;
 	virtual Size2 get_inner_combined_maximum_size() const;
 
@@ -643,7 +648,7 @@ public:
 
 	void set_parent_maximum_size_cache(const Size2 &p_size);
 
-	virtual Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 
 	void set_custom_minimum_size(const Size2 &p_custom);

@@ -837,6 +837,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 	void _accessibility_action_scroll_down(const Variant &p_data);
 	void _accessibility_action_scroll_left(const Variant &p_data);
 	void _accessibility_action_scroll_right(const Variant &p_data);
@@ -987,8 +989,6 @@ public:
 
 	void set_auto_tooltip(bool p_enable);
 	bool is_auto_tooltip_enabled() const;
-
-	Size2 get_minimum_size() const override;
 
 	Tree();
 	~Tree();

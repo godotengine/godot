@@ -46,10 +46,6 @@ void GraphElement::_edit_set_position(const Point2 &p_position) {
 }
 #endif
 
-Size2 GraphElement::get_minimum_size() const {
-	return Container::_get_minimum_size();
-}
-
 void GraphElement::_resort() {
 	Size2 size = get_size();
 

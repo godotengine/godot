@@ -256,6 +256,7 @@ class AnimationTimelineEdit : public Range {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	virtual Size2 _get_minimum_size() const override;
 
 public:
 	int get_name_limit() const;
@@ -263,7 +264,6 @@ public:
 
 	float get_zoom_scale() const;
 
-	virtual Size2 get_minimum_size() const override;
 	void set_animation(const Ref<Animation> &p_animation, bool p_read_only);
 	void set_track_edit(AnimationTrackEdit *p_track_edit);
 	void set_editor(AnimationTrackEditor *p_editor);
@@ -384,6 +384,8 @@ protected:
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
@@ -401,7 +403,6 @@ public:
 	bool is_moving_selection() const { return moving_selection; }
 	float get_moving_selection_offset() const { return moving_selection_offset; }
 	void set_animation(const Ref<Animation> &p_animation, bool p_read_only);
-	virtual Size2 get_minimum_size() const override;
 
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
@@ -515,6 +516,8 @@ protected:
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
@@ -542,7 +545,6 @@ public:
 	AnimationTrackEditor *get_editor() const { return editor; }
 	NodePath get_path() const;
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
-	virtual Size2 get_minimum_size() const override;
 
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
@@ -592,9 +594,10 @@ protected:
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	void set_type_and_name(const Ref<Texture2D> &p_type, const String &p_name, const NodePath &p_node);
-	virtual Size2 get_minimum_size() const override;
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_root(Node *p_root);
 	void set_editor(AnimationTrackEditor *p_editor);

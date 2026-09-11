@@ -830,9 +830,9 @@ class VisualShaderNodePortPreview : public Control {
 	void _shader_changed(); //must regen
 protected:
 	void _notification(int p_what);
+	virtual Size2 _get_minimum_size() const override;
 
 public:
-	virtual Size2 get_minimum_size() const override;
 	void setup(const Ref<ShaderGraph> &p_shader_graph, Ref<ShaderMaterial> &p_preview_material, bool p_has_transparency, int p_node, int p_port, bool p_is_valid);
 };
 

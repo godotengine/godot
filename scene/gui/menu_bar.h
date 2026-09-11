@@ -147,6 +147,8 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -158,8 +160,6 @@ public:
 	bool is_prefer_global_menu() const;
 
 	bool is_native_menu() const;
-
-	virtual Size2 get_minimum_size() const override;
 
 	int get_menu_count() const;
 

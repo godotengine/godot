@@ -46,9 +46,9 @@ class ScalableContainer : public MarginContainer {
 protected:
 	void _notification(int p_what);
 
-public:
-	virtual Size2 get_minimum_size() const override;
+	virtual Size2 _get_minimum_size() const override;
 
+public:
 	ScalableContainer();
 };
 
