@@ -32,10 +32,9 @@
 
 TEST_FORCE_LINK(test_camera_2d)
 
-#include "scene/2d/camera_2d.h"
-
 #include "core/config/engine.h"
 #include "core/object/callable_mp.h"
+#include "scene/2d/camera_2d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
