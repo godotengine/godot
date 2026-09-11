@@ -694,9 +694,9 @@ void FileSystemDock::_notification(int p_what) {
 			}
 
 			int new_thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
-			if (new_thumbnail_size_setting != thumbnail_size_setting) {
+			if (thumbnail_debounce_timer->is_stopped() && new_thumbnail_size_setting != thumbnail_size_setting) {
 				thumbnail_size_setting = new_thumbnail_size_setting;
-				thumbnail_size_slider->set_value(thumbnail_size_setting);
+				thumbnail_size_slider->set_value_no_signal(thumbnail_size_setting);
 				do_redraw = true;
 			}
 
