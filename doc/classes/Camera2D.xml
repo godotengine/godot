@@ -217,6 +217,7 @@
 		</member>
 		<member name="zoom_smoothing_enabled" type="bool" setter="set_zoom_smoothing_enabled" getter="is_zoom_smoothing_enabled" default="false">
 			If [code]true[/code], the camera's zoom smoothly transitions towards its target zoom at [member zoom_smoothing_speed].
+			If a zoom component changes sign, that component is updated immediately to avoid passing through zero.
 		</member>
 		<member name="zoom_smoothing_speed" type="float" setter="set_zoom_smoothing_speed" getter="get_zoom_smoothing_speed" default="5.0">
 			Speed of the camera's zoom smoothing effect when [member zoom_smoothing_enabled] is [code]true[/code].
@@ -226,13 +227,13 @@
 		<signal name="bounds_limit_reached">
 			<param index="0" name="sides_hit" type="int" />
 			<description>
-				Emitted when the camera reaches a bounds limit. The [param sides_hit] parameter is a bitmask indicating which limits were reached (use the [enum Side] enum values: [constant SIDE_LEFT] = 1, [constant SIDE_TOP] = 2, [constant SIDE_RIGHT] = 4, [constant SIDE_BOTTOM] = 8).
+				Emitted when the camera reaches a bounds limit. The [param sides_hit] parameter is a bitmask indicating which limits were reached. Test each side using [code]sides_hit &amp; (1 &lt;&lt; SIDE_LEFT)[/code], replacing [constant SIDE_LEFT] with the desired [enum Side] constant. When [member limit_smoothed] is enabled, the signal follows the target position being limited, even while the view is still approaching the limit.
 			</description>
 		</signal>
 		<signal name="bounds_limit_released">
 			<param index="0" name="sides_released" type="int" />
 			<description>
-				Emitted when the camera stops being limited by a bounds limit. The [param sides_released] parameter is a bitmask indicating which limits were released (use the [enum Side] enum values: [constant SIDE_LEFT] = 1, [constant SIDE_TOP] = 2, [constant SIDE_RIGHT] = 4, [constant SIDE_BOTTOM] = 8).
+				Emitted when the camera stops being limited by a bounds limit, including when [member limit_enabled] is disabled. The [param sides_released] parameter is a bitmask indicating which limits were released. Test each side using [code]sides_released &amp; (1 &lt;&lt; SIDE_LEFT)[/code], replacing [constant SIDE_LEFT] with the desired [enum Side] constant.
 			</description>
 		</signal>
 		<signal name="zoom_limit_reached">

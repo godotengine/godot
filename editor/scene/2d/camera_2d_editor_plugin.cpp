@@ -83,9 +83,9 @@ bool Camera2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 			} else if (drag_type != Drag::NONE) {
 				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 				ur->create_action(TTR("Edit Camera2D Limits"));
-				ur->add_do_method(selected_camera, "_set_limit_rect", selected_camera->get_limit_rect());
+				ur->add_do_method(selected_camera, "set_limit_rect", selected_camera->get_limit_rect());
 				ur->add_do_method(this, "_update_overlays_if_needed", selected_camera);
-				ur->add_undo_method(selected_camera, "_set_limit_rect", drag_revert);
+				ur->add_undo_method(selected_camera, "set_limit_rect", drag_revert);
 				ur->add_undo_method(this, "_update_overlays_if_needed", selected_camera);
 				ur->commit_action(false);
 
@@ -228,7 +228,7 @@ void Camera2DEditor::_menu_option(int p_option) {
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Snap Camera2D Limits to the Viewport"), UndoRedo::MERGE_DISABLE, selected_camera);
 			ur->add_do_method(this, "_snap_limits_to_viewport", selected_camera);
-			ur->add_undo_method(selected_camera, "_set_limit_rect", selected_camera->get_limit_rect());
+			ur->add_undo_method(selected_camera, "set_limit_rect", selected_camera->get_limit_rect());
 			ur->add_undo_method(this, "_update_overlays_if_needed", selected_camera);
 			ur->commit_action();
 		} break;
