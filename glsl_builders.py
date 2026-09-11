@@ -1,5 +1,6 @@
 """Functions used to generate source files during build time"""
 
+import argparse
 import os.path
 
 from methods import generated_wrapper, print_error, to_raw_cstring
@@ -189,11 +190,11 @@ def build_rd_header_lines_for_raytracing_stage(lines, stage: str):
 """
 
 
-def build_rd_header(filename: str, shader: str) -> None:
+def rd_glsl(target: str, shader: str) -> None:
     include_file_in_rd_header(shader, header_data := RDHeaderStruct(), 0)
     class_name = os.path.basename(shader).replace(".glsl", "").title().replace("_", "").replace(".", "") + "ShaderRD"
 
-    with generated_wrapper(filename) as file:
+    with generated_wrapper(target) as file:
         file.write(f"""\
 #include "servers/rendering/renderer_rd/shader_rd.h"
 
@@ -244,12 +245,6 @@ public:
 """)
 
 
-def build_rd_headers(target, source, env):
-    env.NoCache(target)
-    for src in source:
-        build_rd_header(f"{src}.gen.h", str(src))
-
-
 class RAWHeaderStruct:
     def __init__(self):
         self.code = ""
@@ -272,10 +267,10 @@ def include_file_in_raw_header(filename: str, header_data: RAWHeaderStruct, dept
             line = fs.readline()
 
 
-def build_raw_header(filename: str, shader: str) -> None:
+def glsl_header(target: str, shader: str) -> None:
     include_file_in_raw_header(shader, header_data := RAWHeaderStruct(), 0)
 
-    with generated_wrapper(filename) as file:
+    with generated_wrapper(target) as file:
         file.write(f"""\
 static const char {os.path.basename(shader).replace(".glsl", "_shader_glsl")}[] = {{
 {to_raw_cstring(header_data.code)}
@@ -283,7 +278,22 @@ static const char {os.path.basename(shader).replace(".glsl", "_shader_glsl")}[] 
 """)
 
 
-def build_raw_headers(target, source, env):
-    env.NoCache(target)
-    for src in source:
-        build_raw_header(f"{src}.gen.h", str(src))
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    rd_glsl_parser = subparsers.add_parser("rd_glsl")
+    rd_glsl_parser.add_argument("target")
+    rd_glsl_parser.add_argument("shader")
+
+    glsl_header_parser = subparsers.add_parser("glsl_header")
+    glsl_header_parser.add_argument("target")
+    glsl_header_parser.add_argument("shader")
+
+    args = vars(parser.parse_args())
+    command = globals().get(args.pop("command"), {})
+    command(**args)
+
+
+if __name__ == "__main__":
+    main()

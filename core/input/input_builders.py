@@ -1,14 +1,21 @@
 """Functions used to generate source files during build time"""
 
-from collections import OrderedDict
+from __future__ import annotations
 
-import methods
+import argparse
+import sys
+
+try:
+    sys.path.insert(0, "./")
+    import methods
+except ImportError:
+    raise SystemExit(f'Generator script "{__file__}" must be run from repository root!')
 
 
-def make_default_controller_mappings(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
+def default_controller_mappings(target: str, mapping_files: list[str]) -> None:
+    with methods.generated_wrapper(target) as file:
         file.write("""\
-#include "core/input/default_controller_mappings.h"
+#include "default_controller_mappings.h"
 
 #include "core/typedefs.h"
 
@@ -24,8 +31,8 @@ def make_default_controller_mappings(target, source, env):
         }
 
         # ensure mappings have a consistent order
-        platform_mappings = OrderedDict()
-        for src_path in map(str, source):
+        platform_mappings: dict[str, dict[str, str]] = {}
+        for src_path in mapping_files:
             with open(src_path, "r", encoding="utf-8") as f:
                 mapping_file_lines = f.readlines()
 
@@ -63,3 +70,20 @@ def make_default_controller_mappings(target, source, env):
             file.write(f"#endif // {variable}_ENABLED\n")
 
         file.write("\tnullptr\n};\n")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    default_controller_mappings_parser = subparsers.add_parser("default_controller_mappings")
+    default_controller_mappings_parser.add_argument("target")
+    default_controller_mappings_parser.add_argument("mapping_files", nargs="*")
+
+    args = vars(parser.parse_args())
+    command = globals().get(args.pop("command"), {})
+    command(**args)
+
+
+if __name__ == "__main__":
+    main()
