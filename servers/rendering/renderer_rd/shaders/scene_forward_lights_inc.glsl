@@ -1416,6 +1416,7 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 			vec2 ambient_uv = vec3_to_oct_with_border(local_amb_vec, border_size);
 			ambient_out.rgb = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ambient_uv, reflections.data[ref_index].index), roughness_lod).rgb);
 			ambient_out.rgb *= half(reflections.data[ref_index].exposure_normalization);
+			ambient_out.rgb *= half(reflections.data[ref_index].intensity);
 			ambient_out.a = ambient_blend;
 			ambient_out.rgb *= ambient_out.a;
 			ambient_accum += ambient_out;
@@ -1425,6 +1426,7 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 			half ambient_blend = max(half(0.0), blend - ambient_accum.a);
 
 			ambient_out.rgb = hvec3(reflections.data[ref_index].ambient);
+			ambient_out.rgb *= half(reflections.data[ref_index].intensity);
 			ambient_out.a = ambient_blend;
 			ambient_out.rgb *= ambient_out.a;
 			ambient_accum += ambient_out;
