@@ -71,7 +71,10 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 #ifdef LINUXBSD_ENABLED
 		accesskit_unix_adapter *adapter = nullptr;
 #endif
-
+#ifdef ANDROID_ENABLED
+		accesskit_android_adapter *adapter = nullptr;
+		jobject host = nullptr;
+#endif
 		RID root_id;
 		bool initial_update_completed = false;
 		HashSet<RID> update;
@@ -106,6 +109,7 @@ public:
 
 	bool window_create(DisplayServerEnums::WindowID p_window_id, void *p_handle) override;
 	void window_destroy(DisplayServerEnums::WindowID p_window_id) override;
+	bool has_window(DisplayServerEnums::WindowID p_window_id) override;
 
 	RID create_element(DisplayServerEnums::WindowID p_window_id, AccessibilityServerEnums::AccessibilityRole p_role) override;
 	RID create_sub_element(const RID &p_parent_rid, AccessibilityServerEnums::AccessibilityRole p_role, int p_insert_pos = -1) override;
@@ -190,6 +194,11 @@ public:
 	void update_set_color_value(const RID &p_id, const Color &p_color) override;
 	void update_set_background_color(const RID &p_id, const Color &p_color) override;
 	void update_set_foreground_color(const RID &p_id, const Color &p_color) override;
+
+	void *native_create_node_info(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id) override;
+	void *native_find_focus(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_focus_type) override;
+	bool native_perform_action(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id, int p_action, void *p_arguments) override;
+	bool native_on_hover(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_action, float p_x, float p_y) override;
 
 	static void register_create_func();
 
