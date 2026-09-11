@@ -2519,6 +2519,13 @@ void MeshStorage::skeleton_set_base_transform_2d(RID p_skeleton, const Transform
 	skeleton->base_transform_2d = p_base_transform;
 }
 
+RID MeshStorage::skeleton_get_bones_buffer(RID p_skeleton) const {
+	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
+	ERR_FAIL_NULL_V(skeleton, RID());
+
+	return skeleton->buffer;
+}
+
 void MeshStorage::_update_dirty_skeletons() {
 	while (skeleton_dirty_list) {
 		Skeleton *skeleton = skeleton_dirty_list;

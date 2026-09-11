@@ -105,9 +105,11 @@ private:
 	Vector3 previous_velocity;
 	Vector3 previous_position;
 
-	void _attach_sub_emitter();
+	NodePath skeletal_mesh = NodePath(".");
 
 	void _skinning_changed();
+	void _attach_sub_emitter();
+	void _fetch_skin();
 
 protected:
 	static void _bind_methods();
@@ -193,6 +195,9 @@ public:
 
 	void set_transform_align_axis(RSE::ParticlesTransformAlignAxis p_axis);
 	RSE::ParticlesTransformAlignAxis get_transform_align_axis() const;
+
+	void set_skeletal_mesh(const NodePath &p_remote_node);
+	NodePath get_skeletal_mesh() const;
 
 	void restart(bool p_keep_seed = false);
 

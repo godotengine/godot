@@ -480,6 +480,9 @@ public:
 	virtual void particles_request_process(RID p_particles) = 0;
 	virtual void particles_restart(RID p_particles) = 0;
 
+	virtual void particles_set_skeleton(RID p_particles, RID p_skeleton) = 0;
+	virtual void particles_set_baked_emission_texture(RID p_particles, RID p_skeleton) = 0;
+
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
 
 	virtual void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) = 0;
