@@ -15,7 +15,7 @@
 			# Create an HTTP request node and connect its completion signal.
 			var http_request = HTTPRequest.new()
 			add_child(http_request)
-			http_request.request_completed.connect(self._http_request_completed)
+			http_request.request_completed.connect(self._http_request_completed.bind(http_request))
 
 			# Perform a GET request. The URL below returns JSON as of writing.
 			var error = http_request.request("https://httpbin.org/get")
@@ -31,7 +31,9 @@
 				push_error("An error occurred in the HTTP request.")
 
 		# Called when the HTTP request is completed.
-		func _http_request_completed(result, response_code, headers, body):
+		func _http_request_completed(result, response_code, headers, body, request):
+			request.queue_free()
+
 			var json = JSON.new()
 			json.parse(body.get_string_from_utf8())
 			var response = json.get_data()
@@ -45,7 +47,8 @@
 			// Create an HTTP request node and connect its completion signal.
 			var httpRequest = new HttpRequest();
 			AddChild(httpRequest);
-			httpRequest.RequestCompleted += HttpRequestCompleted;
+			httpRequest.RequestCompleted += (result, responseCode, headers, body) =&gt;
+				HttpRequestCompleted(result, responseCode, headers, body, httpRequest);
 
 			// Perform a GET request. The URL below returns JSON as of writing.
 			Error error = httpRequest.Request("https://httpbin.org/get");
@@ -69,8 +72,10 @@
 		}
 
 		// Called when the HTTP request is completed.
-		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
+		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body, HttpRequest request)
 		{
+			request.QueueFree();
+
 			var json = new Json();
 			json.Parse(body.GetStringFromUtf8());
 			var response = json.GetData().AsGodotDictionary();
@@ -87,7 +92,7 @@
 			# Create an HTTP request node and connect its completion signal.
 			var http_request = HTTPRequest.new()
 			add_child(http_request)
-			http_request.request_completed.connect(self._http_request_completed)
+			http_request.request_completed.connect(self._http_request_completed.bind(http_request))
 
 			# Perform the HTTP request. The URL below returns a PNG image as of writing.
 			var error = http_request.request("https://placehold.co/512.png")
@@ -95,7 +100,9 @@
 				push_error("An error occurred in the HTTP request.")
 
 		# Called when the HTTP request is completed.
-		func _http_request_completed(result, response_code, headers, body):
+		func _http_request_completed(result, response_code, headers, body, request):
+			request.queue_free()
+
 			if result != HTTPRequest.RESULT_SUCCESS:
 				push_error("Image couldn't be downloaded. Try a different image.")
 
@@ -117,7 +124,9 @@
 			// Create an HTTP request node and connect its completion signal.
 			var httpRequest = new HttpRequest();
 			AddChild(httpRequest);
-			httpRequest.RequestCompleted += HttpRequestCompleted;
+			httpRequest.RequestCompleted += (result, responseCode, headers, body) =&gt;
+				HttpRequestCompleted(result, responseCode, headers, body, httpRequest);
+
 
 			// Perform the HTTP request. The URL below returns a PNG image as of writing.
 			Error error = httpRequest.Request("https://placehold.co/512.png");
@@ -128,8 +137,10 @@
 		}
 
 		// Called when the HTTP request is completed.
-		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
+		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body, HttpRequest request)
 		{
+			request.QueueFree()
+
 			if (result != (long)HttpRequest.Result.Success)
 			{
 				GD.PushError("Image couldn't be downloaded. Try a different image.");
