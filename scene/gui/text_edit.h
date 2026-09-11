@@ -347,6 +347,7 @@ private:
 	Array st_args;
 
 	void _clear();
+	void _clear_preserving_undo_history();
 	void _update_caches(bool p_invalidate_all = false);
 
 	void _close_ime_window();
