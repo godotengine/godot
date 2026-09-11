@@ -37,7 +37,7 @@
 		<method name="force_update_transform">
 			<return type="void" />
 			<description>
-				Forces the node's [member global_transform] to update, by sending [constant NOTIFICATION_TRANSFORM_CHANGED]. Fails if the node is not inside the tree.
+				Forces the node's [member global_transform] to update, by sending [constant NOTIFICATION_GLOBAL_TRANSFORM_CHANGED]. Fails if the node is not inside the tree.
 				[b]Note:[/b] For performance reasons, transform changes are usually accumulated and applied [i]once[/i] at the end of the frame. The update propagates through [Node3D] children, as well. Therefore, use this method only when you need an up-to-date transform (such as during physics operations).
 			</description>
 		</method>
@@ -98,6 +98,12 @@
 				Prevents this node from being rendered. Equivalent to setting [member visible] to [code]false[/code]. This is the opposite of [method show].
 			</description>
 		</method>
+		<method name="is_global_transform_notification_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the node receives [constant NOTIFICATION_GLOBAL_TRANSFORM_CHANGED] whenever [member global_transform] changes. This is enabled with [method set_notify_global_transform].
+			</description>
+		</method>
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -111,10 +117,10 @@
 				[b]Note:[/b] [member transform] is not affected by this setting.
 			</description>
 		</method>
-		<method name="is_transform_notification_enabled" qualifiers="const">
+		<method name="is_transform_notification_enabled" qualifiers="const" deprecated="Use [method is_global_transform_notification_enabled] instead.">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node receives [constant NOTIFICATION_TRANSFORM_CHANGED] whenever [member global_transform] changes. This is enabled with [method set_notify_transform].
+				Returns [code]true[/code] if the node receives [constant NOTIFICATION_GLOBAL_TRANSFORM_CHANGED] whenever [member global_transform] changes. This is enabled with [method set_notify_global_transform].
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
@@ -215,8 +221,17 @@
 			<return type="void" />
 			<param index="0" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], the node will not receive [constant NOTIFICATION_TRANSFORM_CHANGED] or [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED].
+				If [code]true[/code], the node will not receive [constant NOTIFICATION_GLOBAL_TRANSFORM_CHANGED] or [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED].
 				It may useful to call this method when handling these notifications to prevent infinite recursion.
+			</description>
+		</method>
+		<method name="set_notify_global_transform" keywords="set_notify_global_transform">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], the node will receive [constant NOTIFICATION_GLOBAL_TRANSFORM_CHANGED] whenever [member global_transform] changes.
+				[b]Note:[/b] Most 3D nodes such as [VisualInstance3D] or [CollisionObject3D] automatically enable this to function correctly.
+				[b]Note:[/b] In the editor, nodes will propagate this notification to their children if a gizmo is attached (see [method add_gizmo]).
 			</description>
 		</method>
 		<method name="set_notify_local_transform">
@@ -227,11 +242,11 @@
 				[b]Note:[/b] Some 3D nodes such as [CSGShape3D] or [CollisionShape3D] automatically enable this to function correctly.
 			</description>
 		</method>
-		<method name="set_notify_transform" keywords="set_notify_global_transform">
+		<method name="set_notify_transform" deprecated="Use [method set_notify_global_transform] instead.">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], the node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] whenever [member global_transform] changes.
+				If [code]true[/code], the node will receive [constant NOTIFICATION_GLOBAL_TRANSFORM_CHANGED] whenever [member global_transform] changes.
 				[b]Note:[/b] Most 3D nodes such as [VisualInstance3D] or [CollisionObject3D] automatically enable this to function correctly.
 				[b]Note:[/b] In the editor, nodes will propagate this notification to their children if a gizmo is attached (see [method add_gizmo]).
 			</description>
@@ -370,8 +385,13 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000" keywords="NOTIFICATION_GLOBAL_TRANSFORM_CHANGED">
-			Notification received when this node's [member global_transform] changes, if [method is_transform_notification_enabled] is [code]true[/code]. See also [method set_notify_transform].
+		<constant name="NOTIFICATION_GLOBAL_TRANSFORM_CHANGED" value="2000" keywords="NOTIFICATION_TRANSFORM_CHANGED">
+			Notification received when this node's [member global_transform] changes, if [method is_global_transform_notification_enabled] is [code]true[/code]. See also [method set_notify_global_transform].
+			[b]Note:[/b] Most 3D nodes such as [VisualInstance3D] or [CollisionObject3D] automatically enable this to function correctly.
+			[b]Note:[/b] In the editor, nodes will propagate this notification to their children if a gizmo is attached (see [method add_gizmo]).
+		</constant>
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000" deprecated="Use [constant NOTIFICATION_GLOBAL_TRANSFORM_CHANGED] instead.">
+			Notification received when this node's [member global_transform] changes, if [method is_global_transform_notification_enabled] is [code]true[/code]. See also [method set_notify_global_transform].
 			[b]Note:[/b] Most 3D nodes such as [VisualInstance3D] or [CollisionObject3D] automatically enable this to function correctly.
 			[b]Note:[/b] In the editor, nodes will propagate this notification to their children if a gizmo is attached (see [method add_gizmo]).
 		</constant>
