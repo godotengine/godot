@@ -298,6 +298,13 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
             )
             shutil.copy(mvk_path + "/Info.plist", app_dir + "/MoltenVK.xcframework/Info.plist")
 
+    if env["accesskit"]:
+        ak_sdk_path = env.get("accesskit_sdk_path")
+        if ak_sdk_path:
+            ak_xcf = os.path.join(ak_sdk_path, "lib", "ios", "AccessKit.xcframework")
+            if os.path.isdir(ak_xcf):
+                shutil.copytree(ak_xcf, app_dir + "/AccessKit.xcframework")
+
     # ZIP Xcode project bundle.
     zip_dir = env.Dir("#bin/" + (app_prefix + extra_suffix).replace(".", "_")).abspath
     shutil.make_archive(zip_dir, "zip", root_dir=app_dir)
