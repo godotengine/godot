@@ -2193,6 +2193,7 @@ void ScriptEditor::_notification(int p_what) {
 			list_split->connect("dragged", callable_mp(this, &ScriptEditor::_split_dragged));
 
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_update_filenames));
+			EditorFileSystem::get_singleton()->connect("script_classes_updated", callable_mp(this, &ScriptEditor::_script_classes_updated));
 #ifdef ANDROID_ENABLED
 			set_process(true);
 #endif
@@ -4674,4 +4675,17 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 
 ScriptEditorPlugin::~ScriptEditorPlugin() {
 	memdelete(FindInFiles::get_singleton());
+}
+
+void ScriptEditor::_script_classes_updated() {
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		ScriptServer::get_language(i)->reload_all_scripts();
+	}
+
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (se) {
+			se->validate_script();
+		}
+	}
 }
