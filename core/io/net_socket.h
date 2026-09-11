@@ -115,6 +115,7 @@ public:
 	virtual void set_ipv6_only_enabled(bool p_enabled) = 0;
 	virtual void set_tcp_no_delay_enabled(bool p_enabled) = 0;
 	virtual void set_reuse_address_enabled(bool p_enabled) = 0;
+	virtual void set_reuse_port_enabled(bool p_enabled) = 0;
 	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) = 0;
 	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) = 0;
 
