@@ -7522,10 +7522,6 @@ bool RenderingDeviceDriverVulkan::is_composite_alpha_supported(CommandQueueID p_
 	return false;
 }
 
-RenderingDeviceDriver::DriverWorkarounds RenderingDeviceDriverVulkan::get_driver_workarounds() const {
-	return driver_workarounds;
-}
-
 /******************/
 
 RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverVulkan *p_context_driver) {

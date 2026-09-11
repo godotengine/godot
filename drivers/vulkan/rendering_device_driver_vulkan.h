@@ -193,7 +193,6 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	};
 
 	PipelineStatistics pipeline_statistics;
-	DriverWorkarounds driver_workarounds;
 
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
 	Error _initialize_device_extensions();
@@ -806,8 +805,6 @@ public:
 	virtual const RenderingShaderContainerFormat &get_shader_container_format() const override final;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
-
-	virtual DriverWorkarounds get_driver_workarounds() const override final;
 
 private:
 	/*********************/
