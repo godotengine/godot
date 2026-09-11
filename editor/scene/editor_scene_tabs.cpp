@@ -53,6 +53,7 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/packed_scene.h"
 
 void EditorSceneTabs::_notification(int p_what) {
 	switch (p_what) {
@@ -321,6 +322,9 @@ void EditorSceneTabs::_update_tab_titles() {
 		scene_tabs->set_tab_icon(i, icon);
 
 		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorNode::get_editor_data().get_scene_history_id(i));
+
+		Ref<PackedScene> scene = EditorNode::get_editor_data().get_scene_resource(i);
+		unsaved = unsaved || (scene.is_valid() && scene->is_edited());
 		scene_tabs->set_tab_title(i, disambiguated_scene_names[i] + (unsaved ? "(*)" : ""));
 
 		if (!main_scene_path.is_empty() && main_scene_path == EditorNode::get_editor_data().get_scene_path(i)) {

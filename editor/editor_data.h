@@ -206,6 +206,7 @@ public:
 	void set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene);
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node *p_root);
+	Ref<PackedScene> get_scene_resource(int p_idx) const;
 	int get_edited_scene() const;
 	int get_edited_scene_from_path(const String &p_path) const;
 	Node *get_edited_scene_root(int p_idx = -1);
