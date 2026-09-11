@@ -72,6 +72,8 @@ class NavigationAgent2D : public Node {
 
 	Vector2 target_position;
 
+	Vector2 previous_origin;
+
 	Ref<NavigationPathQueryParameters2D> navigation_query;
 	Ref<NavigationPathQueryResult2D> navigation_result;
 	int navigation_path_index = 0;
