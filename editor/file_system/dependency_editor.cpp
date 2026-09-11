@@ -777,7 +777,7 @@ void DependencyRemoveDialog::ok_pressed() {
 		setting_path_map[path] = setting;
 	}
 
-	bool project_settings_modified = false;
+	bool project_settings_modified = ProjectSettings::get_singleton()->handle_removed_files(all_remove_files);
 
 	for (const KeyValue<String, String> &E : all_remove_files) {
 		String file = E.key;
