@@ -31,8 +31,7 @@
 #include "class_db.h"
 
 #include "core/config/engine.h"
-#include "core/io/resource_loader.h"
-#include "core/object/script_language.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/sort_array.h"
 #include "core/version.h"
 
@@ -829,87 +828,49 @@ void ClassDB::set_object_extension_instance(Object *p_object, const StringName &
 }
 
 bool ClassDB::can_instantiate(const StringName &p_class) {
-	String script_path;
-	{
-		Locker::Lock lock(Locker::STATE_READ);
+	Locker::Lock lock(Locker::STATE_READ);
 
-		ClassInfo *ti = classes.getptr(p_class);
-		if (!ti) {
-			if (!ScriptServer::is_global_class(p_class)) {
-				ERR_FAIL_V_MSG(false, vformat("Cannot get class '%s'.", String(p_class)));
-			}
-			script_path = ScriptServer::get_global_class_path(p_class);
-			goto use_script; // Open the lock for resource loading.
-		}
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(ti, false, vformat("Cannot get class '%s'.", String(p_class)));
 #ifdef TOOLS_ENABLED
-		if ((ti->api == API_EDITOR || ti->api == API_EDITOR_EXTENSION) && !Engine::get_singleton()->is_editor_hint()) {
-			return false;
-		}
-#endif
-		return _can_instantiate(ti);
+	if ((ti->api == API_EDITOR || ti->api == API_EDITOR_EXTENSION) && !Engine::get_singleton()->is_editor_hint()) {
+		return false;
 	}
-
-use_script:
-	Ref<Script> scr = ResourceLoader::load(script_path);
-	return scr.is_valid() && scr->is_script_valid() && !scr->is_abstract();
+#endif
+	return _can_instantiate(ti);
 }
 
 bool ClassDB::is_abstract(const StringName &p_class) {
-	String script_path;
-	{
-		Locker::Lock lock(Locker::STATE_READ);
+	Locker::Lock lock(Locker::STATE_READ);
 
-		ClassInfo *ti = classes.getptr(p_class);
-		if (!ti) {
-			if (!ScriptServer::is_global_class(p_class)) {
-				ERR_FAIL_V_MSG(false, vformat("Cannot get class '%s'.", String(p_class)));
-			}
-			script_path = ScriptServer::get_global_class_path(p_class);
-			goto use_script; // Open the lock for resource loading.
-		}
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(ti, false, vformat("Cannot get class '%s'.", String(p_class)));
 
-		if (ti->creation_func != nullptr) {
-			return false;
-		}
-		if (!ti->gdextension) {
-			return true;
-		}
-#ifndef DISABLE_DEPRECATED
-		return ti->gdextension->create_instance3 == nullptr && ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance == nullptr;
-#else
-		return ti->gdextension->create_instance3 == nullptr;
-#endif //  DISABLE_DEPRECATED
+	if (ti->creation_func != nullptr) {
+		return false;
 	}
-
-use_script:
-	Ref<Script> scr = ResourceLoader::load(script_path);
-	return scr.is_valid() && scr->is_script_valid() && scr->is_abstract();
+	if (!ti->gdextension) {
+		return true;
+	}
+#ifndef DISABLE_DEPRECATED
+	return ti->gdextension->create_instance3 == nullptr && ti->gdextension->create_instance2 == nullptr && ti->gdextension->create_instance == nullptr;
+#else
+	return ti->gdextension->create_instance3 == nullptr;
+#endif //  DISABLE_DEPRECATED
 }
 
 bool ClassDB::is_virtual(const StringName &p_class) {
-	String script_path;
-	{
-		Locker::Lock lock(Locker::STATE_READ);
+	Locker::Lock lock(Locker::STATE_READ);
 
-		ClassInfo *ti = classes.getptr(p_class);
-		if (!ti) {
-			if (!ScriptServer::is_global_class(p_class)) {
-				ERR_FAIL_V_MSG(false, vformat("Cannot get class '%s'.", String(p_class)));
-			}
-			script_path = ScriptServer::get_global_class_path(p_class);
-			goto use_script; // Open the lock for resource loading.
-		}
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(ti, false, vformat("Cannot get class '%s'.", String(p_class)));
+
 #ifdef TOOLS_ENABLED
-		if ((ti->api == API_EDITOR || ti->api == API_EDITOR_EXTENSION) && !Engine::get_singleton()->is_editor_hint()) {
-			return false;
-		}
-#endif
-		return (_can_instantiate(ti) && ti->is_virtual);
+	if ((ti->api == API_EDITOR || ti->api == API_EDITOR_EXTENSION) && !Engine::get_singleton()->is_editor_hint()) {
+		return false;
 	}
-
-use_script:
-	Ref<Script> scr = ResourceLoader::load(script_path);
-	return scr.is_valid() && scr->is_script_valid() && scr->is_abstract();
+#endif
+	return (_can_instantiate(ti) && ti->is_virtual);
 }
 
 bool ClassDB::is_gdextension(const StringName &p_class) {
