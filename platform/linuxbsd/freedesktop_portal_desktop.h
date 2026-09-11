@@ -41,6 +41,7 @@
 struct DBusMessage;
 struct DBusConnection;
 struct DBusMessageIter;
+class Texture2D;
 
 class FreeDesktopPortalDesktop : public Object {
 	GDSOFTCLASS(FreeDesktopPortalDesktop, Object);
@@ -108,11 +109,30 @@ private:
 
 	Mutex file_dialog_mutex;
 	Vector<FileDialogData> file_dialogs;
+
+	struct NotificationData {
+		Callable callback;
+		DisplayServerEnums::NotificationID id;
+		String id_s;
+	};
+
+	struct NotificationCallback {
+		Callable callback;
+		Variant id;
+		Variant status = DisplayServerEnums::NOTIFICATION_ACTIVATED;
+	};
+	List<NotificationCallback> pending_notification_cbs;
+
+	Mutex notification_mutex;
+	Vector<NotificationData> notifications;
+
 	Thread monitor_thread;
 	SafeFlag monitor_thread_abort;
 	DBusConnection *monitor_connection = nullptr;
 
+	String app_id;
 	String theme_path;
+	String noti_path;
 	Callable system_theme_changed;
 	void _system_theme_changed_callback();
 	bool _is_interface_supported(const char *p_iface, uint32_t p_minimum_version);
@@ -120,6 +140,8 @@ private:
 	Mutex inhibit_mutex;
 	String inhibit_path;
 	String inhibit_filter;
+
+	void _register_app_id();
 
 	static void _thread_monitor(void *p_ud);
 
@@ -132,6 +154,10 @@ public:
 	bool is_settings_supported();
 	bool is_screenshot_supported();
 	bool is_inhibit_supported();
+
+	// org.freedesktop.portal.Notification methods.
+	bool send_toast_notification(DisplayServerEnums::NotificationID p_id, const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback);
+	void hide_toast_notification(DisplayServerEnums::NotificationID p_id);
 
 	// org.freedesktop.portal.FileChooser methods.
 	Error file_dialog_show(DisplayServerEnums::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);

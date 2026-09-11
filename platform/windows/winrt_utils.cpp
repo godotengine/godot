@@ -612,6 +612,7 @@ DisplayServerEnums::NotificationID WinRTUtils::send_toast_notification(const Str
 }
 
 void WinRTUtils::hide_toast_notification(DisplayServerEnums::NotificationID p_id) {
+	ERR_FAIL_COND(p_id < 0 || p_id >= notification_id);
 	if (!notifier) {
 		return;
 	}
