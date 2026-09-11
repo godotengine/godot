@@ -1,0 +1,13 @@
+GDTEST_OK
+yes
+no
+testBasic: ok
+subclass instance
+base-typed variable
+2
+testMultiFile: ok
+node2d inst
+node3d inst
+testNative: ok
+special node
+testNativeMixed: ok
