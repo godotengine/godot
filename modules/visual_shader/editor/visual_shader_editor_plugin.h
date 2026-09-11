@@ -266,7 +266,9 @@ class VisualShaderEditor : public ScriptEditorBase {
 	Ref<VisualShaderGroup> visual_shader_group; // Could be null.
 
 	Ref<ShaderMaterial> preview_material;
-	Ref<Environment> preview_environment;
+#ifndef _3D_DISABLED
+	Ref<Environment> env;
+#endif // _3D_DISABLED
 
 	Ref<ConfigFile> vs_editor_cache; // Keeps the graph offsets and zoom levels for each VisualShader that has been edited.
 

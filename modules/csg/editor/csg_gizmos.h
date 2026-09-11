@@ -76,7 +76,9 @@ class CSGShapeEditor : public Control {
 	void _menu_option(int p_option);
 
 	void _create_baked_mesh_instance();
+#ifndef PHYSICS_3D_DISABLED
 	void _create_baked_collision_shape();
+#endif // PHYSICS_3D_DISABLED
 
 protected:
 	void _node_removed(Node *p_node);
