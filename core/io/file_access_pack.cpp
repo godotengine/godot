@@ -392,6 +392,7 @@ Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::Pack
 bool PackedSourceDirectory::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
 	// Load with offset feature only supported for PCK files.
 	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with directories.");
+	ERR_FAIL_COND_V_MSG(!p_decryption_key.is_empty(), false, "Invalid PCK data. Note that using a key isn't supported with directories.");
 
 	if (p_path != "res://") {
 		return false;
