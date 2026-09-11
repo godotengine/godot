@@ -20,6 +20,8 @@
     <uses-permission android:name="android.permission.HEAD_TRACKING" />
 
     <application>
+        <meta-data android:name="com.google.ar.core" android:value="optional" />
+
         <uses-native-library android:name="libopenxr.google.so" android:required="false" />
 
         <property
