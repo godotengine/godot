@@ -777,6 +777,9 @@
 			If [code]true[/code], the text size will automatically shrink or grow to fit within the node's bounding rectangle. It will pick the largest font size between [member minimum_font_size] and [member maximum_font_size] that doesn't cause the text to be truncated.
 			Font sizes that are overridden with the [code skip-lint][font_size][/code] tag are scaled relative to the theme font size. For example, if the theme font size is [code]16[/code] and [code skip-lint][font_size=24][/code] is used with an automatic font size determined to be [code]32[/code], text in the overridden block will be in size [code]48[/code].
 		</member>
+		<member name="resource_access_flags" type="int" setter="set_resource_access_flags" getter="get_resource_access_flags" enum="RichTextLabel.ResoureceAccessFlag" is_bitfield="true" default="3">
+			The set of locations BBCode is allowed to load resource files from.
+		</member>
 		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
 			If [code]true[/code], the scrollbar is visible. Setting this to [code]false[/code] does not block scrolling completely. See [method scroll_to_line].
 		</member>
@@ -920,6 +923,21 @@
 		</constant>
 		<constant name="UPDATE_WIDTH_UNIT" value="128" enum="ImageUpdateMask" is_bitfield="true">
 			If this bit is set, [method update_image] changes the units used to calculate image size.
+		</constant>
+		<constant name="RESOURCE_ACCESS_RESOURCES" value="1" enum="ResoureceAccessFlag" is_bitfield="true">
+			Allows accessing files under the [Resource] path ([code]res://[/code]).
+		</constant>
+		<constant name="RESOURCE_ACCESS_USERDATA" value="2" enum="ResoureceAccessFlag" is_bitfield="true">
+			Allows accessing files under user data path ([code]user://[/code]).
+		</constant>
+		<constant name="RESOURCE_ACCESS_FILESYSTEM" value="4" enum="ResoureceAccessFlag" is_bitfield="true">
+			Allows accessing files on the whole local file system.
+		</constant>
+		<constant name="RESOURCE_ACCESS_PIPE" value="8" enum="ResoureceAccessFlag" is_bitfield="true">
+			Allows accessing named pipes ([code]pipe://[/code]).
+		</constant>
+		<constant name="RESOURCE_ACCESS_NETWORK" value="16" enum="ResoureceAccessFlag" is_bitfield="true">
+			Allows accessing files on the network shares.
 		</constant>
 		<constant name="IMAGE_UNIT_PIXEL" value="0" enum="ImageUnit">
 			Images drawn with this unit will be in pixels.
