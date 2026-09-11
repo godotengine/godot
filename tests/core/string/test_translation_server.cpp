@@ -121,11 +121,11 @@ TEST_CASE("[TranslationServer] Locale operations") {
 
 	CHECK(res == "de_DE");
 
-	// No added defaults.
+	// Add default script.
 	loc = "es_ES";
 	res = ts->standardize_locale(loc, true);
 
-	CHECK(res == "es_ES");
+	CHECK(res == "es_Latn_ES");
 
 	// Add default script.
 	loc = "az_AZ";
@@ -201,7 +201,7 @@ TEST_CASE("[TranslationServer] Comparing locales") {
 	// Mismatched country (-1).
 	res = ts->compare_locales(locale_a, locale_b);
 
-	CHECK(res == 4);
+	CHECK(res == 5);
 
 	locale_a = "es";
 	locale_b = "es-AR";
@@ -209,7 +209,7 @@ TEST_CASE("[TranslationServer] Comparing locales") {
 	// No country for one locale (+0).
 	res = ts->compare_locales(locale_a, locale_b);
 
-	CHECK(res == 5);
+	CHECK(res == 6);
 
 	locale_a = "es-EC";
 	locale_b = "fr-LU";
