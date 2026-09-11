@@ -169,6 +169,11 @@ GodotApplication *GodotApp = nil;
 	}
 }
 
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 140000
+// This option was deprecated in macOS 14.0, replace it with 0 (no options) when min version is 14.0 or higher.
+#define NSApplicationActivateIgnoringOtherApps 0
+#endif
+
 - (void)forceUnbundledWindowActivationHackStep1 {
 	// Step 1: Switch focus to macOS SystemUIServer process.
 	// Required to perform step 2, TransformProcessType will fail if app is already the in focus.
@@ -192,5 +197,9 @@ GodotApplication *GodotApp = nil;
 	// Step 3: Switch focus back to app window.
 	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 }
+
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 140000
+#undef NSApplicationActivateIgnoringOtherApps
+#endif
 
 @end
