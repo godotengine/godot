@@ -1298,9 +1298,9 @@ void Window::_update_window_size() {
 			DisplayServer::get_singleton()->window_set_max_size(max_size_used, window_id);
 			DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
 			DisplayServer::get_singleton()->window_set_size(size, window_id);
-		} else if (Engine::get_singleton()->is_embedded_in_editor()) {
-			size = DisplayServer::get_singleton()->window_get_size(window_id); // Reset size.
 		}
+		// Always check size because WM or embedded window can mess with window set_size
+		size = DisplayServer::get_singleton()->window_get_size(window_id);
 	}
 
 	//update the viewport
