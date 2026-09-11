@@ -42,8 +42,12 @@ EditorToolbarGroup::EditorToolbarGroup() {
 	add_child(hbox);
 }
 
-HBoxContainer *EditorToolbarGroup::create(Control *p_parent) {
+HBoxContainer *EditorToolbarGroup::create(Control *p_parent, bool p_contextual) {
 	EditorToolbarGroup *group = memnew(EditorToolbarGroup);
+	if (p_contextual) {
+		group->set_theme_type_variation("PanelContainerContextualGroup");
+	}
+
 	p_parent->add_child(group);
 
 	return group->get_hbox();

@@ -42,7 +42,7 @@ class EditorToolbarGroup : public PanelContainer {
 public:
 	EditorToolbarGroup();
 
-	static HBoxContainer *create(Control *p_parent);
+	static HBoxContainer *create(Control *p_parent, bool p_contextual = false);
 
 	HBoxContainer *get_hbox() const { return hbox; }
 };
