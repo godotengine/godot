@@ -270,7 +270,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	sbox_mesh_xray = st_xray->commit();
 #endif // _3D_DISABLED
 
-	SceneTree::get_singleton()->connect("process_frame", callable_mp(this, &RuntimeNodeSelect::_process_frame));
+	SceneTree::get_singleton()->connect("_internal_process_frame", callable_mp(this, &RuntimeNodeSelect::_process_frame));
 	SceneTree::get_singleton()->connect("physics_frame", callable_mp(this, &RuntimeNodeSelect::_physics_frame));
 
 	// This function will be called before the root enters the tree at first when the Game view is passing its settings to
