@@ -125,11 +125,9 @@ layout(location = 8) out vec4 specular_light_interp;
 #include "../scene_forward_vertex_lights_inc.glsl"
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
 #ifdef MATERIAL_UNIFORMS_USED
-/* clang-format off */
 layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
-/* clang-format on */
 #endif
 
 #ifdef MODE_DUAL_PARABOLOID
@@ -961,18 +959,14 @@ layout(location = 14) in vec2 point_coord_interp;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-/* clang-format off */
 layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
-/* clang-format on */
 #endif
 
 #GLOBALS
 
 #define scene_data scene_data_block.data
-
-/* clang-format on */
 
 #ifdef MODE_RENDER_DEPTH
 

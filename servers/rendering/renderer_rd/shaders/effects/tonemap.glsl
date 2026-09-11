@@ -84,8 +84,7 @@ layout(push_constant, std430) uniform Params {
 	float luminance_multiplier;
 
 	vec4 tonemapper_params;
-}
-params;
+} params;
 
 layout(location = 0) out vec4 frag_color;
 

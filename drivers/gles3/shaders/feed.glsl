@@ -11,15 +11,15 @@ USE_EXTERNAL_SAMPLER = false
 
 layout(location = 0) in vec2 vertex_attrib;
 
-out vec2 uv_interp;
+/* clang-format on */
 
+out vec2 uv_interp;
 
 void main() {
 	uv_interp = vertex_attrib * 0.5 + 0.5;
 	gl_Position = vec4(vertex_attrib, 1.0, 1.0);
 }
 
-/* clang-format off */
 #[fragment]
 
 layout(location = 0) out vec4 frag_color;

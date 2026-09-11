@@ -35,8 +35,7 @@ layout(location = 1) out vec4 offset;
 layout(push_constant, std430) uniform Params {
 	vec2 inv_size;
 	vec2 pad;
-}
-params;
+} params;
 
 void main() {
 	vec2 vertex_base;
@@ -69,8 +68,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 inv_size;
 	uint use_debanding;
 	float pad;
-}
-params;
+} params;
 
 #define textureLinear(tex, uv) srgb_to_linear(textureLod(tex, uv, 0.0).rgb)
 

@@ -17,13 +17,11 @@ layout(push_constant, std430) uniform Constants {
 	uint cull_mode;
 	float pad3;
 	float pad4;
-}
-constants;
+} constants;
 
 layout(set = 0, binding = 0, std430) restrict readonly buffer OccluderTransforms {
 	mat2x4 transforms[];
-}
-occluder_transforms;
+} occluder_transforms;
 
 #else
 
@@ -33,8 +31,7 @@ layout(push_constant, std430) uniform Constants {
 	vec2 direction;
 	float z_far;
 	uint cull_mode;
-}
-constants;
+} constants;
 
 #endif
 
@@ -88,8 +85,7 @@ layout(push_constant, std430) uniform Constants {
 	uint cull_mode;
 	float pad3;
 	float pad4;
-}
-constants;
+} constants;
 
 #else
 
@@ -99,8 +95,7 @@ layout(push_constant, std430) uniform Constants {
 	vec2 direction;
 	float z_far;
 	uint cull_mode;
-}
-constants;
+} constants;
 
 #endif
 

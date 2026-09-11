@@ -15,8 +15,7 @@ layout(push_constant, std430) uniform Params {
 	uint max_cluster_element_count_div_32; //divided by 32
 	uint pad1;
 	uint pad2;
-}
-params;
+} params;
 
 layout(set = 0, binding = 1, std430) buffer restrict readonly ClusterRender {
 	uint data[];

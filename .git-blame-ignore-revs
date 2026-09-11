@@ -93,3 +93,6 @@ a3088fecf1837aa22fcf2bccae413598a2e91766
 
 # Style: Apply left qualifier alignment rule
 eb1b8e8edacc3c7449ea8ac894812720e7ee48bf
+
+# Style: Apply updated `clang-format` glsl rules
+e7a584d905b036cbcbd2c3f0fcba2961ce49bdaf

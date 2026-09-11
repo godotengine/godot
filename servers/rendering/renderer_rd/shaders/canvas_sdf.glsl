@@ -18,8 +18,7 @@ layout(push_constant, std430) uniform Params {
 	int shift;
 	ivec2 base_size;
 	uvec2 pad;
-}
-params;
+} params;
 
 #define SDF_MAX_LENGTH 16384.0
 

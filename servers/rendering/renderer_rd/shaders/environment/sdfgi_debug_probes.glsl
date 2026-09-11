@@ -27,8 +27,7 @@ layout(push_constant, std430) uniform Params {
 	float y_mult;
 	uint probe_debug_index;
 	int probe_axis_size;
-}
-params;
+} params;
 
 // https://in4k.untergrund.net/html_articles/hugi_27_-_coding_corner_polaris_sphere_tessellation_101.htm
 
@@ -69,16 +68,14 @@ struct CascadeData {
 
 layout(set = 0, binding = 1, std140) uniform Cascades {
 	CascadeData data[MAX_CASCADES];
-}
-cascades;
+} cascades;
 
 layout(set = 0, binding = 4) uniform texture3D occlusion_texture;
 layout(set = 0, binding = 3) uniform sampler linear_sampler;
 
 layout(set = 0, binding = 5, std140) uniform SceneData {
 	mat4 projection[MAX_VIEWS];
-}
-scene_data;
+} scene_data;
 
 void main() {
 #ifdef MODE_PROBES
@@ -187,8 +184,7 @@ layout(push_constant, std430) uniform Params {
 	float y_mult;
 	uint probe_debug_index;
 	int probe_axis_size;
-}
-params;
+} params;
 
 #ifdef MODE_PROBES
 

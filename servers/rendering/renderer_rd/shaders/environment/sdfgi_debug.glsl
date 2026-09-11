@@ -26,8 +26,7 @@ struct CascadeData {
 
 layout(set = 0, binding = 9, std140) uniform Cascades {
 	CascadeData data[MAX_CASCADES];
-}
-cascades;
+} cascades;
 
 layout(rgba16f, set = 0, binding = 10) uniform restrict writeonly image2D screen_buffer;
 
@@ -46,8 +45,7 @@ layout(push_constant, std430) uniform Params {
 	// We pack these more tightly than mat3 and vec3, which will require some reconstruction trickery.
 	float cam_basis[3][3];
 	float cam_origin[3];
-}
-params;
+} params;
 
 vec3 linear_to_srgb(vec3 color) {
 	const vec3 a = vec3(0.055f);

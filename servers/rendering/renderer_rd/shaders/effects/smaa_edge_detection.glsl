@@ -36,8 +36,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 inv_size;
 	float threshold;
 	float reserved;
-}
-params;
+} params;
 
 void main() {
 	vec2 vertex_base;
@@ -70,8 +69,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 inv_size;
 	float threshold;
 	float reserved;
-}
-params;
+} params;
 
 #define SMAA_LOCAL_CONTRAST_ADAPTATION_FACTOR 2.0
 

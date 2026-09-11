@@ -14,8 +14,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 pad;
 	float luminance_multiplier;
 	float brightness_multiplier;
-}
-params;
+} params;
 
 void main() {
 	vec2 base_arr[3] = vec2[](vec2(-1.0, -3.0), vec2(-1.0, 1.0), vec2(3.0, 1.0));
@@ -48,15 +47,13 @@ layout(push_constant, std430) uniform Params {
 	vec2 border_size;
 	float luminance_multiplier;
 	float brightness_multiplier;
-}
-params;
+} params;
 
 #include "../samplers_inc.glsl"
 
 layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
-}
-global_shader_uniforms;
+} global_shader_uniforms;
 
 layout(set = 0, binding = 2, std140) uniform SkySceneData {
 	mat4 combined_reprojection[2];
@@ -80,8 +77,7 @@ layout(set = 0, binding = 2, std140) uniform SkySceneData {
 	uint directional_light_count; // 4 - 56
 	bool fog_use_legacy_blending; // 4 - 60
 	uint pad1; // 4 - 64
-}
-sky_scene_data;
+} sky_scene_data;
 
 struct DirectionalLightData {
 	vec4 direction_energy;
@@ -91,15 +87,12 @@ struct DirectionalLightData {
 
 layout(set = 0, binding = 3, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-}
-directional_lights;
+} directional_lights;
 
 #ifdef MATERIAL_UNIFORMS_USED
-/* clang-format off */
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
-/* clang-format on */
 #endif
 
 layout(set = 2, binding = 0) uniform texture2D radiance;
