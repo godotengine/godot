@@ -823,6 +823,11 @@
 		<member name="filesystem/directories/default_project_path" type="String" setter="" getter="">
 			The folder where new projects should be created by default when clicking the project manager's [b]New Project[/b] button. This can be set to the same value as [member filesystem/directories/autoscan_project_path] for convenience.
 		</member>
+		<member name="filesystem/directories/enable_multiple_project_directories" type="bool" setter="" getter="">
+			If [code]true[/code], allows adding separate directories for projects. Only the projects within the selected directory will be shown.
+			[b]Note:[/b] While [code]true[/code], scanning will only scan the currently selected directory.
+			[b]Note:[/b] While [code]true[/code], importing a project will add it to the currently selected directory, but its folder will not be moved or copied. If installing a project from a zip file or creating a new project, if the chosen path is not in the directory list, it will be added.
+		</member>
 		<member name="filesystem/external_programs/3d_model_editor" type="String" setter="" getter="">
 			The program that opens 3D model scene files when clicking "Open in External Program" option in Filesystem Dock. If not specified, the file will be opened in the system's default program.
 		</member>
