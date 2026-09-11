@@ -375,6 +375,10 @@
 	return NO;
 }
 
+- (NSDragOperation)draggingSession:(NSDraggingSession *)session sourceOperationMaskForDraggingContext:(NSDraggingContext)context {
+	return NSDragOperationCopy;
+}
+
 // MARK: Focus
 
 - (BOOL)canBecomeKeyView {
