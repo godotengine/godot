@@ -579,6 +579,18 @@ static void _generate_tangents_unindexed(float *p_tangents, size_t p_count, cons
 			tangent_vertices.ptr()->uv, sizeof(TangentVertex), 0);
 }
 
+void CSGShape3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	GeometryInstance3D::_get_property_list(p_list);
+
+	// Adds instance shader parameters
+	for (auto &instance_shader_parameter : instance_shader_parameters) {
+		PropertyInfo pi;
+		pi.name = "instance_shader_parameters/" + instance_shader_parameter.key;
+		pi.usage = PROPERTY_USAGE_STORAGE;
+		p_list->push_back(pi);
+	}
+}
+
 void CSGShape3D::update_shape() {
 	if (!is_root_shape()) {
 		return;
