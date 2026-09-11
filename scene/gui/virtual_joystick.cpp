@@ -57,9 +57,9 @@ void VirtualJoystick::gui_input(const Ref<InputEvent> &p_event) {
 			is_pressed = false;
 			emit_signal(SNAME("released"), input_vector);
 
-			if (!is_flick_canceled && !has_moved) {
+			if (!has_moved) {
 				emit_signal(SNAME("tapped"));
-			} else if (has_input && has_moved) {
+			} else if (!is_in_deadzone && !is_flick_canceled) {
 				emit_signal(SNAME("flicked"), input_vector);
 			}
 			_reset();
@@ -105,33 +105,26 @@ void VirtualJoystick::_update_joystick(const Vector2 &p_pos) {
 
 	float clampzone_radius = joystick_size * 0.5f * clampzone_ratio;
 
-	if (joystick_mode == JOYSTICK_FOLLOWING && length > clampzone_radius && has_point(p_pos)) {
-		joystick_pos = p_pos - direction * clampzone_radius;
-	}
-
+	
 	if (length > clampzone_radius) {
+		if (joystick_mode == JOYSTICK_FOLLOWING && has_point(p_pos)) {
+			joystick_pos = p_pos - direction * clampzone_radius;
+		}
 		length = clampzone_radius;
 		offset = direction * length;
 	}
 
 	tip_pos = joystick_pos + offset;
 
-	bool was_pressed = has_input;
 	raw_input_vector = offset / clampzone_radius;
-	if (length > deadzone_ratio * clampzone_radius) {
-		has_input = true;
-		float scaled = Math::inverse_lerp(deadzone_ratio * clampzone_radius, clampzone_radius, length);
-		input_vector = direction * scaled;
-	} else {
-		has_input = false;
-		input_vector = Vector2();
-	}
+	
+	bool was_in_deadzone = is_in_deadzone;
+	_set_is_in_deadzone(length < deadzone_ratio * clampzone_radius);
+	input_vector = is_in_deadzone ? Vector2() : direction * Math::inverse_lerp(deadzone_ratio * clampzone_radius, clampzone_radius, length);
 
-	if (!is_flick_canceled && was_pressed && !has_input) {
+	if (!is_flick_canceled && !was_in_deadzone && is_in_deadzone) {
 		is_flick_canceled = true;
 		emit_signal(SNAME("flick_canceled"));
-	} else if (is_flick_canceled && !was_pressed && has_input) {
-		is_flick_canceled = false;
 	}
 
 	_handle_input_actions();
@@ -169,7 +162,7 @@ void VirtualJoystick::_handle_input_actions() {
 
 void VirtualJoystick::_reset() {
 	is_pressed = false;
-	has_input = false;
+	_set_is_in_deadzone(true);
 	has_moved = false;
 	raw_input_vector = Vector2();
 	input_vector = Vector2();
@@ -191,6 +184,13 @@ void VirtualJoystick::_reset() {
 	}
 
 	queue_redraw();
+}
+
+void VirtualJoystick::_set_is_in_deadzone(bool p_is_in_deadzone) {
+	if (is_in_deadzone != p_is_in_deadzone) {
+		is_in_deadzone = p_is_in_deadzone;
+		emit_signal(is_in_deadzone ? SNAME("deadzone_entered") : SNAME("deadzone_exited"));
+	}
 }
 
 void VirtualJoystick::_bind_methods() {
@@ -227,6 +227,8 @@ void VirtualJoystick::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visibility_mode", "mode"), &VirtualJoystick::set_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_visibility_mode"), &VirtualJoystick::get_visibility_mode);
 
+	ClassDB::bind_method(D_METHOD("get_is_in_deadzone"), &VirtualJoystick::get_is_in_deadzone);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joystick_mode", PROPERTY_HINT_ENUM, "Fixed,Dynamic,Following"), "set_joystick_mode", "get_joystick_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "joystick_size", PROPERTY_HINT_RANGE, "10,500,1"), "set_joystick_size", "get_joystick_size");
@@ -247,6 +249,8 @@ void VirtualJoystick::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("released", PropertyInfo(Variant::VECTOR2, "input_vector")));
 	ADD_SIGNAL(MethodInfo("flicked", PropertyInfo(Variant::VECTOR2, "input_vector")));
 	ADD_SIGNAL(MethodInfo("flick_canceled"));
+	ADD_SIGNAL(MethodInfo("deadzone_entered"));
+	ADD_SIGNAL(MethodInfo("deadzone_exited"));
 
 	BIND_ENUM_CONSTANT(JOYSTICK_FIXED);
 	BIND_ENUM_CONSTANT(JOYSTICK_DYNAMIC);
@@ -369,3 +373,8 @@ void VirtualJoystick::set_visibility_mode(VisibilityMode p_mode) {
 VirtualJoystick::VisibilityMode VirtualJoystick::get_visibility_mode() const {
 	return visibility;
 }
+
+bool VirtualJoystick::get_is_in_deadzone() const {
+	return is_in_deadzone;
+}
+
