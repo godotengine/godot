@@ -160,6 +160,7 @@ public:
 			// Special
 			ERROR,
 			TK_EOF, // "EOF" is reserved
+			TK_OP_NULL_SAFE, // ?.
 			TK_MAX
 		};
 

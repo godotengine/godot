@@ -268,8 +268,10 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_GET_KEYED_VALIDATED, \
 		&&OPCODE_GET_INDEXED_VALIDATED, \
 		&&OPCODE_SET_NAMED, \
+		&&OPCODE_SET_NAMED_SAFE, \
 		&&OPCODE_SET_NAMED_VALIDATED, \
 		&&OPCODE_GET_NAMED, \
+		&&OPCODE_GET_NAMED_SAFE, \
 		&&OPCODE_GET_NAMED_VALIDATED, \
 		&&OPCODE_SET_MEMBER, \
 		&&OPCODE_GET_MEMBER, \
@@ -294,6 +296,8 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_CONSTRUCT_DICTIONARY, \
 		&&OPCODE_CONSTRUCT_TYPED_DICTIONARY, \
 		&&OPCODE_CALL, \
+		&&OPCODE_CALL_SAFE, \
+		&&OPCODE_CALL_SAFE_RETURN, \
 		&&OPCODE_CALL_RETURN, \
 		&&OPCODE_CALL_ASYNC, \
 		&&OPCODE_CALL_UTILITY, \
@@ -1243,6 +1247,50 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_SET_NAMED_SAFE) {
+				CHECK_SPACE(3);
+
+				GET_VARIANT_PTR(dst, 0);
+				GET_VARIANT_PTR(value, 1);
+
+				// If the object is literally null, OR if it's a previously deleted/freed object in memory:
+				if (dst->get_type() == Variant::NIL ||
+						(dst->get_type() == Variant::OBJECT && dst->get_validated_object() == nullptr)) {
+					ip += 4; // Advance the instruction pointer past this node
+					DISPATCH_OPCODE; // Immediately jump to the next line of script execution!
+				}
+
+				int indexname = _code_ptr[ip + 3];
+
+				GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+				const StringName *index = &_global_names_ptr[indexname];
+
+				bool valid;
+				dst->set_named(*index, *value, valid);
+
+#ifdef DEBUG_ENABLED
+				if (!valid) {
+					if (dst->is_read_only()) {
+						err_text = "Invalid assignment on read-only value (on base: '" + _get_var_type(dst) + "').";
+					} else {
+						Object *obj = dst->get_validated_object();
+						bool read_only_property = false;
+						if (obj) {
+							read_only_property = ClassDB::has_property(obj->get_class_name(), *index) && (ClassDB::get_property_setter(obj->get_class_name(), *index) == StringName());
+						}
+						if (read_only_property) {
+							err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", String(*index), _get_var_type(dst));
+						} else {
+							err_text = "Invalid assignment of property or key '" + String(*index) + "' with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
+						}
+					}
+					OPCODE_BREAK;
+				}
+#endif
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_SET_NAMED_VALIDATED) {
 				CHECK_SPACE(3);
 
@@ -1324,6 +1372,44 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif
 				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_GET_NAMED_SAFE) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(src, 0);
+				GET_VARIANT_PTR(dst, 1);
+
+				// If the object is literally null, OR if it's a previously deleted/freed object in memory:
+				if (src->get_type() == Variant::NIL ||
+						(src->get_type() == Variant::OBJECT && src->get_validated_object() == nullptr)) {
+					*dst = Variant(); // Silently assign a null Variant to the result
+					ip += 4; // Advance the instruction pointer past this node
+					DISPATCH_OPCODE; // Immediately jump to the next line of script execution!
+				}
+
+				int indexname = _code_ptr[ip + 3];
+
+				GD_ERR_BREAK(indexname < 0 || indexname >= _global_names_count);
+				const StringName *index = &_global_names_ptr[indexname];
+
+				bool valid;
+#ifdef DEBUG_ENABLED
+				//allow better error message in cases where src and dst are the same stack position
+				Variant ret = src->get_named(*index, valid);
+
+#else
+				*dst = src->get_named(*index, valid);
+#endif
+#ifdef DEBUG_ENABLED
+				if (!valid) {
+					err_text = "Invalid access to property or key '" + index->operator String() + "' on a base object of type '" + _get_var_type(src) + "'.";
+					OPCODE_BREAK;
+				}
+				*dst = ret;
+#endif
+				ip += 4;
 			}
 			DISPATCH_OPCODE;
 
@@ -1900,9 +1986,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_CALL_ASYNC)
+			OPCODE(OPCODE_CALL_SAFE_RETURN)
+			OPCODE(OPCODE_CALL_SAFE)
 			OPCODE(OPCODE_CALL_RETURN)
 			OPCODE(OPCODE_CALL) {
-				bool call_ret = (_code_ptr[ip]) != OPCODE_CALL;
+				bool call_ret = (_code_ptr[ip]) != OPCODE_CALL && (_code_ptr[ip]) != OPCODE_CALL_SAFE;
+				bool call_safe = (_code_ptr[ip]) == OPCODE_CALL_SAFE || (_code_ptr[ip]) == OPCODE_CALL_SAFE_RETURN;
 #ifdef DEBUG_ENABLED
 				bool call_async = (_code_ptr[ip]) == OPCODE_CALL_ASYNC;
 #endif
@@ -1922,6 +2011,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GET_INSTRUCTION_ARG(base, argc);
 				Variant **argptrs = instruction_args;
+
+				if (call_safe && (base->get_type() == Variant::NIL || (base->get_type() == Variant::OBJECT && base->get_validated_object() == nullptr))) {
+					if (call_ret) {
+						GET_INSTRUCTION_ARG(ret, argc + 1);
+						*ret = Variant();
+					}
+					ip += 3;
+					DISPATCH_OPCODE;
+				}
 
 #ifdef DEBUG_ENABLED
 				uint64_t call_time = 0;
