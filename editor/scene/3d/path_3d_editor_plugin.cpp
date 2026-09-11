@@ -334,6 +334,9 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 
 void Path3DGizmo::redraw() {
 	clear();
+	if (!path->is_visible_in_tree()) {
+		return;
+	}
 
 	Ref<StandardMaterial3D> path_thin_material = gizmo_plugin->get_material("path_thin_material", this);
 	Ref<StandardMaterial3D> path_tilt_material = gizmo_plugin->get_material("path_tilt_material", this);
