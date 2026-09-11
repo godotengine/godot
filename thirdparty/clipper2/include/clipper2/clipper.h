@@ -13,8 +13,9 @@
 #include "clipper2/clipper.core.h"
 #include "clipper2/clipper.engine.h"
 #include "clipper2/clipper.offset.h"
-#include "clipper2/clipper.minkowski.h"
 #include "clipper2/clipper.rectclip.h"
+#include "clipper2/clipper.minkowski.h"
+#include "clipper2/clipper.triangulation.h"
 #include <type_traits>
 
 namespace Clipper2Lib {
@@ -157,7 +158,7 @@ namespace Clipper2Lib {
     clip_offset.Execute(delta * scale, solution);
     return ScalePaths<double, int64_t>(solution, 1 / scale, error_code);
   }
-
+  
   template <typename T>
   inline Path<T> TranslatePath(const Path<T>& path, T dx, T dy)
   {
