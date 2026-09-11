@@ -3657,6 +3657,16 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 		} break;
 
+		case SCENE_EDIT_IN_INSPECTOR: {
+			Node *scene = editor_data.get_edited_scene_root(scene_tabs->get_option_tab());
+			ERR_FAIL_NULL(scene);
+
+			const String &scene_path = scene->get_scene_file_path();
+			if (!scene_path.is_empty()) {
+				EditorNode::get_singleton()->load_resource(scene_path);
+			}
+		} break;
+
 		case PROJECT_EXPORT: {
 			project_export->popup_export();
 		} break;
@@ -8121,6 +8131,7 @@ void EditorNode::_build_file_menu(bool p_dark_mode) {
 	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_redo"), SCENE_REDO, false, true);
 	file_menu->add_separator();
 
+	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/edit_scene_in_inspector"), SCENE_EDIT_IN_INSPECTOR);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/reload_saved_scene"), SCENE_RELOAD_SAVED_SCENE);
 	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("CloseScene"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/close_scene"), SCENE_CLOSE);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_all_scenes"), SCENE_CLOSE_ALL);
@@ -9089,6 +9100,7 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT("editor/export_as_mesh_library", TTRC("MeshLibrary..."));
 
+	ED_SHORTCUT_AND_COMMAND("editor/edit_scene_in_inspector", TTRC("Edit Scene in Inspector"));
 	ED_SHORTCUT_AND_COMMAND("editor/reload_saved_scene", TTRC("Reload Saved Scene"));
 	ED_SHORTCUT_AND_COMMAND("editor/close_scene", TTRC("Close Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::W);
 	ED_SHORTCUT_AND_COMMAND("editor/close_all_scenes", TTRC("Close All Scenes"));
