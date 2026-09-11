@@ -36,6 +36,7 @@
 #include "servers/rendering/renderer_rd/effects/debug_effects.h"
 #include "servers/rendering/renderer_rd/effects/fsr.h"
 #include "servers/rendering/renderer_rd/effects/luminance.h"
+#include "servers/rendering/renderer_rd/effects/motion_blur.h"
 #include "servers/rendering/renderer_rd/effects/resolve.h"
 #include "servers/rendering/renderer_rd/effects/smaa.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
@@ -61,6 +62,7 @@ class RendererSceneRenderRD : public RendererSceneRender, public RenderingShader
 protected:
 	RendererRD::ForwardIDStorage *forward_id_storage = nullptr;
 	RendererRD::BokehDOF *bokeh_dof = nullptr;
+	RendererRD::MotionBlur *motion_blur = nullptr;
 	RendererRD::CopyEffects *copy_effects = nullptr;
 	RendererRD::DebugEffects *debug_effects = nullptr;
 	RendererRD::Luminance *luminance = nullptr;
