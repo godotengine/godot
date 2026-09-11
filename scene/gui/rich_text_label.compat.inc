@@ -94,6 +94,10 @@ void RichTextLabel::_update_image_bind_compat_112617(const Variant &p_key, BitFi
 	update_image(p_key, p_mask, p_image, p_width, p_height, p_color, p_alignment, p_region, p_pad, p_tooltip, p_width_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL, p_height_in_percent ? IMAGE_UNIT_PERCENT : IMAGE_UNIT_PIXEL);
 }
 
+void RichTextLabel::_push_dropcap_bind_compat_119716(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins, const Color &p_color, int p_ol_size, const Color &p_ol_color) {
+	push_dropcap(p_string, p_font, p_size, p_dropcap_margins, p_color, p_ol_size, p_ol_color, 0, Color(0, 0, 0, 0), Vector2());
+}
+
 void RichTextLabel::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::_push_font_bind_compat_79053);
 	ClassDB::bind_compatibility_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::_set_table_column_expand_bind_compat_79053);
@@ -111,6 +115,8 @@ void RichTextLabel::_bind_compatibility_methods() {
 
 	ClassDB::bind_compatibility_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region", "key", "pad", "tooltip", "width_in_percent", "height_in_percent", "alt_text"), &RichTextLabel::_add_image_bind_compat_112617, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(Variant()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_compatibility_method(D_METHOD("update_image", "key", "mask", "image", "width", "height", "color", "inline_align", "region", "pad", "tooltip", "width_in_percent", "height_in_percent"), &RichTextLabel::_update_image_bind_compat_112617, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2()), DEFVAL(false), DEFVAL(String()), DEFVAL(false), DEFVAL(false));
+
+	ClassDB::bind_compatibility_method(D_METHOD("push_dropcap", "string", "font", "size", "dropcap_margins", "color", "outline_size", "outline_color"), &RichTextLabel::_push_dropcap_bind_compat_119716, DEFVAL(Rect2()), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(0, 0, 0, 0)));
 }
 
 #endif // DISABLE_DEPRECATED
