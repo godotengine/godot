@@ -59,6 +59,7 @@ protected:
 	Dictionary prepare_base_event() const;
 	Dictionary prepare_success_response(const Dictionary &p_params) const;
 	Dictionary prepare_error_response(const Dictionary &p_params, DAP::ErrorType err_type, const Dictionary &variables = Dictionary()) const;
+	Dictionary prepare_malformed_error_response(const Dictionary &p_params, const String &p_error) const;
 
 	Dictionary ev_stopped() const;
 
