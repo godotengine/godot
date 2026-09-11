@@ -933,7 +933,7 @@ void ColorPicker::_load_palette() {
 
 	file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->set_current_file("");
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 }
 
 void ColorPicker::_save_palette(bool p_is_save_as) {
@@ -953,7 +953,7 @@ void ColorPicker::_save_palette(bool p_is_save_as) {
 
 		file_dialog->set_file_mode(FileDialog::FILE_MODE_SAVE_FILE);
 		file_dialog->set_current_file("new_palette.tres");
-		file_dialog->popup_centered_ratio();
+		file_dialog->popup_file_dialog();
 	}
 }
 
