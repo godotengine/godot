@@ -55,6 +55,7 @@ private:
 	NodePath root_path = NodePath(".."); // Start with parent, like with AnimationPlayer.
 	uint64_t sync_interval_usec = 0;
 	uint64_t delta_interval_usec = 0;
+	uint64_t visibility_interval_usec = 0;
 	VisibilityUpdateMode visibility_update_mode = VISIBILITY_PROCESS_IDLE;
 	HashSet<Callable> visibility_filters;
 	HashSet<int> peer_visibility;
@@ -64,6 +65,7 @@ private:
 	ObjectID root_node_cache;
 	uint64_t last_sync_usec = 0;
 	uint16_t last_inbound_sync = 0;
+	uint64_t last_visibility_usec = 0;
 	uint32_t net_id = 0;
 	bool sync_started = false;
 
@@ -71,6 +73,7 @@ private:
 	void _start();
 	void _stop();
 	void _update_process();
+	bool _update_visibility_time(uint64_t p_usec);
 	Error _watch_changes(uint64_t p_usec);
 
 protected:
@@ -97,6 +100,9 @@ public:
 
 	void set_delta_interval(double p_interval);
 	double get_delta_interval() const;
+
+	void set_visibility_interval(double p_interval);
+	double get_visibility_interval() const;
 
 	void set_replication_config(Ref<SceneReplicationConfig> p_config);
 	Ref<SceneReplicationConfig> get_replication_config();
