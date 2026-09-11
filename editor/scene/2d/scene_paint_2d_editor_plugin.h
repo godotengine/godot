@@ -87,6 +87,8 @@ class ScenePaint2DEditor : public Control {
 	PaintMode quick_paint_mode = PAINT_MODE_SNAP_GRID_CELL_CENTER;
 	InputTool input_tool = INPUT_TOOL_NONE;
 
+	ProcessMode original_instance_process_mode = PROCESS_MODE_INHERIT;
+
 	Size2i grid_step = Size2i(16, 16);
 	Size2i grid_offset = Size2i(0, 0);
 
