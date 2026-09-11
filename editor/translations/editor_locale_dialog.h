@@ -33,11 +33,13 @@
 #include "scene/gui/dialogs.h"
 
 class Button;
+class FilterLineEdit;
 class HBoxContainer;
-class VBoxContainer;
 class LineEdit;
-class Tree;
+class MarginContainer;
 class OptionButton;
+class Tree;
+class VBoxContainer;
 
 class EditorLocaleDialog : public ConfirmationDialog {
 	GDCLASS(EditorLocaleDialog, ConfirmationDialog);
@@ -56,6 +58,12 @@ class EditorLocaleDialog : public ConfirmationDialog {
 	LineEdit *script_code = nullptr;
 	LineEdit *country_code = nullptr;
 	LineEdit *variant_code = nullptr;
+	FilterLineEdit *lang_search = nullptr;
+	FilterLineEdit *script_search = nullptr;
+	FilterLineEdit *cnt_search = nullptr;
+	MarginContainer *lang_search_margin = nullptr;
+	MarginContainer *script_search_margin = nullptr;
+	MarginContainer *cnt_search_margin = nullptr;
 	Tree *lang_list = nullptr;
 	Tree *script_list = nullptr;
 	Tree *cnt_list = nullptr;
@@ -79,6 +87,9 @@ protected:
 	void _filter_mode_changed(int p_mode);
 	void _edit_filters(bool p_checked);
 	void _toggle_advanced(bool p_checked);
+	void _update_search_margins();
+
+	FilterLineEdit *_add_column_search(VBoxContainer *p_parent, MarginContainer *&r_margin, const String &p_accessibility_name);
 
 	void _update_tree();
 
