@@ -8317,7 +8317,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	// CONSTANTS
 
 	for (int i = 0; i < MAX_FLOAT_CONST_DEFS; i++) {
-		add_options.push_back(AddOption(float_constant_defs[i].name, "Scalar/Constants", "VisualShaderNodeFloatConstant", TTRGET(float_constant_defs[i].desc_key), { float_constant_defs[i].value }, VisualShaderNode::PORT_TYPE_SCALAR));
+		add_options.push_back(AddOption(float_constant_defs[i].name, "Scalar/Constants", "VisualShaderNodeFloatConstant", TTR(float_constant_defs[i].desc_key), { float_constant_defs[i].value }, VisualShaderNode::PORT_TYPE_SCALAR));
 	}
 	// FUNCTIONS
 

@@ -886,7 +886,7 @@ String InputEventMouseButton::_to_string() {
 		case MouseButton::WHEEL_RIGHT:
 		case MouseButton::MB_XBUTTON1:
 		case MouseButton::MB_XBUTTON2:
-			button_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)idx - 1])); // button index starts from 1, array index starts from 0, so subtract 1
+			button_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)idx - 1])); // button index starts from 1, array index starts from 0, so subtract 1
 			break;
 		default:
 			break;
@@ -1013,19 +1013,19 @@ String InputEventMouseMotion::_to_string() {
 	String button_mask_string = itos((int64_t)mouse_button_mask);
 
 	if (mouse_button_mask.has_flag(MouseButtonMask::LEFT)) {
-		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
+		button_mask_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
 	}
 	if (mouse_button_mask.has_flag(MouseButtonMask::MIDDLE)) {
-		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]));
+		button_mask_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]));
 	}
 	if (mouse_button_mask.has_flag(MouseButtonMask::RIGHT)) {
-		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]));
+		button_mask_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]));
 	}
 	if (mouse_button_mask.has_flag(MouseButtonMask::MB_XBUTTON1)) {
-		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]));
+		button_mask_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]));
 	}
 	if (mouse_button_mask.has_flag(MouseButtonMask::MB_XBUTTON2)) {
-		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]));
+		button_mask_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]));
 	}
 
 	// Work around the fact vformat can only take 5 substitutions but 7 need to be passed.
@@ -1199,7 +1199,7 @@ static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX] = {
 };
 
 String InputEventJoypadMotion::as_text() const {
-	String desc = axis < JoyAxis::MAX ? TTRGET(_joy_axis_descriptions[(size_t)axis]) : RTR("Unknown Joypad Axis");
+	String desc = axis < JoyAxis::MAX ? RTR(_joy_axis_descriptions[(size_t)axis]) : RTR("Unknown Joypad Axis");
 
 	return vformat(RTR("Joypad Motion on Axis %d (%s) with Value %.2f"), axis, desc, axis_value);
 }
@@ -1313,7 +1313,7 @@ String InputEventJoypadButton::as_text() const {
 	String text = vformat(RTR("Joypad Button %d"), (int64_t)button_index);
 
 	if (button_index > JoyButton::INVALID && button_index < JoyButton::SDL_MAX) {
-		text += vformat(" (%s)", TTRGET(_joy_button_descriptions[(size_t)button_index]));
+		text += vformat(" (%s)", RTR(_joy_button_descriptions[(size_t)button_index]));
 	}
 
 	if (pressure != 0) {
