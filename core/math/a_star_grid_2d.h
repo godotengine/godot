@@ -62,6 +62,19 @@ public:
 	};
 
 private:
+	enum ClusterAdjacency {
+		CLUSTER_ADJACENCY_NONE,
+		CLUSTER_ADJACENCY_LATERAL,
+		CLUSTER_ADJACENCY_VERTICAL,
+		CLUSTER_ADJACENCY_DIAGONAL,
+	};
+
+	enum HPAPathResult {
+		HPA_PATH_RESULT_FOUND,
+		HPA_PATH_RESULT_UNREACHABLE,
+		HPA_PATH_RESULT_FAILED,
+	};
+
 	Rect2i region;
 	Vector2 offset;
 	Size2 cell_size = Size2(1, 1);
@@ -72,6 +85,16 @@ private:
 	DiagonalMode diagonal_mode = DIAGONAL_MODE_ALWAYS;
 	Heuristic default_compute_heuristic = HEURISTIC_EUCLIDEAN;
 	Heuristic default_estimate_heuristic = HEURISTIC_EUCLIDEAN;
+
+	bool hpa_enabled = false;
+	bool hpa_dirty = false;
+	int32_t hpa_cluster_size = 5;
+
+	// Number of clusters along each axis, used to map a cell to its cluster index.
+	int32_t hpa_cluster_cols = 0;
+	int32_t hpa_cluster_rows = 0;
+	// Separate pass counter for the abstract graph search (independent of the cell-level `pass`).
+	uint64_t hpa_pass = 1;
 
 	struct Point {
 		Vector2i id;
@@ -107,6 +130,47 @@ private:
 			}
 		}
 	};
+
+	struct HierEdge {
+		int32_t to_node_idx = -1;
+		real_t distance = 0.0;
+		bool is_inter_cluster = false;
+	};
+
+	struct HierNode {
+		int32_t id = -1;
+		Vector2i pos;
+		int32_t cluster_idx = -1;
+		LocalVector<HierEdge> edges;
+
+		// Used for the abstract A* search.
+		real_t g_score = 0;
+		real_t f_score = 0;
+		int32_t prev_node_idx = -1;
+		uint64_t open_pass = 0;
+		uint64_t closed_pass = 0;
+	};
+
+	struct Cluster {
+		int32_t cluster_width = 0;
+		int32_t cluster_height = 0;
+		Vector2i cluster_pos;
+		LocalVector<int32_t> node_ids;
+	};
+
+	struct Entrance {
+		int32_t cluster_1_idx = -1;
+		int32_t cluster_2_idx = -1;
+		Vector2i c1_pos; // First boundary cell of the entrance on cluster 1's side.
+		Vector2i c2_pos; // First boundary cell of the entrance on cluster 2's side.
+		int32_t width = 0;
+		int32_t height = 0;
+		ClusterAdjacency dir = CLUSTER_ADJACENCY_NONE;
+	};
+
+	LocalVector<Cluster> hpa_clusters;
+	LocalVector<Entrance> hpa_entrances;
+	LocalVector<HierNode> hpa_nodes;
 
 	LocalVector<bool> solid_mask;
 	LocalVector<LocalVector<Point>> points;
@@ -156,6 +220,22 @@ private: // Internal routines.
 	}
 
 	void _get_nbors(Point *p_point, LocalVector<Point *> &r_nbors);
+	ClusterAdjacency _clusters_are_adjacent(const Cluster *p_c1, const Cluster *p_c2) const;
+	void _create_entrances(int32_t p_c1_idx, int32_t p_c2_idx, ClusterAdjacency p_adjacent_dir);
+	void _add_entrance(int32_t p_c1_idx, int32_t p_c2_idx, const Vector2i &p_c1_pos, const Vector2i &p_c2_pos, int32_t p_width, int32_t p_height, ClusterAdjacency p_dir);
+	void _build_clusters();
+	void _build_entrances();
+	void _create_hpa_nodes();
+	void _build_node_and_inter_edges(const Vector2i &p_pos1, int32_t p_c1_idx, const Vector2i &p_pos2, int32_t p_c2_idx);
+	void _build_intra_edges();
+	_FORCE_INLINE_ Rect2i _cluster_rect(const Cluster *p_c) const {
+		return Rect2i(p_c->cluster_pos, Size2i(p_c->cluster_width, p_c->cluster_height));
+	}
+	int32_t _get_cluster_index(const Vector2i &p_pos) const;
+	real_t _solve_bounded(const Vector2i &p_from, const Vector2i &p_to, const Rect2i &p_bounds, LocalVector<Vector2i> *r_path = nullptr);
+	bool _abstract_astar(int32_t p_start_idx, int32_t p_goal_idx, LocalVector<Vector2i> &r_node_path);
+	HPAPathResult _hpa_solve_abstract(const Vector2i &p_from, const Vector2i &p_to, LocalVector<Vector2i> &r_node_path);
+	HPAPathResult _hpa_get_cell_path(const Vector2i &p_from, const Vector2i &p_to, LocalVector<Vector2i> &r_cells);
 	Point *_jump(Point *p_from, Point *p_to);
 	bool _solve(Point *p_begin_point, Point *p_end_point, bool p_allow_partial_path);
 	Point *_forced_successor(int32_t p_x, int32_t p_y, int32_t p_dx, int32_t p_dy, bool p_inclusive = false);
@@ -196,6 +276,13 @@ public:
 	bool is_in_bounds(int32_t p_x, int32_t p_y) const;
 	bool is_in_boundsv(const Vector2i &p_id) const;
 	bool is_dirty() const;
+
+	bool is_hpa_enabled() const;
+	bool is_hpa_dirty() const;
+	void set_hpa_enabled(bool p_enabled);
+	int32_t get_hpa_cluster_size() const;
+	void set_hpa_cluster_size(int32_t p_cluster_size);
+	void update_hpa();
 
 	void set_jumping_enabled(bool p_enabled);
 	bool is_jumping_enabled() const;
