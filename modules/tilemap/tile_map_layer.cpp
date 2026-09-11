@@ -52,6 +52,9 @@
 #ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_2d/navigation_server_2d_debug.h"
+#endif // DEBUG_ENABLED
 Callable TileMapLayer::_navmesh_source_geometry_parsing_callback;
 RID TileMapLayer::_navmesh_source_geometry_parser;
 #endif // NAVIGATION_2D_DISABLED
@@ -1489,13 +1492,13 @@ void TileMapLayer::_navigation_draw_cell_debug(const RID &p_canvas_item, const V
 	}
 
 	RenderingServer *rs = RenderingServer::get_singleton();
-	const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
+	const NavigationServer2DDebug *ns2dd = NavigationServer2DDebug::get_singleton();
 
-	bool enabled_geometry_face_random_color = ns2d->get_debug_navigation_enable_geometry_face_random_color();
-	bool enabled_edge_lines = ns2d->get_debug_navigation_enable_edge_lines();
+	bool enabled_geometry_face_random_color = ns2dd->get_debug_navigation_enable_geometry_face_random_color();
+	bool enabled_edge_lines = ns2dd->get_debug_navigation_enable_edge_lines();
 
-	Color debug_face_color = ns2d->get_debug_navigation_geometry_face_color();
-	Color debug_edge_color = ns2d->get_debug_navigation_geometry_edge_color();
+	Color debug_face_color = ns2dd->get_debug_navigation_geometry_face_color();
+	Color debug_edge_color = ns2dd->get_debug_navigation_geometry_edge_color();
 
 	RandomPCG rand;
 

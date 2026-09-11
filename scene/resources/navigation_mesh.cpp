@@ -32,9 +32,9 @@
 
 #include "core/object/class_db.h"
 
-#ifdef DEBUG_ENABLED
-#include "servers/navigation_3d/navigation_server_3d.h"
-#endif // DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
+#include "servers/navigation_3d/navigation_server_3d_debug.h"
+#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	RWLockWrite write_lock(rwlock);
@@ -387,7 +387,7 @@ void NavigationMesh::get_data(Vector<Vector3> &r_vertices, Vector<Vector<int>> &
 	r_polygons = polygons;
 }
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED)
 Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	if (debug_mesh.is_valid()) {
 		// Blocks further updates for now, code below is intended for dynamic updates e.g. when settings change.
@@ -429,10 +429,11 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	face_mesh_array.resize(Mesh::ARRAY_MAX);
 	face_mesh_array[Mesh::ARRAY_VERTEX] = face_vertex_array;
 
+#if !defined(NAVIGATION_3D_DISABLED)
 	// if enabled add vertex colors to colorize each face individually
-	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
+	bool enabled_geometry_face_random_color = NavigationServer3DDebug::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	if (enabled_geometry_face_random_color) {
-		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+		Color debug_navigation_geometry_face_color = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_color();
 		Color polygon_color = debug_navigation_geometry_face_color;
 
 		Vector<Color> face_color_array;
@@ -447,13 +448,19 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		}
 		face_mesh_array[Mesh::ARRAY_COLOR] = face_color_array;
 	}
+#endif // !defined(NAVIGATION_3D_DISABLED)
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
-	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material();
+#if !defined(NAVIGATION_3D_DISABLED)
+	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_material();
 	debug_mesh->surface_set_material(0, debug_geometry_face_material);
+#endif // !defined(NAVIGATION_3D_DISABLED)
 
 	// if enabled build geometry edge line surface
-	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
+	bool enabled_edge_lines = true;
+#if !defined(NAVIGATION_3D_DISABLED)
+	enabled_edge_lines = NavigationServer3DDebug::get_singleton()->get_debug_navigation_enable_edge_lines();
+#endif // !defined(NAVIGATION_3D_DISABLED)
 
 	if (enabled_edge_lines) {
 		Vector<Vector3> line_vertex_array;
@@ -474,8 +481,10 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		line_mesh_array.resize(Mesh::ARRAY_MAX);
 		line_mesh_array[Mesh::ARRAY_VERTEX] = line_vertex_array;
 		debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, line_mesh_array);
-		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_material();
+#if !defined(NAVIGATION_3D_DISABLED)
+		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_edge_material();
 		debug_mesh->surface_set_material(1, debug_geometry_edge_material);
+#endif // !defined(NAVIGATION_3D_DISABLED)
 	}
 
 	return debug_mesh;

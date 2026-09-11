@@ -39,6 +39,9 @@
 #include "scene/resources/navigation_mesh.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #include "servers/rendering/rendering_server.h"
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_3d/navigation_server_3d_debug.h"
+#endif // DEBUG_ENABLED
 
 Callable NavigationObstacle3D::_navmesh_source_geometry_parsing_callback;
 RID NavigationObstacle3D::_navmesh_source_geometry_parser;
@@ -550,15 +553,15 @@ void NavigationObstacle3D::_update_debug() {
 }
 
 void NavigationObstacle3D::_update_fake_agent_radius_debug() {
-	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
+	NavigationServer3DDebug *ns3ddebug = NavigationServer3DDebug::get_singleton();
 	RenderingServer *rs = RenderingServer::get_singleton();
 
 	bool is_debug_enabled = false;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		is_debug_enabled = true;
-	} else if (ns3d->get_debug_enabled() &&
-			ns3d->get_debug_avoidance_enabled() &&
-			ns3d->get_debug_navigation_avoidance_enable_obstacles_radius()) {
+	} else if (ns3ddebug->get_debug_enabled() &&
+			ns3ddebug->get_debug_avoidance_enabled() &&
+			ns3ddebug->get_debug_navigation_avoidance_enable_obstacles_radius()) {
 		is_debug_enabled = true;
 	}
 
@@ -623,7 +626,7 @@ void NavigationObstacle3D::_update_fake_agent_radius_debug() {
 
 	rs->mesh_add_surface_from_arrays(fake_agent_radius_debug_mesh_rid, RSE::PRIMITIVE_TRIANGLES, face_mesh_array);
 
-	Ref<StandardMaterial3D> face_material = ns3d->get_debug_navigation_avoidance_obstacles_radius_material();
+	Ref<StandardMaterial3D> face_material = NavigationServer3DDebug::get_singleton()->get_debug_navigation_avoidance_obstacles_radius_material();
 	rs->instance_set_surface_override_material(fake_agent_radius_debug_instance_rid, 0, face_material->get_rid());
 
 	if (is_inside_tree()) {
@@ -640,13 +643,13 @@ void NavigationObstacle3D::_update_static_obstacle_debug() {
 		return;
 	}
 
-	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
+	NavigationServer3DDebug *ns3ddebug = NavigationServer3DDebug::get_singleton();
 	RenderingServer *rs = RenderingServer::get_singleton();
 
 	bool is_debug_enabled = false;
-	if (ns3d->get_debug_enabled() &&
-			ns3d->get_debug_avoidance_enabled() &&
-			ns3d->get_debug_navigation_avoidance_enable_obstacles_static()) {
+	if (ns3ddebug->get_debug_enabled() &&
+			ns3ddebug->get_debug_avoidance_enabled() &&
+			ns3ddebug->get_debug_navigation_avoidance_enable_obstacles_static()) {
 		is_debug_enabled = true;
 	}
 
@@ -702,9 +705,9 @@ void NavigationObstacle3D::_update_static_obstacle_debug() {
 	Ref<StandardMaterial3D> edge_material;
 
 	if (are_vertices_valid()) {
-		edge_material = ns3d->get_debug_navigation_avoidance_static_obstacle_pushout_edge_material();
+		edge_material = ns3ddebug->get_debug_navigation_avoidance_static_obstacle_pushout_edge_material();
 	} else {
-		edge_material = ns3d->get_debug_navigation_avoidance_static_obstacle_pushin_edge_material();
+		edge_material = ns3ddebug->get_debug_navigation_avoidance_static_obstacle_pushin_edge_material();
 	}
 
 	rs->instance_set_surface_override_material(static_obstacle_debug_instance_rid, 0, edge_material->get_rid());
