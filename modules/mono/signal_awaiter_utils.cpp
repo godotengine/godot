@@ -183,19 +183,7 @@ void EventSignalCallable::call(const Variant **p_arguments, int p_argcount, Vari
 	CSharpInstance *csharp_instance = CAST_CSHARP_INSTANCE(owner->get_script_instance());
 	ERR_FAIL_NULL(csharp_instance);
 
-	GCHandleIntPtr owner_gchandle_intptr = csharp_instance->get_gchandle_intptr();
-
-	bool awaiter_is_null = false;
-	GDMonoCache::managed_callbacks.ScriptManagerBridge_RaiseEventSignal(
-			owner_gchandle_intptr, &event_signal_name,
-			p_arguments, p_argcount, &awaiter_is_null);
-
-	if (awaiter_is_null) {
-		r_call_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
-		return;
-	}
-
-	r_call_error.error = Callable::CallError::CALL_OK;
+	csharp_instance->raise_event_signal(event_signal_name, p_arguments, p_argcount, r_call_error);
 }
 
 EventSignalCallable::EventSignalCallable(Object *p_owner, const StringName &p_event_signal_name) :

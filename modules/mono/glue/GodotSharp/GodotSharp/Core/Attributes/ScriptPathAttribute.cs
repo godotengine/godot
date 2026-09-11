@@ -1,11 +1,15 @@
 using System;
+using JetBrains.Annotations;
+
+#nullable enable
 
 namespace Godot
 {
     /// <summary>
     /// An attribute that contains the path to the object's script.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+    [PublicAPI("ABI compatibility with legacy code.")]
     public sealed class ScriptPathAttribute : Attribute
     {
         /// <summary>

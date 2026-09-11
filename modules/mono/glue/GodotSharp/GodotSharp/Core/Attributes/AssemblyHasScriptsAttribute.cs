@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 
 #nullable enable
 
@@ -10,6 +11,9 @@ namespace Godot
     /// collection of types that implement scripts; otherwise, retrieving the types requires lookup.
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly)]
+    [PublicAPI("ABI compatibility with legacy code.")]
+    [Obsolete("Use 'ScriptManagerBridge.RegisterScriptPathForType' or " +
+              "'ScriptManagerBridge.RegisterScriptPathForGenericTypeDefinition'.")]
     public sealed class AssemblyHasScriptsAttribute : Attribute
     {
         /// <summary>
@@ -46,5 +50,3 @@ namespace Godot
         }
     }
 }
-
-#nullable restore

@@ -25,8 +25,12 @@ public static class CSharpAnalyzerVerifier<TAnalyzer>
             SolutionTransforms.Add((Solution solution, ProjectId projectId) =>
             {
                 Project project =
-                    solution.GetProject(projectId)!.AddMetadataReference(Constants.GodotSharpAssembly
-                        .CreateMetadataReference()).WithParseOptions(new CSharpParseOptions(LangVersion));
+                    solution.GetProject(projectId)!
+                        .WithAssemblyName("GodotAnalyzersTestProject")
+                        .AddMetadataReference(
+                            Constants.GodotSharpAssembly.CreateMetadataReference()
+                        )
+                        .WithParseOptions(new CSharpParseOptions(LangVersion));
 
                 return project.Solution;
             });
@@ -42,10 +46,12 @@ public static class CSharpAnalyzerVerifier<TAnalyzer>
     {
         var verifier = new Test();
 
-        verifier.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", $"""
-        is_global = true
-        build_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}
-        """));
+        verifier.TestState.AnalyzerConfigFiles.Add(("/.globalconfig",
+            $"""
+             is_global = true
+             build_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}
+             build_property.EnableTrimAnalyzer = true
+             """));
 
         verifier.TestState.Sources.AddRange(sources.Select(source =>
         {

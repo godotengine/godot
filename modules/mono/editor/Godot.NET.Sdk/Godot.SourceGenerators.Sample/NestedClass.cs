@@ -6,7 +6,7 @@ public partial class NestedClass : GodotObject
 {
     public partial class NestedClass2 : GodotObject
     {
-        public partial class NestedClass3 : GodotObject
+        public partial class NestedClass3 : NestedClass2
         {
             [Signal]
             public delegate void MySignalEventHandler(string str, int num);
@@ -19,4 +19,6 @@ public partial class NestedClass : GodotObject
             }
         }
     }
+
+    private partial class PrivateNestedClass : GodotObject;
 }
