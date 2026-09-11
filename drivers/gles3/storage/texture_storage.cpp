@@ -1521,6 +1521,11 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 
+	i = 0;
+	while (i < p_textures.size()) {
+		texture_atlas_mark_draw_on_texture(p_textures[i]);
+		i += 1;
+	}
 	// Reset to system FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
@@ -2342,6 +2347,18 @@ void TextureStorage::texture_atlas_mark_dirty_on_texture(RID p_texture) {
 	}
 }
 
+void TextureStorage::texture_atlas_mark_draw_on_texture(RID p_texture) {
+	if (texture_atlas.dirty) {
+		return; //Don't mess with it while it's dirty anyway
+	}
+
+	if (texture_atlas.textures.has(p_texture)) {
+		TextureAtlas::Texture *t = texture_atlas.textures.getptr(p_texture);
+		t->drawn = true;
+		texture_atlas.draw_dirty = true;
+	}
+}
+
 void TextureStorage::texture_atlas_remove_texture(RID p_texture) {
 	if (texture_atlas.textures.has(p_texture)) {
 		texture_atlas.textures.erase(p_texture);
@@ -2520,6 +2537,40 @@ void TextureStorage::update_texture_atlas() {
 	if (texture_atlas.textures.size()) {
 		for (const KeyValue<RID, TextureAtlas::Texture> &E : texture_atlas.textures) {
 			TextureAtlas::Texture *t = texture_atlas.textures.getptr(E.key);
+			Texture *src_tex = get_texture(E.key);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, src_tex->tex_id);
+			copy_effects->copy_to_rect(t->uv_rect);
+			t->drawn = false;
+		}
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+}
+
+void TextureStorage::texture_atlas_redraw_textures() {
+	if (texture_atlas.dirty) {
+		return; //Don't mess with it while it's dirty anyway
+	}
+
+	if (!texture_atlas.draw_dirty) {
+		return; //Nothing to do
+	}
+
+	texture_atlas.draw_dirty = false;
+
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
+	ERR_FAIL_COND(texture_atlas.texture == 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, texture_atlas.framebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_atlas.texture, 0);
+	glViewport(0, 0, texture_atlas.size.width, texture_atlas.size.height);
+
+	glDisable(GL_BLEND);
+
+	for (const KeyValue<RID, TextureAtlas::Texture> &E : texture_atlas.textures) {
+		TextureAtlas::Texture *t = texture_atlas.textures.getptr(E.key);
+		if (t->drawn) {
 			Texture *src_tex = get_texture(E.key);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, src_tex->tex_id);
