@@ -310,6 +310,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		_fetch_setting_values();
 
 		settings_list_panel = memnew(PanelContainer);
+		settings_list_panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		main_vbox->add_child(settings_list_panel);
 
 		settings_list = memnew(VBoxContainer);
@@ -435,6 +436,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		Button *open_full_settings = memnew(Button);
 		open_full_settings->set_text(TTRC("Edit All Settings"));
 		open_full_settings->set_h_size_flags(Control::SIZE_SHRINK_END);
+		open_full_settings->set_v_size_flags(Control::SIZE_SHRINK_END | Control::SIZE_EXPAND);
 		settings_list->add_child(open_full_settings);
 		open_full_settings->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_show_full_settings));
 	}
