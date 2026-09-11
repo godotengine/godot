@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 # This script makes RST files from the XML class reference for use with the online docs.
-from __future__ import annotations
-
 import argparse
 import os
 import re
@@ -424,7 +422,7 @@ class State:
 
         self.current_class = ""
 
-    def parse_params(self, root: ET.Element, context: str) -> list[ParameterDef]:
+    def parse_params(self, root: ET.Element, context: str) -> list["ParameterDef"]:
         param_elements = root.findall("param")
         params: Any = [None] * len(param_elements)
 
@@ -474,7 +472,7 @@ class TypeName:
             return make_type(self.type_name, state)
 
     @classmethod
-    def from_element(cls, element: ET.Element) -> TypeName:
+    def from_element(cls, element: ET.Element) -> "TypeName":
         return cls(element.attrib["type"], element.get("enum"), element.get("is_bitfield") == "true")
 
 
