@@ -34,6 +34,7 @@
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
+#include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
@@ -2500,8 +2501,22 @@ Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_p
 
 	EditorFileSystem::get_singleton()->update_file(p_path);
 
+	_saved_reimport(p_path);
 	_res_saved_callback(sqscr);
 	return OK;
+}
+
+void ScriptEditor::_saved_reimport(const String &p_path) {
+	int order;
+	bool can_threads;
+	String importer;
+	Error err;
+
+	err = ResourceFormatImporter::get_singleton()->get_import_order_threads_and_importer(p_path, order, can_threads, importer);
+
+	if (err == OK && importer == "csv_translation") {
+		EditorFileSystem::get_singleton()->reimport_files({ p_path });
+	}
 }
 
 bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus) {
