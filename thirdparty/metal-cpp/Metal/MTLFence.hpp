@@ -1,55 +1,49 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTLFence.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
 #include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
+#include "MTLBlocks.hpp"
+#include "MTLStructs.hpp"
+#include "MTLBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
+
+namespace MTL {
+    class Device;
+}
+namespace NS {
+    class String;
+}
 
 namespace MTL
 {
-class Device;
 
 class Fence : public NS::Referencing<Fence>
 {
 public:
-    Device*     device() const;
+    MTL::Device* device() const;
+    NS::String*  label() const;
+    void         setLabel(NS::String* label);
 
-    NS::String* label() const;
-    void        setLabel(const NS::String* label);
 };
 
-}
+} // namespace MTL
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTLFence;
+
 _MTL_INLINE MTL::Device* MTL::Fence::device() const
 {
-    return Object::sendMessage<MTL::Device*>(this, _MTL_PRIVATE_SEL(device));
+    return _MTL_msg_MTL__Devicep_device((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::String* MTL::Fence::label() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    return _MTL_msg_NS__Stringp_label((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL::Fence::setLabel(const NS::String* label)
+_MTL_INLINE void MTL::Fence::setLabel(NS::String* label)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLabel_), label);
+    _MTL_msg_v_setLabel__NS__Stringp((const void*)this, nullptr, label);
 }

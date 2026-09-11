@@ -1,319 +1,310 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTLFunctionStitching.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
 #include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
+#include "MTLBlocks.hpp"
+#include "MTLStructs.hpp"
+#include "MTLBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
+
+namespace NS {
+    class Array;
+    class String;
+}
 
 namespace MTL
 {
-class FunctionStitchingAttributeAlwaysInline;
-class FunctionStitchingFunctionNode;
-class FunctionStitchingGraph;
-class FunctionStitchingInputNode;
-class StitchedLibraryDescriptor;
 
 _MTL_OPTIONS(NS::UInteger, StitchedLibraryOptions) {
     StitchedLibraryOptionNone = 0,
-    StitchedLibraryOptionFailOnBinaryArchiveMiss = 1,
+    StitchedLibraryOptionFailOnBinaryArchiveMiss = 1 << 0,
     StitchedLibraryOptionStoreLibraryInMetalPipelinesScript = 1 << 1,
 };
 
+
+class FunctionStitchingAttribute;
+class FunctionStitchingAttributeAlwaysInline;
+class FunctionStitchingNode;
+class FunctionStitchingInputNode;
+class FunctionStitchingFunctionNode;
+class FunctionStitchingGraph;
+class StitchedLibraryDescriptor;
+
 class FunctionStitchingAttribute : public NS::Referencing<FunctionStitchingAttribute>
 {
+public:
 };
-class FunctionStitchingAttributeAlwaysInline : public NS::Referencing<FunctionStitchingAttributeAlwaysInline, FunctionStitchingAttribute>
+
+class FunctionStitchingAttributeAlwaysInline : public NS::Referencing<FunctionStitchingAttributeAlwaysInline>
 {
 public:
     static FunctionStitchingAttributeAlwaysInline* alloc();
+    FunctionStitchingAttributeAlwaysInline*        init() const;
 
-    FunctionStitchingAttributeAlwaysInline*        init();
 };
+
 class FunctionStitchingNode : public NS::Copying<FunctionStitchingNode>
 {
+public:
 };
-class FunctionStitchingInputNode : public NS::Referencing<FunctionStitchingInputNode, FunctionStitchingNode>
+
+class FunctionStitchingInputNode : public NS::Referencing<FunctionStitchingInputNode>
 {
 public:
     static FunctionStitchingInputNode* alloc();
+    FunctionStitchingInputNode*        init() const;
 
-    NS::UInteger                       argumentIndex() const;
+    NS::UInteger                     argumentIndex() const;
+    MTL::FunctionStitchingInputNode* init(NS::UInteger argument);
+    void                             setArgumentIndex(NS::UInteger argumentIndex);
 
-    FunctionStitchingInputNode*        init();
-    FunctionStitchingInputNode*        init(NS::UInteger argument);
-
-    void                               setArgumentIndex(NS::UInteger argumentIndex);
 };
-class FunctionStitchingFunctionNode : public NS::Referencing<FunctionStitchingFunctionNode, FunctionStitchingNode>
+
+class FunctionStitchingFunctionNode : public NS::Referencing<FunctionStitchingFunctionNode>
 {
 public:
     static FunctionStitchingFunctionNode* alloc();
+    FunctionStitchingFunctionNode*        init() const;
 
-    NS::Array*                            arguments() const;
+    NS::Array*                          arguments() const;
+    NS::Array*                          controlDependencies() const;
+    MTL::FunctionStitchingFunctionNode* init(NS::String* name, NS::Array* arguments, NS::Array* controlDependencies);
+    NS::String*                         name() const;
+    void                                setArguments(NS::Array* arguments);
+    void                                setControlDependencies(NS::Array* controlDependencies);
+    void                                setName(NS::String* name);
 
-    NS::Array*                            controlDependencies() const;
-
-    FunctionStitchingFunctionNode*        init();
-    FunctionStitchingFunctionNode*        init(const NS::String* name, const NS::Array* arguments, const NS::Array* controlDependencies);
-
-    NS::String*                           name() const;
-
-    void                                  setArguments(const NS::Array* arguments);
-
-    void                                  setControlDependencies(const NS::Array* controlDependencies);
-
-    void                                  setName(const NS::String* name);
 };
+
 class FunctionStitchingGraph : public NS::Copying<FunctionStitchingGraph>
 {
 public:
     static FunctionStitchingGraph* alloc();
+    FunctionStitchingGraph*        init() const;
 
-    NS::Array*                     attributes() const;
+    NS::Array*                          attributes() const;
+    NS::String*                         functionName() const;
+    MTL::FunctionStitchingGraph*        init(NS::String* functionName, NS::Array* nodes, MTL::FunctionStitchingFunctionNode* outputNode, NS::Array* attributes);
+    NS::Array*                          nodes() const;
+    MTL::FunctionStitchingFunctionNode* outputNode() const;
+    void                                setAttributes(NS::Array* attributes);
+    void                                setFunctionName(NS::String* functionName);
+    void                                setNodes(NS::Array* nodes);
+    void                                setOutputNode(MTL::FunctionStitchingFunctionNode* outputNode);
 
-    NS::String*                    functionName() const;
-
-    FunctionStitchingGraph*        init();
-    FunctionStitchingGraph*        init(const NS::String* functionName, const NS::Array* nodes, const MTL::FunctionStitchingFunctionNode* outputNode, const NS::Array* attributes);
-
-    NS::Array*                     nodes() const;
-
-    FunctionStitchingFunctionNode* outputNode() const;
-
-    void                           setAttributes(const NS::Array* attributes);
-
-    void                           setFunctionName(const NS::String* functionName);
-
-    void                           setNodes(const NS::Array* nodes);
-
-    void                           setOutputNode(const MTL::FunctionStitchingFunctionNode* outputNode);
 };
+
 class StitchedLibraryDescriptor : public NS::Copying<StitchedLibraryDescriptor>
 {
 public:
     static StitchedLibraryDescriptor* alloc();
+    StitchedLibraryDescriptor*        init() const;
 
-    NS::Array*                        binaryArchives() const;
+    NS::Array*                  binaryArchives() const;
+    NS::Array*                  functionGraphs() const;
+    NS::Array*                  functions() const;
+    MTL::StitchedLibraryOptions options() const;
+    void                        setBinaryArchives(NS::Array* binaryArchives);
+    void                        setFunctionGraphs(NS::Array* functionGraphs);
+    void                        setFunctions(NS::Array* functions);
+    void                        setOptions(MTL::StitchedLibraryOptions options);
 
-    NS::Array*                        functionGraphs() const;
-
-    NS::Array*                        functions() const;
-
-    StitchedLibraryDescriptor*        init();
-
-    StitchedLibraryOptions            options() const;
-
-    void                              setBinaryArchives(const NS::Array* binaryArchives);
-
-    void                              setFunctionGraphs(const NS::Array* functionGraphs);
-
-    void                              setFunctions(const NS::Array* functions);
-
-    void                              setOptions(MTL::StitchedLibraryOptions options);
 };
 
-}
+} // namespace MTL
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTLFunctionStitchingAttribute;
+extern "C" void *OBJC_CLASS_$_MTLFunctionStitchingAttributeAlwaysInline;
+extern "C" void *OBJC_CLASS_$_MTLFunctionStitchingNode;
+extern "C" void *OBJC_CLASS_$_MTLFunctionStitchingInputNode;
+extern "C" void *OBJC_CLASS_$_MTLFunctionStitchingFunctionNode;
+extern "C" void *OBJC_CLASS_$_MTLFunctionStitchingGraph;
+extern "C" void *OBJC_CLASS_$_MTLStitchedLibraryDescriptor;
+
 _MTL_INLINE MTL::FunctionStitchingAttributeAlwaysInline* MTL::FunctionStitchingAttributeAlwaysInline::alloc()
 {
-    return NS::Object::alloc<MTL::FunctionStitchingAttributeAlwaysInline>(_MTL_PRIVATE_CLS(MTLFunctionStitchingAttributeAlwaysInline));
+    return _MTL_msg_MTL__FunctionStitchingAttributeAlwaysInlinep_alloc((const void*)&OBJC_CLASS_$_MTLFunctionStitchingAttributeAlwaysInline, nullptr);
 }
 
-_MTL_INLINE MTL::FunctionStitchingAttributeAlwaysInline* MTL::FunctionStitchingAttributeAlwaysInline::init()
+_MTL_INLINE MTL::FunctionStitchingAttributeAlwaysInline* MTL::FunctionStitchingAttributeAlwaysInline::init() const
 {
-    return NS::Object::init<MTL::FunctionStitchingAttributeAlwaysInline>();
+    return _MTL_msg_MTL__FunctionStitchingAttributeAlwaysInlinep_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE MTL::FunctionStitchingInputNode* MTL::FunctionStitchingInputNode::alloc()
 {
-    return NS::Object::alloc<MTL::FunctionStitchingInputNode>(_MTL_PRIVATE_CLS(MTLFunctionStitchingInputNode));
+    return _MTL_msg_MTL__FunctionStitchingInputNodep_alloc((const void*)&OBJC_CLASS_$_MTLFunctionStitchingInputNode, nullptr);
+}
+
+_MTL_INLINE MTL::FunctionStitchingInputNode* MTL::FunctionStitchingInputNode::init() const
+{
+    return _MTL_msg_MTL__FunctionStitchingInputNodep_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::UInteger MTL::FunctionStitchingInputNode::argumentIndex() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(argumentIndex));
-}
-
-_MTL_INLINE MTL::FunctionStitchingInputNode* MTL::FunctionStitchingInputNode::init()
-{
-    return NS::Object::init<MTL::FunctionStitchingInputNode>();
-}
-
-_MTL_INLINE MTL::FunctionStitchingInputNode* MTL::FunctionStitchingInputNode::init(NS::UInteger argument)
-{
-    return Object::sendMessage<MTL::FunctionStitchingInputNode*>(this, _MTL_PRIVATE_SEL(initWithArgumentIndex_), argument);
+    return _MTL_msg_NS__UInteger_argumentIndex((const void*)this, nullptr);
 }
 
 _MTL_INLINE void MTL::FunctionStitchingInputNode::setArgumentIndex(NS::UInteger argumentIndex)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setArgumentIndex_), argumentIndex);
+    _MTL_msg_v_setArgumentIndex__NS__UInteger((const void*)this, nullptr, argumentIndex);
+}
+
+_MTL_INLINE MTL::FunctionStitchingInputNode* MTL::FunctionStitchingInputNode::init(NS::UInteger argument)
+{
+    return _MTL_msg_MTL__FunctionStitchingInputNodep_initWithArgumentIndex__NS__UInteger((const void*)this, nullptr, argument);
 }
 
 _MTL_INLINE MTL::FunctionStitchingFunctionNode* MTL::FunctionStitchingFunctionNode::alloc()
 {
-    return NS::Object::alloc<MTL::FunctionStitchingFunctionNode>(_MTL_PRIVATE_CLS(MTLFunctionStitchingFunctionNode));
+    return _MTL_msg_MTL__FunctionStitchingFunctionNodep_alloc((const void*)&OBJC_CLASS_$_MTLFunctionStitchingFunctionNode, nullptr);
 }
 
-_MTL_INLINE NS::Array* MTL::FunctionStitchingFunctionNode::arguments() const
+_MTL_INLINE MTL::FunctionStitchingFunctionNode* MTL::FunctionStitchingFunctionNode::init() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(arguments));
-}
-
-_MTL_INLINE NS::Array* MTL::FunctionStitchingFunctionNode::controlDependencies() const
-{
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(controlDependencies));
-}
-
-_MTL_INLINE MTL::FunctionStitchingFunctionNode* MTL::FunctionStitchingFunctionNode::init()
-{
-    return NS::Object::init<MTL::FunctionStitchingFunctionNode>();
-}
-
-_MTL_INLINE MTL::FunctionStitchingFunctionNode* MTL::FunctionStitchingFunctionNode::init(const NS::String* name, const NS::Array* arguments, const NS::Array* controlDependencies)
-{
-    return Object::sendMessage<MTL::FunctionStitchingFunctionNode*>(this, _MTL_PRIVATE_SEL(initWithName_arguments_controlDependencies_), name, arguments, controlDependencies);
+    return _MTL_msg_MTL__FunctionStitchingFunctionNodep_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::String* MTL::FunctionStitchingFunctionNode::name() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(name));
+    return _MTL_msg_NS__Stringp_name((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL::FunctionStitchingFunctionNode::setArguments(const NS::Array* arguments)
+_MTL_INLINE void MTL::FunctionStitchingFunctionNode::setName(NS::String* name)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setArguments_), arguments);
+    _MTL_msg_v_setName__NS__Stringp((const void*)this, nullptr, name);
 }
 
-_MTL_INLINE void MTL::FunctionStitchingFunctionNode::setControlDependencies(const NS::Array* controlDependencies)
+_MTL_INLINE NS::Array* MTL::FunctionStitchingFunctionNode::arguments() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setControlDependencies_), controlDependencies);
+    return _MTL_msg_NS__Arrayp_arguments((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL::FunctionStitchingFunctionNode::setName(const NS::String* name)
+_MTL_INLINE void MTL::FunctionStitchingFunctionNode::setArguments(NS::Array* arguments)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setName_), name);
+    _MTL_msg_v_setArguments__NS__Arrayp((const void*)this, nullptr, arguments);
+}
+
+_MTL_INLINE NS::Array* MTL::FunctionStitchingFunctionNode::controlDependencies() const
+{
+    return _MTL_msg_NS__Arrayp_controlDependencies((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::FunctionStitchingFunctionNode::setControlDependencies(NS::Array* controlDependencies)
+{
+    _MTL_msg_v_setControlDependencies__NS__Arrayp((const void*)this, nullptr, controlDependencies);
+}
+
+_MTL_INLINE MTL::FunctionStitchingFunctionNode* MTL::FunctionStitchingFunctionNode::init(NS::String* name, NS::Array* arguments, NS::Array* controlDependencies)
+{
+    return _MTL_msg_MTL__FunctionStitchingFunctionNodep_initWithName_arguments_controlDependencies__NS__Stringp_NS__Arrayp_NS__Arrayp((const void*)this, nullptr, name, arguments, controlDependencies);
 }
 
 _MTL_INLINE MTL::FunctionStitchingGraph* MTL::FunctionStitchingGraph::alloc()
 {
-    return NS::Object::alloc<MTL::FunctionStitchingGraph>(_MTL_PRIVATE_CLS(MTLFunctionStitchingGraph));
+    return _MTL_msg_MTL__FunctionStitchingGraphp_alloc((const void*)&OBJC_CLASS_$_MTLFunctionStitchingGraph, nullptr);
 }
 
-_MTL_INLINE NS::Array* MTL::FunctionStitchingGraph::attributes() const
+_MTL_INLINE MTL::FunctionStitchingGraph* MTL::FunctionStitchingGraph::init() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(attributes));
+    return _MTL_msg_MTL__FunctionStitchingGraphp_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::String* MTL::FunctionStitchingGraph::functionName() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(functionName));
+    return _MTL_msg_NS__Stringp_functionName((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::FunctionStitchingGraph* MTL::FunctionStitchingGraph::init()
+_MTL_INLINE void MTL::FunctionStitchingGraph::setFunctionName(NS::String* functionName)
 {
-    return NS::Object::init<MTL::FunctionStitchingGraph>();
-}
-
-_MTL_INLINE MTL::FunctionStitchingGraph* MTL::FunctionStitchingGraph::init(const NS::String* functionName, const NS::Array* nodes, const MTL::FunctionStitchingFunctionNode* outputNode, const NS::Array* attributes)
-{
-    return Object::sendMessage<MTL::FunctionStitchingGraph*>(this, _MTL_PRIVATE_SEL(initWithFunctionName_nodes_outputNode_attributes_), functionName, nodes, outputNode, attributes);
+    _MTL_msg_v_setFunctionName__NS__Stringp((const void*)this, nullptr, functionName);
 }
 
 _MTL_INLINE NS::Array* MTL::FunctionStitchingGraph::nodes() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(nodes));
+    return _MTL_msg_NS__Arrayp_nodes((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::FunctionStitchingGraph::setNodes(NS::Array* nodes)
+{
+    _MTL_msg_v_setNodes__NS__Arrayp((const void*)this, nullptr, nodes);
 }
 
 _MTL_INLINE MTL::FunctionStitchingFunctionNode* MTL::FunctionStitchingGraph::outputNode() const
 {
-    return Object::sendMessage<MTL::FunctionStitchingFunctionNode*>(this, _MTL_PRIVATE_SEL(outputNode));
+    return _MTL_msg_MTL__FunctionStitchingFunctionNodep_outputNode((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL::FunctionStitchingGraph::setAttributes(const NS::Array* attributes)
+_MTL_INLINE void MTL::FunctionStitchingGraph::setOutputNode(MTL::FunctionStitchingFunctionNode* outputNode)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setAttributes_), attributes);
+    _MTL_msg_v_setOutputNode__MTL__FunctionStitchingFunctionNodep((const void*)this, nullptr, outputNode);
 }
 
-_MTL_INLINE void MTL::FunctionStitchingGraph::setFunctionName(const NS::String* functionName)
+_MTL_INLINE NS::Array* MTL::FunctionStitchingGraph::attributes() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setFunctionName_), functionName);
+    return _MTL_msg_NS__Arrayp_attributes((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL::FunctionStitchingGraph::setNodes(const NS::Array* nodes)
+_MTL_INLINE void MTL::FunctionStitchingGraph::setAttributes(NS::Array* attributes)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setNodes_), nodes);
+    _MTL_msg_v_setAttributes__NS__Arrayp((const void*)this, nullptr, attributes);
 }
 
-_MTL_INLINE void MTL::FunctionStitchingGraph::setOutputNode(const MTL::FunctionStitchingFunctionNode* outputNode)
+_MTL_INLINE MTL::FunctionStitchingGraph* MTL::FunctionStitchingGraph::init(NS::String* functionName, NS::Array* nodes, MTL::FunctionStitchingFunctionNode* outputNode, NS::Array* attributes)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setOutputNode_), outputNode);
+    return _MTL_msg_MTL__FunctionStitchingGraphp_initWithFunctionName_nodes_outputNode_attributes__NS__Stringp_NS__Arrayp_MTL__FunctionStitchingFunctionNodep_NS__Arrayp((const void*)this, nullptr, functionName, nodes, outputNode, attributes);
 }
 
 _MTL_INLINE MTL::StitchedLibraryDescriptor* MTL::StitchedLibraryDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL::StitchedLibraryDescriptor>(_MTL_PRIVATE_CLS(MTLStitchedLibraryDescriptor));
+    return _MTL_msg_MTL__StitchedLibraryDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTLStitchedLibraryDescriptor, nullptr);
 }
 
-_MTL_INLINE NS::Array* MTL::StitchedLibraryDescriptor::binaryArchives() const
+_MTL_INLINE MTL::StitchedLibraryDescriptor* MTL::StitchedLibraryDescriptor::init() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(binaryArchives));
+    return _MTL_msg_MTL__StitchedLibraryDescriptorp_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::Array* MTL::StitchedLibraryDescriptor::functionGraphs() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(functionGraphs));
+    return _MTL_msg_NS__Arrayp_functionGraphs((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::StitchedLibraryDescriptor::setFunctionGraphs(NS::Array* functionGraphs)
+{
+    _MTL_msg_v_setFunctionGraphs__NS__Arrayp((const void*)this, nullptr, functionGraphs);
 }
 
 _MTL_INLINE NS::Array* MTL::StitchedLibraryDescriptor::functions() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(functions));
+    return _MTL_msg_NS__Arrayp_functions((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::StitchedLibraryDescriptor* MTL::StitchedLibraryDescriptor::init()
+_MTL_INLINE void MTL::StitchedLibraryDescriptor::setFunctions(NS::Array* functions)
 {
-    return NS::Object::init<MTL::StitchedLibraryDescriptor>();
+    _MTL_msg_v_setFunctions__NS__Arrayp((const void*)this, nullptr, functions);
+}
+
+_MTL_INLINE NS::Array* MTL::StitchedLibraryDescriptor::binaryArchives() const
+{
+    return _MTL_msg_NS__Arrayp_binaryArchives((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::StitchedLibraryDescriptor::setBinaryArchives(NS::Array* binaryArchives)
+{
+    _MTL_msg_v_setBinaryArchives__NS__Arrayp((const void*)this, nullptr, binaryArchives);
 }
 
 _MTL_INLINE MTL::StitchedLibraryOptions MTL::StitchedLibraryDescriptor::options() const
 {
-    return Object::sendMessage<MTL::StitchedLibraryOptions>(this, _MTL_PRIVATE_SEL(options));
-}
-
-_MTL_INLINE void MTL::StitchedLibraryDescriptor::setBinaryArchives(const NS::Array* binaryArchives)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setBinaryArchives_), binaryArchives);
-}
-
-_MTL_INLINE void MTL::StitchedLibraryDescriptor::setFunctionGraphs(const NS::Array* functionGraphs)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setFunctionGraphs_), functionGraphs);
-}
-
-_MTL_INLINE void MTL::StitchedLibraryDescriptor::setFunctions(const NS::Array* functions)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setFunctions_), functions);
+    return _MTL_msg_MTL__StitchedLibraryOptions_options((const void*)this, nullptr);
 }
 
 _MTL_INLINE void MTL::StitchedLibraryDescriptor::setOptions(MTL::StitchedLibraryOptions options)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setOptions_), options);
+    _MTL_msg_v_setOptions__MTL__StitchedLibraryOptions((const void*)this, nullptr, options);
 }

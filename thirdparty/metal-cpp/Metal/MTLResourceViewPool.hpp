@@ -1,118 +1,108 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTLResourceViewPool.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
 #include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
-#include "MTLTypes.hpp"
+#include "MTLBlocks.hpp"
+#include "MTLStructs.hpp"
+#include "MTLBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
+
+namespace MTL {
+    class Device;
+}
+namespace NS {
+    class String;
+}
 
 namespace MTL
 {
-class Device;
-class ResourceViewPool;
+
 class ResourceViewPoolDescriptor;
+class ResourceViewPool;
 
 class ResourceViewPoolDescriptor : public NS::Copying<ResourceViewPoolDescriptor>
 {
 public:
     static ResourceViewPoolDescriptor* alloc();
+    ResourceViewPoolDescriptor*        init() const;
 
-    ResourceViewPoolDescriptor*        init();
+    NS::String*  label() const;
+    NS::UInteger resourceViewCount() const;
+    void         setLabel(NS::String* label);
+    void         setResourceViewCount(NS::UInteger resourceViewCount);
 
-    NS::String*                        label() const;
-
-    NS::UInteger                       resourceViewCount() const;
-
-    void                               setLabel(const NS::String* label);
-
-    void                               setResourceViewCount(NS::UInteger resourceViewCount);
 };
+
 class ResourceViewPool : public NS::Referencing<ResourceViewPool>
 {
 public:
-    ResourceID   baseResourceID() const;
+    MTL::ResourceID baseResourceID() const;
+    MTL::ResourceID copyResourceViewsFromPool(MTL::ResourceViewPool* sourcePool, NS::Range sourceRange, NS::UInteger destinationIndex);
+    MTL::Device*    device() const;
+    NS::String*     label() const;
+    NS::UInteger    resourceViewCount() const;
 
-    ResourceID   copyResourceViewsFromPool(const MTL::ResourceViewPool* sourcePool, NS::Range sourceRange, NS::UInteger destinationIndex);
-
-    Device*      device() const;
-
-    NS::String*  label() const;
-
-    NS::UInteger resourceViewCount() const;
 };
 
-}
+} // namespace MTL
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTLResourceViewPoolDescriptor;
+extern "C" void *OBJC_CLASS_$_MTLResourceViewPool;
+
 _MTL_INLINE MTL::ResourceViewPoolDescriptor* MTL::ResourceViewPoolDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL::ResourceViewPoolDescriptor>(_MTL_PRIVATE_CLS(MTLResourceViewPoolDescriptor));
+    return _MTL_msg_MTL__ResourceViewPoolDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTLResourceViewPoolDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL::ResourceViewPoolDescriptor* MTL::ResourceViewPoolDescriptor::init()
+_MTL_INLINE MTL::ResourceViewPoolDescriptor* MTL::ResourceViewPoolDescriptor::init() const
 {
-    return NS::Object::init<MTL::ResourceViewPoolDescriptor>();
-}
-
-_MTL_INLINE NS::String* MTL::ResourceViewPoolDescriptor::label() const
-{
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    return _MTL_msg_MTL__ResourceViewPoolDescriptorp_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::UInteger MTL::ResourceViewPoolDescriptor::resourceViewCount() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(resourceViewCount));
-}
-
-_MTL_INLINE void MTL::ResourceViewPoolDescriptor::setLabel(const NS::String* label)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLabel_), label);
+    return _MTL_msg_NS__UInteger_resourceViewCount((const void*)this, nullptr);
 }
 
 _MTL_INLINE void MTL::ResourceViewPoolDescriptor::setResourceViewCount(NS::UInteger resourceViewCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setResourceViewCount_), resourceViewCount);
+    _MTL_msg_v_setResourceViewCount__NS__UInteger((const void*)this, nullptr, resourceViewCount);
+}
+
+_MTL_INLINE NS::String* MTL::ResourceViewPoolDescriptor::label() const
+{
+    return _MTL_msg_NS__Stringp_label((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::ResourceViewPoolDescriptor::setLabel(NS::String* label)
+{
+    _MTL_msg_v_setLabel__NS__Stringp((const void*)this, nullptr, label);
 }
 
 _MTL_INLINE MTL::ResourceID MTL::ResourceViewPool::baseResourceID() const
 {
-    return Object::sendMessage<MTL::ResourceID>(this, _MTL_PRIVATE_SEL(baseResourceID));
-}
-
-_MTL_INLINE MTL::ResourceID MTL::ResourceViewPool::copyResourceViewsFromPool(const MTL::ResourceViewPool* sourcePool, NS::Range sourceRange, NS::UInteger destinationIndex)
-{
-    return Object::sendMessage<MTL::ResourceID>(this, _MTL_PRIVATE_SEL(copyResourceViewsFromPool_sourceRange_destinationIndex_), sourcePool, sourceRange, destinationIndex);
-}
-
-_MTL_INLINE MTL::Device* MTL::ResourceViewPool::device() const
-{
-    return Object::sendMessage<MTL::Device*>(this, _MTL_PRIVATE_SEL(device));
-}
-
-_MTL_INLINE NS::String* MTL::ResourceViewPool::label() const
-{
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    return _MTL_msg_MTL__ResourceID_baseResourceID((const void*)this, nullptr);
 }
 
 _MTL_INLINE NS::UInteger MTL::ResourceViewPool::resourceViewCount() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(resourceViewCount));
+    return _MTL_msg_NS__UInteger_resourceViewCount((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::Device* MTL::ResourceViewPool::device() const
+{
+    return _MTL_msg_MTL__Devicep_device((const void*)this, nullptr);
+}
+
+_MTL_INLINE NS::String* MTL::ResourceViewPool::label() const
+{
+    return _MTL_msg_NS__Stringp_label((const void*)this, nullptr);
+}
+
+_MTL_INLINE MTL::ResourceID MTL::ResourceViewPool::copyResourceViewsFromPool(MTL::ResourceViewPool* sourcePool, NS::Range sourceRange, NS::UInteger destinationIndex)
+{
+    return _MTL_msg_MTL__ResourceID_copyResourceViewsFromPool_sourceRange_destinationIndex__MTL__ResourceViewPoolp_NS__Range_NS__UInteger((const void*)this, nullptr, sourcePool, sourceRange, destinationIndex);
 }

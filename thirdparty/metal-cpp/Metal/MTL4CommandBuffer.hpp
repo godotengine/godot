@@ -1,193 +1,174 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTL4CommandBuffer.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
-#include "MTL4RenderCommandEncoder.hpp"
-#include "MTLAccelerationStructureTypes.hpp"
-#include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
+#include "MTL4Defines.hpp"
+#include "MTL4Blocks.hpp"
+#include "MTL4Structs.hpp"
+#include "MTL4Bridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
+
+namespace MTL {
+    class Device;
+    class Fence;
+    class LogState;
+    class ResidencySet;
+}
+namespace MTL4 {
+    class CommandAllocator;
+    class ComputeCommandEncoder;
+    class CounterHeap;
+    class MachineLearningCommandEncoder;
+    class RenderCommandEncoder;
+    class RenderPassDescriptor;
+    using RenderEncoderOptions = NS::UInteger;
+}
+namespace NS {
+    class String;
+}
 
 namespace MTL4
 {
-class CommandAllocator;
+
 class CommandBufferOptions;
-class ComputeCommandEncoder;
-class CounterHeap;
-class MachineLearningCommandEncoder;
-class RenderCommandEncoder;
-class RenderPassDescriptor;
-}
+class CommandBuffer;
 
-namespace MTL
-{
-class Device;
-class Fence;
-class LogState;
-class ResidencySet;
-}
-
-namespace MTL4
-{
 class CommandBufferOptions : public NS::Copying<CommandBufferOptions>
 {
 public:
     static CommandBufferOptions* alloc();
+    CommandBufferOptions*        init() const;
 
-    CommandBufferOptions*        init();
+    MTL::LogState* logState() const;
+    void           setLogState(MTL::LogState* logState);
 
-    MTL::LogState*               logState() const;
-    void                         setLogState(const MTL::LogState* logState);
 };
+
 class CommandBuffer : public NS::Referencing<CommandBuffer>
 {
 public:
-    void                           beginCommandBuffer(const MTL4::CommandAllocator* allocator);
-    void                           beginCommandBuffer(const MTL4::CommandAllocator* allocator, const MTL4::CommandBufferOptions* options);
+    void                                 beginCommandBuffer(MTL4::CommandAllocator* allocator);
+    void                                 beginCommandBuffer(MTL4::CommandAllocator* allocator, MTL4::CommandBufferOptions* options);
+    MTL4::ComputeCommandEncoder*         computeCommandEncoder();
+    MTL::Device*                         device() const;
+    void                                 endCommandBuffer();
+    NS::String*                          label() const;
+    MTL4::MachineLearningCommandEncoder* machineLearningCommandEncoder();
+    void                                 popDebugGroup();
+    void                                 pushDebugGroup(NS::String* string);
+    MTL4::RenderCommandEncoder*          renderCommandEncoder(MTL4::RenderPassDescriptor* descriptor);
+    MTL4::RenderCommandEncoder*          renderCommandEncoder(MTL4::RenderPassDescriptor* descriptor, MTL4::RenderEncoderOptions options);
+    void                                 resolveCounterHeap(MTL4::CounterHeap* counterHeap, NS::Range range, MTL4::BufferRange bufferRange, MTL::Fence* fenceToWait, MTL::Fence* fenceToUpdate);
+    void                                 setLabel(NS::String* label);
+    void                                 useResidencySet(MTL::ResidencySet* residencySet);
+    void                                 useResidencySets(const MTL::ResidencySet* const * residencySets, NS::UInteger count);
+    void                                 writeTimestampIntoHeap(MTL4::CounterHeap* counterHeap, NS::UInteger index);
 
-    ComputeCommandEncoder*         computeCommandEncoder();
-
-    MTL::Device*                   device() const;
-
-    void                           endCommandBuffer();
-
-    NS::String*                    label() const;
-
-    MachineLearningCommandEncoder* machineLearningCommandEncoder();
-
-    void                           popDebugGroup();
-
-    void                           pushDebugGroup(const NS::String* string);
-
-    RenderCommandEncoder*          renderCommandEncoder(const MTL4::RenderPassDescriptor* descriptor);
-    RenderCommandEncoder*          renderCommandEncoder(const MTL4::RenderPassDescriptor* descriptor, MTL4::RenderEncoderOptions options);
-
-    void                           resolveCounterHeap(const MTL4::CounterHeap* counterHeap, NS::Range range, const MTL4::BufferRange bufferRange, const MTL::Fence* fenceToWait, const MTL::Fence* fenceToUpdate);
-
-    void                           setLabel(const NS::String* label);
-
-    void                           useResidencySet(const MTL::ResidencySet* residencySet);
-    void                           useResidencySets(const MTL::ResidencySet* const residencySets[], NS::UInteger count);
-
-    void                           writeTimestampIntoHeap(const MTL4::CounterHeap* counterHeap, NS::UInteger index);
 };
 
-}
-_MTL_INLINE MTL4::CommandBufferOptions* MTL4::CommandBufferOptions::alloc()
+} // namespace MTL4
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTL4CommandBufferOptions;
+extern "C" void *OBJC_CLASS_$_MTL4CommandBuffer;
+
+_MTL4_INLINE MTL4::CommandBufferOptions* MTL4::CommandBufferOptions::alloc()
 {
-    return NS::Object::alloc<MTL4::CommandBufferOptions>(_MTL_PRIVATE_CLS(MTL4CommandBufferOptions));
+    return _MTL4_msg_MTL4__CommandBufferOptionsp_alloc((const void*)&OBJC_CLASS_$_MTL4CommandBufferOptions, nullptr);
 }
 
-_MTL_INLINE MTL4::CommandBufferOptions* MTL4::CommandBufferOptions::init()
+_MTL4_INLINE MTL4::CommandBufferOptions* MTL4::CommandBufferOptions::init() const
 {
-    return NS::Object::init<MTL4::CommandBufferOptions>();
+    return _MTL4_msg_MTL4__CommandBufferOptionsp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::LogState* MTL4::CommandBufferOptions::logState() const
+_MTL4_INLINE MTL::LogState* MTL4::CommandBufferOptions::logState() const
 {
-    return Object::sendMessage<MTL::LogState*>(this, _MTL_PRIVATE_SEL(logState));
+    return _MTL4_msg_MTL__LogStatep_logState((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::CommandBufferOptions::setLogState(const MTL::LogState* logState)
+_MTL4_INLINE void MTL4::CommandBufferOptions::setLogState(MTL::LogState* logState)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLogState_), logState);
+    _MTL4_msg_v_setLogState__MTL__LogStatep((const void*)this, nullptr, logState);
 }
 
-_MTL_INLINE void MTL4::CommandBuffer::beginCommandBuffer(const MTL4::CommandAllocator* allocator)
+_MTL4_INLINE MTL::Device* MTL4::CommandBuffer::device() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(beginCommandBufferWithAllocator_), allocator);
+    return _MTL4_msg_MTL__Devicep_device((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::CommandBuffer::beginCommandBuffer(const MTL4::CommandAllocator* allocator, const MTL4::CommandBufferOptions* options)
+_MTL4_INLINE NS::String* MTL4::CommandBuffer::label() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(beginCommandBufferWithAllocator_options_), allocator, options);
+    return _MTL4_msg_NS__Stringp_label((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::ComputeCommandEncoder* MTL4::CommandBuffer::computeCommandEncoder()
+_MTL4_INLINE void MTL4::CommandBuffer::setLabel(NS::String* label)
 {
-    return Object::sendMessage<MTL4::ComputeCommandEncoder*>(this, _MTL_PRIVATE_SEL(computeCommandEncoder));
+    _MTL4_msg_v_setLabel__NS__Stringp((const void*)this, nullptr, label);
 }
 
-_MTL_INLINE MTL::Device* MTL4::CommandBuffer::device() const
+_MTL4_INLINE void MTL4::CommandBuffer::beginCommandBuffer(MTL4::CommandAllocator* allocator)
 {
-    return Object::sendMessage<MTL::Device*>(this, _MTL_PRIVATE_SEL(device));
+    _MTL4_msg_v_beginCommandBufferWithAllocator__MTL4__CommandAllocatorp((const void*)this, nullptr, allocator);
 }
 
-_MTL_INLINE void MTL4::CommandBuffer::endCommandBuffer()
+_MTL4_INLINE void MTL4::CommandBuffer::beginCommandBuffer(MTL4::CommandAllocator* allocator, MTL4::CommandBufferOptions* options)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(endCommandBuffer));
+    _MTL4_msg_v_beginCommandBufferWithAllocator_options__MTL4__CommandAllocatorp_MTL4__CommandBufferOptionsp((const void*)this, nullptr, allocator, options);
 }
 
-_MTL_INLINE NS::String* MTL4::CommandBuffer::label() const
+_MTL4_INLINE void MTL4::CommandBuffer::endCommandBuffer()
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    _MTL4_msg_v_endCommandBuffer((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::MachineLearningCommandEncoder* MTL4::CommandBuffer::machineLearningCommandEncoder()
+_MTL4_INLINE MTL4::RenderCommandEncoder* MTL4::CommandBuffer::renderCommandEncoder(MTL4::RenderPassDescriptor* descriptor)
 {
-    return Object::sendMessage<MTL4::MachineLearningCommandEncoder*>(this, _MTL_PRIVATE_SEL(machineLearningCommandEncoder));
+    return _MTL4_msg_MTL4__RenderCommandEncoderp_renderCommandEncoderWithDescriptor__MTL4__RenderPassDescriptorp((const void*)this, nullptr, descriptor);
 }
 
-_MTL_INLINE void MTL4::CommandBuffer::popDebugGroup()
+_MTL4_INLINE MTL4::RenderCommandEncoder* MTL4::CommandBuffer::renderCommandEncoder(MTL4::RenderPassDescriptor* descriptor, MTL4::RenderEncoderOptions options)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(popDebugGroup));
+    return _MTL4_msg_MTL4__RenderCommandEncoderp_renderCommandEncoderWithDescriptor_options__MTL4__RenderPassDescriptorp_MTL4__RenderEncoderOptions((const void*)this, nullptr, descriptor, options);
 }
 
-_MTL_INLINE void MTL4::CommandBuffer::pushDebugGroup(const NS::String* string)
+_MTL4_INLINE MTL4::ComputeCommandEncoder* MTL4::CommandBuffer::computeCommandEncoder()
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(pushDebugGroup_), string);
+    return _MTL4_msg_MTL4__ComputeCommandEncoderp_computeCommandEncoder((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderCommandEncoder* MTL4::CommandBuffer::renderCommandEncoder(const MTL4::RenderPassDescriptor* descriptor)
+_MTL4_INLINE MTL4::MachineLearningCommandEncoder* MTL4::CommandBuffer::machineLearningCommandEncoder()
 {
-    return Object::sendMessage<MTL4::RenderCommandEncoder*>(this, _MTL_PRIVATE_SEL(renderCommandEncoderWithDescriptor_), descriptor);
+    return _MTL4_msg_MTL4__MachineLearningCommandEncoderp_machineLearningCommandEncoder((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderCommandEncoder* MTL4::CommandBuffer::renderCommandEncoder(const MTL4::RenderPassDescriptor* descriptor, MTL4::RenderEncoderOptions options)
+_MTL4_INLINE void MTL4::CommandBuffer::useResidencySet(MTL::ResidencySet* residencySet)
 {
-    return Object::sendMessage<MTL4::RenderCommandEncoder*>(this, _MTL_PRIVATE_SEL(renderCommandEncoderWithDescriptor_options_), descriptor, options);
+    _MTL4_msg_v_useResidencySet__MTL__ResidencySetp((const void*)this, nullptr, residencySet);
 }
 
-_MTL_INLINE void MTL4::CommandBuffer::resolveCounterHeap(const MTL4::CounterHeap* counterHeap, NS::Range range, const MTL4::BufferRange bufferRange, const MTL::Fence* fenceToWait, const MTL::Fence* fenceToUpdate)
+_MTL4_INLINE void MTL4::CommandBuffer::useResidencySets(const MTL::ResidencySet* const * residencySets, NS::UInteger count)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(resolveCounterHeap_withRange_intoBuffer_waitFence_updateFence_), counterHeap, range, bufferRange, fenceToWait, fenceToUpdate);
+    _MTL4_msg_v_useResidencySets_count__constMTL__ResidencySetpconstp_NS__UInteger((const void*)this, nullptr, residencySets, count);
 }
 
-_MTL_INLINE void MTL4::CommandBuffer::setLabel(const NS::String* label)
+_MTL4_INLINE void MTL4::CommandBuffer::pushDebugGroup(NS::String* string)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLabel_), label);
+    _MTL4_msg_v_pushDebugGroup__NS__Stringp((const void*)this, nullptr, string);
 }
 
-_MTL_INLINE void MTL4::CommandBuffer::useResidencySet(const MTL::ResidencySet* residencySet)
+_MTL4_INLINE void MTL4::CommandBuffer::popDebugGroup()
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(useResidencySet_), residencySet);
+    _MTL4_msg_v_popDebugGroup((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::CommandBuffer::useResidencySets(const MTL::ResidencySet* const residencySets[], NS::UInteger count)
+_MTL4_INLINE void MTL4::CommandBuffer::writeTimestampIntoHeap(MTL4::CounterHeap* counterHeap, NS::UInteger index)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(useResidencySets_count_), residencySets, count);
+    _MTL4_msg_v_writeTimestampIntoHeap_atIndex__MTL4__CounterHeapp_NS__UInteger((const void*)this, nullptr, counterHeap, index);
 }
 
-_MTL_INLINE void MTL4::CommandBuffer::writeTimestampIntoHeap(const MTL4::CounterHeap* counterHeap, NS::UInteger index)
+_MTL4_INLINE void MTL4::CommandBuffer::resolveCounterHeap(MTL4::CounterHeap* counterHeap, NS::Range range, MTL4::BufferRange bufferRange, MTL::Fence* fenceToWait, MTL::Fence* fenceToUpdate)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(writeTimestampIntoHeap_atIndex_), counterHeap, index);
+    _MTL4_msg_v_resolveCounterHeap_withRange_intoBuffer_waitFence_updateFence__MTL4__CounterHeapp_NS__Range_MTL4__BufferRange_MTL__Fencep_MTL__Fencep((const void*)this, nullptr, counterHeap, range, bufferRange, fenceToWait, fenceToUpdate);
 }

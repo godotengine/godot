@@ -1,587 +1,525 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTL4RenderPipeline.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
+#include "MTL4Defines.hpp"
+#include "MTL4Blocks.hpp"
+#include "MTL4Structs.hpp"
+#include "MTL4Bridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 #include "MTL4PipelineState.hpp"
-#include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPixelFormat.hpp"
-#include "MTLPrivate.hpp"
-#include "MTLRenderPipeline.hpp"
+
+namespace MTL {
+    class VertexDescriptor;
+    enum BlendFactor : NS::UInteger;
+    enum BlendOperation : NS::UInteger;
+    using ColorWriteMask = NS::UInteger;
+    enum PixelFormat : NS::UInteger;
+    enum PrimitiveTopologyClass : NS::UInteger;
+}
+namespace MTL4 {
+    class FunctionDescriptor;
+    class StaticLinkingDescriptor;
+    enum AlphaToCoverageState : NS::Integer;
+    enum AlphaToOneState : NS::Integer;
+    enum BlendState : NS::Integer;
+    enum IndirectCommandBufferSupportState : NS::Integer;
+}
+namespace NS {
+    class Array;
+}
 
 namespace MTL4
 {
-class FunctionDescriptor;
-class RenderPipelineBinaryFunctionsDescriptor;
-class RenderPipelineColorAttachmentDescriptor;
-class RenderPipelineColorAttachmentDescriptorArray;
-class RenderPipelineDescriptor;
-class StaticLinkingDescriptor;
-}
 
-namespace MTL
-{
-class VertexDescriptor;
-}
-
-namespace MTL4
-{
-_MTL_ENUM(NS::Integer, LogicalToPhysicalColorAttachmentMappingState) {
+_MTL4_ENUM(NS::Integer, LogicalToPhysicalColorAttachmentMappingState) {
     LogicalToPhysicalColorAttachmentMappingStateIdentity = 0,
     LogicalToPhysicalColorAttachmentMappingStateInherited = 1,
 };
+
+
+class RenderPipelineColorAttachmentDescriptor;
+class RenderPipelineColorAttachmentDescriptorArray;
+class RenderPipelineBinaryFunctionsDescriptor;
+class RenderPipelineDescriptor;
 
 class RenderPipelineColorAttachmentDescriptor : public NS::Copying<RenderPipelineColorAttachmentDescriptor>
 {
 public:
     static RenderPipelineColorAttachmentDescriptor* alloc();
+    RenderPipelineColorAttachmentDescriptor*        init() const;
 
-    MTL::BlendOperation                             alphaBlendOperation() const;
+    MTL::BlendOperation alphaBlendOperation() const;
+    MTL4::BlendState    blendingState() const;
+    MTL::BlendFactor    destinationAlphaBlendFactor() const;
+    MTL::BlendFactor    destinationRGBBlendFactor() const;
+    MTL::PixelFormat    pixelFormat() const;
+    void                reset();
+    MTL::BlendOperation rgbBlendOperation() const;
+    void                setAlphaBlendOperation(MTL::BlendOperation alphaBlendOperation);
+    void                setBlendingState(MTL4::BlendState blendingState);
+    void                setDestinationAlphaBlendFactor(MTL::BlendFactor destinationAlphaBlendFactor);
+    void                setDestinationRGBBlendFactor(MTL::BlendFactor destinationRGBBlendFactor);
+    void                setPixelFormat(MTL::PixelFormat pixelFormat);
+    void                setRgbBlendOperation(MTL::BlendOperation rgbBlendOperation);
+    void                setSourceAlphaBlendFactor(MTL::BlendFactor sourceAlphaBlendFactor);
+    void                setSourceRGBBlendFactor(MTL::BlendFactor sourceRGBBlendFactor);
+    void                setWriteMask(MTL::ColorWriteMask writeMask);
+    MTL::BlendFactor    sourceAlphaBlendFactor() const;
+    MTL::BlendFactor    sourceRGBBlendFactor() const;
+    MTL::ColorWriteMask writeMask() const;
 
-    BlendState                                      blendingState() const;
-
-    MTL::BlendFactor                                destinationAlphaBlendFactor() const;
-
-    MTL::BlendFactor                                destinationRGBBlendFactor() const;
-
-    RenderPipelineColorAttachmentDescriptor*        init();
-
-    MTL::PixelFormat                                pixelFormat() const;
-
-    void                                            reset();
-
-    MTL::BlendOperation                             rgbBlendOperation() const;
-
-    void                                            setAlphaBlendOperation(MTL::BlendOperation alphaBlendOperation);
-
-    void                                            setBlendingState(MTL4::BlendState blendingState);
-
-    void                                            setDestinationAlphaBlendFactor(MTL::BlendFactor destinationAlphaBlendFactor);
-
-    void                                            setDestinationRGBBlendFactor(MTL::BlendFactor destinationRGBBlendFactor);
-
-    void                                            setPixelFormat(MTL::PixelFormat pixelFormat);
-
-    void                                            setRgbBlendOperation(MTL::BlendOperation rgbBlendOperation);
-
-    void                                            setSourceAlphaBlendFactor(MTL::BlendFactor sourceAlphaBlendFactor);
-
-    void                                            setSourceRGBBlendFactor(MTL::BlendFactor sourceRGBBlendFactor);
-
-    void                                            setWriteMask(MTL::ColorWriteMask writeMask);
-
-    MTL::BlendFactor                                sourceAlphaBlendFactor() const;
-
-    MTL::BlendFactor                                sourceRGBBlendFactor() const;
-
-    MTL::ColorWriteMask                             writeMask() const;
 };
 
 class RenderPipelineColorAttachmentDescriptorArray : public NS::Copying<RenderPipelineColorAttachmentDescriptorArray>
 {
 public:
     static RenderPipelineColorAttachmentDescriptorArray* alloc();
+    RenderPipelineColorAttachmentDescriptorArray*        init() const;
 
-    RenderPipelineColorAttachmentDescriptorArray*        init();
+    MTL4::RenderPipelineColorAttachmentDescriptor* object(NS::UInteger attachmentIndex);
+    void                                           reset();
+    void                                           setObject(MTL4::RenderPipelineColorAttachmentDescriptor* attachment, NS::UInteger attachmentIndex);
 
-    RenderPipelineColorAttachmentDescriptor*             object(NS::UInteger attachmentIndex);
-
-    void                                                 reset();
-
-    void                                                 setObject(const MTL4::RenderPipelineColorAttachmentDescriptor* attachment, NS::UInteger attachmentIndex);
 };
 
 class RenderPipelineBinaryFunctionsDescriptor : public NS::Copying<RenderPipelineBinaryFunctionsDescriptor>
 {
 public:
     static RenderPipelineBinaryFunctionsDescriptor* alloc();
+    RenderPipelineBinaryFunctionsDescriptor*        init() const;
 
-    NS::Array*                                      fragmentAdditionalBinaryFunctions() const;
+    NS::Array* fragmentAdditionalBinaryFunctions() const;
+    NS::Array* meshAdditionalBinaryFunctions() const;
+    NS::Array* objectAdditionalBinaryFunctions() const;
+    void       reset();
+    void       setFragmentAdditionalBinaryFunctions(NS::Array* fragmentAdditionalBinaryFunctions);
+    void       setMeshAdditionalBinaryFunctions(NS::Array* meshAdditionalBinaryFunctions);
+    void       setObjectAdditionalBinaryFunctions(NS::Array* objectAdditionalBinaryFunctions);
+    void       setTileAdditionalBinaryFunctions(NS::Array* tileAdditionalBinaryFunctions);
+    void       setVertexAdditionalBinaryFunctions(NS::Array* vertexAdditionalBinaryFunctions);
+    NS::Array* tileAdditionalBinaryFunctions() const;
+    NS::Array* vertexAdditionalBinaryFunctions() const;
 
-    RenderPipelineBinaryFunctionsDescriptor*        init();
-
-    NS::Array*                                      meshAdditionalBinaryFunctions() const;
-
-    NS::Array*                                      objectAdditionalBinaryFunctions() const;
-
-    void                                            reset();
-
-    void                                            setFragmentAdditionalBinaryFunctions(const NS::Array* fragmentAdditionalBinaryFunctions);
-
-    void                                            setMeshAdditionalBinaryFunctions(const NS::Array* meshAdditionalBinaryFunctions);
-
-    void                                            setObjectAdditionalBinaryFunctions(const NS::Array* objectAdditionalBinaryFunctions);
-
-    void                                            setTileAdditionalBinaryFunctions(const NS::Array* tileAdditionalBinaryFunctions);
-
-    void                                            setVertexAdditionalBinaryFunctions(const NS::Array* vertexAdditionalBinaryFunctions);
-
-    NS::Array*                                      tileAdditionalBinaryFunctions() const;
-
-    NS::Array*                                      vertexAdditionalBinaryFunctions() const;
 };
 
-class RenderPipelineDescriptor : public NS::Copying<RenderPipelineDescriptor, PipelineDescriptor>
+class RenderPipelineDescriptor : public NS::Referencing<RenderPipelineDescriptor, MTL4::PipelineDescriptor>
 {
 public:
-    static RenderPipelineDescriptor*              alloc();
+    static RenderPipelineDescriptor* alloc();
+    RenderPipelineDescriptor*        init() const;
 
-    AlphaToCoverageState                          alphaToCoverageState() const;
+    MTL4::AlphaToCoverageState                          alphaToCoverageState() const;
+    MTL4::AlphaToOneState                               alphaToOneState() const;
+    MTL4::LogicalToPhysicalColorAttachmentMappingState  colorAttachmentMappingState() const;
+    MTL4::RenderPipelineColorAttachmentDescriptorArray* colorAttachments() const;
+    MTL4::FunctionDescriptor*                           fragmentFunctionDescriptor() const;
+    MTL4::StaticLinkingDescriptor*                      fragmentStaticLinkingDescriptor() const;
+    MTL::PrimitiveTopologyClass                         inputPrimitiveTopology() const;
+    bool                                                isRasterizationEnabled();
+    NS::UInteger                                        maxVertexAmplificationCount() const;
+    NS::UInteger                                        rasterSampleCount() const;
+    bool                                                rasterizationEnabled() const;
+    void                                                reset();
+    void                                                setAlphaToCoverageState(MTL4::AlphaToCoverageState alphaToCoverageState);
+    void                                                setAlphaToOneState(MTL4::AlphaToOneState alphaToOneState);
+    void                                                setColorAttachmentMappingState(MTL4::LogicalToPhysicalColorAttachmentMappingState colorAttachmentMappingState);
+    void                                                setFragmentFunctionDescriptor(MTL4::FunctionDescriptor* fragmentFunctionDescriptor);
+    void                                                setFragmentStaticLinkingDescriptor(MTL4::StaticLinkingDescriptor* fragmentStaticLinkingDescriptor);
+    void                                                setInputPrimitiveTopology(MTL::PrimitiveTopologyClass inputPrimitiveTopology);
+    void                                                setMaxVertexAmplificationCount(NS::UInteger maxVertexAmplificationCount);
+    void                                                setRasterSampleCount(NS::UInteger rasterSampleCount);
+    void                                                setRasterizationEnabled(bool rasterizationEnabled);
+    void                                                setSupportFragmentBinaryLinking(bool supportFragmentBinaryLinking);
+    void                                                setSupportIndirectCommandBuffers(MTL4::IndirectCommandBufferSupportState supportIndirectCommandBuffers);
+    void                                                setSupportVertexBinaryLinking(bool supportVertexBinaryLinking);
+    void                                                setVertexDescriptor(MTL::VertexDescriptor* vertexDescriptor);
+    void                                                setVertexFunctionDescriptor(MTL4::FunctionDescriptor* vertexFunctionDescriptor);
+    void                                                setVertexStaticLinkingDescriptor(MTL4::StaticLinkingDescriptor* vertexStaticLinkingDescriptor);
+    bool                                                supportFragmentBinaryLinking() const;
+    MTL4::IndirectCommandBufferSupportState             supportIndirectCommandBuffers() const;
+    bool                                                supportVertexBinaryLinking() const;
+    MTL::VertexDescriptor*                              vertexDescriptor() const;
+    MTL4::FunctionDescriptor*                           vertexFunctionDescriptor() const;
+    MTL4::StaticLinkingDescriptor*                      vertexStaticLinkingDescriptor() const;
 
-    AlphaToOneState                               alphaToOneState() const;
-
-    LogicalToPhysicalColorAttachmentMappingState  colorAttachmentMappingState() const;
-
-    RenderPipelineColorAttachmentDescriptorArray* colorAttachments() const;
-
-    FunctionDescriptor*                           fragmentFunctionDescriptor() const;
-
-    StaticLinkingDescriptor*                      fragmentStaticLinkingDescriptor() const;
-
-    RenderPipelineDescriptor*                     init();
-
-    MTL::PrimitiveTopologyClass                   inputPrimitiveTopology() const;
-
-    bool                                          isRasterizationEnabled() const;
-
-    NS::UInteger                                  maxVertexAmplificationCount() const;
-
-    NS::UInteger                                  rasterSampleCount() const;
-
-    [[deprecated("please use isRasterizationEnabled instead")]]
-    bool                              rasterizationEnabled() const;
-
-    void                              reset();
-
-    void                              setAlphaToCoverageState(MTL4::AlphaToCoverageState alphaToCoverageState);
-
-    void                              setAlphaToOneState(MTL4::AlphaToOneState alphaToOneState);
-
-    void                              setColorAttachmentMappingState(MTL4::LogicalToPhysicalColorAttachmentMappingState colorAttachmentMappingState);
-
-    void                              setFragmentFunctionDescriptor(const MTL4::FunctionDescriptor* fragmentFunctionDescriptor);
-
-    void                              setFragmentStaticLinkingDescriptor(const MTL4::StaticLinkingDescriptor* fragmentStaticLinkingDescriptor);
-
-    void                              setInputPrimitiveTopology(MTL::PrimitiveTopologyClass inputPrimitiveTopology);
-
-    void                              setMaxVertexAmplificationCount(NS::UInteger maxVertexAmplificationCount);
-
-    void                              setRasterSampleCount(NS::UInteger rasterSampleCount);
-
-    void                              setRasterizationEnabled(bool rasterizationEnabled);
-
-    void                              setSupportFragmentBinaryLinking(bool supportFragmentBinaryLinking);
-
-    void                              setSupportIndirectCommandBuffers(MTL4::IndirectCommandBufferSupportState supportIndirectCommandBuffers);
-
-    void                              setSupportVertexBinaryLinking(bool supportVertexBinaryLinking);
-
-    void                              setVertexDescriptor(const MTL::VertexDescriptor* vertexDescriptor);
-
-    void                              setVertexFunctionDescriptor(const MTL4::FunctionDescriptor* vertexFunctionDescriptor);
-
-    void                              setVertexStaticLinkingDescriptor(const MTL4::StaticLinkingDescriptor* vertexStaticLinkingDescriptor);
-
-    bool                              supportFragmentBinaryLinking() const;
-
-    IndirectCommandBufferSupportState supportIndirectCommandBuffers() const;
-
-    bool                              supportVertexBinaryLinking() const;
-
-    MTL::VertexDescriptor*            vertexDescriptor() const;
-
-    FunctionDescriptor*               vertexFunctionDescriptor() const;
-
-    StaticLinkingDescriptor*          vertexStaticLinkingDescriptor() const;
 };
 
-}
-_MTL_INLINE MTL4::RenderPipelineColorAttachmentDescriptor* MTL4::RenderPipelineColorAttachmentDescriptor::alloc()
+} // namespace MTL4
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTL4RenderPipelineColorAttachmentDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4RenderPipelineColorAttachmentDescriptorArray;
+extern "C" void *OBJC_CLASS_$_MTL4RenderPipelineBinaryFunctionsDescriptor;
+extern "C" void *OBJC_CLASS_$_MTL4RenderPipelineDescriptor;
+
+_MTL4_INLINE MTL4::RenderPipelineColorAttachmentDescriptor* MTL4::RenderPipelineColorAttachmentDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::RenderPipelineColorAttachmentDescriptor>(_MTL_PRIVATE_CLS(MTL4RenderPipelineColorAttachmentDescriptor));
+    return _MTL4_msg_MTL4__RenderPipelineColorAttachmentDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4RenderPipelineColorAttachmentDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL::BlendOperation MTL4::RenderPipelineColorAttachmentDescriptor::alphaBlendOperation() const
+_MTL4_INLINE MTL4::RenderPipelineColorAttachmentDescriptor* MTL4::RenderPipelineColorAttachmentDescriptor::init() const
 {
-    return Object::sendMessage<MTL::BlendOperation>(this, _MTL_PRIVATE_SEL(alphaBlendOperation));
+    return _MTL4_msg_MTL4__RenderPipelineColorAttachmentDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::BlendState MTL4::RenderPipelineColorAttachmentDescriptor::blendingState() const
+_MTL4_INLINE MTL::PixelFormat MTL4::RenderPipelineColorAttachmentDescriptor::pixelFormat() const
 {
-    return Object::sendMessage<MTL4::BlendState>(this, _MTL_PRIVATE_SEL(blendingState));
+    return _MTL4_msg_MTL__PixelFormat_pixelFormat((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::BlendFactor MTL4::RenderPipelineColorAttachmentDescriptor::destinationAlphaBlendFactor() const
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setPixelFormat(MTL::PixelFormat pixelFormat)
 {
-    return Object::sendMessage<MTL::BlendFactor>(this, _MTL_PRIVATE_SEL(destinationAlphaBlendFactor));
+    _MTL4_msg_v_setPixelFormat__MTL__PixelFormat((const void*)this, nullptr, pixelFormat);
 }
 
-_MTL_INLINE MTL::BlendFactor MTL4::RenderPipelineColorAttachmentDescriptor::destinationRGBBlendFactor() const
+_MTL4_INLINE MTL4::BlendState MTL4::RenderPipelineColorAttachmentDescriptor::blendingState() const
 {
-    return Object::sendMessage<MTL::BlendFactor>(this, _MTL_PRIVATE_SEL(destinationRGBBlendFactor));
+    return _MTL4_msg_MTL4__BlendState_blendingState((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderPipelineColorAttachmentDescriptor* MTL4::RenderPipelineColorAttachmentDescriptor::init()
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setBlendingState(MTL4::BlendState blendingState)
 {
-    return NS::Object::init<MTL4::RenderPipelineColorAttachmentDescriptor>();
+    _MTL4_msg_v_setBlendingState__MTL4__BlendState((const void*)this, nullptr, blendingState);
 }
 
-_MTL_INLINE MTL::PixelFormat MTL4::RenderPipelineColorAttachmentDescriptor::pixelFormat() const
+_MTL4_INLINE MTL::BlendFactor MTL4::RenderPipelineColorAttachmentDescriptor::sourceRGBBlendFactor() const
 {
-    return Object::sendMessage<MTL::PixelFormat>(this, _MTL_PRIVATE_SEL(pixelFormat));
+    return _MTL4_msg_MTL__BlendFactor_sourceRGBBlendFactor((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::reset()
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setSourceRGBBlendFactor(MTL::BlendFactor sourceRGBBlendFactor)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(reset));
+    _MTL4_msg_v_setSourceRGBBlendFactor__MTL__BlendFactor((const void*)this, nullptr, sourceRGBBlendFactor);
 }
 
-_MTL_INLINE MTL::BlendOperation MTL4::RenderPipelineColorAttachmentDescriptor::rgbBlendOperation() const
+_MTL4_INLINE MTL::BlendFactor MTL4::RenderPipelineColorAttachmentDescriptor::destinationRGBBlendFactor() const
 {
-    return Object::sendMessage<MTL::BlendOperation>(this, _MTL_PRIVATE_SEL(rgbBlendOperation));
+    return _MTL4_msg_MTL__BlendFactor_destinationRGBBlendFactor((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setAlphaBlendOperation(MTL::BlendOperation alphaBlendOperation)
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setDestinationRGBBlendFactor(MTL::BlendFactor destinationRGBBlendFactor)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setAlphaBlendOperation_), alphaBlendOperation);
+    _MTL4_msg_v_setDestinationRGBBlendFactor__MTL__BlendFactor((const void*)this, nullptr, destinationRGBBlendFactor);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setBlendingState(MTL4::BlendState blendingState)
+_MTL4_INLINE MTL::BlendOperation MTL4::RenderPipelineColorAttachmentDescriptor::rgbBlendOperation() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setBlendingState_), blendingState);
+    return _MTL4_msg_MTL__BlendOperation_rgbBlendOperation((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setDestinationAlphaBlendFactor(MTL::BlendFactor destinationAlphaBlendFactor)
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setRgbBlendOperation(MTL::BlendOperation rgbBlendOperation)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setDestinationAlphaBlendFactor_), destinationAlphaBlendFactor);
+    _MTL4_msg_v_setRgbBlendOperation__MTL__BlendOperation((const void*)this, nullptr, rgbBlendOperation);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setDestinationRGBBlendFactor(MTL::BlendFactor destinationRGBBlendFactor)
+_MTL4_INLINE MTL::BlendFactor MTL4::RenderPipelineColorAttachmentDescriptor::sourceAlphaBlendFactor() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setDestinationRGBBlendFactor_), destinationRGBBlendFactor);
+    return _MTL4_msg_MTL__BlendFactor_sourceAlphaBlendFactor((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setPixelFormat(MTL::PixelFormat pixelFormat)
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setSourceAlphaBlendFactor(MTL::BlendFactor sourceAlphaBlendFactor)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setPixelFormat_), pixelFormat);
+    _MTL4_msg_v_setSourceAlphaBlendFactor__MTL__BlendFactor((const void*)this, nullptr, sourceAlphaBlendFactor);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setRgbBlendOperation(MTL::BlendOperation rgbBlendOperation)
+_MTL4_INLINE MTL::BlendFactor MTL4::RenderPipelineColorAttachmentDescriptor::destinationAlphaBlendFactor() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRgbBlendOperation_), rgbBlendOperation);
+    return _MTL4_msg_MTL__BlendFactor_destinationAlphaBlendFactor((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setSourceAlphaBlendFactor(MTL::BlendFactor sourceAlphaBlendFactor)
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setDestinationAlphaBlendFactor(MTL::BlendFactor destinationAlphaBlendFactor)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSourceAlphaBlendFactor_), sourceAlphaBlendFactor);
+    _MTL4_msg_v_setDestinationAlphaBlendFactor__MTL__BlendFactor((const void*)this, nullptr, destinationAlphaBlendFactor);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setSourceRGBBlendFactor(MTL::BlendFactor sourceRGBBlendFactor)
+_MTL4_INLINE MTL::BlendOperation MTL4::RenderPipelineColorAttachmentDescriptor::alphaBlendOperation() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSourceRGBBlendFactor_), sourceRGBBlendFactor);
+    return _MTL4_msg_MTL__BlendOperation_alphaBlendOperation((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setWriteMask(MTL::ColorWriteMask writeMask)
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setAlphaBlendOperation(MTL::BlendOperation alphaBlendOperation)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setWriteMask_), writeMask);
+    _MTL4_msg_v_setAlphaBlendOperation__MTL__BlendOperation((const void*)this, nullptr, alphaBlendOperation);
 }
 
-_MTL_INLINE MTL::BlendFactor MTL4::RenderPipelineColorAttachmentDescriptor::sourceAlphaBlendFactor() const
+_MTL4_INLINE MTL::ColorWriteMask MTL4::RenderPipelineColorAttachmentDescriptor::writeMask() const
 {
-    return Object::sendMessage<MTL::BlendFactor>(this, _MTL_PRIVATE_SEL(sourceAlphaBlendFactor));
+    return _MTL4_msg_MTL__ColorWriteMask_writeMask((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::BlendFactor MTL4::RenderPipelineColorAttachmentDescriptor::sourceRGBBlendFactor() const
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::setWriteMask(MTL::ColorWriteMask writeMask)
 {
-    return Object::sendMessage<MTL::BlendFactor>(this, _MTL_PRIVATE_SEL(sourceRGBBlendFactor));
+    _MTL4_msg_v_setWriteMask__MTL__ColorWriteMask((const void*)this, nullptr, writeMask);
 }
 
-_MTL_INLINE MTL::ColorWriteMask MTL4::RenderPipelineColorAttachmentDescriptor::writeMask() const
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptor::reset()
 {
-    return Object::sendMessage<MTL::ColorWriteMask>(this, _MTL_PRIVATE_SEL(writeMask));
+    _MTL4_msg_v_reset((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderPipelineColorAttachmentDescriptorArray* MTL4::RenderPipelineColorAttachmentDescriptorArray::alloc()
+_MTL4_INLINE MTL4::RenderPipelineColorAttachmentDescriptorArray* MTL4::RenderPipelineColorAttachmentDescriptorArray::alloc()
 {
-    return NS::Object::alloc<MTL4::RenderPipelineColorAttachmentDescriptorArray>(_MTL_PRIVATE_CLS(MTL4RenderPipelineColorAttachmentDescriptorArray));
+    return _MTL4_msg_MTL4__RenderPipelineColorAttachmentDescriptorArrayp_alloc((const void*)&OBJC_CLASS_$_MTL4RenderPipelineColorAttachmentDescriptorArray, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderPipelineColorAttachmentDescriptorArray* MTL4::RenderPipelineColorAttachmentDescriptorArray::init()
+_MTL4_INLINE MTL4::RenderPipelineColorAttachmentDescriptorArray* MTL4::RenderPipelineColorAttachmentDescriptorArray::init() const
 {
-    return NS::Object::init<MTL4::RenderPipelineColorAttachmentDescriptorArray>();
+    return _MTL4_msg_MTL4__RenderPipelineColorAttachmentDescriptorArrayp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderPipelineColorAttachmentDescriptor* MTL4::RenderPipelineColorAttachmentDescriptorArray::object(NS::UInteger attachmentIndex)
+_MTL4_INLINE MTL4::RenderPipelineColorAttachmentDescriptor* MTL4::RenderPipelineColorAttachmentDescriptorArray::object(NS::UInteger attachmentIndex)
 {
-    return Object::sendMessage<MTL4::RenderPipelineColorAttachmentDescriptor*>(this, _MTL_PRIVATE_SEL(objectAtIndexedSubscript_), attachmentIndex);
+    return _MTL4_msg_MTL4__RenderPipelineColorAttachmentDescriptorp_objectAtIndexedSubscript__NS__UInteger((const void*)this, nullptr, attachmentIndex);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptorArray::reset()
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptorArray::setObject(MTL4::RenderPipelineColorAttachmentDescriptor* attachment, NS::UInteger attachmentIndex)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(reset));
+    _MTL4_msg_v_setObject_atIndexedSubscript__MTL4__RenderPipelineColorAttachmentDescriptorp_NS__UInteger((const void*)this, nullptr, attachment, attachmentIndex);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineColorAttachmentDescriptorArray::setObject(const MTL4::RenderPipelineColorAttachmentDescriptor* attachment, NS::UInteger attachmentIndex)
+_MTL4_INLINE void MTL4::RenderPipelineColorAttachmentDescriptorArray::reset()
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setObject_atIndexedSubscript_), attachment, attachmentIndex);
+    _MTL4_msg_v_reset((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderPipelineBinaryFunctionsDescriptor* MTL4::RenderPipelineBinaryFunctionsDescriptor::alloc()
+_MTL4_INLINE MTL4::RenderPipelineBinaryFunctionsDescriptor* MTL4::RenderPipelineBinaryFunctionsDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::RenderPipelineBinaryFunctionsDescriptor>(_MTL_PRIVATE_CLS(MTL4RenderPipelineBinaryFunctionsDescriptor));
+    return _MTL4_msg_MTL4__RenderPipelineBinaryFunctionsDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4RenderPipelineBinaryFunctionsDescriptor, nullptr);
 }
 
-_MTL_INLINE NS::Array* MTL4::RenderPipelineBinaryFunctionsDescriptor::fragmentAdditionalBinaryFunctions() const
+_MTL4_INLINE MTL4::RenderPipelineBinaryFunctionsDescriptor* MTL4::RenderPipelineBinaryFunctionsDescriptor::init() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(fragmentAdditionalBinaryFunctions));
+    return _MTL4_msg_MTL4__RenderPipelineBinaryFunctionsDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderPipelineBinaryFunctionsDescriptor* MTL4::RenderPipelineBinaryFunctionsDescriptor::init()
+_MTL4_INLINE NS::Array* MTL4::RenderPipelineBinaryFunctionsDescriptor::vertexAdditionalBinaryFunctions() const
 {
-    return NS::Object::init<MTL4::RenderPipelineBinaryFunctionsDescriptor>();
+    return _MTL4_msg_NS__Arrayp_vertexAdditionalBinaryFunctions((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::Array* MTL4::RenderPipelineBinaryFunctionsDescriptor::meshAdditionalBinaryFunctions() const
+_MTL4_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::setVertexAdditionalBinaryFunctions(NS::Array* vertexAdditionalBinaryFunctions)
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(meshAdditionalBinaryFunctions));
+    _MTL4_msg_v_setVertexAdditionalBinaryFunctions__NS__Arrayp((const void*)this, nullptr, vertexAdditionalBinaryFunctions);
 }
 
-_MTL_INLINE NS::Array* MTL4::RenderPipelineBinaryFunctionsDescriptor::objectAdditionalBinaryFunctions() const
+_MTL4_INLINE NS::Array* MTL4::RenderPipelineBinaryFunctionsDescriptor::fragmentAdditionalBinaryFunctions() const
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(objectAdditionalBinaryFunctions));
+    return _MTL4_msg_NS__Arrayp_fragmentAdditionalBinaryFunctions((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::reset()
+_MTL4_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::setFragmentAdditionalBinaryFunctions(NS::Array* fragmentAdditionalBinaryFunctions)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(reset));
+    _MTL4_msg_v_setFragmentAdditionalBinaryFunctions__NS__Arrayp((const void*)this, nullptr, fragmentAdditionalBinaryFunctions);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::setFragmentAdditionalBinaryFunctions(const NS::Array* fragmentAdditionalBinaryFunctions)
+_MTL4_INLINE NS::Array* MTL4::RenderPipelineBinaryFunctionsDescriptor::tileAdditionalBinaryFunctions() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setFragmentAdditionalBinaryFunctions_), fragmentAdditionalBinaryFunctions);
+    return _MTL4_msg_NS__Arrayp_tileAdditionalBinaryFunctions((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::setMeshAdditionalBinaryFunctions(const NS::Array* meshAdditionalBinaryFunctions)
+_MTL4_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::setTileAdditionalBinaryFunctions(NS::Array* tileAdditionalBinaryFunctions)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMeshAdditionalBinaryFunctions_), meshAdditionalBinaryFunctions);
+    _MTL4_msg_v_setTileAdditionalBinaryFunctions__NS__Arrayp((const void*)this, nullptr, tileAdditionalBinaryFunctions);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::setObjectAdditionalBinaryFunctions(const NS::Array* objectAdditionalBinaryFunctions)
+_MTL4_INLINE NS::Array* MTL4::RenderPipelineBinaryFunctionsDescriptor::objectAdditionalBinaryFunctions() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setObjectAdditionalBinaryFunctions_), objectAdditionalBinaryFunctions);
+    return _MTL4_msg_NS__Arrayp_objectAdditionalBinaryFunctions((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::setTileAdditionalBinaryFunctions(const NS::Array* tileAdditionalBinaryFunctions)
+_MTL4_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::setObjectAdditionalBinaryFunctions(NS::Array* objectAdditionalBinaryFunctions)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setTileAdditionalBinaryFunctions_), tileAdditionalBinaryFunctions);
+    _MTL4_msg_v_setObjectAdditionalBinaryFunctions__NS__Arrayp((const void*)this, nullptr, objectAdditionalBinaryFunctions);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::setVertexAdditionalBinaryFunctions(const NS::Array* vertexAdditionalBinaryFunctions)
+_MTL4_INLINE NS::Array* MTL4::RenderPipelineBinaryFunctionsDescriptor::meshAdditionalBinaryFunctions() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVertexAdditionalBinaryFunctions_), vertexAdditionalBinaryFunctions);
+    return _MTL4_msg_NS__Arrayp_meshAdditionalBinaryFunctions((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::Array* MTL4::RenderPipelineBinaryFunctionsDescriptor::tileAdditionalBinaryFunctions() const
+_MTL4_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::setMeshAdditionalBinaryFunctions(NS::Array* meshAdditionalBinaryFunctions)
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(tileAdditionalBinaryFunctions));
+    _MTL4_msg_v_setMeshAdditionalBinaryFunctions__NS__Arrayp((const void*)this, nullptr, meshAdditionalBinaryFunctions);
 }
 
-_MTL_INLINE NS::Array* MTL4::RenderPipelineBinaryFunctionsDescriptor::vertexAdditionalBinaryFunctions() const
+_MTL4_INLINE void MTL4::RenderPipelineBinaryFunctionsDescriptor::reset()
 {
-    return Object::sendMessage<NS::Array*>(this, _MTL_PRIVATE_SEL(vertexAdditionalBinaryFunctions));
+    _MTL4_msg_v_reset((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderPipelineDescriptor* MTL4::RenderPipelineDescriptor::alloc()
+_MTL4_INLINE MTL4::RenderPipelineDescriptor* MTL4::RenderPipelineDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::RenderPipelineDescriptor>(_MTL_PRIVATE_CLS(MTL4RenderPipelineDescriptor));
+    return _MTL4_msg_MTL4__RenderPipelineDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4RenderPipelineDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::AlphaToCoverageState MTL4::RenderPipelineDescriptor::alphaToCoverageState() const
+_MTL4_INLINE MTL4::RenderPipelineDescriptor* MTL4::RenderPipelineDescriptor::init() const
 {
-    return Object::sendMessage<MTL4::AlphaToCoverageState>(this, _MTL_PRIVATE_SEL(alphaToCoverageState));
+    return _MTL4_msg_MTL4__RenderPipelineDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::AlphaToOneState MTL4::RenderPipelineDescriptor::alphaToOneState() const
+_MTL4_INLINE MTL4::FunctionDescriptor* MTL4::RenderPipelineDescriptor::vertexFunctionDescriptor() const
 {
-    return Object::sendMessage<MTL4::AlphaToOneState>(this, _MTL_PRIVATE_SEL(alphaToOneState));
+    return _MTL4_msg_MTL4__FunctionDescriptorp_vertexFunctionDescriptor((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::LogicalToPhysicalColorAttachmentMappingState MTL4::RenderPipelineDescriptor::colorAttachmentMappingState() const
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setVertexFunctionDescriptor(MTL4::FunctionDescriptor* vertexFunctionDescriptor)
 {
-    return Object::sendMessage<MTL4::LogicalToPhysicalColorAttachmentMappingState>(this, _MTL_PRIVATE_SEL(colorAttachmentMappingState));
+    _MTL4_msg_v_setVertexFunctionDescriptor__MTL4__FunctionDescriptorp((const void*)this, nullptr, vertexFunctionDescriptor);
 }
 
-_MTL_INLINE MTL4::RenderPipelineColorAttachmentDescriptorArray* MTL4::RenderPipelineDescriptor::colorAttachments() const
+_MTL4_INLINE MTL4::FunctionDescriptor* MTL4::RenderPipelineDescriptor::fragmentFunctionDescriptor() const
 {
-    return Object::sendMessage<MTL4::RenderPipelineColorAttachmentDescriptorArray*>(this, _MTL_PRIVATE_SEL(colorAttachments));
+    return _MTL4_msg_MTL4__FunctionDescriptorp_fragmentFunctionDescriptor((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::FunctionDescriptor* MTL4::RenderPipelineDescriptor::fragmentFunctionDescriptor() const
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setFragmentFunctionDescriptor(MTL4::FunctionDescriptor* fragmentFunctionDescriptor)
 {
-    return Object::sendMessage<MTL4::FunctionDescriptor*>(this, _MTL_PRIVATE_SEL(fragmentFunctionDescriptor));
+    _MTL4_msg_v_setFragmentFunctionDescriptor__MTL4__FunctionDescriptorp((const void*)this, nullptr, fragmentFunctionDescriptor);
 }
 
-_MTL_INLINE MTL4::StaticLinkingDescriptor* MTL4::RenderPipelineDescriptor::fragmentStaticLinkingDescriptor() const
+_MTL4_INLINE MTL::VertexDescriptor* MTL4::RenderPipelineDescriptor::vertexDescriptor() const
 {
-    return Object::sendMessage<MTL4::StaticLinkingDescriptor*>(this, _MTL_PRIVATE_SEL(fragmentStaticLinkingDescriptor));
+    return _MTL4_msg_MTL__VertexDescriptorp_vertexDescriptor((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::RenderPipelineDescriptor* MTL4::RenderPipelineDescriptor::init()
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setVertexDescriptor(MTL::VertexDescriptor* vertexDescriptor)
 {
-    return NS::Object::init<MTL4::RenderPipelineDescriptor>();
+    _MTL4_msg_v_setVertexDescriptor__MTL__VertexDescriptorp((const void*)this, nullptr, vertexDescriptor);
 }
 
-_MTL_INLINE MTL::PrimitiveTopologyClass MTL4::RenderPipelineDescriptor::inputPrimitiveTopology() const
+_MTL4_INLINE NS::UInteger MTL4::RenderPipelineDescriptor::rasterSampleCount() const
 {
-    return Object::sendMessage<MTL::PrimitiveTopologyClass>(this, _MTL_PRIVATE_SEL(inputPrimitiveTopology));
+    return _MTL4_msg_NS__UInteger_rasterSampleCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE bool MTL4::RenderPipelineDescriptor::isRasterizationEnabled() const
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setRasterSampleCount(NS::UInteger rasterSampleCount)
 {
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(isRasterizationEnabled));
+    _MTL4_msg_v_setRasterSampleCount__NS__UInteger((const void*)this, nullptr, rasterSampleCount);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPipelineDescriptor::maxVertexAmplificationCount() const
+_MTL4_INLINE MTL4::AlphaToCoverageState MTL4::RenderPipelineDescriptor::alphaToCoverageState() const
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(maxVertexAmplificationCount));
+    return _MTL4_msg_MTL4__AlphaToCoverageState_alphaToCoverageState((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::UInteger MTL4::RenderPipelineDescriptor::rasterSampleCount() const
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setAlphaToCoverageState(MTL4::AlphaToCoverageState alphaToCoverageState)
 {
-    return Object::sendMessage<NS::UInteger>(this, _MTL_PRIVATE_SEL(rasterSampleCount));
+    _MTL4_msg_v_setAlphaToCoverageState__MTL4__AlphaToCoverageState((const void*)this, nullptr, alphaToCoverageState);
 }
 
-_MTL_INLINE bool MTL4::RenderPipelineDescriptor::rasterizationEnabled() const
+_MTL4_INLINE MTL4::AlphaToOneState MTL4::RenderPipelineDescriptor::alphaToOneState() const
 {
-    return Object::sendMessage<bool>(this, _MTL_PRIVATE_SEL(isRasterizationEnabled));
+    return _MTL4_msg_MTL4__AlphaToOneState_alphaToOneState((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::reset()
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setAlphaToOneState(MTL4::AlphaToOneState alphaToOneState)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(reset));
+    _MTL4_msg_v_setAlphaToOneState__MTL4__AlphaToOneState((const void*)this, nullptr, alphaToOneState);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setAlphaToCoverageState(MTL4::AlphaToCoverageState alphaToCoverageState)
+_MTL4_INLINE bool MTL4::RenderPipelineDescriptor::rasterizationEnabled() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setAlphaToCoverageState_), alphaToCoverageState);
+    return _MTL4_msg_bool_rasterizationEnabled((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setAlphaToOneState(MTL4::AlphaToOneState alphaToOneState)
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setRasterizationEnabled(bool rasterizationEnabled)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setAlphaToOneState_), alphaToOneState);
+    _MTL4_msg_v_setRasterizationEnabled__bool((const void*)this, nullptr, rasterizationEnabled);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setColorAttachmentMappingState(MTL4::LogicalToPhysicalColorAttachmentMappingState colorAttachmentMappingState)
+_MTL4_INLINE NS::UInteger MTL4::RenderPipelineDescriptor::maxVertexAmplificationCount() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setColorAttachmentMappingState_), colorAttachmentMappingState);
+    return _MTL4_msg_NS__UInteger_maxVertexAmplificationCount((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setFragmentFunctionDescriptor(const MTL4::FunctionDescriptor* fragmentFunctionDescriptor)
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setMaxVertexAmplificationCount(NS::UInteger maxVertexAmplificationCount)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setFragmentFunctionDescriptor_), fragmentFunctionDescriptor);
+    _MTL4_msg_v_setMaxVertexAmplificationCount__NS__UInteger((const void*)this, nullptr, maxVertexAmplificationCount);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setFragmentStaticLinkingDescriptor(const MTL4::StaticLinkingDescriptor* fragmentStaticLinkingDescriptor)
+_MTL4_INLINE MTL4::RenderPipelineColorAttachmentDescriptorArray* MTL4::RenderPipelineDescriptor::colorAttachments() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setFragmentStaticLinkingDescriptor_), fragmentStaticLinkingDescriptor);
+    return _MTL4_msg_MTL4__RenderPipelineColorAttachmentDescriptorArrayp_colorAttachments((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setInputPrimitiveTopology(MTL::PrimitiveTopologyClass inputPrimitiveTopology)
+_MTL4_INLINE MTL::PrimitiveTopologyClass MTL4::RenderPipelineDescriptor::inputPrimitiveTopology() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setInputPrimitiveTopology_), inputPrimitiveTopology);
+    return _MTL4_msg_MTL__PrimitiveTopologyClass_inputPrimitiveTopology((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setMaxVertexAmplificationCount(NS::UInteger maxVertexAmplificationCount)
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setInputPrimitiveTopology(MTL::PrimitiveTopologyClass inputPrimitiveTopology)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setMaxVertexAmplificationCount_), maxVertexAmplificationCount);
+    _MTL4_msg_v_setInputPrimitiveTopology__MTL__PrimitiveTopologyClass((const void*)this, nullptr, inputPrimitiveTopology);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setRasterSampleCount(NS::UInteger rasterSampleCount)
+_MTL4_INLINE MTL4::StaticLinkingDescriptor* MTL4::RenderPipelineDescriptor::vertexStaticLinkingDescriptor() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRasterSampleCount_), rasterSampleCount);
+    return _MTL4_msg_MTL4__StaticLinkingDescriptorp_vertexStaticLinkingDescriptor((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setRasterizationEnabled(bool rasterizationEnabled)
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setVertexStaticLinkingDescriptor(MTL4::StaticLinkingDescriptor* vertexStaticLinkingDescriptor)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setRasterizationEnabled_), rasterizationEnabled);
+    _MTL4_msg_v_setVertexStaticLinkingDescriptor__MTL4__StaticLinkingDescriptorp((const void*)this, nullptr, vertexStaticLinkingDescriptor);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setSupportFragmentBinaryLinking(bool supportFragmentBinaryLinking)
+_MTL4_INLINE MTL4::StaticLinkingDescriptor* MTL4::RenderPipelineDescriptor::fragmentStaticLinkingDescriptor() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSupportFragmentBinaryLinking_), supportFragmentBinaryLinking);
+    return _MTL4_msg_MTL4__StaticLinkingDescriptorp_fragmentStaticLinkingDescriptor((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setSupportIndirectCommandBuffers(MTL4::IndirectCommandBufferSupportState supportIndirectCommandBuffers)
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setFragmentStaticLinkingDescriptor(MTL4::StaticLinkingDescriptor* fragmentStaticLinkingDescriptor)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSupportIndirectCommandBuffers_), supportIndirectCommandBuffers);
+    _MTL4_msg_v_setFragmentStaticLinkingDescriptor__MTL4__StaticLinkingDescriptorp((const void*)this, nullptr, fragmentStaticLinkingDescriptor);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setSupportVertexBinaryLinking(bool supportVertexBinaryLinking)
+_MTL4_INLINE bool MTL4::RenderPipelineDescriptor::supportVertexBinaryLinking() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setSupportVertexBinaryLinking_), supportVertexBinaryLinking);
+    return _MTL4_msg_bool_supportVertexBinaryLinking((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setVertexDescriptor(const MTL::VertexDescriptor* vertexDescriptor)
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setSupportVertexBinaryLinking(bool supportVertexBinaryLinking)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVertexDescriptor_), vertexDescriptor);
+    _MTL4_msg_v_setSupportVertexBinaryLinking__bool((const void*)this, nullptr, supportVertexBinaryLinking);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setVertexFunctionDescriptor(const MTL4::FunctionDescriptor* vertexFunctionDescriptor)
+_MTL4_INLINE bool MTL4::RenderPipelineDescriptor::supportFragmentBinaryLinking() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVertexFunctionDescriptor_), vertexFunctionDescriptor);
+    return _MTL4_msg_bool_supportFragmentBinaryLinking((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::RenderPipelineDescriptor::setVertexStaticLinkingDescriptor(const MTL4::StaticLinkingDescriptor* vertexStaticLinkingDescriptor)
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setSupportFragmentBinaryLinking(bool supportFragmentBinaryLinking)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setVertexStaticLinkingDescriptor_), vertexStaticLinkingDescriptor);
+    _MTL4_msg_v_setSupportFragmentBinaryLinking__bool((const void*)this, nullptr, supportFragmentBinaryLinking);
 }
 
-_MTL_INLINE bool MTL4::RenderPipelineDescriptor::supportFragmentBinaryLinking() const
+_MTL4_INLINE MTL4::LogicalToPhysicalColorAttachmentMappingState MTL4::RenderPipelineDescriptor::colorAttachmentMappingState() const
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportFragmentBinaryLinking));
+    return _MTL4_msg_MTL4__LogicalToPhysicalColorAttachmentMappingState_colorAttachmentMappingState((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::IndirectCommandBufferSupportState MTL4::RenderPipelineDescriptor::supportIndirectCommandBuffers() const
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setColorAttachmentMappingState(MTL4::LogicalToPhysicalColorAttachmentMappingState colorAttachmentMappingState)
 {
-    return Object::sendMessage<MTL4::IndirectCommandBufferSupportState>(this, _MTL_PRIVATE_SEL(supportIndirectCommandBuffers));
+    _MTL4_msg_v_setColorAttachmentMappingState__MTL4__LogicalToPhysicalColorAttachmentMappingState((const void*)this, nullptr, colorAttachmentMappingState);
 }
 
-_MTL_INLINE bool MTL4::RenderPipelineDescriptor::supportVertexBinaryLinking() const
+_MTL4_INLINE MTL4::IndirectCommandBufferSupportState MTL4::RenderPipelineDescriptor::supportIndirectCommandBuffers() const
 {
-    return Object::sendMessageSafe<bool>(this, _MTL_PRIVATE_SEL(supportVertexBinaryLinking));
+    return _MTL4_msg_MTL4__IndirectCommandBufferSupportState_supportIndirectCommandBuffers((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::VertexDescriptor* MTL4::RenderPipelineDescriptor::vertexDescriptor() const
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::setSupportIndirectCommandBuffers(MTL4::IndirectCommandBufferSupportState supportIndirectCommandBuffers)
 {
-    return Object::sendMessage<MTL::VertexDescriptor*>(this, _MTL_PRIVATE_SEL(vertexDescriptor));
+    _MTL4_msg_v_setSupportIndirectCommandBuffers__MTL4__IndirectCommandBufferSupportState((const void*)this, nullptr, supportIndirectCommandBuffers);
 }
 
-_MTL_INLINE MTL4::FunctionDescriptor* MTL4::RenderPipelineDescriptor::vertexFunctionDescriptor() const
+_MTL4_INLINE void MTL4::RenderPipelineDescriptor::reset()
 {
-    return Object::sendMessage<MTL4::FunctionDescriptor*>(this, _MTL_PRIVATE_SEL(vertexFunctionDescriptor));
+    _MTL4_msg_v_reset((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::StaticLinkingDescriptor* MTL4::RenderPipelineDescriptor::vertexStaticLinkingDescriptor() const
+_MTL4_INLINE bool MTL4::RenderPipelineDescriptor::isRasterizationEnabled()
 {
-    return Object::sendMessage<MTL4::StaticLinkingDescriptor*>(this, _MTL_PRIVATE_SEL(vertexStaticLinkingDescriptor));
+    return _MTL4_msg_bool_isRasterizationEnabled((const void*)this, nullptr);
 }

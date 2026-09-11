@@ -1,386 +1,295 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Foundation/NSProcessInfo.hpp
-//
-// Copyright 2020-2024 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #include "NSDefines.hpp"
-#include "NSNotification.hpp"
+#include "NSBlocks.hpp"
+#include "NSStructs.hpp"
+#include "NSBridge.hpp"
 #include "NSObject.hpp"
-#include "NSPrivate.hpp"
 #include "NSTypes.hpp"
+#include "NSRange.hpp"
 
-#include <functional>
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+namespace NS {
+    class Array;
+    class Dictionary;
+    class Object;
+    class String;
+}
 
 namespace NS
 {
-_NS_CONST(NotificationName, ProcessInfoThermalStateDidChangeNotification);
-_NS_CONST(NotificationName, ProcessInfoPowerStateDidChangeNotification);
-_NS_CONST(NotificationName, ProcessInfoPerformanceProfileDidChangeNotification);
+
+extern NS::NotificationName const ProcessInfoThermalStateDidChangeNotification __asm__("_NSProcessInfoThermalStateDidChangeNotification");
+extern NS::NotificationName const ProcessInfoPowerStateDidChangeNotification __asm__("_NSProcessInfoPowerStateDidChangeNotification");
+inline constexpr unsigned int WindowsNTOperatingSystem = 1;
+inline constexpr unsigned int Windows95OperatingSystem = 2;
+inline constexpr unsigned int SolarisOperatingSystem = 3;
+inline constexpr unsigned int HPUXOperatingSystem = 4;
+inline constexpr unsigned int MACHOperatingSystem = 5;
+inline constexpr unsigned int SunOSOperatingSystem = 6;
+inline constexpr unsigned int OSF1OperatingSystem = 7;
+
+_NS_OPTIONS(uint64_t, ActivityOptions) {
+    ActivityIdleDisplaySleepDisabled = (1ULL << 40),
+    ActivityIdleSystemSleepDisabled = (1ULL << 20),
+    ActivitySuddenTerminationDisabled = (1ULL << 14),
+    ActivityAutomaticTerminationDisabled = (1ULL << 15),
+    ActivityAnimationTrackingEnabled = (1ULL << 45),
+    ActivityTrackingEnabled = (1ULL << 46),
+    ActivityUserInitiated = (0x00FFFFFFULL | ActivityIdleSystemSleepDisabled),
+    ActivityUserInitiatedAllowingIdleSystemSleep = (ActivityUserInitiated & ~ActivityIdleSystemSleepDisabled),
+    ActivityBackground = 0x000000FFULL,
+    ActivityLatencyCritical = 0xFF00000000ULL,
+    ActivityUserInteractive = (ActivityUserInitiated | ActivityLatencyCritical),
+};
 
 _NS_ENUM(NS::Integer, ProcessInfoThermalState) {
     ProcessInfoThermalStateNominal = 0,
     ProcessInfoThermalStateFair = 1,
     ProcessInfoThermalStateSerious = 2,
-    ProcessInfoThermalStateCritical = 3
+    ProcessInfoThermalStateCritical = 3,
 };
 
-_NS_OPTIONS(std::uint64_t, ActivityOptions) {
-    ActivityIdleDisplaySleepDisabled = (1ULL << 40),
-    ActivityIdleSystemSleepDisabled = (1ULL << 20),
-    ActivitySuddenTerminationDisabled = (1ULL << 14),
-    ActivityAutomaticTerminationDisabled = (1ULL << 15),
-    ActivityUserInitiated = (0x00FFFFFFULL | ActivityIdleSystemSleepDisabled),
-    ActivityUserInitiatedAllowingIdleSystemSleep = (ActivityUserInitiated & ~ActivityIdleSystemSleepDisabled),
-    ActivityBackground = 0x000000FFULL,
-    ActivityLatencyCritical = 0xFF00000000ULL,
-};
 
-typedef NS::Integer DeviceCertification;
-_NS_CONST(DeviceCertification, DeviceCertificationiPhonePerformanceGaming);
-
-typedef NS::Integer ProcessPerformanceProfile;
-_NS_CONST(ProcessPerformanceProfile, ProcessPerformanceProfileDefault);
-_NS_CONST(ProcessPerformanceProfile, ProcessPerformanceProfileSustained);
-
-class ProcessInfo : public Referencing<ProcessInfo>
+class ProcessInfo : public NS::Referencing<ProcessInfo>
 {
 public:
-    static ProcessInfo*     processInfo();
+    static ProcessInfo* alloc();
+    ProcessInfo*        init() const;
 
-    class Array*            arguments() const;
-    class Dictionary*       environment() const;
-    class String*           hostName() const;
-    class String*           processName() const;
-    void                    setProcessName(const String* pString);
-    int                     processIdentifier() const;
-    class String*           globallyUniqueString() const;
+    static NS::ProcessInfo* processInfo();
 
-    class String*           userName() const;
-    class String*           fullUserName() const;
-
-    UInteger                operatingSystem() const;
-    OperatingSystemVersion  operatingSystemVersion() const;
-    class String*           operatingSystemVersionString() const;
-    bool                    isOperatingSystemAtLeastVersion(OperatingSystemVersion version) const;
-
-    UInteger                processorCount() const;
-    UInteger                activeProcessorCount() const;
-    unsigned long long      physicalMemory() const;
-    TimeInterval            systemUptime() const;
-
-    void                    disableSuddenTermination();
-    void                    enableSuddenTermination();
-
-    void                    disableAutomaticTermination(const class String* pReason);
-    void                    enableAutomaticTermination(const class String* pReason);
-    bool                    automaticTerminationSupportEnabled() const;
-    void                    setAutomaticTerminationSupportEnabled(bool enabled);
-
-    class Object*           beginActivity(ActivityOptions options, const class String* pReason);
-    void                    endActivity(class Object* pActivity);
-    void                    performActivity(ActivityOptions options, const class String* pReason, void (^block)(void));
-    void                    performActivity(ActivityOptions options, const class String* pReason, const std::function<void()>& func);
-    void                    performExpiringActivity(const class String* pReason, void (^block)(bool expired));
-    void                    performExpiringActivity(const class String* pReason, const std::function<void(bool expired)>& func);
-
-    ProcessInfoThermalState thermalState() const;
-    bool                    isLowPowerModeEnabled() const;
-
-    bool                    isiOSAppOnMac() const;
-    bool                    isMacCatalystApp() const;
-
-    bool                    isDeviceCertified(DeviceCertification performanceTier) const;
-    bool                    hasPerformanceProfile(ProcessPerformanceProfile performanceProfile) const;
+    NS::UInteger                activeProcessorCount() const;
+    NS::Array*                  arguments() const;
+    bool                        automaticTerminationSupportEnabled() const;
+    NS::Object*                 beginActivity(NS::ActivityOptions options, NS::String* reason);
+    void                        disableAutomaticTermination(NS::String* reason);
+    void                        disableSuddenTermination();
+    void                        enableAutomaticTermination(NS::String* reason);
+    void                        enableSuddenTermination();
+    void                        endActivity(NS::Object* activity);
+    NS::Dictionary*             environment() const;
+    NS::String*                 fullUserName() const;
+    NS::String*                 globallyUniqueString() const;
+    NS::String*                 hostName() const;
+    bool                        isLowPowerModeEnabled();
+    bool                        isMacCatalystApp();
+    bool                        isOperatingSystem(NS::OperatingSystemVersion version);
+    bool                        isiOSAppOnMac();
+    bool                        lowPowerModeEnabled() const;
+    bool                        macCatalystApp() const;
+    NS::UInteger                operatingSystem();
+    NS::OperatingSystemVersion  operatingSystemVersion() const;
+    NS::String*                 operatingSystemVersionString() const;
+    void                        performActivity(NS::ActivityOptions options, NS::String* reason, NS::PerformActivityBlock block);
+    void                        performActivity(NS::ActivityOptions options, NS::String* reason, const NS::PerformActivityFunction& block);
+    void                        performExpiringActivity(NS::String* reason, NS::PerformExpiringActivityBlock block);
+    void                        performExpiringActivity(NS::String* reason, const NS::PerformExpiringActivityFunction& block);
+    unsigned long long          physicalMemory() const;
+    int                         processIdentifier() const;
+    NS::String*                 processName() const;
+    NS::UInteger                processorCount() const;
+    void                        setAutomaticTerminationSupportEnabled(bool automaticTerminationSupportEnabled);
+    void                        setProcessName(NS::String* processName);
+    NS::TimeInterval            systemUptime() const;
+    NS::ProcessInfoThermalState thermalState() const;
+    NS::String*                 userName() const;
 
 };
+
+} // namespace NS
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_NSProcessInfo;
+
+_NS_INLINE NS::ProcessInfo* NS::ProcessInfo::alloc()
+{
+    return _NS_msg_NS__ProcessInfop_alloc((const void*)&OBJC_CLASS_$_NSProcessInfo, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_PRIVATE_DEF_CONST(NS::NotificationName, ProcessInfoThermalStateDidChangeNotification);
-_NS_PRIVATE_DEF_CONST(NS::NotificationName, ProcessInfoPowerStateDidChangeNotification);
-
-// The linker searches for these symbols in the Metal framework, be sure to link it in as well:
-_NS_PRIVATE_DEF_CONST(NS::NotificationName, ProcessInfoPerformanceProfileDidChangeNotification);
-_NS_PRIVATE_DEF_CONST(NS::DeviceCertification, DeviceCertificationiPhonePerformanceGaming);
-_NS_PRIVATE_DEF_CONST(NS::ProcessPerformanceProfile, ProcessPerformanceProfileDefault);
-_NS_PRIVATE_DEF_CONST(NS::ProcessPerformanceProfile, ProcessPerformanceProfileSustained);
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_NS_INLINE NS::ProcessInfo* NS::ProcessInfo::init() const
+{
+    return _NS_msg_NS__ProcessInfop_init((const void*)this, nullptr);
+}
 
 _NS_INLINE NS::ProcessInfo* NS::ProcessInfo::processInfo()
 {
-    return Object::sendMessage<ProcessInfo*>(_NS_PRIVATE_CLS(NSProcessInfo), _NS_PRIVATE_SEL(processInfo));
+    return _NS_msg_NS__ProcessInfop_processInfo((const void*)&OBJC_CLASS_$_NSProcessInfo, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Array* NS::ProcessInfo::arguments() const
-{
-    return Object::sendMessage<Array*>(this, _NS_PRIVATE_SEL(arguments));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::Dictionary* NS::ProcessInfo::environment() const
 {
-    return Object::sendMessage<Dictionary*>(this, _NS_PRIVATE_SEL(environment));
+    return _NS_msg_NS__Dictionaryp_environment((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_NS_INLINE NS::Array* NS::ProcessInfo::arguments() const
+{
+    return _NS_msg_NS__Arrayp_arguments((const void*)this, nullptr);
+}
 
 _NS_INLINE NS::String* NS::ProcessInfo::hostName() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(hostName));
+    return _NS_msg_NS__Stringp_hostName((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::ProcessInfo::processName() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(processName));
+    return _NS_msg_NS__Stringp_processName((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::setProcessName(const String* pString)
+_NS_INLINE void NS::ProcessInfo::setProcessName(NS::String* processName)
 {
-    Object::sendMessage<void>(this, _NS_PRIVATE_SEL(setProcessName_), pString);
+    _NS_msg_v_setProcessName__NS__Stringp((const void*)this, nullptr, processName);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE int NS::ProcessInfo::processIdentifier() const
 {
-    return Object::sendMessage<int>(this, _NS_PRIVATE_SEL(processIdentifier));
+    return _NS_msg_int_processIdentifier((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::ProcessInfo::globallyUniqueString() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(globallyUniqueString));
+    return _NS_msg_NS__Stringp_globallyUniqueString((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::ProcessInfo::userName() const
-{
-    return Object::sendMessageSafe<String*>(this, _NS_PRIVATE_SEL(userName));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::ProcessInfo::fullUserName() const
-{
-    return Object::sendMessageSafe<String*>(this, _NS_PRIVATE_SEL(fullUserName));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::UInteger NS::ProcessInfo::operatingSystem() const
-{
-    return Object::sendMessage<UInteger>(this, _NS_PRIVATE_SEL(operatingSystem));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::OperatingSystemVersion NS::ProcessInfo::operatingSystemVersion() const
-{
-    return Object::sendMessage<OperatingSystemVersion>(this, _NS_PRIVATE_SEL(operatingSystemVersion));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::String* NS::ProcessInfo::operatingSystemVersionString() const
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(operatingSystemVersionString));
+    return _NS_msg_NS__Stringp_operatingSystemVersionString((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::ProcessInfo::isOperatingSystemAtLeastVersion(OperatingSystemVersion version) const
+_NS_INLINE NS::OperatingSystemVersion NS::ProcessInfo::operatingSystemVersion() const
 {
-    return Object::sendMessage<bool>(this, _NS_PRIVATE_SEL(isOperatingSystemAtLeastVersion_), version);
+    return _NS_msg_NS__OperatingSystemVersion_operatingSystemVersion((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::UInteger NS::ProcessInfo::processorCount() const
 {
-    return Object::sendMessage<UInteger>(this, _NS_PRIVATE_SEL(processorCount));
+    return _NS_msg_NS__UInteger_processorCount((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::UInteger NS::ProcessInfo::activeProcessorCount() const
 {
-    return Object::sendMessage<UInteger>(this, _NS_PRIVATE_SEL(activeProcessorCount));
+    return _NS_msg_NS__UInteger_activeProcessorCount((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE unsigned long long NS::ProcessInfo::physicalMemory() const
 {
-    return Object::sendMessage<unsigned long long>(this, _NS_PRIVATE_SEL(physicalMemory));
+    return _NS_msg_unsignedlonglong_physicalMemory((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::TimeInterval NS::ProcessInfo::systemUptime() const
 {
-    return Object::sendMessage<TimeInterval>(this, _NS_PRIVATE_SEL(systemUptime));
+    return _NS_msg_double_systemUptime((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::disableSuddenTermination()
-{
-    Object::sendMessageSafe<void>(this, _NS_PRIVATE_SEL(disableSuddenTermination));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::enableSuddenTermination()
-{
-    Object::sendMessageSafe<void>(this, _NS_PRIVATE_SEL(enableSuddenTermination));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::disableAutomaticTermination(const String* pReason)
-{
-    Object::sendMessageSafe<void>(this, _NS_PRIVATE_SEL(disableAutomaticTermination_), pReason);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::enableAutomaticTermination(const String* pReason)
-{
-    Object::sendMessageSafe<void>(this, _NS_PRIVATE_SEL(enableAutomaticTermination_), pReason);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE bool NS::ProcessInfo::automaticTerminationSupportEnabled() const
 {
-    return Object::sendMessageSafe<bool>(this, _NS_PRIVATE_SEL(automaticTerminationSupportEnabled));
+    return _NS_msg_bool_automaticTerminationSupportEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::setAutomaticTerminationSupportEnabled(bool enabled)
+_NS_INLINE void NS::ProcessInfo::setAutomaticTerminationSupportEnabled(bool automaticTerminationSupportEnabled)
 {
-    Object::sendMessageSafe<void>(this, _NS_PRIVATE_SEL(setAutomaticTerminationSupportEnabled_), enabled);
+    _NS_msg_v_setAutomaticTerminationSupportEnabled__bool((const void*)this, nullptr, automaticTerminationSupportEnabled);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Object* NS::ProcessInfo::beginActivity(ActivityOptions options, const String* pReason)
+_NS_INLINE NS::String* NS::ProcessInfo::userName() const
 {
-    return Object::sendMessage<Object*>(this, _NS_PRIVATE_SEL(beginActivityWithOptions_reason_), options, pReason);
+    return _NS_msg_NS__Stringp_userName((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::endActivity(Object* pActivity)
+_NS_INLINE NS::String* NS::ProcessInfo::fullUserName() const
 {
-    Object::sendMessage<void>(this, _NS_PRIVATE_SEL(endActivity_), pActivity);
+    return _NS_msg_NS__Stringp_fullUserName((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::performActivity(ActivityOptions options, const String* pReason, void (^block)(void))
-{
-    Object::sendMessage<void>(this, _NS_PRIVATE_SEL(performActivityWithOptions_reason_usingBlock_), options, pReason, block);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::performActivity(ActivityOptions options, const String* pReason, const std::function<void()>& function)
-{
-    __block std::function<void()> blockFunction = function;
-
-    performActivity(options, pReason, ^() { blockFunction(); });
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::performExpiringActivity(const String* pReason, void (^block)(bool expired))
-{
-    Object::sendMessageSafe<void>(this, _NS_PRIVATE_SEL(performExpiringActivityWithReason_usingBlock_), pReason, block);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE void NS::ProcessInfo::performExpiringActivity(const String* pReason, const std::function<void(bool expired)>& function)
-{
-    __block std::function<void(bool expired)> blockFunction = function;
-
-    performExpiringActivity(pReason, ^(bool expired) { blockFunction(expired); });
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::ProcessInfoThermalState NS::ProcessInfo::thermalState() const
 {
-    return Object::sendMessage<ProcessInfoThermalState>(this, _NS_PRIVATE_SEL(thermalState));
+    return _NS_msg_NS__ProcessInfoThermalState_thermalState((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::ProcessInfo::isLowPowerModeEnabled() const
+_NS_INLINE bool NS::ProcessInfo::lowPowerModeEnabled() const
 {
-    return Object::sendMessageSafe<bool>(this, _NS_PRIVATE_SEL(isLowPowerModeEnabled));
+    return _NS_msg_bool_lowPowerModeEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::ProcessInfo::isiOSAppOnMac() const
+_NS_INLINE bool NS::ProcessInfo::macCatalystApp() const
 {
-    return Object::sendMessageSafe<bool>(this, _NS_PRIVATE_SEL(isiOSAppOnMac));
+    return _NS_msg_bool_macCatalystApp((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::ProcessInfo::isMacCatalystApp() const
+_NS_INLINE NS::UInteger NS::ProcessInfo::operatingSystem()
 {
-    return Object::sendMessageSafe<bool>(this, _NS_PRIVATE_SEL(isMacCatalystApp));
+    return _NS_msg_NS__UInteger_operatingSystem((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::ProcessInfo::isDeviceCertified(DeviceCertification performanceTier) const
+_NS_INLINE bool NS::ProcessInfo::isOperatingSystem(NS::OperatingSystemVersion version)
 {
-    return Object::sendMessageSafe<bool>(this, _NS_PRIVATE_SEL(isDeviceCertified_), performanceTier);
+    return _NS_msg_bool_isOperatingSystemAtLeastVersion__NS__OperatingSystemVersion((const void*)this, nullptr, version);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::ProcessInfo::hasPerformanceProfile(ProcessPerformanceProfile performanceProfile) const
+_NS_INLINE void NS::ProcessInfo::disableSuddenTermination()
 {
-    return Object::sendMessageSafe<bool>(this, _NS_PRIVATE_SEL(hasPerformanceProfile_), performanceProfile);
+    _NS_msg_v_disableSuddenTermination((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_NS_INLINE void NS::ProcessInfo::enableSuddenTermination()
+{
+    _NS_msg_v_enableSuddenTermination((const void*)this, nullptr);
+}
+
+_NS_INLINE void NS::ProcessInfo::disableAutomaticTermination(NS::String* reason)
+{
+    _NS_msg_v_disableAutomaticTermination__NS__Stringp((const void*)this, nullptr, reason);
+}
+
+_NS_INLINE void NS::ProcessInfo::enableAutomaticTermination(NS::String* reason)
+{
+    _NS_msg_v_enableAutomaticTermination__NS__Stringp((const void*)this, nullptr, reason);
+}
+
+_NS_INLINE NS::Object* NS::ProcessInfo::beginActivity(NS::ActivityOptions options, NS::String* reason)
+{
+    return _NS_msg_NS__Objectp_beginActivityWithOptions_reason__NS__ActivityOptions_NS__Stringp((const void*)this, nullptr, options, reason);
+}
+
+_NS_INLINE void NS::ProcessInfo::endActivity(NS::Object* activity)
+{
+    _NS_msg_v_endActivity__NS__Objectp((const void*)this, nullptr, activity);
+}
+
+_NS_INLINE void NS::ProcessInfo::performActivity(NS::ActivityOptions options, NS::String* reason, NS::PerformActivityBlock block)
+{
+    _NS_msg_v_performActivityWithOptions_reason_usingBlock__NS__ActivityOptions_NS__Stringp_NS__PerformActivityBlock((const void*)this, nullptr, options, reason, block);
+}
+
+_NS_INLINE void NS::ProcessInfo::performActivity(NS::ActivityOptions options, NS::String* reason, const NS::PerformActivityFunction& block)
+{
+    __block NS::PerformActivityFunction blockFunction = block;
+    performActivity(options, reason, ^() { blockFunction(); });
+}
+
+_NS_INLINE void NS::ProcessInfo::performExpiringActivity(NS::String* reason, NS::PerformExpiringActivityBlock block)
+{
+    _NS_msg_v_performExpiringActivityWithReason_usingBlock__NS__Stringp_NS__PerformExpiringActivityBlock((const void*)this, nullptr, reason, block);
+}
+
+_NS_INLINE void NS::ProcessInfo::performExpiringActivity(NS::String* reason, const NS::PerformExpiringActivityFunction& block)
+{
+    __block NS::PerformExpiringActivityFunction blockFunction = block;
+    performExpiringActivity(reason, ^(bool x0) { blockFunction(x0); });
+}
+
+_NS_INLINE bool NS::ProcessInfo::isLowPowerModeEnabled()
+{
+    return _NS_msg_bool_isLowPowerModeEnabled((const void*)this, nullptr);
+}
+
+_NS_INLINE bool NS::ProcessInfo::isMacCatalystApp()
+{
+    return _NS_msg_bool_isMacCatalystApp((const void*)this, nullptr);
+}
+
+_NS_INLINE bool NS::ProcessInfo::isiOSAppOnMac()
+{
+    return _NS_msg_bool_isiOSAppOnMac((const void*)this, nullptr);
+}

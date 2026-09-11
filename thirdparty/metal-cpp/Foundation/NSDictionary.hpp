@@ -1,128 +1,95 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Foundation/NSDictionary.hpp
-//
-// Copyright 2020-2024 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#include "NSEnumerator.hpp"
+#include "NSDefines.hpp"
+#include "NSBlocks.hpp"
+#include "NSStructs.hpp"
+#include "NSBridge.hpp"
 #include "NSObject.hpp"
 #include "NSTypes.hpp"
+#include "NSRange.hpp"
+#include "NSEnumerator.hpp"
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+namespace NS {
+    class Object;
+}
 
 namespace NS
 {
-class Dictionary : public NS::Copying<Dictionary>
+
+class Dictionary : public NS::SecureCoding<Dictionary>
 {
 public:
-    static Dictionary* dictionary();
-    static Dictionary* dictionary(const Object* pObject, const Object* pKey);
-    static Dictionary* dictionary(const Object* const* pObjects, const Object* const* pKeys, UInteger count);
-
     static Dictionary* alloc();
+    Dictionary*        init() const;
 
-    Dictionary*        init();
-    Dictionary*        init(const Object* const* pObjects, const Object* const* pKeys, UInteger count);
-    Dictionary*        init(const class Coder* pCoder);
+    static NS::Dictionary* dictionary();
+    static NS::Dictionary* dictionary(NS::Object* object, NS::Object* key);
+    static NS::Dictionary* dictionary(const NS::Object* const * objects, const NS::Object* const * keys, NS::UInteger cnt);
 
+    NS::UInteger          count() const;
+    NS::Dictionary*       init(const NS::Object* const * objects, const NS::Object* const * keys, NS::UInteger cnt);
+    NS::Dictionary*       init(void* coder);
     template <class _KeyType = Object>
-    Enumerator<_KeyType>* keyEnumerator() const;
-
+    Enumerator<_KeyType>* keyEnumerator();
     template <class _Object = Object>
-    _Object* object(const Object* pKey) const;
-    UInteger count() const;
+    _Object*              object(NS::Object* aKey);
+
 };
-}
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+} // namespace NS
 
-_NS_INLINE NS::Dictionary* NS::Dictionary::dictionary()
-{
-    return Object::sendMessage<Dictionary*>(_NS_PRIVATE_CLS(NSDictionary), _NS_PRIVATE_SEL(dictionary));
-}
+// --- Class symbols + inline implementations ---
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Dictionary* NS::Dictionary::dictionary(const Object* pObject, const Object* pKey)
-{
-    return Object::sendMessage<Dictionary*>(_NS_PRIVATE_CLS(NSDictionary), _NS_PRIVATE_SEL(dictionaryWithObject_forKey_), pObject, pKey);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Dictionary* NS::Dictionary::dictionary(const Object* const* pObjects, const Object* const* pKeys, UInteger count)
-{
-    return Object::sendMessage<Dictionary*>(_NS_PRIVATE_CLS(NSDictionary), _NS_PRIVATE_SEL(dictionaryWithObjects_forKeys_count_),
-        pObjects, pKeys, count);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern "C" void *OBJC_CLASS_$_NSDictionary;
 
 _NS_INLINE NS::Dictionary* NS::Dictionary::alloc()
 {
-    return NS::Object::alloc<Dictionary>(_NS_PRIVATE_CLS(NSDictionary));
+    return _NS_msg_NS__Dictionaryp_alloc((const void*)&OBJC_CLASS_$_NSDictionary, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Dictionary* NS::Dictionary::init()
+_NS_INLINE NS::Dictionary* NS::Dictionary::init() const
 {
-    return NS::Object::init<Dictionary>();
+    return _NS_msg_NS__Dictionaryp_init((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Dictionary* NS::Dictionary::init(const Object* const* pObjects, const Object* const* pKeys, UInteger count)
+_NS_INLINE NS::Dictionary* NS::Dictionary::dictionary()
 {
-    return Object::sendMessage<Dictionary*>(this, _NS_PRIVATE_SEL(initWithObjects_forKeys_count_), pObjects, pKeys, count);
+    return _NS_msg_NS__Dictionaryp_dictionary((const void*)&OBJC_CLASS_$_NSDictionary, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Dictionary* NS::Dictionary::init(const class Coder* pCoder)
+_NS_INLINE NS::Dictionary* NS::Dictionary::dictionary(NS::Object* object, NS::Object* key)
 {
-    return Object::sendMessage<Dictionary*>(this, _NS_PRIVATE_SEL(initWithCoder_), pCoder);
+    return _NS_msg_NS__Dictionaryp_dictionaryWithObject_forKey__NS__Objectp_NS__Objectp((const void*)&OBJC_CLASS_$_NSDictionary, nullptr, object, key);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-template <class _KeyType>
-_NS_INLINE NS::Enumerator<_KeyType>* NS::Dictionary::keyEnumerator() const
+_NS_INLINE NS::Dictionary* NS::Dictionary::dictionary(const NS::Object* const * objects, const NS::Object* const * keys, NS::UInteger cnt)
 {
-    return Object::sendMessage<Enumerator<_KeyType>*>(this, _NS_PRIVATE_SEL(keyEnumerator));
+    return _NS_msg_NS__Dictionaryp_dictionaryWithObjects_forKeys_count__constNS__Objectpconstp_constNS__Objectpconstp_NS__UInteger((const void*)&OBJC_CLASS_$_NSDictionary, nullptr, objects, keys, cnt);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-template <class _Object>
-_NS_INLINE _Object* NS::Dictionary::object(const Object* pKey) const
-{
-    return Object::sendMessage<_Object*>(this, _NS_PRIVATE_SEL(objectForKey_), pKey);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::UInteger NS::Dictionary::count() const
 {
-    return Object::sendMessage<UInteger>(this, _NS_PRIVATE_SEL(count));
+    return _NS_msg_NS__UInteger_count((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+template <class _Object>
+_NS_INLINE _Object* NS::Dictionary::object(NS::Object* aKey)
+{
+    return reinterpret_cast<_Object*>(_NS_msg_NS__Objectp_objectForKey__NS__Objectp((const void*)this, nullptr, aKey));
+}
+
+template <class _KeyType>
+_NS_INLINE NS::Enumerator<_KeyType>* NS::Dictionary::keyEnumerator()
+{
+    return reinterpret_cast<NS::Enumerator<_KeyType>*>(_NS_msg_NS__EnumeratorLNS__ObjectGp_keyEnumerator((const void*)this, nullptr));
+}
+
+_NS_INLINE NS::Dictionary* NS::Dictionary::init(const NS::Object* const * objects, const NS::Object* const * keys, NS::UInteger cnt)
+{
+    return _NS_msg_NS__Dictionaryp_initWithObjects_forKeys_count__constNS__Objectpconstp_constNS__Objectpconstp_NS__UInteger((const void*)this, nullptr, objects, keys, cnt);
+}
+
+_NS_INLINE NS::Dictionary* NS::Dictionary::init(void* coder)
+{
+    return _NS_msg_NS__Dictionaryp_initWithCoder__voidp((const void*)this, nullptr, coder);
+}

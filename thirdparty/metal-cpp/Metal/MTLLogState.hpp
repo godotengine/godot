@@ -1,33 +1,17 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTLLogState.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
 #include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPrivate.hpp"
+#include "MTLBlocks.hpp"
+#include "MTLStructs.hpp"
+#include "MTLBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 
 namespace MTL
 {
-class LogStateDescriptor;
+
+extern NS::ErrorDomain const LogStateErrorDomain __asm__("_MTLLogStateErrorDomain");
 _MTL_ENUM(NS::Integer, LogLevel) {
     LogLevelUndefined = 0,
     LogLevelDebug = 1,
@@ -42,70 +26,75 @@ _MTL_ENUM(NS::UInteger, LogStateError) {
     LogStateErrorInvalid = 2,
 };
 
-using LogHandlerFunction = std::function<void(NS::String* subsystem, NS::String* category, MTL::LogLevel logLevel, NS::String* message)>;
 
-_MTL_CONST(NS::ErrorDomain, LogStateErrorDomain);
+class LogState;
+class LogStateDescriptor;
+
 class LogState : public NS::Referencing<LogState>
 {
 public:
-    void addLogHandler(void (^block)(NS::String*, NS::String*, MTL::LogLevel, NS::String*));
-    void addLogHandler(const MTL::LogHandlerFunction& handler);
+    void addLogHandler(MTL::LogHandlerBlock block);
+    void addLogHandler(const MTL::LogHandlerFunction& block);
+
 };
+
 class LogStateDescriptor : public NS::Copying<LogStateDescriptor>
 {
 public:
     static LogStateDescriptor* alloc();
+    LogStateDescriptor*        init() const;
 
-    NS::Integer                bufferSize() const;
+    NS::Integer   bufferSize() const;
+    MTL::LogLevel level() const;
+    void          setBufferSize(NS::Integer bufferSize);
+    void          setLevel(MTL::LogLevel level);
 
-    LogStateDescriptor*        init();
-
-    LogLevel                   level() const;
-
-    void                       setBufferSize(NS::Integer bufferSize);
-
-    void                       setLevel(MTL::LogLevel level);
 };
 
-}
-_MTL_PRIVATE_DEF_CONST(NS::ErrorDomain, LogStateErrorDomain);
-_MTL_INLINE void MTL::LogState::addLogHandler(void (^block)(NS::String*, NS::String*, MTL::LogLevel, NS::String*))
+} // namespace MTL
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTLLogState;
+extern "C" void *OBJC_CLASS_$_MTLLogStateDescriptor;
+
+_MTL_INLINE void MTL::LogState::addLogHandler(MTL::LogHandlerBlock block)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(addLogHandler_), block);
+    _MTL_msg_v_addLogHandler__MTL__LogHandlerBlock((const void*)this, nullptr, block);
 }
 
-_MTL_INLINE void MTL::LogState::addLogHandler(const MTL::LogHandlerFunction& handler)
+_MTL_INLINE void MTL::LogState::addLogHandler(const MTL::LogHandlerFunction& block)
 {
-    __block LogHandlerFunction function = handler;
-    addLogHandler(^void(NS::String* subsystem, NS::String* category, MTL::LogLevel logLevel, NS::String* message) { function(subsystem, category, logLevel, message); });
+    __block MTL::LogHandlerFunction blockFunction = block;
+    addLogHandler(^(NS::String* x0, NS::String* x1, MTL::LogLevel x2, NS::String* x3) { blockFunction(x0, x1, x2, x3); });
 }
 
 _MTL_INLINE MTL::LogStateDescriptor* MTL::LogStateDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL::LogStateDescriptor>(_MTL_PRIVATE_CLS(MTLLogStateDescriptor));
+    return _MTL_msg_MTL__LogStateDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTLLogStateDescriptor, nullptr);
 }
 
-_MTL_INLINE NS::Integer MTL::LogStateDescriptor::bufferSize() const
+_MTL_INLINE MTL::LogStateDescriptor* MTL::LogStateDescriptor::init() const
 {
-    return Object::sendMessage<NS::Integer>(this, _MTL_PRIVATE_SEL(bufferSize));
-}
-
-_MTL_INLINE MTL::LogStateDescriptor* MTL::LogStateDescriptor::init()
-{
-    return NS::Object::init<MTL::LogStateDescriptor>();
+    return _MTL_msg_MTL__LogStateDescriptorp_init((const void*)this, nullptr);
 }
 
 _MTL_INLINE MTL::LogLevel MTL::LogStateDescriptor::level() const
 {
-    return Object::sendMessage<MTL::LogLevel>(this, _MTL_PRIVATE_SEL(level));
-}
-
-_MTL_INLINE void MTL::LogStateDescriptor::setBufferSize(NS::Integer bufferSize)
-{
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setBufferSize_), bufferSize);
+    return _MTL_msg_MTL__LogLevel_level((const void*)this, nullptr);
 }
 
 _MTL_INLINE void MTL::LogStateDescriptor::setLevel(MTL::LogLevel level)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLevel_), level);
+    _MTL_msg_v_setLevel__MTL__LogLevel((const void*)this, nullptr, level);
+}
+
+_MTL_INLINE NS::Integer MTL::LogStateDescriptor::bufferSize() const
+{
+    return _MTL_msg_NS__Integer_bufferSize((const void*)this, nullptr);
+}
+
+_MTL_INLINE void MTL::LogStateDescriptor::setBufferSize(NS::Integer bufferSize)
+{
+    _MTL_msg_v_setBufferSize__NS__Integer((const void*)this, nullptr, bufferSize);
 }

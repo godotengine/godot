@@ -1,38 +1,55 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Foundation/NSString.hpp
-//
-// Copyright 2020-2024 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #include "NSDefines.hpp"
-#include "NSObjCRuntime.hpp"
+#include "NSBlocks.hpp"
+#include "NSStructs.hpp"
+#include "NSBridge.hpp"
 #include "NSObject.hpp"
-#include "NSPrivate.hpp"
-#include "NSRange.hpp"
 #include "NSTypes.hpp"
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+#include "NSRange.hpp"
 
 namespace NS
 {
+
+using StringTransform = NS::String*;
+using StringEncodingDetectionOptionsKey = NS::String*;
+extern StringTransform const StringTransformLatinToKatakana __asm__("_NSStringTransformLatinToKatakana");
+extern StringTransform const StringTransformLatinToHiragana __asm__("_NSStringTransformLatinToHiragana");
+extern StringTransform const StringTransformLatinToHangul __asm__("_NSStringTransformLatinToHangul");
+extern StringTransform const StringTransformLatinToArabic __asm__("_NSStringTransformLatinToArabic");
+extern StringTransform const StringTransformLatinToHebrew __asm__("_NSStringTransformLatinToHebrew");
+extern StringTransform const StringTransformLatinToThai __asm__("_NSStringTransformLatinToThai");
+extern StringTransform const StringTransformLatinToCyrillic __asm__("_NSStringTransformLatinToCyrillic");
+extern StringTransform const StringTransformLatinToGreek __asm__("_NSStringTransformLatinToGreek");
+extern StringTransform const StringTransformToLatin __asm__("_NSStringTransformToLatin");
+extern StringTransform const StringTransformMandarinToLatin __asm__("_NSStringTransformMandarinToLatin");
+extern StringTransform const StringTransformHiraganaToKatakana __asm__("_NSStringTransformHiraganaToKatakana");
+extern StringTransform const StringTransformFullwidthToHalfwidth __asm__("_NSStringTransformFullwidthToHalfwidth");
+extern StringTransform const StringTransformToXMLHex __asm__("_NSStringTransformToXMLHex");
+extern StringTransform const StringTransformToUnicodeName __asm__("_NSStringTransformToUnicodeName");
+extern StringTransform const StringTransformStripCombiningMarks __asm__("_NSStringTransformStripCombiningMarks");
+extern StringTransform const StringTransformStripDiacritics __asm__("_NSStringTransformStripDiacritics");
+extern StringEncodingDetectionOptionsKey const StringEncodingDetectionSuggestedEncodingsKey __asm__("_NSStringEncodingDetectionSuggestedEncodingsKey");
+extern StringEncodingDetectionOptionsKey const StringEncodingDetectionDisallowedEncodingsKey __asm__("_NSStringEncodingDetectionDisallowedEncodingsKey");
+extern StringEncodingDetectionOptionsKey const StringEncodingDetectionUseOnlySuggestedEncodingsKey __asm__("_NSStringEncodingDetectionUseOnlySuggestedEncodingsKey");
+extern StringEncodingDetectionOptionsKey const StringEncodingDetectionAllowLossyKey __asm__("_NSStringEncodingDetectionAllowLossyKey");
+extern StringEncodingDetectionOptionsKey const StringEncodingDetectionFromWindowsKey __asm__("_NSStringEncodingDetectionFromWindowsKey");
+extern StringEncodingDetectionOptionsKey const StringEncodingDetectionLossySubstitutionKey __asm__("_NSStringEncodingDetectionLossySubstitutionKey");
+extern StringEncodingDetectionOptionsKey const StringEncodingDetectionLikelyLanguageKey __asm__("_NSStringEncodingDetectionLikelyLanguageKey");
+extern NS::String* const CharacterConversionException __asm__("_NSCharacterConversionException");
+extern NS::String* const ParseErrorException __asm__("_NSParseErrorException");
+_NS_OPTIONS(NS::UInteger, StringCompareOptions) {
+    CaseInsensitiveSearch = 1,
+    LiteralSearch = 2,
+    BackwardsSearch = 4,
+    AnchoredSearch = 8,
+    NumericSearch = 64,
+    DiacriticInsensitiveSearch = 128,
+    WidthInsensitiveSearch = 256,
+    ForcedOrderingSearch = 512,
+    RegularExpressionSearch = 1024,
+};
+
 _NS_ENUM(NS::UInteger, StringEncoding) {
     ASCIIStringEncoding = 1,
     NEXTSTEPStringEncoding = 2,
@@ -51,60 +68,58 @@ _NS_ENUM(NS::UInteger, StringEncoding) {
     WindowsCP1250StringEncoding = 15,
     ISO2022JPStringEncoding = 21,
     MacOSRomanStringEncoding = 30,
-
     UTF16StringEncoding = UnicodeStringEncoding,
-
     UTF16BigEndianStringEncoding = 0x90000100,
     UTF16LittleEndianStringEncoding = 0x94000100,
-
     UTF32StringEncoding = 0x8c000100,
     UTF32BigEndianStringEncoding = 0x98000100,
-    UTF32LittleEndianStringEncoding = 0x9c000100
+    UTF32LittleEndianStringEncoding = 0x9c000100,
 };
 
-_NS_OPTIONS(NS::UInteger, StringCompareOptions) {
-    CaseInsensitiveSearch = 1,
-    LiteralSearch = 2,
-    BackwardsSearch = 4,
-    AnchoredSearch = 8,
-    NumericSearch = 64,
-    DiacriticInsensitiveSearch = 128,
-    WidthInsensitiveSearch = 256,
-    ForcedOrderingSearch = 512,
-    RegularExpressionSearch = 1024
+_NS_OPTIONS(NS::UInteger, StringEncodingConversionOptions) {
+    StringEncodingConversionAllowLossy = 1,
+    StringEncodingConversionExternalRepresentation = 2,
 };
 
-using unichar = unsigned short;
+_NS_OPTIONS(NS::UInteger, StringEnumerationOptions) {
+    StringEnumerationByLines = 0,
+    StringEnumerationByParagraphs = 1,
+    StringEnumerationByComposedCharacterSequences = 2,
+    StringEnumerationByWords = 3,
+    StringEnumerationBySentences = 4,
+    StringEnumerationByCaretPositions = 5,
+    StringEnumerationByDeletionClusters = 6,
+    StringEnumerationReverse = 1UL << 8,
+    StringEnumerationSubstringNotRequired = 1UL << 9,
+    StringEnumerationLocalized = 1UL << 10,
+};
 
-class String : public Copying<String>
+
+class String : public NS::SecureCoding<String>
 {
 public:
-    static String*   string();
-    static String*   string(const String* pString);
-    static String*   string(const char* pString, StringEncoding encoding);
+    static String* alloc();
+    String*        init() const;
 
-    static String*   alloc();
-    String*          init();
-    String*          init(const String* pString);
-    String*          init(const char* pString, StringEncoding encoding);
-    String*          init(void* pBytes, UInteger len, StringEncoding encoding, bool freeBuffer);
+    static NS::String* string();
+    static NS::String* string(NS::String* string);
+    static NS::String* string(const char * cString, NS::StringEncoding enc);
 
-    unichar          character(UInteger index) const;
-    UInteger         length() const;
+    const char * cString(NS::StringEncoding encoding);
+    long         caseInsensitiveCompare(NS::String* string);
+    NS::unichar  character(NS::UInteger index);
+    NS::String*  init(NS::String* aString);
+    NS::String*  init(const void * bytes, NS::UInteger len, NS::StringEncoding encoding);
+    NS::String*  init(void * bytes, NS::UInteger len, NS::StringEncoding encoding, bool freeBuffer);
+    NS::String*  init(const char * nullTerminatedCString, NS::StringEncoding encoding);
+    bool         isEqualToString(NS::String* aString);
+    NS::UInteger length() const;
+    NS::UInteger lengthOfBytes(NS::StringEncoding enc);
+    NS::UInteger maximumLengthOfBytes(NS::StringEncoding enc);
+    NS::Range    rangeOfString(NS::String* searchString, NS::StringCompareOptions mask);
+    NS::String*  stringByAppendingString(NS::String* aString);
+    const char * utf8String() const;
 
-    const char*      cString(StringEncoding encoding) const;
-    const char*      utf8String() const;
-    UInteger         maximumLengthOfBytes(StringEncoding encoding) const;
-    UInteger         lengthOfBytes(StringEncoding encoding) const;
-
-    bool             isEqualToString(const String* pString) const;
-    Range            rangeOfString(const String* pString, StringCompareOptions options) const;
-
-    const char*      fileSystemRepresentation() const;
-
-    String*          stringByAppendingString(const String* pString) const;
-    ComparisonResult caseInsensitiveCompare(const String* pString) const;
-    NS::String* init(const void * bytes, NS::UInteger len, NS::StringEncoding encoding);
 };
 
 /// Create an NS::String* from a string literal.
@@ -116,146 +131,103 @@ template <std::size_t _StringLen>
     return reinterpret_cast<const String*>(__CFStringMakeConstantString(str));
 }
 
-}
+} // namespace NS
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- Class symbols + inline implementations ---
 
-_NS_INLINE NS::String* NS::String::string()
-{
-    return Object::sendMessage<String*>(_NS_PRIVATE_CLS(NSString), _NS_PRIVATE_SEL(string));
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::String::string(const String* pString)
-{
-    return Object::sendMessage<String*>(_NS_PRIVATE_CLS(NSString), _NS_PRIVATE_SEL(stringWithString_), pString);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::String::string(const char* pString, StringEncoding encoding)
-{
-    return Object::sendMessage<String*>(_NS_PRIVATE_CLS(NSString), _NS_PRIVATE_SEL(stringWithCString_encoding_), pString, encoding);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern "C" void *OBJC_CLASS_$_NSString;
 
 _NS_INLINE NS::String* NS::String::alloc()
 {
-    return Object::alloc<String>(_NS_PRIVATE_CLS(NSString));
+    return _NS_msg_NS__Stringp_alloc((const void*)&OBJC_CLASS_$_NSString, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::String::init()
+_NS_INLINE NS::String* NS::String::init() const
 {
-    return Object::init<String>();
+    return _NS_msg_NS__Stringp_init((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::String::init(const String* pString)
+_NS_INLINE NS::String* NS::String::string()
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(initWithString_), pString);
+    return _NS_msg_NS__Stringp_string((const void*)&OBJC_CLASS_$_NSString, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::String::init(const char* pString, StringEncoding encoding)
+_NS_INLINE NS::String* NS::String::string(NS::String* string)
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(initWithCString_encoding_), pString, encoding);
+    return _NS_msg_NS__Stringp_stringWithString__NS__Stringp((const void*)&OBJC_CLASS_$_NSString, nullptr, string);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::String::init(void* pBytes, UInteger len, StringEncoding encoding, bool freeBuffer)
+_NS_INLINE NS::String* NS::String::string(const char * cString, NS::StringEncoding enc)
 {
-    return Object::sendMessage<String*>(this, _NS_PRIVATE_SEL(initWithBytesNoCopy_length_encoding_freeWhenDone_), pBytes, len, encoding, freeBuffer);
+    return _NS_msg_NS__Stringp_stringWithCString_encoding__constcharp_NS__StringEncoding((const void*)&OBJC_CLASS_$_NSString, nullptr, cString, enc);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::unichar NS::String::character(UInteger index) const
-{
-    return Object::sendMessage<unichar>(this, _NS_PRIVATE_SEL(characterAtIndex_), index);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _NS_INLINE NS::UInteger NS::String::length() const
 {
-    return Object::sendMessage<UInteger>(this, _NS_PRIVATE_SEL(length));
+    return _NS_msg_NS__UInteger_length((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE const char* NS::String::cString(StringEncoding encoding) const
+_NS_INLINE const char * NS::String::utf8String() const
 {
-    return Object::sendMessage<const char*>(this, _NS_PRIVATE_SEL(cStringUsingEncoding_), encoding);
+    return _NS_msg_constcharp_UTF8String((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE const char* NS::String::utf8String() const
+_NS_INLINE NS::unichar NS::String::character(NS::UInteger index)
 {
-    return Object::sendMessage<const char*>(this, _NS_PRIVATE_SEL(UTF8String));
+    return _NS_msg_unsignedshort_characterAtIndex__NS__UInteger((const void*)this, nullptr, index);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::UInteger NS::String::maximumLengthOfBytes(StringEncoding encoding) const
+_NS_INLINE long NS::String::caseInsensitiveCompare(NS::String* string)
 {
-    return Object::sendMessage<UInteger>(this, _NS_PRIVATE_SEL(maximumLengthOfBytesUsingEncoding_), encoding);
+    return _NS_msg_long_caseInsensitiveCompare__NS__Stringp((const void*)this, nullptr, string);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::UInteger NS::String::lengthOfBytes(StringEncoding encoding) const
+_NS_INLINE bool NS::String::isEqualToString(NS::String* aString)
 {
-    return Object::sendMessage<UInteger>(this, _NS_PRIVATE_SEL(lengthOfBytesUsingEncoding_), encoding);
+    return _NS_msg_bool_isEqualToString__NS__Stringp((const void*)this, nullptr, aString);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE bool NS::String::isEqualToString(const NS::String* pString) const
+_NS_INLINE NS::Range NS::String::rangeOfString(NS::String* searchString, NS::StringCompareOptions mask)
 {
-    return Object::sendMessage<bool>(this, _NS_PRIVATE_SEL(isEqualToString_), pString);
+    return _NS_msg_NS__Range_rangeOfString_options__NS__Stringp_NS__StringCompareOptions((const void*)this, nullptr, searchString, mask);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Range NS::String::rangeOfString(const NS::String* pString, NS::StringCompareOptions options) const
+_NS_INLINE NS::String* NS::String::stringByAppendingString(NS::String* aString)
 {
-    return Object::sendMessage<Range>(this, _NS_PRIVATE_SEL(rangeOfString_options_), pString, options);
+    return _NS_msg_NS__Stringp_stringByAppendingString__NS__Stringp((const void*)this, nullptr, aString);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE const char* NS::String::fileSystemRepresentation() const
+_NS_INLINE const char * NS::String::cString(NS::StringEncoding encoding)
 {
-    return Object::sendMessage<const char*>(this, _NS_PRIVATE_SEL(fileSystemRepresentation));
+    return _NS_msg_constcharp_cStringUsingEncoding__NS__StringEncoding((const void*)this, nullptr, encoding);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::String* NS::String::stringByAppendingString(const String* pString) const
+_NS_INLINE NS::UInteger NS::String::maximumLengthOfBytes(NS::StringEncoding enc)
 {
-    return Object::sendMessage<NS::String*>(this, _NS_PRIVATE_SEL(stringByAppendingString_), pString);
+    return _NS_msg_NS__UInteger_maximumLengthOfBytesUsingEncoding__NS__StringEncoding((const void*)this, nullptr, enc);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::ComparisonResult NS::String::caseInsensitiveCompare(const String* pString) const
+_NS_INLINE NS::UInteger NS::String::lengthOfBytes(NS::StringEncoding enc)
 {
-    return Object::sendMessage<NS::ComparisonResult>(this, _NS_PRIVATE_SEL(caseInsensitiveCompare_), pString);
+    return _NS_msg_NS__UInteger_lengthOfBytesUsingEncoding__NS__StringEncoding((const void*)this, nullptr, enc);
+}
+
+_NS_INLINE NS::String* NS::String::init(NS::String* aString)
+{
+    return _NS_msg_NS__Stringp_initWithString__NS__Stringp((const void*)this, nullptr, aString);
 }
 
 _NS_INLINE NS::String* NS::String::init(const void * bytes, NS::UInteger len, NS::StringEncoding encoding)
 {
-    return Object::sendMessage<NS::String*>(this, _NS_PRIVATE_SEL(initWithBytes_length_encoding_), bytes, len, encoding);
+    return _NS_msg_NS__Stringp_initWithBytes_length_encoding__constvoidp_NS__UInteger_NS__StringEncoding((const void*)this, nullptr, bytes, len, encoding);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_NS_INLINE NS::String* NS::String::init(void * bytes, NS::UInteger len, NS::StringEncoding encoding, bool freeBuffer)
+{
+    return _NS_msg_NS__Stringp_initWithBytesNoCopy_length_encoding_freeWhenDone__voidp_NS__UInteger_NS__StringEncoding_bool((const void*)this, nullptr, bytes, len, encoding, freeBuffer);
+}
+
+_NS_INLINE NS::String* NS::String::init(const char * nullTerminatedCString, NS::StringEncoding encoding)
+{
+    return _NS_msg_NS__Stringp_initWithCString_encoding__constcharp_NS__StringEncoding((const void*)this, nullptr, nullTerminatedCString, encoding);
+}
