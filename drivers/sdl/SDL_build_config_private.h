@@ -84,6 +84,8 @@
 #define HAVE_LIBC 1
 #define HAVE_LINUX_INPUT_H 1
 #define HAVE_POLL 1
+#define HAVE_LIBUSB 1
+#define HAVE_ENABLE_GAMECUBE_ADAPTORS 1
 
 #ifdef __linux__
 #define HAVE_INOTIFY 1

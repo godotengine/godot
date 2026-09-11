@@ -421,6 +421,7 @@ def configure(env: "SConsEnvironment"):
         env["udev"] = False  # Linux specific
 
     if env["sdl"]:
+        env.ParseConfig("pkg-config libusb-1.0 --cflags --libs")
         if env["builtin_sdl"]:
             env.Append(CPPDEFINES=["SDL_ENABLED"])
         elif subprocess.run(["pkg-config", "--exists", "sdl3"], capture_output=True).returncode == 0:
