@@ -32,6 +32,7 @@
 
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/vector.h"
 
@@ -74,6 +75,20 @@ public:
 		}
 		return breakpoints[p_line].has(p_source);
 	}
+
+	// True if a breakpoint for `p_source` is specifically between the previous and current executable lines.
+	_ALWAYS_INLINE_ bool is_breakpoint_between(int p_from_line, int p_to_line, const StringName &p_source) const {
+		if (likely(breakpoints.is_empty()) || p_to_line <= p_from_line + 1) {
+			return false;
+		}
+		for (const KeyValue<int, HashSet<StringName>> &E : breakpoints) {
+			if (E.key > p_from_line && E.key < p_to_line && E.value.has(p_source)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	void clear_breakpoints();
 	const HashMap<int, HashSet<StringName>> &get_breakpoints() const { return breakpoints; }
 
