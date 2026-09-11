@@ -144,6 +144,10 @@ def configure(env: "SConsEnvironment"):
     ## Configure assertions.
     if env["use_assertions"] == "auto":
         env["use_assertions"] = "yes" if env.debug_features else "no"
+        # Build editor without assertions by default.
+        if env["target"] == "editor":
+            env["use_assertions"] = "no"
+
     if env["use_assertions"] == "yes":
         print_info("Building with runtime assertions.")
         env.Append(LINKFLAGS=["-sASSERTIONS=1"])
