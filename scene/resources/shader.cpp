@@ -184,14 +184,12 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 				DocData::PropertyDoc prop_doc;
 				prop_doc.name = "shader_parameter/" + pi.name;
 				const RegEx pattern("/\\*\\*\\s([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/\\s*uniform\\s+\\w+\\s+" + pi.name + "(?=[\\s:;=])");
-				Ref<RegExMatch> pattern_ref = pattern.search(code);
-				if (pattern_ref.is_valid()) {
-					RegExMatch *match = pattern_ref.ptr();
+				RegExMatch match = pattern.search(code);
+				if (match.is_valid()) {
 					const RegEx pattern_tip("\\/\\*\\*([\\s\\S]*?)\\*/");
-					Ref<RegExMatch> pattern_tip_ref = pattern_tip.search(match->get_string(0));
-					RegExMatch *match_tip = pattern_tip_ref.ptr();
+					RegExMatch match_tip = pattern_tip.search(match.get_string(0));
 					const RegEx pattern_stripped("\\n\\s*\\*\\s*");
-					prop_doc.description = pattern_stripped.sub(match_tip->get_string(1), "\n", true);
+					prop_doc.description = pattern_stripped.sub(match_tip.get_string(1), "\n", true);
 
 					pi.class_name = class_doc.name;
 					class_doc.properties.push_back(prop_doc);

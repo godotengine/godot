@@ -30,80 +30,68 @@
 
 #pragma once
 
-#include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/vector.h"
-#include "core/variant/array.h"
-#include "core/variant/dictionary.h"
-#include "core/variant/typed_array.h"
 
-class RegExMatch : public RefCounted {
-	GDCLASS(RegExMatch, RefCounted);
+class RegEx;
+
+class RegExMatch {
+	friend class ::RegEx;
 
 	struct Range {
 		int start = 0;
 		int end = 0;
 	};
 
-	String subject;
-	Vector<Range> data;
-	HashMap<String, int> names;
+	String _subject;
+	Vector<Range> _data;
+	HashMap<String, int> _names;
 
-	friend class RegEx;
+	int _find(const String &p_name) const;
+	int _find(int p_index) const;
 
-protected:
-	static void _bind_methods();
-
-	int _find(const Variant &p_name) const;
+	String _get_string(int p_found) const;
+	int _get_start(int p_found) const;
+	int _get_end(int p_found) const;
 
 public:
-	String get_subject() const;
-	int get_group_count() const;
-	Dictionary get_names() const;
+	_FORCE_INLINE_ bool is_valid() const { return !_data.is_empty(); }
+	_FORCE_INLINE_ const String &get_subject() const _LIFETIME_BOUND_ { return _subject; }
+	_FORCE_INLINE_ int get_group_count() const { return is_valid() ? _data.size() - 1 : 0; }
+	_FORCE_INLINE_ const HashMap<String, int> &get_names() const _LIFETIME_BOUND_ { return _names; }
 
-	PackedStringArray get_strings() const;
-	String get_string(const Variant &p_name) const;
-	int get_start(const Variant &p_name) const;
-	int get_end(const Variant &p_name) const;
+	Vector<String> get_strings() const;
+	_FORCE_INLINE_ String get_string(const String &p_name) const { return _get_string(_find(p_name)); }
+	_FORCE_INLINE_ String get_string(int p_index) const { return _get_string(_find(p_index)); }
+	_FORCE_INLINE_ int get_start(const String &p_name) const { return _get_start(_find(p_name)); }
+	_FORCE_INLINE_ int get_start(int p_index) const { return _get_start(_find(p_index)); }
+	_FORCE_INLINE_ int get_end(const String &p_name) const { return _get_end(_find(p_name)); }
+	_FORCE_INLINE_ int get_end(int p_index) const { return _get_end(_find(p_index)); }
 };
 
-class RegEx : public RefCounted {
-	GDCLASS(RegEx, RefCounted);
-
-	void *general_ctx = nullptr;
-	void *code = nullptr;
-	String pattern;
+class RegEx {
+	void *_general_context = nullptr;
+	void *_code = nullptr;
+	String _pattern;
 
 	void _pattern_info(uint32_t p_what, void *r_where) const;
-
 	int _sub(const String &p_subject, const String &p_replacement, int p_offset, int p_end, uint32_t p_flags, String &r_output) const;
 
-protected:
-	static void _bind_methods();
-
-#ifndef DISABLE_DEPRECATED
-	static Ref<RegEx> _create_from_string_bind_compat_95212(const String &p_pattern);
-	Error _compile_bind_compat_95212(const String &p_pattern);
-	static void _bind_compatibility_methods();
-#endif
-
 public:
-	static Ref<RegEx> create_from_string(const String &p_pattern, bool p_show_error = true);
-
 	void clear();
 	Error compile(const String &p_pattern, bool p_show_error = true);
 
-	Ref<RegExMatch> search(const String &p_subject, int p_offset = 0, int p_end = -1) const;
-	TypedArray<RegExMatch> search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;
+	RegExMatch search(const String &p_subject, int p_offset = 0, int p_end = -1) const;
+	Vector<RegExMatch> search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;
 	String sub(const String &p_subject, const String &p_replacement, bool p_all = false, int p_offset = 0, int p_end = -1) const;
 
-	bool is_valid() const;
-	String get_pattern() const;
+	_FORCE_INLINE_ bool is_valid() const { return _code != nullptr; }
+	_FORCE_INLINE_ String get_pattern() const { return _pattern; }
 	int get_group_count() const;
-	PackedStringArray get_names() const;
+	Vector<String> get_names() const;
 
 	RegEx();
-	RegEx(const String &p_pattern);
+	RegEx(const String &p_pattern, bool p_show_error = true);
 	~RegEx();
 };
