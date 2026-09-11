@@ -108,13 +108,17 @@ TEST_CASE("[HashSet] Insert, iterate and remove many elements") {
 
 TEST_CASE("[HashSet] Insert, iterate and remove many strings") {
 	// This tests a key that uses allocation, to see if any leaks occur
-
 	uint64_t pre_mem = Memory::get_mem_usage();
+
 	const int elem_max = 4018;
 	HashSet<String> set;
+
+	// To not print WARNING: Excessive collision count (NN), is the right hash function being used?
+	ERR_PRINT_OFF;
 	for (int i = 0; i < elem_max; i++) {
 		set.insert(itos(i));
 	}
+	ERR_PRINT_ON;
 
 	//insert order should have been kept
 	int idx = 0;
