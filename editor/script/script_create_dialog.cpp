@@ -662,9 +662,9 @@ void ScriptCreateDialog::_update_dialog() {
 
 	bool is_new_file = is_built_in || is_new_script_created;
 
-	parent_name->set_editable(is_new_file);
-	parent_search_button->set_disabled(!is_new_file);
-	parent_browse_button->set_disabled(!is_new_file || !can_inherit_from_file);
+	parent_name->set_editable(!load_enabled || is_new_file);
+	parent_search_button->set_disabled(load_enabled && !is_new_file);
+	parent_browse_button->set_disabled((load_enabled && !is_new_file) || !can_inherit_from_file);
 	template_inactive_message = "";
 	String button_text = is_new_file ? TTR("Create") : TTR("Load");
 	set_ok_button_text(button_text);
