@@ -48,4 +48,7 @@ public:
 
 	static void assign_custom_type_script(Object *p_object, const Ref<Script> &p_script);
 	static Ref<Script> get_custom_type_script(const Object *p_object);
+
+	static void parse_array_hint_string(const String &p_hint_string, Variant::Type &r_subtype, PropertyHint &r_subtype_hint, String *r_subtype_hint_string = nullptr);
+	static void parse_dictionary_hint_string(const String &p_hint_string, Variant::Type &r_key_subtype, PropertyHint &r_key_subtype_hint, Variant::Type &r_value_subtype, PropertyHint &r_value_subtype_hint, String *r_key_subtype_hint_string = nullptr, String *r_value_subtype_hint_string = nullptr);
 };
