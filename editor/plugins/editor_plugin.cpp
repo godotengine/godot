@@ -48,7 +48,6 @@
 #include "editor/export/editor_export_platform.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_bottom_panel.h"
-#include "editor/gui/editor_title_bar.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/inspector/editor_inspector.h"
@@ -144,7 +143,7 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 
 	switch (p_location) {
 		case CONTAINER_TOOLBAR: {
-			EditorNode::get_title_bar()->add_child(p_control);
+			EditorNode::get_singleton()->add_control_to_toolbar(p_control);
 		} break;
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
@@ -196,7 +195,7 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 
 	switch (p_location) {
 		case CONTAINER_TOOLBAR: {
-			EditorNode::get_title_bar()->remove_child(p_control);
+			EditorNode::get_singleton()->remove_control_from_toolbar(p_control);
 		} break;
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
