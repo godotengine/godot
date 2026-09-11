@@ -642,6 +642,8 @@ public:
 	String uri_encode() const;
 	String uri_decode() const;
 	String uri_file_decode() const;
+	String idna_encode() const;
+	String idna_decode() const;
 	String c_escape() const;
 	String c_escape_multiline() const;
 	String c_unescape() const;
