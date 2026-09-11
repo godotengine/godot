@@ -56,6 +56,15 @@ GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wstringop-overflow=0") // Can't "ignor
 GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wdangling-pointer=0") // Can't "ignore" this for some reason.
 #endif
 
+/**
+ * Array-like container with copy-on-write semantics.
+ * Not intended for direct use. Consider using Vector or String instead.
+ *
+ * Elements are relocated by naive memory moves; they must not store their own address (see GH-100509).
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
 template <typename T>
 class CowData {
 public:
@@ -344,7 +353,7 @@ Error CowData<T>::_insert_uninitialized(USize p_index, USize p_count, USize p_ca
 			RETURN_IF_ERROR(_realloc_exact(p_capacity));
 		}
 
-		// Relocate elements up.
+		// Relocate elements up (assumes trivial relocatability; see GH-100509).
 		if (p_index != (USize)size()) {
 			memmove((void *)(_ptr + p_index + p_count), (void *)(_ptr + p_index), (size() - p_index) * sizeof(T));
 		}
