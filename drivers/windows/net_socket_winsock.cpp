@@ -621,4 +621,38 @@ Error NetSocketWinSock::leave_multicast_group(const IPAddress &p_multi_address, 
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
 
+Error NetSocketWinSock::set_multicast_send_interface(const String &p_if_name) {
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+
+	HashMap<String, IP::Interface_Info> if_info_list;
+	IP::get_singleton()->get_local_interfaces(&if_info_list);
+
+	const IP::Interface_Info *match = nullptr;
+	for (const KeyValue<String, IP::Interface_Info> &E : if_info_list) {
+		if (E.value.name == p_if_name) {
+			match = &E.value;
+			break;
+		}
+	}
+	ERR_FAIL_NULL_V_MSG(match, ERR_INVALID_PARAMETER, vformat("Network interface %s not found.", p_if_name));
+
+	bool ipv6_success = true; // Using this variable allows attempting IPv4 even if this fails
+	if (_ip_type == IP::TYPE_IPV6 || _ip_type == IP::TYPE_ANY) {
+		DWORD if_index = (DWORD)match->index.to_int();
+		if (setsockopt(_sock, IPPROTO_IPV6, IPV6_MULTICAST_IF, (const char *)&if_index, sizeof(if_index)) != 0) {
+			ERR_PRINT("Unable to set IPV6_MULTICAST_IF option.");
+			ipv6_success = false;
+		}
+	}
+
+	if (_ip_type == IP::TYPE_IPV4 || _ip_type == IP::TYPE_ANY) {
+		DWORD if_index = htonl((u_long)match->index.to_int());
+		ERR_FAIL_COND_V_MSG(
+				setsockopt(_sock, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&if_index, sizeof(if_index)) != 0,
+				FAILED, "Unable to set IP_MULTICAST_IF option.");
+	}
+
+	return ipv6_success ? OK : FAILED;
+}
+
 #endif // WINDOWS_ENABLED
