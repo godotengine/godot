@@ -3702,6 +3702,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				}
 			}
 
+			// FIXME: Show Info conflicts with Update Priority Editor Setting - Forces refreshes, even on "Vital Only"
 			bool show_info = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 			if (show_info != info_panel->is_visible()) {
 				info_panel->set_visible(show_info);
