@@ -84,7 +84,7 @@ private:
 	};
 
 	HashMap<Thread::ID, List<Message>> messages;
-	HashSet<Thread::ID> threads_in_break;
+	HashMap<Thread::ID, bool> threads_in_break;
 
 	void _poll_messages();
 	bool _has_messages();
