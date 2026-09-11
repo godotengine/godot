@@ -351,6 +351,9 @@ const GodotInputDragDrop = {
 							'size': file.size,
 							'data': reader.result,
 						};
+						if (GodotConfig.persistent_drops) {
+							f['path'] = entry.fullPath;
+						}
 						if (!f['path']) {
 							f['path'] = f['name'];
 						}
@@ -401,16 +404,56 @@ const GodotInputDragDrop = {
 				GodotRuntime.error('File upload not supported');
 			}
 			new Promise(GodotInputDragDrop.process).then(function () {
-				const DROP = `/tmp/drop-${parseInt(Math.random() * (1 << 30), 10)}/`;
+				let DROP = `/tmp/drop-${parseInt(Math.random() * (1 << 30), 10)}/`;
 				const drops = [];
 				const files = [];
-				FS.mkdir(DROP.slice(0, -1)); // Without trailing slash
+				const valid_project_paths = [];
+				if (GodotConfig.persistent_drops) {
+					// This only happens in the ProjectManager
+					// Find only valid projects in the contents of the dropped files
+					DROP = '/home/web_user/';
+					GodotInputDragDrop.pending_files.forEach((elem) => {
+						const path = elem['path'];
+						if (path.indexOf('/') === -1) {
+							// dragging contents of a project is unsupported, should drag the entire folder
+							elem['skip'] = true;
+							return;
+						}
+						const fileName = path.split('/').pop();
+						if (fileName == 'project.godot') {
+							const dir = path.substring(0, path.lastIndexOf('/'));
+							valid_project_paths.push(dir);
+						}
+					});
+				}
+				try {
+					FS.mkdir(DROP.slice(0, -1)); // Without trailing slash
+				} catch (e) {
+					// dir exists, nevermind
+				}
 				GodotInputDragDrop.pending_files.forEach((elem) => {
-					const path = elem['path'];
+					if (elem['skip']) {
+						return;
+					}
+					let path = elem['path'];
+					if (GodotConfig.persistent_drops) {
+						// Installing a project folder
+						let isProjectFile = false;
+						for (let i = 0; i < valid_project_paths.length; i++) {
+							if (path.startsWith(valid_project_paths[i])) {
+								const projectDirName = valid_project_paths[i].substring(1, valid_project_paths[i].lastIndexOf('/'));
+								path = `${projectDirName}/${path.slice(valid_project_paths[i].length)}`;
+								isProjectFile = true;
+								break;
+							}
+						}
+						if (!isProjectFile) {
+							return;
+						}
+					}
 					GodotFS.copy_to_fs(DROP + path, elem['data']);
 					let idx = path.indexOf('/');
 					if (idx === -1) {
-						// Root file
 						drops.push(DROP + path);
 					} else {
 						// Subdir
@@ -425,13 +468,7 @@ const GodotInputDragDrop = {
 				GodotInputDragDrop.promises = [];
 				GodotInputDragDrop.pending_files = [];
 				callback(drops);
-				if (GodotConfig.persistent_drops) {
-					// Delay removal at exit.
-					GodotOS.atexit(function (resolve, reject) {
-						GodotInputDragDrop.remove_drop(files, DROP);
-						resolve();
-					});
-				} else {
+				if (!GodotConfig.persistent_drops) {
 					GodotInputDragDrop.remove_drop(files, DROP);
 				}
 			});

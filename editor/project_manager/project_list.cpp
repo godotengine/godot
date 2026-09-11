@@ -1397,6 +1397,9 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->add_item(TTRC("Rename"), MENU_RENAME);
 		project_context_menu->add_item(TTRC("Manage Tags"), MENU_MANAGE_TAGS);
 		project_context_menu->add_item(TTRC("Duplicate"), MENU_DUPLICATE);
+#ifdef WEB_ENABLED
+		project_context_menu->add_item(TTRC("Download Backup"), MENU_DOWNLOAD_BACKUP);
+#endif
 		project_context_menu->add_item(TTRC("Remove from Project List"), MENU_REMOVE);
 		add_child(project_context_menu);
 		project_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectList::_menu_option));
@@ -1414,6 +1417,9 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 #endif
 				 MENU_RENAME,
 				 MENU_MANAGE_TAGS,
+#ifdef WEB_ENABLED
+				 MENU_DOWNLOAD_BACKUP,
+#endif
 				 MENU_DUPLICATE }) {
 		project_context_menu->set_item_disabled(project_context_menu->get_item_index(id), clicked_project.missing);
 	}
@@ -1439,6 +1445,9 @@ void ProjectList::_update_menu_icons() {
 	project_context_menu->set_item_icon(project_context_menu->get_item_index(MENU_RENAME), get_editor_theme_icon("Rename"));
 	project_context_menu->set_item_icon(project_context_menu->get_item_index(MENU_MANAGE_TAGS), get_editor_theme_icon("Script"));
 	project_context_menu->set_item_icon(project_context_menu->get_item_index(MENU_DUPLICATE), get_editor_theme_icon("Duplicate"));
+#ifdef WEB_ENABLED
+	project_context_menu->set_item_icon(project_context_menu->get_item_index(MENU_DOWNLOAD_BACKUP), get_editor_theme_icon("Download"));
+#endif
 	project_context_menu->set_item_icon(project_context_menu->get_item_index(MENU_REMOVE), get_editor_theme_icon("Remove"));
 }
 
@@ -1575,11 +1584,17 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 		if (_selected_project_paths.has(item.path) && item.control->is_visible()) {
 			_config.erase_section(item.path);
 
+#ifdef WEB_ENABLED
+			if (p_delete_project_contents) {
+				godot_js_editor_delete_dir(item.path.utf8().get_data());
+			}
+#else
 			// Comment out for now until we have a better warning system to
 			// ensure users delete their project only.
 			//if (p_delete_project_contents) {
 			//	OS::get_singleton()->move_to_trash(item.path);
 			//}
+#endif
 
 			memdelete(item.control);
 			_projects.remove_at(i);
