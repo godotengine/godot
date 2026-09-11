@@ -86,12 +86,8 @@ void PhysicalBone3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Joint3DGizmoPlugin::CreateConeTwistJointGizmo(
 					physical_bone->get_joint_offset(),
 					physical_bone->get_global_transform() * physical_bone->get_joint_offset(),
-					pb->get_global_transform(),
-					pbp->get_global_transform(),
 					cjd->swing_span,
-					cjd->twist_span,
-					&points,
-					&points);
+					points);
 		} break;
 		case PhysicalBone3D::JOINT_TYPE_HINGE: {
 			const PhysicalBone3D::HingeJointData *hjd(static_cast<const PhysicalBone3D::HingeJointData *>(physical_bone->get_joint_data()));
