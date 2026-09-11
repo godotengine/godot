@@ -1014,7 +1014,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 		}
 #endif
 		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->gdtype->get_self_compatibility_method_map()) {
-			LocalVector<MethodBind *> compat(E.value);
+			const LocalVector<MethodBind *> &compat = E.value;
 			for (MethodBind *method : compat) {
 				MethodInfo minfo = info_from_bind(method);
 
