@@ -2604,12 +2604,16 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	// Tile inspector.
 	tile_inspector = memnew(EditorInspector);
+	Ref<TileTerrainEditorPlugin> plugin;
+	plugin.instantiate();
+	tile_inspector->add_inspector_plugin(plugin);
 	tile_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_inspector->set_show_categories(false, true);
 	tile_inspector->set_use_doc_hints(true);
 	tile_inspector->set_use_folding(true);
 	tile_inspector->set_theme_type_variation("ScrollContainerSecondary");
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
+
 	middle_vbox_container->add_child(tile_inspector);
 
 	tile_inspector_no_tile_selected_label = memnew(Label);
