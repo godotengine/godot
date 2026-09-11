@@ -285,6 +285,7 @@ private:
 	bool is_reference_space_supported(XrReferenceSpaceType p_reference_space);
 	bool setup_play_space();
 	bool setup_view_space();
+	void update_head_transform(XrTime p_display_time);
 	void update_head_tracking();
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
