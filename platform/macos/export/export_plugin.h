@@ -86,6 +86,9 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 
 	Error _export_liquid_glass_icon(const Ref<EditorExportPreset> &p_preset, const String &p_app_path, const String &p_icon_path);
 	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+	Error _copy_dir_and_validate_arch(const Ref<EditorExportPreset> &p_preset, const Ref<DirAccess> &p_dir_access, const String &p_from, String p_to, int p_chmod_flags, bool p_copy_links);
+	Error _copy_dir_and_validate_arch_impl(const Ref<EditorExportPreset> &p_preset, const Ref<DirAccess> &p_dir_access, Ref<DirAccess> &p_target_da, const String &p_to, int p_chmod_flags, bool p_copy_links);
+	Error _copy_and_validate_arch(const Ref<EditorExportPreset> &p_preset, const Ref<DirAccess> &p_dir_access, const String &p_from, const String &p_to, int p_chmod_flags = -1);
 	void _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn = true, bool p_set_id = false);
 	void _code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, const String &p_helper_ent_path, bool p_should_error_on_non_code = true);
 	Error _copy_and_sign_files(Ref<DirAccess> &dir_access, const String &p_src_path, const String &p_in_app_path,
