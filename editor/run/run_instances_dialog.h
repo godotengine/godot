@@ -94,11 +94,21 @@ class RunInstancesDialog : public AcceptDialog {
 	void _instance_menu_id_pressed(int p_option);
 	void _instance_tree_rmb(const Vector2 &p_pos, MouseButton p_button);
 
+protected:
+	void _notification(int p_what);
+
+	static void _bind_methods();
+
 public:
 	void popup_dialog();
-	int get_instance_count() const;
 	void get_argument_list_for_instance(int p_idx, List<String> &r_list) const;
 	void apply_custom_features(int p_instance_idx);
+
+	void set_instance_count(int p_count, bool p_force_debug_mode);
+	int get_instance_count() const;
+
+	void set_stored_data(TypedArray<Dictionary> p_data);
+	TypedArray<Dictionary> get_stored_data() const;
 
 	static RunInstancesDialog *get_singleton() { return singleton; }
 	RunInstancesDialog();
