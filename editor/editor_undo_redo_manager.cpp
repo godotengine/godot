@@ -243,6 +243,16 @@ void EditorUndoRedoManager::add_undo_reference(Object *p_object) {
 	undo_redo->add_undo_reference(p_object);
 }
 
+void EditorUndoRedoManager::add_do_callable(const Callable &p_callable) {
+	UndoRedo *undo_redo = get_history_for_object(nullptr).undo_redo;
+	undo_redo->add_do_custom_callable(p_callable);
+}
+
+void EditorUndoRedoManager::add_undo_callable(const Callable &p_callable) {
+	UndoRedo *undo_redo = get_history_for_object(nullptr).undo_redo;
+	undo_redo->add_undo_custom_callable(p_callable);
+}
+
 void EditorUndoRedoManager::commit_action(bool p_execute) {
 	if (pending_action.history_id == INVALID_HISTORY) {
 		return; // Empty action, do nothing.
@@ -565,6 +575,8 @@ void EditorUndoRedoManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_undo_property", "object", "property", "value"), &EditorUndoRedoManager::add_undo_property);
 	ClassDB::bind_method(D_METHOD("add_do_reference", "object"), &EditorUndoRedoManager::add_do_reference);
 	ClassDB::bind_method(D_METHOD("add_undo_reference", "object"), &EditorUndoRedoManager::add_undo_reference);
+	ClassDB::bind_method(D_METHOD("add_do_callable", "callable"), &EditorUndoRedoManager::add_do_callable);
+	ClassDB::bind_method(D_METHOD("add_undo_callable", "callable"), &EditorUndoRedoManager::add_undo_callable);
 
 	ClassDB::bind_method(D_METHOD("get_object_history_id", "object"), &EditorUndoRedoManager::get_history_id_for_object);
 	ClassDB::bind_method(D_METHOD("get_history_undo_redo", "id"), &EditorUndoRedoManager::get_history_undo_redo);
