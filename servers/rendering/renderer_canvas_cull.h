@@ -132,6 +132,8 @@ public:
 		RSE::CanvasOccluderPolygonCullMode cull_mode;
 		RID occluder;
 		HashSet<RendererCanvasRender::LightOccluderInstance *> owners;
+		Vector<Vector2> points;
+		bool closed = false;
 
 		LightOccluderPolygon() {
 			active = false;
@@ -361,6 +363,9 @@ public:
 	void canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const Vector<Vector2> &p_shape, bool p_closed);
 
 	void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon, RSE::CanvasOccluderPolygonCullMode p_mode);
+
+	bool is_light_inside_solid_occluder(const Vector2 &p_light_pos,
+			RendererCanvasRender::LightOccluderInstance *p_occluders);
 
 	void canvas_set_shadow_texture_size(int p_size);
 
