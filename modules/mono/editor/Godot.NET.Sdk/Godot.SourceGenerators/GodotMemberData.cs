@@ -34,55 +34,66 @@ namespace Godot.SourceGenerators
         public GodotMethodData InvokeMethodData { get; }
     }
 
-    public readonly struct GodotPropertyData
+    public enum PropertyType
     {
-        public GodotPropertyData(IPropertySymbol propertySymbol, MarshalType type)
-        {
-            PropertySymbol = propertySymbol;
-            Type = type;
-        }
-
-        public IPropertySymbol PropertySymbol { get; }
-        public MarshalType Type { get; }
-
-        public bool IsReadOnly => PropertySymbol.IsReadOnly ||
-                                  PropertySymbol.SetMethodOrBaseSetMethod() is { IsInitOnly: true };
-        public bool IsWriteOnly => PropertySymbol.IsWriteOnly;
+        Unallowed,
+        Field,
+        Property,
+        Embed,
     }
 
-    public readonly struct GodotFieldData
+    public class GodotPropertyData
     {
-        public GodotFieldData(IFieldSymbol fieldSymbol, MarshalType type)
-        {
-            FieldSymbol = fieldSymbol;
-            Type = type;
-        }
-
-        public IFieldSymbol FieldSymbol { get; }
-        public MarshalType Type { get; }
-
-        public bool IsReadOnly => FieldSymbol.IsReadOnly;
-    }
-
-    public struct GodotPropertyOrFieldData
-    {
-        public GodotPropertyOrFieldData(ISymbol symbol, MarshalType type)
+        public GodotPropertyData(
+            ISymbol symbol,
+            ITypeSymbol typeSymbol,
+            MarshalType marshalType,
+            PropertyType propertyType,
+            GodotPropertyData? containingProperty,
+            bool isReadOnly,
+            bool isWriteOnly)
         {
             Symbol = symbol;
-            Type = type;
+            PropertyTypeSymbol = typeSymbol;
+            MarshalType = marshalType;
+            PropertyType = propertyType;
+            ContainingProperty = containingProperty;
+            IsReadOnly = isReadOnly;
+            IsWriteOnly = isWriteOnly;
         }
 
-        public GodotPropertyOrFieldData(GodotPropertyData propertyData)
-            : this(propertyData.PropertySymbol, propertyData.Type)
+        public GodotPropertyData(IPropertySymbol propertySymbol, MarshalType type, PropertyType propertyType, GodotPropertyData? containingProperty)
+            : this(propertySymbol, propertySymbol.Type, type, propertyType, containingProperty,
+                propertySymbol.IsReadOnly || propertySymbol.SetMethodOrBaseSetMethod() is { IsInitOnly: true }, propertySymbol.IsWriteOnly)
         {
         }
 
-        public GodotPropertyOrFieldData(GodotFieldData fieldData)
-            : this(fieldData.FieldSymbol, fieldData.Type)
+        public GodotPropertyData(IFieldSymbol fieldSymbol, MarshalType type, PropertyType propertyType, GodotPropertyData? containingProperty)
+            : this(fieldSymbol, fieldSymbol.Type, type, propertyType, containingProperty, fieldSymbol.IsReadOnly, false)
         {
         }
 
+        public GodotPropertyData? ContainingProperty { get; }
         public ISymbol Symbol { get; }
-        public MarshalType Type { get; }
+        public ITypeSymbol PropertyTypeSymbol { get; }
+        public MarshalType MarshalType { get; }
+        public PropertyType PropertyType { get; }
+        [System.Diagnostics.CodeAnalysis.MemberNotNullWhen(true, nameof(ContainingProperty))]
+        public bool InNullable => ContainingProperty is not null && (ContainingProperty.InNullable || ContainingProperty.PropertyTypeSymbol.IsReferenceType);
+        public string MemberName => string.Concat(ContainingProperty is not null ? $"{ContainingProperty.MemberName}.@" : "", Symbol.Name);
+        public string MemberNameNullable => string.Concat(
+            ContainingProperty is not null
+            ? string.Concat(ContainingProperty.MemberNameNullable, ContainingProperty.PropertyTypeSymbol.IsReferenceType ? $"?" : "", ".@")
+            : "", Symbol.Name);
+        public string PropertyName => string.Concat(ContainingProperty is not null ? $"{ContainingProperty.PropertyName}_" : "", Symbol.Name);
+        public string PropertyNameHint => string.Concat(ContainingProperty is not null ? $"{ContainingProperty.PropertyGroupName}/" : "", Symbol.Name);
+        public string PropertyGroupName => string.Concat(ContainingProperty is not null ? $"{ContainingProperty.PropertyGroupName}/" : "", Capitalize(Symbol.Name));
+        public bool IsReadOnly { get; }
+        public bool IsWriteOnly { get; }
+
+        private static string Capitalize(string input)
+        {
+            return input[0].ToString().ToUpper() + input.Substring(1);
+        }
     }
 }
