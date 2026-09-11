@@ -772,6 +772,7 @@
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
 			The window's size in pixels. See also [member content_scale_size], which doesn't set the window's physical size but affects how scaling works relative to the current [member content_scale_mode].
+			[b]Note:[/b] Changing the size of the window is not possible when embedded in the editor, and will print a warning instead.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.

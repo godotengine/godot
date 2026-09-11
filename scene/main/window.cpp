@@ -1299,6 +1299,11 @@ void Window::_update_window_size() {
 			DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
 			DisplayServer::get_singleton()->window_set_size(size, window_id);
 		} else if (Engine::get_singleton()->is_embedded_in_editor()) {
+			// This method is hit when first launching the game. Ensure the initial update does not throw the warning.
+			if (!is_first_size_update) {
+				WARN_PRINT("Attempted to resize game window while the game was embedded in the editor. Game window cannot be resized when embedded in the editor.");
+			}
+			is_first_size_update = false;
 			size = DisplayServer::get_singleton()->window_get_size(window_id); // Reset size.
 		}
 	}
