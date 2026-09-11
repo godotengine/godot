@@ -69,16 +69,18 @@
 		</method>
 		<method name="get_country_name" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="country" type="String" />
+			<param index="0" name="code" type="String" />
 			<description>
-				Returns a readable country name for the [param country] code.
+				Returns the English name for the given country code. Returns [param code] as-is if it is unrecognized.
+				[b]Note:[/b] The returned names are intended for editor scripts, plugins, or debugging purposes. The list of recognized codes may vary across different versions or builds.
 			</description>
 		</method>
 		<method name="get_language_name" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="language" type="String" />
+			<param index="0" name="code" type="String" />
 			<description>
-				Returns a readable language name for the [param language] code.
+				Returns the English name for the given language code. Returns [param code] as-is if it is unrecognized.
+				[b]Note:[/b] The returned names are intended for editor scripts, plugins, or debugging purposes. The list of recognized codes may vary across different versions or builds.
 			</description>
 		</method>
 		<method name="get_loaded_locales" qualifiers="const">
@@ -98,7 +100,8 @@
 			<return type="String" />
 			<param index="0" name="locale" type="String" />
 			<description>
-				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
+				Returns a locale's language and its variant in English (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
+				[b]Note:[/b] The returned names are intended for editor scripts, plugins, or debugging purposes. The list of recognized codes may vary across different versions or builds.
 			</description>
 		</method>
 		<method name="get_or_add_domain">
@@ -124,9 +127,10 @@
 		</method>
 		<method name="get_script_name" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="script" type="String" />
+			<param index="0" name="code" type="String" />
 			<description>
-				Returns a readable script name for the [param script] code.
+				Returns the English name for the given script code. Returns [param code] as-is if it is unrecognized.
+				[b]Note:[/b] The returned names are intended for editor scripts, plugins, or debugging purposes. The list of recognized codes may vary across different versions or builds.
 			</description>
 		</method>
 		<method name="get_tool_locale">
