@@ -89,11 +89,24 @@ private:
 	void _parse_opening_xml_element();
 	void _parse_current_node();
 
-	_FORCE_INLINE_ void next_char() {
-		if (*P == '\n') {
-			current_line++;
+	_FORCE_INLINE_ char peek(int p_offset = 0) const {
+		if (!P || !data) {
+			return '\0';
 		}
-		P++;
+		int64_t offset = (P - data) + p_offset;
+		if (offset >= 0 && (uint64_t)offset < length) {
+			return data[offset];
+		}
+		return '\0';
+	}
+
+	_FORCE_INLINE_ void next_char() {
+		if (P && data && P < data + length) {
+			if (*P == '\n') {
+				current_line++;
+			}
+			P++;
+		}
 	}
 
 	static void _bind_methods();
