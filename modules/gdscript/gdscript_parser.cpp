@@ -3932,6 +3932,21 @@ static void _process_doc_line(const String &p_line, String &r_text, const String
 		line = line.trim_prefix(p_space_prefix);
 	}
 
+	const LocalVector<String> no_space_tags = {
+		"[note]",
+		"[warning]",
+		"[important]",
+		"[tip]",
+	};
+	bool line_begins_with_no_space_tag = false;
+	for (const String &tag : no_space_tags) {
+		if (line.begins_with(tag)) {
+			line_begins_with_no_space_tag = true;
+			break;
+		}
+	}
+
+
 	String line_join;
 	if (!r_text.is_empty()) {
 		if (r_state == DOC_LINE_NORMAL) {
@@ -3941,7 +3956,7 @@ static void _process_doc_line(const String &p_line, String &r_text, const String
 				// We want to replace `[br][br]` with `\n` (paragraph), so we move the trailing `[br]` here.
 				r_text = r_text.left(-4); // `-len("[br]")`.
 				line = "[br]" + line;
-			} else if (!r_text.ends_with("\n")) {
+			} else if (!r_text.ends_with("\n") && !line_begins_with_no_space_tag) {
 				line_join = " ";
 			}
 		} else {

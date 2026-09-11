@@ -343,6 +343,17 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 	return "<unknown>";
 }
 
+// Returns the description with admonitions preceded by a "natural" line break
+// (making it start on a new paragraph). This makes them match built-in class reference
+// behavior without requiring users to add two explicit line breaks with `[br]`.
+String GDScriptDocGen::_get_description_with_fixed_admonitions(const String &p_description) {
+	return p_description
+			.replace("[note]", "\n[note]")
+			.replace("[warning]", "\n[warning]")
+			.replace("[important]", "\n[important]")
+			.replace("[tip]", "\n[tip]");
+}
+
 void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
 	p_script->_clear_doc();
 
@@ -363,7 +374,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 	}
 
 	doc.brief_description = p_class->doc_data.brief;
-	doc.description = p_class->doc_data.description;
+	doc.description = _get_description_with_fixed_admonitions(p_class->doc_data.description);
 	for (const Pair<String, String> &p : p_class->doc_data.tutorials) {
 		DocData::TutorialDoc td;
 		td.title = p.first;
@@ -399,7 +410,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				const_doc.value = _docvalue_from_variant(m_const->initializer->reduced_value);
 				const_doc.is_value_valid = true;
 				_doctype_from_datatype(m_const->type_constraint, const_doc.type, const_doc.enumeration);
-				const_doc.description = m_const->doc_data.description;
+				const_doc.description = _get_description_with_fixed_admonitions(m_const->doc_data.description);
 				const_doc.is_deprecated = m_const->doc_data.is_deprecated;
 				const_doc.deprecated_message = m_const->doc_data.deprecated_message;
 				const_doc.is_experimental = m_const->doc_data.is_experimental;
@@ -415,7 +426,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 
 				DocData::MethodDoc method_doc;
 				method_doc.name = func_name;
-				method_doc.description = m_func->doc_data.description;
+				method_doc.description = _get_description_with_fixed_admonitions(m_func->doc_data.description);
 				method_doc.is_deprecated = m_func->doc_data.is_deprecated;
 				method_doc.deprecated_message = m_func->doc_data.deprecated_message;
 				method_doc.is_experimental = m_func->doc_data.is_experimental;
@@ -471,7 +482,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 
 				DocData::MethodDoc signal_doc;
 				signal_doc.name = signal_name;
-				signal_doc.description = m_signal->doc_data.description;
+				signal_doc.description = _get_description_with_fixed_admonitions(m_signal->doc_data.description);
 				signal_doc.is_deprecated = m_signal->doc_data.is_deprecated;
 				signal_doc.deprecated_message = m_signal->doc_data.deprecated_message;
 				signal_doc.is_experimental = m_signal->doc_data.is_experimental;
@@ -495,7 +506,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 
 				DocData::PropertyDoc prop_doc;
 				prop_doc.name = var_name;
-				prop_doc.description = m_var->doc_data.description;
+				prop_doc.description = _get_description_with_fixed_admonitions(m_var->doc_data.description);
 				prop_doc.is_deprecated = m_var->doc_data.is_deprecated;
 				prop_doc.deprecated_message = m_var->doc_data.deprecated_message;
 				prop_doc.is_experimental = m_var->doc_data.is_experimental;
@@ -539,7 +550,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				p_script->member_lines[name] = m_enum->start_line;
 
 				DocData::EnumDoc enum_doc;
-				enum_doc.description = m_enum->doc_data.description;
+				enum_doc.description = _get_description_with_fixed_admonitions(m_enum->doc_data.description);
 				enum_doc.is_deprecated = m_enum->doc_data.is_deprecated;
 				enum_doc.deprecated_message = m_enum->doc_data.deprecated_message;
 				enum_doc.is_experimental = m_enum->doc_data.is_experimental;
@@ -553,7 +564,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					const_doc.is_value_valid = true;
 					const_doc.type = "int";
 					const_doc.enumeration = name;
-					const_doc.description = val.doc_data.description;
+					const_doc.description = _get_description_with_fixed_admonitions(val.doc_data.description);
 					const_doc.is_deprecated = val.doc_data.is_deprecated;
 					const_doc.deprecated_message = val.doc_data.deprecated_message;
 					const_doc.is_experimental = val.doc_data.is_experimental;
@@ -576,7 +587,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				const_doc.is_value_valid = true;
 				const_doc.type = "int";
 				const_doc.enumeration = "@unnamed_enums";
-				const_doc.description = m_enum_val.doc_data.description;
+				const_doc.description = _get_description_with_fixed_admonitions(m_enum_val.doc_data.description);
 				const_doc.is_deprecated = m_enum_val.doc_data.is_deprecated;
 				const_doc.deprecated_message = m_enum_val.doc_data.deprecated_message;
 				const_doc.is_experimental = m_enum_val.doc_data.is_experimental;
