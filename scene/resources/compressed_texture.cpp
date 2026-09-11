@@ -36,7 +36,7 @@
 #include "scene/resources/bit_map.h"
 #include "servers/rendering/rendering_server.h"
 
-Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit) {
+Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness) {
 	alpha_cache.unref();
 
 	ERR_FAIL_COND_V(image.is_null(), ERR_INVALID_PARAMETER);
@@ -66,7 +66,7 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 #endif
 
 	//skip reserved
-	mipmap_limit = int(f->get_32());
+	/* mipmap_limit = */ f->get_32();
 	//reserved
 	f->get_32();
 	f->get_32();
@@ -140,9 +140,8 @@ Error CompressedTexture2D::load(const String &p_path) {
 	bool request_3d;
 	bool request_normal;
 	bool request_roughness;
-	int mipmap_limit;
 
-	RETURN_IF_ERROR(_load_data(p_path, lw, lh, image, request_3d, request_normal, request_roughness, mipmap_limit));
+	RETURN_IF_ERROR(_load_data(p_path, lw, lh, image, request_3d, request_normal, request_roughness));
 
 	if (texture.is_valid()) {
 		RID new_texture = RS::get_singleton()->texture_2d_create(image);
@@ -585,7 +584,7 @@ Image::Format CompressedTextureLayered::get_format() const {
 	return format;
 }
 
-Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit) {
+Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Image>> &images) {
 	ERR_FAIL_COND_V(images.size() != 0, ERR_INVALID_PARAMETER);
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
@@ -608,7 +607,7 @@ Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Imag
 	ERR_FAIL_COND_V((int)type != layered_type, ERR_INVALID_DATA);
 
 	/* uint32_t df = */ f->get_32(); //data format (currently unused)
-	mipmap_limit = int(f->get_32());
+	/* mipmap_limit = */ f->get_32();
 	//reserved
 	f->get_32();
 	f->get_32();
@@ -628,9 +627,7 @@ Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Imag
 Error CompressedTextureLayered::load(const String &p_path) {
 	Vector<Ref<Image>> images;
 
-	int mipmap_limit;
-
-	RETURN_IF_ERROR(_load_data(p_path, images, mipmap_limit));
+	RETURN_IF_ERROR(_load_data(p_path, images));
 
 	if (texture.is_valid()) {
 		RID new_texture = RS::get_singleton()->texture_2d_layered_create(images, RSE::TextureLayeredType(layered_type));

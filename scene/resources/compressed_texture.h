@@ -66,7 +66,7 @@ private:
 	int h = 0;
 	mutable Ref<BitMap> alpha_cache;
 
-	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit);
+	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness);
 	virtual void reload_from_file() override;
 
 	static void _requested_3d(void *p_ud);
@@ -128,7 +128,7 @@ public:
 	};
 
 private:
-	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit);
+	Error _load_data(const String &p_path, Vector<Ref<Image>> &images);
 	String path_to_file;
 	mutable RID texture;
 	Image::Format format = Image::FORMAT_L8;
