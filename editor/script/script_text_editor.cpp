@@ -361,6 +361,8 @@ void ScriptTextEditor::_show_errors_panel(bool p_show) {
 
 bool ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 	if (CodeEditorBase::_warning_clicked(p_line)) {
+		CodeEdit *text_edit = code_editor->get_text_editor();
+		text_edit->grab_focus();
 		return true;
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
@@ -964,6 +966,7 @@ void ScriptTextEditor::_validate_script() {
 void ScriptTextEditor::_update_warnings() {
 	int warning_nb = warnings.size();
 	warnings_panel->clear();
+	warnings_panel_tree->clear();
 
 	bool has_connections_table = false;
 	// Add missing connections.
@@ -982,6 +985,8 @@ void ScriptTextEditor::_update_warnings() {
 				warnings_panel->add_text(vformat(TTR("Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."), connection.callable.get_method(), connection.signal.get_name(), source_path, target_path));
 				warnings_panel->pop(); // Color.
 				warnings_panel->pop(); // Cell.
+
+				warnings_panel_tree->add_warning(vformat(TTR("Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."), connection.callable.get_method(), connection.signal.get_name(), source_path, target_path));
 			}
 			warnings_panel->pop(); // Table.
 
@@ -1022,6 +1027,9 @@ void ScriptTextEditor::_update_warnings() {
 		warnings_panel->add_text(w.message);
 		warnings_panel->add_newline();
 		warnings_panel->pop(); // Cell.
+
+		warnings_panel_tree->add_warning(w);
+		// warnings_panel_tree->add_diagnostic(vformat("%s [Line %s, Col %s]", w.message, w.start_line, w.start_column));
 	}
 	warnings_panel->pop(); // Table.
 }
@@ -1044,6 +1052,8 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->add_text(err.message);
 		errors_panel->add_newline();
 		errors_panel->pop(); // Cell.
+
+		warnings_panel_tree->add_error(err);
 	}
 	errors_panel->pop(); // Table
 
@@ -1058,6 +1068,9 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->add_text(vformat(R"(%s:)", KV.key));
 		errors_panel->pop(); // Meta goto.
 		errors_panel->add_newline();
+
+		// TreeItem *new_item = warnings_panel_tree->add_error(KV.key);
+		warnings_panel_tree->add_error(KV.key);
 
 		errors_panel->push_indent(1);
 		errors_panel->push_table(2);
@@ -1078,6 +1091,8 @@ void ScriptTextEditor::_update_errors() {
 			errors_panel->push_cell();
 			errors_panel->add_text(err.message);
 			errors_panel->pop(); // Cell.
+
+			// warnings_panel_tree->add_suberror(new_item, err); // TODO: Handle suberrors
 		}
 		errors_panel->pop(); // Table
 		errors_panel->pop(); // Indent.
@@ -2719,6 +2734,7 @@ void ScriptTextEditor::_on_hover_tooltip_timer_timeout() {
 ScriptTextEditor::ScriptTextEditor() {
 	editor_box->add_child(code_editor);
 	editor_box->add_child(warnings_panel);
+	editor_box->add_child(warnings_panel_tree);
 
 	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
