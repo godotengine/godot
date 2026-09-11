@@ -64,6 +64,9 @@
 		<constant name="PATHFINDING_ALGORITHM_ASTAR" value="0" enum="PathfindingAlgorithm">
 			The path query uses the default A* pathfinding algorithm.
 		</constant>
+		<constant name="PATHFINDING_ALGORITHM_DIJKSTRA" value="1" enum="PathfindingAlgorithm">
+			The path query uses the Dijkstra pathfinding algorithm. Dijkstra is a heuristic-free pathfinding algorithm that explores more polygons than A* but guarantees the shortest path in graphs.
+		</constant>
 		<constant name="PATH_POSTPROCESSING_CORRIDORFUNNEL" value="0" enum="PathPostProcessing">
 			Applies a funnel algorithm to the raw path corridor found by the pathfinding algorithm. This will result in the shortest path possible inside the path corridor. This postprocessing very much depends on the navigation mesh polygon layout and the created corridor. Especially tile- or gridbased layouts can face artificial corners with diagonal movement due to a jagged path corridor imposed by the cell shapes.
 		</constant>
