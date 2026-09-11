@@ -881,12 +881,18 @@ class Bus {
 
 	/**
 	 * Adds a new bus at the specified index.
-	 * @param {number} index Index to add a new bus.
+	 * @param {number} index Index to add a new bus, or -1 to append.
 	 * @returns {void}
 	 */
 	static addAt(index) {
 		const newBus = GodotAudio.Bus.create();
-		if (index !== newBus.getId()) {
+		// `index === -1` is the "append" sentinel from C++ AudioServer::add_bus when
+		// p_at_pos >= buses.size(); Bus.create() already pushed to the end, so any
+		// move would be incorrect. Without this guard, Bus.move(N, -1) does
+		// splice(toIndex - 1, 0, item) i.e. splice(-2, 0, item) which inserts at
+		// length-2 instead of the end, scrambling the JS bus array relative to C++
+		// and eventually disconnecting Master from ctx.destination on Sample playback.
+		if (index !== -1 && index !== newBus.getId()) {
 			GodotAudio.Bus.move(newBus.getId(), index);
 		}
 	}
