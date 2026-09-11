@@ -2011,6 +2011,14 @@ void OpenXRAPI::update_head_tracking() {
 			print_line("OpenXR: Couldn't locate spatial container views [", get_error_string(result), "]");
 			return;
 		}
+
+		// Spatial container views are located in their space, but we expect the view poses in view space.
+		XrPosef inv_head_pose;
+		XrPosef_Invert(&inv_head_pose, &head_pose);
+		for (uint32_t i = 0; i < view_count; i++) {
+			XrPosef view_pose = views[i].pose;
+			XrPosef_Multiply(&views[i].pose, &inv_head_pose, &view_pose);
+		}
 	} else {
 		void *view_locate_info_next_pointer = nullptr;
 		for (OpenXRExtensionWrapper *extension : frame_info_extensions) {
