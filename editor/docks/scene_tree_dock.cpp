@@ -1651,6 +1651,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
+			EditorNode::get_editor_data().instantiate_object_properties(new_node);
 			add_root_node(new_node);
 
 			if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
@@ -3818,6 +3819,7 @@ void SceneTreeDock::_script_dropped(const String &p_file, Node *p_to_node) {
 		}
 		new_node->set_name(Node::adjust_name_casing(p_file.get_file().get_basename()));
 		new_node->set_script(scr);
+		EditorNode::get_editor_data().instantiate_object_properties(new_node);
 
 		undo_redo->create_action(TTR("Instantiate Script"));
 		undo_redo->add_do_method(p_to_node, "add_child", new_node, true);
