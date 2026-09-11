@@ -462,7 +462,7 @@ void TileAtlasView::_draw_alternatives() {
 				RID ci_rid = _get_canvas_item_to_draw(tile_data, alternatives_draw, material_alternatives_draw);
 
 				// Update the y to max value.
-				Vector2i offset_pos;
+				Vector2 offset_pos;
 				if (transposed) {
 					offset_pos = (current_pos + Vector2(texture_region_size.y, texture_region_size.x) / 2 + tile_data->get_texture_origin());
 					y_increment = MAX(y_increment, texture_region_size.x);

@@ -1967,7 +1967,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 			TileData *tile_data = p_tile_set_atlas_source->get_tile_data(hovered_coords, 0);
 			int terrain_set = tile_data->get_terrain_set();
 			Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(hovered_coords);
-			Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+			Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 
 			if (terrain_set >= 0 && terrain_set == int(dummy_object->get("terrain_set"))) {
 				// Draw hovered bit.
@@ -2018,7 +2018,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 				// Text
 				p_canvas_item->draw_set_transform_matrix(Transform2D());
 				Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-				Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+				Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 
 				Color color = Color(1, 1, 1);
 				String text;
@@ -2109,7 +2109,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 			Vector2i coords = E.get_atlas_coords();
 
 			Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-			Vector2i position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_data(coords, 0)->get_texture_origin();
+			Vector2 position = texture_region.get_center() + p_tile_set_atlas_source->get_tile_data(coords, 0)->get_texture_origin();
 
 			Vector<Vector2> polygon = tile_set->get_terrain_polygon(terrain_set);
 			for (int j = 0; j < polygon.size(); j++) {
@@ -2154,7 +2154,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 			TileData *tile_data = p_tile_set_atlas_source->get_tile_data(hovered_coords, hovered_alternative);
 			int terrain_set = tile_data->get_terrain_set();
 			Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(hovered_coords, hovered_alternative);
-			Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+			Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 
 			if (terrain_set == int(dummy_object->get("terrain_set"))) {
 				// Draw hovered bit.
@@ -2207,7 +2207,7 @@ void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_til
 					// Text
 					p_canvas_item->draw_set_transform_matrix(Transform2D());
 					Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
-					Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+					Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 
 					Color color = Color(1, 1, 1);
 					String text;
@@ -2292,7 +2292,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 
 						// Set the terrains bits.
 						Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-						Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+						Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 
 						Vector<Vector2> polygon = tile_set->get_terrain_polygon(tile_data->get_terrain_set());
 						if (Geometry2D::is_segment_intersecting_polygon(mm->get_position() - position, drag_last_pos - position, polygon)) {
@@ -2326,7 +2326,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 						int terrain_set = tile_data->get_terrain_set();
 						Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-						Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+						Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 						dummy_object->set("terrain_set", terrain_set);
 						dummy_object->set("terrain", -1);
 
@@ -2441,7 +2441,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 
 								// Set the terrain bit.
 								Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-								Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+								Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 
 								Vector<Vector2> polygon = tile_set->get_terrain_polygon(terrain_set);
 								if (Geometry2D::is_point_in_polygon(mb->get_position() - position, polygon)) {
@@ -2587,7 +2587,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, 0);
 
 						Rect2i texture_region = p_tile_set_atlas_source->get_tile_texture_region(coords);
-						Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+						Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 
 						Vector<Vector2> polygon = tile_set->get_terrain_polygon(terrain_set);
 						for (int j = 0; j < polygon.size(); j++) {
@@ -2687,7 +2687,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 
 					// Set the terrains bits.
 					Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
-					Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+					Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 
 					Vector<Vector2> polygon = tile_set->get_terrain_polygon(tile_data->get_terrain_set());
 					if (Geometry2D::is_segment_intersecting_polygon(mm->get_position() - position, drag_last_pos - position, polygon)) {
@@ -2723,7 +2723,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 						TileData *tile_data = p_tile_set_atlas_source->get_tile_data(coords, alternative_tile);
 						int terrain_set = tile_data->get_terrain_set();
 						Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
-						Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+						Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 						dummy_object->set("terrain_set", terrain_set);
 						dummy_object->set("terrain", -1);
 
@@ -2813,7 +2813,7 @@ void TileDataTerrainsEditor::forward_painting_alternatives_gui_input(TileAtlasVi
 
 								// Set the terrain bit.
 								Rect2i texture_region = p_tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
-								Vector2i position = texture_region.get_center() + tile_data->get_texture_origin();
+								Vector2 position = texture_region.get_center() + tile_data->get_texture_origin();
 
 								Vector<Vector2> polygon = tile_set->get_terrain_polygon(terrain_set);
 								if (Geometry2D::is_point_in_polygon(mb->get_position() - position, polygon)) {

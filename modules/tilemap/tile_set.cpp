@@ -6229,12 +6229,12 @@ bool TileData::get_transpose() const {
 	return transpose;
 }
 
-void TileData::set_texture_origin(Vector2i p_texture_origin) {
+void TileData::set_texture_origin(Vector2 p_texture_origin) {
 	texture_origin = p_texture_origin;
 	emit_signal(CoreStringName(changed));
 }
 
-Vector2i TileData::get_texture_origin() const {
+Vector2 TileData::get_texture_origin() const {
 	return texture_origin;
 }
 
@@ -7183,7 +7183,7 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transpose"), "set_transpose", "get_transpose");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_origin", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_origin", "get_texture_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "texture_origin", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_origin", "get_texture_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");
