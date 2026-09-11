@@ -83,6 +83,7 @@
 #include "editor/scene/3d/gizmos/two_bone_ik_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/visible_on_screen_notifier_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/voxel_gi_gizmo_plugin.h"
+#include "editor/scene/3d/lightmap_gi_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_constants.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
 #include "editor/scene/3d/node_3d_editor_viewport.h"
@@ -90,6 +91,7 @@
 #include "editor/translations/editor_translation_preview_menu.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
+#include "scene/3d/lightmap_gi.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/world_environment.h"
@@ -110,6 +112,7 @@
 #include "scene/resources/3d/sky_material.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/display/display_server.h"
 #include "servers/physics_3d/physics_server_3d_types.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -2321,6 +2324,41 @@ void Node3DEditor::_sun_environ_settings_pressed() {
 	sun_environ_popup->grab_focus();
 }
 
+void Node3DEditor::_bake_lightmaps_button_pressed() {
+	TypedArray<Node> lightmaps = EditorNode::get_singleton()->get_edited_scene()->find_children("*", LightmapGI::get_class_static());
+	for (int i = 0; i < lightmaps.size(); i++) {
+		LightmapGI *lightmap = Object::cast_to<LightmapGI>(lightmaps[i]);
+		if (!lightmap) {
+			continue;
+		}
+
+		Ref<LightmapGIData> lightmap_gi_data = lightmap->get_light_data();
+		bool is_read_only = false;
+		if (lightmap_gi_data.is_valid()) {
+			is_read_only = EditorNode::get_singleton()->is_resource_read_only(lightmap_gi_data);
+		}
+
+		bool is_instance = false;
+		Node *node = lightmap;
+		while (node && !is_instance) {
+			if (node->is_instance() && node != EditorNode::get_singleton()->get_edited_scene()) {
+				is_instance = true;
+			}
+			node = node->get_parent();
+		}
+
+		if (!is_read_only && !is_instance) {
+			// Do not bake LightmapGI nodes that are part of instantiated subscenes,
+			// as changes would be lost when disabling Editable Children.
+			EditorNode::get_singleton()->lightmap_gi_bake_select_file("", lightmap);
+		}
+	}
+}
+
+void Node3DEditor::_bake_geometry_button_pressed() {
+	print_line("Bake geometry button pressed");
+}
+
 #ifdef MODULE_TEXTURE_STREAMING_ENABLED
 void Node3DEditor::_textures_button_pressed() {
 	if (textures_button->is_disabled()) {
@@ -2569,6 +2607,8 @@ void Node3DEditor::_update_theme() {
 
 	sun_button->set_button_icon(get_editor_theme_icon(SNAME("PreviewSun")));
 	environ_button->set_button_icon(get_editor_theme_icon(SNAME("PreviewEnvironment")));
+	bake_lightmaps_button->set_button_icon(get_editor_theme_icon(SNAME("Bake")));
+	bake_geometry_button->set_button_icon(get_editor_theme_icon(SNAME("MeshItem"))); // TODO: Design icon for geometry baking.
 	sun_environ_settings->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 	sun_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
@@ -3698,6 +3738,25 @@ Node3DEditor::Node3DEditor() {
 	view_layout_menu->set_shortcut_context(this);
 	transform_view_hbox->add_child(view_layout_menu);
 	transform_view_hbox->add_child(memnew(VSeparator));
+
+	HBoxContainer *bake_hbox = memnew(HBoxContainer);
+	main_flow->add_child(bake_hbox);
+
+	bake_lightmaps_button = memnew(Button);
+	bake_lightmaps_button->set_shortcut(ED_SHORTCUT("spatial_editor/bake_lightmaps", TTRC("Bake Lightmaps"), KeyModifierMask::ALT | Key::B, true));
+	bake_lightmaps_button->set_tooltip_text(TTRC("Bake all LightmapGI nodes in the currently open scene (excluding instantiated subscenes)."));
+	bake_lightmaps_button->set_theme_type_variation(SceneStringName(FlatButton));
+	bake_lightmaps_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_bake_lightmaps_button_pressed));
+	bake_hbox->add_child(bake_lightmaps_button);
+
+	bake_geometry_button = memnew(Button);
+	bake_geometry_button->set_shortcut(ED_SHORTCUT("spatial_editor/bake_geometry_dependent_nodes", TTRC("Bake Geometry-Dependent Nodes"), KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::B, true));
+	bake_geometry_button->set_tooltip_text(TTRC("Bake all geometry-dependent nodes in the currently open scene (excluding instantiated subscenes), such as VoxelGI, OccluderInstance3D, and GPUParticlesCollisionSDF3D."));
+	bake_geometry_button->set_theme_type_variation(SceneStringName(FlatButton));
+	bake_geometry_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_bake_geometry_button_pressed));
+	bake_hbox->add_child(bake_geometry_button);
+
+	bake_hbox->add_child(memnew(VSeparator));
 
 #ifdef MODULE_TEXTURE_STREAMING_ENABLED
 	textures_button = memnew(Button);

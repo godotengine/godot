@@ -53,6 +53,7 @@ class Control;
 class FileDialog;
 class HBoxContainer;
 class ImageTexture;
+class LightmapGI;
 class MenuBar;
 class MenuButton;
 class OptionButton;
@@ -743,6 +744,13 @@ private:
 
 	void _bottom_panel_resized();
 
+	EditorFileDialog *bake_lightmaps_dialog = nullptr;
+	LightmapGI *lightmap_to_bake = nullptr;
+
+	static EditorProgress *lightmap_gi_progress;
+	static bool lightmap_gi_bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh);
+	static void lightmap_gi_bake_func_end(uint64_t p_time_started);
+
 protected:
 	friend class FileSystemDock;
 
@@ -754,6 +762,8 @@ public:
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 
 	void init_plugins();
+
+	void lightmap_gi_bake_select_file(const String &p_file, LightmapGI *p_lightmap_gi);
 
 	bool call_build();
 	void call_run_scene(const String &p_scene, Vector<String> &r_args);
