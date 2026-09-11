@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		This class serves as a default material with a wide variety of rendering features and properties without the need to write shader code. See the tutorial below for details.
+		[b]Fallback material:[/b] Meshes which don't have any material assigned will use a [i]fallback material[/i]. This material uses an [member albedo_color] set to [code]Color(0.5, 0.5, 0.5)[/code] and [member roughness] set to [code]0.5[/code]. All other parameters are identical to the defaults here. In contrast, newly created [BaseMaterial3D]s will use an [member albedo_color] of [code]Color(1.0, 1.0, 1.0)[/code] and [member roughness] of [code]1.0[/code], so they will appear brighter and less reflective.
 	</description>
 	<tutorials>
 		<link title="Standard Material 3D and ORM Material 3D">$DOCS_URL/tutorials/3d/standard_material_3d.html</link>
