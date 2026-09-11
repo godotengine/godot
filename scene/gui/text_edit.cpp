@@ -5946,6 +5946,39 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 
 	set_selection_mode(SELECTION_MODE_NONE);
 
+	HashSet<int> carets_to_select;
+	int carets_to_select_offset = 0;
+	if (has_selection()) {
+		// Get all carets that are connected to another caret that selects.
+		// A caret is considered connected if the `last_fit_x` matches and there are connecting carets on every line between.
+		// This lets selections continue after lines that are too small to select.
+		const PackedInt32Array sorted_carets = get_sorted_carets();
+		const int start_index = p_below ? 0 : (sorted_carets.size() - 1);
+		const int inc = p_below ? 1 : -1;
+		for (int i = start_index; i >= 0 && i < sorted_carets.size(); i += inc) {
+			int c = sorted_carets[i];
+			if (has_selection(c)) {
+				carets_to_select.insert(c);
+				continue;
+			}
+			// When adding carets below, search above for connected carets and vice versa.
+			for (int j = i - inc; j >= 0 && j < sorted_carets.size(); j -= inc) {
+				if (get_caret_line(sorted_carets[j]) == get_caret_line(c)) {
+					continue;
+				}
+				if (get_caret_line(sorted_carets[j]) != get_caret_line(c) - inc) {
+					break;
+				}
+				if (carets[sorted_carets[j]].last_fit_x == carets[c].last_fit_x && carets[sorted_carets[j]].selection.origin_last_fit_x == carets[c].selection.origin_last_fit_x) {
+					if (carets_to_select.has(sorted_carets[j])) {
+						carets_to_select.insert(c);
+					}
+					break;
+				}
+			}
+		}
+	}
+
 	begin_multicaret_edit();
 	int view_target_caret = -1;
 	int view_line = p_below ? -1 : INT_MAX;
@@ -5953,10 +5986,10 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 	for (int i = 0; i < num_carets; i++) {
 		const int caret_line = get_caret_line(i);
 		const int caret_column = get_caret_column(i);
-		bool is_selected = has_selection(i) || carets[i].last_fit_x != carets[i].selection.origin_last_fit_x;
 		const int selection_origin_line = get_selection_origin_line(i);
 		const int selection_origin_column = get_selection_origin_column(i);
 		const int caret_wrap_index = get_caret_wrap_index(i);
+		const bool is_selected = carets_to_select.has(i - carets_to_select_offset);
 		const int selection_origin_wrap_index = !is_selected ? -1 : get_line_wrap_index_at_column(selection_origin_line, selection_origin_column);
 
 		if (caret_line == 0 && !p_below && (caret_wrap_index == 0 || selection_origin_wrap_index == 0)) {
@@ -6046,6 +6079,7 @@ void TextEdit::add_caret_at_carets(bool p_below) {
 			carets.insert(0, new_caret);
 			i++;
 			num_carets += 1;
+			carets_to_select_offset += 1;
 		}
 	}
 
