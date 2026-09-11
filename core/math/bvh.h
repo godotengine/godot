@@ -51,8 +51,13 @@
 // and pairable_mask is either 0 if static, or set to all if non static
 
 #include "core/math/bvh_tree.h"
-#include "core/math/geometry_3d.h"
 #include "core/os/mutex.h"
+
+#if GODOT_VERSION_MAJOR >= 4
+#include "core/math/geometry_3d.h"
+#else
+#include "core/math/geometry.h"
+#endif
 
 #include <climits> // INT_MAX
 
@@ -408,11 +413,17 @@ public:
 		if (!p_convex.size()) {
 			return 0;
 		}
-
+#if GODOT_VERSION_MAJOR >= 4
 		Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(&p_convex[0], p_convex.size());
 		if (convex_points.is_empty()) {
 			return 0;
 		}
+#else
+		Vector<Vector3> convex_points = Geometry::compute_convex_mesh_points(p_convex);
+		if (convex_points.size() == 0) {
+			return 0;
+		}
+#endif
 
 		typename BVHTREE_CLASS::CullParams params;
 		params.result_count_overall = 0;
@@ -439,7 +450,6 @@ private:
 			// noop
 			return;
 		}
-
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -447,7 +457,12 @@ private:
 		params.result_array = nullptr;
 		params.subindex_array = nullptr;
 
+#if GODOT_VERSION_MAJOR >= 4
 		for (const BVHHandle &h : changed_items) {
+#else
+		for (unsigned int n = 0; n < changed_items.size(); n++) {
+			const BVHHandle &h = changed_items[n];
+#endif
 			// use the expanded aabb for pairing
 			const BOUNDS &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
 			BVHABB_CLASS abb;
@@ -465,8 +480,12 @@ private:
 
 			params.result_count_overall = 0; // might not be needed
 			tree.cull_aabb(params, false);
-
+#if GODOT_VERSION_MAJOR >= 4
 			for (const uint32_t ref_id : tree._cull_hits) {
+#else
+			for (unsigned int i = 0; i < tree._cull_hits.size(); i++) {
+				uint32_t ref_id = tree._cull_hits[i];
+#endif
 				// don't collide against ourself
 				if (ref_id == changed_item_ref_id) {
 					continue;
@@ -753,8 +772,11 @@ private:
 		// remove from changed items (not very efficient yet)
 		for (int n = 0; n < (int)changed_items.size(); n++) {
 			if (changed_items[n] == p_handle) {
+#if GODOT_VERSION_MAJOR >= 4
 				changed_items.remove_at_unordered(n);
-
+#else
+				changed_items.remove_unordered(n);
+#endif
 				// because we are using an unordered remove,
 				// the last changed item will now be at spot 'n',
 				// and we need to redo it, so we prevent moving on to
@@ -778,7 +800,11 @@ private:
 
 	// for collision pairing,
 	// maintain a list of all items moved etc on each frame / tick
+#if GODOT_VERSION_MAJOR >= 4
 	LocalVector<BVHHandle> changed_items;
+#else
+	LocalVector<BVHHandle, uint32_t, true> changed_items;
+#endif
 	uint32_t _tick = 1; // Start from 1 so items with 0 indicate never updated.
 
 	class BVHLockedFunction {

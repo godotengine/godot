@@ -51,7 +51,11 @@ struct ItemPairs {
 		for (int n = 0; n < num_pairs; n++) {
 			if (extended_pairs[n].handle == p_handle) {
 				userdata = extended_pairs[n].userdata;
+#if GODOT_VERSION_MAJOR >= 4
 				extended_pairs.remove_at_unordered(n);
+#else
+				extended_pairs.remove_unordered(n);
+#endif
 				num_pairs--;
 				break;
 			}
