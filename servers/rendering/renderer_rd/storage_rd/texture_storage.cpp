@@ -2228,7 +2228,7 @@ Size2 TextureStorage::texture_size_with_proxy(RID p_proxy) {
 	return texture_2d_get_size(p_proxy);
 }
 
-void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type) {
+void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type, Image::Format p_format_hint) {
 	ERR_FAIL_COND(!RD::get_singleton()->texture_is_valid(p_rd_texture));
 
 	// TODO : investigate if we can support this, will need to be able to obtain the order and obtain the slice info
@@ -2240,6 +2240,13 @@ void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_textur
 	TextureFromRDFormat imfmt;
 	_texture_format_from_rd(tf.format, imfmt);
 	ERR_FAIL_COND(imfmt.image_format == Image::FORMAT_MAX);
+	if (p_format_hint == Image::FORMAT_RG8 && tf.format == RD::DATA_FORMAT_R8G8_UNORM) {
+		imfmt.image_format = Image::FORMAT_RG8;
+		imfmt.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+		imfmt.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+		imfmt.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+		imfmt.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+	}
 
 	Texture texture;
 
