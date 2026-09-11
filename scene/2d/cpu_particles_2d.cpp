@@ -198,20 +198,29 @@ void CPUParticles2D::_update_mesh_texture() {
 		-tex_size * 0.5 + Vector2(0, tex_size.y)
 	};
 
-	Vector<Vector2> uvs;
-	AtlasTexture *atlas_texture = Object::cast_to<AtlasTexture>(*texture);
-	if (atlas_texture && atlas_texture->get_atlas().is_valid()) {
-		Rect2 region_rect = atlas_texture->get_region();
-		Size2 atlas_size = atlas_texture->get_atlas()->get_size();
-		uvs.push_back(Vector2(region_rect.position.x / atlas_size.x, region_rect.position.y / atlas_size.y));
-		uvs.push_back(Vector2((region_rect.position.x + region_rect.size.x) / atlas_size.x, region_rect.position.y / atlas_size.y));
-		uvs.push_back(Vector2((region_rect.position.x + region_rect.size.x) / atlas_size.x, (region_rect.position.y + region_rect.size.y) / atlas_size.y));
-		uvs.push_back(Vector2(region_rect.position.x / atlas_size.x, (region_rect.position.y + region_rect.size.y) / atlas_size.y));
-	} else {
-		uvs.push_back(Vector2(0, 0));
-		uvs.push_back(Vector2(1, 0));
-		uvs.push_back(Vector2(1, 1));
-		uvs.push_back(Vector2(0, 1));
+	Vector<Vector2> uvs = {
+		Vector2(0, 0),
+		Vector2(1, 0),
+		Vector2(1, 1),
+		Vector2(0, 1)
+	};
+	
+	Ref<AtlasTexture> atlas_texture = texture;
+	if (atlas_texture.is_valid()) {
+		Rect2 region;
+		Ref<Texture2D> base_texture =
+				atlas_texture->get_base_texture_and_region(region);
+
+		if (base_texture.is_valid()) {
+			Size2 base_size = base_texture->get_size();
+			Vector2 region_end = region.get_end();
+
+			Vector2 *uvs_write = uvs.ptrw();
+			uvs_write[0] = region.position / base_size;
+			uvs_write[1] = Vector2(region_end.x, region.position.y) / base_size;
+			uvs_write[2] = region_end / base_size;
+			uvs_write[3] = Vector2(region.position.x, region_end.y) / base_size;
+		}
 	}
 
 	Vector<Color> colors = {
