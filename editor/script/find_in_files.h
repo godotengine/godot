@@ -219,6 +219,7 @@ class FindInFilesResultsPanel : public MarginContainer {
 	HashMap<TreeItem *, int> file_items_results_count;
 	HashMap<TreeItem *, Result> result_items;
 	bool with_replace = false;
+	HashMap<String, Ref<Resource>> files_to_save;
 
 	String replace_text;
 
@@ -235,6 +236,7 @@ class FindInFilesResultsPanel : public MarginContainer {
 	void _on_item_edited();
 
 	void _apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text);
+	void _save_files_to_save();
 	void _update_matches_text();
 	void _update_replace_preview();
 	void _update_replace_item(TreeItem *p_item, const Result &p_result);
