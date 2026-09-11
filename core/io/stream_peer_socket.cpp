@@ -196,6 +196,11 @@ Error StreamPeerSocket::wait(NetSocket::PollType p_type, int p_timeout) {
 	return _sock->poll(p_type, p_timeout);
 }
 
+void StreamPeerSocket::shutdown(NetSocket::ShutdownType p_type) {
+	ERR_FAIL_COND(_sock.is_null());
+	_sock->shutdown(p_type);
+}
+
 Error StreamPeerSocket::put_data(const uint8_t *p_data, int p_bytes) {
 	int total;
 	return write(p_data, p_bytes, total, true);
