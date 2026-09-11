@@ -209,6 +209,133 @@ int64_t get_image_base(const String &p_path) {
 	}
 }
 
+static String get_gnu_debuglink(const String &p_exec_path) {
+	Ref<FileAccess> f = FileAccess::open(p_exec_path, FileAccess::READ);
+	if (f.is_null()) {
+		return String();
+	}
+
+	// Jump to the PE header and check the magic number.
+	{
+		f->seek(0x3c);
+		uint32_t pe_pos = f->get_32();
+
+		f->seek(pe_pos);
+		uint32_t magic = f->get_32();
+		if (magic != 0x00004550) {
+			return String();
+		}
+	}
+
+	// Process header.
+	int num_sections;
+	uint64_t string_table_pos = 0;
+
+	int64_t section_table_pos = 0;
+	{
+		int64_t header_pos = f->get_position();
+		f->seek(header_pos + 2);
+		num_sections = f->get_16();
+		f->seek(header_pos + 8);
+		string_table_pos += f->get_32();
+		f->seek(header_pos + 12);
+		string_table_pos += f->get_32() * 18;
+		f->seek(header_pos + 16);
+		uint16_t opt_header_size = f->get_16();
+		int64_t opt_header_pos = f->get_position() + 2;
+
+		// Skip rest of header + optional header to go to the section headers.
+		f->seek(opt_header_pos + opt_header_size);
+		section_table_pos = f->get_position();
+	}
+
+	if (string_table_pos == 0) {
+		return String();
+	}
+
+	// Load the strings table.
+	uint8_t *strings = nullptr;
+	{
+		f->seek(string_table_pos);
+		uint32_t string_data_size = f->get_32();
+
+		// Read strings data.
+		f->seek(string_table_pos);
+		strings = (uint8_t *)memalloc(string_data_size);
+		if (!strings) {
+			return String();
+		}
+		f->get_buffer(strings, string_data_size);
+	}
+
+	// Search for the ".gnu_debuglink" section.
+	String ret;
+
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * 40;
+		f->seek(section_header_pos);
+
+		uint8_t section_name[9];
+		f->get_buffer(section_name, 8);
+		section_name[8] = '\0';
+
+		if (section_name[0] == '/') {
+			uint32_t string_table_off = String::utf8((const char *)&section_name[1], 7).to_int();
+			if (strcmp((char *)strings + string_table_off, ".gnu_debuglink") == 0) {
+				// ".gnu_debuglink" section found.
+
+				f->seek(section_table_pos + i * 40 + 8);
+				uint32_t section_size = f->get_32();
+				f->seek(section_table_pos + i * 40 + 20);
+				uint32_t section_start = f->get_32();
+
+				f->seek(section_start);
+
+				// Extract the value as a UTF-8 string.
+				uint8_t *str = (uint8_t *)memalloc(section_size);
+
+				f->get_buffer(str, section_size);
+
+				ret = String::utf8((const char *)str, section_size);
+
+				memfree(str);
+
+				break;
+			}
+		}
+	}
+
+	memfree(strings);
+
+	return ret;
+}
+
+static String find_debugsymbols(const String &p_exec_path) {
+	const String base_dir = p_exec_path.get_base_dir() + "/";
+	const String exec_file = p_exec_path.get_file() + ".debugsymbols";
+
+	// First try the current executable name plus `.debugsymbols`, possibly in a `.debug` folder.
+	if (FileAccess::exists(p_exec_path + ".debugsymbols")) {
+		return p_exec_path + ".debugsymbols";
+	} else if (FileAccess::exists(base_dir + ".debug/" + exec_file)) {
+		return base_dir + ".debug/" + exec_file;
+	}
+
+	// Otherwise try using the `.gnu_debuglink` section, and try it in the same places if non-empty.
+	const String debuglink_value = get_gnu_debuglink(p_exec_path);
+	if (debuglink_value.is_empty()) {
+		return p_exec_path;
+	}
+
+	if (FileAccess::exists(base_dir + debuglink_value)) {
+		return base_dir + debuglink_value;
+	} else if (FileAccess::exists(base_dir + ".debug/" + debuglink_value)) {
+		return base_dir + ".debug/" + debuglink_value;
+	}
+
+	return p_exec_path;
+}
+
 extern void CrashHandlerException(int signal) {
 	CrashHandlerData data;
 
@@ -268,10 +395,7 @@ extern void CrashHandlerException(int signal) {
 
 	print_error(vformat("Load address: %x\n", (uint64_t)data.offset));
 
-	if (FileAccess::exists(exec_path + ".debugsymbols")) {
-		exec_path = exec_path + ".debugsymbols";
-	}
-	exec_path = exec_path.replace_char('/', '\\');
+	exec_path = find_debugsymbols(exec_path).replace_char('/', '\\');
 
 	CharString cs = exec_path.utf8(); // Note: should remain in scope during backtrace_simple call.
 	data.state = backtrace_create_state(cs.get_data(), 0, &error_callback, reinterpret_cast<void *>(&data));
