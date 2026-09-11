@@ -48,6 +48,7 @@
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <link.h>
+#include <unistd.h>
 
 #include <csignal>
 #include <cstdio>
@@ -109,9 +110,13 @@ static void handle_crash(int sig) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 	}
 
-	// Dump the backtrace to stderr with a message to the user
+	// Dump the backtrace to stderr with a message to the user.
 	print_error("\n================================================================");
-	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, sig));
+	if (OS::get_singleton()->get_stderr_type() == OS::STD_HANDLE_CONSOLE) {
+		print_error(vformat("\x1b[1;91m%s: Program crashed with signal %d.\x1b[0m", __FUNCTION__, sig));
+	} else {
+		print_error(vformat("%s: Program crashed with signal %d.", __FUNCTION__, sig));
+	}
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(GODOT_VERSION_HASH).is_empty()) {
@@ -194,7 +199,23 @@ static void handle_crash(int sig) {
 				}
 
 				// Simplify printed file paths to remove redundant `/./` sections (e.g. `/opt/godot/./core` -> `/opt/godot/core`).
-				print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
+				if (OS::get_singleton()->get_stderr_type() == OS::STD_HANDLE_CONSOLE) {
+					// Print colors using ANSI escape codes for easier visual grepping.
+					String color;
+					if (output.contains("::")) {
+						// Color function names and parameters.
+						output = output.replace(" at ", "\x1b[22;90m at ").replace("::", "\x1b[0m::\x1b[93m").replace("(", "\x1b[0m(");
+						// Godot function (green). This is generally what we're interested in, so highlight it.
+						color = "92";
+					} else {
+						// Not a Godot function (dark gray). Third-party library, or main process.
+						color = "90";
+					}
+					print_error(vformat("\x1b[94m%2d | \x1b[%sm%s - \x1b[22;90m%x (%s+%x)\x1b[0m", (int64_t)i, color, output, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off));
+				} else {
+					// Not a TTY (could be writing to a file). Don't use ANSI escape codes.
+					print_error(vformat("%2d | %s - %x (%s+%x)", (int64_t)i, output, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off));
+				}
 			}
 		} else {
 			// Otherwise fall back to trace symbols.
@@ -226,7 +247,13 @@ static void handle_crash(int sig) {
 					mod_name = "<unknown module>";
 				}
 
-				print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
+				if (OS::get_singleton()->get_stderr_type() == OS::STD_HANDLE_CONSOLE) {
+					// Print colors using ANSI escape codes for easier visual grepping.
+					print_error(vformat("\x1b[94m[%d] \x1b[96m%x \x1b[90m(%s+%x) - %s\x1b[0m", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
+				} else {
+					// Not a TTY (could be writing to a file). Don't use ANSI escape codes.
+					print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
+				}
 			}
 		}
 
