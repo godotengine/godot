@@ -87,11 +87,10 @@ void Vector4::normalize() {
 		return;
 	}
 
-	real_t l = length_squared();
-	if (l == 0) {
+	if (is_zero_approx()) {
 		zero();
 	} else {
-		l = Math::sqrt(l);
+		real_t l = length();
 		x /= l;
 		y /= l;
 		z /= l;
