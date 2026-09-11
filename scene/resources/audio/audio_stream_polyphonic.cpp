@@ -174,6 +174,10 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 		bool stream_done = false;
 
 		while (todo) {
+			if (s.paused.is_set()) {
+				break;
+			}
+
 			int to_mix = MIN(todo, int(INTERNAL_BUFFER_LEN));
 			int mixed = s.stream_playback->mix(internal_buffer, p_rate_scale * s.pitch_scale, to_mix);
 
@@ -225,10 +229,12 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 			streams[i].stream = p_stream;
 			streams[i].stream_playback = streams[i].stream->instantiate_playback();
 			streams[i].play_offset = p_from_offset;
+			streams[i].pause_time = p_from_offset;
 			streams[i].volume_db = p_volume_db;
 			streams[i].prev_volume_db = p_volume_db;
 			streams[i].pitch_scale = p_pitch_scale;
 			streams[i].id = id_counter++;
+			streams[i].paused.clear();
 			streams[i].finish_request.clear();
 			streams[i].pending_play.set();
 			streams[i].active.set();
@@ -296,31 +302,78 @@ const AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_fin
 	return &streams[index];
 }
 
+void AudioStreamPlaybackPolyphonic::seek_stream(ID p_stream_id, double p_time) {
+	Stream *s = _find_stream(p_stream_id);
+	ERR_FAIL_COND_MSG(!s, "Invalid stream ID.");
+	ERR_FAIL_COND_MSG(s->paused.is_set(), "Cannot seek while stream is paused.");
+
+	s->stream_playback->seek(p_time);
+}
+
+double AudioStreamPlaybackPolyphonic::get_stream_playback_position(ID p_stream_id) const {
+	const Stream *s = _find_stream(p_stream_id);
+	ERR_FAIL_COND_V_MSG(!s, 0.0, "Invalid stream ID.");
+
+	return s->stream_playback->get_playback_position();
+}
+
+void AudioStreamPlaybackPolyphonic::set_stream_paused(ID p_stream_id, bool p_pause) {
+	Stream *s = _find_stream(p_stream_id);
+	ERR_FAIL_COND_MSG(!s, "Invalid stream ID.");
+
+	if (p_pause && !s->paused.is_set()) {
+		s->pause_time = s->stream_playback->get_playback_position();
+		s->stream_playback->stop();
+		s->paused.set();
+	} else if (!p_pause && s->paused.is_set()) {
+		s->stream_playback->start(s->pause_time);
+		s->paused.clear();
+	}
+}
+
+bool AudioStreamPlaybackPolyphonic::is_stream_paused(ID p_stream_id) const {
+	const Stream *s = _find_stream(p_stream_id);
+	ERR_FAIL_COND_V_MSG(!s, false, "Invalid stream ID.");
+
+	return s->paused.is_set();
+}
+
 void AudioStreamPlaybackPolyphonic::set_stream_volume(ID p_stream_id, float p_volume_db) {
 	Stream *s = _find_stream(p_stream_id);
-	if (!s) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(!s, "Invalid stream ID.");
+
 	s->volume_db = p_volume_db;
+}
+
+float AudioStreamPlaybackPolyphonic::get_stream_volume(ID p_stream_id) const {
+	const Stream *s = _find_stream(p_stream_id);
+	ERR_FAIL_COND_V_MSG(!s, 0.0, "Invalid stream ID.");
+
+	return s->volume_db;
 }
 
 void AudioStreamPlaybackPolyphonic::set_stream_pitch_scale(ID p_stream_id, float p_pitch_scale) {
 	Stream *s = _find_stream(p_stream_id);
-	if (!s) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(!s, "Invalid stream ID.");
+
 	s->pitch_scale = p_pitch_scale;
 }
 
-bool AudioStreamPlaybackPolyphonic::is_stream_playing(ID p_stream_id) const {
+float AudioStreamPlaybackPolyphonic::get_stream_pitch_scale(ID p_stream_id) const {
+	const Stream *s = _find_stream(p_stream_id);
+	ERR_FAIL_COND_V_MSG(!s, 0.0, "Invalid stream ID.");
+
+	return s->pitch_scale;
+}
+
+bool AudioStreamPlaybackPolyphonic::is_id_valid(ID p_stream_id) const {
 	return _find_stream(p_stream_id) != nullptr;
 }
 
 void AudioStreamPlaybackPolyphonic::stop_stream(ID p_stream_id) {
 	Stream *s = _find_stream(p_stream_id);
-	if (!s) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(!s, "Invalid stream ID.");
+
 	s->finish_request.set();
 }
 
@@ -345,9 +398,15 @@ void AudioStreamPlaybackPolyphonic::set_sample_playback(const Ref<AudioSamplePla
 
 void AudioStreamPlaybackPolyphonic::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("play_stream", "stream", "from_offset", "volume_db", "pitch_scale", "playback_type", "bus"), &AudioStreamPlaybackPolyphonic::play_stream, DEFVAL(0), DEFVAL(0), DEFVAL(1.0), DEFVAL(0), DEFVAL(SceneStringName(Master)));
+	ClassDB::bind_method(D_METHOD("seek_stream", "stream", "time"), &AudioStreamPlaybackPolyphonic::seek_stream);
+	ClassDB::bind_method(D_METHOD("get_stream_playback_position", "stream"), &AudioStreamPlaybackPolyphonic::get_stream_playback_position);
+	ClassDB::bind_method(D_METHOD("set_stream_paused", "stream", "pause"), &AudioStreamPlaybackPolyphonic::set_stream_paused);
+	ClassDB::bind_method(D_METHOD("is_stream_paused", "stream"), &AudioStreamPlaybackPolyphonic::is_stream_paused);
 	ClassDB::bind_method(D_METHOD("set_stream_volume", "stream", "volume_db"), &AudioStreamPlaybackPolyphonic::set_stream_volume);
+	ClassDB::bind_method(D_METHOD("get_stream_volume", "stream"), &AudioStreamPlaybackPolyphonic::get_stream_volume);
 	ClassDB::bind_method(D_METHOD("set_stream_pitch_scale", "stream", "pitch_scale"), &AudioStreamPlaybackPolyphonic::set_stream_pitch_scale);
-	ClassDB::bind_method(D_METHOD("is_stream_playing", "stream"), &AudioStreamPlaybackPolyphonic::is_stream_playing);
+	ClassDB::bind_method(D_METHOD("get_stream_pitch_scale", "stream"), &AudioStreamPlaybackPolyphonic::get_stream_pitch_scale);
+	ClassDB::bind_method(D_METHOD("is_id_valid", "stream"), &AudioStreamPlaybackPolyphonic::is_id_valid);
 	ClassDB::bind_method(D_METHOD("stop_stream", "stream"), &AudioStreamPlaybackPolyphonic::stop_stream);
 
 	BIND_CONSTANT(INVALID_ID);
