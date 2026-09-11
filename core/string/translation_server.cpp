@@ -40,6 +40,10 @@
 #include "core/string/locales.h"
 #include "core/variant/typed_array.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/settings/editor_settings.h"
+#endif // TOOLS_ENABLED
+
 void TranslationServer::init_locale_info() {
 	// Init locale info.
 	language_map.clear();
@@ -482,7 +486,14 @@ void TranslationServer::set_locale(const String &p_locale) {
 	ERR_FAIL_COND_MSG(p_locale.is_empty(), "Locale cannot be an empty string.");
 
 	String new_locale = standardize_locale(p_locale);
-	if (locale == new_locale) {
+
+	bool done = (locale == new_locale);
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton()) {
+		done = done && !EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localization/localize_editor") && !EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localization/localize_documentation");
+	}
+#endif // TOOLS_ENABLED
+	if (done) {
 		return;
 	}
 
