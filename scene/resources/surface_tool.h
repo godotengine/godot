@@ -48,6 +48,9 @@ public:
 		uint32_t smooth_group = 0; // Must be first.
 
 		Color color;
+#ifdef REAL_T_IS_DOUBLE
+		float _ = 0; // needed to fill field padding consistently
+#endif
 		Vector3 normal;
 		Vector4 tangent; // xyz tangent, w orientation.
 		Vector2 uv;
