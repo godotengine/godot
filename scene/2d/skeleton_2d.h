@@ -170,6 +170,8 @@ public:
 	void set_modification_stack(Ref<SkeletonModificationStack2D> p_stack);
 	void execute_modifications(real_t p_delta, int p_execution_mode);
 
+	PackedStringArray get_configuration_warnings() const override;
+
 	Skeleton2D();
 	~Skeleton2D();
 };
