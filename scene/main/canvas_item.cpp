@@ -999,6 +999,46 @@ void CanvasItem::draw_texture_rect_region(RequiredParam<Texture2D> p_texture, co
 	texture->draw_rect_region(canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
+void CanvasItem::draw_texture_rotated(const Ref<Texture2D> &p_texture, const Point2 &p_pos, real_t p_rotation, const Vector2 &p_origin, const Rect2 &p_texture_region, const Color &p_modulate) {
+	ERR_THREAD_GUARD;
+	ERR_DRAW_GUARD;
+	ERR_FAIL_COND(p_texture.is_null());
+
+	const Vector2 texture_size = p_texture->get_size() * Vector2(p_texture_region.size.x < 0 ? -1 : 1, p_texture_region.size.y < 0 ? -1 : 1);
+	Rect2 region = p_texture_region.abs();
+	if (!region.has_area()) {
+		region = Rect2(Vector2(), texture_size);
+	}
+	const Vector2 draw_offset = Vector2::from_angle(p_rotation - Math::PI / 2);
+
+	const Vector2 dist_to_left(
+			draw_offset.y * region.size.x * p_origin.x,
+			-draw_offset.x * region.size.x * p_origin.x);
+	const Vector2 dist_to_right(
+			-draw_offset.y * region.size.x * (1 - p_origin.x),
+			draw_offset.x * region.size.x * (1 - p_origin.x));
+	const Vector2 dist_to_top(
+			draw_offset.x * region.size.y * p_origin.y,
+			draw_offset.y * region.size.y * p_origin.y);
+	const Vector2 dist_to_bottom(
+			-draw_offset.x * region.size.y * (1 - p_origin.y),
+			-draw_offset.y * region.size.y * (1 - p_origin.y));
+
+	PackedVector2Array points{
+		Vector2(p_pos.x + dist_to_left.x + dist_to_top.x, p_pos.y + dist_to_left.y + dist_to_top.y),
+		Vector2(p_pos.x + dist_to_right.x + dist_to_top.x, p_pos.y + dist_to_right.y + dist_to_top.y),
+		Vector2(p_pos.x + dist_to_right.x + dist_to_bottom.x, p_pos.y + dist_to_right.y + dist_to_bottom.y),
+		Vector2(p_pos.x + dist_to_left.x + dist_to_bottom.x, p_pos.y + dist_to_left.y + dist_to_bottom.y),
+	};
+	PackedVector2Array uvs{
+		region.position / texture_size,
+		Vector2(region.get_end().x, region.position.y) / texture_size,
+		region.get_end() / texture_size,
+		Vector2(region.position.x, region.get_end().y) / texture_size,
+	};
+	draw_colored_polygon(points, p_modulate, uvs, p_texture);
+}
+
 void CanvasItem::draw_msdf_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, double p_outline, double p_pixel_range, double p_scale) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
@@ -1497,6 +1537,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("draw_texture_rotated", "texture", "position", "rotation", "origin", "region", "modulate"), &CanvasItem::draw_texture_rotated, DEFVAL(Vector2(0.5, 0.5)), DEFVAL(Rect2()), DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_msdf_texture_rect_region", "texture", "rect", "src_rect", "modulate", "outline", "pixel_range", "scale"), &CanvasItem::draw_msdf_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0.0), DEFVAL(4.0), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("draw_lcd_texture_rect_region", "texture", "rect", "src_rect", "modulate"), &CanvasItem::draw_lcd_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_style_box", "style_box", "rect"), &CanvasItem::draw_style_box);
