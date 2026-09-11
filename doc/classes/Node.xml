@@ -805,6 +805,20 @@
 			<description>
 				Calls the given [param method] name, passing [param args] as arguments, on this node and all of its children, recursively.
 				If [param parent_first] is [code]true[/code], the method is called on this node first, then on all of its children. If [code]false[/code], the children's methods are called first.
+				Example:
+				[codeblocks]
+				[gdscript]
+				# This script is attached to a parent node and all its children.
+
+				func _ready():
+					propagate_call("setup", [15, ["apple", "orange", "pear"]])
+
+				func setup(total_fruits, fruit_names):
+					print("Setting up dispenser with %d fruits: %s" % [total_fruits, fruit_names])
+				[/gdscript]
+				[/codeblocks]
+				To call methods on children without also calling it on the parent, use [method get_children] and a [code]for[/code] loop with [method Object.call] or [method Object.callv] instead.
+				[b]Note:[/b] When calling methods that use static type hints, parameter types must match, including typed arrays/dictionaries. You may have to create explicitly typed arrays using [Array] and [Dictionary]'s typed constructors, as opposed to using the shorthand [code][][/code] and [code]{}[/code] syntaxes. Otherwise, the method won't be called and an error is printed.
 			</description>
 		</method>
 		<method name="propagate_notification">
