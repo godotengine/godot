@@ -1178,6 +1178,6 @@ void DockSlotGrid::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-Size2 DockSlotGrid::get_minimum_size() const {
+Size2 DockSlotGrid::_get_minimum_size() const {
 	return GRID_SIZE * CELL_SIZE * EDSCALE + (GRID_SIZE - Vector2i(1, 0)) * MARGINS * EDSCALE;
 }

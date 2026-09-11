@@ -106,6 +106,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	void fold();
 	void expand();
@@ -137,7 +139,6 @@ public:
 	void add_title_bar_control(Control *p_control);
 	void remove_title_bar_control(Control *p_control);
 
-	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_desired_size() const override;
 	virtual Size2 get_inner_combined_maximum_size() const override;
 

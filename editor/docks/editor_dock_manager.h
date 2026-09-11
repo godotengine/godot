@@ -187,7 +187,7 @@ protected:
 	void _notification(int p_what);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	virtual Size2 get_minimum_size() const override;
+	virtual Size2 _get_minimum_size() const override;
 
 public:
 	EditorDock *context_dock = nullptr;

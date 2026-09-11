@@ -5771,7 +5771,7 @@ void Tree::_update_all() {
 	}
 }
 
-Size2 Tree::get_minimum_size() const {
+Size2 Tree::_get_minimum_size() const {
 	Vector2 min_size = Vector2(0, _get_title_button_height());
 
 	if (theme_cache.panel_style.is_valid()) {

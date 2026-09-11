@@ -1067,7 +1067,7 @@ Size2 TabContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	return ms;
 }
 
-Size2 TabContainer::get_minimum_size() const {
+Size2 TabContainer::_get_minimum_size() const {
 	return _get_minimum_size(false);
 }
 

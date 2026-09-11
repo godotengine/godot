@@ -37,7 +37,7 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
-Size2 ProgressBar::get_minimum_size() const {
+Size2 ProgressBar::_get_minimum_size() const {
 	Size2 minimum_size = theme_cache.background_style->get_minimum_size();
 	minimum_size = minimum_size.max(theme_cache.fill_style->get_minimum_size());
 	if (show_percentage) {

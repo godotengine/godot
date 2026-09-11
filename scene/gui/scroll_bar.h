@@ -112,6 +112,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	static inline const int PAGE_DIVISOR = 8;
 
@@ -128,7 +130,6 @@ public:
 	void set_smooth_scroll_enabled(bool p_enable);
 	bool is_smooth_scroll_enabled() const;
 
-	virtual Size2 get_minimum_size() const override;
 	ScrollBar(Orientation p_orientation = VERTICAL);
 	~ScrollBar();
 };

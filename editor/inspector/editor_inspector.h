@@ -238,14 +238,14 @@ protected:
 	void _accessibility_action_menu(const Variant &p_data);
 	void _accessibility_action_click(const Variant &p_data);
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	static String get_property_warning(Object *p_object, const StringName &p_property);
 
 	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
 
 	String get_tooltip_string(const String &p_string) const;
-
-	virtual Size2 get_minimum_size() const override;
 
 	void set_label(const String &p_label);
 	String get_label() const;
@@ -445,6 +445,8 @@ protected:
 	void _notification(int p_what);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	virtual Size2 _get_minimum_size() const override;
+
 	void _accessibility_action_menu(const Variant &p_data);
 
 public:
@@ -455,7 +457,6 @@ public:
 
 	void register_property(EditorProperty *p_property) { category_properties.push_back(p_property); }
 
-	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
 	EditorInspectorCategory();
@@ -564,11 +565,12 @@ protected:
 	static void _bind_methods();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
+	virtual Size2 _get_minimum_size() const override;
+
 	void _accessibility_action_collapse(const Variant &p_data);
 	void _accessibility_action_expand(const Variant &p_data);
 
 public:
-	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
 	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);

@@ -198,7 +198,7 @@ void LinkButton::pressed() {
 	OS::get_singleton()->shell_open(uri);
 }
 
-Size2 LinkButton::get_minimum_size() const {
+Size2 LinkButton::_get_minimum_size() const {
 	Size2 minsize = text_buf->get_size();
 	if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		minsize.width = 0;

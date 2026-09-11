@@ -747,6 +747,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 #ifndef DISABLE_DEPRECATED
 	void _set_selection_mode_bind_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
 	Point2i _get_line_column_at_pos_bind_compat_100913(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
@@ -849,7 +851,6 @@ public:
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 	bool alt_input(const Ref<InputEvent> &p_gui_input);
-	virtual Size2 get_minimum_size() const override;
 	virtual bool is_text_field() const override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 	virtual Variant get_drag_data(const Point2 &p_point) override;
