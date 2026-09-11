@@ -1398,6 +1398,7 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->add_item(TTRC("Manage Tags"), MENU_MANAGE_TAGS);
 		project_context_menu->add_item(TTRC("Duplicate"), MENU_DUPLICATE);
 		project_context_menu->add_item(TTRC("Remove from Project List"), MENU_REMOVE);
+		project_context_menu->add_item(TTRC("Relocate"), MENU_RELOCATE);
 		add_child(project_context_menu);
 		project_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectList::_menu_option));
 		_update_menu_icons();
@@ -1440,6 +1441,7 @@ void ProjectList::_update_menu_icons() {
 	project_context_menu->set_item_icon(project_context_menu->get_item_index(MENU_MANAGE_TAGS), get_editor_theme_icon("Script"));
 	project_context_menu->set_item_icon(project_context_menu->get_item_index(MENU_DUPLICATE), get_editor_theme_icon("Duplicate"));
 	project_context_menu->set_item_icon(project_context_menu->get_item_index(MENU_REMOVE), get_editor_theme_icon("Remove"));
+	project_context_menu->set_item_icon(project_context_menu->get_item_index(MENU_RELOCATE), get_editor_theme_icon("Search"));
 }
 
 // Project list selection.
@@ -1636,6 +1638,15 @@ void ProjectList::erase_missing_projects() {
 
 	print_line("Removed " + itos(deleted_count) + " projects from the list, remaining " + itos(remaining_count) + " projects");
 	save_config();
+}
+
+void ProjectList::erase_project(const String &p_dir_path) {
+	for (int i = 0; i < _projects.size(); ++i) {
+		if (_projects[i].path == p_dir_path) {
+			_remove_project(i, true);
+			break;
+		}
+	}
 }
 
 // Project list sorting and filtering.
