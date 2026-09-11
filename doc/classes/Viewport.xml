@@ -36,7 +36,7 @@
 		<method name="get_audio_listener_2d" qualifiers="const">
 			<return type="AudioListener2D" />
 			<description>
-				Returns the currently active 2D audio listener. Returns [code]null[/code] if there are no active 2D audio listeners, in which case the active 2D camera will be treated as listener.
+				Returns the currently active 2D audio listener. Returns [code]null[/code] if there are no active 2D audio listeners, in which case the center of the viewport's visible rect is used as a reference for positional audio.
 			</description>
 		</method>
 		<method name="get_audio_listener_3d" qualifiers="const">
