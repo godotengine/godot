@@ -57,6 +57,10 @@ void GLTFPhysicsShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &GLTFPhysicsShape::set_size);
 	ClassDB::bind_method(D_METHOD("get_radius"), &GLTFPhysicsShape::get_radius);
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &GLTFPhysicsShape::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius_top"), &GLTFPhysicsShape::get_radius_top);
+	ClassDB::bind_method(D_METHOD("set_radius_top", "radius_top"), &GLTFPhysicsShape::set_radius_top);
+	ClassDB::bind_method(D_METHOD("get_radius_bottom"), &GLTFPhysicsShape::get_radius_bottom);
+	ClassDB::bind_method(D_METHOD("set_radius_bottom", "radius_bottom"), &GLTFPhysicsShape::set_radius_bottom);
 	ClassDB::bind_method(D_METHOD("get_height"), &GLTFPhysicsShape::get_height);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &GLTFPhysicsShape::set_height);
 	ClassDB::bind_method(D_METHOD("get_is_trigger"), &GLTFPhysicsShape::get_is_trigger);
@@ -69,6 +73,8 @@ void GLTFPhysicsShape::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "shape_type"), "set_shape_type", "get_shape_type");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius_top"), "set_radius_top", "get_radius_top");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius_bottom"), "set_radius_bottom", "get_radius_bottom");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_trigger"), "set_is_trigger", "get_is_trigger");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mesh_index"), "set_mesh_index", "get_mesh_index");
@@ -92,11 +98,32 @@ void GLTFPhysicsShape::set_size(const Vector3 &p_size) {
 }
 
 real_t GLTFPhysicsShape::get_radius() const {
-	return radius;
+	if (Math::is_equal_approx(radius_top, radius_bottom)) {
+		return radius_top;
+	}
+	// Until Godot has tapered collision shapes, return the average as an approximation.
+	return (radius_top + radius_bottom) * real_t(0.5);
 }
 
 void GLTFPhysicsShape::set_radius(real_t p_radius) {
-	radius = p_radius;
+	radius_top = p_radius;
+	radius_bottom = p_radius;
+}
+
+real_t GLTFPhysicsShape::get_radius_top() const {
+	return radius_top;
+}
+
+void GLTFPhysicsShape::set_radius_top(real_t p_radius_top) {
+	radius_top = p_radius_top;
+}
+
+real_t GLTFPhysicsShape::get_radius_bottom() const {
+	return radius_bottom;
+}
+
+void GLTFPhysicsShape::set_radius_bottom(real_t p_radius_bottom) {
+	radius_bottom = p_radius_bottom;
 }
 
 real_t GLTFPhysicsShape::get_height() const {
@@ -237,19 +264,25 @@ Ref<Shape3D> GLTFPhysicsShape::to_resource(bool p_cache_shapes) {
 		} else if (shape_type == "capsule") {
 			Ref<CapsuleShape3D> capsule;
 			capsule.instantiate();
-			capsule->set_radius(radius);
+			if (!Math::is_equal_approx(get_radius_top(), get_radius_bottom())) {
+				WARN_PRINT("GLTFPhysicsShape: The capsule shape has different radiusTop and radiusBottom values. Using the average radius as an approximation.");
+			}
+			capsule->set_radius(get_radius());
 			capsule->set_height(height);
 			_shape_cache = capsule;
 		} else if (shape_type == "cylinder") {
 			Ref<CylinderShape3D> cylinder;
 			cylinder.instantiate();
-			cylinder->set_radius(radius);
+			if (!Math::is_equal_approx(get_radius_top(), get_radius_bottom())) {
+				WARN_PRINT("GLTFPhysicsShape: The cylinder shape has different radiusTop and radiusBottom values. Using the average radius as an approximation.");
+			}
+			cylinder->set_radius(get_radius());
 			cylinder->set_height(height);
 			_shape_cache = cylinder;
 		} else if (shape_type == "sphere") {
 			Ref<SphereShape3D> sphere;
 			sphere.instantiate();
-			sphere->set_radius(radius);
+			sphere->set_radius(get_radius());
 			_shape_cache = sphere;
 		} else if (shape_type == "convex") {
 			ERR_FAIL_COND_V_MSG(importer_mesh.is_null(), _shape_cache, "GLTFPhysicsShape: Error converting convex hull shape to a shape resource: The mesh resource is null.");
@@ -284,10 +317,25 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary &p_dict
 	} else {
 		properties = p_dictionary;
 	}
-	if (properties.has("radius")) {
-		gltf_shape->set_radius(properties["radius"]);
+	real_t radius = properties.get("radius", gltf_shape->get_radius_top());
+	real_t radius_top = radius;
+	real_t radius_bottom = radius;
+	if (shape_type == "capsule" || shape_type == "cylinder") {
+		radius_top = properties.get("radiusTop", radius);
+		radius_bottom = properties.get("radiusBottom", radius);
 	}
-	if (properties.has("height")) {
+	gltf_shape->set_radius_top(radius_top);
+	gltf_shape->set_radius_bottom(radius_bottom);
+	const String extension = p_dictionary.get("extension", "");
+	if (extension != "OMI_collider" && (shape_type == "capsule" || shape_type == "cylinder")) {
+		if (shape_type == "capsule") {
+			real_t mid_height = properties.get("height", real_t(1.0));
+			gltf_shape->set_height(mid_height + radius_top + radius_bottom);
+		} else { // cylinder
+			real_t total_height = properties.get("height", real_t(2.0));
+			gltf_shape->set_height(total_height);
+		}
+	} else if (properties.has("height")) {
 		gltf_shape->set_height(properties["height"]);
 	}
 	if (properties.has("size")) {
@@ -322,10 +370,12 @@ Dictionary GLTFPhysicsShape::to_dictionary() const {
 		size_array[2] = size.z;
 		sub["size"] = size_array;
 	} else if (shape_type == "capsule") {
-		sub["radius"] = get_radius();
-		sub["height"] = get_height();
+		sub["radiusTop"] = get_radius_top();
+		sub["radiusBottom"] = get_radius_bottom();
+		sub["height"] = MAX(get_height() - (get_radius_top() + get_radius_bottom()), real_t(0.0));
 	} else if (shape_type == "cylinder") {
-		sub["radius"] = get_radius();
+		sub["radiusTop"] = get_radius_top();
+		sub["radiusBottom"] = get_radius_bottom();
 		sub["height"] = get_height();
 	} else if (shape_type == "sphere") {
 		sub["radius"] = get_radius();
