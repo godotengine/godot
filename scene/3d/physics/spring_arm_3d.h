@@ -42,10 +42,12 @@ class SpringArm3D : public Node3D {
 	real_t current_spring_length = 0.0;
 	uint32_t mask = 1;
 	real_t margin = 0.01;
+	bool hit_back_faces = true;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_length(real_t p_length);
@@ -60,6 +62,8 @@ public:
 	real_t get_hit_length();
 	void set_margin(real_t p_margin);
 	real_t get_margin();
+	void set_hit_back_faces(bool p_enabled);
+	bool is_hit_back_faces_enabled() const;
 
 private:
 	void process_spring();
