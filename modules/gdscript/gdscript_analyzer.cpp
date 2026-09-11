@@ -836,6 +836,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				script_path = autoload.path;
 			}
 			if (script_path.is_empty()) {
+				push_error(vformat(R"(Could not resolve script type from autoload "%s".)", first), first_id);
 				return bad_type;
 			}
 			Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(script_path);
