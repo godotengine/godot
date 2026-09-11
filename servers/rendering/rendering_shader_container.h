@@ -42,7 +42,7 @@ class RenderingShaderContainer : public RefCounted {
 
 public:
 	static const uint32_t CONTAINER_MAGIC_NUMBER = 0x43535247;
-	static const uint32_t CONTAINER_VERSION = 2;
+	static const uint32_t CONTAINER_VERSION = 3;
 
 protected:
 	using RDC = RenderingDeviceCommons;
@@ -64,6 +64,7 @@ protected:
 		uint32_t has_physical_storage_buffer_addresses = 0;
 		uint32_t has_dynamic_buffers = 0;
 		uint32_t compute_local_size[3] = {};
+		uint32_t compute_local_spec_id[3] = { UINT32_MAX, UINT32_MAX, UINT32_MAX };
 		uint32_t set_count = 0;
 		uint32_t push_constant_size = 0;
 		uint32_t push_constant_stages_mask = 0;
@@ -227,6 +228,7 @@ protected:
 		uint64_t vertex_input_mask = 0;
 		uint32_t fragment_output_mask = 0;
 		uint32_t compute_local_size[3] = {};
+		uint32_t compute_local_spec_id[3] = { UINT32_MAX, UINT32_MAX, UINT32_MAX };
 		uint32_t push_constant_size = 0;
 		bool has_multiview = false;
 		bool has_physical_storage_buffer_addresses = false;
