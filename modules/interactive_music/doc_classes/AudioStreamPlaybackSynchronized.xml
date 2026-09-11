@@ -8,4 +8,13 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_playback">
+			<return type="AudioStreamPlayback" />
+			<param index="0" name="stream_index" type="int" />
+			<description>
+				Return playback of sub-stream, by index.
+			</description>
+		</method>
+	</methods>
 </class>
