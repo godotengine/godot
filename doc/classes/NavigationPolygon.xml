@@ -216,11 +216,11 @@
 			Represents the size of the [enum SamplePartitionType] enum.
 		</constant>
 		<constant name="PARSED_GEOMETRY_MESH_INSTANCES" value="0" enum="ParsedGeometryType">
-			Parses mesh instances as obstruction geometry. This includes [Polygon2D], [MeshInstance2D], [MultiMeshInstance2D], and [TileMap] nodes.
+			Parses mesh instances as obstruction geometry. This includes [Polygon2D], [MeshInstance2D], [MultiMeshInstance2D], and [TileMapLayer] nodes.
 			Meshes are only parsed when they use a 2D vertices surface format.
 		</constant>
 		<constant name="PARSED_GEOMETRY_STATIC_COLLIDERS" value="1" enum="ParsedGeometryType">
-			Parses [StaticBody2D] and [TileMap] colliders as obstruction geometry. The collider should be in any of the layers specified by [member parsed_collision_mask].
+			Parses [StaticBody2D] and [TileMapLayer] colliders as obstruction geometry. The collider should be in any of the layers specified by [member parsed_collision_mask].
 		</constant>
 		<constant name="PARSED_GEOMETRY_BOTH" value="2" enum="ParsedGeometryType">
 			Both [constant PARSED_GEOMETRY_MESH_INSTANCES] and [constant PARSED_GEOMETRY_STATIC_COLLIDERS].
