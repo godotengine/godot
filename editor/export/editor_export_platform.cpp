@@ -1341,7 +1341,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				autoload_path = autoload_path.substr(1);
 			}
 
-			_export_find_dependencies(autoload_path, paths);
+			_export_find_dependencies(ResourceUID::ensure_path(autoload_path), paths);
 		}
 	}
 
