@@ -198,7 +198,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		_clear_intermediate_buffers();
 	}
 
-	if ((!use_internal_buffer || internal3d.color != 0) && (msaa3d.mode == RSE::VIEWPORT_MSAA_DISABLED || msaa3d.color != 0)) {
+	if ((!use_internal_buffer || internal3d.color != 0) && (msaa3d.mode == RSE::VIEWPORT_MSAA_DISABLED || msaa3d.fbo != 0)) {
 		// already setup!
 		return;
 	}
@@ -268,7 +268,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
-	if (msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && msaa3d.color == 0) {
+	if (msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && msaa3d.fbo == 0) {
 		// Setup MSAA.
 		const GLsizei samples[] = { 1, 2, 4, 8 };
 		msaa3d.samples = samples[msaa3d.mode];
