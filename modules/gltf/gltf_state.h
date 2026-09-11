@@ -255,6 +255,7 @@ public:
 
 	String get_filename() const;
 	void set_filename(const String &p_filename);
+	bool is_text_file() const;
 
 	PackedInt32Array get_root_nodes() const;
 	void set_root_nodes(const PackedInt32Array &p_root_nodes);
