@@ -139,6 +139,8 @@ class DisplayServerWayland : public DisplayServer {
 
 	WaylandThread wayland_thread;
 
+	DisplayServerEnums::NotificationID noti_id = 0;
+
 	DisplayServerEnums::Context context;
 	bool swap_cancel_ok = false;
 
@@ -356,6 +358,9 @@ public:
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
 	virtual DisplayServerEnums::CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape, const Vector2 &p_hotspot) override;
+
+	virtual DisplayServerEnums::NotificationID send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) override;
+	virtual void hide_toast_notification(DisplayServerEnums::NotificationID p_id) override;
 
 	virtual bool get_swap_cancel_ok() override;
 
