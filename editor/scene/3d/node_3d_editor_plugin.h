@@ -224,10 +224,6 @@ private:
 	PopupMenu *gizmos_menu = nullptr;
 	MenuButton *view_layout_menu = nullptr;
 
-#ifdef MODULE_TEXTURE_STREAMING_ENABLED
-	MenuButton *textures_layout_menu = nullptr;
-#endif
-
 	AcceptDialog *accept = nullptr;
 
 	ConfirmationDialog *snap_dialog = nullptr;
@@ -360,6 +356,7 @@ private:
 
 #ifdef MODULE_TEXTURE_STREAMING_ENABLED
 	Button *textures_button = nullptr;
+	VSeparator *textures_separator = nullptr;
 	PopupPanel *textures_popup = nullptr;
 	Button *textures_very_low = nullptr;
 	Button *textures_low = nullptr;
