@@ -42,6 +42,9 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/tree.h"
 #include "servers/display/display_server.h"
 
 bool EditorHelpSearch::_all_terms_in_name(const Vector<String> &p_terms, const String &p_name) const {
@@ -156,10 +159,8 @@ void EditorHelpSearch::_update_results() {
 			search_flags |= SEARCH_SHOW_HIERARCHY;
 		}
 
-		search.instantiate(results_tree, results_tree, &tree_cache, term, search_flags);
+		search.instantiate(results_tree, results_tree, &tree_cache, term, category_flags, search_flags);
 
-		// Clear old search flags to force rebuild on short term.
-		old_search_flags = 0;
 		set_process(true);
 	} else {
 		// Disable hierarchy and case sensitive options, not used for short searches.
@@ -167,14 +168,26 @@ void EditorHelpSearch::_update_results() {
 		hierarchy_button->set_disabled(true);
 
 		// Always show hierarchy for short searches.
-		search.instantiate(results_tree, results_tree, &tree_cache, term, search_flags | SEARCH_SHOW_HIERARCHY);
+		search.instantiate(results_tree, results_tree, &tree_cache, term, category_flags, search_flags | SEARCH_SHOW_HIERARCHY);
 
-		old_search_flags = search_flags;
 		set_process(true);
 	}
 }
 
 void EditorHelpSearch::_search_box_text_changed(const String &p_text) {
+	_update_results();
+}
+
+void EditorHelpSearch::_category_filter_id_pressed(int p_id) {
+	const int index = category_filter_button->get_popup()->get_item_index(p_id);
+	const bool new_state = !category_filter_button->get_popup()->is_item_checked(index);
+	if (new_state) {
+		category_flags |= p_id;
+	} else {
+		category_flags &= ~p_id;
+	}
+	category_filter_button->get_popup()->set_item_checked(index, new_state);
+	EditorSettings::get_singleton()->set_project_metadata("search_help", "category_flags", category_flags);
 	_update_results();
 }
 
@@ -237,6 +250,7 @@ void EditorHelpSearch::_notification(int p_what) {
 
 			case_sensitive_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
 			hierarchy_button->set_button_icon(get_editor_theme_icon(SNAME("ClassList")));
+			category_filter_button->set_button_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
 
 			if (is_visible()) {
 				_update_results();
@@ -285,7 +299,6 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 		popup_centered_ratio(0.5F);
 	}
 
-	old_search_flags = 0;
 	if (p_term.is_empty()) {
 		search_box->clear();
 	} else {
@@ -343,6 +356,34 @@ EditorHelpSearch::EditorHelpSearch() {
 	hierarchy_button->set_pressed(true);
 	hierarchy_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	hbox->add_child(hierarchy_button);
+
+	/* clang-format off */
+#define ADD_CATEGORY_FILTER_ITEM(m_label, m_id) \
+	category_filter_menu->add_check_item((m_label), (m_id)); \
+	category_filter_menu->set_item_checked(category_filter_menu->get_item_index(m_id), category_flags & (m_id))
+	/* clang-format on */
+
+	category_flags = (int)EditorSettings::get_singleton()->get_project_metadata("search_help", "category_flags", category_flags) & CAT_ALL;
+
+	category_filter_button = memnew(MenuButton);
+	category_filter_button->set_accessibility_name(TTRC("Category Filter"));
+	category_filter_button->set_tooltip_text(TTR("Filter Classes by Category"));
+	PopupMenu *category_filter_menu = category_filter_button->get_popup();
+	category_filter_menu->add_separator("Engine");
+	ADD_CATEGORY_FILTER_ITEM(TTR("Main Classes"), CAT_ENGINE_MAIN);
+	ADD_CATEGORY_FILTER_ITEM(TTR("Editor-Only Classes"), CAT_ENGINE_EDITOR);
+	category_filter_menu->add_separator("Extension");
+	ADD_CATEGORY_FILTER_ITEM(TTR("Main Classes"), CAT_EXTENSION_MAIN);
+	ADD_CATEGORY_FILTER_ITEM(TTR("Editor-Only Classes"), CAT_EXTENSION_EDITOR);
+	category_filter_menu->add_separator("Script");
+	ADD_CATEGORY_FILTER_ITEM(TTR("Global Classes"), CAT_SCRIPT_GLOBAL);
+	ADD_CATEGORY_FILTER_ITEM(TTR("Unnamed Classes"), CAT_SCRIPT_UNNAMED);
+	ADD_CATEGORY_FILTER_ITEM(TTR("Built-In Script Classes"), CAT_SCRIPT_BUILTIN);
+	category_filter_menu->set_hide_on_checkable_item_selection(false);
+	category_filter_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorHelpSearch::_category_filter_id_pressed));
+	hbox->add_child(category_filter_button);
+
+#undef ADD_CATEGORY_FILTER_ITEM
 
 	filter_combo = memnew(OptionButton);
 	filter_combo->set_accessibility_name(TTRC("Filter"));
@@ -484,23 +525,25 @@ bool EditorHelpSearch::Runner::_phase_fill_classes() {
 			return false;
 		}
 
-		// If class matches the flags, add it to the matched stack.
-		const bool class_matched =
-				(search_flags & SEARCH_CLASSES) ||
-				((search_flags & SEARCH_CONSTRUCTORS) && !class_doc->constructors.is_empty()) ||
-				((search_flags & SEARCH_METHODS) && !class_doc->methods.is_empty()) ||
-				((search_flags & SEARCH_OPERATORS) && !class_doc->operators.is_empty()) ||
-				((search_flags & SEARCH_SIGNALS) && !class_doc->signals.is_empty()) ||
-				((search_flags & SEARCH_CONSTANTS) && !class_doc->constants.is_empty()) ||
-				((search_flags & SEARCH_PROPERTIES) && !class_doc->properties.is_empty()) ||
-				((search_flags & SEARCH_THEME_ITEMS) && !class_doc->theme_properties.is_empty()) ||
-				((search_flags & SEARCH_ANNOTATIONS) && !class_doc->annotations.is_empty());
+		if (_match_category(class_doc)) {
+			// If class matches the flags, add it to the matched stack.
+			const bool class_matched =
+					(search_flags & SEARCH_CLASSES) ||
+					((search_flags & SEARCH_CONSTRUCTORS) && !class_doc->constructors.is_empty()) ||
+					((search_flags & SEARCH_METHODS) && !class_doc->methods.is_empty()) ||
+					((search_flags & SEARCH_OPERATORS) && !class_doc->operators.is_empty()) ||
+					((search_flags & SEARCH_SIGNALS) && !class_doc->signals.is_empty()) ||
+					((search_flags & SEARCH_CONSTANTS) && !class_doc->constants.is_empty()) ||
+					((search_flags & SEARCH_PROPERTIES) && !class_doc->properties.is_empty()) ||
+					((search_flags & SEARCH_THEME_ITEMS) && !class_doc->theme_properties.is_empty()) ||
+					((search_flags & SEARCH_ANNOTATIONS) && !class_doc->annotations.is_empty());
 
-		if (class_matched) {
-			if (term.is_empty() || class_doc->name.containsn(term)) {
-				matched_classes.push_back(Pair<DocData::ClassDoc *, String>(class_doc, String()));
-			} else if (String keyword = _match_keywords(term, class_doc->keywords); !keyword.is_empty()) {
-				matched_classes.push_back(Pair<DocData::ClassDoc *, String>(class_doc, keyword));
+			if (class_matched) {
+				if (term.is_empty() || class_doc->name.containsn(term)) {
+					matched_classes.push_back(Pair<DocData::ClassDoc *, String>(class_doc, String()));
+				} else if (String keyword = _match_keywords(term, class_doc->keywords); !keyword.is_empty()) {
+					matched_classes.push_back(Pair<DocData::ClassDoc *, String>(class_doc, keyword));
+				}
 			}
 		}
 
@@ -727,6 +770,12 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 		ClassMatch match;
 		match.doc = class_doc;
 
+		match.category = _match_category(class_doc);
+
+		if (!match.category) {
+			goto insert_match;
+		}
+
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES) {
 			match.name = _match_string(term, class_doc->name);
@@ -797,6 +846,8 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 				}
 			}
 		}
+
+	insert_match:
 		matches[class_doc->name] = match;
 	}
 
@@ -878,7 +929,7 @@ bool EditorHelpSearch::Runner::_phase_class_items() {
 			_create_class_hierarchy(match);
 		}
 	} else {
-		if (match.name || !match.keyword.is_empty()) {
+		if (match.category && (match.name || !match.keyword.is_empty())) {
 			_create_class_item(root_item, match.doc, false, match.name ? String() : match.keyword);
 		}
 	}
@@ -980,6 +1031,50 @@ String EditorHelpSearch::Runner::_match_keywords_in_all_terms(const String &p_ke
 		}
 	}
 	return matching_keyword;
+}
+
+bool EditorHelpSearch::Runner::_match_category(const DocData::ClassDoc *p_class_doc) const {
+	if (p_class_doc->is_script_doc) {
+		if (p_class_doc->name.begins_with("\"")) {
+			if (p_class_doc->name.contains("::")) {
+				// Examples: `"my_scene.tscn::GDScript_abcde"`, `"my_scene.tscn::GDScript_abcde".InnerClass`.
+				return category_flags & CAT_SCRIPT_BUILTIN;
+			} else {
+				// Examples: `"unnamed_class.gd"`, `"unnamed_class.gd".InnerClass`.
+				return category_flags & CAT_SCRIPT_UNNAMED;
+			}
+		} else {
+			// Examples: `GlobalClass`, `GlobalClass.InnerClass`.
+			return category_flags & CAT_SCRIPT_GLOBAL;
+		}
+	} else {
+		const StringName class_name = p_class_doc->name;
+		if (ClassDB::class_exists(class_name)) {
+			switch (ClassDB::get_api_type(class_name)) {
+				case ClassDB::API_CORE:
+					return category_flags & CAT_ENGINE_MAIN;
+				case ClassDB::API_EDITOR:
+					return category_flags & CAT_ENGINE_EDITOR;
+				case ClassDB::API_EXTENSION:
+					return category_flags & CAT_EXTENSION_MAIN;
+				case ClassDB::API_EDITOR_EXTENSION:
+					return category_flags & CAT_EXTENSION_EDITOR;
+				case ClassDB::API_NONE:
+					return true; // Is this possible? Let's always display this class.
+			}
+		} else if (category_flags & CAT_ENGINE_MAIN) {
+			if (p_class_doc->name.begins_with("@")) {
+				return true;
+			}
+			if (Variant::get_type_by_name(p_class_doc->name) != Variant::VARIANT_MAX) {
+				return true;
+			}
+			if (class_name == SNAME("Variant")) {
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 bool EditorHelpSearch::Runner::_match_string(const String &p_term, const String &p_string) const {
@@ -1105,7 +1200,7 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 		}
 	}
 
-	TreeItem *class_item = _create_class_item(parent_item, p_match.doc, !p_match.name && p_match.keyword.is_empty(), p_match.name ? String() : p_match.keyword);
+	TreeItem *class_item = _create_class_item(parent_item, p_match.doc, !p_match.category && !p_match.name && p_match.keyword.is_empty(), p_match.name ? String() : p_match.keyword);
 	class_items[p_match.doc->name] = class_item;
 	return class_item;
 }
@@ -1305,11 +1400,12 @@ bool EditorHelpSearch::Runner::work(uint64_t slot) {
 	return true;
 }
 
-EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, TreeCache *p_tree_cache, const String &p_term, int p_search_flags) :
+EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, TreeCache *p_tree_cache, const String &p_term, int p_category_flags, int p_search_flags) :
 		ui_service(p_icon_service),
 		results_tree(p_results_tree),
 		tree_cache(p_tree_cache),
 		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.to_lower() : p_term),
+		category_flags(p_category_flags),
 		search_flags(p_search_flags),
 		disabled_color(ui_service->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor))) {
 }
