@@ -417,6 +417,9 @@ void EditorRunBar::play_main_scene(bool p_from_native, const Vector<String> &p_p
 		EditorToaster::get_singleton()->popup_str(TTR("Recovery Mode is enabled. Disable it to run the project."), EditorToaster::SEVERITY_WARNING);
 		return;
 	}
+	if (!is_playing_enabled()) {
+		return;
+	}
 
 	if (p_from_native) {
 		run_native->resume_run_native();
@@ -431,6 +434,9 @@ void EditorRunBar::play_main_scene(bool p_from_native, const Vector<String> &p_p
 void EditorRunBar::play_current_scene(bool p_reload, const Vector<String> &p_play_args) {
 	if (Engine::get_singleton()->is_recovery_mode_hint()) {
 		EditorToaster::get_singleton()->popup_str(TTR("Recovery Mode is enabled. Disable it to run the project."), EditorToaster::SEVERITY_WARNING);
+		return;
+	}
+	if (!is_playing_enabled()) {
 		return;
 	}
 
@@ -450,6 +456,9 @@ void EditorRunBar::play_current_scene(bool p_reload, const Vector<String> &p_pla
 void EditorRunBar::play_custom_scene(const String &p_custom, const Vector<String> &p_play_args) {
 	if (Engine::get_singleton()->is_recovery_mode_hint()) {
 		EditorToaster::get_singleton()->popup_str(TTR("Recovery Mode is enabled. Disable it to run the project."), EditorToaster::SEVERITY_WARNING);
+		return;
+	}
+	if (!is_playing_enabled()) {
 		return;
 	}
 
@@ -521,6 +530,17 @@ void EditorRunBar::set_movie_maker_enabled(bool p_enabled) {
 
 bool EditorRunBar::is_movie_maker_enabled() const {
 	return movie_maker_enabled;
+}
+
+void EditorRunBar::set_playing_enabled(bool p_enabled) {
+	playing_enabled = p_enabled;
+	play_button->set_disabled(!p_enabled);
+	play_scene_button->set_disabled(!p_enabled);
+	play_custom_scene_button->set_disabled(!p_enabled);
+}
+
+bool EditorRunBar::is_playing_enabled() const {
+	return playing_enabled;
 }
 
 void EditorRunBar::update_profiler_autostart_indicator() {
