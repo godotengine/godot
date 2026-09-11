@@ -80,7 +80,7 @@ if env["profiler"]:
         if env["profiler_broadcast_address"]:
             env_tracy.Append(CPPDEFINES=[("TRACY_CLIENT_ADDRESS", '"' + env["profiler_broadcast_address"] + '"')])
         env_tracy.disable_warnings()
-        env_tracy.add_source_files(env.core_sources, str((profiler_path / "TracyClient.cpp").absolute()))
+        env.core_sources += [env_tracy.Object("TracyClient", str((profiler_path / "TracyClient.cpp").absolute()))]
     elif env["profiler"] == "perfetto":
         if env["profiler_path"]:
             profiler_path = find_perfetto_path(pathlib.Path(env["profiler_path"]))
@@ -105,7 +105,7 @@ if env["profiler"]:
             print("profiler_broadcast_address ignored. Perfetto does not support broadcast address configuration.")
         env_perfetto.disable_warnings()
         env_perfetto.Prepend(CPPPATH=[str(profiler_path.absolute())])
-        env_perfetto.add_source_files(env.core_sources, str((profiler_path / "perfetto.cc").absolute()))
+        env.core_sources += [env_perfetto.Object("perfetto", str((profiler_path / "perfetto.cc").absolute()))]
 elif env["profiler_path"]:
     print("profiler is required if profiler_path is set. Aborting.")
     Exit(255)
