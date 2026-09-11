@@ -71,6 +71,9 @@ public:
 	virtual Error object_configuration_add(Object *p_object, Variant p_config) = 0;
 	virtual Error object_configuration_remove(Object *p_object, Variant p_config) = 0;
 
+	virtual void set_refuse_new_connections(bool p_refuse) = 0;
+	virtual bool is_refusing_new_connections() const = 0;
+
 	bool has_multiplayer_peer() { return get_multiplayer_peer().is_valid(); }
 	bool is_server() { return get_unique_id() == MultiplayerPeer::TARGET_PEER_SERVER; }
 
@@ -98,6 +101,9 @@ public:
 	virtual Error object_configuration_add(Object *p_object, Variant p_config) override;
 	virtual Error object_configuration_remove(Object *p_object, Variant p_config) override;
 
+	virtual void set_refuse_new_connections(bool p_refuse) override;
+	virtual bool is_refusing_new_connections() const override;
+
 	// Extensions
 	GDVIRTUAL0R(Error, _poll);
 	GDVIRTUAL1(_set_multiplayer_peer, Ref<MultiplayerPeer>);
@@ -108,4 +114,6 @@ public:
 	GDVIRTUAL0RC(int, _get_remote_sender_id);
 	GDVIRTUAL2R(Error, _object_configuration_add, Object *, Variant);
 	GDVIRTUAL2R(Error, _object_configuration_remove, Object *, Variant);
+	GDVIRTUAL1(_set_refuse_new_connections, bool);
+	GDVIRTUAL0RC(bool, _is_refusing_new_connections)
 };

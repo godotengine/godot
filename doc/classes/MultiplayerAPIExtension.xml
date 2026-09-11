@@ -106,6 +106,12 @@
 				Callback for [method MultiplayerAPI.get_unique_id].
 			</description>
 		</method>
+		<method name="_is_refusing_new_connections" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Called when [member MultiplayerAPI.refuse_new_connections] is retrieved.
+			</description>
+		</method>
 		<method name="_object_configuration_add" qualifiers="virtual">
 			<return type="int" enum="Error" />
 			<param index="0" name="object" type="Object" />
@@ -143,6 +149,13 @@
 			<param index="0" name="multiplayer_peer" type="MultiplayerPeer" />
 			<description>
 				Called when the [member MultiplayerAPI.multiplayer_peer] is set.
+			</description>
+		</method>
+		<method name="_set_refuse_new_connections" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="refuse" type="bool" />
+			<description>
+				Called when [member MultiplayerAPI.refuse_new_connections] is set.
 			</description>
 		</method>
 	</methods>
