@@ -34,6 +34,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -504,20 +505,26 @@ void DependencyEditorOwners::_file_option(int p_option) {
 	}
 }
 
-void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
+void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd, ResourceUID::ID p_editing_uid) {
 	if (!efsd) {
 		return;
 	}
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
-		_fill_owners(efsd->get_subdir(i));
+		_fill_owners(efsd->get_subdir(i), p_editing_uid);
 	}
 
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 		Vector<String> deps = efsd->get_file_deps(i);
 		bool found = false;
+
 		for (int j = 0; j < deps.size(); j++) {
-			if (deps[j] == editing) {
+			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(deps[j]);
+			if (uid == ResourceUID::INVALID_ID) {
+				uid = ResourceLoader::get_resource_uid(deps[j]);
+			}
+
+			if (uid == p_editing_uid) {
 				found = true;
 				break;
 			}
@@ -527,15 +534,130 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 		}
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(efsd->get_file_type(i));
-
 		owners->add_item(efsd->get_file_path(i), icon);
 	}
 }
 
-void DependencyEditorOwners::show(const String &p_path) {
+void DependencyEditorOwners::_search_script_references(EditorFileSystemDirectory *efsd, ResourceUID::ID p_editing_uid, EditorProgress *p_progress, int &r_current_step) {
+	if (!efsd) {
+		return;
+	}
+
+	for (int i = 0; i < efsd->get_subdir_count(); i++) {
+		_search_script_references(efsd->get_subdir(i), p_editing_uid, p_progress, r_current_step);
+	}
+
+	for (int i = 0; i < efsd->get_file_count(); i++) {
+		String file_type = efsd->get_file_type(i);
+
+		if (!ClassDB::is_parent_class(file_type, SNAME("Script"))) {
+			continue;
+		}
+
+		String file_path = efsd->get_file_path(i);
+
+		Ref<FileAccess> f = FileAccess::open(file_path, FileAccess::READ);
+		if (f.is_null()) {
+			continue;
+		}
+
+		String content = f->get_as_text();
+		f->close();
+
+		bool found_reference = false;
+		Vector<String> lines = content.split("\n");
+		for (const String &line : lines) {
+			String trimmed = line.strip_edges();
+
+			int uid_pos = trimmed.find("uid://");
+			if (uid_pos >= 0) {
+				String uid_ref = trimmed.substr(uid_pos);
+				int end_pos = uid_ref.find_char('"');
+				if (end_pos > 0) {
+					uid_ref = uid_ref.substr(0, end_pos);
+				}
+
+				ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uid_ref);
+				if (uid == p_editing_uid) {
+					found_reference = true;
+					break;
+				}
+			}
+
+			int res_pos = trimmed.find("res://");
+			if (res_pos >= 0) {
+				String res_ref = trimmed.substr(res_pos);
+				int end_pos = res_ref.find_char('"');
+				if (end_pos > 0) {
+					res_ref = res_ref.substr(0, end_pos);
+				}
+
+				if (res_ref.contains_char('%')) {
+					continue;
+				}
+
+				ResourceUID::ID uid = ResourceLoader::get_resource_uid(res_ref);
+				if (uid == p_editing_uid) {
+					found_reference = true;
+					break;
+				}
+			}
+		}
+
+		if (found_reference) {
+			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(file_type);
+			owners->add_item(file_path, icon);
+		}
+
+		if (p_progress) {
+			r_current_step++;
+			p_progress->step(file_path, r_current_step);
+		}
+	}
+}
+
+void DependencyEditorOwners::_count_script_files(EditorFileSystemDirectory *efsd, int &r_count) {
+	if (!efsd) {
+		return;
+	}
+
+	for (int i = 0; i < efsd->get_subdir_count(); i++) {
+		_count_script_files(efsd->get_subdir(i), r_count);
+	}
+
+	for (int i = 0; i < efsd->get_file_count(); i++) {
+		String file_type = efsd->get_file_type(i);
+		if (ClassDB::is_parent_class(file_type, SNAME("Script"))) {
+			r_count++;
+		}
+	}
+}
+
+void DependencyEditorOwners::show(const String &p_path, bool p_search_deep) {
 	editing = p_path;
 	owners->clear();
-	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
+
+	ResourceUID::ID editing_uid = ResourceLoader::get_resource_uid(editing);
+
+	EditorProgress *ep = nullptr;
+	int total_script_files = 0;
+	int current_step = 0;
+
+	if (p_search_deep) {
+		_count_script_files(EditorFileSystem::get_singleton()->get_filesystem(), total_script_files);
+
+		if (total_script_files > 0) {
+			ep = memnew(EditorProgress("deep_owners", TTR("Searching Scripts for References..."), total_script_files));
+		}
+	}
+
+	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem(), editing_uid);
+
+	if (p_search_deep) {
+		_search_script_references(EditorFileSystem::get_singleton()->get_filesystem(), editing_uid, ep, current_step);
+	}
+
+	memdelete_notnull(ep);
 
 	int count = owners->get_item_count();
 	if (count > 0) {
