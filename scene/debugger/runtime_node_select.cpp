@@ -408,6 +408,11 @@ void RuntimeNodeSelect::_update_input_state() {
 	scene_tree->get_root()->set_disable_input_override(disable_input);
 }
 
+void RuntimeNodeSelect::_show_toaster(const String &p_message, int p_level) {
+	// Levels are the same as the ones in `EditorToaster`.
+	EngineDebugger::get_singleton()->send_message("game_view:show_toaster", { p_message, p_level });
+}
+
 void RuntimeNodeSelect::_process_frame() {
 #ifndef _3D_DISABLED
 	// Calculate the process time manually, as the time scale can be frozen.
