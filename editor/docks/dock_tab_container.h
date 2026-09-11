@@ -101,6 +101,8 @@ public:
 
 	static String get_config_key(int p_idx) { return "dock_" + itos(p_idx + 1); }
 
+	virtual void dock_added(EditorDock *p_dock) {}
+	virtual void dock_removed(EditorDock *p_dock) {}
 	virtual void dock_closed(EditorDock *p_dock) {}
 	virtual void dock_focused(EditorDock *p_dock, bool p_was_visible) {}
 	virtual void update_visibility();
