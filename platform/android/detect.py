@@ -177,9 +177,6 @@ def configure(env: "SConsEnvironment"):
 
     env["SHLIBSUFFIX"] = ".so"
 
-    if env["PLATFORM"] == "win32":
-        env.use_windows_spawn_fix()
-
     if sys.platform.startswith("linux"):
         host_subpath = "linux-x86_64"
     elif sys.platform.startswith("darwin"):
