@@ -4675,6 +4675,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 	bool is_curve_xyz = (Object::cast_to<VisualShaderNodeCurveXYZTexture>(vsnode.ptr()) != nullptr);
 	bool is_parameter = (Object::cast_to<VisualShaderNodeParameter>(vsnode.ptr()) != nullptr);
 	bool is_mesh_emitter = (Object::cast_to<VisualShaderNodeParticleMeshEmitter>(vsnode.ptr()) != nullptr);
+	bool is_shader_group = (Object::cast_to<VisualShaderNodeGroup>(vsnode.ptr()) != nullptr);
 
 	Point2 position = graph->get_scroll_offset();
 
@@ -4893,6 +4894,12 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 
 		if (is_mesh_emitter) {
 			undo_redo->add_do_method(vsnode.ptr(), "set_mesh", ResourceLoader::load(p_resource_path));
+			return;
+		}
+
+		if (is_shader_group) {
+			undo_redo->add_do_method(vsnode.ptr(), "set_group", ResourceLoader::load(p_resource_path));
+			undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, id_to_use);
 			return;
 		}
 	}
@@ -7252,6 +7259,10 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 						saved_node_pos = p_point + Vector2(0, i * 250 * EDSCALE);
 						saved_node_pos_dirty = true;
 						_add_node(mesh_emitter_option_idx, {}, arr[i], i);
+					} else if (type == "VisualShaderGroup") {
+						saved_node_pos = p_point + Vector2(0, i * 250 * EDSCALE);
+						saved_node_pos_dirty = true;
+						_add_node(group_node_option_idx, {}, arr[i], i);
 					}
 				}
 			}
@@ -8699,6 +8710,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	// SPECIAL
 	add_options.push_back(AddOption("Frame", "Special", "VisualShaderNodeFrame", TTR("A rectangular area with a description string for better graph organization.")));
 	add_options.push_back(AddOption("Expression", "Special", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
+	group_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Group", "Special", "VisualShaderNodeGroup", TTR("A node group/subgraph. Analogous to a function in textual shader languages.")));
 	add_options.push_back(AddOption("GlobalExpression", "Special", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, parameters and constants.")));
 	add_options.push_back(AddOption("GroupInput", "Special", "VisualShaderNodeGroupInput", TTR("Input node for the group. Represents the input ports of the group.")));
