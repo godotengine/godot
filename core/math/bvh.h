@@ -437,6 +437,12 @@ public:
 	}
 
 private:
+	struct ResultIndex {
+		uint32_t start;
+		uint16_t count;
+		uint16_t thread;
+	};
+	mutable LocalVector<ResultIndex> result_index;
 	mutable LocalVector<LocalVector<Pair<uint32_t, uint32_t>>> _cull_hits_mt;
 
 	void _cull_mt(uint32_t p_changed_index, void *p_userdata) const {
@@ -447,7 +453,6 @@ private:
 		params.result_array = nullptr;
 		params.subindex_array = nullptr;
 
-		//for (const BVHHandle &h : changed_items) {
 		// use the expanded aabb for pairing
 		const BVHHandle &h = changed_items[p_changed_index];
 		const BOUNDS &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
@@ -458,7 +463,25 @@ private:
 
 		params.abb = abb;
 		params.result_count_overall = 0; // might not be needed
-		tree._cull_aabb_mt(_cull_hits_mt[WorkerThreadPool::get_singleton()->get_thread_index()], params, h.id());
+
+		int thread_index = WorkerThreadPool::get_singleton()->get_thread_index();
+		DEV_ASSERT(thread_index >= 0 && thread_index < WorkerThreadPool::get_singleton()->get_thread_count());
+		if (thread_index < 0) {
+			// Thread index will be -1 if we are on the main thread rather than a worker.
+			// We shouldn't get here, but if we do, there no reason we can't continue.
+			thread_index = 0;
+		}
+
+		int start = _cull_hits_mt[thread_index].size();
+		tree._cull_aabb_mt(_cull_hits_mt[thread_index], params, h.id());
+		int count = _cull_hits_mt[thread_index].size() - start;
+		if (count) {
+			DEV_ASSERT(count < UINT16_MAX);
+			// NOTE: If there are > 65536 hits, nothing should crash, but the excess hits won't get reported
+			result_index[p_changed_index].count = CLAMP(count, 0, UINT16_MAX);
+			result_index[p_changed_index].thread = thread_index;
+			result_index[p_changed_index].start = start;
+		}
 	}
 
 	void _check_for_collisions_mt(bool p_full_check = false) {
@@ -478,7 +501,12 @@ private:
 		}
 
 		WorkerThreadPool *pool = WorkerThreadPool::get_singleton();
-		_cull_hits_mt.resize(pool->get_thread_count());
+		int worker_thread_count = pool->get_thread_count();
+		DEV_ASSERT(worker_thread_count > 1);
+
+		result_index.clear();
+		result_index.resize_initialized(changed_items.size());
+		_cull_hits_mt.resize(worker_thread_count);
 		for (LocalVector<Pair<uint32_t, uint32_t>> &c : _cull_hits_mt) {
 			c.clear();
 		}
@@ -486,21 +514,27 @@ private:
 		WorkerThreadPool::GroupID group_task = pool->add_template_group_task(this, &BVH_Manager::_cull_mt, nullptr, changed_items.size(), -1, true, SNAME("BVH Collision Tests"));
 		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
-		for (const LocalVector<Pair<uint32_t, uint32_t>> &c : _cull_hits_mt) {
-			for (const Pair<uint32_t, uint32_t> &p : c) {
-				// don't collide against ourself
-				if (p.first == p.second) {
-					continue;
+		for (const ResultIndex ri : result_index) {
+			if (ri.count) {
+				const LocalVector<Pair<uint32_t, uint32_t>> &c = _cull_hits_mt[ri.thread];
+				uint32_t end = ri.start + ri.count;
+				for (uint32_t i = ri.start; i < end; ++i) {
+					const Pair<uint32_t, uint32_t> &p = c[i];
+
+					// don't collide against ourself
+					if (p.first == p.second) {
+						continue;
+					}
+
+					// checkmasks is already done in the cull routine.
+					BVHHandle h_collidee;
+					h_collidee.set_id(p.second);
+					BVHHandle h;
+					h.set_id(p.first);
+
+					// find NEW enterers, and send callbacks for them only
+					_collide(h, h_collidee);
 				}
-
-				// checkmasks is already done in the cull routine.
-				BVHHandle h_collidee;
-				h_collidee.set_id(p.second);
-				BVHHandle h;
-				h.set_id(p.first);
-
-				// find NEW enterers, and send callbacks for them only
-				_collide(h, h_collidee);
 			}
 		}
 		_reset();
@@ -508,56 +542,61 @@ private:
 
 	// do this after moving etc.
 	void _check_for_collisions(bool p_full_check = false) {
+		// `_check_for_collisions_mt` and the single threaded implementation below it
+		// must produce the same output order (to be deterministic).
 		if constexpr (BVH_USE_THREADS) {
-			_check_for_collisions_mt(p_full_check);
-		} else {
-			if (!changed_items.size()) {
-				// noop
+			if (WorkerThreadPool::get_singleton()->get_thread_count() > 1) {
+				_check_for_collisions_mt(p_full_check);
 				return;
 			}
-
-			typename BVHTREE_CLASS::CullParams params;
-
-			params.result_count_overall = 0;
-			params.result_max = INT_MAX;
-			params.result_array = nullptr;
-			params.subindex_array = nullptr;
-
-			for (const BVHHandle &h : changed_items) {
-				// use the expanded aabb for pairing
-				const BOUNDS &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
-				BVHABB_CLASS abb;
-				abb.from(expanded_aabb);
-
-				tree.item_fill_cullparams(h, params);
-
-				// find all the existing paired aabbs that are no longer
-				// paired, and send callbacks
-				_find_leavers(h, abb, p_full_check);
-
-				uint32_t changed_item_ref_id = h.id();
-
-				params.abb = abb;
-
-				params.result_count_overall = 0; // might not be needed
-				tree.cull_aabb(params, false);
-
-				for (const uint32_t ref_id : tree._cull_hits) {
-					// don't collide against ourself
-					if (ref_id == changed_item_ref_id) {
-						continue;
-					}
-
-					// checkmasks is already done in the cull routine.
-					BVHHandle h_collidee;
-					h_collidee.set_id(ref_id);
-
-					// find NEW enterers, and send callbacks for them only
-					_collide(h, h_collidee);
-				}
-			}
-			_reset();
 		}
+
+		if (!changed_items.size()) {
+			// noop
+			return;
+		}
+
+		typename BVHTREE_CLASS::CullParams params;
+
+		params.result_count_overall = 0;
+		params.result_max = INT_MAX;
+		params.result_array = nullptr;
+		params.subindex_array = nullptr;
+
+		for (const BVHHandle &h : changed_items) {
+			// use the expanded aabb for pairing
+			const BOUNDS &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
+			BVHABB_CLASS abb;
+			abb.from(expanded_aabb);
+
+			tree.item_fill_cullparams(h, params);
+
+			// find all the existing paired aabbs that are no longer
+			// paired, and send callbacks
+			_find_leavers(h, abb, p_full_check);
+
+			uint32_t changed_item_ref_id = h.id();
+
+			params.abb = abb;
+
+			params.result_count_overall = 0; // might not be needed
+			tree.cull_aabb(params, false);
+
+			for (const uint32_t ref_id : tree._cull_hits) {
+				// don't collide against ourself
+				if (ref_id == changed_item_ref_id) {
+					continue;
+				}
+
+				// checkmasks is already done in the cull routine.
+				BVHHandle h_collidee;
+				h_collidee.set_id(ref_id);
+
+				// find NEW enterers, and send callbacks for them only
+				_collide(h, h_collidee);
+			}
+		}
+		_reset();
 	}
 
 public:
