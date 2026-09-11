@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsIntersectShapeResult2D" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Stores the results of a shape intersection query.
+	</brief_description>
+	<description>
+		This class contains the intersection information produced by [method PhysicsDirectSpaceState2D.intersect_shape_into].
+		It can store multiple intersections, up to a user-defined maximum.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collider" qualifiers="const">
+			<return type="Object" />
+			<param index="0" name="intersection_index" type="int" />
+			<description>
+				The colliding object.
+			</description>
+		</method>
+		<method name="get_collider_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="intersection_index" type="int" />
+			<description>
+				The colliding object's ID.
+			</description>
+		</method>
+		<method name="get_collider_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="intersection_index" type="int" />
+			<description>
+				The intersecting object's [RID].
+			</description>
+		</method>
+		<method name="get_collider_shape" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="intersection_index" type="int" />
+			<description>
+				The shape index of the colliding shape.
+			</description>
+		</method>
+		<method name="get_intersection_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of shapes that intersect with the query shape.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="max_intersections" type="int" setter="set_max_intersections" getter="get_max_intersections" default="32">
+			The maximum number of intersections this result object can store.
+		</member>
+	</members>
+</class>
