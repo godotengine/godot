@@ -31,6 +31,7 @@
 #include "editor_log.h"
 
 #include "core/io/resource_loader.h"
+#include "core/math/math_funcs.h"
 #include "core/object/callable_mp.h"
 #include "core/object/message_queue.h"
 #include "core/object/undo_redo.h"
@@ -44,7 +45,6 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/flow_container.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
@@ -125,6 +125,8 @@ void EditorLog::_update_theme() {
 
 	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
+	filter_previous_match_button->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
+	filter_next_match_button->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
@@ -132,6 +134,9 @@ void EditorLog::_update_theme() {
 	theme_cache.warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 	theme_cache.warning_icon = get_editor_theme_icon(SNAME("Warning"));
 	theme_cache.message_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
+	theme_cache.filter_highlight_active_color = EDITOR_GET("text_editor/theme/highlighting/selection_color");
+	theme_cache.filter_highlight_inactive_color = theme_cache.filter_highlight_active_color * Color(1, 1, 1, 0.6);
+	
 }
 
 void EditorLog::_editor_settings_changed() {
@@ -203,6 +208,45 @@ void EditorLog::_load_state() {
 	collapse_button->set_pressed(EDITOR_DEF("_editor_log_collapse", false));
 
 	is_loading_state = false;
+}
+
+void EditorLog::_set_show_non_search_matches(bool p_state) {
+	show_non_search_matches = p_state;
+
+	log->set_scroll_follow(false);
+	_rebuild_log();
+	log->set_scroll_follow(true);
+}
+
+void EditorLog::_set_search_case_sensitive(bool p_state) {
+	search_case_sensitive = p_state;
+	log->set_filter_case_sensitive(p_state);
+
+	log->set_scroll_follow(false);
+	_rebuild_log();
+	log->set_scroll_follow(true);
+
+	_count_matches();
+}
+
+// void EditorLog::_set_search_parse_bbcode(bool p_state) {
+// 	search_parse_bbcode = p_state;
+
+// 	log->set_scroll_follow(false);
+// 	_rebuild_log();
+// 	log->set_scroll_follow(true);
+// }
+
+void EditorLog::_set_extra_filter_options_visible(bool p_visible) {
+	extra_filter_options_hbox->set_visible(p_visible);
+}
+
+void EditorLog::_enable_filter_previous_match_button(bool p_enable) {
+	filter_previous_match_button->set_disabled(!p_enable);
+}
+
+void EditorLog::_enable_filter_next_match_button(bool p_enable) {
+	filter_next_match_button->set_disabled(!p_enable);
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
@@ -316,8 +360,6 @@ void EditorLog::_rebuild_log() {
 		return;
 	}
 
-	log->clear();
-
 	int line_count = 0;
 	int start_message_index = 0;
 	int initial_skip = 0;
@@ -346,6 +388,8 @@ void EditorLog::_rebuild_log() {
 		}
 	}
 
+	log->clear();
+
 	for (int msg_idx = start_message_index; msg_idx < messages.size(); msg_idx++) {
 		LogMessage msg = messages[msg_idx];
 
@@ -363,6 +407,8 @@ void EditorLog::_rebuild_log() {
 }
 
 bool EditorLog::_check_display_message(LogMessage &p_message) {
+	// Whether a message ought to be displayed in the log according to filtering
+
 	bool filter_active = type_filter_map[p_message.type]->is_active();
 	String search_text = search_box->get_text();
 
@@ -370,25 +416,118 @@ bool EditorLog::_check_display_message(LogMessage &p_message) {
 		return filter_active;
 	}
 
-	bool search_match = p_message.text.containsn(search_text);
-
-	// If not found and message contains BBCode tags, also check the parsed text
-	if (!search_match && p_message.text.contains_char('[')) {
-		// Lazy initialize the BBCode parser
-		if (!bbcode_parser) {
-			bbcode_parser = memnew(RichTextLabel);
-			bbcode_parser->set_use_bbcode(true);
-		}
-
-		// Ensure clean state for each message
-		bbcode_parser->clear();
-		bbcode_parser->parse_bbcode(p_message.text);
-		String parsed_text = bbcode_parser->get_parsed_text();
-		search_match = parsed_text.containsn(search_text);
-	}
+	bool search_match = _contains_case_sensitive(_strip_bbcode_from_message(p_message.text), search_text) || show_non_search_matches;
 
 	return filter_active && search_match;
 }
+
+bool EditorLog::_contains_case_sensitive(const String &p_base, const String &p_contains) {
+	if (search_case_sensitive) {
+		return p_base.contains(p_contains);
+	} else {
+		return p_base.containsn(p_contains);
+	}
+}
+
+int EditorLog::_find_case_sensitive(const String &p_base, const String &p_target) {
+	if (search_case_sensitive) {
+		return p_base.find(p_target);
+	} else {
+		return p_base.findn(p_target);
+	}
+}
+
+int EditorLog::_count_case_sensitive(const String &p_base, const String &p_target) {
+	if (search_case_sensitive) {
+		return p_base.count(p_target);
+	} else {
+		return p_base.countn(p_target);
+	}
+}
+
+String EditorLog::_strip_bbcode_from_message(const String &p_text) {
+	String result;
+
+	bbcode_parser->clear();
+	bbcode_parser->parse_bbcode(p_text);
+	result = bbcode_parser->get_parsed_text();
+	return result;
+}
+
+// Vector<int> EditorLog::_get_line_search_query_positions(const String &p_line, const String &p_keytext) {
+// 	int keytext_length = p_keytext.length();
+
+// 	String iterator_line = p_line;
+// 	int cursor_position = 0;
+
+// 	Vector<int> positions; // Array of substring positions. Every pair will be cut into a substring from p_line.
+// 	positions.append(0);
+
+// 	if (_find_case_sensitive(iterator_line, p_keytext) == 0) {
+// 		positions.append(0);
+// 		positions.append(0); // This last zero will be replaced in a few lines, which fixes the order in case the first characters are immediately matches.
+// 	}
+
+// 	// Map which segments of p_line contain the target string. Every uneven pair of ints will be a non-match, and every even pair will be a match.
+// 	while (_contains_case_sensitive(iterator_line, p_keytext)) {
+// 		int keytext_pos = _find_case_sensitive(iterator_line, p_keytext);
+
+// 		if (keytext_pos == 0) {
+// 			int last_pos = positions[positions.size() - 1];
+// 			positions.resize(positions.size() - 1);
+// 			positions.append(last_pos + keytext_length);
+// 		} else {
+// 			positions.append(keytext_pos + cursor_position);
+// 			positions.append(keytext_pos + cursor_position + keytext_length);
+// 		}
+
+// 		cursor_position += keytext_pos + keytext_length;
+
+// 		iterator_line = p_line.substr(cursor_position);
+// 	}
+
+// 	// Imagine p_line "Lullaby" and p_keytext "l".
+// 	// positions will be [0,0,1,2,4].
+// 	// - The pair 0,0 was inserted due to 20 lines up and is considered not a match.
+// 	// - The pair 0,1 ("L") is a match
+// 	// - The pair 1,2 ("u") is not a match
+// 	// - The pair 2,4 ("ll") is a match once again
+
+// 	// The last pair will always describe a match at this point and in the case p_line does not end with a match, that would cut off p_line after the last match...
+// 	if (positions[positions.size() - 1] != p_line.size() - 1) {
+// 		positions.append(p_line.size() - 1); // ...so we add a final position. In the case of "Lullaby", it'd append 6 so that positions becomes [0,0,1,2,4,6]. That prevents the mistake described 2 lines up.
+// 	}
+
+// 	return positions;
+// }
+
+// void EditorLog::_add_highlighted_log_line(const String &p_line, const String &p_keytext) {
+// 	String parsed_text = _strip_bbcode_from_message(p_line);
+
+// 	if (p_keytext.is_empty() || !_contains_case_sensitive(parsed_text, p_keytext)) {
+// 		log->append_text(p_line);
+// 		return;
+// 	}
+
+// 	Vector<int> positions = _get_line_search_query_positions(parsed_text, p_keytext);
+
+// 	// Iterate through map in pairs. That's why we start at index 1.
+// 	for (int i = 1; i < positions.size(); i++) {
+// 		String substring = parsed_text.substr(positions[i - 1], positions[i] - positions[i - 1]);
+
+// 		// Even index means this segment is a match, uneven means the segment is not a match.
+// 		if (i % 2 == 1) { // Not a match
+// 			log->push_bgcolor(Color(1.0, 1.0, 1.0, 0.0));
+// 			log->push_normal();
+// 			log->add_text(substring);
+// 		} else { // Match
+// 			log->push_bgcolor(theme_cache.filter_highlight_active_color);
+// 			log->add_text(substring);
+// 		}
+// 	}
+
+// 	log->pop(); // To finish off, we break off the most recently pushed tag. In the case that was push_bold(), the boldening effect is removed.
+// }
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	if (!is_inside_tree()) {
@@ -473,13 +612,88 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 }
 
 void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
+	log->set_scroll_follow(false);
+
 	type_filter_map[p_message_type]->set_active(p_active);
 	_start_state_save_timer();
 	_rebuild_log();
+
+	log->set_scroll_follow(true);
+}
+
+void EditorLog::_filter_view_previous_match() {
+	_set_currently_viewed_match_index(currently_viewed_match_index - 1);
+}
+
+void EditorLog::_filter_view_next_match() {
+	_set_currently_viewed_match_index(currently_viewed_match_index + 1);
 }
 
 void EditorLog::_search_changed(const String &p_text) {
+	log->set_filter_keytext(p_text);
+
+	_set_extra_filter_options_visible(!p_text.is_empty());
+	_count_matches();
+
+	if (show_non_search_matches) {
+		return;
+	}
+
+	log->set_scroll_follow(false); // Prevent the RichTextLabel from autoscrolling due to new messages being added during _rebuild_log().
 	_rebuild_log();
+	log->set_scroll_follow(true);
+}
+
+void EditorLog::_set_currently_viewed_match_index(int p_index) {
+	currently_viewed_match_index = CLAMP(p_index, 0, match_count - 1);
+
+	_enable_filter_previous_match_button(true);
+	_enable_filter_next_match_button(true);
+
+	if (currently_viewed_match_index == 0) {
+		_enable_filter_previous_match_button(false);
+	}
+	if (currently_viewed_match_index == match_count - 1) {
+		_enable_filter_next_match_button(false);
+	}
+
+	_update_matches_count_label();
+}
+
+void EditorLog::_count_matches() {
+	int count = 0;
+	const String search_text = search_box->get_text();
+
+	for (const LogMessage &msg : messages) {
+		String message_text = msg.text;
+
+		if (msg.type != MSG_TYPE_STD) {
+			message_text = _strip_bbcode_from_message(message_text);
+		}
+
+		count += _count_case_sensitive(message_text, search_text);
+	}
+
+	match_count = count;
+
+	_set_currently_viewed_match_index(CLAMP(currently_viewed_match_index, 0, count - 1));
+
+	_update_matches_count_label();
+}
+
+void EditorLog::_update_matches_count_label() {
+	filter_matches_count_label->set_modulate(Color(1.0, 1.0, 1.0));
+
+	if (match_count == 0) {
+		filter_matches_count_label->set_text("No matches");
+		filter_matches_count_label->set_modulate(theme_cache.error_color);
+		return;
+	} else if (match_count == 1) {
+		filter_matches_count_label->set_text("1 out of 1 match");
+		return;
+	}
+
+	filter_matches_count_label->set_text(vformat("%s of %s matches", itos(currently_viewed_match_index + 1), itos(match_count)));
 }
 
 void EditorLog::_reset_message_counts() {
@@ -515,10 +729,14 @@ EditorLog::EditorLog() {
 	vb_left->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(vb_left);
 
+	bbcode_parser = memnew(RichTextLabel);
+	bbcode_parser->set_use_bbcode(true);
+
 	// Log - Rich Text Label.
-	log = memnew(RichTextLabel);
+	log = memnew(EditorLogRichTextLabel);
 	log->set_threaded(true);
 	log->set_use_bbcode(true);
+	log->set_bbcode_parser(bbcode_parser);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
 	log->set_context_menu_enabled(true);
@@ -532,6 +750,70 @@ EditorLog::EditorLog() {
 	HFlowContainer *bottom_hf = memnew(HFlowContainer);
 	bottom_hf->set_alignment(FlowContainer::ALIGNMENT_END);
 	vb_left->add_child(bottom_hf);
+
+	// Search box
+	search_box = memnew(LineEdit);
+	search_box->set_custom_minimum_size(Vector2(150 * EDSCALE, 0));
+	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_box->set_placeholder(TTRC("Filter Messages"));
+	search_box->set_accessibility_name(TTRC("Filter Messages"));
+	search_box->set_clear_button_enabled(true);
+	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
+	bottom_hf->add_child(search_box);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	bottom_hf->add_child(hbox);
+
+	extra_filter_options_hbox = memnew(HBoxContainer);
+	vb_left->add_child(extra_filter_options_hbox);
+
+	filter_matches_count_label = memnew(Label);
+	extra_filter_options_hbox->add_child(filter_matches_count_label);
+
+	// Previous filter match button
+	filter_previous_match_button = memnew(Button);
+	filter_previous_match_button->set_tooltip_text(TTRC("Previous filter match"));
+	filter_previous_match_button->set_theme_type_variation(SceneStringName(FlatButton));
+	filter_previous_match_button->set_accessibility_name(TTRC("Previous filter match"));
+	filter_previous_match_button->connect("button_down", callable_mp(this, &EditorLog::_filter_view_previous_match)); 
+	extra_filter_options_hbox->add_child(filter_previous_match_button);
+
+	// Next filter match button
+	filter_next_match_button = memnew(Button);
+	filter_next_match_button->set_tooltip_text(TTRC("Next filter match"));
+	filter_next_match_button->set_theme_type_variation(SceneStringName(FlatButton));
+	filter_next_match_button->set_accessibility_name(TTRC("Next filter match"));
+	filter_next_match_button->connect("button_down", callable_mp(this, &EditorLog::_filter_view_next_match));
+	extra_filter_options_hbox->add_child(filter_next_match_button);
+
+	// Exclude non-filter matches button
+	show_non_search_matches_button = memnew(CheckBox);
+	show_non_search_matches_button->set_text("Show Non-Matching Lines");
+	show_non_search_matches_button->set_tooltip_text(TTRC("Show Non-Matching Lines"));
+	show_non_search_matches_button->set_accessibility_name(TTRC("Show Non-Matching Lines"));
+	show_non_search_matches_button->set_pressed(true);
+	show_non_search_matches_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_show_non_search_matches));
+	extra_filter_options_hbox->add_child(show_non_search_matches_button);
+
+	// Case sensitive button
+	search_case_sensitive_button = memnew(CheckBox);
+	search_case_sensitive_button->set_text("Match Case");
+	search_case_sensitive_button->set_tooltip_text(TTRC("Toggle case-sensitivity"));
+	search_case_sensitive_button->set_accessibility_name(TTRC("Toggle case-sensitivity"));
+	search_case_sensitive_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_case_sensitive));
+	extra_filter_options_hbox->add_child(search_case_sensitive_button);
+
+	// // Parse BBCode button
+	// search_parse_bbcode_button = memnew(Button);
+	// search_parse_bbcode_button->set_tooltip_text(TTRC("Parse BBCode"));
+	// search_parse_bbcode_button->set_accessibility_name(TTRC("Parse BBCode"));
+	// search_parse_bbcode_button->set_theme_type_variation(SceneStringName(FlatButton));
+	// search_parse_bbcode_button->set_toggle_mode(true);
+	// search_parse_bbcode_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_parse_bbcode));
+	// extra_filter_options_hbox->add_child(search_parse_bbcode_button);
+
+	// Make show_non_search_matches_button and search_case_sensitive_button invisible
+	_set_extra_filter_options_visible(false);
 
 	// Clear.
 	clear_button = memnew(Button);
@@ -551,19 +833,6 @@ EditorLog::EditorLog() {
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
 	bottom_hf->add_child(collapse_button);
-
-	// Search box
-	search_box = memnew(LineEdit);
-	search_box->set_custom_minimum_size(Vector2(150 * EDSCALE, 0));
-	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->set_placeholder(TTRC("Filter Messages"));
-	search_box->set_accessibility_name(TTRC("Filter Messages"));
-	search_box->set_clear_button_enabled(true);
-	search_box->connect(SceneStringName(text_changed), callable_mp(this, &EditorLog::_search_changed));
-	bottom_hf->add_child(search_box);
-
-	HBoxContainer *hbox = memnew(HBoxContainer);
-	bottom_hf->add_child(hbox);
 
 	// Message Type Filters.
 	LogFilter *std_filter = memnew(LogFilter(MSG_TYPE_STD));

@@ -32,7 +32,10 @@
 
 #include "core/os/thread.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/gui/editor_log_rich_text_label.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
 
@@ -75,6 +78,9 @@ private:
 		Ref<Texture2D> warning_icon;
 
 		Color message_color;
+
+		Color filter_highlight_inactive_color;
+		Color filter_highlight_active_color;
 	} theme_cache;
 
 	// Encapsulates all data and functionality regarding filters.
@@ -130,9 +136,43 @@ private:
 	// Maps MessageTypes to LogFilters for convenient access and storage (don't need 1 member per filter).
 	HashMap<MessageType, LogFilter *> type_filter_map;
 
-	RichTextLabel *log = nullptr;
+	//A custom class is used for filter highlighting, since highlight drawing is deeply integrated in RichTextLabel drawing logic.
+	EditorLogRichTextLabel *log = nullptr;
 
 	Button *clear_button = nullptr;
+
+	HBoxContainer *extra_filter_options_hbox = nullptr;
+
+	int match_count = 0;
+	int currently_viewed_match_index = 0;
+	void _set_currently_viewed_match_index(int p_index);
+
+	Label *filter_matches_count_label = nullptr;
+	void _update_matches_count_label();
+
+	Button *filter_previous_match_button = nullptr;
+	void _enable_filter_previous_match_button(bool p_enable);
+	void _filter_view_previous_match();
+
+	Button *filter_next_match_button = nullptr;
+	void _enable_filter_next_match_button(bool p_enable);
+	void _filter_view_next_match();
+
+	CheckBox *show_non_search_matches_button = nullptr;
+	void _set_show_non_search_matches(bool p_state);
+	bool show_non_search_matches = true;
+
+	CheckBox *search_case_sensitive_button = nullptr;
+	void _set_search_case_sensitive(bool p_state);
+	bool search_case_sensitive = false;
+
+	// Button *search_parse_bbcode_button = nullptr;
+	// void _set_search_parse_bbcode(bool p_state);
+	// bool search_parse_bbcode = true;
+
+	void _set_extra_filter_options_visible(bool p_visible);
+
+	Vector<int> _get_line_search_query_positions(const String &p_line, const String &p_keytext);
 
 	Button *collapse_button = nullptr;
 	bool collapse = false;
@@ -155,11 +195,17 @@ private:
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 	void _rebuild_log();
+	void _add_highlighted_log_line(const String &p_line, const String &p_keytext);
 	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false);
 	bool _check_display_message(LogMessage &p_message);
+	bool _contains_case_sensitive(const String &p_base, const String &p_contains);
+	int _find_case_sensitive(const String &p_base, const String &p_target);
+	int _count_case_sensitive(const String &p_base, const String &p_target);
+	String _strip_bbcode_from_message(const String &p_text);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
 	void _search_changed(const String &p_text);
+	void _count_matches();
 
 	void _process_message(const String &p_msg, MessageType p_type, bool p_clear);
 	void _reset_message_counts();
