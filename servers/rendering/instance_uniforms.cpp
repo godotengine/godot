@@ -159,7 +159,7 @@ void InstanceUniforms::_init_param(Item &r_item, const RendererMaterialStorage::
 		Variant::construct(r_item.info.type, r_item.default_value, nullptr, 0, cerr);
 	}
 
-	if (r_item.value.get_type() == Variant::NIL) {
+	if (r_item.value.get_type() != p_param.info.type) {
 		r_item.value = r_item.default_value;
 	}
 
