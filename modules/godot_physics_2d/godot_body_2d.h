@@ -293,6 +293,12 @@ public:
 		set_active(true);
 	}
 
+	void refresh_pair(GodotCollisionObject2D *p_source) override {
+		if (this != p_source) {
+			wakeup();
+		}
+	}
+
 	void set_param(PS2DE::BodyParameter p_param, const Variant &p_value);
 	Variant get_param(PS2DE::BodyParameter p_param) const;
 
