@@ -32,6 +32,8 @@
 
 #ifdef WAYLAND_ENABLED
 
+#include "xkb_convert_dead_keys.h"
+
 #include "core/config/engine.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
@@ -5865,6 +5867,7 @@ Key WaylandThread::keyboard_get_label_from_physical(Key p_key) const {
 
 		xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(keycode_no_mod);
 		xkb_keycode_t xkb_keysym = xkb_state_key_get_one_sym(ss->xkb_state, xkb_keycode);
+		xkb_keysym = xkb_convert_if_dead_key(xkb_keysym);
 		char32_t chr = xkb_keysym_to_utf32(xkb_keysym_to_upper(xkb_keysym));
 		if (chr != 0) {
 			String keysym = String::chr(chr);
