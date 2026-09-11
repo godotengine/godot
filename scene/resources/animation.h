@@ -553,15 +553,15 @@ public:
 	void editor_clear_folded_groups() { folded_groups.clear(); }
 	void editor_add_folded_group(const StringName &p_group_name) { folded_groups.insert(p_group_name); }
 	void editor_remove_folded_group(const StringName &p_group_name) { folded_groups.erase(p_group_name); }
-	bool editor_is_group_folded(const StringName &p_group_name) const { return folded_groups.has(p_group_name); }
-	void editor_set_group_folded(const StringName &p_group_name, bool p_folded) {
-		if (editor_is_group_folded(p_group_name) == p_folded) {
+	bool editor_is_group_folded(const NodePath &p_group_path) const { return folded_groups.has(p_group_path.get_concatenated_names()); }
+	void editor_set_group_folded(const NodePath &p_group_path, bool p_folded) {
+		if (editor_is_group_folded(p_group_path) == p_folded) {
 			return; // Do nothing.
 		}
 		if (p_folded) {
-			editor_add_folded_group(p_group_name);
+			editor_add_folded_group(p_group_path.get_concatenated_names());
 		} else {
-			editor_remove_folded_group(p_group_name);
+			editor_remove_folded_group(p_group_path.get_concatenated_names());
 		}
 		folded_groups_dirty = true;
 	}
