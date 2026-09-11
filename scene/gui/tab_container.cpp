@@ -202,7 +202,9 @@ void TabContainer::_notification(int p_what) {
 				popup_button->set_button_icon(theme_cache.menu_icon);
 				internal_container->move_child(popup_button, is_layout_rtl() ? 0 : 1);
 			}
+
 			_update_margins();
+			callable_mp(this, &TabContainer::_repaint).call_deferred();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
