@@ -40,7 +40,7 @@ Size2 FoldableContainer::get_minimum_size() const {
 	if (folded) {
 		return title_minimum_size;
 	}
-	Size2 ms = Container::get_minimum_size();
+	Size2 ms = Container::_get_minimum_size();
 	ms += theme_cache.panel_style->get_minimum_size();
 
 	return Size2(MAX(ms.width, title_minimum_size.width), ms.height + title_minimum_size.height);
