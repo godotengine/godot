@@ -807,7 +807,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			Dictionary dict;
 			if (key_type.builtin_type != Variant::NIL || value_type.builtin_type != Variant::NIL) {
-				dict.set_typed(key_type, value_type);
+				dict.set_typed(std::move(key_type), std::move(value_type));
 			}
 
 			for (int i = 0; i < count; i++) {
@@ -861,7 +861,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			Array array;
 			if (type.builtin_type != Variant::NIL) {
-				array.set_typed(type);
+				array.set_typed(std::move(type));
 			}
 
 			for (int i = 0; i < count; i++) {

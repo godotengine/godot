@@ -710,7 +710,7 @@ public:
 		int bsize = p_array_right.size();
 
 		if (p_array_left.is_typed() && p_array_left.is_same_typed(p_array_right)) {
-			r_sum.set_typed(p_array_left.get_typed_builtin(), p_array_left.get_typed_class_name(), p_array_left.get_typed_script());
+			r_sum.set_typed(p_array_left.get_element_type());
 		}
 
 		r_sum.resize(asize + bsize);

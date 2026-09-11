@@ -40,9 +40,9 @@ public:
 		Dictionary::operator=(p_dictionary);
 	}
 
-	_FORCE_INLINE_ TypedDictionary(const Dictionary &p_dictionary) {
-		set_typed(GodotTypeInfo::Internal::get_variant_type<K>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<K>(), Variant(),
-				GodotTypeInfo::Internal::get_variant_type<V>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<V>(), Variant());
+	_FORCE_INLINE_ TypedDictionary(const Dictionary &p_dictionary) :
+			Dictionary(GodotTypeInfo::Internal::get_variant_type<K>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<K>(),
+					GodotTypeInfo::Internal::get_variant_type<V>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<V>()) {
 		if (is_same_typed(p_dictionary)) {
 			Dictionary::operator=(p_dictionary);
 		} else {
@@ -53,8 +53,7 @@ public:
 	_FORCE_INLINE_ TypedDictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init) :
 			TypedDictionary(Dictionary(p_init)) {}
 
-	_FORCE_INLINE_ TypedDictionary() {
-		set_typed(GodotTypeInfo::Internal::get_variant_type<K>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<K>(), Variant(),
-				GodotTypeInfo::Internal::get_variant_type<V>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<V>(), Variant());
-	}
+	_FORCE_INLINE_ TypedDictionary() :
+			Dictionary(GodotTypeInfo::Internal::get_variant_type<K>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<K>(),
+					GodotTypeInfo::Internal::get_variant_type<V>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<V>()) {}
 };
