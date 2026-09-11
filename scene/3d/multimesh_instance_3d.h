@@ -69,7 +69,7 @@ public:
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
 #endif // NAVIGATION_3D_DISABLED
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	MultiMeshInstance3D();
-	~MultiMeshInstance3D();
 };
