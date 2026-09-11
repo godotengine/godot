@@ -41,6 +41,7 @@
 #include <cstdlib>
 
 class ArrayMesh;
+class CanvasLayer;
 class InputEvent;
 class Material;
 class MultiplayerAPI;
@@ -48,6 +49,7 @@ class Node;
 class PackedScene;
 class Tween;
 class Viewport;
+class VirtualController;
 class Window;
 
 #ifndef _3D_DISABLED
@@ -204,6 +206,9 @@ private:
 	ObjectID prev_scene_id;
 	ObjectID pending_new_scene_id;
 
+	CanvasLayer *virtual_controller_canvas_layer = nullptr;
+	VirtualController *virtual_controller = nullptr;
+
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
 	Color debug_paths_color;
@@ -282,6 +287,8 @@ private:
 
 	//used by viewport
 	void _call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport);
+
+	void _project_settings_changed();
 
 protected:
 	void _notification(int p_notification);
@@ -450,6 +457,9 @@ public:
 	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path = NodePath());
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;
+
+	void set_virtual_controller_visible(bool p_visible);
+	bool is_virtual_controller_visible() const;
 
 	static void add_idle_callback(IdleCallback p_callback);
 
