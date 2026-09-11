@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A button that brings up a [PopupMenu] when clicked. To create new items inside this [PopupMenu], use [code]get_popup().add_item("My Item Name")[/code]. You can also create them directly from Godot editor's inspector.
+		To create a button that brings up a dropdown with selectable [i]states[/i] instead, use [OptionButton].
 		See also [BaseButton] which contains common properties and methods associated with this node.
 	</description>
 	<tutorials>
