@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/object/script_backtrace.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/string/regex.h"
 #include "core/templates/rb_set.h"
@@ -57,21 +58,14 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 		return;
 	}
 
-	const char *err_type = error_type_string(p_type);
+	const char *err_details = p_rationale && *p_rationale ? p_rationale : p_code;
 
-	const char *err_details;
-	if (p_rationale && *p_rationale) {
-		err_details = p_rationale;
-	} else {
-		err_details = p_code;
-	}
-
-	logf_error("%s: %s\n", err_type, err_details);
-	logf_error("   at: %s (%s:%i)\n", p_function, p_file, p_line);
+	logf_error("%s: %s\n", error_type_string(p_type), err_details);
+	logf_error("%sat: %s (%s:%i)\n", error_type_indent(p_type), p_function, p_file, p_line);
 
 	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
 		if (!backtrace->is_empty()) {
-			logf_error("%s\n", backtrace->format(3).utf8().get_data());
+			logf_error("%s\n", backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data());
 		}
 	}
 }
@@ -223,6 +217,62 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 			// Don't always flush when printing stdout to avoid performance
 			// issues when `print()` is spammed in release builds.
 			fflush(stdout);
+		}
+	}
+}
+
+void StdLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
+	if (!should_log(true)) {
+		return;
+	}
+
+	constexpr const char GRAY[] = "\u001b[0;90m";
+	constexpr const char RED[] = "\u001b[0;31m";
+	constexpr const char RED_BOLD[] = "\u001b[1;31m";
+	constexpr const char YELLOW[] = "\u001b[0;33m";
+	constexpr const char YELLOW_BOLD[] = "\u001b[1;33m";
+	constexpr const char MAGENTA[] = "\u001b[0;35m";
+	constexpr const char MAGENTA_BOLD[] = "\u001b[1;35m";
+	constexpr const char CYAN[] = "\u001b[0;36m";
+	constexpr const char CYAN_BOLD[] = "\u001b[1;36m";
+	constexpr const char RESET[] = "\u001b[0m";
+
+	const char *bold_color = "";
+	const char *normal_color = "";
+	const char *gray_color = "";
+	const char *reset_color = "";
+
+	if (OS::get_singleton() && OS::get_singleton()->is_stderr_color()) {
+		gray_color = GRAY;
+		reset_color = RESET;
+		switch (p_type) {
+			case ERR_WARNING:
+				bold_color = YELLOW_BOLD;
+				normal_color = YELLOW;
+				break;
+			case ERR_SCRIPT:
+				bold_color = MAGENTA_BOLD;
+				normal_color = MAGENTA;
+				break;
+			case ERR_SHADER:
+				bold_color = CYAN_BOLD;
+				normal_color = CYAN;
+				break;
+			case ERR_ERROR:
+				bold_color = RED_BOLD;
+				normal_color = RED;
+				break;
+		}
+	}
+
+	const char *err_details = p_rationale && *p_rationale ? p_rationale : p_code;
+
+	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
+	logf_error("%s%sat: %s (%s:%i)%s\n", gray_color, error_type_indent(p_type), p_function, p_file, p_line, reset_color);
+
+	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
+		if (!backtrace->is_empty()) {
+			logf_error("%s%s%s\n", gray_color, backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data(), reset_color);
 		}
 	}
 }
