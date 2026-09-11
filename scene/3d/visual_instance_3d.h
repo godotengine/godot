@@ -98,6 +98,7 @@ public:
 		SHADOW_CASTING_SETTING_ON = RSE::SHADOW_CASTING_SETTING_ON,
 		SHADOW_CASTING_SETTING_DOUBLE_SIDED = RSE::SHADOW_CASTING_SETTING_DOUBLE_SIDED,
 		SHADOW_CASTING_SETTING_SHADOWS_ONLY = RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY,
+		SHADOW_CASTING_SETTING_SHADOWS_ONLY_DOUBLE_SIDED = RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY_DOUBLE_SIDED,
 	};
 
 	enum GIMode {
@@ -141,6 +142,9 @@ private:
 	float extra_cull_margin = 0.0;
 	AABB custom_aabb;
 	float lightmap_texel_scale = 1.0f;
+	bool lightmap_receive = true;
+	bool lightmap_contribute = true;
+	bool lightmap_emissive = true;
 	GIMode gi_mode = GI_MODE_STATIC;
 	bool ignore_occlusion_culling = false;
 
@@ -157,6 +161,7 @@ protected:
 public:
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
 	ShadowCastingSetting get_cast_shadows_setting() const;
+
 
 	void set_transparency(float p_transparency);
 	float get_transparency() const;
@@ -190,6 +195,15 @@ public:
 
 	void set_gi_mode(GIMode p_mode);
 	GIMode get_gi_mode() const;
+
+	void set_lightmap_receive(bool p_enabled);
+	bool is_lightmap_receive_enabled() const;
+
+	void set_lightmap_contribute(bool p_enabled);
+	bool is_lightmap_contribute_enabled() const;
+
+	void set_lightmap_emissive(bool p_enabled);
+	bool is_lightmap_emissive_enabled() const;
 
 	void set_lightmap_texel_scale(float p_scale);
 	float get_lightmap_texel_scale() const;

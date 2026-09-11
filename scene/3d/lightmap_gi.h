@@ -230,6 +230,11 @@ private:
 		NodePath node_path;
 		int32_t subindex = 0;
 		Ref<Mesh> mesh;
+		bool receive = true;
+		bool contribute = true;
+		bool emissive = true;
+		bool cast_shadow = true;
+		bool cast_shadow_double_sided = false;
 		float lightmap_scale = 0.0;
 		Vector<Ref<Material>> overrides;
 	};
