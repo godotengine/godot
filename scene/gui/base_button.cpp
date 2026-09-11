@@ -477,7 +477,7 @@ bool BaseButton::is_shortcut_feedback() const {
 void BaseButton::set_shortcut(const Ref<Shortcut> &p_shortcut) {
 	if (shortcut != p_shortcut) {
 		shortcut = p_shortcut;
-		set_process_shortcut_input(shortcut.is_valid());
+		_update_shortcut_input();
 		queue_accessibility_update();
 	}
 }
@@ -569,6 +569,10 @@ void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
 
 Ref<ButtonGroup> BaseButton::get_button_group() const {
 	return button_group;
+}
+
+void BaseButton::_update_shortcut_input() {
+	set_process_shortcut_input(shortcut.is_valid());
 }
 
 bool BaseButton::_was_pressed_by_mouse() const {
