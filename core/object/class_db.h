@@ -96,7 +96,6 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 
 class ClassDB {
 	friend class Object;
-	friend class GDType;
 
 public:
 	enum APIType {
@@ -112,7 +111,7 @@ public:
 		APIType api = API_NONE;
 		ClassInfo *inherits_ptr = nullptr;
 		void *class_ptr = nullptr;
-		GDType *gdtype = nullptr;
+		ObjectGDType *gdtype = nullptr;
 
 		ObjectGDExtension *gdextension = nullptr;
 
@@ -120,7 +119,6 @@ public:
 		List<MethodInfo> virtual_methods;
 		HashMap<StringName, MethodInfo> virtual_methods_map;
 		HashMap<StringName, Vector<Error>> method_error_values;
-		HashMap<StringName, List<StringName>> linked_properties;
 #endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
@@ -190,7 +188,7 @@ public:
 	static APIType current_api;
 	static HashMap<APIType, uint32_t> api_hashes_cache;
 
-	static void _add_class(GDType &p_class, const GDType *p_inherits);
+	static void _add_class(ObjectGDType &p_class, const ObjectGDType *p_inherits);
 
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
 	static HashSet<StringName> default_values_cached;
@@ -207,7 +205,7 @@ public:
 
 	// Types added here will be automatically cleaned up on engine shutdown.
 	// Only add types that aren't cleaned up in another way.
-	static LocalVector<GDType **> gdtype_autorelease_pool;
+	static LocalVector<ObjectGDType **> gdtype_autorelease_pool;
 
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.
@@ -310,7 +308,7 @@ public:
 	static void get_extension_class_list(const Ref<GDExtension> &p_extension, List<StringName> *p_classes);
 	static ObjectGDExtension *get_placeholder_extension(const StringName &p_class);
 #endif
-	static const GDType *get_gdtype(const StringName &p_class);
+	static const ObjectGDType *get_gdtype(const StringName &p_class);
 	static void get_inheriters_from_class(const StringName &p_class, LocalVector<StringName> &p_classes);
 	static void get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static StringName get_parent_class_nocheck(const StringName &p_class);

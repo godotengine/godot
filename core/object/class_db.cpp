@@ -793,7 +793,7 @@ ObjectGDExtension *ClassDB::get_placeholder_extension(const StringName &p_class)
 }
 #endif
 
-const GDType *ClassDB::get_gdtype(const StringName &p_class) {
+const ObjectGDType *ClassDB::get_gdtype(const StringName &p_class) {
 	Locker::Lock lock(Locker::STATE_READ);
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL_V(type, nullptr);
@@ -921,7 +921,7 @@ bool ClassDB::is_gdextension(const StringName &p_class) {
 	return false;
 }
 
-void ClassDB::_add_class(GDType &p_class, const GDType *p_inherits) {
+void ClassDB::_add_class(ObjectGDType &p_class, const ObjectGDType *p_inherits) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	const StringName &name = p_class.get_name();
@@ -1396,19 +1396,7 @@ void ClassDB::add_linked_property(const StringName &p_class, const String &p_pro
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	const GDType::Member *member = type->gdtype->members(true).getptr(p_property);
-	ERR_FAIL_NULL(member);
-	ERR_FAIL_COND(member->type != GDType::Member::Type::PROPERTY);
-
-	const GDType::Member *linked_property = type->gdtype->members(true).getptr(p_linked_property);
-	ERR_FAIL_NULL(linked_property);
-	ERR_FAIL_COND(linked_property->type != GDType::Member::Type::PROPERTY);
-
-	if (!type->linked_properties.has(p_property)) {
-		type->linked_properties.insert(p_property, List<StringName>());
-	}
-	type->linked_properties[p_property].push_back(p_linked_property);
-
+	type->gdtype->link_properties(p_property, p_linked_property);
 #endif
 }
 
@@ -1436,10 +1424,10 @@ void ClassDB::get_linked_properties_info(const StringName &p_class, const String
 #ifdef TOOLS_ENABLED
 	ClassInfo *check = classes.getptr(p_class);
 	while (check) {
-		if (!check->linked_properties.has(p_property)) {
+		if (!check->gdtype->get_self_linked_properties().has(p_property)) {
 			return;
 		}
-		for (const StringName &E : check->linked_properties[p_property]) {
+		for (const StringName &E : check->gdtype->get_self_linked_properties()[p_property]) {
 			r_properties->push_back(E);
 		}
 
@@ -2030,7 +2018,7 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 	c.is_runtime = p_extension->is_runtime;
 #endif
 
-	c.gdtype = memnew(GDType(c.inherits_ptr->gdtype, p_extension->class_name));
+	c.gdtype = memnew(ObjectGDType(c.inherits_ptr->gdtype, p_extension->class_name));
 	c.gdtype->initialize();
 	p_extension->gdtype = c.gdtype;
 
@@ -2085,7 +2073,7 @@ void ClassDB::cleanup_defaults() {
 	default_values_cached.clear();
 }
 
-LocalVector<GDType **> ClassDB::gdtype_autorelease_pool;
+LocalVector<ObjectGDType **> ClassDB::gdtype_autorelease_pool;
 void ClassDB::cleanup() {
 	//OBJTYPE_LOCK; hah not here
 
@@ -2101,7 +2089,7 @@ void ClassDB::cleanup() {
 	compat_classes.clear();
 	native_structs.clear();
 
-	for (GDType **type : gdtype_autorelease_pool) {
+	for (ObjectGDType **type : gdtype_autorelease_pool) {
 		if (!*type) {
 			WARN_PRINT("GDType in autorelease pool was cleaned up before being auto-released. Ignoring.");
 			continue;
