@@ -210,12 +210,24 @@ class CSGPrimitive3D : public CSGShape3D {
 
 protected:
 	bool flip_faces;
+	bool uv_match_size;
+	Vector2 uv_offset;
+	Vector2 uv_scale;
 	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
 	static void _bind_methods();
 
 public:
 	void set_flip_faces(bool p_invert);
 	bool get_flip_faces();
+
+	void set_uv_match_size(bool p_enabled);
+	bool get_uv_match_size();
+
+	void set_uv_offset(const Vector2 &p_uv_offset);
+	Vector2 get_uv_offset() const;
+
+	void set_uv_scale(const Vector2 &p_uv_scale);
+	Vector2 get_uv_scale() const;
 
 	CSGPrimitive3D();
 };
