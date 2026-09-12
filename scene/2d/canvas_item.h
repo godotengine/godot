@@ -48,8 +48,6 @@ class CanvasItemMaterial : public Material {
 	GDCLASS(CanvasItemMaterial, Material);
 
 public:
-	static constexpr AncestralClass static_ancestral_class = AncestralClass::CANVAS_ITEM;
-
 	enum BlendMode {
 		BLEND_MODE_MIX,
 		BLEND_MODE_ADD,
@@ -167,6 +165,8 @@ class CanvasItem : public Node {
 	friend class CanvasLayer;
 
 public:
+	static constexpr AncestralClass static_ancestral_class = AncestralClass::CANVAS_ITEM;
+
 	enum BlendMode {
 
 		BLEND_MODE_MIX, //default
