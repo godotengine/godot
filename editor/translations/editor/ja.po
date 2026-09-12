@@ -97,13 +97,16 @@
 # shortsun <weekenddamehuman@gmail.com>, 2026.
 # "IndigoCarmine (Yuhei Yamada)" <tamanisikaminai@gmail.com>, 2026.
 # Chikashi Suzuki <underground.resources823@gmail.com>, 2026.
+# taisan11 <131413638+taisan11@users.noreply.github.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# マムス <mamusu.silhouette@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-20 16:31+0000\n"
-"Last-Translator: Rudeus <95301440+7Luminaries@users.noreply.github.com>\n"
+"PO-Revision-Date: 2026-08-03 10:02+0000\n"
+"Last-Translator: マムス <mamusu.silhouette@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -111,7 +114,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -450,6 +453,9 @@ msgstr "選択"
 msgid "Cancel"
 msgstr "キャンセル"
 
+msgid "Close Dialog"
+msgstr "ダイアログを閉じる"
+
 msgid "Focus Next"
 msgstr "次にフォーカス"
 
@@ -768,11 +774,14 @@ msgstr "すべてのキーの選択を解除"
 msgid "Add Animation"
 msgstr "アニメーションを追加"
 
+msgid "No available animations"
+msgstr "使用可能なアニメーションはありません"
+
 msgid "Add %s"
 msgstr "%s を追加"
 
 msgid "Load..."
-msgstr "読み込む.."
+msgstr "...を読み込む。"
 
 msgid "Move BlendSpace1D Node Point"
 msgstr "BlendSpace1Dノードポイントを移動"
@@ -799,6 +808,9 @@ msgstr "アニメーションポイントを追加"
 msgid "Remove BlendSpace1D Point"
 msgstr "BlendSpace1Dのポイントを削除"
 
+msgid "Change BlendSpace1D Point Name"
+msgstr "BlendSpace1D ポイントの名前を変更"
+
 msgid "Continuous"
 msgstr "継続的"
 
@@ -807,6 +819,19 @@ msgstr "離散"
 
 msgid "Capture"
 msgstr "キャプチャ"
+
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"ノードの選択と移動を行います。\n"
+"\n"
+"右クリック: クリックした位置にノードを追加します。\n"
+"\n"
+"Shift+左クリック+ドラッグ：選択したノードと他のノードを接続するか、ノードのな"
+"い領域を選択した場合は新しいノードを作成します。"
 
 msgid "Create points."
 msgstr "点を作成する。"
@@ -826,8 +851,37 @@ msgstr "同期"
 msgid "None"
 msgstr "None"
 
+msgid "Cyclic Mutable"
+msgstr "循環する変更可能な参照"
+
+msgid "Cyclic Length"
+msgstr "循環長"
+
+msgid ""
+"Cycle length in seconds for cyclic sync. All animations are time-scaled to "
+"complete one cycle in this duration."
+msgstr ""
+"循環同期の 1 サイクルの長さを秒単位で設定します。すべてのアニメーションは、こ"
+"の時間内に 1 サイクルを完了するように時間スケールされます。"
+
+msgid "Blend"
+msgstr "ブレンド"
+
 msgid "Open Editor"
 msgstr "エディターで開く"
+
+msgid "Index"
+msgstr "インデックス"
+
+msgid "Blend Point Index"
+msgstr "ブレンドポイントのインデックス"
+
+msgid ""
+"Index of the blend point.\n"
+"Values outside of the valid range will be clamped to the nearest index."
+msgstr ""
+"ブレンドポイントのインデックスです。\n"
+"有効な範囲外の値は、最も近いインデックスに制限されます。"
 
 msgid "Position"
 msgstr "位置"
@@ -864,6 +918,9 @@ msgstr "BlendSpace2Dのポイントを削除する"
 
 msgid "Remove BlendSpace2D Triangle"
 msgstr "BlendSpace2Dの三角形を削除する"
+
+msgid "Change BlendSpace2D Point Name"
+msgstr "BlendSpace2Dのポイントの名前を変更"
 
 msgid "Toggle Auto Triangles"
 msgstr "三角形の自動作成をオン / オフ"
@@ -2260,8 +2317,14 @@ msgstr "タイトル"
 msgid "Author"
 msgstr "作者"
 
+msgid "Verified Author"
+msgstr "認証済みの作者"
+
 msgid "License"
 msgstr "ライセンス"
+
+msgid "No changelog provided for this version."
+msgstr "このバージョンの変更履歴は提供されていません。"
 
 msgid "Loading..."
 msgstr "読み込み中..."
@@ -9379,6 +9442,9 @@ msgstr "タイルプロパティをペイント"
 
 msgid "Painting:"
 msgstr "ペイント設定:"
+
+msgid "Polygon %d"
+msgstr "ポリゴン %d"
 
 msgid "No terrains"
 msgstr "地形なし"

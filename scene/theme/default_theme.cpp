@@ -729,6 +729,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("file_thumbnail", "FileDialog", icons["file_thumbnail"]);
 	theme->set_icon("folder_thumbnail", "FileDialog", icons["folder_thumbnail"]);
+	theme->set_icon("menu_copy_path", "FileDialog", empty_icon);
+	theme->set_icon("menu_delete", "FileDialog", empty_icon);
+	theme->set_icon("menu_new_folder", "FileDialog", empty_icon);
+	theme->set_icon("menu_refresh", "FileDialog", empty_icon);
+	theme->set_icon("menu_show_in_file_manager", "FileDialog", empty_icon);
+	theme->set_icon("menu_open_bundle", "FileDialog", empty_icon);
 	theme->set_color("folder_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_disabled_color", "FileDialog", Color(1, 1, 1, 0.25));

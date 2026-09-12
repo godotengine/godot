@@ -196,7 +196,7 @@ static int hmac_drbg_reseed_core(mbedtls_hmac_drbg_context *ctx,
     }
 
     /* 3. Reset reseed_counter */
-    ctx->reseed_counter = 1;
+    ctx->reseed_counter = 0;
 
 exit:
     /* 4. Done */
@@ -326,7 +326,7 @@ int mbedtls_hmac_drbg_random_with_add(void *p_rng,
     /* 1. (aka VII and IX) Check reseed counter and PR */
     if (ctx->f_entropy != NULL && /* For no-reseeding instances */
         (ctx->prediction_resistance == MBEDTLS_HMAC_DRBG_PR_ON ||
-         ctx->reseed_counter > ctx->reseed_interval)) {
+         ctx->reseed_counter >= ctx->reseed_interval)) {
         if ((ret = mbedtls_hmac_drbg_reseed(ctx, additional, add_len)) != 0) {
             return ret;
         }

@@ -48,7 +48,10 @@
 #define MBEDTLS_SHA1_C
 #define MBEDTLS_SHA256_C
 #define MBEDTLS_PLATFORM_ZEROIZE_ALT
-#define MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
+
+// Custom entropy source.
+#define MBEDTLS_NO_PLATFORM_ENTROPY
+#define MBEDTLS_ENTROPY_HARDWARE_ALT
 
 // This is only to pass a check in the mbedtls check_config.h header, none of
 // the files we include as part of the core build uses it anyway, we already

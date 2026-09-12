@@ -209,15 +209,14 @@ bool EditorQuickOpenDialog::_is_instant_preview_active() const {
 }
 
 void EditorQuickOpenDialog::selection_changed() {
-	if (!_is_instant_preview_active()) {
-		return;
-	}
-
 	// This prevents the property from being changed the first time the Quick Open
 	// window is opened.
 	if (!initial_selection_performed) {
 		initial_selection_performed = true;
-	} else {
+		return;
+	}
+
+	if (_is_instant_preview_active()) {
 		preview_property();
 	}
 }

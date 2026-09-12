@@ -34,6 +34,7 @@
 #if defined(MBEDTLS_RSA_C)
 #include "pkwrite.h"
 #include "rsa_internal.h"
+#include "constant_time_internal.h"
 #endif
 
 #if defined(MBEDTLS_PK_CAN_ECDSA_SOME)
@@ -72,7 +73,7 @@ static int rsa_verify_wrap(mbedtls_pk_context *pk, mbedtls_md_type_t md_alg,
     mbedtls_svc_key_id_t key_id = MBEDTLS_SVC_KEY_ID_INIT;
     psa_status_t status;
     int key_len;
-    unsigned char buf[MBEDTLS_PK_RSA_PUB_DER_MAX_BYTES];
+    unsigned char buf[PSA_KEY_EXPORT_RSA_PUBLIC_KEY_MAX_SIZE(PSA_VENDOR_RSA_MAX_KEY_BITS)];
     unsigned char *p = buf + sizeof(buf);
     psa_algorithm_t psa_alg_md;
     size_t rsa_len = mbedtls_rsa_get_len(rsa);
@@ -288,9 +289,6 @@ static int rsa_decrypt_wrap(mbedtls_pk_context *pk,
     psa_algorithm_t psa_md_alg, decrypt_alg;
     psa_status_t status;
     int key_len;
-    unsigned char buf[MBEDTLS_PK_RSA_PRV_DER_MAX_BYTES];
-    unsigned char *p = buf + sizeof(buf);
-
     ((void) f_rng);
     ((void) p_rng);
 
@@ -298,6 +296,13 @@ static int rsa_decrypt_wrap(mbedtls_pk_context *pk,
         return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
     }
 
+    const size_t key_bits = mbedtls_pk_get_bitlen(pk);
+    /* mbedtls_rsa_write_key() uses the same format as PSA export, which
+     * actually calls it under the hood, so we can use the PSA size macro. */
+    const size_t buf_size = PSA_KEY_EXPORT_RSA_KEY_PAIR_MAX_SIZE(key_bits);
+    unsigned char *buf = mbedtls_calloc(1, buf_size);
+
+    unsigned char *p = buf + buf_size;
     key_len = mbedtls_rsa_write_key(rsa, buf, &p);
     if (key_len <= 0) {
         return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
@@ -314,7 +319,7 @@ static int rsa_decrypt_wrap(mbedtls_pk_context *pk,
     psa_set_key_algorithm(&attributes, decrypt_alg);
 
     status = psa_import_key(&attributes,
-                            buf + sizeof(buf) - key_len, key_len,
+                            buf + buf_size - key_len, key_len,
                             &key_id);
     if (status != PSA_SUCCESS) {
         ret = PSA_PK_TO_MBEDTLS_ERR(status);
@@ -325,21 +330,33 @@ static int rsa_decrypt_wrap(mbedtls_pk_context *pk,
                                     input, ilen,
                                     NULL, 0,
                                     output, osize, olen);
-    if (status != PSA_SUCCESS) {
-        ret = PSA_PK_RSA_TO_MBEDTLS_ERR(status);
-        goto cleanup;
-    }
 
-    ret = 0;
+#if defined(MBEDTLS_PKCS1_V15)
+    /* Translate error codes from PSA to legacy
+     * Success vs INVALID_PADDING vs BUFFER_TOO_SMALL is sensitive
+     * (padding oracle attack), so we take care to translate that
+     * part in constant time.
+     */
+    int problem;
+    status = mbedtls_rsa_decrypt_decompose_ret(
+        PSA_ERROR_INVALID_PADDING, MBEDTLS_ERR_RSA_INVALID_PADDING,
+        PSA_ERROR_BUFFER_TOO_SMALL, MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE,
+        status, &problem);
+    ret = PSA_PK_RSA_TO_MBEDTLS_ERR(status);
+    ret |= problem;
+#else
+    ret = PSA_PK_RSA_TO_MBEDTLS_ERR(status);
+#endif
 
 cleanup:
-    mbedtls_platform_zeroize(buf, sizeof(buf));
+    mbedtls_zeroize_and_free(buf, buf_size);
     status = psa_destroy_key(key_id);
-    if (ret == 0 && status != PSA_SUCCESS) {
-        ret = PSA_PK_TO_MBEDTLS_ERR(status);
-    }
-
-    return ret;
+    /* Don't branch on ret as it is a sensitive value
+     * (it reveals whether padding was valid).
+     * Instead branch on status. That means when both ret and
+     * status were errors, we'll return the unlock status while we would
+     * normally return the first error, but that's better than leaking info. */
+    return (status != PSA_SUCCESS) ? PSA_PK_TO_MBEDTLS_ERR(status) : ret;
 }
 #else /* MBEDTLS_USE_PSA_CRYPTO */
 static int rsa_decrypt_wrap(mbedtls_pk_context *pk,
@@ -371,7 +388,7 @@ static int rsa_encrypt_wrap(mbedtls_pk_context *pk,
     psa_algorithm_t psa_md_alg, psa_encrypt_alg;
     psa_status_t status;
     int key_len;
-    unsigned char buf[MBEDTLS_PK_RSA_PUB_DER_MAX_BYTES];
+    unsigned char buf[PSA_KEY_EXPORT_RSA_PUBLIC_KEY_MAX_SIZE(PSA_VENDOR_RSA_MAX_KEY_BITS)];
     unsigned char *p = buf + sizeof(buf);
 
     ((void) f_rng);
@@ -1336,7 +1353,6 @@ static int rsa_alt_check_pair(mbedtls_pk_context *pub, mbedtls_pk_context *prv,
                               int (*f_rng)(void *, unsigned char *, size_t),
                               void *p_rng)
 {
-    unsigned char sig[MBEDTLS_MPI_MAX_SIZE];
     unsigned char hash[32];
     size_t sig_len = 0;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
@@ -1345,21 +1361,29 @@ static int rsa_alt_check_pair(mbedtls_pk_context *pub, mbedtls_pk_context *prv,
         return MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
     }
 
+    size_t sig_size = (rsa_get_bitlen(pub) + 7) / 8;
+    unsigned char *sig = mbedtls_calloc(1, sig_size);
+    if (sig == NULL) {
+        return MBEDTLS_ERR_PK_ALLOC_FAILED;
+    }
+
     memset(hash, 0x2a, sizeof(hash));
 
     if ((ret = rsa_alt_sign_wrap(prv, MBEDTLS_MD_NONE,
                                  hash, sizeof(hash),
-                                 sig, sizeof(sig), &sig_len,
+                                 sig, sig_size, &sig_len,
                                  f_rng, p_rng)) != 0) {
-        return ret;
+        goto cleanup;
     }
 
     if (rsa_verify_wrap(pub, MBEDTLS_MD_NONE,
                         hash, sizeof(hash), sig, sig_len) != 0) {
-        return MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
+        ret = MBEDTLS_ERR_RSA_KEY_CHECK_FAILED;
     }
 
-    return 0;
+cleanup:
+    mbedtls_zeroize_and_free(sig, sig_size);
+    return ret;
 }
 #endif /* MBEDTLS_RSA_C */
 
@@ -1492,11 +1516,21 @@ static int rsa_opaque_decrypt(mbedtls_pk_context *pk,
     }
 
     status = psa_asymmetric_decrypt(pk->priv_id, alg, input, ilen, NULL, 0, output, osize, olen);
-    if (status != PSA_SUCCESS) {
-        return PSA_PK_RSA_TO_MBEDTLS_ERR(status);
-    }
-
-    return 0;
+#if defined(MBEDTLS_PKCS1_V15)
+    /* Translate error codes from PSA to legacy
+     * Success vs INVALID_PADDING vs BUFFER_TOO_SMALL is sensitive
+     * (padding oracle attack), so we take care to translate that
+     * part in constant time.
+     */
+    int problem;
+    status = mbedtls_rsa_decrypt_decompose_ret(
+        PSA_ERROR_INVALID_PADDING, MBEDTLS_ERR_RSA_INVALID_PADDING,
+        PSA_ERROR_BUFFER_TOO_SMALL, MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE,
+        status, &problem);
+    return PSA_PK_RSA_TO_MBEDTLS_ERR(status) | problem;
+#else
+    return PSA_PK_RSA_TO_MBEDTLS_ERR(status);
+#endif
 }
 #endif /* PSA_WANT_KEY_TYPE_RSA_KEY_PAIR_BASIC */
 

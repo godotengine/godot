@@ -79,13 +79,16 @@
 # Narada Fox <narada.fox7pc@gmail.com>, 2026.
 # "Oscar :D" <robloxgamingindonesia7@gmail.com>, 2026.
 # Foliage Tree Nicer <foliagetree23@gmail.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# "Ahmad E. Nugraha" <ahmaderdiansha.9a@gmail.com>, 2026.
+# Mahiir <mhrirab.12@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-28 22:01+0000\n"
-"Last-Translator: Foliage Tree Nicer <foliagetree23@gmail.com>\n"
+"PO-Revision-Date: 2026-07-17 12:16+0000\n"
+"Last-Translator: Mahiir <mhrirab.12@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -93,7 +96,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "Oke"
@@ -117,7 +120,7 @@ msgid "Out of memory"
 msgstr "Kehabisan memori"
 
 msgid "File not found"
-msgstr "Berkas tidak ditemukan"
+msgstr "File tidak ditemukan."
 
 msgid "File: Bad drive"
 msgstr "Berkas: Drive Tidak Terbaca"
@@ -754,6 +757,9 @@ msgstr "Batalkan Pilihan Semua Kunci"
 
 msgid "Add Animation"
 msgstr "Tambah Animasi"
+
+msgid "No available animations"
+msgstr "animasi tidak tersedia"
 
 msgid "Add %s"
 msgstr "Tambah %s"
@@ -1689,6 +1695,9 @@ msgstr "Dalam Genggaman:"
 msgid "Out-Handle:"
 msgstr "Diluar Genggaman:"
 
+msgid "Handle mode: %s"
+msgstr "Mode pegangan: %s"
+
 msgid "Stream:"
 msgstr "Aliran:"
 
@@ -1986,6 +1995,9 @@ msgstr "AnimationPlayer mati. Putar ulang tidak akan diproses."
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Pilih node AnimationPlayer untuk membuat dan mengedit animasi."
 
+msgid "Imported Animation"
+msgstr "Animasi yang Diimpor"
+
 msgid "Warning: Editing imported animation"
 msgstr "Peringatan: Menyunting animasi yang diimpor"
 
@@ -2024,6 +2036,9 @@ msgstr ""
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "Susun track berdasarkan node atau tampilkan sebagai daftar biasa."
+
+msgid "Insert at current time."
+msgstr "Sisipkan pada waktu saat ini."
 
 msgid "Apply snapping to timeline cursor."
 msgstr "Terapkan snapping pada kursor timeline."
@@ -2253,6 +2268,9 @@ msgstr "Pasang..."
 msgid "Version:"
 msgstr "Versi:"
 
+msgid "Open the web browser to show the asset in the online store page."
+msgstr "Buka peramban web untuk menunjukkan aset di laman toko online."
+
 msgid "Description"
 msgstr "Deskripsi"
 
@@ -2307,6 +2325,9 @@ msgstr "Gagal:"
 msgid "Bad download hash, assuming file has been tampered with."
 msgstr "Hash unduhan buruk, berkas mungkin telah diubah."
 
+msgid "Expected:"
+msgstr "Yang diharapkan:"
+
 msgid "Got:"
 msgstr "Yang Didapat:"
 
@@ -2355,6 +2376,13 @@ msgstr "Berikutnya"
 msgctxt "Pagination"
 msgid "Last"
 msgstr "Terakhir"
+
+msgid ""
+"The Asset Store requires an online connection and involves sending data over "
+"the internet."
+msgstr ""
+"Asset Store memerlukan koneksi online dan melibatkan pengiriman data melalui "
+"internet."
 
 msgid "All"
 msgstr "Semua"
@@ -4489,6 +4517,9 @@ msgstr "Paket Templat"
 msgid "Export Library"
 msgstr "Ekspor Pustaka"
 
+msgid "Project data folder (.godot) is missing. Please restart editor."
+msgstr "Folder data proyek (.godot) tidak ditemukan. Mohon mulai ulang editor."
+
 msgid "Restart"
 msgstr "Mulai Ulang"
 
@@ -6304,6 +6335,9 @@ msgstr "Lokasi Projek"
 msgid "This project was last edited in a different Godot version: "
 msgstr "Projek ini terakhir diedit di versi Godot yang berbeda: "
 
+msgid "Opening it will upgrade it to Godot %s.%s."
+msgstr "Membukanya akan memperbarui ke Godot versi %s.%s."
+
 msgid "Unknown version"
 msgstr "Versi tidak diketahui"
 
@@ -7029,6 +7063,9 @@ msgstr "Alihkan Snap Kisi"
 
 msgid "Grid Snap"
 msgstr "Pengancingan Kisi"
+
+msgid "Polygon %d"
+msgstr "Poligon %d"
 
 msgid "No terrains"
 msgstr "Tidak ada lahan"

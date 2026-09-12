@@ -556,6 +556,7 @@ private:
 	bool show_column_titles = false;
 
 	bool popup_edit_committed = true;
+	int scroll_pending = 0;
 	RID accessibility_scroll_element;
 	RID stylebox_ci; // Separate canvas item for drawing native styleboxes.
 	RID custom_ci; // Separate canvas item for drawing custom content.

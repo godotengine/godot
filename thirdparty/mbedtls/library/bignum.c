@@ -2059,30 +2059,38 @@ int mbedtls_mpi_inv_mod(mbedtls_mpi *X, const mbedtls_mpi *A, const mbedtls_mpi 
 
 #if defined(MBEDTLS_GENPRIME)
 
-/* Gaps between primes, starting at 3. https://oeis.org/A001223 */
-static const unsigned char small_prime_gaps[] = {
-    2, 2, 4, 2, 4, 2, 4, 6,
-    2, 6, 4, 2, 4, 6, 6, 2,
-    6, 4, 2, 6, 4, 6, 8, 4,
-    2, 4, 2, 4, 14, 4, 6, 2,
-    10, 2, 6, 6, 4, 6, 6, 2,
-    10, 2, 4, 2, 12, 12, 4, 2,
-    4, 6, 2, 10, 6, 6, 6, 2,
-    6, 4, 2, 10, 14, 4, 2, 4,
-    14, 6, 10, 2, 4, 6, 8, 6,
-    6, 4, 6, 8, 4, 8, 10, 2,
-    10, 2, 6, 4, 6, 8, 4, 2,
-    4, 12, 8, 4, 8, 4, 6, 12,
-    2, 18, 6, 10, 6, 6, 2, 6,
-    10, 6, 6, 2, 6, 6, 4, 2,
-    12, 10, 2, 4, 6, 6, 2, 12,
-    4, 6, 8, 10, 8, 10, 8, 6,
-    6, 4, 8, 6, 4, 8, 4, 14,
-    10, 12, 2, 10, 2, 4, 2, 10,
-    14, 4, 2, 4, 14, 4, 2, 4,
-    20, 4, 8, 10, 8, 4, 6, 6,
-    14, 4, 6, 6, 8, 6, /*reaches 997*/
-    0 /* the last entry is effectively unused */
+static const mbedtls_mpi_sint small_primes_limit = 997;
+/* Product of small primes up to small_primes_limit included */
+static const mbedtls_mpi_uint small_primes_product_limbs[] = {
+    MBEDTLS_BYTES_TO_T_UINT_8(0x4b, 0x13, 0x6a, 0x97, 0xbb, 0xd0, 0xdf, 0x95),
+    MBEDTLS_BYTES_TO_T_UINT_8(0xa7, 0x2c, 0x10, 0xa4, 0x20, 0xa4, 0x9f, 0x7b),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x9d, 0x18, 0xd6, 0xdf, 0xc0, 0xf5, 0x61, 0x65),
+    MBEDTLS_BYTES_TO_T_UINT_8(0xfc, 0x35, 0x79, 0xfb, 0x30, 0xa8, 0xd5, 0xbf),
+    MBEDTLS_BYTES_TO_T_UINT_8(0xdb, 0x37, 0xba, 0x2c, 0xfb, 0xbb, 0x89, 0xfb),
+    MBEDTLS_BYTES_TO_T_UINT_8(0xad, 0xc2, 0x8c, 0x1d, 0x99, 0x18, 0xe8, 0xe5),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x8d, 0x77, 0xc9, 0x5d, 0x96, 0x8a, 0x61, 0x9d),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x39, 0x41, 0x3e, 0xf4, 0x34, 0x07, 0x57, 0xe0),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x4a, 0xf1, 0x54, 0x3a, 0x43, 0x67, 0x46, 0xa2),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x83, 0x0c, 0xe5, 0x31, 0xa2, 0xfc, 0x05, 0x45),
+    MBEDTLS_BYTES_TO_T_UINT_8(0xf0, 0x1d, 0x66, 0xfc, 0x7a, 0x85, 0x37, 0xe1),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x17, 0xe0, 0x80, 0x62, 0x0d, 0xa2, 0xbc, 0x32),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x6d, 0xce, 0x84, 0x68, 0x00, 0xb5, 0xe3, 0x35),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x14, 0x19, 0x0d, 0xe4, 0x92, 0xd5, 0xd8, 0xdf),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x20, 0x1c, 0x7d, 0x38, 0x3b, 0xe8, 0xd9, 0xa8),
+    MBEDTLS_BYTES_TO_T_UINT_8(0xf6, 0xac, 0x11, 0xe6, 0xb4, 0x03, 0xf7, 0x6c),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x78, 0x3d, 0xf2, 0x3a, 0x8f, 0xf9, 0x2f, 0x6a),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x7b, 0x72, 0x66, 0xa9, 0x48, 0xe4, 0x6d, 0x02),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x69, 0xc7, 0x32, 0xcb, 0xf2, 0xf7, 0xa9, 0x0b),
+    MBEDTLS_BYTES_TO_T_UINT_8(0xd3, 0x52, 0x72, 0x9d, 0xbf, 0x54, 0xea, 0xc7),
+    MBEDTLS_BYTES_TO_T_UINT_8(0xf5, 0xf3, 0x8a, 0xc5, 0xf0, 0xe1, 0x21, 0x81),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x8e, 0x61, 0x78, 0xf0, 0x05, 0x00, 0x00, 0x00),
+};
+/* Could make ECP_MPI_INIT_ARRAY() available outside ecp, but not doing it now
+ * as it would lead to conflicts with other in-flight PRs. */
+static const mbedtls_mpi small_primes_product = {
+    .p = (mbedtls_mpi_uint *) small_primes_product_limbs,
+    .s = 1,
+    .n = sizeof(small_primes_product_limbs) / sizeof(mbedtls_mpi_uint),
 };
 
 /*
@@ -2097,26 +2105,43 @@ static const unsigned char small_prime_gaps[] = {
 static int mpi_check_small_factors(const mbedtls_mpi *X)
 {
     int ret = 0;
-    size_t i;
-    mbedtls_mpi_uint r;
-    unsigned p = 3; /* The first odd prime */
+    mbedtls_mpi g;
+
+    mbedtls_mpi_init(&g);
 
     if ((X->p[0] & 1) == 0) {
         return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
     }
 
-    for (i = 0; i < sizeof(small_prime_gaps); p += small_prime_gaps[i], i++) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_mod_int(&r, X, p));
-        if (r == 0) {
-            if (mbedtls_mpi_cmp_int(X, p) == 0) {
-                return 1;
-            } else {
-                return MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
-            }
+    /* The GCD test below only works if X > small_primes_limit.
+     * Below this limit, use trial division: numbers that small are of no
+     * interest for cryptography, so we don't care about performance or side
+     * channels. We're supporting them only for backwards compatibility, so
+     * let's not waste code size on those. */
+    if (mbedtls_mpi_cmp_int(X, small_primes_limit) <= 0) {
+        mbedtls_mpi_uint x = X->p[0];
+        mbedtls_mpi_uint d = 2;
+        while (x % d != 0) {
+            ++d;
         }
+        return x == d ? 1 : MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
+    }
+
+    /* We can't directly use mbedtls_mpi_gcd_modinv_odd() because we don't know
+     * if X is larger than prod or not (prod is 1380 bits). So, use this generic
+     * wrapper - it does a bit more than what we need (handles even inputs as
+     * well, while we know our inputs are both odd), but that's OK. */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd(&g, &small_primes_product, X));
+
+    if (mbedtls_mpi_cmp_int(&g, 1) == 0) {
+        /* X is not divisible by a small prime */
+        ret = 0;
+    } else {
+        ret = MBEDTLS_ERR_MPI_NOT_ACCEPTABLE;
     }
 
 cleanup:
+    mbedtls_mpi_free(&g);
     return ret;
 }
 

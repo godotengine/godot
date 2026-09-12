@@ -446,7 +446,13 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 		v = Object::cast_to<EncodedObjectAsID>(v)->get_object_id();
 		h = PROPERTY_HINT_OBJECT_ID;
 		hs = var.type_hint;
+
+		// Makes the call stack select the node in the remote tree. See https://github.com/godotengine/godot/issues/79477
+		if (n == "self") {
+			_object_selected(v);
+		}
 	}
+
 	String type;
 	switch (var.type) {
 		case 0:

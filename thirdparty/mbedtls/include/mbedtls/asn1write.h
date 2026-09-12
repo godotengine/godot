@@ -381,10 +381,10 @@ mbedtls_asn1_named_data *mbedtls_asn1_store_named_data(mbedtls_asn1_named_data *
                                                        const unsigned char *val,
                                                        size_t val_len);
 
+#endif /* MBEDTLS_ASN1_WRITE_C */
+
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* MBEDTLS_ASN1_WRITE_C */
 
 #endif /* MBEDTLS_ASN1_WRITE_H */

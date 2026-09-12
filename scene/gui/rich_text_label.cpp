@@ -6202,33 +6202,36 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		} else if (tag.begins_with("img")) {
 			int alignment = INLINE_ALIGNMENT_CENTER;
 			if (tag.begins_with("img=")) {
-				Vector<String> subtag = _split_unquoted(_get_tag_value(tag), U',');
-				_normalize_subtags(subtag);
+				Vector<String> base_tag_block = _split_unquoted(tag, ' ');
+				if (!base_tag_block.is_empty()) {
+					Vector<String> subtag = _split_unquoted(_get_tag_value(base_tag_block[0]), U',');
+					_normalize_subtags(subtag);
 
-				if (subtag.size() > 1) {
-					if (subtag[0] == "top" || subtag[0] == "t") {
-						alignment = INLINE_ALIGNMENT_TOP_TO;
-					} else if (subtag[0] == "center" || subtag[0] == "c") {
-						alignment = INLINE_ALIGNMENT_CENTER_TO;
-					} else if (subtag[0] == "bottom" || subtag[0] == "b") {
-						alignment = INLINE_ALIGNMENT_BOTTOM_TO;
-					}
-					if (subtag[1] == "top" || subtag[1] == "t") {
-						alignment |= INLINE_ALIGNMENT_TO_TOP;
-					} else if (subtag[1] == "center" || subtag[1] == "c") {
-						alignment |= INLINE_ALIGNMENT_TO_CENTER;
-					} else if (subtag[1] == "baseline" || subtag[1] == "l") {
-						alignment |= INLINE_ALIGNMENT_TO_BASELINE;
-					} else if (subtag[1] == "bottom" || subtag[1] == "b") {
-						alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
-					}
-				} else if (!subtag.is_empty()) {
-					if (subtag[0] == "top" || subtag[0] == "t") {
-						alignment = INLINE_ALIGNMENT_TOP;
-					} else if (subtag[0] == "center" || subtag[0] == "c") {
-						alignment = INLINE_ALIGNMENT_CENTER;
-					} else if (subtag[0] == "bottom" || subtag[0] == "b") {
-						alignment = INLINE_ALIGNMENT_BOTTOM;
+					if (subtag.size() > 1) {
+						if (subtag[0] == "top" || subtag[0] == "t") {
+							alignment = INLINE_ALIGNMENT_TOP_TO;
+						} else if (subtag[0] == "center" || subtag[0] == "c") {
+							alignment = INLINE_ALIGNMENT_CENTER_TO;
+						} else if (subtag[0] == "bottom" || subtag[0] == "b") {
+							alignment = INLINE_ALIGNMENT_BOTTOM_TO;
+						}
+						if (subtag[1] == "top" || subtag[1] == "t") {
+							alignment |= INLINE_ALIGNMENT_TO_TOP;
+						} else if (subtag[1] == "center" || subtag[1] == "c") {
+							alignment |= INLINE_ALIGNMENT_TO_CENTER;
+						} else if (subtag[1] == "baseline" || subtag[1] == "l") {
+							alignment |= INLINE_ALIGNMENT_TO_BASELINE;
+						} else if (subtag[1] == "bottom" || subtag[1] == "b") {
+							alignment |= INLINE_ALIGNMENT_TO_BOTTOM;
+						}
+					} else if (!subtag.is_empty()) {
+						if (subtag[0] == "top" || subtag[0] == "t") {
+							alignment = INLINE_ALIGNMENT_TOP;
+						} else if (subtag[0] == "center" || subtag[0] == "c") {
+							alignment = INLINE_ALIGNMENT_CENTER;
+						} else if (subtag[0] == "bottom" || subtag[0] == "b") {
+							alignment = INLINE_ALIGNMENT_BOTTOM;
+						}
 					}
 				}
 			}
@@ -6426,20 +6429,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front(tag.substr(0, value_pos));
 
-		} else if (tag.begins_with("font=")) {
-			String fnt = _get_tag_value(tag).unquote();
-
-			Ref<Font> fc = ResourceLoader::load(fnt, "Font");
-			if (fc.is_valid()) {
-				push_font(fc);
-			} else {
-				push_font(theme_cache.normal_font);
-			}
-
-			pos = brk_end + 1;
-			tag_stack.push_front("font");
-
-		} else if (tag.begins_with("font ")) {
+		} else if (tag.begins_with("font")) {
 			Ref<Font> font = theme_cache.normal_font;
 			DefaultFont def_font = RTL_NORMAL_FONT;
 			int fnt_size = -1;
@@ -6454,6 +6444,17 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 			Ref<FontVariation> fc;
 			fc.instantiate();
+			if (tag.begins_with("font=")) {
+				Vector<String> base_tag_block = _split_unquoted(tag, ' ');
+				if (!base_tag_block.is_empty()) {
+					const String &fnt = _get_tag_value(base_tag_block[0]).unquote();
+					Ref<Font> font_data = ResourceLoader::load(fnt, "Font");
+					if (font_data.is_valid()) {
+						font = font_data;
+						def_font = RTL_CUSTOM_FONT;
+					}
+				}
+			}
 
 			OptionMap::Iterator name_option = bbcode_options.find("name");
 			if (!name_option) {

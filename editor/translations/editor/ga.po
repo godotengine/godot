@@ -5,12 +5,13 @@
 # Rónán Quill <ronan085@gmail.com>, 2019, 2020.
 # Aindriú Mac Giolla Eoin <aindriu80@gmail.com>, 2024, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-02-21 13:09+0000\n"
-"Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
+"PO-Revision-Date: 2026-07-07 03:32+0000\n"
+"Last-Translator: MedProgAyat <hosseinmehriyari1383@gmail.com>\n"
 "Language-Team: Irish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ga/>\n"
 "Language: ga\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : (n>2 && n<7) ? 2 :(n>6 "
 "&& n<11) ? 3 : 4;\n"
-"X-Generator: Weblate 5.16.1-dev\n"
+"X-Generator: Weblate 2026.7.1.dev0\n"
 
 msgid "OK"
 msgstr "Ceart go leor"
@@ -9851,6 +9852,9 @@ msgstr "Péinteáil Tíleanna Maoin"
 
 msgid "Painting:"
 msgstr "Péinteáil:"
+
+msgid "Polygon %d"
+msgstr "Polagán %d"
 
 msgid "No terrains"
 msgstr "Gan tír-raon"

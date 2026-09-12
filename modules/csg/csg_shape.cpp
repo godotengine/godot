@@ -37,7 +37,10 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
-#include "servers/rendering/rendering_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/rendering/rendering_server.h" // Only used for debug collision shapes.
+#endif // PHYSICS_3D_DISABLED
 
 #ifdef DEV_ENABLED
 #include "core/io/json.h"
@@ -205,6 +208,7 @@ void CSGShape3D::set_collision_priority(real_t p_priority) {
 real_t CSGShape3D::get_collision_priority() const {
 	return collision_priority;
 }
+#endif // PHYSICS_3D_DISABLED
 
 void CSGShape3D::set_autosmooth(bool p_smooth) {
 	autosmooth = p_smooth;
@@ -224,8 +228,6 @@ void CSGShape3D::set_smoothing_angle(const float p_angle) {
 float CSGShape3D::get_smoothing_angle() const {
 	return smoothing_angle;
 }
-
-#endif // PHYSICS_3D_DISABLED
 
 bool CSGShape3D::is_root_shape() const {
 	return !parent_shape;

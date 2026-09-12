@@ -248,8 +248,6 @@ abstract class GodotActivity : FragmentActivity(), GodotHost, PictureInPicturePr
 			} catch (e: NumberFormatException) {
 				Log.w(TAG, "Unable to parse viewport dimensions.", e)
 			}
-
-			runOnHostThread { updatePiPParams() }
 		}
 	}
 

@@ -1215,7 +1215,7 @@ template <typename T>
 inline void meshopt_remapIndexBuffer(T* destination, const T* indices, size_t index_count, const unsigned int* remap)
 {
 	meshopt_IndexAdapter<T> in(NULL, indices, indices ? index_count : 0);
-	meshopt_IndexAdapter<T> out(destination, 0, index_count);
+	meshopt_IndexAdapter<T> out(destination, NULL, index_count);
 
 	meshopt_remapIndexBuffer(out.data, indices ? in.data : NULL, index_count, remap);
 }
@@ -1263,7 +1263,7 @@ inline size_t meshopt_generateProvokingIndexBuffer(T* destination, unsigned int*
 	meshopt_IndexAdapter<T> out(destination, NULL, index_count);
 
 	size_t bound = vertex_count + (index_count / 3);
-	assert(size_t(T(bound - 1)) == bound - 1); // bound - 1 must fit in T
+	assert(bound == 0 || size_t(T(bound - 1)) == bound - 1); // bound - 1 must fit in T
 	(void)bound;
 
 	return meshopt_generateProvokingIndexBuffer(out.data, reorder, in.data, index_count, vertex_count);
@@ -1435,7 +1435,7 @@ template <typename T>
 inline size_t meshopt_unstripify(T* destination, const T* indices, size_t index_count, T restart_index)
 {
 	meshopt_IndexAdapter<T> in(NULL, indices, index_count);
-	meshopt_IndexAdapter<T> out(destination, NULL, (index_count - 2) * 3);
+	meshopt_IndexAdapter<T> out(destination, NULL, index_count == 0 ? 0 : (index_count - 2) * 3);
 
 	return meshopt_unstripify(out.data, in.data, index_count, unsigned(restart_index));
 }

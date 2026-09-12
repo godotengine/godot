@@ -133,13 +133,16 @@
 # Alperen Turan <alpptrnn@gmail.com>, 2026.
 # can unal <justplay95@gmail.com>, 2026.
 # Efe Yılmaz <iceburn322@gmail.com>, 2026.
+# Yagiz <yayahaga4@gmail.com>, 2026.
+# Alex Turner <brkformic@gmail.com>, 2026.
+# Oğuz Kaan Dere <ogzkaann96@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-16 19:05+0000\n"
-"Last-Translator: Cataphract <catapharaoh@proton.me>\n"
+"PO-Revision-Date: 2026-08-01 15:15+0000\n"
+"Last-Translator: Oğuz Kaan Dere <ogzkaann96@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -147,7 +150,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "Tamam"
@@ -891,6 +894,12 @@ msgstr "Hiçbiri"
 msgid "Independent"
 msgstr "Bağımsız"
 
+msgid "Cyclic Mutable"
+msgstr "Döngüsel Değiştirilebilir"
+
+msgid "Cyclic Constant"
+msgstr "Döngüsel Sabit"
+
 msgid "Cyclic Length"
 msgstr "Döngüsel Uzunluk"
 
@@ -909,6 +918,13 @@ msgstr "Düzenleyiciyi Aç"
 
 msgid "Blend Point Index"
 msgstr "Blend Noktası İndeksi"
+
+msgid ""
+"Index of the blend point.\n"
+"Values outside of the valid range will be clamped to the nearest index."
+msgstr ""
+"Harmanlama noktasının indeksi.\n"
+"Geçerli aralığın dışındaki değerler, en yakın geçerli indeks değerine çekilir."
 
 msgid "Position"
 msgstr "Konum"
@@ -933,6 +949,9 @@ msgstr "Üçgen zaten var."
 
 msgid "Add Triangle"
 msgstr "Üçgen Ekle"
+
+msgid "Move BlendSpace2D Node Point"
+msgstr "BlendSpace2D Düğüm Noktasını Taşı"
 
 msgid "Change BlendSpace2D Config"
 msgstr "BlendSpace2D Ayarlarını Değiştir"
@@ -1187,6 +1206,31 @@ msgid "Save Animation to File: %s"
 msgstr "Canlandırmayı Dosyaya Kaydet: %s"
 
 msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... → Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"Seçtiğiniz dosya, glTF veya FBX gibi bir 3B modelden içe aktarılmış bir "
+"sahnedir.\n"
+"\n"
+"Godot’ta 3B modeller sahne veya animasyon kitaplığı olarak içe aktarılabilir. "
+"Bu nedenle burada görüntülenirler.\n"
+"\n"
+"Bu 3B modeldeki animasyonları kullanmak istiyorsanız Gelişmiş İçe Aktarma "
+"Ayarları iletişim kutusunu açın\n"
+"ve Eylemler... → Animasyon Kayıt Yollarını Ayarla seçeneğini kullanarak "
+"animasyonları kaydedin.\n"
+"Alternatif olarak, İçe Aktar panelinden tüm sahneyi tek bir AnimationLibrary "
+"olarak içe aktarabilirsiniz."
+
+msgid ""
 "The file you selected is not a valid AnimationLibrary.\n"
 "\n"
 "If the animations you want are inside of this file, save them to a separate "
@@ -1370,6 +1414,9 @@ msgstr "Onion skinning, bir RESET (Sıfırlama) canlandırması gerektiriyor."
 
 msgid "Animation"
 msgstr "Canlandırma"
+
+msgid "Toggle Animation Dock"
+msgstr "Animasyon Panelini Aç/Kapat"
 
 msgid "Animation position (in seconds)."
 msgstr "Canlandırma konumu (saniye olarak)."
@@ -1916,6 +1963,14 @@ msgid "Spring"
 msgstr "Yaylanan"
 
 msgctxt "Ease Type"
+msgid "Ease In"
+msgstr "Yumuşak Başlangıç"
+
+msgctxt "Ease Type"
+msgid "Ease Out"
+msgstr "Yumuşak Bitiş"
+
+msgctxt "Ease Type"
 msgid "Ease In-Out"
 msgstr "İçe-Dışa Yumuşatma"
 
@@ -2130,6 +2185,9 @@ msgstr ""
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "İzleri düğüme göre grupla veya onları düz liste olarak göster."
+
+msgid "Insert at current time."
+msgstr "Geçerli zamana ekle."
 
 msgid "Apply snapping to timeline cursor."
 msgstr "Kurgu şeridi imlecine tutunma uygula."
@@ -2407,6 +2465,9 @@ msgstr "Ses İzi Parçasının Bitiş Kaymasını Değiştir"
 msgid "%s at "
 msgstr "%s şurada "
 
+msgid "input %d '%s'."
+msgstr "%d numaralı '%s' girişi."
+
 msgid "Error: "
 msgstr "Hata: "
 
@@ -2440,6 +2501,12 @@ msgstr "Onaylı Yazar"
 msgid "License"
 msgstr "Lisans"
 
+msgid "Review Score"
+msgstr "Değerlendirme Puanı"
+
+msgid "Open Asset Details"
+msgstr "Varlık Ayrıntılarını Aç"
+
 msgid "No changelog provided for this version."
 msgstr "Bu sürüm için değişim kaydı sağlanmamış."
 
@@ -2463,6 +2530,9 @@ msgstr "Sürüm:"
 
 msgid "Download other versions."
 msgstr "Başka sürümleri indir."
+
+msgid "Store Page"
+msgstr "Mağaza Sayfası"
 
 msgid "Open the web browser to show the asset in the online store page."
 msgstr "Varlığı online mağaza sayfasında göstermek için tarayıcıyı açın."
@@ -2628,8 +2698,17 @@ msgstr "Şablon"
 msgid "All"
 msgstr "Tümü"
 
+msgid "Repository returned with invalid data."
+msgstr "Depo geçersiz veri gönderdi."
+
 msgid "No results for \"%s\"."
 msgstr "\"%s\" için sonuç yok."
+
+msgid "No results compatible with %s %s."
+msgstr "%s %s ile uyumlu sonuç bulunamadı."
+
+msgid "Unstable"
+msgstr "Kararsız"
 
 msgid "Search templates. Use tags by including \"#tagname\"."
 msgstr "Şablon arat. Etiketleri \"#etiketadı\" şeklinde dahil et."
@@ -2711,6 +2790,9 @@ msgstr "Yükleme Klasörünü Değiştir"
 msgid ""
 "Change the folder where the contents of the asset are going to be installed."
 msgstr "Varlığa ait içeriklerin yükleneceği klasörü değiştirin."
+
+msgid "Ignore Asset Root"
+msgstr "Varlık Kök Dizinini Yok Say"
 
 msgid "No files conflict with your project."
 msgstr "Projenizle çakışan hiçbir dosya yok."
@@ -3102,6 +3184,9 @@ msgstr ""
 "Dalın sahne olarak kaydedilmesi, yalnızca bir düğümün seçili olmasını "
 "gerektirir, ancak %d düğüm seçtiniz."
 
+msgid "Expression to evaluate (Up/Down: Navigate history)"
+msgstr "Değerlendirilecek ifade (Yukarı/Aşağı: Geçmişte gezin)"
+
 msgid "Expression to evaluate"
 msgstr "Değerlendirilecek ifade"
 
@@ -3478,6 +3563,9 @@ msgstr "Bu sınıf, gelecek sürümlerde değiştirilebilir veya kaldırılabili
 
 msgid "Inherits:"
 msgstr "Miras Aldığı:"
+
+msgid "Inherited By:"
+msgstr "Miras Alan Sınıflar:"
 
 msgid "There is currently no description for this class."
 msgstr "Şu anda bu sınıf için bir tanımlama yok."
@@ -3962,6 +4050,11 @@ msgstr ""
 msgid "Could not create folder: %s"
 msgstr "Klasör oluşturulamadı: %s"
 
+msgid "Copy %d selected item to \"%s\"?"
+msgid_plural "Copy %d selected items to \"%s\"?"
+msgstr[0] "Seçili %d öğe \"%s\" konumuna kopyalansın mı?"
+msgstr[1] "Seçili %d öğe \"%s\" konumuna kopyalansın mı?"
+
 msgid "Move %d selected item to \"%s\"?"
 msgid_plural "Move %d selected items to \"%s\"?"
 msgstr[0] "Seçili %d öğe \"%s\" konumuna taşınsın mı?"
@@ -4168,6 +4261,14 @@ msgstr "Dönüştür"
 
 msgid "Don't Ask Again"
 msgstr "Tekrar Sorma"
+
+msgid ""
+"This dialog can be skipped by holding shift or enabled/disabled in the Editor "
+"Settings: Docks > FileSystem > Ask Before Moving Files."
+msgstr ""
+"Bu iletişim kutusu Shift tuşu basılı tutularak atlanabilir ya da Düzenleyici "
+"Ayarları > Paneller > Dosya Sistemi > Dosyaları Taşımadan Önce Sor bölümünden "
+"etkinleştirilip devre dışı bırakılabilir."
 
 msgid ""
 "This file extension is not recognized by the editor.\n"
@@ -4756,6 +4857,15 @@ msgid "Filter by Group"
 msgstr "Gruba Göre Filtrele"
 
 msgid ""
+"Selects all Nodes belonging to the given group.\n"
+"If empty, selects any Node belonging to any group.\n"
+"Inserts \"group:\". You can also use the shorthand \"g:\"."
+msgstr ""
+"Belirtilen gruba ait tüm düğümleri seçer.\n"
+"Boş bırakılırsa en az bir gruba ait olan tüm düğümleri seçer.\n"
+"\"group:\" ifadesini ekler. Kısaltma olarak \"g:\" de kullanılabilir."
+
+msgid ""
 "Cannot attach a script: there are no languages registered.\n"
 "This is probably because this editor was built with all language modules "
 "disabled."
@@ -4776,6 +4886,9 @@ msgstr "Düğüm(ler)i, %s'nin Alt-Ögesi Olarak Yapıştır"
 msgid "Paste Node(s) as Root"
 msgstr "Düğüm(ler)i, Kök Olarak Yapıştır"
 
+msgid "Paste Node(s) as Replacement"
+msgstr "Düğüm(ler)i Değiştirerek Yapıştır"
+
 msgid "<Unnamed> at %s"
 msgstr "%s 'de <İsimsiz>"
 
@@ -4794,8 +4907,14 @@ msgstr "Alt-öge Düğümü Ekle..."
 msgid "Instantiate Child Scene..."
 msgstr "Alt-öge Sahnesini Örneklendir..."
 
+msgid "Paste (as Child)"
+msgstr "Yapıştır (Alt Düğüm Olarak)"
+
 msgid "Paste as Sibling"
 msgstr "Kardeş-Öge Olarak Yapıştır"
+
+msgid "Paste as Replacement"
+msgstr "Yerine Yapıştır"
 
 msgid "Change Type..."
 msgstr "Türü Değiştir..."
@@ -4826,6 +4945,9 @@ msgstr "Sahne Kökü Yap"
 
 msgid "Toggle Access as Unique Name"
 msgstr "Benzersiz İsim olarak Erişimi Aç/Kapat"
+
+msgid "Open Scene in Editor"
+msgstr "Sahneyi Düzenleyicide Aç"
 
 msgid "Delete (No Confirm)"
 msgstr "Sil (Doğrulama Yok)"
@@ -4875,6 +4997,9 @@ msgstr "İlgili Canlandırma İzlerini Sil"
 
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Kalıtım Temizlensin mi? (Geri Alınamaz!)"
+
+msgid "Open Signals Dock"
+msgstr "Sinyaller Panelini Aç"
 
 msgid "Paste Params"
 msgstr "Alınan Değişkenlerini Yapıştır"
@@ -5092,6 +5217,23 @@ msgstr ""
 "Sahne kaydedilemedi. Muhtemel bağımlılıklar (örneklemeler veya miras alma) "
 "karşılanamadı."
 
+msgid ""
+"The text-based scene at path \"%s\" is large on disk (%s), likely because it "
+"has embedded binary data.\n"
+"This slows down scene saving and loading.\n"
+"Consider saving its binary subresource(s) to a binary `.res` file or saving "
+"the scene as a binary `.scn` file.\n"
+"This warning can be disabled in the Editor Settings (FileSystem > On Save > "
+"Warn on Saving Large Text Resources)."
+msgstr ""
+"\"%s\" yolundaki metin tabanlı sahne, muhtemelen gömülü ikili veriler "
+"içerdiği için diskte fazla yer kaplıyor (%s).\n"
+"Bu durum sahnenin kaydedilmesini ve yüklenmesini yavaşlatır.\n"
+"İkili alt kaynaklarını ayrı bir `.res` dosyasına kaydetmeyi veya sahneyi "
+"ikili `.scn` biçiminde kaydetmeyi değerlendirin.\n"
+"Bu uyarı, Düzenleyici Ayarları'ndan (Dosya Sistemi > Kaydederken > Büyük "
+"Metin Kaynaklarını Kaydederken Uyar) devre dışı bırakılabilir."
+
 msgid "Save scene before running..."
 msgstr "Çalıştırmadan önce sahneyi kaydedin..."
 
@@ -5225,6 +5367,9 @@ msgstr ""
 msgid "Save Scene As..."
 msgstr "Sahneyi Farklı Kaydet..."
 
+msgid "Save new main scene..."
+msgstr "Yeni ana sahneyi kaydet..."
+
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Fare düğmelerine basılıyken geri alma yapılamaz."
 
@@ -5275,6 +5420,9 @@ msgstr "Düzenleyiciden çıkmadan önce çalışan proje durdurulsun mu?"
 
 msgid "Stop & Quit"
 msgstr "Durdur ve Çık"
+
+msgid "The export templates are still being downloaded."
+msgstr "Dışa aktarma şablonlarının indirilmesi hâlâ sürüyor."
 
 msgid "Save modified resources before reloading?"
 msgstr "Yeniden yüklemeden önce, değiştirilen kaynaklar kaydedilsin mi?"
@@ -5693,6 +5841,9 @@ msgstr "Kaydedilmiş Sahneyi Yeniden Yükle"
 
 msgid "Close Scene"
 msgstr "Sahneyi Kapat"
+
+msgid "Close All Scenes"
+msgstr "Tüm Sahneleri Kapat"
 
 msgid "Editor Settings..."
 msgstr "Düzenleyici Ayarları..."
@@ -6177,6 +6328,9 @@ msgstr "Özel hata ayıklama şablonu bulunmadı."
 msgid "Custom release template not found."
 msgstr "Özel yayınlama şablonu bulunamadı."
 
+msgid "Camera module enabled, but camera usage description is not set."
+msgstr "Kamera modülü etkin, ancak kamera kullanım açıklaması ayarlanmamış."
+
 msgid "Invalid additional PList content: "
 msgstr "Geçersiz ek PList içeriği: "
 
@@ -6270,6 +6424,13 @@ msgid "Error getting the list of mirrors."
 msgstr "Ayna kaynakların listesini alırken hata."
 
 msgid ""
+"No mirrors found for this version. Template download is only available for "
+"official releases."
+msgstr ""
+"Bu sürüm için ayna sunucu bulunamadı. Şablonlar yalnızca resmî sürümler için "
+"indirilebilir."
+
+msgid ""
 "Result: %d\n"
 "Response code: %d"
 msgstr ""
@@ -6342,8 +6503,49 @@ msgstr "ARM mimarisindeki Linux sistemleri için 64-bit derleme."
 msgid "Universal build for macOS."
 msgstr "macOS için evrensel derleme."
 
+msgid ""
+"Regular web build with threading support. Threads improve performance, but "
+"require \"cross-origin isolated\" website to run."
+msgstr ""
+"İş parçacığı desteğine sahip standart web derlemesi. İş parçacıkları "
+"performansı artırır ancak çalışabilmek için sitenin “cross-origin isolated” "
+"olması gerekir."
+
+msgid "Web with Extensions"
+msgstr "GDExtension Destekli Web"
+
+msgid ""
+"Web build with support for GDExtensions. Only useful if you use GDExtensions, "
+"otherwise it only increases build size."
+msgstr ""
+"GDExtension desteğine sahip web derlemesi. Yalnızca GDExtension "
+"kullanıyorsanız yararlıdır; aksi takdirde yalnızca derleme boyutunu artırır."
+
+msgid "Web Single-Threaded"
+msgstr "Web (Tek İş Parçacıklı)"
+
+msgid "Web build without threading support."
+msgstr "İş parçacığı desteği olmayan Web derlemesi."
+
+msgid "Web with Extensions Single-Threaded"
+msgstr "Uzantılı Web (Tek İş Parçacıklı)"
+
+msgid "Web build with GDExtension support and no threading support."
+msgstr ""
+"GDExtension desteği bulunan ve iş parçacığı desteği olmayan Web derlemesi."
+
 msgid "Android APK template and source for Gradle builds."
 msgstr "Gradle derlemekeri için Android APK şablonu ve kaynağı."
+
+msgid "Build for Apple's iOS."
+msgstr "Apple’ın iOS platformu için derleyin."
+
+msgid "ICU Data"
+msgstr "ICU Verileri"
+
+msgid "Line breaking dictionaries for TextServer, used by certain languages."
+msgstr ""
+"Belirli diller için TextServer tarafından kullanılan satır bölme sözlükleri."
 
 msgctxt "Platform Group"
 msgid "Desktop"
@@ -6355,6 +6557,12 @@ msgstr "Web"
 
 msgid "Common"
 msgstr "Ortak"
+
+msgid "Downloads are only available for the current Godot version."
+msgstr "İndirmeler yalnızca mevcut Godot sürümü için kullanılabilir."
+
+msgid "Cancel downloading this template."
+msgstr "Bu şablonun indirilmesini iptal et."
 
 msgid "Cancel downloading this file."
 msgstr "Bu dosyayı indirmeyi iptal et."
@@ -6692,11 +6900,44 @@ msgstr "Yamalanıyor"
 msgid "Enable Delta Encoding"
 msgstr "Artışlı Sıkıştırmayı etkinleştir"
 
+msgid "Delta Encoding Compression Level"
+msgstr "Delta Kodlaması Sıkıştırma Düzeyi"
+
+msgid "Delta Encoding Minimum Size Reduction"
+msgstr "Delta Kodlaması İçin Minimum Boyut Azalması"
+
+msgid "Delta Encoding Include Filters"
+msgstr "Delta Kodlamasına Dahil Edilecek Dosya Filtreleri"
+
+msgid ""
+"Filters to include files/folders from being delta-encoded\n"
+"(comma-separated, e.g: *.gdc, scripts/*)"
+msgstr ""
+"Delta kodlamasına dahil edilecek dosya ve klasörleri belirleyen filtreler\n"
+"(virgülle ayrılır; ör. *.gdc, scripts/*)"
+
+msgid "Delta Encoding Exclude Filters"
+msgstr "Delta Kodlamasından Hariç Tutulacak Dosya Filtreleri"
+
+msgid ""
+"Filters to exclude files/folders from being delta-encoded\n"
+"(comma-separated, e.g: *.ctex, textures/*)"
+msgstr ""
+"Delta kodlamasının dışında tutulacak dosya ve klasörleri belirleyen "
+"filtreler\n"
+"(virgülle ayrılır; ör. *.ctex, textures/*)"
+
 msgid "Base Packs:"
 msgstr "Temel Paketler:"
 
 msgid "Godot Project Pack"
 msgstr "Godot Proje Paketi"
+
+msgid "Android App Bundle"
+msgstr "Android App Bundle"
+
+msgid "Android Package"
+msgstr "Android Paketi"
 
 msgid "Add Pack"
 msgstr "Paket Ekle"
@@ -6760,6 +7001,13 @@ msgstr "İkili-tip belirteçler (daha hızlı yükleme)"
 
 msgid "Compressed binary tokens (smaller files)"
 msgstr "Sıkıştırılmış ikili-tip belirteçler (daha küçük dosyalar)"
+
+msgid ""
+"No presets found.\n"
+"Create one so that its parameters can be edited here."
+msgstr ""
+"Ön ayar bulunamadı.\n"
+"Parametrelerini burada düzenlemek için bir ön ayar oluşturun."
 
 msgid "Export PCK/ZIP..."
 msgstr "PCK/ZIP Dışa Aktar..."
@@ -6827,11 +7075,29 @@ msgstr "Bağımlılıklar:"
 msgid "Fix Broken"
 msgstr "Bozulanı Onar"
 
+msgid "Filter Dependencies"
+msgstr "Bağımlılıkları Filtrele"
+
+msgid "Sort Dependencies"
+msgstr "Bağımlılıkları Sırala"
+
+msgid "Sort by Path (Ascending)"
+msgstr "Yola Göre Sırala (Artan)"
+
+msgid "Sort by Path (Descending)"
+msgstr "Yola Göre Sırala (Azalan)"
+
 msgid "Dependency Editor"
 msgstr "Bağımlılık Düzenleyicisi"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "%s için iyeler (Toplam: %d)"
+
+msgid "No owners found for: %s"
+msgstr "Şu kaynağı kullanan dosya bulunamadı: %s"
+
+msgid "Owners List"
+msgstr "Kaynağı Kullananlar"
 
 msgid "Localization remap"
 msgstr "Yerelleştirme tekrar-haritalaması"
@@ -6867,8 +7133,17 @@ msgstr "Kaldırılamıyor:"
 msgid "Files to be deleted:"
 msgstr "Silinecek dosyalar:"
 
+msgid "Owners of files to be deleted:"
+msgstr "Silinecek dosyaları kullananlar:"
+
+msgid "Owners"
+msgstr "Kullananlar"
+
 msgid "Error loading: %s"
 msgstr "Yüklerken hata: %s"
+
+msgid "Referenced by %s"
+msgstr "%s tarafından kullanılıyor"
 
 msgid "Fix Dependencies"
 msgstr "Bağımlılıkları Düzelt"
@@ -7010,6 +7285,13 @@ msgstr "Sekmeler"
 msgid "Zoom Factor"
 msgstr "Yakınlaştıma Oranı"
 
+msgid ""
+"%s+Mouse Wheel, %s/%s: Finetune\n"
+"%s: Reset"
+msgstr ""
+"%s+Fare Tekerleği, %s/%s: Hassas Ayar\n"
+"%s: Sıfırla"
+
 msgid "Zoom In"
 msgstr "Yakınlaştır"
 
@@ -7060,6 +7342,15 @@ msgstr "Filtreleri sıfırla."
 
 msgid "Filters"
 msgstr "Filtreler"
+
+msgid "Show Built-in"
+msgstr "Yerleşikleri Göster"
+
+msgid "Show Custom"
+msgstr "Özelleri Göster"
+
+msgid "Show Editor"
+msgstr "Düzenleyiciyi Göster"
 
 msgctxt "Job Title"
 msgid "Project Manager"
@@ -7161,6 +7452,9 @@ msgstr "Godot Oyun Motoru katkı sağlayanlar"
 msgid "Double-click to open in browser."
 msgstr "Tarayıcıda açmak için çift tıklayın."
 
+msgid "No distractions for this, close that game first."
+msgstr "Buna odaklanmak için önce diğer oyunu kapat."
+
 msgid "Thanks from the Godot community!"
 msgstr "Godot topluluğundan teşekkürler!"
 
@@ -7228,6 +7522,15 @@ msgstr "Sahne Seç"
 
 msgid "Select %s"
 msgstr "%s Seç"
+
+msgid "Recursion detected, Instant Preview failed."
+msgstr "Özyineleme algılandı. Anında Önizleme oluşturulamadı."
+
+msgid "Instant Preview"
+msgstr "Anında Önizleme"
+
+msgid "Selected resource will be previewed in the editor before accepting."
+msgstr "Seçilen kaynak, kabulden önce düzenleyicide önizlenir."
 
 msgid "Fuzzy Search"
 msgstr "Bulanık Arama"
@@ -7354,6 +7657,9 @@ msgstr ""
 
 msgid "Error opening scene"
 msgstr "Sahne açılırken hata"
+
+msgid "Advanced Import Settings for %s '%s'"
+msgstr "%s '%s' için Gelişmiş İçe Aktarma Ayarları"
 
 msgid "Select folder to extract material resources"
 msgstr "Malzeme kaynaklarını çıkartmak için klasör seç"
@@ -7851,8 +8157,17 @@ msgstr "Değeri Eski Haline Al"
 msgid "Category: %s"
 msgstr "Kategori: %s"
 
+msgid "Paste category properties"
+msgstr "Kategori Özelliklerini Yapıştır"
+
 msgid "Unfavorite All"
 msgstr "Tümünü Sık Kullanılan Olmaktan Çıkar"
+
+msgid "Copy Category Values"
+msgstr "Kategori Değerlerini Kopyala"
+
+msgid "Paste Category Values"
+msgstr "Kategori Değerlerini Yapıştır"
 
 msgid "Section: %s"
 msgstr "Bölüm: %s"
@@ -7864,6 +8179,15 @@ msgid "(%d change)"
 msgid_plural "(%d changes)"
 msgstr[0] "(%d değişme)"
 msgstr[1] "(%d değişen)"
+
+msgid "Copy Section Values"
+msgstr "Bölüm Değerlerini Kopyala"
+
+msgid "Paste Section Values"
+msgstr "Bölüm Değerlerini Yapıştır"
+
+msgid "Paste section properties"
+msgstr "Bölüm Özelliklerini Yapıştır"
 
 msgid "Add element to property array with prefix %s."
 msgstr "Elemanı, %s ön ekli özellik dizisine ekle."
@@ -7983,8 +8307,14 @@ msgstr ""
 "Yol ve UID Kimliği arasında görüntülemeyi açar/kapatır.\n"
 "UID, bu özelliğin asıl değeridir."
 
+msgid "Renaming Layer %d:"
+msgstr "%d. Katman Yeniden Adlandırılıyor:"
+
 msgid "Layer %d"
 msgstr "Katman %d"
+
+msgid "Bit %d, Value %d"
+msgstr "Bit %d, Değer %d"
 
 msgid "Rename Layer"
 msgstr "Katmanı Yeniden Adlandır"
@@ -8003,6 +8333,10 @@ msgstr "Katmanlar"
 
 msgid "<empty>"
 msgstr "<boş>"
+
+msgctxt "Ease Type"
+msgid "Linear"
+msgstr "Doğrusal"
 
 msgctxt "Ease Type"
 msgid "Zero"
@@ -8135,6 +8469,13 @@ msgid_plural "This %s is used in %d places."
 msgstr[0] "Bu %s, %d yerde kullanılıyor."
 msgstr[1] "Bu %s, %d yerde kullanılıyor."
 
+msgid "This %s is external to scene."
+msgstr "Bu %s, sahneye harici olarak bağlıdır."
+
+msgid ""
+"The %s cannot be edited in the inspector and can't be made unique directly."
+msgstr "%s, denetçide düzenlenemez ve doğrudan benzersiz hâle getirilemez."
+
 msgid "Left-click to make it unique."
 msgstr "Benzersiz hale getirmek için Sol-tıklayın."
 
@@ -8143,6 +8484,9 @@ msgstr "Alt kaynaklarını benzersiz yapmak mümkün."
 
 msgid "Right-click to make them unique."
 msgstr "Benzersiz yapmak için sağ tıklayın."
+
+msgid "In order to duplicate it, make its parent Resource unique."
+msgstr "Çoğaltmak için üst Kaynağını benzersiz hâle getirin."
 
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
@@ -8162,8 +8506,25 @@ msgstr ""
 msgid "Inspect"
 msgstr "İncele"
 
+msgid ""
+"Hold %s while drag-and-dropping from the FileSystem dock or another resource "
+"picker to automatically make a dropped resource unique."
+msgstr ""
+"FileSystem panelinden veya başka bir kaynak seçiciden sürükleyip bırakırken "
+"%s tuşunu basılı tutarak bırakılan kaynağı otomatik olarak benzersiz hâle "
+"getirin."
+
+msgid "This Resource is already unique."
+msgstr "Bu Kaynak zaten benzersiz."
+
 msgid "Make Unique (Recursive)"
 msgstr "Benzersiz Yap (Özyinelemeli)"
+
+msgid "In order to duplicate recursively, make its parent Resource unique."
+msgstr "Özyinelemeli olarak çoğaltabilmek için üst Kaynağı benzersiz yapın."
+
+msgid "Subresources have already been made unique."
+msgstr "Alt kaynaklar zaten benzersiz hâle getirildi."
 
 msgid "Paste as Unique"
 msgstr "Benzersiz Olarak Yapıştır"
@@ -8237,6 +8598,9 @@ msgstr "Sanal Yöntem Seç"
 msgid "Select Method"
 msgstr "Yöntem Seç"
 
+msgid "The assigned tool button callback can't be used with multiple nodes."
+msgstr "Araç düğmesine atanan geri çağrı, birden fazla düğümle kullanılamaz."
+
 msgid ""
 "Name: %s\n"
 "Path: %s\n"
@@ -8283,6 +8647,14 @@ msgstr "Alt klasör, zaten var olan bir klasör olamaz."
 
 msgid "Script extension must match chosen language extension (.%s)."
 msgstr "Betik uzantısı, seçilen dil uzantısıyla (.%s) eşleşmelidir."
+
+msgid ""
+"Consider enabling GDScript warnings for this plugin by adding an entry for it "
+"to the project setting Debug > GDScript > Warnings > Directory Rules."
+msgstr ""
+"Proje Ayarları’ndaki Hata Ayıklama > GDScript > Uyarılar > Dizin Kuralları "
+"bölümüne bu eklenti için bir girdi ekleyerek GDScript uyarılarını "
+"etkinleştirmeyi düşünün."
 
 msgid "Edit a Plugin"
 msgstr "Bir Eklentiyi Düzenle"
@@ -8457,6 +8829,9 @@ msgid ""
 "recommended."
 msgstr "Seçilen yol boş değil. Boş bir klasör seçilmesi önemle tavsiye edilir."
 
+msgid "Cannot duplicate a project into itself."
+msgstr "Bir proje kendi içine çoğaltılamaz."
+
 msgid "New Game Project"
 msgstr "Yeni Oyun Projesi"
 
@@ -8569,6 +8944,9 @@ msgstr "Proje Yükleme Yolu:"
 msgid "Renderer:"
 msgstr "İşleyici:"
 
+msgid "More information"
+msgstr "Daha fazla bilgi"
+
 msgid ""
 "RenderingDevice-based methods not available on this GPU:\n"
 "%s\n"
@@ -8602,8 +8980,20 @@ msgid "This project was last edited in a different Godot version: "
 msgstr ""
 "Bu projenin en son düzenlenmesi, Godot'nun farklı bir sürümüyle yapılmış. "
 
+msgid "Opening it will upgrade it to Godot %s.%s."
+msgstr "Bunu açmak, Godot %s.%s sürümüne yükseltecek."
+
+msgid "Opening it will downgrade it to Godot %s.%s."
+msgstr "Bunu açmak, sürümünü Godot %s.%s’e düşürecek."
+
+msgid "Downgrading projects is not recommended."
+msgstr "Projelerin sürümünü düşürmek önerilmez."
+
 msgid "Unknown version"
 msgstr "Bilinmeyen sürüm"
+
+msgid "This project uses an unknown version of Godot."
+msgstr "Bu proje, Godot’un bilinmeyen bir sürümünü kullanıyor."
 
 msgid "This project uses features unsupported by the current build:"
 msgstr ""
@@ -8633,11 +9023,20 @@ msgstr "Projeler için taranıyor..."
 msgid "Missing Project"
 msgstr "Eksik Proje"
 
+msgid "Open in Editor (Verbose Mode)"
+msgstr "Düzenleyicide Aç (Ayrıntılı Mod)"
+
+msgid "Open in Editor (Recovery Mode)"
+msgstr "Düzenleyicide Aç (Kurtarma Modu)"
+
 msgid "Run Project"
 msgstr "Projeyi Çalıştır"
 
 msgid "Manage Tags"
 msgstr "Etiketleri Yönet"
+
+msgid "Remove from Project List"
+msgstr "Proje Listesinden Kaldır"
 
 msgid "New Window"
 msgstr "Yeni Pencere"
@@ -8648,6 +9047,18 @@ msgstr "Proje Yöneticisi"
 
 msgid "You don't have any projects yet."
 msgstr "Henüz herhangi bir projeniz yok."
+
+msgid ""
+"Get started by creating a new one,\n"
+"importing one that exists, or by downloading a project template from the "
+"Asset Store!"
+msgstr ""
+"Başlamak için yeni bir proje oluşturun,\n"
+"mevcut bir projeyi içe aktarın veya Varlık Mağazası’ndan bir proje şablonu "
+"indirin!"
+
+msgid "Go Online and Open Asset Store"
+msgstr "Çevrimiçi Ol ve Varlık Mağazası’nı Aç"
 
 msgid "Are you sure to run %d projects at once?"
 msgstr "%d projenin hepsini tek seferde çalıştırmak istediğinize emin misiniz?"
@@ -8895,11 +9306,17 @@ msgstr "Etiket ismi boş olamaz."
 msgid "Tag name can't begin or end with underscore."
 msgstr "Etiket ismi alt çizgi ile başlayamaz ya da bitemez."
 
+msgid "Tag name can't contain consecutive underscores or spaces."
+msgstr "Etiket adı, art arda gelen alt çizgiler veya boşluklar içeremez."
+
 msgid "These characters are not allowed in tags: %s."
 msgstr "Şu karakterlere, etiketlerde izin verilmez: '%s'."
 
 msgid "About Godot"
 msgstr "Godot Hakkında"
+
+msgid "Window"
+msgstr "Pencere"
 
 msgid "Settings"
 msgstr "Ayarlar"
@@ -8940,6 +9357,13 @@ msgstr "Son Düzenleme"
 msgid "Tags"
 msgstr "Etiketler"
 
+msgid ""
+"Note: The Asset Store requires an online connection and involves sending data "
+"over the internet."
+msgstr ""
+"Not: Varlık Mağazası internet bağlantısı gerektirir ve kullanım sırasında "
+"internet üzerinden veri gönderilir."
+
 msgid "Edit Project"
 msgstr "Projeyi Düzenle"
 
@@ -8954,6 +9378,16 @@ msgstr "Projeyi Kaldır"
 
 msgid "Remove Missing"
 msgstr "Eksikleri Kaldır"
+
+msgid "Donate"
+msgstr "Bağış Yap"
+
+msgid ""
+"Asset Store not available (due to using Web editor, or because SSL support "
+"disabled)."
+msgstr ""
+"Varlık Mağazası kullanılamıyor (Web düzenleyicisi kullanıldığı veya SSL "
+"desteği devre dışı bırakıldığı için)."
 
 msgid "Select a Folder to Scan"
 msgstr "Tarama İçin Bir Klasör Seç"
@@ -9025,6 +9459,9 @@ msgstr "Etiketler görüntülenirken otomatik olarak büyük harfe çevrilir."
 msgid "New Tag Name"
 msgstr "Yeni Etiket Adı"
 
+msgid "example_tag (will display as Example Tag)"
+msgstr "örnek_etiket (Örnek Etiket olarak görüntülenir)"
+
 msgid "Create Tag"
 msgstr "Etiket Oluştur"
 
@@ -9043,6 +9480,9 @@ msgstr "Dil"
 msgid "Style"
 msgstr "Tarz"
 
+msgid "Color Preset"
+msgstr "Renk Ön Ayarı"
+
 msgid "Custom preset can be further configured in the editor."
 msgstr "Özel hazır ayar, düzenleyici içinden daha fazla yapılandırılabilir."
 
@@ -9057,6 +9497,9 @@ msgstr "Güncellemeleri Kontrol Et"
 
 msgid "Directory Naming Convention"
 msgstr "Dizin Adlandırma Kuralı"
+
+msgid "Edit All Settings"
+msgstr "Tüm Ayarları Düzenle"
 
 msgid ""
 "Settings changed! The project manager must be restarted for changes to take "
@@ -9109,8 +9552,26 @@ msgstr "Proje Kaynakları Güncelleniyor"
 msgid "Re-saving resource:"
 msgstr "Kaynak tekrar kaydediliyor:"
 
+msgid "Run the project's main scene."
+msgstr "Projenin ana sahnesini çalıştır."
+
+msgid "Play the currently edited scene."
+msgstr "Şu anda düzenlenen sahneyi çalıştırın."
+
 msgid "Play a custom scene."
 msgstr "Özel yapım bir sahneyi oynat."
+
+msgid "Reload the played scene that was being edited."
+msgstr "Oynatılmaya başlandığında düzenlenmekte olan sahneyi yeniden yükle."
+
+msgid "Reload the played custom scene."
+msgstr "Çalıştırılan özel sahneyi yeniden yükle."
+
+msgid "Reload the played main scene."
+msgstr "Çalıştırılan ana sahneyi yeniden yükle."
+
+msgid "Failed to run the project because the project.godot file is missing."
+msgstr "project.godot dosyası eksik olduğundan proje çalıştırılamadı."
 
 msgid ""
 "Movie Maker mode is enabled, but no movie file path has been specified.\n"
@@ -9277,6 +9738,9 @@ msgstr "Sonraki Kare"
 msgid "Connection impossible to the game process."
 msgstr "Oyun sürecine bağlantı imkansız."
 
+msgid "Window Dynamic Range"
+msgstr "Pencerenin Dinamik Aralığı"
+
 msgid "Game starting..."
 msgstr "Oyun başlatılıyor..."
 
@@ -9325,11 +9789,79 @@ msgstr ""
 msgid "Game embedding not available in single window mode."
 msgstr "Gömülü oyun, tek pencere kipinde kullanılabilir değil."
 
+msgid "Game embedding not available when the game starts in headless mode."
+msgstr ""
+"Oyun headless modda başlatıldığında oyun penceresini editöre gömme özelliği "
+"kullanılamaz."
+
+msgid "HDR"
+msgstr "HDR"
+
+msgid ""
+"Window size: %s\n"
+"Mode: %s\n"
+"Maximum linear value: %.2f%s"
+msgstr ""
+"Pencere boyutu: %s\n"
+"Mod: %s\n"
+"En yüksek doğrusal değer: %.2f%s"
+
+msgid "SDR"
+msgstr "SDR"
+
+msgid ""
+"\n"
+"Reference luminance: %.0f nits\n"
+"Maximum luminance: %.0f nits"
+msgstr ""
+"\n"
+"Referans parlaklığı: %.0f nit\n"
+"En yüksek parlaklık: %.0f nit"
+
 msgid "Unmute game audio."
 msgstr "Oyunun sesini aç."
 
 msgid "Mute game audio."
 msgstr "Oyun sesini kapat."
+
+msgid "Request HDR Output"
+msgstr "HDR Çıkışını Talep Et"
+
+msgid "Window does not support HDR output."
+msgstr "Pencere HDR çıkışını desteklemiyor."
+
+msgid ""
+"Move the game window to a screen\n"
+"that is operating in HDR mode."
+msgstr ""
+"Oyun penceresini HDR modunun\n"
+"etkin olduğu bir ekrana taşıyın."
+
+msgid "Display server does not support HDR output."
+msgstr "Görüntü sunucusu HDR çıkışını desteklemiyor."
+
+msgid "Renderer does not support HDR output."
+msgstr "Görüntü işleyici HDR çıkışını desteklemiyor."
+
+msgid ""
+"Change the display/display_server/driver\n"
+"advanced project setting to a driver\n"
+"that supports HDR output."
+msgstr ""
+"display/display_server/driver gelişmiş\n"
+"proje ayarını HDR çıkışını destekleyen\n"
+"bir sürücüye değiştirin."
+
+msgid ""
+"Change the rendering/renderer/rendering_method\n"
+"project setting to a renderer that supports HDR output and\n"
+"the rendering/rendering_device/driver advanced project\n"
+"setting to a driver that supports HDR output."
+msgstr ""
+"rendering/renderer/rendering_method proje ayarını\n"
+"HDR çıktısını destekleyen bir işleyiciye ve\n"
+"rendering/rendering_device/driver gelişmiş proje ayarını\n"
+"HDR çıktısını destekleyen bir sürücüye ayarlayın."
 
 msgid "%s+Alt+RMB: Show list of all nodes at position clicked."
 msgstr ""
@@ -9337,6 +9869,25 @@ msgstr ""
 
 msgid "Suspend"
 msgstr "Askıya Al"
+
+msgid ""
+"Force pause at SceneTree level. Stops all processing, but you can still "
+"interact with the project."
+msgstr ""
+"SceneTree düzeyinde zorla duraklat. Tüm işlemleri durdurur, ancak projeyle "
+"etkileşime devam edebilirsiniz."
+
+msgid "Change the game speed."
+msgstr "Oyun hızını değiştir."
+
+msgid "Speed State"
+msgstr "Hız Durumu"
+
+msgid "Reset the game speed."
+msgstr "Oyun hızını sıfırla."
+
+msgid "Reset Speed"
+msgstr "Hızı Sıfırla"
 
 msgid "Input"
 msgstr "Giriş"
@@ -9362,6 +9913,15 @@ msgstr "Tıklanan konumdaki, seçilebilir düğümlerin listesini göster."
 
 msgid "Toggle Selection Visibility"
 msgstr "Seçim Görünürlüğünü Aç/Kapat"
+
+msgid "Selection Options"
+msgstr "Seçim Seçenekleri"
+
+msgid "Don't Select Locked Nodes"
+msgstr "Kilitli Düğümleri Seçme"
+
+msgid "Select Group Over Children"
+msgstr "Alt Ögeler Yerine Grubu Seç"
 
 msgid "Override the in-game camera."
 msgstr "Oyun içi kameranın üzerine yaz."

@@ -22,7 +22,7 @@
 # Ram Tourgeman <ramtorgeman@gmail.com>, 2021, 2023, 2024.
 # Shailee Eliyahu <dev.sle.il@gmail.com>, 2021.
 # Mati Borlak <matiborlak@gmail.com>, 2022.
-# Tamir Livneh <fkeyzuwu@gmail.com>, 2022.
+# Tamir Livneh <fkeyzuwu@gmail.com>, 2022, 2026.
 # Tomer Ben Rachel <tomerpacific@gmail.com>, 2022.
 # moshe mil <milgmoshe@gmail.com>, 2022.
 # Blawnode <blawnode@gmail.com>, 2022.
@@ -44,13 +44,14 @@
 # exceeding speed <gevaor.tech@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # IgnitedIce <bendahansh@gmail.com>, 2026.
+# shalev katz <shalev5552@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-04-16 02:09+0000\n"
-"Last-Translator: IgnitedIce <bendahansh@gmail.com>\n"
+"PO-Revision-Date: 2026-07-18 18:02+0000\n"
+"Last-Translator: Tamir Livneh <fkeyzuwu@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/godot/"
 "he/>\n"
 "Language: he\n"
@@ -59,7 +60,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && n "
 "% 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "אישור"
@@ -407,6 +408,12 @@ msgstr "התמקד על הבא"
 msgid "Focus Prev"
 msgstr "התמקד על הקודם"
 
+msgid "Left"
+msgstr "שמאל"
+
+msgid "Right"
+msgstr "ימין"
+
 msgid "Up"
 msgstr "למעלה"
 
@@ -675,7 +682,7 @@ msgid "Make Handles Balanced (Auto Tangent)"
 msgstr "‎הפוך ידיות למאוזנות (מגע אוטומטי)"
 
 msgid "Add Bezier Point"
-msgstr "הוסף נקודת בזייה"
+msgstr "הוספת נקודת בזייה"
 
 msgid "Move Bezier Points"
 msgstr "הזזת נקודות בזייה"
@@ -689,11 +696,20 @@ msgstr "ניקוי בחירת כל המפתחות"
 msgid "Add Animation"
 msgstr "הוסף אנימציה"
 
+msgid "Add %s"
+msgstr "הוספת %s"
+
 msgid "Load..."
 msgstr "טעינה..."
 
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr "לא ניתן להשתמש בסוג מפרק זה. רק מפרקי שורש מותרים."
+
+msgid "Add Node Point"
+msgstr "הוספת נקודת מפרק"
+
+msgid "Add Animation Point"
+msgstr "הוספת נקודת הנפשה"
 
 msgid "Continuous"
 msgstr "מתמשך"
@@ -704,23 +720,67 @@ msgstr "בדיד"
 msgid "Capture"
 msgstr "לכידה"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"בחר והזז נקודות.\n"
+"לחצן עכבר ימני: יצירת נקודה במיקום שנלחץ.\n"
+"'Shift'+לחצן עכבר שמלי+גרירה: קבעת מיקום המיזוג בתוך המרחב.\n"
+"גלול: לעלות או להוריד את מדד."
+
+msgid "Create points."
+msgstr "יצירת נקודות"
+
 msgid "Sync"
 msgstr "סנכרון"
+
+msgid "Independent"
+msgstr "עצמאי"
 
 msgid "Position"
 msgstr "מיקום"
 
+msgid "Min"
+msgstr "מינימום"
+
+msgid "Max"
+msgstr "מקסימום"
+
 msgid "Value"
 msgstr "ערך"
+
+msgid "Open Animation Node"
+msgstr "פתח אנימציה"
 
 msgid "Triangle already exists."
 msgstr "המשולש כבר קיים."
 
+msgid "Parameter Changed: %s"
+msgstr "משתנה השתנה: %s"
+
 msgid "Edit Filters"
 msgstr "עריכת מסננים"
 
+msgid "Node Moved"
+msgstr "מפרק הוזז"
+
+msgid "Nodes Connected"
+msgstr "מפרקים חוברו"
+
+msgid "Nodes Disconnected"
+msgstr "מפרקים נותקו"
+
 msgid "Set Animation"
 msgstr "קביעת הנפשה"
+
+msgid "Delete Node"
+msgstr "מחיקת מפרק"
+
+msgid "Delete Node(s)"
+msgstr "מחק מפרק(ים)"
 
 msgid "Change Filter"
 msgstr "שינוי מסנן"
@@ -808,6 +868,9 @@ msgstr "שמור ספריית הנפשה בקובץ: %s"
 msgid "Save Animation to File: %s"
 msgstr "שמור הנפשה בקובץ: %s"
 
+msgid "Add Animation Libraries"
+msgstr "הוסף ספריות הנפשה"
+
 msgid "Some of the selected animations were already added to the library."
 msgstr "מספר מההנפשות שנבחרו כבר נוספו לספרייה."
 
@@ -816,6 +879,9 @@ msgstr "טעינת הנפשה לספרייה: %s"
 
 msgid "Rename Animation Library: %s"
 msgstr "שינוי שם ספריית הנפשה: %s"
+
+msgid "[Global]"
+msgstr "[גלובלי]"
 
 msgid "Rename Animation: %s"
 msgstr "שינוי שם ההנפשה: %s"
@@ -919,6 +985,9 @@ msgstr "שינוי שם הנפשה"
 msgid "Change Animation Name:"
 msgstr "שינוי שם הנפשה:"
 
+msgid "Delete Animation '%s'?"
+msgstr "מחיקת אנימציה '%s'?"
+
 msgid "Remove Animation"
 msgstr "הסרת הנפשה"
 
@@ -933,6 +1002,9 @@ msgstr "המיזוג הבא השתנה"
 
 msgid "Change Blend Time"
 msgstr "שינוי זמן מיזוג"
+
+msgid "[Global] (create)"
+msgstr "[גלובלי] (יצירה)"
 
 msgid "Animation"
 msgstr "הנפשה"
@@ -1624,6 +1696,20 @@ msgstr "המשך"
 msgid "Deploy with Remote Debug"
 msgstr "הטעמה עם ניפוי שגיאות מרחוק"
 
+msgid ""
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
+msgstr ""
+"בעט הפעלת אפשרות זו, בשימוש פריסה בלחיצה אחת יגרום לאפליקציה לנסות להתחבר "
+"לכתובת ה\"IP\" של המחשב כדי שפהפרויקט הרץ יוכל למפות את השגיאות.\n"
+"האפשרות הזו נועדה להיות משומשת עבור מיפוי שגיעות מרוחק (בדרך כלל באמצעות "
+"טלפון נייד).\n"
+"את/ה לא לא צריך להפעיל את המיפוי בעיות של \"GDscript\" בצורה מקומית."
+
 msgid "Visible Collision Shapes"
 msgstr "צורות התנגשות גלויים"
 
@@ -1669,6 +1755,9 @@ msgstr "להצגת הגרף יש לבחור פריט אחד או יותר מהר
 msgid "Start"
 msgstr "התחלה"
 
+msgid "Autostart"
+msgstr "הפעלה אוטומטית"
+
 msgid "Measure:"
 msgstr "מדידה:"
 
@@ -1698,6 +1787,9 @@ msgstr "זמן"
 
 msgid "Calls"
 msgstr "קריאות"
+
+msgid "Linked"
+msgstr "קשור"
 
 msgid "CPU"
 msgstr "מעבד"
@@ -2650,6 +2742,9 @@ msgstr "ייצוא"
 
 msgid "Orphan Resource Explorer..."
 msgstr "סייר משאבים יתומים ..."
+
+msgid "Upgrade Project Files..."
+msgstr "עדכן קבצי מיזם"
 
 msgid "Quit to Project List"
 msgstr "יציאה לרשימת מיזמים"
@@ -4655,6 +4750,27 @@ msgstr ""
 
 msgid "Constants cannot be modified."
 msgstr "אי אפשר לשנות קבועים."
+
+msgid "Expected an integer or unsigned integer expression."
+msgstr "מצופה ביטוי של מספר שלם או מספר שלם חיובי."
+
+msgid "Expected data type."
+msgstr "ציפה לסוג דאטא."
+
+msgid "A '%s' data type is not allowed here."
+msgstr "סוג נתונים %s לא מורשה כאן."
+
+msgid "Expected an identifier or '['."
+msgstr "ציפה לשם או '['."
+
+msgid "Expected a function name after type."
+msgstr "מצופה לשם פונקציה אחרי סוג."
+
+msgid "Expected '(' after function identifier."
+msgstr "מצופה ')' אחרי שם פונקציה."
+
+msgid "Expected an identifier after type."
+msgstr "מצופה לשם אחרי סוג."
 
 msgid "The local variable '%s' is declared but never used."
 msgstr "המשתנה המקומי '%s' הוגדר אך לא משומש."

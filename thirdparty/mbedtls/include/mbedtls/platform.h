@@ -385,6 +385,37 @@ int mbedtls_platform_set_exit(void (*exit_func)(int status));
 #define MBEDTLS_EXIT_FAILURE 1
 #endif
 
+#if defined(MBEDTLS_ENTROPY_C) && \
+    !defined(MBEDTLS_NO_PLATFORM_ENTROPY) && \
+    !(defined(_WIN32) && !defined(EFIX64) && !defined(EFI32))
+/* Platforms where MBEDTLS_PLATFORM_DEV_RANDOM is used
+ * unless a dedicated system call is available both at
+ * compile time and at run time. */
+#define MBEDTLS_PLATFORM_HAVE_DEV_RANDOM
+#endif
+
+#if !defined(MBEDTLS_PLATFORM_DEV_RANDOM)
+#define MBEDTLS_PLATFORM_DEV_RANDOM "/dev/random"
+#endif
+
+/* Arrange for mbedtls_platform_dev_random to always be visible to
+ * Doxygen, because it's linked from the documentation of
+ * MBEDTLS_PLATFORM_DEV_RANDOM and that documentation can be visible
+ * even in configurations where it isn't used. */
+#if defined(MBEDTLS_PLATFORM_HAVE_DEV_RANDOM) || defined(__DOXYGEN__)
+/**
+ * Path to a special file that returns cryptographic-quality random bytes
+ * when read.
+ *
+ * This variable is only declared on platforms where it is used.
+ * It is available when the macro `MBEDTLS_PLATFORM_HAVE_DEV_RANDOM` is defined.
+ *
+ * The default value is #MBEDTLS_PLATFORM_DEV_RANDOM.
+ * See the documentation of this option for guidance.
+ */
+extern const char *mbedtls_platform_dev_random;
+#endif
+
 /*
  * The function pointers for reading from and writing a seed file to
  * Non-Volatile storage (NV) in a platform-independent way

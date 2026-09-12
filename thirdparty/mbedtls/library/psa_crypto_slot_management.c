@@ -684,6 +684,12 @@ static psa_status_t psa_load_persistent_key_into_slot(psa_key_slot_t *slot)
     psa_status_t status = PSA_SUCCESS;
     uint8_t *key_data = NULL;
     size_t key_data_length = 0;
+    psa_key_id_t key_id = MBEDTLS_SVC_KEY_ID_GET_KEY_ID(slot->attr.id);
+
+    /* Do not try to load a persistent key whose ID is in the volatile range. */
+    if ((key_id >= PSA_KEY_ID_VOLATILE_MIN) && (key_id <= PSA_KEY_ID_VOLATILE_MAX)) {
+        return PSA_ERROR_DOES_NOT_EXIST;
+    }
 
     status = psa_load_persistent_key(&slot->attr,
                                      &key_data, &key_data_length);

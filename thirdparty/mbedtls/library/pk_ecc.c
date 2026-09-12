@@ -205,13 +205,19 @@ int mbedtls_pk_ecc_set_pubkey(mbedtls_pk_context *pk, const unsigned char *pub, 
 {
 #if defined(MBEDTLS_PK_USE_PSA_EC_DATA)
 
+    /* We need to read the first byte to determine the format (compressed,
+     * uncompressed or 0). */
+    if (pub_len == 0) {
+        return MBEDTLS_ERR_PK_INVALID_PUBKEY;
+    }
+
     /* Load the key */
     if (!PSA_ECC_FAMILY_IS_WEIERSTRASS(pk->ec_family) || *pub == 0x04) {
         /* Format directly supported by PSA:
          * - non-Weierstrass curves that only have one format;
          * - uncompressed format for Weierstrass curves. */
         if (pub_len > sizeof(pk->pub_raw)) {
-            return MBEDTLS_ERR_PK_BUFFER_TOO_SMALL;
+            return MBEDTLS_ERR_PK_INVALID_PUBKEY;
         }
         memcpy(pk->pub_raw, pub, pub_len);
         pk->pub_raw_len = pub_len;

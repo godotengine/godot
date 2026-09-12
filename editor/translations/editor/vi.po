@@ -60,13 +60,15 @@
 # Bách <bachmeme1212@gmail.com>, 2026.
 # Lý Hoàng Bách <bachmeme1212@gmail.com>, 2026.
 # LPL-sudo <lephuocloc070313@gmail.com>, 2026.
+# Nguyễn Thị Đào <kenhcuatoilaan@gmail.com>, 2026.
+# The Earth <winterwolfvn123@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-16 19:05+0000\n"
-"Last-Translator: Lý Hoàng Bách <bachmeme1212@gmail.com>\n"
+"PO-Revision-Date: 2026-07-26 09:01+0000\n"
+"Last-Translator: The Earth <winterwolfvn123@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -74,7 +76,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -148,6 +150,9 @@ msgstr "đang được sử dụng"
 msgid "Locked"
 msgstr "Đã khoá"
 
+msgid "Timeout"
+msgstr "Hết thời gian"
+
 msgid "Can't connect"
 msgstr "Không thể kết nối"
 
@@ -156,6 +161,12 @@ msgstr "Không thể giải quyết"
 
 msgid "Connection error"
 msgstr "Lỗi kết nối"
+
+msgid "Can't acquire resource"
+msgstr "Không thể lấy được tài nguyên"
+
+msgid "Can't fork"
+msgstr "Không thể tạo tiến trình"
 
 msgid "Invalid data"
 msgstr "Dữ liệu không hợp lệ"
@@ -178,14 +189,23 @@ msgstr "Không thể ghi vào cơ sở dữ liệu"
 msgid "Compilation failed"
 msgstr "Biên dịch thất bại"
 
+msgid "Method not found"
+msgstr "Không tìm thấy phương thức"
+
 msgid "Link failed"
 msgstr "Liên kết thất bại"
 
 msgid "Script failed"
 msgstr "Thực thi lệnh thất bại"
 
+msgid "Cyclic link detected"
+msgstr "Phát hiện liên kết vòng lặp"
+
 msgid "Invalid declaration"
 msgstr "Khai báo không hợp lệ"
+
+msgid "Duplicate symbol"
+msgstr "Tên khai báo bị trùng"
 
 msgid "Parse error"
 msgstr "Lỗi phân tích cú pháp"
@@ -201,6 +221,12 @@ msgstr "Trợ giúp"
 
 msgid "Bug"
 msgstr "Lỗi"
+
+msgid "Printer on fire"
+msgstr "Hệ thống quá tải"
+
+msgid "unset"
+msgstr "Chưa được đặt"
 
 msgid "Physical"
 msgstr "Vật lý"
@@ -240,6 +266,9 @@ msgstr "Nhấp đúp Chuột"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Chuột di chuyển tại vị trí (%s) với vận tốc (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Trục X của cần điều khiển bên trái, Trục X của cần điều khiển 0"
 
 msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
 msgstr "Trục Y của cần trái, Trục Y của cần 0"
@@ -319,6 +348,9 @@ msgstr "D-pad trái"
 msgid "D-pad Right"
 msgstr "D-pad phải"
 
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Nút Chia sẻ Xbox, Nút Microphone PS5, Nút Chụp màn hình Nintendo"
+
 msgid "Xbox Paddle 1"
 msgstr "Cò dưới Xbox 1"
 
@@ -383,6 +415,12 @@ msgstr "Huỷ bỏ"
 msgid "Close Dialog"
 msgstr "Đóng hộp thoại"
 
+msgid "Focus Next"
+msgstr "Mục tiếp theo"
+
+msgid "Focus Prev"
+msgstr "Mục trước đó"
+
 msgid "Left"
 msgstr "Trái"
 
@@ -406,6 +444,9 @@ msgstr "Sao chép"
 
 msgid "Paste"
 msgstr "Dán"
+
+msgid "Toggle Tab Focus Mode"
+msgstr "Chuyển đổi chế độ điều hướng bằng Tab"
 
 msgid "Undo"
 msgstr "Hoàn tác"
@@ -529,6 +570,9 @@ msgstr "Hiện các tệp ẩn"
 
 msgid "Find"
 msgstr "Tìm"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Trợ năng: Kéo và thả bằng bàn phím"
 
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Toán hạng không hợp lệ cho toán tử %s, %s và %s."
@@ -2494,6 +2538,9 @@ msgstr "Bản mẫu"
 
 msgid "All"
 msgstr "Tất cả"
+
+msgid "Repository returned with invalid data."
+msgstr "kho dữ liệu trả về kết quả không hợp lệ."
 
 msgid "No results for \"%s\"."
 msgstr "Không tìm thấy kết quả cho \"%s\"."
@@ -12865,13 +12912,6 @@ msgstr ""
 
 msgid "Ungroup"
 msgstr "Hủy Nhóm (Ungroup)"
-
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"Chuột trái + Kéo: Đo khoảng cách giữa hai điểm.\n"
-"Shift + Chuột trái + Kéo: Hiển thị các phép đo thành phần trục đơn lẻ."
 
 msgid "Ruler Mode"
 msgstr "Chế độ thước"

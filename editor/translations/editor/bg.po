@@ -29,13 +29,16 @@
 # Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>, 2025, 2026.
 # Vladimir Kirov <morbeo@gmail.com>, 2026.
 # bruvzg <bruvzg13@proton.me>, 2026.
+# Supermyskin <supermyskin@abv.bg>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# Repa <youme.ytv@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-21 13:09+0000\n"
-"Last-Translator: bruvzg <bruvzg13@proton.me>\n"
+"PO-Revision-Date: 2026-07-17 12:16+0000\n"
+"Last-Translator: Repa <youme.ytv@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -43,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16.1-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "Добре"
@@ -554,7 +557,7 @@ msgid "Go Up One Level"
 msgstr "Качване едно ниво по-нагоре"
 
 msgid "Refresh"
-msgstr "Опресни"
+msgstr "Обнови"
 
 msgid "Show Hidden"
 msgstr "Показване на скритите"
@@ -701,6 +704,9 @@ msgstr "Премахване на избора на всички ключове"
 msgid "Add Animation"
 msgstr "Добавяне не анимация"
 
+msgid "No available animations"
+msgstr "Няма налични анимации"
+
 msgid "Add %s"
 msgstr "Добавяне на %s"
 
@@ -734,6 +740,9 @@ msgstr "Добавяне на точки за анимация"
 msgid "Remove BlendSpace1D Point"
 msgstr "Премахване на точка на BlendSpace1D"
 
+msgid "Change BlendSpace1D Point Name"
+msgstr "Промяна на името на точката на BlendSpace1D"
+
 msgid "Continuous"
 msgstr "Плавно"
 
@@ -742,6 +751,17 @@ msgstr "Дискретно"
 
 msgid "Capture"
 msgstr "Заснемане"
+
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"Избери и премести координати.\n"
+"ДБМ: Създава координат на кликната позиция.\n"
+"Shift+ЛБМ+Плъзгане: Задава позицията на смесване в пространството.\n"
+"Скрол: Увеличаване или намаляване"
 
 msgid "Create points."
 msgstr "Създаване на точки."
@@ -764,8 +784,44 @@ msgstr "Синхронизиране"
 msgid "None"
 msgstr "Няма"
 
+msgid "Independent"
+msgstr "Независим"
+
+msgid "Cyclic Mutable"
+msgstr "Циклично заглушаване"
+
+msgid "Cyclic Constant"
+msgstr "Циклична константа"
+
+msgid "Cyclic Length"
+msgstr "Циклична дължина"
+
+msgid ""
+"Cycle length in seconds for cyclic sync. All animations are time-scaled to "
+"complete one cycle in this duration."
+msgstr ""
+"Продължителност на цикъла в секунди за циклична синхронизация. Всички "
+"анимации са мащабирани във времето, за да завършат един цикъл в рамките на "
+"тази продължителност."
+
+msgid "Blend"
+msgstr "Смесване"
+
 msgid "Open Editor"
 msgstr "Отваряне на редактора"
+
+msgid "Index"
+msgstr "Индекс"
+
+msgid "Blend Point Index"
+msgstr "Индекс на точката на смесване"
+
+msgid ""
+"Index of the blend point.\n"
+"Values outside of the valid range will be clamped to the nearest index."
+msgstr ""
+"Индекс на точката на смесване.\n"
+"Стойностите извън валидния диапазон ще бъдат фиксирани към най-близкия индекс."
 
 msgid "Position"
 msgstr "Позиция"
@@ -802,6 +858,9 @@ msgstr "Премахване на точката на BlendSpace2D"
 
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Премахване на триъгълника на BlendSpace2D"
+
+msgid "Reorder BlendSpace2D Point Index"
+msgstr "Пренареждане на точката на BlendSpace2D"
 
 msgid "Toggle Auto Triangles"
 msgstr "Превключване на автоматичните триъгълници"
@@ -1733,6 +1792,14 @@ msgid "Set the default handle mode of new bezier keys."
 msgstr "Задайте режим на работа по подразбиране за новите ключове на Безие."
 
 msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Квинт"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Кварта"
+
+msgctxt "Transition Type"
 msgid "Quad"
 msgstr "четириъгълник"
 
@@ -1741,12 +1808,36 @@ msgid "Elastic"
 msgstr "Еластично"
 
 msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Кръг"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Подскачане"
+
+msgctxt "Transition Type"
 msgid "Back"
 msgstr "Назад"
 
 msgctxt "Transition Type"
 msgid "Spring"
 msgstr "Пружина"
+
+msgctxt "Ease Type"
+msgid "Ease In"
+msgstr "Плавно влизане"
+
+msgctxt "Ease Type"
+msgid "Ease Out"
+msgstr "Плавно излизане"
+
+msgctxt "Ease Type"
+msgid "Ease In-Out"
+msgstr "Плавно влизане-излизане"
+
+msgctxt "Ease Type"
+msgid "Ease Out-In"
+msgstr "Плавно излизане-влизане"
 
 msgid "Change Animation Step"
 msgstr "Промяна на стъпката на анимацията"
@@ -1786,6 +1877,15 @@ msgstr "Добавянето на нова пътечка без корен е �
 
 msgid "Pick a node to animate:"
 msgstr "Изберете обект, който да бъде анимиран:"
+
+msgid "Pick a node to select method:"
+msgstr "Изберете обект, за да изберете метод:"
+
+msgid "Pick a node to play audio:"
+msgstr "Изберете обект, за възпроизвеждане на аудио:"
+
+msgid "Pick a node to play animation:"
+msgstr "Изберете обект, за възпроизвеждане на анимация:"
 
 msgid "Invalid track for Bezier (no suitable sub-properties)"
 msgstr "Невалидни пътечки за Безиер (няма подходящи подсвойства)"
@@ -1946,8 +2046,14 @@ msgstr ""
 msgid "Group tracks by node or display them as plain list."
 msgstr "Групиране на пътечките по обект, или показване като общ списък."
 
+msgid "Insert at current time."
+msgstr "Вмъкване в текущо време."
+
 msgid "Apply snapping to timeline cursor."
 msgstr "Приложи прилепване към курсора на времевата линия."
+
+msgid "Apply snapping to selected key(s)."
+msgstr "Приложете прихващане към избрани ключ(ове)."
 
 msgid "Apply snapping to the nearest integer FPS."
 msgstr "Приложи прилепване към най-близкото цяло число FPS."
@@ -1963,6 +2069,12 @@ msgstr "Кадри/сек"
 
 msgid "Snap Mode"
 msgstr "Режим на Закрепване"
+
+msgid "Zoom"
+msgstr "Приближаване"
+
+msgid "Fit to panel"
+msgstr "Преместване в кадър"
 
 msgid "Auto Fit Bezier"
 msgstr "Автоматично приспособяване Безие"
@@ -2000,6 +2112,15 @@ msgstr "Добави пътечки към RESET"
 msgid "Apply RESET"
 msgstr "Приложи RESET"
 
+msgid "Bake Animation..."
+msgstr "Изпичане на анимацията..."
+
+msgid "Optimize Animation (no undo)..."
+msgstr "Оптимизиране на анимацията (не може да бъде отменено)..."
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Почистване на анимацията (не може да бъде отменено)..."
+
 msgid "Create RESET Track(s)"
 msgstr "Създаване на пътечка/и за НУЛИРАНЕ"
 
@@ -2017,6 +2138,12 @@ msgstr "Макс. грешка в точността:"
 
 msgid "Optimize"
 msgstr "Оптимизиране"
+
+msgid "Remove invalid keys"
+msgstr "Премахни невалидните ключове"
+
+msgid "Clean-up all animations"
+msgstr "Изчисти всички анимации"
 
 msgid "Clean-Up"
 msgstr "Почистване"
@@ -2053,6 +2180,9 @@ msgstr "Път:"
 
 msgid "Errors"
 msgstr "Грешки"
+
+msgid "Title"
+msgstr "Заглавие"
 
 msgid "Author"
 msgstr "Автор"
@@ -2380,6 +2510,9 @@ msgstr ""
 "Вмомента няма описание за този клас. Моля помогнете ни, като [color=$color]"
 "[url=$url]напѝшете едно[/url][/color]!"
 
+msgid "Properties"
+msgstr "Свойства"
+
 msgid "overrides %s:"
 msgstr "заменя %s:"
 
@@ -2642,6 +2775,9 @@ msgstr "Глобална"
 
 msgid "Description:"
 msgstr "Описание:"
+
+msgid "Rename"
+msgstr "Преименуване"
 
 msgid "Scene"
 msgstr "Сцена"
@@ -3034,6 +3170,9 @@ msgstr "Заснемане на екрана"
 
 msgid "Online Documentation"
 msgstr "Документация в Интернет"
+
+msgid "Community"
+msgstr "Общност"
 
 msgid "Report a Bug"
 msgstr "Докладване на проблем"
@@ -3916,6 +4055,9 @@ msgstr "Прилепване към решетката"
 
 msgid "Painting:"
 msgstr "Рисуване:"
+
+msgid "Polygon %d"
+msgstr "Полигони %d"
 
 msgid "Flip Tile Horizontally"
 msgstr "Обърни Плочката Хоризонтално"

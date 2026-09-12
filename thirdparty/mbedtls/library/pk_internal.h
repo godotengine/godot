@@ -44,6 +44,40 @@
 #define PEM_BEGIN_ENCRYPTED_PRIVATE_KEY_PKCS8 "-----BEGIN ENCRYPTED PRIVATE KEY-----"
 #define PEM_END_ENCRYPTED_PRIVATE_KEY_PKCS8   "-----END ENCRYPTED PRIVATE KEY-----"
 
+/*
+ * We're trying to statisfy two kinds of users:
+ * - those who don't want to use the heap;
+ * - those who can't afford large stack buffers.
+ *
+ * The current compromise is that if ECC is the only key type supported in PK,
+ * then we export keys on the stack, and otherwise we use the heap.
+ *
+ * RSA can either be used directly or indirectly via opaque keys if enabled.
+ * (RSA_ALT is not relevant here as we can't export from such contexts.)
+ */
+#if !defined(MBEDTLS_RSA_C) && \
+    !(defined(MBEDTLS_USE_PSA_CRYPTO) && defined(PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY))
+#define PK_EXPORT_KEYS_ON_THE_STACK
+#endif
+
+#if defined(PK_EXPORT_KEYS_ON_THE_STACK)
+/* We know for ECC, pubkey are longer than privkeys, but double check.
+ * Also, take the maximum size of legacy and PSA, as PSA might be disabled. */
+#define PK_EXPORT_KEY_STACK_BUFFER_SIZE  MBEDTLS_PSA_MAX_EC_PUBKEY_LENGTH
+#if PK_EXPORT_KEY_STACK_BUFFER_SIZE < MBEDTLS_PSA_MAX_EC_KEY_PAIR_LENGTH
+#undef PK_EXPORT_KEY_STACK_BUFFER_SIZE
+#define PK_EXPORT_KEY_STACK_BUFFER_SIZE  MBEDTLS_PSA_MAX_EC_KEY_PAIR_LENGTH
+#endif
+#if PK_EXPORT_KEY_STACK_BUFFER_SIZE < MBEDTLS_ECP_MAX_BYTES
+#undef PK_EXPORT_KEY_STACK_BUFFER_SIZE
+#define PK_EXPORT_KEY_STACK_BUFFER_SIZE  MBEDTLS_ECP_MAX_BYTES
+#endif
+#if PK_EXPORT_KEY_STACK_BUFFER_SIZE < MBEDTLS_ECP_MAX_PT_LEN
+#undef PK_EXPORT_KEY_STACK_BUFFER_SIZE
+#define PK_EXPORT_KEY_STACK_BUFFER_SIZE  MBEDTLS_ECP_MAX_PT_LEN
+#endif
+#endif
+
 #if defined(MBEDTLS_PK_HAVE_ECC_KEYS) && !defined(MBEDTLS_PK_USE_PSA_EC_DATA)
 /**
  * Public function mbedtls_pk_ec() can be used to get direct access to the

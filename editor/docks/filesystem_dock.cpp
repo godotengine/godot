@@ -561,6 +561,10 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				_update_file_list(!selected_files.is_empty(), selected_files);
 			} else {
 				tree->ensure_cursor_is_visible();
+
+				// Always update to avoid broken icons, as previous updates
+				// could have happened before the dock was inside the tree.
+				update_all();
 			}
 		} break;
 	}

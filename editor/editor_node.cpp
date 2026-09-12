@@ -4720,7 +4720,6 @@ void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state) {
 
 	Node *old_scene = get_editor_data().get_edited_scene_root();
 
-	resource_count.clear();
 	editor_selection->clear();
 	SceneTreeDock::get_singleton()->clear_previous_node_selection();
 	editor_data.set_edited_scene(p_idx);
@@ -4752,6 +4751,7 @@ void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state) {
 
 		EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_scene_history_id(p_idx), false);
 	}
+	resource_count.clear();
 	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
 
 	_update_title();
@@ -4763,7 +4763,6 @@ void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state) {
 
 	changing_scene = false;
 
-	_edit_current(true);
 	if (EDITOR_GET("interface/scene_tabs/auto_select_current_scene_file")) {
 		FileSystemDock::get_singleton()->navigate_to_path(scene_path);
 	}

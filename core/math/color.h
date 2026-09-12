@@ -242,7 +242,7 @@ struct [[nodiscard]] Color {
 
 	uint32_t hash() const {
 		uint32_t h = hash_murmur3_one_float(r);
-		h = hash_murmur3_one_float(r, h);
+		h = hash_murmur3_one_float(g, h);
 		h = hash_murmur3_one_float(b, h);
 		h = hash_murmur3_one_float(a, h);
 		return hash_fmix32(h);

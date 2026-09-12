@@ -72,7 +72,7 @@ void FlowContainer::_resort() {
 			continue;
 		}
 
-		Size2i child_msc = child->get_combined_minimum_size();
+		Size2i child_msc = child->get_bound_minimum_size();
 		Size2i child_max_size = child->get_combined_maximum_size();
 
 		if (vertical) { /* VERTICAL */

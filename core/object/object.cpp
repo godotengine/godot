@@ -877,17 +877,17 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 }
 
 void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const {
-	r_fn_ptr = nullptr;
+	void *fn_ptr = nullptr;
 	if (_extension->get_virtual_call_data2 && _extension->call_virtual_with_data) {
-		r_fn_ptr = _extension->get_virtual_call_data2(_extension->class_userdata, &p_fn_name, p_compat_hash);
+		fn_ptr = _extension->get_virtual_call_data2(_extension->class_userdata, &p_fn_name, p_compat_hash);
 	} else if (_extension->get_virtual2) {
-		r_fn_ptr = (void *)_extension->get_virtual2(_extension->class_userdata, &p_fn_name, p_compat_hash);
+		fn_ptr = (void *)_extension->get_virtual2(_extension->class_userdata, &p_fn_name, p_compat_hash);
 #ifndef DISABLE_DEPRECATED
 	} else if (p_compat || ClassDB::get_virtual_method_compatibility_hashes(get_class_name(), p_fn_name).size() == 0) {
 		if (_extension->get_virtual_call_data && _extension->call_virtual_with_data) {
-			r_fn_ptr = _extension->get_virtual_call_data(_extension->class_userdata, &p_fn_name);
+			fn_ptr = _extension->get_virtual_call_data(_extension->class_userdata, &p_fn_name);
 		} else if (_extension->get_virtual) {
-			r_fn_ptr = (void *)_extension->get_virtual(_extension->class_userdata, &p_fn_name);
+			fn_ptr = (void *)_extension->get_virtual(_extension->class_userdata, &p_fn_name);
 		}
 #endif
 	}
@@ -899,9 +899,10 @@ void Object::_gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr,
 		virtual_method_list = tracker;
 	}
 #endif
-	if (r_fn_ptr == nullptr) {
-		r_fn_ptr = reinterpret_cast<void *>(_INVALID_GDVIRTUAL_FUNC_ADDR);
+	if (fn_ptr == nullptr) {
+		fn_ptr = reinterpret_cast<void *>(_INVALID_GDVIRTUAL_FUNC_ADDR);
 	}
+	r_fn_ptr = fn_ptr;
 }
 
 void Object::_notification_forward(int p_notification) {

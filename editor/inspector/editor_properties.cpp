@@ -585,6 +585,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_accessibility_name(TTRC("Enum Options"));
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	option_button->set_clip_text(true);
+	option_button->set_fit_to_longest_item(false);
 	option_button->set_flat(true);
 	option_button->set_search_bar_enabled(true);
 	option_button->set_search_bar_min_item_count(10);
@@ -997,6 +998,7 @@ OptionButton *EditorPropertyEnum::get_option_button() {
 EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	options->set_flat(true);
 	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

@@ -1416,7 +1416,7 @@ inline v128_t unzigzag16(v128_t v)
 SIMD_TARGET
 inline v128_t rotate32(v128_t v, int r)
 {
-	return wasm_v128_or(wasm_i32x4_shl(v, r), wasm_i32x4_shr(v, 32 - r));
+	return wasm_v128_or(wasm_i32x4_shl(v, r), wasm_u32x4_shr(v, 32 - r));
 }
 #endif
 

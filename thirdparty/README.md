@@ -8,7 +8,7 @@ readability.
 ## accesskit
 
 - Upstream: https://github.com/AccessKit/accesskit-c
-- Version: 0.21.2 (72460cd52d1b24492393cdf54a6f19d2fd63e258, 2026)
+- Version: 0.22.3 (826d672661f9453c8b269ab3946dbcbae6300555, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -683,7 +683,7 @@ File extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 3.6.5 (e185d7fd85499c8ce5ca2a54f5cf8fe7dbe3f8df, 2025)
+- Version: 3.6.7 (068ff080b369adfac81509f9b57b2afabaf82dc5, 2026)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -720,7 +720,7 @@ Update instructions:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: 1.1 (dc9d09ed83e1004aef47a1c3c597e0ec64848a37, 2026)
+- Version: 1.1.1 (b22872835dbabc56a6e4a366ea9917f62b7daf1a, 2026)
 - License: MIT
 
 Files extracted from upstream repository:

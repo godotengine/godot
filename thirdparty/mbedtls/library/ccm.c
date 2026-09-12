@@ -177,6 +177,7 @@ static int ccm_calculate_first_block_if_ready(mbedtls_ccm_context *ctx)
             ctx->plaintext_len = 0;
             return 0;
         } else {
+            ctx->state |= CCM_STATE__ERROR;
             return MBEDTLS_ERR_CCM_BAD_INPUT;
         }
     }
@@ -480,11 +481,23 @@ int mbedtls_ccm_finish(mbedtls_ccm_context *ctx,
         return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     }
 
+    if (!(ctx->state & CCM_STATE__STARTED)) {
+        return MBEDTLS_ERR_CCM_BAD_INPUT;
+    }
+
+    if (!(ctx->state & CCM_STATE__LENGTHS_SET)) {
+        return MBEDTLS_ERR_CCM_BAD_INPUT;
+    }
+
     if (ctx->add_len > 0 && !(ctx->state & CCM_STATE__AUTH_DATA_FINISHED)) {
         return MBEDTLS_ERR_CCM_BAD_INPUT;
     }
 
     if (ctx->plaintext_len > 0 && ctx->processed != ctx->plaintext_len) {
+        return MBEDTLS_ERR_CCM_BAD_INPUT;
+    }
+
+    if (tag_len != ctx->tag_len) {
         return MBEDTLS_ERR_CCM_BAD_INPUT;
     }
 

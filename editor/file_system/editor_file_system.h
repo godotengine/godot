@@ -182,7 +182,7 @@ class EditorFileSystem : public Node {
 	EditorFileSystemDirectory *new_filesystem = nullptr;
 	static ScannedDirectory *first_scan_root_dir;
 
-	bool filesystem_changed_queued = false;
+	SafeFlag filesystem_changed_queued;
 	bool scanning = false;
 	bool importing = false;
 	bool first_scan = true;
@@ -391,6 +391,8 @@ public:
 	void update_files(const Vector<String> &p_script_paths);
 	HashSet<String> get_valid_extensions() const;
 	void register_global_class_script(const String &p_search_path, const String &p_target_path);
+
+	void filesystem_changed();
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;

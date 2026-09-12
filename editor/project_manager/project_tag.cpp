@@ -57,6 +57,7 @@ const String ProjectTag::get_tag() const {
 ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
 	add_theme_constant_override(SNAME("separation"), 0);
 	set_v_size_flags(SIZE_SHRINK_CENTER);
+	set_custom_maximum_size(Vector2(336 * EDSCALE, -1));
 	tag_string = p_text;
 	display_close = p_display_close;
 
@@ -80,6 +81,5 @@ ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
 	button->set_accessibility_name(vformat(TTR("Project Tag: %s"), p_text));
 	button->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 	button->set_theme_type_variation(SNAME("ProjectTagButton"));
-	button->set_custom_maximum_size(Vector2(334 * EDSCALE, -1));
 	button->set_mouse_filter(MOUSE_FILTER_PASS);
 }

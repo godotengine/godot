@@ -746,6 +746,13 @@ String EditorResourcePicker::_get_owner_path() const {
 		Node *p_edited_scene_root = EditorNode::get_singleton()->get_editor_data().get_edited_scene_root();
 		if (node->get_scene_file_path().is_empty()) {
 			node = node->get_owner();
+			// If the owner is not the currently edited scene root, the node is an editable
+			// child from another scene. Use the edited scene's path so the new resource is
+			// not treated as foreign (belonging to the external scene).
+			if (node && p_edited_scene_root != nullptr && node != p_edited_scene_root &&
+					!p_edited_scene_root->get_scene_file_path().is_empty()) {
+				return p_edited_scene_root->get_scene_file_path();
+			}
 		} else if (p_edited_scene_root != nullptr && p_edited_scene_root->get_scene_file_path() != node->get_scene_file_path()) {
 			// PackedScene should use root scene path.
 			return p_edited_scene_root->get_scene_file_path();
@@ -1764,7 +1771,7 @@ void EditorAudioStreamPicker::_preview_draw() {
 
 	float text_width = size.width - 4 * EDSCALE - icon->get_width();
 	if (text_width > 0) {
-		stream_preview_rect->draw_string(font, Point2i(EDSCALE * 4 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, text_width, font_size, get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
+		stream_preview_rect->draw_string(font, Point2i(size.width - text_width, rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, text_width, font_size, get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 	}
 }
 

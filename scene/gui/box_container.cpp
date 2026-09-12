@@ -67,7 +67,7 @@ void BoxContainer::_resort() {
 		if (propagating_max_size) {
 			c->set_parent_maximum_size_cache(combined_max_size);
 		}
-		Size2i min_size = c->get_combined_minimum_size().ceil();
+		Size2i min_size = c->get_bound_minimum_size().ceil();
 		Size2i max_size = c->get_combined_maximum_size();
 		_MinSizeCache msc;
 
