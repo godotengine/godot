@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BVH_ABB_H
-#define BVH_ABB_H
+#pragma once
 
-#include <float.h>
-#include <cmath>
+#include "core/math/aabb.h"
+
+#include <cfloat> // FLT_MAX
 
 // special optimized version of axis aligned bounding box
-template <class BOUNDS = AABB, class POINT = Vector3>
+template <typename BOUNDS = AABB, typename POINT = Vector3>
 struct BVH_ABB {
 	struct ConvexHull {
 		// convex hulls (optional)
@@ -60,12 +60,12 @@ struct BVH_ABB {
 	POINT min;
 	POINT neg_max;
 
-	bool operator==(const BVH_ABB &o) const { return (min == o.min) && (neg_max == o.neg_max); }
-	bool operator!=(const BVH_ABB &o) const { return (*this == o) == false; }
+	bool operator==(const BVH_ABB &p_other) const { return (min == p_other.min) && (neg_max == p_other.neg_max); }
+	bool operator!=(const BVH_ABB &p_other) const { return (*this == p_other) == false; }
 
-	void set(const POINT &_min, const POINT &_max) {
-		min = _min;
-		neg_max = -_max;
+	void set(const POINT &p_min, const POINT &p_max) {
+		min = p_min;
+		neg_max = -p_max;
 	}
 
 	// to and from standard AABB
@@ -90,13 +90,13 @@ struct BVH_ABB {
 		return -neg_max - min;
 	}
 
-	POINT calculate_centre() const {
-		return POINT((calculate_size() * 0.5f) + min);
+	POINT calculate_center() const {
+		return POINT((calculate_size() * 0.5) + min);
 	}
 
 	real_t get_proximity_to(const BVH_ABB &p_b) const {
 		const POINT d = (min - neg_max) - (p_b.min - p_b.neg_max);
-		real_t proximity = 0;
+		real_t proximity = 0.0;
 		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
 			proximity += Math::abs(d[axis]);
 		}
@@ -122,7 +122,7 @@ struct BVH_ABB {
 
 	bool intersects_plane(const Plane &p_p) const {
 		Vector3 size = calculate_size();
-		Vector3 half_extents = size * 0.5f;
+		Vector3 half_extents = size * 0.5;
 		Vector3 ofs = min + half_extents;
 
 		// forward side of plane?
@@ -146,7 +146,7 @@ struct BVH_ABB {
 
 	bool intersects_convex_optimized(const ConvexHull &p_hull, const uint32_t *p_plane_ids, uint32_t p_num_planes) const {
 		Vector3 size = calculate_size();
-		Vector3 half_extents = size * 0.5f;
+		Vector3 half_extents = size * 0.5;
 		Vector3 ofs = min + half_extents;
 
 		for (unsigned int i = 0; i < p_num_planes; i++) {
@@ -192,7 +192,7 @@ struct BVH_ABB {
 
 	bool is_point_within_hull(const ConvexHull &p_hull, const Vector3 &p_pt) const {
 		for (int n = 0; n < p_hull.num_planes; n++) {
-			if (p_hull.planes[n].distance_to(p_pt) > 0) {
+			if (p_hull.planes[n].distance_to(p_pt) > 0.0f) {
 				return false;
 			}
 		}
@@ -258,38 +258,22 @@ struct BVH_ABB {
 
 	void expand(real_t p_change) {
 		POINT change;
-		change.set_all(p_change);
+		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
+			change[axis] = p_change;
+		}
 		grow(change);
 	}
 
 	// Actually surface area metric.
 	real_t get_area() const {
 		POINT d = calculate_size();
-		return 2 * (d.x * d.y + d.y * d.z + d.z * d.x);
+		return 2.0 * (d.x * d.y + d.y * d.z + d.z * d.x);
 	}
 
 	void set_to_max_opposite_extents() {
-		neg_max.set_all(FLT_MAX);
+		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
+			neg_max[axis] = FLT_MAX;
+		}
 		min = neg_max;
 	}
-
-	bool _any_morethan(const POINT &p_a, const POINT &p_b) const {
-		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
-			if (p_a[axis] > p_b[axis]) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	bool _any_lessthan(const POINT &p_a, const POINT &p_b) const {
-		for (int axis = 0; axis < POINT::AXIS_COUNT; ++axis) {
-			if (p_a[axis] < p_b[axis]) {
-				return true;
-			}
-		}
-		return false;
-	}
 };
-
-#endif // BVH_ABB_H
