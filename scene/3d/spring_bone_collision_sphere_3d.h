@@ -58,5 +58,4 @@ public:
 	float get_radius() const;
 	void set_collide_mode(CollideMode p_collide_mode);
 	CollideMode get_collide_mode() const;
-	
 };
