@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  spring_bone_collision_sphere_3d.compat.inc                                   */
+/*  spring_bone_collision_sphere_3d.compat.inc                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
