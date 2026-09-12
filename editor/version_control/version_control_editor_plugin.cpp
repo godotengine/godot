@@ -704,7 +704,7 @@ void VersionControlEditorPlugin::_display_diff_split_view(List<EditorVCSInterfac
 			diff_line.old_text = line;
 			parsed_diff.push_back(diff_line);
 		} else if (diff_line.old_line_no == -1) {
-			int32_t j = parsed_diff.size() - 1;
+			int32_t j = (int32_t)parsed_diff.size() - 1;
 			while (j >= 0 && parsed_diff[j].new_line_no == -1) {
 				j--;
 			}
