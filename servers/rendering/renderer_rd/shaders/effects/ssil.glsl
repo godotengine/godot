@@ -28,8 +28,8 @@
 #define SSIL_DEPTH_MIPS_GLOBAL_OFFSET (-4.3)
 
 // Sample count is num_slices * num_samples.
-const int num_samples[5] = { 2, 3, 4, 8, 8 };
-const int num_slices[5] = { 2, 3, 4, 4, 6 };
+const int num_samples[5] = { 4, 4, 4, 4, 4 };
+const int num_slices[5] = { 1, 2, 4, 6, 8 };
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
@@ -39,8 +39,9 @@ layout(rgba16, set = 0, binding = 0) uniform restrict writeonly image2D dest_ima
 layout(set = 1, binding = 0) uniform sampler2D depth_buffer;
 layout(rgba8, set = 1, binding = 1) uniform restrict readonly image2D normal_buffer;
 
-layout(set = 2, binding = 0) uniform sampler2D last_frame;
-layout(set = 2, binding = 1) uniform Matrices {
+layout(r8, set = 2, binding = 0) uniform restrict writeonly image2D edge_weights_image;
+layout(set = 2, binding = 1) uniform sampler2D last_frame;
+layout(set = 2, binding = 2) uniform Matrices {
 	mat4 last_frame_reproj;
 }
 matrices;
@@ -65,6 +66,19 @@ layout(push_constant, std430) uniform Params {
 	ivec2 full_screen_size;
 }
 params;
+
+float pack_edges(vec4 p_edgesLRTB) {
+	p_edgesLRTB = round(clamp(p_edgesLRTB, 0.0, 1.0) * 3.05);
+	return dot(p_edgesLRTB, vec4(64.0 / 255.0, 16.0 / 255.0, 4.0 / 255.0, 1.0 / 255.0));
+}
+
+vec4 calculate_edges(const float p_center_z, const float p_left_z, const float p_right_z, const float p_top_z, const float p_bottom_z) {
+	// slope-sensitive depth-based edge detection
+	vec4 edgesLRTB = vec4(p_left_z, p_right_z, p_top_z, p_bottom_z) - p_center_z;
+	vec4 edgesLRTB_slope_adjusted = edgesLRTB + edgesLRTB.yxwz;
+	edgesLRTB = min(abs(edgesLRTB), abs(edgesLRTB_slope_adjusted));
+	return clamp((1.3 - edgesLRTB / (p_center_z * 0.040)), 0.0, 1.0);
+}
 
 // Projection conversions
 vec3 viewspace_to_screenspace(vec3 p_vpos) {
@@ -112,7 +126,7 @@ vec3 load_normal(ivec2 p_pos) {
 	return encoded_normal;
 }
 
-// https://graphics.stanford.edu/%7Eseander/bithacks.html#CountBitsSetParallel | license: public domain
+// https://graphics.stanford.edu/%7Eseander/bithacks.html#CountBitsSetParallel
 uint CountBits(uint v) {
 	v = v - ((v >> 1u) & 0x55555555u);
 	v = (v & 0x33333333u) + ((v >> 2u) & 0x33333333u);
@@ -126,17 +140,87 @@ float ign(vec2 p_uv, uint p_n) {
 	return mod(52.9829189 * mod(0.06711056 * p_uv.x + 0.00583715 * p_uv.y, 1.0), 1.0);
 }
 
-vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
+vec2 hash23(vec3 p3)
+{
+	p3 = fract(p3 * vec3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yzx+33.33);
+    return fract((p3.xx+p3.yz)*p3.zy);
+}
+
+vec2 r2_modified(float idx, vec2 seed)
+{
+    return fract(seed + float(idx) * vec2(0.245122333753, 0.430159709002));
+}
+
+float GetBayerFromCoordLevel(vec2 pixelpos)
+{
+    ivec2 ppos = ivec2(pixelpos);
+    int sum = 0;
+    for(int i = 0; i<4; i++)
+    {
+         ivec2 t = ppos & 1;
+         sum = sum * 4 | (t.x ^ t.y) * 2 | t.x;
+         ppos /= 2;
+    }    
+    return float(sum) / float(1 << (2 * 4));
+}
+
+float ReshapeUniformToTriangle(float v) {
+    v = v * 2.0 - 1.0;
+    v = sign(v) * (1.0 - sqrt(max(0.0, 1.0 - abs(v)))); // [-1, 1], max prevents NaNs
+    return v + 0.5; // [-0.5, 1.5]
+}
+
+float PhiNoise(uvec3 uvw)
+{
+    // flip every other tile to reduce anisotropy
+    if(((uvw.x ^ uvw.y ^ uvw.z) & 4u) == 0u) uvw = uvw.yzx;
+    
+    // constants of 3d Roberts sequence rounded to nearest primes
+    const uint r0 = 3518319149u;// prime[(2^32-1) / phi_3  ]
+    const uint r1 = 2882110339u;// prime[(2^32-1) / phi_3^2]
+    const uint r2 = 2360945581u;// prime[(2^32-1) / phi_3^3]
+    
+    // h = high-freq dither noise
+    uint h = (uvw.x * r0) + (uvw.y * r1) + (uvw.z * r2);
+    
+    // l = low-freq white noise
+    uvw = uvw >> 2u;// 3u works equally well (I think)
+    uint l = ((uvw.x * r0) ^ (uvw.y * r1) ^ (uvw.z * r2)) * r1;
+    
+    // combine low and high
+    return float(l + h) * (1.0 / 4294967296.0);
+}
+
+void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, const int p_quality) {
 	ivec2 uvi = ivec2(p_pos * vec2(params.screen_size));
 	ivec2 full_res_uvi = ivec2(p_pos * vec2(params.full_screen_size));
+	vec2 pos_rounded = vec2(uvi);
+
+	float pix_z, pix_left_z, pix_top_z, pix_right_z, pix_bottom_z;
+
+	vec4 valuesUL = textureGather(depth_buffer, pos_rounded * (1.0 / params.screen_size));
+	vec4 valuesBR = textureGather(depth_buffer, (pos_rounded + vec2(1.0)) * (1.0 / params.screen_size));
+
+	// get this pixel's viewspace depth
+	pix_z = valuesUL.y;
+
+	// get left right top bottom neighboring pixels for edge detection (gets compiled out on quality_level == 0)
+	pix_left_z = valuesUL.x;
+	pix_top_z = valuesUL.z;
+	pix_right_z = valuesBR.z;
+	pix_bottom_z = valuesBR.x;
+
+	// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to "no edge" (1 is no edge, 0 is edge)
+	vec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);
+	edgesLRTB = calculate_edges(pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);
 
 	uint count = uint(num_samples[p_quality]);
 
 	vec3 vs_normal = load_normal(full_res_uvi);
 
-	vec3 vs_pos = clipspace_to_viewspace(p_pos, p_linear_depth);
-	const vec2 pixel_size_at_center = clipspace_to_viewspace(p_pos + (1.0 / vec2(params.screen_size)), p_linear_depth).xy - vs_pos.xy;
-
+	vec3 vs_pos = clipspace_to_viewspace(p_pos, pix_z);
+	const vec2 pixel_size_at_center = clipspace_to_viewspace(p_pos + (1.0 / vec2(params.screen_size)), pix_z).xy - vs_pos.xy;
 	const float s = pow(params.radius / pixel_size_at_center.x, 1.0 / float(count));
 
 	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
@@ -151,7 +235,7 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 	vec3 v_mul_thickness = v * params.thickness;
 
 	vec2 ray_start = viewspace_to_screenspace(vs_pos).xy;
-	vec3 ray_start_vc3 = vec3(ray_start, p_linear_depth);
+	vec3 ray_start_vc3 = vec3(ray_start, pix_z);
 
 	float ao = 0.0;
 	vec3 gi = vec3(0.0);
@@ -162,6 +246,7 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 	for (uint i = 0u; i < dir_count; ++i) {
 		uint n = frame * dir_count + i;
 		float rnd01 = ign(floor(p_pos * vec2(params.screen_size)), n);
+		//rnd01 = ReshapeUniformToTriangle(rnd01);
 
 		vec3 sample_dir_vs;
 		vec2 dir;
@@ -186,7 +271,9 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 
 		float proj_n_sqr_len = dot(proj_n, proj_n);
 		if (proj_n_sqr_len == 0.0) {
-			return vec4(0.0, 0.0, 0.0, 1.0);
+			r_color = vec4(0.0, 0.0, 0.0, 1.0);
+			r_edges = edgesLRTB;
+			return;
 		}
 
 		vec3 t = cross(slice_n, proj_n);
@@ -201,7 +288,9 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 		const float global_mip_offset = SSIL_DEPTH_MIPS_GLOBAL_OFFSET;
 		float mip_offset = (log2(s) + global_mip_offset);
 
-		vec2 rnd01_vc2 = vec2(ign(floor(p_pos * vec2(params.screen_size)), n * 2u + 1u), ign(floor(p_pos * vec2(params.screen_size)), n * 2u + 2u));
+		//vec2 b_rnd01_vc2 = vec2(GetBayerFromCoordLevel(p_pos * vec2(params.screen_size)), fract(GetBayerFromCoordLevel(p_pos * vec2(params.screen_size))) + 0.6180339887);
+		//vec2 rnd01_vc2 = vec2(ReshapeUniformToTriangle(b_rnd01_vc2.x), ReshapeUniformToTriangle(b_rnd01_vc2.y));
+		vec2 rnd01_vc2 = vec2(PhiNoise(uvec3(p_pos * vec2(params.screen_size), n)), GetBayerFromCoordLevel(p_pos * vec2(params.screen_size)));
 
 		for (float d = -1.0; d <= 1.0; d += 2.0) {
 			vec2 ray_dir0 = dir * d;
@@ -213,16 +302,15 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 
 			for (int i = 0; i < int(count); ++i) {
 				vec2 sample_pos = ray_start + ray_dir0 * t1;
+				vec2 sample_uv = sample_pos / vec2(params.screen_size);
 
 				t1 *= s;
 
 				// handle out of bounds samples
-				if (sample_pos.x < 0.0 || sample_pos.x >= float(params.screen_size.x) ||
-						sample_pos.y < 0.0 || sample_pos.y >= float(params.screen_size.y)) {
+				if (sample_uv.x < 0.0 || sample_uv.x > 1.0 ||
+					sample_uv.y < 0.0 || sample_uv.y > 1.0) {
 					break;
 				}
-
-				vec2 sample_uv = sample_pos / vec2(params.screen_size);
 
 				float sample_depth = textureLod(depth_buffer, sample_uv, mip_offset).r;
 
@@ -307,11 +395,12 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 	// inverse tonemap
 	gi *= norm;
 	gi /= 1.0 - dot(gi, vec3(0.299, 0.587, 0.114));
-	gi *= params.intensity;
+	gi = params.intensity * gi;
 
 	ao *= norm;
 
-	return vec4(gi, ao);
+	r_color = vec4(gi, ao);
+	r_edges = edgesLRTB;
 }
 
 void main() {
@@ -321,12 +410,12 @@ void main() {
 		return;
 	}
 
+	vec4 out_color;
+	vec4 out_edges;
+
 	vec2 uv = ((vec2(ssC) + 0.5) / vec2(params.screen_size));
+	ssilvb(out_color, out_edges, uv, params.quality);
 
-	vec4 lighting;
-	float depth = textureLod(depth_buffer, uv, 0.0).r; // depth is linear
-
-	lighting = ssilvb(uv, params.quality, depth);
-
-	imageStore(dest_image, ssC, lighting);
+	imageStore(dest_image, ssC, out_color);
+	imageStore(edge_weights_image, ssC, vec4(pack_edges(out_edges)));
 }
