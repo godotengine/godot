@@ -52,6 +52,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/animation/tween.h"
 #include "scene/gui/check_box.h"
@@ -3255,9 +3256,63 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				callable_mp(this, &AnimationTrackEdit::_popup_key_context_menu).call_deferred(hovering_key_idx, popup_pos);
 				accept_event();
 			}
+		} else if (pos.x < timeline->get_name_limit()) {
+			// User right-clicks on path/name.
+			if (!menu) {
+				menu = memnew(PopupMenu);
+				add_child(menu);
+				menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationTrackEdit::_menu_selected));
+			}
+			menu->clear();
+			menu->add_item(TTR("Change Target Node..."), MENU_CHANGE_TARGET_NODE);
+
+			// show change property dialog only if:
+			// NodePath is valid
+			// TrackType is Property/Bezier/Blendshape/Transform(bone only)
+			Animation::TrackType type = animation->track_get_type(get_track());
+			Node *target = editor->get_track_node_or_null(get_track());
+			if (target) {
+				switch (type) {
+					case Animation::TYPE_VALUE:
+					case Animation::TYPE_BEZIER: {
+						// These three always support properties.
+						menu->add_item(TTR("Change Target Property..."), MENU_CHANGE_TARGET_PROPERTY);
+					} break;
+					case Animation::TYPE_BLEND_SHAPE: {
+						// BlendShape has a slightly different selector.
+						menu->add_item(TTR("Change Target BlendShape..."), MENU_CHANGE_TARGET_BLENDSHAPE);
+					} break;
+					case Animation::TYPE_POSITION_3D:
+					case Animation::TYPE_ROTATION_3D:
+					case Animation::TYPE_SCALE_3D: {
+						// Transform tracks: "Change Target Bone" if pointing to valid skeleton AND bone.
+						Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(target);
+						if (!skeleton) {
+							break;
+						}
+						if (editor->is_bone_track(get_track())) {
+							menu->add_item(TTR("Change Target Bone..."), MENU_CHANGE_TARGET_BONE);
+						}
+					} break;
+					default: {
+						break;
+					} break;
+				}
+			}
+
+			menu->reset_size();
+
+			moving_selection_attempt = false;
+			moving_selection = false;
+
+			menu->set_position(get_screen_position() + get_local_mouse_position());
+			menu->popup();
+
+			accept_event();
 		}
 	}
 
+	// User left-clicks on the path label.
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && clicking_on_name) {
 		if (!path) {
 			path_popup = memnew(Popup);
@@ -3709,6 +3764,14 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			undo_redo->commit_action();
 			queue_redraw();
 		} break;
+		case MENU_CHANGE_TARGET_NODE: {
+			emit_signal(SNAME("change_track_target_node"));
+		} break;
+		case MENU_CHANGE_TARGET_PROPERTY:
+		case MENU_CHANGE_TARGET_BLENDSHAPE:
+		case MENU_CHANGE_TARGET_BONE: {
+			emit_signal(SNAME("change_track_target_property"));
+		} break;
 	}
 }
 
@@ -3769,6 +3832,9 @@ void AnimationTrackEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("cut_request"));
 	ADD_SIGNAL(MethodInfo("paste_request", PropertyInfo(Variant::FLOAT, "offset"), PropertyInfo(Variant::BOOL, "is_offset_valid")));
 	ADD_SIGNAL(MethodInfo("delete_request"));
+
+	ADD_SIGNAL(MethodInfo("change_track_target_node"));
+	ADD_SIGNAL(MethodInfo("change_track_target_property"));
 }
 
 AnimationTrackEdit::AnimationTrackEdit() {
@@ -4191,6 +4257,35 @@ void AnimationTrackEditor::set_root(Node *p_root) {
 
 Node *AnimationTrackEditor::get_root() const {
 	return root;
+}
+
+Node *AnimationTrackEditor::get_track_node_or_null(int p_track) {
+	// Gets the node a track points to if valid, ignores property path if present.
+	AnimationPlayer *ap = AnimationPlayerEditor::get_singleton()->get_player();
+	if (!ap) {
+		return nullptr;
+	}
+	Node *root_node = ap->get_node_or_null(ap->get_root_node());
+	Node *current_node = root_node->get_node_or_null(animation->track_get_path(p_track));
+	return current_node;
+}
+
+bool AnimationTrackEditor::is_bone_track(int p_track) {
+	// Transform tracks with subnames point to bones.
+	// Doesn't check for skeleton node validity, as invalid paths may need to be able to change skeleton.
+
+	Animation::TrackType type = animation->track_get_type(p_track);
+	switch (type) {
+		case Animation::TYPE_POSITION_3D:
+		case Animation::TYPE_ROTATION_3D:
+		case Animation::TYPE_SCALE_3D:
+			break;
+		default:
+			return false;
+	}
+
+	NodePath path = animation->track_get_path(p_track);
+	return path.get_subname_count() == 1;
 }
 
 void AnimationTrackEditor::update_keying() {
@@ -5388,6 +5483,8 @@ void AnimationTrackEditor::_update_tracks() {
 		track_edit->connect("paste_request", callable_mp(this, &AnimationTrackEditor::_anim_paste_keys).bind(i), CONNECT_DEFERRED);
 		track_edit->connect("create_reset_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_ADD_RESET_KEY), CONNECT_DEFERRED);
 		track_edit->connect("delete_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_DELETE_SELECTION), CONNECT_DEFERRED);
+		track_edit->connect("change_track_target_node", callable_mp(this, &AnimationTrackEditor::_change_track_target_node_pressed).bind(i), CONNECT_DEFERRED);
+		track_edit->connect("change_track_target_property", callable_mp(this, &AnimationTrackEditor::_change_track_target_property_pressed).bind(i), CONNECT_DEFERRED);
 	}
 
 	if (use_grouping) {
@@ -5724,6 +5821,63 @@ void AnimationTrackEditor::_dropped_track(int p_from_track, int p_to_track) {
 	undo_redo->commit_action();
 }
 
+Vector<StringName> AnimationTrackEditor::_get_valid_types_for_track(int p_type) {
+	Vector<StringName> valid_types;
+	switch (p_type) {
+		case Animation::TYPE_BLEND_SHAPE: {
+			// Blend Shape is a property of MeshInstance3D.
+			valid_types.push_back(SNAME("MeshInstance3D"));
+		} break;
+		case Animation::TYPE_POSITION_3D:
+		case Animation::TYPE_ROTATION_3D:
+		case Animation::TYPE_SCALE_3D: {
+			// 3D Properties come from nodes inheriting Node3D.
+			valid_types.push_back(SNAME("Node3D"));
+		} break;
+		case Animation::TYPE_AUDIO: {
+			valid_types.push_back(SNAME("AudioStreamPlayer"));
+			valid_types.push_back(SNAME("AudioStreamPlayer2D"));
+			valid_types.push_back(SNAME("AudioStreamPlayer3D"));
+		} break;
+		case Animation::TYPE_ANIMATION: {
+			valid_types.push_back(SNAME("AnimationPlayer"));
+		} break;
+	}
+	return valid_types;
+}
+
+void AnimationTrackEditor::_add_track(int p_type) {
+	AnimationPlayer *ap = AnimationPlayerEditor::get_singleton()->get_player();
+	if (!ap) {
+		ERR_FAIL_EDMSG("No AnimationPlayer is currently being edited.");
+	}
+	Node *root_node = ap->get_node_or_null(ap->get_root_node());
+	if (!root_node) {
+		EditorNode::get_singleton()->show_warning(TTR("Not possible to add a new track without a root"));
+		return;
+	}
+	adding_track_type = p_type;
+	dialog_state = DIALOG_ADD_TRACK_NODE;
+
+	Vector<StringName> valid_types = _get_valid_types_for_track(adding_track_type);
+	pick_track->set_valid_types(valid_types);
+
+	pick_track->popup_scenetree_dialog(nullptr, root_node);
+	pick_track->get_filter_line_edit()->clear();
+	pick_track->get_filter_line_edit()->grab_focus();
+}
+
+void AnimationTrackEditor::_pick_track_node_selected(NodePath p_path) {
+	switch (dialog_state) {
+		case DIALOG_ADD_TRACK_NODE: {
+			_new_track_node_selected(p_path);
+		} break;
+		case DIALOG_CHANGE_NODE_PATH: {
+			_move_track_to_node(p_path);
+		} break;
+	}
+}
+
 void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 	ERR_FAIL_NULL(root);
 	Node *node = get_node_or_null(p_path);
@@ -5743,11 +5897,13 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 	switch (adding_track_type) {
 		case Animation::TYPE_VALUE: {
 			adding_track_path = path_to;
+			dialog_state = DIALOG_ADD_TRACK_PROPERTY;
 			prop_selector->set_type_filter(Vector<Variant::Type>());
 			prop_selector->select_property_from_instance(node);
 		} break;
 		case Animation::TYPE_BLEND_SHAPE: {
 			adding_track_path = path_to;
+			dialog_state = DIALOG_ADD_TRACK_PROPERTY;
 			Vector<Variant::Type> filter;
 			filter.push_back(Variant::FLOAT);
 			prop_selector->set_type_filter(filter);
@@ -5775,6 +5931,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			filter.push_back(Variant::PLANE);
 			filter.push_back(Variant::COLOR);
 
+			dialog_state = DIALOG_ADD_TRACK_PROPERTY;
 			adding_track_path = path_to;
 			prop_selector->set_type_filter(filter);
 			prop_selector->select_property_from_instance(node);
@@ -5810,55 +5967,8 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
 			undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
 			undo_redo->commit_action();
-
 		} break;
 	}
-}
-
-void AnimationTrackEditor::_add_track(int p_type) {
-	AnimationPlayer *ap = AnimationPlayerEditor::get_singleton()->get_player();
-	if (!ap) {
-		ERR_FAIL_EDMSG("No AnimationPlayer is currently being edited.");
-	}
-	Node *root_node = ap->get_node_or_null(ap->get_root_node());
-	if (!root_node) {
-		EditorNode::get_singleton()->show_warning(TTR("Not possible to add a new track without a root"));
-		return;
-	}
-	adding_track_type = p_type;
-
-	String title_text = TTRC("Pick a node to animate:");
-	Vector<StringName> valid_types;
-	switch (adding_track_type) {
-		case Animation::TYPE_BLEND_SHAPE: {
-			// Blend Shape is a property of MeshInstance3D.
-			valid_types.push_back(SNAME("MeshInstance3D"));
-		} break;
-		case Animation::TYPE_POSITION_3D:
-		case Animation::TYPE_ROTATION_3D:
-		case Animation::TYPE_SCALE_3D: {
-			// 3D Properties come from nodes inheriting Node3D.
-			valid_types.push_back(SNAME("Node3D"));
-		} break;
-		case Animation::TYPE_METHOD: {
-			title_text = TTRC("Pick a node to select method:");
-		} break;
-		case Animation::TYPE_AUDIO: {
-			valid_types.push_back(SNAME("AudioStreamPlayer"));
-			valid_types.push_back(SNAME("AudioStreamPlayer2D"));
-			valid_types.push_back(SNAME("AudioStreamPlayer3D"));
-			title_text = TTRC("Pick a node to play audio:");
-		} break;
-		case Animation::TYPE_ANIMATION: {
-			valid_types.push_back(SNAME("AnimationPlayer"));
-			title_text = TTRC("Pick a node to play animation:");
-		} break;
-	}
-	pick_track->set_valid_types(valid_types);
-	pick_track->set_title(title_text);
-	pick_track->popup_scenetree_dialog(nullptr, root_node);
-	pick_track->get_filter_line_edit()->clear();
-	pick_track->get_filter_line_edit()->grab_focus();
 }
 
 void AnimationTrackEditor::_fetch_value_track_options(const NodePath &p_path, Animation::UpdateMode *r_update_mode, Animation::InterpolationType *r_interpolation_type, bool *r_loop_wrap) {
@@ -5913,6 +6023,51 @@ void AnimationTrackEditor::_fetch_value_track_options(const NodePath &p_path, An
 	}
 }
 
+/*
+	Takes p_path - a NodePath to a new target node (NOT with the property)
+	and p_track - The AnimationTrack
+	Changes the Animation's path to match that node.
+*/
+void AnimationTrackEditor::_move_track_to_node(NodePath p_path) {
+	Node *tree_root = EditorNode::get_singleton()->get_tree()->get_root();
+	Node *new_node = tree_root->get_node_or_null(p_path);
+	ERR_FAIL_NULL(new_node);
+
+	// Get AnimationPlayer's root_node.
+	AnimationPlayer *ap = AnimationPlayerEditor::get_singleton()->get_player();
+	if (!ap) {
+		ERR_FAIL_EDMSG("No AnimationPlayer is currently being edited.");
+	}
+	Node *root_node = ap->get_node_or_null(ap->get_root_node());
+	if (!root_node) {
+		EditorNode::get_singleton()->show_warning(TTR("Not possible to change node path without a root"));
+		return;
+	}
+
+	// Get New Path, in respect to AP's root_node.
+	NodePath current_track_path = NodePath(animation->track_get_path(affected_track_idx));
+	String property_path = current_track_path.get_concatenated_subnames();
+	String new_path = String(root_node->get_path_to(new_node));
+	new_path = new_path + ":" + property_path;
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Change Track Path"));
+	undo_redo->add_do_method(animation.ptr(), "track_set_path", affected_track_idx, new_path);
+	undo_redo->add_undo_method(animation.ptr(), "track_set_path", affected_track_idx, current_track_path);
+	undo_redo->commit_action();
+}
+
+void AnimationTrackEditor::_prop_selector_property_selected(const String &p_name) {
+	switch (dialog_state) {
+		case (DIALOG_ADD_TRACK_PROPERTY): {
+			_new_track_property_selected(p_name);
+		} break;
+		case (DIALOG_CHANGE_PROPERTY_PATH): {
+			_change_track_property_selected(p_name);
+		} break;
+	}
+}
+
 void AnimationTrackEditor::_new_track_property_selected(const String &p_name) {
 	String full_path = String(adding_track_path) + ":" + p_name;
 
@@ -5953,10 +6108,7 @@ void AnimationTrackEditor::_new_track_property_selected(const String &p_name) {
 	} else {
 		bool is_blend_shape = adding_track_type == Animation::TYPE_BLEND_SHAPE;
 		if (is_blend_shape) {
-			PackedStringArray split = p_name.split("/");
-			if (!split.is_empty()) {
-				full_path = String(adding_track_path) + ":" + split[split.size() - 1];
-			}
+			full_path = _get_blend_shape_track_path(full_path);
 		}
 		undo_redo->create_action(TTR("Add Track"));
 		undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
@@ -5969,6 +6121,129 @@ void AnimationTrackEditor::_new_track_property_selected(const String &p_name) {
 		undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
 		undo_redo->commit_action();
 	}
+}
+
+void AnimationTrackEditor::_change_track_property_selected(const String &p_name) {
+	NodePath current_track_path = animation->track_get_path(affected_track_idx);
+	String base_path = current_track_path.get_concatenated_names();
+	String new_path = base_path + ":" + p_name;
+
+	bool is_blend_shape = adding_track_type == Animation::TYPE_BLEND_SHAPE;
+	if (is_blend_shape) {
+		new_path = _get_blend_shape_track_path(new_path);
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Change Track Path"));
+	undo_redo->add_do_method(animation.ptr(), "track_set_path", affected_track_idx, new_path);
+	undo_redo->add_undo_method(animation.ptr(), "track_set_path", affected_track_idx, current_track_path);
+	undo_redo->commit_action();
+}
+
+void AnimationTrackEditor::_change_track_target_node_pressed(int p_track) {
+	AnimationPlayer *ap = AnimationPlayerEditor::get_singleton()->get_player();
+	if (!ap) {
+		ERR_FAIL_EDMSG("No AnimationPlayer is currently being edited.");
+	}
+	Node *root_node = ap->get_node_or_null(ap->get_root_node());
+
+	dialog_state = DIALOG_CHANGE_NODE_PATH;
+	affected_track_idx = p_track;
+
+	int track_type = animation->track_get_type(p_track);
+	Vector<StringName> valid_types = _get_valid_types_for_track(track_type);
+
+	Node *current_node = get_track_node_or_null(p_track);
+
+	// Transform3D pointing to bone requires Skeleton3D instead of Node3D.
+	if (is_bone_track(p_track)) {
+		valid_types.clear();
+		valid_types.push_back(SNAME("Skeleton3D"));
+	}
+	pick_track->set_valid_types(valid_types);
+
+	pick_track->popup_scenetree_dialog(current_node, root_node);
+	pick_track->get_filter_line_edit()->clear();
+	pick_track->get_filter_line_edit()->grab_focus();
+}
+
+void AnimationTrackEditor::_change_track_target_property_pressed(int p_track) {
+	// Catches Change Target Property/BlendShape/Bone, need to split here.
+	Node *current_node = get_track_node_or_null(p_track);
+	if (!current_node) {
+		EditorNode::get_singleton()->show_warning(TTR("Not possible to change property without a valid target node"));
+		return;
+	}
+
+	switch (animation->track_get_type(p_track)) {
+		case Animation::TYPE_BLEND_SHAPE: {
+			// BlendShape selector is currently property selector with float filter.
+			Vector<Variant::Type> type_filter;
+			type_filter.push_back(Variant::FLOAT);
+			prop_selector->set_type_filter(type_filter);
+		} break;
+		case Animation::TYPE_VALUE:
+		case Animation::TYPE_BEZIER: {
+			// Filter the property dialog by the type of the track's values.
+			Vector<Variant::Type> type_filter;
+			Variant::Type value_type = _get_track_value_type(p_track);
+			if (value_type != Variant::NIL) {
+				type_filter.push_back(value_type);
+			}
+			prop_selector->set_type_filter(type_filter);
+
+			// No filtering property track until nested filters are supported.
+			prop_selector->set_type_filter(Vector<Variant::Type>());
+		} break;
+		case Animation::TYPE_POSITION_3D:
+		case Animation::TYPE_ROTATION_3D:
+		case Animation::TYPE_SCALE_3D: {
+			// Change Target Bone, use BonePicker here.
+			EditorNode::get_singleton()->show_warning(TTR("Changing bone targets is not implemented yet."));
+			return;
+		} break;
+		default: {
+			prop_selector->set_type_filter(Vector<Variant::Type>());
+		} break;
+	}
+
+	affected_track_idx = p_track;
+	dialog_state = DIALOG_CHANGE_PROPERTY_PATH;
+
+	String current_property = animation->track_get_path(p_track).get_concatenated_subnames();
+	prop_selector->select_property_from_instance(current_node, current_property);
+}
+
+Variant::Type AnimationTrackEditor::_get_track_value_type(int p_track) {
+	// Returns the Variant type we expect a track to filter for.
+
+	// Use the target property's variant type, if valid path.
+	Node *current_node = get_track_node_or_null(p_track);
+	if (current_node) {
+		NodePath current_track_path = animation->track_get_path(p_track);
+		if (current_track_path.get_subname_count() > 0) {
+			Variant prop_value = current_node->get_indexed(current_track_path.get_subnames());
+			if (prop_value.get_type() != Variant::NIL) {
+				return prop_value.get_type();
+			}
+		}
+	}
+	// Fallback to the first key's type.
+	if (animation->track_get_key_count(p_track) > 0) {
+		return animation->track_get_key_value(p_track, 0).get_type();
+	}
+	return Variant::NIL;
+}
+
+String AnimationTrackEditor::_get_blend_shape_track_path(const String &p_property_path) const {
+	// Handle NodePath w/ Property -> BlendShape track path conversion.
+	// MeshInstance3D exposes blend shapes as "Node:blend_shapes/<name>".
+	// A BlendShape animation track needs to store "Node:<name>".
+
+	if (p_property_path.contains(":blend_shapes/")) {
+		return p_property_path.replace_first(":blend_shapes/", ":");
+	}
+	return p_property_path;
 }
 
 void AnimationTrackEditor::_timeline_value_changed(double) {
@@ -8519,14 +8794,16 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed));
 	edit->get_popup()->connect("about_to_popup", callable_mp(this, &AnimationTrackEditor::_edit_menu_about_to_popup));
 
+	// SceneTreeDialog to add a new track
 	pick_track = memnew(SceneTreeDialog);
 	add_child(pick_track);
-	pick_track->connect("selected", callable_mp(this, &AnimationTrackEditor::_new_track_node_selected));
+	pick_track->set_title(TTR("Pick a node to animate:"));
+	pick_track->connect("selected", callable_mp(this, &AnimationTrackEditor::_pick_track_node_selected));
 	pick_track->get_filter_line_edit()->connect(SceneStringName(text_changed), callable_mp(this, &AnimationTrackEditor::_pick_track_filter_text_changed));
 
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
-	prop_selector->connect("selected", callable_mp(this, &AnimationTrackEditor::_new_track_property_selected));
+	prop_selector->connect("selected", callable_mp(this, &AnimationTrackEditor::_prop_selector_property_selected));
 	prop_selector->set_accessibility_name(TTRC("Track Property"));
 
 	method_selector = memnew(PropertySelector);
