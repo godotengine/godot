@@ -296,6 +296,14 @@ const AudioStreamPlaybackPolyphonic::Stream *AudioStreamPlaybackPolyphonic::_fin
 	return &streams[index];
 }
 
+double AudioStreamPlaybackPolyphonic::get_stream_playback_position(ID p_stream_id) const {
+	const Stream *s = _find_stream(p_stream_id);
+	if (!s) {
+		return 0.0;
+	}
+	return s->stream_playback->get_playback_position();
+}
+
 void AudioStreamPlaybackPolyphonic::set_stream_volume(ID p_stream_id, float p_volume_db) {
 	Stream *s = _find_stream(p_stream_id);
 	if (!s) {
@@ -345,6 +353,7 @@ void AudioStreamPlaybackPolyphonic::set_sample_playback(const Ref<AudioSamplePla
 
 void AudioStreamPlaybackPolyphonic::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("play_stream", "stream", "from_offset", "volume_db", "pitch_scale", "playback_type", "bus"), &AudioStreamPlaybackPolyphonic::play_stream, DEFVAL(0), DEFVAL(0), DEFVAL(1.0), DEFVAL(0), DEFVAL(SceneStringName(Master)));
+	ClassDB::bind_method(D_METHOD("get_stream_playback_position", "stream"), &AudioStreamPlaybackPolyphonic::get_stream_playback_position);
 	ClassDB::bind_method(D_METHOD("set_stream_volume", "stream", "volume_db"), &AudioStreamPlaybackPolyphonic::set_stream_volume);
 	ClassDB::bind_method(D_METHOD("set_stream_pitch_scale", "stream", "pitch_scale"), &AudioStreamPlaybackPolyphonic::set_stream_pitch_scale);
 	ClassDB::bind_method(D_METHOD("is_stream_playing", "stream"), &AudioStreamPlaybackPolyphonic::is_stream_playing);
