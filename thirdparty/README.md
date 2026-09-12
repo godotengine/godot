@@ -714,6 +714,10 @@ Update instructions:
 - Download latest metal-cpp ZIP from https://developer.apple.com/metal/cpp/:
 - Run `update-metal-cpp.sh <path to the downloaded zip>` to extract the relevant files and apply patches.
 
+Patches:
+
+* 0002-sharedptr-nil-safe-retain-release.patch ([GH-123439](https://github.com/godotengine/godot/pull/123439))
+
 
 ## meshoptimizer
 
